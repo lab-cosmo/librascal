@@ -7,7 +7,7 @@ import subprocess
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
-
+from setup_requirements import install_requires
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
@@ -56,14 +56,17 @@ class CMakeBuild(build_ext):
         subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
-setup(
-    name='cmake_example',
-    version='0.0.1',
-    author='Dean Moldovan',
-    author_email='dean0x7d@gmail.com',
-    description='A test project using pybind11 and CMake',
-    long_description='',
-    ext_modules=[CMakeExtension('cmake_example')],
-    cmdclass=dict(build_ext=CMakeBuild),
-    zip_safe=False,
-)
+if __name__ == '__main__':
+
+    setup(
+        name='proteus',
+        version='0.0.1',
+        author='Felix Musil',
+        author_email='felix.musil@epfl.ch',
+        description='An efficient library for generating atomistic descriptor and building machine learning potentials.',
+        long_description='',
+        ext_modules=[CMakeExtension('cmake_example')],
+        install_requires=install_requires,
+        cmdclass=dict(build_ext=CMakeBuild),
+        zip_safe=False,
+    )
