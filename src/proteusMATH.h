@@ -20,7 +20,7 @@ void export_proteus_math_function(py::module& m){
         Some other explanation about the add function.
     )pbdoc");
 
-    m.def("subtract", &substract, R"pbdoc(
+    m.def("subtract", &subtract, R"pbdoc(
         subtract two numbers
 
         Some other explanation about the subtract function.
