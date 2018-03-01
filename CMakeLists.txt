@@ -47,7 +47,7 @@ include_directories(
 file( GLOB TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/test_*.cc")
 
 add_executable(main_test_suite tests/main_test_suite.cc ${TEST_SRCS})
-target_link_libraries(main_test_suite ${Boost_LIBRARIES} muSpectre)
+target_link_libraries(main_test_suite ${Boost_LIBRARIES} proteus)
 add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
 
 
@@ -57,7 +57,7 @@ add_subdirectory(
   ${CMAKE_SOURCE_DIR}/src/
   )
 add_subdirectory(
-  ${CMAKE_SOURCE_DIR}/language_bindings/
+  ${CMAKE_SOURCE_DIR}/bindings/
   )
 
 add_subdirectory(
@@ -69,7 +69,7 @@ file( GLOB binaries "${CMAKE_SOURCE_DIR}/examples/*.cc")
 foreach(binaryfile ${binaries})
   get_filename_component(binaryname  ${binaryfile} NAME_WE)
   add_executable(${binaryname} ${binaryfile})
-  target_link_libraries(${binaryname} ${Boost_LIBRARIES} muSpectre)
+  target_link_libraries(${binaryname} ${Boost_LIBRARIES} proteus)
 endforeach(binaryfile ${binaries})
 #or copy them
 file (GLOB pybins "${CMAKE_SOURCE_DIR}/bin/*.py")
