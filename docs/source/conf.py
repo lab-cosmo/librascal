@@ -36,6 +36,18 @@ extensions = ['sphinx.ext.autodoc',
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode']
 
+
+read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
+
+if read_the_docs_build:
+    proteus_path = "."
+else:
+    proteus_path = "@CMAKE_CURRENT_BINARY_DIR@"
+    os.makedirs("@CMAKE_CURRENT_BINARY_DIR@/_static", exist_ok=True)
+print("proteus_path = '{}'".format(proteus_path))
+subprocess.call('ls; pwd', shell=True)
+subprocess.call("cd {} && doxygen".format(proteus_path), shell=True)
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
