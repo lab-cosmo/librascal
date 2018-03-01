@@ -1,8 +1,6 @@
-#include <pybind11/pybind11.h>
 #include "basic_types.h"
 #include <Eigen/Dense>
 
-namespace py = pybind11;
 
 Matrix cdist(const Eigen::Ref<const Eigen::MatrixX3d>& X,const Eigen::Ref<Eigen::MatrixX3d>& Y)
 {  	
@@ -23,12 +21,6 @@ Matrix cdist(const Eigen::Ref<const Eigen::MatrixX3d>& X,const Eigen::Ref<Eigen:
     	}
     }
     return Eigen::sqrt(D.array());
-}
-
-
-void prot_dist_mat(py::module& m)
-{
-	m.def("cdist",&cdist);
 }
 
 
