@@ -10,7 +10,8 @@ Welcome to Proteus's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-
+.. doxygenindex::
+   :project: proteus
 
 Indices and tables
 ==================

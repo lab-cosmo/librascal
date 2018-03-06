@@ -17,7 +17,8 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
+import os
+import subprocess
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
@@ -32,11 +33,14 @@
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinx.ext.autodoc',
-    'sphinx.ext.todo',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.viewcode']
+              'sphinx.ext.intersphinx',
+              'sphinx.ext.todo',
+              'sphinx.ext.mathjax',
+              'sphinx.ext.viewcode',
+              'breathe']
 
-
+## this line detects whether the script is run on readthedocs.io, where it
+## needs to run in-place
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 
 if read_the_docs_build:
@@ -47,6 +51,9 @@ else:
 print("proteus_path = '{}'".format(proteus_path))
 subprocess.call('ls; pwd', shell=True)
 subprocess.call("cd {} && doxygen".format(proteus_path), shell=True)
+
+breathe_projects = {"proteus": os.path.join(proteus_path, "doxygenxml")}
+breathe_default_project = "proteus"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
