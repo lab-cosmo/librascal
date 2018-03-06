@@ -52,6 +52,9 @@ print("proteus_path = '{}'".format(proteus_path))
 subprocess.call('ls; pwd', shell=True)
 subprocess.call("cd {} && doxygen".format(proteus_path), shell=True)
 
+breathe_projects = {"proteus": os.path.join(proteus_path, "doxygenxml")}
+breathe_default_project = "proteus"
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
