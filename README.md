@@ -2,8 +2,20 @@
 A scalable and versatile fingerprint and machine-learning code
 
 How to install:
-..1. Need to have mercurial, gcc (or other c++14 compiler), boost unit_test_framework,  Sphinx
-..2. mkdir build; cd build; cmake ..
+* Need to have the programs mercurial, git, gcc (or other c++14 compiler), boost (unit_test_framework), doxygen
+* Need the python packages Sphinx, breathe 
+* To build the program: 
+```Shell
+mkdir build 
+cd build 
+cmake .. 
+make
+``` 
+* To make development documentation:
+```Shell
+cd build 
+make dev_doc
+``` 
 
 
 TILL:

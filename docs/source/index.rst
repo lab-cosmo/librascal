@@ -10,15 +10,20 @@ Welcome to Proteus's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   intro
+   how_to
+
 .. doxygenindex::
    :project: proteus
+
 
 Indices and tables
 ==================
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. * :ref:`intro`
+.. * :ref:`genindex`
+.. * :ref:`modindex`
+.. * :ref:`search`
 
 
 
