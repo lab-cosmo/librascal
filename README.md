@@ -3,7 +3,7 @@ A scalable and versatile fingerprint and machine-learning code
 
 How to install:
 * Need to have the programs mercurial, git, gcc (or other c++14 compiler), boost (unit_test_framework), doxygen
-* Need the python packages Sphinx, breathe 
+* Need the python packages Sphinx, Breathe 
 * To build the program: 
 ```Shell
 mkdir build 
@@ -16,6 +16,7 @@ make
 cd build 
 make dev_doc
 ``` 
+
 
 
 TILL:
