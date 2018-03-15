@@ -20,7 +20,7 @@ Welcome to Proteus's documentation!
 Indices and tables
 ==================
 
-* :ref:`intro`
+* :ref:`_introduction`
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
