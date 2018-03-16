@@ -1,7 +1,10 @@
 .. _introduction:
 
+Introduction
+============
+
 About this project
-==================
+------------------
 
 Proteus is a scalable and versatile fingerprint and machine-learning code is a scalable and versatile machine-learning code. It collects several different algorithms that can be used to create fingerprints, perform dimensionality reduction and fit, atomistic and finite element calculations.
 
@@ -13,7 +16,7 @@ It comes with a GNU lesser general public license of version 3, which means that
 
 
 Compile the Code
-================
+----------------
 
 To compile the code it is necessary to have CMake 3.0 and a C++ compiler supporting C++14. During the configuration, it will automatically try to download the external libraries on which it depends:
 
@@ -50,7 +53,7 @@ Since Eigen depends on Mercurial, it may fail to download if you don't have the 
 .. _code_structure:
 
 Structure of the Code
-=====================
+---------------------
 
 The code is divided mainly in two parts: a pure C++ part and a python-binding interface.
 
