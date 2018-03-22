@@ -28,8 +28,13 @@
 
 #include <Eigen/Dense>
 
+
+namespace proteus {
+
 /**
  * Dynamically allocated matrix of arbitrary dimension.
  */
-Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> Matrix;
 
+using MatrixXdR = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+
+}

@@ -31,11 +31,15 @@
 
 #include <pybind11/pybind11.h>
 #include "cdist.h"
+#include <pybind11/eigen.h>
 
+using namespace proteus;
 namespace py=pybind11;
 
-void prot_dist_mat(py::module& m)
+void add_cdist(py::module& m)
 {
+	m.doc()  = " binding for the distance matrix calculation" ;
 	m.def("cdist",&cdist);
+	//m.def("scale", [](py::EigenDRef<Eigen::MatrixXd> mm, double c) { mm *= c; });
 }
 

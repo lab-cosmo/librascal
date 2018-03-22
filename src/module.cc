@@ -32,6 +32,11 @@
  * that can be used by Doxygen to construct a developer manual.
  * This file contains just a function that return 2! Not bad, ah? 
  */
+
+namespace proteus {
+
 int f(int){
 	return 2;
+}
+
 }

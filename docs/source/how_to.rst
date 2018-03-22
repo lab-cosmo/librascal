@@ -20,10 +20,10 @@ The format of the README file for git is markdown. Here is a cheat-sheet summari
 https://guides.github.com/features/mastering-markdown/
 
 
-How to add a new Machine Learning Method
-----------------------------------------
+How to add a new descriptor
+---------------------------
 
-If you want to add a new Machine Learning Method (or in general a method that can be used in Proteus), please, first of all, be aware of the :ref:`code_structure`. Once you know how Proteus is subdivided, you can start thinking about the implementation of the new functionality.
+If you want to add a new descriptor (or in general a method that can be used in Proteus), please, first of all, be aware of the :ref:`code_structure`. Once you know how Proteus is subdivided, you can start thinking about the implementation of the new functionality.
 
 First of all, think about what you need and check if is already implemented (for example, if you need a special C++ structure or if you can use one of the basic types already implemented).
 
