@@ -2,6 +2,8 @@
 
 import unittest
 
+from python_cdist_test import TestCdist
+
 class SimpleCheck(unittest.TestCase):
     def setUp(self):
         self.truth = True

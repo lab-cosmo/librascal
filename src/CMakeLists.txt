@@ -30,7 +30,8 @@
 
 
 set(proteus_SRC
-    module.cc)
+  module.cc
+  cdist.cc)
 
 
 add_library(proteus ${proteus_SRC})

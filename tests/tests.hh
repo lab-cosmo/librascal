@@ -24,10 +24,12 @@
 #ifndef TESTS_H
 #define TESTS_H
 
+#include <boost/test/unit_test.hpp>
+#define BOOST_TEST_DYN_LINK
+
 namespace proteus {
 
-
-  const Real tol = 1e-14*100; //it's in percent
+  const double tol = 1e-14*100; //it's in percent
 
 }  // proteus
 
