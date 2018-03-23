@@ -14,7 +14,7 @@ namespace proteus {
   }
 
   BOOST_AUTO_TEST_CASE(f_test) {
-    BOOST_TEST(f(12) == 2, "Should have been 2");
+    BOOST_CHECK_EQUAL(f(12), 2);
   }
 
 
@@ -34,7 +34,7 @@ namespace proteus {
   using fixtures = boost::mpl::list<DemoTestFixture<2>, DemoTestFixture<3>>;
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_basic_fixture_test, Fix, fixtures, Fix) {
-    BOOST_TEST(Fix::val == Fix::dim());
+    BOOST_CHECK_EQUAL(Fix::val, Fix::dim());
   }
 
   BOOST_AUTO_TEST_SUITE_END();

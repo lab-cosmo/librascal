@@ -14,6 +14,7 @@ make
 * To make development documentation:
 ```Shell
 cd build 
+cmake ..
 make dev_doc
 ``` 
 
