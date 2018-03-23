@@ -22,7 +22,16 @@ make dev_doc
 
 TILL:
 Test + compilation of documentation in cmake + how to add a test
+Make sure that one can compile on fidis / daint without docs and tests and it will work based on existing libraries
+Libboost-test dependency 
+Stub for the neighbor list
 Federico:
 comments to c++ + how to bindings/function/class
+try to enable CI on github with travis
 Felix:
 the rest of the tutorial
+start pulling the reference implementation in Python (with Andrea G)
+Chiheb:
+Start writing down the blueprints from the google doc to the docs
+
+
