@@ -1,7 +1,7 @@
 download_external_project(Eigen3
-  URL "https://bitbucket.org/eigen/eigen"
+  URL "https://github.com/eigenteam/eigen-git-mirror.git"
   TAG "${_Eigen3_version}"
-  BACKEND HG
+  BACKEND GIT
   THIRD_PARTY_SRC_DIR ${_Eigen3_external_dir}
   ${_Eigen3_update}
   )

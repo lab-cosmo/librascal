@@ -35,7 +35,7 @@ endif()
 
 find_package(Boost COMPONENTS unit_test_framework REQUIRED)
 
-add_external_package(Eigen3 VERSION 3.3 CONFIG)
+add_external_package(Eigen3 VERSION 3.3-rc2 CONFIG)
 add_external_package(pybind11 VERSION 2.2.2 CONFIG)
 
 include_directories(
