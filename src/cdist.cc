@@ -6,7 +6,7 @@ namespace proteus {
   MatrixXdR cdist(Eigen::Ref<MatrixXdR> X,Eigen::Ref<MatrixXdR> Y) {
     const int N = X.rows();
     const int K = Y.rows();
-
+ 
     MatrixXdR  XX,YY,D;
     XX.resize(N,1);
     YY.resize(K,1);
