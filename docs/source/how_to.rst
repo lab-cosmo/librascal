@@ -10,13 +10,13 @@ The format is restructured text. Restructured text work a lot like markdown. How
 For example, if you want to add a file describing how_to_do_something to the index, create the how_to_do_someth
 ing.rst file and then add 'how_to_do_something' to the index.rst file and it will appear in the HTML.
 
-For a quick reference, here is the cheatsheet for .rst:
+For a quick reference, here is a cheatsheet for .rst:
 https://github.com/ralsina/rst-cheatsheet/blob/master/rst-cheatsheet.rst
 
 How to edit a Readme
 --------------------
 
-The format of the README file for git is markdown. Here is a cheat-sheet summarizing how you can use it:
+The format of the README file for git is markdown. For a quick reference, here is a cheat-sheet summarizing how you can use it:
 https://guides.github.com/features/mastering-markdown/
 
 
