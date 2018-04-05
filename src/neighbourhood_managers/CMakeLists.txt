@@ -1,22 +1,22 @@
-# =============================================================================
+#==============================================================================
 # file   CMakeLists.txt
 #
 # @author Till Junge <till.junge@epfl.ch>
 #
-# @date   01 Mar 2018
+# @date   05 Apr 2018
 #
-# @brief  configuration for system implementations
+# @brief  configuration for compiling neighbourhood_managers
 #
 # @section LICENSE
 #
 # Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
 #
-# Proteus is free software; you can redistribute it and/or
+# proteus is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
 # published by the Free Software Foundation, either version 3, or (at
 # your option) any later version.
 #
-# Proteus is distributed in the hope that it will be useful, but
+# proteus is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 # General Public License for more details.
@@ -25,16 +25,10 @@
 # along with GNU Emacs; see the file COPYING. If not, write to the
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
-# =============================================================================
+#
 
 
+set (manager_SRC
+  neighbourhood_managers/neighbourhood_manager_lammps.cc)
 
-set(proteus_SRC
-  module.cc
-  cdist.cc)
-
-
-add_library(proteus ${proteus_SRC})
-target_link_libraries(proteus PUBLIC Eigen3::Eigen)
-
-add_subdirectory(neighbourhood_managers)
+target_sources(proteus PRIVATE ${manager_SRC})

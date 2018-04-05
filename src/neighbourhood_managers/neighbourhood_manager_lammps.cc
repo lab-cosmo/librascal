@@ -1,11 +1,12 @@
 /**
- * file   test_base.cc
+ * file   neighbourhood_manager_lammps.cc
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
- * @date   01 Mar 2018
+ * @date   05 Apr 2018
  *
- * @brief  description
+ * @brief Implementation of the neighbourhood manager for lammps
+ *        neighbourhood lists
  *
  * @section LICENSE
  *
@@ -27,43 +28,21 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "tests.hh"
-#include "module.hh"
+#include "neighbourhood_managers/neighbourhood_manager_lammps.hh"
 
-#include <boost/mpl/list.hpp>
-
+#include <numeric>
 
 namespace proteus {
 
-  BOOST_AUTO_TEST_SUITE(base_tests);
+  /* ---------------------------------------------------------------------- */
+  NeighbourhoodManagerLammps::
+  NeighbourhoodManagerLammps(const int & inum, const int & tot_num,
+                             int * ilist, int * numneigh, int ** firstneigh,
+                             double ** x, double ** f, int * type,
+                             double * eatom, double ** vatom)
+    : inum{inum}, tot_num{tot_num}, ilist{ilist}, numneigh{numneigh},
+      firstneigh{firstneigh}, x{x}, f{f}, type{type}, eatom{eatom},
+      vatom{vatom}, nb_pairs{std::accumulate(numneigh, numneigh+inum, 0)}
+  { }
 
-  BOOST_AUTO_TEST_CASE(base_test) {
-    BOOST_CHECK_EQUAL(1, 2-1);
-  }
-
-  BOOST_AUTO_TEST_CASE(f_test) {
-    BOOST_CHECK_EQUAL(f(12), 2);
-  }
-
-
-  template <int Dim>
-  struct DemoTestFixture {
-
-    static constexpr int dim(){return Dim;}
-
-    DemoTestFixture()
-      :val{Dim}
-    {}
-
-
-    int val;
-  };
-
-  using fixtures = boost::mpl::list<DemoTestFixture<2>, DemoTestFixture<3>>;
-
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_basic_fixture_test, Fix, fixtures, Fix) {
-    BOOST_CHECK_EQUAL(Fix::val, Fix::dim());
-  }
-
-  BOOST_AUTO_TEST_SUITE_END();
 }  // proteus

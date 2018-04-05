@@ -1,0 +1,141 @@
+/**
+ * file   neighbourhood_manager_lammps.hh
+ *
+ * @author Till Junge <till.junge@epfl.ch>
+ *
+ * @date   05 Apr 2018
+ *
+ * @brief Neighbourhood manager for lammps neighbourhood lists
+ *
+ * @section LICENSE
+ *
+ * Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
+ *
+ * proteus is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3, or (at
+ * your option) any later version.
+ *
+ * proteus is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GNU Emacs; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+
+
+#ifndef NEIGHBOURHOOD_MANAGER_LAMMPS_H
+#define NEIGHBOURHOOD_MANAGER_LAMMPS_H
+
+#include "neighbourhood_managers/neighbourhood_manager_base.hh"
+
+
+namespace proteus {
+  //! forward declaration for traits
+  class NeighbourhoodManagerLammps;
+
+  //! traits specialisation for Lammps manager
+  template <>
+  struct NeighbourhoodManager_traits<NeighbourhoodManagerLammps> {
+    constexpr static int Dim {3};
+  };
+  class NeighbourhoodManagerLammps: public NeighbourhoodManagerBase<NeighbourhoodManagerLammps>
+  {
+  public:
+    using traits = NeighbourhoodManager_traits<NeighbourhoodManagerLammps>;
+    using Parent = NeighbourhoodManagerBase<NeighbourhoodManagerLammps>;
+    using Vector_ref = typename Parent::Vector_ref;
+    using AtomRef_t = typename Parent::AtomRef;
+
+    //! Default constructor
+    NeighbourhoodManagerLammps() = delete;
+
+    /**
+     * constructor without explicit dependency to lammmps. The
+     * signature could be simplified by including lammps as a
+     * dependency, but it is unclear that the convenience would
+     * outweigh the hassle of maintaining the dependency.
+     *
+     * @param inum Field `inum` in the lammps `NeighList` structure
+     *
+     * @param tot_num sum of the fields `nlocal` and `nghost` in the
+     *                lammps `Atom` structure
+     *
+     * @param ilist Field `ilist` in the lammps `NeighList` structure
+     *
+     * @param numneigh Field `numneigh` in the lammps `NeighList` structure
+     *
+     * @param firstneigh Field `firstneigh` in the lammps `NeighList` structure
+     *
+     * @param x Field `x` in the lammps `Atom` structure
+     *
+     * @param f Field `f` in the lammps `Atom` structure
+     *
+     * @param type Field `type` in the lammps `Atom` structure
+     *
+     * @param eatom per-atom energy
+     *
+     * @param vatom per-atom virial
+     */
+    NeighbourhoodManagerLammps(const int & inum, const int & tot_num,
+                               int * ilist, int * numneigh, int ** firstneigh,
+                               double ** x, double ** f, int * type,
+                               double * eatom, double ** vatom);
+
+    //! Copy constructor
+    NeighbourhoodManagerLammps(const NeighbourhoodManagerLammps &other) = delete;
+
+    //! Move constructor
+    NeighbourhoodManagerLammps(NeighbourhoodManagerLammps &&other) = default;
+
+    //! Destructor
+    virtual ~NeighbourhoodManagerLammps() = default;
+
+    //! Copy assignment operator
+    NeighbourhoodManagerLammps& operator=(const NeighbourhoodManagerLammps &other) = delete;
+
+    //! Move assignment operator
+    NeighbourhoodManagerLammps& operator=(NeighbourhoodManagerLammps &&other) = default;
+
+    // required for the construction of vectors, etc
+    constexpr static int dim() {return traits::Dim;}
+
+
+    // return position vector
+    inline Vector_ref get_x(const AtomRef_t atom) {
+      return Vector_ref(this->x[atom.get_index()]);
+    }
+
+    // return force vector
+    inline Vector_ref get_f(const AtomRef_t atom) {
+      return Vector_ref(this->f[atom.get_index()]);
+    }
+
+    // return number of I atoms in the list
+    inline size_t get_size() const {
+      return this->inum;
+    }
+
+  protected:
+    int inum;
+    int tot_num; //includes ghosts
+    int * ilist;
+    int * numneigh;
+    int ** firstneigh;
+    double **x;
+    double **f;
+    int * type;
+    double * eatom;
+    double ** vatom;
+    int nb_pairs;
+
+  private:
+  };
+
+}  // proteus
+
+#endif /* NEIGHBOURHOOD_MANAGER_LAMMPS_H */
