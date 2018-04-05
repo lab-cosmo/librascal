@@ -57,10 +57,10 @@ namespace proteus {
       }
     };
 
-    template<typename t, size_t NbRow, size_t NbCol>
+    template<typename T, size_t NbRow, size_t NbCol>
     using Value_t = typename Value<T, NbRow, NbCol>::type;
 
-    template<typename t, size_t NbRow, size_t NbCol>
+    template<typename T, size_t NbRow, size_t NbCol>
     using Value_ref = typename Value<T, NbRow, NbCol>::reference;
 
   }  // internal
@@ -89,7 +89,8 @@ namespace proteus {
     Field() = delete;
 
     //! constructor with Manager
-    Field(NeighbourhoodManager & manager): manager{manager},
+    Field(NeighbourhoodManager & manager)
+      :manager{manager}
     {}
 
     //! Copy constructor
@@ -109,11 +110,12 @@ namespace proteus {
 
     //! adjust size (only increases, never frees)
     void resize() {
-      this->values.resize(manager.get_nb_clusters(ClusterSize) * NbDof)};
+      this->values.resize(this->manager.get_nb_clusters(ClusterSize) * NbDof);
     }
 
     reference operator[](const Cluster_t& id) {
-      return Value::ret_ref(this->values[id.get_global_index()*NbDof];)
+      return Value::get_ref(this->values[id.get_global_index()*NbDof]);
+    }
 
   protected:
     NeighbourhoodManager & manager;

@@ -180,7 +180,7 @@ namespace proteus {
 
   /* ---------------------------------------------------------------------- */
   template<int Level, int MaxLevel>
-  int NeighbourhoodManagerLammps::
+  inline int NeighbourhoodManagerLammps::
   get_offset_impl(const ClusterRef_t<Level, MaxLevel>& cluster) const {
     static_assert(Level == 2, "This class cas only handle single atoms and pairs");
     static_assert(MaxLevel == traits::MaxLevel, "Wrong maxlevel");
@@ -195,7 +195,7 @@ namespace proteus {
   /* ---------------------------------------------------------------------- */
   // specialisation for just atoms
   template <>
-  int NeighbourhoodManagerLammps:: template
+  inline int NeighbourhoodManagerLammps:: template
   get_offset_impl<1, 2>(const ClusterRef_t<1, 2>& cluster) const {
     return cluster.get_atoms().back().get_index();
   }
