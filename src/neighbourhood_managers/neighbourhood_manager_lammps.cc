@@ -45,4 +45,23 @@ namespace proteus {
       vatom{vatom}, nb_pairs{std::accumulate(numneigh, numneigh+inum, 0)}
   { }
 
+
+  /* ---------------------------------------------------------------------- */
+  size_t NeighbourhoodManagerLammps::
+  get_nb_clusters(int cluster_size)  {
+    switch (cluster_size) {
+    case 1: {
+      return inum;
+      break;
+    }
+    case 2: {
+      return nb_pairs;
+      break;
+    }
+    default:
+      throw std::runtime_error("Can only handle single atoms and pairs");
+      break;
+    }
+  }
+
 }  // proteus

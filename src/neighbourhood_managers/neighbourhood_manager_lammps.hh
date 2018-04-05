@@ -33,6 +33,8 @@
 
 #include "neighbourhood_managers/neighbourhood_manager_base.hh"
 
+#include <stdexcept>
+
 
 namespace proteus {
   //! forward declaration for traits
@@ -148,6 +150,9 @@ namespace proteus {
                               int i_atom_id) const {
       return this->ilist[i_atom_id];
     }
+
+
+    size_t get_nb_clusters(int cluster_size);
 
   protected:
     int inum;

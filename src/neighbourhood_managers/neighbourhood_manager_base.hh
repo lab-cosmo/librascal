@@ -88,6 +88,7 @@ namespace proteus {
     template <int Level, int MaxLevel>
     class iterator;
     using Iterator_t = iterator<1, traits::MaxLevel>;
+    friend Iterator_t;
 
     /**
      * return type for iterators: a light-weight atom reference,
@@ -106,6 +107,10 @@ namespace proteus {
     inline Iterator_t end() {return Iterator_t(*this,
                                                this->implementation().size());}
     inline size_t size() const {return this->implementation().get_size();}
+
+    inline size_t nb_clusters(int cluster_size) const {
+      return this->implementation().get_nb_clusters();
+    }
 
     inline Vector_ref get_x(const AtomRef& atom) {
       return this->implementation().get_x(atom);
@@ -139,6 +144,9 @@ namespace proteus {
     }
 
     std::array<AtomRef, 0> get_atoms() const {return std::array<AtomRef, 0>{};};
+
+    constexpr int get_global_index() const {return 0;}
+
   private:
   };
 
@@ -213,6 +221,7 @@ namespace proteus {
     using Atoms_t = std::array<AtomRef_t, Level>;
 
     using iterator = typename Manager_t::template iterator<Level + 1, MaxLevel>;
+    friend iterator;
 
     //! Default constructor
     ClusterRef() = delete;
@@ -245,6 +254,7 @@ namespace proteus {
     inline iterator end() {return iterator(*this, this->size());}
     inline size_t size() {return this->get_manager().cluster_size(*this);}
   protected:
+    inline int get_global_index() const {return this->it.global_index;}
     Atoms_t atoms;
     Iterator_t & it;
   private:
@@ -295,6 +305,7 @@ namespace proteus {
     //! pre-increment
     inline iterator & operator ++ () {
       ++this->index;
+      ++this->global_index;
       return *this;
     }
 
@@ -315,8 +326,9 @@ namespace proteus {
 
   protected:
     //! constructor with container ref and starting point
-    iterator(Container_t & cont, int index)
-      :container{cont}, index{index} {}
+    iterator(Container_t & cont, int start)
+      :container{cont}, index{start},
+       global_index{cont.get_global_index()+start} {}
 
     std::array<AtomRef_t, Level> get_container_atoms() {
       return internal::append_array
@@ -329,6 +341,7 @@ namespace proteus {
 
     Container_t & container;
     int index;
+    int global_index;
   private:
   };
 
