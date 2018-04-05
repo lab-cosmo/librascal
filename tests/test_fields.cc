@@ -59,7 +59,7 @@ namespace proteus {
     atom_field.resize();
     int pair_field_counter{};
     for (auto atom: manager) {
-      atom_field[atom] = atom.get_atoms().back().get_x();
+      atom_field[atom] = atom.get_x();
       for (auto pair: atom) {
         pair_field[pair] = ++pair_field_counter;
       }
@@ -67,10 +67,28 @@ namespace proteus {
 
     pair_field_counter = 0;
     for (auto atom: manager) {
-      auto error = (atom_field[atom] - atom.get_atoms().back().get_x()).norm();
+      auto error = (atom_field[atom] - atom.get_x()).norm();
       BOOST_CHECK_EQUAL(error, 0);
       for (auto pair: atom) {
         BOOST_CHECK_EQUAL(pair_field[pair], ++pair_field_counter);
+      }
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE(compute_distances, FieldFixture) {
+    pair_field.resize();
+
+    for (auto atom: manager) {
+      for (auto pair: atom) {
+        pair_field[pair] = (atom.get_x() - pair.get_x()).norm();
+      }
+    }
+
+    for (auto atom: manager) {
+      for (auto pair: atom) {
+        auto error = pair_field[pair] - 1;
+        BOOST_CHECK_LE(error, 1e-12);
       }
     }
   }

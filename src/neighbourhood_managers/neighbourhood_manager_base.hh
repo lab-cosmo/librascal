@@ -251,6 +251,13 @@ namespace proteus {
     const std::array<AtomRef_t, Level>& get_atoms() const {return this->atoms;};
     std::array<AtomRef_t, Level>& get_atoms() {return this->atoms;};
 
+    /**
+     * convenience functions, because in loops, we frequently like to
+     * use clusters as proxies to their last atom
+     */
+    inline decltype(auto) get_x() {return this->atoms.back().get_x();}
+    inline decltype(auto) get_f() {return this->atoms.back().get_f();}
+
     inline Manager_t & get_manager() {return this->it.get_manager();}
     inline const Manager_t & get_manager() const {return this->it.get_manager();}
 
