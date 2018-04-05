@@ -9,8 +9,6 @@ set(BUILD_SHARED_LIBS ON)
 
 add_compile_options(-Wall -Wextra -Weffc++)
 
-enable_testing()
-
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 include(proteusTools)
 
@@ -43,13 +41,34 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src
   ${CMAKE_SOURCE_DIR}
  )
-#build tests
-file( GLOB TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/test_*.cc")
 
-add_executable(main_test_suite tests/main_test_suite.cc ${TEST_SRCS})
-target_link_libraries(main_test_suite ${Boost_LIBRARIES} proteus)
-add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
+set(ENABLE_DOC "OFF" CACHE BOOL
+  "If on, a target 'dev_doc' (which builds the documentation) is added")
+set(BUILD_TESTS "ON" CACHE BOOL
+  "If on, builds the unit tests")
 
+if (${BUILD_TESTS})
+  enable_testing()
+  # copy python test
+
+  file( GLOB PY_TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/python_*.py")
+
+  foreach(pytest ${PY_TEST_SRCS})
+    get_filename_component(pytest_name ${pytest} NAME)
+    configure_file(
+      ${pytest}
+      "${CMAKE_BINARY_DIR}/${pytest_name}"
+      COPYONLY)
+  endforeach(pytest ${PY_TEST_SRCS})
+  add_test(python_binding_test python_binding_tests.py)
+
+  #build tests
+  file( GLOB TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/test_*.cc")
+
+  add_executable(main_test_suite tests/main_test_suite.cc ${TEST_SRCS})
+  target_link_libraries(main_test_suite ${Boost_LIBRARIES} proteus)
+  add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
+endif(${BUILD_TESTS})
 
 # compile the library
 add_compile_options( -Werror)
@@ -60,9 +79,11 @@ add_subdirectory(
   ${CMAKE_SOURCE_DIR}/bindings/
   )
 
-add_subdirectory(
-  ${CMAKE_SOURCE_DIR}/docs/
-  )
+if (${ENABLE_DOC})
+  add_subdirectory(
+    ${CMAKE_SOURCE_DIR}/docs/
+    )
+endif (${ENABLE_DOC})
 
 #compile executables
 file( GLOB binaries "${CMAKE_SOURCE_DIR}/examples/*.cc")
@@ -82,15 +103,3 @@ foreach(pybin ${pybins})
     COPYONLY)
 endforeach(pybin ${pybins})
 
-# copy python test
-#build tests
-file( GLOB PY_TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/python_*.py")
-
-foreach(pytest ${PY_TEST_SRCS})
-  get_filename_component(pytest_name ${pytest} NAME)
-  configure_file(
-    ${pytest}
-    "${CMAKE_BINARY_DIR}/${pytest_name}"
-    COPYONLY)
-endforeach(pytest ${PY_TEST_SRCS})
-add_test(python_binding_test python_binding_tests.py)
