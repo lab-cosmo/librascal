@@ -7,8 +7,6 @@
  *
  * @brief  Interface for neighbourhood managers
  *
- * @section LICENSE
- *
  * Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
  * proteus is free software; you can redistribute it and/or

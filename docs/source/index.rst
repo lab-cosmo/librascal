@@ -12,6 +12,7 @@ Welcome to Proteus's documentation!
 
    intro
    how_to
+   coding_convention
 
 .. doxygenindex::
    :project: proteus

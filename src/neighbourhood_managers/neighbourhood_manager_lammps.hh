@@ -7,8 +7,6 @@
  *
  * @brief Neighbourhood manager for lammps neighbourhood lists
  *
- * @section LICENSE
- *
  * Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
  * proteus is free software; you can redistribute it and/or
