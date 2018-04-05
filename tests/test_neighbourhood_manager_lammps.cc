@@ -98,8 +98,11 @@ namespace proteus {
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(constructor_test, ManagerFixture) {
-    for (auto atom: manager) {
-      std::cout << atom.get_x().transpose() << std::endl;
+    for (auto atom_cluster: manager) {
+      std::cout << atom_cluster.get_atoms()[0].get_x().transpose() << std::endl;
+      for (auto pair_cluster: atom_cluster) {
+        std::cout << pair_cluster.get_atoms()[1].get_x().transpose() << std::endl;
+      }
     }
   }
 }  // proteus

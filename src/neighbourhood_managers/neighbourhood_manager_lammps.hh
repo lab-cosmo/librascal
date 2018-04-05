@@ -42,6 +42,7 @@ namespace proteus {
   template <>
   struct NeighbourhoodManager_traits<NeighbourhoodManagerLammps> {
     constexpr static int Dim {3};
+    constexpr static int MaxLevel{2};
   };
   class NeighbourhoodManagerLammps: public NeighbourhoodManagerBase<NeighbourhoodManagerLammps>
   {
@@ -50,6 +51,8 @@ namespace proteus {
     using Parent = NeighbourhoodManagerBase<NeighbourhoodManagerLammps>;
     using Vector_ref = typename Parent::Vector_ref;
     using AtomRef_t = typename Parent::AtomRef;
+    template <int Level, int MaxLevel>
+    using ClusterRef_t = typename Parent::template ClusterRef<Level, MaxLevel>;
 
     //! Default constructor
     NeighbourhoodManagerLammps() = delete;
@@ -106,18 +109,44 @@ namespace proteus {
 
 
     // return position vector
-    inline Vector_ref get_x(const AtomRef_t atom) {
-      return Vector_ref(this->x[atom.get_index()]);
+    inline Vector_ref get_x(const AtomRef_t& atom) {
+      auto index{atom.get_index()};
+      auto * xval{this->x[index]};
+      return Vector_ref(xval);
     }
 
     // return force vector
-    inline Vector_ref get_f(const AtomRef_t atom) {
+    inline Vector_ref get_f(const AtomRef_t& atom) {
       return Vector_ref(this->f[atom.get_index()]);
     }
 
     // return number of I atoms in the list
     inline size_t get_size() const {
       return this->inum;
+    }
+
+    // return the number of neighbours of a given atom
+    template<int Level, int MaxLevel>
+    inline size_t get_cluster_size(const ClusterRef_t<Level, MaxLevel>& cluster) const {
+      static_assert(Level == traits::MaxLevel-1,
+                    "this implementation only handles atoms and pairs");
+      return this->numneigh[cluster.get_atoms().back().get_index()];
+    }
+
+    // return the number of atoms forming the next higher cluster with this one
+    template<int Level, int MaxLevel>
+    inline size_t get_atom_id(const ClusterRef_t<Level, MaxLevel>& cluster,
+                              int j_atom_id) const {
+      static_assert(Level == traits::MaxLevel-1,
+                    "this implementation only handles atoms and pairs");
+      auto && i_atom_id{cluster.get_atoms().back().get_index()};
+      return this->firstneigh[std::move(i_atom_id)][j_atom_id];
+    }
+
+    // return the number of neighbours of a given atom
+    inline size_t get_atom_id(const Parent& /*cluster*/,
+                              int i_atom_id) const {
+      return this->ilist[i_atom_id];
     }
 
   protected:

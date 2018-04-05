@@ -33,6 +33,8 @@
 #include <Eigen/Dense>
 
 #include <cstddef>
+#include <array>
+#include <type_traits>
 
 
 namespace proteus {
@@ -79,11 +81,13 @@ namespace proteus {
     NeighbourhoodManagerBase& operator=(NeighbourhoodManagerBase &&other)  = default;
 
     /**
-     * iterator over the atoms in the manager. Iterators like these
-     * can be used as indices for random access in atom-related
-     * fields.
+     * iterator over the atoms, pairs, triplets, etc in the
+     * manager. Iterators like these can be used as indices for random
+     * access in atom-, pair, ... -related fields.
      */
+    template <int Level, int MaxLevel>
     class iterator;
+    using Iterator_t = iterator<1, traits::MaxLevel>;
 
     /**
      * return type for iterators: a light-weight atom reference,
@@ -91,23 +95,69 @@ namespace proteus {
      */
     class AtomRef;
 
-    inline iterator begin() {return iterator(*this, 0);}
-    inline iterator end() {return iterator(*this, this->implementation().size());}
+    /**
+     * return type for iterators: a light-weight pair, triplet, etc reference,
+     * giving access to the AtomRefs of all implicated atoms
+     */
+    template <int Level, int MaxLevel>
+    class ClusterRef;
+
+    inline Iterator_t begin() {return Iterator_t(*this, 0);}
+    inline Iterator_t end() {return Iterator_t(*this,
+                                               this->implementation().size());}
     inline size_t size() const {return this->implementation().get_size();}
 
-    inline Vector_ref get_x(const AtomRef atom);
+    inline Vector_ref get_x(const AtomRef& atom) {
+      return this->implementation().get_x(atom);
+    }
 
-    inline Vector_ref get_f(const AtomRef atom);
+    inline Vector_ref get_f(const AtomRef& atom) {
+      return this->implementation().get_f(atom);
+    }
+
   protected:
+    template <int L, int ML>
+    inline size_t cluster_size(ClusterRef<L, ML> & cluster) const {
+      return this->implementation().get_cluster_size(cluster);
+    }
+    template <int L, int ML>
+    inline size_t atom_id(ClusterRef<L, ML> & cluster, int index) const {
+      return this->implementation().get_atom_id(cluster, index);
+    }
+
+    inline size_t atom_id(NeighbourhoodManagerBase & cluster, int index) const {
+      return this->implementation().get_atom_id(cluster, index);
+    }
+
+    inline NeighbourhoodManagerBase & get_manager() {return *this;}
+
     inline ManagerImplementation& implementation() {
       return static_cast<ManagerImplementation&>(*this);
     }
     inline const ManagerImplementation& implementation() const {
       return static_cast<const ManagerImplementation&>(*this);
     }
+
+    std::array<AtomRef, 0> get_atoms() const {return std::array<AtomRef, 0>{};};
   private:
   };
 
+
+  namespace internal {
+
+    template <typename T, size_t Size, size_t... Indices>
+    decltype(auto) append_array_helper(std::array<T, Size>&& arr, T &&  t,
+                                        std::index_sequence<Indices...>) {
+      return std::array<T, Size+1> {std::move(arr[Indices])..., std::forward<T>(t)};
+    }
+    template <typename T, size_t Size>
+    decltype(auto) append_array (std::array<T, Size>&& arr, T &&  t) {
+      return append_array_helper(std::move(arr), std::forward<T>(t),
+                                 std::make_index_sequence<Size>{});
+    }
+
+  }  // internal
+  /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
   class NeighbourhoodManagerBase<ManagerImplementation>::AtomRef
   {
@@ -115,16 +165,15 @@ namespace proteus {
     using Vector_t = Eigen::Matrix<double, ManagerImplementation::dim(), 1>;
     using Vector_ref = Eigen::Map<Vector_t>;
     using Manager_t = NeighbourhoodManagerBase<ManagerImplementation>;
-    using iterator_t = typename Manager_t::iterator;
 
     //! Default constructor
     AtomRef() = delete;
 
     //! constructor from iterator
-    AtomRef(iterator_t & it): it{it}{}
+    AtomRef(Manager_t & manager, int id): manager{manager}, index{id}{}
 
     //! Copy constructor
-    AtomRef(const AtomRef &other) = default;
+    AtomRef(const AtomRef &other) = delete;
 
     //! Move constructor
     AtomRef(AtomRef &&other) = default;
@@ -133,35 +182,94 @@ namespace proteus {
     virtual ~AtomRef() = default;
 
     //! Copy assignment operator
-    AtomRef& operator=(const AtomRef &other) = default;
+    AtomRef& operator=(const AtomRef &other) = delete;
 
     //! Move assignment operator
     AtomRef& operator=(AtomRef &&other) = default;
 
     //! return index
-    inline int get_index() const {return this->it.index;}
+    inline int get_index() const {return this->index;}
 
     //! return position vector
-    inline Vector_ref get_x() {return this->it.manager.get_x(*this);}
+    inline Vector_ref get_x() {return this->manager.get_x(*this);}
     //! return force vector
-    inline Vector_ref get_f() {return this->it.manager.get_f(*this);}
+    inline Vector_ref get_f() {return this->manager.get_f(*this);}
 
   protected:
-    iterator_t & it;
+    Manager_t & manager;
+    int index;
   private:
   };
 
-
+  /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
+  template <int Level, int MaxLevel>
+  class NeighbourhoodManagerBase<ManagerImplementation>::ClusterRef
+  {
+  public:
+    using Manager_t = NeighbourhoodManagerBase<ManagerImplementation>;
+    using AtomRef_t = typename Manager_t::AtomRef;
+    using Iterator_t = typename Manager_t::template iterator<Level, MaxLevel>;
+    using Atoms_t = std::array<AtomRef_t, Level>;
+
+    using iterator = typename Manager_t::template iterator<Level + 1, MaxLevel>;
+
+    //! Default constructor
+    ClusterRef() = delete;
+
+    //! constructor from an iterator
+    ClusterRef(Iterator_t & it): atoms{it.get_container_atoms()}, it{it}{}
+
+    //! Copy constructor
+    ClusterRef(const ClusterRef &other) = default;
+
+    //! Move constructor
+    ClusterRef(ClusterRef &&other) = default;
+
+    //! Destructor
+    virtual ~ClusterRef() = default;
+
+    //! Copy assignment operator
+    ClusterRef& operator=(const ClusterRef &other) = default;
+
+    //! Move assignment operator
+    ClusterRef& operator=(ClusterRef &&other) = default;
+
+
+    const std::array<AtomRef_t, Level>& get_atoms() const {return this->atoms;};
+    std::array<AtomRef_t, Level>& get_atoms() {return this->atoms;};
+
+    inline Manager_t & get_manager() {return this->it.get_manager();}
+
+    inline iterator begin() {return iterator(*this, 0);}
+    inline iterator end() {return iterator(*this, this->size());}
+    inline size_t size() {return this->get_manager().cluster_size(*this);}
+  protected:
+    Atoms_t atoms;
+    Iterator_t & it;
+  private:
+  };
+
+  /* ---------------------------------------------------------------------- */
+  template <class ManagerImplementation>
+  template <int Level, int MaxLevel>
   class NeighbourhoodManagerBase<ManagerImplementation>::iterator
   {
   public:
     using Manager_t = NeighbourhoodManagerBase<ManagerImplementation>;
     friend Manager_t;
-    using AtomRef_t = typename Manager_t::AtomRef;
-    friend AtomRef_t;
+    using ClusterRef_t = typename Manager_t::template ClusterRef<Level, MaxLevel>;
+    friend ClusterRef_t;
+    using Container_t =
+      std::conditional_t
+      <Level == 1,
+       Manager_t,
+       typename Manager_t::template ClusterRef<Level-1, MaxLevel>>;
+    static_assert(Level > 0, "Level has to be positive");
 
-    using value_type = AtomRef_t;
+    using AtomRef_t = typename Manager_t::AtomRef;
+
+    using value_type = ClusterRef_t;
     using difference_type = std::ptrdiff_t;
     using iterator_category = std::forward_iterator_tag;
     using reference = value_type;
@@ -192,7 +300,7 @@ namespace proteus {
 
     //! dereference
     inline value_type operator * () {
-      return AtomRef(*this);
+      return ClusterRef_t(*this);
     }
 
     //! equality
@@ -206,31 +314,24 @@ namespace proteus {
     }
 
   protected:
-    //! constructor with manager and starting point
-    iterator(Manager_t & manager, int start)
-      :manager{manager}, index{start} {}
+    //! constructor with container ref and starting point
+    iterator(Container_t & cont, int index)
+      :container{cont}, index{index} {}
 
-    Manager_t & manager;
+    std::array<AtomRef_t, Level> get_container_atoms() {
+      return internal::append_array
+        (std::move(container.get_atoms()),
+         AtomRef_t(this->get_manager(),
+                   this->get_manager().atom_id(container, this->index)));
+    }
+
+    inline Manager_t & get_manager() {return this->container.get_manager();}
+
+    Container_t & container;
     int index;
   private:
   };
 
-
-  /* ---------------------------------------------------------------------- */
-  template <class ManagerImplementation>
-  auto
-  NeighbourhoodManagerBase<ManagerImplementation>::
-  get_x(const AtomRef atom) -> Vector_ref {
-    return this->implementation().get_x(std::move(atom));
-  }
-
-  /* ---------------------------------------------------------------------- */
-  template <class ManagerImplementation>
-  auto
-  NeighbourhoodManagerBase<ManagerImplementation>::
-  get_f(const AtomRef atom) -> Vector_ref {
-    return this->implementation().get_f(std::move(atom));
-  }
 
 }  // proteus
 
