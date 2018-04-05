@@ -66,6 +66,7 @@ if (${BUILD_TESTS})
   file( GLOB TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/test_*.cc")
 
   add_executable(main_test_suite tests/main_test_suite.cc ${TEST_SRCS})
+  target_include_directories(main_test_suite SYSTEM PRIVATE ${Boost_INCLUDE_DIR})
   target_link_libraries(main_test_suite ${Boost_LIBRARIES} proteus)
   add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
 endif(${BUILD_TESTS})
