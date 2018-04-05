@@ -34,7 +34,7 @@
 #include "neighbourhood_managers/neighbourhood_manager_base.hh"
 
 #include <stdexcept>
-
+#include <vector>
 
 namespace proteus {
   //! forward declaration for traits
@@ -57,10 +57,26 @@ namespace proteus {
     using ClusterRef_t = typename Parent::template ClusterRef<Level, MaxLevel>;
 
     //! Default constructor
-    NeighbourhoodManagerLammps() = delete;
+    NeighbourhoodManagerLammps() = default;
+
+    //! Copy constructor
+    NeighbourhoodManagerLammps(const NeighbourhoodManagerLammps &other) = delete;
+
+    //! Move constructor
+    NeighbourhoodManagerLammps(NeighbourhoodManagerLammps &&other) = default;
+
+    //! Destructor
+    virtual ~NeighbourhoodManagerLammps() = default;
+
+    //! Copy assignment operator
+    NeighbourhoodManagerLammps& operator=(const NeighbourhoodManagerLammps &other) = delete;
+
+    //! Move assignment operator
+    NeighbourhoodManagerLammps& operator=(NeighbourhoodManagerLammps &&other) = default;
 
     /**
-     * constructor without explicit dependency to lammmps. The
+     * resetting is required every time the list changes. Here, this
+     * is implemented without explicit dependency to lammmps. The
      * signature could be simplified by including lammps as a
      * dependency, but it is unclear that the convenience would
      * outweigh the hassle of maintaining the dependency.
@@ -86,26 +102,10 @@ namespace proteus {
      *
      * @param vatom per-atom virial
      */
-    NeighbourhoodManagerLammps(const int & inum, const int & tot_num,
-                               int * ilist, int * numneigh, int ** firstneigh,
-                               double ** x, double ** f, int * type,
-                               double * eatom, double ** vatom);
-
-    //! Copy constructor
-    NeighbourhoodManagerLammps(const NeighbourhoodManagerLammps &other) = delete;
-
-    //! Move constructor
-    NeighbourhoodManagerLammps(NeighbourhoodManagerLammps &&other) = default;
-
-    //! Destructor
-    virtual ~NeighbourhoodManagerLammps() = default;
-
-    //! Copy assignment operator
-    NeighbourhoodManagerLammps& operator=(const NeighbourhoodManagerLammps &other) = delete;
-
-    //! Move assignment operator
-    NeighbourhoodManagerLammps& operator=(NeighbourhoodManagerLammps &&other) = default;
-
+    void reset_impl(const int & inum, const int & tot_num,
+                    int * ilist, int * numneigh, int ** firstneigh,
+                    double ** x, double ** f, int * type,
+                    double * eatom, double ** vatom);
     // required for the construction of vectors, etc
     constexpr static int dim() {return traits::Dim;}
 
@@ -151,24 +151,54 @@ namespace proteus {
       return this->ilist[i_atom_id];
     }
 
+    /**
+     * return the linear index of cluster (i.e., the count at which
+     * this cluster appears in an iteration
+     */
+    template<int Level, int MaxLevel>
+    inline int get_offset_impl(const ClusterRef_t<Level, MaxLevel>& cluster) const;
 
     size_t get_nb_clusters(int cluster_size);
 
   protected:
-    int inum;
-    int tot_num; //includes ghosts
-    int * ilist;
-    int * numneigh;
-    int ** firstneigh;
-    double **x;
-    double **f;
-    int * type;
-    double * eatom;
-    double ** vatom;
-    int nb_pairs;
+    int inum{};
+    int tot_num{}; //includes ghosts
+    int * ilist{};
+    int * numneigh{};
+    int ** firstneigh{};
+    double **x{};
+    double **f{};
+    int * type{};
+    double * eatom{};
+    double ** vatom{};
+    int nb_pairs{};
+    std::vector<int> offsets{};
 
   private:
   };
+
+
+  /* ---------------------------------------------------------------------- */
+  template<int Level, int MaxLevel>
+  int NeighbourhoodManagerLammps::
+  get_offset_impl(const ClusterRef_t<Level, MaxLevel>& cluster) const {
+    static_assert(Level == 2, "This class cas only handle single atoms and pairs");
+    static_assert(MaxLevel == traits::MaxLevel, "Wrong maxlevel");
+
+    auto atoms{cluster.get_atoms()};
+    auto i{atoms.front().get_index()};
+    auto j{cluster.get_index()};
+    auto main_offset{this->offsets[i]};
+    return main_offset + j;
+  }
+
+  /* ---------------------------------------------------------------------- */
+  // specialisation for just atoms
+  template <>
+  int NeighbourhoodManagerLammps:: template
+  get_offset_impl<1, 2>(const ClusterRef_t<1, 2>& cluster) const {
+    return cluster.get_atoms().back().get_index();
+  }
 
 }  // proteus
 

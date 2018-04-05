@@ -34,11 +34,45 @@
 
 namespace proteus {
 
+  namespace internal {
+
+    template <typename T, size_t NbRow, size_t NbCol>
+    struct Value {
+      using type = Eigen::Map<Eigen::Matrix<T, NbRow, NbCol>>;
+      using reference = type;
+
+      static reference get_ref(T & value) {
+        return type(&value);
+      }
+    };
+
+    //! specialisation for scalar fields
+    template <typename T>
+    struct Value<T, 1, 1> {
+      using type = T;
+      using reference = T&;
+
+      static reference get_ref(T & value) {
+        return value;
+      }
+    };
+
+    template<typename t, size_t NbRow, size_t NbCol>
+    using Value_t = typename Value<T, NbRow, NbCol>::type;
+
+    template<typename t, size_t NbRow, size_t NbCol>
+    using Value_ref = typename Value<T, NbRow, NbCol>::reference;
+
+  }  // internal
+
   template <class NeighbourhoodManager, typename T,
             size_t ClusterSize,
             size_t NbRow = 1, size_t NbCol = 1>
   class Field
   {
+    static_assert((std::is_arithmetic<T>::value or
+                   std::is_same<T, std::complex<double>>::value),
+                  "can currently only handle arithmetic types");
   public:
     using traits = NeighbourhoodManager_traits<NeighbourhoodManager>;
     constexpr static size_t NbDof{NbRow*NbCol};
@@ -46,14 +80,10 @@ namespace proteus {
       typename NeighbourhoodManager::template ClusterRef
       <ClusterSize, traits::MaxLevel>;
 
-    using value_type =
-      std::conditional_t<NbDof ==1,
-                         T,
-                         Eigen::Map<Eigen::Matrix<T, NbRow, NbCol>>>;
-    using reference =
-      std::conditional_t<NbDof ==1,
-                         T&,
-                         Eigen::Map<Eigen::Matrix<T, NbRow, NbCol>>>;
+    using Value = internal::Value<T, NbRow, NbCol>;
+
+    using value_type = typename Value::type;
+    using reference =typename Value::reference;
 
     //! Default constructor
     Field() = delete;
@@ -83,7 +113,7 @@ namespace proteus {
     }
 
     reference operator[](const Cluster_t& id) {
-      return reference(this->values[id.get_global_index()*NbDof];)
+      return Value::ret_ref(this->values[id.get_global_index()*NbDof];)
 
   protected:
     NeighbourhoodManager & manager;

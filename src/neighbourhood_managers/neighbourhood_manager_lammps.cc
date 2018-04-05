@@ -35,15 +35,27 @@
 namespace proteus {
 
   /* ---------------------------------------------------------------------- */
-  NeighbourhoodManagerLammps::
-  NeighbourhoodManagerLammps(const int & inum, const int & tot_num,
-                             int * ilist, int * numneigh, int ** firstneigh,
-                             double ** x, double ** f, int * type,
-                             double * eatom, double ** vatom)
-    : inum{inum}, tot_num{tot_num}, ilist{ilist}, numneigh{numneigh},
-      firstneigh{firstneigh}, x{x}, f{f}, type{type}, eatom{eatom},
-      vatom{vatom}, nb_pairs{std::accumulate(numneigh, numneigh+inum, 0)}
-  { }
+  void NeighbourhoodManagerLammps::
+  reset_impl(const int &inum, const int &tot_num, int *ilist, int *numneigh,
+             int **firstneigh, double **x, double **f, int *type,
+             double *eatom, double **vatom) {
+    this->inum = inum;
+    this->tot_num = tot_num;
+    this->ilist = ilist;
+    this->numneigh = numneigh;
+    this->firstneigh = firstneigh;
+    this->x = x;
+    this->f = f;
+    this->type = type;
+    this->eatom = eatom;
+    this->vatom = vatom;
+    this->offsets.reserve(inum);
+    this->offsets.resize(1);
+    for (int i{0} ; i<this->inum-1 ; ++i) {
+      this->offsets.emplace_back(this->offsets[i] + this->numneigh[i]);
+    }
+    this->nb_pairs = std::accumulate(numneigh, numneigh+this->inum, 0);
+  }
 
 
   /* ---------------------------------------------------------------------- */

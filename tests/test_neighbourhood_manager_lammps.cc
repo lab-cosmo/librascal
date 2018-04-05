@@ -44,11 +44,12 @@ namespace proteus {
        x{new double*[nb]},
        f{new double*[nb]},
        vatom{new double*[nb]},
-       manager(inum, tot_num, ilist, numneigh,
-               static_cast<int**>(firstneigh),
-               ptr_t(x),
-               ptr_t(f), type, eatom,
-               static_cast<double**>(vatom)) {
+       manager{} {
+         manager.reset_impl(inum, tot_num, ilist, numneigh,
+                            static_cast<int**>(firstneigh),
+                            ptr_t(x),
+                            ptr_t(f), type, eatom,
+                            static_cast<double**>(vatom));
       firstneigh[0] = new int[2];
       firstneigh[0][0] = 1;
       firstneigh[0][1] = 2;
@@ -57,8 +58,6 @@ namespace proteus {
       firstneigh[2] = new int;
       firstneigh[2][0] = 0;
 
-      double tx[nb][nb] = {{0,0,0},{1,0,0},{0,1,0}};
-      double tf[nb][nb] = {{1,1,0},{-1,0,0},{0,-1,0}};
       for (int i{0} ; i < nb ; ++i) {
         x[i] = new double[dim];
         f[i] = new double[dim];
@@ -81,6 +80,9 @@ namespace proteus {
       delete[] x;
       delete[] f;
     }
+    double tx[nb][nb] = {{0,0,0},{1,0,0},{0,1,0}};
+    double tf[nb][nb] = {{1,1,0},{-1,0,0},{0,-1,0}};
+
     int inum{nb};
     int tot_num{nb}; //includes ghosts
     int ilist[nb]{0,1,2};
@@ -98,11 +100,31 @@ namespace proteus {
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(constructor_test, ManagerFixture) {
+  }
+
+  /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE(iterator_test, ManagerFixture) {
+    int atom_counter{};
+    int pair_counter{};
+    constexpr bool verbose{false};
     for (auto atom_cluster: manager) {
-      std::cout << atom_cluster.get_atoms()[0].get_x().transpose() << std::endl;
+      BOOST_CHECK_EQUAL(atom_counter, atom_cluster.get_global_index());
+      ++atom_counter;
+
       for (auto pair_cluster: atom_cluster) {
-        std::cout << pair_cluster.get_atoms()[1].get_x().transpose() << std::endl;
+        auto pair_offset{pair_cluster.get_global_index()};
+        if (verbose) {
+          std::cout << "pair (" << atom_cluster.get_atoms().back().get_index()
+                    << ", " << pair_cluster.get_atoms().back().get_index()
+                    << "), pair_counter = " << pair_counter
+                    << ", pair_offset = " << pair_offset << std::endl;
+        }
+
+        BOOST_CHECK_EQUAL(pair_counter, pair_offset);
+        ++pair_counter;
+
       }
     }
   }
+
 }  // proteus
