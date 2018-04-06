@@ -25,6 +25,9 @@ Test + compilation of documentation in cmake + how to add a test
 Make sure that one can compile on fidis / daint without docs and tests and it will work based on existing libraries
 Libboost-test dependency 
 Stub for the neighbor list
+Management of derivative relations for fields
+"Functional dependency" management to obtain automatically derivatives with chain rule 
+s/Field/Property/g
 Federico:
 comments to c++ + how to bindings/function/class
 try to enable CI on github with travis
@@ -33,5 +36,7 @@ the rest of the tutorial
 start pulling the reference implementation in Python (with Andrea G)
 Chiheb:
 Start writing down the blueprints from the google doc to the docs
+*EFFICIENCY OF BULK KERNEL EVALUATION*
+typically we will do operations like diag (AB) where A and B are matrices of the order of 10'000x10'000
 
 
