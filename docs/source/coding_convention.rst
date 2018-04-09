@@ -1087,9 +1087,9 @@ Ownership and Smart Pointers
 Prefer to have single, fixed owners for dynamically allocated objects. Prefer to transfer ownership with smart pointers.
 
 Definition:
-  "Ownership" is a bookkeeping technique for managing dynamically allocated memory (and other resources). The owner of a dynamically allocated object is an object or function that is responsible for ensuring that it is deleted when no longer needed. Ownership can sometimes be shared, in which case the last owner is typically responsible for deleting it. Even when ownership is not shared, it can be transferred from one piece of code to another.
+  *Ownership* is a bookkeeping technique for managing dynamically allocated memory (and other resources). The owner of a dynamically allocated object is an object or function that is responsible for ensuring that it is deleted when no longer needed. Ownership can sometimes be shared, in which case the last owner is typically responsible for deleting it. Even when ownership is not shared, it can be transferred from one piece of code to another.
 
-  "Smart" pointers are classes that act like pointers, e.g. by overloading the ``*`` and ``->`` operators. Some smart pointer types can be used to automate ownership bookkeeping, to ensure these responsibilities are met. ``std::unique_ptr`` is a smart pointer type introduced in C++11, which expresses exclusive ownership of a dynamically allocated object; the object is deleted when the ``std::unique_ptr`` goes out of scope. It cannot be copied, but can be moved to represent ownership transfer. ``std::shared_ptr`` is a smart pointer type that expresses shared ownership of a dynamically allocated object. ``std::shared_ptrs`` can be copied; ownership of the object is shared among all copies, and the object is deleted when the last ``std::shared_ptr`` is destroyed.
+  *Smart* pointers are classes that act like pointers, e.g. by overloading the ``*`` and ``->`` operators. Some smart pointer types can be used to automate ownership bookkeeping, to ensure these responsibilities are met. ``std::unique_ptr`` is a smart pointer type introduced in C++11, which expresses exclusive ownership of a dynamically allocated object; the object is deleted when the ``std::unique_ptr`` goes out of scope. It cannot be copied, but can be moved to represent ownership transfer. ``std::shared_ptr`` is a smart pointer type that expresses shared ownership of a dynamically allocated object. ``std::shared_ptrs`` can be copied; ownership of the object is shared among all copies, and the object is deleted when the last ``std::shared_ptr`` is destroyed.
 
 Pros:
 
@@ -1176,6 +1176,7 @@ Cons:
 
 
 Decision:
+
 On their face, the benefits of using exceptions outweigh the costs, especially in new projects. Especially in a computational project, were we are perfectly happy to terminate if an exception is thrown.
 
 There is an :ref:`exception <joke>` to this rule (no pun intended) for Windows code.
@@ -1214,7 +1215,7 @@ Cons:
   Undisciplined use of RTTI makes code hard to maintain. It can lead to type-based decision trees or switch statements scattered throughout the code, all of which must be examined when making further changes.
 
 Pros:
-  RTTI can be very useful when interacting with duck-typed languages (like python) and when implementing efficient containers with polymorphic interfaces, see, e.g., proteus's ``FieldMap`` implementation.
+  RTTI can be very useful when interacting with duck-typed languages (like python) and when implementing efficient containers with polymorphic interfaces, see future implementation for `map()` member function of `Property`.
 
   RTTI can be useful in some unit tests. For example, it is useful in tests of factory classes where the test has to verify that a newly created object has the expected dynamic type. It is also useful in managing the relationship between objects and their mocks.
 
@@ -1272,7 +1273,7 @@ Decision:
 
   - Use brace initialisation to convert arithmetic types (e.g. ``int64{x}``). This is the safest approach because code will not compile if conversion can result in information loss. The syntax is also concise.
   - Use ``static_cast`` as the equivalent of a C-style cast that does value conversion, when you need to explicitly up-cast a pointer from a class to its superclass, or when you need to explicitly cast a pointer from a superclass to a subclass. In this last case, you must be sure your object is actually an instance of the subclass.
-  - Use ``const_cast`` to remove the ``const`` qualifier (see :ref:`const`). **This indicates a serious design flaw if it happens in µSpectre and is to be considered a bug**. Only use this if third-party libraries force you to.
+  - Use ``const_cast`` to remove the ``const`` qualifier (see :ref:`const`). **This indicates a serious design flaw if it happens in proteus and is to be considered a bug**. Only use this if third-party libraries force you to.
   - Use ``reinterpret_cast`` to do unsafe conversions of pointer types to and from integer and other pointer types. Use this only if you know what you are doing and you understand the aliasing issues.
 
 See the :ref:`RTTI <rtti>` section for guidance on the use of ``dynamic_cast``.
@@ -1325,7 +1326,7 @@ Decision:
 Use of const
 ------------
 
-Use ``const`` doggedly whenever it makes is correct. With C++11, ``constexpr`` is a better choice for some uses of ``const``.
+Use ``const`` dly whenever its use is correct. With C++11, ``constexpr`` is a better choice for some uses of ``const``.
 
 Definition:
   Declared variables and parameters can be preceded by the keyword ``const`` to indicate the variables are not changed (e.g., ``const int foo``). Class functions can have the ``const`` qualifier to indicate the function does not change the state of the class member variables (e.g., ``class Foo { int Bar(char c) const; };``).
@@ -1706,12 +1707,15 @@ Boost
 We try to depend on Boost as little as possible. The core library should not at all depend on Boost, while the tests use the `Boost unit test framework <http://www.boost.org/doc/libs/1_43_0/libs/test/doc/html/utf.html>`_. There is one exception: For users with ancient compilers, Boost is used to emulate ``std::optional``. Do not add Boost dependencies.
 
 Definition:
+
   The `Boost library collection <https://www.boost.org/>`_ is a popular collection of peer-reviewed, free, open-source C++ libraries.
 
 Pros:
+
   Boost code is generally very high-quality, is widely portable, and fills many important gaps in the C++ standard library, such as type traits and better binders.
 
 Cons:
+
   Boost can be tricky to install on certain systems
 
 C++14
@@ -1869,8 +1873,6 @@ Do not use filenames that already exist in ``/usr/include`` or widely used libra
 
 In general, make your filenames very specific. For example, use ``http_server_logs.hh`` rather than ``logs.hh``. A very common case is to have a pair of files called, e.g., ``foo_bar.hh`` and ``foo_bar.cc``, defining a class called ``FooBar``.
 
-Inline functions must be in a ``.hh`` file. If your inline functions are very short, they should go directly into your ``.hh`` file.
-
 .. _`type names`:
 
 Type Names
@@ -1922,7 +1924,7 @@ Data members of ``struct``\s and  classes, both static and non-static, are named
    class TableInfo {
      ...
    private:
-     string unique_name;  // OK - underscore at end.
+     string unique_name;  // OK - underscore.
      static Field_t<FieldCollection> gradient;  // OK.
 
      string tablename;   // Bad - missing underscore.
@@ -1953,9 +1955,11 @@ Distinguish (member) functions that compute something at non-trivial cost from s
 
 .. code-block:: c++
 
-   compute_stresses()  // not an accessor, does actual work
-   get_nb_components() // simple accessor
-   sdim()              // constexpr compile-time access
+   compute_stresses()  // not an accessor, does actual work (verb
+                       // implies work)
+   get_nb_components() // simple accessor (verb implies no work)
+   sdim()              // constexpr compile-time access (no verb:
+                       // nothing is done at runtime)
 
 .. _`namespace names`:
 
@@ -2039,18 +2043,18 @@ Start each file with license boilerplate. e.g., for file ``common.hh`` authored 
     *
     * @date   01 May 2017
     *
-    * @brief  Small definitions of commonly used types throughout µSpectre
+    * @brief  Small definitions of commonly used types throughout proteus
     *
     * @section  LICENSE
     *
     * Copyright © 2017 Till Junge, John Doe
     *
-    * µSpectre is free software; you can redistribute it and/or
+    * proteus is free software; you can redistribute it and/or
     * modify it under the terms of the GNU General Public License as
     * published by the Free Software Foundation, either version 3, or (at
     * your option) any later version.
     *
-    * µSpectre is distributed in the hope that it will be useful, but
+    * proteus is distributed in the hope that it will be useful, but
     * WITHOUT ANY WARRANTY; without even the implied warranty of
     * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
     * General Public License for more details.
@@ -2106,7 +2110,7 @@ The class comment should provide the reader with enough information to know how 
 
 The class comment is often a good place for a small example code snippet demonstrating a simple and focused usage of the class.
 
-When sufficiently separated (e.g. ``.hh`` and ``.cc`` files), comments describing the use of the class should go together with its interface definition; comments about the class operation and implementation should accompany the interface definition of the class's methods.
+When sufficiently separated (e.g. ``.hh`` and ``.cc`` files), comments describing the use of the class should go together with its declaration. Comments about the class operation and implementation should accompany the class's methods (definition).
 
 Function Comments
 -----------------
@@ -2695,7 +2699,6 @@ The following are examples of correctly-formatted pointer and reference expressi
 Note that:
 
 - There are no spaces around the period or arrow when accessing a member.
-- Pointer operators have no space after the ``*`` or ``&``.
 
 
 Boolean Expressions
