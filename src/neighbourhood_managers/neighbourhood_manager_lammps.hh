@@ -109,7 +109,7 @@ namespace proteus {
 
 
     // return position vector
-    inline Vector_ref get_x(const AtomRef_t& atom) {
+    inline Vector_ref get_position(const AtomRef_t& atom) {
       auto index{atom.get_index()};
       auto * xval{this->x[index]};
       return Vector_ref(xval);

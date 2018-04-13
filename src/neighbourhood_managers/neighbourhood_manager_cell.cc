@@ -26,14 +26,15 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "neighbourhood_managers/neighbourhood_manager_lammps.hh"
+#include "neighbourhood_managers/neighbourhood_manager_cell.hh"
 
 #include <numeric>
 
 namespace proteus {
 
   /* ---------------------------------------------------------------------- */
-  void NeighbourhoodManagerLammps::
+  /*
+  void NeighbourhoodManagerCell::
   reset_impl(const int &inum, const int &tot_num, int *ilist, int *numneigh,
              int **firstneigh, double **x, double **f, int *type,
              double *eatom, double **vatom) {
@@ -54,10 +55,11 @@ namespace proteus {
     }
     this->nb_pairs = std::accumulate(numneigh, numneigh+this->inum, 0);
   }
-
+  */
 
   /* ---------------------------------------------------------------------- */
-  size_t NeighbourhoodManagerLammps::
+  /*
+  size_t NeighbourhoodManagerCell::
   get_nb_clusters(int cluster_size)  {
     switch (cluster_size) {
     case 1: {
@@ -73,5 +75,5 @@ namespace proteus {
       break;
     }
   }
-
+  */
 }  // proteus

@@ -60,6 +60,7 @@ namespace proteus {
     using traits = NeighbourhoodManager_traits<ManagerImplementation>;
     using Vector_t = Eigen::Matrix<double, traits::Dim, 1>;
     using Vector_ref = Eigen::Map<Vector_t>;
+    using Vector_block = Eigen::Block<Eigen::MatrixXd, -1, 1, true>;
     //! Default constructor
     NeighbourhoodManagerBase() = default;
 
@@ -109,12 +110,15 @@ namespace proteus {
     inline size_t nb_clusters(int cluster_size) const {
       return this->implementation().get_nb_clusters(cluster_size);
     }
-
-    inline Vector_ref get_x(const AtomRef& atom) {
-      return this->implementation().get_x(atom);
+    /*
+    inline Vector_block get_position(const AtomRef& atom) {
+      return this->implementation().get_position(atom);
     }
-
-    inline Vector_ref get_f(const AtomRef& atom) {
+    */
+   inline Vector_block get_position(const AtomRef& atom) {
+      return this->implementation().get_position(atom);
+    }
+    inline Vector_block get_f(const AtomRef& atom) {
       return this->implementation().get_f(atom);
     }
 
@@ -173,6 +177,7 @@ namespace proteus {
   public:
     using Vector_t = Eigen::Matrix<double, ManagerImplementation::dim(), 1>;
     using Vector_ref = Eigen::Map<Vector_t>;
+    using Vector_block = Eigen::Block<Eigen::MatrixXd, -1, 1, true>;
     using Manager_t = NeighbourhoodManagerBase<ManagerImplementation>;
 
     //! Default constructor
@@ -200,9 +205,11 @@ namespace proteus {
     inline int get_index() const {return this->index;}
 
     //! return position vector
-    inline Vector_ref get_x() {return this->manager.get_x(*this);}
+    // inline Vector_block get_position() {return this->manager.get_position(*this);}
+    //! return position vector
+    inline Vector_block get_position() {return this->manager.get_position(*this);}
     //! return force vector
-    inline Vector_ref get_f() {return this->manager.get_f(*this);}
+    inline Vector_block get_f() {return this->manager.get_f(*this);}
 
   protected:
     Manager_t & manager;
@@ -253,7 +260,7 @@ namespace proteus {
      * convenience functions, because in loops, we frequently like to
      * use clusters as proxies to their last atom
      */
-    inline decltype(auto) get_x() {return this->atoms.back().get_x();}
+    inline decltype(auto) get_position() {return this->atoms.back().get_position();}
     inline decltype(auto) get_f() {return this->atoms.back().get_f();}
 
     inline Manager_t & get_manager() {return this->it.get_manager();}

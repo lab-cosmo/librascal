@@ -36,5 +36,5 @@ namespace proteus {
  */
 
 using MatrixXdR = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
-
+using VecXb = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
 }
