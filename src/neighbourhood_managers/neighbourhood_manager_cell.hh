@@ -58,6 +58,7 @@ namespace proteus {
     using AtomRef_t = typename Parent::AtomRef;
     template <int Level, int MaxLevel>
     using ClusterRef_t = typename Parent::template ClusterRef<Level, MaxLevel>;
+    using vVector3d = std::vector<Eigen::Vector3d,Eigen::aligned_allocator<Eigen::Vector3d> >;
 
     //! Default constructor
     NeighbourhoodManagerCell() = default;
@@ -83,13 +84,18 @@ namespace proteus {
 
     // return position vector
     inline Vector_block get_position(const AtomRef_t& atom) {
+      //cout << "get_position" << endl;
       auto index{atom.get_index()};
-      //auto * xval{this->_positions.col(index)};
-      //const Vector_t ppp = this->positions.col(index); //there is a copy I think
-      //const Vector_ref aaa = Vector_ref(ppp.data());
-      //Vector_ref aaa = Vector_ref(this->positions.col(index).data());
-      //return aaa;
       return this->positions.col(index);
+    }
+    inline Vector_shift get_position_shift(const AtomRef_t& atom,const int& center_id,const int& cluster_id) {
+      cout << "get_position_shift" << endl;
+      auto index{atom.get_index()};
+      
+      cout << "center id, neigh id "<<center_id<<", "<<cluster_id;
+      cout<<", "<< this->offsetlist[center_id][cluster_id].transpose()<<endl;
+      return this->positions.col(index)+(this->offsetlist[center_id][cluster_id].transpose()*this->cell).transpose();
+      //return this->positions.col(index);
     }
     // return number of I atoms in the list
     inline Eigen::Index get_size() const {
@@ -100,6 +106,18 @@ namespace proteus {
       return this->centers[i_atom_id].get_index();
     }
     
+    // return the number of atoms forming the next higher cluster with this one
+    template<int Level, int MaxLevel>
+    inline size_t get_atom_id(const ClusterRef_t<Level, MaxLevel>& cluster,
+                              int j_atom_id) const {
+      static_assert(Level == traits::MaxLevel-1,
+                    "this implementation only handles atoms and pairs");
+      auto && i_atom_id{cluster.get_atoms().back().get_index()};
+      auto && ij_atom_id{this->neighlist[i_atom_id][j_atom_id].get_index()};
+      return ij_atom_id;
+    }
+
+
     // return the number of neighbours of a given atom
     template<int Level, int MaxLevel>
     inline size_t get_cluster_size(const ClusterRef_t<Level, MaxLevel>& cluster) const {
@@ -108,15 +126,7 @@ namespace proteus {
       return this->neighlist[cluster.get_atoms().back().get_index()].size();
     }
 
-    // return the number of atoms forming the next higher cluster with this one
-    template<int Level, int MaxLevel>
-    inline size_t get_atom_id(const ClusterRef_t<Level, MaxLevel>& cluster,
-                              int j_atom_id) const {
-      static_assert(Level == traits::MaxLevel-1,
-                    "this implementation only handles atoms and pairs");
-      auto && i_atom_id{cluster.get_atoms().back().get_index()};
-      return this->neighlist[std::move(i_atom_id)][j_atom_id].get_index();
-    }
+    
 
 
     template<int Level, int MaxLevel>
@@ -131,7 +141,8 @@ namespace proteus {
   protected:
     std::vector<AtomRef_t> centers;
     std::vector<std::vector<AtomRef_t>> neighlist;
-    std::vector<std::vector<std::array<int,3>>> offsetlist;
+    //std::vector<std::vector<std::array<int,3>>> offsetlist;
+    std::vector<vVector3d> offsetlist;
     Eigen::MatrixXd positions, cell;
     std::array<bool,3> pbc;
   private:
@@ -147,7 +158,7 @@ namespace proteus {
       Eigen::Index Natom{positions.cols()};
       cout << "Natom " << Natom << endl;
 
-      std::vector<AtomRef_t> particules;
+      //std::vector<AtomRef_t> particules;
 
       cout << "init centers " << endl;
       for (int id{0} ; id<Natom ; ++id) {
@@ -155,7 +166,7 @@ namespace proteus {
           //cout << this->centers.at(id).get_position() << endl;
       }
       std::vector<std::vector<AtomRef_t>> neighlist(Natom);
-      std::vector<std::vector<std::array<int,3>>> offsetlist(Natom);
+      std::vector<NeighbourhoodManagerCell::vVector3d> offsetlist(Natom);
 
       this->positions.resize(traits::Dim,Natom);
       this->cell.resize(traits::Dim,traits::Dim);
@@ -214,15 +225,16 @@ namespace proteus {
       double dist2{0};
       double cutoff_max2{cutoff_max*cutoff_max};
       Eigen::Vector3d offset(0,0,0);
-      for (auto center: this->get_manager() ){
+      for (auto center: centers ){
         // loop over the centers
         cout << "Index and positions " << center.get_index() << endl;
         center_bin_coord = (center.get_position().array() / nbins_coord).floor().cast<int>();
-        cout << "center_bin_coord " << endl << center_bin_coord.transpose() << endl;
+        cout << "center_bin_coord "  << center_bin_coord.transpose() << endl;
         upper_bound = center_bin_coord + neigh_search;
         lower_bound = center_bin_coord - neigh_search;
         std::vector<int> neighbours_index;
-        std::vector<std::array<int,3> > offsets;
+        //std::vector<std::array<int,3> > offsets;
+        NeighbourhoodManagerCell::vVector3d  offsets;
         for (int neigh_id{0} ; neigh_id<Natom ; ++neigh_id){ // TODO here particules is the same set of centers but this could be something else
         //for (auto neigh: this->get_manager() ){ 
           //int neigh_id{neigh.get_index()}; 
@@ -239,43 +251,56 @@ namespace proteus {
                 if ( (neigh_bin_coord < upper_bound).all() and (neigh_bin_coord > lower_bound).all()) {
                   //Vector_t distVec = ;
                   dist2 = ( (positions.col(neigh_id) + (offset.transpose() * cell).transpose() ) - center.get_position() ).squaredNorm();
-                  cout << "Distance : " << dist2 << endl;
+                  //cout << "Distance : " << dist2 << endl;
                   if (dist2 <  cutoff_max2){
-                    cout << "Id of neighbour: " << neigh_id << endl;
-
+                    //cout << "Id of neighbour: " << neigh_id << endl;
+                    
+                    cout << "Neighbour ids: " << neigh_id << endl;
+                    cout << "neigh_bin_coord "  << neigh_bin_coord.transpose() << endl;
+                    cout << "Offset: " << offset.transpose() << endl;
                     neighbours_index.push_back(neigh_id);
-                    std::array<int, 3> arr = {ii,jj,kk};
-                    offsets.push_back(arr);
+                    //std::array<int, 3> arr = {ii,jj,kk};
+                    //offsets.push_back(arr);
+                    offsets.push_back(offset);
                   }
                 }
               }
             } 
           }
         }
-        cout << "# of neighbours: " << neighbours_index.size() << endl;
+        //cout << "# of neighbours: " << neighbours_index.size() << endl;
         for (auto id: neighbours_index){
           neighlist[center.get_index()].push_back(NeighbourhoodManagerCell::AtomRef_t(this->get_manager(),id));
         }
         for (auto off : offsets){
           offsetlist[center.get_index()].push_back(off);
         }
-        
+        cout  << endl;
       }
 
-      for (auto center:centers){
-      int c_idx{center.get_index()};
-      cout << "Center id: " << c_idx << endl;
-      cout << "Neighbour ids: " ;
       
-        for (auto neigh : neighlist[c_idx]){
-            cout << neigh.get_index() << ", "<< endl;
-        }
-      cout <<  endl;
-      }
-
+      
       this->neighlist =  std::move(neighlist);
+
+
       this->offsetlist =  std::move(offsetlist);
 
+      /*
+      for (auto center:this->centers){
+        int c_idx{center.get_index()};
+        cout << "Center id: " << c_idx << endl;
+        cout << "Neighbour ids: " ;
+          for (auto neigh : this->neighlist[c_idx]){
+              cout << neigh.get_index() << ", ";
+          }
+          cout <<  endl;
+          cout << "Neighbour shift: " <<  endl;
+          for (auto off : this->offsetlist[c_idx]){
+              cout << off[0] << ", "<<off[1] << ", "<<off[2] <<  " ; ";
+          }
+        cout <<  endl;
+      }
+      */
     }
 
   /* ---------------------------------------------------------------------- */

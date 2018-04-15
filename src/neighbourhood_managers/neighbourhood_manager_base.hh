@@ -34,7 +34,6 @@
 #include <array>
 #include <type_traits>
 
-
 namespace proteus {
 
   //! traits structure to avoid incomplete types in crtp
@@ -61,6 +60,7 @@ namespace proteus {
     using Vector_t = Eigen::Matrix<double, traits::Dim, 1>;
     using Vector_ref = Eigen::Map<Vector_t>;
     using Vector_block = Eigen::Block<Eigen::MatrixXd, -1, 1, true>;
+    using Vector_shift = const Eigen::CwiseBinaryOp<Eigen::internal::scalar_sum_op<double, double>, const Eigen::Block<Eigen::Matrix<double, -1, -1>, -1, 1, true>, const Eigen::Transpose<const Eigen::Product<Eigen::Transpose<Eigen::Matrix<double, 3, 1> >, Eigen::Matrix<double, -1, -1>, 0> > >;
     //! Default constructor
     NeighbourhoodManagerBase() = default;
 
@@ -117,6 +117,9 @@ namespace proteus {
     */
    inline Vector_block get_position(const AtomRef& atom) {
       return this->implementation().get_position(atom);
+    }
+    inline Vector_shift get_position_shift(const AtomRef& atom,const int& center_id,const int& cluster_id) {
+      return this->implementation().get_position_shift(atom,center_id,cluster_id);
     }
     inline Vector_block get_f(const AtomRef& atom) {
       return this->implementation().get_f(atom);
@@ -179,13 +182,13 @@ namespace proteus {
     using Vector_ref = Eigen::Map<Vector_t>;
     using Vector_block = Eigen::Block<Eigen::MatrixXd, -1, 1, true>;
     using Manager_t = NeighbourhoodManagerBase<ManagerImplementation>;
-
+    using Vector_shift = const Eigen::CwiseBinaryOp<Eigen::internal::scalar_sum_op<double, double>, const Eigen::Block<Eigen::Matrix<double, -1, -1>, -1, 1, true>, const Eigen::Transpose<const Eigen::Product<Eigen::Transpose<Eigen::Matrix<double, 3, 1> >, Eigen::Matrix<double, -1, -1>, 0> > >;
     //! Default constructor
     AtomRef() = delete;
 
     //! constructor from iterator
-    AtomRef(Manager_t & manager, int id): manager{manager}, index{id}{}
-
+    //AtomRef(Manager_t & manager, int id): manager{manager}, index{id}{}
+    AtomRef(Manager_t & manager, int id): manager{manager}, index{id} {}
     //! Copy constructor
     AtomRef(const AtomRef &other) = default;
 
@@ -208,16 +211,22 @@ namespace proteus {
     // inline Vector_block get_position() {return this->manager.get_position(*this);}
     //! return position vector
     inline Vector_block get_position() {return this->manager.get_position(*this);}
+    //! return position vector
+    inline Vector_shift get_position_shift(const int& center_id, const int& cluster_id) {return this->manager.get_position_shift(*this,center_id,cluster_id);}    
     //! return force vector
     inline Vector_block get_f() {return this->manager.get_f(*this);}
 
   protected:
     Manager_t & manager;
     int index;
+    //Eigen::Vector3i shift;
   private:
   };
 
   /* ---------------------------------------------------------------------- */
+  /**
+    This is the object we have when iterating over the manager
+  */
   template <class ManagerImplementation>
   template <int Level, int MaxLevel>
   class NeighbourhoodManagerBase<ManagerImplementation>::ClusterRef
@@ -227,7 +236,7 @@ namespace proteus {
     using AtomRef_t = typename Manager_t::AtomRef;
     using Iterator_t = typename Manager_t::template iterator<Level, MaxLevel>;
     using Atoms_t = std::array<AtomRef_t, Level>;
-
+    using Vector_block = Eigen::Block<Eigen::MatrixXd, -1, 1, true>;
     using iterator = typename Manager_t::template iterator<Level + 1, MaxLevel>;
     friend iterator;
 
@@ -260,9 +269,31 @@ namespace proteus {
      * convenience functions, because in loops, we frequently like to
      * use clusters as proxies to their last atom
      */
-    inline decltype(auto) get_position() {return this->atoms.back().get_position();}
-    inline decltype(auto) get_f() {return this->atoms.back().get_f();}
 
+    /** 
+    There is 2 cases: 
+        center (Level== 1)-> position is in the cell
+        neighbour (Level > 1)   -> position has an offset associated
+    */
+    template<int L = Level, int aa = 1>
+    inline typename std::enable_if<L == aa, Vector_block>::type  get_position() 
+    {
+      return this->atoms.back().get_position();
+    }
+    template<int L = Level, int aa = 2>
+    inline typename std::enable_if< L >= aa,Vector_shift >::type  get_position() 
+    {
+      return this->atoms.back().get_position_shift(this->atoms.front().get_index(),this->get_index());
+    }
+    
+    //inline decltype(auto) get_position() {return this->atoms.back().get_position();}
+
+    inline decltype(auto) get_f() {return this->atoms.back().get_f();}
+    //! return the index of the atom: Atoms_t is len==1 if center, len==2 if 1st neighbours,...
+    inline decltype(auto) get_atom_index() {
+      return this->atoms.back().get_index();
+      }
+   
     inline Manager_t & get_manager() {return this->it.get_manager();}
     inline const Manager_t & get_manager() const {return this->it.get_manager();}
 
