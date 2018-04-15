@@ -17,7 +17,7 @@ int main()
   pos << 0.00,2.68,1.79,0.00,1.79,0.89,0.89,2.68,
             0.00,2.68,0.00,1.79,1.79,2.68,0.89,0.89,
             1.79,2.68,0.00,0.00,1.79,0.89,2.68,0.89;
-  cout << "Now the array a is:" << endl << pos << endl;
+  cout << "Now the array pos is:" << endl << pos << endl;
   Eigen::MatrixXd cell(3,3);
   cell << 3.57,0.00,0.00,
             0.00,3.57,0.00,

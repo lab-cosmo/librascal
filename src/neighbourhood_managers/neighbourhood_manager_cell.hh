@@ -137,6 +137,8 @@ namespace proteus {
   private:
   };
 
+
+
   /* ---------------------------------------------------------------------- */
   void NeighbourhoodManagerCell::build(const Eigen::MatrixXd& positions,
                                         const Eigen::MatrixXd& cell,
@@ -165,14 +167,26 @@ namespace proteus {
       std::vector<std::vector<int>> periodic_image_it(traits::Dim);
       for (unsigned int ii{0} ; ii < pbc.size() ; ++ii){
         if ( pbc[ii] ){
-          int arr[3] = {-1,0,1};
-          periodic_image_it[ii].assign(3,*arr);
+          std::vector<int> v = {-1,0,1};
+          periodic_image_it[ii].insert( periodic_image_it[ii].end(), v.begin(), v.end() );
+
+          //periodic_image_it[ii].push_back(v);
         }
         else {
-          int arr[1] = {0};
-          periodic_image_it[ii].assign(1,*arr);
+          std::vector<int> v = {0};
+          periodic_image_it[ii].insert( periodic_image_it[ii].end(), v.begin(), v.end() );
+
+          //periodic_image_it[ii].push_back(v);
         }
+
       }
+      for (int ii{0}; ii < 3; ++ii){
+        cout << "p image " <<  ii  ;
+        for (const auto& i: periodic_image_it[ii])
+            cout << ' ' <<  i ;
+        cout <<  endl;
+      }
+
 
       cout << "pos " << endl << this->positions << endl;
       cout << "cell " << endl << this->cell << endl;
@@ -216,13 +230,19 @@ namespace proteus {
           for (auto ii : periodic_image_it[0]){
             for (auto jj : periodic_image_it[1]){
               for (auto kk : periodic_image_it[2]){
+
                 offset << ii,jj,kk;
+                //cout << "offset : " << ii<<" "<< jj<<" "<< kk << endl;
+
                 neigh_bin_coord = ( (positions.col(neigh_id) + (offset.transpose() * cell).transpose() ).array() / nbins_coord).floor().cast<int>();
-                
+                //cout << "Atom bin : " << neigh_bin_coord.transpose() << endl;
                 if ( (neigh_bin_coord < upper_bound).all() and (neigh_bin_coord > lower_bound).all()) {
                   //Vector_t distVec = ;
                   dist2 = ( (positions.col(neigh_id) + (offset.transpose() * cell).transpose() ) - center.get_position() ).squaredNorm();
+                  cout << "Distance : " << dist2 << endl;
                   if (dist2 <  cutoff_max2){
+                    cout << "Id of neighbour: " << neigh_id << endl;
+
                     neighbours_index.push_back(neigh_id);
                     std::array<int, 3> arr = {ii,jj,kk};
                     offsets.push_back(arr);
@@ -232,6 +252,7 @@ namespace proteus {
             } 
           }
         }
+        cout << "# of neighbours: " << neighbours_index.size() << endl;
         for (auto id: neighbours_index){
           neighlist[center.get_index()].push_back(NeighbourhoodManagerCell::AtomRef_t(this->get_manager(),id));
         }
@@ -242,11 +263,12 @@ namespace proteus {
       }
 
       for (auto center:centers){
-      cout << "Center id: " << center << endl;
+      int c_idx{center.get_index()};
+      cout << "Center id: " << c_idx << endl;
       cout << "Neighbour ids: " ;
       
-        for (auto neigh : neighlist.at(center)){
-            cout << neigh << ", "<< endl;
+        for (auto neigh : neighlist[c_idx]){
+            cout << neigh.get_index() << ", "<< endl;
         }
       cout <<  endl;
       }
