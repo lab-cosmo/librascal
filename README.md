@@ -11,7 +11,7 @@ cd build
 cmake .. 
 make
 ``` 
-* To make development documentation:
+* To make development documentation: first enable the documentation building with ccmake, then
 ```Shell
 cd build 
 cmake ..
