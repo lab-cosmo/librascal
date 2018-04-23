@@ -39,7 +39,7 @@ namespace proteus {
     template <typename T, size_t NbRow, size_t NbCol>
     struct Value {
       using type = Eigen::Map<Eigen::Matrix<T, NbRow, NbCol>>;
-      using reference = type;
+      using reference = type; //Map<MatrixXd>( resultC, resultEigen.rows(), resultEigen.cols() ) = resultEigen;
 
       static reference get_ref(T & value) {
         return type(&value);
@@ -103,10 +103,10 @@ namespace proteus {
     virtual ~Field() = default;
 
     //! Copy assignment operator
-    Field& operator=(const Field &other) = delete;
+    Field& operator=(const Field &other) = delete; //! Disallow copying
 
     //! Move assignment operator
-    Field& operator=(Field &&other) = delete;
+    Field& operator=(Field &&other) = delete; //! Disallow copying
 
     //! adjust size (only increases, never frees)
     void resize() {

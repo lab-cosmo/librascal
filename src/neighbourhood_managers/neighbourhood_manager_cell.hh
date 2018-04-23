@@ -1,13 +1,13 @@
 /**
- * file   neighbourhood_manager_lammps.hh
+ * file   neighbourhood_manager_cell.hh
  *
- * @author Till Junge <till.junge@epfl.ch>
+ * @author Felix Musil <felix.musil@epfl.ch>
  *
  * @date   05 Apr 2018
  *
  * @brief Neighbourhood manager for lammps neighbourhood lists
  *
- * Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
  * proteus is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -35,6 +35,8 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <izip.hh>
+
 using namespace std;
 
 namespace proteus {
@@ -83,29 +85,47 @@ namespace proteus {
 
 
     // return position vector
-    inline Vector_block get_position(const AtomRef_t& atom) {
+    inline Vector_ref get_position(const AtomRef_t& atom) {
       //cout << "get_position" << endl;
       auto index{atom.get_index()};
-      return this->positions.col(index);
+      auto * xval{this->positions[index]};
+      return Vector_ref(xval);
+      //return this->positions[index];
     }
-    inline Vector_shift get_position_shift(const AtomRef_t& atom,const int& center_id,const int& cluster_id) {
-      cout << "get_position_shift" << endl;
-      auto index{atom.get_index()};
-      
-      cout << "center id, neigh id "<<center_id<<", "<<cluster_id;
-      cout<<", "<< this->offsetlist[center_id][cluster_id].transpose()<<endl;
-      return this->positions.col(index)+(this->offsetlist[center_id][cluster_id].transpose()*this->cell).transpose();
-      //return this->positions.col(index);
-    }
+    
     // return number of I atoms in the list
     inline Eigen::Index get_size() const {
-      return this->positions.cols();
+      //return this->positions;
     }
     // return the number of neighbours of a given atom
     inline size_t get_atom_id(const Parent& , int i_atom_id) const {
       return this->centers[i_atom_id].get_index();
     }
     
+    void set_positions(const Eigen::MatrixXd& pos){
+      int dim{this->dim()};
+      int Natom{pos.cols()};
+
+      this->positions = new double*[Natom];
+      for (int i{0}; i < Natom; ++i){
+        this->positions[i] = new double[dim];
+        for (int j{0}; j < dim; ++j){
+          this->positions[i][j] = pos(j,i);
+        }
+      }
+    }
+
+    void set_cell(const Eigen::MatrixXd& cell){
+      int dim{this->dim()};
+      this->cell = new double*[dim];
+      for (int i{0}; i < dim; ++i){
+        this->cell[i] = new double[dim];
+        for (int j{0}; j < dim; ++j){
+          this->cell[i][j] = cell(j,i);
+        }
+      }
+    }
+
     // return the number of atoms forming the next higher cluster with this one
     template<int Level, int MaxLevel>
     inline size_t get_atom_id(const ClusterRef_t<Level, MaxLevel>& cluster,
@@ -141,9 +161,12 @@ namespace proteus {
   protected:
     std::vector<AtomRef_t> centers;
     std::vector<std::vector<AtomRef_t>> neighlist;
+    std::vector<std::array<double,3>> neighpos;
     //std::vector<std::vector<std::array<int,3>>> offsetlist;
-    std::vector<vVector3d> offsetlist;
-    Eigen::MatrixXd positions, cell;
+    //std::vector<vVector3d> offsetlist;
+    double **positions;
+    double **cell;
+    
     std::array<bool,3> pbc;
   private:
   };
@@ -151,31 +174,139 @@ namespace proteus {
 
 
   /* ---------------------------------------------------------------------- */
+  
   void NeighbourhoodManagerCell::build(const Eigen::MatrixXd& positions,
                                         const Eigen::MatrixXd& cell,
                                         const std::array<bool,3>& pbc, const double& cutoff_max)
     {
       Eigen::Index Natom{positions.cols()};
+      const int Ncenter{Natom};
       cout << "Natom " << Natom << endl;
-
-      //std::vector<AtomRef_t> particules;
+      const int dim{traits::Dim};
+      using Vecd = typename Eigen::Array<double, dim, 1>;
+      using Veci = typename Eigen::Array<int, dim, 1>;
+      using Mati = typename Eigen::Array<int, 4, dim>;
 
       cout << "init centers " << endl;
       for (int id{0} ; id<Natom ; ++id) {
           this->centers.push_back(NeighbourhoodManagerCell::AtomRef_t(this->get_manager(),id));
           //cout << this->centers.at(id).get_position() << endl;
       }
-      std::vector<std::vector<AtomRef_t>> neighlist(Natom);
-      std::vector<NeighbourhoodManagerCell::vVector3d> offsetlist(Natom);
+      this->neighlist.resize(Ncenter);
+      //std::vector<NeighbourhoodManagerCell::vVector3d> offsetlist(Natom);
 
-      this->positions.resize(traits::Dim,Natom);
-      this->cell.resize(traits::Dim,traits::Dim);
+      this->set_positions(positions);
+      this->set_cell(cell);
 
-      this->positions = positions;
-      this->cell = cell;
-      this->pbc = pbc;
+      std::vector<std::vector<int>> periodic_image_it(dim);
 
-      std::vector<std::vector<int>> periodic_image_it(traits::Dim);
+      Vecd cell_lengths;
+      cell_lengths = cell.colwise().norm();
+
+      double bin_size{std::max(cutoff_max,3.)};
+
+      //const Vecd nbins_coord(0,0,0);
+      Vecd nbins_coord = (cell_lengths / bin_size).ceil();
+      array<int,dim> nbins_c = {nbins_coord[0],nbins_coord[0],nbins_coord[0]};
+      
+      //Veci neigh_search(1,1,1);
+      const Veci neigh_search = (bin_size * nbins_coord / cell_lengths).ceil().cast<int>();
+      
+      double dist2{0};
+      double cutoff_max2{cutoff_max*cutoff_max};
+      Vecd offset(0,0,0);
+      Veci center_bin_coord(0,0,0);
+      Veci neigh_bin_coord(0,0,0);
+      Veci bin_id(0,0,0);
+      Mati bin_boundaries; //! 0->left 1->right 2->bottom 3->top
+      bin_boundaries <<  0,2,0,2,
+                         0,2,0,2,
+                         0,2,0,2;
+
+      vector<vector<vector<vector<int>>>> bin2icenter;
+      vector<vector<vector<vector<array<int,dim>>>>> bin2neighbin,bin2neighbin_shift;
+      bin2icenter.resize(nbins_coord(0)+1);
+      bin2neighbin.resize(nbins_coord(0)+1);
+      bin2neighbin_shift.resize(nbins_coord(0)+1);
+      for ( int ii{0} ; ii < nbins_coord[0] ; ++ii){
+        bin2icenter[ii].resize(nbins_coord(1)+1);
+        bin2neighbin[ii].resize(nbins_coord(1)+1);
+        bin2neighbin_shift[ii].resize(nbins_coord(1)+1);
+        for ( int jj{0} ; jj < nbins_coord[1] ; ++jj){
+          bin2icenter[ii][jj].resize(nbins_coord(2)+1);
+          bin2neighbin[ii][jj].resize(nbins_coord(2)+1);
+          bin2neighbin_shift[ii][jj].resize(nbins_coord(2)+1);
+          for ( int kk{0} ; kk < nbins_coord[2] ; ++kk){
+            for ( int dx{-neigh_search[0]} ; dx <= neigh_search[0] ; ++dx){
+              for ( int dy{-neigh_search[1]} ; dy <= neigh_search[1] ; ++dy){
+                for ( int dz{-neigh_search[2]} ; dz <= neigh_search[2] ; ++dz){
+                  bin_id << ii+dx,jj+dy,kk+dz;
+                  array<int,dim> shift = {0,0,0};
+                  array<int,dim> bin_id_c = {ii+dx,jj+dy,kk+dz};
+
+                  if ( (bin_id >= bin_boundaries.col(0)).all() && (bin_id <= bin_boundaries.col(1)).all()  ){
+                    bin2neighbin[ii][jj][kk].push_back(bin_id_c);
+                    bin2neighbin_shift[ii][jj][kk].push_back(shift);
+                  }
+                  else {
+                    bool compatible_with_pbc = true;
+                    for (int it{0};it<dim;++it){
+                      shift[it] = (int)bin_id_c[it] / nbins_c[it];
+                      bin_id_c[it] = bin_id_c[it] % nbins_c[it];
+                      if (pbc[it]==false && shift[it]!=0){
+                        compatible_with_pbc = false;
+                      }
+                    }
+                    if (compatible_with_pbc){
+                      bin2neighbin[ii][jj][kk].push_back(bin_id_c);
+                      bin2neighbin_shift[ii][jj][kk].push_back(shift);
+                    }
+
+
+                  }
+              
+                }
+              
+              }
+            }
+          }
+        }
+      }
+
+      for (auto center: centers ){
+        center_bin_coord = (center.get_position().array()/nbins_coord).floor().cast<int>();
+      
+        bin2icenter[center_bin_coord[0]][center_bin_coord[1]][center_bin_coord[2]].push_back(center.get_index());
+      }
+      int count{0};
+      for ( int ii{0} ; ii < nbins_coord[0] ; ++ii){
+        for ( int jj{0} ; jj < nbins_coord[1] ; ++jj){
+          for ( int kk{0} ; kk < nbins_coord[2] ; ++kk){
+            for (auto icenter:bin2icenter[ii][jj][kk]){
+              zipfor(jbin_id,jshift eachin bin2neighbin[ii][jj][kk],bin2neighbin_shift[ii][jj][kk]){
+                for (auto jneigh:bin2icenter[jbin_id[0]][jbin_id[1]][jbin_id[2]]){
+                  dd = Eigen::Map<Eigen::Matrix<double,1,dim>>(jshift);
+                  jpos = positions.col(jneigh) + dd * cell;
+                  jr = jpos - positions.col(icenter);
+                  dist2 = jr.squaredNorm();
+                  if (cutoff_max2 > dist2){
+                    this->neighlist[icenter].push_back(NeighbourhoodManagerCell::AtomRef_t(this->get_manager(),count));
+                    array<double,3> iptpp = {jpos[0],jpos[1],jpos[2]};
+                    this->neighpos.push_back(iptpp)
+                    ++count;
+
+                  }
+                }
+              }
+            }
+            
+          }
+        }
+      }
+
+      //Eigen::Array<double, dim, Natom> aa; = (positions/nbins_coord).ceil().cast<int>();
+
+      /*
       for (unsigned int ii{0} ; ii < pbc.size() ; ++ii){
         if ( pbc[ii] ){
           std::vector<int> v = {-1,0,1};
@@ -285,7 +416,7 @@ namespace proteus {
 
       this->offsetlist =  std::move(offsetlist);
 
-      /*
+      
       for (auto center:this->centers){
         int c_idx{center.get_index()};
         cout << "Center id: " << c_idx << endl;
@@ -302,7 +433,7 @@ namespace proteus {
       }
       */
     }
-
+  
   /* ---------------------------------------------------------------------- */
   
   template<int Level, int MaxLevel>

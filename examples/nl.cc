@@ -45,25 +45,27 @@ int main()
   double rc_max{2};
   manager.build(pos,cell,pbc,rc_max);
   //manager.set_positions(pos);
-  
-  
+  //for (auto center:manager){
+  //  center.get_position();
+  //}
+/*
   for (auto center:manager){
       //center.get_index(); type_name()
 
-      cout << "Center id: " << center.get_atom_index() << endl;
-      cout << "Center pos: " << center.get_position().transpose() << endl;
+      //cout << "Center id: " << center.get_atom_index() << endl;
+      //cout << "Center pos: " << center.get_position().transpose() << endl;
       
       cout << "Neighbour ids: " <<  endl;
       for (auto neigh : center){
           //neigh.get_index();
-          cout << "Neigh idx: "<< neigh.get_atom_index() <<  endl ;
-          cout << "Neigh pos: "<< neigh.get_position().transpose() <<  endl <<  endl;
+          //cout << "Neigh idx: "<< neigh.get_atom_index() <<  endl ;
+          //cout << "Neigh pos: "<< neigh.get_position().transpose() <<  endl <<  endl;
           //auto atom = neigh.get_atoms()[1];
           //cout << "Neigh idx :"<< atom.get_index() <<  endl <<  endl;
       }
       cout <<  endl;
   }
-  
+  */
   /*
   for (auto atom: manager) {
     for (auto pair: atom) {

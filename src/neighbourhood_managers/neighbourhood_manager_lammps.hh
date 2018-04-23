@@ -164,7 +164,7 @@ namespace proteus {
     int * ilist{};
     int * numneigh{};
     int ** firstneigh{};
-    double **x{};
+    double **x{}; //! pointer to pointer
     double **f{};
     int * type{};
     double * eatom{};

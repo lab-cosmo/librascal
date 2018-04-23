@@ -115,13 +115,13 @@ namespace proteus {
       return this->implementation().get_position(atom);
     }
     */
-   inline Vector_block get_position(const AtomRef& atom) {
+   inline Vector_ref get_position(const AtomRef& atom) {
       return this->implementation().get_position(atom);
     }
     inline Vector_shift get_position_shift(const AtomRef& atom,const int& center_id,const int& cluster_id) {
       return this->implementation().get_position_shift(atom,center_id,cluster_id);
     }
-    inline Vector_block get_f(const AtomRef& atom) {
+    inline Vector_ref get_f(const AtomRef& atom) {
       return this->implementation().get_f(atom);
     }
 
@@ -210,11 +210,11 @@ namespace proteus {
     //! return position vector
     // inline Vector_block get_position() {return this->manager.get_position(*this);}
     //! return position vector
-    inline Vector_block get_position() {return this->manager.get_position(*this);}
+    inline Vector_ref get_position() {return this->manager.get_position(*this);}
     //! return position vector
     inline Vector_shift get_position_shift(const int& center_id, const int& cluster_id) {return this->manager.get_position_shift(*this,center_id,cluster_id);}    
     //! return force vector
-    inline Vector_block get_f() {return this->manager.get_f(*this);}
+    inline Vector_ref get_f() {return this->manager.get_f(*this);}
 
   protected:
     Manager_t & manager;
@@ -276,7 +276,7 @@ namespace proteus {
         neighbour (Level > 1)   -> position has an offset associated
     */
     template<int L = Level, int aa = 1>
-    inline typename std::enable_if<L == aa, Vector_block>::type  get_position() 
+    inline typename std::enable_if<L == aa, Vector_ref>::type  get_position() 
     {
       return this->atoms.back().get_position();
     }

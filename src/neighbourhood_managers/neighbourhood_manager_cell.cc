@@ -1,14 +1,14 @@
 /**
- * file   neighbourhood_manager_lammps.cc
+ * file   neighbourhood_manager_cell.cc
  *
- * @author Till Junge <till.junge@epfl.ch>
+ * @author  Felix Musil <felix.musil@epfl.ch>
  *
  * @date   05 Apr 2018
  *
  * @brief Implementation of the neighbourhood manager for lammps
  *        neighbourhood lists
  *
- * Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
  * proteus is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
