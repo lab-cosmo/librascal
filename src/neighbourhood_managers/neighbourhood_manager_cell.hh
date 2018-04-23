@@ -35,7 +35,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include <izip.hh>
+#include <izip.hh> //! this is a header enabeling a nice for i,j in zip(a1,a2) kind of loops. see for more details https://github.com/cshelton/zipfor
 
 using namespace std;
 
