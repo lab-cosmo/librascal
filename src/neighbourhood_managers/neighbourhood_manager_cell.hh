@@ -169,22 +169,20 @@ namespace proteus {
 
     void build(const Eigen::MatrixXd& positions, const Eigen::MatrixXd& cell,const std::array<bool,3>& pbc, const double& cutoff_max);
     
+    void update(const Eigen::MatrixXd& positions, const Eigen::MatrixXd& cell,const std::array<bool,3>& pbc, const double& cutoff_max);
     
 
   protected:
-    std::vector<AtomRef_t> centers;
-    std::vector<std::vector<AtomRef_t>> neighlist;
-    std::vector<std::array<double,3>> neighpos;
-    //std::vector<std::vector<std::array<int,3>>> offsetlist;
-    //std::vector<vVector3d> offsetlist;
-    double **positions;
-    double **cell;
+    std::vector<AtomRef_t> centers; //! list of center indices. after build it points to neighpos
+    std::vector<std::vector<AtomRef_t>> neighlist; //! list of list of neighbour indices. fisrt dimension is in the same order as centers. it points to neighpos
+    std::vector<std::array<double,3>> neighpos; //! list of positions for the neighboor list. contains positions of the centers and then the positions of the neighboors.
+
+    double **positions; //! list of pointers. after build it points to neighpos
+    double **cell; //! list of pointers to the cell
     
     std::array<bool,3> pbc;
   private:
   };
-
-
 
   /* ---------------------------------------------------------------------- */
   
@@ -465,6 +463,17 @@ namespace proteus {
   
   /* ---------------------------------------------------------------------- */
   
+  void NeighbourhoodManagerCell::update(const Eigen::MatrixXd& positions,
+                                        const Eigen::MatrixXd& cell,
+                                        const std::array<bool,3>& pbc, const double& cutoff_max)
+  {
+    bool some_condition{false};
+    if (some_condition){
+      NeighbourhoodManagerCell::build(positions,cell,pbc,cutoff_max);
+    }
+  }
+  /* ---------------------------------------------------------------------- */
+  
   template<int Level, int MaxLevel>
   inline int NeighbourhoodManagerCell::
   get_offset_impl(const ClusterRef_t<Level, MaxLevel>& cluster) const {
@@ -474,8 +483,8 @@ namespace proteus {
     auto atoms{cluster.get_atoms()};
     auto i{atoms.front().get_index()};
     auto j{cluster.get_index()};
-    //auto main_offset{this->offsets[i]};
-    return j;
+    auto main_offset{this->neighlist[i][j]};
+    return main_offset;
   }
   
   /* ---------------------------------------------------------------------- */
