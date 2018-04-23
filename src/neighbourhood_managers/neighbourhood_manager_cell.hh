@@ -185,7 +185,7 @@ namespace proteus {
       const int dim{traits::Dim};
       using Vecd = typename Eigen::Array<double, dim, 1>;
       using Veci = typename Eigen::Array<int, dim, 1>;
-      using Mati = typename Eigen::Array<int, 4, dim>;
+      using Mati = typename Eigen::Array<int, dim, 4>;
 
       cout << "init centers " << endl;
       for (int id{0} ; id<Natom ; ++id) {
@@ -214,7 +214,9 @@ namespace proteus {
       
       double dist2{0};
       double cutoff_max2{cutoff_max*cutoff_max};
-      Vecd offset(0,0,0);
+      Eigen::Matrix<double, dim, 1> offset(0,0,0);
+      Eigen::Matrix<double, dim, 1> jpos(0,0,0);
+      Eigen::Matrix<double, dim, 1> jr(0,0,0);
       Veci center_bin_coord(0,0,0);
       Veci neigh_bin_coord(0,0,0);
       Veci bin_id(0,0,0);
@@ -244,7 +246,7 @@ namespace proteus {
                   array<int,dim> shift = {0,0,0};
                   array<int,dim> bin_id_c = {ii+dx,jj+dy,kk+dz};
 
-                  if ( (bin_id >= bin_boundaries.col(0)).all() && (bin_id <= bin_boundaries.col(1)).all()  ){
+                  if ( (bin_id >= bin_boundaries.col(0) ).all() && (bin_id <= bin_boundaries.col(1) ).all()  ){
                     bin2neighbin[ii][jj][kk].push_back(bin_id_c);
                     bin2neighbin_shift[ii][jj][kk].push_back(shift);
                   }
@@ -285,15 +287,16 @@ namespace proteus {
             for (auto icenter:bin2icenter[ii][jj][kk]){
               zipfor(jbin_id,jshift eachin bin2neighbin[ii][jj][kk],bin2neighbin_shift[ii][jj][kk]){
                 for (auto jneigh:bin2icenter[jbin_id[0]][jbin_id[1]][jbin_id[2]]){
-                  dd = Eigen::Map<Eigen::Matrix<double,1,dim>>(jshift);
-                  jpos = positions.col(jneigh) + dd * cell;
+                  //Eigen::Map<Eigen::Matrix<double,1,dim>> dd(jshift,dim);
+                  offset << jshift[0],jshift[1],jshift[2];
+                  jpos = positions.col(jneigh) + (offset.transpose() * cell).transpose();
                   jr = jpos - positions.col(icenter);
                   dist2 = jr.squaredNorm();
                   if (cutoff_max2 > dist2){
                     this->neighlist[icenter].push_back(NeighbourhoodManagerCell::AtomRef_t(this->get_manager(),count));
                     array<double,3> iptpp = {jpos[0],jpos[1],jpos[2]};
-                    this->neighpos.push_back(iptpp)
-                    ++count;
+                    this->neighpos.push_back(iptpp);
+                    count += 1;
 
                   }
                 }
