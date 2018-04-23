@@ -115,6 +115,19 @@ namespace proteus {
       }
     }
 
+    void set_positions(const std::vector<array<double,3>>& pos){
+      int dim{this->dim()};
+      int Natom{pos.size()};
+
+      this->positions = new double*[Natom];
+      for (int i{0}; i < Natom; ++i){
+        this->positions[i] = new double[dim];
+        for (int j{0}; j < dim; ++j){
+          this->positions[i][j] = pos[i][j];
+        }
+      }
+    }
+
     void set_cell(const Eigen::MatrixXd& cell){
       int dim{this->dim()};
       this->cell = new double*[dim];
@@ -181,18 +194,25 @@ namespace proteus {
     {
       Eigen::Index Natom{positions.cols()};
       const int Ncenter{Natom};
+      //this->centers.resize(Ncenter);
+      this->neighlist.resize(Ncenter);
+
       cout << "Natom " << Natom << endl;
       const int dim{traits::Dim};
       using Vecd = typename Eigen::Array<double, dim, 1>;
       using Veci = typename Eigen::Array<int, dim, 1>;
-      using Mati = typename Eigen::Array<int, dim, 4>;
+      using Mati = typename Eigen::Array<int, dim, 2>;
 
       cout << "init centers " << endl;
-      for (int id{0} ; id<Natom ; ++id) {
+      int count{0};
+      for (int id{0} ; id<Ncenter ; ++id) {
           this->centers.push_back(NeighbourhoodManagerCell::AtomRef_t(this->get_manager(),id));
+          array<double,3> iptpp = {positions(0,id),positions(1,id),positions(2,id)};
+          this->neighpos.push_back(iptpp);
+          count += 1;
           //cout << this->centers.at(id).get_position() << endl;
       }
-      this->neighlist.resize(Ncenter);
+      
       //std::vector<NeighbourhoodManagerCell::vVector3d> offsetlist(Natom);
 
       this->set_positions(positions);
@@ -207,7 +227,7 @@ namespace proteus {
 
       //const Vecd nbins_coord(0,0,0);
       Vecd nbins_coord = (cell_lengths / bin_size).ceil();
-      array<int,dim> nbins_c = {nbins_coord[0],nbins_coord[0],nbins_coord[0]};
+      array<int,dim> nbins_c = {nbins_coord[0],nbins_coord[1],nbins_coord[2]};
       
       //Veci neigh_search(1,1,1);
       const Veci neigh_search = (bin_size * nbins_coord / cell_lengths).ceil().cast<int>();
@@ -221,23 +241,23 @@ namespace proteus {
       Veci neigh_bin_coord(0,0,0);
       Veci bin_id(0,0,0);
       Mati bin_boundaries; //! 0->left 1->right 2->bottom 3->top
-      bin_boundaries <<  0,2,0,2,
-                         0,2,0,2,
-                         0,2,0,2;
+      bin_boundaries <<  0,nbins_c[0],
+                         0,nbins_c[1],
+                         0,nbins_c[2];
 
       vector<vector<vector<vector<int>>>> bin2icenter;
       vector<vector<vector<vector<array<int,dim>>>>> bin2neighbin,bin2neighbin_shift;
-      bin2icenter.resize(nbins_coord(0)+1);
-      bin2neighbin.resize(nbins_coord(0)+1);
-      bin2neighbin_shift.resize(nbins_coord(0)+1);
+      bin2icenter.resize(nbins_coord(0));
+      bin2neighbin.resize(nbins_coord(0));
+      bin2neighbin_shift.resize(nbins_coord(0));
       for ( int ii{0} ; ii < nbins_coord[0] ; ++ii){
-        bin2icenter[ii].resize(nbins_coord(1)+1);
-        bin2neighbin[ii].resize(nbins_coord(1)+1);
-        bin2neighbin_shift[ii].resize(nbins_coord(1)+1);
+        bin2icenter[ii].resize(nbins_coord(1));
+        bin2neighbin[ii].resize(nbins_coord(1));
+        bin2neighbin_shift[ii].resize(nbins_coord(1));
         for ( int jj{0} ; jj < nbins_coord[1] ; ++jj){
-          bin2icenter[ii][jj].resize(nbins_coord(2)+1);
-          bin2neighbin[ii][jj].resize(nbins_coord(2)+1);
-          bin2neighbin_shift[ii][jj].resize(nbins_coord(2)+1);
+          bin2icenter[ii][jj].resize(nbins_coord(2));
+          bin2neighbin[ii][jj].resize(nbins_coord(2));
+          bin2neighbin_shift[ii][jj].resize(nbins_coord(2));
           for ( int kk{0} ; kk < nbins_coord[2] ; ++kk){
             for ( int dx{-neigh_search[0]} ; dx <= neigh_search[0] ; ++dx){
               for ( int dy{-neigh_search[1]} ; dy <= neigh_search[1] ; ++dy){
@@ -245,8 +265,8 @@ namespace proteus {
                   bin_id << ii+dx,jj+dy,kk+dz;
                   array<int,dim> shift = {0,0,0};
                   array<int,dim> bin_id_c = {ii+dx,jj+dy,kk+dz};
-
-                  if ( (bin_id >= bin_boundaries.col(0) ).all() && (bin_id <= bin_boundaries.col(1) ).all()  ){
+                  array<int,dim> bin_id_new = {0,0,0};
+                  if ( (bin_id >= bin_boundaries.col(0) ).all() and (bin_id < bin_boundaries.col(1) ).all()  ){
                     bin2neighbin[ii][jj][kk].push_back(bin_id_c);
                     bin2neighbin_shift[ii][jj][kk].push_back(shift);
                   }
@@ -254,13 +274,18 @@ namespace proteus {
                     bool compatible_with_pbc = true;
                     for (int it{0};it<dim;++it){
                       shift[it] = (int)bin_id_c[it] / nbins_c[it];
-                      bin_id_c[it] = bin_id_c[it] % nbins_c[it];
-                      if (pbc[it]==false && shift[it]!=0){
+                      //! remainder has the same sign as dividend 
+                      bin_id_new[it] = bin_id_c[it] % nbins_c[it]; 
+                      if  (bin_id_new[it] < 0){
+                        bin_id_new[it] += nbins_c[it];
+                        shift[it] -= 1;
+                      }
+                      if (pbc[it]==false and shift[it]!=0){
                         compatible_with_pbc = false;
                       }
                     }
                     if (compatible_with_pbc){
-                      bin2neighbin[ii][jj][kk].push_back(bin_id_c);
+                      bin2neighbin[ii][jj][kk].push_back(bin_id_new);
                       bin2neighbin_shift[ii][jj][kk].push_back(shift);
                     }
 
@@ -275,17 +300,18 @@ namespace proteus {
         }
       }
 
-      for (auto center: centers ){
+      for (auto center: this->centers ){
         center_bin_coord = (center.get_position().array()/nbins_coord).floor().cast<int>();
       
         bin2icenter[center_bin_coord[0]][center_bin_coord[1]][center_bin_coord[2]].push_back(center.get_index());
       }
-      int count{0};
+      
       for ( int ii{0} ; ii < nbins_coord[0] ; ++ii){
         for ( int jj{0} ; jj < nbins_coord[1] ; ++jj){
           for ( int kk{0} ; kk < nbins_coord[2] ; ++kk){
             for (auto icenter:bin2icenter[ii][jj][kk]){
               zipfor(jbin_id,jshift eachin bin2neighbin[ii][jj][kk],bin2neighbin_shift[ii][jj][kk]){
+                //vector<int> ooo = bin2icenter[jbin_id[0]][jbin_id[1]][jbin_id[2]];
                 for (auto jneigh:bin2icenter[jbin_id[0]][jbin_id[1]][jbin_id[2]]){
                   //Eigen::Map<Eigen::Matrix<double,1,dim>> dd(jshift,dim);
                   offset << jshift[0],jshift[1],jshift[2];
@@ -306,7 +332,7 @@ namespace proteus {
           }
         }
       }
-
+      this->set_positions(this->neighpos);
       //Eigen::Array<double, dim, Natom> aa; = (positions/nbins_coord).ceil().cast<int>();
 
       /*

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <../src/basic_types.h>
 #include <Eigen/StdVector>
+#include <cmath>
 using namespace std;
 
 using Manager_t = proteus::NeighbourhoodManagerCell;
@@ -35,9 +36,9 @@ int main()
   Eigen::Vector3d ddd;
   ddd = sss.array()*eee.array();
 
-  std::vector<vVector3d> aa;
-  
-
+  //std::vector<vVector3d> aa;
+    //cout << "sdfasdfasdf" << endl;
+    //cout << fmod(2,2)<< endl;
 
     //int nb_pairs;
   Manager_t manager;
