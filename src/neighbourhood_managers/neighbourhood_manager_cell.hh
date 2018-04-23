@@ -94,8 +94,8 @@ namespace proteus {
     }
     
     // return number of I atoms in the list
-    inline Eigen::Index get_size() const {
-      //return this->positions;
+    inline size_t get_size() const {
+      return this->centers.size();
     }
     // return the number of neighbours of a given atom
     inline size_t get_atom_id(const Parent& , int i_atom_id) const {
