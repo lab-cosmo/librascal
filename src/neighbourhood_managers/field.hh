@@ -44,6 +44,14 @@ namespace proteus {
       static reference get_ref(T & value) {
         return type(&value);
       }
+
+      static void push_in_vector(std::vector<T> & vec, reference ref) {
+        for (int j = 0; j < NbCol; ++j) {
+          for (int i = 0; i < NbRow; ++i) {
+            vec.push_back(ref(i,j));
+          }
+        }
+      }
     };
 
     //! specialisation for scalar fields
@@ -54,6 +62,10 @@ namespace proteus {
 
       static reference get_ref(T & value) {
         return value;
+      }
+
+      static void push_in_vector(std::vector<T> & vec, reference ref) {
+        vec.push_back(ref);
       }
     };
 
@@ -113,6 +125,21 @@ namespace proteus {
       this->values.resize(this->manager.get_nb_clusters(ClusterSize) * NbDof);
     }
 
+    /**
+     * shortens the vector so that the manager can push_back into it
+     * (capacity not reduced)
+     */
+    void resize_to_zero() {
+      this->values.resize(0);
+    }
+
+    /**
+     * allows to add a value to field during construction of the neighbourhood.
+     */
+    inline void push_back(reference ref) {
+      Value::push_in_vector(this->values, ref);
+    }
+
     reference operator[](const Cluster_t& id) {
       return Value::get_ref(this->values[id.get_global_index()*NbDof]);
     }
@@ -122,6 +149,5 @@ namespace proteus {
     std::vector<T> values;
   private:
   };
-
 
 }  // proteus

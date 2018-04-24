@@ -55,7 +55,6 @@ namespace proteus {
     using traits = NeighbourhoodManager_traits<NeighbourhoodManagerCell>;
     using Parent = NeighbourhoodManagerBase<NeighbourhoodManagerCell>;
     using Vector_ref = typename Parent::Vector_ref;
-    using Vector_block = typename Parent::Vector_block;
     using Vector_t = typename Parent::Vector_t;
     using AtomRef_t = typename Parent::AtomRef;
     template <int Level, int MaxLevel>
@@ -92,7 +91,7 @@ namespace proteus {
       return Vector_ref(xval);
       //return this->positions[index];
     }
-    
+
     // return number of I atoms in the list
     inline size_t get_size() const {
       return this->centers.size();
@@ -101,7 +100,7 @@ namespace proteus {
     inline size_t get_atom_id(const Parent& , int i_atom_id) const {
       return this->centers[i_atom_id].get_index();
     }
-    
+
     void set_positions(const Eigen::MatrixXd& pos){
       int dim{this->dim()};
       int Natom{pos.cols()};
@@ -159,7 +158,7 @@ namespace proteus {
       return this->neighlist[cluster.get_atoms().back().get_index()].size();
     }
 
-    
+
 
 
     template<int Level, int MaxLevel>
@@ -168,24 +167,23 @@ namespace proteus {
     size_t get_nb_clusters(int cluster_size);
 
     void build(const Eigen::MatrixXd& positions, const Eigen::MatrixXd& cell,const std::array<bool,3>& pbc, const double& cutoff_max);
-    
+
     void update(const Eigen::MatrixXd& positions, const Eigen::MatrixXd& cell,const std::array<bool,3>& pbc, const double& cutoff_max);
-    
+
 
   protected:
     std::vector<AtomRef_t> centers; //! list of center indices. after build it points to neighpos
     std::vector<std::vector<AtomRef_t>> neighlist; //! list of list of neighbour indices. fisrt dimension is in the same order as centers. it points to neighpos
     std::vector<std::array<double,3>> neighpos; //! list of positions for the neighboor list. contains positions of the centers and then the positions of the neighboors.
-
     double **positions; //! list of pointers. after build it points to neighpos
     double **cell; //! list of pointers to the cell
-    
+
     std::array<bool,3> pbc;
   private:
   };
 
   /* ---------------------------------------------------------------------- */
-  
+
   void NeighbourhoodManagerCell::build(const Eigen::MatrixXd& positions,
                                         const Eigen::MatrixXd& cell,
                                         const std::array<bool,3>& pbc, const double& cutoff_max)
@@ -210,7 +208,7 @@ namespace proteus {
           count += 1;
           //cout << this->centers.at(id).get_position() << endl;
       }
-      
+
       //std::vector<NeighbourhoodManagerCell::vVector3d> offsetlist(Natom);
 
       this->set_positions(positions);
@@ -226,10 +224,10 @@ namespace proteus {
       //const Vecd nbins_coord(0,0,0);
       Vecd nbins_coord = (cell_lengths / bin_size).ceil();
       array<int,dim> nbins_c = {nbins_coord[0],nbins_coord[1],nbins_coord[2]};
-      
+
       //Veci neigh_search(1,1,1);
       const Veci neigh_search = (bin_size * nbins_coord / cell_lengths).ceil().cast<int>();
-      
+
       double dist2{0};
       double cutoff_max2{cutoff_max*cutoff_max};
       Eigen::Matrix<double, dim, 1> offset(0,0,0);
@@ -248,6 +246,12 @@ namespace proteus {
       bin2icenter.resize(nbins_coord(0));
       bin2neighbin.resize(nbins_coord(0));
       bin2neighbin_shift.resize(nbins_coord(0));
+
+      //! warning: works only with negative a if |a| < b
+      auto branch_less_mod = [] (int a, int b) {
+        return std::modulus<int>{}(a+b, b);
+      };
+
       for ( int ii{0} ; ii < nbins_coord[0] ; ++ii){
         bin2icenter[ii].resize(nbins_coord(1));
         bin2neighbin[ii].resize(nbins_coord(1));
@@ -271,13 +275,10 @@ namespace proteus {
                   else {
                     bool compatible_with_pbc = true;
                     for (int it{0};it<dim;++it){
+
                       shift[it] = (int)bin_id_c[it] / nbins_c[it];
-                      //! remainder has the same sign as dividend 
-                      bin_id_new[it] = bin_id_c[it] % nbins_c[it]; 
-                      if  (bin_id_new[it] < 0){
-                        bin_id_new[it] += nbins_c[it];
-                        shift[it] -= 1;
-                      }
+                      //! remainder has the same sign as dividend
+                      bin_id_new[it] = branch_less_mod(bin_id_c[it], nbins_c[it]);
                       if (pbc[it]==false and shift[it]!=0){
                         compatible_with_pbc = false;
                       }
@@ -289,9 +290,9 @@ namespace proteus {
 
 
                   }
-              
+
                 }
-              
+
               }
             }
           }
@@ -300,10 +301,10 @@ namespace proteus {
 
       for (auto center: this->centers ){
         center_bin_coord = (center.get_position().array()/nbins_coord).floor().cast<int>();
-      
+
         bin2icenter[center_bin_coord[0]][center_bin_coord[1]][center_bin_coord[2]].push_back(center.get_index());
       }
-      
+
       for ( int ii{0} ; ii < nbins_coord[0] ; ++ii){
         for ( int jj{0} ; jj < nbins_coord[1] ; ++jj){
           for ( int kk{0} ; kk < nbins_coord[2] ; ++kk){
@@ -326,7 +327,7 @@ namespace proteus {
                 }
               }
             }
-            
+
           }
         }
       }
@@ -373,7 +374,7 @@ namespace proteus {
 
       Eigen::Array<int, traits::Dim, 1> center_bin_coord(0,0,0);
       Eigen::Array<int, traits::Dim, 1> neigh_bin_coord(0,0,0);
-      
+
       Eigen::Array<int, traits::Dim, 1> neigh_search(1,1,1);
       neigh_search = (bin_size * nbins_coord / cell_lengths).ceil().cast<int>();
       cout << "neigh_search " << endl << neigh_search << endl;
@@ -394,8 +395,8 @@ namespace proteus {
         //std::vector<std::array<int,3> > offsets;
         NeighbourhoodManagerCell::vVector3d  offsets;
         for (int neigh_id{0} ; neigh_id<Natom ; ++neigh_id){ // TODO here particules is the same set of centers but this could be something else
-        //for (auto neigh: this->get_manager() ){ 
-          //int neigh_id{neigh.get_index()}; 
+        //for (auto neigh: this->get_manager() ){
+          //int neigh_id{neigh.get_index()};
           // loop over the periodic images of neigh
           for (auto ii : periodic_image_it[0]){
             for (auto jj : periodic_image_it[1]){
@@ -412,7 +413,7 @@ namespace proteus {
                   //cout << "Distance : " << dist2 << endl;
                   if (dist2 <  cutoff_max2){
                     //cout << "Id of neighbour: " << neigh_id << endl;
-                    
+
                     cout << "Neighbour ids: " << neigh_id << endl;
                     cout << "neigh_bin_coord "  << neigh_bin_coord.transpose() << endl;
                     cout << "Offset: " << offset.transpose() << endl;
@@ -423,7 +424,7 @@ namespace proteus {
                   }
                 }
               }
-            } 
+            }
           }
         }
         //cout << "# of neighbours: " << neighbours_index.size() << endl;
@@ -436,14 +437,14 @@ namespace proteus {
         cout  << endl;
       }
 
-      
-      
+
+
       this->neighlist =  std::move(neighlist);
 
 
       this->offsetlist =  std::move(offsetlist);
 
-      
+
       for (auto center:this->centers){
         int c_idx{center.get_index()};
         cout << "Center id: " << c_idx << endl;
@@ -460,9 +461,9 @@ namespace proteus {
       }
       */
     }
-  
+
   /* ---------------------------------------------------------------------- */
-  
+
   void NeighbourhoodManagerCell::update(const Eigen::MatrixXd& positions,
                                         const Eigen::MatrixXd& cell,
                                         const std::array<bool,3>& pbc, const double& cutoff_max)
@@ -473,7 +474,7 @@ namespace proteus {
     }
   }
   /* ---------------------------------------------------------------------- */
-  
+
   template<int Level, int MaxLevel>
   inline int NeighbourhoodManagerCell::
   get_offset_impl(const ClusterRef_t<Level, MaxLevel>& cluster) const {
@@ -486,16 +487,34 @@ namespace proteus {
     auto main_offset{this->neighlist[i][j]};
     return main_offset;
   }
-  
+
   /* ---------------------------------------------------------------------- */
   // specialisation for just atoms
-  
+
   template <>
   inline int NeighbourhoodManagerCell:: template
   get_offset_impl<1, 2>(const ClusterRef_t<1, 2>& cluster) const {
     return cluster.get_atoms().back().get_index();
   }
-  
+
+
+  //----------------------------------------------------------------------------//
+  // check in muSpectre src/common/ccoord_operations.hh (class Pixels<dim>)
+    //! get the i-th pixel in a grid of size sizes
+    template <size_t dim>
+    constexpr std::array<int, dim> get_ccoord(const std::array<int, dim> & resolutions,
+                                              Dim_t index) {
+      std::array<int, dim> retval{{0}};
+      int factor{1};
+      for (int i = dim-1; i >=0; --i) {
+        retval[i] = index/factor%resolutions[i]];
+        if (i != 0 ) {
+          factor *= resolutions[i];
+        }
+      }
+      return retval;
+    }
+
 }  // proteus
 
 #endif /* NEIGHBOURHOOD_MANAGER_LAMMPS_H */
