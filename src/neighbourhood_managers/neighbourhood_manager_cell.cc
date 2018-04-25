@@ -58,7 +58,7 @@ namespace proteus {
   */
 
   /* ---------------------------------------------------------------------- */
-  
+
   size_t NeighbourhoodManagerCell::
   get_nb_clusters(int cluster_size)  {
     switch (cluster_size) {
@@ -75,5 +75,5 @@ namespace proteus {
       break;
     }
   }
-  
+
 }  // proteus
