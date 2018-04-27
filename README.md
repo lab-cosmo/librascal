@@ -18,7 +18,13 @@ cmake ..
 make dev_doc
 ``` 
 
-
+* To build for development:
+```Shell
+cd build 
+cmake -DCMAKE_BUILD_TYPE=Debug  -DENABLE_DOC=ON -DBUILD_TESTS=ON  ..
+make all
+ctest -V
+```
 
 TILL:
 Test + compilation of documentation in cmake + how to add a test

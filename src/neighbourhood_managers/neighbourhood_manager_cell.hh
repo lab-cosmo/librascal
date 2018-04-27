@@ -158,9 +158,6 @@ namespace proteus {
       return this->neighlist[cluster.get_atoms().back().get_index()].size();
     }
 
-
-
-
     template<int Level, int MaxLevel>
     inline int get_offset_impl(const ClusterRef_t<Level, MaxLevel>& cluster) const;
 
@@ -252,6 +249,8 @@ namespace proteus {
         return std::modulus<int>{}(a+b, b);
       };
 
+    
+      
       for ( int ii{0} ; ii < nbins_coord[0] ; ++ii){
         bin2icenter[ii].resize(nbins_coord(1));
         bin2neighbin[ii].resize(nbins_coord(1));
@@ -301,7 +300,6 @@ namespace proteus {
 
       for (auto center: this->centers ){
         center_bin_coord = (center.get_position().array()/nbins_coord).floor().cast<int>();
-
         bin2icenter[center_bin_coord[0]][center_bin_coord[1]][center_bin_coord[2]].push_back(center.get_index());
       }
 
@@ -501,20 +499,22 @@ namespace proteus {
   //----------------------------------------------------------------------------//
   // check in muSpectre src/common/ccoord_operations.hh (class Pixels<dim>)
     //! get the i-th pixel in a grid of size sizes
+    /*
     template <size_t dim>
     constexpr std::array<int, dim> get_ccoord(const std::array<int, dim> & resolutions,
                                               Dim_t index) {
       std::array<int, dim> retval{{0}};
       int factor{1};
       for (int i = dim-1; i >=0; --i) {
-        retval[i] = index/factor%resolutions[i]];
+        retval[i] = index/factor%resolutions[i];
         if (i != 0 ) {
           factor *= resolutions[i];
         }
       }
       return retval;
     }
+    */
 
 }  // proteus
 
-#endif /* NEIGHBOURHOOD_MANAGER_LAMMPS_H */
+#endif /* NEIGHBOURHOOD_MANAGER_CELL_H */
