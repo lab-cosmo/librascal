@@ -1,4 +1,4 @@
-.. _coding-convention
+.. _coding-convention:
 
 Coding Convention
 ~~~~~~~~~~~~~~~~~
