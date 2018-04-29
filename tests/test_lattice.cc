@@ -133,6 +133,42 @@ namespace proteus {
     }
     
   }
+
+  BOOST_FIXTURE_TEST_CASE(crossproduct_test, ManagerFixture_lattice) {
+    Vec3_t v_true; 
+    v_true << -0.23767568374958059,  0.24116413754264393, -0.063589340753780477;
+    Vec3_t v1;
+    v1 << 0.57942928, 0.82826958, 0.97551992;
+    Vec3_t v2;
+    v2 << 0.56475161, 0.69754369, 0.53459899;
+    Vec3_t v3;
+    
+    lattice.crossproduct(v1,v2,v3);
+    for (int ii{0};ii<3;++ii) {
+      BOOST_CHECK_CLOSE(v_true[ii], v3[ii],lattice_tol);
+    }
+  }
+
+  BOOST_FIXTURE_TEST_CASE(set_reciprocal_vectors_test, ManagerFixture_lattice) {
+    Cell_t reciprocical_vectors_true; // 3,22
+    reciprocical_vectors_true << 0.16155088852988697123,-0.0000000000000000,0.0000000000000000,
+                                -0.06330693355398815669,0.16260162601626021450,-0.0000000000000000,
+                                0.00419252881447217986,-0.02268859897901305545,0.13679890560875518357;
+
+    Cell_t reciprocical_vectors = lattice.get_reciprocal_vectors();
+    
+    Vec3_t reciprocal_lenghts_true;
+    reciprocal_lenghts_true << 0.17356276881481585983,0.16417692074942269453,0.13679890560875518357;
+    Vec3_t reciprocal_lenghts = lattice.get_reciprocal_lenghts();
+
+    for (int jj{0};jj<3;++jj) {
+      for (int ii{0};ii<3;++ii) {
+        BOOST_CHECK_CLOSE(reciprocical_vectors_true(ii,jj), reciprocical_vectors(ii,jj),lattice_tol);
+      }
+      BOOST_CHECK_CLOSE(reciprocal_lenghts_true[jj], reciprocal_lenghts[jj],lattice_tol);
+    }
+    
+  }
   /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();
 

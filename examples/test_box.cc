@@ -45,21 +45,28 @@ const Dim_t mult2lin( const Ccoord_t& coord, const Ccoord_t& shape)  {
   
 template<class ManagerImplementation>
 class Boxes {
-
   using Manager_t = proteus::NeighbourhoodManagerBase<ManagerImplementation>;
   using Vecd = typename Eigen::Array<double, dim, 1>;
   //using AtomRef_t = typename Manager_t::AtomRef;
   public:
     //! constructor
-    Boxes(Manager_t & manager, const std::array<double,3> & sizes, 
+    Boxes(Manager_t & manager, Lattice& lattice, 
           const std::array<bool,3> & pbc, const double& cutoff_max)
-      :sizes{sizes},   pbc{pbc}, manager{manager}{
+      :sizes{sizes},   pbc{pbc}, manager{manager},lattice{lattice}{
         this->bin_size = cutoff_max;
 
+        Vec3_t reciprocal_lenghts = this->lattice.get_reciprocal_lenghts();
+        double face_distance{1};//! distance between cell faces -> height between 2 parallel planes belonging to the parallelepiped
         for (size_t i = 0; i < dim; ++i) {
-          this->nbins[i] = std::max(static_cast<int>(sizes[i] / this->bin_size), 1 );
+          if (reciprocal_lenghts[i] > 0){
+            face_distance = 1/reciprocal_lenghts[i];
+          }
+          else {
+            face_distance = 1;
+          }
+          this->nbins[i] = std::max(static_cast<int>(face_distance / this->bin_size), 1 );
           this->nbins_d[i] = this->nbins[i];
-          this->neigh_search[i] = static_cast<int>(std::ceil(this->bin_size*this->nbins[i]/sizes[i]));
+          this->neigh_search[i] = static_cast<int>(std::ceil(this->bin_size*this->nbins[i]/face_distance));
           this->nneighbour *= (this->neigh_search[i]*2+1);
           this->nbin *= this->nbins[i];
         }
@@ -135,9 +142,10 @@ class Boxes {
   protected:
     //NeighbourhoodManagerCell::AtomRef_t(this->get_manager(),count)
     Manager_t & manager;
-    Ccoord_t nbins{{1,1,1}};
+    Lattice & lattice;
+    Ccoord_t nbins{{1,1,1}}; //! number of boxes in each directions.
     Vecd nbins_d; //! to use in bin_centers()
-    Dim_t nbin{1};
+    Dim_t nbin{1}; //! 
     Dim_t nneighbour{1}; //! Max number of neighbour boxes. counts also the center one.
     double bin_size;
     std::array<double,3> sizes; // size of the boxes along the 3 directions
@@ -211,8 +219,7 @@ int main()
   const std::array<bool,3> & pbc{{true,true,true}};
   double rc{2};
   Manager_t manager;
-  Boxes<Manager_t> boxes( manager,sizes, pbc,rc);
-  cout << boxes.size()  << endl;
+  
 
   Eigen::MatrixXd positions_test(3,22); // 3,22
   positions_test << 3.689540159937393,5.123016813620886,1.994119731169116,6.818437242389163,2.630056617829216,6.182500355729062,2.114977334498767,6.697579639059512,1.392155450018263,7.420401523540017,2.432242071439904,6.380314902118375,1.112656394115962,7.699900579442317,3.569715877854675,5.242841095703604,3.122826344932127,5.689730628626151,3.248684682453303,5.563872291104976,2.608353462112637,6.204203511445642,
@@ -225,26 +232,39 @@ int main()
           0.00,6.15,1.02,
           0.00,0.00,7.31;
   lattice.set_cell(cell);
-  Eigen::MatrixXd positions_sc(3,22);//get_scaled2cartesian
-  lattice.get_cartesian2scaled(positions_test,positions_sc);
-  Eigen::MatrixXd positions_sc_true;
+
+  Boxes<Manager_t> boxes( manager,lattice, pbc,rc);
+  cout << boxes.size()  << endl;
+
+  //Eigen::Matrix<double,3,22> positions_sc;//get_scaled2cartesian
+  //lattice.get_cartesian2scaled(positions_test,positions_sc);
+  /*
+  Vec3_t positions_sc;//get_scaled2cartesian
+  
+
+  
+  Eigen::MatrixXd positions_sc_true(3,22);
   positions_sc_true <<  0.296723741750796,0.703639876645053,0.267449366982580,0.732914251413269,0.164593885207063,0.835769733188786,0.235325758326898,0.765037860068951,0.062053748440047,0.938309869955802,0.075557451185986,0.924806167209864,0.099306843325001,0.901056775070848,0.252988672836491,0.747374945559359,0.336207030045438,0.664156588350411,0.361801281872678,0.638562336523171,0.396587390963031,0.603776227432818,
                         0.713451112366376,0.286724809564553,0.125592877525700,0.874583044405229,0.658294016242431,0.341881905688497,0.219086555224869,0.781089366706060,0.351412276497280,0.648763645433649,0.735260445980754,0.264915475950175,0.165043890527786,0.835132031403143,0.814291210823212,0.185884711107717,0.419672726629966,0.580503195300962,0.371065952685266,0.629109969245663,0.000224293676929,0.999951628253999,
                         0.635252465223814,0.364186600654445,0.171091974809567,0.828347091068692,0.117770901205896,0.881668164672363,0.620534725539691,0.378904340338568,0.767329337218692,0.232109728659567,0.916970351357315,0.082468714520945,0.477101227439239,0.522337838439020,0.196543690061223,0.802895375817036,0.144255037012604,0.855184028865655,0.546980008047315,0.452459057830944,0.728271258524170,0.271167807354089;
-    
+  double aa{0};
   for (int jj{0};jj<22;++jj) {
-      for (int ii{0};ii<3;++ii) {
-        positions_sc_true(ii,jj)- positions_sc(ii,jj);
-      }
+    lattice.get_cartesian2scaled(positions_test.col(jj),positions_sc);
+    for (int ii{0};ii<3;++ii) {
+      aa = positions_sc_true(ii,jj) - positions_sc[ii];
+      
     }
+    }
+  */
+  
   for (auto box : boxes){
-    /*
+    
     for (int i{0};i<dim;++i){
       cout<< box[i]<<" ";
     }
     cout << endl;
     cout << mult2lin(box,nbins)<<endl;
-    */
+    
   }
 
   return(0);

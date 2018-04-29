@@ -35,7 +35,9 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include <izip.hh> //! this is a header enabeling a nice for i,j in zip(a1,a2) kind of loops. see for more details https://github.com/cshelton/zipfor
+#include <lattice.hh> //! this is a header enabeling a nice for i,j in zip(a1,a2) kind of loops. see for more details https://github.com/cshelton/zipfor
+#include <basic_types.h>
+#include <field.hh>
 
 using namespace std;
 
@@ -60,7 +62,7 @@ namespace proteus {
     template <int Level, int MaxLevel>
     using ClusterRef_t = typename Parent::template ClusterRef<Level, MaxLevel>;
     using vVector3d = std::vector<Eigen::Vector3d,Eigen::aligned_allocator<Eigen::Vector3d> >;
-
+    using AtomVectorField_t = Field<NeighbourhoodManagerCell, double, 1, 3>;
     //! Default constructor
     NeighbourhoodManagerCell() = default;
 
@@ -101,6 +103,7 @@ namespace proteus {
       return this->centers[i_atom_id].get_index();
     }
 
+    /*
     void set_positions(const Eigen::MatrixXd& pos){
       int dim{this->dim()};
       int Natom{pos.cols()};
@@ -113,6 +116,7 @@ namespace proteus {
         }
       }
     }
+    */
 
     void set_positions(const std::vector<array<double,3>>& pos){
       int dim{this->dim()};
@@ -123,17 +127,6 @@ namespace proteus {
         this->positions[i] = new double[dim];
         for (int j{0}; j < dim; ++j){
           this->positions[i][j] = pos[i][j];
-        }
-      }
-    }
-
-    void set_cell(const Eigen::MatrixXd& cell){
-      int dim{this->dim()};
-      this->cell = new double*[dim];
-      for (int i{0}; i < dim; ++i){
-        this->cell[i] = new double[dim];
-        for (int j{0}; j < dim; ++j){
-          this->cell[i][j] = cell(j,i);
         }
       }
     }
@@ -163,7 +156,9 @@ namespace proteus {
 
     size_t get_nb_clusters(int cluster_size);
 
-    void build(const Eigen::MatrixXd& positions, const Eigen::MatrixXd& cell,const std::array<bool,3>& pbc, const double& cutoff_max);
+    //void build(const Eigen::MatrixXd& positions, const Eigen::MatrixXd& cell,const std::array<bool,3>& pbc, const double& cutoff_max);
+    void build(Eigen::MatrixXd& positions, const Eigen::MatrixXd& cell,const std::array<bool,3>& pbc, const double& cutoff_max);
+
 
     void update(const Eigen::MatrixXd& positions, const Eigen::MatrixXd& cell,const std::array<bool,3>& pbc, const double& cutoff_max);
 
@@ -172,16 +167,15 @@ namespace proteus {
     std::vector<AtomRef_t> centers; //! list of center indices. after build it points to neighpos
     std::vector<std::vector<AtomRef_t>> neighlist; //! list of list of neighbour indices. fisrt dimension is in the same order as centers. it points to neighpos
     std::vector<std::array<double,3>> neighpos; //! list of positions for the neighboor list. contains positions of the centers and then the positions of the neighboors.
-    double **positions; //! list of pointers. after build it points to neighpos
-    double **cell; //! list of pointers to the cell
-
+    Eigen::Map<Eigen::MatrixXd> positions; //! list of pointers. after build it points to neighpos
+    Lattice lattice;
     std::array<bool,3> pbc;
   private:
   };
 
   /* ---------------------------------------------------------------------- */
 
-  void NeighbourhoodManagerCell::build(const Eigen::MatrixXd& positions,
+  void NeighbourhoodManagerCell::build(Eigen::MatrixXd&  positions,
                                         const Eigen::MatrixXd& cell,
                                         const std::array<bool,3>& pbc, const double& cutoff_max)
     {
@@ -200,264 +194,21 @@ namespace proteus {
       int count{0};
       for (int id{0} ; id<Ncenter ; ++id) {
           this->centers.push_back(NeighbourhoodManagerCell::AtomRef_t(this->get_manager(),id));
+          
+
           array<double,3> iptpp = {positions(0,id),positions(1,id),positions(2,id)};
-          this->neighpos.push_back(iptpp);
+          //this->neighpos.push_back(iptpp);
           count += 1;
           //cout << this->centers.at(id).get_position() << endl;
       }
 
-      //std::vector<NeighbourhoodManagerCell::vVector3d> offsetlist(Natom);
+      Cell_t lat = cell;
+      this->lattice.set_cell(lat);
+      new (&this->positions) Eigen::Map<Eigen::MatrixXd>(&positions[0]);
+      //this->set_positions(positions);
+      //this->positions = positions.data();
 
-      this->set_positions(positions);
-      this->set_cell(cell);
-
-      std::vector<std::vector<int>> periodic_image_it(dim);
-
-      Vecd cell_lengths;
-      cell_lengths = cell.colwise().norm();
-
-      double bin_size{std::max(cutoff_max,3.)};
-
-      //const Vecd nbins_coord(0,0,0);
-      Vecd nbins_coord = (cell_lengths / bin_size).ceil();
-      array<int,dim> nbins_c = {nbins_coord[0],nbins_coord[1],nbins_coord[2]};
-
-      //Veci neigh_search(1,1,1);
-      const Veci neigh_search = (bin_size * nbins_coord / cell_lengths).ceil().cast<int>();
-
-      double dist2{0};
-      double cutoff_max2{cutoff_max*cutoff_max};
-      Eigen::Matrix<double, dim, 1> offset(0,0,0);
-      Eigen::Matrix<double, dim, 1> jpos(0,0,0);
-      Eigen::Matrix<double, dim, 1> jr(0,0,0);
-      Veci center_bin_coord(0,0,0);
-      Veci neigh_bin_coord(0,0,0);
-      Veci bin_id(0,0,0);
-      Mati bin_boundaries; //! 0->left 1->right 2->bottom 3->top
-      bin_boundaries <<  0,nbins_c[0],
-                         0,nbins_c[1],
-                         0,nbins_c[2];
-
-      vector<vector<vector<vector<int>>>> bin2icenter;
-      vector<vector<vector<vector<array<int,dim>>>>> bin2neighbin,bin2neighbin_shift;
-      bin2icenter.resize(nbins_coord(0));
-      bin2neighbin.resize(nbins_coord(0));
-      bin2neighbin_shift.resize(nbins_coord(0));
-
-      //! warning: works only with negative a if |a| < b
-      auto branch_less_mod = [] (int a, int b) {
-        return std::modulus<int>{}(a+b, b);
-      };
-
-    
       
-      for ( int ii{0} ; ii < nbins_coord[0] ; ++ii){
-        bin2icenter[ii].resize(nbins_coord(1));
-        bin2neighbin[ii].resize(nbins_coord(1));
-        bin2neighbin_shift[ii].resize(nbins_coord(1));
-        for ( int jj{0} ; jj < nbins_coord[1] ; ++jj){
-          bin2icenter[ii][jj].resize(nbins_coord(2));
-          bin2neighbin[ii][jj].resize(nbins_coord(2));
-          bin2neighbin_shift[ii][jj].resize(nbins_coord(2));
-          for ( int kk{0} ; kk < nbins_coord[2] ; ++kk){
-            for ( int dx{-neigh_search[0]} ; dx <= neigh_search[0] ; ++dx){
-              for ( int dy{-neigh_search[1]} ; dy <= neigh_search[1] ; ++dy){
-                for ( int dz{-neigh_search[2]} ; dz <= neigh_search[2] ; ++dz){
-                  bin_id << ii+dx,jj+dy,kk+dz;
-                  array<int,dim> shift = {0,0,0};
-                  array<int,dim> bin_id_c = {ii+dx,jj+dy,kk+dz};
-                  array<int,dim> bin_id_new = {0,0,0};
-                  if ( (bin_id >= bin_boundaries.col(0) ).all() and (bin_id < bin_boundaries.col(1) ).all()  ){
-                    bin2neighbin[ii][jj][kk].push_back(bin_id_c);
-                    bin2neighbin_shift[ii][jj][kk].push_back(shift);
-                  }
-                  else {
-                    bool compatible_with_pbc = true;
-                    for (int it{0};it<dim;++it){
-
-                      shift[it] = (int)bin_id_c[it] / nbins_c[it];
-                      //! remainder has the same sign as dividend
-                      bin_id_new[it] = branch_less_mod(bin_id_c[it], nbins_c[it]);
-                      if (pbc[it]==false and shift[it]!=0){
-                        compatible_with_pbc = false;
-                      }
-                    }
-                    if (compatible_with_pbc){
-                      bin2neighbin[ii][jj][kk].push_back(bin_id_new);
-                      bin2neighbin_shift[ii][jj][kk].push_back(shift);
-                    }
-
-
-                  }
-
-                }
-
-              }
-            }
-          }
-        }
-      }
-
-      for (auto center: this->centers ){
-        center_bin_coord = (center.get_position().array()/nbins_coord).floor().cast<int>();
-        bin2icenter[center_bin_coord[0]][center_bin_coord[1]][center_bin_coord[2]].push_back(center.get_index());
-      }
-
-      for ( int ii{0} ; ii < nbins_coord[0] ; ++ii){
-        for ( int jj{0} ; jj < nbins_coord[1] ; ++jj){
-          for ( int kk{0} ; kk < nbins_coord[2] ; ++kk){
-            for (auto icenter:bin2icenter[ii][jj][kk]){
-              zipfor(jbin_id,jshift eachin bin2neighbin[ii][jj][kk],bin2neighbin_shift[ii][jj][kk]){
-                //vector<int> ooo = bin2icenter[jbin_id[0]][jbin_id[1]][jbin_id[2]];
-                for (auto jneigh:bin2icenter[jbin_id[0]][jbin_id[1]][jbin_id[2]]){
-                  //Eigen::Map<Eigen::Matrix<double,1,dim>> dd(jshift,dim);
-                  offset << jshift[0],jshift[1],jshift[2];
-                  jpos = positions.col(jneigh) + (offset.transpose() * cell).transpose();
-                  jr = jpos - positions.col(icenter);
-                  dist2 = jr.squaredNorm();
-                  if (cutoff_max2 > dist2){
-                    this->neighlist[icenter].push_back(NeighbourhoodManagerCell::AtomRef_t(this->get_manager(),count));
-                    array<double,3> iptpp = {jpos[0],jpos[1],jpos[2]};
-                    this->neighpos.push_back(iptpp);
-                    count += 1;
-
-                  }
-                }
-              }
-            }
-
-          }
-        }
-      }
-      this->set_positions(this->neighpos);
-      //Eigen::Array<double, dim, Natom> aa; = (positions/nbins_coord).ceil().cast<int>();
-
-      /*
-      for (unsigned int ii{0} ; ii < pbc.size() ; ++ii){
-        if ( pbc[ii] ){
-          std::vector<int> v = {-1,0,1};
-          periodic_image_it[ii].insert( periodic_image_it[ii].end(), v.begin(), v.end() );
-
-          //periodic_image_it[ii].push_back(v);
-        }
-        else {
-          std::vector<int> v = {0};
-          periodic_image_it[ii].insert( periodic_image_it[ii].end(), v.begin(), v.end() );
-
-          //periodic_image_it[ii].push_back(v);
-        }
-
-      }
-      for (int ii{0}; ii < 3; ++ii){
-        cout << "p image " <<  ii  ;
-        for (const auto& i: periodic_image_it[ii])
-            cout << ' ' <<  i ;
-        cout <<  endl;
-      }
-
-
-      cout << "pos " << endl << this->positions << endl;
-      cout << "cell " << endl << this->cell << endl;
-      //cout << "cell " << endl << this->cell << endl;
-      Eigen::Array<double, traits::Dim, 1> cell_lengths;
-      cell_lengths = cell.colwise().norm();
-      cout << "cell_lengths " << endl << cell_lengths << endl;
-
-      double bin_size{std::max(cutoff_max,3.)};
-      cout << "bin_size " << endl << bin_size << endl;
-
-      Eigen::Array<double, traits::Dim, 1> nbins_coord(0,0,0);
-      nbins_coord = (cell_lengths / bin_size).ceil();
-      cout << "nbins_coord " << endl << nbins_coord << endl;
-
-      Eigen::Array<int, traits::Dim, 1> center_bin_coord(0,0,0);
-      Eigen::Array<int, traits::Dim, 1> neigh_bin_coord(0,0,0);
-
-      Eigen::Array<int, traits::Dim, 1> neigh_search(1,1,1);
-      neigh_search = (bin_size * nbins_coord / cell_lengths).ceil().cast<int>();
-      cout << "neigh_search " << endl << neigh_search << endl;
-
-      Eigen::Array<int, traits::Dim, 1> upper_bound(1,1,1);
-      Eigen::Array<int, traits::Dim, 1> lower_bound(1,1,1);
-      double dist2{0};
-      double cutoff_max2{cutoff_max*cutoff_max};
-      Eigen::Vector3d offset(0,0,0);
-      for (auto center: centers ){
-        // loop over the centers
-        cout << "Index and positions " << center.get_index() << endl;
-        center_bin_coord = (center.get_position().array() / nbins_coord).floor().cast<int>();
-        cout << "center_bin_coord "  << center_bin_coord.transpose() << endl;
-        upper_bound = center_bin_coord + neigh_search;
-        lower_bound = center_bin_coord - neigh_search;
-        std::vector<int> neighbours_index;
-        //std::vector<std::array<int,3> > offsets;
-        NeighbourhoodManagerCell::vVector3d  offsets;
-        for (int neigh_id{0} ; neigh_id<Natom ; ++neigh_id){ // TODO here particules is the same set of centers but this could be something else
-        //for (auto neigh: this->get_manager() ){
-          //int neigh_id{neigh.get_index()};
-          // loop over the periodic images of neigh
-          for (auto ii : periodic_image_it[0]){
-            for (auto jj : periodic_image_it[1]){
-              for (auto kk : periodic_image_it[2]){
-
-                offset << ii,jj,kk;
-                //cout << "offset : " << ii<<" "<< jj<<" "<< kk << endl;
-
-                neigh_bin_coord = ( (positions.col(neigh_id) + (offset.transpose() * cell).transpose() ).array() / nbins_coord).floor().cast<int>();
-                //cout << "Atom bin : " << neigh_bin_coord.transpose() << endl;
-                if ( (neigh_bin_coord < upper_bound).all() and (neigh_bin_coord > lower_bound).all()) {
-                  //Vector_t distVec = ;
-                  dist2 = ( (positions.col(neigh_id) + (offset.transpose() * cell).transpose() ) - center.get_position() ).squaredNorm();
-                  //cout << "Distance : " << dist2 << endl;
-                  if (dist2 <  cutoff_max2){
-                    //cout << "Id of neighbour: " << neigh_id << endl;
-
-                    cout << "Neighbour ids: " << neigh_id << endl;
-                    cout << "neigh_bin_coord "  << neigh_bin_coord.transpose() << endl;
-                    cout << "Offset: " << offset.transpose() << endl;
-                    neighbours_index.push_back(neigh_id);
-                    //std::array<int, 3> arr = {ii,jj,kk};
-                    //offsets.push_back(arr);
-                    offsets.push_back(offset);
-                  }
-                }
-              }
-            }
-          }
-        }
-        //cout << "# of neighbours: " << neighbours_index.size() << endl;
-        for (auto id: neighbours_index){
-          neighlist[center.get_index()].push_back(NeighbourhoodManagerCell::AtomRef_t(this->get_manager(),id));
-        }
-        for (auto off : offsets){
-          offsetlist[center.get_index()].push_back(off);
-        }
-        cout  << endl;
-      }
-
-
-
-      this->neighlist =  std::move(neighlist);
-
-
-      this->offsetlist =  std::move(offsetlist);
-
-
-      for (auto center:this->centers){
-        int c_idx{center.get_index()};
-        cout << "Center id: " << c_idx << endl;
-        cout << "Neighbour ids: " ;
-          for (auto neigh : this->neighlist[c_idx]){
-              cout << neigh.get_index() << ", ";
-          }
-          cout <<  endl;
-          cout << "Neighbour shift: " <<  endl;
-          for (auto off : this->offsetlist[c_idx]){
-              cout << off[0] << ", "<<off[1] << ", "<<off[2] <<  " ; ";
-          }
-        cout <<  endl;
-      }
-      */
     }
 
   /* ---------------------------------------------------------------------- */

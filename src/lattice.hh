@@ -46,7 +46,6 @@ class Lattice {
 
     Lattice(const Cell_t& cell) {
       this->set_cell(cell);
-      //this->cell_angles[0] = (cell[1].dot(cell[2])/this->cell_lenght[1]/this->cell_lenght[2]).array().acos();
     };
 
     //! Copy constructor
@@ -70,7 +69,8 @@ class Lattice {
       this->cell_angles[0] = std::acos(this->cell_vectors.col(1).dot(this->cell_vectors.col(2))/this->cell_lenghts[1]/this->cell_lenghts[2]);
       this->cell_angles[1] = std::acos(this->cell_vectors.col(0).dot(this->cell_vectors.col(2))/this->cell_lenghts[0]/this->cell_lenghts[2]);
       this->cell_angles[2] = std::acos(this->cell_vectors.col(1).dot(this->cell_vectors.col(0))/this->cell_lenghts[1]/this->cell_lenghts[0]);
-      this->compute_transformation_matrix();
+      this->set_transformation_matrix();
+      this->set_reciprocal_vectors();
     }
 
     const Vec3_t get_cell_lengths() {
@@ -89,10 +89,42 @@ class Lattice {
       return this->scaled2cartesian;
     }
 
-    inline void compute_transformation_matrix(){
+    const Cell_t get_reciprocal_vectors() {
+      return this->reciprocal_vectors;
+    }
+    
+    const Vec3_t get_reciprocal_lenghts() {
+      return this->reciprocal_lenghts;
+    }
+
+    inline void set_reciprocal_vectors(){
+      Vec3_t c_abg = cell_angles.array().cos();
+      double V{ this->cell_lenghts[0] *this->cell_lenghts[1] *this->cell_lenghts[2] *  std::sqrt(1 - c_abg[0]*c_abg[0] - c_abg[1]*c_abg[1] - c_abg[2]*c_abg[2] + 2 * c_abg[0] * c_abg[1] * c_abg[2] )}; //! Cell volume
+      double Vinv{1./V};
+      this->reciprocal_vectors *= Vinv;
+      Vec3_t recip1,recip2,recip3;
+      this->crossproduct(this->cell_vectors.col(1),this->cell_vectors.col(2),recip1);
+      this->crossproduct(this->cell_vectors.col(2),this->cell_vectors.col(0),recip2);
+      this->crossproduct(this->cell_vectors.col(0),this->cell_vectors.col(1),recip3);
+      for (int ii{0};ii<3;++ii) {
+        this->reciprocal_vectors(ii,0) *= recip1[ii];
+        this->reciprocal_vectors(ii,1) *= recip2[ii];
+        this->reciprocal_vectors(ii,2) *= recip3[ii];
+      }
+      this->reciprocal_lenghts = this->reciprocal_vectors.colwise().norm();
+    }
+
+    template <typename DerivedA,typename DerivedB>
+    inline void crossproduct(const Eigen::MatrixBase<DerivedA>& v1, const Eigen::MatrixBase<DerivedB>& v2, Vec3_t& v3){
+      v3[0] = v1[1]*v2[2] - v1[2]*v2[1];
+      v3[1] = v1[2]*v2[0] - v1[0]*v2[2];
+      v3[2] = v1[0]*v2[1] - v1[1]*v2[0];
+    }
+
+    inline void set_transformation_matrix(){
       Vec3_t c_abg = cell_angles.array().cos();
       Vec3_t s_abg = cell_angles.array().sin();
-      double V{std::sqrt(1 - c_abg[0]*c_abg[0] - c_abg[1]*c_abg[1] - c_abg[2]*c_abg[2] + 2 * c_abg[0] * c_abg[1] * c_abg[2] )}; // Cell volume divided by a*b*c
+      double V{std::sqrt(1 - c_abg[0]*c_abg[0] - c_abg[1]*c_abg[1] - c_abg[2]*c_abg[2] + 2 * c_abg[0] * c_abg[1] * c_abg[2] )}; //! Cell volume divided by a*b*c
       double Vinv{1/V};
       //! compute transformation matrix from the cartesian system to the lattice coordinate system
       this->cartesian2scaled(0,0) = 1.0/this->cell_lenghts[0];
@@ -122,7 +154,9 @@ class Lattice {
 
   protected:
     Cell_t cell_vectors;
+    Cell_t reciprocal_vectors = Cell_t::Ones();
     Vec3_t cell_lenghts;
+    Vec3_t reciprocal_lenghts;
     Vec3_t cell_angles;// alpha(b,c) beta(a,c) gamma(a,b) in radian
     Cell_t scaled2cartesian = Cell_t::Zero(); //! transformation matrix from the lattice coordinate system to cartesian
     Cell_t cartesian2scaled = Cell_t::Zero(); //! transformation matrix from the cartesian system to the lattice coordinate system
