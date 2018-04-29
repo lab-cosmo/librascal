@@ -1,1 +1,5 @@
-.. _auto
+.. _auto:
+
+Auto Documentations
+===================
+
