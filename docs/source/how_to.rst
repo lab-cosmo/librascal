@@ -29,7 +29,9 @@ First of all, think about what you need and check if is already implemented (for
 
 When you know what is necessary for your method, you can proceed in the implementation.
 
-The new method should be written in C++ in the **src** folder and should be named in a way that is clear what the method does (no method_3_bis.cc etc..). The file should start with a header reporting a few information such as the author, date, etc.. You can check the other .cc files in the directory for a quick reference.
+The new method should be written in C++ in the **src** folder and should be named in a way that is clear what the method does (no method_3_bis.cc etc..). The file should start with a header reporting a few information such as the author, date, etc.. You can check the other .cc files in the directory for a quick reference. 
+Bofore, jumping into the next paragraphs, please respect our :ref:`coding convention <coding_convention>`
+
 
 
 Write the C++ method
@@ -232,7 +234,7 @@ While the previous example was simple, it was also very limited. Frequently, we 
 
 
 
-writing a binding test
+Writing a binding test
 ^^^^^^^^^^^^^^^^^^^^^^
 
 Similarly to the library tests, binding tests can be added to any of the ``python_*.py`` files in the ``tests`` folder, or you can add a new file containing tests in a new file, as long as it follows the pattern ``python_*.py`` (after adding a new file, you will have to run ``cmake .`` in the build folder for CMake to pick up the modification). Furthermore, if you add a new file (say, ``python_tutorial_test.py``, you will have to import it in the main python test file ``python_binding_tests.py``:

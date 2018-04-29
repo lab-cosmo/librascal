@@ -11,6 +11,7 @@ Welcome to Proteus's documentation!
    :caption: Contents:
 
    intro
+   installation
    how_to
    coding_convention
 
