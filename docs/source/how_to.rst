@@ -30,7 +30,7 @@ First of all, think about what you need and check if is already implemented (for
 When you know what is necessary for your method, you can proceed in the implementation.
 
 The new method should be written in C++ in the **src** folder and should be named in a way that is clear what the method does (no method_3_bis.cc etc..). The file should start with a header reporting a few information such as the author, date, etc.. You can check the other .cc files in the directory for a quick reference. 
-Bofore, jumping into the next paragraphs, please respect our :ref:`coding convention <coding_convention>`
+Bofore, jumping into the next paragraphs, please respect our :ref:`coding convention <coding_convention>`.
 
 
 
