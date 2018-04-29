@@ -25,6 +25,13 @@ cmake -DCMAKE_BUILD_TYPE=Debug  -DENABLE_DOC=ON -DBUILD_TESTS=ON  ..
 make all
 ctest -V
 ```
+To remove all the cmake files/folders except for the external library (enable glob and remove):
+```
+shopt -s extglob
+rm -fr -- !(external|third-party) 
+```
+
+
 
 TILL:
 Test + compilation of documentation in cmake + how to add a test

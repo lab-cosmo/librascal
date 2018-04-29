@@ -109,22 +109,15 @@ class Lattice {
       this->scaled2cartesian(2,1) = this->cell_lenghts[2] * (c_abg[0] - c_abg[1] * c_abg[2]) / s_abg[2];
       this->scaled2cartesian(2,2) = this->cell_lenghts[2] * V / s_abg[2];
     }
-  /*
-    inline Vector_ref get_cartesian2scaled(const Vector_ref& position){
-      return this->cartesian2scaled.transpose().dot(position);
+
+    template <typename DerivedA,typename DerivedB>
+    inline void get_cartesian2scaled(const Eigen::MatrixBase<DerivedA>& position, Eigen::MatrixBase<DerivedB>& position_sc){
+      position_sc = this->cartesian2scaled.transpose() * position;
     }
 
-    inline Vector_ref get_cartesian2scaled(const Vec3_t& position){
-      return this->cartesian2scaled.transpose().dot(position);
-    }
-*/
-    inline Eigen::MatrixXd get_cartesian2scaled(const Eigen::Ref<const Eigen::MatrixXd> positions,
-                                                Eigen::Ref<Eigen::MatrixXd> positions_sc){
-      positions_sc = this->cartesian2scaled.transpose() * positions;
-    }
-
-    inline void get_scaled2cartesian(const Eigen::Ref<const Eigen::MatrixXd> positions_sc,Eigen::Ref<Eigen::MatrixXd> positions){
-      positions = this->scaled2cartesian.transpose() * positions_sc;
+    template <typename DerivedA,typename DerivedB>
+    inline void get_scaled2cartesian(const Eigen::MatrixBase<DerivedA>& position_sc, Eigen::MatrixBase<DerivedB>& position){
+      position = this->scaled2cartesian.transpose() * position_sc;
     }
 
   protected:
