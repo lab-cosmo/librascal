@@ -17,7 +17,10 @@ cd build
 cmake ..
 make dev_doc
 ``` 
-
+In order to have the readthedocs.org theme for the documentation, please install the following python package:
+```Shell
+pip install sphinx_rtd_theme
+```
 
 
 TILL:
