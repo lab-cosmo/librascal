@@ -12,8 +12,13 @@ Welcome to Proteus's documentation!
 
    intro
    installation
+   tutorials
+   descriptors
+   neighbor_list_manager
+   models
    how_to
    coding_convention
+   auto
 
 .. doxygenindex::
    :project: proteus
