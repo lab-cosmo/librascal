@@ -1,4 +1,4 @@
-.. _neighbor_list_manager
+.. _neighbor_list_manager:
 
 Neighbor list manager
 =====================
