@@ -3,7 +3,9 @@
 Developer's guide
 =================
 
-.. contents::
+.. toctree::
+    :maxdepth: 2
+    
     how-to
     coding-convention
 
