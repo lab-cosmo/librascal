@@ -16,13 +16,8 @@ Welcome to Proteus's documentation!
    descriptors
    neighbor-list-manager
    models
-   how-to
-   coding-convention
+   developer
    auto
-
-.. doxygenindex::
-   :project: proteus
-
 
 Indices and tables
 ==================
