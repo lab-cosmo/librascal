@@ -35,9 +35,6 @@ Interfaces
 Classes
 ~~~~~~~
 
-.. toctree::
-    :maxdepth: 2
-
 .. doxygenindex::
     :project: proteus
 
