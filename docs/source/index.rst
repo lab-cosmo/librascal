@@ -16,8 +16,8 @@ Proteus (or the new software title) is a scalable and versatile fingerprint and 
    installation
    tutorials
    descriptors
-   neighbor-list-manager
    models
+   neighbor-list-manager
    developer
    auto
 
