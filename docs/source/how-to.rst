@@ -3,6 +3,9 @@
 How to
 ======
 
+.. contents::
+   :local:
+   
 How to edit the documentation
 -----------------------------
 
