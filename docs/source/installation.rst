@@ -36,25 +36,37 @@ It is strongly recommended to clone Proteus from its repository in GitHub.
 Build Proteus
 #############
 
+To compile the code it is necessary to have CMake 3.0 and a C++ compiler supporting C++14. During the configuration, it will automatically try to download the external libraries on which it depends:
+
+
+- Eigen
+- Pybind11
+- Boost (only the unit test framework  library)
+- Doxygen
+- Sphinx
+- Breathe
+- Python3
+
+Beware, Python3 is mandatory. The code won't work with a Python version older than 3.
+
+
 To configure and compile the code on UNIX, follow the command list:
 
-.. code-block:: bash
+.. code-block:: console
 
   mkdir build
   cd build
   cmake ..
   make
 
-Proteus checks  automatically for the optimal configuration corresponding to your system.
-
 
 To Compile the documentation from the build folder:
 
-.. code-block:: bash
+.. code-block:: console
 
   make dev_doc
 
-Sphinx and Breathe packages are required for building the documentation.
+Since Eigen depends on Mercurial, it may fail to download if you don't have the necessary dependencies. In that case, it may be sufficient to fix the dependencies or proceed by yourself.
 
 
 Run Proteus
