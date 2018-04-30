@@ -1,5 +1,5 @@
 .. _auto:
 
-Auto Documentations
-===================
+Auto Documentation
+==================
 
