@@ -1,4 +1,4 @@
-.. _how_to:
+.. _how-to:
 
 How to
 ======

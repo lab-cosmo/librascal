@@ -1,7 +1,7 @@
 .. _coding-convention:
 
 Coding Convention
-~~~~~~~~~~~~~~~~~
+=================
 
 .. contents::
    :local:

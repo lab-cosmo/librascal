@@ -14,10 +14,10 @@ Welcome to Proteus's documentation!
    installation
    tutorials
    descriptors
-   neighbor_list_manager
+   neighbor-list-manager
    models
-   how_to
-   coding_convention
+   how-to
+   coding-convention
    auto
 
 .. doxygenindex::
