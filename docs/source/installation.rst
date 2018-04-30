@@ -54,7 +54,7 @@ To Compile the documentation from the build folder:
 
   make dev_doc
 
-Sphinx and breathe packages are required for building the documentation.
+Sphinx and Breathe packages are required for building the documentation.
 
 
 Run Proteus

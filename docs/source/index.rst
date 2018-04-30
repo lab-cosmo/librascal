@@ -6,6 +6,8 @@
 Welcome to Proteus's documentation!
 ===================================
 
+Proteus (or the new software title) is a scalable and versatile fingerprint and machine-learning code is a scalable and versatile machine-learning code. It collects several different algorithms that can be used to create fingerprints, perform dimensionality reduction and fit, atomistic and finite element calculations.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
