@@ -37,7 +37,7 @@
 #include <algorithm>
 #include <lattice.hh> //! this is a header enabeling a nice for i,j in zip(a1,a2) kind of loops. see for more details https://github.com/cshelton/zipfor
 #include <basic_types.h>
-#include <field.hh>
+#include <neighbourhood_managers/field.hh>
 
 using namespace std;
 
@@ -88,8 +88,8 @@ namespace proteus {
     // return position vector
     inline Vector_ref get_position(const AtomRef_t& atom) {
       //cout << "get_position" << endl;
-      auto index{atom.get_index()};
-      auto * xval{this->positions[index]};//&this-
+      int index{atom.get_index()};
+      double * xval{this->positions.col(index).data()};//&this-
       return Vector_ref(xval);
       //return this->positions[index];
     }
@@ -118,17 +118,8 @@ namespace proteus {
     }
     */
 
-    void set_positions(const std::vector<array<double,3>>& pos){
-      int dim{this->dim()};
-      int Natom{pos.size()};
-
-      this->positions = new double*[Natom];
-      for (int i{0}; i < Natom; ++i){
-        this->positions[i] = new double[dim];
-        for (int j{0}; j < dim; ++j){
-          this->positions[i][j] = pos[i][j];
-        }
-      }
+    void set_positions(const Eigen::Ref<const Eigen::MatrixXd> pos){
+      this->positions = pos;
     }
 
     // return the number of atoms forming the next higher cluster with this one
@@ -157,17 +148,17 @@ namespace proteus {
     size_t get_nb_clusters(int cluster_size);
 
     //void build(const Eigen::MatrixXd& positions, const Eigen::MatrixXd& cell,const std::array<bool,3>& pbc, const double& cutoff_max);
-    void build(Eigen::MatrixXd& positions, const Eigen::MatrixXd& cell,const std::array<bool,3>& pbc, const double& cutoff_max);
+    void build(const Eigen::Ref<const Eigen::MatrixXd>, const Eigen::Ref<const Eigen::MatrixXd> cell,const std::array<bool,3>& pbc, const double& cutoff_max);
 
 
-    void update(const Eigen::MatrixXd& positions, const Eigen::MatrixXd& cell,const std::array<bool,3>& pbc, const double& cutoff_max);
+    void update(const Eigen::Ref<const Eigen::MatrixXd>, const Eigen::Ref<const Eigen::MatrixXd> cell,const std::array<bool,3>& pbc, const double& cutoff_max);
 
 
   protected:
     std::vector<AtomRef_t> centers; //! list of center indices. after build it points to neighpos
     std::vector<std::vector<AtomRef_t>> neighlist; //! list of list of neighbour indices. fisrt dimension is in the same order as centers. it points to neighpos
     std::vector<std::array<double,3>> neighpos; //! list of positions for the neighboor list. contains positions of the centers and then the positions of the neighboors.
-    Eigen::Map<Eigen::MatrixXd> positions; //! list of pointers. after build it points to neighpos
+    Matrix3XdC positions; //! list of pointers. after build it points to neighpos
     Lattice lattice;
     std::array<bool,3> pbc;
   private:
@@ -175,8 +166,8 @@ namespace proteus {
 
   /* ---------------------------------------------------------------------- */
 
-  void NeighbourhoodManagerCell::build(Eigen::MatrixXd&  positions,
-                                        const Eigen::MatrixXd& cell,
+  void NeighbourhoodManagerCell::build(const Eigen::Ref<const Eigen::MatrixXd>  positions,
+                                        const Eigen::Ref<const Eigen::MatrixXd> cell,
                                         const std::array<bool,3>& pbc, const double& cutoff_max)
     {
       Eigen::Index Natom{positions.cols()};
@@ -192,19 +183,18 @@ namespace proteus {
 
       cout << "init centers " << endl;
       int count{0};
+      this->set_positions(positions);
+
       for (int id{0} ; id<Ncenter ; ++id) {
           this->centers.push_back(NeighbourhoodManagerCell::AtomRef_t(this->get_manager(),id));
-          
-
-          array<double,3> iptpp = {positions(0,id),positions(1,id),positions(2,id)};
-          //this->neighpos.push_back(iptpp);
           count += 1;
-          //cout << this->centers.at(id).get_position() << endl;
       }
 
       Cell_t lat = cell;
       this->lattice.set_cell(lat);
-      new (&this->positions) Eigen::Map<Eigen::MatrixXd>(&positions[0]);
+      
+
+      
       //this->set_positions(positions);
       //this->positions = positions.data();
 
@@ -213,8 +203,8 @@ namespace proteus {
 
   /* ---------------------------------------------------------------------- */
 
-  void NeighbourhoodManagerCell::update(const Eigen::MatrixXd& positions,
-                                        const Eigen::MatrixXd& cell,
+  void NeighbourhoodManagerCell::update(const Eigen::Ref<const Eigen::MatrixXd>,
+                                        const Eigen::Ref<const Eigen::MatrixXd> cell,
                                         const std::array<bool,3>& pbc, const double& cutoff_max)
   {
     bool some_condition{false};
