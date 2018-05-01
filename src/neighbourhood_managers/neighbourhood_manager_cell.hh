@@ -31,15 +31,15 @@
 
 #include "neighbourhood_managers/neighbourhood_manager_base.hh"
 #include "neighbourhood_managers/box.hh"
+#include "lattice.hh"
+#include "basic_types.h"
+#include "neighbourhood_managers/field.hh"
 #include <Eigen/Dense>
 #include <Eigen/StdVector>
 #include <stdexcept>
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include "lattice.hh"
-#include "basic_types.h"
-#include "neighbourhood_managers/field.hh"
 #include <map>
 
 using namespace std;
@@ -229,6 +229,7 @@ namespace proteus {
       }
 
       for (auto box : this->boxes){
+        // TODO do this part here instead of in box
         box.set_neighbour_ids();
       }
       
