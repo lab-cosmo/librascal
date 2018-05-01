@@ -30,18 +30,22 @@
 #define NEIGHBOURHOOD_MANAGER_CELL_H
 
 #include "neighbourhood_managers/neighbourhood_manager_base.hh"
+#include "neighbourhood_managers/box.hh"
+#include "neighbourhood_managers/field.hh"
+#include "lattice.hh"
+#include "basic_types.h"
 #include <Eigen/Dense>
+#include <Eigen/StdVector>
 #include <stdexcept>
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include <lattice.hh> //! this is a header enabeling a nice for i,j in zip(a1,a2) kind of loops. see for more details https://github.com/cshelton/zipfor
-#include <basic_types.h>
-#include <neighbourhood_managers/field.hh>
+#include <map>
 
 using namespace std;
 
 namespace proteus {
+
   //! forward declaration for traits
   class NeighbourhoodManagerCell;
 
@@ -84,14 +88,13 @@ namespace proteus {
     // required for the construction of vectors, etc
     constexpr static int dim() {return traits::Dim;}
 
+    class Box;
 
     // return position vector
     inline Vector_ref get_position(const AtomRef_t& atom) {
-      //cout << "get_position" << endl;
-      int index{atom.get_index()};
-      double * xval{this->positions.col(index).data()};//&this-
+      auto index{atom.get_index()};
+      auto * xval{this->positions.col(index).data()};
       return Vector_ref(xval);
-      //return this->positions[index];
     }
 
     // return number of I atoms in the list
@@ -103,33 +106,19 @@ namespace proteus {
       return this->centers[i_atom_id].get_index();
     }
 
-    /*
-    void set_positions(const Eigen::MatrixXd& pos){
-      int dim{this->dim()};
-      int Natom{pos.cols()};
-
-      this->positions = new double*[Natom];
-      for (int i{0}; i < Natom; ++i){
-        this->positions[i] = new double[dim];
-        for (int j{0}; j < dim; ++j){
-          this->positions[i][j] = pos(j,i);
-        }
-      }
-    }
-    */
-
     void set_positions(const Eigen::Ref<const Eigen::MatrixXd> pos){
       this->positions = pos;
     }
 
     // return the number of atoms forming the next higher cluster with this one
     template<int Level, int MaxLevel>
-    inline size_t get_atom_id(const ClusterRef_t<Level, MaxLevel>& cluster,
-                              int j_atom_id) const {
+    inline size_t get_atom_id(const ClusterRef_t<Level, MaxLevel>& cluster, int j_atom_id) const {
       static_assert(Level == traits::MaxLevel-1,
                     "this implementation only handles atoms and pairs");
       auto && i_atom_id{cluster.get_atoms().back().get_index()};
-      auto && ij_atom_id{this->neighlist[i_atom_id][j_atom_id].get_index()};
+      int i_bin_id = this->center2bin[i_atom_id];
+      Box<NeighbourhoodManagerCell> box = this->boxes[i_bin_id];
+      auto && ij_atom_id{box.get_neighbour_index(j_atom_id)};
       return ij_atom_id;
     }
 
@@ -147,11 +136,19 @@ namespace proteus {
 
     size_t get_nb_clusters(int cluster_size);
 
+    size_t get_nb_of_center_in_box(const int& bin_id){
+      return this->boxes[bin_id].get_number_of_centers();
+    }
+
+    std::vector<AtomRef_t> get_centers_from_box(int bin_id){
+      Box<NeighbourhoodManagerCell> box = this->boxes[bin_id];
+      return box.get_centers();
+    }
     //void build(const Eigen::MatrixXd& positions, const Eigen::MatrixXd& cell,const std::array<bool,3>& pbc, const double& cutoff_max);
-    void build(const Eigen::Ref<const Eigen::MatrixXd>, const Eigen::Ref<const Eigen::MatrixXd> cell,const std::array<bool,3>& pbc, const double& cutoff_max);
+    void build(const Eigen::Ref<const Eigen::MatrixXd> positions,const std::vector<int>& center_ids, const Eigen::Ref<const Eigen::MatrixXd> cell,const std::array<bool,3>& pbc, const double& cutoff_max);
 
 
-    void update(const Eigen::Ref<const Eigen::MatrixXd>, const Eigen::Ref<const Eigen::MatrixXd> cell,const std::array<bool,3>& pbc, const double& cutoff_max);
+    void update(const Eigen::Ref<const Eigen::MatrixXd>,const std::vector<int>& center_ids, const Eigen::Ref<const Eigen::MatrixXd> cell,const std::array<bool,3>& pbc, const double& cutoff_max);
 
 
   protected:
@@ -161,12 +158,15 @@ namespace proteus {
     Matrix3XdC positions; //! list of pointers. after build it points to neighpos
     Lattice lattice;
     std::array<bool,3> pbc;
+    std::vector<Box<NeighbourhoodManagerCell>> boxes;
+    std::map<int, int> center2bin; 
   private:
   };
 
   /* ---------------------------------------------------------------------- */
 
   void NeighbourhoodManagerCell::build(const Eigen::Ref<const Eigen::MatrixXd>  positions,
+                                        const std::vector<int>& center_ids,
                                         const Eigen::Ref<const Eigen::MatrixXd> cell,
                                         const std::array<bool,3>& pbc, const double& cutoff_max)
     {
@@ -177,39 +177,74 @@ namespace proteus {
 
       cout << "Natom " << Natom << endl;
       const int dim{traits::Dim};
-      using Vecd = typename Eigen::Array<double, dim, 1>;
-      using Veci = typename Eigen::Array<int, dim, 1>;
-      using Mati = typename Eigen::Array<int, dim, 2>;
+
 
       cout << "init centers " << endl;
       int count{0};
       this->set_positions(positions);
 
-      for (int id{0} ; id<Ncenter ; ++id) {
+      for (int id:center_ids) {
           this->centers.push_back(NeighbourhoodManagerCell::AtomRef_t(this->get_manager(),id));
           count += 1;
       }
 
       Cell_t lat = cell;
       this->lattice.set_cell(lat);
+      Vec3_t reciprocal_lenghts = this->lattice.get_reciprocal_lenghts();
+      double bin_size{cutoff_max};
+      Vec3i_t nbins_c,neigh_search;
+      Vec3_t nbins_cd;
+      int nbins{1};
+      double face_dist_c;
+      for (int ii{0};ii<dim;++ii){
+        if (reciprocal_lenghts[ii] > 0){
+          face_dist_c = 1 / reciprocal_lenghts[ii];
+        }
+        else {
+          face_dist_c = 1;
+        }
       
-
+        nbins_c[ii] =  std::max( static_cast<int>(face_dist_c/bin_size), 1);
+        nbins_cd[ii] = static_cast<double>(nbins_c[ii]);
+        neigh_search[ii] = static_cast<int>(std::ceil(bin_size * nbins_c[ii] / face_dist_c));
+        nbins *= nbins_c[ii];
       
-      //this->set_positions(positions);
-      //this->positions = positions.data();
+      }
 
+      Vec3i_t bin_index_c;
+      // TODO take into acount pbc dif from 1,1,1 
+      std::array<std::array<Dim_t, 3>,2> neigh_bounds{{{0,0,0},{nbins_c[0],nbins_c[1],nbins_c[2]}}};
+      for (int ii{0}; ii < nbins; ++ii){
+        internal::lin2mult(ii,nbins_c,bin_index_c);
+        this->boxes.push_back(Box<NeighbourhoodManagerCell>(this->get_manager(), bin_index_c, neigh_bounds, nbins_c));
+      }
+
+      Vec3_t position_sc;
+      int bin_id{0};
+      for (auto center : this->centers){
+          this->lattice.get_cartesian2scaled(center.get_position(),position_sc);
+          bin_index_c = (position_sc.array() * nbins_cd.array()).cast<int>();
+          bin_id = internal::mult2lin(bin_index_c,nbins_c);
+          this->boxes[bin_id].push_center_back(center.get_index());
+          center2bin[center.get_index()] = bin_id;
+      }
+
+      for (auto box : this->boxes){
+        box.set_neighbour_ids();
+      }
       
     }
 
   /* ---------------------------------------------------------------------- */
 
-  void NeighbourhoodManagerCell::update(const Eigen::Ref<const Eigen::MatrixXd>,
+  void NeighbourhoodManagerCell::update(const Eigen::Ref<const Eigen::MatrixXd> positions,
+                                        const std::vector<int>& center_ids,
                                         const Eigen::Ref<const Eigen::MatrixXd> cell,
                                         const std::array<bool,3>& pbc, const double& cutoff_max)
   {
     bool some_condition{false};
     if (some_condition){
-      NeighbourhoodManagerCell::build(positions,cell,pbc,cutoff_max);
+      NeighbourhoodManagerCell::build(positions,center_ids,cell,pbc,cutoff_max);
     }
   }
   /* ---------------------------------------------------------------------- */
@@ -235,27 +270,102 @@ namespace proteus {
   get_offset_impl<1, 2>(const ClusterRef_t<1, 2>& cluster) const {
     return cluster.get_atoms().back().get_index();
   }
+  /* ---------------------------------------------------------------------- */
+  
+  class NeighbourhoodManagerCell::Box {
+  public:
+    using AtomRef_t = typename NeighbourhoodManagerCell::AtomRef_t;
+    //! Default constructor
+    Box() = default;
+
+    //! constructor
+    Box(NeighbourhoodManagerBase<NeighbourhoodManagerCell> & manager, const Eigen::Ref<const Vec3i_t> coord, 
+                const std::array<std::array<Dim_t, 3>,2>& neigh_bounds, const Eigen::Ref<const Vec3i_t> nbins_c)
+                :manager{manager}
+    { 
+      //! warning: works only with negative a if |a| < b
+      std::function<void (int,int,std::array<int,2>)> branchless_div_mod = [](int a, int b,std::array<int,2> d) {d = {(a+b)/b,(a+b)%b};};
+      
+      this->coordinates = coord;
+      Vec3i_t shift,neighbour_bin_idx_c,neighbour_bin_shift;
+      std::array<int,2> div_mod;
+      int bin_id{0};
+      for (int dx{neigh_bounds[0][0]}; dx <= neigh_bounds[1][0]; ++dx){
+        for (int dy{neigh_bounds[0][1]}; dy <= neigh_bounds[1][1]; ++dy){
+          for (int dz{neigh_bounds[0][2]}; dz <= neigh_bounds[1][2]; ++dz){
+            shift << dx,dy,dz;
+            
+            for (int ii{0};ii<3;++ii){
+              branchless_div_mod(coord(ii)+shift(ii),nbins_c(ii),div_mod);
+              neighbour_bin_idx_c[ii] = div_mod[1];
+              neighbour_bin_shift[ii] = div_mod[0];
+            }
+
+            bin_id = internal::mult2lin(neighbour_bin_idx_c,nbins_c);
+            this->neighbour_bin_ids.push_back(bin_id);
+            this->neighbour_bin_shift.push_back(neighbour_bin_shift);
+            
+          }
+        }
+      }
+    };
+    //! copy constructor
+    Box(const Box & other) = default;
+    //! assignment operator
+    Box & operator=(const Box & other) = default;
+    virtual ~Box() = default;
+
+    inline void push_center_back(const int& id){
+      this->centers.push_back(AtomRef_t(this->manager,id));
+    }
+
+    
+    inline size_t get_number_of_centers(){
+      return this->centers.size();
+    }
+    /*
+    inline size_t get_number_of_neighbour(){
+      int Nneighbour{0};
+      for (auto bin_id : this->neighbour_bin_ids){
+        Nneighbour += this->manager.get_nb_of_center_in_box(bin_id);
+      }
+      return Nneighbour;
+    }*/
+
+    inline size_t get_number_of_neighbour(){
+      return this->neighbour_ids.size();
+    }
+
+    inline  int get_neighbour_index(int j_index){
+      return this->neighbour_bin_ids[j_index].get_index();
+    }
+
+    inline  std::vector<AtomRef_t> get_centers(){
+      return this->centers;
+    }
+    void set_neighbour_ids(){
+      for (auto bin_id:this->neighbour_bin_ids){
+        
+        size_t Ncenter = this->manager.get_nb_of_center_in_box(bin_id);
+        for (auto center : centers){
+          neighbour_ids.push_back(AtomRef_t(this->manager,center.get_index()));
+        }
+        
+      }
+    }
+
+  protected:
+    Vec3i_t coordinates;
+    std::vector<AtomRef_t> centers;
+    NeighbourhoodManagerBase<NeighbourhoodManagerCell> & manager;
+    std::vector<Vec3i_t,Eigen::aligned_allocator<Vec3i_t>> neighbour_bin_shift;
+    std::vector<Dim_t> neighbour_bin_ids;
+    // TODO replace neighbour_ids by an iterator that iterates over the centers in the neighbouring boxes
+    std::vector<AtomRef_t> neighbour_ids; 
+  };
 
 
   //----------------------------------------------------------------------------//
-  // check in muSpectre src/common/ccoord_operations.hh (class Pixels<dim>)
-    //! get the i-th pixel in a grid of size sizes
-    /*
-    template <size_t dim>
-    constexpr std::array<int, dim> get_ccoord(const std::array<int, dim> & resolutions,
-                                              Dim_t index) {
-      std::array<int, dim> retval{{0}};
-      int factor{1};
-      for (int i = dim-1; i >=0; --i) {
-        retval[i] = index/factor%resolutions[i];
-        if (i != 0 ) {
-          factor *= resolutions[i];
-        }
-      }
-      return retval;
-    }
-    */
-
 }  // proteus
 
 #endif /* NEIGHBOURHOOD_MANAGER_CELL_H */

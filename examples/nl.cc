@@ -13,7 +13,7 @@ using ptr_t = double**;
 using vVector3d = std::vector<Eigen::Vector3d,Eigen::aligned_allocator<Eigen::Vector3d> >;
 int main()
 {
-
+    /*
   cout << Natom << " "<< dim << " test " << endl;
   Eigen::MatrixXd pos(3,8);
   pos << 0.00,2.68,1.79,0.00,1.79,0.89,0.89,2.68,
@@ -66,7 +66,7 @@ int main()
       }
       cout <<  endl;
   }
-  
+  */
   /*
   for (auto atom: manager) {
     for (auto pair: atom) {
@@ -78,6 +78,6 @@ int main()
   */
   //cout <<  nb_pairs << " test " << endl;
 
-
+    
     return(0);
 }

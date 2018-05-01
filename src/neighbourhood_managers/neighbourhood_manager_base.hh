@@ -120,9 +120,7 @@ namespace proteus {
     inline Vector_shift get_position_shift(const AtomRef& atom,const int& center_id,const int& cluster_id) {
       return this->implementation().get_position_shift(atom,center_id,cluster_id);
     }*/
-    inline Vector_ref get_f(const AtomRef& atom) {
-      return this->implementation().get_f(atom);
-    }
+   
 
   protected:
     template <int L, int ML>
@@ -211,9 +209,6 @@ namespace proteus {
     //! return position vector
     inline Vector_ref get_position() {return this->manager.get_position(*this);}
     //! return position vector
-    //inline Vector_shift get_position_shift(const int& center_id, const int& cluster_id) {return this->manager.get_position_shift(*this,center_id,cluster_id);}    
-    //! return force vector
-    inline Vector_ref get_f() {return this->manager.get_f(*this);}
 
   protected:
     Manager_t & manager;
@@ -287,7 +282,7 @@ namespace proteus {
     */
     inline decltype(auto) get_position() {return this->atoms.back().get_position();}
 
-    inline decltype(auto) get_f() {return this->atoms.back().get_f();}
+    
     //! return the index of the atom: Atoms_t is len==1 if center, len==2 if 1st neighbours,...
     inline decltype(auto) get_atom_index() {
       return this->atoms.back().get_index();

@@ -115,11 +115,6 @@ namespace proteus {
       return Vector_ref(xval);
     }
 
-    // return force vector
-    inline Vector_ref get_f(const AtomRef_t& atom) {
-      return Vector_ref(this->f[atom.get_index()]);
-    }
-
     // return number of I atoms in the list
     inline size_t get_size() const {
       return this->inum;

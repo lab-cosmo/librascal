@@ -27,10 +27,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <Eigen/Dense>
+#ifndef NEIGHBOURHOOD_FIELD_H
+#define NEIGHBOURHOOD_FIELD_H
 
+#include <Eigen/Dense>
 #include <type_traits>
 #include <vector>
+#include <basic_types.h>
 
 namespace proteus {
 
@@ -74,6 +77,32 @@ namespace proteus {
 
     template<typename T, size_t NbRow, size_t NbCol>
     using Value_ref = typename Value<T, NbRow, NbCol>::reference;
+
+    const inline Vec3i_t lin2mult(const Dim_t& index, const Eigen::Ref<const Vec3i_t> shape, Eigen::Ref< Vec3i_t> retval)  {
+      int dim{3};
+      //Vec3i_t retval;
+      Dim_t factor{1};
+      for (Dim_t i{0}; i < dim; ++i) {
+        retval[i] = index/factor%shape[i];
+        if (i != dim-1 ) {
+          factor *= shape[i];
+        }
+      }
+      //return retval;
+    }
+
+    const inline Dim_t mult2lin( const Eigen::Ref<const Vec3i_t> coord, const Eigen::Ref<const Vec3i_t> shape)  {
+      int dim{3};
+      Dim_t index{0};
+      Dim_t factor{1};
+      for (Dim_t i = 0; i < dim; ++i) {
+        index += coord[i]*factor;
+        if (i != dim-1 ) {
+          factor *= shape[i];
+        }
+      }
+      return index;
+    }
 
   }  // internal
 
@@ -151,3 +180,5 @@ namespace proteus {
   };
 
 }  // proteus
+
+#endif /* NEIGHBOURHOOD_FIELD_H */
