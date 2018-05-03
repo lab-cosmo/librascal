@@ -59,11 +59,11 @@ class CMakeBuild(build_ext):
 if __name__ == '__main__':
 
     setup(
-        name='proteus',
+        name='librascal',
         version='0.0.1',
-        author='Felix Musil',
+        author='librascal Developers Team',
         author_email='felix.musil@epfl.ch',
-        description='An efficient library for generating atomistic descriptor and building machine learning potentials.',
+        description='An efficient library for generating representations for atomic-scale learning.',
         long_description='',
         ext_modules=[CMakeExtension('cmake_example')],
         install_requires=install_requires,

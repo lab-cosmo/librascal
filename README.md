@@ -1,5 +1,5 @@
-# proteus
-A scalable and versatile fingerprint and machine-learning code
+# Librascal 
+A scalable and versatile library to generate representations for atomic-scale learning
 
 
 
