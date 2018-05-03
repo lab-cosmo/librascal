@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.12)
 
-project(proteus)
+project(librascal)
 
 option(NDARRAY_EIGEN "Enable Eigen" ON)
 
@@ -35,5 +35,5 @@ add_subdirectory(${PROTEUS_SRC_DIR})
 
 
 
-#pybind11_add_module(proteus src/module.cc)
-#add_subdirectory(proteus)
+#pybind11_add_module(librascal src/module.cc)
+#add_subdirectory(librascal)
