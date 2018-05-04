@@ -1,4 +1,4 @@
-PROJECT_NAME           = rascal
+PROJECT_NAME           = librascal
 ## this is for read the docs, which builds in-place
 INPUT                  = ../../../src
 ## this overwrites the INPUT path for local builds
