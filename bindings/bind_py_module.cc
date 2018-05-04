@@ -1,11 +1,11 @@
 /**
- * @file   module.cc
+ * @file   bind_py_module.cc
  *
  * @author Federico Giberti <federico.giberti@epfl.ch>
  *
  * @date   14 Mar 2018
  *
- * @brief  Main C++ file for Rascal
+ * @brief  Main binding file for Rascal
  *
  * Copyright © 2017 Felix Musil
  *
@@ -26,13 +26,17 @@
  */
 
 
-#include "module.hh"
 
+#include <pybind11/pybind11.h>
+#include "bind_py_cdist.cc"
 
-namespace rascal {
+using namespace pybind11::literals;
+namespace py=pybind11;
 
-int f(int){
-	return 2;
-}
+extern void add_cdist(py::module&);
 
+PYBIND11_MODULE(_rascal, mod) {
+  mod.doc() = "Python bindings for the Rascal library";
+
+  add_cdist(mod);
 }

@@ -1,7 +1,44 @@
+# trahs
+*.swp
+.vscode
+.idea 
+*.ipynb_checkpoints
 build/
-dist/
-_build/
-_generate/
+*.ipynb
+docs/_build
+__pycache__
+
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
 *.so
-*.py[cod]
-*.egg-info
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+*~
+/build/
