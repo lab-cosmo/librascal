@@ -1,11 +1,11 @@
 /**
- * file   test_fields.cc
+ * file   test_properties.cc
  *
  * @author Till Junge <till.junge@altermail.ch>
  *
  * @date   05 Apr 2018
  *
- * @brief  tests for cluster-related fields
+ * @brief  tests for cluster-related properties
  *
  * @section LICENSE
  *
@@ -29,65 +29,65 @@
 
 #include "tests.hh"
 #include "test_neighbourhood.hh"
-#include "neighbourhood_managers/field.hh"
+#include "neighbourhood_managers/property.hh"
 
 
 namespace rascal {
 
-  BOOST_AUTO_TEST_SUITE (Field_tests);
-  struct FieldFixture: public ManagerFixture {
+  BOOST_AUTO_TEST_SUITE (Property_tests);
+  struct PropertyFixture: public ManagerFixture {
     using Manager_t = typename ManagerFixture::Manager_t;
-    using PairScalarField_t = Field<Manager_t, double, 2>;
-    using AtomVectorField_t = Field<Manager_t, double, 1, 3>;
+    using PairScalarProperty_t = Property<Manager_t, double, 2>;
+    using AtomVectorProperty_t = Property<Manager_t, double, 1, 3>;
 
 
-    FieldFixture()
-      :ManagerFixture{}, pair_field{this->manager},
-       atom_field{this->manager}
+    PropertyFixture()
+      :ManagerFixture{}, pair_property{this->manager},
+       atom_property{this->manager}
     {}
 
-    PairScalarField_t pair_field;
-    AtomVectorField_t atom_field;
+    PairScalarProperty_t pair_property;
+    AtomVectorProperty_t atom_property;
   };
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(constructor_test, FieldFixture) {}
+  BOOST_FIXTURE_TEST_CASE(constructor_test, PropertyFixture) {}
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(fill_test, FieldFixture) {
-    pair_field.resize();
-    atom_field.resize();
-    int pair_field_counter{};
+  BOOST_FIXTURE_TEST_CASE(fill_test, PropertyFixture) {
+    pair_property.resize();
+    atom_property.resize();
+    int pair_property_counter{};
     for (auto atom: manager) {
-      atom_field[atom] = atom.get_x();
+      atom_property[atom] = atom.get_x();
       for (auto pair: atom) {
-        pair_field[pair] = ++pair_field_counter;
+        pair_property[pair] = ++pair_property_counter;
       }
     }
 
-    pair_field_counter = 0;
+    pair_property_counter = 0;
     for (auto atom: manager) {
-      auto error = (atom_field[atom] - atom.get_x()).norm();
+      auto error = (atom_property[atom] - atom.get_x()).norm();
       BOOST_CHECK_EQUAL(error, 0);
       for (auto pair: atom) {
-        BOOST_CHECK_EQUAL(pair_field[pair], ++pair_field_counter);
+        BOOST_CHECK_EQUAL(pair_property[pair], ++pair_property_counter);
       }
     }
   }
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(compute_distances, FieldFixture) {
-    pair_field.resize();
+  BOOST_FIXTURE_TEST_CASE(compute_distances, PropertyFixture) {
+    pair_property.resize();
 
     for (auto atom: manager) {
       for (auto pair: atom) {
-        pair_field[pair] = (atom.get_x() - pair.get_x()).norm();
+        pair_property[pair] = (atom.get_x() - pair.get_x()).norm();
       }
     }
 
     for (auto atom: manager) {
       for (auto pair: atom) {
-        auto error = pair_field[pair] - 1;
+        auto error = pair_property[pair] - 1;
         BOOST_CHECK_LE(error, 1e-12);
       }
     }

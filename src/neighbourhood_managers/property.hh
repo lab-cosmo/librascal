@@ -1,11 +1,11 @@
 /**
- * file   field.hh
+ * file   property.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
  * @date   05 Apr 2018
  *
- * @brief  Fields of atom-, pair-, triplet-, etc-related values
+ * @brief  Properties of atom-, pair-, triplet-, etc-related values
  *
  * @section LICENSE
  *
@@ -46,7 +46,7 @@ namespace rascal {
       }
     };
 
-    //! specialisation for scalar fields
+    //! specialisation for scalar properties
     template <typename T>
     struct Value<T, 1, 1> {
       using type = T;
@@ -68,7 +68,7 @@ namespace rascal {
   template <class NeighbourhoodManager, typename T,
             size_t ClusterSize,
             size_t NbRow = 1, size_t NbCol = 1>
-  class Field
+  class Property
   {
     static_assert((std::is_arithmetic<T>::value or
                    std::is_same<T, std::complex<double>>::value),
@@ -86,27 +86,27 @@ namespace rascal {
     using reference =typename Value::reference;
 
     //! Default constructor
-    Field() = delete;
+    Property() = delete;
 
     //! constructor with Manager
-    Field(NeighbourhoodManager & manager)
+    Property(NeighbourhoodManager & manager)
       :manager{manager}
     {}
 
     //! Copy constructor
-    Field(const Field &other) = delete;
+    Property(const Property &other) = delete;
 
     //! Move constructor
-    Field(Field &&other) = delete;
+    Property(Property &&other) = delete;
 
     //! Destructor
-    virtual ~Field() = default;
+    virtual ~Property() = default;
 
     //! Copy assignment operator
-    Field& operator=(const Field &other) = delete;
+    Property& operator=(const Property &other) = delete;
 
     //! Move assignment operator
-    Field& operator=(Field &&other) = delete;
+    Property& operator=(Property &&other) = delete;
 
     //! adjust size (only increases, never frees)
     void resize() {
