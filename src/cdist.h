@@ -9,12 +9,12 @@
  *
  * Copyright © 2017 Felix Musil
  *
- * Proteus is free software; you can redistribute it and/or
+ * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
- * Proteus is distributed in the hope that it will be useful, but
+ * Rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
@@ -35,7 +35,7 @@
 
 namespace py=pybind11;
 
-namespace proteus {
+namespace rascal {
 
 /**
  * cdist calculate the distance matrix between two different input vector containing an arbitrary number of points 

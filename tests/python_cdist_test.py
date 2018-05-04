@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from python_import_proteus import _proteus as pt
+from python_import_rascal import _rascal as pt
 
 class TestCdist(unittest.TestCase):
     def setUp(self):
@@ -28,7 +28,7 @@ class TestCdist(unittest.TestCase):
 
 
     def test_cdist(self):
-        """feeds the matrices A and B to Proteus' cdist function and compares
+        """feeds the matrices A and B to Rascal' cdist function and compares
         the results to the local reference dist_ref
         """
         dists = pt.cdist(self.A, self.B)

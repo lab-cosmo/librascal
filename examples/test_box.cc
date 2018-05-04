@@ -7,7 +7,7 @@
 #include <cmath>
 #include <lattice.hh>
 using namespace std;
-using namespace proteus;
+using namespace rascal;
 
 constexpr static int Natom{8};
 constexpr static int dim{3};
@@ -15,7 +15,7 @@ using ptr_t = double**;
 using vVector3d = std::vector<Eigen::Vector3d,Eigen::aligned_allocator<Eigen::Vector3d> >;
 using Dim_t = int;
 using Ccoord_t = std::array<Dim_t,3>;
-using Manager_t = proteus::NeighbourhoodManagerCell;
+using Manager_t = rascal::NeighbourhoodManagerCell;
 using Veci = typename Eigen::Array<int, dim, 1>;
 
 const Ccoord_t lin2mult(const Dim_t& index, const Ccoord_t& shape)  {
@@ -45,7 +45,7 @@ const Dim_t mult2lin( const Ccoord_t& coord, const Ccoord_t& shape)  {
   
 template<class ManagerImplementation>
 class Boxes {
-  using Manager_t = proteus::NeighbourhoodManagerBase<ManagerImplementation>;
+  using Manager_t = rascal::NeighbourhoodManagerBase<ManagerImplementation>;
   using Vecd = typename Eigen::Array<double, dim, 1>;
   //using AtomRef_t = typename Manager_t::AtomRef;
   public:

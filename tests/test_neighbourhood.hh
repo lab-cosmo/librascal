@@ -11,12 +11,12 @@
  *
  * Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
- * proteus is free software; you can redistribute it and/or
+ * rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
- * proteus is distributed in the hope that it will be useful, but
+ * rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
@@ -32,7 +32,7 @@
 
 #include "neighbourhood_managers/neighbourhood_manager_lammps.hh"
 
-namespace proteus {
+namespace rascal {
 
   struct ManagerFixture
   {
@@ -100,6 +100,6 @@ namespace proteus {
   };
 
 
-}  // proteus
+}  // rascal
 
 #endif /* TEST_NEIGHBOURHOOD_H */
