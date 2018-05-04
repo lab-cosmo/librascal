@@ -27,7 +27,7 @@ https://guides.github.com/features/mastering-markdown/
 How to add a new descriptor
 ---------------------------
 
-If you want to add a new descriptor (or in general a method that can be used in Proteus), please, first of all, be aware of the :ref:`code_structure`. Once you know how Proteus is subdivided, you can start thinking about the implementation of the new functionality.
+If you want to add a new descriptor (or in general a method that can be used in Rascal), please, first of all, be aware of the :ref:`code_structure`. Once you know how Rascal is subdivided, you can start thinking about the implementation of the new functionality.
 
 First of all, think about what you need and check if is already implemented (for example, if you need a special C++ structure or if you can use one of the basic types already implemented).
 
@@ -41,13 +41,13 @@ Bofore, jumping into the next paragraphs, please respect our :ref:`coding conven
 Write the C++ method
 ^^^^^^^^^^^^^^^^^^^^
 
-At this point, you can code the method in the way that you want, but we remind you that it should be included in the ``namespace Proteus {...}``. So for example, your file(s) ``mymethod.h`` will contain:
+At this point, you can code the method in the way that you want, but we remind you that it should be included in the ``namespace Rascal {...}``. So for example, your file(s) ``mymethod.h`` will contain:
 
 .. code-block:: c++
 
     #include <wathever_is_needed>
 
-    namespace Proteus {
+    namespace Rascal {
         /**
         * Remember to put comments in a form that Doxygen
         * so that is clear what they do
@@ -69,7 +69,7 @@ The second task that you need to accomplish is to create a python binding to the
     #include <pybind11/pybind11.h>
     #include "mymethod.h"
 
-    using namespace Proteus;
+    using namespace Rascal;
     namespace py=pybind11;
     using namespace pybind11::literals;
 
@@ -95,7 +95,7 @@ Then, it will be necessary to modify the file ``bind_py_module.cc`` and add your
     #include <pybind11/pybind11.h>
     #include "mymethod.h"
 
-    using namespace Proteus;
+    using namespace Rascal;
     namespace py=pybind11;
     using namespace pybind11::literals;
 
@@ -113,12 +113,12 @@ Then, it will be necessary to modify the file ``bind_py_module.cc`` and add your
 
     /**
     * This command will expose all the method declared to python,
-    * so that it will be possible to import Proteus and use
-    * Proteus.previous_method(args)
+    * so that it will be possible to import Rascal and use
+    * Rascal.previous_method(args)
     * or
-    * Proteus.my_method(args)
+    * Rascal.my_method(args)
     */
-    PYBIND11_MODULE(_proteus, mod) {
+    PYBIND11_MODULE(_rascal, mod) {
         mod.doc() = "Hello, World!"; //! This is printing the doc.
         previoud_method(mod);
         my_method(mod); //! you also need to add this line
@@ -129,7 +129,7 @@ How to write a test
 
 Every feature (e.g., functions, class methods and constructors, algorithms) needs its own unit test. Unit tests serve two main purposes, on the one hand, they allow test-driven development (I.e.,  you define a test case and your expected results, then develop your feature. Once you replicate the expected results, your feature is ready) and on the other hand, they help catching regressions, especially in combination with the continuous integration server (It runs all test cases after every commit, and complains if the change causes any of them to fail.
 
-*Proteus* uses the `boost unit testing framework <http://www.boost.org/doc/libs/1_66_0/libs/test/doc/html/index.html>`_ for unit tests of the C++ core library and `unittest module <https://docs.python.org/3/library/unittest.html>`_ of the Python standard library for Python binding tests.
+*Rascal* uses the `boost unit testing framework <http://www.boost.org/doc/libs/1_66_0/libs/test/doc/html/index.html>`_ for unit tests of the C++ core library and `unittest module <https://docs.python.org/3/library/unittest.html>`_ of the Python standard library for Python binding tests.
 
 It is instructive to go through the documentations and tutorials for both testing frameworks for details, as the following examples only serve as pointers in the right direction.
 
@@ -144,19 +144,19 @@ A test file needs to have the following structure:
 
    #include "tests.hh"
 
-   namespace proteus {
+   namespace rascal {
 
      ... // test cases go here
 
-   } // proteus
+   } // rascal
 
-Any test case in such a file will be added to *Proteus*\' main test suite. It is recommended to group test cases that logically belong together in sub test suites using the ``BOOST_AUTO_TEST_SUITE`` macro. Imagine we write a new sub-suite called ``tutorial_test``
+Any test case in such a file will be added to *Rascal*\' main test suite. It is recommended to group test cases that logically belong together in sub test suites using the ``BOOST_AUTO_TEST_SUITE`` macro. Imagine we write a new sub-suite called ``tutorial_test``
 
 .. code-block:: c++
 
    #include "tests.hh"
 
-   namespace proteus {
+   namespace rascal {
 
      BOOST_AUTO_TEST_SUITE(tutorial_test);
 
@@ -164,7 +164,7 @@ Any test case in such a file will be added to *Proteus*\' main test suite. It is
 
      BOOST_AUTO_TEST_SUITE_END()
 
-   } // proteus
+   } // rascal
 
 The most used types of test cases will very likely be ``BOOST_AUTO_TEST_CASE`` (for straight-forward test cases that do not share common code with other test cases) and ``BOOST_FIXTURE_TEST_CASE_TEMPLATE`` (for testing more involved features which require a setup phase and are parametrised by template parameters, see `Fixtures <http://www.boost.org/doc/libs/1_66_0/libs/test/doc/html/boost_test/tests_organization/fixtures.html>`_ for a detailed discussion)
 
@@ -177,7 +177,7 @@ This is as simple as running some function from the library and checking the res
    #include "tests.hh"
    #include "module.hh"
 
-   namespace proteus {
+   namespace rascal {
 
      BOOST_AUTO_TEST_SUITE(tutorial_test);
 
@@ -187,7 +187,7 @@ This is as simple as running some function from the library and checking the res
 
      BOOST_AUTO_TEST_SUITE_END()
 
-   } // proteus
+   } // rascal
 
 
 Writing a ``BOOST_FIXTURE_TEST_CASE_TEMPLATE``
@@ -201,13 +201,13 @@ While the previous example was simple, it was also very limited. Frequently, we 
    #include "tests.hh"
    #include <boost/mpl/list.hpp>
 
-   namespace proteus {
+   namespace rascal {
 
      BOOST_AUTO_TEST_SUITE(tutorial_test);
 
      // creation of the test fixture. In practice, this structure would
      // contain data members (here `int val`) that correspond to some data
-     // structure of proteus. The constructor (which is required to be a
+     // structure of rascal. The constructor (which is required to be a
      // *default constructor*, i.e., without parameters) initialises the
      //structure)
      template <int Dim>
@@ -234,7 +234,7 @@ While the previous example was simple, it was also very limited. Frequently, we 
 
      BOOST_AUTO_TEST_SUITE_END()
 
-   } // proteus
+   } // rascal
 
 
 
@@ -254,7 +254,7 @@ The basic unit test tool in Python's ``unittest`` module is the ``unittest.TestC
 
    import unittest
    import numpy as np
-   from python_import_proteus import _proteus as pt
+   from python_import_rascal import _rascal as pt
 
    class TestCdist(unittest.TestCase):
        def setUp(self):
@@ -282,7 +282,7 @@ The basic unit test tool in Python's ``unittest`` module is the ``unittest.TestC
 
 
        def test_cdist(self):
-           """feeds the matrices A and B to Proteus' cdist function and compares
+           """feeds the matrices A and B to Rascal' cdist function and compares
            the results to the local reference dist_ref
            """
            dists = pt.cdist(self.A, self.B)

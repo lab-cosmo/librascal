@@ -1,20 +1,20 @@
 /**
- * @file   cdist.h
+ * @file   basic_types.h
  *
  * @author Federico Giberti <federico.giberti@epfl.ch>
  *
  * @date   14 Mar 2018
  *
- * @brief  Implementation of a general distance matrix calculation
+ * @brief  Implementation of base-type objects for Rascal
  *
  * Copyright © 2017 Felix Musil
  *
- * Proteus is free software; you can redistribute it and/or
+ * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
- * Proteus is distributed in the hope that it will be useful, but
+ * Rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
@@ -26,25 +26,15 @@
  */
 
 
-
-
-#include "basic_types.h"
 #include <Eigen/Dense>
-#include <pybind11/eigen.h>
 
 
-namespace py=pybind11;
-
-namespace proteus {
+namespace rascal {
 
 /**
- * cdist calculate the distance matrix between two different input vector containing an arbitrary number of points 
- * with an arbitrary number of dimensions. It is supposed to work with float and results for integer are not guaranteed.
+ * Dynamically allocated matrix of arbitrary dimension.
  */
 
+using MatrixXdR = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
-  MatrixXdR cdist(Eigen::Ref<MatrixXdR> X,Eigen::Ref<MatrixXdR> Y);
-//	MatrixXdR cdist(py::EigenDRef<Eigen::MatrixXd> X,py::EigenDRef<Eigen::MatrixXd> Y)
-	
 }
-

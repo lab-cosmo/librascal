@@ -27,11 +27,11 @@
 #include <boost/test/unit_test.hpp>
 #define BOOST_TEST_DYN_LINK
 
-namespace proteus {
+namespace rascal {
 
   const double tol = 1e-14*100; //it's in percent
 
-}  // proteus
+}  // rascal
 
 
 #endif /* TESTS_H */

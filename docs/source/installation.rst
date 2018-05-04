@@ -7,7 +7,7 @@ Installation
 Prequisties
 ###########
 
-Bofore installing Proteus, please make sure you have at least the following packages installed:
+Bofore installing Rascal, please make sure you have at least the following packages installed:
 
 +-------------+--------------------+
 | Package     |  Required version  |
@@ -21,19 +21,19 @@ Bofore installing Proteus, please make sure you have at least the following pack
 | python      |  3.4 or higher     |
 +-------------+--------------------+
 
-Other necessary packages (such as Eigen and PyBind11) are downloaded automatically whrn compiling Proteus.
+Other necessary packages (such as Eigen and PyBind11) are downloaded automatically whrn compiling Rascal.
 
 
-Get Proteus
+Get Rascal
 ###########
 
-It is strongly recommended to clone Proteus from its repository in GitHub.
+It is strongly recommended to clone Rascal from its repository in GitHub.
 
 .. code-block:: bash
 
-    git clone LINK TO PROTEUS REPOSITORY
+    git clone LINK TO RASCAL REPOSITORY
 
-Build Proteus
+Build Rascal
 #############
 
 To compile the code it is necessary to have CMake 3.0 and a C++ compiler supporting C++14. During the configuration, it will automatically try to download the external libraries on which it depends:
@@ -69,17 +69,17 @@ To Compile the documentation from the build folder:
 Since Eigen depends on Mercurial, it may fail to download if you don't have the necessary dependencies. In that case, it may be sufficient to fix the dependencies or proceed by yourself.
 
 
-Run Proteus
+Run Rascal
 ###########
 
-In order to run Proteus, you need to import the library into a Python code:
+In order to run Rascal, you need to import the library into a Python code:
 
 .. code-block:: python
     
-    import Proteus as P
+    import Rascal as P
 
 
 Advanced options
 ################
 
-It is possible to link Proteus with other scientific calculation packages, s.a LAMMPS, ASE,... etc. A specific flag needs to be specified when building Proteus.
+It is possible to link Rascal with other scientific calculation packages, s.a LAMMPS, ASE,... etc. A specific flag needs to be specified when building Rascal.

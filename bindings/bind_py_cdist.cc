@@ -9,12 +9,12 @@
  *
  * Copyright © 2017 Felix Musil
  *
- * Proteus is free software; you can redistribute it and/or
+ * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
- * Proteus is distributed in the hope that it will be useful, but
+ * Rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
@@ -30,10 +30,10 @@
 
 
 #include <pybind11/pybind11.h>
-#include "cdist.h"
+#include "cdist.hh"
 #include <pybind11/eigen.h>
 
-using namespace proteus;
+using namespace rascal;
 namespace py=pybind11;
 
 void add_cdist(py::module& m)

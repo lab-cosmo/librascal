@@ -3,7 +3,7 @@
 Auto Documentation
 ==================
 
-For more details about the methods, the interfaces and the classes implemented in Proteus, please check the following:
+For more details about the methods, the interfaces and the classes implemented in Rascal, please check the following:
 
 .. contents::
    :local:
@@ -36,5 +36,5 @@ Classes
 ~~~~~~~
 
 .. doxygenindex::
-    :project: proteus
+    :project: rascal
 

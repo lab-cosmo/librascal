@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Proteus documentation build configuration file, created by
+# Rascal documentation build configuration file, created by
 # sphinx-quickstart on Thu Mar  1 13:58:45 2018.
 #
 # This file is execfile()d with the current directory set to its
@@ -44,16 +44,16 @@ extensions = ['sphinx.ext.autodoc',
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 
 if read_the_docs_build:
-    proteus_path = "."
+    rascal_path = "."
 else:
-    proteus_path = "@CMAKE_CURRENT_BINARY_DIR@"
+    rascal_path = "@CMAKE_CURRENT_BINARY_DIR@"
     os.makedirs("@CMAKE_CURRENT_BINARY_DIR@/_static", exist_ok=True)
-print("proteus_path = '{}'".format(proteus_path))
+print("rascal_path = '{}'".format(rascal_path))
 subprocess.call('ls; pwd', shell=True)
-subprocess.call("cd {} && doxygen".format(proteus_path), shell=True)
+subprocess.call("cd {} && doxygen".format(rascal_path), shell=True)
 
-breathe_projects = {"proteus": os.path.join(proteus_path, "doxygenxml")}
-breathe_default_project = "proteus"
+breathe_projects = {"rascal": os.path.join(rascal_path, "doxygenxml")}
+breathe_default_project = "rascal"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -68,7 +68,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'Proteus'
+project = 'Rascal'
 copyright = '2018, Felix Musil, Federico Giberti, Till Junge, Michele Ceriotti'
 author = 'Felix Musil, Federico Giberti, Till Junge, Michele Ceriotti'
 
@@ -150,7 +150,7 @@ html_sidebars = {
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'Proteusdoc'
+htmlhelp_basename = 'Rascaldoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -177,7 +177,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'Proteus.tex', 'Proteus Documentation',
+    (master_doc, 'Rascal.tex', 'Rascal Documentation',
      'Felix Musil, Federico Giberti, Till Junge, Michele Ceriotti', 'manual'),
 ]
 
@@ -187,7 +187,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'proteus', 'Proteus Documentation',
+    (master_doc, 'rascal', 'Rascal Documentation',
      [author], 1)
 ]
 
@@ -198,8 +198,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'Proteus', 'Proteus Documentation',
-     author, 'Proteus', 'One line description of project.',
+    (master_doc, 'Rascal', 'Rascal Documentation',
+     author, 'Rascal', 'One line description of project.',
      'Miscellaneous'),
 ]
 

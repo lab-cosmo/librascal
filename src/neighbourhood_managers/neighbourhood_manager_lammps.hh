@@ -9,12 +9,12 @@
  *
  * Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
- * proteus is free software; you can redistribute it and/or
+ * rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
- * proteus is distributed in the hope that it will be useful, but
+ * rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
@@ -34,7 +34,7 @@
 #include <stdexcept>
 #include <vector>
 
-namespace proteus {
+namespace rascal {
   //! forward declaration for traits
   class NeighbourhoodManagerLammps;
 
@@ -198,6 +198,6 @@ namespace proteus {
     return cluster.get_atoms().back().get_index();
   }
 
-}  // proteus
+}  // rascal
 
 #endif /* NEIGHBOURHOOD_MANAGER_LAMMPS_H */

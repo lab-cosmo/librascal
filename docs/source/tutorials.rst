@@ -3,4 +3,4 @@
 Tutorials
 =========
 
-Here go the first examples needed to start with Proteus. 
+Here go the first examples needed to start with Rascal. 

@@ -3,4 +3,4 @@ import os
 
 sys.path.append("bindings")
 
-import _proteus
+import _rascal

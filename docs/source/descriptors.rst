@@ -3,7 +3,7 @@
 Descriptors
 ===========
 
-In this section, we summarize the descriptors implemented in Proteus.
+In this section, we summarize the descriptors implemented in Rascal.
 
 .. contents::
    :local:

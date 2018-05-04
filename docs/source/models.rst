@@ -3,7 +3,7 @@
 Models
 ======
 
-A summary of the prediction models implemented in Proteus.
+A summary of the prediction models implemented in Rascal.
 
 .. contents::
    :local:
