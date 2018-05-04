@@ -109,16 +109,23 @@ namespace rascal {
 
 
     // return position vector
-    inline Vector_ref get_x(const AtomRef_t& atom) {
+    inline Vector_ref get_position(const AtomRef_t& atom) {
       auto index{atom.get_index()};
       auto * xval{this->x[index]};
       return Vector_ref(xval);
     }
 
     // return force vector
-    inline Vector_ref get_f(const AtomRef_t& atom) {
+    inline Vector_ref get_force(const AtomRef_t& atom) {
       return Vector_ref(this->f[atom.get_index()]);
     }
+
+    // return position vector
+    inline int get_atom_type(const AtomRef_t& atom) {
+      auto index{atom.get_index()};
+      return this->type[index];
+    }
+
 
     // return number of I atoms in the list
     inline size_t get_size() const {

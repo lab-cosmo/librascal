@@ -110,13 +110,14 @@ namespace rascal {
       return this->implementation().get_nb_clusters(cluster_size);
     }
 
-    inline Vector_ref get_x(const AtomRef& atom) {
-      return this->implementation().get_x(atom);
+    inline Vector_ref get_position(const AtomRef& atom) {
+      return this->implementation().get_position(atom);
     }
 
-    inline Vector_ref get_f(const AtomRef& atom) {
-      return this->implementation().get_f(atom);
+    inline int get_atom_type(const AtomRef& atom) {
+      return this->implementation().get_atom_type(atom);
     }
+
 
   protected:
     template <int L, int ML>
@@ -200,9 +201,11 @@ namespace rascal {
     inline int get_index() const {return this->index;}
 
     //! return position vector
-    inline Vector_ref get_x() {return this->manager.get_x(*this);}
-    //! return force vector
-    inline Vector_ref get_f() {return this->manager.get_f(*this);}
+    inline Vector_ref get_position() {return this->manager.get_position(*this);}
+
+    //! return position vector
+    inline int get_atom_type() {return this->manager.get_atom_type(*this);}
+
 
   protected:
     Manager_t & manager;
@@ -253,8 +256,8 @@ namespace rascal {
      * convenience functions, because in loops, we frequently like to
      * use clusters as proxies to their last atom
      */
-    inline decltype(auto) get_x() {return this->atoms.back().get_x();}
-    inline decltype(auto) get_f() {return this->atoms.back().get_f();}
+    inline decltype(auto) get_position() {return this->atoms.back().get_position();}
+    inline decltype(auto) get_atom_type() {return this->atoms.back().get_atom_type();}
 
     inline Manager_t & get_manager() {return this->it.get_manager();}
     inline const Manager_t & get_manager() const {return this->it.get_manager();}
