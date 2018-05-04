@@ -3,13 +3,13 @@
 #
 # @author Till Junge <till.junge@epfl.ch>
 #
-# @date   01 Mar 2018
+# @date   08 Jan 2018
 #
 # @brief  configuration for system implementations
 #
 # @section LICENSE
 #
-# Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
+# Copyright © 2018 Till Junge
 #
 # Rascal is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -29,12 +29,11 @@
 
 
 
-set(rascal_SRC
-  module.cc
-  cdist.cc)
+set (PY_BINDING_SRCS
+  ${CMAKE_CURRENT_SOURCE_DIR}/bind_py_module.cc
+  )
 
-
-add_library(rascal ${rascal_SRC})
-target_link_libraries(rascal PUBLIC Eigen3::Eigen)
-
-add_subdirectory(neighbourhood_managers)
+pybind11_add_module(pyRascal ${PY_BINDING_SRCS})
+target_link_libraries(pyRascal PRIVATE rascal)
+# Want to rename the output, so that the python module is called _rascal
+set_target_properties(pyRascal PROPERTIES OUTPUT_NAME _rascal)

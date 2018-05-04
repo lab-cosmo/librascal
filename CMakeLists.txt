@@ -1,39 +1,106 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.0)
 
-project(librascal)
+project(rascal)
 
-option(NDARRAY_EIGEN "Enable Eigen" ON)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(BUILD_SHARED_LIBS ON)
 
-# put our local cmake find scripts at the beginning of the cmake
-# module search path
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
+add_compile_options(-Wall -Wextra -Weffc++)
 
-# enable C++14 support
-add_definitions(-std=c++14)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
+include(rascalTools)
 
-### Eigen dependency tests
-if(NDARRAY_EIGEN)
-    find_package(Eigen3 REQUIRED)
-    include_directories( ${EIGEN3_INCLUDE_DIR} )
-endif(NDARRAY_EIGEN)
-
-find_package(OpenMP)
-if (OPENMP_FOUND)
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  # using Clang
+  add_compile_options(-Wno-missing-braces)
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  # using GCC
+  add_compile_options(-Wno-non-virtual-dtor)
+  string( TOLOWER "${CMAKE_BUILD_TYPE}" build_type )
+  if ("release" STREQUAL "${build_type}" )
+    add_compile_options(-march=native)
+  endif()
+  if ("debug" STREQUAL "${build_type}" )
+    add_compile_options(-O0)
+  endif()
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+  # using Intel C++
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+  # using Visual Studio C++
 endif()
 
-add_compile_options(-msse2 )
+find_package(Boost COMPONENTS unit_test_framework REQUIRED)
 
-add_subdirectory(pybind11)
+add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
+add_external_package(pybind11 VERSION 2.2.2 CONFIG)
 
+include_directories(
+  ${CMAKE_SOURCE_DIR}/tests
+  ${CMAKE_SOURCE_DIR}/src
+  ${CMAKE_SOURCE_DIR}
+ )
 
-set(PROTEUS_SRC_DIR ${PROJECT_SOURCE_DIR}/src)
+set(ENABLE_DOC "OFF" CACHE BOOL
+  "If on, a target 'dev_doc' (which builds the documentation) is added")
+set(BUILD_TESTS "ON" CACHE BOOL
+  "If on, builds the unit tests")
 
-add_subdirectory(${PROTEUS_SRC_DIR})
+if (${BUILD_TESTS})
+  enable_testing()
+  # copy python test
 
+  file( GLOB PY_TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/python_*.py")
 
+  foreach(pytest ${PY_TEST_SRCS})
+    get_filename_component(pytest_name ${pytest} NAME)
+    configure_file(
+      ${pytest}
+      "${CMAKE_BINARY_DIR}/${pytest_name}"
+      COPYONLY)
+  endforeach(pytest ${PY_TEST_SRCS})
+  add_test(python_binding_test python_binding_tests.py)
 
-#pybind11_add_module(librascal src/module.cc)
-#add_subdirectory(librascal)
+  #build tests
+  file( GLOB TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/test_*.cc")
+
+  add_executable(main_test_suite tests/main_test_suite.cc ${TEST_SRCS})
+  target_include_directories(main_test_suite SYSTEM PRIVATE ${Boost_INCLUDE_DIR})
+  target_link_libraries(main_test_suite ${Boost_LIBRARIES} rascal)
+  add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
+endif(${BUILD_TESTS})
+
+# compile the library
+add_compile_options( -Werror)
+add_subdirectory(
+  ${CMAKE_SOURCE_DIR}/src/
+  )
+add_subdirectory(
+  ${CMAKE_SOURCE_DIR}/bindings/
+  )
+
+if (${ENABLE_DOC})
+  add_subdirectory(
+    ${CMAKE_SOURCE_DIR}/docs/
+    )
+endif (${ENABLE_DOC})
+
+#compile executables
+file( GLOB binaries "${CMAKE_SOURCE_DIR}/examples/*.cc")
+foreach(binaryfile ${binaries})
+  get_filename_component(binaryname  ${binaryfile} NAME_WE)
+  add_executable(${binaryname} ${binaryfile})
+  target_link_libraries(${binaryname} ${Boost_LIBRARIES} rascal)
+endforeach(binaryfile ${binaries})
+#or copy them
+file (GLOB pybins "${CMAKE_SOURCE_DIR}/bin/*.py")
+foreach(pybin ${pybins})
+
+  get_filename_component(binaryname  ${pybin} NAME_WE)
+  configure_file(
+    ${pybin}
+    "${CMAKE_BINARY_DIR}/${binaryname}.py"
+    COPYONLY)
+endforeach(pybin ${pybins})
+

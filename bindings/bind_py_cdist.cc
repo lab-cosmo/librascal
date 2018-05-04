@@ -1,11 +1,11 @@
 /**
- * @file   module.cc
+ * @file   bind_py_cdist.cc
  *
  * @author Federico Giberti <federico.giberti@epfl.ch>
  *
  * @date   14 Mar 2018
  *
- * @brief  Main C++ file for Rascal
+ * @brief  File for binding the function cdist to a python object
  *
  * Copyright © 2017 Felix Musil
  *
@@ -26,13 +26,20 @@
  */
 
 
-#include "module.hh"
 
 
-namespace rascal {
 
-int f(int){
-	return 2;
+#include <pybind11/pybind11.h>
+#include "cdist.hh"
+#include <pybind11/eigen.h>
+
+using namespace rascal;
+namespace py=pybind11;
+
+void add_cdist(py::module& m)
+{
+	m.doc()  = " binding for the distance matrix calculation" ;
+	m.def("cdist",&cdist);
+	//m.def("scale", [](py::EigenDRef<Eigen::MatrixXd> mm, double c) { mm *= c; });
 }
 
-}

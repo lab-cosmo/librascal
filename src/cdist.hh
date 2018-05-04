@@ -1,11 +1,11 @@
 /**
- * @file   module.cc
+ * @file   cdist.h
  *
  * @author Federico Giberti <federico.giberti@epfl.ch>
  *
  * @date   14 Mar 2018
  *
- * @brief  Main C++ file for Rascal
+ * @brief  Implementation of a general distance matrix calculation
  *
  * Copyright © 2017 Felix Musil
  *
@@ -26,13 +26,25 @@
  */
 
 
-#include "module.hh"
 
+
+#include "basic_types.hh"
+#include <Eigen/Dense>
+#include <pybind11/eigen.h>
+
+
+namespace py=pybind11;
 
 namespace rascal {
 
-int f(int){
-	return 2;
+/**
+ * cdist calculate the distance matrix between two different input vector containing an arbitrary number of points 
+ * with an arbitrary number of dimensions. It is supposed to work with float and results for integer are not guaranteed.
+ */
+
+
+  MatrixXdR cdist(Eigen::Ref<MatrixXdR> X,Eigen::Ref<MatrixXdR> Y);
+//	MatrixXdR cdist(py::EigenDRef<Eigen::MatrixXd> X,py::EigenDRef<Eigen::MatrixXd> Y)
+	
 }
 
-}

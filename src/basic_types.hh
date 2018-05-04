@@ -1,11 +1,11 @@
 /**
- * @file   module.cc
+ * @file   basic_types.h
  *
  * @author Federico Giberti <federico.giberti@epfl.ch>
  *
  * @date   14 Mar 2018
  *
- * @brief  Main C++ file for Rascal
+ * @brief  Implementation of base-type objects for Rascal
  *
  * Copyright © 2017 Felix Musil
  *
@@ -26,13 +26,15 @@
  */
 
 
-#include "module.hh"
+#include <Eigen/Dense>
 
 
 namespace rascal {
 
-int f(int){
-	return 2;
-}
+/**
+ * Dynamically allocated matrix of arbitrary dimension.
+ */
+
+using MatrixXdR = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
 }
