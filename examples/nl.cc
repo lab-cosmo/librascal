@@ -6,7 +6,7 @@
 #include <cmath>
 using namespace std;
 
-using Manager_t = proteus::NeighbourhoodManagerCell;
+using Manager_t = rascal::NeighbourhoodManagerCell;
 constexpr static int Natom{8};
 constexpr static int dim{3};
 using ptr_t = double**;

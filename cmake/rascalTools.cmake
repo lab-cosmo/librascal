@@ -1,25 +1,25 @@
 #==============================================================================
-# file   ProteusTools
+# file   RascalTools
 #
 # @author Nicolas Richart <nicolas.,richart@epfl.ch>
 # @author Till Junge <till.junge@epfl.ch>
 #
 # @date   11 Jan 2018
 #
-# @brief  some tool to help to do stuff with cmake in proteus
+# @brief  some tool to help to do stuff with cmake in rascal
 #
 # @section LICENSE
 #
 # Copyright © 2018 Till Junge
 #
-# proteus is free software; HANDLE LICENSES HERE
+# rascal is free software; HANDLE LICENSES HERE
 #
 
 #[=[.rst:
-proteusTools
+rascalTools
 -------------
 
-This module provide some helper functions for proteus
+This module provide some helper functions for rascal
 
 ::
 

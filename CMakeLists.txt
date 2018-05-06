@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-project(proteus)
+project(rascal)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -10,7 +10,7 @@ set(BUILD_SHARED_LIBS ON)
 add_compile_options(-Wall -Wextra -Weffc++)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
-include(proteusTools)
+include(rascalTools)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   # using Clang
@@ -67,7 +67,7 @@ if (${BUILD_TESTS})
 
   add_executable(main_test_suite tests/main_test_suite.cc ${TEST_SRCS})
   target_include_directories(main_test_suite SYSTEM PRIVATE ${Boost_INCLUDE_DIR})
-  target_link_libraries(main_test_suite ${Boost_LIBRARIES} proteus)
+  target_link_libraries(main_test_suite ${Boost_LIBRARIES} rascal)
   add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
 endif(${BUILD_TESTS})
 
@@ -91,7 +91,7 @@ file( GLOB binaries "${CMAKE_SOURCE_DIR}/examples/*.cc")
 foreach(binaryfile ${binaries})
   get_filename_component(binaryname  ${binaryfile} NAME_WE)
   add_executable(${binaryname} ${binaryfile})
-  target_link_libraries(${binaryname} ${Boost_LIBRARIES} proteus)
+  target_link_libraries(${binaryname} ${Boost_LIBRARIES} rascal)
 endforeach(binaryfile ${binaries})
 #or copy them
 file (GLOB pybins "${CMAKE_SOURCE_DIR}/bin/*.py")

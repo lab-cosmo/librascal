@@ -11,12 +11,12 @@
 #
 # Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
 #
-# Proteus is free software; you can redistribute it and/or
+# Rascal is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
 # published by the Free Software Foundation, either version 3, or (at
 # your option) any later version.
 #
-# Proteus is distributed in the hope that it will be useful, but
+# Rascal is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 # General Public License for more details.
@@ -29,12 +29,12 @@
 
 
 
-set(proteus_SRC
+set(rascal_SRC
   module.cc
   cdist.cc)
 
 
-add_library(proteus ${proteus_SRC})
-target_link_libraries(proteus PUBLIC Eigen3::Eigen)
+add_library(rascal ${rascal_SRC})
+target_link_libraries(rascal PUBLIC Eigen3::Eigen)
 
 add_subdirectory(neighbourhood_managers)

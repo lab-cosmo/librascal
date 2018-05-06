@@ -1,4 +1,4 @@
-namespace proteus {
+namespace rascal {
   /**
    * This is just a stub, but is a good illustration on howto put comments in a C++ file
    * that can be used by Doxygen to construct a developer manual.
@@ -6,4 +6,4 @@ namespace proteus {
    */
 
   int f(int);
-}  // proteus
+}  // rascal

@@ -1,4 +1,4 @@
-# proteus
+# rascal
 A scalable and versatile fingerprint and machine-learning code
 
 How to install:

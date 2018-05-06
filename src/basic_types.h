@@ -5,16 +5,16 @@
  *
  * @date   14 Mar 2018
  *
- * @brief  Implementation of base-type objects for Proteus
+ * @brief  Implementation of base-type objects for Rascal
  *
  * Copyright © 2017 Felix Musil
  *
- * Proteus is free software; you can redistribute it and/or
+ * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
- * Proteus is distributed in the hope that it will be useful, but
+ * Rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
@@ -29,7 +29,7 @@
 #include <Eigen/Dense>
 
 
-namespace proteus {
+namespace rascal {
 
 /**
  * Dynamically allocated matrix of arbitrary dimension.
