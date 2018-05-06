@@ -1,5 +1,5 @@
 /**
- * file   neighbourhood_manager_cell.hh
+ * file   neighbourhood_boc.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
@@ -29,32 +29,31 @@
 #ifndef NEIGHBOURHOOD_BOX_H
 #define NEIGHBOURHOOD_BOX_H
 
-#include "neighbourhood_managers/neighbourhood_manager_cell.hh"
 #include "neighbourhood_managers/neighbourhood_manager_base.hh"
+#include "neighbourhood_managers/field.hh"
+#include "lattice.hh"
+#include "basic_types.h"
 #include <Eigen/Dense>
 #include <Eigen/StdVector>
 #include <stdexcept>
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include <lattice.hh> //! this is a header enabeling a nice for i,j in zip(a1,a2) kind of loops. see for more details https://github.com/cshelton/zipfor
-#include <basic_types.h>
-#include <neighbourhood_managers/field.hh>
-
+#include <map>
 
 
 namespace rascal {
 
-  template<class ManagerImplementation>
+  template <class ManagerImplementation>
   class Box {
   public:
-    using AtomRef_t = typename ManagerImplementation::AtomRef_t;
+    using AtomRef_t = typename NeighbourhoodManagerBase<ManagerImplementation>::AtomRef;
     //! Default constructor
     Box() = default;
 
     //! constructor
-    Box(NeighbourhoodManagerBase<ManagerImplementation> & manager, const Eigen::Ref<const Vec3i_t> coord, 
-                const std::array<std::array<Dim_t, 3>,2>& neigh_bounds, const Eigen::Ref<const Vec3i_t> nbins_c)
+    Box(NeighbourhoodManagerBase<ManagerImplementation> & manager, const Vec3i_t& coord, 
+                const std::array<std::array<Dim_t, 3>,2>& neigh_bounds, const Vec3i_t& nbins_c)
                 :manager{manager}
     { 
       //! warning: works only with negative a if |a| < b
@@ -92,41 +91,35 @@ namespace rascal {
     inline void push_center_back(const int& id){
       this->centers.push_back(AtomRef_t(this->manager,id));
     }
-
+    inline void push_neighbour_back(const int& id){
+      this->neighbour_ids.push_back(AtomRef_t(this->manager,id));
+    }
     
     inline size_t get_number_of_centers(){
       return this->centers.size();
     }
-    /*
-    inline size_t get_number_of_neighbour(){
-      int Nneighbour{0};
-      for (auto bin_id : this->neighbour_bin_ids){
-        Nneighbour += this->manager.get_nb_of_center_in_box(bin_id);
-      }
-      return Nneighbour;
-    }*/
 
     inline size_t get_number_of_neighbour(){
-      return this->neighbour_ids.size();
+      size_t size{this->neighbour_ids.size()};
+      return size;
+    }
+
+    inline std::vector<AtomRef_t> get_neighbour_ids(){
+      return this->neighbour_ids;
     }
 
     inline  int get_neighbour_index(int j_index){
-      return this->neighbour_bin_ids[j_index].get_index();
+      return this->neighbour_bin_ids[j_index];
     }
 
     inline  std::vector<AtomRef_t> get_centers(){
       return this->centers;
     }
-    void set_neighbour_ids(){
-      for (auto bin_id:this->neighbour_bin_ids){
-        /*
-        size_t Ncenter = this->manager.get_nb_of_center_in_box(bin_id);
-        for (auto center : centers){
-          neighbour_ids.push_back(AtomRef_t(this->manager,center.get_index()));
-        }
-        */
-      }
+    inline  std::vector<Dim_t> get_neighbour_bin_ids(){
+      return this->neighbour_bin_ids;
     }
+
+  
 
   protected:
     Vec3i_t coordinates;
@@ -138,6 +131,8 @@ namespace rascal {
     std::vector<AtomRef_t> neighbour_ids; 
   };
 
-} //rascal
 
-#endif /* NEIGHBOURHOOD_BOX_H */
+  //----------------------------------------------------------------------------//
+}  // rascal
+
+#endif /* NEIGHBOURHOOD_MANAGER_CELL_H */

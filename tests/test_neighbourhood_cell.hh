@@ -10,12 +10,12 @@
  *
  * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
- * proteus is free software; you can redistribute it and/or
+ * rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
- * proteus is distributed in the hope that it will be useful, but
+ * rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
@@ -33,7 +33,7 @@
 #include "basic_types.h"
 
 
-namespace proteus {
+namespace rascal {
 
   struct ManagerFixture_cell
   {
@@ -61,6 +61,6 @@ namespace proteus {
   NeighbourhoodManagerCell manager;
   
   };
-}  // proteus
+}  // rascal
 
 #endif /* TEST__H */

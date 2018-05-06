@@ -5,16 +5,16 @@
  *
  * @date   14 Mar 2018
  *
- * @brief  Main binding file for Proteus
+ * @brief  Main binding file for Rascal
  *
  * Copyright © 2017 Felix Musil
  *
- * Proteus is free software; you can redistribute it and/or
+ * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
- * Proteus is distributed in the hope that it will be useful, but
+ * Rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
@@ -35,8 +35,8 @@ namespace py=pybind11;
 
 extern void add_cdist(py::module&);
 
-PYBIND11_MODULE(_proteus, mod) {
-  mod.doc() = "Python bindings for the Proteus library";
+PYBIND11_MODULE(_rascal, mod) {
+  mod.doc() = "Python bindings for the Rascal library";
 
   add_cdist(mod);
 }

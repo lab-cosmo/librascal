@@ -1,7 +1,7 @@
 
 #include "basic_types.h"
 
-namespace proteus {
+namespace rascal {
 
   MatrixXdR cdist(Eigen::Ref<MatrixXdR> X,Eigen::Ref<MatrixXdR> Y) {
     const int N = X.rows();
@@ -22,4 +22,4 @@ namespace proteus {
     return Eigen::sqrt(D.array());
   }
 
-}  // proteus
+}  // rascal

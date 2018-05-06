@@ -9,12 +9,12 @@
  *
  * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
- * proteus is free software; you can redistribute it and/or
+ * rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
- * proteus is distributed in the hope that it will be useful, but
+ * rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
@@ -30,7 +30,8 @@
 #define NEIGHBOURHOOD_MANAGER_CELL_H
 
 #include "neighbourhood_managers/neighbourhood_manager_base.hh"
-#include "neighbourhood_managers/box.hh"
+#include "neighbourhood_managers/neighbourhood_box.hh"
+#include "neighbourhood_managers/field.hh"
 #include "lattice.hh"
 #include "basic_types.h"
 #include "neighbourhood_managers/field.hh"
@@ -44,7 +45,7 @@
 
 using namespace std;
 
-namespace proteus {
+namespace rascal {
 
   //! forward declaration for traits
   class NeighbourhoodManagerCell;
@@ -88,7 +89,6 @@ namespace proteus {
     // required for the construction of vectors, etc
     constexpr static int dim() {return traits::Dim;}
 
-
     // return position vector
     inline Vector_ref get_position(const AtomRef_t& atom) {
       auto index{atom.get_index()};
@@ -115,7 +115,7 @@ namespace proteus {
       static_assert(Level == traits::MaxLevel-1,
                     "this implementation only handles atoms and pairs");
       auto && i_atom_id{cluster.get_atoms().back().get_index()};
-      int i_bin_id = this->center2bin[i_atom_id];
+      auto && i_bin_id{this->center2bin.at(i_atom_id)};
       Box<NeighbourhoodManagerCell> box = this->boxes[i_bin_id];
       auto && ij_atom_id{box.get_neighbour_index(j_atom_id)};
       return ij_atom_id;
@@ -127,7 +127,10 @@ namespace proteus {
     inline size_t get_cluster_size(const ClusterRef_t<Level, MaxLevel>& cluster) const {
       static_assert(Level == traits::MaxLevel-1,
                     "this implementation only handles atoms and pairs");
-      return this->neighlist[cluster.get_atoms().back().get_index()].size();
+      auto && box_id{this->center2bin.at(cluster.get_atoms().back().get_index())};
+      Box<NeighbourhoodManagerCell> box = this->boxes[box_id];
+      int aa{box.get_number_of_neighbour()};
+      return aa;
     }
 
     template<int Level, int MaxLevel>
@@ -174,11 +177,8 @@ namespace proteus {
       //this->centers.resize(Ncenter);
       this->neighlist.resize(Ncenter);
 
-      cout << "Natom " << Natom << endl;
       const int dim{traits::Dim};
 
-
-      cout << "init centers " << endl;
       int count{0};
       this->set_positions(positions);
 
@@ -212,7 +212,7 @@ namespace proteus {
 
       Vec3i_t bin_index_c;
       // TODO take into acount pbc dif from 1,1,1 
-      std::array<std::array<Dim_t, 3>,2> neigh_bounds{{{0,0,0},{nbins_c[0],nbins_c[1],nbins_c[2]}}};
+      std::array<std::array<Dim_t, 3>,2> neigh_bounds{{{-nbins_c[0],-nbins_c[1],-nbins_c[2]},{nbins_c[0],nbins_c[1],nbins_c[2]}}};
       for (int ii{0}; ii < nbins; ++ii){
         internal::lin2mult(ii,nbins_c,bin_index_c);
         this->boxes.push_back(Box<NeighbourhoodManagerCell>(this->get_manager(), bin_index_c, neigh_bounds, nbins_c));
@@ -225,12 +225,16 @@ namespace proteus {
           bin_index_c = (position_sc.array() * nbins_cd.array()).cast<int>();
           bin_id = internal::mult2lin(bin_index_c,nbins_c);
           this->boxes[bin_id].push_center_back(center.get_index());
-          center2bin[center.get_index()] = bin_id;
+          this->center2bin[center.get_index()] = bin_id;
       }
 
       for (auto box : this->boxes){
-        // TODO do this part here instead of in box
-        box.set_neighbour_ids();
+        for (auto neigh_bin : box.get_neighbour_bin_ids()) {
+          for (auto neigh : this->boxes[neigh_bin].get_centers()){
+            box.push_neighbour_back(neigh.get_index());
+            size_t aa{box.get_number_of_neighbour()};
+          }
+        }
       }
       
     }
@@ -270,10 +274,11 @@ namespace proteus {
   get_offset_impl<1, 2>(const ClusterRef_t<1, 2>& cluster) const {
     return cluster.get_atoms().back().get_index();
   }
-
-
+  /* ---------------------------------------------------------------------- */
+  
+  
 
   //----------------------------------------------------------------------------//
-}  // proteus
+}  // rascal
 
 #endif /* NEIGHBOURHOOD_MANAGER_CELL_H */

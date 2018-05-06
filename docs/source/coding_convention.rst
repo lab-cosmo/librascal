@@ -8,7 +8,7 @@ Coding Convention
 
 Objectives of the Convention
 ****************************
-proteus is a collaborative project and these coding conventions aim to make reading and understanding its code as pain-free as possible, while ensuring the four main requirements of the library
+rascal is a collaborative project and these coding conventions aim to make reading and understanding its code as pain-free as possible, while ensuring the four main requirements of the library
  #. Versatility
  #. Efficiency
  #. Reliability
@@ -21,7 +21,7 @@ Review of submitted code is the main mechanism to enforce the coding conventions
 
 Documentation
 *************
-There are two types of Documentation for proteus: on the one hand, there is this monograph which is supposed to serve as reference manual to understand, and use the library and its extensions, and to look up APIs and data structures. On the other hand, there is in-code documentation helping the developer to understand the role of functions, variables, member (function)s and steps in algorithms.
+There are two types of Documentation for rascal: on the one hand, there is this monograph which is supposed to serve as reference manual to understand, and use the library and its extensions, and to look up APIs and data structures. On the other hand, there is in-code documentation helping the developer to understand the role of functions, variables, member (function)s and steps in algorithms.
 
 The in-code documentation uses the syntax of `the doxygen documentation generator <http://www.stack.nl/~dimitri/doxygen/>`_, as its lightweight markup language is very readable in the code and allows to generate the standalone API documentation in :ref:`Reference`.
 
@@ -31,7 +31,7 @@ All lengthier, text-based documentation is written for `Sphinx <http://www.sphin
 Testing
 *******
 
-*Every* feature in proteus's core library is supposed to be unit tested, and a missing test is considered a bug. Core library features are unit tested in the C++ unit tests (preferred option) or the python unit tests (both within the ``tests`` folder).
+*Every* feature in rascal's core library is supposed to be unit tested, and a missing test is considered a bug. Core library features are unit tested in the C++ unit tests (preferred option) or the python unit tests (both within the ``tests`` folder).
 
 The unit tests typically use the `Boost unit test framework <http://www.boost.org/doc/libs/1_43_0/libs/test/doc/html/utf.html>`_ to define C++ test cases and python's `unittest <https://docs.python.org/3/library/unittest.html>`_ module for python tests. If necessary, standalone tests can be added by contributors, provided that they are added as ``ctest`` targets to the project's main CMake file. See in the ``tests`` folder for examples regarding the tests.
 
@@ -107,7 +107,7 @@ Make sure to use unique file names to avoid triggering the wrong ``#define`` gua
 Forward Declarations
 --------------------
 
-Use forward declarations of proteus entities where it avoids ``include``\s and saves compile time.
+Use forward declarations of rascal entities where it avoids ``include``\s and saves compile time.
 
 A "forward declaration" is a declaration of a class, function, or template without an associated definition.
 
@@ -148,20 +148,20 @@ Use inline functions for performance-critical code. Also, templated member funct
 Names and Order of Includes
 ---------------------------
 
-All of a project's header files should be listed as descendants of the project's source directory without use of UNIX directory shortcuts ``.`` (the current directory) or ``..`` (the parent directory). For example, ``proteus/src/neighbourhood_managers/neighbourhood_manager_base.hh`` should be included as:
+All of a project's header files should be listed as descendants of the project's source directory without use of UNIX directory shortcuts ``.`` (the current directory) or ``..`` (the parent directory). For example, ``rascal/src/neighbourhood_managers/neighbourhood_manager_base.hh`` should be included as:
 
 .. code-block:: c++
 
    #include "neighbourhood_managers/neighbourhood_manager_base.hh"
 
 Use the following order for includes to avoid hidden dependencies:
- #. proteus headers
+ #. rascal headers
  #. A blank line
  #. Other libraries' headers
  #. A blank line
  #. C++ system headers
 
-With this ordering, if a proteus header omits any necessary includes, the build will break. Thus, this rule ensures that build breaks show up first for the people working on these files, not for innocent people in different places.
+With this ordering, if a rascal header omits any necessary includes, the build will break. Thus, this rule ensures that build breaks show up first for the people working on these files, not for innocent people in different places.
 
 You should include all the headers that define the symbols you rely upon, except in the case of forward declaration. If you rely on symbols from ``bar.hh``, don't count on the fact that you included ``foo.hh`` which (currently) includes ``bar.hh``: include ``bar.hh`` yourself, unless ``foo.hh`` explicitly demonstrates its intent to provide you the symbols of ``bar.hh``. However, any includes present in the related header do not need to be included again in the related ``.cc`` (i.e., ``foo.cc`` can rely on ``foo.hh``'s includes).
 
@@ -175,7 +175,7 @@ Namespaces
 
 
 
-With few exceptions, place code in the namespace ``proteus``. All other (subordinate) namespaces should have unique, expressive names based on their purpose. Do not use using-directives (e.g. ``using namespace foo``) within the core library (but feel free to do so in the executables in the ``bin`` folder). Do not use inline namespaces. For unnamed namespaces, see :ref:`unnamed`.
+With few exceptions, place code in the namespace ``rascal``. All other (subordinate) namespaces should have unique, expressive names based on their purpose. Do not use using-directives (e.g. ``using namespace foo``) within the core library (but feel free to do so in the executables in the ``bin`` folder). Do not use inline namespaces. For unnamed namespaces, see :ref:`unnamed`.
 
 Definition:
    Namespaces subdivide the global scope into distinct, named scopes, and so are useful for preventing name collisions in the global scope.
@@ -302,7 +302,7 @@ Format unnamed namespaces like named namespaces. In the terminating comment, lea
 Nonmember, Static Member, and Global Functions
 ----------------------------------------------
 
-Prefer placing nonmember functions in a namespace; use completely global functions rarely. Note: placing functions in a namespace keeps them globally accessible, the goal of this is not to suppress the use of non-member functions but rather to avoid polluting the global and ``proteus`` namespace by grouping them together in thematic namespaces. Do not use a class simply to group static functions, unless they are function templates which need to be partially specialised. Otherwise, static methods of a class should generally be closely related to instances of the class or the class's static data.
+Prefer placing nonmember functions in a namespace; use completely global functions rarely. Note: placing functions in a namespace keeps them globally accessible, the goal of this is not to suppress the use of non-member functions but rather to avoid polluting the global and ``rascal`` namespace by grouping them together in thematic namespaces. Do not use a class simply to group static functions, unless they are function templates which need to be partially specialised. Otherwise, static methods of a class should generally be closely related to instances of the class or the class's static data.
 
 Pros:
   Nonmember and static member functions can be useful in some situations. Putting nonmember functions in a namespace avoids polluting the global namespace.
@@ -968,7 +968,7 @@ You could find long and complicated functions when working with some code. Do no
 Reference Arguments
 -------------------
 
-All input parameters passed by reference must be labelled ``const``, Output and input/output parameters can be passed as references, :ref:`smart pointers <ownership and smart pointers>`, or ``std::optional``. **There are no raw pointers** within proteus, ever.
+All input parameters passed by reference must be labelled ``const``, Output and input/output parameters can be passed as references, :ref:`smart pointers <ownership and smart pointers>`, or ``std::optional``. **There are no raw pointers** within rascal, ever.
 
 Definition:
   In C, if a function needs to modify a variable, the parameter must use a pointer, e.g., ``int foo(int *pval)``. In C++, the function can alternatively declare a reference parameter: ``int foo(int &val)``.
@@ -980,7 +980,7 @@ Cons:
   References can be confusing to absolute beginners, as they have value syntax but pointer semantics.
 
 Decision:
-  The one hard rule in proteus is that no raw pointers will be tolerated (with the obvious exception of interacting with third-party APIs). Pointers are to be considered a bug-generating relic of a darker time when ``goto`` statements were allowed to exist. If you need to mimic the questionable practice of passing a pointer that could be ``nullptr`` to indicate that there is no value, use ``std::optional``.
+  The one hard rule in rascal is that no raw pointers will be tolerated (with the obvious exception of interacting with third-party APIs). Pointers are to be considered a bug-generating relic of a darker time when ``goto`` statements were allowed to exist. If you need to mimic the questionable practice of passing a pointer that could be ``nullptr`` to indicate that there is no value, use ``std::optional``.
 
 .. _`function overloading`:
 
@@ -1273,7 +1273,7 @@ Decision:
 
   - Use brace initialisation to convert arithmetic types (e.g. ``int64{x}``). This is the safest approach because code will not compile if conversion can result in information loss. The syntax is also concise.
   - Use ``static_cast`` as the equivalent of a C-style cast that does value conversion, when you need to explicitly up-cast a pointer from a class to its superclass, or when you need to explicitly cast a pointer from a superclass to a subclass. In this last case, you must be sure your object is actually an instance of the subclass.
-  - Use ``const_cast`` to remove the ``const`` qualifier (see :ref:`const`). **This indicates a serious design flaw if it happens in proteus and is to be considered a bug**. Only use this if third-party libraries force you to.
+  - Use ``const_cast`` to remove the ``const`` qualifier (see :ref:`const`). **This indicates a serious design flaw if it happens in rascal and is to be considered a bug**. Only use this if third-party libraries force you to.
   - Use ``reinterpret_cast`` to do unsafe conversions of pointer types to and from integer and other pointer types. Use this only if you know what you are doing and you understand the aliasing issues.
 
 See the :ref:`RTTI <rtti>` section for guidance on the use of ``dynamic_cast``.
@@ -1365,10 +1365,10 @@ Decision:
 Integer Types
 -------------
 
-We do not use the built-in C++ integer types in proteus, rather the alias ``Int``. If a part needs a variable of a different size, use a precise-width integer type from ``<cstdint>``, such as ``int16_t``. If your variable represents a value that could ever be greater than or equal to 2³¹ (2GiB), use a 64-bit type such as ``int64_t``. Keep in mind that even if your value won't ever be too large for an ``Int``, it may be used in intermediate calculations which may require a larger type. When in doubt, choose a larger type.
+We do not use the built-in C++ integer types in rascal, rather the alias ``Int``. If a part needs a variable of a different size, use a precise-width integer type from ``<cstdint>``, such as ``int16_t``. If your variable represents a value that could ever be greater than or equal to 2³¹ (2GiB), use a 64-bit type such as ``int64_t``. Keep in mind that even if your value won't ever be too large for an ``Int``, it may be used in intermediate calculations which may require a larger type. When in doubt, choose a larger type.
 
 Definition:
-  proteus does not specify the size of ``Int``. Assume it's 32 bits.
+  rascal does not specify the size of ``Int``. Assume it's 32 bits.
 
 Pros:
   Uniformity of declaration.
@@ -1436,7 +1436,7 @@ Exporting macros from headers (i.e. defining them in a header without ``#undef``
 
 Use ``0`` for integers, ``0.`` for reals, ``nullptr`` for pointers, and ``'\0'`` for chars.
 
-For pointers (address values), there is a choice between ``0``, ``NULL``, and ``nullptr``. proteus only accepts ``nullptr``, as this provides type-safety.
+For pointers (address values), there is a choice between ``0``, ``NULL``, and ``nullptr``. rascal only accepts ``nullptr``, as this provides type-safety.
 
 Use ``'\0'`` for the null character. Using the correct type makes the code more readable.
 
@@ -1681,7 +1681,7 @@ Decision:
 Template metaprogramming
 ------------------------
 
-Template metaprogramming is our tool to obtain both generic and efficient code. It can be complicated, but efficiency is the top priority in the core of proteus.
+Template metaprogramming is our tool to obtain both generic and efficient code. It can be complicated, but efficiency is the top priority in the core of rascal.
 
 Definition:
   Template metaprogramming refers to a family of techniques that exploit the fact that the C++ template instantiation mechanism is Turing complete and can be used to perform arbitrary compile-time computation in the type domain.
@@ -1697,7 +1697,7 @@ Cons:
   Template metaprogramming interferes with large scale refactoring by making the job of refactoring tools harder. First, the template code is expanded in multiple contexts, and it's hard to verify that the transformation makes sense in all of them. Second, some refactoring tools work with an AST that only represents the structure of the code after template expansion. It can be difficult to automatically work back to the original source construct that needs to be rewritten.
 
 Decision:
-  Template metaprogramming sometimes allows cleaner and easier-to-use interfaces than would be possible without it. It's best used in a small number of low level components where the extra maintenance burden is spread out over a large number of uses (i.e., the core of proteus, e.g. ``NeighbourhoodManagerBase`` and the data structures ``Field``, etc).
+  Template metaprogramming sometimes allows cleaner and easier-to-use interfaces than would be possible without it. It's best used in a small number of low level components where the extra maintenance burden is spread out over a large number of uses (i.e., the core of rascal, e.g. ``NeighbourhoodManagerBase`` and the data structures ``Field``, etc).
 
 If you use template metaprogramming, you should expect to put considerable effort into minimising and isolating the complexity. You should hide metaprogramming as an implementation detail whenever possible, so that user-facing headers are readable, and you should make sure that tricky code is especially well commented. You should carefully document how the code is used, and you should say something about what the "generated" code looks like. Pay extra attention to the error messages that the compiler emits when users make mistakes. The error messages are part of your user interface, and your code should be tweaked as necessary so that the error messages are understandable and actionable from a user point of view.
 
@@ -1755,7 +1755,7 @@ Definition:
      using other_namespace::Foo;
 
 
-  In proteus, aliases are created with the ``using`` keyword and never with ``typedef``, because it provides a more consistent syntax with the rest of C++ and works with templates.
+  In rascal, aliases are created with the ``using`` keyword and never with ``typedef``, because it provides a more consistent syntax with the rest of C++ and works with templates.
 
   Like other declarations, aliases declared in a header file are part of that header's public API unless they're in a function definition, in the private portion of a class, or in an explicitly-marked internal namespace. Aliases in such areas or in ``.cc`` files are implementation details (because client code can't refer to them), and are not restricted by this rule.
 
@@ -1966,7 +1966,7 @@ Distinguish (member) functions that compute something at non-trivial cost from s
 Namespace Names
 ---------------
 
-The main namespace is ``proteus``. All subordinate namespaces are CamelCase. Avoid collisions between nested namespaces and well-known top-level namespaces. If a namespace is only used to hide unnecessary internal complications, put it in ``namespace internal`` or ``namespace *_internal`` to indicate that these are implementation details that the user does not have to bother with.
+The main namespace is ``rascal``. All subordinate namespaces are CamelCase. Avoid collisions between nested namespaces and well-known top-level namespaces. If a namespace is only used to hide unnecessary internal complications, put it in ``namespace internal`` or ``namespace *_internal`` to indicate that these are implementation details that the user does not have to bother with.
 
 Keep in mind that the :ref:`rule against abbreviated names <general naming rules>` applies to namespaces just as much as variable names. Code inside the namespace seldom needs to mention the namespace name, so there's usually no particular need for abbreviation anyway.
 
@@ -2043,18 +2043,18 @@ Start each file with license boilerplate. e.g., for file ``common.hh`` authored 
     *
     * @date   01 May 2017
     *
-    * @brief  Small definitions of commonly used types throughout proteus
+    * @brief  Small definitions of commonly used types throughout rascal
     *
     * @section  LICENSE
     *
     * Copyright © 2017 Till Junge, John Doe
     *
-    * proteus is free software; you can redistribute it and/or
+    * rascal is free software; you can redistribute it and/or
     * modify it under the terms of the GNU General Public License as
     * published by the Free Software Foundation, either version 3, or (at
     * your option) any later version.
     *
-    * proteus is distributed in the hope that it will be useful, but
+    * rascal is distributed in the hope that it will be useful, but
     * WITHOUT ANY WARRANTY; without even the implied warranty of
     * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
     * General Public License for more details.
@@ -3044,7 +3044,7 @@ OK, enough writing about writing code; the code itself is much more interesting.
 Python Coding Style
 *******************
 
-proteus is a C++ project with a thin Python wrapping. Try to follow the spirit of the :ref:`cpp coding style and convention`, as far as it fits into ``pep8``. in case of conflict, follow ``pep8``
+rascal is a C++ project with a thin Python wrapping. Try to follow the spirit of the :ref:`cpp coding style and convention`, as far as it fits into ``pep8``. in case of conflict, follow ``pep8``
 
 References
 **********

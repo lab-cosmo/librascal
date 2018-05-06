@@ -10,12 +10,12 @@
  *
  * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
- * proteus is free software; you can redistribute it and/or
+ * rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
- * proteus is distributed in the hope that it will be useful, but
+ * rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
@@ -33,10 +33,10 @@
 #include <basic_types.h>
 #include <cmath>
 
-namespace proteus {
+namespace rascal {
 
-//using Cell_t = typename proteus::Cell_t;
-//using Vec3_t = typename proteus::Vec3_t;
+//using Cell_t = typename rascal::Cell_t;
+//using Vec3_t = typename rascal::Vec3_t;
 using Vector_ref = Eigen::Map<Vec3_t>;
 
 class Lattice {
@@ -167,6 +167,6 @@ class Lattice {
 };
 
 
-} // proteus
+} // rascal
 
 #endif /* LATTICE_H */
