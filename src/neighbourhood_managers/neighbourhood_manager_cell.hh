@@ -114,7 +114,7 @@ namespace proteus {
       static_assert(Level == traits::MaxLevel-1,
                     "this implementation only handles atoms and pairs");
       auto && i_atom_id{cluster.get_atoms().back().get_index()};
-      int i_bin_id = this->center2bin[i_atom_id];
+      auto && i_bin_id{this->center2bin.at(i_atom_id)};
       Box<NeighbourhoodManagerCell> box = this->boxes[i_bin_id];
       auto && ij_atom_id{box.get_neighbour_index(j_atom_id)};
       return ij_atom_id;
@@ -126,7 +126,10 @@ namespace proteus {
     inline size_t get_cluster_size(const ClusterRef_t<Level, MaxLevel>& cluster) const {
       static_assert(Level == traits::MaxLevel-1,
                     "this implementation only handles atoms and pairs");
-      return this->neighlist[cluster.get_atoms().back().get_index()].size();
+      auto && box_id{this->center2bin.at(cluster.get_atoms().back().get_index())};
+      Box<NeighbourhoodManagerCell> box = this->boxes[box_id];
+      int aa{box.get_number_of_neighbour()};
+      return aa;
     }
 
     template<int Level, int MaxLevel>
@@ -221,13 +224,14 @@ namespace proteus {
           bin_index_c = (position_sc.array() * nbins_cd.array()).cast<int>();
           bin_id = internal::mult2lin(bin_index_c,nbins_c);
           this->boxes[bin_id].push_center_back(center.get_index());
-          center2bin[center.get_index()] = bin_id;
+          this->center2bin[center.get_index()] = bin_id;
       }
 
       for (auto box : this->boxes){
         for (auto neigh_bin : box.get_neighbour_bin_ids()) {
           for (auto neigh : this->boxes[neigh_bin].get_centers()){
             box.push_neighbour_back(neigh.get_index());
+            size_t aa{box.get_number_of_neighbour()};
           }
         }
       }

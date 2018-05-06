@@ -98,22 +98,18 @@ namespace proteus {
     inline size_t get_number_of_centers(){
       return this->centers.size();
     }
-    /*
+
     inline size_t get_number_of_neighbour(){
-      int Nneighbour{0};
-      for (auto bin_id : this->neighbour_bin_ids){
-        Nneighbour += this->manager.get_nb_of_center_in_box(bin_id);
-      }
-      return Nneighbour;
+      size_t size{this->neighbour_ids.size()};
+      return size;
     }
-    */
-    inline size_t get_number_of_neighbour(){
-      return this->neighbour_ids.size();
+
+    inline std::vector<AtomRef_t> get_neighbour_ids(){
+      return this->neighbour_ids;
     }
 
     inline  int get_neighbour_index(int j_index){
-      return 1;
-      //return this->neighbour_bin_ids[j_index].get_index();
+      return this->neighbour_bin_ids[j_index];
     }
 
     inline  std::vector<AtomRef_t> get_centers(){
