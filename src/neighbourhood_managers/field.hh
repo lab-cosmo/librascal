@@ -104,6 +104,24 @@ namespace rascal {
       return index;
     }
 
+    // https://stackoverflow.com/questions/828092/python-style-integer-division-modulus-in-c
+    // TODO more efficient implementation without if (would be less general)
+    //! div_mod function returning python like div_mod, i.e. signed integer division truncates towards negative infinity, and signed integer modulus has the same sign the second operand.
+    template<class Integral>
+    void div_mod(const Integral& x, const Integral& y, std::array<int,2>& out)
+    {
+      const Integral quot = x / y;
+      const Integral rem  = x % y;
+      if (rem != 0 && (x < 0) != (y < 0)){
+        out[0] = quot - 1;
+        out[1] = rem + y;
+      }
+      else {
+        out[0] = quot;
+        out[1] = rem;
+      }
+    }
+    
   }  // internal
 
   template <class NeighbourhoodManager, typename T,

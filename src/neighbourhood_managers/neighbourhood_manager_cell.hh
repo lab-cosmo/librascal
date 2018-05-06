@@ -116,8 +116,7 @@ namespace rascal {
                     "this implementation only handles atoms and pairs");
       auto && i_atom_id{cluster.get_atoms().back().get_index()};
       auto && i_bin_id{this->center2bin.at(i_atom_id)};
-      Box<NeighbourhoodManagerCell> box = this->boxes[i_bin_id];
-      auto && ij_atom_id{box.get_neighbour_index(j_atom_id)};
+      auto && ij_atom_id{this->boxes[i_bin_id].neighbour_ids[j_atom_id].get_index()};
       return ij_atom_id;
     }
 
@@ -127,10 +126,10 @@ namespace rascal {
     inline size_t get_cluster_size(const ClusterRef_t<Level, MaxLevel>& cluster) const {
       static_assert(Level == traits::MaxLevel-1,
                     "this implementation only handles atoms and pairs");
-      auto && box_id{this->center2bin.at(cluster.get_atoms().back().get_index())};
-      Box<NeighbourhoodManagerCell> box = this->boxes[box_id];
-      int aa{box.get_number_of_neighbour()};
-      return aa;
+      auto && i_atom_id{cluster.get_atoms().back().get_index()};
+      auto && box_id{this->center2bin.at(i_atom_id)};
+      size_t size{this->boxes[box_id].neighbour_ids.size()};
+      return size;
     }
 
     template<int Level, int MaxLevel>
@@ -138,14 +137,6 @@ namespace rascal {
 
     size_t get_nb_clusters(int cluster_size);
 
-    size_t get_nb_of_center_in_box(const int& bin_id){
-      return this->boxes[bin_id].get_number_of_centers();
-    }
-
-    std::vector<AtomRef_t> get_centers_from_box(int bin_id){
-      Box<NeighbourhoodManagerCell> box = this->boxes[bin_id];
-      return box.get_centers();
-    }
     //void build(const Eigen::MatrixXd& positions, const Eigen::MatrixXd& cell,const std::array<bool,3>& pbc, const double& cutoff_max);
     void build(const Eigen::Ref<const Eigen::MatrixXd> positions,const std::vector<int>& center_ids, const Eigen::Ref<const Eigen::MatrixXd> cell,const std::array<bool,3>& pbc, const double& cutoff_max);
 
@@ -212,7 +203,8 @@ namespace rascal {
 
       Vec3i_t bin_index_c;
       // TODO take into acount pbc dif from 1,1,1 
-      std::array<std::array<Dim_t, 3>,2> neigh_bounds{{{-nbins_c[0],-nbins_c[1],-nbins_c[2]},{nbins_c[0],nbins_c[1],nbins_c[2]}}};
+      std::array<std::array<Dim_t, 3>,2> neigh_bounds{{ {-nbins_c[0]+1,-nbins_c[1]+1,-nbins_c[2]+1},
+                                                        { nbins_c[0]-1, nbins_c[1]-1, nbins_c[2]-1} }};
       for (int ii{0}; ii < nbins; ++ii){
         internal::lin2mult(ii,nbins_c,bin_index_c);
         this->boxes.push_back(Box<NeighbourhoodManagerCell>(this->get_manager(), bin_index_c, neigh_bounds, nbins_c));
@@ -227,15 +219,23 @@ namespace rascal {
           this->boxes[bin_id].push_center_back(center.get_index());
           this->center2bin[center.get_index()] = bin_id;
       }
-
-      for (auto box : this->boxes){
-        for (auto neigh_bin : box.get_neighbour_bin_ids()) {
-          for (auto neigh : this->boxes[neigh_bin].get_centers()){
-            box.push_neighbour_back(neigh.get_index());
-            size_t aa{box.get_number_of_neighbour()};
+      for (int i_box{0}; i_box < this->boxes.size(); ++i_box){
+        for (auto neigh_bin : this->boxes[i_box].neighbour_bin_ids) {
+          for (auto neigh : this->boxes[neigh_bin].centers){
+            this->boxes[i_box].push_neighbour_back(neigh.get_index());
+            //size_t aa{box.get_number_of_neighbour()};
           }
         }
       }
+      /*
+      for (auto box : this->boxes){
+        for (auto neigh_bin : box.neighbour_bin_ids) {
+          for (auto neigh : this->boxes[neigh_bin].centers){
+            box.push_neighbour_back(neigh.get_index());
+            //size_t aa{box.get_number_of_neighbour()};
+          }
+        }
+      }*/ 
       
     }
 

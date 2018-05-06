@@ -33,24 +33,25 @@ int main()
                 5.035681855581504,2.134827911489532,0.946910011088814,6.223599755982222,4.168634519120968,3.001875247950068,1.980327734683430,5.190182032387606,2.943861424421339,4.226648342649697,5.457161501166098,1.713348265904937,1.501663178733906,5.668846588337130,5.208365510425203,1.962144256645833,2.728127406527150,4.442382360543885,2.839975217222644,4.330534549848392,0.744216089807768,6.426293677263268,
                 4.643695520786083,2.662204050783991,1.250682335857938,6.055217235712136,0.860905287815103,6.444994283754972,4.536108843695142,2.769790727874932,5.609177455068640,1.696722116501434,6.703053268421970,0.602846303148105,3.487609972580834,3.818289598989240,1.436734374347541,5.869165197222533,1.054504320562138,6.251395251007936,3.998423858825871,3.307475712744203,5.323662899811682,1.982236671758393;
         
-    proteus::VecXi neighlist;
+    rascal::VecXi neighlist;
     
     int atom_counter{};
     int pair_counter{};
     constexpr bool verbose{false};
-    for (auto atom_cluster: manager) {
-        if (atom_counter - atom_cluster.get_index() != 0 ){
-            cout << "index " << atom_cluster.get_index() << endl;
+    for (auto center: manager) {
+        if (atom_counter - center.get_index() != 0 ){
+            cout << "index " << center.get_index() << endl;
         }
         ++atom_counter;
-        cout << "Center atom index: " << atom_cluster.get_index() << endl;
+        cout << "Center atom index: " << center.get_index() << endl;
         for (int ii{3};ii<3;++ii){
-            if (positions_test(ii,atom_cluster.get_index()) - atom_cluster.get_position()[ii] != 0 ){
-                cout << "position " << atom_cluster.get_index() << endl;
+            if (positions_test(ii,center.get_index()) - center.get_position()[ii] != 0 ){
+                cout << "position " << center.get_index() << endl;
             }
         }
-        for (auto neigh : atom_cluster){
-            cout << "Neighbour indices: " << neigh.get_index() ;
+        cout << "Neighbour indices: ";
+        for (auto neigh : center){
+            cout  << neigh.get_index() << ", ";
         }
         cout << endl;
     }

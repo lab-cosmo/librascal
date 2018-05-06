@@ -1,5 +1,5 @@
 /**
- * file   neighbourhood_boc.hh
+ * file   neighbourhood_box.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
@@ -54,10 +54,10 @@ namespace rascal {
     //! constructor
     Box(NeighbourhoodManagerBase<ManagerImplementation> & manager, const Vec3i_t& coord, 
                 const std::array<std::array<Dim_t, 3>,2>& neigh_bounds, const Vec3i_t& nbins_c)
-                :manager{manager}
+                :manager{manager},centers{},neighbour_bin_shift{},neighbour_bin_ids{},neighbour_ids{}
     { 
-      //! warning: works only with negative a if |a| < b
-      std::function<void (int,int,std::array<int,2>)> branchless_div_mod = [](int a, int b,std::array<int,2> d) {d = {(a+b)/b,(a+b)%b};};
+    
+      //std::function<void (int,int,std::array<int,2>)> branchless_div_mod = [](int a, int b,std::array<int,2> d) {d = {a/b-1,(a+b)%b};};
       
       this->coordinates = coord;
       Vec3i_t shift,neighbour_bin_idx_c,neighbour_bin_shift;
@@ -69,9 +69,10 @@ namespace rascal {
             shift << dx,dy,dz;
             
             for (int ii{0};ii<3;++ii){
-              branchless_div_mod(coord(ii)+shift(ii),nbins_c(ii),div_mod);
-              neighbour_bin_idx_c[ii] = div_mod[1];
+              //branchless_div_mod(coord(ii)+shift(ii),nbins_c(ii),div_mod);
+              internal::div_mod(coord(ii)+shift(ii),nbins_c(ii),div_mod);
               neighbour_bin_shift[ii] = div_mod[0];
+              neighbour_bin_idx_c[ii] = div_mod[1];
             }
 
             bin_id = internal::mult2lin(neighbour_bin_idx_c,nbins_c);
@@ -86,6 +87,8 @@ namespace rascal {
     Box(const Box & other) = default;
     //! assignment operator
     Box & operator=(const Box & other) = default;
+
+
     virtual ~Box() = default;
 
     inline void push_center_back(const int& id){
@@ -94,7 +97,7 @@ namespace rascal {
     inline void push_neighbour_back(const int& id){
       this->neighbour_ids.push_back(AtomRef_t(this->manager,id));
     }
-    
+    /*
     inline size_t get_number_of_centers(){
       return this->centers.size();
     }
@@ -105,30 +108,37 @@ namespace rascal {
     }
 
     inline std::vector<AtomRef_t> get_neighbour_ids(){
-      return this->neighbour_ids;
+      std::vector<AtomRef_t> out(this->neighbour_ids);
+      return out;
     }
 
     inline  int get_neighbour_index(int j_index){
-      return this->neighbour_bin_ids[j_index];
+      return this->neighbour_ids[j_index].get_index();
     }
 
     inline  std::vector<AtomRef_t> get_centers(){
-      return this->centers;
+      std::vector<AtomRef_t> out{this->centers};
+      return out;
     }
     inline  std::vector<Dim_t> get_neighbour_bin_ids(){
-      return this->neighbour_bin_ids;
-    }
+      std::vector<Dim_t> out(this->neighbour_bin_ids);
+      return out;
+    }*/
 
   
-
-  protected:
-    Vec3i_t coordinates;
     std::vector<AtomRef_t> centers;
-    NeighbourhoodManagerBase<ManagerImplementation> & manager;
     std::vector<Vec3i_t,Eigen::aligned_allocator<Vec3i_t>> neighbour_bin_shift;
     std::vector<Dim_t> neighbour_bin_ids;
     // TODO replace neighbour_ids by an iterator that iterates over the centers in the neighbouring boxes
     std::vector<AtomRef_t> neighbour_ids; 
+    Vec3i_t coordinates;
+    NeighbourhoodManagerBase<ManagerImplementation> & manager;
+
+  protected:
+    
+    
+    
+    
   };
 
 
