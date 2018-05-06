@@ -116,7 +116,7 @@ namespace rascal {
                     "this implementation only handles atoms and pairs");
       auto && i_atom_id{cluster.get_atoms().back().get_index()};
       auto && i_bin_id{this->center2bin.at(i_atom_id)};
-      auto && ij_atom_id{this->boxes[i_bin_id].neighbour_ids[j_atom_id].get_index()};
+      size_t ij_atom_id{this->boxes[i_bin_id].neighbour_ids[j_atom_id].get_index()};
       return ij_atom_id;
     }
 

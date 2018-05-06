@@ -39,19 +39,20 @@ int main()
     int pair_counter{};
     constexpr bool verbose{false};
     for (auto center: manager) {
-        if (atom_counter - center.get_index() != 0 ){
-            cout << "index " << center.get_index() << endl;
+        if (atom_counter - center.get_atom_index() != 0 ){
+            cout << "index " << center.get_atom_index() << endl;
         }
         ++atom_counter;
-        cout << "Center atom index: " << center.get_index() << endl;
+        cout << "Center atom index: " << center.get_atom_index() << endl;
         for (int ii{3};ii<3;++ii){
-            if (positions_test(ii,center.get_index()) - center.get_position()[ii] != 0 ){
-                cout << "position " << center.get_index() << endl;
+            if (positions_test(ii,center.get_atom_index()) - center.get_position()[ii] != 0 ){
+                cout << "position " << center.get_atom_index() << endl;
             }
         }
         cout << "Neighbour indices: ";
         for (auto neigh : center){
-            cout  << neigh.get_index() << ", ";
+            int ij_atom_id{neigh.get_atom_index()};
+            cout  << neigh.get_atom_index() << ", ";
         }
         cout << endl;
     }
