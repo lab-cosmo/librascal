@@ -34,7 +34,6 @@ addons:
         packages:
             - cmake-data
             - cmake
-            - python3.6
             - g++-4.9
             - clang-3.7
             
