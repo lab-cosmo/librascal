@@ -38,29 +38,13 @@ addons:
      
 
 before_install:
-    - if [[ "$TRAVIS_OS_NAME" == "linux" ]] ; 
-      sudo apt-get install libboost-test-dev
-      sudo apt-get install sphinx-rtd-theme-common
-
-      fi
+        - sudo apt-get install libboost-test-dev
+        - sudo apt-get install sphinx-rtd-theme-common
 
 install:
        - mkdir build
        - cd build
        - cmake .. -DENABLE_DOC=YES
-
-
-
-##before_install: sudo apt-get install
-#
-## Configurations
-#script: ci/configure.sh
-#
-## Compilation
-#script: ci/compilation.sh
-#
-## Test
-#script: ci/test.sh
-#
-## Doc compilation
-#script: ci/dev_doc.sh
+       - make
+       - make dev_doc
+       - make test
