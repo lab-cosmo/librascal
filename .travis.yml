@@ -15,9 +15,7 @@ language:
     - python
 
 python:
-    - "3.0"
     - "3.5"
-    - "3.6"
 
 compiler:
         #        - gcc
@@ -46,6 +44,7 @@ addons:
 
 before_install:
         - sudo apt-get install libboost-test-dev
+        - sudo apt-get install python3.5-dev  
           #- sudo apt-get install sphinx-rtd-theme-common
 
 install:
