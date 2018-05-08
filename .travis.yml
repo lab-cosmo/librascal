@@ -29,22 +29,19 @@ addons:
             - g++-4.9
             - clang-3.7
             
-            - doxygen
-            - doxygen-doc
-            - doxygen-latex
-            - doxygen-gui
-            - graphviz
+              #- doxygen
+              #- graphviz
 
      
 
 before_install:
         - sudo apt-get install libboost-test-dev
-        - sudo apt-get install sphinx-rtd-theme-common
+          #- sudo apt-get install sphinx-rtd-theme-common
 
 install:
        - mkdir build
        - cd build
        - cmake .. -DENABLE_DOC=YES
        - make
-       - make dev_doc
+         #- make dev_doc
        - make test
