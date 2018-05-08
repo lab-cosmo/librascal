@@ -6,7 +6,7 @@ branches:
         - master
         - feat/test_CI
 
-dist: trusty
+dist: "trusty"
 
 sudo: required
 
@@ -15,7 +15,7 @@ language:
     - python
 
 python:
-    - "3.5"
+    - "3.0"
 
 compiler:
         #        - gcc
@@ -35,6 +35,7 @@ addons:
             - cmake-data
             - cmake
             - g++-4.9
+            - "python3"
               #- clang-3.7
             
               #- doxygen
