@@ -1,26 +1,48 @@
+git:
+    depth: 3
+
 branches:
     only:
         - master
         - feat/test_CI
 
+sudo: false
 
 language: cpp
-
-matrix:
-    include:
-        - os: linux
-          env: PYTHON=3.6
 
 compiler:
         - gcc
 
+os:
+    - linux
+
 addons:
     apt:
         sources:
+            - ubuntu-toolchain-r-test
             - george-edison55-precise-backports
+            - llvm-toolchain-precise-3.7
         packages:
             - cmake-data
             - cmake
+            - python3
+            - g++-4.9
+            - clang-3.7
+            
+            - doxygen
+            - doxygen-doc
+            - doxygen-latex
+            - doxygen-gui
+            - graphviz
+
+     
+
+before_install:
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]] ; 
+      sudo apt-get install libboost-test-dev
+      sudo apt-get install sphinx-rtd-theme-common
+
+      fi
 
 install:
        - mkdir build
