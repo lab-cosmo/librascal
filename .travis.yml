@@ -1,6 +1,7 @@
 branches:
     only:
         - master
+        - feat/test_CI
 
 
 language: cpp
