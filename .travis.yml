@@ -18,12 +18,10 @@ language:
     - python
 
 python:
-    - "3.0"
+    - "3.5"
 
 compiler:
-        #        - gcc
         - g++
-        #        - clang
 
 os:
     - linux
@@ -38,7 +36,6 @@ addons:
             - cmake-data
             - cmake
             - g++-4.9
-            - "python3"
               #- clang-3.7
             
               #- doxygen
@@ -49,66 +46,66 @@ matrix:
           env: BOOST_VERSION=1.60.0
 
 before_install:
-        -  pyenv global system 3.5   
+    - pyenv global system 3.5   
 
 install:
-  ############################################################################
-  # All the dependencies are installed in ${TRAVIS_BUILD_DIR}/deps/
-  ############################################################################
-  - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
-  - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
-  ############################################################################
-  # Install Boost headers
-  ############################################################################
-    - |
-            if [[ "${BOOST_VERSION}" != "" ]]; then
-             BOOST_DIR=${DEPS_DIR}/boost-${BOOST_VERSION}
-              if [[ -z "$(ls -A ${BOOST_DIR})" ]]; then
-               if [[ "${BOOST_VERSION}" == "trunk" ]]; then
-                BOOST_URL="http://github.com/boostorg/boost.git"
-                travis_retry git clone --depth 1 --recursive --quiet ${BOOST_URL} ${BOOST_DIR} || exit 1
-                (cd ${BOOST_DIR} && ./bootstrap.sh && ./b2 headers)
-               else
-                BOOST_URL="http://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/boost_${BOOST_VERSION//\./_}.tar.gz"
-                mkdir -p ${BOOST_DIR}
-                { travis_retry wget --quiet -O - ${BOOST_URL} | tar --strip-components=1 -xz -C ${BOOST_DIR}; } || exit 1
-               fi
-               # Make sure we don't conflict with the Hana shipped with Boost
-              rm -rf ${BOOST_ROOT}/include/boost/{hana,hana.hpp}
-              fi
-             CMAKE_OPTIONS+=" -DBOOST_ROOT=${BOOST_DIR}"
-            fi
-  ############################################################################
-  # Install a recent CMake
-  ############################################################################
-    - |
-            if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
-            CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.2-Linux-x86_64.tar.gz"
-            mkdir cmake && travis_retry wget --no-check-certificate --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
-            export PATH=${DEPS_DIR}/cmake/bin:${PATH}
-            else
-            brew upgrade cmake || brew install cmake
-            fi
-    - cmake --version
-
-        ############################################################################
-        # Install Boost.Build
-        ############################################################################
-    - |
-            if [[ "${BOOST_BUILD}" == "true" ]]; then
-            (cd ${BOOST_DIR}/tools/build && ./bootstrap.sh && ./b2 install --prefix=${DEPS_DIR}/b2)
-            export PATH=${DEPS_DIR}/b2/bin:${PATH}
-            fi
-            #  ############################################################################
-            #  # Install a recent Doxygen
-            #  ############################################################################
-            #    - |
-            #            if [[ "${DOCUMENTATION}" == "true" ]]; then
-            #            DOXYGEN_URL="http://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.11.linux.bin.tar.gz"
-            #            mkdir doxygen && travis_retry wget --quiet -O - ${DOXYGEN_URL} | tar --strip-components=1 -xz -C doxygen
-            #            export PATH=${DEPS_DIR}/doxygen/bin:${PATH}
-            #            doxygen --version
-            #            fi
+        #  ############################################################################
+        #  # All the dependencies are installed in ${TRAVIS_BUILD_DIR}/deps/
+        #  ############################################################################
+        #  - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
+        #  - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
+        #  ############################################################################
+        #  # Install Boost headers
+        #  ############################################################################
+        #    - |
+        #            if [[ "${BOOST_VERSION}" != "" ]]; then
+        #             BOOST_DIR=${DEPS_DIR}/boost-${BOOST_VERSION}
+        #              if [[ -z "$(ls -A ${BOOST_DIR})" ]]; then
+        #               if [[ "${BOOST_VERSION}" == "trunk" ]]; then
+        #                BOOST_URL="http://github.com/boostorg/boost.git"
+        #                travis_retry git clone --depth 1 --recursive --quiet ${BOOST_URL} ${BOOST_DIR} || exit 1
+        #                (cd ${BOOST_DIR} && ./bootstrap.sh && ./b2 headers)
+        #               else
+        #                BOOST_URL="http://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/boost_${BOOST_VERSION//\./_}.tar.gz"
+        #                mkdir -p ${BOOST_DIR}
+        #                { travis_retry wget --quiet -O - ${BOOST_URL} | tar --strip-components=1 -xz -C ${BOOST_DIR}; } || exit 1
+        #               fi
+        #               # Make sure we don't conflict with the Hana shipped with Boost
+        #              rm -rf ${BOOST_ROOT}/include/boost/{hana,hana.hpp}
+        #              fi
+        #             CMAKE_OPTIONS+=" -DBOOST_ROOT=${BOOST_DIR}"
+        #            fi
+        #  ############################################################################
+        #  # Install a recent CMake
+        #  ############################################################################
+        #    - |
+        #            if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
+        #            CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.2-Linux-x86_64.tar.gz"
+        #            mkdir cmake && travis_retry wget --no-check-certificate --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
+        #            export PATH=${DEPS_DIR}/cmake/bin:${PATH}
+        #            else
+        #            brew upgrade cmake || brew install cmake
+        #            fi
+        #    - cmake --version
+        #
+        #        ############################################################################
+        #        # Install Boost.Build
+        #        ############################################################################
+        #    - |
+        #            if [[ "${BOOST_BUILD}" == "true" ]]; then
+        #            (cd ${BOOST_DIR}/tools/build && ./bootstrap.sh && ./b2 install --prefix=${DEPS_DIR}/b2)
+        #            export PATH=${DEPS_DIR}/b2/bin:${PATH}
+        #            fi
+        #            #  ############################################################################
+        #            #  # Install a recent Doxygen
+        #            #  ############################################################################
+        #            #    - |
+        #            #            if [[ "${DOCUMENTATION}" == "true" ]]; then
+        #            #            DOXYGEN_URL="http://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.11.linux.bin.tar.gz"
+        #            #            mkdir doxygen && travis_retry wget --quiet -O - ${DOXYGEN_URL} | tar --strip-components=1 -xz -C doxygen
+        #            #            export PATH=${DEPS_DIR}/doxygen/bin:${PATH}
+        #            #            doxygen --version
+        #            #            fi
   
             
        - mkdir build
