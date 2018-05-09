@@ -8,10 +8,6 @@ branches:
 
 sudo: false
 
-cache:
-    directories:
-        - ${TRAVIS_BUILD_DIR}/deps/boost-1.60.0
-
 
 language: 
     - cpp
@@ -41,46 +37,25 @@ addons:
 matrix:
      include:
         - os: linux
-          env: BOOST_VERSION=1.60.0
+          env: BOOST_VERSION=1.58.0
 
 before_install:
     - pyenv global system 3.6
+    - export DOWNLOAD_ROOT="${TRAVIS_BUILD_DIR}/../download"; if [ ! -d "${DOWNLOAD_ROOT}" ]; then mkdir -p "${DOWNLOAD_ROOT}"; fi
+    - export BOOST_DOWNLOAD_URL="http://sourceforge.net/projects/boost/files/boost/1.58.0/boost_1_58_0.tar.bz2/download"
+    - export BOOST_ROOT="${TRAVIS_BUILD_DIR}/../boost"
+    - export CMAKE_MODULE_PATH="${BOOST_ROOT}"
+    - if [ ! -f "${DOWNLOAD_ROOT}/boost.tar.bz2" ]; then wget --no-verbose --output-document="${DOWNLOAD_ROOT}/boost.tar.bz2" "${BOOST_DOWNLOAD_URL}"; fi
+    - if [ ! -d "${BOOST_ROOT}" ]; then mkdir -p "${BOOST_ROOT}" && tar jxf "${DOWNLOAD_ROOT}/boost.tar.bz2" --strip-components=1 -C "${BOOST_ROOT}"; fi
+    - if [ ! -f "${BOOST_ROOT}/b2" ]; then cd "${BOOST_ROOT}"; ./bootstrap.sh --with-libraries=test; fi
+    - cd "${BOOST_ROOT}"; ./b2 --prefix="$BOOST_ROOT" -d0 install
 
 install:
-       ############################################################################
-       # All the dependencies are installed in ${TRAVIS_BUILD_DIR}/deps/
-       ############################################################################
-       - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
-       - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
-       ############################################################################
-       # Install Boost headers
-       ############################################################################
-       - |
-         if [ "${BOOST_VERSION}" != "" ]; then
-          BOOST_DIR=${DEPS_DIR}/boost-${BOOST_VERSION}
-           if [ -z "$(ls -A ${BOOST_DIR})" ]; then
-            if [ "${BOOST_VERSION}" == "trunk" ]; then
-             BOOST_URL="http://github.com/boostorg/boost.git"
-             travis_retry git clone --depth 1 --recursive --quiet ${BOOST_URL} ${BOOST_DIR} || exit 1
-             (cd ${BOOST_DIR} && ./bootstrap.sh && ./b2 headers)
-             cd ${TRAVIS_BUILD_DIR}
-            else
-             BOOST_URL="http://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/boost_${BOOST_VERSION//\./_}.tar.gz"
-             mkdir -p ${BOOST_DIR}
-             { travis_retry wget --quiet -O - ${BOOST_URL} | tar --strip-components=1 -xz -C ${BOOST_DIR}; } || exit 1
-            fi
-            # Make sure we don't conflict with the Hana shipped with Boost
-           rm -rf ${BOOST_ROOT}/include/boost/{hana,hana.hpp}
-           fi
-          CMAKE_OPTIONS+=" -DBOOST_ROOT=${BOOST_DIR}"
-         fi
-
-
-
+       - cd "${TRAVIS_BUILD_DIR}"
        - pip3 install Sphinx
        - mkdir build
        - cd build
-       - cmake ..
+       - cmake .. -DBOOST
        - make
        - make test
 
@@ -99,14 +74,6 @@ install:
         #            fi
         #    - cmake --version
         #
-        #        ############################################################################
-        #        # Install Boost.Build
-        #        ############################################################################
-        #    - |
-        #            if [[ "${BOOST_BUILD}" == "true" ]]; then
-        #            (cd ${BOOST_DIR}/tools/build && ./bootstrap.sh && ./b2 install --prefix=${DEPS_DIR}/b2)
-        #            export PATH=${DEPS_DIR}/b2/bin:${PATH}
-        #            fi
         #            #  ############################################################################
         #            #  # Install a recent Doxygen
         #            #  ############################################################################
