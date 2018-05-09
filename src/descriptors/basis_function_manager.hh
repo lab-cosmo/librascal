@@ -41,7 +41,7 @@ namespace rascal {
     BasisFunManager() = delete;
 
     //! Construct from file
-    BasisFunManager(NeighManager & manager);
+    BasisFunManager(FILE *);
 
     //! Copy constructor
     BasisFunManager(const BasisFunManager &other) = delete;
@@ -64,6 +64,12 @@ namespace rascal {
 
     // Number of hyperparameters per basis function type
     constexpr static unit get_nhyper(const BasisFunType& fun_type);
+
+    // Basis functions and derivative
+    template<BasisFunType fun_type>
+    inline double comp_fun(const double * const param, const double * rij);
+    template<BasisFunType func_type>
+    inline double comp_Dfun(const double * const param, const double * const rij);
 
   protected:
   private:

@@ -28,6 +28,8 @@
 
 #include "descriptors/basis_function_manager.cc"
 
+#include <cmath>
+
 using unit = BasisFunManager::unit;
 using BasisFunType = BasisFunManager::BasisFunType;
 
@@ -49,6 +51,7 @@ namespace rascal {
     tanh=3;
   }
 
+  /* ---------------------------------------------------------------------- */
   constexpr unint BasisFunManager::get_nhyper(const BasisFunType& fun_type) {
     switch(fun_type) {
     case BasisFunType::One:
@@ -65,5 +68,101 @@ namespace rascal {
       return 0;
     }
   }
+
+  /* ---------------------------------------------------------------------- */
+  template<BasisFunType fun_type>
+  inline double BasisFunManager::comp_fun(const double * const param,
+					  const double * rij) {
+    switch (fun_type) {
+    case BasisFunType::One: {
+      return 1.;
+    }
+    case BasisFunType::Gaussian: {
+      const auto & eta = param[0]; // Gaussian width
+      const auto & Rs = param[1];    // position
+      const auto & Rij = rij[0];
+      const auto & dR = Rij - Rs;
+      return exp(-eta * dR * dR);
+
+    }
+    case BasisFunType::cosine: {
+      const auto & kappa = param [0];
+      const auto & Rij = rij[0];
+      return cos(kappa * Rij);
+    }
+      // remark: possible direct use of cos
+    case BasisFunType::angular1: {
+      const auto & zeta = param[0];
+      const auto & lambda = param[1];
+      const auto & eta = param[2];
+      const auto & thetaijk = rij[0];
+      const auto & Rij = rij[1];
+      const auto & Rik = rij[2];
+      const auto & Rjk = rij[3];
+      return pow(2., 1 - zeta) * pow(1. + lambda * cos(thetaijk), zeta)
+	* exp(-eta * (Rij*Rij + Rik*Rik + Rjk*Rjk));
+    }
+      // remark: possible direct use of cos
+    case BasisFunType::angular2: {
+      const auto & zeta = param[0];
+      const auto & lambda = param[1];
+      const auto & eta = param[2];
+      const auto & thetaijk = rij[0];
+      const auto & Rij = rij[1];
+      const auto & Rik = rij[2];
+      return pow(2., 1 - zeta) * pow(1. + lambda * cos(thetaijk), zeta)
+	* exp(-eta * (Rij*Rij + Rik*Rik));
+    }
+    default:
+      throw std::runtime_error("Basis function not specified")
+    }
+  }
+
+  template<BasisFunType fun_type>
+  inline double BasisFunManager::comp_Dfun(const double * const param,
+					   const double * rij) {
+    switch (fun_type) {
+    case BasisFunType::One: {
+      return 1.; // need to keep a '1.' -> keep derivative of cutoff
+    }
+    case BasisFunType::Gaussian: {
+      const auto & eta = param[0]; // Gaussian width
+      const auto & Rs = param[1];    // position
+      const auto & Rij = rij[0];
+      const auto & dR = Rij - Rs;
+      return -2. * eta * dR * exp(-eta * dR * dR);
+
+    }
+    case BasisFunType::cosine: {
+      const auto & kappa = param [0];
+      const auto & Rij = rij[0];
+      return -kappa * sin(kappa * Rij);
+    }
+    case BasisFunType::angular1: {
+      const auto & zeta = param[0];
+      const auto & lambda = param[1];
+      const auto & eta = param[2];
+      const auto & thetaijk = rij[0];
+      const auto & Rij = rij[1];
+      const auto & Rik = rij[2];
+      const auto & Rjk = rij[3];
+      return /* pow(2., 1 - zeta) * pow(1. + lambda * cos(thetaijk), zeta)
+	      * exp(-eta * (Rij*Rij + Rik*Rik + Rjk*Rjk)); */
+    }
+    case BasisFunType::angular2: {
+      const auto & zeta = param[0];
+      const auto & lambda = param[1];
+      const auto & eta = param[2];
+      const auto & thetaijk = rij[0];
+      const auto & Rij = rij[1];
+      const auto & Rik = rij[2];
+      return /* pow(2., 1 - zeta) * pow(1. + lambda * cos(thetaijk), zeta)
+	      * exp(-eta * (Rij*Rij + Rik*Rik)) */;
+    }
+    default:
+      throw std::runtime_error("Basis function not specified")
+    }
+  }
+
 
 }
