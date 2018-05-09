@@ -30,11 +30,9 @@
 #define NEIGHBOURHOOD_MANAGER_CELL_H
 
 #include "neighbourhood_managers/neighbourhood_manager_base.hh"
-#include "neighbourhood_managers/neighbourhood_box.hh"
 #include "neighbourhood_managers/field.hh"
 #include "lattice.hh"
 #include "basic_types.h"
-#include "neighbourhood_managers/field.hh"
 #include <Eigen/Dense>
 #include <Eigen/StdVector>
 #include <stdexcept>
@@ -66,10 +64,13 @@ namespace rascal {
     using AtomRef_t = typename Parent::AtomRef;
     template <int Level, int MaxLevel>
     using ClusterRef_t = typename Parent::template ClusterRef<Level, MaxLevel>;
-    using vVector3d = std::vector<Eigen::Vector3d,Eigen::aligned_allocator<Eigen::Vector3d> >;
+    
     using AtomVectorField_t = Field<NeighbourhoodManagerCell, double, 1, 3>;
+    
     //! Default constructor
-    NeighbourhoodManagerCell() = default;
+    NeighbourhoodManagerCell()
+    :particles{}, centers{} ,positions{} ,lattice{} ,pbc{} ,part2bin{} ,boxes{} ,number_of_neighbours{0} ,neighbour_bin_id{} , number_of_neighbours_stride{}, neighbour_atom_index{}
+    {}
 
     //! Copy constructor
     NeighbourhoodManagerCell(const NeighbourhoodManagerCell &other) = delete;
@@ -89,6 +90,8 @@ namespace rascal {
     // required for the construction of vectors, etc
     constexpr static int dim() {return traits::Dim;}
 
+    class Box;
+
     // return position vector
     inline Vector_ref get_position(const AtomRef_t& atom) {
       auto index{atom.get_index()};
@@ -96,30 +99,46 @@ namespace rascal {
       return Vector_ref(xval);
     }
 
-    // return number of I atoms in the list
+    // return number of center in the list
     inline size_t get_size() const {
       return this->centers.size();
     }
-    // return the number of neighbours of a given atom
+    // return the id a given center atom
     inline size_t get_atom_id(const Parent& , int i_atom_id) const {
       return this->centers[i_atom_id].get_index();
     }
 
-    void set_positions(const Eigen::Ref<const Eigen::MatrixXd> pos){
-      this->positions = pos;
+    //! return atom type
+    inline int get_atom_type() {
+      return 0;
     }
 
-    // return the number of atoms forming the next higher cluster with this one
+    
+    
+    // return the shift associated to the neighbour image. No implementation for Parent input type because centers are always within the cell
+    template<int Level, int MaxLevel>
+    inline Vector_ref get_atom_shift(const ClusterRef_t<Level, MaxLevel>& cluster, int j_atom_id) {
+      static_assert(Level == traits::MaxLevel,
+                    "this implementation only handles atoms and pairs");
+      auto && i_atom_id{cluster.get_atoms().front().get_index()};
+      auto && i_bin_id{this-> part2bin.at(i_atom_id)};
+      auto && j_lin_id{cluster.get_index()};
+      //cout << i_bin_id << ": " << i_atom_id  << ": "<< j_lin_id << ": ";
+      auto && shift_index{neighbour_bin_id[i_bin_id][j_lin_id].get_index()};
+      return this->boxes[i_bin_id].get_neighbour_bin_shift(shift_index);
+    }
+
+
+    // return the index of the center corresponding to its neighbour image
     template<int Level, int MaxLevel>
     inline size_t get_atom_id(const ClusterRef_t<Level, MaxLevel>& cluster, int j_atom_id) const {
       static_assert(Level == traits::MaxLevel-1,
                     "this implementation only handles atoms and pairs");
       auto && i_atom_id{cluster.get_atoms().back().get_index()};
-      auto && i_bin_id{this->center2bin.at(i_atom_id)};
-      size_t ij_atom_id{this->boxes[i_bin_id].neighbour_ids[j_atom_id].get_index()};
+      auto && i_bin_id{this->part2bin.at(i_atom_id)};
+      auto && ij_atom_id{this->neighbour_atom_index[i_bin_id][j_atom_id].get_index()};
       return ij_atom_id;
     }
-
 
     // return the number of neighbours of a given atom
     template<int Level, int MaxLevel>
@@ -127,8 +146,8 @@ namespace rascal {
       static_assert(Level == traits::MaxLevel-1,
                     "this implementation only handles atoms and pairs");
       auto && i_atom_id{cluster.get_atoms().back().get_index()};
-      auto && box_id{this->center2bin.at(i_atom_id)};
-      size_t size{this->boxes[box_id].neighbour_ids.size()};
+      auto && box_id{this->part2bin.at(i_atom_id)};
+      auto && size{this->neighbour_atom_index[box_id].size()};
       return size;
     }
 
@@ -143,114 +162,84 @@ namespace rascal {
 
     void update(const Eigen::Ref<const Eigen::MatrixXd>,const std::vector<int>& center_ids, const Eigen::Ref<const Eigen::MatrixXd> cell,const std::array<bool,3>& pbc, const double& cutoff_max);
 
+    Box get_box(const int& bin_id);
+
+    size_t get_box_nb();
+
+    std::vector<std::vector<AtomRef_t>> neighbour_bin_id;
+    std::vector<size_t> number_of_neighbours_stride;
+    std::vector<std::vector<AtomRef_t>> neighbour_atom_index;
 
   protected:
+
+    void set_positions(const Eigen::Ref<const Eigen::MatrixXd> pos){
+      this->positions = pos;
+    }
+
+
+    std::vector<AtomRef_t> particles;
     std::vector<AtomRef_t> centers; //! list of center indices. after build it points to neighpos
-    std::vector<std::vector<AtomRef_t>> neighlist; //! list of list of neighbour indices. fisrt dimension is in the same order as centers. it points to neighpos
-    std::vector<std::array<double,3>> neighpos; //! list of positions for the neighboor list. contains positions of the centers and then the positions of the neighboors.
     Matrix3XdC positions; //! list of pointers. after build it points to neighpos
     Lattice lattice;
     std::array<bool,3> pbc;
-    std::vector<Box<NeighbourhoodManagerCell>> boxes;
-    std::map<int, int> center2bin; 
+    std::map<int, int> part2bin; //make_shared<MyClass>
+    std::vector<Box> boxes;
+    size_t number_of_neighbours;
+    
+
   private:
   };
 
   /* ---------------------------------------------------------------------- */
 
-  void NeighbourhoodManagerCell::build(const Eigen::Ref<const Eigen::MatrixXd>  positions,
-                                        const std::vector<int>& center_ids,
-                                        const Eigen::Ref<const Eigen::MatrixXd> cell,
-                                        const std::array<bool,3>& pbc, const double& cutoff_max)
-    {
-      Eigen::Index Natom{positions.cols()};
-      const int Ncenter{Natom};
-      //this->centers.resize(Ncenter);
-      this->neighlist.resize(Ncenter);
+  class NeighbourhoodManagerCell::Box {
+  public:
+    using Manager_t = NeighbourhoodManagerBase<NeighbourhoodManagerCell>;
+    using AtomRef_t = typename NeighbourhoodManagerCell::AtomRef_t;
+    using Vector_t = typename NeighbourhoodManagerCell::Vector_t;
+    using Vector_ref = typename NeighbourhoodManagerCell::Vector_ref;
+    //! Default constructor
+    Box() = default;
 
-      const int dim{traits::Dim};
+    //! constructor
+    Box(Manager_t& manager ,const Vec3i_t& coord,
+          const std::array<std::array<Dim_t, 3>,2>& neigh_bounds, 
+          const Vec3i_t& nbins_c);
+    
+    //! copy constructor
+    Box(const Box & other) = default;
+    //! assignment operator
+    Box & operator=(const Box & other) = default;
 
-      int count{0};
-      this->set_positions(positions);
+    virtual ~Box() = default;
 
-      for (int id:center_ids) {
-          this->centers.push_back(NeighbourhoodManagerCell::AtomRef_t(this->get_manager(),id));
-          count += 1;
-      }
+    inline void push_particle_back(const int& part_index);
 
-      Cell_t lat = cell;
-      this->lattice.set_cell(lat);
-      Vec3_t reciprocal_lenghts = this->lattice.get_reciprocal_lenghts();
-      double bin_size{cutoff_max};
-      Vec3i_t nbins_c,neigh_search;
-      Vec3_t nbins_cd;
-      int nbins{1};
-      double face_dist_c;
-      for (int ii{0};ii<dim;++ii){
-        if (reciprocal_lenghts[ii] > 0){
-          face_dist_c = 1 / reciprocal_lenghts[ii];
-        }
-        else {
-          face_dist_c = 1;
-        }
+    inline size_t get_number_of_particles();
+
+    inline size_t get_number_of_neighbours();
       
-        nbins_c[ii] =  std::max( static_cast<int>(face_dist_c/bin_size), 1);
-        nbins_cd[ii] = static_cast<double>(nbins_c[ii]);
-        neigh_search[ii] = static_cast<int>(std::ceil(bin_size * nbins_c[ii] / face_dist_c));
-        nbins *= nbins_c[ii];
+    inline size_t get_number_of_neighbour_box();
       
-      }
+    inline void set_number_of_neighbours(const size_t& neigh_nb);
 
-      Vec3i_t bin_index_c;
-      // TODO take into acount pbc dif from 1,1,1 
-      std::array<std::array<Dim_t, 3>,2> neigh_bounds{{ {-nbins_c[0]+1,-nbins_c[1]+1,-nbins_c[2]+1},
-                                                        { nbins_c[0]-1, nbins_c[1]-1, nbins_c[2]-1} }};
-      for (int ii{0}; ii < nbins; ++ii){
-        internal::lin2mult(ii,nbins_c,bin_index_c);
-        this->boxes.push_back(Box<NeighbourhoodManagerCell>(this->get_manager(), bin_index_c, neigh_bounds, nbins_c));
-      }
+    inline  int get_neighbour_bin_index(const int& j_index);
 
-      Vec3_t position_sc;
-      int bin_id{0};
-      for (auto center : this->centers){
-          this->lattice.get_cartesian2scaled(center.get_position(),position_sc);
-          bin_index_c = (position_sc.array() * nbins_cd.array()).cast<int>();
-          bin_id = internal::mult2lin(bin_index_c,nbins_c);
-          this->boxes[bin_id].push_center_back(center.get_index());
-          this->center2bin[center.get_index()] = bin_id;
-      }
-      for (int i_box{0}; i_box < this->boxes.size(); ++i_box){
-        for (auto neigh_bin : this->boxes[i_box].neighbour_bin_ids) {
-          for (auto neigh : this->boxes[neigh_bin].centers){
-            this->boxes[i_box].push_neighbour_back(neigh.get_index());
-            //size_t aa{box.get_number_of_neighbour()};
-          }
-        }
-      }
-      /*
-      for (auto box : this->boxes){
-        for (auto neigh_bin : box.neighbour_bin_ids) {
-          for (auto neigh : this->boxes[neigh_bin].centers){
-            box.push_neighbour_back(neigh.get_index());
-            //size_t aa{box.get_number_of_neighbour()};
-          }
-        }
-      }*/ 
+    inline size_t get_particle_index(const int& index);
       
+    inline Vector_ref get_neighbour_bin_shift(const int& neigh_bin_index){
+      auto * xval{this->neighbour_bin_shift[neigh_bin_index].col(0).data()};
+      return Vector_ref(xval);
     }
 
-  /* ---------------------------------------------------------------------- */
-
-  void NeighbourhoodManagerCell::update(const Eigen::Ref<const Eigen::MatrixXd> positions,
-                                        const std::vector<int>& center_ids,
-                                        const Eigen::Ref<const Eigen::MatrixXd> cell,
-                                        const std::array<bool,3>& pbc, const double& cutoff_max)
-  {
-    bool some_condition{false};
-    if (some_condition){
-      NeighbourhoodManagerCell::build(positions,center_ids,cell,pbc,cutoff_max);
-    }
-  }
+  protected:
+    Manager_t & manager;
+    std::vector<AtomRef_t> particles;
+    std::vector<Vector_t,Eigen::aligned_allocator<Vector_t>> neighbour_bin_shift; //stores double for the dot product with the Cell vectors
+    std::vector<int> neighbour_bin_index;
+    size_t number_of_neighbours;
+    Vec3i_t coordinates;
+  };
   /* ---------------------------------------------------------------------- */
 
   template<int Level, int MaxLevel>
@@ -259,10 +248,11 @@ namespace rascal {
     static_assert(Level == 2, "This class cas only handle single atoms and pairs");
     static_assert(MaxLevel == traits::MaxLevel, "Wrong maxlevel");
 
-    auto atoms{cluster.get_atoms()};
-    auto i{atoms.front().get_index()};
+    //auto atoms{};
+    auto icenter{cluster.get_atoms().front().get_index()};
+    auto stride{this->number_of_neighbours_stride[icenter]};
     auto j{cluster.get_index()};
-    auto main_offset{this->neighlist[i][j]};
+    auto main_offset{stride+j};
     return main_offset;
   }
 

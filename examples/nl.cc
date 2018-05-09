@@ -1,5 +1,6 @@
 #include <../src/neighbourhood_managers/neighbourhood_manager_cell.hh>
 #include <../src/neighbourhood_managers/neighbourhood_manager_lammps.hh>
+#include <../src/neighbourhood_managers/field.hh>
 #include <iostream>
 #include <../src/basic_types.h>
 #include <Eigen/StdVector>
@@ -9,8 +10,8 @@ using namespace std;
 using Manager_t = rascal::NeighbourhoodManagerCell;
 constexpr static int Natom{8};
 constexpr static int dim{3};
-using ptr_t = double**;
-using vVector3d = std::vector<Eigen::Vector3d,Eigen::aligned_allocator<Eigen::Vector3d> >;
+using Vector_t = Eigen::Matrix<double, dim, 1>;
+
 int main()
 {   
     Manager_t manager;
@@ -34,27 +35,119 @@ int main()
                 4.643695520786083,2.662204050783991,1.250682335857938,6.055217235712136,0.860905287815103,6.444994283754972,4.536108843695142,2.769790727874932,5.609177455068640,1.696722116501434,6.703053268421970,0.602846303148105,3.487609972580834,3.818289598989240,1.436734374347541,5.869165197222533,1.054504320562138,6.251395251007936,3.998423858825871,3.307475712744203,5.323662899811682,1.982236671758393;
         
     rascal::VecXi neighlist;
-    
-    int atom_counter{};
-    int pair_counter{};
-    constexpr bool verbose{false};
+    double rc2{cutoff_max*cutoff_max};
+    double rc{cutoff_max};
+    int atom_counter{0};
+    int pair_counter{0};
+
+    /*
+    rascal::Vec3i_t nbins_c,neigh_search,coord;
+    neigh_search << 1,1,1;
+    std::array<std::array<int, 3>,2> neigh_bounds{{ {-neigh_search[0],-neigh_search[1],-neigh_search[2]},
+                                                        { neigh_search[0], neigh_search[1], neigh_search[2]} }};
+    coord << 0,0,0;
+    nbins_c << 1,2,2;
+    rascal::Vec3i_t shift,neighbour_bin_idx_c;
+    Vector_t neighbour_bin_shift;
+    std::array<int,2> div_mod;
+    int bin_id{0};
+    for (int dx{neigh_bounds[0][0]}; dx <= neigh_bounds[1][0]; ++dx){
+      for (int dy{neigh_bounds[0][1]}; dy <= neigh_bounds[1][1]; ++dy){
+        for (int dz{neigh_bounds[0][2]}; dz <= neigh_bounds[1][2]; ++dz){
+          shift << coord(0)+dx,coord(1)+dy,coord(2)+dz;
+          
+          for (int ii{0};ii<3;++ii){
+            //branchless_div_mod(coord(ii)+shift(ii),nbins_c(ii),div_mod);
+            rascal::internal::div_mod(shift(ii),nbins_c(ii),div_mod);
+            neighbour_bin_shift[ii] = static_cast<double>(div_mod[0]);
+            neighbour_bin_idx_c[ii] = div_mod[1];
+          }
+
+          bin_id = rascal::internal::mult2lin(neighbour_bin_idx_c,nbins_c);
+          int trois{3};
+          trois = bin_id*trois;
+        }
+      }
+    std::vector<std::vector<AtomRef_t>> neighbour_bin_id;
+    std::vector<size_t> number_of_neighbours_stride;
+    std::vector<std::vector<AtomRef_t>> neighbour_atom_index;
+    this->neighbour_atom_index[box_id].size()
+    get_box_nb
+    }*/
+    Vector_t shift;
+    /*
+    Manager_t::Box box{manager.get_box(0)};
+    for (size_t ii{0}; ii < box.get_number_of_neighbour_box(); ++ii){
+        cout<<box.get_neighbour_bin_index(ii)<<": " << ii << ": ";
+        shift = box.get_neighbour_bin_shift(ii);
+        cout<< shift.transpose() <<endl;
+    }
+    cout << endl;
+
+    for (size_t bin_id{0}; bin_id < manager.get_box_nb(); ++bin_id){
+        if (bin_id != 0){continue;}
+        Manager_t::Box box{manager.get_box(bin_id)};
+        for(size_t neigh_part_id{0}; neigh_part_id < manager.neighbour_atom_index[bin_id].size(); ++neigh_part_id ){
+            int part_index{manager.neighbour_atom_index[bin_id][neigh_part_id].get_index()};
+            int shift_index{manager.neighbour_bin_id[bin_id][neigh_part_id].get_index()};
+            shift = box.get_neighbour_bin_shift(shift_index);
+            cout << bin_id << ": " << part_index << ": " << neigh_part_id <<  ": " << shift.transpose()  << endl;
+        }
+    }
+    cout << endl;
+    */
     for (auto center: manager) {
         if (atom_counter - center.get_atom_index() != 0 ){
             cout << "index " << center.get_atom_index() << endl;
         }
         ++atom_counter;
-        cout << "Center atom index: " << center.get_atom_index() << endl;
+        
+        
         for (int ii{3};ii<3;++ii){
             if (positions_test(ii,center.get_atom_index()) - center.get_position()[ii] != 0 ){
                 cout << "position " << center.get_atom_index() << endl;
             }
         }
-        cout << "Neighbour indices: ";
+
+
+        if (center.get_atom_index() != 1){continue;}
+        cout << "Center atom index: " << center.get_atom_index() << endl;
+        cout << "Neighbour indices: "<< endl;
         for (auto neigh : center){
-            int ij_atom_id{neigh.get_atom_index()};
-            cout  << neigh.get_atom_index() << ", ";
+            int part_index{neigh.get_atom_index()};
+            
+            //Vector_t r,rcent,shift;
+            Vector_t r,rcent;
+            shift = neigh.get_atom_shift();
+            
+            
+            r = neigh.get_position() +  cell * shift;
+            rcent = r -  center.get_position();
+            double d{rcent.norm()};
+            /*
+            cout  << shift.transpose()  << endl;
+            //cout << part_index << ": " << neigh.get_index() <<  ": " << shift.transpose()  << endl;
+            cout  << "Neigh: " << part_index << endl;
+            cout  << "Shift: " << shift.transpose() << endl;
+            cout  << "pos: " << neigh.get_position().transpose() << endl;
+            cout  << "pos shifted: " << r.transpose() << endl;
+            cout  << "center pos: " << center.get_position().transpose() << endl;
+            cout  << "distance: " << d << endl;
+            cout << endl;
+            */
+            //double d2{(neigh.get_position() +  cell.transpose() * neigh.get_atom_shift() - center.get_position()).squaredNorm()};
+            
+            if (d < rc ){
+                cout  << neigh.get_atom_index() << ":"<<neigh.get_atom_shift().transpose() << "; ";
+            }
+            
+            
         }
+
         cout << endl;
+        //break;
+    
+        
     }
 
     return(0);

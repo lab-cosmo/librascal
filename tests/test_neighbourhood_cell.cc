@@ -38,6 +38,28 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(manager_cell_constructor_test, ManagerFixture_cell){}
   /* ---------------------------------------------------------------------- */
+  /*
+  BOOST_FIXTURE_TEST_CASE(manager_box_constructor_test, ManagerFixture_cell){
+    
+  }
+  */
+  /* ---------------------------------------------------------------------- */
+  /*
+  BOOST_FIXTURE_TEST_CASE(manager_box_centers_test, ManagerFixture_cell){
+    //NeighbourhoodManagerBox<NeighbourhoodManagerCell> box;
+    //box = manager.get_box(0);
+    std::array<int, 5> center_true{{1,2,11,12,16}};
+    for (size_t ii{0};ii<box.get_center_nb();++ii){
+      BOOST_CHECK_EQUAL(box.get_center_index(ii),center_true[ii]);
+    }
+    for (auto neigh_box : box){
+      auto neigh_box_id{neigh_box.get_atom_index()};
+
+    }
+  }*/
+  
+  /* ---------------------------------------------------------------------- */
+  
   BOOST_FIXTURE_TEST_CASE(manager_test, ManagerFixture_cell) {
     Eigen::MatrixXd positions_test(3,22); // 3,22
       positions_test << 3.689540159937393,5.123016813620886,1.994119731169116,6.818437242389163,2.630056617829216,6.182500355729062,2.114977334498767,6.697579639059512,1.392155450018263,7.420401523540017,2.432242071439904,6.380314902118375,1.112656394115962,7.699900579442317,3.569715877854675,5.242841095703604,3.122826344932127,5.689730628626151,3.248684682453303,5.563872291104976,2.608353462112637,6.204203511445642,
@@ -53,7 +75,7 @@ namespace rascal {
       for (int ii{3};ii<3;++ii){
         BOOST_CHECK_EQUAL(positions_test(ii,atom_cluster.get_index()),atom_cluster.get_position()[ii]);
       }
-      /*
+      
       for (auto pair_cluster: atom_cluster) {
         auto pair_offset{pair_cluster.get_global_index()};
         if (verbose) {
@@ -66,7 +88,7 @@ namespace rascal {
         BOOST_CHECK_EQUAL(pair_counter, pair_offset);
         ++pair_counter;
 
-      }*/
+      }
     }
     
   }

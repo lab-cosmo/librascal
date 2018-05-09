@@ -153,11 +153,11 @@ class Lattice {
     }
 
   protected:
-    Cell_t cell_vectors;
+    Cell_t cell_vectors = Cell_t::Ones();
     Cell_t reciprocal_vectors = Cell_t::Ones();
-    Vec3_t cell_lenghts;
-    Vec3_t reciprocal_lenghts;
-    Vec3_t cell_angles;// alpha(b,c) beta(a,c) gamma(a,b) in radian
+    Vec3_t cell_lenghts = Vec3_t::Ones();
+    Vec3_t reciprocal_lenghts = Vec3_t::Ones();
+    Vec3_t cell_angles = Vec3_t::Ones();// alpha(b,c) beta(a,c) gamma(a,b) in radian
     Cell_t scaled2cartesian = Cell_t::Zero(); //! transformation matrix from the lattice coordinate system to cartesian
     Cell_t cartesian2scaled = Cell_t::Zero(); //! transformation matrix from the cartesian system to the lattice coordinate system
     double pi{M_PI};

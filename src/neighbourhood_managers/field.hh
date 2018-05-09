@@ -78,7 +78,7 @@ namespace rascal {
     template<typename T, size_t NbRow, size_t NbCol>
     using Value_ref = typename Value<T, NbRow, NbCol>::reference;
 
-    const inline Vec3i_t lin2mult(const Dim_t& index, const Eigen::Ref<const Vec3i_t> shape, Eigen::Ref< Vec3i_t> retval)  {
+    inline void lin2mult(const Dim_t& index, const Eigen::Ref<const Vec3i_t> shape, Eigen::Ref< Vec3i_t> retval)  {
       int dim{3};
       //Vec3i_t retval;
       Dim_t factor{1};
@@ -91,7 +91,7 @@ namespace rascal {
       //return retval;
     }
 
-    const inline Dim_t mult2lin( const Eigen::Ref<const Vec3i_t> coord, const Eigen::Ref<const Vec3i_t> shape)  {
+    inline Dim_t mult2lin( const Eigen::Ref<const Vec3i_t> coord, const Eigen::Ref<const Vec3i_t> shape)  {
       int dim{3};
       Dim_t index{0};
       Dim_t factor{1};
@@ -142,7 +142,7 @@ namespace rascal {
     using Value = internal::Value<T, NbRow, NbCol>;
 
     using value_type = typename Value::type;
-    using reference =typename Value::reference;
+    using reference = typename Value::reference;
 
     //! Default constructor
     Field() = delete;

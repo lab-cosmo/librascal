@@ -108,19 +108,16 @@ namespace rascal {
     inline size_t nb_clusters(int cluster_size) const {
       return this->implementation().get_nb_clusters(cluster_size);
     }
-    /*
-    inline Vector_block get_position(const AtomRef& atom) {
+    
+    inline Vector_ref get_position(const AtomRef& atom) {
       return this->implementation().get_position(atom);
     }
-    */
-   inline Vector_ref get_position(const AtomRef& atom) {
-      return this->implementation().get_position(atom);
+
+    inline int get_atom_type(const AtomRef& atom) {
+      return this->implementation().get_atom_type(atom);
     }
-    /*
-    inline Vector_shift get_position_shift(const AtomRef& atom,const int& center_id,const int& cluster_id) {
-      return this->implementation().get_position_shift(atom,center_id,cluster_id);
-    }*/
-   
+    
+    
 
   protected:
     template <int L, int ML>
@@ -130,6 +127,11 @@ namespace rascal {
     template <int L, int ML>
     inline size_t atom_id(ClusterRef<L, ML> & cluster, int index) const {
       return this->implementation().get_atom_id(cluster, index);
+    }
+
+    template <int L, int ML>
+    inline Vector_ref atom_shift(ClusterRef<L, ML> & cluster, int index) {
+      return this->implementation().get_atom_shift(cluster, index);
     }
 
     inline size_t atom_id(NeighbourhoodManagerBase & cluster, int index) const {
@@ -210,6 +212,9 @@ namespace rascal {
     inline Vector_ref get_position() {return this->manager.get_position(*this);}
     //! return position vector
 
+    //! return atom type
+    inline int get_atom_type() {return this->manager.get_atom_type(*this);}
+
   protected:
     Manager_t & manager;
     int index;
@@ -259,30 +264,14 @@ namespace rascal {
     const std::array<AtomRef_t, Level>& get_atoms() const {return this->atoms;};
     std::array<AtomRef_t, Level>& get_atoms() {return this->atoms;};
 
-    /**
-     * convenience functions, because in loops, we frequently like to
-     * use clusters as proxies to their last atom
-     */
-
-    /** 
-    There is 2 cases: 
-        center (Level== 1)-> position is in the cell
-        neighbour (Level > 1)   -> position has an offset associated
-    
-    template<int L = Level, int aa = 1>
-    inline typename std::enable_if<L == aa, Vector_ref>::type  get_position() 
-    {
-      return this->atoms.back().get_position();
-    }
-    template<int L = Level, int aa = 2>
-    inline typename std::enable_if< L >= aa,Vector_shift >::type  get_position() 
-    {
-      return this->atoms.back().get_position_shift(this->atoms.front().get_index(),this->get_index());
-    }
-    */
     inline decltype(auto) get_position() {return this->atoms.back().get_position();}
 
-    
+    inline decltype(auto) get_atom_shift() {
+      return this->get_manager().atom_shift(*this,this->get_atom_index());
+    }
+
+    inline decltype(auto) get_atom_type() {return this->atoms.back().get_atom_type();}
+
     //! return the index of the atom: Atoms_t is len==1 if center, len==2 if 1st neighbours,...
     inline decltype(auto) get_atom_index() {
       return this->atoms.back().get_index();
