@@ -36,6 +36,8 @@
 #define SPECIES_MANAGER_H
 
 #include "neighbourhood_managers/neighbourhood_manager_base.hh"
+#include "descriptors/basis_function_manager.hh"
+
 namespace rascal {
 
   template <class NeighManager, int MaxDepth, int Depth=0>
@@ -71,15 +73,18 @@ namespace rascal {
     SpeciesManager& operator=(SpeciesManager &&other) = default;
 
     //! get the symmetry functions and the corresponding neighbourhoodmanager
-    std::map<Species_t, SymFunManager> & get_symmetry_functions();
+    std::map<Species_t, BasisFunManager> & get_symmetry_functions();
 
     //! get the next level of depth
     template <bool NotAtMaxDepth = (Depth != MaxDepth)>
-    std::map<Species_t, std::enable_if_t<NotAtMaxDepth, SubManagerType>> & get_next_level();
+    std::map<Species_t,
+	     std::enable_if_t<NotAtMaxDepth,
+			      SubManagerType>>
+             & get_next_level();
 
   protected:
     std::array<Species_t, Depth> fixed_species;
-    std::map<Species_t, SymFunManager>;
+    std::map<Species_t, BasisFunManager>;
     std::map<Species_t, SubManagerType>;
   private:
   };
