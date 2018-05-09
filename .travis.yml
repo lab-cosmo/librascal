@@ -49,31 +49,17 @@ before_install:
     - if [ ! -d "${BOOST_ROOT}" ]; then mkdir -p "${BOOST_ROOT}" && tar jxf "${DOWNLOAD_ROOT}/boost.tar.bz2" --strip-components=1 -C "${BOOST_ROOT}"; fi
     - if [ ! -f "${BOOST_ROOT}/b2" ]; then cd "${BOOST_ROOT}"; ./bootstrap.sh --with-libraries=test; fi
     - cd "${BOOST_ROOT}"; ./b2 --prefix="$BOOST_ROOT" -d0 install
-
+    - cmake --version
 install:
        - cd "${TRAVIS_BUILD_DIR}"
        - pip3 install Sphinx
        - mkdir build
        - cd build
-       - cmake .. -DBOOST
+       - cmake .. 
        - make
        - make test
 
-         #- make dev_doc
-
-                #  ############################################################################
-        #  # Install a recent CMake
-        #  ############################################################################
-        #    - |
-        #            if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
-        #            CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.2-Linux-x86_64.tar.gz"
-        #            mkdir cmake && travis_retry wget --no-check-certificate --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
-        #            export PATH=${DEPS_DIR}/cmake/bin:${PATH}
-        #            else
-        #            brew upgrade cmake || brew install cmake
-        #            fi
-        #    - cmake --version
-        #
+        
         #            #  ############################################################################
         #            #  # Install a recent Doxygen
         #            #  ############################################################################
