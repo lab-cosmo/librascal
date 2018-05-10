@@ -49,7 +49,7 @@ class TestNeighbourManagerCell(unittest.TestCase):
         """
         TEST constructor wrapper
         """
-        manager =  rc.NeighbourhoodManagerCell()
+        rc.NeighbourhoodManagerCell()
     
     def test_manager_iteration(self):
         manager =  rc.NeighbourhoodManagerCell()
