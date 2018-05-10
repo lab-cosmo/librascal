@@ -1,5 +1,5 @@
 /**
- * @file   basic_types.h
+ * @file   basic_types.hh
  *
  * @author Federico Giberti <federico.giberti@epfl.ch>
  *

@@ -30,7 +30,7 @@
 #define TEST_LATTICE_H
 
 #include "lattice.hh"
-#include "basic_types.h"
+#include "basic_types.hh"
 
 
 namespace rascal {

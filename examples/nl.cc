@@ -2,7 +2,7 @@
 #include <neighbourhood_managers/neighbourhood_manager_lammps.hh>
 #include <neighbourhood_managers/field.hh>
 #include <iostream>
-#include <basic_types.h>
+#include <basic_types.hh>
 #include <Eigen/StdVector>
 #include <cmath>
 using namespace std;

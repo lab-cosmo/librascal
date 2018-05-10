@@ -35,7 +35,7 @@
 #include <pybind11/eigen.h>
 #include <pybind11/stl.h>
 #include <Eigen/Dense>
-#include <basic_types.h>
+#include <basic_types.hh>
 
 using namespace rascal;
 namespace py=pybind11;

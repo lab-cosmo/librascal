@@ -28,7 +28,7 @@
 
 
 
-#include "basic_types.h"
+#include "basic_types.hh"
 #include <Eigen/Dense>
 #include <pybind11/eigen.h>
 

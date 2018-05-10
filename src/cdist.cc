@@ -1,5 +1,5 @@
 
-#include "basic_types.h"
+#include "basic_types.hh"
 
 namespace rascal {
 

@@ -32,7 +32,7 @@
 #include "neighbourhood_managers/neighbourhood_manager_base.hh"
 #include "neighbourhood_managers/field.hh"
 #include "lattice.hh"
-#include "basic_types.h"
+#include "basic_types.hh"
 #include <Eigen/Dense>
 #include <Eigen/StdVector>
 #include <stdexcept>

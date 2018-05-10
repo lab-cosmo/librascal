@@ -1,4 +1,4 @@
-# rascal
+# Rascal
 A scalable and versatile fingerprint and machine-learning code
 
 How to install:
@@ -11,7 +11,7 @@ cd build
 cmake .. 
 make
 ``` 
-* To make development documentation:
+* To make development documentation: first enable the documentation building with ccmake, then
 ```Shell
 cd build 
 cmake ..
@@ -30,7 +30,10 @@ To remove all the cmake files/folders except for the external library (enable gl
 shopt -s extglob
 rm -fr -- !(external|third-party) 
 ```
-
+In order to have the readthedocs.org theme for the documentation, please install the following python package:
+```Shell
+pip install sphinx_rtd_theme
+```
 
 
 TILL:

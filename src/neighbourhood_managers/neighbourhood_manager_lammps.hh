@@ -41,7 +41,7 @@ namespace rascal {
   //! traits specialisation for Lammps manager
   template <>
   struct NeighbourhoodManager_traits<NeighbourhoodManagerLammps> {
-    constexpr static int Dim {3};
+    constexpr static int Dim{3};
     constexpr static int MaxLevel{2};
   };
   class NeighbourhoodManagerLammps: public NeighbourhoodManagerBase<NeighbourhoodManagerLammps>

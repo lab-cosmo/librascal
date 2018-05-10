@@ -30,7 +30,7 @@
 #define TEST_NEIGHBOURHOOD_MANAGER_CELL_H
 
 #include "neighbourhood_managers/neighbourhood_manager_cell.hh"
-#include "basic_types.h"
+#include "basic_types.hh"
 
 
 namespace rascal {

@@ -33,7 +33,7 @@
 #include <Eigen/Dense>
 #include <type_traits>
 #include <vector>
-#include <basic_types.h>
+#include <basic_types.hh>
 
 namespace rascal {
 

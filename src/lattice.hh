@@ -30,7 +30,7 @@
 #define LATTICE_H
 
 #include <Eigen/Dense>
-#include <basic_types.h>
+#include <basic_types.hh>
 #include <cmath>
 
 namespace rascal {

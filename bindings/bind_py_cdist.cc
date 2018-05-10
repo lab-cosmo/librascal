@@ -30,7 +30,7 @@
 
 
 #include <pybind11/pybind11.h>
-#include "cdist.h"
+#include "cdist.hh"
 #include <pybind11/eigen.h>
 
 using namespace rascal;
