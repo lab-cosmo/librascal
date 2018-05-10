@@ -78,8 +78,9 @@ namespace rascal {
     template<typename T, size_t NbRow, size_t NbCol>
     using Value_ref = typename Value<T, NbRow, NbCol>::reference;
 
+    template<int dim>
     inline void lin2mult(const Dim_t& index, const Eigen::Ref<const Vec3i_t> shape, Eigen::Ref< Vec3i_t> retval)  {
-      int dim{3};
+      //int dim{3};
       //Vec3i_t retval;
       Dim_t factor{1};
       for (Dim_t i{0}; i < dim; ++i) {
@@ -91,8 +92,9 @@ namespace rascal {
       //return retval;
     }
 
+    template<int dim>
     inline Dim_t mult2lin( const Eigen::Ref<const Vec3i_t> coord, const Eigen::Ref<const Vec3i_t> shape)  {
-      int dim{3};
+      //int dim{3};
       Dim_t index{0};
       Dim_t factor{1};
       for (Dim_t i = 0; i < dim; ++i) {
@@ -108,8 +110,7 @@ namespace rascal {
     // TODO more efficient implementation without if (would be less general)
     //! div_mod function returning python like div_mod, i.e. signed integer division truncates towards negative infinity, and signed integer modulus has the same sign the second operand.
     template<class Integral>
-    void div_mod(const Integral& x, const Integral& y, std::array<int,2>& out)
-    {
+    void div_mod(const Integral& x, const Integral& y, std::array<int,2>& out){
       const Integral quot = x / y;
       const Integral rem  = x % y;
       if (rem != 0 && (x < 0) != (y < 0)){
@@ -120,6 +121,17 @@ namespace rascal {
         out[0] = quot;
         out[1] = rem;
       }
+    }
+
+    //! warning: works only with negative x if |x| < y
+    // TODO Does not pass tests
+    template<class Integral>
+    void branchless_div_mod(const Integral& x, const Integral& y, std::array<int,2>& out){
+      const Integral quot = (x-y) / y;
+      const Integral rem  = (x+y) % y;
+      out[0] = quot;
+      out[1] = rem;
+      
     }
     
   }  // internal

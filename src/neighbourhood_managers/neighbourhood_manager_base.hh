@@ -117,6 +117,10 @@ namespace rascal {
       return this->implementation().get_atom_type(atom);
     }
     
+    template <int L, int ML>
+    inline Vector_ref atom_shift(ClusterRef<L, ML> & cluster, const int& index) {
+      return this->implementation().get_atom_shift(cluster, index);
+    }
     
 
   protected:
@@ -127,11 +131,6 @@ namespace rascal {
     template <int L, int ML>
     inline size_t atom_id(ClusterRef<L, ML> & cluster, int index) const {
       return this->implementation().get_atom_id(cluster, index);
-    }
-
-    template <int L, int ML>
-    inline Vector_ref atom_shift(ClusterRef<L, ML> & cluster, int index) {
-      return this->implementation().get_atom_shift(cluster, index);
     }
 
     inline size_t atom_id(NeighbourhoodManagerBase & cluster, int index) const {
@@ -267,7 +266,7 @@ namespace rascal {
     inline decltype(auto) get_position() {return this->atoms.back().get_position();}
 
     inline decltype(auto) get_atom_shift() {
-      return this->get_manager().atom_shift(*this,this->get_atom_index());
+      return this->get_manager().atom_shift(*this,this->get_index());
     }
 
     inline decltype(auto) get_atom_type() {return this->atoms.back().get_atom_type();}

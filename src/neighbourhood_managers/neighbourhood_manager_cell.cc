@@ -40,7 +40,8 @@ namespace rascal {
    /* ---------------------------------------------------------------------- */
 
   void NeighbourhoodManagerCell::build(const Eigen::Ref<const Eigen::MatrixXd>  positions,
-                                        const std::vector<int>& center_ids,
+                                        const Eigen::Ref<const VecXi>  particule_types,
+                                        const Eigen::Ref<const VecXi> center_ids,
                                         const Eigen::Ref<const Eigen::MatrixXd> cell,
                                         const std::array<bool,3>& pbc, const double& cutoff_max)
     {
@@ -48,13 +49,18 @@ namespace rascal {
       
       const int dim{traits::Dim};
 
+      // set the positions of all particle in the cell
       this->set_positions(positions);
-
-      for (int id:center_ids) {
-          this->centers.push_back(NeighbourhoodManagerCell::AtomRef_t(this->get_manager(),id));
+      // set the references to the center positions
+      for (int id{0}; id < center_ids.size(); ++id) {
+          this->centers.push_back(NeighbourhoodManagerCell::AtomRef_t(this->get_manager(),center_ids(id)));
       }
+      // TODO get particles type as input and use it
+      this->particule_types.resize(Natom);
+      //set the references to the particles positions
       for (Eigen::Index id{0}; id < Natom; ++id){
         this->particles.push_back(NeighbourhoodManagerCell::AtomRef_t(this->get_manager(),id));
+        this->particule_types[id] = particule_types(id);
       }
 
       Cell_t lat = cell;
@@ -65,57 +71,59 @@ namespace rascal {
       Vec3_t nbins_cd;
       int nbins{1};
       double face_dist_c;
+
+      
       for (int ii{0};ii<dim;++ii){
+        // compute the distance between the cell faces (only French wiki https://fr.wikipedia.org/wiki/Distance_interr%C3%A9ticulaire)
         if (reciprocal_lenghts[ii] > 0){
           face_dist_c = 1 / reciprocal_lenghts[ii];
         }
         else {
           face_dist_c = 1;
         }
-      
+        // number of bin in each directions
         nbins_c[ii] =  std::max( static_cast<int>(face_dist_c/bin_size), 1);
         nbins_cd[ii] = static_cast<double>(nbins_c[ii]);
+        // number of bin one need to look around 
         neigh_search[ii] = static_cast<int>(std::ceil(bin_size * nbins_c[ii] / face_dist_c));
+        // total number of bin
         nbins *= nbins_c[ii];
       
       }
 
       Vec3i_t bin_index_c;
-      // TODO take into acount pbc dif from 1,1,1 
-      for (auto p : pbc){
-        p;
-      }
-      std::array<std::array<Dim_t, 3>,2> neigh_bounds{{ {-neigh_search[0],-neigh_search[1],-neigh_search[2]},
-                                                        { neigh_search[0], neigh_search[1], neigh_search[2]} }};
       for (int ii{0}; ii < nbins; ++ii){
-        internal::lin2mult(ii,nbins_c,bin_index_c);
-        this->boxes.push_back(Box(this->get_manager(),bin_index_c, neigh_bounds, nbins_c));
+        internal::lin2mult<dim>(ii,nbins_c,bin_index_c);
+        this->boxes.push_back(Box(this->get_manager(),bin_index_c, pbc, neigh_search, nbins_c));
       }
 
-      // bin the atoms in the boxes
+      // bin the particles in the boxes
       Vec3_t position_sc;
       int bin_id{0};
       for (auto part : this->particles){
           this->lattice.get_cartesian2scaled(part.get_position(),position_sc);
           bin_index_c = (position_sc.array() * nbins_cd.array()).cast<int>();
-          bin_id = internal::mult2lin(bin_index_c,nbins_c);
+          bin_id = internal::mult2lin<dim>(bin_index_c,nbins_c);
           this->boxes[bin_id].push_particle_back(part.get_index());
           this->part2bin[part.get_index()] = bin_id;
       }
       
+      // Set up the data strucure containing the information about neighbourhood
       // get the number of particles in the box and its neighbour boxes 
       // set the arrays that will be used to iterate over the centers and neighbours
       this->neighbour_bin_id.resize(nbins);
       this->neighbour_atom_index.resize(nbins);
+      //loop over the boxes
       for (size_t bin_index{0}; bin_index < this->boxes.size(); ++bin_index){
         size_t n_neigh{0};
+        // loop over the neighbouring boxes
         for (size_t neigh_bin_id{0}; neigh_bin_id < this->boxes[bin_index].get_number_of_neighbour_box(); ++neigh_bin_id){
-          
           int neig_bin_index{this->boxes[bin_index].get_neighbour_bin_index(neigh_bin_id)};
+          //loop over the particle in the neighbouring boxes
           for (size_t neigh_part_id{0}; neigh_part_id < this->boxes[neig_bin_index].get_number_of_particles(); ++neigh_part_id){
-            // store the indices to the atomic shift inside the box
+            // store the indices to the corresponding atomic shift 
             this->neighbour_bin_id[bin_index].push_back(AtomRef_t(this->get_manager(),neigh_bin_id));
-            // store the indices to the neighbour particles in positions
+            // store the indices to the neighbour particles
             this->neighbour_atom_index[bin_index].push_back(AtomRef_t(this->get_manager(),this->boxes[neig_bin_index].get_particle_index(neigh_part_id)));
           }
           n_neigh += this->boxes[neig_bin_index].get_number_of_particles();
@@ -124,6 +132,7 @@ namespace rascal {
       }
 
       int stride{0};
+      // get the stride for the fields. (center,neigh) dimentions are flattened in fields with center being leading dimension
       for (auto center : this->centers){
         this->number_of_neighbours_stride.push_back(stride);
         int bin_index{this->part2bin[center.get_index()]};
@@ -135,35 +144,59 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
 
-  NeighbourhoodManagerCell::Box::Box(Manager_t& manager ,const Vec3i_t& coord,
-        const std::array<std::array<Dim_t, 3>,2>& neigh_bounds, 
-        const Vec3i_t& nbins_c)
+  NeighbourhoodManagerCell::Box::Box(Manager_t& manager ,const Vec3i_t& coord, const std::array<bool, 3>& pbc, 
+        const Vec3i_t& neigh_search,const Vec3i_t& nbins_c)
+        //const std::array<std::array<Dim_t, 3>,2>& neigh_bounds, 
         :manager{manager},particles{},neighbour_bin_shift{},neighbour_bin_index{},number_of_neighbours{0},coordinates{}
   { 
+    const int dim{NeighbourhoodManagerCell::dim()};
+    
     this->coordinates = coord;
+    int bin_id{0};
     Vec3i_t shift,neighbour_bin_idx_c;
     Vector_t neighbour_bin_shift;
     std::array<int,2> div_mod;
-    int bin_id{0};
-    for (int dx{neigh_bounds[0][0]}; dx <= neigh_bounds[1][0]; ++dx){
-      for (int dy{neigh_bounds[0][1]}; dy <= neigh_bounds[1][1]; ++dy){
-        for (int dz{neigh_bounds[0][2]}; dz <= neigh_bounds[1][2]; ++dz){
+    std::array<std::vector<int>,dim> neigh_search_ids;
+
+    // takes into account the pbc for neighbour boxes
+    // TODO find a way to not have if statements 
+    for (int ii{0}; ii < dim; ++ii)  {
+      if (pbc[ii] == true){
+        for (int jj{-neigh_search[ii]}; jj <= neigh_search[ii]; ++jj ){
+            neigh_search_ids[ii].push_back(this->coordinates[ii]+jj);
+        }
+      }
+      else if (pbc[ii] == false && this->coordinates[ii] == 0 ){
+        for (int jj{0}; jj <= neigh_search[ii]; ++jj ){
+          neigh_search_ids[ii].push_back(this->coordinates[ii]+jj);
+        }
+      }
+      else if (pbc[ii] == false && this->coordinates[ii] == nbins_c[ii]-1 ){
+          for (int jj{-neigh_search[ii]}; jj <= 0; ++jj ){
+          neigh_search_ids[ii].push_back(this->coordinates[ii]+jj);
+        }
+      }
+    }
+
+    for (auto dx : neigh_search_ids[0]){
+      for (auto dy : neigh_search_ids[1]){
+        for (auto dz : neigh_search_ids[2]){
           shift << dx,dy,dz;
-          
-          for (int ii{0};ii<3;++ii){
-            //branchless_div_mod(coord(ii)+shift(ii),nbins_c(ii),div_mod);
-            internal::div_mod(coord(ii)+shift(ii),nbins_c(ii),div_mod);
+          for (int ii{0};ii<dim;++ii){
+            
+            internal::div_mod(shift(ii),nbins_c(ii),div_mod);
+            //internal::branchless_div_mod(shift(ii),nbins_c(ii),div_mod);
             neighbour_bin_shift[ii] = static_cast<double>(div_mod[0]);
             neighbour_bin_idx_c[ii] = div_mod[1];
           }
 
-          bin_id = internal::mult2lin(neighbour_bin_idx_c,nbins_c);
+          bin_id = internal::mult2lin<dim>(neighbour_bin_idx_c,nbins_c);
           this->neighbour_bin_index.push_back(bin_id);
           this->neighbour_bin_shift.push_back(neighbour_bin_shift);
-          
         }
       }
     }
+    
   }
 
   inline size_t NeighbourhoodManagerCell::Box::get_number_of_neighbour_box(){
@@ -198,13 +231,14 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
 
   void NeighbourhoodManagerCell::update(const Eigen::Ref<const Eigen::MatrixXd> positions,
-                                        const std::vector<int>& center_ids,
+                                        const Eigen::Ref<const VecXi>  particule_types,
+                                        const Eigen::Ref<const VecXi> center_ids,
                                         const Eigen::Ref<const Eigen::MatrixXd> cell,
                                         const std::array<bool,3>& pbc, const double& cutoff_max)
   {
     bool some_condition{false};
     if (some_condition){
-      NeighbourhoodManagerCell::build(positions,center_ids,cell,pbc,cutoff_max);
+      NeighbourhoodManagerCell::build(positions,particule_types,center_ids,cell,pbc,cutoff_max);
     }
   }
 
