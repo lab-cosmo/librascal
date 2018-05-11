@@ -30,7 +30,7 @@ addons:
         packages:
             - cmake-data
             - cmake
-            - g++-4.9
+            - g++-5.0
               #- clang-3.7
               #- doxygen
               #- graphviz
