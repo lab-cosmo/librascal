@@ -7,7 +7,7 @@ branches:
         - feat/test_CI
 
 virtualenv:
-            system_site_packages: true
+    system_site_packages: true
 
 sudo: false
 
@@ -41,8 +41,6 @@ matrix:
           env: BOOST_VERSION=1.58.0
 
 before_install:
-    - SITE_PKG_DIR=$VIRTUAL_ENV/lib/python$TRAVIS_PYTHON_VERSION/site-packages
-    - rm -f $VIRTUAL_ENV/lib/python$TRAVIS_PYTHON_VERSION/no-global-site-packages.txt 
     - pyenv global system 3.6
     - export DOWNLOAD_ROOT="${TRAVIS_BUILD_DIR}/../download"; if [ ! -d "${DOWNLOAD_ROOT}" ]; then mkdir -p "${DOWNLOAD_ROOT}"; fi
     - export BOOST_DOWNLOAD_URL="http://sourceforge.net/projects/boost/files/boost/1.58.0/boost_1_58_0.tar.bz2/download"
