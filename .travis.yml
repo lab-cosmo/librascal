@@ -8,7 +8,6 @@ branches:
 
 sudo: false
 
-
 language: 
     - cpp
 
@@ -17,9 +16,6 @@ python:
 
 compiler:
         - g++
-
-os:
-    - linux
 
 addons:
     apt:
@@ -34,6 +30,7 @@ addons:
               #- clang-3.7
               #- doxygen
               #- graphviz
+              #- sphinx_rtd_theme
 
 matrix:
      include:
@@ -56,10 +53,9 @@ before_install:
 after_failure:
        - cat ${TRAVIS_TEST_RESULT}
 
-
 install:
        - cd "${TRAVIS_BUILD_DIR}"
-       - pip3 install Sphinx
+       - pip3 install Sphinx numpy ase 
        - mkdir build
        - cd build
        - cmake .. -DBUILD_TESTS=ON
