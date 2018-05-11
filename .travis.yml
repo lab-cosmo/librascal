@@ -55,7 +55,7 @@ after_failure:
 
 install:
        - cd "${TRAVIS_BUILD_DIR}"
-       - pip3 install Sphinx numpy ase 
+       - pip3 install -U Sphinx numpy ase 
        - mkdir build
        - cd build
        - cmake .. -DBUILD_TESTS=ON
