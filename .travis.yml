@@ -62,8 +62,8 @@ install:
        - pip3 install Sphinx
        - mkdir build
        - cd build
-       - cmake .. 
+       - cmake .. -DBUILD_TESTS=ON
        - make
-       - make test
+       - ctest -V
 
 
