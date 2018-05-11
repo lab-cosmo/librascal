@@ -62,5 +62,5 @@ install:
        - make test
 
 after_failure:
-       - cat Testing/Temporary/LastTest.log
+       - cat ${TRAVIS_TEST_RESULT}
 
