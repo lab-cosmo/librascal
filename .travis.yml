@@ -34,6 +34,7 @@ addons:
               #- clang-3.7
               #- doxygen
               #- graphviz
+
 matrix:
      include:
         - os: linux
@@ -50,6 +51,7 @@ before_install:
     - if [ ! -f "${BOOST_ROOT}/b2" ]; then cd "${BOOST_ROOT}"; ./bootstrap.sh --with-libraries=test; fi
     - cd "${BOOST_ROOT}"; ./b2 --prefix="$BOOST_ROOT" -d0 install
     - cmake --version
+    - eval "CC=gcc-4.9 && CXX=g++-4.9"
 install:
        - cd "${TRAVIS_BUILD_DIR}"
        - pip3 install Sphinx
