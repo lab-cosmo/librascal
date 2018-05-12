@@ -31,5 +31,6 @@
 set (manager_SRC
   neighbourhood_managers/neighbourhood_manager_lammps.cc
   neighbourhood_managers/neighbourhood_manager_cell.cc
+  neighbourhood_managers/neighbourhood_manager_strict.cc
   )
 target_sources(rascal PRIVATE ${manager_SRC})

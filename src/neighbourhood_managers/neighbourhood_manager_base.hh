@@ -212,7 +212,7 @@ namespace rascal {
     //! return position vector
 
     //! return atom type
-    inline int get_atom_type() {return this->manager.get_atom_type(*this);}
+    inline int get_atom_type() const {return this->manager.get_atom_type(*this);}
 
   protected:
     Manager_t & manager;
@@ -269,7 +269,7 @@ namespace rascal {
       return this->get_manager().atom_shift(*this,this->get_index());
     }
 
-    inline decltype(auto) get_atom_type() {return this->atoms.back().get_atom_type();}
+    inline decltype(auto) get_atom_type() const {return this->atoms.back().get_atom_type();}
 
     //! return the index of the atom: Atoms_t is len==1 if center, len==2 if 1st neighbours,...
     inline decltype(auto) get_atom_index() {

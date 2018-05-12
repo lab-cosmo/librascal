@@ -5,7 +5,7 @@
  *
  * @date   05 Apr 2018
  *
- * @brief Neighbourhood manager for lammps neighbourhood lists
+ * @brief Neighbourhood manager linked cell
  *
  * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *

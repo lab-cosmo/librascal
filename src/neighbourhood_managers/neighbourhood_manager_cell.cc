@@ -5,8 +5,7 @@
  *
  * @date   05 Apr 2018
  *
- * @brief Implementation of the neighbourhood manager for lammps
- *        neighbourhood lists
+ * @brief Implementation of the linked cell neighbourhood manager
  *
  * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *

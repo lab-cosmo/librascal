@@ -42,15 +42,15 @@ namespace rascal {
     template <typename T, size_t NbRow, size_t NbCol>
     struct Value {
       using type = Eigen::Map<Eigen::Matrix<T, NbRow, NbCol>>;
-      using reference = type; //Map<MatrixXd>( resultC, resultEigen.rows(), resultEigen.cols() ) = resultEigen;
+      using reference = type; 
 
       static reference get_ref(T & value) {
         return type(&value);
       }
 
       static void push_in_vector(std::vector<T> & vec, reference ref) {
-        for (int j = 0; j < NbCol; ++j) {
-          for (int i = 0; i < NbRow; ++i) {
+        for (size_t j{0}; j < NbCol; ++j) {
+          for (size_t i{0}; i < NbRow; ++i) {
             vec.push_back(ref(i,j));
           }
         }
