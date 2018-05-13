@@ -83,6 +83,93 @@ class TestNeighbourManagerCell(unittest.TestCase):
                     ii += 1
 
 
+class TestNeighbourManagerStrict(unittest.TestCase):
+    def setUp(self):
+        """builds the test case. Test the strict neighbourlist implementation against a triclinic crystal using 
+        a custom pyhton implementation as a reference (which was tested against ase neighbourlist).
+
+        """
+        # TODO write a small reader to remove ase dependency
+        fn = '../tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.cif'
+        self.frame = read(fn).repeat([1,1,1])
+        self.Natom = len(self.frame)
+        self.cutoffs = [3.]*self.Natom
+        self.sorted = True
+        self.bothways = True
+        self.self_interaction = True
+        self.max_cutoff = np.max(self.cutoffs)
+
+        self.cell = self.frame.get_cell()
+        self.scaled = self.frame.get_scaled_positions()
+        self.positions = self.frame.get_positions()
+        self.numbers = self.frame.get_atomic_numbers()
+        self.pbc = [[True,True,True],[False,False,False],
+                    [False,True,True],[True,False,True],[True,True,False],
+                    [False,False,True],[True,False,False],[False,True,False]]
+
+    def get_reference(self,pbc):
+        list_box = BoxList(self.max_cutoff,self.cell,pbc,self.positions)
+        neighlist = [{sp:[] for sp in np.unique(self.numbers)} for _ in range(self.Natom)]
+        Rij = [{sp:[] for sp in np.unique(self.numbers)} for _ in range(self.Natom)]
+        distances = [{sp:[] for sp in np.unique(self.numbers)} for _ in range(self.Natom)]
+        neighshift = [{sp:[] for sp in np.unique(self.numbers)} for _ in range(self.Natom)]
+        for box in list_box.iter_box():
+            for icenter in box.icenters:
+                for jneigh,box_shift in box.iter_neigh_box():
+                    nnp = self.positions[jneigh] + np.dot(box_shift.reshape((1,3)),self.cell).reshape((1,3))
+                    rr = nnp - self.positions[icenter].reshape((1,3))
+                    dist = np.linalg.norm(rr,axis=1)
+                    if dist < self.max_cutoff:
+                        sp = self.numbers[jneigh]
+                        Rij[icenter][sp].extend(rr)
+                        neighlist[icenter][sp].append(jneigh)
+                        neighshift[icenter][sp].append(box_shift)
+                        distances[icenter][sp].append(dist)
+        return Rij,distances,neighlist,neighshift
+
+    def test_constructor(self):
+        """
+        TEST constructor wrapper
+        """
+        rc.NeighbourhoodManagerStrict()
+    
+    def test_manager_iteration(self):
+        manager =  rc.NeighbourhoodManagerStrict()
+        centers = np.array([it for it in range(self.Natom)],dtype=np.int32)
+        manager.build(np.array(self.positions.T,order='F'),self.numbers,centers, 
+                      np.array(self.cell.T,order='F'),self.pbc[0],self.max_cutoff)
+        ii = 0
+        for center in manager:
+            self.assertTrue(ii == center.get_atom_index())
+            self.assertTrue(self.numbers[ii] == center.get_atom_type())
+            self.assertTrue(np.allclose(self.positions[ii], center.get_position()))
+            ii += 1
+        
+    def test_neighbour_iteration(self):
+        for pbc in self.pbc:
+            Rij,distances,neighlist,neighshift = self.get_reference(pbc)
+
+            manager =  rc.NeighbourhoodManagerStrict()
+            centers = np.array([it for it in range(self.Natom)],dtype=np.int32)
+            manager.build(np.array(self.positions.T,order='F'),self.numbers,centers, 
+                            np.array(self.cell.T,order='F'),pbc,self.max_cutoff)
+            
+            for center in manager:
+                icenter = center.get_atom_index()
+                
+                for species in center:
+                    sp = species.get_atom_type()
+                    ii = 0
+                    for neigh in species:
+                        ineigh = neigh.get_atom_index()
+                        self.assertTrue(neighlist[icenter][sp][ii] == neigh.get_atom_index())
+                        self.assertTrue(self.numbers[ineigh] == neigh.get_atom_type())
+                        self.assertTrue(np.allclose(neighshift[icenter][sp][ii], neigh.get_atom_shift()))
+                        self.assertTrue(distances[icenter][sp][ii] == manager.get_distance(neigh))
+                        self.assertTrue(np.allclose(Rij[icenter][sp][ii], manager.get_Rij(neigh)))
+                        ii += 1
+
+
 
 class BoxList(object):
     def __init__(self,max_cutoff,cell,pbc,centers):

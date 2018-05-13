@@ -28,80 +28,8 @@
 #include "neighbourhood_managers/neighbourhood_manager_strict.hh"
 
 namespace rascal {
+
   /* ---------------------------------------------------------------------- */
-  /*
-  // return position vector
-  inline Vector_ref NeighbourhoodManagerStrict::get_position(const NeighbourhoodManagerStrict::AtomRef_t& atom) {
-    auto index{atom.get_index()};
-    auto * xval{this->positions.col(index).data()};
-    return Vector_ref(xval);
-  }
-
-  // return number of center in the list
-  inline size_t NeighbourhoodManagerStrict::get_size() const {
-    return this->centers.size();
-  }
-  // return the id a given center atom
-  inline size_t NeighbourhoodManagerStrict::get_atom_id(const Parent& , int i_atom_id) const {
-    return this->centers[i_atom_id].get_index();
-  }
-
-  //! return atom type
-  inline int NeighbourhoodManagerStrict::get_atom_type(const NeighbourhoodManagerStrict::AtomRef_t& atom) const {
-    auto && index{atom.get_index()};
-    return this->particule_types[index];
-  }
-  
-  // return the index of the center corresponding to its neighbour image
-  template<>
-  inline size_t NeighbourhoodManagerStrict::get_atom_id(const NeighbourhoodManagerStrict::ClusterRef_t<3,3>& cluster, int j_atom_id) const {
-    auto && i_atom_id{cluster.get_atoms().back().get_index()};
-    auto && j_atom_type{cluster.get_atom_type()};
-    auto && ij_atom_id{this->neighbours[i_atom_id][j_atom_type][j_atom_id].get_index()};
-    return ij_atom_id;
-  }
-
-  template<>
-  inline size_t NeighbourhoodManagerStrict::get_atom_id(const NeighbourhoodManagerStrict::ClusterRef_t<1,3>& cluster, int j_atom_id) const {
-    auto && i_atom_id{cluster.get_atoms().back().get_index()};
-    auto && j_atom_type{cluster.get_atom_type()};
-    auto && ij_atom_id{this->neighbours[i_atom_id][j_atom_type][j_atom_id].get_index()};
-    return ij_atom_id;
-  }
-
-  
-  template<>
-  inline size_t NeighbourhoodManagerStrict::get_atom_id(const NeighbourhoodManagerStrict::ClusterRef_t<2,3>& cluster, int j_atom_id) const {
-    auto && atom_type{this->unique_types[j_atom_id]};
-    return atom_type;
-  }
-
-  // return the number of neighbours of a given atom
-  template<>
-  inline size_t NeighbourhoodManagerStrict::get_cluster_size(const NeighbourhoodManagerStrict::ClusterRef_t<3,3>& cluster) const {
-    auto && i_atom_id{cluster.get_atoms().back().get_index()};
-    auto && j_atom_type{cluster.get_atom_type()};
-    auto && size{this->neighbours[i_atom_id][j_atom_type].size()};
-    return size;
-  }
-
-  template<>
-  inline size_t NeighbourhoodManagerStrict::get_cluster_size(const NeighbourhoodManagerStrict::ClusterRef_t<1,3>& cluster) const {
-    auto && i_atom_id{cluster.get_atoms().back().get_index()};
-    auto && j_atom_type{cluster.get_atom_type()};
-    auto && size{this->neighbours[i_atom_id][j_atom_type].size()};
-    return size;
-  }
-
-  // return the number of neighbours of a given atom
-  template<>
-  inline size_t NeighbourhoodManagerStrict::get_cluster_size(const NeighbourhoodManagerStrict::ClusterRef_t<2,3>& cluster) const {
-    auto && size{this->unique_types.size()};
-    return size;
-  }
-*/
-  
-   /* ---------------------------------------------------------------------- */
 
   void NeighbourhoodManagerStrict::build(const Eigen::Ref<const Eigen::MatrixXd>  positions,
                                         const Eigen::Ref<const VecXi>  particule_types,
@@ -110,11 +38,10 @@ namespace rascal {
                                         const std::array<bool,3>& pbc, const double& cutoff_max)
   { 
     using Vector_t = NeighbourhoodManagerStrict::Vector_t;
-    using Vector_ref = NeighbourhoodManagerStrict::Vector_ref;
     using AtomRef_t = NeighbourhoodManagerStrict::AtomRef_t;
     Eigen::Index Natom{positions.cols()};
     
-    const int dim{traits::Dim};
+    //const int dim{traits::Dim};
 
     // set the positions of all particle in the cell
     this->set_positions(positions);
@@ -126,43 +53,58 @@ namespace rascal {
     // TODO get particles type as input and use it
     this->particule_types.resize(Natom);
     //set the references to the particles positions
-    std::set<int> unique_types;
+    std::vector<int> unique_types;
+    std::vector<int> unique_type_part_ids;
     for (Eigen::Index id{0}; id < Natom; ++id){
       this->particles.push_back(AtomRef_t(this->get_manager(),id));
       this->particule_types[id] = particule_types(id);
-      unique_types.insert(particule_types(id));
+      if(std::find(unique_types.begin(), unique_types.end(), particule_types(id)) == unique_types.end()) {
+          unique_types.push_back(particule_types(id));
+          unique_type_part_ids.push_back(id);
+      } 
+      //unique_types.insert(particule_types(id));
     }
-    this->unique_types.assign( unique_types.begin(), unique_types.end() ); // unique_types is sorted
+    //this->unique_types.assign( unique_types.begin(), unique_types.end() ); // unique_types is sorted
 
-    for (size_t ii{0}; ii < this->unique_types.size(); ++ii){
-      this->type2idx[this->unique_types[ii]] = ii;
+    for (size_t ii{0}; ii < unique_types.size(); ++ii){
+      this->type2idx[unique_types[ii]] = ii;
+      //this->unique_types.push_back(AtomRef_t(this->get_manager(),unique_type_part_ids[ii]));
     }
 
     NeighbourhoodManagerCell cell_manager;
     cell_manager.build(positions,particule_types,center_ids,cell,pbc,cutoff_max);
 
-    number_of_neighbours_stride.resize(this->centers.size());
-    neighbours.resize(this->centers.size());
+    size_t Ncenter{this->centers.size()};
+    number_of_neighbours_stride.resize(Ncenter);
+    this->neighbours.resize(Ncenter);
+    this->unique_types.resize(Ncenter);
+    this->neighbour_shifts.resize(Ncenter);
     this->distances.resize_to_zero();
     this->Rijs.resize_to_zero();
-    double rc2{cutoff_max};
+
+    double rc2{cutoff_max*cutoff_max};
     this->number_of_neighbours = 0;
     for (auto center: cell_manager) {
       int center_idx{center.get_atom_index()};
-      size_t nb_types{this->unique_types.size()};
+      size_t nb_types{unique_types.size()};
       number_of_neighbours_stride[center_idx].resize(nb_types);
-      neighbours[center_idx].resize(nb_types);
+      this->neighbours[center_idx].resize(nb_types);
+      this->neighbour_shifts[center_idx].resize(nb_types);
       std::vector<std::vector<Vector_t,Eigen::aligned_allocator<Vector_t>> > Rijs(nb_types);
       std::vector<std::vector<double>> distances(nb_types);
       std::vector<size_t> nb_of_neigh_inner(nb_types,0);
-      size_t n_neigh_outer{this->number_of_neighbours};
+      int n_neigh_outer{this->number_of_neighbours};
 
       for (auto neigh: center) {
         double d2{(neigh.get_position() + lattice * neigh.get_atom_shift() - center.get_position()).squaredNorm()};
         if (d2 < rc2){
           int type_idx{this->type2idx.at(neigh.get_atom_type())};
+
+
           Vector_t Rij = neigh.get_position() + lattice * neigh.get_atom_shift() - center.get_position();
-          neighbours[center_idx][type_idx].push_back(AtomRef_t(this->get_manager(),neigh.get_atom_index()));
+          this->neighbours[center_idx][type_idx].push_back(AtomRef_t(this->get_manager(),neigh.get_atom_index()));
+          Vector_t shift = neigh.get_atom_shift();
+          this->neighbour_shifts[center_idx][type_idx].push_back(shift);
           Rijs[type_idx].push_back(Rij);
           distances[type_idx].push_back(std::sqrt(d2));
           nb_of_neigh_inner[type_idx] += 1;
@@ -172,35 +114,29 @@ namespace rascal {
 
       int stride{0};
       for (size_t type_idx{0}; type_idx < nb_types; ++type_idx){
-        for (size_t jneigh{0}; jneigh < neighbours[center_idx][type_idx].size(); ++jneigh){
+
+        
+        for (size_t jneigh{0}; jneigh < this->neighbours[center_idx][type_idx].size(); ++jneigh){
           this->distances.push_back(distances[type_idx][jneigh]);
           //auto * xval{Rijs[type_idx][jneigh].col(0).data()} ; 
           Eigen::Map<Vector_t> v(&Rijs[type_idx][jneigh](0),Rijs[type_idx][jneigh].size());
           this->Rijs.push_back(v);
         }
 
-        this->number_of_neighbours_stride[center_idx][type_idx] = n_neigh_outer + stride;
-        stride += nb_of_neigh_inner[type_idx];
+        if (this->neighbours[center_idx][type_idx].size() > 0){
+          this->unique_types[center_idx].push_back(AtomRef_t(this->get_manager(),unique_type_part_ids[type_idx]));
+          this->number_of_neighbours_stride[center_idx][type_idx] = n_neigh_outer + stride;
+          stride += nb_of_neigh_inner[type_idx];
+        }
+        
       }
       
     }
-
-    
+ 
 
   }
 
-  /* ---------------------------------------------------------------------- */
-  
-  inline NeighbourhoodManagerStrict::AtomVectorProp_t::reference NeighbourhoodManagerStrict::get_Rij(
-            const NeighbourhoodManagerStrict::ClusterRef_t<3,3>& cluster){
-    return this->Rijs[cluster];
-  }
 
-
-  inline NeighbourhoodManagerStrict::AtomScalarProp_t::reference NeighbourhoodManagerStrict::get_distance(
-            const NeighbourhoodManagerStrict::ClusterRef_t<3,3>& cluster){
-    return this->distances[cluster];
-  }
   /* ---------------------------------------------------------------------- */
 
   void NeighbourhoodManagerStrict::update(const Eigen::Ref<const Eigen::MatrixXd> positions,
@@ -223,10 +159,11 @@ namespace rascal {
         return this->centers.size();
         break;
       }
+      /* cluster_size == 2 is a dummy dimension ordering the neighbour iteration by species
       case 2: {
         return this->unique_types.size();
         break;
-      }
+      }*/
       case 3: {
         return this->number_of_neighbours;
         break;

@@ -161,7 +161,7 @@ namespace rascal {
 
     //! constructor with Manager
     Field(NeighbourhoodManager & manager)
-      :manager{manager}
+      :manager{manager},values{}
     {}
 
     //! Copy constructor

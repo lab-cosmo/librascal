@@ -71,7 +71,7 @@ namespace rascal {
     
     //! Default constructor
     NeighbourhoodManagerStrict()
-    :particles{},centers{},particule_types{},unique_types{},type2idx{},positions{},pbc{},number_of_neighbours_stride{},neighbours{},number_of_neighbours{0},Rijs{this->implementation()},distances{this->implementation()}
+    :particles{},centers{},particule_types{},unique_types{},type2idx{},positions{},pbc{},number_of_neighbours_stride{},neighbours{},neighbour_shifts{},number_of_neighbours{0},Rijs{this->implementation()},distances{this->implementation()}
     {}
 
     //! Copy constructor
@@ -142,12 +142,13 @@ namespace rascal {
     std::vector<AtomRef_t> particles;
     std::vector<AtomRef_t> centers; 
     std::vector<size_t> particule_types;
-    std::vector<size_t> unique_types;
+    std::vector<std::vector<AtomRef_t>> unique_types;
     std::map<int,int> type2idx;
     Matrix3XdC positions; 
     std::array<bool,3> pbc;
     std::vector<std::vector<size_t>> number_of_neighbours_stride;
     std::vector<std::vector<std::vector<AtomRef_t>>> neighbours;
+    std::vector<std::vector<std::vector<Vector_t,Eigen::aligned_allocator<Vector_t>>>> neighbour_shifts;
     int number_of_neighbours;
     AtomVectorProp_t Rijs;
     AtomScalarProp_t distances;
@@ -155,7 +156,18 @@ namespace rascal {
   private:
   };
 
+  /* ---------------------------------------------------------------------- */
   
+  inline NeighbourhoodManagerStrict::AtomVectorProp_t::reference NeighbourhoodManagerStrict::get_Rij(
+            const NeighbourhoodManagerStrict::ClusterRef_t<3,3>& cluster){
+    return this->Rijs[cluster];
+  }
+
+
+  inline NeighbourhoodManagerStrict::AtomScalarProp_t::reference NeighbourhoodManagerStrict::get_distance(
+            const NeighbourhoodManagerStrict::ClusterRef_t<3,3>& cluster){
+    return this->distances[cluster];
+  }
   /* ---------------------------------------------------------------------- */
   
   // return position vector
@@ -180,50 +192,53 @@ namespace rascal {
     return this->particule_types[index];
   }
   
-  // return the index of the center corresponding to its neighbour image
-  template<>
-  inline size_t NeighbourhoodManagerStrict::get_atom_id(const NeighbourhoodManagerStrict::ClusterRef_t<3,3>& cluster, int j_atom_id) const {
-    auto && i_atom_id{cluster.get_atoms().back().get_index()};
+  template<int Level, int MaxLevel>
+  inline Vector_ref NeighbourhoodManagerStrict::get_atom_shift(const NeighbourhoodManagerStrict::ClusterRef_t<Level, MaxLevel>& cluster, const int& j_cluster_id){
+    auto && i_atom_id{cluster.get_atoms().front().get_index()};
     auto && type_idx{this->type2idx.at(cluster.get_atom_type())};
-    auto && ij_atom_id{this->neighbours[i_atom_id][type_idx][j_atom_id].get_index()};
-    return ij_atom_id;
+    auto * xval {this->neighbour_shifts[i_atom_id][type_idx][j_cluster_id].col(0).data()};
+    return Vector_ref(xval);
   }
 
+
+  // return the index of the center corresponding to its neighbour image
   template<>
   inline size_t NeighbourhoodManagerStrict::get_atom_id(const NeighbourhoodManagerStrict::ClusterRef_t<1,3>& cluster, int j_atom_id) const {
-    auto && atom_type{this->unique_types[j_atom_id]};
-    return atom_type;
+    auto && i_atom_id{cluster.get_atoms().front().get_index()};
+    auto && ij_atom_id{this->unique_types[i_atom_id][j_atom_id].get_index()};
+    return ij_atom_id;
   }
 
   template<>
   inline size_t NeighbourhoodManagerStrict::get_atom_id(const NeighbourhoodManagerStrict::ClusterRef_t<2,3>& cluster, int j_atom_id) const {
-    auto && i_atom_id{cluster.get_atoms().back().get_index()};
+    auto && i_atom_id{cluster.get_atoms().front().get_index()};
     auto && type_idx{this->type2idx.at(cluster.get_atom_type())};
     auto && ij_atom_id{this->neighbours[i_atom_id][type_idx][j_atom_id].get_index()};
     return ij_atom_id;
   }
-
+  
   // return the number of neighbours of a given atom
   template<>
-  inline size_t NeighbourhoodManagerStrict::get_cluster_size(const NeighbourhoodManagerStrict::ClusterRef_t<3,3>& cluster) const {
-    auto && i_atom_id{cluster.get_atoms().back().get_index()};
-    auto && type_idx{this->type2idx.at(cluster.get_atom_type())};
-    auto && size{this->neighbours[i_atom_id][type_idx].size()};
-    return size;
-  }
-
-  template<>
   inline size_t NeighbourhoodManagerStrict::get_cluster_size(const NeighbourhoodManagerStrict::ClusterRef_t<1,3>& cluster) const {
-    auto && i_atom_id{cluster.get_atoms().back().get_index()};
-    auto && type_idx{this->type2idx.at(cluster.get_atom_type())};
-    auto && size{this->neighbours[i_atom_id][type_idx].size()};
+    auto && i_atom_id{cluster.get_atoms().front().get_index()};
+    size_t size{this->unique_types[i_atom_id].size()};
     return size;
   }
 
   // return the number of neighbours of a given atom
   template<>
   inline size_t NeighbourhoodManagerStrict::get_cluster_size(const NeighbourhoodManagerStrict::ClusterRef_t<2,3>& cluster) const {
-    auto && size{this->unique_types.size()};
+    auto && i_atom_id{cluster.get_atoms().front().get_index()};
+    auto && type_idx{this->type2idx.at(cluster.get_atom_type())};
+    auto && size{this->neighbours[i_atom_id][type_idx].size()};
+    return size;
+  }
+  
+  template<>
+  inline size_t NeighbourhoodManagerStrict::get_cluster_size(const NeighbourhoodManagerStrict::ClusterRef_t<3,3>& cluster) const {
+    auto && i_atom_id{cluster.get_atoms().front().get_index()};
+    auto && type_idx{this->type2idx.at(cluster.get_atom_type())};
+    auto && size{this->neighbours[i_atom_id][type_idx].size()};
     return size;
   }
 

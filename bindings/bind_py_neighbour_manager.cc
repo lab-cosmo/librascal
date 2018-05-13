@@ -31,6 +31,7 @@
 
 #include <pybind11/pybind11.h>
 #include "neighbourhood_managers/neighbourhood_manager_cell.hh"
+#include "neighbourhood_managers/neighbourhood_manager_strict.hh"
 #include "neighbourhood_managers/neighbourhood_manager_base.hh"
 #include <pybind11/eigen.h>
 #include <pybind11/stl.h>
@@ -40,8 +41,6 @@
 using namespace rascal;
 namespace py=pybind11;
 
-
-//using ClusterRef_t = NeighbourhoodManagerCell::ClusterRef_t;
 
 void add_manager_cell(py::module& m){
 	m.doc()  = "binding for the Neighbourhood Manager Linked Cell" ;
@@ -61,7 +60,7 @@ void add_manager_cell(py::module& m){
 	//py::class_<NeighbourhoodManagerBase<NeighbourhoodManagerCell>::iterator<1, 2>>(m, "Center_iterator")
 	//	.def(py::init<>())
 
-	py::class_<NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<1, 2>>(m, "Center")
+	py::class_<NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<1, 2>>(m, "Cell.Center")
 		.def("get_atom_index",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<1, 2>::get_atom_index)
 		.def("get_atom_type",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<1, 2>::get_atom_type)
 		.def("get_index",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<1, 2>::get_index) 
@@ -72,7 +71,7 @@ void add_manager_cell(py::module& m){
        	return py::make_iterator(v.begin(),v.end());
     	}, py::keep_alive<0, 1>()); /* Keep vector alive while iterator is used */
 
-	py::class_<NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2, 2>>(m, "Neighbour")
+	py::class_<NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2, 2>>(m, "Cell.Neighbour")
 		.def("get_atom_index",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2, 2>::get_atom_index)
 		.def("get_atom_type",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2, 2>::get_atom_type)
 		.def("get_index",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2, 2>::get_index) 
@@ -81,3 +80,48 @@ void add_manager_cell(py::module& m){
 		.def("get_position",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2, 2>::get_position); 
 }
 
+void add_manager_strict(py::module& m){
+	m.doc()  = "binding for the Neighbourhood Manager Strict" ;
+	py::class_<NeighbourhoodManagerBase<NeighbourhoodManagerStrict>>(m, "NeighbourhoodManagerBase_Strict")
+    .def(py::init<>());
+
+	py::class_<NeighbourhoodManagerStrict,NeighbourhoodManagerBase<NeighbourhoodManagerStrict>>(m, "NeighbourhoodManagerStrict")
+    .def(py::init<>())
+		.def("build",&NeighbourhoodManagerStrict::build)
+		.def("get_Rij",&NeighbourhoodManagerStrict::get_Rij)
+		.def("get_distance",&NeighbourhoodManagerStrict::get_distance)
+		.def("__iter__", 
+			[](NeighbourhoodManagerBase<NeighbourhoodManagerStrict> &v) {
+       	return py::make_iterator(v.begin(),v.end());
+    	}, py::keep_alive<0, 1>()); /* Keep vector alive while iterator is used */
+
+
+	py::class_<NeighbourhoodManagerBase<NeighbourhoodManagerStrict>::ClusterRef<1, 3>>(m, "Strict.Center")
+		.def("get_atom_index",&NeighbourhoodManagerBase<NeighbourhoodManagerStrict>::ClusterRef<1, 3>::get_atom_index)
+		.def("get_atom_type",&NeighbourhoodManagerBase<NeighbourhoodManagerStrict>::ClusterRef<1, 3>::get_atom_type)
+		.def("get_index",&NeighbourhoodManagerBase<NeighbourhoodManagerStrict>::ClusterRef<1, 3>::get_index) 
+		.def("get_size",&NeighbourhoodManagerBase<NeighbourhoodManagerStrict>::ClusterRef<1, 3>::size)
+		.def("get_position",&NeighbourhoodManagerBase<NeighbourhoodManagerStrict>::ClusterRef<1, 3>::get_position)
+		.def("__iter__", 
+			[](NeighbourhoodManagerBase<NeighbourhoodManagerStrict>::ClusterRef<1, 3> &v) {
+       	return py::make_iterator(v.begin(),v.end());
+    	}, py::keep_alive<0, 1>()); /* Keep vector alive while iterator is used */
+
+	py::class_<NeighbourhoodManagerBase<NeighbourhoodManagerStrict>::ClusterRef<2, 3>>(m, "Strict.Type")
+		.def("get_atom_type",&NeighbourhoodManagerBase<NeighbourhoodManagerStrict>::ClusterRef<2, 3>::get_atom_type)
+		.def("get_index",&NeighbourhoodManagerBase<NeighbourhoodManagerStrict>::ClusterRef<2, 3>::get_index) 
+		.def("get_size",&NeighbourhoodManagerBase<NeighbourhoodManagerStrict>::ClusterRef<2, 3>::size)
+		.def("__iter__", 
+			[](NeighbourhoodManagerBase<NeighbourhoodManagerStrict>::ClusterRef<2, 3> &v) {
+       	return py::make_iterator(v.begin(),v.end());
+    	}, py::keep_alive<0, 1>()); /* Keep vector alive while iterator is used */
+
+	py::class_<NeighbourhoodManagerBase<NeighbourhoodManagerStrict>::ClusterRef<3, 3>>(m, "Strict.Neighbour")
+		.def("get_atom_index",&NeighbourhoodManagerBase<NeighbourhoodManagerStrict>::ClusterRef<3, 3>::get_atom_index)
+		.def("get_atom_type",&NeighbourhoodManagerBase<NeighbourhoodManagerStrict>::ClusterRef<3, 3>::get_atom_type)
+		.def("get_index",&NeighbourhoodManagerBase<NeighbourhoodManagerStrict>::ClusterRef<3, 3>::get_index) 
+		.def("get_atom_shift",&NeighbourhoodManagerBase<NeighbourhoodManagerStrict>::ClusterRef<3, 3>::get_atom_shift)
+		.def("get_size",&NeighbourhoodManagerBase<NeighbourhoodManagerStrict>::ClusterRef<3, 3>::size)
+		.def("get_position",&NeighbourhoodManagerBase<NeighbourhoodManagerStrict>::ClusterRef<3, 3>::get_position);
+		
+}

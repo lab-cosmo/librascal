@@ -3,7 +3,7 @@
 import unittest
 
 from python_cdist_test import TestCdist
-from python_neighbour_cell_test import TestNeighbourManagerCell
+from python_neighbour_manager_test import TestNeighbourManagerCell,TestNeighbourManagerStrict
 
 class SimpleCheck(unittest.TestCase):
     def setUp(self):

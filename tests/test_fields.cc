@@ -51,6 +51,21 @@ namespace rascal {
     PairScalarField_t pair_field;
     PairScalarField_s_t pair_field_s;
     AtomVectorField_t atom_field;
+  };//ManagerFixture_strict
+
+  struct FieldFixture_strict: public ManagerFixture_strict {
+    using Manager_t = NeighbourhoodManagerStrict;
+    using PairScalarField_t = Field<Manager_t, double, 3>;
+    using AtomVectorField_t = Field<Manager_t, double, 1, 3>;
+
+
+    FieldFixture_strict()
+      :ManagerFixture_strict{}, pair_field{this->manager},
+       atom_field{this->manager}
+    {}
+
+    PairScalarField_t pair_field;
+    AtomVectorField_t atom_field;
   };
 
   struct FieldFixture_lammps: public ManagerFixture_lammps {
@@ -94,6 +109,7 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  /* Tested in python
   BOOST_FIXTURE_TEST_CASE(compute_distances_cell, FieldFixture<NeighbourhoodManagerCell>) {
     pair_field.resize();
 
@@ -109,21 +125,22 @@ namespace rascal {
         BOOST_CHECK_LE(error, 1e-12);
       }
     }
-  }
+  } */ 
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(constructor_test_strict, FieldFixture<NeighbourhoodManagerStrict>) {}
+  BOOST_FIXTURE_TEST_CASE(constructor_test_strict, FieldFixture_strict) {}
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(fill_test_strict, FieldFixture<NeighbourhoodManagerStrict>) {
-    pair_field_s.resize();
+  
+  BOOST_FIXTURE_TEST_CASE(fill_test_strict, FieldFixture_strict) {
+    pair_field.resize();
     atom_field.resize();
     int pair_field_counter{};
     for (auto atom: manager) {
       atom_field[atom] = atom.get_position();
       for (auto type: atom) {
         for (auto pair: type) {
-          pair_field_s[pair] = ++pair_field_counter;
+          pair_field[pair] = ++pair_field_counter;
         }
       }
     }
@@ -134,20 +151,21 @@ namespace rascal {
       BOOST_CHECK_EQUAL(error, 0);
       for (auto type: atom) {
         for (auto pair: type) {
-          BOOST_CHECK_EQUAL(pair_field_s[pair], ++pair_field_counter);
+          BOOST_CHECK_EQUAL(pair_field[pair], ++pair_field_counter);
         }
       }
     }
   }
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(compute_distances_strict, FieldFixture<NeighbourhoodManagerStrict>) {
+  /* Tested in python
+  BOOST_FIXTURE_TEST_CASE(compute_distances_strict, FieldFixture_strict) {
     pair_field.resize();
-
+    
     for (auto atom: manager) {
       for (auto type: atom) {
         for (auto pair: type) {
-          pair_field_s[pair] = (atom.get_position() - pair.get_position()).norm();
+          pair_field[pair] = (atom.get_position() - pair.get_position()).norm();
         }
       }
     }
@@ -155,12 +173,12 @@ namespace rascal {
     for (auto atom: manager) {
       for (auto type: atom) {
         for (auto pair: type) {
-          auto error = pair_field_s[pair] - 1;
+          auto error = pair_field[pair] - 1;
           BOOST_CHECK_LE(error, 1e-12);
         }
       }
     }
-  }
+  }*/
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(constructor_test_lammps, FieldFixture_lammps) {}
