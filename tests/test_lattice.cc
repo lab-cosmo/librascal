@@ -1,12 +1,11 @@
 /**
- * file   lattice.cc
+ * file   test_lattice.cc
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  *
  * @date   05 Apr 2018
  *
- * @brief Implementation of the neighbourhood manager for lammps
- *        neighbourhood lists
+ * @brief test implementation of lattice
  *
  * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *

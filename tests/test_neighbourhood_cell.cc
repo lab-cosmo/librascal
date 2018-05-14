@@ -1,12 +1,11 @@
 /**
- * file   lattice.cc
+ * file   test_neighbourhood_cell.cc
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  *
  * @date   05 Apr 2018
  *
- * @brief Implementation of the neighbourhood manager for lammps
- *        neighbourhood lists
+ * @brief Test the implementation of the linked cell neighbourhood manager 
  *
  * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *

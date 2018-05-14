@@ -5,8 +5,7 @@
  *
  * @date   05 Apr 2018
  *
- * @brief Implementation of the neighbourhood manager for lammps
- *        neighbourhood lists
+ * @brief Lattice class used to compute face distances within the cell and to scale and unscale positions
  *
  * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
