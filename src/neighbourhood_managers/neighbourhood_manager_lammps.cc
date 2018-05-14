@@ -34,7 +34,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   void NeighbourhoodManagerLammps::
-  reset_impl(const int &inum, const int &tot_num, int *ilist, int *numneigh,
+  update(const int &inum, const int &tot_num, int *ilist, int *numneigh,
              int **firstneigh, double **x, double **f, int *type,
              double *eatom, double **vatom) {
     this->inum = inum;

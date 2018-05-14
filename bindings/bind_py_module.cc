@@ -36,7 +36,6 @@ namespace py=pybind11;
 
 extern void add_cdist(py::module&);
 extern void add_manager_cell(py::module&);
-extern void add_manager_strict(py::module&);
 
 
 PYBIND11_MODULE(_rascal, mod) {
@@ -44,5 +43,5 @@ PYBIND11_MODULE(_rascal, mod) {
 
   add_cdist(mod);
   add_manager_cell(mod);
-  add_manager_strict(mod);
+  
 }

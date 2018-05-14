@@ -30,7 +30,7 @@ int main()
     double cutoff_max{3}; 
     rascal::VecXi center_ids(22);
     center_ids << 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21;
-    manager.build(positions,numbers,center_ids,cell,pbc,cutoff_max);
+    manager.update(positions,numbers,center_ids,cell,pbc,cutoff_max);
     
     Eigen::MatrixXd positions_test(3,22); // 3,22
     positions_test << 3.689540159937393,5.123016813620886,1.994119731169116,6.818437242389163,2.630056617829216,6.182500355729062,2.114977334498767,6.697579639059512,1.392155450018263,7.420401523540017,2.432242071439904,6.380314902118375,1.112656394115962,7.699900579442317,3.569715877854675,5.242841095703604,3.122826344932127,5.689730628626151,3.248684682453303,5.563872291104976,2.608353462112637,6.204203511445642,
@@ -121,10 +121,8 @@ int main()
             
             //Vector_t r,rcent,shift;
             Vector_t r,rcent;
-            shift = neigh.get_atom_shift();
             
-            
-            r = neigh.get_position() +  cell * shift;
+            r = neigh.get_position();
             rcent = r -  center.get_position();
             double d{rcent.norm()};
             /*
@@ -141,7 +139,7 @@ int main()
             //double d2{(neigh.get_position() +  cell.transpose() * neigh.get_atom_shift() - center.get_position()).squaredNorm()};
             
             if (d < rc ){
-                cout  << neigh.get_atom_index() << ":"<<neigh.get_atom_shift().transpose() << "; ";
+                cout  << neigh.get_atom_index() << ":"<<neigh.get_position().transpose() << "; ";
             }
             
             

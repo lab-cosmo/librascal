@@ -108,26 +108,19 @@ namespace rascal {
     inline size_t nb_clusters(int cluster_size) const {
       return this->implementation().get_nb_clusters(cluster_size);
     }
-    
-    inline Vector_ref get_position(const AtomRef& atom) {
-      if (Level == 1){
-        return this->implementation().get_center_position(atom);
-      } else {
-        return this->implementation().get_neighbour_position(atom);
-      }
-      
+
+    inline Vector_ref position(const AtomRef& atom) {
+      return this->implementation().get_position(atom);
     }
 
-    inline int get_atom_type(const AtomRef& atom) {
+    inline Vector_ref neighbour_position(const AtomRef& atom, const AtomRef& center_atom,const int& j_linear_id) {
+      return this->implementation().get_neighbour_position(atom,center_atom,j_linear_id);
+    }
+
+    inline int atom_type(const AtomRef& atom) {
       return this->implementation().get_atom_type(atom);
     }
     
-    template <int L, int ML>
-    inline Vector_ref atom_shift(ClusterRef<L, ML> & cluster, const int& index) {
-      return this->implementation().get_atom_shift(cluster, index);
-    }
-    
-
   protected:
     template <int L, int ML>
     inline size_t cluster_size(ClusterRef<L, ML> & cluster) const {
@@ -211,13 +204,10 @@ namespace rascal {
     inline int get_index() const {return this->index;}
 
     //! return position vector
-    // inline Vector_block get_position() {return this->manager.get_position(*this);}
-    //! return position vector
-    inline Vector_ref get_position() {return this->manager.get_position(*this);}
-    //! return position vector
-
+    inline Vector_ref get_position() {return this->manager.position(*this);}
+    
     //! return atom type
-    inline int get_atom_type() const {return this->manager.get_atom_type(*this);}
+    inline int get_atom_type() const {return this->manager.atom_type(*this);}
 
   protected:
     Manager_t & manager;
@@ -268,11 +258,20 @@ namespace rascal {
     const std::array<AtomRef_t, Level>& get_atoms() const {return this->atoms;};
     std::array<AtomRef_t, Level>& get_atoms() {return this->atoms;};
 
-    inline decltype(auto) get_position() {return this->atoms.back().get_position();}
+    
+    /* There are 2 cases: 
+        center (Level== 1)-> position is in the cell
+        neighbour (Level > 1)   -> position might have an offset associated
+     */
+     inline Vector_ref get_position() {
+      if (Level == 1){
+        return this->get_manager().position(this->atoms.back());
+      } else {
+        // These are the informations I need for my linked cell
+        return this->get_manager().neighbour_position(this->atoms.back(),this->atoms.front(),this->get_index());
+      }
+    } 
 
-    inline decltype(auto) get_atom_shift() {
-      return this->get_manager().atom_shift(*this,this->get_index());
-    }
 
     inline decltype(auto) get_atom_type() const {return this->atoms.back().get_atom_type();}
 

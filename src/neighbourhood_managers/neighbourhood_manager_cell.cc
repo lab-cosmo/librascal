@@ -30,12 +30,14 @@
 namespace rascal {
   
 
-  NeighbourhoodManagerCell::Box NeighbourhoodManagerCell::get_box(const int& bin_id){
+  /* NeighbourhoodManagerCell::Box NeighbourhoodManagerCell::get_box(const int& bin_id){
     return this->boxes[bin_id];
-  }
+  } */
   size_t NeighbourhoodManagerCell::get_box_nb(){
     return this->boxes.size();
   }
+
+  
    /* ---------------------------------------------------------------------- */
 
   void NeighbourhoodManagerCell::build(const Eigen::Ref<const Eigen::MatrixXd>  positions,
@@ -64,6 +66,7 @@ namespace rascal {
 
       Cell_t lat = cell;
       this->lattice.set_cell(lat);
+      this->cell = lat;
       Vec3_t reciprocal_lenghts = this->lattice.get_reciprocal_lenghts();
       double bin_size{cutoff_max};
       Vec3i_t nbins_c,neigh_search;
@@ -99,6 +102,7 @@ namespace rascal {
       // bin the particles in the boxes
       Vec3_t position_sc;
       int bin_id{0};
+      this->part2bin.resize(Natom);
       for (auto part : this->particles){
           this->lattice.get_cartesian2scaled(part.get_position(),position_sc);
           bin_index_c = (position_sc.array() * nbins_cd.array()).cast<int>();
@@ -235,7 +239,7 @@ namespace rascal {
                                         const Eigen::Ref<const Eigen::MatrixXd> cell,
                                         const std::array<bool,3>& pbc, const double& cutoff_max)
   {
-    bool some_condition{false};
+    bool some_condition{true};
     if (some_condition){
       NeighbourhoodManagerCell::build(positions,particule_types,center_ids,cell,pbc,cutoff_max);
     }

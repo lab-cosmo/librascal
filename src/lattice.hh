@@ -152,6 +152,7 @@ class Lattice {
       position = this->scaled2cartesian.transpose() * position_sc;
     }
 
+    
   protected:
     Cell_t cell_vectors = Cell_t::Ones();
     Cell_t reciprocal_vectors = Cell_t::Ones();
