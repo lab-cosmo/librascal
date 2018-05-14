@@ -54,8 +54,8 @@ before_install:
     - eval "CC=gcc-5 && CXX=g++-5"
     - SITE_PKG_DIR=$VIRTUAL_ENV/lib/python$TRAVIS_PYTHON_VERSION/site-packages
     - rm -f $VIRTUAL_ENV/lib/python$TRAVIS_PYTHON_VERSION/no-global-site-packages.txt
-    - apt-get install python-numpy
-    - apt-get install python-scipy
+    - sudo apt-get install python-numpy
+
 after_failure:
        - cat ${TRAVIS_TEST_RESULT}
 
