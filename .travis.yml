@@ -42,6 +42,7 @@ before_install:
     - pyenv global system 3.6
     - virtualenv --python=python venv
     - source venv/bin/activate
+    - python --version
     - export DOWNLOAD_ROOT="${TRAVIS_BUILD_DIR}/../download"; if [ ! -d "${DOWNLOAD_ROOT}" ]; then mkdir -p "${DOWNLOAD_ROOT}"; fi
     - export BOOST_DOWNLOAD_URL="http://sourceforge.net/projects/boost/files/boost/1.58.0/boost_1_58_0.tar.bz2/download"
     - export BOOST_ROOT="${TRAVIS_BUILD_DIR}/../boost"
@@ -52,7 +53,6 @@ before_install:
     - cd "${BOOST_ROOT}"; ./b2 --prefix="$BOOST_ROOT" -d0 install
     - cmake --version
     - eval "CC=gcc-5 && CXX=g++-5"
-    - pip3 install --upgrade pip3
     - pip3 install Sphinx numpy
     - python3 --version
     - pip3 freeze | grep 'numpy'
