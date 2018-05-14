@@ -46,6 +46,7 @@ before_install:
     - cd "${BOOST_ROOT}"; ./b2 --prefix="$BOOST_ROOT" -d0 install
     - cmake --version
     - eval "CC=gcc-5 && CXX=g++-5"
+    - pyenv global system 3.6
     - virtualenv --python=python3.6 vir_env
     - source /vir_env/bin/activate
     - pip3.6 install Sphinx numpy
