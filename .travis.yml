@@ -58,7 +58,7 @@ before_install:
     - pyenv global system ${PYTHON_VERSION}
     - virtualenv --python=python${PYTHON_VERSION} vir_env
     - source vir_env/bin/activate
-    - pip install Sphinx numpy
+    - pip install Sphinx numpy breathe
 
 install:
       - cd "${TRAVIS_BUILD_DIR}"
