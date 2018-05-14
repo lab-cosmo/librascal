@@ -52,7 +52,7 @@ before_install:
     - cd "${BOOST_ROOT}"; ./b2 --prefix="$BOOST_ROOT" -d0 install
     - cmake --version
     - eval "CC=gcc-5 && CXX=g++-5"
-    - pip3 install -U Sphinx numpy ase
+    - pip3 install --user Sphinx numpy ase
 
 after_failure:
        - cat ${TRAVIS_TEST_RESULT}
