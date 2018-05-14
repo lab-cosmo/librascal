@@ -35,14 +35,31 @@
 namespace rascal {
 
   BOOST_AUTO_TEST_SUITE (Property_tests);
-  struct PropertyFixture: public ManagerFixture {
-    using Manager_t = typename ManagerFixture::Manager_t;
+  template<class ManagerImplementation>
+  struct PropertyFixture: public ManagerFixture<ManagerImplementation> {
+    using Manager_t = ManagerImplementation;
     using PairScalarProperty_t = Property<Manager_t, double, 2>;
     using AtomVectorProperty_t = Property<Manager_t, double, 1, 3>;
 
 
     PropertyFixture()
-      :ManagerFixture{}, pair_property{this->manager},
+      :ManagerFixture<ManagerImplementation>{}, pair_property{this->manager},
+       atom_property{this->manager}
+    {}
+    
+    PairScalarProperty_t pair_property;
+    AtomVectorProperty_t atom_property;
+  };
+  
+
+  struct PropertyFixture_lammps: public ManagerFixture_lammps {
+    using Manager_t = typename ManagerFixture_lammps::Manager_t;
+    using PairScalarProperty_t = Property<Manager_t, double, 2>;
+    using AtomVectorProperty_t = Property<Manager_t, double, 1, 3>;
+
+
+    PropertyFixture_lammps()
+      :ManagerFixture_lammps{}, pair_property{this->manager},
        atom_property{this->manager}
     {}
 
@@ -51,15 +68,15 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(constructor_test, PropertyFixture) {}
+  BOOST_FIXTURE_TEST_CASE(constructor_test_cell, PropertyFixture<NeighbourhoodManagerCell>) {}
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(fill_test, PropertyFixture) {
+  BOOST_FIXTURE_TEST_CASE(fill_test_cell, PropertyFixture<NeighbourhoodManagerCell>) {
     pair_property.resize();
     atom_property.resize();
     int pair_property_counter{};
     for (auto atom: manager) {
-      atom_property[atom] = atom.get_x();
+      atom_property[atom] = atom.get_position();
       for (auto pair: atom) {
         pair_property[pair] = ++pair_property_counter;
       }
@@ -67,7 +84,7 @@ namespace rascal {
 
     pair_property_counter = 0;
     for (auto atom: manager) {
-      auto error = (atom_property[atom] - atom.get_x()).norm();
+      auto error = (atom_property[atom] - atom.get_position()).norm();
       BOOST_CHECK_EQUAL(error, 0);
       for (auto pair: atom) {
         BOOST_CHECK_EQUAL(pair_property[pair], ++pair_property_counter);
@@ -76,12 +93,37 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(compute_distances, PropertyFixture) {
+  BOOST_FIXTURE_TEST_CASE(constructor_test_lammps, PropertyFixture_lammps) {}
+
+  /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE(fill_test_lammps, PropertyFixture_lammps) {
+    pair_property.resize();
+    atom_property.resize();
+    int pair_property_counter{};
+    for (auto atom: manager) {
+      atom_property[atom] = atom.get_position();
+      for (auto pair: atom) {
+        pair_property[pair] = ++pair_property_counter;
+      }
+    }
+
+    pair_property_counter = 0;
+    for (auto atom: manager) {
+      auto error = (atom_property[atom] - atom.get_position()).norm();
+      BOOST_CHECK_EQUAL(error, 0);
+      for (auto pair: atom) {
+        BOOST_CHECK_EQUAL(pair_property[pair], ++pair_property_counter);
+      }
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE(compute_distances_lammps, PropertyFixture_lammps) {
     pair_property.resize();
 
     for (auto atom: manager) {
       for (auto pair: atom) {
-        pair_property[pair] = (atom.get_x() - pair.get_x()).norm();
+        pair_property[pair] = (atom.get_position() - pair.get_position()).norm();
       }
     }
 

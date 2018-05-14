@@ -100,7 +100,7 @@ namespace rascal {
      *
      * @param vatom per-atom virial
      */
-    void reset_impl(const int & inum, const int & tot_num,
+    void update(const int & inum, const int & tot_num,
                     int * ilist, int * numneigh, int ** firstneigh,
                     double ** x, double ** f, int * type,
                     double * eatom, double ** vatom);
@@ -109,15 +109,15 @@ namespace rascal {
 
 
     // return position vector
-    inline Vector_ref get_x(const AtomRef_t& atom) {
+    inline Vector_ref get_position(const AtomRef_t& atom) {
       auto index{atom.get_index()};
       auto * xval{this->x[index]};
       return Vector_ref(xval);
     }
 
-    // return force vector
-    inline Vector_ref get_f(const AtomRef_t& atom) {
-      return Vector_ref(this->f[atom.get_index()]);
+    // return position vector
+    inline Vector_ref get_neighbour_position(const AtomRef_t& atom, const AtomRef_t& ,const int& ) {
+      return this->get_position(atom);
     }
 
     // return number of I atoms in the list
@@ -164,7 +164,7 @@ namespace rascal {
     int * ilist{};
     int * numneigh{};
     int ** firstneigh{};
-    double **x{};
+    double **x{}; //! pointer to pointer
     double **f{};
     int * type{};
     double * eatom{};
