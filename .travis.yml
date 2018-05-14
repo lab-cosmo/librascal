@@ -10,31 +10,22 @@ sudo: false
 
 language: cpp
 
-python:
-    - "3.6"
-
 compiler: g++
 
 addons:
     apt:
-        update: true
         sources:
             - ubuntu-toolchain-r-test
             - george-edison55-precise-backports
-              #- llvm-toolchain-precise-3.7   # clang
+            - llvm-toolchain-precise-3.7   # clang
         packages:
             - cmake-data
             - cmake
-            - g++-5
             - doxygen
             - doxygen-doc
             - doxygen-latex
             - doxygen-gui
             - graphviz
-              #- clang-3.7
-              #- doxygen
-              #- graphviz
-              #- sphinx_rtd_theme
 
 matrix:
      include:
@@ -43,6 +34,20 @@ matrix:
               - BOOST_VERSION=1.58.0
               - PYTHON_VERSION=3.6
               - CC_ENV="CC=gcc-5 && CXX=g++-5"
+        addons:
+            apt:
+                packages:
+                    - g++-5
+
+        - os: linux
+          env: 
+              - BOOST_VERSION=1.58.0
+              - PYTHON_VERSION=3.6
+              - CC_ENV="CC=clang-4.0 && CXX=clang++-4.0"
+        addons:
+            apt:
+                packages:
+                    - clang-4.0
 
 before_install:
 
