@@ -53,7 +53,7 @@ before_install:
     - cmake --version
     - eval "CC=gcc-5 && CXX=g++-5"
     - pip3 install --user Sphinx ase
-    - apt-get install -qq  python-numpy python-scipy
+    - sudo apt-get install -qq  python-numpy python-scipy
 
 after_failure:
        - cat ${TRAVIS_TEST_RESULT}
