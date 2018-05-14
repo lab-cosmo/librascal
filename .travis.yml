@@ -34,7 +34,10 @@ addons:
 matrix:
      include:
         - os: linux
-          env: BOOST_VERSION=1.58.0
+          env: 
+              - BOOST_VERSION=1.58.0
+              - PYTHON_VERSION=3.6
+
 
 before_install:
     - export DOWNLOAD_ROOT="${TRAVIS_BUILD_DIR}/../download"; if [ ! -d "${DOWNLOAD_ROOT}" ]; then mkdir -p "${DOWNLOAD_ROOT}"; fi
@@ -47,15 +50,11 @@ before_install:
     - cd "${BOOST_ROOT}"; ./b2 --prefix="$BOOST_ROOT" -d0 install
     - cmake --version
     - eval "CC=gcc-5 && CXX=g++-5"
-    - pyenv global system 3.6
-    - virtualenv --python=python3.6 vir_env
+    - pyenv global system ${PYTHON_VERSION}
+    - virtualenv --python=python${PYTHON_VERSION} vir_env
     - source vir_env/bin/activate
-    - pip3.6 install Sphinx numpy
-    - python3 --version
-    - pip3.6 freeze | grep 'numpy'
-
-after_failure:
-       - cat ${TRAVIS_TEST_RESULT}
+    - pip install Sphinx numpy
+    - pip freeze | grep 'numpy'
 
 install:
       - cd "${TRAVIS_BUILD_DIR}"
@@ -63,6 +62,6 @@ install:
       - cd build
       - cmake .. -DBUILD_TESTS=ON
       - make
-      - python3.6 -c "import numpy as np ; print(np.version.version)"
+      - python -c "import numpy as np ; print(np.version.version)"
       - ctest -V
 
