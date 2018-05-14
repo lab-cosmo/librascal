@@ -79,22 +79,22 @@ namespace rascal {
      * dependency, but it is unclear that the convenience would
      * outweigh the hassle of maintaining the dependency.
      *
-     * @param inum Field `inum` in the lammps `NeighList` structure
+     * @param inum Property `inum` in the lammps `NeighList` structure
      *
-     * @param tot_num sum of the fields `nlocal` and `nghost` in the
+     * @param tot_num sum of the properties `nlocal` and `nghost` in the
      *                lammps `Atom` structure
      *
-     * @param ilist Field `ilist` in the lammps `NeighList` structure
+     * @param ilist Property `ilist` in the lammps `NeighList` structure
      *
-     * @param numneigh Field `numneigh` in the lammps `NeighList` structure
+     * @param numneigh Property `numneigh` in the lammps `NeighList` structure
      *
-     * @param firstneigh Field `firstneigh` in the lammps `NeighList` structure
+     * @param firstneigh Property `firstneigh` in the lammps `NeighList` structure
      *
-     * @param x Field `x` in the lammps `Atom` structure
+     * @param x Property `x` in the lammps `Atom` structure
      *
-     * @param f Field `f` in the lammps `Atom` structure
+     * @param f Property `f` in the lammps `Atom` structure
      *
-     * @param type Field `type` in the lammps `Atom` structure
+     * @param type Property `type` in the lammps `Atom` structure
      *
      * @param eatom per-atom energy
      *

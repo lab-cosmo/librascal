@@ -80,7 +80,7 @@ namespace rascal {
     /**
      * iterator over the atoms, pairs, triplets, etc in the
      * manager. Iterators like these can be used as indices for random
-     * access in atom-, pair, ... -related fields.
+     * access in atom-, pair, ... -related properties.
      */
     template <int Level, int MaxLevel>
     class iterator;

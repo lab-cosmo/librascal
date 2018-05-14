@@ -30,7 +30,7 @@
 #define NEIGHBOURHOOD_MANAGER_CELL_H
 
 #include "neighbourhood_managers/neighbourhood_manager_base.hh"
-#include "neighbourhood_managers/field.hh"
+#include "neighbourhood_managers/property.hh"
 #include "lattice.hh"
 #include "basic_types.hh"
 #include <Eigen/Dense>
@@ -65,7 +65,7 @@ namespace rascal {
     template <int Level, int MaxLevel>
     using ClusterRef_t = typename Parent::template ClusterRef<Level, MaxLevel>;
     
-    using AtomVectorField_t = Field<NeighbourhoodManagerCell, double, 1, 3>;
+    using AtomVectorField_t = Property<NeighbourhoodManagerCell, double, 1, 3>;
     
     //! Default constructor
     NeighbourhoodManagerCell()

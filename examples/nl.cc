@@ -1,6 +1,6 @@
 #include <neighbourhood_managers/neighbourhood_manager_cell.hh>
 #include <neighbourhood_managers/neighbourhood_manager_lammps.hh>
-#include <neighbourhood_managers/field.hh>
+#include <neighbourhood_managers/property.hh>
 #include <iostream>
 #include <basic_types.hh>
 #include <Eigen/StdVector>
