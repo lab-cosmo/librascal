@@ -110,7 +110,12 @@ namespace rascal {
     }
     
     inline Vector_ref get_position(const AtomRef& atom) {
-      return this->implementation().get_position(atom);
+      if (Level == 1){
+        return this->implementation().get_center_position(atom);
+      } else {
+        return this->implementation().get_neighbour_position(atom);
+      }
+      
     }
 
     inline int get_atom_type(const AtomRef& atom) {
