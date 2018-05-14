@@ -37,31 +37,33 @@ matrix:
           env: 
               - BOOST_VERSION=1.58.0
               - PYTHON_VERSION=3.6
+              - eval "CC=gcc-5 && CXX=g++-5"
+
 
 
 before_install:
+
     - export DOWNLOAD_ROOT="${TRAVIS_BUILD_DIR}/../download"; if [ ! -d "${DOWNLOAD_ROOT}" ]; then mkdir -p "${DOWNLOAD_ROOT}"; fi
-    - export BOOST_DOWNLOAD_URL="http://sourceforge.net/projects/boost/files/boost/1.58.0/boost_1_58_0.tar.bz2/download"
+    - export BOOST_DOWNLOAD_URL="http://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/boost_1_58_0.tar.bz2/download"
     - export BOOST_ROOT="${TRAVIS_BUILD_DIR}/../boost"
     - export CMAKE_MODULE_PATH="${BOOST_ROOT}"
     - if [ ! -f "${DOWNLOAD_ROOT}/boost.tar.bz2" ]; then wget --no-verbose --output-document="${DOWNLOAD_ROOT}/boost.tar.bz2" "${BOOST_DOWNLOAD_URL}"; fi
     - if [ ! -d "${BOOST_ROOT}" ]; then mkdir -p "${BOOST_ROOT}" && tar jxf "${DOWNLOAD_ROOT}/boost.tar.bz2" --strip-components=1 -C "${BOOST_ROOT}"; fi
     - if [ ! -f "${BOOST_ROOT}/b2" ]; then cd "${BOOST_ROOT}"; ./bootstrap.sh --with-libraries=test; fi
     - cd "${BOOST_ROOT}"; ./b2 --prefix="$BOOST_ROOT" -d0 install
-    - cmake --version
-    - eval "CC=gcc-5 && CXX=g++-5"
+
     - pyenv global system ${PYTHON_VERSION}
     - virtualenv --python=python${PYTHON_VERSION} vir_env
     - source vir_env/bin/activate
     - pip install Sphinx numpy
-    - pip freeze | grep 'numpy'
 
 install:
       - cd "${TRAVIS_BUILD_DIR}"
       - mkdir build
       - cd build
-      - cmake .. -DBUILD_TESTS=ON
+      - cmake .. -DBUILD_TESTS=ON -DENABLE_DOC=ON
       - make
+      - make dev_doc
 
 script:
       - ctest -V
