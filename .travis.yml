@@ -28,6 +28,7 @@ addons:
             - cmake-data
             - cmake
             - g++-5
+            - python3
               #- clang-3.7
               #- doxygen
               #- graphviz
@@ -39,8 +40,6 @@ matrix:
           env: BOOST_VERSION=1.58.0
 
 before_install:
-    - sudo apt-get update
-    - sudo apt-get install python3
     - pyenv global system 3
         #    - virtualenv --python=python venv
         #    - source venv/bin/activate
