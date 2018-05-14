@@ -52,14 +52,13 @@ before_install:
     - cd "${BOOST_ROOT}"; ./b2 --prefix="$BOOST_ROOT" -d0 install
     - cmake --version
     - eval "CC=gcc-5 && CXX=g++-5"
-    - SITE_PKG_DIR=$VIRTUAL_ENV/lib/python$TRAVIS_PYTHON_VERSION/site-packages
-    - rm -f $VIRTUAL_ENV/lib/python$TRAVIS_PYTHON_VERSION/no-global-site-packages.txt
-    - sudo apt-get install python-numpy
+
 
 after_failure:
        - cat ${TRAVIS_TEST_RESULT}
 
 install:
+       - pip3 install --user Sphinx numpy ase
        - cd "${TRAVIS_BUILD_DIR}"
        - mkdir build
        - cd build
