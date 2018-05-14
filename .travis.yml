@@ -37,7 +37,7 @@ matrix:
           env: 
               - BOOST_VERSION=1.58.0
               - PYTHON_VERSION=3.6
-              - eval "CC=gcc-5 && CXX=g++-5"
+              - CC=gcc-5 && CXX=g++-5
 
 
 
