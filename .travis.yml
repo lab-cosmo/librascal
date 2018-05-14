@@ -17,6 +17,7 @@ compiler: g++
 
 addons:
     apt:
+        update: true
         sources:
             - ubuntu-toolchain-r-test
             - george-edison55-precise-backports
@@ -48,7 +49,7 @@ before_install:
     - eval "CC=gcc-5 && CXX=g++-5"
     - pyenv global system 3.6
     - virtualenv --python=python3.6 vir_env
-    - source /vir_env/bin/activate
+    - source vir_env/bin/activate
     - pip3.6 install Sphinx numpy
     - python3 --version
     - pip3.6 freeze | grep 'numpy'
