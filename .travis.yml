@@ -58,7 +58,7 @@ after_failure:
        - cat ${TRAVIS_TEST_RESULT}
 
 install:
-       - alias python=`python3.6`
+       - alias python=python3.6
        - pip3 install --user Sphinx numpy ase
        - python --version
        - pip3 freeze | grep 'numpy'
