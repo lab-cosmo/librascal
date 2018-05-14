@@ -53,9 +53,9 @@ before_install:
     - cd "${BOOST_ROOT}"; ./b2 --prefix="$BOOST_ROOT" -d0 install
     - cmake --version
     - eval "CC=gcc-5 && CXX=g++-5"
-    - pip3 install Sphinx numpy
+    - pip3.6 install Sphinx numpy
     - python3 --version
-    - pip3 freeze | grep 'numpy'
+    - pip3.6 freeze | grep 'numpy'
 
 after_failure:
        - cat ${TRAVIS_TEST_RESULT}
@@ -66,7 +66,6 @@ install:
       - cd build
       - cmake .. -DBUILD_TESTS=ON
       - make
-      - python -c "import numpy as np ; print(np.version.version)"
       - python3.6 -c "import numpy as np ; print(np.version.version)"
       - ctest -V
 
