@@ -62,6 +62,6 @@ install:
       - cd build
       - cmake .. -DBUILD_TESTS=ON
       - make
-      - python -c "import numpy as np ; print(np.version.version)"
-      - ctest -V
 
+script:
+      - ctest -V
