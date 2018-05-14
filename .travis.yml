@@ -56,7 +56,6 @@ before_install:
     - pip install Sphinx numpy
     - python --version
     - pip freeze | grep 'numpy'
-    - python -c "import numpy; print(numpy.version.version)"
 
 after_failure:
        - cat ${TRAVIS_TEST_RESULT}
@@ -67,5 +66,8 @@ install:
       - cd build
       - cmake .. -DBUILD_TESTS=ON
       - make
+      - python -c "import numpy as np ; print(np.version.version)"
+      - python3 -c "import numpy as np ; print(np.version.version)"
+      - python3.6 -c "import numpy as np ; print(np.version.version)"
       - ctest -V
 
