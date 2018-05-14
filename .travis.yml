@@ -6,9 +6,6 @@ branches:
         - master
         - feat/test_CI
 
-virtualenv:
-    system_site_packages: true
-
 sudo: false
 
 language: 
@@ -53,12 +50,17 @@ before_install:
     - cmake --version
     - eval "CC=gcc-5 && CXX=g++-5"
 
+virtualenv:
+    system_site_packages: true
+
 
 after_failure:
        - cat ${TRAVIS_TEST_RESULT}
 
 install:
        - pip3 install --user Sphinx numpy ase
+       - python --version
+       - pip3 freeze | grep 'numpy'
        - cd "${TRAVIS_BUILD_DIR}"
        - mkdir build
        - cd build
