@@ -27,65 +27,94 @@ addons:
 
 matrix:
      include:
-        - os: linux
-          env: 
-              - BOOST_VERSION=1.58.0
-              - PYTHON_VERSION=3.6
-              - CC_ENV="CC=gcc-5 && CXX=g++-5"
-          addons:
-              apt:
-                  sources:
-                      - *common_sources
-                      - ubuntu-toolchain-r-test
-                  packages:
-                      - *common_deps   
-                      - g++-5
+         - os: linux
+           env: 
+               - BOOST_VERSION=1.58.0
+               - PYTHON_VERSION=3.6
+               - CC_ENV="CC=clang-3.5 && CXX=clang++-3.5"
+           addons:
+               apt:
+                   sources:
+                       - *common_sources
+                       - llvm-toolchain-trusty-3.5
+                   packages:
+                       - *common_deps
+                       - clang-3.5
 
-        - os: linux
-          env: 
-              - BOOST_VERSION=1.58.0
-              - PYTHON_VERSION=3.6
-              - CC_ENV="CC=gcc-6 && CXX=g++-6"
-          addons:
-              apt:
-                  sources:
-                      - *common_sources
-                      - ubuntu-toolchain-r-test
-                  packages:
-                      - *common_deps   
-                      - g++-6
+         - os: linux
+           env: 
+               - BOOST_VERSION=1.58.0
+               - PYTHON_VERSION=3.6
+               - CC_ENV="CC=clang-4.0 && CXX=clang++-4.0"
+           addons:
+               apt:
+                   sources:
+                       - *common_sources
+                       - llvm-toolchain-trusty-4.0
+                   packages:
+                       - *common_deps
+                       - clang-4.0
 
-        - os: linux
-          env: 
-              - BOOST_VERSION=1.58.0
-              - PYTHON_VERSION=3.6
-              - CC_ENV="CC=gcc-7 && CXX=g++-7"
-          addons:
-              apt:
-                  sources:
-                      - *common_sources
-                      - ubuntu-toolchain-r-test
-                  packages:
-                      - *common_deps   
-                      - g++-7
+         - os: linux
+           env: 
+               - BOOST_VERSION=1.58.0
+               - PYTHON_VERSION=3.6
+               - CC_ENV="CC=clang-5.0 && CXX=clang++-5.0"
+           addons:
+               apt:
+                   sources:
+                       - *common_sources
+                       - llvm-toolchain-trusty-5.0
+                   packages:
+                       - *common_deps
+                       - clang-5.0
+
+             # THESE WORKS JUST FINE
+             #        - os: linux
+             #          env: 
+             #              - BOOST_VERSION=1.58.0
+             #              - PYTHON_VERSION=3.6
+             #              - CC_ENV="CC=gcc-5 && CXX=g++-5"
+             #          addons:
+             #              apt:
+             #                  sources:
+             #                      - *common_sources
+             #                      - ubuntu-toolchain-r-test
+             #                  packages:
+             #                      - *common_deps   
+             #                      - g++-5
+             #
+             #        - os: linux
+             #          env: 
+             #              - BOOST_VERSION=1.58.0
+             #              - PYTHON_VERSION=3.6
+             #              - CC_ENV="CC=gcc-6 && CXX=g++-6"
+             #          addons:
+             #              apt:
+             #                  sources:
+             #                      - *common_sources
+             #                      - ubuntu-toolchain-r-test
+             #                  packages:
+             #                      - *common_deps   
+             #                      - g++-6
+             #
+             #        - os: linux
+             #          env: 
+             #              - BOOST_VERSION=1.58.0
+             #              - PYTHON_VERSION=3.6
+             #              - CC_ENV="CC=gcc-7 && CXX=g++-7"
+             #          addons:
+             #              apt:
+             #                  sources:
+             #                      - *common_sources
+             #                      - ubuntu-toolchain-r-test
+             #                  packages:
+             #                      - *common_deps   
+             #                      - g++-7
 
 
-#        - os: linux
-#          env: 
-#              - BOOST_VERSION=1.58.0
-#              - PYTHON_VERSION=3.6
-#              - CC_ENV="CC=clang-4.0 && CXX=clang++-4.0"
-#          addons:
-#              apt:
-#                  sources:
-#                      - *common_sources
-#                      - llvm-toolchain-trusty-4.0
-#                  packages:
-#                      - *common_deps
-#                      - clang-4.0
 
 before_install:
-
     - export DOWNLOAD_ROOT="${TRAVIS_BUILD_DIR}/../download"; if [ ! -d "${DOWNLOAD_ROOT}" ]; then mkdir -p "${DOWNLOAD_ROOT}"; fi
     - export BOOST_DOWNLOAD_URL="http://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/boost_1_58_0.tar.bz2/download"
     - export BOOST_ROOT="${TRAVIS_BUILD_DIR}/../boost"
