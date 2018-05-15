@@ -14,9 +14,9 @@ compiler: g++
 
 addons:
     apt:
-        sources:
+        sources: &common_sources
             - george-edison55-precise-backports
-        packages:
+        packages: &common_deps
             - cmake-data
             - cmake
             - doxygen
@@ -35,8 +35,10 @@ matrix:
           addons:
               apt:
                   sources:
+                      - *common_sources
                       - ubuntu-toolchain-r-test
                   packages:
+                      - *common_deps   
                       - g++-5
 
         - os: linux
@@ -47,8 +49,10 @@ matrix:
           addons:
               apt:
                   sources:
+                      - *common_sources
                       - llvm-toolchain-trusty-4.0
                   packages:
+                      - *common_deps
                       - clang-4.0
 
 before_install:
