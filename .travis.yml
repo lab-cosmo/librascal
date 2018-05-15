@@ -45,15 +45,44 @@ matrix:
           env: 
               - BOOST_VERSION=1.58.0
               - PYTHON_VERSION=3.6
-              - CC_ENV="CC=clang-4.0 && CXX=clang++-4.0"
+              - CC_ENV="CC=gcc-6 && CXX=g++-6"
           addons:
               apt:
                   sources:
                       - *common_sources
-                      - llvm-toolchain-trusty-4.0
+                      - ubuntu-toolchain-r-test
                   packages:
-                      - *common_deps
-                      - clang-4.0
+                      - *common_deps   
+                      - g++-6
+
+        - os: linux
+          env: 
+              - BOOST_VERSION=1.58.0
+              - PYTHON_VERSION=3.6
+              - CC_ENV="CC=gcc-7 && CXX=g++-7"
+          addons:
+              apt:
+                  sources:
+                      - *common_sources
+                      - ubuntu-toolchain-r-test
+                  packages:
+                      - *common_deps   
+                      - g++-7
+
+
+#        - os: linux
+#          env: 
+#              - BOOST_VERSION=1.58.0
+#              - PYTHON_VERSION=3.6
+#              - CC_ENV="CC=clang-4.0 && CXX=clang++-4.0"
+#          addons:
+#              apt:
+#                  sources:
+#                      - *common_sources
+#                      - llvm-toolchain-trusty-4.0
+#                  packages:
+#                      - *common_deps
+#                      - clang-4.0
 
 before_install:
 
