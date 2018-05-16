@@ -31,7 +31,7 @@ matrix:
            env: 
                - BOOST_VERSION=1.58.0
                - PYTHON_VERSION=3.6
-               - CC_ENV="CC=clang-3.5 && CXX=clang++-3.5 && CMAKE_CXX_STANDARD=14 && CXXFLAGS=libc++ && LDFLAGS=-stdlib=libc++"
+               - CC_ENV="CC=clang-3.5 && CXX=clang++-3.5 && CMAKE_CXX_STANDARD=14 && CXXFLAGS=libc++ && LDFLAGS=libc++"
                - CLANG_LIB="-DLLVM_ENABLE_LIBCXX=ON -DLLVM_ENABLE_LIBCXXABI=ON"
            addons:
                apt:
@@ -48,7 +48,7 @@ matrix:
            env: 
                - BOOST_VERSION=1.58.0
                - PYTHON_VERSION=3.6
-               - CC_ENV="CC=clang-4.0 && CXX=clang++-4.0 && CMAKE_CXX_STANDARD=14 && CXXFLAGS=libc++ && LDFLAGS=-stdlib=libc++"
+               - CC_ENV="CC=clang-4.0 && CXX=clang++-4.0 && CMAKE_CXX_STANDARD=14 && CXXFLAGS=libc++ && LDFLAGS=libc++"
                - CLANG_LIB="-DLLVM_ENABLE_LIBCXX=ON -DLLVM_ENABLE_LIBCXXABI=ON"
            addons:
                apt:
@@ -65,7 +65,7 @@ matrix:
            env: 
                - BOOST_VERSION=1.58.0
                - PYTHON_VERSION=3.6
-               - CC_ENV="CC=clang-5.0 && CXX=clang++-5.0 && CMAKE_CXX_STANDARD=14 && CXXFLAGS=libc++ && LDFLAGS=-stdlib=libc++"
+               - CC_ENV="CC=clang-5.0 && CXX=clang++-5.0 && CMAKE_CXX_STANDARD=14 && CXXFLAGS=libc++ && LDFLAGS=libc++"
                - CLANG_LIB="-DLLVM_ENABLE_LIBCXX=ON -DLLVM_ENABLE_LIBCXXABI=ON"
            addons:
                apt:
