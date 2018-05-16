@@ -140,6 +140,7 @@ install:
       - mkdir build
       - cd build
       - cmake .. -DBUILD_TESTS=ON -DENABLE_DOC=ON
+      - cat build/CMakeCache*
       - make
       - make dev_doc
 
