@@ -31,49 +31,55 @@ matrix:
            env: 
                - BOOST_VERSION=1.58.0
                - PYTHON_VERSION=3.6
-               - CC_ENV="LIBS='-lc++ -lc++abi' && CC=clang-3.5 && CXX=clang++-3.5 && CMAKE_CXX_COMPILER=clang++-3.5"
+               - CC_ENV="CC=clang-3.5 && CXX=clang++-3.5"
            addons:
                apt:
                    sources:
                        - *common_sources
                        - llvm-toolchain-trusty-3.5
+                       - ubuntu-toolchain-r-test
                    packages:
                        - *common_deps
                        - clang-3.5
-                       - libc++-dev
-                       - libc++abi-dev
+                       - g++-5
+                       #- libc++-dev
+                       #- libc++abi-dev
 
          - os: linux
            env: 
                - BOOST_VERSION=1.58.0
                - PYTHON_VERSION=3.6
-               - CC_ENV=" LIBS='-lc++ -lc++abi' && CC=clang-4.0 && CXX=clang++-4.0 && CMAKE_CXX_COMPILER=clang++-4.0"
+               - CC_ENV="CC=clang-4.0 && CXX=clang++-4.0"
            addons:
                apt:
                    sources:
                        - *common_sources
                        - llvm-toolchain-trusty-4.0
+                       - ubuntu-toolchain-r-test
                    packages:
                        - *common_deps
                        - clang-4.0
-                       - libc++-dev
-                       - libc++abi-dev
+                       - g++-5
+                       #- libc++-dev
+                       #- libc++abi-dev
 
          - os: linux
            env: 
                - BOOST_VERSION=1.58.0
                - PYTHON_VERSION=3.6
-               - CC_ENV=" LIBS='-lc++ -lc++abi' && CC=clang-5.0 && CXX=clang++-5.0 && CMAKE_CXX_COMPILER=clang++-5.0"
+               - CC_ENV=" CC=clang-5.0 && CXX=clang++-5.0"
            addons:
                apt:
                    sources:
                        - *common_sources
                        - llvm-toolchain-trusty-5.0
+                       - ubuntu-toolchain-r-test
                    packages:
                        - *common_deps
                        - clang-5.0
-                       - libc++-dev
-                       - libc++abi-dev
+                       - g++-5
+                       #- libc++-dev
+                       #- libc++abi-dev
 
              # THESE WORKS JUST FINE
              #        - os: linux
