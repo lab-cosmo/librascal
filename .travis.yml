@@ -31,8 +31,7 @@ matrix:
            env: 
                - BOOST_VERSION=1.58.0
                - PYTHON_VERSION=3.6
-               - CC_ENV="CC=clang-3.5 && CXX=clang++-3.5 && CMAKE_CXX_STANDARD=14 && CXXFLAGS=libc++ && LDFLAGS=libc++"
-               - CLANG_LIB="-DLLVM_ENABLE_LIBCXX=ON -DLLVM_ENABLE_LIBCXXABI=ON"
+               - CC_ENV="CC=clang-3.5 && CXX=clang++-3.5 && CMAKE_CXX_COMPILER=clang++-3.5 && CMAKE_EXE_LINKER_FLAGS="-stdlib=libc++ -lc++abi""
            addons:
                apt:
                    sources:
@@ -48,8 +47,7 @@ matrix:
            env: 
                - BOOST_VERSION=1.58.0
                - PYTHON_VERSION=3.6
-               - CC_ENV="CC=clang-4.0 && CXX=clang++-4.0 && CMAKE_CXX_STANDARD=14 && CXXFLAGS=libc++ && LDFLAGS=libc++"
-               - CLANG_LIB="-DLLVM_ENABLE_LIBCXX=ON -DLLVM_ENABLE_LIBCXXABI=ON"
+               - CC_ENV="CC=clang-4.0 && CXX=clang++-4.0 && CMAKE_CXX_COMPILER=clang++-4.0 && CMAKE_EXE_LINKER_FLAGS="-stdlib=libc++ -lc++abi""
            addons:
                apt:
                    sources:
@@ -65,8 +63,7 @@ matrix:
            env: 
                - BOOST_VERSION=1.58.0
                - PYTHON_VERSION=3.6
-               - CC_ENV="CC=clang-5.0 && CXX=clang++-5.0 && CMAKE_CXX_STANDARD=14 && CXXFLAGS=libc++ && LDFLAGS=libc++"
-               - CLANG_LIB="-DLLVM_ENABLE_LIBCXX=ON -DLLVM_ENABLE_LIBCXXABI=ON"
+               - CC_ENV="CC=clang-5.0 && CXX=clang++-5.0 && CMAKE_CXX_COMPILER=clang++-5.0 && CMAKE_EXE_LINKER_FLAGS="-stdlib=libc++ -lc++abi""
            addons:
                apt:
                    sources:
@@ -142,7 +139,7 @@ install:
       - cd "${TRAVIS_BUILD_DIR}"
       - mkdir build
       - cd build
-      - cmake .. -DBUILD_TESTS=ON -DENABLE_DOC=ON ${CLANG_LIB}
+      - cmake .. -DBUILD_TESTS=ON -DENABLE_DOC=ON 
       - make
       - make dev_doc
 
