@@ -140,7 +140,7 @@ install:
       - mkdir build
       - cd build
       - cmake .. -DBUILD_TESTS=ON -DENABLE_DOC=ON
-      - cat build/CMakeCache*
+      - cat /home/travis/build/cosmo-epfl/librascal/build/CMakeCache*
       - make
       - make dev_doc
 
