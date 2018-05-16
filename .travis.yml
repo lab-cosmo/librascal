@@ -143,7 +143,6 @@ install:
       - mkdir build
       - cd build
       - cmake .. -DBUILD_TESTS=ON -DENABLE_DOC=ON ${CLANG_LIB}
-      - locate libc++
       - make
       - make dev_doc
 
