@@ -58,7 +58,7 @@ matrix:
                env: 
                    - BOOST_VERSION=1.58.0
                    - PYTHON_VERSION=3.6
-                   - CC_ENV="CC=clang-4.0 && CXX=clang++-4.0"
+                   - CC_ENV="CXX=clang++"
              #          addons:
              #              apt:
              #                  sources:
