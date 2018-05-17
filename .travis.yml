@@ -158,11 +158,11 @@ matrix:
 # AT THE MOMENT LINUX AND OSX BUILD BREAK DOWN SO THERE IS NO COMPATIBILITY.
 before_install:
     - | 
-            if [ "${TRAVIS_OS_NAME}" == "linux" ]; then 
-                sudo apt-get install cmake cmake-data doxygen doxygen-latex graphviz 
-            else 
-                sudo brew install cmake cmake-data doxygen doxygen-latex graphviz wget
-            fi
+      if [ "${TRAVIS_OS_NAME}" == "linux" ]; then 
+          sudo apt-get install cmake cmake-data doxygen doxygen-latex graphviz 
+      else 
+          sudo brew install cmake cmake-data doxygen doxygen-latex graphviz wget
+      fi
     - export DOWNLOAD_ROOT="${TRAVIS_BUILD_DIR}/../download"; if [ ! -d "${DOWNLOAD_ROOT}" ]; then mkdir -p "${DOWNLOAD_ROOT}"; fi
     - export BOOST_DOWNLOAD_URL="http://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/boost_1_58_0.tar.bz2/download"
     - export BOOST_ROOT="${TRAVIS_BUILD_DIR}/../boost"
