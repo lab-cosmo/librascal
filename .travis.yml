@@ -53,12 +53,12 @@ matrix:
 # CLANG on OSX
 #====================================================================
 
-                   - os: osx
-                     osx_image: xcode9.1
-                     env: 
-                         - BOOST_VERSION=1.58.0
-                         - PYTHON_VERSION=3.6
-                         - CC_ENV="CC=clang-4.0 && CXX=clang++-4.0"
+             - os: osx
+               osx_image: xcode9.1
+               env: 
+                   - BOOST_VERSION=1.58.0
+                   - PYTHON_VERSION=3.6
+                   - CC_ENV="CC=clang-4.0 && CXX=clang++-4.0"
              #          addons:
              #              apt:
              #                  sources:
@@ -111,19 +111,19 @@ matrix:
 # GCC on Linux
 #====================================================================
 
-                     - os: linux
-                       env: 
-                           - BOOST_VERSION=1.58.0
-                           - PYTHON_VERSION=3.6
-                           - CC_ENV="CC=gcc-5 && CXX=g++-5"
-                       addons:
-                           apt:
-                               sources:
-                                       #- *common_sources
-                                   - ubuntu-toolchain-r-test
-                               packages:
-                                       #- *common_deps   
-                                   - g++-5
+             - os: linux
+               env: 
+                   - BOOST_VERSION=1.58.0
+                   - PYTHON_VERSION=3.6
+                   - CC_ENV="CC=gcc-5 && CXX=g++-5"
+               addons:
+                   apt:
+                       sources:
+                               #- *common_sources
+                           - ubuntu-toolchain-r-test
+                       packages:
+                               #- *common_deps   
+                           - g++-5
              #        
              #        - os: linux
              #          env: 
@@ -157,8 +157,8 @@ matrix:
 # Download and configurations of the libraries needed from librascal 
 # AT THE MOMENT LINUX AND OSX BUILD BREAK DOWN SO THERE IS NO COMPATIBILITY.
 before_install:
-    - if [ "${TRAVIS_OS_NAME}" == "linux" ] ; then sudo apt-get install cmake cmake-data doxygen doxygen-latex graphviz ; fi
-    - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then sudo brew install cmake cmake-data doxygen doxygen-latex graphviz wget ;  fi
+    - if [ "${TRAVIS_OS_NAME}" == "linux" ]; then sudo apt-get install cmake cmake-data doxygen doxygen-latex graphviz; fi
+    - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then sudo brew install cmake cmake-data doxygen doxygen-latex graphviz wget; fi
     - export DOWNLOAD_ROOT="${TRAVIS_BUILD_DIR}/../download"; if [ ! -d "${DOWNLOAD_ROOT}" ]; then mkdir -p "${DOWNLOAD_ROOT}"; fi
     - export BOOST_DOWNLOAD_URL="http://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/boost_1_58_0.tar.bz2/download"
     - export BOOST_ROOT="${TRAVIS_BUILD_DIR}/../boost"
