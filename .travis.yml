@@ -27,23 +27,25 @@ addons:
 
 matrix:
      include:
-         - os: linux
-           env: 
-               - BOOST_VERSION=1.58.0
-               - PYTHON_VERSION=3.6
-               - CC_ENV="CC=clang-3.6 && CXX=clang++-3.6"
-           addons:
-               apt:
-                   sources:
-                       - *common_sources
-                       - llvm-toolchain-trusty-3.6
-                       - ubuntu-toolchain-r-test
-                   packages:
-                       - *common_deps
-                       - clang-3.6
-                       - g++-5
-                       #- libc++-dev
-                       #- libc++abi-dev
+
+             # clang < 4 not working for some c++14 problem. Working on it
+             #         - os: linux
+             #           env: 
+             #               - BOOST_VERSION=1.58.0
+             #               - PYTHON_VERSION=3.6
+             #               - CC_ENV="CC=clang-3.6 && CXX=clang++-3.6"
+             #           addons:
+             #               apt:
+             #                   sources:
+             #                       - *common_sources
+             #                       - llvm-toolchain-trusty-3.6
+             #                       - ubuntu-toolchain-r-test
+             #                   packages:
+             #                       - *common_deps
+             #                       - clang-3.6
+             #                       - g++-5
+             #                       #- libc++-dev
+             #                       #- libc++abi-dev
 
          - os: linux
            env: 
@@ -60,8 +62,6 @@ matrix:
                        - *common_deps
                        - clang-4.0
                        - g++-5
-                       #- libc++-dev
-                       #- libc++abi-dev
 
          - os: linux
            env: 
@@ -78,51 +78,49 @@ matrix:
                        - *common_deps
                        - clang-5.0
                        - g++-5
-                       #- libc++-dev
-                       #- libc++abi-dev
 
              # THESE WORKS JUST FINE
-             #        - os: linux
-             #          env: 
-             #              - BOOST_VERSION=1.58.0
-             #              - PYTHON_VERSION=3.6
-             #              - CC_ENV="CC=gcc-5 && CXX=g++-5"
-             #          addons:
-             #              apt:
-             #                  sources:
-             #                      - *common_sources
-             #                      - ubuntu-toolchain-r-test
-             #                  packages:
-             #                      - *common_deps   
-             #                      - g++-5
-             #
-             #        - os: linux
-             #          env: 
-             #              - BOOST_VERSION=1.58.0
-             #              - PYTHON_VERSION=3.6
-             #              - CC_ENV="CC=gcc-6 && CXX=g++-6"
-             #          addons:
-             #              apt:
-             #                  sources:
-             #                      - *common_sources
-             #                      - ubuntu-toolchain-r-test
-             #                  packages:
-             #                      - *common_deps   
-             #                      - g++-6
-             #
-             #        - os: linux
-             #          env: 
-             #              - BOOST_VERSION=1.58.0
-             #              - PYTHON_VERSION=3.6
-             #              - CC_ENV="CC=gcc-7 && CXX=g++-7"
-             #          addons:
-             #              apt:
-             #                  sources:
-             #                      - *common_sources
-             #                      - ubuntu-toolchain-r-test
-             #                  packages:
-             #                      - *common_deps   
-             #                      - g++-7
+         - os: linux
+           env: 
+               - BOOST_VERSION=1.58.0
+               - PYTHON_VERSION=3.6
+               - CC_ENV="CC=gcc-5 && CXX=g++-5"
+           addons:
+               apt:
+                   sources:
+                       - *common_sources
+                       - ubuntu-toolchain-r-test
+                   packages:
+                       - *common_deps   
+                       - g++-5
+         
+         - os: linux
+           env: 
+               - BOOST_VERSION=1.58.0
+               - PYTHON_VERSION=3.6
+               - CC_ENV="CC=gcc-6 && CXX=g++-6"
+           addons:
+               apt:
+                   sources:
+                       - *common_sources
+                       - ubuntu-toolchain-r-test
+                   packages:
+                       - *common_deps   
+                       - g++-6
+         
+         - os: linux
+           env: 
+               - BOOST_VERSION=1.58.0
+               - PYTHON_VERSION=3.6
+               - CC_ENV="CC=gcc-7 && CXX=g++-7"
+           addons:
+               apt:
+                   sources:
+                       - *common_sources
+                       - ubuntu-toolchain-r-test
+                   packages:
+                       - *common_deps   
+                       - g++-7
 
 
 
