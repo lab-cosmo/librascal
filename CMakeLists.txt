@@ -31,10 +31,13 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   # using Visual Studio C++
 endif()
 
-find_package(Boost COMPONENTS unit_test_framework REQUIRED)
+#find_package(Boost COMPONENTS unit_test_framework REQUIRED)
 
 add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
 add_external_package(pybind11 VERSION 2.2.2 CONFIG)
+
+#include(AddBoostLib)
+add_external_package(boost_test VERSION 1.60.0 CONFIG)
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/tests
