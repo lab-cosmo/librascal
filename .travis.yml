@@ -9,7 +9,7 @@ branches:
        - feat/test_CI
 
 # We suppose that it is possible to install the whole code and test it WITHOUT sudo
-sudo: false
+sudo: true
 
 language: cpp
 
@@ -157,7 +157,7 @@ matrix:
 # Download and configurations of the libraries needed from librascal 
 # AT THE MOMENT LINUX AND OSX BUILD BREAK DOWN SO THERE IS NO COMPATIBILITY.
 before_install:
-    - apt-get install cmake cmake-data doxygen doxygen-latex graphviz
+    - sudo apt-get install cmake cmake-data doxygen doxygen-latex graphviz
     - export DOWNLOAD_ROOT="${TRAVIS_BUILD_DIR}/../download"; if [ ! -d "${DOWNLOAD_ROOT}" ]; then mkdir -p "${DOWNLOAD_ROOT}"; fi
     - export BOOST_DOWNLOAD_URL="http://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/boost_1_58_0.tar.bz2/download"
     - export BOOST_ROOT="${TRAVIS_BUILD_DIR}/../boost"
