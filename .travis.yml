@@ -58,7 +58,7 @@ matrix:
                env: 
                    - BOOST_VERSION=1.58.0
                    - PYTHON_VERSION=3.6
-                   - CC_ENV="CXX=clang++ CMAKE_CXX_FLAGS=-std=c++14"
+                   - CC_ENV="CXX=clang++ && CMAKE_CXX_FLAGS=-std=c++14"
              #          addons:
              #              apt:
              #                  sources:
@@ -168,6 +168,7 @@ before_install:
     - |
             if [ "${TRAVIS_OS_NAME}" == "osx" ]; then 
                 brew upgrade python doxygen graphviz wget cmake 
+                clang -v
             fi
     - export DOWNLOAD_ROOT="${TRAVIS_BUILD_DIR}/../download"
     - |
