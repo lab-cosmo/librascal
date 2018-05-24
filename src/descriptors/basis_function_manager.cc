@@ -102,7 +102,7 @@ namespace rascal {
       return pow(2., 1 - zeta) * pow(1. + lambda * cos(thetaijk), zeta)
 	* exp(-eta * (Rij*Rij + Rik*Rik + Rjk*Rjk));
     }
-      // remark: possible direct use of cos
+      // remark: possible direct use of cos?
     case BasisFunType::angular2: {
       const auto & zeta = param[0];
       const auto & lambda = param[1];
@@ -111,7 +111,7 @@ namespace rascal {
       const auto & Rij = rij[1];
       const auto & Rik = rij[2];
       return pow(2., 1 - zeta) * pow(1. + lambda * cos(thetaijk), zeta)
-	* exp(-eta * (Rij*Rij + Rik*Rik));
+	* exp(-eta * (Rij * Rij + Rik * Rik));
     }
     default:
       throw std::runtime_error("Basis function not specified")
@@ -164,5 +164,76 @@ namespace rascal {
     }
   }
 
+  template<CutoffFunType cfun_type>
+  inline double BasisFunManager::comp_fc(const double * const param,
+					 const double * r_ij) {
 
+    switch (cfun_type) {
+      case CutoffFunType::cosine: {
+	const auto & Rc = param[0];
+	if (r_ij < Rc) {
+	  return 0.5 * (cos(r_ij * M_PI / Rc) + 1.);
+
+	} else {
+	  return 0.;
+	}
+      }
+      case CutoffFunType::cosine_with_shift: {
+	const auto & Rc = param[0];
+	const auto & alpha = param[1];
+	const auto Rstar = alpha * Rc;
+	if (r_ij < Rstar) {
+	  return 1.;
+	} else if (r_ij < Rc) {
+	  0.5 * (cos((r_ij - Rstar) * M_PI / (Rc - Rstar)) + 1.);
+	} else {
+	  return 0.;
+	}
+      }
+      case CutoffFunType::tanh: {
+	const auto & Rc = param[0];
+	if (r_ij < Rc){
+	  return pow(tanh(1. - r_ij / Rc), 3.);
+	} else {
+	  return 0.;
+	}
+      }
+    }
+  }
+
+  template<CutoffFunType cfun_type>
+  inline double BasisFunManager::comp_Dfc(const double * const param,
+					  const double * r_ij) {
+    switch (cfun_type) {
+    case CutoffFunType::cosine: {
+      const auto & Rc = param[0];
+      if (r_ij < Rc) {
+	return -0.5 * sin(r_ij * M_PI / Rc);
+      } else {
+	return 0.;
+      }
+    }
+    case CutoffFunType::cosine_with_shift: {
+      const auto & Rc = param[0];
+      const auto & alpha = param[1];
+      const auto Rstar = alpha * Rc;
+      if (r_ij < Rstar) {
+	return 0.;
+      } else if (r_ij < Rc) {
+	return -0.5 * sin((r_ij - Rstar) * M_PI / (Rc - Rstar))
+	  * M_PI / (Rc - Rstar);
+      } else {
+	return 0.;
+      }
+    }
+    case CutoffFunType::tanh: {
+      const auto & Rc = param[0];
+      if (r_ij < Rc) {
+	-3. / Rc * pow(sinh(1. - r_ij / Rc), 2.) /
+	  pow(cosh(1. - r_ij / Rc), 4.);
+      } else {
+	return 0;
+      }
+    }
+  }
 }
