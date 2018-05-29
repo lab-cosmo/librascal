@@ -72,7 +72,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template<BasisFunType fun_type>
   inline double BasisFunManager::comp_fun(const double * const param,
-					  const double * rij) {
+					  const double * const rij) {
     switch (fun_type) {
     case BasisFunType::One: {
       return 1.;
@@ -90,7 +90,7 @@ namespace rascal {
       const auto & Rij = rij[0];
       return cos(kappa * Rij);
     }
-      // remark: possible direct use of cos
+      // remark: possible direct use of cosine
     case BasisFunType::angular1: {
       const auto & zeta = param[0];
       const auto & lambda = param[1];
@@ -102,7 +102,7 @@ namespace rascal {
       return pow(2., 1 - zeta) * pow(1. + lambda * cos(thetaijk), zeta)
 	* exp(-eta * (Rij*Rij + Rik*Rik + Rjk*Rjk));
     }
-      // remark: possible direct use of cos?
+      // remark: possible direct use of cosine?
     case BasisFunType::angular2: {
       const auto & zeta = param[0];
       const auto & lambda = param[1];
@@ -118,9 +118,11 @@ namespace rascal {
     }
   }
 
-  template<BasisFunType fun_type>
-  inline double BasisFunManager::comp_Dfun(const double * const param,
-					   const double * rij) {
+  /* ---------------------------------------------------------------------- */
+  template<BasisFunType fun_type, T>
+  // Return type should be templated - as input type * input type
+  decltype(auto) BasisFunManager::comp_Dfun(const double * const param,
+					   const double * const rij) {
     switch (fun_type) {
     case BasisFunType::One: {
       return 1.; // need to keep a '1.' -> keep derivative of cutoff
@@ -130,13 +132,13 @@ namespace rascal {
       const auto & Rs = param[1];    // position
       const auto & Rij = rij[0];
       const auto & dR = Rij - Rs;
-      return -2. * eta * dR * exp(-eta * dR * dR);
+      return -2. * eta * dR * exp(-eta * dR * dR); // returns double
 
     }
     case BasisFunType::cosine: {
       const auto & kappa = param [0];
       const auto & Rij = rij[0];
-      return -kappa * sin(kappa * Rij);
+      return -kappa * sin(kappa * Rij); // returns double
     }
     case BasisFunType::angular1: {
       const auto & zeta = param[0];
@@ -146,7 +148,8 @@ namespace rascal {
       const auto & Rij = rij[1];
       const auto & Rik = rij[2];
       const auto & Rjk = rij[3];
-      return /* pow(2., 1 - zeta) * pow(1. + lambda * cos(thetaijk), zeta)
+      return // returns double * 3
+	/* 3 /* pow(2., 1 - zeta) * pow(1. + lambda * cos(thetaijk), zeta)
 	      * exp(-eta * (Rij*Rij + Rik*Rik + Rjk*Rjk)); */
     }
     case BasisFunType::angular2: {
@@ -156,7 +159,8 @@ namespace rascal {
       const auto & thetaijk = rij[0];
       const auto & Rij = rij[1];
       const auto & Rik = rij[2];
-      return /* pow(2., 1 - zeta) * pow(1. + lambda * cos(thetaijk), zeta)
+      return // returns double * 2
+	/* pow(2., 1 - zeta) * pow(1. + lambda * cos(thetaijk), zeta)
 	      * exp(-eta * (Rij*Rij + Rik*Rik)) */;
     }
     default:
@@ -164,15 +168,16 @@ namespace rascal {
     }
   }
 
+  /* ---------------------------------------------------------------------- */
   template<CutoffFunType cfun_type>
   inline double BasisFunManager::comp_fc(const double * const param,
-					 const double * r_ij) {
+					 const double * const rij) {
 
     switch (cfun_type) {
       case CutoffFunType::cosine: {
 	const auto & Rc = param[0];
-	if (r_ij < Rc) {
-	  return 0.5 * (cos(r_ij * M_PI / Rc) + 1.);
+	if (rij < Rc) {
+	  return 0.5 * (cos(rij * M_PI / Rc) + 1.);
 
 	} else {
 	  return 0.;
@@ -182,18 +187,18 @@ namespace rascal {
 	const auto & Rc = param[0];
 	const auto & alpha = param[1];
 	const auto Rstar = alpha * Rc;
-	if (r_ij < Rstar) {
+	if (rij < Rstar) {
 	  return 1.;
-	} else if (r_ij < Rc) {
-	  0.5 * (cos((r_ij - Rstar) * M_PI / (Rc - Rstar)) + 1.);
+	} else if (rij < Rc) {
+	  0.5 * (cos((rij - Rstar) * M_PI / (Rc - Rstar)) + 1.);
 	} else {
 	  return 0.;
 	}
       }
       case CutoffFunType::tanh: {
 	const auto & Rc = param[0];
-	if (r_ij < Rc){
-	  return pow(tanh(1. - r_ij / Rc), 3.);
+	if (rij < Rc){
+	  return pow(tanh(1. - rij / Rc), 3.);
 	} else {
 	  return 0.;
 	}
@@ -201,14 +206,15 @@ namespace rascal {
     }
   }
 
+  /* ---------------------------------------------------------------------- */
   template<CutoffFunType cfun_type>
   inline double BasisFunManager::comp_Dfc(const double * const param,
-					  const double * r_ij) {
+					  const double * const rij) {
     switch (cfun_type) {
     case CutoffFunType::cosine: {
       const auto & Rc = param[0];
-      if (r_ij < Rc) {
-	return -0.5 * sin(r_ij * M_PI / Rc);
+      if (rij < Rc) {
+	return -0.5 * sin(rij * M_PI / Rc);
       } else {
 	return 0.;
       }
@@ -217,10 +223,10 @@ namespace rascal {
       const auto & Rc = param[0];
       const auto & alpha = param[1];
       const auto Rstar = alpha * Rc;
-      if (r_ij < Rstar) {
+      if (rij < Rstar) {
 	return 0.;
-      } else if (r_ij < Rc) {
-	return -0.5 * sin((r_ij - Rstar) * M_PI / (Rc - Rstar))
+      } else if (rij < Rc) {
+	return -0.5 * sin((rij - Rstar) * M_PI / (Rc - Rstar))
 	  * M_PI / (Rc - Rstar);
       } else {
 	return 0.;
@@ -228,9 +234,9 @@ namespace rascal {
     }
     case CutoffFunType::tanh: {
       const auto & Rc = param[0];
-      if (r_ij < Rc) {
-	-3. / Rc * pow(sinh(1. - r_ij / Rc), 2.) /
-	  pow(cosh(1. - r_ij / Rc), 4.);
+      if (rij < Rc) {
+	-3. / Rc * pow(sinh(1. - rij / Rc), 2.) /
+	  pow(cosh(1. - rij / Rc), 4.);
       } else {
 	return 0;
       }

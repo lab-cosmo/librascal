@@ -68,8 +68,10 @@ namespace rascal {
     // Basis functions and derivative
     template<BasisFunType fun_type>
     inline double comp_fun(const double * const param, const double * rij);
-    template<BasisFunType func_type>
-    inline double comp_Dfun(const double * const param, const double * const rij);
+    // return a matrix
+    template<BasisFunType func_type, T>
+    decltype(auto) comp_Dfun(const double * const param, const double * const rij);
+    // inline double comp_Dfun(const double * const param, const double * const rij);
 
   protected:
   private:
