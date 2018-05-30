@@ -6,7 +6,7 @@
  * @date   30 May 2018
  *
  * @brief Neighbourhood manager for polyalanine chain, reading
- * structure from json file
+ *        structure from json file
  *
  * Copyright © 2018 Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -74,7 +74,8 @@ namespace rascal {
     //! Move assignment operator
     NeighbourhoodManagerChain& operator=(NeighbourhoodManagerChain &&other) = default;
 
-    //! void reset_impl()
+    //! something like this!
+    void reset_impl()
     // void reset_impl(const int & inum, const int & tot_num,
     //                 int * ilist, int * numneigh, int ** firstneigh,
     //                 double ** x, double ** f, int * type,
@@ -109,7 +110,8 @@ namespace rascal {
 
     // return the number of neighbours of a given atom
     template<int Level, int MaxLevel>
-    inline size_t get_cluster_size(const ClusterRef_t<Level, MaxLevel>& cluster) const {
+    inline size_t get_cluster_size(const ClusterRef_t<Level,
+				   MaxLevel>& cluster) const {
       static_assert(Level == traits::MaxLevel-1,
                     "this implementation only handles atoms and pairs");
       return this->numneigh[cluster.get_atoms().back().get_index()];
@@ -141,24 +143,20 @@ namespace rascal {
     size_t get_nb_clusters(int cluster_size);
 
   protected:
-    int inum{};
-    int tot_num{}; //includes ghosts
-    int * ilist{};
-    int * numneigh{};
-    int ** firstneigh{};
-    double **x{};
-    double **f{};
-    int * type{};
-    double * eatom{};
-    double ** vatom{};
-    int nb_pairs{};
-    std::vector<int> offsets{};
+    int inum{}; // total number of atoms in structure
+    //int tot_num{}; //includes ghosts
+    //int * ilist{};
+    //int * numneigh{};
+    //int ** firstneigh{};
+    // positions double **x{};
+    //atom_type //int * type{};
 
   private:
   };
 
 
   /* ---------------------------------------------------------------------- */
+  // adjust for triplets
   template<int Level, int MaxLevel>
   inline int NeighbourhoodManagerChain::
   get_offset_impl(const ClusterRef_t<Level, MaxLevel>& cluster) const {
