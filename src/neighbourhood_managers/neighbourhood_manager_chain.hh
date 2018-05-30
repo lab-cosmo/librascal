@@ -43,7 +43,7 @@ namespace rascal {
   template <>
   struct NeighbourhoodManager_traits<NeighbourhoodManagerChain> {
     constexpr static int Dim{3};
-    constexpr static int MaxLevel{2}; // only triplets needed for angle
+    constexpr static int MaxLevel{3}; // triplets needed for angle
   };
   class NeighbourhoodManagerChain:
     public NeighbourhoodManagerBase<NeighbourhoodManagerChain>
@@ -69,15 +69,16 @@ namespace rascal {
     virtual ~NeighbourhoodManagerChain() = default;
 
     //! Copy assignment operator
-    NeighbourhoodManagerChain& operator=(const NeighbourhoodManagerChain &other) = delete;
+    NeighbourhoodManagerChain&
+    operator=(const NeighbourhoodManagerChain &other) = delete;
 
     //! Move assignment operator
-    NeighbourhoodManagerChain& operator=(NeighbourhoodManagerChain &&other) = default;
+    NeighbourhoodManagerChain&
+    operator=(NeighbourhoodManagerChain &&other) = default;
 
     //! something like this!
-    void reset_impl()
-    // void reset_impl(const int & inum, const int & tot_num,
-    //                 int * ilist, int * numneigh, int ** firstneigh,
+    void reset_impl(const int & natoms)
+    // void reset_impl(int * ilist, int * numneigh, int ** firstneigh,
     //                 double ** x, double ** f, int * type,
     //                 double * eatom, double ** vatom);
     // required for the construction of vectors, etc
@@ -105,7 +106,7 @@ namespace rascal {
 
     // return number of I atoms in the list
     inline size_t get_size() const {
-      return this->inum;
+      return this->natoms;
     }
 
     // return the number of neighbours of a given atom
@@ -143,8 +144,8 @@ namespace rascal {
     size_t get_nb_clusters(int cluster_size);
 
   protected:
-    int inum{}; // total number of atoms in structure
-    //int tot_num{}; //includes ghosts
+    int natoms{}; // total number of atoms in structure
+    int
     //int * ilist{};
     //int * numneigh{};
     //int ** firstneigh{};
