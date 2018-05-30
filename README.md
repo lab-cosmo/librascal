@@ -17,6 +17,19 @@ cd build
 cmake ..
 make dev_doc
 ``` 
+
+* To build for development:
+```Shell
+cd build 
+cmake -DCMAKE_BUILD_TYPE=Debug  -DENABLE_DOC=ON -DBUILD_TESTS=ON -DCMAKE_C_COMPILER=/usr/local/bin/gcc-7 -DCMAKE_CXX_COMPILER=/usr/local/bin/g++-7 ..
+make all
+ctest -V
+```
+To remove all the cmake files/folders except for the external library (enable glob and remove):
+```
+shopt -s extglob
+rm -fr -- !(external|third-party) 
+```
 In order to have the readthedocs.org theme for the documentation, please install the following python package:
 ```Shell
 pip install sphinx_rtd_theme

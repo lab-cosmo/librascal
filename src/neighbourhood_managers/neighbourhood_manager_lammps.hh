@@ -79,28 +79,28 @@ namespace rascal {
      * dependency, but it is unclear that the convenience would
      * outweigh the hassle of maintaining the dependency.
      *
-     * @param inum Field `inum` in the lammps `NeighList` structure
+     * @param inum Property `inum` in the lammps `NeighList` structure
      *
-     * @param tot_num sum of the fields `nlocal` and `nghost` in the
+     * @param tot_num sum of the properties `nlocal` and `nghost` in the
      *                lammps `Atom` structure
      *
-     * @param ilist Field `ilist` in the lammps `NeighList` structure
+     * @param ilist Property `ilist` in the lammps `NeighList` structure
      *
-     * @param numneigh Field `numneigh` in the lammps `NeighList` structure
+     * @param numneigh Property `numneigh` in the lammps `NeighList` structure
      *
-     * @param firstneigh Field `firstneigh` in the lammps `NeighList` structure
+     * @param firstneigh Property `firstneigh` in the lammps `NeighList` structure
      *
-     * @param x Field `x` in the lammps `Atom` structure
+     * @param x Property `x` in the lammps `Atom` structure
      *
-     * @param f Field `f` in the lammps `Atom` structure
+     * @param f Property `f` in the lammps `Atom` structure
      *
-     * @param type Field `type` in the lammps `Atom` structure
+     * @param type Property `type` in the lammps `Atom` structure
      *
      * @param eatom per-atom energy
      *
      * @param vatom per-atom virial
      */
-    void reset_impl(const int & inum, const int & tot_num,
+    void update(const int & inum, const int & tot_num,
                     int * ilist, int * numneigh, int ** firstneigh,
                     double ** x, double ** f, int * type,
                     double * eatom, double ** vatom);
@@ -134,7 +134,8 @@ namespace rascal {
 
     // return the number of neighbours of a given atom
     template<int Level, int MaxLevel>
-    inline size_t get_cluster_size(const ClusterRef_t<Level, MaxLevel>& cluster) const {
+    inline size_t get_cluster_size(const ClusterRef_t<Level, MaxLevel>& cluster)
+      const {
       static_assert(Level == traits::MaxLevel-1,
                     "this implementation only handles atoms and pairs");
       return this->numneigh[cluster.get_atoms().back().get_index()];
@@ -171,7 +172,7 @@ namespace rascal {
     int * ilist{};
     int * numneigh{};
     int ** firstneigh{};
-    double **x{};
+    double **x{}; //! pointer to pointer
     double **f{};
     int * type{};
     double * eatom{};

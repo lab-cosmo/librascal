@@ -34,7 +34,6 @@
 #include <array>
 #include <type_traits>
 
-
 namespace rascal {
 
   //! traits structure to avoid incomplete types in crtp
@@ -81,7 +80,7 @@ namespace rascal {
     /**
      * iterator over the atoms, pairs, triplets, etc in the
      * manager. Iterators like these can be used as indices for random
-     * access in atom-, pair, ... -related fields.
+     * access in atom-, pair, ... -related properties.
      */
     template <int Level, int MaxLevel>
     class iterator;
@@ -110,14 +109,21 @@ namespace rascal {
       return this->implementation().get_nb_clusters(cluster_size);
     }
 
-    inline Vector_ref get_position(const AtomRef& atom) {
+    inline Vector_ref position(const AtomRef& atom) {
       return this->implementation().get_position(atom);
     }
 
-    inline int get_atom_type(const AtomRef& atom) {
-      return this->implementation().get_atom_type(atom);
+    inline Vector_ref neighbour_position(const AtomRef& atom,
+					 const AtomRef& center_atom,
+					 const int& j_linear_id) {
+      return this->implementation().get_neighbour_position(atom,
+							   center_atom,
+							   j_linear_id);
     }
 
+    inline int atom_type(const AtomRef& atom) {
+      return this->implementation().get_atom_type(atom);
+    }
 
   protected:
     template <int L, int ML>
@@ -174,14 +180,15 @@ namespace rascal {
   public:
     using Vector_t = Eigen::Matrix<double, ManagerImplementation::dim(), 1>;
     using Vector_ref = Eigen::Map<Vector_t>;
+    using Vector_block = Eigen::Block<Eigen::MatrixXd, -1, 1, true>;
     using Manager_t = NeighbourhoodManagerBase<ManagerImplementation>;
-
+    using Vector_shift = const Eigen::CwiseBinaryOp<Eigen::internal::scalar_sum_op<double, double>, const Eigen::Block<Eigen::Matrix<double, -1, -1>, -1, 1, true>, const Eigen::Transpose<const Eigen::Product<Eigen::Transpose<Eigen::Matrix<double, 3, 1> >, Eigen::Matrix<double, -1, -1>, 0> > >;
     //! Default constructor
     AtomRef() = delete;
 
     //! constructor from iterator
-    AtomRef(Manager_t & manager, int id): manager{manager}, index{id}{}
-
+    //AtomRef(Manager_t & manager, int id): manager{manager}, index{id}{}
+    AtomRef(Manager_t & manager, int id): manager{manager}, index{id} {}
     //! Copy constructor
     AtomRef(const AtomRef &other) = default;
 
@@ -201,19 +208,22 @@ namespace rascal {
     inline int get_index() const {return this->index;}
 
     //! return position vector
-    inline Vector_ref get_position() {return this->manager.get_position(*this);}
+    inline Vector_ref get_position() {return this->manager.position(*this);}
 
-    //! return position vector
-    inline int get_atom_type() {return this->manager.get_atom_type(*this);}
-
+    //! return atom type
+    inline int get_atom_type() const {return this->manager.atom_type(*this);}
 
   protected:
     Manager_t & manager;
     int index;
+    //Eigen::Vector3i shift;
   private:
   };
 
   /* ---------------------------------------------------------------------- */
+  /**
+    This is the object we have when iterating over the manager
+  */
   template <class ManagerImplementation>
   template <int Level, int MaxLevel>
   class NeighbourhoodManagerBase<ManagerImplementation>::ClusterRef
@@ -223,7 +233,7 @@ namespace rascal {
     using AtomRef_t = typename Manager_t::AtomRef;
     using Iterator_t = typename Manager_t::template iterator<Level, MaxLevel>;
     using Atoms_t = std::array<AtomRef_t, Level>;
-
+    using Vector_block = Eigen::Block<Eigen::MatrixXd, -1, 1, true>;
     using iterator = typename Manager_t::template iterator<Level + 1, MaxLevel>;
     friend iterator;
 
@@ -252,12 +262,33 @@ namespace rascal {
     const std::array<AtomRef_t, Level>& get_atoms() const {return this->atoms;};
     std::array<AtomRef_t, Level>& get_atoms() {return this->atoms;};
 
-    /**
-     * convenience functions, because in loops, we frequently like to
-     * use clusters as proxies to their last atom
+
+    /* There are 2 cases:
+     * center (Level== 1)-> position is in the cell
+     * neighbour (Level > 1)   -> position might have an offset associated
      */
-    inline decltype(auto) get_position() {return this->atoms.back().get_position();}
-    inline decltype(auto) get_atom_type() {return this->atoms.back().get_atom_type();}
+
+     inline Vector_ref get_position() {
+      if (Level == 1){
+        return this->get_manager().position(this->atoms.back());
+      } else {
+        // These are the informations I need for my linked cell
+        return this->get_manager().neighbour_position(this->atoms.back(),
+						      this->atoms.front(),
+						      this->get_index());
+      }
+    }
+
+
+    inline decltype(auto) get_atom_type() const {
+      return this->atoms.back().get_atom_type();
+    }
+
+    //! return the index of the atom: Atoms_t is len==1 if center,
+    // len==2 if 1st neighbours,...
+    inline decltype(auto) get_atom_index() {
+      return this->atoms.back().get_index();
+      }
 
     inline Manager_t & get_manager() {return this->it.get_manager();}
     inline const Manager_t & get_manager() const {return this->it.get_manager();}

@@ -1,5 +1,5 @@
 /**
- * @file   basic_types.h
+ * @file   basic_types.hh
  *
  * @author Federico Giberti <federico.giberti@epfl.ch>
  *
@@ -36,5 +36,22 @@ namespace rascal {
  */
 
 using MatrixXdR = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+using MatrixXdC = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor>;
+
+using VecXb = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
+using VecXi = Eigen::Matrix<int, Eigen::Dynamic, 1>;
+
+
+
+using Matrix3XdC = Eigen::Matrix<double, 3, Eigen::Dynamic, Eigen::ColMajor>;
+using Vecd_t = typename Eigen::Array<double, 3, 1>;
+using Veci_t = typename Eigen::Array<int, 3, 1>;
+using Mati_t = typename Eigen::Array<int, 3, 2>;
+using Cell_t = Eigen::Matrix<double, 3, 3, Eigen::ColMajor>;
+using Vec3_t = Eigen::Matrix<double, 3,1>;
+using Vec3i_t = Eigen::Matrix<int, 3, 1>;
+
+
+using Dim_t = int;
 
 }
