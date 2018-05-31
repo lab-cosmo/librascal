@@ -36,6 +36,7 @@
 
 #include <Eigen/Dense>
 #include <Eigen/StdVector>
+
 #include <stdexcept>
 #include <iostream>
 #include <vector>
