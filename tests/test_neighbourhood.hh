@@ -51,19 +51,19 @@ namespace rascal {
       VecXi numbers(22);
       numbers << 20, 20, 24, 24, 15, 15, 15, 15,  8,  8,  8,  8,  8,  8,  8,  8,  8, 8,  8,  8,  8,  8;
       std::array<bool,3> pbc{{true,true,true}};
-      double cutoff_max{3}; 
+      double cutoff_max{3};
       VecXi center_ids(22);
       center_ids << 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21;
       manager.update(positions,numbers,center_ids,cell,pbc,cutoff_max);
-      
+
     }
-        
+
     ~ManagerFixture() {
-      
+
     }
-    
+
   ManagerImplementation manager;
-  
+
   };
 
 
@@ -73,6 +73,7 @@ namespace rascal {
     constexpr static int nb{3};
     constexpr static int dim{3};
     using ptr_t = double**;
+
     ManagerFixture_lammps()
       :firstneigh{new int*[nb]},
        x{new double*[nb]},
@@ -80,27 +81,27 @@ namespace rascal {
        vatom{new double*[nb]},
        manager{} {
          manager.update(inum, tot_num, ilist, numneigh,
-                            static_cast<int**>(firstneigh),
-                            ptr_t(x),
-                            ptr_t(f), type, eatom,
-                            static_cast<double**>(vatom));
-      firstneigh[0] = new int[2];
-      firstneigh[0][0] = 1;
-      firstneigh[0][1] = 2;
-      firstneigh[1] = new int;
-      firstneigh[1][0] = 0;
-      firstneigh[2] = new int;
-      firstneigh[2][0] = 0;
+			static_cast<int**>(firstneigh),
+			ptr_t(x),
+			ptr_t(f), type, eatom,
+			static_cast<double**>(vatom));
+	 firstneigh[0] = new int[2];
+	 firstneigh[0][0] = 1;
+	 firstneigh[0][1] = 2;
+	 firstneigh[1] = new int;
+	 firstneigh[1][0] = 0;
+	 firstneigh[2] = new int;
+	 firstneigh[2][0] = 0;
 
-      for (int i{0} ; i < nb ; ++i) {
-        x[i] = new double[dim];
-        f[i] = new double[dim];
-        for (int j{0} ; j < dim ; ++j) {
-          x[i][j] = tx[i][j];
-          f[i][j] = tf[i][j];
-        }
-      }
-    }
+	 for (int i{0} ; i < nb ; ++i) {
+	   x[i] = new double[dim];
+	   f[i] = new double[dim];
+	   for (int j{0} ; j < dim ; ++j) {
+	     x[i][j] = tx[i][j];
+	     f[i][j] = tf[i][j];
+	   }
+	 }
+       }
     ~ManagerFixture_lammps() {
       delete[] firstneigh[0];
       delete firstneigh[1];

@@ -31,7 +31,6 @@
 #include "test_neighbourhood.hh"
 #include "neighbourhood_managers/property.hh"
 
-
 namespace rascal {
 
   BOOST_AUTO_TEST_SUITE (Property_tests);

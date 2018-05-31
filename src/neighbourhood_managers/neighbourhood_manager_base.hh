@@ -276,7 +276,7 @@ namespace rascal {
         center (Level== 1)-> position is in the cell
         neighbour (Level > 1)   -> position might have an offset associated
      */
-     inline Vector_ref get_position() {
+    inline Vector_ref get_position() {
       if (Level == 1){
         return this->get_manager().get_position(this->atoms.back());
       } else {
@@ -286,14 +286,14 @@ namespace rascal {
 							  this->get_index());
       }
     }
-
-
-    inline decltype(auto) get_atom_type() const {return this->atoms.back().get_atom_type();}
-
-    //! return the index of the atom: Atoms_t is len==1 if center, len==2 if 1st neighbours,...
+    inline decltype(auto) get_atom_type() const {
+      return this->atoms.back().get_atom_type();
+    }
+    //! return the index of the atom: Atoms_t is len==1 if center,
+    // len==2 if 1st neighbours,...
     inline decltype(auto) get_atom_index() {
       return this->atoms.back().get_index();
-      }
+    }
 
     inline Manager_t & get_manager() {return this->it.get_manager();}
     inline const Manager_t & get_manager() const {return this->it.get_manager();}
