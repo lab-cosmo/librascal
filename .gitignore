@@ -1,7 +1,7 @@
 # trahs
 *.swp
 .vscode
-.idea 
+.idea
 *.ipynb_checkpoints
 build/
 *.ipynb
@@ -42,3 +42,4 @@ __pycache__
 *.app
 *~
 /build/
+/debug/
