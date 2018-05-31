@@ -33,6 +33,7 @@
 #include "neighbourhood_managers/property.hh"
 #include "lattice.hh"
 #include "basic_types.hh"
+
 #include <Eigen/Dense>
 #include <Eigen/StdVector>
 #include <stdexcept>
