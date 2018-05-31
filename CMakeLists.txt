@@ -37,6 +37,7 @@ add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
 add_external_package(pybind11 VERSION 2.2.2 CONFIG)
 
 include_directories(
+  ${CMAKE_SOURCE_DIR}/external
   ${CMAKE_SOURCE_DIR}/tests
   ${CMAKE_SOURCE_DIR}/src
   ${CMAKE_SOURCE_DIR}
@@ -103,4 +104,3 @@ foreach(pybin ${pybins})
     "${CMAKE_BINARY_DIR}/${binaryname}.py"
     COPYONLY)
 endforeach(pybin ${pybins})
-

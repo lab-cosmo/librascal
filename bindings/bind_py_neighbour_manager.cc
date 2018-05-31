@@ -50,7 +50,7 @@ void add_manager_cell(py::module& m){
     .def(py::init<>())
 		.def("update",&NeighbourhoodManagerCell::update)
 		//.def("build",[]())
-		.def("__iter__", 
+		.def("__iter__",
 			[](NeighbourhoodManagerBase<NeighbourhoodManagerCell> &v) {
        	return py::make_iterator(v.begin(),v.end());
     	}, py::keep_alive<0, 1>()); /* Keep vector alive while iterator is used */
@@ -62,10 +62,10 @@ void add_manager_cell(py::module& m){
 	py::class_<NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<1, 2>>(m, "Cell.Center")
 		.def("get_atom_index",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<1, 2>::get_atom_index)
 		.def("get_atom_type",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<1, 2>::get_atom_type)
-		.def("get_index",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<1, 2>::get_index) 
+		.def("get_index",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<1, 2>::get_index)
 		.def("get_size",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<1, 2>::size)
 		.def("get_position",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<1, 2>::get_position)
-		.def("__iter__", 
+		.def("__iter__",
 			[](NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<1, 2> &v) {
        	return py::make_iterator(v.begin(),v.end());
     	}, py::keep_alive<0, 1>()); /* Keep vector alive while iterator is used */
@@ -73,8 +73,8 @@ void add_manager_cell(py::module& m){
 	py::class_<NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2, 2>>(m, "Cell.Neighbour")
 		.def("get_atom_index",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2, 2>::get_atom_index)
 		.def("get_atom_type",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2, 2>::get_atom_type)
-		.def("get_index",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2, 2>::get_index) 
+		.def("get_index",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2, 2>::get_index)
 		.def("get_size",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2, 2>::size)
 		//.def("get_atom_shift",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2, 2>::get_atom_shift)
-		.def("get_position",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2, 2>::get_position); 
+		.def("get_position",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2, 2>::get_position);
 }
