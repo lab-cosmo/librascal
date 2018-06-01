@@ -72,12 +72,10 @@ namespace rascal {
     virtual ~NeighbourhoodManagerBase() = default;
 
     //! Copy assignment operator
-    NeighbourhoodManagerBase&
-    operator=(const NeighbourhoodManagerBase &other) = delete;
+    NeighbourhoodManagerBase& operator=(const NeighbourhoodManagerBase &other) = delete;
 
     //! Move assignment operator
-    NeighbourhoodManagerBase&
-    operator=(NeighbourhoodManagerBase &&other) = default;
+    NeighbourhoodManagerBase& operator=(NeighbourhoodManagerBase &&other)  = default;
 
     /**
      * iterator over the atoms, pairs, triplets, etc in the
@@ -103,32 +101,26 @@ namespace rascal {
     class ClusterRef;
 
     inline Iterator_t begin() {return Iterator_t(*this, 0);}
-    // why not get_size here?, this does not exist?
     inline Iterator_t end() {return Iterator_t(*this,
                                                this->implementation().size());}
-
     inline size_t size() const {return this->implementation().get_size();}
 
     inline size_t nb_clusters(int cluster_size) const {
       return this->implementation().get_nb_clusters(cluster_size);
     }
 
-    inline Vector_ref get_position(const AtomRef& atom) {
+    inline Vector_ref position(const AtomRef& atom) {
       return this->implementation().get_position(atom);
     }
 
-    inline Vector_ref get_neighbour_position(const AtomRef& atom,
-					     const AtomRef& center_atom,
-					     const int& j_linear_id) {
-      return this->implementation().get_neighbour_position(atom,
-							   center_atom,
-							   j_linear_id);
+    inline Vector_ref neighbour_position(const AtomRef& atom, const AtomRef& center_atom,const int& j_linear_id) {
+      return this->implementation().get_neighbour_position(atom,center_atom,j_linear_id);
     }
 
-    inline int get_atom_type(const AtomRef& atom) {
+    inline int atom_type(const AtomRef& atom) {
       return this->implementation().get_atom_type(atom);
     }
-
+    
   protected:
     template <int L, int ML>
     inline size_t cluster_size(ClusterRef<L, ML> & cluster) const {
@@ -168,8 +160,7 @@ namespace rascal {
     template <typename T, size_t Size, size_t... Indices>
     decltype(auto) append_array_helper(std::array<T, Size>&& arr, T &&  t,
                                         std::index_sequence<Indices...>) {
-      return std::array<T, Size+1> {std::move(arr[Indices])...,
-	  std::forward<T>(t)};
+      return std::array<T, Size+1> {std::move(arr[Indices])..., std::forward<T>(t)};
     }
     template <typename T, size_t Size>
     decltype(auto) append_array (std::array<T, Size>&& arr, T &&  t) {
@@ -187,21 +178,12 @@ namespace rascal {
     using Vector_ref = Eigen::Map<Vector_t>;
     using Vector_block = Eigen::Block<Eigen::MatrixXd, -1, 1, true>;
     using Manager_t = NeighbourhoodManagerBase<ManagerImplementation>;
-    using Vector_shift = const
-      Eigen::CwiseBinaryOp<Eigen::internal::scalar_sum_op<double, double>,
-			   const Eigen::Block<Eigen::Matrix<double, -1, -1>,
-					      -1, 1, true>,
-			   const Eigen::Transpose<const Eigen::Product<
-						    Eigen::Transpose<
-						      Eigen::Matrix<
-							double, 3, 1> >,
-						    Eigen::Matrix<double,
-								  -1, -1>,
-						    0> > >;
+    using Vector_shift = const Eigen::CwiseBinaryOp<Eigen::internal::scalar_sum_op<double, double>, const Eigen::Block<Eigen::Matrix<double, -1, -1>, -1, 1, true>, const Eigen::Transpose<const Eigen::Product<Eigen::Transpose<Eigen::Matrix<double, 3, 1> >, Eigen::Matrix<double, -1, -1>, 0> > >;
     //! Default constructor
     AtomRef() = delete;
 
     //! constructor from iterator
+    //AtomRef(Manager_t & manager, int id): manager{manager}, index{id}{}
     AtomRef(Manager_t & manager, int id): manager{manager}, index{id} {}
     //! Copy constructor
     AtomRef(const AtomRef &other) = default;
@@ -222,16 +204,15 @@ namespace rascal {
     inline int get_index() const {return this->index;}
 
     //! return position vector
-    inline Vector_ref get_position() {return this->manager.get_position(*this);}
-
+    inline Vector_ref get_position() {return this->manager.position(*this);}
+    
     //! return atom type
-    inline int get_atom_type() const {
-      return this->manager.get_atom_type(*this);
-    }
+    inline int get_atom_type() const {return this->manager.atom_type(*this);}
 
   protected:
     Manager_t & manager;
     int index;
+    //Eigen::Vector3i shift;
   private:
   };
 
@@ -277,34 +258,30 @@ namespace rascal {
     const std::array<AtomRef_t, Level>& get_atoms() const {return this->atoms;};
     std::array<AtomRef_t, Level>& get_atoms() {return this->atoms;};
 
-
-    /* There are 2 cases:
+    
+    /* There are 2 cases: 
         center (Level== 1)-> position is in the cell
         neighbour (Level > 1)   -> position might have an offset associated
      */
-    inline Vector_ref get_position() {
+     inline Vector_ref get_position() {
       if (Level == 1){
-        return this->get_manager().get_position(this->atoms.back());
+        return this->get_manager().position(this->atoms.back());
       } else {
         // These are the informations I need for my linked cell
-        return this->get_manager().get_neighbour_position(this->atoms.back(),
-							  this->atoms.front(),
-							  this->get_index());
+        return this->get_manager().neighbour_position(this->atoms.back(),this->atoms.front(),this->get_index());
       }
-    }
-    inline decltype(auto) get_atom_type() const {
-      return this->atoms.back().get_atom_type();
-    }
-    //! return the index of the atom: Atoms_t is len==1 if center,
-    // len==2 if 1st neighbours,...
+    } 
+
+
+    inline decltype(auto) get_atom_type() const {return this->atoms.back().get_atom_type();}
+
+    //! return the index of the atom: Atoms_t is len==1 if center, len==2 if 1st neighbours,...
     inline decltype(auto) get_atom_index() {
       return this->atoms.back().get_index();
-    }
-
+      }
+   
     inline Manager_t & get_manager() {return this->it.get_manager();}
-    inline const Manager_t & get_manager() const {
-      return this->it.get_manager();
-    }
+    inline const Manager_t & get_manager() const {return this->it.get_manager();}
 
     inline iterator begin() {return iterator(*this, 0);}
     inline iterator end() {return iterator(*this, this->size());}
@@ -329,8 +306,7 @@ namespace rascal {
   public:
     using Manager_t = NeighbourhoodManagerBase<ManagerImplementation>;
     friend Manager_t;
-    using ClusterRef_t = typename Manager_t::template ClusterRef<Level,
-								 MaxLevel>;
+    using ClusterRef_t = typename Manager_t::template ClusterRef<Level, MaxLevel>;
     friend ClusterRef_t;
     using Container_t =
       std::conditional_t

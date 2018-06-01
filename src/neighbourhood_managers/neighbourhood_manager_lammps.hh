@@ -115,22 +115,9 @@ namespace rascal {
       return Vector_ref(xval);
     }
 
-    // return neighbour positions if Level > 1
-    inline Vector_ref get_neighbour_position(const AtomRef_t& atom,
-					     const AtomRef_t&,
-					     const int&) {
-      return get_position(atom);
-    }
-
-    // return force vector
-    inline Vector_ref get_force(const AtomRef_t& atom) {
-      return Vector_ref(this->f[atom.get_index()]);
-    }
-
     // return position vector
-    inline int get_atom_type(const AtomRef_t& atom) {
-      auto index{atom.get_index()};
-      return this->type[index];
+    inline Vector_ref get_neighbour_position(const AtomRef_t& atom, const AtomRef_t& ,const int& ) {
+      return this->get_position(atom);
     }
 
     // return number of I atoms in the list
@@ -140,8 +127,7 @@ namespace rascal {
 
     // return the number of neighbours of a given atom
     template<int Level, int MaxLevel>
-    inline size_t get_cluster_size(const ClusterRef_t<Level, MaxLevel>& cluster)
-      const {
+    inline size_t get_cluster_size(const ClusterRef_t<Level, MaxLevel>& cluster) const {
       static_assert(Level == traits::MaxLevel-1,
                     "this implementation only handles atoms and pairs");
       return this->numneigh[cluster.get_atoms().back().get_index()];
