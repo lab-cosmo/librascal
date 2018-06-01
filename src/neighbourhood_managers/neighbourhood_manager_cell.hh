@@ -87,9 +87,6 @@ namespace rascal {
     //! Move assignment operator
     NeighbourhoodManagerCell& operator=(NeighbourhoodManagerCell &&other) = default;
 
-    // required for the construction of vectors, etc
-    constexpr static int dim() {return traits::Dim;}
-
     class Box;
 
     // return position vector

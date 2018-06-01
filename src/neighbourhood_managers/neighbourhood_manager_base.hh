@@ -36,6 +36,19 @@
 
 namespace rascal {
 
+
+
+  namespace AdaptorTraits {
+
+    enum class SortedByDistance: bool {yes = true, no = false};
+    enum class MinImageConvention: bool {yes = true, no = false};
+    enum class NeighbourListType {full, half};
+    //----------------------------------------------------------------------------//
+    enum class Strict:bool {yes = true, no = false}; // r_cut
+
+    class Type; // type_id
+  }  // AdaptorTraits
+
   //! traits structure to avoid incomplete types in crtp
   template <class Manager>
   struct NeighbourhoodManager_traits
@@ -76,6 +89,9 @@ namespace rascal {
 
     //! Move assignment operator
     NeighbourhoodManagerBase& operator=(NeighbourhoodManagerBase &&other)  = default;
+
+    // required for the construction of vectors, etc
+    constexpr static int dim() {return traits::Dim;}
 
     /**
      * iterator over the atoms, pairs, triplets, etc in the

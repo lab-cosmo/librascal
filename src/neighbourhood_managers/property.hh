@@ -42,7 +42,7 @@ namespace rascal {
     template <typename T, size_t NbRow, size_t NbCol>
     struct Value {
       using type = Eigen::Map<Eigen::Matrix<T, NbRow, NbCol>>;
-      using reference = type; 
+      using reference = type;
 
       static reference get_ref(T & value) {
         return type(&value);
@@ -131,9 +131,9 @@ namespace rascal {
       const Integral rem  = (x+y) % y;
       out[0] = quot;
       out[1] = rem;
-      
+
     }
-    
+
   }  // internal
 
   template <class NeighbourhoodManager, typename T,
