@@ -49,7 +49,7 @@ namespace rascal {
   get_nb_clusters(int cluster_size)  {
     switch (cluster_size) {
     case 1: {
-      return inum;
+      return natoms;
       break;
     }
     case 2: {
