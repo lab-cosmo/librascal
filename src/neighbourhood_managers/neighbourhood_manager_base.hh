@@ -72,10 +72,12 @@ namespace rascal {
     virtual ~NeighbourhoodManagerBase() = default;
 
     //! Copy assignment operator
-    NeighbourhoodManagerBase& operator=(const NeighbourhoodManagerBase &other) = delete;
+    NeighbourhoodManagerBase&
+    operator=(const NeighbourhoodManagerBase &other) = delete;
 
     //! Move assignment operator
-    NeighbourhoodManagerBase& operator=(NeighbourhoodManagerBase &&other)  = default;
+    NeighbourhoodManagerBase&
+    operator=(NeighbourhoodManagerBase &&other) = default;
 
     /**
      * iterator over the atoms, pairs, triplets, etc in the
@@ -101,8 +103,10 @@ namespace rascal {
     class ClusterRef;
 
     inline Iterator_t begin() {return Iterator_t(*this, 0);}
+    // why not get_size here?, this does not exist?
     inline Iterator_t end() {return Iterator_t(*this,
                                                this->implementation().size());}
+
     inline size_t size() const {return this->implementation().get_size();}
 
     inline size_t nb_clusters(int cluster_size) const {
@@ -164,7 +168,8 @@ namespace rascal {
     template <typename T, size_t Size, size_t... Indices>
     decltype(auto) append_array_helper(std::array<T, Size>&& arr, T &&  t,
                                         std::index_sequence<Indices...>) {
-      return std::array<T, Size+1> {std::move(arr[Indices])..., std::forward<T>(t)};
+      return std::array<T, Size+1> {std::move(arr[Indices])...,
+	  std::forward<T>(t)};
     }
     template <typename T, size_t Size>
     decltype(auto) append_array (std::array<T, Size>&& arr, T &&  t) {
@@ -220,12 +225,13 @@ namespace rascal {
     inline Vector_ref get_position() {return this->manager.get_position(*this);}
 
     //! return atom type
-    inline int get_atom_type() const {return this->manager.get_atom_type(*this);}
+    inline int get_atom_type() const {
+      return this->manager.get_atom_type(*this);
+    }
 
   protected:
     Manager_t & manager;
     int index;
-    //Eigen::Vector3i shift;
   private:
   };
 
@@ -296,7 +302,9 @@ namespace rascal {
     }
 
     inline Manager_t & get_manager() {return this->it.get_manager();}
-    inline const Manager_t & get_manager() const {return this->it.get_manager();}
+    inline const Manager_t & get_manager() const {
+      return this->it.get_manager();
+    }
 
     inline iterator begin() {return iterator(*this, 0);}
     inline iterator end() {return iterator(*this, this->size());}
@@ -321,7 +329,8 @@ namespace rascal {
   public:
     using Manager_t = NeighbourhoodManagerBase<ManagerImplementation>;
     friend Manager_t;
-    using ClusterRef_t = typename Manager_t::template ClusterRef<Level, MaxLevel>;
+    using ClusterRef_t = typename Manager_t::template ClusterRef<Level,
+								 MaxLevel>;
     friend ClusterRef_t;
     using Container_t =
       std::conditional_t
