@@ -119,9 +119,7 @@ namespace rascal {
     inline Vector_ref get_neighbour_position(const AtomRef_t& atom,
 					     const AtomRef_t&,
 					     const int&) {
-      auto index{atom.get_index()};
-      auto * xval{this->x[index]};
-      return Vector_ref(xval);
+      return get_position(atom);
     }
 
     // return force vector
@@ -134,7 +132,6 @@ namespace rascal {
       auto index{atom.get_index()};
       return this->type[index];
     }
-
 
     // return number of I atoms in the list
     inline size_t get_size() const {
