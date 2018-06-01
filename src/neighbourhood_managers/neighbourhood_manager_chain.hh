@@ -37,6 +37,7 @@
 
 #include <stdexcept>
 #include <vector>
+#include <string>
 
 namespace rascal {
   //! forward declaration for traits
@@ -174,7 +175,7 @@ namespace rascal {
 
     size_t get_nb_clusters(int cluster_size);
 
-    PositionJson_t read_structure_from_json();
+    void read_structure_from_json(const std::string filename);
 
   protected:
     // Given by example json file (for transfer from JSON

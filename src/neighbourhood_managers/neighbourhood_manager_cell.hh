@@ -138,7 +138,8 @@ namespace rascal {
 
     // return the index of the center corresponding to its neighbour image
     template<int Level, int MaxLevel>
-    inline size_t get_atom_id(const ClusterRef_t<Level, MaxLevel>& cluster, int j_atom_id) const {
+    inline size_t get_atom_id(const ClusterRef_t<Level, MaxLevel>& cluster,
+			      int j_atom_id) const {
       static_assert(Level <= traits::MaxLevel,
                     "this implementation only handles atoms and pairs");
       auto && i_atom_id{cluster.get_atoms().back().get_index()};
@@ -163,9 +164,11 @@ namespace rascal {
 
     size_t get_nb_clusters(int cluster_size);
 
-    void update(const Eigen::Ref<const Eigen::MatrixXd> positions,const Eigen::Ref<const VecXi>  particule_types,
-               const Eigen::Ref<const VecXi> center_ids,
-                const Eigen::Ref<const Eigen::MatrixXd> cell,const std::array<bool,3>& pbc, const double& cutoff_max);
+    void update(const Eigen::Ref<const Eigen::MatrixXd> positions,
+		const Eigen::Ref<const VecXi>  particule_types,
+		const Eigen::Ref<const VecXi> center_ids,
+                const Eigen::Ref<const Eigen::MatrixXd> cell,
+		const std::array<bool,3>& pbc, const double& cutoff_max);
 
     //Box get_box(const int& bin_id);
 
@@ -173,9 +176,11 @@ namespace rascal {
 
   protected:
 
-    void build(const Eigen::Ref<const Eigen::MatrixXd> positions, const Eigen::Ref<const VecXi>  particule_types,
+    void build(const Eigen::Ref<const Eigen::MatrixXd> positions,
+	       const Eigen::Ref<const VecXi>  particule_types,
                const Eigen::Ref<const VecXi> center_ids,
-               const Eigen::Ref<const Eigen::MatrixXd> cell,const std::array<bool,3>& pbc, const double& cutoff_max);
+               const Eigen::Ref<const Eigen::MatrixXd> cell,
+	       const std::array<bool,3>& pbc, const double& cutoff_max);
 
     void set_positions(const Eigen::Ref<const Eigen::MatrixXd> pos){
       this->positions = pos;
@@ -211,9 +216,10 @@ namespace rascal {
     Box() = default;
 
     //! constructor
-    Box(Manager_t& manager, const Vec3i_t& coord, const std::array<bool, 3>& pbc, const Vec3i_t& neigh_search, const Vec3i_t& nbins_c);
-          //const std::array<std::array<Dim_t, 3>,2>& neigh_bounds,
-
+    Box(Manager_t& manager, const Vec3i_t& coord,
+	const std::array<bool, 3>& pbc,
+	const Vec3i_t& neigh_search, const Vec3i_t& nbins_c);
+    //const std::array<std::array<Dim_t, 3>,2>& neigh_bounds,
 
     //! copy constructor
     Box(const Box & other) = default;
