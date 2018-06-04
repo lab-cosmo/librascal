@@ -36,6 +36,19 @@
 
 namespace rascal {
 
+
+
+  namespace AdaptorTraits {
+
+    enum class SortedByDistance: bool {yes = true, no = false};
+    enum class MinImageConvention: bool {yes = true, no = false};
+    enum class NeighbourListType {full, half};
+    //----------------------------------------------------------------------------//
+    enum class Strict:bool {yes = true, no = false}; // r_cut
+
+    class Type; // type_id
+  }  // AdaptorTraits
+
   //! traits structure to avoid incomplete types in crtp
   template <class Manager>
   struct NeighbourhoodManager_traits
@@ -76,6 +89,9 @@ namespace rascal {
 
     //! Move assignment operator
     NeighbourhoodManagerBase& operator=(NeighbourhoodManagerBase &&other)  = default;
+
+    // required for the construction of vectors, etc
+    constexpr static int dim() {return traits::Dim;}
 
     /**
      * iterator over the atoms, pairs, triplets, etc in the
@@ -120,7 +136,7 @@ namespace rascal {
     inline int atom_type(const AtomRef& atom) {
       return this->implementation().get_atom_type(atom);
     }
-    
+
   protected:
     template <int L, int ML>
     inline size_t cluster_size(ClusterRef<L, ML> & cluster) const {
@@ -205,7 +221,7 @@ namespace rascal {
 
     //! return position vector
     inline Vector_ref get_position() {return this->manager.position(*this);}
-    
+
     //! return atom type
     inline int get_atom_type() const {return this->manager.atom_type(*this);}
 
@@ -258,8 +274,8 @@ namespace rascal {
     const std::array<AtomRef_t, Level>& get_atoms() const {return this->atoms;};
     std::array<AtomRef_t, Level>& get_atoms() {return this->atoms;};
 
-    
-    /* There are 2 cases: 
+
+    /* There are 2 cases:
         center (Level== 1)-> position is in the cell
         neighbour (Level > 1)   -> position might have an offset associated
      */
@@ -270,7 +286,7 @@ namespace rascal {
         // These are the informations I need for my linked cell
         return this->get_manager().neighbour_position(this->atoms.back(),this->atoms.front(),this->get_index());
       }
-    } 
+    }
 
 
     inline decltype(auto) get_atom_type() const {return this->atoms.back().get_atom_type();}
@@ -279,7 +295,7 @@ namespace rascal {
     inline decltype(auto) get_atom_index() {
       return this->atoms.back().get_index();
       }
-   
+
     inline Manager_t & get_manager() {return this->it.get_manager();}
     inline const Manager_t & get_manager() const {return this->it.get_manager();}
 

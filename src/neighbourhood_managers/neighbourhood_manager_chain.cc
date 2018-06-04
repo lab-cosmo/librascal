@@ -27,44 +27,51 @@
  */
 
 #include "neighbourhood_managers/neighbourhood_manager_chain.hh"
-#include "external/json.hpp"
 
 #include <numeric>
-
+#include <fstream>
+#include <iostream>
 
 
 
 
 namespace rascal {
 
+  using json = nlohmann::json;
+
   /* ---------------------------------------------------------------------- */
-  void NeighbourhoodManagerChain::
-  update() {
+  void NeighbourhoodManagerChain::update() {
     // create neighbourlist/triplet etc.
+    std::cout << "update function dummy" << std::endl;
   }
 
 
   /* ---------------------------------------------------------------------- */
-  size_t NeighbourhoodManagerChain::
-  get_nb_clusters(int cluster_size)  {
+  size_t NeighbourhoodManagerChain::get_nb_clusters(int cluster_size)  {
     switch (cluster_size) {
     case 1: {
       return natoms;
       break;
     }
-    case 2: {
-      return nb_pairs;
-      break;
-    }
-    case 3: {
-      return nb_triplets;
-      break;
-    }
     default:
-      throw std::runtime_error("Can only handle single atoms,"
-                               " pairs and triplets");
+      throw std::runtime_error("Can only handle single atoms; "
+                               " use adaptor to increase MaxLevel.");
       break;
     }
   }
+
+  /* ---------------------------------------------------------------------- */
+  void NeighbourhoodManagerChain::
+  read_structure_from_json(const std::string filename) {
+    std::ifstream i(filename);
+    json input_dataset, alanine;
+    i >> input_dataset;
+
+    // ASE json format is nested - first entry is actual molecule
+    alanine = input_dataset.begin().value();
+    this->molecule_in = alanine;
+  }
+
+
 
 }  // rascal

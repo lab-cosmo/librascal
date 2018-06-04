@@ -32,6 +32,7 @@
 
 #include "neighbourhood_managers/neighbourhood_manager_base.hh"
 #include "neighbourhood_managers/property.hh"
+#include "json.hpp"
 
 #include <Eigen/Dense>
 
@@ -40,6 +41,34 @@
 #include <string>
 
 namespace rascal {
+
+  namespace JSONTransfer {
+
+    //! JSON specific
+    using json = nlohmann::json;
+
+    struct Molecule {
+      std::vector<std::vector<double>> position{};
+      std::vector<int> type{};
+      std::vector<std::vector<double>> cell{};
+      std::vector<bool> pbc{};
+    };
+
+    void to_json(json & j, Molecule& s) {
+      j = json{{"positions", s.position},
+	       {"numbers", s.type},
+	       {"cell", s.cell},
+	       {"pbc", s.pbc}};
+    }
+
+    void from_json(const json& j, Molecule& s) {
+      s.position = j.at("positions").get<std::vector<std::vector<double>>>();
+      s.type = j.at("numbers").get<std::vector<int>>();
+      s.cell = j.at("cell").get<std::vector<std::vector<double>>>();
+      s.pbc = j.at("pbc").get<std::vector<bool>>();
+    }
+  }
+
   //! forward declaration for traits
   class NeighbourhoodManagerChain;
 
@@ -65,13 +94,13 @@ namespace rascal {
     using AtomType_ref = Eigen::Map<AtomTypeJson_t>;
     using CellJson_t = std::vector<std::vector<double>>;
     using CellType_ref = Eigen::Map<CellJson_t>;
-    using PBCJson_t = std<vector<bool>>;
+    using PBCJson_t = std::vector<bool>;
     using PBC_ref = Eigen::Map<PBCJson_t>;
 
 
     using NeighbourList_t = Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>;
-    using Numneigh_t = Eigen::Matrix<int, Eigen::Dynamic>;
-    using Ilist_t = Eigen::Matrix<int, Eigen::Dynamic>;
+    using NumNeigh_t = Eigen::Matrix<int, Eigen::Dynamic, 1>;
+    using Ilist_t = Eigen::Matrix<int, Eigen::Dynamic, 1>;
     template <int Level, int MaxLevel>
     using ClusterRef_t = typename Parent::template ClusterRef<Level, MaxLevel>;
 
@@ -95,42 +124,34 @@ namespace rascal {
     NeighbourhoodManagerChain&
     operator=(NeighbourhoodManagerChain &&other) = default;
 
-    //! something like this!
-    void reset_impl(const int & natoms);
-    // void reset_impl(int * ilist, int * numneigh, int ** firstneigh,
-    //                 double ** x, double ** f, int * type,
-    //                 double * eatom, double ** vatom);
+    void update();
     // required for the construction of vectors, etc
-    // TODO
     constexpr static int dim() {return traits::Dim;}
 
+    //! something like this!
+    // void reset_impl(const int & natoms);
+    // // TODO
+    // constexpr static int dim() {return traits::Dim;}
 
-    // return position vector
-    inline Vector_ref get_position(const AtomRef_t& atom) {
-      // auto index{atom.get_index()};
-      // auto * xval{this->x[index]};
-      // return Vector_ref(xval);
-      // TODO
-    }
 
-    // return neighbour positions if Level > 1, temporary
-    inline Vector_ref get_neighbour_position(const AtomRef_t& atom,
-					     const AtomRef_t&,
-					     const int&) {
-      // auto index{atom.get_index()};
-      // auto * xval{this->x[index]};
-      // return Vector_ref(xval);
-      // TODO
-    }
+    // // return position vector
+    // inline Vector_ref get_position(const AtomRef_t& atom) {
+    //   // TODO
+    // }
 
-    // return force vector
+    // // return neighbour positions if Level > 1, temporary
+    // inline Vector_ref get_neighbour_position(const AtomRef_t& atom,
+    // 					     const AtomRef_t&,
+    // 					     const int&) {
+    //   // TODO
+    // }
 
-    // return position vector
-    inline int get_atom_type(const AtomRef_t& atom) {
-      // auto index{atom.get_index()};
-      // return this->type[index];
-      // TODO
-    }
+    // // return force vector
+
+    // // return position vector
+    // inline int get_atom_type(const AtomRef_t& atom) {
+    //   // TODO
+    // }
 
 
     // return number of I atoms in the list
@@ -178,7 +199,9 @@ namespace rascal {
     void read_structure_from_json(const std::string filename);
 
   protected:
-    // Given by example json file (for transfer from JSON
+    JSONTransfer::Molecule molecule_in;
+
+    // Map types for access to json data
     PositionJson_t position;
     AtomTypeJson_t type; // atom type - according to atomic number in periodic table
     CellJson_t cell; // unit cell of structure
@@ -186,14 +209,19 @@ namespace rascal {
 
     // To be initialized by contruction of manager for actual neighbour use
     size_t natoms{}; // total number of atoms in structure
-    size_t nb_pairs{};
-    size_t nb_triplets{};
+    // size_t nb_pairs{};
+    // size_t nb_triplets{};
+    // size_t nb_quadruplets{};
     Ilist_t ilist; // adhering to lammps-naming
     NeighbourList_t firstneigh; // adhering to lammps-naming
     NumNeigh_t numneigh; // adhering to lammps-naming
 
+    std::vector<int> offsets;
+
+
 
   private:
+
   };
 
 
@@ -202,9 +230,9 @@ namespace rascal {
   template<int Level, int MaxLevel>
   inline int NeighbourhoodManagerChain::
   get_offset_impl(const ClusterRef_t<Level, MaxLevel>& cluster) const {
-    static_assert(Level == 3,
-		  "This class cas only handle single atoms, pairs "
-		  "and triplets");
+    static_assert(Level == 1,
+		  "This class cas only handle single atoms; "
+		  "use adaptors to increase MaxLevel.");
     static_assert(MaxLevel == traits::MaxLevel, "Wrong maxlevel");
 
     auto atoms{cluster.get_atoms()};
