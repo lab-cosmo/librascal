@@ -50,9 +50,6 @@ namespace rascal {
 
       for (auto pair_cluster: atom_cluster) {
         auto pair_offset{pair_cluster.get_global_index()};
-        for (auto triplet: pair_cluster) {
-          std::cout << "";
-        }
         if (verbose) {
           std::cout << "pair (" << atom_cluster.get_atoms().back().get_index()
                     << ", " << pair_cluster.get_atoms().back().get_index()

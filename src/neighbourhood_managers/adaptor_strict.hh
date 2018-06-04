@@ -70,20 +70,19 @@ namespace rascal {
     AdaptorStrict& operator=(AdaptorStrict &&other) = default;
 
     template<class ... Args>
-    void update(Args&&... arguments) {
-      this->manager.update(std::forward<Args>(arguments)...);
-      do my stuff;
-    }
+    void update(Args&&... arguments);
 
-    inline double get_cutoff() const;
+    inline double get_cutoff() const {return this->cut_off;}
 
     inline double get_distance(const PairRef_t & pair) const;
 
     inline size_t get_nb_clusters(int cluster_size) const;
 
-    inline size_t get_size() const;
+    inline size_t get_size() const {return this->distance.size();}
 
     inline Vector_ref get_position(const AtomRef_t & atom);
+
+    inline Vector_ref get_neighbour_position(const AtomRef_t& atom, const AtomRef_t& center_atom,const int& j_linear_id);
 
     // return the global id of an atom
     inline size_t get_atom_id(const Parent& , int i_atom_id) const;
@@ -93,7 +92,6 @@ namespace rascal {
     inline size_t get_atom_id(const ClusterRef_t<Level, MaxLevel>& cluster,
                               int j_atom_id) const;
 
-      inline Vector_ref get_neighbour_position(const AtomRef_t& atom, const AtomRef_t& center_atom,const int& j_linear_id);
 
     //! return atom type
     inline int get_atom_type(const AtomRef_t& atom);
@@ -117,12 +115,38 @@ namespace rascal {
 
   namespace internal {
 
-    template<class 
-    struct 
+    /* ---------------------------------------------------------------------- */
+    template<bool IsStrict, class ManagerImplementation>
+    struct CutOffChecker {
+      static bool check(const ManagerImplementation & manager,
+                        double cut_off) {
+        return cut_off < manager.get_cutoff();
+      }
+    };
+
+    /* ---------------------------------------------------------------------- */
+    template<class ManagerImplementation>
+    struct CutOffChecker<false, ManagerImplementation> {
+      static bool check(const ManagerImplementation & /*manager*/,
+                        double /*cut_off*/) {
+        return true;
+      }
+    };
+
+    /* ---------------------------------------------------------------------- */
+    template <class ManagerImplementation>
+    bool inline check_cut_off(const ManagerImplementation & manager,
+                              double cut_off) {
+      constexpr bool IsStrict{(ManagerImplementation::traits::Strict ==
+                               AdaptorTraits::Strict::yes)};
+      return CutOffChecker<IsStrict>::check(manager, cut_off);
+    }
+
 
   }  // internal
+
   //----------------------------------------------------------------------------//
-  template < class ManagerImplementation>
+  template <class ManagerImplementation>
   AdaptorStrict<ManagerImplementation>::
   AdaptorStrict(ManagerImplementation & manager, double cut_off):
     manager{manager},
@@ -133,6 +157,19 @@ namespace rascal {
       throw std::runtime_error("underlying manager already has a smaller cut_off");
     }
   }
+
+  /* ---------------------------------------------------------------------- */
+  template <class ManagerImplementation>
+  template<class ... Args>
+  void AdaptorStrict<ManagerImplementation>::update(Args&&... arguments) {
+    this->manager.update(std::forward<Args>(arguments)...);
+    do my stuff;
+  }
+
+  /* ---------------------------------------------------------------------- */
+
+
+
 }  // rascal
 
 #endif /* ADAPTOR_STRICT_H */
