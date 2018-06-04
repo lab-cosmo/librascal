@@ -46,11 +46,11 @@ namespace rascal {
       :ManagerFixture<ManagerImplementation>{}, pair_property{this->manager},
        atom_property{this->manager}
     {}
-    
+
     PairScalarProperty_t pair_property;
     AtomVectorProperty_t atom_property;
   };
-  
+
 
   struct PropertyFixture_lammps: public ManagerFixture_lammps {
     using Manager_t = typename ManagerFixture_lammps::Manager_t;

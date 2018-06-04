@@ -53,6 +53,7 @@ namespace rascal {
   struct NeighbourhoodManager_traits<NeighbourhoodManagerCell> {
     constexpr static int Dim{3};
     constexpr static int MaxLevel{2};
+    constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
   };
   class NeighbourhoodManagerCell: public NeighbourhoodManagerBase<NeighbourhoodManagerCell>
   {

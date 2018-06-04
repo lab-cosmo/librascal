@@ -27,10 +27,22 @@
 
 #include "tests.hh"
 #include "test_neighbourhood.hh"
+#include "neighbourhood_managers/adaptor_strict.hh"
 
 
 namespace rascal {
 
-  
+  BOOST_AUTO_TEST_SUITE(strict_adaptor_test);
+
+  /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE(constructor_test,
+                          ManagerFixture<NeighbourhoodManagerCell>) {
+    double cut_off{cutoff_max/2};
+    AdaptorStrict<NeighbourhoodManagerCell> adaptor{manager, cut_off};
+    adaptor.update();
+  }
+
+
+  BOOST_AUTO_TEST_SUITE_END();
 
 }  // rascal
