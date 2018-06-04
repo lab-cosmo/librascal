@@ -72,7 +72,8 @@ namespace rascal {
       BOOST_CHECK_EQUAL(atom_counter, atom_cluster.get_index());
       ++atom_counter;
       for (int ii{3};ii<3;++ii){
-        BOOST_CHECK_EQUAL(positions_test(ii,atom_cluster.get_index()),atom_cluster.get_position()[ii]);
+        BOOST_CHECK_EQUAL(positions_test(ii,atom_cluster.get_index()),
+			  atom_cluster.get_position()[ii]);
       }
 
       for (auto pair_cluster: atom_cluster) {

@@ -41,7 +41,12 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   void NeighbourhoodManagerChain::update() {
-    // create neighbourlist/triplet etc.
+    // Make map to eigen types
+    this->position = this->molecule_in.position;
+    this->type = this->molecule_in.type;
+    this->cell = this->molecule_in.cell;
+    this->pbc = this->molecule_in.pbc;
+
     std::cout << "update function dummy" << std::endl;
   }
 
@@ -64,12 +69,11 @@ namespace rascal {
   void NeighbourhoodManagerChain::
   read_structure_from_json(const std::string filename) {
     std::ifstream i(filename);
-    json input_dataset, alanine;
+    json input_dataset;
     i >> input_dataset;
 
     // ASE json format is nested - first entry is actual molecule
-    alanine = input_dataset.begin().value();
-    this->molecule_in = alanine;
+    this->molecule_in = input_dataset.begin().value();
   }
 
 

@@ -33,7 +33,7 @@
 #include "neighbourhood_managers/neighbourhood_manager_base.hh"
 #include "neighbourhood_managers/neighbourhood_manager_lammps.hh"
 #include "neighbourhood_managers/neighbourhood_manager_cell.hh"
-//#include "neighbourbood_managers/neighbourbood_managers_chain.hh"
+//#include "neighbourbood_managers/neighbourbood_manager_chain.hh"
 
 namespace rascal {
 
@@ -89,6 +89,7 @@ namespace rascal {
   };
 
 
+  /* ---------------------------------------------------------------------- */
   struct ManagerFixture_lammps
   {
     using Manager_t = NeighbourhoodManagerLammps;
@@ -154,6 +155,25 @@ namespace rascal {
     Manager_t manager;
 
   };
+
+  /* ---------------------------------------------------------------------- */
+  // struct ManagerFixture_chain
+  // {
+  //   using Manager_t = NeighbourhoodManagerChain;
+  //   std::string fname = "test.json";
+  //   constexpr static int dim{3};
+
+  //   ManagerFixture_chain():manager{} {
+
+  //     manager.read_from_json(fname);
+  //     manager.update();
+  //   }
+
+  //   ~ManagerFixture_chain() {} // only trivial destructor?
+
+  //   Manager_t = manager;
+
+  // };
 
 
 }  // rascal
