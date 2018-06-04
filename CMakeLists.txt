@@ -37,11 +37,13 @@ add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
 add_external_package(pybind11 VERSION 2.2.2 CONFIG)
 
 include_directories(
-  ${CMAKE_SOURCE_DIR}/external
   ${CMAKE_SOURCE_DIR}/tests
   ${CMAKE_SOURCE_DIR}/src
-  ${CMAKE_SOURCE_DIR}
  )
+
+include_directories(SYSTEM
+  ${CMAKE_SOURCE_DIR}/external
+  )
 
 set(ENABLE_DOC "OFF" CACHE BOOL
   "If on, a target 'dev_doc' (which builds the documentation) is added")
