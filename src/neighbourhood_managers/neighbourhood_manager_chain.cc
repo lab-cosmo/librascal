@@ -37,11 +37,11 @@
 
 namespace rascal {
 
-  using json = nlohmann::json;
+  //using json = nlohmann::json;
 
   /* ---------------------------------------------------------------------- */
   void NeighbourhoodManagerChain::update() {
-    // Make map to eigen types
+    // Make map to Eigen types
     this->position = this->molecule_in.position;
     this->type = this->molecule_in.type;
     this->cell = this->molecule_in.cell;

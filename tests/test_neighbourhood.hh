@@ -33,7 +33,7 @@
 #include "neighbourhood_managers/neighbourhood_manager_base.hh"
 #include "neighbourhood_managers/neighbourhood_manager_lammps.hh"
 #include "neighbourhood_managers/neighbourhood_manager_cell.hh"
-//#include "neighbourbood_managers/neighbourbood_manager_chain.hh"
+#include "neighbourhood_managers/neighbourhood_manager_chain.hh"
 
 namespace rascal {
 
@@ -46,7 +46,8 @@ namespace rascal {
               0.00, 6.15, 1.02,
               0.00, 0.00, 7.31;
       Eigen::MatrixXd positions(3, 22); // 3,22
-      positions << 3.689540159937393, 5.123016813620886, 1.994119731169116,
+      positions <<
+	3.689540159937393, 5.123016813620886, 1.994119731169116,
 	6.818437242389163, 2.630056617829216, 6.182500355729062,
 	2.114977334498767, 6.697579639059512, 1.392155450018263,
 	7.420401523540017, 2.432242071439904, 6.380314902118375,
@@ -157,23 +158,25 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
-  // struct ManagerFixture_chain
-  // {
-  //   using Manager_t = NeighbourhoodManagerChain;
-  //   std::string fname = "test.json";
-  //   constexpr static int dim{3};
+  struct ManagerFixture_chain
+  {
+    using Manager_t = NeighbourhoodManagerChain;
+    //std::string fname = "test.json";
+    constexpr static int dim{3};
 
-  //   ManagerFixture_chain():manager{} {
+    ManagerFixture_chain() : manager_chain {} {
 
-  //     manager.read_from_json(fname);
-  //     manager.update();
-  //   }
+      manager_chain.read_from_json("test_polyalanine.json");
+      //manager.update();
+    }
 
-  //   ~ManagerFixture_chain() {} // only trivial destructor?
+    ~ManagerFixture_chain() {
+    } // only trivial destructor?
 
-  //   Manager_t = manager;
+    int dummy{3};
+    Manager_t = manager_chain;
 
-  // };
+  };
 
 
 }  // rascal

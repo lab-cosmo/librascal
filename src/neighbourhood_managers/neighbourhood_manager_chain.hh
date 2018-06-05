@@ -26,12 +26,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef NEIGHBOURHOOD_MANAGER_CHAIN_H
 #define NEIGHBOURHOOD_MANAGER_CHAIN_H
 
 #include "neighbourhood_managers/neighbourhood_manager_base.hh"
 #include "neighbourhood_managers/property.hh"
+//#include "neighbourhood_managers/json_molecule.hh"
 #include "json.hpp"
 
 #include <Eigen/Dense>
@@ -40,13 +40,13 @@
 #include <vector>
 #include <string>
 
+using json = nlohmann::json;
+
 namespace rascal {
 
   namespace JSONTransfer {
 
     //! JSON specific
-    using json = nlohmann::json;
-
     struct Molecule {
       std::vector<std::vector<double>> position{};
       std::vector<int> type{};
@@ -54,14 +54,15 @@ namespace rascal {
       std::vector<bool> pbc{};
     };
 
-    void to_json(json & j, Molecule& s) {
+    // resorted to inline, but not sure if that should be so?
+    inline void to_json(json & j, Molecule& s) {
       j = json{{"positions", s.position},
-	       {"numbers", s.type},
-	       {"cell", s.cell},
-	       {"pbc", s.pbc}};
+  	       {"numbers", s.type},
+  	       {"cell", s.cell},
+  	       {"pbc", s.pbc}};
     }
 
-    void from_json(const json& j, Molecule& s) {
+    inline void from_json(const json& j, Molecule& s) {
       s.position = j.at("positions").get<std::vector<std::vector<double>>>();
       s.type = j.at("numbers").get<std::vector<int>>();
       s.cell = j.at("cell").get<std::vector<std::vector<double>>>();
@@ -213,7 +214,7 @@ namespace rascal {
     // size_t nb_triplets{};
     // size_t nb_quadruplets{};
     Ilist_t ilist; // adhering to lammps-naming
-    NeighbourList_t firstneigh; // adhering to lammps-naming
+    NeighbourList_t firstneigh; // adhering to lammps-naming: TODO will be initialized bei MaxLevel + 1 adaptor
     NumNeigh_t numneigh; // adhering to lammps-naming
 
     std::vector<int> offsets;
