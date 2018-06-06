@@ -32,12 +32,7 @@
 #include <fstream>
 #include <iostream>
 
-
-
-
 namespace rascal {
-
-  //using json = nlohmann::json;
 
   /* ---------------------------------------------------------------------- */
   void NeighbourhoodManagerChain::update() {
@@ -70,11 +65,17 @@ namespace rascal {
   void NeighbourhoodManagerChain::
   read_structure_from_json(const std::string filename) {
     std::ifstream i(filename);
+    std::cout << "filename " << filename << std::endl;
     json input_dataset;
     i >> input_dataset;
 
     // ASE json format is nested - first entry is actual molecule
     this->molecule_in = input_dataset.begin().value();
+
+    std::cout << "Output of atom type from structure:\n";
+    for (auto type : this->molecule_in.type) {
+      std::cout << type << std::endl;
+    }
   }
 
 

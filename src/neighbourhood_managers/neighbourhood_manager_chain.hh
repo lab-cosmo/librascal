@@ -31,7 +31,7 @@
 
 #include "neighbourhood_managers/neighbourhood_manager_base.hh"
 #include "neighbourhood_managers/property.hh"
-//#include "neighbourhood_managers/json_molecule.hh"
+
 #include "json.hpp"
 
 #include <Eigen/Dense>
@@ -40,18 +40,20 @@
 #include <vector>
 #include <string>
 
-using json = nlohmann::json;
+
 
 namespace rascal {
+
+  using json = nlohmann::json;
 
   namespace JSONTransfer {
 
     //! JSON specific
     struct Molecule {
-      std::vector<std::vector<double>> position{};
-      std::vector<int> type{};
       std::vector<std::vector<double>> cell{};
+      std::vector<int> type{};
       std::vector<bool> pbc{};
+      std::vector<std::vector<double>> position{};
     };
 
     // resorted to inline, but not sure if that should be so?
