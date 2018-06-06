@@ -174,11 +174,12 @@ namespace rascal {
     template<int Level, int MaxLevel>
     inline size_t get_atom_id(const ClusterRef_t<Level, MaxLevel>& cluster,
                               int j_atom_id) const {
-      static_assert(Level == traits::MaxLevel-1,
-                    "this implementation only handles atoms, pairs "
-		    "and triplets");
-      auto && i_atom_id{cluster.get_atoms().back().get_index()};
-      return this->firstneigh[std::move(i_atom_id)][j_atom_id];
+      // static_assert(Level == traits::MaxLevel-1,
+      //               "this implementation only handles atoms, pairs "
+      // 		    "and triplets");
+      // auto && i_atom_id{cluster.get_atoms().back().get_index()};
+      // return this->firstneigh[std::move(i_atom_id)][j_atom_id];
+      return 0;
     }
 
     // return the number of neighbours of a given atom
@@ -214,7 +215,8 @@ namespace rascal {
     // size_t nb_triplets{};
     // size_t nb_quadruplets{};
     Ilist_t ilist; // adhering to lammps-naming
-    NeighbourList_t firstneigh; // adhering to lammps-naming: TODO will be initialized bei MaxLevel + 1 adaptor
+    // adhering to lammps-naming: TODO will be initialized bei MaxLevel + 1 adaptor
+    // NeighbourList_t firstneigh;
     NumNeigh_t numneigh; // adhering to lammps-naming
 
     std::vector<int> offsets;

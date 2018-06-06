@@ -46,6 +46,7 @@ namespace rascal {
     this->type = this->molecule_in.type;
     this->cell = this->molecule_in.cell;
     this->pbc = this->molecule_in.pbc;
+    // this->natoms = t
 
     std::cout << "update function dummy" << std::endl;
   }

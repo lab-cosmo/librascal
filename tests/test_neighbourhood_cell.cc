@@ -35,7 +35,8 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(ManagerCellTests);
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(manager_cell_constructor_test, ManagerFixture<NeighbourhoodManagerCell>){}
+  BOOST_FIXTURE_TEST_CASE(manager_cell_constructor_test,
+			  ManagerFixture<NeighbourhoodManagerCell>){}
 
   /* ---------------------------------------------------------------------- */
 

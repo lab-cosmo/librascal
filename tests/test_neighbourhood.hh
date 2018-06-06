@@ -158,23 +158,24 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
+  //std::string fname = "test.json";
+  //constexpr static int dim{3};
+  //manager.update();
+
   struct ManagerFixture_chain
   {
     using Manager_t = NeighbourhoodManagerChain;
-    //std::string fname = "test.json";
-    constexpr static int dim{3};
 
-    ManagerFixture_chain() : manager_chain {} {
-
-      manager_chain.read_from_json("test_polyalanine.json");
-      //manager.update();
+    ManagerFixture_chain()
+      : manager_chain{} {
+      BOOST_TEST_MESSAGE("setup ManagerChain fixture");
+      manager_chain.read_structure_from_json("test_polyalanine.json");
+      manager_chain.update();
     }
 
-    ~ManagerFixture_chain() {
-    } // only trivial destructor?
+    ~ManagerFixture_chain() {BOOST_TEST_MESSAGE("teardown ManagerChain fixture");}
 
-    int dummy{3};
-    Manager_t = manager_chain;
+    Manager_t manager_chain;
 
   };
 
