@@ -91,16 +91,18 @@ namespace rascal {
     using Vector_ref = typename Parent::Vector_ref;
     using AtomRef_t = typename Parent::AtomRef;
 
-    // JSON-specific and respective maps
-    using PositionJson_t = std::vector<std::vector<double>>;
-    using Position_ref = Eigen::Map<PositionJson_t>;
-    using AtomTypeJson_t = std::vector<int>;
-    using AtomType_ref = Eigen::Map<AtomTypeJson_t>;
-    using CellJson_t = std::vector<std::vector<double>>;
-    using CellType_ref = Eigen::Map<CellJson_t>;
-    using PBCJson_t = std::vector<bool>;
-    using PBC_ref = Eigen::Map<PBCJson_t>;
-
+    // Maps for access to complete contiguous data sets as Eigen types
+    /*
+     * These are needed extra along with the accessors, because these
+     * maps can not be member variables. But they cost 'nothing' to
+     * to build and access to the complete dataset might be useful.
+     */
+    using Cell_ref = Eigen::Map<Eigen::Matrix<double, traits::Dim,
+					      Eigen::Dynamic>>;
+    using AtomTypes_ref = Eigen::Map<Eigen::Matrix<int, 1, Eigen::Dynamic>>;
+    using PBC_ref = Eigen::Map<Eigen::Matrix<int, 1, traits::Dim>>;
+    using Positions_ref = Eigen::Map<Eigen::Matrix<double, traits::Dim,
+						  Eigen::Dynamic>>;
 
     using NeighbourList_t = Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>;
     using NumNeigh_t = Eigen::Matrix<int, Eigen::Dynamic, 1>;
@@ -140,8 +142,11 @@ namespace rascal {
 
     // // return position vector
     // inline Vector_ref get_position(const AtomRef_t& atom) {
-    //   // TODO
+    //   return Vector_ref(
     // }
+
+
+
 
     // // return neighbour positions if Level > 1, temporary
     // inline Vector_ref get_neighbour_position(const AtomRef_t& atom,
@@ -157,6 +162,24 @@ namespace rascal {
     //   // TODO
     // }
 
+    inline Cell_ref get_cell() {
+      return Cell_ref(this->cell_data.data(), traits::Dim,
+		      this->cell_data.size()/traits::Dim);
+    }
+
+    inline AtomTypes_ref get_atom_types() {
+      return AtomTypes_ref(this->type_data.data(), this->type_data.size());
+    }
+
+    // TODO: invalid use of void expression?
+    // inline PBC_ref get_periodic_boundary_conditions() {
+    //   return PBC_ref(this->pbc_data.data());
+    // }
+
+    inline Positions_ref get_positions() {
+      return Positions_ref(this->pos_data.data(), traits::Dim,
+			   this->pos_data.size()/traits::Dim);
+    }
 
     // return number of I atoms in the list
     inline size_t get_size() const {
@@ -204,13 +227,14 @@ namespace rascal {
     void read_structure_from_json(const std::string filename);
 
   protected:
+
     JSONTransfer::Molecule molecule_in;
 
-    // Map types for access to json data
-    PositionJson_t position;
-    AtomTypeJson_t type; // atom type - according to atomic number in periodic table
-    CellJson_t cell; // unit cell of structure
-    PBCJson_t pbc; // boolean for periodicity of unit cell
+    // References to contiguous vectors for nested types
+    std::vector<double> cell_data{};
+    std::vector<int> type_data{};
+    std::vector<bool> pbc_data{};
+    std::vector<double> pos_data{};
 
     // To be initialized by contruction of manager for actual neighbour use
     size_t natoms{}; // total number of atoms in structure

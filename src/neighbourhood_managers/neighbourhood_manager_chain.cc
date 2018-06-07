@@ -36,12 +36,28 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   void NeighbourhoodManagerChain::update() {
-    // Make map to Eigen types
-    this->cell = this->molecule_in.cell;
-    this->type = this->molecule_in.type;
-    this->pbc = this->molecule_in.pbc;
-    this->position = this->molecule_in.position;
-    // this->natoms = t
+    // Ensure contiguous data structures
+    for (const auto vec : molecule_in.cell) {
+      for (const auto coord : vec) {
+	this->cell_data.push_back(coord);
+      }
+    }
+
+    for (const auto type : molecule_in.type) {
+      this->type_data.push_back(type);
+    }
+
+    for (const auto bc : molecule_in.pbc) {
+      this->pbc_data.push_back(bc);
+    }
+
+    for (const auto pos : molecule_in.position) {
+      for (const auto coord : pos) {
+	this->pos_data.push_back(coord);
+      }
+    }
+
+    this->natoms = molecule_in.position.size();
   }
 
   /* ---------------------------------------------------------------------- */
@@ -72,15 +88,11 @@ namespace rascal {
       std::cerr << e.what() << std::endl;
     }
 
-    // ASE json format is nested - first entry is actual molecule
+    // ASE json format is nested - here, first entry is actual molecule
     this->molecule_in = j.begin().value();
-
-    // std::cout << "Output of atom type from structure:\n";
-    // for (auto type : this->molecule_in.type) {
-    //   std::cout << type << std::endl;
-    // }
   }
 
+  /* ---------------------------------------------------------------------- */
 
 
-}  // rascal
+} // rascal
