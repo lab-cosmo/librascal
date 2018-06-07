@@ -169,7 +169,7 @@ namespace rascal {
     ManagerFixture_chain()
       : manager_chain{} {
       // BOOST_TEST_MESSAGE("setup ManagerChain fixture");
-      manager_chain.read_structure_from_json("test_polyalanine.json");
+      manager_chain.read_structure_from_json("alanine-X.json");
       //""test_polyalanine.json");
       manager_chain.update();
     }
