@@ -38,13 +38,12 @@
 
 #include <stdexcept>
 #include <vector>
-#include <string>
+//#include <string>
 
 
+using json = nlohmann::json;
 
 namespace rascal {
-
-  using json = nlohmann::json;
 
   namespace JSONTransfer {
 
@@ -58,17 +57,19 @@ namespace rascal {
 
     // resorted to inline, but not sure if that should be so?
     inline void to_json(json & j, Molecule& s) {
-      j = json{{"positions", s.position},
-  	       {"numbers", s.type},
-  	       {"cell", s.cell},
-  	       {"pbc", s.pbc}};
+      j = json{
+	{"cell", s.cell},
+	{"numbers", s.type},
+	{"pbc", s.pbc},
+	{"positions", s.position}
+      };
     }
 
     inline void from_json(const json& j, Molecule& s) {
-      s.position = j.at("positions").get<std::vector<std::vector<double>>>();
-      s.type = j.at("numbers").get<std::vector<int>>();
       s.cell = j.at("cell").get<std::vector<std::vector<double>>>();
+      s.type = j.at("numbers").get<std::vector<int>>();
       s.pbc = j.at("pbc").get<std::vector<bool>>();
+      s.position = j.at("positions").get<std::vector<std::vector<double>>>();
     }
   }
 

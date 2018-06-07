@@ -37,15 +37,12 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   void NeighbourhoodManagerChain::update() {
     // Make map to Eigen types
-    this->position = this->molecule_in.position;
-    this->type = this->molecule_in.type;
     this->cell = this->molecule_in.cell;
+    this->type = this->molecule_in.type;
     this->pbc = this->molecule_in.pbc;
+    this->position = this->molecule_in.position;
     // this->natoms = t
-
-    std::cout << "update function dummy" << std::endl;
   }
-
 
   /* ---------------------------------------------------------------------- */
   size_t NeighbourhoodManagerChain::get_nb_clusters(int cluster_size)  {
@@ -64,18 +61,24 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   void NeighbourhoodManagerChain::
   read_structure_from_json(const std::string filename) {
-    std::ifstream i(filename);
-    std::cout << "filename " << filename << std::endl;
-    json input_dataset;
-    i >> input_dataset;
+
+    json j;
+
+    try {
+      std::ifstream f(filename);
+      if (!f.is_open()) throw std::ios::failure("Error opening JSON file!");
+      f >> j;
+    } catch (const std::exception& e) {
+      std::cerr << e.what() << std::endl;
+    }
 
     // ASE json format is nested - first entry is actual molecule
-    this->molecule_in = input_dataset.begin().value();
+    this->molecule_in = j.begin().value();
 
-    std::cout << "Output of atom type from structure:\n";
-    for (auto type : this->molecule_in.type) {
-      std::cout << type << std::endl;
-    }
+    // std::cout << "Output of atom type from structure:\n";
+    // for (auto type : this->molecule_in.type) {
+    //   std::cout << type << std::endl;
+    // }
   }
 
 

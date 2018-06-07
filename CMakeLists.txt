@@ -72,6 +72,7 @@ if (${BUILD_TESTS})
   target_include_directories(main_test_suite SYSTEM PRIVATE ${Boost_INCLUDE_DIR})
   target_link_libraries(main_test_suite ${Boost_LIBRARIES} rascal)
   add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
+  configure_file("tests/test_polyalanine.json" ${CMAKE_BINARY_DIR} COPYONLY)
 endif(${BUILD_TESTS})
 
 # compile the library

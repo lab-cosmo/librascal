@@ -168,9 +168,10 @@ namespace rascal {
 
     ManagerFixture_chain()
       : manager_chain{} {
-      BOOST_TEST_MESSAGE("setup ManagerChain fixture");
+      // BOOST_TEST_MESSAGE("setup ManagerChain fixture");
       manager_chain.read_structure_from_json("test_polyalanine.json");
-      // manager_chain.update();
+      //""test_polyalanine.json");
+      manager_chain.update();
     }
 
     ~ManagerFixture_chain() {BOOST_TEST_MESSAGE("teardown ManagerChain fixture");}
