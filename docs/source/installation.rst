@@ -1,4 +1,4 @@
-.. _installation
+.. _installation:
 
 Installation
 ============
@@ -31,7 +31,7 @@ It is strongly recommended to clone Rascal from its repository in GitHub.
 
 .. code-block:: bash
 
-    git clone LINK TO RASCAL REPOSITORY
+    git clone https://github.com/cosmo-epfl/librascal.git
 
 Build Rascal
 #############
@@ -76,7 +76,7 @@ In order to run Rascal, you need to import the library into a Python code:
 
 .. code-block:: python
     
-    import Rascal as P
+    import Rascal as R
 
 
 Advanced options
