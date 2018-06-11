@@ -51,7 +51,7 @@ namespace rascal {
     struct Molecule {
       std::vector<std::vector<double>> cell{};
       std::vector<int> type{};
-      std::vector<bool> pbc{};
+      std::vector<int> pbc{};
       std::vector<std::vector<double>> position{};
     };
 
@@ -68,7 +68,7 @@ namespace rascal {
     inline void from_json(const json& j, Molecule& s) {
       s.cell = j.at("cell").get<std::vector<std::vector<double>>>();
       s.type = j.at("numbers").get<std::vector<int>>();
-      s.pbc = j.at("pbc").get<std::vector<bool>>();
+      s.pbc = j.at("pbc").get<std::vector<int>>();
       s.position = j.at("positions").get<std::vector<std::vector<double>>>();
     }
   }
@@ -161,12 +161,13 @@ namespace rascal {
     }
 
     inline AtomTypes_ref get_atom_types() {
-      return AtomTypes_ref(this->type_data.data(), this->type_data.size());
+      return AtomTypes_ref(this->molecule_in.type.data(),
+			   this->molecule_in.type.size());
     }
 
     // TODO: invalid use of void expression?
     inline PBC_ref get_periodic_boundary_conditions() {
-      return PBC_ref(this->pbc_data.data());
+      return PBC_ref(this->molecule_in.pbc.data());
     }
 
     inline Vector_ref get_position(const AtomRef_t& atom) {
@@ -232,9 +233,6 @@ namespace rascal {
 
     // References to contiguous vectors for nested types
     std::vector<double> cell_data{};
-    std::vector<int> type_data{};
-    // this is actually bool - but Eigen does not like it
-    std::vector<int> pbc_data{};
     std::vector<double> pos_data{};
 
     // To be initialized by contruction of manager for actual neighbour use

@@ -43,14 +43,6 @@ namespace rascal {
       }
     }
 
-    for (const auto type : molecule_in.type) {
-      this->type_data.push_back(type);
-    }
-
-    for (const auto bc : molecule_in.pbc) {
-      this->pbc_data.push_back(bc);
-    }
-
     for (const auto pos : molecule_in.position) {
       for (const auto coord : pos) {
 	this->pos_data.push_back(coord);
