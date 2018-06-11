@@ -65,4 +65,3 @@ set_target_properties(boost_test_framework PROPERTIES FOLDER "UTF")
 
 message(STATUS "Boost Unit Test Framework " ${_BoostTest_version})
 
-
