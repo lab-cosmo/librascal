@@ -140,14 +140,6 @@ namespace rascal {
     // constexpr static int dim() {return traits::Dim;}
 
 
-    // // return position vector
-    // inline Vector_ref get_position(const AtomRef_t& atom) {
-    //   return Vector_ref(
-    // }
-
-
-
-
     // // return neighbour positions if Level > 1, temporary
     // inline Vector_ref get_neighbour_position(const AtomRef_t& atom,
     // 					     const AtomRef_t&,
@@ -157,14 +149,15 @@ namespace rascal {
 
     // // return force vector
 
-    // // return position vector
-    // inline int get_atom_type(const AtomRef_t& atom) {
-    //   // TODO
-    // }
-
     inline Cell_ref get_cell() {
       return Cell_ref(this->cell_data.data(), traits::Dim,
 		      this->cell_data.size()/traits::Dim);
+    }
+
+    inline int get_atom_type(const AtomRef_t& atom) {
+      auto index{atom.get_index()};
+      auto t = this->get_atom_types();
+      return t(index);
     }
 
     inline AtomTypes_ref get_atom_types() {
@@ -174,6 +167,13 @@ namespace rascal {
     // TODO: invalid use of void expression?
     inline PBC_ref get_periodic_boundary_conditions() {
       return PBC_ref(this->pbc_data.data());
+    }
+
+    inline Vector_ref get_position(const AtomRef_t& atom) {
+      auto index{atom.get_index()};
+      auto p = this->get_positions();
+      auto * xval{p.col(index).data()};
+      return Vector_ref(xval);
     }
 
     inline Positions_ref get_positions() {
@@ -248,8 +248,6 @@ namespace rascal {
     NumNeigh_t numneigh; // adhering to lammps-naming
 
     std::vector<int> offsets;
-
-
 
   private:
 
