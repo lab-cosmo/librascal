@@ -172,9 +172,9 @@ namespace rascal {
     }
 
     // TODO: invalid use of void expression?
-    // inline PBC_ref get_periodic_boundary_conditions() {
-    //   return PBC_ref(this->pbc_data.data());
-    // }
+    inline PBC_ref get_periodic_boundary_conditions() {
+      return PBC_ref(this->pbc_data.data());
+    }
 
     inline Positions_ref get_positions() {
       return Positions_ref(this->pos_data.data(), traits::Dim,
@@ -233,7 +233,8 @@ namespace rascal {
     // References to contiguous vectors for nested types
     std::vector<double> cell_data{};
     std::vector<int> type_data{};
-    std::vector<bool> pbc_data{};
+    // this is actually bool - but Eigen does not like it
+    std::vector<int> pbc_data{};
     std::vector<double> pos_data{};
 
     // To be initialized by contruction of manager for actual neighbour use
