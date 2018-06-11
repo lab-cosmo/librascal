@@ -48,7 +48,7 @@ namespace rascal {
   namespace JSONTransfer {
 
     //! JSON specific
-    struct Molecule {
+    struct AtomicStructure {
       std::vector<std::vector<double>> cell{};
       std::vector<int> type{};
       std::vector<int> pbc{};
@@ -56,7 +56,7 @@ namespace rascal {
     };
 
     // resorted to inline, but not sure if that should be so?
-    inline void to_json(json & j, Molecule& s) {
+    inline void to_json(json & j, AtomicStructure& s) {
       j = json{
 	{"cell", s.cell},
 	{"numbers", s.type},
@@ -65,7 +65,7 @@ namespace rascal {
       };
     }
 
-    inline void from_json(const json& j, Molecule& s) {
+    inline void from_json(const json& j, AtomicStructure& s) {
       s.cell = j.at("cell").get<std::vector<std::vector<double>>>();
       s.type = j.at("numbers").get<std::vector<int>>();
       s.pbc = j.at("pbc").get<std::vector<int>>();
@@ -161,13 +161,13 @@ namespace rascal {
     }
 
     inline AtomTypes_ref get_atom_types() {
-      return AtomTypes_ref(this->molecule_in.type.data(),
-			   this->molecule_in.type.size());
+      return AtomTypes_ref(this->neigh_in.type.data(),
+			   this->neigh_in.type.size());
     }
 
     // TODO: invalid use of void expression?
     inline PBC_ref get_periodic_boundary_conditions() {
-      return PBC_ref(this->molecule_in.pbc.data());
+      return PBC_ref(this->neigh_in.pbc.data());
     }
 
     inline Vector_ref get_position(const AtomRef_t& atom) {
@@ -229,9 +229,9 @@ namespace rascal {
 
   protected:
 
-    JSONTransfer::Molecule molecule_in;
+    JSONTransfer::AtomicStructure neigh_in;
 
-    // References to contiguous vectors for nested types
+    // References to contiguous vectors for nested types from JSON
     std::vector<double> cell_data{};
     std::vector<double> pos_data{};
 

@@ -37,19 +37,19 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   void NeighbourhoodManagerChain::update() {
     // Ensure contiguous data structures
-    for (const auto vec : molecule_in.cell) {
+    for (const auto vec : neigh_in.cell) {
       for (const auto coord : vec) {
 	this->cell_data.push_back(coord);
       }
     }
 
-    for (const auto pos : molecule_in.position) {
+    for (const auto pos : neigh_in.position) {
       for (const auto coord : pos) {
 	this->pos_data.push_back(coord);
       }
     }
 
-    this->natoms = molecule_in.position.size();
+    this->natoms = neigh_in.position.size();
   }
 
   /* ---------------------------------------------------------------------- */
@@ -81,7 +81,7 @@ namespace rascal {
     }
 
     // ASE json format is nested - here, first entry is actual molecule
-    this->molecule_in = j.begin().value();
+    this->neigh_in = j.begin().value();
   }
 
   /* ---------------------------------------------------------------------- */
