@@ -10,6 +10,7 @@ download_external_project(BoostTest
 set(BOOST_TEST_ROOT_DIR ${_BoostTest_external_dir}/BoostTest)
 get_filename_component(BOOST_TEST_ROOT_DIR_ABS ${_BoostTest_external_dir}/BoostTest ABSOLUTE)
 
+
 # include globs
 file(GLOB_RECURSE
      BOOST_UTF_HEADERS
@@ -64,4 +65,10 @@ set(BOOST_TEST_INCLUDE_DIR ${BOOST_TEST_ROOT_DIR}/include/)
 set_target_properties(boost_test_framework PROPERTIES FOLDER "UTF")
 
 message(STATUS "Boost Unit Test Framework " ${_BoostTest_version})
+
+# Debug Fede
+message(STATUS "Boost relative dirs " ${BOOST_TEST_ROOT_DIR} )
+message(STATUS "Boost absolute dirs " ${BOOST_TEST_ROOT_DIR_ABS} )
+message(STATUS "Boost include dirs " ${BOOST_TEST_INCLUDE_DIR} )
+#
 
