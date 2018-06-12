@@ -119,8 +119,10 @@ namespace rascal {
     }
 
     // return position vector
-    inline Vector_ref get_neighbour_position(const AtomRef_t& atom, const AtomRef_t& ,const int& ) {
-      return this->get_position(atom);
+    template<int Level, int MaxLevel>
+    inline Vector_ref get_neighbour_position(const ClusterRef_t<Level, MaxLevel>& cluster) {
+      //static_assert(Level > 1,"this implementation should only work with a neighbour");
+      return this->get_position(cluster.get_atoms().back());
     }
 
     // return number of I atoms in the list
