@@ -43,7 +43,11 @@ namespace rascal {
   struct NeighbourhoodManager_traits<NeighbourhoodManagerLammps> {
     constexpr static int Dim{3};
     constexpr static int MaxLevel{2};
+    constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
   };
+
+
+  //----------------------------------------------------------------------------//
   class NeighbourhoodManagerLammps: public NeighbourhoodManagerBase<NeighbourhoodManagerLammps>
   {
   public:
@@ -104,8 +108,7 @@ namespace rascal {
                     int * ilist, int * numneigh, int ** firstneigh,
                     double ** x, double ** f, int * type,
                     double * eatom, double ** vatom);
-    // required for the construction of vectors, etc
-    constexpr static int dim() {return traits::Dim;}
+
 
 
     // return position vector
@@ -133,7 +136,7 @@ namespace rascal {
       return this->numneigh[cluster.get_atoms().back().get_index()];
     }
 
-    // return the number of atoms forming the next higher cluster with this one
+    // return the global id of an atom
     template<int Level, int MaxLevel>
     inline size_t get_atom_id(const ClusterRef_t<Level, MaxLevel>& cluster,
                               int j_atom_id) const {
@@ -143,7 +146,7 @@ namespace rascal {
       return this->firstneigh[std::move(i_atom_id)][j_atom_id];
     }
 
-    // return the number of neighbours of a given atom
+    // return the global id of an atom
     inline size_t get_atom_id(const Parent& /*cluster*/,
                               int i_atom_id) const {
       return this->ilist[i_atom_id];
