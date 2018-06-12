@@ -99,10 +99,13 @@ namespace rascal {
      */
     using Cell_ref = Eigen::Map<Eigen::Matrix<double, traits::Dim,
 					      Eigen::Dynamic>>;
+    // using CellVector_ref = Eigen::Map<Eigen::Matrix<double, 1, traits::Dim>>;
     using AtomTypes_ref = Eigen::Map<Eigen::Matrix<int, 1, Eigen::Dynamic>>;
     using PBC_ref = Eigen::Map<Eigen::Matrix<int, 1, traits::Dim>>;
     using Positions_ref = Eigen::Map<Eigen::Matrix<double, traits::Dim,
 						  Eigen::Dynamic>>;
+
+    // using BoxSize_t = std::vector<double>;
 
     using NeighbourList_t = Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>;
     using NumNeigh_t = Eigen::Matrix<int, Eigen::Dynamic, 1>;
@@ -131,23 +134,12 @@ namespace rascal {
     operator=(NeighbourhoodManagerChain &&other) = default;
 
     void update();
+
     // required for the construction of vectors, etc
     constexpr static int dim() {return traits::Dim;}
 
-    //! something like this!
     // void reset_impl(const int & natoms);
     // // TODO
-    // constexpr static int dim() {return traits::Dim;}
-
-
-    // // return neighbour positions if Level > 1, temporary
-    // inline Vector_ref get_neighbour_position(const AtomRef_t& atom,
-    // 					     const AtomRef_t&,
-    // 					     const int&) {
-    //   // TODO
-    // }
-
-    // // return force vector
 
     inline Cell_ref get_cell() {
       return Cell_ref(this->cell_data.data(), traits::Dim,
@@ -165,7 +157,6 @@ namespace rascal {
 			   this->neigh_in.type.size());
     }
 
-    // TODO: invalid use of void expression?
     inline PBC_ref get_periodic_boundary_conditions() {
       return PBC_ref(this->neigh_in.pbc.data());
     }
@@ -175,6 +166,14 @@ namespace rascal {
       auto p = this->get_positions();
       auto * xval{p.col(index).data()};
       return Vector_ref(xval);
+    }
+
+    template<int Level, int MaxLevel>
+    inline Vector_ref get_neighbour_position(const ClusterRef_t<Level,
+					     MaxLevel>& cluster) {
+      static_assert(Level > 1,
+		    "this implementation should only work with a neighbour");
+      return this->get_position(cluster.get_atoms().back());
     }
 
     inline Positions_ref get_positions() {
@@ -227,23 +226,28 @@ namespace rascal {
 
     void read_structure_from_json(const std::string filename);
 
+    inline double get_box_length(int dimension);
+
+    void make_neighbourlist();
+
   protected:
 
     JSONTransfer::AtomicStructure neigh_in;
 
     // References to contiguous vectors for nested types from JSON
-    std::vector<double> cell_data{};
-    std::vector<double> pos_data{};
+    std::vector<double> cell_data{}; // volume cell 3x3
+    std::vector<double> pos_data{}; // array of positions dim*natoms
 
     // To be initialized by contruction of manager for actual neighbour use
     size_t natoms{}; // total number of atoms in structure
     // size_t nb_pairs{};
     // size_t nb_triplets{};
     // size_t nb_quadruplets{};
-    Ilist_t ilist; // adhering to lammps-naming
+    Ilist_t ilist; // adhering to lammps-naming, atom id
     // adhering to lammps-naming: TODO will be initialized bei MaxLevel + 1 adaptor
-    // NeighbourList_t firstneigh;
+    NeighbourList_t firstneigh;
     NumNeigh_t numneigh; // adhering to lammps-naming
+    double cut_off{1.0};
 
     std::vector<int> offsets;
 
@@ -276,6 +280,7 @@ namespace rascal {
   get_offset_impl<1, 2>(const ClusterRef_t<1, 2>& cluster) const {
     return cluster.get_atoms().back().get_index();
   }
+
 
 }  // rascal
 

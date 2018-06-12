@@ -50,7 +50,7 @@ set(ENABLE_DOC "OFF" CACHE BOOL
   "If on, a target 'dev_doc' (which builds the documentation) is added")
 set(BUILD_TESTS "ON" CACHE BOOL
   "If on, builds the unit tests")
-set(SUPPRESS_LIBRARY_WARNINGS "ON" CACHE BOOL 
+set(SUPPRESS_LIBRARY_WARNINGS "ON" CACHE BOOL
   "Suppress warnings from  Boost library")
 
 
@@ -79,6 +79,7 @@ if (${BUILD_TESTS})
   target_link_libraries(main_test_suite boost_test_framework rascal)
   add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
   configure_file("tests/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
+  configure_file("tests/simple_cubic.json" ${CMAKE_BINARY_DIR} COPYONLY)
 endif(${BUILD_TESTS})
 
 # compile the library

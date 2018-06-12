@@ -128,10 +128,12 @@ namespace rascal {
       return this->manager.get_position(original_atom);
     }
 
-    inline Vector_ref get_neighbour_position(const AtomRef_t & atom,
-                                             const AtomRef_t & center_atom,
-                                             const int & j_linear_id) {
+    template<int Level, int MaxLevel>
+    inline Vector_ref get_neighbour_position(const ClusterRef_t<Level,
+					     MaxLevel>& cluster) {
+      // Argument is now the same, but implementation
       throw std::runtime_error("should be adapted to Félix's new interface using the ClusterRef");
+
     }
 
 
