@@ -107,9 +107,12 @@ namespace rascal {
 
     // using BoxSize_t = std::vector<double>;
 
-    using NeighbourList_t = Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>;
-    using NumNeigh_t = Eigen::Matrix<int, Eigen::Dynamic, 1>;
-    using Ilist_t = Eigen::Matrix<int, Eigen::Dynamic, 1>;
+    using NeighbourList_t = std::vector<std::vector<int>>;
+      //Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>;
+    using NumNeigh_t = std::vector<int>;
+      //Eigen::Matrix<int, Eigen::Dynamic, 1>;
+    using Ilist_t = std::vector<int>;
+      //Eigen::Matrix<int, Eigen::Dynamic, 1>;
     template <int Level, int MaxLevel>
     using ClusterRef_t = typename Parent::template ClusterRef<Level, MaxLevel>;
 
@@ -244,12 +247,26 @@ namespace rascal {
     // size_t nb_triplets{};
     // size_t nb_quadruplets{};
     Ilist_t ilist; // adhering to lammps-naming, atom id
-    // adhering to lammps-naming: TODO will be initialized bei MaxLevel + 1 adaptor
+    // adhering to lammps-naming: TODO will be initialized bei MaxLevel + 1 adaptor?
     NeighbourList_t firstneigh;
     NumNeigh_t numneigh; // adhering to lammps-naming
     double cut_off{1.0};
 
-    std::vector<int> offsets;
+    std::vector<int> offsets{};
+
+    // For linked cell algorithm;
+    std::vector<int> ll{}; //linked list
+    std::vector<int> lc{}; // linear indexed linked cells
+
+    inline std::vector<int>
+    get_box_index(Vector_ref& position,
+		  std::vector<double>& rc,
+		  Eigen::Matrix<double, 1, traits::Dim> offset,
+		  std::vector<int> nmax);
+
+    inline void collect_neighbour_info_of_atom(const int i,
+					       const std::vector<int> boxidx,
+					       const std::vector<int> nmax);
 
   private:
 
