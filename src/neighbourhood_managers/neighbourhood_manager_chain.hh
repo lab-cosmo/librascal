@@ -108,6 +108,7 @@ namespace rascal {
     // using BoxSize_t = std::vector<double>;
 
     using NeighbourList_t = std::vector<std::vector<int>>;
+    using HalfNeighbourList_t = std::vector<int>;
       //Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>;
     using NumNeigh_t = std::vector<int>;
       //Eigen::Matrix<int, Eigen::Dynamic, 1>;
@@ -248,9 +249,12 @@ namespace rascal {
     // size_t nb_quadruplets{};
     Ilist_t ilist; // adhering to lammps-naming, atom id
     // adhering to lammps-naming: TODO will be initialized bei MaxLevel + 1 adaptor?
-    NeighbourList_t firstneigh;
-    NumNeigh_t numneigh; // adhering to lammps-naming
+    NeighbourList_t firstneigh{};
+    HalfNeighbourList_t halfneigh{}; // one long vector
+
+    NumNeigh_t numneigh{}; // adhering to lammps-naming?
     double cut_off{1.0};
+    double cut_off_skin{0.0}; // for later use
 
     std::vector<int> offsets{};
 

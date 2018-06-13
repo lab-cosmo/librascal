@@ -50,6 +50,7 @@ namespace rascal {
     }
 
     this->natoms = neigh_in.position.size();
+    // Invoke neighbourlist, because without it, you can not really to anything
     this->make_neighbourlist();
   }
 
@@ -215,7 +216,7 @@ namespace rascal {
       auto linear_index = get_linear_index(nidx, nmax);
 
       std::cout<< "Linear index: " << linear_index << std::endl;
-      std::cout<< "dim-index: "
+      std::cout<< "box-index: "
 	       << nidx[0] << " "
 	       << nidx[1] << " "
 	       << nidx[2] << " "
@@ -249,48 +250,44 @@ namespace rascal {
       // own cell
       nidx = get_box_index(pos, rc, offset, nmax);
 
-      auto nneighcells = std::pow(3, traits::Dim) - 1;
-      std::cout << "Number of neighbours " << nneighcells << std::endl;
+      auto nneighcells {std::pow(3, traits::Dim) - 1};
+      std::cout << "Number of neighbour cells " << nneighcells << std::endl;
 
       auto nidxtmp = nidx;
       switch(traits::Dim) {
       case 1: {
-	std::vector<int> ndx{-1, 0, 1};
-
-	for (auto dx :ndx) {
+	std::vector<int> nd{-1, 0, 1};
+	for (auto dx :nd) {
 	  nidxtmp[0] = nidx[0] + dx ;
 	  if(nidxtmp[0] < 0) continue;
 	  if(nidxtmp[1] > nmax[1] -1) continue;
-
 	  collect_neighbour_info_of_atom(i, nidxtmp, nmax);
 	}
 	break;
       }
       case 2: {
-	std::vector<int> ndx{-1, 0, 1};
-	std::vector<int> ndy{-1, 0, 1};
-	for (auto dx : ndx) {
-	  for (auto dy : ndy) {
+	std::vector<int> nd{-1, 0, 1};
+	for (auto dx : nd) {
+	  for (auto dy : nd) {
 	    nidxtmp[0] = nidx[0] + dx ;
 	    nidxtmp[1] = nidx[1] + dy ;
-
 	    if(nidxtmp[0] < 0) continue;
 	    if(nidxtmp[0] > nmax[0] -1) continue;
 	    if(nidxtmp[1] < 0) continue;
 	    if(nidxtmp[1] > nmax[1] -1) continue;
-
 	    collect_neighbour_info_of_atom(i, nidxtmp, nmax);
 	  }
 	}
 	break;
       }
       case 3: {
-	std::vector<int> ndx{-1, 0, 1};
-	std::vector<int> ndy{-1, 0, 1};
-	std::vector<int> ndz{-1, 0, 1};
-	for (auto dx : ndx) {
-	  for (auto dy : ndy) {
-	    for (auto dz : ndz) {
+	// Full neighbourlist
+	std::vector<int> nd{-1, 0, 1};
+	// Half neighbour list?
+	// std::vector<int> nd{0, 1};
+	for (auto dx : nd) {
+	  for (auto dy : nd) {
+	    for (auto dz : nd) {
 	      nidxtmp[0] = nidx[0] + dx ;
 	      nidxtmp[1] = nidx[1] + dy ;
 	      nidxtmp[2] = nidx[2] + dz ;
@@ -307,7 +304,7 @@ namespace rascal {
 	break;
       }
       default:
-	throw std::runtime_error("Can only give index for 1,2,3 dimensions");
+	throw std::runtime_error("Neighbourlist only max 3D.");
 	break;
       }
 
@@ -315,13 +312,39 @@ namespace rascal {
       // loop through neighbours
     } // atom neighbours
 
-    for (auto a : firstneigh) {
-      std::cout << "===" << std::endl;
-      for (auto b : a) {
-	// b++;
-	std::cout << "neighbours "<< b << std::endl;
+    // for (auto a : firstneigh) {
+    //   std::cout << "===" << std::endl;
+    //   for (auto b : a) {
+    // 	// b++;
+    // 	std::cout << "neighbours "<< b << std::endl;
+    //   }
+    //   // std::cout << std::endl;
+    // }
+    // Half-neighbourlist
+    this->numneigh.resize(this->natoms);
+
+    for (size_t i=0; i < this->natoms; ++i) {
+      auto neigh = firstneigh[i];
+      auto i_number_of_neighbours{0};
+      for(size_t j : neigh) {
+	if (j > i) {
+	  i_number_of_neighbours += 1;
+	  halfneigh.push_back(j);
+	}
+	numneigh[i] = i_number_of_neighbours;
       }
-      // std::cout << std::endl;
+    }
+
+    auto ioff{0};
+    for (size_t n=0; n < this->natoms; ++n){
+      auto a = numneigh[n];
+      std::cout << "Next neigh atom---- " << n
+		<< " ynumber of neighbours " << a << std::endl;
+      for (auto i=ioff; i < ioff+a; i++) {
+	std::cout << "Neighbour "
+		  << halfneigh[i] << std::endl;
+      }
+      ioff += a;
     }
 
 
