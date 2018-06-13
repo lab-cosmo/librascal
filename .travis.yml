@@ -26,6 +26,7 @@ addons:
             - cmake-data
             - cmake
             - g++-5
+            - libboost-dev
             - doxygen
             - doxygen-doc
             - doxygen-latex

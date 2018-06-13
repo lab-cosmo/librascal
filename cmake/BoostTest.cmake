@@ -55,13 +55,9 @@ target_compile_definitions(boost_test_framework PUBLIC "-DBOOST_TEST_DYN_LINK=0"
 
 if (SUPPRESS_LIBRARY_WARNINGS)
   target_include_directories(boost_test_framework SYSTEM PUBLIC ${BOOST_TEST_ROOT_DIR}/include/)
-  #added by fede
-  target_include_directories(boost_test_framework SYSTEM PUBLIC ${BOOST_TEST_ROOT_DIR}/include/boost/test/detail/)
   message(STATUS "Suppressing warnings from library Boost Unit Test Framework")
 else (SUPPRESS_LIBRARY_WARNINGS)
   target_include_directories(boost_test_framework PUBLIC ${BOOST_TEST_ROOT_DIR}/include/)
-  # added by fede
-  target_include_directories(boost_test_framework SYSTEM PUBLIC ${BOOST_TEST_ROOT_DIR}/include/boost/test/detail/)
 endif (SUPPRESS_LIBRARY_WARNINGS)
 
 set(BOOST_TEST_INCLUDE_DIR ${BOOST_TEST_ROOT_DIR}/include/)
@@ -69,10 +65,4 @@ set(BOOST_TEST_INCLUDE_DIR ${BOOST_TEST_ROOT_DIR}/include/)
 set_target_properties(boost_test_framework PROPERTIES FOLDER "UTF")
 
 message(STATUS "Boost Unit Test Framework " ${_BoostTest_version})
-
-# Debug Fede
-message(STATUS "Boost relative dirs " ${BOOST_TEST_ROOT_DIR} )
-message(STATUS "Boost absolute dirs " ${BOOST_TEST_ROOT_DIR_ABS} )
-message(STATUS "Boost include dirs " ${BOOST_TEST_INCLUDE_DIR} )
-#
 
