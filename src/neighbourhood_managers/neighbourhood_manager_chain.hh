@@ -244,7 +244,7 @@ namespace rascal {
 
     // To be initialized by contruction of manager for actual neighbour use
     size_t natoms{}; // total number of atoms in structure
-    // size_t nb_pairs{};
+    size_t nb_pairs{};
     // size_t nb_triplets{};
     // size_t nb_quadruplets{};
     Ilist_t ilist; // adhering to lammps-naming, atom id

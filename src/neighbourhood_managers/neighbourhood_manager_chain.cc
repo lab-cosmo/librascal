@@ -138,29 +138,17 @@ namespace rascal {
 				  const std::vector<int> nmax) {
 
     auto jcell_index = get_linear_index(boxidx, nmax);
-    std::cout << ">2> i, jcell_index " << i << ", " << jcell_index << std::endl;
     auto ihead = this->lc[jcell_index]; //ll[jcell_index];
-    std::cout << "ihead " << ihead
-	      << " " << this->ll[ihead]
-	      << " " << this->ll[this->ll[ihead]]
-	      << std::endl;
     // Check if any atom is in given cell
     if(ihead != -1) {
       if(ihead != i) this->firstneigh[i].push_back(ihead);
       // same cell neighbours?
       auto itail = this->ll[ihead];
-      // std::cout << "Adding neighbour (1) "
-      // 		<< itail << " "
-      // 		<< this->ll[itail]
-      // 		<< std::endl;
       while (itail != -1) {
 	if(itail != i) {
-	  std::cout << "Adding neighbour " << itail << " to " << i << std::endl;
 	  this->firstneigh[i].push_back(itail);
 	}
-	// std::cout << "Adding neighbour (2) " << itail << std::endl;
 	itail = this->ll[itail];
-	// std::cout << "Adding neighbour (3) " << itail << std::endl;
       }
     }
   }
@@ -181,12 +169,6 @@ namespace rascal {
     for (auto n : nmax){nboxes *= n;}
     nboxes = std::max(nboxes, 1);
 
-    std::cout << "nboxes " << nboxes << std::endl;
-    std::cout << "nmax "
-	      << nmax[0] << " "
-	      << nmax[1] << " "
-	      << nmax[2] << " "
-	      << std::endl;
     this->ll.resize(this->natoms);
     this->lc.resize(nboxes) ;
     for (auto & i : this->ll){
@@ -200,28 +182,15 @@ namespace rascal {
     Eigen::Matrix<double, 1, traits::Dim> offset{};
     for(auto dim{0}; dim < traits::Dim; ++dim) {
       offset(dim) = std::min(0., atom_pos.row(dim).minCoeff());
-      std::cout << "box length " << this->get_box_length(dim) << std::endl;
     }
-    std::cout<< "offset " << offset << std::endl;
 
     // Make cell lists
     std::vector<int> nidx(traits::Dim);
     for (auto i{0}; i < atom_pos.cols(); ++i) {
       auto * p{atom_pos.col(i).data()};
       Vector_ref pos{p};
-      std::cout << "p " << pos << std::endl;
-
       nidx = get_box_index(pos, rc, offset, nmax);
-
       auto linear_index = get_linear_index(nidx, nmax);
-
-      std::cout<< "Linear index: " << linear_index << std::endl;
-      std::cout<< "box-index: "
-	       << nidx[0] << " "
-	       << nidx[1] << " "
-	       << nidx[2] << " "
-	       << std::endl;
-
       this->ll[i] = this->lc[linear_index];
       this->lc[linear_index] = i;
 
@@ -237,7 +206,7 @@ namespace rascal {
 	n = this->ll[n];
       }
     }
-    // Make verlet table of neighbours (vectorized)
+    // Make verlet table? of neighbours (vectorized)
     // Full neighbour list
     this->firstneigh.resize(this->natoms);
     std::cout << ">>>>>>>>>>>>>>>>start neighbour list" << std::endl;
@@ -322,6 +291,7 @@ namespace rascal {
     // }
     // Half-neighbourlist
     this->numneigh.resize(this->natoms);
+    this->nb_pairs = 0;
 
     for (size_t i=0; i < this->natoms; ++i) {
       auto neigh = firstneigh[i];
@@ -329,12 +299,14 @@ namespace rascal {
       for(size_t j : neigh) {
 	if (j > i) {
 	  i_number_of_neighbours += 1;
+	  this->nb_pairs += 1;
 	  halfneigh.push_back(j);
 	}
 	numneigh[i] = i_number_of_neighbours;
       }
     }
 
+    std::cout << "Number of pairs: " << this->nb_pairs << std::endl;
     auto ioff{0};
     for (size_t n=0; n < this->natoms; ++n){
       auto a = numneigh[n];
