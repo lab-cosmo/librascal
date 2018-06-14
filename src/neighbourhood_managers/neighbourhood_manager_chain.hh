@@ -26,28 +26,59 @@
  * Boston, MA 02111-1307, USA.
  */
 
+/* NOTE to Developer
+ * -----------------
+ * This implementation of NeighbourhoodManager is designed to be a
+ * developer tutorial. It reads a molecular structure from a JSON file
+ * in the format of ASE (Atomic Simulation environment,
+ * https://wiki.fysik.dtu.dk/ase/index.html), transfers the data into
+ * efficient containers where necessary and builds a full as well as a
+ * half neighbour list based on the linked cell / linked list
+ * algorithm.  Further processing of the structure is done via
+ * adaptors, which are explained elsewhere.
+ * The code is heavily commented to explain the thought process behind
+ * the library design. Fell free to use this example as a basis for
+ * your own implementation of a NeighbourhoodManager.
+ * Some very basic knowledge of C++ is needed, but the idea of this
+ * tutorial is also to explain some recent features of the language
+ * and why they are used here. Please also read the coding convention
+ * to adhere to the coding style used throughout the library.
+ */
+
+// Always use header guards
 #ifndef NEIGHBOURHOOD_MANAGER_CHAIN_H
 #define NEIGHBOURHOOD_MANAGER_CHAIN_H
 
+// Each actual implementation of a NeighbourhoodManager is based
+// on the given interface
 #include "neighbourhood_managers/neighbourhood_manager_base.hh"
 #include "neighbourhood_managers/property.hh"
 
+// An external header-library/header-class, which makes it easy to use
+// the JSON as a first class data type. See
+// https://github.com/nlohmann/json for documentation.
 #include "json.hpp"
 
+// Some data types and operations are based on the Eigen library
 #include <Eigen/Dense>
 
+// And standard header inclusion
 #include <stdexcept>
 #include <vector>
-//#include <string>
 
-
+// For convenience
 using json = nlohmann::json;
 
+// All functions and classes are in the namespace <code>rascal</code>,
+// which ensures that they don't clash with other libraries one might
+// use in conjunction.
 namespace rascal {
 
+  //
   namespace JSONTransfer {
 
-    //! JSON specific
+    // To read from a JSON file and deserialize the content, the used
+    // class needs a <code>struct</code> with standard data types.
     struct AtomicStructure {
       std::vector<std::vector<double>> cell{};
       std::vector<int> type{};
@@ -55,7 +86,9 @@ namespace rascal {
       std::vector<std::vector<double>> position{};
     };
 
-    // resorted to inline, but not sure if that should be so?
+    // This function is used to convert to the JSON format with the
+    // given keywords.
+    // Inline needed, otherwise it is a multiple definition
     inline void to_json(json & j, AtomicStructure& s) {
       j = json{
 	{"cell", s.cell},
@@ -65,6 +98,8 @@ namespace rascal {
       };
     }
 
+    // This function is used to read from the JSON file and convert
+    // the data into standard types
     inline void from_json(const json& j, AtomicStructure& s) {
       s.cell = j.at("cell").get<std::vector<std::vector<double>>>();
       s.type = j.at("numbers").get<std::vector<int>>();
@@ -77,43 +112,72 @@ namespace rascal {
   class NeighbourhoodManagerChain;
 
   //! traits specialisation for Chain manager
+
+  // The traits are used for vector allocation and further down the
+  // processing chain to determine what the given Neighbourhoodmanager
+  // already contains to avoid recomputation. See also the
+  // implementation of adaptors.
   template <>
   struct NeighbourhoodManager_traits<NeighbourhoodManagerChain> {
     constexpr static int Dim{3};
-    constexpr static int MaxLevel{3}; // triplets needed for angle
+    constexpr static int MaxLevel{2}; //
   };
+  // Definition of the new NeighbourhoodManager class. To add your
+  // own, please stick to the convention of using
+  // 'NeighbourhoofManagerYours', where 'Yours' will give a hin of
+  // what it is about.
   class NeighbourhoodManagerChain:
+    // It inherits publicly everything from the base class
     public NeighbourhoodManagerBase<NeighbourhoodManagerChain>
   {
+    // Publicly accessible variables and function of the class are
+    // given here
   public:
+    // For convenience, the names are shortened
     using traits = NeighbourhoodManager_traits<NeighbourhoodManagerChain>;
     using Parent = NeighbourhoodManagerBase<NeighbourhoodManagerChain>;
+    // Here you see why -- definition of used function return types
     using Vector_ref = typename Parent::Vector_ref;
     using AtomRef_t = typename Parent::AtomRef;
 
-    // Maps for access to complete contiguous data sets as Eigen types
-    /*
-     * These are needed extra along with the accessors, because these
-     * maps can not be member variables. But they cost 'nothing' to
-     * to build and access to the complete dataset might be useful.
-     */
+    // Eigen::Map is a convenient way to access data in the
+    // 'Eigen-way', if it is already stored in a contiguous array.
+    // The positions of the JSON file and the cell vectors are put
+    // into contiguous arrays, which are member variables of this
+    // class. Access is provided via the Eigen::Maps
+
+    // The following types are defined to access the data. Since they
+    // cost almost nothing to build, they are created on the fly via
+    // e.g. the .get_positions() member function, if needed.
+    // Access to the cell vectors, defined in the JSON file.
     using Cell_ref = Eigen::Map<Eigen::Matrix<double, traits::Dim,
 					      Eigen::Dynamic>>;
-    // using CellVector_ref = Eigen::Map<Eigen::Matrix<double, 1, traits::Dim>>;
+    // Access to the atom types, defined in the JSON file.
     using AtomTypes_ref = Eigen::Map<Eigen::Matrix<int, 1, Eigen::Dynamic>>;
+    // Access to periodic boundary conditions, defined in JSON file, x,y,z
     using PBC_ref = Eigen::Map<Eigen::Matrix<int, 1, traits::Dim>>;
+    // Access to an array of all given positions
     using Positions_ref = Eigen::Map<Eigen::Matrix<double, traits::Dim,
 						  Eigen::Dynamic>>;
 
-    // using BoxSize_t = std::vector<double>;
-
+    // Here, the types for internal data structures are defined, based
+    // on standard types.  In general, we try to use as many standard
+    // types, where possible, since it reduces the dependence on
+    // external libraries. If you want to use e.g. Eigen, the access
+    // to the data can be given via the above mentioned Eigen::Maps,
+    // which wrap arround contiguous arrays of the internally saved
+    // data.
     using NeighbourList_t = std::vector<std::vector<int>>;
     using HalfNeighbourList_t = std::vector<int>;
-      //Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>;
     using NumNeigh_t = std::vector<int>;
-      //Eigen::Matrix<int, Eigen::Dynamic, 1>;
     using Ilist_t = std::vector<int>;
-      //Eigen::Matrix<int, Eigen::Dynamic, 1>;
+    // A ClusterRef_t is a return type for iterators. It gives a
+    // light-weight reference to an atom, a pair, a triplet,... to the
+    // AtomRefs of all implicated atoms.
+
+    // The template parameters Level and MaxLevel give the
+    // pair/triplet/ and the maximum depth, e.g. up to pair leve.
+    // To increase the MaxLevel, use an <code>adaptor</code>.
     template <int Level, int MaxLevel>
     using ClusterRef_t = typename Parent::template ClusterRef<Level, MaxLevel>;
 
@@ -137,6 +201,13 @@ namespace rascal {
     NeighbourhoodManagerChain&
     operator=(NeighbourhoodManagerChain &&other) = default;
 
+    // This member function invokes the reinitialisation of
+    // data. E.g. when the atom positions are provided by a simulation
+    // method, which evolves in time, this function updates the
+    // data. In this example, .update() takes no arguments, because it
+    // relies on the data provided by a file. It is read by invoking
+    // .read_structure_from_json(). Invoking update also builds a full
+    // and half neighbour list.
     void update();
 
     // required for the construction of vectors, etc
@@ -145,26 +216,32 @@ namespace rascal {
     // void reset_impl(const int & natoms);
     // // TODO
 
+    // Returns a traits::Dim by traits::Dim matrix with the cell
+    // vectors of the structure.
     inline Cell_ref get_cell() {
       return Cell_ref(this->cell_data.data(), traits::Dim,
 		      this->cell_data.size()/traits::Dim);
     }
 
+    // Returns the type of a given atom.
     inline int get_atom_type(const AtomRef_t& atom) {
       auto index{atom.get_index()};
       auto t = this->get_atom_types();
       return t(index);
     }
 
+    // Returns an a map with all atom types.
     inline AtomTypes_ref get_atom_types() {
-      return AtomTypes_ref(this->neigh_in.type.data(),
-			   this->neigh_in.type.size());
+      return AtomTypes_ref(this->atoms_object.type.data(),
+			   this->atoms_object.type.size());
     }
 
+    // Returns a map of size traits::Dim with 0/1 for periodicity
     inline PBC_ref get_periodic_boundary_conditions() {
-      return PBC_ref(this->neigh_in.pbc.data());
+      return PBC_ref(this->atoms_object.pbc.data());
     }
 
+    // Returns the position of an atom
     inline Vector_ref get_position(const AtomRef_t& atom) {
       auto index{atom.get_index()};
       auto p = this->get_positions();
@@ -172,6 +249,9 @@ namespace rascal {
       return Vector_ref(xval);
     }
 
+    // Returns the position of a neighbour. In case of periodic
+    // boundary conditions, the get_neighbour should return a
+    // different position, if it is a ghost atom.
     template<int Level, int MaxLevel>
     inline Vector_ref get_neighbour_position(const ClusterRef_t<Level,
 					     MaxLevel>& cluster) {
@@ -180,6 +260,7 @@ namespace rascal {
       return this->get_position(cluster.get_atoms().back());
     }
 
+    // Returns a map to all positions.
     inline Positions_ref get_positions() {
       return Positions_ref(this->pos_data.data(), traits::Dim,
 			   this->pos_data.size()/traits::Dim);
@@ -190,7 +271,7 @@ namespace rascal {
       return this->natoms;
     }
 
-    // return the number of neighbours of a given atom
+    // Returns the number of neighbours of a given atom
     template<int Level, int MaxLevel>
     inline size_t get_cluster_size(const ClusterRef_t<Level,
 				   MaxLevel>& cluster) const {
@@ -200,7 +281,8 @@ namespace rascal {
       return this->numneigh[cluster.get_atoms().back().get_index()];
     }
 
-    // return the number of atoms forming the next higher cluster with this one
+    // Return the number of atoms forming the next higher cluster with
+    // this one
     template<int Level, int MaxLevel>
     inline size_t get_atom_id(const ClusterRef_t<Level, MaxLevel>& cluster,
                               int j_atom_id) const {
@@ -212,14 +294,15 @@ namespace rascal {
       return 0;
     }
 
-    // return the number of neighbours of a given atom
+    // Return unique id of a given atom. Here the atoms are numbered
+    // from 0 to natoms (see .update() function).
     inline size_t get_atom_id(const Parent& /*cluster*/,
                               int i_atom_id) const {
       return this->ilist[i_atom_id];
     }
 
     /**
-     * return the linear index of cluster (i.e., the count at which
+     * Return the linear index of cluster (i.e., the count at which
      * this cluster appears in an iteration
      */
     template<int Level, int MaxLevel>
@@ -228,37 +311,61 @@ namespace rascal {
 
     size_t get_nb_clusters(int cluster_size);
 
+    // Function to read from a JSON file.
     void read_structure_from_json(const std::string filename);
 
+    // A helper-function for the linked cell algorithm.
     inline double get_box_length(int dimension);
 
+    // Declaration of the neighbourlist function.
     void make_neighbourlist();
 
   protected:
 
-    JSONTransfer::AtomicStructure neigh_in;
+    // The variable for the JSON object is called
+    // <code>atoms_object</code>, because ASE (see above) calls it's
+    // read/write function an iterator for 'Atoms objects'.
+    JSONTransfer::AtomicStructure atoms_object;
 
-    // References to contiguous vectors for nested types from JSON
-    std::vector<double> cell_data{}; // volume cell 3x3
+    // Since the data from the <code>atoms_object</code>, especially
+    // the positions are not contiguous in memory (they are
+    // <code>std:vector<std::vector<double>></code>) and those are the
+    // ones, which are used heavily, they are put into contiguous
+    // memory vector. Access to those are provided via Eigen:Map.
+    std::vector<double> cell_data{}; // volume cell dim*dim
     std::vector<double> pos_data{}; // array of positions dim*natoms
 
-    // To be initialized by contruction of manager for actual neighbour use
-    size_t natoms{}; // total number of atoms in structure
-    size_t nb_pairs{};
-    // size_t nb_triplets{};
-    // size_t nb_quadruplets{};
-    Ilist_t ilist; // adhering to lammps-naming, atom id
-    // adhering to lammps-naming: TODO will be initialized bei MaxLevel + 1 adaptor?
-    NeighbourList_t firstneigh{};
-    HalfNeighbourList_t halfneigh{}; // one long vector
+    // Comfortable variables, which are set during update or while the
+    // neighbourlist is built
+    size_t natoms{}; // Total number of atoms in structure
+    size_t nb_pairs{}; // Number of pairs
+    Ilist_t ilist; // A list of atom indeces (int), here it is just
+		   // the number in the list
+    NeighbourList_t firstneigh{}; // A full neighbour list. Each entry
+				  // in firstneigh is a vector of
+				  // neighbours of the given atom id
 
-    NumNeigh_t numneigh{}; // adhering to lammps-naming?
-    double cut_off{1.0};
-    double cut_off_skin{0.0}; // for later use
+    HalfNeighbourList_t halfneigh{}; // Half neighbourlist. It is a
+				     // contiguous vector where all
+				     // neighbours are listed
+				     // once. Use in conjunction with
+				     // <code>numneigh</code> to get
+				     // the number of neighbours per
+				     // atom. This can be used to
+				     // calculate a property like the
+				     // atomic distance.
+    NumNeigh_t numneigh{}; // A vector which hold the number of
+			   // neighbours (half neighbourlist for each
+			   // atom.
+
+    double cut_off{1.0}; // This value is used for constructing the
+			 // linked cell/ linked list.
+    double cut_off_skin{0.0}; // Added now, but intended for use later
+			      // in a Verlet list.
 
     std::vector<int> offsets{};
 
-    // For linked cell algorithm;
+    // For linked cell algorithm; saved for possible later use.
     std::vector<int> ll{}; //linked list
     std::vector<int> lc{}; // linear indexed linked cells
 

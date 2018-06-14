@@ -37,21 +37,23 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   void NeighbourhoodManagerChain::update() {
     // Ensure contiguous data structures
-    for (const auto vec : neigh_in.cell) {
+    for (const auto vec : atoms_object.cell) {
       for (const auto coord : vec) {
 	this->cell_data.push_back(coord);
       }
     }
 
-    for (const auto pos : neigh_in.position) {
+    for (const auto pos : atoms_object.position) {
       for (const auto coord : pos) {
 	this->pos_data.push_back(coord);
       }
     }
 
-    this->natoms = neigh_in.position.size();
+    this->natoms = atoms_object.position.size();
     // Invoke neighbourlist, because without it, you can not really to anything
     this->make_neighbourlist();
+    this->ilist.resize(this->natoms);
+    std::iota (ilist.begin(), ilist.end(), 0);
   }
 
   /* ---------------------------------------------------------------------- */
@@ -61,8 +63,11 @@ namespace rascal {
       return this->natoms;
       break;
     }
+    case 2: {
+      return this->nb_pairs;
+    }
     default:
-      throw std::runtime_error("Can only handle single atoms; "
+      throw std::runtime_error("Can only handle atoms and pairs,"
                                " use adaptor to increase MaxLevel.");
       break;
     }
@@ -83,7 +88,7 @@ namespace rascal {
     }
 
     // ASE json format is nested - here, first entry is actual data structure
-    this->neigh_in = j.begin().value();
+    this->atoms_object = j.begin().value();
   }
 
   /* ---------------------------------------------------------------------- */
@@ -155,6 +160,10 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   void NeighbourhoodManagerChain::make_neighbourlist() {
+    /* Neighbourlist algorithm, non periodic, non triclinic cell
+     * for demonstration purposes.
+     *
+     */
     // internal variables for linked list/ linked cell
     std::vector<int> nmax(3);
     std::vector<double> rc(3);
@@ -166,19 +175,19 @@ namespace rascal {
     };
 
     int nboxes{1};
-    for (auto n : nmax){nboxes *= n;}
-    nboxes = std::max(nboxes, 1);
+    nboxes = std::accumulate(nmax.begin(), nmax.end(), 1,
+			     std::multiplies<int>());
+    nboxes = std::max(nboxes, 1); // For very small structure
 
+    // Save for possible reuse
     this->ll.resize(this->natoms);
-    this->lc.resize(nboxes) ;
-    for (auto & i : this->ll){
-      i = -1;
-    }
-    for (int & i : this->lc) {
-      i = -1;
-    }
+    this->lc.resize(nboxes);
+    std::fill(this->ll.begin(), this->ll.end(), -1);
+    std::fill(this->lc.begin(), this->lc.end(), -1);
 
     Positions_ref atom_pos = this->get_positions();
+
+    // Get a differen origin, if positions are negative
     Eigen::Matrix<double, 1, traits::Dim> offset{};
     for(auto dim{0}; dim < traits::Dim; ++dim) {
       offset(dim) = std::min(0., atom_pos.row(dim).minCoeff());
@@ -206,7 +215,7 @@ namespace rascal {
 	n = this->ll[n];
       }
     }
-    // Make verlet table? of neighbours (vectorized)
+    // Make verlet table of neighbours (vectorized), not strict
     // Full neighbour list
     this->firstneigh.resize(this->natoms);
     std::cout << ">>>>>>>>>>>>>>>>start neighbour list" << std::endl;
@@ -218,17 +227,14 @@ namespace rascal {
 
       // own cell
       nidx = get_box_index(pos, rc, offset, nmax);
-
-      auto nneighcells {std::pow(3, traits::Dim) - 1};
-      std::cout << "Number of neighbour cells " << nneighcells << std::endl;
-
       auto nidxtmp = nidx;
+
       switch(traits::Dim) {
       case 1: {
 	std::vector<int> nd{-1, 0, 1};
 	for (auto dx :nd) {
-	  nidxtmp[0] = nidx[0] + dx ;
-	  if(nidxtmp[0] < 0) continue;
+	  nidxtmp[0] = nidx[0] + dx;
+	  if(nidxtmp[0] < 0 || nidxtmp[0] > nmax[0]-1) continue;
 	  if(nidxtmp[1] > nmax[1] -1) continue;
 	  collect_neighbour_info_of_atom(i, nidxtmp, nmax);
 	}
@@ -238,34 +244,26 @@ namespace rascal {
 	std::vector<int> nd{-1, 0, 1};
 	for (auto dx : nd) {
 	  for (auto dy : nd) {
-	    nidxtmp[0] = nidx[0] + dx ;
-	    nidxtmp[1] = nidx[1] + dy ;
-	    if(nidxtmp[0] < 0) continue;
-	    if(nidxtmp[0] > nmax[0] -1) continue;
-	    if(nidxtmp[1] < 0) continue;
-	    if(nidxtmp[1] > nmax[1] -1) continue;
+	    nidxtmp[0] = nidx[0] + dx;
+	    nidxtmp[1] = nidx[1] + dy;
+	    if(nidxtmp[0] < 0 || nidxtmp[0] > nmax[0]-1) continue;
+	    if(nidxtmp[1] < 0 || nidxtmp[1] > nmax[1]-1) continue;
 	    collect_neighbour_info_of_atom(i, nidxtmp, nmax);
 	  }
 	}
 	break;
       }
       case 3: {
-	// Full neighbourlist
 	std::vector<int> nd{-1, 0, 1};
-	// Half neighbour list?
-	// std::vector<int> nd{0, 1};
 	for (auto dx : nd) {
 	  for (auto dy : nd) {
 	    for (auto dz : nd) {
-	      nidxtmp[0] = nidx[0] + dx ;
-	      nidxtmp[1] = nidx[1] + dy ;
-	      nidxtmp[2] = nidx[2] + dz ;
-	      if(nidxtmp[0] < 0) continue;
-	      if(nidxtmp[0] > nmax[0] -1) continue;
-	      if(nidxtmp[1] < 0) continue;
-	      if(nidxtmp[1] > nmax[1] -1) continue;
-	      if(nidxtmp[2] < 0) continue;
-	      if(nidxtmp[2] > nmax[2] -1) continue;
+	      nidxtmp[0] = nidx[0] + dx;
+	      nidxtmp[1] = nidx[1] + dy;
+	      nidxtmp[2] = nidx[2] + dz;
+	      if(nidxtmp[0] < 0 || nidxtmp[0] > nmax[0]-1) continue;
+	      if(nidxtmp[1] < 0 || nidxtmp[1] > nmax[1]-1) continue;
+	      if(nidxtmp[2] < 0 || nidxtmp[2] > nmax[2]-1) continue;
 	      collect_neighbour_info_of_atom(i, nidxtmp, nmax);
 	    }
 	  }
@@ -276,19 +274,8 @@ namespace rascal {
 	throw std::runtime_error("Neighbourlist only max 3D.");
 	break;
       }
-
-
-      // loop through neighbours
     } // atom neighbours
 
-    // for (auto a : firstneigh) {
-    //   std::cout << "===" << std::endl;
-    //   for (auto b : a) {
-    // 	// b++;
-    // 	std::cout << "neighbours "<< b << std::endl;
-    //   }
-    //   // std::cout << std::endl;
-    // }
     // Half-neighbourlist
     this->numneigh.resize(this->natoms);
     this->nb_pairs = 0;
@@ -319,10 +306,10 @@ namespace rascal {
       ioff += a;
     }
 
-
-
-
-
+    // Get number of pairs
+    this->nb_pairs = std::accumulate(this->numneigh.begin(),
+				     this->numneigh.end(), 0);
+    std::cout << "nb_pairs " << this->nb_pairs << std::endl;
 
 
   }
