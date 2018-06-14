@@ -131,7 +131,7 @@ namespace rascal {
     public NeighbourhoodManagerBase<NeighbourhoodManagerChain>
   {
     // Publicly accessible variables and function of the class are
-    // given here
+    // given here. These provide the interface to access the neighbourhood.
   public:
     // For convenience, the names are shortened
     using traits = NeighbourhoodManager_traits<NeighbourhoodManagerChain>;
@@ -307,22 +307,29 @@ namespace rascal {
     inline int
     get_offset_impl(const ClusterRef_t<Level, MaxLevel>& cluster) const;
 
+    // Function for returning the number of atoms, pairs, tuples, etc.
     size_t get_nb_clusters(int cluster_size);
 
-    // Function to read from a JSON file.
+    // Function to read from a JSON file. Based on the above mentioned
+    // header class
     void read_structure_from_json(const std::string filename);
 
-    // A helper-function for the linked cell algorithm.
+    // A helper-function for the linked cell algorithm. It is used for
+    // the division of the box into the cells. 
     inline double get_box_length(int dimension);
 
-    // Declaration of the neighbourlist function.
+    // Function for constructing a full neighbourlist as well as a
+    // half neighbourlist. Since the JSON file does not provide it and
+    // it is necessary for calculating follow-up properties.
     void make_neighbourlist();
 
+    // Behind the interface.
   protected:
 
     // The variable for the JSON object is called
     // <code>atoms_object</code>, because ASE (see above) calls it's
-    // read/write function an iterator for 'Atoms objects'.
+    // read/write function an iterator for 'Atoms objects'.  It is
+    // first class C++ data structure, which 'feels' like JSON.
     JSONTransfer::AtomicStructure atoms_object;
 
     // Since the data from the <code>atoms_object</code>, especially
@@ -333,8 +340,8 @@ namespace rascal {
     std::vector<double> cell_data{}; // volume cell dim*dim
     std::vector<double> pos_data{}; // array of positions dim*natoms
 
-    // Comfortable variables, which are set during update or while the
-    // neighbourlist is built
+    // Convenience variables, which are set during <code>update</code>
+    // or while the neighbourlist is built
     size_t natoms{}; // Total number of atoms in structure
     size_t nb_pairs{}; // Number of pairs
     Ilist_t ilist; // A list of atom indeces (int), here it is just
@@ -353,7 +360,7 @@ namespace rascal {
 				     // calculate a property like the
 				     // atomic distance.
     NumNeigh_t numneigh{}; // A vector which hold the number of
-			   // neighbours (half neighbourlist for each
+			   // neighbours (half neighbourlist) for each
 			   // atom.
 
     double cut_off{1.0}; // This value is used for constructing the
@@ -361,11 +368,14 @@ namespace rascal {
     double cut_off_skin{0.0}; // Added now, but intended for use later
 			      // in a Verlet list.
 
-    std::vector<int> offsets{};
+    std::vector<int> offsets{}; // A vector which stores the absolute
+				// offsets for each atom to access the
+				// correct variables in the
+				// neighbourlist.
 
     // For linked cell algorithm; saved for possible later use.
-    std::vector<int> ll{}; // linked list
-    std::vector<int> lc{}; // linear indexed linked cells
+    std::vector<int> ll{}; // Linked list
+    std::vector<int> lc{}; // Linear indexed linked cells
 
     // Given a position and a discretization of the volume, this
     // function gives the traits:Dim box coordinates of the position
@@ -378,13 +388,12 @@ namespace rascal {
 		  std::vector<int> nmax);
 
     // Function which collects the neighbour atom id and writes it to
-    // the <code>firstneigh</code>.
+    // the member variable <code>firstneigh</code>.
     inline void collect_neighbour_info_of_atom(const int i,
 					       const std::vector<int> boxidx,
 					       const std::vector<int> nmax);
 
   private:
-
   };
 
 
