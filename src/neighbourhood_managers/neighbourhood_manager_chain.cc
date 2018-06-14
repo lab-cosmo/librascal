@@ -36,25 +36,48 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   void NeighbourhoodManagerChain::update() {
-    // Ensure contiguous data structures
-    for (const auto vec : atoms_object.cell) {
-      for (const auto coord : vec) {
+    // After reading the <code>atoms_object</code> from the file, the
+    // cell vectors as well as the atomic positions are put into
+    // contiguous a <code>std::vector</code> data structure to ensure
+    // fast access via the <code>Eigen::Map</code>.
+    // <code>std::vector</code> provide iterator access, which is used
+    // here with the <code>auto</code> keyword. Using this, it is
+    // unnecessary to know the exact size of the positions/cell
+    // array. No distinction between 2 or 3 dimensions. We just put
+    // all numbers in a vector and access them with the map. Using the
+    // vector type automatically ensures contiguity
+    
+    for (auto vec : atoms_object.cell) {
+      for (auto coord : vec) {
 	this->cell_data.push_back(coord);
       }
     }
 
-    for (const auto pos : atoms_object.position) {
-      for (const auto coord : pos) {
+    for (auto pos : atoms_object.position) {
+      for (auto coord : pos) {
 	this->pos_data.push_back(coord);
       }
     }
 
+    // Before going further, we check if the number of positions and
+    // atom types match, otherwise the data set is incomplete.
+    assert(atoms_object.position.size() == atoms_object.type.size());
+    // Set the protected member variable number of atoms, depending on
+    // the given number of positions
     this->natoms = atoms_object.position.size();
-    // Invoke neighbourlist, because without it, you can not really to anything
+    // Invoke neighbourlist builder, because without it, you can not
+    // really to anything.
     this->make_neighbourlist();
+    // The following two commands build a list of increasing
+    // indeces. It is assumed that the atoms do not have a unique
+    // index, when they are read from file. Therefore a list of
+    // increasing integer identifiers is built. Numbers are assigned
+    // to the positions in the order in which they appear in the file.
     this->ilist.resize(this->natoms);
     std::iota (ilist.begin(), ilist.end(), 0);
 
+    // The next commands gather necessary information to iterate over
+    // the half neighbourlist.
     this->offsets.reserve(this->natoms);
     this->offsets.resize(1);
     for (size_t i{0} ; i<this->natoms-1 ; ++i) {
@@ -136,7 +159,7 @@ namespace rascal {
     for(auto dim{0}; dim < traits::Dim; ++dim) {
       nidx[dim] = static_cast<int>(std::floor( (position(dim) - offset(dim))
 					       / rc[dim] ));
-      nidx[dim] = std::min(nidx[dim], nmax[dim] - 1);
+      nidx[dim] = std::min(nidx[dim], nmax[dim]-1);
       nidx[dim] = std::max(nidx[dim], 0);
     }
     return nidx;
@@ -145,8 +168,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   inline void NeighbourhoodManagerChain::
   collect_neighbour_info_of_atom(const int i,
-				  const std::vector<int> boxidx,
-				  const std::vector<int> nmax) {
+				 const std::vector<int> boxidx,
+				 const std::vector<int> nmax) {
 
     auto jcell_index = get_linear_index(boxidx, nmax);
     auto ihead = this->lc[jcell_index]; //ll[jcell_index];
