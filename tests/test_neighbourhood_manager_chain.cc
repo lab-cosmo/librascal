@@ -46,17 +46,13 @@ namespace rascal {
     constexpr int natoms{9};
     constexpr int npairs{36};
 
-    // std::cout << "Chain: test " << manager_chain.get_nb_clusters(2) << "\n";
-    // Check number of atoms
     BOOST_CHECK_EQUAL(manager_chain.get_size(), natoms);
-    // Check cluster Level 1, atoms
     BOOST_CHECK_EQUAL(manager_chain.get_nb_clusters(1), natoms);
-    // Check cluster Level 2, pairs
     BOOST_CHECK_EQUAL(manager_chain.get_nb_clusters(2), npairs);
 
-    int atom_counter{0};
-    int pair_counter{0};
-    constexpr bool verbose{true};
+    int atom_counter{};
+    int pair_counter{};
+    constexpr bool verbose{false};
 
     for (auto atom_cluster : manager_chain) {
       BOOST_CHECK_EQUAL(atom_counter, atom_cluster.get_global_index());
@@ -77,8 +73,26 @@ namespace rascal {
     BOOST_CHECK_EQUAL(pair_counter, npairs);
   }
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(neighbourlist_test, ManagerFixture_chain) {
+  // BOOST_FIXTURE_TEST_CASE(neighbourlist_test, ManagerFixture_chain) {
+  //   std::vector<std::vector<int>> neighbours(9);
+  //   neighbours[0] = {1, 5, 3, 7, 2, 6, 4, 8};
+  //   neighbours[1] = {0, 5, 3, 7, 2, 6, 4, 8};
+  //   neighbours[2] = {0, 5, 3, 7, 2, 6, 4, 8};
+  //   neighbours[3] = {0, 5, 3, 7, 2, 6, 4, 8};
+  //   neighbours[4] = {0, 5, 3, 7, 2, 6, 4, 8};
+  //   neighbours[5] = {0, 5, 3, 7, 2, 6, 4, 8};
+  //   neighbours[6] = {0, 5, 3, 7, 2, 6, 4, 8};
+  //   neighbours[7] = {0, 5, 3, 7, 2, 6, 4, 8};
+  //   neighbours[8] = {0, 5, 3, 7, 2, 6, 4, 8};
 
+  //   for (size_t i=0; i < manager_chain.get_size(); ++i) {
+  //     neighs = manager_chain.
+  //   }
+
+
+  // }
+  /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE(test_get_cell, ManagerFixture_chain) {
   }
 
   /* ---------------------------------------------------------------------- */

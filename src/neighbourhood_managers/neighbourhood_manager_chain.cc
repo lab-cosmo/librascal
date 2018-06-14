@@ -282,6 +282,15 @@ namespace rascal {
       }
     } // atom neighbours
 
+    for (size_t i=0; i<this->natoms; ++i) {
+      std::cout << "Atom i " << i << std::endl;
+      auto neighs = firstneigh[i];
+      for (auto n : neighs) {
+	std::cout << n << " ";
+      }
+      std::cout << std::endl;
+    }
+
     // Half-neighbourlist
     this->numneigh.resize(this->natoms);
     this->nb_pairs = 0;
