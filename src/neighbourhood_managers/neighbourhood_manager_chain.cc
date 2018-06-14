@@ -54,6 +54,12 @@ namespace rascal {
     this->make_neighbourlist();
     this->ilist.resize(this->natoms);
     std::iota (ilist.begin(), ilist.end(), 0);
+
+    this->offsets.reserve(this->natoms);
+    this->offsets.resize(1);
+    for (size_t i{0} ; i<this->natoms-1 ; ++i) {
+      this->offsets.emplace_back(this->offsets[i] + this->numneigh[i]);
+    }
   }
 
   /* ---------------------------------------------------------------------- */
@@ -298,7 +304,7 @@ namespace rascal {
     for (size_t n=0; n < this->natoms; ++n){
       auto a = numneigh[n];
       std::cout << "Next neigh atom---- " << n
-		<< " ynumber of neighbours " << a << std::endl;
+		<< " number of neighbours " << a << std::endl;
       for (auto i=ioff; i < ioff+a; i++) {
 	std::cout << "Neighbour "
 		  << halfneigh[i] << std::endl;

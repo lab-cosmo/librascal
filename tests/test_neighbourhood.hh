@@ -163,20 +163,13 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
-  //std::string fname = "test.json";
-  //constexpr static int dim{3};
-  //manager.update();
-
   struct ManagerFixture_chain
   {
     using Manager_t = NeighbourhoodManagerChain;
 
     ManagerFixture_chain()
       : manager_chain{} {
-      // BOOST_TEST_MESSAGE("setup ManagerChain fixture");
-      //manager_chain.read_structure_from_json("alanine-X.json");
       manager_chain.read_structure_from_json("simple_cubic_8.json");
-      //""test_polyalanine.json");
       manager_chain.update();
     }
 

@@ -276,8 +276,7 @@ namespace rascal {
     inline size_t get_cluster_size(const ClusterRef_t<Level,
 				   MaxLevel>& cluster) const {
       static_assert(Level == traits::MaxLevel-1,
-                    "this implementation only handles atoms, "
-		    "pairs and triplets");
+                    "this implementation only handles atoms and pairs.");
       return this->numneigh[cluster.get_atoms().back().get_index()];
     }
 
@@ -286,11 +285,10 @@ namespace rascal {
     template<int Level, int MaxLevel>
     inline size_t get_atom_id(const ClusterRef_t<Level, MaxLevel>& cluster,
                               int j_atom_id) const {
-      // static_assert(Level == traits::MaxLevel-1,
-      //               "this implementation only handles atoms, pairs "
-      // 		    "and triplets");
-      // auto && i_atom_id{cluster.get_atoms().back().get_index()};
-      // return this->firstneigh[std::move(i_atom_id)][j_atom_id];
+      static_assert(Level == traits::MaxLevel-1,
+                    "this implementation only handles atoms and pairs.");
+      auto && i_atom_id{cluster.get_atoms().back().get_index()};
+      return this->firstneigh[std::move(i_atom_id)][j_atom_id];
       return 0;
     }
 
@@ -366,15 +364,21 @@ namespace rascal {
     std::vector<int> offsets{};
 
     // For linked cell algorithm; saved for possible later use.
-    std::vector<int> ll{}; //linked list
+    std::vector<int> ll{}; // linked list
     std::vector<int> lc{}; // linear indexed linked cells
 
+    // Given a position and a discretization of the volume, this
+    // function gives the traits:Dim box coordinates of the position
+    // in the cell. Usage for example in construction of neighbour
+    // list
     inline std::vector<int>
     get_box_index(Vector_ref& position,
 		  std::vector<double>& rc,
 		  Eigen::Matrix<double, 1, traits::Dim> offset,
 		  std::vector<int> nmax);
 
+    // Function which collects the neighbour atom id and writes it to
+    // the <code>firstneigh</code>.
     inline void collect_neighbour_info_of_atom(const int i,
 					       const std::vector<int> boxidx,
 					       const std::vector<int> nmax);
@@ -389,9 +393,7 @@ namespace rascal {
   template<int Level, int MaxLevel>
   inline int NeighbourhoodManagerChain::
   get_offset_impl(const ClusterRef_t<Level, MaxLevel>& cluster) const {
-    static_assert(Level == 1,
-		  "This class cas only handle single atoms; "
-		  "use adaptors to increase MaxLevel.");
+    static_assert(Level == 2, "This class cas only handle single atoms and pairs");
     static_assert(MaxLevel == traits::MaxLevel, "Wrong maxlevel");
 
     auto atoms{cluster.get_atoms()};

@@ -41,9 +41,45 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  // BOOST_FIXTURE_TEST_CASE(iterator_test, ManagerFixture_chain) {
-  //   std::cout << "positions.size " << manager_chain.position.size() << "\n";
-  // }
+  BOOST_FIXTURE_TEST_CASE(iterator_test, ManagerFixture_chain) {
+    // Reference values
+    constexpr int natoms{9};
+    constexpr int npairs{36};
+
+    // std::cout << "Chain: test " << manager_chain.get_nb_clusters(2) << "\n";
+    // Check number of atoms
+    BOOST_CHECK_EQUAL(manager_chain.get_size(), natoms);
+    // Check cluster Level 1, atoms
+    BOOST_CHECK_EQUAL(manager_chain.get_nb_clusters(1), natoms);
+    // Check cluster Level 2, pairs
+    BOOST_CHECK_EQUAL(manager_chain.get_nb_clusters(2), npairs);
+
+    int atom_counter{0};
+    int pair_counter{0};
+    constexpr bool verbose{true};
+
+    for (auto atom_cluster : manager_chain) {
+      BOOST_CHECK_EQUAL(atom_counter, atom_cluster.get_global_index());
+      ++atom_counter;
+      for (auto pair_cluster : atom_cluster) {
+      	auto pair_offset{pair_cluster.get_global_index()};
+      	++pair_counter;
+      	if (verbose) {
+      	  std::cout
+	    << "pair (" << atom_cluster.get_atoms().back().get_index()
+	    << ", " << pair_cluster.get_atoms().back().get_index()
+	    << "), pair_counter = " << pair_counter
+	    << ", pair_offset = " << pair_offset << std::endl;
+        }
+      }
+    }
+    BOOST_CHECK_EQUAL(atom_counter, natoms);
+    BOOST_CHECK_EQUAL(pair_counter, npairs);
+  }
+  /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE(neighbourlist_test, ManagerFixture_chain) {
+
+  }
 
   /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();
