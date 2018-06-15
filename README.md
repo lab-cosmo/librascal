@@ -35,7 +35,7 @@ In order to have the readthedocs.org theme for the documentation, please install
 pip install sphinx_rtd_theme
 ```
 
-
+ 
 TILL:
 Test + compilation of documentation in cmake + how to add a test
 Make sure that one can compile on fidis / daint without docs and tests and it will work based on existing libraries
