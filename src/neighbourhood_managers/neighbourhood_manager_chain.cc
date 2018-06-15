@@ -42,11 +42,26 @@ namespace rascal {
   // <code>std::vector</code> provide iterator access, which is used
   // here with the <code>auto</code> keyword. Using this, it is
   // unnecessary to know the exact size of the positions/cell
-  // array. No distinction between 2 or 3 dimensions. We just put
-  // all numbers in a vector and access them with the map. Using the
+  // array. No distinction between 2 or 3 dimensions. We just put all
+  // numbers in a vector and access them with the map. Using the
   // vector type automatically ensures contiguity
-  void NeighbourhoodManagerChain::update() {
+  void NeighbourhoodManagerChain::update(double cutoff) {
+
+    // Check if a structure has already been read, if not, throw an
+    // exception to let the user know, what is wrong.
+    try {
+      auto pos_size = atoms_object.position.size();
+      if (pos_size == 0) {
+    	throw std::runtime_error("No atomic structure defined. "
+				 "Read structure first!");
+      }
+    } catch (const std::exception& e) {
+      std::cerr << e.what() << std::endl;
+      std::exit(EXIT_FAILURE);
+    }
   
+    
+    
     
     for (auto vec : atoms_object.cell) {
       for (auto coord : vec) {
@@ -68,7 +83,7 @@ namespace rascal {
     this->natoms = atoms_object.position.size();
     // Invoke neighbourlist builder, because without it, you can not
     // really to anything.
-    this->make_neighbourlist();
+    this->make_neighbourlist(cutoff);
     // The following two commands build a list of increasing
     // indeces. It is assumed that the atoms do not have a unique
     // index, when they are read from file. Therefore a list of
@@ -126,6 +141,7 @@ namespace rascal {
       f >> j;
     } catch (const std::exception& e) {
       std::cerr << e.what() << std::endl;
+      std::exit(EXIT_FAILURE);
     }
     
     // ASE json format is nested - here, first entry is actual data
@@ -224,7 +240,7 @@ namespace rascal {
   // Function for creating the full and half neighbour list. The
   // result is directly written into protected member variables of the
   // neighbourhood manager.
-  void NeighbourhoodManagerChain::make_neighbourlist() {
+  void NeighbourhoodManagerChain::make_neighbourlist(double cutoff) {
     /* Neighbourlist algorithm, non periodic, non triclinic cell
      * for demonstration purposes.
      *
@@ -235,7 +251,7 @@ namespace rascal {
     
     for(auto dim{0}; dim < traits::Dim; ++dim) {
       nmax[dim] = static_cast<int>(std::floor(this->get_box_length(dim)
-					      / this->cut_off));
+					      / cutoff));
       rc[dim] = static_cast<double>(this->get_box_length(dim) / nmax[dim]);
     };
     

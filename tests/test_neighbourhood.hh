@@ -170,16 +170,16 @@ namespace rascal {
     ManagerFixture_chain()
       : manager_chain{} {
       manager_chain.read_structure_from_json("simple_cubic_8.json");
-      manager_chain.update();
+      double cutoff{1.0};
+      manager_chain.update(cutoff);
     }
 
     ~ManagerFixture_chain() {BOOST_TEST_MESSAGE("teardown ManagerChain fixture");}
 
     Manager_t manager_chain;
-
+    double cutoff;
   };
-
-
+  
 }  // rascal
 
 #endif /* TEST_NEIGHBOURHOOD_H */

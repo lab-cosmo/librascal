@@ -208,7 +208,7 @@ namespace rascal {
     // relies on the data provided by a file. It is read by invoking
     // .read_structure_from_json(). Invoking update also builds a full
     // and half neighbour list.
-    void update();
+    void update(double cutoff);
 
     // required for the construction of vectors, etc
     constexpr static int dim() {return traits::Dim;}
@@ -321,7 +321,7 @@ namespace rascal {
     // Function for constructing a full neighbourlist as well as a
     // half neighbourlist. Since the JSON file does not provide it and
     // it is necessary for calculating follow-up properties.
-    void make_neighbourlist();
+    void make_neighbourlist(double cutoff);
 
     // Behind the interface.
   protected:
@@ -330,7 +330,7 @@ namespace rascal {
     // <code>atoms_object</code>, because ASE (see above) calls it's
     // read/write function an iterator for 'Atoms objects'.  It is
     // first class C++ data structure, which 'feels' like JSON.
-    JSONTransfer::AtomicStructure atoms_object;
+    JSONTransfer::AtomicStructure atoms_object{};
 
     // Since the data from the <code>atoms_object</code>, especially
     // the positions are not contiguous in memory (they are
@@ -363,8 +363,6 @@ namespace rascal {
 			   // neighbours (half neighbourlist) for each
 			   // atom.
 
-    double cut_off{1.0}; // This value is used for constructing the
-			 // linked cell/ linked list.
     double cut_off_skin{0.0}; // Added now, but intended for use later
 			      // in a Verlet list.
 
@@ -395,7 +393,7 @@ namespace rascal {
 
     // A switch to make the class verbose and give screen output about
     // its processes.
-    constexpr verbose{false};
+    constexpr static bool verbose{false};
 
   private:
   };
