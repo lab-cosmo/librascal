@@ -35,6 +35,33 @@ In order to have the readthedocs.org theme for the documentation, please install
 pip install sphinx_rtd_theme
 ```
 
+sudo docker build -t test ./docker/
+sudo docker run -it -v /local/git/proteus/:/home/  test
+export BOOST_INCLUDEDIR=/usr/local/include/boost/
+export BOOST_LIBRARYDIR=/usr/local/lib/
+export BOOST_INCLUDEDIR=/usr/include/boost/
+export BOOST_LIBRARYDIR=/usr/lib/
+export Boost_NO_SYSTEM_PATHS=OFF
+export BOOST_NO_SYSTEM_PATHS=OFF
+
+export BOOST_ROOT=/home/boost_1_58_0
+export BOOST_LIBRARYDIR=/home/boost_1_58_0/bin.v2/libs/test/build/gcc-5.4.0/release/link-static/threading-multi/
+export BOOST_INCLUDEDIR=/home/boost_1_58_0/boost/
+
+export BOOST_ROOT=/local/git/proteus/boost_1_58_0
+export  BOOST_LIBRARYDIR=/local/git/proteus/boost_1_58_0/bin.v2/libs/test/build/gcc-5.4.0/release/link-static/threading-multi/
+export BOOST_INCLUDEDIR=/local/git/proteus/boost_1_58_0/
+
+export BOOST_ROOT=/local/git/proteus/boost_1_59_0
+export BOOST_LIBRARYDIR=/local/git/proteus/boost_1_59_0/bin.v2/libs/test/build/gcc-5.4.0/release/link-static/threading-multi/
+export BOOST_INCLUDEDIR=/local/git/proteus/boost_1_59_0/boost/
+
+export BOOST_ROOT=/local/git/proteus/boost_1_67_0
+
+
+./bootstrap.sh --with-libraries=test
+
+
 
 TILL:
 Test + compilation of documentation in cmake + how to add a test
