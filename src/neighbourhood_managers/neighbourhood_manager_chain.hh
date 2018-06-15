@@ -393,6 +393,10 @@ namespace rascal {
 					       const std::vector<int> boxidx,
 					       const std::vector<int> nmax);
 
+    // A switch to make the class verbose and give screen output about
+    // its processes.
+    constexpr verbose{false};
+
   private:
   };
 
