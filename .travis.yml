@@ -41,20 +41,20 @@ matrix:
      include:
         - os: linux
           env: 
-              - BOOST_VERSION=1.58.0
+              - BOOST_VERSION=1.67.0
               - PYTHON_VERSION=3.6
               - CC_ENV="CC=gcc-5 && CXX=g++-5"
 
 before_install:
 
     - export DOWNLOAD_ROOT="${TRAVIS_BUILD_DIR}/../download"; if [ ! -d "${DOWNLOAD_ROOT}" ]; then mkdir -p "${DOWNLOAD_ROOT}"; fi
-    #- export BOOST_DOWNLOAD_URL="http://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/boost_1_58_0.tar.bz2/download"
-    #- export BOOST_ROOT="${TRAVIS_BUILD_DIR}/../boost"
-    #- export CMAKE_MODULE_PATH="${BOOST_ROOT}"
-    #- if [ ! -f "${DOWNLOAD_ROOT}/boost.tar.bz2" ]; then wget --no-verbose --output-document="${DOWNLOAD_ROOT}/boost.tar.bz2" "${BOOST_DOWNLOAD_URL}"; fi
-    #- if [ ! -d "${BOOST_ROOT}" ]; then mkdir -p "${BOOST_ROOT}" && tar jxf "${DOWNLOAD_ROOT}/boost.tar.bz2" --strip-components=1 -C "${BOOST_ROOT}"; fi
-    #- if [ ! -f "${BOOST_ROOT}/b2" ]; then cd "${BOOST_ROOT}"; ./bootstrap.sh --with-libraries=test; fi
-    #- cd "${BOOST_ROOT}"; ./b2 --prefix="$BOOST_ROOT" -d0 install
+    - export BOOST_DOWNLOAD_URL="http://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/boost_1_67_0.tar.bz2/download"
+    - export BOOST_ROOT="${TRAVIS_BUILD_DIR}/../boost"
+    - export CMAKE_MODULE_PATH="${BOOST_ROOT}"
+    - if [ ! -f "${DOWNLOAD_ROOT}/boost.tar.bz2" ]; then wget --no-verbose --output-document="${DOWNLOAD_ROOT}/boost.tar.bz2" "${BOOST_DOWNLOAD_URL}"; fi
+    - if [ ! -d "${BOOST_ROOT}" ]; then mkdir -p "${BOOST_ROOT}" && tar jxf "${DOWNLOAD_ROOT}/boost.tar.bz2" --strip-components=1 -C "${BOOST_ROOT}"; fi
+    - if [ ! -f "${BOOST_ROOT}/b2" ]; then cd "${BOOST_ROOT}"; ./bootstrap.sh --with-libraries=test; fi
+    - cd "${BOOST_ROOT}"; ./b2 --prefix="$BOOST_ROOT" -d0 install
     - eval ${CC_ENV}
     - pyenv global system ${PYTHON_VERSION}
     - virtualenv --python=python${PYTHON_VERSION} vir_env
