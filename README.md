@@ -35,16 +35,6 @@ In order to have the readthedocs.org theme for the documentation, please install
 pip install sphinx_rtd_theme
 ```
 
-sudo docker build -t test ./docker/
-sudo docker run -it -v /local/git/proteus/:/home/  test
-export BOOST_INCLUDEDIR=/usr/local/include/boost/
-export BOOST_LIBRARYDIR=/usr/local/lib/
-export Boost_NO_SYSTEM_PATHS=OFF
-
-
-export BOOST_ROOT=/home/felix/git/boost_1_58_0/boost_bin/
-y
-export BOOST_ROOT=/home/felix/miniconda2/envs/soap/
 
 TILL:
 Test + compilation of documentation in cmake + how to add a test
