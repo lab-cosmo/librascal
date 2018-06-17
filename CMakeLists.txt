@@ -31,10 +31,9 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   # using Visual Studio C++
 endif()
 
-find_package(Boost COMPONENTS unit_test_framework REQUIRED)
-
 add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
 add_external_package(pybind11 VERSION 2.2.2 CONFIG)
+
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/tests
@@ -44,10 +43,12 @@ include_directories(
 
 set(ENABLE_DOC "OFF" CACHE BOOL
   "If on, a target 'dev_doc' (which builds the documentation) is added")
-set(BUILD_TESTS "ON" CACHE BOOL
+set(BUILD_TESTS "OFF" CACHE BOOL
   "If on, builds the unit tests")
 
 if (${BUILD_TESTS})
+
+  find_package(Boost REQUIRED COMPONENTS unit_test_framework )
   enable_testing()
   # copy python test
 
@@ -66,13 +67,18 @@ if (${BUILD_TESTS})
   file( GLOB TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/test_*.cc")
 
   add_executable(main_test_suite tests/main_test_suite.cc ${TEST_SRCS})
+
+  # https://stackoverflow.com/questions/7781374/boost-test-linking
+  ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK) 
+
   target_include_directories(main_test_suite SYSTEM PRIVATE ${Boost_INCLUDE_DIR})
   target_link_libraries(main_test_suite ${Boost_LIBRARIES} rascal)
   add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
+
 endif(${BUILD_TESTS})
 
 # compile the library
-add_compile_options( -Werror)
+add_compile_options(-Werror)
 add_subdirectory(
   ${CMAKE_SOURCE_DIR}/src/
   )
