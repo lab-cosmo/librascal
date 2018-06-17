@@ -80,6 +80,16 @@ namespace rascal {
     // To read from a JSON file and deserialize the content, the used
     // class needs a <code>struct</code> with standard data types.
     struct AtomicStructure {
+      /**
+	 \param cell is a vector a vector of vectors which holds the cell unit
+	 vectors.
+	 \param type a vector of integers which holds the atomic type
+	 (coordination number).
+	 \param pbc is a 0/1 vector which says, where periodic boundary
+	 conditions are applied.
+	 \param position is a vector of vectors which holds the atomic
+	 positions.
+       */
       std::vector<std::vector<double>> cell{};
       std::vector<int> type{};
       std::vector<int> pbc{};
@@ -87,7 +97,8 @@ namespace rascal {
     };
 
     // This function is used to convert to the JSON format with the
-    // given keywords.
+    // given keywords. It is an overload of the function defined in the header
+    // class json.hpp.
     // Inline needed, otherwise it is a multiple definition
     inline void to_json(json & j, AtomicStructure& s) {
       j = json{
@@ -99,7 +110,8 @@ namespace rascal {
     }
 
     // This function is used to read from the JSON file and convert
-    // the data into standard types
+    // the data into standard types. It is an overload of the function defined
+    // in json.hpp class header.
     inline void from_json(const json& j, AtomicStructure& s) {
       s.cell = j.at("cell").get<std::vector<std::vector<double>>>();
       s.type = j.at("numbers").get<std::vector<int>>();
@@ -160,13 +172,14 @@ namespace rascal {
     using Positions_ref = Eigen::Map<Eigen::Matrix<double, traits::Dim,
 						  Eigen::Dynamic>>;
 
-    // Here, the types for internal data structures are defined, based
-    // on standard types.  In general, we try to use as many standard
-    // types, where possible, since it reduces the dependence on
-    // external libraries. If you want to use e.g. Eigen, the access
-    // to the data can be given via the above mentioned Eigen::Maps,
-    // which wrap arround contiguous arrays of the internally saved
-    // data.
+    // Here, the types for internal data structures are defined, based on
+    // standard types.  In general, we try to use as many standard types, where
+    // possible. It reduces the dependance on external libraries. If you want to
+    // use e.g. the <code>Eigen</code> library, the access to the data can be
+    // given via the above mentioned Eigen::Maps, which wrap arround contiguous
+    // arrays of the internally saved data. It should be straight forward to
+    // even include native <code>Eigen</code> types, since the compilation
+    // checks for the library by default.
     using NeighbourList_t = std::vector<std::vector<int>>;
     using HalfNeighbourList_t = std::vector<int>;
     using NumNeigh_t = std::vector<int>;
@@ -174,9 +187,8 @@ namespace rascal {
     // A ClusterRef_t is a return type for iterators. It gives a
     // light-weight reference to an atom, a pair, a triplet,... to the
     // AtomRefs of all implicated atoms.
-
     // The template parameters Level and MaxLevel give the
-    // pair/triplet/ and the maximum depth, e.g. up to pair leve.
+    // pair/triplet/ and the maximum depth, e.g. up to pair level.
     // To increase the MaxLevel, use an <code>adaptor</code>.
     template <int Level, int MaxLevel>
     using ClusterRef_t = typename Parent::template ClusterRef<Level, MaxLevel>;
@@ -208,6 +220,15 @@ namespace rascal {
     // relies on the data provided by a file. It is read by invoking
     // .read_structure_from_json(). Invoking update also builds a full
     // and half neighbour list.
+    /**
+     * The update function is required, every time the list changes. It is
+     * implemented here with a dependency to the JSON interface. An update of
+     * the positions in the JSON object <code>atoms_object</code> needs to be
+     * followed by a call to this function.
+     * @param cutoff Property, which defines the cutoff in the
+     *        neighbourlist. Can in the future be combined with cutoff_skin for a
+     *        Verlet type list
+     */
     void update(double cutoff);
 
     // required for the construction of vectors, etc
@@ -363,7 +384,7 @@ namespace rascal {
 			   // neighbours (half neighbourlist) for each
 			   // atom.
 
-    double cut_off_skin{0.0}; // Added now, but intended for use later
+    double cutoff_skin{0.0}; // Added now, but intended for use later
 			      // in a Verlet list.
 
     std::vector<int> offsets{}; // A vector which stores the absolute

@@ -1,4 +1,4 @@
-/**
+2/**
  * file   neighbourhood_manager_lammps.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
