@@ -80,7 +80,7 @@ if (${BUILD_TESTS})
   add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
   configure_file("tests/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
   configure_file("tests/simple_cubic_8.json" ${CMAKE_BINARY_DIR} COPYONLY)
-  configure_file("tests/simple_cubic_27.json" ${CMAKE_BINARY_DIR} COPYONLY)
+  #configure_file("tests/simple_cubic_27.json" ${CMAKE_BINARY_DIR} COPYONLY)
 endif(${BUILD_TESTS})
 
 # compile the library
@@ -98,17 +98,17 @@ if (${ENABLE_DOC})
     )
 endif (${ENABLE_DOC})
 
-#compile executables
+# compile executables
 file( GLOB binaries "${CMAKE_SOURCE_DIR}/examples/*.cc")
 foreach(binaryfile ${binaries})
   get_filename_component(binaryname  ${binaryfile} NAME_WE)
   add_executable(${binaryname} ${binaryfile})
   target_link_libraries(${binaryname} ${Boost_LIBRARIES} rascal)
 endforeach(binaryfile ${binaries})
+
 #or copy them
 file (GLOB pybins "${CMAKE_SOURCE_DIR}/bin/*.py")
 foreach(pybin ${pybins})
-
   get_filename_component(binaryname  ${pybin} NAME_WE)
   configure_file(
     ${pybin}
