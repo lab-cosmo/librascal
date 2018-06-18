@@ -336,7 +336,7 @@ namespace rascal {
     void read_structure_from_json(const std::string filename);
 
     // A helper-function for the linked cell algorithm. It is used for
-    // the division of the box into the cells. 
+    // the division of the box into the cells.
     inline double get_box_length(int dimension);
 
     // Function for constructing a full neighbourlist as well as a
@@ -365,7 +365,7 @@ namespace rascal {
     // or while the neighbourlist is built
     size_t natoms{}; // Total number of atoms in structure
     size_t nb_pairs{}; // Number of pairs
-    Ilist_t ilist; // A list of atom indeces (int), here it is just
+    Ilist_t ilist{}; // A list of atom indeces (int), here it is just
 		   // the number in the list
     NeighbourList_t firstneigh{}; // A full neighbour list. Each entry
 				  // in firstneigh is a vector of
