@@ -59,7 +59,8 @@ int main() {
 
   // Get the positions to work with. The return type is an
   // <code>Eigen::Map</code> to the underlying array. This means, that
-  // all the <code>Eigen</code> magic works on the structure.
+  // all the <code>Eigen</code> magic works on the structure, e.g. dot
+  // and cross products or norms.
   auto positions = manager.get_positions();
 
   // Loop over the defined quadruplets and calculate the respective
@@ -72,7 +73,7 @@ int main() {
     auto na = b1.cross(b2);
     auto nb = b2.cross(b3);
 
-    auto arg1 = (( b1.cross(b2) ).cross( b2.cross(b3) )).dot( b2/b2.norm() );
+    auto arg1 = ((b1.cross(b2)).cross(b2.cross(b3))).dot(b2/b2.norm());
     auto arg2 = (b1.cross(b2)).dot(b2.cross(b3));
 
     auto angle = atan2(arg1, arg2);
