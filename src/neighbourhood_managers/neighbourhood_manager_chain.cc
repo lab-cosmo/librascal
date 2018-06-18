@@ -59,19 +59,16 @@ namespace rascal {
       std::cerr << e.what() << std::endl;
       std::exit(EXIT_FAILURE);
     }
-  
-    
-    
     
     for (auto vec : atoms_object.cell) {
       for (auto coord : vec) {
-	this->cell_data.push_back(coord);
+	      this->cell_data.push_back(coord);
       }
     }
     
     for (auto pos : atoms_object.position) {
       for (auto coord : pos) {
-	this->pos_data.push_back(coord);
+	      this->pos_data.push_back(coord);
       }
     }
     
@@ -82,10 +79,10 @@ namespace rascal {
     // the given number of positions
     this->natoms = atoms_object.position.size();
     // Invoke neighbourlist builder, because without it, you can not
-    // really to anything.
+    // really do anything.
     this->make_neighbourlist(cutoff);
     // The following two commands build a list of increasing
-    // indeces. It is assumed that the atoms do not have a unique
+    // indices. It is assumed that the atoms do not have a unique
     // index, when they are read from file. Therefore a list of
     // increasing integer identifiers is built. Numbers are assigned
     // to the positions in the order in which they appear in the file.
@@ -228,10 +225,10 @@ namespace rascal {
       // same cell neighbours?
       auto itail = this->ll[ihead];
       while (itail != -1) {
-	if(itail != i) {
-	  this->firstneigh[i].push_back(itail);
-	}
-	itail = this->ll[itail];
+        if(itail != i) {
+          this->firstneigh[i].push_back(itail);
+        }
+        itail = this->ll[itail];
       }
     }
   }
@@ -269,7 +266,7 @@ namespace rascal {
     
     Positions_ref atom_pos = this->get_positions();
     
-    // Get an origin. This is neede, because sometimes positions have
+    // Get an origin. This is needed, because sometimes positions have
     // negative values.
     Eigen::Matrix<double, 1, traits::Dim> offset{};
     for(auto dim{0}; dim < traits::Dim; ++dim) {
@@ -305,7 +302,7 @@ namespace rascal {
     for (auto i{0}; i < atom_pos.cols(); ++i) {
       auto * p{atom_pos.col(i).data()};
       Vector_ref pos{p};
-      if(this-> verbose) std::cout << "---pos \n" << pos << std::endl;
+      if(this->verbose) std::cout << "---pos \n" << pos << std::endl;
       
       // Which is my own cell
       nidx = get_box_index(pos, rc, offset, nmax);
@@ -313,44 +310,44 @@ namespace rascal {
       
       switch(traits::Dim) {
       case 1: {
-	std::vector<int> nd{-1, 0, 1};
-	for (auto dx :nd) {
-	  nidxtmp[0] = nidx[0] + dx;
-	  if(nidxtmp[0] < 0 || nidxtmp[0] > nmax[0]-1) continue;
-	  if(nidxtmp[1] > nmax[1] -1) continue;
-	  collect_neighbour_info_of_atom(i, nidxtmp, nmax);
-	}
-	break;
+        std::vector<int> nd{-1, 0, 1};
+        for (auto dx :nd) {
+          nidxtmp[0] = nidx[0] + dx;
+          if(nidxtmp[0] < 0 || nidxtmp[0] > nmax[0]-1) continue;
+          if(nidxtmp[1] > nmax[1] -1) continue;
+          this->collect_neighbour_info_of_atom(i, nidxtmp, nmax);
+        }
+        break;
       }
       case 2: {
-	std::vector<int> nd{-1, 0, 1};
-	for (auto dx : nd) {
-	  for (auto dy : nd) {
-	    nidxtmp[0] = nidx[0] + dx;
-	    nidxtmp[1] = nidx[1] + dy;
-	    if(nidxtmp[0] < 0 || nidxtmp[0] > nmax[0]-1) continue;
-	    if(nidxtmp[1] < 0 || nidxtmp[1] > nmax[1]-1) continue;
-	    collect_neighbour_info_of_atom(i, nidxtmp, nmax);
-	  }
-	}
-	break;
+        std::vector<int> nd{-1, 0, 1};
+        for (auto dx : nd) {
+          for (auto dy : nd) {
+            nidxtmp[0] = nidx[0] + dx;
+            nidxtmp[1] = nidx[1] + dy;
+            if(nidxtmp[0] < 0 || nidxtmp[0] > nmax[0]-1) continue;
+            if(nidxtmp[1] < 0 || nidxtmp[1] > nmax[1]-1) continue;
+            this->collect_neighbour_info_of_atom(i, nidxtmp, nmax);
+          }
+        }
+        break;
       }
       case 3: {
-	std::vector<int> nd{-1, 0, 1};
-	for (auto dx : nd) {
-	  for (auto dy : nd) {
-	    for (auto dz : nd) {
-	      nidxtmp[0] = nidx[0] + dx;
-	      nidxtmp[1] = nidx[1] + dy;
-	      nidxtmp[2] = nidx[2] + dz;
-	      if(nidxtmp[0] < 0 || nidxtmp[0] > nmax[0]-1) continue;
-	      if(nidxtmp[1] < 0 || nidxtmp[1] > nmax[1]-1) continue;
-	      if(nidxtmp[2] < 0 || nidxtmp[2] > nmax[2]-1) continue;
-	      collect_neighbour_info_of_atom(i, nidxtmp, nmax);
-	    }
-	  }
-	}
-	break;
+        std::vector<int> nd{-1, 0, 1};
+        for (auto dx : nd) {
+          for (auto dy : nd) {
+            for (auto dz : nd) {
+              nidxtmp[0] = nidx[0] + dx;
+              nidxtmp[1] = nidx[1] + dy;
+              nidxtmp[2] = nidx[2] + dz;
+              if(nidxtmp[0] < 0 || nidxtmp[0] > nmax[0]-1) continue;
+              if(nidxtmp[1] < 0 || nidxtmp[1] > nmax[1]-1) continue;
+              if(nidxtmp[2] < 0 || nidxtmp[2] > nmax[2]-1) continue;
+              this->collect_neighbour_info_of_atom(i, nidxtmp, nmax);
+            }
+          }
+        }
+        break;
       }
       default:
 	throw std::runtime_error("Neighbourlist only max 3D.");
@@ -360,12 +357,12 @@ namespace rascal {
     
     if (this->verbose) {
       for (size_t i=0; i<this->natoms; ++i) {
-	std::cout << "Atom i " << i << std::endl;
-	auto neighs = firstneigh[i];
-	for (auto n : neighs) {
-	  std::cout << n << " ";
-	}
-	std::cout << std::endl;
+        std::cout << "Atom i " << i << std::endl;
+        auto neighs = firstneigh[i];
+        for (auto n : neighs) {
+          std::cout << n << " ";
+        }
+        std::cout << std::endl;
       }
     }
     
@@ -377,12 +374,12 @@ namespace rascal {
       auto neigh = firstneigh[i];
       auto i_number_of_neighbours{0};
       for(size_t j : neigh) {
-	if (j > i) {
-	  i_number_of_neighbours += 1;
-	  this->nb_pairs += 1;
-	  halfneigh.push_back(j);
-	}
-	numneigh[i] = i_number_of_neighbours;
+        if (j > i) {
+          i_number_of_neighbours += 1;
+          this->nb_pairs += 1;
+          halfneigh.push_back(j);
+        }
+        numneigh[i] = i_number_of_neighbours;
       }
     }
     
@@ -390,14 +387,14 @@ namespace rascal {
       std::cout << "Number of pairs: " << this->nb_pairs << std::endl;
       auto ioff{0};
       for (size_t n=0; n < this->natoms; ++n){
-	auto a = numneigh[n];
-	std::cout << "Next neigh atom---- " << n
-		  << " number of neighbours " << a << std::endl;
-	for (auto i=ioff; i < ioff+a; i++) {
-	  std::cout << "Neighbour "
-		    << halfneigh[i] << std::endl;
-	}
-	ioff += a;
+        auto a = numneigh[n];
+        std::cout << "Next neigh atom---- " << n
+            << " number of neighbours " << a << std::endl;
+        for (auto i=ioff; i < ioff+a; i++) {
+          std::cout << "Neighbour "
+              << halfneigh[i] << std::endl;
+        }
+        ioff += a;
       }
     }
 
