@@ -254,32 +254,7 @@ namespace rascal {
     // TODO Add all neighbour list stuff in internal
 
     /* ---------------------------------------------------------------------- */
-    template<bool IsStrict, class ManagerImplementation>
-    struct CutOffChecker {
-      static bool check(const ManagerImplementation & manager,
-                        double cutoff) {
-        return cutoff < manager.get_cutoff();
-      }
-    };
 
-    /* ---------------------------------------------------------------------- */
-    template<class ManagerImplementation>
-    struct CutOffChecker<false, ManagerImplementation> {
-      static bool check(const ManagerImplementation & /*manager*/,
-                        double /*cutoff*/) {
-        return true;
-      }
-    };
-
-    /* ---------------------------------------------------------------------- */
-    template <class ManagerImplementation>
-    bool inline check_cutoff(const ManagerImplementation & manager,
-                              double cutoff) {
-      constexpr bool IsStrict{(ManagerImplementation::traits::Strict ==
-                               AdaptorTraits::Strict::yes)};
-      return CutOffChecker<IsStrict, ManagerImplementation>::
-        check(manager, cutoff);
-    }
 
 
   }  // internal
@@ -298,8 +273,8 @@ namespace rascal {
     offsets{}
 
   {
-    if (not internal::check_cutoff(manager, cutoff)) {
-      throw std::runtime_error("underlying manager already has a smaller cutoff");
+    if (traits::MaxLevel < 1) {
+      throw std::runtime_error("No atoms in manager.");
     }
   }
 
@@ -312,9 +287,19 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  //! TODO: no recursion necessary, only increase one Level.
+  //! TODO
 
+  void AdaptorMaxLevel::make_verlet_list() {
+    // Make a verlet neighbour list according to Tadmor and Miller
+    // 'Modeling Materials', algorithm 6.7, p 323, with modification
+    // for periodicity. It results in a <code>strict</code>
+    // neighbourlist.
+    // This is only necessary, if the ManagerImplementation, with
+    // which this adaptor is initializer does not have at least
+    // already the atomic pairs.  Inluding ghost neighbours?  TODO:
+    // add functionality for the shift vector
 
+  }
 
 
   /* ---------------------------------------------------------------------- */
@@ -323,6 +308,16 @@ namespace rascal {
     // initialise the list if it does not exist
     // TODO
     // initialise the neighbourlist
+
+    if (traits::MaxLevel == 1) {
+      // Make full and half neighbour list (strict?)
+    } else {
+      // Make triplets/quadruplets/etc. based on existing
+      // neighbourlist
+      // Templated function?
+    }
+
+    // Initilize the list
     for (int i{0}; i < traits::MaxLevel; ++i) {
       this->atom_refs[i].clear();
       this->nb_neigh[i].resize(0);
