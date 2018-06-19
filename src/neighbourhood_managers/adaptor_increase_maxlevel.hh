@@ -49,16 +49,17 @@ namespace rascal {
 
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDistances{false};
-    constexpr static bool HasDirectionVectors{ManagerImplementation::traits::HasDirectionVectors};
+    constexpr static bool HasDirectionVectors{
+      ManagerImplementation::traits::HasDirectionVectors};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
     constexpr static int MaxLevel{ManagerImplementation::traits::MaxLevel};
   };
 
   /**
    * Adaptor that increases the MaxLevel of an existing
-   * NeighbourhoodManager. If the manager does not have a
-   * neighbourlist, it is created, if it exists, the MaxLevel is
-   * increased based on the existing neighbour list.
+   * NeighbourhoodManager. This means, if the manager does not have a
+   * neighbourlist, it is created, if it exists, triplets,
+   * quadruplets, etc. lists are created.
    */
   template <class ManagerImplementation>
   class AdaptorMaxLevel: public
@@ -99,17 +100,19 @@ namespace rascal {
     //! Move assignment operator
     AdaptorMaxLevel& operator=(AdaptorMaxLevel &&other) = default;
 
-    //! update just the adaptor assuming the underlying manager was
+    //! Update just the adaptor assuming the underlying manager was
     //! updated. this function invokes building either the neighbour
-    //! list or to make triplets, quadruplets, etc.
+    //! list or to make triplets, quadruplets, etc. depending on the
+    //! MaxLevel
     void update();
 
-    //! update the underlying manager as well as the adaptor
+    //! Update the underlying manager as well as the adaptor
     template<class ... Args>
     void update(Args&&... arguments);
 
     inline double get_cutoff() const {return this->cutoff;}
 
+    //! Get number of atoms, pairs, triplets, etc.
     inline size_t get_nb_clusters(int cluster_size) const {
       return this->atom_refs[cluster_size-1].size();
     }
@@ -156,7 +159,7 @@ namespace rascal {
     }
 
 
-    //! return atom type
+    //! Return atom type
     inline int & get_atom_type(const AtomRef_t& atom) {
       // careful, atom refers to our local index, for the manager, we
       // need its index:
@@ -164,7 +167,7 @@ namespace rascal {
       return this->manager.get_atom_type(original_atom);
     }
 
-    //! return atom type
+    //! Return atom type
     inline const int & get_atom_type(const AtomRef_t& atom) const {
       // careful, atom refers to our local index, for the manager, we
       // need its index:
@@ -229,17 +232,18 @@ namespace rascal {
      */
     // TODO: minimum is to have atoms from a neighbour list.
     std::array<std::vector<AtomRef_t>, traits::MaxLevel> atom_refs;
-    // TODO these lists might need to be built!
+    // TODO these lists might need to be built, if a neighbourlist
+    // does not exist.
 
     // /**
     //  * store the number of j-atoms for every i-atom (nb_neigh[1]), the
     //  * number of k-atoms for every j-atom (nb_neigh[2]), etc
     //  */
-    // std::array<std::vector<unsigned int>, traits::MaxLevel> nb_neigh;
+    std::array<std::vector<unsigned int>, traits::MaxLevel> nb_neigh;
     // /**
     //  * store the offsets from where the nb_neigh can be counted
     //  */
-    // std::array<std::vector<unsigned int>, traits::MaxLevel> offsets;x
+    std::array<std::vector<unsigned int>, traits::MaxLevel> offsets;
   private:
   };
 
@@ -307,42 +311,10 @@ namespace rascal {
     this->update();
   }
 
-
   /* ---------------------------------------------------------------------- */
-  template <class ManagerImplementation>
-  template <int Level, bool IsDummy>
-  struct AdaptorMaxLevel<ManagerImplementation>::HelperLoop {
-    static constexpr int MaxLevel{ManagerImplementation::traits::MaxLevel};
-    using ClusterRef_t = typename ManagerImplementation::template
-      ClusterRef<Level, MaxLevel>;
-
-    using NextLevelLoop = HelperLoop<Level+1,
-                                     (Level+1 >= MaxLevel)>;
+  //! TODO: no recursion necessary, only increase one Level.
 
 
-    static void loop(ClusterRef_t & cluster, AdaptorMaxLevel& manager) {
-      for (auto next_cluster: cluster) {
-        manager.add_atom(next_cluster);
-        NextLevelLoop::loop(next_cluster, manager);
-      }
-    }
-  };
-
-  /* ---------------------------------------------------------------------- */
-  /**
-   * End of recursion
-   */
-  template <class ManagerImplementation>
-  template <int Level>
-  struct AdaptorMaxLevel<ManagerImplementation>::HelperLoop<Level, true> {
-    static constexpr int MaxLevel{ManagerImplementation::traits::MaxLevel};
-    using ClusterRef_t = typename ManagerImplementation::template
-      ClusterRef<Level, MaxLevel>;
-    static void loop(ClusterRef_t & /*cluster*/,
-                     AdaptorMaxLevel<ManagerImplementation>& /*manager*/) {
-      // do nothing
-    }
-  };
 
 
   /* ---------------------------------------------------------------------- */
@@ -356,9 +328,11 @@ namespace rascal {
       this->nb_neigh[i].resize(0);
       this->offsets[i].resize(0);
     }
-    this->nb_neigh[0].push_back(0);
-    for (auto & vector: this->offsets) {
-      vector.push_back(0);
+    if (traits::MaxLevel > 1) {
+      this->nb_neigh[0].push_back(0);
+      for (auto & vector: this->offsets) {
+	vector.push_back(0);
+      }
     }
   }
 
