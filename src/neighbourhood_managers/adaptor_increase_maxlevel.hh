@@ -30,6 +30,7 @@
 #include "neighbourhood_managers/neighbourhood_manager_base.hh"
 #include "neighbourhood_managers/property.hh"
 
+#include <typeinfo>
 
 #ifndef ADAPTOR_MAXLEVEL_H
 #define ADAPTOR_MAXLEVEL_H
@@ -217,8 +218,8 @@ namespace rascal {
       return this->template add_atom <Level-1>(cluster.get_atoms().back());
     }
 
-    template <int Level, bool IsDummy>
-    struct HelperLoop;
+    // Make a verlet list, of by construction only Level=1 is supplied.
+    void make_verlet_list();
 
     ManagerImplementation & manager;
     const double cutoff;
@@ -231,7 +232,7 @@ namespace rascal {
      *   - etc
      */
     // TODO: minimum is to have atoms from a neighbour list.
-    std::array<std::vector<AtomRef_t>, traits::MaxLevel> atom_refs;
+    std::array<std::vector<AtomRef_t>, traits::MaxLevel+1> atom_refs;
     // TODO these lists might need to be built, if a neighbourlist
     // does not exist.
 
@@ -239,11 +240,11 @@ namespace rascal {
     //  * store the number of j-atoms for every i-atom (nb_neigh[1]), the
     //  * number of k-atoms for every j-atom (nb_neigh[2]), etc
     //  */
-    std::array<std::vector<unsigned int>, traits::MaxLevel> nb_neigh;
+    std::array<std::vector<unsigned int>, traits::MaxLevel+1> nb_neigh;
     // /**
     //  * store the offsets from where the nb_neigh can be counted
     //  */
-    std::array<std::vector<unsigned int>, traits::MaxLevel> offsets;
+    std::array<std::vector<unsigned int>, traits::MaxLevel+1> offsets;
   private:
   };
 
@@ -288,17 +289,51 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   //! TODO
-
-  void AdaptorMaxLevel::make_verlet_list() {
+  template <class ManagerImplementation>
+  void AdaptorMaxLevel<ManagerImplementation>::make_verlet_list() {
     // Make a verlet neighbour list according to Tadmor and Miller
     // 'Modeling Materials', algorithm 6.7, p 323, with modification
     // for periodicity. It results in a <code>strict</code>
-    // neighbourlist.
+    // neighbourlist. It is only a half-neighbour list.
+    // The most obvious difference is that no 'skin' is used in
+    // conjunction with the cutoff.
     // This is only necessary, if the ManagerImplementation, with
-    // which this adaptor is initializer does not have at least
-    // already the atomic pairs.  Inluding ghost neighbours?  TODO:
-    // add functionality for the shift vector
+    // which this adaptor is initialized does not have at least
+    // already atomic pairs. Inluding ghost neighbours?
 
+    // TODO: add functionality for the shift vector??!
+    // TODO: full neighbour list
+
+    // The zeroth level does not have neighbours
+    this->nb_neigh[0].push_back(0);
+
+    unsigned int nneigh_off{0};
+    // for (auto atom_i : this->manager) {
+    for (auto it=manager.begin(); it!=manager.end(); ++it){
+      // i+1 atom for half neighbour list correct reasoning in
+      // iterator?
+      // auto index_i = atom_i.get_index();
+      // // Initialize number of neighbours with zero
+
+      // Add atom at this level thi sis just the standard list.
+      auto atom_i = *it;
+
+      this->add_atom(atom_i);
+
+      auto itmp = it;
+      auto jt = ++itmp;
+      for (; jt!=manager.end(); ++jt){
+      	auto atom_j = *jt;
+      	double distance{(atom_i.get_position() - atom_j.get_position()).norm()};
+      	if (distance <= this->cutoff) {
+      	  // Store atom_j in neighbourlist of atom_i
+      	  auto index_j = atom_j.get_index();
+      	  this->nb_neigh[1].push_back(index_j);
+      	  nneigh_off += 1;
+      	}
+      }
+      this->offsets[1].push_back(nneigh_off);
+    }
   }
 
 
@@ -310,25 +345,21 @@ namespace rascal {
     // initialise the neighbourlist
 
     if (traits::MaxLevel == 1) {
-      // Make full and half neighbour list (strict?)
+      // Make half neighbour list (strict?)
+      // initialise the neighbourlist
+      for (int i{0}; i < traits::MaxLevel; ++i) {
+	this->atom_refs[i].clear();
+	this->nb_neigh[i].resize(0);
+	this->offsets[i].resize(0);
+      }
+      this->make_verlet_list();
     } else {
       // Make triplets/quadruplets/etc. based on existing
       // neighbourlist
       // Templated function?
+      std::cout << "Not implemented yet" << std::endl;
     }
 
-    // Initilize the list
-    for (int i{0}; i < traits::MaxLevel; ++i) {
-      this->atom_refs[i].clear();
-      this->nb_neigh[i].resize(0);
-      this->offsets[i].resize(0);
-    }
-    if (traits::MaxLevel > 1) {
-      this->nb_neigh[0].push_back(0);
-      for (auto & vector: this->offsets) {
-	vector.push_back(0);
-      }
-    }
   }
 
   /* ---------------------------------------------------------------------- */
