@@ -230,7 +230,9 @@ namespace rascal {
     // Increase whatever level is present
     void increase_maxlevel();
 
-    // Increase the MaxLevel
+    // Construction to get the correct ClusterRef
+
+
 
     ManagerImplementation & manager;
     const double cutoff;
@@ -332,8 +334,8 @@ namespace rascal {
 			 atom_j.get_position()).norm()};
       	if (distance <= this->cutoff) {
       	  // Store atom_j in neighbourlist of atom_i
+	  this->atom_refs[1].push_back(atom_j.get_atoms().back());
       	  this->nb_neigh[1].back()++;
-	  this->atom_refs[1].push_back(atom_j);
       	  nneigh_off += 1;
       	}
       }
@@ -360,8 +362,8 @@ namespace rascal {
 			   atom_j.get_position()).norm()};
       	  if (distance <= this->cutoff) {
       	    // Store atom_j in neighbourlist of atom_i
+	    this->atom_refs[1].push_back(atom_j.get_atoms().back());
       	    this->nb_neigh[1].back()++;
-	    this->atom_refs[1].push_back(atom_j);
       	    nneigh_off += 1;
       	  }
       	}
@@ -412,8 +414,8 @@ namespace rascal {
 	this->nb_neigh[i].resize(0);
 	this->offsets[i].resize(0);
       }
-      this->make_verlet_list();
-      // this->make_full_neighbour_list(); // no frills, full neighbourlist
+      //this->make_verlet_list();
+      this->make_full_neighbour_list(); // no frills, full neighbourlist
     } else {
       // Make triplets/quadruplets/etc. based on existing
       // neighbourlist
@@ -424,7 +426,9 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-
+  // template <class ManagerImplementation>
+  // template <int Level>
+  // struct
 
 
 }  // rascal
