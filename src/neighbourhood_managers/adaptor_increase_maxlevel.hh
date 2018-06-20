@@ -199,6 +199,7 @@ namespace rascal {
                     "you can only add neighbours to the n-th degree defined by "
                     "MaxLevel of the underlying manager");
 
+
       // add new atom at this Level
       this->atom_refs[Level].push_back(atom);
       // count that this atom is a new neighbour
@@ -225,6 +226,9 @@ namespace rascal {
 
     // Make full list
     void make_full_neighbour_list();
+
+    // Increase whatever level is present
+    void increase_maxlevel();
 
     // Increase the MaxLevel
 
@@ -324,11 +328,12 @@ namespace rascal {
       ++jt; // go to next atom in manager (no self-neighbour)
       for (;jt!=manager.end(); ++jt){
       	auto atom_j = *jt;
-      	double distance{(atom_i.get_position() - atom_j.get_position()).norm()};
+      	double distance{(atom_i.get_position() -
+			 atom_j.get_position()).norm()};
       	if (distance <= this->cutoff) {
       	  // Store atom_j in neighbourlist of atom_i
-      	  auto index_j = atom_j.get_index();
-      	  this->nb_neigh[1].push_back(index_j);
+      	  this->nb_neigh[1].back()++;
+	  this->atom_refs[1].push_back(atom_j);
       	  nneigh_off += 1;
       	}
       }
@@ -336,11 +341,11 @@ namespace rascal {
     }
   }
 
-    /* ---------------------------------------------------------------------- */
+  /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
   void AdaptorMaxLevel<ManagerImplementation>::make_full_neighbour_list() {
     // Make a full neighbourlist, whithout fancy linked list or
-    // cell. Also missing is periodicity
+    // cell. Also missing are periodic boundary conditions.
 
     // The zeroth level does not have neighbours
     this->nb_neigh[0].push_back(0);
@@ -348,15 +353,15 @@ namespace rascal {
     unsigned int nneigh_off{0};
 
     for (auto atom_i : this->manager){
-
       this->add_atom(atom_i);
       for (auto atom_j : this->manager){
       	if(&atom_i != &atom_j) { // avoid self-neighbouring
-      	  double distance{(atom_i.get_position() - atom_j.get_position()).norm()};
+      	  double distance{(atom_i.get_position() -
+			   atom_j.get_position()).norm()};
       	  if (distance <= this->cutoff) {
       	    // Store atom_j in neighbourlist of atom_i
-      	    auto index_j = atom_j.get_index();
-      	    this->nb_neigh[1].push_back(index_j);
+      	    this->nb_neigh[1].back()++;
+	    this->atom_refs[1].push_back(atom_j);
       	    nneigh_off += 1;
       	  }
       	}
@@ -365,6 +370,32 @@ namespace rascal {
     }
   }
 
+  /* ---------------------------------------------------------------------- */
+  template <class ManagerImplementation>
+  void AdaptorMaxLevel<ManagerImplementation>::increase_maxlevel() {
+    // Depends on an existing neighbourlist of at least pairs
+    // Depending on the existing Level, this function increases the
+    // depth
+    // TODO: cutoff is defined to within what? i,j,k,.. atom?
+    static_assert(traits::MaxLevel > 1, "No neighbourlist present.");
+
+    // initialize the next list ??
+    auto new_max_level = traits::MaxLevel;
+    this->atom_refs[new_max_level].clear();
+    this->nb_neigh[new_max_level].resize(0);
+    this->offsets[new_max_level].resize(0);
+
+    // Iteration for i-j to k pairs is with other j and k atoms.
+    // Iteration for i-j-k to l pairs is with other j k and l atoms.
+
+    // triplets:
+    // atom_refs[new_max_level].push_back(j,k atoms)
+    // quadruplets
+    // atom_refs[new_max_level].push_back(j,k,l atoms)
+    // The new level atom_refs need to get the correct ClusterRef to
+    // be acessible as triplet/quadruplet/etc.
+
+  }
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
@@ -376,19 +407,18 @@ namespace rascal {
     if (traits::MaxLevel == 1) {
       // Make half neighbour list (strict?)
       // initialise the neighbourlist
-      for (int i{0}; i < traits::MaxLevel; ++i) {
+      for (int i{0}; i < traits::MaxLevel+1; ++i) {
 	this->atom_refs[i].clear();
 	this->nb_neigh[i].resize(0);
 	this->offsets[i].resize(0);
       }
-      // this->make_verlet_list();
-      this->make_full_neighbour_list(); // no fuzz, full neighbourlist
+      this->make_verlet_list();
+      // this->make_full_neighbour_list(); // no frills, full neighbourlist
     } else {
       // Make triplets/quadruplets/etc. based on existing
       // neighbourlist
       // Templated function?
-
-      std::cout << "Not implemented yet" << std::endl;
+      this->increase_maxlevel();
     }
 
   }
