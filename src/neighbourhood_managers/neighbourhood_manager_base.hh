@@ -361,6 +361,11 @@ namespace rascal {
       ++this->index;
       return *this;
     }
+    //! pre-decrement
+    inline iterator & operator -- () {
+      --this->index;
+      return *this;
+    }
 
     //! dereference
     inline value_type operator * () {
