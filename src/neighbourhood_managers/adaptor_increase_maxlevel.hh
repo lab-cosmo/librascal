@@ -358,6 +358,8 @@ namespace rascal {
       this->add_atom(atom_i);
       for (auto atom_j : this->manager){
       	if(&atom_i != &atom_j) { // avoid self-neighbouring
+	  // TODO: this .get_position() function will always give the
+	  // real position, never the shifted one.
       	  double distance{(atom_i.get_position() -
 			   atom_j.get_position()).norm()};
       	  if (distance <= this->cutoff) {
@@ -396,6 +398,7 @@ namespace rascal {
     // atom_refs[new_max_level].push_back(j,k,l atoms)
     // The new level atom_refs need to get the correct ClusterRef to
     // be acessible as triplet/quadruplet/etc.
+    // The existing MaxLevel is the iteration depth
 
   }
 
