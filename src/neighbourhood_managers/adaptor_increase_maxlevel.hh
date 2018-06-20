@@ -53,6 +53,8 @@ namespace rascal {
     constexpr static bool HasDirectionVectors{
       ManagerImplementation::traits::HasDirectionVectors};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
+    // TODO: Increase MaxLevel here already? -> does not compile if it is
+    // increased here
     constexpr static int MaxLevel{ManagerImplementation::traits::MaxLevel};
   };
 
@@ -75,8 +77,8 @@ namespace rascal {
     using PairRef_t = ClusterRef_t<2, traits::MaxLevel>;
 
     // TODO if MaxLevel can be == 1 -> neighbourlist need to be built.
-    static_assert(traits::MaxLevel > 1,
-                  "ManagerImlementation needs to handle pairs");
+    static_assert(traits::MaxLevel > 0,
+                  "ManagerImlementation needs to have and atom list.");
 
     //! Default constructor
     AdaptorMaxLevel() = delete;
@@ -221,6 +223,11 @@ namespace rascal {
     // Make a verlet list, of by construction only Level=1 is supplied.
     void make_verlet_list();
 
+    // Make full list
+    void make_full_neighbour_list();
+
+    // Increase the MaxLevel
+
     ManagerImplementation & manager;
     const double cutoff;
 
@@ -288,7 +295,6 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  //! TODO
   template <class ManagerImplementation>
   void AdaptorMaxLevel<ManagerImplementation>::make_verlet_list() {
     // Make a verlet neighbour list according to Tadmor and Miller
@@ -308,14 +314,14 @@ namespace rascal {
     this->nb_neigh[0].push_back(0);
 
     unsigned int nneigh_off{0};
-    // for (auto atom_i : this->manager) {
-    for (auto it=manager.begin(); it!=--manager.end(); ++it){
-      // Add atom at this level thi sis just the standard list.
+
+    for (auto it=this->manager.begin(); it!=--this->manager.end(); ++it){
+      // Add atom at this level this is just the standard list.
       auto atom_i = *it;
       this->add_atom(atom_i);
 
       auto jt = it;
-      ++jt; // go to next reference
+      ++jt; // go to next atom in manager (no self-neighbour)
       for (;jt!=manager.end(); ++jt){
       	auto atom_j = *jt;
       	double distance{(atom_i.get_position() - atom_j.get_position()).norm()};
@@ -324,6 +330,35 @@ namespace rascal {
       	  auto index_j = atom_j.get_index();
       	  this->nb_neigh[1].push_back(index_j);
       	  nneigh_off += 1;
+      	}
+      }
+      this->offsets[1].push_back(nneigh_off);
+    }
+  }
+
+    /* ---------------------------------------------------------------------- */
+  template <class ManagerImplementation>
+  void AdaptorMaxLevel<ManagerImplementation>::make_full_neighbour_list() {
+    // Make a full neighbourlist, whithout fancy linked list or
+    // cell. Also missing is periodicity
+
+    // The zeroth level does not have neighbours
+    this->nb_neigh[0].push_back(0);
+
+    unsigned int nneigh_off{0};
+
+    for (auto atom_i : this->manager){
+
+      this->add_atom(atom_i);
+      for (auto atom_j : this->manager){
+      	if(&atom_i != &atom_j) { // avoid self-neighbouring
+      	  double distance{(atom_i.get_position() - atom_j.get_position()).norm()};
+      	  if (distance <= this->cutoff) {
+      	    // Store atom_j in neighbourlist of atom_i
+      	    auto index_j = atom_j.get_index();
+      	    this->nb_neigh[1].push_back(index_j);
+      	    nneigh_off += 1;
+      	  }
       	}
       }
       this->offsets[1].push_back(nneigh_off);
@@ -346,11 +381,13 @@ namespace rascal {
 	this->nb_neigh[i].resize(0);
 	this->offsets[i].resize(0);
       }
-      this->make_verlet_list();
+      // this->make_verlet_list();
+      this->make_full_neighbour_list(); // no fuzz, full neighbourlist
     } else {
       // Make triplets/quadruplets/etc. based on existing
       // neighbourlist
       // Templated function?
+
       std::cout << "Not implemented yet" << std::endl;
     }
 
