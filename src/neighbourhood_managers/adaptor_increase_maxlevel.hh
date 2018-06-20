@@ -309,20 +309,14 @@ namespace rascal {
 
     unsigned int nneigh_off{0};
     // for (auto atom_i : this->manager) {
-    for (auto it=manager.begin(); it!=manager.end(); ++it){
-      // i+1 atom for half neighbour list correct reasoning in
-      // iterator?
-      // auto index_i = atom_i.get_index();
-      // // Initialize number of neighbours with zero
-
+    for (auto it=manager.begin(); it!=--manager.end(); ++it){
       // Add atom at this level thi sis just the standard list.
       auto atom_i = *it;
-
       this->add_atom(atom_i);
 
-      auto itmp = it;
-      auto jt = ++itmp;
-      for (; jt!=manager.end(); ++jt){
+      auto jt = it;
+      ++jt; // go to next reference
+      for (;jt!=manager.end(); ++jt){
       	auto atom_j = *jt;
       	double distance{(atom_i.get_position() - atom_j.get_position()).norm()};
       	if (distance <= this->cutoff) {
