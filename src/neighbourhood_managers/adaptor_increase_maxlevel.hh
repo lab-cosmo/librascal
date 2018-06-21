@@ -43,7 +43,7 @@ namespace rascal {
   class AdaptorMaxLevel;
 
   /**
-   * specialisation of traits for increase MaxLevel adaptor
+   * specialisation of traits for increase <code>MaxLevel</code> adaptor
    */
   template <class ManagerImplementation>
   struct NeighbourhoodManager_traits<AdaptorMaxLevel<ManagerImplementation>> {
@@ -53,9 +53,8 @@ namespace rascal {
     constexpr static bool HasDirectionVectors{
       ManagerImplementation::traits::HasDirectionVectors};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
-    // TODO: Increase MaxLevel here already? -> does not compile if it is
-    // increased here
-    constexpr static int MaxLevel{ManagerImplementation::traits::MaxLevel};
+    // New MaxLevel upon construction!
+    constexpr static int MaxLevel{ManagerImplementation::traits::MaxLevel+1};
   };
 
   /**
@@ -74,11 +73,11 @@ namespace rascal {
     using AtomRef_t = typename Parent::AtomRef_t;
     template <int Level, int MaxLevel>
     using ClusterRef_t = typename Parent::template ClusterRef_t<Level, MaxLevel>;
-    using PairRef_t = ClusterRef_t<2, traits::MaxLevel>;
+    using PairRef_t = ClusterRef_t<2, traits::MaxLevel-1>;
 
     // TODO if MaxLevel can be == 1 -> neighbourlist need to be built.
-    static_assert(traits::MaxLevel > 0,
-                  "ManagerImlementation needs to have and atom list.");
+    static_assert(traits::MaxLevel-1 > 0,
+                  "ManagerImlementation needs to have an atom list.");
 
     //! Default constructor
     AdaptorMaxLevel() = delete;
@@ -206,7 +205,7 @@ namespace rascal {
       this->nb_neigh[Level].back()++;
       this->offsets[Level].back()++;
 
-      for (int i{Level+1}; i < traits::MaxLevel; ++i) {
+      for (int i{Level+1}; i < traits::MaxLevel-1; ++i) {
         // make sure that this atom starts with zero lower-Level neighbours
         this->nb_neigh[i].push_back(0);
         // update the offsets
@@ -217,12 +216,18 @@ namespace rascal {
 
     template <int Level>
     inline void add_atom(typename ManagerImplementation::template
-                         ClusterRef<Level, traits::MaxLevel> cluster) {
+                         ClusterRef<Level, traits::MaxLevel-1> cluster) {
       return this->template add_atom <Level-1>(cluster.get_atoms().back());
     }
 
-    // Make a verlet list, of by construction only Level=1 is supplied.
-    void make_verlet_list();
+    template <int Level>
+    inline void add_atom_level_up(typename ManagerImplementation::template
+				  ClusterRef<Level, traits::MaxLevel-1> cluster) {
+      return this->template add_atom <Level>(cluster.get_atoms().back());
+    }
+
+    // Make a half neighbour list, by construction only Level=1 is supplied.
+    void make_half_neighbour_list();
 
     // Make full list
     void make_full_neighbour_list();
@@ -236,6 +241,8 @@ namespace rascal {
 
     ManagerImplementation & manager;
     const double cutoff;
+
+    template<int Level, bool IsDummy> struct AddLevelLoop;
 
     /**
      * store atom refs per level if it exists,i.e.
@@ -302,19 +309,56 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
-  void AdaptorMaxLevel<ManagerImplementation>::make_verlet_list() {
-    // Make a verlet neighbour list according to Tadmor and Miller
-    // 'Modeling Materials', algorithm 6.7, p 323, with modification
-    // for periodicity. It results in a <code>strict</code>
-    // neighbourlist. It is only a half-neighbour list.
-    // The most obvious difference is that no 'skin' is used in
-    // conjunction with the cutoff.
-    // This is only necessary, if the ManagerImplementation, with
-    // which this adaptor is initialized does not have at least
-    // already atomic pairs. Inluding ghost neighbours?
+  template <int Level, bool IsDummy>
+  struct AdaptorMaxLevel<ManagerImplementation>::AddLevelLoop {
+    static constexpr int NewMaxLevel{ManagerImplementation::traits::MaxLevel};
+    using ClusterRef_t = typename ManagerImplementation::template
+      ClusterRef<Level, NewMaxLevel>;
+
+    using NextLevelLoop = AddLevelLoop<Level+1,
+				       (Level+1 == NewMaxLevel)>;
+    static void loop(ClusterRef_t & cluster, AdaptorMaxLevel& manager) {
+      // do nothing if MaxLevel is not reached, except call the next
+      // level
+      for (auto next_cluster : cluster) {
+	//manager.add_atom(next_cluster);
+	NextLevelLoop::loop(next_cluster, manager);
+      }
+    }
+  };
+
+  /* ---------------------------------------------------------------------- */
+  // end of levels, here is where the magic happens and the neighbours
+  // of the same level are added as the Level+1.
+  template <class ManagerImplementation>
+  template <int Level>
+  struct AdaptorMaxLevel<ManagerImplementation>::AddLevelLoop<Level, true> {
+    static constexpr int MaxLevel{ManagerImplementation::traits::MaxLevel};
+    using ClusterRef_t = typename ManagerImplementation::template
+      ClusterRef<Level, MaxLevel>;
+    static void loop (ClusterRef_t & cluster,
+		      AdaptorMaxLevel<ManagerImplementation>& manager) {
+      manager.add_atom_level_up(cluster);
+    }
+      // end
+  };
+
+  /* ---------------------------------------------------------------------- */
+  template <class ManagerImplementation>
+  void AdaptorMaxLevel<ManagerImplementation>::make_half_neighbour_list() {
+    // Make a half neighbour list (not quite Verlet, because of the
+    // missing skin) according to Tadmor and Miller 'Modeling
+    // Materials', algorithm 6.7, p 323, (needs modification for
+    // periodicity).
+
+    // It results in a <code>strict</code> neighbourlist. It is
+    // only a half-neighbour list.  The most obvious difference is
+    // that no 'skin' is used in conjunction with the cutoff.  This is
+    // only necessary, if the ManagerImplementation, with which this
+    // adaptor is initialized does not have at least already atomic
+    // pairs. Inluding ghost neighbours?
 
     // TODO: add functionality for the shift vector??!
-    // TODO: full neighbour list
 
     // The zeroth level does not have neighbours
     this->nb_neigh[0].push_back(0);
@@ -364,7 +408,8 @@ namespace rascal {
 			   atom_j.get_position()).norm()};
       	  if (distance <= this->cutoff) {
       	    // Store atom_j in neighbourlist of atom_i
-	    this->atom_refs[1].push_back(atom_j.get_atoms().back());
+	    // this->atom_refs[1].push_back(atom_j.get_atoms().back());
+	    this->add_atom_level_up(atom_j);
       	    this->nb_neigh[1].back()++;
       	    nneigh_off += 1;
       	  }
@@ -377,20 +422,43 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
   void AdaptorMaxLevel<ManagerImplementation>::increase_maxlevel() {
-    // Depends on an existing neighbourlist of at least pairs
+    // Depends on an existing neighbourlist (pairs).
     // Depending on the existing Level, this function increases the
-    // depth
-    // TODO: cutoff is defined to within what? i,j,k,.. atom?
-    static_assert(traits::MaxLevel > 1, "No neighbourlist present.");
+    // depth by one.
+    // Each triplet is only given once.
+
+    // Attention, <code>traits::MaxLevel</code> is already increased,
+    // therefore the MaxLevel needs to be larger than 2 (i.e. a
+    // NeighbourhoodManager with a pairlist is present)
+    static_assert(traits::MaxLevel > 2, "No neighbourlist present.");
 
     // initialize the next list ??
     auto new_max_level = traits::MaxLevel;
-    this->atom_refs[new_max_level].clear();
-    this->nb_neigh[new_max_level].resize(0);
-    this->offsets[new_max_level].resize(0);
+    for (int i{0}; i < new_max_level; ++i) {
+      this->atom_refs[i].clear();
+      this->nb_neigh[i].resize(0);
+      this->offsets[i].resize(0);
+    }
+    this->nb_neigh[0].push_back(0);
+    for (auto & vector: this->offsets) {
+      vector.push_back(0);
+    }
 
-    // Iteration for i-j to k pairs is with other j and k atoms.
-    // Iteration for i-j-k to l pairs is with other j k and l atoms.
+    for (auto atom : this->manager) {
+      // Level 1, atoms, index 0
+      this->add_atom(atom);
+
+      for (auto pair : atom) {
+	// Level 2, pairs, index 1
+	// add all pairs of atom as triplets
+	using AddLevelLoop = AddLevelLoop<2, 2>= traits::MaxLevel>;
+	AddLevelLoop::loop(pair, *this);
+      }
+    }
+
+
+    // Iteration for i-j adding j-k pairs
+    // Iteration for i-j-k addint k-l pairs
 
     // triplets:
     // atom_refs[new_max_level].push_back(j,k atoms)
@@ -409,16 +477,16 @@ namespace rascal {
     // TODO
     // initialise the neighbourlist
 
-    if (traits::MaxLevel == 1) {
+    if (traits::MaxLevel - 1 == 1) { // -1 because the traits already increased
       // Make half neighbour list (strict?)
       // initialise the neighbourlist
-      for (int i{0}; i < traits::MaxLevel+1; ++i) {
+      for (int i{0}; i < traits::MaxLevel; ++i) {
 	this->atom_refs[i].clear();
 	this->nb_neigh[i].resize(0);
 	this->offsets[i].resize(0);
       }
-      //this->make_verlet_list();
-      this->make_full_neighbour_list(); // no frills, full neighbourlist
+      this->make_half_neighbour_list();
+      // this->make_full_neighbour_list(); // no frills, full neighbourlist
     } else {
       // Make triplets/quadruplets/etc. based on existing
       // neighbourlist

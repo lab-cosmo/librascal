@@ -33,7 +33,7 @@
 #include <iostream>
 
 namespace rascal {
-  
+
   /* ---------------------------------------------------------------------- */
   // After reading the <code>atoms_object</code> from the file, the
   // cell vectors as well as the atomic positions are put into
@@ -59,19 +59,19 @@ namespace rascal {
       std::cerr << e.what() << std::endl;
       std::exit(EXIT_FAILURE);
     }
-    
+
     for (auto vec : atoms_object.cell) {
       for (auto coord : vec) {
 	      this->cell_data.push_back(coord);
       }
     }
-    
+
     for (auto pos : atoms_object.position) {
       for (auto coord : pos) {
 	      this->pos_data.push_back(coord);
       }
     }
-    
+
     // Before going further, we check if the number of positions and
     // atom types match, otherwise the data set is incomplete.
     assert(atoms_object.position.size() == atoms_object.type.size());
@@ -88,7 +88,7 @@ namespace rascal {
     // to the positions in the order in which they appear in the file.
     this->ilist.resize(this->natoms);
     std::iota (ilist.begin(), ilist.end(), 0);
-    
+
     // The next commands gather necessary information to iterate over
     // the half neighbourlist.
     this->offsets.reserve(this->natoms);
@@ -97,7 +97,7 @@ namespace rascal {
       this->offsets.emplace_back(this->offsets[i] + this->numneigh[i]);
     }
   }
-  
+
   /* ---------------------------------------------------------------------- */
   // Helper function to get the number of <code>clusters</code>
   // (atoms, pairs, triplets, quadruplets) with a specific
@@ -119,7 +119,7 @@ namespace rascal {
       break;
     }
   }
-  
+
   /* ---------------------------------------------------------------------- */
   // Function for reading data from a JSON file in the ASE format. See
   // the definition of <code>AtomicStructure</code> and adapt the
@@ -129,9 +129,9 @@ namespace rascal {
   // try/catch block -- to make sure, the file is opened.
   void NeighbourhoodManagerChain::
   read_structure_from_json(const std::string filename) {
-    
+
     json j;
-    
+
     try {
       std::ifstream f(filename);
       if (!f.is_open()) throw std::ios::failure("Error opening JSON file!");
@@ -140,7 +140,7 @@ namespace rascal {
       std::cerr << e.what() << std::endl;
       std::exit(EXIT_FAILURE);
     }
-    
+
     // ASE json format is nested - here, first entry is actual data
     // structure. If in any case you should have multiple
     // <code>atoms_objects</code> in your file, which you want to
@@ -153,7 +153,7 @@ namespace rascal {
     // belonging to this file. Here, just the first one is read.
     this->atoms_object = j.begin().value();
   }
-  
+
   /* ---------------------------------------------------------------------- */
   // Helper function for the linked cell algorithm for
   // scaling/rescaling the complete simulation box. It is included,
@@ -187,7 +187,7 @@ namespace rascal {
       break;
     }
   }
-  
+
   /* ---------------------------------------------------------------------- */
   // Helper function for the linked cell algorithm. Given a position,
   // a cutoff, an offset and the maximum number of boxes, this returns
@@ -207,7 +207,7 @@ namespace rascal {
     }
     return nidx;
   }
-  
+
   /* ---------------------------------------------------------------------- */
   // Helper function for linked cell algorithm. Given an atomic id,
   // this function collects all neighbours of the box and writes it to
@@ -216,7 +216,7 @@ namespace rascal {
   collect_neighbour_info_of_atom(const int i,
 				 const std::vector<int> boxidx,
 				 const std::vector<int> nmax) {
-    
+
     auto jcell_index = get_linear_index(boxidx, nmax);
     auto ihead = this->lc[jcell_index]; //ll[jcell_index];
     // Check if any atom is in given cell
@@ -232,7 +232,7 @@ namespace rascal {
       }
     }
   }
-  
+
   /* ---------------------------------------------------------------------- */
   // Function for creating the full and half neighbour list. The
   // result is directly written into protected member variables of the
@@ -245,34 +245,34 @@ namespace rascal {
     // internal variables for linked list/ linked cell
     std::vector<int> nmax(3);
     std::vector<double> rc(3);
-    
+
     for(auto dim{0}; dim < traits::Dim; ++dim) {
       nmax[dim] = static_cast<int>(std::floor(this->get_box_length(dim)
 					      / cutoff));
       rc[dim] = static_cast<double>(this->get_box_length(dim) / nmax[dim]);
     };
-    
+
     int nboxes{1};
     nboxes = std::accumulate(nmax.begin(), nmax.end(), 1,
 			     std::multiplies<int>());
     nboxes = std::max(nboxes, 1); // If the cutoff is smaller than
 				  // length of the structure.
-    
+
     // Create the data structure for the linked cell algorithm.
     this->ll.resize(this->natoms);
     this->lc.resize(nboxes);
     std::fill(this->ll.begin(), this->ll.end(), -1);
     std::fill(this->lc.begin(), this->lc.end(), -1);
-    
+
     Positions_ref atom_pos = this->get_positions();
-    
+
     // Get an origin. This is needed, because sometimes positions have
     // negative values.
     Eigen::Matrix<double, 1, traits::Dim> offset{};
     for(auto dim{0}; dim < traits::Dim; ++dim) {
       offset(dim) = std::min(0., atom_pos.row(dim).minCoeff());
     }
-    
+
     // Make cell lists
     std::vector<int> nidx(traits::Dim);
     for (auto i{0}; i < atom_pos.cols(); ++i) {
@@ -283,7 +283,7 @@ namespace rascal {
       this->ll[i] = this->lc[linear_index];
       this->lc[linear_index] = i;
     }
-    
+
     if(this->verbose) {
       std::cout << ">>>> nboxes " << nboxes << std::endl;
       for (auto i{0}; i<nboxes; ++i) {
@@ -303,11 +303,11 @@ namespace rascal {
       auto * p{atom_pos.col(i).data()};
       Vector_ref pos{p};
       if(this->verbose) std::cout << "---pos \n" << pos << std::endl;
-      
+
       // Which is my own cell
       nidx = get_box_index(pos, rc, offset, nmax);
       auto nidxtmp = nidx;
-      
+
       switch(traits::Dim) {
       case 1: {
         std::vector<int> nd{-1, 0, 1};
@@ -354,7 +354,7 @@ namespace rascal {
 	break;
       }
     } // atom neighbours
-    
+
     if (this->verbose) {
       for (size_t i=0; i<this->natoms; ++i) {
         std::cout << "Atom i " << i << std::endl;
@@ -365,11 +365,11 @@ namespace rascal {
         std::cout << std::endl;
       }
     }
-    
+
     // Half-neighbourlist
     this->numneigh.resize(this->natoms);
     this->nb_pairs = 0;
-    
+
     for (size_t i=0; i < this->natoms; ++i) {
       auto neigh = firstneigh[i];
       auto i_number_of_neighbours{0};
@@ -382,7 +382,7 @@ namespace rascal {
         numneigh[i] = i_number_of_neighbours;
       }
     }
-    
+
     if (this->verbose) {
       std::cout << "Number of pairs: " << this->nb_pairs << std::endl;
       auto ioff{0};
