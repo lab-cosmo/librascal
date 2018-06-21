@@ -25,7 +25,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "neighbourhood_managers/neighbourhood_manager_Minimal.hh"
+#include "neighbourhood_managers/neighbourhood_manager_minimal.hh"
 
 namespace rascal {
 
