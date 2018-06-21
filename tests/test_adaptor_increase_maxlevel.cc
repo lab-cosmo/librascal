@@ -37,9 +37,9 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
-                          ManagerFixture<NeighbourhoodManagerCell>) {
-    double cut_off{cutoff_max/2};
-    AdaptorMaxLevel<NeighbourhoodManagerCell> adaptor{manager, cut_off};
+			  ManagerFixture_chain){
+    //double cut_off{1.0};
+    AdaptorMaxLevel<NeighbourhoodManagerChain> adaptor{manager_chain, cutoff};
     adaptor.update();
   }
 
