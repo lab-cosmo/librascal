@@ -28,11 +28,14 @@
 #ifndef NEIGHBOURHOOD_MANAGER_BASE_H
 #define NEIGHBOURHOOD_MANAGER_BASE_H
 
+#include "neighbourhood_managers/ClusterRefBase.hh"
+
 #include <Eigen/Dense>
 
 #include <cstddef>
 #include <array>
 #include <type_traits>
+#include <utility>
 
 namespace rascal {
 
@@ -184,6 +187,19 @@ namespace rascal {
                                  std::make_index_sequence<Size>{});
     }
 
+    template<size_t Level, class AtomRef_t, std::size_t... I>
+    std::array<int, Level>
+    get_indices_from_list(const std::array<AtomRef_t, Level> & atoms,
+			  std::index_sequence<I...>) {
+      return std::array<int, Level>{atoms[I].get_index()...};
+    }
+
+    template<size_t Level, class AtomRef_t> std::array<int, Level>
+    get_indices(const std::array<AtomRef_t, Level> & atoms) {
+      return get_indices_from_list(atoms, std::make_index_sequence<Level>{});
+    }
+
+
   }  // internal
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
@@ -228,9 +244,10 @@ namespace rascal {
   protected:
     Manager_t & manager;
     int index;
-    //Eigen::Vector3i shift;
   private:
   };
+
+
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -238,14 +255,15 @@ namespace rascal {
   */
   template <class ManagerImplementation>
   template <int Level, int MaxLevel>
-  class NeighbourhoodManagerBase<ManagerImplementation>::ClusterRef
+  class NeighbourhoodManagerBase<ManagerImplementation>::ClusterRef :
+    public ClusterRefBase<Level>
   {
   public:
     using Manager_t = NeighbourhoodManagerBase<ManagerImplementation>;
+    using Parent = ClusterRefBase<Level>;
     using AtomRef_t = typename Manager_t::AtomRef;
     using Iterator_t = typename Manager_t::template iterator<Level, MaxLevel>;
     using Atoms_t = std::array<AtomRef_t, Level>;
-    using Vector_block = Eigen::Block<Eigen::MatrixXd, -1, 1, true>;
     using iterator = typename Manager_t::template iterator<Level + 1, MaxLevel>;
     friend iterator;
 
@@ -253,7 +271,9 @@ namespace rascal {
     ClusterRef() = delete;
 
     //! constructor from an iterator
-    ClusterRef(Iterator_t & it): atoms{it.get_container_atoms()}, it{it}{}
+    ClusterRef(Iterator_t & it):
+      Parent{internal::get_indices(it.get_container_atoms())},
+      atoms{it.get_container_atoms()}, it{it}{}
 
     //! Copy constructor
     ClusterRef(const ClusterRef &other) = default;
@@ -292,7 +312,7 @@ namespace rascal {
     inline decltype(auto) get_atom_type() const {return this->atoms.back().get_atom_type();}
 
     //! return the index of the atom: Atoms_t is len==1 if center, len==2 if 1st neighbours,...
-    inline decltype(auto) get_atom_index() {
+    inline int get_atom_index() {
       return this->atoms.back().get_index();
       }
 

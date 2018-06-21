@@ -201,6 +201,7 @@ namespace rascal {
 
     reference operator[](const Cluster_t& id) {
       return Value::get_ref(this->values[id.get_global_index()*NbDof]);
+      //return Value::get_ref(this->values[manager.get_offset(id)*NbDof]);
     }
 
   protected:

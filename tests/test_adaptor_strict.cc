@@ -40,6 +40,12 @@ namespace rascal {
     double cut_off{cutoff_max/2};
     AdaptorStrict<NeighbourhoodManagerCell> adaptor{manager, cut_off};
     adaptor.update();
+
+    for (auto atom : adaptor) {
+      for (auto pair : atom) {
+	std::cout << "out " << pair.get_index() << std::endl;
+      }
+    }
   }
 
 

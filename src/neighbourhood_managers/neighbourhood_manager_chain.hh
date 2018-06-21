@@ -216,7 +216,7 @@ namespace rascal {
     }
 
     // Returns the position of a neighbour. In case of periodic
-    // boundary conditions, the get_neighbour should return a
+    // boundary conditions, the get_neighbour_position should return a
     // different position, if it is a ghost atom.
     template<int Level, int MaxLevel>
     inline Vector_ref get_neighbour_position(const ClusterRef_t<Level,

@@ -54,7 +54,7 @@ namespace rascal {
       ManagerImplementation::traits::HasDirectionVectors};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
     // New MaxLevel upon construction!
-    constexpr static int MaxLevel{ManagerImplementation::traits::MaxLevel+1};
+    constexpr static int MaxLevel{ManagerImplementation::traits::MaxLevel + 1};
   };
 
   /**
@@ -68,11 +68,12 @@ namespace rascal {
   NeighbourhoodManagerBase<AdaptorMaxLevel<ManagerImplementation>>
   {
   public:
+    using Base = NeighbourhoodManagerBase<AdaptorMaxLevel<ManagerImplementation>>;
     using Parent = ManagerImplementation;
     using traits = NeighbourhoodManager_traits<AdaptorMaxLevel>;
     using AtomRef_t = typename Parent::AtomRef_t;
     template <int Level, int MaxLevel>
-    using ClusterRef_t = typename Parent::template ClusterRef_t<Level, MaxLevel>;
+    using ClusterRef_t = typename Base::template ClusterRef<Level, MaxLevel>;
     using PairRef_t = ClusterRef_t<2, traits::MaxLevel-1>;
 
     // TODO if MaxLevel can be == 1 -> neighbourlist need to be built.
@@ -184,6 +185,15 @@ namespace rascal {
     template<int Level, int MaxLevel>
     inline int get_offset_impl(const ClusterRef_t<Level, MaxLevel>& cluster) const {
       return this->offsets[Level][cluster.get_index()];
+    }
+
+    template<int Level, int MaxLevel, bool AtMaxLevel = (Level==MaxLevel)>
+    inline std::enable_if_t<AtMaxLevel, size_t>
+    get_cluster_size(const ClusterRef_t<Level, MaxLevel>& cluster) const {
+      static_assert(Level== MaxLevel,
+		    "AtMaxLevel is a SFINAE, do not set manually");
+      return this->atom_refs[Level].size();
+
     }
 
   protected:
@@ -311,12 +321,12 @@ namespace rascal {
   template <class ManagerImplementation>
   template <int Level, bool IsDummy>
   struct AdaptorMaxLevel<ManagerImplementation>::AddLevelLoop {
-    static constexpr int NewMaxLevel{ManagerImplementation::traits::MaxLevel};
-    using ClusterRef_t = typename ManagerImplementation::template
-      ClusterRef<Level, NewMaxLevel>;
+    static constexpr int MaxLevel{ManagerImplementation::traits::MaxLevel};
+    using ClusterRef_t = typename AdaptorMaxLevel<ManagerImplementation>::
+      template ClusterRef_t<Level, MaxLevel>;
 
     using NextLevelLoop = AddLevelLoop<Level+1,
-				       (Level+1 == NewMaxLevel)>;
+				       (Level+1 == MaxLevel)>;
     static void loop(ClusterRef_t & cluster, AdaptorMaxLevel& manager) {
       // do nothing if MaxLevel is not reached, except call the next
       // level
@@ -334,8 +344,9 @@ namespace rascal {
   template <int Level>
   struct AdaptorMaxLevel<ManagerImplementation>::AddLevelLoop<Level, true> {
     static constexpr int MaxLevel{ManagerImplementation::traits::MaxLevel};
-    using ClusterRef_t = typename ManagerImplementation::template
-      ClusterRef<Level, MaxLevel>;
+    using ClusterRef_t = typename AdaptorMaxLevel<ManagerImplementation>::
+      template ClusterRef_t<Level, MaxLevel>;
+
     static void loop (ClusterRef_t & cluster,
 		      AdaptorMaxLevel<ManagerImplementation>& manager) {
       manager.add_atom_level_up(cluster);
@@ -422,19 +433,19 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
   void AdaptorMaxLevel<ManagerImplementation>::increase_maxlevel() {
-    // Depends on an existing neighbourlist (pairs).
     // Depending on the existing Level, this function increases the
-    // depth by one.
-    // Each triplet is only given once.
+    // MaxLevel by one by adding all neighbours of the last atom at
+    // the end of the chain as new end of a tuple.
+    // This results in each triplet is only existing once.
 
-    // Attention, <code>traits::MaxLevel</code> is already increased,
-    // therefore the MaxLevel needs to be larger than 2 (i.e. a
-    // NeighbourhoodManager with a pairlist is present)
+    // Attention, <code>traits::MaxLevel</code> is already increased
+    // in the traits upon construction, therefore the MaxLevel needs
+    // to be larger than 2 (i.e. a NeighbourhoodManager with a
+    // pairlist is present to call this function here.)
     static_assert(traits::MaxLevel > 2, "No neighbourlist present.");
 
-    // initialize the next list ??
-    auto new_max_level = traits::MaxLevel;
-    for (int i{0}; i < new_max_level; ++i) {
+    // initialize the
+    for (int i{0}; i < traits::MaxLevel; ++i) {
       this->atom_refs[i].clear();
       this->nb_neigh[i].resize(0);
       this->offsets[i].resize(0);
@@ -477,7 +488,8 @@ namespace rascal {
     // TODO
     // initialise the neighbourlist
 
-    if (traits::MaxLevel - 1 == 1) { // -1 because the traits already increased
+    // -1 because the traits' MaxLevel is already increased
+    if (traits::MaxLevel-1 == 1) {
       // Make half neighbour list (strict?)
       // initialise the neighbourlist
       for (int i{0}; i < traits::MaxLevel; ++i) {
