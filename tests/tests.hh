@@ -25,7 +25,7 @@
 #define TESTS_H
 
 #include <boost/test/unit_test.hpp>
-#define BOOST_TEST_DYN_LINK
+//#define BOOST_TEST_DYN_LINK
 
 namespace rascal {
 

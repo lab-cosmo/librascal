@@ -3,7 +3,7 @@
 .vscode
 .idea 
 *.ipynb_checkpoints
-build/
+build*/
 *.ipynb
 docs/_build
 __pycache__

@@ -112,9 +112,9 @@ namespace rascal {
     inline Vector_ref position(const AtomRef& atom) {
       return this->implementation().get_position(atom);
     }
-
-    inline Vector_ref neighbour_position(const AtomRef& atom, const AtomRef& center_atom,const int& j_linear_id) {
-      return this->implementation().get_neighbour_position(atom,center_atom,j_linear_id);
+    template <int L, int ML>
+    inline Vector_ref neighbour_position(ClusterRef<L, ML> & cluster) {
+      return this->implementation().get_neighbour_position(cluster);
     }
 
     inline int atom_type(const AtomRef& atom) {
@@ -268,7 +268,7 @@ namespace rascal {
         return this->get_manager().position(this->atoms.back());
       } else {
         // These are the informations I need for my linked cell
-        return this->get_manager().neighbour_position(this->atoms.back(),this->atoms.front(),this->get_index());
+        return this->get_manager().neighbour_position(*this);
       }
     } 
 
