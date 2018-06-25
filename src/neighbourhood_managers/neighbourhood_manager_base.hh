@@ -210,7 +210,6 @@ namespace rascal {
     using Vector_ref = Eigen::Map<Vector_t>;
     using Vector_block = Eigen::Block<Eigen::MatrixXd, -1, 1, true>;
     using Manager_t = NeighbourhoodManagerBase<ManagerImplementation>;
-    using Vector_shift = const Eigen::CwiseBinaryOp<Eigen::internal::scalar_sum_op<double, double>, const Eigen::Block<Eigen::Matrix<double, -1, -1>, -1, 1, true>, const Eigen::Transpose<const Eigen::Product<Eigen::Transpose<Eigen::Matrix<double, 3, 1> >, Eigen::Matrix<double, -1, -1>, 0> > >;
     //! Default constructor
     AtomRef() = delete;
 
@@ -224,7 +223,7 @@ namespace rascal {
     AtomRef(AtomRef &&other) = default;
 
     //! Destructor
-    virtual ~AtomRef() = default;
+    ~AtomRef(){};
 
     //! Copy assignment operator
     AtomRef& operator=(const AtomRef &other) = delete;

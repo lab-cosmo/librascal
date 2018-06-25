@@ -130,7 +130,7 @@ namespace rascal {
 
     template<int Level, int MaxLevel>
     inline Vector_ref get_neighbour_position(const ClusterRef_t<Level,
-					     MaxLevel>& cluster) {
+					     MaxLevel>& /*cluster*/) {
       // Argument is now the same, but implementation
       throw std::runtime_error("should be adapted to Félix's new interface using the ClusterRef");
 
