@@ -248,12 +248,12 @@ namespace rascal {
 
     // Return the number of atoms forming the next higher cluster with
     // this one
-    template<int Level, int MaxLevel>
-    inline size_t get_atom_id(const ClusterRef_t<Level, MaxLevel>& cluster,
+    template<int Level>
+    inline size_t get_atom_id(const ClusterRefBase<Level>& cluster,
                               int j_atom_id) const {
-      static_assert(Level == traits::MaxLevel-1,
-                    "this implementation only handles atoms and pairs.");
-      auto && i_atom_id{cluster.get_atoms().back().get_index()};
+      // static_assert(Level == traits::MaxLevel-1,
+      //               "this implementation only handles atoms and pairs.");
+      auto && i_atom_id{cluster.back()};
       return this->firstneigh[std::move(i_atom_id)][j_atom_id];
       return 0;
     }

@@ -28,7 +28,7 @@
 #ifndef NEIGHBOURHOOD_MANAGER_BASE_H
 #define NEIGHBOURHOOD_MANAGER_BASE_H
 
-#include "neighbourhood_managers/ClusterRefBase.hh"
+#include "neighbourhood_managers/cluster_ref_base.hh"
 
 #include <Eigen/Dense>
 
@@ -270,7 +270,7 @@ namespace rascal {
     //! Default constructor
     ClusterRef() = delete;
 
-    //! constructor from an iterator
+    //! Constructor from an iterator
     ClusterRef(Iterator_t & it):
       Parent{internal::get_indices(it.get_container_atoms())},
       atoms{it.get_container_atoms()}, it{it}{}
