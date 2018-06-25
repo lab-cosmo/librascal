@@ -40,12 +40,13 @@ namespace rascal {
   template<class ManagerImplementation>
   struct ManagerFixture
   {
-    ManagerFixture(){
-      Eigen::MatrixXd cell(3, 3);
+    ManagerFixture():
+      pbc{{true,true,true}}, cutoff_max{3}, center_ids(22),
+      cell(3, 3), positions(3, 22), numbers(22)
+    {
       cell << 6.19, 2.41, 0.21,
               0.00, 6.15, 1.02,
               0.00, 0.00, 7.31;
-      Eigen::MatrixXd positions(3, 22); // 3,22
       positions <<
 	3.689540159937393, 5.123016813620886, 1.994119731169116,
 	6.818437242389163, 2.630056617829216, 6.182500355729062,
@@ -69,12 +70,8 @@ namespace rascal {
 	3.818289598989240, 1.436734374347541, 5.869165197222533,
 	1.054504320562138, 6.251395251007936, 3.998423858825871,
 	3.307475712744203, 5.323662899811682, 1.982236671758393;
-      VecXi numbers(22);
       numbers << 20, 20, 24, 24, 15, 15, 15, 15,  8,  8,  8,
 	          8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8;
-      std::array<bool,3> pbc{{true,true,true}};
-      double cutoff_max{3};
-      VecXi center_ids(22);
       center_ids << 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
 	           12, 13, 14, 15, 16, 17, 18, 19, 20, 21;
       manager.update(positions,numbers,center_ids,cell,pbc,cutoff_max);
@@ -85,13 +82,13 @@ namespace rascal {
 
     }
 
-  ManagerImplementation manager;
-    Eigen::MatrixXd cell;
-    Eigen::MatrixXd positions; // 3, 22
-    VecXi numbers;
+    ManagerImplementation manager{};
     std::array<bool, 3> pbc;
     double cutoff_max;
     VecXi center_ids;
+    Eigen::MatrixXd cell;
+    Eigen::MatrixXd positions; // 3, 22
+    VecXi numbers;
   };
 
 
@@ -131,6 +128,9 @@ namespace rascal {
 	   }
 	 }
        }
+
+    ManagerFixture_lammps( ManagerFixture_lammps &) = delete;
+    ManagerFixture_lammps & operator=(const rascal::ManagerFixture_lammps&) = delete;
     ~ManagerFixture_lammps() {
       delete[] firstneigh[0];
       delete firstneigh[1];
@@ -157,7 +157,6 @@ namespace rascal {
     int type[nb]{1, 1, 1};
     double  eatom[3]{2, 1, 1};
     double ** vatom;
-    int nb_pairs;
     Manager_t manager;
 
   };
@@ -168,9 +167,8 @@ namespace rascal {
     using Manager_t = NeighbourhoodManagerChain;
 
     ManagerFixture_chain()
-      : manager_chain{} {
+      : manager_chain{}, cutoff{1.0} {
       manager_chain.read_structure_from_json("simple_cubic_8.json");
-      double cutoff{1.0};
       manager_chain.update(cutoff);
     }
 
@@ -179,7 +177,7 @@ namespace rascal {
     Manager_t manager_chain;
     double cutoff;
   };
-  
+
 }  // rascal
 
 #endif /* TEST_NEIGHBOURHOOD_H */

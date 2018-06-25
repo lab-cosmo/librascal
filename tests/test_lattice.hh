@@ -42,17 +42,17 @@ namespace rascal {
               0.00,6.15,1.02,
               0.00,0.00,7.31;
       lattice.set_cell(cell);
-      
+
     }
-        
-      
-    
+
+
+
     ~ManagerFixture_lattice() {
-      
+
     }
-    
-  Lattice lattice;
-  
+
+    Lattice lattice{};
+
   };
 }  // rascal
 

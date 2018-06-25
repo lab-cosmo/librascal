@@ -64,11 +64,11 @@ namespace rascal {
   NeighbourhoodManagerBase<AdaptorStrict<ManagerImplementation>>
   {
   public:
-    using Parent = ManagerImplementation;
+    using Parent = NeighbourhoodManagerBase<AdaptorStrict<ManagerImplementation>>;
     using traits = NeighbourhoodManager_traits<AdaptorStrict>;
-    using AtomRef_t = typename Parent::AtomRef_t;
+    using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     template <int Level, int MaxLevel>
-    using ClusterRef_t = typename Parent::template ClusterRef_t<Level, MaxLevel>;
+    using ClusterRef_t = typename ManagerImplementation::template ClusterRef<Level, MaxLevel>;
     using PairRef_t = ClusterRef_t<2, traits::MaxLevel>;
 
     static_assert(traits::MaxLevel > 1,
@@ -136,26 +136,16 @@ namespace rascal {
 
     }
 
-
     // return the global id of an atom
-    inline size_t get_atom_id(const Parent& parent, int i_atom_id) const {
-      return this->manager.get_atom_id(parent, i_atom_id);
+    inline size_t get_atom_id(const Parent& /*parent*/, int i_atom_id) const {
+      return this->manager.get_atom_id(this->manager, i_atom_id);
     }
 
     // return the global id of an atom
-    template<int Level, int MaxLevel>
-    inline size_t get_atom_id(const ClusterRef_t<Level, MaxLevel>& cluster,
+    template<int Level>
+    inline size_t get_atom_id(const ClusterRefBase<Level>& cluster,
                               int j_atom_id) const {
-      // careful, cluster refers to our local index, for the manager, we
-      // need its index:
-      auto original_cluster{cluster};
-      auto & original_atoms = original_atoms.get_atoms();
-      const auto &atoms = cluster.get_atoms();
-      for (int i{0}; i < Level; i++) {
-        original_atoms[i] = this->atom_refs[0][atoms[i].get_index()];
-      }
-
-      return this->manager.get_atom_id(original_cluster, j_atom_id);
+      return this->manager.get_atom_id(cluster, j_atom_id);
     }
 
 
@@ -184,7 +174,13 @@ namespace rascal {
       return this->offsets[Level][cluster.get_index()];
     }
 
-  protected:
+    // return the number of neighbours of a given atom
+    template<int Level>
+    inline size_t get_cluster_size(const ClusterRefBase<Level>& cluster) const {
+      static_assert(Level <= traits::MaxLevel-1,
+                    "this implementation only handles atoms and pairs");
+      return this->nb_neigh[Level][cluster.back()];
+    }
     /**
      * main function during construction of a neighbourlist.  @param
      * atom the atom to add to the list @param level select whether it
@@ -364,10 +360,10 @@ namespace rascal {
     for (auto atom: this->manager) {
       this->add_atom(atom);
       for (auto pair: atom) {
-        this->add_atom(pair);
         double distance{(atom.get_position()-
                          pair.get_position()).norm()};
         if (distance <= this->cut_off) {
+	  this->add_atom(pair);
           this->distance.push_back(distance);
         }
         using HelperLoop = HelperLoop<2, 2 >= traits::MaxLevel>;

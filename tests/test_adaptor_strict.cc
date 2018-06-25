@@ -37,13 +37,13 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
                           ManagerFixture<NeighbourhoodManagerCell>) {
-    double cut_off{cutoff_max/2};
+    double cut_off{0.9*cutoff_max};
     AdaptorStrict<NeighbourhoodManagerCell> adaptor{manager, cut_off};
     adaptor.update();
 
     for (auto atom : adaptor) {
       for (auto pair : atom) {
-	std::cout << "out " << pair.get_index() << std::endl;
+      	std::cout << "out " << pair.get_index() << std::endl;
       }
     }
   }
