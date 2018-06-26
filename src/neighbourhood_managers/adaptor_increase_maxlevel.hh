@@ -54,7 +54,7 @@ namespace rascal {
       ManagerImplementation::traits::HasDirectionVectors};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
     // New MaxLevel upon construction!
-    constexpr static int MaxLevel{ManagerImplementation::traits::MaxLevel + 1};
+    constexpr static int MaxLevel{ManagerImplementation::traits::MaxLevel+1};
   };
 
   /**
@@ -69,16 +69,18 @@ namespace rascal {
   {
   public:
     using Base = NeighbourhoodManagerBase<AdaptorMaxLevel<ManagerImplementation>>;
-    using Parent = ManagerImplementation;
+
+    using Parent = NeighbourhoodManagerBase<AdaptorMaxLevel<ManagerImplementation>>;
     using traits = NeighbourhoodManager_traits<AdaptorMaxLevel>;
-    using AtomRef_t = typename Parent::AtomRef_t;
+    using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     template <int Level, int MaxLevel>
-    using ClusterRef_t = typename Base::template ClusterRef<Level, MaxLevel>;
-    using PairRef_t = ClusterRef_t<2, traits::MaxLevel-1>;
+    // using ClusterRef_t = typename Base::template ClusterRef<Level, MaxLevel>;
+    using ClusterRef_t = typename ManagerImplementation::template ClusterRef<Level, MaxLevel>;
+    using PairRef_t = ClusterRef_t<2, traits::MaxLevel>;
 
     // TODO if MaxLevel can be == 1 -> neighbourlist need to be built.
     static_assert(traits::MaxLevel-1 > 0,
-                  "ManagerImlementation needs to have an atom list.");
+                  "ManagerImplementation needs to have an atom list.");
 
     //! Default constructor
     AdaptorMaxLevel() = delete;
@@ -139,26 +141,18 @@ namespace rascal {
       throw std::runtime_error("should be adapted to Félix's new interface using the ClusterRef");
     }
 
-
     // return the global id of an atom
-    inline size_t get_atom_id(const Parent& parent, int i_atom_id) const {
-      return this->manager.get_atom_id(parent, i_atom_id);
+    inline size_t get_atom_id(const Parent& /*parent*/, int i_atom_id) const {
+      return this->manager.get_atom_id(this->manager, i_atom_id);
     }
 
     // return the global id of an atom
-    template<int Level, int MaxLevel>
-    inline size_t get_atom_id(const ClusterRef_t<Level, MaxLevel>& cluster,
+    template<int Level>
+    inline size_t get_atom_id(const ClusterRefBase<Level>& cluster,
                               int j_atom_id) const {
-      // careful, cluster refers to our local index, for the manager, we
-      // need its index:
-      auto original_cluster{cluster};
-      auto & original_atoms = original_atoms.get_atoms();
-      const auto &atoms = cluster.get_atoms();
-      for (int i{0}; i < Level; i++) {
-        original_atoms[i] = this->atom_refs[0][atoms[i].get_index()];
-      }
-
-      return this->manager.get_atom_id(original_cluster, j_atom_id);
+      static_assert(Level <= traits::MaxLevel-1,
+                    "this implementation only handles upto traits::MaxLevel");
+      return this->manager.get_atom_id(cluster, j_atom_id);
     }
 
 
@@ -187,13 +181,20 @@ namespace rascal {
       return this->offsets[Level][cluster.get_index()];
     }
 
-    template<int Level, int MaxLevel, bool AtMaxLevel = (Level==MaxLevel)>
+    template<int Level, bool AtMaxLevel = (Level==traits::MaxLevel)>
     inline std::enable_if_t<AtMaxLevel, size_t>
-    get_cluster_size(const ClusterRef_t<Level, MaxLevel>& cluster) const {
-      static_assert(Level== MaxLevel,
-		    "AtMaxLevel is a SFINAE, do not set manually");
+    get_cluster_size(const ClusterRefBase<Level>& cluster) const {
+      static_assert(Level== traits::MaxLevel,
+    		    "AtMaxLevel is a SFINAE, do not set manually");
       return this->atom_refs[Level].size();
 
+    }
+
+    template<int Level>
+    inline size_t get_cluster_size(const ClusterRefBase<Level>& cluster) const {
+      static_assert(Level <= traits::MaxLevel-1,
+                    "this implementation only handles atoms and pairs");
+      return this->nb_neigh[Level][cluster.back()];
     }
 
   protected:
@@ -209,13 +210,15 @@ namespace rascal {
                     "MaxLevel of the underlying manager");
 
 
+      std::cout<< "add_atom add -- data --" << std::endl;
+
       // add new atom at this Level
       this->atom_refs[Level].push_back(atom);
       // count that this atom is a new neighbour
       this->nb_neigh[Level].back()++;
       this->offsets[Level].back()++;
 
-      for (int i{Level+1}; i < traits::MaxLevel-1; ++i) {
+      for (int i{Level+1}; i < traits::MaxLevel; ++i) {
         // make sure that this atom starts with zero lower-Level neighbours
         this->nb_neigh[i].push_back(0);
         // update the offsets
@@ -227,13 +230,20 @@ namespace rascal {
     template <int Level>
     inline void add_atom(typename ManagerImplementation::template
                          ClusterRef<Level, traits::MaxLevel-1> cluster) {
+      std::cout<< "add_atom add 1, Level " << Level << std::endl;
       return this->template add_atom <Level-1>(cluster.get_atoms().back());
     }
 
     template <int Level>
     inline void add_atom_level_up(typename ManagerImplementation::template
 				  ClusterRef<Level, traits::MaxLevel-1> cluster) {
-      return this->template add_atom <Level>(cluster.get_atoms().back());
+
+      // this->atom_refs[Level].push_back(cluster.get_atoms().back());
+
+      // // this->nb_neigh[Level].back()++;
+
+      std::cout<< "add_atom add 2 up " << Level << std::endl;
+      return this->template add_atom <Level>(cluster);
     }
 
     // Make a half neighbour list, by construction only Level=1 is supplied.
@@ -321,17 +331,20 @@ namespace rascal {
   template <class ManagerImplementation>
   template <int Level, bool IsDummy>
   struct AdaptorMaxLevel<ManagerImplementation>::AddLevelLoop {
-    static constexpr int MaxLevel{ManagerImplementation::traits::MaxLevel};
-    using ClusterRef_t = typename AdaptorMaxLevel<ManagerImplementation>::
-      template ClusterRef_t<Level, MaxLevel>;
+
+    static constexpr int OldMaxLevel{ManagerImplementation::traits::MaxLevel};
+    using ClusterRef_t = typename ManagerImplementation::template
+      ClusterRef<Level, OldMaxLevel>;
 
     using NextLevelLoop = AddLevelLoop<Level+1,
-				       (Level+1 == MaxLevel)>;
-    static void loop(ClusterRef_t & cluster, AdaptorMaxLevel& manager) {
+				       (Level+1 == OldMaxLevel)>;
+    static void loop(ClusterRef_t & cluster,
+		     AdaptorMaxLevel<ManagerImplementation>& manager) {
       // do nothing if MaxLevel is not reached, except call the next
       // level
       for (auto next_cluster : cluster) {
-	//manager.add_atom(next_cluster);
+	std::cout << "next_cluster "
+		  << next_cluster.get_atoms().back().get_index() << std::endl;
 	NextLevelLoop::loop(next_cluster, manager);
       }
     }
@@ -343,13 +356,16 @@ namespace rascal {
   template <class ManagerImplementation>
   template <int Level>
   struct AdaptorMaxLevel<ManagerImplementation>::AddLevelLoop<Level, true> {
-    static constexpr int MaxLevel{ManagerImplementation::traits::MaxLevel};
-    using ClusterRef_t = typename AdaptorMaxLevel<ManagerImplementation>::
-      template ClusterRef_t<Level, MaxLevel>;
+    static constexpr int OldMaxLevel{ManagerImplementation::traits::MaxLevel};
+    using ClusterRef_t = typename ManagerImplementation::template
+      ClusterRef<Level, OldMaxLevel>;
 
     static void loop (ClusterRef_t & cluster,
 		      AdaptorMaxLevel<ManagerImplementation>& manager) {
-      manager.add_atom_level_up(cluster);
+      std::cout << "Level, true" << std::endl;
+      for (auto next_cluster : cluster) {
+	manager.add_atom_level_up(next_cluster);
+      }
     }
       // end
   };
@@ -445,7 +461,7 @@ namespace rascal {
     static_assert(traits::MaxLevel > 2, "No neighbourlist present.");
 
     // initialize the
-    for (int i{0}; i < traits::MaxLevel; ++i) {
+    for (int i{0}; i < traits::MaxLevel+1; ++i) {
       this->atom_refs[i].clear();
       this->nb_neigh[i].resize(0);
       this->offsets[i].resize(0);
@@ -459,11 +475,14 @@ namespace rascal {
       // Level 1, atoms, index 0
       this->add_atom(atom);
 
+      // using AddLevelLoop = AddLevelLoop<1, 1 >= traits::MaxLevel>;
+      // AddLevelLoop::loop(pair, *this);
       for (auto pair : atom) {
-	// Level 2, pairs, index 1
-	// add all pairs of atom as triplets
-	using AddLevelLoop = AddLevelLoop<2, 2>= traits::MaxLevel>;
-	AddLevelLoop::loop(pair, *this);
+      	// Level 2, pairs, index 1
+      	// add all pairs of atom as triplets
+	this->add_atom(pair);
+      	using AddLevelLoop = AddLevelLoop<2, 2 == traits::MaxLevel-1>;
+      	AddLevelLoop::loop(pair, *this);
       }
     }
 
