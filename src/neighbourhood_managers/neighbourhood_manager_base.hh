@@ -145,6 +145,7 @@ namespace rascal {
     inline size_t cluster_size(ClusterRef<L, ML> & cluster) const {
       return this->implementation().get_cluster_size(cluster);
     }
+
     template <int L, int ML>
     inline size_t atom_id(ClusterRef<L, ML> & cluster, int index) const {
       return this->implementation().get_atom_id(cluster, index);

@@ -78,6 +78,9 @@ namespace rascal {
   struct NeighbourhoodManager_traits<NeighbourhoodManagerChain> {
     constexpr static int Dim{3};
     constexpr static int MaxLevel{2}; //
+    constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
+    constexpr static bool HasDirectionVectors{false};
+    constexpr static bool HasDistances{false};
   };
   // Definition of the new NeighbourhoodManager class. To add your
   // own, please stick to the convention of using
@@ -240,9 +243,9 @@ namespace rascal {
     // Returns the number of neighbours of a given atom
     template<int Level, int MaxLevel>
     inline size_t get_cluster_size(const ClusterRef_t<Level,
-				   MaxLevel>& cluster) const {
-      static_assert(Level == traits::MaxLevel-1,
-                    "this implementation only handles atoms and pairs.");
+    				   MaxLevel>& cluster) const {
+      // static_assert(Level == traits::MaxLevel-1,
+      //               "this implementation only handles atoms and pairs.");
       return this->numneigh[cluster.get_atoms().back().get_index()];
     }
 

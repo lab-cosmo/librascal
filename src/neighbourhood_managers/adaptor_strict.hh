@@ -145,6 +145,8 @@ namespace rascal {
     template<int Level>
     inline size_t get_atom_id(const ClusterRefBase<Level>& cluster,
                               int j_atom_id) const {
+      static_assert(Level <= traits::MaxLevel-1,
+                    "this implementation only handles upto traits::MaxLevel");
       return this->manager.get_atom_id(cluster, j_atom_id);
     }
 
@@ -181,6 +183,8 @@ namespace rascal {
                     "this implementation only handles atoms and pairs");
       return this->nb_neigh[Level][cluster.back()];
     }
+
+  protected:
     /**
      * main function during construction of a neighbourlist.  @param
      * atom the atom to add to the list @param level select whether it
@@ -311,8 +315,7 @@ namespace rascal {
       ClusterRef<Level, MaxLevel>;
 
     using NextLevelLoop = HelperLoop<Level+1,
-                                     (Level+1 >= MaxLevel)>;
-
+                                     (Level+1 == MaxLevel)>;
 
     static void loop(ClusterRef_t & cluster, AdaptorStrict& manager) {
       for (auto next_cluster: cluster) {
