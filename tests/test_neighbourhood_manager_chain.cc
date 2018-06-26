@@ -52,7 +52,7 @@ namespace rascal {
 
     int atom_counter{};
     int pair_counter{};
-    constexpr bool verbose{false};
+    constexpr bool verbose{true};
 
     for (auto atom_cluster : manager_chain) {
       BOOST_CHECK_EQUAL(atom_counter, atom_cluster.get_global_index());

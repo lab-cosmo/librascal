@@ -92,7 +92,7 @@ namespace rascal {
     // The next commands gather necessary information to iterate over
     // the half neighbourlist.
     this->offsets.reserve(this->natoms);
-    this->offsets.resize(1);
+    this->offsets.push_back(0);
     for (size_t i{0} ; i<this->natoms-1 ; ++i) {
       this->offsets.emplace_back(this->offsets[i] + this->numneigh[i]);
     }
@@ -211,7 +211,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   // Helper function for linked cell algorithm. Given an atomic id,
   // this function collects all neighbours of the box and writes it to
-  // the full neighbourlist <code>firstneigh</code>.
+  // the full neighbourlist <code>allneigh</code>.
   inline void NeighbourhoodManagerChain::
   collect_neighbour_info_of_atom(const int i,
 				 const std::vector<int> boxidx,
@@ -221,12 +221,12 @@ namespace rascal {
     auto ihead = this->lc[jcell_index]; //ll[jcell_index];
     // Check if any atom is in given cell
     if(ihead != -1) {
-      if(ihead != i) this->firstneigh[i].push_back(ihead);
+      if(ihead != i) this->allneigh[i].push_back(ihead);
       // same cell neighbours?
       auto itail = this->ll[ihead];
       while (itail != -1) {
         if(itail != i) {
-          this->firstneigh[i].push_back(itail);
+          this->allneigh[i].push_back(itail);
         }
         itail = this->ll[itail];
       }
@@ -297,7 +297,7 @@ namespace rascal {
     }
     // Make verlet table of neighbours (vectorized), not strict
     // Full neighbour list
-    this->firstneigh.resize(this->natoms);
+    this->allneigh.resize(this->natoms);
     if(this->verbose) std::cout << ">>>>>>>>>>>>>>>>start neighbour list" << std::endl;
     for (auto i{0}; i < atom_pos.cols(); ++i) {
       auto * p{atom_pos.col(i).data()};
@@ -358,7 +358,7 @@ namespace rascal {
     if (this->verbose) {
       for (size_t i=0; i<this->natoms; ++i) {
         std::cout << "Atom i " << i << std::endl;
-        auto neighs = firstneigh[i];
+        auto neighs = allneigh[i];
         for (auto n : neighs) {
           std::cout << n << " ";
         }
@@ -371,17 +371,18 @@ namespace rascal {
     this->nb_pairs = 0;
 
     for (size_t i=0; i < this->natoms; ++i) {
-      auto neigh = firstneigh[i];
+      auto neigh = allneigh[i];
       auto i_number_of_neighbours{0};
       for(size_t j : neigh) {
         if (j > i) {
           i_number_of_neighbours += 1;
           this->nb_pairs += 1;
-          halfneigh.push_back(j);
+          firstneigh.push_back(j);
         }
-        numneigh[i] = i_number_of_neighbours;
       }
+      numneigh[i] = i_number_of_neighbours;
     }
+    std::cout << std::endl;
 
     if (this->verbose) {
       std::cout << "Number of pairs: " << this->nb_pairs << std::endl;
@@ -392,7 +393,7 @@ namespace rascal {
             << " number of neighbours " << a << std::endl;
         for (auto i=ioff; i < ioff+a; i++) {
           std::cout << "Neighbour "
-              << halfneigh[i] << std::endl;
+              << firstneigh[i] << std::endl;
         }
         ioff += a;
       }

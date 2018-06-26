@@ -224,8 +224,8 @@ namespace rascal {
     template<int Level, int MaxLevel>
     inline Vector_ref get_neighbour_position(const ClusterRef_t<Level,
 					     MaxLevel>& cluster) {
-      // static_assert(Level > 2,
-      // 		    "this implementation should only work with a neighbour");
+      static_assert(Level < traits::MaxLevel,
+      		    "this implementation should only work with a neighbour");
       return this->get_position(cluster.get_atoms().back());
     }
 
@@ -244,8 +244,8 @@ namespace rascal {
     template<int Level, int MaxLevel>
     inline size_t get_cluster_size(const ClusterRef_t<Level,
     				   MaxLevel>& cluster) const {
-      // static_assert(Level == traits::MaxLevel-1,
-      //               "this implementation only handles atoms and pairs.");
+      static_assert(Level <= traits::MaxLevel,
+                    "this implementation only handles atoms and pairs.");
       return this->numneigh[cluster.get_atoms().back().get_index()];
     }
 
@@ -254,11 +254,11 @@ namespace rascal {
     template<int Level>
     inline size_t get_atom_id(const ClusterRefBase<Level>& cluster,
                               int j_atom_id) const {
-      // static_assert(Level == traits::MaxLevel-1,
-      //               "this implementation only handles atoms and pairs.");
+      static_assert(Level <= traits::MaxLevel,
+                    "this implementation only handles atoms and pairs.");
       auto && i_atom_id{cluster.back()};
-      return this->firstneigh[std::move(i_atom_id)][j_atom_id];
-      return 0;
+      auto && off{this->offsets[i_atom_id]};
+      return this->firstneigh[off + j_atom_id];//.get_index();
     }
 
     // Return unique id of a given atom. Here the atoms are numbered
@@ -315,19 +315,19 @@ namespace rascal {
     size_t nb_pairs{}; // Number of pairs
     Ilist_t ilist{}; // A list of atom indeces (int), here it is just
 		   // the number in the list
-    NeighbourList_t firstneigh{}; // A full neighbour list. Each entry
-				  // in firstneigh is a vector of
+    NeighbourList_t allneigh{}; // A full neighbour list. Each entry
+				  // in allneigh is a vector of
 				  // neighbours of the given atom id
 
-    HalfNeighbourList_t halfneigh{}; // Half neighbourlist. It is a
-				     // contiguous vector where all
-				     // neighbours are listed
-				     // once. Use in conjunction with
-				     // <code>numneigh</code> to get
-				     // the number of neighbours per
-				     // atom. This can be used to
-				     // calculate a property like the
-				     // atomic distance.
+    HalfNeighbourList_t firstneigh{}; // Half neighbourlist. It is a
+                                      // contiguous vector where all
+                                      // neighbours are listed
+                                      // once. Use in conjunction with
+                                      // <code>numneigh</code> to get
+                                      // the number of neighbours per
+                                      // atom. This can be used to
+                                      // calculate a property like the
+                                      // atomic distance.
     NumNeigh_t numneigh{}; // A vector which hold the number of
 			   // neighbours (half neighbourlist) for each
 			   // atom.
@@ -355,7 +355,7 @@ namespace rascal {
 		  std::vector<int> nmax);
 
     // Function which collects the neighbour atom id and writes it to
-    // the member variable <code>firstneigh</code>.
+    // the member variable <code>allneigh</code>.
     inline void collect_neighbour_info_of_atom(const int i,
 					       const std::vector<int> boxidx,
 					       const std::vector<int> nmax);

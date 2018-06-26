@@ -205,12 +205,9 @@ namespace rascal {
      */
     template <int Level>
     inline void add_atom(typename ManagerImplementation::AtomRef_t atom) {
-      static_assert(Level <= traits::MaxLevel,
+      static_assert(Level < traits::MaxLevel,
                     "you can only add neighbours to the n-th degree defined by "
                     "MaxLevel of the underlying manager");
-
-
-      std::cout<< "add_atom add -- data --" << std::endl;
 
       // add new atom at this Level
       this->atom_refs[Level].push_back(atom);
@@ -230,7 +227,10 @@ namespace rascal {
     template <int Level>
     inline void add_atom(typename ManagerImplementation::template
                          ClusterRef<Level, traits::MaxLevel-1> cluster) {
-      std::cout<< "add_atom add 1, Level " << Level << std::endl;
+      std::cout << "add_atom (cluster) "
+		<< cluster.get_atoms().back().get_index()
+		<< " Level " << Level
+		<< std::endl;
       return this->template add_atom <Level-1>(cluster.get_atoms().back());
     }
 
@@ -238,11 +238,7 @@ namespace rascal {
     inline void add_atom_level_up(typename ManagerImplementation::template
 				  ClusterRef<Level, traits::MaxLevel-1> cluster) {
 
-      // this->atom_refs[Level].push_back(cluster.get_atoms().back());
-
-      // // this->nb_neigh[Level].back()++;
-
-      std::cout<< "add_atom add 2 up " << Level << std::endl;
+      std::cout << "add_atom_level_up" << std::endl;
       return this->template add_atom <Level>(cluster);
     }
 
@@ -345,6 +341,7 @@ namespace rascal {
       for (auto next_cluster : cluster) {
 	std::cout << "next_cluster "
 		  << next_cluster.get_atoms().back().get_index() << std::endl;
+	manager.add_atom(next_cluster);
 	NextLevelLoop::loop(next_cluster, manager);
       }
     }
@@ -362,8 +359,9 @@ namespace rascal {
 
     static void loop (ClusterRef_t & cluster,
 		      AdaptorMaxLevel<ManagerImplementation>& manager) {
-      std::cout << "Level, true" << std::endl;
       for (auto next_cluster : cluster) {
+	std::cout << "next_cluster ----- @MaxLevel " << Level<< " index "
+		  << next_cluster.get_atoms().back().get_index() << std::endl;
 	manager.add_atom_level_up(next_cluster);
       }
     }
@@ -475,8 +473,6 @@ namespace rascal {
       // Level 1, atoms, index 0
       this->add_atom(atom);
 
-      // using AddLevelLoop = AddLevelLoop<1, 1 >= traits::MaxLevel>;
-      // AddLevelLoop::loop(pair, *this);
       for (auto pair : atom) {
       	// Level 2, pairs, index 1
       	// add all pairs of atom as triplets

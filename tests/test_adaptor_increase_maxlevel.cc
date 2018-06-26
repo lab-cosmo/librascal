@@ -42,12 +42,20 @@ namespace rascal {
     AdaptorMaxLevel<NeighbourhoodManagerChain> adaptor{manager_chain, cutoff};
     adaptor.update();
 
+    std::cout << "Increase MaxLevel" << std::endl;
+
     for (auto atom : adaptor) {
-      std::cout << "atom " << atom.get_atoms().back().get_index() << std::endl;
+      std::cout << "atom "
+		<< atom.get_atoms().back().get_index()
+		<< std::endl;
       for (auto pair : atom) {
-	std::cout << "  pair " << pair.get_atoms().back().get_index() << std::endl;
+	std::cout << "  pair "
+		  << pair.get_atoms().back().get_index()
+		  << std::endl;
 	for (auto triplet : pair) {
-	  std::cout << "    triplet " << triplet.get_atoms().back().get_index() << std::endl;
+	  std::cout << "    triplet "
+		    << triplet.get_atoms().back().get_index()
+		    << std::endl;
 	}
       }
     }
