@@ -101,9 +101,9 @@ namespace rascal {
      * manager. Iterators like these can be used as indices for random
      * access in atom-, pair, ... -related properties.
      */
-    template <int Level, int MaxLevel>
+    template <int Level>//, int MaxLevel>
     class iterator;
-    using Iterator_t = iterator<1, traits::MaxLevel>;
+    using Iterator_t = iterator<1>;//, traits::MaxLevel>;
     friend Iterator_t;
 
     /**
@@ -116,8 +116,11 @@ namespace rascal {
      * return type for iterators: a light-weight pair, triplet, etc reference,
      * giving access to the AtomRefs of all implicated atoms
      */
-    template <int Level, int MaxLevel>
+    template <int Level>//, int MaxLevel>
     class ClusterRef;
+
+    // template <int Level>
+    // using ClusterRef_t = ClusterRef<Level, traits::MaxLevel>;
 
     inline Iterator_t begin() {return Iterator_t(*this, 0);}
     inline Iterator_t end() {return Iterator_t(*this,
@@ -131,8 +134,8 @@ namespace rascal {
     inline Vector_ref position(const AtomRef& atom) {
       return this->implementation().get_position(atom);
     }
-    template <int L, int ML>
-    inline Vector_ref neighbour_position(ClusterRef<L, ML> & cluster) {
+    template <int L>//, int ML>
+    inline Vector_ref neighbour_position(ClusterRef<L> & cluster) {
       return this->implementation().get_neighbour_position(cluster);
     }
 
@@ -141,13 +144,13 @@ namespace rascal {
     }
 
   protected:
-    template <int L, int ML>
-    inline size_t cluster_size(ClusterRef<L, ML> & cluster) const {
+    template <int L>//, int ML>
+    inline size_t cluster_size(ClusterRef<L> & cluster) const {
       return this->implementation().get_cluster_size(cluster);
     }
 
-    template <int L, int ML>
-    inline size_t atom_id(ClusterRef<L, ML> & cluster, int index) const {
+    template <int L>//, int ML>
+    inline size_t atom_id(ClusterRef<L> & cluster, int index) const {
       return this->implementation().get_atom_id(cluster, index);
     }
 
@@ -166,10 +169,15 @@ namespace rascal {
 
     std::array<AtomRef, 0> get_atoms() const {return std::array<AtomRef, 0>{};};
 
-    template <int L, int ML>
-    inline int get_offset(const ClusterRef<L, ML> & cluster) const {
+    template <int L>
+    inline int get_offset(const ClusterRef<L> & cluster) const {
       return this->implementation().get_offset_impl(cluster);
     }
+
+    // template <int L>
+    // inline int get_cluster(const ClusterRefBase<L> & cluster) const {
+    //   // all pairs of the following thing
+    // }
 
   private:
   };
@@ -254,7 +262,7 @@ namespace rascal {
     This is the object we have when iterating over the manager
   */
   template <class ManagerImplementation>
-  template <int Level, int MaxLevel>
+  template <int Level>//, int MaxLevel>
   class NeighbourhoodManagerBase<ManagerImplementation>::ClusterRef :
     public ClusterRefBase<Level>
   {
@@ -262,10 +270,13 @@ namespace rascal {
     using Manager_t = NeighbourhoodManagerBase<ManagerImplementation>;
     using Parent = ClusterRefBase<Level>;
     using AtomRef_t = typename Manager_t::AtomRef;
-    using Iterator_t = typename Manager_t::template iterator<Level, MaxLevel>;
+    using Iterator_t = typename Manager_t::template iterator<Level>;
     using Atoms_t = std::array<AtomRef_t, Level>;
-    using iterator = typename Manager_t::template iterator<Level + 1, MaxLevel>;
+    using iterator = typename Manager_t::template iterator<Level+1>;
     friend iterator;
+
+    static_assert(Level <= traits::MaxLevel,
+		  "Level > MaxLevel, impossible iterator");
 
     //! Default constructor
     ClusterRef() = delete;
@@ -309,7 +320,9 @@ namespace rascal {
     }
 
 
-    inline decltype(auto) get_atom_type() const {return this->atoms.back().get_atom_type();}
+    inline decltype(auto) get_atom_type() const {
+      return this->atoms.back().get_atom_type();
+    }
 
     //! return the index of the atom: Atoms_t is len==1 if center, len==2 if 1st neighbours,...
     inline int get_atom_index() {
@@ -336,19 +349,19 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
-  template <int Level, int MaxLevel>
+  template <int Level> //, int MaxLevel>
   class NeighbourhoodManagerBase<ManagerImplementation>::iterator
   {
   public:
     using Manager_t = NeighbourhoodManagerBase<ManagerImplementation>;
     friend Manager_t;
-    using ClusterRef_t = typename Manager_t::template ClusterRef<Level, MaxLevel>;
+    using ClusterRef_t = typename Manager_t::template ClusterRef<Level>;
     friend ClusterRef_t;
     using Container_t =
       std::conditional_t
       <Level == 1,
        Manager_t,
-       typename Manager_t::template ClusterRef<Level-1, MaxLevel>>;
+       typename Manager_t::template ClusterRef<Level-1>>;
     static_assert(Level > 0, "Level has to be positive");
 
     using AtomRef_t = typename Manager_t::AtomRef;
