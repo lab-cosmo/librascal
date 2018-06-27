@@ -258,7 +258,7 @@ namespace rascal {
                     "this implementation only handles atoms and pairs.");
       auto && i_atom_id{cluster.back()};
       auto && off{this->offsets[i_atom_id]};
-      return this->firstneigh[off + j_atom_id];//.get_index();
+      return this->firstneigh[off + j_atom_id];
     }
 
     // Return unique id of a given atom. Here the atoms are numbered
