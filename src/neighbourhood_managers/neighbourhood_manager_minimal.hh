@@ -105,7 +105,9 @@ namespace rascal {
     inline Vector_ref get_neighbour_position(const ClusterRef_t<Level>&
 					     cluster) {
       static_assert(Level > 1,
-		    "this implementation should only work with a neighbour");
+		    "Only possible for Level > 1.");
+      static_assert(Level <= traits::MaxLevel,
+      		    "this implementation should only work up to MaxLevel.");
       auto && j_linear_id = cluster.get_index();
       auto && i_atom_id{cluster.get_atoms().front().get_index()}; // center_atom index
       auto && i_bin_id{this->part2bin[i_atom_id]};

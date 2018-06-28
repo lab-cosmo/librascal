@@ -205,6 +205,23 @@ namespace rascal {
       return get_indices_from_list(atoms, std::make_index_sequence<Level>{});
     }
 
+    template<int Level, class ClusterRef>
+    struct PositionGetter {
+      using Vector_ref = typename ClusterRef::Manager_t::Vector_ref;
+      static inline Vector_ref  get_position(ClusterRef& cluster) {
+	return cluster.get_manager().neighbour_position(cluster);
+      };
+    };
+
+    template<class ClusterRef>
+    struct PositionGetter<1, ClusterRef> {
+      using Vector_ref = typename ClusterRef::Manager_t::Vector_ref;
+      static inline Vector_ref get_position(ClusterRef& cluster) {
+	return cluster.get_manager().position(cluster.get_atoms().back());
+      };
+    };
+
+
 
   }  // internal
   /* ---------------------------------------------------------------------- */
@@ -307,13 +324,9 @@ namespace rascal {
         center (Level== 1)-> position is in the cell
         neighbour (Level > 1)   -> position might have an offset associated
      */
+
     inline Vector_ref get_position() {
-      if (Level == 1){
-	return this->get_manager().position(this->atoms.back());
-      } else {
-	// These are the informations I need for my linked cell
-	return this->get_manager().neighbour_position(*this);
-      }
+      return internal::PositionGetter<Level, ClusterRef>::get_position(*this);
     }
 
 

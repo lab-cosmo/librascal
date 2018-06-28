@@ -131,6 +131,10 @@ namespace rascal {
     template<int Level>
     inline Vector_ref get_neighbour_position(const ClusterRef_t<Level>&
 					     /*cluster*/) {
+      static_assert(Level > 1,
+		    "Only possible for Level > 1.");
+      static_assert(Level <= traits::MaxLevel,
+      		    "this implementation should only work up to MaxLevel.");
       // Argument is now the same, but implementation
       throw std::runtime_error("should be adapted to Félix's new interface using the ClusterRef");
 
