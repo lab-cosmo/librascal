@@ -131,7 +131,7 @@ namespace rascal {
     inline Vector_ref position(const AtomRef& atom) {
       return this->implementation().get_position(atom);
     }
-    template <int L>
+    template <int L> //ll
     inline Vector_ref neighbour_position(ClusterRef<L> & cluster) {
       return this->implementation().get_neighbour_position(cluster);
     }
@@ -259,7 +259,7 @@ namespace rascal {
     This is the object we have when iterating over the manager
   */
   template <class ManagerImplementation>
-  template <int Level>//, int MaxLevel>
+  template <int Level>
   class NeighbourhoodManagerBase<ManagerImplementation>::ClusterRef :
     public ClusterRefBase<Level>
   {
@@ -307,12 +307,12 @@ namespace rascal {
         center (Level== 1)-> position is in the cell
         neighbour (Level > 1)   -> position might have an offset associated
      */
-     inline Vector_ref get_position() {
+    inline Vector_ref get_position() {
       if (Level == 1){
-        return this->get_manager().position(this->atoms.back());
+	return this->get_manager().position(this->atoms.back());
       } else {
-        // These are the informations I need for my linked cell
-        return this->get_manager().neighbour_position(*this);
+	// These are the informations I need for my linked cell
+	return this->get_manager().neighbour_position(*this);
       }
     }
 
@@ -321,7 +321,8 @@ namespace rascal {
       return this->atoms.back().get_atom_type();
     }
 
-    //! return the index of the atom: Atoms_t is len==1 if center, len==2 if 1st neighbours,...
+    //! return the index of the atom: Atoms_t is len==1 if center,
+    //! len==2 if 1st neighbours,...
     inline int get_atom_index() {
       return this->atoms.back().get_index();
       }

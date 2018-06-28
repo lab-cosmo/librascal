@@ -101,11 +101,14 @@ namespace rascal {
 
     inline Vector_ref get_shift(const int& i_bin_id, const int& shift_index);
 
-    // return position vector
-    // atom is the neighbour atom. center_atom is the current center. j_linear_id is the index of the current neighbour iterator.
+    // return position vector atom is the neighbour atom. center_atom
+    // is the current center. j_linear_id is the index of the current
+    // neighbour iterator.
     template<int Level>
-    inline Vector_ref get_neighbour_position(const ClusterRef_t<Level>& cluster) {
-      //static_assert(Level > 1,"this implementation should only work with a neighbour");
+    inline Vector_ref get_neighbour_position(const ClusterRef_t<Level>&
+					     cluster) {
+      static_assert(Level > 1,
+		    "this implementation should only work with a neighbour");
       auto && j_linear_id = cluster.get_index();
       auto && i_atom_id{cluster.get_atoms().front().get_index()}; // center_atom index
       auto && i_bin_id{this->part2bin[i_atom_id]};

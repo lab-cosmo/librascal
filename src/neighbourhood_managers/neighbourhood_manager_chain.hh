@@ -224,7 +224,7 @@ namespace rascal {
     template<int Level>
     inline Vector_ref get_neighbour_position(const ClusterRef_t<Level>&
 					     cluster) {
-      static_assert(Level < traits::MaxLevel,
+      static_assert(Level <= traits::MaxLevel,
       		    "this implementation should only work with a neighbour");
       return this->get_position(cluster.get_atoms().back());
     }

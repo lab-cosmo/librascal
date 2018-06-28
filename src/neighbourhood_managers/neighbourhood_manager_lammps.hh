@@ -120,9 +120,13 @@ namespace rascal {
 
     // return position vector
     template<int Level>
-    inline Vector_ref get_neighbour_position(const ClusterRef_t<Level>& cluster) {
-      // static_assert(Level > 1,"this implementation should only work with a neighbour");
-      // static_assert(Level > traits::MaxLevel, "Level to large, not available");
+    inline Vector_ref get_neighbour_position(const ClusterRef_t<Level>&
+					     cluster) {
+      static_assert(Level > 1,
+		    "this implementation only works with "
+		    "existing neighbours");
+      static_assert(Level <= traits::MaxLevel,
+		    "Level to large, not available");
       return this->get_position(cluster.get_atoms().back());
     }
 
