@@ -65,8 +65,8 @@ namespace rascal {
     using Vector_ref = typename Parent::Vector_ref;
     using Vector_t = typename Parent::Vector_t;
     using AtomRef_t = typename Parent::AtomRef;
-    template <int Level, int MaxLevel>
-    using ClusterRef_t = typename Parent::template ClusterRef<Level, MaxLevel>;
+    template <int Level>
+    using ClusterRef_t = typename Parent::template ClusterRef<Level>;
 
     using AtomVectorField_t = Property<NeighbourhoodManagerCell, double, 1, 3>;
 
@@ -103,8 +103,8 @@ namespace rascal {
 
     // return position vector
     // atom is the neighbour atom. center_atom is the current center. j_linear_id is the index of the current neighbour iterator.
-    template<int Level, int MaxLevel>
-    inline Vector_ref get_neighbour_position(const ClusterRef_t<Level, MaxLevel>& cluster) {
+    template<int Level>
+    inline Vector_ref get_neighbour_position(const ClusterRef_t<Level>& cluster) {
       //static_assert(Level > 1,"this implementation should only work with a neighbour");
       auto && j_linear_id = cluster.get_index();
       auto && i_atom_id{cluster.get_atoms().front().get_index()}; // center_atom index
@@ -145,8 +145,8 @@ namespace rascal {
     }
 
     // return the number of neighbours of a given atom
-    template<int Level, int MaxLevel>
-    inline size_t get_cluster_size(const ClusterRef_t<Level, MaxLevel>& cluster) const {
+    template<int Level>
+    inline size_t get_cluster_size(const ClusterRef_t<Level>& cluster) const {
       static_assert(Level <= traits::MaxLevel,
                     "this implementation only handles atoms and pairs");
       auto && i_atom_id{cluster.get_atoms().back().get_index()};
@@ -155,8 +155,8 @@ namespace rascal {
       return size;
     }
 
-    template<int Level, int MaxLevel>
-    inline int get_offset_impl(const ClusterRef_t<Level, MaxLevel>& cluster) const;
+    template<int Level>
+    inline int get_offset_impl(const ClusterRef_t<Level>& cluster) const;
 
     size_t get_nb_clusters(int cluster_size);
 
@@ -250,11 +250,10 @@ namespace rascal {
   };
   /* ---------------------------------------------------------------------- */
 
-  template<int Level, int MaxLevel>
+  template<int Level>
   inline int NeighbourhoodManagerCell::
-  get_offset_impl(const ClusterRef_t<Level, MaxLevel>& cluster) const {
+  get_offset_impl(const ClusterRef_t<Level>& cluster) const {
     static_assert(Level == 2, "This class cas only handle single atoms and pairs");
-    static_assert(MaxLevel == traits::MaxLevel, "Wrong maxlevel");
 
     //auto atoms{};
     auto icenter{cluster.get_atoms().front().get_index()};
@@ -269,7 +268,7 @@ namespace rascal {
 
   template <>
   inline int NeighbourhoodManagerCell:: template
-  get_offset_impl<1, 2>(const ClusterRef_t<1, 2>& cluster) const {
+  get_offset_impl<1>(const ClusterRef_t<1>& cluster) const {
     return cluster.get_atoms().back().get_index();
   }
   /* ---------------------------------------------------------------------- */

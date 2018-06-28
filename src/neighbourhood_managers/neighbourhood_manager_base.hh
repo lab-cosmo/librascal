@@ -116,11 +116,8 @@ namespace rascal {
      * return type for iterators: a light-weight pair, triplet, etc reference,
      * giving access to the AtomRefs of all implicated atoms
      */
-    template <int Level>//, int MaxLevel>
+    template <int Level>
     class ClusterRef;
-
-    // template <int Level>
-    // using ClusterRef_t = ClusterRef<Level, traits::MaxLevel>;
 
     inline Iterator_t begin() {return Iterator_t(*this, 0);}
     inline Iterator_t end() {return Iterator_t(*this,
@@ -134,7 +131,7 @@ namespace rascal {
     inline Vector_ref position(const AtomRef& atom) {
       return this->implementation().get_position(atom);
     }
-    template <int L>//, int ML>
+    template <int L>
     inline Vector_ref neighbour_position(ClusterRef<L> & cluster) {
       return this->implementation().get_neighbour_position(cluster);
     }
@@ -144,12 +141,12 @@ namespace rascal {
     }
 
   protected:
-    template <int L>//, int ML>
+    template <int L>
     inline size_t cluster_size(ClusterRef<L> & cluster) const {
       return this->implementation().get_cluster_size(cluster);
     }
 
-    template <int L>//, int ML>
+    template <int L>
     inline size_t atom_id(ClusterRef<L> & cluster, int index) const {
       return this->implementation().get_atom_id(cluster, index);
     }

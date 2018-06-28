@@ -64,10 +64,10 @@ namespace rascal {
     using Vector_t = typename Parent::Vector_t;
     using AtomRef_t = typename Parent::AtomRef;
     template <int Level, int MaxLevel>
-    using ClusterRef_t = typename Parent::template ClusterRef<Level, MaxLevel>;
-    
+    using ClusterRef_t = typename Parent::template ClusterRef<Level>;//, MaxLevel>;
+
     using AtomVectorField_t = Property<NeighbourhoodManagerMinimal, double, 1, 3>;
-    
+
     //! Default constructor
     NeighbourhoodManagerMinimal()
     :particles{}, centers{} ,positions{},shifted_position{} ,lattice{}, cell{},pbc{} ,part2bin{} ,boxes{} ,number_of_neighbours{0} ,neighbour_bin_id{} , number_of_neighbours_stride{}, neighbour_atom_index{},particule_types{}
@@ -109,7 +109,7 @@ namespace rascal {
       auto && i_bin_id{this->part2bin[i_atom_id]};
       auto && shift_index{this->neighbour_bin_id[i_bin_id][j_linear_id].get_index()};
       auto && j_atom_id{cluster.get_atoms().back().get_index()}; // neighbour atom index
-      // TODO: find another way. This is a work around so that shifted_position lives longer than the function call but it is prone to side effects 
+      // TODO: find another way. This is a work around so that shifted_position lives longer than the function call but it is prone to side effects
       this->shifted_position = this->positions.col(j_atom_id) + this->cell * this->get_shift(i_bin_id,shift_index);
       auto * xval{this->shifted_position.col(0).data()};
       return Vector_ref(xval);
@@ -158,7 +158,7 @@ namespace rascal {
     size_t get_nb_clusters(int cluster_size);
 
     void update(const Eigen::Ref<const Eigen::MatrixXd> positions,const Eigen::Ref<const VecXi>  particule_types,
-               const Eigen::Ref<const VecXi> center_ids, 
+               const Eigen::Ref<const VecXi> center_ids,
                 const Eigen::Ref<const Eigen::MatrixXd> cell,const std::array<bool,3>& pbc, const double& cutoff_max);
 
     //Box get_box(const int& bin_id);
@@ -168,7 +168,7 @@ namespace rascal {
   protected:
 
     void build(const Eigen::Ref<const Eigen::MatrixXd> positions, const Eigen::Ref<const VecXi>  particule_types,
-               const Eigen::Ref<const VecXi> center_ids, 
+               const Eigen::Ref<const VecXi> center_ids,
                const Eigen::Ref<const Eigen::MatrixXd> cell,const std::array<bool,3>& pbc, const double& cutoff_max);
 
     void set_positions(const Eigen::Ref<const Eigen::MatrixXd> pos){
@@ -176,8 +176,8 @@ namespace rascal {
     }
 
     std::vector<AtomRef_t> particles;
-    std::vector<AtomRef_t> centers; //! 
-    Matrix3XdC positions; //! 
+    std::vector<AtomRef_t> centers; //!
+    Matrix3XdC positions; //!
     Vector_t shifted_position;
     Lattice lattice;
     Cell_t cell; // to simplify get_neighbour_position()
@@ -206,9 +206,9 @@ namespace rascal {
 
     //! constructor
     Box(Manager_t& manager, const Vec3i_t& coord, const std::array<bool, 3>& pbc, const Vec3i_t& neigh_search, const Vec3i_t& nbins_c);
-          //const std::array<std::array<Dim_t, 3>,2>& neigh_bounds, 
-          
-    
+          //const std::array<std::array<Dim_t, 3>,2>& neigh_bounds,
+
+
     //! copy constructor
     Box(const Box & other) = default;
     //! assignment operator
@@ -223,18 +223,18 @@ namespace rascal {
     inline size_t get_number_of_particles();
 
     inline size_t get_number_of_neighbours();
-      
+
     inline size_t get_number_of_neighbour_box();
-      
+
     inline void set_number_of_neighbours(const size_t& neigh_nb);
 
     inline  int get_neighbour_bin_index(const int& j_index);
 
     inline size_t get_particle_index(const int& index);
-      
+
     inline Vector_ref get_neighbour_bin_shift(const int& neigh_bin_index){
       auto * xval{this->neighbour_bin_shift[neigh_bin_index].col(0).data()};
-      return Vector_ref(xval); 
+      return Vector_ref(xval);
     }
 
   protected:
@@ -270,7 +270,7 @@ namespace rascal {
     return cluster.get_atoms().back().get_index();
   }
   /* ---------------------------------------------------------------------- */
-  
+
   inline Vector_ref NeighbourhoodManagerMinimal::get_shift(const int& i_bin_id, const int& neigh_bin_index){
       return this->boxes[i_bin_id].get_neighbour_bin_shift(neigh_bin_index);
   }

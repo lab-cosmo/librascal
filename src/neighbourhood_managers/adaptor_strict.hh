@@ -67,9 +67,9 @@ namespace rascal {
     using Parent = NeighbourhoodManagerBase<AdaptorStrict<ManagerImplementation>>;
     using traits = NeighbourhoodManager_traits<AdaptorStrict>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
-    template <int Level, int MaxLevel>
-    using ClusterRef_t = typename ManagerImplementation::template ClusterRef<Level, MaxLevel>;
-    using PairRef_t = ClusterRef_t<2, traits::MaxLevel>;
+    template <int Level>
+    using ClusterRef_t = typename ManagerImplementation::template ClusterRef<Level>;
+    using PairRef_t = ClusterRef_t<2>;
 
     static_assert(traits::MaxLevel > 1,
                   "ManagerImlementation needs to handle pairs");
@@ -128,9 +128,9 @@ namespace rascal {
       return this->manager.get_position(original_atom);
     }
 
-    template<int Level, int MaxLevel>
-    inline Vector_ref get_neighbour_position(const ClusterRef_t<Level,
-					     MaxLevel>& /*cluster*/) {
+    template<int Level>
+    inline Vector_ref get_neighbour_position(const ClusterRef_t<Level>&
+					     /*cluster*/) {
       // Argument is now the same, but implementation
       throw std::runtime_error("should be adapted to Félix's new interface using the ClusterRef");
 
@@ -171,8 +171,8 @@ namespace rascal {
      * return the linear index of cluster (i.e., the count at which
      * this cluster appears in an iteration
      */
-    template<int Level, int MaxLevel>
-    inline int get_offset_impl(const ClusterRef_t<Level, MaxLevel>& cluster) const {
+    template<int Level>
+    inline int get_offset_impl(const ClusterRef_t<Level>& cluster) const {
       return this->offsets[Level][cluster.get_index()];
     }
 
@@ -213,7 +213,7 @@ namespace rascal {
 
     template <int Level>
     inline void add_atom(typename ManagerImplementation::template
-                         ClusterRef<Level, traits::MaxLevel> cluster) {
+                         ClusterRef<Level> cluster) {
       return this->template add_atom <Level-1>(cluster.get_atoms().back());
     }
 
@@ -312,7 +312,7 @@ namespace rascal {
   struct AdaptorStrict<ManagerImplementation>::HelperLoop {
     static constexpr int MaxLevel{ManagerImplementation::traits::MaxLevel};
     using ClusterRef_t = typename ManagerImplementation::template
-      ClusterRef<Level, MaxLevel>;
+      ClusterRef<Level>;
 
     using NextLevelLoop = HelperLoop<Level+1,
                                      (Level+1 == MaxLevel)>;
@@ -334,7 +334,7 @@ namespace rascal {
   struct AdaptorStrict<ManagerImplementation>::HelperLoop<Level, true> {
     static constexpr int MaxLevel{ManagerImplementation::traits::MaxLevel};
     using ClusterRef_t = typename ManagerImplementation::template
-      ClusterRef<Level, MaxLevel>;
+      ClusterRef<Level>;
     static void loop(ClusterRef_t & /*cluster*/,
                      AdaptorStrict<ManagerImplementation>& /*manager*/) {
       // do nothing

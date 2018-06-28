@@ -149,7 +149,7 @@ namespace rascal {
     constexpr static size_t NbDof{NbRow*NbCol};
     using Cluster_t =
       typename NeighbourhoodManager::template ClusterRef
-      <ClusterSize, traits::MaxLevel>;
+      <ClusterSize>;
 
     using Value = internal::Value<T, NbRow, NbCol>;
 
