@@ -377,7 +377,7 @@ namespace rascal {
         if (j > i) {
           i_number_of_neighbours += 1;
           this->nb_pairs += 1;
-          firstneigh.push_back(j);
+          halfneigh.push_back(j);
         }
       }
       numneigh[i] = i_number_of_neighbours;
@@ -393,7 +393,7 @@ namespace rascal {
             << " number of neighbours " << a << std::endl;
         for (auto i=ioff; i < ioff+a; i++) {
           std::cout << "Neighbour "
-              << firstneigh[i] << std::endl;
+              << halfneigh[i] << std::endl;
         }
         ioff += a;
       }

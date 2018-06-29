@@ -244,7 +244,7 @@ namespace rascal {
 
     // Returns the number of neighbours of a given atom
     template<int Level>
-    inline size_t get_cluster_size(const ClusterRef_t<Level>&
+    inline size_t get_cluster_size(const ClusterRefBase<Level>&
 				   cluster) const {
       static_assert(Level < traits::MaxLevel,
                     "this implementation only handles atoms and pairs.");
@@ -258,7 +258,7 @@ namespace rascal {
                     "this implementation only handles atoms and pairs.");
       auto && i_atom_id{cluster.back()};
       auto && off{this->offsets[i_atom_id]};
-      return this->firstneigh[off + j_atom_id];
+      return this->halfneigh[off + j_atom_id];
     }
 
     // Return unique id of a given atom. Here the atoms are numbered
@@ -319,7 +319,7 @@ namespace rascal {
 				  // in allneigh is a vector of
 				  // neighbours of the given atom id
 
-    HalfNeighbourList_t firstneigh{}; // Half neighbourlist. It is a
+    HalfNeighbourList_t halfneigh{}; // Half neighbourlist. It is a
                                       // contiguous vector where all
                                       // neighbours are listed
                                       // once. Use in conjunction with

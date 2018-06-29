@@ -116,15 +116,16 @@ namespace rascal {
 
     inline double get_cutoff() const {return this->cutoff;}
 
-    //! Get number of atoms, pairs, triplets, etc.
+    //! Get number of MaxLevel+1 tuplets
     inline size_t get_nb_clusters(int cluster_size) const {
-      std::cout << "cluster_size " << cluster_size << std::endl;
       return this->atom_refs.size();
     }
 
     //! Return number of atoms
     inline size_t get_size() const {
-      return this->get_nb_clusters(1);
+      // return this->get_nb_clusters(1); TODO: this has to return the
+      // original number of atoms from the underlying manager
+      return this->manager.get_size();
     }
 
     inline Vector_ref get_position(const AtomRef_t & atom) {
@@ -142,7 +143,8 @@ namespace rascal {
       static_assert(Level <= traits::MaxLevel,
       		    "this implementation should only work up to MaxLevel.");
       // Argument is now the same, but implementation
-      throw std::runtime_error("should be adapted to Félix's new interface using the ClusterRef");
+      throw std::runtime_error("should be adapted to Félix's "
+			       "new interface using the ClusterRef");
     }
 
     // return the global id of an atom
@@ -185,25 +187,20 @@ namespace rascal {
       return this->offsets[Level][cluster.get_index()];
     }
 
-    // template<int Level, bool AtMaxLevel = (Level==traits::MaxLevel-1)>
-    // inline std::enable_if_t<AtMaxLevel, size_t>
-    // get_cluster_size(const ClusterRefBase<Level>& cluster) const {
-    //   static_assert(Level < traits::MaxLevel,
-    // 		    "AtMaxLevel is a SFINAE, do not set manually");
-    //   return this->atom_refs.size();
-    // }
+    template<int Level, bool AtOldMaxLevel = (Level==traits::MaxLevel-1)>
+    inline std::enable_if_t<AtOldMaxLevel, size_t>
+    get_cluster_size(const ClusterRefBase<Level>& cluster) const {
+      static_assert(Level < traits::MaxLevel,
+    		    "AtMaxLevel is a SFINAE, do not set manually");
+      return this->nb_neigh[cluster.get_global_index()];
+    }
 
     template<int Level>
     inline size_t get_cluster_size(const ClusterRefBase<Level>& cluster) const {
       static_assert(Level < traits::MaxLevel,
                     "this implementation only handles atoms and pairs");
-        std::cout << "get_cluster_size, level/index/neighbours/size "
-      	<< Level
-      	<< "/" << cluster.back()
-      	<< "/" <<  nb_neigh[cluster.back()]
-      	<< "/" << nb_neigh.size()
-      	<< std::endl;
-      return this->nb_neigh[cluster.back()];
+    	return this->manager.get_cluster_size(cluster);
+    	  //this->nb_neigh[cluster.back()];
     }
 
     // template<int Level>
@@ -294,26 +291,17 @@ namespace rascal {
 
     template<int Level, bool IsDummy> struct AddLevelLoop;
 
-    /**
-     * store atom refs per level if it exists,i.e.
-     *   - atom_refs[0] lists all i-atoms
-     *   - atom_refs[1] lists all j-atoms
-     *   - atom_refs[2] lists all k-atoms
-     *   - etc
-     */
-
+    // stores AtomRefs to of neighbours for traits::MaxLevel-1-*plets
     std::vector<AtomRef_t> atom_refs;
-    // TODO: minimum is to have atoms from a neighbour list?
-    /**
-     * store the number of j-atoms for every i-atom (nb_neigh[1]), the
-     * number of k-atoms for every j-atom (nb_neigh[2]), etc
-     */
+
+    // stores the number of neighbours of traits::MaxLevel-1-*plets
     std::vector<unsigned int> nb_neigh{};
 
-    std::vector<unsigned int> firstneigh{};
-    /**
-     * store the offsets from where the nb_neigh can be counted
-     */
+    // stores all neighbours of traits::MaxLevel-1-*plets
+    std::vector<unsigned int> neighbours{};
+
+    // stores the offsets of traits::MaxLevel-1-*plets for accessing
+    // <code>neighbours</code>
     std::vector<unsigned int> offsets{};
   private:
   };
@@ -379,8 +367,8 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
-  // end of levels, here is where the magic happens and the neighbours
-  // of the same level are added as the Level+1.
+  // At desired MaxLevel (plus one), here is where the magic happens
+  // and the neighbours of the same level are added as the Level+1.
   // add check for non half neighbour list
   template <class ManagerImplementation>
   template <int Level>
@@ -393,11 +381,14 @@ namespace rascal {
 		      AdaptorMaxLevel<ManagerImplementation>& manager) {
       std::cout << " ------At old MaxLevel, adding new layer-----" << std::endl;
 
-      std::cout << cluster.back() << std::endl;
+      // i refers to the local atom for which the pairs j are added as
+      // MaxLevel+1
+      auto atom_i = cluster.back();
+      std::cout << "Atom i " << atom_i << std::endl;
       std::cout << manager.get_size() << std::endl;
       // auto index {cluster.get_global_index()};
       // for (int i{0};  i  < this->nb_neigh[index]; ++i) {
-      // 	auto jndex{this->firstneigh[this->offsets[index]+i]}
+      // 	auto jndex{this->neighbours[this->offsets[index]+i]}
       // 	auto this->
       // }
 

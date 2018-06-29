@@ -300,6 +300,12 @@ namespace rascal {
       Parent{internal::get_indices(it.get_container_atoms())},
       atoms{it.get_container_atoms()}, it{it}{}
 
+
+    ClusterRef(std::enable_if<Level==1, ClusterRefBase<1>> & cluster,
+	       Manager_t& manager):
+      Parent{cluster.get_indices()},
+      it{manager, }{}
+
     //! Copy constructor
     ClusterRef(const ClusterRef &other) = default;
 

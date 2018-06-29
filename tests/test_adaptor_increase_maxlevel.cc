@@ -52,11 +52,11 @@ namespace rascal {
 	std::cout << "  pair "
 		  << pair.get_atoms().back().get_index()
 		  << std::endl;
-	for (auto triplet : pair) {
-	  std::cout << "    triplet "
-		    << triplet.get_atoms().back().get_index()
-		    << std::endl;
-	}
+	// for (auto triplet : pair) {
+	//   std::cout << "    triplet "
+	// 	    << triplet.get_atoms().back().get_index()
+	// 	    << std::endl;
+	// }
       }
     }
   }
