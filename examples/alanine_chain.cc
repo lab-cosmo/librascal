@@ -41,7 +41,7 @@ int main() {
   // the calculation of the dihedral angles in the alanine-unit.
   std::vector<int> phi{4, 3, 19, 1};
   std::vector<int> psi{19, 1, 0, 18};
-  // Put them in a container for interation
+  // Put them in a container for iteration
   std::vector<std::vector<int>> quadruplets{};
   quadruplets.push_back(phi);
   quadruplets.push_back(psi);
