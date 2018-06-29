@@ -71,9 +71,9 @@ namespace rascal {
   //! traits specialisation for Chain manager
 
   // The traits are used for vector allocation and further down the
-  // processing chain to determine what the given Neighbourhoodmanager
-  // already contains to avoid recomputation. See also the
-  // implementation of adaptors.
+  // processing chain to determine what functionality the given 
+  // NeighbourhoodManager already contains to avoid recomputation. 
+  // See also the implementation of adaptors.
   template <>
   struct NeighbourhoodManager_traits<NeighbourhoodManagerChain> {
     constexpr static int Dim{3};
@@ -82,9 +82,10 @@ namespace rascal {
     constexpr static bool HasDirectionVectors{false};
     constexpr static bool HasDistances{false};
   };
+  
   // Definition of the new NeighbourhoodManager class. To add your
   // own, please stick to the convention of using
-  // 'NeighbourhoofManagerYours', where 'Yours' will give a hin of
+  // 'NeighbourhoofManagerYours', where 'Yours' will give a hint of
   // what it is about.
   class NeighbourhoodManagerChain:
     // It inherits publicly everything from the base class

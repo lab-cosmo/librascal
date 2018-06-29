@@ -370,7 +370,7 @@ namespace rascal {
         double distance{(atom.get_position()-
                          pair.get_position()).norm()};
         if (distance <= this->cut_off) {
-	  this->add_atom(pair);
+          this->add_atom(pair);
           this->distance.push_back(distance);
         }
         using HelperLoop = HelperLoop<2, 2 >= traits::MaxLevel>;
