@@ -163,7 +163,7 @@ namespace rascal {
      * this cluster appears in an iteration
      */
     template<int Level>
-    inline int get_offset_impl(const ClusterRef_t<Level>& cluster) const;
+    inline int get_offset_impl(const ClusterRefBase<Level>& cluster) const;
 
     size_t get_nb_clusters(int cluster_size);
 
@@ -188,11 +188,10 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template<int Level>
   inline int NeighbourhoodManagerLammps::
-  get_offset_impl(const ClusterRef_t<Level>& cluster) const {
+  get_offset_impl(const ClusterRefBase<Level>& cluster) const {
     static_assert(Level == 2, "This class cas only handle single atoms and pairs");
 
-    auto atoms{cluster.get_atoms()};
-    auto i{atoms.front().get_index()};
+    auto i{cluster.front()};
     auto j{cluster.get_index()};
     auto main_offset{this->offsets[i]};
     return main_offset + j;
@@ -202,8 +201,8 @@ namespace rascal {
   // specialisation for just atoms
   template <>
   inline int NeighbourhoodManagerLammps:: template
-  get_offset_impl<1>(const ClusterRef_t<1>& cluster) const {
-    return cluster.get_atoms().back().get_index();
+  get_offset_impl<1>(const ClusterRefBase<1>& cluster) const {
+    return cluster.back(); //get_atoms().back().get_index();
   }
 
 }  // rascal
