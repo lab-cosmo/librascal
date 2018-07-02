@@ -136,7 +136,7 @@ namespace rascal {
     }
 
     template<int Level>
-    inline Vector_ref get_neighbour_position(const ClusterRef_t<Level>&
+    inline Vector_ref get_neighbour_position(const ClusterRefBase<Level>&
 					     /*cluster*/) {
       static_assert(Level > 1,
 		    "Only possible for Level > 1.");

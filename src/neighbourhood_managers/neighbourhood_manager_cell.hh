@@ -105,7 +105,7 @@ namespace rascal {
     // is the current center. j_linear_id is the index of the current
     // neighbour iterator.
     template<int Level>
-    inline Vector_ref get_neighbour_position(const ClusterRef_t<Level>&
+    inline Vector_ref get_neighbour_position(const ClusterRefBase<Level>&
 					     cluster) {
       static_assert(Level > 1,
 		    "Only possible for Level > 1.");
@@ -113,10 +113,10 @@ namespace rascal {
       		    "this implementation should only work up to MaxLevel.");
 
       auto && j_linear_id = cluster.get_index();
-      auto && i_atom_id{cluster.get_atoms().front().get_index()}; // center_atom index
+      auto && i_atom_id{cluster.front()}; // center_atom index
       auto && i_bin_id{this->part2bin[i_atom_id]};
       auto && shift_index{this->neighbour_bin_id[i_bin_id][j_linear_id].get_index()};
-      auto && j_atom_id{cluster.get_atoms().back().get_index()}; // neighbour atom index
+      auto && j_atom_id{cluster.back()}; // neighbour atom index
       // TODO: find another way. This is a work around so that shifted_position lives longer than the function call but it is prone to side effects
       this->shifted_position = this->positions.col(j_atom_id) + this->cell * this->get_shift(i_bin_id,shift_index);
       auto * xval{this->shifted_position.col(0).data()};

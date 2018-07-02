@@ -120,13 +120,13 @@ namespace rascal {
 
     // return position vector
     template<int Level>
-    inline Vector_ref get_neighbour_position(const ClusterRef_t<Level>&
+    inline Vector_ref get_neighbour_position(const ClusterRefBase<Level>&
 					     cluster) {
       static_assert(Level > 1,
 		    "Only possible for Level > 1.");
       static_assert(Level <= traits::MaxLevel,
 		    "Level to large, not available.");
-      return this->get_position(cluster.get_atoms().back());
+      return this->get_position(cluster.back());
     }
 
     // return number of I atoms in the list
