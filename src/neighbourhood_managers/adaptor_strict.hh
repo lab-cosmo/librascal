@@ -52,6 +52,7 @@ namespace rascal {
     constexpr static bool HasDirectionVectors{ManagerImplementation::traits::HasDirectionVectors};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
     constexpr static int MaxLevel{ManagerImplementation::traits::MaxLevel};
+    using Depth = DepthIncreaser<MaxLevel, ManagerImplementation::traits::Depth>::type;
   };
 
   /**

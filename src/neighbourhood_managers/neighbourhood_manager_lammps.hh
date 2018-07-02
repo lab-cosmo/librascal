@@ -41,6 +41,7 @@ namespace rascal {
   //! traits specialisation for Lammps manager
   template <>
   struct NeighbourhoodManager_traits<NeighbourhoodManagerLammps> {
+    using Depth = std::integer_sequence<int, 0, 0>;
     constexpr static int Dim{3};
     constexpr static int MaxLevel{2};
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
