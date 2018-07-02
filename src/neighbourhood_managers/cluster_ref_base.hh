@@ -69,8 +69,6 @@ namespace rascal {
   private:
   };
 
-
-
 } // rascal
 
 #endif /* CLUSTERREFBASE_H */

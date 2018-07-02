@@ -183,8 +183,8 @@ namespace rascal {
      * this cluster appears in an iteration
      */
     template<int Level>
-    inline int get_offset_impl(const ClusterRef_t<Level>& cluster) const {
-      return this->offsets[Level][cluster.get_index()];
+    inline int get_offset_impl(const ClusterRefBase<Level>& cluster) const {
+      return this->offsets[cluster.get_index()];
     }
 
     template<int Level, bool AtOldMaxLevel = (Level==traits::MaxLevel-1)>
@@ -200,7 +200,6 @@ namespace rascal {
       static_assert(Level < traits::MaxLevel,
                     "this implementation only handles atoms and pairs");
     	return this->manager.get_cluster_size(cluster);
-    	  //this->nb_neigh[cluster.back()];
     }
 
     // template<int Level>
