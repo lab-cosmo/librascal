@@ -249,7 +249,7 @@ namespace rascal {
 				   cluster) const {
       static_assert(Level < traits::MaxLevel,
                     "this implementation only handles atoms and pairs.");
-      return this->numneigh[cluster.get_atoms().back().get_index()];
+      return this->numneigh[cluster.back()];
     }
 
     template<int Level>

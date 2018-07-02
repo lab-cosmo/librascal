@@ -136,10 +136,10 @@ namespace rascal {
 
     // return the number of neighbours of a given atom
     template<int Level>
-    inline size_t get_cluster_size(const ClusterRef_t<Level>& cluster) const {
-      static_assert(Level == traits::MaxLevel-1,
+    inline size_t get_cluster_size(const ClusterRefBase<Level>& cluster) const {
+      static_assert(Level < traits::MaxLevel,
                     "this implementation only handles atoms and pairs");
-      return this->numneigh[cluster.get_atoms().back().get_index()];
+      return this->numneigh[cluster.back()];
     }
 
     // return the global id of an atom
