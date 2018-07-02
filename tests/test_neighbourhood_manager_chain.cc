@@ -59,7 +59,6 @@ namespace rascal {
       ++atom_counter;
       for (auto pair_cluster : atom_cluster) {
       	auto pair_offset{pair_cluster.get_global_index()};
-      	++pair_counter;
       	if (verbose) {
       	  std::cout
 	    << "pair (" << atom_cluster.get_atoms().back().get_index()
@@ -67,6 +66,8 @@ namespace rascal {
 	    << "), pair_counter = " << pair_counter
 	    << ", pair_offset = " << pair_offset << std::endl;
         }
+	BOOST_CHECK_EQUAL(pair_counter, pair_offset);
+	++pair_counter;
       }
     }
     BOOST_CHECK_EQUAL(atom_counter, natoms);
