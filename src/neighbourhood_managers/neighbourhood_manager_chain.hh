@@ -223,13 +223,13 @@ namespace rascal {
     // boundary conditions, the get_neighbour_position should return a
     // different position, if it is a ghost atom.
     template<int Level>
-    inline Vector_ref get_neighbour_position(const ClusterRef_t<Level>&
+    inline Vector_ref get_neighbour_position(const ClusterRefBase<Level>&
 					     cluster) {
       static_assert(Level > 1,
 		    "Only possible for Level > 1.");
       static_assert(Level <= traits::MaxLevel,
       		    "this implementation should only work up to MaxLevel.");
-      return this->get_position(cluster.get_atoms().back());
+      return this->get_position(cluster.back());
     }
 
     // Returns a map to all positions.
@@ -275,7 +275,7 @@ namespace rascal {
      */
     template<int Level>
     inline int
-    get_offset_impl(const ClusterRef_t<Level>& cluster) const;
+    get_offset_impl(const ClusterRefBase<Level>& cluster) const;
 
     // Function for returning the number of atoms, pairs, tuples, etc.
     size_t get_nb_clusters(int cluster_size);
@@ -373,22 +373,21 @@ namespace rascal {
   // adjust for triplets
   template<int Level>
   inline int NeighbourhoodManagerChain::
-  get_offset_impl(const ClusterRef_t<Level>& cluster) const {
-    static_assert(Level == 2, "This class cas only handle single atoms and pairs");
+  get_offset_impl(const ClusterRefBase<Level>& cluster) const {
+    static_assert(Level == 2, "This class can only handle single atoms and pairs");
 
-    auto atoms{cluster.get_atoms()};
-    auto i{atoms.front().get_index()};
+    auto i{cluster.front()};
     auto j{cluster.get_index()};
     auto main_offset{this->offsets[i]};
     return main_offset + j;
   }
 
   /* ---------------------------------------------------------------------- */
-  // specialisation for just atoms
+  // specialisation for just atoms (Level=1)
   template <>
   inline int NeighbourhoodManagerChain:: template
-  get_offset_impl<1>(const ClusterRef_t<1>& cluster) const {
-    return cluster.get_atoms().back().get_index();
+  get_offset_impl<1>(const ClusterRefBase<1>& cluster) const {
+    return cluster.back(); //get_atoms().back().get_index();
   }
 
 

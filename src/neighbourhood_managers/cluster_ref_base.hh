@@ -62,7 +62,11 @@ namespace rascal {
     const int & front() const{return this->indices.front();}
     const int & back() const{return this->indices.back();}
 
-
+    virtual int get_index() const = 0;
+    
+    // inline int get_index() const {
+    //   return 
+    // }
 
   protected:
     std::array<int, Level> indices;

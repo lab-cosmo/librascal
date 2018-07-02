@@ -101,9 +101,9 @@ namespace rascal {
      * manager. Iterators like these can be used as indices for random
      * access in atom-, pair, ... -related properties.
      */
-    template <int Level>//, int MaxLevel>
+    template <int Level>
     class iterator;
-    using Iterator_t = iterator<1>;//, traits::MaxLevel>;
+    using Iterator_t = iterator<1>;
     friend Iterator_t;
 
     /**
@@ -167,7 +167,7 @@ namespace rascal {
     std::array<AtomRef, 0> get_atoms() const {return std::array<AtomRef, 0>{};};
 
     template <int L>
-    inline int get_offset(const ClusterRef<L> & cluster) const {
+    inline int get_offset(const ClusterRefBase<L> & cluster) const {
       return this->implementation().get_offset_impl(cluster);
     }
 
@@ -300,11 +300,10 @@ namespace rascal {
       Parent{internal::get_indices(it.get_container_atoms())},
       atoms{it.get_container_atoms()}, it{it}{}
 
-
     ClusterRef(std::enable_if<Level==1, ClusterRefBase<1>> & cluster,
 	       Manager_t& manager):
       Parent{cluster.get_indices()},
-      it{manager, }{}
+      it{manager}{}
 
     //! Copy constructor
     ClusterRef(const ClusterRef &other) = default;
@@ -335,7 +334,6 @@ namespace rascal {
       return internal::PositionGetter<Level, ClusterRef>::get_position(*this);
     }
 
-
     inline decltype(auto) get_atom_type() const {
       return this->atoms.back().get_atom_type();
     }
@@ -344,7 +342,7 @@ namespace rascal {
     //! len==2 if 1st neighbours,...
     inline int get_atom_index() {
       return this->atoms.back().get_index();
-      }
+    }
 
     inline Manager_t & get_manager() {return this->it.get_manager();}
     inline const Manager_t & get_manager() const {return this->it.get_manager();}
@@ -352,9 +350,10 @@ namespace rascal {
     inline iterator begin() {return iterator(*this, 0);}
     inline iterator end() {return iterator(*this, this->size());}
     inline size_t size() {return this->get_manager().cluster_size(*this);}
-    inline int get_index() const {
+    int get_index() const {
       return this->it.index;
     }
+
     inline int get_global_index() const {
       return this->get_manager().get_offset(*this);
     }
@@ -366,7 +365,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
-  template <int Level> //, int MaxLevel>
+  template <int Level>
   class NeighbourhoodManagerBase<ManagerImplementation>::iterator
   {
   public:
