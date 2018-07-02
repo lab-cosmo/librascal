@@ -31,16 +31,43 @@
 #include <array>
 
 namespace rascal {
+  namespace internal {
+    template <int Depth, int HiDepth,typename T, int... Ints>
+    std::array<T, Depth>
+    head_helper(const std::array<T, HiDepth> & arr,
+                std::index_sequence<Ints...>) {
+      return std::array<T, Depth> {arr[Ints]...};
+    }
 
-  template<int Level>
+    template <int Depth, int HiDepth,typename T>
+    std::array<T, Depth> head(const std::array<T, HiDepth> & arr) {
+      return head_helper(arr, std::make_index_sequence<Depth>{});
+    }
+
+  }  // internal
+
+  template<int Level, int Depth=2>
   class ClusterRefBase
   {
   public:
     //! Default constructor
     ClusterRefBase() = delete;
 
-    ClusterRefBase(std::array<int, Level> indices):
-    indices{indices} {}
+    //! direct constructor
+    ClusterRefBase(std::array<int, Level> atom_indices,
+                   std::array<int, Depth> cluster_indices={}):
+      atom_indices{atom_indices}, cluster_indices{cluster_indices} {}
+
+    // //! constructor from higher depth
+    // template<int HiDepth>
+    // ClusterRefBase(const ClusterRefBase<Level, HiDepth> & other):
+    //   atom_indices{other.atom_indices},
+    //   cluster_indices{internal::head<Depth>(other.cluster_indices)} {
+    //     static_assert(HiDepth >= Depth,
+    //                   "You are trying to access a property that "
+    //                   "does not exist at this low a level in the "
+    //                   "adaptor stack.");
+    //   }
 
     //! Copy constructor
     ClusterRefBase(const ClusterRefBase &other) = default; //
@@ -57,15 +84,20 @@ namespace rascal {
     //! Move assignment operator
     ClusterRefBase& operator=(ClusterRefBase &&other) = default;
 
-    const std::array<int, Level> & get_indices() const {return this->indices;}
+    const std::array<int, Level> & get_atom_indices() const {return this->indices;}
 
-    const int & front() const{return this->indices.front();}
-    const int & back() const{return this->indices.back();}
+    const int & front() const{return this->atom_indices.front();}
+    const int & back() const{return this->atom_indices.back();}
 
-    virtual int get_index() const = 0;
+    inline int get_cluster_index(int depth) const {return this->cluster_indices[depth];}
 
   protected:
-    std::array<int, Level> indices;
+    std::array<int, Level> atom_indices;
+    /**
+     * cluster indices by depth level, highest depth, means last
+     * adaptor, and mean last entry (.back())
+     */
+    std::array<int, Depth> cluster_indices;
   private:
   };
 

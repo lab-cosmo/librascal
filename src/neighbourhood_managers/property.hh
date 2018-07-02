@@ -199,8 +199,14 @@ namespace rascal {
       Value::push_in_vector(this->values, ref);
     }
 
-    reference operator[](const Cluster_t& id) {
-      return Value::get_ref(this->values[id.get_global_index()*NbDof]);
+    template<int HiDepth>
+    reference operator[](const ClusterRefBase<Level, HiDepth> & id) {
+      constexpr int Depth{traits::Depth};
+      static_assert(HiDepth >= Depth,
+                    "You are trying to access a property that "
+                    "does not exist at this low a level in the "
+                    "adaptor stack.");
+      return Value::get_ref(this->values[id.get_cluster_index(Depth)*NbDof]);
       //return Value::get_ref(this->values[manager.get_offset(id)*NbDof]);
     }
 
