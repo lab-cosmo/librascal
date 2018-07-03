@@ -44,7 +44,7 @@ namespace rascal {
     constexpr static int Dim{3};
     constexpr static int MaxLevel{2};
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
-    using DepthByDimension = std::integer_sequence<int, 0, 0>;
+    using DepthByDimension = std::index_sequence<0, 0>;
   };
 
 

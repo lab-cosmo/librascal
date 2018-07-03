@@ -305,7 +305,8 @@ namespace rascal {
 
     //! Constructor from an iterator
     ClusterRef(Iterator_t & it):
-      Parent{it.get_atom_indices()},
+      Parent{it.get_atom_indices(),
+        Intelligenzija},
       it{it}{}
 
 
