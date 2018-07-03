@@ -116,7 +116,7 @@ namespace rascal {
      * return type for iterators: a light-weight pair, triplet, etc reference,
      * giving access to the AtomRefs of all implicated atoms
      */
-    template <int Level>
+    template <int Level, int Depth>
     class ClusterRef;
 
     inline Iterator_t begin() {return Iterator_t(*this, 0);}
@@ -131,8 +131,8 @@ namespace rascal {
     inline Vector_ref position(const AtomRef& atom) {
       return this->implementation().get_position(atom);
     }
-    template <int L> //ll
-    inline Vector_ref neighbour_position(ClusterRef<L> & cluster) {
+    template <int L, int D>
+    inline Vector_ref neighbour_position(ClusterRef<L, D> & cluster) {
       return this->implementation().get_neighbour_position(cluster);
     }
 
@@ -141,13 +141,13 @@ namespace rascal {
     }
 
   protected:
-    template <int L>
-    inline size_t cluster_size(ClusterRef<L> & cluster) const {
+    template <int L, int D>
+    inline size_t cluster_size(ClusterRef<L, D> & cluster) const {
       return this->implementation().get_cluster_size(cluster);
     }
 
-    template <int L>
-    inline size_t atom_id(ClusterRef<L> & cluster, int index) const {
+    template <int L, int D>
+    inline size_t atom_id(ClusterRef<L, D> & cluster, int index) const {
       return this->implementation().get_atom_id(cluster, index);
     }
 
@@ -166,8 +166,8 @@ namespace rascal {
 
     std::array<AtomRef, 0> get_atoms() const {return std::array<AtomRef, 0>{};};
 
-    template <int L>
-    inline int get_offset(const ClusterRefBase<L> & cluster) const {
+    template <int L, int D>
+    inline int get_offset(const ClusterRefBase<L, D> & cluster) const {
       return this->implementation().get_offset_impl(cluster);
     }
 
@@ -231,31 +231,30 @@ namespace rascal {
   public:
     using Vector_t = Eigen::Matrix<double, ManagerImplementation::dim(), 1>;
     using Vector_ref = Eigen::Map<Vector_t>;
-    using Vector_block = Eigen::Block<Eigen::MatrixXd, -1, 1, true>;
     using Manager_t = NeighbourhoodManagerBase<ManagerImplementation>;
     //! Default constructor
     AtomRef() = delete;
 
     //! constructor from iterator
     //AtomRef(Manager_t & manager, int id): manager{manager}, index{id}{}
-    AtomRef(Manager_t & manager, int id): manager{manager}, index{id} {}
+    AtomRef(Manager_t & manager, const int & id): manager{manager}, index{id} {}
     //! Copy constructor
-    AtomRef(const AtomRef &other) = default;
+    AtomRef(const AtomRef & other) = default;
 
     //! Move constructor
-    AtomRef(AtomRef &&other) = default;
+    AtomRef(AtomRef && other) = default;
 
     //! Destructor
     ~AtomRef(){};
 
     //! Copy assignment operator
-    AtomRef& operator=(const AtomRef &other) = delete;
+    AtomRef & operator=(const AtomRef & other) = delete;
 
     //! Move assignment operator
-    AtomRef& operator=(AtomRef &&other) = default;
+    AtomRef & operator=(AtomRef && other) = default;
 
     //! return index
-    inline int get_index() const {return this->index;}
+    inline const int & get_index() const {return this->index;}
 
     //! return position vector
     inline Vector_ref get_position() {return this->manager.position(*this);}
@@ -265,7 +264,7 @@ namespace rascal {
 
   protected:
     Manager_t & manager;
-    int index;
+    const int & index; //!< corresponds to the 0-depth, 1st-level cluster_id (i.e. memory-offset)
   private:
   };
 
@@ -276,13 +275,13 @@ namespace rascal {
     This is the object we have when iterating over the manager
   */
   template <class ManagerImplementation>
-  template <int Level>
+  template <int Level, int Depth>
   class NeighbourhoodManagerBase<ManagerImplementation>::ClusterRef :
-    public ClusterRefBase<Level>
+    public ClusterRefBase<Level, Depth>
   {
   public:
     using Manager_t = NeighbourhoodManagerBase<ManagerImplementation>;
-    using Parent = ClusterRefBase<Level>;
+    using Parent = ClusterRefBase<Level, Depth>;
     using AtomRef_t = typename Manager_t::AtomRef;
     using Iterator_t = typename Manager_t::template iterator<Level>;
     using Atoms_t = std::array<AtomRef_t, Level>;
@@ -300,7 +299,7 @@ namespace rascal {
       Parent{internal::get_indices(it.get_container_atoms())},
       atoms{it.get_container_atoms()}, it{it}{}
 
-    ClusterRef(std::enable_if<Level==1, ClusterRefBase<1>> & cluster,
+    ClusterRef(std::enable_if<Level==1, ClusterRefBase<1, Depth>> & cluster,
 	       Manager_t& manager):
       Parent{cluster.get_indices()},
       it{manager}{}
@@ -371,13 +370,13 @@ namespace rascal {
   public:
     using Manager_t = NeighbourhoodManagerBase<ManagerImplementation>;
     friend Manager_t;
-    using ClusterRef_t = typename Manager_t::template ClusterRef<Level>;
+    using ClusterRef_t = typename Manager_t::template ClusterRef<Level, traits::Depth>;
     friend ClusterRef_t;
     using Container_t =
       std::conditional_t
       <Level == 1,
        Manager_t,
-       typename Manager_t::template ClusterRef<Level-1>>;
+       typename Manager_t::template ClusterRef<Level-1, traits::Depth>>;
     static_assert(Level > 0, "Level has to be positive");
 
     using AtomRef_t = typename Manager_t::AtomRef;

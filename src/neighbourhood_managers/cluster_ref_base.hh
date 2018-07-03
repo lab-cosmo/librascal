@@ -28,9 +28,122 @@
 #ifndef CLUSTERREFBASE_H
 #define CLUSTERREFBASE_H
 
+#include <tuple>
 #include <array>
 
 namespace rascal {
+
+  /**
+   * Depth calculations and manipulations
+   */
+  /**
+   * Computes depth by cluster dimension for new adaptor layer
+   */
+  template <size_t MaxLevel, class T>
+  struct DepthIncreaser{};
+
+  template <size_t MaxLevel, int... Ints>
+  struct DepthIncreaser<MaxLevel,
+			std::integer_sequence<int, Ints...>>{
+    using type = std::integer_sequence<int, (Ints+1)...>;
+  };
+
+  template <size_t MaxLevel, int... Ints>
+  using DepthIncreaser_t = typename DepthIncreaser<MaxLevel,
+					  std::integer_sequence<int, Ints...>>::type;
+
+  /**
+   * Extends depth by cluster for an additional cluster dimension
+   */
+  template <size_t MaxLevel, class T>
+  struct DepthExtender{};
+
+  template <size_t MaxLevel, int... Ints>
+  struct DepthExtender<MaxLevel,
+		       std::integer_sequence<int, Ints...>>{
+    using type = std::integer_sequence<int, Ints..., 0>;
+  };
+
+  template <size_t MaxLevel, int... Ints>
+  using DepthExtender_t = typename DepthExtender<MaxLevel,
+					std::integer_sequence<int, Ints...>>::type;
+
+  /**
+   * Dynamic access to all depths by cluster dimension (probably not
+   * necessary)
+   */
+  template <size_t MaxLevel, int... Ints>
+  constexpr std::array<int, MaxLevel>
+  get_depths(std::integer_sequence<int, Ints...>) {
+    return std::array<int, MaxLevel>{Ints...};
+  }
+
+  namespace internal {
+    template <int head, int... tail>
+    struct Min {
+      constexpr static int value{ head < Min<tail...>::value ? head : Min<tail...>::value};
+    };
+
+    template <int head>
+    struct Min<head> {
+      constexpr static int value{head};
+    };
+
+    template <class Sequence>
+    struct MinExtractor {};
+
+    template <int... Ints>
+    struct MinExtractor<std::integer_sequence<int, Ints...>> {
+      constexpr static int value {Min<Ints...>::value};
+    };
+
+    template <int Level, class Sequence, int... Ints>
+    struct HeadExtractor {};
+
+    template <int Level, int head, int... tail, int... seq>
+    struct HeadExtractor<Level, std::integer_sequence<int, seq...>, head, tail...> {
+      using type = typename HeadExtractor<Level-1,
+					  std::integer_sequence<int, seq..., head>,
+					  tail...>::type; 
+    };
+
+    template <int... head, int... seq>
+    struct HeadExtractor<0, std::integer_sequence<int, seq...>, head...> {
+      using type = std::integer_sequence<int, seq...>;
+    };
+      
+
+  }  // internal
+
+  template <int Level, int... Ints>
+  constexpr int cluster_depth(const std::integer_sequence<int, Ints...> &) {
+    using ActiveDimensions = typename internal::HeadExtractor
+      <Level, std::integer_sequence<int>, Ints...>::type;
+    return internal::MinExtractor<ActiveDimensions>::value;
+  }
+
+  /**
+   * Dynamic access to depth by cluster dimension (possibly not
+   * necessary)
+   */
+  template <size_t MaxLevel, int... Ints>
+  constexpr int
+  get_depth(size_t index, std::integer_sequence<int, Ints...>) {
+    constexpr int arr[] {Ints...};
+    return arr [index];
+  }
+
+
+  /**
+   * Static access to depth by cluster dimension (e.g., for defining
+   * template parameter `NbRow` for a property
+   */
+  template <size_t index, int... Ints>
+  constexpr int get(std::integer_sequence<int, Ints...>) {
+    return get<index>(std::make_tuple(Ints...));
+  }
+
+  
   namespace internal {
     template <int Depth, int HiDepth,typename T, int... Ints>
     std::array<T, Depth>
@@ -46,7 +159,7 @@ namespace rascal {
 
   }  // internal
 
-  template<int Level, int Depth=2>
+  template<int Level, int Depth>
   class ClusterRefBase
   {
   public:
