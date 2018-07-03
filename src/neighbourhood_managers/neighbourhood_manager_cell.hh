@@ -56,6 +56,7 @@ namespace rascal {
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDirectionVectors{false};
     constexpr static bool HasDistances{false};
+    using Depth = std::integer_sequence<int, 0, 0>;
   };
   class NeighbourhoodManagerCell: public NeighbourhoodManagerBase<NeighbourhoodManagerCell>
   {
@@ -66,7 +67,7 @@ namespace rascal {
     using Vector_t = typename Parent::Vector_t;
     using AtomRef_t = typename Parent::AtomRef;
     template <int Level>
-    using ClusterRef_t = typename Parent::template ClusterRef<Level>;
+    using ClusterRef_t = typename Parent::template ClusterRef<Level, Depth>;
 
     using AtomVectorField_t = Property<NeighbourhoodManagerCell, double, 1, 3>;
 
@@ -104,8 +105,8 @@ namespace rascal {
     // return position vector atom is the neighbour atom. center_atom
     // is the current center. j_linear_id is the index of the current
     // neighbour iterator.
-    template<int Level>
-    inline Vector_ref get_neighbour_position(const ClusterRefBase<Level>&
+    template<int Level, int Depth>
+    inline Vector_ref get_neighbour_position(const ClusterRefBase<Level, Depth>&
 					     cluster) {
       static_assert(Level > 1,
 		    "Only possible for Level > 1.");
@@ -139,8 +140,8 @@ namespace rascal {
     }
 
     // return the index of the center corresponding to its neighbour image
-    template<int Level>
-    inline size_t get_atom_id(const ClusterRefBase<Level>& cluster,
+    template<int Level, int Depth>
+    inline size_t get_atom_id(const ClusterRefBase<Level, Depth>& cluster,
 			      int j_atom_id) const {
       static_assert(Level <= traits::MaxLevel,
                     "this implementation only handles atoms and pairs");
@@ -151,8 +152,8 @@ namespace rascal {
     }
 
     // return the number of neighbours of a given atom
-    template<int Level>
-    inline size_t get_cluster_size(const ClusterRefBase<Level>& cluster) const {
+    template<int Level, int Depth>
+    inline size_t get_cluster_size(const ClusterRefBase<Level, Depth>& cluster) const {
       static_assert(Level <= traits::MaxLevel,
                     "this implementation only handles atoms and pairs");
       auto && i_atom_id{cluster.back()};
@@ -161,8 +162,8 @@ namespace rascal {
       return size;
     }
 
-    template<int Level>
-    inline int get_offset_impl(const ClusterRefBase<Level>& cluster) const;
+    template<int Level, int Depth>
+    inline int get_offset_impl(const ClusterRefBase<Level, Depth>& cluster) const;
 
     size_t get_nb_clusters(int cluster_size);
 
@@ -256,9 +257,9 @@ namespace rascal {
   };
   /* ---------------------------------------------------------------------- */
 
-  template<int Level>
+  template<int Level, int Depth>
   inline int NeighbourhoodManagerCell::
-  get_offset_impl(const ClusterRefBase<Level>& cluster) const {
+  get_offset_impl(const ClusterRefBase<Level, Depth>& cluster) const {
     static_assert(Level == 2, "This class cas only handle single atoms and pairs");
 
     auto icenter{cluster.front()};
@@ -273,7 +274,7 @@ namespace rascal {
 
   template <>
   inline int NeighbourhoodManagerCell:: template
-  get_offset_impl<1>(const ClusterRefBase<1>& cluster) const {
+  get_offset_impl<1>(const ClusterRefBase<1, Depth>& cluster) const {
     return cluster.back();//get_atoms().back().get_index();
   }
   /* ---------------------------------------------------------------------- */

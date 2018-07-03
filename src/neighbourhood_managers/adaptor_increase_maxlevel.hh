@@ -55,6 +55,8 @@ namespace rascal {
     constexpr static int Dim{ManagerImplementation::traits::Dim};
     // New MaxLevel upon construction!
     constexpr static int MaxLevel{ManagerImplementation::traits::MaxLevel+1};
+    // New Depth
+    using Depth = DepthIncreaser<MaxLevel, ManagerImplementation::traits::Depth>::type;
   };
 
   /**
