@@ -78,9 +78,9 @@ namespace rascal {
     //! get the next level of depth
     template <bool NotAtMaxDepth = (Depth != MaxDepth)>
     std::map<Species_t,
-	     std::enable_if_t<NotAtMaxDepth,
-			      SubManagerType>>
-             & get_next_level();
+             std::enable_if_t<NotAtMaxDepth,
+                              SubManagerType>>
+    & get_next_level();
 
   protected:
     std::array<Species_t, Depth> fixed_species;

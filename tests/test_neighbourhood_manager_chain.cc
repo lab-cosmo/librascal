@@ -37,7 +37,7 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(ManagerChainTests);
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(manager_chain_constructor_test,
-			  ManagerFixture_chain) {
+                          ManagerFixture_chain) {
   }
 
   /* ---------------------------------------------------------------------- */
@@ -58,16 +58,16 @@ namespace rascal {
       BOOST_CHECK_EQUAL(atom_counter, atom_cluster.get_global_index());
       ++atom_counter;
       for (auto pair_cluster : atom_cluster) {
-      	auto pair_offset{pair_cluster.get_global_index()};
-      	if (verbose) {
-      	  std::cout
-	    << "pair (" << atom_cluster.get_atoms().back().get_index()
-	    << ", " << pair_cluster.get_atoms().back().get_index()
-	    << "), pair_counter = " << pair_counter
-	    << ", pair_offset = " << pair_offset << std::endl;
+        auto pair_offset{pair_cluster.get_global_index()};
+        if (verbose) {
+          std::cout
+            << "pair (" << atom_cluster.get_atoms().back().get_index()
+            << ", " << pair_cluster.get_atoms().back().get_index()
+            << "), pair_counter = " << pair_counter
+            << ", pair_offset = " << pair_offset << std::endl;
         }
-	BOOST_CHECK_EQUAL(pair_counter, pair_offset);
-	++pair_counter;
+        BOOST_CHECK_EQUAL(pair_counter, pair_offset);
+        ++pair_counter;
       }
     }
     BOOST_CHECK_EQUAL(atom_counter, natoms);

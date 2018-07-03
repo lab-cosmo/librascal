@@ -1,5 +1,5 @@
 /**
- * file   ClusterRefBase.hh
+ * file   cluster_ref_base.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
@@ -44,13 +44,13 @@ namespace rascal {
 
   template <size_t MaxLevel, int... Ints>
   struct DepthIncreaser<MaxLevel,
-			std::integer_sequence<int, Ints...>>{
+                        std::integer_sequence<int, Ints...>>{
     using type = std::integer_sequence<int, (Ints+1)...>;
   };
 
   template <size_t MaxLevel, int... Ints>
   using DepthIncreaser_t = typename DepthIncreaser<MaxLevel,
-					  std::integer_sequence<int, Ints...>>::type;
+                                                   std::integer_sequence<int, Ints...>>::type;
 
   /**
    * Extends depth by cluster for an additional cluster dimension
@@ -60,13 +60,13 @@ namespace rascal {
 
   template <size_t MaxLevel, int... Ints>
   struct DepthExtender<MaxLevel,
-		       std::integer_sequence<int, Ints...>>{
+                       std::integer_sequence<int, Ints...>>{
     using type = std::integer_sequence<int, Ints..., 0>;
   };
 
   template <size_t MaxLevel, int... Ints>
   using DepthExtender_t = typename DepthExtender<MaxLevel,
-					std::integer_sequence<int, Ints...>>::type;
+                                                 std::integer_sequence<int, Ints...>>::type;
 
   /**
    * Dynamic access to all depths by cluster dimension (probably not
@@ -103,8 +103,8 @@ namespace rascal {
     template <int Level, int head, int... tail, int... seq>
     struct HeadExtractor<Level, std::integer_sequence<int, seq...>, head, tail...> {
       using type = typename HeadExtractor<Level-1,
-					  std::integer_sequence<int, seq..., head>,
-					  tail...>::type; 
+                                          std::integer_sequence<int, seq..., head>,
+                                          tail...>::type; 
     };
 
     template <int... head, int... seq>

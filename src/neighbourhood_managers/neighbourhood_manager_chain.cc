@@ -52,8 +52,8 @@ namespace rascal {
     try {
       auto pos_size = atoms_object.position.size();
       if (pos_size == 0) {
-    	throw std::runtime_error("No atomic structure defined. "
-				 "Read structure first!");
+        throw std::runtime_error("No atomic structure defined. "
+                                 "Read structure first!");
       }
     } catch (const std::exception& e) {
       std::cerr << e.what() << std::endl;
@@ -62,13 +62,13 @@ namespace rascal {
 
     for (auto vec : atoms_object.cell) {
       for (auto coord : vec) {
-	      this->cell_data.push_back(coord);
+        this->cell_data.push_back(coord);
       }
     }
 
     for (auto pos : atoms_object.position) {
       for (auto coord : pos) {
-	      this->pos_data.push_back(coord);
+        this->pos_data.push_back(coord);
       }
     }
 
@@ -179,7 +179,7 @@ namespace rascal {
     }
     case 3: {
       return nidx[2] * nmax[0] * nmax[1] +
-	nidx[1] * nmax[0] + nidx[0];
+        nidx[1] * nmax[0] + nidx[0];
       break;
     }
     default:
@@ -195,13 +195,13 @@ namespace rascal {
   inline std::vector<int>
   NeighbourhoodManagerChain::
   get_box_index(Vector_ref& position,
-		std::vector<double>& rc,
-		Eigen::Matrix<double, 1, traits::Dim>offset,
-		std::vector<int> nmax) {
+                std::vector<double>& rc,
+                Eigen::Matrix<double, 1, traits::Dim>offset,
+                std::vector<int> nmax) {
     std::vector<int> nidx(traits::Dim);
     for(auto dim{0}; dim < traits::Dim; ++dim) {
       nidx[dim] = static_cast<int>(std::floor( (position(dim) - offset(dim))
-					       / rc[dim] ));
+                                               / rc[dim] ));
       nidx[dim] = std::min(nidx[dim], nmax[dim]-1);
       nidx[dim] = std::max(nidx[dim], 0);
     }
@@ -214,8 +214,8 @@ namespace rascal {
   // the full neighbourlist <code>allneigh</code>.
   inline void NeighbourhoodManagerChain::
   collect_neighbour_info_of_atom(const int i,
-				 const std::vector<int> boxidx,
-				 const std::vector<int> nmax) {
+                                 const std::vector<int> boxidx,
+                                 const std::vector<int> nmax) {
 
     auto jcell_index = get_linear_index(boxidx, nmax);
     auto ihead = this->lc[jcell_index]; //ll[jcell_index];
@@ -248,15 +248,15 @@ namespace rascal {
 
     for(auto dim{0}; dim < traits::Dim; ++dim) {
       nmax[dim] = static_cast<int>(std::floor(this->get_box_length(dim)
-					      / cutoff));
+                                              / cutoff));
       rc[dim] = static_cast<double>(this->get_box_length(dim) / nmax[dim]);
     };
 
     int nboxes{1};
     nboxes = std::accumulate(nmax.begin(), nmax.end(), 1,
-			     std::multiplies<int>());
+                             std::multiplies<int>());
     nboxes = std::max(nboxes, 1); // If the cutoff is smaller than
-				  // length of the structure.
+    // length of the structure.
 
     // Create the data structure for the linked cell algorithm.
     this->ll.resize(this->natoms);
@@ -287,12 +287,12 @@ namespace rascal {
     if(this->verbose) {
       std::cout << ">>>> nboxes " << nboxes << std::endl;
       for (auto i{0}; i<nboxes; ++i) {
-	auto n = this->lc[i];
-	std::cout << "linear index " << i << std::endl;
-	while (n != -1) {
-	  std::cout << "box " << i<< " atom " << n << std::endl;
-	  n = this->ll[n];
-	}
+        auto n = this->lc[i];
+        std::cout << "linear index " << i << std::endl;
+        while (n != -1) {
+          std::cout << "box " << i<< " atom " << n << std::endl;
+          n = this->ll[n];
+        }
       }
     }
     // Make verlet table of neighbours (vectorized), not strict
@@ -350,8 +350,8 @@ namespace rascal {
         break;
       }
       default:
-	throw std::runtime_error("Neighbourlist only max 3D.");
-	break;
+        throw std::runtime_error("Neighbourlist only max 3D.");
+        break;
       }
     } // atom neighbours
 
@@ -390,10 +390,10 @@ namespace rascal {
       for (size_t n=0; n < this->natoms; ++n){
         auto a = numneigh[n];
         std::cout << "Next neigh atom---- " << n
-            << " number of neighbours " << a << std::endl;
+                  << " number of neighbours " << a << std::endl;
         for (auto i=ioff; i < ioff+a; i++) {
           std::cout << "Neighbour "
-              << halfneigh[i] << std::endl;
+                    << halfneigh[i] << std::endl;
         }
         ioff += a;
       }
@@ -401,6 +401,6 @@ namespace rascal {
 
     // Get number of pairs to write into member variable.
     this->nb_pairs = std::accumulate(this->numneigh.begin(),
-				     this->numneigh.end(), 0);
+                                     this->numneigh.end(), 0);
   }
 } // rascal

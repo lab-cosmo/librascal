@@ -139,14 +139,14 @@ namespace rascal {
 
     template<int Level>
     inline Vector_ref get_neighbour_position(const ClusterRefBase<Level>&
-					     /*cluster*/) {
+                                             /*cluster*/) {
       static_assert(Level > 1,
-		    "Only possible for Level > 1.");
+                    "Only possible for Level > 1.");
       static_assert(Level <= traits::MaxLevel,
-      		    "this implementation should only work up to MaxLevel.");
+                    "this implementation should only work up to MaxLevel.");
       // Argument is now the same, but implementation
       throw std::runtime_error("should be adapted to Félix's "
-			       "new interface using the ClusterRef");
+                               "new interface using the ClusterRef");
     }
 
     // return the global id of an atom
@@ -193,7 +193,7 @@ namespace rascal {
     inline std::enable_if_t<AtOldMaxLevel, size_t>
     get_cluster_size(const ClusterRefBase<Level>& cluster) const {
       static_assert(Level < traits::MaxLevel,
-    		    "AtMaxLevel is a SFINAE, do not set manually");
+                    "AtMaxLevel is a SFINAE, do not set manually");
       return this->nb_neigh[cluster.get_global_index()];
     }
 
@@ -201,7 +201,7 @@ namespace rascal {
     inline size_t get_cluster_size(const ClusterRefBase<Level>& cluster) const {
       static_assert(Level < traits::MaxLevel,
                     "this implementation only handles atoms and pairs");
-    	return this->manager.get_cluster_size(cluster);
+      return this->manager.get_cluster_size(cluster);
     }
 
     // template<int Level>
@@ -209,8 +209,8 @@ namespace rascal {
     //   static_assert(Level < traits::MaxLevel,
     //                 "this implementation only handles atoms and pairs");
     //   std::cout << "get_cluster_size, level/index/neighbours/size "
-    // 	// << cluster.front() << "/"
-    // 	<< Level
+    //     // << cluster.front() << "/"
+    //     << Level
     // 	<< "/" << cluster.back()
     // 	<< "/" <<  nb_neigh[Level][cluster.back()]
     // 	<< "/" << nb_neigh[Level].size()
@@ -406,7 +406,7 @@ namespace rascal {
       // 	manager.add_atom_level_up(next_cluster);
       // }
     }
-      // end
+    // end
   };
 
   /* ---------------------------------------------------------------------- */

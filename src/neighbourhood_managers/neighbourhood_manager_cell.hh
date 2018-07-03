@@ -47,7 +47,7 @@ namespace rascal {
 
   //! forward declaration for traits
   class NeighbourhoodManagerCell;
-
+  
   //! traits specialisation for Lammps manager
   template <>
   struct NeighbourhoodManager_traits<NeighbourhoodManagerCell> {
@@ -56,7 +56,7 @@ namespace rascal {
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDirectionVectors{false};
     constexpr static bool HasDistances{false};
-    using Depth = std::integer_sequence<int, 0, 0>;
+    using DepthByDimension = std::integer_sequence<int, 0, 0>;
   };
   class NeighbourhoodManagerCell: public NeighbourhoodManagerBase<NeighbourhoodManagerCell>
   {
@@ -67,13 +67,13 @@ namespace rascal {
     using Vector_t = typename Parent::Vector_t;
     using AtomRef_t = typename Parent::AtomRef;
     template <int Level>
-    using ClusterRef_t = typename Parent::template ClusterRef<Level, Depth>;
-
+    using ClusterRef_t = typename Parent::template ClusterRef
+      <Level, cluster_depth<Level>(traits::DepthByDimension{})>;
     using AtomVectorField_t = Property<NeighbourhoodManagerCell, double, 1, 3>;
 
     //! Default constructor
     NeighbourhoodManagerCell()
-    :particles{}, centers{} ,positions{},shifted_position{} ,lattice{}, cell{},pbc{} ,part2bin{} ,boxes{} ,number_of_neighbours{0} ,neighbour_bin_id{} , number_of_neighbours_stride{}, neighbour_atom_index{},particule_types{}
+      :particles{}, centers{} ,positions{},shifted_position{} ,lattice{}, cell{},pbc{} ,part2bin{} ,boxes{} ,number_of_neighbours{0} ,neighbour_bin_id{} , number_of_neighbours_stride{}, neighbour_atom_index{},particule_types{}
     {}
 
     //! Copy constructor
@@ -107,11 +107,11 @@ namespace rascal {
     // neighbour iterator.
     template<int Level, int Depth>
     inline Vector_ref get_neighbour_position(const ClusterRefBase<Level, Depth>&
-					     cluster) {
+                                             cluster) {
       static_assert(Level > 1,
-		    "Only possible for Level > 1.");
+                    "Only possible for Level > 1.");
       static_assert(Level <= traits::MaxLevel,
-      		    "this implementation should only work up to MaxLevel.");
+                    "this implementation should only work up to MaxLevel.");
 
       auto && j_linear_id = cluster.get_index();
       auto && i_atom_id{cluster.front()}; // center_atom index
@@ -142,7 +142,7 @@ namespace rascal {
     // return the index of the center corresponding to its neighbour image
     template<int Level, int Depth>
     inline size_t get_atom_id(const ClusterRefBase<Level, Depth>& cluster,
-			      int j_atom_id) const {
+                              int j_atom_id) const {
       static_assert(Level <= traits::MaxLevel,
                     "this implementation only handles atoms and pairs");
       auto && i_atom_id{cluster.back()};
@@ -162,13 +162,14 @@ namespace rascal {
       return size;
     }
 
-    template<int Level, int Depth>
-    inline int get_offset_impl(const ClusterRefBase<Level, Depth>& cluster) const;
-
+    template<int Level>
+    inline int get_offset_impl(const ClusterRefBase<Level,
+                               cluster_depth<Level>(traits::DepthByDimension{}) >& cluster) const;
+    
     size_t get_nb_clusters(int cluster_size);
 
     void update(const Eigen::Ref<const Eigen::MatrixXd> positions,const Eigen::Ref<const VecXi>  particule_types,
-               const Eigen::Ref<const VecXi> center_ids,
+                const Eigen::Ref<const VecXi> center_ids,
                 const Eigen::Ref<const Eigen::MatrixXd> cell,const std::array<bool,3>& pbc, const double& cutoff_max);
 
     //Box get_box(const int& bin_id);
@@ -216,7 +217,7 @@ namespace rascal {
 
     //! constructor
     Box(Manager_t& manager, const Vec3i_t& coord, const std::array<bool, 3>& pbc, const Vec3i_t& neigh_search, const Vec3i_t& nbins_c);
-          //const std::array<std::array<Dim_t, 3>,2>& neigh_bounds,
+    //const std::array<std::array<Dim_t, 3>,2>& neigh_bounds,
 
 
     //! copy constructor
@@ -257,30 +258,37 @@ namespace rascal {
   };
   /* ---------------------------------------------------------------------- */
 
-  template<int Level, int Depth>
-  inline int NeighbourhoodManagerCell::
-  get_offset_impl(const ClusterRefBase<Level, Depth>& cluster) const {
-    static_assert(Level == 2, "This class cas only handle single atoms and pairs");
+  // template<int Level, int Depth>
+  // inline int NeighbourhoodManagerCell::
+  // get_offset_impl(const ClusterRefBase<Level, Depth>& cluster) const {
+  //   static_assert(Level == 2, "This class cas only handle single atoms and pairs");
 
-    auto icenter{cluster.front()};
-    auto stride{this->number_of_neighbours_stride[icenter]};
-    auto j{cluster.get_index()};
-    auto main_offset{stride+j};
-    return main_offset;
+  //   auto icenter{cluster.front()};
+  //   auto stride{this->number_of_neighbours_stride[icenter]};
+  //   auto j{cluster.get_index()};
+  //   auto main_offset{stride+j};
+  //   return main_offset;
+  // }
+  template <int Level>
+  inline int NeighbourhoodManagerCell:: template
+  get_offset_impl(const ClusterRefBase<Level,
+                  cluster_depth<Level>(traits::DepthByDimension{})> & cluster) const {
+    return cluster.get_cluster_index(cluster_depth<Level>(traits::DepthByDimension{}));
   }
 
   /* ---------------------------------------------------------------------- */
   // specialisation for just atoms
 
-  template <>
-  inline int NeighbourhoodManagerCell:: template
-  get_offset_impl<1>(const ClusterRefBase<1, Depth>& cluster) const {
-    return cluster.back();//get_atoms().back().get_index();
-  }
+  // template <>
+  // inline int NeighbourhoodManagerCell:: template
+  // get_offset_impl<1>(const ClusterRefBase<1, Depth>& cluster) const {
+  //   return cluster.back();//get_atoms().back().get_index();
+  // }
+  
   /* ---------------------------------------------------------------------- */
 
   inline Vector_ref NeighbourhoodManagerCell::get_shift(const int& i_bin_id, const int& neigh_bin_index){
-      return this->boxes[i_bin_id].get_neighbour_bin_shift(neigh_bin_index);
+    return this->boxes[i_bin_id].get_neighbour_bin_shift(neigh_bin_index);
   }
 
   //----------------------------------------------------------------------------//

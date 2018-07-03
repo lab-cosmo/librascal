@@ -43,7 +43,7 @@ namespace rascal {
 
     for (auto atom : adaptor) {
       for (auto pair : atom) {
-      	//std::cout << "out " << pair.get_index() << std::endl;
+        //std::cout << "out " << pair.get_index() << std::endl;
       }
     }
   }

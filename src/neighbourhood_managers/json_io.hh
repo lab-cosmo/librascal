@@ -45,14 +45,14 @@ namespace rascal {
     // class needs a <code>struct</code> with standard data types.
     struct AtomicStructure {
       /**
-	 \param cell is a vector a vector of vectors which holds the cell unit
-	 vectors.
-	 \param type a vector of integers which holds the atomic type
-	 (coordination number).
-	 \param pbc is a 0/1 vector which says, where periodic boundary
-	 conditions are applied.
-	 \param position is a vector of vectors which holds the atomic
-	 positions.
+         \param cell is a vector a vector of vectors which holds the cell unit
+         vectors.
+         \param type a vector of integers which holds the atomic type
+         (coordination number).
+         \param pbc is a 0/1 vector which says, where periodic boundary
+         conditions are applied.
+         \param position is a vector of vectors which holds the atomic
+         positions.
       */
       std::vector<std::vector<double>> cell{};
       std::vector<int> type{};
@@ -66,10 +66,10 @@ namespace rascal {
     // Inline needed, otherwise it is a multiple definition
     inline void to_json(json & j, AtomicStructure& s) {
       j = json{
-	{"cell", s.cell},
-	{"numbers", s.type},
-	{"pbc", s.pbc},
-	{"positions", s.position}
+        {"cell", s.cell},
+        {"numbers", s.type},
+        {"pbc", s.pbc},
+        {"positions", s.position}
       };
     }
 

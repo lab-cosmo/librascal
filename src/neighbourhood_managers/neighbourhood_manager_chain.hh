@@ -81,6 +81,7 @@ namespace rascal {
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDirectionVectors{false};
     constexpr static bool HasDistances{false};
+    using DepthByDimension = std::integer_sequence<int, 0, 0>;
   };
   
   // Definition of the new NeighbourhoodManager class. To add your
@@ -112,14 +113,14 @@ namespace rascal {
     // e.g. the .get_positions() member function, if needed.
     // Access to the cell vectors, defined in the JSON file.
     using Cell_ref = Eigen::Map<Eigen::Matrix<double, traits::Dim,
-					      Eigen::Dynamic>>;
+                                              Eigen::Dynamic>>;
     // Access to the atom types, defined in the JSON file.
     using AtomTypes_ref = Eigen::Map<Eigen::Matrix<int, 1, Eigen::Dynamic>>;
     // Access to periodic boundary conditions, defined in JSON file, x,y,z
     using PBC_ref = Eigen::Map<Eigen::Matrix<int, 1, traits::Dim>>;
     // Access to an array of all given positions
     using Positions_ref = Eigen::Map<Eigen::Matrix<double, traits::Dim,
-						  Eigen::Dynamic>>;
+                                                   Eigen::Dynamic>>;
 
     // Here, the types for internal data structures are defined, based on
     // standard types.  In general, we try to use as many standard types, where
@@ -139,8 +140,9 @@ namespace rascal {
     // The template parameters Level and MaxLevel give the
     // pair/triplet/ and the maximum depth, e.g. up to pair level.
     // To increase the MaxLevel, use an <code>adaptor</code>.
-    template <int Level>
-    using ClusterRef_t = typename Parent::template ClusterRef<Level>;
+    template<int Level>
+    using ClusterRef_t = typename Parent::template ClusterRef
+      <Level, cluster_depth<Level>(traits::DepthByDimension{})>;
 
     //! Default constructor
     NeighbourhoodManagerChain() = default;
@@ -190,7 +192,7 @@ namespace rascal {
     // vectors of the structure.
     inline Cell_ref get_cell() {
       return Cell_ref(this->cell_data.data(), traits::Dim,
-		      this->cell_data.size()/traits::Dim);
+                      this->cell_data.size()/traits::Dim);
     }
 
     // Returns the type of a given atom.
@@ -203,7 +205,7 @@ namespace rascal {
     // Returns an a map with all atom types.
     inline AtomTypes_ref get_atom_types() {
       return AtomTypes_ref(this->atoms_object.type.data(),
-			   this->atoms_object.type.size());
+                           this->atoms_object.type.size());
     }
 
     // Returns a map of size traits::Dim with 0/1 for periodicity
@@ -223,19 +225,20 @@ namespace rascal {
     // boundary conditions, the get_neighbour_position should return a
     // different position, if it is a ghost atom.
     template<int Level>
-    inline Vector_ref get_neighbour_position(const ClusterRefBase<Level>&
-					     cluster) {
+    inline Vector_ref get_neighbour_position(const ClusterRefBase<Level,
+                                             cluster_depth<Level>(traits::DepthByDimension{})>
+                                             & cluster) {
       static_assert(Level > 1,
-		    "Only possible for Level > 1.");
+                    "Only possible for Level > 1.");
       static_assert(Level <= traits::MaxLevel,
-      		    "this implementation should only work up to MaxLevel.");
+                    "this implementation should only work up to MaxLevel.");
       return this->get_position(cluster.back());
     }
 
     // Returns a map to all positions.
     inline Positions_ref get_positions() {
       return Positions_ref(this->pos_data.data(), traits::Dim,
-			   this->pos_data.size()/traits::Dim);
+                           this->pos_data.size()/traits::Dim);
     }
 
     // return number of I atoms in the list
@@ -245,15 +248,18 @@ namespace rascal {
 
     // Returns the number of neighbours of a given atom
     template<int Level>
-    inline size_t get_cluster_size(const ClusterRefBase<Level>&
-				   cluster) const {
+    inline size_t get_cluster_size(const ClusterRefBase<Level,
+                                   cluster_depth<Level>(traits::DepthByDimension{})>
+                                   & cluster) const {
       static_assert(Level < traits::MaxLevel,
                     "this implementation only handles atoms and pairs.");
       return this->numneigh[cluster.back()];
     }
 
     template<int Level>
-    inline size_t get_atom_id(const ClusterRefBase<Level>& cluster,
+    inline size_t get_atom_id(const ClusterRefBase<Level,
+                              cluster_depth<Level>(traits::DepthByDimension{})>
+                              & cluster,
                               int j_atom_id) const {
       static_assert(Level <= traits::MaxLevel,
                     "this implementation only handles atoms and pairs.");
@@ -275,7 +281,9 @@ namespace rascal {
      */
     template<int Level>
     inline int
-    get_offset_impl(const ClusterRefBase<Level>& cluster) const;
+    get_offset_impl(const ClusterRefBase<Level,
+                    cluster_depth<Level>(traits::DepthByDimension{})>
+                    & cluster) const;
 
     // Function for returning the number of atoms, pairs, tuples, etc.
     size_t get_nb_clusters(int cluster_size);
@@ -315,31 +323,31 @@ namespace rascal {
     size_t natoms{}; // Total number of atoms in structure
     size_t nb_pairs{}; // Number of pairs
     Ilist_t ilist{}; // A list of atom indeces (int), here it is just
-		   // the number in the list
+    // the number in the list
     NeighbourList_t allneigh{}; // A full neighbour list. Each entry
-				  // in allneigh is a vector of
-				  // neighbours of the given atom id
+    // in allneigh is a vector of
+    // neighbours of the given atom id
 
     HalfNeighbourList_t halfneigh{}; // Half neighbourlist. It is a
-                                      // contiguous vector where all
-                                      // neighbours are listed
-                                      // once. Use in conjunction with
-                                      // <code>numneigh</code> to get
-                                      // the number of neighbours per
-                                      // atom. This can be used to
-                                      // calculate a property like the
-                                      // atomic distance.
+    // contiguous vector where all
+    // neighbours are listed
+    // once. Use in conjunction with
+    // <code>numneigh</code> to get
+    // the number of neighbours per
+    // atom. This can be used to
+    // calculate a property like the
+    // atomic distance.
     NumNeigh_t numneigh{}; // A vector which hold the number of
-			   // neighbours (half neighbourlist) for each
-			   // atom.
+    // neighbours (half neighbourlist) for each
+    // atom.
 
     double cutoff_skin{0.0}; // Added now, but intended for use later
-			      // in a Verlet list.
+    // in a Verlet list.
 
     std::vector<int> offsets{}; // A vector which stores the absolute
-				// offsets for each atom to access the
-				// correct variables in the
-				// neighbourlist.
+    // offsets for each atom to access the
+    // correct variables in the
+    // neighbourlist.
 
     // For linked cell algorithm; saved for possible later use.
     std::vector<int> ll{}; // Linked list
@@ -351,15 +359,15 @@ namespace rascal {
     // list
     inline std::vector<int>
     get_box_index(Vector_ref& position,
-		  std::vector<double>& rc,
-		  Eigen::Matrix<double, 1, traits::Dim> offset,
-		  std::vector<int> nmax);
+                  std::vector<double>& rc,
+                  Eigen::Matrix<double, 1, traits::Dim> offset,
+                  std::vector<int> nmax);
 
     // Function which collects the neighbour atom id and writes it to
     // the member variable <code>allneigh</code>.
     inline void collect_neighbour_info_of_atom(const int i,
-					       const std::vector<int> boxidx,
-					       const std::vector<int> nmax);
+                                               const std::vector<int> boxidx,
+                                               const std::vector<int> nmax);
 
     // A switch to make the class verbose and give screen output about
     // its processes.
@@ -371,24 +379,33 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   // adjust for triplets
-  template<int Level>
-  inline int NeighbourhoodManagerChain::
-  get_offset_impl(const ClusterRefBase<Level>& cluster) const {
-    static_assert(Level == 2, "This class can only handle single atoms and pairs");
+  // template<int Level>
+  // inline int NeighbourhoodManagerChain::
+  // get_offset_impl(const ClusterRefBase<Level,
+  //           cluster_depth<Level>(traits::DepthByDimension{})>
+  //           & cluster) const {
+  //   static_assert(Level == 2, "This class can only handle single atoms and pairs");
 
-    auto i{cluster.front()};
-    auto j{cluster.get_index()};
-    auto main_offset{this->offsets[i]};
-    return main_offset + j;
+  //   auto i{cluster.front()};
+  //   auto j{cluster.get_index()};
+  //   auto main_offset{this->offsets[i]};
+  //   return main_offset + j;
+  // }
+
+  template <int Level>
+  inline int NeighbourhoodManagerChain:: template
+  get_offset_impl(const ClusterRefBase<Level,
+                  cluster_depth<Level>(traits::DepthByDimension{})> & cluster) const {
+    return cluster.get_cluster_index(cluster_depth<Level>(traits::DepthByDimension{}));
   }
 
   /* ---------------------------------------------------------------------- */
   // specialisation for just atoms (Level=1)
-  template <>
-  inline int NeighbourhoodManagerChain:: template
-  get_offset_impl<1>(const ClusterRefBase<1>& cluster) const {
-    return cluster.back(); //get_atoms().back().get_index();
-  }
+  // template <>
+  // inline int NeighbourhoodManagerChain:: template
+  // get_offset_impl<1>(const ClusterRefBase<1>& cluster) const {
+  //   return cluster.back(); //get_atoms().back().get_index();
+  // }
 
 
 }  // rascal

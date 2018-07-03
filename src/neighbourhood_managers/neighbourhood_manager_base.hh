@@ -79,19 +79,19 @@ namespace rascal {
     NeighbourhoodManagerBase() = default;
 
     //! Copy constructor
-    NeighbourhoodManagerBase(const NeighbourhoodManagerBase &other) = delete;
+    NeighbourhoodManagerBase(const NeighbourhoodManagerBase & other) = delete;
 
     //! Move constructor
-    NeighbourhoodManagerBase(NeighbourhoodManagerBase &&other) = default;
+    NeighbourhoodManagerBase(NeighbourhoodManagerBase && other) = default;
 
     //! Destructor
     virtual ~NeighbourhoodManagerBase() = default;
 
     //! Copy assignment operator
-    NeighbourhoodManagerBase& operator=(const NeighbourhoodManagerBase &other) = delete;
+    NeighbourhoodManagerBase & operator=(const NeighbourhoodManagerBase & other) = delete;
 
     //! Move assignment operator
-    NeighbourhoodManagerBase& operator=(NeighbourhoodManagerBase &&other)  = default;
+    NeighbourhoodManagerBase & operator=(NeighbourhoodManagerBase && other)  = default;
 
     // required for the construction of vectors, etc
     constexpr static int dim() {return traits::Dim;}
@@ -128,7 +128,7 @@ namespace rascal {
       return this->implementation().get_nb_clusters(cluster_size);
     }
 
-    inline Vector_ref position(const AtomRef& atom) {
+    inline Vector_ref position(const AtomRef & atom) {
       return this->implementation().get_position(atom);
     }
     template <int L, int D>
@@ -136,7 +136,7 @@ namespace rascal {
       return this->implementation().get_neighbour_position(cluster);
     }
 
-    inline int atom_type(const AtomRef& atom) {
+    inline int atom_type(const AtomRef & atom) {
       return this->implementation().get_atom_type(atom);
     }
 
@@ -157,10 +157,10 @@ namespace rascal {
 
     inline NeighbourhoodManagerBase & get_manager() {return *this;}
 
-    inline ManagerImplementation& implementation() {
+    inline ManagerImplementation & implementation() {
       return static_cast<ManagerImplementation&>(*this);
     }
-    inline const ManagerImplementation& implementation() const {
+    inline const ManagerImplementation & implementation() const {
       return static_cast<const ManagerImplementation&>(*this);
     }
 
@@ -183,12 +183,12 @@ namespace rascal {
   namespace internal {
 
     template <typename T, size_t Size, size_t... Indices>
-    decltype(auto) append_array_helper(std::array<T, Size>&& arr, T &&  t,
+    decltype(auto) append_array_helper(std::array<T, Size> && arr, T &&  t,
                                         std::index_sequence<Indices...>) {
       return std::array<T, Size+1> {std::move(arr[Indices])..., std::forward<T>(t)};
     }
     template <typename T, size_t Size>
-    decltype(auto) append_array (std::array<T, Size>&& arr, T &&  t) {
+    decltype(auto) append_array (std::array<T, Size> && arr, T &&  t) {
       return append_array_helper(std::move(arr), std::forward<T>(t),
                                  std::make_index_sequence<Size>{});
     }
@@ -196,7 +196,7 @@ namespace rascal {
     template<size_t Level, class AtomRef_t, std::size_t... I>
     std::array<int, Level>
     get_indices_from_list(const std::array<AtomRef_t, Level> & atoms,
-			  std::index_sequence<I...>) {
+                          std::index_sequence<I...>) {
       return std::array<int, Level>{atoms[I].get_index()...};
     }
 
@@ -208,16 +208,16 @@ namespace rascal {
     template<int Level, class ClusterRef>
     struct PositionGetter {
       using Vector_ref = typename ClusterRef::Manager_t::Vector_ref;
-      static inline Vector_ref  get_position(ClusterRef& cluster) {
-	return cluster.get_manager().neighbour_position(cluster);
+      static inline Vector_ref  get_position(ClusterRef & cluster) {
+        return cluster.get_manager().neighbour_position(cluster);
       };
     };
 
     template<class ClusterRef>
     struct PositionGetter<1, ClusterRef> {
       using Vector_ref = typename ClusterRef::Manager_t::Vector_ref;
-      static inline Vector_ref get_position(ClusterRef& cluster) {
-	return cluster.get_manager().position(cluster.get_atoms().back());
+      static inline Vector_ref get_position(ClusterRef & cluster) {
+        return cluster.get_manager().position(cluster.get_atoms().back());
       };
     };
 
@@ -289,7 +289,7 @@ namespace rascal {
     friend iterator;
 
     static_assert(Level <= traits::MaxLevel,
-		  "Level > MaxLevel, impossible iterator");
+                  "Level > MaxLevel, impossible iterator");
 
     //! Default constructor
     ClusterRef() = delete;
@@ -300,7 +300,7 @@ namespace rascal {
       atoms{it.get_container_atoms()}, it{it}{}
 
     ClusterRef(std::enable_if<Level==1, ClusterRefBase<1, Depth>> & cluster,
-	       Manager_t& manager):
+               Manager_t& manager):
       Parent{cluster.get_indices()},
       it{manager}{}
 
@@ -370,13 +370,16 @@ namespace rascal {
   public:
     using Manager_t = NeighbourhoodManagerBase<ManagerImplementation>;
     friend Manager_t;
-    using ClusterRef_t = typename Manager_t::template ClusterRef<Level, traits::Depth>;
+    using ClusterRef_t = typename Manager_t::template
+      ClusterRef<Level, cluster_depth<Level>(traits::DepthByDimension{})>;
+
     friend ClusterRef_t;
     using Container_t =
       std::conditional_t
       <Level == 1,
        Manager_t,
-       typename Manager_t::template ClusterRef<Level-1, traits::Depth>>;
+       typename Manager_t::template
+       ClusterRef<Level-1, cluster_depth<Level>(traits::DepthByDimension{})>>;
     static_assert(Level > 0, "Level has to be positive");
 
     using AtomRef_t = typename Manager_t::AtomRef;
@@ -390,19 +393,19 @@ namespace rascal {
     iterator() = delete;
 
     //! Copy constructor
-    iterator(const iterator &other) = default;
+    iterator(const iterator & other) = default;
 
     //! Move constructor
-    iterator(iterator &&other) = default;
+    iterator(iterator && other) = default;
 
     //! Destructor
     virtual ~iterator() = default;
 
     //! Copy assignment operator
-    iterator& operator=(const iterator &other) = default;
+    iterator& operator=(const iterator & other) = default;
 
     //! Move assignment operator
-    iterator& operator=(iterator &&other) = default;
+    iterator& operator=(iterator && other) = default;
 
     //! pre-increment
     inline iterator & operator ++ () {

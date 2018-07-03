@@ -48,12 +48,13 @@ namespace rascal {
   //! forward declaration for traits
   class NeighbourhoodManagerMinimal;
 
-  //! traits specialisation for Lammps manager
+  //! traits specialisation for minimal manager
   template <>
   struct NeighbourhoodManager_traits<NeighbourhoodManagerMinimal> {
     constexpr static int Dim{3};
     constexpr static int MaxLevel{1};
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
+    using DepthByDimension = std::integer_sequence<int, 0, 0>;
   };
   class NeighbourhoodManagerMinimal: public NeighbourhoodManagerBase<NeighbourhoodManagerMinimal>
   {
@@ -64,13 +65,14 @@ namespace rascal {
     using Vector_t = typename Parent::Vector_t;
     using AtomRef_t = typename Parent::AtomRef;
     template <int Level>
-    using ClusterRef_t = typename Parent::template ClusterRef<Level>;
+    using ClusterRef_t = typename Parent::template ClusterRef
+      <Level, cluster_depth<Level>(traits::DepthByDimension{})>;
 
     using AtomVectorField_t = Property<NeighbourhoodManagerMinimal, double, 1, 3>;
 
     //! Default constructor
     NeighbourhoodManagerMinimal()
-    :particles{}, centers{} ,positions{},shifted_position{} ,lattice{}, cell{},pbc{} ,part2bin{} ,boxes{} ,number_of_neighbours{0} ,neighbour_bin_id{} , number_of_neighbours_stride{}, neighbour_atom_index{},particule_types{}
+      :particles{}, centers{} ,positions{},shifted_position{} ,lattice{}, cell{},pbc{} ,part2bin{} ,boxes{} ,number_of_neighbours{0} ,neighbour_bin_id{} , number_of_neighbours_stride{}, neighbour_atom_index{},particule_types{}
     {}
 
     //! Copy constructor
@@ -103,11 +105,11 @@ namespace rascal {
     // atom is the neighbour atom. center_atom is the current center. j_linear_id is the index of the current neighbour iterator.
     template<int Level>
     inline Vector_ref get_neighbour_position(const ClusterRef_t<Level>&
-					     cluster) {
+                                             cluster) {
       static_assert(Level > 1,
-		    "Only possible for Level > 1.");
+                    "Only possible for Level > 1.");
       static_assert(Level <= traits::MaxLevel,
-      		    "this implementation should only work up to MaxLevel.");
+                    "this implementation should only work up to MaxLevel.");
       auto && j_linear_id = cluster.get_index();
       auto && i_atom_id{cluster.get_atoms().front().get_index()}; // center_atom index
       auto && i_bin_id{this->part2bin[i_atom_id]};
@@ -157,12 +159,13 @@ namespace rascal {
     }
 
     template<int Level>
-    inline int get_offset_impl(const ClusterRef_t<Level>& cluster) const;
-
+    inline int get_offset_impl(const ClusterRefBase<Level,
+                               cluster_depth<Level>(traits::DepthByDimension{}) >& cluster) const;
+    
     size_t get_nb_clusters(int cluster_size);
 
     void update(const Eigen::Ref<const Eigen::MatrixXd> positions,const Eigen::Ref<const VecXi>  particule_types,
-               const Eigen::Ref<const VecXi> center_ids,
+                const Eigen::Ref<const VecXi> center_ids,
                 const Eigen::Ref<const Eigen::MatrixXd> cell,const std::array<bool,3>& pbc, const double& cutoff_max);
 
     //Box get_box(const int& bin_id);
@@ -210,7 +213,7 @@ namespace rascal {
 
     //! constructor
     Box(Manager_t& manager, const Vec3i_t& coord, const std::array<bool, 3>& pbc, const Vec3i_t& neigh_search, const Vec3i_t& nbins_c);
-          //const std::array<std::array<Dim_t, 3>,2>& neigh_bounds,
+    //const std::array<std::array<Dim_t, 3>,2>& neigh_bounds,
 
 
     //! copy constructor
@@ -251,31 +254,38 @@ namespace rascal {
   };
   /* ---------------------------------------------------------------------- */
 
-  template<int Level>
-  inline int NeighbourhoodManagerMinimal::
-  get_offset_impl(const ClusterRef_t<Level>& cluster) const {
-    static_assert(Level == 2, "This class cas only handle single atoms and pairs");
+  // template<int Level>
+  // inline int NeighbourhoodManagerMinimal::
+  // get_offset_impl(const ClusterRef_t<Level>& cluster) const {
+  //   static_assert(Level == 2, "This class cas only handle single atoms and pairs");
 
-    //auto atoms{};
-    auto icenter{cluster.get_atoms().front().get_index()};
-    auto stride{this->number_of_neighbours_stride[icenter]};
-    auto j{cluster.get_index()};
-    auto main_offset{stride+j};
-    return main_offset;
+  //   //auto atoms{};
+  //   auto icenter{cluster.get_atoms().front().get_index()};
+  //   auto stride{this->number_of_neighbours_stride[icenter]};
+  //   auto j{cluster.get_index()};
+  //   auto main_offset{stride+j};
+  //   return main_offset;
+  // }
+  
+  template <int Level>
+  inline int NeighbourhoodManagerMinimal:: template
+  get_offset_impl(const ClusterRefBase<Level,
+                  cluster_depth<Level>(traits::DepthByDimension{})> & cluster) const {
+    return cluster.get_cluster_index(cluster_depth<Level>(traits::DepthByDimension{}));
   }
 
   /* ---------------------------------------------------------------------- */
   // specialisation for just atoms
 
-  template <>
-  inline int NeighbourhoodManagerMinimal:: template
-  get_offset_impl<1>(const ClusterRef_t<1>& cluster) const {
-    return cluster.get_atoms().back().get_index();
-  }
+  // template <>
+  // inline int NeighbourhoodManagerMinimal:: template
+  // get_offset_impl<1>(const ClusterRef_t<1>& cluster) const {
+  //   return cluster.get_atoms().back().get_index();
+  // }
   /* ---------------------------------------------------------------------- */
 
   inline Vector_ref NeighbourhoodManagerMinimal::get_shift(const int& i_bin_id, const int& neigh_bin_index){
-      return this->boxes[i_bin_id].get_neighbour_bin_shift(neigh_bin_index);
+    return this->boxes[i_bin_id].get_neighbour_bin_shift(neigh_bin_index);
   }
 
   //----------------------------------------------------------------------------//

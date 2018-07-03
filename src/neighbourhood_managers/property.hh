@@ -137,7 +137,7 @@ namespace rascal {
   }  // internal
 
   template <class NeighbourhoodManager, typename T,
-            size_t ClusterSize,
+            size_t Level, //Level,
             size_t NbRow = 1, size_t NbCol = 1>
   class Property
   {
@@ -149,7 +149,7 @@ namespace rascal {
     constexpr static size_t NbDof{NbRow*NbCol};
     using Cluster_t =
       typename NeighbourhoodManager::template ClusterRef
-      <ClusterSize>;
+      <Level>;
 
     using Value = internal::Value<T, NbRow, NbCol>;
 
@@ -165,23 +165,23 @@ namespace rascal {
     {}
 
     //! Copy constructor
-    Property(const Property &other) = delete;
+    Property(const Property & other) = delete;
 
     //! Move constructor
-    Property(Property &&other) = delete;
+    Property(Property && other) = delete;
 
     //! Destructor
     virtual ~Property() = default;
 
     //! Copy assignment operator
-    Property& operator=(const Property &other) = delete;
+    Property& operator=(const Property & other) = delete;
 
     //! Move assignment operator
-    Property& operator=(Property &&other) = delete;
+    Property& operator=(Property && other) = delete;
 
     //! adjust size (only increases, never frees)
     void resize() {
-      this->values.resize(this->manager.get_nb_clusters(ClusterSize) * NbDof);
+      this->values.resize(this->manager.get_nb_clusters(Level) * NbDof);
     }
 
     /**

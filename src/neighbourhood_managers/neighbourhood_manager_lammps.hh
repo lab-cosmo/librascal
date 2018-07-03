@@ -57,8 +57,8 @@ namespace rascal {
     using Vector_ref = typename Parent::Vector_ref;
     using AtomRef_t = typename Parent::AtomRef;
     template <int Level>
-    using ClusterRef_t = typename Parent::template ClusterRef
-      <Level, cluster_depth<Level>(traits::DepthByDimension{})>;
+    using ClusterRef_t = typename Parent::template
+      ClusterRef<Level, cluster_depth<Level>(traits::DepthByDimension{})>;
 
     //! Default constructor
     NeighbourhoodManagerLammps() = default;
@@ -107,9 +107,9 @@ namespace rascal {
      * @param vatom per-atom virial
      */
     void update(const int & inum, const int & tot_num,
-                    int * ilist, int * numneigh, int ** firstneigh,
-                    double ** x, double ** f, int * type,
-                    double * eatom, double ** vatom);
+                int * ilist, int * numneigh, int ** firstneigh,
+                double ** x, double ** f, int * type,
+                double * eatom, double ** vatom);
 
 
 
@@ -121,13 +121,14 @@ namespace rascal {
     }
 
     // return position vector
-    template<int Level, int Depth>
-    inline Vector_ref get_neighbour_position(const ClusterRefBase<Level, Depth>&
-					     cluster) {
+    template<int Level>
+    inline Vector_ref get_neighbour_position(const ClusterRefBase<Level,
+                                             cluster_depth<Level>(traits::DepthByDimension{})> &
+                                             cluster) {
       static_assert(Level > 1,
-		    "Only possible for Level > 1.");
+                    "Only possible for Level > 1.");
       static_assert(Level <= traits::MaxLevel,
-		    "Level to large, not available.");
+                    "Level to large, not available.");
       return this->get_position(cluster.back());
     }
 
@@ -137,8 +138,10 @@ namespace rascal {
     }
 
     // return the number of neighbours of a given atom
-    template<int Level, int Depth>
-    inline size_t get_cluster_size(const ClusterRefBase<Level, Depth>& cluster) const {
+    template<int Level>
+    inline size_t get_cluster_size(const ClusterRefBase<Level,
+                                   cluster_depth<Level>(traits::DepthByDimension{})> & cluster)
+      const {
       static_assert(Level < traits::MaxLevel,
                     "this implementation only handles atoms and pairs");
       return this->numneigh[cluster.back()];
@@ -164,8 +167,9 @@ namespace rascal {
      * return the linear index of cluster (i.e., the count at which
      * this cluster appears in an iteration
      */
-    template<int Level, int Depth>
-    inline int get_offset_impl(const ClusterRefBase<Level, Depth>& cluster) const;
+    template<int Level>
+    inline int get_offset_impl(const ClusterRefBase<Level,
+                               cluster_depth<Level>(traits::DepthByDimension{}) >& cluster) const;
 
     size_t get_nb_clusters(int cluster_size);
 
@@ -201,10 +205,11 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   // specialisation for just atoms
-  template <int Level, int Depth>
+  template <int Level>
   inline int NeighbourhoodManagerLammps:: template
-  get_offset_impl(const ClusterRefBase<Level, Depth>& cluster) const {
-    return cluster.get_cluster_index(cluster_depth<Level>(traits::Depth{});
+  get_offset_impl(const ClusterRefBase<Level,
+                  cluster_depth<Level>(traits::DepthByDimension{})> & cluster) const {
+    return cluster.get_cluster_index(cluster_depth<Level>(traits::DepthByDimension{}));
   }
 
 }  // rascal
