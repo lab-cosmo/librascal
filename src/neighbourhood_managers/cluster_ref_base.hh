@@ -100,23 +100,28 @@ namespace rascal {
     template <int Level, class Sequence, int... Ints>
     struct HeadExtractor {};
 
-    template <int Level, int head, int... tail, int... seq>
-    struct HeadExtractor<Level, std::integer_sequence<int, seq...>, head, tail...> {
-      using type = typename HeadExtractor<Level-1,
-                                          std::integer_sequence<int, seq..., head>,
-                                          tail...>::type; 
-    };
-
-    template <int... head, int... seq>
-    struct HeadExtractor<0, std::integer_sequence<int, seq...>, head...> {
+    template <int... seq>
+    struct HeadExtractorTail {
       using type = std::integer_sequence<int, seq...>;
     };
       
 
+    template <int Level, int head, int... tail, int... seq>
+    struct HeadExtractor<Level, std::integer_sequence<int, seq...>, head, tail...> {
+      using Extractor_t = std::conditional_t
+        <(Level > 1),
+        HeadExtractor<Level-1,
+                      std::integer_sequence<int, seq..., head>,
+                      tail...>,
+        HeadExtractorTail<seq..., head>>;
+      using type = typename Extractor_t::type; 
+    };
+
+
   }  // internal
 
   template <int Level, int... Ints>
-  constexpr int cluster_depth(const std::integer_sequence<int, Ints...> &) {
+  constexpr int compute_cluster_depth(const std::integer_sequence<int, Ints...> &) {
     using ActiveDimensions = typename internal::HeadExtractor
       <Level, std::integer_sequence<int>, Ints...>::type;
     return internal::MinExtractor<ActiveDimensions>::value;

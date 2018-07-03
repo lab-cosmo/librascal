@@ -116,7 +116,7 @@ namespace rascal {
      * return type for iterators: a light-weight pair, triplet, etc reference,
      * giving access to the AtomRefs of all implicated atoms
      */
-    template <int Level, int Depth>
+    template <int Level>
     class ClusterRef;
 
     inline Iterator_t begin() {return Iterator_t(*this, 0);}
@@ -128,29 +128,38 @@ namespace rascal {
       return this->implementation().get_nb_clusters(cluster_size);
     }
 
-    inline Vector_ref position(const AtomRef & atom) {
-      return this->implementation().get_position(atom);
+    inline Vector_ref position(const int & atom_index) {
+      return this->implementation().get_position(atom_index);
     }
     template <int L, int D>
-    inline Vector_ref neighbour_position(ClusterRef<L, D> & cluster) {
+    inline Vector_ref neighbour_position(ClusterRefBase<L, D> & cluster) {
       return this->implementation().get_neighbour_position(cluster);
     }
 
-    inline int atom_type(const AtomRef & atom) {
-      return this->implementation().get_atom_type(atom);
+    inline int atom_type(const int & atom_index) {
+      return this->implementation().get_atom_type(atom_index);
     }
 
   protected:
-    template <int L, int D>
-    inline size_t cluster_size(ClusterRef<L, D> & cluster) const {
+    template <int Level>
+    constexpr static size_t cluster_depth(){
+      return compute_cluster_depth<Level>(typename traits::DepthByDimension{});
+    }
+
+    //! recursion end, not for use
+    const std::array<int, 0> & get_atom_indices() const {return std::array<int,0>{};}
+    template <int L>
+    inline size_t cluster_size(ClusterRef<L> & cluster) const {
       return this->implementation().get_cluster_size(cluster);
     }
 
-    template <int L, int D>
-    inline size_t atom_id(ClusterRef<L, D> & cluster, int index) const {
+    //! get atom_index of index-th atom in cluster
+    template <int L>
+    inline size_t atom_id(ClusterRef<L> & cluster, int index) const {
       return this->implementation().get_atom_id(cluster, index);
     }
 
+    //! get atom_index of the index-th atom in manager
     inline size_t atom_id(NeighbourhoodManagerBase & cluster, int index) const {
       return this->implementation().get_atom_id(cluster, index);
     }
@@ -217,7 +226,7 @@ namespace rascal {
     struct PositionGetter<1, ClusterRef> {
       using Vector_ref = typename ClusterRef::Manager_t::Vector_ref;
       static inline Vector_ref get_position(ClusterRef & cluster) {
-        return cluster.get_manager().position(cluster.get_atoms().back());
+        return cluster.get_manager().position(cluster.back());
       };
     };
 
@@ -257,10 +266,10 @@ namespace rascal {
     inline const int & get_index() const {return this->index;}
 
     //! return position vector
-    inline Vector_ref get_position() {return this->manager.position(*this);}
+    inline Vector_ref get_position() {return this->manager.position(this->index);}
 
     //! return atom type
-    inline int get_atom_type() const {return this->manager.atom_type(*this);}
+    inline int get_atom_type() const {return this->manager.atom_type(this->index);}
 
   protected:
     Manager_t & manager;
@@ -275,13 +284,13 @@ namespace rascal {
     This is the object we have when iterating over the manager
   */
   template <class ManagerImplementation>
-  template <int Level, int Depth>
+  template <int Level>
   class NeighbourhoodManagerBase<ManagerImplementation>::ClusterRef :
-    public ClusterRefBase<Level, Depth>
+    public ClusterRefBase<Level, ManagerImplementation::template cluster_depth<Level>()>
   {
   public:
     using Manager_t = NeighbourhoodManagerBase<ManagerImplementation>;
-    using Parent = ClusterRefBase<Level, Depth>;
+    using Parent = ClusterRefBase<Level, ManagerImplementation::template cluster_depth<Level>()>;
     using AtomRef_t = typename Manager_t::AtomRef;
     using Iterator_t = typename Manager_t::template iterator<Level>;
     using Atoms_t = std::array<AtomRef_t, Level>;
@@ -296,9 +305,11 @@ namespace rascal {
 
     //! Constructor from an iterator
     ClusterRef(Iterator_t & it):
-      Parent{internal::get_indices(it.get_container_atoms())},
-      atoms{it.get_container_atoms()}, it{it}{}
+      Parent{it.get_atom_indices()},
+      it{it}{}
 
+
+    template<int Depth>
     ClusterRef(std::enable_if<Level==1, ClusterRefBase<1, Depth>> & cluster,
                Manager_t& manager):
       Parent{cluster.get_indices()},
@@ -340,7 +351,7 @@ namespace rascal {
     //! return the index of the atom: Atoms_t is len==1 if center,
     //! len==2 if 1st neighbours,...
     inline int get_atom_index() {
-      return this->atoms.back().get_index();
+      return this->back();
     }
 
     inline Manager_t & get_manager() {return this->it.get_manager();}
@@ -356,8 +367,9 @@ namespace rascal {
     inline int get_global_index() const {
       return this->get_manager().get_offset(*this);
     }
+
   protected:
-    Atoms_t atoms;
+    //Atoms_t atoms;
     Iterator_t & it;
   private:
   };
@@ -370,8 +382,7 @@ namespace rascal {
   public:
     using Manager_t = NeighbourhoodManagerBase<ManagerImplementation>;
     friend Manager_t;
-    using ClusterRef_t = typename Manager_t::template
-      ClusterRef<Level, cluster_depth<Level>(traits::DepthByDimension{})>;
+    using ClusterRef_t = typename Manager_t::template ClusterRef<Level>;
 
     friend ClusterRef_t;
     using Container_t =
@@ -379,7 +390,7 @@ namespace rascal {
       <Level == 1,
        Manager_t,
        typename Manager_t::template
-       ClusterRef<Level-1, cluster_depth<Level>(traits::DepthByDimension{})>>;
+       ClusterRef<Level-1>>;
     static_assert(Level > 0, "Level has to be positive");
 
     using AtomRef_t = typename Manager_t::AtomRef;
@@ -438,12 +449,17 @@ namespace rascal {
     iterator(Container_t & cont, int start)
       :container{cont}, index{start} {}
 
-    std::array<AtomRef_t, Level> get_container_atoms() {
+    std::array<int, Level> get_atom_indices() {
       return internal::append_array
-        (std::move(container.get_atoms()),
-         AtomRef_t(this->get_manager(),
-                   this->get_manager().atom_id(container, this->index)));
+        (std::move(container.get_atom_indices()),
+                   this->get_manager().atom_id(container, this->index));
     }
+    // std::array<AtomRef_t, Level> get_container_atoms() {
+    //   return internal::append_array
+    //     (std::move(container.get_atoms()),
+    //      AtomRef_t(this->get_manager(),
+    //                this->get_manager().atom_id(container, this->index)));
+    // }
 
     inline Manager_t & get_manager() {return this->container.get_manager();}
     inline const Manager_t & get_manager() const {

@@ -140,9 +140,8 @@ namespace rascal {
     // The template parameters Level and MaxLevel give the
     // pair/triplet/ and the maximum depth, e.g. up to pair level.
     // To increase the MaxLevel, use an <code>adaptor</code>.
-    template<int Level>
-    using ClusterRef_t = typename Parent::template ClusterRef
-      <Level, cluster_depth<Level>(traits::DepthByDimension{})>;
+    template <int Level>
+    using ClusterRef_t = typename Parent::template ClusterRef<Level>;
 
     //! Default constructor
     NeighbourhoodManagerChain() = default;

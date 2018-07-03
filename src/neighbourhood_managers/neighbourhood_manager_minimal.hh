@@ -65,8 +65,7 @@ namespace rascal {
     using Vector_t = typename Parent::Vector_t;
     using AtomRef_t = typename Parent::AtomRef;
     template <int Level>
-    using ClusterRef_t = typename Parent::template ClusterRef
-      <Level, cluster_depth<Level>(traits::DepthByDimension{})>;
+    using ClusterRef_t = typename Parent::template ClusterRef <Level>;
 
     using AtomVectorField_t = Property<NeighbourhoodManagerMinimal, double, 1, 3>;
 
@@ -93,9 +92,8 @@ namespace rascal {
     class Box;
 
     // return position vector
-    inline Vector_ref get_position(const AtomRef_t& atom) {
-      auto index{atom.get_index()};
-      auto * xval{this->positions.col(index).data()};
+    inline Vector_ref get_position(const int & atom_index) {
+      auto * xval{this->positions.col(atom_index).data()};
       return Vector_ref(xval);
     }
 
