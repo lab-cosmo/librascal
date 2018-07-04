@@ -31,6 +31,8 @@
 #include <tuple>
 #include <array>
 
+#include <Eigen/Dense>
+
 namespace rascal {
 
   /**
@@ -173,8 +175,8 @@ namespace rascal {
 
     //! direct constructor
     ClusterRefBase(std::array<size_t, Level> atom_indices,
-                   Eigen::Map<Eigen::Matrix<size_t, Depth, 1>> cluster_indices):
-      atom_indices{atom_indices}, cluster_indices{cluster_indices} {}
+                   std::array<size_t, Depth> cluster_indeces):
+      atom_indices{atom_indices}, cluster_indices(cluster_indices) {}
 
     // //! constructor from higher depth
     // template<size_t HiDepth>
@@ -202,12 +204,16 @@ namespace rascal {
     //! Move assignment operator
     ClusterRefBase& operator=(ClusterRefBase &&other) = default;
 
-    const std::array<size_t, Level> & get_atom_indices() const {return this->indices;}
+    const std::array<size_t, Level> & get_atom_indices() const {
+      return this->indices;
+    }
 
     const size_t & front() const{return this->atom_indices.front();}
     const size_t & back() const{return this->atom_indices.back();}
 
-    inline size_t get_cluster_index(size_t depth) const {return this->cluster_indices[depth];}
+    inline size_t get_cluster_index(size_t depth) const {
+      return this->cluster_indices(depth);
+    }
 
   protected:
     std::array<size_t, Level> atom_indices;
@@ -216,7 +222,8 @@ namespace rascal {
      * adaptor, and mean last entry (.back())
      */
     // Eigen::Map
-    std::array<size_t, Depth> cluster_indices;
+    Eigen::Map<Eigen::Matrix<size_t, Depth, 1>> cluster_indices;
+
   private:
   };
 

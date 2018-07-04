@@ -51,7 +51,7 @@ namespace rascal {
     constexpr static bool HasDistances{true};
     constexpr static bool HasDirectionVectors{ManagerImplementation::traits::HasDirectionVectors};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
-    constexpr static int MaxLevel{ManagerImplementation::traits::MaxLevel};
+    constexpr static size_t MaxLevel{ManagerImplementation::traits::MaxLevel};
     using Depth = DepthIncreaser<MaxLevel, ManagerImplementation::traits::Depth>::type;
   };
 
@@ -68,7 +68,7 @@ namespace rascal {
     using Parent = NeighbourhoodManagerBase<AdaptorStrict<ManagerImplementation>>;
     using traits = NeighbourhoodManager_traits<AdaptorStrict>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
-    template <int Level>
+    template <size_t Level>
     using ClusterRef_t = typename ManagerImplementation::template ClusterRef<Level>;
     using PairRef_t = ClusterRef_t<2>;
 
@@ -129,7 +129,7 @@ namespace rascal {
       return this->manager.get_position(original_atom);
     }
 
-    template<int Level>
+    template<size_t Level>
     inline Vector_ref get_neighbour_position(const ClusterRef_t<Level>&
                                              /*cluster*/) {
       static_assert(Level > 1,
@@ -147,7 +147,7 @@ namespace rascal {
     }
 
     // return the global id of an atom
-    template<int Level>
+    template<size_t Level>
     inline size_t get_atom_id(const ClusterRefBase<Level>& cluster,
                               int j_atom_id) const {
       static_assert(Level <= traits::MaxLevel-1,
@@ -176,13 +176,13 @@ namespace rascal {
      * return the linear index of cluster (i.e., the count at which
      * this cluster appears in an iteration
      */
-    template<int Level>
+    template<size_t Level>
     inline int get_offset_impl(const ClusterRef_t<Level>& cluster) const {
       return this->offsets[Level][cluster.get_index()];
     }
 
     // return the number of neighbours of a given atom
-    template<int Level>
+    template<size_t Level>
     inline size_t get_cluster_size(const ClusterRefBase<Level>& cluster) const {
       static_assert(Level <= traits::MaxLevel-1,
                     "this implementation only handles atoms and pairs");
@@ -195,7 +195,7 @@ namespace rascal {
      * atom the atom to add to the list @param level select whether it
      * is an i-atom (level=0), j-atom (level=1), or ...
      */
-    template <int Level>
+    template <size_t Level>
     inline void add_atom(typename ManagerImplementation::AtomRef_t atom) {
       static_assert(Level <= traits::MaxLevel,
                     "you can only add neighbours to the n-th degree defined by "
@@ -216,13 +216,13 @@ namespace rascal {
       }
     }
 
-    template <int Level>
+    template <size_t Level>
     inline void add_atom(typename ManagerImplementation::template
                          ClusterRef<Level> cluster) {
-      return this->template add_atom <Level-1>(cluster.get_atoms().back());
+      return this->template add_atom <Level-1>(cluster.back());
     }
 
-    template <int Level, bool IsDummy>
+    template <size_t Level, bool IsDummy>
     struct HelperLoop;
 
     ManagerImplementation & manager;
@@ -313,9 +313,9 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
-  template <int Level, bool IsDummy>
+  template <size_t Level, bool IsDummy>
   struct AdaptorStrict<ManagerImplementation>::HelperLoop {
-    static constexpr int MaxLevel{ManagerImplementation::traits::MaxLevel};
+    static constexpr size_t MaxLevel{ManagerImplementation::traits::MaxLevel};
     using ClusterRef_t = typename ManagerImplementation::template
       ClusterRef<Level>;
 
@@ -335,9 +335,9 @@ namespace rascal {
    * End of recursion
    */
   template <class ManagerImplementation>
-  template <int Level>
+  template <size_t Level>
   struct AdaptorStrict<ManagerImplementation>::HelperLoop<Level, true> {
-    static constexpr int MaxLevel{ManagerImplementation::traits::MaxLevel};
+    static constexpr size_t MaxLevel{ManagerImplementation::traits::MaxLevel};
     using ClusterRef_t = typename ManagerImplementation::template
       ClusterRef<Level>;
     static void loop(ClusterRef_t & /*cluster*/,

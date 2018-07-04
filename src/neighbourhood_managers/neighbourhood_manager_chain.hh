@@ -77,7 +77,7 @@ namespace rascal {
   template <>
   struct NeighbourhoodManager_traits<NeighbourhoodManagerChain> {
     constexpr static int Dim{3};
-    constexpr static int MaxLevel{2}; //
+    constexpr static size_t MaxLevel{2}; //
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDirectionVectors{false};
     constexpr static bool HasDistances{false};
@@ -140,7 +140,7 @@ namespace rascal {
     // The template parameters Level and MaxLevel give the
     // pair/triplet/ and the maximum depth, e.g. up to pair level.
     // To increase the MaxLevel, use an <code>adaptor</code>.
-    template <int Level>
+    template <size_t Level>
     using ClusterRef_t = typename Parent::template ClusterRef<Level>;
 
     //! Default constructor
@@ -223,7 +223,7 @@ namespace rascal {
     // Returns the position of a neighbour. In case of periodic
     // boundary conditions, the get_neighbour_position should return a
     // different position, if it is a ghost atom.
-    template<int Level>
+    template<size_t Level>
     inline Vector_ref get_neighbour_position(const ClusterRefBase<Level,
                                              cluster_depth<Level>(traits::DepthByDimension{})>
                                              & cluster) {
@@ -246,7 +246,7 @@ namespace rascal {
     }
 
     // Returns the number of neighbours of a given atom
-    template<int Level>
+    template<size_t Level>
     inline size_t get_cluster_size(const ClusterRefBase<Level,
                                    cluster_depth<Level>(traits::DepthByDimension{})>
                                    & cluster) const {
@@ -255,7 +255,7 @@ namespace rascal {
       return this->numneigh[cluster.back()];
     }
 
-    template<int Level>
+    template<size_t Level>
     inline size_t get_atom_id(const ClusterRefBase<Level,
                               cluster_depth<Level>(traits::DepthByDimension{})>
                               & cluster,
@@ -278,7 +278,7 @@ namespace rascal {
      * Return the linear index of cluster (i.e., the count at which
      * this cluster appears in an iteration
      */
-    template<int Level>
+    template<size_t Level>
     inline int
     get_offset_impl(const ClusterRefBase<Level,
                     cluster_depth<Level>(traits::DepthByDimension{})>
@@ -378,7 +378,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   // adjust for triplets
-  // template<int Level>
+  // template<size_t Level>
   // inline int NeighbourhoodManagerChain::
   // get_offset_impl(const ClusterRefBase<Level,
   //           cluster_depth<Level>(traits::DepthByDimension{})>
@@ -391,7 +391,7 @@ namespace rascal {
   //   return main_offset + j;
   // }
 
-  template <int Level>
+  template <size_t Level>
   inline int NeighbourhoodManagerChain:: template
   get_offset_impl(const ClusterRefBase<Level,
                   cluster_depth<Level>(traits::DepthByDimension{})> & cluster) const {

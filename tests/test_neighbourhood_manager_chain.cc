@@ -61,8 +61,8 @@ namespace rascal {
         auto pair_offset{pair_cluster.get_global_index()};
         if (verbose) {
           std::cout
-            << "pair (" << atom_cluster.get_atoms().back().get_index()
-            << ", " << pair_cluster.get_atoms().back().get_index()
+            << "pair (" << atom_cluster.back()
+            << ", " << pair_cluster.back()
             << "), pair_counter = " << pair_counter
             << ", pair_offset = " << pair_offset << std::endl;
         }

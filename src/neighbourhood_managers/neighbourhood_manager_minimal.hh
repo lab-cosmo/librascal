@@ -52,7 +52,7 @@ namespace rascal {
   template <>
   struct NeighbourhoodManager_traits<NeighbourhoodManagerMinimal> {
     constexpr static int Dim{3};
-    constexpr static int MaxLevel{1};
+    constexpr static size_t MaxLevel{1};
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     using DepthByDimension = std::index_sequence<0, 0>;
   };
@@ -64,7 +64,7 @@ namespace rascal {
     using Vector_ref = typename Parent::Vector_ref;
     using Vector_t = typename Parent::Vector_t;
     using AtomRef_t = typename Parent::AtomRef;
-    template <int Level>
+    template <size_t Level>
     using ClusterRef_t = typename Parent::template ClusterRef <Level>;
 
     using AtomVectorField_t = Property<NeighbourhoodManagerMinimal, double, 1, 3>;
@@ -101,7 +101,7 @@ namespace rascal {
 
     // return position vector
     // atom is the neighbour atom. center_atom is the current center. j_linear_id is the index of the current neighbour iterator.
-    template<int Level>
+    template<size_t Level>
     inline Vector_ref get_neighbour_position(const ClusterRef_t<Level>&
                                              cluster) {
       static_assert(Level > 1,
@@ -109,10 +109,10 @@ namespace rascal {
       static_assert(Level <= traits::MaxLevel,
                     "this implementation should only work up to MaxLevel.");
       auto && j_linear_id = cluster.get_index();
-      auto && i_atom_id{cluster.get_atoms().front().get_index()}; // center_atom index
+      auto && i_atom_id{cluster.front()}; // center_atom index
       auto && i_bin_id{this->part2bin[i_atom_id]};
       auto && shift_index{this->neighbour_bin_id[i_bin_id][j_linear_id].get_index()};
-      auto && j_atom_id{cluster.get_atoms().back().get_index()}; // neighbour atom index
+      auto && j_atom_id{cluster.back()}; // neighbour atom index
       // TODO: find another way. This is a work around so that shifted_position lives longer than the function call but it is prone to side effects
       this->shifted_position = this->positions.col(j_atom_id) + this->cell * this->get_shift(i_bin_id,shift_index);
       auto * xval{this->shifted_position.col(0).data()};
@@ -135,28 +135,28 @@ namespace rascal {
     }
 
     // return the index of the center corresponding to its neighbour image
-    template<int Level>
+    template<size_t Level>
     inline size_t get_atom_id(const ClusterRef_t<Level>& cluster, int j_atom_id) const {
       static_assert(Level <= traits::MaxLevel,
                     "this implementation only handles atoms and pairs");
-      auto && i_atom_id{cluster.get_atoms().back().get_index()};
+      auto && i_atom_id{cluster.back()};
       auto && i_bin_id{this->part2bin[i_atom_id]};
       auto && ij_atom_id{this->neighbour_atom_index[i_bin_id][j_atom_id].get_index()};
       return ij_atom_id;
     }
 
     // return the number of neighbours of a given atom
-    template<int Level>
+    template<size_t Level>
     inline size_t get_cluster_size(const ClusterRef_t<Level>& cluster) const {
       static_assert(Level <= traits::MaxLevel,
                     "this implementation only handles atoms and pairs");
-      auto && i_atom_id{cluster.get_atoms().back().get_index()};
+      auto && i_atom_id{cluster.back()};
       auto && box_id{this->part2bin[i_atom_id]};
       auto && size{this->neighbour_atom_index[box_id].size()};
       return size;
     }
 
-    template<int Level>
+    template<size_t Level>
     inline int get_offset_impl(const ClusterRefBase<Level,
                                cluster_depth<Level>(traits::DepthByDimension{}) >& cluster) const;
     
@@ -252,20 +252,20 @@ namespace rascal {
   };
   /* ---------------------------------------------------------------------- */
 
-  // template<int Level>
+  // template<size_t Level>
   // inline int NeighbourhoodManagerMinimal::
   // get_offset_impl(const ClusterRef_t<Level>& cluster) const {
   //   static_assert(Level == 2, "This class cas only handle single atoms and pairs");
 
   //   //auto atoms{};
-  //   auto icenter{cluster.get_atoms().front().get_index()};
+  //   auto icenter{cluster.front()};
   //   auto stride{this->number_of_neighbours_stride[icenter]};
   //   auto j{cluster.get_index()};
   //   auto main_offset{stride+j};
   //   return main_offset;
   // }
   
-  template <int Level>
+  template <size_t Level>
   inline int NeighbourhoodManagerMinimal:: template
   get_offset_impl(const ClusterRefBase<Level,
                   cluster_depth<Level>(traits::DepthByDimension{})> & cluster) const {
@@ -278,7 +278,7 @@ namespace rascal {
   // template <>
   // inline int NeighbourhoodManagerMinimal:: template
   // get_offset_impl<1>(const ClusterRef_t<1>& cluster) const {
-  //   return cluster.get_atoms().back().get_index();
+  //   return cluster.back();
   // }
   /* ---------------------------------------------------------------------- */
 
