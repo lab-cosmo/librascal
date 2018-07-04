@@ -170,13 +170,14 @@ namespace rascal {
   class ClusterRefBase
   {
   public:
+    using IndexArray = Eigen::Map<Eigen::Array<size_t, Depth+1, 1>>;
     //! Default constructor
     ClusterRefBase() = delete;
 
     //! direct constructor
     ClusterRefBase(std::array<size_t, Level> atom_indices,
-                   std::array<size_t, Depth> cluster_indeces):
-      atom_indices{atom_indices}, cluster_indices(cluster_indices) {}
+                   IndexArray cluster_indices):
+      atom_indices{atom_indices}, cluster_indices(cluster_indices.data()) {}
 
     // //! constructor from higher depth
     // template<size_t HiDepth>
@@ -222,7 +223,7 @@ namespace rascal {
      * adaptor, and mean last entry (.back())
      */
     // Eigen::Map
-    Eigen::Map<Eigen::Matrix<size_t, Depth, 1>> cluster_indices;
+    IndexArray cluster_indices;
 
   private:
   };

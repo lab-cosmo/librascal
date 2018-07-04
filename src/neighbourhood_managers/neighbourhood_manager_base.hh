@@ -175,10 +175,20 @@ namespace rascal {
 
     std::array<AtomRef, 0> get_atoms() const {return std::array<AtomRef, 0>{};};
 
-    template <size_t L, size_t D>
-    inline int get_offset(const ClusterRefBase<L, D> & cluster) const {
-      return this->implementation().get_offset_impl(cluster);
+    // TODO: get property index - dependent on Depth (e.g., by means of sorting)
+    // not necessary to specialize, can be done in _base
+    template <size_t L, size_t CallerDepth>
+    inline int get_offset(const ClusterRefBase<L, CallerDepth> & cluster) const {
+      constexpr static auto ActiveDepth{cluster_depth<L>(traits::DepthByDimenions{})};
+      static_assert(CallerDepth>=ActiveDepth,
+                    "Calling from an inexisting depth");
+      return cluster.get_cluster_index(ActiveDepth);
+      //      return this->implementation().get_offset_impl(cluster);
     }
+
+    // inline size_t * cluster_indices
+    template <size_t Depth>
+    inline Eigen::Map<Eigen::Array<size_t, Depth+1>> get_cluster_indices(
 
     // template <size_t L>
     // inline int get_cluster(const ClusterRefBase<L> & cluster) const {
@@ -305,11 +315,12 @@ namespace rascal {
 
     //! Constructor from an iterator
     ClusterRef(Iterator_t & it):
-      Parent{it.get_atom_indices(),it.get_cluster_indices()},
-      it{it}{}
+      Parent{it.get_atom_indices(), it.get_cluster_indices()},
+      //it{it}{}
         // Intelligenzija: an array of cluster_indeces
         // std::array<size_t, Depth>
-      // it{it}{}
+      //it{it}
+    {}
 
 
     template<size_t Depth>
@@ -458,10 +469,8 @@ namespace rascal {
                    this->get_manager().atom_id(container, this->index));
     }
 
-    std::array<size_t, Level> get_cluster_indices() {
-      return internal::append_array
-        (std::move(container.get_atom_indices()),
-                   this->get_manager().atom_id(container, this->index));
+    Eigen::Map<Eigen::Array<size_t, traits::XXXXDEPTHXXX+1>> get_cluster_indices() {
+      needs own global index
     }
 
     
@@ -479,6 +488,7 @@ namespace rascal {
 
     Container_t & container;
     int index;
+    std::array<size_t, MaxLevel-Level> starting_points;
   private:
   };
 
