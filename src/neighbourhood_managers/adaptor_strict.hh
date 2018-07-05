@@ -49,10 +49,12 @@ namespace rascal {
 
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::yes};
     constexpr static bool HasDistances{true};
-    constexpr static bool HasDirectionVectors{ManagerImplementation::traits::HasDirectionVectors};
+    constexpr static bool HasDirectionVectors{
+      ManagerImplementation::traits::HasDirectionVectors};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
     constexpr static size_t MaxLevel{ManagerImplementation::traits::MaxLevel};
-    using Depth = DepthIncreaser<MaxLevel, ManagerImplementation::traits::Depth>::type;
+    using DepthByDimension =
+      DepthIncreaser<MaxLevel, ManagerImplementation::traits::DepthByDimension>::type;
   };
 
   /**

@@ -206,7 +206,7 @@ namespace rascal {
     ClusterRefBase & operator=(ClusterRefBase && other) = default;
 
     const std::array<size_t, Level> & get_atom_indices() const {
-      return this->indices;
+      return this->atom_indices;
     }
 
     const size_t & front() const{return this->atom_indices.front();}

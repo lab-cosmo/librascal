@@ -206,16 +206,16 @@ namespace rascal {
     /**
      * Not sure about the actual implementation of this one.
      */
-    template<size_t Level, size_t CallerDepth>
+    template<size_t CallerDepth>
     reference operator[](const ClusterRefBase<Level, CallerDepth> & id) {
-      constexpr static auto
-        ActiveDepth{cluster_depth<L>(traits::DepthByDimenions{})};
+      constexpr static auto ActiveDepth{
+        this->manager.compute_cluster_depth<Level>(typename traits::DepthByDimenions{})};
       static_assert(CallerDepth >= ActiveDepth,
                     "You are trying to access a property that "
                     "does not exist at this low a level in the "
                     "adaptor stack.");
       
-      return Value::get_ref(this->values[id.get_cluster_index(Depth)*NbDof]);
+      return Value::get_ref(this->values[id.get_cluster_index(CallerDepth)*NbDof]);
       //return Value::get_ref(this->values[manager.get_offset(id)*NbDof]);
     }
 

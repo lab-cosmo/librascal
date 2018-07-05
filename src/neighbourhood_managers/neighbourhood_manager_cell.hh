@@ -47,7 +47,7 @@ namespace rascal {
 
   //! forward declaration for traits
   class NeighbourhoodManagerCell;
-  
+
   //! traits specialisation for Lammps manager
   template <>
   struct NeighbourhoodManager_traits<NeighbourhoodManagerCell> {
@@ -164,12 +164,15 @@ namespace rascal {
     inline int get_offset_impl(const ClusterRefBase<Level,
                                cluster_depth<Level>(traits::DepthByDimension{})>
                                & cluster) const;
-    
+
     size_t get_nb_clusters(int cluster_size);
 
-    void update(const Eigen::Ref<const Eigen::MatrixXd> positions,const Eigen::Ref<const VecXi>  particle_types,
+    void update(const Eigen::Ref<const Eigen::MatrixXd> positions,
+                const Eigen::Ref<const VecXi>  particle_types,
                 const Eigen::Ref<const VecXi> center_ids,
-                const Eigen::Ref<const Eigen::MatrixXd> cell,const std::array<bool,3>& pbc, const double& cutoff_max);
+                const Eigen::Ref<const Eigen::MatrixXd> cell,
+                const std::array<bool,3>& pbc,
+                const double & cutoff_max);
 
     //Box get_box(const int& bin_id);
 
@@ -177,9 +180,12 @@ namespace rascal {
 
   protected:
 
-    void build(const Eigen::Ref<const Eigen::MatrixXd> positions, const Eigen::Ref<const VecXi>  particle_types,
+    void build(const Eigen::Ref<const Eigen::MatrixXd> positions,
+               const Eigen::Ref<const VecXi>  particle_types,
                const Eigen::Ref<const VecXi> center_ids,
-               const Eigen::Ref<const Eigen::MatrixXd> cell,const std::array<bool,3>& pbc, const double& cutoff_max);
+               const Eigen::Ref<const Eigen::MatrixXd> cell,
+               const std::array<bool,3>& pbc,
+               const double& cutoff_max);
 
     void set_positions(const Eigen::Ref<const Eigen::MatrixXd> pos){
       this->positions = pos;
@@ -283,7 +289,7 @@ namespace rascal {
   // get_offset_impl<1>(const ClusterRefBase<1, Depth>& cluster) const {
   //   return cluster.back();//get_atoms().back().get_index();
   // }
-  
+
   /* ---------------------------------------------------------------------- */
 
   inline Vector_ref NeighbourhoodManagerCell::get_shift(const int& i_bin_id, const int& neigh_bin_index){

@@ -57,7 +57,8 @@ namespace rascal {
     constexpr static size_t MaxLevel{ManagerImplementation::traits::MaxLevel+1};
     // New Depth
     // using DepthByDimension = std::index_sequence<0, 0>;
-    using DepthByDimension = DepthIncreaser<MaxLevel, ManagerImplementation>;
+    using DepthByDimension =
+      DepthIncreaser<MaxLevel, ManagerImplementation::traits::DepthByDimension>::type;
   };
 
   /**

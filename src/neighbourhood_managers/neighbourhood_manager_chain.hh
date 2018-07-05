@@ -81,7 +81,7 @@ namespace rascal {
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDirectionVectors{false};
     constexpr static bool HasDistances{false};
-    using DepthByDimension = std::index_sequence<0, 0>;
+    using DepthByDimension = std::integer_sequence<size_t, 0, 0>;
   };
   
   // Definition of the new NeighbourhoodManager class. To add your
