@@ -46,13 +46,13 @@ namespace rascal {
 
   template <size_t MaxLevel, size_t... Ints>
   struct DepthIncreaser<MaxLevel,
-                        std::integer_sequence<size_t, Ints...>>{
-    using type = std::integer_sequence<size_t, (Ints+1)...>;
+                        std::index_sequence<Ints...>>{
+    using type = std::index_sequence<(Ints+1)...>;
   };
 
   template <size_t MaxLevel, size_t... Ints>
   using DepthIncreaser_t = typename DepthIncreaser<MaxLevel,
-                                                   std::integer_sequence<size_t, Ints...>>::type;
+                                                   std::index_sequence<Ints...>>::type;
 
   /**
    * Extends depth by cluster for an additional cluster dimension
@@ -62,13 +62,13 @@ namespace rascal {
 
   template <size_t MaxLevel, size_t... Ints>
   struct DepthExtender<MaxLevel,
-                       std::integer_sequence<size_t, Ints...>>{
-    using type = std::integer_sequence<size_t, Ints..., 0>;
+                       std::index_sequence<Ints...>>{
+    using type = std::index_sequence<Ints..., 0>;
   };
 
   template <size_t MaxLevel, size_t... Ints>
   using DepthExtender_t = typename DepthExtender<MaxLevel,
-                                                 std::integer_sequence<size_t, Ints...>>::type;
+                                                 std::index_sequence<Ints...>>::type;
 
   /**
    * Dynamic access to all depths by cluster dimension (probably not
@@ -76,7 +76,7 @@ namespace rascal {
    */
   template <size_t MaxLevel, size_t... Ints>
   constexpr std::array<size_t, MaxLevel>
-  get_depths(std::integer_sequence<size_t, Ints...>) {
+  get_depths(std::index_sequence<Ints...>) {
     return std::array<size_t, MaxLevel>{Ints...};
   }
 
@@ -95,7 +95,7 @@ namespace rascal {
     struct MinExtractor {};
 
     template <size_t... Ints>
-    struct MinExtractor<std::integer_sequence<size_t, Ints...>> {
+    struct MinExtractor<std::index_sequence<Ints...>> {
       constexpr static size_t value {Min<Ints...>::value};
     };
 
@@ -104,16 +104,16 @@ namespace rascal {
 
     template <size_t... seq>
     struct HeadExtractorTail {
-      using type = std::integer_sequence<size_t, seq...>;
+      using type = std::index_sequence<seq...>;
     };
       
 
     template <size_t Level, size_t head, size_t... tail, size_t... seq>
-    struct HeadExtractor<Level, std::integer_sequence<size_t, seq...>, head, tail...> {
+    struct HeadExtractor<Level, std::index_sequence<seq...>, head, tail...> {
       using Extractor_t = std::conditional_t
         <(Level > 1),
         HeadExtractor<Level-1,
-                      std::integer_sequence<size_t, seq..., head>,
+                      std::index_sequence<seq..., head>,
                       tail...>,
         HeadExtractorTail<seq..., head>>;
       using type = typename Extractor_t::type; 
@@ -123,9 +123,9 @@ namespace rascal {
   }  // internal
 
   template <size_t Level, size_t... Ints>
-  constexpr size_t compute_cluster_depth(const std::integer_sequence<size_t, Ints...> &) {
+  constexpr size_t compute_cluster_depth(const std::index_sequence<Ints...> &) {
     using ActiveDimensions = typename internal::HeadExtractor
-      <Level, std::integer_sequence<size_t>, Ints...>::type;
+      <Level, std::index_sequence<>, Ints...>::type;
     return internal::MinExtractor<ActiveDimensions>::value;
   }
 
@@ -135,7 +135,7 @@ namespace rascal {
    */
   template <size_t MaxLevel, size_t... Ints>
   constexpr size_t
-  get_depth(size_t index, std::integer_sequence<size_t, Ints...>) {
+  get_depth(size_t index, std::index_sequence<Ints...>) {
     constexpr size_t arr[] {Ints...};
     return arr [index];
   }
@@ -146,7 +146,7 @@ namespace rascal {
    * template parameter `NbRow` for a property
    */
   template <size_t index, size_t... Ints>
-  constexpr size_t get(std::integer_sequence<size_t, Ints...>) {
+  constexpr size_t get(std::index_sequence<Ints...>) {
     return get<index>(std::make_tuple(Ints...));
   }
 
@@ -191,19 +191,19 @@ namespace rascal {
     //   }
 
     //! Copy constructor
-    ClusterRefBase(const ClusterRefBase &other) = default; //
+    ClusterRefBase(const ClusterRefBase & other) = default; //
 
     //! Move constructor
-    ClusterRefBase(ClusterRefBase &&other) = default;
+    ClusterRefBase(ClusterRefBase && other) = default;
 
     //! Destructor
     virtual ~ClusterRefBase() = default;
 
     //! Copy assignment operator
-    ClusterRefBase& operator=(const ClusterRefBase &other) = delete;
+    ClusterRefBase & operator=(const ClusterRefBase & other) = delete;
 
     //! Move assignment operator
-    ClusterRefBase& operator=(ClusterRefBase &&other) = default;
+    ClusterRefBase & operator=(ClusterRefBase && other) = default;
 
     const std::array<size_t, Level> & get_atom_indices() const {
       return this->indices;
