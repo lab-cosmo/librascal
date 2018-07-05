@@ -63,9 +63,7 @@ namespace rascal {
       using type = T;
       using reference = T&;
 
-      static reference get_ref(T & value) {
-        return value;
-      }
+      static reference get_ref(T & value) {return value;}
 
       static void push_in_vector(std::vector<T> & vec, reference ref) {
         vec.push_back(ref);
@@ -79,7 +77,9 @@ namespace rascal {
     using Value_ref = typename Value<T, NbRow, NbCol>::reference;
 
     template<int dim>
-    inline void lin2mult(const Dim_t& index, const Eigen::Ref<const Vec3i_t> shape, Eigen::Ref< Vec3i_t> retval)  {
+    inline void lin2mult(const Dim_t& index,
+                         const Eigen::Ref<const Vec3i_t> shape,
+                         Eigen::Ref< Vec3i_t> retval) {
       //int dim{3};
       //Vec3i_t retval;
       Dim_t factor{1};
@@ -93,7 +93,8 @@ namespace rascal {
     }
 
     template<int dim>
-    inline Dim_t mult2lin( const Eigen::Ref<const Vec3i_t> coord, const Eigen::Ref<const Vec3i_t> shape)  {
+    inline Dim_t mult2lin(const Eigen::Ref<const Vec3i_t> coord,
+                          const Eigen::Ref<const Vec3i_t> shape) {
       //int dim{3};
       Dim_t index{0};
       Dim_t factor{1};
@@ -107,15 +108,19 @@ namespace rascal {
     }
 
     // https://stackoverflow.com/questions/828092/python-style-integer-division-modulus-in-c
-    // TODO more efficient implementation without if (would be less general)
-    //! div_mod function returning python like div_mod, i.e. signed integer division truncates towards negative infinity, and signed integer modulus has the same sign the second operand.
+    // TODO more efficient implementation without if (would be less general) !
+    // div_mod function returning python like div_mod, i.e. signed integer
+    // division truncates towards negative infinity, and signed integer modulus
+    // has the same sign the second operand.
     template<class Integral>
-    void div_mod(const Integral& x, const Integral& y, std::array<int,2>& out){
-      const Integral quot = x / y;
-      const Integral rem  = x % y;
-      if (rem != 0 && (x < 0) != (y < 0)){
-        out[0] = quot - 1;
-        out[1] = rem + y;
+    void div_mod(const Integral& x,
+                 const Integral & y,
+                 std::array<int, 2> & out){
+      const Integral quot = x/y;
+      const Integral rem  = x%y;
+      if (rem != 0 && (x<0) != (y<0)){
+        out[0] = quot-1;
+        out[1] = rem+y;
       }
       else {
         out[0] = quot;
@@ -126,18 +131,19 @@ namespace rascal {
     //! warning: works only with negative x if |x| < y
     // TODO Does not pass tests
     template<class Integral>
-    void branchless_div_mod(const Integral& x, const Integral& y, std::array<int,2>& out){
+    void branchless_div_mod(const Integral & x,
+                            const Integral & y,
+                            std::array<int, 2> & out){
       const Integral quot = (x-y) / y;
       const Integral rem  = (x+y) % y;
       out[0] = quot;
       out[1] = rem;
-
     }
 
   }  // internal
 
   template <class NeighbourhoodManager, typename T,
-            size_t Level, //Level,
+            size_t Level,
             size_t NbRow = 1, size_t NbCol = 1>
   class Property
   {
@@ -147,9 +153,7 @@ namespace rascal {
   public:
     using traits = NeighbourhoodManager_traits<NeighbourhoodManager>;
     constexpr static size_t NbDof{NbRow*NbCol};
-    using Cluster_t =
-      typename NeighbourhoodManager::template ClusterRef
-      <Level>;
+    using Cluster_t = typename NeighbourhoodManager::template ClusterRef<Level>;
 
     using Value = internal::Value<T, NbRow, NbCol>;
 
@@ -174,10 +178,10 @@ namespace rascal {
     virtual ~Property() = default;
 
     //! Copy assignment operator
-    Property& operator=(const Property & other) = delete;
+    Property & operator=(const Property & other) = delete;
 
     //! Move assignment operator
-    Property& operator=(Property && other) = delete;
+    Property & operator=(Property && other) = delete;
 
     //! adjust size (only increases, never frees)
     void resize() {
@@ -199,13 +203,18 @@ namespace rascal {
       Value::push_in_vector(this->values, ref);
     }
 
-    template<int HiDepth>
-    reference operator[](const ClusterRefBase<Level, HiDepth> & id) {
-      constexpr int Depth{traits::Depth};
-      static_assert(HiDepth >= Depth,
+    /**
+     * Not sure about the actual implementation of this one.
+     */
+    template<size_t Level, size_t CallerDepth>
+    reference operator[](const ClusterRefBase<Level, CallerDepth> & id) {
+      constexpr static auto
+        ActiveDepth{cluster_depth<L>(traits::DepthByDimenions{})};
+      static_assert(CallerDepth >= ActiveDepth,
                     "You are trying to access a property that "
                     "does not exist at this low a level in the "
                     "adaptor stack.");
+      
       return Value::get_ref(this->values[id.get_cluster_index(Depth)*NbDof]);
       //return Value::get_ref(this->values[manager.get_offset(id)*NbDof]);
     }
