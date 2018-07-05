@@ -56,7 +56,7 @@ namespace rascal {
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDirectionVectors{false};
     constexpr static bool HasDistances{false};
-    using DepthByDimension = std::index_sequence<0, 0>;
+    using DepthByDimension = std::integer_sequence<size_t, 0, 0>;
   };
   class NeighbourhoodManagerCell: public NeighbourhoodManagerBase<NeighbourhoodManagerCell>
   {
@@ -72,7 +72,7 @@ namespace rascal {
 
     //! Default constructor
     NeighbourhoodManagerCell()
-      :particles{}, centers{} ,positions{},shifted_position{} ,lattice{}, cell{},pbc{} ,part2bin{} ,boxes{} ,number_of_neighbours{0} ,neighbour_bin_id{} , number_of_neighbours_stride{}, neighbour_atom_index{},particule_types{}
+      :particles{}, centers{} ,positions{},shifted_position{} ,lattice{}, cell{},pbc{} ,part2bin{} ,boxes{} ,number_of_neighbours{0} ,neighbour_bin_id{} , number_of_neighbours_stride{}, neighbour_atom_index{},particle_types{}
     {}
 
     //! Copy constructor
@@ -127,14 +127,14 @@ namespace rascal {
       return this->centers.size();
     }
     // return the id a given center atom
-    inline size_t get_atom_id(const Parent& , int i_atom_id) const {
+    inline size_t get_atom_id(const Parent& , size_t i_atom_id) const {
       return this->centers[i_atom_id].get_index();
     }
 
     //! return atom type
     inline int get_atom_type(const AtomRef_t& atom) {
       auto && index{atom.get_index()};
-      return this->particule_types[index];
+      return this->particle_types[index];
     }
 
     // return the index of the center corresponding to its neighbour image
@@ -167,7 +167,7 @@ namespace rascal {
     
     size_t get_nb_clusters(int cluster_size);
 
-    void update(const Eigen::Ref<const Eigen::MatrixXd> positions,const Eigen::Ref<const VecXi>  particule_types,
+    void update(const Eigen::Ref<const Eigen::MatrixXd> positions,const Eigen::Ref<const VecXi>  particle_types,
                 const Eigen::Ref<const VecXi> center_ids,
                 const Eigen::Ref<const Eigen::MatrixXd> cell,const std::array<bool,3>& pbc, const double& cutoff_max);
 
@@ -177,7 +177,7 @@ namespace rascal {
 
   protected:
 
-    void build(const Eigen::Ref<const Eigen::MatrixXd> positions, const Eigen::Ref<const VecXi>  particule_types,
+    void build(const Eigen::Ref<const Eigen::MatrixXd> positions, const Eigen::Ref<const VecXi>  particle_types,
                const Eigen::Ref<const VecXi> center_ids,
                const Eigen::Ref<const Eigen::MatrixXd> cell,const std::array<bool,3>& pbc, const double& cutoff_max);
 
@@ -198,7 +198,7 @@ namespace rascal {
     std::vector<std::vector<AtomRef_t>> neighbour_bin_id;
     std::vector<size_t> number_of_neighbours_stride;
     std::vector<std::vector<AtomRef_t>> neighbour_atom_index;
-    std::vector<int> particule_types;
+    std::vector<int> particle_types;
 
   private:
   };

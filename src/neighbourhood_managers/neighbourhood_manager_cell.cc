@@ -41,7 +41,7 @@ namespace rascal {
    /* ---------------------------------------------------------------------- */
 
   void NeighbourhoodManagerCell::build(const Eigen::Ref<const Eigen::MatrixXd>  positions,
-                                        const Eigen::Ref<const VecXi>  particule_types,
+                                        const Eigen::Ref<const VecXi>  particle_types,
                                         const Eigen::Ref<const VecXi> center_ids,
                                         const Eigen::Ref<const Eigen::MatrixXd> cell,
                                         const std::array<bool,3>& pbc, const double& cutoff_max)
@@ -54,14 +54,15 @@ namespace rascal {
       this->set_positions(positions);
       // set the references to the center positions
       for (int id{0}; id < center_ids.size(); ++id) {
-          this->centers.push_back(NeighbourhoodManagerCell::AtomRef_t(this->get_manager(),center_ids(id)));
+          this->centers.push_back(NeighbourhoodManagerCell::AtomRef_t(this->get_manager(),
+                                                                      center_ids(id)));
       }
       // TODO get particles type as input and use it
-      this->particule_types.resize(Natom);
+      this->particle_types.resize(Natom);
       //set the references to the particles positions
       for (Eigen::Index id{0}; id < Natom; ++id){
         this->particles.push_back(NeighbourhoodManagerCell::AtomRef_t(this->get_manager(),id));
-        this->particule_types[id] = particule_types(id);
+        this->particle_types[id] = particle_types(id);
       }
 
       Cell_t lat = cell;
@@ -234,14 +235,14 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
 
   void NeighbourhoodManagerCell::update(const Eigen::Ref<const Eigen::MatrixXd> positions,
-                                        const Eigen::Ref<const VecXi>  particule_types,
+                                        const Eigen::Ref<const VecXi>  particle_types,
                                         const Eigen::Ref<const VecXi> center_ids,
                                         const Eigen::Ref<const Eigen::MatrixXd> cell,
                                         const std::array<bool,3>& pbc, const double& cutoff_max)
   {
     bool some_condition{true};
     if (some_condition){
-      NeighbourhoodManagerCell::build(positions,particule_types,center_ids,cell,pbc,cutoff_max);
+      NeighbourhoodManagerCell::build(positions,particle_types,center_ids,cell,pbc,cutoff_max);
     }
   }
 
