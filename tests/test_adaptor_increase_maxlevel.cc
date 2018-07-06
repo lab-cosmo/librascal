@@ -46,11 +46,11 @@ namespace rascal {
 
     for (auto atom : adaptor) {
       std::cout << "atom "
-                << atom.get_atoms().back().get_index()
+                << atom.back()
                 << std::endl;
       for (auto pair : atom) {
         std::cout << "  pair "
-                  << pair.get_atoms().back().get_index()
+                  << pair.back()
                   << std::endl;
         // for (auto triplet : pair) {
         //   std::cout << "    triplet "
