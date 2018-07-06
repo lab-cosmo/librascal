@@ -223,22 +223,6 @@ namespace rascal {
                                  std::make_index_sequence<Size>{});
     }
 
-    // CHANGED VERSION ----
-    // template <typename T, size_t Size, size_t... Indices>
-    // decltype(auto) append_array_helper(std::array<T, Size> && arr, T &&  t,
-    //                                    std::index_sequence<Indices...>) {
-    //   return std::array<T, Size+1> {(arr[Indices])..., std::forward<T>(t)};
-    // }
-
-    // // TODO: not corresponding to
-    // //append_array(std::remove_reference<const std::array<long unsigned int, 0>&>::type, size_t)
-    // //std::conditional_t<Level == 1, Manager_t, typename Manager_t::template ClusterRef<Level-1>>;
-    // template <typename T, size_t Size>
-    // decltype(auto) append_array(std::array<T, Size> && arr, T &&  t) {
-    //   return append_array_helper(arr, std::forward<T>(t),
-    //                              std::make_index_sequence<Size>{});
-    // }
-
     template<size_t Level, class AtomRef_t, std::size_t... I>
     std::array<size_t, Level>
     get_indices_from_list(const std::array<AtomRef_t, Level> & atoms,
@@ -514,14 +498,6 @@ namespace rascal {
       // this array need to be filled with this->index upon iteration
       return Eigen::Map<Eigen::Array<size_t, compute_cluster_depth<Level>(typename traits::DepthByDimension{})+1, 1>>(nullptr);
     }
-
-    // TODO: This is obsolete, because the atoms are not any more a part of the cluster!
-    // std::array<AtomRef_t, Level> get_container_atoms() {
-    //   return internal::append_array
-    //     (std::move(container.get_atoms()),  // TODO:  should be container.get_atom_indeces?
-    //      AtomRef_t(this->get_manager(),
-    //                this->get_manager().atom_id(container, this->index)));
-    // }
 
     inline Manager_t & get_manager() {return this->container.get_manager();}
     inline const Manager_t & get_manager() const {
