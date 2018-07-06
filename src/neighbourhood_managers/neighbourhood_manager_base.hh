@@ -124,11 +124,11 @@ namespace rascal {
                                                this->implementation().size());}
     inline size_t size() const {return this->implementation().get_size();}
 
-    inline size_t nb_clusters(int cluster_size) const {
+    inline size_t nb_clusters(size_t cluster_size) const {
       return this->implementation().get_nb_clusters(cluster_size);
     }
 
-    inline Vector_ref position(const int & atom_index) {
+    inline Vector_ref position(const size_t & atom_index) {
       return this->implementation().get_position(atom_index);
     }
     template <size_t L, size_t D>
@@ -136,7 +136,7 @@ namespace rascal {
       return this->implementation().get_neighbour_position(cluster);
     }
 
-    inline int atom_type(const int & atom_index) {
+    inline size_t atom_type(const size_t & atom_index) {
       return this->implementation().get_atom_type(atom_index);
     }
 
@@ -147,7 +147,7 @@ namespace rascal {
     }
 
     //! recursion end, not for use
-    const std::array<size_t, 0> & get_atom_indices() const {
+    const std::array<size_t, 0> get_atom_indices() const {
       return std::array<size_t, 0>{};
     }
 
@@ -163,7 +163,8 @@ namespace rascal {
     }
 
     //! get atom_index of the index-th atom in manager
-    inline size_t atom_id(NeighbourhoodManagerBase & cluster, int index) const {
+    inline size_t atom_id(NeighbourhoodManagerBase & cluster,
+                          size_t & index) const {
       return this->implementation().get_atom_id(cluster, index);
     }
 
@@ -178,10 +179,13 @@ namespace rascal {
 
     std::array<AtomRef, 0> get_atoms() const {return std::array<AtomRef, 0>{};};
 
+    //! Starting array for builing container in iterator
+    std::array<size_t, 0> get_atom_ids() const {return std::array<size_t, 0>{};};
+
     // TODO: get property index - dependent on Depth (e.g., by means of sorting)
     // not necessary to specialize, can be done in _base
     template <size_t Level, size_t CallerDepth>
-    inline int get_offset(const ClusterRefBase<Level, CallerDepth> & cluster) const {
+    inline size_t get_offset(const ClusterRefBase<Level, CallerDepth> & cluster) const {
       constexpr static auto ActiveDepth{
         compute_cluster_depth<Level>(typename traits::DepthByDimension{})};
       static_assert(CallerDepth>=ActiveDepth,
@@ -205,24 +209,38 @@ namespace rascal {
 
 
   namespace internal {
-
+    
+    // OLD VERSION ----------
     template <typename T, size_t Size, size_t... Indices>
-    decltype(auto) append_array_helper(std::array<T, Size> && arr, T &&  t,
-                                       std::index_sequence<Indices...>) {
-      return std::array<T, Size+1> {(arr[Indices])..., std::forward<T>(t)};
+    decltype(auto) append_array_helper(const std::array<T, Size> & arr, T &&  t,
+                                        std::index_sequence<Indices...>) {
+      return std::array<T, Size+1> {arr[Indices]..., std::forward<T>(t)};
     }
-
-    // TODO: not corresponding to
-    //append_array(std::remove_reference<const std::array<long unsigned int, 0>&>::type, size_t)
-    //std::conditional_t<Level == 1, Manager_t, typename Manager_t::template ClusterRef<Level-1>>;
+    
     template <typename T, size_t Size>
-    decltype(auto) append_array(std::array<T, Size> && arr, T &&  t) {
+    decltype(auto) append_array (const std::array<T, Size> & arr, T &&  t) {
       return append_array_helper(arr, std::forward<T>(t),
                                  std::make_index_sequence<Size>{});
     }
 
+    // CHANGED VERSION ----
+    // template <typename T, size_t Size, size_t... Indices>
+    // decltype(auto) append_array_helper(std::array<T, Size> && arr, T &&  t,
+    //                                    std::index_sequence<Indices...>) {
+    //   return std::array<T, Size+1> {(arr[Indices])..., std::forward<T>(t)};
+    // }
+
+    // // TODO: not corresponding to
+    // //append_array(std::remove_reference<const std::array<long unsigned int, 0>&>::type, size_t)
+    // //std::conditional_t<Level == 1, Manager_t, typename Manager_t::template ClusterRef<Level-1>>;
+    // template <typename T, size_t Size>
+    // decltype(auto) append_array(std::array<T, Size> && arr, T &&  t) {
+    //   return append_array_helper(arr, std::forward<T>(t),
+    //                              std::make_index_sequence<Size>{});
+    // }
+
     template<size_t Level, class AtomRef_t, std::size_t... I>
-    std::array<int, Level>
+    std::array<size_t, Level>
     get_indices_from_list(const std::array<AtomRef_t, Level> & atoms,
                           std::index_sequence<I...>) {
       return std::array<size_t, Level>{atoms[I].get_index()...};
@@ -357,6 +375,9 @@ namespace rascal {
     const std::array<AtomRef_t, Level> & get_atoms() const {return this->atoms;};
     std::array<AtomRef_t, Level> & get_atoms() {return this->atoms;};
 
+    const std::array<size_t, Level> & get_atom_ids() const {return this->atom_indices;};
+    std::array<size_t, Level> & get_atoms_ids() {return this->atom_indices;};
+
 
     /* There are 2 cases:
         center (Level== 1)-> position is in the cell
@@ -373,7 +394,7 @@ namespace rascal {
 
     //! return the index of the atom: Atoms_t is len==1 if center,
     //! len==2 if 1st neighbours,...
-    inline int get_atom_index() {
+    inline size_t get_atom_index() {
       return this->back();
     }
 
@@ -383,11 +404,11 @@ namespace rascal {
     inline iterator begin() {return iterator(*this, 0);}
     inline iterator end() {return iterator(*this, this->size());}
     inline size_t size() {return this->get_manager().cluster_size(*this);}
-    int get_index() const {
+    size_t get_index() const {
       return this->it.index;
     }
 
-    inline int get_global_index() const {
+    inline size_t get_global_index() const {
       return this->get_manager().get_offset(*this);
     }
 
@@ -436,10 +457,10 @@ namespace rascal {
     virtual ~iterator() = default;
 
     //! Copy assignment operator
-    iterator& operator=(const iterator & other) = default;
+    iterator & operator=(const iterator & other) = default;
 
     //! Move assignment operator
-    iterator& operator=(iterator && other) = default;
+    iterator & operator=(iterator && other) = default;
 
     //! pre-increment
     inline iterator & operator ++ () {
@@ -473,6 +494,8 @@ namespace rascal {
       :container{cont}, index{start} {}
 
     std::array<size_t, Level> get_atom_indices() {
+      static_assert(std::is_same<size_t, long unsigned int>::value,
+                    "mhm");
       return internal::append_array
         (container.get_atom_indices(),
          this->get_manager().atom_id(container, this->index));
@@ -486,8 +509,10 @@ namespace rascal {
                 // ActiveDepth+1,
                // should be doing something like this: DEPTH+1,
                    1>> get_cluster_indices() {
+      // TODO: global index from offset?
       // needs its own global index
       // this array need to be filled with this->index upon iteration
+      return Eigen::Map<Eigen::Array<size_t, compute_cluster_depth<Level>(typename traits::DepthByDimension{})+1, 1>>(nullptr);
     }
 
     // TODO: This is obsolete, because the atoms are not any more a part of the cluster!
