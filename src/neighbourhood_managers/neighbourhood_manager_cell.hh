@@ -56,7 +56,7 @@ namespace rascal {
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDirectionVectors{false};
     constexpr static bool HasDistances{false};
-    using DepthByDimension = std::integer_sequence<size_t, 0, 0>;
+    using DepthByDimension = std::index_sequence<0, 0>;
   };
   class NeighbourhoodManagerCell: public NeighbourhoodManagerBase<NeighbourhoodManagerCell>
   {
@@ -93,7 +93,7 @@ namespace rascal {
     class Box;
 
     // return position vector
-    inline Vector_ref get_position(const int& atom_index) {
+    inline Vector_ref get_position(const size_t & atom_index) {
       auto * xval{this->positions.col(atom_index).data()};
       return Vector_ref(xval);
     }
@@ -132,7 +132,7 @@ namespace rascal {
     }
 
     //! return atom type
-    inline int get_atom_type(const AtomRef_t& atom) {
+    inline size_t get_atom_type(const AtomRef_t& atom) {
       auto && index{atom.get_index()};
       return this->particle_types[index];
     }
@@ -140,7 +140,7 @@ namespace rascal {
     // return the index of the center corresponding to its neighbour image
     template<size_t Level, size_t Depth>
     inline size_t get_atom_id(const ClusterRefBase<Level, Depth>& cluster,
-                              int j_atom_id) const {
+                              size_t j_atom_id) const {
       static_assert(Level <= traits::MaxLevel,
                     "this implementation only handles atoms and pairs");
       auto && i_atom_id{cluster.back()};
@@ -161,11 +161,11 @@ namespace rascal {
     }
 
     template<size_t Level>
-    inline int get_offset_impl(const ClusterRefBase<Level,
+    inline size_t get_offset_impl(const ClusterRefBase<Level,
                                cluster_depth<Level>(traits::DepthByDimension{})>
                                & cluster) const;
 
-    size_t get_nb_clusters(int cluster_size);
+    size_t get_nb_clusters(size_t cluster_size);
 
     void update(const Eigen::Ref<const Eigen::MatrixXd> positions,
                 const Eigen::Ref<const VecXi>  particle_types,
@@ -275,7 +275,7 @@ namespace rascal {
   //   return main_offset;
   // }
   template <size_t Level>
-  inline int NeighbourhoodManagerCell:: template
+  inline size_t NeighbourhoodManagerCell:: template
   get_offset_impl(const ClusterRefBase<Level,
                   cluster_depth<Level>(traits::DepthByDimension{})> & cluster) const {
     return cluster.get_cluster_index(cluster_depth<Level>(traits::DepthByDimension{}));

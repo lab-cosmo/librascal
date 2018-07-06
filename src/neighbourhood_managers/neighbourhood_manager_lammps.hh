@@ -155,8 +155,8 @@ namespace rascal {
 
     // return the global id of an atom
     inline size_t get_atom_id(const Parent& /*cluster*/,
-                              int i_atom_id) const {
-      return this->ilist[i_atom_id];
+                              size_t i_atom_id) const {
+      return (size_t) this->ilist[i_atom_id];
     }
 
     /**
@@ -164,7 +164,7 @@ namespace rascal {
      * this cluster appears in an iteration
      */
     template<size_t Level>
-    inline int get_offset_impl(const ClusterRefBase<Level,
+    inline size_t get_offset_impl(const ClusterRefBase<Level,
                                cluster_depth<Level>(traits::DepthByDimension{})>
                                & cluster) const;
 
@@ -201,9 +201,9 @@ namespace rascal {
   // }
 
   /* ---------------------------------------------------------------------- */
-  // specialisation for just atoms
+  // specialisation for just atoms // TODO: is not correct anymore
   template <size_t Level>
-  inline int NeighbourhoodManagerLammps:: template
+  inline size_t NeighbourhoodManagerLammps:: template
   get_offset_impl(const ClusterRefBase<Level,
                   cluster_depth<Level>(traits::DepthByDimension{})> & cluster) const {
     return cluster.get_cluster_index(cluster_depth<Level>(traits::DepthByDimension{}));
