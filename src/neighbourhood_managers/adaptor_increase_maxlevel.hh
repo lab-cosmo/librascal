@@ -182,35 +182,6 @@ namespace rascal {
       return this->manager.get_atom_type(original_atom);
     }
 
-    /**
-     * return the linear index of cluster (i.e., the count at which
-     * this cluster appears in an iteration
-     */
-    // template<size_t Level>
-    // inline int get_offset_impl(const ClusterRefBase<Level>& cluster) const {
-    //   return this->offsets[cluster.get_index()];
-    // }
-
-    // template <size_t Level, size_t Depth>
-    // inline size_t get_offset_impl(const ClusterRefBase<Level, Depth> & cluster) const;
-
-    // template<size_t Level>
-    // inline size_t get_offset_impl(const ClusterRefBase<Level,
-    //                               compute_cluster_depth<Level>(typename traits::DepthByDimension{})>
-    //                               & cluster) const;
-
-    // template<size_t Level, size_t Depth>
-    // inline size_t get_offset_impl(const ClusterRefBase<Level, Depth>
-    //                               & cluster) const;
-
-    // template<size_t Level, bool AtOldMaxLevel = (Level==traits::MaxLevel-1)>
-    // inline std::enable_if_t<AtOldMaxLevel, size_t>
-    // get_cluster_size(const ClusterRefBase<Level>& cluster) const {
-    //   static_assert(Level < traits::MaxLevel,
-    //                 "AtMaxLevel is a SFINAE, do not set manually");
-    //   return this->nb_neigh[cluster.get_global_index()];
-    // }
-
     template<size_t Level, size_t Depth>
     inline size_t get_cluster_size(const ClusterRefBase<Level, Depth>& cluster) const {
       static_assert(Level < traits::MaxLevel,
@@ -218,26 +189,22 @@ namespace rascal {
       return this->manager.get_cluster_size(cluster);
     }
 
-    // template<size_t Level>
-    // inline size_t get_cluster_size(const ClusterRefBase<Level>& cluster) const {
+    // TODO: get a function answer highest Level cluster size = MaxLevel here
+    // TODO2: or probably manager_base? 
+    // template<size_t Level, size_t Depth>
+    // inline size_t get_cluster_size(const ClusterRefBase<Level, Depth>& cluster) const {
     //   static_assert(Level < traits::MaxLevel,
     //                 "this implementation only handles atoms and pairs");
-    //   std::cout << "get_cluster_size, level/index/neighbours/size "
-    //     // << cluster.front() << "/"
-    //     << Level
-    // 	<< "/" << cluster.back()
-    // 	<< "/" <<  nb_neigh[Level][cluster.back()]
-    // 	<< "/" << nb_neigh[Level].size()
-    // 	<< std::endl;
-    //   return this->nb_neigh[Level][cluster.back()];
+    //   return this->manager.get_cluster_size(cluster);
     // }
-
+    
   protected:
     /**
      * main function during construction of a neighbourlist.  @param
      * atom the atom to add to the list @param level select whether it
      * is an i-atom (level=0), j-atom (level=1), or ...
      */
+    // TODO: change add atom from AtomRef_t to size_t, because all access is with atom index?!
     template <size_t Level>
     inline void add_atom(typename ManagerImplementation::AtomRef_t atom) {
       static_assert(Level < traits::MaxLevel,
@@ -259,15 +226,6 @@ namespace rascal {
 		<< " Level " << Level << ", back "
 		<< nb_neigh.back()
 		<< std::endl;
-
-      // for (int i{Level+1}; i < traits::MaxLevel; ++i) {
-      //   // make sure that this atom starts with zero lower-Level neighbours
-      //   this->nb_neigh[i].push_back(0);
-      // 	std::cout << "push_back nb_neigh" << std::endl;
-      //   // update the offsets
-      //   this->offsets[i].push_back(this->offsets[i].back() +
-      //                              this->nb_neigh[i-1].back());
-      // }
     }
 
     template <size_t Level>
@@ -560,27 +518,6 @@ namespace rascal {
     }
 
   }
-
-  /* ---------------------------------------------------------------------- */
-  // template <class ManagerImplementation>
-  // template <size_t Level>
-  // struct
-  // template <size_t Level> //, size_t CallerDepth>
-  // inline size_t AdaptorMaxLevel<ManagerImplementation>:: template
-  // get_offset_impl(const ClusterRefBase<Level, CallerDepth> & cluster) const {
-  //   constexpr static auto ActiveDepth{
-  //       compute_cluster_depth<Level>(typename traits::DepthByDimension{})};
-  //   static_assert(CallerDepth>=ActiveDepth,
-  //                 "Calling from an inexisting depth");
-  //   return cluster.get_cluster_index(ActiveDepth);
-  // }
-
-  // template <size_t Level>
-  // inline size_t AdaptorMaxLevel<ManagerImplementation>:: template
-  // get_offset_impl(const ClusterRefBase<Level,
-  //                 compute_cluster_depth<Level>(typename traits::DepthByDimension{})> & cluster) const {
-  //   return cluster.get_cluster_index(compute_cluster_depth<Level>(typename traits::DepthByDimension{}));
-  // }
 
 }  // rascal
 
