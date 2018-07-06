@@ -481,7 +481,7 @@ namespace rascal {
 
     std::array<size_t, Level> get_atom_indices() {
       static_assert(std::is_same<size_t, long unsigned int>::value,
-                    "mhm");
+                    "Check for size_t failed.");
       return internal::append_array
         (container.get_atom_indices(),
          this->get_manager().atom_id(container, this->index));

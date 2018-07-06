@@ -51,8 +51,8 @@ namespace rascal {
   };
 
   template <size_t MaxLevel, size_t... Ints>
-  using DepthIncreaser_t = typename DepthIncreaser<MaxLevel,
-                                                   std::index_sequence<Ints...>>::type;
+  using DepthIncreaser_t =
+    typename DepthIncreaser<MaxLevel, std::index_sequence<Ints...>>::type;
 
   /**
    * Extends depth by cluster for an additional cluster dimension
@@ -67,8 +67,8 @@ namespace rascal {
   };
 
   template <size_t MaxLevel, size_t... Ints>
-  using DepthExtender_t = typename DepthExtender<MaxLevel,
-                                                 std::index_sequence<Ints...>>::type;
+  using DepthExtender_t =
+    typename DepthExtender<MaxLevel, std::index_sequence<Ints...>>::type;
 
   /**
    * Dynamic access to all depths by cluster dimension (probably not
@@ -83,7 +83,8 @@ namespace rascal {
   namespace internal {
     template <size_t head, size_t... tail>
     struct Min {
-      constexpr static size_t value{ head < Min<tail...>::value ? head : Min<tail...>::value};
+      constexpr static
+      size_t value{ head < Min<tail...>::value ? head : Min<tail...>::value};
     };
 
     template <size_t head>
