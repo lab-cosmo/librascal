@@ -491,7 +491,9 @@ namespace rascal {
     // this->get_manager().compute_cluster_depth<Level>(typename traits::DepthByDimenions{})+1
     Eigen::Map<
       Eigen::Array<size_t,
-                   compute_cluster_depth<Level>(typename traits::DepthByDimension{})+1,
+                   // this->container.get_manager().cluster_depth<Level>(traits::DepthByDimension{})+1,
+                   // compute_cluster_depth<Level>(typename traits::DepthByDimension{})+1,
+                   cluster_depth<Level>()+1 ,//<Level>(traits::DepthByDimension{})+1,
                 // ActiveDepth+1,
                // should be doing something like this: DEPTH+1,
                    1>> get_cluster_indices() {

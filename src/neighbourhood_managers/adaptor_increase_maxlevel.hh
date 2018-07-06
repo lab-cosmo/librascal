@@ -57,8 +57,8 @@ namespace rascal {
     constexpr static size_t MaxLevel{ManagerImplementation::traits::MaxLevel+1};
     // New Depth
     // TODO: Is this the correct way to initialize the increased depth?
-    using DepthByDimension =
-      DepthIncreaser<MaxLevel, typename ManagerImplementation::traits::DepthByDimension>;
+    using DepthByDimension = typename
+      DepthIncreaser<MaxLevel, typename ManagerImplementation::traits::DepthByDimension>::type;
   };
 
   /**
