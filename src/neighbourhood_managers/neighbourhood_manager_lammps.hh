@@ -44,7 +44,7 @@ namespace rascal {
     constexpr static int Dim{3};
     constexpr static size_t MaxLevel{2};
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
-    using DepthByDimension = std::integer_sequence<size_t, 0, 0>;
+    using DepthByDimension = std::index_sequence<0, 0>;
   };
 
 
@@ -63,19 +63,19 @@ namespace rascal {
     NeighbourhoodManagerLammps() = default;
 
     //! Copy constructor
-    NeighbourhoodManagerLammps(const NeighbourhoodManagerLammps &other) = delete;
+    NeighbourhoodManagerLammps(const NeighbourhoodManagerLammps & other) = delete;
 
     //! Move constructor
-    NeighbourhoodManagerLammps(NeighbourhoodManagerLammps &&other) = default;
+    NeighbourhoodManagerLammps(NeighbourhoodManagerLammps && other) = default;
 
     //! Destructor
     virtual ~NeighbourhoodManagerLammps() = default;
 
     //! Copy assignment operator
-    NeighbourhoodManagerLammps& operator=(const NeighbourhoodManagerLammps &other) = delete;
+    NeighbourhoodManagerLammps & operator=(const NeighbourhoodManagerLammps & other) = delete;
 
     //! Move assignment operator
-    NeighbourhoodManagerLammps& operator=(NeighbourhoodManagerLammps &&other) = default;
+    NeighbourhoodManagerLammps & operator=(NeighbourhoodManagerLammps && other) = default;
 
     /**
      * resetting is required every time the list changes. Here, this
@@ -145,7 +145,7 @@ namespace rascal {
 
     // return the global id of an atom
     template<size_t Level>
-    inline size_t get_atom_id(const ClusterRef_t<Level>& cluster,
+    inline size_t get_atom_id(const ClusterRef_t<Level> & cluster,
                               int j_atom_id) const {
       static_assert(Level == traits::MaxLevel-1,
                     "this implementation only handles atoms and pairs");
@@ -154,7 +154,7 @@ namespace rascal {
     }
 
     // return the global id of an atom
-    inline size_t get_atom_id(const Parent& /*cluster*/,
+    inline size_t get_atom_id(const Parent & /*cluster*/,
                               size_t i_atom_id) const {
       return (size_t) this->ilist[i_atom_id];
     }

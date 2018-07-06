@@ -111,7 +111,7 @@ namespace rascal {
       static_assert(Level <= traits::MaxLevel,
                     "this implementation should only work up to MaxLevel.");
 
-      auto && j_linear_id = cluster.get_index();
+      auto && j_linear_id = cluster.back();
       auto && i_atom_id{cluster.front()}; // center_atom index
       auto && i_bin_id{this->part2bin[i_atom_id]};
       auto && shift_index{this->neighbour_bin_id[i_bin_id][j_linear_id].get_index()};
@@ -134,6 +134,11 @@ namespace rascal {
     //! return atom type
     inline size_t get_atom_type(const AtomRef_t& atom) {
       auto && index{atom.get_index()};
+      return this->particle_types[index];
+    }
+
+    //! return atom type from atom index
+    inline size_t get_atom_type(const size_t& index) {
       return this->particle_types[index];
     }
 

@@ -209,7 +209,7 @@ namespace rascal {
     template<size_t CallerDepth>
     reference operator[](const ClusterRefBase<Level, CallerDepth> & id) {
       constexpr static auto ActiveDepth{
-        this->manager.compute_cluster_depth<Level>(typename traits::DepthByDimenions{})};
+        compute_cluster_depth<Level>(typename traits::DepthByDimension{})};
       static_assert(CallerDepth >= ActiveDepth,
                     "You are trying to access a property that "
                     "does not exist at this low a level in the "

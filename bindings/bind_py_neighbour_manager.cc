@@ -25,10 +25,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
-
-
-
 #include <pybind11/pybind11.h>
 #include "neighbourhood_managers/neighbourhood_manager_cell.hh"
 #include "neighbourhood_managers/neighbourhood_manager_base.hh"

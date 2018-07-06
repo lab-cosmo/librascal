@@ -56,9 +56,9 @@ namespace rascal {
     // New MaxLevel upon construction!
     constexpr static size_t MaxLevel{ManagerImplementation::traits::MaxLevel+1};
     // New Depth
-    // using DepthByDimension = std::index_sequence<0, 0>;
+    // TODO: Is this the correct way to initialize the increased depth?
     using DepthByDimension =
-      DepthIncreaser<MaxLevel, ManagerImplementation::traits::DepthByDimension>::type;
+      DepthIncreaser<MaxLevel, typename ManagerImplementation::traits::DepthByDimension>;
   };
 
   /**
@@ -190,9 +190,18 @@ namespace rascal {
     // inline int get_offset_impl(const ClusterRefBase<Level>& cluster) const {
     //   return this->offsets[cluster.get_index()];
     // }
-    template<size_t Level, size_t Depth>
-    inline size_t get_offset_impl(const ClusterRefBase<Level, Depth>
-                                  & cluster) const;
+
+    // template <size_t Level, size_t Depth>
+    // inline size_t get_offset_impl(const ClusterRefBase<Level, Depth> & cluster) const;
+
+    // template<size_t Level>
+    // inline size_t get_offset_impl(const ClusterRefBase<Level,
+    //                               compute_cluster_depth<Level>(typename traits::DepthByDimension{})>
+    //                               & cluster) const;
+
+    // template<size_t Level, size_t Depth>
+    // inline size_t get_offset_impl(const ClusterRefBase<Level, Depth>
+    //                               & cluster) const;
 
     // template<size_t Level, bool AtOldMaxLevel = (Level==traits::MaxLevel-1)>
     // inline std::enable_if_t<AtOldMaxLevel, size_t>
@@ -556,11 +565,22 @@ namespace rascal {
   // template <class ManagerImplementation>
   // template <size_t Level>
   // struct
-  template <size_t Level, size_t Depth>
-  inline size_t AdaptorMaxLevel:: template
-  get_offset_impl(const ClusterRefBase<Level, Depth> & cluster) const {
-    return cluster.get_cluster_index(cluster_depth<Level>(traits::DepthByDimension{}));
-  }
+  // template <size_t Level> //, size_t CallerDepth>
+  // inline size_t AdaptorMaxLevel<ManagerImplementation>:: template
+  // get_offset_impl(const ClusterRefBase<Level, CallerDepth> & cluster) const {
+  //   constexpr static auto ActiveDepth{
+  //       compute_cluster_depth<Level>(typename traits::DepthByDimension{})};
+  //   static_assert(CallerDepth>=ActiveDepth,
+  //                 "Calling from an inexisting depth");
+  //   return cluster.get_cluster_index(ActiveDepth);
+  // }
+
+  // template <size_t Level>
+  // inline size_t AdaptorMaxLevel<ManagerImplementation>:: template
+  // get_offset_impl(const ClusterRefBase<Level,
+  //                 compute_cluster_depth<Level>(typename traits::DepthByDimension{})> & cluster) const {
+  //   return cluster.get_cluster_index(compute_cluster_depth<Level>(typename traits::DepthByDimension{}));
+  // }
 
 }  // rascal
 

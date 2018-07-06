@@ -359,6 +359,7 @@ namespace rascal {
     const std::array<AtomRef_t, Level> & get_atoms() const {return this->atoms;};
     std::array<AtomRef_t, Level> & get_atoms() {return this->atoms;};
 
+    // TODO: Not sure if this function is needed/used/necessary
     const std::array<size_t, Level> & get_atom_ids() const {return this->atom_indices;};
     std::array<size_t, Level> & get_atoms_ids() {return this->atom_indices;};
 
@@ -372,8 +373,9 @@ namespace rascal {
       return internal::PositionGetter<Level, ClusterRef>::get_position(*this);
     }
 
-    inline decltype(auto) get_atom_type() const {
-      return this->atoms.back().get_atom_type();
+    inline decltype(auto) get_atom_type() {
+      auto && id{this->atom_indices.back()};
+      return this->get_manager().atom_type(id);
     }
 
     //! return the index of the atom: Atoms_t is len==1 if center,
@@ -496,7 +498,9 @@ namespace rascal {
       // TODO: global index from offset?
       // needs its own global index
       // this array need to be filled with this->index upon iteration
-      return Eigen::Map<Eigen::Array<size_t, compute_cluster_depth<Level>(typename traits::DepthByDimension{})+1, 1>>(nullptr);
+      return Eigen::Map<
+        Eigen::Array<size_t,compute_cluster_depth<Level>
+                     (typename traits::DepthByDimension{})+1, 1>>(nullptr);
     }
 
     inline Manager_t & get_manager() {return this->container.get_manager();}
