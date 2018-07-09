@@ -113,7 +113,7 @@ namespace rascal {
 
 
     // return position vector
-    inline Vector_ref get_position(const int & atom_index) {
+    inline Vector_ref get_position(const size_t & atom_index) {
       auto * xval{this->x[atom_index]};
       return Vector_ref(xval);
     }

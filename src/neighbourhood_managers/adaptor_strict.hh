@@ -54,7 +54,7 @@ namespace rascal {
     constexpr static int Dim{ManagerImplementation::traits::Dim};
     constexpr static size_t MaxLevel{ManagerImplementation::traits::MaxLevel};
     using DepthByDimension =
-      DepthIncreaser<MaxLevel, ManagerImplementation::traits::DepthByDimension>::type;
+      typename DepthIncreaser<MaxLevel, typename ManagerImplementation::traits::DepthByDimension>::type;
   };
 
   /**
@@ -149,8 +149,10 @@ namespace rascal {
     }
 
     // return the global id of an atom
-    template<size_t Level>
-    inline size_t get_atom_id(const ClusterRefBase<Level>& cluster,
+    template<size_t Level>//, size_t Depth>
+    inline size_t get_atom_id(const ClusterRefBase<Level,
+			      compute_cluster_depth<Level>(typename traits::DepthByDimension{})>
+			      & cluster,
                               int j_atom_id) const {
       static_assert(Level <= traits::MaxLevel-1,
                     "this implementation only handles upto traits::MaxLevel");
@@ -185,7 +187,9 @@ namespace rascal {
 
     // return the number of neighbours of a given atom
     template<size_t Level>
-    inline size_t get_cluster_size(const ClusterRefBase<Level>& cluster) const {
+    inline size_t get_cluster_size(const ClusterRefBase<Level,
+				   compute_cluster_depth<Level>(typename traits::DepthByDimension{})>
+				   & cluster) const {
       static_assert(Level <= traits::MaxLevel-1,
                     "this implementation only handles atoms and pairs");
       return this->nb_neigh[Level][cluster.back()];
@@ -197,6 +201,12 @@ namespace rascal {
      * atom the atom to add to the list @param level select whether it
      * is an i-atom (level=0), j-atom (level=1), or ...
      */
+
+    template <size_t Level>
+    inline void add_atom(size_t index) {
+      std::cout << "adding atom, placeholder " << index << std::endl;
+    }
+
     template <size_t Level>
     inline void add_atom(typename ManagerImplementation::AtomRef_t atom) {
       static_assert(Level <= traits::MaxLevel,
@@ -353,7 +363,7 @@ namespace rascal {
   template <class ManagerImplementation>
   void AdaptorStrict<ManagerImplementation>::update() {
     // initialise the neighbourlist
-    for (int i{0}; i < traits::MaxLevel; ++i) {
+    for (size_t i{0}; i < traits::MaxLevel; ++i) {
       this->atom_refs[i].clear();
       this->nb_neigh[i].resize(0);
       this->offsets[i].resize(0);

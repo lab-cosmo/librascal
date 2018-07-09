@@ -131,6 +131,11 @@ namespace rascal {
     inline Vector_ref position(const size_t & atom_index) {
       return this->implementation().get_position(atom_index);
     }
+
+    inline Vector_ref position(const AtomRef & atom) {
+      return this->implementation().get_position(atom);
+    }
+
     template <size_t L, size_t D>
     inline Vector_ref neighbour_position(ClusterRefBase<L, D> & cluster) {
       return this->implementation().get_neighbour_position(cluster);
@@ -209,14 +214,14 @@ namespace rascal {
 
 
   namespace internal {
-    
+
     // OLD VERSION ----------
     template <typename T, size_t Size, size_t... Indices>
     decltype(auto) append_array_helper(const std::array<T, Size> & arr, T &&  t,
                                         std::index_sequence<Indices...>) {
       return std::array<T, Size+1> {arr[Indices]..., std::forward<T>(t)};
     }
-    
+
     template <typename T, size_t Size>
     decltype(auto) append_array (const std::array<T, Size> & arr, T &&  t) {
       return append_array_helper(arr, std::forward<T>(t),

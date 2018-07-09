@@ -71,8 +71,8 @@ namespace rascal {
   //! traits specialisation for Chain manager
 
   // The traits are used for vector allocation and further down the
-  // processing chain to determine what functionality the given 
-  // NeighbourhoodManager already contains to avoid recomputation. 
+  // processing chain to determine what functionality the given
+  // NeighbourhoodManager already contains to avoid recomputation.
   // See also the implementation of adaptors.
   template <>
   struct NeighbourhoodManager_traits<NeighbourhoodManagerChain> {
@@ -83,7 +83,7 @@ namespace rascal {
     constexpr static bool HasDistances{false};
     using DepthByDimension = std::integer_sequence<size_t, 0, 0>;
   };
-  
+
   // Definition of the new NeighbourhoodManager class. To add your
   // own, please stick to the convention of using
   // 'NeighbourhoofManagerYours', where 'Yours' will give a hint of
@@ -212,11 +212,18 @@ namespace rascal {
       return PBC_ref(this->atoms_object.pbc.data());
     }
 
-    // Returns the position of an atom
+    // Returns the position of an atom, given an AtomRef
     inline Vector_ref get_position(const AtomRef_t& atom) {
       auto index{atom.get_index()};
       auto p = this->get_positions();
       auto * xval{p.col(index).data()};
+      return Vector_ref(xval);
+    }
+
+    // Returns the position of an atom, given an atom index
+    inline Vector_ref get_position(const size_t & atom_index) {
+      auto p = this->get_positions();
+      auto * xval{p.col(atom_index).data()};
       return Vector_ref(xval);
     }
 
@@ -225,7 +232,7 @@ namespace rascal {
     // different position, if it is a ghost atom.
     template<size_t Level>
     inline Vector_ref get_neighbour_position(const ClusterRefBase<Level,
-                                             cluster_depth<Level>(traits::DepthByDimension{})>
+                                             cluster_depth<Level>()>
                                              & cluster) {
       static_assert(Level > 1,
                     "Only possible for Level > 1.");
@@ -248,18 +255,16 @@ namespace rascal {
     // Returns the number of neighbours of a given atom
     template<size_t Level>
     inline size_t get_cluster_size(const ClusterRefBase<Level,
-                                   cluster_depth<Level>(traits::DepthByDimension{})>
+                                   cluster_depth<Level>()>
                                    & cluster) const {
       static_assert(Level < traits::MaxLevel,
                     "this implementation only handles atoms and pairs.");
       return this->numneigh[cluster.back()];
     }
 
-    template<size_t Level>
-    inline size_t get_atom_id(const ClusterRefBase<Level,
-                              cluster_depth<Level>(traits::DepthByDimension{})>
-                              & cluster,
-                              int j_atom_id) const {
+    template<size_t Level, size_t Depth>
+    inline size_t get_atom_id(const ClusterRefBase<Level, Depth> & cluster,
+                              size_t j_atom_id) const {
       static_assert(Level <= traits::MaxLevel,
                     "this implementation only handles atoms and pairs.");
       auto && i_atom_id{cluster.back()};
@@ -270,7 +275,7 @@ namespace rascal {
     // Return unique id of a given atom. Here the atoms are numbered
     // from 0 to natoms (see .update() function).
     inline size_t get_atom_id(const Parent& /*cluster*/,
-                              int i_atom_id) const {
+                              size_t i_atom_id) const {
       return this->ilist[i_atom_id];
     }
 

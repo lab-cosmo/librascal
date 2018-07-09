@@ -144,7 +144,7 @@ namespace rascal {
 
     // return the index of the center corresponding to its neighbour image
     template<size_t Level, size_t Depth>
-    inline size_t get_atom_id(const ClusterRefBase<Level, Depth>& cluster,
+    inline size_t get_atom_id(const ClusterRefBase<Level, Depth> & cluster,
                               size_t j_atom_id) const {
       static_assert(Level <= traits::MaxLevel,
                     "this implementation only handles atoms and pairs");

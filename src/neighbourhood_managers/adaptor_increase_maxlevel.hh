@@ -132,9 +132,17 @@ namespace rascal {
       return this->manager.get_size();
     }
 
-    inline Vector_ref get_position(const int & atom_index) {
+    inline Vector_ref get_position(const size_t & atom_index) {
       // careful, atom refers to our local index, for the manager, we
       // need its index:
+      auto && original_atom{this->atom_refs[atom_index]};
+      return this->manager.get_position(original_atom);
+    }
+
+    inline Vector_ref get_position(const AtomRef_t & atom) {
+      // careful, atom refers to our local index, for the manager, we
+      // need its index:
+      auto atom_index{atom.get_index()};
       auto && original_atom{this->atom_refs[atom_index]};
       return this->manager.get_position(original_atom);
     }
@@ -158,8 +166,10 @@ namespace rascal {
 
     // return the global id of an atom
     template<size_t Level>
-    inline size_t get_atom_id(const ClusterRef_t<Level>& cluster,
-                              int j_atom_id) const {
+    inline size_t get_atom_id(const ClusterRefBase<Level,
+			      compute_cluster_depth<Level>(typename traits::DepthByDimension{})>
+			      & cluster,
+                              size_t j_atom_id) const {
       static_assert(Level < traits::MaxLevel,
                     "this implementation only handles upto traits::MaxLevel");
       return this->manager.get_atom_id(cluster, j_atom_id);
@@ -182,22 +192,25 @@ namespace rascal {
       return this->manager.get_atom_type(original_atom);
     }
 
-    template<size_t Level, size_t Depth>
-    inline size_t get_cluster_size(const ClusterRefBase<Level, Depth>& cluster) const {
+    template<size_t Level> //, size_t Depth>
+    inline size_t
+    get_cluster_size(const ClusterRefBase<Level,
+		     compute_cluster_depth<Level>(typename traits::DepthByDimension{})>
+		     & cluster) const {
       static_assert(Level < traits::MaxLevel,
-                    "this implementation only handles atoms and pairs");
-      return this->manager.get_cluster_size(cluster);
+                    "this implementation the respective MaxLevel");
+      return nb_neigh[cluster.back()] ; // this->manager.get_cluster_size(cluster); //hhh
     }
 
     // TODO: get a function answer highest Level cluster size = MaxLevel here
-    // TODO2: or probably manager_base? 
+    // TODO2: or probably manager_base?
     // template<size_t Level, size_t Depth>
     // inline size_t get_cluster_size(const ClusterRefBase<Level, Depth>& cluster) const {
     //   static_assert(Level < traits::MaxLevel,
     //                 "this implementation only handles atoms and pairs");
     //   return this->manager.get_cluster_size(cluster);
     // }
-    
+
   protected:
     /**
      * main function during construction of a neighbourlist.  @param
@@ -226,6 +239,11 @@ namespace rascal {
 		<< " Level " << Level << ", back "
 		<< nb_neigh.back()
 		<< std::endl;
+    }
+
+    template <size_t Level>
+    inline void add_atom(size_t index) {
+      std::cout << "adding atom, placeholder " << index << std::endl;
     }
 
     template <size_t Level>
@@ -268,14 +286,14 @@ namespace rascal {
     std::vector<AtomRef_t> atom_refs;
 
     // stores the number of neighbours of traits::MaxLevel-1-*plets
-    std::vector<unsigned int> nb_neigh{};
+    std::vector<size_t> nb_neigh{};
 
     // stores all neighbours of traits::MaxLevel-1-*plets
-    std::vector<unsigned int> neighbours{};
+    std::vector<size_t> neighbours{};
 
     // stores the offsets of traits::MaxLevel-1-*plets for accessing
     // <code>neighbours</code>
-    std::vector<unsigned int> offsets{};
+    std::vector<size_t> offsets{};
   private:
   };
 
