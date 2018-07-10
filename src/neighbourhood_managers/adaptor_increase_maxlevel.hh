@@ -195,11 +195,15 @@ namespace rascal {
     template<size_t Level> //, size_t Depth>
     inline size_t
     get_cluster_size(const ClusterRefBase<Level,
-		     compute_cluster_depth<Level>(typename traits::DepthByDimension{})>
+		     compute_cluster_depth<Level>
+		     (typename traits::DepthByDimension{})>
 		     & cluster) const {
       static_assert(Level < traits::MaxLevel,
                     "this implementation the respective MaxLevel");
-      return nb_neigh[cluster.back()] ; // this->manager.get_cluster_size(cluster); //hhh
+      return nb_neigh[cluster.back()] ;
+      // return this->manager.get_cluster_size(cluster);
+      // TODO: this should be self-referring if Level=MaxLevel, otherwise underlying manager
+      // TODO: conditional_t ??
     }
 
     // TODO: get a function answer highest Level cluster size = MaxLevel here
@@ -214,15 +218,15 @@ namespace rascal {
   protected:
     /**
      * main function during construction of a neighbourlist.  @param
-     * atom the atom to add to the list @param level select whether it
-     * is an i-atom (level=0), j-atom (level=1), or ...
+     * atom the atom to add to the list. since the MaxLevel is
+     * increased by one in this adaptor, the Level=MaxLevel
      */
-    // TODO: change add atom from AtomRef_t to size_t, because all access is with atom index?!
-    template <size_t Level>
+    // TODO: change add atom from AtomRef_t to size_t, because all
+    // access is with atom index?!
     inline void add_atom(typename ManagerImplementation::AtomRef_t atom) {
-      static_assert(Level < traits::MaxLevel,
-                    "you can only add neighbours to the n-th degree defined by "
-                    "MaxLevel of the underlying manager");
+      // static_assert(Level < traits::MaxLevel,
+                    // "you can only add neighbours to the n-th degree defined by "
+                    // "MaxLevel of the underlying manager");
 
       auto p = &atom;
       std::cout << p << std::endl;
@@ -235,15 +239,16 @@ namespace rascal {
       this->nb_neigh.back()++;
       this->offsets.back()++;
 
-      std::cout << "inside add atom: nb_neigh[Level].back() "
-		<< " Level " << Level << ", back "
-		<< nb_neigh.back()
-		<< std::endl;
+      // std::cout << "inside add atom: nb_neigh[Level].back() "
+      // 		<< " Level " << Level << ", back "
+      // 		<< nb_neigh.back()
+      // 		<< std::endl;
     }
 
-    template <size_t Level>
+    // TODO: correct implementation?
     inline void add_atom(size_t index) {
-      std::cout << "adding atom, placeholder " << index << std::endl;
+      AtomRef_t atom{this->manager, index};
+      this->add_atom(atom);
     }
 
     template <size_t Level>
@@ -253,15 +258,14 @@ namespace rascal {
 		<< cluster.back()
 		<< " Level " << Level
 		<< std::endl;
-      return this->template add_atom <Level-1>(cluster.back());
+      return this->add_atom(cluster.back());
     }
 
     template <size_t Level>
     inline void add_atom_level_up(typename ManagerImplementation::template
 				  ClusterRef<Level> cluster) {
-
       std::cout << "            adding_atom_level_up" << std::endl;
-      return this->template add_atom <Level>(cluster);
+      return this->template add_atom(cluster.back());
     }
 
     // Make a half neighbour list, by construction only Level=1 is supplied.
@@ -283,7 +287,10 @@ namespace rascal {
     template<size_t Level, bool IsDummy> struct AddLevelLoop;
 
     // stores AtomRefs to of neighbours for traits::MaxLevel-1-*plets
-    std::vector<AtomRef_t> atom_refs;
+    std::vector<AtomRef_t> atom_refs{};
+
+    // Stores atom indices
+    std::vector<size_t> atom_indices{}; //akin to ilist[]
 
     // stores the number of neighbours of traits::MaxLevel-1-*plets
     std::vector<size_t> nb_neigh{};

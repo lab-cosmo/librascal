@@ -202,7 +202,7 @@ namespace rascal {
     Vector_t shifted_position;
     Lattice lattice;
     Cell_t cell; // to simplify get_neighbour_position()
-    std::array<bool,3> pbc;
+    std::array<bool,3> pblac;
     std::vector<int> part2bin; //!
     std::vector<Box> boxes;
     size_t number_of_neighbours;

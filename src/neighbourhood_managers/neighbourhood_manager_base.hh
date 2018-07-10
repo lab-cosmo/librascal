@@ -190,7 +190,8 @@ namespace rascal {
     // TODO: get property index - dependent on Depth (e.g., by means of sorting)
     // not necessary to specialize, can be done in _base
     template <size_t Level, size_t CallerDepth>
-    inline size_t get_offset(const ClusterRefBase<Level, CallerDepth> & cluster) const {
+    inline size_t get_offset(const ClusterRefBase<Level,
+			     CallerDepth> & cluster) const {
       constexpr static auto ActiveDepth{
         compute_cluster_depth<Level>(typename traits::DepthByDimension{})};
       static_assert(CallerDepth>=ActiveDepth,
@@ -271,8 +272,8 @@ namespace rascal {
     AtomRef() = delete;
 
     //! constructor from iterator
-    //AtomRef(Manager_t & manager, int id): manager{manager}, index{id}{}
-    AtomRef(Manager_t & manager, const size_t & id): manager{manager}, index{id} {}
+    AtomRef(Manager_t & manager, const size_t & id): manager{manager},
+						     index{id} {}
     //! Copy constructor
     AtomRef(const AtomRef & other) = default;
 
@@ -292,14 +293,19 @@ namespace rascal {
     inline const size_t & get_index() const {return this->index;}
 
     //! return position vector
-    inline Vector_ref get_position() {return this->manager.position(this->index);}
+    inline Vector_ref get_position() {
+      return this->manager.position(this->index);
+    }
 
     //! return atom type
-    inline size_t get_atom_type() const {return this->manager.atom_type(this->index);}
+    inline size_t get_atom_type() const {
+      return this->manager.atom_type(this->index);
+    }
 
   protected:
     Manager_t & manager;
-    const size_t & index; //!< corresponds to the 0-depth, 1st-level cluster_id (i.e. memory-offset)
+    //!< corresponds to the 0-depth, 1st-level cluster_id (i.e. memory-offset)
+    const size_t & index;
   private:
   };
 
@@ -361,19 +367,24 @@ namespace rascal {
     ClusterRef& operator=(ClusterRef && other) = default;
 
 
-    const std::array<AtomRef_t, Level> & get_atoms() const {return this->atoms;};
+    const std::array<AtomRef_t, Level> & get_atoms() const {
+      return this->atoms;
+    }
+
     std::array<AtomRef_t, Level> & get_atoms() {return this->atoms;};
 
     // TODO: Not sure if this function is needed/used/necessary
-    const std::array<size_t, Level> & get_atom_ids() const {return this->atom_indices;};
+    const std::array<size_t, Level> & get_atom_ids() const {
+      return this->atom_indices;
+    }
+
     std::array<size_t, Level> & get_atoms_ids() {return this->atom_indices;};
 
 
     /* There are 2 cases:
-        center (Level== 1)-> position is in the cell
-        neighbour (Level > 1)   -> position might have an offset associated
+     * center (Level== 1)-> position is in the cell
+     * neighbour (Level > 1)   -> position might have an offset (ghost atom)
      */
-
     inline Vector_ref get_position() {
       return internal::PositionGetter<Level, ClusterRef>::get_position(*this);
     }
@@ -390,7 +401,9 @@ namespace rascal {
     }
 
     inline Manager_t & get_manager() {return this->it.get_manager();}
-    inline const Manager_t & get_manager() const {return this->it.get_manager();}
+    inline const Manager_t & get_manager() const {
+      return this->it.get_manager();
+    }
 
     inline iterator begin() {return iterator(*this, 0);}
     inline iterator end() {return iterator(*this, this->size());}
@@ -404,7 +417,8 @@ namespace rascal {
     }
 
   protected:
-    //Atoms_t atoms; // TODO no atom refs any more, they are in cluster_ref_base now
+    //Atoms_t atoms;
+    // TODO no atom refs any more, they are in cluster_ref_base now?!
     Iterator_t & it;
   private:
   };
@@ -517,12 +531,11 @@ namespace rascal {
 
     Container_t & container;
     size_t index;
-    std::array<size_t, traits::MaxLevel-Level> starting_points{}; // TODO: initialized by iteration?
+    // TODO: starting_points initialized by iteration?
+    std::array<size_t, traits::MaxLevel-Level> starting_points{};
   private:
   };
 
-
 }  // rascal
-
 
 #endif /* NEIGHBOURHOOD_MANAGER_BASE_H */

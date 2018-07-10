@@ -120,7 +120,8 @@ namespace rascal {
 
     // return position vector
     template<size_t Level, size_t Depth>
-    inline Vector_ref get_neighbour_position(const ClusterRefBase<Level, Depth> & cluster) {
+    inline Vector_ref get_neighbour_position(const ClusterRefBase<Level,
+					     Depth> & cluster) {
       static_assert(Level > 1,
                     "Only possible for Level > 1.");
       static_assert(Level <= traits::MaxLevel,
@@ -150,7 +151,15 @@ namespace rascal {
       static_assert(Level == traits::MaxLevel-1,
                     "this implementation only handles atoms and pairs");
       auto && i_atom_id{cluster.back()};
+      return i_atom_id;
       return this->firstneigh[std::move(i_atom_id)][j_atom_id];
+    }
+
+    template<size_t Level>
+    inline size_t get_atom_id(const ClusterRef_t<Level> & cluster) const {
+      static_assert(Level == traits::MaxLevel-1,
+                    "this implementation only handles atoms and pairs");
+      return cluster.back();
     }
 
     // return the global id of an atom

@@ -202,9 +202,11 @@ namespace rascal {
      * is an i-atom (level=0), j-atom (level=1), or ...
      */
 
+    // TODO: correct implementation - detour with atom index
     template <size_t Level>
     inline void add_atom(size_t index) {
-      std::cout << "adding atom, placeholder " << index << std::endl;
+      AtomRef_t atom{this->manager, index};
+      this->add_atom<Level>(atom);
     }
 
     template <size_t Level>
@@ -219,7 +221,7 @@ namespace rascal {
       this->nb_neigh[Level].back()++;
       this->offsets[Level].back()++;
 
-      for (int i{Level+1}; i < traits::MaxLevel; ++i) {
+      for (auto i{Level+1}; i < traits::MaxLevel; ++i) {
         // make sure that this atom starts with zero lower-Level neighbours
         this->nb_neigh[i].push_back(0);
         // update the offsets
