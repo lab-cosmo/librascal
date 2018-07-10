@@ -123,26 +123,32 @@ namespace rascal {
     inline size_t get_size() const {
       return this->centers.size();
     }
-    // return the id a given center atom
-    inline size_t get_atom_id(const Parent& , int i_atom_id) const {
-      return this->centers[i_atom_id].get_index();
+
+    // return the index-th neighbour of cluster
+    template<size_t Level, size_t Depth>
+    inline size_t get_cluster_neighbour(const ClusterRefBase<Level, Depth>
+					& cluster,
+					size_t index) const {
+      static_assert(Level <= traits::MaxLevel,
+                    "this implementation only handles atoms and pairs");
+      auto && i_atom_id{cluster.back()};
+      auto && i_bin_id{this->part2bin[i_atom_id]};
+      auto && ij_atom_id{this->neighbour_atom_index[i_bin_id][index].get_index()};
+      return ij_atom_id;
     }
+
+
+    // return the atom_index of the index-th atom in manager
+    inline size_t get_cluster_neighbour(const Parent & /*cluster */ ,
+			      size_t index) const {
+      return this->centers[index].get_index();
+    }
+
 
     //! return atom type
     inline int get_atom_type(const AtomRef_t& atom) {
       auto && index{atom.get_index()};
       return this->particule_types[index];
-    }
-
-    // return the index of the center corresponding to its neighbour image
-    template<size_t Level>
-    inline size_t get_atom_id(const ClusterRef_t<Level>& cluster, int j_atom_id) const {
-      static_assert(Level <= traits::MaxLevel,
-                    "this implementation only handles atoms and pairs");
-      auto && i_atom_id{cluster.back()};
-      auto && i_bin_id{this->part2bin[i_atom_id]};
-      auto && ij_atom_id{this->neighbour_atom_index[i_bin_id][j_atom_id].get_index()};
-      return ij_atom_id;
     }
 
     // return the number of neighbours of a given atom
@@ -159,7 +165,7 @@ namespace rascal {
     template<size_t Level>
     inline int get_offset_impl(const ClusterRefBase<Level,
                                cluster_depth<Level>(traits::DepthByDimension{}) >& cluster) const;
-    
+
     size_t get_nb_clusters(int cluster_size);
 
     void update(const Eigen::Ref<const Eigen::MatrixXd> positions,const Eigen::Ref<const VecXi>  particule_types,
@@ -264,7 +270,7 @@ namespace rascal {
   //   auto main_offset{stride+j};
   //   return main_offset;
   // }
-  
+
   template <size_t Level>
   inline int NeighbourhoodManagerMinimal:: template
   get_offset_impl(const ClusterRefBase<Level,

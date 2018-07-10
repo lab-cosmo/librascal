@@ -160,19 +160,30 @@ namespace rascal {
     }
 
     // return the global id of an atom
-    inline size_t get_atom_id(const Parent& /*parent*/, int i_atom_id) const {
-      return this->manager.get_atom_id(this->manager, i_atom_id);
+    inline size_t get_cluster_neighbour(const Parent& /*parent*/,
+					int index) const {
+      return this->manager.get_cluster_neighbour(this->manager, index);
     }
 
     // return the global id of an atom
-    template<size_t Level>
-    inline size_t get_atom_id(const ClusterRefBase<Level,
-			      compute_cluster_depth<Level>(typename traits::DepthByDimension{})>
-			      & cluster,
-                              size_t j_atom_id) const {
+    /**
+     * This function depends on MaxLevel
+     */
+
+
+
+    template<size_t Level, size_t Depth>
+    inline size_t get_cluster_neighbour(const ClusterRefBase<Level, Depth>
+					& cluster,
+					size_t index) const {
       static_assert(Level < traits::MaxLevel,
                     "this implementation only handles upto traits::MaxLevel");
-      return this->manager.get_atom_id(cluster, j_atom_id);
+      if (Level < traits::MaxLevel-1) {
+	return this->manager.get_cluster_neighbour(cluster, index);
+      } else {
+	auto && offset = this->offsets[cluster.get_cluster_index(Depth)];
+	return this->neighbours[offset + index];
+      }
     }
 
 
@@ -192,15 +203,17 @@ namespace rascal {
       return this->manager.get_atom_type(original_atom);
     }
 
-    template<size_t Level> //, size_t Depth>
+    template<size_t Level, size_t Depth>
     inline size_t
-    get_cluster_size(const ClusterRefBase<Level,
-		     compute_cluster_depth<Level>
-		     (typename traits::DepthByDimension{})>
+    get_cluster_size(const ClusterRefBase<Level, Depth>
 		     & cluster) const {
       static_assert(Level < traits::MaxLevel,
                     "this implementation the respective MaxLevel");
-      return nb_neigh[cluster.back()] ;
+      if (Level < traits::MaxLevel-1) {
+	return this->manager.get_cluster_size(cluster);
+      } else {
+	return nb_neigh[cluster.back()] ;
+      }
       // return this->manager.get_cluster_size(cluster);
       // TODO: this should be self-referring if Level=MaxLevel, otherwise underlying manager
       // TODO: conditional_t ??

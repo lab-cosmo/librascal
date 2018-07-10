@@ -253,30 +253,30 @@ namespace rascal {
     }
 
     // Returns the number of neighbours of a given atom
-    template<size_t Level>
-    inline size_t get_cluster_size(const ClusterRefBase<Level,
-                                   cluster_depth<Level>()>
+    template<size_t Level, size_t Depth>
+    inline size_t get_cluster_size(const ClusterRefBase<Level, Depth>
                                    & cluster) const {
       static_assert(Level < traits::MaxLevel,
                     "this implementation only handles atoms and pairs.");
       return this->numneigh[cluster.back()];
     }
 
+    // return the index-th neighbour of cluster
     template<size_t Level, size_t Depth>
-    inline size_t get_atom_id(const ClusterRefBase<Level, Depth> & cluster,
-                              size_t j_atom_id) const {
+    inline size_t get_cluster_neighbour(const ClusterRefBase<Level, Depth>
+					& cluster,
+					size_t index) const {
       static_assert(Level <= traits::MaxLevel,
                     "this implementation only handles atoms and pairs.");
       auto && i_atom_id{cluster.back()};
       auto && off{this->offsets[i_atom_id]};
-      return this->halfneigh[off + j_atom_id];
+      return this->halfneigh[off + index];
     }
 
-    // Return unique id of a given atom. Here the atoms are numbered
-    // from 0 to natoms (see .update() function).
-    inline size_t get_atom_id(const Parent& /*cluster*/,
-                              size_t i_atom_id) const {
-      return this->ilist[i_atom_id];
+    // return the atom_index of the index-th atom in manager
+    inline size_t get_cluster_neighbour(const Parent& /*cluster*/,
+					size_t index) const {
+      return this->ilist[index];
     }
 
     /**

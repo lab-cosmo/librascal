@@ -143,22 +143,22 @@ namespace rascal {
 
     }
 
-    // return the global id of an atom
-    inline size_t get_atom_id(const Parent& /*parent*/, int i_atom_id) const {
-      return this->manager.get_atom_id(this->manager, i_atom_id);
-    }
-
-    // return the global id of an atom
-    template<size_t Level>//, size_t Depth>
-    inline size_t get_atom_id(const ClusterRefBase<Level,
-			      compute_cluster_depth<Level>(typename traits::DepthByDimension{})>
-			      & cluster,
-                              int j_atom_id) const {
+    // get atom_index of index-th neighbour of this cluster
+    template<size_t Level, size_t Depth>
+    inline size_t get_cluster_neighbour(const ClusterRefBase<Level, Depth>
+					& cluster,
+					int index) const {
       static_assert(Level <= traits::MaxLevel-1,
                     "this implementation only handles upto traits::MaxLevel");
-      return this->manager.get_atom_id(cluster, j_atom_id);
+      auto && offset = this->offsets[Level][cluster.get_cluster_index(Depth)];
+      return this->atom_refs[Level][offset + index].get_index();
     }
 
+    // get atom_index of the index-th atom in manager
+    inline size_t get_cluster_neighbour(const Parent& /*parent*/,
+					size_t index) const {
+      return this->atom_refs[0][index].get_index();
+    }
 
     //! return atom type
     inline int & get_atom_type(const AtomRef_t& atom) {
@@ -186,9 +186,8 @@ namespace rascal {
     }
 
     // return the number of neighbours of a given atom
-    template<size_t Level>
-    inline size_t get_cluster_size(const ClusterRefBase<Level,
-				   compute_cluster_depth<Level>(typename traits::DepthByDimension{})>
+    template<size_t Level, size_t Depth>
+    inline size_t get_cluster_size(const ClusterRefBase<Level, Depth>
 				   & cluster) const {
       static_assert(Level <= traits::MaxLevel-1,
                     "this implementation only handles atoms and pairs");

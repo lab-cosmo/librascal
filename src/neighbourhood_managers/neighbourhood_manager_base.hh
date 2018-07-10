@@ -161,16 +161,18 @@ namespace rascal {
       return this->implementation().get_cluster_size(cluster);
     }
 
-    //! get atom_index of index-th atom in cluster
-    template <size_t L>
-    inline size_t atom_id(ClusterRef<L> & cluster, size_t index) const {
-      return this->implementation().get_atom_id(cluster, index);
+    //! get atom_index of index-th neighbour of this cluster, e.g. j-th
+    // neighbour of atom i or k-th neighbour of pair i-j, etc.
+    template <size_t L, size_t D>
+    inline size_t cluster_neighbour(ClusterRefBase<L, D> & cluster,
+				    size_t index) const {
+      return this->implementation().get_cluster_neighbour(cluster, index);
     }
 
     //! get atom_index of the index-th atom in manager
-    inline size_t atom_id(NeighbourhoodManagerBase & cluster,
-                          size_t & index) const {
-      return this->implementation().get_atom_id(cluster, index);
+    inline size_t cluster_neighbour(NeighbourhoodManagerBase & cluster,
+				    size_t & index) const {
+      return this->implementation().get_cluster_neighbour(cluster, index);
     }
 
     inline NeighbourhoodManagerBase & get_manager() {return *this;}
@@ -304,7 +306,12 @@ namespace rascal {
 
   protected:
     Manager_t & manager;
-    //!< corresponds to the 0-depth, 1st-level cluster_id (i.e. memory-offset)
+    /**
+     * The meaning of `index` is manager-dependent. There are no
+     * quaranties regarding contiguity. It is used internally to
+     * access atom-related properties.
+     */
+    // TODO: size_t -> int change, to comply with all possible external atom ids
     const size_t & index;
   private:
   };
@@ -503,7 +510,7 @@ namespace rascal {
                     "Check for size_t failed.");
       return internal::append_array
         (container.get_atom_indices(),
-         this->get_manager().atom_id(container, this->index));
+         this->get_manager().cluster_neighbour(container, this->index));
     }
 
     // TODO: something like this for array size

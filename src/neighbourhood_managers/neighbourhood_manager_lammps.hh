@@ -144,28 +144,21 @@ namespace rascal {
       return this->numneigh[cluster.back()];
     }
 
-    // return the global id of an atom
-    template<size_t Level>
-    inline size_t get_atom_id(const ClusterRef_t<Level> & cluster,
-                              int j_atom_id) const {
+    // return the index-th neighbour of cluster
+    template<size_t Level, size_t Depth>
+    inline size_t get_cluster_neighbour(const ClusterRefBase<Level, Depth>
+					& cluster,
+					size_t index) const {
       static_assert(Level == traits::MaxLevel-1,
                     "this implementation only handles atoms and pairs");
       auto && i_atom_id{cluster.back()};
-      return i_atom_id;
-      return this->firstneigh[std::move(i_atom_id)][j_atom_id];
+      return this->firstneigh[std::move(i_atom_id)][index];
     }
 
-    template<size_t Level>
-    inline size_t get_atom_id(const ClusterRef_t<Level> & cluster) const {
-      static_assert(Level == traits::MaxLevel-1,
-                    "this implementation only handles atoms and pairs");
-      return cluster.back();
-    }
-
-    // return the global id of an atom
-    inline size_t get_atom_id(const Parent & /*cluster*/,
-                              size_t i_atom_id) const {
-      return (size_t) this->ilist[i_atom_id];
+    // return the atom_index of the index-th atom in manager
+    inline size_t get_cluster_neighbour(const Parent & /*cluster*/,
+					size_t index) const {
+      return this->ilist[index];
     }
 
     /**

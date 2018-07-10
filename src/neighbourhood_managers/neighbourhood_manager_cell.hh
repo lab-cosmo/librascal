@@ -72,7 +72,7 @@ namespace rascal {
 
     //! Default constructor
     NeighbourhoodManagerCell()
-      :particles{}, centers{} ,positions{},shifted_position{} ,lattice{}, cell{},pbc{} ,part2bin{} ,boxes{} ,number_of_neighbours{0} ,neighbour_bin_id{} , number_of_neighbours_stride{}, neighbour_atom_index{},particle_types{}
+      :particles{}, centers{} ,positions{},shifted_position{} ,lattice{}, cell{}, pbc{} ,part2bin{} ,boxes{} ,number_of_neighbours{0} ,neighbour_bin_id{} , number_of_neighbours_stride{}, neighbour_atom_index{},particle_types{}
     {}
 
     //! Copy constructor
@@ -126,9 +126,25 @@ namespace rascal {
     inline size_t get_size() const {
       return this->centers.size();
     }
-    // return the id a given center atom
-    inline size_t get_atom_id(const Parent& , size_t i_atom_id) const {
-      return this->centers[i_atom_id].get_index();
+
+    // return the index-th neighbour of cluster
+    template<size_t Level, size_t Depth>
+    inline size_t get_cluster_neighbour(const ClusterRefBase<Level, Depth>
+					& cluster,
+					size_t index) const {
+      static_assert(Level <= traits::MaxLevel,
+                    "this implementation only handles atoms and pairs");
+      auto && i_atom_id{cluster.back()};
+      auto && i_bin_id{this->part2bin[i_atom_id]};
+      auto && ij_atom_id{this->neighbour_atom_index[i_bin_id][index].get_index()};
+      return ij_atom_id;
+    }
+
+
+    // return the atom_index of the index-th atom in manager
+    inline size_t get_cluster_neighbour(const Parent & /*cluster */ ,
+			      size_t index) const {
+      return this->centers[index].get_index();
     }
 
     //! return atom type
@@ -140,18 +156,6 @@ namespace rascal {
     //! return atom type from atom index
     inline size_t get_atom_type(const size_t& index) {
       return this->particle_types[index];
-    }
-
-    // return the index of the center corresponding to its neighbour image
-    template<size_t Level, size_t Depth>
-    inline size_t get_atom_id(const ClusterRefBase<Level, Depth> & cluster,
-                              size_t j_atom_id) const {
-      static_assert(Level <= traits::MaxLevel,
-                    "this implementation only handles atoms and pairs");
-      auto && i_atom_id{cluster.back()};
-      auto && i_bin_id{this->part2bin[i_atom_id]};
-      auto && ij_atom_id{this->neighbour_atom_index[i_bin_id][j_atom_id].get_index()};
-      return ij_atom_id;
     }
 
     // return the number of neighbours of a given atom
@@ -202,7 +206,7 @@ namespace rascal {
     Vector_t shifted_position;
     Lattice lattice;
     Cell_t cell; // to simplify get_neighbour_position()
-    std::array<bool,3> pblac;
+    std::array<bool,3> pbc;
     std::vector<int> part2bin; //!
     std::vector<Box> boxes;
     size_t number_of_neighbours;
