@@ -36,41 +36,53 @@
 using namespace rascal;
 namespace py=pybind11;
 
+template<size_t Level>
+decltype(auto) add_cluster(py::module & m) {
+  using ClusterRef = NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<Level>;
+  py::class_<ClusterRef> py_cluster (m, (Level == 1) ? "Cell.Center" : "Cell.Neighbour");
+  py_cluster.def_property_readonly("atom_index", & ClusterRef::get_atom_index)
+    .def_property_readonly("atom_type", & ClusterRef::get_atom_type)
+    .def_property_readonly("index", & ClusterRef::get_index)
+    .def_property_readonly("size", & ClusterRef::size)
+    .def_property("position",
+		  & ClusterRef::get_position,
+		  [] (ClusterRef & cluster, py::EigenDRef<Eigen::MatrixXd> mat) {
+		    cluster.get_position() = mat;
+		  });
+    return py_cluster;
+}
 
 void add_manager_cell(py::module& m){
-	m.doc()  = "binding for the Neighbourhood Manager Linked Cell" ;
-	py::class_<NeighbourhoodManagerBase<NeighbourhoodManagerCell>>(m, "NeighbourhoodManagerBase_Cell")
+  m.doc()  = "binding for the Neighbourhood Manager Linked Cell" ;
+  py::class_<NeighbourhoodManagerBase<NeighbourhoodManagerCell>>(m, "NeighbourhoodManagerBase_Cell")
     .def(py::init<>());
 
-	py::class_<NeighbourhoodManagerCell,NeighbourhoodManagerBase<NeighbourhoodManagerCell>>(m, "NeighbourhoodManagerCell")
+  py::class_<NeighbourhoodManagerCell,NeighbourhoodManagerBase<NeighbourhoodManagerCell>>(m, "NeighbourhoodManagerCell")
     .def(py::init<>())
-		.def("update",&NeighbourhoodManagerCell::update)
-		//.def("build",[]())
-		.def("__iter__",
-			[](NeighbourhoodManagerBase<NeighbourhoodManagerCell> &v) {
-       	return py::make_iterator(v.begin(),v.end());
-    	}, py::keep_alive<0, 1>()); /* Keep vector alive while iterator is used */
+    .def("update",&NeighbourhoodManagerCell::update)
+    //.def("build",[]())
+    .def("__iter__",
+	 [](NeighbourhoodManagerBase<NeighbourhoodManagerCell> &v) {
+	   return py::make_iterator(v.begin(),v.end());
+	 }, py::keep_alive<0, 1>()); /* Keep vector alive while iterator is used */
+
+  add_cluster<1>(m)
+    .def("__iter__",
+	 [](NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<1> &v) {
+	   return py::make_iterator(v.begin(),v.end());
+	 }, py::keep_alive<0, 1>()); /* Keep vector alive while iterator is used */
+
+  add_cluster<2>(m);
 
 
-	//py::class_<NeighbourhoodManagerBase<NeighbourhoodManagerCell>::iterator<1, 2>>(m, "Center_iterator")
-	//	.def(py::init<>())
-
-	py::class_<NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<1>>(m, "Cell.Center")
-		.def("get_atom_index",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<1>::get_atom_index)
-		.def("get_atom_type",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<1>::get_atom_type)
-		.def("get_index",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<1>::get_index)
-		.def("get_size",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<1>::size)
-		.def("get_position",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<1>::get_position)
-		.def("__iter__",
-			[](NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<1> &v) {
-       	return py::make_iterator(v.begin(),v.end());
-    	}, py::keep_alive<0, 1>()); /* Keep vector alive while iterator is used */
-
-	py::class_<NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2>>(m, "Cell.Neighbour")
-		.def("get_atom_index",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2>::get_atom_index)
-		.def("get_atom_type",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2>::get_atom_type)
-		.def("get_index",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2>::get_index)
-		.def("get_size",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2>::size)
-		//.def("get_atom_shift",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2>::get_atom_shift)
-		.def("get_position",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2>::get_position);
+  // // TODO: return value policy?
+  // // TODO: cleaner: def_property w/ setter
+  //   using ClusterRef2 = NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2>;
+  // py::class_<NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2>>(m, "Cell.Neighbour")
+  //   .def("get_atom_index",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2>::get_atom_index)
+  //   .def("get_atom_type",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2>::get_atom_type)
+  //   .def("get_index",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2>::get_index)
+  //   .def("get_size",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2>::size)
+  //   //.def("get_atom_shift",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2>::get_atom_shift)
+  //   .def("get_position",&NeighbourhoodManagerBase<NeighbourhoodManagerCell>::ClusterRef<2>::get_position);
 }
