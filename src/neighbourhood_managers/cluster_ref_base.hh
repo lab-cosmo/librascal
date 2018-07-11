@@ -46,7 +46,7 @@ namespace rascal {
 
   template <size_t MaxLevel, size_t... Ints>
   struct DepthIncreaser<MaxLevel,
-                        std::index_sequence<Ints...>>{
+                        std::integer_sequence<size_t, Ints...>>{
     using type = std::index_sequence<(Ints+1)...>;
   };
 
@@ -107,7 +107,7 @@ namespace rascal {
     struct HeadExtractorTail {
       using type = std::index_sequence<seq...>;
     };
-      
+
 
     template <size_t Level, size_t head, size_t... tail, size_t... seq>
     struct HeadExtractor<Level, std::index_sequence<seq...>, head, tail...> {
@@ -117,7 +117,7 @@ namespace rascal {
                       std::index_sequence<seq..., head>,
                       tail...>,
         HeadExtractorTail<seq..., head>>;
-      using type = typename Extractor_t::type; 
+      using type = typename Extractor_t::type;
     };
 
 
@@ -151,7 +151,7 @@ namespace rascal {
     return get<index>(std::make_tuple(Ints...));
   }
 
-  
+
   namespace internal {
     template <size_t Depth, size_t HiDepth,typename T, size_t... Ints>
     std::array<T, Depth>
@@ -176,20 +176,9 @@ namespace rascal {
     ClusterRefBase() = delete;
 
     //! direct constructor
-    ClusterRefBase(std::array<size_t, Level> atom_indices,
+    ClusterRefBase(std::array<int, Level> atom_indices,
                    IndexArray cluster_indices):
       atom_indices{atom_indices}, cluster_indices(cluster_indices.data()) {}
-
-    // //! constructor from higher depth
-    // template<size_t HiDepth>
-    // ClusterRefBase(const ClusterRefBase<Level, HiDepth> & other):
-    //   atom_indices{other.atom_indices},
-    //   cluster_indices{internal::head<Depth>(other.cluster_indices)} {
-    //     static_assert(HiDepth >= Depth,
-    //                   "You are trying to access a property that "
-    //                   "does not exist at this low a level in the "
-    //                   "adaptor stack.");
-    //   }
 
     //! Copy constructor
     ClusterRefBase(const ClusterRefBase & other) = default; //
@@ -206,19 +195,19 @@ namespace rascal {
     //! Move assignment operator
     ClusterRefBase & operator=(ClusterRefBase && other) = default;
 
-    const std::array<size_t, Level> & get_atom_indices() const {
+    const std::array<int, Level> & get_atom_indices() const {
       return this->atom_indices;
     }
 
-    const size_t & front() const{return this->atom_indices.front();}
-    const size_t & back() const{return this->atom_indices.back();}
+    const int & front() const{return this->atom_indices.front();}
+    const int & back() const{return this->atom_indices.back();}
 
     inline size_t get_cluster_index(size_t depth) const {
       return this->cluster_indices(depth);
     }
 
   protected:
-    std::array<size_t, Level> atom_indices;
+    std::array<int, Level> atom_indices;
     /**
      * cluster indices by depth level, highest depth, means last
      * adaptor, and mean last entry (.back())

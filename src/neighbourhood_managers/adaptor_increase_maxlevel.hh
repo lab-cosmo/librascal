@@ -58,7 +58,7 @@ namespace rascal {
     // New Depth
     // TODO: Is this the correct way to initialize the increased depth?
     using DepthByDimension = typename
-      DepthIncreaser<MaxLevel, typename ManagerImplementation::traits::DepthByDimension>::type;
+      DepthExtender<MaxLevel, typename ManagerImplementation::traits::DepthByDimension>::type;
   };
 
   /**
@@ -160,8 +160,8 @@ namespace rascal {
     }
 
     // return the global id of an atom
-    inline size_t get_cluster_neighbour(const Parent& /*parent*/,
-					int index) const {
+    inline int get_cluster_neighbour(const Parent& /*parent*/,
+				     size_t index) const {
       return this->manager.get_cluster_neighbour(this->manager, index);
     }
 
@@ -173,9 +173,9 @@ namespace rascal {
 
 
     template<size_t Level, size_t Depth>
-    inline size_t get_cluster_neighbour(const ClusterRefBase<Level, Depth>
-					& cluster,
-					size_t index) const {
+    inline int get_cluster_neighbour(const ClusterRefBase<Level, Depth>
+				     & cluster,
+				     size_t index) const {
       static_assert(Level < traits::MaxLevel,
                     "this implementation only handles upto traits::MaxLevel");
       if (Level < traits::MaxLevel-1) {
@@ -238,8 +238,8 @@ namespace rascal {
     // access is with atom index?!
     inline void add_atom(typename ManagerImplementation::AtomRef_t atom) {
       // static_assert(Level < traits::MaxLevel,
-                    // "you can only add neighbours to the n-th degree defined by "
-                    // "MaxLevel of the underlying manager");
+      // "you can only add neighbours to the n-th degree defined by "
+      // "MaxLevel of the underlying manager");
 
       auto p = &atom;
       std::cout << p << std::endl;
@@ -259,7 +259,7 @@ namespace rascal {
     }
 
     // TODO: correct implementation?
-    inline void add_atom(size_t index) {
+    inline void add_atom(const int & index) {
       AtomRef_t atom{this->manager, index};
       this->add_atom(atom);
     }
@@ -388,15 +388,15 @@ namespace rascal {
     using ClusterRef_t = typename ManagerImplementation::template
       ClusterRef<Level>;
 
-    static void loop (ClusterRef_t & cluster,
-		      AdaptorMaxLevel<ManagerImplementation>& manager) {
-      std::cout << " ------At old MaxLevel, adding new layer-----" << std::endl;
+    static void loop (ClusterRef_t & /*cluster*/,
+		      AdaptorMaxLevel<ManagerImplementation>&/* manager*/) {
+      // std::cout << " ------At old MaxLevel, adding new layer-----" << std::endl;
 
       // i refers to the local atom for which the pairs j are added as
       // MaxLevel+1
-      auto atom_i = cluster.back();
-      std::cout << "Atom i " << atom_i << std::endl;
-      std::cout << manager.get_size() << std::endl;
+      // auto atom_i = cluster.back();
+      // std::cout << "Atom i " << atom_i << std::endl;
+      // std::cout << manager.get_size() << std::endl;
       // auto index {cluster.get_global_index()};
       // for (int i{0};  i  < this->nb_neigh[index]; ++i) {
       // 	auto jndex{this->neighbours[this->offsets[index]+i]}
@@ -510,7 +510,7 @@ namespace rascal {
 
     for (auto atom : this->manager) {
       // Level 1, atoms, index 0
-      std::cout << "## for atoms in manager ##" << std::endl;
+      // std::cout << "## for atoms in manager ##" << std::endl;
 
       using AddLevelLoop = AddLevelLoop<1, 1 == traits::MaxLevel-1>;
       AddLevelLoop::loop(atom, *this);

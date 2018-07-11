@@ -117,54 +117,50 @@ namespace rascal {
     }
 
     inline size_t get_nb_clusters(int cluster_size) const {
-      return this->atom_refs[cluster_size-1].size();
+      return this->atom_indices[cluster_size-1].size();
     }
 
     inline size_t get_size() const {
       return this->get_nb_clusters(1);
     }
 
-    inline Vector_ref get_position(const AtomRef_t & atom) {
-      // careful, atom refers to our local index, for the manager, we
-      // need its index:
-      auto && original_atom{this->atom_refs[0][atom.get_index()]};
-      return this->manager.get_position(original_atom);
+    inline Vector_ref get_position(const int & index) {
+      return this->manager.get_position(index);
     }
 
-    template<size_t Level>
-    inline Vector_ref get_neighbour_position(const ClusterRef_t<Level>&
-                                             /*cluster*/) {
-      static_assert(Level > 1,
-                    "Only possible for Level > 1.");
-      static_assert(Level <= traits::MaxLevel,
-                    "this implementation should only work up to MaxLevel.");
-      // Argument is now the same, but implementation
-      throw std::runtime_error("should be adapted to Félix's new interface using the ClusterRef");
-
-    }
+    // template<size_t Level, size_t Depth>
+    // inline Vector_ref get_neighbour_position(const ClusterRefBase<Level, Depth>
+    // 					     & cluster) {
+    //   static_assert(Level > 1,
+    //                 "Only possible for Level > 1.");
+    //   static_assert(Level <= traits::MaxLevel,
+    //                 "this implementation should only work up to MaxLevel.");
+    //   // Argument is now the same, but implementation
+    //   return this->manager.get_neighbour_position(cluster);
+    // }
 
     // get atom_index of index-th neighbour of this cluster
     template<size_t Level, size_t Depth>
-    inline size_t get_cluster_neighbour(const ClusterRefBase<Level, Depth>
-					& cluster,
-					int index) const {
+    inline int get_cluster_neighbour(const ClusterRefBase<Level, Depth>
+				     & cluster,
+				     int index) const {
       static_assert(Level <= traits::MaxLevel-1,
                     "this implementation only handles upto traits::MaxLevel");
       auto && offset = this->offsets[Level][cluster.get_cluster_index(Depth)];
-      return this->atom_refs[Level][offset + index].get_index();
+      return this->atom_indices[Level][offset + index];
     }
 
     // get atom_index of the index-th atom in manager
-    inline size_t get_cluster_neighbour(const Parent& /*parent*/,
-					size_t index) const {
-      return this->atom_refs[0][index].get_index();
+    inline int get_cluster_neighbour(const Parent& /*parent*/,
+				     size_t index) const {
+      return this->atom_indices[0][index];
     }
 
     //! return atom type
     inline int & get_atom_type(const AtomRef_t& atom) {
       // careful, atom refers to our local index, for the manager, we
       // need its index:
-      auto && original_atom{this->atom_refs[0][atom.get_index()]};
+      auto && original_atom{this->atom_indices[0][atom.get_index()]};
       return this->manager.get_atom_type(original_atom);
     }
 
@@ -172,7 +168,7 @@ namespace rascal {
     inline const int & get_atom_type(const AtomRef_t& atom) const {
       // careful, atom refers to our local index, for the manager, we
       // need its index:
-      auto && original_atom{this->atom_refs[0][atom.get_index()]};
+      auto && original_atom{this->atom_indices[0][atom.get_index()]};
       return this->manager.get_atom_type(original_atom);
     }
 
@@ -201,21 +197,14 @@ namespace rascal {
      * is an i-atom (level=0), j-atom (level=1), or ...
      */
 
-    // TODO: correct implementation - detour with atom index
     template <size_t Level>
-    inline void add_atom(size_t index) {
-      AtomRef_t atom{this->manager, index};
-      this->add_atom<Level>(atom);
-    }
-
-    template <size_t Level>
-    inline void add_atom(typename ManagerImplementation::AtomRef_t atom) {
+    inline void add_atom(int atom_index) {
       static_assert(Level <= traits::MaxLevel,
                     "you can only add neighbours to the n-th degree defined by "
                     "MaxLevel of the underlying manager");
 
       // add new atom at this Level
-      this->atom_refs[Level].push_back(atom);
+      this->atom_indices[Level].push_back(atom_index);
       // count that this atom is a new neighbour
       this->nb_neigh[Level].back()++;
       this->offsets[Level].back()++;
@@ -243,13 +232,13 @@ namespace rascal {
     const double cut_off;
 
     /**
-     * store atom refs per level,i.e.
-     *   - atom_refs[0] lists all i-atoms
-     *   - atom_refs[1] lists all j-atoms
-     *   - atom_refs[2] lists all k-atoms
+     * store atom indices per level,i.e.
+     *   - atom_indices[0] lists all i-atoms
+     *   - atom_indices[1] lists all j-atoms
+     *   - atom_indices[2] lists all k-atoms
      *   - etc
      */
-    std::array<std::vector<AtomRef_t>, traits::MaxLevel> atom_refs;
+    std::array<std::vector<int>, traits::MaxLevel> atom_indices;
     /**
      * store the number of j-atoms for every i-atom (nb_neigh[1]), the
      * number of k-atoms for every j-atom (nb_neigh[2]), etc
@@ -305,7 +294,7 @@ namespace rascal {
     manager{manager},
     distance{*this},
     cut_off{cut_off},
-    atom_refs{},
+    atom_indices{},
     nb_neigh{},
     offsets{}
 
@@ -363,9 +352,9 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
   void AdaptorStrict<ManagerImplementation>::update() {
-    // initialise the neighbourlist
+    // initialise the neighbourlistl
     for (size_t i{0}; i < traits::MaxLevel; ++i) {
-      this->atom_refs[i].clear();
+      this->atom_indices[i].clear();
       this->nb_neigh[i].resize(0);
       this->offsets[i].resize(0);
     }

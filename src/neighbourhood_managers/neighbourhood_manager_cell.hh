@@ -72,8 +72,10 @@ namespace rascal {
 
     //! Default constructor
     NeighbourhoodManagerCell()
-      :particles{}, centers{} ,positions{},shifted_position{} ,lattice{}, cell{}, pbc{} ,part2bin{} ,boxes{} ,number_of_neighbours{0} ,neighbour_bin_id{} , number_of_neighbours_stride{}, neighbour_atom_index{},particle_types{}
-    {}
+      : particles{}, centers{}, positions{}, shifted_position{}, lattice{},
+	cell{}, pbc{}, part2bin{}, boxes{}, number_of_neighbours{0},
+	neighbour_bin_id{}, number_of_neighbours_stride{},
+	neighbour_atom_index{}, particle_types{} {}
 
     //! Copy constructor
     NeighbourhoodManagerCell(const NeighbourhoodManagerCell &other) = delete;
@@ -92,7 +94,14 @@ namespace rascal {
 
     class Box;
 
-    // return position vector
+    // return position vector for atom
+    inline Vector_ref get_position(const AtomRef_t & atom) {
+      auto index{atom.get_index()};
+      auto * xval{this->positions.col(index).data()};
+      return Vector_ref(xval);
+    }
+
+    // return position vector for atom_index
     inline Vector_ref get_position(const size_t & atom_index) {
       auto * xval{this->positions.col(atom_index).data()};
       return Vector_ref(xval);
@@ -111,13 +120,18 @@ namespace rascal {
       static_assert(Level <= traits::MaxLevel,
                     "this implementation should only work up to MaxLevel.");
 
-      auto && j_linear_id = cluster.back();
-      auto && i_atom_id{cluster.front()}; // center_atom index
-      auto && i_bin_id{this->part2bin[i_atom_id]};
-      auto && shift_index{this->neighbour_bin_id[i_bin_id][j_linear_id].get_index()};
-      auto && j_atom_id{cluster.back()}; // neighbour atom index
-      // TODO: find another way. This is a work around so that shifted_position lives longer than the function call but it is prone to side effects
-      this->shifted_position = this->positions.col(j_atom_id) + this->cell * this->get_shift(i_bin_id,shift_index);
+      // TODO: why is there a j_linear_id and a j_atom_id, which is the same?
+      auto & j_linear_id{cluster.back()};
+      auto & i_atom_id{cluster.front()}; // center_atom index
+      auto & i_bin_id{this->part2bin[i_atom_id]};
+      auto & shift_index{this->neighbour_bin_id[i_bin_id][j_linear_id].get_index()};
+      auto & j_atom_id{cluster.back()}; // neighbour atom index
+      // TODO: find another way. This is a work around so that
+      // shifted_position lives longer than the function call but it
+      // is prone to side effects
+      this->shifted_position = this->positions.col(j_atom_id);
+      Eigen::MatrixXd tmp{this->cell * this->get_shift(i_bin_id,shift_index)};
+      this->shifted_position += tmp;
       auto * xval{this->shifted_position.col(0).data()};
       return Vector_ref(xval);
     }
@@ -129,9 +143,9 @@ namespace rascal {
 
     // return the index-th neighbour of cluster
     template<size_t Level, size_t Depth>
-    inline size_t get_cluster_neighbour(const ClusterRefBase<Level, Depth>
-					& cluster,
-					size_t index) const {
+    inline int get_cluster_neighbour(const ClusterRefBase<Level, Depth>
+				     & cluster,
+				     size_t index) const {
       static_assert(Level <= traits::MaxLevel,
                     "this implementation only handles atoms and pairs");
       auto && i_atom_id{cluster.back()};
@@ -142,8 +156,8 @@ namespace rascal {
 
 
     // return the atom_index of the index-th atom in manager
-    inline size_t get_cluster_neighbour(const Parent & /*cluster */ ,
-			      size_t index) const {
+    inline int get_cluster_neighbour(const Parent & /*cluster */ ,
+				     size_t index) const {
       return this->centers[index].get_index();
     }
 
@@ -160,7 +174,8 @@ namespace rascal {
 
     // return the number of neighbours of a given atom
     template<size_t Level, size_t Depth>
-    inline size_t get_cluster_size(const ClusterRefBase<Level, Depth>& cluster) const {
+    inline size_t get_cluster_size(const ClusterRefBase<Level, Depth>
+				   & cluster) const {
       static_assert(Level <= traits::MaxLevel,
                     "this implementation only handles atoms and pairs");
       auto && i_atom_id{cluster.back()};
@@ -169,9 +184,8 @@ namespace rascal {
       return size;
     }
 
-    template<size_t Level>
-    inline size_t get_offset_impl(const ClusterRefBase<Level,
-                               cluster_depth<Level>(traits::DepthByDimension{})>
+    template<size_t Level, size_t Depth>
+    inline size_t get_offset_impl(const ClusterRefBase<Level, Depth>
                                & cluster) const;
 
     size_t get_nb_clusters(size_t cluster_size);
@@ -283,10 +297,9 @@ namespace rascal {
   //   auto main_offset{stride+j};
   //   return main_offset;
   // }
-  template <size_t Level>
+  template <size_t Level, size_t Depth>
   inline size_t NeighbourhoodManagerCell:: template
-  get_offset_impl(const ClusterRefBase<Level,
-                  cluster_depth<Level>(traits::DepthByDimension{})> & cluster) const {
+  get_offset_impl(const ClusterRefBase<Level, Depth> & cluster) const {
     return cluster.get_cluster_index(cluster_depth<Level>(traits::DepthByDimension{}));
   }
 

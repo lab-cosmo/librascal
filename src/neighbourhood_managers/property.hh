@@ -142,6 +142,11 @@ namespace rascal {
 
   }  // internal
 
+  // Forward declaration of traits to use `Property`.
+  template <class Manager>
+  struct NeighbourhoodManager_traits;
+
+
   template <class NeighbourhoodManager, typename T,
             size_t Level,
             size_t NbRow = 1, size_t NbCol = 1>
@@ -153,7 +158,6 @@ namespace rascal {
   public:
     using traits = NeighbourhoodManager_traits<NeighbourhoodManager>;
     constexpr static size_t NbDof{NbRow*NbCol};
-    using Cluster_t = typename NeighbourhoodManager::template ClusterRef<Level>;
 
     using Value = internal::Value<T, NbRow, NbCol>;
 
@@ -214,9 +218,8 @@ namespace rascal {
                     "You are trying to access a property that "
                     "does not exist at this low a level in the "
                     "adaptor stack.");
-      
+
       return Value::get_ref(this->values[id.get_cluster_index(CallerDepth)*NbDof]);
-      //return Value::get_ref(this->values[manager.get_offset(id)*NbDof]);
     }
 
   protected:
