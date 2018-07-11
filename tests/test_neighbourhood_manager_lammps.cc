@@ -43,7 +43,7 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(iterator_test, ManagerFixture_lammps) {
     int atom_counter{};
     int pair_counter{};
-    constexpr bool verbose{false};
+    constexpr bool verbose{true};
     for (auto atom_cluster: manager) {
       BOOST_CHECK_EQUAL(atom_counter, atom_cluster.get_global_index());
       ++atom_counter;

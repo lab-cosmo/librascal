@@ -30,7 +30,6 @@
 #include "test_neighbourhood.hh"
 #include "neighbourhood_managers/adaptor_increase_maxlevel.hh"
 
-
 namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(maxlevel_increase_adaptor_test);
@@ -42,16 +41,24 @@ namespace rascal {
     AdaptorMaxLevel<NeighbourhoodManagerChain> adaptor{manager_chain, cutoff};
     adaptor.update();
 
-    std::cout << "Increase MaxLevel" << std::endl;
+    constexpr bool verbose{false};
+
+    if (verbose) {
+      std::cout << "Increase MaxLevel" << std::endl;
+    }
 
     for (auto atom : adaptor) {
-      std::cout << "atom "
-                << atom.back()
-                << std::endl;
+      if (verbose) {
+	std::cout << "atom "
+		  << atom.back()
+		  << std::endl;
+      }
       for (auto pair : atom) {
-        std::cout << "  pair "
-                  << pair.back()
-                  << std::endl;
+	if (verbose) {
+	  std::cout << "  pair "
+		    << pair.back()
+		    << std::endl;
+	}
         // for (auto triplet : pair) {
         //   std::cout << "    triplet "
         //         << triplet.get_atoms().back().get_index()
