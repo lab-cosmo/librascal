@@ -171,7 +171,7 @@ namespace rascal {
   class ClusterRefBase
   {
   public:
-    using IndexArray = Eigen::Map<Eigen::Array<size_t, Depth+1, 1>>;
+    using IndexArray = Eigen::Map<const Eigen::Array<size_t, Depth+1, 1>>;
     //! Default constructor
     ClusterRefBase() = delete;
 
@@ -204,6 +204,10 @@ namespace rascal {
 
     inline size_t get_cluster_index(size_t depth) const {
       return this->cluster_indices(depth);
+    }
+
+    inline IndexArray get_cluster_indices() const {
+      return this->cluster_indices;
     }
 
   protected:

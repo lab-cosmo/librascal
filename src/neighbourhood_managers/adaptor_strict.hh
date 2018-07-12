@@ -54,7 +54,9 @@ namespace rascal {
     constexpr static int Dim{ManagerImplementation::traits::Dim};
     constexpr static size_t MaxLevel{ManagerImplementation::traits::MaxLevel};
     using DepthByDimension =
-      typename DepthIncreaser<MaxLevel, typename ManagerImplementation::traits::DepthByDimension>::type;
+      typename
+      DepthIncreaser<MaxLevel,
+		     typename ManagerImplementation::traits::DepthByDimension>::type;
   };
 
   /**
@@ -177,8 +179,9 @@ namespace rascal {
      * this cluster appears in an iteration
      */
     template<size_t Level>
-    inline int get_offset_impl(const ClusterRef_t<Level>& cluster) const {
-      return this->offsets[Level][cluster.get_index()];
+    inline size_t get_offset_impl(const std::array<size_t, Level>
+				  & counters) const {
+      return this->offsets[Level][counters.back()];
     }
 
     // return the number of neighbours of a given atom
@@ -219,8 +222,8 @@ namespace rascal {
     }
 
     template <size_t Level>
-    inline void add_atom(typename ManagerImplementation::template
-                         ClusterRef<Level> cluster) {
+    inline void add_atom(const typename ManagerImplementation::template
+                         ClusterRef<Level> & cluster) {
       return this->template add_atom <Level-1>(cluster.back());
     }
 
@@ -381,11 +384,6 @@ namespace rascal {
       }
     }
   }
-
-  /* ---------------------------------------------------------------------- */
-
-
-
 }  // rascal
 
 #endif /* ADAPTOR_STRICT_H */

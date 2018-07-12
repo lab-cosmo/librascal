@@ -176,7 +176,7 @@ namespace rascal {
     Property(const Property & other) = delete;
 
     //! Move constructor
-    Property(Property && other) = delete;
+    Property(Property && other) = default;
 
     //! Destructor
     virtual ~Property() = default;
@@ -189,7 +189,7 @@ namespace rascal {
 
     //! adjust size (only increases, never frees)
     void resize() {
-      this->values.resize(this->manager.get_nb_clusters(Level) * NbDof);
+      this->values.resize(this->manager.nb_clusters(Level) * NbDof);
     }
 
     /**
@@ -207,6 +207,17 @@ namespace rascal {
       Value::push_in_vector(this->values, ref);
     }
 
+
+    /**
+     * Fill sequence for *_cluster_indices.
+     */
+    inline void fill_sequence() {
+      this->resize();
+      for (size_t i{0}; i<this->values.size(); ++i) {
+	values[i] = i;
+      }
+    }
+
     /**
      * Not sure about the actual implementation of this one.
      */
@@ -220,6 +231,13 @@ namespace rascal {
                     "adaptor stack.");
 
       return Value::get_ref(this->values[id.get_cluster_index(CallerDepth)*NbDof]);
+    }
+
+    /**
+     * Accessor for property by index.
+     */
+    reference operator[](const size_t & index) {
+      return Value::get_ref(this->values[index*NbDof]);
     }
 
   protected:

@@ -162,11 +162,11 @@ namespace rascal {
       return size;
     }
 
-    template<size_t Level>
-    inline int get_offset_impl(const ClusterRefBase<Level,
-                               cluster_depth<Level>(traits::DepthByDimension{}) >& cluster) const;
-
     size_t get_nb_clusters(int cluster_size);
+
+    template<size_t Level>
+    inline size_t get_offset_impl(const std::array<size_t, Level>
+				  & counters) const;
 
     void update(const Eigen::Ref<const Eigen::MatrixXd> positions,const Eigen::Ref<const VecXi>  particule_types,
                 const Eigen::Ref<const VecXi> center_ids,
@@ -251,41 +251,32 @@ namespace rascal {
   protected:
     Manager_t & manager;
     std::vector<AtomRef_t> particles;
-    std::vector<Vector_t,Eigen::aligned_allocator<Vector_t>> neighbour_bin_shift; //stores double for the dot product with the Cell vectors
+    //stores double for the dot product with the Cell vectors
+    std::vector<Vector_t,Eigen::aligned_allocator<Vector_t>> neighbour_bin_shift;
     std::vector<int> neighbour_bin_index;
     size_t number_of_neighbours;
     Vec3i_t coordinates;
   };
+
   /* ---------------------------------------------------------------------- */
+  template<size_t Level>
+  inline size_t NeighbourhoodManagerMinimal::
+  get_offset_impl(const std::array<size_t, Level>
+		  & counters) const {
 
-  // template<size_t Level>
-  // inline int NeighbourhoodManagerMinimal::
-  // get_offset_impl(const ClusterRef_t<Level>& cluster) const {
-  //   static_assert(Level == 2, "This class cas only handle single atoms and pairs");
-
-  //   //auto atoms{};
-  //   auto icenter{cluster.front()};
-  //   auto stride{this->number_of_neighbours_stride[icenter]};
-  //   auto j{cluster.get_index()};
-  //   auto main_offset{stride+j};
-  //   return main_offset;
-  // }
-
-  template <size_t Level>
-  inline int NeighbourhoodManagerMinimal:: template
-  get_offset_impl(const ClusterRefBase<Level,
-                  cluster_depth<Level>(traits::DepthByDimension{})> & cluster) const {
-    return cluster.get_cluster_index(cluster_depth<Level>(traits::DepthByDimension{}));
+    static_assert(Level <= 2,
+		  "This class cas only handle single atoms and pairs");
+    if (Level == 1) {
+      return counters.front();
+    } else {
+      auto icenter{counters.front()};
+      auto stride{this->number_of_neighbours_stride[icenter]};
+      auto j{counters.back()};
+      auto main_offset{stride + j};
+      return main_offset;
+    }
   }
 
-  /* ---------------------------------------------------------------------- */
-  // specialisation for just atoms
-
-  // template <>
-  // inline int NeighbourhoodManagerMinimal:: template
-  // get_offset_impl<1>(const ClusterRef_t<1>& cluster) const {
-  //   return cluster.back();
-  // }
   /* ---------------------------------------------------------------------- */
 
   inline Vector_ref NeighbourhoodManagerMinimal::get_shift(const int& i_bin_id, const int& neigh_bin_index){

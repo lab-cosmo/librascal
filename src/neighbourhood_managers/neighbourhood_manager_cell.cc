@@ -249,7 +249,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
 
   size_t NeighbourhoodManagerCell::
-  get_nb_clusters(size_t cluster_size)  {
+  get_nb_clusters(size_t cluster_size) const {
     switch (cluster_size) {
     case 1: {
       return this->centers.size();

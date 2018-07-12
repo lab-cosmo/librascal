@@ -283,10 +283,8 @@ namespace rascal {
      * this cluster appears in an iteration
      */
     template<size_t Level>
-    inline int
-    get_offset_impl(const ClusterRefBase<Level,
-                    cluster_depth<Level>(traits::DepthByDimension{})>
-                    & cluster) const;
+    inline size_t get_offset_impl(const std::array<size_t, Level>
+				  & counters) const;
 
     // Function for returning the number of atoms, pairs, tuples, etc.
     size_t get_nb_clusters(int cluster_size);
@@ -381,25 +379,20 @@ namespace rascal {
 
 
   /* ---------------------------------------------------------------------- */
-  // adjust for triplets
-  // template<size_t Level>
-  // inline int NeighbourhoodManagerChain::
-  // get_offset_impl(const ClusterRefBase<Level,
-  //           cluster_depth<Level>(traits::DepthByDimension{})>
-  //           & cluster) const {
-  //   static_assert(Level == 2, "This class can only handle single atoms and pairs");
-
-  //   auto i{cluster.front()};
-  //   auto j{cluster.get_index()};
-  //   auto main_offset{this->offsets[i]};
-  //   return main_offset + j;
-  // }
-
-  template <size_t Level>
-  inline int NeighbourhoodManagerChain:: template
-  get_offset_impl(const ClusterRefBase<Level,
-                  cluster_depth<Level>(traits::DepthByDimension{})> & cluster) const {
-    return cluster.get_cluster_index(cluster_depth<Level>(traits::DepthByDimension{}));
+  // buildup
+  template<size_t Level>
+  inline size_t NeighbourhoodManagerChain::
+  get_offset_impl(const std::array<size_t, Level> & counters) const {
+    static_assert(Level <= 2,
+		  "This class cas only handles up to MaxLevel");
+    if (Level == 1) {
+      return counters.front();
+    } else {
+    auto i{counters.front()};
+    auto j{counters.back()};
+    auto main_offset{this->offsets[i]};
+    return main_offset + j;
+    }
   }
 
   /* ---------------------------------------------------------------------- */

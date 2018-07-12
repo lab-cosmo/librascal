@@ -167,11 +167,10 @@ namespace rascal {
      * this cluster appears in an iteration
      */
     template<size_t Level>
-    inline size_t get_offset_impl(const ClusterRefBase<Level,
-                               cluster_depth<Level>(traits::DepthByDimension{})>
-                               & cluster) const;
+    inline size_t get_offset_impl(const std::array<size_t, Level>
+				  & counters) const;
 
-    size_t get_nb_clusters(int cluster_size);
+    size_t get_nb_clusters(int cluster_size) const;
 
   protected:
     int inum{};
@@ -192,24 +191,20 @@ namespace rascal {
 
 
   /* ---------------------------------------------------------------------- */
-  // template<size_t Level, size_t Depth>
-  // inline int NeighbourhoodManagerLammps::
-  // get_offset_impl(const ClusterRefBase<Level, Depth>& cluster) const {
-  //   static_assert(Level == 2, "This class cas only handle single atoms and pairs");
-
-  //   auto i{cluster.front()};
-  //   auto j{cluster.get_index()};
-  //   auto main_offset{this->offsets[i]};
-  //   return main_offset + j;
-  // }
-
-  /* ---------------------------------------------------------------------- */
-  // specialisation for just atoms // TODO: is not correct anymore
-  template <size_t Level>
-  inline size_t NeighbourhoodManagerLammps:: template
-  get_offset_impl(const ClusterRefBase<Level,
-                  cluster_depth<Level>(traits::DepthByDimension{})> & cluster) const {
-    return cluster.get_cluster_index(cluster_depth<Level>(traits::DepthByDimension{}));
+  // buildup
+  // used for lookup e.g. in property
+  template<size_t Level>
+  inline size_t NeighbourhoodManagerLammps::
+  get_offset_impl(const std::array<size_t, Level> & counters) const {
+    static_assert(Level <= 2, "This class cas only handle single atoms and pairs");
+    if (Level == 1) {
+      return counters.front();
+    } else {
+      auto i{counters.front()};
+      auto j{counters.back()};
+      auto main_offset{this->offsets[i]};
+      return main_offset + j;
+    }
   }
 
 }  // rascal

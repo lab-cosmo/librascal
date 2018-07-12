@@ -120,8 +120,12 @@ namespace rascal {
 
     inline double get_cutoff() const {return this->cutoff;}
 
+    template<size_t Level>
+    inline size_t get_offset_impl(const std::array<size_t, Level>
+				  & counters) const;
+
     //! Get number of MaxLevel+1 tuplets
-    inline size_t get_nb_clusters(int cluster_size) const {
+    inline size_t get_nb_clusters() const {
       return this->atom_refs.size();
     }
 
@@ -236,7 +240,7 @@ namespace rascal {
      */
     // TODO: change add atom from AtomRef_t to size_t, because all
     // access is with atom index?!
-    inline void add_atom(typename ManagerImplementation::AtomRef_t atom) {
+    inline void add_atom(const typename ManagerImplementation::AtomRef_t & atom) {
       // static_assert(Level < traits::MaxLevel,
       // "you can only add neighbours to the n-th degree defined by "
       // "MaxLevel of the underlying manager");
@@ -265,8 +269,8 @@ namespace rascal {
     }
 
     template <size_t Level>
-    inline void add_atom(typename ManagerImplementation::template
-                         ClusterRef<Level> cluster) {
+    inline void add_atom(const typename ManagerImplementation::template
+                         ClusterRef<Level> & cluster) {
       std::cout << "add_atom (cluster) "
 		<< cluster.back()
 		<< " Level " << Level
@@ -557,6 +561,18 @@ namespace rascal {
 
   }
 
+  /* ---------------------------------------------------------------------- */
+  template<class ManagerImplementation>
+  template<size_t Level>
+  inline size_t AdaptorMaxLevel<ManagerImplementation>::
+  get_offset_impl(const std::array<size_t, Level> & counters) const {
+    // static_assert(Level == traits::MaxLevel,
+    // 		  "This class cas only handles MaxLevel");
+    auto i{counters.front()};
+    auto j{counters.back()};
+    auto main_offset{this->offsets[i]};
+    return main_offset + j;
+  }
 }  // rascal
 
 #endif /* ADAPTOR_MAXLEVEL_H */

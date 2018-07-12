@@ -37,6 +37,7 @@
 #include <array>
 #include <type_traits>
 #include <utility>
+#include <limits>
 
 namespace rascal {
 
@@ -60,56 +61,56 @@ namespace rascal {
 
   namespace internal {
     /**
-     * Helper function to calculate cluster_indeces by depth.
+     * Helper function to calculate cluster_indices by depth.
      */
-    template<typename Manager, size_t MaxLevel, typename sequence>
+    template<typename Manager, typename sequence>
     struct ClusterIndexPropertyComputer {};
-
 
     template<typename Manager, size_t Level, typename sequence, typename Tup>
     struct ClusterIndexPropertyComputer_Helper {};
 
-    // Entry case
-    template<typename Manager, size_t Level, size_t... DepthsHead, int DepthsTail>
+    template<typename Manager, size_t Level, size_t DepthsHead,
+	     size_t... DepthsTail, typename... TupComp>
     struct ClusterIndexPropertyComputer_Helper<Manager,
 					       Level,
 					       std::index_sequence
-					       <DepthsHead..., DepthsTail>,
-					       std::tuple<>> {
-      using Property_t = Property<Manager, size_t, Level, DepthsTail, 1>;
-      using type = typename ClusterIndexPropertyComputer_Helper
-	<Manager, Level-1, std::index_sequence<DepthsHead...>,
-	 std::tuple<Property_t>>::type;
-    };
-
-    template<typename Manager, size_t Level, size_t... DepthsHead, int DepthsTail, typename... TupComp>
-    struct ClusterIndexPropertyComputer_Helper<Manager,
-					       Level,
-					       std::index_sequence
-					       <DepthsHead..., DepthsTail>,
+					       <DepthsHead, DepthsTail...>,
 					       std::tuple<TupComp...>> {
-      using Property_t = Property<Manager, size_t, Level, DepthsTail, 1>;
+      using Property_t = Property<Manager, size_t, Level, DepthsHead+1, 1>;
       using type = typename ClusterIndexPropertyComputer_Helper
-	<Manager, Level-1, std::index_sequence<DepthsHead...>,
-	 std::tuple<Property_t, TupComp...>>::type;
+	<Manager, Level+1, std::index_sequence<DepthsTail...>,
+	 std::tuple<TupComp..., Property_t>>::type;
     };
 
     // Recursion end
-    template<typename Manager, size_t Level, int DepthsTail, typename... TupComp>
-    struct ClusterIndexPropertyComputer_Helper<Manager, Level, std::index_sequence<DepthsTail>, std::tuple<TupComp...>> {
-      static_assert(Level == 1, "Level error in building cluster_indices.");
-      using Property_t = Property<Manager, size_t, Level, DepthsTail, 1>;
-      using type = std::tuple<Property_t, TupComp...>;
+    template<typename Manager, size_t Level, size_t DepthsHead,
+	     typename... TupComp>
+    struct ClusterIndexPropertyComputer_Helper<Manager,
+					       Level,
+					       std::index_sequence<DepthsHead>,
+					       std::tuple<TupComp...>> {
+      using Property_t = Property<Manager, size_t, Level, DepthsHead+1, 1>;
+      using type = std::tuple<TupComp..., Property_t>;
     };
 
-    template<typename Manager, size_t MaxLevel, size_t... Depths>
-    struct ClusterIndexPropertyComputer<Manager, MaxLevel, std::index_sequence<Depths...>> {
-      using type = typename ClusterIndexPropertyComputer_Helper<Manager, MaxLevel, std::index_sequence<Depths...>, std::tuple<>>::type;
+    template<typename Manager, size_t... Depths>
+    struct ClusterIndexPropertyComputer<Manager, std::index_sequence<Depths...>> {
+      using type = typename ClusterIndexPropertyComputer_Helper<Manager,
+								1,
+								std::index_sequence
+								<Depths...>,
+								std::tuple<>>::type;
     };
 
+    template<typename Tup, typename Manager>
+    struct ClusterIndexConstructor {};
 
-
-
+    template<typename... PropertyTypes, typename Manager>
+    struct ClusterIndexConstructor<std::tuple<PropertyTypes...>, Manager> {
+      static inline decltype(auto) make(Manager & manager) {
+	return std::tuple<PropertyTypes...>(PropertyTypes(manager)...);
+      }
+    };
   }  // internal
 
   /**
@@ -131,10 +132,13 @@ namespace rascal {
     using Vector_t = Eigen::Matrix<double, traits::Dim, 1>;
     using Vector_ref = Eigen::Map<Vector_t>;
     using ClusterIndex_t = typename internal::ClusterIndexPropertyComputer
-      <NeighbourhoodManagerBase, traits::MaxLevel, typename traits::DepthByDimension>;
+      <NeighbourhoodManagerBase, typename traits::DepthByDimension>::type;
+    using ClusterConstructor_t = typename internal::ClusterIndexConstructor
+      <ClusterIndex_t, NeighbourhoodManagerBase>;
 
     //! Default constructor
-    NeighbourhoodManagerBase() = default;
+    NeighbourhoodManagerBase() :
+      cluster_indices(ClusterConstructor_t::make(*this)) {}
 
     //! Copy constructor
     NeighbourhoodManagerBase(const NeighbourhoodManagerBase & other) = delete;
@@ -177,9 +181,11 @@ namespace rascal {
     template <size_t Level>
     class ClusterRef;
 
-    inline Iterator_t begin() {return Iterator_t(*this, 0);}
-    inline Iterator_t end() {return Iterator_t(*this,
-                                               this->implementation().size());}
+    inline Iterator_t begin() {return Iterator_t(*this, 0, 0);}
+    inline Iterator_t end() {
+      return Iterator_t(*this,
+			this->implementation().size(),
+			std::numeric_limits<size_t>::max());}
     inline size_t size() const {return this->implementation().get_size();}
 
     inline size_t nb_clusters(size_t cluster_size) const {
@@ -249,28 +255,32 @@ namespace rascal {
 
     // TODO: get property index - dependent on Depth (e.g., by means of sorting)
     // not necessary to specialize, can be done in _base
+    // USE
     template <size_t Level, size_t CallerDepth>
     inline size_t get_offset(const ClusterRefBase<Level,
 			     CallerDepth> & cluster) const {
-      constexpr static auto ActiveDepth{
-        compute_cluster_depth<Level>(typename traits::DepthByDimension{})};
-      static_assert(CallerDepth>=ActiveDepth,
-                    "Calling from an inexisting depth");
-      return cluster.get_cluster_index(ActiveDepth);
-      //      return this->implementation().get_offset_impl(cluster);
+      return cluster.get_cluster_index(this->cluster_depth<Level>());
     }
 
-    // inline size_t * cluster_indices
-    template <size_t Depth>
-    inline Eigen::Map<Eigen::Array<size_t, Depth+1, 1>> get_cluster_indices() {
+    // BUILD
+    template<size_t Level>
+    inline size_t get_offset(const std::array<size_t, Level> & counters) const {
+      return this->implementation().get_offset_impl(counters);
+    }
+
+    inline std::array<size_t, 1> get_counters() const {
+      return std::array<size_t, 1>{};
+    }
+
+    inline ClusterIndex_t & get_cluster_indices() {
+      return this->cluster_indices;
     }
 
     /**
      * Tuple which contains MaxLevel number of cluster_index lists for
      * reference with increasing depth.
      */
-
-    ClusterIndex_t cluster_indices{};
+    ClusterIndex_t cluster_indices;
 
     // template <size_t L>
     // inline int get_cluster(const ClusterRefBase<L> & cluster) const {
@@ -387,16 +397,20 @@ namespace rascal {
   template <class ManagerImplementation>
   template <size_t Level>
   class NeighbourhoodManagerBase<ManagerImplementation>::ClusterRef :
-    public ClusterRefBase<Level, ManagerImplementation::template cluster_depth<Level>()>
+    public ClusterRefBase<Level,
+			  ManagerImplementation::template cluster_depth<Level>()>
   {
   public:
     using Manager_t = NeighbourhoodManagerBase<ManagerImplementation>;
-    using Parent = ClusterRefBase<Level, ManagerImplementation::template cluster_depth<Level>()>;
+    using Parent =
+      ClusterRefBase<Level, ManagerImplementation::template cluster_depth<Level>()>;
     using AtomRef_t = typename Manager_t::AtomRef;
     using Iterator_t = typename Manager_t::template iterator<Level>;
     using Atoms_t = std::array<AtomRef_t, Level>;
     using iterator = typename Manager_t::template iterator<Level+1>;
     friend iterator;
+
+    using IndexArray = typename Parent::IndexArray;
 
     static_assert(Level <= traits::MaxLevel,
                   "Level > MaxLevel, impossible iterator");
@@ -405,15 +419,21 @@ namespace rascal {
     ClusterRef() = delete;
 
     //! Constructor from an iterator
-    ClusterRef(Iterator_t & it):
-      Parent{it.get_atom_indices(), it.get_cluster_indices()},
-      //it{it}{}
-        // Intelligenzija: an array of cluster_indices
-        // std::array<int, Depth>
+    // ClusterRef(Iterator_t & it):
+    //   Parent{it.get_atom_indices(), property(it.get_cluster_index())},
+    //   it{it} {}
 
-      it{it}
-    {}
+    ClusterRef(Iterator_t & it,
+    	       const std::array<int, Level> & atom_indices,
+    	       const IndexArray & cluster_indices) :
+      Parent{atom_indices, cluster_indices}, it{it} {}
 
+    ClusterRef(Iterator_t & it,
+	       const std::array<int, Level> & atom_indices,
+	       const size_t & cluster_index) :
+      Parent{atom_indices,
+	Eigen::Map<const Eigen::Array<size_t, 1, 1>> (& cluster_index)},
+      it{it} {}
 
     template<size_t Depth>
     ClusterRef(std::enable_if<Level==1, ClusterRefBase<1, Depth>> & cluster,
@@ -422,7 +442,7 @@ namespace rascal {
       it{manager}{}
 
     //! Copy constructor
-    ClusterRef(const ClusterRef & other) = default;
+    ClusterRef(const ClusterRef & other) = delete;
 
     //! Move constructor
     ClusterRef(ClusterRef && other) = default;
@@ -475,8 +495,16 @@ namespace rascal {
       return this->it.get_manager();
     }
 
-    inline iterator begin() {return iterator(*this, 0);}
-    inline iterator end() {return iterator(*this, this->size());}
+    inline iterator begin() {
+	std::array<size_t, Level> counters{this->it.get_counters()};
+
+	auto offset = this->get_manager().get_offset(counters);
+
+	return iterator(*this, 0, offset);
+    }
+    inline iterator end() {
+      return iterator(*this, this->size(), std::numeric_limits<size_t>::max());
+    }
     inline size_t size() {return this->get_manager().cluster_size(*this);}
     size_t get_index() const {
       return this->it.index;
@@ -487,6 +515,9 @@ namespace rascal {
     }
 
   protected:
+    inline std::array<size_t, 1> get_counters() const {
+      return this->it.get_counters();
+    }
     //Atoms_t atoms;
     // TODO no atom refs any more, they are in cluster_ref_base now?!
     Iterator_t & it;
@@ -549,8 +580,13 @@ namespace rascal {
     }
 
     //! dereference
+    //! calculate cluster indices
     inline value_type operator * () {
-      return ClusterRef_t(*this);
+      auto & cluster_indices_properties =
+	std::get<Level-1>(this->get_manager().get_cluster_indices());
+      auto cluster_indices =
+	cluster_indices_properties[this->get_cluster_index() + this->index];
+      return ClusterRef_t(*this, this->get_atom_indices(), cluster_indices);
     }
 
     //! equality
@@ -565,8 +601,8 @@ namespace rascal {
 
   protected:
     //! constructor with container ref and starting point
-    iterator(Container_t & cont, size_t start)
-      :container{cont}, index{start} {}
+    iterator(Container_t & cont, size_t start, size_t offset)
+      :container{cont}, index{start}, offset{offset} {}
 
     // TODO: get_atom_indeces does not work?!?
     std::array<int, Level> get_atom_indices() {
@@ -575,22 +611,9 @@ namespace rascal {
          this->get_manager().cluster_neighbour(container, this->index));
     }
 
-    // TODO: something like this for array size
-    // this->get_manager().compute_cluster_depth<Level>(typename traits::DepthByDimenions{})+1
-    Eigen::Map<
-      Eigen::Array<size_t,
-                   // this->container.get_manager().cluster_depth<Level>(traits::DepthByDimension{})+1,
-                   // compute_cluster_depth<Level>(typename traits::DepthByDimension{})+1,
-                   cluster_depth<Level>()+1 ,//<Level>(traits::DepthByDimension{})+1,
-                // ActiveDepth+1,
-               // should be doing something like this: DEPTH+1,
-                   1>> get_cluster_indices() {
-      // TODO: global index from offset?
-      // needs its own global index
-      // this array need to be filled with this->index upon iteration
-      return Eigen::Map<
-        Eigen::Array<size_t,compute_cluster_depth<Level>
-                     (typename traits::DepthByDimension{})+1, 1>>(nullptr);
+    // TODO: MYINDEX????
+    size_t get_cluster_index() const {
+      return this->index + this->offset;
     }
 
     inline Manager_t & get_manager() {return this->container.get_manager();}
@@ -598,10 +621,23 @@ namespace rascal {
       return this->container.get_manager();
     }
 
+    inline std::array<size_t, Level> get_counters() {
+      std::array<size_t, Level> counters;
+      counters[Level-1] = this->index;
+      if (Level == 1) {
+	return counters;
+      } else {
+	auto parental_counters = this->container.get_counters();
+	for (int i{0}; i < Level-1; i++) {
+	  counters[i] = parental_counters[i];
+	}
+	return counters;
+      }
+    }
+
     Container_t & container;
-    size_t index;
-    // TODO: starting_points initialized by iteration?
-    std::array<size_t, traits::MaxLevel-Level> starting_points{};
+    size_t index; // + offset from earlier pairs.
+    const size_t offset;
   private:
   };
 
