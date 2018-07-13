@@ -96,6 +96,7 @@ namespace rascal {
     for (size_t i{0} ; i<this->natoms-1 ; ++i) {
       this->offsets.emplace_back(this->offsets[i] + this->numneigh[i]);
     }
+
   }
 
   /* ---------------------------------------------------------------------- */

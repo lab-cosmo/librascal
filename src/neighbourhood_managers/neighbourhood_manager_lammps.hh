@@ -73,10 +73,12 @@ namespace rascal {
     virtual ~NeighbourhoodManagerLammps() = default;
 
     //! Copy assignment operator
-    NeighbourhoodManagerLammps & operator=(const NeighbourhoodManagerLammps & other) = delete;
+    NeighbourhoodManagerLammps
+    & operator=(const NeighbourhoodManagerLammps & other) = delete;
 
     //! Move assignment operator
-    NeighbourhoodManagerLammps & operator=(NeighbourhoodManagerLammps && other) = default;
+    NeighbourhoodManagerLammps
+    & operator=(NeighbourhoodManagerLammps && other) = default;
 
     /**
      * resetting is required every time the list changes. Here, this

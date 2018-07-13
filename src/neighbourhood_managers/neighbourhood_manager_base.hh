@@ -150,10 +150,12 @@ namespace rascal {
     virtual ~NeighbourhoodManagerBase() = default;
 
     //! Copy assignment operator
-    NeighbourhoodManagerBase & operator=(const NeighbourhoodManagerBase & other) = delete;
+    NeighbourhoodManagerBase
+    & operator=(const NeighbourhoodManagerBase & other) = delete;
 
     //! Move assignment operator
-    NeighbourhoodManagerBase & operator=(NeighbourhoodManagerBase && other)  = default;
+    NeighbourhoodManagerBase
+    & operator=(NeighbourhoodManagerBase && other)  = default;
 
     // required for the construction of vectors, etc
     constexpr static int dim() {return traits::Dim;}
@@ -392,8 +394,8 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-     This is the object we have when iterating over the manager
-  */
+   *  This is the object we have when iterating over the manager
+   */
   template <class ManagerImplementation>
   template <size_t Level>
   class NeighbourhoodManagerBase<ManagerImplementation>::ClusterRef :
@@ -410,7 +412,8 @@ namespace rascal {
     using iterator = typename Manager_t::template iterator<Level+1>;
     friend iterator;
 
-    using IndexArray = typename Parent::IndexArray;
+    using IndexConstArray_t = typename Parent::IndexConstArray;
+    using IndexArray_t = typename Parent::IndexArray;
 
     static_assert(Level <= traits::MaxLevel,
                   "Level > MaxLevel, impossible iterator");
@@ -425,15 +428,18 @@ namespace rascal {
 
     ClusterRef(Iterator_t & it,
                const std::array<int, Level> & atom_indices,
-               const IndexArray & cluster_indices) :
+               const IndexConstArray_t & cluster_indices) :
       Parent{atom_indices, cluster_indices}, it{it} {}
 
     ClusterRef(Iterator_t & it,
                const std::array<int, Level> & atom_indices,
+               IndexArray_t & cluster_indices) :
+      Parent{atom_indices, IndexConstArray_t(cluster_indices.data())}, it{it} {}
+
+    ClusterRef(Iterator_t & it,
+               const std::array<int, Level> & atom_indices,
                const size_t & cluster_index) :
-      Parent{atom_indices,
-        Eigen::Map<const Eigen::Array<size_t, 1, 1>> (& cluster_index)},
-      it{it} {}
+      Parent(atom_indices, IndexConstArray_t (& cluster_index)), it{it} {}
 
     template<size_t Depth>
     ClusterRef(std::enable_if<Level==1, ClusterRefBase<1, Depth>> & cluster,
@@ -497,9 +503,7 @@ namespace rascal {
 
     inline iterator begin() {
       std::array<size_t, Level> counters{this->it.get_counters()};
-
       auto offset = this->get_manager().get_offset(counters);
-
       return iterator(*this, 0, offset);
     }
     inline iterator end() {
@@ -612,7 +616,7 @@ namespace rascal {
     }
 
     // TODO: MYINDEX????
-    size_t get_cluster_index() const {
+    inline size_t get_cluster_index() const {
       return this->index + this->offset;
     }
 

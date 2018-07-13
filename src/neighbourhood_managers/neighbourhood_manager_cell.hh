@@ -48,7 +48,7 @@ namespace rascal {
   //! forward declaration for traits
   class NeighbourhoodManagerCell;
 
-  //! traits specialisation for Lammps manager
+  //! traits specialisation for Cell manager
   template <>
   struct NeighbourhoodManager_traits<NeighbourhoodManagerCell> {
     constexpr static int Dim{3};
@@ -58,7 +58,8 @@ namespace rascal {
     constexpr static bool HasDistances{false};
     using DepthByDimension = std::index_sequence<0, 0>;
   };
-  class NeighbourhoodManagerCell: public NeighbourhoodManagerBase<NeighbourhoodManagerCell>
+  class NeighbourhoodManagerCell:
+    public NeighbourhoodManagerBase<NeighbourhoodManagerCell>
   {
   public:
     using traits = NeighbourhoodManager_traits<NeighbourhoodManagerCell>;
@@ -87,10 +88,12 @@ namespace rascal {
     virtual ~NeighbourhoodManagerCell() = default;
 
     //! Copy assignment operator
-    NeighbourhoodManagerCell& operator=(const NeighbourhoodManagerCell &other) = delete;
+    NeighbourhoodManagerCell
+    & operator=(const NeighbourhoodManagerCell &other) = delete;
 
     //! Move assignment operator
-    NeighbourhoodManagerCell& operator=(NeighbourhoodManagerCell &&other) = default;
+    NeighbourhoodManagerCell
+    & operator=(NeighbourhoodManagerCell &&other) = default;
 
     class Box;
 
@@ -120,7 +123,6 @@ namespace rascal {
       static_assert(Level <= traits::MaxLevel,
                     "this implementation should only work up to MaxLevel.");
 
-      // TODO: why is there a j_linear_id and a j_atom_id, which is the same?
       auto & j_linear_id{cluster.back()};
       auto & i_atom_id{cluster.front()}; // center_atom index
       auto & i_bin_id{this->part2bin[i_atom_id]};
