@@ -33,6 +33,8 @@
 
 #include <Eigen/Dense>
 
+#include <iostream>
+
 namespace rascal {
 
   /**
@@ -203,7 +205,8 @@ namespace rascal {
     const int & front() const{return this->atom_indices.front();}
     const int & back() const{return this->atom_indices.back();}
 
-    inline size_t get_cluster_index(size_t depth) const {
+    inline size_t get_cluster_index(const size_t depth) const {
+      std::cout << "base, get cl idx depth: " << depth << std::endl;
       return this->cluster_indices(depth);
     }
 
@@ -217,7 +220,7 @@ namespace rascal {
      * cluster indices by depth level, highest depth, means last
      * adaptor, and mean last entry (.back())
      */
-    // Eigen::Map
+    // Eigen::Map<const Eigen::Matrix...
     IndexConstArray cluster_indices;
 
   private:

@@ -261,6 +261,9 @@ namespace rascal {
     template <size_t Level, size_t CallerDepth>
     inline size_t get_offset(const ClusterRefBase<Level,
                              CallerDepth> & cluster) const {
+      auto depth = this->cluster_depth<Level>();
+      std::cout << "cluster_depth/Level/CallerDepth "
+                << depth << "/" << Level << "/" << CallerDepth << std::endl;
       return cluster.get_cluster_index(this->cluster_depth<Level>());
     }
 
@@ -282,6 +285,7 @@ namespace rascal {
      * Tuple which contains MaxLevel number of cluster_index lists for
      * reference with increasing depth.
      */
+    // TODO: How does this get filled?
     ClusterIndex_t cluster_indices;
 
     // template <size_t L>
@@ -522,8 +526,6 @@ namespace rascal {
     inline std::array<size_t, 1> get_counters() const {
       return this->it.get_counters();
     }
-    //Atoms_t atoms;
-    // TODO no atom refs any more, they are in cluster_ref_base now?!
     Iterator_t & it;
   private:
   };
@@ -577,6 +579,7 @@ namespace rascal {
       ++this->index;
       return *this;
     }
+
     //! pre-decrement
     inline iterator & operator -- () {
       --this->index;
