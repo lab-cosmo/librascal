@@ -73,9 +73,9 @@ namespace rascal {
     //! Default constructor
     NeighbourhoodManagerCell()
       : particles{}, centers{}, positions{}, shifted_position{}, lattice{},
-	cell{}, pbc{}, part2bin{}, boxes{}, number_of_neighbours{0},
-	neighbour_bin_id{}, number_of_neighbours_stride{},
-	neighbour_atom_index{}, particle_types{} {}
+        cell{}, pbc{}, part2bin{}, boxes{}, number_of_neighbours{0},
+        neighbour_bin_id{}, number_of_neighbours_stride{},
+        neighbour_atom_index{}, particle_types{} {}
 
     //! Copy constructor
     NeighbourhoodManagerCell(const NeighbourhoodManagerCell &other) = delete;
@@ -144,8 +144,8 @@ namespace rascal {
     // return the index-th neighbour of cluster
     template<size_t Level, size_t Depth>
     inline int get_cluster_neighbour(const ClusterRefBase<Level, Depth>
-				     & cluster,
-				     size_t index) const {
+                                     & cluster,
+                                     size_t index) const {
       static_assert(Level <= traits::MaxLevel,
                     "this implementation only handles atoms and pairs");
       auto && i_atom_id{cluster.back()};
@@ -157,7 +157,7 @@ namespace rascal {
 
     // return the atom_index of the index-th atom in manager
     inline int get_cluster_neighbour(const Parent & /*cluster */ ,
-				     size_t index) const {
+                                     size_t index) const {
       return this->centers[index].get_index();
     }
 
@@ -175,7 +175,7 @@ namespace rascal {
     // return the number of neighbours of a given atom
     template<size_t Level, size_t Depth>
     inline size_t get_cluster_size(const ClusterRefBase<Level, Depth>
-				   & cluster) const {
+                                   & cluster) const {
       static_assert(Level <= traits::MaxLevel,
                     "this implementation only handles atoms and pairs");
       auto && i_atom_id{cluster.back()};
@@ -186,7 +186,7 @@ namespace rascal {
 
     template<size_t Level>
     inline size_t get_offset_impl(const std::array<size_t, Level>
-				  & counters) const;
+                                  & counters) const;
 
     size_t get_nb_clusters(size_t cluster_size) const;
 
@@ -292,7 +292,7 @@ namespace rascal {
   inline size_t NeighbourhoodManagerCell::
   get_offset_impl(const std::array<size_t, Level> & counters) const {
     static_assert(Level <= 2,
-		  "This class cas only handle single atoms and pairs");
+                  "This class cas only handle single atoms and pairs");
     if (Level == 1) {
       return counters.front();
     } else {

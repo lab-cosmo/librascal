@@ -127,8 +127,8 @@ namespace rascal {
     // return the index-th neighbour of cluster
     template<size_t Level, size_t Depth>
     inline int get_cluster_neighbour(const ClusterRefBase<Level, Depth>
-					& cluster,
-					size_t index) const {
+                                     & cluster,
+                                     size_t index) const {
       static_assert(Level <= traits::MaxLevel,
                     "this implementation only handles atoms and pairs");
       auto && i_atom_id{cluster.back()};
@@ -140,7 +140,7 @@ namespace rascal {
 
     // return the atom_index of the index-th atom in manager
     inline int get_cluster_neighbour(const Parent & /*cluster */ ,
-				     size_t index) const {
+                                     size_t index) const {
       return this->centers[index].get_index();
     }
 
@@ -166,7 +166,7 @@ namespace rascal {
 
     template<size_t Level>
     inline size_t get_offset_impl(const std::array<size_t, Level>
-				  & counters) const;
+                                  & counters) const;
 
     void update(const Eigen::Ref<const Eigen::MatrixXd> positions,const Eigen::Ref<const VecXi>  particule_types,
                 const Eigen::Ref<const VecXi> center_ids,
@@ -262,10 +262,10 @@ namespace rascal {
   template<size_t Level>
   inline size_t NeighbourhoodManagerMinimal::
   get_offset_impl(const std::array<size_t, Level>
-		  & counters) const {
+                  & counters) const {
 
     static_assert(Level <= 2,
-		  "This class cas only handle single atoms and pairs");
+                  "This class cas only handle single atoms and pairs");
     if (Level == 1) {
       return counters.front();
     } else {

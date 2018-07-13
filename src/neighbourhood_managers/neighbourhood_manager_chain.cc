@@ -196,7 +196,7 @@ namespace rascal {
   NeighbourhoodManagerChain::
   get_box_index(Vector_ref& position,
                 std::vector<double>& rc,
-                Eigen::Matrix<double, 1, traits::Dim>offset,
+                Eigen::Matrix<double, 1, traits::Dim> offset,
                 std::vector<int> nmax) {
     std::vector<int> nidx(traits::Dim);
     for(auto dim{0}; dim < traits::Dim; ++dim) {

@@ -244,6 +244,11 @@ namespace rascal {
     if (some_condition){
       NeighbourhoodManagerCell::build(positions,particle_types,center_ids,cell,pbc,cutoff_max);
     }
+    auto & atom_cluster_indices{std::get<0>(this->cluster_indices)};
+    auto & pair_cluster_indices{std::get<1>(this->cluster_indices)};
+
+    atom_cluster_indices.fill_sequence();
+    pair_cluster_indices.fill_sequence();
   }
 
   /* ---------------------------------------------------------------------- */

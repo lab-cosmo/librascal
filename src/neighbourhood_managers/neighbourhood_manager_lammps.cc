@@ -35,8 +35,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   void NeighbourhoodManagerLammps::
   update(const int &inum, const int &tot_num, int *ilist, int *numneigh,
-	 int **firstneigh, double **x, double **f, int *type,
-	 double *eatom, double **vatom) {
+         int **firstneigh, double **x, double **f, int *type,
+         double *eatom, double **vatom) {
     this->inum = inum;
     this->tot_num = tot_num;
     this->ilist = ilist;

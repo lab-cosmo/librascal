@@ -232,7 +232,7 @@ namespace rascal {
     // different position, if it is a ghost atom.
     template<size_t Level, size_t Depth>
     inline Vector_ref get_neighbour_position(const ClusterRefBase<Level, Depth>
-					     & cluster) {
+                                             & cluster) {
       static_assert(Level > 1,
                     "Only possible for Level > 1.");
       static_assert(Level <= traits::MaxLevel,
@@ -263,8 +263,8 @@ namespace rascal {
     // return the index-th neighbour of cluster
     template<size_t Level, size_t Depth>
     inline int get_cluster_neighbour(const ClusterRefBase<Level, Depth>
-				     & cluster,
-				     size_t index) const {
+                                     & cluster,
+                                     size_t index) const {
       static_assert(Level <= traits::MaxLevel,
                     "this implementation only handles atoms and pairs.");
       auto && i_atom_id{cluster.back()};
@@ -274,7 +274,7 @@ namespace rascal {
 
     // return the atom_index of the index-th atom in manager
     inline int get_cluster_neighbour(const Parent& /*cluster*/,
-					size_t index) const {
+                                     size_t index) const {
       return this->ilist[index];
     }
 
@@ -284,7 +284,7 @@ namespace rascal {
      */
     template<size_t Level>
     inline size_t get_offset_impl(const std::array<size_t, Level>
-				  & counters) const;
+                                  & counters) const;
 
     // Function for returning the number of atoms, pairs, tuples, etc.
     size_t get_nb_clusters(int cluster_size);
@@ -384,14 +384,14 @@ namespace rascal {
   inline size_t NeighbourhoodManagerChain::
   get_offset_impl(const std::array<size_t, Level> & counters) const {
     static_assert(Level <= 2,
-		  "This class cas only handles up to MaxLevel");
+                  "This class cas only handles up to MaxLevel");
     if (Level == 1) {
       return counters.front();
     } else {
-    auto i{counters.front()};
-    auto j{counters.back()};
-    auto main_offset{this->offsets[i]};
-    return main_offset + j;
+      auto i{counters.front()};
+      auto j{counters.back()};
+      auto main_offset{this->offsets[i]};
+      return main_offset + j;
     }
   }
 

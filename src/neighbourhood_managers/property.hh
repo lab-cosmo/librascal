@@ -214,7 +214,7 @@ namespace rascal {
     inline void fill_sequence() {
       this->resize();
       for (size_t i{0}; i<this->values.size(); ++i) {
-	values[i] = i;
+        values[i] = i;
       }
     }
 
