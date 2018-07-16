@@ -157,7 +157,7 @@ namespace rascal {
                   "can currently only handle arithmetic types");
   public:
     using traits = NeighbourhoodManager_traits<NeighbourhoodManager>;
-    constexpr static size_t NbDof{NbRow*NbCol};
+    constexpr static size_t NbComp{NbRow*NbCol};
 
     using Value = internal::Value<T, NbRow, NbCol>;
 
@@ -189,7 +189,7 @@ namespace rascal {
 
     //! adjust size (only increases, never frees)
     void resize() {
-      this->values.resize(this->manager.nb_clusters(Level) * NbDof);
+      this->values.resize(this->manager.nb_clusters(Level) * NbComp);
     }
 
     /**
@@ -230,14 +230,14 @@ namespace rascal {
                     "does not exist at this low a level in the "
                     "adaptor stack.");
 
-      return Value::get_ref(this->values[id.get_cluster_index(CallerDepth)*NbDof]);
+      return Value::get_ref(this->values[id.get_cluster_index(CallerDepth)*NbComp]);
     }
 
     /**
      * Accessor for property by index.
      */
     reference operator[](const size_t & index) {
-      return Value::get_ref(this->values[index*NbDof]);
+      return Value::get_ref(this->values[index*NbComp]);
     }
 
   protected:
