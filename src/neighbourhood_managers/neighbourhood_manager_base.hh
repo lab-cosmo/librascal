@@ -594,7 +594,8 @@ namespace rascal {
     inline value_type operator * () {
       auto & cluster_indices_properties =
         std::get<Level-1>(this->get_manager().get_cluster_indices());
-      using Ref_t = typename std::remove_reference_t<decltype(cluster_indices_properties)>::reference;
+      using Ref_t = typename
+        std::remove_reference_t<decltype(cluster_indices_properties)>::reference;
       Ref_t cluster_indices =
         cluster_indices_properties[this->get_cluster_index()];
       return ClusterRef_t(*this, this->get_atom_indices(), cluster_indices);

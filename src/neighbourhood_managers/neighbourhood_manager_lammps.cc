@@ -49,7 +49,7 @@ namespace rascal {
     this->vatom = vatom;
     this->offsets.reserve(inum);
     this->offsets.resize(1);
-    for (int i{0} ; i<this->inum-1 ; ++i) {
+    for (int i{0}; i<this->inum-1 ; ++i) {
       this->offsets.emplace_back(this->offsets[i] + this->numneigh[i]);
     }
     this->nb_pairs = std::accumulate(numneigh, numneigh+this->inum, 0);

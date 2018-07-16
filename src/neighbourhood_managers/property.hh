@@ -57,6 +57,9 @@ namespace rascal {
       }
     };
 
+    // TODO: const ref auf eigenbase<derived>
+    // Further push_back without reference
+
     //! specialisation for scalar properties
     template <typename T>
     struct Value<T, 1, 1> {
@@ -201,12 +204,12 @@ namespace rascal {
     }
 
     /**
-     * allows to add a value to Property during construction of the neighbourhood.
+     * allows to add a value to `Property` during construction of the
+     * neighbourhood.
      */
     inline void push_back(reference ref) {
       Value::push_in_vector(this->values, ref);
     }
-
 
     /**
      * Fill sequence for *_cluster_indices.
@@ -230,7 +233,8 @@ namespace rascal {
                     "does not exist at this low a level in the "
                     "adaptor stack.");
 
-      return Value::get_ref(this->values[id.get_cluster_index(CallerDepth)*NbComp]);
+      return
+        Value::get_ref(this->values[id.get_cluster_index(CallerDepth)*NbComp]);
     }
 
     /**

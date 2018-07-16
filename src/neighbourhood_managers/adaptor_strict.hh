@@ -29,6 +29,7 @@
 
 #include "neighbourhood_managers/neighbourhood_manager_base.hh"
 #include "neighbourhood_managers/property.hh"
+#include "rascal_utility.hh"
 
 
 #ifndef ADAPTOR_STRICT_H
@@ -58,6 +59,19 @@ namespace rascal {
       DepthIncreaser<MaxLevel,
 		     typename ManagerImplementation::traits::DepthByDimension>::type;
   };
+
+  namespace internal {
+    /**
+     * Resetting cluster_indices (all tuples), `t` is an element in a
+     * tuple cluster_indices
+     */
+    struct SetClusterIndicesZero {
+      template<typename T>
+      void operator() (T& t) {
+        t.resize_to_zero();
+      }
+    };
+  }  // internal
 
   /**
    * Adaptor that guarantees that only neighbours within the cutoff
@@ -246,11 +260,11 @@ namespace rascal {
      * store the number of j-atoms for every i-atom (nb_neigh[1]), the
      * number of k-atoms for every j-atom (nb_neigh[2]), etc
      */
-    std::array<std::vector<unsigned int>, traits::MaxLevel> nb_neigh;
+    std::array<std::vector<size_t>, traits::MaxLevel> nb_neigh;
     /**
      * store the offsets from where the nb_neigh can be counted
      */
-    std::array<std::vector<unsigned int>, traits::MaxLevel> offsets;
+    std::array<std::vector<size_t>, traits::MaxLevel> offsets;
   private:
   };
 
@@ -355,7 +369,11 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
   void AdaptorStrict<ManagerImplementation>::update() {
-    // initialise the neighbourlistl
+
+     // Reset cluster_indices for adaptor to fill with push back.
+    for_each(this->cluster_indices, internal::SetClusterIndicesZero());
+
+    // initialise the neighbourlist
     for (size_t i{0}; i < traits::MaxLevel; ++i) {
       this->atom_indices[i].clear();
       this->nb_neigh[i].resize(0);
@@ -369,15 +387,20 @@ namespace rascal {
     // initialise the distance storage
     this->distance.resize_to_zero();
 
-    // fill the list
+    // fill the list, at least pairs are mandatory
+    auto & atom_cluster_indices{std::get<0>(this->cluster_indices)};
+    auto & pair_cluster_indices{std::get<1>(this->cluster_indices)};
+
     for (auto atom: this->manager) {
       this->add_atom(atom);
+      atom_cluster_indices.push_back(atom.get_cluster_indices());
       for (auto pair: atom) {
         double distance{(atom.get_position()-
                          pair.get_position()).norm()};
         if (distance <= this->cut_off) {
           this->add_atom(pair);
           this->distance.push_back(distance);
+          pair_cluster_indices.push_back(pair.get_cluster_indices());
         }
         using HelperLoop = HelperLoop<2, 2 >= traits::MaxLevel>;
         HelperLoop::loop(pair, *this);
