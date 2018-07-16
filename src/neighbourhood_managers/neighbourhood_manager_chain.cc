@@ -87,7 +87,7 @@ namespace rascal {
     // increasing integer identifiers is built. Numbers are assigned
     // to the positions in the order in which they appear in the file.
     this->ilist.resize(this->natoms);
-    std::iota (ilist.begin(), ilist.end(), 0);
+    std::iota(ilist.begin(), ilist.end(), 0);
 
     // The next commands gather necessary information to iterate over
     // the half neighbourlist.
@@ -97,11 +97,11 @@ namespace rascal {
       this->offsets.emplace_back(this->offsets[i] + this->numneigh[i]);
     }
 
-    // auto & atom_cluster_indices{std::get<0>(this->cluster_indices)};
-    // auto & pair_cluster_indices{std::get<1>(this->cluster_indices)};
+    auto & atom_cluster_indices{std::get<0>(this->cluster_indices)};
+    auto & pair_cluster_indices{std::get<1>(this->cluster_indices)};
 
-    // atom_cluster_indices.fill_sequence();
-    // pair_cluster_indices.fill_sequence();
+    atom_cluster_indices.fill_sequence();
+    pair_cluster_indices.fill_sequence();
 
   }
 
@@ -111,7 +111,7 @@ namespace rascal {
   // <code>Level</code>. The <code>MaxLevel</code> depends on your
   // implementation or processing. Increasing the level is done with
   // an adaptor.
-  size_t NeighbourhoodManagerChain::get_nb_clusters(int cluster_size)  {
+  size_t NeighbourhoodManagerChain::get_nb_clusters(size_t cluster_size) const {
     switch (cluster_size) {
     case 1: {
       return this->natoms;

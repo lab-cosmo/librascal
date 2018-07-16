@@ -287,7 +287,7 @@ namespace rascal {
                                   & counters) const;
 
     // Function for returning the number of atoms, pairs, tuples, etc.
-    size_t get_nb_clusters(int cluster_size);
+    size_t get_nb_clusters(size_t cluster_size) const;
 
     // Function to read from a JSON file. Based on the above mentioned
     // header class

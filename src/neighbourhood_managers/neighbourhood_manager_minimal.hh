@@ -162,7 +162,7 @@ namespace rascal {
       return size;
     }
 
-    size_t get_nb_clusters(int cluster_size);
+    size_t get_nb_clusters(int cluster_size) const;
 
     template<size_t Level>
     inline size_t get_offset_impl(const std::array<size_t, Level>

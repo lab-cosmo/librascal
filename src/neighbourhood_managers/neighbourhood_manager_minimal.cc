@@ -248,7 +248,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
 
   size_t NeighbourhoodManagerMinimal::
-  get_nb_clusters(int cluster_size)  {
+  get_nb_clusters(int cluster_size) const {
     switch (cluster_size) {
     case 1: {
       return this->centers.size();
