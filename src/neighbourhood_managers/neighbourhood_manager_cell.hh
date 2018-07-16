@@ -293,17 +293,10 @@ namespace rascal {
   template<size_t Level>
   inline size_t NeighbourhoodManagerCell::
   get_offset_impl(const std::array<size_t, Level> & counters) const {
-    static_assert(Level <= 2,
-                  "This class cas only handle single atoms and pairs");
-    if (Level == 1) {
-      return counters.front();
-    } else {
-      auto icenter{counters.front()};
-      auto stride{this->number_of_neighbours_stride[icenter]};
-      auto j{counters.back()};
-      auto main_offset{stride + j};
-      return main_offset;
-    }
+    static_assert (Level == 1, "this manager can only give the offset "
+                   "(= starting index) for a pair iterator, given the i atom "
+                   "of the pair");
+    return this->number_of_neighbours_stride[counters.front()];
   }
 
   /* ---------------------------------------------------------------------- */
@@ -312,7 +305,6 @@ namespace rascal {
     return this->boxes[i_bin_id].get_neighbour_bin_shift(neigh_bin_index);
   }
 
-  //----------------------------------------------------------------------------//
 }  // rascal
 
 #endif /* NEIGHBOURHOOD_MANAGER_CELL_H */

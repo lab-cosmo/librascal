@@ -206,7 +206,6 @@ namespace rascal {
     const int & back() const{return this->atom_indices.back();}
 
     inline size_t get_cluster_index(const size_t depth) const {
-      std::cout << "base, get cl idx depth: " << depth << std::endl;
       return this->cluster_indices(depth);
     }
 
