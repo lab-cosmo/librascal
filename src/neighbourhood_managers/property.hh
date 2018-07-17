@@ -55,6 +55,21 @@ namespace rascal {
           }
         }
       }
+      template<typename Derived>
+      static void push_in_vector(std::vector<T> & vec, const Eigen::DenseBase<Derived> & ref) {
+        static_assert(Derived::RowsAtCompileTime==NbRow,
+                      "NbRow has incorrect size.");
+        static_assert(Derived::ColsAtCompileTime==NbCol,
+                      "NbCol has incorrect size.");
+
+        for (size_t j{0}; j < NbCol; ++j) {
+          for (size_t i{0}; i < NbRow; ++i) {
+            vec.push_back(ref(i,j));
+
+          }
+        }
+      }
+
     };
 
     // TODO: const ref auf eigenbase<derived>
@@ -211,6 +226,18 @@ namespace rascal {
       Value::push_in_vector(this->values, ref);
     }
 
+    template<typename Derived, bool NotScalar = (NbComp>1)>
+    inline std::enable_if_t<NotScalar>
+    push_back(const Eigen::DenseBase<Derived> & ref) {
+      static_assert(NbComp > 1, "SFINAE parameter do not set.");
+      static_assert(Derived::RowsAtCompileTime==NbRow,
+                    "NbRow has incorrect size.");
+      static_assert(Derived::ColsAtCompileTime==NbCol,
+                    "NbCol has incorrect size.");
+
+      Value::push_in_vector(this->values, ref);
+    }
+
     /**
      * Fill sequence for *_cluster_indices.
      */
@@ -226,7 +253,7 @@ namespace rascal {
      */
     template<size_t CallerDepth>
     reference operator[](const ClusterRefBase<Level, CallerDepth> & id) {
-      constexpr static auto ActiveDepth{
+      constexpr auto ActiveDepth{
         compute_cluster_depth<Level>(typename traits::DepthByDimension{})};
       static_assert(CallerDepth >= ActiveDepth,
                     "You are trying to access a property that "

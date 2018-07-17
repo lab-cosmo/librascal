@@ -213,6 +213,8 @@ namespace rascal {
       return this->cluster_indices;
     }
 
+    inline constexpr static size_t level() {return Level;}
+
   protected:
     std::array<int, Level> atom_indices;
     /**

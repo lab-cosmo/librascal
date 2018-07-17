@@ -447,8 +447,9 @@ namespace rascal {
 
     }
 
-    template<size_t Depth>
-    ClusterRef(std::enable_if<Level==1, ClusterRefBase<1, Depth>> & cluster,
+    // Reference to j neighbours of a given atom i // TODO: description
+    template<size_t Depth, bool FirstLevel=(Level==1)>
+    ClusterRef(std::enable_if_t<FirstLevel, ClusterRefBase<1, Depth>> & cluster,
                Manager_t& manager):
       Parent{cluster.get_indices(), cluster.get_cluster_indices()},
       it{manager}{}

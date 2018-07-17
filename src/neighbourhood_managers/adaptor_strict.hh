@@ -54,10 +54,13 @@ namespace rascal {
       ManagerImplementation::traits::HasDirectionVectors};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
     constexpr static size_t MaxLevel{ManagerImplementation::traits::MaxLevel};
+    // TODO: Future optimisation: do not increase depth for atoms
+    // (they are all kept)
     using DepthByDimension =
       typename
       DepthIncreaser<MaxLevel,
-		     typename ManagerImplementation::traits::DepthByDimension>::type;
+		     typename
+                     ManagerImplementation::traits::DepthByDimension>::type;
   };
 
   namespace internal {
@@ -83,11 +86,13 @@ namespace rascal {
   NeighbourhoodManagerBase<AdaptorStrict<ManagerImplementation>>
   {
   public:
-    using Parent = NeighbourhoodManagerBase<AdaptorStrict<ManagerImplementation>>;
+    using Parent =
+      NeighbourhoodManagerBase<AdaptorStrict<ManagerImplementation>>;
     using traits = NeighbourhoodManager_traits<AdaptorStrict>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     template <size_t Level>
-    using ClusterRef_t = typename ManagerImplementation::template ClusterRef<Level>;
+    using ClusterRef_t =
+      typename ManagerImplementation::template ClusterRef<Level>;
     using PairRef_t = ClusterRef_t<2>;
 
     static_assert(traits::MaxLevel > 1,
@@ -97,7 +102,8 @@ namespace rascal {
     AdaptorStrict() = delete;
 
     /**
-     * construct a strict neighbourhood list from a given manager and cut-off radius
+     * construct a strict neighbourhood list from a given manager and
+     * cut-off radius
      */
     AdaptorStrict(ManagerImplementation& manager, double cut_off);
 
@@ -268,11 +274,7 @@ namespace rascal {
   private:
   };
 
-
-
-
   namespace internal {
-
     /* ---------------------------------------------------------------------- */
     template<bool IsStrict, class ManagerImplementation>
     struct CutOffChecker {
@@ -300,8 +302,6 @@ namespace rascal {
       return CutOffChecker<IsStrict, ManagerImplementation>::
         check(manager, cut_off);
     }
-
-
   }  // internal
 
   //----------------------------------------------------------------------------//
@@ -317,7 +317,8 @@ namespace rascal {
 
   {
     if (not internal::check_cut_off(manager, cut_off)) {
-      throw std::runtime_error("underlying manager already has a smaller cut_off");
+      throw std::runtime_error("underlying manager already has a smaller "
+                               "cut off");
     }
   }
 
@@ -342,8 +343,26 @@ namespace rascal {
                                      (Level+1 == MaxLevel)>;
 
     static void loop(ClusterRef_t & cluster, AdaptorStrict& manager) {
+      auto & next_cluster_indices{std::get<Level>(manager->cluster_indices)};
+      size_t cluster_counter{0};
+
       for (auto next_cluster: cluster) {
+        // add atom
         manager.add_atom(next_cluster);
+
+        // get new depth and add index at this depth
+        constexpr auto NextClusterDepth{
+          compute_cluster_depth<next_cluster.level()>
+            (typename traits::DepthByDimension{})
+            };
+
+        Eigen::Matrix<size_t, NextClusterDepth+1, 1> indices_cluster;
+        indices_cluster.template head<NextClusterDepth>()
+          = next_cluster.get_cluster_indices();
+        indices_cluster(NextClusterDepth) = cluster_counter;
+        next_cluster_indices.push_back(indices_cluster);
+        cluster_counter++;
+
         NextLevelLoop::loop(next_cluster, manager);
       }
     }
@@ -364,7 +383,6 @@ namespace rascal {
       // do nothing
     }
   };
-
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
@@ -387,22 +405,49 @@ namespace rascal {
     // initialise the distance storage
     this->distance.resize_to_zero();
 
-    // fill the list, at least pairs are mandatory
+    // fill the list, at least pairs are mandatory for this to work
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices)};
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices)};
 
+    size_t pair_counter{0};
     for (auto atom: this->manager) {
       this->add_atom(atom);
-      atom_cluster_indices.push_back(atom.get_cluster_indices());
+      /**
+       * Add new depth layer for atoms (see DepthByDimension for
+       * possible optimisation).
+       */
+
+      constexpr auto AtomDepth{
+        compute_cluster_depth<atom.level()>
+          (typename traits::DepthByDimension{})
+          };
+
+      Eigen::Matrix<size_t, AtomDepth+1, 1> indices;
+      indices.template head<AtomDepth>() = atom.get_cluster_indices();
+      indices(AtomDepth) = indices(AtomDepth-1);
+      atom_cluster_indices.push_back(indices);
+
       for (auto pair: atom) {
-        double distance{(atom.get_position()-
-                         pair.get_position()).norm()};
+        constexpr auto PairDepth{
+          compute_cluster_depth<pair.level()>
+            (typename traits::DepthByDimension{})};
+
+        double distance{(atom.get_position()
+                         - pair.get_position()).norm()};
+
         if (distance <= this->cut_off) {
           this->add_atom(pair);
           this->distance.push_back(distance);
-          pair_cluster_indices.push_back(pair.get_cluster_indices());
+
+          Eigen::Matrix<size_t, PairDepth+1, 1> indices_pair;
+          indices_pair.template head<PairDepth>() = pair.get_cluster_indices();
+          indices_pair(PairDepth) = pair_counter;
+          pair_cluster_indices.push_back(indices_pair);
+
+          pair_counter++;
         }
-        using HelperLoop = HelperLoop<2, 2 >= traits::MaxLevel>;
+        using HelperLoop = HelperLoop<pair.level(),
+                                      pair.level() >= traits::MaxLevel>;
         HelperLoop::loop(pair, *this);
       }
     }
