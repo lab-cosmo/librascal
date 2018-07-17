@@ -36,7 +36,7 @@
 #define SPECIES_MANAGER_H
 
 #include "neighbourhood_managers/neighbourhood_manager_base.hh"
-#include "descriptors/basis_function_manager.hh"
+#include "representations/basis_function_manager.hh"
 
 namespace rascal {
 

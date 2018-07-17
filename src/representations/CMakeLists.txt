@@ -5,7 +5,7 @@
 #
 # @date   04 May 2018
 #
-# @brief  Configuration for compiling all descriptors
+# @brief  Configuration for compiling all representations
 #
 # @section LICENSE
 #
@@ -28,9 +28,7 @@
 #
 
 
-set(descriptor_SRC
+set(representation_SRC
   )
 
-target_sources(rascal PRIVATE ${descriptor_SRC})
-
-
+target_sources(rascal PRIVATE ${representation_SRC})

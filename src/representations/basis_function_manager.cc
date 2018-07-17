@@ -26,7 +26,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "descriptors/basis_function_manager.cc"
+#include "representations/basis_function_manager.cc"
 
 #include <cmath>
 

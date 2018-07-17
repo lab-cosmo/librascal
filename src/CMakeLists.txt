@@ -38,4 +38,4 @@ add_library(rascal ${rascal_SRC})
 target_link_libraries(rascal PUBLIC Eigen3::Eigen)
 
 add_subdirectory(neighbourhood_managers)
-add_subdirectory(descriptors)
+add_subdirectory(representations)
