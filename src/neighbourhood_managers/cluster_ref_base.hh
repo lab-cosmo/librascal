@@ -36,13 +36,10 @@
 #include <iostream>
 
 namespace rascal {
-
   /**
    * Depth calculations and manipulations
    */
-  /**
-   * Computes depth by cluster dimension for new adaptor layer
-   */
+  // Computes depth by cluster dimension for new adaptor layer
   template <size_t MaxLevel, class T>
   struct DepthIncreaser{};
 
@@ -110,7 +107,6 @@ namespace rascal {
       using type = std::index_sequence<seq...>;
     };
 
-
     template <size_t Level, size_t head, size_t... tail, size_t... seq>
     struct HeadExtractor<Level, std::index_sequence<seq...>, head, tail...> {
       using Extractor_t = std::conditional_t
@@ -121,8 +117,6 @@ namespace rascal {
         HeadExtractorTail<seq..., head>>;
       using type = typename Extractor_t::type;
     };
-
-
   }  // internal
 
   template <size_t Level, size_t... Ints>
@@ -143,7 +137,6 @@ namespace rascal {
     return arr [index];
   }
 
-
   /**
    * Static access to depth by cluster dimension (e.g., for defining
    * template parameter `NbRow` for a property
@@ -152,7 +145,6 @@ namespace rascal {
   constexpr size_t get(std::index_sequence<Ints...>) {
     return get<index>(std::make_tuple(Ints...));
   }
-
 
   namespace internal {
     template <size_t Depth, size_t HiDepth,typename T, size_t... Ints>
@@ -173,8 +165,14 @@ namespace rascal {
   class ClusterRefBase
   {
   public:
+    /**
+     * Index array types need both a constant and a non-constant version. The
+     * non-const version can and needs to be cast into a const version in
+     * argument.
+     */
     using IndexConstArray = Eigen::Map<const Eigen::Matrix<size_t, Depth+1, 1>>;
     using IndexArray = Eigen::Map<Eigen::Matrix<size_t, Depth+1, 1>>;
+
     //! Default constructor
     ClusterRefBase() = delete;
 
@@ -184,7 +182,7 @@ namespace rascal {
       atom_indices{atom_indices}, cluster_indices(cluster_indices.data()) {}
 
     //! Copy constructor
-    ClusterRefBase(const ClusterRefBase & other) = default; //
+    ClusterRefBase(const ClusterRefBase & other) = default;
 
     //! Move constructor
     ClusterRefBase(ClusterRefBase && other) = default;
@@ -216,12 +214,16 @@ namespace rascal {
     inline constexpr static size_t level() {return Level;}
 
   protected:
+    /**
+     *  Array with unique atom indices. These can be user defined to refer to
+     *  the exact same atom, e.g. in a Monte-Carlo simulation, where atoms are
+     *  swapped.
+     */
     std::array<int, Level> atom_indices;
     /**
-     * cluster indices by depth level, highest depth, means last
+     * Cluster indices by depth level, highest depth, means last
      * adaptor, and mean last entry (.back())
      */
-    // Eigen::Map<const Eigen::Matrix...
     IndexConstArray cluster_indices;
 
   private:

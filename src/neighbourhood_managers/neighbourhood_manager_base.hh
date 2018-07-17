@@ -48,7 +48,7 @@ namespace rascal {
     enum class SortedByDistance: bool {yes = true, no = false};
     enum class MinImageConvention: bool {yes = true, no = false};
     enum class NeighbourListType {full, half};
-    //----------------------------------------------------------------------------//
+    //------------------------------------------------------------------------//
     enum class Strict:bool {yes = true, no = false}; // r_cut
 
     class Type; // type_id
@@ -94,12 +94,13 @@ namespace rascal {
     };
 
     template<typename Manager, size_t... Depths>
-    struct ClusterIndexPropertyComputer<Manager, std::index_sequence<Depths...>> {
+    struct ClusterIndexPropertyComputer<Manager,
+                                        std::index_sequence<Depths...>> {
       using type =
-        typename ClusterIndexPropertyComputer_Helper<Manager, 1,
-                                                     std::index_sequence
-                                                     <Depths...>,
-                                                     std::tuple<>>::type;
+        typename
+        ClusterIndexPropertyComputer_Helper<Manager, 1,
+                                            std::index_sequence<Depths...>,
+                                            std::tuple<>>::type;
     };
 
     template<typename Tup, typename Manager>
@@ -111,6 +112,7 @@ namespace rascal {
         return std::tuple<PropertyTypes...>(std::move(PropertyTypes(manager))...);
       }
     };
+
   }  // internal
 
   /**
@@ -252,14 +254,16 @@ namespace rascal {
       return static_cast<const ManagerImplementation&>(*this);
     }
 
-    std::array<AtomRef, 0> get_atoms() const {return std::array<AtomRef, 0>{};};
+    std::array<AtomRef, 0> get_atoms() const {
+      return std::array<AtomRef, 0>{};
+    }
 
     //! Starting array for builing container in iterator
-    std::array<int, 0> get_atom_ids() const {return std::array<int, 0>{};};
+    std::array<int, 0> get_atom_ids() const {
+      return std::array<int, 0>{};
+    }
 
-    // TODO: get property index - dependent on Depth (e.g., by means of sorting)
-    // not necessary to specialize, can be done in _base
-    // USE
+    //! Access to offsets for access of cluster-related properties
     template <size_t Level, size_t CallerDepth>
     inline size_t get_offset(const ClusterRefBase<Level,
                              CallerDepth> & cluster) const {
@@ -267,7 +271,7 @@ namespace rascal {
       return cluster.get_cluster_index(depth);
     }
 
-    // BUILD
+    //! Used for building cluster indices
     template<size_t Level>
     inline size_t get_offset(const std::array<size_t, Level> & counters) const {
       return this->implementation().get_offset_impl(counters);

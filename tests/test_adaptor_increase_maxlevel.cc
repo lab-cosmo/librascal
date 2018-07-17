@@ -41,7 +41,7 @@ namespace rascal {
     AdaptorMaxLevel<NeighbourhoodManagerChain> adaptor{manager_chain, cutoff};
     adaptor.update();
 
-    constexpr bool verbose{false};
+    constexpr bool verbose{true};
 
     if (verbose) {
       std::cout << "Increase MaxLevel" << std::endl;
