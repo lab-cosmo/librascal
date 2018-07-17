@@ -55,7 +55,7 @@ namespace rascal {
     constexpr static int Dim{ManagerImplementation::traits::Dim};
     constexpr static size_t MaxLevel{ManagerImplementation::traits::MaxLevel};
     // TODO: Future optimisation: do not increase depth for atoms
-    // (they are all kept)
+    // (they are all kept anyways, so no duplication necessary).
     using DepthByDimension =
       typename
       DepthIncreaser<MaxLevel,
@@ -65,8 +65,8 @@ namespace rascal {
 
   namespace internal {
     /**
-     * Resetting cluster_indices (all tuples), `t` is an element in a
-     * tuple cluster_indices
+     * Functor for resetting cluster_indices (all tuples), `t` is an element in
+     * a tuple cluster_indices
      */
     struct SetClusterIndicesZero {
       template<typename T>
@@ -77,9 +77,9 @@ namespace rascal {
   }  // internal
 
   /**
-   * Adaptor that guarantees that only neighbours within the cutoff
-   * are present. This interface should be implemented by all managers
-   * with the trait AdaptorTraits::Strict::yes
+   * Adaptor that guarantees that only neighbours within the cutoff are
+   * present. This interface should be implemented by all managers with the
+   * trait AdaptorTraits::Strict::yes
    */
   template <class ManagerImplementation>
   class AdaptorStrict: public

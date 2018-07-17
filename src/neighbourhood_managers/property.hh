@@ -55,25 +55,23 @@ namespace rascal {
           }
         }
       }
+
+      // User for extending cluster_indices
       template<typename Derived>
-      static void push_in_vector(std::vector<T> & vec, const Eigen::DenseBase<Derived> & ref) {
+      static void push_in_vector(std::vector<T> & vec,
+                                 const Eigen::DenseBase<Derived> & ref) {
         static_assert(Derived::RowsAtCompileTime==NbRow,
                       "NbRow has incorrect size.");
         static_assert(Derived::ColsAtCompileTime==NbCol,
                       "NbCol has incorrect size.");
-
         for (size_t j{0}; j < NbCol; ++j) {
           for (size_t i{0}; i < NbRow; ++i) {
             vec.push_back(ref(i,j));
-
           }
         }
       }
 
     };
-
-    // TODO: const ref auf eigenbase<derived>
-    // Further push_back without reference
 
     //! specialisation for scalar properties
     template <typename T>
@@ -94,31 +92,29 @@ namespace rascal {
     template<typename T, size_t NbRow, size_t NbCol>
     using Value_ref = typename Value<T, NbRow, NbCol>::reference;
 
-    template<int dim>
+    template<int Dim>
     inline void lin2mult(const Dim_t& index,
                          const Eigen::Ref<const Vec3i_t> shape,
                          Eigen::Ref< Vec3i_t> retval) {
-      //int dim{3};
-      //Vec3i_t retval;
+      // TODO: what does the factor do?
       Dim_t factor{1};
-      for (Dim_t i{0}; i < dim; ++i) {
-        retval[i] = index/factor%shape[i];
-        if (i != dim-1 ) {
+
+      for (Dim_t i{0}; i < Dim; ++i) {
+        retval[i] = index / factor%shape[i];
+        if (i != Dim-1) {
           factor *= shape[i];
         }
       }
-      //return retval;
     }
 
-    template<int dim>
+    template<int Dim>
     inline Dim_t mult2lin(const Eigen::Ref<const Vec3i_t> coord,
                           const Eigen::Ref<const Vec3i_t> shape) {
-      //int dim{3};
       Dim_t index{0};
       Dim_t factor{1};
-      for (Dim_t i = 0; i < dim; ++i) {
+      for (Dim_t i = 0; i < Dim; ++i) {
         index += coord[i]*factor;
-        if (i != dim-1 ) {
+        if (i != Dim-1 ) {
           factor *= shape[i];
         }
       }
@@ -131,16 +127,15 @@ namespace rascal {
     // division truncates towards negative infinity, and signed integer modulus
     // has the same sign the second operand.
     template<class Integral>
-    void div_mod(const Integral& x,
-                 const Integral & y,
-                 std::array<int, 2> & out){
+    void div_mod(const Integral& x, const Integral & y,
+                 std::array<int, 2> & out) {
       const Integral quot = x/y;
       const Integral rem  = x%y;
-      if (rem != 0 && (x<0) != (y<0)){
+
+      if (rem != 0 && (x<0) != (y<0)) {
         out[0] = quot-1;
         out[1] = rem+y;
-      }
-      else {
+      } else {
         out[0] = quot;
         out[1] = rem;
       }
@@ -149,9 +144,8 @@ namespace rascal {
     //! warning: works only with negative x if |x| < y
     // TODO Does not pass tests
     template<class Integral>
-    void branchless_div_mod(const Integral & x,
-                            const Integral & y,
-                            std::array<int, 2> & out){
+    void branchless_div_mod(const Integral & x, const Integral & y,
+                            std::array<int, 2> & out) {
       const Integral quot = (x-y) / y;
       const Integral rem  = (x+y) % y;
       out[0] = quot;
@@ -185,7 +179,7 @@ namespace rascal {
     //! Default constructor
     Property() = delete;
 
-    //! constructor with Manager
+    //! Constructor with Manager
     Property(NeighbourhoodManager & manager)
       :manager{manager},values{}
     {}
@@ -205,7 +199,7 @@ namespace rascal {
     //! Move assignment operator
     Property & operator=(Property && other) = delete;
 
-    //! adjust size (only increases, never frees)
+    //! Adjust size of values (only increases, never frees)
     void resize() {
       this->values.resize(this->manager.nb_clusters(Level) * NbComp);
     }
@@ -226,6 +220,9 @@ namespace rascal {
       Value::push_in_vector(this->values, ref);
     }
 
+    /**
+     * Function for adding Eigen-based matrix data to `property`
+     */
     template<typename Derived, bool NotScalar = (NbComp>1)>
     inline std::enable_if_t<NotScalar>
     push_back(const Eigen::DenseBase<Derived> & ref) {
@@ -239,7 +236,7 @@ namespace rascal {
     }
 
     /**
-     * Fill sequence for *_cluster_indices.
+     * Fill sequence for *_cluster_indices to initialize
      */
     inline void fill_sequence() {
       this->resize();
