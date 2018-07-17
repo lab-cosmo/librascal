@@ -58,7 +58,9 @@ namespace rascal {
     // New Depth
     // TODO: Is this the correct way to initialize the increased depth?
     using DepthByDimension = typename
-      DepthExtender<MaxLevel, typename ManagerImplementation::traits::DepthByDimension>::type;
+      DepthExtender<MaxLevel,
+                    typename
+                    ManagerImplementation::traits::DepthByDimension>::type;
   };
 
   /**
@@ -74,11 +76,13 @@ namespace rascal {
   public:
     using Base = NeighbourhoodManagerBase<AdaptorMaxLevel<ManagerImplementation>>;
 
-    using Parent = NeighbourhoodManagerBase<AdaptorMaxLevel<ManagerImplementation>>;
+    using Parent =
+      NeighbourhoodManagerBase<AdaptorMaxLevel<ManagerImplementation>>;
     using traits = NeighbourhoodManager_traits<AdaptorMaxLevel>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     template <size_t Level>
-    using ClusterRef_t = typename ManagerImplementation::template ClusterRef<Level>;
+    using ClusterRef_t =
+      typename ManagerImplementation::template ClusterRef<Level>;
     //using PairRef_t = ClusterRef_t<2, traits::MaxLevel>;
 
     // TODO if MaxLevel can be == 1 -> neighbourlist need to be built.
@@ -169,13 +173,6 @@ namespace rascal {
       return this->manager.get_cluster_neighbour(this->manager, index);
     }
 
-    // return the global id of an atom
-    /**
-     * This function depends on MaxLevel
-     */
-
-
-
     template<size_t Level, size_t Depth>
     inline int get_cluster_neighbour(const ClusterRefBase<Level, Depth>
 				     & cluster,
@@ -218,8 +215,8 @@ namespace rascal {
       } else {
 	return nb_neigh[cluster.back()] ;
       }
-      // return this->manager.get_cluster_size(cluster);
-      // TODO: this should be self-referring if Level=MaxLevel, otherwise underlying manager
+      // return this->manager.get_cluster_size(cluster); TODO: this should be
+      // self-referring if Level=MaxLevel, otherwise underlying manager
       // TODO: conditional_t ??
     }
 
@@ -303,8 +300,9 @@ namespace rascal {
 
     template<size_t Level, bool IsDummy> struct AddLevelLoop;
 
-    // stores AtomRefs to of neighbours for traits::MaxLevel-1-*plets
-    std::vector<AtomRef_t> atom_refs{};
+    // not necessary any more
+    // // stores AtomRefs to of neighbours for traits::MaxLevel-1-*plets
+    // std::vector<AtomRef_t> atom_refs{};
 
     // Stores atom indices
     std::vector<size_t> atom_indices{}; //akin to ilist[]
@@ -342,7 +340,7 @@ namespace rascal {
   AdaptorMaxLevel(ManagerImplementation & manager, double cutoff):
     manager{manager},
     cutoff{cutoff},
-    atom_refs{},
+    atom_indices{},
     nb_neigh{},
     offsets{}
 
@@ -373,6 +371,8 @@ namespace rascal {
 				       (Level+1 == OldMaxLevel)>;
     static void loop(ClusterRef_t & cluster,
 		     AdaptorMaxLevel<ManagerImplementation>& manager) {
+      // size_t cluster_counter{0};
+
       // do nothing if MaxLevel is not reached, except call the next
       // level
       for (auto next_cluster : cluster) {
@@ -392,8 +392,10 @@ namespace rascal {
     using ClusterRef_t = typename ManagerImplementation::template
       ClusterRef<Level>;
 
-    static void loop (ClusterRef_t & /*cluster*/,
-		      AdaptorMaxLevel<ManagerImplementation>&/* manager*/) {
+    static void loop (ClusterRef_t & cluster,
+		      AdaptorMaxLevel<ManagerImplementation>& manager) {
+
+      auto & next_cluster_indices{std::get<Level>(manager->cluster_indices)};
       // std::cout << " ------At old MaxLevel, adding new layer-----" << std::endl;
 
       // i refers to the local atom for which the pairs j are added as
@@ -568,10 +570,22 @@ namespace rascal {
   get_offset_impl(const std::array<size_t, Level> & counters) const {
     // static_assert(Level == traits::MaxLevel,
     // 		  "This class cas only handles MaxLevel");
-    auto i{counters.front()};
-    auto j{counters.back()};
-    auto main_offset{this->offsets[i]};
-    return main_offset + j;
+
+    if (Level==traits::MaxLevel) {
+      /**
+       * Reinterpret counters as a smaller array to call parent offset
+       * multiplet. This can then be used to access the actual offset here.
+       */
+      auto i{this->manager.get_offset_impl(reinterpret_cast<std::array<size_t, Level-1>&>(counters))};
+      auto j{counters.back()};
+      auto main_offset{this->offsets[i]};
+      return main_offset + j;
+    } else {
+      return this->manager.get_offset_impl(counters);
+    }
+
+
+
   }
 }  // rascal
 

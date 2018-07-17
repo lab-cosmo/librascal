@@ -35,8 +35,7 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(maxlevel_increase_adaptor_test);
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(constructor_test,
-                          ManagerFixture_chain){
+  BOOST_FIXTURE_TEST_CASE(constructor_test, ManagerFixture_chain){
 
     AdaptorMaxLevel<NeighbourhoodManagerChain> adaptor{manager_chain, cutoff};
     adaptor.update();
@@ -49,16 +48,16 @@ namespace rascal {
 
     for (auto atom : adaptor) {
       if (verbose) {
-	std::cout << "atom "
-		  << atom.back()
-		  << std::endl;
+        std::cout << "atom "
+        	  << atom.back()
+        	  << std::endl;
       }
       for (auto pair : atom) {
-	if (verbose) {
-	  std::cout << "  pair "
-		    << pair.back()
-		    << std::endl;
-	}
+        if (verbose) {
+          std::cout << "  pair "
+        	    << pair.back()
+        	    << std::endl;
+        }
         // for (auto triplet : pair) {
         //   std::cout << "    triplet "
         //         << triplet.get_atoms().back().get_index()

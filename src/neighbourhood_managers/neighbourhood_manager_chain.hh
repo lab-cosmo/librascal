@@ -345,7 +345,7 @@ namespace rascal {
     double cutoff_skin{0.0}; // Added now, but intended for use later
     // in a Verlet list.
 
-    std::vector<int> offsets{}; // A vector which stores the absolute
+    std::vector<size_t> offsets{}; // A vector which stores the absolute
     // offsets for each atom to access the
     // correct variables in the
     // neighbourlist.
@@ -376,7 +376,6 @@ namespace rascal {
 
   private:
   };
-
 
   /* ---------------------------------------------------------------------- */
   // buildup
