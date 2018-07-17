@@ -263,7 +263,7 @@ namespace rascal {
     template <size_t Level, size_t CallerDepth>
     inline size_t get_offset(const ClusterRefBase<Level,
                              CallerDepth> & cluster) const {
-      auto depth = this->cluster_depth<Level>();
+      constexpr auto depth{this->cluster_depth<Level>()};
       return cluster.get_cluster_index(depth);
     }
 

@@ -56,7 +56,7 @@ namespace rascal {
     BasisFunManager& operator=(const BasisFunManager &other) = delete;
 
     //! Move assignment operator
-    BasisFunManager& operator=(BasisFunManager &&other) = default;
+    BasisFunManager& operator=(BasisFunManager && other) = default;
 
     // Initialize hyperparameters
     void read_hyperparameters(const FILE *);
