@@ -29,6 +29,7 @@
 
 #include "neighbourhood_managers/neighbourhood_manager_base.hh"
 #include "neighbourhood_managers/property.hh"
+#include "rascal_utility.hh"
 
 #include <typeinfo>
 
@@ -205,11 +206,11 @@ namespace rascal {
     }
 
     template<size_t Level, size_t Depth>
-    inline size_t
-    get_cluster_size(const ClusterRefBase<Level, Depth>
-		     & cluster) const {
+    inline size_t get_cluster_size(const ClusterRefBase<Level, Depth>
+                                   & cluster) const {
       static_assert(Level < traits::MaxLevel,
-                    "this implementation the respective MaxLevel");
+                    "this implementation handles only the respective MaxLevel");
+      // TODO: Should this not be a test for Depth?
       if (Level < traits::MaxLevel-1) {
 	return this->manager.get_cluster_size(cluster);
       } else {
@@ -235,34 +236,23 @@ namespace rascal {
      * atom the atom to add to the list. since the MaxLevel is
      * increased by one in this adaptor, the Level=MaxLevel
      */
-    // TODO: change add atom from AtomRef_t to size_t, because all
-    // access is with atom index?!
-    inline void add_atom(const typename ManagerImplementation::AtomRef_t & atom) {
-      // static_assert(Level < traits::MaxLevel,
-      // "you can only add neighbours to the n-th degree defined by "
-      // "MaxLevel of the underlying manager");
 
-      auto p = &atom;
-      std::cout << p << std::endl;
+    inline void add_atom(const int atom_index) {
+      // static_assert(Level <= traits::MaxLevel,
+      //               "you can only add neighbours to the n-th degree defined by "
+      //               "MaxLevel of the underlying manager");
+
       // add new atom at this Level
-      // this->atom_refs.push_back(atom);
+      this->atom_indices.push_back(atom_index);
       // count that this atom is a new neighbour
-      // if (Level == (traits::MaxLevel-1)) {
-      // 	std::cout << "incr nb_neigh " << nb_neigh[Level].back() << std::endl;
-      // }
       this->nb_neigh.back()++;
       this->offsets.back()++;
 
-      // std::cout << "inside add atom: nb_neigh[Level].back() "
-      // 		<< " Level " << Level << ", back "
-      // 		<< nb_neigh.back()
-      // 		<< std::endl;
-    }
-
-    // TODO: correct implementation?
-    inline void add_atom(const int & index) {
-      AtomRef_t atom{this->manager, index};
-      this->add_atom(atom);
+      // make sure that this atom starts with zero lower-Level neighbours
+      this->nb_neigh.push_back(0);
+      // update the offsets
+      this->offsets.push_back(this->offsets.back() +
+                              this->nb_neigh.back());
     }
 
     template <size_t Level>
@@ -276,8 +266,8 @@ namespace rascal {
     }
 
     template <size_t Level>
-    inline void add_atom_level_up(typename ManagerImplementation::template
-				  ClusterRef<Level> cluster) {
+    inline void add_atom(typename ManagerImplementation::template
+                         ClusterRef<Level> & cluster) {
       std::cout << "            adding_atom_level_up" << std::endl;
       return this->template add_atom(cluster.back());
     }
@@ -316,6 +306,8 @@ namespace rascal {
     // stores the offsets of traits::MaxLevel-1-*plets for accessing
     // <code>neighbours</code>
     std::vector<size_t> offsets{};
+
+    size_t cluster_counter{0};
   private:
   };
 
@@ -341,8 +333,8 @@ namespace rascal {
     manager{manager},
     cutoff{cutoff},
     atom_indices{},
-    nb_neigh{},
-    offsets{}
+    nb_neigh{0},
+    offsets{0}
 
   {
     if (traits::MaxLevel < 1) {
@@ -362,13 +354,13 @@ namespace rascal {
   template <class ManagerImplementation>
   template <size_t Level, bool IsDummy>
   struct AdaptorMaxLevel<ManagerImplementation>::AddLevelLoop {
-
     static constexpr int OldMaxLevel{ManagerImplementation::traits::MaxLevel};
     using ClusterRef_t = typename ManagerImplementation::template
       ClusterRef<Level>;
 
     using NextLevelLoop = AddLevelLoop<Level+1,
 				       (Level+1 == OldMaxLevel)>;
+
     static void loop(ClusterRef_t & cluster,
 		     AdaptorMaxLevel<ManagerImplementation>& manager) {
       // size_t cluster_counter{0};
@@ -391,12 +383,32 @@ namespace rascal {
     static constexpr int OldMaxLevel{ManagerImplementation::traits::MaxLevel};
     using ClusterRef_t = typename ManagerImplementation::template
       ClusterRef<Level>;
+    using traits = typename AdaptorMaxLevel<ManagerImplementation>::traits;
 
     static void loop (ClusterRef_t & cluster,
-		      AdaptorMaxLevel<ManagerImplementation>& manager) {
+		      AdaptorMaxLevel<ManagerImplementation> & manager) {
 
-      auto & next_cluster_indices{std::get<Level>(manager->cluster_indices)};
-      // std::cout << " ------At old MaxLevel, adding new layer-----" << std::endl;
+      // TODO: Understand why manager.get_cluster_indices(), compare to strict?!
+      auto & next_cluster_indices{std::get<Level>(manager.get_cluster_indices())};
+
+      // get new depth of cluster indices
+      constexpr auto NextClusterDepth{
+        compute_cluster_depth<cluster.level()>
+          (typename traits::DepthByDimension{})};
+
+      Eigen::Matrix<size_t, NextClusterDepth+1, 1> indices_cluster;
+
+
+      std::cout << " ------At old MaxLevel, adding new layer-----" << std::endl;
+      /**
+       * Take the last atom index in the cluster, ask the apropriate manager for
+       * its neighbours and add them as neighbours to the list here.
+       * Update
+       */
+
+      auto atom_i = cluster.back();
+      std::cout << "Atom i " << atom_i << std::endl;
+
 
       // i refers to the local atom for which the pairs j are added as
       // MaxLevel+1
@@ -515,10 +527,10 @@ namespace rascal {
     static_assert(traits::MaxLevel > 2, "No neighbourlist present.");
 
     for (auto atom : this->manager) {
-      // Level 1, atoms, index 0
+      // Level 1, Level variable is at 0, atoms, index 0
       // std::cout << "## for atoms in manager ##" << std::endl;
-
-      using AddLevelLoop = AddLevelLoop<1, 1 == traits::MaxLevel-1>;
+      using AddLevelLoop = AddLevelLoop<atom.level(),
+                                        atom.level() == traits::MaxLevel-1>;
       AddLevelLoop::loop(atom, *this);
     }
 
@@ -560,7 +572,6 @@ namespace rascal {
       // Templated function?
       this->increase_maxlevel();
     }
-
   }
 
   /* ---------------------------------------------------------------------- */
@@ -568,24 +579,51 @@ namespace rascal {
   template<size_t Level>
   inline size_t AdaptorMaxLevel<ManagerImplementation>::
   get_offset_impl(const std::array<size_t, Level> & counters) const {
-    // static_assert(Level == traits::MaxLevel,
-    // 		  "This class cas only handles MaxLevel");
 
-    if (Level==traits::MaxLevel) {
+    static_assert(Level < traits::MaxLevel,
+                  "this implementation handles only the respective MaxLevel");
+    /**
+     * Level accessor: 0 - atoms
+     *                 1 - pairs
+     *                 2 - triplets
+     *                 etc.
+     */
+
+    if (Level == traits::MaxLevel-1) {
       /**
        * Reinterpret counters as a smaller array to call parent offset
        * multiplet. This can then be used to access the actual offset here.
        */
-      auto i{this->manager.get_offset_impl(reinterpret_cast<std::array<size_t, Level-1>&>(counters))};
+      std::cout << "IncMax if Level " << Level << std::endl;
+      std::cout << "counters "
+                << counters[0] << " "
+                << counters[1] << " "
+                << "size " << counters.size()
+                << std::endl;
+      /**
+       * reinterpret_cast cuts off the last index in the cluster to access lower
+       * level manager get_offset_impl
+       */
+      auto call_counters =
+        reinterpret_cast<const std::array<size_t, Level-1> &>(counters);
+      std::cout << "call_counters "
+                << call_counters[0] << " "
+                << "size " << call_counters.size()
+                << std::endl;
+
+      auto i{this->manager.get_offset_impl(call_counters)};
+
       auto j{counters.back()};
       auto main_offset{this->offsets[i]};
       return main_offset + j;
     } else {
-      return this->manager.get_offset_impl(counters);
+      /**
+       * If not accessible at this level, call lower Level offsets from lower
+       * level manager(s).
+       */
+      std::cout << "IncMax else Level " << Level << std::endl;
+      // return this->manager.get_offset_impl(counters);
     }
-
-
-
   }
 }  // rascal
 

@@ -37,32 +37,54 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(constructor_test, ManagerFixture_chain){
 
+    constexpr bool verbose{true};
+    constexpr bool check_below{false};
+
+    // Check underlying manager
+    if (check_below) {
+      for (auto atom : manager_chain) {
+        if (verbose) {
+          std::cout << "chain atom "
+                    << atom.back()
+                    << std::endl;
+        }
+        for (auto pair : atom) {
+          if (verbose) {
+            std::cout << " chain pair "
+                      << pair.back()
+                      << std::endl;
+          }
+        }
+      }
+    }
+
     AdaptorMaxLevel<NeighbourhoodManagerChain> adaptor{manager_chain, cutoff};
     adaptor.update();
 
-    constexpr bool verbose{true};
-
     if (verbose) {
-      std::cout << "Increase MaxLevel" << std::endl;
+      std::cout << "Adaptor increase MaxLevel" << std::endl;
     }
 
     for (auto atom : adaptor) {
       if (verbose) {
-        std::cout << "atom "
+        std::cout << "increase MaxLevel atom "
         	  << atom.back()
         	  << std::endl;
       }
       for (auto pair : atom) {
         if (verbose) {
-          std::cout << "  pair "
+          std::cout << " increase MaxLevel pair "
         	    << pair.back()
         	    << std::endl;
         }
-        // for (auto triplet : pair) {
-        //   std::cout << "    triplet "
-        //         << triplet.get_atoms().back().get_index()
-        //         << std::endl;
-        // }
+        std::cout << " increase MaxLevel before triplet " << std::endl;
+        for (auto triplet : pair) {
+          if (verbose) {
+            std::cout << "    triplet "
+                      << triplet.back()
+                      << std::endl;
+          }
+        }
       }
     }
   }

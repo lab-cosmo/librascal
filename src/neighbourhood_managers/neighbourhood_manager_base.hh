@@ -226,8 +226,8 @@ namespace rascal {
       return std::array<int, 0>{};
     }
 
-    template <size_t L>
-    inline size_t cluster_size(ClusterRef<L> & cluster) const {
+    template <size_t Level, size_t Depth>
+    inline size_t cluster_size(ClusterRefBase<Level, Depth> & cluster) const {
       return this->implementation().get_cluster_size(cluster);
     }
 
@@ -645,7 +645,7 @@ namespace rascal {
         return counters;
       } else {
         auto parental_counters = this->container.get_counters();
-        for (auto i{0}; i < Level-1; i++) {
+        for (size_t i{0}; i < Level-1; i++) {
           counters[i] = parental_counters[i];
         }
         return counters;

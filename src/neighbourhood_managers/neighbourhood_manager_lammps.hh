@@ -139,8 +139,8 @@ namespace rascal {
     }
 
     // return the number of neighbours of a given atom
-    template<size_t Level>
-    inline size_t get_cluster_size(const ClusterRef<Level> & cluster)
+    template<size_t Level, size_t Depth>
+    inline size_t get_cluster_size(const ClusterRefBase<Level, Depth> & cluster)
       const {
       static_assert(Level < traits::MaxLevel,
                     "this implementation only handles atoms and pairs");
