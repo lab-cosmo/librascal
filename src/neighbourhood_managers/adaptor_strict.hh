@@ -56,8 +56,7 @@ namespace rascal {
     constexpr static size_t MaxLevel{ManagerImplementation::traits::MaxLevel};
     // TODO: Future optimisation: do not increase depth for atoms
     // (they are all kept anyways, so no duplication necessary).
-    using DepthByDimension =
-      typename
+    using DepthByDimension = typename
       DepthIncreaser<MaxLevel,
 		     typename
                      ManagerImplementation::traits::DepthByDimension>::type;
@@ -338,6 +337,7 @@ namespace rascal {
     static constexpr size_t MaxLevel{ManagerImplementation::traits::MaxLevel};
     using ClusterRef_t = typename ManagerImplementation::template
       ClusterRef<Level>;
+    using traits = typename AdaptorStrict<ManagerImplementation>::traits;
 
     using NextLevelLoop = HelperLoop<Level+1,
                                      (Level+1 == MaxLevel)>;
