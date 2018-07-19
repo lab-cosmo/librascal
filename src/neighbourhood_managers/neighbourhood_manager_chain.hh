@@ -255,8 +255,12 @@ namespace rascal {
     template<size_t Level, size_t Depth>
     inline size_t get_cluster_size(const ClusterRefBase<Level, Depth>
                                    & cluster) const {
-      static_assert(Level < traits::MaxLevel,
+      // TODO: Check for <= or < ?!
+      static_assert(Level <= traits::MaxLevel,
                     "this implementation only handles atoms and pairs.");
+      std::cout << "1Level " << Level <<std::endl;
+      std::cout << "1Depth " << Depth <<std::endl;
+      std::cout << "1clustersize " << this->numneigh[cluster.back()] <<std::endl;
       return this->numneigh[cluster.back()];
     }
 
@@ -379,12 +383,18 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   // buildup
+  // used for lookup e.g. in property
   template<size_t Level>
   inline size_t NeighbourhoodManagerChain::
   get_offset_impl(const std::array<size_t, Level> & counters) const {
-    static_assert (Level == 1, "this manager can only give the offset "
-                   "(= starting index) for a pair iterator, given the i atom "
-                   "of the pair");
+    std::cout << "get_offset_impl Level " << Level << std::endl;
+    // TODO: Check this static_assert for validity
+    // static_assert (Level == 1, "this manager can only give the offset "
+    //                "(= starting index) for a pair iterator, given the i atom "
+    //                "of the pair");
+    std::cout << "counters.front(), offsets(<-) "
+              << counters.front() << ", "
+              << this->offsets[counters.front()] << std::endl;
     return this->offsets[counters.front()];
   }
 

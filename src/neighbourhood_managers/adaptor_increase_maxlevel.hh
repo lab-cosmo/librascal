@@ -32,6 +32,7 @@
 #include "rascal_utility.hh"
 
 #include <typeinfo>
+#include <set>
 
 #ifndef ADAPTOR_MAXLEVEL_H
 #define ADAPTOR_MAXLEVEL_H
@@ -381,8 +382,8 @@ namespace rascal {
   template <size_t Level>
   struct AdaptorMaxLevel<ManagerImplementation>::AddLevelLoop<Level, true> {
     static constexpr int OldMaxLevel{ManagerImplementation::traits::MaxLevel};
-    using ClusterRef_t = typename ManagerImplementation::template
-      ClusterRef<Level>;
+    using ClusterRef_t =
+      typename ManagerImplementation::template ClusterRef<Level>;
     using traits = typename AdaptorMaxLevel<ManagerImplementation>::traits;
 
     static void loop (ClusterRef_t & cluster,
@@ -398,16 +399,68 @@ namespace rascal {
 
       Eigen::Matrix<size_t, NextClusterDepth+1, 1> indices_cluster;
 
-
-      std::cout << " ------At old MaxLevel, adding new layer-----" << std::endl;
+      std::cout << " ------At old MaxLevel, adding new layer----- "
+                << OldMaxLevel << std::endl;
       /**
        * Take the last atom index in the cluster, ask the apropriate manager for
        * its neighbours and add them as neighbours to the list here.
        * Update
+       * "atom 130 is not a spot 130 after a filter"
        */
 
-      auto atom_i = cluster.back();
-      std::cout << "Atom i " << atom_i << std::endl;
+      // auto atom_i = cluster.back();
+      // std::cout << "Atom i " << atom_i << std::endl;
+
+      // Iterate over all indices in the cluster and get all neighbour indices
+      // in a list. Delete duplicates
+      // TODO: clean up this part of the code
+      auto i_atoms = cluster.get_atom_indices();
+      std::cout << "no of atoms in cluster " << i_atoms.size() << std::endl;
+
+      // set for storing atom indices which have to be iterated for neighbours
+      std::set<int> current_i_atoms;
+
+      for (auto idx : i_atoms) {
+        current_i_atoms.insert(idx);
+      };
+
+      std::cout << "Atoms i to make the next size cluster with:";
+      for (std::set<int>::iterator it = current_i_atoms.begin();
+           it! = current_i_atoms.end(); ++it) {
+        std::cout << ' ' << *it;
+        // std::cout << ' ' << typeid(*it).name();
+      }
+      std::cout<<"\n";
+
+      // set for storing atoms indices to extend current cluster to next level
+      std::set<int> current_j_atoms;
+
+      for (auto atom_offset : cluster.get_atom_offsets()) {
+        neighs = ClusterRef(atom_offset, *this);
+          for (n : neighs)
+            current_j_atoms.insert(n);
+      }
+
+      for (auto atom : this->manager) {
+        for (auto pair : this-> manager) {
+          if (pair.back == {current_i_atoms})
+            current_j_atoms.insert(pair.back);
+        }
+      }
+      for (auto i_atom: i_atoms) {
+        for (auto atom: this->manager){ // clusterref
+          if (atom.get_atom_index() == i_atom) {
+            for (auto pair: atom) {
+              do stuff;
+            }
+          }
+        }
+      }
+
+      // Get the corresponding neighbours of all current i atoms, i.e. build
+      // pairs with the collected i_atoms
+
+
 
 
       // i refers to the local atom for which the pairs j are added as
@@ -535,8 +588,12 @@ namespace rascal {
     }
 
 
-    // Iteration for i-j adding j-k pairs
-    // Iteration for i-j-k addint k-l pairs
+    /**
+     * To make triplets
+     * Iteration for i-j adding i-k and j-k pairs
+     * Iteration for i-j-k adding i-j and j-k and k-l pairs
+     * etc.
+     */
 
     // triplets:
     // atom_refs[new_max_level].push_back(j,k atoms)

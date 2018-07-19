@@ -269,7 +269,7 @@ namespace rascal {
     /**
      * store the offsets from where the nb_neigh can be counted
      */
-    std::array<std::vector<size_t>, traits::MaxLevel> offsets;
+    std::array<std::vector<size_t>, traits::MaxLevel>  offsets;
   private:
   };
 

@@ -413,7 +413,8 @@ namespace rascal {
   public:
     using Manager_t = NeighbourhoodManagerBase<ManagerImplementation>;
     using Parent =
-      ClusterRefBase<Level, ManagerImplementation::template cluster_depth<Level>()>;
+      ClusterRefBase<Level,
+                     ManagerImplementation::template cluster_depth<Level>()>;
     using AtomRef_t = typename Manager_t::AtomRef;
     using Iterator_t = typename Manager_t::template iterator<Level>;
     using Atoms_t = std::array<AtomRef_t, Level>;
@@ -447,12 +448,11 @@ namespace rascal {
     ClusterRef(Iterator_t & it,
                const std::array<int, Level> & atom_indices,
                const size_t & cluster_index) :
-      Parent(atom_indices, IndexConstArray_t (& cluster_index)), it{it} {
-
-    }
+      Parent(atom_indices, IndexConstArray_t (& cluster_index)), it{it} {}
 
     // Reference to j neighbours of a given atom i // TODO: description
     template<size_t Depth, bool FirstLevel=(Level==1)>
+    // cluster->atom_index
     ClusterRef(std::enable_if_t<FirstLevel, ClusterRefBase<1, Depth>> & cluster,
                Manager_t& manager):
       Parent{cluster.get_indices(), cluster.get_cluster_indices()},
@@ -621,14 +621,14 @@ namespace rascal {
     iterator(Container_t & cont, size_t start, size_t offset)
       :container{cont}, index{start}, offset{offset} {}
 
-    // TODO: get_atom_indices does not work?!?
+    //! add atomic indices in current iteration
     std::array<int, Level> get_atom_indices() {
       return internal::append_array
         (container.get_atom_indices(),
          this->get_manager().cluster_neighbour(container, this->index));
     }
 
-    // TODO: MYINDEX????
+    //! returns the current index of the cluster in iteration
     inline size_t get_cluster_index() const {
       return this->index + this->offset;
     }
