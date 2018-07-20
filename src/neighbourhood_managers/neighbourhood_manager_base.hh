@@ -286,14 +286,17 @@ namespace rascal {
     }
 
     /**
-     * Tuple which contains MaxLevel number of cluster_index lists for
-     * reference with increasing depth.
+     * Tuple which contains MaxLevel number of cluster_index lists for reference
+     * with increasing depth.  It is filled upon construction of the
+     * neighbourhood manager via a
+     * std::get<Level>(this->cluster_indices). Higher levels are constructed in
+     * adaptors accordingly via the lower level indices and a Level-dependend
+     * index is appended to the array.
      */
-    // TODO: How does this get filled?
     ClusterIndex_t cluster_indices;
 
-    // template <size_t L>
-    // inline int get_cluster(const ClusterRefBase<L> & cluster) const {
+    // template <size_t Level, size_t Depth>
+    // inline int get_cluster(const ClusterRefBase<Level, Depth> & cluster) const {
     //   // all pairs of the following thing
     // }
 
@@ -458,6 +461,10 @@ namespace rascal {
       Parent{cluster.get_indices(), cluster.get_cluster_indices()},
       it{manager}{}
 
+    //! construct a clusterref from atom_offset: get a clusterref of Level=1 to
+    //! iterate over neighbours
+    // ClusterRef(
+    
     //! Copy constructor
     ClusterRef(const ClusterRef & other) = delete;
 
@@ -530,6 +537,10 @@ namespace rascal {
       return this->get_manager().get_offset(*this);
     }
 
+    const std::array<int, Level> & get_atom_indices() const {
+      //return this->atom_indices;
+    }
+    
   protected:
     inline std::array<size_t, 1> get_counters() const {
       return this->it.get_counters();

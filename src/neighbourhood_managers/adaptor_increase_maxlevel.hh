@@ -411,51 +411,55 @@ namespace rascal {
       // auto atom_i = cluster.back();
       // std::cout << "Atom i " << atom_i << std::endl;
 
-      // Iterate over all indices in the cluster and get all neighbour indices
-      // in a list. Delete duplicates
-      // TODO: clean up this part of the code
+      // get all i_atom 'names'
       auto i_atoms = cluster.get_atom_indices();
       std::cout << "no of atoms in cluster " << i_atoms.size() << std::endl;
 
-      // set for storing atom indices which have to be iterated for neighbours
-      std::set<int> current_i_atoms;
+      // // set for storing atom indices which have to be iterated for neighbours
+      // std::set<int> current_i_atoms;
 
-      for (auto idx : i_atoms) {
-        current_i_atoms.insert(idx);
-      };
+      // for (auto idx : i_atoms) {
+      //   current_i_atoms.insert(idx);
+      // };
 
-      std::cout << "Atoms i to make the next size cluster with:";
-      for (std::set<int>::iterator it = current_i_atoms.begin();
-           it! = current_i_atoms.end(); ++it) {
-        std::cout << ' ' << *it;
-        // std::cout << ' ' << typeid(*it).name();
-      }
-      std::cout<<"\n";
+      // translate i atom 'names' into cluster_indices for accessing neighbour
+      // offsets
+      std::set<size_t> current_j_atoms;
+
+      
+
+      // std::cout << "Atoms i to make the next size cluster with:";
+      // for (std::set<int>::iterator it = current_i_atoms.begin();
+      //      it! = current_i_atoms.end(); ++it) {
+      //   std::cout << ' ' << *it;
+      //   // std::cout << ' ' << typeid(*it).name();
+      // }
+      // std::cout<<"\n";
 
       // set for storing atoms indices to extend current cluster to next level
       std::set<int> current_j_atoms;
 
       for (auto atom_offset : cluster.get_atom_offsets()) {
-        neighs = ClusterRef(atom_offset, *this);
-          for (n : neighs)
-            current_j_atoms.insert(n);
+        // neighs = ClusterRef(atom_offset, *this);
+        //   for (n : neighs)
+        //     current_j_atoms.insert(n);
       }
 
-      for (auto atom : this->manager) {
-        for (auto pair : this-> manager) {
-          if (pair.back == {current_i_atoms})
-            current_j_atoms.insert(pair.back);
-        }
-      }
-      for (auto i_atom: i_atoms) {
-        for (auto atom: this->manager){ // clusterref
-          if (atom.get_atom_index() == i_atom) {
-            for (auto pair: atom) {
-              do stuff;
-            }
-          }
-        }
-      }
+      // for (auto atom : this->manager) {
+      //   for (auto pair : this-> manager) {
+      //     if (pair.back == {current_i_atoms})
+      //       current_j_atoms.insert(pair.back);
+      //   }
+      // }
+      // for (auto i_atom: i_atoms) {
+      //   for (auto atom: this->manager){ // clusterref
+      //     if (atom.get_atom_index() == i_atom) {
+      //       for (auto pair: atom) {
+      //         do stuff;
+      //       }
+      //     }
+      //   }
+      // }
 
       // Get the corresponding neighbours of all current i atoms, i.e. build
       // pairs with the collected i_atoms

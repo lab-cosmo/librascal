@@ -196,7 +196,7 @@ namespace rascal {
     //! Move assignment operator
     ClusterRefBase & operator=(ClusterRefBase && other) = default;
 
-    const std::array<int, Level> & get_atom_indices() const {
+    const inline std::array<int, Level> & get_atom_indices() const {
       return this->atom_indices;
     }
 
