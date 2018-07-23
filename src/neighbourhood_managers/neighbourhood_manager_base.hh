@@ -320,22 +320,27 @@ namespace rascal {
                                  std::make_integer_sequence<int, Size>{});
     }
 
-    template<size_t Level, class AtomRef_t, std::size_t... I>
-    std::array<int, Level>
-    get_indices_from_list(const std::array<AtomRef_t, Level> & atoms,
-                          std::integer_sequence<int, I...>) {
-      return std::array<int, Level>{atoms[I].get_index()...};
-    }
+    // template<size_t Level, class AtomRef_t, std::size_t... I>
+    // std::array<int, Level>
+    // get_indices_from_list(const std::array<AtomRef_t, Level> & atoms,
+    //                       std::integer_sequence<int, I...>) {
+    //   return std::array<int, Level>{atoms[I].get_index()...};
+    // }
 
-    template<size_t Level, class AtomRef_t> std::array<int, Level>
-    get_indices(const std::array<AtomRef_t, Level> & atoms) {
-      return get_indices_from_list(atoms, std::make_integer_sequence<int, Level>{});
-    }
+    // template<size_t Level, class AtomRef_t> std::array<int, Level>
+    // get_indices(const std::array<AtomRef_t, Level> & atoms) {
+    //   return get_indices_from_list(atoms, std::make_integer_sequence<int, Level>{});
+    // }
 
+    /**
+     * Depending on the Level of the ClusterRef (Level=1 or higher), the cluster
+     * can be a ghost cluster. If it is a ghost-cluster, i.e. the position of a
+     * periodic image will be returned automatically. The decision is made here.
+     */
     template<size_t Level, class ClusterRef>
     struct PositionGetter {
       using Vector_ref = typename ClusterRef::Manager_t::Vector_ref;
-      static inline Vector_ref  get_position(ClusterRef & cluster) {
+      static inline Vector_ref get_position(ClusterRef & cluster) {
         return cluster.get_manager().neighbour_position(cluster);
       };
     };
@@ -438,33 +443,40 @@ namespace rascal {
     //   Parent{it.get_atom_indices(), property(it.get_cluster_index())},
     //   it{it} {}
 
+    //! ClusterRef for multiple atoms with const IndexArray
     ClusterRef(Iterator_t & it,
                const std::array<int, Level> & atom_indices,
                const IndexConstArray_t & cluster_indices) :
       Parent{atom_indices, cluster_indices}, it{it} {}
 
+    //! ClusterRef for multiple atoms with non const IndexArray
     ClusterRef(Iterator_t & it,
                const std::array<int, Level> & atom_indices,
                IndexArray_t & cluster_indices) :
       Parent{atom_indices, IndexConstArray_t(cluster_indices.data())}, it{it} {}
 
+    //! ClusterRef for single atom, see `cluster_index`
     ClusterRef(Iterator_t & it,
                const std::array<int, Level> & atom_indices,
                const size_t & cluster_index) :
-      Parent(atom_indices, IndexConstArray_t (& cluster_index)), it{it} {}
+      Parent{atom_indices, IndexConstArray_t (& cluster_index)}, it{it} {}
 
     // Reference to j neighbours of a given atom i // TODO: description
     template<size_t Depth, bool FirstLevel=(Level==1)>
-    // cluster->atom_index
+    // cluster.get_indices() -> index of the atom w.r.t order in arrays
+    /**
+     * This is a ClusterRef of Level=1, constructed from a higher Level.
+     *
+     */
     ClusterRef(std::enable_if_t<FirstLevel, ClusterRefBase<1, Depth>> & cluster,
                Manager_t& manager):
-      Parent{cluster.get_indices(), cluster.get_cluster_indices()},
+      Parent{cluster.get_atom_indices(), cluster.get_cluster_indices()},
       it{manager}{}
 
     //! construct a clusterref from atom_offset: get a clusterref of Level=1 to
     //! iterate over neighbours
     // ClusterRef(
-    
+
     //! Copy constructor
     ClusterRef(const ClusterRef & other) = delete;
 
@@ -538,13 +550,17 @@ namespace rascal {
     }
 
     const std::array<int, Level> & get_atom_indices() const {
-      //return this->atom_indices;
+      return this->atom_indices;
     }
-    
+
   protected:
     inline std::array<size_t, 1> get_counters() const {
       return this->it.get_counters();
     }
+    /**
+     * `atom_cluster_indices` is an initially contiguous numbering of atoms
+     */
+    // IndexConstArray_t atom_cluster_indices;
     Iterator_t & it;
   private:
   };

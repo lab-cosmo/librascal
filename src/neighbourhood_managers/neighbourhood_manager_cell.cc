@@ -234,15 +234,21 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
 
-  void NeighbourhoodManagerCell::update(const Eigen::Ref<const Eigen::MatrixXd> positions,
-                                        const Eigen::Ref<const VecXi>  particle_types,
-                                        const Eigen::Ref<const VecXi> center_ids,
-                                        const Eigen::Ref<const Eigen::MatrixXd> cell,
-                                        const std::array<bool,3>& pbc, const double& cutoff_max)
-  {
+  void NeighbourhoodManagerCell::
+  update(const Eigen::Ref<const Eigen::MatrixXd> positions,
+         const Eigen::Ref<const VecXi>  particle_types,
+         const Eigen::Ref<const VecXi> center_ids,
+         const Eigen::Ref<const Eigen::MatrixXd> cell,
+         const std::array<bool,3>& pbc, const double& cutoff_max) {
+
     bool some_condition{true};
     if (some_condition){
-      NeighbourhoodManagerCell::build(positions,particle_types,center_ids,cell,pbc,cutoff_max);
+      NeighbourhoodManagerCell::build(positions,
+                                      particle_types,
+                                      center_ids,
+                                      cell,
+                                      pbc,
+                                      cutoff_max);
     }
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices)};
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices)};
