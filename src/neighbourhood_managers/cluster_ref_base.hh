@@ -213,6 +213,8 @@ namespace rascal {
 
     inline constexpr static size_t level() {return Level;}
 
+    inline constexpr static size_t depth() {return Depth;}
+
   protected:
     /**
      *  Array with unique atom indices. These can be user defined to refer to
