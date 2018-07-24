@@ -38,7 +38,7 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(constructor_test, ManagerFixture_chain){
 
     constexpr bool verbose{true};
-    constexpr bool check_below{false};
+    constexpr bool check_below{true};
 
     // Check underlying manager
     if (check_below) {

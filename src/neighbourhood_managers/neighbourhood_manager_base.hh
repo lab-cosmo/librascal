@@ -63,13 +63,13 @@ namespace rascal {
     /**
      * Helper function to calculate cluster_indices by depth.
      */
-    template<typename Manager, typename sequence>
+    template <typename Manager, typename sequence>
     struct ClusterIndexPropertyComputer {};
 
-    template<typename Manager, size_t Level, typename sequence, typename Tup>
+    template <typename Manager, size_t Level, typename sequence, typename Tup>
     struct ClusterIndexPropertyComputer_Helper {};
 
-    template<typename Manager, size_t Level, size_t DepthsHead,
+    template <typename Manager, size_t Level, size_t DepthsHead,
              size_t... DepthsTail, typename... TupComp>
     struct ClusterIndexPropertyComputer_Helper<Manager,
                                                Level,
@@ -83,7 +83,7 @@ namespace rascal {
     };
 
     // Recursion end
-    template<typename Manager, size_t Level, size_t DepthsHead,
+    template <typename Manager, size_t Level, size_t DepthsHead,
              typename... TupComp>
     struct ClusterIndexPropertyComputer_Helper<Manager,
                                                Level,
@@ -93,7 +93,7 @@ namespace rascal {
       using type = std::tuple<TupComp..., Property_t>;
     };
 
-    template<typename Manager, size_t... Depths>
+    template <typename Manager, size_t... Depths>
     struct ClusterIndexPropertyComputer<Manager,
                                         std::index_sequence<Depths...>> {
       using type =
@@ -103,10 +103,10 @@ namespace rascal {
                                             std::tuple<>>::type;
     };
 
-    template<typename Tup, typename Manager>
+    template <typename Tup, typename Manager>
     struct ClusterIndexConstructor {};
 
-    template<typename... PropertyTypes, typename Manager>
+    template <typename... PropertyTypes, typename Manager>
     struct ClusterIndexConstructor<std::tuple<PropertyTypes...>, Manager> {
       static inline decltype(auto) make(Manager & manager) {
         return std::tuple<PropertyTypes...>(std::move(PropertyTypes(manager))...);
@@ -231,6 +231,10 @@ namespace rascal {
       return this->implementation().get_cluster_size(cluster);
     }
 
+    inline size_t cluster_size(const int atom_index) const {
+      return this->implementation().get_cluster_size(atom_index);
+    }
+
     //! get atom_index of index-th neighbour of this cluster, e.g. j-th
     // neighbour of atom i or k-th neighbour of pair i-j, etc.
     template <size_t Level, size_t Depth>
@@ -272,7 +276,7 @@ namespace rascal {
     }
 
     //! Used for building cluster indices
-    template<size_t Level>
+    template <size_t Level>
     inline size_t get_offset(const std::array<size_t, Level> & counters) const {
       return this->implementation().get_offset_impl(counters);
     }
@@ -320,14 +324,14 @@ namespace rascal {
                                  std::make_integer_sequence<int, Size>{});
     }
 
-    // template<size_t Level, class AtomRef_t, std::size_t... I>
+    // template <size_t Level, class AtomRef_t, std::size_t... I>
     // std::array<int, Level>
     // get_indices_from_list(const std::array<AtomRef_t, Level> & atoms,
     //                       std::integer_sequence<int, I...>) {
     //   return std::array<int, Level>{atoms[I].get_index()...};
     // }
 
-    // template<size_t Level, class AtomRef_t> std::array<int, Level>
+    // template <size_t Level, class AtomRef_t> std::array<int, Level>
     // get_indices(const std::array<AtomRef_t, Level> & atoms) {
     //   return get_indices_from_list(atoms, std::make_integer_sequence<int, Level>{});
     // }
@@ -337,7 +341,7 @@ namespace rascal {
      * can be a ghost cluster. If it is a ghost-cluster, i.e. the position of a
      * periodic image will be returned automatically. The decision is made here.
      */
-    template<size_t Level, class ClusterRef>
+    template <size_t Level, class ClusterRef>
     struct PositionGetter {
       using Vector_ref = typename ClusterRef::Manager_t::Vector_ref;
       static inline Vector_ref get_position(ClusterRef & cluster) {
@@ -345,7 +349,7 @@ namespace rascal {
       };
     };
 
-    template<class ClusterRef>
+    template <class ClusterRef>
     struct PositionGetter<1, ClusterRef> {
       using Vector_ref = typename ClusterRef::Manager_t::Vector_ref;
       static inline Vector_ref get_position(ClusterRef & cluster) {
@@ -365,8 +369,8 @@ namespace rascal {
     AtomRef() = delete;
 
     //! constructor from iterator
-    AtomRef(Manager_t & manager, const int & id): manager{manager},
-                                                  index{id} {}
+    AtomRef(Manager_t & manager, const int & id)
+      : manager{manager}, index{id} {}
     //! Copy constructor
     AtomRef(const AtomRef & other) = default;
 
@@ -462,20 +466,22 @@ namespace rascal {
       Parent{atom_indices, IndexConstArray_t (& cluster_index)}, it{it} {}
 
     // Reference to j neighbours of a given atom i // TODO: description
-    template<size_t Depth, bool FirstLevel=(Level==1)>
+    template <size_t Depth, bool FirstLevel=(Level==1)>
     // cluster.get_indices() -> index of the atom w.r.t order in arrays
     /**
-     * This is a ClusterRef of Level=1, constructed from a higher Level.
-     *
+     * This is a ClusterRef of Level=1, constructed from a higher Level.  This
+     * function here is self referencing right now. A ClusterRefBase with
+     * Level=1 is needed to construct it ?!
      */
     ClusterRef(std::enable_if_t<FirstLevel, ClusterRefBase<1, Depth>> & cluster,
-               Manager_t& manager):
+               Manager_t & manager):
       Parent{cluster.get_atom_indices(), cluster.get_cluster_indices()},
       it{manager}{}
 
     //! construct a clusterref from atom_offset: get a clusterref of Level=1 to
     //! iterate over neighbours
-    // ClusterRef(
+    // ClusterRef(const size_t atom_index, Manager_t & manager):
+    //   Parent{}
 
     //! Copy constructor
     ClusterRef(const ClusterRef & other) = delete;
@@ -523,7 +529,7 @@ namespace rascal {
     //! return the index of the atom: Atoms_t is len==1 if center,
     //! len==2 if 1st neighbours,...
     inline int get_atom_index() {
-      return this->back();
+      return this->back(); // TODO: ?? what .back() is it?
     }
 
     inline Manager_t & get_manager() {return this->it.get_manager();}
@@ -588,7 +594,9 @@ namespace rascal {
 
     using value_type = ClusterRef_t;
     using difference_type = std::ptrdiff_t;
-    using iterator_category = std::forward_iterator_tag;
+    // using iterator_category = std::forward_iterator_tag;
+    using iterator_category = std::random_access_iterator_tag;
+
     using reference = value_type;
 
     //! Default constructor
@@ -641,6 +649,36 @@ namespace rascal {
     //! inequality
     inline bool operator != (const iterator & other) const {
       return not (*this == other);
+    }
+
+    //! less than
+    inline bool operator < (const iterator & other) const {
+      return this->index < other.index;
+    }
+
+    //! larger than
+    inline bool operator > (const iterator & other) const {
+      return this->index > other.index;
+    }
+
+    //! larger equal than
+    inline bool operator >= (const iterator & other) const {
+      return this->index >= other.index;
+    }
+
+    //! less equal than
+    inline bool operator <= (const iterator & other) const {
+      return this->index <= other.index;
+    }
+
+    // ! move
+    inline iterator & operator + (const int n) {
+      this->index + n;
+    }
+
+    //! access at specific position // TODO: Not sure about this one?
+    inline value_type operator[] (const int & n) const {
+      return *(this->container.begin() + n);
     }
 
   protected:
