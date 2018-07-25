@@ -430,6 +430,10 @@ namespace rascal {
                   << std::endl;
         auto atom_tmp{manager.begin()[access_index]};
 
+        for (auto pair : atom_tmp) {
+          std::cout << "Pair idx " << pair.back() << std::endl;
+        }
+
 
         // std::cout << "cluster size " << manager.cluster_size(access_index) << std::endl;
       //   auto & cluster_indices_properties

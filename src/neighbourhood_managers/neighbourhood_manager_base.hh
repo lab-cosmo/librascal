@@ -672,12 +672,13 @@ namespace rascal {
     }
 
     // ! move
-    inline iterator & operator + (const int n) {
+    inline iterator operator + (const int n) {
       this->index + n;
     }
 
     //! access at specific position // TODO: Not sure about this one?
     inline value_type operator[] (const int & n) const {
+      // TODO: Check for boundary of container
       return *(this->container.begin() + n);
     }
 
