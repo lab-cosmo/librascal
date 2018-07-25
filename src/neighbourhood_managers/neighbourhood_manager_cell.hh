@@ -116,14 +116,17 @@ namespace rascal {
     // is the current center. j_linear_id is the index of the current
     // neighbour iterator.
     template<size_t Level, size_t Depth>
-    inline Vector_ref get_neighbour_position(const ClusterRefBase<Level, Depth>&
+    inline Vector_ref get_neighbour_position(const ClusterRefBase<Level, Depth> &
                                              cluster) {
       static_assert(Level > 1,
                     "Only possible for Level > 1.");
       static_assert(Level <= traits::MaxLevel,
                     "this implementation should only work up to MaxLevel.");
 
-      auto & j_linear_id{cluster.back()};
+
+      // TODO: why is there a j_linear_id and a j_atom_id, which is the same?
+      // TODO: this is the wrong index -> Repair by Felix?
+      auto && j_linear_id = cluster.back();
       auto & i_atom_id{cluster.front()}; // center_atom index
       auto & i_bin_id{this->part2bin[i_atom_id]};
       auto & shift_index{this->neighbour_bin_id[i_bin_id][j_linear_id].get_index()};

@@ -130,10 +130,13 @@ namespace rascal {
 
     inline double get_cutoff() const {return this->cut_off;}
 
-    inline const double & get_distance(const PairRef_t & pair) const {
+    template <size_t Level, size_t Depth>
+    inline const double & get_distance(const ClusterRefBase<Level, Depth> & pair) const {
       return this->distance[pair];
     }
-    inline double & get_distance(const PairRef_t & pair) {
+
+    template <size_t Level, size_t Depth>
+    inline double & get_distance(const ClusterRefBase<Level, Depth>& pair) {
       return this->distance[pair];
     }
 
@@ -355,6 +358,8 @@ namespace rascal {
           compute_cluster_depth<next_cluster.level()>
             (typename traits::DepthByDimension{})
             };
+
+        // TODO: check for distance missing
 
         Eigen::Matrix<size_t, NextClusterDepth+1, 1> indices_cluster;
         indices_cluster.template head<NextClusterDepth>()

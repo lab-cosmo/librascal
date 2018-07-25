@@ -651,36 +651,36 @@ namespace rascal {
       return not (*this == other);
     }
 
-    //! less than
-    inline bool operator < (const iterator & other) const {
-      return this->index < other.index;
-    }
+    // //! less than
+    // inline bool operator < (const iterator & other) const {
+    //   return this->index < other.index;
+    // }
 
-    //! larger than
-    inline bool operator > (const iterator & other) const {
-      return this->index > other.index;
-    }
+    // //! larger than
+    // inline bool operator > (const iterator & other) const {
+    //   return this->index > other.index;
+    // }
 
-    //! larger equal than
-    inline bool operator >= (const iterator & other) const {
-      return this->index >= other.index;
-    }
+    // //! larger equal than
+    // inline bool operator >= (const iterator & other) const {
+    //   return this->index >= other.index;
+    // }
 
-    //! less equal than
-    inline bool operator <= (const iterator & other) const {
-      return this->index <= other.index;
-    }
+    // //! less equal than
+    // inline bool operator <= (const iterator & other) const {
+    //   return this->index <= other.index;
+    // }
 
-    // ! move
-    inline iterator operator + (const int n) {
-      this->index + n;
-    }
+    // // ! plus operator
+    // inline iterator operator + (const size_t n) {
+    //   return (this->index + n);
+    //   return this;
+    // }
 
-    //! access at specific position // TODO: Not sure about this one?
-    inline value_type operator[] (const int & n) const {
-      // TODO: Check for boundary of container
-      return *(this->container.begin() + n);
-    }
+    // //! access at specific position // TODO: Not sure about this one?
+    // inline value_type operator[] (const int n) const {
+    //   return *(this->container.begin() + (size_t)n);
+    // }
 
   protected:
     //! constructor with container ref and starting point

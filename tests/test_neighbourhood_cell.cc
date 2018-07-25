@@ -79,7 +79,12 @@ namespace rascal {
           std::cout << "pair (" << atom_cluster.back()
                     << ", " << pair_cluster.back()
                     << "), pair_counter = " << pair_counter
-                    << ", pair_offset = " << pair_offset << std::endl;
+                    << ", pair_offset = " << pair_offset;// << std::endl;
+          auto dist{(atom_cluster.get_position()
+                     - pair_cluster.get_position()).norm()};
+          std::cout << " distance "
+                    << dist
+                    << " " << (dist < 0.9*3.0) << std::endl;
         }
 
         BOOST_CHECK_EQUAL(pair_counter, pair_offset);
