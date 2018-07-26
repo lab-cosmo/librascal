@@ -178,7 +178,7 @@ namespace rascal {
 
     //! direct constructor
     ClusterRefBase(std::array<int, Level> atom_indices,
-                   IndexConstArray cluster_indices):
+                   IndexConstArray cluster_indices) :
       atom_indices{atom_indices}, cluster_indices(cluster_indices.data()) {}
 
     //! Copy constructor

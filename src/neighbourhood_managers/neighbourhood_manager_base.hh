@@ -231,7 +231,7 @@ namespace rascal {
       return this->implementation().get_cluster_size(cluster);
     }
 
-    inline size_t cluster_size(const int atom_index) const {
+    inline size_t cluster_size(const int & atom_index) const {
       return this->implementation().get_cluster_size(atom_index);
     }
 
@@ -463,7 +463,11 @@ namespace rascal {
     ClusterRef(Iterator_t & it,
                const std::array<int, Level> & atom_indices,
                const size_t & cluster_index) :
+
       Parent{atom_indices, IndexConstArray_t (& cluster_index)}, it{it} {}
+
+    // needed to construct a ClusterRef<1> with the correct offset:
+
 
     // Reference to j neighbours of a given atom i // TODO: description
     // cluster.get_indices() -> index of the atom w.r.t order in arrays
@@ -472,11 +476,13 @@ namespace rascal {
      * function here is self referencing right now. A ClusterRefBase with
      * Level=1 is needed to construct it ?!
      */
-    template <size_t Depth, bool FirstLevel=(Level==1)>
-    ClusterRef(std::enable_if_t<FirstLevel, ClusterRefBase<1, Depth>> & cluster,
+    template <bool FirstLevel=(Level==1)>
+    ClusterRef(std::enable_if_t<FirstLevel, ClusterRef<1>> & cluster,
                Manager_t & manager):
       Parent{cluster.get_atom_indices(), cluster.get_cluster_indices()},
       it{manager}{}
+
+    // ClusterRef(Manager_t & manager, size_t access_index);
 
     //! construct a clusterref from atom_offset: get a clusterref of Level=1 to
     //! iterate over neighbours
@@ -503,14 +509,12 @@ namespace rascal {
       return this->atoms;
     }
 
-    std::array<AtomRef_t, Level> & get_atoms() {return this->atoms;};
-
     // TODO: Not sure if this function is needed/used/necessary
-    const std::array<int, Level> & get_atom_ids() const {
-      return this->atom_indices;
-    }
+    // const std::array<int, Level> & get_atom_ids() const {
+    //   return this->atom_indices;
+    // }
 
-    std::array<int, Level> & get_atoms_ids() {return this->atom_indices;};
+    const std::array<int, Level> & get_atoms_ids() const {return this->atom_indices;};
 
 
     /* There are 2 cases:
@@ -650,37 +654,6 @@ namespace rascal {
     inline bool operator != (const iterator & other) const {
       return not (*this == other);
     }
-
-    // //! less than
-    // inline bool operator < (const iterator & other) const {
-    //   return this->index < other.index;
-    // }
-
-    // //! larger than
-    // inline bool operator > (const iterator & other) const {
-    //   return this->index > other.index;
-    // }
-
-    // //! larger equal than
-    // inline bool operator >= (const iterator & other) const {
-    //   return this->index >= other.index;
-    // }
-
-    // //! less equal than
-    // inline bool operator <= (const iterator & other) const {
-    //   return this->index <= other.index;
-    // }
-
-    // // ! plus operator
-    // inline iterator operator + (const size_t n) {
-    //   return (this->index + n);
-    //   return this;
-    // }
-
-    // //! access at specific position // TODO: Not sure about this one?
-    // inline value_type operator[] (const int n) const {
-    //   return *(this->container.begin() + (size_t)n);
-    // }
 
   protected:
     //! constructor with container ref and starting point

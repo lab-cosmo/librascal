@@ -41,6 +41,7 @@ namespace rascal {
     constexpr bool check_below{true};
 
     // Check underlying manager
+    std::cout << ">============ below" << std::endl;
     if (check_below) {
       for (auto atom : manager_chain) {
         if (verbose) {
@@ -57,6 +58,7 @@ namespace rascal {
         }
       }
     }
+    std::cout << "<============ below" << std::endl;
 
     AdaptorMaxLevel<NeighbourhoodManagerChain> adaptor{manager_chain, cutoff};
     adaptor.update();
