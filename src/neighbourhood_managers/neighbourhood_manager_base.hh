@@ -466,13 +466,13 @@ namespace rascal {
       Parent{atom_indices, IndexConstArray_t (& cluster_index)}, it{it} {}
 
     // Reference to j neighbours of a given atom i // TODO: description
-    template <size_t Depth, bool FirstLevel=(Level==1)>
     // cluster.get_indices() -> index of the atom w.r.t order in arrays
     /**
      * This is a ClusterRef of Level=1, constructed from a higher Level.  This
      * function here is self referencing right now. A ClusterRefBase with
      * Level=1 is needed to construct it ?!
      */
+    template <size_t Depth, bool FirstLevel=(Level==1)>
     ClusterRef(std::enable_if_t<FirstLevel, ClusterRefBase<1, Depth>> & cluster,
                Manager_t & manager):
       Parent{cluster.get_atom_indices(), cluster.get_cluster_indices()},

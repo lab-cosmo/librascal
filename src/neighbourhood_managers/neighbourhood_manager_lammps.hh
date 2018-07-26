@@ -56,9 +56,9 @@ namespace rascal {
     using traits = NeighbourhoodManager_traits<NeighbourhoodManagerLammps>;
     using Parent = NeighbourhoodManagerBase<NeighbourhoodManagerLammps>;
     using Vector_ref = typename Parent::Vector_ref;
-    using AtomRef_t = typename Parent::AtomRef;
-    template <size_t Level>
-    using ClusterRef_t = typename Parent::template ClusterRef<Level>;
+    // using AtomRef_t = typename Parent::AtomRef;
+    // template <size_t Level>
+    // using ClusterRef_t = typename Parent::template ClusterRef<Level>;
 
     //! Default constructor
     NeighbourhoodManagerLammps() = default;

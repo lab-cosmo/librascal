@@ -388,7 +388,7 @@ namespace rascal {
     using ClusterRef_t =
       typename ManagerImplementation::template ClusterRef<Level>;
 
-    template<size_t CustomLevel>
+    template <size_t CustomLevel>
     using ClusterRefCustom_t =
       typename ManagerImplementation::template ClusterRef<CustomLevel>;
 
@@ -423,8 +423,17 @@ namespace rascal {
                   << access_index
                   << std::endl;
 
-        // ClusterRefCustom_t<1>(manager,  )
-        //
+        // iterator for construction of a ClusterRef
+        auto it = manager.begin();
+
+        auto & cluster_indices_properties =
+          std::get<0>(manager.get_cluster_indices());
+        using Ref_t = typename
+          std::remove_reference_t<decltype(cluster_indices_properties)>::reference;
+        Ref_t cluster_indices =
+          cluster_indices_properties[access_index];
+        ClusterRefCustom_t<1> pair_cluster{it, access_index, cluster_indices};
+
         // for (auto pair : atom_tmp) {
         //   std::cout << "Pair idx " << pair.back() << std::endl;
         //   current_j_atoms.insert(pair.back());
