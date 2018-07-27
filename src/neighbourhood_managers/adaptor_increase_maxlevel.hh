@@ -362,7 +362,7 @@ namespace rascal {
 				       (Level+1 == OldMaxLevel)>;
 
     static void loop(ClusterRef_t & cluster,
-		     AdaptorMaxLevel<ManagerImplementation> & manager) {
+                     AdaptorMaxLevel<ManagerImplementation> & manager) {
       // size_t cluster_counter{0};
 
       // do nothing, if MaxLevel is not reached, except call the next level
@@ -393,9 +393,8 @@ namespace rascal {
 
     using traits = typename AdaptorMaxLevel<ManagerImplementation>::traits;
 
-    static void loop (ClusterRef_t & cluster,
-		      AdaptorMaxLevel<ManagerImplementation> & manager) {
-
+    static void loop(ClusterRef_t & cluster,
+                     AdaptorMaxLevel<ManagerImplementation> & manager) {
       // TODO: Understand why manager.get_cluster_indices(), compare to strict?!
       auto & next_cluster_indices{std::get<Level>(manager.get_cluster_indices())};
 
@@ -415,9 +414,13 @@ namespace rascal {
 
       std::set<size_t> current_j_atoms;
 
-      for (auto atom_index : i_atoms) {
-        size_t access_index = manager.get_cluster_neighbour(manager, atom_index);
+      //! access to underlying manager for access to atom pairs
+      auto && manager_tmp{cluster.get_manager()};
 
+      for (auto atom_index : i_atoms) {
+
+        size_t access_index = manager.get_cluster_neighbour(manager,
+                                                            atom_index);
         auto counters = manager.get_counters();
         std::cout << " === neigh back "
                   << access_index
@@ -438,25 +441,25 @@ namespace rascal {
         // Ref_t cluster_indices =
         //   cluster_indices_properties[access_index];
 
-        // ClusterRefOne_t atom_cluster(manager.begin(), access_index);
+        // ClusterRefOne_t atom_cluster(manager_impl.begin(), access_index);
 
         // TODO: Build a ClusterRefBase of Level 1
-        using Parent = ClusterRefBase<1, 0>;
-        using IndexConstArray_t = typename Parent::IndexConstArray;
-        std::array<int,1> atom_array{access_index};
-        ClusterRefBase<1,0> cluster_base(atom_array,
-                                         IndexConstArray_t(& access_index));
+        // using Parent = ClusterRefBase<1, 0>;
+        // using IndexConstArray_t = typename Parent::IndexConstArray;
+        // std::array<int, 1> atom_array{access_index};
+        // ClusterRefBase<1, 0> cluster_base(atom_array,
+        //                                   IndexConstArray_t(& access_index));
 
         // TODO: Use ClusterRefBase from above to construct an iterable
         // ClusterRef to gather neighbour indices
-        ClusterRefOne_t i_cluster(cluster_base, manager.get_manager());
+        // ClusterRefOne_t i_cluster(cluster_base, manager_impl);
 
-        for (auto pair : i_cluster) {
-          std::cout << "Neigh of"
-                    << pair.back()
-                    << std::endl;
-          current_j_atoms.insert(pair.back());
-        }
+        // for (auto pair : i_cluster) {
+        //   std::cout << "Neigh of"
+        //             << pair.back()
+        //             << std::endl;
+        //   current_j_atoms.insert(pair.back());
+        // }
 
         // iterator for construction of a ClusterRef
         // auto it = manager.begin();

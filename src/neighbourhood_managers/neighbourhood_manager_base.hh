@@ -477,10 +477,10 @@ namespace rascal {
      * Level=1 is needed to construct it ?!
      */
     template <bool FirstLevel=(Level==1)>
-    ClusterRef(std::enable_if_t<FirstLevel, ClusterRef<1>> & cluster,
+    ClusterRef(std::enable_if_t<FirstLevel, ClusterRefBase<1,0>> & cluster,
                Manager_t & manager):
-      Parent{cluster.get_atom_indices(), cluster.get_cluster_indices()},
-      it{manager}{}
+      Parent(cluster.get_atom_indices(), cluster.get_cluster_indices()),
+      it(manager) {}
 
     // ClusterRef(Manager_t & manager, size_t access_index);
 
