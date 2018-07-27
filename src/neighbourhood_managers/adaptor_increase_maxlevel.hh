@@ -418,19 +418,21 @@ namespace rascal {
       auto && manager_tmp{cluster.get_manager()};
 
       for (auto atom_index : i_atoms) {
-
+        // TODO: should not be needed in case of single atoms?! The indices seem
+        // to be the same
         size_t access_index = manager.get_cluster_neighbour(manager,
                                                             atom_index);
+
+        // pseudo code:
+        // ClusterRef(cluster.get_manager(), atom_index
         auto counters = manager.get_counters();
         std::cout << " === neigh back "
-                  << access_index
-                  << " numneigh "
-                  << manager.cluster_size(access_index)
-                  << " offset(cluster) "
-                  << manager.get_offset(cluster)
-                  << " counters "
-                  << counters[0]
-                  << std::endl;
+          << access_index
+          << " numneigh "
+          << manager.cluster_size(access_index)
+          << " offset(cluster) "
+          << manager.get_offset(cluster)
+          << std::endl;
 
 
         // auto it = manager.begin();
