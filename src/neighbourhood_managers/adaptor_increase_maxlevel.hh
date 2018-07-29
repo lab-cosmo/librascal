@@ -384,19 +384,17 @@ namespace rascal {
     using ClusterRef_t =
       typename ManagerImplementation::template ClusterRef<Level>;
 
-    using ClusterRefOne_t =
-      typename ManagerImplementation::template ClusterRef<1>;
+    // using Iterator_t = typename Manager_t::template iterator<Level>;
 
-    template <size_t CustomLevel>
-    using ClusterRefCustom_t =
-      typename ManagerImplementation::template ClusterRef<CustomLevel>;
+    // using Iterator_t = iterator<1>;
+    using Manager_t = NeighbourhoodManagerBase<ManagerImplementation>;
+    using IteratorOne_t = typename Manager_t::template iterator<1>;
 
     using traits = typename AdaptorMaxLevel<ManagerImplementation>::traits;
 
     static void loop(ClusterRef_t & cluster,
                      AdaptorMaxLevel<ManagerImplementation> & manager) {
       // TODO: Understand why manager.get_cluster_indices(), compare to strict?!
-      auto & next_cluster_indices{std::get<Level>(manager.get_cluster_indices())};
 
       // get new depth of cluster indices
       constexpr auto NextClusterDepth{
@@ -415,7 +413,7 @@ namespace rascal {
       std::set<size_t> current_j_atoms;
 
       //! access to underlying manager for access to atom pairs
-      auto && manager_tmp{cluster.get_manager()};
+      auto & manager_tmp{cluster.get_manager()};
 
       for (auto atom_index : i_atoms) {
         // TODO: should not be needed in case of single atoms?! The indices seem
@@ -423,9 +421,6 @@ namespace rascal {
         size_t access_index = manager.get_cluster_neighbour(manager,
                                                             atom_index);
 
-        // pseudo code:
-        // ClusterRef(cluster.get_manager(), atom_index
-        auto counters = manager.get_counters();
         std::cout << " === neigh back "
           << access_index
           << " numneigh "
@@ -434,51 +429,21 @@ namespace rascal {
           << manager.get_offset(cluster)
           << std::endl;
 
+        const auto offset = manager.get_offset(cluster);
+        // access needs to be shifted to exclude cluster.back() from being added
+        // twice
+        auto iterator_at_position =
+          manager_tmp.get_iterator_at(access_index + 1, offset);
 
-        // auto it = manager.begin();
-        // auto & cluster_indices_properties =
-        //   std::get<0>(manager.get_cluster_indices());
-        // using Ref_t = typename
-        //   std::remove_reference_t<decltype(cluster_indices_properties)>::reference;
-        // Ref_t cluster_indices =
-        //   cluster_indices_properties[access_index];
+        auto && cluster_ref (*iterator_at_position);
 
-        // ClusterRefOne_t atom_cluster(manager_impl.begin(), access_index);
-
-        // TODO: Build a ClusterRefBase of Level 1
-        // using Parent = ClusterRefBase<1, 0>;
-        // using IndexConstArray_t = typename Parent::IndexConstArray;
-        // std::array<int, 1> atom_array{access_index};
-        // ClusterRefBase<1, 0> cluster_base(atom_array,
-        //                                   IndexConstArray_t(& access_index));
-
-        // TODO: Use ClusterRefBase from above to construct an iterable
-        // ClusterRef to gather neighbour indices
-        // ClusterRefOne_t i_cluster(cluster_base, manager_impl);
-
-        // for (auto pair : i_cluster) {
-        //   std::cout << "Neigh of"
-        //             << pair.back()
-        //             << std::endl;
-        //   current_j_atoms.insert(pair.back());
-        // }
-
-        // iterator for construction of a ClusterRef
-        // auto it = manager.begin();
-
-        // auto & cluster_indices_properties =
-        //   std::get<0>(manager.get_cluster_indices());
-        // using Ref_t = typename
-        //   std::remove_reference_t<decltype(cluster_indices_properties)>::reference;
-        // Ref_t cluster_indices =
-        //   cluster_indices_properties[access_index];
-        // ClusterRefCustom_t<1> pair_cluster{it, access_index, cluster_indices};
-
-        // for (auto pair : atom_tmp) {
-        //   std::cout << "Pair idx " << pair.back() << std::endl;
-        //   current_j_atoms.insert(pair.back());
-        // }
-
+        for (auto pair : cluster_ref) {
+          std::cout << "Dereference "
+                    << pair.back()
+                    << " access_index "
+                    << access_index << std::endl;
+          current_j_atoms.insert(pair.back());
+        }
       }
 
       std::cout << "Neighbours to add to cluster ";
@@ -487,8 +452,7 @@ namespace rascal {
       }
       std::cout << std::endl;
 
-      // TODO: Need to build clusterrefs with depth=cluster.depth but level=1
-      // from i_atoms using BaseRef_t = ClusterRefCustom_t<1>; BaseRef_t
+      // Now do studd with current_j_atoms
 
       /**
        * The following is the naive approach to what is necessary here. But
@@ -503,36 +467,6 @@ namespace rascal {
       //       }
       //     }
       //   }
-      // }
-
-      // Get the corresponding neighbours of all current i atoms, i.e. build
-      // pairs with the collected i_atoms
-
-
-
-
-      // i refers to the local atom for which the pairs j are added as
-      // MaxLevel+1
-      // auto atom_i = cluster.back();
-      // std::cout << "Atom i " << atom_i << std::endl;
-      // std::cout << manager.get_size() << std::endl;
-      // auto index {cluster.get_global_index()};
-      // for (int i{0};  i  < this->nb_neigh[index]; ++i) {
-      // 	auto jndex{this->neighbours[this->offsets[index]+i]}
-      // 	auto this->
-      // }
-
-
-
-      // std::cout << "atom_i " << atom_i << std::endl;
-
-      // auto nneigh_i = ;
-      // std::cout << "neigh " << neigh << std::endl;
-
-      // for (auto next_cluster : cluster) {
-      // 	std::cout << ">>next_cluster ----- @MaxLevel " << Level<< " index "
-      // 		  << next_cluster.back() << std::endl;
-      // 	manager.add_atom_level_up(next_cluster);
       // }
 
       std::cout << "<--------------------" << std::endl;

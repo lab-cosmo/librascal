@@ -187,6 +187,10 @@ namespace rascal {
     template <size_t Level>
     class ClusterRef;
 
+    inline Iterator_t get_iterator_at(const size_t index, const size_t offset) {
+      return Iterator_t(*this, index, offset);
+    }
+    
     inline Iterator_t begin() {return Iterator_t(*this, 0, 0);}
     inline Iterator_t end() {
       return Iterator_t(*this,
@@ -206,8 +210,9 @@ namespace rascal {
       return this->implementation().get_position(atom);
     }
 
-    template <size_t L, size_t D>
-    inline Vector_ref neighbour_position(ClusterRefBase<L, D> & cluster) {
+    template <size_t Level, size_t Depth>
+    inline Vector_ref
+    neighbour_position(ClusterRefBase<Level, Depth> & cluster) {
       return this->implementation().get_neighbour_position(cluster);
     }
 
@@ -598,8 +603,8 @@ namespace rascal {
 
     using value_type = ClusterRef_t;
     using difference_type = std::ptrdiff_t;
-    // using iterator_category = std::forward_iterator_tag;
-    using iterator_category = std::random_access_iterator_tag;
+    using iterator_category = std::forward_iterator_tag;
+    // using iterator_category = std::random_access_iterator_tag;
 
     using reference = value_type;
 
