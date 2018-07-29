@@ -394,7 +394,6 @@ namespace rascal {
 
     static void loop(ClusterRef_t & cluster,
                      AdaptorMaxLevel<ManagerImplementation> & manager) {
-      // TODO: Understand why manager.get_cluster_indices(), compare to strict?!
 
       // get new depth of cluster indices
       constexpr auto NextClusterDepth{
@@ -410,6 +409,7 @@ namespace rascal {
       auto i_atoms = cluster.get_atom_indices();
       std::cout << "-------------------->" << std::endl;
 
+      // a set of new neighbours, which will be added to the cluster
       std::set<size_t> current_j_atoms;
 
       //! access to underlying manager for access to atom pairs
@@ -430,13 +430,17 @@ namespace rascal {
           << std::endl;
 
         const auto offset = manager.get_offset(cluster);
+        // build a shifted iterator to constuct a ClusterRef<1>
         // access needs to be shifted to exclude cluster.back() from being added
         // twice
         auto iterator_at_position =
           manager_tmp.get_iterator_at(access_index + 1, offset);
 
+        // ClusterRef<1> as dereference from iterator
         auto && cluster_ref (*iterator_at_position);
 
+        // collect all possible neighbours of the cluster: collection of all
+        // neighbours of current_i_atoms
         for (auto pair : cluster_ref) {
           std::cout << "Dereference "
                     << pair.back()
@@ -452,7 +456,7 @@ namespace rascal {
       }
       std::cout << std::endl;
 
-      // Now do studd with current_j_atoms
+      // Now do stuff with current_j_atoms
 
       /**
        * The following is the naive approach to what is necessary here. But
