@@ -187,10 +187,14 @@ namespace rascal {
     template <size_t Level>
     class ClusterRef;
 
-    inline Iterator_t get_iterator_at(const size_t index, const size_t offset) {
+    /**
+     * Get an iterator for a ClusterRef<1> to access pairs of an atom
+     */
+    inline Iterator_t get_iterator_at(const size_t index,
+                                      const size_t offset=0) {
       return Iterator_t(*this, index, offset);
     }
-    
+
     inline Iterator_t begin() {return Iterator_t(*this, 0, 0);}
     inline Iterator_t end() {
       return Iterator_t(*this,
@@ -211,7 +215,7 @@ namespace rascal {
     }
 
     template <size_t Level, size_t Depth>
-    inline Vector_ref
+    inline decltype(auto)
     neighbour_position(ClusterRefBase<Level, Depth> & cluster) {
       return this->implementation().get_neighbour_position(cluster);
     }
@@ -348,8 +352,7 @@ namespace rascal {
      */
     template <size_t Level, class ClusterRef>
     struct PositionGetter {
-      using Vector_ref = typename ClusterRef::Manager_t::Vector_ref;
-      static inline Vector_ref get_position(ClusterRef & cluster) {
+      static inline decltype(auto) get_position(ClusterRef & cluster) {
         return cluster.get_manager().neighbour_position(cluster);
       };
     };
@@ -514,19 +517,13 @@ namespace rascal {
       return this->atoms;
     }
 
-    // TODO: Not sure if this function is needed/used/necessary
-    // const std::array<int, Level> & get_atom_ids() const {
-    //   return this->atom_indices;
-    // }
-
     const std::array<int, Level> & get_atoms_ids() const {return this->atom_indices;};
-
 
     /* There are 2 cases:
      * center (Level== 1)-> position is in the cell
      * neighbour (Level > 1) -> position might have an offset (ghost atom)
      */
-    inline Vector_ref get_position() {
+    inline decltype(auto) get_position() {
       return internal::PositionGetter<Level, ClusterRef>::get_position(*this);
     }
 

@@ -407,9 +407,12 @@ namespace rascal {
 
       // get all i_atom 'names' to find neighbours for
       auto i_atoms = cluster.get_atom_indices();
+
       std::cout << "-------------------->" << std::endl;
 
       // a set of new neighbours, which will be added to the cluster
+      // vector instead of set
+      std::vector<size_t> current_i_atoms;
       std::set<size_t> current_j_atoms;
 
       //! access to underlying manager for access to atom pairs
@@ -418,6 +421,7 @@ namespace rascal {
       for (auto atom_index : i_atoms) {
         // TODO: should not be needed in case of single atoms?! The indices seem
         // to be the same
+        current_i_atoms.push_back(atom_index);
         size_t access_index = manager.get_cluster_neighbour(manager,
                                                             atom_index);
 
@@ -425,33 +429,35 @@ namespace rascal {
           << access_index
           << " numneigh "
           << manager.cluster_size(access_index)
-          << " offset(cluster) "
-          << manager.get_offset(cluster)
           << std::endl;
 
-        const auto offset = manager.get_offset(cluster);
         // build a shifted iterator to constuct a ClusterRef<1>
         // access needs to be shifted to exclude cluster.back() from being added
         // twice
-        auto iterator_at_position =
-          manager_tmp.get_iterator_at(access_index + 1, offset);
+        auto iterator_at_position{manager_tmp.get_iterator_at(access_index)};
 
         // ClusterRef<1> as dereference from iterator
-        auto && cluster_ref (*iterator_at_position);
+        auto && j_cluster{*iterator_at_position};
 
         // collect all possible neighbours of the cluster: collection of all
         // neighbours of current_i_atoms
-        for (auto pair : cluster_ref) {
+        for (auto pair : j_cluster) {
           std::cout << "Dereference "
-                    << pair.back()
-                    << " access_index "
-                    << access_index << std::endl;
+                    << pair.back() << std::endl;
           current_j_atoms.insert(pair.back());
         }
       }
 
+      //! delete cluster atoms
+      std::vector<size_t> atoms_to_add;
+      std::set_difference(current_j_atoms.begin(), current_j_atoms.end(),
+                          current_i_atoms.begin(), current_i_atoms.end(),
+                          std::inserter(atoms_to_add, atoms_to_add.begin()));
+
+
+
       std::cout << "Neighbours to add to cluster ";
-      for (auto j : current_j_atoms) {
+      for (auto j : atoms_to_add) {
         std::cout << j << " ";
       }
       std::cout << std::endl;
