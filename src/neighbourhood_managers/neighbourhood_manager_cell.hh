@@ -116,7 +116,7 @@ namespace rascal {
     // is the current center. j_linear_id is the index of the current
     // neighbour iterator.
     template<size_t Level, size_t Depth>
-    inline Vector_ref get_neighbour_position(const ClusterRefBase<Level, Depth> &
+    inline Vector_t get_neighbour_position(const ClusterRefBase<Level, Depth> &
                                              cluster) {
       static_assert(Level > 1,
                     "Only possible for Level > 1.");
@@ -134,11 +134,9 @@ namespace rascal {
       // TODO: find another way. This is a work around so that
       // shifted_position lives longer than the function call but it
       // is prone to side effects
-      this->shifted_position = this->positions.col(j_atom_id);
-      Eigen::MatrixXd tmp{this->cell * this->get_shift(i_bin_id,shift_index)};
-      this->shifted_position += tmp;
-      auto * xval{this->shifted_position.col(0).data()};
-      return Vector_ref(xval);
+      auto && shifted_position = this->positions.col(j_atom_id);
+      auto && tmp{this->cell * this->get_shift(i_bin_id,shift_index)};
+      return shifted_position + tmp;
     }
 
     // return number of center in the list
