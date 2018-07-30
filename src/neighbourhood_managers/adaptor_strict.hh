@@ -346,7 +346,7 @@ namespace rascal {
                                      (Level+1 == MaxLevel)>;
 
     static void loop(ClusterRef_t & cluster, AdaptorStrict& manager) {
-      auto & next_cluster_indices{std::get<Level>(manager->cluster_indices)};
+      auto & next_cluster_indices{std::get<Level>(manager.cluster_indices)};
       size_t cluster_counter{0};
 
       for (auto next_cluster: cluster) {
@@ -359,11 +359,12 @@ namespace rascal {
             (typename traits::DepthByDimension{})
             };
 
-        // TODO: check for distance missing
 
+        // TODO: check for distance missing
+        static_assert(NextClusterDepth == (NextClusterDepth + 1), "Depth not correct");
         Eigen::Matrix<size_t, NextClusterDepth+1, 1> indices_cluster;
         indices_cluster.template head<NextClusterDepth>()
-          = next_cluster.get_cluster_indices();
+          = cluster.get_cluster_indices();
         indices_cluster(NextClusterDepth) = cluster_counter;
         next_cluster_indices.push_back(indices_cluster);
         cluster_counter++;
@@ -404,6 +405,7 @@ namespace rascal {
     }
     this->nb_neigh[0].push_back(0);
     for (auto & vector: this->offsets) {
+
       vector.push_back(0);
     }
 

@@ -258,14 +258,15 @@ namespace rascal {
       // TODO: Check for <= or < ?!
       static_assert(Level <= traits::MaxLevel,
                     "this implementation only handles atoms and pairs.");
-      std::cout << "1Level " << Level <<std::endl;
-      std::cout << "1Depth " << Depth <<std::endl;
-      std::cout << "1clustersize " << this->numneigh[cluster.back()] <<std::endl;
       return this->numneigh[cluster.back()];
     }
 
 
     inline size_t get_cluster_size(const int & atom_index) const {
+      for (auto n : numneigh ) {
+          std::cout << " " << n;
+        }
+        std::cout << std::endl;
       return this->numneigh[atom_index];
     }
 

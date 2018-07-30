@@ -67,23 +67,29 @@ namespace rascal {
       std::cout << "Adaptor increase MaxLevel" << std::endl;
     }
 
+    auto natoms{0};
+    auto npairs{0};
+    auto ntriplets{0};
     for (auto atom : adaptor) {
+      natoms++;
       if (verbose) {
         std::cout << "increase MaxLevel atom "
-        	  << atom.back()
+        	  << atom.back() << " " << natoms
         	  << std::endl;
       }
       for (auto pair : atom) {
+        npairs++;
         if (verbose) {
-          std::cout << " increase MaxLevel pair "
-        	    << pair.back()
+          std::cout << "   increase MaxLevel pair "
+        	    << pair.back() << " " << npairs
         	    << std::endl;
         }
-        std::cout << " increase MaxLevel before triplet " << std::endl;
+        std::cout << "     increase MaxLevel before triplet " << std::endl;
         for (auto triplet : pair) {
+          ntriplets++;
           if (verbose) {
-            std::cout << "    triplet "
-                      << triplet.back()
+            std::cout << "       triplet "
+                      << triplet.back() << " " << ntriplets
                       << std::endl;
           }
         }

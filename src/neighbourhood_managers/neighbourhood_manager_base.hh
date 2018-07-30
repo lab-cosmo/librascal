@@ -280,7 +280,7 @@ namespace rascal {
     template <size_t Level, size_t CallerDepth>
     inline size_t get_offset(const ClusterRefBase<Level,
                              CallerDepth> & cluster) const {
-      constexpr auto depth{this->cluster_depth<Level>()};
+      constexpr auto depth{NeighbourhoodManagerBase::template cluster_depth<Level>()};
       return cluster.get_cluster_index(depth);
     }
 
@@ -306,6 +306,8 @@ namespace rascal {
      * adaptors accordingly via the lower level indices and a Level-dependend
      * index is appended to the array.
      */
+    /// TODO: possible: tuple of shared pointer. adaptor_increase_maxleve makes
+    /// a copy
     ClusterIndex_t cluster_indices;
 
     // template <size_t Level, size_t Depth>
@@ -548,6 +550,7 @@ namespace rascal {
       auto offset = this->get_manager().get_offset(counters);
       return iterator(*this, 0, offset);
     }
+
     inline iterator end() {
       return iterator(*this, this->size(), std::numeric_limits<size_t>::max());
     }

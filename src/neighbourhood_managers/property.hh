@@ -56,7 +56,7 @@ namespace rascal {
         }
       }
 
-      // User for extending cluster_indices
+      // Used for extending cluster_indices
       template<typename Derived>
       static void push_in_vector(std::vector<T> & vec,
                                  const Eigen::DenseBase<Derived> & ref) {
@@ -70,12 +70,13 @@ namespace rascal {
           }
         }
       }
-
     };
 
     //! specialisation for scalar properties
     template <typename T>
     struct Value<T, 1, 1> {
+      constexpr static Dim_t NbRow{1};
+      constexpr static Dim_t NbCol{1};
       using type = T;
       using reference = T&;
 
@@ -83,6 +84,17 @@ namespace rascal {
 
       static void push_in_vector(std::vector<T> & vec, reference ref) {
         vec.push_back(ref);
+      }
+
+      // Used for extending cluster_indices
+      template<typename Derived>
+      static void push_in_vector(std::vector<T> & vec,
+                                 const Eigen::DenseBase<Derived> & ref) {
+        static_assert(Derived::RowsAtCompileTime==NbRow,
+                      "NbRow has incorrect size.");
+        static_assert(Derived::ColsAtCompileTime==NbCol,
+                      "NbCol has incorrect size.");
+        vec.push_back(ref(0,0));
       }
     };
 
@@ -223,10 +235,9 @@ namespace rascal {
     /**
      * Function for adding Eigen-based matrix data to `property`
      */
-    template<typename Derived, bool NotScalar = (NbComp>1)>
-    inline std::enable_if_t<NotScalar>
+    template<typename Derived>
+    inline void
     push_back(const Eigen::DenseBase<Derived> & ref) {
-      static_assert(NbComp > 1, "SFINAE parameter do not set.");
       static_assert(Derived::RowsAtCompileTime==NbRow,
                     "NbRow has incorrect size.");
       static_assert(Derived::ColsAtCompileTime==NbCol,
