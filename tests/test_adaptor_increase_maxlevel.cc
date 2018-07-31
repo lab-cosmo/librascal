@@ -83,23 +83,25 @@ namespace rascal {
       for (auto pair : atom) {
         npairs++;
         if (verbose) {
-          std::cout << pair.back() << " " << pair.get_global_index()
-        	    << std::endl;
+          // std::cout << pair.back() << " glob " << pair.get_global_index()
+          //           << std::endl;
           std::cout << "   complete pair "
-                    << atom.back() << " " << pair.back() << std::endl;
+                    << atom.back() << " " << pair.back()
+                    << " glob " << pair.get_global_index() << std::endl;
         }
         for (auto triplet : pair) {
           ntriplets++;
           if (verbose) {
-            std::cout << "       triplet "
+            std::cout << "             triplet "
                       << triplet.back() << " global " << triplet.get_global_index()
                       << std::endl;
-            std::cout << "                 complete "
+            std::cout << "                         complete "
                       << atom.back() << " " << pair.back() << " " << triplet.back() << std::endl;
           }
         }
       }
     }
+    std::cout << "Number of triplets: " << ntriplets << std::endl;
   }
 
 

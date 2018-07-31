@@ -137,7 +137,6 @@ namespace rascal {
     inline size_t get_nb_clusters(size_t cluster_size) const {
       switch (cluster_size) {
       case traits::MaxLevel: {
-        std::cout << "neighbours.size() " << neighbours.size() << std::endl;
         return this->neighbours.size();
         break;
       }
@@ -224,43 +223,12 @@ namespace rascal {
                                    & cluster) const {
       static_assert(Level < traits::MaxLevel,
                     "this implementation handles only the respective MaxLevel");
-      // TODO: Should this not be a test for Depth?
       if (Level < traits::MaxLevel-1) {
-        // std:: cout << "Level -1- " << Level << std::endl;
-        // std::cout << " cluster index -1- " << this->manager.get_cluster_size(cluster) << std::endl;
 	return this->manager.get_cluster_size(cluster);
       } else {
-        // std:: cout << "Level -2- " << Level << std::endl;
-
-        // auto idx_tmp = this->manager.get_offset_impl(cluster);
         auto access_index = cluster.get_cluster_index(Depth);
-        // std::cout << "acc idx " << access_index
-        // //           << " " << nb_neigh[access_index]
-        // //           << " idx_tmp " << idx_tmp
-        // //           << " level " << cluster.level()
-        //           << std::endl;
-        // // for (auto n : nb_neigh ) {
-        // //   std::cout << " " << n;
-        // // }
-        // // std::cout << std::endl;
-        // std::cout << "offsets " << std::endl;
-        // for (auto o : offsets ) {
-        //   std::cout << " " << o;
-        // }
-        // std::cout << std::endl;
-        // std::cout << "neighbours of cluster<MaxLevel> " << std::endl;
-        // for (auto n : neighbours ) {
-        //   std::cout << " " << n;
-        // }
-        // std::cout << std::endl;
-        // auto off =
-
-        // TODO: access_index -> global cluster index
 	return nb_neigh[access_index];
       }
-      // return this->manager.get_cluster_size(cluster); TODO: this should be
-      // self-referring if Level=MaxLevel, otherwise underlying manager
-      // TODO: conditional_t ??
     }
 
     // Returns the pairs of an atom with index `atom_index`
@@ -276,10 +244,6 @@ namespace rascal {
      */
 
     inline void add_atom(const int atom_index) {
-      // static_assert(Level <= traits::MaxLevel,
-      //               "you can only add neighbours to the n-th degree defined by "
-      //               "MaxLevel of the underlying manager");
-
       // add new atom at this Level
       this->atom_indices.push_back(atom_index);
       // count that this atom is a new neighbour
@@ -308,31 +272,20 @@ namespace rascal {
     // now set the correct offsets for access
     inline void set_offsets() {
       auto n_tuples{nb_neigh.size()};
-      std::cout << "n_tuples " << n_tuples << std::endl;
       this->offsets.reserve(n_tuples);
       this->offsets.resize(1);
       // this->offsets.push_back(0);
       for (size_t i{0}; i<n_tuples; ++i) {
         this->offsets.emplace_back(this->offsets[i] + this->nb_neigh[i]);
       }
-      // for (si
     }
 
     template <size_t Level>
     inline void add_atom(const typename ManagerImplementation::template
                          ClusterRef<Level> & cluster) {
-      std::cout << "add_atom (cluster) "
-		<< cluster.back()
-		<< " Level " << Level
-		<< std::endl;
+      static_assert(Level <= traits::MaxLevel,
+                   "Level too high, not possible to add atom");
       return this->add_atom(cluster.back());
-    }
-
-    template <size_t Level>
-    inline void add_atom(typename ManagerImplementation::template
-                         ClusterRef<Level> & cluster) {
-      std::cout << "            adding_atom_level_up" << std::endl;
-      return this->template add_atom(cluster.back());
     }
 
     // Make a half neighbour list, by construction only Level=1 is supplied.
@@ -427,10 +380,6 @@ namespace rascal {
       for (auto next_cluster : cluster) {
 
         auto & next_cluster_indices{std::get<Level>(manager.cluster_indices)};
-        std::cout << "-4- push cluster indices "
-                  << cluster.get_cluster_indices()
-                  << " " << Level
-                  << std::endl;
         next_cluster_indices.push_back(next_cluster.get_cluster_indices());
 
 	NextLevelLoop::loop(next_cluster, manager);
@@ -458,29 +407,25 @@ namespace rascal {
     static void loop(ClusterRef_t & cluster,
                      AdaptorMaxLevel<ManagerImplementation> & manager) {
 
-      std::cout << " ------At old MaxLevel, adding new layer----- OldMax = "
-                << OldMaxLevel << std::endl;
-
-      // get all i_atom 'names' to find neighbours for
+      // get all i_atoms to find neighbours to extend the cluster to the next
+      // level
       auto i_atoms = cluster.get_atom_indices();
 
-      std::cout << "-------------------->" << std::endl;
-
-      // a set of new neighbours, which will be added to the cluster
-      // vector instead of set
+      // vector of existing i_atoms in `cluster` to avoid doubling of atoms in
+      // final list
       std::vector<size_t> current_i_atoms;
+      // a set of new neighbours for the cluster, which will be added to extend
+      // the cluster
       std::set<size_t> current_j_atoms;
 
       //! access to underlying manager for access to atom pairs
       auto & manager_tmp{cluster.get_manager()};
 
-      std::cout << " === neigh back "
-                << i_atoms[0] << " " << i_atoms[1]
-                << std::endl;
+      // std::cout << " === neigh back "
+      //           << i_atoms[0] << " " << i_atoms[1]
+      //           << std::endl;
 
       for (auto atom_index : i_atoms) {
-        // TODO: should not be needed in case of single atoms?! The indices seem
-        // to be the same
         current_i_atoms.push_back(atom_index);
         size_t access_index = manager.get_cluster_neighbour(manager,
                                                             atom_index);
@@ -488,30 +433,29 @@ namespace rascal {
         // build a shifted iterator to constuct a ClusterRef<1>
         auto iterator_at_position{manager_tmp.get_iterator_at(access_index)};
 
-        // ClusterRef<1> as dereference from iterator to get pairs
+        // ClusterRef<1> as dereference from iterator to get pairs of the
+        // i_atoms
         auto && j_cluster{*iterator_at_position};
 
         // collect all possible neighbours of the cluster: collection of all
         // neighbours of current_i_atoms
         for (auto pair : j_cluster) {
-          std::cout << "Dereference "
-                    << pair.back() << std::endl;
           current_j_atoms.insert(pair.back());
         }
       }
 
-      // delete cluster atoms from list to build additional neighbours
+      // delete existing cluster atoms from list to build additional neighbours
       std::vector<size_t> atoms_to_add{};
       std::set_difference(current_j_atoms.begin(), current_j_atoms.end(),
                           current_i_atoms.begin(), current_i_atoms.end(),
                           std::inserter(atoms_to_add, atoms_to_add.begin()));
 
-      std::cout << "Neighbours to add to cluster ";
-      for (auto j : atoms_to_add) {
-        std::cout << j << " ";
-      }
-      std::cout << "number of neighbours to add to add " << atoms_to_add.size();
-      std::cout << std::endl;
+      // std::cout << "Neighbours to add to cluster ";
+      // for (auto j : atoms_to_add) {
+      //   std::cout << j << " ";
+      // }
+      // std::cout << "number of neighbours to add to add " << atoms_to_add.size();
+      // std::cout << std::endl;
 
       manager.add_entry_number_of_neighbours();
       if (atoms_to_add.size() > 0) {
@@ -519,10 +463,7 @@ namespace rascal {
           manager.add_neighbour_of_cluster(j);
         }
       }
-
-      std::cout << "<--------------------" << std::endl;
     }
-    // end
   };
 
   /* ---------------------------------------------------------------------- */
@@ -616,7 +557,6 @@ namespace rascal {
 
     for (auto atom : this->manager) {
       // Level 1, Level variable is at 0, atoms, index 0
-      // std::cout << "## for atoms in manager ##" << std::endl;
       using AddLevelLoop = AddLevelLoop<atom.level(),
                                         atom.level() == traits::MaxLevel-1>;
       auto & atom_cluster_indices{std::get<0>(this->cluster_indices)};
@@ -624,27 +564,11 @@ namespace rascal {
       AddLevelLoop::loop(atom, *this);
     }
 
-    // correct the offsets
+    // correct the offsets for the new cluster level
     this->set_offsets();
-
+    // add correct cluster_indices for the highest level
     auto & max_cluster_indices{std::get<traits::MaxLevel-1>(this->cluster_indices)};
     max_cluster_indices.fill_sequence();
-
-    /**
-     * To make triplets
-     * Iteration for i-j adding i-k and j-k pairs
-     * Iteration for i-j-k adding i-j and j-k and k-l pairs
-     * etc.
-     */
-
-    // triplets:
-    // atom_refs[new_max_level].push_back(j,k atoms)
-    // quadruplets
-    // atom_refs[new_max_level].push_back(j,k,l atoms)
-    // The new level atom_refs need to get the correct ClusterRef to
-    // be acessible as triplet/quadruplet/etc.
-    // The existing MaxLevel is the iteration depth
-
   }
 
   /* ---------------------------------------------------------------------- */
@@ -686,25 +610,21 @@ namespace rascal {
      *                 1 - pairs
      *                 2 - triplets
      *                 etc.
+     * Level is determined by the ClusterRef building iterator, not by the Level
+     * of the built iterator
      */
 
-    if (Level == traits::MaxLevel) {
+    if (Level == traits::MaxLevel-1) {
       /**
-       * Reinterpret counters as a smaller array to call parent offset
-       * multiplet. This can then be used to access the actual offset here.
+       * Counters as an array to call parent offset multiplet. This can then be
+       * used to access the actual offset for the next Level here.
        */
-      auto call_counters =
-        reinterpret_cast<const std::array<size_t, Level-1> &>(counters);
-      auto i{this->manager.get_offset_impl(call_counters)};
-      auto j{counters.back()}; // this index is not correct
-      auto main_offset{this->offsets[i]};
-      // std::cout << "call_counters " <<  << std::endl;
-      std::cout << "offset -3- "
-                << " i/j/off+j/i+j " << i
-                << "/" << j
-                << "/" << main_offset+j
-                << std::endl;
-      return main_offset + j;
+
+      auto i{this->manager.get_offset_impl(counters)};
+      auto j{counters[Level-1]};
+      auto tuple_index{i+j};
+      auto main_offset{this->offsets[tuple_index]};
+      return main_offset;
     } else {
       /**
        * If not accessible at this level, call lower Level offsets from lower
@@ -716,3 +636,7 @@ namespace rascal {
 }  // rascal
 
 #endif /* ADAPTOR_MAXLEVEL_H */
+
+// TODO: The construction of triplets is fine, but they occur multiple times. We
+// probably need to check for increasing atomic index to get rid of
+// duplicates. But this is in general a design decision, if we want full/half neighbour list and full/half/whatever triplets and quadruplets

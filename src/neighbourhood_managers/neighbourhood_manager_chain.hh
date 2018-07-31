@@ -393,14 +393,10 @@ namespace rascal {
   template<size_t Level>
   inline size_t NeighbourhoodManagerChain::
   get_offset_impl(const std::array<size_t, Level> & counters) const {
-    // std::cout << "get_offset_impl Level " << Level << std::endl;
-    // // TODO: Check this static_assert for validity
-    // // static_assert (Level == 1, "this manager can only give the offset "
-    // //                "(= starting index) for a pair iterator, given the i atom "
-    // //                "of the pair");
-    // std::cout << "counters.front(), offsets(<-) "
-    //           << counters.front() << ", "
-    //           << this->offsets[counters.front()] << std::endl;
+    // TODO: Check this static_assert for validity
+    // static_assert (Level == 1, "this manager can only give the offset "
+    //                "(= starting index) for a pair iterator, given the i atom "
+    //                "of the pair");
     return this->offsets[counters.front()];
   }
 

@@ -556,7 +556,7 @@ namespace rascal {
     }
     inline size_t size() {return this->get_manager().cluster_size(*this);}
 
-    size_t get_index() const {
+    inline size_t get_index() const {
       return this->it.index;
     }
 
