@@ -42,6 +42,7 @@ namespace rascal {
 
     // Check underlying manager
     std::cout << ">============ below" << std::endl;
+    size_t npairs1{0};
     if (check_below) {
       for (auto atom : manager_chain) {
         if (verbose) {
@@ -50,14 +51,17 @@ namespace rascal {
                     << std::endl;
         }
         for (auto pair : atom) {
+          npairs1++;
           if (verbose) {
             std::cout << " chain pair "
                       << pair.back()
+                      << " glob " << pair.get_global_index()
                       << std::endl;
           }
         }
       }
     }
+    std::cout << "number of pairs " << npairs1 << std::endl;
     std::cout << "<============ below" << std::endl;
 
     AdaptorMaxLevel<NeighbourhoodManagerChain> adaptor{manager_chain, cutoff};
@@ -73,24 +77,25 @@ namespace rascal {
     for (auto atom : adaptor) {
       natoms++;
       if (verbose) {
-        std::cout << "increase MaxLevel atom "
-        	  << atom.back() << " " << natoms
+        std::cout << atom.back()
         	  << std::endl;
       }
       for (auto pair : atom) {
         npairs++;
         if (verbose) {
-          std::cout << "   increase MaxLevel pair "
-        	    << pair.back() << " " << npairs
+          std::cout << pair.back() << " " << pair.get_global_index()
         	    << std::endl;
+          std::cout << "   complete pair "
+                    << atom.back() << " " << pair.back() << std::endl;
         }
-        std::cout << "     increase MaxLevel before triplet " << std::endl;
         for (auto triplet : pair) {
           ntriplets++;
           if (verbose) {
             std::cout << "       triplet "
-                      << triplet.back() << " " << ntriplets
+                      << triplet.back() << " global " << triplet.get_global_index()
                       << std::endl;
+            std::cout << "                 complete "
+                      << atom.back() << " " << pair.back() << " " << triplet.back() << std::endl;
           }
         }
       }

@@ -226,25 +226,37 @@ namespace rascal {
                     "this implementation handles only the respective MaxLevel");
       // TODO: Should this not be a test for Depth?
       if (Level < traits::MaxLevel-1) {
+        // std:: cout << "Level -1- " << Level << std::endl;
+        // std::cout << " cluster index -1- " << this->manager.get_cluster_size(cluster) << std::endl;
 	return this->manager.get_cluster_size(cluster);
       } else {
+        // std:: cout << "Level -2- " << Level << std::endl;
+
+        // auto idx_tmp = this->manager.get_offset_impl(cluster);
         auto access_index = cluster.get_cluster_index(Depth);
-        std::cout << "acc idx " << access_index
-                  << " " << nb_neigh[access_index]
-                  << std::endl;
-        for (auto n : nb_neigh ) {
-          std::cout << " " << n;
-        }
-        std::cout << std::endl;
-        for (auto o : offsets ) {
-          std::cout << " " << o;
-        }
-        std::cout << std::endl;
-        for (auto n : neighbours ) {
-          std::cout << " " << n;
-        }
-        std::cout << std::endl;
-	return nb_neigh[access_index] ;
+        // std::cout << "acc idx " << access_index
+        // //           << " " << nb_neigh[access_index]
+        // //           << " idx_tmp " << idx_tmp
+        // //           << " level " << cluster.level()
+        //           << std::endl;
+        // // for (auto n : nb_neigh ) {
+        // //   std::cout << " " << n;
+        // // }
+        // // std::cout << std::endl;
+        // std::cout << "offsets " << std::endl;
+        // for (auto o : offsets ) {
+        //   std::cout << " " << o;
+        // }
+        // std::cout << std::endl;
+        // std::cout << "neighbours of cluster<MaxLevel> " << std::endl;
+        // for (auto n : neighbours ) {
+        //   std::cout << " " << n;
+        // }
+        // std::cout << std::endl;
+        // auto off =
+
+        // TODO: access_index -> global cluster index
+	return nb_neigh[access_index];
       }
       // return this->manager.get_cluster_size(cluster); TODO: this should be
       // self-referring if Level=MaxLevel, otherwise underlying manager
@@ -283,10 +295,6 @@ namespace rascal {
 
     // new entry in nb_neigh vector
     inline void add_entry_number_of_neighbours() {
-      std::cout << "add_entry " << std::endl;
-      for (auto n : nb_neigh ) {
-          std::cout << " " << n;
-        }
       this->nb_neigh.push_back(0);
     }
 
@@ -303,6 +311,7 @@ namespace rascal {
       std::cout << "n_tuples " << n_tuples << std::endl;
       this->offsets.reserve(n_tuples);
       this->offsets.resize(1);
+      // this->offsets.push_back(0);
       for (size_t i{0}; i<n_tuples; ++i) {
         this->offsets.emplace_back(this->offsets[i] + this->nb_neigh[i]);
       }
@@ -418,8 +427,11 @@ namespace rascal {
       for (auto next_cluster : cluster) {
 
         auto & next_cluster_indices{std::get<Level>(manager.cluster_indices)};
-
-        next_cluster_indices.push_back(cluster.get_cluster_indices());
+        std::cout << "-4- push cluster indices "
+                  << cluster.get_cluster_indices()
+                  << " " << Level
+                  << std::endl;
+        next_cluster_indices.push_back(next_cluster.get_cluster_indices());
 
 	NextLevelLoop::loop(next_cluster, manager);
       }
@@ -498,16 +510,14 @@ namespace rascal {
       for (auto j : atoms_to_add) {
         std::cout << j << " ";
       }
+      std::cout << "number of neighbours to add to add " << atoms_to_add.size();
       std::cout << std::endl;
 
       manager.add_entry_number_of_neighbours();
       if (atoms_to_add.size() > 0) {
-        // prepare storage vector for number of neighbours
         for (auto j: atoms_to_add) {
           manager.add_neighbour_of_cluster(j);
         }
-      } else {
-
       }
 
       std::cout << "<--------------------" << std::endl;
@@ -609,6 +619,8 @@ namespace rascal {
       // std::cout << "## for atoms in manager ##" << std::endl;
       using AddLevelLoop = AddLevelLoop<atom.level(),
                                         atom.level() == traits::MaxLevel-1>;
+      auto & atom_cluster_indices{std::get<0>(this->cluster_indices)};
+      atom_cluster_indices.push_back(atom.get_cluster_indices());
       AddLevelLoop::loop(atom, *this);
     }
 
@@ -676,7 +688,7 @@ namespace rascal {
      *                 etc.
      */
 
-    if (Level == traits::MaxLevel-1) {
+    if (Level == traits::MaxLevel) {
       /**
        * Reinterpret counters as a smaller array to call parent offset
        * multiplet. This can then be used to access the actual offset here.
@@ -684,16 +696,20 @@ namespace rascal {
       auto call_counters =
         reinterpret_cast<const std::array<size_t, Level-1> &>(counters);
       auto i{this->manager.get_offset_impl(call_counters)};
-      auto j{counters.back()};
+      auto j{counters.back()}; // this index is not correct
       auto main_offset{this->offsets[i]};
+      // std::cout << "call_counters " <<  << std::endl;
+      std::cout << "offset -3- "
+                << " i/j/off+j/i+j " << i
+                << "/" << j
+                << "/" << main_offset+j
+                << std::endl;
       return main_offset + j;
     } else {
       /**
        * If not accessible at this level, call lower Level offsets from lower
        * level manager(s).
        */
-
-      // std::cout << "IncMax else Level " << Level << std::endl;
       return this->manager.get_offset_impl(counters);
     }
   }

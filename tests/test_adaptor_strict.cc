@@ -49,11 +49,11 @@ namespace rascal {
     // TODO: Check if the neighbour list is actually a linked cell list, not
     // just all neighbours
 
-    std::cout << "Setting up strict manager" << std::endl;
+    // std::cout << "Setting up strict manager" << std::endl;
     AdaptorStrict<NeighbourhoodManagerCell> adaptor{manager, cut_off};
     adaptor.update();
 
-    std::cout << "Testing adaptor_strict" << std::endl;
+    // std::cout << "Testing adaptor_strict" << std::endl;
     for (auto atom : adaptor) {
       // std::cout << "strict atom out " << atom.get_index() << std::endl;
       for (auto pair : atom) {

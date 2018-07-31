@@ -92,7 +92,8 @@ namespace rascal {
     // The next commands gather necessary information to iterate over
     // the half neighbourlist.
     this->offsets.reserve(this->natoms);
-    this->offsets.push_back(0);
+    this->offsets.resize(1);
+    // this->offsets.push_back(0);
     for (size_t i{0} ; i<this->natoms-1 ; ++i) {
       this->offsets.emplace_back(this->offsets[i] + this->numneigh[i]);
     }
