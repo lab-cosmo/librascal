@@ -80,6 +80,9 @@ namespace rascal {
         std::cout << atom.back()
         	  << std::endl;
       }
+
+      std::cout << "position: " << atom.get_position() << std::endl;
+
       for (auto pair : atom) {
         npairs++;
         if (verbose) {
