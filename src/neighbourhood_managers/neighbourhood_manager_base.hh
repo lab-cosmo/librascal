@@ -25,14 +25,19 @@
  * Boston, MA 02111-1307, USA.
  */
 
+// Always use header guards
 #ifndef NEIGHBOURHOOD_MANAGER_BASE_H
 #define NEIGHBOURHOOD_MANAGER_BASE_H
 
+// Each actual implementation of a NeighbourhoodManager is based
+// on the given interface
 #include "neighbourhood_managers/cluster_ref_base.hh"
 #include "neighbourhood_managers/property.hh"
 
+// Some data types and operations are based on the Eigen library
 #include <Eigen/Dense>
 
+// And standard header inclusion
 #include <cstddef>
 #include <array>
 #include <type_traits>
@@ -55,6 +60,7 @@ namespace rascal {
   }  // AdaptorTraits
 
   //! traits structure to avoid incomplete types in crtp
+  //! Empty because it is not known what it will contain
   template <class Manager>
   struct NeighbourhoodManager_traits
   {};
@@ -63,12 +69,15 @@ namespace rascal {
     /**
      * Helper function to calculate cluster_indices by depth.
      */
+    //! Here an empty template structure is created to manage the clusters and their depth
     template <typename Manager, typename sequence>
     struct ClusterIndexPropertyComputer {};
 
+    //! Here an empty template helper structure is created to manage the clusters and their depth
     template <typename Manager, size_t Level, typename sequence, typename Tup>
     struct ClusterIndexPropertyComputer_Helper {};
 
+    //! Overloads helper function and is used to cycle on the objects, returning the next object in line
     template <typename Manager, size_t Level, size_t DepthsHead,
              size_t... DepthsTail, typename... TupComp>
     struct ClusterIndexPropertyComputer_Helper<Manager,
@@ -83,6 +92,7 @@ namespace rascal {
     };
 
     // Recursion end
+    //! Overloads helper function and is used to cycle on the objects, for the last object in the list
     template <typename Manager, size_t Level, size_t DepthsHead,
              typename... TupComp>
     struct ClusterIndexPropertyComputer_Helper<Manager,
@@ -93,6 +103,7 @@ namespace rascal {
       using type = std::tuple<TupComp..., Property_t>;
     };
 
+    //! Overloads the base function to call the helper function
     template <typename Manager, size_t... Depths>
     struct ClusterIndexPropertyComputer<Manager,
                                         std::index_sequence<Depths...>> {
@@ -322,13 +333,15 @@ namespace rascal {
 
 
   namespace internal {
-
+    //! This is the helper function that allows to append extra elements to an array
+    //! It returns the given array, plus one element
     template <typename T, size_t Size, int... Indices>
     decltype(auto) append_array_helper(const std::array<T, Size> & arr, T &&  t,
                                        std::integer_sequence<int, Indices...>) {
       return std::array<T, Size+1> {arr[Indices]..., std::forward<T>(t)};
     }
 
+    //! This template function allows to add an element to an array
     template <typename T, size_t Size>
     decltype(auto) append_array (const std::array<T, Size> & arr, T &&  t) {
       return append_array_helper(arr, std::forward<T>(t),
