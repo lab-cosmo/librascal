@@ -39,6 +39,10 @@ namespace rascal {
   class NeighbourhoodManagerLammps;
 
   //! traits specialisation for Lammps manager
+  // The traits are used for vector allocation and further down the
+  // processing chain to determine what functionality the given
+  // NeighbourhoodManager already contains to avoid recomputation.
+  // See also the implementation of adaptors.
   template <>
   struct NeighbourhoodManager_traits<NeighbourhoodManagerLammps> {
     constexpr static int Dim{3};
@@ -47,9 +51,10 @@ namespace rascal {
     using DepthByDimension = std::index_sequence<0, 0>;
   };
 
-
   //----------------------------------------------------------------------------//
+  // Definition of the new NeighbourhoodManagerLammps class. 
   class NeighbourhoodManagerLammps:
+    // It inherits publicly everything from the base class
     public NeighbourhoodManagerBase<NeighbourhoodManagerLammps>
   {
   public:
@@ -82,7 +87,7 @@ namespace rascal {
 
     /**
      * resetting is required every time the list changes. Here, this
-     * is implemented without explicit dependency to lammmps. The
+     * is implemented without explicit dependency to lammps. The
      * signature could be simplified by including lammps as a
      * dependency, but it is unclear that the convenience would
      * outweigh the hassle of maintaining the dependency.
@@ -115,13 +120,13 @@ namespace rascal {
 
 
 
-    // return position vector
+    //! return position vector of an atom given the atom index
     inline Vector_ref get_position(const size_t & atom_index) {
       auto * xval{this->x[atom_index]};
       return Vector_ref(xval);
     }
 
-    // return position vector
+    //! return position vector of the last atom in the cluster
     template<size_t Level, size_t Depth>
     inline Vector_ref get_neighbour_position(const ClusterRefBase<Level,
                                              Depth> & cluster) {
@@ -133,12 +138,12 @@ namespace rascal {
       return this->get_position(cluster.back());
     }
 
-    // return number of I atoms in the list
+    //! return number of I atoms in the list
     inline size_t get_size() const {
       return this->inum;
     }
 
-    // return the number of neighbours of a given atom
+    //! return the number of neighbours of a given atom
     template<size_t Level, size_t Depth>
     inline size_t get_cluster_size(const ClusterRefBase<Level, Depth> & cluster)
       const {
@@ -147,35 +152,44 @@ namespace rascal {
       return this->numneigh[cluster.back()];
     }
 
-    // return the index-th neighbour of cluster
+    //! return the index-th neighbour of the last atom 
+    //! in a cluster with cluster_size = 1 (atoms)
+    //! which can be used to construct pairs
     template<size_t Level, size_t Depth>
     inline int get_cluster_neighbour(const ClusterRefBase<Level, Depth>
                                      & cluster,
                                      size_t index) const {
       static_assert(Level == traits::MaxLevel-1,
-                    "this implementation only handles atoms and pairs");
+                    "this implementation only handles atoms and identify its index-th neighbour.");
       auto && i_atom_id{cluster.back()};
       return this->firstneigh[std::move(i_atom_id)][index];
     }
 
-    // return the atom_index of the index-th atom in manager
+    //! return the atom_index of the index-th atom in manager 
+    //! parent here is dummy and is used for consistency
+    //! in other words, atom_index is the global LAMMPS atom index.
     inline int get_cluster_neighbour(const Parent & /*cluster*/,
                                      size_t index) const {
       return this->ilist[index];
     }
 
     /**
-     * return the linear index of cluster (i.e., the count at which
-     * this cluster appears in an iteration
+     * provided an atom, returns the cumulative numbers of pairs
+     * up to the first pair in which the atom is the I atom
+     * this only works for atom   
      */
     template<size_t Level>
     inline size_t get_offset_impl(const std::array<size_t, Level>
                                   & counters) const;
-
+  
+    /**
+     * return the number of clusters of size cluster_size.
+     * Can only handle cluster_size 1 (atoms) and cluster_size 2 (pairs).
+    */
     size_t get_nb_clusters(int cluster_size) const;
 
   protected:
-    int inum{};
+    int inum{}; 
     int tot_num{}; //includes ghosts
     int * ilist{};
     int * numneigh{};
@@ -185,16 +199,18 @@ namespace rascal {
     int * type{};
     double * eatom{};
     double ** vatom{};
-    int nb_pairs{};
+    int nb_pairs{}; //! number of clusters with cluster_size=2 (pairs)
     std::vector<int> offsets{};
 
   private:
   };
 
 
-  /* ---------------------------------------------------------------------- */
-  // buildup
-  // used for lookup e.g. in property
+  /*
+   * provided an atom, returns the cumulative numbers of pairs
+   * up to the first pair in which the atom is the I atom
+   * this only works for atom   
+   */
   template<size_t Level>
   inline size_t NeighbourhoodManagerLammps::
   get_offset_impl(const std::array<size_t, Level> & counters) const {
