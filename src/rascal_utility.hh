@@ -28,36 +28,54 @@
 #include <utility>
 
 namespace rascal {
-  /* ---------------------------------------------------------------------- */
-  /**
-   * Utility for applying a function to individual tuple elements. The function
-   * `f` which is applied should be defined close to the usage.
-   */
-  template<typename Func, typename Last>
-  void for_each_impl(Func&& f, Last&& last) {
-    f(last);
-  }
+  namespace internal {
+    /* ---------------------------------------------------------------------- */
+    /* Helper functions to apply a functor to all items in a tuple. 
+     * The actual function is for_each, other functions construct the
+     * template loop over the items in the tuple.  */
+     
+    template<typename Func, typename Last>
+    inline void for_each_impl(Func&& f, Last&& last) {
+      f(last);
+    }
 
-  template<typename Func, typename Head, typename ... Tail>
-  void for_each_impl(Func&& f, Head&& head, Tail&&...tail) {
-    f(head);
-    for_each_impl( std::forward<Func>(f), tail...);
-  }
+    template<typename Func, typename Head, typename ... Tail>
+    inline void for_each_impl(Func&& f, Head&& head, Tail&&...tail) {
+      f(head);
+      for_each_impl( std::forward<Func>(f), tail...);
+    }
 
-  template<typename Func, size_t ... Indices, typename ... Args>
-  void for_each_helper(Func&& f,
-                       std::index_sequence<Indices...>,
-                       std::tuple<Args...>&& tup) {
-    for_each_impl(std::forward<Func>(f),
-                  std::forward<Args>(std::get<Indices>(tup))...);
-  }
+    template<typename Func, size_t ... Indices, typename ... Args>
+    inline void for_each_helper(Func&& f,
+                         std::index_sequence<Indices...>,
+                         std::tuple<Args...>&& tup) {
+      for_each_impl(std::forward<Func>(f),
+                    std::forward<Args>(std::get<Indices>(tup))...);
+    }
 
-  template<typename Func, typename ... Args>
-  void for_each(std::tuple<Args...>& tup, Func&& f) {
-    for_each_helper(std::forward<Func>(f),
-                    std::index_sequence_for<Args...>{},
-                    std::forward<std::tuple<Args...>>(tup));
-  }
-  /* ---------------------------------------------------------------------- */
-
+    /**
+     * Utility for applying a function to individual tuple elements. 
+     * `tup` is a tuple that can be templated with an arbitrary number 
+     * of arguments. `f` is the function that should be applied to each 
+     * element of the tuple. 
+     */
+    template<typename Func, typename ... Args>
+    inline void for_each(std::tuple<Args...>& tup, Func&& f) {
+      for_each_helper(std::forward<Func>(f),
+                      std::index_sequence_for<Args...>{},
+                      std::forward<std::tuple<Args...>>(tup));
+    }
+    /* ---------------------------------------------------------------------- */
+    /* A collection of useful functors to be applied to tuples somewhere
+     * else in the code. */
+     /**
+     * Functor for resetting properties to zero size
+     */
+    struct ResizePropertyToZero {
+      template<typename T>
+      void operator() (T& t) {
+        t.resize_to_zero();
+      }
+    };
+  }  // internal
 }  // rascal
