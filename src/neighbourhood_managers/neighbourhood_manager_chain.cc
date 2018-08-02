@@ -35,20 +35,24 @@
 namespace rascal {
 
   /* ---------------------------------------------------------------------- */
-  // After reading the <code>atoms_object</code> from the file, the
-  // cell vectors as well as the atomic positions are put into
-  // contiguous a <code>std::vector</code> data structure to ensure
-  // fast access via the <code>Eigen::Map</code>.
-  // <code>std::vector</code> provide iterator access, which is used
-  // here with the <code>auto</code> keyword. Using this, it is
-  // unnecessary to know the exact size of the positions/cell
-  // array. No distinction between 2 or 3 dimensions. We just put all
-  // numbers in a vector and access them with the map. Using the
-  // vector type automatically ensures contiguity
+
+  /**
+   * After reading the <code>atoms_object</code> from the file, the cell vectors
+   * as well as the atomic positions are put into contiguous a
+   * <code>std::vector</code> data structure to ensure fast access via the
+   * <code>Eigen::Map</code>.  <code>std::vector</code> provide iterator access,
+   * which is used here with the <code>auto</code> keyword. Using this, it is
+   * unnecessary to know the exact size of the positions/cell array. No
+   * distinction between 2 or 3 dimensions. We just put all numbers in a vector
+   * and access them with the map. Using the vector type automatically ensures
+   * contiguity
+   */
   void NeighbourhoodManagerChain::update(double cutoff) {
 
-    // Check if a structure has already been read, if not, throw an
-    // exception to let the user know, what is wrong.
+    /**
+     * Check if a structure has already been read, if not, throw an exception to
+     * let the user know, what is wrong.
+     */
     try {
       auto pos_size = atoms_object.position.size();
       if (pos_size == 0) {
@@ -72,28 +76,37 @@ namespace rascal {
       }
     }
 
-    // Before going further, we check if the number of positions and
-    // atom types match, otherwise the data set is incomplete.
+    /**
+     * Before going further, we check if the number of positions and atom types
+     * match, otherwise the data set is incomplete.
+     */
     assert(atoms_object.position.size() == atoms_object.type.size());
-    // Set the protected member variable number of atoms, depending on
-    // the given number of positions
+    /**
+     * Set the protected member variable number of atoms, depending on the given
+     * number of positions
+     */
     this->natoms = atoms_object.position.size();
-    // Invoke neighbourlist builder, because without it, you can not
-    // really do anything.
+    /**
+     * Invoke neighbourlist builder, because without it, you can not really do
+     * anything.
+     */
     this->make_neighbourlist(cutoff);
-    // The following two commands build a list of increasing
-    // indices. It is assumed that the atoms do not have a unique
-    // index, when they are read from file. Therefore a list of
-    // increasing integer identifiers is built. Numbers are assigned
-    // to the positions in the order in which they appear in the file.
+    /**
+     * The following two commands build a list of increasing indices. It is
+     * assumed that the atoms do not have a unique index, when they are read
+     * from file. Therefore a list of increasing integer identifiers is
+     * built. Numbers are assigned to the positions in the order in which they
+     * appear in the file.
+     */
     this->ilist.resize(this->natoms);
     std::iota(ilist.begin(), ilist.end(), 0);
-
-    // The next commands gather necessary information to iterate over
-    // the half neighbourlist.
+    /**
+     * The next commands gather necessary information to iterate over the half
+     * neighbourlist.
+     */
     this->offsets.reserve(this->natoms);
     this->offsets.resize(1);
-    // this->offsets.push_back(0);
+
     for (size_t i{0} ; i<this->natoms-1 ; ++i) {
       this->offsets.emplace_back(this->offsets[i] + this->numneigh[i]);
     }
@@ -107,11 +120,12 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  // Helper function to get the number of <code>clusters</code>
-  // (atoms, pairs, triplets, quadruplets) with a specific
-  // <code>Level</code>. The <code>MaxLevel</code> depends on your
-  // implementation or processing. Increasing the level is done with
-  // an adaptor.
+  /**
+   * Helper function to get the number of <code>clusters</code> (atoms, pairs,
+   * triplets, quadruplets) with a specific <code>Level</code>. The
+   * <code>MaxLevel</code> depends on your implementation or
+   * processing. Increasing the level is done with an adaptor.
+   */
   size_t NeighbourhoodManagerChain::get_nb_clusters(size_t cluster_size) const {
     switch (cluster_size) {
     case 1: {
@@ -129,12 +143,14 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  // Function for reading data from a JSON file in the ASE format. See
-  // the definition of <code>AtomicStructure</code> and adapt the
-  // fields, which should be read to your case. One peculiarity should
-  // be mentioned: The type <code>std::fstream</code> does not throw
-  // an exception, if the file is not read. That is the reason for the
-  // try/catch block -- to make sure, the file is opened.
+  /**
+   * Function for reading data from a JSON file in the ASE format. See the
+   * definition of <code>AtomicStructure</code> and adapt the fields, which
+   * should be read to your case. One peculiarity should be mentioned: The type
+   * <code>std::fstream</code> does not throw an exception, if the file is not
+   * read. That is the reason for the try/catch block -- to make sure, the file
+   * is opened.
+   */
   void NeighbourhoodManagerChain::
   read_structure_from_json(const std::string filename) {
 
@@ -149,31 +165,35 @@ namespace rascal {
       std::exit(EXIT_FAILURE);
     }
 
-    // ASE json format is nested - here, first entry is actual data
-    // structure. If in any case you should have multiple
-    // <code>atoms_objects</code> in your file, which you want to
-    // read, the following line has to be adapted. Nesting on the
-    // first level is structure1, structure 2, etc. These could be a
-    // time series of a simulation, but also just different structures
-    // you want to read in from different simulation runs.  Each
-    // structure should contain the necessary fields for the
-    // <code>AtomicStructure</code> object defined in the header
-    // belonging to this file. Here, just the first one is read.
+    /**
+     * ASE json format is nested - here, first entry is actual data
+     * structure. If in any case you should have multiple
+     * <code>atoms_objects</code> in your file, which you want to read, the
+     * following line has to be adapted. Nesting on the first level is
+     * structure1, structure 2, etc. These could be a time series of a
+     * simulation, but also just different structures you want to read in from
+     * different simulation runs.  Each structure should contain the necessary
+     * fields for the <code>AtomicStructure</code> object defined in the header
+     * belonging to this file. Here, just the first one is read.
+     */
     this->atoms_object = j.begin().value();
   }
 
   /* ---------------------------------------------------------------------- */
-  // Helper function for the linked cell algorithm for
-  // scaling/rescaling the complete simulation box. It is included,
-  // because usually, there is no origin given for the cell of the
-  // atomic environment.
+  /**
+   * Helper function for the linked cell algorithm for scaling/rescaling the
+   * complete simulation box. It is included, because usually, there is no
+   * origin given for the cell of the atomic environment.
+   */
   inline double NeighbourhoodManagerChain::get_box_length(int d) {
     Cell_ref Cell = this->get_cell();
     return Cell.col(d).norm();
   }
   /* ---------------------------------------------------------------------- */
-  // Helper function to get the linear index for the respective
-  // cell. The cells are represented as a contiguous 1D vector.
+  /**
+   * Helper function to get the linear index for the respective cell. The cells
+   * are represented as a contiguous 1D vector.
+   */
   inline int get_linear_index(std::vector<int> nidx, std::vector<int> nmax) {
     auto dim = nidx.size();
     switch (dim) {
@@ -197,9 +217,11 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  // Helper function for the linked cell algorithm. Given a position,
-  // a cutoff, an offset and the maximum number of boxes, this returns
-  // the 3D index set of the box.
+  /**
+   * Helper function for the linked cell algorithm. Given a position, a cutoff,
+   * an offset and the maximum number of boxes, this returns the 3D index set of
+   * the box.
+   */
   inline std::vector<int>
   NeighbourhoodManagerChain::
   get_box_index(Vector_ref& position,
@@ -217,9 +239,11 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  // Helper function for linked cell algorithm. Given an atomic id,
-  // this function collects all neighbours of the box and writes it to
-  // the full neighbourlist <code>allneigh</code>.
+  /**
+   * Helper function for linked cell algorithm. Given an atomic id, this
+   * function collects all neighbours of the box and writes it to the full
+   * neighbourlist <code>allneigh</code>.
+   */
   inline void NeighbourhoodManagerChain::
   collect_neighbour_info_of_atom(const int i,
                                  const std::vector<int> boxidx,
@@ -242,15 +266,16 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  // Function for creating the full and half neighbour list. The
-  // result is directly written into protected member variables of the
-  // neighbourhood manager.
+  /**
+   * Function for creating the full and half neighbour list. The result is
+   * directly written into protected member variables of the neighbourhood
+   * manager.
+   */
   void NeighbourhoodManagerChain::make_neighbourlist(double cutoff) {
     /* Neighbourlist algorithm, non periodic, non triclinic cell
      * for demonstration purposes.
-     *
      */
-    // internal variables for linked list/ linked cell
+    //! internal variables for linked list/ linked cell
     std::vector<int> nmax(3);
     std::vector<double> rc(3);
 
@@ -263,10 +288,10 @@ namespace rascal {
     int nboxes{1};
     nboxes = std::accumulate(nmax.begin(), nmax.end(), 1,
                              std::multiplies<int>());
-    nboxes = std::max(nboxes, 1); // If the cutoff is smaller than
-    // length of the structure.
+    //! If the cutoff is smaller than length of the structure.
+    nboxes = std::max(nboxes, 1); 
 
-    // Create the data structure for the linked cell algorithm.
+    //! Create the data structure for the linked cell algorithm.
     this->ll.resize(this->natoms);
     this->lc.resize(nboxes);
     std::fill(this->ll.begin(), this->ll.end(), -1);
@@ -274,14 +299,16 @@ namespace rascal {
 
     Positions_ref atom_pos = this->get_positions();
 
-    // Get an origin. This is needed, because sometimes positions have
-    // negative values.
+    /**
+     * Get an origin. This is needed, because sometimes positions have negative
+     * values.
+     */
     Eigen::Matrix<double, 1, traits::Dim> offset{};
     for(auto dim{0}; dim < traits::Dim; ++dim) {
       offset(dim) = std::min(0., atom_pos.row(dim).minCoeff());
     }
 
-    // Make cell lists
+    //! Make cell lists
     std::vector<int> nidx(traits::Dim);
     for (auto i{0}; i < atom_pos.cols(); ++i) {
       auto * p{atom_pos.col(i).data()};
@@ -303,8 +330,10 @@ namespace rascal {
         }
       }
     }
-    // Make verlet table of neighbours (vectorized), not strict
-    // Full neighbour list
+    /**
+     * Make verlet table of neighbours (vectorized), not strict Full neighbour
+     * list
+     */
     this->allneigh.resize(this->natoms);
     if(this->verbose) std::cout << ">>>>>>>>>>>>>>>>start neighbour list" << std::endl;
     for (auto i{0}; i < atom_pos.cols(); ++i) {
@@ -312,7 +341,7 @@ namespace rascal {
       Vector_ref pos{p};
       if(this->verbose) std::cout << "---pos \n" << pos << std::endl;
 
-      // Which is my own cell
+      //! Which is my own cell?
       nidx = get_box_index(pos, rc, offset, nmax);
       auto nidxtmp = nidx;
 
@@ -407,7 +436,7 @@ namespace rascal {
       }
     }
 
-    // Get number of pairs to write into member variable.
+    //! Get number of pairs to write into member variable.
     this->nb_pairs = std::accumulate(this->numneigh.begin(),
                                      this->numneigh.end(), 0);
   }
