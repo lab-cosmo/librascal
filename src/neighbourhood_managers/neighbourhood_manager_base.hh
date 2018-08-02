@@ -55,7 +55,7 @@ namespace rascal {
   }  // AdaptorTraits
 
   //! traits structure to avoid incomplete types in crtp
-  template <class Manager>
+  template <class ManagerImplementation>
   struct NeighbourhoodManager_traits
   {};
 
@@ -131,6 +131,7 @@ namespace rascal {
   {
   public:
     using traits = NeighbourhoodManager_traits<ManagerImplementation>;
+    //! type used to represent spatial coordinates, etc
     using Vector_t = Eigen::Matrix<double, traits::Dim, 1>;
     using Vector_ref = Eigen::Map<Vector_t>;
     using ClusterIndex_t = typename internal::ClusterIndexPropertyComputer

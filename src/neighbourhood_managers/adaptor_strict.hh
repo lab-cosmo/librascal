@@ -58,7 +58,7 @@ namespace rascal {
     // (they are all kept anyways, so no duplication necessary).
     using DepthByDimension = typename
       DepthIncreaser<MaxLevel,
-		     typename
+                     typename
                      ManagerImplementation::traits::DepthByDimension>::type;
   };
 
