@@ -36,13 +36,13 @@
 #define ADAPTOR_STRICT_H
 
 namespace rascal {
-  /**
+  /*
    * forward declaration for traits
    */
   template <class ManagerImplementation>
   class AdaptorStrict;
 
-  /**
+  /*
    * specialisation of traits for strict adaptor
    */
   template <class ManagerImplementation>
@@ -58,26 +58,20 @@ namespace rascal {
     // (they are all kept anyways, so no duplication necessary).
     using DepthByDimension = typename
       DepthIncreaser<MaxLevel,
-		     typename
+                     typename
                      ManagerImplementation::traits::DepthByDimension>::type;
   };
 
-  namespace internal {
-    /**
-     * Functor for resetting cluster_indices (all tuples), `t` is an element in
-     * a tuple cluster_indices
-     */
-    struct SetClusterIndicesZero {
-      template<typename T>
-      void operator() (T& t) {
-        t.resize_to_zero();
-      }
-    };
-  }  // internal
-
   /**
    * Adaptor that guarantees that only neighbours within the cutoff are
-   * present. This interface should be implemented by all managers with the
+   * present. A neighbor manager could include some wiggle room and list
+   * clusters with distances above the specified cutoff, this adaptor 
+   * makes it possible to get a list with only the clusters that have 
+   * distances strictly below the cutoff. This is also useful to extract
+   * managers with different levels of truncation from a single, loose 
+   * manager.
+   * 
+   * This interface should be implemented by all managers with the
    * trait AdaptorTraits::Strict::yes
    */
   template <class ManagerImplementation>
@@ -101,8 +95,9 @@ namespace rascal {
     AdaptorStrict() = delete;
 
     /**
-     * construct a strict neighbourhood list from a given manager and
-     * cut-off radius
+     * construct a strict neighbourhood list from a given manager. 
+     * `cut-off` specifies the strict cutoff radius. all clusters 
+     *  with distances above this parameter will be skipped
      */
     AdaptorStrict(ManagerImplementation& manager, double cut_off);
 
@@ -128,8 +123,10 @@ namespace rascal {
     template<class ... Args>
     void update(Args&&... arguments);
 
+    //! returns the (strict) cutoff for the adaptor
     inline double get_cutoff() const {return this->cut_off;}
 
+    //! returns the distance between atoms in a given pair
     template <size_t Level, size_t Depth>
     inline const double & get_distance(const ClusterRefBase<Level, Depth> & pair) const {
       return this->distance[pair];
@@ -395,7 +392,7 @@ namespace rascal {
   void AdaptorStrict<ManagerImplementation>::update() {
 
      // Reset cluster_indices for adaptor to fill with push back.
-    for_each(this->cluster_indices, internal::SetClusterIndicesZero());
+    internal::for_each(this->cluster_indices, internal::ResizePropertyToZero());
 
     // initialise the neighbourlist
     for (size_t i{0}; i < traits::MaxLevel; ++i) {
@@ -405,7 +402,6 @@ namespace rascal {
     }
     this->nb_neigh[0].push_back(0);
     for (auto & vector: this->offsets) {
-
       vector.push_back(0);
     }
 
@@ -419,7 +415,7 @@ namespace rascal {
     size_t pair_counter{0};
     for (auto atom: this->manager) {
       this->add_atom(atom);
-      /**
+      /*
        * Add new depth layer for atoms (see DepthByDimension for
        * possible optimisation).
        */

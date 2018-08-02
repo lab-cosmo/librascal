@@ -20,6 +20,9 @@ Bofore installing Rascal, please make sure you have at least the following packa
 +-------------+--------------------+
 | python      |  3.4 or higher     |
 +-------------+--------------------+
+| numpy       |  1.13 or higher    |
++-------------+--------------------+
+
 
 Other necessary packages (such as Eigen and PyBind11) are downloaded automatically whrn compiling Rascal.
 
