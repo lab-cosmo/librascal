@@ -4,17 +4,18 @@ A scalable and versatile fingerprint and machine-learning code
 How to install:
 * Need to have the programs git, gcc (or other c++14 compiler), boost (unit_test_framework, see BOOST.md for further details on how to install the boost library), doxygen
 * Need the python packages Sphinx, Breathe 
+* You can use either cmake or (recommended) ccmake to configure the Makefile. If using ccmake, you should press *c* one or more times until the option to generate the configuration appears, then type *g*.
 * To build the program: 
 ```Shell
 mkdir build 
 cd build 
-cmake .. 
+ccmake .. 
 make
 ``` 
 * To make development documentation: first enable the documentation building with ccmake, then
 ```Shell
 cd build 
-cmake ..
+ccmake ..
 make dev_doc
 ``` 
 
