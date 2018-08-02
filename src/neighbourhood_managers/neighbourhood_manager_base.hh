@@ -69,15 +69,18 @@ namespace rascal {
     /**
      * Helper function to calculate cluster_indices by depth.
      */
-    //! Here an empty template structure is created to manage the clusters and their depth
+    //! Here an empty template structure is created to manage the clusters and
+    //! their depth
     template <typename Manager, typename sequence>
     struct ClusterIndexPropertyComputer {};
 
-    //! Here an empty template helper structure is created to manage the clusters and their depth
+    //! Here an empty template helper structure is created to manage the
+    //! clusters and their depth
     template <typename Manager, size_t Level, typename sequence, typename Tup>
     struct ClusterIndexPropertyComputer_Helper {};
 
-    //! Overloads helper function and is used to cycle on the objects, returning the next object in line
+    //! Overloads helper function and is used to cycle on the objects, returning
+    //! the next object in line
     template <typename Manager, size_t Level, size_t DepthsHead,
              size_t... DepthsTail, typename... TupComp>
     struct ClusterIndexPropertyComputer_Helper<Manager,
@@ -91,8 +94,8 @@ namespace rascal {
          std::tuple<TupComp..., Property_t>>::type;
     };
 
-    // Recursion end
-    //! Overloads helper function and is used to cycle on the objects, for the last object in the list
+    //! Recursion end. Overloads helper function and is used to cycle on the
+    //! objects, for the last object in the list
     template <typename Manager, size_t Level, size_t DepthsHead,
              typename... TupComp>
     struct ClusterIndexPropertyComputer_Helper<Manager,
@@ -127,11 +130,10 @@ namespace rascal {
   }  // internal
 
   /**
-   * Base class interface for neighbourhood managers. The actual
-   * implementation is written in the class ManagerImplementation, and
-   * the base class both inherits from it and is templated by it. This
-   * allows for compile-time polymorphism without runtime cost and is
-   * called a `CRTP
+   * Base class interface for neighbourhood managers. The actual implementation
+   * is written in the class ManagerImplementation, and the base class both
+   * inherits from it and is templated by it. This allows for compile-time
+   * polymorphism without runtime cost and is called a `CRTP
    * <https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern>`_
    *
    * @param ManagerImplementation
@@ -177,9 +179,9 @@ namespace rascal {
     constexpr static int dim() {return traits::Dim;}
 
     /**
-     * iterator over the atoms, pairs, triplets, etc in the
-     * manager. Iterators like these can be used as indices for random
-     * access in atom-, pair, ... -related properties.
+     * iterator over the atoms, pairs, triplets, etc in the manager. Iterators
+     * like these can be used as indices for random access in atom-, pair,
+     * ... -related properties.
      */
     template <size_t Level>
     class iterator;
@@ -187,8 +189,8 @@ namespace rascal {
     friend Iterator_t;
 
     /**
-     * return type for iterators: a light-weight atom reference,
-     * giving access to an atom's position and force
+     * return type for iterators: a light-weight atom reference, giving access
+     * to an atom's position and force
      */
     class AtomRef;
 
@@ -257,7 +259,7 @@ namespace rascal {
     }
 
     //! get atom_index of index-th neighbour of this cluster, e.g. j-th
-    // neighbour of atom i or k-th neighbour of pair i-j, etc.
+    //! neighbour of atom i or k-th neighbour of pair i-j, etc.
     template <size_t Level, size_t Depth>
     inline int cluster_neighbour(ClusterRefBase<Level, Depth> & cluster,
                                  size_t index) const {
@@ -292,7 +294,8 @@ namespace rascal {
     template <size_t Level, size_t CallerDepth>
     inline size_t get_offset(const ClusterRefBase<Level,
                              CallerDepth> & cluster) const {
-      constexpr auto depth{NeighbourhoodManagerBase::template cluster_depth<Level>()};
+      constexpr auto
+        depth{NeighbourhoodManagerBase::template cluster_depth<Level>()};
       return cluster.get_cluster_index(depth);
     }
 
@@ -322,10 +325,9 @@ namespace rascal {
     /// a copy
     ClusterIndex_t cluster_indices;
 
-    // template <size_t Level, size_t Depth>
-    // inline int get_cluster(const ClusterRefBase<Level, Depth> & cluster) const {
-    //   // all pairs of the following thing
-    // }
+    // template <size_t Level, size_t Depth> inline int get_cluster(const
+    // ClusterRefBase<Level, Depth> & cluster) const { // all pairs of the
+    // following thing }
 
 
 
@@ -334,8 +336,8 @@ namespace rascal {
 
 
   namespace internal {
-    //! This is the helper function that allows to append extra elements to an array
-    //! It returns the given array, plus one element
+    //! This is the helper function that allows to append extra elements to an
+    //! array It returns the given array, plus one element
     template <typename T, size_t Size, int... Indices>
     decltype(auto) append_array_helper(const std::array<T, Size> & arr, T &&  t,
                                        std::integer_sequence<int, Indices...>) {
@@ -426,9 +428,9 @@ namespace rascal {
   protected:
     Manager_t & manager;
     /**
-     * The meaning of `index` is manager-dependent. There are no
-     * guaranties regarding contiguity. It is used internally to
-     * absolutely address atom-related properties.
+     * The meaning of `index` is manager-dependent. There are no guaranties
+     * regarding contiguity. It is used internally to absolutely address
+     * atom-related properties.
      */
     int index;
   private:
