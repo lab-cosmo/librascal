@@ -373,7 +373,8 @@ namespace rascal {
       //! do nothing, if MaxLevel is not reached, except call the next level
       for (auto next_cluster : cluster) {
 
-        auto & next_cluster_indices{std::get<Level>(manager.cluster_indices)};
+        auto & next_cluster_indices
+        {std::get<Level>(manager.cluster_indices_container)};
         next_cluster_indices.push_back(next_cluster.get_cluster_indices());
 
 	NextLevelLoop::loop(next_cluster, manager);
@@ -551,7 +552,7 @@ namespace rascal {
       //! Level 1, Level variable is at 0, atoms, index 0
       using AddLevelLoop = AddLevelLoop<atom.level(),
                                         atom.level() == traits::MaxLevel-1>;
-      auto & atom_cluster_indices{std::get<0>(this->cluster_indices)};
+      auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
       atom_cluster_indices.push_back(atom.get_cluster_indices());
       AddLevelLoop::loop(atom, *this);
     }
@@ -559,7 +560,8 @@ namespace rascal {
     //! correct the offsets for the new cluster level
     this->set_offsets();
     //! add correct cluster_indices for the highest level
-    auto & max_cluster_indices{std::get<traits::MaxLevel-1>(this->cluster_indices)};
+    auto & max_cluster_indices
+    {std::get<traits::MaxLevel-1>(this->cluster_indices_container)};
     max_cluster_indices.fill_sequence();
   }
 

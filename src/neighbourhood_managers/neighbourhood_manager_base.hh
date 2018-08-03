@@ -67,7 +67,7 @@ namespace rascal {
 
   namespace internal {
     /**
-     * Helper function to calculate cluster_indices by depth.
+     * Helper function to calculate cluster_indices_container by depth.
      */
     //! Here an empty template structure is created to manage the clusters and
     //! their depth
@@ -154,8 +154,7 @@ namespace rascal {
 
     //! Default constructor
     NeighbourhoodManagerBase() :
-      cluster_indices{ClusterConstructor_t::make(*this)} {
-
+      cluster_indices_container{ClusterConstructor_t::make(*this)} {
     }
 
     //! Copy constructor
@@ -309,8 +308,8 @@ namespace rascal {
       return std::array<size_t, 1>{};
     }
 
-    inline ClusterIndex_t & get_cluster_indices() {
-      return this->cluster_indices;
+    inline ClusterIndex_t & get_cluster_indices_container() {
+      return this->cluster_indices_container;
     }
 
     /**
@@ -323,7 +322,10 @@ namespace rascal {
      */
     /// TODO: possible: tuple of shared pointer. adaptor_increase_maxleve makes
     /// a copy
-    ClusterIndex_t cluster_indices;
+    // TODO: this should be named cluster_indices_container. a
+    /// cluster_ref_base maps onto a column of this, which referes to the
+    /// current cluster
+    ClusterIndex_t cluster_indices_container;
 
     // template <size_t Level, size_t Depth> inline int get_cluster(const
     // ClusterRefBase<Level, Depth> & cluster) const { // all pairs of the
@@ -658,7 +660,7 @@ namespace rascal {
     //! calculate cluster indices
     inline value_type operator * () {
       auto & cluster_indices_properties =
-        std::get<Level-1>(this->get_manager().get_cluster_indices());
+        std::get<Level-1>(this->get_manager().get_cluster_indices_container());
       using Ref_t = typename
         std::remove_reference_t<decltype(cluster_indices_properties)>::reference;
       Ref_t cluster_indices =

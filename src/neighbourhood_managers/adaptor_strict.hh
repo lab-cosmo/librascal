@@ -395,7 +395,8 @@ namespace rascal {
   void AdaptorStrict<ManagerImplementation>::update() {
 
     //! Reset cluster_indices for adaptor to fill with push back.
-    internal::for_each(this->cluster_indices, internal::ResizePropertyToZero());
+    internal::for_each(this->cluster_indices_container,
+                       internal::ResizePropertyToZero());
 
     //! initialise the neighbourlist
     for (size_t i{0}; i < traits::MaxLevel; ++i) {
@@ -412,8 +413,8 @@ namespace rascal {
     this->distance.resize_to_zero();
 
     // fill the list, at least pairs are mandatory for this to work
-    auto & atom_cluster_indices{std::get<0>(this->cluster_indices)};
-    auto & pair_cluster_indices{std::get<1>(this->cluster_indices)};
+    auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
+    auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
     size_t pair_counter{0};
     for (auto atom: this->manager) {
