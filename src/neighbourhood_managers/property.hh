@@ -39,10 +39,14 @@ namespace rascal {
 
   namespace internal {
 
-    template <typename T, size_t NbRow, size_t NbCol>
+    template <typename T, Dim_t NbRow, Dim_t NbCol>
     struct Value {
       using type = Eigen::Map<Eigen::Matrix<T, NbRow, NbCol>>;
       using reference = type;
+
+      static reference get_ref(T & value, int nb_row, int nb_col) {
+        return type(&value, nb_row, nb_col);
+      }
 
       static reference get_ref(T & value) {
         return type(&value);
@@ -104,66 +108,6 @@ namespace rascal {
     template<typename T, size_t NbRow, size_t NbCol>
     using Value_ref = typename Value<T, NbRow, NbCol>::reference;
 
-    template<int Dim>
-    inline void lin2mult(const Dim_t& index,
-                         const Eigen::Ref<const Vec3i_t> shape,
-                         Eigen::Ref< Vec3i_t> retval) {
-      // TODO: what does the factor do?
-      Dim_t factor{1};
-
-      for (Dim_t i{0}; i < Dim; ++i) {
-        retval[i] = index / factor%shape[i];
-        if (i != Dim-1) {
-          factor *= shape[i];
-        }
-      }
-    }
-
-    template<int Dim>
-    inline Dim_t mult2lin(const Eigen::Ref<const Vec3i_t> coord,
-                          const Eigen::Ref<const Vec3i_t> shape) {
-      Dim_t index{0};
-      Dim_t factor{1};
-      for (Dim_t i = 0; i < Dim; ++i) {
-        index += coord[i]*factor;
-        if (i != Dim-1 ) {
-          factor *= shape[i];
-        }
-      }
-      return index;
-    }
-
-    // https://stackoverflow.com/questions/828092/python-style-integer-division-modulus-in-c
-    // TODO more efficient implementation without if (would be less general) !
-    // div_mod function returning python like div_mod, i.e. signed integer
-    // division truncates towards negative infinity, and signed integer modulus
-    // has the same sign the second operand.
-    template<class Integral>
-    void div_mod(const Integral& x, const Integral & y,
-                 std::array<int, 2> & out) {
-      const Integral quot = x/y;
-      const Integral rem  = x%y;
-
-      if (rem != 0 && (x<0) != (y<0)) {
-        out[0] = quot-1;
-        out[1] = rem+y;
-      } else {
-        out[0] = quot;
-        out[1] = rem;
-      }
-    }
-
-    //! warning: works only with negative x if |x| < y
-    // TODO Does not pass tests
-    template<class Integral>
-    void branchless_div_mod(const Integral & x, const Integral & y,
-                            std::array<int, 2> & out) {
-      const Integral quot = (x-y) / y;
-      const Integral rem  = (x+y) % y;
-      out[0] = quot;
-      out[1] = rem;
-    }
-
   }  // internal
 
   // Forward declaration of traits to use `Property`.
@@ -173,7 +117,7 @@ namespace rascal {
 
   template <class NeighbourhoodManager, typename T,
             size_t Level,
-            size_t NbRow = 1, size_t NbCol = 1>
+            Dim_t NbRow = 1, Dim_t NbCol = 1>
   class Property
   {
     static_assert((std::is_arithmetic<T>::value or
@@ -188,12 +132,15 @@ namespace rascal {
     using value_type = typename Value::type;
     using reference = typename Value::reference;
 
+    static constexpr bool IsStaticallySized{(NbCol != Eigen::Dynamic)
+        and (NbRow != Eigen::Dynamic)};
+
     //! Default constructor
     Property() = delete;
 
     //! Constructor with Manager
     Property(NeighbourhoodManager & manager)
-      :manager{manager},values{}
+      :manager{manager}, values{}
     {}
 
     //! Copy constructor
@@ -273,10 +220,25 @@ namespace rascal {
     }
 
     /**
-     * Accessor for property by index.
+     * Accessor for property by index for statically sized properties
      */
-    reference operator[](const size_t & index) {
+    template <bool Static = IsStaticallySized>
+    reference operator[](const std::enable_if_t<Static, size_t> & index) {
+      static_assert(Static == IsStaticallySized,
+                    "SFINAE, don't set 'Static'");
       return Value::get_ref(this->values[index*NbComp]);
+    }
+
+    /**
+     * Accessor for property by index for dynamically sized properties
+     */
+    template <bool Dynamic = !IsStaticallySized>
+    std::enable_if_t<Dynamic, reference> operator[](const size_t & index) {
+      static_assert(Dynamic == !IsStaticallySized,
+                    "SFINAE, don't set 'Dynamic'");
+      return Value::get_ref(this->values[index*this->get_nb_comp()],
+                            this->get_nb_row(),
+                            this->get_nb_col());
     }
 
   protected:

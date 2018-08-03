@@ -26,7 +26,7 @@
  */
 
 #include "neighbourhood_managers/neighbourhood_manager_minimal.hh"
-
+#include "neighbourhood_managers/neighbourhood_manager_cell.hh"
 namespace rascal {
 
 
