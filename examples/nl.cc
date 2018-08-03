@@ -1,13 +1,13 @@
-#include <neighbourhood_managers/neighbourhood_manager_cell.hh>
-#include <neighbourhood_managers/neighbourhood_manager_lammps.hh>
-#include <neighbourhood_managers/property.hh>
+#include <structure_managers/structure_manager_cell.hh>
+#include <structure_managers/structure_manager_lammps.hh>
+#include <structure_managers/property.hh>
 #include <iostream>
 #include <basic_types.hh>
 #include <Eigen/StdVector>
 #include <cmath>
 using namespace std;
 
-using Manager_t = rascal::NeighbourhoodManagerCell;
+using Manager_t = rascal::StructureManagerCell;
 constexpr static int dim{3};
 using Vector_t = Eigen::Matrix<double, dim, 1>;
 

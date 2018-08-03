@@ -5,7 +5,7 @@
 #
 # @date   05 Apr 2018
 #
-# @brief  configuration for compiling neighbourhood_managers
+# @brief  configuration for compiling structure_managers
 #
 # @section LICENSE
 #
@@ -29,9 +29,9 @@
 
 
 set (manager_SRC
-  neighbourhood_managers/neighbourhood_manager_lammps.cc
-  neighbourhood_managers/neighbourhood_manager_cell.cc
-  neighbourhood_managers/neighbourhood_manager_minimal.cc
-  neighbourhood_managers/neighbourhood_manager_chain.cc
+  structure_managers/structure_manager_lammps.cc
+  structure_managers/structure_manager_cell.cc
+  structure_managers/structure_manager_minimal.cc
+  structure_managers/structure_manager_chain.cc
   )
 target_sources(rascal PRIVATE ${manager_SRC})

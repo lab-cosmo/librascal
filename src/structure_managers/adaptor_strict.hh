@@ -5,7 +5,7 @@
  *
  * @date   04 Jun 2018
  *
- * @brief implements an adaptor for neighbourhood_managers, filtering
+ * @brief implements an adaptor for structure_managers, filtering
  * the original manager so that only neighbours that are strictly
  * within r_cut are retained
  *
@@ -27,8 +27,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "neighbourhood_managers/neighbourhood_manager_base.hh"
-#include "neighbourhood_managers/property.hh"
+#include "structure_managers/structure_manager_base.hh"
+#include "structure_managers/property.hh"
 #include "rascal_utility.hh"
 
 
@@ -46,7 +46,7 @@ namespace rascal {
    * specialisation of traits for strict adaptor
    */
   template <class ManagerImplementation>
-  struct NeighbourhoodManager_traits<AdaptorStrict<ManagerImplementation>> {
+  struct StructureManager_traits<AdaptorStrict<ManagerImplementation>> {
 
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::yes};
     constexpr static bool HasDistances{true};
@@ -75,12 +75,12 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   class AdaptorStrict: public
-  NeighbourhoodManagerBase<AdaptorStrict<ManagerImplementation>>
+  StructureManager<AdaptorStrict<ManagerImplementation>>
   {
   public:
     using Parent =
-      NeighbourhoodManagerBase<AdaptorStrict<ManagerImplementation>>;
-    using traits = NeighbourhoodManager_traits<AdaptorStrict>;
+      StructureManager<AdaptorStrict<ManagerImplementation>>;
+    using traits = StructureManager_traits<AdaptorStrict>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     template <size_t Order>
     using ClusterRef_t =

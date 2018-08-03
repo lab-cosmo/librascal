@@ -5,7 +5,7 @@
  *
  * @date   19 Jun 2018
  *
- * @brief implements an adaptor for neighbourhood_managers, which
+ * @brief implements an adaptor for structure_managers, which
  * creates a full and half neighbourlist if there is none and
  * triplets/quadruplets, etc. if existant.
  *
@@ -27,8 +27,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "neighbourhood_managers/neighbourhood_manager_base.hh"
-#include "neighbourhood_managers/property.hh"
+#include "structure_managers/structure_manager_base.hh"
+#include "structure_managers/property.hh"
 #include "rascal_utility.hh"
 
 #include <typeinfo>
@@ -48,7 +48,7 @@ namespace rascal {
    * Specialisation of traits for increase <code>MaxOrder</code> adaptor
    */
   template <class ManagerImplementation>
-  struct NeighbourhoodManager_traits<AdaptorMaxOrder<ManagerImplementation>> {
+  struct StructureManager_traits<AdaptorMaxOrder<ManagerImplementation>> {
 
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDistances{false};
@@ -67,20 +67,20 @@ namespace rascal {
 
   /**
    * Adaptor that increases the MaxOrder of an existing
-   * NeighbourhoodManager. This means, if the manager does not have a
+   * StructureManager. This means, if the manager does not have a
    * neighbourlist, it is created, if it exists, triplets, quadruplets,
    * etc. lists are created.
    */
   template <class ManagerImplementation>
   class AdaptorMaxOrder: public
-  NeighbourhoodManagerBase<AdaptorMaxOrder<ManagerImplementation>>
+  StructureManager<AdaptorMaxOrder<ManagerImplementation>>
   {
   public:
-    using Base = NeighbourhoodManagerBase<AdaptorMaxOrder<ManagerImplementation>>;
+    using Base = StructureManager<AdaptorMaxOrder<ManagerImplementation>>;
 
     using Parent =
-      NeighbourhoodManagerBase<AdaptorMaxOrder<ManagerImplementation>>;
-    using traits = NeighbourhoodManager_traits<AdaptorMaxOrder>;
+      StructureManager<AdaptorMaxOrder<ManagerImplementation>>;
+    using traits = StructureManager_traits<AdaptorMaxOrder>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     template<size_t Order>
     using ClusterRef_t =
@@ -394,7 +394,7 @@ namespace rascal {
     using ClusterRef_t =
       typename ManagerImplementation::template ClusterRef<Order>;
 
-    // using Manager_t = NeighbourhoodManagerBase<ManagerImplementation>;
+    // using Manager_t = StructureManager<ManagerImplementation>;
     // using IteratorOne_t = typename Manager_t::template iterator<1>;
 
     using traits = typename AdaptorMaxOrder<ManagerImplementation>::traits;
@@ -544,7 +544,7 @@ namespace rascal {
 
     //! Attention, <code>traits::MaxOrder</code> is already increased
     //! in the traits upon construction, therefore the MaxOrder needs
-    //! to be larger than 2 (i.e. a NeighbourhoodManager with a
+    //! to be larger than 2 (i.e. a StructureManager with a
     //! pairlist is present to call this function here.)
     static_assert(traits::MaxOrder > 2, "No neighbourlist present.");
 

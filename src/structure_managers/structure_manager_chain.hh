@@ -1,5 +1,5 @@
 /**
- * file   neighbourhood_manager_chain.hh
+ * file   structure_manager_chain.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *
@@ -28,7 +28,7 @@
 
 /** NOTE to Developer
  * -----------------
- * This implementation of NeighbourhoodManager is designed to be a
+ * This implementation of StructureManager is designed to be a
  * developer tutorial. It reads a molecular structure from a JSON file
  * in the format of ASE (Atomic Simulation environment,
  * https://wiki.fysik.dtu.dk/ase/index.html), transfers the data into
@@ -38,7 +38,7 @@
  * adaptors, which are explained elsewhere.
  * The code is heavily commented to explain the thought process behind
  * the library design. Fell free to use this example as a basis for
- * your own implementation of a NeighbourhoodManager.
+ * your own implementation of a StructureManager.
  * Some very basic knowledge of C++ is needed, but the idea of this
  * tutorial is also to explain some recent features of the language
  * and why they are used here. Please also read the coding convention
@@ -46,15 +46,15 @@
  */
 
 //! Always use header guards
-#ifndef NEIGHBOURHOOD_MANAGER_CHAIN_H
-#define NEIGHBOURHOOD_MANAGER_CHAIN_H
+#ifndef STRUCTURE_MANAGER_CHAIN_H
+#define STRUCTURE_MANAGER_CHAIN_H
 
 /**
- * Each actual implementation of a NeighbourhoodManager is based on the given
- * interface ´neighbourhood_manager_base.hh´
+ * Each actual implementation of a StructureManager is based on the given
+ * interface ´structure_manager_base.hh´
  */
-#include "neighbourhood_managers/neighbourhood_manager_base.hh"
-#include "neighbourhood_managers/json_io.hh"
+#include "structure_managers/structure_manager_base.hh"
+#include "structure_managers/json_io.hh"
 
 //! Some data types and operations are based on the Eigen library
 #include <Eigen/Dense>
@@ -70,18 +70,18 @@
  */
 namespace rascal {
   //! forward declaration for traits
-  class NeighbourhoodManagerChain;
+  class StructureManagerChain;
 
   //! traits specialisation for Chain manager
 
   /**
    * The traits are used for vector allocation and further down the processing
-   * chain to determine what functionality the given NeighbourhoodManager
+   * chain to determine what functionality the given StructureManager
    * already contains to avoid recomputation.  See also the implementation of
    * adaptors.
    */
   template <>
-  struct NeighbourhoodManager_traits<NeighbourhoodManagerChain> {
+  struct StructureManager_traits<StructureManagerChain> {
     constexpr static int Dim{3};
     constexpr static size_t MaxOrder{2}; //
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
@@ -91,13 +91,13 @@ namespace rascal {
   };
 
   /**
-   * Definition of the new NeighbourhoodManager class. To add your own, please
+   * Definition of the new StructureManager class. To add your own, please
    * stick to the convention of using 'NeighbourhoofManagerYours', where 'Yours'
    * will give a hint of what it is about.
    */
-  class NeighbourhoodManagerChain:
+  class StructureManagerChain:
     // It inherits publicly everything from the base class
-    public NeighbourhoodManagerBase<NeighbourhoodManagerChain>
+    public StructureManager<StructureManagerChain>
   {
     /**
      * Publicly accessible variables and function of the class are given
@@ -105,8 +105,8 @@ namespace rascal {
      */
   public:
     //! For convenience, the names are shortened
-    using traits = NeighbourhoodManager_traits<NeighbourhoodManagerChain>;
-    using Parent = NeighbourhoodManagerBase<NeighbourhoodManagerChain>;
+    using traits = StructureManager_traits<StructureManagerChain>;
+    using Parent = StructureManager<StructureManagerChain>;
     //! Here you see why -- definition of used function return types
     using Vector_ref = typename Parent::Vector_ref;
     using AtomRef_t = typename Parent::AtomRef;
@@ -158,24 +158,24 @@ namespace rascal {
     using ClusterRef_t = typename Parent::template ClusterRef<Order>;
 
     //! Default constructor
-    NeighbourhoodManagerChain() = default;
+    StructureManagerChain() = default;
 
     //! Copy constructor
-    NeighbourhoodManagerChain(const NeighbourhoodManagerChain &other) = delete;
+    StructureManagerChain(const StructureManagerChain &other) = delete;
 
     //! Move constructor
-    NeighbourhoodManagerChain(NeighbourhoodManagerChain &&other) = default;
+    StructureManagerChain(StructureManagerChain &&other) = default;
 
     //! Destructor
-    virtual ~NeighbourhoodManagerChain() = default;
+    virtual ~StructureManagerChain() = default;
 
     //! Copy assignment operator
-    NeighbourhoodManagerChain&
-    operator=(const NeighbourhoodManagerChain &other) = delete;
+    StructureManagerChain&
+    operator=(const StructureManagerChain &other) = delete;
 
     //! Move assignment operator
-    NeighbourhoodManagerChain&
-    operator=(NeighbourhoodManagerChain &&other) = default;
+    StructureManagerChain&
+    operator=(StructureManagerChain &&other) = default;
 
     /**
      * This member function invokes the reinitialisation of data. E.g. when the
@@ -424,7 +424,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   // used for buildup
   template<size_t Order>
-  inline size_t NeighbourhoodManagerChain::
+  inline size_t StructureManagerChain::
   get_offset_impl(const std::array<size_t, Order> & counters) const {
     // TODO: Check this static_assert for validity
     // static_assert (Order == 1, "this manager can only give the offset "
@@ -435,4 +435,4 @@ namespace rascal {
 
 }  // rascal
 
-#endif /* NEIGHBOURHOOD_MANAGER_CHAIN_H */
+#endif /* STRUCTURE_MANAGER_CHAIN_H */

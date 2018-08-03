@@ -1,5 +1,5 @@
 /**
- * file   test_neighbourhood_manager_chain.cc
+ * file   test_structure_manager_chain.cc
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *
@@ -28,7 +28,7 @@
  */
 
 #include "tests.hh"
-#include "test_neighbourhood.hh"
+#include "test_structure.hh"
 
 #include <iostream>
 
