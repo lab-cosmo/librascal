@@ -57,9 +57,10 @@ namespace rascal {
     for (auto atom : adaptor) {
       // std::cout << "strict atom out " << atom.get_index() << std::endl;
       for (auto pair : atom) {
-        std::cout << "  strict pair out " << pair.get_index() << std::endl;
-        auto dist = adaptor.get_distance(pair);
-        std::cout << "distance " << dist << std::endl;
+        // TODO: commented out after Félix's repair
+        // std::cout << "  strict pair out " << pair.get_index() << std::endl;
+        // auto dist = adaptor.get_distance(pair);
+        // std::cout << "distance " << dist << std::endl;
       }
     }
   }

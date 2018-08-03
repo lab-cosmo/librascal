@@ -37,6 +37,7 @@ namespace rascal {
   update(const int &inum, const int &tot_num, int *ilist, int *numneigh,
          int **firstneigh, double **x, double **f, int *type,
          double *eatom, double **vatom) {
+    // setting the class variables
     this->inum = inum;
     this->tot_num = tot_num;
     this->ilist = ilist;
@@ -54,8 +55,8 @@ namespace rascal {
     }
     this->nb_pairs = std::accumulate(numneigh, numneigh+this->inum, 0);
 
-    auto & atom_cluster_indices{std::get<0>(this->cluster_indices)};
-    auto & pair_cluster_indices{std::get<1>(this->cluster_indices)};
+    auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
+    auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
     atom_cluster_indices.fill_sequence();
     pair_cluster_indices.fill_sequence();
@@ -63,6 +64,10 @@ namespace rascal {
 
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * Return the number of clusters of size cluster_size.  Can only handle
+   * cluster_size 1 (atoms) and cluster_size 2 (pairs).
+   */
   size_t NeighbourhoodManagerLammps::
   get_nb_clusters(int cluster_size) const  {
     switch (cluster_size) {

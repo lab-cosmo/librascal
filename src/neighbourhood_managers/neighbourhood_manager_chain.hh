@@ -92,8 +92,8 @@ namespace rascal {
 
   /**
    * Definition of the new NeighbourhoodManager class. To add your own, please
-   * stick to the convention of using 'NeighbourhoofManagerYours', where
-   * 'Yours' will give a hint of what it is about.
+   * stick to the convention of using 'NeighbourhoofManagerYours', where 'Yours'
+   * will give a hint of what it is about.
    */
   class NeighbourhoodManagerChain:
     // It inherits publicly everything from the base class
@@ -183,14 +183,14 @@ namespace rascal {
      * time, this function updates the data. In this example, .update() takes no
      * arguments, because it relies on the data provided by a file. It is read
      * by invoking .read_structure_from_json(). Invoking update also builds a
-     * full and half neighbour list.
-     * The update function is required, every time the list changes. It is
-     * implemented here with a dependency to the JSON interface. An update of
-     * the positions in the JSON object <code>atoms_object</code> needs to be
-     * followed by a call to this function.
+     * full and half neighbour list.  The update function is required, every
+     * time the list changes. It is implemented here with a dependency to the
+     * JSON interface. An update of the positions in the JSON object
+     * <code>atoms_object</code> needs to be followed by a call to this
+     * function.
      * @param cutoff Property, which defines the cutoff in the
-     *        neighbourlist. Can in the future be combined with cutoff_skin for a
-     *        Verlet type list
+     * neighbourlist. Can in the future be combined with cutoff_skin for a
+     * Verlet type list
      */
     void update(double cutoff);
 
@@ -357,7 +357,7 @@ namespace rascal {
      * the neighbourlist is built
      */
     //! Total number of atoms in structure
-    size_t natoms{}; 
+    size_t natoms{};
     //! Number of pairs
     size_t nb_pairs{};
     //! A list of atom indeces (int), here it is just the number in the list
@@ -379,7 +379,7 @@ namespace rascal {
      * A vector which hold the number of neighbours (half neighbourlist) for
      * each atom.
      */
-    NumNeigh_t numneigh{}; 
+    NumNeigh_t numneigh{};
 
     //! Skin is an additional layer for the neighbour list (Verlet)
     double cutoff_skin{0.0};
@@ -387,7 +387,7 @@ namespace rascal {
      * A vector which stores the absolute offsets for each atom to access the
      * correct variables in the neighbourlist.
      */
-    std::vector<size_t> offsets{}; 
+    std::vector<size_t> offsets{};
 
     //! For linked cell algorithm; saved for possible later use.
     std::vector<int> ll{};

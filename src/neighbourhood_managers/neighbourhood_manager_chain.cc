@@ -111,8 +111,8 @@ namespace rascal {
       this->offsets.emplace_back(this->offsets[i] + this->numneigh[i]);
     }
 
-    auto & atom_cluster_indices{std::get<0>(this->cluster_indices)};
-    auto & pair_cluster_indices{std::get<1>(this->cluster_indices)};
+    auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
+    auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
     atom_cluster_indices.fill_sequence();
     pair_cluster_indices.fill_sequence();
@@ -289,7 +289,7 @@ namespace rascal {
     nboxes = std::accumulate(nmax.begin(), nmax.end(), 1,
                              std::multiplies<int>());
     //! If the cutoff is smaller than length of the structure.
-    nboxes = std::max(nboxes, 1); 
+    nboxes = std::max(nboxes, 1);
 
     //! Create the data structure for the linked cell algorithm.
     this->ll.resize(this->natoms);

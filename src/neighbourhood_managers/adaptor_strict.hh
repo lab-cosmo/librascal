@@ -65,14 +65,13 @@ namespace rascal {
   /**
    * Adaptor that guarantees that only neighbours within the cutoff are
    * present. A neighbor manager could include some wiggle room and list
-   * clusters with distances above the specified cutoff, this adaptor 
-   * makes it possible to get a list with only the clusters that have 
-   * distances strictly below the cutoff. This is also useful to extract
-   * managers with different levels of truncation from a single, loose 
-   * manager.
-   * 
-   * This interface should be implemented by all managers with the
-   * trait AdaptorTraits::Strict::yes
+   * clusters with distances above the specified cutoff, this adaptor makes it
+   * possible to get a list with only the clusters that have distances strictly
+   * below the cutoff. This is also useful to extract managers with different
+   * levels of truncation from a single, loose manager.
+   *
+   * This interface should be implemented by all managers with the trait
+   * AdaptorTraits::Strict::yes
    */
   template <class ManagerImplementation>
   class AdaptorStrict: public
@@ -95,9 +94,9 @@ namespace rascal {
     AdaptorStrict() = delete;
 
     /**
-     * construct a strict neighbourhood list from a given manager. 
-     * `cut-off` specifies the strict cutoff radius. all clusters 
-     *  with distances above this parameter will be skipped
+     * construct a strict neighbourhood list from a given manager. `cut-off`
+     * specifies the strict cutoff radius. all clusters with distances above
+     * this parameter will be skipped
      */
     AdaptorStrict(ManagerImplementation& manager, double cut_off);
 
@@ -128,7 +127,8 @@ namespace rascal {
 
     //! returns the distance between atoms in a given pair
     template <size_t Level, size_t Depth>
-    inline const double & get_distance(const ClusterRefBase<Level, Depth> & pair) const {
+    inline const double & get_distance(const ClusterRefBase<Level, Depth> &
+                                       pair) const {
       return this->distance[pair];
     }
 
@@ -160,7 +160,7 @@ namespace rascal {
     //   return this->manager.get_neighbour_position(cluster);
     // }
 
-    // get atom_index of index-th neighbour of this cluster
+    //! get atom_index of index-th neighbour of this cluster
     template<size_t Level, size_t Depth>
     inline int get_cluster_neighbour(const ClusterRefBase<Level, Depth>
 				     & cluster,
@@ -171,7 +171,7 @@ namespace rascal {
       return this->atom_indices[Level][offset + index];
     }
 
-    // get atom_index of the index-th atom in manager
+    //! get atom_index of the index-th atom in manager
     inline int get_cluster_neighbour(const Parent& /*parent*/,
 				     size_t index) const {
       return this->atom_indices[0][index];
@@ -179,16 +179,18 @@ namespace rascal {
 
     //! return atom type
     inline int & get_atom_type(const AtomRef_t& atom) {
-      // careful, atom refers to our local index, for the manager, we
-      // need its index:
+      /**
+       * careful, atom refers to our local index, for the manager, we need its
+       * index:
+       */
       auto && original_atom{this->atom_indices[0][atom.get_index()]};
       return this->manager.get_atom_type(original_atom);
     }
 
     //! return atom type
     inline const int & get_atom_type(const AtomRef_t& atom) const {
-      // careful, atom refers to our local index, for the manager, we
-      // need its index:
+      // careful, atom refers to our local index, for the manager, we need its
+      // index:
       auto && original_atom{this->atom_indices[0][atom.get_index()]};
       return this->manager.get_atom_type(original_atom);
     }
@@ -203,7 +205,7 @@ namespace rascal {
       return this->offsets[Level][counters.back()];
     }
 
-    // return the number of neighbours of a given atom
+    //! return the number of neighbours of a given atom
     template<size_t Level, size_t Depth>
     inline size_t get_cluster_size(const ClusterRefBase<Level, Depth>
 				   & cluster) const {
@@ -214,11 +216,11 @@ namespace rascal {
 
   protected:
     /**
-     * main function during construction of a neighbourlist.  @param
-     * atom the atom to add to the list @param level select whether it
-     * is an i-atom (level=0), j-atom (level=1), or ...
+     * main function during construction of a neighbourlist.
+     * @param atom the atom to add to the list
+     * @param level select whether it is an i-atom (level=0), j-atom (level=1),
+     * or ...
      */
-
     template <size_t Level>
     inline void add_atom(int atom_index) {
       static_assert(Level <= traits::MaxLevel,
@@ -262,8 +264,8 @@ namespace rascal {
      */
     std::array<std::vector<int>, traits::MaxLevel> atom_indices;
     /**
-     * store the number of j-atoms for every i-atom (nb_neigh[1]), the
-     * number of k-atoms for every j-atom (nb_neigh[2]), etc
+     * store the number of j-atoms for every i-atom (nb_neigh[1]), the number of
+     * k-atoms for every j-atom (nb_neigh[2]), etc
      */
     std::array<std::vector<size_t>, traits::MaxLevel> nb_neigh;
     /**
@@ -358,7 +360,8 @@ namespace rascal {
 
 
         // TODO: check for distance missing
-        static_assert(NextClusterDepth == (NextClusterDepth + 1), "Depth not correct");
+        static_assert(NextClusterDepth == (NextClusterDepth + 1),
+                      "Depth not correct");
         Eigen::Matrix<size_t, NextClusterDepth+1, 1> indices_cluster;
         indices_cluster.template head<NextClusterDepth>()
           = cluster.get_cluster_indices();
@@ -373,7 +376,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * End of recursion
+   * End of recursion for making a strict neighbourlist
    */
   template <class ManagerImplementation>
   template <size_t Level>
@@ -391,10 +394,11 @@ namespace rascal {
   template <class ManagerImplementation>
   void AdaptorStrict<ManagerImplementation>::update() {
 
-     // Reset cluster_indices for adaptor to fill with push back.
-    internal::for_each(this->cluster_indices, internal::ResizePropertyToZero());
+    //! Reset cluster_indices for adaptor to fill with push back.
+    internal::for_each(this->cluster_indices_container,
+                       internal::ResizePropertyToZero());
 
-    // initialise the neighbourlist
+    //! initialise the neighbourlist
     for (size_t i{0}; i < traits::MaxLevel; ++i) {
       this->atom_indices[i].clear();
       this->nb_neigh[i].resize(0);
@@ -405,17 +409,17 @@ namespace rascal {
       vector.push_back(0);
     }
 
-    // initialise the distance storage
+    //! initialise the distance storage
     this->distance.resize_to_zero();
 
     // fill the list, at least pairs are mandatory for this to work
-    auto & atom_cluster_indices{std::get<0>(this->cluster_indices)};
-    auto & pair_cluster_indices{std::get<1>(this->cluster_indices)};
+    auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
+    auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
     size_t pair_counter{0};
     for (auto atom: this->manager) {
       this->add_atom(atom);
-      /*
+      /**
        * Add new depth layer for atoms (see DepthByDimension for
        * possible optimisation).
        */

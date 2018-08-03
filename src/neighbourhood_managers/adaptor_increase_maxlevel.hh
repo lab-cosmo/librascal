@@ -39,13 +39,13 @@
 
 namespace rascal {
   /**
-   * forward declaration for traits
+   * Forward declaration for traits
    */
   template <class ManagerImplementation>
   class AdaptorMaxLevel;
 
   /**
-   * specialisation of traits for increase <code>MaxLevel</code> adaptor
+   * Specialisation of traits for increase <code>MaxLevel</code> adaptor
    */
   template <class ManagerImplementation>
   struct NeighbourhoodManager_traits<AdaptorMaxLevel<ManagerImplementation>> {
@@ -55,10 +55,10 @@ namespace rascal {
     constexpr static bool HasDirectionVectors{
       ManagerImplementation::traits::HasDirectionVectors};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
-    // New MaxLevel upon construction!
+    //! New MaxLevel upon construction!
     constexpr static size_t MaxLevel{ManagerImplementation::traits::MaxLevel+1};
-    // New Depth
-    // TODO: Is this the correct way to initialize the increased depth?
+    //! New Depth
+    //! TODO: Is this the correct way to initialize the increased depth?
     using DepthByDimension = typename
       DepthExtender<MaxLevel,
                     typename
@@ -68,8 +68,8 @@ namespace rascal {
   /**
    * Adaptor that increases the MaxLevel of an existing
    * NeighbourhoodManager. This means, if the manager does not have a
-   * neighbourlist, it is created, if it exists, triplets,
-   * quadruplets, etc. lists are created.
+   * neighbourlist, it is created, if it exists, triplets, quadruplets,
+   * etc. lists are created.
    */
   template <class ManagerImplementation>
   class AdaptorMaxLevel: public
@@ -85,9 +85,9 @@ namespace rascal {
     template<size_t Level>
     using ClusterRef_t =
       typename ManagerImplementation::template ClusterRef<Level>;
-    // template<size_t Level, size_t Depth>
-    // using ClusterRefBase_t =
-    //   typename ManagerImplementation::template ClusterRefBase<Level, Depth>;
+    //! template<size_t Level, size_t Depth>
+    //! using ClusterRefBase_t =
+    //!   typename ManagerImplementation::template ClusterRefBase<Level, Depth>;
     //using PairRef_t = ClusterRef_t<2, traits::MaxLevel>;
 
     // TODO if MaxLevel can be == 1 -> neighbourlist need to be built.
@@ -98,7 +98,8 @@ namespace rascal {
     AdaptorMaxLevel() = delete;
 
     /**
-     * construct a strict neighbourhood list from a given manager and cut-off radius
+     * Construct a strict neighbourhood list from a given manager and cut-off
+     * radius
      */
     AdaptorMaxLevel(ManagerImplementation& manager, double cutoff);
 
@@ -118,15 +119,15 @@ namespace rascal {
     AdaptorMaxLevel& operator=(AdaptorMaxLevel &&other) = default;
 
     //! Update just the adaptor assuming the underlying manager was
-    //! updated. this function invokes building either the neighbour
-    //! list or to make triplets, quadruplets, etc. depending on the
-    //! MaxLevel
+    //! updated. this function invokes building either the neighbour list or to
+    //! make triplets, quadruplets, etc. depending on the MaxLevel
     void update();
 
     //! Update the underlying manager as well as the adaptor
     template<class ... Args>
     void update(Args&&... arguments);
 
+    //! Return cutoff radius of the neighbourhood manager
     inline double get_cutoff() const {return this->cutoff;}
 
     template<size_t Level>
@@ -148,25 +149,21 @@ namespace rascal {
 
     //! Return number of atoms
     inline size_t get_size() const {
-      // return this->get_nb_clusters(1); TODO: this has to return the
-      // original number of atoms from the underlying manager
-      // return this->neighbours.size();
+      //! return this->get_nb_clusters(1); TODO: this has to return the original
+      //! number of atoms from the underlying manager return
+      //! this->neighbours.size();
       return this->manager.get_size();
     }
 
+    //! Return position of atom at given index
+    //! (useful for developers)
     inline Vector_ref get_position(const size_t & atom_index) {
-      // careful, atom refers to our local index, for the manager, we
-      // need its index:
-      auto && original_atom{this->atom_refs[atom_index]};
-      return this->manager.get_position(original_atom);
+      return this->manager.get_position(atom_index);
     }
 
+    //! Return position associated with the given atom object (useful for users)
     inline Vector_ref get_position(const AtomRef_t & atom) {
-      // careful, atom refers to our local index, for the manager, we
-      // need its index:
-      auto atom_index{atom.get_index()};
-      auto && original_atom{this->atom_refs[atom_index]};
-      return this->manager.get_position(original_atom);
+      return this->manager.get_position(atom.get_index());
     }
 
     template<size_t Level, size_t Depth>
@@ -176,12 +173,13 @@ namespace rascal {
                     "Only possible for Level > 1.");
       static_assert(Level <= traits::MaxLevel,
                     "this implementation should only work up to MaxLevel.");
-      // Argument is now the same, but implementation
+      //! Argument is now the same, but implementation
       throw std::runtime_error("should be adapted to Félix's "
                                "new interface using the ClusterRef");
     }
 
-    // return the global id of an atom
+    //! Return the id of an atom at the given index in the neighborhood
+    //! of the cluster
     inline int get_cluster_neighbour(const Parent& /*parent*/,
 				     size_t index) const {
       return this->manager.get_cluster_neighbour(this->manager, index);
@@ -204,18 +202,12 @@ namespace rascal {
 
     //! Return atom type
     inline int & get_atom_type(const AtomRef_t& atom) {
-      // careful, atom refers to our local index, for the manager, we
-      // need its index:
-      auto && original_atom{this->atom_refs[atom.get_index()]};
-      return this->manager.get_atom_type(original_atom);
+      return this->manager.get_atom_type(atom.get_index());
     }
 
     //! Return atom type
     inline const int & get_atom_type(const AtomRef_t& atom) const {
-      // careful, atom refers to our local index, for the manager, we
-      // need its index:
-      auto && original_atom{this->atom_refs[atom.get_index()]};
-      return this->manager.get_atom_type(original_atom);
+      return this->manager.get_atom_type(atom.get_index());
     }
 
     template<size_t Level, size_t Depth>
@@ -231,45 +223,45 @@ namespace rascal {
       }
     }
 
-    // Returns the pairs of an atom with index `atom_index`
+    //! Returns the number of neighbors of an atom with the given index
     inline size_t get_cluster_size(const int & atom_index) const {
       return this->manager.get_cluster_size(atom_index);
     }
 
   protected:
     /**
-     * main function during construction of a neighbourlist.  @param
-     * atom the atom to add to the list. since the MaxLevel is
+     * Main function during construction of a neighbourlist.
+     *
+     * @param atom The atom to add to the list. Because the MaxLevel is
      * increased by one in this adaptor, the Level=MaxLevel
      */
-
     inline void add_atom(const int atom_index) {
-      // add new atom at this Level
+      //! add new atom at this Level
       this->atom_indices.push_back(atom_index);
-      // count that this atom is a new neighbour
+      //! count that this atom is a new neighbour
       this->nb_neigh.back()++;
       this->offsets.back()++;
 
-      // make sure that this atom starts with zero lower-Level neighbours
+      //! make sure that this atom starts with zero lower-Level neighbours
       this->nb_neigh.push_back(0);
-      // update the offsets
+      //! update the offsets
       this->offsets.push_back(this->offsets.back() +
                               this->nb_neigh.back());
     }
 
-    // new entry in nb_neigh vector
+    //! Create new entry in nb_neigh vector
     inline void add_entry_number_of_neighbours() {
       this->nb_neigh.push_back(0);
     }
 
-    // add atom_index as new cluster neighbour
+    //! Add given atom index as new cluster neighbour
     inline void add_neighbour_of_cluster(const int atom_index) {
-      // add `atom_index` to neighbours
+      //! add `atom_index` to neighbours
       this->neighbours.push_back(atom_index);
       this->nb_neigh.back()++;
     }
 
-    // now set the correct offsets for access
+    //! Set the correct offsets for accessing neighbors
     inline void set_offsets() {
       auto n_tuples{nb_neigh.size()};
       this->offsets.reserve(n_tuples);
@@ -288,35 +280,37 @@ namespace rascal {
       return this->add_atom(cluster.back());
     }
 
-    // Make a half neighbour list, by construction only Level=1 is supplied.
+    //! Make a half neighbour list, by construction only Level=1 is supplied.
     void make_half_neighbour_list();
 
-    // Make full list
+    //! Make a full neighbour list
     void make_full_neighbour_list();
 
-    // Increase whatever level is present
+    //! Increase whatever level is present
     void increase_maxlevel();
 
     ManagerImplementation & manager;
+
+    //! Cutoff radius of manager
     const double cutoff;
 
     template<size_t Level, bool IsDummy> struct AddLevelLoop;
 
-    // not necessary any more
-    // // stores AtomRefs to of neighbours for traits::MaxLevel-1-*plets
+    //! not necessary any more
+    //! // stores AtomRefs to of neighbours for traits::MaxLevel-1-*plets
     // std::vector<AtomRef_t> atom_refs{};
 
-    // Stores atom indices of current Level
+    //! Stores atom indices of current Level
     std::vector<size_t> atom_indices{}; //akin to ilist[]
 
-    // stores the number of neighbours for every traits::MaxLevel-1-*plets
+    //! Stores the number of neighbours for every traits::MaxLevel-1-*plets
     std::vector<size_t> nb_neigh{};
 
-    // stores all neighbours of traits::MaxLevel-1-*plets
+    //! Stores all neighbours of traits::MaxLevel-1-*plets
     std::vector<size_t> neighbours{};
 
-    // stores the offsets of traits::MaxLevel-1-*plets for accessing
-    // `neighbours`, from where nb_neigh can be counted
+    //! Stores the offsets of traits::MaxLevel-1-*plets for accessing
+    //! `neighbours`, from where nb_neigh can be counted
     std::vector<size_t> offsets{};
 
     size_t cluster_counter{0};
@@ -376,10 +370,11 @@ namespace rascal {
     static void loop(ClusterRef_t & cluster,
                      AdaptorMaxLevel<ManagerImplementation> & manager) {
 
-      // do nothing, if MaxLevel is not reached, except call the next level
+      //! do nothing, if MaxLevel is not reached, except call the next level
       for (auto next_cluster : cluster) {
 
-        auto & next_cluster_indices{std::get<Level>(manager.cluster_indices)};
+        auto & next_cluster_indices
+        {std::get<Level>(manager.cluster_indices_container)};
         next_cluster_indices.push_back(next_cluster.get_cluster_indices());
 
 	NextLevelLoop::loop(next_cluster, manager);
@@ -388,9 +383,9 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
-  // At desired MaxLevel (plus one), here is where the magic happens
-  // and the neighbours of the same level are added as the Level+1.
-  // add check for non half neighbour list
+  //! At desired MaxLevel (plus one), here is where the magic happens and the
+  //! neighbours of the same level are added as the Level+1.  add check for non
+  //! half neighbour list
   template <class ManagerImplementation>
   template <size_t Level>
   struct AdaptorMaxLevel<ManagerImplementation>::AddLevelLoop<Level, true> {
@@ -407,15 +402,15 @@ namespace rascal {
     static void loop(ClusterRef_t & cluster,
                      AdaptorMaxLevel<ManagerImplementation> & manager) {
 
-      // get all i_atoms to find neighbours to extend the cluster to the next
-      // level
+      //! get all i_atoms to find neighbours to extend the cluster to the next
+      //! level
       auto i_atoms = cluster.get_atom_indices();
 
-      // vector of existing i_atoms in `cluster` to avoid doubling of atoms in
-      // final list
+      //! vector of existing i_atoms in `cluster` to avoid doubling of atoms in
+      //! final list
       std::vector<size_t> current_i_atoms;
-      // a set of new neighbours for the cluster, which will be added to extend
-      // the cluster
+      //! a set of new neighbours for the cluster, which will be added to extend
+      //! the cluster
       std::set<size_t> current_j_atoms;
 
       //! access to underlying manager for access to atom pairs
@@ -430,21 +425,21 @@ namespace rascal {
         size_t access_index = manager.get_cluster_neighbour(manager,
                                                             atom_index);
 
-        // build a shifted iterator to constuct a ClusterRef<1>
+        //! build a shifted iterator to constuct a ClusterRef<1>
         auto iterator_at_position{manager_tmp.get_iterator_at(access_index)};
 
-        // ClusterRef<1> as dereference from iterator to get pairs of the
-        // i_atoms
+        //! ClusterRef<1> as dereference from iterator to get pairs of the
+        //! i_atoms
         auto && j_cluster{*iterator_at_position};
 
-        // collect all possible neighbours of the cluster: collection of all
-        // neighbours of current_i_atoms
+        //! collect all possible neighbours of the cluster: collection of all
+        //! neighbours of current_i_atoms
         for (auto pair : j_cluster) {
           current_j_atoms.insert(pair.back());
         }
       }
 
-      // delete existing cluster atoms from list to build additional neighbours
+      //! delete existing cluster atoms from list to build additional neighbours
       std::vector<size_t> atoms_to_add{};
       std::set_difference(current_j_atoms.begin(), current_j_atoms.end(),
                           current_i_atoms.begin(), current_i_atoms.end(),
@@ -469,38 +464,36 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
   void AdaptorMaxLevel<ManagerImplementation>::make_half_neighbour_list() {
-    // Make a half neighbour list (not quite Verlet, because of the
-    // missing skin) according to Tadmor and Miller 'Modeling
-    // Materials', algorithm 6.7, p 323, (needs modification for
-    // periodicity).
+    //! Make a half neighbour list (not quite Verlet, because of the missing
+    //! skin) according to Tadmor and Miller 'Modeling Materials', algorithm 6.7,
+    //! p 323, (needs modification for periodicity).
 
-    // It results in a <code>strict</code> neighbourlist. It is
-    // only a half-neighbour list.  The most obvious difference is
-    // that no 'skin' is used in conjunction with the cutoff.  This is
-    // only necessary, if the ManagerImplementation, with which this
-    // adaptor is initialized does not have at least already atomic
-    // pairs. Inluding ghost neighbours?
+    //! It results in a <code>strict</code> neighbourlist. It is only a
+    //! half-neighbour list.  The most obvious difference is that no 'skin' is
+    //! used in conjunction with the cutoff.  This is only necessary, if the
+    //! ManagerImplementation, with which this adaptor is initialized does not
+    //! have at least already atomic pairs. Inluding ghost neighbours?
 
     // TODO: add functionality for the shift vector??!
 
-    // The zeroth level does not have neighbours
+    //! The zeroth level does not have neighbours
     this->nb_neigh.push_back(0);
 
     unsigned int nneigh_off{0};
 
     for (auto it=this->manager.begin(); it!=--this->manager.end(); ++it){
-      // Add atom at this level this is just the standard list.
+      //! Add atom at this level this is just the standard list.
       auto atom_i = *it;
       this->add_atom(atom_i);
 
       auto jt = it;
-      ++jt; // go to next atom in manager (no self-neighbour)
+      ++jt; //! go to next atom in manager (no self-neighbour)
       for (;jt!=manager.end(); ++jt){
       	auto atom_j = *jt;
       	double distance{(atom_i.get_position() -
 			 atom_j.get_position()).norm()};
       	if (distance <= this->cutoff) {
-      	  // Store atom_j in neighbourlist of atom_i
+      	  //! Store atom_j in neighbourlist of atom_i
       	  this->nb_neigh.back()++;
       	  nneigh_off += 1;
       	}
@@ -512,10 +505,10 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
   void AdaptorMaxLevel<ManagerImplementation>::make_full_neighbour_list() {
-    // Make a full neighbourlist, whithout fancy linked list or
-    // cell. Also missing are periodic boundary conditions.
+    //! Make a full neighbourlist, whithout fancy linked list or cell. Also
+    //! missing are periodic boundary conditions.
 
-    // The zeroth level does not have neighbours
+    //! The zeroth level does not have neighbours
     this->nb_neigh.push_back(0);
 
     unsigned int nneigh_off{0};
@@ -523,14 +516,14 @@ namespace rascal {
     for (auto atom_i : this->manager){
       this->add_atom(atom_i);
       for (auto atom_j : this->manager){
-      	if(&atom_i != &atom_j) { // avoid self-neighbouring
+      	if(&atom_i != &atom_j) { //! avoid self-neighbouring
 	  // TODO: this .get_position() function will always give the
 	  // real position, never the shifted one.
       	  double distance{(atom_i.get_position() -
 			   atom_j.get_position()).norm()};
       	  if (distance <= this->cutoff) {
-      	    // Store atom_j in neighbourlist of atom_i
-	    // this->atom_refs[1].push_back(atom_j.back());
+      	    //! Store atom_j in neighbourlist of atom_i
+	    //! this->atom_refs[1].push_back(atom_j.back());
 	    this->add_atom_level_up(atom_j);
       	    this->nb_neigh.back()++;
       	    nneigh_off += 1;
@@ -544,55 +537,56 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
   void AdaptorMaxLevel<ManagerImplementation>::increase_maxlevel() {
-    // Depending on the existing Level, this function increases the
-    // MaxLevel by one by adding all neighbours of the last atom at
-    // the end of the chain as new end of a tuple.
-    // This results in each triplet is only existing once.
+    //! Depending on the existing Level, this function increases the
+    //! MaxLevel by one by adding all neighbours of the last atom at
+    //! the end of the chain as new end of a tuple.
+    //! This results in each triplet is only existing once.
 
-    // Attention, <code>traits::MaxLevel</code> is already increased
-    // in the traits upon construction, therefore the MaxLevel needs
-    // to be larger than 2 (i.e. a NeighbourhoodManager with a
-    // pairlist is present to call this function here.)
+    //! Attention, <code>traits::MaxLevel</code> is already increased
+    //! in the traits upon construction, therefore the MaxLevel needs
+    //! to be larger than 2 (i.e. a NeighbourhoodManager with a
+    //! pairlist is present to call this function here.)
     static_assert(traits::MaxLevel > 2, "No neighbourlist present.");
 
     for (auto atom : this->manager) {
-      // Level 1, Level variable is at 0, atoms, index 0
+      //! Level 1, Level variable is at 0, atoms, index 0
       using AddLevelLoop = AddLevelLoop<atom.level(),
                                         atom.level() == traits::MaxLevel-1>;
-      auto & atom_cluster_indices{std::get<0>(this->cluster_indices)};
+      auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
       atom_cluster_indices.push_back(atom.get_cluster_indices());
       AddLevelLoop::loop(atom, *this);
     }
 
-    // correct the offsets for the new cluster level
+    //! correct the offsets for the new cluster level
     this->set_offsets();
-    // add correct cluster_indices for the highest level
-    auto & max_cluster_indices{std::get<traits::MaxLevel-1>(this->cluster_indices)};
+    //! add correct cluster_indices for the highest level
+    auto & max_cluster_indices
+    {std::get<traits::MaxLevel-1>(this->cluster_indices_container)};
     max_cluster_indices.fill_sequence();
   }
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
   void AdaptorMaxLevel<ManagerImplementation>::update() {
-    // initialise the list if it does not exist
+    //! initialise the list if it does not exist
     // TODO
     // initialise the neighbourlist
 
-    // -1 because the traits' MaxLevel is already increased
+    //! -1 because the traits' MaxLevel is already increased
     if (traits::MaxLevel-1 == 1) {
-      // Make half neighbour list (strict?)
-      // initialise the neighbourlist
+      //! Make half neighbour list (strict?)
+      //! initialise the neighbourlist
       for (int i{0}; i < traits::MaxLevel; ++i) {
-	// this->atom_refs.clear();
+	//! this->atom_refs.clear();
 	this->nb_neigh.resize(0);
 	this->offsets.resize(0);
       }
       this->make_half_neighbour_list();
       // this->make_full_neighbour_list(); // no frills, full neighbourlist
     } else {
-      // Make triplets/quadruplets/etc. based on existing
-      // neighbourlist
-      // Templated function?
+      //! Make triplets/quadruplets/etc. based on existing
+      //! neighbourlist
+      //! Templated function?
       this->increase_maxlevel();
     }
   }
