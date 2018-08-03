@@ -30,28 +30,25 @@
 
 
 namespace rascal {
-
-/**
- * Dynamically allocated matrix of arbitrary dimension.
- */
-
-using MatrixXdR = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
-using MatrixXdC = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor>;
-
-using VecXb = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
+//! Dynamically allocated integer vector to store the particle type
 using VecXi = Eigen::Matrix<int, Eigen::Dynamic, 1>;
-
-
-
+//! Dynamically allocated Column Major matrix used for storing positions.
 using Matrix3XdC = Eigen::Matrix<double, 3, Eigen::Dynamic, Eigen::ColMajor>;
-using Vecd_t = typename Eigen::Array<double, 3, 1>;
-using Veci_t = typename Eigen::Array<int, 3, 1>;
-using Mati_t = typename Eigen::Array<int, 3, 2>;
+//! Static double matrix for storing the lattice vectors.
 using Cell_t = Eigen::Matrix<double, 3, 3, Eigen::ColMajor>;
+//! Static double vector to store a position, an angle etc..
 using Vec3_t = Eigen::Matrix<double, 3,1>;
+//! Reference vector defined using Eigen Map function
+using Vector_ref = Eigen::Map<Vec3_t>;
+/** Static integer vector to store the three indices
+ * of either the atom in a triplet or the coordinates of a cell 
+ * in a supercell
+ */
 using Vec3i_t = Eigen::Matrix<int, 3, 1>;
-
-
+/** 
+ * Static integer scalar to store the number of real space 
+ * dimensions of the system.
+ */
 using Dim_t = int;
 
 }

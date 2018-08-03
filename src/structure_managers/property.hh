@@ -112,11 +112,11 @@ namespace rascal {
 
   // Forward declaration of traits to use `Property`.
   template <class Manager>
-  struct NeighbourhoodManager_traits;
+  struct StructureManager_traits;
 
 
-  template <class NeighbourhoodManager, typename T,
-            size_t Level,
+  template <class StructureManager, typename T,
+            size_t Order,
             Dim_t NbRow = 1, Dim_t NbCol = 1>
   class Property
   {
@@ -124,7 +124,7 @@ namespace rascal {
                    std::is_same<T, std::complex<double>>::value),
                   "can currently only handle arithmetic types");
   public:
-    using traits = NeighbourhoodManager_traits<NeighbourhoodManager>;
+    using traits = StructureManager_traits<StructureManager>;
     constexpr static size_t NbComp{NbRow*NbCol};
 
     using Value = internal::Value<T, NbRow, NbCol>;
@@ -139,8 +139,8 @@ namespace rascal {
     Property() = delete;
 
     //! Constructor with Manager
-    Property(NeighbourhoodManager & manager)
-      :manager{manager}, values{}
+    Property(StructureManager & manager)
+      :manager{manager},values{}
     {}
 
     //! Copy constructor
@@ -160,7 +160,7 @@ namespace rascal {
 
     //! Adjust size of values (only increases, never frees)
     void resize() {
-      this->values.resize(this->manager.nb_clusters(Level) * NbComp);
+      this->values.resize(this->manager.nb_clusters(Order) * NbComp);
     }
 
     /**
@@ -206,17 +206,17 @@ namespace rascal {
     /**
      * Not sure about the actual implementation of this one.
      */
-    template<size_t CallerDepth>
-    reference operator[](const ClusterRefBase<Level, CallerDepth> & id) {
-      constexpr auto ActiveDepth{
-        compute_cluster_depth<Level>(typename traits::DepthByDimension{})};
-      static_assert(CallerDepth >= ActiveDepth,
+    template<size_t CallerLayer>
+    reference operator[](const ClusterRefBase<Order, CallerLayer> & id) {
+      constexpr auto ActiveLayer{
+        compute_cluster_layer<Order>(typename traits::LayerByDimension{})};
+      static_assert(CallerLayer >= ActiveLayer,
                     "You are trying to access a property that "
-                    "does not exist at this low a level in the "
+                    "does not exist at this depth in the "
                     "adaptor stack.");
 
       return
-        Value::get_ref(this->values[id.get_cluster_index(CallerDepth)*NbComp]);
+        Value::get_ref(this->values[id.get_cluster_index(CallerLayer)*NbComp]);
     }
 
     /**
@@ -242,7 +242,7 @@ namespace rascal {
     }
 
   protected:
-    NeighbourhoodManager & manager;
+    StructureManager & manager;
     std::vector<T> values;
   private:
   };

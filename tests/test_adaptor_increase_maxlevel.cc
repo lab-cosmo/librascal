@@ -27,8 +27,8 @@
  */
 
 #include "tests.hh"
-#include "test_neighbourhood.hh"
-#include "neighbourhood_managers/adaptor_increase_maxlevel.hh"
+#include "test_structure.hh"
+#include "structure_managers/adaptor_increase_maxlevel.hh"
 
 namespace rascal {
 
@@ -64,11 +64,11 @@ namespace rascal {
     std::cout << "number of pairs " << npairs1 << std::endl;
     std::cout << "<============ below" << std::endl;
 
-    AdaptorMaxLevel<NeighbourhoodManagerChain> adaptor{manager_chain, cutoff};
+    AdaptorMaxOrder<StructureManagerChain> adaptor{manager_chain, cutoff};
     adaptor.update();
 
     if (verbose) {
-      std::cout << "Adaptor increase MaxLevel" << std::endl;
+      std::cout << "Adaptor increase MaxOrder" << std::endl;
     }
 
     auto natoms{0};

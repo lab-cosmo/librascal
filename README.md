@@ -51,8 +51,10 @@ try to enable CI on github with travis
 Felix:
 the rest of the tutorial
 start pulling the reference implementation in Python (with Andrea G)
-Chiheb:
-Start writing down the blueprints from the google doc to the docs
+Michele:
+Write a whitepaper section
+Everyone:
+Make sure new and existing doxygen documentation refers correctly to Order and Layer rather than to Level and Depth
 *EFFICIENCY OF BULK KERNEL EVALUATION*
 typically we will do operations like diag (AB) where A and B are matrices of the order of 10'000x10'000
 

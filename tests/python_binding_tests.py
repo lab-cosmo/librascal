@@ -2,8 +2,7 @@
 
 import unittest
 
-from python_cdist_test import TestCdist
-from python_neighbour_manager_test import TestNeighbourManagerCell
+from python_structure_manager_test import TestStructureManagerCell
 
 class SimpleCheck(unittest.TestCase):
     def setUp(self):

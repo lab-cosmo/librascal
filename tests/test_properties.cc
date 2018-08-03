@@ -28,8 +28,8 @@
  */
 
 #include "tests.hh"
-#include "test_neighbourhood.hh"
-#include "neighbourhood_managers/property.hh"
+#include "test_structure.hh"
+#include "structure_managers/property.hh"
 
 namespace rascal {
 
@@ -67,10 +67,10 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(constructor_test_cell, PropertyFixture<NeighbourhoodManagerCell>) {}
+  BOOST_FIXTURE_TEST_CASE(constructor_test_cell, PropertyFixture<StructureManagerCell>) {}
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(fill_test_cell, PropertyFixture<NeighbourhoodManagerCell>) {
+  BOOST_FIXTURE_TEST_CASE(fill_test_cell, PropertyFixture<StructureManagerCell>) {
     pair_property.resize();
     atom_property.resize();
     int pair_property_counter{};

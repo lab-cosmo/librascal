@@ -1,5 +1,5 @@
 /**
- * file   test_neighbourhood_manager_lammps.cc
+ * file   test_structure_manager_lammps.cc
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
@@ -28,7 +28,7 @@
  */
 
 #include "tests.hh"
-#include "test_neighbourhood.hh"
+#include "test_structure.hh"
 
 #include <iostream>
 

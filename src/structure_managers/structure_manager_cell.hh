@@ -1,5 +1,5 @@
 /**
- * file   neighbourhood_manager_cell.hh
+ * file   structure_manager_cell.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
@@ -26,11 +26,11 @@
  */
 
 
-#ifndef NEIGHBOURHOOD_MANAGER_CELL_H
-#define NEIGHBOURHOOD_MANAGER_CELL_H
+#ifndef STRUCTURE_MANAGER_CELL_H
+#define STRUCTURE_MANAGER_CELL_H
 
-#include "neighbourhood_managers/neighbourhood_manager_base.hh"
-#include "neighbourhood_managers/property.hh"
+#include "structure_managers/structure_manager_base.hh"
+#include "structure_managers/property.hh"
 #include "lattice.hh"
 #include "basic_types.hh"
 #include <Eigen/Dense>
@@ -109,54 +109,54 @@ namespace rascal {
   }  // internal
 
   //! forward declaration for traits
-  class NeighbourhoodManagerCell;
+  class StructureManagerCell;
 
   //! traits specialisation for Cell manager
   template <>
-  struct NeighbourhoodManager_traits<NeighbourhoodManagerCell> {
+  struct StructureManager_traits<StructureManagerCell> {
     constexpr static int Dim{3};
-    constexpr static size_t MaxLevel{2};
+    constexpr static size_t MaxOrder{2};
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDirectionVectors{false};
     constexpr static bool HasDistances{false};
-    using DepthByDimension = std::index_sequence<0, 0>;
+    using LayerByDimension = std::index_sequence<0, 0>;
   };
-  class NeighbourhoodManagerCell:
-    public NeighbourhoodManagerBase<NeighbourhoodManagerCell>
+  class StructureManagerCell:
+    public StructureManager<StructureManagerCell>
   {
   public:
-    using traits = NeighbourhoodManager_traits<NeighbourhoodManagerCell>;
-    using Parent = NeighbourhoodManagerBase<NeighbourhoodManagerCell>;
+    using traits = StructureManager_traits<StructureManagerCell>;
+    using Parent = StructureManager<StructureManagerCell>;
     using Vector_ref = typename Parent::Vector_ref;
     using Vector_t = typename Parent::Vector_t;
     using AtomRef_t = typename Parent::AtomRef;
-    template <size_t Level>
-    using ClusterRef_t = typename Parent::template ClusterRef<Level>;
-    using AtomVectorField_t = Property<NeighbourhoodManagerCell, double, 1, 3>;
+    template <size_t Order>
+    using ClusterRef_t = typename Parent::template ClusterRef<Order>;
+    using AtomVectorField_t = Property<StructureManagerCell, double, 1, 3>;
 
     //! Default constructor
-    NeighbourhoodManagerCell()
+    StructureManagerCell()
       : particles{}, centers{}, positions{}, shifted_position{}, lattice{},
         cell{}, pbc{}, part2bin{}, boxes{}, number_of_neighbours{0},
         neighbour_bin_id{}, number_of_neighbours_stride{},
         neighbour_atom_index{}, particle_types{} {}
 
     //! Copy constructor
-    NeighbourhoodManagerCell(const NeighbourhoodManagerCell &other) = delete;
+    StructureManagerCell(const StructureManagerCell &other) = delete;
 
     //! Move constructor
-    NeighbourhoodManagerCell(NeighbourhoodManagerCell &&other) = default;
+    StructureManagerCell(StructureManagerCell &&other) = default;
 
     //! Destructor
-    virtual ~NeighbourhoodManagerCell() = default;
+    virtual ~StructureManagerCell() = default;
 
     //! Copy assignment operator
-    NeighbourhoodManagerCell
-    & operator=(const NeighbourhoodManagerCell &other) = delete;
+    StructureManagerCell
+    & operator=(const StructureManagerCell &other) = delete;
 
     //! Move assignment operator
-    NeighbourhoodManagerCell
-    & operator=(NeighbourhoodManagerCell &&other) = default;
+    StructureManagerCell
+    & operator=(StructureManagerCell &&other) = default;
 
     class Box;
 
@@ -178,13 +178,13 @@ namespace rascal {
     // return position vector atom is the neighbour atom. center_atom
     // is the current center. j_linear_id is the index of the current
     // neighbour iterator.
-    template<size_t Level, size_t Depth>
-    inline Vector_t get_neighbour_position(const ClusterRefBase<Level, Depth> &
+    template<size_t Order, size_t Layer>
+    inline Vector_t get_neighbour_position(const ClusterRefBase<Order, Layer> &
                                              cluster) {
-      static_assert(Level > 1,
-                    "Only possible for Level > 1.");
-      static_assert(Level <= traits::MaxLevel,
-                    "this implementation should only work up to MaxLevel.");
+      static_assert(Order > 1,
+                    "Only possible for Order > 1.");
+      static_assert(Order <= traits::MaxOrder,
+                    "this implementation should only work up to MaxOrder.");
 
 
       // TODO: why is there a j_linear_id and a j_atom_id, which is the same?
@@ -208,11 +208,11 @@ namespace rascal {
     }
 
     // return the index-th neighbour of cluster
-    template<size_t Level, size_t Depth>
-    inline int get_cluster_neighbour(const ClusterRefBase<Level, Depth>
+    template<size_t Order, size_t Layer>
+    inline int get_cluster_neighbour(const ClusterRefBase<Order, Layer>
                                      & cluster,
                                      size_t index) const {
-      static_assert(Level <= traits::MaxLevel,
+      static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
       auto && i_atom_id{cluster.back()};
       auto && i_bin_id{this->part2bin[i_atom_id]};
@@ -239,10 +239,10 @@ namespace rascal {
     }
 
     // return the number of neighbours of a given atom
-    template<size_t Level, size_t Depth>
-    inline size_t get_cluster_size(const ClusterRefBase<Level, Depth>
+    template<size_t Order, size_t Layer>
+    inline size_t get_cluster_size(const ClusterRefBase<Order, Layer>
                                    & cluster) const {
-      static_assert(Level <= traits::MaxLevel,
+      static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
       auto && i_atom_id{cluster.back()};
       auto && box_id{this->part2bin[i_atom_id]};
@@ -250,8 +250,8 @@ namespace rascal {
       return size;
     }
 
-    template<size_t Level>
-    inline size_t get_offset_impl(const std::array<size_t, Level>
+    template<size_t Order>
+    inline size_t get_offset_impl(const std::array<size_t, Order>
                                   & counters) const;
 
     size_t get_nb_clusters(size_t cluster_size) const;
@@ -300,12 +300,12 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
 
-  class NeighbourhoodManagerCell::Box {
+  class StructureManagerCell::Box {
   public:
-    using Manager_t = NeighbourhoodManagerBase<NeighbourhoodManagerCell>;
-    using AtomRef_t = typename NeighbourhoodManagerCell::AtomRef_t;
-    using Vector_t = typename NeighbourhoodManagerCell::Vector_t;
-    using Vector_ref = typename NeighbourhoodManagerCell::Vector_ref;
+    using Manager_t = StructureManager<StructureManagerCell>;
+    using AtomRef_t = typename StructureManagerCell::AtomRef_t;
+    using Vector_t = typename StructureManagerCell::Vector_t;
+    using Vector_ref = typename StructureManagerCell::Vector_ref;
     //! Default constructor
     Box() = default;
 
@@ -321,7 +321,7 @@ namespace rascal {
 
     virtual ~Box() = default;
 
-    constexpr static int dim() {return NeighbourhoodManagerCell::dim();}
+    constexpr static int dim() {return StructureManagerCell::dim();}
 
     inline void push_particle_back(const int& part_index);
 
@@ -354,21 +354,21 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   // buildup
-  template<size_t Level>
-  inline size_t NeighbourhoodManagerCell::
-  get_offset_impl(const std::array<size_t, Level> & counters) const {
-    static_assert (Level == 1, "this manager can only give the offset "
+  template<size_t Order>
+  inline size_t StructureManagerCell::
+  get_offset_impl(const std::array<size_t, Order> & counters) const {
+    static_assert (Order == 1, "this manager can only give the offset "
                    "(= starting index) for a pair iterator, given the i atom "
                    "of the pair");
     return this->number_of_neighbours_stride[counters.front()];
   }
 
   /* ---------------------------------------------------------------------- */
-  inline Vector_ref NeighbourhoodManagerCell::
+  inline Vector_ref StructureManagerCell::
   get_shift(const int& i_bin_id, const int& neigh_bin_index){
     return this->boxes[i_bin_id].get_neighbour_bin_shift(neigh_bin_index);
   }
 
 }  // rascal
 
-#endif /* NEIGHBOURHOOD_MANAGER_CELL_H */
+#endif /* STRUCTURE_MANAGER_CELL_H */

@@ -5,7 +5,7 @@
  *
  * @date   04 Jun 2018
  *
- * @brief  tests the implementation of the strict neighbourhood adaptor
+ * @brief  tests the implementation of the strict structure adaptor
  *
  * Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -26,8 +26,8 @@
  */
 
 #include "tests.hh"
-#include "test_neighbourhood.hh"
-#include "neighbourhood_managers/adaptor_strict.hh"
+#include "test_structure.hh"
+#include "structure_managers/adaptor_strict.hh"
 
 
 namespace rascal {
@@ -36,7 +36,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
-                          ManagerFixture<NeighbourhoodManagerCell>) {
+                          ManagerFixture<StructureManagerCell>) {
     double cut_off{0.9*cutoff_max};
 
     // std::cout << "Testing manager cell iteration" << std::endl;
@@ -50,7 +50,7 @@ namespace rascal {
     // just all neighbours
 
     // std::cout << "Setting up strict manager" << std::endl;
-    AdaptorStrict<NeighbourhoodManagerCell> adaptor{manager, cut_off};
+    AdaptorStrict<StructureManagerCell> adaptor{manager, cut_off};
     adaptor.update();
 
     // std::cout << "Testing adaptor_strict" << std::endl;

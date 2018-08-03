@@ -1,5 +1,5 @@
 /**
- * file   neighbourhood_manager_chain.cc
+ * file   structure_manager_chain.cc
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *
@@ -26,7 +26,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "neighbourhood_managers/neighbourhood_manager_chain.hh"
+#include "structure_managers/structure_manager_chain.hh"
 
 #include <numeric>
 #include <fstream>
@@ -47,7 +47,7 @@ namespace rascal {
    * and access them with the map. Using the vector type automatically ensures
    * contiguity
    */
-  void NeighbourhoodManagerChain::update(double cutoff) {
+  void StructureManagerChain::update(double cutoff) {
 
     /**
      * Check if a structure has already been read, if not, throw an exception to
@@ -122,11 +122,11 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   /**
    * Helper function to get the number of <code>clusters</code> (atoms, pairs,
-   * triplets, quadruplets) with a specific <code>Level</code>. The
-   * <code>MaxLevel</code> depends on your implementation or
-   * processing. Increasing the level is done with an adaptor.
+   * triplets, quadruplets) with a specific <code>Order</code>. The
+   * <code>MaxOrder</code> depends on your implementation or
+   * processing. Increasing the order is done with an adaptor.
    */
-  size_t NeighbourhoodManagerChain::get_nb_clusters(size_t cluster_size) const {
+  size_t StructureManagerChain::get_nb_clusters(size_t cluster_size) const {
     switch (cluster_size) {
     case 1: {
       return this->natoms;
@@ -137,7 +137,7 @@ namespace rascal {
     }
     default:
       throw std::runtime_error("Can only handle atoms and pairs,"
-                               " use adaptor to increase MaxLevel.");
+                               " use adaptor to increase MaxOrder.");
       break;
     }
   }
@@ -151,7 +151,7 @@ namespace rascal {
    * read. That is the reason for the try/catch block -- to make sure, the file
    * is opened.
    */
-  void NeighbourhoodManagerChain::
+  void StructureManagerChain::
   read_structure_from_json(const std::string filename) {
 
     json j;
@@ -185,7 +185,7 @@ namespace rascal {
    * complete simulation box. It is included, because usually, there is no
    * origin given for the cell of the atomic environment.
    */
-  inline double NeighbourhoodManagerChain::get_box_length(int d) {
+  inline double StructureManagerChain::get_box_length(int d) {
     Cell_ref Cell = this->get_cell();
     return Cell.col(d).norm();
   }
@@ -223,7 +223,7 @@ namespace rascal {
    * the box.
    */
   inline std::vector<int>
-  NeighbourhoodManagerChain::
+  StructureManagerChain::
   get_box_index(Vector_ref& position,
                 std::vector<double>& rc,
                 Eigen::Matrix<double, 1, traits::Dim> offset,
@@ -244,7 +244,7 @@ namespace rascal {
    * function collects all neighbours of the box and writes it to the full
    * neighbourlist <code>allneigh</code>.
    */
-  inline void NeighbourhoodManagerChain::
+  inline void StructureManagerChain::
   collect_neighbour_info_of_atom(const int i,
                                  const std::vector<int> boxidx,
                                  const std::vector<int> nmax) {
@@ -271,7 +271,7 @@ namespace rascal {
    * directly written into protected member variables of the neighbourhood
    * manager.
    */
-  void NeighbourhoodManagerChain::make_neighbourlist(double cutoff) {
+  void StructureManagerChain::make_neighbourlist(double cutoff) {
     /* Neighbourlist algorithm, non periodic, non triclinic cell
      * for demonstration purposes.
      */

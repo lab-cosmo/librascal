@@ -37,46 +37,46 @@
 
 namespace rascal {
   /**
-   * Depth calculations and manipulations
+   * Layer calculations and manipulations
    */
-  // Computes depth by cluster dimension for new adaptor layer
-  template <size_t MaxLevel, class T>
-  struct DepthIncreaser{};
+  // Computes layer index by cluster dimension for new adaptor layer
+  template <size_t MaxOrder, class T>
+  struct LayerIncreaser{};
 
-  template <size_t MaxLevel, size_t... Ints>
-  struct DepthIncreaser<MaxLevel,
+  template <size_t MaxOrder, size_t... Ints>
+  struct LayerIncreaser<MaxOrder,
                         std::integer_sequence<size_t, Ints...>>{
     using type = std::index_sequence<(Ints+1)...>;
   };
 
-  template <size_t MaxLevel, size_t... Ints>
-  using DepthIncreaser_t =
-    typename DepthIncreaser<MaxLevel, std::index_sequence<Ints...>>::type;
+  template <size_t MaxOrder, size_t... Ints>
+  using LayerIncreaser_t =
+    typename LayerIncreaser<MaxOrder, std::index_sequence<Ints...>>::type;
 
   /**
    * Extends depth by cluster for an additional cluster dimension
    */
-  template <size_t MaxLevel, class T>
-  struct DepthExtender{};
+  template <size_t MaxOrder, class T>
+  struct LayerExtender{};
 
-  template <size_t MaxLevel, size_t... Ints>
-  struct DepthExtender<MaxLevel,
+  template <size_t MaxOrder, size_t... Ints>
+  struct LayerExtender<MaxOrder,
                        std::index_sequence<Ints...>>{
     using type = std::index_sequence<Ints..., 0>;
   };
 
-  template <size_t MaxLevel, size_t... Ints>
-  using DepthExtender_t =
-    typename DepthExtender<MaxLevel, std::index_sequence<Ints...>>::type;
+  template <size_t MaxOrder, size_t... Ints>
+  using LayerExtender_t =
+    typename LayerExtender<MaxOrder, std::index_sequence<Ints...>>::type;
 
   /**
    * Dynamic access to all depths by cluster dimension (probably not
    * necessary)
    */
-  template <size_t MaxLevel, size_t... Ints>
-  constexpr std::array<size_t, MaxLevel>
-  get_depths(std::index_sequence<Ints...>) {
-    return std::array<size_t, MaxLevel>{Ints...};
+  template <size_t MaxOrder, size_t... Ints>
+  constexpr std::array<size_t, MaxOrder>
+  get_layers(std::index_sequence<Ints...>) {
+    return std::array<size_t, MaxOrder>{Ints...};
   }
 
   namespace internal {
@@ -99,7 +99,7 @@ namespace rascal {
       constexpr static size_t value {Min<Ints...>::value};
     };
 
-    template <size_t Level, class Sequence, size_t... Ints>
+    template <size_t Order, class Sequence, size_t... Ints>
     struct HeadExtractor {};
 
     template <size_t... seq>
@@ -107,11 +107,11 @@ namespace rascal {
       using type = std::index_sequence<seq...>;
     };
 
-    template <size_t Level, size_t head, size_t... tail, size_t... seq>
-    struct HeadExtractor<Level, std::index_sequence<seq...>, head, tail...> {
+    template <size_t Order, size_t head, size_t... tail, size_t... seq>
+    struct HeadExtractor<Order, std::index_sequence<seq...>, head, tail...> {
       using Extractor_t = std::conditional_t
-        <(Level > 1),
-        HeadExtractor<Level-1,
+        <(Order > 1),
+        HeadExtractor<Order-1,
                       std::index_sequence<seq..., head>,
                       tail...>,
         HeadExtractorTail<seq..., head>>;
@@ -119,26 +119,26 @@ namespace rascal {
     };
   }  // internal
 
-  template <size_t Level, size_t... Ints>
-  constexpr size_t compute_cluster_depth(const std::index_sequence<Ints...> &) {
+  template <size_t Order, size_t... Ints>
+  constexpr size_t compute_cluster_layer(const std::index_sequence<Ints...> &) {
     using ActiveDimensions = typename internal::HeadExtractor
-      <Level, std::index_sequence<>, Ints...>::type;
+      <Order, std::index_sequence<>, Ints...>::type;
     return internal::MinExtractor<ActiveDimensions>::value;
   }
 
   /**
-   * Dynamic access to depth by cluster dimension (possibly not
+   * Dynamic access to layer by cluster dimension (possibly not
    * necessary)
    */
-  template <size_t MaxLevel, size_t... Ints>
+  template <size_t MaxOrder, size_t... Ints>
   constexpr size_t
-  get_depth(size_t index, std::index_sequence<Ints...>) {
+  get_layer(size_t index, std::index_sequence<Ints...>) {
     constexpr size_t arr[] {Ints...};
     return arr [index];
   }
 
   /**
-   * Static access to depth by cluster dimension (e.g., for defining
+   * Static access to layer by cluster dimension (e.g., for defining
    * template parameter `NbRow` for a property
    */
   template <size_t index, size_t... Ints>
@@ -147,16 +147,16 @@ namespace rascal {
   }
 
   namespace internal {
-    template <size_t Depth, size_t HiDepth,typename T, size_t... Ints>
-    std::array<T, Depth>
-    head_helper(const std::array<T, HiDepth> & arr,
+    template <size_t Layer, size_t HiLayer,typename T, size_t... Ints>
+    std::array<T, Layer>
+    head_helper(const std::array<T, HiLayer> & arr,
                 std::index_sequence<Ints...>) {
-      return std::array<T, Depth> {arr[Ints]...};
+      return std::array<T, Layer> {arr[Ints]...};
     }
 
-    template <size_t Depth, size_t HiDepth,typename T>
-    std::array<T, Depth> head(const std::array<T, HiDepth> & arr) {
-      return head_helper(arr, std::make_index_sequence<Depth>{});
+    template <size_t Layer, size_t HiLayer,typename T>
+    std::array<T, Layer> head(const std::array<T, HiLayer> & arr) {
+      return head_helper(arr, std::make_index_sequence<Layer>{});
     }
 
   }  // internal
@@ -165,29 +165,30 @@ namespace rascal {
    * Base class for a reference to a cluster, i.e. a tuple of atoms 
    * (atoms, pairs, triples, ...). The reference does not store data
    * about the actual tuple, just contains all the information needed 
-   * to locate the infor in the appropriate arrays that are stored in 
+   * to locate such data in the appropriate arrays that are stored in 
    * a Manager class. 
    * 
    * Given that Manager classes can be 'stacked', e.g. using a strict
    * cutoff on top of a loose neighbor list, the reference must know in
-   * which level of the hierarchy the data.   
+   * which layer of the hierarchy the data.   
    *  
    * For these reasons ClusterRefBase is templated by two arguments: 
-   * Level that specifies the number of atoms in the cluster, and Depth
-   * that specifies how many layers of managers/adaptors are stacked
+   * Order that specifies the number of atoms in the cluster (its body order)
+   * and Layer that specifies how many layers of managers/adaptors are stacked
    * at the point at which the cluster reference is introduced.
    */
-  template<size_t Level, size_t Depth>
+  template<size_t Order, size_t Layer>
   class ClusterRefBase
   {
   public:
+
     /**
      * Index array types need both a constant and a non-constant version. The
      * non-const version can and needs to be cast into a const version in
      * argument.
      */
-    using IndexConstArray = Eigen::Map<const Eigen::Matrix<size_t, Depth+1, 1>>;
-    using IndexArray = Eigen::Map<Eigen::Matrix<size_t, Depth+1, 1>>;
+    using IndexConstArray = Eigen::Map<const Eigen::Matrix<size_t, Layer+1, 1>>;
+    using IndexArray = Eigen::Map<Eigen::Matrix<size_t, Layer+1, 1>>;
 
     //! Default constructor
     ClusterRefBase() = delete;
@@ -196,7 +197,7 @@ namespace rascal {
      * direct constructor. Initialized with an array of atoms indices,
      * and a cluster reference data
     */
-    ClusterRefBase(std::array<int, Level> atom_indices,
+    ClusterRefBase(std::array<int, Order> atom_indices,
                    IndexConstArray cluster_indices) :
       atom_indices{atom_indices}, cluster_indices(cluster_indices.data()) {}
 
@@ -215,24 +216,24 @@ namespace rascal {
     //! Move assignment operator
     ClusterRefBase & operator=(ClusterRefBase && other) = default;
 
-    const inline std::array<int, Level> & get_atom_indices() const {
+    const inline std::array<int, Order> & get_atom_indices() const {
       return this->atom_indices;
     }
 
     const int & front() const{return this->atom_indices.front();}
     const int & back() const{return this->atom_indices.back();}
 
-    inline size_t get_cluster_index(const size_t depth) const {
-      return this->cluster_indices(depth);
+    inline size_t get_cluster_index(const size_t layer) const {
+      return this->cluster_indices(layer);
     }
 
     inline IndexConstArray get_cluster_indices() const {
       return this->cluster_indices;
     }
 
-    inline constexpr static size_t level() {return Level;}
+    inline constexpr static size_t order() {return Order;}
 
-    inline constexpr static size_t depth() {return Depth;}
+    inline constexpr static size_t layer() {return Layer;}
 
   protected:
     /**
@@ -240,9 +241,9 @@ namespace rascal {
      *  the exact same atom, e.g. in a Monte-Carlo simulation, where atoms are
      *  swapped.
      */
-    std::array<int, Level> atom_indices;
+    std::array<int, Order> atom_indices;
     /**
-     * Cluster indices by depth level, highest depth, means last
+     * Cluster indices by layer, highest value means last
      * adaptor, and mean last entry (.back())
      */
     IndexConstArray cluster_indices;

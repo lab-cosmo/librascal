@@ -25,15 +25,15 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <neighbourhood_managers/neighbourhood_manager_chain.hh>
-#include <neighbourhood_managers/property.hh>
+#include <structure_managers/structure_manager_chain.hh>
+#include <structure_managers/property.hh>
 
 #include "json.hpp"
 
 #include <iostream>
 #include <vector>
 
-using Manager_t = rascal::NeighbourhoodManagerChain;
+using Manager_t = rascal::StructureManagerChain;
 
 int main() {
 
