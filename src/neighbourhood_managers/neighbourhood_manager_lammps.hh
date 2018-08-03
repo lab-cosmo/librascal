@@ -121,14 +121,14 @@ namespace rascal {
       return Vector_ref(xval);
     }
 
-    // return position vector
+    // return position of neighbor
     template<size_t Level, size_t Depth>
     inline Vector_ref get_neighbour_position(const ClusterRefBase<Level,
                                              Depth> & cluster) {
       static_assert(Level > 1,
                     "Only possible for Level > 1.");
       static_assert(Level <= traits::MaxLevel,
-                    "Level to large, not available.");
+                    "Level too large, not available.");
 
       return this->get_position(cluster.back());
     }

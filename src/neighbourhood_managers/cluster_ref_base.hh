@@ -161,6 +161,22 @@ namespace rascal {
 
   }  // internal
 
+  /**
+   * Base class for a reference to a cluster, i.e. a tuple of atoms 
+   * (atoms, pairs, triples, ...). The reference does not store data
+   * about the actual tuple, just contains all the information needed 
+   * to locate the infor in the appropriate arrays that are stored in 
+   * a Manager class. 
+   * 
+   * Given that Manager classes can be 'stacked', e.g. using a strict
+   * cutoff on top of a loose neighbor list, the reference must know in
+   * which level of the hierarchy the data.   
+   *  
+   * For these reasons ClusterRefBase is templated by two arguments: 
+   * Level that specifies the number of atoms in the cluster, and Depth
+   * that specifies how many layers of managers/adaptors are stacked
+   * at the point at which the cluster reference is introduced.
+   */
   template<size_t Level, size_t Depth>
   class ClusterRefBase
   {
@@ -176,7 +192,10 @@ namespace rascal {
     //! Default constructor
     ClusterRefBase() = delete;
 
-    //! direct constructor
+    /**
+     * direct constructor. Initialized with an array of atoms indices,
+     * and a cluster reference data
+    */
     ClusterRefBase(std::array<int, Level> atom_indices,
                    IndexConstArray cluster_indices) :
       atom_indices{atom_indices}, cluster_indices(cluster_indices.data()) {}
