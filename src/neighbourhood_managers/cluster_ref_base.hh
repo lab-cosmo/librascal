@@ -165,7 +165,7 @@ namespace rascal {
    * Base class for a reference to a cluster, i.e. a tuple of atoms 
    * (atoms, pairs, triples, ...). The reference does not store data
    * about the actual tuple, just contains all the information needed 
-   * to locate the infor in the appropriate arrays that are stored in 
+   * to locate such data in the appropriate arrays that are stored in 
    * a Manager class. 
    * 
    * Given that Manager classes can be 'stacked', e.g. using a strict
@@ -181,6 +181,7 @@ namespace rascal {
   class ClusterRefBase
   {
   public:
+
     /**
      * Index array types need both a constant and a non-constant version. The
      * non-const version can and needs to be cast into a const version in

@@ -6,13 +6,13 @@ Introduction
 About this project
 ------------------
 
-Rascal is a scalable and versatile fingerprint and machine-learning code is a scalable and versatile machine-learning code. It collects several different algorithms that can be used to create fingerprints, perform dimensionality reduction and fit, atomistic and finite element calculations.
+Rascal is a versatile and scalable fingerprint and machine-learning code. It focuses on the efficient construction of representations of atomic structures, that can then be fed to any supervised or unsupervised learning algorithm. Simple regression code will be included for testing purposes, but the long-term goal is to develop a separate collection of tools to this end. 
 
 Rascal as of now is thought as standalone code. However, we aim to provide enough flexibility to interface it with other codes such as LAMMPS and PLUMED-2.0. It can be used as a C++ library as well as a python module. To be able to call it from python, we have used the pybind11 library.
 
 Although at the moment is a serial-only code, we aim to write it in MPI so that it will be possible to take advantage of parallelization to speed up the calculations significantly.
 
-It comes with a GNU lesser general public license of version 3, which means that it can be modified and freely distribute, although we take no responsibility for its misuse.
+It comes with a GNU lesser general public license of version 3, which means that it can be modified and freely distributed, although we take no responsibility for its misuse.
 
 
 Compile the Code
