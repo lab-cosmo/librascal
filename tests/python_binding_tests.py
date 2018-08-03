@@ -2,7 +2,6 @@
 
 import unittest
 
-from python_cdist_test import TestCdist
 from python_structure_manager_test import TestStructureManagerCell
 
 class SimpleCheck(unittest.TestCase):
