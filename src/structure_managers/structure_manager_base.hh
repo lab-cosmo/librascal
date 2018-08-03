@@ -1,5 +1,5 @@
 /**
- * file   neighbourhood_manager_base.hh
+ * file   structure_manager_base.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
@@ -26,13 +26,13 @@
  */
 
 // Always use header guards
-#ifndef NEIGHBOURHOOD_MANAGER_BASE_H
-#define NEIGHBOURHOOD_MANAGER_BASE_H
+#ifndef STRUCTURE_MANAGER_BASE_H
+#define STRUCTURE_MANAGER_BASE_H
 
-// Each actual implementation of a NeighbourhoodManager is based
+// Each actual implementation of a StructureManager is based
 // on the given interface
-#include "neighbourhood_managers/cluster_ref_base.hh"
-#include "neighbourhood_managers/property.hh"
+#include "structure_managers/cluster_ref_base.hh"
+#include "structure_managers/property.hh"
 
 // Some data types and operations are based on the Eigen library
 #include <Eigen/Dense>
@@ -62,7 +62,7 @@ namespace rascal {
   //! traits structure to avoid incomplete types in crtp
   //! Empty because it is not known what it will contain
   template <class ManagerImplementation>
-  struct NeighbourhoodManager_traits
+  struct StructureManager_traits
   {};
 
   namespace internal {
@@ -140,39 +140,39 @@ namespace rascal {
    * class implementation
    */
   template <class ManagerImplementation>
-  class NeighbourhoodManagerBase
+  class StructureManager
   {
   public:
-    using traits = NeighbourhoodManager_traits<ManagerImplementation>;
+    using traits = StructureManager_traits<ManagerImplementation>;
     //! type used to represent spatial coordinates, etc
     using Vector_t = Eigen::Matrix<double, traits::Dim, 1>;
     using Vector_ref = Eigen::Map<Vector_t>;
     using ClusterIndex_t = typename internal::ClusterIndexPropertyComputer
-      <NeighbourhoodManagerBase, typename traits::LayerByDimension>::type;
+      <StructureManager, typename traits::LayerByDimension>::type;
     using ClusterConstructor_t = typename internal::ClusterIndexConstructor
-      <ClusterIndex_t, NeighbourhoodManagerBase>;
+      <ClusterIndex_t, StructureManager>;
 
     //! Default constructor
-    NeighbourhoodManagerBase() :
+    StructureManager() :
       cluster_indices_container{ClusterConstructor_t::make(*this)} {
     }
 
     //! Copy constructor
-    NeighbourhoodManagerBase(const NeighbourhoodManagerBase & other) = delete;
+    StructureManager(const StructureManager & other) = delete;
 
     //! Move constructor
-    NeighbourhoodManagerBase(NeighbourhoodManagerBase && other) = default;
+    StructureManager(StructureManager && other) = default;
 
     //! Destructor
-    virtual ~NeighbourhoodManagerBase() = default;
+    virtual ~StructureManager() = default;
 
     //! Copy assignment operator
-    NeighbourhoodManagerBase
-    & operator=(const NeighbourhoodManagerBase & other) = delete;
+    StructureManager
+    & operator=(const StructureManager & other) = delete;
 
     //! Move assignment operator
-    NeighbourhoodManagerBase
-    & operator=(NeighbourhoodManagerBase && other)  = default;
+    StructureManager
+    & operator=(StructureManager && other)  = default;
 
     // required for the construction of vectors, etc
     constexpr static int dim() {return traits::Dim;}
@@ -266,12 +266,12 @@ namespace rascal {
     }
 
     //! get atom_index of the index-th atom in manager
-    inline int cluster_neighbour(NeighbourhoodManagerBase & cluster,
+    inline int cluster_neighbour(StructureManager & cluster,
                                  size_t & index) const {
       return this->implementation().get_cluster_neighbour(cluster, index);
     }
 
-    inline NeighbourhoodManagerBase & get_manager() {return *this;}
+    inline StructureManager & get_manager() {return *this;}
 
     inline ManagerImplementation & implementation() {
       return static_cast<ManagerImplementation&>(*this);
@@ -294,7 +294,7 @@ namespace rascal {
     inline size_t get_offset(const ClusterRefBase<Order,
                              CallerLayer> & cluster) const {
       constexpr auto
-        layer{NeighbourhoodManagerBase::template cluster_layer<Order>()};
+        layer{StructureManager::template cluster_layer<Order>()};
       return cluster.get_cluster_index(layer);
     }
 
@@ -387,12 +387,12 @@ namespace rascal {
   }  // internal
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
-  class NeighbourhoodManagerBase<ManagerImplementation>::AtomRef
+  class StructureManager<ManagerImplementation>::AtomRef
   {
   public:
     using Vector_t = Eigen::Matrix<double, ManagerImplementation::dim(), 1>;
     using Vector_ref = Eigen::Map<Vector_t>;
-    using Manager_t = NeighbourhoodManagerBase<ManagerImplementation>;
+    using Manager_t = StructureManager<ManagerImplementation>;
     //! Default constructor
     AtomRef() = delete;
 
@@ -446,12 +446,12 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   template <size_t Order>
-  class NeighbourhoodManagerBase<ManagerImplementation>::ClusterRef :
+  class StructureManager<ManagerImplementation>::ClusterRef :
     public ClusterRefBase<Order,
                           ManagerImplementation::template cluster_layer<Order>()>
   {
   public:
-    using Manager_t = NeighbourhoodManagerBase<ManagerImplementation>;
+    using Manager_t = StructureManager<ManagerImplementation>;
     using Parent =
       ClusterRefBase<Order,
                      ManagerImplementation::template cluster_layer<Order>()>;
@@ -601,10 +601,10 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
   template <size_t Order>
-  class NeighbourhoodManagerBase<ManagerImplementation>::iterator
+  class StructureManager<ManagerImplementation>::iterator
   {
   public:
-    using Manager_t = NeighbourhoodManagerBase<ManagerImplementation>;
+    using Manager_t = StructureManager<ManagerImplementation>;
     friend Manager_t;
     using ClusterRef_t = typename Manager_t::template ClusterRef<Order>;
 
@@ -722,4 +722,4 @@ namespace rascal {
 
 }  // rascal
 
-#endif /* NEIGHBOURHOOD_MANAGER_BASE_H */
+#endif /* STRUCTURE_MANAGER_BASE_H */

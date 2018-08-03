@@ -35,7 +35,7 @@
 #ifndef SPECIES_MANAGER_H
 #define SPECIES_MANAGER_H
 
-#include "neighbourhood_managers/neighbourhood_manager_base.hh"
+#include "structure_managers/structure_manager_base.hh"
 #include "representations/basis_function_manager.hh"
 
 namespace rascal {
@@ -54,7 +54,7 @@ namespace rascal {
     //! Default constructor
     SpeciesManager() = delete;
 
-    //! Construct from an existing Neighbourhoodmanager
+    //! Construct from an existing StructureManager
     SpeciesManager(NeighManager & manager);
 
     //! Copy constructor
@@ -72,7 +72,7 @@ namespace rascal {
     //! Move assignment operator
     SpeciesManager& operator=(SpeciesManager &&other) = default;
 
-    //! get the symmetry functions and the corresponding neighbourhoodmanager
+    //! get the symmetry functions and the corresponding StructureManager
     std::map<Species_t, BasisFunManager> & get_symmetry_functions();
 
     //! get the next depth layer

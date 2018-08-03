@@ -1,5 +1,5 @@
 /**
- * file   neighbourhood_manager_Minimal.hh
+ * file   structure_manager_Minimal.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
@@ -26,11 +26,11 @@
  */
 
 
-#ifndef NEIGHBOURHOOD_MANAGER_MINIMAL_H
-#define NEIGHBOURHOOD_MANAGER_MINIMAL_H
+#ifndef STRUCTURE_MANAGER_MINIMAL_H
+#define STRUCTURE_MANAGER_MINIMAL_H
 
-#include "neighbourhood_managers/neighbourhood_manager_base.hh"
-#include "neighbourhood_managers/property.hh"
+#include "structure_managers/structure_manager_base.hh"
+#include "structure_managers/property.hh"
 #include "lattice.hh"
 #include "basic_types.hh"
 #include <Eigen/Dense>
@@ -46,48 +46,48 @@ using namespace std;
 namespace rascal {
 
   //! forward declaration for traits
-  class NeighbourhoodManagerMinimal;
+  class StructureManagerMinimal;
 
   //! traits specialisation for minimal manager
   template <>
-  struct NeighbourhoodManager_traits<NeighbourhoodManagerMinimal> {
+  struct StructureManager_traits<StructureManagerMinimal> {
     constexpr static int Dim{3};
     constexpr static size_t MaxOrder{1};
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     using LayerByDimension = std::integer_sequence<size_t, 0, 0>;
   };
-  class NeighbourhoodManagerMinimal: public NeighbourhoodManagerBase<NeighbourhoodManagerMinimal>
+  class StructureManagerMinimal: public StructureManager<StructureManagerMinimal>
   {
   public:
-    using traits = NeighbourhoodManager_traits<NeighbourhoodManagerMinimal>;
-    using Parent = NeighbourhoodManagerBase<NeighbourhoodManagerMinimal>;
+    using traits = StructureManager_traits<StructureManagerMinimal>;
+    using Parent = StructureManager<StructureManagerMinimal>;
     using Vector_ref = typename Parent::Vector_ref;
     using Vector_t = typename Parent::Vector_t;
     using AtomRef_t = typename Parent::AtomRef;
     template <size_t Order>
     using ClusterRef_t = typename Parent::template ClusterRef <Order>;
 
-    using AtomVectorField_t = Property<NeighbourhoodManagerMinimal, double, 1, 3>;
+    using AtomVectorField_t = Property<StructureManagerMinimal, double, 1, 3>;
 
     //! Default constructor
-    NeighbourhoodManagerMinimal()
+    StructureManagerMinimal()
       :particles{}, centers{} ,positions{},shifted_position{} ,lattice{}, cell{},pbc{} ,part2bin{} ,boxes{} ,number_of_neighbours{0} ,neighbour_bin_id{} , number_of_neighbours_stride{}, neighbour_atom_index{},particule_types{}
     {}
 
     //! Copy constructor
-    NeighbourhoodManagerMinimal(const NeighbourhoodManagerMinimal &other) = delete;
+    StructureManagerMinimal(const StructureManagerMinimal &other) = delete;
 
     //! Move constructor
-    NeighbourhoodManagerMinimal(NeighbourhoodManagerMinimal &&other) = default;
+    StructureManagerMinimal(StructureManagerMinimal &&other) = default;
 
     //! Destructor
-    virtual ~NeighbourhoodManagerMinimal() = default;
+    virtual ~StructureManagerMinimal() = default;
 
     //! Copy assignment operator
-    NeighbourhoodManagerMinimal& operator=(const NeighbourhoodManagerMinimal &other) = delete;
+    StructureManagerMinimal& operator=(const StructureManagerMinimal &other) = delete;
 
     //! Move assignment operator
-    NeighbourhoodManagerMinimal& operator=(NeighbourhoodManagerMinimal &&other) = default;
+    StructureManagerMinimal& operator=(StructureManagerMinimal &&other) = default;
 
     class Box;
 
@@ -206,12 +206,12 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
 
-  class NeighbourhoodManagerMinimal::Box {
+  class StructureManagerMinimal::Box {
   public:
-    using Manager_t = NeighbourhoodManagerBase<NeighbourhoodManagerMinimal>;
-    using AtomRef_t = typename NeighbourhoodManagerMinimal::AtomRef_t;
-    using Vector_t = typename NeighbourhoodManagerMinimal::Vector_t;
-    using Vector_ref = typename NeighbourhoodManagerMinimal::Vector_ref;
+    using Manager_t = StructureManager<StructureManagerMinimal>;
+    using AtomRef_t = typename StructureManagerMinimal::AtomRef_t;
+    using Vector_t = typename StructureManagerMinimal::Vector_t;
+    using Vector_ref = typename StructureManagerMinimal::Vector_ref;
     //! Default constructor
     Box() = default;
 
@@ -227,7 +227,7 @@ namespace rascal {
 
     virtual ~Box() = default;
 
-    constexpr static int dim() {return NeighbourhoodManagerMinimal::dim();}
+    constexpr static int dim() {return StructureManagerMinimal::dim();}
 
     inline void push_particle_back(const int& part_index);
 
@@ -260,7 +260,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template<size_t Order>
-  inline size_t NeighbourhoodManagerMinimal::
+  inline size_t StructureManagerMinimal::
   get_offset_impl(const std::array<size_t, Order>
                   & counters) const {
     static_assert (Order == 1, "this manager can only give the offset "
@@ -271,7 +271,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   inline Vector_ref
-  NeighbourhoodManagerMinimal::get_shift(const int& i_bin_id,
+  StructureManagerMinimal::get_shift(const int& i_bin_id,
                                          const int& neigh_bin_index){
     return this->boxes[i_bin_id].get_neighbour_bin_shift(neigh_bin_index);
   }
@@ -279,4 +279,4 @@ namespace rascal {
   //----------------------------------------------------------------------------//
 }  // rascal
 
-#endif /* NEIGHBOURHOOD_MANAGER_MINIMAL_H */
+#endif /* STRUCTURE_MANAGER_MINIMAL_H */

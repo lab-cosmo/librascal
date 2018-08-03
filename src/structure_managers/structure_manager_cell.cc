@@ -1,5 +1,5 @@
 /**
- * file   neighbourhood_manager_cell.cc
+ * file   structure_manager_cell.cc
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  *
@@ -25,22 +25,22 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "neighbourhood_managers/neighbourhood_manager_cell.hh"
+#include "structure_managers/structure_manager_cell.hh"
 
 namespace rascal {
 
 
-  /* NeighbourhoodManagerCell::Box NeighbourhoodManagerCell::get_box(const int& bin_id){
+  /* StructureManagerCell::Box StructureManagerCell::get_box(const int& bin_id){
     return this->boxes[bin_id];
   } */
-  size_t NeighbourhoodManagerCell::get_box_nb(){
+  size_t StructureManagerCell::get_box_nb(){
     return this->boxes.size();
   }
 
 
   /* ---------------------------------------------------------------------- */
 
-  void NeighbourhoodManagerCell::
+  void StructureManagerCell::
   build(const Eigen::Ref<const Eigen::MatrixXd>  positions,
         const Eigen::Ref<const VecXi>  particle_types,
         const Eigen::Ref<const VecXi> center_ids,
@@ -55,14 +55,14 @@ namespace rascal {
     this->set_positions(positions);
     // set the references to the center positions
     for (int id{0}; id < center_ids.size(); ++id) {
-      this->centers.push_back(NeighbourhoodManagerCell::
+      this->centers.push_back(StructureManagerCell::
                               AtomRef_t(this->get_manager(), center_ids(id)));
     }
     // TODO get particles type as input and use it
     this->particle_types.resize(Natom);
     //set the references to the particles positions
     for (Eigen::Index id{0}; id < Natom; ++id){
-      this->particles.push_back(NeighbourhoodManagerCell::
+      this->particles.push_back(StructureManagerCell::
                                 AtomRef_t(this->get_manager(),id));
       this->particle_types[id] = particle_types(id);
     }
@@ -165,7 +165,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
 
-  NeighbourhoodManagerCell::Box::Box(Manager_t& manager,
+  StructureManagerCell::Box::Box(Manager_t& manager,
                                      const Vec3i_t& coord,
                                      const std::array<bool, 3>& pbc,
                                      const Vec3i_t& neigh_search,
@@ -173,7 +173,7 @@ namespace rascal {
     :manager{manager},particles{},neighbour_bin_shift{},neighbour_bin_index{},
      number_of_neighbours{0},coordinates{}
   {
-    const int dim{NeighbourhoodManagerCell::dim()};
+    const int dim{StructureManagerCell::dim()};
 
     this->coordinates = coord;
     int bin_id{0};
@@ -223,38 +223,38 @@ namespace rascal {
 
   }
 
-  inline size_t NeighbourhoodManagerCell::Box::get_number_of_neighbour_box(){
+  inline size_t StructureManagerCell::Box::get_number_of_neighbour_box(){
     return this->neighbour_bin_index.size();
   }
 
-  inline void NeighbourhoodManagerCell::Box::push_particle_back(const int& part_index){
+  inline void StructureManagerCell::Box::push_particle_back(const int& part_index){
     this->particles.push_back(AtomRef_t(this->manager, part_index));
   }
 
-  inline size_t NeighbourhoodManagerCell::Box::get_number_of_particles(){
+  inline size_t StructureManagerCell::Box::get_number_of_particles(){
     return this->particles.size();
   }
 
-  inline size_t NeighbourhoodManagerCell::Box::get_number_of_neighbours(){
+  inline size_t StructureManagerCell::Box::get_number_of_neighbours(){
     return number_of_neighbours;
   }
 
-  inline int NeighbourhoodManagerCell::Box::get_neighbour_bin_index(const int& j_index){
+  inline int StructureManagerCell::Box::get_neighbour_bin_index(const int& j_index){
     return this->neighbour_bin_index[j_index];
   }
 
-  inline size_t NeighbourhoodManagerCell::Box::get_particle_index(const int& index){
+  inline size_t StructureManagerCell::Box::get_particle_index(const int& index){
     return this->particles[index].get_index();
   }
 
-  inline void NeighbourhoodManagerCell::Box::set_number_of_neighbours(const size_t& neigh_nb){
+  inline void StructureManagerCell::Box::set_number_of_neighbours(const size_t& neigh_nb){
     this->number_of_neighbours = neigh_nb;
   }
 
 
   /* ---------------------------------------------------------------------- */
 
-  void NeighbourhoodManagerCell::
+  void StructureManagerCell::
   update(const Eigen::Ref<const Eigen::MatrixXd> positions,
          const Eigen::Ref<const VecXi>  particle_types,
          const Eigen::Ref<const VecXi> center_ids,
@@ -263,7 +263,7 @@ namespace rascal {
 
     bool some_condition{true};
     if (some_condition){
-      NeighbourhoodManagerCell::build(positions,
+      StructureManagerCell::build(positions,
                                       particle_types,
                                       center_ids,
                                       cell,
@@ -279,7 +279,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
 
-  size_t NeighbourhoodManagerCell::
+  size_t StructureManagerCell::
   get_nb_clusters(size_t cluster_size) const {
     switch (cluster_size) {
     case 1: {

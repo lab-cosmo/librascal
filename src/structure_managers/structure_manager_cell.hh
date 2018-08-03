@@ -1,5 +1,5 @@
 /**
- * file   neighbourhood_manager_cell.hh
+ * file   structure_manager_cell.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
@@ -26,11 +26,11 @@
  */
 
 
-#ifndef NEIGHBOURHOOD_MANAGER_CELL_H
-#define NEIGHBOURHOOD_MANAGER_CELL_H
+#ifndef STRUCTURE_MANAGER_CELL_H
+#define STRUCTURE_MANAGER_CELL_H
 
-#include "neighbourhood_managers/neighbourhood_manager_base.hh"
-#include "neighbourhood_managers/property.hh"
+#include "structure_managers/structure_manager_base.hh"
+#include "structure_managers/property.hh"
 #include "lattice.hh"
 #include "basic_types.hh"
 #include <Eigen/Dense>
@@ -46,11 +46,11 @@ using namespace std;
 namespace rascal {
 
   //! forward declaration for traits
-  class NeighbourhoodManagerCell;
+  class StructureManagerCell;
 
   //! traits specialisation for Cell manager
   template <>
-  struct NeighbourhoodManager_traits<NeighbourhoodManagerCell> {
+  struct StructureManager_traits<StructureManagerCell> {
     constexpr static int Dim{3};
     constexpr static size_t MaxOrder{2};
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
@@ -58,42 +58,42 @@ namespace rascal {
     constexpr static bool HasDistances{false};
     using LayerByDimension = std::index_sequence<0, 0>;
   };
-  class NeighbourhoodManagerCell:
-    public NeighbourhoodManagerBase<NeighbourhoodManagerCell>
+  class StructureManagerCell:
+    public StructureManager<StructureManagerCell>
   {
   public:
-    using traits = NeighbourhoodManager_traits<NeighbourhoodManagerCell>;
-    using Parent = NeighbourhoodManagerBase<NeighbourhoodManagerCell>;
+    using traits = StructureManager_traits<StructureManagerCell>;
+    using Parent = StructureManager<StructureManagerCell>;
     using Vector_ref = typename Parent::Vector_ref;
     using Vector_t = typename Parent::Vector_t;
     using AtomRef_t = typename Parent::AtomRef;
     template <size_t Order>
     using ClusterRef_t = typename Parent::template ClusterRef<Order>;
-    using AtomVectorField_t = Property<NeighbourhoodManagerCell, double, 1, 3>;
+    using AtomVectorField_t = Property<StructureManagerCell, double, 1, 3>;
 
     //! Default constructor
-    NeighbourhoodManagerCell()
+    StructureManagerCell()
       : particles{}, centers{}, positions{}, shifted_position{}, lattice{},
         cell{}, pbc{}, part2bin{}, boxes{}, number_of_neighbours{0},
         neighbour_bin_id{}, number_of_neighbours_stride{},
         neighbour_atom_index{}, particle_types{} {}
 
     //! Copy constructor
-    NeighbourhoodManagerCell(const NeighbourhoodManagerCell &other) = delete;
+    StructureManagerCell(const StructureManagerCell &other) = delete;
 
     //! Move constructor
-    NeighbourhoodManagerCell(NeighbourhoodManagerCell &&other) = default;
+    StructureManagerCell(StructureManagerCell &&other) = default;
 
     //! Destructor
-    virtual ~NeighbourhoodManagerCell() = default;
+    virtual ~StructureManagerCell() = default;
 
     //! Copy assignment operator
-    NeighbourhoodManagerCell
-    & operator=(const NeighbourhoodManagerCell &other) = delete;
+    StructureManagerCell
+    & operator=(const StructureManagerCell &other) = delete;
 
     //! Move assignment operator
-    NeighbourhoodManagerCell
-    & operator=(NeighbourhoodManagerCell &&other) = default;
+    StructureManagerCell
+    & operator=(StructureManagerCell &&other) = default;
 
     class Box;
 
@@ -237,12 +237,12 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
 
-  class NeighbourhoodManagerCell::Box {
+  class StructureManagerCell::Box {
   public:
-    using Manager_t = NeighbourhoodManagerBase<NeighbourhoodManagerCell>;
-    using AtomRef_t = typename NeighbourhoodManagerCell::AtomRef_t;
-    using Vector_t = typename NeighbourhoodManagerCell::Vector_t;
-    using Vector_ref = typename NeighbourhoodManagerCell::Vector_ref;
+    using Manager_t = StructureManager<StructureManagerCell>;
+    using AtomRef_t = typename StructureManagerCell::AtomRef_t;
+    using Vector_t = typename StructureManagerCell::Vector_t;
+    using Vector_ref = typename StructureManagerCell::Vector_ref;
     //! Default constructor
     Box() = default;
 
@@ -258,7 +258,7 @@ namespace rascal {
 
     virtual ~Box() = default;
 
-    constexpr static int dim() {return NeighbourhoodManagerCell::dim();}
+    constexpr static int dim() {return StructureManagerCell::dim();}
 
     inline void push_particle_back(const int& part_index);
 
@@ -292,7 +292,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   // buildup
   template<size_t Order>
-  inline size_t NeighbourhoodManagerCell::
+  inline size_t StructureManagerCell::
   get_offset_impl(const std::array<size_t, Order> & counters) const {
     static_assert (Order == 1, "this manager can only give the offset "
                    "(= starting index) for a pair iterator, given the i atom "
@@ -301,11 +301,11 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  inline Vector_ref NeighbourhoodManagerCell::
+  inline Vector_ref StructureManagerCell::
   get_shift(const int& i_bin_id, const int& neigh_bin_index){
     return this->boxes[i_bin_id].get_neighbour_bin_shift(neigh_bin_index);
   }
 
 }  // rascal
 
-#endif /* NEIGHBOURHOOD_MANAGER_CELL_H */
+#endif /* STRUCTURE_MANAGER_CELL_H */

@@ -1,5 +1,5 @@
 /**
- * file   neighbourhood_manager_lammps.hh
+ * file   structure_manager_lammps.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
@@ -26,26 +26,26 @@
  */
 
 
-#ifndef NEIGHBOURHOOD_MANAGER_LAMMPS_H
-#define NEIGHBOURHOOD_MANAGER_LAMMPS_H
+#ifndef STRUCTURE_MANAGER_LAMMPS_H
+#define STRUCTURE_MANAGER_LAMMPS_H
 
-#include "neighbourhood_managers/neighbourhood_manager_base.hh"
+#include "structure_managers/structure_manager_base.hh"
 
 #include <stdexcept>
 #include <vector>
 
 namespace rascal {
   //! forward declaration for traits
-  class NeighbourhoodManagerLammps;
+  class StructureManagerLammps;
 
   /**
    * traits specialisation for Lammps manager The traits are used for vector
    * allocation and further down the processing chain to determine what
-   * functionality the given NeighbourhoodManager already contains to avoid
+   * functionality the given StructureManager already contains to avoid
    * recomputation.  See also the implementation of adaptors.
    */
   template <>
-  struct NeighbourhoodManager_traits<NeighbourhoodManagerLammps> {
+  struct StructureManager_traits<StructureManagerLammps> {
     constexpr static int Dim{3};
     constexpr static size_t MaxOrder{2};
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
@@ -53,38 +53,38 @@ namespace rascal {
   };
 
   //----------------------------------------------------------------------------//
-  //! Definition of the new NeighbourhoodManagerLammps class.
-  class NeighbourhoodManagerLammps:
+  //! Definition of the new StructureManagerLammps class.
+  class StructureManagerLammps:
     //! It inherits publicly everything from the base class
-    public NeighbourhoodManagerBase<NeighbourhoodManagerLammps>
+    public StructureManager<StructureManagerLammps>
   {
   public:
-    using traits = NeighbourhoodManager_traits<NeighbourhoodManagerLammps>;
-    using Parent = NeighbourhoodManagerBase<NeighbourhoodManagerLammps>;
+    using traits = StructureManager_traits<StructureManagerLammps>;
+    using Parent = StructureManager<StructureManagerLammps>;
     using Vector_ref = typename Parent::Vector_ref;
     // using AtomRef_t = typename Parent::AtomRef;
     // template <size_t Order>
     // using ClusterRef_t = typename Parent::template ClusterRef<Order>;
 
     //! Default constructor
-    NeighbourhoodManagerLammps() = default;
+    StructureManagerLammps() = default;
 
     //! Copy constructor
-    NeighbourhoodManagerLammps(const NeighbourhoodManagerLammps & other) = delete;
+    StructureManagerLammps(const StructureManagerLammps & other) = delete;
 
     //! Move constructor
-    NeighbourhoodManagerLammps(NeighbourhoodManagerLammps && other) = default;
+    StructureManagerLammps(StructureManagerLammps && other) = default;
 
     //! Destructor
-    virtual ~NeighbourhoodManagerLammps() = default;
+    virtual ~StructureManagerLammps() = default;
 
     //! Copy assignment operator
-    NeighbourhoodManagerLammps
-    & operator=(const NeighbourhoodManagerLammps & other) = delete;
+    StructureManagerLammps
+    & operator=(const StructureManagerLammps & other) = delete;
 
     //! Move assignment operator
-    NeighbourhoodManagerLammps
-    & operator=(NeighbourhoodManagerLammps && other) = default;
+    StructureManagerLammps
+    & operator=(StructureManagerLammps && other) = default;
 
     /**
      * resetting is required every time the list changes. Here, this
@@ -215,7 +215,7 @@ namespace rascal {
    * this only works for atom
    */
   template<size_t Order>
-  inline size_t NeighbourhoodManagerLammps::
+  inline size_t StructureManagerLammps::
   get_offset_impl(const std::array<size_t, Order> & counters) const {
     static_assert (Order == 1, "this manager can only give the offset "
                    "(= starting index) for a pair iterator, given the i atom "
@@ -224,4 +224,4 @@ namespace rascal {
   }
 }  // rascal
 
-#endif /* NEIGHBOURHOOD_MANAGER_LAMMPS_H */
+#endif /* STRUCTURE_MANAGER_LAMMPS_H */

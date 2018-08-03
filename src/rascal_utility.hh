@@ -30,10 +30,10 @@
 namespace rascal {
   namespace internal {
     /* ---------------------------------------------------------------------- */
-    /* Helper functions to apply a functor to all items in a tuple. 
+    /** Helper functions to apply a functor to all items in a tuple. 
      * The actual function is for_each, other functions construct the
-     * template loop over the items in the tuple.  */
-     
+     * template loop over the items in the tuple.  
+     */
     template<typename Func, typename Last>
     inline void for_each_impl(Func&& f, Last&& last) {
       f(last);

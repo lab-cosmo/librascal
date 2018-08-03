@@ -33,16 +33,18 @@
 #include <cmath>
 
 namespace rascal {
-
-//using Cell_t = typename rascal::Cell_t;
-//using Vec3_t = typename rascal::Vec3_t;
-using Vector_ref = Eigen::Map<Vec3_t>;
-
+/**
+ * Class to store and change between different lattice representation
+ * (real and reciprocal space in terms of lattice vectors, cell lenght
+ * and angles). Also translate absolute to fractional and fractional to 
+ * absolute coordinates.
+ */ 
 class Lattice {
   public:
     //! Default constructor
     Lattice() = default;
 
+    //! Initializes the cell via set_cell function
     Lattice(const Cell_t& cell) {
       this->set_cell(cell);
     };
@@ -62,6 +64,10 @@ class Lattice {
     //! Move assignment operator
     Lattice& operator=(Lattice &&other) = default;
 
+    /** Calculates the cell lengths and angles given the lattice vectors
+     *  in a 3x3 matrix, as well as the reciprocal vectors and the 
+     *  transformation matrix.
+     */
     void set_cell(const Cell_t& cell){
       this->cell_vectors = cell;
       this->cell_lenghts = cell.colwise().norm();
@@ -72,30 +78,46 @@ class Lattice {
       this->set_reciprocal_vectors();
     }
 
+    //! Returns the cell lengths
     const Vec3_t get_cell_lengths() {
       return this->cell_lenghts;
     }
-
+    
+    //! Returns the cell angles
     const Vec3_t get_cell_angles() {
       return this->cell_angles;
     }
-    
+
+    /** Returns the transformation matrix to transform absolute
+     *  cartesian coordinates into fractional/scaled coordinates
+     */  
     const Cell_t get_cartesian2scaled_matrix() {
       return this->cartesian2scaled;
     }
 
+    /** Returns the transformation matrix to transform
+     * fractional/scaled coordinates into 
+     * absolute cartesian coordinates
+     */  
     const Cell_t get_scaled2cartesian_matrix() {
       return this->scaled2cartesian;
     }
 
+    //! Returns the reciprocal space lattice vectors
     const Cell_t get_reciprocal_vectors() {
       return this->reciprocal_vectors;
     }
     
+    //! Returns the reciprocal space cell lengths
     const Vec3_t get_reciprocal_lenghts() {
       return this->reciprocal_lenghts;
     }
 
+
+    /** Calculates the reciprocal space lattice vectors from the 
+     * cartesian real space lattice vectors and
+     * the reciprocal space cell lengths
+     */
     inline void set_reciprocal_vectors(){
       Vec3_t c_abg = cell_angles.array().cos();
       double V{ this->cell_lenghts[0] *this->cell_lenghts[1] *this->cell_lenghts[2] *  std::sqrt(1 - c_abg[0]*c_abg[0] - c_abg[1]*c_abg[1] - c_abg[2]*c_abg[2] + 2 * c_abg[0] * c_abg[1] * c_abg[2] )}; //! Cell volume
@@ -120,6 +142,9 @@ class Lattice {
       v3[2] = v1[0]*v2[1] - v1[1]*v2[0];
     }
 
+    /** Calculates the transformation matrix to transform 
+     * absolute cartesian coordinates to fractional/scaled coordinates
+     */ 
     inline void set_transformation_matrix(){
       Vec3_t c_abg = cell_angles.array().cos();
       Vec3_t s_abg = cell_angles.array().sin();
@@ -141,11 +166,17 @@ class Lattice {
       this->scaled2cartesian(2,2) = this->cell_lenghts[2] * V / s_abg[2];
     }
 
+    /** Calculates the fractional/scaled coordinates (position_sc)
+     * from the absolute cartesian coordinates (position)
+     */
     template <typename DerivedA,typename DerivedB>
     inline void get_cartesian2scaled(const Eigen::MatrixBase<DerivedA>& position, Eigen::MatrixBase<DerivedB>& position_sc){
       position_sc = this->cartesian2scaled.transpose() * position;
     }
 
+    /** Calculates the absolute cartesian coordinates (position)
+     * from the fractional/scaled coordinates (position_sc)
+     */
     template <typename DerivedA,typename DerivedB>
     inline void get_scaled2cartesian(const Eigen::MatrixBase<DerivedA>& position_sc, Eigen::MatrixBase<DerivedB>& position){
       position = this->scaled2cartesian.transpose() * position_sc;
@@ -153,10 +184,10 @@ class Lattice {
 
     
   protected:
-    Cell_t cell_vectors = Cell_t::Ones();
-    Cell_t reciprocal_vectors = Cell_t::Ones();
-    Vec3_t cell_lenghts = Vec3_t::Ones();
-    Vec3_t reciprocal_lenghts = Vec3_t::Ones();
+    Cell_t cell_vectors = Cell_t::Ones(); //! lattice vectors
+    Cell_t reciprocal_vectors = Cell_t::Ones(); //! Reciprocal lattice
+    Vec3_t cell_lenghts = Vec3_t::Ones(); //! Cell lengths
+    Vec3_t reciprocal_lenghts = Vec3_t::Ones(); //! Reciprocal Cell lengths
     Vec3_t cell_angles = Vec3_t::Ones();// alpha(b,c) beta(a,c) gamma(a,b) in radian
     Cell_t scaled2cartesian = Cell_t::Zero(); //! transformation matrix from the lattice coordinate system to cartesian
     Cell_t cartesian2scaled = Cell_t::Zero(); //! transformation matrix from the cartesian system to the lattice coordinate system

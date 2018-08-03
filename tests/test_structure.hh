@@ -1,5 +1,5 @@
 /**
- * file   test_neighbourhood.hh
+ * file   test_structure.hh
  *
  * @author Till Junge <till.junge@altermail.ch>
  *
@@ -30,10 +30,10 @@
 #ifndef TEST_NEIGHBOURHOOD_H
 #define TEST_NEIGHBOURHOOD_H
 
-#include "neighbourhood_managers/neighbourhood_manager_base.hh"
-#include "neighbourhood_managers/neighbourhood_manager_lammps.hh"
-#include "neighbourhood_managers/neighbourhood_manager_cell.hh"
-#include "neighbourhood_managers/neighbourhood_manager_chain.hh"
+#include "structure_managers/structure_manager_base.hh"
+#include "structure_managers/structure_manager_lammps.hh"
+#include "structure_managers/structure_manager_cell.hh"
+#include "structure_managers/structure_manager_chain.hh"
 
 namespace rascal {
 
@@ -96,7 +96,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   struct ManagerFixture_lammps
   {
-    using Manager_t = NeighbourhoodManagerLammps;
+    using Manager_t = StructureManagerLammps;
     constexpr static int nb{3};
     constexpr static int dim{3};
     using ptr_t = double**;
@@ -165,7 +165,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   struct ManagerFixture_chain
   {
-    using Manager_t = NeighbourhoodManagerChain;
+    using Manager_t = StructureManagerChain;
 
     ManagerFixture_chain()
       : manager_chain{}, cutoff{1.0} {

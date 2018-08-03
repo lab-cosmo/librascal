@@ -5,7 +5,7 @@ sys.path.insert(0,'../tests/')
 from test_utils import load_json_frame,BoxList,Box
 from python_import_rascal import _rascal as  rc
 
-class TestNeighbourManagerCell(unittest.TestCase):
+class TestStructureManagerCell(unittest.TestCase):
     def setUp(self):
         """builds the test case. Test the cell neighbourlist implementation against a triclinic crystal using
         a custom pyhton implementation as a reference (which was tested against ase neighbourlist).
@@ -46,10 +46,10 @@ class TestNeighbourManagerCell(unittest.TestCase):
         """
         TEST constructor wrapper
         """
-        rc.NeighbourhoodManagerCell()
+        rc.StructureManagerCell()
 
     def test_manager_iteration(self):
-        manager =  rc.NeighbourhoodManagerCell()
+        manager =  rc.StructureManagerCell()
         centers = np.array([it for it in range(self.Natom)],dtype=np.int32)
         manager.update(np.array(self.positions.T,order='F'),self.numbers,centers,
                       np.array(self.cell.T,order='F'),self.pbc[0],self.max_cutoff)
@@ -64,7 +64,7 @@ class TestNeighbourManagerCell(unittest.TestCase):
         for pbc in self.pbc:
             neighpos,neighlist,neighshift = self.get_reference(pbc)
 
-            manager =  rc.NeighbourhoodManagerCell()
+            manager =  rc.StructureManagerCell()
             centers = np.array([it for it in range(self.Natom)],dtype=np.int32)
             manager.update(np.array(self.positions.T,order='F'),self.numbers,centers,
                             np.array(self.cell.T,order='F'),pbc,self.max_cutoff)
@@ -85,7 +85,7 @@ class TestNeighbourManagerCell(unittest.TestCase):
                     val = (neighpos[icenter][ii] == neigh.position).all()
                     ## TODO: this test fails due to a referenced bug
                     ## in get_neighbour_position in
-                    ## neighbourhood_manager_cell.hh:128
+                    ## structure_manager_cell.hh:128
                     if not val:
                         #print ("neighpos {}, neigh.pos{}".format(neighpos[icenter][ii], neigh.position))
                         pass

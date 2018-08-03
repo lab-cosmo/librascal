@@ -1,5 +1,5 @@
 /**
- * file   neighbourhood_manager_lammps.cc
+ * file   structure_manager_lammps.cc
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
@@ -26,14 +26,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "neighbourhood_managers/neighbourhood_manager_lammps.hh"
+#include "structure_managers/structure_manager_lammps.hh"
 
 #include <numeric>
 
 namespace rascal {
 
   /* ---------------------------------------------------------------------- */
-  void NeighbourhoodManagerLammps::
+  void StructureManagerLammps::
   update(const int &inum, const int &tot_num, int *ilist, int *numneigh,
          int **firstneigh, double **x, double **f, int *type,
          double *eatom, double **vatom) {
@@ -68,7 +68,7 @@ namespace rascal {
    * Return the number of clusters of size cluster_size.  Can only handle
    * cluster_size 1 (atoms) and cluster_size 2 (pairs).
    */
-  size_t NeighbourhoodManagerLammps::
+  size_t StructureManagerLammps::
   get_nb_clusters(int cluster_size) const  {
     switch (cluster_size) {
     case 1: {

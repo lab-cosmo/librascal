@@ -168,10 +168,10 @@ namespace rascal {
 
   // Forward declaration of traits to use `Property`.
   template <class Manager>
-  struct NeighbourhoodManager_traits;
+  struct StructureManager_traits;
 
 
-  template <class NeighbourhoodManager, typename T,
+  template <class StructureManager, typename T,
             size_t Order,
             size_t NbRow = 1, size_t NbCol = 1>
   class Property
@@ -180,7 +180,7 @@ namespace rascal {
                    std::is_same<T, std::complex<double>>::value),
                   "can currently only handle arithmetic types");
   public:
-    using traits = NeighbourhoodManager_traits<NeighbourhoodManager>;
+    using traits = StructureManager_traits<StructureManager>;
     constexpr static size_t NbComp{NbRow*NbCol};
 
     using Value = internal::Value<T, NbRow, NbCol>;
@@ -192,7 +192,7 @@ namespace rascal {
     Property() = delete;
 
     //! Constructor with Manager
-    Property(NeighbourhoodManager & manager)
+    Property(StructureManager & manager)
       :manager{manager},values{}
     {}
 
@@ -280,7 +280,7 @@ namespace rascal {
     }
 
   protected:
-    NeighbourhoodManager & manager;
+    StructureManager & manager;
     std::vector<T> values;
   private:
   };

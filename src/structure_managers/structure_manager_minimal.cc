@@ -1,5 +1,5 @@
 /**
- * file   neighbourhood_manager_Minimal.cc
+ * file   structure_manager_Minimal.cc
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  *
@@ -25,22 +25,22 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "neighbourhood_managers/neighbourhood_manager_minimal.hh"
+#include "structure_managers/structure_manager_minimal.hh"
 
 namespace rascal {
 
 
-  /* NeighbourhoodManagerMinimal::Box NeighbourhoodManagerMinimal::get_box(const int& bin_id){
+  /* StructureManagerMinimal::Box StructureManagerMinimal::get_box(const int& bin_id){
     return this->boxes[bin_id];
   } */
-  size_t NeighbourhoodManagerMinimal::get_box_nb(){
+  size_t StructureManagerMinimal::get_box_nb(){
     return this->boxes.size();
   }
 
 
    /* ---------------------------------------------------------------------- */
 
-  void NeighbourhoodManagerMinimal::build(const Eigen::Ref<const Eigen::MatrixXd>  positions,
+  void StructureManagerMinimal::build(const Eigen::Ref<const Eigen::MatrixXd>  positions,
                                         const Eigen::Ref<const VecXi>  particule_types,
                                         const Eigen::Ref<const VecXi> center_ids,
                                         const Eigen::Ref<const Eigen::MatrixXd> cell,
@@ -54,13 +54,13 @@ namespace rascal {
       this->set_positions(positions);
       // set the references to the center positions
       for (int id{0}; id < center_ids.size(); ++id) {
-          this->centers.push_back(NeighbourhoodManagerMinimal::AtomRef_t(this->get_manager(),center_ids(id)));
+          this->centers.push_back(StructureManagerMinimal::AtomRef_t(this->get_manager(),center_ids(id)));
       }
       // TODO get particles type as input and use it
       this->particule_types.resize(Natom);
       //set the references to the particles positions
       for (Eigen::Index id{0}; id < Natom; ++id){
-        this->particles.push_back(NeighbourhoodManagerMinimal::AtomRef_t(this->get_manager(),id));
+        this->particles.push_back(StructureManagerMinimal::AtomRef_t(this->get_manager(),id));
         this->particule_types[id] = particule_types(id);
       }
 
@@ -147,12 +147,12 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
 
-  NeighbourhoodManagerMinimal::Box::Box(Manager_t& manager ,const Vec3i_t& coord, const std::array<bool, 3>& pbc,
+  StructureManagerMinimal::Box::Box(Manager_t& manager ,const Vec3i_t& coord, const std::array<bool, 3>& pbc,
         const Vec3i_t& neigh_search,const Vec3i_t& nbins_c)
         //const std::array<std::array<Dim_t, 3>,2>& neigh_bounds,
         :manager{manager},particles{},neighbour_bin_shift{},neighbour_bin_index{},number_of_neighbours{0},coordinates{}
   {
-    const int dim{NeighbourhoodManagerMinimal::dim()};
+    const int dim{StructureManagerMinimal::dim()};
 
     this->coordinates = coord;
     int bin_id{0};
@@ -202,38 +202,38 @@ namespace rascal {
 
   }
 
-  inline size_t NeighbourhoodManagerMinimal::Box::get_number_of_neighbour_box(){
+  inline size_t StructureManagerMinimal::Box::get_number_of_neighbour_box(){
     return this->neighbour_bin_index.size();
   }
 
-  inline void NeighbourhoodManagerMinimal::Box::push_particle_back(const int& part_index){
+  inline void StructureManagerMinimal::Box::push_particle_back(const int& part_index){
     this->particles.push_back(AtomRef_t(this->manager, part_index));
   }
 
-  inline size_t NeighbourhoodManagerMinimal::Box::get_number_of_particles(){
+  inline size_t StructureManagerMinimal::Box::get_number_of_particles(){
     return this->particles.size();
   }
 
-  inline size_t NeighbourhoodManagerMinimal::Box::get_number_of_neighbours(){
+  inline size_t StructureManagerMinimal::Box::get_number_of_neighbours(){
     return number_of_neighbours;
   }
 
-  inline int NeighbourhoodManagerMinimal::Box::get_neighbour_bin_index(const int& j_index){
+  inline int StructureManagerMinimal::Box::get_neighbour_bin_index(const int& j_index){
     return this->neighbour_bin_index[j_index];
   }
 
-  inline size_t NeighbourhoodManagerMinimal::Box::get_particle_index(const int& index){
+  inline size_t StructureManagerMinimal::Box::get_particle_index(const int& index){
     return this->particles[index].get_index();
   }
 
-  inline void NeighbourhoodManagerMinimal::Box::set_number_of_neighbours(const size_t& neigh_nb){
+  inline void StructureManagerMinimal::Box::set_number_of_neighbours(const size_t& neigh_nb){
     this->number_of_neighbours = neigh_nb;
   }
 
 
   /* ---------------------------------------------------------------------- */
 
-  void NeighbourhoodManagerMinimal::update(const Eigen::Ref<const Eigen::MatrixXd> positions,
+  void StructureManagerMinimal::update(const Eigen::Ref<const Eigen::MatrixXd> positions,
                                         const Eigen::Ref<const VecXi>  particule_types,
                                         const Eigen::Ref<const VecXi> center_ids,
                                         const Eigen::Ref<const Eigen::MatrixXd> cell,
@@ -241,13 +241,13 @@ namespace rascal {
   {
     bool some_condition{true};
     if (some_condition){
-      NeighbourhoodManagerMinimal::build(positions,particule_types,center_ids,cell,pbc,cutoff_max);
+      StructureManagerMinimal::build(positions,particule_types,center_ids,cell,pbc,cutoff_max);
     }
   }
 
   /* ---------------------------------------------------------------------- */
 
-  size_t NeighbourhoodManagerMinimal::
+  size_t StructureManagerMinimal::
   get_nb_clusters(int cluster_size) const {
     switch (cluster_size) {
     case 1: {

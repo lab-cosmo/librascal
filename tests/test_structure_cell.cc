@@ -1,11 +1,11 @@
 /**
- * file   test_neighbourhood_cell.cc
+ * file   test_structure_cell.cc
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  *
  * @date   05 Apr 2018
  *
- * @brief Test the implementation of the linked cell neighbourhood manager
+ * @brief Test the implementation of the linked cell structure manager
  *
  * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -26,17 +26,17 @@
  */
 
 #include "tests.hh"
-#include "test_neighbourhood.hh"
+#include "test_structure.hh"
 
 namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(ManagerCellTests);
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(manager_cell_constructor_test,
-                          ManagerFixture<NeighbourhoodManagerCell>){}
+                          ManagerFixture<StructureManagerCell>){}
   /* ---------------------------------------------------------------------- */
 
-  BOOST_FIXTURE_TEST_CASE(manager_test, ManagerFixture<NeighbourhoodManagerCell>) {
+  BOOST_FIXTURE_TEST_CASE(manager_test, ManagerFixture<StructureManagerCell>) {
     Eigen::MatrixXd positions_test(3,22); // 3,22
     positions_test <<
       3.689540159937393, 5.123016813620886, 1.994119731169116,
