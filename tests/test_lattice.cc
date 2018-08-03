@@ -65,7 +65,8 @@ namespace rascal {
     Vec3_t cell_angles_true;
     cell_angles_true <<  1.4313508192414794, 1.5423518764040736, 1.1973182286702833; // angle in radian
     for (int ii{0};ii<3;++ii) {
-      BOOST_CHECK_EQUAL(cell_angles[ii], cell_angles_true[ii]);
+      auto error{std::abs(cell_angles[ii]-cell_angles_true[ii])};
+      BOOST_CHECK_LE(error, lattice_tol);
     }
 
   }
