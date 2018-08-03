@@ -49,7 +49,7 @@ namespace rascal {
     constexpr static int Dim{3};
     constexpr static size_t MaxOrder{2};
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
-    using DepthByDimension = std::index_sequence<0, 0>;
+    using LayerByDimension = std::index_sequence<0, 0>;
   };
 
   //----------------------------------------------------------------------------//
@@ -128,9 +128,9 @@ namespace rascal {
     }
 
     //! return position vector of the last atom in the cluster
-    template<size_t Order, size_t Depth>
+    template<size_t Order, size_t Layer>
     inline Vector_ref get_neighbour_position(const ClusterRefBase<Order,
-                                             Depth> & cluster) {
+                                             Layer> & cluster) {
       static_assert(Order > 1,
                     "Only possible for Order > 1.");
       static_assert(Order <= traits::MaxOrder,
@@ -145,8 +145,8 @@ namespace rascal {
     }
 
     //! return the number of neighbours of a given atom
-    template<size_t Order, size_t Depth>
-    inline size_t get_cluster_size(const ClusterRefBase<Order, Depth> & cluster)
+    template<size_t Order, size_t Layer>
+    inline size_t get_cluster_size(const ClusterRefBase<Order, Layer> & cluster)
       const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
@@ -156,8 +156,8 @@ namespace rascal {
     //! return the index-th neighbour of the last atom
     //! in a cluster with cluster_size = 1 (atoms)
     //! which can be used to construct pairs
-    template<size_t Order, size_t Depth>
-    inline int get_cluster_neighbour(const ClusterRefBase<Order, Depth>
+    template<size_t Order, size_t Layer>
+    inline int get_cluster_neighbour(const ClusterRefBase<Order, Layer>
                                      & cluster,
                                      size_t index) const {
       static_assert(Order == traits::MaxOrder-1,

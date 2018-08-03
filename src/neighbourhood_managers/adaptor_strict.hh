@@ -56,10 +56,10 @@ namespace rascal {
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
     // TODO: Future optimisation: do not increase depth for atoms
     // (they are all kept anyways, so no duplication necessary).
-    using DepthByDimension = typename
-      DepthIncreaser<MaxOrder,
+    using LayerByDimension = typename
+      LayerIncreaser<MaxOrder,
                      typename
-                     ManagerImplementation::traits::DepthByDimension>::type;
+                     ManagerImplementation::traits::LayerByDimension>::type;
   };
 
   /**
@@ -126,14 +126,14 @@ namespace rascal {
     inline double get_cutoff() const {return this->cut_off;}
 
     //! returns the distance between atoms in a given pair
-    template <size_t Order, size_t Depth>
-    inline const double & get_distance(const ClusterRefBase<Order, Depth> &
+    template <size_t Order, size_t Layer>
+    inline const double & get_distance(const ClusterRefBase<Order, Layer> &
                                        pair) const {
       return this->distance[pair];
     }
 
-    template <size_t Order, size_t Depth>
-    inline double & get_distance(const ClusterRefBase<Order, Depth>& pair) {
+    template <size_t Order, size_t Layer>
+    inline double & get_distance(const ClusterRefBase<Order, Layer>& pair) {
       return this->distance[pair];
     }
 
@@ -149,8 +149,8 @@ namespace rascal {
       return this->manager.get_position(index);
     }
 
-    // template<size_t Order, size_t Depth>
-    // inline Vector_ref get_neighbour_position(const ClusterRefBase<Order, Depth>
+    // template<size_t Order, size_t Layer>
+    // inline Vector_ref get_neighbour_position(const ClusterRefBase<Order, Layer>
     // 					     & cluster) {
     //   static_assert(Order > 1,
     //                 "Only possible for Order > 1.");
@@ -161,13 +161,13 @@ namespace rascal {
     // }
 
     //! get atom_index of index-th neighbour of this cluster
-    template<size_t Order, size_t Depth>
-    inline int get_cluster_neighbour(const ClusterRefBase<Order, Depth>
+    template<size_t Order, size_t Layer>
+    inline int get_cluster_neighbour(const ClusterRefBase<Order, Layer>
 				     & cluster,
 				     int index) const {
       static_assert(Order <= traits::MaxOrder-1,
                     "this implementation only handles upto traits::MaxOrder");
-      auto && offset = this->offsets[Order][cluster.get_cluster_index(Depth)];
+      auto && offset = this->offsets[Order][cluster.get_cluster_index(Layer)];
       return this->atom_indices[Order][offset + index];
     }
 
@@ -206,8 +206,8 @@ namespace rascal {
     }
 
     //! return the number of neighbours of a given atom
-    template<size_t Order, size_t Depth>
-    inline size_t get_cluster_size(const ClusterRefBase<Order, Depth>
+    template<size_t Order, size_t Layer>
+    inline size_t get_cluster_size(const ClusterRefBase<Order, Layer>
 				   & cluster) const {
       static_assert(Order <= traits::MaxOrder-1,
                     "this implementation only handles atoms and pairs");
@@ -353,19 +353,19 @@ namespace rascal {
         manager.add_atom(next_cluster);
 
         // get new depth and add index at this depth
-        constexpr auto NextClusterDepth{
+        constexpr auto NextClusterLayer{
           compute_cluster_depth<next_cluster.level()>
-            (typename traits::DepthByDimension{})
+            (typename traits::LayerByDimension{})
             };
 
 
         // TODO: check for distance missing
-        static_assert(NextClusterDepth == (NextClusterDepth + 1),
-                      "Depth not correct");
-        Eigen::Matrix<size_t, NextClusterDepth+1, 1> indices_cluster;
-        indices_cluster.template head<NextClusterDepth>()
+        static_assert(NextClusterLayer == (NextClusterLayer + 1),
+                      "Layer not correct");
+        Eigen::Matrix<size_t, NextClusterLayer+1, 1> indices_cluster;
+        indices_cluster.template head<NextClusterLayer>()
           = cluster.get_cluster_indices();
-        indices_cluster(NextClusterDepth) = cluster_counter;
+        indices_cluster(NextClusterLayer) = cluster_counter;
         next_cluster_indices.push_back(indices_cluster);
         cluster_counter++;
 
@@ -420,24 +420,24 @@ namespace rascal {
     for (auto atom: this->manager) {
       this->add_atom(atom);
       /**
-       * Add new depth layer for atoms (see DepthByDimension for
+       * Add new depth layer for atoms (see LayerByDimension for
        * possible optimisation).
        */
 
-      constexpr auto AtomDepth{
+      constexpr auto AtomLayer{
         compute_cluster_depth<atom.level()>
-          (typename traits::DepthByDimension{})
+          (typename traits::LayerByDimension{})
           };
 
-      Eigen::Matrix<size_t, AtomDepth+1, 1> indices;
-      indices.template head<AtomDepth>() = atom.get_cluster_indices();
-      indices(AtomDepth) = indices(AtomDepth-1);
+      Eigen::Matrix<size_t, AtomLayer+1, 1> indices;
+      indices.template head<AtomLayer>() = atom.get_cluster_indices();
+      indices(AtomLayer) = indices(AtomLayer-1);
       atom_cluster_indices.push_back(indices);
 
       for (auto pair: atom) {
-        constexpr auto PairDepth{
+        constexpr auto PairLayer{
           compute_cluster_depth<pair.level()>
-            (typename traits::DepthByDimension{})};
+            (typename traits::LayerByDimension{})};
 
         double distance{(atom.get_position()
                          - pair.get_position()).norm()};
@@ -446,9 +446,9 @@ namespace rascal {
           this->add_atom(pair);
           this->distance.push_back(distance);
 
-          Eigen::Matrix<size_t, PairDepth+1, 1> indices_pair;
-          indices_pair.template head<PairDepth>() = pair.get_cluster_indices();
-          indices_pair(PairDepth) = pair_counter;
+          Eigen::Matrix<size_t, PairLayer+1, 1> indices_pair;
+          indices_pair.template head<PairLayer>() = pair.get_cluster_indices();
+          indices_pair(PairLayer) = pair_counter;
           pair_cluster_indices.push_back(indices_pair);
 
           pair_counter++;

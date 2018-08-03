@@ -40,7 +40,7 @@
 
 namespace rascal {
 
-  template <class NeighManager, int MaxDepth, int Depth=0>
+  template <class NeighManager, int MaxLayer, int Layer=0>
   class SpeciesManager
   {
   public:
@@ -48,8 +48,8 @@ namespace rascal {
     using Species_t = int;
     using Dummy_t = char;
     using SubManagerType =
-      std::conditional_t<(Depth != MaxDepth),
-                         SpeciesManager<NeighManager, MaxDepth, Depth+1>,
+      std::conditional_t<(Layer != MaxLayer),
+                         SpeciesManager<NeighManager, MaxLayer, Layer+1>,
                          Dummy_t>;
     //! Default constructor
     SpeciesManager() = delete;
@@ -76,14 +76,14 @@ namespace rascal {
     std::map<Species_t, BasisFunManager> & get_symmetry_functions();
 
     //! get the next level of depth
-    template <bool NotAtMaxDepth = (Depth != MaxDepth)>
+    template <bool NotAtMaxLayer = (Layer != MaxLayer)>
     std::map<Species_t,
-             std::enable_if_t<NotAtMaxDepth,
+             std::enable_if_t<NotAtMaxLayer,
                               SubManagerType>>
     & get_next_level();
 
   protected:
-    std::array<Species_t, Depth> fixed_species;
+    std::array<Species_t, Layer> fixed_species;
     std::map<Species_t, BasisFunManager>;
     std::map<Species_t, SubManagerType>;
   private:

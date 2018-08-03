@@ -81,39 +81,39 @@ namespace rascal {
 
     //! Overloads helper function and is used to cycle on the objects, returning
     //! the next object in line
-    template <typename Manager, size_t Order, size_t DepthsHead,
-             size_t... DepthsTail, typename... TupComp>
+    template <typename Manager, size_t Order, size_t LayersHead,
+             size_t... LayersTail, typename... TupComp>
     struct ClusterIndexPropertyComputer_Helper<Manager,
                                                Order,
                                                std::index_sequence
-                                               <DepthsHead, DepthsTail...>,
+                                               <LayersHead, LayersTail...>,
                                                std::tuple<TupComp...>> {
-      using Property_t = Property<Manager, size_t, Order, DepthsHead+1, 1>;
+      using Property_t = Property<Manager, size_t, Order, LayersHead+1, 1>;
       using type = typename ClusterIndexPropertyComputer_Helper
-        <Manager, Order+1, std::index_sequence<DepthsTail...>,
+        <Manager, Order+1, std::index_sequence<LayersTail...>,
          std::tuple<TupComp..., Property_t>>::type;
     };
 
     //! Recursion end. Overloads helper function and is used to cycle on the
     //! objects, for the last object in the list
-    template <typename Manager, size_t Order, size_t DepthsHead,
+    template <typename Manager, size_t Order, size_t LayersHead,
              typename... TupComp>
     struct ClusterIndexPropertyComputer_Helper<Manager,
                                                Order,
-                                               std::index_sequence<DepthsHead>,
+                                               std::index_sequence<LayersHead>,
                                                std::tuple<TupComp...>> {
-      using Property_t = Property<Manager, size_t, Order, DepthsHead+1, 1>;
+      using Property_t = Property<Manager, size_t, Order, LayersHead+1, 1>;
       using type = std::tuple<TupComp..., Property_t>;
     };
 
     //! Overloads the base function to call the helper function
-    template <typename Manager, size_t... Depths>
+    template <typename Manager, size_t... Layers>
     struct ClusterIndexPropertyComputer<Manager,
-                                        std::index_sequence<Depths...>> {
+                                        std::index_sequence<Layers...>> {
       using type =
         typename
         ClusterIndexPropertyComputer_Helper<Manager, 1,
-                                            std::index_sequence<Depths...>,
+                                            std::index_sequence<Layers...>,
                                             std::tuple<>>::type;
     };
 
@@ -148,7 +148,7 @@ namespace rascal {
     using Vector_t = Eigen::Matrix<double, traits::Dim, 1>;
     using Vector_ref = Eigen::Map<Vector_t>;
     using ClusterIndex_t = typename internal::ClusterIndexPropertyComputer
-      <NeighbourhoodManagerBase, typename traits::DepthByDimension>::type;
+      <NeighbourhoodManagerBase, typename traits::LayerByDimension>::type;
     using ClusterConstructor_t = typename internal::ClusterIndexConstructor
       <ClusterIndex_t, NeighbourhoodManagerBase>;
 
@@ -227,9 +227,9 @@ namespace rascal {
       return this->implementation().get_position(atom);
     }
 
-    template <size_t Order, size_t Depth>
+    template <size_t Order, size_t Layer>
     inline decltype(auto)
-    neighbour_position(ClusterRefBase<Order, Depth> & cluster) {
+    neighbour_position(ClusterRefBase<Order, Layer> & cluster) {
       return this->implementation().get_neighbour_position(cluster);
     }
 
@@ -240,7 +240,7 @@ namespace rascal {
   protected:
     template <size_t Order>
     constexpr static size_t cluster_depth(){
-      return compute_cluster_depth<Order>(typename traits::DepthByDimension{});
+      return compute_cluster_depth<Order>(typename traits::LayerByDimension{});
     }
 
     //! recursion end, not for use
@@ -248,8 +248,8 @@ namespace rascal {
       return std::array<int, 0>{};
     }
 
-    template <size_t Order, size_t Depth>
-    inline size_t cluster_size(ClusterRefBase<Order, Depth> & cluster) const {
+    template <size_t Order, size_t Layer>
+    inline size_t cluster_size(ClusterRefBase<Order, Layer> & cluster) const {
       return this->implementation().get_cluster_size(cluster);
     }
 
@@ -259,8 +259,8 @@ namespace rascal {
 
     //! get atom_index of index-th neighbour of this cluster, e.g. j-th
     //! neighbour of atom i or k-th neighbour of pair i-j, etc.
-    template <size_t Order, size_t Depth>
-    inline int cluster_neighbour(ClusterRefBase<Order, Depth> & cluster,
+    template <size_t Order, size_t Layer>
+    inline int cluster_neighbour(ClusterRefBase<Order, Layer> & cluster,
                                  size_t index) const {
       return this->implementation().get_cluster_neighbour(cluster, index);
     }
@@ -290,9 +290,9 @@ namespace rascal {
     }
 
     //! Access to offsets for access of cluster-related properties
-    template <size_t Order, size_t CallerDepth>
+    template <size_t Order, size_t CallerLayer>
     inline size_t get_offset(const ClusterRefBase<Order,
-                             CallerDepth> & cluster) const {
+                             CallerLayer> & cluster) const {
       constexpr auto
         depth{NeighbourhoodManagerBase::template cluster_depth<Order>()};
       return cluster.get_cluster_index(depth);
@@ -327,8 +327,8 @@ namespace rascal {
     /// current cluster
     ClusterIndex_t cluster_indices_container;
 
-    // template <size_t Order, size_t Depth> inline int get_cluster(const
-    // ClusterRefBase<Order, Depth> & cluster) const { // all pairs of the
+    // template <size_t Order, size_t Layer> inline int get_cluster(const
+    // ClusterRefBase<Order, Layer> & cluster) const { // all pairs of the
     // following thing }
 
 

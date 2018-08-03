@@ -57,12 +57,12 @@ namespace rascal {
     constexpr static int Dim{ManagerImplementation::traits::Dim};
     //! New MaxOrder upon construction!
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder+1};
-    //! New Depth
+    //! New Layer
     //! TODO: Is this the correct way to initialize the increased depth?
-    using DepthByDimension = typename
-      DepthExtender<MaxOrder,
+    using LayerByDimension = typename
+      LayerExtender<MaxOrder,
                     typename
-                    ManagerImplementation::traits::DepthByDimension>::type;
+                    ManagerImplementation::traits::LayerByDimension>::type;
   };
 
   /**
@@ -85,9 +85,9 @@ namespace rascal {
     template<size_t Order>
     using ClusterRef_t =
       typename ManagerImplementation::template ClusterRef<Order>;
-    //! template<size_t Order, size_t Depth>
+    //! template<size_t Order, size_t Layer>
     //! using ClusterRefBase_t =
-    //!   typename ManagerImplementation::template ClusterRefBase<Order, Depth>;
+    //!   typename ManagerImplementation::template ClusterRefBase<Order, Layer>;
     //using PairRef_t = ClusterRef_t<2, traits::MaxOrder>;
 
     // TODO if MaxOrder can be == 1 -> neighbourlist need to be built.
@@ -166,8 +166,8 @@ namespace rascal {
       return this->manager.get_position(atom.get_index());
     }
 
-    template<size_t Order, size_t Depth>
-    inline Vector_ref get_neighbour_position(const ClusterRefBase<Order, Depth>&
+    template<size_t Order, size_t Layer>
+    inline Vector_ref get_neighbour_position(const ClusterRefBase<Order, Layer>&
                                              /*cluster*/) {
       static_assert(Order > 1,
                     "Only possible for Order > 1.");
@@ -185,8 +185,8 @@ namespace rascal {
       return this->manager.get_cluster_neighbour(this->manager, index);
     }
 
-    template<size_t Order, size_t Depth>
-    inline int get_cluster_neighbour(const ClusterRefBase<Order, Depth>
+    template<size_t Order, size_t Layer>
+    inline int get_cluster_neighbour(const ClusterRefBase<Order, Layer>
 				     & cluster,
 				     size_t index) const {
       static_assert(Order < traits::MaxOrder,
@@ -194,7 +194,7 @@ namespace rascal {
       if (Order < traits::MaxOrder-1) {
 	return this->manager.get_cluster_neighbour(cluster, index);
       } else {
-	auto && offset = this->offsets[cluster.get_cluster_index(Depth)];
+	auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
 	return this->neighbours[offset + index];
       }
     }
@@ -210,15 +210,15 @@ namespace rascal {
       return this->manager.get_atom_type(atom.get_index());
     }
 
-    template<size_t Order, size_t Depth>
-    inline size_t get_cluster_size(const ClusterRefBase<Order, Depth>
+    template<size_t Order, size_t Layer>
+    inline size_t get_cluster_size(const ClusterRefBase<Order, Layer>
                                    & cluster) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
       if (Order < traits::MaxOrder-1) {
 	return this->manager.get_cluster_size(cluster);
       } else {
-        auto access_index = cluster.get_cluster_index(Depth);
+        auto access_index = cluster.get_cluster_index(Layer);
 	return nb_neigh[access_index];
       }
     }

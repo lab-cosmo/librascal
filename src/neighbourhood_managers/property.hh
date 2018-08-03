@@ -259,17 +259,17 @@ namespace rascal {
     /**
      * Not sure about the actual implementation of this one.
      */
-    template<size_t CallerDepth>
-    reference operator[](const ClusterRefBase<Order, CallerDepth> & id) {
-      constexpr auto ActiveDepth{
-        compute_cluster_depth<Order>(typename traits::DepthByDimension{})};
-      static_assert(CallerDepth >= ActiveDepth,
+    template<size_t CallerLayer>
+    reference operator[](const ClusterRefBase<Order, CallerLayer> & id) {
+      constexpr auto ActiveLayer{
+        compute_cluster_depth<Order>(typename traits::LayerByDimension{})};
+      static_assert(CallerLayer >= ActiveLayer,
                     "You are trying to access a property that "
                     "does not exist at this low a level in the "
                     "adaptor stack.");
 
       return
-        Value::get_ref(this->values[id.get_cluster_index(CallerDepth)*NbComp]);
+        Value::get_ref(this->values[id.get_cluster_index(CallerLayer)*NbComp]);
     }
 
     /**

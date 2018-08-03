@@ -54,7 +54,7 @@ namespace rascal {
     constexpr static int Dim{3};
     constexpr static size_t MaxOrder{1};
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
-    using DepthByDimension = std::integer_sequence<size_t, 0, 0>;
+    using LayerByDimension = std::integer_sequence<size_t, 0, 0>;
   };
   class NeighbourhoodManagerMinimal: public NeighbourhoodManagerBase<NeighbourhoodManagerMinimal>
   {
@@ -125,8 +125,8 @@ namespace rascal {
     }
 
     // return the index-th neighbour of cluster
-    template<size_t Order, size_t Depth>
-    inline int get_cluster_neighbour(const ClusterRefBase<Order, Depth>
+    template<size_t Order, size_t Layer>
+    inline int get_cluster_neighbour(const ClusterRefBase<Order, Layer>
                                      & cluster,
                                      size_t index) const {
       static_assert(Order <= traits::MaxOrder,

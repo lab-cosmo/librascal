@@ -87,7 +87,7 @@ namespace rascal {
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDirectionVectors{false};
     constexpr static bool HasDistances{false};
-    using DepthByDimension = std::integer_sequence<size_t, 0, 0>;
+    using LayerByDimension = std::integer_sequence<size_t, 0, 0>;
   };
 
   /**
@@ -247,8 +247,8 @@ namespace rascal {
      * conditions, the get_neighbour_position should return a different
      * position, if it is a ghost atom.
      */
-    template<size_t Order, size_t Depth>
-    inline Vector_ref get_neighbour_position(const ClusterRefBase<Order, Depth>
+    template<size_t Order, size_t Layer>
+    inline Vector_ref get_neighbour_position(const ClusterRefBase<Order, Layer>
                                              & cluster) {
       static_assert(Order > 1,
                     "Only possible for Order > 1.");
@@ -269,8 +269,8 @@ namespace rascal {
     }
 
     //! returns the number of neighbours of a given i atom
-    template<size_t Order, size_t Depth>
-    inline size_t get_cluster_size(const ClusterRefBase<Order, Depth>
+    template<size_t Order, size_t Layer>
+    inline size_t get_cluster_size(const ClusterRefBase<Order, Layer>
                                    & cluster) const {
       // TODO: Check for <= or < ?!
       static_assert(Order <= traits::MaxOrder,
@@ -284,8 +284,8 @@ namespace rascal {
     }
 
     //! return the index-th neighbour of cluster
-    template<size_t Order, size_t Depth>
-    inline int get_cluster_neighbour(const ClusterRefBase<Order, Depth>
+    template<size_t Order, size_t Layer>
+    inline int get_cluster_neighbour(const ClusterRefBase<Order, Layer>
                                      & cluster,
                                      size_t index) const {
       static_assert(Order <= traits::MaxOrder,
