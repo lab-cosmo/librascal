@@ -38,11 +38,12 @@ namespace rascal {
   //! forward declaration for traits
   class NeighbourhoodManagerLammps;
 
-  //! traits specialisation for Lammps manager
-  // The traits are used for vector allocation and further down the
-  // processing chain to determine what functionality the given
-  // NeighbourhoodManager already contains to avoid recomputation.
-  // See also the implementation of adaptors.
+  /**
+   * traits specialisation for Lammps manager The traits are used for vector
+   * allocation and further down the processing chain to determine what
+   * functionality the given NeighbourhoodManager already contains to avoid
+   * recomputation.  See also the implementation of adaptors.
+   */
   template <>
   struct NeighbourhoodManager_traits<NeighbourhoodManagerLammps> {
     constexpr static int Dim{3};
@@ -52,9 +53,9 @@ namespace rascal {
   };
 
   //----------------------------------------------------------------------------//
-  // Definition of the new NeighbourhoodManagerLammps class. 
+  //! Definition of the new NeighbourhoodManagerLammps class.
   class NeighbourhoodManagerLammps:
-    // It inherits publicly everything from the base class
+    //! It inherits publicly everything from the base class
     public NeighbourhoodManagerBase<NeighbourhoodManagerLammps>
   {
   public:
@@ -152,7 +153,7 @@ namespace rascal {
       return this->numneigh[cluster.back()];
     }
 
-    //! return the index-th neighbour of the last atom 
+    //! return the index-th neighbour of the last atom
     //! in a cluster with cluster_size = 1 (atoms)
     //! which can be used to construct pairs
     template<size_t Level, size_t Depth>
@@ -165,9 +166,11 @@ namespace rascal {
       return this->firstneigh[std::move(i_atom_id)][index];
     }
 
-    //! return the atom_index of the index-th atom in manager 
-    //! parent here is dummy and is used for consistency
-    //! in other words, atom_index is the global LAMMPS atom index.
+    /**
+     * return the atom_index of the index-th atom in manager parent here is
+     * dummy and is used for consistency in other words, atom_index is the
+     * global LAMMPS atom index.
+     */
     inline int get_cluster_neighbour(const Parent & /*cluster*/,
                                      size_t index) const {
       return this->ilist[index];
@@ -176,12 +179,12 @@ namespace rascal {
     /**
      * provided an atom, returns the cumulative numbers of pairs
      * up to the first pair in which the atom is the I atom
-     * this only works for atom   
+     * this only works for atom
      */
     template<size_t Level>
     inline size_t get_offset_impl(const std::array<size_t, Level>
                                   & counters) const;
-  
+
     /**
      * return the number of clusters of size cluster_size.
      * Can only handle cluster_size 1 (atoms) and cluster_size 2 (pairs).
@@ -189,7 +192,7 @@ namespace rascal {
     size_t get_nb_clusters(int cluster_size) const;
 
   protected:
-    int inum{}; 
+    int inum{};
     int tot_num{}; //includes ghosts
     int * ilist{};
     int * numneigh{};
@@ -209,7 +212,7 @@ namespace rascal {
   /*
    * provided an atom, returns the cumulative numbers of pairs
    * up to the first pair in which the atom is the I atom
-   * this only works for atom   
+   * this only works for atom
    */
   template<size_t Level>
   inline size_t NeighbourhoodManagerLammps::
