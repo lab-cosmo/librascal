@@ -124,7 +124,7 @@ namespace rascal {
    * Helper function to get the number of <code>clusters</code> (atoms, pairs,
    * triplets, quadruplets) with a specific <code>Order</code>. The
    * <code>MaxOrder</code> depends on your implementation or
-   * processing. Increasing the level is done with an adaptor.
+   * processing. Increasing the order is done with an adaptor.
    */
   size_t NeighbourhoodManagerChain::get_nb_clusters(size_t cluster_size) const {
     switch (cluster_size) {

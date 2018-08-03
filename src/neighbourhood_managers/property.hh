@@ -262,10 +262,10 @@ namespace rascal {
     template<size_t CallerLayer>
     reference operator[](const ClusterRefBase<Order, CallerLayer> & id) {
       constexpr auto ActiveLayer{
-        compute_cluster_depth<Order>(typename traits::LayerByDimension{})};
+        compute_cluster_layer<Order>(typename traits::LayerByDimension{})};
       static_assert(CallerLayer >= ActiveLayer,
                     "You are trying to access a property that "
-                    "does not exist at this low a level in the "
+                    "does not exist at this depth in the "
                     "adaptor stack.");
 
       return

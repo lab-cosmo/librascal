@@ -75,12 +75,12 @@ namespace rascal {
     //! get the symmetry functions and the corresponding neighbourhoodmanager
     std::map<Species_t, BasisFunManager> & get_symmetry_functions();
 
-    //! get the next level of depth
+    //! get the next depth layer
     template <bool NotAtMaxLayer = (Layer != MaxLayer)>
     std::map<Species_t,
              std::enable_if_t<NotAtMaxLayer,
                               SubManagerType>>
-    & get_next_level();
+    & get_next_order();
 
   protected:
     std::array<Species_t, Layer> fixed_species;

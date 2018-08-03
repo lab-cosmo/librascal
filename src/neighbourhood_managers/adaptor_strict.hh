@@ -218,7 +218,7 @@ namespace rascal {
     /**
      * main function during construction of a neighbourlist.
      * @param atom the atom to add to the list
-     * @param level select whether it is an i-atom (level=0), j-atom (level=1),
+     * @param Order select whether it is an i-atom (order=1), j-atom (order=2),
      * or ...
      */
     template <size_t Order>
@@ -256,7 +256,7 @@ namespace rascal {
     const double cut_off;
 
     /**
-     * store atom indices per level,i.e.
+     * store atom indices per order,i.e.
      *   - atom_indices[0] lists all i-atoms
      *   - atom_indices[1] lists all j-atoms
      *   - atom_indices[2] lists all k-atoms
@@ -352,9 +352,9 @@ namespace rascal {
         // add atom
         manager.add_atom(next_cluster);
 
-        // get new depth and add index at this depth
+        // get new layer and add index at this depth
         constexpr auto NextClusterLayer{
-          compute_cluster_depth<next_cluster.level()>
+          compute_cluster_layer<next_cluster.order()>
             (typename traits::LayerByDimension{})
             };
 
@@ -425,7 +425,7 @@ namespace rascal {
        */
 
       constexpr auto AtomLayer{
-        compute_cluster_depth<atom.level()>
+        compute_cluster_layer<atom.order()>
           (typename traits::LayerByDimension{})
           };
 
@@ -436,7 +436,7 @@ namespace rascal {
 
       for (auto pair: atom) {
         constexpr auto PairLayer{
-          compute_cluster_depth<pair.level()>
+          compute_cluster_layer<pair.order()>
             (typename traits::LayerByDimension{})};
 
         double distance{(atom.get_position()
@@ -453,8 +453,8 @@ namespace rascal {
 
           pair_counter++;
         }
-        using HelperLoop = HelperLoop<pair.level(),
-                                      pair.level() >= traits::MaxOrder>;
+        using HelperLoop = HelperLoop<pair.order(),
+                                      pair.order() >= traits::MaxOrder>;
         HelperLoop::loop(pair, *this);
       }
     }

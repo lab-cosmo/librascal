@@ -71,14 +71,14 @@ cell vectors, atomic positions and numbers and the ids of the centers.
 Commands of the neighborhood manager:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In the current implementation of the neighborhood manager, the centers and their neighbors are :cpp:class:`rascal::Neighborhood Cell::ClusterRef` objects of level 1 and 2, respectively. 
-In order to access objects of level 2, we need to iterate over the corresponding level 1 object (the corresponding center).
+In the current implementation of the neighborhood manager, the centers and their neighbors are :cpp:class:`rascal::Neighborhood Cell::ClusterRef` objects of order 1 and 2, respectively. 
+In order to access objects of order 2, we need to iterate over the corresponding order 1 object (the corresponding center).
 This implementation has the advantage of not using explicit arrays to deal with center and neighbor properties. 
 
 Several methods are implemented for the :cpp:class:`rascal::NeighborhoodCell::ClusterRef` objects (centers and their neighbors), such as retrieving 
 the index of the object, its position and its atom type.
 
-- .. note:: The positions of level 2 are given with a certain offset relative to the position of the corresponding center of level 1. If one atom is included in the neighborhood of two different centers, it will have different positions depending on 
+- .. note:: The positions of order 2 are given with a certain offset relative to the position of the corresponding center of order 1. If one atom is included in the neighborhood of two different centers, it will have different positions depending on 
             the center being iterated over.
 
 - .. warning:: The relative positions of the neighbors of a center are calculated on the fly and are not stored. If needed they have to be stored manually.

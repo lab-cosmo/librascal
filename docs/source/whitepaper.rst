@@ -31,6 +31,6 @@ It takes care of
 * Holding information about an atomic structure
 * Building clusters based on existing structural information
 * Provide iterators that can be used to loop over clusters of a given type,
-and to access properties associated with clusters of each level.
+and to access properties associated with clusters of each body order.
 
 

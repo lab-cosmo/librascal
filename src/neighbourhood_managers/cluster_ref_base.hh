@@ -39,7 +39,7 @@ namespace rascal {
   /**
    * Layer calculations and manipulations
    */
-  // Computes depth by cluster dimension for new adaptor layer
+  // Computes layer index by cluster dimension for new adaptor layer
   template <size_t MaxOrder, class T>
   struct LayerIncreaser{};
 
@@ -75,7 +75,7 @@ namespace rascal {
    */
   template <size_t MaxOrder, size_t... Ints>
   constexpr std::array<size_t, MaxOrder>
-  get_depths(std::index_sequence<Ints...>) {
+  get_layers(std::index_sequence<Ints...>) {
     return std::array<size_t, MaxOrder>{Ints...};
   }
 
@@ -120,25 +120,25 @@ namespace rascal {
   }  // internal
 
   template <size_t Order, size_t... Ints>
-  constexpr size_t compute_cluster_depth(const std::index_sequence<Ints...> &) {
+  constexpr size_t compute_cluster_layer(const std::index_sequence<Ints...> &) {
     using ActiveDimensions = typename internal::HeadExtractor
       <Order, std::index_sequence<>, Ints...>::type;
     return internal::MinExtractor<ActiveDimensions>::value;
   }
 
   /**
-   * Dynamic access to depth by cluster dimension (possibly not
+   * Dynamic access to layer by cluster dimension (possibly not
    * necessary)
    */
   template <size_t MaxOrder, size_t... Ints>
   constexpr size_t
-  get_depth(size_t index, std::index_sequence<Ints...>) {
+  get_layer(size_t index, std::index_sequence<Ints...>) {
     constexpr size_t arr[] {Ints...};
     return arr [index];
   }
 
   /**
-   * Static access to depth by cluster dimension (e.g., for defining
+   * Static access to layer by cluster dimension (e.g., for defining
    * template parameter `NbRow` for a property
    */
   template <size_t index, size_t... Ints>
@@ -170,11 +170,11 @@ namespace rascal {
    * 
    * Given that Manager classes can be 'stacked', e.g. using a strict
    * cutoff on top of a loose neighbor list, the reference must know in
-   * which level of the hierarchy the data.   
+   * which layer of the hierarchy the data.   
    *  
    * For these reasons ClusterRefBase is templated by two arguments: 
-   * Order that specifies the number of atoms in the cluster, and Layer
-   * that specifies how many layers of managers/adaptors are stacked
+   * Order that specifies the number of atoms in the cluster (its body order)
+   * and Layer that specifies how many layers of managers/adaptors are stacked
    * at the point at which the cluster reference is introduced.
    */
   template<size_t Order, size_t Layer>
@@ -223,17 +223,17 @@ namespace rascal {
     const int & front() const{return this->atom_indices.front();}
     const int & back() const{return this->atom_indices.back();}
 
-    inline size_t get_cluster_index(const size_t depth) const {
-      return this->cluster_indices(depth);
+    inline size_t get_cluster_index(const size_t layer) const {
+      return this->cluster_indices(layer);
     }
 
     inline IndexConstArray get_cluster_indices() const {
       return this->cluster_indices;
     }
 
-    inline constexpr static size_t level() {return Order;}
+    inline constexpr static size_t order() {return Order;}
 
-    inline constexpr static size_t depth() {return Layer;}
+    inline constexpr static size_t layer() {return Layer;}
 
   protected:
     /**
@@ -243,7 +243,7 @@ namespace rascal {
      */
     std::array<int, Order> atom_indices;
     /**
-     * Cluster indices by depth level, highest depth, means last
+     * Cluster indices by layer, highest value means last
      * adaptor, and mean last entry (.back())
      */
     IndexConstArray cluster_indices;

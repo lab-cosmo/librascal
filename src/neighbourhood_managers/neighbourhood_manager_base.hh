@@ -67,15 +67,15 @@ namespace rascal {
 
   namespace internal {
     /**
-     * Helper function to calculate cluster_indices_container by depth.
+     * Helper function to calculate cluster_indices_container by layer.
      */
     //! Here an empty template structure is created to manage the clusters and
-    //! their depth
+    //! their layer
     template <typename Manager, typename sequence>
     struct ClusterIndexPropertyComputer {};
 
     //! Here an empty template helper structure is created to manage the
-    //! clusters and their depth
+    //! clusters and their layer
     template <typename Manager, size_t Order, typename sequence, typename Tup>
     struct ClusterIndexPropertyComputer_Helper {};
 
@@ -239,8 +239,8 @@ namespace rascal {
 
   protected:
     template <size_t Order>
-    constexpr static size_t cluster_depth(){
-      return compute_cluster_depth<Order>(typename traits::LayerByDimension{});
+    constexpr static size_t cluster_layer(){
+      return compute_cluster_layer<Order>(typename traits::LayerByDimension{});
     }
 
     //! recursion end, not for use
@@ -294,8 +294,8 @@ namespace rascal {
     inline size_t get_offset(const ClusterRefBase<Order,
                              CallerLayer> & cluster) const {
       constexpr auto
-        depth{NeighbourhoodManagerBase::template cluster_depth<Order>()};
-      return cluster.get_cluster_index(depth);
+        layer{NeighbourhoodManagerBase::template cluster_layer<Order>()};
+      return cluster.get_cluster_index(layer);
     }
 
     //! Used for building cluster indices
@@ -314,9 +314,9 @@ namespace rascal {
 
     /**
      * Tuple which contains MaxOrder number of cluster_index lists for reference
-     * with increasing depth.  It is filled upon construction of the
+     * with increasing layer depth.  It is filled upon construction of the
      * neighbourhood manager via a
-     * std::get<Order>(this->cluster_indices). Higher levels are constructed in
+     * std::get<Order>(this->cluster_indices). Higher order are constructed in
      * adaptors accordingly via the lower level indices and a Order-dependend
      * index is appended to the array.
      */
@@ -448,13 +448,13 @@ namespace rascal {
   template <size_t Order>
   class NeighbourhoodManagerBase<ManagerImplementation>::ClusterRef :
     public ClusterRefBase<Order,
-                          ManagerImplementation::template cluster_depth<Order>()>
+                          ManagerImplementation::template cluster_layer<Order>()>
   {
   public:
     using Manager_t = NeighbourhoodManagerBase<ManagerImplementation>;
     using Parent =
       ClusterRefBase<Order,
-                     ManagerImplementation::template cluster_depth<Order>()>;
+                     ManagerImplementation::template cluster_layer<Order>()>;
     using AtomRef_t = typename Manager_t::AtomRef;
     using Iterator_t = typename Manager_t::template iterator<Order>;
     using Atoms_t = std::array<AtomRef_t, Order>;

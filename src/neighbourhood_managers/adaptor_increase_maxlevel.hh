@@ -286,8 +286,8 @@ namespace rascal {
     //! Make a full neighbour list
     void make_full_neighbour_list();
 
-    //! Increase whatever level is present
-    void increase_maxlevel();
+    //! Increase whatever body order is present
+    void increase_maxorder();
 
     ManagerImplementation & manager;
 
@@ -370,7 +370,7 @@ namespace rascal {
     static void loop(ClusterRef_t & cluster,
                      AdaptorMaxOrder<ManagerImplementation> & manager) {
 
-      //! do nothing, if MaxOrder is not reached, except call the next level
+      //! do nothing, if MaxOrder is not reached, except call the next order 
       for (auto next_cluster : cluster) {
 
         auto & next_cluster_indices
@@ -384,7 +384,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   //! At desired MaxOrder (plus one), here is where the magic happens and the
-  //! neighbours of the same level are added as the Order+1.  add check for non
+  //! neighbours of the same order are added as the Order+1.  add check for non
   //! half neighbour list
   template <class ManagerImplementation>
   template <size_t Order>
@@ -403,7 +403,7 @@ namespace rascal {
                      AdaptorMaxOrder<ManagerImplementation> & manager) {
 
       //! get all i_atoms to find neighbours to extend the cluster to the next
-      //! level
+      //! order
       auto i_atoms = cluster.get_atom_indices();
 
       //! vector of existing i_atoms in `cluster` to avoid doubling of atoms in
@@ -476,13 +476,13 @@ namespace rascal {
 
     // TODO: add functionality for the shift vector??!
 
-    //! The zeroth level does not have neighbours
+    //! The zeroth order does not have neighbours
     this->nb_neigh.push_back(0);
 
     unsigned int nneigh_off{0};
 
     for (auto it=this->manager.begin(); it!=--this->manager.end(); ++it){
-      //! Add atom at this level this is just the standard list.
+      //! Add atom at this order this is just the standard list.
       auto atom_i = *it;
       this->add_atom(atom_i);
 
@@ -508,7 +508,7 @@ namespace rascal {
     //! Make a full neighbourlist, whithout fancy linked list or cell. Also
     //! missing are periodic boundary conditions.
 
-    //! The zeroth level does not have neighbours
+    //! The zeroth order does not have neighbours
     this->nb_neigh.push_back(0);
 
     unsigned int nneigh_off{0};
@@ -524,7 +524,7 @@ namespace rascal {
       	  if (distance <= this->cutoff) {
       	    //! Store atom_j in neighbourlist of atom_i
 	    //! this->atom_refs[1].push_back(atom_j.back());
-	    this->add_atom_level_up(atom_j);
+	    this->add_atom_order_up(atom_j);
       	    this->nb_neigh.back()++;
       	    nneigh_off += 1;
       	  }
@@ -536,7 +536,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
-  void AdaptorMaxOrder<ManagerImplementation>::increase_maxlevel() {
+  void AdaptorMaxOrder<ManagerImplementation>::increase_maxorder() {
     //! Depending on the existing Order, this function increases the
     //! MaxOrder by one by adding all neighbours of the last atom at
     //! the end of the chain as new end of a tuple.
@@ -550,16 +550,16 @@ namespace rascal {
 
     for (auto atom : this->manager) {
       //! Order 1, Order variable is at 0, atoms, index 0
-      using AddOrderLoop = AddOrderLoop<atom.level(),
-                                        atom.level() == traits::MaxOrder-1>;
+      using AddOrderLoop = AddOrderLoop<atom.order(),
+                                        atom.order() == traits::MaxOrder-1>;
       auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
       atom_cluster_indices.push_back(atom.get_cluster_indices());
       AddOrderLoop::loop(atom, *this);
     }
 
-    //! correct the offsets for the new cluster level
+    //! correct the offsets for the new cluster order
     this->set_offsets();
-    //! add correct cluster_indices for the highest level
+    //! add correct cluster_indices for the highest order
     auto & max_cluster_indices
     {std::get<traits::MaxOrder-1>(this->cluster_indices_container)};
     max_cluster_indices.fill_sequence();
@@ -587,7 +587,7 @@ namespace rascal {
       //! Make triplets/quadruplets/etc. based on existing
       //! neighbourlist
       //! Templated function?
-      this->increase_maxlevel();
+      this->increase_maxorder();
     }
   }
 
@@ -622,7 +622,7 @@ namespace rascal {
     } else {
       /**
        * If not accessible at this level, call lower Order offsets from lower
-       * level manager(s).
+       * order manager(s).
        */
       return this->manager.get_offset_impl(counters);
     }
