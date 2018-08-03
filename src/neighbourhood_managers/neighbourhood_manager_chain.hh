@@ -83,7 +83,7 @@ namespace rascal {
   template <>
   struct NeighbourhoodManager_traits<NeighbourhoodManagerChain> {
     constexpr static int Dim{3};
-    constexpr static size_t MaxLevel{2}; //
+    constexpr static size_t MaxOrder{2}; //
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDirectionVectors{false};
     constexpr static bool HasDistances{false};
@@ -150,12 +150,12 @@ namespace rascal {
     /**
      * A ClusterRef_t is a return type for iterators. It gives a light-weight
      * reference to an atom, a pair, a triplet,... to the AtomRefs of all
-     * implicated atoms.  The template parameters Level and MaxLevel give the
+     * implicated atoms.  The template parameters Order and MaxOrder give the
      * pair/triplet/ and the maximum depth, e.g. up to pair level.  To increase
-     * the MaxLevel, use an <code>adaptor</code>.
+     * the MaxOrder, use an <code>adaptor</code>.
      */
-    template <size_t Level>
-    using ClusterRef_t = typename Parent::template ClusterRef<Level>;
+    template <size_t Order>
+    using ClusterRef_t = typename Parent::template ClusterRef<Order>;
 
     //! Default constructor
     NeighbourhoodManagerChain() = default;
@@ -247,13 +247,13 @@ namespace rascal {
      * conditions, the get_neighbour_position should return a different
      * position, if it is a ghost atom.
      */
-    template<size_t Level, size_t Depth>
-    inline Vector_ref get_neighbour_position(const ClusterRefBase<Level, Depth>
+    template<size_t Order, size_t Depth>
+    inline Vector_ref get_neighbour_position(const ClusterRefBase<Order, Depth>
                                              & cluster) {
-      static_assert(Level > 1,
-                    "Only possible for Level > 1.");
-      static_assert(Level <= traits::MaxLevel,
-                    "this implementation should only work up to MaxLevel.");
+      static_assert(Order > 1,
+                    "Only possible for Order > 1.");
+      static_assert(Order <= traits::MaxOrder,
+                    "this implementation should only work up to MaxOrder.");
       return this->get_position(cluster.back());
     }
 
@@ -269,11 +269,11 @@ namespace rascal {
     }
 
     //! returns the number of neighbours of a given i atom
-    template<size_t Level, size_t Depth>
-    inline size_t get_cluster_size(const ClusterRefBase<Level, Depth>
+    template<size_t Order, size_t Depth>
+    inline size_t get_cluster_size(const ClusterRefBase<Order, Depth>
                                    & cluster) const {
       // TODO: Check for <= or < ?!
-      static_assert(Level <= traits::MaxLevel,
+      static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs.");
       return this->numneigh[cluster.back()];
     }
@@ -284,11 +284,11 @@ namespace rascal {
     }
 
     //! return the index-th neighbour of cluster
-    template<size_t Level, size_t Depth>
-    inline int get_cluster_neighbour(const ClusterRefBase<Level, Depth>
+    template<size_t Order, size_t Depth>
+    inline int get_cluster_neighbour(const ClusterRefBase<Order, Depth>
                                      & cluster,
                                      size_t index) const {
-      static_assert(Level <= traits::MaxLevel,
+      static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs.");
       auto && i_atom_id{cluster.back()};
       auto && off{this->offsets[i_atom_id]};
@@ -305,8 +305,8 @@ namespace rascal {
      * Return the linear index of cluster (i.e., the count at which
      * this cluster appears in an iteration
      */
-    template<size_t Level>
-    inline size_t get_offset_impl(const std::array<size_t, Level>
+    template<size_t Order>
+    inline size_t get_offset_impl(const std::array<size_t, Order>
                                   & counters) const;
 
     //! Function for returning the number of atoms, pairs, tuples, etc.
@@ -423,11 +423,11 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   // used for buildup
-  template<size_t Level>
+  template<size_t Order>
   inline size_t NeighbourhoodManagerChain::
-  get_offset_impl(const std::array<size_t, Level> & counters) const {
+  get_offset_impl(const std::array<size_t, Order> & counters) const {
     // TODO: Check this static_assert for validity
-    // static_assert (Level == 1, "this manager can only give the offset "
+    // static_assert (Order == 1, "this manager can only give the offset "
     //                "(= starting index) for a pair iterator, given the i atom "
     //                "of the pair");
     return this->offsets[counters.front()];

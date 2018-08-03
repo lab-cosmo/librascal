@@ -122,8 +122,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   /**
    * Helper function to get the number of <code>clusters</code> (atoms, pairs,
-   * triplets, quadruplets) with a specific <code>Level</code>. The
-   * <code>MaxLevel</code> depends on your implementation or
+   * triplets, quadruplets) with a specific <code>Order</code>. The
+   * <code>MaxOrder</code> depends on your implementation or
    * processing. Increasing the level is done with an adaptor.
    */
   size_t NeighbourhoodManagerChain::get_nb_clusters(size_t cluster_size) const {
@@ -137,7 +137,7 @@ namespace rascal {
     }
     default:
       throw std::runtime_error("Can only handle atoms and pairs,"
-                               " use adaptor to increase MaxLevel.");
+                               " use adaptor to increase MaxOrder.");
       break;
     }
   }

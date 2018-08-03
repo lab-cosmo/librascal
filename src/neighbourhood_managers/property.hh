@@ -172,7 +172,7 @@ namespace rascal {
 
 
   template <class NeighbourhoodManager, typename T,
-            size_t Level,
+            size_t Order,
             size_t NbRow = 1, size_t NbCol = 1>
   class Property
   {
@@ -213,7 +213,7 @@ namespace rascal {
 
     //! Adjust size of values (only increases, never frees)
     void resize() {
-      this->values.resize(this->manager.nb_clusters(Level) * NbComp);
+      this->values.resize(this->manager.nb_clusters(Order) * NbComp);
     }
 
     /**
@@ -260,9 +260,9 @@ namespace rascal {
      * Not sure about the actual implementation of this one.
      */
     template<size_t CallerDepth>
-    reference operator[](const ClusterRefBase<Level, CallerDepth> & id) {
+    reference operator[](const ClusterRefBase<Order, CallerDepth> & id) {
       constexpr auto ActiveDepth{
-        compute_cluster_depth<Level>(typename traits::DepthByDimension{})};
+        compute_cluster_depth<Order>(typename traits::DepthByDimension{})};
       static_assert(CallerDepth >= ActiveDepth,
                     "You are trying to access a property that "
                     "does not exist at this low a level in the "

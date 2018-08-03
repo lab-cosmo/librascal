@@ -53,11 +53,11 @@ namespace rascal {
     constexpr static bool HasDirectionVectors{
       ManagerImplementation::traits::HasDirectionVectors};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
-    constexpr static size_t MaxLevel{ManagerImplementation::traits::MaxLevel};
+    constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
     // TODO: Future optimisation: do not increase depth for atoms
     // (they are all kept anyways, so no duplication necessary).
     using DepthByDimension = typename
-      DepthIncreaser<MaxLevel,
+      DepthIncreaser<MaxOrder,
                      typename
                      ManagerImplementation::traits::DepthByDimension>::type;
   };
@@ -82,12 +82,12 @@ namespace rascal {
       NeighbourhoodManagerBase<AdaptorStrict<ManagerImplementation>>;
     using traits = NeighbourhoodManager_traits<AdaptorStrict>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
-    template <size_t Level>
+    template <size_t Order>
     using ClusterRef_t =
-      typename ManagerImplementation::template ClusterRef<Level>;
+      typename ManagerImplementation::template ClusterRef<Order>;
     using PairRef_t = ClusterRef_t<2>;
 
-    static_assert(traits::MaxLevel > 1,
+    static_assert(traits::MaxOrder > 1,
                   "ManagerImlementation needs to handle pairs");
 
     //! Default constructor
@@ -126,14 +126,14 @@ namespace rascal {
     inline double get_cutoff() const {return this->cut_off;}
 
     //! returns the distance between atoms in a given pair
-    template <size_t Level, size_t Depth>
-    inline const double & get_distance(const ClusterRefBase<Level, Depth> &
+    template <size_t Order, size_t Depth>
+    inline const double & get_distance(const ClusterRefBase<Order, Depth> &
                                        pair) const {
       return this->distance[pair];
     }
 
-    template <size_t Level, size_t Depth>
-    inline double & get_distance(const ClusterRefBase<Level, Depth>& pair) {
+    template <size_t Order, size_t Depth>
+    inline double & get_distance(const ClusterRefBase<Order, Depth>& pair) {
       return this->distance[pair];
     }
 
@@ -149,26 +149,26 @@ namespace rascal {
       return this->manager.get_position(index);
     }
 
-    // template<size_t Level, size_t Depth>
-    // inline Vector_ref get_neighbour_position(const ClusterRefBase<Level, Depth>
+    // template<size_t Order, size_t Depth>
+    // inline Vector_ref get_neighbour_position(const ClusterRefBase<Order, Depth>
     // 					     & cluster) {
-    //   static_assert(Level > 1,
-    //                 "Only possible for Level > 1.");
-    //   static_assert(Level <= traits::MaxLevel,
-    //                 "this implementation should only work up to MaxLevel.");
+    //   static_assert(Order > 1,
+    //                 "Only possible for Order > 1.");
+    //   static_assert(Order <= traits::MaxOrder,
+    //                 "this implementation should only work up to MaxOrder.");
     //   // Argument is now the same, but implementation
     //   return this->manager.get_neighbour_position(cluster);
     // }
 
     //! get atom_index of index-th neighbour of this cluster
-    template<size_t Level, size_t Depth>
-    inline int get_cluster_neighbour(const ClusterRefBase<Level, Depth>
+    template<size_t Order, size_t Depth>
+    inline int get_cluster_neighbour(const ClusterRefBase<Order, Depth>
 				     & cluster,
 				     int index) const {
-      static_assert(Level <= traits::MaxLevel-1,
-                    "this implementation only handles upto traits::MaxLevel");
-      auto && offset = this->offsets[Level][cluster.get_cluster_index(Depth)];
-      return this->atom_indices[Level][offset + index];
+      static_assert(Order <= traits::MaxOrder-1,
+                    "this implementation only handles upto traits::MaxOrder");
+      auto && offset = this->offsets[Order][cluster.get_cluster_index(Depth)];
+      return this->atom_indices[Order][offset + index];
     }
 
     //! get atom_index of the index-th atom in manager
@@ -199,19 +199,19 @@ namespace rascal {
      * return the linear index of cluster (i.e., the count at which
      * this cluster appears in an iteration
      */
-    template<size_t Level>
-    inline size_t get_offset_impl(const std::array<size_t, Level>
+    template<size_t Order>
+    inline size_t get_offset_impl(const std::array<size_t, Order>
 				  & counters) const {
-      return this->offsets[Level][counters.back()];
+      return this->offsets[Order][counters.back()];
     }
 
     //! return the number of neighbours of a given atom
-    template<size_t Level, size_t Depth>
-    inline size_t get_cluster_size(const ClusterRefBase<Level, Depth>
+    template<size_t Order, size_t Depth>
+    inline size_t get_cluster_size(const ClusterRefBase<Order, Depth>
 				   & cluster) const {
-      static_assert(Level <= traits::MaxLevel-1,
+      static_assert(Order <= traits::MaxOrder-1,
                     "this implementation only handles atoms and pairs");
-      return this->nb_neigh[Level][cluster.back()];
+      return this->nb_neigh[Order][cluster.back()];
     }
 
   protected:
@@ -221,20 +221,20 @@ namespace rascal {
      * @param level select whether it is an i-atom (level=0), j-atom (level=1),
      * or ...
      */
-    template <size_t Level>
+    template <size_t Order>
     inline void add_atom(int atom_index) {
-      static_assert(Level <= traits::MaxLevel,
+      static_assert(Order <= traits::MaxOrder,
                     "you can only add neighbours to the n-th degree defined by "
-                    "MaxLevel of the underlying manager");
+                    "MaxOrder of the underlying manager");
 
-      // add new atom at this Level
-      this->atom_indices[Level].push_back(atom_index);
+      // add new atom at this Order
+      this->atom_indices[Order].push_back(atom_index);
       // count that this atom is a new neighbour
-      this->nb_neigh[Level].back()++;
-      this->offsets[Level].back()++;
+      this->nb_neigh[Order].back()++;
+      this->offsets[Order].back()++;
 
-      for (auto i{Level+1}; i < traits::MaxLevel; ++i) {
-        // make sure that this atom starts with zero lower-Level neighbours
+      for (auto i{Order+1}; i < traits::MaxOrder; ++i) {
+        // make sure that this atom starts with zero lower-Order neighbours
         this->nb_neigh[i].push_back(0);
         // update the offsets
         this->offsets[i].push_back(this->offsets[i].back() +
@@ -242,13 +242,13 @@ namespace rascal {
       }
     }
 
-    template <size_t Level>
+    template <size_t Order>
     inline void add_atom(const typename ManagerImplementation::template
-                         ClusterRef<Level> & cluster) {
-      return this->template add_atom <Level-1>(cluster.back());
+                         ClusterRef<Order> & cluster) {
+      return this->template add_atom <Order-1>(cluster.back());
     }
 
-    template <size_t Level, bool IsDummy>
+    template <size_t Order, bool IsDummy>
     struct HelperLoop;
 
     ManagerImplementation & manager;
@@ -262,16 +262,16 @@ namespace rascal {
      *   - atom_indices[2] lists all k-atoms
      *   - etc
      */
-    std::array<std::vector<int>, traits::MaxLevel> atom_indices;
+    std::array<std::vector<int>, traits::MaxOrder> atom_indices;
     /**
      * store the number of j-atoms for every i-atom (nb_neigh[1]), the number of
      * k-atoms for every j-atom (nb_neigh[2]), etc
      */
-    std::array<std::vector<size_t>, traits::MaxLevel> nb_neigh;
+    std::array<std::vector<size_t>, traits::MaxOrder> nb_neigh;
     /**
      * store the offsets from where the nb_neigh can be counted
      */
-    std::array<std::vector<size_t>, traits::MaxLevel>  offsets;
+    std::array<std::vector<size_t>, traits::MaxOrder>  offsets;
   private:
   };
 
@@ -334,18 +334,18 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
-  template <size_t Level, bool IsDummy>
+  template <size_t Order, bool IsDummy>
   struct AdaptorStrict<ManagerImplementation>::HelperLoop {
-    static constexpr size_t MaxLevel{ManagerImplementation::traits::MaxLevel};
+    static constexpr size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
     using ClusterRef_t = typename ManagerImplementation::template
-      ClusterRef<Level>;
+      ClusterRef<Order>;
     using traits = typename AdaptorStrict<ManagerImplementation>::traits;
 
-    using NextLevelLoop = HelperLoop<Level+1,
-                                     (Level+1 == MaxLevel)>;
+    using NextOrderLoop = HelperLoop<Order+1,
+                                     (Order+1 == MaxOrder)>;
 
     static void loop(ClusterRef_t & cluster, AdaptorStrict& manager) {
-      auto & next_cluster_indices{std::get<Level>(manager.cluster_indices)};
+      auto & next_cluster_indices{std::get<Order>(manager.cluster_indices)};
       size_t cluster_counter{0};
 
       for (auto next_cluster: cluster) {
@@ -369,7 +369,7 @@ namespace rascal {
         next_cluster_indices.push_back(indices_cluster);
         cluster_counter++;
 
-        NextLevelLoop::loop(next_cluster, manager);
+        NextOrderLoop::loop(next_cluster, manager);
       }
     }
   };
@@ -379,11 +379,11 @@ namespace rascal {
    * End of recursion for making a strict neighbourlist
    */
   template <class ManagerImplementation>
-  template <size_t Level>
-  struct AdaptorStrict<ManagerImplementation>::HelperLoop<Level, true> {
-    static constexpr size_t MaxLevel{ManagerImplementation::traits::MaxLevel};
+  template <size_t Order>
+  struct AdaptorStrict<ManagerImplementation>::HelperLoop<Order, true> {
+    static constexpr size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
     using ClusterRef_t = typename ManagerImplementation::template
-      ClusterRef<Level>;
+      ClusterRef<Order>;
     static void loop(ClusterRef_t & /*cluster*/,
                      AdaptorStrict<ManagerImplementation>& /*manager*/) {
       // do nothing
@@ -399,7 +399,7 @@ namespace rascal {
                        internal::ResizePropertyToZero());
 
     //! initialise the neighbourlist
-    for (size_t i{0}; i < traits::MaxLevel; ++i) {
+    for (size_t i{0}; i < traits::MaxOrder; ++i) {
       this->atom_indices[i].clear();
       this->nb_neigh[i].resize(0);
       this->offsets[i].resize(0);
@@ -454,7 +454,7 @@ namespace rascal {
           pair_counter++;
         }
         using HelperLoop = HelperLoop<pair.level(),
-                                      pair.level() >= traits::MaxLevel>;
+                                      pair.level() >= traits::MaxOrder>;
         HelperLoop::loop(pair, *this);
       }
     }

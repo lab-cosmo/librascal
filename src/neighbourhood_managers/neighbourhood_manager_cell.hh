@@ -52,7 +52,7 @@ namespace rascal {
   template <>
   struct NeighbourhoodManager_traits<NeighbourhoodManagerCell> {
     constexpr static int Dim{3};
-    constexpr static size_t MaxLevel{2};
+    constexpr static size_t MaxOrder{2};
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDirectionVectors{false};
     constexpr static bool HasDistances{false};
@@ -67,8 +67,8 @@ namespace rascal {
     using Vector_ref = typename Parent::Vector_ref;
     using Vector_t = typename Parent::Vector_t;
     using AtomRef_t = typename Parent::AtomRef;
-    template <size_t Level>
-    using ClusterRef_t = typename Parent::template ClusterRef<Level>;
+    template <size_t Order>
+    using ClusterRef_t = typename Parent::template ClusterRef<Order>;
     using AtomVectorField_t = Property<NeighbourhoodManagerCell, double, 1, 3>;
 
     //! Default constructor
@@ -115,13 +115,13 @@ namespace rascal {
     // return position vector atom is the neighbour atom. center_atom
     // is the current center. j_linear_id is the index of the current
     // neighbour iterator.
-    template<size_t Level, size_t Depth>
-    inline Vector_t get_neighbour_position(const ClusterRefBase<Level, Depth> &
+    template<size_t Order, size_t Depth>
+    inline Vector_t get_neighbour_position(const ClusterRefBase<Order, Depth> &
                                              cluster) {
-      static_assert(Level > 1,
-                    "Only possible for Level > 1.");
-      static_assert(Level <= traits::MaxLevel,
-                    "this implementation should only work up to MaxLevel.");
+      static_assert(Order > 1,
+                    "Only possible for Order > 1.");
+      static_assert(Order <= traits::MaxOrder,
+                    "this implementation should only work up to MaxOrder.");
 
 
       // TODO: why is there a j_linear_id and a j_atom_id, which is the same?
@@ -145,11 +145,11 @@ namespace rascal {
     }
 
     // return the index-th neighbour of cluster
-    template<size_t Level, size_t Depth>
-    inline int get_cluster_neighbour(const ClusterRefBase<Level, Depth>
+    template<size_t Order, size_t Depth>
+    inline int get_cluster_neighbour(const ClusterRefBase<Order, Depth>
                                      & cluster,
                                      size_t index) const {
-      static_assert(Level <= traits::MaxLevel,
+      static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
       auto && i_atom_id{cluster.back()};
       auto && i_bin_id{this->part2bin[i_atom_id]};
@@ -176,10 +176,10 @@ namespace rascal {
     }
 
     // return the number of neighbours of a given atom
-    template<size_t Level, size_t Depth>
-    inline size_t get_cluster_size(const ClusterRefBase<Level, Depth>
+    template<size_t Order, size_t Depth>
+    inline size_t get_cluster_size(const ClusterRefBase<Order, Depth>
                                    & cluster) const {
-      static_assert(Level <= traits::MaxLevel,
+      static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
       auto && i_atom_id{cluster.back()};
       auto && box_id{this->part2bin[i_atom_id]};
@@ -187,8 +187,8 @@ namespace rascal {
       return size;
     }
 
-    template<size_t Level>
-    inline size_t get_offset_impl(const std::array<size_t, Level>
+    template<size_t Order>
+    inline size_t get_offset_impl(const std::array<size_t, Order>
                                   & counters) const;
 
     size_t get_nb_clusters(size_t cluster_size) const;
@@ -291,10 +291,10 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   // buildup
-  template<size_t Level>
+  template<size_t Order>
   inline size_t NeighbourhoodManagerCell::
-  get_offset_impl(const std::array<size_t, Level> & counters) const {
-    static_assert (Level == 1, "this manager can only give the offset "
+  get_offset_impl(const std::array<size_t, Order> & counters) const {
+    static_assert (Order == 1, "this manager can only give the offset "
                    "(= starting index) for a pair iterator, given the i atom "
                    "of the pair");
     return this->number_of_neighbours_stride[counters.front()];

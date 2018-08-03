@@ -42,85 +42,85 @@ namespace rascal {
    * Forward declaration for traits
    */
   template <class ManagerImplementation>
-  class AdaptorMaxLevel;
+  class AdaptorMaxOrder;
 
   /**
-   * Specialisation of traits for increase <code>MaxLevel</code> adaptor
+   * Specialisation of traits for increase <code>MaxOrder</code> adaptor
    */
   template <class ManagerImplementation>
-  struct NeighbourhoodManager_traits<AdaptorMaxLevel<ManagerImplementation>> {
+  struct NeighbourhoodManager_traits<AdaptorMaxOrder<ManagerImplementation>> {
 
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDistances{false};
     constexpr static bool HasDirectionVectors{
       ManagerImplementation::traits::HasDirectionVectors};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
-    //! New MaxLevel upon construction!
-    constexpr static size_t MaxLevel{ManagerImplementation::traits::MaxLevel+1};
+    //! New MaxOrder upon construction!
+    constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder+1};
     //! New Depth
     //! TODO: Is this the correct way to initialize the increased depth?
     using DepthByDimension = typename
-      DepthExtender<MaxLevel,
+      DepthExtender<MaxOrder,
                     typename
                     ManagerImplementation::traits::DepthByDimension>::type;
   };
 
   /**
-   * Adaptor that increases the MaxLevel of an existing
+   * Adaptor that increases the MaxOrder of an existing
    * NeighbourhoodManager. This means, if the manager does not have a
    * neighbourlist, it is created, if it exists, triplets, quadruplets,
    * etc. lists are created.
    */
   template <class ManagerImplementation>
-  class AdaptorMaxLevel: public
-  NeighbourhoodManagerBase<AdaptorMaxLevel<ManagerImplementation>>
+  class AdaptorMaxOrder: public
+  NeighbourhoodManagerBase<AdaptorMaxOrder<ManagerImplementation>>
   {
   public:
-    using Base = NeighbourhoodManagerBase<AdaptorMaxLevel<ManagerImplementation>>;
+    using Base = NeighbourhoodManagerBase<AdaptorMaxOrder<ManagerImplementation>>;
 
     using Parent =
-      NeighbourhoodManagerBase<AdaptorMaxLevel<ManagerImplementation>>;
-    using traits = NeighbourhoodManager_traits<AdaptorMaxLevel>;
+      NeighbourhoodManagerBase<AdaptorMaxOrder<ManagerImplementation>>;
+    using traits = NeighbourhoodManager_traits<AdaptorMaxOrder>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
-    template<size_t Level>
+    template<size_t Order>
     using ClusterRef_t =
-      typename ManagerImplementation::template ClusterRef<Level>;
-    //! template<size_t Level, size_t Depth>
+      typename ManagerImplementation::template ClusterRef<Order>;
+    //! template<size_t Order, size_t Depth>
     //! using ClusterRefBase_t =
-    //!   typename ManagerImplementation::template ClusterRefBase<Level, Depth>;
-    //using PairRef_t = ClusterRef_t<2, traits::MaxLevel>;
+    //!   typename ManagerImplementation::template ClusterRefBase<Order, Depth>;
+    //using PairRef_t = ClusterRef_t<2, traits::MaxOrder>;
 
-    // TODO if MaxLevel can be == 1 -> neighbourlist need to be built.
-    static_assert(traits::MaxLevel > 1,
+    // TODO if MaxOrder can be == 1 -> neighbourlist need to be built.
+    static_assert(traits::MaxOrder > 1,
                   "ManagerImplementation needs to have an atom list.");
 
     //! Default constructor
-    AdaptorMaxLevel() = delete;
+    AdaptorMaxOrder() = delete;
 
     /**
      * Construct a strict neighbourhood list from a given manager and cut-off
      * radius
      */
-    AdaptorMaxLevel(ManagerImplementation& manager, double cutoff);
+    AdaptorMaxOrder(ManagerImplementation& manager, double cutoff);
 
     //! Copy constructor
-    AdaptorMaxLevel(const AdaptorMaxLevel &other) = delete;
+    AdaptorMaxOrder(const AdaptorMaxOrder &other) = delete;
 
     //! Move constructor
-    AdaptorMaxLevel(AdaptorMaxLevel &&other) = default;
+    AdaptorMaxOrder(AdaptorMaxOrder &&other) = default;
 
     //! Destructor
-    virtual ~AdaptorMaxLevel() = default;
+    virtual ~AdaptorMaxOrder() = default;
 
     //! Copy assignment operator
-    AdaptorMaxLevel& operator=(const AdaptorMaxLevel &other) = delete;
+    AdaptorMaxOrder& operator=(const AdaptorMaxOrder &other) = delete;
 
     //! Move assignment operator
-    AdaptorMaxLevel& operator=(AdaptorMaxLevel &&other) = default;
+    AdaptorMaxOrder& operator=(AdaptorMaxOrder &&other) = default;
 
     //! Update just the adaptor assuming the underlying manager was
     //! updated. this function invokes building either the neighbour list or to
-    //! make triplets, quadruplets, etc. depending on the MaxLevel
+    //! make triplets, quadruplets, etc. depending on the MaxOrder
     void update();
 
     //! Update the underlying manager as well as the adaptor
@@ -130,14 +130,14 @@ namespace rascal {
     //! Return cutoff radius of the neighbourhood manager
     inline double get_cutoff() const {return this->cutoff;}
 
-    template<size_t Level>
-    inline size_t get_offset_impl(const std::array<size_t, Level>
+    template<size_t Order>
+    inline size_t get_offset_impl(const std::array<size_t, Order>
 				  & counters) const;
 
-    //! Get number of MaxLevel+1 tuplets
+    //! Get number of MaxOrder+1 tuplets
     inline size_t get_nb_clusters(size_t cluster_size) const {
       switch (cluster_size) {
-      case traits::MaxLevel: {
+      case traits::MaxOrder: {
         return this->neighbours.size();
         break;
       }
@@ -166,13 +166,13 @@ namespace rascal {
       return this->manager.get_position(atom.get_index());
     }
 
-    template<size_t Level, size_t Depth>
-    inline Vector_ref get_neighbour_position(const ClusterRefBase<Level, Depth>&
+    template<size_t Order, size_t Depth>
+    inline Vector_ref get_neighbour_position(const ClusterRefBase<Order, Depth>&
                                              /*cluster*/) {
-      static_assert(Level > 1,
-                    "Only possible for Level > 1.");
-      static_assert(Level <= traits::MaxLevel,
-                    "this implementation should only work up to MaxLevel.");
+      static_assert(Order > 1,
+                    "Only possible for Order > 1.");
+      static_assert(Order <= traits::MaxOrder,
+                    "this implementation should only work up to MaxOrder.");
       //! Argument is now the same, but implementation
       throw std::runtime_error("should be adapted to Félix's "
                                "new interface using the ClusterRef");
@@ -185,13 +185,13 @@ namespace rascal {
       return this->manager.get_cluster_neighbour(this->manager, index);
     }
 
-    template<size_t Level, size_t Depth>
-    inline int get_cluster_neighbour(const ClusterRefBase<Level, Depth>
+    template<size_t Order, size_t Depth>
+    inline int get_cluster_neighbour(const ClusterRefBase<Order, Depth>
 				     & cluster,
 				     size_t index) const {
-      static_assert(Level < traits::MaxLevel,
-                    "this implementation only handles upto traits::MaxLevel");
-      if (Level < traits::MaxLevel-1) {
+      static_assert(Order < traits::MaxOrder,
+                    "this implementation only handles upto traits::MaxOrder");
+      if (Order < traits::MaxOrder-1) {
 	return this->manager.get_cluster_neighbour(cluster, index);
       } else {
 	auto && offset = this->offsets[cluster.get_cluster_index(Depth)];
@@ -210,12 +210,12 @@ namespace rascal {
       return this->manager.get_atom_type(atom.get_index());
     }
 
-    template<size_t Level, size_t Depth>
-    inline size_t get_cluster_size(const ClusterRefBase<Level, Depth>
+    template<size_t Order, size_t Depth>
+    inline size_t get_cluster_size(const ClusterRefBase<Order, Depth>
                                    & cluster) const {
-      static_assert(Level < traits::MaxLevel,
-                    "this implementation handles only the respective MaxLevel");
-      if (Level < traits::MaxLevel-1) {
+      static_assert(Order < traits::MaxOrder,
+                    "this implementation handles only the respective MaxOrder");
+      if (Order < traits::MaxOrder-1) {
 	return this->manager.get_cluster_size(cluster);
       } else {
         auto access_index = cluster.get_cluster_index(Depth);
@@ -232,17 +232,17 @@ namespace rascal {
     /**
      * Main function during construction of a neighbourlist.
      *
-     * @param atom The atom to add to the list. Because the MaxLevel is
-     * increased by one in this adaptor, the Level=MaxLevel
+     * @param atom The atom to add to the list. Because the MaxOrder is
+     * increased by one in this adaptor, the Order=MaxOrder
      */
     inline void add_atom(const int atom_index) {
-      //! add new atom at this Level
+      //! add new atom at this Order
       this->atom_indices.push_back(atom_index);
       //! count that this atom is a new neighbour
       this->nb_neigh.back()++;
       this->offsets.back()++;
 
-      //! make sure that this atom starts with zero lower-Level neighbours
+      //! make sure that this atom starts with zero lower-Order neighbours
       this->nb_neigh.push_back(0);
       //! update the offsets
       this->offsets.push_back(this->offsets.back() +
@@ -272,15 +272,15 @@ namespace rascal {
       }
     }
 
-    template <size_t Level>
+    template <size_t Order>
     inline void add_atom(const typename ManagerImplementation::template
-                         ClusterRef<Level> & cluster) {
-      static_assert(Level <= traits::MaxLevel,
-                   "Level too high, not possible to add atom");
+                         ClusterRef<Order> & cluster) {
+      static_assert(Order <= traits::MaxOrder,
+                   "Order too high, not possible to add atom");
       return this->add_atom(cluster.back());
     }
 
-    //! Make a half neighbour list, by construction only Level=1 is supplied.
+    //! Make a half neighbour list, by construction only Order=1 is supplied.
     void make_half_neighbour_list();
 
     //! Make a full neighbour list
@@ -294,22 +294,22 @@ namespace rascal {
     //! Cutoff radius of manager
     const double cutoff;
 
-    template<size_t Level, bool IsDummy> struct AddLevelLoop;
+    template<size_t Order, bool IsDummy> struct AddOrderLoop;
 
     //! not necessary any more
-    //! // stores AtomRefs to of neighbours for traits::MaxLevel-1-*plets
+    //! // stores AtomRefs to of neighbours for traits::MaxOrder-1-*plets
     // std::vector<AtomRef_t> atom_refs{};
 
-    //! Stores atom indices of current Level
+    //! Stores atom indices of current Order
     std::vector<size_t> atom_indices{}; //akin to ilist[]
 
-    //! Stores the number of neighbours for every traits::MaxLevel-1-*plets
+    //! Stores the number of neighbours for every traits::MaxOrder-1-*plets
     std::vector<size_t> nb_neigh{};
 
-    //! Stores all neighbours of traits::MaxLevel-1-*plets
+    //! Stores all neighbours of traits::MaxOrder-1-*plets
     std::vector<size_t> neighbours{};
 
-    //! Stores the offsets of traits::MaxLevel-1-*plets for accessing
+    //! Stores the offsets of traits::MaxOrder-1-*plets for accessing
     //! `neighbours`, from where nb_neigh can be counted
     std::vector<size_t> offsets{};
 
@@ -332,10 +332,10 @@ namespace rascal {
   //----------------------------------------------------------------------------//
   // TODO include a distinction for the cutoff: with respect to the
   // i-atom only or with respect to the j,k,l etc. atom. I.e. the
-  // cutoff goes with the Level.
+  // cutoff goes with the Order.
   template <class ManagerImplementation>
-  AdaptorMaxLevel<ManagerImplementation>::
-  AdaptorMaxLevel(ManagerImplementation & manager, double cutoff):
+  AdaptorMaxOrder<ManagerImplementation>::
+  AdaptorMaxOrder(ManagerImplementation & manager, double cutoff):
     manager{manager},
     cutoff{cutoff},
     atom_indices{},
@@ -343,7 +343,7 @@ namespace rascal {
     offsets{}
 
   {
-    if (traits::MaxLevel < 1) {
+    if (traits::MaxOrder < 1) {
       throw std::runtime_error("No atoms in manager.");
     }
   }
@@ -351,56 +351,56 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
   template <class ... Args>
-  void AdaptorMaxLevel<ManagerImplementation>::update(Args&&... arguments) {
+  void AdaptorMaxOrder<ManagerImplementation>::update(Args&&... arguments) {
     this->manager.update(std::forward<Args>(arguments)...);
     this->update();
   }
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
-  template <size_t Level, bool IsDummy>
-  struct AdaptorMaxLevel<ManagerImplementation>::AddLevelLoop {
-    static constexpr int OldMaxLevel{ManagerImplementation::traits::MaxLevel};
+  template <size_t Order, bool IsDummy>
+  struct AdaptorMaxOrder<ManagerImplementation>::AddOrderLoop {
+    static constexpr int OldMaxOrder{ManagerImplementation::traits::MaxOrder};
     using ClusterRef_t = typename ManagerImplementation::template
-      ClusterRef<Level>;
+      ClusterRef<Order>;
 
-    using NextLevelLoop = AddLevelLoop<Level+1,
-				       (Level+1 == OldMaxLevel)>;
+    using NextOrderLoop = AddOrderLoop<Order+1,
+				       (Order+1 == OldMaxOrder)>;
 
     static void loop(ClusterRef_t & cluster,
-                     AdaptorMaxLevel<ManagerImplementation> & manager) {
+                     AdaptorMaxOrder<ManagerImplementation> & manager) {
 
-      //! do nothing, if MaxLevel is not reached, except call the next level
+      //! do nothing, if MaxOrder is not reached, except call the next level
       for (auto next_cluster : cluster) {
 
         auto & next_cluster_indices
-        {std::get<Level>(manager.cluster_indices_container)};
+        {std::get<Order>(manager.cluster_indices_container)};
         next_cluster_indices.push_back(next_cluster.get_cluster_indices());
 
-	NextLevelLoop::loop(next_cluster, manager);
+	NextOrderLoop::loop(next_cluster, manager);
       }
     }
   };
 
   /* ---------------------------------------------------------------------- */
-  //! At desired MaxLevel (plus one), here is where the magic happens and the
-  //! neighbours of the same level are added as the Level+1.  add check for non
+  //! At desired MaxOrder (plus one), here is where the magic happens and the
+  //! neighbours of the same level are added as the Order+1.  add check for non
   //! half neighbour list
   template <class ManagerImplementation>
-  template <size_t Level>
-  struct AdaptorMaxLevel<ManagerImplementation>::AddLevelLoop<Level, true> {
-    static constexpr int OldMaxLevel{ManagerImplementation::traits::MaxLevel};
+  template <size_t Order>
+  struct AdaptorMaxOrder<ManagerImplementation>::AddOrderLoop<Order, true> {
+    static constexpr int OldMaxOrder{ManagerImplementation::traits::MaxOrder};
 
     using ClusterRef_t =
-      typename ManagerImplementation::template ClusterRef<Level>;
+      typename ManagerImplementation::template ClusterRef<Order>;
 
     // using Manager_t = NeighbourhoodManagerBase<ManagerImplementation>;
     // using IteratorOne_t = typename Manager_t::template iterator<1>;
 
-    using traits = typename AdaptorMaxLevel<ManagerImplementation>::traits;
+    using traits = typename AdaptorMaxOrder<ManagerImplementation>::traits;
 
     static void loop(ClusterRef_t & cluster,
-                     AdaptorMaxLevel<ManagerImplementation> & manager) {
+                     AdaptorMaxOrder<ManagerImplementation> & manager) {
 
       //! get all i_atoms to find neighbours to extend the cluster to the next
       //! level
@@ -463,7 +463,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
-  void AdaptorMaxLevel<ManagerImplementation>::make_half_neighbour_list() {
+  void AdaptorMaxOrder<ManagerImplementation>::make_half_neighbour_list() {
     //! Make a half neighbour list (not quite Verlet, because of the missing
     //! skin) according to Tadmor and Miller 'Modeling Materials', algorithm 6.7,
     //! p 323, (needs modification for periodicity).
@@ -504,7 +504,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
-  void AdaptorMaxLevel<ManagerImplementation>::make_full_neighbour_list() {
+  void AdaptorMaxOrder<ManagerImplementation>::make_full_neighbour_list() {
     //! Make a full neighbourlist, whithout fancy linked list or cell. Also
     //! missing are periodic boundary conditions.
 
@@ -536,47 +536,47 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
-  void AdaptorMaxLevel<ManagerImplementation>::increase_maxlevel() {
-    //! Depending on the existing Level, this function increases the
-    //! MaxLevel by one by adding all neighbours of the last atom at
+  void AdaptorMaxOrder<ManagerImplementation>::increase_maxlevel() {
+    //! Depending on the existing Order, this function increases the
+    //! MaxOrder by one by adding all neighbours of the last atom at
     //! the end of the chain as new end of a tuple.
     //! This results in each triplet is only existing once.
 
-    //! Attention, <code>traits::MaxLevel</code> is already increased
-    //! in the traits upon construction, therefore the MaxLevel needs
+    //! Attention, <code>traits::MaxOrder</code> is already increased
+    //! in the traits upon construction, therefore the MaxOrder needs
     //! to be larger than 2 (i.e. a NeighbourhoodManager with a
     //! pairlist is present to call this function here.)
-    static_assert(traits::MaxLevel > 2, "No neighbourlist present.");
+    static_assert(traits::MaxOrder > 2, "No neighbourlist present.");
 
     for (auto atom : this->manager) {
-      //! Level 1, Level variable is at 0, atoms, index 0
-      using AddLevelLoop = AddLevelLoop<atom.level(),
-                                        atom.level() == traits::MaxLevel-1>;
+      //! Order 1, Order variable is at 0, atoms, index 0
+      using AddOrderLoop = AddOrderLoop<atom.level(),
+                                        atom.level() == traits::MaxOrder-1>;
       auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
       atom_cluster_indices.push_back(atom.get_cluster_indices());
-      AddLevelLoop::loop(atom, *this);
+      AddOrderLoop::loop(atom, *this);
     }
 
     //! correct the offsets for the new cluster level
     this->set_offsets();
     //! add correct cluster_indices for the highest level
     auto & max_cluster_indices
-    {std::get<traits::MaxLevel-1>(this->cluster_indices_container)};
+    {std::get<traits::MaxOrder-1>(this->cluster_indices_container)};
     max_cluster_indices.fill_sequence();
   }
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
-  void AdaptorMaxLevel<ManagerImplementation>::update() {
+  void AdaptorMaxOrder<ManagerImplementation>::update() {
     //! initialise the list if it does not exist
     // TODO
     // initialise the neighbourlist
 
-    //! -1 because the traits' MaxLevel is already increased
-    if (traits::MaxLevel-1 == 1) {
+    //! -1 because the traits' MaxOrder is already increased
+    if (traits::MaxOrder-1 == 1) {
       //! Make half neighbour list (strict?)
       //! initialise the neighbourlist
-      for (int i{0}; i < traits::MaxLevel; ++i) {
+      for (int i{0}; i < traits::MaxOrder; ++i) {
 	//! this->atom_refs.clear();
 	this->nb_neigh.resize(0);
 	this->offsets.resize(0);
@@ -593,35 +593,35 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template<class ManagerImplementation>
-  template<size_t Level>
-  inline size_t AdaptorMaxLevel<ManagerImplementation>::
-  get_offset_impl(const std::array<size_t, Level> & counters) const {
+  template<size_t Order>
+  inline size_t AdaptorMaxOrder<ManagerImplementation>::
+  get_offset_impl(const std::array<size_t, Order> & counters) const {
 
-    static_assert(Level < traits::MaxLevel,
-                  "this implementation handles only the respective MaxLevel");
+    static_assert(Order < traits::MaxOrder,
+                  "this implementation handles only the respective MaxOrder");
     /**
-     * Level accessor: 0 - atoms
+     * Order accessor: 0 - atoms
      *                 1 - pairs
      *                 2 - triplets
      *                 etc.
-     * Level is determined by the ClusterRef building iterator, not by the Level
+     * Order is determined by the ClusterRef building iterator, not by the Order
      * of the built iterator
      */
 
-    if (Level == traits::MaxLevel-1) {
+    if (Order == traits::MaxOrder-1) {
       /**
        * Counters as an array to call parent offset multiplet. This can then be
-       * used to access the actual offset for the next Level here.
+       * used to access the actual offset for the next Order here.
        */
 
       auto i{this->manager.get_offset_impl(counters)};
-      auto j{counters[Level-1]};
+      auto j{counters[Order-1]};
       auto tuple_index{i+j};
       auto main_offset{this->offsets[tuple_index]};
       return main_offset;
     } else {
       /**
-       * If not accessible at this level, call lower Level offsets from lower
+       * If not accessible at this level, call lower Order offsets from lower
        * level manager(s).
        */
       return this->manager.get_offset_impl(counters);
