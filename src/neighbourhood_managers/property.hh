@@ -207,7 +207,7 @@ namespace rascal {
      * Not sure about the actual implementation of this one.
      */
     template<size_t CallerDepth>
-    reference operator[](const ClusterRefBase<Level, CallerDepth> & id) {
+    reference operator[](const ClusterRefKey<Level, CallerDepth> & id) {
       constexpr auto ActiveDepth{
         compute_cluster_depth<Level>(typename traits::DepthByDimension{})};
       static_assert(CallerDepth >= ActiveDepth,

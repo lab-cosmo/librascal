@@ -1,11 +1,12 @@
 /**
- * file   cluster_ref_base.hh
+ * file   cluster_ref_key.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
  * @date   21 Jun 2018
  *
- * @brief  a base class for getting access to clusters
+ * @brief an accessor class for getting access to clusters along a stack of
+ *        neighbourhood/adaptors
  *
  * Copyright © 2018 Till Junge, Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -25,8 +26,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef CLUSTERREFBASE_H
-#define CLUSTERREFBASE_H
+#ifndef CLUSTERREFKEY_H
+#define CLUSTERREFKEY_H
 
 #include <tuple>
 #include <array>
@@ -162,23 +163,22 @@ namespace rascal {
   }  // internal
 
   /**
-   * Base class for a reference to a cluster, i.e. a tuple of atoms 
-   * (atoms, pairs, triples, ...). The reference does not store data
-   * about the actual tuple, just contains all the information needed 
-   * to locate the infor in the appropriate arrays that are stored in 
-   * a Manager class. 
+   * Accessor class for a reference to a cluster, i.e. a tuple of atoms (atoms,
+   * pairs, triples, ...). The reference does not store data about the actual
+   * tuple, just contains all the information needed to locate the infor in the
+   * appropriate arrays that are stored in a Manager class.
    * 
-   * Given that Manager classes can be 'stacked', e.g. using a strict
-   * cutoff on top of a loose neighbor list, the reference must know in
-   * which level of the hierarchy the data.   
+   * Given that Manager classes can be 'stacked', e.g. using a strict cutoff on
+   * top of a loose neighbor list, the reference must know in which level of the
+   * hierarchy the data.
    *  
-   * For these reasons ClusterRefBase is templated by two arguments: 
-   * Level that specifies the number of atoms in the cluster, and Depth
-   * that specifies how many layers of managers/adaptors are stacked
-   * at the point at which the cluster reference is introduced.
+   * For these reasons ClusterRefKey is templated by two arguments: Level that
+   * specifies the number of atoms in the cluster, and Depth that specifies how
+   * many layers of managers/adaptors are stacked at the point at which the
+   * cluster reference is introduced.
    */
   template<size_t Level, size_t Depth>
-  class ClusterRefBase
+  class ClusterRefKey
   {
   public:
     /**
@@ -190,30 +190,30 @@ namespace rascal {
     using IndexArray = Eigen::Map<Eigen::Matrix<size_t, Depth+1, 1>>;
 
     //! Default constructor
-    ClusterRefBase() = delete;
+    ClusterRefKey() = delete;
 
     /**
      * direct constructor. Initialized with an array of atoms indices,
      * and a cluster reference data
     */
-    ClusterRefBase(std::array<int, Level> atom_indices,
+    ClusterRefKey(std::array<int, Level> atom_indices,
                    IndexConstArray cluster_indices) :
       atom_indices{atom_indices}, cluster_indices(cluster_indices.data()) {}
 
     //! Copy constructor
-    ClusterRefBase(const ClusterRefBase & other) = default;
+    ClusterRefKey(const ClusterRefKey & other) = default;
 
     //! Move constructor
-    ClusterRefBase(ClusterRefBase && other) = default;
+    ClusterRefKey(ClusterRefKey && other) = default;
 
     //! Destructor
-    virtual ~ClusterRefBase() = default;
+    virtual ~ClusterRefKey() = default;
 
     //! Copy assignment operator
-    ClusterRefBase & operator=(const ClusterRefBase & other) = delete;
+    ClusterRefKey & operator=(const ClusterRefKey & other) = delete;
 
     //! Move assignment operator
-    ClusterRefBase & operator=(ClusterRefBase && other) = default;
+    ClusterRefKey & operator=(ClusterRefKey && other) = default;
 
     const inline std::array<int, Level> & get_atom_indices() const {
       return this->atom_indices;

@@ -126,7 +126,7 @@ namespace rascal {
 
     // return the index-th neighbour of cluster
     template<size_t Level, size_t Depth>
-    inline int get_cluster_neighbour(const ClusterRefBase<Level, Depth>
+    inline int get_cluster_neighbour(const ClusterRefKey<Level, Depth>
                                      & cluster,
                                      size_t index) const {
       static_assert(Level <= traits::MaxLevel,

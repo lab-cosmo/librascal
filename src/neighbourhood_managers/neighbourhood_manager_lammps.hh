@@ -129,7 +129,7 @@ namespace rascal {
 
     //! return position vector of the last atom in the cluster
     template<size_t Level, size_t Depth>
-    inline Vector_ref get_neighbour_position(const ClusterRefBase<Level,
+    inline Vector_ref get_neighbour_position(const ClusterRefKey<Level,
                                              Depth> & cluster) {
       static_assert(Level > 1,
                     "Only possible for Level > 1.");
@@ -146,7 +146,7 @@ namespace rascal {
 
     //! return the number of neighbours of a given atom
     template<size_t Level, size_t Depth>
-    inline size_t get_cluster_size(const ClusterRefBase<Level, Depth> & cluster)
+    inline size_t get_cluster_size(const ClusterRefKey<Level, Depth> & cluster)
       const {
       static_assert(Level < traits::MaxLevel,
                     "this implementation only handles atoms and pairs");
@@ -157,7 +157,7 @@ namespace rascal {
     //! in a cluster with cluster_size = 1 (atoms)
     //! which can be used to construct pairs
     template<size_t Level, size_t Depth>
-    inline int get_cluster_neighbour(const ClusterRefBase<Level, Depth>
+    inline int get_cluster_neighbour(const ClusterRefKey<Level, Depth>
                                      & cluster,
                                      size_t index) const {
       static_assert(Level == traits::MaxLevel-1,

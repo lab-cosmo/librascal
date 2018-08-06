@@ -179,7 +179,7 @@ namespace rascal {
     // is the current center. j_linear_id is the index of the current
     // neighbour iterator.
     template<size_t Level, size_t Depth>
-    inline Vector_t get_neighbour_position(const ClusterRefBase<Level, Depth> &
+    inline Vector_t get_neighbour_position(const ClusterRefKey<Level, Depth> &
                                              cluster) {
       static_assert(Level > 1,
                     "Only possible for Level > 1.");
@@ -209,7 +209,7 @@ namespace rascal {
 
     // return the index-th neighbour of cluster
     template<size_t Level, size_t Depth>
-    inline int get_cluster_neighbour(const ClusterRefBase<Level, Depth>
+    inline int get_cluster_neighbour(const ClusterRefKey<Level, Depth>
                                      & cluster,
                                      size_t index) const {
       static_assert(Level <= traits::MaxLevel,
@@ -240,7 +240,7 @@ namespace rascal {
 
     // return the number of neighbours of a given atom
     template<size_t Level, size_t Depth>
-    inline size_t get_cluster_size(const ClusterRefBase<Level, Depth>
+    inline size_t get_cluster_size(const ClusterRefKey<Level, Depth>
                                    & cluster) const {
       static_assert(Level <= traits::MaxLevel,
                     "this implementation only handles atoms and pairs");

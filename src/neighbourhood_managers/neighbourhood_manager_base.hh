@@ -31,7 +31,7 @@
 
 // Each actual implementation of a NeighbourhoodManager is based
 // on the given interface
-#include "neighbourhood_managers/cluster_ref_base.hh"
+#include "neighbourhood_managers/cluster_ref_key.hh"
 #include "neighbourhood_managers/property.hh"
 
 // Some data types and operations are based on the Eigen library
@@ -229,7 +229,7 @@ namespace rascal {
 
     template <size_t Level, size_t Depth>
     inline decltype(auto)
-    neighbour_position(ClusterRefBase<Level, Depth> & cluster) {
+    neighbour_position(ClusterRefKey<Level, Depth> & cluster) {
       return this->implementation().get_neighbour_position(cluster);
     }
 
@@ -249,7 +249,7 @@ namespace rascal {
     }
 
     template <size_t Level, size_t Depth>
-    inline size_t cluster_size(ClusterRefBase<Level, Depth> & cluster) const {
+    inline size_t cluster_size(ClusterRefKey<Level, Depth> & cluster) const {
       return this->implementation().get_cluster_size(cluster);
     }
 
@@ -260,7 +260,7 @@ namespace rascal {
     //! get atom_index of index-th neighbour of this cluster, e.g. j-th
     //! neighbour of atom i or k-th neighbour of pair i-j, etc.
     template <size_t Level, size_t Depth>
-    inline int cluster_neighbour(ClusterRefBase<Level, Depth> & cluster,
+    inline int cluster_neighbour(ClusterRefKey<Level, Depth> & cluster,
                                  size_t index) const {
       return this->implementation().get_cluster_neighbour(cluster, index);
     }
@@ -291,7 +291,7 @@ namespace rascal {
 
     //! Access to offsets for access of cluster-related properties
     template <size_t Level, size_t CallerDepth>
-    inline size_t get_offset(const ClusterRefBase<Level,
+    inline size_t get_offset(const ClusterRefKey<Level,
                              CallerDepth> & cluster) const {
       constexpr auto
         depth{NeighbourhoodManagerBase::template cluster_depth<Level>()};
@@ -328,7 +328,7 @@ namespace rascal {
     ClusterIndex_t cluster_indices_container;
 
     // template <size_t Level, size_t Depth> inline int get_cluster(const
-    // ClusterRefBase<Level, Depth> & cluster) const { // all pairs of the
+    // ClusterRefKey<Level, Depth> & cluster) const { // all pairs of the
     // following thing }
 
 
@@ -447,13 +447,13 @@ namespace rascal {
   template <class ManagerImplementation>
   template <size_t Level>
   class NeighbourhoodManagerBase<ManagerImplementation>::ClusterRef :
-    public ClusterRefBase<Level,
+    public ClusterRefKey<Level,
                           ManagerImplementation::template cluster_depth<Level>()>
   {
   public:
     using Manager_t = NeighbourhoodManagerBase<ManagerImplementation>;
     using Parent =
-      ClusterRefBase<Level,
+      ClusterRefKey<Level,
                      ManagerImplementation::template cluster_depth<Level>()>;
     using AtomRef_t = typename Manager_t::AtomRef;
     using Iterator_t = typename Manager_t::template iterator<Level>;
@@ -501,11 +501,11 @@ namespace rascal {
     // cluster.get_indices() -> index of the atom w.r.t order in arrays
     /**
      * This is a ClusterRef of Level=1, constructed from a higher Level.  This
-     * function here is self referencing right now. A ClusterRefBase with
+     * function here is self referencing right now. A ClusterRefKey with
      * Level=1 is needed to construct it ?!
      */
     template <bool FirstLevel=(Level==1)>
-    ClusterRef(std::enable_if_t<FirstLevel, ClusterRefBase<1,0>> & cluster,
+    ClusterRef(std::enable_if_t<FirstLevel, ClusterRefKey<1,0>> & cluster,
                Manager_t & manager):
       Parent(cluster.get_atom_indices(), cluster.get_cluster_indices()),
       it(manager) {}

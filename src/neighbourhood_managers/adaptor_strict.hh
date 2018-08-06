@@ -127,13 +127,13 @@ namespace rascal {
 
     //! returns the distance between atoms in a given pair
     template <size_t Level, size_t Depth>
-    inline const double & get_distance(const ClusterRefBase<Level, Depth> &
+    inline const double & get_distance(const ClusterRefKey<Level, Depth> &
                                        pair) const {
       return this->distance[pair];
     }
 
     template <size_t Level, size_t Depth>
-    inline double & get_distance(const ClusterRefBase<Level, Depth>& pair) {
+    inline double & get_distance(const ClusterRefKey<Level, Depth>& pair) {
       return this->distance[pair];
     }
 
@@ -150,7 +150,7 @@ namespace rascal {
     }
 
     // template<size_t Level, size_t Depth>
-    // inline Vector_ref get_neighbour_position(const ClusterRefBase<Level, Depth>
+    // inline Vector_ref get_neighbour_position(const ClusterRefKey<Level, Depth>
     // 					     & cluster) {
     //   static_assert(Level > 1,
     //                 "Only possible for Level > 1.");
@@ -162,7 +162,7 @@ namespace rascal {
 
     //! get atom_index of index-th neighbour of this cluster
     template<size_t Level, size_t Depth>
-    inline int get_cluster_neighbour(const ClusterRefBase<Level, Depth>
+    inline int get_cluster_neighbour(const ClusterRefKey<Level, Depth>
 				     & cluster,
 				     int index) const {
       static_assert(Level <= traits::MaxLevel-1,
@@ -207,7 +207,7 @@ namespace rascal {
 
     //! return the number of neighbours of a given atom
     template<size_t Level, size_t Depth>
-    inline size_t get_cluster_size(const ClusterRefBase<Level, Depth>
+    inline size_t get_cluster_size(const ClusterRefKey<Level, Depth>
 				   & cluster) const {
       static_assert(Level <= traits::MaxLevel-1,
                     "this implementation only handles atoms and pairs");

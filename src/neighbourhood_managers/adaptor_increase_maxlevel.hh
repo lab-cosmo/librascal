@@ -86,8 +86,8 @@ namespace rascal {
     using ClusterRef_t =
       typename ManagerImplementation::template ClusterRef<Level>;
     //! template<size_t Level, size_t Depth>
-    //! using ClusterRefBase_t =
-    //!   typename ManagerImplementation::template ClusterRefBase<Level, Depth>;
+    //! using ClusterRefKey_t =
+    //!   typename ManagerImplementation::template ClusterRefKey<Level, Depth>;
     //using PairRef_t = ClusterRef_t<2, traits::MaxLevel>;
 
     // TODO if MaxLevel can be == 1 -> neighbourlist need to be built.
@@ -167,7 +167,7 @@ namespace rascal {
     }
 
     template<size_t Level, size_t Depth>
-    inline Vector_ref get_neighbour_position(const ClusterRefBase<Level, Depth>&
+    inline Vector_ref get_neighbour_position(const ClusterRefKey<Level, Depth>&
                                              /*cluster*/) {
       static_assert(Level > 1,
                     "Only possible for Level > 1.");
@@ -186,7 +186,7 @@ namespace rascal {
     }
 
     template<size_t Level, size_t Depth>
-    inline int get_cluster_neighbour(const ClusterRefBase<Level, Depth>
+    inline int get_cluster_neighbour(const ClusterRefKey<Level, Depth>
 				     & cluster,
 				     size_t index) const {
       static_assert(Level < traits::MaxLevel,
@@ -211,7 +211,7 @@ namespace rascal {
     }
 
     template<size_t Level, size_t Depth>
-    inline size_t get_cluster_size(const ClusterRefBase<Level, Depth>
+    inline size_t get_cluster_size(const ClusterRefKey<Level, Depth>
                                    & cluster) const {
       static_assert(Level < traits::MaxLevel,
                     "this implementation handles only the respective MaxLevel");
