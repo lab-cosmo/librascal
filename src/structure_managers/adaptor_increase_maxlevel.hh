@@ -432,7 +432,7 @@ namespace rascal {
       std::set<size_t> current_j_atoms;
 
       //! access to underlying manager for access to atom pairs
-      auto & manager_tmp{cluster.get_manager()};
+      auto & manager_tmp{cluster.manager()};
 
       // std::cout << " === neigh back "
       //           << i_atoms[0] << " " << i_atoms[1]

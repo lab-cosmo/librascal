@@ -271,7 +271,7 @@ namespace rascal {
       return this->implementation().get_cluster_neighbour(cluster, index);
     }
 
-    inline StructureManager & get_manager() {return *this;}
+    inline StructureManager & manager() {return *this;}
 
     inline ManagerImplementation & implementation() {
       return static_cast<ManagerImplementation&>(*this);
@@ -280,6 +280,7 @@ namespace rascal {
       return static_cast<const ManagerImplementation&>(*this);
     }
 
+    //! Recursion end for get_atoms. Not meant to ever be explicitly called
     std::array<AtomRef, 0> get_atoms() const {
       return std::array<AtomRef, 0>{};
     }
@@ -373,7 +374,7 @@ namespace rascal {
     template <size_t Order, class ClusterRef>
     struct PositionGetter {
       static inline decltype(auto) get_position(ClusterRef & cluster) {
-        return cluster.get_manager().neighbour_position(cluster);
+        return cluster.manager().neighbour_position(cluster);
       };
     };
 
@@ -381,7 +382,7 @@ namespace rascal {
     struct PositionGetter<1, ClusterRef> {
       using Vector_ref = typename ClusterRef::Manager_t::Vector_ref;
       static inline Vector_ref get_position(ClusterRef & cluster) {
-        return cluster.get_manager().position(cluster.back());
+        return cluster.manager().position(cluster.back());
       };
     };
   }  // internal
@@ -549,7 +550,7 @@ namespace rascal {
 
     inline decltype(auto) get_atom_type() {
       auto && id{this->atom_indices.back()};
-      return this->get_manager().atom_type(id);
+      return this->manager().atom_type(id);
     }
 
     //! return the index of the atom: Atoms_t is len==1 if center,
@@ -558,28 +559,28 @@ namespace rascal {
       return this->back(); // TODO: ?? what .back() is it?
     }
 
-    inline Manager_t & get_manager() {return this->it.get_manager();}
-    inline const Manager_t & get_manager() const {
-      return this->it.get_manager();
+    inline Manager_t & manager() {return this->it.manager();}
+    inline const Manager_t & manager() const {
+      return this->it.manager();
     }
 
     inline iterator begin() {
       std::array<size_t, Order> counters{this->it.get_counters()};
-      auto offset = this->get_manager().get_offset(counters);
+      auto offset = this->manager().get_offset(counters);
       return iterator(*this, 0, offset);
     }
 
     inline iterator end() {
       return iterator(*this, this->size(), std::numeric_limits<size_t>::max());
     }
-    inline size_t size() {return this->get_manager().cluster_size(*this);}
+    inline size_t size() {return this->manager().cluster_size(*this);}
 
     inline size_t get_index() const {
       return this->it.index;
     }
 
     inline size_t get_global_index() const {
-      return this->get_manager().get_offset(*this);
+      return this->manager().get_offset(*this);
     }
 
     const std::array<int, Order> & get_atom_indices() const {
@@ -660,7 +661,7 @@ namespace rascal {
     //! calculate cluster indices
     inline value_type operator * () {
       auto & cluster_indices_properties =
-        std::get<Order-1>(this->get_manager().get_cluster_indices_container());
+        std::get<Order-1>(this->manager().get_cluster_indices_container());
       using Ref_t = typename
         std::remove_reference_t<decltype(cluster_indices_properties)>::reference;
       Ref_t cluster_indices =
@@ -687,7 +688,7 @@ namespace rascal {
     std::array<int, Order> get_atom_indices() {
       return internal::append_array
         (container.get_atom_indices(),
-         this->get_manager().cluster_neighbour(container, this->index));
+         this->manager().cluster_neighbour(container, this->index));
     }
 
     //! returns the current index of the cluster in iteration
@@ -695,9 +696,9 @@ namespace rascal {
       return this->index + this->offset;
     }
 
-    inline Manager_t & get_manager() {return this->container.get_manager();}
-    inline const Manager_t & get_manager() const {
-      return this->container.get_manager();
+    inline Manager_t & manager() {return this->container.manager();}
+    inline const Manager_t & manager() const {
+      return this->container.manager();
     }
 
     inline std::array<size_t, Order> get_counters() {

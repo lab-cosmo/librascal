@@ -54,13 +54,13 @@ namespace rascal {
       this->set_positions(positions);
       // set the references to the center positions
       for (int id{0}; id < center_ids.size(); ++id) {
-          this->centers.push_back(StructureManagerMinimal::AtomRef_t(this->get_manager(),center_ids(id)));
+          this->centers.push_back(StructureManagerMinimal::AtomRef_t(this->manager(),center_ids(id)));
       }
       // TODO get particles type as input and use it
       this->particule_types.resize(Natom);
       //set the references to the particles positions
       for (Eigen::Index id{0}; id < Natom; ++id){
-        this->particles.push_back(StructureManagerMinimal::AtomRef_t(this->get_manager(),id));
+        this->particles.push_back(StructureManagerMinimal::AtomRef_t(this->manager(),id));
         this->particule_types[id] = particule_types(id);
       }
 
@@ -96,7 +96,7 @@ namespace rascal {
       Vec3i_t bin_index_c;
       for (int ii{0}; ii < nbins; ++ii){
         internal::lin2mult<dim>(ii,nbins_c,bin_index_c);
-        this->boxes.push_back(Box(this->get_manager(),bin_index_c, pbc, neigh_search, nbins_c));
+        this->boxes.push_back(Box(this->manager(),bin_index_c, pbc, neigh_search, nbins_c));
       }
 
       // bin the particles in the boxes
@@ -125,9 +125,9 @@ namespace rascal {
           //loop over the particle in the neighbouring boxes
           for (size_t neigh_part_id{0}; neigh_part_id < this->boxes[neig_bin_index].get_number_of_particles(); ++neigh_part_id){
             // store the indices to the corresponding atomic shift
-            this->neighbour_bin_id[bin_index].push_back(AtomRef_t(this->get_manager(),neigh_bin_id));
+            this->neighbour_bin_id[bin_index].push_back(AtomRef_t(this->manager(),neigh_bin_id));
             // store the indices to the neighbour particles
-            this->neighbour_atom_index[bin_index].push_back(AtomRef_t(this->get_manager(),this->boxes[neig_bin_index].get_particle_index(neigh_part_id)));
+            this->neighbour_atom_index[bin_index].push_back(AtomRef_t(this->manager(),this->boxes[neig_bin_index].get_particle_index(neigh_part_id)));
           }
           n_neigh += this->boxes[neig_bin_index].get_number_of_particles();
         }
