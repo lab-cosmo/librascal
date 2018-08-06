@@ -38,12 +38,15 @@ and to access properties associated with clusters of each body order.
 
 In practice the ``StructureManager`` allocates the memory to store
 property data, which can be accessed as a heterogeneous map containing
-different types of properties. It also stores a list of clusters, that
-internally correspond to tuples of atom indices, that can be iterated 
-on based on ``ClusterRef`` objects, that act as a light pointer to this
-list.
+different types of properties. It also provides an interface to access 
+clusters in terms of iterators: the internal implementation of the 
+neighbor list is left to the implementation, and it only should allow
+to retrieve ``ClusterRef`` objects, that act as a light pointer to the 
+sequential list of clusters, and contains the indices of the atoms involved
+in the cluster. 
 
-``ClusterRef`` objects can be in turn 
+``ClusterRef`` objects can be in turn iterated on, giving access to a 
+concise notation to iterate over atoms, pairs, triplets, ...
 
 This is best explained with a code snippet
 
@@ -70,6 +73,7 @@ This is best explained with a code snippet
                         // the last member of the cluster
       }
     }
+    
 
 Stacking of StructureManagers
 -----------------------------
@@ -87,6 +91,7 @@ and then create a `AdaptorStrict` manager to select only the pairs within
 iterated within the adapter should point at this reduced list, but single-atom
 clusters do not need to be duplicated, as they are still present and valid
 in the parent manager.
+
 
 
 
