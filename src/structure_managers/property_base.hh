@@ -73,6 +73,9 @@ namespace rascal {
     //! returns the cluster order
     inline Dim_t get_order() const {return this->order;}
 
+    //! returns the property layer
+    inline Dim_t get_property_layer() const {return this->property_layer;}
+
   protected:
 
     StructureManagerBase & base_manager; //!< base-class reference to StructureManager
@@ -80,10 +83,13 @@ namespace rascal {
     const Dim_t nb_col;  //!< number of columns stored
     const Dim_t nb_comp; //!< number of dofs stored
     const size_t order;  //!< order of the clusters
+    //! layer in the stack at which property is attached
+    const size_t property_layer;
     //! constructor
-    PropertyBase(StructureManagerBase & manager, Dim_t nb_row, Dim_t nb_col, size_t order):
+    PropertyBase(StructureManagerBase & manager, Dim_t nb_row, Dim_t nb_col,
+                 size_t order, size_t layer):
       base_manager{manager}, nb_row{nb_row}, nb_col{nb_col},
-      nb_comp{nb_row*nb_col}, order{order}
+      nb_comp{nb_row*nb_col}, order{order}, property_layer{layer}
     {}
 
 

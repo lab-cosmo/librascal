@@ -106,7 +106,9 @@ namespace rascal {
   }  // internal
 
 
-  template <typename T>
+  template <typename T,
+            size_t Order,
+            size_t PropertyLayer>
   class TypedProperty: public PropertyBase
   {
     using Parent = PropertyBase;
@@ -118,8 +120,8 @@ namespace rascal {
     using reference = typename Value::reference;
 
     //! constructor
-    TypedProperty(StructureManagerBase & manager, Dim_t nb_row, Dim_t nb_col, size_t order):
-      Parent{manager, nb_row, nb_col, order}
+    TypedProperty(StructureManagerBase & manager, Dim_t nb_row, Dim_t nb_col):
+      Parent{manager, nb_row, nb_col, Order, PropertyLayer}
     {}
 
     //! Default constructor

@@ -95,7 +95,7 @@ namespace rascal {
       constexpr static auto ActiveLayer{
         compute_cluster_layer<Order>(typename traits::LayerByDimension{})};
 
-      using Property_t = Property<Manager, size_t, Order, LayersHead+1, 1, ActiveLayer>;
+      using Property_t = Property<size_t, Order, ActiveLayer, LayersHead+1, 1>;
       using type = typename ClusterIndexPropertyComputer_Helper
         <Manager, Order+1, std::index_sequence<LayersTail...>,
          std::tuple<TupComp..., Property_t>>::type;
@@ -113,7 +113,7 @@ namespace rascal {
       constexpr static auto ActiveLayer{
         compute_cluster_layer<Order>(typename traits::LayerByDimension{})};
 
-      using Property_t = Property<Manager, size_t, Order, LayersHead+1, 1, ActiveLayer>;
+      using Property_t = Property<size_t, Order, ActiveLayer, LayersHead+1, 1>;
       using type = std::tuple<TupComp..., Property_t>;
     };
 
@@ -162,6 +162,13 @@ namespace rascal {
       <StructureManager, typename traits::LayerByDimension>::type;
     using ClusterConstructor_t = typename internal::ClusterIndexConstructor
       <ClusterIndex_t, StructureManager>;
+
+    //! helper type for Property creation
+    template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
+    using Property_t = Property<T, Order,
+                                compute_cluster_layer<Order>
+                                  (typename traits::LayerByDimension{}),
+                                NbRow, NbCol>;
 
     //! Default constructor
     StructureManager() :

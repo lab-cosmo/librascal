@@ -67,7 +67,7 @@ namespace rascal {
     template <size_t Order>
     using ClusterRef_t = typename Parent::template ClusterRef <Order>;
 
-    using AtomVectorField_t = Property<StructureManagerMinimal, double, 1, 3>;
+    using AtomVectorField_t = typename StructureManagerMinimal::Property_t<double, 1, 3>;
 
     //! Default constructor
     StructureManagerMinimal()

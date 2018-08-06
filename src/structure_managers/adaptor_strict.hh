@@ -252,7 +252,7 @@ namespace rascal {
     struct HelperLoop;
 
     ManagerImplementation & manager;
-    Property<AdaptorStrict, double, 2> distance;
+    typename AdaptorStrict::template Property_t<double, 2> distance;
     const double cut_off;
 
     /**

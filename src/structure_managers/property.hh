@@ -46,19 +46,17 @@ namespace rascal {
   struct StructureManager_traits;
 
 
-  template <class StructureManager, typename T,
+  template <typename T,
             size_t Order,
-            Dim_t NbRow = 1, Dim_t NbCol = 1,
-            size_t ActiveLayer=compute_cluster_layer<Order>(typename StructureManager::traits::LayerByDimension{})>
-  class Property: public TypedProperty<T>
+            size_t PropertyLayer,
+            Dim_t NbRow = 1, Dim_t NbCol = 1>
+  class Property: public TypedProperty<T, Order, PropertyLayer>
   {
     static_assert((std::is_arithmetic<T>::value or
                    std::is_same<T, std::complex<double>>::value),
                   "can currently only handle arithmetic types");
   public:
-    using traits = StructureManager_traits<StructureManager>;
-
-    using Parent = TypedProperty<T>;
+    using Parent = TypedProperty<T, Order, PropertyLayer>;
     constexpr static size_t NbComp{NbRow*NbCol};
 
     using Value = internal::Value<T, NbRow, NbCol>;
@@ -75,8 +73,8 @@ namespace rascal {
     Property() = delete;
 
     //! Constructor with Manager
-    Property(StructureManager & manager)
-      :Parent{manager, NbRow, NbCol, Order}
+    Property(StructureManagerBase & manager)
+      :Parent{manager, NbRow, NbCol}
     {}
 
     //! Copy constructor
@@ -93,6 +91,53 @@ namespace rascal {
 
     //! Move assignment operator
     Property & operator=(Property && other) = delete;
+
+    /**
+     * Cast operator: takes polymorphic base class reference, and
+     * returns properly casted fully typed and sized reference, or
+     * throws a runttime error
+     */
+    inline Property & operator=(PropertyBase & other) {
+      // check type compatibility
+
+      if (not (other.get_type_info().hash_code() ==
+               typeid(T).hash_code())) {
+        std::stringstream err_str{};
+        err_str << "Incompatible types: '" << other.get_type_info().name()
+                << "' != '" << typeid(T).name() << "'." ;
+        throw std::runtime_error (err_str.str());
+      }
+
+      // check order compatibility
+      if (not (other.get_order() == Order )) {
+        std::stringstream err_str{};
+        err_str << "Incompatible property order: input is of order "
+                << other.order() << ", this property is of order "
+                << Order << "." ;
+        throw std::runtime_error (err_str.str());
+      }
+
+      // check property layer compatibility
+      if (not (other.get_property_layer() == PropertyLayer )) {
+        std::stringstream err_str{};
+        err_str << "At wrong layer in stack: input is at layer "
+                << other.get_property_layer() << ", this property is at layer "
+                << PropertyLayer << "." ;
+        throw std::runtime_error (err_str.str());
+      }
+
+      // check size compatibility
+      if (not ((other.get_nb_row() == NbRow) and
+               (other.get_nb_col() == NbCol))) {
+        std::stringstream err_str{};
+        err_str << "Incompatible sizes: input is " << other.get_nb_row() << "×"
+                << other.get_nb_col() << ", but should be " << NbRow << "×"
+                << NbCol  << ".";
+        throw std::runtime_error (err_str.str());
+      }
+      return static_cast<Property& > (other);
+    }
+
 
     /**
      * allows to add a value to `Property` during construction of the
@@ -121,7 +166,7 @@ namespace rascal {
      */
     template<size_t CallerLayer>
     reference operator[](const ClusterRefKey<Order, CallerLayer> & id) {
-      static_assert(CallerLayer >= ActiveLayer,
+      static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that "
                     "does not exist at this depth in the "
                     "adaptor stack.");

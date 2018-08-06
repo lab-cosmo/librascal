@@ -37,11 +37,9 @@ namespace rascal {
   template<class ManagerImplementation>
   struct PropertyFixture: public ManagerFixture<ManagerImplementation> {
     using Manager_t = ManagerImplementation;
-    using PairScalarProperty_t = Property<Manager_t, double, 2>;
-    using AtomVectorProperty_t = Property<Manager_t, double, 1, 3>;
-    static_assert(std::is_same<typename AtomVectorProperty_t::Value, internal::Value<double, 3, 1>>::value,
-                  "type alias failed");
 
+    using PairScalarProperty_t = typename Manager_t::template Property_t<double, 2>;
+    using AtomVectorProperty_t = typename Manager_t::template Property_t<double, 1, 3, 1>;
 
     PropertyFixture()
       :ManagerFixture<ManagerImplementation>{}, pair_property{this->manager},
@@ -55,10 +53,11 @@ namespace rascal {
 
   struct PropertyFixture_lammps: public ManagerFixture_lammps {
     using Manager_t = typename ManagerFixture_lammps::Manager_t;
-    using PairScalarProperty_t = Property<Manager_t, double, 2>;
-    using AtomVectorProperty_t = Property<Manager_t, double, 1, 3, 1>;
-    static_assert(std::is_same<typename AtomVectorProperty_t::Value, internal::Value<double, 3, 1>>::value,
-                  "type alias failed");
+    constexpr static auto AtomLayer{compute_cluster_layer<1>(typename Manager_t::traits::LayerByDimension{})};
+    constexpr static auto PairLayer{compute_cluster_layer<2>(typename Manager_t::traits::LayerByDimension{})};
+    using PairScalarProperty_t = typename Manager_t::template Property_t<double, 2>;
+    using AtomVectorProperty_t = typename Manager_t::template Property_t<double, 1, 3, 1>;
+
 
     PropertyFixture_lammps()
       :ManagerFixture_lammps{}, pair_property{this->manager},

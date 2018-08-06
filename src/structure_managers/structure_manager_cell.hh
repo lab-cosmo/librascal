@@ -132,7 +132,7 @@ namespace rascal {
     using AtomRef_t = typename Parent::AtomRef;
     template <size_t Order>
     using ClusterRef_t = typename Parent::template ClusterRef<Order>;
-    using AtomVectorField_t = Property<StructureManagerCell, double, 1, 3>;
+    using AtomVectorField_t = typename StructureManagerCell::Property_t< double, 1, 3>;
 
     //! Default constructor
     StructureManagerCell()
