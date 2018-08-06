@@ -29,8 +29,6 @@
 #ifndef CLUSTER_REF_BASE_H
 #define CLUSTER_REF_BASE_H
 
-
-
 namespace rascal {
 
   class ClusterRefBase
