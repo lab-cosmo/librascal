@@ -44,19 +44,19 @@ namespace rascal {
     PropertyBase() = delete;
 
     //! Copy constructor
-    PropertyBase(const PropertyBase &other) = delete;
+    PropertyBase(const PropertyBase & other) = delete;
 
     //! Move constructor
-    PropertyBase(PropertyBase &&other) = default;
+    PropertyBase(PropertyBase && other) = default;
 
     //! Destructor
     virtual ~PropertyBase() = default;
 
     //! Copy assignment operator
-    PropertyBase& operator=(const PropertyBase &other) = delete;
+    PropertyBase & operator=(const PropertyBase & other) = delete;
 
     //! Move assignment operator
-    PropertyBase& operator=(PropertyBase &&other) = default;
+    PropertyBase & operator=(PropertyBase && other) = default;
 
     //! return runtime info about the stored (e.g., numerical) type
     virtual const std::type_info & get_type_info() const = 0;

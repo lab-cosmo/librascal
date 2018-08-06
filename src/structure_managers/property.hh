@@ -36,7 +36,7 @@
 #include <basic_types.hh>
 
 #include "structure_managers/property_typed.hh"
-#include "structure_managers/cluster_ref_base.hh"
+#include "structure_managers/cluster_ref_key.hh"
 
 namespace rascal {
 
@@ -120,7 +120,7 @@ namespace rascal {
      * Not sure about the actual implementation of this one.
      */
     template<size_t CallerLayer>
-    reference operator[](const ClusterRefBase<Order, CallerLayer> & id) {
+    reference operator[](const ClusterRefKey<Order, CallerLayer> & id) {
       static_assert(CallerLayer >= ActiveLayer,
                     "You are trying to access a property that "
                     "does not exist at this depth in the "

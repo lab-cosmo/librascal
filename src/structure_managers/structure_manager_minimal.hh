@@ -126,7 +126,7 @@ namespace rascal {
 
     // return the index-th neighbour of cluster
     template<size_t Order, size_t Layer>
-    inline int get_cluster_neighbour(const ClusterRefBase<Order, Layer>
+    inline int get_cluster_neighbour(const ClusterRefKey<Order, Layer>
                                      & cluster,
                                      size_t index) const {
       static_assert(Order <= traits::MaxOrder,

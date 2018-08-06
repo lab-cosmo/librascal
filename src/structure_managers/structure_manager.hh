@@ -34,7 +34,7 @@
 
 // Each actual implementation of a StructureManager is based
 // on the given interface
-#include "structure_managers/cluster_ref_base.hh"
+#include "structure_managers/cluster_ref_key.hh"
 
 // Some data types and operations are based on the Eigen library
 #include <Eigen/Dense>
@@ -240,7 +240,7 @@ namespace rascal {
 
     template <size_t Order, size_t Layer>
     inline decltype(auto)
-    neighbour_position(ClusterRefBase<Order, Layer> & cluster) {
+    neighbour_position(ClusterRefKey<Order, Layer> & cluster) {
       return this->implementation().get_neighbour_position(cluster);
     }
 
@@ -260,7 +260,7 @@ namespace rascal {
     }
 
     template <size_t Order, size_t Layer>
-    inline size_t cluster_size(ClusterRefBase<Order, Layer> & cluster) const {
+    inline size_t cluster_size(ClusterRefKey<Order, Layer> & cluster) const {
       return this->implementation().get_cluster_size(cluster);
     }
 
@@ -271,7 +271,7 @@ namespace rascal {
     //! get atom_index of index-th neighbour of this cluster, e.g. j-th
     //! neighbour of atom i or k-th neighbour of pair i-j, etc.
     template <size_t Order, size_t Layer>
-    inline int cluster_neighbour(ClusterRefBase<Order, Layer> & cluster,
+    inline int cluster_neighbour(ClusterRefKey<Order, Layer> & cluster,
                                  size_t index) const {
       return this->implementation().get_cluster_neighbour(cluster, index);
     }
@@ -302,7 +302,7 @@ namespace rascal {
 
     //! Access to offsets for access of cluster-related properties
     template <size_t Order, size_t CallerLayer>
-    inline size_t get_offset(const ClusterRefBase<Order,
+    inline size_t get_offset(const ClusterRefKey<Order,
                              CallerLayer> & cluster) const {
       constexpr auto
         layer{StructureManager::template cluster_layer<Order>()};
@@ -339,7 +339,7 @@ namespace rascal {
     ClusterIndex_t cluster_indices_container;
 
     // template <size_t Order, size_t Layer> inline int get_cluster(const
-    // ClusterRefBase<Order, Layer> & cluster) const { // all pairs of the
+    // ClusterRefKey<Order, Layer> & cluster) const { // all pairs of the
     // following thing }
 
 
@@ -458,13 +458,13 @@ namespace rascal {
   template <class ManagerImplementation>
   template <size_t Order>
   class StructureManager<ManagerImplementation>::ClusterRef :
-    public ClusterRefBase<Order,
+    public ClusterRefKey<Order,
                           ManagerImplementation::template cluster_layer<Order>()>
   {
   public:
     using Manager_t = StructureManager<ManagerImplementation>;
     using Parent =
-      ClusterRefBase<Order,
+      ClusterRefKey<Order,
                      ManagerImplementation::template cluster_layer<Order>()>;
     using AtomRef_t = typename Manager_t::AtomRef;
     using Iterator_t = typename Manager_t::template iterator<Order>;
@@ -512,11 +512,11 @@ namespace rascal {
     // cluster.get_indices() -> index of the atom w.r.t order in arrays
     /**
      * This is a ClusterRef of Order=1, constructed from a higher Order.  This
-     * function here is self referencing right now. A ClusterRefBase with
+     * function here is self referencing right now. A ClusterRefKey with
      * Order=1 is needed to construct it ?!
      */
     template <bool FirstOrder=(Order==1)>
-    ClusterRef(std::enable_if_t<FirstOrder, ClusterRefBase<1,0>> & cluster,
+    ClusterRef(std::enable_if_t<FirstOrder, ClusterRefKey<1,0>> & cluster,
                Manager_t & manager):
       Parent(cluster.get_atom_indices(), cluster.get_cluster_indices()),
       it(manager) {}

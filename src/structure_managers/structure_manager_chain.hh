@@ -248,7 +248,7 @@ namespace rascal {
      * position, if it is a ghost atom.
      */
     template<size_t Order, size_t Layer>
-    inline Vector_ref get_neighbour_position(const ClusterRefBase<Order, Layer>
+    inline Vector_ref get_neighbour_position(const ClusterRefKey<Order, Layer>
                                              & cluster) {
       static_assert(Order > 1,
                     "Only possible for Order > 1.");
@@ -270,7 +270,7 @@ namespace rascal {
 
     //! returns the number of neighbours of a given i atom
     template<size_t Order, size_t Layer>
-    inline size_t get_cluster_size(const ClusterRefBase<Order, Layer>
+    inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
                                    & cluster) const {
       // TODO: Check for <= or < ?!
       static_assert(Order <= traits::MaxOrder,
@@ -285,7 +285,7 @@ namespace rascal {
 
     //! return the index-th neighbour of cluster
     template<size_t Order, size_t Layer>
-    inline int get_cluster_neighbour(const ClusterRefBase<Order, Layer>
+    inline int get_cluster_neighbour(const ClusterRefKey<Order, Layer>
                                      & cluster,
                                      size_t index) const {
       static_assert(Order <= traits::MaxOrder,
