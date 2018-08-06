@@ -32,8 +32,10 @@
 #include <typeinfo>
 
 #include "basic_types.hh"
+#include "structure_managers/structure_manager_base.hh"
 
 namespace rascal {
+
 
   class PropertyBase
   {
@@ -57,7 +59,7 @@ namespace rascal {
     PropertyBase& operator=(PropertyBase &&other) = default;
 
     //! return runtime info about the stored (e.g., numerical) type
-    virtual std::type_info & get_type_info() = 0;
+    virtual const std::type_info & get_type_info() const = 0;
 
     //! returns the number of degrees of freedom stored per cluster
     inline Dim_t get_nb_comp() const {return this->nb_comp;}
@@ -71,12 +73,20 @@ namespace rascal {
     //! returns the cluster order
     inline Dim_t get_order() const {return this->order;}
 
-
   protected:
+
+    StructureManagerBase & base_manager; //!< base-class reference to StructureManager
     const Dim_t nb_row;  //!< number of rows stored
     const Dim_t nb_col;  //!< number of columns stored
     const Dim_t nb_comp; //!< number of dofs stored
     const size_t order;  //!< order of the clusters
+    //! constructor
+    PropertyBase(StructureManagerBase & manager, Dim_t nb_row, Dim_t nb_col, size_t order):
+      base_manager{manager}, nb_row{nb_row}, nb_col{nb_col},
+      nb_comp{nb_row*nb_col}, order{order}
+    {}
+
+
   private:
   };
 

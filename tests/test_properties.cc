@@ -39,6 +39,8 @@ namespace rascal {
     using Manager_t = ManagerImplementation;
     using PairScalarProperty_t = Property<Manager_t, double, 2>;
     using AtomVectorProperty_t = Property<Manager_t, double, 1, 3>;
+    static_assert(std::is_same<typename AtomVectorProperty_t::Value, internal::Value<double, 3, 1>>::value,
+                  "type alias failed");
 
 
     PropertyFixture()
@@ -54,8 +56,9 @@ namespace rascal {
   struct PropertyFixture_lammps: public ManagerFixture_lammps {
     using Manager_t = typename ManagerFixture_lammps::Manager_t;
     using PairScalarProperty_t = Property<Manager_t, double, 2>;
-    using AtomVectorProperty_t = Property<Manager_t, double, 1, 3>;
-
+    using AtomVectorProperty_t = Property<Manager_t, double, 1, 3, 1>;
+    static_assert(std::is_same<typename AtomVectorProperty_t::Value, internal::Value<double, 3, 1>>::value,
+                  "type alias failed");
 
     PropertyFixture_lammps()
       :ManagerFixture_lammps{}, pair_property{this->manager},
@@ -75,6 +78,12 @@ namespace rascal {
     atom_property.resize();
     int pair_property_counter{};
     for (auto atom: manager) {
+
+      using Value = internal::Value<double, 1, 3>;
+      using reference = typename Value::reference;
+      using true_ref = Eigen::Map<Eigen::Matrix<double, 1, 3>>;
+      static_assert(std::is_same<reference, true_ref>::value, "1");
+
       atom_property[atom] = atom.get_position();
       for (auto pair: atom) {
         pair_property[pair] = ++pair_property_counter;

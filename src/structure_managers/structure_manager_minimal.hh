@@ -29,7 +29,7 @@
 #ifndef STRUCTURE_MANAGER_MINIMAL_H
 #define STRUCTURE_MANAGER_MINIMAL_H
 
-#include "structure_managers/structure_manager_base.hh"
+#include "structure_managers/structure_manager.hh"
 #include "structure_managers/property.hh"
 #include "lattice.hh"
 #include "basic_types.hh"

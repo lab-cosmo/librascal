@@ -51,9 +51,9 @@
 
 /**
  * Each actual implementation of a StructureManager is based on the given
- * interface ´structure_manager_base.hh´
+ * interface ´structure_manager.hh´
  */
-#include "structure_managers/structure_manager_base.hh"
+#include "structure_managers/structure_manager.hh"
 #include "structure_managers/json_io.hh"
 
 //! Some data types and operations are based on the Eigen library

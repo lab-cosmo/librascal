@@ -29,7 +29,7 @@
 #ifndef STRUCTURE_MANAGER_LAMMPS_H
 #define STRUCTURE_MANAGER_LAMMPS_H
 
-#include "structure_managers/structure_manager_base.hh"
+#include "structure_managers/structure_manager.hh"
 
 #include <stdexcept>
 #include <vector>
