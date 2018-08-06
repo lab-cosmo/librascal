@@ -283,12 +283,7 @@ namespace rascal {
     //! Recursion end for get_atoms. Not meant to ever be explicitly called
     std::array<AtomRef, 0> get_atoms() const {
       return std::array<AtomRef, 0>{};
-    }
-
-    //! Starting array for builing container in iterator
-    std::array<int, 0> get_atom_ids() const {
-      return std::array<int, 0>{};
-    }
+    }   
 
     //! Access to offsets for access of cluster-related properties
     template <size_t Order, size_t CallerLayer>
@@ -538,7 +533,7 @@ namespace rascal {
       return this->atoms;
     }
 
-    const std::array<int, Order> & get_atoms_ids() const {return this->atom_indices;};
+    const std::array<int, Order> & get_atoms_indices() const {return this->atom_indices;};
 
     /* There are 2 cases:
      * center (Order== 1)-> position is in the cell
