@@ -20,7 +20,9 @@ which we refer to as "clusters".
 For instance, the energy is a property associated to an entire molecule or
 crystal structure, the nuclear chemical shift is a property associated to 
 atoms, a distance is a property of a pair of atoms, and so on. 
-We refer to the number of atoms involved in a 
+We refer to the number of atoms involved in a cluster as the order of that 
+cluster. An atom is a cluster with `Order=1`, a pair is a cluster with
+`Order=2` and so on. 
 
 Structure Managers
 ------------------
@@ -31,8 +33,10 @@ It takes care of:
 
 * Holding information about an atomic structure
 * Building clusters based on existing structural information
-* Provide iterators that can be used to loop over clusters of a given type,
-and to access properties associated with clusters of each body order.
+* Filtering, sorting or modifying existing clusters
+* Computing properties of clusters (e.g. distances, angles, ...)
+* Providing iterators that can be used to loop over clusters of a given type,
+  and to access properties associated with clusters of each body order.
 
 .. image:: ../figures/implementation_structure_manager.svg
 
@@ -52,7 +56,7 @@ This is best explained with a code snippet
 
 .. code-block:: c++
     
-    StructureManager SM(structure_data); // assume this can compute pairs
+    StructureManager SM(structure_data); // assume this can compute pairs and distances
     SM.update();   // refreshes the list of pairs
     
     energy = SM.get_real(0, "energy") // structure-global property access
@@ -82,17 +86,72 @@ Structure managers can be build in a modular fashion by stacking them on
 top of each other. That is, one can add functionalities to an existing 
 manager by creating an adapter, which is just a structure manager that is 
 built based on a lower-level manager. 
-An example would be selecting only atoms of a given kind, or building 
-clusters of high body order based on lower-order clusters. 
-This leads to the problem that clusters can be defined at different levels:
-for instance, one could have pairs defined up to a cutoff of 5 Angstrom, 
-and then create a `AdaptorStrict` manager to select only the pairs within 
-3 Angstrom, by stacking it on top of the former. `ClusterRef`s to pairs 
-iterated within the adapter should point at this reduced list, but single-atom
-clusters do not need to be duplicated, as they are still present and valid
-in the parent manager.
+Each manager after the first (which can e.g. be built based on a input 
+structure, or fetching data from a host code such as LAMMPS) takes the 
+status of an existing manager and "adapts" it by computing properties, 
+creating clusters of higher order, or filtering existing clusters. 
+
+.. image:: ../figures/implementation_structure_layers-0.png 
+   :scale: 30
+   :align: center
+   
+Conceptually this can be understood as if the state of a manager was 
+described by a series of layers, one for each cluster order, starting
+from an empty slate in which no data exists. Each layer
+knows how to reference clusters at a given level, and can possibly contain
+new properties that are defined for each cluster it can index.
+
+Consider for instance the following stack:
+
+1. A structure is read from file, and contains only the list of atoms. Each
+item in the index list corresponds with an atom, and can be used to index 
+associated properties, e.g. the position of each atom
+
+  .. image:: ../figures/implementation_structure_layers-1.png
+     :scale: 30
+     :align: center
+
+2. Pair clusters are computed with a linked-cell algorithm. The parameters
+of the manager determines how the pairs are constructed, and no distance is 
+actually computed and stored
+
+  .. image:: ../figures/implementation_structure_layers-2.png
+     :scale: 30
+     :align: center
+
+3. Distances are computed for a subset of the pairs, e.g. only for pairs 
+within a strict cutoff of 3Å. Only a subset of the pairs computed at the 
+previous layer is indexed. We will discuss later how one can index multiple 
+layers without significant runtime overhead.
+
+  .. image:: ../figures/implementation_structure_layers-3.png
+     :scale: 30
+     :align: center
+
+4. Only oxygen atoms, and pairs involving oxygen atoms are selected. Note that
+this adds a new layer to both atoms and pairs.
+
+  .. image:: ../figures/implementation_structure_layers-4.png
+     :scale: 30
+     :align: center
+
+5. Triplets of oxygen atoms are constructed, and angles computed between them.
+A new layer is created for triplets and properties are simultaneously stored
+
+  .. image:: ../figures/implementation_structure_layers-5.png
+     :scale: 30
+     :align: center
 
 
+ClusterRefs and indexing
+========================
+
+TBD
+
+.. image:: ../figures/implementation_clusterref.svg
+
+Compile-time lookup of the appropriate property is achieved by means
+of the `ClusterRef` object, that holds a list of the location in memory of each
 
 
 
