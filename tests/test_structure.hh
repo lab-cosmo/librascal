@@ -94,14 +94,15 @@ namespace rascal {
 
 
   /* ---------------------------------------------------------------------- */
-  struct ManagerFixture_lammps
+  template <>
+  struct ManagerFixture<StructureManagerLammps>
   {
     using Manager_t = StructureManagerLammps;
     constexpr static int nb{3};
     constexpr static int dim{3};
     using ptr_t = double**;
 
-    ManagerFixture_lammps()
+    ManagerFixture()
       :firstneigh{new int*[nb]},
        x{new double*[nb]},
        f{new double*[nb]},
@@ -130,9 +131,9 @@ namespace rascal {
          }
        }
 
-    ManagerFixture_lammps( ManagerFixture_lammps &) = delete;
-    ManagerFixture_lammps & operator=(const rascal::ManagerFixture_lammps&) = delete;
-    ~ManagerFixture_lammps() {
+    ManagerFixture( ManagerFixture &) = delete;
+    ManagerFixture & operator=(const ManagerFixture&) = delete;
+    ~ManagerFixture() {
       delete[] firstneigh[0];
       delete firstneigh[1];
       delete firstneigh[2];
@@ -163,17 +164,18 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
-  struct ManagerFixture_chain
+  template <>
+  struct ManagerFixture<StructureManagerChain>
   {
     using Manager_t = StructureManagerChain;
 
-    ManagerFixture_chain()
+    ManagerFixture()
       : manager_chain{}, cutoff{1.0} {
         manager_chain.read_structure_from_json("simple_cubic_8.json");
         manager_chain.update(cutoff);
       }
 
-    ~ManagerFixture_chain() {BOOST_TEST_MESSAGE("teardown ManagerChain fixture");}
+    ~ManagerFixture() {BOOST_TEST_MESSAGE("teardown ManagerChain fixture");}
 
     Manager_t manager_chain;
     double cutoff;

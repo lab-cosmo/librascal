@@ -27,7 +27,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "structure_managers/structure_manager_base.hh"
+#include "structure_managers/structure_manager.hh"
 #include "structure_managers/property.hh"
 #include "rascal_utility.hh"
 
@@ -86,8 +86,8 @@ namespace rascal {
     using ClusterRef_t =
       typename ManagerImplementation::template ClusterRef<Order>;
     //! template<size_t Order, size_t Layer>
-    //! using ClusterRefBase_t =
-    //!   typename ManagerImplementation::template ClusterRefBase<Order, Layer>;
+    //! using ClusterRefKey_t =
+    //!   typename ManagerImplementation::template ClusterRefKey<Order, Layer>;
     //using PairRef_t = ClusterRef_t<2, traits::MaxOrder>;
 
     // TODO if MaxOrder can be == 1 -> neighbourlist need to be built.
@@ -130,17 +130,17 @@ namespace rascal {
     //! Returns cutoff radius of the neighbourhood manager
     inline double get_cutoff() const {return this->cutoff;}
 
-    /** Returns the linear indices of the clusters (whose atom indices 
-     * are stored in counters). For example when counters is just the list 
-     * of atoms, it returns the index of each atom. If counters is a list of pairs 
-     * of indices (i.e. specifying pairs), for each pair of indices i,j it returns 
+    /** Returns the linear indices of the clusters (whose atom indices
+     * are stored in counters). For example when counters is just the list
+     * of atoms, it returns the index of each atom. If counters is a list of pairs
+     * of indices (i.e. specifying pairs), for each pair of indices i,j it returns
      * the number entries in the list of pairs before i,j appears.
      */
     template<size_t Order>
     inline size_t get_offset_impl(const std::array<size_t, Order>
 				  & counters) const;
 
-    //! Returns the number of clusters of size cluster_size 
+    //! Returns the number of clusters of size cluster_size
     inline size_t get_nb_clusters(size_t cluster_size) const {
       switch (cluster_size) {
       case traits::MaxOrder: {
@@ -172,9 +172,9 @@ namespace rascal {
       return this->manager.get_position(atom.get_index());
     }
 
-    //! TODO: Finish the implementation 
+    //! TODO: Finish the implementation
     template<size_t Order, size_t Layer>
-    inline Vector_ref get_neighbour_position(const ClusterRefBase<Order, Layer>&
+    inline Vector_ref get_neighbour_position(const ClusterRefKey<Order, Layer>&
                                              /*cluster*/) {
       static_assert(Order > 1,
                     "Only possible for Order > 1.");
@@ -185,8 +185,8 @@ namespace rascal {
                                "new interface using the ClusterRef");
     }
 
-    //! Returns the id of the index-th (neighbour) atom of the cluster 
-    //! that is the full structure/atoms object, i.e. simply the id of 
+    //! Returns the id of the index-th (neighbour) atom of the cluster
+    //! that is the full structure/atoms object, i.e. simply the id of
     //! the index-th atom
     inline int get_cluster_neighbour(const Parent& /*parent*/,
 				     size_t index) const {
@@ -195,7 +195,7 @@ namespace rascal {
 
     //! Returns the id of the index-th neighbour atom of a given cluster
     template<size_t Order, size_t Layer>
-    inline int get_cluster_neighbour(const ClusterRefBase<Order, Layer>
+    inline int get_cluster_neighbour(const ClusterRefKey<Order, Layer>
 				     & cluster,
 				     size_t index) const {
       static_assert(Order < traits::MaxOrder,
@@ -219,9 +219,9 @@ namespace rascal {
       return this->manager.get_atom_type(atom.get_index());
     }
 
-    //! Returns the number of neighbors of a given cluster 
+    //! Returns the number of neighbors of a given cluster
     template<size_t Order, size_t Layer>
-    inline size_t get_cluster_size(const ClusterRefBase<Order, Layer>
+    inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
                                    & cluster) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
@@ -248,7 +248,7 @@ namespace rascal {
     inline void add_atom(const int atom_index) {
       //! adds new atom at this Order
       this->atom_indices.push_back(atom_index);
-      //! increases the number of neighbours 
+      //! increases the number of neighbours
       this->nb_neigh.back()++;
       //! increases the offsets
       this->offsets.back()++;
@@ -256,13 +256,13 @@ namespace rascal {
       //! extends the list containing the number of neighbours
       //! with a new 0 entry for the added atom
       this->nb_neigh.push_back(0);
-      //! extends the list containing the offsets and sets it 
+      //! extends the list containing the offsets and sets it
       //! with the number of neighbours plus the offsets of the last atom
       this->offsets.push_back(this->offsets.back() +
                               this->nb_neigh.back());
     }
 
-    //! Extends the list containing the number of neighbours with a 0 
+    //! Extends the list containing the number of neighbours with a 0
     inline void add_entry_number_of_neighbours() {
       this->nb_neigh.push_back(0);
     }
@@ -286,7 +286,7 @@ namespace rascal {
       }
     }
 
-    //! Interface of the add_atom function that adds the last atom in a 
+    //! Interface of the add_atom function that adds the last atom in a
     //! given cluster
     template <size_t Order>
     inline void add_atom(const typename ManagerImplementation::template
@@ -388,7 +388,7 @@ namespace rascal {
     static void loop(ClusterRef_t & cluster,
                      AdaptorMaxOrder<ManagerImplementation> & manager) {
 
-      //! do nothing, if MaxOrder is not reached, except call the next order 
+      //! do nothing, if MaxOrder is not reached, except call the next order
       for (auto next_cluster : cluster) {
 
         auto & next_cluster_indices
@@ -432,7 +432,7 @@ namespace rascal {
       std::set<size_t> current_j_atoms;
 
       //! access to underlying manager for access to atom pairs
-      auto & manager_tmp{cluster.manager()};
+      auto & manager_tmp{cluster.get_manager()};
 
       // std::cout << " === neigh back "
       //           << i_atoms[0] << " " << i_atoms[1]
@@ -610,10 +610,10 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  /* Returns the linear indices of the clusters (whose atom indices 
-   * are stored in counters). For example when counters is just the list 
-   * of atoms, it returns the index of each atom. If counters is a list of pairs 
-   * of indices (i.e. specifying pairs), for each pair of indices i,j it returns 
+  /* Returns the linear indices of the clusters (whose atom indices
+   * are stored in counters). For example when counters is just the list
+   * of atoms, it returns the index of each atom. If counters is a list of pairs
+   * of indices (i.e. specifying pairs), for each pair of indices i,j it returns
    * the number entries in the list of pairs before i,j appears.
    */
   template<class ManagerImplementation>

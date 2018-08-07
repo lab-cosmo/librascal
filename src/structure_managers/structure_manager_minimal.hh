@@ -1,11 +1,11 @@
 /**
- * file   structure_manager_cell.hh
+ * file   structure_manager_Minimal.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
  * @date   05 Apr 2018
  *
- * @brief Neighbourhood manager linked cell
+ * @brief Neighbourhood manager linked Minimal
  *
  * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -26,8 +26,8 @@
  */
 
 
-#ifndef STRUCTURE_MANAGER_CELL_H
-#define STRUCTURE_MANAGER_CELL_H
+#ifndef STRUCTURE_MANAGER_MINIMAL_H
+#define STRUCTURE_MANAGER_MINIMAL_H
 
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/property.hh"
@@ -44,162 +44,79 @@
 using namespace std;
 
 namespace rascal {
-  namespace internal {
-
-    template<int Dim>
-    inline void lin2mult(const Dim_t& index,
-                         const Eigen::Ref<const Vec3i_t> shape,
-                         Eigen::Ref< Vec3i_t> retval) {
-      // TODO: what does the factor do?
-      Dim_t factor{1};
-
-      for (Dim_t i{0}; i < Dim; ++i) {
-        retval[i] = index / factor%shape[i];
-        if (i != Dim-1) {
-          factor *= shape[i];
-        }
-      }
-    }
-
-    template<int Dim>
-    inline Dim_t mult2lin(const Eigen::Ref<const Vec3i_t> coord,
-                          const Eigen::Ref<const Vec3i_t> shape) {
-      Dim_t index{0};
-      Dim_t factor{1};
-      for (Dim_t i = 0; i < Dim; ++i) {
-        index += coord[i]*factor;
-        if (i != Dim-1 ) {
-          factor *= shape[i];
-        }
-      }
-      return index;
-    }
-
-    // https://stackoverflow.com/questions/828092/python-style-integer-division-modulus-in-c
-    // TODO more efficient implementation without if (would be less general) !
-    // div_mod function returning python like div_mod, i.e. signed integer
-    // division truncates towards negative infinity, and signed integer modulus
-    // has the same sign the second operand.
-    template<class Integral>
-    void div_mod(const Integral& x, const Integral & y,
-                 std::array<int, 2> & out) {
-      const Integral quot = x/y;
-      const Integral rem  = x%y;
-
-      if (rem != 0 && (x<0) != (y<0)) {
-        out[0] = quot-1;
-        out[1] = rem+y;
-      } else {
-        out[0] = quot;
-        out[1] = rem;
-      }
-    }
-
-    //! warning: works only with negative x if |x| < y
-    // TODO Does not pass tests
-    template<class Integral>
-    void branchless_div_mod(const Integral & x, const Integral & y,
-                            std::array<int, 2> & out) {
-      const Integral quot = (x-y) / y;
-      const Integral rem  = (x+y) % y;
-      out[0] = quot;
-      out[1] = rem;
-    }
-
-  }  // internal
 
   //! forward declaration for traits
-  class StructureManagerCell;
+  class StructureManagerMinimal;
 
-  //! traits specialisation for Cell manager
+  //! traits specialisation for minimal manager
   template <>
-  struct StructureManager_traits<StructureManagerCell> {
+  struct StructureManager_traits<StructureManagerMinimal> {
     constexpr static int Dim{3};
-    constexpr static size_t MaxOrder{2};
+    constexpr static size_t MaxOrder{1};
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
-    constexpr static bool HasDirectionVectors{false};
-    constexpr static bool HasDistances{false};
-    using LayerByDimension = std::index_sequence<0, 0>;
+    using LayerByDimension = std::integer_sequence<size_t, 0, 0>;
   };
-  class StructureManagerCell:
-    public StructureManager<StructureManagerCell>
+  class StructureManagerMinimal: public StructureManager<StructureManagerMinimal>
   {
   public:
-    using traits = StructureManager_traits<StructureManagerCell>;
-    using Parent = StructureManager<StructureManagerCell>;
+    using traits = StructureManager_traits<StructureManagerMinimal>;
+    using Parent = StructureManager<StructureManagerMinimal>;
     using Vector_ref = typename Parent::Vector_ref;
     using Vector_t = typename Parent::Vector_t;
     using AtomRef_t = typename Parent::AtomRef;
     template <size_t Order>
-    using ClusterRef_t = typename Parent::template ClusterRef<Order>;
-    using AtomVectorField_t = typename StructureManagerCell::Property_t< double, 1, 3>;
+    using ClusterRef_t = typename Parent::template ClusterRef <Order>;
+
+    using AtomVectorField_t = typename StructureManagerMinimal::Property_t<double, 1, 3>;
 
     //! Default constructor
-    StructureManagerCell()
-      : particles{}, centers{}, positions{}, shifted_position{}, lattice{},
-        cell{}, pbc{}, part2bin{}, boxes{}, number_of_neighbours{0},
-        neighbour_bin_id{}, number_of_neighbours_stride{},
-        neighbour_atom_index{}, particle_types{} {}
+    StructureManagerMinimal()
+      :particles{}, centers{} ,positions{},shifted_position{} ,lattice{}, cell{},pbc{} ,part2bin{} ,boxes{} ,number_of_neighbours{0} ,neighbour_bin_id{} , number_of_neighbours_stride{}, neighbour_atom_index{},particule_types{}
+    {}
 
     //! Copy constructor
-    StructureManagerCell(const StructureManagerCell &other) = delete;
+    StructureManagerMinimal(const StructureManagerMinimal &other) = delete;
 
     //! Move constructor
-    StructureManagerCell(StructureManagerCell &&other) = default;
+    StructureManagerMinimal(StructureManagerMinimal &&other) = default;
 
     //! Destructor
-    virtual ~StructureManagerCell() = default;
+    virtual ~StructureManagerMinimal() = default;
 
     //! Copy assignment operator
-    StructureManagerCell
-    & operator=(const StructureManagerCell &other) = delete;
+    StructureManagerMinimal& operator=(const StructureManagerMinimal &other) = delete;
 
     //! Move assignment operator
-    StructureManagerCell
-    & operator=(StructureManagerCell &&other) = default;
+    StructureManagerMinimal& operator=(StructureManagerMinimal &&other) = default;
 
     class Box;
 
-    // return position vector for atom
-    inline Vector_ref get_position(const AtomRef_t & atom) {
-      auto index{atom.get_index()};
-      auto * xval{this->positions.col(index).data()};
-      return Vector_ref(xval);
-    }
-
-    // return position vector for atom_index
-    inline Vector_ref get_position(const size_t & atom_index) {
+    // return position vector
+    inline Vector_ref get_position(const int & atom_index) {
       auto * xval{this->positions.col(atom_index).data()};
       return Vector_ref(xval);
     }
 
     inline Vector_ref get_shift(const int& i_bin_id, const int& shift_index);
 
-    // return position vector atom is the neighbour atom. center_atom
-    // is the current center. j_linear_id is the index of the current
-    // neighbour iterator.
-    template<size_t Order, size_t Layer>
-    inline Vector_t get_neighbour_position(const ClusterRefKey<Order, Layer> &
+    // return position vector
+    // atom is the neighbour atom. center_atom is the current center. j_linear_id is the index of the current neighbour iterator.
+    template<size_t Order>
+    inline Vector_ref get_neighbour_position(const ClusterRef_t<Order>&
                                              cluster) {
       static_assert(Order > 1,
                     "Only possible for Order > 1.");
       static_assert(Order <= traits::MaxOrder,
                     "this implementation should only work up to MaxOrder.");
-
-
-      // TODO: why is there a j_linear_id and a j_atom_id, which is the same?
-      // TODO: this is the wrong index -> Repair by Felix?
-      auto && j_linear_id = cluster.back();
-      auto & i_atom_id{cluster.front()}; // center_atom index
-      auto & i_bin_id{this->part2bin[i_atom_id]};
-      auto & shift_index{this->neighbour_bin_id[i_bin_id][j_linear_id].get_index()};
-      auto & j_atom_id{cluster.back()}; // neighbour atom index
-      // TODO: find another way. This is a work around so that
-      // shifted_position lives longer than the function call but it
-      // is prone to side effects
-      auto && shifted_position = this->positions.col(j_atom_id);
-      auto && tmp{this->cell * this->get_shift(i_bin_id,shift_index)};
-      return shifted_position + tmp;
+      auto && j_linear_id = cluster.get_index();
+      auto && i_atom_id{cluster.front()}; // center_atom index
+      auto && i_bin_id{this->part2bin[i_atom_id]};
+      auto && shift_index{this->neighbour_bin_id[i_bin_id][j_linear_id].get_index()};
+      auto && j_atom_id{cluster.back()}; // neighbour atom index
+      // TODO: find another way. This is a work around so that shifted_position lives longer than the function call but it is prone to side effects
+      this->shifted_position = this->positions.col(j_atom_id) + this->cell * this->get_shift(i_bin_id,shift_index);
+      auto * xval{this->shifted_position.col(0).data()};
+      return Vector_ref(xval);
     }
 
     // return number of center in the list
@@ -227,21 +144,16 @@ namespace rascal {
       return this->centers[index].get_index();
     }
 
-    //! return atom type
-    inline size_t get_atom_type(const AtomRef_t& atom) {
-      auto && index{atom.get_index()};
-      return this->particle_types[index];
-    }
 
-    //! return atom type from atom index
-    inline size_t get_atom_type(const size_t& index) {
-      return this->particle_types[index];
+    //! return atom type
+    inline int get_atom_type(const AtomRef_t& atom) {
+      auto && index{atom.get_index()};
+      return this->particule_types[index];
     }
 
     // return the number of neighbours of a given atom
-    template<size_t Order, size_t Layer>
-    inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
-                                   & cluster) const {
+    template<size_t Order>
+    inline size_t get_cluster_size(const ClusterRef_t<Order>& cluster) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
       auto && i_atom_id{cluster.back()};
@@ -250,18 +162,15 @@ namespace rascal {
       return size;
     }
 
+    size_t get_nb_clusters(int cluster_size) const;
+
     template<size_t Order>
     inline size_t get_offset_impl(const std::array<size_t, Order>
                                   & counters) const;
 
-    size_t get_nb_clusters(size_t cluster_size) const;
-
-    void update(const Eigen::Ref<const Eigen::MatrixXd> positions,
-                const Eigen::Ref<const VecXi>  particle_types,
+    void update(const Eigen::Ref<const Eigen::MatrixXd> positions,const Eigen::Ref<const VecXi>  particule_types,
                 const Eigen::Ref<const VecXi> center_ids,
-                const Eigen::Ref<const Eigen::MatrixXd> cell,
-                const std::array<bool,3>& pbc,
-                const double & cutoff_max);
+                const Eigen::Ref<const Eigen::MatrixXd> cell,const std::array<bool,3>& pbc, const double& cutoff_max);
 
     //Box get_box(const int& bin_id);
 
@@ -269,12 +178,9 @@ namespace rascal {
 
   protected:
 
-    void build(const Eigen::Ref<const Eigen::MatrixXd> positions,
-               const Eigen::Ref<const VecXi>  particle_types,
+    void build(const Eigen::Ref<const Eigen::MatrixXd> positions, const Eigen::Ref<const VecXi>  particule_types,
                const Eigen::Ref<const VecXi> center_ids,
-               const Eigen::Ref<const Eigen::MatrixXd> cell,
-               const std::array<bool,3>& pbc,
-               const double& cutoff_max);
+               const Eigen::Ref<const Eigen::MatrixXd> cell,const std::array<bool,3>& pbc, const double& cutoff_max);
 
     void set_positions(const Eigen::Ref<const Eigen::MatrixXd> pos){
       this->positions = pos;
@@ -293,19 +199,19 @@ namespace rascal {
     std::vector<std::vector<AtomRef_t>> neighbour_bin_id;
     std::vector<size_t> number_of_neighbours_stride;
     std::vector<std::vector<AtomRef_t>> neighbour_atom_index;
-    std::vector<int> particle_types;
+    std::vector<int> particule_types;
 
   private:
   };
 
   /* ---------------------------------------------------------------------- */
 
-  class StructureManagerCell::Box {
+  class StructureManagerMinimal::Box {
   public:
-    using Manager_t = StructureManager<StructureManagerCell>;
-    using AtomRef_t = typename StructureManagerCell::AtomRef_t;
-    using Vector_t = typename StructureManagerCell::Vector_t;
-    using Vector_ref = typename StructureManagerCell::Vector_ref;
+    using Manager_t = StructureManager<StructureManagerMinimal>;
+    using AtomRef_t = typename StructureManagerMinimal::AtomRef_t;
+    using Vector_t = typename StructureManagerMinimal::Vector_t;
+    using Vector_ref = typename StructureManagerMinimal::Vector_ref;
     //! Default constructor
     Box() = default;
 
@@ -321,7 +227,7 @@ namespace rascal {
 
     virtual ~Box() = default;
 
-    constexpr static int dim() {return StructureManagerCell::dim();}
+    constexpr static int dim() {return StructureManagerMinimal::dim();}
 
     inline void push_particle_back(const int& part_index);
 
@@ -353,10 +259,10 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
-  // buildup
   template<size_t Order>
-  inline size_t StructureManagerCell::
-  get_offset_impl(const std::array<size_t, Order> & counters) const {
+  inline size_t StructureManagerMinimal::
+  get_offset_impl(const std::array<size_t, Order>
+                  & counters) const {
     static_assert (Order == 1, "this manager can only give the offset "
                    "(= starting index) for a pair iterator, given the i atom "
                    "of the pair");
@@ -364,11 +270,13 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  inline Vector_ref StructureManagerCell::
-  get_shift(const int& i_bin_id, const int& neigh_bin_index){
+  inline Vector_ref
+  StructureManagerMinimal::get_shift(const int& i_bin_id,
+                                         const int& neigh_bin_index){
     return this->boxes[i_bin_id].get_neighbour_bin_shift(neigh_bin_index);
   }
 
+  //----------------------------------------------------------------------------//
 }  // rascal
 
-#endif /* STRUCTURE_MANAGER_CELL_H */
+#endif /* STRUCTURE_MANAGER_MINIMAL_H */

@@ -82,7 +82,7 @@ namespace rascal {
 
     for (int id{0}; id < center_ids.size(); ++id) {
       this->centers.push_back(StructureManagerCenters::
-                              AtomRef_t(this->manager(), center_ids(id)));
+                              AtomRef_t(this->get_manager(), center_ids(id)));
       this->offsets.push_back(id);
     }
 
@@ -90,7 +90,7 @@ namespace rascal {
     //set the references to the particles positions
     for (Eigen::Index id{0}; id < Natom; ++id){
       this->particles.push_back(StructureManagerCenters::
-                                AtomRef_t(this->manager(),id));
+                                AtomRef_t(this->get_manager(),id));
       this->particle_types[id] = particle_types(id);
     }
 

@@ -35,165 +35,45 @@
 #include <vector>
 #include <basic_types.hh>
 
+#include "structure_managers/property_typed.hh"
+
 namespace rascal {
 
-  namespace internal {
-
-    template <typename T, size_t NbRow, size_t NbCol>
-    struct Value {
-      using type = Eigen::Map<Eigen::Matrix<T, NbRow, NbCol>>;
-      using reference = type;
-
-      static reference get_ref(T & value) {
-        return type(&value);
-      }
-
-      static void push_in_vector(std::vector<T> & vec, reference ref) {
-        for (size_t j{0}; j < NbCol; ++j) {
-          for (size_t i{0}; i < NbRow; ++i) {
-            vec.push_back(ref(i,j));
-          }
-        }
-      }
-
-      // Used for extending cluster_indices
-      template<typename Derived>
-      static void push_in_vector(std::vector<T> & vec,
-                                 const Eigen::DenseBase<Derived> & ref) {
-        static_assert(Derived::RowsAtCompileTime==NbRow,
-                      "NbRow has incorrect size.");
-        static_assert(Derived::ColsAtCompileTime==NbCol,
-                      "NbCol has incorrect size.");
-        for (size_t j{0}; j < NbCol; ++j) {
-          for (size_t i{0}; i < NbRow; ++i) {
-            vec.push_back(ref(i,j));
-          }
-        }
-      }
-    };
-
-    //! specialisation for scalar properties
-    template <typename T>
-    struct Value<T, 1, 1> {
-      constexpr static Dim_t NbRow{1};
-      constexpr static Dim_t NbCol{1};
-      using type = T;
-      using reference = T&;
-
-      static reference get_ref(T & value) {return value;}
-
-      static void push_in_vector(std::vector<T> & vec, reference ref) {
-        vec.push_back(ref);
-      }
-
-      // Used for extending cluster_indices
-      template<typename Derived>
-      static void push_in_vector(std::vector<T> & vec,
-                                 const Eigen::DenseBase<Derived> & ref) {
-        static_assert(Derived::RowsAtCompileTime==NbRow,
-                      "NbRow has incorrect size.");
-        static_assert(Derived::ColsAtCompileTime==NbCol,
-                      "NbCol has incorrect size.");
-        vec.push_back(ref(0,0));
-      }
-    };
-
-    template<typename T, size_t NbRow, size_t NbCol>
-    using Value_t = typename Value<T, NbRow, NbCol>::type;
-
-    template<typename T, size_t NbRow, size_t NbCol>
-    using Value_ref = typename Value<T, NbRow, NbCol>::reference;
-
-    template<int Dim>
-    inline void lin2mult(const Dim_t& index,
-                         const Eigen::Ref<const Vec3i_t> shape,
-                         Eigen::Ref< Vec3i_t> retval) {
-      // TODO: what does the factor do?
-      Dim_t factor{1};
-
-      for (Dim_t i{0}; i < Dim; ++i) {
-        retval[i] = index / factor%shape[i];
-        if (i != Dim-1) {
-          factor *= shape[i];
-        }
-      }
-    }
-
-    template<int Dim>
-    inline Dim_t mult2lin(const Eigen::Ref<const Vec3i_t> coord,
-                          const Eigen::Ref<const Vec3i_t> shape) {
-      Dim_t index{0};
-      Dim_t factor{1};
-      for (Dim_t i = 0; i < Dim; ++i) {
-        index += coord[i]*factor;
-        if (i != Dim-1 ) {
-          factor *= shape[i];
-        }
-      }
-      return index;
-    }
-
-    // https://stackoverflow.com/questions/828092/python-style-integer-division-modulus-in-c
-    // TODO more efficient implementation without if (would be less general) !
-    // div_mod function returning python like div_mod, i.e. signed integer
-    // division truncates towards negative infinity, and signed integer modulus
-    // has the same sign the second operand.
-    template<class Integral>
-    void div_mod(const Integral& x, const Integral & y,
-                 std::array<int, 2> & out) {
-      const Integral quot = x/y;
-      const Integral rem  = x%y;
-
-      if (rem != 0 && (x<0) != (y<0)) {
-        out[0] = quot-1;
-        out[1] = rem+y;
-      } else {
-        out[0] = quot;
-        out[1] = rem;
-      }
-    }
-
-    //! warning: works only with negative x if |x| < y
-    // TODO Does not pass tests
-    template<class Integral>
-    void branchless_div_mod(const Integral & x, const Integral & y,
-                            std::array<int, 2> & out) {
-      const Integral quot = (x-y) / y;
-      const Integral rem  = (x+y) % y;
-      out[0] = quot;
-      out[1] = rem;
-    }
-
-  }  // internal
 
   // Forward declaration of traits to use `Property`.
   template <class Manager>
   struct StructureManager_traits;
 
 
-  template <class StructureManager, typename T,
+  template <typename T,
             size_t Order,
-            size_t NbRow = 1, size_t NbCol = 1>
-  class Property
+            size_t PropertyLayer,
+            Dim_t NbRow = 1, Dim_t NbCol = 1>
+  class Property: public TypedProperty<T, Order, PropertyLayer>
   {
     static_assert((std::is_arithmetic<T>::value or
                    std::is_same<T, std::complex<double>>::value),
                   "can currently only handle arithmetic types");
   public:
-    using traits = StructureManager_traits<StructureManager>;
+    using Parent = TypedProperty<T, Order, PropertyLayer>;
     constexpr static size_t NbComp{NbRow*NbCol};
 
     using Value = internal::Value<T, NbRow, NbCol>;
+    static_assert(std::is_same<Value, internal::Value<T, NbRow, NbCol>>::value,
+                  "type alias failed");
 
     using value_type = typename Value::type;
     using reference = typename Value::reference;
+
+    static constexpr bool IsStaticallySized{(NbCol != Eigen::Dynamic)
+        and (NbRow != Eigen::Dynamic)};
 
     //! Default constructor
     Property() = delete;
 
     //! Constructor with Manager
-    Property(StructureManager & manager)
-      :manager{manager},values{}
+    Property(StructureManagerBase & manager)
+      :Parent{manager, NbRow, NbCol}
     {}
 
     //! Copy constructor
@@ -211,18 +91,52 @@ namespace rascal {
     //! Move assignment operator
     Property & operator=(Property && other) = delete;
 
-    //! Adjust size of values (only increases, never frees)
-    void resize() {
-      this->values.resize(this->manager.nb_clusters(Order) * NbComp);
+    /**
+     * Cast operator: takes polymorphic base class reference, and
+     * returns properly casted fully typed and sized reference, or
+     * throws a runttime error
+     */
+    static inline Property & check_compatibility(PropertyBase & other) {
+      // check type compatibility
+
+      if (not (other.get_type_info().hash_code() ==
+               typeid(T).hash_code())) {
+        std::stringstream err_str{};
+        err_str << "Incompatible types: '" << other.get_type_info().name()
+                << "' != '" << typeid(T).name() << "'." ;
+        throw std::runtime_error (err_str.str());
+      }
+
+      // check order compatibility
+      if (not (other.get_order() == Order )) {
+        std::stringstream err_str{};
+        err_str << "Incompatible property order: input is of order "
+                << other.get_order() << ", this property is of order "
+                << Order << "." ;
+        throw std::runtime_error (err_str.str());
+      }
+
+      // check property layer compatibility
+      if (not (other.get_property_layer() == PropertyLayer )) {
+        std::stringstream err_str{};
+        err_str << "At wrong layer in stack: input is at layer "
+                << other.get_property_layer() << ", this property is at layer "
+                << PropertyLayer << "." ;
+        throw std::runtime_error (err_str.str());
+      }
+
+      // check size compatibility
+      if (not ((other.get_nb_row() == NbRow) and
+               (other.get_nb_col() == NbCol))) {
+        std::stringstream err_str{};
+        err_str << "Incompatible sizes: input is " << other.get_nb_row() << "×"
+                << other.get_nb_col() << ", but should be " << NbRow << "×"
+                << NbCol  << ".";
+        throw std::runtime_error (err_str.str());
+      }
+      return static_cast<Property& > (other);
     }
 
-    /**
-     * shortens the vector so that the manager can push_back into it
-     * (capacity not reduced)
-     */
-    void resize_to_zero() {
-      this->values.resize(0);
-    }
 
     /**
      * allows to add a value to `Property` during construction of the
@@ -245,43 +159,27 @@ namespace rascal {
 
       Value::push_in_vector(this->values, ref);
     }
-
     /**
-     * Fill sequence for *_cluster_indices to initialize
-     */
-    inline void fill_sequence() {
-      this->resize();
-      for (size_t i{0}; i<this->values.size(); ++i) {
-        values[i] = i;
-      }
-    }
-
-    /**
-     * Not sure about the actual implementation of this one.
+     * Property accessor by cluster ref
      */
     template<size_t CallerLayer>
-    reference operator[](const ClusterRefBase<Order, CallerLayer> & id) {
-      constexpr auto ActiveLayer{
-        compute_cluster_layer<Order>(typename traits::LayerByDimension{})};
-      static_assert(CallerLayer >= ActiveLayer,
+    inline reference operator[](const ClusterRefKey<Order, CallerLayer> & id) {
+      static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that "
                     "does not exist at this depth in the "
                     "adaptor stack.");
 
-      return
-        Value::get_ref(this->values[id.get_cluster_index(CallerLayer)*NbComp]);
+      return this->operator[](id.get_cluster_index(CallerLayer));
     }
 
     /**
-     * Accessor for property by index.
+     * Accessor for property by index for statically sized properties
      */
-    reference operator[](const size_t & index) {
+    inline reference operator[](const size_t & index) {
       return Value::get_ref(this->values[index*NbComp]);
     }
 
   protected:
-    StructureManager & manager;
-    std::vector<T> values;
   private:
   };
 

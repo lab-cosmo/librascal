@@ -29,7 +29,7 @@
 
 
 
-add_library(rascal) # ${rascal_SRC})
+add_library(rascal "") # ${rascal_SRC})
 target_link_libraries(rascal PUBLIC Eigen3::Eigen)
 
 add_subdirectory(structure_managers)

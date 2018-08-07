@@ -35,7 +35,7 @@
 #ifndef SPECIES_MANAGER_H
 #define SPECIES_MANAGER_H
 
-#include "structure_managers/structure_manager_base.hh"
+#include "structure_managers/structure_manager.hh"
 #include "representations/basis_function_manager.hh"
 
 namespace rascal {

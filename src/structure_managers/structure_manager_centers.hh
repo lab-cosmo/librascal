@@ -29,7 +29,7 @@
 #ifndef STRUCTURE_MANAGER_CENTERS_H
 #define STRUCTURE_MANAGER_CENTERS_H
 
-#include "structure_managers/structure_manager_base.hh"
+#include "structure_managers/structure_manager.hh"
 #include "lattice.hh"
 #include "basic_types.hh"
 //! Some data types and operations are based on the Eigen library
@@ -123,7 +123,7 @@ namespace rascal {
      * A ClusterRef_t is a return type for iterators. It gives a light-weight
      * reference to an atom, a pair, a triplet,... to the AtomRefs of all
      * implicated atoms.  The template parameters Order and MaxOrder give the
-     * pair/triplet/ and the maximum body order, e.g. up to pair level.  
+     * pair/triplet/ and the maximum body order, e.g. up to pair level.
      * To increase the MaxOrder, use an <code>adaptor</code>.
      */
     template <size_t Order>
@@ -230,12 +230,12 @@ namespace rascal {
      * position, if it is a ghost atom.
      */
     template<size_t Order, size_t Layer>
-    inline void get_neighbour_position(const ClusterRefBase<Order, Layer>
+    inline void get_neighbour_position(const ClusterRefKey<Order, Layer>
                                              & ) {
 
       static_assert(true,
                     "this implementation only work with atoms.");
-      
+
     }
 
     //! returns a map to all atomic positions.
@@ -251,7 +251,7 @@ namespace rascal {
 
     //! returns the number of neighbours of a given i atom
     template<size_t Order, size_t Layer>
-    inline void get_cluster_size(const ClusterRefBase<Order, Layer>
+    inline void get_cluster_size(const ClusterRefKey<Order, Layer>
                                    & ) const {
       static_assert(true,
                     "this implementation only handles atoms.");
@@ -273,7 +273,7 @@ namespace rascal {
     //! Function for returning the number of atoms, pairs, tuples, etc.
     size_t get_nb_clusters(size_t cluster_size) const;
 
-    
+
 
   protected:
 
@@ -304,7 +304,7 @@ namespace rascal {
      */
     //! Total number of atoms in structure
     size_t natoms{};
-    
+
 
     /**
      * A switch to make the class verbose and give screen output about its

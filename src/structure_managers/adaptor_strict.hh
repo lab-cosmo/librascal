@@ -27,7 +27,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "structure_managers/structure_manager_base.hh"
+#include "structure_managers/structure_manager.hh"
 #include "structure_managers/property.hh"
 #include "rascal_utility.hh"
 
@@ -127,13 +127,13 @@ namespace rascal {
 
     //! returns the distance between atoms in a given pair
     template <size_t Order, size_t Layer>
-    inline const double & get_distance(const ClusterRefBase<Order, Layer> &
+    inline const double & get_distance(const ClusterRefKey<Order, Layer> &
                                        pair) const {
       return this->distance[pair];
     }
 
     template <size_t Order, size_t Layer>
-    inline double & get_distance(const ClusterRefBase<Order, Layer>& pair) {
+    inline double & get_distance(const ClusterRefKey<Order, Layer>& pair) {
       return this->distance[pair];
     }
 
@@ -150,7 +150,7 @@ namespace rascal {
     }
 
     // template<size_t Order, size_t Layer>
-    // inline Vector_ref get_neighbour_position(const ClusterRefBase<Order, Layer>
+    // inline Vector_ref get_neighbour_position(const ClusterRefKey<Order, Layer>
     // 					     & cluster) {
     //   static_assert(Order > 1,
     //                 "Only possible for Order > 1.");
@@ -162,7 +162,7 @@ namespace rascal {
 
     //! get atom_index of index-th neighbour of this cluster
     template<size_t Order, size_t Layer>
-    inline int get_cluster_neighbour(const ClusterRefBase<Order, Layer>
+    inline int get_cluster_neighbour(const ClusterRefKey<Order, Layer>
 				     & cluster,
 				     int index) const {
       static_assert(Order <= traits::MaxOrder-1,
@@ -207,7 +207,7 @@ namespace rascal {
 
     //! return the number of neighbours of a given atom
     template<size_t Order, size_t Layer>
-    inline size_t get_cluster_size(const ClusterRefBase<Order, Layer>
+    inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
 				   & cluster) const {
       static_assert(Order <= traits::MaxOrder-1,
                     "this implementation only handles atoms and pairs");
@@ -252,7 +252,7 @@ namespace rascal {
     struct HelperLoop;
 
     ManagerImplementation & manager;
-    Property<AdaptorStrict, double, 2> distance;
+    typename AdaptorStrict::template Property_t<double, 2> distance;
     const double cut_off;
 
     /**
