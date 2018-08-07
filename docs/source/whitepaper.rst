@@ -177,8 +177,62 @@ This means that higher layers can always access properties that have been
 computed at a deeper level without the need for recomputing or duplicating 
 the data.
 
+TODO: discussion of Properties, how they are indexed and how they can store
+metadata.
 
+RepManager
+---------------
 
+A ``RepManager`` object has the purpose of computing properties of 
+clusters, such as distances, angles, or more complex features such as 
+symmetry functions or SOAP power spectrum components, and to store them in 
+the Properties associated with the structure.  
+It needs to be initialized with a ``StructureManager`` and
+a JSON formatted string that contains its hyperparameters. 
+This string will also be attached to the metadata of the returned 
+properties. 
+
+Structure Managers, RepManager and Python
+----------------------------------------------
+
+NOTE: this is more of a summary of a discussion we had about using this from
+Python and what this entails in terms of the template definitions.
+
+Let's say you wanted to be able to write code like this
+
+.. code: Python
+  import rascal as ras
+  
+  sm = ras.load_structure("structure.xyz")
+  sm = ras.compute_pairs(sm)
+  sm = ras.adaptor_strict(sm, 3.0)
+  
+  rep = ras.SOAP(sm, hypers)
+  sm = rep.compute()
+    
+The way we understand it,  this would make it impossible to have statically
+typed structure managers, as we don't know how many stacks a user might 
+plug in before calling the representation builder. 
+
+So the idea we have to deal with this is that we should define a 
+`StructureManagerFull` object that would be the only structure manager object
+available from Python. This should be general enough that every representation
+can function with it without stacking anything on top, and have enough 
+flexibility to reuse between different representations (within reason). 
+
+So a typical representation constructor would have a mode of functioning 
+based on StructureManagerFull, that could go like 
+
+.. code: c++
+  RepManagerSOAP<StructureManagerFull> (StructureManagerFull& SM, hypers) {
+    this->sm = SM;
+    this->sm.initialize_pars_based_on_hypers(hypers);
+    this->sm.update();    
+  }
+
+and a generic constructor that would use template algebra to make sure that 
+whatever SM that is passed as a constructor has the functionality that is 
+needed to compute the representation.
 
 
 
