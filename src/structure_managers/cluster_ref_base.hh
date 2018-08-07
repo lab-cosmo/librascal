@@ -29,8 +29,6 @@
 #ifndef CLUSTER_REF_BASE_H
 #define CLUSTER_REF_BASE_H
 
-
-
 namespace rascal {
 
   class ClusterRefBase
@@ -54,13 +52,24 @@ namespace rascal {
     //! Move assignment operator
     ClusterRefBase & operator=(ClusterRefBase && other) = default;
 
+    //! returns the order of the cluster
+    inline size_t get_order() const {return this->order;}
 
+    //! returns the layer of the cluster
+    inline size_t get_cluster_layer() const {return this->layer;}
 
   protected:
+
+    const size_t order; //! cluster order: atom, pair, triplet?
+    const size_t layer; //! cluster layer
+
+    //! constructor
+    ClusterRefBase(size_t order, size_t layer):
+      order{order}, layer{layer}
+    {}
   private:
   };
-  
+
 } // rascal
 
 #endif /* CLUSTER_REF_BASE_H */
-

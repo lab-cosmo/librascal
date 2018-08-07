@@ -29,6 +29,8 @@
 #ifndef CLUSTERREFKEY_H
 #define CLUSTERREFKEY_H
 
+#include "structure_managers/cluster_ref_base.hh"
+
 #include <tuple>
 #include <array>
 
@@ -167,18 +169,18 @@ namespace rascal {
    * pairs, triples, ...). The reference does not store data about the actual
    * tuple, just contains all the information needed to locate the infor in the
    * appropriate arrays that are stored in a Manager class.
-   * 
+   *
    * Given that Manager classes can be 'stacked', e.g. using a strict cutoff on
    * top of a loose neighbor list, the reference must know in which order of the
    * hierarchy the data.
-   *  
+   *
    * For these reasons ClusterRefKey is templated by two arguments: Order that
    * specifies the number of atoms in the cluster, and Layer that specifies how
    * many layers of managers/adaptors are stacked at the point at which the
    * cluster reference is introduced.
    */
   template<size_t Order, size_t Layer>
-  class ClusterRefKey
+  class ClusterRefKey: ClusterRefBase
   {
   public:
     /**
@@ -186,6 +188,7 @@ namespace rascal {
      * non-const version can and needs to be cast into a const version in
      * argument.
      */
+    using Parent = ClusterRefBase;
     using IndexConstArray = Eigen::Map<const Eigen::Matrix<size_t, Layer+1, 1>>;
     using IndexArray = Eigen::Map<Eigen::Matrix<size_t, Layer+1, 1>>;
 
@@ -198,7 +201,9 @@ namespace rascal {
     */
     ClusterRefKey(std::array<int, Order> atom_indices,
                    IndexConstArray cluster_indices) :
-      atom_indices{atom_indices}, cluster_indices(cluster_indices.data()) {}
+      Parent{Order, Layer}, atom_indices{atom_indices},
+      cluster_indices(cluster_indices.data())
+    {}
 
     //! Copy constructor
     ClusterRefKey(const ClusterRefKey & other) = default;
@@ -230,9 +235,9 @@ namespace rascal {
       return this->cluster_indices;
     }
 
-    inline constexpr static size_t order() {return Order;}
+    constexpr static inline size_t order() {return Order;}
 
-    inline constexpr static size_t layer() {return Layer;}
+    constexpr static inline size_t cluster_layer() {return Layer;}
 
   protected:
     /**
