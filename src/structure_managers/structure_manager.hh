@@ -170,6 +170,12 @@ namespace rascal {
                                   (typename traits::LayerByDimension{}),
                                 NbRow, NbCol>;
 
+    //! helper type for Property creation
+    template <typename T, size_t Order>
+    using TypedProperty_t = TypedProperty<T, Order,
+                                          compute_cluster_layer<Order>
+                                          (typename traits::LayerByDimension{})>;
+
     //! Default constructor
     StructureManager() :
       cluster_indices_container{ClusterConstructor_t::make(*this)} {

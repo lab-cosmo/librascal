@@ -40,14 +40,24 @@ namespace rascal {
 
     using PairScalarProperty_t = typename Manager_t::template Property_t<double, 2>;
     using AtomVectorProperty_t = typename Manager_t::template Property_t<double, 1, 3, 1>;
+    using AtomDynamicProperty_t =
+      typename Manager_t::template TypedProperty_t<size_t, 1>;
+    using AtomDynamicProperty2_t =
+      typename Manager_t::template TypedProperty_t<double, 1>;
+
+    constexpr static Dim_t DynSize() {return 3;}
 
     PropertyFixture()
       :ManagerFixture<ManagerImplementation>{}, pair_property{this->manager},
-       atom_property{this->manager}
+      atom_property{this->manager},
+      dynamic_property{this->manager, DynSize()},
+      dynamic_property2{this->manager, DynSize()}
     {}
 
     PairScalarProperty_t pair_property;
     AtomVectorProperty_t atom_property;
+    AtomDynamicProperty_t dynamic_property;
+    AtomDynamicProperty2_t dynamic_property2;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -59,12 +69,6 @@ namespace rascal {
     atom_property.resize();
     int pair_property_counter{};
     for (auto atom: manager) {
-
-      using Value = internal::Value<double, 1, 3>;
-      using reference = typename Value::reference;
-      using true_ref = Eigen::Map<Eigen::Matrix<double, 1, 3>>;
-      static_assert(std::is_same<reference, true_ref>::value, "1");
-
       atom_property[atom] = atom.get_position();
       for (auto pair: atom) {
         pair_property[pair] = ++pair_property_counter;
@@ -88,17 +92,43 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(fill_test_lammps, PropertyFixture<StructureManagerLammps>) {
     pair_property.resize();
     atom_property.resize();
+    dynamic_property.resize();
+    dynamic_property2.resize();
+
+    BOOST_CHECK_THROW(AtomVectorProperty_t::check_compatibility(dynamic_property),
+                      std::runtime_error) ;
+
+    BOOST_CHECK_NO_THROW(AtomVectorProperty_t::check_compatibility(atom_property));
+
     int pair_property_counter{};
+    size_t counter{};
     for (auto atom: manager) {
       atom_property[atom] = atom.get_position();
+      dynamic_property2[atom] = atom.get_position();
+
+      dynamic_property[atom] << counter++, counter, counter;
       for (auto pair: atom) {
         pair_property[pair] = ++pair_property_counter;
       }
     }
 
+    auto & FakeSizedProperty{
+      AtomVectorProperty_t::check_compatibility(dynamic_property2)};
+
     pair_property_counter = 0;
+    counter = 0;
     for (auto atom: manager) {
       auto error = (atom_property[atom] - atom.get_position()).norm();
+      BOOST_CHECK_EQUAL(error, 0);
+      Eigen::Matrix<size_t, DynSize(), Eigen::Dynamic> tmp(DynSize(), 1);
+      tmp << counter++, counter, counter;
+
+      auto ierror{(tmp - dynamic_property[atom]).norm()};
+      BOOST_CHECK_EQUAL(ierror, 0);
+
+      error = (atom_property[atom] - dynamic_property2[atom]).norm();
+      BOOST_CHECK_EQUAL(error, 0);
+      error = (atom_property[atom] - FakeSizedProperty[atom]).norm();
       BOOST_CHECK_EQUAL(error, 0);
       for (auto pair: atom) {
         BOOST_CHECK_EQUAL(pair_property[pair], ++pair_property_counter);

@@ -36,7 +36,6 @@
 #include <basic_types.hh>
 
 #include "structure_managers/property_typed.hh"
-#include "structure_managers/cluster_ref_key.hh"
 
 namespace rascal {
 
@@ -97,7 +96,7 @@ namespace rascal {
      * returns properly casted fully typed and sized reference, or
      * throws a runttime error
      */
-    inline Property & operator=(PropertyBase & other) {
+    static inline Property & check_compatibility(PropertyBase & other) {
       // check type compatibility
 
       if (not (other.get_type_info().hash_code() ==
@@ -112,7 +111,7 @@ namespace rascal {
       if (not (other.get_order() == Order )) {
         std::stringstream err_str{};
         err_str << "Incompatible property order: input is of order "
-                << other.order() << ", this property is of order "
+                << other.get_order() << ", this property is of order "
                 << Order << "." ;
         throw std::runtime_error (err_str.str());
       }
@@ -160,25 +159,23 @@ namespace rascal {
 
       Value::push_in_vector(this->values, ref);
     }
-
     /**
-     * Not sure about the actual implementation of this one.
+     * Property accessor by cluster ref
      */
     template<size_t CallerLayer>
-    reference operator[](const ClusterRefKey<Order, CallerLayer> & id) {
+    inline reference operator[](const ClusterRefKey<Order, CallerLayer> & id) {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that "
                     "does not exist at this depth in the "
                     "adaptor stack.");
 
-      return
-        Value::get_ref(this->values[id.get_cluster_index(CallerLayer)*NbComp]);
+      return this->operator[](id.get_cluster_index(CallerLayer));
     }
 
     /**
      * Accessor for property by index for statically sized properties
      */
-    reference operator[](const size_t & index) {
+    inline reference operator[](const size_t & index) {
       return Value::get_ref(this->values[index*NbComp]);
     }
 

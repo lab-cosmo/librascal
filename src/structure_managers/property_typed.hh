@@ -28,6 +28,7 @@
 
 
 #include "structure_managers/property_base.hh"
+#include "structure_managers/cluster_ref_key.hh"
 
 
 namespace rascal {
@@ -120,7 +121,7 @@ namespace rascal {
     using reference = typename Value::reference;
 
     //! constructor
-    TypedProperty(StructureManagerBase & manager, Dim_t nb_row, Dim_t nb_col):
+    TypedProperty(StructureManagerBase & manager, Dim_t nb_row, Dim_t nb_col=1):
       Parent{manager, nb_row, nb_col, Order, PropertyLayer}
     {}
 
@@ -167,6 +168,20 @@ namespace rascal {
      */
     void resize_to_zero() {
       this->values.resize(0);
+    }
+
+
+    /**
+     * Property accessor by cluster ref
+     */
+    template<size_t CallerLayer>
+    inline reference operator[](const ClusterRefKey<Order, CallerLayer> & id) {
+      static_assert(CallerLayer >= PropertyLayer,
+                    "You are trying to access a property that "
+                    "does not exist at this depth in the "
+                    "adaptor stack.");
+
+      return this->operator[](id.get_cluster_index(CallerLayer));
     }
 
     /**
