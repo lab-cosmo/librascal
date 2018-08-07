@@ -35,7 +35,7 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(maxlevel_increase_adaptor_test);
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(constructor_test, ManagerFixture_chain){
+  BOOST_FIXTURE_TEST_CASE(constructor_test, ManagerFixture<StructureManagerChain>){
 
     constexpr bool verbose{true};
     constexpr bool check_below{true};

@@ -50,24 +50,6 @@ namespace rascal {
     AtomVectorProperty_t atom_property;
   };
 
-
-  struct PropertyFixture_lammps: public ManagerFixture_lammps {
-    using Manager_t = typename ManagerFixture_lammps::Manager_t;
-    constexpr static auto AtomLayer{compute_cluster_layer<1>(typename Manager_t::traits::LayerByDimension{})};
-    constexpr static auto PairLayer{compute_cluster_layer<2>(typename Manager_t::traits::LayerByDimension{})};
-    using PairScalarProperty_t = typename Manager_t::template Property_t<double, 2>;
-    using AtomVectorProperty_t = typename Manager_t::template Property_t<double, 1, 3, 1>;
-
-
-    PropertyFixture_lammps()
-      :ManagerFixture_lammps{}, pair_property{this->manager},
-       atom_property{this->manager}
-    {}
-
-    PairScalarProperty_t pair_property;
-    AtomVectorProperty_t atom_property;
-  };
-
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(constructor_test_cell, PropertyFixture<StructureManagerCell>) {}
 
@@ -100,10 +82,10 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(constructor_test_lammps, PropertyFixture_lammps) {}
+  BOOST_FIXTURE_TEST_CASE(constructor_test_lammps, PropertyFixture<StructureManagerLammps>) {}
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(fill_test_lammps, PropertyFixture_lammps) {
+  BOOST_FIXTURE_TEST_CASE(fill_test_lammps, PropertyFixture<StructureManagerLammps>) {
     pair_property.resize();
     atom_property.resize();
     int pair_property_counter{};
@@ -125,7 +107,7 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(compute_distances_lammps, PropertyFixture_lammps) {
+  BOOST_FIXTURE_TEST_CASE(compute_distances_lammps, PropertyFixture<StructureManagerLammps>) {
     pair_property.resize();
 
     for (auto atom: manager) {
