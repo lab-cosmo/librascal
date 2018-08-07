@@ -104,14 +104,15 @@ new properties that are defined for each cluster it can index.
 Consider for instance the following stack:
 
 1. A structure is read from file, and contains only the list of atoms. Each
-item in the index list corresponds with an atom, and can be used to index 
+item in the index list corresponds to an atom, and can be used to index 
 associated properties, e.g. the position of each atom
 
   .. image:: ../figures/implementation_structure_layers-1.png
      :scale: 30
      :align: center
 
-2. Pair clusters are computed with a linked-cell algorithm. The parameters
+2. Pair clusters are computed with a linked-cell algorithm
+[AllenTildesley]_. The parameters
 of the manager determines how the pairs are constructed, and no distance is 
 actually computed and stored
 
@@ -122,7 +123,7 @@ actually computed and stored
 3. Distances are computed for a subset of the pairs, e.g. only for pairs 
 within a strict cutoff of 3Å. Only a subset of the pairs computed at the 
 previous layer is indexed. We will discuss later how one can index multiple 
-layers without significant runtime overhead.
+layers without runtime overhead.
 
   .. image:: ../figures/implementation_structure_layers-3.png
      :scale: 30
@@ -141,17 +142,43 @@ A new layer is created for triplets and properties are simultaneously stored
   .. image:: ../figures/implementation_structure_layers-5.png
      :scale: 30
      :align: center
+     
+It is important to keep in mind that this architecture is not associated with a
+separate control structure in the code, but is realized at compile time by 
+template algebra based on the ``StructureManager`` class. Structure managers
+provide storage space for most of the data (both properties and indices) and
+infrastructure to access this data with minimal memory duplication and 
+computational overhead.
 
 
-ClusterRefs and indexing
-========================
+ClusterRefs, Property and indexing
+----------------------------------
 
-TBD
+The actual infrastructure to index and access cluster data is created at 
+compile time and linked statically, so despite the apparent complexity there
+is little to no associated overhead. 
 
 .. image:: ../figures/implementation_clusterref.svg
 
 Compile-time lookup of the appropriate property is achieved by means
-of the `ClusterRef` object, that holds a list of the location in memory of each
+of the ``ClusterRef`` object, that holds a list of the location in memory of 
+each cluster at a given layer in the hierarchy. A ``ClusterRef`` object is 
+an iterate, and an index that can be used to access properties. It can also 
+be used as a container to return an iterator to clusters of higher order, as
+shown in the code snippets above.
+
+Note that, once clusters of a given order have been created, Managers and 
+Adaptors can only select or reshuffle them, and not create new ones. 
+As a consequence, it is always possible to refer to deeper layers from 
+higher ones. A ``StructureManager`` object that introduces a new layer and 
+modifies clusters will create a cluster index array that specifies how each
+of the clusters that is present at that layer is mapped onto deeper layers.
+This means that higher layers can always access properties that have been
+computed at a deeper level without the need for recomputing or duplicating 
+the data.
+
+
+
 
 
 

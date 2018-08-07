@@ -333,8 +333,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.979899"
-     inkscape:cx="369.35648"
-     inkscape:cy="210.48686"
+     inkscape:cx="329.53014"
+     inkscape:cy="212.00209"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -591,15 +591,15 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:14.15839863px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#aa0000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="113.78822"
+       x="111.14067"
        y="217.13724"
        id="text821-6-0-7-9-3-2"
        transform="scale(0.99935371,1.0006467)"><tspan
          sodipodi:role="line"
          id="tspan819-0-9-5-7-7-2"
-         x="113.78822"
+         x="111.14067"
          y="217.13724"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.05555534px;font-family:Ubuntu;-inkscape-font-specification:Ubuntu;fill:#aa0000;fill-opacity:1;stroke-width:0.26458332px">access(iterator)</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.05555534px;font-family:Ubuntu;-inkscape-font-specification:Ubuntu;fill:#aa0000;fill-opacity:1;stroke-width:0.26458332px">access(*iterator)</tspan></text>
     <path
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
