@@ -200,7 +200,8 @@ Python and what this entails in terms of the template definitions.
 
 Let's say you wanted to be able to write code like this
 
-.. code: Python
+.. code-block:: Python
+
   import rascal as ras
   
   sm = ras.load_structure("structure.xyz")
@@ -223,7 +224,8 @@ flexibility to reuse between different representations (within reason).
 So a typical representation constructor would have a mode of functioning 
 based on StructureManagerFull, that could go like 
 
-.. code: c++
+.. code-block:: c++
+
   RepManagerSOAP<StructureManagerFull> (StructureManagerFull& SM, hypers) {
     this->sm = SM;
     this->sm.initialize_pars_based_on_hypers(hypers);
