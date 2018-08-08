@@ -130,9 +130,9 @@ namespace rascal {
     using ClusterRef_t = typename Parent::template ClusterRef<Order>;
 
     //! Default constructor
-    StructureManagerCenters() = default;
-    // :atoms_index{},positions{},atoms_type{},lattice{},cell{},pbc{},offsets{},natoms{}
-    // {};
+    StructureManagerCenters() // = default;
+    :atoms_index{},positions{},atoms_type{},lattice{},cell{},pbc{},offsets{},natoms{}
+    {};
 
     //! Copy constructor
     StructureManagerCenters(const StructureManagerCenters &other) = delete;

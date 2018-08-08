@@ -40,14 +40,23 @@ namespace py=pybind11;
 
 template<size_t Order, typename StructureManagerImplementation>
 decltype(auto) add_cluster(py::module & m) {
-  using ClusterRef = typename StructureManager<StructureManagerImplementation>::template ClusterRef<Order>;
-  // py::class_<ClusterRef> py_cluster (m, (Order == 1) ? "Center.Center" : "Cell.Neighbour");
-  // py_cluster.def_property_readonly("atom_index", & ClusterRef::get_atom_index, return_value_policy::reference)
-    // .def_property_readonly("atom_type", & ClusterRef::get_atom_type, return_value_policy::reference)
-    // .def_property_readonly("index", & ClusterRef::get_index, return_value_policy::reference)
-    // .def_property_readonly("size", & ClusterRef::size, return_value_policy::reference)
-  py::class_<ClusterRef> py_cluster (m,"Center")  
-    py_cluster.def_property_readonly("position",& ClusterRef::get_position, return_value_policy::reference);
+  using ClusterRef = typename StructureManager<
+              StructureManagerImplementation>::template ClusterRef<Order>;
+  // TODO: change the exposed name to a convertion of the 
+  // StructureManagerImplementation type to a string
+  py::class_<ClusterRef> py_cluster (m, 
+                      (Order == 1) ? "StructureManager.Center" 
+                                    : "StructureManager.Neighbour");
+  py_cluster.def_property_readonly("atom_index", & ClusterRef::get_atom_index, 
+                          py::return_value_policy::reference)
+    .def_property_readonly("atom_type", & ClusterRef::get_atom_type, 
+                          py::return_value_policy::reference)
+    .def_property_readonly("index", & ClusterRef::get_index, 
+                          py::return_value_policy::reference)
+    .def_property_readonly("size", & ClusterRef::size, 
+                          py::return_value_policy::reference) 
+    .def_property_readonly("position", & ClusterRef::get_position,
+                          py::return_value_policy::reference);
     return py_cluster;
 }
 
@@ -59,14 +68,14 @@ void add_manager_centers(py::module& m){
   py::class_<StructureManagerCenters,
       StructureManager<StructureManagerCenters>>(m, 
                                                 "StructureManagerCenters")
-    .def(py::init<>());
-    // .def("update",&StructureManagerCenters::update)
-  //   .def("__iter__",
-	//  [](StructureManager<StructureManagerCenters> &v) {
-	//    return py::make_iterator(v.begin(),v.end());
-	//  }, py::keep_alive<0, 1>()); /* Keep vector alive while iterator is used */
+    .def(py::init<>())
+    .def("update",&StructureManagerCenters::update)
+    .def("__iter__",
+	 [](StructureManager<StructureManagerCenters> &v) {
+	   return py::make_iterator(v.begin(),v.end());
+	 }, py::keep_alive<0, 1>()); /* Keep vector alive while iterator is used */
 
-  // add_cluster<1,StructureManagerCenters>(m);
+  add_cluster<1,StructureManagerCenters>(m);
 };
 
 // void add_manager_cell(py::module& m){
