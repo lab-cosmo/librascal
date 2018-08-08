@@ -87,7 +87,7 @@ namespace rascal {
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDirectionVectors{false};
     constexpr static bool HasDistances{false};
-    using LayerByDimension = std::integer_sequence<size_t, 0, 0>;
+    using LayerByOrder = std::integer_sequence<size_t, 0, 0>;
   };
 
   /**
@@ -151,7 +151,7 @@ namespace rascal {
      * A ClusterRef_t is a return type for iterators. It gives a light-weight
      * reference to an atom, a pair, a triplet,... to the AtomRefs of all
      * implicated atoms.  The template parameters Order and MaxOrder give the
-     * pair/triplet/ and the maximum body order, e.g. up to pair level.  
+     * pair/triplet/ and the maximum body order, e.g. up to pair level.
      * To increase the MaxOrder, use an <code>adaptor</code>.
      */
     template <size_t Order>

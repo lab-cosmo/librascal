@@ -56,10 +56,10 @@ namespace rascal {
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
     // TODO: Future optimisation: do not increase depth for atoms
     // (they are all kept anyways, so no duplication necessary).
-    using LayerByDimension = typename
+    using LayerByOrder = typename
       LayerIncreaser<MaxOrder,
                      typename
-                     ManagerImplementation::traits::LayerByDimension>::type;
+                     ManagerImplementation::traits::LayerByOrder>::type;
   };
 
   /**
@@ -355,7 +355,7 @@ namespace rascal {
         // get new layer and add index at this depth
         constexpr auto NextClusterLayer{
           compute_cluster_layer<next_cluster.order()>
-            (typename traits::LayerByDimension{})
+            (typename traits::LayerByOrder{})
             };
 
 
@@ -420,13 +420,13 @@ namespace rascal {
     for (auto atom: this->manager) {
       this->add_atom(atom);
       /**
-       * Add new depth layer for atoms (see LayerByDimension for
+       * Add new depth layer for atoms (see LayerByOrder for
        * possible optimisation).
        */
 
       constexpr auto AtomLayer{
         compute_cluster_layer<atom.order()>
-          (typename traits::LayerByDimension{})
+          (typename traits::LayerByOrder{})
           };
 
       Eigen::Matrix<size_t, AtomLayer+1, 1> indices;
@@ -437,7 +437,7 @@ namespace rascal {
       for (auto pair: atom) {
         constexpr auto PairLayer{
           compute_cluster_layer<pair.order()>
-            (typename traits::LayerByDimension{})};
+            (typename traits::LayerByOrder{})};
 
         double distance{(atom.get_position()
                          - pair.get_position()).norm()};

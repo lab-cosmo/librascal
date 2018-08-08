@@ -93,7 +93,7 @@ namespace rascal {
                                                std::tuple<TupComp...>> {
       using traits = typename Manager::traits;
       constexpr static auto ActiveLayer{
-        compute_cluster_layer<Order>(typename traits::LayerByDimension{})};
+        compute_cluster_layer<Order>(typename traits::LayerByOrder{})};
 
       using Property_t = Property<size_t, Order, ActiveLayer, LayersHead+1, 1>;
       using type = typename ClusterIndexPropertyComputer_Helper
@@ -111,7 +111,7 @@ namespace rascal {
                                                std::tuple<TupComp...>> {
       using traits = typename Manager::traits;
       constexpr static auto ActiveLayer{
-        compute_cluster_layer<Order>(typename traits::LayerByDimension{})};
+        compute_cluster_layer<Order>(typename traits::LayerByOrder{})};
 
       using Property_t = Property<size_t, Order, ActiveLayer, LayersHead+1, 1>;
       using type = std::tuple<TupComp..., Property_t>;
@@ -159,7 +159,7 @@ namespace rascal {
     using Vector_t = Eigen::Matrix<double, traits::Dim, 1>;
     using Vector_ref = Eigen::Map<Vector_t>;
     using ClusterIndex_t = typename internal::ClusterIndexPropertyComputer
-      <StructureManager, typename traits::LayerByDimension>::type;
+      <StructureManager, typename traits::LayerByOrder>::type;
     using ClusterConstructor_t = typename internal::ClusterIndexConstructor
       <ClusterIndex_t, StructureManager>;
 
@@ -167,14 +167,14 @@ namespace rascal {
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
     using Property_t = Property<T, Order,
                                 compute_cluster_layer<Order>
-                                  (typename traits::LayerByDimension{}),
+                                  (typename traits::LayerByOrder{}),
                                 NbRow, NbCol>;
 
     //! helper type for Property creation
     template <typename T, size_t Order>
     using TypedProperty_t = TypedProperty<T, Order,
                                           compute_cluster_layer<Order>
-                                          (typename traits::LayerByDimension{})>;
+                                          (typename traits::LayerByOrder{})>;
 
     //! Default constructor
     StructureManager() :
@@ -264,7 +264,7 @@ namespace rascal {
   protected:
     template <size_t Order>
     constexpr static size_t cluster_layer(){
-      return compute_cluster_layer<Order>(typename traits::LayerByDimension{});
+      return compute_cluster_layer<Order>(typename traits::LayerByOrder{});
     }
 
     //! recursion end, not for use

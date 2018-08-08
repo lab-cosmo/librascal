@@ -59,10 +59,10 @@ namespace rascal {
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder+1};
     //! New Layer
     //! TODO: Is this the correct way to initialize the increased depth?
-    using LayerByDimension = typename
+    using LayerByOrder = typename
       LayerExtender<MaxOrder,
                     typename
-                    ManagerImplementation::traits::LayerByDimension>::type;
+                    ManagerImplementation::traits::LayerByOrder>::type;
   };
 
   /**
