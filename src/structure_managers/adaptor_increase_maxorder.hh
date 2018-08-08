@@ -453,7 +453,10 @@ namespace rascal {
         //! collect all possible neighbours of the cluster: collection of all
         //! neighbours of current_i_atoms
         for (auto pair : j_cluster) {
-          current_j_atoms.insert(pair.back());
+          auto j_add = pair.back();
+          if (j_add > i_atoms.back()) {
+            current_j_atoms.insert(j_add);
+          }
         }
       }
 
@@ -462,13 +465,6 @@ namespace rascal {
       std::set_difference(current_j_atoms.begin(), current_j_atoms.end(),
                           current_i_atoms.begin(), current_i_atoms.end(),
                           std::inserter(atoms_to_add, atoms_to_add.begin()));
-
-      // std::cout << "Neighbours to add to cluster ";
-      // for (auto j : atoms_to_add) {
-      //   std::cout << j << " ";
-      // }
-      // std::cout << "number of neighbours to add to add " << atoms_to_add.size();
-      // std::cout << std::endl;
 
       manager.add_entry_number_of_neighbours();
       if (atoms_to_add.size() > 0) {
