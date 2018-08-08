@@ -1,5 +1,5 @@
 /**
- * file   adaptor_increase_maxlevel.hh
+ * file   adaptor_increase_maxorder.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *
@@ -34,8 +34,8 @@
 #include <typeinfo>
 #include <set>
 
-#ifndef ADAPTOR_MAXLEVEL_H
-#define ADAPTOR_MAXLEVEL_H
+#ifndef ADAPTOR_MAXORDER_H
+#define ADAPTOR_MAXORDER_H
 
 namespace rascal {
   /**
@@ -645,7 +645,7 @@ namespace rascal {
       return main_offset;
     } else {
       /**
-       * If not accessible at this level, call lower Order offsets from lower
+       * If not accessible at this order, call lower Order offsets from lower
        * order manager(s).
        */
       return this->manager.get_offset_impl(counters);
@@ -653,7 +653,7 @@ namespace rascal {
   }
 }  // rascal
 
-#endif /* ADAPTOR_MAXLEVEL_H */
+#endif /* ADAPTOR_MAXORDER_H */
 
 // TODO: The construction of triplets is fine, but they occur multiple times. We
 // probably need to check for increasing atomic index to get rid of
