@@ -46,6 +46,7 @@ using namespace std;
 namespace rascal {
   namespace internal {
 
+    // conversion of a linear id to a Dim_t id
     template<int Dim>
     inline void lin2mult(const Dim_t& index,
                          const Eigen::Ref<const Vec3i_t> shape,
@@ -80,6 +81,7 @@ namespace rascal {
     // div_mod function returning python like div_mod, i.e. signed integer
     // division truncates towards negative infinity, and signed integer modulus
     // has the same sign the second operand.
+    // Integral is just a name, it does not mean an actual integration
     template<class Integral>
     void div_mod(const Integral& x, const Integral & y,
                  std::array<int, 2> & out) {
@@ -105,6 +107,8 @@ namespace rascal {
       out[0] = quot;
       out[1] = rem;
     }
+
+    // maybe get_box_index from _chain.cc
 
   }  // internal
 
@@ -132,7 +136,8 @@ namespace rascal {
     using AtomRef_t = typename Parent::AtomRef;
     template <size_t Order>
     using ClusterRef_t = typename Parent::template ClusterRef<Order>;
-    using AtomVectorField_t = typename StructureManagerCell::Property_t< double, 1, 3>;
+    using AtomVectorField_t =
+      typename StructureManagerCell::Property_t<double, 1, 3>;
 
     //! Default constructor
     StructureManagerCell()
@@ -175,12 +180,12 @@ namespace rascal {
 
     inline Vector_ref get_shift(const int& i_bin_id, const int& shift_index);
 
-    // return position vector atom is the neighbour atom. center_atom
-    // is the current center. j_linear_id is the index of the current
-    // neighbour iterator.
+    // return position vector atom is the neighbour atom. center_atom is the
+    // current center. j_linear_id is the index of the current neighbour
+    // iterator.
     template<size_t Order, size_t Layer>
     inline Vector_t get_neighbour_position(const ClusterRefKey<Order, Layer> &
-                                             cluster) {
+                                           cluster) {
       static_assert(Order > 1,
                     "Only possible for Order > 1.");
       static_assert(Order <= traits::MaxOrder,
@@ -194,10 +199,7 @@ namespace rascal {
       auto & i_bin_id{this->part2bin[i_atom_id]};
       auto & shift_index{this->neighbour_bin_id[i_bin_id][j_linear_id].get_index()};
       auto & j_atom_id{cluster.back()}; // neighbour atom index
-      // TODO: find another way. This is a work around so that
-      // shifted_position lives longer than the function call but it
-      // is prone to side effects
-      auto && shifted_position = this->positions.col(j_atom_id);
+      auto && shifted_position{this->positions.col(j_atom_id)};
       auto && tmp{this->cell * this->get_shift(i_bin_id,shift_index)};
       return shifted_position + tmp;
     }

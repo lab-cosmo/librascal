@@ -490,6 +490,10 @@ namespace rascal {
 
     // TODO: add functionality for the shift vector??!
 
+    // TODO: include linked-list-cell algorithm from Felix _cell.cc here before
+    // the building of the neighbour list
+    // Add a distinction between full and half neighbour list -- probably in traits?
+
     //! The zeroth order does not have neighbours
     this->nb_neigh.push_back(0);
 

@@ -30,9 +30,9 @@
 namespace rascal {
 
 
-  /* StructureManagerCell::Box StructureManagerCell::get_box(const int& bin_id){
-    return this->boxes[bin_id];
-  } */
+  /* StructureManagerCell::Box StructureManagerCell::get_box(const int & bin_id){
+     return this->boxes[bin_id];
+     } */
   size_t StructureManagerCell::get_box_nb(){
     return this->boxes.size();
   }
@@ -45,7 +45,7 @@ namespace rascal {
         const Eigen::Ref<const VecXi>  particle_types,
         const Eigen::Ref<const VecXi> center_ids,
         const Eigen::Ref<const Eigen::MatrixXd> cell,
-        const std::array<bool,3>& pbc, const double& cutoff_max) {
+        const std::array<bool,3> & pbc, const double & cutoff_max) {
 
     Eigen::Index Natom{positions.cols()};
 
@@ -119,8 +119,11 @@ namespace rascal {
     }
 
     // Set up the data strucure containing the information about neighbourhood
-    // get the number of particles in the box and its neighbour boxes
-    // set the arrays that will be used to iterate over the centers and neighbours
+    // get the number of particles in the box and its neighbour boxes set the
+    // arrays that will be used to iterate over the centers and neighbourr
+    //
+    // TODO: short circuit for building neighbours, nneigh, etc. to make calls in
+    // manager short
     this->neighbour_bin_id.resize(nbins);
     this->neighbour_atom_index.resize(nbins);
     //loop over the boxes
@@ -141,6 +144,7 @@ namespace rascal {
           this->neighbour_bin_id[bin_index].push_back(AtomRef_t(this->get_manager(),
                                                                 neigh_bin_id));
           // store the indices to the neighbour particles
+          // TODO: basically a neighbour list??
           this->neighbour_atom_index[bin_index]
             .push_back(AtomRef_t(this->get_manager(),
                                  this->boxes[neig_bin_index]
@@ -152,8 +156,9 @@ namespace rascal {
     }
 
     int stride{0};
-    // get the stride for the fields. (center,neigh) dimentions are flattened in
+    // get the stride for the fields. (center,neigh) dimensions are flattened in
     // fields with center being leading dimension
+    // TODO: number_of_neighbours; offsets can be calculated from this
     for (auto center : this->centers){
       this->number_of_neighbours_stride.push_back(stride);
       int bin_index{this->part2bin[center.get_index()]};
@@ -165,11 +170,11 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
 
-  StructureManagerCell::Box::Box(Manager_t& manager,
-                                     const Vec3i_t& coord,
-                                     const std::array<bool, 3>& pbc,
-                                     const Vec3i_t& neigh_search,
-                                     const Vec3i_t& nbins_c)
+  StructureManagerCell::Box::Box(Manager_t & manager,
+                                 const Vec3i_t & coord,
+                                 const std::array<bool, 3> & pbc,
+                                 const Vec3i_t & neigh_search,
+                                 const Vec3i_t & nbins_c)
     :manager{manager},particles{},neighbour_bin_shift{},neighbour_bin_index{},
      number_of_neighbours{0},coordinates{}
   {
@@ -177,7 +182,7 @@ namespace rascal {
 
     this->coordinates = coord;
     int bin_id{0};
-    Vec3i_t shift,neighbour_bin_idx_c;
+    Vec3i_t shift, neighbour_bin_idx_c;
     Vector_t neighbour_bin_shift;
     std::array<int,2> div_mod;
     std::array<std::vector<int>,dim> neigh_search_ids;
@@ -187,7 +192,7 @@ namespace rascal {
     for (int ii{0}; ii < dim; ++ii)  {
       if (pbc[ii] == true){
         for (int jj{-neigh_search[ii]}; jj <= neigh_search[ii]; ++jj ){
-            neigh_search_ids[ii].push_back(this->coordinates[ii]+jj);
+          neigh_search_ids[ii].push_back(this->coordinates[ii]+jj);
         }
       }
       else if (pbc[ii] == false && this->coordinates[ii] == 0 ){
@@ -196,7 +201,7 @@ namespace rascal {
         }
       }
       else if (pbc[ii] == false && this->coordinates[ii] == nbins_c[ii]-1 ){
-          for (int jj{-neigh_search[ii]}; jj <= 0; ++jj ){
+        for (int jj{-neigh_search[ii]}; jj <= 0; ++jj ){
           neigh_search_ids[ii].push_back(this->coordinates[ii]+jj);
         }
       }
@@ -227,7 +232,7 @@ namespace rascal {
     return this->neighbour_bin_index.size();
   }
 
-  inline void StructureManagerCell::Box::push_particle_back(const int& part_index){
+  inline void StructureManagerCell::Box::push_particle_back(const int & part_index){
     this->particles.push_back(AtomRef_t(this->manager, part_index));
   }
 
@@ -239,15 +244,15 @@ namespace rascal {
     return number_of_neighbours;
   }
 
-  inline int StructureManagerCell::Box::get_neighbour_bin_index(const int& j_index){
+  inline int StructureManagerCell::Box::get_neighbour_bin_index(const int & j_index){
     return this->neighbour_bin_index[j_index];
   }
 
-  inline size_t StructureManagerCell::Box::get_particle_index(const int& index){
+  inline size_t StructureManagerCell::Box::get_particle_index(const int & index){
     return this->particles[index].get_index();
   }
 
-  inline void StructureManagerCell::Box::set_number_of_neighbours(const size_t& neigh_nb){
+  inline void StructureManagerCell::Box::set_number_of_neighbours(const size_t & neigh_nb){
     this->number_of_neighbours = neigh_nb;
   }
 
@@ -259,16 +264,16 @@ namespace rascal {
          const Eigen::Ref<const VecXi>  particle_types,
          const Eigen::Ref<const VecXi> center_ids,
          const Eigen::Ref<const Eigen::MatrixXd> cell,
-         const std::array<bool,3>& pbc, const double& cutoff_max) {
+         const std::array<bool,3> & pbc, const double & cutoff_max) {
 
     bool some_condition{true};
     if (some_condition){
       StructureManagerCell::build(positions,
-                                      particle_types,
-                                      center_ids,
-                                      cell,
-                                      pbc,
-                                      cutoff_max);
+                                  particle_types,
+                                  center_ids,
+                                  cell,
+                                  pbc,
+                                  cutoff_max);
     }
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
@@ -278,7 +283,6 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-
   size_t StructureManagerCell::
   get_nb_clusters(size_t cluster_size) const {
     switch (cluster_size) {
