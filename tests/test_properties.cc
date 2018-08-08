@@ -47,11 +47,15 @@ namespace rascal {
 
     constexpr static Dim_t DynSize() {return 3;}
 
+    std::string atom_property_metadata{"positions"};
+    std::string dynamic_property_metadata{"arbitrary counters"};
+    std::string dynamic_property2_metadata{"distances"};
+
     PropertyFixture()
       :ManagerFixture<ManagerImplementation>{}, pair_property{this->manager},
-      atom_property{this->manager},
-      dynamic_property{this->manager, DynSize()},
-      dynamic_property2{this->manager, DynSize()}
+      atom_property{this->manager, atom_property_metadata},
+      dynamic_property{this->manager, DynSize(), 1, dynamic_property_metadata},
+      dynamic_property2{this->manager, DynSize(), 1, dynamic_property2_metadata}
     {}
 
     PairScalarProperty_t pair_property;
@@ -85,11 +89,23 @@ namespace rascal {
     }
   }
 
+  BOOST_FIXTURE_TEST_CASE(meta_data_test,
+                          PropertyFixture<StructureManagerCell> ) {
+    auto atom_metadata = atom_property.get_metadata();
+    auto dynamic_metadata = dynamic_property.get_metadata();
+    auto dynamic_metadata2 = dynamic_property2.get_metadata();
+
+    BOOST_CHECK_EQUAL(atom_metadata, atom_property_metadata);
+    BOOST_CHECK_EQUAL(dynamic_metadata, dynamic_property_metadata);
+    BOOST_CHECK_EQUAL(dynamic_metadata2, dynamic_property2_metadata);
+  }
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(constructor_test_lammps, PropertyFixture<StructureManagerLammps>) {}
+  BOOST_FIXTURE_TEST_CASE(constructor_test_lammps,
+                          PropertyFixture<StructureManagerLammps>) {}
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(fill_test_lammps, PropertyFixture<StructureManagerLammps>) {
+  BOOST_FIXTURE_TEST_CASE(fill_test_lammps,
+                          PropertyFixture<StructureManagerLammps>) {
     pair_property.resize();
     atom_property.resize();
     dynamic_property.resize();
