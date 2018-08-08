@@ -37,11 +37,11 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(constructor_test, ManagerFixture<StructureManagerChain>){
 
-    constexpr bool verbose{true};
-    constexpr bool check_below{true};
+    constexpr bool verbose{false};
+    constexpr bool check_below{false};
 
     // Check underlying manager
-    std::cout << ">============ below" << std::endl;
+    if (check_below) std::cout << ">============ below" << std::endl;
     size_t npairs1{0};
     if (check_below) {
       for (auto atom : manager_chain) {
@@ -61,8 +61,10 @@ namespace rascal {
         }
       }
     }
-    std::cout << "number of pairs " << npairs1 << std::endl;
-    std::cout << "<============ below" << std::endl;
+    if (check_below) {
+      std::cout << "number of pairs " << npairs1 << std::endl;
+      std::cout << "<============ below" << std::endl;
+    }
 
     AdaptorMaxOrder<StructureManagerChain> adaptor{manager_chain, cutoff};
     adaptor.update();
@@ -81,7 +83,7 @@ namespace rascal {
         	  << std::endl;
       }
 
-      std::cout << "position: " << atom.get_position() << std::endl;
+      if (verbose) std::cout << "position: " << atom.get_position() << std::endl;
 
       for (auto pair : atom) {
         npairs++;
@@ -104,7 +106,7 @@ namespace rascal {
         }
       }
     }
-    std::cout << "Number of triplets: " << ntriplets << std::endl;
+    if(verbose) std::cout << "Number of triplets: " << ntriplets << std::endl;
   }
 
 

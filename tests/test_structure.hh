@@ -34,6 +34,7 @@
 #include "structure_managers/structure_manager_lammps.hh"
 #include "structure_managers/structure_manager_cell.hh"
 #include "structure_managers/structure_manager_chain.hh"
+#include "structure_managers/structure_manager_json.hh"
 
 namespace rascal {
 
@@ -189,13 +190,13 @@ namespace rascal {
     ManagerFixture()
       : manager_json{} {
       manager_json.read_structure_from_json("simple_cubic_8.json");
-      manager_chain.update();
+      manager_json.update();
     }
 
     ~ManagerFixture () {BOOST_TEST_MESSAGE("teardown ManagerJson fixture");}
 
     Manager_t manager_json;
-  }
+  };
 
 }  // rascal
 

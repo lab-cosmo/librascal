@@ -47,7 +47,7 @@ namespace rascal {
    * and access them with the map. Using the vector type automatically ensures
    * contiguity
    */
-  void StructureManagerJson::update(double cutoff) {
+  void StructureManagerJson::update() {
 
     /**
      * Check if a structure has already been read, if not, throw an exception to
@@ -87,11 +87,6 @@ namespace rascal {
      */
     this->natoms = atoms_object.position.size();
     /**
-     * Invoke neighbourlist builder, because without it, you can not really do
-     * anything.
-     */
-    this->make_neighbourlist(cutoff);
-    /**
      * The following two commands build a list of increasing indices. It is
      * assumed that the atoms do not have a unique index, when they are read
      * from file. Therefore a list of increasing integer identifiers is
@@ -100,23 +95,10 @@ namespace rascal {
      */
     this->ilist.resize(this->natoms);
     std::iota(ilist.begin(), ilist.end(), 0);
-    /**
-     * The next commands gather necessary information to iterate over the half
-     * neighbourlist.
-     */
-    this->offsets.reserve(this->natoms);
-    this->offsets.resize(1);
-
-    for (size_t i{0} ; i<this->natoms-1 ; ++i) {
-      this->offsets.emplace_back(this->offsets[i] + this->numneigh[i]);
-    }
 
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
-    auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
     atom_cluster_indices.fill_sequence();
-    pair_cluster_indices.fill_sequence();
-
   }
 
   /* ---------------------------------------------------------------------- */
@@ -131,9 +113,6 @@ namespace rascal {
     case 1: {
       return this->natoms;
       break;
-    }
-    case 2: {
-      return this->nb_pairs;
     }
     default:
       throw std::runtime_error("Can only handle atoms and pairs,"
@@ -177,267 +156,5 @@ namespace rascal {
      * belonging to this file. Here, just the first one is read.
      */
     this->atoms_object = j.begin().value();
-  }
-
-  /* ---------------------------------------------------------------------- */
-  /**
-   * Helper function for the linked cell algorithm for scaling/rescaling the
-   * complete simulation box. It is included, because usually, there is no
-   * origin given for the cell of the atomic environment.
-   */
-  inline double StructureManagerJson::get_box_length(int d) {
-    Cell_ref Cell = this->get_cell();
-    return Cell.col(d).norm();
-  }
-  /* ---------------------------------------------------------------------- */
-  /**
-   * Helper function to get the linear index for the respective cell. The cells
-   * are represented as a contiguous 1D vector.
-   */
-  inline int get_linear_index(std::vector<int> nidx, std::vector<int> nmax) {
-    auto dim = nidx.size();
-    switch (dim) {
-    case 1: {
-      return nidx[0];
-      break;
-    }
-    case 2: {
-      return nidx[1]*nmax[0] + nidx[0];
-      break;
-    }
-    case 3: {
-      return nidx[2] * nmax[0] * nmax[1] +
-        nidx[1] * nmax[0] + nidx[0];
-      break;
-    }
-    default:
-      throw std::runtime_error("Can only give index for max 3 dimensions");
-      break;
-    }
-  }
-
-  /* ---------------------------------------------------------------------- */
-  /**
-   * Helper function for the linked cell algorithm. Given a position, a cutoff,
-   * an offset and the maximum number of boxes, this returns the 3D index set of
-   * the box.
-   */
-  inline std::vector<int>
-  StructureManagerJson::
-  get_box_index(Vector_ref& position,
-                std::vector<double>& rc,
-                Eigen::Matrix<double, 1, traits::Dim> offset,
-                std::vector<int> nmax) {
-    std::vector<int> nidx(traits::Dim);
-    for(auto dim{0}; dim < traits::Dim; ++dim) {
-      nidx[dim] = static_cast<int>(std::floor( (position(dim) - offset(dim))
-                                               / rc[dim] ));
-      nidx[dim] = std::min(nidx[dim], nmax[dim]-1);
-      nidx[dim] = std::max(nidx[dim], 0);
-    }
-    return nidx;
-  }
-
-  /* ---------------------------------------------------------------------- */
-  /**
-   * Helper function for linked cell algorithm. Given an atomic id, this
-   * function collects all neighbours of the box and writes it to the full
-   * neighbourlist <code>allneigh</code>.
-   */
-  inline void StructureManagerJson::
-  collect_neighbour_info_of_atom(const int i,
-                                 const std::vector<int> boxidx,
-                                 const std::vector<int> nmax) {
-
-    auto jcell_index = get_linear_index(boxidx, nmax);
-    auto ihead = this->lc[jcell_index]; //ll[jcell_index];
-    // Check if any atom is in given cell
-    if(ihead != -1) {
-      if(ihead != i) this->allneigh[i].push_back(ihead);
-      // same cell neighbours?
-      auto itail = this->ll[ihead];
-      while (itail != -1) {
-        if(itail != i) {
-          this->allneigh[i].push_back(itail);
-        }
-        itail = this->ll[itail];
-      }
-    }
-  }
-
-  /* ---------------------------------------------------------------------- */
-  /**
-   * Function for creating the full and half neighbour list. The result is
-   * directly written into protected member variables of the neighbourhood
-   * manager.
-   */
-  void StructureManagerJson::make_neighbourlist(double cutoff) {
-    /* Neighbourlist algorithm, non periodic, non triclinic cell
-     * for demonstration purposes.
-     */
-    //! internal variables for linked list/ linked cell
-    std::vector<int> nmax(3);
-    std::vector<double> rc(3);
-
-    for(auto dim{0}; dim < traits::Dim; ++dim) {
-      nmax[dim] = static_cast<int>(std::floor(this->get_box_length(dim)
-                                              / cutoff));
-      rc[dim] = static_cast<double>(this->get_box_length(dim) / nmax[dim]);
-    };
-
-    int nboxes{1};
-    nboxes = std::accumulate(nmax.begin(), nmax.end(), 1,
-                             std::multiplies<int>());
-    //! If the cutoff is smaller than length of the structure.
-    nboxes = std::max(nboxes, 1);
-
-    //! Create the data structure for the linked cell algorithm.
-    this->ll.resize(this->natoms);
-    this->lc.resize(nboxes);
-    std::fill(this->ll.begin(), this->ll.end(), -1);
-    std::fill(this->lc.begin(), this->lc.end(), -1);
-
-    Positions_ref atom_pos = this->get_positions();
-
-    /**
-     * Get an origin. This is needed, because sometimes positions have negative
-     * values.
-     */
-    Eigen::Matrix<double, 1, traits::Dim> offset{};
-    for(auto dim{0}; dim < traits::Dim; ++dim) {
-      offset(dim) = std::min(0., atom_pos.row(dim).minCoeff());
-    }
-
-    //! Make cell lists
-    std::vector<int> nidx(traits::Dim);
-    for (auto i{0}; i < atom_pos.cols(); ++i) {
-      auto * p{atom_pos.col(i).data()};
-      Vector_ref pos{p};
-      nidx = get_box_index(pos, rc, offset, nmax);
-      auto linear_index = get_linear_index(nidx, nmax);
-      this->ll[i] = this->lc[linear_index];
-      this->lc[linear_index] = i;
-    }
-
-    if(this->verbose) {
-      std::cout << ">>>> nboxes " << nboxes << std::endl;
-      for (auto i{0}; i<nboxes; ++i) {
-        auto n = this->lc[i];
-        std::cout << "linear index " << i << std::endl;
-        while (n != -1) {
-          std::cout << "box " << i<< " atom " << n << std::endl;
-          n = this->ll[n];
-        }
-      }
-    }
-    /**
-     * Make verlet table of neighbours (vectorized), not strict Full neighbour
-     * list
-     */
-    this->allneigh.resize(this->natoms);
-    if(this->verbose) std::cout << ">>>>>>>>>>>>>>>>start neighbour list" << std::endl;
-    for (auto i{0}; i < atom_pos.cols(); ++i) {
-      auto * p{atom_pos.col(i).data()};
-      Vector_ref pos{p};
-      if(this->verbose) std::cout << "---pos \n" << pos << std::endl;
-
-      //! Which is my own cell?
-      nidx = get_box_index(pos, rc, offset, nmax);
-      auto nidxtmp = nidx;
-
-      switch(traits::Dim) {
-      case 1: {
-        std::vector<int> nd{-1, 0, 1};
-        for (auto dx :nd) {
-          nidxtmp[0] = nidx[0] + dx;
-          if(nidxtmp[0] < 0 || nidxtmp[0] > nmax[0]-1) continue;
-          if(nidxtmp[1] > nmax[1] -1) continue;
-          this->collect_neighbour_info_of_atom(i, nidxtmp, nmax);
-        }
-        break;
-      }
-      case 2: {
-        std::vector<int> nd{-1, 0, 1};
-        for (auto dx : nd) {
-          for (auto dy : nd) {
-            nidxtmp[0] = nidx[0] + dx;
-            nidxtmp[1] = nidx[1] + dy;
-            if(nidxtmp[0] < 0 || nidxtmp[0] > nmax[0]-1) continue;
-            if(nidxtmp[1] < 0 || nidxtmp[1] > nmax[1]-1) continue;
-            this->collect_neighbour_info_of_atom(i, nidxtmp, nmax);
-          }
-        }
-        break;
-      }
-      case 3: {
-        std::vector<int> nd{-1, 0, 1};
-        for (auto dx : nd) {
-          for (auto dy : nd) {
-            for (auto dz : nd) {
-              nidxtmp[0] = nidx[0] + dx;
-              nidxtmp[1] = nidx[1] + dy;
-              nidxtmp[2] = nidx[2] + dz;
-              if(nidxtmp[0] < 0 || nidxtmp[0] > nmax[0]-1) continue;
-              if(nidxtmp[1] < 0 || nidxtmp[1] > nmax[1]-1) continue;
-              if(nidxtmp[2] < 0 || nidxtmp[2] > nmax[2]-1) continue;
-              this->collect_neighbour_info_of_atom(i, nidxtmp, nmax);
-            }
-          }
-        }
-        break;
-      }
-      default:
-        throw std::runtime_error("Neighbourlist only max 3D.");
-        break;
-      }
-    } // atom neighbours
-
-    if (this->verbose) {
-      for (size_t i=0; i<this->natoms; ++i) {
-        std::cout << "Atom i " << i << std::endl;
-        auto neighs = allneigh[i];
-        for (auto n : neighs) {
-          std::cout << n << " ";
-        }
-        std::cout << std::endl;
-      }
-    }
-
-    // Half-neighbourlist
-    this->numneigh.resize(this->natoms);
-    this->nb_pairs = 0;
-
-    for (size_t i=0; i < this->natoms; ++i) {
-      auto neigh = allneigh[i];
-      auto i_number_of_neighbours{0};
-      for(size_t j : neigh) {
-        if (j > i) {
-          i_number_of_neighbours += 1;
-          this->nb_pairs += 1;
-          halfneigh.push_back(j);
-        }
-      }
-      numneigh[i] = i_number_of_neighbours;
-    }
-    std::cout << std::endl;
-
-    if (this->verbose) {
-      std::cout << "Number of pairs: " << this->nb_pairs << std::endl;
-      auto ioff{0};
-      for (size_t n=0; n < this->natoms; ++n){
-        auto a = numneigh[n];
-        std::cout << "Next neigh atom---- " << n
-                  << " number of neighbours " << a << std::endl;
-        for (auto i=ioff; i < ioff+a; i++) {
-          std::cout << "Neighbour "
-                    << halfneigh[i] << std::endl;
-        }
-        ioff += a;
-      }
-    }
-
-    //! Get number of pairs to write into member variable.
-    this->nb_pairs = std::accumulate(this->numneigh.begin(),
-                                     this->numneigh.end(), 0);
   }
 } // rascal

@@ -159,12 +159,7 @@ namespace rascal {
      * atom positions are provided by a simulation method, which evolves in
      * time, this function updates the data. In this example, .update() takes no
      * arguments, because it relies on the data provided by a file. It is read
-     * by invoking .read_structure_from_json(). Invoking update also builds a
-     * full and half neighbour list.  The update function is required, every
-     * time the list changes. It is implemented here with a dependency to the
-     * JSON interface. An update of the positions in the JSON object
-     * <code>atoms_object</code> needs to be followed by a call to this
-     * function.
+     * by invoking .read_structure_from_json().
      */
     void update();
 
@@ -227,6 +222,22 @@ namespace rascal {
       return this->natoms;
     }
 
+    //! return the index-th neighbour of cluster
+    template<size_t Order, size_t Layer>
+    inline int get_cluster_neighbour(const ClusterRefKey<Order, Layer>
+                                     & cluster,
+                                     size_t index) const {
+      static_assert(Order <= traits::MaxOrder,
+                    "this implementation only handles atoms and pairs.");
+      return 0;
+    }
+
+    //! return the atom_index of the index-th atom in manager
+    inline int get_cluster_neighbour(const Parent& /*cluster*/,
+                                     size_t index) const {
+      return this->ilist[index];
+    }
+
     /**
      * Return the linear index of cluster (i.e., the count at which
      * this cluster appears in an iteration
@@ -243,19 +254,6 @@ namespace rascal {
      * class
      */
     void read_structure_from_json(const std::string filename);
-
-    /**
-     * A helper-function for the linked cell algorithm. It is used for the
-     * division of the box into the cells.
-     */
-    inline double get_box_length(int dimension);
-
-    /**
-     * Function for constructing a full neighbourlist as well as a half
-     * neighbourlist. Since the JSON file does not provide it and it is
-     * necessary for calculating follow-up properties.
-     */
-    void make_neighbourlist(double cutoff);
 
     //! Behind the interface.
   protected:
@@ -284,59 +282,8 @@ namespace rascal {
      */
     //! Total number of atoms in structure
     size_t natoms{};
-    //! Number of pairs
-    size_t nb_pairs{};
     //! A list of atom indeces (int), here it is just the number in the list
     Ilist_t ilist{};
-    /**
-     *  A full neighbour list. Each entry in allneigh is a vector of neighbours
-     * of the given atom id
-     */
-    NeighbourList_t allneigh{};
-
-    /**
-     * Half neighbourlist. It is a contiguous vector where all neighbours are
-     * listed once. Use in conjunction with <code>numneigh</code> to get the
-     * number of neighbours per atom. This can be used to calculate a property
-     * like the atomic distance.
-     */
-    HalfNeighbourList_t halfneigh{};
-    /**
-     * A vector which hold the number of neighbours (half neighbourlist) for
-     * each atom.
-     */
-    NumNeigh_t numneigh{};
-
-    //! Skin is an additional layer for the neighbour list (Verlet)
-    double cutoff_skin{0.0};
-    /**
-     * A vector which stores the absolute offsets for each atom to access the
-     * correct variables in the neighbourlist.
-     */
-    std::vector<size_t> offsets{};
-
-    //! For linked cell algorithm; saved for possible later use.
-    std::vector<int> ll{};
-    std::vector<int> lc{};
-
-    /**
-     * Given a position and a discretization of the volume, this function gives
-     * the traits:Dim box coordinates of the position in the cell. Usage for
-     * example in construction of neighbour list
-     */
-    inline std::vector<int>
-    get_box_index(Vector_ref& position,
-                  std::vector<double>& rc,
-                  Eigen::Matrix<double, 1, traits::Dim> offset,
-                  std::vector<int> nmax);
-
-    /**
-     * Function which collects the neighbour atom id and writes it to the
-     * member variable <code>allneigh</code>.
-     */
-    inline void collect_neighbour_info_of_atom(const int i,
-                                               const std::vector<int> boxidx,
-                                               const std::vector<int> nmax);
 
     /**
      * A switch to make the class verbose and give screen output about its
@@ -353,10 +300,8 @@ namespace rascal {
   inline size_t StructureManagerJson::
   get_offset_impl(const std::array<size_t, Order> & counters) const {
     // TODO: Check this static_assert for validity
-    // static_assert (Order == 1, "this manager can only give the offset "
-    //                "(= starting index) for a pair iterator, given the i atom "
-    //                "of the pair");
-    return this->offsets[counters.front()];
+    static_assert (Order == 1, "this manager can not provide any offsets.");
+    return 0;
   }
 
 }  // rascal

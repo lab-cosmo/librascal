@@ -33,5 +33,6 @@ set (manager_SRC
   structure_managers/structure_manager_cell.cc
   structure_managers/structure_manager_centers.cc
   structure_managers/structure_manager_chain.cc
+  structure_managers/structure_manager_json.cc
   )
 target_sources(rascal PRIVATE ${manager_SRC})

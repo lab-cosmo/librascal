@@ -1,15 +1,15 @@
 /**
- * file   test_structure_manager_lammps.cc
+ * file   test_structure_manager_chain.cc
  *
- * @author Till Junge <till.junge@epfl.ch>
+ * @author Markus Stricker <markus.stricker@epfl.ch>
  *
- * @date   05 Apr 2018
+ * @date   08 Aug 2018
  *
- * @brief  tests for the class `NeighbourhoodManagerLammps
+ * @brief  tests for the class NeighbourhoodManagerJson
  *
  * @section LICENSE
  *
- * Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2018 Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
  *
  * rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -34,34 +34,31 @@
 
 namespace rascal {
 
-  BOOST_AUTO_TEST_SUITE(ManagerTests);
+  BOOST_AUTO_TEST_SUITE(ManagerJsonTests);
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(constructor_test, ManagerFixture<StructureManagerLammps>) {
+  BOOST_FIXTURE_TEST_CASE(manager_json_constructor_test,
+                          ManagerFixture<StructureManagerJson>) {
   }
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(iterator_test, ManagerFixture<StructureManagerLammps>) {
+  BOOST_FIXTURE_TEST_CASE(iterator_test, ManagerFixture<StructureManagerJson>) {
+    // Reference values
+    constexpr int natoms{9};
+
+    BOOST_CHECK_EQUAL(manager_json.get_size(), natoms);
+    BOOST_CHECK_EQUAL(manager_json.get_nb_clusters(1), natoms);
+
     int atom_counter{};
-    int pair_counter{};
-    constexpr bool verbose{false};
-    for (auto atom_cluster: manager) {
+    //    constexpr bool verbose{false};
+
+    for (auto atom_cluster : manager_json) {
       BOOST_CHECK_EQUAL(atom_counter, atom_cluster.get_global_index());
       ++atom_counter;
-
-      for (auto pair_cluster: atom_cluster) {
-        auto pair_offset{pair_cluster.get_global_index()};
-        if (verbose) {
-          std::cout << "pair (" << atom_cluster.back()
-                    << ", " << pair_cluster.back()
-                    << "), pair_counter = " << pair_counter
-                    << ", pair_offset = " << pair_offset << std::endl;
-        }
-
-        BOOST_CHECK_EQUAL(pair_counter, pair_offset);
-        ++pair_counter;
-
-      }
     }
+    BOOST_CHECK_EQUAL(atom_counter, natoms);
+  }
+  /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE(test_get_cell, ManagerFixture<StructureManagerJson>) {
   }
 
   /* ---------------------------------------------------------------------- */
