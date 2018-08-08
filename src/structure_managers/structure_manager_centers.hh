@@ -31,6 +31,7 @@
 
 #include "structure_managers/structure_manager.hh"
 #include "lattice.hh"
+#include "atomic_structure.hh"
 #include "basic_types.hh"
 //! Some data types and operations are based on the Eigen library
 #include <Eigen/Dense>
@@ -99,14 +100,14 @@ namespace rascal {
      * .get_positions() member function, if needed. Access to the cell vectors,
      * defined in the JSON file.
      */
-    using Cell_t = Eigen::Matrix<double, traits::Dim,traits::Dim,Eigen::ColMajor>;
-    using Cell_ref = Eigen::Map<Cell_t>;
-    using AtomTypes_t = Eigen::Matrix<int, 1, Eigen::Dynamic>;
-    using AtomTypes_ref = Eigen::Map<AtomTypes_t>;
-    using PBC_t = Eigen::Matrix<bool, 1, traits::Dim>;
-    using PBC_ref = Eigen::Map<PBC_t>;
-    using Positions_t = Eigen::Matrix<double, traits::Dim,Eigen::Dynamic,Eigen::ColMajor>;
-    using Positions_ref = Eigen::Map<Positions_t>;
+    using Cell_t = AtomicStructure<traits::Dim>::Cell_t;
+    using Cell_ref = typename Eigen::Map<Cell_t>;
+    using AtomTypes_t = AtomicStructure<traits::Dim>::AtomTypes_t;
+    using AtomTypes_ref = typename Eigen::Map<AtomTypes_t>;
+    using PBC_t = AtomicStructure<traits::Dim>::PBC_t;
+    using PBC_ref = typename Eigen::Map<PBC_t>;
+    using Positions_t = AtomicStructure<traits::Dim>::Positions_t;
+    using Positions_ref = typename Eigen::Map<Positions_t>;
 
     /**
      * Here, the types for internal data structures are defined, based on
@@ -131,7 +132,7 @@ namespace rascal {
 
     //! Default constructor
     StructureManagerCenters() // = default;
-    :atoms_index{},positions{},atoms_type{},lattice{},cell{},pbc{},offsets{},natoms{}
+    :atoms_object{},atoms_index{},lattice{},offsets{},natoms{}
     {};
 
     //! Copy constructor
@@ -169,26 +170,21 @@ namespace rascal {
     void update(const Eigen::Ref<const Eigen::MatrixXd> positions,
                 const Eigen::Ref<const VecXi>  atoms_type,
                 const Eigen::Ref<const Eigen::MatrixXd> cell,
-                const std::array<bool,3>& pbc);
+                const Eigen::Ref<const Eigen::Matrix<bool, 
+                                    1, Eigen::Dynamic>>& pbc);
 
-    void build(const Eigen::Ref<const Eigen::MatrixXd> positions,
-                const Eigen::Ref<const VecXi>  atoms_type,
-                const Eigen::Ref<const Eigen::MatrixXd> cell,
-                const std::array<bool,3>& pbc);
+    void build();
 
     //1 required for the construction of vectors, etc
     constexpr static int dim() {return traits::Dim;}
-
-    // void reset_impl(const int & natoms);
-    // // TODO
 
     /**
      * Returns a traits::Dim by traits::Dim matrix with the cell vectors of the
      * structure.
      */
     inline Cell_ref get_cell() {
-      return Cell_ref(this->cell.data(), traits::Dim,
-                      this->cell.size()/traits::Dim);
+      Cell_ref xval(this->atoms_object.cell.data(),3,3);
+      return xval;
     }
 
     //! Returns the type of a given atom, given an AtomRef
@@ -200,13 +196,15 @@ namespace rascal {
 
     //! Returns an a map with all atom types.
     inline AtomTypes_ref get_atom_types() {
-      return AtomTypes_ref(this->atoms_type.data(),
-                           this->atoms_type.size());
+      AtomTypes_ref xval(this->atoms_object.atoms_type.data(),
+                          1,this->natoms);
+      return xval;
     }
 
     //! Returns a map of size traits::Dim with 0/1 for periodicity
     inline PBC_ref get_periodic_boundary_conditions() {
-      return PBC_ref(this->pbc.data());
+      PBC_ref xval(this->atoms_object.pbc.data(),1,3);
+      return xval;
     }
 
     //! Returns the position of an atom, given an AtomRef
@@ -240,15 +238,16 @@ namespace rascal {
 
     //! returns a map to all atomic positions.
     inline Positions_ref get_positions() {
-      return Positions_ref(this->positions.data(), traits::Dim,
-                           this->positions.size()/traits::Dim);
+      Positions_ref xval(this->atoms_object.positions.data(),
+                          3,this->natoms);
+      return xval;
     }
 
     //! returns number of I atoms in the list
     inline size_t get_size() const {
       return this->natoms;
     }
-
+    
     //! returns the number of neighbours of a given i atom
     template<size_t Order, size_t Layer>
     inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
@@ -295,6 +294,12 @@ namespace rascal {
 
   protected:
 
+
+    /**
+
+     */
+    AtomicStructure<traits::Dim> atoms_object{};
+
     /**
      * store atoms index per order,i.e.
      *   - atoms_index[0] lists all i-atoms
@@ -302,11 +307,8 @@ namespace rascal {
      */
     std::array<std::vector<int>, traits::MaxOrder> atoms_index;
 
-    Positions_t positions; //!
-    AtomTypes_t atoms_type;
     Lattice lattice;
-    Cell_t cell; // to simplify get_neighbour_position()
-    std::array<bool,traits::Dim> pbc;
+    
     /**
      * A vector which stores the absolute offsets for each atom to access the
      * correct variables in the neighbourlist.

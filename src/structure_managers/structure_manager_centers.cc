@@ -50,45 +50,41 @@ namespace rascal {
                 const Eigen::Ref<const Eigen::MatrixXd> positions,
                 const Eigen::Ref<const VecXi>  atoms_type,
                 const Eigen::Ref<const Eigen::MatrixXd> cell,
-                const std::array<bool,3>& pbc) {
-
+                const Eigen::Ref<const Eigen::Matrix<bool, 
+                                    1, Eigen::Dynamic>>& pbc) {
+  
     bool some_condition{true};
+
+    Eigen::Index Natom{positions.cols()};
+    this->natoms = Natom;
+
     if (some_condition){
-      StructureManagerCenters::build(positions,
-                                      atoms_type,
-                                      cell,
-                                      pbc);
+      
+      set_structure(this->atoms_object,positions,atoms_type,cell,pbc);
+
+      StructureManagerCenters::build();
+    } else {
+      
+      set_structure(this->atoms_object,positions,atoms_type,cell,pbc);
     }
+
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
 
     atom_cluster_indices.fill_sequence();
   }
 
   /* ---------------------------------------------------------------------- */
-  void StructureManagerCenters::build(
-                const Eigen::Ref<const Eigen::MatrixXd> positions,
-                const Eigen::Ref<const VecXi>  atoms_type,
-                const Eigen::Ref<const Eigen::MatrixXd> cell,
-                const std::array<bool,StructureManagerCenters::dim()>& pbc) {
+  void StructureManagerCenters::build() {
 
-    Eigen::Index Natom{positions.cols()};
-    this->natoms = Natom;
-    this->positions = positions;
-    this->atoms_type = atoms_type;
-
-    this->atoms_type.resize(Natom);
+    this->atoms_object.atoms_type.resize(this->natoms);
     //set the references to the particles positions
-    for (Eigen::Index id{0}; id < Natom; ++id){
+    for (size_t id{0}; id < this->natoms; ++id){
       this->atoms_index[0].push_back(id);
       this->offsets.push_back(id);
     }
 
-    Cell_t lat = cell;
+    Cell_t lat = this->atoms_object.cell;
     this->lattice.set_cell(lat);
-
-    for (size_t id{0}; id < pbc.size(); ++id){
-      this->pbc[id] = pbc[id];
-    }
 
   }
 
