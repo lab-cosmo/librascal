@@ -1,5 +1,5 @@
 /**
- * file   adaptor_increase_maxlevel.hh
+ * file   adaptor_increase_maxorder.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *
@@ -34,8 +34,8 @@
 #include <typeinfo>
 #include <set>
 
-#ifndef ADAPTOR_MAXLEVEL_H
-#define ADAPTOR_MAXLEVEL_H
+#ifndef ADAPTOR_MAXORDER_H
+#define ADAPTOR_MAXORDER_H
 
 namespace rascal {
   /**
@@ -453,7 +453,10 @@ namespace rascal {
         //! collect all possible neighbours of the cluster: collection of all
         //! neighbours of current_i_atoms
         for (auto pair : j_cluster) {
-          current_j_atoms.insert(pair.back());
+          auto j_add = pair.back();
+          if (j_add > i_atoms.back()) {
+            current_j_atoms.insert(j_add);
+          }
         }
       }
 
@@ -462,13 +465,6 @@ namespace rascal {
       std::set_difference(current_j_atoms.begin(), current_j_atoms.end(),
                           current_i_atoms.begin(), current_i_atoms.end(),
                           std::inserter(atoms_to_add, atoms_to_add.begin()));
-
-      // std::cout << "Neighbours to add to cluster ";
-      // for (auto j : atoms_to_add) {
-      //   std::cout << j << " ";
-      // }
-      // std::cout << "number of neighbours to add to add " << atoms_to_add.size();
-      // std::cout << std::endl;
 
       manager.add_entry_number_of_neighbours();
       if (atoms_to_add.size() > 0) {
@@ -645,7 +641,7 @@ namespace rascal {
       return main_offset;
     } else {
       /**
-       * If not accessible at this level, call lower Order offsets from lower
+       * If not accessible at this order, call lower Order offsets from lower
        * order manager(s).
        */
       return this->manager.get_offset_impl(counters);
@@ -653,7 +649,7 @@ namespace rascal {
   }
 }  // rascal
 
-#endif /* ADAPTOR_MAXLEVEL_H */
+#endif /* ADAPTOR_MAXORDER_H */
 
 // TODO: The construction of triplets is fine, but they occur multiple times. We
 // probably need to check for increasing atomic index to get rid of

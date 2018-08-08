@@ -28,7 +28,7 @@
 
 #include "tests.hh"
 #include "test_structure.hh"
-#include "structure_managers/adaptor_increase_maxlevel.hh"
+#include "structure_managers/adaptor_increase_maxorder.hh"
 
 namespace rascal {
 

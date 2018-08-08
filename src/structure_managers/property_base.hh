@@ -34,6 +34,8 @@
 #include "basic_types.hh"
 #include "structure_managers/structure_manager_base.hh"
 
+#include <string>
+
 namespace rascal {
 
 
@@ -76,6 +78,9 @@ namespace rascal {
     //! returns the property layer
     inline Dim_t get_property_layer() const {return this->property_layer;}
 
+    //! returns the metadata string
+    inline std::string get_metadata() const {return this->metadata;}
+
   protected:
 
     StructureManagerBase & base_manager; //!< base-class reference to StructureManager
@@ -85,12 +90,16 @@ namespace rascal {
     const size_t order;  //!< order of the clusters
     //! layer in the stack at which property is attached
     const size_t property_layer;
+    //!< e.g. a JSON formatted string
+    const std::string metadata;
     //! constructor
     PropertyBase(StructureManagerBase & manager, Dim_t nb_row, Dim_t nb_col,
-                 size_t order, size_t layer):
+                 size_t order, size_t layer, std::string metadata="no metadata"):
       base_manager{manager}, nb_row{nb_row}, nb_col{nb_col},
-      nb_comp{nb_row*nb_col}, order{order}, property_layer{layer}
+      nb_comp{nb_row*nb_col}, order{order}, property_layer{layer},
+      metadata{metadata}
     {}
+
 
 
   private:
