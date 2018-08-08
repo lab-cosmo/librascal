@@ -26,6 +26,8 @@ cmake -DCMAKE_BUILD_TYPE=Debug  -DENABLE_DOC=ON -DBUILD_TESTS=ON -DCMAKE_C_COMPI
 make all
 ctest -V
 ```
+cmake -DCMAKE_BUILD_TYPE=Debug  -DENABLE_DOC=ON -DBUILD_TESTS=OFF -DCMAKE_C_COMPILER=/usr/local/bin/gcc-7 -DCMAKE_CXX_COMPILER=/usr/local/bin/g++-7 ..
+
 To remove all the cmake files/folders except for the external library (enable glob and remove):
 ```
 shopt -s extglob

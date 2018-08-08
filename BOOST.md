@@ -22,7 +22,7 @@ cd $BOOST_DIR/boost_1_67_0
 mkdir boost_root
 ./bootstrap.sh --with-libraries=test --prefix=$BOOST_DIR/boost_root
 ./b2 install
-export Boost_NO_SYSTEM_PATHS=OFF 
+export Boost_NO_SYSTEM_PATHS=ON
 export BOOST_ROOT=$BOOST_DIR/boost_root
 ```
 Cmake FindBoost might not find this installation of Boost Test so we set Boost_NO_SYSTEM_PATHS to avoid finding another installation of Boost and we set BOOST_ROOT to this new installation.
@@ -45,7 +45,7 @@ conda create -n myenv python=3.6
 ```
 source activate myenv
 conda install -c conda-forge boost
-export Boost_NO_SYSTEM_PATHS=OFF 
+export Boost_NO_SYSTEM_PATHS=ON 
 export BOOST_ROOT=/path/to/myenv
 ```
 Following the previous example, /path/to/myenv -> $HOME/miniconda/envs/myenv.

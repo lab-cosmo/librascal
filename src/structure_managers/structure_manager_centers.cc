@@ -48,16 +48,14 @@ namespace rascal {
    */
   void StructureManagerCenters::update(
                 const Eigen::Ref<const Eigen::MatrixXd> positions,
-                const Eigen::Ref<const VecXi>  particle_types,
-                const Eigen::Ref<const VecXi> center_ids,
+                const Eigen::Ref<const VecXi>  atoms_type,
                 const Eigen::Ref<const Eigen::MatrixXd> cell,
                 const std::array<bool,3>& pbc) {
 
     bool some_condition{true};
     if (some_condition){
       StructureManagerCenters::build(positions,
-                                      particle_types,
-                                      center_ids,
+                                      atoms_type,
                                       cell,
                                       pbc);
     }
@@ -69,29 +67,20 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   void StructureManagerCenters::build(
                 const Eigen::Ref<const Eigen::MatrixXd> positions,
-                const Eigen::Ref<const VecXi>  particle_types,
-                const Eigen::Ref<const VecXi> center_ids,
+                const Eigen::Ref<const VecXi>  atoms_type,
                 const Eigen::Ref<const Eigen::MatrixXd> cell,
                 const std::array<bool,StructureManagerCenters::dim()>& pbc) {
 
     Eigen::Index Natom{positions.cols()};
     this->natoms = Natom;
     this->positions = positions;
-    this->particle_types = particle_types;
+    this->atoms_type = atoms_type;
 
-
-    for (int id{0}; id < center_ids.size(); ++id) {
-      this->centers.push_back(StructureManagerCenters::
-                              AtomRef_t(this->get_manager(), center_ids(id)));
-      this->offsets.push_back(id);
-    }
-
-    this->particle_types.resize(Natom);
+    this->atoms_type.resize(Natom);
     //set the references to the particles positions
     for (Eigen::Index id{0}; id < Natom; ++id){
-      this->particles.push_back(StructureManagerCenters::
-                                AtomRef_t(this->get_manager(),id));
-      this->particle_types[id] = particle_types(id);
+      this->atoms_index[0].push_back(id);
+      this->offsets.push_back(id);
     }
 
     Cell_t lat = cell;

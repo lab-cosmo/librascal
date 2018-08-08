@@ -28,16 +28,16 @@
 
 
 #include <pybind11/pybind11.h>
-#include "bind_py_neighbour_manager.cc"
+#include "bind_py_structure_manager.cc"
 
 using namespace pybind11::literals;
 namespace py=pybind11;
 
-extern void add_manager_cell(py::module&);
+extern void add_manager_centers(py::module&);
 
 PYBIND11_MODULE(_rascal, mod) {
   mod.doc() = "Python bindings for the Rascal library";
 
-  add_manager_cell(mod);
+  add_manager_centers(mod);
   
 }

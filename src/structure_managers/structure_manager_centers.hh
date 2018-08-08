@@ -131,6 +131,8 @@ namespace rascal {
 
     //! Default constructor
     StructureManagerCenters() = default;
+    // :atoms_index{},positions{},atoms_type{},lattice{},cell{},pbc{},offsets{},natoms{}
+    // {};
 
     //! Copy constructor
     StructureManagerCenters(const StructureManagerCenters &other) = delete;
@@ -165,14 +167,12 @@ namespace rascal {
      * Verlet type list
      */
     void update(const Eigen::Ref<const Eigen::MatrixXd> positions,
-                const Eigen::Ref<const VecXi>  particle_types,
-                const Eigen::Ref<const VecXi> center_ids,
+                const Eigen::Ref<const VecXi>  atoms_type,
                 const Eigen::Ref<const Eigen::MatrixXd> cell,
                 const std::array<bool,3>& pbc);
 
     void build(const Eigen::Ref<const Eigen::MatrixXd> positions,
-                const Eigen::Ref<const VecXi>  particle_types,
-                const Eigen::Ref<const VecXi> center_ids,
+                const Eigen::Ref<const VecXi>  atoms_type,
                 const Eigen::Ref<const Eigen::MatrixXd> cell,
                 const std::array<bool,3>& pbc);
 
@@ -192,16 +192,16 @@ namespace rascal {
     }
 
     //! Returns the type of a given atom, given an AtomRef
-    inline int get_atom_type(const AtomRef_t& atom) {
-      auto index{atom.get_index()};
+    inline int get_atom_type(const int& atom_index) {
+      // auto index{atom.get_index()};
       auto t = this->get_atom_types();
-      return t(index);
+      return t(atom_index);
     }
 
     //! Returns an a map with all atom types.
     inline AtomTypes_ref get_atom_types() {
-      return AtomTypes_ref(this->particle_types.data(),
-                           this->particle_types.size());
+      return AtomTypes_ref(this->atoms_type.data(),
+                           this->atoms_type.size());
     }
 
     //! Returns a map of size traits::Dim with 0/1 for periodicity
@@ -251,17 +251,35 @@ namespace rascal {
 
     //! returns the number of neighbours of a given i atom
     template<size_t Order, size_t Layer>
-    inline void get_cluster_size(const ClusterRefKey<Order, Layer>
+    inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
                                    & ) const {
       static_assert(true,
                     "this implementation only handles atoms.");
+      size_t out{1};
+      return out;
     }
 
     //! Cluster size is the number of neighbours here
     inline size_t get_cluster_size(const int & ) const {
-      return 1;
+      size_t out{1};
+      return out;
+    }
+    //! return the index-th neighbour of cluster
+    template<size_t Order, size_t Layer>
+    inline int get_cluster_neighbour(const ClusterRefKey<Order, Layer>
+                                     & ,
+                                     size_t ) const {
+      static_assert(true,
+                    "this implementation only handles atoms.");
+      int out{1};
+      return out;
     }
 
+    //! return the atom_index of the index-th atom in manager
+    inline int get_cluster_neighbour(const Parent& /*cluster*/,
+                                     size_t index) const {
+      return this->atoms_index[0][index];
+    }
     /**
      * Return the linear index of cluster (i.e., the count at which
      * this cluster appears in an iteration
@@ -278,17 +296,14 @@ namespace rascal {
   protected:
 
     /**
-     * Since the data from the <code>atoms_object</code>, especially the
-     * positions are not contiguous in memory (they are
-     * <code>std:vector<std::vector<double>></code>) and those are the ones,
-     * which are used heavily, they are put into contiguous memory
-     * vector. Access to those are provided via Eigen:Map.
+     * store atoms index per order,i.e.
+     *   - atoms_index[0] lists all i-atoms
+     *   - etc
      */
+    std::array<std::vector<int>, traits::MaxOrder> atoms_index;
 
-    std::vector<AtomRef_t> particles;
-    std::vector<AtomRef_t> centers; //!
     Positions_t positions; //!
-    AtomTypes_t particle_types;
+    AtomTypes_t atoms_type;
     Lattice lattice;
     Cell_t cell; // to simplify get_neighbour_position()
     std::array<bool,traits::Dim> pbc;
