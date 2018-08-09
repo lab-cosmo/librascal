@@ -41,10 +41,11 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(iterator_test, ManagerFixture<StructureManagerChain>) {
+  BOOST_FIXTURE_TEST_CASE(iterator_test,
+                          ManagerFixture<StructureManagerChain>) {
     // Reference values
-    constexpr int natoms{9};
-    constexpr int npairs{36};
+    constexpr static int natoms{9};
+    constexpr static int npairs{36};
 
     BOOST_CHECK_EQUAL(manager_chain.get_size(), natoms);
     BOOST_CHECK_EQUAL(manager_chain.get_nb_clusters(1), natoms);

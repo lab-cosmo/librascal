@@ -32,6 +32,7 @@
 #include "structure_managers/structure_manager.hh"
 #include "lattice.hh"
 #include "basic_types.hh"
+
 //! Some data types and operations are based on the Eigen library
 #include <Eigen/Dense>
 
@@ -53,9 +54,8 @@ namespace rascal {
 
   /**
    * The traits are used for vector allocation and further down the processing
-   * chain to determine what functionality the given StructureManager
-   * already contains to avoid recomputation.  See also the implementation of
-   * adaptors.
+   * chain to determine what functionality the given StructureManager already
+   * contains to avoid recomputation.  See also the implementation of adaptors.
    */
   template <>
   struct StructureManager_traits<StructureManagerCenters> {
@@ -89,7 +89,7 @@ namespace rascal {
     using AtomRef_t = typename Parent::AtomRef;
 
     /**
-     *  Eigen::Map is a convenient way to access data in the 'Eigen-way', if it
+     * Eigen::Map is a convenient way to access data in the 'Eigen-way', if it
      * is already stored in a contiguous array.  The positions of the JSON file
      * and the cell vectors are put into contiguous arrays, which are member
      * variables of this class. Access is provided via the Eigen::Maps
@@ -133,7 +133,8 @@ namespace rascal {
 
     //! Default constructor
     StructureManagerCenters() // = default;
-    :atoms_index{},positions{},atom_types{},lattice{},cell{},pbc{},offsets{},natoms{}
+      :atoms_index{}, positions{}, atom_types{},
+       lattice{}, cell{}, pbc{}, natoms{}
     {};
 
     //! Copy constructor
@@ -156,27 +157,18 @@ namespace rascal {
     /**
      * This member function invokes the reinitialisation of data. E.g. when the
      * atom positions are provided by a simulation method, which evolves in
-     * time, this function updates the data. In this example, .update() takes no
-     * arguments, because it relies on the data provided by a file. It is read
-     * by invoking .read_structure_from_json(). Invoking update also builds a
-     * full and half neighbour list.  The update function is required, every
-     * time the list changes. It is implemented here with a dependency to the
-     * JSON interface. An update of the positions in the JSON object
-     * <code>atoms_object</code> needs to be followed by a call to this
-     * function.
-     * @param cutoff Property, which defines the cutoff in the
-     * neighbourlist. Can in the future be combined with cutoff_skin for a
-     * Verlet type list
+     * time, this function updates the data.
      */
+    // TODO: ambiguous update/build?
     void update(const Eigen::Ref<const Eigen::MatrixXd> positions,
-                const Eigen::Ref<const VecXi>  atom_types,
+                const Eigen::Ref<const VecXi> atom_types,
                 const Eigen::Ref<const Eigen::MatrixXd> cell,
-                const std::array<bool,3>& pbc);
+                const std::array<bool, 3>& pbc);
 
     void build(const Eigen::Ref<const Eigen::MatrixXd> positions,
-                const Eigen::Ref<const VecXi>  atom_types,
-                const Eigen::Ref<const Eigen::MatrixXd> cell,
-                const std::array<bool,3>& pbc);
+               const Eigen::Ref<const VecXi> atom_types,
+               const Eigen::Ref<const Eigen::MatrixXd> cell,
+               const std::array<bool, 3>& pbc);
 
     //! required for the construction of vectors, etc
     constexpr static int dim() {return traits::Dim;}
@@ -191,8 +183,7 @@ namespace rascal {
     }
 
     //! Returns the type of a given atom, given an AtomRef
-    inline int get_atom_type(const int& atom_index) {
-      // auto index{atom.get_index()};
+    inline int get_atom_type(const int & atom_index) {
       auto t = this->get_atom_types();
       return t(atom_index);
     }
@@ -209,7 +200,7 @@ namespace rascal {
     }
 
     //! Returns the position of an atom, given an AtomRef
-    inline Vector_ref get_position(const AtomRef_t& atom) {
+    inline Vector_ref get_position(const AtomRef_t & atom) {
       auto index{atom.get_index()};
       auto p = this->get_positions();
       auto * xval{p.col(index).data()};
@@ -230,8 +221,9 @@ namespace rascal {
      */
     template<size_t Order, size_t Layer>
     inline void get_neighbour_position(const ClusterRefKey<Order, Layer> & ) {
-      static_assert(true,
-                    "this implementation only work with atoms.");
+      static_assert(Order == 1,
+                    "this implementation only handles atoms.");
+
     }
 
     //! returns a map to all atomic positions.
@@ -279,29 +271,14 @@ namespace rascal {
     std::array<std::vector<int>, traits::MaxOrder> atoms_index;
 
     Positions_t positions;
-    AtomTypes_t atom_types;
+    AtomTypes_t atom_types; //!< element numbers
     Lattice lattice;
-    Cell_t cell; // to simplify get_neighbour_position()
+    //! Used in neighbour list build
+    Cell_t cell;
     std::array<bool,traits::Dim> pbc;
-    /**
-     * A vector which stores the absolute offsets for each atom to access the
-     * correct variables in the neighbourlist.
-     */
-    std::vector<size_t> offsets{};
 
-    /**
-     * Convenience variables, which are set during <code>update</code> or while
-     * the neighbourlist is built
-     */
     //! Total number of atoms in structure
     size_t natoms{};
-
-
-    /**
-     * A switch to make the class verbose and give screen output about its
-     * processes.
-     */
-    constexpr static bool verbose{false};
 
   private:
   };

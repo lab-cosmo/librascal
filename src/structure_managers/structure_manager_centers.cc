@@ -79,7 +79,6 @@ namespace rascal {
     //set the references to the particles positions // TODO: do not understand?
     for (Eigen::Index id{0}; id < Natom; ++id){
       this->atoms_index[0].push_back(id);
-      this->offsets.push_back(id);
     }
 
     Cell_t lat = cell;
