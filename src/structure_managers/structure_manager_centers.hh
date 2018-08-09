@@ -99,13 +99,15 @@ namespace rascal {
      * .get_positions() member function, if needed. Access to the cell vectors,
      * defined in the JSON file.
      */
-    using Cell_t = Eigen::Matrix<double, traits::Dim,traits::Dim,Eigen::ColMajor>;
+    using Cell_t = Eigen::Matrix<double, traits::Dim,
+                                 traits::Dim, Eigen::ColMajor>;
     using Cell_ref = Eigen::Map<Cell_t>;
     using AtomTypes_t = Eigen::Matrix<int, 1, Eigen::Dynamic>;
     using AtomTypes_ref = Eigen::Map<AtomTypes_t>;
     using PBC_t = Eigen::Matrix<bool, 1, traits::Dim>;
     using PBC_ref = Eigen::Map<PBC_t>;
-    using Positions_t = Eigen::Matrix<double, traits::Dim,Eigen::Dynamic,Eigen::ColMajor>;
+    using Positions_t = Eigen::Matrix<double, traits::Dim, Eigen::Dynamic,
+                                      Eigen::ColMajor>;
     using Positions_ref = Eigen::Map<Positions_t>;
 
     /**
@@ -123,8 +125,8 @@ namespace rascal {
      * A ClusterRef_t is a return type for iterators. It gives a light-weight
      * reference to an atom, a pair, a triplet,... to the AtomRefs of all
      * implicated atoms.  The template parameters Order and MaxOrder give the
-     * pair/triplet/ and the maximum body order, e.g. up to pair level.
-     * To increase the MaxOrder, use an <code>adaptor</code>.
+     * pair/triplet/ and the maximum body order, e.g. up to pair level.  To
+     * increase the MaxOrder, use an <code>adaptor</code>.
      */
     template <size_t Order>
     using ClusterRef_t = typename Parent::template ClusterRef<Order>;
@@ -171,16 +173,13 @@ namespace rascal {
                 const std::array<bool,3>& pbc);
 
     void build(const Eigen::Ref<const Eigen::MatrixXd> positions,
-                const Eigen::Ref<const VecXi>  particle_types,
-                const Eigen::Ref<const VecXi> center_ids,
-                const Eigen::Ref<const Eigen::MatrixXd> cell,
-                const std::array<bool,3>& pbc);
+               const Eigen::Ref<const VecXi>  particle_types,
+               const Eigen::Ref<const VecXi> center_ids,
+               const Eigen::Ref<const Eigen::MatrixXd> cell,
+               const std::array<bool,3>& pbc);
 
-    //1 required for the construction of vectors, etc
+    //! required for the construction of vectors, etc
     constexpr static int dim() {return traits::Dim;}
-
-    // void reset_impl(const int & natoms);
-    // // TODO
 
     /**
      * Returns a traits::Dim by traits::Dim matrix with the cell vectors of the
@@ -230,12 +229,9 @@ namespace rascal {
      * position, if it is a ghost atom.
      */
     template<size_t Order, size_t Layer>
-    inline void get_neighbour_position(const ClusterRefKey<Order, Layer>
-                                             & ) {
-
+    inline void get_neighbour_position(const ClusterRefKey<Order, Layer> & ) {
       static_assert(true,
                     "this implementation only work with atoms.");
-
     }
 
     //! returns a map to all atomic positions.
@@ -245,26 +241,21 @@ namespace rascal {
     }
 
     //! returns number of I atoms in the list
-    inline size_t get_size() const {
-      return this->natoms;
-    }
+    inline size_t get_size() const {return this->natoms;}
 
     //! returns the number of neighbours of a given i atom
     template<size_t Order, size_t Layer>
-    inline void get_cluster_size(const ClusterRefKey<Order, Layer>
-                                   & ) const {
+    inline void get_cluster_size(const ClusterRefKey<Order, Layer> & ) const {
       static_assert(true,
                     "this implementation only handles atoms.");
     }
 
     //! Cluster size is the number of neighbours here
-    inline size_t get_cluster_size(const int & ) const {
-      return 1;
-    }
+    inline size_t get_cluster_size(const int & ) const {return 1;}
 
     /**
-     * Return the linear index of cluster (i.e., the count at which
-     * this cluster appears in an iteration
+     * Return the linear index of cluster (i.e., the count at which this cluster
+     * appears in an iteration
      */
     template<size_t Order>
     inline size_t get_offset_impl(const std::array<size_t, Order>
@@ -276,7 +267,6 @@ namespace rascal {
 
 
   protected:
-
     /**
      * Since the data from the <code>atoms_object</code>, especially the
      * positions are not contiguous in memory (they are
@@ -320,11 +310,9 @@ namespace rascal {
   template<size_t Order>
   inline size_t StructureManagerCenters::
   get_offset_impl(const std::array<size_t, Order> & counters) const {
-    // TODO: Check this static_assert for validity
-    // static_assert (Order == 1, "this manager can only give the offset "
-    //                "(= starting index) for a pair iterator, given the i atom "
-    //                "of the pair");
-    return this->offsets[counters.front()];
+    static_assert (Order == 1,
+                   "this manager only handles atoms.");
+    return 0;
   }
 
 }  // rascal
