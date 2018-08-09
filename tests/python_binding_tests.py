@@ -2,7 +2,7 @@
 
 import unittest
 
-from python_structure_manager_test import TestStructureManagerCell
+from python_structure_manager_test import TestStructureManagerCenters
 
 class SimpleCheck(unittest.TestCase):
     def setUp(self):

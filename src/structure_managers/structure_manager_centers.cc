@@ -46,52 +46,40 @@ namespace rascal {
    * and access them with the map. Using the vector type automatically ensures
    * contiguity
    */
-  void StructureManagerCenters::update(
-                const Eigen::Ref<const Eigen::MatrixXd> positions,
-                const Eigen::Ref<const VecXi>  particle_types,
-                const Eigen::Ref<const VecXi> center_ids,
-                const Eigen::Ref<const Eigen::MatrixXd> cell,
-                const std::array<bool,3>& pbc) {
+  void StructureManagerCenters::
+  update(const Eigen::Ref<const Eigen::MatrixXd> positions,
+         const Eigen::Ref<const VecXi> atom_types,
+         const Eigen::Ref<const Eigen::MatrixXd> cell,
+         const std::array<bool,3> & pbc) {
 
+    // TODO: why conditions?
     bool some_condition{true};
     if (some_condition){
-      StructureManagerCenters::build(positions,
-                                      particle_types,
-                                      center_ids,
-                                      cell,
-                                      pbc);
-    }
-    auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
+      StructureManagerCenters::build(positions, atom_types, cell, pbc);
 
-    atom_cluster_indices.fill_sequence();
+      auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
+      atom_cluster_indices.fill_sequence();
+    }
   }
 
   /* ---------------------------------------------------------------------- */
-  void StructureManagerCenters::build(
-                const Eigen::Ref<const Eigen::MatrixXd> positions,
-                const Eigen::Ref<const VecXi>  particle_types,
-                const Eigen::Ref<const VecXi> center_ids,
-                const Eigen::Ref<const Eigen::MatrixXd> cell,
-                const std::array<bool,StructureManagerCenters::dim()>& pbc) {
+  void StructureManagerCenters::
+  build(const Eigen::Ref<const Eigen::MatrixXd> positions,
+        const Eigen::Ref<const VecXi> atom_types,
+        const Eigen::Ref<const Eigen::MatrixXd> cell,
+        const std::array<bool,StructureManagerCenters::dim()> & pbc) {
 
     Eigen::Index Natom{positions.cols()};
     this->natoms = Natom;
     this->positions = positions;
-    this->particle_types = particle_types;
+    this->atom_types = atom_types;
 
+    this->atom_types.resize(Natom);
 
-    for (int id{0}; id < center_ids.size(); ++id) {
-      this->centers.push_back(StructureManagerCenters::
-                              AtomRef_t(this->get_manager(), center_ids(id)));
-      this->offsets.push_back(id);
-    }
-
-    this->particle_types.resize(Natom);
-    //set the references to the particles positions
+    //set the references to the particles positions // TODO: do not understand?
     for (Eigen::Index id{0}; id < Natom; ++id){
-      this->particles.push_back(StructureManagerCenters::
-                                AtomRef_t(this->get_manager(),id));
-      this->particle_types[id] = particle_types(id);
+      this->atoms_index[0].push_back(id);
+      this->offsets.push_back(id);
     }
 
     Cell_t lat = cell;
@@ -100,11 +88,19 @@ namespace rascal {
     for (size_t id{0}; id < pbc.size(); ++id){
       this->pbc[id] = pbc[id];
     }
-
   }
 
-  size_t StructureManagerCenters::get_nb_clusters(size_t ) const {
-    return this->natoms;
+  size_t StructureManagerCenters::get_nb_clusters(size_t cluster_size) const {
+    switch (cluster_size) {
+    case 1: {
+      return this->natoms;
+      break;
+    }
+    default:
+      throw std::runtime_error("Can only handle atoms and pairs,"
+                               " use adaptor to increase MaxOrder.");
+      break;
+    }
   }
 
 

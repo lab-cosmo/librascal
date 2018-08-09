@@ -26,6 +26,7 @@ cmake -DCMAKE_BUILD_TYPE=Debug  -DENABLE_DOC=ON -DBUILD_TESTS=ON -DCMAKE_C_COMPI
 make all
 ctest -V
 ```
+
 To remove all the cmake files/folders except for the external library (enable glob and remove):
 ```
 shopt -s extglob

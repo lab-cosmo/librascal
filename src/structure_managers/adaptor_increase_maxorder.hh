@@ -292,7 +292,7 @@ namespace rascal {
     inline void add_atom(const typename ManagerImplementation::template
                          ClusterRef<Order> & cluster) {
       static_assert(Order <= traits::MaxOrder,
-                   "Order too high, not possible to add atom");
+                    "Order too high, not possible to add atom");
       return this->add_atom(cluster.back());
     }
 
@@ -594,7 +594,7 @@ namespace rascal {
     if (traits::MaxOrder-1 == 1) {
       //! Make half neighbour list (strict?)
       //! initialise the neighbourlist
-      for (int i{0}; i < traits::MaxOrder; ++i) {
+      for (size_t i{0}; i < traits::MaxOrder; ++i) {
 	//! this->atom_refs.clear();
 	this->nb_neigh.resize(0);
 	this->offsets.resize(0);

@@ -132,7 +132,9 @@ namespace rascal {
     using ClusterRef_t = typename Parent::template ClusterRef<Order>;
 
     //! Default constructor
-    StructureManagerCenters() = default;
+    StructureManagerCenters() // = default;
+    :atoms_index{},positions{},atom_types{},lattice{},cell{},pbc{},offsets{},natoms{}
+    {};
 
     //! Copy constructor
     StructureManagerCenters(const StructureManagerCenters &other) = delete;
@@ -167,16 +169,14 @@ namespace rascal {
      * Verlet type list
      */
     void update(const Eigen::Ref<const Eigen::MatrixXd> positions,
-                const Eigen::Ref<const VecXi>  particle_types,
-                const Eigen::Ref<const VecXi> center_ids,
+                const Eigen::Ref<const VecXi>  atom_types,
                 const Eigen::Ref<const Eigen::MatrixXd> cell,
                 const std::array<bool,3>& pbc);
 
     void build(const Eigen::Ref<const Eigen::MatrixXd> positions,
-               const Eigen::Ref<const VecXi>  particle_types,
-               const Eigen::Ref<const VecXi> center_ids,
-               const Eigen::Ref<const Eigen::MatrixXd> cell,
-               const std::array<bool,3>& pbc);
+                const Eigen::Ref<const VecXi>  atom_types,
+                const Eigen::Ref<const Eigen::MatrixXd> cell,
+                const std::array<bool,3>& pbc);
 
     //! required for the construction of vectors, etc
     constexpr static int dim() {return traits::Dim;}
@@ -191,16 +191,16 @@ namespace rascal {
     }
 
     //! Returns the type of a given atom, given an AtomRef
-    inline int get_atom_type(const AtomRef_t& atom) {
-      auto index{atom.get_index()};
+    inline int get_atom_type(const int& atom_index) {
+      // auto index{atom.get_index()};
       auto t = this->get_atom_types();
-      return t(index);
+      return t(atom_index);
     }
 
     //! Returns an a map with all atom types.
     inline AtomTypes_ref get_atom_types() {
-      return AtomTypes_ref(this->particle_types.data(),
-                           this->particle_types.size());
+      return AtomTypes_ref(this->atom_types.data(),
+                           this->atom_types.size());
     }
 
     //! Returns a map of size traits::Dim with 0/1 for periodicity
@@ -245,14 +245,20 @@ namespace rascal {
 
     //! returns the number of neighbours of a given i atom
     template<size_t Order, size_t Layer>
-    inline void get_cluster_size(const ClusterRefKey<Order, Layer> & ) const {
-      static_assert(true,
-                    "this implementation only handles atoms.");
+    inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
+                                   & ) const {
+      static_assert(true, "this implementation only handles atoms.");
+      return 1;
     }
 
     //! Cluster size is the number of neighbours here
     inline size_t get_cluster_size(const int & ) const {return 1;}
 
+    //! return the atom_index of the index-th atom in manager
+    inline int get_cluster_neighbour(const Parent& /*cluster*/,
+                                     size_t index) const {
+      return this->atoms_index[0][index];
+    }
     /**
      * Return the linear index of cluster (i.e., the count at which this cluster
      * appears in an iteration
@@ -261,24 +267,19 @@ namespace rascal {
     inline size_t get_offset_impl(const std::array<size_t, Order>
                                   & counters) const;
 
-    //! Function for returning the number of atoms, pairs, tuples, etc.
+    //! Function for returning the number of atoms
     size_t get_nb_clusters(size_t cluster_size) const;
-
-
 
   protected:
     /**
-     * Since the data from the <code>atoms_object</code>, especially the
-     * positions are not contiguous in memory (they are
-     * <code>std:vector<std::vector<double>></code>) and those are the ones,
-     * which are used heavily, they are put into contiguous memory
-     * vector. Access to those are provided via Eigen:Map.
+     * store atoms index per order,i.e.
+     *   - atoms_index[0] lists all i-atoms
+     *   - etc
      */
+    std::array<std::vector<int>, traits::MaxOrder> atoms_index;
 
-    std::vector<AtomRef_t> particles;
-    std::vector<AtomRef_t> centers; //!
-    Positions_t positions; //!
-    AtomTypes_t particle_types;
+    Positions_t positions;
+    AtomTypes_t atom_types;
     Lattice lattice;
     Cell_t cell; // to simplify get_neighbour_position()
     std::array<bool,traits::Dim> pbc;
