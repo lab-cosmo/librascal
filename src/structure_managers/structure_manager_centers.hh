@@ -253,10 +253,10 @@ namespace rascal {
     //! dummy function, since neighbours not present at this Order
     template<size_t Order, size_t Layer>
     inline int get_cluster_neighbour(const ClusterRefKey<Order, Layer>
-                                     & /*cluster*/, size_t /*index*/) const {
+                                     & /*cluster*/, size_t index) const {
       static_assert(Order <= traits::MaxOrder,
-                    "this implementation only handles atoms and pairs.");
-      return 0;
+                    "this implementation only handles atoms.");
+      return this->atoms_index[0][index];
     }
 
     /**
