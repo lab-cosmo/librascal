@@ -1,15 +1,18 @@
 import unittest
 import numpy as np
 import sys
+
 sys.path.insert(0,'../tests/')
-from test_utils import load_json_frame,BoxList,Box
-from python_import_rascal import _rascal as  rc
+
+from test_utils import load_json_frame, BoxList, Box
+from python_import_rascal import _rascal as rc
 
 
 class TestStructureManagerCenters(unittest.TestCase):
     def setUp(self):
-        """builds the test case. Test the order=1 structure manager implementation against a triclinic crystal.
-
+        """
+        builds the test case. Test the order=1 structure manager implementation
+        against a triclinic crystal.
         """
 
         fn = '../tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
@@ -35,7 +38,7 @@ class TestStructureManagerCenters(unittest.TestCase):
         manager =  rc.StructureManagerCenters()
         centers = np.array([it for it in range(self.Natom)],dtype=np.int32)
         manager.update(np.array(self.positions.T,order='F'),self.numbers,
-                      np.array(self.cell.T,order='F'),self.pbc[0])
+                       np.array(self.cell.T,order='F'),self.pbc[0])
         ii = 0
         for center in manager:
             self.assertTrue(ii == center.atom_index)
@@ -43,7 +46,7 @@ class TestStructureManagerCenters(unittest.TestCase):
             self.assertTrue(np.allclose(self.positions[ii], center.position))
             ii += 1
 
-    
+
 
 
 
@@ -131,5 +134,5 @@ class TestStructureManagerCenters(unittest.TestCase):
 #                     if not val:
 #                         #print ("neighpos {}, neigh.pos{}".format(neighpos[icenter][ii], neigh.position))
 #                         pass
-                      
+
 #                     #self.assertTrue(val)

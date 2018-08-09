@@ -58,11 +58,11 @@ namespace rascal {
     //! New MaxOrder upon construction!
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder+1};
     //! New Layer
-    //! TODO: Is this the correct way to initialize the increased depth?
-    using LayerByOrder = typename
-      LayerExtender<MaxOrder,
-                    typename
-                    ManagerImplementation::traits::LayerByOrder>::type;
+    //! TODO: Is this the correct way to initialize the increased order?
+    using LayerByOrder =
+      typename LayerExtender<MaxOrder,
+                             typename
+                             ManagerImplementation::traits::LayerByOrder>::type;
   };
 
   /**
@@ -90,9 +90,8 @@ namespace rascal {
     //!   typename ManagerImplementation::template ClusterRefKey<Order, Layer>;
     //using PairRef_t = ClusterRef_t<2, traits::MaxOrder>;
 
-    // TODO if MaxOrder can be == 1 -> neighbourlist need to be built.
     static_assert(traits::MaxOrder > 1,
-                  "ManagerImplementation needs to have an atom list.");
+                  "ManagerImplementation needs an atom list.");
 
     //! Default constructor
     AdaptorMaxOrder() = delete;
@@ -178,7 +177,7 @@ namespace rascal {
                                              /*cluster*/) {
       static_assert(Order > 1,
                     "Only possible for Order > 1.");
-      static_assert(Order <= traits::MaxOrder,
+      static_assert(Order < traits::MaxOrder,
                     "this implementation should only work up to MaxOrder.");
       //! Argument is now the same, but implementation
       throw std::runtime_error("should be adapted to Félix's "
@@ -199,7 +198,7 @@ namespace rascal {
 				     & cluster,
 				     size_t index) const {
       static_assert(Order < traits::MaxOrder,
-                    "this implementation only handles upto traits::MaxOrder");
+                    "this implementation only handles up to traits::MaxOrder");
       if (Order < traits::MaxOrder-1) {
 	return this->manager.get_cluster_neighbour(cluster, index);
       } else {
@@ -301,6 +300,9 @@ namespace rascal {
     //! Makes a half neighbour list, by construction only Order=1 is supplied.
     void make_half_neighbour_list();
 
+    //! find the corresponding cell indices for all atom positions
+    void make_cells_for_neighbourlist();
+
     //! Makes a full neighbour list
     void make_full_neighbour_list();
 
@@ -337,13 +339,62 @@ namespace rascal {
 
 
 
-
   namespace internal {
-    // TODO Add all neighbour list stuff in internal
 
-    /* ---------------------------------------------------------------------- */
+    // conversion of a linear id to a Dim_t id
+    template<int Dim>
+    inline void
+    linear_to_dim_index(const Dim_t& index,
+                        const Eigen::Ref<const Vec3i_t> shape,
+                        Eigen::Ref< Vec3i_t> retval) {
+      Dim_t factor{1};
 
+      for (Dim_t i{0}; i < Dim; ++i) {
+        retval[i] = index / factor%shape[i];
+        if (i != Dim-1) {
+          factor *= shape[i];
+        }
+      }
+    }
 
+    template<int Dim>
+    inline Dim_t
+    dimension_to_linear_index(const Eigen::Ref<const Vec3i_t> coord,
+                              const Eigen::Ref<const Vec3i_t> shape) {
+      Dim_t index{0};
+      Dim_t factor{1};
+      for (Dim_t i = 0; i < Dim; ++i) {
+        index += coord[i]*factor;
+        if (i != Dim-1 ) {
+          factor *= shape[i];
+        }
+      }
+      return index;
+    }
+
+    //! Taken from StructureManagerCell
+    // https://stackoverflow.com/questions/828092/python-style-integer-division-modulus-in-c
+    // TODO more efficient implementation without if (would be less general) !
+    // div_mod function returning python like div_mod, i.e. signed integer
+    // division truncates towards negative infinity, and signed integer modulus
+    // has the same sign the second operand.
+
+    template<class T>
+    decltype(auto) modulo_and_rest(const T & x, const T & y) {
+      std::array<int, 2> out;
+      const T quot = x / y;
+      const T rem  = x % y;
+
+      if (rem != 0 && (x<0) != (y<0)) {
+        out[0] = quot-1;
+        out[1] = rem+y;
+      } else {
+        out[0] = quot;
+        out[1] = rem;
+      }
+
+      return out;
+    }
 
   }  // internal
 
@@ -564,7 +615,7 @@ namespace rascal {
     //! in the traits upon construction, therefore the MaxOrder needs
     //! to be larger than 2 (i.e. a StructureManager with a
     //! pairlist is present to call this function here.)
-    static_assert(traits::MaxOrder > 2, "No neighbourlist present.");
+    static_assert(traits::MaxOrder > 1, "No neighbourlist present.");
 
     for (auto atom : this->manager) {
       //! Order 1, Order variable is at 0, atoms, index 0
@@ -590,6 +641,7 @@ namespace rascal {
     // TODO
     // initialise the neighbourlist
 
+    std::cout << "MaxOrder " << traits::MaxOrder << std::endl;
     //! -1 because the traits' MaxOrder is already increased
     if (traits::MaxOrder-1 == 1) {
       //! Make half neighbour list (strict?)
@@ -599,6 +651,7 @@ namespace rascal {
 	this->nb_neigh.resize(0);
 	this->offsets.resize(0);
       }
+      // this->make_cells_for_neighbourlist();
       this->make_half_neighbour_list();
       // this->make_full_neighbour_list(); // no frills, full neighbourlist
     } else {
@@ -631,8 +684,10 @@ namespace rascal {
      * Order is determined by the ClusterRef building iterator, not by the Order
      * of the built iterator
      */
-
-    if (Order == traits::MaxOrder-1) {
+    if (Order == 1) {
+      return this->offsets[counters.front()];
+    } else if (Order == traits::MaxOrder-1) {
+      //if (Order == traits::MaxOrder-1) {
       /**
        * Counters as an array to call parent offset multiplet. This can then be
        * used to access the actual offset for the next Order here.

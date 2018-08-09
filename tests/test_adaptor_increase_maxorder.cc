@@ -35,7 +35,8 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(maxlevel_increase_adaptor_test);
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(constructor_test, ManagerFixture<StructureManagerChain>){
+  BOOST_FIXTURE_TEST_CASE(constructor_test,
+                          ManagerFixture<StructureManagerChain>){
 
     constexpr bool verbose{false};
     constexpr bool check_below{false};
@@ -98,10 +99,13 @@ namespace rascal {
           ntriplets++;
           if (verbose) {
             std::cout << "             triplet "
-                      << triplet.back() << " global " << triplet.get_global_index()
+                      << triplet.back()
+                      << " global " << triplet.get_global_index()
                       << std::endl;
             std::cout << "                         complete "
-                      << atom.back() << " " << pair.back() << " " << triplet.back() << std::endl;
+                      << atom.back() << " "
+                      << pair.back() << " "
+                      << triplet.back() << std::endl;
           }
         }
       }
@@ -109,6 +113,37 @@ namespace rascal {
     if(verbose) std::cout << "Number of triplets: " << ntriplets << std::endl;
   }
 
+  /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE(constructor_test_order_zero,
+                          ManagerFixture<StructureManagerCenters>){
+    constexpr bool verbose{true};
+
+    if (verbose) std::cout << "===> zeroth order manager " << std::endl;
+
+    for (auto atom : manager) {
+      if (verbose) {
+        std::cout << "atom " << atom.back() << std::endl;
+      }
+    }
+
+    if (verbose) std::cout << "<== zeroth order manager " << std::endl;
+
+    AdaptorMaxOrder<StructureManagerCenters> manager2{manager, cutoff};
+    manager2.update();
+
+    for (auto atom : manager2) {
+      if (verbose) std::cout << "atom " << atom.back() << std::endl;
+      for (auto pair : atom) {
+        if (verbose) {
+          std::cout << "   complete pair "
+                    << atom.back() << " " << pair.back()
+                    << " glob " << pair.get_global_index() << std::endl;
+        }
+      }
+    }
+
+
+  }
 
   BOOST_AUTO_TEST_SUITE_END();
 

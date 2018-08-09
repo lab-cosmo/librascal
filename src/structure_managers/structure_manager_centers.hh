@@ -30,7 +30,6 @@
 #define STRUCTURE_MANAGER_CENTERS_H
 
 #include "structure_managers/structure_manager.hh"
-#include "lattice.hh"
 #include "basic_types.hh"
 
 //! Some data types and operations are based on the Eigen library
@@ -134,7 +133,7 @@ namespace rascal {
     //! Default constructor
     StructureManagerCenters() // = default;
       :atoms_index{}, positions{}, atom_types{},
-       lattice{}, cell{}, pbc{}, natoms{}
+       cell{}, pbc{}, natoms{}
     {};
 
     //! Copy constructor
@@ -246,11 +245,20 @@ namespace rascal {
     //! Cluster size is the number of neighbours here
     inline size_t get_cluster_size(const int & ) const {return 1;}
 
-    //! return the atom_index of the index-th atom in manager
     inline int get_cluster_neighbour(const Parent& /*cluster*/,
                                      size_t index) const {
       return this->atoms_index[0][index];
     }
+
+    //! dummy function, since neighbours not present at this Order
+    template<size_t Order, size_t Layer>
+    inline int get_cluster_neighbour(const ClusterRefKey<Order, Layer>
+                                     & /*cluster*/, size_t /*index*/) const {
+      static_assert(Order <= traits::MaxOrder,
+                    "this implementation only handles atoms and pairs.");
+      return 0;
+    }
+
     /**
      * Return the linear index of cluster (i.e., the count at which this cluster
      * appears in an iteration
@@ -272,7 +280,6 @@ namespace rascal {
 
     Positions_t positions;
     AtomTypes_t atom_types; //!< element numbers
-    Lattice lattice;
     //! Used in neighbour list build
     Cell_t cell;
     std::array<bool,traits::Dim> pbc;
@@ -287,7 +294,7 @@ namespace rascal {
   // used for buildup
   template<size_t Order>
   inline size_t StructureManagerCenters::
-  get_offset_impl(const std::array<size_t, Order> & counters) const {
+  get_offset_impl(const std::array<size_t, Order> & /*counters*/) const {
     static_assert (Order == 1,
                    "this manager only handles atoms.");
     return 0;

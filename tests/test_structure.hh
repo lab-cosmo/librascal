@@ -189,7 +189,7 @@ namespace rascal {
   {
     using Manager_t = StructureManagerJson;
     ManagerFixture()
-      : manager_json{} {
+      : manager_json{}, cutoff{1.1} {
       manager_json.read_structure_from_json("simple_cubic_8.json");
       manager_json.update();
     }
@@ -197,6 +197,7 @@ namespace rascal {
     ~ManagerFixture () {BOOST_TEST_MESSAGE("teardown ManagerJson fixture");}
 
     Manager_t manager_json;
+    double cutoff;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -207,7 +208,8 @@ namespace rascal {
     using Manager_t = StructureManagerCenters;
 
     ManagerFixture():
-      pbc{{true,true,true}}, cell(3, 3), positions(3, 22), numbers(22)
+      pbc{{true,true,true}}, cell(3, 3), positions(3, 22), numbers(22),
+      cutoff{3.0}
     {
       cell <<
 	6.19, 2.41, 0.21,
@@ -253,6 +255,8 @@ namespace rascal {
     Eigen::MatrixXd cell;
     Eigen::MatrixXd positions; // 3, 22
     VecXi numbers;
+
+    double cutoff;
   };
 
 }  // rascal

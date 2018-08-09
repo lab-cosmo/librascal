@@ -52,14 +52,10 @@ namespace rascal {
          const Eigen::Ref<const Eigen::MatrixXd> cell,
          const std::array<bool,3> & pbc) {
 
-    // TODO: why conditions?
-    bool some_condition{true};
-    if (some_condition){
-      StructureManagerCenters::build(positions, atom_types, cell, pbc);
+    StructureManagerCenters::build(positions, atom_types, cell, pbc);
 
-      auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
-      atom_cluster_indices.fill_sequence();
-    }
+    auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
+    atom_cluster_indices.fill_sequence();
   }
 
   /* ---------------------------------------------------------------------- */
@@ -73,6 +69,7 @@ namespace rascal {
     this->natoms = Natom;
     this->positions = positions;
     this->atom_types = atom_types;
+    this->cell = cell;
 
     this->atom_types.resize(Natom);
 
@@ -81,8 +78,8 @@ namespace rascal {
       this->atoms_index[0].push_back(id);
     }
 
-    Cell_t lat = cell;
-    this->lattice.set_cell(lat);
+
+
 
     for (size_t id{0}; id < pbc.size(); ++id){
       this->pbc[id] = pbc[id];
