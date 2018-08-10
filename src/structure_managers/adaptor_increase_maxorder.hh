@@ -569,6 +569,10 @@ namespace rascal {
       }
       this->offsets.push_back(nneigh_off);
     }
+    // get the cluster_indeces right
+    auto & pair_cluster_indices
+    {std::get<traits::MaxOrder-1>(this->cluster_indices_container)};
+    pair_cluster_indices.fill_sequence();
   }
 
   /* ---------------------------------------------------------------------- */
@@ -615,7 +619,7 @@ namespace rascal {
     //! in the traits upon construction, therefore the MaxOrder needs
     //! to be larger than 2 (i.e. a StructureManager with a
     //! pairlist is present to call this function here.)
-    static_assert(traits::MaxOrder > 1, "No neighbourlist present.");
+    static_assert(traits::MaxOrder > 2, "No neighbourlist present.");
 
     for (auto atom : this->manager) {
       //! Order 1, Order variable is at 0, atoms, index 0
@@ -642,8 +646,9 @@ namespace rascal {
     // initialise the neighbourlist
 
     std::cout << "MaxOrder " << traits::MaxOrder << std::endl;
-    //! -1 because the traits' MaxOrder is already increased
-    if (traits::MaxOrder-1 == 1) {
+
+    //!< will be next MaxOrder after building neighbourlist
+    if (traits::MaxOrder == 2) {
       //! Make half neighbour list (strict?)
       //! initialise the neighbourlist
       for (size_t i{0}; i < traits::MaxOrder; ++i) {
@@ -684,7 +689,7 @@ namespace rascal {
      * Order is determined by the ClusterRef building iterator, not by the Order
      * of the built iterator
      */
-    if (Order == 1) {
+    if (Order == 0) {
       return this->offsets[counters.front()];
     } else if (Order == traits::MaxOrder-1) {
       //if (Order == traits::MaxOrder-1) {

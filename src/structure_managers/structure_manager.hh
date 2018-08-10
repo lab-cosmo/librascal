@@ -472,7 +472,7 @@ namespace rascal {
   template <size_t Order>
   class StructureManager<ManagerImplementation>::ClusterRef :
     public ClusterRefKey<Order,
-                          ManagerImplementation::template cluster_layer<Order>()>
+                         ManagerImplementation::template cluster_layer<Order>()>
   {
   public:
     using Manager_t = StructureManager<ManagerImplementation>;
