@@ -131,9 +131,11 @@ namespace rascal {
     AdaptorMaxOrder<StructureManagerCenters> manager2{manager, cutoff};
     manager2.update();
 
+    auto n_pairs{0};
     for (auto atom : manager2) {
       if (verbose) std::cout << "atom " << atom.back() << std::endl;
       for (auto pair : atom) {
+        n_pairs++;
         if (verbose) {
           std::cout << "   complete pair "
                     << atom.back() << " " << pair.back()
@@ -141,7 +143,7 @@ namespace rascal {
         }
       }
     }
-
+    if (verbose) std::cout << "Number of pairs " << n_pairs << std::endl;
 
   }
 

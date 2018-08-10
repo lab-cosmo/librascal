@@ -564,7 +564,7 @@ namespace rascal {
     for (auto it=this->manager.begin(); it!=--this->manager.end(); ++it){
       //! Add atom at this order this is just the standard list.
       auto atom_i = *it;
-      // this->add_atom(atom_i);
+      this->add_atom(atom_i);
 
       auto jt = it;
       ++jt; //! go to next atom in manager (no self-neighbour)
