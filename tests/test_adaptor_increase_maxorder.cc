@@ -131,16 +131,16 @@ namespace rascal {
     AdaptorMaxOrder<StructureManagerCenters> manager2{manager, cutoff};
     manager2.update();
 
-    // for (auto atom : manager2) {
-    //   if (verbose) std::cout << "atom " << atom.back() << std::endl;
-    //   for (auto pair : atom) {
-    //     if (verbose) {
-    //       std::cout << "   complete pair "
-    //                 << atom.back() << " " << pair.back()
-    //                 << " glob " << pair.get_global_index() << std::endl;
-    //     }
-    //   }
-    // }
+    for (auto atom : manager2) {
+      if (verbose) std::cout << "atom " << atom.back() << std::endl;
+      for (auto pair : atom) {
+        if (verbose) {
+          std::cout << "   complete pair "
+                    << atom.back() << " " << pair.back()
+                    << " glob " << pair.get_global_index() << std::endl;
+        }
+      }
+    }
 
 
   }

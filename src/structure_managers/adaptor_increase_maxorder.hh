@@ -309,8 +309,8 @@ namespace rascal {
     // //! Makes a full neighbour list
     // void make_full_neighbour_list();
 
-    //! Increases whatever body order is present
-    void increase_maxorder();
+    // //! Increases whatever body order is present
+    // void increase_maxorder();
 
     ManagerImplementation & manager;
 
@@ -556,18 +556,15 @@ namespace rascal {
 
     //! The zeroth order does not have neighbours
 
-    using ClusterRefAtom_t = AdaptorMaxOrder<ManagerImplementation>::ClusterRef_t<1>;
-
-
     this->nb_neigh.push_back(0);
+    this->offsets.push_back(0);
 
     unsigned int nneigh_off{0};
 
     for (auto it=this->manager.begin(); it!=--this->manager.end(); ++it){
       //! Add atom at this order this is just the standard list.
-      // auto atom_i = *it;
-      ClusterRefAtom_t atom_i = *it;
-      this->add_atom(atom_i);
+      auto atom_i = *it;
+      // this->add_atom(atom_i);
 
       auto jt = it;
       ++jt; //! go to next atom in manager (no self-neighbour)
@@ -583,76 +580,12 @@ namespace rascal {
       }
       this->offsets.push_back(nneigh_off);
     }
-    // get the cluster_indeces right
-    auto & pair_cluster_indices
-    {std::get<traits::MaxOrder-1>(this->cluster_indices_container)};
+    // get the cluster_indices right
+
+    auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
+    atom_cluster_indices.fill_sequence();
+    auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
     pair_cluster_indices.fill_sequence();
-  }
-
-  /* ---------------------------------------------------------------------- */
-  // template <class ManagerImplementation>
-  // void AdaptorMaxOrder<ManagerImplementation>::make_full_neighbour_list() {
-  //   //! Make a full neighbourlist, whithout fancy linked list or cell. Also
-  //   //! missing are periodic boundary conditions.
-
-  //   //! The zeroth order does not have neighbours
-  //   this->nb_neigh.push_back(0);
-
-  //   unsigned int nneigh_off{0};
-
-  //   for (auto atom_i : this->manager){
-  //     this->add_atom(atom_i);
-  //     for (auto atom_j : this->manager){
-  //     	if(&atom_i != &atom_j) { //! avoid self-neighbouring
-  //         // TODO: this .get_position() function will always give the
-  //         // real position, never the shifted one.
-  //     	  double distance{(atom_i.get_position() -
-  //       		   atom_j.get_position()).norm()};
-  //     	  if (distance <= this->cutoff) {
-  //     	    //! Store atom_j in neighbourlist of atom_i
-  //           //! this->atom_refs[1].push_back(atom_j.back());
-  //           this->add_atom_order_up(atom_j);
-  //     	    this->nb_neigh.back()++;
-  //     	    nneigh_off += 1;
-  //     	  }
-  //     	}
-  //     }
-  //     this->offsets.push_back(nneigh_off);
-  //   }
-  // }
-
-  /* ---------------------------------------------------------------------- */
-  template <class ManagerImplementation>
-  // template <size_t Order>
-  void AdaptorMaxOrder<ManagerImplementation>::increase_maxorder() {
-    /**
-     * Depending on the existing Order, this function increases the MaxOrder by
-     * one by adding all neighbours of the last atom at the end of the chain as
-     * new end of a tuple.  This results in each triplet is only existing once.
-     * If a neighbourlist does not exist, a new one is built.
-     * Attention, <code>traits::MaxOrder</code> is already increased in the
-     * traits upon construction, therefore the MaxOrder needs to be larger than
-     * 2 (i.e. a StructureManager with a pairlist is present to call this
-     * function here.)
-     */
-
-    static_assert(traits::MaxOrder > 2, "No neighbourlist present.");
-
-    for (auto atom : this->manager) {
-      //! Order 1, Order variable is at 0, atoms, index 0
-      using AddOrderLoop = AddOrderLoop<atom.order(),
-                                        atom.order() == traits::MaxOrder-1>;
-      auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
-      atom_cluster_indices.push_back(atom.get_cluster_indices());
-      AddOrderLoop::loop(atom, *this);
-    }
-
-    //! correct the offsets for the new cluster order
-    this->set_offsets();
-    //! add correct cluster_indices for the highest order
-    auto & max_cluster_indices
-    {std::get<traits::MaxOrder-1>(this->cluster_indices_container)};
-    max_cluster_indices.fill_sequence();
   }
 
   /* ---------------------------------------------------------------------- */
@@ -660,11 +593,13 @@ namespace rascal {
   template <class ManagerImplementation>
   template <size_t MaxOrder, bool IsDummy>
   struct AdaptorMaxOrder<ManagerImplementation>::IncreaseMaxOrder {
-    //this->increase_maxorder();
+
     static void increase_maxorder(AdaptorMaxOrder<ManagerImplementation>
                                   * manager_max) {
 
-      static_assert(MaxOrder > 2, "No neighbourlist present.");
+      static_assert(MaxOrder > 2,
+                    "no neighbourlist present; extension not possible.");
+
       for (auto atom : manager_max->manager) {
         //! Order 1, Order variable is at 0, atoms, index 0
         using AddOrderLoop = AddOrderLoop<atom.order(),
@@ -686,14 +621,13 @@ namespace rascal {
 
   template <class ManagerImplementation>
   template <size_t MaxOrder>
-  struct AdaptorMaxOrder<ManagerImplementation>::IncreaseMaxOrder<MaxOrder, true> {
-    static void
-    increase_maxorder(AdaptorMaxOrder<ManagerImplementation> * manager) {
-      for (size_t i{0}; i < traits::MaxOrder; ++i) {
-      manager->nb_neigh.resize(0);
-      manager->offsets.resize(0);
-    }
-    manager->make_half_neighbour_list();
+  struct AdaptorMaxOrder<ManagerImplementation>::
+  IncreaseMaxOrder<MaxOrder, true> {
+    static void increase_maxorder(AdaptorMaxOrder<ManagerImplementation>
+                                  * manager_max) {
+      manager_max->nb_neigh.resize(0);
+      manager_max->offsets.resize(0);
+      manager_max->make_half_neighbour_list();
     }
   };
 
