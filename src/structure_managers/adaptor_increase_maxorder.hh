@@ -574,6 +574,7 @@ namespace rascal {
 			 atom_j.get_position()).norm()};
       	if (distance <= this->cutoff) {
       	  //! Store atom_j in neighbourlist of atom_i
+          this->neighbours.push_back(atom_j.get_index());
       	  this->nb_neigh.back()++;
       	  nneigh_off += 1;
       	}
@@ -627,6 +628,7 @@ namespace rascal {
                                   * manager_max) {
       manager_max->nb_neigh.resize(0);
       manager_max->offsets.resize(0);
+      manager_max->neighbours.resize(0);
       manager_max->make_half_neighbour_list();
     }
   };
