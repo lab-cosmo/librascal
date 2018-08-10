@@ -7,7 +7,7 @@
  *
  * @brief implements an adaptor for structure_managers, which
  * creates a full and half neighbourlist if there is none and
- * triplets/quadruplets, etc. if existant.
+ * triplets/quadruplets, etc. if existent.
  *
  * Copyright © 2018 Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -30,9 +30,12 @@
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/property.hh"
 #include "rascal_utility.hh"
+#include "lattice.hh"
+#include "basic_types.hh"
 
 #include <typeinfo>
 #include <set>
+#include <vector>
 
 #ifndef ADAPTOR_MAXORDER_H
 #define ADAPTOR_MAXORDER_H
@@ -303,6 +306,9 @@ namespace rascal {
     //! Makes a half neighbour list, by construction only Order=1 is supplied.
     void make_half_neighbour_list();
 
+    //! full neighbour list
+    void make_full_neighbour_list();
+
     //! find the corresponding cell indices for all atom positions
     void make_cells_for_neighbourlist();
 
@@ -537,7 +543,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
-    void AdaptorMaxOrder<ManagerImplementation>::make_half_neighbour_list() {
+  void AdaptorMaxOrder<ManagerImplementation>::make_half_neighbour_list() {
     //! Make a half neighbour list (not quite Verlet, because of the missing
     //! skin) according to Tadmor and Miller 'Modeling Materials', algorithm 6.7,
     //! p 323, (needs modification for periodicity).
@@ -590,6 +596,131 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * Make a full neighbour list, transferred from former StructureManagerCell,
+   * slightly modified to fit the current member variables.
+   */
+  template <class ManagerImplementation>
+  void AdaptorMaxOrder<ManagerImplementation>::make_full_neighbour_list() {
+
+    size_t natoms{this->get_manager().size()};
+
+    const auto dim{traits::Dim};
+
+    std::vector<AtomRef_t> centers;
+    std::vector<double> positions;
+  std:vector<int> particle_types;
+    Lattice lattice;
+
+    for (auto atom : this->get_manager()) {
+      centers.push_back(AtomRef_t(this->get_manager(), atom.get_index()));
+      positions.push_back(atom.get_position());
+      particle_types.push_back(atom.get_atom_type());
+    }
+
+    Cell_t lat = cell;
+    lattice.set_cell(lat);
+    cell = lat;
+    Vec3_t reciprocal_lenghts = this->lattice.get_reciprocal_lenghts();
+    double bin_size{cutoff_max};
+    Vec3i_t nbins_c,neigh_search;
+    Vec3_t nbins_cd;
+    int nbins{1};
+    double face_dist_c;
+
+
+    for (int ii{0};ii<dim;++ii){
+      // compute the distance between the cell faces (only French wiki
+      // https://fr.wikipedia.org/wiki/Distance_interr%C3%A9ticulaire)
+      if (reciprocal_lenghts[ii] > 0){
+        face_dist_c = 1 / reciprocal_lenghts[ii];
+      }
+      else {
+        face_dist_c = 1;
+      }
+      // number of bin in each directions
+      nbins_c[ii] =  std::max( static_cast<int>(face_dist_c/bin_size), 1);
+      nbins_cd[ii] = static_cast<double>(nbins_c[ii]);
+      // number of bin one need to look around
+      neigh_search[ii] = static_cast<int>(std::
+                                          ceil(bin_size * nbins_c[ii]
+                                               / face_dist_c));
+      // total number of bin
+      nbins *= nbins_c[ii];
+
+    }
+
+    Vec3i_t bin_index_c;
+    for (int ii{0}; ii < nbins; ++ii){
+      internal::lin2mult<dim>(ii,nbins_c, bin_index_c);
+      this->boxes.push_back(Box(this->get_manager(), bin_index_c,
+                                pbc, neigh_search, nbins_c));
+    }
+
+    // bin the particles in the boxes
+    Vec3_t position_sc;
+    int bin_id{0};
+    this->part2bin.resize(Natom);
+    for (auto part : this->particles){
+      this->lattice.get_cartesian2scaled(part.get_position(), position_sc);
+      bin_index_c = (position_sc.array() * nbins_cd.array()).cast<int>();
+      bin_id = internal::mult2lin<dim>(bin_index_c, nbins_c);
+      this->boxes[bin_id].push_particle_back(part.get_index());
+      this->part2bin[part.get_index()] = bin_id;
+    }
+
+    // Set up the data strucure containing the information about neighbourhood
+    // get the number of particles in the box and its neighbour boxes set the
+    // arrays that will be used to iterate over the centers and neighbourr
+    //
+    // TODO: short circuit for building neighbours, nneigh, etc. to make calls in
+    // manager short
+    this->neighbour_bin_id.resize(nbins);
+    this->neighbour_atom_index.resize(nbins);
+    //loop over the boxes
+    for (size_t bin_index{0}; bin_index < this->boxes.size(); ++bin_index){
+      size_t n_neigh{0};
+      // loop over the neighbouring boxes
+      for (size_t neigh_bin_id{0}; neigh_bin_id <
+             this->boxes[bin_index].get_number_of_neighbour_box();
+           ++neigh_bin_id){
+        int neig_bin_index{
+          this->boxes[bin_index].get_neighbour_bin_index(neigh_bin_id)
+            };
+        //loop over the particle in the neighbouring boxes
+        for (size_t neigh_part_id{0}; neigh_part_id
+               < this->boxes[neig_bin_index].get_number_of_particles();
+             ++neigh_part_id){
+          // store the indices to the corresponding atomic shift
+          this->neighbour_bin_id[bin_index].push_back(AtomRef_t(this->get_manager(),
+                                                                neigh_bin_id));
+          // store the indices to the neighbour particles
+          // TODO: basically a neighbour list??
+          this->neighbour_atom_index[bin_index]
+            .push_back(AtomRef_t(this->get_manager(),
+                                 this->boxes[neig_bin_index]
+                                 .get_particle_index(neigh_part_id)));
+        }
+        n_neigh += this->boxes[neig_bin_index].get_number_of_particles();
+      }
+      this->boxes[bin_index].set_number_of_neighbours(n_neigh);
+    }
+
+    int stride{0};
+    // get the stride for the fields. (center,neigh) dimensions are flattened in
+    // fields with center being leading dimension
+    // TODO: number_of_neighbours; offsets can be calculated from this
+    for (auto center : this->centers){
+      this->number_of_neighbours_stride.push_back(stride);
+      int bin_index{this->part2bin[center.get_index()]};
+      size_t n_neigh{this->boxes[bin_index].get_number_of_neighbours()};
+      stride += n_neigh;
+    }
+    this->number_of_neighbours = stride;
+  }
+
+
+  /* ---------------------------------------------------------------------- */
   //! Extend and existing neighbour list.
   template <class ManagerImplementation>
   template <size_t MaxOrder, bool IsDummy>
@@ -630,6 +761,7 @@ namespace rascal {
       manager_max->offsets.resize(0);
       manager_max->neighbours.resize(0);
       manager_max->make_half_neighbour_list();
+      manager_max->make_full_neighbour_list();
     }
   };
 
