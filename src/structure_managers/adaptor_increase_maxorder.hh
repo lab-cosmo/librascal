@@ -658,39 +658,42 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   //! Extend and existing neighbour list.
   template <class ManagerImplementation>
-  template <size_t Order, bool IsDummy>
+  template <size_t MaxOrder, bool IsDummy>
   struct AdaptorMaxOrder<ManagerImplementation>::IncreaseMaxOrder {
     //this->increase_maxorder();
-    static void increase_maxorder() {
-      static_assert(traits::MaxOrder > 2, "No neighbourlist present.");
+    static void increase_maxorder(AdaptorMaxOrder<ManagerImplementation>
+                                  * manager_max) {
 
-      for (auto atom : this->manager) {
+      static_assert(MaxOrder > 2, "No neighbourlist present.");
+      for (auto atom : manager_max->manager) {
         //! Order 1, Order variable is at 0, atoms, index 0
         using AddOrderLoop = AddOrderLoop<atom.order(),
                                           atom.order() == traits::MaxOrder-1>;
-        auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
+        auto & atom_cluster_indices{std::get<0>
+            (manager_max->cluster_indices_container)};
         atom_cluster_indices.push_back(atom.get_cluster_indices());
-        AddOrderLoop::loop(atom, *this);
+        AddOrderLoop::loop(atom, *manager_max);
       }
 
       //! correct the offsets for the new cluster order
-      this->set_offsets();
+      manager_max->set_offsets();
       //! add correct cluster_indices for the highest order
       auto & max_cluster_indices
-      {std::get<traits::MaxOrder-1>(this->cluster_indices_container)};
+      {std::get<traits::MaxOrder-1>(manager_max->cluster_indices_container)};
       max_cluster_indices.fill_sequence();
     }
   };
 
   template <class ManagerImplementation>
-  template <size_t Order>
-  struct AdaptorMaxOrder<ManagerImplementation>::IncreaseMaxOrder<Order, true> {
-    static void increase_maxorder() {
+  template <size_t MaxOrder>
+  struct AdaptorMaxOrder<ManagerImplementation>::IncreaseMaxOrder<MaxOrder, true> {
+    static void
+    increase_maxorder(AdaptorMaxOrder<ManagerImplementation> * manager) {
       for (size_t i{0}; i < traits::MaxOrder; ++i) {
-      this->nb_neigh.resize(0);
-      this->offsets.resize(0);
+      manager->nb_neigh.resize(0);
+      manager->offsets.resize(0);
     }
-    this->make_half_neighbour_list();
+    manager->make_half_neighbour_list();
     }
   };
 
@@ -701,8 +704,9 @@ namespace rascal {
      * Standard case, increase an existing neighbour list or triplet list to a
      * higher Order
      */
-    using IncreaseMaxOrder = IncreaseMaxOrder<traits::MaxOrder-1, traits::MaxOrder ==2>;
-    IncreaseMaxOrder::increase_maxorder();
+    using IncreaseMaxOrder = IncreaseMaxOrder<traits::MaxOrder,
+                                              (traits::MaxOrder==2)>;
+    IncreaseMaxOrder::increase_maxorder(this);
   }
 
   /* ---------------------------------------------------------------------- */
