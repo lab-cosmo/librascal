@@ -40,13 +40,13 @@ Bofore, jumping into the next paragraphs, please respect our :ref:`coding conven
 Write the C++ method
 ^^^^^^^^^^^^^^^^^^^^
 
-At this point, you can code the method in the way that you want, but we remind you that it should be included in the ``namespace Rascal {...}``. So for example, your file(s) ``mymethod.h`` will contain:
+At this point, you can code the method in the way that you want, but we remind you that it should be included in the ``namespace rascal {...}``. So for example, your file(s) ``mymethod.h`` will contain:
 
 .. code-block:: c++
 
     #include <wathever_is_needed>
 
-    namespace Rascal {
+    namespace rascal {
         /**
         * Remember to put comments in a form that Doxygen
         * so that is clear what they do
@@ -68,7 +68,7 @@ The second task that you need to accomplish is to create a python binding to the
     #include <pybind11/pybind11.h>
     #include "mymethod.h"
 
-    using namespace Rascal;
+    using namespace rascal;
     namespace py=pybind11;
     using namespace pybind11::literals;
 
@@ -94,7 +94,7 @@ Then, it will be necessary to modify the file ``bind_py_module.cc`` and add your
     #include <pybind11/pybind11.h>
     #include "mymethod.h"
 
-    using namespace Rascal;
+    using namespace rascal;
     namespace py=pybind11;
     using namespace pybind11::literals;
 
@@ -112,10 +112,10 @@ Then, it will be necessary to modify the file ``bind_py_module.cc`` and add your
 
     /**
     * This command will expose all the method declared to python,
-    * so that it will be possible to import Rascal and use
-    * Rascal.previous_method(args)
+    * so that it will be possible to import rascal and use
+    * rascal.previous_method(args)
     * or
-    * Rascal.my_method(args)
+    * rascal.my_method(args)
     */
     PYBIND11_MODULE(_rascal, mod) {
         mod.doc() = "Hello, World!"; //! This is printing the doc.
@@ -281,7 +281,7 @@ The basic unit test tool in Python's ``unittest`` module is the ``unittest.TestC
 
 
        def test_cdist(self):
-           """feeds the matrices A and B to Rascal' cdist function and compares
+           """feeds the matrices A and B to rascal' cdist function and compares
            the results to the local reference dist_ref
            """
            dists = pt.cdist(self.A, self.B)
