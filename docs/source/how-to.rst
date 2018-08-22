@@ -107,7 +107,7 @@ Then, it will be necessary to modify the file ``bind_py_module.cc`` and add your
     * This is declaring the function of your method.
     * This is the line you need to add.
     */
-    extern void my_method(py::module&);
+    extern void my_method_binding(py::module&);
 
 
     /**
@@ -120,7 +120,7 @@ Then, it will be necessary to modify the file ``bind_py_module.cc`` and add your
     PYBIND11_MODULE(_rascal, mod) {
         mod.doc() = "Hello, World!"; //! This is printing the doc.
         previoud_method(mod);
-        my_method(mod); //! you also need to add this line
+        my_method_binding(mod); //! you also need to add this line
     }
 
 How to write a test

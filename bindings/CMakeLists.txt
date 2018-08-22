@@ -31,6 +31,8 @@
 
 set (PY_BINDING_SRCS
   ${CMAKE_CURRENT_SOURCE_DIR}/bind_py_module.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/bind_py_structure_manager.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/bind_py_utils.cc
   )
 
 find_package(PythonLibsNew 3 MODULE REQUIRED)
