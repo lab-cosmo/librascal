@@ -53,7 +53,7 @@ Style rules should pull their weight
 
 Optimise for the reader, not the writer
 
-    Our core library (and most individual components submitted to it) is expected to continue for quite some time, and we will hopefully attract more external contributors. As a result, more time will be spent reading most of our code than writing it. We explicitly choose to optimise for the experience of our average contributor reading, maintaining, and debugging code in our code base rather than ease when writing said code. "Leave a trace for the reader" is a particularly common sub-point of this principle: When something surprising or unusual is happening in a snippet of code (for example, use of raw pointers in the ``FFTEngine`` classes), leaving textual hints for the reader at the point of use is valuable. Use explicit traces of ownership of objects on the heap using smart pointers such as  ``std::unique_ptr`` and ``std::shared_ptr``.
+    Our core library (and most individual components submitted to it) is expected to continue for quite some time, and we will hopefully attract more external contributors. As a result, more time will be spent reading most of our code than writing it. We explicitly choose to optimise for the experience of our average contributor reading, maintaining, and debugging code in our code base rather than ease when writing said code. "Leave a trace for the reader" is a particularly common sub-point of this principle: When something surprising or unusual is happening in a snippet of code, leaving textual hints for the reader at the point of use is valuable. Use explicit traces of ownership of objects on the heap using smart pointers such as  ``std::unique_ptr`` and ``std::shared_ptr``.
 
 Be consistent with existing code
 
