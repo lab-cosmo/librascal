@@ -138,7 +138,7 @@ namespace utils {
 #ifdef DO_TIMING    
     // timing code    
     double tmax {0}, tactive{0}, tloop{0};
-    long ndist_eval {0}, npoint_skip{0}, ndist_active{0}, nactive{0};
+    long ndist_eval {0}, npoint_skip{0}, ndist_active{0};
     auto gtstart = hrclock::now();
 #endif
     for (int i=1 ; i<n_sparse; ++i) {
@@ -169,7 +169,7 @@ namespace utils {
 
 #ifdef DO_TIMING      
       tstart = hrclock::now();
-      ndist_active += i;
+      ndist_active += i;      
 #endif      
       // must compute distance of the new point to all the previous FPS. 
       // some of these might have been computed already, but bookkeeping 
@@ -187,16 +187,17 @@ namespace utils {
         if (list_sel_d2q(j) < voronoi_r2(j)) {
           f_active(j) = 1;
           voronoi_r2(j) = 0;  // size of active cells will have to be recomputed          
+        }
 #ifdef DO_TIMING
-          ++nactive;
+        else {
+          ++npoint_skip;
+        }
 #endif
-        }        
     }
 
 #ifdef DO_TIMING    
     tend = hrclock::now();
     tactive += std::chrono::duration_cast<std::chrono::nanoseconds>(tend-tstart).count();    
-    npoint_skip += i-nactive;
     
     tstart = hrclock::now();
 #endif    
