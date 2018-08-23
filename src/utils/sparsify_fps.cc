@@ -58,8 +58,9 @@ namespace utils {
       d2max_new = list_min_d2.maxCoeff(&i_new);  // picks max dist and its index
       sparse_indices(i) = i_new;
       sparse_minmax_d2(i-1) = d2max_new;    
+      // compute distances^2 to the new point
       list_new_d2 = feature_x2 + feature_x2(i_new) - 
-          2*(feature_matrix*feature_matrix.row(i_new).transpose()).array(); // compute distances to the new point
+          2*(feature_matrix*feature_matrix.row(i_new).transpose()).array();
       
       // this actually returns a list with the element-wise minimum between 
       // list_min_d2(i) and list_new_d2(i)
@@ -175,7 +176,7 @@ namespace utils {
       // some of these might have been computed already, but bookkeeping 
       // could be worse that recomputing (TODO: verify!)
       list_sel_d2q.head(i) = feature_x2(i_new) - 
-            2*(feature_matrix.topRows(i)*feature_new).array();    
+            2*(feature_sel.topRows(i)*feature_new).array();    
       for (ssize_t j=0; j<i; ++j) list_sel_d2q(j) += feature_x2(sparse_indices(j));
       list_sel_d2q.head(i) *= 0.25;  // triangle inequality reads voronoi_r < d/2 
     
@@ -256,11 +257,3 @@ namespace utils {
 
 } // namespace utils
 } // namespace rascal
-/*
-PYBIND11_MODULE(libfps, m) {
-    m.def("fps", &fps, "Selects points from a NxD dimensional feature matrix by farthest point sampling",
-          py::arg("X"), py::arg("n_sparse"), py::arg("ifirst") );
-    m.def("fps_voronoi", &fps_voronoi, 
-        "Selects points from a NxD dimensional feature matrix by farthest point sampling, using a voronoi-cell algorithm to compute fewer distances",
-          py::arg("X"), py::arg("n_sparse"), py::arg("ifirst") );
-}*/
