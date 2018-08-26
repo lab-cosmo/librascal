@@ -136,27 +136,27 @@ namespace utils {
     
     feature_sel.row(0) = feature_matrix.row(i_first_point);
 
-#ifdef DO_TIMING    
+    #ifdef DO_TIMING    
     // timing code    
-    double tmax {0}, tactive{0}, tloop{0};
-    long ndist_eval {0}, npoint_skip{0}, ndist_active{0};
+    double tmax{0}, tactive{0}, tloop{0};
+    long ndist_eval{0}, npoint_skip{0}, ndist_active{0};
     auto gtstart = hrclock::now();
-#endif
+    #endif
     for (int i=1 ; i<n_sparse; ++i) {
-#ifdef DO_TIMING         
+      #ifdef DO_TIMING         
       auto tstart = hrclock::now();
-#endif    
+      #endif    
       // find the maximum minimum distance and the corresponding point. this is our next FPS
       // the maxmin point must be one of the voronoi radii. So we pick it from this
       // smaller array. Note we only act on the first i items as the array is 
       // filled incrementally
       d2max_new = voronoi_r2.head(i).maxCoeff(&i_new);   // picks max dist and index of the cell
       i_new = voronoi_i_far(i_new);   // the actual index of the fartest point
-#ifdef DO_TIMING    
+      #ifdef DO_TIMING    
       auto tend = hrclock::now();
       tmax += std::chrono::duration_cast<std::chrono::nanoseconds>(tend-tstart).count();
-#endif    
-      // store properties of the new FP selection
+      #endif    
+      // store properties of the new FPS selection
       sparse_indices(i) = i_new;
       sparse_minmax_d2(i-1) = d2max_new;
       feature_new = feature_matrix.row(i_new);
@@ -168,10 +168,10 @@ namespace utils {
       // that might change due to the new selection. 
       f_active = 0;
 
-#ifdef DO_TIMING      
+      #ifdef DO_TIMING      
       tstart = hrclock::now();
       ndist_active += i;      
-#endif      
+      #endif      
       // must compute distance of the new point to all the previous FPS. 
       // some of these might have been computed already, but bookkeeping 
       // could be worse that recomputing (TODO: verify!)
@@ -189,19 +189,19 @@ namespace utils {
           f_active(j) = 1;
           voronoi_r2(j) = 0;  // size of active cells will have to be recomputed          
         }
-#ifdef DO_TIMING
+        #ifdef DO_TIMING
         else {
           ++npoint_skip;
         }
-#endif
+        #endif
     }
 
-#ifdef DO_TIMING    
+    #ifdef DO_TIMING    
     tend = hrclock::now();
     tactive += std::chrono::duration_cast<std::chrono::nanoseconds>(tend-tstart).count();    
     
     tstart = hrclock::now();
-#endif    
+    #endif    
     
     for (ssize_t j=0; j<n_inputs; ++j) {// only considers "active" points      
       int voronoi_idx_j = voronoi_indices(j); 
@@ -211,9 +211,9 @@ namespace utils {
         if (list_sel_d2q(voronoi_idx_j) < list_min_d2(j)) {  
           double d2_j = feature_x2(i_new) + feature_x2(j) 
               - 2*feature_new.dot(feature_matrix.row(j));
-#ifdef DO_TIMING
+          #ifdef DO_TIMING
           ndist_eval ++;
-#endif
+          #endif
           // we have to reassign point j to the new selection. also,
           // the voronoi center is actually that of the new selection
           if ( d2_j < list_min_d2(j) ) {
@@ -229,15 +229,15 @@ namespace utils {
       }    
     } 
     
-#ifdef DO_TIMING
+    #ifdef DO_TIMING
     tend = hrclock::now();
     tloop += std::chrono::duration_cast<std::chrono::nanoseconds>(tend-tstart).count();    
-#endif
+    #endif
        
   }
   sparse_minmax_d2(n_sparse-1) = 0;
 
-#ifdef DO_TIMING  
+  #ifdef DO_TIMING  
   auto gtend = hrclock::now();
   
   std::cout<<"Skipped "<<npoint_skip<<" FPS centers of "<< n_sparse*(n_sparse-1)/2<< " - "
@@ -249,7 +249,7 @@ namespace utils {
   std::cout<<"Time looking for max "<<tmax*1e-9<<"\n";
   std::cout<<"Time looking for active "<<tactive*1e-9<<" with "<< ndist_active << " distances\n";
   std::cout<<"Time general loop "<<tloop*1e-9<<"\n";
-#endif
+  #endif
   
   return std::make_tuple(sparse_indices, sparse_minmax_d2, 
                          voronoi_indices, voronoi_r2);
