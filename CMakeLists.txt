@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(BUILD_SHARED_LIBS ON)
 
-# add_compile_options(-Wall -Wextra -Weffc++)
+add_compile_options(-Wall -Wextra -Weffc++)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 include(rascalTools)
@@ -55,14 +55,11 @@ set(SUPPRESS_LIBRARY_WARNINGS "ON" CACHE BOOL
 set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT true CACHE BOOL
   "Use the default install path")
 
-  # see for more details:
-  # https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
+# see for more details on the linking path handling in Linux and MacOS when installing:
+# https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH "ON")
-set(CMAKE_SKIP_RPATH "OFF")
+#set(CMAKE_SKIP_RPATH "OFF")
 set(CMAKE_MACOSX_RPATH "ON")
-
-# workaround hard coded rpath
-# set(CMAKE_INSTALL_RPATH "${CMAKE_SOURCE_DIR}/build/src")
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   # when make install, the bindinds will be copied using this path
