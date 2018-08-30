@@ -79,9 +79,7 @@ namespace utils {
     double d2max_new{};
     
     // computes the squared modulus of input points
-    for (ssize_t i=0; i<n_inputs; ++i) {  
-      feature_x2(i) = feature_matrix.row(i).squaredNorm(); 
-    }
+    feature_x2 = feature_matrix.cwiseAbs2().rowwise().sum();    
     
     // initializes arrays taking the first point provided in input
     sparse_indices(0) = i_first_point;  
@@ -172,10 +170,8 @@ namespace utils {
     double d2max_new{};
     
     // computes the squared modulus of input points
-    for (ssize_t i=0; i<n_inputs; ++i) {  
-      feature_x2(i) = feature_matrix.row(i).squaredNorm(); 
-    }
-    
+    feature_x2 = feature_matrix.cwiseAbs2().rowwise().sum();
+        
     // initializes arrays taking the first point provided in input
     sparse_indices(0) = i_first_point;  
     //  distance square to the selected point
@@ -235,7 +231,9 @@ namespace utils {
       // could be worse that recomputing (TODO: verify!)
       list_sel_d2q.head(i) = feature_x2(i_new) - 
             2*(feature_sel.topRows(i)*feature_new).array();    
-      for (ssize_t j=0; j<i; ++j) list_sel_d2q(j) += feature_x2(sparse_indices(j));
+      for (ssize_t j=0; j<i; ++j) {
+        list_sel_d2q(j) += feature_x2(sparse_indices(j));
+      }
       list_sel_d2q.head(i) *= 0.25;  // triangle inequality: voronoi_r < d/2 
     
       for (ssize_t j=0; j<i; ++j) {
