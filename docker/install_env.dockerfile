@@ -6,6 +6,7 @@ RUN apt-get update \
     gcc \
     cmake \
     wget \
+    bzip2 \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean all
 
@@ -23,15 +24,14 @@ CMD /bin/bash
 
 ENV HOME /home/$UNAME
 
-RUN wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -o /tmp/miniconda.sh \ 
-    && bash /tmp/miniconda.sh -bfp $HOME/ \ 
-    && rm -rf /tmp/miniconda.sh \ 
+ENV PATH $HOME/miniconda3/bin:$PATH
+
+RUN cd $HOME && wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh \ 
+    && bash $HOME/Miniconda3-latest-Linux-x86_64.sh -b \ 
+    && rm -rf $HOME/Miniconda3-latest-Linux-x86_64.sh \ 
     && conda install -y python=3 \ 
     && conda update conda \ 
-    && rm -rf /var/lib/apt/lists/* /var/log/dpkg.log \ 
     && conda clean --all --yes 
-
-ENV PATH $HOME/miniconda/bin:$PATH
 
 RUN conda config --add channels conda-forge
 

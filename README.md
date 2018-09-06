@@ -37,6 +37,13 @@ In order to have the readthedocs.org theme for the documentation, please install
 pip install sphinx_rtd_theme
 ```
 
+To build libRascal with as docker environement:
+```
+sudo docker build -t test -f ./docker/install_env.dockerfile  .
+sudo docker run -it -v /path/to/repo/:/home/user/  test
+```
+And then follow the instruction in BOOST.md for compilation with boost from conda 
+
 
 TILL:
 Test + compilation of documentation in cmake + how to add a test
