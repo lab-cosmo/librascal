@@ -95,6 +95,8 @@ namespace utils {
       sparse_minmax_d2(i-1) = d2max_new;
           
       // compute distances^2 to the new point
+      // TODO: encapsulate the distance calculation into an interface function 
+      // dispatching to the proper distance/kernel needed 
       list_new_d2 = feature_x2 + feature_x2(i_new) - 
           2*(feature_matrix*feature_matrix.row(i_new).transpose()).array();
       
