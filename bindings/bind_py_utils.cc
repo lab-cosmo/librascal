@@ -37,13 +37,13 @@ namespace py=pybind11;
 void utils_binding(py::module& m){
     m.def("fps", &utils::select_fps, 
           "Selects points from a NxD dimensional feature matrix \
-          by farthest point sampling",
+          by farthest point sampling (N is the number of sample in a D dimentional space).",
           py::arg("feature_matrix"), py::arg("n_sparse"), 
           py::arg("i_first_point") );
           
     m.def("fps_voronoi", &utils::select_fps_voronoi, 
           "Selects points from a NxD dimensional feature matrix \
-          by farthest point sampling, using a Voronoi cell method",
+          by farthest point sampling, using a Voronoi cell method (N is the number of sample in a D dimentional space).",
           py::arg("feature_matrix"), py::arg("n_sparse"), 
           py::arg("i_first_point") );
 }
