@@ -603,30 +603,35 @@ namespace rascal {
   template <class ManagerImplementation>
   void AdaptorMaxOrder<ManagerImplementation>::make_full_neighbour_list() {
 
-    size_t natoms{this->get_manager().size()};
+    size_t natoms{this->manager.size()};
 
     const auto dim{traits::Dim};
 
     std::vector<AtomRef_t> centers;
     std::vector<double> positions;
-  std:vector<int> particle_types;
+    std::vector<int> particle_types;
     Lattice lattice;
+    std::vector<Box> boxes;
 
-    for (auto atom : this->get_manager()) {
-      centers.push_back(AtomRef_t(this->get_manager(), atom.get_index()));
-      positions.push_back(atom.get_position());
-      particle_types.push_back(atom.get_atom_type());
-    }
+    //! unnecessary because it is stored in the underlying manager
+    // for (auto atom : this->get_manager()) {
+    //   auto atom_ref = AtomRef_t(this->get_manager(), atom.get_index());
+    //   centers.push_back(atom_ref);
+    //   positions.push_back(atom.get_position());
+    //   particle_types.push_back(atom.get_atom_type());
+    // }
 
-    Cell_t lat = cell;
+    Cell_t lat = this->manager.get_cell();
     lattice.set_cell(lat);
-    cell = lat;
-    Vec3_t reciprocal_lenghts = this->lattice.get_reciprocal_lenghts();
-    double bin_size{cutoff_max};
-    Vec3i_t nbins_c,neigh_search;
+    // cell = lat;
+    Vec3_t reciprocal_lenghts = lattice.get_reciprocal_lenghts();
+    double bin_size{this->get_cutoff()};
+    Vec3i_t nbins_c, neigh_search;
     Vec3_t nbins_cd;
     int nbins{1};
     double face_dist_c;
+
+
 
 
     for (int ii{0};ii<dim;++ii){
@@ -651,16 +656,18 @@ namespace rascal {
     }
 
     Vec3i_t bin_index_c;
+    // auto manager = this->manager;
+    auto pbc = this->manager.get_periodic_boundary_conditions();
     for (int ii{0}; ii < nbins; ++ii){
-      internal::lin2mult<dim>(ii,nbins_c, bin_index_c);
-      this->boxes.push_back(Box(this->get_manager(), bin_index_c,
-                                pbc, neigh_search, nbins_c));
+      internal::lin2mult<dim>(ii, nbins_c, bin_index_c);
+      this->boxes.push_back(Box(this->manager, bin_index_c, pbc, neigh_search,
+                                nbins_c));
     }
 
     // bin the particles in the boxes
     Vec3_t position_sc;
     int bin_id{0};
-    this->part2bin.resize(Natom);
+    this->part2bin.resize(natoms);
     for (auto part : this->particles){
       this->lattice.get_cartesian2scaled(part.get_position(), position_sc);
       bin_index_c = (position_sc.array() * nbins_cd.array()).cast<int>();
@@ -760,7 +767,7 @@ namespace rascal {
       manager_max->nb_neigh.resize(0);
       manager_max->offsets.resize(0);
       manager_max->neighbours.resize(0);
-      manager_max->make_half_neighbour_list();
+      // manager_max->make_half_neighbour_list();
       manager_max->make_full_neighbour_list();
     }
   };
@@ -825,4 +832,5 @@ namespace rascal {
 
 // TODO: The construction of triplets is fine, but they occur multiple times. We
 // probably need to check for increasing atomic index to get rid of
-// duplicates. But this is in general a design decision, if we want full/half neighbour list and full/half/whatever triplets and quadruplets
+// duplicates. But this is in general a design decision, if we want full/half
+// neighbour list and full/half/whatever triplets and quadruplets
