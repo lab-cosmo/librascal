@@ -87,6 +87,7 @@ namespace rascal {
       else {
         face_dist_c = 1;
       }
+      //std::cout << "cell: face_dist_c " << face_dist_c << std::endl;
       // number of bin in each directions
       nbins_c[ii] =  std::max( static_cast<int>(face_dist_c/bin_size), 1);
       nbins_cd[ii] = static_cast<double>(nbins_c[ii]);
@@ -105,6 +106,13 @@ namespace rascal {
       this->boxes.push_back(Box(this->get_manager(), bin_index_c,
                                 pbc, neigh_search, nbins_c));
     }
+
+    // std::cout << "cell: bin_index_c " << bin_index_c[0] << " "
+    //           << bin_index_c[1] << " "
+    //           << bin_index_c[2] << std::endl;
+    // std::cout << "cell: nbins_c " << nbins_c[0] << " "
+    //           << nbins_c[1] << " "
+    //           << nbins_c[2] << std::endl;
 
     // bin the particles in the boxes
     Vec3_t position_sc;

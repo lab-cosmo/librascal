@@ -356,12 +356,14 @@ namespace rascal {
 
   namespace internal {
 
-    // conversion of a linear id to a Dim_t id
+    //!
+
+    //! conversion of a linear id to a Dim_t id
     template<int Dim>
     inline void
-    linear_to_dim_index(const Dim_t& index,
-                        const Eigen::Ref<const Vec3i_t> shape,
-                        Eigen::Ref< Vec3i_t> retval) {
+    linear_to_dim_index(const Dim_t & index,
+                        const std::vector<int> shape,
+                        std::vector<int> & retval) {
       Dim_t factor{1};
 
       for (Dim_t i{0}; i < Dim; ++i) {
@@ -374,8 +376,8 @@ namespace rascal {
 
     template<int Dim>
     inline Dim_t
-    dimension_to_linear_index(const Eigen::Ref<const Vec3i_t> coord,
-                              const Eigen::Ref<const Vec3i_t> shape) {
+    dimension_to_linear_index(const std::vector<int> coord,
+                              const std::vector<int> shape) {
       Dim_t index{0};
       Dim_t factor{1};
       for (Dim_t i = 0; i < Dim; ++i) {
@@ -385,6 +387,20 @@ namespace rascal {
         }
       }
       return index;
+    }
+
+    //! get box indices from a position
+    template<int Dim>
+    inline std::vector<int>
+    get_box_indices_from_position(const Vec3_t pos,
+                                  const std::vector<double> nbins) {
+      std::vector<int> box_coords(Dim);
+
+      for (auto i{0}; i<Dim; ++i) {
+        box_coords[i] = static_cast<int>(pos[i] * nbins[i]);
+      }
+
+      return box_coords;
     }
 
     //! Taken from StructureManagerCell
@@ -603,128 +619,91 @@ namespace rascal {
   template <class ManagerImplementation>
   void AdaptorMaxOrder<ManagerImplementation>::make_full_neighbour_list() {
 
+    //! short hands for variable
     size_t natoms{this->manager.size()};
-
     const auto dim{traits::Dim};
 
-    std::vector<AtomRef_t> centers;
-    std::vector<double> positions;
-    std::vector<int> particle_types;
-    Lattice lattice;
-    std::vector<Box> boxes;
+    Lattice lattice{manager.get_cell()};
+    auto reciprocal_lengths = lattice.get_reciprocal_lenghts();
+    double bin_size{this->cutoff};
 
-    //! unnecessary because it is stored in the underlying manager
-    // for (auto atom : this->get_manager()) {
-    //   auto atom_ref = AtomRef_t(this->get_manager(), atom.get_index());
-    //   centers.push_back(atom_ref);
-    //   positions.push_back(atom.get_position());
-    //   particle_types.push_back(atom.get_atom_type());
-    // }
-
-    Cell_t lat = this->manager.get_cell();
-    lattice.set_cell(lat);
-    // cell = lat;
-    Vec3_t reciprocal_lenghts = lattice.get_reciprocal_lenghts();
-    double bin_size{this->get_cutoff()};
-    Vec3i_t nbins_c, neigh_search;
-    Vec3_t nbins_cd;
+    //! subscript c stands for 'cartesian'
+    std::vector<int> nbins_c(dim);
+    std::vector<int> neighbour_search(dim);
+    std::vector<double> nbins_cd(dim);
     int nbins{1};
-    double face_dist_c;
+    double face_dist_c{};
+
+    //! vector for storing the atom indices of each box
+    std::vector<std::vector<int>> atoms_in_box{};
+    //! contiguous vector for neighbour positions; periodic boundary conditions
+    //! can lead to more neighbour positions than actual atoms, so called ghost
+    //! atoms. these are stored here during the buildup of the neighbourlist
+    std::vector<double> neighbour_positions{};
+    //! linear box index per atom --needed?
+    std::vector<int> part2bin{};
 
 
-
-
-    for (int ii{0};ii<dim;++ii){
-      // compute the distance between the cell faces (only French wiki
-      // https://fr.wikipedia.org/wiki/Distance_interr%C3%A9ticulaire)
-      if (reciprocal_lenghts[ii] > 0){
-        face_dist_c = 1 / reciprocal_lenghts[ii];
+    //! prepare boxes in each dimension
+    for (int i{0}; i<dim; ++i) {
+      if (reciprocal_lengths[i] > 0.) {
+        face_dist_c = 1. / reciprocal_lengths[i];
       }
       else {
-        face_dist_c = 1;
+        face_dist_c = 1.;
       }
-      // number of bin in each directions
-      nbins_c[ii] =  std::max( static_cast<int>(face_dist_c/bin_size), 1);
-      nbins_cd[ii] = static_cast<double>(nbins_c[ii]);
-      // number of bin one need to look around
-      neigh_search[ii] = static_cast<int>(std::
-                                          ceil(bin_size * nbins_c[ii]
-                                               / face_dist_c));
-      // total number of bin
-      nbins *= nbins_c[ii];
-
+      std::cout << "incMax face_dist_c " << face_dist_c << std::endl;
+      //! number of bins in each direction, minimum is 1
+      nbins_c[i] = std::max(static_cast<int>(face_dist_c / bin_size), 1);
+      nbins_cd[i] = static_cast<double>(nbins_c[i]);
+      //! number of bin to include for neighbour search
+      neighbour_search[i] = static_cast<int>(std::ceil(bin_size * nbins_c[i]
+                                                   / face_dist_c));
+      //! total number of bins (flattened)
+      nbins *= nbins_c[i];
     }
 
-    Vec3i_t bin_index_c;
-    // auto manager = this->manager;
-    auto pbc = this->manager.get_periodic_boundary_conditions();
-    for (int ii{0}; ii < nbins; ++ii){
-      internal::lin2mult<dim>(ii, nbins_c, bin_index_c);
-      this->boxes.push_back(Box(this->manager, bin_index_c, pbc, neigh_search,
-                                nbins_c));
+    //! resizing the vector with atom indeces to number of bins
+    atoms_in_box.resize(nbins);
+    part2bin.resize(natoms);
+    std::cout << "nbins " << nbins << std::endl;
+
+    //! TODO check minimum image here convention with face distances?
+
+    std::vector<int> bin_index_c(dim);
+    for (int i{0}; i < nbins; ++i) {
+      internal::linear_to_dim_index<dim>(i, nbins_c, bin_index_c);
+      std::cout << "increase max: bin_index_c " << i << " "
+                << bin_index_c[0] << " "
+                << bin_index_c[1] << " "
+                << bin_index_c[2] << std::endl;
     }
 
-    // bin the particles in the boxes
-    Vec3_t position_sc;
-    int bin_id{0};
-    this->part2bin.resize(natoms);
-    for (auto part : this->particles){
-      this->lattice.get_cartesian2scaled(part.get_position(), position_sc);
-      bin_index_c = (position_sc.array() * nbins_cd.array()).cast<int>();
-      bin_id = internal::mult2lin<dim>(bin_index_c, nbins_c);
-      this->boxes[bin_id].push_particle_back(part.get_index());
-      this->part2bin[part.get_index()] = bin_id;
-    }
+    std::cout << "increase max: nbins_c " << nbins_c[0] << " "
+              << nbins_c[1] << " "
+              << nbins_c[2] << std::endl;
 
-    // Set up the data strucure containing the information about neighbourhood
-    // get the number of particles in the box and its neighbour boxes set the
-    // arrays that will be used to iterate over the centers and neighbourr
-    //
-    // TODO: short circuit for building neighbours, nneigh, etc. to make calls in
-    // manager short
-    this->neighbour_bin_id.resize(nbins);
-    this->neighbour_atom_index.resize(nbins);
-    //loop over the boxes
-    for (size_t bin_index{0}; bin_index < this->boxes.size(); ++bin_index){
-      size_t n_neigh{0};
-      // loop over the neighbouring boxes
-      for (size_t neigh_bin_id{0}; neigh_bin_id <
-             this->boxes[bin_index].get_number_of_neighbour_box();
-           ++neigh_bin_id){
-        int neig_bin_index{
-          this->boxes[bin_index].get_neighbour_bin_index(neigh_bin_id)
-            };
-        //loop over the particle in the neighbouring boxes
-        for (size_t neigh_part_id{0}; neigh_part_id
-               < this->boxes[neig_bin_index].get_number_of_particles();
-             ++neigh_part_id){
-          // store the indices to the corresponding atomic shift
-          this->neighbour_bin_id[bin_index].push_back(AtomRef_t(this->get_manager(),
-                                                                neigh_bin_id));
-          // store the indices to the neighbour particles
-          // TODO: basically a neighbour list??
-          this->neighbour_atom_index[bin_index]
-            .push_back(AtomRef_t(this->get_manager(),
-                                 this->boxes[neig_bin_index]
-                                 .get_particle_index(neigh_part_id)));
-        }
-        n_neigh += this->boxes[neig_bin_index].get_number_of_particles();
-      }
-      this->boxes[bin_index].set_number_of_neighbours(n_neigh);
-    }
+    //! loop over atoms (underlying manager) and put them into the respective
+    //! bins
+    Vec3_t pos_scaled;
+    for (auto atom : this->manager) {
+      lattice.get_cartesian2scaled(atom.get_position(), pos_scaled);
+      bin_index_c =
+        internal::get_box_indices_from_position<dim>(pos_scaled, nbins_cd);
+      auto bin_id =
+        internal::dimension_to_linear_index<dim>(bin_index_c, nbins_c);
+      auto idx = atom.get_index();
 
-    int stride{0};
-    // get the stride for the fields. (center,neigh) dimensions are flattened in
-    // fields with center being leading dimension
-    // TODO: number_of_neighbours; offsets can be calculated from this
-    for (auto center : this->centers){
-      this->number_of_neighbours_stride.push_back(stride);
-      int bin_index{this->part2bin[center.get_index()]};
-      size_t n_neigh{this->boxes[bin_index].get_number_of_neighbours()};
-      stride += n_neigh;
+      atoms_in_box[bin_id].push_back(idx);
+      part2bin[idx] = bin_id;
     }
-    this->number_of_neighbours = stride;
   }
+
+  // build neighbour list and neighbour position array according to prescribed
+  // periodicity
+
+
+  // par2bin necessary?
 
 
   /* ---------------------------------------------------------------------- */

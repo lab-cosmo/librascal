@@ -50,7 +50,7 @@ namespace rascal {
     template<int Dim>
     inline void lin2mult(const Dim_t& index,
                          const Eigen::Ref<const Vec3i_t> shape,
-                         Eigen::Ref< Vec3i_t> retval) {
+                         Eigen::Ref<Vec3i_t> retval) {
       // TODO: what does the factor do?
       Dim_t factor{1};
 
@@ -312,7 +312,11 @@ namespace rascal {
     Box() = default;
 
     //! constructor
-    Box(Manager_t& manager, const Vec3i_t& coord, const std::array<bool, 3>& pbc, const Vec3i_t& neigh_search, const Vec3i_t& nbins_c);
+    Box(Manager_t& manager,
+        const Vec3i_t& coord,
+        const std::array<bool, 3>& pbc,
+        const Vec3i_t& neigh_search,
+        const Vec3i_t& nbins_c);
     //const std::array<std::array<Dim_t, 3>,2>& neigh_bounds,
 
 
