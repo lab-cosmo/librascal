@@ -45,7 +45,8 @@ namespace rascal {
         const Eigen::Ref<const VecXi>  particle_types,
         const Eigen::Ref<const VecXi> center_ids,
         const Eigen::Ref<const Eigen::MatrixXd> cell,
-        const std::array<bool,3> & pbc, const double & cutoff_max) {
+        const std::array<bool,3> & pbc,
+        const double & cutoff_max) {
 
     Eigen::Index Natom{positions.cols()};
 

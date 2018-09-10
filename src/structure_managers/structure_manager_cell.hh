@@ -33,8 +33,10 @@
 #include "structure_managers/property.hh"
 #include "lattice.hh"
 #include "basic_types.hh"
+
 #include <Eigen/Dense>
 #include <Eigen/StdVector>
+
 #include <stdexcept>
 #include <iostream>
 #include <vector>
@@ -139,6 +141,9 @@ namespace rascal {
     using AtomVectorField_t =
       typename StructureManagerCell::Property_t<double, 1, 3>;
 
+    //! access to periodic boundary conditions
+    using PBC_ref = Eigen::Map<Eigen::Matrix<int, 1, traits::Dim>>;
+
     //! Default constructor
     StructureManagerCell()
       : particles{}, centers{}, positions{}, shifted_position{}, lattice{},
@@ -176,6 +181,11 @@ namespace rascal {
     inline Vector_ref get_position(const size_t & atom_index) {
       auto * xval{this->positions.col(atom_index).data()};
       return Vector_ref(xval);
+    }
+
+    //! Returns a map of size traits::Dim with 0/1 for periodicity
+    inline decltype(auto) get_periodic_boundary_conditions() {
+      return this->pbc;
     }
 
     inline Vector_ref get_shift(const int& i_bin_id, const int& shift_index);
@@ -288,7 +298,7 @@ namespace rascal {
     Vector_t shifted_position;
     Lattice lattice;
     Cell_t cell; // to simplify get_neighbour_position()
-    std::array<bool,3> pbc;
+    std::array<int, 3> pbc;
     std::vector<int> part2bin; //!
     std::vector<Box> boxes;
     size_t number_of_neighbours;

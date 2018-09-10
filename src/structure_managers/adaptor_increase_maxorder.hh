@@ -92,6 +92,8 @@ namespace rascal {
     //! using ClusterRefKey_t =
     //!   typename ManagerImplementation::template ClusterRefKey<Order, Layer>;
     //using PairRef_t = ClusterRef_t<2, traits::MaxOrder>;
+    using Vector_ref = typename Parent::Vector_ref;
+    using Vector_t = typename Parent::Vector_t;
 
     static_assert(traits::MaxOrder > 1,
                   "ManagerImplementation needs an atom list.");
@@ -164,6 +166,10 @@ namespace rascal {
       //! number of atoms from the underlying manager return
       //! this->neighbours.size();
       return this->manager.get_size();
+    }
+
+    inline size_t get_size_with_ghosts() const{
+      return this->n_i_atoms+this->n_j_atoms;
     }
 
     //! Returns position of an atom with index atom_index
@@ -267,6 +273,22 @@ namespace rascal {
                               this->nb_neigh.back());
     }
 
+    //! this function is necessary, because the underlying manager is not known
+    //! at this stage. Therefore we can not add positions to the existing array,
+    //! but have to add positions to a ghost array. This also means, that the
+    //! get_position function will need to branch, depending on the atom_index >
+    //! n_i_atoms and offset with n_j_atoms to access ghost positions.
+    inline void add_ghost_atom(const int atom_index, const Vector_t position) {
+      //! cast position into standard type
+      std::vector<double> pos (position.data(),
+                               position.data()
+                               + position.rows() * position.cols());
+
+      this->atom_indices.push_back(atom_index);
+      this->ghost_positions.push_back(pos);
+      this->n_j_atoms++;
+    }
+
     //! Extends the list containing the number of neighbours with a 0
     inline void add_entry_number_of_neighbours() {
       this->nb_neigh.push_back(0);
@@ -331,10 +353,6 @@ namespace rascal {
      */
     template <size_t Order, bool IsDummy> struct IncreaseMaxOrder;
 
-    //! not necessary any more
-    //! // stores AtomRefs to of neighbours for traits::MaxOrder-1-*plets
-    // std::vector<AtomRef_t> atom_refs{};
-
     //! Stores atom indices of current Order
     std::vector<size_t> atom_indices{}; //akin to ilist[]
 
@@ -349,6 +367,14 @@ namespace rascal {
     std::vector<size_t> offsets{};
 
     size_t cluster_counter{0};
+
+    //! number of i atoms, i.e. centers
+    int n_i_atoms{};
+    //! number of ghost atoms (periodicity)
+    int n_j_atoms{};
+
+    //! ghost positions
+    std::vector<std::vector<double>> ghost_positions{};
   private:
   };
 
@@ -356,52 +382,91 @@ namespace rascal {
 
   namespace internal {
 
-    //!
+    //! get the box index
+    template<class Vector_t>
+    inline std::vector<int> get_box_index(const Vector_t & position,
+                                          const std::vector<double> & rc,
+                                          const std::vector<int> nmax) {
+      auto constexpr dimension{Vector_t::SizeAtCompileTime};
+      static_assert(dimension != Eigen::Dynamic,
+                    "Dynamic dimension. Should be static with.");
+      std::vector<int> nidx(dimension);
+      for(auto dim{0}; dim < dimension; ++dim) {
+        nidx[dim] = static_cast<int>(std::floor(position(dim) / rc[dim] ));
+        nidx[dim] = std::min(nidx[dim], nmax[dim]-1);
+        nidx[dim] = std::max(nidx[dim], 0);
+      }
+      return nidx;
+    }
 
-    //! conversion of a linear id to a Dim_t id
-    template<int Dim>
-    inline void
-    linear_to_dim_index(const Dim_t & index,
-                        const std::vector<int> shape,
-                        std::vector<int> & retval) {
-      Dim_t factor{1};
 
-      for (Dim_t i{0}; i < Dim; ++i) {
-        retval[i] = index / factor%shape[i];
-        if (i != Dim-1) {
-          factor *= shape[i];
-        }
+    inline int get_linear_index(std::vector<int> nidx, std::vector<int> nmax) {
+      auto dim = nidx.size();
+      switch (dim) {
+      case 1: {
+        return nidx[0];
+        break;
+      }
+      case 2: {
+        return nidx[1]*nmax[0] + nidx[0];
+        break;
+      }
+      case 3: {
+        return nidx[2] * nmax[0] * nmax[1] +
+          nidx[1] * nmax[0] + nidx[0];
+        break;
+      }
+      default:
+        throw std::runtime_error("Can only give index for max 3 dimensions");
+        break;
       }
     }
 
-    template<int Dim>
-    inline Dim_t
-    dimension_to_linear_index(const std::vector<int> coord,
-                              const std::vector<int> shape) {
-      Dim_t index{0};
-      Dim_t factor{1};
-      for (Dim_t i = 0; i < Dim; ++i) {
-        index += coord[i]*factor;
-        if (i != Dim-1 ) {
-          factor *= shape[i];
-        }
-      }
-      return index;
-    }
 
-    //! get box indices from a position
-    template<int Dim>
-    inline std::vector<int>
-    get_box_indices_from_position(const Vec3_t pos,
-                                  const std::vector<double> nbins) {
-      std::vector<int> box_coords(Dim);
+    // //! conversion of a linear id to a Dim_t id
+    // template<int Dim>
+    // inline void
+    // linear_to_dim_index(const Dim_t & index,
+    //                     const std::vector<int> shape,
+    //                     std::vector<int> & retval) {
+    //   Dim_t factor{1};
 
-      for (auto i{0}; i<Dim; ++i) {
-        box_coords[i] = static_cast<int>(pos[i] * nbins[i]);
-      }
+    //   for (Dim_t i{0}; i < Dim; ++i) {
+    //     retval[i] = index / factor%shape[i];
+    //     if (i != Dim-1) {
+    //       factor *= shape[i];
+    //     }
+    //   }
+    // }
 
-      return box_coords;
-    }
+    // template<int Dim>
+    // inline Dim_t
+    // dimension_to_linear_index(const std::vector<int> coord,
+    //                           const std::vector<int> shape) {
+    //   Dim_t index{0};
+    //   Dim_t factor{1};
+    //   for (Dim_t i = 0; i < Dim; ++i) {
+    //     index += coord[i]*factor;
+    //     if (i != Dim-1 ) {
+    //       factor *= shape[i];
+    //     }
+    //   }
+    //   return index;
+    // }
+
+    // //! get box indices from a position
+    // template<int Dim>
+    // inline std::vector<int>
+    // get_box_indices_from_position(const Vec3_t pos,
+    //                               const std::vector<double> nbins) {
+    //   std::vector<int> box_coords(Dim);
+
+    //   for (auto i{0}; i<Dim; ++i) {
+    //     box_coords[i] = static_cast<int>(pos[i] * nbins[i]);
+    //   }
+
+    //   return box_coords;
+    // }
 
     //! Taken from StructureManagerCell
     // https://stackoverflow.com/questions/828092/python-style-integer-division-modulus-in-c
@@ -410,22 +475,22 @@ namespace rascal {
     // division truncates towards negative infinity, and signed integer modulus
     // has the same sign the second operand.
 
-    template<class T>
-    decltype(auto) modulo_and_rest(const T & x, const T & y) {
-      std::array<int, 2> out;
-      const T quot = x / y;
-      const T rem  = x % y;
+    // template<class T>
+    // decltype(auto) modulo_and_rest(const T & x, const T & y) {
+    //   std::array<int, 2> out;
+    //   const T quot = x / y;
+    //   const T rem  = x % y;
 
-      if (rem != 0 && (x<0) != (y<0)) {
-        out[0] = quot-1;
-        out[1] = rem+y;
-      } else {
-        out[0] = quot;
-        out[1] = rem;
-      }
+    //   if (rem != 0 && (x<0) != (y<0)) {
+    //     out[0] = quot-1;
+    //     out[1] = rem+y;
+    //   } else {
+    //     out[0] = quot;
+    //     out[1] = rem;
+    //   }
 
-      return out;
-    }
+    //   return out;
+    // }
 
   }  // internal
 
@@ -446,6 +511,8 @@ namespace rascal {
     if (traits::MaxOrder < 1) {
       throw std::runtime_error("No atoms in manager.");
     }
+    n_i_atoms = this->manager.get_size();
+    n_j_atoms = 0;
   }
 
   /* ---------------------------------------------------------------------- */
@@ -618,93 +685,154 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   void AdaptorMaxOrder<ManagerImplementation>::make_full_neighbour_list() {
+    using Vector_t = Eigen::Matrix<double, traits::Dim, 1>;
 
     //! short hands for variable
     size_t natoms{this->manager.size()};
+    size_t nghosts{0};
     const auto dim{traits::Dim};
+    auto periodicity = this->manager.get_periodic_boundary_conditions();
 
-    Lattice lattice{manager.get_cell()};
-    auto reciprocal_lengths = lattice.get_reciprocal_lenghts();
-    double bin_size{this->cutoff};
-
-    //! subscript c stands for 'cartesian'
-    std::vector<int> nbins_c(dim);
-    std::vector<int> neighbour_search(dim);
-    std::vector<double> nbins_cd(dim);
-    int nbins{1};
-    double face_dist_c{};
+    auto cell{manager.get_cell()};
+    double boxlength{this->cutoff};
+    // number of boxes per dimension
+    std::vector<int> nboxes_per_dim(dim);
+    std::vector<double> rc_per_dim(3);
 
     //! vector for storing the atom indices of each box
     std::vector<std::vector<int>> atoms_in_box{};
     //! contiguous vector for neighbour positions; periodic boundary conditions
     //! can lead to more neighbour positions than actual atoms, so called ghost
     //! atoms. these are stored here during the buildup of the neighbourlist
-    std::vector<double> neighbour_positions{};
-    //! linear box index per atom --needed?
-    std::vector<int> part2bin{};
+    std::vector<Vector_t> ghost_positions{};
 
+    //! find minimum/maximum coordinate of mesh for neighbour list
+    Vector_t r_mesh_min(dim);
+    Vector_t r_mesh_max(dim);
+    std::vector<double> cell_norm(dim);
+    std::vector<double> cell_max(dim);
+    std::vector<double> angles(dim);
+    // std::fill(r_mesh_min.begin(), r_mesh_min.end(), 0.);
+    // std::fill(r_mesh_max.begin(), r_mesh_max.end(), 0.);
+    r_mesh_min.setZero();
+    r_mesh_max.setZero();
 
-    //! prepare boxes in each dimension
-    for (int i{0}; i<dim; ++i) {
-      if (reciprocal_lengths[i] > 0.) {
-        face_dist_c = 1. / reciprocal_lengths[i];
+    std::fill(cell_max.begin(), cell_max.end(), 0.);
+
+    //! norms of the cell vectors and maximum
+    for (auto i{0}; i < dim; ++i) {
+      auto vec = cell.col(i);
+      cell_norm[i] = vec.norm();
+      for (auto j{0}; j < dim; ++j) {
+        cell_max[j] += vec[j];
       }
-      else {
-        face_dist_c = 1.;
+    }
+    for (auto i{0}; i < dim; ++i) r_mesh_max[i] = cell_max[i];
+    //! calculate angle to scale mesh offset
+    for (auto i{0}; i < dim; ++i) {
+      std::vector<double> e_i(dim);
+      std::fill(e_i.begin(), e_i.end(), 0.);
+      e_i[i] = 1;
+      auto vec = cell.col(i);
+      double val{0.};
+      for (auto j{0}; j < dim; ++j) {
+        val += e_i[j] * vec[j];
       }
-      std::cout << "incMax face_dist_c " << face_dist_c << std::endl;
-      //! number of bins in each direction, minimum is 1
-      nbins_c[i] = std::max(static_cast<int>(face_dist_c / bin_size), 1);
-      nbins_cd[i] = static_cast<double>(nbins_c[i]);
-      //! number of bin to include for neighbour search
-      neighbour_search[i] = static_cast<int>(std::ceil(bin_size * nbins_c[i]
-                                                   / face_dist_c));
-      //! total number of bins (flattened)
-      nbins *= nbins_c[i];
+      val /= cell_norm[i];
+      angles[i] = std::acos(val);
+    }
+    std::cout << "cell_max "
+              << cell_max[0] << " "
+              << cell_max[1] << " "
+              << cell_max[2] << std::endl;
+
+    auto val = 180/3.1415;
+    std::cout << "angles "
+              << angles[0]*val << " "
+              << angles[1]*val << " "
+              << angles[2]*val << std::endl;
+
+    // r_mesh_max = cell_max;
+
+    //! calculate minimum and maximum coordinate for box algorithm
+    for (auto i{0}; i < dim; ++i) {
+
+      if (periodicity[i]) {
+        std::cout << "periodic i=" << i << " p=" << periodicity[i] << std::endl;
+
+        auto vec = cell.col(i);
+        std::cout << "vec " <<  vec << std::endl;
+        //! scale correctly along cell vectors
+        double boxlength_c = boxlength / std::cos(angles[i]);
+        for (auto j{0}; j < dim; ++j) {
+          auto val = boxlength_c / cell_norm[i] * vec[j];
+          std::cout << "vec j " << j << " " << vec[j] << std::endl;
+          r_mesh_min[j] -= val;
+          r_mesh_max[j] += val;
+        }
+      }
+    }
+    std::cout << "r_mesh_min "
+              << r_mesh_min[0] << " "
+              << r_mesh_min[1] << " "
+              << r_mesh_min[2] << " " << std::endl;
+    std::cout << "r_mesh_max "
+              << r_mesh_max[0] << " "
+              << r_mesh_max[1] << " "
+              << r_mesh_max[2] << " " << std::endl;
+
+    //! get all ghost atom positions
+    for (auto atom : this->get_manager()) {
+      auto pos = atom.get_position();
+      for (auto i{0}; i < dim; ++i) {
+        if(periodicity[i]) {
+          for(auto m{-1}; m < 2; m+=2) {
+            auto pos_ghost = pos + cell.col(i)*m;
+            auto pos_lt  = pos_ghost.array() - r_mesh_min.array();
+            auto pos_gt  = pos_ghost.array() - r_mesh_max.array();
+            //! check lower bound
+            auto f_lt = (pos_lt.array() > 0.).all();
+            //! check upper bound
+            auto f_gt = (pos_gt.array() < 0.).all();
+            if (f_lt && f_gt) {
+              auto new_atom_index = this->get_size_with_ghosts();
+              new_atom_index++;
+              this->add_ghost_atom(new_atom_index, pos_ghost);
+
+            }
+          }
+        }
+      }
+    }
+    std::cout << "natoms " << natoms
+              << " nghosts " << nghosts << std::endl;
+
+
+    //! sort into boxes
+    auto periodic_cell = r_mesh_max - r_mesh_min;
+    for (auto i{0}; i < dim; ++i) {
+      nboxes_per_dim[i] =
+        static_cast<int>(std::floor(periodic_cell[i] / cutoff));
+      rc_per_dim[i] =
+        static_cast<double>(periodic_cell[i] / nboxes_per_dim[i]);
+      std::cout << "nboxes_per_dim " << nboxes_per_dim[i] << std::endl;
+      std::cout << "rc_per_dim " << rc_per_dim[i] << std::endl;
+
     }
 
-    //! resizing the vector with atom indeces to number of bins
-    atoms_in_box.resize(nbins);
-    part2bin.resize(natoms);
-    std::cout << "nbins " << nbins << std::endl;
-
-    //! TODO check minimum image here convention with face distances?
-
-    std::vector<int> bin_index_c(dim);
-    for (int i{0}; i < nbins; ++i) {
-      internal::linear_to_dim_index<dim>(i, nbins_c, bin_index_c);
-      std::cout << "increase max: bin_index_c " << i << " "
-                << bin_index_c[0] << " "
-                << bin_index_c[1] << " "
-                << bin_index_c[2] << std::endl;
+    for (auto pos : ghost_positions) {
+      //! dim-dimensional index
+      auto pos_shift = pos - r_mesh_min;
+      std::vector<int> idx =
+        internal::get_box_index(pos_shift, rc_per_dim, nboxes_per_dim);
+      std::cout << "idx " << idx[0] << idx[1] << idx[2] << std::endl;
+      //! 1-d index
+      // auto linear_idx = internal::get_linear_index(idx, nboxes_per_dim);
+      // std::cout << "linear_idx " << linear_idx << std::endl;
     }
 
-    std::cout << "increase max: nbins_c " << nbins_c[0] << " "
-              << nbins_c[1] << " "
-              << nbins_c[2] << std::endl;
 
-    //! loop over atoms (underlying manager) and put them into the respective
-    //! bins
-    Vec3_t pos_scaled;
-    for (auto atom : this->manager) {
-      lattice.get_cartesian2scaled(atom.get_position(), pos_scaled);
-      bin_index_c =
-        internal::get_box_indices_from_position<dim>(pos_scaled, nbins_cd);
-      auto bin_id =
-        internal::dimension_to_linear_index<dim>(bin_index_c, nbins_c);
-      auto idx = atom.get_index();
-
-      atoms_in_box[bin_id].push_back(idx);
-      part2bin[idx] = bin_id;
-    }
   }
-
-  // build neighbour list and neighbour position array according to prescribed
-  // periodicity
-
-
-  // par2bin necessary?
-
 
   /* ---------------------------------------------------------------------- */
   //! Extend and existing neighbour list.
