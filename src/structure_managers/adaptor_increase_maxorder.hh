@@ -481,13 +481,14 @@ namespace rascal {
       std::vector<size_t> neighbours;
 
       for (auto && s: Stencil<Dim>{ccoord}) {
-        std::cout << "s "
-                  << s[0] << " "
-                  << s[1] << " "
-                  << s[2] << " " << std::endl;
+        // std::cout << "s "
+        //           << s[0] << " "
+        //           << s[1] << " "
+        //           << s[2] << " " << std::endl;
         for (const auto & neigh : boxes[s]) {
           //! avoid adding the current i atom to the neighbour list
           if (neigh != current_atom_index) {
+            std::cout << "neigh " << neigh << " " << "curr " << current_atom_index<< std::endl;
             neighbours.push_back(neigh);
           }
         }
@@ -829,7 +830,7 @@ namespace rascal {
         cell_max[j] += vec[j];
       }
     }
-    for (auto i{0}; i < dim; ++i) r_mesh_max[i] = cell_max[i];
+
     //! calculate angle to scale mesh offset
     for (auto i{0}; i < dim; ++i) {
       std::vector<double> e_i(dim);
@@ -853,8 +854,6 @@ namespace rascal {
               << angles[0]*val << " "
               << angles[1]*val << " "
               << angles[2]*val << std::endl;
-
-    // r_mesh_max = cell_max;
 
     //! calculate minimum mesh coordinates
     for (auto i{0}; i < dim; ++i) {
@@ -968,10 +967,11 @@ namespace rascal {
 
     //! go through atoms and build neighbour list
 
-    int nneigh{0};
+
     int offset{0};
 
     for (size_t i{0}; i < this->n_i_atoms; ++i) {
+      int nneigh{0};
       auto pos = this->get_position(i);
       auto dpos = pos - r_mesh_min;
       auto idx = internal::get_box_index(dpos, cutoff, nboxes_per_dim);
