@@ -481,19 +481,13 @@ namespace rascal {
       std::vector<size_t> neighbours;
 
       for (auto && s: Stencil<Dim>{ccoord}) {
-        // std::cout << "s "
-        //           << s[0] << " "
-        //           << s[1] << " "
-        //           << s[2] << " " << std::endl;
         for (const auto & neigh : boxes[s]) {
           //! avoid adding the current i atom to the neighbour list
           if (neigh != current_atom_index) {
-            std::cout << "neigh " << neigh << " " << "curr " << current_atom_index<< std::endl;
             neighbours.push_back(neigh);
           }
         }
       }
-
       return neighbours;
     }
 
@@ -691,9 +685,6 @@ namespace rascal {
       //! access to underlying manager for access to atom pairs
       auto & manager_tmp{cluster.get_manager()};
 
-      // std::cout << " === neigh back "
-      //           << i_atoms[0] << " " << i_atoms[1]
-      //           << std::endl;
 
       for (auto atom_index : i_atoms) {
         current_i_atoms.push_back(atom_index);
@@ -844,17 +835,6 @@ namespace rascal {
       val /= cell_norm[i];
       angles[i] = std::acos(val);
     }
-    std::cout << "cell_max "
-              << cell_max[0] << " "
-              << cell_max[1] << " "
-              << cell_max[2] << std::endl;
-
-    auto val = 180/3.1415;
-    std::cout << "angles "
-              << angles[0]*val << " "
-              << angles[1]*val << " "
-              << angles[2]*val << std::endl;
-
     //! calculate minimum mesh coordinates
     for (auto i{0}; i < dim; ++i) {
       r_mesh_min[i] -= cutoff;
@@ -867,51 +847,22 @@ namespace rascal {
       nboxes_per_dim[i] = n;
     }
 
-    std::cout << "r_mesh_min "
-              << r_mesh_min[0] << " "
-              << r_mesh_min[1] << " "
-              << r_mesh_min[2] << " " << std::endl;
-    std::cout << "r_mesh_max "
-              << r_mesh_max[0] << " "
-              << r_mesh_max[1] << " "
-              << r_mesh_max[2] << " " << std::endl;
-
     //! get all ghost atom positions
     for (auto atom : this->get_manager()) {
       auto pos = atom.get_position();
-      std::cout << "----pos "
-                << pos[0] << " "
-                << pos[1] << " "
-                << pos[2] << " " << std::endl;
       for (auto i{0}; i < dim; ++i) {
         if(periodicity[i]) {
           for(auto m{-1}; m < 2; m+=2) {
-            std::cout << "m " << m << std::endl;
-            std::cout << "cell col(i) "
-                      << cell.col(i)*m << std::endl;
+
             auto pos_ghost = pos + cell.col(i)*m;
             auto pos_lt  = pos_ghost.array() - r_mesh_min.array();
             auto pos_gt  = pos_ghost.array() - r_mesh_max.array();
-            std::cout << "pos_lt "
-                      << pos_lt[0] << " "
-                      << pos_lt[1] << " "
-                      << pos_lt[2] << " " << std::endl;
-            std::cout << "pos_gt "
-                      << pos_gt[0] << " "
-                      << pos_gt[1] << " "
-                      << pos_gt[2] << " " << std::endl;
 
             //! check lower bound
             auto f_lt = (pos_lt.array() > 0.).all();
             //! check upper bound
             auto f_gt = (pos_gt.array() < 0.).all();
-            std::cout << "f_lt/f_gt " << f_lt << "/" << f_gt << std::endl;
             if (f_lt && f_gt) {
-              std::cout << "adding ghost" << std::endl;
-              std::cout << "pos_ghost "
-                        << pos_ghost[0] << " "
-                        << pos_ghost[1] << " "
-                        << pos_ghost[2] << " " << std::endl;
               auto new_atom_index = this->get_size_with_ghosts();
               new_atom_index++;
               this->add_ghost_atom(new_atom_index, pos_ghost);
@@ -926,33 +877,11 @@ namespace rascal {
     //! neighbour boxes
     internal::IndexContainer<dim> atom_id_cell{nboxes_per_dim};
 
-    std::cout << "=====r_mesh_min "
-              << r_mesh_min[0] << " "
-              << r_mesh_min[1] << " "
-              << r_mesh_min[2] << " " << std::endl;
-    std::cout << "=====r_mesh_max "
-              << r_mesh_max[0] << " "
-              << r_mesh_max[1] << " "
-              << r_mesh_max[2] << " " << std::endl;
     // i-atoms sorting into boxes
     for (size_t i{0}; i < this->n_i_atoms; ++i) {
       auto pos = this->get_position(i);
-      // std::cout << "pos "
-      //           << pos[0] << " "
-      //           << pos[1] << " "
-      //           << pos[2] << " " << std::endl;
       auto dpos = pos - r_mesh_min;
-      // std::cout << "dpos "
-      //           << dpos[0] << " "
-      //           << dpos[1] << " "
-      //           << dpos[2] << " " << std::endl;
-      // std::cout << "rc0 " << rc_per_dim[0] << std::endl;
-      // std::cout << "pos0/rc0 " << dpos[0]/rc_per_dim[0] << std::endl;
       auto idx = internal::get_box_index(dpos, cutoff, nboxes_per_dim);
-      // std::cout << "idx "
-      //           << idx[0] << " "
-      //           << idx[1] << " "
-      //           << idx[2] << std::endl;
       atom_id_cell[idx].push_back(i);
     }
 
@@ -972,11 +901,6 @@ namespace rascal {
       auto pos = this->get_position(i);
       auto dpos = pos - r_mesh_min;
       auto idx = internal::get_box_index(dpos, cutoff, nboxes_per_dim);
-      std::cout << "stencil idx "
-                << idx[0] << " "
-                << idx[1] << " "
-                << idx[2] << std::endl;
-
       auto current_j_atoms = internal::get_neighbours(i, idx, atom_id_cell);
 
       for (auto j : current_j_atoms) {

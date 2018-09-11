@@ -144,7 +144,6 @@ namespace rascal {
       }
     }
     if (verbose) std::cout << "Number of pairs " << n_pairs << std::endl;
-
   }
 
   BOOST_AUTO_TEST_SUITE_END();
