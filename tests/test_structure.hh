@@ -39,6 +39,8 @@
 
 namespace rascal {
 
+  // TODO: this is not a general case of a manager fixture. Should not be so
+  // complicated
   template<class ManagerImplementation>
   struct ManagerFixture
   {
@@ -94,6 +96,27 @@ namespace rascal {
     VecXi numbers;
   };
 
+  /* ---------------------------------------------------------------------- */
+  template<class ManagerImplementation>
+  struct ManagerFixtureSimple
+  {
+    ManagerFixtureSimple():
+      pbc{{true,true,true}}, cutoff{1.}, center_ids(natoms),
+      cell(dim, dim), positions(dim, natoms), atom_types(natoms)
+    {}
+
+    ~ManagerFixtureSimple() {}
+
+    ManagerImplementation manager{};
+    std::array<bool, 3> pbc;
+    double cutoff;
+    VecXi center_ids;
+    Eigen::MatrixXd cell;
+    Eigen::MatrixXd positions;
+    VecXi atom_types;
+    int natoms;
+    int dim;
+  };
 
   /* ---------------------------------------------------------------------- */
   template <>
@@ -212,7 +235,7 @@ namespace rascal {
       cutoff{3.}
     {
       cell <<
-	6.19, 2.41, 0.21,
+        6.19, 2.41, 0.21,
         0.00, 6.15, 1.02,
         0.00, 0.00, 7.31;
 
@@ -257,6 +280,49 @@ namespace rascal {
     VecXi numbers;
 
     double cutoff;
+
+    int natoms{22};
+  };
+
+  /* ---------------------------------------------------------------------- */
+  template<>
+  struct ManagerFixtureSimple<StructureManagerCenters>
+  {
+
+    using Manager_t = StructureManagerCenters;
+
+    ManagerFixtureSimple():
+      pbc{{true,false,false}}, cell(3, 3), positions(3, 9), numbers(9),
+      cutoff{1.5}
+    {
+      cell <<
+        2., 0., 0.,
+        0., 2., 0.,
+        0., 0., 2.;
+
+      positions <<
+        0.5, 0.5, 1.5, 0.5, 1.5, 0.5, 1.5, 0.5, 1.5,
+        0.4, 0.5, 0.5, 1.5, 1.5, 0.5, 0.5, 1.5, 1.5,
+        0.5, 0.5, 0.5, 0.5, 0.5, 1.5, 1.5, 1.5, 1.8;
+
+      numbers << 1, 1, 1, 1, 1, 1, 1, 1, 1;
+
+      manager.update(positions, numbers, cell, pbc);
+    }
+
+    ~ManagerFixtureSimple() {
+
+    }
+
+    Manager_t manager{};
+    std::array<bool, 3> pbc;
+    Eigen::MatrixXd cell;
+    Eigen::MatrixXd positions;
+    VecXi numbers;
+
+    double cutoff;
+
+    const int natoms{9};
   };
 
 }  // rascal

@@ -94,6 +94,8 @@ namespace rascal {
     //using PairRef_t = ClusterRef_t<2, traits::MaxOrder>;
     using Vector_ref = typename Parent::Vector_ref;
     using Vector_t = typename Parent::Vector_t;
+    using Positions_ref = Eigen::Map<Eigen::Matrix<double, traits::Dim,
+                                                   Eigen::Dynamic>>;
 
     static_assert(traits::MaxOrder > 1,
                   "ManagerImplementation needs an atom list.");
@@ -175,7 +177,22 @@ namespace rascal {
     //! Returns position of an atom with index atom_index
     //! (useful for developers)
     inline Vector_ref get_position(const size_t & atom_index) {
-      return this->manager.get_position(atom_index);
+      if (atom_index < n_i_atoms) {
+        return this->manager.get_position(atom_index);
+      } else {
+        return this->get_ghost_position(atom_index - this->n_i_atoms);
+      }
+    }
+
+    inline Vector_ref get_ghost_position(const size_t & atom_index) {
+      auto p = this->get_ghost_positions();
+      auto * xval{p.col(atom_index).data()};
+      return Vector_ref(xval);
+    }
+
+    inline Positions_ref get_ghost_positions() {
+      return Positions_ref(this->ghost_positions.data(), traits::Dim,
+                           this->ghost_positions.size()/traits::Dim);
     }
 
     //! Returns position of the given atom object (useful for users)
@@ -279,13 +296,10 @@ namespace rascal {
     //! get_position function will need to branch, depending on the atom_index >
     //! n_i_atoms and offset with n_j_atoms to access ghost positions.
     inline void add_ghost_atom(const int atom_index, const Vector_t position) {
-      //! cast position into standard type
-      std::vector<double> pos (position.data(),
-                               position.data()
-                               + position.rows() * position.cols());
-
       this->atom_indices.push_back(atom_index);
-      this->ghost_positions.push_back(pos);
+      for (auto dim{0}; dim < traits::Dim; ++dim) {
+        this->ghost_positions.push_back(position(dim));
+      }
       this->n_j_atoms++;
     }
 
@@ -369,12 +383,12 @@ namespace rascal {
     size_t cluster_counter{0};
 
     //! number of i atoms, i.e. centers
-    int n_i_atoms{};
-    //! number of ghost atoms (periodicity)
-    int n_j_atoms{};
+    size_t n_i_atoms{};
+    //! number of ghost atoms (by prescribed periodicity)
+    size_t n_j_atoms{};
 
     //! ghost positions
-    std::vector<std::vector<double>> ghost_positions{};
+    std::vector<double> ghost_positions{};
   private:
   };
 
@@ -382,115 +396,208 @@ namespace rascal {
 
   namespace internal {
 
+    template <typename R, typename I>
+    constexpr R ipow(R base, I exponent) {
+      static_assert(std::is_integral<I>::value, "Type must be integer");
+      R retval{1};
+      for (I i = 0; i < exponent; ++i) {
+        retval *= base;
+      }
+      return retval;
+    }
+
+    //! stencil iterator for simple, dimension dependent stencils
+    template <size_t Dim>
+    class Stencil {
+    public:
+      //! constructor
+      Stencil(const std::array<int, Dim> & origin)
+        : origin{origin}{};
+      //! copy constructor
+      Stencil(const Stencil & other) = default;
+      //! assignment operator
+      Stencil & operator=(const Stencil & other) = default;
+      ~Stencil() = default;
+
+      /**
+       * iterators over `` dereferences to cell coordinates
+       */
+      class iterator
+      {
+      public:
+        using value_type = std::array<int, Dim>; //!< stl conformance
+        using const_value_type = const value_type; //!< stl conformance
+        using pointer = value_type*; //!< stl conformance
+        using iterator_category = std::forward_iterator_tag;//!<stl conformance
+
+        //! constructor
+        iterator(const Stencil & stencil, bool begin=true)
+          : stencil{stencil}, index{begin? 0: stencil.size()} {}
+
+        ~iterator() {};
+        //! dereferencing
+        value_type operator*() const {
+          constexpr int size{3};
+          std::array<int, Dim> retval{{0}};
+          int factor{1};
+          for (int i = Dim-1; i >=0; --i) {
+            //! -1 for offset of stencil
+            retval[i] = this->index/factor%size + this->stencil.origin[i] - 1;
+            if (i != 0 ) {
+              factor *= size;
+            }
+          }
+          return retval;
+        };
+        //! pre-increment
+        iterator & operator++() {this->index++; return *this;}
+        //! inequality
+        inline bool operator!=(const iterator & other) const {
+          return this->index != other.index;
+        };
+        // //! equality
+        // inline bool operator==(const iterator & other) const;
+
+      protected:
+        const Stencil& stencil; //!< ref to stencils in cell
+        size_t index; //!< index of currect pointed-to pixel
+      };
+      //! stl conformance
+      inline iterator begin() const {return iterator(*this);}
+      //! stl conformance
+      inline iterator end() const {return iterator(*this, false);}
+      //! stl conformance
+      inline size_t size() const {return ipow(3, Dim);}
+    protected:
+      const std::array<int, Dim> origin; //!< locations of this domain
+    };
+
+    //! get dimension dependent neighbour indices
+    template<size_t Dim, class Container_t>
+    std::vector<size_t> get_neighbours(const int current_atom_index,
+                                       const std::array<int, Dim> & ccoord,
+                                       const Container_t & boxes) {
+
+      std::vector<size_t> neighbours;
+
+      for (auto && s: Stencil<Dim>{ccoord}) {
+        std::cout << "s "
+                  << s[0] << " "
+                  << s[1] << " "
+                  << s[2] << " " << std::endl;
+        for (const auto & neigh : boxes[s]) {
+          //! avoid adding the current i atom to the neighbour list
+          if (neigh != current_atom_index) {
+            neighbours.push_back(neigh);
+          }
+        }
+      }
+
+      return neighbours;
+    }
+
+    // template<size_t Dim>
+    // std::vector<std::array<int, Dim>>
     //! get the box index
-    template<class Vector_t>
-    inline std::vector<int> get_box_index(const Vector_t & position,
-                                          const std::vector<double> & rc,
-                                          const std::vector<int> nmax) {
+    template<class Vector_t, size_t Dim>
+    decltype(auto) get_box_index(const Vector_t & position,
+                                 const double & rc,
+                                 const std::array<int, Dim> nmax) {
+
       auto constexpr dimension{Vector_t::SizeAtCompileTime};
-      static_assert(dimension != Eigen::Dynamic,
-                    "Dynamic dimension. Should be static with.");
-      std::vector<int> nidx(dimension);
+      static_assert(dimension == Dim,
+                    "Discrepancy between position and boxgrid dimension");
+
+      std::array<int, dimension> nidx{};
       for(auto dim{0}; dim < dimension; ++dim) {
-        nidx[dim] = static_cast<int>(std::floor(position(dim) / rc[dim] ));
+        nidx[dim] = static_cast<int>(std::floor(position(dim) / rc));
         nidx[dim] = std::min(nidx[dim], nmax[dim]-1);
         nidx[dim] = std::max(nidx[dim], 0);
       }
       return nidx;
     }
 
-
-    inline int get_linear_index(std::vector<int> nidx, std::vector<int> nmax) {
-      auto dim = nidx.size();
-      switch (dim) {
-      case 1: {
-        return nidx[0];
-        break;
+    //! get the linear index of a voxel in a given grid
+    template <size_t Dim>
+    constexpr Dim_t get_index(const std::array<int, Dim> & sizes,
+                              const std::array<int, Dim> & ccoord) {
+      Dim_t retval{0};
+      Dim_t factor{1};
+      for (Dim_t i = Dim-1; i >=0; --i) {
+        retval += ccoord[i]*factor;
+        if (i != 0) {
+          factor *= sizes[i];
+        }
       }
-      case 2: {
-        return nidx[1]*nmax[0] + nidx[0];
-        break;
-      }
-      case 3: {
-        return nidx[2] * nmax[0] * nmax[1] +
-          nidx[1] * nmax[0] + nidx[0];
-        break;
-      }
-      default:
-        throw std::runtime_error("Can only give index for max 3 dimensions");
-        break;
-      }
+      return retval;
     }
 
+    //! get the dim-index array from a linear index
+    template <size_t Dim>
+    constexpr std::array<int, Dim>
+    get_ccoord(const std::array<int, Dim> & sizes,
+               const std::array<int, Dim> & origin, int index) {
+      std::array<int, Dim> retval{{0}};
+      int factor{1};
+      for (size_t i = Dim-1; i >=0; --i) {
+        retval[i] = index/factor%sizes[i] + origin[i];
+        if (i != 0 ) {
+          factor *= sizes[i];
+        }
+      }
+      return retval;
+    }
 
-    // //! conversion of a linear id to a Dim_t id
-    // template<int Dim>
-    // inline void
-    // linear_to_dim_index(const Dim_t & index,
-    //                     const std::vector<int> shape,
-    //                     std::vector<int> & retval) {
-    //   Dim_t factor{1};
+    //! storage for index container, depending on the number of dimensions
+    template<int Dim>
+    class IndexContainer
+    {
+    public:
+      //! Default constructor
+      IndexContainer() = delete;
 
-    //   for (Dim_t i{0}; i < Dim; ++i) {
-    //     retval[i] = index / factor%shape[i];
-    //     if (i != Dim-1) {
-    //       factor *= shape[i];
-    //     }
-    //   }
-    // }
+      //! Constructor with size
+      IndexContainer(const std::array<int, Dim> & nboxes)
+        : nboxes{nboxes} {
+        auto ntot = std::accumulate(nboxes.begin(), nboxes.end(),
+                                    1, std::multiplies<int>());
+        data.resize(ntot);
+      }
 
-    // template<int Dim>
-    // inline Dim_t
-    // dimension_to_linear_index(const std::vector<int> coord,
-    //                           const std::vector<int> shape) {
-    //   Dim_t index{0};
-    //   Dim_t factor{1};
-    //   for (Dim_t i = 0; i < Dim; ++i) {
-    //     index += coord[i]*factor;
-    //     if (i != Dim-1 ) {
-    //       factor *= shape[i];
-    //     }
-    //   }
-    //   return index;
-    // }
+      //! Copy constructor
+      IndexContainer(const IndexContainer &other) = delete;
 
-    // //! get box indices from a position
-    // template<int Dim>
-    // inline std::vector<int>
-    // get_box_indices_from_position(const Vec3_t pos,
-    //                               const std::vector<double> nbins) {
-    //   std::vector<int> box_coords(Dim);
+      //! Move constructor
+      IndexContainer(IndexContainer &&other) = delete;
 
-    //   for (auto i{0}; i<Dim; ++i) {
-    //     box_coords[i] = static_cast<int>(pos[i] * nbins[i]);
-    //   }
+      //! Destructor
+      ~IndexContainer(){};
 
-    //   return box_coords;
-    // }
+      //! Copy assignment operator
+      IndexContainer& operator=(const IndexContainer &other) = delete;
 
-    //! Taken from StructureManagerCell
-    // https://stackoverflow.com/questions/828092/python-style-integer-division-modulus-in-c
-    // TODO more efficient implementation without if (would be less general) !
-    // div_mod function returning python like div_mod, i.e. signed integer
-    // division truncates towards negative infinity, and signed integer modulus
-    // has the same sign the second operand.
+      //! Move assignment operator
+      IndexContainer& operator=(IndexContainer &&other) = default;
 
-    // template<class T>
-    // decltype(auto) modulo_and_rest(const T & x, const T & y) {
-    //   std::array<int, 2> out;
-    //   const T quot = x / y;
-    //   const T rem  = x % y;
+      std::vector<int> & operator[](const std::array<int, Dim>& ccoord) {
+        auto index = get_index(this->nboxes, ccoord);
+        return data[index];
+      }
 
-    //   if (rem != 0 && (x<0) != (y<0)) {
-    //     out[0] = quot-1;
-    //     out[1] = rem+y;
-    //   } else {
-    //     out[0] = quot;
-    //     out[1] = rem;
-    //   }
+      const std::vector<int> & operator[](const std::array<int,
+                                          Dim>& ccoord) const {
+        auto index = get_index(this->nboxes, ccoord);
+        return this->data[index];
+      }
 
-    //   return out;
-    // }
+    protected:
+      //! a vector of atom indices for every box
+      std::vector<std::vector<int>> data{};
+      //! number of boxes in each dimension
+      std::array<int, Dim> nboxes{};
+
+    private:
+    };
 
   }  // internal
 
@@ -689,22 +796,19 @@ namespace rascal {
 
     //! short hands for variable
     size_t natoms{this->manager.size()};
-    size_t nghosts{0};
     const auto dim{traits::Dim};
     auto periodicity = this->manager.get_periodic_boundary_conditions();
 
     auto cell{manager.get_cell()};
-    double boxlength{this->cutoff};
+    double cutoff{this->cutoff};
     // number of boxes per dimension
-    std::vector<int> nboxes_per_dim(dim);
-    std::vector<double> rc_per_dim(3);
+    std::array<int, dim> nboxes_per_dim;
 
     //! vector for storing the atom indices of each box
     std::vector<std::vector<int>> atoms_in_box{};
     //! contiguous vector for neighbour positions; periodic boundary conditions
     //! can lead to more neighbour positions than actual atoms, so called ghost
     //! atoms. these are stored here during the buildup of the neighbourlist
-    std::vector<Vector_t> ghost_positions{};
 
     //! find minimum/maximum coordinate of mesh for neighbour list
     Vector_t r_mesh_min(dim);
@@ -712,8 +816,6 @@ namespace rascal {
     std::vector<double> cell_norm(dim);
     std::vector<double> cell_max(dim);
     std::vector<double> angles(dim);
-    // std::fill(r_mesh_min.begin(), r_mesh_min.end(), 0.);
-    // std::fill(r_mesh_max.begin(), r_mesh_max.end(), 0.);
     r_mesh_min.setZero();
     r_mesh_max.setZero();
 
@@ -754,24 +856,18 @@ namespace rascal {
 
     // r_mesh_max = cell_max;
 
-    //! calculate minimum and maximum coordinate for box algorithm
+    //! calculate minimum mesh coordinates
     for (auto i{0}; i < dim; ++i) {
-
-      if (periodicity[i]) {
-        std::cout << "periodic i=" << i << " p=" << periodicity[i] << std::endl;
-
-        auto vec = cell.col(i);
-        std::cout << "vec " <<  vec << std::endl;
-        //! scale correctly along cell vectors
-        double boxlength_c = boxlength / std::cos(angles[i]);
-        for (auto j{0}; j < dim; ++j) {
-          auto val = boxlength_c / cell_norm[i] * vec[j];
-          std::cout << "vec j " << j << " " << vec[j] << std::endl;
-          r_mesh_min[j] -= val;
-          r_mesh_max[j] += val;
-        }
-      }
+      r_mesh_min[i] -= cutoff;
     }
+    //! calculate maximum mesh coordinates
+    for (auto i{0}; i < dim; ++i) {
+      auto dx =  cell_norm[i] + 2. * cutoff;
+      int n(std::ceil(dx / cutoff));
+      r_mesh_max[i] = n * cutoff;
+      nboxes_per_dim[i] = n;
+    }
+
     std::cout << "r_mesh_min "
               << r_mesh_min[0] << " "
               << r_mesh_min[1] << " "
@@ -784,55 +880,125 @@ namespace rascal {
     //! get all ghost atom positions
     for (auto atom : this->get_manager()) {
       auto pos = atom.get_position();
+      std::cout << "----pos "
+                << pos[0] << " "
+                << pos[1] << " "
+                << pos[2] << " " << std::endl;
       for (auto i{0}; i < dim; ++i) {
         if(periodicity[i]) {
           for(auto m{-1}; m < 2; m+=2) {
+            std::cout << "m " << m << std::endl;
+            std::cout << "cell col(i) "
+                      << cell.col(i)*m << std::endl;
             auto pos_ghost = pos + cell.col(i)*m;
             auto pos_lt  = pos_ghost.array() - r_mesh_min.array();
             auto pos_gt  = pos_ghost.array() - r_mesh_max.array();
+            std::cout << "pos_lt "
+                      << pos_lt[0] << " "
+                      << pos_lt[1] << " "
+                      << pos_lt[2] << " " << std::endl;
+            std::cout << "pos_gt "
+                      << pos_gt[0] << " "
+                      << pos_gt[1] << " "
+                      << pos_gt[2] << " " << std::endl;
+
             //! check lower bound
             auto f_lt = (pos_lt.array() > 0.).all();
             //! check upper bound
             auto f_gt = (pos_gt.array() < 0.).all();
+            std::cout << "f_lt/f_gt " << f_lt << "/" << f_gt << std::endl;
             if (f_lt && f_gt) {
+              std::cout << "adding ghost" << std::endl;
+              std::cout << "pos_ghost "
+                        << pos_ghost[0] << " "
+                        << pos_ghost[1] << " "
+                        << pos_ghost[2] << " " << std::endl;
               auto new_atom_index = this->get_size_with_ghosts();
               new_atom_index++;
               this->add_ghost_atom(new_atom_index, pos_ghost);
-
             }
           }
         }
       }
     }
     std::cout << "natoms " << natoms
-              << " nghosts " << nghosts << std::endl;
+              << " nghosts " << n_j_atoms << std::endl;
 
+    //! neighbour boxes
+    internal::IndexContainer<dim> atom_id_cell{nboxes_per_dim};
 
-    //! sort into boxes
-    auto periodic_cell = r_mesh_max - r_mesh_min;
-    for (auto i{0}; i < dim; ++i) {
-      nboxes_per_dim[i] =
-        static_cast<int>(std::floor(periodic_cell[i] / cutoff));
-      rc_per_dim[i] =
-        static_cast<double>(periodic_cell[i] / nboxes_per_dim[i]);
-      std::cout << "nboxes_per_dim " << nboxes_per_dim[i] << std::endl;
-      std::cout << "rc_per_dim " << rc_per_dim[i] << std::endl;
-
+    std::cout << "=====r_mesh_min "
+              << r_mesh_min[0] << " "
+              << r_mesh_min[1] << " "
+              << r_mesh_min[2] << " " << std::endl;
+    std::cout << "=====r_mesh_max "
+              << r_mesh_max[0] << " "
+              << r_mesh_max[1] << " "
+              << r_mesh_max[2] << " " << std::endl;
+    // i-atoms sorting into boxes
+    for (size_t i{0}; i < this->n_i_atoms; ++i) {
+      auto pos = this->get_position(i);
+      // std::cout << "pos "
+      //           << pos[0] << " "
+      //           << pos[1] << " "
+      //           << pos[2] << " " << std::endl;
+      auto dpos = pos - r_mesh_min;
+      // std::cout << "dpos "
+      //           << dpos[0] << " "
+      //           << dpos[1] << " "
+      //           << dpos[2] << " " << std::endl;
+      // std::cout << "rc0 " << rc_per_dim[0] << std::endl;
+      // std::cout << "pos0/rc0 " << dpos[0]/rc_per_dim[0] << std::endl;
+      auto idx = internal::get_box_index(dpos, cutoff, nboxes_per_dim);
+      // std::cout << "idx "
+      //           << idx[0] << " "
+      //           << idx[1] << " "
+      //           << idx[2] << std::endl;
+      atom_id_cell[idx].push_back(i);
     }
 
-    for (auto pos : ghost_positions) {
-      //! dim-dimensional index
-      auto pos_shift = pos - r_mesh_min;
-      std::vector<int> idx =
-        internal::get_box_index(pos_shift, rc_per_dim, nboxes_per_dim);
-      std::cout << "idx " << idx[0] << idx[1] << idx[2] << std::endl;
-      //! 1-d index
-      // auto linear_idx = internal::get_linear_index(idx, nboxes_per_dim);
-      // std::cout << "linear_idx " << linear_idx << std::endl;
+    //! ghost atoms sorting into boxes
+    for (size_t i{0}; i < this->n_j_atoms; ++i) {
+      auto ghost_pos = this->get_ghost_position(i);
+      auto dpos = ghost_pos - r_mesh_min;
+      auto idx  = internal::get_box_index(dpos, cutoff, nboxes_per_dim);
+      auto ghost_atom_index = i + this->n_i_atoms;
+      atom_id_cell[idx].push_back(ghost_atom_index);
     }
 
+    //! go through atoms and build neighbour list
 
+    int nneigh{0};
+    int offset{0};
+
+    for (size_t i{0}; i < this->n_i_atoms; ++i) {
+      auto pos = this->get_position(i);
+      auto dpos = pos - r_mesh_min;
+      auto idx = internal::get_box_index(dpos, cutoff, nboxes_per_dim);
+      std::cout << "stencil idx "
+                << idx[0] << " "
+                << idx[1] << " "
+                << idx[2] << std::endl;
+
+      auto current_j_atoms = internal::get_neighbours(i, idx, atom_id_cell);
+
+      for (auto j : current_j_atoms) {
+        this->neighbours.push_back(j);
+        nneigh++;
+      }
+      this->nb_neigh.push_back(nneigh);
+      this->offsets.push_back(offset);
+      offset += nneigh;
+    }
+
+    auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
+    auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
+
+    atom_cluster_indices.fill_sequence();
+    pair_cluster_indices.fill_sequence();
   }
+
+
 
   /* ---------------------------------------------------------------------- */
   //! Extend and existing neighbour list.

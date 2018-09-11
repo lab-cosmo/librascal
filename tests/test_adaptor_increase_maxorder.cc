@@ -115,7 +115,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(constructor_test_order_zero,
-                          ManagerFixture<StructureManagerCenters>){
+                          ManagerFixtureSimple<StructureManagerCenters>){
     constexpr bool verbose{true};
 
     if (verbose) std::cout << "===> zeroth order manager " << std::endl;
@@ -128,22 +128,22 @@ namespace rascal {
 
     if (verbose) std::cout << "<== zeroth order manager " << std::endl;
 
-    AdaptorMaxOrder<StructureManagerCenters> manager2{manager, cutoff};
-    manager2.update();
+    AdaptorMaxOrder<StructureManagerCenters> pair_manager{manager, cutoff};
+    pair_manager.update();
 
-    // auto n_pairs{0};
-    // for (auto atom : manager2) {
-    //   if (verbose) std::cout << "atom " << atom.back() << std::endl;
-    //   for (auto pair : atom) {
-    //     n_pairs++;
-    //     if (verbose) {
-    //       std::cout << "   complete pair "
-    //                 << atom.back() << " " << pair.back()
-    //                 << " glob " << pair.get_global_index() << std::endl;
-    //     }
-    //   }
-    // }
-    // if (verbose) std::cout << "Number of pairs " << n_pairs << std::endl;
+    auto n_pairs{0};
+    for (auto atom : pair_manager) {
+      if (verbose) std::cout << "atom " << atom.back() << std::endl;
+      for (auto pair : atom) {
+        n_pairs++;
+        if (verbose) {
+          std::cout << "   complete pair "
+                    << atom.back() << " " << pair.back()
+                    << " glob " << pair.get_global_index() << std::endl;
+        }
+      }
+    }
+    if (verbose) std::cout << "Number of pairs " << n_pairs << std::endl;
 
   }
 

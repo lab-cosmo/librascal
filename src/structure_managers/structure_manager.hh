@@ -423,6 +423,7 @@ namespace rascal {
     //! constructor from iterator
     AtomRef(Manager_t & manager, const int & id)
       : manager{manager}, index{id} {}
+
     //! Copy constructor
     AtomRef(const AtomRef & other) = default;
 
