@@ -966,10 +966,7 @@ namespace rascal {
     }
 
     //! go through atoms and build neighbour list
-
-
     int offset{0};
-
     for (size_t i{0}; i < this->n_i_atoms; ++i) {
       int nneigh{0};
       auto pos = this->get_position(i);

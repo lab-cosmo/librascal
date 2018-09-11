@@ -76,7 +76,7 @@ namespace rascal {
 
     auto natoms{0};
     auto npairs{0};
-    auto ntriplets{0};
+    auto n_triplets{0};
     for (auto atom : adaptor) {
       natoms++;
       if (verbose) {
@@ -96,7 +96,7 @@ namespace rascal {
                     << " glob " << pair.get_global_index() << std::endl;
         }
         for (auto triplet : pair) {
-          ntriplets++;
+          n_triplets++;
           if (verbose) {
             std::cout << "             triplet "
                       << triplet.back()
@@ -110,7 +110,7 @@ namespace rascal {
         }
       }
     }
-    if(verbose) std::cout << "Number of triplets: " << ntriplets << std::endl;
+    if(verbose) std::cout << "Number of triplets: " << n_triplets << std::endl;
   }
 
   /* ---------------------------------------------------------------------- */
