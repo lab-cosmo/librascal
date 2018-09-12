@@ -21,9 +21,6 @@ class TestStructureManagerCenters(unittest.TestCase):
         self.cell = self.frame['cell']
         self.positions = self.frame['positions']
         self.numbers = self.frame['numbers']
-        # self.pbc = [[True,True,True],[False,False,False],
-        #             [False,True,True],[True,False,True],[True,True,False],
-        #             [False,False,True],[True,False,False],[False,True,False]]
         self.pbc = np.array([ [1, 1, 1], [0, 0, 0],
                               [0, 1, 0], [1, 0, 1],
                               [1, 1, 0], [0, 0, 1],
@@ -43,9 +40,9 @@ class TestStructureManagerCenters(unittest.TestCase):
         manager =  rc.StructureManagerCenters()
         centers = np.array([it for it in range(self.Natom)], dtype=np.int32)
         manager.update(np.array(self.positions.T,order='F'),
-                       self.numbers,
+                       self.numbers.reshape(-1,1),
                        np.array(self.cell.T,order='F'),
-                       self.pbc[0])
+                       self.pbc[0].reshape(3,1))
         ii = 0
         for center in manager:
             self.assertTrue(ii == center.atom_index)

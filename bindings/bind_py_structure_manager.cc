@@ -41,12 +41,12 @@ namespace py=pybind11;
 template<size_t Order, typename StructureManagerImplementation>
 decltype(auto) add_cluster(py::module & m) {
   using ClusterRef = typename StructureManager<
-              StructureManagerImplementation>::template ClusterRef<Order>;
+    StructureManagerImplementation>::template ClusterRef<Order>;
   // TODO: change the exposed name to a convertion of the
   // StructureManagerImplementation type to a string
-  py::class_<ClusterRef> py_cluster (m,
-                                     (Order == 1) ? "StructureManager.Center"
-                                     : "StructureManager.Neighbour");
+  py::class_<ClusterRef>
+    py_cluster (m, (Order == 1)
+                ? "StructureManager.Center" : "StructureManager.Neighbour");
   py_cluster.def_property_readonly("atom_index", & ClusterRef::get_atom_index,
                                    py::return_value_policy::reference)
     .def_property_readonly("atom_type", & ClusterRef::get_atom_type,
@@ -68,10 +68,16 @@ void add_manager_centers(py::module & m){
              StructureManager<StructureManagerCenters>>
     (m, "StructureManagerCenters")
     .def(py::init<>())
-    .def("update", & StructureManagerCenters::update)
+    //! interface can handle both row- and col-major matrices
+    .def("update", [] (StructureManagerCenters & v,
+                       const py::EigenDRef<const Eigen::MatrixXd> & positions,
+                       const py::EigenDRef<const Eigen::VectorXi> & atom_types,
+                       const py::EigenDRef<const Eigen::MatrixXd> & cell,
+                       const py::EigenDRef<const Eigen::MatrixXi> & pbc ) {
+           v.update(positions, atom_types, cell, pbc);
+         })
     .def("__iter__", [] (StructureManager<StructureManagerCenters> & v) {
         return py::make_iterator(v.begin(),v.end());
       }, py::keep_alive<0, 1>()); /* Keep vector alive while iterator is used */
-
   add_cluster<1,StructureManagerCenters>(m);
 };

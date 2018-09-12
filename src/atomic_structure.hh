@@ -5,7 +5,8 @@
  *
  * @date   08 August 2018
  *
- * @brief Lattice class used to compute face distances within the cell and to scale and unscale positions
+ * @brief Lattice class used to compute face distances within the cell and to
+ * scale and unscale positions
  *
  * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -39,52 +40,46 @@ namespace rascal {
   template <int Dim>
   struct AtomicStructure {
     /**
-       \param cell is a vector a vector of vectors which holds the cell unit
-        vectors.
-        \param type a vector of integers which holds the atomic type
-        (coordination number).
-        \param pbc is a 0/1 vector which says, where periodic boundary
-        conditions are applied.
-        \param position is a vector of vectors which holds the atomic
-        positions.
-    */
-    using Cell_t = Eigen::Matrix<double, Dim, Dim,Eigen::ColMajor>;
+     *  \param cell is a vector a vector of vectors which holds the cell unit
+     *  vectors.
+     *  \param type a vector of integers which holds the atomic type
+     *  (coordination number).
+     *  \param pbc is a 0/1 vector which says, where periodic boundary
+     *  conditions are applied.
+     *  \param position is a vector of vectors which holds the atomic
+     *  positions.
+     */
+    using Cell_t = Eigen::Matrix<double, Dim, Dim, Eigen::ColMajor>;
     using AtomTypes_t = Eigen::Matrix<int, 1, Eigen::Dynamic>;
     using PBC_t = Eigen::Matrix<int, Dim, 1>;
-    using Positions_t = Eigen::Matrix<double,Dim,Eigen::Dynamic,
-                                                  Eigen::ColMajor>;
+    using Positions_t = Eigen::Matrix<double, Dim,
+                                      Eigen::Dynamic, Eigen::ColMajor>;
+    using PositionsInput_t =
+      Eigen::Ref<const Eigen::MatrixXd, 0,
+                 Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>>;
+    using AtomTypesInput_t =
+      Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1>>;
 
-    Positions_t positions; //!
+    using PBCInput_t =
+      Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1>>;
+
+    Positions_t positions;
     AtomTypes_t atoms_type;
     Cell_t cell;
     PBC_t pbc;
+
+    //! method for initializing data, beware: copy!
+    void set_structure(const PositionsInput_t & positions,
+                       const AtomTypesInput_t &  atoms_type,
+                       const Eigen::Ref<const Eigen::MatrixXd> cell,
+                       const PBCInput_t & pbc) {
+
+      this->cell = cell;
+      this->atoms_type = atoms_type;
+      this->pbc = pbc;
+      this->positions = positions;
+    }
   };
-
-  inline void set_structure(AtomicStructure<2>& s,
-    const Eigen::Ref<const Eigen::MatrixXd> positions,
-    const Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1> >  atoms_type,
-    const Eigen::Ref<const Eigen::MatrixXd> cell,
-    const Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1> >& pbc) {
-
-    s.cell = cell;
-    s.atoms_type = atoms_type;
-    s.pbc = pbc;
-    s.positions = positions;
-
-  }
-
-  inline void set_structure(AtomicStructure<3>& s,
-    const Eigen::Ref<const Eigen::MatrixXd> positions,
-    const Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1> >  atoms_type,
-    const Eigen::Ref<const Eigen::MatrixXd> cell,
-    const Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1> >& pbc) {
-
-    s.cell = cell;
-    s.atoms_type = atoms_type;
-    s.pbc = pbc;
-    s.positions = positions;
-
-  }
 
 } // rascal
 

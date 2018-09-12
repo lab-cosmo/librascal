@@ -68,11 +68,11 @@ namespace rascal {
                              ManagerImplementation::traits::LayerByOrder>::type;
   };
 
+  /* ---------------------------------------------------------------------- */
   /**
-   * Adaptor that increases the MaxOrder of an existing
-   * StructureManager. This means, if the manager does not have a
-   * neighbourlist, it is created, if it exists, triplets, quadruplets,
-   * etc. lists are created.
+   * Adaptor that increases the MaxOrder of an existing StructureManager. This
+   * means, if the manager does not have a neighbourlist, it is created, if it
+   * exists, triplets, quadruplets, etc. lists are created.
    */
   template <class ManagerImplementation>
   class AdaptorMaxOrder: public
@@ -88,10 +88,6 @@ namespace rascal {
     template<size_t Order>
     using ClusterRef_t =
       typename ManagerImplementation::template ClusterRef<Order>;
-    //! template<size_t Order, size_t Layer>
-    //! using ClusterRefKey_t =
-    //!   typename ManagerImplementation::template ClusterRefKey<Order, Layer>;
-    //using PairRef_t = ClusterRef_t<2, traits::MaxOrder>;
     using Vector_ref = typename Parent::Vector_ref;
     using Vector_t = typename Parent::Vector_t;
     using Positions_ref = Eigen::Map<Eigen::Matrix<double, traits::Dim,
@@ -105,7 +101,7 @@ namespace rascal {
 
     /**
      * Constructs a full neighbourhood list from a given manager and cut-off
-     * radius
+     * radius or extends an existing neighbourlist to the next order
      */
     AdaptorMaxOrder(ManagerImplementation& manager, double cutoff);
 
@@ -124,13 +120,12 @@ namespace rascal {
     //! Move assignment operator
     AdaptorMaxOrder& operator=(AdaptorMaxOrder &&other) = default;
 
-    //! Updates just the adaptor assuming the underlying manager was
-    //! updated. this function invokes building either the neighbour list or to
-    //! make triplets, quadruplets, etc. depending on the MaxOrder
+    /**
+     * Updates just the adaptor assuming the underlying manager was
+     * updated. this function invokes building either the neighbour list or to
+     * make triplets, quadruplets, etc. depending on the MaxOrder
+     */
     void update();
-
-    // template <size_t MaxOrder, typename std::enable_if<MaxOrder == 2>::value>
-    // void update();
 
     //! Updates the underlying manager as well as the adaptor
     template<class ... Args>
@@ -139,11 +134,12 @@ namespace rascal {
     //! Returns cutoff radius of the neighbourhood manager
     inline double get_cutoff() const {return this->cutoff;}
 
-    /** Returns the linear indices of the clusters (whose atom indices
-     * are stored in counters). For example when counters is just the list
-     * of atoms, it returns the index of each atom. If counters is a list of pairs
-     * of indices (i.e. specifying pairs), for each pair of indices i,j it returns
-     * the number entries in the list of pairs before i,j appears.
+    /**
+     * Returns the linear indices of the clusters (whose atom indices are stored
+     * in counters). For example when counters is just the list of atoms, it
+     * returns the index of each atom. If counters is a list of pairs of indices
+     * (i.e. specifying pairs), for each pair of indices i,j it returns the
+     * number entries in the list of pairs before i,j appears.
      */
     template<size_t Order>
     inline size_t get_offset_impl(const std::array<size_t, Order>
@@ -167,12 +163,12 @@ namespace rascal {
       return this->manager.get_size();
     }
 
+    //! total number of atoms used for neighbour list, including ghosts
     inline size_t get_size_with_ghosts() const{
       return this->n_i_atoms+this->n_j_atoms;
     }
 
     //! Returns position of an atom with index atom_index
-    //! (useful for developers)
     inline Vector_ref get_position(const size_t & atom_index) {
       if (atom_index < n_i_atoms) {
         return this->manager.get_position(atom_index);
@@ -198,8 +194,6 @@ namespace rascal {
       return this->manager.get_position(atom.get_index());
     }
 
-    //! TODO: Finish the implementation
-    //! TODO: neighbour position
     template<size_t Order, size_t Layer>
     inline Vector_ref get_neighbour_position(const ClusterRefKey<Order, Layer>
                                              & cluster) {
@@ -215,9 +209,10 @@ namespace rascal {
       }
     }
 
-    //! Returns the id of the index-th (neighbour) atom of the cluster
-    //! that is the full structure/atoms object, i.e. simply the id of
-    //! the index-th atom
+    /**
+     * Returns the id of the index-th (neighbour) atom of the cluster that is
+     * the full structure/atoms object, i.e. simply the id of the index-th atom
+     */
     inline int get_cluster_neighbour(const Parent& /*parent*/,
 				     size_t index) const {
       return this->manager.get_cluster_neighbour(this->manager, index);
@@ -286,20 +281,28 @@ namespace rascal {
       //! increases the offsets
       this->offsets.back()++;
 
-      //! extends the list containing the number of neighbours
-      //! with a new 0 entry for the added atom
+      /**
+       * extends the list containing the number of neighbours with a new 0 entry
+       * for the added atom
+       */
       this->nb_neigh.push_back(0);
-      //! extends the list containing the offsets and sets it
-      //! with the number of neighbours plus the offsets of the last atom
+
+      /**
+       * extends the list containing the offsets and sets it with the number of
+       * neighbours plus the offsets of the last atom
+       */
       this->offsets.push_back(this->offsets.back() +
                               this->nb_neigh.back());
     }
 
-    //! this function is necessary, because the underlying manager is not known
-    //! at this stage. Therefore we can not add positions to the existing array,
-    //! but have to add positions to a ghost array. This also means, that the
-    //! get_position function will need to branch, depending on the atom_index >
-    //! n_i_atoms and offset with n_j_atoms to access ghost positions.
+    /**
+     * This function, including the storage of ghost atom positions is
+     * necessary, because the underlying manager is not known at this
+     * layer. Therefore we can not add positions to the existing array, but have
+     * to add positions to a ghost array. This also means, that the get_position
+     * function will need to branch, depending on the atom_index > n_i_atoms and
+     * offset with n_j_atoms to access ghost positions.
+     */
     inline void add_ghost_atom(const int atom_index, const Vector_t position) {
       this->atom_indices.push_back(atom_index);
       for (auto dim{0}; dim < traits::Dim; ++dim) {
@@ -332,8 +335,10 @@ namespace rascal {
       }
     }
 
-    //! Interface of the add_atom function that adds the last atom in a
-    //! given cluster
+    /**
+     * Interface of the add_atom function that adds the last atom in a given
+     * cluster
+     */
     template <size_t Order>
     inline void add_atom(const typename ManagerImplementation::template
                          ClusterRef<Order> & cluster) {
@@ -342,19 +347,8 @@ namespace rascal {
       return this->add_atom(cluster.back());
     }
 
-    //TODO(federico.giberti@gmail.com): finish the documentation
-
-    //! full neighbour list
+    //! full neighbour list with cell algorithm if Order==1
     void make_full_neighbour_list();
-
-    //! find the corresponding cell indices for all atom positions
-    void make_cells_for_neighbourlist();
-
-    // //! Makes a full neighbour list
-    // void make_full_neighbour_list();
-
-    // //! Increases whatever body order is present
-    // void increase_maxorder();
 
     ManagerImplementation & manager;
 
@@ -365,7 +359,7 @@ namespace rascal {
 
     /**
      * Compile time decision, if a new neighbour list is built or if an existing
-     * one is extended.
+     * one is extended to the next Order.
      */
     template <size_t Order, bool IsDummy> struct IncreaseMaxOrder;
 
@@ -386,7 +380,10 @@ namespace rascal {
 
     //! number of i atoms, i.e. centers
     size_t n_i_atoms{};
-    //! number of ghost atoms (by prescribed periodicity)
+    /**
+     * number of ghost atoms (given by periodicity) filled during full
+     * neighbourlist build
+     */
     size_t n_j_atoms{};
 
     //! ghost positions
@@ -394,10 +391,9 @@ namespace rascal {
   private:
   };
 
-
-
   namespace internal {
 
+    /* ---------------------------------------------------------------------- */
     template <typename R, typename I>
     constexpr R ipow(R base, I exponent) {
       static_assert(std::is_integral<I>::value, "Type must be integer");
@@ -408,6 +404,7 @@ namespace rascal {
       return retval;
     }
 
+    /* ---------------------------------------------------------------------- */
     //! stencil iterator for simple, dimension dependent stencils
     template <size_t Dim>
     class Stencil {
@@ -421,9 +418,7 @@ namespace rascal {
       Stencil & operator=(const Stencil & other) = default;
       ~Stencil() = default;
 
-      /**
-       * iterators over `` dereferences to cell coordinates
-       */
+      //! iterators over `` dereferences to cell coordinates
       class iterator
       {
       public:
@@ -457,12 +452,12 @@ namespace rascal {
         inline bool operator!=(const iterator & other) const {
           return this->index != other.index;
         };
-        // //! equality
-        // inline bool operator==(const iterator & other) const;
 
       protected:
-        const Stencil& stencil; //!< ref to stencils in cell
-        size_t index; //!< index of currect pointed-to pixel
+        //!< ref to stencils in cell
+        const Stencil& stencil;
+        //!< index of currect pointed-to pixel
+        size_t index;
       };
       //! stl conformance
       inline iterator begin() const {return iterator(*this);}
@@ -474,14 +469,13 @@ namespace rascal {
       const std::array<int, Dim> origin; //!< locations of this domain
     };
 
+    /* ---------------------------------------------------------------------- */
     //! get dimension dependent neighbour indices
     template<size_t Dim, class Container_t>
     std::vector<size_t> get_neighbours(const int current_atom_index,
                                        const std::array<int, Dim> & ccoord,
                                        const Container_t & boxes) {
-
       std::vector<size_t> neighbours;
-
       for (auto && s: Stencil<Dim>{ccoord}) {
         for (const auto & neigh : boxes[s]) {
           //! avoid adding the current i atom to the neighbour list
@@ -493,7 +487,8 @@ namespace rascal {
       return neighbours;
     }
 
-    //! get the box index
+    /* ---------------------------------------------------------------------- */
+    //! get the cell index or a position
     template<class Vector_t, size_t Dim>
     decltype(auto) get_box_index(const Vector_t & position,
                                  const double & rc,
@@ -512,6 +507,7 @@ namespace rascal {
       return nidx;
     }
 
+    /* ---------------------------------------------------------------------- */
     //! get the linear index of a voxel in a given grid
     template <size_t Dim>
     constexpr Dim_t get_index(const std::array<int, Dim> & sizes,
@@ -527,6 +523,7 @@ namespace rascal {
       return retval;
     }
 
+    /* ---------------------------------------------------------------------- */
     //! get the dim-index array from a linear index
     template <size_t Dim>
     constexpr std::array<int, Dim>
@@ -543,7 +540,11 @@ namespace rascal {
       return retval;
     }
 
-    //! storage for index container, depending on the number of dimensions
+    /* ---------------------------------------------------------------------- */
+    /**
+     * storage for cell coordinates of atoms depending on the number of
+     * dimensions
+     */
     template<int Dim>
     class IndexContainer
     {
@@ -590,16 +591,17 @@ namespace rascal {
       std::vector<std::vector<int>> data{};
       //! number of boxes in each dimension
       std::array<int, Dim> nboxes{};
-
     private:
     };
 
   }  // internal
 
-  //----------------------------------------------------------------------------//
-  // TODO include a distinction for the cutoff: with respect to the
-  // i-atom only or with respect to the j,k,l etc. atom. I.e. the
-  // cutoff goes with the Order.
+  /* ---------------------------------------------------------------------- */
+  /**
+   * TODO include a distinction for the cutoff: with respect to the i-atom only
+   * or with respect to the j,k,l etc. atom. I.e. the cutoff goes with the
+   * Order?
+   */
   template <class ManagerImplementation>
   AdaptorMaxOrder<ManagerImplementation>::
   AdaptorMaxOrder(ManagerImplementation & manager, double cutoff):
@@ -608,7 +610,6 @@ namespace rascal {
     atom_indices{},
     nb_neigh{},
     offsets{}
-
   {
     if (traits::MaxOrder < 1) {
       throw std::runtime_error("No atoms in manager.");
@@ -866,7 +867,7 @@ namespace rascal {
 
 
   /* ---------------------------------------------------------------------- */
-  //! Extend and existing neighbour list.
+  //! Extend an existing neighbour list to the next order
   template <class ManagerImplementation>
   template <size_t MaxOrder, bool IsDummy>
   struct AdaptorMaxOrder<ManagerImplementation>::IncreaseMaxOrder {
@@ -910,6 +911,7 @@ namespace rascal {
   };
 
 
+  /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
   void AdaptorMaxOrder<ManagerImplementation>::update() {
     /**
@@ -934,7 +936,8 @@ namespace rascal {
   get_offset_impl(const std::array<size_t, Order> & counters) const {
 
     static_assert(Order < traits::MaxOrder,
-                  "this implementation handles only up to the respective MaxOrder");
+                  "this implementation handles only up to "
+                  "the respective MaxOrder");
     /**
      * Order accessor: 0 - atoms
      *                 1 - pairs
@@ -967,7 +970,9 @@ namespace rascal {
 
 #endif /* ADAPTOR_MAXORDER_H */
 
-// TODO: The construction of triplets is fine, but they occur multiple times. We
-// probably need to check for increasing atomic index to get rid of
-// duplicates. But this is in general a design decision, if we want full/half
-// neighbour list and full/half/whatever triplets and quadruplets
+/**
+ * TODO: The construction of triplets is fine, but they occur multiple times. We
+ * probably need to check for increasing atomic index to get rid of
+ * duplicates. But this is in general a design decision, if we want full/half
+ * neighbour list and full/half/whatever triplets and quadruplets
+ */

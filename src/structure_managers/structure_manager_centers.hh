@@ -52,7 +52,7 @@ namespace rascal {
   //! forward declaration for traits
   class StructureManagerCenters;
 
-  //! traits specialisation for Centers manager
+  //! traits specialisation for ManagerCenters
 
   /**
    * The traits are used for vector allocation and further down the processing
@@ -62,7 +62,7 @@ namespace rascal {
   template <>
   struct StructureManager_traits<StructureManagerCenters> {
     constexpr static int Dim{3};
-    constexpr static size_t MaxOrder{1}; //
+    constexpr static size_t MaxOrder{1};
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDirectionVectors{false};
     constexpr static bool HasDistances{false};
@@ -70,12 +70,12 @@ namespace rascal {
   };
 
   /**
-   * Definition of the new StructureManager class. To add your own, please
-   * stick to the convention of using 'StructureManagerYours', where 'Yours'
-   * will give a hint of what it is about.
+   * Definition of the new StructureManager class. To add your own, please stick
+   * to the convention of using 'StructureManagerYours', where 'Yours' will give
+   * a hint of what it is about.
    */
   class StructureManagerCenters:
-    // It inherits publicly everything from the base class
+    //! It inherits publicly everything from the base class
     public StructureManager<StructureManagerCenters>
   {
     /**
@@ -131,10 +131,9 @@ namespace rascal {
     template <size_t Order>
     using ClusterRef_t = typename Parent::template ClusterRef<Order>;
 
-    //! Default constructor
+    //! Default constructor //TODO: all empty initializers??
     StructureManagerCenters()
-      : atoms_object{}, atoms_index{}, positions{}, atom_types{}, cell{}, pbc{},
-       lattice{}, offsets{}, natoms{}
+      : atoms_object{}, atoms_index{}, lattice{}, offsets{}, natoms{}
     {};
 
     //! Copy constructor
@@ -159,16 +158,13 @@ namespace rascal {
      * atom positions are provided by a simulation method, which evolves in
      * time, this function updates the data.
      */
-    void update(const Eigen::Ref<const Eigen::MatrixXd> positions,
+    void update(const Eigen::Ref<const Eigen::MatrixXd,
+                0, Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>> positions,
                 const Eigen::Ref<const VecXi> atom_types,
                 const Eigen::Ref<const Eigen::MatrixXd> cell,
-                const Eigen::Ref<PBC_t> pbc);
+                const Eigen::Ref<const PBC_t> pbc);
 
-
-    void build(const Eigen::Ref<const Eigen::MatrixXd> positions,
-               const Eigen::Ref<const VecXi> atom_types,
-               const Eigen::Ref<const Eigen::MatrixXd> cell);
-
+    //! makes atom index lists and offsets
     void build();
 
     //! required for the construction of vectors, etc
@@ -179,8 +175,8 @@ namespace rascal {
      * structure.
      */
     inline Cell_ref get_cell() {
-      Cell_ref xval(this->atoms_object.cell.data(),3,3);
-      return xval;
+      Cell_ref retval(this->atoms_object.cell.data(), 3, 3);
+      return retval;
     }
 
     //! Returns the type of a given atom, given an AtomRef
@@ -191,27 +187,15 @@ namespace rascal {
 
     //! Returns an a map with all atom types.
     inline AtomTypes_ref get_atom_types() {
-// <<<<<<< HEAD
-//       return AtomTypes_ref(this->atom_types.data(),
-//                            this->atom_types.size());
-// =======
       AtomTypes_ref val(this->atoms_object.atoms_type.data(),
-                          1, this->natoms);
+                        1, this->natoms);
       return val;
-// >>>>>>> feat/tools_fps
     }
 
     //! Returns a map of size traits::Dim with 0/1 for periodicity
     inline PBC_ref get_periodic_boundary_conditions() {
-      // PBC_ref xval(this->atoms_object.pbc.data(),1,3);
-      // return xval;
       return Eigen::Map<PBC_t>(this->atoms_object.pbc.data());
     }
-
-    // inline std::array<bool, traits::Dim> get_periodic_boundary_conditions() {
-    //   // PBC_ref xval(this->atoms_object.pbc.data(),1,3);
-    //   return this->pbc;
-    // }
 
     //! Returns the position of an atom, given an AtomRef
     inline Vector_ref get_position(const AtomRef_t & atom) {
@@ -231,31 +215,31 @@ namespace rascal {
     /**
      * Returns the position of a neighbour. In case of periodic boundary
      * conditions, the get_neighbour_position should return a different
-     * position, if it is a ghost atom.
+     * position, if it is a ghost atom. Here, it is not necessary, because no
+     * neighbours are present. Just ensuring compliance with the interface.
      */
     template<size_t Order, size_t Layer>
     inline void get_neighbour_position(const ClusterRefKey<Order, Layer> & ) {
       static_assert(Order == 1,
                     "this implementation only handles atoms.");
-
     }
 
     //! returns a map to all atomic positions.
     inline Positions_ref get_positions() {
       return Positions_ref(this->atoms_object.positions.data(), traits::Dim,
                            this->atoms_object.positions.size()/traits::Dim);
-      // return Positions_ref(this->positions.data(), traits::Dim,
-      //                      this->positions.size()/traits::Dim);
     }
 
     //! returns number of I atoms in the list
     inline size_t get_size() const {return this->natoms;}
 
     //! returns the number of neighbours of a given i atom
+    //! TODO: not sure if this is the correct way to solve this??
     template<size_t Order, size_t Layer>
     inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
-                                   & ) const {
-      static_assert(true, "this implementation only handles atoms.");
+                                   & /*cluster*/) const {
+      static_assert(Order <= traits::MaxOrder,
+                    "this implementation only handles atoms.");
       return 1;
     }
 
@@ -267,7 +251,7 @@ namespace rascal {
       return this->atoms_index[0][index];
     }
 
-    //! dummy function, since neighbours not present at this Order
+    //! Dummy function, since neighbours not present at this Order
     template<size_t Order, size_t Layer>
     inline int get_cluster_neighbour(const ClusterRefKey<Order, Layer>
                                      & /*cluster*/, size_t index) const {
@@ -289,7 +273,9 @@ namespace rascal {
 
   protected:
     /**
-     *
+     * Object which can interface to the json header to read and write atom
+     * related data in the ASE format: positions, cell, periodicity, atom types
+     * (corresponding to element numbers)
      */
     AtomicStructure<traits::Dim> atoms_object{};
 
@@ -300,11 +286,6 @@ namespace rascal {
      */
     std::array<std::vector<int>, traits::MaxOrder> atoms_index;
 
-    Positions_t positions;
-    AtomTypes_t atom_types; //!< element numbers
-    //! Used in neighbour list build
-    Cell_t cell;
-    std::array<bool, traits::Dim> pbc;
     Lattice lattice;
 
     /**
@@ -320,7 +301,7 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
-  // used for buildup
+  //! used for construction (not for iteration)
   template<size_t Order>
   inline size_t StructureManagerCenters::
   get_offset_impl(const std::array<size_t, Order> & /*counters*/) const {

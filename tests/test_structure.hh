@@ -289,6 +289,11 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * A simple manager using ManagerCenters to check the neighbourlist algorithm
+   * with simple positions and a periodicity only in x-direction.
+   *
+   */
   template<>
   struct ManagerFixtureSimple<StructureManagerCenters>
   {
@@ -315,9 +320,7 @@ namespace rascal {
                      Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
     }
 
-    ~ManagerFixtureSimple() {
-
-    }
+    ~ManagerFixtureSimple() {}
 
     Manager_t manager{};
     std::array<int, 3> pbc;
