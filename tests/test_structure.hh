@@ -292,8 +292,8 @@ namespace rascal {
     using Manager_t = StructureManagerCenters;
 
     ManagerFixtureSimple():
-      pbc{{true,false,false}}, cell(3, 3), positions(3, 9), numbers(9),
-      cutoff{1.5}
+      pbc{{true,false,false}}, cell(3, 3), positions(3, 8), numbers(8),
+      cutoff{1}
     {
       cell <<
         2., 0., 0.,
@@ -301,11 +301,11 @@ namespace rascal {
         0., 0., 2.;
 
       positions <<
-        0.5, 0.5, 1.5, 0.5, 1.5, 0.5, 1.5, 0.5, 1.5,
-        0.4, 0.5, 0.5, 1.5, 1.5, 0.5, 0.5, 1.5, 1.5,
-        0.5, 0.5, 0.5, 0.5, 0.5, 1.5, 1.5, 1.5, 1.8;
+        0.4, 1.4, 0.4, 1.4, 0.4, 1.4, 0.4, 1.4,
+        0.4, 0.4, 1.4, 1.4, 0.4, 0.4, 1.4, 1.4,
+        0.4, 0.4, 0.4, 0.4, 1.4, 1.4, 1.4, 1.4;
 
-      numbers << 1, 1, 1, 1, 1, 1, 1, 1, 1;
+      numbers << 1, 1, 1, 1, 1, 1, 1, 1;
 
       manager.update(positions, numbers, cell, pbc);
     }
@@ -322,7 +322,7 @@ namespace rascal {
 
     double cutoff;
 
-    const int natoms{9};
+    const int natoms{8};
   };
 
 }  // rascal

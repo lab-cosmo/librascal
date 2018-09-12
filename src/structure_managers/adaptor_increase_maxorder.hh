@@ -104,7 +104,7 @@ namespace rascal {
     AdaptorMaxOrder() = delete;
 
     /**
-     * Constructs a strict neighbourhood list from a given manager and cut-off
+     * Constructs a full neighbourhood list from a given manager and cut-off
      * radius
      */
     AdaptorMaxOrder(ManagerImplementation& manager, double cutoff);
@@ -164,9 +164,6 @@ namespace rascal {
 
     //! Returns number of clusters of the original manager
     inline size_t get_size() const {
-      //! return this->get_nb_clusters(1); TODO: this has to return the original
-      //! number of atoms from the underlying manager return
-      //! this->neighbours.size();
       return this->manager.get_size();
     }
 
@@ -184,6 +181,7 @@ namespace rascal {
       }
     }
 
+    //! ghost positions are only available for MaxOrder == 2
     inline Vector_ref get_ghost_position(const size_t & atom_index) {
       auto p = this->get_ghost_positions();
       auto * xval{p.col(atom_index).data()};
@@ -201,16 +199,20 @@ namespace rascal {
     }
 
     //! TODO: Finish the implementation
+    //! TODO: neighbour position
     template<size_t Order, size_t Layer>
-    inline Vector_ref get_neighbour_position(const ClusterRefKey<Order, Layer>&
-                                             /*cluster*/) {
+    inline Vector_ref get_neighbour_position(const ClusterRefKey<Order, Layer>
+                                             & cluster) {
       static_assert(Order > 1,
                     "Only possible for Order > 1.");
       static_assert(Order < traits::MaxOrder,
                     "this implementation should only work up to MaxOrder.");
-      //! Argument is now the same, but implementation
-      throw std::runtime_error("should be adapted to Félix's "
-                               "new interface using the ClusterRef");
+
+      if (Order == 2) {
+        return this->get_position(cluster.back());
+      } else {
+        return this->manager.get_neighbour_position(cluster, index);
+      }
     }
 
     //! Returns the id of the index-th (neighbour) atom of the cluster
@@ -235,7 +237,6 @@ namespace rascal {
 	return this->neighbours[offset + index];
       }
     }
-
 
     //! Returns atom type given an atom object AtomRef
     inline int & get_atom_type(const AtomRef_t& atom) {
@@ -263,7 +264,11 @@ namespace rascal {
 
     //! Returns the number of neighbors of an atom with the given index
     inline size_t get_cluster_size(const int & atom_index) const {
-      return this->manager.get_cluster_size(atom_index);
+      if (traits::MaxOrder == 2) {
+        return this->nb_neigh[atom_index];
+      } else {
+        return this->manager.get_cluster_size(atom_index);
+      }
     }
 
   protected:
@@ -338,9 +343,6 @@ namespace rascal {
     }
 
     //TODO(federico.giberti@gmail.com): finish the documentation
-
-    //! Makes a half neighbour list, by construction only Order=1 is supplied.
-    void make_half_neighbour_list();
 
     //! full neighbour list
     void make_full_neighbour_list();
@@ -491,8 +493,6 @@ namespace rascal {
       return neighbours;
     }
 
-    // template<size_t Dim>
-    // std::vector<std::array<int, Dim>>
     //! get the box index
     template<class Vector_t, size_t Dim>
     decltype(auto) get_box_index(const Vector_t & position,
@@ -724,63 +724,18 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
-  template <class ManagerImplementation>
-  void AdaptorMaxOrder<ManagerImplementation>::make_half_neighbour_list() {
-    //! Make a half neighbour list (not quite Verlet, because of the missing
-    //! skin) according to Tadmor and Miller 'Modeling Materials', algorithm 6.7,
-    //! p 323, (needs modification for periodicity).
-
-    //! It results in a <code>strict</code> neighbourlist. It is only a
-    //! half-neighbour list.  The most obvious difference is that no 'skin' is
-    //! used in conjunction with the cutoff.  This is only necessary, if the
-    //! ManagerImplementation, with which this adaptor is initialized does not
-    //! have at least already atomic pairs. Inluding ghost neighbours?
-
-    // TODO: add functionality for the shift vector??!
-
-    // TODO: include linked-list-cell algorithm from Felix _cell.cc here before
-    // the building of the neighbour list
-    // Add a distinction between full and half neighbour list -- probably in traits?
-
-    //! The zeroth order does not have neighbours
-
-    this->nb_neigh.push_back(0);
-    this->offsets.push_back(0);
-
-    unsigned int nneigh_off{0};
-
-    for (auto it=this->manager.begin(); it!=--this->manager.end(); ++it){
-      //! Add atom at this order this is just the standard list.
-      auto atom_i = *it;
-      this->add_atom(atom_i);
-
-      auto jt = it;
-      ++jt; //! go to next atom in manager (no self-neighbour)
-      for (;jt!=manager.end(); ++jt){
-      	auto atom_j = *jt;
-      	double distance{(atom_i.get_position() -
-			 atom_j.get_position()).norm()};
-      	if (distance <= this->cutoff) {
-      	  //! Store atom_j in neighbourlist of atom_i
-          this->neighbours.push_back(atom_j.get_index());
-      	  this->nb_neigh.back()++;
-      	  nneigh_off += 1;
-      	}
-      }
-      this->offsets.push_back(nneigh_off);
-    }
-    // get the cluster_indices right
-
-    auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
-    atom_cluster_indices.fill_sequence();
-    auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
-    pair_cluster_indices.fill_sequence();
-  }
-
-  /* ---------------------------------------------------------------------- */
   /**
-   * Make a full neighbour list, transferred from former StructureManagerCell,
-   * slightly modified to fit the current member variables.
+   * Builds full neighbour list. Triclinicity is accounted for. The general idea
+   * is anchor a mesh the origin of the supplied cell. Then the mesh is extended
+   * into space until it is as big as the maximum cell coordinate plus one
+   * cutoff. This mesh has boxes of size cutoff. Depending on the periodicity of
+   * the mesh, ghost atoms are added by shifting all i-atoms by the cell
+   * vectors. All i-atoms and the ghost atoms are then sorted into the
+   * respective boxes of the mesh and a stencil anchored at the boxes of the
+   * i-atoms is used to build the atom neighbourhoods from the 9 (2d) or 27 (3d)
+   * boxes, which have to be checked for the neighbourhood . Correct periodicity
+   * is ensured by the placement of the ghost atoms. The resulting neighbourlist
+   * is full and not strict.
    */
   template <class ManagerImplementation>
   void AdaptorMaxOrder<ManagerImplementation>::make_full_neighbour_list() {
@@ -793,78 +748,63 @@ namespace rascal {
 
     auto cell{manager.get_cell()};
     double cutoff{this->cutoff};
-    // number of boxes per dimension
     std::array<int, dim> nboxes_per_dim;
 
     //! vector for storing the atom indices of each box
     std::vector<std::vector<int>> atoms_in_box{};
-    //! contiguous vector for neighbour positions; periodic boundary conditions
-    //! can lead to more neighbour positions than actual atoms, so called ghost
-    //! atoms. these are stored here during the buildup of the neighbourlist
 
-    //! find minimum/maximum coordinate of mesh for neighbour list
-    Vector_t r_mesh_min(dim);
-    Vector_t r_mesh_max(dim);
-    std::vector<double> cell_norm(dim);
-    std::vector<double> cell_max(dim);
-    std::vector<double> angles(dim);
-    r_mesh_min.setZero();
-    r_mesh_max.setZero();
+    /**
+     * minimum/maximum coordinate of mesh for neighbour list; depends on
+     * cell triclinicity and cutoff
+     */
+    Vector_t mesh_min(dim);
+    Vector_t mesh_max(dim);
+    Vector_t cell_max(dim);
+    mesh_min.setZero();
+    mesh_max.setZero();
 
-    std::fill(cell_max.begin(), cell_max.end(), 0.);
+    //! maximum cell position
+    for (auto i{0}; i < dim; ++i) { cell_max[i] = cell.col(i)[i];}
 
-    //! norms of the cell vectors and maximum
-    for (auto i{0}; i < dim; ++i) {
-      auto vec = cell.col(i);
-      cell_norm[i] = vec.norm();
-      for (auto j{0}; j < dim; ++j) {
-        cell_max[j] += vec[j];
-      }
-    }
-
-    //! calculate angle to scale mesh offset
-    for (auto i{0}; i < dim; ++i) {
-      std::vector<double> e_i(dim);
-      std::fill(e_i.begin(), e_i.end(), 0.);
-      e_i[i] = 1;
-      auto vec = cell.col(i);
-      double val{0.};
-      for (auto j{0}; j < dim; ++j) {
-        val += e_i[j] * vec[j];
-      }
-      val /= cell_norm[i];
-      angles[i] = std::acos(val);
-    }
     //! calculate minimum mesh coordinates
     for (auto i{0}; i < dim; ++i) {
-      r_mesh_min[i] -= cutoff;
+      mesh_min[i] -= cutoff;
     }
+
     //! calculate maximum mesh coordinates
     for (auto i{0}; i < dim; ++i) {
-      auto dx =  cell_norm[i] + 2. * cutoff;
+      auto dx =  cell.col(i)[i] + 2. * cutoff;
+      std::cout << "dx " << dx << std::endl;
       int n(std::ceil(dx / cutoff));
-      r_mesh_max[i] = n * cutoff;
+      //! max is mesh origin + dx
+      mesh_max[i] = mesh_min[i] + n * cutoff;
       nboxes_per_dim[i] = n;
     }
 
-    //! get all ghost atom positions
+    /**
+     * TODO possible future optimization for cells large triclinicity: use
+     * triclinic coordinates and explicitly check for the 'skin' around the cell
+     */
+    //! generate ghost atom indices and position
     for (auto atom : this->get_manager()) {
       auto pos = atom.get_position();
       for (auto i{0}; i < dim; ++i) {
         if(periodicity[i]) {
+          //! exclude m=0, because it is the i atom itself
           for(auto m{-1}; m < 2; m+=2) {
-
+            //! shift i atom along cell vector i
             auto pos_ghost = pos + cell.col(i)*m;
-            auto pos_lt  = pos_ghost.array() - r_mesh_min.array();
-            auto pos_gt  = pos_ghost.array() - r_mesh_max.array();
 
-            //! check lower bound
-            auto f_lt = (pos_lt.array() > 0.).all();
-            //! check upper bound
-            auto f_gt = (pos_gt.array() < 0.).all();
-            if (f_lt && f_gt) {
+            //! shift position to mesh origin
+            auto pos_lower  = pos_ghost.array() - mesh_min.array();
+            auto pos_greater  = pos_ghost.array() - mesh_max.array();
+            //! shifted position inside mesh?
+            auto f_lt = (pos_lower.array() > 0.).all();
+            auto f_gt = (pos_greater.array() < 0.).all();
+            if (f_lt and f_gt) {
+              //! nex atom index is size, since start is at index = 0
               auto new_atom_index = this->get_size_with_ghosts();
-              new_atom_index++;
+              // new_atom_index++;
               this->add_ghost_atom(new_atom_index, pos_ghost);
             }
           }
@@ -880,7 +820,7 @@ namespace rascal {
     // i-atoms sorting into boxes
     for (size_t i{0}; i < this->n_i_atoms; ++i) {
       auto pos = this->get_position(i);
-      auto dpos = pos - r_mesh_min;
+      auto dpos = pos - mesh_min;
       auto idx = internal::get_box_index(dpos, cutoff, nboxes_per_dim);
       atom_id_cell[idx].push_back(i);
     }
@@ -888,7 +828,7 @@ namespace rascal {
     //! ghost atoms sorting into boxes
     for (size_t i{0}; i < this->n_j_atoms; ++i) {
       auto ghost_pos = this->get_ghost_position(i);
-      auto dpos = ghost_pos - r_mesh_min;
+      auto dpos = ghost_pos - mesh_min;
       auto idx  = internal::get_box_index(dpos, cutoff, nboxes_per_dim);
       auto ghost_atom_index = i + this->n_i_atoms;
       atom_id_cell[idx].push_back(ghost_atom_index);
@@ -899,7 +839,7 @@ namespace rascal {
     for (size_t i{0}; i < this->n_i_atoms; ++i) {
       int nneigh{0};
       auto pos = this->get_position(i);
-      auto dpos = pos - r_mesh_min;
+      auto dpos = pos - mesh_min;
       auto idx = internal::get_box_index(dpos, cutoff, nboxes_per_dim);
       auto current_j_atoms = internal::get_neighbours(i, idx, atom_id_cell);
 
@@ -961,7 +901,6 @@ namespace rascal {
       manager_max->nb_neigh.resize(0);
       manager_max->offsets.resize(0);
       manager_max->neighbours.resize(0);
-      // manager_max->make_half_neighbour_list();
       manager_max->make_full_neighbour_list();
     }
   };
