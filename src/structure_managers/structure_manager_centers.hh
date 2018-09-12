@@ -101,18 +101,6 @@ namespace rascal {
      * .get_positions() member function, if needed. Access to the cell vectors,
      * defined in the JSON file.
      */
-// <<<<<<< HEAD
-//     using Cell_t = Eigen::Matrix<double, traits::Dim,
-//                                  traits::Dim, Eigen::ColMajor>;
-//     using Cell_ref = Eigen::Map<Cell_t>;
-//     using AtomTypes_t = Eigen::Matrix<int, 1, Eigen::Dynamic>;
-//     using AtomTypes_ref = Eigen::Map<AtomTypes_t>;
-//     using PBC_t = Eigen::Matrix<bool, 1, traits::Dim>;
-//     using PBC_ref = Eigen::Map<PBC_t>;
-//     using Positions_t = Eigen::Matrix<double, traits::Dim, Eigen::Dynamic,
-//                                       Eigen::ColMajor>;
-//     using Positions_ref = Eigen::Map<Positions_t>;
-// =======
     using Cell_t = AtomicStructure<traits::Dim>::Cell_t;
     using Cell_ref = typename Eigen::Map<Cell_t>;
     using AtomTypes_t = AtomicStructure<traits::Dim>::AtomTypes_t;
@@ -121,7 +109,6 @@ namespace rascal {
     using PBC_ref = typename Eigen::Map<PBC_t>;
     using Positions_t = AtomicStructure<traits::Dim>::Positions_t;
     using Positions_ref = typename Eigen::Map<Positions_t>;
-// >>>>>>> feat/tools_fps
 
     /**
      * Here, the types for internal data structures are defined, based on
@@ -145,8 +132,8 @@ namespace rascal {
     using ClusterRef_t = typename Parent::template ClusterRef<Order>;
 
     //! Default constructor
-    StructureManagerCenters() // = default;
-      :atoms_object{}, atoms_index{}, positions{}, atom_types{}, cell{}, pbc{},
+    StructureManagerCenters()
+      : atoms_object{}, atoms_index{}, positions{}, atom_types{}, cell{}, pbc{},
        lattice{}, offsets{}, natoms{}
     {};
 
