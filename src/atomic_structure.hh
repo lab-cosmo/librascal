@@ -40,19 +40,19 @@ namespace rascal {
   struct AtomicStructure {
     /**
        \param cell is a vector a vector of vectors which holds the cell unit
-       vectors.
-       \param type a vector of integers which holds the atomic type
-       (coordination number).
-       \param pbc is a 0/1 vector which says, where periodic boundary
-       conditions are applied.
-       \param position is a vector of vectors which holds the atomic
-       positions.
+        vectors.
+        \param type a vector of integers which holds the atomic type
+        (coordination number).
+        \param pbc is a 0/1 vector which says, where periodic boundary
+        conditions are applied.
+        \param position is a vector of vectors which holds the atomic
+        positions.
     */
-    using Cell_t = Eigen::Matrix<double, Dim, Dim, Eigen::ColMajor>;
+    using Cell_t = Eigen::Matrix<double, Dim, Dim,Eigen::ColMajor>;
     using AtomTypes_t = Eigen::Matrix<int, 1, Eigen::Dynamic>;
-    using PBC_t = Eigen::Map<Eigen::Matrix<int, 1, Dim>>;
-    using Positions_t = Eigen::Matrix<double, Dim, Eigen::Dynamic,
-                                      Eigen::ColMajor>;
+    using PBC_t = Eigen::Matrix<int, Dim, 1>;
+    using Positions_t = Eigen::Matrix<double,Dim,Eigen::Dynamic,
+                                                  Eigen::ColMajor>;
 
     Positions_t positions; //!
     AtomTypes_t atoms_type;
@@ -60,13 +60,11 @@ namespace rascal {
     PBC_t pbc;
   };
 
-  inline void set_structure(AtomicStructure<2> & s,
-                            const Eigen::Ref<const Eigen::MatrixXd> positions,
-                            const Eigen::Ref<
-                            const Eigen::Matrix<int, Eigen::Dynamic, 1> >  atoms_type,
-                            const Eigen::Ref<const Eigen::MatrixXd> cell,
-                            const Eigen::Ref<
-                            const Eigen::Matrix<int, Eigen::Dynamic, 1> >& pbc) {
+  inline void set_structure(AtomicStructure<2>& s,
+    const Eigen::Ref<const Eigen::MatrixXd> positions,
+    const Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1> >  atoms_type,
+    const Eigen::Ref<const Eigen::MatrixXd> cell,
+    const Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1> >& pbc) {
 
     s.cell = cell;
     s.atoms_type = atoms_type;
@@ -76,13 +74,11 @@ namespace rascal {
   }
 
   inline void set_structure(AtomicStructure<3>& s,
-                            const Eigen::Ref<const Eigen::MatrixXd> positions,
-                            const Eigen::Ref<
-                            const Eigen::Matrix<int, Eigen::Dynamic, 1> >
-                            atoms_type,
-                            const Eigen::Ref<const Eigen::MatrixXd> cell,
-                            const Eigen::Ref<
-                            const Eigen::Matrix<int, Eigen::Dynamic, 1> >& pbc) {
+    const Eigen::Ref<const Eigen::MatrixXd> positions,
+    const Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1> >  atoms_type,
+    const Eigen::Ref<const Eigen::MatrixXd> cell,
+    const Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1> >& pbc) {
+
     s.cell = cell;
     s.atoms_type = atoms_type;
     s.pbc = pbc;

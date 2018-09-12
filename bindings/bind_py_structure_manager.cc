@@ -25,9 +25,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <pybind11/pybind11.h>
+
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/structure_manager_centers.hh"
+
+#include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
 #include <pybind11/stl.h>
 #include <Eigen/Dense>

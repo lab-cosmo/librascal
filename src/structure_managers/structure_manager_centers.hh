@@ -172,27 +172,15 @@ namespace rascal {
      * atom positions are provided by a simulation method, which evolves in
      * time, this function updates the data.
      */
-    // TODO: ambiguous update/build?
-    // void update(const Eigen::Ref<const Eigen::MatrixXd> positions,
-    //             const Eigen::Ref<const VecXi> atom_types,
-    //             const Eigen::Ref<const Eigen::MatrixXd> cell,
-    //             const Eigen::Ref<const Eigen::Matrix<bool, Eigen::Dynamic, 1> >& pbc);
-                // const std::array<bool, traits::Dim>& pbc);
-
     void update(const Eigen::Ref<const Eigen::MatrixXd> positions,
                 const Eigen::Ref<const VecXi> atom_types,
                 const Eigen::Ref<const Eigen::MatrixXd> cell,
-                const std::array<bool, 3> & pbc);
+                const Eigen::Ref<PBC_t> pbc);
 
-    // void build(const Eigen::Ref<const Eigen::MatrixXd> positions,
-    //            const Eigen::Ref<const VecXi> atom_types,
-    //            const Eigen::Ref<const Eigen::MatrixXd> cell,
-    //            const Eigen::Ref<const Eigen::Matrix<bool,
-               // 1, traits::Dim>>& pbc);
+
     void build(const Eigen::Ref<const Eigen::MatrixXd> positions,
                const Eigen::Ref<const VecXi> atom_types,
                const Eigen::Ref<const Eigen::MatrixXd> cell);
-               // const std::array<bool, traits::Dim> & pbc);
 
     void build();
 
@@ -230,7 +218,7 @@ namespace rascal {
     inline PBC_ref get_periodic_boundary_conditions() {
       // PBC_ref xval(this->atoms_object.pbc.data(),1,3);
       // return xval;
-      return PBC_t(this->atoms_object.pbc.data());
+      return Eigen::Map<PBC_t>(this->atoms_object.pbc.data());
     }
 
     // inline std::array<bool, traits::Dim> get_periodic_boundary_conditions() {

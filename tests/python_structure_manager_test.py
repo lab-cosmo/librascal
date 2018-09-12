@@ -21,9 +21,14 @@ class TestStructureManagerCenters(unittest.TestCase):
         self.cell = self.frame['cell']
         self.positions = self.frame['positions']
         self.numbers = self.frame['numbers']
-        self.pbc = [[True,True,True],[False,False,False],
-                    [False,True,True],[True,False,True],[True,True,False],
-                    [False,False,True],[True,False,False],[False,True,False]]
+        # self.pbc = [[True,True,True],[False,False,False],
+        #             [False,True,True],[True,False,True],[True,True,False],
+        #             [False,False,True],[True,False,False],[False,True,False]]
+        self.pbc = np.array([ [1, 1, 1], [0, 0, 0],
+                              [0, 1, 0], [1, 0, 1],
+                              [1, 1, 0], [0, 0, 1],
+                              [1, 0, 0], [0, 1, 0] ]).astype(int)
+
         self.Natom = self.positions.shape[0]
         self.cutoffs = [3.]*self.Natom
         self.max_cutoff = np.max(self.cutoffs)
@@ -36,9 +41,11 @@ class TestStructureManagerCenters(unittest.TestCase):
 
     def test_manager_iteration(self):
         manager =  rc.StructureManagerCenters()
-        centers = np.array([it for it in range(self.Natom)],dtype=np.int32)
-        manager.update(np.array(self.positions.T,order='F'),self.numbers,
-                       np.array(self.cell.T,order='F'),self.pbc[0])
+        centers = np.array([it for it in range(self.Natom)], dtype=np.int32)
+        manager.update(np.array(self.positions.T,order='F'),
+                       self.numbers,
+                       np.array(self.cell.T,order='F'),
+                       self.pbc[0])
         ii = 0
         for center in manager:
             self.assertTrue(ii == center.atom_index)

@@ -231,7 +231,7 @@ namespace rascal {
     using Manager_t = StructureManagerCenters;
 
     ManagerFixture():
-      pbc{{true,true,true}}, cell(3, 3), positions(3, 22), numbers(22),
+      positions(3, 22), numbers(22), cell(3, 3), pbc{{true,true,true}},
       cutoff{3.}
     {
       cell <<
@@ -266,7 +266,8 @@ namespace rascal {
       numbers << 20, 20, 24, 24, 15, 15, 15, 15, 8, 8, 8,
         8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8;
 
-      manager.update(positions, numbers, cell, pbc);
+      manager.update(positions, numbers, cell,
+                     Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
     }
 
     ~ManagerFixture() {
@@ -310,7 +311,8 @@ namespace rascal {
 
       numbers << 1, 1, 1, 1, 1, 1, 1, 1;
 
-      manager.update(positions, numbers, cell, pbc);
+      manager.update(positions, numbers, cell,
+                     Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
     }
 
     ~ManagerFixtureSimple() {
@@ -318,7 +320,7 @@ namespace rascal {
     }
 
     Manager_t manager{};
-    std::array<bool, 3> pbc;
+    std::array<int, 3> pbc;
     Eigen::MatrixXd cell;
     Eigen::MatrixXd positions;
     VecXi numbers;

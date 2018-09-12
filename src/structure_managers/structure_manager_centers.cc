@@ -51,7 +51,8 @@ namespace rascal {
   update(const Eigen::Ref<const Eigen::MatrixXd> positions,
          const Eigen::Ref<const VecXi> atom_types,
          const Eigen::Ref<const Eigen::MatrixXd> cell,
-         const std::array<int, 3> & pbc) {
+         const Eigen::Ref<PBC_t> pbc) {
+         // const std::array<int, traits::Dim> & pbc) {
          // const Eigen::Ref<const Eigen::Matrix<bool, Eigen::Dynamic, 1> >& pbc) {
          // const Eigen::Ref<const Eigen::Matrix<bool, traits::Dim, 1> pbc) {
          // const std::array<bool, traits::Dim> & pbc) {
