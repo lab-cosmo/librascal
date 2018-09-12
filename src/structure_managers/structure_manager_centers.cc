@@ -46,7 +46,7 @@ namespace rascal {
    * and access them with the map. Using the vector type automatically ensures
    * contiguity
    */
-<<<<<<< HEAD
+// <<<<<<< HEAD
   void StructureManagerCenters::
   update(const Eigen::Ref<const Eigen::MatrixXd> positions,
          const Eigen::Ref<const VecXi> atom_types,
@@ -54,76 +54,76 @@ namespace rascal {
          const std::array<bool,3> & pbc) {
 
     StructureManagerCenters::build(positions, atom_types, cell, pbc);
-=======
-  void StructureManagerCenters::update(
-                const Eigen::Ref<const Eigen::MatrixXd> positions,
-                const Eigen::Ref<const VecXi>  atoms_type,
-                const Eigen::Ref<const Eigen::MatrixXd> cell,
-                const Eigen::Ref<const Eigen::Matrix<bool, 
-                                    1, Eigen::Dynamic>>& pbc) {
-  
-    bool some_condition{true};
+// =======
+//   void StructureManagerCenters::update(
+//                 const Eigen::Ref<const Eigen::MatrixXd> positions,
+//                 const Eigen::Ref<const VecXi>  atoms_type,
+//                 const Eigen::Ref<const Eigen::MatrixXd> cell,
+//                 const Eigen::Ref<const Eigen::Matrix<bool,
+//                                     1, Eigen::Dynamic>>& pbc) {
 
-    Eigen::Index Natom{positions.cols()};
-    this->natoms = Natom;
+//     bool some_condition{true};
 
-    if (some_condition){
-      
-      set_structure(this->atoms_object,positions,atoms_type,cell,pbc);
+//     Eigen::Index Natom{positions.cols()};
+//     this->natoms = Natom;
 
-      StructureManagerCenters::build();
-    } else {
-      
-      set_structure(this->atoms_object,positions,atoms_type,cell,pbc);
-    }
+//     if (some_condition){
 
-    auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
->>>>>>> feat/tools_fps
+//       set_structure(this->atoms_object,positions,atoms_type,cell,pbc);
+
+//       StructureManagerCenters::build();
+//     } else {
+
+//       set_structure(this->atoms_object,positions,atoms_type,cell,pbc);
+//     }
+
+//     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
+// >>>>>>> feat/tools_fps
 
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
     atom_cluster_indices.fill_sequence();
   }
 
   /* ---------------------------------------------------------------------- */
-<<<<<<< HEAD
-  void StructureManagerCenters::
-  build(const Eigen::Ref<const Eigen::MatrixXd> positions,
-        const Eigen::Ref<const VecXi> atom_types,
-        const Eigen::Ref<const Eigen::MatrixXd> cell,
-        const std::array<bool,StructureManagerCenters::dim()> & pbc) {
+// <<<<<<< HEAD
+//   void StructureManagerCenters::
+//   build(const Eigen::Ref<const Eigen::MatrixXd> positions,
+//         const Eigen::Ref<const VecXi> atom_types,
+//         const Eigen::Ref<const Eigen::MatrixXd> cell,
+//         const std::array<bool,StructureManagerCenters::dim()> & pbc) {
 
-    Eigen::Index Natom{positions.cols()};
-    this->natoms = Natom;
-    this->positions = positions;
-    this->atom_types = atom_types;
-    this->cell = cell;
+//     Eigen::Index Natom{positions.cols()};
+//     this->natoms = Natom;
+//     this->positions = positions;
+//     this->atom_types = atom_types;
+//     this->cell = cell;
 
-    this->atom_types.resize(Natom);
+//     this->atom_types.resize(Natom);
 
-    //set the references to the particles positions // TODO: do not understand?
-    for (Eigen::Index id{0}; id < Natom; ++id){
-=======
+//     //set the references to the particles positions // TODO: do not understand?
+//     for (Eigen::Index id{0}; id < Natom; ++id){
+// =======
   void StructureManagerCenters::build() {
 
     this->atoms_object.atoms_type.resize(this->natoms);
     //set the references to the particles positions
     for (size_t id{0}; id < this->natoms; ++id){
->>>>>>> feat/tools_fps
+// >>>>>>> feat/tools_fps
       this->atoms_index[0].push_back(id);
     }
 
-<<<<<<< HEAD
+// <<<<<<< HEAD
 
 
 
-    for (size_t id{0}; id < pbc.size(); ++id){
-      this->pbc[id] = pbc[id];
-    }
-=======
+//     for (size_t id{0}; id < pbc.size(); ++id){
+//       this->pbc[id] = pbc[id];
+//     }
+// =======
     Cell_t lat = this->atoms_object.cell;
     this->lattice.set_cell(lat);
 
->>>>>>> feat/tools_fps
+// >>>>>>> feat/tools_fps
   }
 
   size_t StructureManagerCenters::get_nb_clusters(size_t cluster_size) const {

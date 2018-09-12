@@ -30,11 +30,11 @@
 #define STRUCTURE_MANAGER_CENTERS_H
 
 #include "structure_managers/structure_manager.hh"
-<<<<<<< HEAD
-=======
-#include "lattice.hh"
-#include "atomic_structure.hh"
->>>>>>> feat/tools_fps
+// <<<<<<< HEAD
+// =======
+// #include "lattice.hh"
+// #include "atomic_structure.hh"
+// >>>>>>> feat/tools_fps
 #include "basic_types.hh"
 
 //! Some data types and operations are based on the Eigen library
@@ -103,18 +103,18 @@ namespace rascal {
      * .get_positions() member function, if needed. Access to the cell vectors,
      * defined in the JSON file.
      */
-<<<<<<< HEAD
-    using Cell_t = Eigen::Matrix<double, traits::Dim,
-                                 traits::Dim, Eigen::ColMajor>;
-    using Cell_ref = Eigen::Map<Cell_t>;
-    using AtomTypes_t = Eigen::Matrix<int, 1, Eigen::Dynamic>;
-    using AtomTypes_ref = Eigen::Map<AtomTypes_t>;
-    using PBC_t = Eigen::Matrix<bool, 1, traits::Dim>;
-    using PBC_ref = Eigen::Map<PBC_t>;
-    using Positions_t = Eigen::Matrix<double, traits::Dim, Eigen::Dynamic,
-                                      Eigen::ColMajor>;
-    using Positions_ref = Eigen::Map<Positions_t>;
-=======
+// <<<<<<< HEAD
+//     using Cell_t = Eigen::Matrix<double, traits::Dim,
+//                                  traits::Dim, Eigen::ColMajor>;
+//     using Cell_ref = Eigen::Map<Cell_t>;
+//     using AtomTypes_t = Eigen::Matrix<int, 1, Eigen::Dynamic>;
+//     using AtomTypes_ref = Eigen::Map<AtomTypes_t>;
+//     using PBC_t = Eigen::Matrix<bool, 1, traits::Dim>;
+//     using PBC_ref = Eigen::Map<PBC_t>;
+//     using Positions_t = Eigen::Matrix<double, traits::Dim, Eigen::Dynamic,
+//                                       Eigen::ColMajor>;
+//     using Positions_ref = Eigen::Map<Positions_t>;
+// =======
     using Cell_t = AtomicStructure<traits::Dim>::Cell_t;
     using Cell_ref = typename Eigen::Map<Cell_t>;
     using AtomTypes_t = AtomicStructure<traits::Dim>::AtomTypes_t;
@@ -123,7 +123,7 @@ namespace rascal {
     using PBC_ref = typename Eigen::Map<PBC_t>;
     using Positions_t = AtomicStructure<traits::Dim>::Positions_t;
     using Positions_ref = typename Eigen::Map<Positions_t>;
->>>>>>> feat/tools_fps
+// >>>>>>> feat/tools_fps
 
     /**
      * Here, the types for internal data structures are defined, based on
@@ -148,12 +148,12 @@ namespace rascal {
 
     //! Default constructor
     StructureManagerCenters() // = default;
-<<<<<<< HEAD
-      :atoms_index{}, positions{}, atom_types{},
-       cell{}, pbc{}, natoms{}
-=======
+// <<<<<<< HEAD
+//       :atoms_index{}, positions{}, atom_types{},
+//        cell{}, pbc{}, natoms{}
+// =======
     :atoms_object{},atoms_index{},lattice{},offsets{},natoms{}
->>>>>>> feat/tools_fps
+// >>>>>>> feat/tools_fps
     {};
 
     //! Copy constructor
@@ -182,19 +182,15 @@ namespace rascal {
     void update(const Eigen::Ref<const Eigen::MatrixXd> positions,
                 const Eigen::Ref<const VecXi> atom_types,
                 const Eigen::Ref<const Eigen::MatrixXd> cell,
-<<<<<<< HEAD
                 const std::array<bool, 3>& pbc);
 
     void build(const Eigen::Ref<const Eigen::MatrixXd> positions,
                const Eigen::Ref<const VecXi> atom_types,
                const Eigen::Ref<const Eigen::MatrixXd> cell,
-               const std::array<bool, 3>& pbc);
-=======
-                const Eigen::Ref<const Eigen::Matrix<bool, 
-                                    1, Eigen::Dynamic>>& pbc);
+               const Eigen::Ref<const Eigen::Matrix<bool,
+               1, Eigen::Dynamic>>& pbc);
 
     void build();
->>>>>>> feat/tools_fps
 
     //! required for the construction of vectors, etc
     constexpr static int dim() {return traits::Dim;}
@@ -216,14 +212,14 @@ namespace rascal {
 
     //! Returns an a map with all atom types.
     inline AtomTypes_ref get_atom_types() {
-<<<<<<< HEAD
-      return AtomTypes_ref(this->atom_types.data(),
-                           this->atom_types.size());
-=======
+// <<<<<<< HEAD
+//       return AtomTypes_ref(this->atom_types.data(),
+//                            this->atom_types.size());
+// =======
       AtomTypes_ref xval(this->atoms_object.atoms_type.data(),
                           1,this->natoms);
       return xval;
->>>>>>> feat/tools_fps
+// >>>>>>> feat/tools_fps
     }
 
     //! Returns a map of size traits::Dim with 0/1 for periodicity
@@ -267,15 +263,8 @@ namespace rascal {
     }
 
     //! returns number of I atoms in the list
-<<<<<<< HEAD
     inline size_t get_size() const {return this->natoms;}
 
-=======
-    inline size_t get_size() const {
-      return this->natoms;
-    }
-    
->>>>>>> feat/tools_fps
     //! returns the number of neighbours of a given i atom
     template<size_t Order, size_t Layer>
     inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
@@ -313,16 +302,11 @@ namespace rascal {
     size_t get_nb_clusters(size_t cluster_size) const;
 
   protected:
-<<<<<<< HEAD
-=======
-
-
     /**
-
+     *
      */
     AtomicStructure<traits::Dim> atoms_object{};
 
->>>>>>> feat/tools_fps
     /**
      * store atoms index per order,i.e.
      *   - atoms_index[0] lists all i-atoms
@@ -330,15 +314,13 @@ namespace rascal {
      */
     std::array<std::vector<int>, traits::MaxOrder> atoms_index;
 
-<<<<<<< HEAD
     Positions_t positions;
     AtomTypes_t atom_types; //!< element numbers
     //! Used in neighbour list build
     Cell_t cell;
     std::array<bool,traits::Dim> pbc;
-=======
     Lattice lattice;
-    
+
     /**
      * A vector which stores the absolute offsets for each atom to access the
      * correct variables in the neighbourlist.
