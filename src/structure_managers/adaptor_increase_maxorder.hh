@@ -746,6 +746,10 @@ namespace rascal {
     const auto dim{traits::Dim};
     auto periodicity = this->manager.get_periodic_boundary_conditions();
 
+    std::cout << periodicity[0] << " "
+              << periodicity[1] << " "
+              << periodicity[2] << " " << std::endl;
+
     auto cell{manager.get_cell()};
     double cutoff{this->cutoff};
     std::array<int, dim> nboxes_per_dim;

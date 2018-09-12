@@ -30,11 +30,9 @@
 #define STRUCTURE_MANAGER_CENTERS_H
 
 #include "structure_managers/structure_manager.hh"
-// <<<<<<< HEAD
-// =======
-// #include "lattice.hh"
-// #include "atomic_structure.hh"
-// >>>>>>> feat/tools_fps
+
+#include "lattice.hh"
+#include "atomic_structure.hh"
 #include "basic_types.hh"
 
 //! Some data types and operations are based on the Eigen library
@@ -148,12 +146,8 @@ namespace rascal {
 
     //! Default constructor
     StructureManagerCenters() // = default;
-// <<<<<<< HEAD
-//       :atoms_index{}, positions{}, atom_types{},
-//        cell{}, pbc{}, natoms{}
-// =======
-    :atoms_object{},atoms_index{},lattice{},offsets{},natoms{}
-// >>>>>>> feat/tools_fps
+      :atoms_object{}, atoms_index{}, positions{}, atom_types{}, cell{}, pbc{},
+       lattice{}, offsets{}, natoms{}
     {};
 
     //! Copy constructor
@@ -179,16 +173,26 @@ namespace rascal {
      * time, this function updates the data.
      */
     // TODO: ambiguous update/build?
+    // void update(const Eigen::Ref<const Eigen::MatrixXd> positions,
+    //             const Eigen::Ref<const VecXi> atom_types,
+    //             const Eigen::Ref<const Eigen::MatrixXd> cell,
+    //             const Eigen::Ref<const Eigen::Matrix<bool, Eigen::Dynamic, 1> >& pbc);
+                // const std::array<bool, traits::Dim>& pbc);
+
     void update(const Eigen::Ref<const Eigen::MatrixXd> positions,
                 const Eigen::Ref<const VecXi> atom_types,
                 const Eigen::Ref<const Eigen::MatrixXd> cell,
-                const std::array<bool, 3>& pbc);
+                const std::array<bool, 3> & pbc);
 
+    // void build(const Eigen::Ref<const Eigen::MatrixXd> positions,
+    //            const Eigen::Ref<const VecXi> atom_types,
+    //            const Eigen::Ref<const Eigen::MatrixXd> cell,
+    //            const Eigen::Ref<const Eigen::Matrix<bool,
+               // 1, traits::Dim>>& pbc);
     void build(const Eigen::Ref<const Eigen::MatrixXd> positions,
                const Eigen::Ref<const VecXi> atom_types,
-               const Eigen::Ref<const Eigen::MatrixXd> cell,
-               const Eigen::Ref<const Eigen::Matrix<bool,
-               1, Eigen::Dynamic>>& pbc);
+               const Eigen::Ref<const Eigen::MatrixXd> cell);
+               // const std::array<bool, traits::Dim> & pbc);
 
     void build();
 
@@ -216,17 +220,23 @@ namespace rascal {
 //       return AtomTypes_ref(this->atom_types.data(),
 //                            this->atom_types.size());
 // =======
-      AtomTypes_ref xval(this->atoms_object.atoms_type.data(),
-                          1,this->natoms);
-      return xval;
+      AtomTypes_ref val(this->atoms_object.atoms_type.data(),
+                          1, this->natoms);
+      return val;
 // >>>>>>> feat/tools_fps
     }
 
     //! Returns a map of size traits::Dim with 0/1 for periodicity
     inline PBC_ref get_periodic_boundary_conditions() {
-      PBC_ref xval(this->atoms_object.pbc.data(),1,3);
-      return xval;
+      // PBC_ref xval(this->atoms_object.pbc.data(),1,3);
+      // return xval;
+      return PBC_t(this->atoms_object.pbc.data());
     }
+
+    // inline std::array<bool, traits::Dim> get_periodic_boundary_conditions() {
+    //   // PBC_ref xval(this->atoms_object.pbc.data(),1,3);
+    //   return this->pbc;
+    // }
 
     //! Returns the position of an atom, given an AtomRef
     inline Vector_ref get_position(const AtomRef_t & atom) {
@@ -257,9 +267,10 @@ namespace rascal {
 
     //! returns a map to all atomic positions.
     inline Positions_ref get_positions() {
-      Positions_ref xval(this->atoms_object.positions.data(),
-                          3,this->natoms);
-      return xval;
+      return Positions_ref(this->atoms_object.positions.data(), traits::Dim,
+                           this->atoms_object.positions.size()/traits::Dim);
+      // return Positions_ref(this->positions.data(), traits::Dim,
+      //                      this->positions.size()/traits::Dim);
     }
 
     //! returns number of I atoms in the list
@@ -318,7 +329,7 @@ namespace rascal {
     AtomTypes_t atom_types; //!< element numbers
     //! Used in neighbour list build
     Cell_t cell;
-    std::array<bool,traits::Dim> pbc;
+    std::array<bool, traits::Dim> pbc;
     Lattice lattice;
 
     /**
@@ -326,7 +337,6 @@ namespace rascal {
      * correct variables in the neighbourlist.
      */
     std::vector<size_t> offsets{};
->>>>>>> feat/tools_fps
 
     //! Total number of atoms in structure
     size_t natoms{};

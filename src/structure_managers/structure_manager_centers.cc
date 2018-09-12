@@ -51,9 +51,14 @@ namespace rascal {
   update(const Eigen::Ref<const Eigen::MatrixXd> positions,
          const Eigen::Ref<const VecXi> atom_types,
          const Eigen::Ref<const Eigen::MatrixXd> cell,
-         const std::array<bool,3> & pbc) {
+         const std::array<int, 3> & pbc) {
+         // const Eigen::Ref<const Eigen::Matrix<bool, Eigen::Dynamic, 1> >& pbc) {
+         // const Eigen::Ref<const Eigen::Matrix<bool, traits::Dim, 1> pbc) {
+         // const std::array<bool, traits::Dim> & pbc) {
 
-    StructureManagerCenters::build(positions, atom_types, cell, pbc);
+    StructureManagerCenters::build(positions, atom_types, cell);
+
+    set_structure(this->atoms_object, positions, atom_types, cell, pbc);
 // =======
 //   void StructureManagerCenters::update(
 //                 const Eigen::Ref<const Eigen::MatrixXd> positions,
@@ -85,25 +90,27 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-// <<<<<<< HEAD
-//   void StructureManagerCenters::
-//   build(const Eigen::Ref<const Eigen::MatrixXd> positions,
-//         const Eigen::Ref<const VecXi> atom_types,
-//         const Eigen::Ref<const Eigen::MatrixXd> cell,
-//         const std::array<bool,StructureManagerCenters::dim()> & pbc) {
+  // <<<<<<< HEAD
+  void StructureManagerCenters::
+  build(const Eigen::Ref<const Eigen::MatrixXd> positions,
+        const Eigen::Ref<const VecXi> atom_types,
+        const Eigen::Ref<const Eigen::MatrixXd> cell) {
+        // const std::array<bool, traits::Dim> & pbc) {
 
-//     Eigen::Index Natom{positions.cols()};
-//     this->natoms = Natom;
-//     this->positions = positions;
-//     this->atom_types = atom_types;
-//     this->cell = cell;
+    Eigen::Index Natom{positions.cols()};
+    this->natoms = Natom;
+    this->positions = positions;
+    this->atom_types = atom_types;
+    this->cell = cell;
+    // this->pbc = pbc;
+    // this->atoms_object.pbc = pbc;
 
-//     this->atom_types.resize(Natom);
+    this->atom_types.resize(Natom);
 
 //     //set the references to the particles positions // TODO: do not understand?
 //     for (Eigen::Index id{0}; id < Natom; ++id){
 // =======
-  void StructureManagerCenters::build() {
+  // void StructureManagerCenters::build() {
 
     this->atoms_object.atoms_type.resize(this->natoms);
     //set the references to the particles positions

@@ -274,10 +274,13 @@ namespace rascal {
     }
 
     Manager_t manager{};
-    std::array<bool, 3> pbc;
-    Eigen::MatrixXd cell;
-    Eigen::MatrixXd positions; // 3, 22
+    Eigen::MatrixXd positions;
     VecXi numbers;
+    Eigen::MatrixXd cell;
+    std::array<int, 3> pbc;
+
+
+
 
     double cutoff;
 
