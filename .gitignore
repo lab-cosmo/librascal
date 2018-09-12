@@ -12,6 +12,9 @@ docs/_build
 # Prerequisites
 *.d
 
+boost_1*
+build*/
+
 # Compiled Object files
 *.slo
 *.lo
