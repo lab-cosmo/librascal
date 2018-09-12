@@ -31,6 +31,8 @@
 
 set (PY_BINDING_SRCS
   ${CMAKE_CURRENT_SOURCE_DIR}/bind_py_module.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/bind_py_structure_manager.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/bind_py_utils.cc
   )
 
 find_package(PythonLibsNew 3 MODULE REQUIRED)
@@ -39,3 +41,5 @@ pybind11_add_module(pyRascal ${PY_BINDING_SRCS})
 target_link_libraries(pyRascal PRIVATE rascal)
 # Want to rename the output, so that the python module is called _rascal
 set_target_properties(pyRascal PROPERTIES OUTPUT_NAME _rascal)
+# Sets rule to install the bindings library in the rascal folder
+install(TARGETS pyRascal DESTINATION lib)

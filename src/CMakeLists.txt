@@ -34,3 +34,6 @@ target_link_libraries(rascal PUBLIC Eigen3::Eigen)
 
 add_subdirectory(structure_managers)
 add_subdirectory(representations)
+add_subdirectory(utils)
+
+install(TARGETS rascal DESTINATION lib)

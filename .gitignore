@@ -6,7 +6,8 @@
 build*/
 *.ipynb
 docs/_build
-__pycache__
+*__pycache__
+*_rascal.*
 
 # Prerequisites
 *.d
