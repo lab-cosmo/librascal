@@ -55,18 +55,7 @@ set(SUPPRESS_LIBRARY_WARNINGS "ON" CACHE BOOL
 set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT true CACHE BOOL
   "Use the default install path")
 
-# see for more details on the linking path handling in Linux and MacOS when installing:
-# https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH "ON")
-#set(CMAKE_SKIP_RPATH "OFF")
-set(CMAKE_MACOSX_RPATH "ON")
-
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  # when make install, the bindinds will be copied using this path
-  set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/rascal/" CACHE PATH "..." FORCE)
-endif()
-
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/")
+set(PYTHON_BUILD_PATH "${CMAKE_BINARY_DIR}/rascal/")
 
 
 if (${BUILD_TESTS})
