@@ -166,12 +166,12 @@ before_install:
             fi
     - |
             if [ "${TRAVIS_OS_NAME}" == "linux" ]; then 
-                sudo apt-get install cmake cmake-data doxygen doxygen-latex graphviz 
+                sudo apt-get install cmake cmake-data doxygen doxygen-latex graphviz python3-sphinx
             fi
-    - |
-            if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
-                sudo pip install sphinx
-            fi
+            #    - |
+            #            if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
+            #                sudo pip install sphinx
+            #            fi
     - |
             if [ "${TRAVIS_OS_NAME}" == "linux" ]; then 
                 sudo pip install breathe
