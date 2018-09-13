@@ -124,8 +124,8 @@ matrix:
                            - ubuntu-toolchain-r-test
                        packages:
                                #- *common_deps   
-                           - python3.6
-                           - python3.6-pip
+                           - python3
+                           - python3-pip
                            - g++-5
              #        
              #        - os: linux
