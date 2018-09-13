@@ -46,21 +46,18 @@ And then follow the instruction in BOOST.md for compilation with boost from cond
 
 
 TILL:
-Test + compilation of documentation in cmake + how to add a test
-Make sure that one can compile on fidis / daint without docs and tests and it will work based on existing libraries
-Libboost-test dependency 
-Stub for the neighbor list
 Management of derivative relations for fields
 "Functional dependency" management to obtain automatically derivatives with chain rule 
-s/Field/Property/g
 Federico:
-comments to c++ + how to bindings/function/class
-try to enable CI on github with travis
+try to enable CI on github with travis (finalize, enable and think what to do with CI)
 Felix:
-the rest of the tutorial
+merge hackaton to master but don't remove the branch
+install target (TBD with Till)
 start pulling the reference implementation in Python (with Andrea G)
 Michele:
 Write a whitepaper section
+Chiheb:
+clean-up and update the tutorial
 Everyone:
 Make sure new and existing doxygen documentation refers correctly to Order and Layer rather than to Level and Depth
 *EFFICIENCY OF BULK KERNEL EVALUATION*
