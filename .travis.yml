@@ -112,6 +112,7 @@ matrix:
 #====================================================================
 
              - os: linux
+               dist: "trusty"
                env: 
                    - BOOST_VERSION=1.67.0
                    - PYTHON_VERSION=3.6
@@ -123,6 +124,8 @@ matrix:
                            - ubuntu-toolchain-r-test
                        packages:
                                #- *common_deps   
+                           - python3.6
+                           - python3.6-pip
                            - g++-5
              #        
              #        - os: linux
@@ -163,7 +166,11 @@ before_install:
             fi
     - |
             if [ "${TRAVIS_OS_NAME}" == "linux" ]; then 
-                sudo apt-get install cmake cmake-data doxygen doxygen-latex graphviz sphinx
+                sudo apt-get install cmake cmake-data doxygen doxygen-latex graphviz 
+            fi
+    - |
+            if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
+                sudo pip3.6 install sphinx
             fi
     - |
             if [ "${TRAVIS_OS_NAME}" == "linux" ]; then 
