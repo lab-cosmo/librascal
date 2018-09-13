@@ -1,15 +1,19 @@
 # trahs
 *.swp
 .vscode
-.idea 
+.idea
 *.ipynb_checkpoints
-build/
+build*/
 *.ipynb
 docs/_build
-__pycache__
+*__pycache__
+*_rascal.*
 
 # Prerequisites
 *.d
+
+boost_1*
+build*/
 
 # Compiled Object files
 *.slo
@@ -42,3 +46,4 @@ __pycache__
 *.app
 *~
 /build/
+/debug/

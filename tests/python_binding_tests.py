@@ -2,7 +2,7 @@
 
 import unittest
 
-from python_cdist_test import TestCdist
+from python_structure_manager_test import TestStructureManagerCenters
 
 class SimpleCheck(unittest.TestCase):
     def setUp(self):

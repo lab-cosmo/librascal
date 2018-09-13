@@ -1,4 +1,4 @@
-.. _installation
+.. _installation:
 
 Installation
 ============
@@ -20,6 +20,9 @@ Bofore installing Rascal, please make sure you have at least the following packa
 +-------------+--------------------+
 | python      |  3.4 or higher     |
 +-------------+--------------------+
+| numpy       |  1.13 or higher    |
++-------------+--------------------+
+
 
 Other necessary packages (such as Eigen and PyBind11) are downloaded automatically whrn compiling Rascal.
 
@@ -31,7 +34,7 @@ It is strongly recommended to clone Rascal from its repository in GitHub.
 
 .. code-block:: bash
 
-    git clone LINK TO RASCAL REPOSITORY
+    git clone https://github.com/cosmo-epfl/librascal.git
 
 Build Rascal
 #############
@@ -76,7 +79,7 @@ In order to run Rascal, you need to import the library into a Python code:
 
 .. code-block:: python
     
-    import Rascal as P
+    import Rascal as R
 
 
 Advanced options

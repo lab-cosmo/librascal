@@ -28,7 +28,6 @@
  */
 
 #include "tests.hh"
-#include "module.hh"
 
 #include <boost/mpl/list.hpp>
 
@@ -39,10 +38,6 @@ namespace rascal {
 
   BOOST_AUTO_TEST_CASE(base_test) {
     BOOST_CHECK_EQUAL(1, 2-1);
-  }
-
-  BOOST_AUTO_TEST_CASE(f_test) {
-    BOOST_CHECK_EQUAL(f(12), 2);
   }
 
 

@@ -197,10 +197,6 @@ before_install:
             if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
                 pyenv global system ${PYTHON_VERSION}
             fi
-    - virtualenv --python=python${PYTHON_VERSION} vir_env
-    - source vir_env/bin/activate
-    - pip install Sphinx numpy breathe sphinx_rtd_theme
-
 install:
     - cd "${TRAVIS_BUILD_DIR}"
     - mkdir build

@@ -12,9 +12,10 @@ add_compile_options(-Wall -Wextra -Weffc++)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 include(rascalTools)
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang") 
   # using Clang
   add_compile_options(-Wno-missing-braces)
+
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   # using GCC
   add_compile_options(-Wno-non-virtual-dtor)
@@ -31,23 +32,46 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   # using Visual Studio C++
 endif()
 
-find_package(Boost COMPONENTS unit_test_framework REQUIRED)
-
 add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
 add_external_package(pybind11 VERSION 2.2.2 CONFIG)
+
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/tests
   ${CMAKE_SOURCE_DIR}/src
-  ${CMAKE_SOURCE_DIR}
  )
+
+include_directories(SYSTEM
+  ${CMAKE_SOURCE_DIR}/external
+  )
 
 set(ENABLE_DOC "OFF" CACHE BOOL
   "If on, a target 'dev_doc' (which builds the documentation) is added")
-set(BUILD_TESTS "ON" CACHE BOOL
+set(BUILD_TESTS "OFF" CACHE BOOL
   "If on, builds the unit tests")
+set(SUPPRESS_LIBRARY_WARNINGS "ON" CACHE BOOL
+  "Suppress warnings from  Boost library")
+
+set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT true CACHE BOOL
+  "Use the default install path")
+
+# see for more details on the linking path handling in Linux and MacOS when installing:
+# https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH "ON")
+#set(CMAKE_SKIP_RPATH "OFF")
+set(CMAKE_MACOSX_RPATH "ON")
+
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  # when make install, the bindinds will be copied using this path
+  set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/rascal/" CACHE PATH "..." FORCE)
+endif()
+
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/")
+
 
 if (${BUILD_TESTS})
+
+  find_package(Boost REQUIRED COMPONENTS unit_test_framework )
   enable_testing()
   # copy python test
 
@@ -66,13 +90,19 @@ if (${BUILD_TESTS})
   file( GLOB TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/test_*.cc")
 
   add_executable(main_test_suite tests/main_test_suite.cc ${TEST_SRCS})
+
+  # https://stackoverflow.com/questions/7781374/boost-test-linking
+  ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK)
+
   target_include_directories(main_test_suite SYSTEM PRIVATE ${Boost_INCLUDE_DIR})
   target_link_libraries(main_test_suite ${Boost_LIBRARIES} rascal)
   add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
+  configure_file("tests/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
+  configure_file("tests/simple_cubic_8.json" ${CMAKE_BINARY_DIR} COPYONLY)
 endif(${BUILD_TESTS})
 
 # compile the library
-add_compile_options( -Werror)
+add_compile_options(-Werror)
 add_subdirectory(
   ${CMAKE_SOURCE_DIR}/src/
   )
@@ -86,21 +116,20 @@ if (${ENABLE_DOC})
     )
 endif (${ENABLE_DOC})
 
-#compile executables
+# compile executables
 file( GLOB binaries "${CMAKE_SOURCE_DIR}/examples/*.cc")
 foreach(binaryfile ${binaries})
   get_filename_component(binaryname  ${binaryfile} NAME_WE)
   add_executable(${binaryname} ${binaryfile})
   target_link_libraries(${binaryname} ${Boost_LIBRARIES} rascal)
 endforeach(binaryfile ${binaries})
+
 #or copy them
 file (GLOB pybins "${CMAKE_SOURCE_DIR}/bin/*.py")
 foreach(pybin ${pybins})
-
   get_filename_component(binaryname  ${pybin} NAME_WE)
   configure_file(
     ${pybin}
     "${CMAKE_BINARY_DIR}/${binaryname}.py"
     COPYONLY)
 endforeach(pybin ${pybins})
-

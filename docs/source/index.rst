@@ -19,6 +19,7 @@ It comes with a GNU lesser general public license of version 3, which means that
    :caption: Contents:
 
    intro
+   whitepaper
    installation
    tutorials
    descriptors
