@@ -163,7 +163,7 @@ before_install:
             fi
     - |
             if [ "${TRAVIS_OS_NAME}" == "linux" ]; then 
-                sudo apt-get install cmake cmake-data doxygen doxygen-latex graphviz python3-sphinx
+                sudo apt-get install cmake cmake-data doxygen doxygen-latex graphviz sphinx
             fi
     - |
             if [ "${TRAVIS_OS_NAME}" == "linux" ]; then 
@@ -183,7 +183,7 @@ before_install:
             if [ ! -d "${DOWNLOAD_ROOT}" ]; then 
                 mkdir -p "${DOWNLOAD_ROOT}"
             fi
-    - export BOOST_DOWNLOAD_URL="http://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/boost_1_67_0.tar.bz2/download"
+    - export BOOST_DOWNLOAD_URL="http://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/*.tar.bz2/download"
     - export BOOST_ROOT="${TRAVIS_BUILD_DIR}/../boost"
     - export CMAKE_MODULE_PATH="${BOOST_ROOT}"
     - |
