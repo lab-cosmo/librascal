@@ -167,7 +167,7 @@ before_install:
             fi
     - |
             if [ "${TRAVIS_OS_NAME}" == "linux" ]; then 
-                sudo pip install sphinx
+                sudo pip${PYTHON_VERSION} install sphinx
             fi
 
     - |
