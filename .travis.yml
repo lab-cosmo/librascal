@@ -190,7 +190,7 @@ before_install:
             if [ ! -d "${DOWNLOAD_ROOT}" ]; then 
                 mkdir -p "${DOWNLOAD_ROOT}"
             fi
-    - export BOOST_DOWNLOAD_URL="http://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/boost_${BOOST_VERSION"}.tar.bz2/download"
+    - export BOOST_DOWNLOAD_URL="http://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/boost_${BOOST_VERSION2}.tar.bz2/download"
     - export BOOST_ROOT="${TRAVIS_BUILD_DIR}/../boost"
     - export CMAKE_MODULE_PATH="${BOOST_ROOT}"
     - |
