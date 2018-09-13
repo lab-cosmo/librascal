@@ -160,8 +160,12 @@ before_install:
     - |
             if [ "${TRAVIS_OS_NAME}" == "linux" ]; then 
                 sudo apt-get install cmake cmake-data doxygen doxygen-latex graphviz
-                sudo pip3.6 install sphinx
             fi
+    - |
+            if [ "${TRAVIS_OS_NAME}" == "linux" ]; then 
+                sudo pip install sphinx
+            fi
+
     - |
             if [ "${TRAVIS_OS_NAME}" == "osx" ]; then 
                 brew install doxygen graphviz
