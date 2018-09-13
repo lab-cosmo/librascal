@@ -158,6 +158,10 @@ matrix:
 # AT THE MOMENT LINUX AND OSX BUILD BREAK DOWN SO THERE IS NO COMPATIBILITY.
 before_install:
     - |
+            if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
+                pyenv global system ${PYTHON_VERSION}
+            fi
+    - |
             if [ "${TRAVIS_OS_NAME}" == "linux" ]; then 
                 sudo apt-get install cmake cmake-data doxygen doxygen-latex graphviz
             fi
@@ -198,10 +202,7 @@ before_install:
             fi
     - cd "${BOOST_ROOT}"; ./b2 --prefix="$BOOST_ROOT" -d0 install
     - eval ${CC_ENV}
-    - |
-            if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
-                pyenv global system ${PYTHON_VERSION}
-            fi
+
 install:
     - cd "${TRAVIS_BUILD_DIR}"
     - mkdir build
