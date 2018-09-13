@@ -11,8 +11,7 @@ How to edit the documentation
 
 The format is restructured text. Restructured text work a lot like markdown. However, the syntax is not the same. You can choose whatever editor you prefer to edit the .rst file. Once you edited them save them and remember to create a link to the file you want them to appear.
 
-For example, if you want to add a file describing how_to_do_something to the index, create the how_to_do_someth
-ing.rst file and then add 'how_to_do_something' to the index.rst file and it will appear in the HTML.
+For example, if you want to add a file describing how_to_do_something to the index, create the how_to_do_something.rst file and then add 'how_to_do_something' to the index.rst file and it will appear in the HTML.
 
 For a quick reference, here is a cheatsheet for .rst:
 https://github.com/ralsina/rst-cheatsheet/blob/master/rst-cheatsheet.rst
@@ -41,13 +40,13 @@ Bofore, jumping into the next paragraphs, please respect our :ref:`coding conven
 Write the C++ method
 ^^^^^^^^^^^^^^^^^^^^
 
-At this point, you can code the method in the way that you want, but we remind you that it should be included in the ``namespace Rascal {...}``. So for example, your file(s) ``mymethod.h`` will contain:
+At this point, you can code the method in the way that you want, but we remind you that it should be included in the ``namespace rascal {...}``. So for example, your file(s) ``mymethod.h`` will contain:
 
 .. code-block:: c++
 
     #include <wathever_is_needed>
 
-    namespace Rascal {
+    namespace rascal {
         /**
         * Remember to put comments in a form that Doxygen
         * so that is clear what they do
@@ -69,7 +68,7 @@ The second task that you need to accomplish is to create a python binding to the
     #include <pybind11/pybind11.h>
     #include "mymethod.h"
 
-    using namespace Rascal;
+    using namespace rascal;
     namespace py=pybind11;
     using namespace pybind11::literals;
 
@@ -95,7 +94,7 @@ Then, it will be necessary to modify the file ``bind_py_module.cc`` and add your
     #include <pybind11/pybind11.h>
     #include "mymethod.h"
 
-    using namespace Rascal;
+    using namespace rascal;
     namespace py=pybind11;
     using namespace pybind11::literals;
 
@@ -108,20 +107,20 @@ Then, it will be necessary to modify the file ``bind_py_module.cc`` and add your
     * This is declaring the function of your method.
     * This is the line you need to add.
     */
-    extern void my_method(py::module&);
+    extern void my_method_binding(py::module&);
 
 
     /**
     * This command will expose all the method declared to python,
-    * so that it will be possible to import Rascal and use
-    * Rascal.previous_method(args)
+    * so that it will be possible to import rascal and use
+    * rascal.previous_method(args)
     * or
-    * Rascal.my_method(args)
+    * rascal.my_method(args)
     */
     PYBIND11_MODULE(_rascal, mod) {
         mod.doc() = "Hello, World!"; //! This is printing the doc.
         previoud_method(mod);
-        my_method(mod); //! you also need to add this line
+        my_method_binding(mod); //! you also need to add this line
     }
 
 How to write a test
@@ -282,7 +281,7 @@ The basic unit test tool in Python's ``unittest`` module is the ``unittest.TestC
 
 
        def test_cdist(self):
-           """feeds the matrices A and B to Rascal' cdist function and compares
+           """feeds the matrices A and B to rascal' cdist function and compares
            the results to the local reference dist_ref
            """
            dists = pt.cdist(self.A, self.B)

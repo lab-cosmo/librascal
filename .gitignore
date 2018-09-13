@@ -1,12 +1,13 @@
 # trahs
 *.swp
 .vscode
-.idea 
+.idea
 *.ipynb_checkpoints
 build*/
 *.ipynb
 docs/_build
-__pycache__
+*__pycache__
+*_rascal.*
 
 # Prerequisites
 *.d
@@ -45,3 +46,4 @@ build*/
 *.app
 *~
 /build/
+/debug/

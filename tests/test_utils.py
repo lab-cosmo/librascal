@@ -2,12 +2,12 @@ import json
 import numpy as np
 
 def dump_json_frame(fn,frame):
-  
+
     with open(fn,'w') as f:
         json.dump(dict(positions = frame.get_positions().tolist(),
-                        cell = frame.get_cell().tolist(),
-                        numbers = frame.get_atomic_numbers().tolist(),
-                        pbc = frame.get_pbc().tolist()),
+                       cell = frame.get_cell().tolist(),
+                       numbers = frame.get_atomic_numbers().tolist(),
+                       pbc = frame.get_pbc().tolist()),
                   f,indent=2, separators=(',', ': '))
 def load_json_frame(fn):
     with open(fn,'r') as f:
@@ -18,15 +18,15 @@ class BoxList(object):
     def __init__(self,max_cutoff,cell,pbc,centers):
         # Compute reciprocal lattice vectors.
         b1_c, b2_c, b3_c = np.linalg.pinv(cell).T
-        
-        # Compute distances of cell faces (height between 2 consecutive faces [010] 
+
+        # Compute distances of cell faces (height between 2 consecutive faces [010]
         l1 = np.linalg.norm(b1_c)
         l2 = np.linalg.norm(b2_c)
         l3 = np.linalg.norm(b3_c)
         face_dist_c = np.array([1 / l1 if l1 > 0 else 1,
                                 1 / l2 if l2 > 0 else 1,
                                 1 / l3 if l3 > 0 else 1])
-        
+
         # We use a minimum bin size of 3 A
         self.bin_size = max_cutoff
         # Compute number of bins such that a sphere of radius cutoff fit into eight
@@ -44,19 +44,19 @@ class BoxList(object):
             bin_id = self.cell2lin(bin_index_ic)
             self.bin2icenters[bin_id].append(icenter)
             self.part2bin[icenter] = bin_id
-        self.list = []
+            self.list = []
         for bin_id in range(self.nbins):
             self.list.append(Box(bin_id,self.nbins_c,self.neigh_search,self.bin2icenters[bin_id],pbc,self))
-            
+
     def cell2lin(self,ids):
         return int(ids[0] + self.nbins_c[0] * (ids[1] + self.nbins_c[1] * ids[2]))
-    
+
     def iter_box(self):
         for bin_id in range(self.nbins):
             yield self.list[bin_id]
     def __getitem__(self, bin_id):
         return self.list[bin_id]
-    
+
 class Box(object):
     def __init__(self,lin_pos,nbins_c,neigh_search,icenters,pbc,boxlist):
         self.nbins_c = nbins_c
@@ -69,14 +69,14 @@ class Box(object):
         self.search_idx = []
         for ii in range(3):
             p = self.pbc[ii]
-            
+
             if 0 == self.mult_pos[ii] and p is False:
                 self.search_idx.append([self.mult_pos[ii]+jj for jj in range(self.neigh_search[ii]+1)])
             elif self.nbins_c[ii]-1 == self.mult_pos[ii] and p is False:
                 self.search_idx.append([self.mult_pos[ii]+jj for jj in range(-self.neigh_search[ii],0+1)])
             else:
                 self.search_idx.append([self.mult_pos[ii]+jj for jj in range(-self.neigh_search[ii], self.neigh_search[ii]+1)])
-        self.neighbour_bin_index,self.neighbour_bin_shift = [],[]
+                self.neighbour_bin_index,self.neighbour_bin_shift = [],[]
         for ii in self.search_idx[0]:
             for jj in self.search_idx[1]:
                 for kk in self.search_idx[2]:
@@ -84,8 +84,8 @@ class Box(object):
                     neigh_box_idx = self.cell2lin(box_pos)
                     self.neighbour_bin_index.append(neigh_box_idx)
                     self.neighbour_bin_shift.append(box_shift)
-        
-                    
+
+
     def cell2lin(self,ids):
         return int(ids[0] + self.nbins_c[0] * (ids[1] + self.nbins_c[1] * ids[2]))
     def lin2cell(self,lin_ids):
