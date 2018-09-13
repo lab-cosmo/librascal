@@ -203,6 +203,7 @@ before_install:
     - eval ${CC_ENV}
 
 install:
+    - python -V
     - cd "${TRAVIS_BUILD_DIR}"
     - mkdir build
     - cd build
