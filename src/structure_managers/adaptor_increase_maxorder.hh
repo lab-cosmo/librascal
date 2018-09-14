@@ -765,30 +765,90 @@ namespace rascal {
     Vector_t mesh_min(dim);
     Vector_t mesh_max(dim);
     Vector_t cell_max(dim);
+    Vector_t cell_max_min_image(dim);
+    //! max and min multipliers for number of cells in mesh per dimension
+    std::array<int, dim> m_min;
+    std::array<int, dim> m_max;
+    auto identity = Eigen::MatrixXd::Identity(dim, dim);
+
     mesh_min.setZero();
     mesh_max.setZero();
 
     //! maximum cell position
-    for (auto i{0}; i < dim; ++i) { cell_max[i] = cell.col(i)[i];}
-
-    //! calculate minimum mesh coordinates
     for (auto i{0}; i < dim; ++i) {
-      mesh_min[i] -= cutoff;
+        cell_max += cell.col(i);
     }
+    // //! calculate cell projection to mesh origin
+    // for (auto i{0}; i < dim; ++i) {
+    //   auto proj = cell.col(i).dot(identity.col(i));
+    //   int n(std::ceil(2.*cutoff/proj));
+    //   auto val(cutoff/proj);
+    //   std::cout << "proj i/val/n " << i << " " << proj
+    //             << " n " << n << " "
+    //             << val<< std::endl;
+    //   std::cout << cell.col(i) * n<< std::endl;
+    //   std::cout << "size " << cell.col(i).size() * n<< std::endl;
+    //   mesh_min -= n * cell.col(i);
+    // }
 
-    //! calculate maximum mesh coordinates
+    // //! calculate minimum mesh coordinates
+    // for (auto i{0}; i < dim; ++i) {
+    //   mesh_min[i] -= cutoff;
+    // }
+
+
+    /**
+     * calculate origin and maximum mesh coordinates. the number of images of
+     * the original cell depends on the cell size and cutoff. if the cell size
+     * is 2 times larger than the cutoff, nothing special has to be done. if it
+     * is not, the cell has to before so that no atom is its own neighbour. If
+     * the projected side length of the cell is smaller than 2 rcut, it is
+     * repeated 'mrep' times. 'mrep_min' refers to the number of repetitions of
+     * the cell to ensure at least rcut distance at the mesh origin. the mesh is
+     * independent of the ghost atoms. first, the mesh is build, then ghost
+     * atoms are added according to position.
+     */
     for (auto i{0}; i < dim; ++i) {
-      auto dx =  cell.col(i)[i] + 2. * cutoff;
-      std::cout << "dx " << dx << std::endl;
+      //! mesh origin is always at negative cutoff
+      mesh_min[i] -= cutoff;
+      auto proj = cell.col(i).dot(identity.col(i));
+      int mrep_min = std::floor(2*cutoff / proj);
+      mrep_min = std::max(1, mrep_min);
+      auto mrep_cell = std::ceil(2. * cutoff / proj);
+      auto dx = -mesh_min[i] + cell_max[i]*mrep_cell + cutoff;
       int n(std::ceil(dx / cutoff));
+
       //! max is mesh origin + dx
       mesh_max[i] = mesh_min[i] + n * cutoff;
+      int mrep_max = std::ceil(mesh_max[i] / proj);
+      mrep_max = std::max(2, mrep_max);
       nboxes_per_dim[i] = n;
+      m_min[i] = -mrep_min;
+      m_max[i] = mrep_max;
     }
+    std::cout << "mesh_origin "
+              << mesh_min[0] << " "
+              << mesh_min[1] << " "
+              << mesh_min[2] << " " << std::endl;
+
+    std::cout << "mesh_max "
+              << mesh_max[0] << " "
+              << mesh_max[1] << " "
+              << mesh_max[2] << " " << std::endl;
+
+    std::cout << "m_min "
+              << m_min[0] << " "
+              << m_min[1] << " "
+              << m_min[2] << " " << std::endl;
+    std::cout << "m_max "
+              << m_max[0] << " "
+              << m_max[1] << " "
+              << m_max[2] << " " << std::endl;
 
     /**
      * TODO possible future optimization for cells large triclinicity: use
      * triclinic coordinates and explicitly check for the 'skin' around the cell
+     * and rotate the cell to have the lower triangular form
      */
     //! generate ghost atom indices and position
     for (auto atom : this->get_manager()) {
@@ -796,21 +856,23 @@ namespace rascal {
       for (auto i{0}; i < dim; ++i) {
         if(periodicity[i]) {
           //! exclude m=0, because it is the i atom itself
-          for(auto m{-1}; m < 2; m+=2) {
-            //! shift i atom along cell vector i
-            auto pos_ghost = pos + cell.col(i)*m;
+          for(auto m{m_min[i]}; m < m_max[i]; ++m) {
+            if (m != 0) {
+              //! shift i atom along cell vector i
+              auto pos_ghost = pos + cell.col(i)*m;
 
-            //! shift position to mesh origin
-            auto pos_lower  = pos_ghost.array() - mesh_min.array();
-            auto pos_greater  = pos_ghost.array() - mesh_max.array();
-            //! shifted position inside mesh?
-            auto f_lt = (pos_lower.array() > 0.).all();
-            auto f_gt = (pos_greater.array() < 0.).all();
-            if (f_lt and f_gt) {
-              //! nex atom index is size, since start is at index = 0
-              auto new_atom_index = this->get_size_with_ghosts();
-              // new_atom_index++;
-              this->add_ghost_atom(new_atom_index, pos_ghost);
+              //! shift position to mesh origin
+              auto pos_lower  = pos_ghost.array() - mesh_min.array();
+              auto pos_greater  = pos_ghost.array() - mesh_max.array();
+              //! check if shifted position inside mesh
+              auto f_lt = (pos_lower.array() > 0.).all();
+              auto f_gt = (pos_greater.array() < 0.).all();
+              if (f_lt and f_gt) {
+                //! nex atom index is size, since start is at index = 0
+                auto new_atom_index = this->get_size_with_ghosts();
+                // new_atom_index++;
+                this->add_ghost_atom(new_atom_index, pos_ghost);
+              }
             }
           }
         }

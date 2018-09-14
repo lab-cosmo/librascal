@@ -302,7 +302,7 @@ namespace rascal {
 
     ManagerFixtureSimple():
       pbc{{true,false,false}}, cell(3, 3), positions(3, 8), numbers(8),
-      cutoff{1}
+      cutoff{0.99}
     {
       cell <<
         2., 0., 0.,
