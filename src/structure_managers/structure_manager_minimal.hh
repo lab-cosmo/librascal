@@ -56,6 +56,7 @@ namespace rascal {
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     using LayerByDimension = std::integer_sequence<size_t, 0, 0>;
   };
+  
   class StructureManagerMinimal: public StructureManager<StructureManagerMinimal>
   {
   public:

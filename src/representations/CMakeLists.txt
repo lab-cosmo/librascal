@@ -29,6 +29,7 @@
 
 
 set(representation_SRC
+  representations/representation_manager_base.cc
   )
 
 target_sources(rascal PRIVATE ${representation_SRC})

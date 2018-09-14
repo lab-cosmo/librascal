@@ -28,24 +28,33 @@
 #ifndef BASIS_REPRESENTATION_MANAGER_BASE_H
 #define BASIS_REPRESENTATION_MANAGER_BASE_H
 
+#include "structure_managers/structure_manager_base.hh"
+#include <map>
+#include <string>
+#include <vector>
 
 
 namespace rascal {
 
-template <class ManagerImplementation>
+  template <class RepresentationImplementation>
   struct RepresentationManager_traits
   {};
 
+  template <class RepresentationImplementation>
   class RepresentationManagerBase
   {
   public:
-    
 
-    //! Default constructor
+    using traits = RepresentationManager_traits<RepresentationImplementation>;
+    using hypers_t = std::map<std::string,std::vector<double>>;
+    //! Default constructor 
+    // RepresentationManagerBase(StructureManagerBase &sm, hypers_t hypers)
+    //   :structure_manager{sm},hyperparmeters{}
+    //   {
+    //     this->check_traits_compatibility(structure_manager);
+    //     this->set_hyperparameters(hypers);
+    //   };
     RepresentationManagerBase() = delete;
-
-    //! Construct from file
-    RepresentationManagerBase(FILE *);
 
     //! Copy constructor
     RepresentationManagerBase(const RepresentationManagerBase &other) = delete;
@@ -62,15 +71,20 @@ template <class ManagerImplementation>
     //! Move assignment operator
     RepresentationManagerBase& operator=(RepresentationManagerBase && other) = default;
 
-    // Initialize hyperparameters
-    void read_hyperparameters(const FILE *);
-    void set_random_hyperparameters(const int);
+    // Resolves the mismatch between the expected traits 
+    // and the effective traits of the Structure Manager
+    void check_traits_compatibility(StructureManagerBase &structure_manager);
 
-    
+    // Pure Virtual Function to set hyperparameters of the representation
+    // TODO think of a generic input type for the hypers
+    virtual void set_hyperparameters(const hypers_t & ) = 0;
+
+    StructureManagerBase& structure_manager;
+    //hypers_t hyperparmeters;
 
   protected:
   private:
-  }
+  };
 
 }
 

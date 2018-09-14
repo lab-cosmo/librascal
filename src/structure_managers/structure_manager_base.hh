@@ -34,6 +34,7 @@ namespace rascal{
 
   /**
    * polymorphic base type for StructureManagers
+   * so that all the structureManagers share this type
    */
 
   class StructureManagerBase {

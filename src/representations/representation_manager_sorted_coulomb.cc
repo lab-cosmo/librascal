@@ -1,5 +1,5 @@
 /**
- * file   representation_manager_base.cc
+ * file   representation_manager_sorted_coulomb.cc
  *
  * @author Musil Felix <musil.felix@epfl.ch>
  *
@@ -26,12 +26,9 @@
  */
 
 
-#include "representations/representation_manager_base.hh"
+#include "representations/representation_manager_sorted_coulomb.hh"
 
 namespace rascal {
-  void RepresentationManagerBase::check_traits_compatibility(StructureManagerBase &){
-    // Hello !
-
-  };
+  
 
 }
