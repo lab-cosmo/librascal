@@ -32,14 +32,14 @@
 
 namespace rascal {
 
+template <class ManagerImplementation>
+  struct RepresentationManager_traits
+  {};
 
-    
   class RepresentationManagerBase
   {
   public:
-    enum class BasisFunType: int;
-    enum class CutoffFunType: int;
-    using uint = insigned int;
+    
 
     //! Default constructor
     RepresentationManagerBase() = delete;
