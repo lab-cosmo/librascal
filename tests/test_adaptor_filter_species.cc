@@ -37,10 +37,23 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(constructor_test_order_zero,
                           ManagerFixtureSimple<StructureManagerCenters>){
 
+    constexpr bool verbose{true};
+
     /* skeleton test */
     std::cout << "Skeleton test" << std::endl;
+
+    for (auto atom : manager) {
+      if (verbose) {
+        std::cout << "Atom "
+                  << atom.back() << " type "
+                  << atom.get_atom_type()
+        	  << std::endl;
+      }
+    }
   }
 
   BOOST_AUTO_TEST_SUITE_END();
+
+
 
 }  // rascal
