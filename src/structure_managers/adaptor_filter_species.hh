@@ -320,3 +320,11 @@ namespace rascal {
 }  // rascal
 
 #endif /* ADAPTOR_SPECIES_H */
+
+/**
+ * Questions
+ * - How to ensure to know the depth of 'explosion' is known?
+ * - How to formulate the existing depth?
+ * - Combinatorics: sorting before or after pairs/triplets?
+ * - method .get_elements (), returns a tuple of the current elements in the cluster
+ */

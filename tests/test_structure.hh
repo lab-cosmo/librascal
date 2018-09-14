@@ -315,7 +315,7 @@ namespace rascal {
         0.4, 0.4, 1.4, 1.4, 0.4, 0.4, 1.4, 1.4,
         0.4, 0.4, 0.4, 0.4, 1.4, 1.4, 1.4, 1.4;
 
-      numbers << 1, 1, 1, 1, 2, 2, 2, 2;
+      numbers << 1, 3, 2, 1, 1, 2, 2, 3;
 
       manager.update(positions, numbers, cell,
                      Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
