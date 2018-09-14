@@ -55,13 +55,12 @@ namespace rascal {
       ManagerImplementation::traits::HasDirectionVectors};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
     //! New MaxOrder upon construction!
-    constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder+1};
+    constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
     //! New Layer
-    //! TODO: Is this the correct way to initialize the increased order?
-    using LayerByOrder =
-      typename LayerExtender<MaxOrder,
-                             typename
-                             ManagerImplementation::traits::LayerByOrder>::type;
+    using LayerByOrder = typename
+      LayerIncreaser<MaxOrder,
+                     typename
+                     ManagerImplementation::traits::LayerByOrder>::type;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -271,9 +270,8 @@ namespace rascal {
      * Standard case, increase an existing neighbour list or triplet list to a
      * higher Order
      */
-    using IncreaseMaxOrder = IncreaseMaxOrder<traits::MaxOrder,
-                                              (traits::MaxOrder==2)>;
-    IncreaseMaxOrder::increase_maxorder(this);
+
+    //TODO
   }
 
   /* ---------------------------------------------------------------------- */

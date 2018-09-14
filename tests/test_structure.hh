@@ -291,7 +291,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   /**
    * A simple manager using ManagerCenters to check the neighbourlist algorithm
-   * with simple positions and a periodicity only in x-direction.
+   * with simple positions and a periodicity only in x-direction. This manager
+   * is also used to check the species filter.
    *
    */
   template<>
@@ -314,7 +315,7 @@ namespace rascal {
         0.4, 0.4, 1.4, 1.4, 0.4, 0.4, 1.4, 1.4,
         0.4, 0.4, 0.4, 0.4, 1.4, 1.4, 1.4, 1.4;
 
-      numbers << 1, 1, 1, 1, 1, 1, 1, 1;
+      numbers << 1, 1, 1, 1, 2, 2, 2, 2;
 
       manager.update(positions, numbers, cell,
                      Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
@@ -332,7 +333,6 @@ namespace rascal {
 
     const int natoms{8};
   };
-
 }  // rascal
 
 #endif /* TEST_NEIGHBOURHOOD_H */

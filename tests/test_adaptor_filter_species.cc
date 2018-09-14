@@ -38,6 +38,7 @@ namespace rascal {
                           ManagerFixtureSimple<StructureManagerCenters>){
 
     /* skeleton test */
+    std::cout << "Skeleton test" << std::endl;
   }
 
   BOOST_AUTO_TEST_SUITE_END();
