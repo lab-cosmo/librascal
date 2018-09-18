@@ -170,7 +170,7 @@ before_install:
             fi
     - |
             if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
-                sudo pip install sphinx
+                sudo pip install sphinx numpy 
             fi
     - |
             if [ "${TRAVIS_OS_NAME}" == "linux" ]; then 
