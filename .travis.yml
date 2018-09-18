@@ -161,8 +161,8 @@ matrix:
 # AT THE MOMENT LINUX AND OSX BUILD BREAK DOWN SO THERE IS NO COMPATIBILITY.
 before_install:
     - |
-            if [ "${TRAVIS_OS_NAME}" == "linux" ]; then 
-                sudo apt-get install cmake cmake-data doxygen doxygen-latex graphviz python3-sphinx
+            if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
+                sudo pip install -U pip
             fi
     - |
             if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
@@ -170,11 +170,23 @@ before_install:
             fi
     - |
             if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
-                sudo pip install sphinx numpy 
+                pyenv global system ${PYTHON_VERSION}
+            fi
+    - |
+            if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
+                python -V
+            fi
+    - |
+            if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
+                sudo pip install sphinx sphinx_rtd_theme numpy breathe
             fi
     - |
             if [ "${TRAVIS_OS_NAME}" == "linux" ]; then 
-                sudo pip install breathe
+                sudo apt-get install cmake cmake-data doxygen doxygen-latex graphviz python3-sphinx
+            fi
+    - |
+            if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
+                python -V
             fi
     - |
             if [ "${TRAVIS_OS_NAME}" == "osx" ]; then 
@@ -208,10 +220,6 @@ before_install:
             fi
     - cd "${BOOST_ROOT}"; ./b2 --prefix="$BOOST_ROOT" -d0 install
     - eval ${CC_ENV}
-    - |
-            if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
-                pyenv global system ${PYTHON_VERSION}
-            fi
 
 
 install:
