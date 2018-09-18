@@ -826,6 +826,7 @@ namespace rascal {
       m_min[i] = -mrep_min;
       m_max[i] = mrep_max;
     }
+    std::cout << "cutoff " << cutoff << std::endl;
     std::cout << "mesh_origin "
               << mesh_min[0] << " "
               << mesh_min[1] << " "
