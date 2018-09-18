@@ -9,7 +9,7 @@ branches:
        - feat/test_CI
 
 # We suppose that it is possible to install the whole code and test it WITHOUT sudo
-sudo: false
+sudo: true
 
 language: cpp
 
@@ -162,11 +162,11 @@ matrix:
 before_install:
     - |
             if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
-                pyenv global system ${PYTHON_VERSION}
+                sudo pyenv global system ${PYTHON_VERSION}
             fi
     - |
             if [ "${TRAVIS_OS_NAME}" == "linux" ]; then 
-                apt-get install cmake cmake-data doxygen doxygen-latex graphviz python3-sphinx
+                sudo apt-get install cmake cmake-data doxygen doxygen-latex graphviz python3-sphinx
             fi
     - |
             if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
@@ -174,11 +174,11 @@ before_install:
             fi
     - |
             if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
-                pip install sphinx
+                sudo pip install sphinx
             fi
     - |
             if [ "${TRAVIS_OS_NAME}" == "linux" ]; then 
-                pip install breathe
+                sudo pip install breathe
             fi
     - |
             if [ "${TRAVIS_OS_NAME}" == "osx" ]; then 
