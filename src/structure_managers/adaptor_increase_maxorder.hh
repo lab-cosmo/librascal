@@ -759,43 +759,21 @@ namespace rascal {
     std::vector<std::vector<int>> atoms_in_box{};
 
     /**
-     * minimum/maximum coordinate of mesh for neighbour list; depends on
-     * cell triclinicity and cutoff
+     * minimum/maximum coordinate of mesh for neighbour list; depends on cell
+     * triclinicity and cutoff, coordinates of the mesh are relative to the
+     * origin of the given cell.
      */
     Vector_t mesh_min(dim);
     Vector_t mesh_max(dim);
-    Vector_t cell_max(dim);
-    Vector_t cell_max_min_image(dim);
-    //! max and min multipliers for number of cells in mesh per dimension
-    std::array<int, dim> m_min;
-    std::array<int, dim> m_max;
-    auto identity = Eigen::MatrixXd::Identity(dim, dim);
 
     mesh_min.setZero();
     mesh_max.setZero();
 
-    //! maximum cell position
-    for (auto i{0}; i < dim; ++i) {
-        cell_max += cell.col(i);
-    }
-    // //! calculate cell projection to mesh origin
-    // for (auto i{0}; i < dim; ++i) {
-    //   auto proj = cell.col(i).dot(identity.col(i));
-    //   int n(std::ceil(2.*cutoff/proj));
-    //   auto val(cutoff/proj);
-    //   std::cout << "proj i/val/n " << i << " " << proj
-    //             << " n " << n << " "
-    //             << val<< std::endl;
-    //   std::cout << cell.col(i) * n<< std::endl;
-    //   std::cout << "size " << cell.col(i).size() * n<< std::endl;
-    //   mesh_min -= n * cell.col(i);
-    // }
-
-    // //! calculate minimum mesh coordinates
-    // for (auto i{0}; i < dim; ++i) {
-    //   mesh_min[i] -= cutoff;
-    // }
-
+    //! max and min multipliers for number of cells in mesh per dimension
+    std::array<int, dim> m_min;
+    std::array<int, dim> m_max;
+    //! used for projecting the cell vectors onto a cartesian grid
+    auto identity = Eigen::MatrixXd::Identity(dim, dim);
 
     /**
      * calculate origin and maximum mesh coordinates. the number of images of
@@ -808,25 +786,58 @@ namespace rascal {
      * independent of the ghost atoms. first, the mesh is build, then ghost
      * atoms are added according to position.
      */
+
+    //! get mesh origin and maximum coordinates
+    for (auto i{0}; i < dim; ++i) {
+      auto mesh_origin = - cutoff;
+      auto projection = cell.col(i).dot(identity.col(i));
+      std::cout << "cell col dim: " << i << " : "
+                << cell.col(i)[0] << " "
+                << cell.col(i)[1] << " "
+                << cell.col(i)[2] << " " << std::endl;
+      std::cout << "identity "
+                << identity.col(i)[0] << " "
+                << identity.col(i)[1] << " "
+                << identity.col(i)[2] << " " << std::endl;
+      std::cout << "projection " << projection << std::endl;
+      int nrep = std::ceil(std::fabs(mesh_origin) / projection);
+      std::cout << "nrep " << nrep << std::endl;
+    }
+
     for (auto i{0}; i < dim; ++i) {
       //! mesh origin is always at negative cutoff
       mesh_min[i] -= cutoff;
-      auto proj = cell.col(i).dot(identity.col(i));
-      int mrep_min = std::floor(2*cutoff / proj);
+      auto projection = cell.col(i).dot(identity.col(i));
+      int mrep_min = std::ceil(std::fabs(mesh_min[i]) / projection);
       mrep_min = std::max(1, mrep_min);
-      auto mrep_cell = std::ceil(2. * cutoff / proj);
-      auto dx = -mesh_min[i] + cell_max[i]*mrep_cell + cutoff;
-      int n(std::ceil(dx / cutoff));
 
-      //! max is mesh origin + dx
-      mesh_max[i] = mesh_min[i] + n * cutoff;
-      int mrep_max = std::ceil(mesh_max[i] / proj);
-      mrep_max = std::max(2, mrep_max);
-      nboxes_per_dim[i] = n;
+      /**
+       * find number of repetitions of the cell to fit in a cell which has a
+       * length of at least 2*cutoff in each dimension (mesh vectors). and since
+       * it starts at 0 with the given cell itsel, the ceiling is taken.
+       */
+      auto mrep_cell = std::ceil(2. * cutoff / projection);
+
+      /**
+       * calculate mesh maximum coordinate by (possibly) repeating the given
+       * unit cell by 'mrep_cell' and adding ad padding of length 'cutoff'.
+       */
+      auto dx = projection * mrep_cell + cutoff;
+      std::cout << "=== dx + cutoff " << dx << std::endl;
+      int n(std::ceil(dx / projection));
+      std::cout << "=== n " << n << std::endl;
+      //! max is cell origin + dx
+      mesh_max[i] = n * projection;
+      // int mrep_max = std::ceil(mesh_max[i] / projection);
+      int mrep_max = std::max(2, n);
+      //! +1 is accounting for box 0
+      nboxes_per_dim[i] = mrep_min + mrep_max + 1;
       m_min[i] = -mrep_min;
       m_max[i] = mrep_max;
     }
-    std::cout << "cutoff " << cutoff << std::endl;
+
+
+    std::cout << ">>>>>cutoff " << cutoff << std::endl;
     std::cout << "mesh_origin "
               << mesh_min[0] << " "
               << mesh_min[1] << " "
