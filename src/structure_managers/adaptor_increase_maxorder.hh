@@ -405,7 +405,10 @@ namespace rascal {
     }
 
     /* ---------------------------------------------------------------------- */
-    //! stencil iterator for simple, dimension dependent stencils
+    /**
+     * stencil iterator for simple, dimension dependent stencils to access the
+     * neighbouring boxes of the cell algorithm
+     */
     template <size_t Dim>
     class Stencil {
     public:
@@ -653,9 +656,11 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
-  //! At desired MaxOrder (plus one), here is where the magic happens and the
-  //! neighbours of the same order are added as the Order+1.  add check for non
-  //! half neighbour list
+  /**
+   * At desired MaxOrder (plus one), here is where the magic happens and the
+   * neighbours of the same order are added as the Order+1.  add check for non
+   * half neighbour list
+   */
   template <class ManagerImplementation>
   template <size_t Order>
   struct AdaptorMaxOrder<ManagerImplementation>::AddOrderLoop<Order, true> {
@@ -664,23 +669,27 @@ namespace rascal {
     using ClusterRef_t =
       typename ManagerImplementation::template ClusterRef<Order>;
 
-    // using Manager_t = StructureManager<ManagerImplementation>;
-    // using IteratorOne_t = typename Manager_t::template iterator<1>;
-
     using traits = typename AdaptorMaxOrder<ManagerImplementation>::traits;
 
     static void loop(ClusterRef_t & cluster,
                      AdaptorMaxOrder<ManagerImplementation> & manager) {
 
-      //! get all i_atoms to find neighbours to extend the cluster to the next
-      //! order
+      /**
+       * get all i_atoms to find neighbours to extend the cluster to the next
+       * order
+       */
       auto i_atoms = cluster.get_atom_indices();
 
-      //! vector of existing i_atoms in `cluster` to avoid doubling of atoms in
-      //! final list
+      /**
+       * vector of existing i_atoms in `cluster` to avoid doubling of atoms in
+       * final list
+       */
       std::vector<size_t> current_i_atoms;
-      //! a set of new neighbours for the cluster, which will be added to extend
-      //! the cluster
+
+      /**
+       * a set of new neighbours for the cluster, which will be added to extend
+       * the cluster
+       */
       std::set<size_t> current_j_atoms;
 
       //! access to underlying manager for access to atom pairs
@@ -695,12 +704,16 @@ namespace rascal {
         //! build a shifted iterator to constuct a ClusterRef<1>
         auto iterator_at_position{manager_tmp.get_iterator_at(access_index)};
 
-        //! ClusterRef<1> as dereference from iterator to get pairs of the
-        //! i_atoms
+        /**
+         * ClusterRef<1> as dereference from iterator to get pairs of the
+         * i_atoms
+         */
         auto && j_cluster{*iterator_at_position};
 
-        //! collect all possible neighbours of the cluster: collection of all
-        //! neighbours of current_i_atoms
+        /**
+         * collect all possible neighbours of the cluster: collection of all
+         * neighbours of current_i_atoms
+         */
         for (auto pair : j_cluster) {
           auto j_add = pair.back();
           if (j_add > i_atoms.back()) {
@@ -743,13 +756,8 @@ namespace rascal {
     using Vector_t = Eigen::Matrix<double, traits::Dim, 1>;
 
     //! short hands for variable
-    size_t natoms{this->manager.size()};
     const auto dim{traits::Dim};
     auto periodicity = this->manager.get_periodic_boundary_conditions();
-
-    std::cout << periodicity[0] << " "
-              << periodicity[1] << " "
-              << periodicity[2] << " " << std::endl;
 
     auto cell{manager.get_cell()};
     double cutoff{this->cutoff};
@@ -787,23 +795,6 @@ namespace rascal {
      * atoms are added according to position.
      */
 
-    //! get mesh origin and maximum coordinates
-    for (auto i{0}; i < dim; ++i) {
-      auto mesh_origin = - cutoff;
-      auto projection = cell.col(i).dot(identity.col(i));
-      std::cout << "cell col dim: " << i << " : "
-                << cell.col(i)[0] << " "
-                << cell.col(i)[1] << " "
-                << cell.col(i)[2] << " " << std::endl;
-      std::cout << "identity "
-                << identity.col(i)[0] << " "
-                << identity.col(i)[1] << " "
-                << identity.col(i)[2] << " " << std::endl;
-      std::cout << "projection " << projection << std::endl;
-      int nrep = std::ceil(std::fabs(mesh_origin) / projection);
-      std::cout << "nrep " << nrep << std::endl;
-    }
-
     for (auto i{0}; i < dim; ++i) {
       //! mesh origin is always at negative cutoff
       mesh_min[i] -= cutoff;
@@ -823,39 +814,17 @@ namespace rascal {
        * unit cell by 'mrep_cell' and adding ad padding of length 'cutoff'.
        */
       auto dx = projection * mrep_cell + cutoff;
-      std::cout << "=== dx + cutoff " << dx << std::endl;
       int n(std::ceil(dx / projection));
-      std::cout << "=== n " << n << std::endl;
+
       //! max is cell origin + dx
       mesh_max[i] = n * projection;
-      // int mrep_max = std::ceil(mesh_max[i] / projection);
       int mrep_max = std::max(2, n);
+
       //! +1 is accounting for box 0
       nboxes_per_dim[i] = mrep_min + mrep_max + 1;
       m_min[i] = -mrep_min;
       m_max[i] = mrep_max;
     }
-
-
-    std::cout << ">>>>>cutoff " << cutoff << std::endl;
-    std::cout << "mesh_origin "
-              << mesh_min[0] << " "
-              << mesh_min[1] << " "
-              << mesh_min[2] << " " << std::endl;
-
-    std::cout << "mesh_max "
-              << mesh_max[0] << " "
-              << mesh_max[1] << " "
-              << mesh_max[2] << " " << std::endl;
-
-    std::cout << "m_min "
-              << m_min[0] << " "
-              << m_min[1] << " "
-              << m_min[2] << " " << std::endl;
-    std::cout << "m_max "
-              << m_max[0] << " "
-              << m_max[1] << " "
-              << m_max[2] << " " << std::endl;
 
     /**
      * TODO possible future optimization for cells large triclinicity: use
@@ -876,13 +845,14 @@ namespace rascal {
               //! shift position to mesh origin
               auto pos_lower  = pos_ghost.array() - mesh_min.array();
               auto pos_greater  = pos_ghost.array() - mesh_max.array();
+
               //! check if shifted position inside mesh
               auto f_lt = (pos_lower.array() > 0.).all();
               auto f_gt = (pos_greater.array() < 0.).all();
+
               if (f_lt and f_gt) {
-                //! nex atom index is size, since start is at index = 0
+                //! next atom index is size, since start is at index = 0
                 auto new_atom_index = this->get_size_with_ghosts();
-                // new_atom_index++;
                 this->add_ghost_atom(new_atom_index, pos_ghost);
               }
             }
@@ -890,8 +860,6 @@ namespace rascal {
         }
       }
     }
-    std::cout << "natoms " << natoms
-              << " nghosts " << n_j_atoms << std::endl;
 
     //! neighbour boxes
     internal::IndexContainer<dim> atom_id_cell{nboxes_per_dim};
@@ -937,8 +905,6 @@ namespace rascal {
     atom_cluster_indices.fill_sequence();
     pair_cluster_indices.fill_sequence();
   }
-
-
 
   /* ---------------------------------------------------------------------- */
   //! Extend an existing neighbour list to the next order

@@ -124,20 +124,21 @@ namespace rascal {
   {
     ManagerFixtureNeighbourComparison():
       pbc{{true,true,true}}, cutoff{1.}, center_ids(natoms),
-      cell_orthogonal(dim, dim), cell_triclinic(dim, dim),
-      positions(dim, natoms), atom_types(natoms)
+      cell_1(dim, dim), cell_2(dim, dim),
+      positions_1(dim, natoms), positions_2(dim, natoms), atom_types(natoms)
     {}
 
     ~ManagerFixtureNeighbourComparison() {}
 
-    ManagerImplementation manager_orthogonal{};
-    ManagerImplementation manager_triclinic{};
+    ManagerImplementation manager_1{};
+    ManagerImplementation manager_2{};
     std::array<bool, 3> pbc;
     double cutoff;
     VecXi center_ids;
-    Eigen::MatrixXd cell_orthogonal;
-    Eigen::MatrixXd cell_triclinic;
-    Eigen::MatrixXd positions;
+    Eigen::MatrixXd cell_1;
+    Eigen::MatrixXd cell_2;
+    Eigen::MatrixXd positions_1;
+    Eigen::MatrixXd positions_2;
     VecXi atom_types;
     int natoms;
     int dim;
@@ -324,46 +325,58 @@ namespace rascal {
     using Manager_t = StructureManagerCenters;
 
     ManagerFixtureNeighbourComparison():
-      pbc{{true, false, false}}, cell_orthogonal(3, 3), cell_triclinic(3, 3),
-      positions(3, 8), numbers(8), cutoff(0.99)
+      pbc{{true, false, false}}, cell_1(3, 3), cell_2(3, 3),
+      positions_1(3, 2), positions_2(3, 2), numbers(2), cutoff(1.7)
     {
-      cell_orthogonal <<
-        2., 0., 0.,
-        0., 2., 0.,
-        0., 0., 2.;
+      /**
+       * hcp crystal with lattice parameter a = 1, c = 1.633, defined in two
+       * unit cells: basal and prismatic 1. The neighbourlist is built with the
+       * same cutoff. The test checks, if all atoms have the same number of
+       * neighbours.
+       */
+      cell_1 <<
+        1., -0.5 , 0.,
+        0.,  0.86, 0.,
+        0.,  0.  , 1.633;
 
-      cell_triclinic <<
-        1., 1., 0.,
-        0., 2., 0.,
-        0., 0., 2.;
+      cell_2 <<
+        1.,  0.   , 0.5,
+        0.,  1.633,  0.,
+        0.,  0.   ,  0.86;
 
-      positions <<
-        0.4, 1.4, 0.4, 1.4, 0.4, 1.4, 0.4, 1.4,
-        0.4, 0.4, 1.4, 1.4, 0.4, 0.4, 1.4, 1.4,
-        0.4, 0.4, 0.4, 0.4, 1.4, 1.4, 1.4, 1.4;
+      positions_1 <<
+        0., 0.5,
+        0., 0.2887,
+        0., 0.8165;
 
-      numbers << 1, 1, 1, 1, 1, 1, 1, 1;
+      positions_2 <<
+        0.0, 0.0,
+        0.0, 0.5443,
+        0.0, 0.5774;
 
-      manager_orthogonal.update(positions, numbers, cell_orthogonal,
+      numbers << 1, 1;
+
+      manager_1.update(positions_1, numbers, cell_1,
                                 Eigen::Map<Eigen::Matrix<int, 3, 1>>
                                 {pbc.data()});
 
-      manager_triclinic.update(positions, numbers, cell_triclinic,
+      manager_2.update(positions_2, numbers, cell_2,
                                Eigen::Map<Eigen::Matrix<int, 3, 1>>
                                {pbc.data()});
-
-      Manager_t manager_orthogonal{};
-      Manager_t manager_triclinic{};
-      std::array<int, 3> pbc;
-      Eigen::MatrixXd cell;
-      Eigen::MatrixXd positions;
-      VecXi numbers;
-
-      double cutoff;
-
-      const int natoms{8};
-
     }
+    Manager_t manager_1{};
+    Manager_t manager_2{};
+    std::array<int, 3> pbc;
+    Eigen::MatrixXd cell_1;
+    Eigen::MatrixXd cell_2;
+    Eigen::MatrixXd positions_1;
+    Eigen::MatrixXd positions_2;
+    VecXi numbers;
+
+    double cutoff;
+
+    const int natoms{2};
+
   };
 
   /* ---------------------------------------------------------------------- */
@@ -379,7 +392,7 @@ namespace rascal {
     using Manager_t = StructureManagerCenters;
 
     ManagerFixtureSimple():
-      pbc{{true,false,false}}, cell(3, 3), positions(3, 8), numbers(8),
+      pbc{{true, false, false}}, cell(3, 3), positions(3, 8), numbers(8),
       cutoff{0.99}
     {
       cell <<

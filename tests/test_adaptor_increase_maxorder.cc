@@ -38,7 +38,7 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(constructor_test_order_zero,
                           ManagerFixtureSimple<StructureManagerCenters>){
 
-    constexpr bool verbose{true};
+    constexpr bool verbose{false};
 
     if (verbose) std::cout << "===> zeroth order manager " << std::endl;
     //! testing iteration of zerot-th order manager
@@ -123,8 +123,6 @@ namespace rascal {
       for (auto pair : atom) {
         npairs++;
         if (verbose) {
-          // std::cout << pair.back() << " glob " << pair.get_global_index()
-          //           << std::endl;
           std::cout << "   complete pair "
                     << atom.back() << " " << pair.back()
                     << " glob " << pair.get_global_index() << std::endl;
@@ -145,6 +143,61 @@ namespace rascal {
       }
     }
     if(verbose) std::cout << "Number of triplets: " << n_triplets << std::endl;
+  }
+
+  /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE(neighbourlist_test,
+                          ManagerFixtureNeighbourComparison
+                          <StructureManagerCenters>) {
+
+    constexpr bool verbose{false};
+
+    std::vector<int> neighbours_per_atom1{};
+    std::vector<int> neighbours_per_atom2{};
+
+    neighbours_per_atom1.resize(0);
+    neighbours_per_atom1.resize(0);
+
+    AdaptorMaxOrder<StructureManagerCenters> pair_manager1{manager_1,
+        cutoff};
+    pair_manager1.update();
+
+    AdaptorMaxOrder<StructureManagerCenters> pair_manager2{manager_2,
+        cutoff};
+    pair_manager2.update();
+
+    for (auto atom : pair_manager1) {
+      neighbours_per_atom1.push_back(0);
+      for (auto pair : atom) {
+        if (verbose) {
+          std::cout << "1 pair "
+                    << atom.back() << " "
+                    << pair.back() << std::endl;
+        }
+        neighbours_per_atom1.back()++;
+      }
+    }
+
+    for (auto atom : pair_manager2) {
+      neighbours_per_atom2.push_back(0);
+      for (auto pair : atom) {
+        if (verbose) {
+          std::cout << "2 pair "
+                    << atom.back() << " "
+                    << pair.back() << std::endl;
+        }
+        neighbours_per_atom2.back()++;
+      }
+    }
+    for (auto i{0}; i < natoms; ++i) {
+      if (verbose) {
+      std::cout << "neigh1/neigh2: "
+                << neighbours_per_atom1[i] << "/"
+                << neighbours_per_atom2[i] << std::endl;
+      }
+      BOOST_CHECK_EQUAL(neighbours_per_atom1[i],
+                        neighbours_per_atom2[i]);
+    }
   }
 
   BOOST_AUTO_TEST_SUITE_END();
