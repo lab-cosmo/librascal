@@ -208,7 +208,7 @@ install:
     - cmake .. -DBUILD_TESTS=ON -DENABLE_DOC=ON 
     - cat CMakeCache.*
     - make
-    - make dev_doc
+      #- make dev_doc
 
 script:
     - ctest -V
