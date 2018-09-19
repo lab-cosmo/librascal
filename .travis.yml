@@ -162,9 +162,10 @@ matrix:
 before_install:
     - |
             if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
+                source ~/virtualenv/python3.6/bin/activate
                 sudo pip install -U pip
                 python -V
-                pyenv global system ${PYTHON_VERSION}
+                #pyenv global system ${PYTHON_VERSION}
                 sudo pip install sphinx sphinx_rtd_theme numpy breathe
                 sudo apt-get install cmake cmake-data doxygen doxygen-latex graphviz python3-sphinx
                 python -V
