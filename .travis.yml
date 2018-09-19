@@ -141,20 +141,21 @@ matrix:
                                packages:
              #                      - *common_deps   
                                    - g++-6
-             #        
-             #        - os: linux
-             #          env: 
-             #              - BOOST_VERSION=1.58.0
-             #              - PYTHON_VERSION=3.6
-             #              - CC_ENV="CC=gcc-7 && CXX=g++-7"
-             #          addons:
-             #              apt:
-             #                  sources:
+                     
+                     - os: linux
+                       env: 
+                           - BOOST_VERSION=1.58.0
+                           - BOOST_VERSION=1_58_0
+                           - PYTHON_VERSION=3.6
+                           - CC_ENV="CC=gcc-7 && CXX=g++-7"
+                       addons:
+                           apt:
+                               sources:
              #                      - *common_sources
-             #                      - ubuntu-toolchain-r-test
-             #                  packages:
+                                   - ubuntu-toolchain-r-test
+                               packages:
              #                      - *common_deps   
-             #                      - g++-7
+                                   - g++-7
 
 
 # Download and configurations of the libraries needed from librascal 
