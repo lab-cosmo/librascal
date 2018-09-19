@@ -163,29 +163,10 @@ before_install:
     - |
             if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
                 sudo pip install -U pip
-            fi
-    - |
-            if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
                 python -V
-            fi
-    - |
-            if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
                 pyenv global system ${PYTHON_VERSION}
-            fi
-    - |
-            if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
-                python -V
-            fi
-    - |
-            if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
                 sudo pip install sphinx sphinx_rtd_theme numpy breathe
-            fi
-    - |
-            if [ "${TRAVIS_OS_NAME}" == "linux" ]; then 
                 sudo apt-get install cmake cmake-data doxygen doxygen-latex graphviz python3-sphinx
-            fi
-    - |
-            if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
                 python -V
             fi
     - |
