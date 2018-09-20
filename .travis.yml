@@ -136,10 +136,10 @@ before_install:
     - |
             if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
                 source ~/virtualenv/python${PYTHON_VERSION}/bin/activate
-                sudo pip install -U pip
+                sudo -E pip install -U pip
                 python -V
-                sudo pip install sphinx sphinx_rtd_theme numpy breathe
-                sudo apt-get install cmake cmake-data doxygen doxygen-latex graphviz python3-sphinx
+                sudo -E pip install sphinx sphinx_rtd_theme numpy breathe
+                sudo -E apt-get install cmake cmake-data doxygen doxygen-latex graphviz python3-sphinx
                 python -V
             fi
     - |
