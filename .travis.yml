@@ -8,28 +8,16 @@ branches:
        - master
        - feat/test_CI
 
-# We suppose that it is possible to install the whole code and test it WITHOUT sudo
+# It is necessary to use sude if we are using python3.X in a non-python code 
 sudo: true
 
 language: cpp
 
-# These add-ons are in common to all the Linux build and will be installed in all the cases
-#addons:
-#   apt:
-#       sources: &common_sources
-#           - george-edison55-precise-backports
-#       packages: &common_deps
-#           - cmake-data
-#           - cmake
-#           - doxygen
-#           - doxygen-latex
-#           - graphviz
-#           - doxygen-gui
-#           - doxygen-doc
-
+# This matrix contains the build we are going to try to compile 
 matrix:
    include:
 
+           # OSX at the moment is not working and uses deprecated version of  xcode
 #====================================================================
 # CLANG on OSX
 #====================================================================
@@ -51,7 +39,7 @@ matrix:
              #                      - clang-4.0
              #                      - g++-5
 
-
+           # CLANG also does not work and crashes. I will solve this in the next week
 #====================================================================
 # CLANG on Linux
 #====================================================================
@@ -90,6 +78,7 @@ matrix:
 # GCC on Linux
 #====================================================================
              - os: linux
+               python: "3.6"
                env: 
                    - BOOST_VERSION=1.67.0
                    - BOOST_VERSION2=1_67_0
@@ -103,6 +92,7 @@ matrix:
                            - g++-5
 
              - os: linux
+               python: "3.6"
                env: 
                    - BOOST_VERSION=1.67.0
                    - BOOST_VERSION2=1_67_0
@@ -116,6 +106,7 @@ matrix:
                            - g++-6
                      
              - os: linux
+               python: "3.6"
                env: 
                    - BOOST_VERSION=1.58.0
                    - BOOST_VERSION2=1_58_0
@@ -129,6 +120,7 @@ matrix:
                            - g++-6
                      
              - os: linux
+               python: "3.6"
                env: 
                    - BOOST_VERSION=1.58.0
                    - BOOST_VERSION2=1_58_0
