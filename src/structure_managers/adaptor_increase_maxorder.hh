@@ -781,8 +781,7 @@ namespace rascal {
     //! max and min multipliers for number of cells in mesh per dimension
     std::array<int, dim> m_min;
     std::array<int, dim> m_max;
-    //! used for projecting the cell vectors onto a cartesian grid
-    auto identity = Eigen::MatrixXd::Identity(dim, dim);
+
 
     /**
      * calculate origin and maximum mesh coordinates. the number of images of
@@ -801,6 +800,7 @@ namespace rascal {
       auto max_coord = cell.row(i).maxCoeff();
       //! check if cell is minimum 2*cutoff, else increase maximum
       max_coord = std::max(2*cutoff, max_coord);
+      std::cout << "min coord " << min_coord << std::endl;
       mesh_min[i] = min_coord - cutoff;
       mesh_max[i] = max_coord + cutoff;
     }
@@ -830,6 +830,7 @@ namespace rascal {
       m_min[i] = std::min(-1., std::floor(mult_min(i)));
       m_max[i] = std::ceil(mult_max(i));
       nboxes_per_dim[i] = -m_min[i] + m_max[i] + 1;
+
       mesh_max[i] = cutoff * m_max[i];
     }
 
@@ -977,6 +978,7 @@ namespace rascal {
               << mesh_max[0] << " "
               << mesh_max[1] << " "
               << mesh_max[2] << std::endl;
+
     //! go through atoms and build neighbour list
     int offset{0};
     for (size_t i{0}; i < this->n_i_atoms; ++i) {
@@ -992,6 +994,10 @@ namespace rascal {
         << dpos(1) << " "
         << dpos(2) << std::endl;
       auto idx = internal::get_box_index(dpos, cutoff, nboxes_per_dim);
+      std::cout << "box idx "
+        << idx[0] << " "
+        << idx[1] << " "
+        << idx[2] << std::endl;
       auto current_j_atoms = internal::get_neighbours(i, idx, atom_id_cell);
 
       for (auto j : current_j_atoms) {
