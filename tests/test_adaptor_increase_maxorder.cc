@@ -150,7 +150,7 @@ namespace rascal {
                           ManagerFixtureNeighbourComparison
                           <StructureManagerCenters>) {
 
-    constexpr bool verbose{true};
+    constexpr bool verbose{false};
 
     int mult = 2;
 

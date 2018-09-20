@@ -491,7 +491,7 @@ namespace rascal {
     }
 
     /* ---------------------------------------------------------------------- */
-    //! get the cell index or a position
+    //! get the cell index for a position
     template<class Vector_t, size_t Dim>
     decltype(auto) get_box_index(const Vector_t & position,
                                  const double & rc,
@@ -503,7 +503,8 @@ namespace rascal {
 
       std::array<int, dimension> nidx{};
       for(auto dim{0}; dim < dimension; ++dim) {
-        nidx[dim] = static_cast<int>(std::floor(position(dim) / rc));
+        auto val = position(dim);
+        nidx[dim] = static_cast<int>(std::floor(val / rc));
         nidx[dim] = std::min(nidx[dim], nmax[dim]-1);
         nidx[dim] = std::max(nidx[dim], 0);
       }
@@ -804,8 +805,9 @@ namespace rascal {
       //! mesh origin is always at negative cutoff
       auto min_coord = cell.row(i).minCoeff();
       std::cout << "min_coord " << min_coord << std::endl;
-      mesh_min[i] += min_coord;
+      // mesh_min[i] += min_coord;
       mesh_min[i] -= cutoff;
+      if (min_coord < 0. ) mesh_min[i] += min_coord;
 
       std::cout << "mesh_min " << mesh_min[i] << std::endl;
       /**
@@ -822,7 +824,6 @@ namespace rascal {
 
       std::cout << "projection " << projection << std::endl;
       int mrep_min = std::ceil(std::fabs(mesh_min[i]) / std::fabs(projection));
-      std::cout << "mrep_min " << mrep_min << std::endl;
       mrep_min = std::max(1, mrep_min);
       std::cout << "mrep_min " << mrep_min << std::endl;
 
@@ -931,12 +932,24 @@ namespace rascal {
       atom_id_cell[idx].push_back(ghost_atom_index);
     }
 
+    std::cout << "mesh origin "
+              << mesh_min[0] << " "
+              << mesh_min[1] << " "
+              << mesh_min[2] << std::endl;
     //! go through atoms and build neighbour list
     int offset{0};
     for (size_t i{0}; i < this->n_i_atoms; ++i) {
       int nneigh{0};
       auto pos = this->get_position(i);
+      std::cout << "pos i " << i << ". "
+        << pos(0) << " "
+        << pos(1) << " "
+        << pos(2) << std::endl;
       auto dpos = pos - mesh_min;
+      std::cout << "dpos "
+        << dpos(0) << " "
+        << dpos(1) << " "
+        << dpos(2) << std::endl;
       auto idx = internal::get_box_index(dpos, cutoff, nboxes_per_dim);
       auto current_j_atoms = internal::get_neighbours(i, idx, atom_id_cell);
 
