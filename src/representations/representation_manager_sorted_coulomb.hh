@@ -34,57 +34,71 @@
 #include <vector>
 
 namespace rascal {
-  //! forward declaration for traits
-  class RepresentationManagerSortedCoulomb;
+  // //! forward declaration for traits
+  // class RepresentationManagerSortedCoulomb;
 
-  template <>
-  struct RepresentationManager_traits<RepresentationManagerSortedCoulomb>
-  {
-    constexpr static int Dim{3};
-    constexpr static size_t MaxOrder{1};
-    constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::yes};
-    //using LayerByDimension = std::integer_sequence<size_t, 0, 0>;
-  };
-
-  class RepresentationManagerSortedCoulomb: public RepresentationManagerBase
+  // template <>
+  // struct RepresentationManager_traits<RepresentationManagerSortedCoulomb>
+  // {
+  //   constexpr static int Dim{3};
+  //   constexpr static size_t MaxOrder{1};
+  //   constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::yes};
+  //   //using LayerByDimension = std::integer_sequence<size_t, 0, 0>;
+  // };
+  template<class StructureManager>
+  class RepresentationManagerSortedCoulomb//: public RepresentationManagerBase
   {
   public:
-    using traits = RepresentationManager_traits<RepresentationManagerSortedCoulomb>;
+    // using traits = RepresentationManager_traits<RepresentationManagerSortedCoulomb>;
     using hypers_t = RepresentationManagerBase::hypers_t;
+    using Manager_t = StructureManager;
     //! Default constructor 
-    RepresentationManagerSortedCoulomb(StructureManagerBase &sm, hypers_t hypers)
-      :structure_manager{sm},hyperparmeters{}
-      {
-        this->check_traits_compatibility(structure_manager);
-        this->set_hyperparameters(hypers);
-      };
-
+    // RepresentationManagerSortedCoulomb()
+    //   :structure_manager{},central_decay{},interaction_cutoff{},interaction_decay{}
+    //   {}
+    RepresentationManagerSortedCoulomb(StructureManager &sm, 
+      double central_decay , double interaction_cutoff, 
+      double interaction_decay)
+      :structure_manager{sm},central_decay{central_decay},
+      interaction_cutoff{interaction_cutoff},interaction_decay{interaction_decay}
+      {}
     //! Copy constructor
-    RepresentationManagerSortedCoulomb(const RepresentationManagerSortedCoulomb &other) = delete;
+    RepresentationManagerSortedCoulomb(
+      const RepresentationManagerSortedCoulomb &other) = delete;
 
     //! Move constructor
-    RepresentationManagerSortedCoulomb(RepresentationManagerSortedCoulomb &&other) = default;
+    RepresentationManagerSortedCoulomb(
+      RepresentationManagerSortedCoulomb &&other) = default;
 
     //! Destructor
     virtual ~RepresentationManagerSortedCoulomb()  = default;
 
     //! Copy assignment operator
-    RepresentationManagerSortedCoulomb& operator=(const RepresentationManagerSortedCoulomb &other) = delete;
+    RepresentationManagerSortedCoulomb& operator=(
+      const RepresentationManagerSortedCoulomb &other) = delete;
 
     //! Move assignment operator
-    RepresentationManagerSortedCoulomb& operator=(RepresentationManagerSortedCoulomb && other) = default;
-
-    // Resolves the mismatch between the expected traits 
-    // and the effective traits of the Structure Manager
-    void check_traits_compatibility(StructureManagerBase &structure_manager);
+    RepresentationManagerSortedCoulomb& operator=(
+      RepresentationManagerSortedCoulomb && other) = default;
     
     // Pure Virtual Function to set hyperparameters of the representation
     // TODO think of a generic input type for the hypers
-    virtual void set_hyperparameters(const hypers_t & ) = 0;
+    // virtual void set_hyperparameters(const hypers_t & );
 
-    StructureManagerBase& structure_manager;
+    void build(StructureManager &sm, 
+      double central_decay , double interaction_cutoff, 
+      double interaction_decay){
+        this->structure_manager = sm;
+        this->central_decay = central_decay;
+        this->interaction_cutoff = interaction_cutoff;
+        this->interaction_decay = interaction_decay;
+      };
+
+    Manager_t& structure_manager;
     //hypers_t hyperparmeters;
-
+    double central_decay;
+    double interaction_cutoff;
+    double interaction_decay;
 
   protected:
   private:

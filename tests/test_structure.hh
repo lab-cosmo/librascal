@@ -49,7 +49,7 @@ namespace rascal {
       cell(3, 3), positions(3, 22), numbers(22)
     {
       cell <<
-	6.19, 2.41, 0.21,
+	      6.19, 2.41, 0.21,
         0.00, 6.15, 1.02,
         0.00, 0.00, 7.31;
       positions <<
@@ -279,9 +279,6 @@ namespace rascal {
     VecXi numbers;
     Eigen::MatrixXd cell;
     std::array<int, 3> pbc;
-
-
-
 
     double cutoff;
 

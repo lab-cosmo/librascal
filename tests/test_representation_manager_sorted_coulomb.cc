@@ -1,5 +1,5 @@
 /**
- * file   test_representation_manager_base.cc
+ * file   test_representation_manager.cc
  *
  * @author Musil Felix <musil.felix@epfl.ch>
  *
@@ -24,3 +24,19 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
+
+#include "tests.hh"
+#include "test_representation_manager.hh"
+
+#include <iostream>
+
+namespace rascal {
+  BOOST_AUTO_TEST_SUITE(representation_sorted_coulomb_test);
+  /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE(constructor_test,
+  RepresentationFixture<RepresentationManagerSortedCoulomb<StructureManagerJson>>)
+  {}
+
+
+  BOOST_AUTO_TEST_SUITE_END();
+} // RASCAL

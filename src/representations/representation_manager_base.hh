@@ -36,16 +36,16 @@
 
 namespace rascal {
 
-  template <class RepresentationImplementation>
-  struct RepresentationManager_traits
-  {};
+  // template <class RepresentationImplementation>
+  // struct RepresentationManager_traits
+  // {};
 
-  template <class RepresentationImplementation>
+  // template <class RepresentationImplementation>
   class RepresentationManagerBase
   {
   public:
 
-    using traits = RepresentationManager_traits<RepresentationImplementation>;
+    // using traits = RepresentationManager_traits<RepresentationImplementation>;
     using hypers_t = std::map<std::string,std::vector<double>>;
     //! Default constructor 
     // RepresentationManagerBase(StructureManagerBase &sm, hypers_t hypers)
@@ -88,5 +88,5 @@ namespace rascal {
 
 }
 
-#endif /* BASIS_REPRESENTATION_MANAGER_BASE_H */
+#endif /* REPRESENTATION_MANAGER_BASE_H */
 
