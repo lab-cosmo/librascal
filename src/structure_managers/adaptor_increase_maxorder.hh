@@ -795,19 +795,43 @@ namespace rascal {
      * atoms are added according to position.
      */
 
+    std::cout << "===== " << std::endl;
+    std::cout << "natoms " << this->get_size() << std::endl;
+    std::cout << "cutoff " << cutoff << std::endl;
+
     for (auto i{0}; i < dim; ++i) {
+      std::cout << " >>> Dimension " << i << std::endl;
       //! mesh origin is always at negative cutoff
+      auto min_coord = cell.row(i).minCoeff();
+      std::cout << "min_coord " << min_coord << std::endl;
+      mesh_min[i] += min_coord;
       mesh_min[i] -= cutoff;
+
+      std::cout << "mesh_min " << mesh_min[i] << std::endl;
+      /**
+       * No assumption is made on the cell vectors being roughly aligned with
+       * the cartesian grid of the neighbour cells. Therefore all components of
+       * all cell vectors have to be added to get the correct component in the
+       * direction of the cartesian grid.
+       */
+      // auto projection{0};
+      // for (auto j{0}; j < dim; ++j) {
+      //   projection += cell.col(j).dot(identity.col(i));
+      // }
       auto projection = cell.col(i).dot(identity.col(i));
-      int mrep_min = std::ceil(std::fabs(mesh_min[i]) / projection);
+
+      std::cout << "projection " << projection << std::endl;
+      int mrep_min = std::ceil(std::fabs(mesh_min[i]) / std::fabs(projection));
+      std::cout << "mrep_min " << mrep_min << std::endl;
       mrep_min = std::max(1, mrep_min);
+      std::cout << "mrep_min " << mrep_min << std::endl;
 
       /**
        * find number of repetitions of the cell to fit in a cell which has a
        * length of at least 2*cutoff in each dimension (mesh vectors). and since
        * it starts at 0 with the given cell itsel, the ceiling is taken.
        */
-      auto mrep_cell = std::ceil(2. * cutoff / projection);
+      auto mrep_cell = std::ceil(2. * cutoff / std::fabs(projection));
 
       /**
        * calculate mesh maximum coordinate by (possibly) repeating the given
@@ -825,6 +849,20 @@ namespace rascal {
       m_min[i] = -mrep_min;
       m_max[i] = mrep_max;
     }
+
+
+    std::cout << "m_min "
+              << m_min[0] << " "
+              << m_min[1] << " "
+              << m_min[2] << " " << std::endl;
+    std::cout << "m_max "
+              << m_max[0] << " "
+              << m_max[1] << " "
+              << m_max[2] << " " << std::endl;
+    std::cout << "nboxes "
+              << nboxes_per_dim[0] << " "
+              << nboxes_per_dim[1] << " "
+              << nboxes_per_dim[2] << std::endl;
 
     /**
      * TODO possible future optimization for cells large triclinicity: use
@@ -845,6 +883,18 @@ namespace rascal {
               //! shift position to mesh origin
               auto pos_lower  = pos_ghost.array() - mesh_min.array();
               auto pos_greater  = pos_ghost.array() - mesh_max.array();
+
+              // std::cout << "lower "
+              //           << pos_lower[0] << " "
+              //           << pos_lower[1] << " "
+              //           << pos_lower[2] << " "
+              //           << (pos_lower.array() > 0.).all() << std::endl;
+              // std::cout << "greater "
+              //           << pos_greater[0] << " "
+              //           << pos_greater[1] << " "
+              //           << pos_greater[2] << " "
+              //           << (pos_greater.array() < 0.).all() << std::endl;
+
 
               //! check if shifted position inside mesh
               auto f_lt = (pos_lower.array() > 0.).all();

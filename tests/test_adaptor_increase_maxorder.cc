@@ -146,57 +146,136 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(neighbourlist_test,
+  BOOST_FIXTURE_TEST_CASE(neighbourlist_test_hcp,
                           ManagerFixtureNeighbourComparison
+                          <StructureManagerCenters>) {
+
+    constexpr bool verbose{true};
+
+    int mult = 2;
+
+    for (auto i{1}; i < mult; ++i) {
+      auto cutoff_tmp = i * cutoff;
+
+      std::vector<int> neighbours_per_atom1{};
+      std::vector<int> neighbours_per_atom2{};
+
+      neighbours_per_atom1.resize(0);
+      neighbours_per_atom1.resize(0);
+
+      if (verbose) {
+        std::cout << "hcp test cutoff " << cutoff_tmp << std::endl;
+      }
+
+      AdaptorMaxOrder<StructureManagerCenters> pair_manager1{manager_1,
+          cutoff_tmp};
+      pair_manager1.update();
+
+      AdaptorMaxOrder<StructureManagerCenters> pair_manager2{manager_2,
+          cutoff_tmp};
+      pair_manager2.update();
+
+      std::cout << "Manager 1" << std::endl;
+      for (auto atom : pair_manager1) {
+        neighbours_per_atom1.push_back(0);
+        for (auto pair : atom) {
+          if (verbose) {
+            std::cout << "1 pair "
+                      << atom.back() << " "
+                      << pair.back() << std::endl;
+          }
+          neighbours_per_atom1.back()++;
+        }
+      }
+      std::cout << "Manager 2" << std::endl;
+      for (auto atom : pair_manager2) {
+        neighbours_per_atom2.push_back(0);
+        for (auto pair : atom) {
+          if (verbose) {
+            std::cout << "2 pair "
+                      << atom.back() << " "
+                      << pair.back() << std::endl;
+          }
+          neighbours_per_atom2.back()++;
+        }
+      }
+
+      BOOST_CHECK_EQUAL_COLLECTIONS(neighbours_per_atom1.begin(),
+                                    neighbours_per_atom1.end(),
+                                    neighbours_per_atom2.begin(),
+                                    neighbours_per_atom2.end());
+
+      for (auto i{0}; i < natoms; ++i) {
+        if (verbose) {
+          std::cout << "neigh1/neigh2: "
+                    << neighbours_per_atom1[i] << "/"
+                    << neighbours_per_atom2[i] << std::endl;
+        }
+      }
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE(neighbourlist_test_fcc,
+                          ManagerFixtureNeighbourCheckFcc
                           <StructureManagerCenters>) {
 
     constexpr bool verbose{false};
 
-    std::vector<int> neighbours_per_atom1{};
-    std::vector<int> neighbours_per_atom2{};
+    int mult = 2;
 
-    neighbours_per_atom1.resize(0);
-    neighbours_per_atom1.resize(0);
+    for (auto i{1}; i < mult; ++i) {
+      auto cutoff_tmp = i * cutoff;
 
-    AdaptorMaxOrder<StructureManagerCenters> pair_manager1{manager_1,
-        cutoff};
-    pair_manager1.update();
+      std::vector<int> neighbours_per_atom1{};
+      std::vector<int> neighbours_per_atom2{};
 
-    AdaptorMaxOrder<StructureManagerCenters> pair_manager2{manager_2,
-        cutoff};
-    pair_manager2.update();
+      neighbours_per_atom1.resize(0);
+      neighbours_per_atom1.resize(0);
 
-    for (auto atom : pair_manager1) {
-      neighbours_per_atom1.push_back(0);
-      for (auto pair : atom) {
-        if (verbose) {
-          std::cout << "1 pair "
-                    << atom.back() << " "
-                    << pair.back() << std::endl;
-        }
-        neighbours_per_atom1.back()++;
-      }
-    }
-
-    for (auto atom : pair_manager2) {
-      neighbours_per_atom2.push_back(0);
-      for (auto pair : atom) {
-        if (verbose) {
-          std::cout << "2 pair "
-                    << atom.back() << " "
-                    << pair.back() << std::endl;
-        }
-        neighbours_per_atom2.back()++;
-      }
-    }
-    for (auto i{0}; i < natoms; ++i) {
       if (verbose) {
-      std::cout << "neigh1/neigh2: "
-                << neighbours_per_atom1[i] << "/"
-                << neighbours_per_atom2[i] << std::endl;
+        std::cout << "fcc cutoff " << cutoff_tmp << std::endl;
       }
-      BOOST_CHECK_EQUAL(neighbours_per_atom1[i],
-                        neighbours_per_atom2[i]);
+
+      AdaptorMaxOrder<StructureManagerCenters> pair_manager1{manager_1,
+          cutoff_tmp};
+      pair_manager1.update();
+
+      AdaptorMaxOrder<StructureManagerCenters> pair_manager2{manager_2,
+          cutoff_tmp};
+      pair_manager2.update();
+
+      for (auto atom : pair_manager1) {
+        neighbours_per_atom1.push_back(0);
+        for (auto pair : atom) {
+          if (verbose) {
+            std::cout << "1 pair "
+                      << atom.back() << " "
+                      << pair.back() << std::endl;
+          }
+          neighbours_per_atom1.back()++;
+        }
+      }
+
+      for (auto atom : pair_manager2) {
+        neighbours_per_atom2.push_back(0);
+        for (auto pair : atom) {
+          if (verbose) {
+            std::cout << "2 pair "
+                      << atom.back() << " "
+                      << pair.back() << std::endl;
+          }
+          neighbours_per_atom2.back()++;
+        }
+      }
+
+      BOOST_CHECK_EQUAL(neighbours_per_atom1[0],
+                        neighbours_per_atom2[0]);
+      if (verbose) {
+        std::cout << "neigh1/neigh2: "
+                  << neighbours_per_atom1[0] << "/"
+                  << neighbours_per_atom2[0] << std::endl;
+      }
     }
   }
 
