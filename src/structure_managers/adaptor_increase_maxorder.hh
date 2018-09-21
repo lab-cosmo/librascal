@@ -199,14 +199,14 @@ namespace rascal {
                                              & cluster) {
       static_assert(Order > 1,
                     "Only possible for Order > 1.");
-      static_assert(Order < traits::MaxOrder,
+      static_assert(Order <= traits::MaxOrder,
                     "this implementation should only work up to MaxOrder.");
 
-      if (Order == 2) {
+      // if (Order == 2) {
         return this->get_position(cluster.back());
-      } else {
-        return this->manager.get_neighbour_position(cluster, index);
-      }
+      // } else {
+        //return this->get_position(cluster.back());//manager.get_neighbour_position(cluster);
+        //}
     }
 
     /**
@@ -795,15 +795,18 @@ namespace rascal {
       auto min_coord = std::min(0., cell.row(i).minCoeff());
       auto max_coord = cell.row(i).maxCoeff();
       std::cout << "min coord " << min_coord << std::endl;
+      std::cout << "max coord " << max_coord << std::endl;
+      std::cout << "cutoff " << cutoff << std::endl;
       /**
        * minimum is given by -cutoff and a delta to avoid ambiguity during cell
        * sorting of atom position e.g. at x = (0,0,0).
        */
-      auto epsilon = cutoff/5.;
+      auto epsilon = 0.33*cutoff;
       mesh_min[i] = min_coord - cutoff - epsilon;
-      auto lmesh = std::fabs(mesh_min[i]) + max_coord + cutoff + epsilon  ;
+      auto lmesh = std::fabs(mesh_min[i]) + max_coord + cutoff + epsilon;
+      std::cout << "lmesh " << lmesh << std::endl;
       int n = std::ceil(lmesh / cutoff);
-      auto lmax = n * cutoff + mesh_min[i];
+      auto lmax = n * cutoff - std::fabs(mesh_min[i]);
       mesh_max[i] = lmax;
     }
 
@@ -820,21 +823,27 @@ namespace rascal {
     Eigen::MatrixXd xpos(dim, ncorners);
     xpos.col(0) = mesh_min;
     xpos.col(7) = mesh_max;
+
     xpos(0,1) = mesh_max[0];
     xpos(1,1) = mesh_min[1];
     xpos(2,1) = mesh_min[2];
+
     xpos(0,2) = mesh_min[0];
     xpos(1,2) = mesh_max[1];
     xpos(2,2) = mesh_min[2];
+
     xpos(0,3) = mesh_max[0];
     xpos(1,3) = mesh_max[1];
     xpos(2,3) = mesh_min[2];
+
     xpos(0,4) = mesh_min[0];
     xpos(1,4) = mesh_min[1];
     xpos(2,4) = mesh_max[2];
+
     xpos(0,5) = mesh_max[0];
     xpos(1,5) = mesh_min[1];
     xpos(2,5) = mesh_max[2];
+
     xpos(0,6) = mesh_min[0];
     xpos(1,6) = mesh_max[1];
     xpos(2,6) = mesh_max[2];
@@ -843,8 +852,8 @@ namespace rascal {
     std::cout << "multiplicator \n" << multiplicator << std::endl;
     auto xmin = multiplicator.rowwise().minCoeff();
     auto xmax = multiplicator.rowwise().maxCoeff();
-    std::cout << "xmin " << xmin << std::endl;
-    std::cout << "xmax " << xmax  << std::endl;
+    std::cout << "xmin \n" << xmin << std::endl;
+    std::cout << "xmax \n" << xmax  << std::endl;
 
     for (auto i{0}; i < dim; ++i) {
       m_min[i] = std::floor(xmin(i));
@@ -929,11 +938,11 @@ namespace rascal {
       atom_id_cell[idx].push_back(ghost_atom_index);
     }
 
-    std::cout << "mesh origin "
+    std::cout << "mesh_min "
               << mesh_min[0] << " "
               << mesh_min[1] << " "
               << mesh_min[2] << std::endl;
-    std::cout << "mesh maximum "
+    std::cout << "mesh_max "
               << mesh_max[0] << " "
               << mesh_max[1] << " "
               << mesh_max[2] << std::endl;

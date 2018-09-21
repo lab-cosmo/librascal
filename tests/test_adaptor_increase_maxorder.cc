@@ -184,7 +184,11 @@ namespace rascal {
                       << atom.back() << " "
                       << pair.back() << std::endl;
           }
-          neighbours_per_atom1.back()++;
+          double dist = {(atom.get_position()
+                          - pair.get_position()).norm()};
+          if (dist < cutoff_tmp) {
+            neighbours_per_atom1.back()++;
+          }
         }
       }
       std::cout << "Manager 2" << std::endl;
@@ -196,7 +200,11 @@ namespace rascal {
                       << atom.back() << " "
                       << pair.back() << std::endl;
           }
-          neighbours_per_atom2.back()++;
+          double dist = {(atom.get_position()
+                          - pair.get_position()).norm()};
+          if (dist < cutoff_tmp) {
+            neighbours_per_atom2.back()++;
+          }
         }
       }
 
@@ -206,11 +214,11 @@ namespace rascal {
                                     neighbours_per_atom2.end());
 
       for (auto i{0}; i < natoms; ++i) {
-        if (verbose) {
-          std::cout << "neigh1/neigh2: "
-                    << neighbours_per_atom1[i] << "/"
-                    << neighbours_per_atom2[i] << std::endl;
-        }
+        //if (verbose) {
+        std::cout << "neigh1/neigh2: i " << i << " "
+                  << neighbours_per_atom1[i] << "/"
+                  << neighbours_per_atom2[i] << std::endl;
+        //}
       }
     }
   }
@@ -221,6 +229,8 @@ namespace rascal {
   //                         <StructureManagerCenters>) {
 
   //   constexpr bool verbose{false};
+
+  //   std::cout << "FCC test " << std::endl;
 
   //   int mult = 2;
 
