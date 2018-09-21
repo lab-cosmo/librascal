@@ -73,10 +73,13 @@ namespace rascal {
 
     // Resolves the mismatch between the expected traits 
     // and the effective traits of the Structure Manager
-    void check_traits_compatibility(StructureManagerBase &structure_manager);
+    template <class Mngr>
+    virtual void check_traits_compatibility(Mngr &structure_manager);
 
     // Pure Virtual Function to set hyperparameters of the representation
     // TODO think of a generic input type for the hypers
+    // make class similar to atomic_structure 
+    // to handle the hyper io (json format from python and files)
     virtual void set_hyperparameters(const hypers_t & ) = 0;
 
     StructureManagerBase& structure_manager;
