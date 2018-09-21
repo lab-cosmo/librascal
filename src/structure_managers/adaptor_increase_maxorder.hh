@@ -504,7 +504,7 @@ namespace rascal {
       std::array<int, dimension> nidx{};
       for(auto dim{0}; dim < dimension; ++dim) {
         auto val = position(dim);
-        nidx[dim] = static_cast<int>(std::floor(val / rc));
+        nidx[dim] = int(std::floor(val / rc));
         nidx[dim] = std::min(nidx[dim], nmax[dim]-1);
         nidx[dim] = std::max(nidx[dim], 0);
       }
@@ -799,8 +799,9 @@ namespace rascal {
        * minimum is given by -cutoff and a delta to avoid ambiguity during cell
        * sorting of atom position e.g. at x = (0,0,0).
        */
-      mesh_min[i] = min_coord - cutoff - cutoff/5.;
-      auto lmesh = std::fabs(mesh_min[i]) + max_coord + cutoff;
+      auto epsilon = cutoff/5.;
+      mesh_min[i] = min_coord - cutoff - epsilon;
+      auto lmesh = std::fabs(mesh_min[i]) + max_coord + cutoff + epsilon  ;
       int n = std::ceil(lmesh / cutoff);
       auto lmax = n * cutoff + mesh_min[i];
       mesh_max[i] = lmax;
@@ -848,7 +849,9 @@ namespace rascal {
     for (auto i{0}; i < dim; ++i) {
       m_min[i] = std::floor(xmin(i));
       m_max[i] = std::ceil(xmax(i));
-      nboxes_per_dim[i] = -m_min[i] + m_max[i] + 1;
+      auto edge_length = std::fabs(mesh_min[i]) + std::fabs(mesh_max[i]);
+      std::cout << "edge_length " << edge_length << std::endl;
+      nboxes_per_dim[i] = edge_length / cutoff;
     }
 
     std::cout << "===== " << std::endl;
@@ -902,6 +905,9 @@ namespace rascal {
         }
       }
     }
+    std::cout << "natoms " << this->manager.get_size() << std::endl;
+    std::cout << "ghosts " << this->n_j_atoms << std::endl;
+
 
     //! neighbour boxes
     internal::IndexContainer<dim> atom_id_cell{nboxes_per_dim};

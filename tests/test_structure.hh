@@ -337,9 +337,6 @@ namespace rascal {
     Eigen::MatrixXd cell;
     std::array<int, 3> pbc;
 
-
-
-
     double cutoff;
 
     int natoms{22};
@@ -357,7 +354,7 @@ namespace rascal {
 
     ManagerFixtureNeighbourComparison():
       pbc{{true, true, true}}, cell_1(3, 3), cell_2(3, 3),
-      positions_1(3, 2), positions_2(3, 2), numbers(2), cutoff{0.9}
+      positions_1(3, 2), positions_2(3, 2), numbers(2), cutoff{0.57937}
     {
       /**
        * hcp crystal with lattice parameter a = 1, c = sqrt(8/3), defined in two
@@ -472,7 +469,7 @@ namespace rascal {
         0.0, p_2[2], p_3[2], p_4[2];
 
       numbers_1 << 1;
-      numbers_2 << 1,1,1,1;
+      numbers_2 << 1, 1, 1, 1;
 
       manager_1.update(positions_1, numbers_1, cell_1,
                        Eigen::Map<Eigen::Matrix<int, 3, 1>>
