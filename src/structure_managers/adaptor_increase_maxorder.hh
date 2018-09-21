@@ -772,11 +772,11 @@ namespace rascal {
      * triclinicity and cutoff, coordinates of the mesh are relative to the
      * origin of the given cell.
      */
-    Vector_t mesh_min(dim);
-    Vector_t mesh_max(dim);
+    Vector_t mesh_min_coord(dim);
+    Vector_t mesh_max_coord(dim);
 
-    mesh_min.setZero();
-    mesh_max.setZero();
+    mesh_min_coord.setZero();
+    mesh_max_coord.setZero();
 
     //! max and min multipliers for number of cells in mesh per dimension
     std::array<int, dim> m_min;
@@ -798,97 +798,53 @@ namespace rascal {
     for (auto i{0}; i < dim; ++i) {
       auto min_coord = cell.row(i).minCoeff();
       auto max_coord = cell.row(i).maxCoeff();
-      //! check if cell is minimum 2*cutoff, else increase maximum
-      max_coord = std::max(2*cutoff, max_coord);
+      /**
+       * check if cell is minimum 2*cutoff, else increase upper corner to at
+       * least 2*cutoff
+       */
+      min_coord = std::min(0., min_coord);
+      auto mult_cell = std::ceil(max_coord / cutoff);
+      std::cout << "mult_cell " << mult_cell << std::endl;
+      mult_cell = std::max(2., mult_cell);
+
+      max_coord = mult_cell * cutoff;
+
       std::cout << "min coord " << min_coord << std::endl;
-      mesh_min[i] = min_coord - cutoff;
-      mesh_max[i] = max_coord + cutoff;
+      std::cout << "max coord " << max_coord << std::endl;
+      mesh_min_coord[i] = min_coord - cutoff;
+      mesh_max_coord[i] = max_coord + cutoff;
     }
 
-    std::cout << "mesh_min origin "
-      << mesh_min[0] << " "
-      << mesh_min[1] << " "
-      << mesh_min[2] << std::endl;
-    std::cout << "mesh_max origin "
-      << mesh_max[0] << " "
-      << mesh_max[1] << " "
-      << mesh_max[2] << std::endl;
+    std::cout << "mesh_min_coord origin "
+      << mesh_min_coord[0] << " "
+      << mesh_min_coord[1] << " "
+      << mesh_min_coord[2] << std::endl;
+    std::cout << "mesh_max_coord origin "
+      << mesh_max_coord[0] << " "
+      << mesh_max_coord[1] << " "
+      << mesh_max_coord[2] << std::endl;
 
-    //! now find multipliers of cell in cell coordinates for repetitions
-
-    auto mult_min = cell.ldlt().solve(mesh_min);
-    auto mult_max = cell.ldlt().solve(mesh_max);
+    //! now find multipliers of the cell in cell coordinates for repetitions
+    auto cell_mult_min = cell.ldlt().solve(mesh_min_coord);
+    auto cell_mult_max = cell.ldlt().solve(mesh_max_coord);
     std::cout << "low "
-      << mult_min(0) << " "
-      << mult_min(1) << " "
-      << mult_min(2) << std::endl;
+      << cell_mult_min(0) << " "
+      << cell_mult_min(1) << " "
+      << cell_mult_min(2) << std::endl;
     std::cout << "high "
-      << mult_max(0) << " "
-      << mult_max(1) << " "
-      << mult_max(2) << std::endl;
+      << cell_mult_max(0) << " "
+      << cell_mult_max(1) << " "
+      << cell_mult_max(2) << std::endl;
     for (auto i{0}; i < dim; ++i) {
-      m_min[i] = std::min(-1., std::floor(mult_min(i)));
-      m_max[i] = std::ceil(mult_max(i));
-      nboxes_per_dim[i] = -m_min[i] + m_max[i] + 1;
-
-      mesh_max[i] = cutoff * m_max[i];
+      m_min[i] = std::min(-1., std::floor(cell_mult_min(i)));
+      m_max[i] = std::ceil(cell_mult_max(i));
+      auto ds = mesh_max_coord[i] - mesh_min_coord[i];
+      nboxes_per_dim[i] = int(ds / cutoff) + 1;
     }
 
     std::cout << "===== " << std::endl;
     std::cout << "natoms " << this->get_size() << std::endl;
     std::cout << "cutoff " << cutoff << std::endl;
-
-    // for (auto i{0}; i < dim; ++i) {
-    //   std::cout << " >>> Dimension " << i << std::endl;
-    //   //! mesh origin is always at negative cutoff
-    //   auto min_coord = cell.row(i).minCoeff();
-    //   std::cout << "min_coord " << min_coord << std::endl;
-    //   // mesh_min[i] += min_coord;
-    //   mesh_min[i] -= cutoff;
-    //   if (min_coord < 0. ) mesh_min[i] += min_coord;
-
-    //   std::cout << "mesh_min " << mesh_min[i] << std::endl;
-    //   /**
-    //    * No assumption is made on the cell vectors being roughly aligned with
-    //    * the cartesian grid of the neighbour cells. Therefore all components of
-    //    * all cell vectors have to be added to get the correct component in the
-    //    * direction of the cartesian grid.
-    //    */
-    //   // auto projection{0};
-    //   // for (auto j{0}; j < dim; ++j) {
-    //   //   projection += cell.col(j).dot(identity.col(i));
-    //   // }
-    //   auto projection = cell.col(i).dot(identity.col(i));
-
-    //   std::cout << "projection " << projection << std::endl;
-    //   int mrep_min = std::ceil(std::fabs(mesh_min[i]) / std::fabs(projection));
-    //   mrep_min = std::max(1, mrep_min);
-    //   std::cout << "mrep_min " << mrep_min << std::endl;
-
-    //   /**
-    //    * find number of repetitions of the cell to fit in a cell which has a
-    //    * length of at least 2*cutoff in each dimension (mesh vectors). and since
-    //    * it starts at 0 with the given cell itsel, the ceiling is taken.
-    //    */
-    //   auto mrep_cell = std::ceil(2. * cutoff / std::fabs(projection));
-
-    //   /**
-    //    * calculate mesh maximum coordinate by (possibly) repeating the given
-    //    * unit cell by 'mrep_cell' and adding ad padding of length 'cutoff'.
-    //    */
-    //   auto dx = projection * mrep_cell + cutoff;
-    //   int n(std::ceil(dx / projection));
-
-    //   //! max is cell origin + dx
-    //   mesh_max[i] = n * projection;
-    //   int mrep_max = std::max(2, n);
-
-    //   //! +1 is accounting for box 0
-    //   nboxes_per_dim[i] = mrep_min + mrep_max + 1;
-    //   m_min[i] = -mrep_min;
-    //   m_max[i] = mrep_max;
-    // }
-
 
     std::cout << "m_min "
               << m_min[0] << " "
@@ -920,20 +876,8 @@ namespace rascal {
               auto pos_ghost = pos + cell.col(i)*m;
 
               //! shift position to mesh origin
-              auto pos_lower  = pos_ghost.array() - mesh_min.array();
-              auto pos_greater  = pos_ghost.array() - mesh_max.array();
-
-              // std::cout << "lower "
-              //           << pos_lower[0] << " "
-              //           << pos_lower[1] << " "
-              //           << pos_lower[2] << " "
-              //           << (pos_lower.array() > 0.).all() << std::endl;
-              // std::cout << "greater "
-              //           << pos_greater[0] << " "
-              //           << pos_greater[1] << " "
-              //           << pos_greater[2] << " "
-              //           << (pos_greater.array() < 0.).all() << std::endl;
-
+              auto pos_lower  = pos_ghost.array() - mesh_min_coord.array();
+              auto pos_greater  = pos_ghost.array() - mesh_max_coord.array();
 
               //! check if shifted position inside mesh
               auto f_lt = (pos_lower.array() > 0.).all();
@@ -956,7 +900,7 @@ namespace rascal {
     // i-atoms sorting into boxes
     for (size_t i{0}; i < this->n_i_atoms; ++i) {
       auto pos = this->get_position(i);
-      auto dpos = pos - mesh_min;
+      auto dpos = pos - mesh_min_coord;
       auto idx = internal::get_box_index(dpos, cutoff, nboxes_per_dim);
       atom_id_cell[idx].push_back(i);
     }
@@ -964,20 +908,20 @@ namespace rascal {
     //! ghost atoms sorting into boxes
     for (size_t i{0}; i < this->n_j_atoms; ++i) {
       auto ghost_pos = this->get_ghost_position(i);
-      auto dpos = ghost_pos - mesh_min;
+      auto dpos = ghost_pos - mesh_min_coord;
       auto idx  = internal::get_box_index(dpos, cutoff, nboxes_per_dim);
       auto ghost_atom_index = i + this->n_i_atoms;
       atom_id_cell[idx].push_back(ghost_atom_index);
     }
 
     std::cout << "mesh origin "
-              << mesh_min[0] << " "
-              << mesh_min[1] << " "
-              << mesh_min[2] << std::endl;
+              << mesh_min_coord[0] << " "
+              << mesh_min_coord[1] << " "
+              << mesh_min_coord[2] << std::endl;
     std::cout << "mesh maximum "
-              << mesh_max[0] << " "
-              << mesh_max[1] << " "
-              << mesh_max[2] << std::endl;
+              << mesh_max_coord[0] << " "
+              << mesh_max_coord[1] << " "
+              << mesh_max_coord[2] << std::endl;
 
     //! go through atoms and build neighbour list
     int offset{0};
@@ -988,7 +932,7 @@ namespace rascal {
         << pos(0) << " "
         << pos(1) << " "
         << pos(2) << std::endl;
-      auto dpos = pos - mesh_min;
+      auto dpos = pos - mesh_min_coord;
       std::cout << "dpos "
         << dpos(0) << " "
         << dpos(1) << " "

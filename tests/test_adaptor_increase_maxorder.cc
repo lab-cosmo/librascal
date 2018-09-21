@@ -175,7 +175,7 @@ namespace rascal {
           cutoff_tmp};
       pair_manager2.update();
 
-      std::cout << "Manager 1" << std::endl;
+      if (verbose) std::cout << "Manager 1" << std::endl;
       for (auto atom : pair_manager1) {
         neighbours_per_atom1.push_back(0);
         for (auto pair : atom) {
@@ -187,7 +187,7 @@ namespace rascal {
           neighbours_per_atom1.back()++;
         }
       }
-      std::cout << "Manager 2" << std::endl;
+      if (verbose) std::cout << "Manager 2" << std::endl;
       for (auto atom : pair_manager2) {
         neighbours_per_atom2.push_back(0);
         for (auto pair : atom) {
