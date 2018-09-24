@@ -480,8 +480,13 @@ namespace rascal {
                                        const Container_t & boxes) {
       std::vector<size_t> neighbours;
       for (auto && s: Stencil<Dim>{ccoord}) {
+        // std::cout << "s "
+        //   << s[0] << " "
+        //   << s[1] << " "
+        //   << s[2] << std::endl;
         for (const auto & neigh : boxes[s]) {
           //! avoid adding the current i atom to the neighbour list
+          // std::cout << "idx, neigh " << current_atom_index << " " << neigh << std::endl;
           if (neigh != current_atom_index) {
             neighbours.push_back(neigh);
           }
@@ -505,8 +510,10 @@ namespace rascal {
       for(auto dim{0}; dim < dimension; ++dim) {
         auto val = position(dim);
         nidx[dim] = int(std::floor(val / rc));
-        nidx[dim] = std::min(nidx[dim], nmax[dim]-1);
-        nidx[dim] = std::max(nidx[dim], 0);
+        // std::cout << "dim, pos " << dim << " " << val;
+        // std::cout << " val/rc " << val/rc << " " << int(std::floor(val / rc)) << std::endl;
+        // nidx[dim] = std::min(nidx[dim], nmax[dim]-1);
+        // nidx[dim] = std::max(nidx[dim], 0);
       }
       return nidx;
     }
@@ -542,6 +549,27 @@ namespace rascal {
         }
       }
       return retval;
+    }
+
+    /* ---------------------------------------------------------------------- */
+    //! test if position inside
+    template <int Dim>
+    bool position_in_bounds(const Eigen::Matrix<double, Dim, 1> & min,
+                            const Eigen::Matrix<double, Dim, 1> & max,
+                            const Eigen::Matrix<double, Dim, 1> & pos) {
+
+      auto pos_lower  = pos.array() - min.array();
+      auto pos_greater  = pos.array() - max.array();
+
+      //! check if shifted position inside mesh
+      auto f_lt = (pos_lower.array() > 0.).all();
+      auto f_gt = (pos_greater.array() < 0.).all();
+
+      if (f_lt and f_gt) {
+        return true;
+      } else {
+        return false;
+      }
     }
 
     /* ---------------------------------------------------------------------- */
@@ -791,9 +819,18 @@ namespace rascal {
      * the mesh is build, then ghost atoms are added according to position.
      */
 
+    std::cout << "======================== start" << std::endl;
+
+    /**
+     * Mesh related stuff for neighbour boxes. Calculate min and max of the mesh
+     * in cartesian coordinates and relative to the cell origin.
+     * mesh_min is the origin of the mesh
+     * mesh_max is the maximum coordinate of the mesh
+     * nboxes_per_dim is the number of cells/boxes in each dimension
+     */
     for (auto i{0}; i < dim; ++i) {
       auto min_coord = std::min(0., cell.row(i).minCoeff());
-      auto max_coord = cell.row(i).maxCoeff();
+      auto max_coord = std::max(0., cell.row(i).maxCoeff());
       std::cout << "min coord " << min_coord << std::endl;
       std::cout << "max coord " << max_coord << std::endl;
       std::cout << "cutoff " << cutoff << std::endl;
@@ -801,25 +838,40 @@ namespace rascal {
        * minimum is given by -cutoff and a delta to avoid ambiguity during cell
        * sorting of atom position e.g. at x = (0,0,0).
        */
-      auto epsilon = 0.33*cutoff;
+      auto epsilon = 0.25*cutoff;
       mesh_min[i] = min_coord - cutoff - epsilon;
-      auto lmesh = std::fabs(mesh_min[i]) + max_coord + cutoff + epsilon;
+      std::cout << "mesh_min " << mesh_min[i] << std::endl;
+      auto lmesh = std::fabs(mesh_min[i]) + max_coord + cutoff;
       std::cout << "lmesh " << lmesh << std::endl;
       int n = std::ceil(lmesh / cutoff);
+      std::cout << "lmesh * n" << n*cutoff << std::endl;
+      std::cout << "n boxes " << n << std::endl;
       auto lmax = n * cutoff - std::fabs(mesh_min[i]);
+      std::cout << "lmax " << lmax << std::endl;
       mesh_max[i] = lmax;
+      nboxes_per_dim[i] = n;
     }
 
-    std::cout << "mesh_min origin "
-      << mesh_min[0] << " "
-      << mesh_min[1] << " "
-      << mesh_min[2] << std::endl;
-    std::cout << "mesh_max origin "
-      << mesh_max[0] << " "
-      << mesh_max[1] << " "
-      << mesh_max[2] << std::endl;
 
-    int ncorners = std::pow(2, dim);
+    std::cout << "mesh_min origin "
+              << mesh_min[0] << " "
+              << mesh_min[1] << " "
+              << mesh_min[2] << std::endl;
+    std::cout << "mesh_max origin "
+              << mesh_max[0] << " "
+              << mesh_max[1] << " "
+              << mesh_max[2] << std::endl;
+    std::cout << "nboxes "
+              << nboxes_per_dim[0] << " "
+              << nboxes_per_dim[1] << " "
+              << nboxes_per_dim[2] << std::endl;
+
+    /**
+     * Periodicity related multipliers. Now the mesh coordinates are calculated
+     * in units of cell vectors. m_min and m_max give the number of repetitions
+     * in each cell dimension.
+     */
+    int ncorners = internal::ipow(2, dim);
     Eigen::MatrixXd xpos(dim, ncorners);
     xpos.col(0) = mesh_min;
     xpos.col(7) = mesh_max;
@@ -856,55 +908,68 @@ namespace rascal {
     std::cout << "xmax \n" << xmax  << std::endl;
 
     for (auto i{0}; i < dim; ++i) {
-      m_min[i] = std::floor(xmin(i));
-      m_max[i] = std::ceil(xmax(i));
-      auto edge_length = std::fabs(mesh_min[i]) + std::fabs(mesh_max[i]);
-      std::cout << "edge_length " << edge_length << std::endl;
-      nboxes_per_dim[i] = edge_length / cutoff;
+      m_min[i] = std::floor(xmin(i)) - 1;
+      m_max[i] = std::ceil(xmax(i)) + 1;
     }
 
     std::cout << "===== " << std::endl;
     std::cout << "natoms " << this->get_size() << std::endl;
     std::cout << "cutoff " << cutoff << std::endl;
 
-    std::cout << "m_min "
+    std::cout << ">>> m_min "
               << m_min[0] << " "
               << m_min[1] << " "
               << m_min[2] << " " << std::endl;
-    std::cout << "m_max "
+    std::cout << ">>> m_max "
               << m_max[0] << " "
               << m_max[1] << " "
               << m_max[2] << " " << std::endl;
-    std::cout << "nboxes "
-              << nboxes_per_dim[0] << " "
-              << nboxes_per_dim[1] << " "
-              << nboxes_per_dim[2] << std::endl;
 
     /**
      * TODO possible future optimization for cells large triclinicity: use
      * triclinic coordinates and explicitly check for the 'skin' around the cell
      * and rotate the cell to have the lower triangular form
      */
+    std::array<int, dim> periodic_max{};
+    std::array<int, dim> periodic_min{};
+    for (auto i{0}; i < dim; ++i) {
+      if (periodicity[i]) {
+        periodic_max[i] = m_max[i];
+        periodic_min[i] = m_min[i];
+      } else {
+        periodic_max[i] = 0;
+        periodic_min[i] = 0;
+      }
+    }
     //! generate ghost atom indices and position
     for (auto atom : this->get_manager()) {
       auto pos = atom.get_position();
-      for (auto i{0}; i < dim; ++i) {
-        if(periodicity[i]) {
-          //! exclude m=0, because it is the i atom itself
-          for(auto m{m_min[i]}; m < m_max[i]; ++m) {
-            if (m != 0) {
+      auto id = atom.get_index();
+      std::cout << "atom index " << id << std::endl;
+
+
+      // for (auto i{0}; i<dim; ++i) {
+      for (int i{periodic_min[0]}; i<=periodic_max[0]; ++i)
+        {
+        for (int j{periodic_min[1]}; j<=periodic_max[1]; ++j)
+          {
+          for (int k{periodic_min[2]}; k<=periodic_max[2]; ++k)
+            {
+
+              if (!(i==0 and j==0 and k==0)) {
               //! shift i atom along cell vector i
-              auto pos_ghost = pos + cell.col(i)*m;
+                Vector_t pos_ghost = pos + cell.col(0)*i + cell.col(1)*j + cell.col(2)*k;
 
-              //! shift position to mesh origin
-              auto pos_lower  = pos_ghost.array() - mesh_min.array();
-              auto pos_greater  = pos_ghost.array() - mesh_max.array();
+                // std::cout << "pos_ghost i,j,k " << i << " " << j << " " << k <<
+                //   ", \n" << pos_ghost << std::endl;
 
-              //! check if shifted position inside mesh
-              auto f_lt = (pos_lower.array() > 0.).all();
-              auto f_gt = (pos_greater.array() < 0.).all();
 
-              if (f_lt and f_gt) {
+                auto flag_inside = internal::position_in_bounds(mesh_min,
+                                                                mesh_max,
+                                                                pos_ghost);
+                // std::cout << " inside:" << flag_inside << std::endl;
+
+              if (flag_inside) {
                 //! next atom index is size, since start is at index = 0
                 auto new_atom_index = this->get_size_with_ghosts();
                 this->add_ghost_atom(new_atom_index, pos_ghost);
@@ -923,10 +988,14 @@ namespace rascal {
 
     // i-atoms sorting into boxes
     for (size_t i{0}; i < this->n_i_atoms; ++i) {
-      auto pos = this->get_position(i);
-      auto dpos = pos - mesh_min;
+      Vector_t pos = this->get_position(i);
+      Vector_t dpos = pos - mesh_min;
       auto idx = internal::get_box_index(dpos, cutoff, nboxes_per_dim);
       atom_id_cell[idx].push_back(i);
+      std::cout << "atom, box " << i << " "
+                << idx[0] << " "
+                << idx[1] << " "
+                << idx[2] << std::endl;
     }
 
     //! ghost atoms sorting into boxes

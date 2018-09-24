@@ -354,7 +354,7 @@ namespace rascal {
 
     ManagerFixtureNeighbourComparison():
       pbc{{true, true, true}}, cell_1(3, 3), cell_2(3, 3),
-      positions_1(3, 2), positions_2(3, 2), numbers(2), cutoff{1.3224277}
+      positions_1(3, 2), positions_2(3, 2), numbers(2), cutoff{0.7}
     {
       /**
        * hcp crystal with lattice parameter a = 1, c = sqrt(8/3), defined in two
@@ -433,8 +433,8 @@ namespace rascal {
       cell_1(3, 3), cell_2(3, 3),
       positions_1(3, 1), positions_2(3, 4),
       numbers_1(1), numbers_2(4),
-      cutoff{0.9}, // start with zero neighbours
-      natoms_1{1}, natoms_2{2}
+      cutoff{0.7}, // start with zero neighbours
+      natoms_1{1}, natoms_2{4}
     {
       /**
        * fcc unit cells: first cell consists of only one atom, which is
