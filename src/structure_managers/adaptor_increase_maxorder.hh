@@ -458,7 +458,7 @@ namespace rascal {
 
       protected:
         //!< ref to stencils in cell
-        const Stencil& stencil;
+        const Stencil & stencil;
         //!< index of currect pointed-to pixel
         size_t index;
       };
@@ -472,6 +472,80 @@ namespace rascal {
       const std::array<int, Dim> origin; //!< locations of this domain
     };
 
+        /* ---------------------------------------------------------------------- */
+    /**
+     * stencil iterator for simple, dimension dependent stencils to access the
+     * neighbouring boxes of the cell algorithm
+     */
+    template <size_t Dim>
+    class PeriodicImages {
+    public:
+      //! constructor
+      PeriodicImages(const std::array<int, Dim> & origin,
+                     const std::array<int, Dim> & extent,
+                     const std::array<int, Dim> & nrepetitions,
+                     const size_t & ntot)
+        : origin{origin}, extent{extent}, nrepetitions{nrepetitions}, ntot{ntot} {};
+      //! copy constructor
+      PeriodicImages(const PeriodicImages & other) = default;
+      //! assignment operator
+      PeriodicImages & operator=(const PeriodicImages & other) = default;
+      ~PeriodicImages() = default;
+
+      //! iterators over `` dereferences to cell coordinates
+      class iterator
+      {
+      public:
+        using value_type = std::array<int, Dim>; //!< stl conformance
+        using const_value_type = const value_type; //!< stl conformance
+        using pointer = value_type*; //!< stl conformance
+        using iterator_category = std::forward_iterator_tag;//!<stl conformance
+
+        //! constructor
+        iterator(const PeriodicImages & periodic_images, bool begin=true)
+          : periodic_images{periodic_images},
+            index{begin? 0: periodic_images.size()} {}
+
+        ~iterator() {};
+        //! dereferencing
+        value_type operator*() const {
+          std::array<int, Dim> retval{{0}};
+          int factor{1};
+          for (int i = Dim-1; i >=0; --i) {
+            retval[i] = this->index/factor%this->periodic_images.nrepetitions[i]
+              + this->periodic_images.origin[i];
+            if (i != 0 ) {
+              factor *= this->periodic_images.nrepetitions[i];
+            }
+          }
+          return retval;
+        };
+        //! pre-increment
+        iterator & operator++() {this->index++; return *this;}
+        //! inequality
+        inline bool operator!=(const iterator & other) const {
+          return this->index != other.index;
+        };
+
+      protected:
+        //!< ref to periodic images
+        const PeriodicImages & periodic_images;
+        //!< index of currect pointed-to pixel
+        size_t index;
+      };
+      //! stl conformance
+      inline iterator begin() const {return iterator(*this);}
+      //! stl conformance
+      inline iterator end() const {return iterator(*this, false);}
+      //! stl conformance
+      inline size_t size() const {return this->ntot;}
+    protected:
+      const std::array<int, Dim> origin; //!< minimum repetitions
+      const std::array<int, Dim> extent; //!< maximum repetitions
+      const std::array<int, Dim> nrepetitions;
+      const size_t ntot;
+    };
+
     /* ---------------------------------------------------------------------- */
     //! get dimension dependent neighbour indices
     template<size_t Dim, class Container_t>
@@ -480,13 +554,8 @@ namespace rascal {
                                        const Container_t & boxes) {
       std::vector<size_t> neighbours;
       for (auto && s: Stencil<Dim>{ccoord}) {
-        // std::cout << "s "
-        //   << s[0] << " "
-        //   << s[1] << " "
-        //   << s[2] << std::endl;
         for (const auto & neigh : boxes[s]) {
           //! avoid adding the current i atom to the neighbour list
-          // std::cout << "idx, neigh " << current_atom_index << " " << neigh << std::endl;
           if (neigh != current_atom_index) {
             neighbours.push_back(neigh);
           }
@@ -497,14 +566,14 @@ namespace rascal {
 
     /* ---------------------------------------------------------------------- */
     //! get the cell index for a position
-    template<class Vector_t, size_t Dim>
+    template<class Vector_t>
     decltype(auto) get_box_index(const Vector_t & position,
-                                 const double & rc,
-                                 const std::array<int, Dim> nmax) {
+                                 const double & rc) {
+                                 // const std::array<int, Dim> nmax) {
 
       auto constexpr dimension{Vector_t::SizeAtCompileTime};
-      static_assert(dimension == Dim,
-                    "Discrepancy between position and boxgrid dimension");
+      // static_assert(dimension == Dim,
+      //               "Discrepancy between position and boxgrid dimension");
 
       std::array<int, dimension> nidx{};
       for(auto dim{0}; dim < dimension; ++dim) {
@@ -932,6 +1001,8 @@ namespace rascal {
      */
     std::array<int, dim> periodic_max{};
     std::array<int, dim> periodic_min{};
+    std::array<int, dim> repetitions{};
+    size_t ntot{1};
     for (auto i{0}; i < dim; ++i) {
       if (periodicity[i]) {
         periodic_max[i] = m_max[i];
@@ -940,6 +1011,9 @@ namespace rascal {
         periodic_max[i] = 0;
         periodic_min[i] = 0;
       }
+      auto nrep_in_dim = -periodic_min[i] + periodic_max[i] + 1;
+      repetitions[i] = nrep_in_dim;
+      ntot *= nrep_in_dim;
     }
     //! generate ghost atom indices and position
     for (auto atom : this->get_manager()) {
@@ -947,6 +1021,13 @@ namespace rascal {
       auto id = atom.get_index();
       std::cout << "atom index " << id << std::endl;
 
+      for (auto && p_image : internal::PeriodicImages<dim>
+        {periodic_min, periodic_max, repetitions, ntot}) {
+        std::cout << ">>> >>> pc " << p_image[0] << " "
+                  << p_image[1] << " "
+                  << p_image[2] << std::endl;
+
+      }
 
       // for (auto i{0}; i<dim; ++i) {
       for (int i{periodic_min[0]}; i<=periodic_max[0]; ++i)
@@ -990,19 +1071,15 @@ namespace rascal {
     for (size_t i{0}; i < this->n_i_atoms; ++i) {
       Vector_t pos = this->get_position(i);
       Vector_t dpos = pos - mesh_min;
-      auto idx = internal::get_box_index(dpos, cutoff, nboxes_per_dim);
+      auto idx = internal::get_box_index(dpos, cutoff);
       atom_id_cell[idx].push_back(i);
-      std::cout << "atom, box " << i << " "
-                << idx[0] << " "
-                << idx[1] << " "
-                << idx[2] << std::endl;
     }
 
     //! ghost atoms sorting into boxes
     for (size_t i{0}; i < this->n_j_atoms; ++i) {
-      auto ghost_pos = this->get_ghost_position(i);
-      auto dpos = ghost_pos - mesh_min;
-      auto idx  = internal::get_box_index(dpos, cutoff, nboxes_per_dim);
+      Vector_t ghost_pos = this->get_ghost_position(i);
+      Vector_t dpos = ghost_pos - mesh_min;
+      auto idx  = internal::get_box_index(dpos, cutoff);
       auto ghost_atom_index = i + this->n_i_atoms;
       atom_id_cell[idx].push_back(ghost_atom_index);
     }
@@ -1020,21 +1097,9 @@ namespace rascal {
     int offset{0};
     for (size_t i{0}; i < this->n_i_atoms; ++i) {
       int nneigh{0};
-      auto pos = this->get_position(i);
-      std::cout << "pos i " << i << ". "
-        << pos(0) << " "
-        << pos(1) << " "
-        << pos(2) << std::endl;
-      auto dpos = pos - mesh_min;
-      std::cout << "dpos "
-        << dpos(0) << " "
-        << dpos(1) << " "
-        << dpos(2) << std::endl;
-      auto idx = internal::get_box_index(dpos, cutoff, nboxes_per_dim);
-      std::cout << "box idx "
-        << idx[0] << " "
-        << idx[1] << " "
-        << idx[2] << std::endl;
+      Vector_t pos = this->get_position(i);
+      Vector_t dpos = pos - mesh_min;
+      auto idx = internal::get_box_index(dpos, cutoff);
       auto current_j_atoms = internal::get_neighbours(i, idx, atom_id_cell);
 
       for (auto j : current_j_atoms) {

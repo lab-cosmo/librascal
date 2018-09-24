@@ -150,9 +150,16 @@ namespace rascal {
                           ManagerFixtureNeighbourComparison
                           <StructureManagerCenters>) {
 
+    /**
+     * Note: since the cell vectors are different, it is possible that one of
+     * the two atoms is repeated into a different cell du to periodicity. This
+     * leads to a difference in number of neighbours. Therefore the strict
+     * cutoff is check to ensure the exakt same number of neighbours.
+     */
+
     constexpr bool verbose{false};
 
-    std::cout << "HCP test " << cutoff << std::endl;
+    //std::cout << "HCP test " << cutoff << std::endl;
 
     int mult = 10;
 
@@ -177,7 +184,7 @@ namespace rascal {
           cutoff_tmp};
       pair_manager2.update();
 
-      std::cout << "Manager 1" << std::endl;
+      //std::cout << "Manager 1" << std::endl;
       for (auto atom : pair_manager1) {
         neighbours_per_atom1.push_back(0);
         for (auto pair : atom) {
@@ -193,7 +200,7 @@ namespace rascal {
           }
         }
       }
-      std::cout << "Manager 2" << std::endl;
+      //std::cout << "Manager 2" << std::endl;
       for (auto atom : pair_manager2) {
         neighbours_per_atom2.push_back(0);
         for (auto pair : atom) {
