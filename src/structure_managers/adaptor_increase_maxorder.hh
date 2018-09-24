@@ -1023,43 +1023,65 @@ namespace rascal {
 
       for (auto && p_image : internal::PeriodicImages<dim>
         {periodic_min, periodic_max, repetitions, ntot}) {
-        std::cout << ">>> >>> pc " << p_image[0] << " "
-                  << p_image[1] << " "
-                  << p_image[2] << std::endl;
+        // std::cout << ">>> >>> pc " << p_image[0] << " "
+        //           << p_image[1] << " "
+        //           << p_image[2] << std::endl;
 
-      }
+        int ncheck{0};
+        for (auto i{0}; i<dim; ++i) ncheck += std::abs(p_image[i]);
 
-      // for (auto i{0}; i<dim; ++i) {
-      for (int i{periodic_min[0]}; i<=periodic_max[0]; ++i)
-        {
-        for (int j{periodic_min[1]}; j<=periodic_max[1]; ++j)
-          {
-          for (int k{periodic_min[2]}; k<=periodic_max[2]; ++k)
-            {
+        //! exclude cell itself
+        if(ncheck > 0) {
 
-              if (!(i==0 and j==0 and k==0)) {
-              //! shift i atom along cell vector i
-                Vector_t pos_ghost = pos + cell.col(0)*i + cell.col(1)*j + cell.col(2)*k;
+          Vector_t pos_ghost = pos;
 
-                // std::cout << "pos_ghost i,j,k " << i << " " << j << " " << k <<
-                //   ", \n" << pos_ghost << std::endl;
+          for (auto i{0}; i< dim; ++i) {
+            pos_ghost += cell.col(i) * p_image[i];
+          }
 
-
-                auto flag_inside = internal::position_in_bounds(mesh_min,
-                                                                mesh_max,
-                                                                pos_ghost);
-                // std::cout << " inside:" << flag_inside << std::endl;
-
-              if (flag_inside) {
-                //! next atom index is size, since start is at index = 0
-                auto new_atom_index = this->get_size_with_ghosts();
-                this->add_ghost_atom(new_atom_index, pos_ghost);
-              }
-            }
+          auto flag_inside = internal::position_in_bounds(mesh_min,
+                                                          mesh_max,
+                                                          pos_ghost);
+          if (flag_inside) {
+            //! next atom index is size, since start is at index = 0
+            auto new_atom_index = this->get_size_with_ghosts();
+            this->add_ghost_atom(new_atom_index, pos_ghost);
           }
         }
       }
     }
+
+    //   // for (auto i{0}; i<dim; ++i) {
+    //   for (int i{periodic_min[0]}; i<=periodic_max[0]; ++i)
+    //     {
+    //     for (int j{periodic_min[1]}; j<=periodic_max[1]; ++j)
+    //       {
+    //       for (int k{periodic_min[2]}; k<=periodic_max[2]; ++k)
+    //         {
+
+    //           if (!(i==0 and j==0 and k==0)) {
+    //           //! shift i atom along cell vector i
+    //             Vector_t pos_ghost = pos + cell.col(0)*i + cell.col(1)*j + cell.col(2)*k;
+
+    //             // std::cout << "pos_ghost i,j,k " << i << " " << j << " " << k <<
+    //             //   ", \n" << pos_ghost << std::endl;
+
+
+    //             auto flag_inside = internal::position_in_bounds(mesh_min,
+    //                                                             mesh_max,
+    //                                                             pos_ghost);
+    //             // std::cout << " inside:" << flag_inside << std::endl;
+
+    //           if (flag_inside) {
+    //             //! next atom index is size, since start is at index = 0
+    //             auto new_atom_index = this->get_size_with_ghosts();
+    //             this->add_ghost_atom(new_atom_index, pos_ghost);
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
     std::cout << "natoms " << this->manager.get_size() << std::endl;
     std::cout << "ghosts " << this->n_j_atoms << std::endl;
 
