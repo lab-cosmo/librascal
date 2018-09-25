@@ -472,20 +472,19 @@ namespace rascal {
       const std::array<int, Dim> origin; //!< locations of this domain
     };
 
-        /* ---------------------------------------------------------------------- */
+    /* ---------------------------------------------------------------------- */
     /**
-     * stencil iterator for simple, dimension dependent stencils to access the
-     * neighbouring boxes of the cell algorithm
+     * Periodic image iterator for easy access to how many images have to be
+     * added for ghost atoms.
      */
     template <size_t Dim>
     class PeriodicImages {
     public:
       //! constructor
       PeriodicImages(const std::array<int, Dim> & origin,
-                     const std::array<int, Dim> & extent,
                      const std::array<int, Dim> & nrepetitions,
                      const size_t & ntot)
-        : origin{origin}, extent{extent}, nrepetitions{nrepetitions}, ntot{ntot} {};
+        : origin{origin}, nrepetitions{nrepetitions}, ntot{ntot} {};
       //! copy constructor
       PeriodicImages(const PeriodicImages & other) = default;
       //! assignment operator
@@ -541,9 +540,74 @@ namespace rascal {
       inline size_t size() const {return this->ntot;}
     protected:
       const std::array<int, Dim> origin; //!< minimum repetitions
-      const std::array<int, Dim> extent; //!< maximum repetitions
-      const std::array<int, Dim> nrepetitions;
+      const std::array<int, Dim> nrepetitions; //!< repetitions in each dimension
       const size_t ntot;
+    };
+
+    /* ---------------------------------------------------------------------- */
+    /**
+     * Mesh bounding coordinates iterator for easy access to the cornes for
+     * evaluating the multipliers necessary to build periodic images.
+     */
+    template <size_t Dim>
+    class MeshBounds {
+    public:
+      //! constructor
+      MeshBounds(const std::array<double, 2*Dim> & extent)
+        : extent{extent} {};
+      //! copy constructor
+      MeshBounds(const MeshBounds & other) = default;
+      //! assignment operator
+      MeshBounds & operator=(const MeshBounds & other) = default;
+      ~MeshBounds() = default;
+
+      //! iterators over `` dereferences to mesh bound coordinate
+      class iterator
+      {
+      public:
+        using value_type = std::array<double, Dim>; //!< stl conformance
+        using const_value_type = const value_type; //!< stl conformance
+        using pointer = value_type*; //!< stl conformance
+        using iterator_category = std::forward_iterator_tag;//!<stl conformance
+
+        //! constructor
+        iterator(const MeshBounds & mesh_bounds, bool begin=true)
+          : mesh_bounds{mesh_bounds},
+            index{begin? 0: mesh_bounds.size()} {}
+
+        ~iterator() {};
+        //! dereferencing
+        value_type operator*() const {
+          std::array<double, Dim> retval{{0}};
+          int factor{1};
+          constexpr int size{2};
+          for (int i{0}; i < Dim; ++i) {
+            int idx = (this->index/ipow(size,i))%size * Dim + i;
+            retval[i] = this->mesh_bounds.extent[idx];
+          }
+          return retval;
+        };
+        //! pre-increment
+        iterator & operator++() {this->index++; return *this;}
+        //! inequality
+        inline bool operator!=(const iterator & other) const {
+          return this->index != other.index;
+        };
+
+      protected:
+        //!< ref to periodic images
+        const MeshBounds & mesh_bounds;
+        //!< index of currect pointed-to pixel
+        size_t index;
+      };
+      //! stl conformance
+      inline iterator begin() const {return iterator(*this);}
+      //! stl conformance
+      inline iterator end() const {return iterator(*this, false);}
+      //! stl conformance
+      inline size_t size() const {return ipow(2, Dim);}
+    protected:
+      const std::array<double, 2*Dim> extent; //!< repetitions in each dimension
     };
 
     /* ---------------------------------------------------------------------- */
@@ -942,6 +1006,20 @@ namespace rascal {
      */
     int ncorners = internal::ipow(2, dim);
     Eigen::MatrixXd xpos(dim, ncorners);
+    Eigen::MatrixXd xpos_test(dim, ncorners);
+    std::array<double, dim*2> mesh_bounds{};
+    for (auto i{0}; i<dim; ++i) {
+      mesh_bounds[i] = mesh_min[i];
+      mesh_bounds[i+dim] = mesh_max[i];
+    }
+    int n{0};
+    for (auto && coord : internal::MeshBounds<dim>{mesh_bounds}) {
+      for (auto i{0}; i<dim; ++i) {
+        std::cout << "coord " << coord[i] << " " << n << std::endl;
+        xpos_test(i,n) = coord[i];
+      }
+      n++;
+    }
     xpos.col(0) = mesh_min;
     xpos.col(7) = mesh_max;
 
@@ -970,11 +1048,18 @@ namespace rascal {
     xpos(2,6) = mesh_max[2];
 
     auto multiplicator = cell.ldlt().solve(xpos);
+    auto multiplicator_test = cell.ldlt().solve(xpos_test);
     std::cout << "multiplicator \n" << multiplicator << std::endl;
     auto xmin = multiplicator.rowwise().minCoeff();
     auto xmax = multiplicator.rowwise().maxCoeff();
+
+    auto xmin_test = multiplicator_test.rowwise().minCoeff();
+    auto xmax_test = multiplicator_test.rowwise().maxCoeff();
+
     std::cout << "xmin \n" << xmin << std::endl;
     std::cout << "xmax \n" << xmax  << std::endl;
+    std::cout << "xmin_test \n" << xmin_test << std::endl;
+    std::cout << "xmax_test \n" << xmax_test  << std::endl;
 
     for (auto i{0}; i < dim; ++i) {
       m_min[i] = std::floor(xmin(i)) - 1;
@@ -1022,10 +1107,7 @@ namespace rascal {
       std::cout << "atom index " << id << std::endl;
 
       for (auto && p_image : internal::PeriodicImages<dim>
-        {periodic_min, periodic_max, repetitions, ntot}) {
-        // std::cout << ">>> >>> pc " << p_image[0] << " "
-        //           << p_image[1] << " "
-        //           << p_image[2] << std::endl;
+        {periodic_min, repetitions, ntot}) {
 
         int ncheck{0};
         for (auto i{0}; i<dim; ++i) ncheck += std::abs(p_image[i]);
@@ -1051,37 +1133,6 @@ namespace rascal {
       }
     }
 
-    //   // for (auto i{0}; i<dim; ++i) {
-    //   for (int i{periodic_min[0]}; i<=periodic_max[0]; ++i)
-    //     {
-    //     for (int j{periodic_min[1]}; j<=periodic_max[1]; ++j)
-    //       {
-    //       for (int k{periodic_min[2]}; k<=periodic_max[2]; ++k)
-    //         {
-
-    //           if (!(i==0 and j==0 and k==0)) {
-    //           //! shift i atom along cell vector i
-    //             Vector_t pos_ghost = pos + cell.col(0)*i + cell.col(1)*j + cell.col(2)*k;
-
-    //             // std::cout << "pos_ghost i,j,k " << i << " " << j << " " << k <<
-    //             //   ", \n" << pos_ghost << std::endl;
-
-
-    //             auto flag_inside = internal::position_in_bounds(mesh_min,
-    //                                                             mesh_max,
-    //                                                             pos_ghost);
-    //             // std::cout << " inside:" << flag_inside << std::endl;
-
-    //           if (flag_inside) {
-    //             //! next atom index is size, since start is at index = 0
-    //             auto new_atom_index = this->get_size_with_ghosts();
-    //             this->add_ghost_atom(new_atom_index, pos_ghost);
-    //           }
-    //         }
-    //       }
-    //     }
-    //   }
-    // }
     std::cout << "natoms " << this->manager.get_size() << std::endl;
     std::cout << "ghosts " << this->n_j_atoms << std::endl;
 
