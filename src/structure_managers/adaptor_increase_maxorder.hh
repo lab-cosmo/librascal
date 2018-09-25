@@ -203,10 +203,10 @@ namespace rascal {
                     "this implementation should only work up to MaxOrder.");
 
       // if (Order == 2) {
-        return this->get_position(cluster.back());
+      return this->get_position(cluster.back());
       // } else {
-        //return this->get_position(cluster.back());//manager.get_neighbour_position(cluster);
-        //}
+      //return this->get_position(cluster.back());//manager.get_neighbour_position(cluster);
+      //}
     }
 
     /**
@@ -579,9 +579,8 @@ namespace rascal {
         //! dereferencing
         value_type operator*() const {
           std::array<double, Dim> retval{{0}};
-          int factor{1};
           constexpr int size{2};
-          for (int i{0}; i < Dim; ++i) {
+          for (size_t i{0}; i < Dim; ++i) {
             int idx = (this->index/ipow(size,i))%size * Dim + i;
             retval[i] = this->mesh_bounds.extent[idx];
           }
@@ -633,7 +632,7 @@ namespace rascal {
     template<class Vector_t>
     decltype(auto) get_box_index(const Vector_t & position,
                                  const double & rc) {
-                                 // const std::array<int, Dim> nmax) {
+      // const std::array<int, Dim> nmax) {
 
       auto constexpr dimension{Vector_t::SizeAtCompileTime};
       // static_assert(dimension == Dim,
@@ -919,7 +918,6 @@ namespace rascal {
 
     //! short hands for variable
     const auto dim{traits::Dim};
-    auto periodicity = this->manager.get_periodic_boundary_conditions();
 
     auto cell{manager.get_cell()};
     double cutoff{this->cutoff};
@@ -939,145 +937,67 @@ namespace rascal {
     mesh_min.setZero();
     mesh_max.setZero();
 
-    //! max and min multipliers for number of cells in mesh per dimension
+    /**
+     * max and min multipliers for number of cells in mesh per dimension in
+     * units of cell vectors
+     */
     std::array<int, dim> m_min;
     std::array<int, dim> m_max;
 
-
-    /**
-     * calculate origin and maximum mesh coordinates. the number of images of
-     * the original cell depends on the cell size and cutoff. 'mrep_min' refers
-     * to the number of repetitions of the cell to ensure at least rcut distance
-     * at the mesh origin. the mesh is independent of the ghost atoms. first,
-     * the mesh is build, then ghost atoms are added according to position.
-     */
-
-    std::cout << "======================== start" << std::endl;
-
     /**
      * Mesh related stuff for neighbour boxes. Calculate min and max of the mesh
-     * in cartesian coordinates and relative to the cell origin.
-     * mesh_min is the origin of the mesh
-     * mesh_max is the maximum coordinate of the mesh
-     * nboxes_per_dim is the number of cells/boxes in each dimension
+     * in cartesian coordinates and relative to the cell origin.  mesh_min is
+     * the origin of the mesh; mesh_max is the maximum coordinate of the mesh;
+     * nboxes_per_dim is the number of mesh boxes in each dimension, not to be
+     * confused with the number of cells to ensure periodicity
      */
     for (auto i{0}; i < dim; ++i) {
       auto min_coord = std::min(0., cell.row(i).minCoeff());
       auto max_coord = std::max(0., cell.row(i).maxCoeff());
-      std::cout << "min coord " << min_coord << std::endl;
-      std::cout << "max coord " << max_coord << std::endl;
-      std::cout << "cutoff " << cutoff << std::endl;
+
       /**
        * minimum is given by -cutoff and a delta to avoid ambiguity during cell
        * sorting of atom position e.g. at x = (0,0,0).
        */
       auto epsilon = 0.25*cutoff;
       mesh_min[i] = min_coord - cutoff - epsilon;
-      std::cout << "mesh_min " << mesh_min[i] << std::endl;
       auto lmesh = std::fabs(mesh_min[i]) + max_coord + cutoff;
-      std::cout << "lmesh " << lmesh << std::endl;
       int n = std::ceil(lmesh / cutoff);
-      std::cout << "lmesh * n" << n*cutoff << std::endl;
-      std::cout << "n boxes " << n << std::endl;
       auto lmax = n * cutoff - std::fabs(mesh_min[i]);
-      std::cout << "lmax " << lmax << std::endl;
       mesh_max[i] = lmax;
       nboxes_per_dim[i] = n;
     }
 
-
-    std::cout << "mesh_min origin "
-              << mesh_min[0] << " "
-              << mesh_min[1] << " "
-              << mesh_min[2] << std::endl;
-    std::cout << "mesh_max origin "
-              << mesh_max[0] << " "
-              << mesh_max[1] << " "
-              << mesh_max[2] << std::endl;
-    std::cout << "nboxes "
-              << nboxes_per_dim[0] << " "
-              << nboxes_per_dim[1] << " "
-              << nboxes_per_dim[2] << std::endl;
-
     /**
      * Periodicity related multipliers. Now the mesh coordinates are calculated
      * in units of cell vectors. m_min and m_max give the number of repetitions
-     * in each cell dimension.
+     * of the cell in each cell vector direction
      */
     int ncorners = internal::ipow(2, dim);
     Eigen::MatrixXd xpos(dim, ncorners);
-    Eigen::MatrixXd xpos_test(dim, ncorners);
     std::array<double, dim*2> mesh_bounds{};
     for (auto i{0}; i<dim; ++i) {
       mesh_bounds[i] = mesh_min[i];
       mesh_bounds[i+dim] = mesh_max[i];
     }
+    // TODO: find way to initialize eigen column with std::array
     int n{0};
     for (auto && coord : internal::MeshBounds<dim>{mesh_bounds}) {
       for (auto i{0}; i<dim; ++i) {
-        std::cout << "coord " << coord[i] << " " << n << std::endl;
-        xpos_test(i,n) = coord[i];
+        xpos(i,n) = coord[i];
       }
       n++;
     }
-    xpos.col(0) = mesh_min;
-    xpos.col(7) = mesh_max;
-
-    xpos(0,1) = mesh_max[0];
-    xpos(1,1) = mesh_min[1];
-    xpos(2,1) = mesh_min[2];
-
-    xpos(0,2) = mesh_min[0];
-    xpos(1,2) = mesh_max[1];
-    xpos(2,2) = mesh_min[2];
-
-    xpos(0,3) = mesh_max[0];
-    xpos(1,3) = mesh_max[1];
-    xpos(2,3) = mesh_min[2];
-
-    xpos(0,4) = mesh_min[0];
-    xpos(1,4) = mesh_min[1];
-    xpos(2,4) = mesh_max[2];
-
-    xpos(0,5) = mesh_max[0];
-    xpos(1,5) = mesh_min[1];
-    xpos(2,5) = mesh_max[2];
-
-    xpos(0,6) = mesh_min[0];
-    xpos(1,6) = mesh_max[1];
-    xpos(2,6) = mesh_max[2];
-
+    //! solve for all multipliers
     auto multiplicator = cell.ldlt().solve(xpos);
-    auto multiplicator_test = cell.ldlt().solve(xpos_test);
-    std::cout << "multiplicator \n" << multiplicator << std::endl;
     auto xmin = multiplicator.rowwise().minCoeff();
     auto xmax = multiplicator.rowwise().maxCoeff();
 
-    auto xmin_test = multiplicator_test.rowwise().minCoeff();
-    auto xmax_test = multiplicator_test.rowwise().maxCoeff();
-
-    std::cout << "xmin \n" << xmin << std::endl;
-    std::cout << "xmax \n" << xmax  << std::endl;
-    std::cout << "xmin_test \n" << xmin_test << std::endl;
-    std::cout << "xmax_test \n" << xmax_test  << std::endl;
-
     for (auto i{0}; i < dim; ++i) {
+      //! +/- 1 because of the "zero" cell, the cell itself
       m_min[i] = std::floor(xmin(i)) - 1;
       m_max[i] = std::ceil(xmax(i)) + 1;
     }
-
-    std::cout << "===== " << std::endl;
-    std::cout << "natoms " << this->get_size() << std::endl;
-    std::cout << "cutoff " << cutoff << std::endl;
-
-    std::cout << ">>> m_min "
-              << m_min[0] << " "
-              << m_min[1] << " "
-              << m_min[2] << " " << std::endl;
-    std::cout << ">>> m_max "
-              << m_max[0] << " "
-              << m_max[1] << " "
-              << m_max[2] << " " << std::endl;
 
     /**
      * TODO possible future optimization for cells large triclinicity: use
@@ -1087,7 +1007,10 @@ namespace rascal {
     std::array<int, dim> periodic_max{};
     std::array<int, dim> periodic_min{};
     std::array<int, dim> repetitions{};
+    auto periodicity = this->manager.get_periodic_boundary_conditions();
     size_t ntot{1};
+
+    //! calculate number of actual repetitions of cell, depending on periodicity
     for (auto i{0}; i < dim; ++i) {
       if (periodicity[i]) {
         periodic_max[i] = m_max[i];
@@ -1100,11 +1023,10 @@ namespace rascal {
       repetitions[i] = nrep_in_dim;
       ntot *= nrep_in_dim;
     }
+
     //! generate ghost atom indices and position
     for (auto atom : this->get_manager()) {
       auto pos = atom.get_position();
-      auto id = atom.get_index();
-      std::cout << "atom index " << id << std::endl;
 
       for (auto && p_image : internal::PeriodicImages<dim>
         {periodic_min, repetitions, ntot}) {
@@ -1114,7 +1036,6 @@ namespace rascal {
 
         //! exclude cell itself
         if(ncheck > 0) {
-
           Vector_t pos_ghost = pos;
 
           for (auto i{0}; i< dim; ++i) {
@@ -1132,10 +1053,6 @@ namespace rascal {
         }
       }
     }
-
-    std::cout << "natoms " << this->manager.get_size() << std::endl;
-    std::cout << "ghosts " << this->n_j_atoms << std::endl;
-
 
     //! neighbour boxes
     internal::IndexContainer<dim> atom_id_cell{nboxes_per_dim};
@@ -1156,15 +1073,6 @@ namespace rascal {
       auto ghost_atom_index = i + this->n_i_atoms;
       atom_id_cell[idx].push_back(ghost_atom_index);
     }
-
-    std::cout << "mesh_min "
-              << mesh_min[0] << " "
-              << mesh_min[1] << " "
-              << mesh_min[2] << std::endl;
-    std::cout << "mesh_max "
-              << mesh_max[0] << " "
-              << mesh_max[1] << " "
-              << mesh_max[2] << std::endl;
 
     //! go through atoms and build neighbour list
     int offset{0};

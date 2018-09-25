@@ -152,14 +152,14 @@ namespace rascal {
 
     /**
      * Note: since the cell vectors are different, it is possible that one of
-     * the two atoms is repeated into a different cell du to periodicity. This
+     * the two atoms is repeated into a different cell due to periodicity. This
      * leads to a difference in number of neighbours. Therefore the strict
      * cutoff is check to ensure the exakt same number of neighbours.
      */
 
     constexpr bool verbose{false};
 
-    //std::cout << "HCP test " << cutoff << std::endl;
+    if(verbose) std::cout << "HCP test " << cutoff << std::endl;
 
     int mult = 10;
 
@@ -239,7 +239,7 @@ namespace rascal {
 
     constexpr bool verbose{false};
 
-    std::cout << "FCC test " << std::endl;
+    if (verbose) std::cout << "FCC test " << std::endl;
 
     int mult = 8;
 
@@ -296,13 +296,18 @@ namespace rascal {
         }
       }
 
+      /**
+       * only the first index atom can be checked, since the cell with only one
+       * atom does not allow for comparison with other atom's number of
+       * neighbours
+       */
       BOOST_CHECK_EQUAL(neighbours_per_atom1[0],
                         neighbours_per_atom2[0]);
-      //if (verbose) {
+      if (verbose) {
         std::cout << "neigh1/neigh2: "
                   << neighbours_per_atom1[0] << "/"
                   << neighbours_per_atom2[0] << std::endl;
-        //}
+      }
     }
   }
 
