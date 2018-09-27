@@ -149,16 +149,17 @@ namespace rascal {
       return this->manager.get_position(index);
     }
 
-    // template<size_t Order, size_t Layer>
-    // inline Vector_ref get_neighbour_position(const ClusterRefKey<Order, Layer>
-    // 					     & cluster) {
-    //   static_assert(Order > 1,
-    //                 "Only possible for Order > 1.");
-    //   static_assert(Order <= traits::MaxOrder,
-    //                 "this implementation should only work up to MaxOrder.");
-    //   // Argument is now the same, but implementation
-    //   return this->manager.get_neighbour_position(cluster);
-    // }
+    template<size_t Order, size_t Layer>
+    inline Vector_ref get_neighbour_position(const ClusterRefKey<Order, Layer>
+                                             & cluster) {
+      static_assert(Order > 1,
+                    "Only possible for Order > 1.");
+      static_assert(Order <= traits::MaxOrder,
+                    "this implementation should only work up to MaxOrder.");
+
+      return this->get_position(cluster.back());
+ 
+    }
 
     //! get atom_index of index-th neighbour of this cluster
     template<size_t Order, size_t Layer>
@@ -194,7 +195,16 @@ namespace rascal {
       auto && original_atom{this->atom_indices[0][atom.get_index()]};
       return this->manager.get_atom_type(original_atom);
     }
+    
+    //! Returns atom type given an atom index
+    inline int & get_atom_type(const int& atom_id) {
+      return this->manager.get_atom_type(atom_id);
+    }
 
+    //! Returns a constant atom type given an atom index
+    inline const int & get_atom_type( int& atom_id) const {
+      return this->manager.get_atom_type(atom_id);
+    }
     /**
      * return the linear index of cluster (i.e., the count at which
      * this cluster appears in an iteration
