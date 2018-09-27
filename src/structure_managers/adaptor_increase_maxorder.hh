@@ -27,6 +27,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
+
+#ifndef ADAPTOR_MAXORDER_H
+#define ADAPTOR_MAXORDER_H
+
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/property.hh"
 #include "rascal_utility.hh"
@@ -36,9 +40,6 @@
 #include <typeinfo>
 #include <set>
 #include <vector>
-
-#ifndef ADAPTOR_MAXORDER_H
-#define ADAPTOR_MAXORDER_H
 
 namespace rascal {
   /**

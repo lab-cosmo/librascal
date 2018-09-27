@@ -27,13 +27,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "structure_managers/structure_manager.hh"
-#include "structure_managers/property.hh"
-#include "rascal_utility.hh"
-
 
 #ifndef ADAPTOR_STRICT_H
 #define ADAPTOR_STRICT_H
+
+#include "structure_managers/structure_manager.hh"
+#include "structure_managers/property.hh"
+#include "rascal_utility.hh"
 
 namespace rascal {
   /*

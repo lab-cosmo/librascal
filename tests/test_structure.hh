@@ -36,6 +36,8 @@
 #include "structure_managers/structure_manager_chain.hh"
 #include "structure_managers/structure_manager_json.hh"
 #include "structure_managers/structure_manager_centers.hh"
+#include "structure_managers/adaptor_strict.hh"
+#include "structure_managers/adaptor_increase_maxorder.hh"
 
 namespace rascal {
 
