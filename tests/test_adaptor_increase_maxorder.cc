@@ -150,9 +150,18 @@ namespace rascal {
                           ManagerFixtureNeighbourComparison
                           <StructureManagerCenters>) {
 
+    /**
+     * Note: since the cell vectors are different, it is possible that one of
+     * the two atoms is repeated into a different cell due to periodicity. This
+     * leads to a difference in number of neighbours. Therefore the strict
+     * cutoff is check to ensure the exakt same number of neighbours.
+     */
+
     constexpr bool verbose{false};
 
-    int mult = 2;
+    if(verbose) std::cout << "HCP test " << cutoff << std::endl;
+
+    int mult = 10;
 
     for (auto i{1}; i < mult; ++i) {
       auto cutoff_tmp = i * cutoff;
@@ -176,6 +185,7 @@ namespace rascal {
       pair_manager2.update();
 
       if (verbose) std::cout << "Manager 1" << std::endl;
+
       for (auto atom : pair_manager1) {
         neighbours_per_atom1.push_back(0);
         for (auto pair : atom) {
@@ -184,10 +194,16 @@ namespace rascal {
                       << atom.back() << " "
                       << pair.back() << std::endl;
           }
-          neighbours_per_atom1.back()++;
+          double dist = {(atom.get_position()
+                          - pair.get_position()).norm()};
+          if (dist < cutoff_tmp) {
+            neighbours_per_atom1.back()++;
+          }
         }
       }
+
       if (verbose) std::cout << "Manager 2" << std::endl;
+
       for (auto atom : pair_manager2) {
         neighbours_per_atom2.push_back(0);
         for (auto pair : atom) {
@@ -196,7 +212,11 @@ namespace rascal {
                       << atom.back() << " "
                       << pair.back() << std::endl;
           }
-          neighbours_per_atom2.back()++;
+          double dist = {(atom.get_position()
+                          - pair.get_position()).norm()};
+          if (dist < cutoff_tmp) {
+            neighbours_per_atom2.back()++;
+          }
         }
       }
 
@@ -207,7 +227,7 @@ namespace rascal {
 
       for (auto i{0}; i < natoms; ++i) {
         if (verbose) {
-          std::cout << "neigh1/neigh2: "
+          std::cout << "neigh1/neigh2: i " << i << " "
                     << neighbours_per_atom1[i] << "/"
                     << neighbours_per_atom2[i] << std::endl;
         }
@@ -222,7 +242,9 @@ namespace rascal {
 
     constexpr bool verbose{false};
 
-    int mult = 2;
+    if (verbose) std::cout << "FCC test " << std::endl;
+
+    int mult = 8;
 
     for (auto i{1}; i < mult; ++i) {
       auto cutoff_tmp = i * cutoff;
@@ -253,7 +275,11 @@ namespace rascal {
                       << atom.back() << " "
                       << pair.back() << std::endl;
           }
-          neighbours_per_atom1.back()++;
+          double dist = {(atom.get_position()
+                          - pair.get_position()).norm()};
+          if (dist < cutoff_tmp) {
+            neighbours_per_atom1.back()++;
+          }
         }
       }
 
@@ -265,10 +291,19 @@ namespace rascal {
                       << atom.back() << " "
                       << pair.back() << std::endl;
           }
-          neighbours_per_atom2.back()++;
+          double dist = {(atom.get_position()
+                          - pair.get_position()).norm()};
+          if (dist < cutoff_tmp) {
+            neighbours_per_atom2.back()++;
+          }
         }
       }
 
+      /**
+       * only the first index atom can be checked, since the cell with only one
+       * atom does not allow for comparison with other atom's number of
+       * neighbours
+       */
       BOOST_CHECK_EQUAL(neighbours_per_atom1[0],
                         neighbours_per_atom2[0]);
       if (verbose) {

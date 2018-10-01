@@ -199,14 +199,14 @@ namespace rascal {
                                              & cluster) {
       static_assert(Order > 1,
                     "Only possible for Order > 1.");
-      static_assert(Order < traits::MaxOrder,
+      static_assert(Order <= traits::MaxOrder,
                     "this implementation should only work up to MaxOrder.");
 
-      if (Order == 2) {
-        return this->get_position(cluster.back());
-      } else {
-        return this->manager.get_neighbour_position(cluster, index);
-      }
+      // if (Order == 2) {
+      return this->get_position(cluster.back());
+      // } else {
+      //return this->get_position(cluster.back());//manager.get_neighbour_position(cluster);
+      //}
     }
 
     /**
@@ -458,7 +458,7 @@ namespace rascal {
 
       protected:
         //!< ref to stencils in cell
-        const Stencil& stencil;
+        const Stencil & stencil;
         //!< index of currect pointed-to pixel
         size_t index;
       };
@@ -470,6 +470,143 @@ namespace rascal {
       inline size_t size() const {return ipow(3, Dim);}
     protected:
       const std::array<int, Dim> origin; //!< locations of this domain
+    };
+
+    /* ---------------------------------------------------------------------- */
+    /**
+     * Periodic image iterator for easy access to how many images have to be
+     * added for ghost atoms.
+     */
+    template <size_t Dim>
+    class PeriodicImages {
+    public:
+      //! constructor
+      PeriodicImages(const std::array<int, Dim> & origin,
+                     const std::array<int, Dim> & nrepetitions,
+                     const size_t & ntot)
+        : origin{origin}, nrepetitions{nrepetitions}, ntot{ntot} {};
+      //! copy constructor
+      PeriodicImages(const PeriodicImages & other) = default;
+      //! assignment operator
+      PeriodicImages & operator=(const PeriodicImages & other) = default;
+      ~PeriodicImages() = default;
+
+      //! iterators over `` dereferences to cell coordinates
+      class iterator
+      {
+      public:
+        using value_type = std::array<int, Dim>; //!< stl conformance
+        using const_value_type = const value_type; //!< stl conformance
+        using pointer = value_type*; //!< stl conformance
+        using iterator_category = std::forward_iterator_tag;//!<stl conformance
+
+        //! constructor
+        iterator(const PeriodicImages & periodic_images, bool begin=true)
+          : periodic_images{periodic_images},
+            index{begin? 0: periodic_images.size()} {}
+
+        ~iterator() {};
+        //! dereferencing
+        value_type operator*() const {
+          std::array<int, Dim> retval{{0}};
+          int factor{1};
+          for (int i = Dim-1; i >=0; --i) {
+            retval[i] = this->index/factor%this->periodic_images.nrepetitions[i]
+              + this->periodic_images.origin[i];
+            if (i != 0 ) {
+              factor *= this->periodic_images.nrepetitions[i];
+            }
+          }
+          return retval;
+        };
+        //! pre-increment
+        iterator & operator++() {this->index++; return *this;}
+        //! inequality
+        inline bool operator!=(const iterator & other) const {
+          return this->index != other.index;
+        };
+
+      protected:
+        //!< ref to periodic images
+        const PeriodicImages & periodic_images;
+        //!< index of currect pointed-to pixel
+        size_t index;
+      };
+      //! stl conformance
+      inline iterator begin() const {return iterator(*this);}
+      //! stl conformance
+      inline iterator end() const {return iterator(*this, false);}
+      //! stl conformance
+      inline size_t size() const {return this->ntot;}
+    protected:
+      const std::array<int, Dim> origin; //!< minimum repetitions
+      const std::array<int, Dim> nrepetitions; //!< repetitions in each dimension
+      const size_t ntot;
+    };
+
+    /* ---------------------------------------------------------------------- */
+    /**
+     * Mesh bounding coordinates iterator for easy access to the cornes for
+     * evaluating the multipliers necessary to build periodic images.
+     */
+    template <size_t Dim>
+    class MeshBounds {
+    public:
+      //! constructor
+      MeshBounds(const std::array<double, 2*Dim> & extent)
+        : extent{extent} {};
+      //! copy constructor
+      MeshBounds(const MeshBounds & other) = default;
+      //! assignment operator
+      MeshBounds & operator=(const MeshBounds & other) = default;
+      ~MeshBounds() = default;
+
+      //! iterators over `` dereferences to mesh bound coordinate
+      class iterator
+      {
+      public:
+        using value_type = std::array<double, Dim>; //!< stl conformance
+        using const_value_type = const value_type; //!< stl conformance
+        using pointer = value_type*; //!< stl conformance
+        using iterator_category = std::forward_iterator_tag;//!<stl conformance
+
+        //! constructor
+        iterator(const MeshBounds & mesh_bounds, bool begin=true)
+          : mesh_bounds{mesh_bounds},
+            index{begin? 0: mesh_bounds.size()} {}
+
+        ~iterator() {};
+        //! dereferencing
+        value_type operator*() const {
+          std::array<double, Dim> retval{{0}};
+          constexpr int size{2};
+          for (size_t i{0}; i < Dim; ++i) {
+            int idx = (this->index/ipow(size,i))%size * Dim + i;
+            retval[i] = this->mesh_bounds.extent[idx];
+          }
+          return retval;
+        };
+        //! pre-increment
+        iterator & operator++() {this->index++; return *this;}
+        //! inequality
+        inline bool operator!=(const iterator & other) const {
+          return this->index != other.index;
+        };
+
+      protected:
+        //!< ref to periodic images
+        const MeshBounds & mesh_bounds;
+        //!< index of currect pointed-to pixel
+        size_t index;
+      };
+      //! stl conformance
+      inline iterator begin() const {return iterator(*this);}
+      //! stl conformance
+      inline iterator end() const {return iterator(*this, false);}
+      //! stl conformance
+      inline size_t size() const {return ipow(2, Dim);}
+    protected:
+      const std::array<double, 2*Dim> extent; //!< repetitions in each dimension
     };
 
     /* ---------------------------------------------------------------------- */
@@ -492,21 +629,23 @@ namespace rascal {
 
     /* ---------------------------------------------------------------------- */
     //! get the cell index for a position
-    template<class Vector_t, size_t Dim>
+    template<class Vector_t>
     decltype(auto) get_box_index(const Vector_t & position,
-                                 const double & rc,
-                                 const std::array<int, Dim> nmax) {
+                                 const double & rc) {
+      // const std::array<int, Dim> nmax) {
 
       auto constexpr dimension{Vector_t::SizeAtCompileTime};
-      static_assert(dimension == Dim,
-                    "Discrepancy between position and boxgrid dimension");
+      // static_assert(dimension == Dim,
+      //               "Discrepancy between position and boxgrid dimension");
 
       std::array<int, dimension> nidx{};
       for(auto dim{0}; dim < dimension; ++dim) {
         auto val = position(dim);
-        nidx[dim] = static_cast<int>(std::floor(val / rc));
-        nidx[dim] = std::min(nidx[dim], nmax[dim]-1);
-        nidx[dim] = std::max(nidx[dim], 0);
+        nidx[dim] = int(std::floor(val / rc));
+        // std::cout << "dim, pos " << dim << " " << val;
+        // std::cout << " val/rc " << val/rc << " " << int(std::floor(val / rc)) << std::endl;
+        // nidx[dim] = std::min(nidx[dim], nmax[dim]-1);
+        // nidx[dim] = std::max(nidx[dim], 0);
       }
       return nidx;
     }
@@ -542,6 +681,27 @@ namespace rascal {
         }
       }
       return retval;
+    }
+
+    /* ---------------------------------------------------------------------- */
+    //! test if position inside
+    template <int Dim>
+    bool position_in_bounds(const Eigen::Matrix<double, Dim, 1> & min,
+                            const Eigen::Matrix<double, Dim, 1> & max,
+                            const Eigen::Matrix<double, Dim, 1> & pos) {
+
+      auto pos_lower  = pos.array() - min.array();
+      auto pos_greater  = pos.array() - max.array();
+
+      //! check if shifted position inside mesh
+      auto f_lt = (pos_lower.array() > 0.).all();
+      auto f_gt = (pos_greater.array() < 0.).all();
+
+      if (f_lt and f_gt) {
+        return true;
+      } else {
+        return false;
+      }
     }
 
     /* ---------------------------------------------------------------------- */
@@ -758,7 +918,6 @@ namespace rascal {
 
     //! short hands for variable
     const auto dim{traits::Dim};
-    auto periodicity = this->manager.get_periodic_boundary_conditions();
 
     auto cell{manager.get_cell()};
     double cutoff{this->cutoff};
@@ -778,117 +937,118 @@ namespace rascal {
     mesh_min_coord.setZero();
     mesh_max_coord.setZero();
 
-    //! max and min multipliers for number of cells in mesh per dimension
+    /**
+     * max and min multipliers for number of cells in mesh per dimension in
+     * units of cell vectors
+     */
     std::array<int, dim> m_min;
     std::array<int, dim> m_max;
 
+    /**
+     * Mesh related stuff for neighbour boxes. Calculate min and max of the mesh
+     * in cartesian coordinates and relative to the cell origin.  mesh_min is
+     * the origin of the mesh; mesh_max_coord is the maximum coordinate of the mesh;
+     * nboxes_per_dim is the number of mesh boxes in each dimension, not to be
+     * confused with the number of cells to ensure periodicity
+     */
+    for (auto i{0}; i < dim; ++i) {
+      auto min_coord = std::min(0., cell.row(i).minCoeff());
+      auto max_coord = std::max(0., cell.row(i).maxCoeff());
+
+      /**
+       * minimum is given by -cutoff and a delta to avoid ambiguity during cell
+       * sorting of atom position e.g. at x = (0,0,0).
+       */
+      auto epsilon = 0.25*cutoff;
+      mesh_min_coord[i] = min_coord - cutoff - epsilon;
+      auto lmesh = std::fabs(mesh_min_coord[i]) + max_coord + cutoff;
+      int n = std::ceil(lmesh / cutoff);
+      auto lmax = n * cutoff - std::fabs(mesh_min_coord[i]);
+      mesh_max_coord[i] = lmax;
+      nboxes_per_dim[i] = n;
+    }
 
     /**
-     * calculate origin and maximum mesh coordinates. the number of images of
-     * the original cell depends on the cell size and cutoff. if the cell size
-     * is 2 times larger than the cutoff, nothing special has to be done. if it
-     * is not, the cell has to before so that no atom is its own neighbour. If
-     * the projected side length of the cell is smaller than 2 rcut, it is
-     * repeated 'mrep' times. 'mrep_min' refers to the number of repetitions of
-     * the cell to ensure at least rcut distance at the mesh origin. the mesh is
-     * independent of the ghost atoms. first, the mesh is build, then ghost
-     * atoms are added according to position.
+     * Periodicity related multipliers. Now the mesh coordinates are calculated
+     * in units of cell vectors. m_min and m_max give the number of repetitions
+     * of the cell in each cell vector direction
      */
+    int ncorners = internal::ipow(2, dim);
+    Eigen::MatrixXd xpos(dim, ncorners);
+    std::array<double, dim*2> mesh_bounds{};
+    for (auto i{0}; i<dim; ++i) {
+      mesh_bounds[i] = mesh_min_coord[i];
+      mesh_bounds[i+dim] = mesh_max_coord[i];
+    }
+    // TODO: find way to initialize eigen column with std::array
+    int n{0};
+    for (auto && coord : internal::MeshBounds<dim>{mesh_bounds}) {
+      for (auto i{0}; i<dim; ++i) {
+        xpos(i,n) = coord[i];
+      }
+      n++;
+    }
+    //! solve for all multipliers
+    auto multiplicator = cell.ldlt().solve(xpos);
+    auto xmin = multiplicator.rowwise().minCoeff();
+    auto xmax = multiplicator.rowwise().maxCoeff();
 
     for (auto i{0}; i < dim; ++i) {
-      auto min_coord = cell.row(i).minCoeff();
-      auto max_coord = cell.row(i).maxCoeff();
-      /**
-       * check if cell is minimum 2*cutoff, else increase upper corner to at
-       * least 2*cutoff
-       */
-      min_coord = std::min(0., min_coord);
-      auto mult_cell = std::ceil(max_coord / cutoff);
-      std::cout << "mult_cell " << mult_cell << std::endl;
-      mult_cell = std::max(2., mult_cell);
-
-      max_coord = mult_cell * cutoff;
-
-      std::cout << "min coord " << min_coord << std::endl;
-      std::cout << "max coord " << max_coord << std::endl;
-      mesh_min_coord[i] = min_coord - cutoff;
-      mesh_max_coord[i] = max_coord + cutoff;
+      //! +/- 1 because of the "zero" cell, the cell itself
+      m_min[i] = std::floor(xmin(i)) - 1;
+      m_max[i] = std::ceil(xmax(i)) + 1;
     }
-
-    std::cout << "mesh_min_coord origin "
-      << mesh_min_coord[0] << " "
-      << mesh_min_coord[1] << " "
-      << mesh_min_coord[2] << std::endl;
-    std::cout << "mesh_max_coord origin "
-      << mesh_max_coord[0] << " "
-      << mesh_max_coord[1] << " "
-      << mesh_max_coord[2] << std::endl;
-
-    //! now find multipliers of the cell in cell coordinates for repetitions
-    auto cell_mult_min = cell.ldlt().solve(mesh_min_coord);
-    auto cell_mult_max = cell.ldlt().solve(mesh_max_coord);
-    std::cout << "low "
-      << cell_mult_min(0) << " "
-      << cell_mult_min(1) << " "
-      << cell_mult_min(2) << std::endl;
-    std::cout << "high "
-      << cell_mult_max(0) << " "
-      << cell_mult_max(1) << " "
-      << cell_mult_max(2) << std::endl;
-    for (auto i{0}; i < dim; ++i) {
-      m_min[i] = std::min(-1., std::floor(cell_mult_min(i)));
-      m_max[i] = std::ceil(cell_mult_max(i));
-      auto ds = mesh_max_coord[i] - mesh_min_coord[i];
-      nboxes_per_dim[i] = int(ds / cutoff) + 1;
-    }
-
-    std::cout << "===== " << std::endl;
-    std::cout << "natoms " << this->get_size() << std::endl;
-    std::cout << "cutoff " << cutoff << std::endl;
-
-    std::cout << "m_min "
-              << m_min[0] << " "
-              << m_min[1] << " "
-              << m_min[2] << " " << std::endl;
-    std::cout << "m_max "
-              << m_max[0] << " "
-              << m_max[1] << " "
-              << m_max[2] << " " << std::endl;
-    std::cout << "nboxes "
-              << nboxes_per_dim[0] << " "
-              << nboxes_per_dim[1] << " "
-              << nboxes_per_dim[2] << std::endl;
 
     /**
      * TODO possible future optimization for cells large triclinicity: use
      * triclinic coordinates and explicitly check for the 'skin' around the cell
      * and rotate the cell to have the lower triangular form
      */
+    std::array<int, dim> periodic_max{};
+    std::array<int, dim> periodic_min{};
+    std::array<int, dim> repetitions{};
+    auto periodicity = this->manager.get_periodic_boundary_conditions();
+    size_t ntot{1};
+
+    //! calculate number of actual repetitions of cell, depending on periodicity
+    for (auto i{0}; i < dim; ++i) {
+      if (periodicity[i]) {
+        periodic_max[i] = m_max[i];
+        periodic_min[i] = m_min[i];
+      } else {
+        periodic_max[i] = 0;
+        periodic_min[i] = 0;
+      }
+      auto nrep_in_dim = -periodic_min[i] + periodic_max[i] + 1;
+      repetitions[i] = nrep_in_dim;
+      ntot *= nrep_in_dim;
+    }
+
     //! generate ghost atom indices and position
     for (auto atom : this->get_manager()) {
       auto pos = atom.get_position();
-      for (auto i{0}; i < dim; ++i) {
-        if(periodicity[i]) {
-          //! exclude m=0, because it is the i atom itself
-          for(auto m{m_min[i]}; m < m_max[i]; ++m) {
-            if (m != 0) {
-              //! shift i atom along cell vector i
-              auto pos_ghost = pos + cell.col(i)*m;
 
-              //! shift position to mesh origin
-              auto pos_lower  = pos_ghost.array() - mesh_min_coord.array();
-              auto pos_greater  = pos_ghost.array() - mesh_max_coord.array();
+      for (auto && p_image : internal::PeriodicImages<dim>
+        {periodic_min, repetitions, ntot}) {
 
-              //! check if shifted position inside mesh
-              auto f_lt = (pos_lower.array() > 0.).all();
-              auto f_gt = (pos_greater.array() < 0.).all();
+        int ncheck{0};
+        for (auto i{0}; i<dim; ++i) ncheck += std::abs(p_image[i]);
 
-              if (f_lt and f_gt) {
-                //! next atom index is size, since start is at index = 0
-                auto new_atom_index = this->get_size_with_ghosts();
-                this->add_ghost_atom(new_atom_index, pos_ghost);
-              }
-            }
+        //! exclude cell itself
+        if(ncheck > 0) {
+          Vector_t pos_ghost = pos;
+
+          for (auto i{0}; i< dim; ++i) {
+            pos_ghost += cell.col(i) * p_image[i];
+          }
+
+          auto flag_inside = internal::position_in_bounds(mesh_min_coord,
+                                                          mesh_max_coord,
+                                                          pos_ghost);
+          if (flag_inside) {
+            //! next atom index is size, since start is at index = 0
+            auto new_atom_index = this->get_size_with_ghosts();
+            this->add_ghost_atom(new_atom_index, pos_ghost);
           }
         }
       }
@@ -899,49 +1059,28 @@ namespace rascal {
 
     // i-atoms sorting into boxes
     for (size_t i{0}; i < this->n_i_atoms; ++i) {
-      auto pos = this->get_position(i);
-      auto dpos = pos - mesh_min_coord;
-      auto idx = internal::get_box_index(dpos, cutoff, nboxes_per_dim);
+      Vector_t pos = this->get_position(i);
+      Vector_t dpos = pos - mesh_min_coord;
+      auto idx = internal::get_box_index(dpos, cutoff);
       atom_id_cell[idx].push_back(i);
     }
 
     //! ghost atoms sorting into boxes
     for (size_t i{0}; i < this->n_j_atoms; ++i) {
-      auto ghost_pos = this->get_ghost_position(i);
-      auto dpos = ghost_pos - mesh_min_coord;
-      auto idx  = internal::get_box_index(dpos, cutoff, nboxes_per_dim);
+      Vector_t ghost_pos = this->get_ghost_position(i);
+      Vector_t dpos = ghost_pos - mesh_min_coord;
+      auto idx  = internal::get_box_index(dpos, cutoff);
       auto ghost_atom_index = i + this->n_i_atoms;
       atom_id_cell[idx].push_back(ghost_atom_index);
     }
-
-    std::cout << "mesh origin "
-              << mesh_min_coord[0] << " "
-              << mesh_min_coord[1] << " "
-              << mesh_min_coord[2] << std::endl;
-    std::cout << "mesh maximum "
-              << mesh_max_coord[0] << " "
-              << mesh_max_coord[1] << " "
-              << mesh_max_coord[2] << std::endl;
 
     //! go through atoms and build neighbour list
     int offset{0};
     for (size_t i{0}; i < this->n_i_atoms; ++i) {
       int nneigh{0};
-      auto pos = this->get_position(i);
-      std::cout << "pos i " << i << ". "
-        << pos(0) << " "
-        << pos(1) << " "
-        << pos(2) << std::endl;
-      auto dpos = pos - mesh_min_coord;
-      std::cout << "dpos "
-        << dpos(0) << " "
-        << dpos(1) << " "
-        << dpos(2) << std::endl;
-      auto idx = internal::get_box_index(dpos, cutoff, nboxes_per_dim);
-      std::cout << "box idx "
-        << idx[0] << " "
-        << idx[1] << " "
-        << idx[2] << std::endl;
+      Vector_t pos = this->get_position(i);
+      Vector_t dpos = pos - mesh_min_coord;
+      auto idx = internal::get_box_index(dpos, cutoff);
       auto current_j_atoms = internal::get_neighbours(i, idx, atom_id_cell);
 
       for (auto j : current_j_atoms) {

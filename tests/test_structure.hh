@@ -337,9 +337,6 @@ namespace rascal {
     Eigen::MatrixXd cell;
     std::array<int, 3> pbc;
 
-
-
-
     double cutoff;
 
     int natoms{22};
@@ -357,7 +354,7 @@ namespace rascal {
 
     ManagerFixtureNeighbourComparison():
       pbc{{true, true, true}}, cell_1(3, 3), cell_2(3, 3),
-      positions_1(3, 2), positions_2(3, 2), numbers(2), cutoff{0.9}
+      positions_1(3, 2), positions_2(3, 2), numbers(2), cutoff{0.7}
     {
       /**
        * hcp crystal with lattice parameter a = 1, c = sqrt(8/3), defined in two
@@ -399,12 +396,12 @@ namespace rascal {
       numbers << 1, 1;
 
       manager_1.update(positions_1, numbers, cell_1,
-                                Eigen::Map<Eigen::Matrix<int, 3, 1>>
-                                {pbc.data()});
+                       Eigen::Map<Eigen::Matrix<int, 3, 1>>
+                       {pbc.data()});
 
       manager_2.update(positions_2, numbers, cell_2,
-                               Eigen::Map<Eigen::Matrix<int, 3, 1>>
-                               {pbc.data()});
+                       Eigen::Map<Eigen::Matrix<int, 3, 1>>
+                       {pbc.data()});
     }
     Manager_t manager_1{};
     Manager_t manager_2{};
@@ -436,8 +433,8 @@ namespace rascal {
       cell_1(3, 3), cell_2(3, 3),
       positions_1(3, 1), positions_2(3, 4),
       numbers_1(1), numbers_2(4),
-      cutoff{0.5}, // start with zero neighbours
-      natoms_1{1}, natoms_2{2}
+      cutoff{0.7}, // start with zero neighbours
+      natoms_1{1}, natoms_2{4}
     {
       /**
        * fcc unit cells: first cell consists of only one atom, which is
@@ -449,7 +446,7 @@ namespace rascal {
 
       cell_1 <<
         a,  0.5*a, 0.5*a,
-        0., 0.5*a, 0.,
+        0., 0.5*a, 0.   ,
         0., 0.,    0.5*a;
 
       cell_2 <<
@@ -472,7 +469,7 @@ namespace rascal {
         0.0, p_2[2], p_3[2], p_4[2];
 
       numbers_1 << 1;
-      numbers_2 << 1,1,1,1;
+      numbers_2 << 1, 1, 1, 1;
 
       manager_1.update(positions_1, numbers_1, cell_1,
                        Eigen::Map<Eigen::Matrix<int, 3, 1>>
