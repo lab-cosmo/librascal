@@ -49,7 +49,7 @@ namespace rascal {
   void StructureManagerCenters::
   update(const Eigen::Ref<const Eigen::MatrixXd, 0,
          Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>> positions,
-         const Eigen::Ref<const VecXi> atom_types,
+         const Eigen::Ref<const Eigen::VectorXi> atom_types,
          const Eigen::Ref<const Eigen::MatrixXd> cell,
          const Eigen::Ref<const PBC_t> pbc) {
 

@@ -90,10 +90,10 @@ namespace rascal {
     ManagerImplementation manager{};
     std::array<bool, 3> pbc;
     double cutoff_max;
-    VecXi center_ids;
+    Eigen::VectorXi center_ids;
     Eigen::MatrixXd cell;
     Eigen::MatrixXd positions; // 3, 22
-    VecXi numbers;
+    Eigen::VectorXi numbers;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -110,10 +110,10 @@ namespace rascal {
     ManagerImplementation manager{};
     std::array<bool, 3> pbc;
     double cutoff;
-    VecXi center_ids;
+    Eigen::VectorXi center_ids;
     Eigen::MatrixXd cell;
     Eigen::MatrixXd positions;
-    VecXi atom_types;
+    Eigen::VectorXi atom_types;
     int natoms;
     int dim;
   };
@@ -134,12 +134,12 @@ namespace rascal {
     ManagerImplementation manager_2{};
     std::array<bool, 3> pbc;
     double cutoff;
-    VecXi center_ids;
+    Eigen::VectorXi center_ids;
     Eigen::MatrixXd cell_1;
     Eigen::MatrixXd cell_2;
     Eigen::MatrixXd positions_1;
     Eigen::MatrixXd positions_2;
-    VecXi atom_types;
+    Eigen::VectorXi atom_types;
     int natoms;
     int dim;
   };
@@ -162,14 +162,14 @@ namespace rascal {
     ManagerImplementation manager_2{};
     std::array<bool, 3> pbc;
     double cutoff;
-    VecXi center_ids_1;
-    VecXi center_ids_2;
+    Eigen::VectorXi center_ids_1;
+    Eigen::VectorXi center_ids_2;
     Eigen::MatrixXd cell_1;
     Eigen::MatrixXd cell_2;
     Eigen::MatrixXd positions_1;
     Eigen::MatrixXd positions_2;
-    VecXi atom_types_1;
-    VecXi atom_types_2;
+    Eigen::VectorXi atom_types_1;
+    Eigen::VectorXi atom_types_2;
     int natoms_1;
     int natoms_2;
     int dim;
@@ -333,7 +333,7 @@ namespace rascal {
 
     Manager_t manager{};
     Eigen::MatrixXd positions;
-    VecXi numbers;
+    Eigen::VectorXi numbers;
     Eigen::MatrixXd cell;
     std::array<int, 3> pbc;
 
@@ -410,7 +410,7 @@ namespace rascal {
     Eigen::MatrixXd cell_2;
     Eigen::MatrixXd positions_1;
     Eigen::MatrixXd positions_2;
-    VecXi numbers;
+    Eigen::VectorXi numbers;
 
     double cutoff;
 
@@ -486,8 +486,8 @@ namespace rascal {
     Eigen::MatrixXd cell_2;
     Eigen::MatrixXd positions_1;
     Eigen::MatrixXd positions_2;
-    VecXi numbers_1;
-    VecXi numbers_2;
+    Eigen::VectorXi numbers_1;
+    Eigen::VectorXi numbers_2;
 
     double cutoff;
 
@@ -534,7 +534,7 @@ namespace rascal {
     std::array<int, 3> pbc;
     Eigen::MatrixXd cell;
     Eigen::MatrixXd positions;
-    VecXi numbers;
+    Eigen::VectorXi numbers;
 
     double cutoff;
 
@@ -573,7 +573,7 @@ namespace rascal {
   //   std::array<int, 3> pbc;
   //   Eigen::MatrixXd cell;
   //   Eigen::MatrixXd positions;
-  //   VecXi numbers;
+  //   Eigen::VectorXi numbers;
 
   //   double cutoff;
 
