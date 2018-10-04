@@ -345,7 +345,8 @@ namespace rascal {
                                      (Order+1 == MaxOrder)>;
 
     static void loop(ClusterRef_t & cluster, AdaptorStrict& manager) {
-      auto & next_cluster_indices{std::get<Order>(manager.cluster_indices)};
+      auto & next_cluster_indices{
+        std::get<Order>(manager.cluster_indices_container)};
       size_t cluster_counter{0};
 
       for (auto next_cluster: cluster) {
@@ -360,6 +361,7 @@ namespace rascal {
 
 
         // TODO: check for distance missing
+        // TODO: wrong assert?
         static_assert(NextClusterLayer == (NextClusterLayer + 1),
                       "Layer not correct");
         Eigen::Matrix<size_t, NextClusterLayer+1, 1> indices_cluster;

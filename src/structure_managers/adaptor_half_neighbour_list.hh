@@ -298,7 +298,8 @@ namespace rascal {
                                      (Order+1 == MaxOrder)>;
 
     static void loop(ClusterRef_t & cluster, AdaptorHalfList& manager) {
-      auto & next_cluster_indices{std::get<Order>(manager.cluster_indices)};
+      auto & next_cluster_indices{
+        std::get<Order>(manager.cluster_indices_container)};
       size_t cluster_counter{0};
 
       for (auto next_cluster: cluster) {
@@ -311,10 +312,9 @@ namespace rascal {
             (typename traits::LayerByOrder{})
             };
 
-
-        // TODO: check for distance missing
-        static_assert(NextClusterLayer == (NextClusterLayer + 1),
-                      "Layer not correct");
+        //TODO todo wrong assert?
+        // static_assert(NextClusterLayer == (NextClusterLayer + 1),
+        //               "Layer not correct");
         Eigen::Matrix<size_t, NextClusterLayer+1, 1> indices_cluster;
         indices_cluster.template head<NextClusterLayer>()
           = cluster.get_cluster_indices();

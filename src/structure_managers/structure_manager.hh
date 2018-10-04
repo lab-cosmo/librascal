@@ -53,7 +53,7 @@ namespace rascal {
   namespace AdaptorTraits {
 
     enum class SortedByDistance: bool {yes = true, no = false};
-    enum class MinImageConvention: bool {yes = true, no = false};
+    //enum class MinImageConvention: bool {yes = true, no = false};
     enum class NeighbourListType {full, half};
     //------------------------------------------------------------------------//
     enum class Strict:bool {yes = true, no = false}; // r_cut

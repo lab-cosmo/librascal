@@ -546,7 +546,7 @@ namespace rascal {
 
     /* ---------------------------------------------------------------------- */
     /**
-     * Mesh bounding coordinates iterator for easy access to the cornes for
+     * Mesh bounding coordinates iterator for easy access to the corners for
      * evaluating the multipliers necessary to build periodic images.
      */
     template <size_t Dim>
@@ -980,14 +980,15 @@ namespace rascal {
       mesh_bounds[i] = mesh_min[i];
       mesh_bounds[i+dim] = mesh_max[i];
     }
+
+    using VecMap_t = Eigen::Map<Eigen::Array<double, dim, 1>>;
     // TODO: find way to initialize eigen column with std::array
     int n{0};
     for (auto && coord : internal::MeshBounds<dim>{mesh_bounds}) {
-      for (auto i{0}; i<dim; ++i) {
-        xpos(i,n) = coord[i];
-      }
+      xpos.col(n) = VecMap_t(coord.data());
       n++;
     }
+
     //! solve for all multipliers
     auto multiplicator = cell.ldlt().solve(xpos);
     auto xmin = multiplicator.rowwise().minCoeff();

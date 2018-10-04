@@ -62,7 +62,7 @@ namespace rascal {
     using traits = StructureManager_traits<StructureManagerLammps>;
     using Parent = StructureManager<StructureManagerLammps>;
     using Vector_ref = typename Parent::Vector_ref;
-    // using AtomRef_t = typename Parent::AtomRef;
+    using AtomRef_t = typename Parent::AtomRef;
     // template <size_t Order>
     // using ClusterRef_t = typename Parent::template ClusterRef<Order>;
 
