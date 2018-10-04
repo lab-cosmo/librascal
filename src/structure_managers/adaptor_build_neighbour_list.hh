@@ -3,11 +3,10 @@
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *
- * @date   19 Jun 2018
+ * @date   04 Oct 2018
  *
  * @brief implements an adaptor for structure_managers, which
- * creates a full and half neighbourlist if there is none and
- * triplets/quadruplets, etc. if existent.
+ * creates a full or half neighbourlist if there is none
  *
  * Copyright © 2018 Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -37,21 +36,21 @@
 #include <set>
 #include <vector>
 
-#ifndef ADAPTOR_MAXORDER_H
-#define ADAPTOR_MAXORDER_H
+#ifndef ADAPTOR_NEIGHBOUR_LIST_H
+#define ADAPTOR_NEIGHBOUR_LIST_H
 
 namespace rascal {
   /**
    * Forward declaration for traits
    */
   template <class ManagerImplementation>
-  class AdaptorMaxOrder;
+  class AdaptorNeighbourList;
 
   /**
    * Specialisation of traits for increase <code>MaxOrder</code> adaptor
    */
   template <class ManagerImplementation>
-  struct StructureManager_traits<AdaptorMaxOrder<ManagerImplementation>> {
+  struct StructureManager_traits<AdaptorNeighbourList<ManagerImplementation>> {
 
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDistances{false};
@@ -61,7 +60,6 @@ namespace rascal {
     //! New MaxOrder upon construction!
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder+1};
     //! New Layer
-    //! TODO: Is this the correct way to initialize the increased order?
     using LayerByOrder =
       typename LayerExtender<MaxOrder,
                              typename
@@ -75,15 +73,15 @@ namespace rascal {
    * exists, triplets, quadruplets, etc. lists are created.
    */
   template <class ManagerImplementation>
-  class AdaptorMaxOrder: public
-  StructureManager<AdaptorMaxOrder<ManagerImplementation>>
+  class AdaptorNeighbourList: public
+  StructureManager<AdaptorNeighbourList<ManagerImplementation>>
   {
   public:
-    using Base = StructureManager<AdaptorMaxOrder<ManagerImplementation>>;
+    using Base = StructureManager<AdaptorNeighbourList<ManagerImplementation>>;
 
     using Parent =
-      StructureManager<AdaptorMaxOrder<ManagerImplementation>>;
-    using traits = StructureManager_traits<AdaptorMaxOrder>;
+      StructureManager<AdaptorNeighbourList<ManagerImplementation>>;
+    using traits = StructureManager_traits<AdaptorNeighbourList>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     template<size_t Order>
     using ClusterRef_t =
@@ -93,32 +91,33 @@ namespace rascal {
     using Positions_ref = Eigen::Map<Eigen::Matrix<double, traits::Dim,
                                                    Eigen::Dynamic>>;
 
-    static_assert(traits::MaxOrder > 1,
-                  "ManagerImplementation needs an atom list.");
+    static_assert(traits::MaxOrder == 1,
+                  "ManagerImplementation needs an atom list "
+                  " and can only build a neighbour list.");
 
     //! Default constructor
-    AdaptorMaxOrder() = delete;
+    AdaptorNeighbourList() = delete;
 
     /**
      * Constructs a full neighbourhood list from a given manager and cut-off
      * radius or extends an existing neighbourlist to the next order
      */
-    AdaptorMaxOrder(ManagerImplementation& manager);
+    AdaptorNeighbourList(ManagerImplementation & manager, double cutoff);
 
     //! Copy constructor
-    AdaptorMaxOrder(const AdaptorMaxOrder &other) = delete;
+    AdaptorNeighbourList(const AdaptorNeighbourList & other) = delete;
 
     //! Move constructor
-    AdaptorMaxOrder(AdaptorMaxOrder &&other) = default;
+    AdaptorNeighbourList(AdaptorNeighbourList && other) = default;
 
     //! Destructor
-    virtual ~AdaptorMaxOrder() = default;
+    virtual ~AdaptorNeighbourList() = default;
 
     //! Copy assignment operator
-    AdaptorMaxOrder& operator=(const AdaptorMaxOrder &other) = delete;
+    AdaptorNeighbourList & operator=(const AdaptorNeighbourList & other) = delete;
 
     //! Move assignment operator
-    AdaptorMaxOrder& operator=(AdaptorMaxOrder &&other) = default;
+    AdaptorNeighbourList & operator=(AdaptorNeighbourList && other) = default;
 
     /**
      * Updates just the adaptor assuming the underlying manager was
@@ -130,6 +129,9 @@ namespace rascal {
     //! Updates the underlying manager as well as the adaptor
     template<class ... Args>
     void update(Args&&... arguments);
+
+    //! Returns cutoff radius of the neighbourhood manager
+    inline double get_cutoff() const {return this->cutoff;}
 
     /**
      * Returns the linear indices of the clusters (whose atom indices are stored
@@ -158,6 +160,11 @@ namespace rascal {
     //! Returns number of clusters of the original manager
     inline size_t get_size() const {
       return this->manager.get_size();
+    }
+
+    //! total number of atoms used for neighbour list, including ghosts
+    inline size_t get_size_with_ghosts() const{
+      return this->n_i_atoms+this->n_j_atoms;
     }
 
     //! Returns position of an atom with index atom_index
@@ -287,6 +294,22 @@ namespace rascal {
                               this->nb_neigh.back());
     }
 
+    /**
+     * This function, including the storage of ghost atom positions is
+     * necessary, because the underlying manager is not known at this
+     * layer. Therefore we can not add positions to the existing array, but have
+     * to add positions to a ghost array. This also means, that the get_position
+     * function will need to branch, depending on the atom_index > n_i_atoms and
+     * offset with n_j_atoms to access ghost positions.
+     */
+    inline void add_ghost_atom(const int atom_index, const Vector_t position) {
+      this->atom_indices.push_back(atom_index);
+      for (auto dim{0}; dim < traits::Dim; ++dim) {
+        this->ghost_positions.push_back(position(dim));
+      }
+      this->n_j_atoms++;
+    }
+
     //! Extends the list containing the number of neighbours with a 0
     inline void add_entry_number_of_neighbours() {
       this->nb_neigh.push_back(0);
@@ -328,7 +351,16 @@ namespace rascal {
 
     ManagerImplementation & manager;
 
+    //! Cutoff radius of manager
+    const double cutoff;
+
     template<size_t Order, bool IsDummy> struct AddOrderLoop;
+
+    /**
+     * Compile time decision, if a new neighbour list is built or if an existing
+     * one is extended to the next Order.
+     */
+    template <size_t Order, bool IsDummy> struct IncreaseMaxOrder;
 
     //! Stores atom indices of current Order
     std::vector<size_t> atom_indices{}; //akin to ilist[]
@@ -347,181 +379,204 @@ namespace rascal {
 
     //! number of i atoms, i.e. centers
     size_t n_i_atoms{};
+    /**
+     * number of ghost atoms (given by periodicity) filled during full
+     * neighbourlist build
+     */
+    size_t n_j_atoms{};
 
+    //! ghost positions
+    std::vector<double> ghost_positions{};
   private:
   };
 
   namespace internal {
-  };  // internal
 
-  /* ---------------------------------------------------------------------- */
-  /**
-   * with this implementation, the cutoff is always with respect to the i-atom
-   */
-  template <class ManagerImplementation>
-  AdaptorMaxOrder<ManagerImplementation>::
-  AdaptorMaxOrder(ManagerImplementation & manager):
-    manager{manager},
-    atom_indices{},
-    nb_neigh{},
-    offsets{}
-  {
-    if (traits::MaxOrder < 3) {
-      throw std::runtime_error("No atoms in manager.");
-    }
-    n_i_atoms = this->manager.get_size();
-  }
-
-  /* ---------------------------------------------------------------------- */
-  template <class ManagerImplementation>
-  template <class ... Args>
-  void AdaptorMaxOrder<ManagerImplementation>::update(Args&&... arguments) {
-    this->manager.update(std::forward<Args>(arguments)...);
-    this->update();
-  }
-
-  /* ---------------------------------------------------------------------- */
-  template <class ManagerImplementation>
-  template <size_t Order, bool IsDummy>
-  struct AdaptorMaxOrder<ManagerImplementation>::AddOrderLoop {
-    static constexpr int OldMaxOrder{ManagerImplementation::traits::MaxOrder};
-    using ClusterRef_t = typename ManagerImplementation::template
-      ClusterRef<Order>;
-
-    using NextOrderLoop = AddOrderLoop<Order+1,
-				       (Order+1 == OldMaxOrder)>;
-
-    static void loop(ClusterRef_t & cluster,
-                     AdaptorMaxOrder<ManagerImplementation> & manager) {
-
-      //! do nothing, if MaxOrder is not reached, except call the next order
-      for (auto next_cluster : cluster) {
-
-        auto & next_cluster_indices
-        {std::get<Order>(manager.cluster_indices_container)};
-        next_cluster_indices.push_back(next_cluster.get_cluster_indices());
-
-	NextOrderLoop::loop(next_cluster, manager);
+    /* ---------------------------------------------------------------------- */
+    template <typename R, typename I>
+    constexpr R ipow(R base, I exponent) {
+      static_assert(std::is_integral<I>::value, "Type must be integer");
+      R retval{1};
+      for (I i = 0; i < exponent; ++i) {
+        retval *= base;
       }
+      return retval;
     }
-  };
 
-  /* ---------------------------------------------------------------------- */
-  /**
-   * At desired MaxOrder (plus one), here is where the magic happens and the
-   * neighbours of the same order are added as the Order+1.  add check for non
-   * half neighbour list
-   */
-  template <class ManagerImplementation>
-  template <size_t Order>
-  struct AdaptorMaxOrder<ManagerImplementation>::AddOrderLoop<Order, true> {
-    static constexpr int OldMaxOrder{ManagerImplementation::traits::MaxOrder};
+    /* ---------------------------------------------------------------------- */
+    /**
+     * stencil iterator for simple, dimension dependent stencils to access the
+     * neighbouring boxes of the cell algorithm
+     */
+    template <size_t Dim>
+    class Stencil {
+    public:
+      //! constructor
+      Stencil(const std::array<int, Dim> & origin)
+        : origin{origin}{};
+      //! copy constructor
+      Stencil(const Stencil & other) = default;
+      //! assignment operator
+      Stencil & operator=(const Stencil & other) = default;
+      ~Stencil() = default;
 
-    using ClusterRef_t =
-      typename ManagerImplementation::template ClusterRef<Order>;
+      //! iterators over `` dereferences to cell coordinates
+      class iterator
+      {
+      public:
+        using value_type = std::array<int, Dim>; //!< stl conformance
+        using const_value_type = const value_type; //!< stl conformance
+        using pointer = value_type*; //!< stl conformance
+        using iterator_category = std::forward_iterator_tag;//!<stl conformance
 
-    using traits = typename AdaptorMaxOrder<ManagerImplementation>::traits;
+        //! constructor
+        iterator(const Stencil & stencil, bool begin=true)
+          : stencil{stencil}, index{begin? 0: stencil.size()} {}
 
-    static void loop(ClusterRef_t & cluster,
-                     AdaptorMaxOrder<ManagerImplementation> & manager) {
-
-      /**
-       * get all i_atoms to find neighbours to extend the cluster to the next
-       * order
-       */
-      auto i_atoms = cluster.get_atom_indices();
-
-      /**
-       * vector of existing i_atoms in `cluster` to avoid doubling of atoms in
-       * final list
-       */
-      std::vector<size_t> current_i_atoms;
-
-      /**
-       * a set of new neighbours for the cluster, which will be added to extend
-       * the cluster
-       */
-      std::set<size_t> current_j_atoms;
-
-      //! access to underlying manager for access to atom pairs
-      auto & manager_tmp{cluster.get_manager()};
-
-
-      for (auto atom_index : i_atoms) {
-        current_i_atoms.push_back(atom_index);
-        size_t access_index = manager.get_cluster_neighbour(manager,
-                                                            atom_index);
-
-        //! build a shifted iterator to constuct a ClusterRef<1>
-        auto iterator_at_position{manager_tmp.get_iterator_at(access_index)};
-
-        /**
-         * ClusterRef<1> as dereference from iterator to get pairs of the
-         * i_atoms
-         */
-        auto && j_cluster{*iterator_at_position};
-
-        /**
-         * collect all possible neighbours of the cluster: collection of all
-         * neighbours of current_i_atoms
-         */
-        for (auto pair : j_cluster) {
-          auto j_add = pair.back();
-          if (j_add > i_atoms.back()) {
-            current_j_atoms.insert(j_add);
+        ~iterator() {};
+        //! dereferencing
+        value_type operator*() const {
+          constexpr int size{3};
+          std::array<int, Dim> retval{{0}};
+          int factor{1};
+          for (int i = Dim-1; i >=0; --i) {
+            //! -1 for offset of stencil
+            retval[i] = this->index/factor%size + this->stencil.origin[i] - 1;
+            if (i != 0 ) {
+              factor *= size;
+            }
           }
-        }
-      }
+          return retval;
+        };
+        //! pre-increment
+        iterator & operator++() {this->index++; return *this;}
+        //! inequality
+        inline bool operator!=(const iterator & other) const {
+          return this->index != other.index;
+        };
 
-      //! delete existing cluster atoms from list to build additional neighbours
-      std::vector<size_t> atoms_to_add{};
-      std::set_difference(current_j_atoms.begin(), current_j_atoms.end(),
-                          current_i_atoms.begin(), current_i_atoms.end(),
-                          std::inserter(atoms_to_add, atoms_to_add.begin()));
+      protected:
+        //!< ref to stencils in cell
+        const Stencil & stencil;
+        //!< index of currect pointed-to pixel
+        size_t index;
+      };
+      //! stl conformance
+      inline iterator begin() const {return iterator(*this);}
+      //! stl conformance
+      inline iterator end() const {return iterator(*this, false);}
+      //! stl conformance
+      inline size_t size() const {return ipow(3, Dim);}
+    protected:
+      const std::array<int, Dim> origin; //!< locations of this domain
+    };
 
-      manager.add_entry_number_of_neighbours();
-      if (atoms_to_add.size() > 0) {
-        for (auto j: atoms_to_add) {
-          manager.add_neighbour_of_cluster(j);
-        }
+    /* ---------------------------------------------------------------------- */
+    /**
+     * Periodic image iterator for easy access to how many images have to be
+     * added for ghost atoms.
+     */
+    template <size_t Dim>
+    class PeriodicImages {
+    public:
+      //! constructor
+      PeriodicImages(const std::array<int, Dim> & origin,
+                     const std::array<int, Dim> & nrepetitions,
+                     const size_t & ntot)
+        : origin{origin}, nrepetitions{nrepetitions}, ntot{ntot} {};
+      //! copy constructor
+      PeriodicImages(const PeriodicImages & other) = default;
+      //! assignment operator
+      PeriodicImages & operator=(const PeriodicImages & other) = default;
+      ~PeriodicImages() = default;
+
+      //! iterators over `` dereferences to cell coordinates
+      class iterator
+      {
+      public:
+        using value_type = std::array<int, Dim>; //!< stl conformance
+        using const_value_type = const value_type; //!< stl conformance
+        using pointer = value_type*; //!< stl conformance
+        using iterator_category = std::forward_iterator_tag;//!<stl conformance
+
+        //! constructor
+        iterator(const PeriodicImages & periodic_images, bool begin=true)
+          : periodic_images{periodic_images},
+            index{begin? 0: periodic_images.size()} {}
+
+        ~iterator() {};
+        //! dereferencing
+        value_type operator*() const {
+          std::array<int, Dim> retval{{0}};
+          int factor{1};
+          for (int i = Dim-1; i >=0; --i) {
+            retval[i] = this->index/factor%this->periodic_images.nrepetitions[i]
+              + this->periodic_images.origin[i];
+            if (i != 0 ) {
+              factor *= this->periodic_images.nrepetitions[i];
+            }
+          }
+          return retval;
+        };
+        //! pre-increment
+        iterator & operator++() {this->index++; return *this;}
+        //! inequality
+        inline bool operator!=(const iterator & other) const {
+          return this->index != other.index;
+        };
+
+      protected:
+        //!< ref to periodic images
+        const PeriodicImages & periodic_images;
+        //!< index of currect pointed-to pixel
+        size_t index;
+      };
+      //! stl conformance
+      inline iterator begin() const {return iterator(*this);}
+      //! stl conformance
+      inline iterator end() const {return iterator(*this, false);}
+      //! stl conformance
+      inline size_t size() const {return this->ntot;}
+    protected:
+      const std::array<int, Dim> origin; //!< minimum repetitions
+      const std::array<int, Dim> nrepetitions; //!< repetitions in each dimension
+      const size_t ntot;
+    };
+
+    /* ---------------------------------------------------------------------- */
+    /**
+     * Mesh bounding coordinates iterator for easy access to the corne;
+      auto idx = internal::get_box_index(dpos, cutoff);
+      auto current_j_atoms = internal::get_neighbours(i, idx, atom_id_cell);
+
+      for (auto j : current_j_atoms) {
+        this->neighbours.push_back(j);
+        nneigh++;
       }
+      this->nb_neigh.push_back(nneigh);
+      this->offsets.push_back(offset);
+      offset += nneigh;
     }
-  };
+
+    auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
+    auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
+
+    atom_cluster_indices.fill_sequence();
+    pair_cluster_indices.fill_sequence();
+  }
 
   /* ---------------------------------------------------------------------- */
-  /**
-   * This is the loop, which runs recursively goes to the maximum Order and then
-   * increases it by one level.
-   */
   template <class ManagerImplementation>
-  void AdaptorMaxOrder<ManagerImplementation>::update() {
+  void AdaptorNeighbourList<ManagerImplementation>::update() {
     /**
      * Standard case, increase an existing neighbour list or triplet list to a
      * higher Order
      */
-
-    static_assert(traits::MaxOrder > 2,
-                  "no neighbourlist present; extension not possible.");
-
-    auto manager = this->manager;
-    for (auto atom : manager) {
-      //! Order 1, Order variable is at 0, atoms, index 0
-      using AddOrderLoop = AddOrderLoop<atom.order(),
-                                        atom.order() == traits::MaxOrder-1>;
-      auto & atom_cluster_indices{std::get<0>
-          (manager->cluster_indices_container)};
-      atom_cluster_indices.push_back(atom.get_cluster_indices());
-      AddOrderLoop::loop(atom, *manager);
-    }
-
-    //! correct the offsets for the new cluster order
-    manager->set_offsets();
-    //! add correct cluster_indices for the highest order
-    auto & max_cluster_indices
-    {std::get<traits::MaxOrder-1>(manager->cluster_indices_container)};
-    max_cluster_indices.fill_sequence();
+    manager_max->nb_neigh.resize(0);
+    manager_max->offsets.resize(0);
+    manager_max->neighbours.resize(0);
+    manager_max->make_full_neighbour_list();
   }
-
 
   /* ---------------------------------------------------------------------- */
   /* Returns the linear indices of the clusters (whose atom indices
@@ -532,7 +587,7 @@ namespace rascal {
    */
   template<class ManagerImplementation>
   template<size_t Order>
-  inline size_t AdaptorMaxOrder<ManagerImplementation>::
+  inline size_t AdaptorNeighbourList<ManagerImplementation>::
   get_offset_impl(const std::array<size_t, Order> & counters) const {
 
     static_assert(Order < traits::MaxOrder,
@@ -548,7 +603,7 @@ namespace rascal {
      */
     if (Order == 1) {
       return this->offsets[counters.front()];
-    } else if (Order == traits::MaxOrder-1) {
+    } else if (Order == 2) {
       /**
        * Counters as an array to call parent offset multiplet. This can then be
        * used to access the actual offset for the next Order here.
@@ -558,21 +613,8 @@ namespace rascal {
       auto tuple_index{i+j};
       auto main_offset{this->offsets[tuple_index]};
       return main_offset;
-    } else {
-      /**
-       * If not accessible at this order, call lower Order offsets from lower
-       * order manager(s).
-       */
-      return this->manager.get_offset_impl(counters);
     }
   }
 }  // rascal
 
-#endif /* ADAPTOR_MAXORDER_H */
-
-/**
- * TODO: The construction of triplets is fine, but they occur multiple times. We
- * probably need to check for increasing atomic index to get rid of
- * duplicates. But this is in general a design decision, if we want full/half
- * neighbour list and full/half/whatever triplets and quadruplets
- */
+#endif /* ADAPTOR_NEIGHBOUR_LIST_H */
