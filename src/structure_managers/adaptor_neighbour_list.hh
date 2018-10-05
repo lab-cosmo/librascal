@@ -1,5 +1,5 @@
 /**
- * file   adaptor_increase_maxorder.hh
+ * file   adaptor_neighbour_list.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *
@@ -93,7 +93,7 @@ namespace rascal {
 
     static_assert(traits::MaxOrder == 1,
                   "ManagerImplementation needs an atom list "
-                  " and can only build a neighbour list.");
+                  " and can only build a neighbour list (pairs).");
 
     //! Default constructor
     AdaptorNeighbourList() = delete;
