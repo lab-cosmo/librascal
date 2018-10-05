@@ -52,7 +52,7 @@ namespace rascal {
 
     AdaptorNeighbourList<StructureManagerCenters> pair_manager{manager, cutoff};
     pair_manager.update();
-    std::cout << "neighbour list done." << std::endl;
+
     auto n_pairs{0};
     for (auto atom : pair_manager) {
       if (verbose) std::cout << "atom " << atom.back() << std::endl;

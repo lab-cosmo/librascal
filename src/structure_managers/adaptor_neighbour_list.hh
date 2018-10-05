@@ -460,6 +460,7 @@ namespace rascal {
     using Vector_t = typename Parent::Vector_t;
     using Positions_ref = Eigen::Map<Eigen::Matrix<double, traits::Dim,
                                                    Eigen::Dynamic>>;
+    using AtomTypes_ref = Eigen::Map<Eigen::Matrix<int, 1, Eigen::Dynamic>>;
 
     static_assert(traits::MaxOrder == 2,
                   "ManagerImplementation needs an atom list "
@@ -558,6 +559,18 @@ namespace rascal {
                            this->ghost_positions.size()/traits::Dim);
     }
 
+    //! ghost types are only available for MaxOrder=2
+    inline int & get_ghost_type(const size_t & atom_index) {
+      auto p = this->get_ghost_types();
+      return p(atom_index);
+    }
+
+    inline AtomTypes_ref get_ghost_types() {
+      AtomTypes_ref val(this->ghost_types.data(), 1, this->ghost_types.size());
+      return val;
+    }
+
+
     //! Returns position of the given atom object (useful for users)
     inline Vector_ref get_position(const AtomRef_t & atom) {
       return this->manager.get_position(atom.get_index());
@@ -571,11 +584,7 @@ namespace rascal {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation should only work up to MaxOrder.");
 
-      // if (Order == 2) {
       return this->get_position(cluster.back());
-      // } else { return
-      //this->get_position(cluster.back());//manager.get_neighbour_position(cluster);
-      //}
     }
 
     /**
@@ -602,14 +611,13 @@ namespace rascal {
       }
     }
 
-    //! Returns atom type given an atom object AtomRef
-    inline int & get_atom_type(const AtomRef_t& atom) {
-      return this->manager.get_atom_type(atom.get_index());
-    }
-
-    //! Returns a constant atom type given an atom object AtomRef
-    inline const int & get_atom_type(const AtomRef_t& atom) const {
-      return this->manager.get_atom_type(atom.get_index());
+    //! Returns atom type given an atom index
+    inline int get_atom_type(const size_t & atom_index) {
+      if (atom_index < this->n_i_atoms) {
+        return this->manager.get_atom_type(atom_index);
+      } else {
+        return this->get_ghost_type(atom_index - this->n_i_atoms);
+      }
     }
 
     //! Returns the number of neighbors of a given cluster
@@ -672,8 +680,11 @@ namespace rascal {
      * function will need to branch, depending on the atom_index > n_i_atoms and
      * offset with n_j_atoms to access ghost positions.
      */
-    inline void add_ghost_atom(const int atom_index, const Vector_t position) {
+    inline void add_ghost_atom(const int & atom_index,
+                               const Vector_t & position,
+                               const int & atom_type) {
       this->atom_indices.push_back(atom_index);
+      this->ghost_types.push_back(atom_type);
       for (auto dim{0}; dim < traits::Dim; ++dim) {
         this->ghost_positions.push_back(position(dim));
       }
@@ -755,8 +766,11 @@ namespace rascal {
      */
     size_t n_j_atoms{};
 
-    //! ghost positions
+    //! ghost atom positions
     std::vector<double> ghost_positions{};
+
+    //! ghost atom type
+    std::vector<int> ghost_types{};
   private:
   };
 
@@ -919,6 +933,7 @@ namespace rascal {
     //! generate ghost atom indices and position
     for (auto atom : this->get_manager()) {
       auto pos = atom.get_position();
+      auto atom_type = atom.get_atom_type();
 
       for (auto && p_image : internal::PeriodicImages<dim>
         {periodic_min, repetitions, ntot}) {
@@ -940,7 +955,7 @@ namespace rascal {
           if (flag_inside) {
             //! next atom index is size, since start is at index = 0
             auto new_atom_index = this->get_size_with_ghosts();
-            this->add_ghost_atom(new_atom_index, pos_ghost);
+            this->add_ghost_atom(new_atom_index, pos_ghost, atom_type);
           }
         }
       }
