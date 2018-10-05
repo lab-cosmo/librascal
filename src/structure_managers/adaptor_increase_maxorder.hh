@@ -324,13 +324,8 @@ namespace rascal {
   private:
   };
 
-  namespace internal {
-  };  // internal
-
   /* ---------------------------------------------------------------------- */
-  /**
-   * Construction of the next level manager
-   */
+  //!Construction of the next level manager
   template <class ManagerImplementation>
   AdaptorMaxOrder<ManagerImplementation>::
   AdaptorMaxOrder(ManagerImplementation & manager):
