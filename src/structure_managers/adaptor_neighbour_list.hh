@@ -611,7 +611,7 @@ namespace rascal {
       }
     }
 
-    //! Returns atom type given an atom index
+    //! Returns atom type given an atom index, also works for ghost atoms
     inline int get_atom_type(const size_t & atom_index) {
       if (atom_index < this->n_i_atoms) {
         return this->manager.get_atom_type(atom_index);
@@ -636,6 +636,7 @@ namespace rascal {
 
     //! Returns the number of neighbors of an atom with the given index
     inline size_t get_cluster_size(const int & atom_index) const {
+      //! if current adaptor has built pair list
       if (traits::MaxOrder == 2) {
         return this->nb_neigh[atom_index];
       } else {
@@ -798,25 +799,30 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
   void AdaptorNeighbourList<ManagerImplementation>::update() {
-    //! build a neighbour list based on atomic positions, types and indices
+    /**
+     * build a neighbour list based on atomic positions, types and indices, in
+     * the following the needed data structures are initialized
+     */
     this->nb_neigh.resize(0);
     this->offsets.resize(0);
     this->neighbours.resize(0);
+    this->ghost_types.resize(0);
     this->make_full_neighbour_list();
   }
   /* ---------------------------------------------------------------------- */
   /**
    * Builds full neighbour list. Triclinicity is accounted for. The general idea
-   * is anchor a mesh the origin of the supplied cell. Then the mesh is extended
-   * into space until it is as big as the maximum cell coordinate plus one
-   * cutoff. This mesh has boxes of size cutoff. Depending on the periodicity of
-   * the mesh, ghost atoms are added by shifting all i-atoms by the cell
-   * vectors. All i-atoms and the ghost atoms are then sorted into the
-   * respective boxes of the mesh and a stencil anchored at the boxes of the
-   * i-atoms is used to build the atom neighbourhoods from the 9 (2d) or 27 (3d)
-   * boxes, which have to be checked for the neighbourhood . Correct periodicity
-   * is ensured by the placement of the ghost atoms. The resulting neighbourlist
-   * is full and not strict.
+   * is to anchor a mesh at the origin of the supplied cell (assuming it is at
+   * the origin). Then the mesh is extended into space until it is as big as the
+   * maximum cell coordinate plus one cutoff in each direction. This mesh has
+   * boxes of size ``cutoff``. Depending on the periodicity of the mesh, ghost
+   * atoms are added by shifting all i-atoms by the cell vectors corresponding
+   * to the desired periodicity. All i-atoms and the ghost atoms are then sorted
+   * into the respective boxes of the cartesian mesh and a stencil anchored at
+   * the box of the i-atoms is used to build the atom neighbourhoods from the 9
+   * (2d) or 27 (3d) boxes, which is checked for the neighbourhood. Correct
+   * periodicity is ensured by the placement of the ghost atoms. The resulting
+   * neighbourlist is full and not strict.
    */
   template <class ManagerImplementation>
   void AdaptorNeighbourList<ManagerImplementation>::make_full_neighbour_list() {
