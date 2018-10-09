@@ -1,13 +1,13 @@
 /**
- * @file   bind_py_module.cc
+ * @file   bind_py_math.cc
  *
- * @author Federico Giberti <federico.giberti@epfl.ch>
+ * @author Felix Musil <musil.felix@gmail.com>
  *
- * @date   14 Mar 2018
+ * @date   22 August 2018
  *
- * @brief  Main binding file for Rascal
+ * @brief  File for binding utils subroutines
  *
- * Copyright © 2017 Felix Musil
+ * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -26,20 +26,16 @@
  */
 
 
-
 #include <pybind11/pybind11.h>
+#include <pybind11/eigen.h>
+#include "math/math_interface.hh"
 
-using namespace pybind11::literals;
+using namespace rascal;
 namespace py=pybind11;
 
-extern void add_manager_centers(py::module&);
-extern void utils_binding(py::module&);
-extern void math_binding(py::module&);
 
-PYBIND11_MODULE(_rascal, mod) {
-  mod.doc() = "Python bindings for the Rascal library";
-
-  add_manager_centers(mod);
-  utils_binding(mod);
-  math_binding(mod);
+void math_binding(py::module& m){
+    m.def(
+      "hyp2f1", &math::hyp2f1, "y = hyp2f1( a, b, c, x )"    
+    );
 }

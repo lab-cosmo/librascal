@@ -5,8 +5,8 @@
 #define MATH_H
 
 
-#include "math/cephes/cephes.h"
-// #include "math/cephes/mconf.h"
+// #include "math/cephes/cephes.h"
+#include "math/cephes/mconf.h"
 
 
 namespace rascal {

@@ -6,6 +6,9 @@
 
 #ifdef __cplusplus
 extern "C" {
+  namespace rascal {
+  namespace math {
+
 #endif
 
 extern int airy(double x, double *ai, double *aip, double *bi, double *bip);
@@ -140,7 +143,9 @@ extern double lanczos_sum_expg_scaled(double x);
 extern double owens_t(double h, double a);
 
 #ifdef __cplusplus
-}
+    }
+  }// math
+} // rascal
 #endif
 
 #endif /* CEPHES_H */

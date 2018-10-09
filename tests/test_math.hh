@@ -60,7 +60,8 @@ namespace rascal {
     Eigen::Matrix<double, 4, Eigen::Dynamic>  numbers;
     Eigen::Matrix<double, 1, Eigen::Dynamic>  results_hyp2f1;
     Eigen::Matrix<double, 3, Eigen::Dynamic>  results_airy;
-
+    bool vebose{false};
+    
   };
 }  // rascal
 
