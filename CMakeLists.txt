@@ -91,7 +91,7 @@ if (${BUILD_TESTS})
 endif(${BUILD_TESTS})
 
 # compile the library
-add_compile_options(-Werror)
+# add_compile_options(-Werror)
 add_subdirectory(
   ${CMAKE_SOURCE_DIR}/src/
   )
