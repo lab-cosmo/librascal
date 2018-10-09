@@ -142,7 +142,7 @@ before_install:
                 source ~/virtualenv/python${PYTHON_VERSION}/bin/activate
                 sudo -E python -m pip install --upgrade pip
                 python -V
-                sudo -E pip install sphinx sphinx_rtd_theme numpy breathe
+                sudo -E pip install sphinx sphinx_rtd_theme numpy breathe scipy
                 sudo -E apt-get install cmake cmake-data doxygen doxygen-latex graphviz python3-sphinx
                 python -V
             fi
