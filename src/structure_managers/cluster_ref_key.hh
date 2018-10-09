@@ -122,6 +122,7 @@ namespace rascal {
     };
   }  // internal
 
+  // TODO please explain the logic allowing to resolve the layer of a cluster
   template <size_t Order, size_t... Ints>
   constexpr size_t compute_cluster_layer(const std::index_sequence<Ints...> &) {
     using ActiveDimensions = typename internal::HeadExtractor

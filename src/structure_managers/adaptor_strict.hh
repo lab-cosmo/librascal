@@ -195,7 +195,7 @@ namespace rascal {
       auto && original_atom{this->atom_indices[0][atom.get_index()]};
       return this->manager.get_atom_type(original_atom);
     }
-    
+
     //! Returns atom type given an atom index
     inline int & get_atom_type(const int& atom_id) {
       return this->manager.get_atom_type(atom_id);
@@ -440,14 +440,20 @@ namespace rascal {
           };
 
       Eigen::Matrix<size_t, AtomLayer+1, 1> indices;
+      // since head is a templated member, the keyword template 
+      // has to be used if the matrix type is also a template parameter
+      // TODO explain the advantage of this syntax
       indices.template head<AtomLayer>() = atom.get_cluster_indices();
       indices(AtomLayer) = indices(AtomLayer-1);
       atom_cluster_indices.push_back(indices);
+      
+      auto icenter{atom.get_index()};
 
       for (auto pair: atom) {
         constexpr auto PairLayer{
           compute_cluster_layer<pair.order()>
-            (typename traits::LayerByOrder{})};
+            (typename traits::LayerByOrder{})
+            };
 
         double distance{(atom.get_position()
                          - pair.get_position()).norm()};
