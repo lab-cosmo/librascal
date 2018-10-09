@@ -9,8 +9,8 @@ set(BUILD_SHARED_LIBS ON)
 
 
 add_compile_options(-Wall -Wextra)
+add_compile_options(-Werror)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weffc++")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
 # to avoid conflicts with built-in functions
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-builtin")
 
