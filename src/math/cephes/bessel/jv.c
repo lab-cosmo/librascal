@@ -163,7 +163,7 @@ if( an < 500.0 )
 		}
 
 if( an > 2.0 * y )
-	goto rlarger;
+	{goto rlarger;}
 
 	if( (n >= 0.0) && (n < 20.0)
 		&& (y > 6.0) && (y < 20.0) )

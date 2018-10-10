@@ -178,7 +178,7 @@ else
 
 
 if( t < 0 )
-	p = -p;	/* note destruction of relative accuracy */
+	{p = -p;}	/* note destruction of relative accuracy */
 
 	p = 0.5 + 0.5 * p;
 return(p);
