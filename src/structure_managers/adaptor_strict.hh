@@ -248,7 +248,7 @@ namespace rascal {
         this->nb_neigh[i].push_back(0);
         // update the offsets
         this->offsets[i].push_back(this->offsets[i].back() +
-                                   this->nb_neigh[i-1].back());
+                                   this->nb_neigh[i].back());
       }
     }
 
@@ -447,7 +447,7 @@ namespace rascal {
       indices(AtomLayer) = indices(AtomLayer-1);
       atom_cluster_indices.push_back(indices);
       
-      auto icenter{atom.get_index()};
+      // auto icenter{atom.get_index()};
 
       for (auto pair: atom) {
         constexpr auto PairLayer{
@@ -466,7 +466,7 @@ namespace rascal {
           indices_pair.template head<PairLayer>() = pair.get_cluster_indices();
           indices_pair(PairLayer) = pair_counter;
           pair_cluster_indices.push_back(indices_pair);
-
+        
           pair_counter++;
         }
         using HelperLoop = HelperLoop<pair.order(),
