@@ -18,7 +18,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-builtin")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 include(rascalTools)
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang") 
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
   # using Clang
   add_compile_options(-Wno-missing-braces)
 

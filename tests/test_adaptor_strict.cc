@@ -38,8 +38,8 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(constructor_test,
                           ManagerFixture<StructureManagerCenters>) {
     double cutoff{3.5};
-    AdaptorMaxOrder<StructureManagerCenters> pair_manager{manager, cutoff};
-    AdaptorStrict<AdaptorMaxOrder<StructureManagerCenters>> 
+    AdaptorNeighbourList<StructureManagerCenters> pair_manager{manager, cutoff};
+    AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>> 
                                       adaptor_strict{pair_manager, cutoff};                        
   }
   /* ---------------------------------------------------------------------- */
@@ -47,9 +47,9 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(update_test,
                           ManagerFixture<StructureManagerCenters>) {
     double cutoff{3.5};
-    AdaptorMaxOrder<StructureManagerCenters> pair_manager{manager, cutoff};
+    AdaptorNeighbourList<StructureManagerCenters> pair_manager{manager, cutoff};
     pair_manager.update();
-    AdaptorStrict<AdaptorMaxOrder<StructureManagerCenters>> 
+    AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>> 
                                       adaptor_strict{pair_manager, cutoff};             
     adaptor_strict.update();
   }
@@ -62,7 +62,7 @@ namespace rascal {
     bool verbose{false};
     int mult = 10;
     double rc_max{mult*0.5 + cutoff};
-    AdaptorMaxOrder<StructureManagerCenters> pair_manager{manager, rc_max };
+    AdaptorNeighbourList<StructureManagerCenters> pair_manager{manager, rc_max };
     pair_manager.update();
 
     for (auto i{0}; i < mult; ++i) {
@@ -74,10 +74,10 @@ namespace rascal {
 
       // TODO re-initiallization in the loop of the pair manager results in a 
       // segmentation fault, is it expected ?
-      // AdaptorMaxOrder<StructureManagerCenters> pair_manager{manager, cutoff_tmp};
+      // AdaptorNeighbourList<StructureManagerCenters> pair_manager{manager, cutoff_tmp};
       // pair_manager.update();
       if (verbose) std::cout << "Setting up strict manager with rc="<<cutoff_tmp << std::endl;
-      AdaptorStrict<AdaptorMaxOrder<StructureManagerCenters>> 
+      AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>> 
                                         adaptor_strict{pair_manager, cutoff_tmp};
       adaptor_strict.update();
 
@@ -216,18 +216,18 @@ namespace rascal {
         std::cout << "hcp test cutoff " << cutoff_tmp << std::endl;
       }
 
-      AdaptorMaxOrder<StructureManagerCenters> pair_manager1{manager_1,
+      AdaptorNeighbourList<StructureManagerCenters> pair_manager1{manager_1,
           cutoff_tmp};
       pair_manager1.update();
       if (verbose) std::cout << "Setting up strict manager 1 " << std::endl;
-      AdaptorStrict<AdaptorMaxOrder<StructureManagerCenters>> 
+      AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>> 
                                         adaptor_strict1{pair_manager1, cutoff_tmp};
       adaptor_strict1.update();
-      AdaptorMaxOrder<StructureManagerCenters> pair_manager2{manager_2,
+      AdaptorNeighbourList<StructureManagerCenters> pair_manager2{manager_2,
           cutoff_tmp};
       pair_manager2.update();
       if (verbose) std::cout << "Setting up strict manager 2 " << std::endl;
-      AdaptorStrict<AdaptorMaxOrder<StructureManagerCenters>> 
+      AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>> 
                                         adaptor_strict2{pair_manager2, cutoff_tmp};
       adaptor_strict2.update();
       
@@ -298,18 +298,18 @@ namespace rascal {
         std::cout << "fcc cutoff " << cutoff_tmp << std::endl;
       }
 
-      AdaptorMaxOrder<StructureManagerCenters> pair_manager1{manager_1,
+      AdaptorNeighbourList<StructureManagerCenters> pair_manager1{manager_1,
           cutoff_tmp};
       pair_manager1.update();
       if (verbose) std::cout << "Setting up strict manager 1 " << std::endl;
-      AdaptorStrict<AdaptorMaxOrder<StructureManagerCenters>> 
+      AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>> 
                                         adaptor_strict1{pair_manager1, cutoff_tmp};
       adaptor_strict1.update();
-      AdaptorMaxOrder<StructureManagerCenters> pair_manager2{manager_2,
+      AdaptorNeighbourList<StructureManagerCenters> pair_manager2{manager_2,
           cutoff_tmp};
       pair_manager2.update();
       if (verbose) std::cout << "Setting up strict manager 2 " << std::endl;
-      AdaptorStrict<AdaptorMaxOrder<StructureManagerCenters>> 
+      AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>> 
                                         adaptor_strict2{pair_manager2, cutoff_tmp};
       adaptor_strict2.update();
 

@@ -38,6 +38,7 @@
 #include "structure_managers/structure_manager_centers.hh"
 #include "structure_managers/adaptor_strict.hh"
 #include "structure_managers/adaptor_increase_maxorder.hh"
+#include "structure_managers/adaptor_neighbour_list.hh"
 
 namespace rascal {
 
