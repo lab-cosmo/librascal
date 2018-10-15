@@ -32,6 +32,8 @@
 #include <Eigen/Dense>
 #include <basic_types.hh>
 #include <cmath>
+#include <iostream>
+#include <math/math_interface.hh>
 
 namespace rascal {
   /**
@@ -160,8 +162,23 @@ namespace rascal {
      * absolute cartesian coordinates to fractional/scaled coordinates
      */
     inline void set_transformation_matrix(){
-      Vec3_t c_abg = cell_angles.array().cos();
-      Vec3_t s_abg = cell_angles.array().sin();
+      // TODO Understand why std::cos in optimized code returns wrong values
+      // Vec3_t c_abg = cell_angles.array().cos();
+      // Vec3_t s_abg = cell_angles.array().sin();
+      // std::cout << cell_angles[0] << ", "<<cell_angles[1] << ", "<<cell_angles[2] << std::endl;
+      // std::cout << math::cos(cell_angles[0]) << ", "<<math::cos(cell_angles[1]) << ", "<<math::cos(cell_angles[2]) << std::endl;
+      // std::cout << math::sin(cell_angles[0]) << ", "<<math::sin(cell_angles[1]) << ", "<<math::sin(cell_angles[2]) << std::endl;
+      // std::cout << c_abg[0] << ", "<<c_abg[1] << ", "<<c_abg[2] << std::endl;
+      // std::cout << s_abg[0] << ", "<<s_abg[1] << ", "<<s_abg[2] << std::endl;
+
+      std::array<double,3> c_abg{{math::cos(cell_angles[0]),
+        math::cos(cell_angles[1]),math::cos(cell_angles[2])}};
+      std::array<double,3> s_abg{{math::sin(cell_angles[0]) ,
+        math::sin(cell_angles[1]),math::sin(cell_angles[2])}};
+
+      // std::cout << cell_angles[0] << ", "<<cell_angles[1] << ", "<<cell_angles[2] << std::endl;
+      // std::cout << c_abg[0] << ", "<<c_abg[1] << ", "<<c_abg[2] << std::endl;
+      // std::cout << s_abg[0] << ", "<<s_abg[1] << ", "<<s_abg[2] << std::endl;
       //! Cell volume divided by a*b*c
       double V{std::sqrt(1 - c_abg[0]*c_abg[0] - c_abg[1]*c_abg[1]
                          - c_abg[2]*c_abg[2]
@@ -226,7 +243,7 @@ namespace rascal {
     //! transformation matrix from the cartesian system to the lattice
     //! coordinate system
     Cell_t cartesian2scaled = Cell_t::Zero();
-    double pi{M_PI};
+    double pi{EIGEN_PI};
 
 
     constexpr static int Dim{3};

@@ -112,6 +112,8 @@ extern int sici(double x, double *si, double *ci);
 extern double radian(double d, double m, double s);
 extern double sindg(double x);
 extern double cosdg(double x);
+extern double sin(double x);
+extern double cos(double x);
 
 extern double spence(double x);
 
