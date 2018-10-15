@@ -4,6 +4,8 @@
 #ifndef TESTS_H
 #define TESTS_H
 
+#include <iostream>
+#include <iomanip>
 #include <boost/test/unit_test.hpp>
 //#define BOOST_TEST_DYN_LINK
 

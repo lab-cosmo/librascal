@@ -25,6 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#ifndef BASIC_TYPES_H
+#define BASIC_TYPES_H
 
 #include <Eigen/Dense>
 
@@ -52,3 +54,5 @@ namespace rascal {
   using Dim_t = int;
 
 }
+
+#endif /* BASIC_TYPES_H */
