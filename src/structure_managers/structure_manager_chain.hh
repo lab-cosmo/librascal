@@ -122,6 +122,9 @@ namespace rascal {
      * .get_positions() member function, if needed. Access to the cell vectors,
      * defined in the JSON file.
      */
+
+
+    // TODO change the ref to use the types defined in AtomicStructure
     using Cell_ref = Eigen::Map<Eigen::Matrix<double, traits::Dim,
                                               Eigen::Dynamic>>;
     //! Access to the atom types, defined in the JSON file.

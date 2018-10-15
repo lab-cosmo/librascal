@@ -87,7 +87,7 @@ extern double MAXNUM, MACHEP;
 double hyperg( a, b, x)
 double a, b, x;
 {
-double asum, psum, acanc, pcanc, temp;
+double asum, psum, acanc, pcanc=0, temp;
 
 /* See if a Kummer transformation will help */
 temp = b - a;

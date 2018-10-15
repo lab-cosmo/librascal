@@ -28,7 +28,6 @@
 
 #include "tests.hh"
 #include "test_structure.hh"
-#include "structure_managers/adaptor_increase_maxorder.hh"
 
 namespace rascal {
 
@@ -146,7 +145,7 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(neighbourlist_test_hcp,
+  BOOST_FIXTURE_TEST_CASE(strict_test_hcp,
                           ManagerFixtureNeighbourComparison
                           <StructureManagerCenters>) {
 
@@ -154,7 +153,7 @@ namespace rascal {
      * Note: since the cell vectors are different, it is possible that one of
      * the two atoms is repeated into a different cell due to periodicity. This
      * leads to a difference in number of neighbours. Therefore the strict
-     * cutoff is check to ensure the exakt same number of neighbours.
+     * cutoff is check to ensure the exact same number of neighbours.
      */
 
     constexpr bool verbose{false};
@@ -233,7 +232,7 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(neighbourlist_test_fcc,
+  BOOST_FIXTURE_TEST_CASE(strict_test_fcc,
                           ManagerFixtureNeighbourCheckFcc
                           <StructureManagerCenters>) {
 

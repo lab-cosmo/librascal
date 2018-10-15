@@ -39,8 +39,8 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(iterator_test,
                           ManagerFixture<StructureManagerCenters>) {
 
-    BOOST_CHECK_EQUAL(manager.get_size(), natoms);
-    BOOST_CHECK_EQUAL(manager.get_nb_clusters(1), natoms);
+    BOOST_CHECK_EQUAL(manager.get_size(), numbers.size());
+    BOOST_CHECK_EQUAL(manager.get_nb_clusters(1), numbers.size());
 
     int atom_counter{};
     constexpr bool verbose{false};

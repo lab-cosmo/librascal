@@ -1,5 +1,5 @@
 /**
- * file   utility.hh
+ * file   rascal_utility.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *
@@ -24,6 +24,9 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
+
+#ifndef RASCAL_UTILITY_H
+#define RASCAL_UTILITY_H
 
 #include <utility>
 
@@ -79,3 +82,5 @@ namespace rascal {
     };
   }  // internal
 }  // rascal
+
+#endif /* RASCAL_UTILITY_H */
