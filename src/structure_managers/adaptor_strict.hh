@@ -198,12 +198,14 @@ namespace rascal {
 
     //! Returns atom type given an atom index
     inline int & get_atom_type(const int& atom_id) {
-      return this->manager.get_atom_type(atom_id);
+      auto && type{this->manager.get_atom_type(atom_id)};
+      return type;
     }
 
     //! Returns a constant atom type given an atom index
     inline const int & get_atom_type( int& atom_id) const {
-      return this->manager.get_atom_type(atom_id);
+      auto && type{this->manager.get_atom_type(atom_id)};
+      return type;
     }
     /**
      * return the linear index of cluster (i.e., the count at which
