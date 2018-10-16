@@ -36,11 +36,13 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(ManagerTests);
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(constructor_test, ManagerFixture<StructureManagerLammps>) {
+  BOOST_FIXTURE_TEST_CASE(constructor_test,
+                          ManagerFixture<StructureManagerLammps>) {
   }
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(iterator_test, ManagerFixture<StructureManagerLammps>) {
+  BOOST_FIXTURE_TEST_CASE(iterator_test,
+                          ManagerFixture<StructureManagerLammps>) {
     int atom_counter{};
     int pair_counter{};
     constexpr bool verbose{false};
