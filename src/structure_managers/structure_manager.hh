@@ -581,7 +581,7 @@ namespace rascal {
     //! len==2 if 1st neighbours,...
     inline int get_atom_index() {
       return this->back(); // TODO: ?? what .back() is it?
-      // return this->get_atom_indices().back(); // TODO: ?? what .back() is it?      
+      // return this->get_atom_indices().back(); // TODO: ?? what .back() is it?
     }
 
     inline Manager_t & get_manager() {return this->it.get_manager();}

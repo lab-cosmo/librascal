@@ -59,7 +59,7 @@ namespace rascal {
       if (verbose) std::cout << "type " << atom.get_atom_type() << std::endl;
       for (auto pair : atom) {
         npairs_half++;
-      }
+       }
     }
 
     if (verbose) {

@@ -68,11 +68,11 @@ namespace rascal {
   };
 
   /**
-   * Adaptor that guarantees that only each pair/triplet/etc. is only contained
-   * once
+   * This adaptor ensures guarantiees, that each pair is contained only once
+   * without a permutation.
    *
    * This interface should be implemented by all managers with the trait
-   * AdaptorTraits::
+   * AdaptorTraits::NeighbourListType{AdaptorTraits::NeighbourListType::half}
    */
   template <class ManagerImplementation>
   class AdaptorHalfList: public
@@ -97,24 +97,25 @@ namespace rascal {
     AdaptorHalfList() = delete;
 
     /**
-     * construct a half neighbourhood list from a given manager.
+     * Reduce a full neighbour list to a half neighbour list (sometimes also
+     * called minimal).
      */
-    AdaptorHalfList(ManagerImplementation& manager);
+    AdaptorHalfList(ManagerImplementation & manager);
 
     //! Copy constructor
-    AdaptorHalfList(const AdaptorHalfList &other) = delete;
+    AdaptorHalfList(const AdaptorHalfList & other) = delete;
 
     //! Move constructor
-    AdaptorHalfList(AdaptorHalfList &&other) = default;
+    AdaptorHalfList(AdaptorHalfList && other) = default;
 
     //! Destructor
     virtual ~AdaptorHalfList() = default;
 
     //! Copy assignment operator
-    AdaptorHalfList& operator=(const AdaptorHalfList &other) = delete;
+    AdaptorHalfList& operator=(const AdaptorHalfList & other) = delete;
 
     //! Move assignment operator
-    AdaptorHalfList& operator=(AdaptorHalfList &&other) = default;
+    AdaptorHalfList& operator=(AdaptorHalfList && other) = default;
 
     //! update just the adaptor assuming the underlying manager was updated
     void update();
@@ -150,7 +151,8 @@ namespace rascal {
     }
 
     inline Vector_ref get_position(const int & index) {
-      return this->manager.get_position(index);
+      auto && original_index{this->atom_indices[0][index]};
+      return this->manager.get_position(original_index);
     }
 
     //! get atom_index of index-th neighbour of this cluster
@@ -158,20 +160,20 @@ namespace rascal {
     inline int get_cluster_neighbour(const ClusterRefKey<Order, Layer>
 				     & cluster,
 				     int index) const {
-      static_assert(Order <= traits::MaxOrder-1,
-                    "this implementation only handles upto traits::MaxOrder");
+      static_assert(Order <= 2,
+                    "This implementation only handles upto pairs.");
       auto && offset = this->offsets[Order][cluster.get_cluster_index(Layer)];
       return this->atom_indices[Order][offset + index];
     }
 
     //! get atom_index of the index-th atom in manager
-    inline int get_cluster_neighbour(const Parent& /*parent*/,
+    inline int get_cluster_neighbour(const Parent & /*parent*/,
 				     size_t index) const {
       return this->atom_indices[0][index];
     }
 
     //! return atom type
-    inline int & get_atom_type(const AtomRef_t& atom) {
+    inline int & get_atom_type(const AtomRef_t & atom) {
       /**
        * careful, atom refers to our local index, for the manager, we need its
        * index:
@@ -181,25 +183,29 @@ namespace rascal {
     }
 
     //! return atom type, const ref
-    inline const int & get_atom_type(const AtomRef_t& atom) const {
-      // careful, atom refers to our local index, for the manager, we need its
-      // index:
+    inline const int & get_atom_type(const AtomRef_t & atom) const {
+      /**
+       * careful, atom refers to our local index, for the manager, we need its
+       * index:
+       */
       auto && original_atom{this->atom_indices[0][atom.get_index()]};
       return this->manager.get_atom_type(original_atom);
     }
 
     //! Returns atom type given an atom index
     inline int & get_atom_type(const int & atom_id) {
-      return this->manager.get_atom_type(atom_id);
+      auto && original_id{this->atom_indices[0][atom_id]};
+      return this->manager.get_atom_type(original_id);
     }
 
     //! Returns a constant atom type given an atom index
     inline const int & get_atom_type(const int & atom_id) const {
-      return this->manager.get_atom_type(atom_id);
+      auto && original_id{this->atom_indices[0][atom_id]};
+      return this->manager.get_atom_type(original_id);
     }
 
     /**
-     * return the linear index of cluster (i.e., the count at which
+     * Returns the linear index of cluster (i.e., the count at which
      * this cluster appears in an iteration
      */
     template<size_t Order>
@@ -208,7 +214,7 @@ namespace rascal {
       return this->offsets[Order][counters.back()];
     }
 
-    //! return the number of neighbours of a given atom
+    //! Returns the number of neighbours of a given cluster
     template<size_t Order, size_t Layer>
     inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
 				   & cluster) const {
@@ -219,7 +225,7 @@ namespace rascal {
 
   protected:
     /**
-     * main function during construction of a neighbourlist.
+     * main function during construction of a the half neighbourlist.
      * @param atom the atom to add to the list
      * @param Order select whether it is an i-atom (order=1), j-atom (order=2),
      * or ...
@@ -251,19 +257,18 @@ namespace rascal {
       return this->template add_atom <Order-1>(cluster.back());
     }
 
+    // Reference to the underlying manager
     ManagerImplementation & manager;
 
     /**
      * store atom indices per order,i.e.
      *   - atom_indices[0] lists all i-atoms
-     *   - atom_indices[1] lists all j-atoms
-     *   - atom_indices[2] lists all k-atoms
      *   - etc
      */
+    // TODO this can be hardcoded to MaxOrder=2?
     std::array<std::vector<int>, traits::MaxOrder> atom_indices;
     /**
-     * store the number of j-atoms for every i-atom (nb_neigh[1]), the number of
-     * k-atoms for every j-atom (nb_neigh[2]), etc
+     * store the number of j-atoms for every i-atom (nb_neigh[1])
      */
     std::array<std::vector<size_t>, traits::MaxOrder> nb_neigh;
     /**
