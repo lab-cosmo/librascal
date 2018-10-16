@@ -341,23 +341,23 @@ namespace rascal {
         constexpr auto PairLayer{
           compute_cluster_layer<pair.order()>
             (typename traits::LayerByOrder{})};
+        // add first pair anyways
+        this->add_atom(pair);
 
-        auto index_i{atom.back()};
-        auto index_j{pair.back()};
+        Eigen::Matrix<size_t, PairLayer+1, 1> indices_pair;
+        indices_pair.template head<PairLayer>() = pair.get_cluster_indices();
+        indices_pair(PairLayer) = pair_counter;
+        pair_cluster_indices.push_back(indices_pair);
 
-        /**
-         * This is the actual check for the full neighbour list
-         */
-        if (index_i < index_j) {
-          this->add_atom(pair);
+        pair_counter++;
 
-          Eigen::Matrix<size_t, PairLayer+1, 1> indices_pair;
-          indices_pair.template head<PairLayer>() = pair.get_cluster_indices();
-          indices_pair(PairLayer) = pair_counter;
-          pair_cluster_indices.push_back(indices_pair);
+        //! TODO: access the second index's pairs and add this one to it. It is
+        // probably better to first collect all pairs and then write them
+        // contiguously
 
-          pair_counter++;
-        }
+        //! Now create the second pair by permutation of the
+        // existing indices auto index_i{atom.back()}; auto
+        // index_j{pair.back()};
       }
     }
   }
