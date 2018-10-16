@@ -36,6 +36,9 @@
 #include "structure_managers/structure_manager_chain.hh"
 #include "structure_managers/structure_manager_json.hh"
 #include "structure_managers/structure_manager_centers.hh"
+#include "structure_managers/adaptor_strict.hh"
+#include "structure_managers/adaptor_increase_maxorder.hh"
+#include "structure_managers/adaptor_neighbour_list.hh"
 
 namespace rascal {
 
@@ -288,14 +291,15 @@ namespace rascal {
     using Manager_t = StructureManagerCenters;
 
     ManagerFixture():
-      positions(3, 22), numbers(22), cell(3, 3), pbc{{true,true,true}},
-      cutoff{3.}
+      positions(22, 3), numbers(22), cell(3, 3), pbc{{true,true,true}},
+      // positions(3,8), numbers(8), cell(3, 3), pbc{{true,true,true}},
+      cutoff{2.}
     {
       cell <<
         6.19, 2.41, 0.21,
         0.00, 6.15, 1.02,
         0.00, 0.00, 7.31;
-
+      // cell.transposeInPlace();
       positions <<
         3.689540159937393, 5.123016813620886, 1.994119731169116,
         6.818437242389163, 2.630056617829216, 6.182500355729062,
@@ -320,8 +324,20 @@ namespace rascal {
         1.054504320562138, 6.251395251007936, 3.998423858825871,
         3.307475712744203, 5.323662899811682, 1.982236671758393;
 
+      positions.transposeInPlace();
       numbers << 20, 20, 24, 24, 15, 15, 15, 15, 8, 8, 8,
         8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8;
+      // cell <<
+      //   2., 0., 0.,
+      //   0., 2., 0.,
+      //   0., 0., 2.;
+
+      // positions <<
+      //   0.4, 1.4, 0.4, 1.4, 0.4, 1.4, 0.4, 1.4,
+      //   0.4, 0.4, 1.4, 1.4, 0.4, 0.4, 1.4, 1.4,
+      //   0.4, 0.4, 0.4, 0.4, 1.4, 1.4, 1.4, 1.4;
+
+      // numbers << 1, 2, 3, 4, 5, 6, 7, 8;
 
       manager.update(positions, numbers, cell,
                      Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
@@ -336,10 +352,9 @@ namespace rascal {
     Eigen::VectorXi numbers;
     Eigen::MatrixXd cell;
     std::array<int, 3> pbc;
-
     double cutoff;
 
-    int natoms{22};
+    //int natoms{22};
   };
 
   /* ---------------------------------------------------------------------- */

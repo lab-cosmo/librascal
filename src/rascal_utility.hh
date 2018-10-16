@@ -1,5 +1,5 @@
 /**
- * file   utility.hh
+ * file   rascal_utility.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *
@@ -25,10 +25,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <utility>
-
 #ifndef RASCAL_UTILITY_H
 #define RASCAL_UTILITY_H
+
+#include <utility>
+
 
 namespace rascal {
   namespace internal {

@@ -22,10 +22,12 @@ make dev_doc
 * To build for development:
 ```Shell
 cd build 
-cmake -DCMAKE_BUILD_TYPE=Debug  -DENABLE_DOC=ON -DBUILD_TESTS=ON ..
+cmake -DCMAKE_BUILD_TYPE=debug  -DENABLE_DOC=ON -DBUILD_TESTS=ON ..
 make all
 ctest -V
 ```
+
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo  -DBUILD_TESTS=ON ..
 
 * Special flags:
   + INSTALL:
@@ -40,7 +42,7 @@ ctest -V
   + -DENABLE_DOC
   + -DBUILD_TESTS
 
-
+RelWithDebInfo
 
 To remove all the cmake files/folders except for the external library (enable glob and remove):
 ```

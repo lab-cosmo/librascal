@@ -26,6 +26,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
+
+
+#ifndef ADAPTOR_NEIGHBOUR_LIST_H
+#define ADAPTOR_NEIGHBOUR_LIST_H
+
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/property.hh"
 #include "rascal_utility.hh"
@@ -35,9 +40,6 @@
 #include <typeinfo>
 #include <set>
 #include <vector>
-
-#ifndef ADAPTOR_NEIGHBOUR_LIST_H
-#define ADAPTOR_NEIGHBOUR_LIST_H
 
 namespace rascal {
   /**

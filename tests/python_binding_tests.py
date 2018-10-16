@@ -3,6 +3,7 @@
 import unittest
 
 from python_structure_manager_test import TestStructureManagerCenters
+from python_math_test import TestMath
 
 class SimpleCheck(unittest.TestCase):
     def setUp(self):

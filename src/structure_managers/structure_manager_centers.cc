@@ -55,10 +55,10 @@ namespace rascal {
 
     Eigen::Index Natom{positions.cols()};
     this->natoms = Natom;
-
-    StructureManagerCenters::build();
     this->atoms_object.set_structure(positions, atom_types, cell, pbc);
 
+    StructureManagerCenters::build();
+    
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
     atom_cluster_indices.fill_sequence();
   }

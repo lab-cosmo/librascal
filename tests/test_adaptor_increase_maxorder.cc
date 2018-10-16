@@ -28,7 +28,6 @@
 
 #include "tests.hh"
 #include "test_structure.hh"
-#include "structure_managers/adaptor_increase_maxorder.hh"
 
 namespace rascal {
 
@@ -111,10 +110,11 @@ namespace rascal {
     }
     if(verbose) std::cout << "Number of triplets: " << n_triplets << std::endl;
   }
-
+  
   /**
    * TODO: check for known pair neighbour list extension to triplets
    */
+
 
   BOOST_AUTO_TEST_SUITE_END();
 

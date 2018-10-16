@@ -27,6 +27,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
+
+#ifndef ADAPTOR_MAXORDER_H
+#define ADAPTOR_MAXORDER_H
+
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/property.hh"
 #include "rascal_utility.hh"
@@ -36,9 +40,6 @@
 #include <typeinfo>
 #include <set>
 #include <vector>
-
-#ifndef ADAPTOR_MAXORDER_H
-#define ADAPTOR_MAXORDER_H
 
 namespace rascal {
   /**
@@ -91,6 +92,7 @@ namespace rascal {
       typename ManagerImplementation::template ClusterRef<Order>;
     using Vector_ref = typename Parent::Vector_ref;
     using Vector_t = typename Parent::Vector_t;
+    // TODO change these type to take them from the ManagerImplementation
     using Positions_ref = Eigen::Map<Eigen::Matrix<double, traits::Dim,
                                                    Eigen::Dynamic>>;
 
@@ -172,7 +174,7 @@ namespace rascal {
     inline Vector_ref get_position(const AtomRef_t & atom) {
       return this->manager.get_position(atom.get_index());
     }
-
+    
     template<size_t Order, size_t Layer>
     inline Vector_ref get_neighbour_position(const ClusterRefKey<Order, Layer>
                                              & cluster) {
@@ -201,21 +203,11 @@ namespace rascal {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles up to traits::MaxOrder");
       if (Order < traits::MaxOrder-1) {
-	return this->manager.get_cluster_neighbour(cluster, index);
+	      return this->manager.get_cluster_neighbour(cluster, index);
       } else {
-	auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
-	return this->neighbours[offset + index];
+	      auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
+	      return this->neighbours[offset + index];
       }
-    }
-
-    //! Returns atom type given an atom object AtomRef
-    inline int & get_atom_type(const AtomRef_t& atom) {
-      return this->manager.get_atom_type(atom.get_index());
-    }
-
-    //! Returns a constant atom type given an atom object AtomRef
-    inline const int & get_atom_type(const AtomRef_t& atom) const {
-      return this->manager.get_atom_type(atom.get_index());
     }
 
     //! Returns the number of neighbors of a given cluster
@@ -225,10 +217,10 @@ namespace rascal {
       static_assert(Order < traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
       if (Order < traits::MaxOrder-1) {
-	return this->manager.get_cluster_size(cluster);
+	      return this->manager.get_cluster_size(cluster);
       } else {
         auto access_index = cluster.get_cluster_index(Layer);
-	return nb_neigh[access_index];
+	      return nb_neigh[access_index];
       }
     }
 
@@ -320,7 +312,7 @@ namespace rascal {
     std::vector<size_t> offsets{};
 
     size_t cluster_counter{0};
-
+    
   private:
   };
 
