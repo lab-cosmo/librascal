@@ -70,56 +70,6 @@ namespace rascal {
 
   }
 
-  BOOST_FIXTURE_TEST_CASE(constructor_test_triplet,
-                          ManagerFixture<StructureManagerLammps>) {
-
-    constexpr bool verbose{false};
-
-    int npairs_full{0};
-    for (auto atom : manager) {
-      for (auto pair : atom) {
-        npairs_full++;
-      }
-    }
-
-    // // increasing from pairs to triplets
-    // AdaptorMaxOrder<StructureManagerLammps> adaptor_triplets{manager, 1.2};
-    // adaptor_triplets.update();
-
-    // for (auto atom : adaptor_triplets) {
-    //   for (auto pair : atom) {
-    //     for (auto triplet : pair) {
-
-    //     }
-    //   }
-    // }
-
-    if (verbose ) {
-      std::cout << "Setting up half neighbourlist manager" << std::endl;
-    }
-    // AdaptorHalfList<AdaptorMaxOrder<StructureManagerLammps>>
-    //   adaptor_half{adaptor_triplets};
-    // adaptor_half.update();
-
-    // int npairs_half{0};
-    // for (auto atom : adaptor_half) {
-    //   for (auto pair : atom) {
-    //     npairs_half++;
-    //   }
-    // }
-
-    // if (verbose) {
-    //   std::cout << "Full/half " << npairs_full << "/" << npairs_half << std::endl;
-    // }
-
-    // BOOST_CHECK_EQUAL(npairs_full, 4);
-    // BOOST_CHECK_EQUAL(npairs_half, 2);
-
-  }
-
-
-
-
   BOOST_AUTO_TEST_SUITE_END();
 
 }  // rascal

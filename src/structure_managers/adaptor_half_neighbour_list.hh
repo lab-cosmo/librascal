@@ -89,7 +89,9 @@ namespace rascal {
     using PairRef_t = ClusterRef_t<2>;
 
     static_assert(traits::MaxOrder > 1,
-                  "ManagerImlementation needs to handle pairs");
+                  "AdaptorHalfList needs pairs.");
+    static_assert(traits::MaxOrder < 3,
+                  "AdaptorHalfList does not work with Order > 2.");
 
     //! Default constructor
     AdaptorHalfList() = delete;
@@ -178,12 +180,24 @@ namespace rascal {
       return this->manager.get_atom_type(original_atom);
     }
 
-    //! return atom type
+    //! return atom type, const ref
     inline const int & get_atom_type(const AtomRef_t& atom) const {
       // careful, atom refers to our local index, for the manager, we need its
       // index:
       auto && original_atom{this->atom_indices[0][atom.get_index()]};
       return this->manager.get_atom_type(original_atom);
+    }
+
+    //! Returns atom type given an atom index
+    inline int & get_atom_type(const int & atom_id) {
+      auto && type{this->manager.get_atom_type(atom_id)};
+      return type;
+    }
+
+    //! Returns a constant atom type given an atom index
+    inline const int & get_atom_type(const int & atom_id) const {
+      auto && type{this->manager.get_atom_type(atom_id)};
+      return type;
     }
 
     /**
@@ -239,11 +253,7 @@ namespace rascal {
       return this->template add_atom <Order-1>(cluster.back());
     }
 
-    template <size_t Order, bool IsDummy>
-    struct HelperLoop;
-
     ManagerImplementation & manager;
-    typename AdaptorHalfList::template Property_t<double, 2> distance;
 
     /**
      * store atom indices per order,i.e.
@@ -270,7 +280,6 @@ namespace rascal {
   AdaptorHalfList<ManagerImplementation>::
   AdaptorHalfList(ManagerImplementation & manager):
     manager{manager},
-    distance{*this},
     atom_indices{},
     nb_neigh{},
     offsets{}
@@ -283,65 +292,6 @@ namespace rascal {
     this->manager.update(std::forward<Args>(arguments)...);
     this->update();
   }
-
-
-  /* ---------------------------------------------------------------------- */
-  template <class ManagerImplementation>
-  template <size_t Order, bool IsDummy>
-  struct AdaptorHalfList<ManagerImplementation>::HelperLoop {
-    static constexpr size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
-    using ClusterRef_t = typename ManagerImplementation::template
-      ClusterRef<Order>;
-    using traits = typename AdaptorHalfList<ManagerImplementation>::traits;
-
-    using NextOrderLoop = HelperLoop<Order+1,
-                                     (Order+1 == MaxOrder)>;
-
-    static void loop(ClusterRef_t & cluster, AdaptorHalfList& manager) {
-      auto & next_cluster_indices{
-        std::get<Order>(manager.cluster_indices_container)};
-      size_t cluster_counter{0};
-
-      for (auto next_cluster: cluster) {
-        // add atom
-        manager.add_atom(next_cluster);
-
-        // get new layer and add index at this depth
-        constexpr auto NextClusterLayer{
-          compute_cluster_layer<next_cluster.order()>
-            (typename traits::LayerByOrder{})
-            };
-
-        //TODO todo wrong assert?
-        // static_assert(NextClusterLayer == (NextClusterLayer + 1),
-        //               "Layer not correct");
-        Eigen::Matrix<size_t, NextClusterLayer+1, 1> indices_cluster;
-        indices_cluster.template head<NextClusterLayer>()
-          = cluster.get_cluster_indices();
-        indices_cluster(NextClusterLayer) = cluster_counter;
-        next_cluster_indices.push_back(indices_cluster);
-        cluster_counter++;
-
-        NextOrderLoop::loop(next_cluster, manager);
-      }
-    }
-  };
-
-  /* ---------------------------------------------------------------------- */
-  /**
-   * End of recursion for making a half neighbourlist
-   */
-  template <class ManagerImplementation>
-  template <size_t Order>
-  struct AdaptorHalfList<ManagerImplementation>::HelperLoop<Order, true> {
-    static constexpr size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
-    using ClusterRef_t = typename ManagerImplementation::template
-      ClusterRef<Order>;
-    static void loop(ClusterRef_t & /*cluster*/,
-                     AdaptorHalfList<ManagerImplementation>& /*manager*/) {
-      // do nothing
-    }
-  };
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
@@ -361,9 +311,6 @@ namespace rascal {
     for (auto & vector: this->offsets) {
       vector.push_back(0);
     }
-
-    //! initialise the distance storage
-    this->distance.resize_to_zero();
 
     // fill the list, at least pairs are mandatory for this to work
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
@@ -395,8 +342,11 @@ namespace rascal {
         auto index_i{atom.back()};
         auto index_j{pair.back()};
 
-        std::cout << "index_i, index_j " << index_i << ", " << index_j << std::endl;
-
+        /**
+         * This is the actual check for the half neighbour list: only pairs with
+         * higher index_j than index_i are used. It should in principle ensure a
+         * minimal neighbour list.
+         */
         if (index_i < index_j) {
           this->add_atom(pair);
 
@@ -407,9 +357,6 @@ namespace rascal {
 
           pair_counter++;
         }
-        using HelperLoop = HelperLoop<pair.order(),
-                                      pair.order() >= traits::MaxOrder>;
-        HelperLoop::loop(pair, *this);
       }
     }
   }
