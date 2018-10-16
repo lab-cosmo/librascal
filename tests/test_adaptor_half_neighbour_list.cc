@@ -94,9 +94,9 @@ namespace rascal {
     //   }
     // }
 
-    // if (verbose ) {
-    //   std::cout << "Setting up half neighbourlist manager" << std::endl;
-    // }
+    if (verbose ) {
+      std::cout << "Setting up half neighbourlist manager" << std::endl;
+    }
     // AdaptorHalfList<AdaptorMaxOrder<StructureManagerLammps>>
     //   adaptor_half{adaptor_triplets};
     // adaptor_half.update();
