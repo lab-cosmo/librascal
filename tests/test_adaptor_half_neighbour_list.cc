@@ -48,7 +48,7 @@ namespace rascal {
       }
     }
 
-    if (verbose ) {
+    if (verbose) {
       std::cout << "Setting up half neighbourlist manager" << std::endl;
     }
     AdaptorHalfList<StructureManagerLammps> adaptor{manager};
@@ -56,6 +56,7 @@ namespace rascal {
 
     int npairs_half{0};
     for (auto atom : adaptor) {
+      if (verbose) std::cout << "type " << atom.get_atom_type() << std::endl;
       for (auto pair : atom) {
         npairs_half++;
       }
