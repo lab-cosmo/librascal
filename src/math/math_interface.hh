@@ -1,21 +1,18 @@
 
 
 
-#ifndef MATH_H
-#define MATH_H
+#ifndef MATH_INTERFACE_H
+#define MATH_INTERFACE_H
 
 
-// #include "math/cephes/cephes.h"
 #include "math/cephes/mconf.h"
-
-
 namespace rascal {
   namespace math {
 
-    // double my_hyp2f1(a, b, c, x )
+    double hyp2f1(double& a, double& b, double& c, double& x);
+    
+  
+  }
+}
 
-  } // math
-} // rascal
-
-
-#endif /* MATH_H */
+#endif /* MATH_INTERFACE_H */

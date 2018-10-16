@@ -29,7 +29,7 @@
 #define TEST_MATH_H
 
 #include "math/math_interface.hh"
-#include "basic_types.hh"
+#include <Eigen/Dense>
 
 
 namespace rascal {

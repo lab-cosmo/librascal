@@ -29,6 +29,10 @@ ctest -V
 
 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo  -DBUILD_TESTS=ON ..
 
+nm -D src/math/libcephes.so
+
+valgrind --fullpath-after="" --leak-check=full --track-origins=yes ./main_test_suite
+
 * Special flags:
   + INSTALL:
     + empty (default) -> install rascal in the build folder
