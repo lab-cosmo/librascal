@@ -73,7 +73,7 @@ namespace rascal {
                  - atom.get_position()).norm()};
         distance_sum_half += dist;
         npairs_half++;
-       }
+      }
     }
 
     if (verbose) {
