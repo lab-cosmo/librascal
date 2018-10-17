@@ -34,9 +34,17 @@
 namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(half_neighbourlist_adaptor_test);
+  /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE(constructor_test,
+                          ManagerFixture<StructureManagerLammps>) {
+
+    //! TODO: should this be included in the constructor??
+    AdaptorHalfList<StructureManagerLammps> adaptor{manager};
+    adaptor.update();
+  }
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(constructor_test_pair,
+  BOOST_FIXTURE_TEST_CASE(iteration_and_distance_half_list,
                           ManagerFixture<StructureManagerLammps>) {
 
     constexpr bool verbose{false};

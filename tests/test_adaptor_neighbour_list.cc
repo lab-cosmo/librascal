@@ -35,7 +35,19 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(neighbour_list_adaptor_test);
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(constructor_test_order_zero,
+  BOOST_FIXTURE_TEST_CASE(constructor_test_fcc,
+                          ManagerFixtureNeighbourCheckFcc
+                          <StructureManagerCenters>) {
+  }
+
+  /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE(constructor_test_hcp,
+                          ManagerFixtureNeighbourComparison
+                          <StructureManagerCenters>) {
+  }
+
+  /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE(test_build_neighbour_list_from_atoms,
                           ManagerFixtureSimple<StructureManagerCenters>){
 
     constexpr bool verbose{false};

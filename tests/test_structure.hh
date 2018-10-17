@@ -5,7 +5,7 @@
  *
  * @date   05 Apr 2018
  *
- * @brief  Common headers for tests related to `NeighbourhoodManager`
+ * @brief  Common headers for tests related to `StructureManager`
  *
  * @section LICENSE
  *
