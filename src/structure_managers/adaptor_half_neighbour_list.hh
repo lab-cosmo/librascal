@@ -27,13 +27,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#ifndef ADAPTOR_HALF_LIST_H
+#define ADAPTOR_HALF_LIST_H
+
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/property.hh"
 #include "rascal_utility.hh"
-
-
-#ifndef ADAPTOR_HALF_LIST_H
-#define ADAPTOR_HALF_LIST_H
 
 namespace rascal {
   /*
@@ -247,7 +246,7 @@ namespace rascal {
         this->nb_neigh[i].push_back(0);
         // update the offsets
         this->offsets[i].push_back(this->offsets[i].back() +
-                                   this->nb_neigh[i-1].back());
+                                   this->nb_neigh[i].back());
       }
     }
 
@@ -337,13 +336,14 @@ namespace rascal {
       indices(AtomLayer) = indices(AtomLayer-1);
       atom_cluster_indices.push_back(indices);
 
+      auto index_i{atom.get_atom_index()};
+
       for (auto pair: atom) {
         constexpr auto PairLayer{
           compute_cluster_layer<pair.order()>
             (typename traits::LayerByOrder{})};
 
-        auto index_i{atom.back()};
-        auto index_j{pair.back()};
+        auto index_j{pair.get_atom_index()};
 
         /**
          * This is the actual check for the half neighbour list: only pairs with
