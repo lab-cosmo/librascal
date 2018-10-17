@@ -894,12 +894,10 @@ namespace rascal {
       mesh_bounds[i] = mesh_min[i];
       mesh_bounds[i+dim] = mesh_max[i];
     }
-    // TODO: find way to initialize eigen column with std::array
+    //! Get the mesh bounds to solve for the multiplicators
     int n{0};
     for (auto && coord : internal::MeshBounds<dim>{mesh_bounds}) {
-      for (auto i{0}; i<dim; ++i) {
-        xpos(i,n) = coord[i];
-      }
+      xpos.col(n) = Eigen::Map<Eigen::Matrix<double, dim, 1>> (coord.data());
       n++;
     }
     //! solve for all multipliers
