@@ -41,9 +41,14 @@ namespace rascal {
 
     constexpr bool verbose{false};
 
+    double distance_sum_full{0.};
+
     int npairs_full{0};
     for (auto atom : manager) {
       for (auto pair : atom) {
+        double dist = {(atom.get_position()
+                        - pair.get_position()).norm()};
+        distance_sum_full += dist;
         npairs_full++;
       }
     }
@@ -54,10 +59,19 @@ namespace rascal {
     AdaptorHalfList<StructureManagerLammps> adaptor{manager};
     adaptor.update();
 
+    double distance_sum_half{0.};
+
     int npairs_half{0};
     for (auto atom : adaptor) {
       if (verbose) std::cout << "type " << atom.get_atom_type() << std::endl;
       for (auto pair : atom) {
+
+        double dist = {(atom.get_position() - pair.get_position()).norm()};
+        distance_sum_half += dist;
+
+        dist = {(pair.get_position()
+                 - atom.get_position()).norm()};
+        distance_sum_half += dist;
         npairs_half++;
        }
     }
@@ -66,8 +80,12 @@ namespace rascal {
       std::cout << "Full/half " << npairs_full << "/" << npairs_half << std::endl;
     }
 
+    auto val{distance_sum_full - distance_sum_half};
+    auto distance_squared = val * val;
+
     BOOST_CHECK_EQUAL(npairs_full, 4);
     BOOST_CHECK_EQUAL(npairs_half, 2);
+    BOOST_CHECK(distance_squared < tol*100);
 
   }
 
