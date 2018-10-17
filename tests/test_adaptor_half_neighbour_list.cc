@@ -46,8 +46,7 @@ namespace rascal {
     int npairs_full{0};
     for (auto atom : manager) {
       for (auto pair : atom) {
-        double dist = {(atom.get_position()
-                        - pair.get_position()).norm()};
+        double dist = {(atom.get_position() - pair.get_position()).norm()};
         distance_sum_full += dist;
         npairs_full++;
       }
@@ -69,15 +68,17 @@ namespace rascal {
         double dist = {(atom.get_position() - pair.get_position()).norm()};
         distance_sum_half += dist;
 
-        dist = {(pair.get_position()
-                 - atom.get_position()).norm()};
+        dist = {(pair.get_position() - atom.get_position()).norm()};
         distance_sum_half += dist;
         npairs_half++;
       }
     }
 
     if (verbose) {
-      std::cout << "Full/half " << npairs_full << "/" << npairs_half << std::endl;
+      std::cout << "Full/half "
+                << npairs_full
+                << "/"
+                << npairs_half << std::endl;
     }
 
     auto val{distance_sum_full - distance_sum_half};
