@@ -27,11 +27,6 @@ make all
 ctest -V
 ```
 
-cmake -DCMAKE_BUILD_TYPE=Release  -DBUILD_TESTS=ON ..
-
-nm -D src/math/libcephes.so
-
-valgrind --fullpath-after="" --leak-check=full --track-origins=yes ./main_test_suite
 
 * Special flags:
   + INSTALL:
