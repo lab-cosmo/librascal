@@ -36,7 +36,7 @@
 
 namespace rascal {
 
-template<class RepresentationImplementation>
+template<class StructureManager>
   struct RepresentationFixture
   {
     RepresentationFixture():
@@ -78,17 +78,12 @@ template<class RepresentationImplementation>
         12, 13, 14, 15, 16, 17, 18, 19, 20, 21;
       manager.update(positions,numbers,center_ids,cell,pbc,cutoff_max);
 
-      RepresentationImplementation representation(
-        manager,central_decay,interaction_cutoff,interaction_decay);
-
     }
 
     ~RepresentationFixture() {
-
     }
-    RepresentationImplementation representation;
-
-    using Manager_t = typename RepresentationImplementation::Manager_t;
+    
+    using Manager_t = typename StructureManager::Manager_t;
     Manager_t manager{};
     
     std::array<bool, 3> pbc;
@@ -101,33 +96,27 @@ template<class RepresentationImplementation>
     double interaction_cutoff;
     double interaction_decay;
 
-
-
   };
 
 /* ---------------------------------------------------------------------- */
   template <>
-  struct RepresentationFixture<RepresentationManagerSortedCoulomb<StructureManagerJson>>
+  struct RepresentationFixture<StructureManagerJson>
   {
     using Manager_t = StructureManagerJson;
-    using Representation_t = RepresentationManagerSortedCoulomb<StructureManagerJson>;
-
+    
     RepresentationFixture()
-      : manager_json{},//representation_sorted_coulomb{},
+      : manager_json{},
       cutoff{1.1},central_decay{0.5}, 
-      interaction_cutoff{3},
-      interaction_decay{0.5} {
+      interaction_cutoff{3}, interaction_decay{0.5} {
 
       manager_json.read_structure_from_json("simple_cubic_8.json");
       manager_json.update();
-    //   representation_sorted_coulomb.build(manager_json,this->central_decay,
-    //     this->interaction_cutoff,this->interaction_decay);
+      
     }
 
     ~RepresentationFixture () {BOOST_TEST_MESSAGE("teardown ManagerJson fixture");}
 
     Manager_t manager_json;
-    Representation_t representation_sorted_coulomb{manager_json,0.5,3,0.5};
     double cutoff;
     double central_decay;
     double interaction_cutoff;

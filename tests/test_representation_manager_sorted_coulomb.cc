@@ -28,14 +28,20 @@
 #include "tests.hh"
 #include "test_representation_manager.hh"
 
-#include <iostream>
 
 namespace rascal {
   BOOST_AUTO_TEST_SUITE(representation_sorted_coulomb_test);
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
-  RepresentationFixture<RepresentationManagerSortedCoulomb<StructureManagerJson>>)
-  {}
+  RepresentationFixture<StructureManagerJson>)
+  {
+    using Representation_t = RepresentationManagerSortedCoulomb<Manager_t>;
+    Representation_t representation{manager_json,central_decay,
+                                      interaction_cutoff,interaction_decay};
+    
+
+
+  }
 
 
   BOOST_AUTO_TEST_SUITE_END();

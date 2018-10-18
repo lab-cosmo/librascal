@@ -22,12 +22,10 @@ make dev_doc
 * To build for development:
 ```Shell
 cd build 
-cmake -DCMAKE_BUILD_TYPE=debug  -DENABLE_DOC=ON -DBUILD_TESTS=ON ..
+cmake -DCMAKE_BUILD_TYPE=Debug  -DENABLE_DOC=ON -DBUILD_TESTS=ON ..
 make all
 ctest -V
 ```
-
-cmake -DCMAKE_BUILD_TYPE=debug  -DBUILD_TESTS=ON ..
 
 * Special flags:
   + INSTALL:

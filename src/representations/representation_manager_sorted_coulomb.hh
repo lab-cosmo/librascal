@@ -34,34 +34,32 @@
 #include <vector>
 
 namespace rascal {
-  // //! forward declaration for traits
-  // class RepresentationManagerSortedCoulomb;
 
-  // template <>
-  // struct RepresentationManager_traits<RepresentationManagerSortedCoulomb>
-  // {
-  //   constexpr static int Dim{3};
-  //   constexpr static size_t MaxOrder{1};
-  //   constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::yes};
-  //   //using LayerByDimension = std::integer_sequence<size_t, 0, 0>;
-  // };
+
   template<class StructureManager>
-  class RepresentationManagerSortedCoulomb//: public RepresentationManagerBase
+  class RepresentationManagerSortedCoulomb: public RepresentationManagerBase
   {
   public:
-    // using traits = RepresentationManager_traits<RepresentationManagerSortedCoulomb>;
+    // TODO make a traits mechanism
     using hypers_t = RepresentationManagerBase::hypers_t;
     using Manager_t = StructureManager;
     //! Default constructor 
-    // RepresentationManagerSortedCoulomb()
-    //   :structure_manager{},central_decay{},interaction_cutoff{},interaction_decay{}
-    //   {}
     RepresentationManagerSortedCoulomb(StructureManager &sm, 
       double central_decay , double interaction_cutoff, 
       double interaction_decay)
       :structure_manager{sm},central_decay{central_decay},
-      interaction_cutoff{interaction_cutoff},interaction_decay{interaction_decay}
+      interaction_cutoff{interaction_cutoff},
+      interaction_decay{interaction_decay}
       {}
+
+    RepresentationManagerSortedCoulomb(StructureManager &sm,const hypers_t& hyper)
+      :structure_manager{sm},central_decay{},
+      interaction_cutoff{},
+      interaction_decay{}
+      {
+        this->set_hyperparameters(hyper);
+      }
+
     //! Copy constructor
     RepresentationManagerSortedCoulomb(
       const RepresentationManagerSortedCoulomb &other) = delete;
@@ -81,18 +79,8 @@ namespace rascal {
     RepresentationManagerSortedCoulomb& operator=(
       RepresentationManagerSortedCoulomb && other) = default;
     
-    // Pure Virtual Function to set hyperparameters of the representation
     // TODO think of a generic input type for the hypers
-    // virtual void set_hyperparameters(const hypers_t & );
-
-    void build(StructureManager &sm, 
-      double central_decay , double interaction_cutoff, 
-      double interaction_decay){
-        this->structure_manager = sm;
-        this->central_decay = central_decay;
-        this->interaction_cutoff = interaction_cutoff;
-        this->interaction_decay = interaction_decay;
-      };
+    void set_hyperparameters(const hypers_t & );
 
     Manager_t& structure_manager;
     //hypers_t hyperparmeters;

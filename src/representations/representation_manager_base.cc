@@ -29,7 +29,9 @@
 #include "representations/representation_manager_base.hh"
 
 namespace rascal {
-  void RepresentationManagerBase::check_traits_compatibility(StructureManagerBase &){
+
+  template<class StructureManager>
+  void RepresentationManagerBase::check_traits_compatibility(StructureManager &){
     // Hello !
 
   };

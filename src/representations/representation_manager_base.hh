@@ -29,38 +29,32 @@
 #define BASIS_REPRESENTATION_MANAGER_BASE_H
 
 #include "structure_managers/structure_manager_base.hh"
-#include <map>
+#include "structure_managers/json_io.hh"
 #include <string>
 #include <vector>
 
 
 namespace rascal {
 
-  // template <class RepresentationImplementation>
-  // struct RepresentationManager_traits
-  // {};
+  template <class RepresentationImplementation>
+  struct RepresentationManager_traits
+  {};
 
   // template <class RepresentationImplementation>
   class RepresentationManagerBase
   {
   public:
 
-    // using traits = RepresentationManager_traits<RepresentationImplementation>;
-    using hypers_t = std::map<std::string,std::vector<double>>;
-    //! Default constructor 
-    // RepresentationManagerBase(StructureManagerBase &sm, hypers_t hypers)
-    //   :structure_manager{sm},hyperparmeters{}
-    //   {
-    //     this->check_traits_compatibility(structure_manager);
-    //     this->set_hyperparameters(hypers);
-    //   };
-    RepresentationManagerBase() = delete;
+
+    using hypers_t = json;
+    
+    RepresentationManagerBase() = default;
 
     //! Copy constructor
     RepresentationManagerBase(const RepresentationManagerBase &other) = delete;
 
     //! Move constructor
-    RepresentationManagerBase(RepresentationManagerBase &&other) = default;
+    RepresentationManagerBase(RepresentationManagerBase &&other) = delete;
 
     //! Destructor
     virtual ~RepresentationManagerBase()  = default;
@@ -69,21 +63,20 @@ namespace rascal {
     RepresentationManagerBase& operator=(const RepresentationManagerBase &other) = delete;
 
     //! Move assignment operator
-    RepresentationManagerBase& operator=(RepresentationManagerBase && other) = default;
+    RepresentationManagerBase& operator=(RepresentationManagerBase && other) = delete;
 
     // Resolves the mismatch between the expected traits 
     // and the effective traits of the Structure Manager
     template <class Mngr>
-    virtual void check_traits_compatibility(Mngr &structure_manager);
+    void check_traits_compatibility(Mngr &structure_manager);
 
     // Pure Virtual Function to set hyperparameters of the representation
     // TODO think of a generic input type for the hypers
     // make class similar to atomic_structure 
     // to handle the hyper io (json format from python and files)
-    virtual void set_hyperparameters(const hypers_t & ) = 0;
-
-    StructureManagerBase& structure_manager;
-    //hypers_t hyperparmeters;
+    // virtual void set_hyperparameters(const hypers_t & ) = 0;
+        
+  
 
   protected:
   private:
