@@ -124,15 +124,15 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template<class ManagerImplementation>
-  struct ManagerFixtureNeighbourComparison
+  struct ManagerFixtureNeighbourCheckHcp
   {
-    ManagerFixtureNeighbourComparison():
+    ManagerFixtureNeighbourCheckHcp():
       pbc{{true,true,true}}, cutoff{1.}, center_ids(natoms),
       cell_1(dim, dim), cell_2(dim, dim),
       positions_1(dim, natoms), positions_2(dim, natoms), atom_types(natoms)
     {}
 
-    ~ManagerFixtureNeighbourComparison() {}
+    ~ManagerFixtureNeighbourCheckHcp() {}
 
     ManagerImplementation manager_1{};
     ManagerImplementation manager_2{};
@@ -364,11 +364,11 @@ namespace rascal {
    * (building the neighbourlist) works properly
    */
   template<>
-  struct ManagerFixtureNeighbourComparison<StructureManagerCenters>
+  struct ManagerFixtureNeighbourCheckHcp<StructureManagerCenters>
   {
     using Manager_t = StructureManagerCenters;
 
-    ManagerFixtureNeighbourComparison():
+    ManagerFixtureNeighbourCheckHcp():
       pbc{{true, true, true}}, cell_1(3, 3), cell_2(3, 3),
       positions_1(3, 2), positions_2(3, 2), numbers(2), cutoff{0.7}
     {

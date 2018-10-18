@@ -42,7 +42,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(constructor_test_hcp,
-                          ManagerFixtureNeighbourComparison
+                          ManagerFixtureNeighbourCheckHcp
                           <StructureManagerCenters>) {
   }
 
@@ -82,7 +82,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(neighbourlist_test_hcp,
-                          ManagerFixtureNeighbourComparison
+                          ManagerFixtureNeighbourCheckHcp
                           <StructureManagerCenters>) {
 
     /**
