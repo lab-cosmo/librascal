@@ -127,8 +127,9 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Test with 3 atoms, extending a half list to triplets, SM is used as a
-   * shorthand for StructureManager
+   * Test with 3 atoms, included stacking: full pair list -> half pair list ->
+   * triplet list; SM is used as a shorthand for StructureManager. Checked
+   * positions are specific to StructureManagerLammps.
    */
   BOOST_FIXTURE_TEST_CASE(pair_to_triplet_extension,
                           ManagerFixture<StructureManagerLammps>) {
@@ -146,8 +147,29 @@ namespace rascal {
     BOOST_CHECK_EQUAL(SM3.get_nb_clusters(3), 1);
 
     for (auto atom : SM3) {
+      auto atom_index = atom.get_atom_index();
+      auto atom_type = atom.get_atom_type();
+      BOOST_CHECK_EQUAL(atom_type, type[atom_index]);
+
+      auto atom_position = atom.get_position();
+
       for (auto pair : atom) {
+        auto pair_index = pair.get_atom_index();
+        auto pair_type = pair.get_atom_type();
+        BOOST_CHECK_EQUAL(pair_type, type[pair_index]);
+
+        auto pair_position = pair.get_position();
+        auto diff_pos_pair = (pair_position - atom_position).norm();
+        BOOST_CHECK_CLOSE(diff_pos_pair, 1., tol);
+
         for (auto triplet : pair) {
+          auto triplet_index = triplet.get_atom_index();
+          auto triplet_type = triplet.get_atom_type();
+          BOOST_CHECK_EQUAL(triplet_type, type[triplet_index]);
+
+          auto triplet_position = triplet.get_position();
+          auto diff_pos_triplet = (triplet_position - atom_position).norm();
+          BOOST_CHECK_CLOSE(diff_pos_triplet, 1., tol);
         }
       }
     }
