@@ -191,6 +191,14 @@ namespace rascal {
                            this->atoms_object.type.size());
     }
 
+    template<size_t Order, size_t Layer>
+    inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
+                                   & /*cluster*/) const {
+      static_assert(Order <= traits::MaxOrder,
+                    "this implementation only handles atoms.");
+      return 1;
+    }
+
     //! Returns a map of size traits::Dim with 0/1 for periodicity
     inline PBC_ref get_periodic_boundary_conditions() {
       return PBC_ref(this->atoms_object.pbc.data());
@@ -229,7 +237,7 @@ namespace rascal {
     //                                  size_t index) const {
     inline int get_cluster_neighbour(const ClusterRefKey<Order, Layer>
                                      & ,
-                                     size_t ) const {                                  
+                                     size_t ) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs.");
       return 0;

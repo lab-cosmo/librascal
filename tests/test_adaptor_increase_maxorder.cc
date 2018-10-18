@@ -162,6 +162,7 @@ namespace rascal {
         auto diff_pos_pair = (pair_position - atom_position).norm();
         BOOST_CHECK_CLOSE(diff_pos_pair, 1., tol);
 
+        std::cout << "Pair size " << pair.size() << std::endl;
         for (auto triplet : pair) {
           auto triplet_index = triplet.get_atom_index();
           auto triplet_type = triplet.get_atom_type();
@@ -175,11 +176,24 @@ namespace rascal {
     }
   }
 
+  /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE(simple_cubic_8_extension,
+                          ManagerFixture<StructureManagerJson>) {
 
-  /**
-   * TODO: check for known pair neighbour list extension to triplets
-   */
+    AdaptorNeighbourList<StructureManagerJson> SM2{manager_json, cutoff};
 
+    auto npairs = SM2.get_nb_clusters(2);
+
+    std::cout << "npairs " << npairs << std::endl;
+
+    int np{0};
+    for (auto atom : SM2) {
+      for (auto pair : atom) {
+        np++;
+      }
+    }
+    std::cout << "np " << np << std::endl;
+  }
 
   BOOST_AUTO_TEST_SUITE_END();
 

@@ -222,7 +222,14 @@ namespace rascal {
     template<size_t Order>
     inline size_t get_offset_impl(const std::array<size_t, Order>
 				  & counters) const {
-      return this->offsets[Order][counters.back()];
+      /**
+       * The static assert with <= is necessary, because the template parameter
+       * ``Order`` is one Order higher than the MaxOrder at the current
+       * level. The return type of this function is used to build the next Order
+       * iteration.
+       */
+      static_assert(Order <= traits::MaxOrder, "Invalid Order");
+      return this->offsets[Order-1][counters.back()];
     }
 
     //! Returns the number of neighbours of a given cluster
@@ -234,10 +241,12 @@ namespace rascal {
       /**
        * TODO: check the assert and why it is not pushed through?
        */
-      if (Order == 1) {
-        auto access_index = cluster.get_cluster_index(Layer);
-        return nb_neigh[Order][access_index];
-      }
+      // if (Order == traits::MaxOrder - 1) {
+      auto access_index = cluster.get_cluster_index(Layer);
+      return nb_neigh[Order][access_index];
+      // } else {
+      //   return this->manager.get_cluster_size(cluster);
+      // }
     }
 
   protected:
@@ -282,7 +291,6 @@ namespace rascal {
      *   - atom_indices[0] lists all i-atoms
      *   - etc
      */
-    // TODO this can be hardcoded to MaxOrder=2?
     std::array<std::vector<int>, traits::MaxOrder> atom_indices;
     /**
      * store the number of j-atoms for every i-atom (nb_neigh[1])

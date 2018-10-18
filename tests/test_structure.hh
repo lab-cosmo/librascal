@@ -273,7 +273,7 @@ namespace rascal {
   {
     using Manager_t = StructureManagerJson;
     ManagerFixture()
-      : manager_json{}, cutoff{1.1} {
+      : manager_json{}, cutoff{1.5} {
       manager_json.read_structure_from_json("simple_cubic_8.json");
       manager_json.update();
     }

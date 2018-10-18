@@ -226,6 +226,11 @@ namespace rascal {
                                    & cluster) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
+      /**
+       * Here it is traits::MaxOrder-1, because only the current manager has the
+       * right answer to the number of neighbours of the MaxOrder-1 tuple. This
+       * is the 'else' case.
+       */
       if (Order < traits::MaxOrder-1) {
         return this->manager.get_cluster_size(cluster);
       } else {
@@ -472,6 +477,10 @@ namespace rascal {
     static_assert(traits::MaxOrder > 2,
                   "No neighbourlist present; extension not possible.");
 
+    // TODO: possible problem: no resize??
+    // this->nb_neigh.resize(0);
+    // this->offsets.resize(0);
+    // this->neighbours.resize(0);
     for (auto atom : this->manager) {
       //! Order 1, variable Order is at 0, atoms, index 0
       using AddOrderLoop = AddOrderLoop<atom.order(),
@@ -488,6 +497,7 @@ namespace rascal {
     auto & max_cluster_indices
     {std::get<traits::MaxOrder-1>(this->cluster_indices_container)};
     max_cluster_indices.fill_sequence();
+
   }
 
 

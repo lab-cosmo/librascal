@@ -97,6 +97,9 @@ namespace rascal {
 
   }
 
+  /* ---------------------------------------------------------------------- */
+  // TODO: add test for going to full neighbour list again
+
   BOOST_AUTO_TEST_SUITE_END();
 
 }  // rascal

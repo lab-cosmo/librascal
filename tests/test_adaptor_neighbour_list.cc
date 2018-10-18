@@ -78,6 +78,7 @@ namespace rascal {
       }
     }
     if (verbose) std::cout << "Number of pairs " << n_pairs << std::endl;
+    BOOST_CHECK_EQUAL(n_pairs, pair_manager.get_nb_clusters(2));
   }
 
   /* ---------------------------------------------------------------------- */
