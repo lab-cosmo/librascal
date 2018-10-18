@@ -127,30 +127,30 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Test with 3 atoms, extending it to triplets, SM is used as a shorthand for
-   * StructureManager
+   * Test with 3 atoms, extending a half list to triplets, SM is used as a
+   * shorthand for StructureManager
    */
-  BOOST_FIXTURE_TEST_CASE(pair_to_triplet_extentsion,
+  BOOST_FIXTURE_TEST_CASE(pair_to_triplet_extension,
                           ManagerFixture<StructureManagerLammps>) {
 
     // TODO: should this be in a fixture?
-    AdaptorHalfList<StructureManagerLammps> SM_half{manager};
-    SM_half.update();
-    AdaptorMaxOrder<AdaptorHalfList<StructureManagerLammps>> SM3{SM_half};
+    AdaptorHalfList<StructureManagerLammps> SM2{manager};
+    SM2.update();
+    AdaptorMaxOrder<AdaptorHalfList<StructureManagerLammps>> SM3{SM2};
     SM3.update();
 
+    // make sure number of pairs are carried over
+    BOOST_CHECK_EQUAL(SM2.get_nb_clusters(2), SM3.get_nb_clusters(2));
+
+    // only one possible triplet?
+    BOOST_CHECK_EQUAL(SM3.get_nb_clusters(3), 1);
+
     for (auto atom : SM3) {
-      std::cout << "atom " << atom.get_atom_index() << std::endl;
       for (auto pair : atom) {
-        std::cout << "  pair " << pair.get_atom_index() << std::endl;
         for (auto triplet : pair) {
-          std::cout << "    triplet " << triplet.get_atom_index() << std::endl;
         }
       }
     }
-
-
-
   }
 
 
