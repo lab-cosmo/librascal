@@ -175,12 +175,14 @@ namespace rascal {
      * structure.
      */
     inline Cell_ref get_cell() {
-      Cell_ref retval(this->atoms_object.cell.data(), 3, 3);
-      return retval;
+      auto dim{traits::Dim};
+      return Cell_ref(this->atoms_object.cell.data(), dim,
+                      this->atoms_object.cell.size() / dim);
+      // return retval;
     }
 
     //! Returns the type of a given atom, given an AtomRef
-    inline int get_atom_type(const int & atom_index) {
+    inline int & get_atom_type(const int & atom_index) {
       auto t = this->get_atom_types();
       return t(atom_index);
     }

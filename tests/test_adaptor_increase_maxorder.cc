@@ -28,45 +28,10 @@
 
 #include "tests.hh"
 #include "test_structure.hh"
-#include "structure_managers/adaptor_increase_maxorder.hh"
 
 namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(maxlevel_increase_adaptor_test);
-
-  /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(constructor_test_order_zero,
-                          ManagerFixtureSimple<StructureManagerCenters>){
-
-    constexpr bool verbose{true};
-
-    if (verbose) std::cout << "===> zeroth order manager " << std::endl;
-    //! testing iteration of zerot-th order manager
-    for (auto atom : manager) {
-      if (verbose) {
-        std::cout << "atom " << atom.back() << std::endl;
-      }
-    }
-
-    if (verbose) std::cout << "<== zeroth order manager " << std::endl;
-
-    AdaptorMaxOrder<StructureManagerCenters> pair_manager{manager, cutoff};
-    pair_manager.update();
-
-    auto n_pairs{0};
-    for (auto atom : pair_manager) {
-      if (verbose) std::cout << "atom " << atom.back() << std::endl;
-      for (auto pair : atom) {
-        n_pairs++;
-        if (verbose) {
-          std::cout << "   complete pair "
-                    << atom.back() << " " << pair.back()
-                    << " glob " << pair.get_global_index() << std::endl;
-        }
-      }
-    }
-    if (verbose) std::cout << "Number of pairs " << n_pairs << std::endl;
-  }
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
@@ -101,7 +66,7 @@ namespace rascal {
       std::cout << "<============ below" << std::endl;
     }
 
-    AdaptorMaxOrder<StructureManagerChain> adaptor{manager_chain, cutoff};
+    AdaptorMaxOrder<StructureManagerChain> adaptor{manager_chain};
     adaptor.update();
 
     if (verbose) {
@@ -123,8 +88,6 @@ namespace rascal {
       for (auto pair : atom) {
         npairs++;
         if (verbose) {
-          // std::cout << pair.back() << " glob " << pair.get_global_index()
-          //           << std::endl;
           std::cout << "   complete pair "
                     << atom.back() << " " << pair.back()
                     << " glob " << pair.get_global_index() << std::endl;
@@ -146,6 +109,11 @@ namespace rascal {
     }
     if(verbose) std::cout << "Number of triplets: " << n_triplets << std::endl;
   }
+  
+  /**
+   * TODO: check for known pair neighbour list extension to triplets
+   */
+
 
   BOOST_AUTO_TEST_SUITE_END();
 

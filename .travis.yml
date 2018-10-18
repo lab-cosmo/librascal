@@ -1,74 +1,197 @@
+# We will test ONLY the last 3 git commits for each branch.
 git:
-    depth: 3
+   depth: 3
 
+# So far, we will test only the following branches
 branches:
-    only:
-        - master
-        - feat/test_CI
+   only:
+       - master
+       - feat/test_CI
 
-sudo: false
+# It is necessary to use sude if we are using python3.X in a non-python code 
+sudo: true
 
 language: cpp
 
-python:
-    - "3.6"
-
-compiler: g++
-
-addons:
-    apt:
-        update: true
-        sources:
-            - ubuntu-toolchain-r-test
-            - george-edison55-precise-backports
-              #- llvm-toolchain-precise-3.7   # clang
-        packages:
-            - cmake-data
-            - cmake
-            - g++-5
-            - libboost-dev
-            - doxygen
-            - doxygen-doc
-            - doxygen-latex
-            - doxygen-gui
-            - graphviz
-              #- clang-3.7
-              #- doxygen
-              #- graphviz
-              #- sphinx_rtd_theme
-
+# This matrix contains the build we are going to try to compile 
 matrix:
-     include:
-        - os: linux
-          env: 
-              - BOOST_VERSION=1.67.0
-              - PYTHON_VERSION=3.6
-              - CC_ENV="CC=gcc-5 && CXX=g++-5"
+   include:
 
+           # OSX at the moment is not working and uses deprecated version of  xcode
+#====================================================================
+# CLANG on OSX
+#====================================================================
+
+           #- os: osx
+           #    osx_image: xcode9.3
+           #    env: 
+           #        - BOOST_VERSION=1.58.0
+           #        - PYTHON_VERSION=3.6
+           #        - CC_ENV="CXX=clang++ && CMAKE_CXX_FLAGS=-std=c++14"
+             #          addons:
+             #              apt:
+             #                  sources:
+             #                      - *common_sources
+             #                      - llvm-toolchain-trusty-4.0
+             #                      - ubuntu-toolchain-r-test
+             #                  packages:
+             #                      - *common_deps
+             #                      - clang-4.0
+             #                      - g++-5
+
+           # CLANG also does not work and crashes. I will solve this in the next week
+#====================================================================
+# CLANG on Linux
+#====================================================================
+
+           #             - os: linux
+           #               env: 
+           #                   - BOOST_VERSION=1.67.0
+           #                   - BOOST_VERSION2=1_67_0
+           #                   - PYTHON_VERSION=3.6
+           #                   - CC_ENV="CC=clang-4.0 && CXX=clang++-4.0"
+           #               addons:
+           #                   apt:
+           #                       sources:
+           #                           - llvm-toolchain-trusty-4.0
+           #                           - ubuntu-toolchain-r-test
+           #                       packages:
+           #                           - clang-4.0
+           #                           - g++-5
+           #             
+           #             - os: linux
+           #               env: 
+           #                   - BOOST_VERSION=1.67.0
+           #                   - BOOST_VERSION2=1_67_0
+           #                   - PYTHON_VERSION=3.6
+           #                   - CC_ENV=" CC=clang-5.0 && CXX=clang++-5.0"
+           #               addons:
+           #                   apt:
+           #                       sources:
+           #                           - llvm-toolchain-trusty-5.0
+           #                           - ubuntu-toolchain-r-test
+           #                       packages:
+           #                           - clang-5.0
+           #                           - g++-5
+
+#====================================================================
+# GCC on Linux
+#====================================================================
+             - os: linux
+               python: "3.6"
+               env: 
+                   - BOOST_VERSION=1.67.0
+                   - BOOST_VERSION2=1_67_0
+                   - PYTHON_VERSION=3.6
+                   - CC_ENV="CC=gcc-5 && CXX=g++-5"
+               addons:
+                   apt:
+                       sources:
+                           - ubuntu-toolchain-r-test
+                       packages:
+                           - g++-5
+
+             - os: linux
+               python: "3.6"
+               env: 
+                   - BOOST_VERSION=1.67.0
+                   - BOOST_VERSION2=1_67_0
+                   - PYTHON_VERSION=3.6
+                   - CC_ENV="CC=gcc-6 && CXX=g++-6"
+               addons:
+                   apt:
+                       sources:
+                           - ubuntu-toolchain-r-test
+                       packages:
+                           - g++-6
+                     
+             - os: linux
+               python: "3.6"
+               env: 
+                   - BOOST_VERSION=1.58.0
+                   - BOOST_VERSION2=1_58_0
+                   - PYTHON_VERSION=3.6
+                   - CC_ENV="CC=gcc-6 && CXX=g++-6"
+               addons:
+                   apt:
+                       sources:
+                           - ubuntu-toolchain-r-test
+                       packages:
+                           - g++-6
+                     
+             - os: linux
+               python: "3.6"
+               env: 
+                   - BOOST_VERSION=1.58.0
+                   - BOOST_VERSION2=1_58_0
+                   - PYTHON_VERSION=3.6
+                   - CC_ENV="CC=gcc-7 && CXX=g++-7"
+               addons:
+                   apt:
+                       sources:
+                           - ubuntu-toolchain-r-test
+                       packages:
+                           - g++-7
+
+
+# Download and configurations of the libraries needed from librascal 
+# AT THE MOMENT LINUX AND OSX BUILD BREAK DOWN SO THERE IS NO COMPATIBILITY.
 before_install:
-
-    - export DOWNLOAD_ROOT="${TRAVIS_BUILD_DIR}/../download"; if [ ! -d "${DOWNLOAD_ROOT}" ]; then mkdir -p "${DOWNLOAD_ROOT}"; fi
-    - export BOOST_DOWNLOAD_URL="http://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/boost_1_67_0.tar.bz2/download"
+    - |
+            if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
+                source ~/virtualenv/python${PYTHON_VERSION}/bin/activate
+                sudo -E python -m pip install --upgrade pip
+                python -V
+                sudo -E pip install sphinx sphinx_rtd_theme numpy breathe scipy
+                sudo -E apt-get install cmake cmake-data doxygen doxygen-latex graphviz python3-sphinx
+                python -V
+            fi
+    - |
+            if [ "${TRAVIS_OS_NAME}" == "osx" ]; then 
+                brew install doxygen graphviz
+            fi
+    - |
+            if [ "${TRAVIS_OS_NAME}" == "osx" ]; then 
+                brew upgrade python doxygen graphviz wget cmake 
+                clang -v
+            fi
+    - export DOWNLOAD_ROOT="${TRAVIS_BUILD_DIR}/../download"
+    - |
+            if [ ! -d "${DOWNLOAD_ROOT}" ]; then 
+                mkdir -p "${DOWNLOAD_ROOT}"
+            fi
+    - export BOOST_DOWNLOAD_URL="http://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/boost_${BOOST_VERSION2}.tar.bz2/download"
     - export BOOST_ROOT="${TRAVIS_BUILD_DIR}/../boost"
     - export CMAKE_MODULE_PATH="${BOOST_ROOT}"
-    - if [ ! -f "${DOWNLOAD_ROOT}/boost.tar.bz2" ]; then wget --no-verbose --output-document="${DOWNLOAD_ROOT}/boost.tar.bz2" "${BOOST_DOWNLOAD_URL}"; fi
-    - if [ ! -d "${BOOST_ROOT}" ]; then mkdir -p "${BOOST_ROOT}" && tar jxf "${DOWNLOAD_ROOT}/boost.tar.bz2" --strip-components=1 -C "${BOOST_ROOT}"; fi
-    - if [ ! -f "${BOOST_ROOT}/b2" ]; then cd "${BOOST_ROOT}"; ./bootstrap.sh --with-libraries=test; fi
+    - |
+            if [ ! -f "${DOWNLOAD_ROOT}/boost.tar.bz2" ]; then 
+                wget --no-verbose --output-document="${DOWNLOAD_ROOT}/boost.tar.bz2" "${BOOST_DOWNLOAD_URL}"
+            fi
+    - |
+            if [ ! -d "${BOOST_ROOT}" ]; then 
+                mkdir -p "${BOOST_ROOT}" && tar jxf "${DOWNLOAD_ROOT}/boost.tar.bz2" --strip-components=1 -C "${BOOST_ROOT}"
+            fi
+    - |
+            if [ ! -f "${BOOST_ROOT}/b2" ]; then 
+                cd "${BOOST_ROOT}"
+                ./bootstrap.sh --with-libraries=test
+            fi
     - cd "${BOOST_ROOT}"; ./b2 --prefix="$BOOST_ROOT" -d0 install
     - eval ${CC_ENV}
-    - pyenv global system ${PYTHON_VERSION}
-    - virtualenv --python=python${PYTHON_VERSION} vir_env
-    - source vir_env/bin/activate
-    - pip install Sphinx numpy breathe sphinx_rtd_theme
+
 
 install:
-      - cd "${TRAVIS_BUILD_DIR}"
-      - mkdir build
-      - cd build
-      - cmake .. -DBUILD_TESTS=ON -DENABLE_DOC=ON
-      - pwd
-      - make
-      - make dev_doc
+    - python -V
+    - cd "${TRAVIS_BUILD_DIR}"
+    - mkdir build
+    - cd build
+    - cmake .. -DBUILD_TESTS=ON -DENABLE_DOC=ON 
+    - cat CMakeCache.*
+    - make
+
 
 script:
-- ctest -V
+    - ctest -V
+
+after_script:
+    - make dev_doc

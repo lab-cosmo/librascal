@@ -22,10 +22,12 @@ make dev_doc
 * To build for development:
 ```Shell
 cd build 
-cmake -DCMAKE_BUILD_TYPE=Debug  -DENABLE_DOC=ON -DBUILD_TESTS=ON ..
+cmake -DCMAKE_BUILD_TYPE=debug  -DENABLE_DOC=ON -DBUILD_TESTS=ON ..
 make all
 ctest -V
 ```
+
+cmake -DCMAKE_BUILD_TYPE=debug  -DBUILD_TESTS=ON ..
 
 * Special flags:
   + INSTALL:
@@ -79,3 +81,6 @@ Make sure new and existing doxygen documentation refers correctly to Order and L
 typically we will do operations like diag (AB) where A and B are matrices of the order of 10'000x10'000
 
 
+TODO:
+
+have NL tests (1-3) that really test all possible features of the implementation

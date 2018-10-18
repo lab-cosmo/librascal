@@ -27,13 +27,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "structure_managers/structure_manager.hh"
-#include "structure_managers/property.hh"
-#include "rascal_utility.hh"
-
 
 #ifndef ADAPTOR_STRICT_H
 #define ADAPTOR_STRICT_H
+
+#include "structure_managers/structure_manager.hh"
+#include "structure_managers/property.hh"
+#include "rascal_utility.hh"
 
 namespace rascal {
   /*
@@ -149,16 +149,17 @@ namespace rascal {
       return this->manager.get_position(index);
     }
 
-    // template<size_t Order, size_t Layer>
-    // inline Vector_ref get_neighbour_position(const ClusterRefKey<Order, Layer>
-    // 					     & cluster) {
-    //   static_assert(Order > 1,
-    //                 "Only possible for Order > 1.");
-    //   static_assert(Order <= traits::MaxOrder,
-    //                 "this implementation should only work up to MaxOrder.");
-    //   // Argument is now the same, but implementation
-    //   return this->manager.get_neighbour_position(cluster);
-    // }
+    template<size_t Order, size_t Layer>
+    inline Vector_ref get_neighbour_position(const ClusterRefKey<Order, Layer>
+                                             & cluster) {
+      static_assert(Order > 1,
+                    "Only possible for Order > 1.");
+      static_assert(Order <= traits::MaxOrder,
+                    "this implementation should only work up to MaxOrder.");
+
+      return this->get_position(cluster.back());
+ 
+    }
 
     //! get atom_index of index-th neighbour of this cluster
     template<size_t Order, size_t Layer>
@@ -195,6 +196,17 @@ namespace rascal {
       return this->manager.get_atom_type(original_atom);
     }
 
+    //! Returns atom type given an atom index
+    inline int & get_atom_type(const int& atom_id) {
+      auto && type{this->manager.get_atom_type(atom_id)};
+      return type;
+    }
+
+    //! Returns a constant atom type given an atom index
+    inline const int & get_atom_type( int& atom_id) const {
+      auto && type{this->manager.get_atom_type(atom_id)};
+      return type;
+    }
     /**
      * return the linear index of cluster (i.e., the count at which
      * this cluster appears in an iteration
@@ -238,7 +250,7 @@ namespace rascal {
         this->nb_neigh[i].push_back(0);
         // update the offsets
         this->offsets[i].push_back(this->offsets[i].back() +
-                                   this->nb_neigh[i-1].back());
+                                   this->nb_neigh[i].back());
       }
     }
 
@@ -430,14 +442,20 @@ namespace rascal {
           };
 
       Eigen::Matrix<size_t, AtomLayer+1, 1> indices;
+      // since head is a templated member, the keyword template 
+      // has to be used if the matrix type is also a template parameter
+      // TODO explain the advantage of this syntax
       indices.template head<AtomLayer>() = atom.get_cluster_indices();
       indices(AtomLayer) = indices(AtomLayer-1);
       atom_cluster_indices.push_back(indices);
+      
+      // auto icenter{atom.get_index()};
 
       for (auto pair: atom) {
         constexpr auto PairLayer{
           compute_cluster_layer<pair.order()>
-            (typename traits::LayerByOrder{})};
+            (typename traits::LayerByOrder{})
+            };
 
         double distance{(atom.get_position()
                          - pair.get_position()).norm()};
@@ -450,7 +468,7 @@ namespace rascal {
           indices_pair.template head<PairLayer>() = pair.get_cluster_indices();
           indices_pair(PairLayer) = pair_counter;
           pair_cluster_indices.push_back(indices_pair);
-
+        
           pair_counter++;
         }
         using HelperLoop = HelperLoop<pair.order(),

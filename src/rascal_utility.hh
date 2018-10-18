@@ -1,5 +1,5 @@
 /**
- * file   utility.hh
+ * file   rascal_utility.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *
@@ -25,14 +25,18 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#ifndef RASCAL_UTILITY_H
+#define RASCAL_UTILITY_H
+
 #include <utility>
+
 
 namespace rascal {
   namespace internal {
     /* ---------------------------------------------------------------------- */
-    /** Helper functions to apply a functor to all items in a tuple. 
+    /** Helper functions to apply a functor to all items in a tuple.
      * The actual function is for_each, other functions construct the
-     * template loop over the items in the tuple.  
+     * template loop over the items in the tuple.
      */
     template<typename Func, typename Last>
     inline void for_each_impl(Func&& f, Last&& last) {
@@ -54,10 +58,10 @@ namespace rascal {
     }
 
     /**
-     * Utility for applying a function to individual tuple elements. 
-     * `tup` is a tuple that can be templated with an arbitrary number 
-     * of arguments. `f` is the function that should be applied to each 
-     * element of the tuple. 
+     * Utility for applying a function to individual tuple elements.
+     * `tup` is a tuple that can be templated with an arbitrary number
+     * of arguments. `f` is the function that should be applied to each
+     * element of the tuple.
      */
     template<typename Func, typename ... Args>
     inline void for_each(std::tuple<Args...>& tup, Func&& f) {
@@ -79,3 +83,5 @@ namespace rascal {
     };
   }  // internal
 }  // rascal
+
+#endif /* RASCAL_UTILITY_H */
