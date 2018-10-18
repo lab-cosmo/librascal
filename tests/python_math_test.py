@@ -30,17 +30,4 @@ class TestMath(unittest.TestCase):
             test = rc.hyp2f1(*inps[ii,:])
 
             self.assertTrue(np.allclose(ref,test,atol=self.atol))
-    
-    def test_legendre(self):
-        """
-        TEST 
-        """
-        
-        inps = np.random.rand(self.Ntest,2)
-        
-        for ii in range(self.Ntest):
-            ref = sps.legendre(*inps[ii,:])
-            test = rc.legendre(*inps[ii,:])
-
-            self.assertTrue(np.allclose(ref,test,atol=self.atol))
-
+            

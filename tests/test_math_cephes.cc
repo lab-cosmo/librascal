@@ -1,11 +1,11 @@
 /**
- * file   test_lattice.cc
+ * file   test_math_cephes.cc
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  *
- * @date   05 Apr 2018
+ * @date   14 October 2018
  *
- * @brief test implementation of lattice
+ * @brief Test interface between librascal and cephes
  *
  * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -45,27 +45,6 @@ namespace rascal {
     }
 
   }
-
-
-  // BOOST_FIXTURE_TEST_CASE(math_airy_test, ManagerFixture_math) {
-    
-  //   for (int ii{0};ii<3;++ii) {
-  //     double Ai{0}, Aip{0}, Bi{0}, Bip{0};
-  //     math::airy(numbers(0,ii),&Ai,&Aip,&Bi,&Bip);
-  //     if (vebose){
-  //       std::cout << std::setprecision(14) << Ai <<", "<<Aip <<", "<<Bi <<", "<<Bip <<", ";
-  //     }
-  //     auto error{std::abs(Ai-results_airy(ii,0))};
-  //     BOOST_CHECK_LE(error, math_tol);
-  //     error = std::abs(Aip-results_airy(ii,1));
-  //     BOOST_CHECK_LE(error, math_tol);
-  //     error = std::abs(Bi-results_airy(ii,2));
-  //     BOOST_CHECK_LE(error, math_tol);
-  //     error = std::abs(Bip-results_airy(ii,3));
-  //     BOOST_CHECK_LE(error, math_tol);
-  //   }
-
-  // }
   
   /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();

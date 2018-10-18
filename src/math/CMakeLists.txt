@@ -5,7 +5,6 @@ add_subdirectory(cephes)
 install(TARGETS cephes DESTINATION lib)
 
 
-
 add_library(rascal-math "")
 
 install(TARGETS rascal-math DESTINATION lib)

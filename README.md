@@ -27,7 +27,7 @@ make all
 ctest -V
 ```
 
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo  -DBUILD_TESTS=ON ..
+cmake -DCMAKE_BUILD_TYPE=Release  -DBUILD_TESTS=ON ..
 
 nm -D src/math/libcephes.so
 
@@ -46,7 +46,6 @@ valgrind --fullpath-after="" --leak-check=full --track-origins=yes ./main_test_s
   + -DENABLE_DOC
   + -DBUILD_TESTS
 
-RelWithDebInfo
 
 To remove all the cmake files/folders except for the external library (enable glob and remove):
 ```

@@ -1,11 +1,11 @@
 /**
- * file   test_lattice.hh
+ * file   test_math.hh
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  *
- * @date   05 Apr 2018
+ * @date   14 October 2018
  *
- * @brief Test implementation of lattice.cc
+ * @brief Test implementation of math functions
  *
  * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
