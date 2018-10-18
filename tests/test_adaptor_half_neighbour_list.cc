@@ -28,8 +28,6 @@
 #include "tests.hh"
 #include "test_structure.hh"
 #include "structure_managers/adaptor_half_neighbour_list.hh"
-#include "structure_managers/adaptor_increase_maxorder.hh"
-
 
 namespace rascal {
 
@@ -90,11 +88,11 @@ namespace rascal {
     }
 
     auto val{distance_sum_full - distance_sum_half};
-    auto distance_squared = val * val;
+    auto relative_error = val * val / (distance_sum_full * distance_sum_full);
 
     BOOST_CHECK_EQUAL(npairs_full, 4);
     BOOST_CHECK_EQUAL(npairs_half, 2);
-    BOOST_CHECK(distance_squared < tol*100);
+    BOOST_CHECK(relative_error < tol * tol);
 
   }
 

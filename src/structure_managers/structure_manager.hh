@@ -277,10 +277,6 @@ namespace rascal {
       return this->implementation().get_cluster_size(cluster);
     }
 
-    inline size_t cluster_size(const int & atom_index) const {
-      return this->implementation().get_cluster_size(atom_index);
-    }
-
     //! get atom_index of index-th neighbour of this cluster, e.g. j-th
     //! neighbour of atom i or k-th neighbour of pair i-j, etc.
     template <size_t Order, size_t Layer>

@@ -174,7 +174,7 @@ namespace rascal {
     inline Vector_ref get_position(const AtomRef_t & atom) {
       return this->manager.get_position(atom.get_index());
     }
-    
+
     template<size_t Order, size_t Layer>
     inline Vector_ref get_neighbour_position(const ClusterRefKey<Order, Layer>
                                              & cluster) {
@@ -222,11 +222,6 @@ namespace rascal {
         auto access_index = cluster.get_cluster_index(Layer);
 	      return nb_neigh[access_index];
       }
-    }
-
-    //! Returns the number of neighbors of an atom with the given index
-    inline size_t get_cluster_size(const int & atom_index) const {
-      return this->manager.get_cluster_size(atom_index);
     }
 
   protected:
@@ -312,7 +307,7 @@ namespace rascal {
     std::vector<size_t> offsets{};
 
     size_t cluster_counter{0};
-    
+
   private:
   };
 

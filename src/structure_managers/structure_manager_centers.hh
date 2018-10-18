@@ -245,9 +245,6 @@ namespace rascal {
       return 1;
     }
 
-    //! Cluster size is the number of neighbours here
-    inline size_t get_cluster_size(const int & ) const {return 1;}
-
     inline int get_cluster_neighbour(const Parent& /*cluster*/,
                                      size_t index) const {
       return this->atoms_index[0][index];

@@ -636,16 +636,6 @@ namespace rascal {
       }
     }
 
-    //! Returns the number of neighbors of an atom with the given index
-    inline size_t get_cluster_size(const int & atom_index) const {
-      //! if current adaptor has built pair list
-      if (traits::MaxOrder == 2) {
-        return this->nb_neigh[atom_index];
-      } else {
-        return this->manager.get_cluster_size(atom_index);
-      }
-    }
-
   protected:
     /**
      * Main function during construction of a neighbourlist.

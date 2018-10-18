@@ -44,6 +44,7 @@ namespace rascal {
 
   // TODO: this is not a general case of a manager fixture. Should not be so
   // complicated
+  // TODO: change this to a usage case of the ManagerFixture
   template<class ManagerImplementation>
   struct ManagerFixture
   {

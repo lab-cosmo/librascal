@@ -281,11 +281,6 @@ namespace rascal {
       return this->numneigh[cluster.back()];
     }
 
-    //! Cluster size is the number of neighbours here
-    inline size_t get_cluster_size(const int & atom_index) const {
-      return this->numneigh[atom_index];
-    }
-
     //! return the index-th neighbour of cluster
     template<size_t Order, size_t Layer>
     inline int get_cluster_neighbour(const ClusterRefKey<Order, Layer>

@@ -69,6 +69,23 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE(interface_test,
+                          ManagerFixture<StructureManagerLammps>) {
+    auto natoms = manager.size();
+    auto natoms2 = manager.get_size();
+    BOOST_CHECK_EQUAL(natoms, natoms2);
+
+    for (auto atom : manager) {
+      auto index = atom.get_atom_index();
+      auto atom_type = atom.get_atom_type();
+      BOOST_CHECK_EQUAL(atom_type, type[index]);
+      // auto index_size = manager.get_cluster_size(index);
+      // auto cluster_size = manager.get_cluster_size(atom);
+      // BOOST_CHECK_EQUAL(index_size, cluster_size);
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();
 
 }  // rascal

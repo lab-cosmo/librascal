@@ -34,8 +34,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(manager_centers_constructor_test,
                           ManagerFixture<StructureManagerCenters>){}
-  /* ---------------------------------------------------------------------- */
 
+  /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(iterator_test,
                           ManagerFixture<StructureManagerCenters>) {
 
@@ -58,6 +58,24 @@ namespace rascal {
                              << std::endl;
     }
   }
+
+  /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE(interface_test,
+                          ManagerFixture<StructureManagerCenters>) {
+
+    auto natoms = manager.size();
+    auto natoms2 = manager.get_size();
+    BOOST_CHECK_EQUAL(natoms, natoms2);
+
+    for (auto atom : manager) {
+      auto index = atom.get_atom_index();
+      auto type = atom.get_atom_type();
+      BOOST_CHECK_EQUAL(type, numbers[index]);
+      auto cluster_size = manager.get_cluster_size(atom);
+      BOOST_CHECK_EQUAL(cluster_size, 1);
+    }
+  }
+
   /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();
 }  // rascal
