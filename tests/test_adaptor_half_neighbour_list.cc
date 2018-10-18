@@ -36,7 +36,7 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(constructor_test,
                           ManagerFixture<StructureManagerLammps>) {
 
-    //! TODO: should this be included in the constructor??
+    //! TODO: should this be included in the constructor?
     AdaptorHalfList<StructureManagerLammps> adaptor{manager};
     adaptor.update();
   }
@@ -61,6 +61,7 @@ namespace rascal {
     if (verbose) {
       std::cout << "Setting up half neighbourlist manager" << std::endl;
     }
+
     AdaptorHalfList<StructureManagerLammps> adaptor{manager};
     adaptor.update();
 

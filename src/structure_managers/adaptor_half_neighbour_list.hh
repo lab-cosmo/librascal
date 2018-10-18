@@ -229,9 +229,15 @@ namespace rascal {
     template<size_t Order, size_t Layer>
     inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
 				   & cluster) const {
-      static_assert(Order <= traits::MaxOrder-1,
+      static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
-      return this->nb_neigh[Order][cluster.back()];
+      /**
+       * TODO: check the assert and why it is not pushed through?
+       */
+      if (Order == 1) {
+        auto access_index = cluster.get_cluster_index(Layer);
+        return nb_neigh[Order][access_index];
+      }
     }
 
   protected:
