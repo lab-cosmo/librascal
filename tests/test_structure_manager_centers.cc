@@ -65,14 +65,22 @@ namespace rascal {
 
     auto natoms = manager.size();
     auto natoms2 = manager.get_size();
+    auto natoms3 = manager.get_nb_clusters(1);
     BOOST_CHECK_EQUAL(natoms, natoms2);
+    BOOST_CHECK_EQUAL(natoms, natoms3);
 
     for (auto atom : manager) {
       auto index = atom.get_atom_index();
       auto type = atom.get_atom_type();
       BOOST_CHECK_EQUAL(type, numbers[index]);
+
       auto cluster_size = manager.get_cluster_size(atom);
       BOOST_CHECK_EQUAL(cluster_size, 1);
+
+      auto pos = atom.get_position();
+      auto pos_reference = positions.col(index);
+      auto position_error = (pos - pos_reference).norm();
+      BOOST_CHECK(position_error < tol / 100);
     }
   }
 
