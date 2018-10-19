@@ -42,6 +42,59 @@
 #include <vector>
 
 namespace rascal {
+
+  namespace internal {
+    /**
+     * Specialisation for the static branching to redirect to the
+     * correct number of neighbours of the cluster.
+     */
+
+    template<bool AtMaxOrder>
+    struct IncreaseHelper {
+      template<class Manager_t, class Cluster_t>
+      inline static size_t get_cluster_size(const Manager_t & /*manager*/,
+                                            const Cluster_t & /*cluster*/) {
+        throw std::runtime_error("This branch should never exist.");
+      }
+      template<class Manager_t, class Counters_t>
+      inline static size_t get_offset_impl(const Manager_t & /*manager*/,
+                                           const Counters_t & /*counters*/) {
+        throw std::runtime_error("This branch should never exist.");
+      }
+      template<class Manager_t, class Counters_t>
+      inline static size_t get_cluster_neighbour(const Manager_t & /*manager*/,
+                                                 const Counters_t & /*counters*/,
+                                                 size_t /*index*/) {
+        throw std::runtime_error("This branch should never exist.");
+      }
+    };
+
+    template<>
+    struct IncreaseHelper<false> {
+
+      template<class Manager_t, class Cluster_t>
+      inline static size_t get_cluster_size(const Manager_t & manager,
+                                            const Cluster_t & cluster) {
+        return manager.get_cluster_size(cluster);
+      }
+
+      template<class Manager_t, class Counters_t>
+      inline static size_t get_offset_impl(const Manager_t & manager,
+                                           const Counters_t & counters) {
+        return manager.get_offset_impl(counters);
+      }
+
+      template<class Manager_t, class Counters_t>
+      inline static size_t get_cluster_neighbour(const Manager_t & manager,
+                                                 const Counters_t & counters,
+                                                 size_t index) {
+        return manager.get_cluster_neighbour(counters, index);
+      }
+    };
+
+
+  }  // internal
+
   /**
    * Forward declaration for traits
    */
@@ -212,11 +265,15 @@ namespace rascal {
 				     size_t index) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles up to traits::MaxOrder");
+
+      using IncreaseHelper_t =
+        internal::IncreaseHelper<Order == (traits::MaxOrder-1)>;
       if (Order < traits::MaxOrder-1) {
-	      return this->manager.get_cluster_neighbour(cluster, index);
+        return IncreaseHelper_t::get_cluster_neighbour(this->manager, cluster,
+                                                       index);
       } else {
-	      auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
-	      return this->neighbours[offset + index];
+        auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
+        return this->neighbours[offset + index];
       }
     }
 
@@ -231,8 +288,13 @@ namespace rascal {
        * right answer to the number of neighbours of the MaxOrder-1 tuple. This
        * is the 'else' case.
        */
-      if (Order < traits::MaxOrder-1) {
-        return this->manager.get_cluster_size(cluster);
+
+      using IncreaseHelper_t =
+        internal::IncreaseHelper<Order == (traits::MaxOrder-1)>;
+
+      if (Order < (traits::MaxOrder-1)) {
+        return IncreaseHelper_t::get_cluster_size(this->manager,
+                                                        cluster);
       } else {
         auto access_index = cluster.get_cluster_index(Layer);
         return nb_neigh[access_index];
@@ -366,6 +428,7 @@ namespace rascal {
       //! do nothing, if MaxOrder is not reached, except call the next order
       for (auto next_cluster : cluster) {
 
+        std::cout << "cluster.order " << next_cluster.order() << std::endl;
         auto & next_cluster_indices
         {std::get<Order>(manager.cluster_indices_container)};
         next_cluster_indices.push_back(next_cluster.get_cluster_indices());
@@ -524,12 +587,19 @@ namespace rascal {
      * Order is determined by the ClusterRef building iterator, not by the Order
      * of the built iterator
      */
+
+    using IncreaseHelper_t =
+      internal::IncreaseHelper_t<Order == (traits::MaxOrder-1)>;
+
+    auto i{GetOffsetImplHelper_t::get_offset_impl(manager, counters)};
+
+      // this->manager.get_offset_impl(counters)};
+
     if (Order == traits::MaxOrder-1) {
       /**
        * Counters as an array to call parent offset multiplet. This can then be
        * used to access the actual offset for the Order which was built here.
        */
-      auto i{this->manager.get_offset_impl(counters)};
       auto j{counters[Order-1]};
       auto tuple_index{i+j};
       auto main_offset{this->offsets[tuple_index]};
@@ -539,7 +609,7 @@ namespace rascal {
        * If not accessible at this order, call lower Order offsets from lower
        * order manager or push through to lower levels, if adaptors are stacked.
        */
-      return this->manager.get_offset_impl(counters);
+      return i;
     }
   }
 }  // rascal

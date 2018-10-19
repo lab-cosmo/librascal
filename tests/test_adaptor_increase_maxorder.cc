@@ -123,6 +123,8 @@ namespace rascal {
       }
     }
     if(verbose) std::cout << "Number of triplets: " << n_triplets << std::endl;
+
+    // TODO: check for consistency in number of tuples
   }
 
   /* ---------------------------------------------------------------------- */
@@ -140,13 +142,16 @@ namespace rascal {
     AdaptorMaxOrder<AdaptorHalfList<StructureManagerLammps>> SM3{SM2};
     SM3.update();
 
+    AdaptorMaxOrder<StructureManagerLammps> test_direct{manager};
+    test_direct.update();
+
     // make sure number of pairs are carried over
     BOOST_CHECK_EQUAL(SM2.get_nb_clusters(2), SM3.get_nb_clusters(2));
 
     // only one possible triplet?
     BOOST_CHECK_EQUAL(SM3.get_nb_clusters(3), 1);
 
-    for (auto atom : SM3) {
+    for (auto atom : test_direct) {
       auto atom_index = atom.get_atom_index();
       auto atom_type = atom.get_atom_type();
       BOOST_CHECK_EQUAL(atom_type, type[atom_index]);

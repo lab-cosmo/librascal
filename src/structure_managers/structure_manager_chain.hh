@@ -276,7 +276,7 @@ namespace rascal {
     inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
                                    & cluster) const {
       // TODO: Check for <= or < ?!
-      static_assert(Order <= traits::MaxOrder,
+      static_assert(Order < traits::MaxOrder,
                     "this implementation only handles atoms and pairs.");
       return this->numneigh[cluster.back()];
     }
