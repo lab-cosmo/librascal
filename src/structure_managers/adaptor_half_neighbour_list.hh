@@ -229,7 +229,9 @@ namespace rascal {
        * level. The return type of this function is used to build the next Order
        * iteration.
        */
-      static_assert(Order <= traits::MaxOrder, "Invalid Order");
+      static_assert(Order <= traits::MaxOrder,
+                    "this implementation handles only up to the respective"
+                    " MaxOrder");
       return this->offsets[Order-1][counters.back()];
     }
 

@@ -1026,8 +1026,8 @@ namespace rascal {
      * iteration.
      */
     static_assert(Order <= traits::MaxOrder,
-                  "this implementation handles only up to "
-                  "the respective MaxOrder");
+                  "this implementation handles only up to the respective"
+                  " MaxOrder");
     /**
      * Order accessor: 0 - atoms
      *                 1 - pairs
@@ -1036,26 +1036,7 @@ namespace rascal {
      * Order is determined by the ClusterRef building iterator, not by the Order
      * of the built iterator
      */
-
-    // using IncreaseHelper_t =
-    //   internal::IncreaseHelper<Order == (traits::MaxOrder-1)>;
-
-    // // auto i = IncreaseHelper_t::get_offset_impl(manager, counters);
-
-    // if (Order < (traits::MaxOrder-1)) {
-    //   return IncreaseHelper_t::get_offset_impl(this->manager, counters);
-    // } else {
-      /**
-       * Counters as an array to call parent offset multiplet. This can then be
-       * used to access the actual offset for the next Order here.
-       */
-      // auto i{IncreaseHelper_t::get_offset_impl(manager, counters)};
-      // auto i{this->manager.get_offset_impl(counters)};
-      // auto j{counters[Order-1]};
-      // auto tuple_index{i+j};
-      // auto main_offset{this->offsets[tuple_index]};
-      return this->offsets[counters.front()]; //main_offset;
-      //}
+    return this->offsets[counters.front()]; //main_offset;
   }
 }  // rascal
 

@@ -534,11 +534,6 @@ namespace rascal {
     //! Default constructor
     ClusterRef() = delete;
 
-    //! Constructor from an iterator
-    // ClusterRef(Iterator_t & it):
-    //   Parent{it.get_atom_indices(), property(it.get_cluster_index())},
-    //   it{it} {}
-
     //! ClusterRef for multiple atoms with const IndexArray
     ClusterRef(Iterator_t & it,
                const std::array<int, Order> & atom_indices,

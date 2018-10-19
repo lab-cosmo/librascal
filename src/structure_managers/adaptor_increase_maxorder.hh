@@ -247,38 +247,11 @@ namespace rascal {
         return IncreaseHelper_t::get_cluster_size(this->manager, cluster);
       } else {
         auto access_index = cluster.get_cluster_index(Layer);
-        return nb_neigh[access_index];
+        return this->nb_neigh[access_index];
       }
     }
 
   protected:
-    /**
-     * Main function during extension of neighbourlist/triplet list.
-     *
-     * @param atom The atom to add to the list. Because the MaxOrder is
-     * increased by one in this adaptor, the Order=MaxOrder
-     */
-    inline void add_atom(const int atom_index) {
-      //! adds new atom at this Order
-      this->atom_indices.push_back(atom_index);
-      //! increases the number of neighbours
-      this->nb_neigh.back()++;
-      //! increases the offsets
-      this->offsets.back()++;
-
-      /**
-       * extends the list containing the number of neighbours with a new 0 entry
-       * for the added atom
-       */
-      this->nb_neigh.push_back(0);
-
-      /**
-       * extends the list containing the offsets and sets it with the number of
-       * neighbours plus the offsets of the last atom
-       */
-      this->offsets.push_back(this->offsets.back() +
-                              this->nb_neigh.back());
-    }
 
     //! Extends the list containing the number of neighbours with a 0
     inline void add_entry_number_of_neighbours() {
@@ -287,6 +260,7 @@ namespace rascal {
 
     //! Adds a given atom index as new cluster neighbour
     inline void add_neighbour_of_cluster(const int atom_index) {
+      std::cout << "adding to list " << atom_index << std::endl;
       //! adds `atom_index` to neighbours
       this->neighbours.push_back(atom_index);
       //! increases the number of neighbours
@@ -298,30 +272,15 @@ namespace rascal {
       auto n_tuples{nb_neigh.size()};
       this->offsets.reserve(n_tuples);
       this->offsets.resize(1);
-      // this->offsets.push_back(0);
+      this->offsets.push_back(0);
       for (size_t i{0}; i < n_tuples; ++i) {
         this->offsets.emplace_back(this->offsets[i] + this->nb_neigh[i]);
       }
     }
 
-    /**
-     * Interface of the add_atom function that adds the last atom in a given
-     * cluster
-     */
-    template <size_t Order>
-    inline void add_atom(const typename ManagerImplementation::template
-                         ClusterRef<Order> & cluster) {
-      static_assert(Order <= traits::MaxOrder,
-                    "Order too high, not possible to add atom");
-      return this->add_atom(cluster.back());
-    }
-
     ManagerImplementation & manager;
 
     template<size_t Order, bool IsDummy> struct AddOrderLoop;
-
-    //! Stores atom indices of current Order
-    std::vector<size_t> atom_indices{}; //akin to ilist[]
 
     //! Stores the number of neighbours for every traits::MaxOrder-1-*plets
     std::vector<size_t> nb_neigh{};
@@ -344,12 +303,13 @@ namespace rascal {
   AdaptorMaxOrder<ManagerImplementation>::
   AdaptorMaxOrder(ManagerImplementation & manager):
     manager{manager},
-    atom_indices{},
     nb_neigh{},
+    neighbours{},
     offsets{}
   {
-    if (traits::MaxOrder < 2) {
-      throw std::runtime_error("No pair list in manager.");
+    if (traits::MaxOrder < 3) {
+      throw std::runtime_error("Increase MaxOrder: No pair list in underlying"
+                               " manager.");
     }
   }
 
@@ -378,7 +338,7 @@ namespace rascal {
       //! do nothing, if MaxOrder is not reached, except call the next order
       for (auto next_cluster : cluster) {
 
-        // std::cout << "cluster.order " << next_cluster.order() << std::endl;
+        std::cout << "cluster.order " << next_cluster.order() << std::endl;
         auto & next_cluster_indices
         {std::get<Order>(manager.cluster_indices_container)};
         next_cluster_indices.push_back(next_cluster.get_cluster_indices());
@@ -434,10 +394,12 @@ namespace rascal {
 
 
       for (auto atom_index : i_atoms) {
+        std::cout << "i_atom " << atom_index << std::endl;
         current_i_atoms.push_back(atom_index);
         size_t access_index = manager.get_cluster_neighbour(manager,
                                                             atom_index);
 
+        std::cout << "access_index " << access_index << std::endl;
         //! build a shifted iterator to constuct a ClusterRef<1>
         auto iterator_at_position{manager_tmp.get_iterator_at(access_index)};
 
@@ -453,7 +415,9 @@ namespace rascal {
          */
         for (auto pair : j_cluster) {
           auto j_add = pair.back();
+          std::cout << "       j atom " << j_add << std::endl;
           if (j_add > i_atoms.back()) {
+            std::cout << "       inserter j atom " << j_add << std::endl;
             current_j_atoms.insert(j_add);
           }
         }
@@ -465,9 +429,15 @@ namespace rascal {
                           current_i_atoms.begin(), current_i_atoms.end(),
                           std::inserter(atoms_to_add, atoms_to_add.begin()));
 
+      std::cout << "atoms to add after sorting ";
+      for (auto j : atoms_to_add) {
+        std::cout << j << " ";
+      }
+      std::cout << std::endl;
+
       manager.add_entry_number_of_neighbours();
       if (atoms_to_add.size() > 0) {
-        for (auto j: atoms_to_add) {
+        for (auto j : atoms_to_add) {
           manager.add_neighbour_of_cluster(j);
         }
       }
@@ -490,12 +460,12 @@ namespace rascal {
     static_assert(traits::MaxOrder > 2,
                   "No neighbourlist present; extension not possible.");
 
-    // TODO: possible problem: no resize??
-    // this->nb_neigh.resize(0);
-    // this->offsets.resize(0);
-    // this->neighbours.resize(0);
+    this->nb_neigh.resize(0);
+    this->offsets.resize(0);
+    this->neighbours.resize(0);
+
     for (auto atom : this->manager) {
-      //! Order 1, variable Order is at 0, atoms, index 0
+      //! Order 1, but variable Order is at 0, atoms, index 0
       using AddOrderLoop = AddOrderLoop<atom.order(),
                                         atom.order() == traits::MaxOrder-1>;
       auto & atom_cluster_indices{std::get<0>

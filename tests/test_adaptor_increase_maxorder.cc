@@ -136,6 +136,10 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(pair_to_triplet_extension,
                           ManagerFixture<StructureManagerLammps>) {
 
+    constexpr bool verbose{true};
+
+    if (verbose) std::cout << ">> pair to triplet extension" << std::endl;
+
     // TODO: should this be in a fixture?
     AdaptorHalfList<StructureManagerLammps> SM2{manager};
     SM2.update();
