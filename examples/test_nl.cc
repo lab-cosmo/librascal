@@ -1,6 +1,6 @@
 #include "structure_managers/structure_manager_centers.hh"
 #include "structure_managers/adaptor_strict.hh"
-#include "structure_managers/adaptor_increase_maxorder.hh"
+#include "structure_managers/adaptor_neighbour_list.hh"
 #include "basic_types.hh"
 #include <iostream>
 #include <basic_types.hh>
@@ -83,7 +83,7 @@ int main()
     
     int mult{10};
     double rc_max{mult*0.5 + cut_off};
-    rascal::AdaptorMaxOrder<rascal::StructureManagerCenters> pair_manager{manager, rc_max };
+    rascal::AdaptorNeighbourList<rascal::StructureManagerCenters> pair_manager{manager, rc_max };
     pair_manager.update();
 
     for (auto i{0}; i < mult; ++i) {
@@ -94,12 +94,12 @@ int main()
       std::vector<std::vector<int>> neigh_ids_strict;
       std::vector<std::vector<double>> neigh_dist_strict;
       
-      // rascal::AdaptorMaxOrder<rascal::StructureManagerCenters> pair_manager{manager, cutoff_tmp};
+      // rascal::AdaptorNeighbourList<rascal::StructureManagerCenters> pair_manager{manager, cutoff_tmp};
       // pair_manager.update();
       if (verbose) {}
       
       std::cout << "Setting up strict manager with rc="<<cutoff_tmp << std::endl;
-      rascal::AdaptorStrict<rascal::AdaptorMaxOrder<rascal::StructureManagerCenters>> 
+      rascal::AdaptorStrict<rascal::AdaptorNeighbourList<rascal::StructureManagerCenters>> 
                                         adaptor_strict{pair_manager, cutoff_tmp};
       adaptor_strict.update();
 

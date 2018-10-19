@@ -27,7 +27,6 @@ make all
 ctest -V
 ```
 
-cmake -DCMAKE_BUILD_TYPE=debug  -DBUILD_TESTS=ON ..
 
 * Special flags:
   + INSTALL:
@@ -41,7 +40,6 @@ cmake -DCMAKE_BUILD_TYPE=debug  -DBUILD_TESTS=ON ..
   + -DCMAKE_BUILD_TYPE
   + -DENABLE_DOC
   + -DBUILD_TESTS
-
 
 
 To remove all the cmake files/folders except for the external library (enable glob and remove):

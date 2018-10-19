@@ -34,40 +34,6 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(maxlevel_increase_adaptor_test);
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(constructor_test_order_zero,
-                          ManagerFixtureSimple<StructureManagerCenters>){
-
-    constexpr bool verbose{false};
-
-    if (verbose) std::cout << "===> zeroth order manager " << std::endl;
-    //! testing iteration of zerot-th order manager
-    for (auto atom : manager) {
-      if (verbose) {
-        std::cout << "atom " << atom.back() << std::endl;
-      }
-    }
-
-    if (verbose) std::cout << "<== zeroth order manager " << std::endl;
-
-    AdaptorMaxOrder<StructureManagerCenters> pair_manager{manager, cutoff};
-    pair_manager.update();
-
-    auto n_pairs{0};
-    for (auto atom : pair_manager) {
-      if (verbose) std::cout << "atom " << atom.back() << std::endl;
-      for (auto pair : atom) {
-        n_pairs++;
-        if (verbose) {
-          std::cout << "   complete pair "
-                    << atom.back() << " " << pair.back()
-                    << " glob " << pair.get_global_index() << std::endl;
-        }
-      }
-    }
-    if (verbose) std::cout << "Number of pairs " << n_pairs << std::endl;
-  }
-
-  /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
                           ManagerFixture<StructureManagerChain>){
 
@@ -100,7 +66,7 @@ namespace rascal {
       std::cout << "<============ below" << std::endl;
     }
 
-    AdaptorMaxOrder<StructureManagerChain> adaptor{manager_chain, cutoff};
+    AdaptorMaxOrder<StructureManagerChain> adaptor{manager_chain};
     adaptor.update();
 
     if (verbose) {
@@ -143,172 +109,11 @@ namespace rascal {
     }
     if(verbose) std::cout << "Number of triplets: " << n_triplets << std::endl;
   }
+  
+  /**
+   * TODO: check for known pair neighbour list extension to triplets
+   */
 
-  /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(strict_test_hcp,
-                          ManagerFixtureNeighbourComparison
-                          <StructureManagerCenters>) {
-
-    /**
-     * Note: since the cell vectors are different, it is possible that one of
-     * the two atoms is repeated into a different cell due to periodicity. This
-     * leads to a difference in number of neighbours. Therefore the strict
-     * cutoff is check to ensure the exact same number of neighbours.
-     */
-
-    constexpr bool verbose{false};
-
-    if(verbose) std::cout << "HCP test " << cutoff << std::endl;
-
-    int mult = 10;
-
-    for (auto i{1}; i < mult; ++i) {
-      auto cutoff_tmp = i * cutoff;
-
-      std::vector<int> neighbours_per_atom1{};
-      std::vector<int> neighbours_per_atom2{};
-
-      neighbours_per_atom1.resize(0);
-      neighbours_per_atom1.resize(0);
-
-      if (verbose) {
-        std::cout << "hcp test cutoff " << cutoff_tmp << std::endl;
-      }
-
-      AdaptorMaxOrder<StructureManagerCenters> pair_manager1{manager_1,
-          cutoff_tmp};
-      pair_manager1.update();
-
-      AdaptorMaxOrder<StructureManagerCenters> pair_manager2{manager_2,
-          cutoff_tmp};
-      pair_manager2.update();
-
-      //std::cout << "Manager 1" << std::endl;
-      for (auto atom : pair_manager1) {
-        neighbours_per_atom1.push_back(0);
-        for (auto pair : atom) {
-          if (verbose) {
-            std::cout << "1 pair "
-                      << atom.back() << " "
-                      << pair.back() << std::endl;
-          }
-          double dist = {(atom.get_position()
-                          - pair.get_position()).norm()};
-          if (dist < cutoff_tmp) {
-            neighbours_per_atom1.back()++;
-          }
-        }
-      }
-      //std::cout << "Manager 2" << std::endl;
-      for (auto atom : pair_manager2) {
-        neighbours_per_atom2.push_back(0);
-        for (auto pair : atom) {
-          if (verbose) {
-            std::cout << "2 pair "
-                      << atom.back() << " "
-                      << pair.back() << std::endl;
-          }
-          double dist = {(atom.get_position()
-                          - pair.get_position()).norm()};
-          if (dist < cutoff_tmp) {
-            neighbours_per_atom2.back()++;
-          }
-        }
-      }
-
-      BOOST_CHECK_EQUAL_COLLECTIONS(neighbours_per_atom1.begin(),
-                                    neighbours_per_atom1.end(),
-                                    neighbours_per_atom2.begin(),
-                                    neighbours_per_atom2.end());
-
-      for (auto i{0}; i < natoms; ++i) {
-        if (verbose) {
-          std::cout << "neigh1/neigh2: i " << i << " "
-                    << neighbours_per_atom1[i] << "/"
-                    << neighbours_per_atom2[i] << std::endl;
-        }
-      }
-    }
-  }
-
-  /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(strict_test_fcc,
-                          ManagerFixtureNeighbourCheckFcc
-                          <StructureManagerCenters>) {
-
-    constexpr bool verbose{false};
-
-    if (verbose) std::cout << "FCC test " << std::endl;
-
-    int mult = 8;
-
-    for (auto i{1}; i < mult; ++i) {
-      auto cutoff_tmp = i * cutoff;
-
-      std::vector<int> neighbours_per_atom1{};
-      std::vector<int> neighbours_per_atom2{};
-
-      neighbours_per_atom1.resize(0);
-      neighbours_per_atom1.resize(0);
-
-      if (verbose) {
-        std::cout << "fcc cutoff " << cutoff_tmp << std::endl;
-      }
-
-      AdaptorMaxOrder<StructureManagerCenters> pair_manager1{manager_1,
-          cutoff_tmp};
-      pair_manager1.update();
-
-      AdaptorMaxOrder<StructureManagerCenters> pair_manager2{manager_2,
-          cutoff_tmp};
-      pair_manager2.update();
-
-      for (auto atom : pair_manager1) {
-        neighbours_per_atom1.push_back(0);
-        for (auto pair : atom) {
-          if (verbose) {
-            std::cout << "1 pair "
-                      << atom.back() << " "
-                      << pair.back() << std::endl;
-          }
-          double dist = {(atom.get_position()
-                          - pair.get_position()).norm()};
-          if (dist < cutoff_tmp) {
-            neighbours_per_atom1.back()++;
-          }
-        }
-      }
-
-      for (auto atom : pair_manager2) {
-        neighbours_per_atom2.push_back(0);
-        for (auto pair : atom) {
-          if (verbose) {
-            std::cout << "2 pair "
-                      << atom.back() << " "
-                      << pair.back() << std::endl;
-          }
-          double dist = {(atom.get_position()
-                          - pair.get_position()).norm()};
-          if (dist < cutoff_tmp) {
-            neighbours_per_atom2.back()++;
-          }
-        }
-      }
-
-      /**
-       * only the first index atom can be checked, since the cell with only one
-       * atom does not allow for comparison with other atom's number of
-       * neighbours
-       */
-      BOOST_CHECK_EQUAL(neighbours_per_atom1[0],
-                        neighbours_per_atom2[0]);
-      if (verbose) {
-        std::cout << "neigh1/neigh2: "
-                  << neighbours_per_atom1[0] << "/"
-                  << neighbours_per_atom2[0] << std::endl;
-      }
-    }
-  }
 
   BOOST_AUTO_TEST_SUITE_END();
 
