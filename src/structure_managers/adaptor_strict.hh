@@ -480,7 +480,7 @@ namespace rascal {
           this->add_atom(pair);
           double distance{std::sqrt(distance2)};
           // vec_ij /= distance;
-          this->dirVec.push_back(vec_ij/distance);
+          this->dirVec.push_back((vec_ij.array()/distance).matrix());
           this->distance.push_back(distance);
 
           Eigen::Matrix<size_t, PairLayer+1, 1> indices_pair;
