@@ -69,8 +69,10 @@ namespace rascal {
       auto cutoff_tmp = i*0.5 + cutoff;
       std::vector<std::vector<int>> neigh_ids{};
       std::vector<std::vector<double>> neigh_dist{};
+      std::vector<std::vector<std::array<double,3>>> neigh_dirVec{};
       std::vector<std::vector<int>> neigh_ids_strict{};
       std::vector<std::vector<double>> neigh_dist_strict{};
+      std::vector<std::vector<std::array<double,3>>> neigh_dirVec_strict{};
 
       // TODO re-initiallization in the loop of the pair manager results in a 
       // segmentation fault, is it expected ?
@@ -85,6 +87,7 @@ namespace rascal {
       for (auto center : pair_manager) {
         std::vector<int> indices{};
         std::vector<double> distances{};
+        std::vector<std::array<double,3>> dirVecs{};
         if (verbose) {
           std::cout << "cell atom out " << center.get_index(); // get_index returns iteration index
           std::cout << " " << center.get_atom_index() << " " ; // get_atom_index returns index from        
@@ -100,6 +103,9 @@ namespace rascal {
           if (distance <= cutoff_tmp) {              
             indices.push_back(neigh.get_atom_index());
             distances.push_back(distance);
+            auto dirVec{center.get_position() - neigh.get_position()};
+            std::array<double,3> aa{{dirVec(0),dirVec(1),dirVec(2)}};
+            dirVecs.push_back(aa);
             if (verbose) {
               std::cout << "cell neigh out " << neigh.get_index();
               std::cout << " " << neigh.get_atom_index() << " " ;
@@ -114,6 +120,7 @@ namespace rascal {
         }
         neigh_ids.push_back(indices);
         neigh_dist.push_back(distances);
+        neigh_dirVec.push_back(dirVecs);
         // break;
       }
 
@@ -122,7 +129,8 @@ namespace rascal {
         // auto icenter{center.get_index()};
         std::vector<int> indices_{};
         std::vector<double> distances_{};
-        
+        std::vector<std::array<double,3>> dirVecs_{};
+
         if (verbose) {
           std::cout << "strict atom out " << center.get_index(); // get_index returns iteration index
           std::cout << " " << center.get_atom_index() << " " ; // get_atom_index returns index from        
@@ -134,11 +142,14 @@ namespace rascal {
         }
         
         for (auto neigh : center) {
-          double distance{(center.get_position()
-                          - neigh.get_position()).norm()};
+          // double distance{(center.get_position()
+          //                 - neigh.get_position()).norm()};
 
           indices_.push_back(neigh.get_atom_index());
-          distances_.push_back(distance);
+          distances_.push_back(adaptor_strict.get_distance(neigh));
+          auto dirVec{adaptor_strict.get_direction_vector(neigh)};
+          std::array<double,3> aa{{dirVec(0),dirVec(1),dirVec(2)}};
+          dirVecs_.push_back(aa);
           
           if (verbose) {
               std::cout << "strict neigh out " << neigh.get_index();
@@ -158,6 +169,7 @@ namespace rascal {
 
         neigh_ids_strict.push_back(indices_);
         neigh_dist_strict.push_back(distances_);
+        neigh_dirVec_strict.push_back(dirVecs_);
         // if (icenter > 1) break;
       }
 
@@ -172,6 +184,11 @@ namespace rascal {
           double d1{neigh_dist_strict[ii][jj]};
           BOOST_CHECK_EQUAL(a0,a1);
           BOOST_CHECK_EQUAL(d0,d1);
+          for (size_t kk{0};kk<neigh_dirVec[ii].size();++kk){
+            double dv0{neigh_dirVec[ii][jj][kk]};
+            double dv1{neigh_dirVec_strict[ii][jj][kk]};
+            BOOST_CHECK_EQUAL(dv0,dv1);
+          }
         }
       }
     }
