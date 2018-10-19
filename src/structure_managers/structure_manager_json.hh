@@ -185,6 +185,12 @@ namespace rascal {
       return t(index);
     }
 
+    //! Returns the type of a given atom, given an atom index
+    inline int get_atom_type(const int & index) {
+      auto t = this->get_atom_types();
+      return t(index);
+    }
+
     //! Returns an a map with all atom types.
     inline AtomTypes_ref get_atom_types() {
       return AtomTypes_ref(this->atoms_object.type.data(),
@@ -309,11 +315,11 @@ namespace rascal {
   // used for buildup
   template<size_t Order>
   inline size_t StructureManagerJson::
-  //get_offset_impl(const std::array<size_t, Order> & counters) const {
-    get_offset_impl(const std::array<size_t, Order> & ) const {
+  get_offset_impl(const std::array<size_t, Order> & counters) const {
     // TODO: Check this static_assert for validity
-    static_assert (Order == 1, "this manager can not provide any offsets.");
-    return 0;
+    static_assert (Order <= traits::MaxOrder, "this manager can not provide any"
+                   " offsets.");
+    return counters.front();
   }
 
 }  // rascal

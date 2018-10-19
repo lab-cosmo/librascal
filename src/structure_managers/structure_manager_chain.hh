@@ -424,10 +424,16 @@ namespace rascal {
   template<size_t Order>
   inline size_t StructureManagerChain::
   get_offset_impl(const std::array<size_t, Order> & counters) const {
-    // TODO: Check this static_assert for validity
-    // static_assert (Order == 1, "this manager can only give the offset "
-    //                "(= starting index) for a pair iterator, given the i atom "
-    //                "of the pair");
+    // TODO: verify the following?
+    /**
+     * The static assert with <= is necessary, because the template parameter
+     * ``Order`` is one Order higher than the MaxOrder at the current
+     * level. The return type of this function is used to build the next Order
+     * iteration.
+     */
+    static_assert (Order <= traits::MaxOrder, "this manager can only give the"
+                   " offset (= starting index) for a pair iterator, given the"
+                   " i atom of the pair");
     return this->offsets[counters.front()];
   }
 

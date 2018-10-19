@@ -605,8 +605,13 @@ namespace rascal {
 				     size_t index) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles up to traits::MaxOrder");
-      if (Order < traits::MaxOrder-1) {
-	return this->manager.get_cluster_neighbour(cluster, index);
+
+      using IncreaseHelper_t =
+        internal::IncreaseHelper<Order == (traits::MaxOrder-1)>;
+
+      if (Order < (traits::MaxOrder-1)) {
+        return IncreaseHelper_t::get_cluster_neighbour(this->manager, cluster,
+                                                       index);
       } else {
 	auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
 	return this->neighbours[offset + index];
@@ -1013,8 +1018,14 @@ namespace rascal {
   template<size_t Order>
   inline size_t AdaptorNeighbourList<ManagerImplementation>::
   get_offset_impl(const std::array<size_t, Order> & counters) const {
-
-    static_assert(Order < traits::MaxOrder,
+    // TODO: verify the following:
+    /**
+     * The static assert with <= is necessary, because the template parameter
+     * ``Order`` is one Order higher than the MaxOrder at the current
+     * level. The return type of this function is used to build the next Order
+     * iteration.
+     */
+    static_assert(Order <= traits::MaxOrder,
                   "this implementation handles only up to "
                   "the respective MaxOrder");
     /**
@@ -1026,25 +1037,25 @@ namespace rascal {
      * of the built iterator
      */
 
-    using IncreaseHelper_t =
-      internal::IncreaseHelper<Order == (traits::MaxOrder-1)>;
+    // using IncreaseHelper_t =
+    //   internal::IncreaseHelper<Order == (traits::MaxOrder-1)>;
 
-    // auto i = IncreaseHelper_t::get_offset_impl(manager, counters);
+    // // auto i = IncreaseHelper_t::get_offset_impl(manager, counters);
 
-    if (Order < (traits::MaxOrder-1)) {
-      return this->offsets[counters.front()];
-    } else {
+    // if (Order < (traits::MaxOrder-1)) {
+    //   return IncreaseHelper_t::get_offset_impl(this->manager, counters);
+    // } else {
       /**
        * Counters as an array to call parent offset multiplet. This can then be
        * used to access the actual offset for the next Order here.
        */
-      auto i{IncreaseHelper_t::get_offset_impl(manager, counters)};
-      //this->manager.get_offset_impl(counters)};
-      auto j{counters[Order-1]};
-      auto tuple_index{i+j};
-      auto main_offset{this->offsets[tuple_index]};
-      return main_offset;
-    }
+      // auto i{IncreaseHelper_t::get_offset_impl(manager, counters)};
+      // auto i{this->manager.get_offset_impl(counters)};
+      // auto j{counters[Order-1]};
+      // auto tuple_index{i+j};
+      // auto main_offset{this->offsets[tuple_index]};
+      return this->offsets[counters.front()]; //main_offset;
+      //}
   }
 }  // rascal
 
