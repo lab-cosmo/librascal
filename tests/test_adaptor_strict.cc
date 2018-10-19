@@ -103,7 +103,7 @@ namespace rascal {
           if (distance <= cutoff_tmp) {              
             indices.push_back(neigh.get_atom_index());
             distances.push_back(distance);
-            auto dirVec{center.get_position() - neigh.get_position()};
+            auto dirVec{(center.get_position() - neigh.get_position()).array()/distance};
             std::array<double,3> aa{{dirVec(0),dirVec(1),dirVec(2)}};
             dirVecs.push_back(aa);
             if (verbose) {
@@ -142,14 +142,13 @@ namespace rascal {
         }
         
         for (auto neigh : center) {
-          // double distance{(center.get_position()
-          //                 - neigh.get_position()).norm()};
+          double distance{adaptor_strict.get_distance(neigh)};
 
           indices_.push_back(neigh.get_atom_index());
-          distances_.push_back(adaptor_strict.get_distance(neigh));
+          distances_.push_back(distance);
           auto dirVec{adaptor_strict.get_direction_vector(neigh)};
-          std::array<double,3> aa{{dirVec(0),dirVec(1),dirVec(2)}};
-          dirVecs_.push_back(aa);
+          std::array<double,3> bb{{dirVec(0),dirVec(1),dirVec(2)}};
+          dirVecs_.push_back(bb);
           
           if (verbose) {
               std::cout << "strict neigh out " << neigh.get_index();
