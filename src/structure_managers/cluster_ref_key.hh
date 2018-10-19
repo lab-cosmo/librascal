@@ -203,7 +203,7 @@ namespace rascal {
     ClusterRefKey(std::array<int, Order> atom_indices,
                    IndexConstArray cluster_indices) :
       Parent{Order, Layer}, atom_indices{atom_indices},
-      cluster_indices(cluster_indices.data())
+      cluster_indices{cluster_indices.data()}
     {}
 
     //! Copy constructor
