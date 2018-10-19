@@ -373,18 +373,7 @@ namespace rascal {
                                  std::make_integer_sequence<int, Size>{});
     }
 
-    // template <size_t Order, class AtomRef_t, std::size_t... I>
-    // std::array<int, Order>
-    // get_indices_from_list(const std::array<AtomRef_t, Order> & atoms,
-    //                       std::integer_sequence<int, I...>) {
-    //   return std::array<int, Order>{atoms[I].get_index()...};
-    // }
-
-    // template <size_t Order, class AtomRef_t> std::array<int, Order>
-    // get_indices(const std::array<AtomRef_t, Order> & atoms) {
-    //   return get_indices_from_list(atoms, std::make_integer_sequence<int, Order>{});
-    // }
-
+    /* ---------------------------------------------------------------------- */
     /**
      * Depending on the Order of the ClusterRef (Order=1 or higher), the cluster
      * can be a ghost cluster. If it is a ghost-cluster, i.e. the position of a
@@ -403,6 +392,60 @@ namespace rascal {
       static inline Vector_ref get_position(ClusterRef & cluster) {
         return cluster.get_manager().position(cluster.back());
       };
+    };
+
+    /* ---------------------------------------------------------------------- */
+    /**
+     * Specialisation for the static branching to redirect to the correct
+     * function to get sizes, offsets and neighbours. Used later by adaptors
+     * which modify or extend the neighbourlist to access the correct offset.
+     */
+
+    template<bool AtMaxOrder>
+    struct IncreaseHelper {
+      template<class Manager_t, class Cluster_t>
+      inline static size_t get_cluster_size(const Manager_t & /*manager*/,
+                                            const Cluster_t & /*cluster*/) {
+        throw std::runtime_error("This branch should never exist"
+                                 " (cluster size).");
+      }
+      template<class Manager_t, class Counters_t>
+      inline static size_t get_offset_impl(const Manager_t & manager,
+                                           const Counters_t & counters) {
+        return manager.get_offset_impl(counters);
+        // throw std::runtime_error("This branch should never exist"
+        //                          " (offset implementation).");
+      }
+      template<class Manager_t, class Counters_t>
+      inline static size_t get_cluster_neighbour(const Manager_t & /*manager*/,
+                                                 const Counters_t & /*counters*/,
+                                                 size_t /*index*/) {
+        throw std::runtime_error("This branch should never exist"
+                                 "(cluster neigbour).");
+      }
+    };
+
+    template<>
+    struct IncreaseHelper<false> {
+
+      template<class Manager_t, class Cluster_t>
+      inline static size_t get_cluster_size(const Manager_t & manager,
+                                            const Cluster_t & cluster) {
+        return manager.get_cluster_size(cluster);
+      }
+
+      template<class Manager_t, class Counters_t>
+      inline static size_t get_offset_impl(const Manager_t & manager,
+                                           const Counters_t & counters) {
+        return manager.get_offset_impl(counters);
+      }
+
+      template<class Manager_t, class Counters_t>
+      inline static size_t get_cluster_neighbour(const Manager_t & manager,
+                                                 const Counters_t & counters,
+                                                 size_t index) {
+        return manager.get_cluster_neighbour(counters, index);
+      }
     };
   }  // internal
   /* ---------------------------------------------------------------------- */
