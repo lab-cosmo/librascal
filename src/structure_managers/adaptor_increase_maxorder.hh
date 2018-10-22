@@ -260,7 +260,6 @@ namespace rascal {
 
     //! Adds a given atom index as new cluster neighbour
     inline void add_neighbour_of_cluster(const int atom_index) {
-      std::cout << "adding to list " << atom_index << std::endl;
       //! adds `atom_index` to neighbours
       this->neighbours.push_back(atom_index);
       //! increases the number of neighbours
@@ -338,12 +337,23 @@ namespace rascal {
       //! do nothing, if MaxOrder is not reached, except call the next order
       for (auto next_cluster : cluster) {
 
-        std::cout << "cluster.order " << next_cluster.order() << std::endl;
-        auto & next_cluster_indices
-        {std::get<Order>(manager.cluster_indices_container)};
-        next_cluster_indices.push_back(next_cluster.get_cluster_indices());
+        auto & next_cluster_indices {std::get<next_cluster.order()-1>
+            (manager.cluster_indices_container)};
 
-	NextOrderLoop::loop(next_cluster, manager);
+        // constexpr auto NextClusterLayer{
+        //   compute_cluster_layer<next_cluster.order()>
+        //     (typename traits::LayerByOrder{})
+        //     };
+
+        // Eigen::Matrix<size_t, NextClusterLayer, 1> indices;
+        // indices = next_cluster.get_cluster_indices();
+        // next_cluster_indices.push_back(indices);
+
+        auto indices{next_cluster.get_cluster_indices()};
+
+        next_cluster_indices.push_back(indices);
+
+        NextOrderLoop::loop(next_cluster, manager);
       }
     }
   };
@@ -394,12 +404,10 @@ namespace rascal {
 
 
       for (auto atom_index : i_atoms) {
-        std::cout << "i_atom " << atom_index << std::endl;
         current_i_atoms.push_back(atom_index);
         size_t access_index = manager.get_cluster_neighbour(manager,
                                                             atom_index);
 
-        std::cout << "access_index " << access_index << std::endl;
         //! build a shifted iterator to constuct a ClusterRef<1>
         auto iterator_at_position{manager_tmp.get_iterator_at(access_index)};
 
@@ -415,9 +423,7 @@ namespace rascal {
          */
         for (auto pair : j_cluster) {
           auto j_add = pair.back();
-          std::cout << "       j atom " << j_add << std::endl;
           if (j_add > i_atoms.back()) {
-            std::cout << "       inserter j atom " << j_add << std::endl;
             current_j_atoms.insert(j_add);
           }
         }
@@ -428,12 +434,6 @@ namespace rascal {
       std::set_difference(current_j_atoms.begin(), current_j_atoms.end(),
                           current_i_atoms.begin(), current_i_atoms.end(),
                           std::inserter(atoms_to_add, atoms_to_add.begin()));
-
-      std::cout << "atoms to add after sorting ";
-      for (auto j : atoms_to_add) {
-        std::cout << j << " ";
-      }
-      std::cout << std::endl;
 
       manager.add_entry_number_of_neighbours();
       if (atoms_to_add.size() > 0) {
@@ -460,6 +460,9 @@ namespace rascal {
     static_assert(traits::MaxOrder > 2,
                   "No neighbourlist present; extension not possible.");
 
+    internal::for_each(this->cluster_indices_container,
+                       internal::ResizePropertyToZero());
+
     this->nb_neigh.resize(0);
     this->offsets.resize(0);
     this->neighbours.resize(0);
@@ -468,17 +471,29 @@ namespace rascal {
       //! Order 1, but variable Order is at 0, atoms, index 0
       using AddOrderLoop = AddOrderLoop<atom.order(),
                                         atom.order() == traits::MaxOrder-1>;
+
       auto & atom_cluster_indices{std::get<0>
           (this->cluster_indices_container)};
+
+      // constexpr auto AtomLayer{
+      //   compute_cluster_layer<atom.order()>
+      //     (typename traits::LayerByOrder{})
+      //     };
+
+      // Eigen::Matrix<size_t, AtomLayer, 1> indices;
+      // indices = atom.get_cluster_indices();
+      // atom_cluster_indices.push_back(indices);
+
       atom_cluster_indices.push_back(atom.get_cluster_indices());
+
       AddOrderLoop::loop(atom, *this);
     }
 
     //! correct the offsets for the new cluster order
     this->set_offsets();
     //! add correct cluster_indices for the highest order
-    auto & max_cluster_indices
-    {std::get<traits::MaxOrder-1>(this->cluster_indices_container)};
+    auto & max_cluster_indices {std::get<traits::MaxOrder-1>
+        (this->cluster_indices_container)};
     max_cluster_indices.fill_sequence();
 
   }

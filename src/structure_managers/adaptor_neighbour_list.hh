@@ -633,7 +633,7 @@ namespace rascal {
                                    & cluster) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
-      if (Order < traits::MaxOrder-1) {
+      if (Order < (traits::MaxOrder-1)) {
 	return this->manager.get_cluster_size(cluster);
       } else {
         auto access_index = cluster.get_cluster_index(Layer);

@@ -553,11 +553,6 @@ namespace rascal {
 
       Parent{atom_indices, IndexConstArray_t (& cluster_index)}, it{it} {}
 
-    // needed to construct a ClusterRef<1> with the correct offset:
-
-
-    // Reference to j neighbours of a given atom i // TODO: description
-    // cluster.get_indices() -> index of the atom w.r.t order in arrays
     /**
      * This is a ClusterRef of Order=1, constructed from a higher Order.  This
      * function here is self referencing right now. A ClusterRefKey with
@@ -568,13 +563,6 @@ namespace rascal {
                Manager_t & manager):
       Parent(cluster.get_atom_indices(), cluster.get_cluster_indices()),
       it(manager) {}
-
-    // ClusterRef(Manager_t & manager, size_t access_index);
-
-    //! construct a clusterref from atom_offset: get a clusterref of Order=1 to
-    //! iterate over neighbours
-    // ClusterRef(const size_t atom_index, Manager_t & manager):
-    //   Parent{}
 
     //! Copy constructor
     ClusterRef(const ClusterRef & other) = delete;
@@ -619,6 +607,7 @@ namespace rascal {
     }
 
     inline Manager_t & get_manager() {return this->it.get_manager();}
+
     inline const Manager_t & get_manager() const {
       return this->it.get_manager();
     }
@@ -632,6 +621,7 @@ namespace rascal {
     inline iterator end() {
       return iterator(*this, this->size(), std::numeric_limits<size_t>::max());
     }
+
     inline size_t size() {return this->get_manager().cluster_size(*this);}
 
     inline size_t get_index() const {
@@ -756,6 +746,7 @@ namespace rascal {
     }
 
     inline Manager_t & get_manager() {return this->container.get_manager();}
+
     inline const Manager_t & get_manager() const {
       return this->container.get_manager();
     }
