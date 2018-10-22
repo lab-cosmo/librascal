@@ -61,7 +61,7 @@ namespace rascal {
     
     bool verbose{false};
     int mult = 1;
-    double rc_max{mult*0.5 + cutoff};
+    // double rc_max{mult*0.5 + cutoff};
     // AdaptorNeighbourList<StructureManagerCenters> pair_manager{manager, rc_max };
     // pair_manager.update();
 

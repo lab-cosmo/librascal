@@ -20,7 +20,7 @@ int main()
     Eigen::Matrix<int, Eigen::Dynamic, 1> numbers(8);
     Eigen::MatrixXd cell(3, 3);
     std::array<int, 3> pbc{{true,true,true}};
-    bool verbose{true};
+    bool verbose{false};
     // double cutoff{1.9};
     
     cell <<
@@ -82,7 +82,7 @@ int main()
     double cut_off{2.};
     
     int mult{1};
-    double rc_max{mult*0.5 + cut_off};
+    // double rc_max{mult*0.5 + cut_off};
     // rascal::AdaptorNeighbourList<rascal::StructureManagerCenters> pair_manager{manager, rc_max };
     // pair_manager.update();
 
