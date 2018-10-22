@@ -26,6 +26,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#ifndef PROPERTY_TYPED_H
+#define PROPERTY_TYPED_H
 
 #include "structure_managers/property_base.hh"
 #include "structure_managers/cluster_ref_key.hh"
@@ -201,3 +203,5 @@ namespace rascal {
   };
 
 }  // rascal
+
+#endif /* PROPERTY_TYPED_H */
