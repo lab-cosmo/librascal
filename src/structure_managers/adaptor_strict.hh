@@ -473,7 +473,7 @@ namespace rascal {
             (typename traits::LayerByOrder{})
             };
 
-        auto vec_ij{atom.get_position() - pair.get_position()};
+        auto vec_ij{pair.get_position() - atom.get_position()};
         double distance2{(vec_ij).squaredNorm()};
 
         if (distance2 <= rc2) {

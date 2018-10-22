@@ -60,10 +60,10 @@ namespace rascal {
                           ManagerFixture<StructureManagerCenters>) {
     
     bool verbose{false};
-    int mult = 10;
+    int mult = 1;
     double rc_max{mult*0.5 + cutoff};
-    AdaptorNeighbourList<StructureManagerCenters> pair_manager{manager, rc_max };
-    pair_manager.update();
+    // AdaptorNeighbourList<StructureManagerCenters> pair_manager{manager, rc_max };
+    // pair_manager.update();
 
     for (auto i{0}; i < mult; ++i) {
       auto cutoff_tmp = i*0.5 + cutoff;
@@ -75,9 +75,9 @@ namespace rascal {
       std::vector<std::vector<std::array<double,3>>> neigh_dirVec_strict{};
 
       // TODO re-initiallization in the loop of the pair manager results in a 
-      // segmentation fault, is it expected ?
-      // AdaptorNeighbourList<StructureManagerCenters> pair_manager{manager, cutoff_tmp};
-      // pair_manager.update();
+      // segmentation fault, is it to be expected ?
+      AdaptorNeighbourList<StructureManagerCenters> pair_manager{manager, cutoff_tmp};
+      pair_manager.update();
       if (verbose) std::cout << "Setting up strict manager with rc="<<cutoff_tmp << std::endl;
       AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>> 
                                         adaptor_strict{pair_manager, cutoff_tmp};
@@ -103,7 +103,7 @@ namespace rascal {
           if (distance <= cutoff_tmp) {              
             indices.push_back(neigh.get_atom_index());
             distances.push_back(distance);
-            auto dirVec{(center.get_position() - neigh.get_position()).array()/distance};
+            auto dirVec{(neigh.get_position() - center.get_position()).array()/distance};
             std::array<double,3> aa{{dirVec(0),dirVec(1),dirVec(2)}};
             dirVecs.push_back(aa);
             if (verbose) {
@@ -183,7 +183,7 @@ namespace rascal {
           double d1{neigh_dist_strict[ii][jj]};
           BOOST_CHECK_EQUAL(a0,a1);
           BOOST_CHECK_EQUAL(d0,d1);
-          for (size_t kk{0};kk<neigh_dirVec[ii].size();++kk){
+          for (size_t kk{0};kk<neigh_dirVec[ii][jj].size();++kk){
             double dv0{neigh_dirVec[ii][jj][kk]};
             double dv1{neigh_dirVec_strict[ii][jj][kk]};
             BOOST_CHECK_EQUAL(dv0,dv1);
