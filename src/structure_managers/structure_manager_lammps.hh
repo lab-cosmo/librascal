@@ -62,7 +62,7 @@ namespace rascal {
     using traits = StructureManager_traits<StructureManagerLammps>;
     using Parent = StructureManager<StructureManagerLammps>;
     using Vector_ref = typename Parent::Vector_ref;
-    // using AtomRef_t = typename Parent::AtomRef;
+    using AtomRef_t = typename Parent::AtomRef;
     // template <size_t Order>
     // using ClusterRef_t = typename Parent::template ClusterRef<Order>;
 
@@ -139,6 +139,16 @@ namespace rascal {
       return this->get_position(cluster.back());
     }
 
+    //! get atom type
+    inline const int & get_atom_type(const int & atom_index) const {
+      return this->type[atom_index];
+    }
+
+    //! Returns atom type given an atom index
+    inline int & get_atom_type(const int & atom_index) {
+      return this->type[atom_index];
+    }
+
     //! return number of I atoms in the list
     inline size_t get_size() const {
       return this->inum;
@@ -161,7 +171,8 @@ namespace rascal {
                                      & cluster,
                                      size_t index) const {
       static_assert(Order == traits::MaxOrder-1,
-                    "this implementation only handles atoms and identify its index-th neighbour.");
+                    "this implementation only handles atoms and identify its "
+                    "index-th neighbour.");
       auto && i_atom_id{cluster.back()};
       return this->firstneigh[std::move(i_atom_id)][index];
     }
@@ -188,7 +199,7 @@ namespace rascal {
     /**
      * return the number of clusters of size cluster_size.
      * Can only handle cluster_size 1 (atoms) and cluster_size 2 (pairs).
-    */
+     */
     size_t get_nb_clusters(int cluster_size) const;
 
   protected:
@@ -217,10 +228,16 @@ namespace rascal {
   template<size_t Order>
   inline size_t StructureManagerLammps::
   get_offset_impl(const std::array<size_t, Order> & counters) const {
-    static_assert (Order == 1, "this manager can only give the offset "
+    /**
+     * The static assert with <= is necessary, because the template parameter
+     * ``Order`` is one Order higher than the MaxOrder at the current
+     * level. The return type of this function is used to build the next Order
+     * iteration.
+     */
+    static_assert (Order <= traits::MaxOrder, "this manager can only give the offset "
                    "(= starting index) for a pair iterator, given the i atom "
                    "of the pair");
-      return this->offsets[counters.front()];
+    return this->offsets[counters.front()];
   }
 }  // rascal
 

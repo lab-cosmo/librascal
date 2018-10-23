@@ -276,14 +276,9 @@ namespace rascal {
     inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
                                    & cluster) const {
       // TODO: Check for <= or < ?!
-      static_assert(Order <= traits::MaxOrder,
+      static_assert(Order < traits::MaxOrder,
                     "this implementation only handles atoms and pairs.");
       return this->numneigh[cluster.back()];
-    }
-
-    //! Cluster size is the number of neighbours here
-    inline size_t get_cluster_size(const int & atom_index) const {
-      return this->numneigh[atom_index];
     }
 
     //! return the index-th neighbour of cluster
@@ -429,10 +424,15 @@ namespace rascal {
   template<size_t Order>
   inline size_t StructureManagerChain::
   get_offset_impl(const std::array<size_t, Order> & counters) const {
-    // TODO: Check this static_assert for validity
-    // static_assert (Order == 1, "this manager can only give the offset "
-    //                "(= starting index) for a pair iterator, given the i atom "
-    //                "of the pair");
+    /**
+     * The static assert with <= is necessary, because the template parameter
+     * ``Order`` is one Order higher than the MaxOrder at the current
+     * level. The return type of this function is used to build the next Order
+     * iteration.
+     */
+    static_assert (Order <= traits::MaxOrder, "this manager can only give the"
+                   " offset (= starting index) for a pair iterator, given the"
+                   " i atom of the pair");
     return this->offsets[counters.front()];
   }
 

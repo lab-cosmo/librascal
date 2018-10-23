@@ -32,8 +32,6 @@
 
 
 namespace rascal {
-  //! Dynamically allocated integer vector to store the particle type
-  using VecXi = Eigen::Matrix<int, Eigen::Dynamic, 1>;
   //! Dynamically allocated Column Major matrix used for storing positions.
   using Matrix3XdC = Eigen::Matrix<double, 3, Eigen::Dynamic, Eigen::ColMajor>;
   //! Static double matrix for storing the lattice vectors.

@@ -35,7 +35,19 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(neighbour_list_adaptor_test);
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(constructor_test_order_zero,
+  BOOST_FIXTURE_TEST_CASE(constructor_test_fcc,
+                          ManagerFixtureNeighbourCheckFcc
+                          <StructureManagerCenters>) {
+  }
+
+  /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE(constructor_test_hcp,
+                          ManagerFixtureNeighbourCheckHcp
+                          <StructureManagerCenters>) {
+  }
+
+  /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE(test_build_neighbour_list_from_atoms,
                           ManagerFixtureSimple<StructureManagerCenters>){
 
     constexpr bool verbose{false};
@@ -66,11 +78,12 @@ namespace rascal {
       }
     }
     if (verbose) std::cout << "Number of pairs " << n_pairs << std::endl;
+    BOOST_CHECK_EQUAL(n_pairs, pair_manager.get_nb_clusters(2));
   }
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(neighbourlist_test_hcp,
-                          ManagerFixtureNeighbourComparison
+                          ManagerFixtureNeighbourCheckHcp
                           <StructureManagerCenters>) {
 
     /**

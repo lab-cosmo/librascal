@@ -49,16 +49,16 @@ namespace rascal {
   void StructureManagerCenters::
   update(const Eigen::Ref<const Eigen::MatrixXd, 0,
          Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>> positions,
-         const Eigen::Ref<const VecXi> atom_types,
+         const Eigen::Ref<const Eigen::VectorXi> atom_types,
          const Eigen::Ref<const Eigen::MatrixXd> cell,
          const Eigen::Ref<const PBC_t> pbc) {
 
     Eigen::Index Natom{positions.cols()};
     this->natoms = Natom;
-
-    StructureManagerCenters::build();
     this->atoms_object.set_structure(positions, atom_types, cell, pbc);
 
+    StructureManagerCenters::build();
+    
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
     atom_cluster_indices.fill_sequence();
   }

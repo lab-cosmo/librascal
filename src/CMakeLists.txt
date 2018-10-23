@@ -31,7 +31,7 @@
 
 add_library(rascal "") # ${rascal_SRC})
 target_link_libraries(rascal PUBLIC Eigen3::Eigen)
-target_link_libraries(rascal PUBLIC rascal-cephes)
+target_link_libraries(rascal PUBLIC rascal-math)
 
 add_subdirectory(structure_managers)
 add_subdirectory(representations)

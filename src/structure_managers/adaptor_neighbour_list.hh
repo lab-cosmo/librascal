@@ -605,8 +605,13 @@ namespace rascal {
 				     size_t index) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles up to traits::MaxOrder");
-      if (Order < traits::MaxOrder-1) {
-	return this->manager.get_cluster_neighbour(cluster, index);
+
+      using IncreaseHelper_t =
+        internal::IncreaseHelper<Order == (traits::MaxOrder-1)>;
+
+      if (Order < (traits::MaxOrder-1)) {
+        return IncreaseHelper_t::get_cluster_neighbour(this->manager, cluster,
+                                                       index);
       } else {
 	auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
 	return this->neighbours[offset + index];
@@ -628,7 +633,7 @@ namespace rascal {
                                    & cluster) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
-      if (Order < traits::MaxOrder-1) {
+      if (Order < (traits::MaxOrder-1)) {
 	return this->manager.get_cluster_size(cluster);
       } else {
         auto access_index = cluster.get_cluster_index(Layer);
@@ -636,44 +641,7 @@ namespace rascal {
       }
     }
 
-    //! Returns the number of neighbors of an atom with the given index
-    inline size_t get_cluster_size(const int & atom_index) const {
-      //! if current adaptor has built pair list
-      if (traits::MaxOrder == 2) {
-        return this->nb_neigh[atom_index];
-      } else {
-        return this->manager.get_cluster_size(atom_index);
-      }
-    }
-
   protected:
-    /**
-     * Main function during construction of a neighbourlist.
-     *
-     * @param atom The atom to add to the list. Because the MaxOrder is
-     * increased by one in this adaptor, the Order=MaxOrder
-     */
-    inline void add_atom(const int atom_index) {
-      //! adds new atom at this Order
-      this->atom_indices.push_back(atom_index);
-      //! increases the number of neighbours
-      this->nb_neigh.back()++;
-      //! increases the offsets
-      this->offsets.back()++;
-
-      /**
-       * extends the list containing the number of neighbours with a new 0 entry
-       * for the added atom
-       */
-      this->nb_neigh.push_back(0);
-
-      /**
-       * extends the list containing the offsets and sets it with the number of
-       * neighbours plus the offsets of the last atom
-       */
-      this->offsets.push_back(this->offsets.back() +
-                              this->nb_neigh.back());
-    }
 
     /**
      * This function, including the storage of ghost atom positions is
@@ -718,18 +686,6 @@ namespace rascal {
       }
     }
 
-    /**
-     * Interface of the add_atom function that adds the last atom in a given
-     * cluster
-     */
-    template <size_t Order>
-    inline void add_atom(const typename ManagerImplementation::template
-                         ClusterRef<Order> & cluster) {
-      static_assert(Order <= traits::MaxOrder,
-                    "Order too high, not possible to add atom");
-      return this->add_atom(cluster.back());
-    }
-
     //! full neighbour list with cell algorithm if Order==1
     void make_full_neighbour_list();
 
@@ -746,7 +702,7 @@ namespace rascal {
      */
     template <size_t Order, bool IsDummy> struct IncreaseMaxOrder;
 
-    //! Stores atom indices of current Order
+    //! Stores additional atom indices of current Order (only ghost atoms)
     std::vector<size_t> atom_indices{}; //akin to ilist[]
 
     //! Stores the number of neighbours for every traits::MaxOrder-1-*plets
@@ -894,12 +850,10 @@ namespace rascal {
       mesh_bounds[i] = mesh_min[i];
       mesh_bounds[i+dim] = mesh_max[i];
     }
-    // TODO: find way to initialize eigen column with std::array
+    //! Get the mesh bounds to solve for the multiplicators
     int n{0};
     for (auto && coord : internal::MeshBounds<dim>{mesh_bounds}) {
-      for (auto i{0}; i<dim; ++i) {
-        xpos(i,n) = coord[i];
-      }
+      xpos.col(n) = Eigen::Map<Eigen::Matrix<double, dim, 1>> (coord.data());
       n++;
     }
     //! solve for all multipliers
@@ -1025,10 +979,16 @@ namespace rascal {
   template<size_t Order>
   inline size_t AdaptorNeighbourList<ManagerImplementation>::
   get_offset_impl(const std::array<size_t, Order> & counters) const {
-
-    static_assert(Order < traits::MaxOrder,
-                  "this implementation handles only up to "
-                  "the respective MaxOrder");
+    // TODO: verify the following:
+    /**
+     * The static assert with <= is necessary, because the template parameter
+     * ``Order`` is one Order higher than the MaxOrder at the current
+     * level. The return type of this function is used to build the next Order
+     * iteration.
+     */
+    static_assert(Order <= traits::MaxOrder,
+                  "this implementation handles only up to the respective"
+                  " MaxOrder");
     /**
      * Order accessor: 0 - atoms
      *                 1 - pairs
@@ -1037,19 +997,7 @@ namespace rascal {
      * Order is determined by the ClusterRef building iterator, not by the Order
      * of the built iterator
      */
-    if (Order == 1) {
-      return this->offsets[counters.front()];
-    } else if (Order == 2) {
-      /**
-       * Counters as an array to call parent offset multiplet. This can then be
-       * used to access the actual offset for the next Order here.
-       */
-      auto i{this->manager.get_offset_impl(counters)};
-      auto j{counters[Order-1]};
-      auto tuple_index{i+j};
-      auto main_offset{this->offsets[tuple_index]};
-      return main_offset;
-    }
+    return this->offsets[counters.front()]; //main_offset;
   }
 }  // rascal
 

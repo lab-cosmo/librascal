@@ -269,8 +269,8 @@ namespace rascal {
     size_t get_nb_clusters(size_t cluster_size) const;
 
     void update(const Eigen::Ref<const Eigen::MatrixXd> positions,
-                const Eigen::Ref<const VecXi>  particle_types,
-                const Eigen::Ref<const VecXi> center_ids,
+                const Eigen::Ref<const Eigen::VectorXi>  particle_types,
+                const Eigen::Ref<const Eigen::VectorXi> center_ids,
                 const Eigen::Ref<const Eigen::MatrixXd> cell,
                 const std::array<bool,3>& pbc,
                 const double & cutoff_max);
@@ -282,8 +282,8 @@ namespace rascal {
   protected:
 
     void build(const Eigen::Ref<const Eigen::MatrixXd> positions,
-               const Eigen::Ref<const VecXi>  particle_types,
-               const Eigen::Ref<const VecXi> center_ids,
+               const Eigen::Ref<const Eigen::VectorXi>  particle_types,
+               const Eigen::Ref<const Eigen::VectorXi> center_ids,
                const Eigen::Ref<const Eigen::MatrixXd> cell,
                const std::array<bool,3>& pbc,
                const double& cutoff_max);

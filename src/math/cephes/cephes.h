@@ -1,150 +1,181 @@
+/**
+ * file   cephes.h
+ *
+ * @author  Felix Musil <felix.musil@epfl.ch>
+ *
+ * @date   14 October 2018
+ *
+ * @brief defines bridge between the cephes C# library and 
+ * librascal
+ *
+ * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
+ *
+ * rascal is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3, or (at
+ * your option) any later version.
+ *
+ * rascal is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GNU Emacs; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+
+
 #ifndef CEPHES_H
 #define CEPHES_H
 
-// #include "math/cephes/cephes_names.h"
-// #include "math/cephes/mconf.h"
 
 #ifdef __cplusplus
-extern "C" {
+ extern "C" {
   namespace rascal {
-  namespace math {
+    namespace cephes {
 
 #endif
 
-extern int airy(double x, double *ai, double *aip, double *bi, double *bip);
 
-extern double bdtrc(int k, int n, double p);
-extern double bdtr(int k, int n, double p);
-extern double bdtri(int k, int n, double y);
+  int airy(double x, double *ai, double *aip, double *bi, double *bip);
 
-extern double beta(double a, double b);
-extern double lbeta(double a, double b);
+  double bdtrc(int k, int n, double p);
+  double bdtr(int k, int n, double p);
+  double bdtri(int k, int n, double y);
 
-extern double btdtr(double a, double b, double x);
+  double beta(double a, double b);
+  double lbeta(double a, double b);
 
-extern double cbrt(double x);
-extern double chbevl(double x, void *, int n);
-extern double chdtrc(double df, double x);
-extern double chdtr(double df, double x);
-extern double chdtri(double df, double y);
-extern double dawsn(double xx);
+  double btdtr(double a, double b, double x);
 
-extern double ellie(double phi, double m);
-extern double ellik(double phi, double m);
-extern double ellpe(double x);
+  double cbrt(double x);
+  double chbevl(double x, void *, int n);
+  double chdtrc(double df, double x);
+  double chdtr(double df, double x);
+  double chdtri(double df, double y);
+  double dawsn(double xx);
 
-extern int ellpj(double u, double m, double *sn, double *cn, double *dn, double *ph);
-extern double ellpk(double x);
-extern double exp10(double x);
-extern double exp1m(double x);
-extern double exp2(double x);
+  double ellie(double phi, double m);
+  double ellik(double phi, double m);
+  double ellpe(double x);
 
-extern double expn(int n, double x);
+  int ellpj(double u, double m, double *sn, double *cn, double *dn, double *ph);
+  double ellpk(double x);
+  double exp10(double x);
+  double exp1m(double x);
+  double exp2(double x);
 
-extern double fdtrc(int a, int b, double x);
-extern double fdtr(int a, int b, double x);
-extern double fdtri(int a, int b, double y);
+  double expn(int n, double x);
 
-extern int fresnl(double xxa, double *ssa, double *cca);
-extern double gamma(double x);
-extern double lgam(double x);
-extern double lgam_sgn(double x, int *sign);
+  double fdtrc(int a, int b, double x);
+  double fdtr(int a, int b, double x);
+  double fdtri(int a, int b, double y);
 
-extern double gdtr(double a, double b, double x);
-extern double gdtrc(double a, double b, double x);
-extern double gdtri(double a, double b, double y);
+  int fresnl(double xxa, double *ssa, double *cca);
+  double gamma(double x);
+  double lgam(double x);
+  double lgam_sgn(double x, int *sign);
 
-extern double hyp2f1(double a, double b, double c, double x);
-extern double hyperg(double a, double b, double x);
-extern double hyp2f0(double a, double b, double x, int type, double *err);
-extern double onef2(double a, double b, double c, double x, double *err);
-extern double threef0(double a, double b, double c, double x, double *err);
+  double gdtr(double a, double b, double x);
+  double gdtrc(double a, double b, double x);
+  double gdtri(double a, double b, double y);
 
-extern double i0(double x);
-extern double i0e(double x);
-extern double i1(double x);
-extern double i1e(double x);
-extern double igamc(double a, double x);
-extern double igam(double a, double x);
-extern double igam_fac(double a, double x);
-extern double igamci(double a, double q);
-extern double igami(double a, double p);
+  double hyp2f1(double a, double b, double c, double x);
+  double hyperg(double a, double b, double x);
+  double hyp2f0(double a, double b, double x, int type, double *err);
+  double onef2(double a, double b, double c, double x, double *err);
+  double threef0(double a, double b, double c, double x, double *err);
 
-extern double incbet(double aa, double bb, double xx);
-extern double incbi(double aa, double bb, double yy0);
+  double i0(double x);
+  double i0e(double x);
+  double i1(double x);
+  double i1e(double x);
+  double igamc(double a, double x);
+  double igam(double a, double x);
+  double igam_fac(double a, double x);
+  double igamci(double a, double q);
+  double igami(double a, double p);
 
-extern double iv(double v, double x);
-extern double j0(double x);
-extern double y0(double x);
-extern double j1(double x);
-extern double y1(double x);
+  double incbet(double aa, double bb, double xx);
+  double incbi(double aa, double bb, double yy0);
 
-extern double jn(int n, double x);
-extern double jv(double n, double x);
-extern double k0(double x);
-extern double k0e(double x);
-extern double k1(double x);
-extern double k1e(double x);
-extern double kn(int nn, double x);
+  double iv(double v, double x);
+  double j0(double x);
+  double y0(double x);
+  double j1(double x);
+  double y1(double x);
 
-extern double nbdtrc(int k, int n, double p);
-extern double nbdtr(int k, int n, double p);
-extern double nbdtri(int k, int n, double p);
+  double jn(int n, double x);
+  double jv(double n, double x);
+  double k0(double x);
+  double k0e(double x);
+  double k1(double x);
+  double k1e(double x);
+  double kn(int nn, double x);
 
-extern double ndtr(double a);
-extern double log_ndtr(double a);
-extern double erfc(double a);
-extern double erf(double x);
-extern double ndtri(double y0);
+  double nbdtrc(int k, int n, double p);
+  double nbdtr(int k, int n, double p);
+  double nbdtri(int k, int n, double p);
 
-extern double pdtrc(int k, double m);
-extern double pdtr(int k, double m);
-extern double pdtri(int k, double y);
+  double ndtr(double a);
+  double log_ndtr(double a);
+  double erfc(double a);
+  double erf(double x);
+  double ndtri(double y0);
 
-extern double psi(double x);
+  double pdtrc(int k, double m);
+  double pdtr(int k, double m);
+  double pdtri(int k, double y);
 
-extern double rgamma(double x);
-extern double round(double x);
+  double psi(double x);
 
-extern int shichi(double x, double *si, double *ci);
-extern int sici(double x, double *si, double *ci);
+  double rgamma(double x);
+  double round(double x);
 
-extern double radian(double d, double m, double s);
-extern double sindg(double x);
-extern double cosdg(double x);
+  int shichi(double x, double *si, double *ci);
+  int sici(double x, double *si, double *ci);
 
-extern double spence(double x);
+  double radian(double d, double m, double s);
+  double sindg(double x);
+  double cosdg(double x);
+//   double sin(double x);
+//   double cos(double x);
 
-extern double stdtr(int k, double t);
-extern double stdtri(int k, double p);
+  double spence(double x);
 
-extern double yv(double v, double x);
+  double stdtr(int k, double t);
+  double stdtri(int k, double p);
 
-extern double tandg(double x);
-extern double cotdg(double x);
+  double yv(double v, double x);
 
-extern double log1p(double x);
-extern double log1pmx(double x);
-extern double expm1(double x);
-extern double cosm1(double x);
-extern double lgam1p(double x);
+  double tandg(double x);
+  double cotdg(double x);
 
-extern double yn(int n, double x);
-extern double zeta(double x, double q);
-extern double zetac(double x);
+  double log1p(double x);
+  double log1pmx(double x);
+  double expm1(double x);
+  double cosm1(double x);
+  double lgam1p(double x);
 
-extern double smirnov(int n, double e);
-extern double smirnovi(int n, double p);
-extern double kolmogorov(double x);
-extern double kolmogi(double p);
+  double yn(int n, double x);
+  double zeta(double x, double q);
+  double zetac(double x);
 
-extern double lanczos_sum_expg_scaled(double x);
+  double smirnov(int n, double e);
+  double smirnovi(int n, double p);
+  double kolmogorov(double x);
+  double kolmogi(double p);
 
-extern double owens_t(double h, double a);
+  double lanczos_sum_expg_scaled(double x);
+
+  double owens_t(double h, double a);
+
 
 #ifdef __cplusplus
     }
-  }// math
+  }// cephes
 } // rascal
 #endif
 

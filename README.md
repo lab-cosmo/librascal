@@ -41,7 +41,6 @@ ctest -V
   + -DBUILD_TESTS
 
 
-
 To remove all the cmake files/folders except for the external library (enable glob and remove):
 ```
 shopt -s extglob
