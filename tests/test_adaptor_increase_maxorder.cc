@@ -136,7 +136,7 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(pair_to_triplet_extension,
                           ManagerFixture<StructureManagerLammps>) {
 
-    constexpr bool verbose{true};
+    constexpr bool verbose{false};
 
     if (verbose) std::cout << ">> pair to triplet extension" << std::endl;
 
@@ -146,13 +146,10 @@ namespace rascal {
     AdaptorMaxOrder<AdaptorHalfList<StructureManagerLammps>> SM3{SM2};
     SM3.update();
 
-    // AdaptorMaxOrder<StructureManagerLammps> test_direct{manager};
-    // test_direct.update();
-
-    // make sure number of pairs are carried over
+    // make sure number of pairs are carried over, since they are are not changed
     BOOST_CHECK_EQUAL(SM2.get_nb_clusters(2), SM3.get_nb_clusters(2));
 
-    // only one possible triplet?
+    // only one possible triplet in this case?
     BOOST_CHECK_EQUAL(SM3.get_nb_clusters(3), 1);
 
     for (auto atom : SM3) {
@@ -161,7 +158,6 @@ namespace rascal {
       BOOST_CHECK_EQUAL(atom_type, type[atom_index]);
 
       auto atom_position = atom.get_position();
-
       for (auto pair : atom) {
         auto pair_index = pair.get_atom_index();
         auto pair_type = pair.get_atom_type();
@@ -171,15 +167,18 @@ namespace rascal {
         auto diff_pos_pair = (pair_position - atom_position).norm();
         BOOST_CHECK_CLOSE(diff_pos_pair, 1., tol);
 
-        std::cout << "Pair size " << pair.size() << std::endl;
         for (auto triplet : pair) {
+          if (verbose) {
+            std::cout << "triplet " << atom.back() << " "
+                    << pair.back() << " " << triplet.back() << std::endl;
+          }
           auto triplet_index = triplet.get_atom_index();
           auto triplet_type = triplet.get_atom_type();
           BOOST_CHECK_EQUAL(triplet_type, type[triplet_index]);
 
-          // auto triplet_position = triplet.get_position();
-          // auto diff_pos_triplet = (triplet_position - atom_position).norm();
-          // BOOST_CHECK_CLOSE(diff_pos_triplet, 1., tol);
+          auto triplet_position = triplet.get_position();
+          auto diff_pos_triplet = (triplet_position - atom_position).norm();
+          BOOST_CHECK_CLOSE(diff_pos_triplet, 1., tol);
         }
       }
     }
