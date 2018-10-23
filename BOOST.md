@@ -20,7 +20,7 @@ wget https://sourceforge.net/projects/boost/files/boost/1.67.0/boost_1_67_0.7z/d
 7z x $BOOST_DIR/boost_1_67_0.7z
 cd $BOOST_DIR/boost_1_67_0
 mkdir boost_root
-./bootstrap.sh --with-libraries=test --prefix=$BOOST_DIR/boost_root
+./bootstrap.sh --with-libraries=test --with-toolset=gcc --prefix=$BOOST_DIR/boost_root 
 ./b2 install
 export Boost_NO_SYSTEM_PATHS=ON
 export BOOST_ROOT=$BOOST_DIR/boost_root

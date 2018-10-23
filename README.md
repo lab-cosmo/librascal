@@ -22,10 +22,25 @@ make dev_doc
 * To build for development:
 ```Shell
 cd build 
-cmake -DCMAKE_BUILD_TYPE=Debug  -DENABLE_DOC=ON -DBUILD_TESTS=ON -DCMAKE_C_COMPILER=/usr/local/bin/gcc-7 -DCMAKE_CXX_COMPILER=/usr/local/bin/g++-7 ..
+cmake -DCMAKE_BUILD_TYPE=debug  -DENABLE_DOC=ON -DBUILD_TESTS=ON ..
 make all
 ctest -V
 ```
+
+
+* Special flags:
+  + INSTALL:
+    + empty (default) -> install rascal in the build folder
+    + local -> install rascal in the site-package folder of the found python binary
+    + pydevelop -> install rascal in the librascal/rascal/lib folder
+
+* Common cmake flag:
+  + -DCMAKE_C_COMPILER
+  + -DINSTALL
+  + -DCMAKE_BUILD_TYPE
+  + -DENABLE_DOC
+  + -DBUILD_TESTS
+
 
 To remove all the cmake files/folders except for the external library (enable glob and remove):
 ```
