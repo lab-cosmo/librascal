@@ -1,20 +1,21 @@
 /**
- * @file   bind_py_math.cc
+ * file   math_interface.hh
  *
- * @author Felix Musil <musil.felix@gmail.com>
+ * @author  Felix Musil <felix.musil@epfl.ch>
  *
- * @date   22 August 2018
+ * @date   14 October 2018
  *
- * @brief  File for binding utils subroutines
+ * @brief defines interface function to other math 
+ * library like cephes
  *
  * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
- * Rascal is free software; you can redistribute it and/or
+ * rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
- * Rascal is distributed in the hope that it will be useful, but
+ * rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
@@ -26,18 +27,13 @@
  */
 
 
-#include <pybind11/pybind11.h>
-#include <pybind11/eigen.h>
-#include "math/math_interface.hh"
-#include "math/math_utils.hh"
+#include "math_interface.hh"
 
-using namespace rascal;
-namespace py=pybind11;
+namespace rascal {
+  namespace math {
 
-
-void math_binding(py::module& m){
-    m.def(
-      "hyp2f1", &math::hyp2f1, "y = hyp2f1( a, b, c, x )"   
-    );
-    
-}
+    double hyp2f1(double& a,double& b,double& c,double& x ){
+      return cephes::hyp2f1( a, b, c, x );
+    }
+  } // math
+} // rascal
