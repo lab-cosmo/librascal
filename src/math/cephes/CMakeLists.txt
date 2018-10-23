@@ -52,5 +52,5 @@ LIST(REMOVE_ITEM cephes_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/polyn/polyr.c"
     )
 
-target_sources(rascal-cephes PRIVATE ${cephes_SRC})
+target_sources(cephes PRIVATE ${cephes_SRC})
 

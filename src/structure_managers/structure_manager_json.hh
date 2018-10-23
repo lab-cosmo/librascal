@@ -103,7 +103,7 @@ namespace rascal {
      * defined in the JSON file.
      */
     using Cell_ref = Eigen::Map<Eigen::Matrix<double, traits::Dim,
-                                              Eigen::Dynamic>>;
+                                              traits::Dim>>; //Eigen::Dynamic>>;
     //! Access to the atom types, defined in the JSON file.
     using AtomTypes_ref = Eigen::Map<Eigen::Matrix<int, 1, Eigen::Dynamic>>;
     //! Access to periodic boundary conditions, defined in JSON file, x,y,z
@@ -174,8 +174,7 @@ namespace rascal {
      * structure.
      */
     inline Cell_ref get_cell() {
-      return Cell_ref(this->cell_data.data(), traits::Dim,
-                      this->cell_data.size()/traits::Dim);
+      return Cell_ref(this->cell_data.data());
     }
 
     //! Returns the type of a given atom, given an AtomRef
@@ -185,10 +184,24 @@ namespace rascal {
       return t(index);
     }
 
+    //! Returns the type of a given atom, given an atom index
+    inline int get_atom_type(const int & index) {
+      auto t = this->get_atom_types();
+      return t(index);
+    }
+
     //! Returns an a map with all atom types.
     inline AtomTypes_ref get_atom_types() {
       return AtomTypes_ref(this->atoms_object.type.data(),
                            this->atoms_object.type.size());
+    }
+
+    template<size_t Order, size_t Layer>
+    inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
+                                   & /*cluster*/) const {
+      static_assert(Order <= traits::MaxOrder,
+                    "this implementation only handles atoms.");
+      return 1;
     }
 
     //! Returns a map of size traits::Dim with 0/1 for periodicity
@@ -229,7 +242,7 @@ namespace rascal {
     //                                  size_t index) const {
     inline int get_cluster_neighbour(const ClusterRefKey<Order, Layer>
                                      & ,
-                                     size_t ) const {                                  
+                                     size_t ) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs.");
       return 0;
@@ -301,11 +314,11 @@ namespace rascal {
   // used for buildup
   template<size_t Order>
   inline size_t StructureManagerJson::
-  //get_offset_impl(const std::array<size_t, Order> & counters) const {
-    get_offset_impl(const std::array<size_t, Order> & ) const {
+  get_offset_impl(const std::array<size_t, Order> & counters) const {
     // TODO: Check this static_assert for validity
-    static_assert (Order == 1, "this manager can not provide any offsets.");
-    return 0;
+    static_assert (Order <= traits::MaxOrder, "this manager can not provide any"
+                   " offsets.");
+    return counters.front();
   }
 
 }  // rascal

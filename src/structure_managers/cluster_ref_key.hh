@@ -48,7 +48,7 @@ namespace rascal {
 
   template <size_t MaxOrder, size_t... Ints>
   struct LayerIncreaser<MaxOrder,
-                        std::integer_sequence<size_t, Ints...>>{
+                        std::index_sequence<Ints...>> {
     using type = std::index_sequence<(Ints+1)...>;
   };
 
@@ -199,11 +199,11 @@ namespace rascal {
     /**
      * direct constructor. Initialized with an array of atoms indices,
      * and a cluster reference data
-    */
+     */
     ClusterRefKey(std::array<int, Order> atom_indices,
-                   IndexConstArray cluster_indices) :
+                  IndexConstArray cluster_indices) :
       Parent{Order, Layer}, atom_indices{atom_indices},
-      cluster_indices(cluster_indices.data())
+      cluster_indices{cluster_indices.data()}
     {}
 
     //! Copy constructor
