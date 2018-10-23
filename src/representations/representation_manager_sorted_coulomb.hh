@@ -30,7 +30,7 @@
 
 #include "representations/representation_manager_base.hh"
 #include "structure_managers/structure_manager.hh"
-#include <map>
+#include "structure_managers/property.hh"
 #include <vector>
 
 namespace rascal {
@@ -42,6 +42,7 @@ namespace rascal {
   public:
     // TODO make a traits mechanism
     using hypers_t = RepresentationManagerBase::hypers_t;
+    using Property_t = Property<size_t, Order, ActiveLayer, LayersHead+1, 1>;
     using Manager_t = StructureManager;
     //! Default constructor 
     RepresentationManagerSortedCoulomb(StructureManager &sm, 
@@ -82,11 +83,16 @@ namespace rascal {
     // TODO think of a generic input type for the hypers
     void set_hyperparameters(const hypers_t & );
 
+    // get representation
+    void build();
+
     Manager_t& structure_manager;
     //hypers_t hyperparmeters;
     double central_decay;
     double interaction_cutoff;
     double interaction_decay;
+
+    typename RepresentationManagerSortedCoulomb<StructureManager>::template Property_t<double, 2> coulomb_matrices;
 
   protected:
   private:

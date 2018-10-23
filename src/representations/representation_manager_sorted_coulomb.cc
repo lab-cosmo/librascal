@@ -39,4 +39,9 @@ namespace rascal {
     this->interaction_decay = hyper["interaction_decay"];
   };
 
+  template<class Mngr>
+  void RepresentationManagerSortedCoulomb<Mngr>::build(){
+    auto Natom{0};
+  }
+
 }

@@ -40,7 +40,7 @@ template<class StructureManager>
   struct RepresentationFixture
   {
     RepresentationFixture():
-      pbc{{true,true,true}}, cutoff_max{3}, center_ids(22),
+      pbc{{true,true,true}}, cutoff_max{3}, 
       cell(3, 3), positions(3, 22), numbers(22), central_decay{0.5}, 
       interaction_cutoff{3},
       interaction_decay{0.5}
@@ -88,10 +88,10 @@ template<class StructureManager>
     
     std::array<bool, 3> pbc;
     double cutoff_max;
-    VecXi center_ids;
+    Eigen::VecXi center_ids;
     Eigen::MatrixXd cell;
     Eigen::MatrixXd positions; // 3, 22
-    VecXi numbers;
+    Eigen::VecXi numbers;
     double central_decay;
     double interaction_cutoff;
     double interaction_decay;
