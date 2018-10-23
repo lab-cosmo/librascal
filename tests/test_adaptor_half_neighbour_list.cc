@@ -37,6 +37,8 @@ namespace rascal {
                           ManagerFixture<StructureManagerLammps>) {
 
     //! TODO: should this be included in the constructor?
+    // I don't think so because if it fails in the Fixture is is harder
+    // to undertand where the error comes from
     AdaptorHalfList<StructureManagerLammps> adaptor{manager};
     adaptor.update();
   }
