@@ -103,7 +103,7 @@ namespace rascal {
      * defined in the JSON file.
      */
     using Cell_ref = Eigen::Map<Eigen::Matrix<double, traits::Dim,
-                                              Eigen::Dynamic>>;
+                                              traits::Dim>>; //Eigen::Dynamic>>;
     //! Access to the atom types, defined in the JSON file.
     using AtomTypes_ref = Eigen::Map<Eigen::Matrix<int, 1, Eigen::Dynamic>>;
     //! Access to periodic boundary conditions, defined in JSON file, x,y,z
@@ -174,8 +174,7 @@ namespace rascal {
      * structure.
      */
     inline Cell_ref get_cell() {
-      return Cell_ref(this->cell_data.data(), traits::Dim,
-                      this->cell_data.size()/traits::Dim);
+      return Cell_ref(this->cell_data.data());
     }
 
     //! Returns the type of a given atom, given an AtomRef
