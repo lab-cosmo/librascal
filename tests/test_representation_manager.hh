@@ -42,8 +42,7 @@ template<class StructureManager>
     RepresentationFixture():
       pbc{{true,true,true}}, cutoff_max{3}, 
       cell(3, 3), positions(3, 22), numbers(22), central_decay{0.5}, 
-      interaction_cutoff{3},
-      interaction_decay{0.5}
+      interaction_cutoff{3},interaction_decay{0.5},size{50}
     {
       cell <<
 	      6.19, 2.41, 0.21,
@@ -88,13 +87,14 @@ template<class StructureManager>
     
     std::array<bool, 3> pbc;
     double cutoff_max;
-    Eigen::VecXi center_ids;
+    Eigen::VectorXi center_ids;
     Eigen::MatrixXd cell;
     Eigen::MatrixXd positions; // 3, 22
-    Eigen::VecXi numbers;
+    Eigen::VectorXi numbers;
     double central_decay;
     double interaction_cutoff;
     double interaction_decay;
+    size_t size;
 
   };
 
@@ -107,7 +107,7 @@ template<class StructureManager>
     RepresentationFixture()
       : manager_json{},
       cutoff{1.1},central_decay{0.5}, 
-      interaction_cutoff{3}, interaction_decay{0.5} {
+      interaction_cutoff{3}, interaction_decay{0.5},size{50} {
 
       manager_json.read_structure_from_json("simple_cubic_8.json");
       manager_json.update();
@@ -121,6 +121,7 @@ template<class StructureManager>
     double central_decay;
     double interaction_cutoff;
     double interaction_decay;
+    size_t size;
   };
 
 

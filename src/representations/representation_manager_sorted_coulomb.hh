@@ -42,21 +42,23 @@ namespace rascal {
   public:
     // TODO make a traits mechanism
     using hypers_t = RepresentationManagerBase::hypers_t;
-    using Property_t = Property<size_t, Order, ActiveLayer, LayersHead+1, 1>;
+    using Property_t = Property<double, 1, 1, Eigen::Dynamic, 1>;
     using Manager_t = StructureManager;
+
     //! Default constructor 
-    RepresentationManagerSortedCoulomb(StructureManager &sm, 
+    RepresentationManagerSortedCoulomb(Manager_t &sm, 
       double central_decay , double interaction_cutoff, 
-      double interaction_decay)
+      double interaction_decay, size_t size)
       :structure_manager{sm},central_decay{central_decay},
       interaction_cutoff{interaction_cutoff},
-      interaction_decay{interaction_decay}
+      interaction_decay{interaction_decay},size{size},
+      coulomb_matrices{sm}
       {}
 
-    RepresentationManagerSortedCoulomb(StructureManager &sm,const hypers_t& hyper)
+    RepresentationManagerSortedCoulomb(Manager_t &sm,const hypers_t& hyper)
       :structure_manager{sm},central_decay{},
       interaction_cutoff{},
-      interaction_decay{}
+      interaction_decay{},coulomb_matrices{sm}
       {
         this->set_hyperparameters(hyper);
       }
@@ -91,8 +93,10 @@ namespace rascal {
     double central_decay;
     double interaction_cutoff;
     double interaction_decay;
+    // first dimension of the largest coulomb mat
+    size_t size;
 
-    typename RepresentationManagerSortedCoulomb<StructureManager>::template Property_t<double, 2> coulomb_matrices;
+    Property_t coulomb_matrices;
 
   protected:
   private:

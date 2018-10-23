@@ -36,8 +36,8 @@ namespace rascal {
   RepresentationFixture<StructureManagerJson>)
   {
     using Representation_t = RepresentationManagerSortedCoulomb<Manager_t>;
-    Representation_t representation{manager_json,central_decay,
-                                      interaction_cutoff,interaction_decay};
+    Representation_t representation(manager_json,central_decay,
+                                    interaction_cutoff,interaction_decay,size);
     
 
 
