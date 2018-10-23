@@ -45,6 +45,10 @@ namespace rascal {
     using Property_t = Property<double, 1, 1, Eigen::Dynamic, 1>;
     using Manager_t = StructureManager;
 
+
+    // get representation
+    void compute();
+
     //! Default constructor 
     RepresentationManagerSortedCoulomb(Manager_t &sm, 
       double central_decay , double interaction_cutoff, 
@@ -53,7 +57,9 @@ namespace rascal {
       interaction_cutoff{interaction_cutoff},
       interaction_decay{interaction_decay},size{size},
       coulomb_matrices{sm}
-      {}
+      {
+        // this->compute();
+      }
 
     RepresentationManagerSortedCoulomb(Manager_t &sm,const hypers_t& hyper)
       :structure_manager{sm},central_decay{},
@@ -85,8 +91,6 @@ namespace rascal {
     // TODO think of a generic input type for the hypers
     void set_hyperparameters(const hypers_t & );
 
-    // get representation
-    void build();
 
     Manager_t& structure_manager;
     //hypers_t hyperparmeters;

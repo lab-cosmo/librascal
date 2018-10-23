@@ -34,11 +34,20 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
   RepresentationFixture<StructureManagerJson>)
-  {
-    using Representation_t = RepresentationManagerSortedCoulomb<Manager_t>;
-    Representation_t representation(manager_json,central_decay,
-                                    interaction_cutoff,interaction_decay,size);
+  { 
     
+    AdaptorNeighbourList<StructureManagerJson> nl{manager_json,cutoff};
+    nl.update();
+    AdaptorStrict<AdaptorNeighbourList<
+                              StructureManagerJson>> strict_nl{nl,cutoff};
+    strict_nl.update();
+
+    using Representation_t = RepresentationManagerSortedCoulomb<
+                   AdaptorStrict<AdaptorNeighbourList<StructureManagerJson>>>;
+
+    Representation_t representation(strict_nl,central_decay,
+                                    interaction_cutoff,interaction_decay,size);
+    representation.compute();
 
 
   }

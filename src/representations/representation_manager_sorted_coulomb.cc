@@ -41,7 +41,7 @@ namespace rascal {
   };
 
   template<class Mngr>
-  void RepresentationManagerSortedCoulomb<Mngr>::build(){
+  void RepresentationManagerSortedCoulomb<Mngr>::compute(){
     
     // upper diag of the coulomb mat
     Eigen::MatrixXd lin_coulomb{};
@@ -54,17 +54,19 @@ namespace rascal {
 
     for (auto center: this->structure_manager){
 
-      for (auto neigh1: center){
-        int ii{neigh1.get_index()};
-        auto distance{this->structure_manager.get_distance(neigh1)};
-        distances_to_sort.push_back(distance);
-
-        for (auto neigh2: center){
-          int jj{neigh2.get_index()};
+      for (auto neigh_i: center){
+        int ii{neigh_i.get_index()};
+        auto dik{this->structure_manager.get_distance(neigh_i)};
+        distances_to_sort.push_back(dik);
+        auto Zi{neigh_i.get_atom_type()};
+        lin_coulomb(ii*this->size) = 0.5*std::pow(Zi,2.4);
+        for (auto neigh_j: center){
+          int jj{neigh_j.get_index()};
+          // work only on the lower diagonal
           if (ii >= jj) continue;
-
-          auto dij{(neigh1.get_position()-neigh2.get_position()).norm};
-          
+          auto Zj{neigh_i.get_atom_type()};
+          auto dij{(neigh_i.get_position()-neigh_j.get_position()).norm};
+          lin_coulomb(ii*this->size+jj) = Zi*Zj/dij;
         }
       }
     }
