@@ -158,7 +158,7 @@ namespace rascal {
                     "this implementation should only work up to MaxOrder.");
 
       return this->get_position(cluster.back());
- 
+
     }
 
     //! get atom_index of index-th neighbour of this cluster
@@ -203,7 +203,7 @@ namespace rascal {
     }
 
     //! Returns a constant atom type given an atom index
-    inline const int & get_atom_type( int& atom_id) const {
+    inline const int & get_atom_type(const int& atom_id) const {
       auto && type{this->manager.get_atom_type(atom_id)};
       return type;
     }
@@ -357,7 +357,8 @@ namespace rascal {
                                      (Order+1 == MaxOrder)>;
 
     static void loop(ClusterRef_t & cluster, AdaptorStrict& manager) {
-      auto & next_cluster_indices{std::get<Order>(manager.cluster_indices)};
+      auto & next_cluster_indices{
+        std::get<Order>(manager.cluster_indices_container)};
       size_t cluster_counter{0};
 
       for (auto next_cluster: cluster) {
@@ -372,6 +373,7 @@ namespace rascal {
 
 
         // TODO: check for distance missing
+        // TODO: wrong assert?
         static_assert(NextClusterLayer == (NextClusterLayer + 1),
                       "Layer not correct");
         Eigen::Matrix<size_t, NextClusterLayer+1, 1> indices_cluster;
@@ -442,13 +444,13 @@ namespace rascal {
           };
 
       Eigen::Matrix<size_t, AtomLayer+1, 1> indices;
-      // since head is a templated member, the keyword template 
+      // since head is a templated member, the keyword template
       // has to be used if the matrix type is also a template parameter
       // TODO explain the advantage of this syntax
       indices.template head<AtomLayer>() = atom.get_cluster_indices();
       indices(AtomLayer) = indices(AtomLayer-1);
       atom_cluster_indices.push_back(indices);
-      
+
       // auto icenter{atom.get_index()};
 
       for (auto pair: atom) {
@@ -468,7 +470,7 @@ namespace rascal {
           indices_pair.template head<PairLayer>() = pair.get_cluster_indices();
           indices_pair(PairLayer) = pair_counter;
           pair_cluster_indices.push_back(indices_pair);
-        
+
           pair_counter++;
         }
         using HelperLoop = HelperLoop<pair.order(),

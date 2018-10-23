@@ -53,7 +53,7 @@ namespace rascal {
   namespace AdaptorTraits {
 
     enum class SortedByDistance: bool {yes = true, no = false};
-    enum class MinImageConvention: bool {yes = true, no = false};
+    //enum class MinImageConvention: bool {yes = true, no = false};
     enum class NeighbourListType {full, half};
     //------------------------------------------------------------------------//
     enum class Strict:bool {yes = true, no = false}; // r_cut
@@ -277,10 +277,6 @@ namespace rascal {
       return this->implementation().get_cluster_size(cluster);
     }
 
-    inline size_t cluster_size(const int & atom_index) const {
-      return this->implementation().get_cluster_size(atom_index);
-    }
-
     //! get atom_index of index-th neighbour of this cluster, e.g. j-th
     //! neighbour of atom i or k-th neighbour of pair i-j, etc.
     template <size_t Order, size_t Layer>
@@ -377,18 +373,7 @@ namespace rascal {
                                  std::make_integer_sequence<int, Size>{});
     }
 
-    // template <size_t Order, class AtomRef_t, std::size_t... I>
-    // std::array<int, Order>
-    // get_indices_from_list(const std::array<AtomRef_t, Order> & atoms,
-    //                       std::integer_sequence<int, I...>) {
-    //   return std::array<int, Order>{atoms[I].get_index()...};
-    // }
-
-    // template <size_t Order, class AtomRef_t> std::array<int, Order>
-    // get_indices(const std::array<AtomRef_t, Order> & atoms) {
-    //   return get_indices_from_list(atoms, std::make_integer_sequence<int, Order>{});
-    // }
-
+    /* ---------------------------------------------------------------------- */
     /**
      * Depending on the Order of the ClusterRef (Order=1 or higher), the cluster
      * can be a ghost cluster. If it is a ghost-cluster, i.e. the position of a
@@ -407,6 +392,60 @@ namespace rascal {
       static inline Vector_ref get_position(ClusterRef & cluster) {
         return cluster.get_manager().position(cluster.back());
       };
+    };
+
+    /* ---------------------------------------------------------------------- */
+    /**
+     * Specialisation for the static branching to redirect to the correct
+     * function to get sizes, offsets and neighbours. Used later by adaptors
+     * which modify or extend the neighbourlist to access the correct offset.
+     */
+
+    template<bool AtMaxOrder>
+    struct IncreaseHelper {
+      template<class Manager_t, class Cluster_t>
+      inline static size_t get_cluster_size(const Manager_t & /*manager*/,
+                                            const Cluster_t & /*cluster*/) {
+        throw std::runtime_error("This branch should never exist"
+                                 " (cluster size).");
+      }
+      template<class Manager_t, class Counters_t>
+      inline static size_t get_offset_impl(const Manager_t & manager,
+                                           const Counters_t & counters) {
+        return manager.get_offset_impl(counters);
+        // throw std::runtime_error("This branch should never exist"
+        //                          " (offset implementation).");
+      }
+      template<class Manager_t, class Counters_t>
+      inline static size_t get_cluster_neighbour(const Manager_t & /*manager*/,
+                                                 const Counters_t & /*counters*/,
+                                                 size_t /*index*/) {
+        throw std::runtime_error("This branch should never exist"
+                                 "(cluster neigbour).");
+      }
+    };
+
+    template<>
+    struct IncreaseHelper<false> {
+
+      template<class Manager_t, class Cluster_t>
+      inline static size_t get_cluster_size(const Manager_t & manager,
+                                            const Cluster_t & cluster) {
+        return manager.get_cluster_size(cluster);
+      }
+
+      template<class Manager_t, class Counters_t>
+      inline static size_t get_offset_impl(const Manager_t & manager,
+                                           const Counters_t & counters) {
+        return manager.get_offset_impl(counters);
+      }
+
+      template<class Manager_t, class Counters_t>
+      inline static size_t get_cluster_neighbour(const Manager_t & manager,
+                                                 const Counters_t & counters,
+                                                 size_t index) {
+        return manager.get_cluster_neighbour(counters, index);
+      }
     };
   }  // internal
   /* ---------------------------------------------------------------------- */
@@ -495,11 +534,6 @@ namespace rascal {
     //! Default constructor
     ClusterRef() = delete;
 
-    //! Constructor from an iterator
-    // ClusterRef(Iterator_t & it):
-    //   Parent{it.get_atom_indices(), property(it.get_cluster_index())},
-    //   it{it} {}
-
     //! ClusterRef for multiple atoms with const IndexArray
     ClusterRef(Iterator_t & it,
                const std::array<int, Order> & atom_indices,
@@ -519,11 +553,6 @@ namespace rascal {
 
       Parent{atom_indices, IndexConstArray_t (& cluster_index)}, it{it} {}
 
-    // needed to construct a ClusterRef<1> with the correct offset:
-
-
-    // Reference to j neighbours of a given atom i // TODO: description
-    // cluster.get_indices() -> index of the atom w.r.t order in arrays
     /**
      * This is a ClusterRef of Order=1, constructed from a higher Order.  This
      * function here is self referencing right now. A ClusterRefKey with
@@ -534,13 +563,6 @@ namespace rascal {
                Manager_t & manager):
       Parent(cluster.get_atom_indices(), cluster.get_cluster_indices()),
       it(manager) {}
-
-    // ClusterRef(Manager_t & manager, size_t access_index);
-
-    //! construct a clusterref from atom_offset: get a clusterref of Order=1 to
-    //! iterate over neighbours
-    // ClusterRef(const size_t atom_index, Manager_t & manager):
-    //   Parent{}
 
     //! Copy constructor
     ClusterRef(const ClusterRef & other) = delete;
@@ -581,10 +603,11 @@ namespace rascal {
     //! len==2 if 1st neighbours,...
     inline int get_atom_index() {
       return this->back(); // TODO: ?? what .back() is it?
-      // return this->get_atom_indices().back(); // TODO: ?? what .back() is it?      
+      // return this->get_atom_indices().back(); // TODO: ?? what .back() is it?
     }
 
     inline Manager_t & get_manager() {return this->it.get_manager();}
+
     inline const Manager_t & get_manager() const {
       return this->it.get_manager();
     }
@@ -598,6 +621,7 @@ namespace rascal {
     inline iterator end() {
       return iterator(*this, this->size(), std::numeric_limits<size_t>::max());
     }
+
     inline size_t size() {return this->get_manager().cluster_size(*this);}
 
     inline size_t get_index() const {
@@ -722,6 +746,7 @@ namespace rascal {
     }
 
     inline Manager_t & get_manager() {return this->container.get_manager();}
+
     inline const Manager_t & get_manager() const {
       return this->container.get_manager();
     }

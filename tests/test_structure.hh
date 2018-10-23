@@ -5,7 +5,7 @@
  *
  * @date   05 Apr 2018
  *
- * @brief  Common headers for tests related to `NeighbourhoodManager`
+ * @brief  Common headers for tests related to `StructureManager`
  *
  * @section LICENSE
  *
@@ -44,6 +44,7 @@ namespace rascal {
 
   // TODO: this is not a general case of a manager fixture. Should not be so
   // complicated
+  // TODO: change this to a usage case of the ManagerFixture
   template<class ManagerImplementation>
   struct ManagerFixture
   {
@@ -93,10 +94,10 @@ namespace rascal {
     ManagerImplementation manager{};
     std::array<bool, 3> pbc;
     double cutoff_max;
-    VecXi center_ids;
+    Eigen::VectorXi center_ids;
     Eigen::MatrixXd cell;
     Eigen::MatrixXd positions; // 3, 22
-    VecXi numbers;
+    Eigen::VectorXi numbers;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -113,36 +114,36 @@ namespace rascal {
     ManagerImplementation manager{};
     std::array<bool, 3> pbc;
     double cutoff;
-    VecXi center_ids;
+    Eigen::VectorXi center_ids;
     Eigen::MatrixXd cell;
     Eigen::MatrixXd positions;
-    VecXi atom_types;
+    Eigen::VectorXi atom_types;
     int natoms;
     int dim;
   };
 
   /* ---------------------------------------------------------------------- */
   template<class ManagerImplementation>
-  struct ManagerFixtureNeighbourComparison
+  struct ManagerFixtureNeighbourCheckHcp
   {
-    ManagerFixtureNeighbourComparison():
+    ManagerFixtureNeighbourCheckHcp():
       pbc{{true,true,true}}, cutoff{1.}, center_ids(natoms),
       cell_1(dim, dim), cell_2(dim, dim),
       positions_1(dim, natoms), positions_2(dim, natoms), atom_types(natoms)
     {}
 
-    ~ManagerFixtureNeighbourComparison() {}
+    ~ManagerFixtureNeighbourCheckHcp() {}
 
     ManagerImplementation manager_1{};
     ManagerImplementation manager_2{};
     std::array<bool, 3> pbc;
     double cutoff;
-    VecXi center_ids;
+    Eigen::VectorXi center_ids;
     Eigen::MatrixXd cell_1;
     Eigen::MatrixXd cell_2;
     Eigen::MatrixXd positions_1;
     Eigen::MatrixXd positions_2;
-    VecXi atom_types;
+    Eigen::VectorXi atom_types;
     int natoms;
     int dim;
   };
@@ -165,14 +166,14 @@ namespace rascal {
     ManagerImplementation manager_2{};
     std::array<bool, 3> pbc;
     double cutoff;
-    VecXi center_ids_1;
-    VecXi center_ids_2;
+    Eigen::VectorXi center_ids_1;
+    Eigen::VectorXi center_ids_2;
     Eigen::MatrixXd cell_1;
     Eigen::MatrixXd cell_2;
     Eigen::MatrixXd positions_1;
     Eigen::MatrixXd positions_2;
-    VecXi atom_types_1;
-    VecXi atom_types_2;
+    Eigen::VectorXi atom_types_1;
+    Eigen::VectorXi atom_types_2;
     int natoms_1;
     int natoms_2;
     int dim;
@@ -272,7 +273,7 @@ namespace rascal {
   {
     using Manager_t = StructureManagerJson;
     ManagerFixture()
-      : manager_json{}, cutoff{1.1} {
+      : manager_json{}, cutoff{1.5} {
       manager_json.read_structure_from_json("simple_cubic_8.json");
       manager_json.update();
     }
@@ -349,7 +350,7 @@ namespace rascal {
 
     Manager_t manager{};
     Eigen::MatrixXd positions;
-    VecXi numbers;
+    Eigen::VectorXi numbers;
     Eigen::MatrixXd cell;
     std::array<int, 3> pbc;
     double cutoff;
@@ -363,11 +364,11 @@ namespace rascal {
    * (building the neighbourlist) works properly
    */
   template<>
-  struct ManagerFixtureNeighbourComparison<StructureManagerCenters>
+  struct ManagerFixtureNeighbourCheckHcp<StructureManagerCenters>
   {
     using Manager_t = StructureManagerCenters;
 
-    ManagerFixtureNeighbourComparison():
+    ManagerFixtureNeighbourCheckHcp():
       pbc{{true, true, true}}, cell_1(3, 3), cell_2(3, 3),
       positions_1(3, 2), positions_2(3, 2), numbers(2), cutoff{0.7}
     {
@@ -425,7 +426,7 @@ namespace rascal {
     Eigen::MatrixXd cell_2;
     Eigen::MatrixXd positions_1;
     Eigen::MatrixXd positions_2;
-    VecXi numbers;
+    Eigen::VectorXi numbers;
 
     double cutoff;
 
@@ -501,8 +502,8 @@ namespace rascal {
     Eigen::MatrixXd cell_2;
     Eigen::MatrixXd positions_1;
     Eigen::MatrixXd positions_2;
-    VecXi numbers_1;
-    VecXi numbers_2;
+    Eigen::VectorXi numbers_1;
+    Eigen::VectorXi numbers_2;
 
     double cutoff;
 
@@ -549,7 +550,7 @@ namespace rascal {
     std::array<int, 3> pbc;
     Eigen::MatrixXd cell;
     Eigen::MatrixXd positions;
-    VecXi numbers;
+    Eigen::VectorXi numbers;
 
     double cutoff;
 
@@ -588,7 +589,7 @@ namespace rascal {
   //   std::array<int, 3> pbc;
   //   Eigen::MatrixXd cell;
   //   Eigen::MatrixXd positions;
-  //   VecXi numbers;
+  //   Eigen::VectorXi numbers;
 
   //   double cutoff;
 

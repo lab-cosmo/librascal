@@ -42,8 +42,8 @@ namespace rascal {
 
   void StructureManagerCell::
   build(const Eigen::Ref<const Eigen::MatrixXd>  positions,
-        const Eigen::Ref<const VecXi>  particle_types,
-        const Eigen::Ref<const VecXi> center_ids,
+        const Eigen::Ref<const Eigen::VectorXi>  particle_types,
+        const Eigen::Ref<const Eigen::VectorXi> center_ids,
         const Eigen::Ref<const Eigen::MatrixXd> cell,
         const std::array<bool,3> & pbc,
         const double & cutoff_max) {
@@ -270,8 +270,8 @@ namespace rascal {
 
   void StructureManagerCell::
   update(const Eigen::Ref<const Eigen::MatrixXd> positions,
-         const Eigen::Ref<const VecXi>  particle_types,
-         const Eigen::Ref<const VecXi> center_ids,
+         const Eigen::Ref<const Eigen::VectorXi>  particle_types,
+         const Eigen::Ref<const Eigen::VectorXi> center_ids,
          const Eigen::Ref<const Eigen::MatrixXd> cell,
          const std::array<bool,3> & pbc, const double & cutoff_max) {
 

@@ -160,7 +160,7 @@ namespace rascal {
      */
     void update(const Eigen::Ref<const Eigen::MatrixXd,
                 0, Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>> positions,
-                const Eigen::Ref<const VecXi> atom_types,
+                const Eigen::Ref<const Eigen::VectorXi> atom_types,
                 const Eigen::Ref<const Eigen::MatrixXd> cell,
                 const Eigen::Ref<const PBC_t> pbc);
 
@@ -244,9 +244,6 @@ namespace rascal {
                     "this implementation only handles atoms.");
       return 1;
     }
-
-    //! Cluster size is the number of neighbours here
-    inline size_t get_cluster_size(const int & ) const {return 1;}
 
     inline int get_cluster_neighbour(const Parent& /*cluster*/,
                                      size_t index) const {
