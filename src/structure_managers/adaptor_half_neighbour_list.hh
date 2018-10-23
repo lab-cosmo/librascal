@@ -150,8 +150,8 @@ namespace rascal {
     }
 
     inline Vector_ref get_position(const int & index) {
-      auto && original_index{this->atom_indices[0][index]};
-      return this->manager.get_position(original_index);
+      // auto && original_index{this->atom_indices[0][index]};
+      return this->manager.get_position(index);
     }
 
     //! return position vector of the last atom in the cluster
@@ -166,15 +166,37 @@ namespace rascal {
       return this->get_position(cluster.back());
     }
 
-    //! get atom_index of index-th neighbour of this cluster
+    // //! get atom_index of index-th neighbour of this cluster
+    // template<size_t Order, size_t Layer>
+    // inline int get_cluster_neighbour(const ClusterRefKey<Order, Layer>
+    //     			     & cluster,
+    //     			     int index) const {
+    //   static_assert(Order <= 2,
+    //                 "This implementation only handles upto pairs.");
+    //   auto && offset = this->offsets[Order][cluster.get_cluster_index(Layer)];
+    //   return this->atom_indices[Order][offset + index];
+    // }
+
+        //! Returns the id of the index-th neighbour atom of a given cluster
     template<size_t Order, size_t Layer>
     inline int get_cluster_neighbour(const ClusterRefKey<Order, Layer>
 				     & cluster,
-				     int index) const {
-      static_assert(Order <= 2,
-                    "This implementation only handles upto pairs.");
-      auto && offset = this->offsets[Order][cluster.get_cluster_index(Layer)];
-      return this->atom_indices[Order][offset + index];
+				     size_t index) const {
+      static_assert(Order < traits::MaxOrder,
+                    "this implementation only handles up to traits::MaxOrder");
+
+      using IncreaseHelper_t =
+        internal::IncreaseHelper<Order == (traits::MaxOrder-1)>;
+
+      if (Order < (traits::MaxOrder-1)) {
+        return IncreaseHelper_t::get_cluster_neighbour(this->manager, cluster,
+                                                       index);
+      } else {
+	auto && offset = this->offsets2[cluster.get_cluster_index(Layer)];
+        std::cout << "offset + index " << offset << " + " << index << std::endl;
+        std::cout << "neighbours " << this->neighbours2[offset + index] << std::endl;
+	return this->neighbours2[offset + index];
+      }
     }
 
     //! get atom_index of the index-th atom in manager
@@ -231,17 +253,15 @@ namespace rascal {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation handles only up to the respective"
                     " MaxOrder");
-      std::cout << "Order " << Order << std::endl;
-      std::cout << "counters.back() " << counters.back() << std::endl;
-      std::cout << ">>>> return value " << this->offsets[Order-1][counters.back()] << std::endl;
-      return this->offsets[Order-1][counters.back()];
+      // return this->offsets[Order-1][counters.back()];
+      return this->offsets2[counters.front()];
     }
 
     //! Returns the number of neighbours of a given cluster
     template<size_t Order, size_t Layer>
     inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
 				   & cluster) const {
-      static_assert(Order <= traits::MaxOrder,
+      static_assert(Order < traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
       /**
        * The static assert with <= is necessary, because the template parameter
@@ -249,12 +269,22 @@ namespace rascal {
        * level. The return type of this function is used to build the next Order
        * iteration.
        */
-      // if (Order == traits::MaxOrder - 1) {
-      auto access_index = cluster.get_cluster_index(Layer);
-      return nb_neigh[Order][access_index];
-      // } else {
+      // if (Order < (traits::MaxOrder - 1)) {
       //   return this->manager.get_cluster_size(cluster);
+      // } else {
+        // auto access_index = cluster.get_cluster_index(Layer);
+        // std::cout << "access_index " << access_index << std::endl;
+        // return nb_neigh2[access_index];
       // }
+
+      static_assert(Order < traits::MaxOrder,
+                    "this implementation handles only the respective MaxOrder");
+      if (Order < (traits::MaxOrder-1)) {
+        return this->manager.get_cluster_size(cluster);
+      } else {
+        auto access_index = cluster.get_cluster_index(Layer);
+        return nb_neigh2[access_index];
+      }
     }
 
   protected:
@@ -262,7 +292,6 @@ namespace rascal {
      * main function during construction of a the half neighbourlist.
      * @param atom the atom to add to the list
      * @param Order select whether it is an i-atom (order=1), j-atom (order=2),
-     * or ...
      */
     template <size_t Order>
     inline void add_atom(int atom_index) {
@@ -274,7 +303,6 @@ namespace rascal {
       this->atom_indices[Order].push_back(atom_index);
 
       // count that this atom is a new neighbour
-      this->nb_neigh[Order].push_back(0);
       this->nb_neigh[Order].back()++;
       this->offsets[Order].back()++;
 
@@ -310,6 +338,17 @@ namespace rascal {
      * store the offsets from where the nb_neigh can be counted
      */
     std::array<std::vector<size_t>, traits::MaxOrder>  offsets;
+
+    //! TEST
+    //! Stores the number of neighbours for every traits::MaxOrder-1-*plets
+    std::vector<size_t> nb_neigh2{};
+
+    //! Stores all neighbours of traits::MaxOrder-1-*plets
+    std::vector<size_t> neighbours2{};
+
+    //! Stores the offsets of traits::MaxOrder-1-*plets for accessing
+    //! `neighbours`, from where nb_neigh can be counted
+    std::vector<size_t> offsets2{};
   private:
   };
 
@@ -339,19 +378,25 @@ namespace rascal {
     internal::for_each(this->cluster_indices_container,
                        internal::ResizePropertyToZero());
 
-    //! initialise the data structures for the neighbourlist
+    //! TEST
+    this->nb_neigh2.resize(0);
+    this->offsets2.resize(0);
+    this->neighbours2.resize(0);
+
+    /**
+     * initialise empty data structures for the reduced neighbour list before
+     * filling it
+     */
     for (size_t i{0}; i < traits::MaxOrder; ++i) {
       this->atom_indices[i].clear();
-      this->nb_neigh[i].clear();
-      this->offsets[i].clear();
-      this->atom_indices[i].resize(0);
       this->nb_neigh[i].resize(0);
       this->offsets[i].resize(0);
     }
-    // //! initialize first atom in list to zero neighbours
-    // this->nb_neigh[0].push_back(0);
 
-    //! initialize the offsets of the first atom in list to zero
+    //! initialize first atom in list to zero neighbours
+    this->nb_neigh[0].push_back(0);
+
+    //! initialize the offsets of the first atom at each Order list to zero
     for (auto & vector: this->offsets) {
       vector.push_back(0);
     }
@@ -360,7 +405,9 @@ namespace rascal {
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
+    int offset{0};
     size_t pair_counter{0};
+
     for (auto atom: this->manager) {
       this->add_atom(atom);
       /**
@@ -380,7 +427,12 @@ namespace rascal {
 
       auto index_i{atom.get_atom_index()};
 
+      //! neighbours per atom
+      int nneigh{0};
+
       for (auto pair: atom) {
+
+
         constexpr auto PairLayer{
           compute_cluster_layer<pair.order()>
             (typename traits::LayerByOrder{})};
@@ -393,6 +445,10 @@ namespace rascal {
          * minimal neighbour list.
          */
         if (index_i < index_j) {
+
+          this->neighbours2.push_back(index_j);
+          nneigh++;
+
           this->add_atom(pair);
 
           Eigen::Matrix<size_t, PairLayer+1, 1> indices_pair;
@@ -403,6 +459,10 @@ namespace rascal {
           pair_counter++;
         }
       }
+      this->nb_neigh2.push_back(nneigh);
+      this->offsets2.push_back(offset);
+
+      offset += nneigh;
     }
   }
 }  // rascal
