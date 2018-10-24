@@ -157,6 +157,5 @@ curl https://c4science.ch/api/harbormaster.createartifact \
 -d artifactData[name]="View Jenkins result" \
 -d artifactData[ui.external]=1
 """
-
 }
 
