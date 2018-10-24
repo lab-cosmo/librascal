@@ -5,14 +5,15 @@ RUN apt-get update \
     build-essential \
     apt-utils \
     gcc \
+    clang \
     curl \
     cmake \
     wget \
     bzip2 \
     git \
+    doxygen \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean all
-
 
 RUN curl -sSL https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -o /tmp/miniconda.sh \ 
     && bash /tmp/miniconda.sh -bfp /usr/local \ 
@@ -26,6 +27,8 @@ ENV PATH /opt/conda/bin:$PATH
 
 RUN conda config --add channels conda-forge
 RUN conda install -c conda-forge numpy git -y
+
+RUN pip3 install scipy numpy sphinx breathe sphinx_rtd_theme 
 
 # RUN conda install -c conda-forge sphinx breathe sphinx_rtd_theme doxygen -y
 
