@@ -30,9 +30,13 @@ pipeline {
         stage ('configure') {
             parallel {
                 stage ('testing') {
-                    agent any
+		    agent {
+		        dockerfile {
+			    filename 'Dockerfile'
+			    dir 'docker'
+			}
+	            }
 		    steps {
-		        sh "apt-get -qq update && apt-get -y -qq install libeigen3-dev libboost-test-dev python3-dev python3-numpy python3-scipy python3-breathe python3-sphinx python3-pytest git doxygen g++ clang cmake"
                         configure('testing')
                     }
                 }
@@ -41,9 +45,13 @@ pipeline {
         stage ('build') {
             parallel {
                 stage ('testing') {
-                    agent any
+		    agent {
+		        dockerfile {
+			    filename 'Dockerfile'
+			    dir 'docker'
+			}
+	            }
 		    steps {
-		        sh "apt-get -qq update && apt-get -y -qq install libeigen3-dev libboost-test-dev python3-dev python3-numpy python3-scipy python3-breathe python3-sphinx python3-pytest git doxygen g++ clang cmake"
                         build('testing')
                     }
                 }
@@ -60,9 +68,13 @@ pipeline {
             parallel {
                 ////////////////////////////////////////////////////
                 stage ('testing') {
-                    agent any
+		    agent {
+		        dockerfile {
+			    filename 'Dockerfile'
+			    dir 'docker'
+			}
+	            }
 		    steps {
-		        sh "apt-get -qq update && apt-get -y -qq install libeigen3-dev libboost-test-dev python3-dev python3-numpy python3-scipy python3-breathe python3-sphinx python3-pytest git doxygen g++ clang cmake"
                         run_test('testing', 'g++')
                     }
                     post {
