@@ -83,7 +83,7 @@ namespace rascal {
     using traits = StructureManager_traits<AdaptorHalfList>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
 
-    /**
+    /*
      * The stacking of this Adaptor is only possible on a manager which has a
      * pair list (MaxOrder=2). This is ensured here.
      */
@@ -178,7 +178,7 @@ namespace rascal {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles up to traits::MaxOrder");
 
-      //! necessary helper construct for static branching
+      // necessary helper construct for static branching
       using IncreaseHelper_t =
         internal::IncreaseHelper<Order == (traits::MaxOrder - 1)>;
 
@@ -224,7 +224,7 @@ namespace rascal {
     template<size_t Order>
     inline size_t get_offset_impl(const std::array<size_t, Order>
 				  & counters) const {
-      /**
+      /*
        * The static assert with <= is necessary, because the template parameter
        * ``Order`` is one Order higher than the MaxOrder at the current
        * level. The return type of this function is used to build the next Order
@@ -233,7 +233,7 @@ namespace rascal {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation handles only up to the respective"
                     " MaxOrder");
-      /**
+      /*
        * Order is determined by the ClusterRef building iterator, not by the Order
        * of the built iterator.
        */
@@ -246,7 +246,7 @@ namespace rascal {
 				   & cluster) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
-      /**
+      /*
        * The static assert with <= is necessary, because the template parameter
        * ``Order`` is one Order higher than the MaxOrder at the current
        * level. The return type of this function is used to build the next Order
@@ -285,6 +285,7 @@ namespace rascal {
   };
 
   //----------------------------------------------------------------------------//
+  //! constructor implementations
   template <class ManagerImplementation>
   AdaptorHalfList<ManagerImplementation>::
   AdaptorHalfList(ManagerImplementation & manager):
@@ -295,6 +296,7 @@ namespace rascal {
   {}
 
   /* ---------------------------------------------------------------------- */
+  //! update function, which updates based on underlying manager
   template <class ManagerImplementation>
   template <class ... Args>
   void AdaptorHalfList<ManagerImplementation>::update(Args&&... arguments) {
@@ -303,17 +305,19 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * Update functions, which involes the reduction of the neighbour list to one
+   * which does not include permutations of pairs
+   */
   template <class ManagerImplementation>
   void AdaptorHalfList<ManagerImplementation>::update() {
 
-    //! Reset cluster_indices for adaptor to fill with push back.
+    // Reset cluster_indices for adaptor to fill with push back.
     internal::for_each(this->cluster_indices_container,
                        internal::ResizePropertyToZero());
 
-    /**
-     * initialise empty data structures for the reduced neighbour list before
-     * filling it
-     */
+    // initialise empty data structures for the reduced neighbour list before
+    // filling it
     this->nb_neigh.resize(0);
     this->offsets.resize(0);
     this->neighbours.resize(0);
@@ -323,14 +327,13 @@ namespace rascal {
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
     int offset{0};
-    //! counter for total number of pairs (minimal list) for cluster_indices
+    // counter for total number of pairs (minimal list) for cluster_indices
     size_t pair_counter{0};
 
     for (auto atom: this->manager) {
-      /**
-       * Add new depth layer for atoms (see LayerByOrder for possible
-       * optimisation).
-       */
+
+      // Add new depth layer for atoms (see LayerByOrder for possible
+      // optimisation).
       constexpr auto AtomLayer{
         compute_cluster_layer<atom.order()>
           (typename traits::LayerByOrder{})};
@@ -342,7 +345,7 @@ namespace rascal {
 
       auto index_i{atom.get_atom_index()};
 
-      //! neighbours per atom counter to correct for offsets
+      // neighbours per atom counter to correct for offsets
       int nneigh{0};
 
       for (auto pair: atom) {
@@ -353,11 +356,9 @@ namespace rascal {
 
         auto index_j{pair.get_atom_index()};
 
-        /**
-         * This is the actual check for the half neighbour list: only pairs with
-         * higher index_j than index_i are used. It should in principle ensure a
-         * minimal neighbour list.
-         */
+        // This is the actual check for the half neighbour list: only pairs with
+        // higher index_j than index_i are used. It should in principle ensure a
+        // minimal neighbour list.
         if (index_i < index_j) {
 
           this->neighbours.push_back(index_j);
