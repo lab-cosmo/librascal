@@ -32,12 +32,16 @@
 
 
 namespace rascal {
+  // TODO: These types are not specific to dimension, etc., which means they are
+  // basically useless as "basic_types". Since they are buried deep, these will
+  // be deleted, once the straggling managers are merged.
+
   //! Dynamically allocated Column Major matrix used for storing positions.
   using Matrix3XdC = Eigen::Matrix<double, 3, Eigen::Dynamic, Eigen::ColMajor>;
   //! Static double matrix for storing the lattice vectors.
-  using Cell_t = Eigen::Matrix<double, 3, 3, Eigen::ColMajor>;
+   using Cell_t = Eigen::Matrix<double, 3, 3, Eigen::ColMajor>;
   //! Static double vector to store a position, an angle etc..
-  using Vec3_t = Eigen::Matrix<double, 3,1>;
+  using Vec3_t = Eigen::Matrix<double, 3, 1>;
   //! Reference vector defined using Eigen Map function
   using Vector_ref = Eigen::Map<Vec3_t>;
   /** Static integer vector to store the three indices
