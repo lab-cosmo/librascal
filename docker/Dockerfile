@@ -12,6 +12,7 @@ RUN apt-get update \
     bzip2 \
     git \
     doxygen \
+    libboost-test-dev \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean all
 
