@@ -133,6 +133,7 @@ namespace rascal {
       Vec3_t c_abg = cell_angles.array().cos();
 
       //! Cell volume
+<<<<<<< HEAD
       double V{this->cell_lenghts[0] * this->cell_lenghts[1] *
           this->cell_lenghts[2] *
           std::sqrt(1 - c_abg[0] * c_abg[0] - c_abg[1] * c_abg[1] -
@@ -153,6 +154,28 @@ namespace rascal {
                          this->cell_vectors.col(1), recip3);
 
       for (int ii{0}; ii < 3; ++ii) {
+=======
+      double V{ this->cell_lenghts[0] *this->cell_lenghts[1] *
+          this->cell_lenghts[2] *
+          std::sqrt(1 - c_abg[0]*c_abg[0] - c_abg[1]*c_abg[1] -
+                    c_abg[2]*c_abg[2] + 2 * c_abg[0] * c_abg[1] * c_abg[2] )};
+
+      double Vinv{1./V};
+      this->reciprocal_vectors *= Vinv;
+
+      Vec3_t recip1,recip2,recip3;
+
+      this->crossproduct(this->cell_vectors.col(1),
+                         this->cell_vectors.col(2),recip1);
+
+      this->crossproduct(this->cell_vectors.col(2),
+                         this->cell_vectors.col(0),recip2);
+
+      this->crossproduct(this->cell_vectors.col(0),
+                         this->cell_vectors.col(1),recip3);
+
+      for (int ii{0};ii<3;++ii) {
+>>>>>>> add8ec6050ce53c013cba5723afb95fe93437ed2
         this->reciprocal_vectors(ii,0) *= recip1[ii];
         this->reciprocal_vectors(ii,1) *= recip2[ii];
         this->reciprocal_vectors(ii,2) *= recip3[ii];
@@ -163,11 +186,18 @@ namespace rascal {
     /* ---------------------------------------------------------------------- */
     template <typename DerivedA,typename DerivedB>
     inline void crossproduct(const Eigen::MatrixBase<DerivedA> & v1,
+<<<<<<< HEAD
                              const Eigen::MatrixBase<DerivedB> & v2,
                              Vec3_t & v3) {
       v3[0] = v1[1] * v2[2] - v1[2] * v2[1];
       v3[1] = v1[2] * v2[0] - v1[0] * v2[2];
       v3[2] = v1[0] * v2[1] - v1[1] * v2[0];
+=======
+                             const Eigen::MatrixBase<DerivedB> & v2, Vec3_t & v3) {
+      v3[0] = v1[1]*v2[2] - v1[2]*v2[1];
+      v3[1] = v1[2]*v2[0] - v1[0]*v2[2];
+      v3[2] = v1[0]*v2[1] - v1[1]*v2[0];
+>>>>>>> add8ec6050ce53c013cba5723afb95fe93437ed2
     }
 
     /* ---------------------------------------------------------------------- */
@@ -184,7 +214,10 @@ namespace rascal {
                          - c_abg[2]*c_abg[2]
                          + 2 * c_abg[0] * c_abg[1] * c_abg[2] )};
       double Vinv{1/V};
+<<<<<<< HEAD
 
+=======
+>>>>>>> add8ec6050ce53c013cba5723afb95fe93437ed2
       //! compute transformation matrix from the cartesian system
       //! to the lattice coordinate system
       this->cartesian2scaled(0,0) = 1.0 / this->cell_lenghts[0];
