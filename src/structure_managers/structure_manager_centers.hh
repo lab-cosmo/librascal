@@ -2,12 +2,13 @@
  * file   structure_manager_centers.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
+ * @author Markus Stricker <markus.stricker@epfl.ch>
  *
  * @date   06 August 2018
  *
  * @brief Manager with atoms and centers
  *
- * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2018 Felix Musil, Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
  *
  * rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -25,12 +26,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef STRUCTURE_MANAGER_CENTERS_H
 #define STRUCTURE_MANAGER_CENTERS_H
 
 #include "structure_managers/structure_manager.hh"
-
 #include "lattice.hh"
 #include "atomic_structure.hh"
 #include "basic_types.hh"
@@ -53,15 +52,15 @@ namespace rascal {
   class StructureManagerCenters;
 
   //! traits specialisation for ManagerCenters
-
   /**
    * The traits are used for vector allocation and further down the processing
    * chain to determine what functionality the given StructureManager already
-   * contains to avoid recomputation.  See also the implementation of adaptors.
+   * contains to avoid recomputation. See also the implementation of adaptors.
    */
   template <>
   struct StructureManager_traits<StructureManagerCenters> {
     constexpr static int Dim{3};
+    //! MaxOrder is set to 1 because it has just atoms
     constexpr static size_t MaxOrder{1};
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDirectionVectors{false};
@@ -137,21 +136,21 @@ namespace rascal {
     {};
 
     //! Copy constructor
-    StructureManagerCenters(const StructureManagerCenters &other) = delete;
+    StructureManagerCenters(const StructureManagerCenters & other) = delete;
 
     //! Move constructor
-    StructureManagerCenters(StructureManagerCenters &&other) = default;
+    StructureManagerCenters(StructureManagerCenters && other) = default;
 
     //! Destructor
     virtual ~StructureManagerCenters() = default;
 
     //! Copy assignment operator
-    StructureManagerCenters&
-    operator=(const StructureManagerCenters &other) = delete;
+    StructureManagerCenters &
+    operator=(const StructureManagerCenters & other) = delete;
 
     //! Move assignment operator
-    StructureManagerCenters&
-    operator=(StructureManagerCenters &&other) = default;
+    StructureManagerCenters &
+    operator=(StructureManagerCenters && other) = default;
 
     /**
      * This member function invokes the reinitialisation of data. E.g. when the
@@ -229,14 +228,13 @@ namespace rascal {
     //! returns a map to all atomic positions.
     inline Positions_ref get_positions() {
       return Positions_ref(this->atoms_object.positions.data(), traits::Dim,
-                           this->atoms_object.positions.size()/traits::Dim);
+                           this->atoms_object.positions.size() / traits::Dim);
     }
 
     //! returns number of I atoms in the list
     inline size_t get_size() const {return this->natoms;}
 
     //! returns the number of neighbours of a given i atom
-    //! TODO: not sure if this is the correct way to solve this??
     template<size_t Order, size_t Layer>
     inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
                                    & /*cluster*/) const {
@@ -247,16 +245,19 @@ namespace rascal {
 
     inline int get_cluster_neighbour(const Parent& /*cluster*/,
                                      size_t index) const {
+      /**
+       * dummy function, which returns an atom
+       */
       return this->atoms_index[0][index];
     }
 
-    //! Dummy function, since neighbours not present at this Order
+    //! Dummy function, since neighbours are not present at this Order
     template<size_t Order, size_t Layer>
     inline int get_cluster_neighbour(const ClusterRefKey<Order, Layer>
                                      & /*cluster*/, size_t index) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms.");
-      return this->atoms_index[0][index];
+      return 0;
     }
 
     /**
@@ -264,8 +265,8 @@ namespace rascal {
      * appears in an iteration
      */
     template<size_t Order>
-    inline size_t get_offset_impl(const std::array<size_t, Order>
-                                  & counters) const;
+    inline size_t
+    get_offset_impl(const std::array<size_t, Order> & counters) const;
 
     //! Function for returning the number of atoms
     size_t get_nb_clusters(size_t cluster_size) const;
@@ -281,7 +282,7 @@ namespace rascal {
     /**
      * store atoms index per order,i.e.
      *   - atoms_index[0] lists all i-atoms
-     *   - etc
+     * the structure here is only used for conformance, could just be a vector.
      */
     std::array<std::vector<int>, traits::MaxOrder> atoms_index;
 
@@ -308,7 +309,6 @@ namespace rascal {
                    "this manager only handles atoms.");
     return 0;
   }
-
 }  // rascal
 
 #endif /* STRUCTURE_MANAGER_CENTERS_H */

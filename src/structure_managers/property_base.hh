@@ -5,8 +5,8 @@
  *
  * @date   03 Aug 2018
  *
- * @brief implementation of non-templated base class for Properties,
- *        Properties are atom-, pair-, triplet-, etc-related values
+ * @brief implementation of non-templated base class for Properties, Properties
+ *        are atom-, pair-, triplet-, etc-related values
  *
  * Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -29,15 +29,14 @@
 #ifndef PROPERTY_BASE_H
 #define PROPERTY_BASE_H
 
-#include <typeinfo>
-
 #include "basic_types.hh"
 #include "structure_managers/structure_manager_base.hh"
 
 #include <string>
+#include <typeinfo>
+#include <vector>
 
 namespace rascal {
-
 
   class PropertyBase
   {
@@ -96,11 +95,9 @@ namespace rascal {
     PropertyBase(StructureManagerBase & manager, Dim_t nb_row, Dim_t nb_col,
                  size_t order, size_t layer, std::string metadata="no metadata"):
       base_manager{manager}, nb_row{nb_row}, nb_col{nb_col},
-      nb_comp{nb_row*nb_col}, order{order}, property_layer{layer},
+      nb_comp{nb_row * nb_col}, order{order}, property_layer{layer},
       metadata{metadata}
     {}
-
-
 
   private:
   };

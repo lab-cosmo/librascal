@@ -29,15 +29,17 @@
 #ifndef LATTICE_H
 #define LATTICE_H
 
-#include <Eigen/Dense>
 #include <basic_types.hh>
 #include <atomic_structure.hh>
+
+#include <Eigen/Dense>
+
 #include <cmath>
 
 namespace rascal {
   /**
    * Class to store and change between different lattice representation (real
-   * and reciprocal space in terms of lattice vectors, cell lenght and
+   * and reciprocal space in terms of lattice vectors, cell length and
    * angles). Also translate absolute to fractional and fractional to absolute
    * coordinates.
    */
@@ -73,16 +75,16 @@ namespace rascal {
      */
     void set_cell(const Cell_t& cell) {
       this->cell_vectors = cell;
-      this->cell_lenghts = cell.colwise().norm();
+      this->cell_lengths = cell.colwise().norm();
       this->cell_angles[0] =
         std::acos(this->cell_vectors.col(1).dot(this->cell_vectors.col(2))
-                  / this->cell_lenghts[1] / this->cell_lenghts[2]);
+                  / this->cell_lengths[1] / this->cell_lengths[2]);
       this->cell_angles[1] =
         std::acos(this->cell_vectors.col(0).dot(this->cell_vectors.col(2))
-                  / this->cell_lenghts[0] / this->cell_lenghts[2]);
+                  / this->cell_lengths[0] / this->cell_lengths[2]);
       this->cell_angles[2] =
         std::acos(this->cell_vectors.col(1).dot(this->cell_vectors.col(0))
-                  / this->cell_lenghts[1] / this->cell_lenghts[0]);
+                  / this->cell_lengths[1] / this->cell_lengths[0]);
       this->set_transformation_matrix();
       this->set_reciprocal_vectors();
     }
@@ -90,7 +92,7 @@ namespace rascal {
     /* ---------------------------------------------------------------------- */
     //! Returns the cell lengths
     const Vec3_t get_cell_lengths() {
-      return this->cell_lenghts;
+      return this->cell_lengths;
     }
 
     //! Returns the cell angles
@@ -120,8 +122,8 @@ namespace rascal {
     }
 
     //! Returns the reciprocal space cell lengths
-    const Vec3_t get_reciprocal_lenghts() {
-      return this->reciprocal_lenghts;
+    const Vec3_t get_reciprocal_lengths() {
+      return this->reciprocal_lengths;
     }
 
     /* ---------------------------------------------------------------------- */
@@ -133,9 +135,8 @@ namespace rascal {
       Vec3_t c_abg = cell_angles.array().cos();
 
       //! Cell volume
-<<<<<<< HEAD
-      double V{this->cell_lenghts[0] * this->cell_lenghts[1] *
-          this->cell_lenghts[2] *
+      double V{this->cell_lengths[0] * this->cell_lengths[1] *
+          this->cell_lengths[2] *
           std::sqrt(1 - c_abg[0] * c_abg[0] - c_abg[1] * c_abg[1] -
                     c_abg[2]*c_abg[2] + 2 * c_abg[0] * c_abg[1] * c_abg[2] )};
 
@@ -154,50 +155,21 @@ namespace rascal {
                          this->cell_vectors.col(1), recip3);
 
       for (int ii{0}; ii < 3; ++ii) {
-=======
-      double V{ this->cell_lenghts[0] *this->cell_lenghts[1] *
-          this->cell_lenghts[2] *
-          std::sqrt(1 - c_abg[0]*c_abg[0] - c_abg[1]*c_abg[1] -
-                    c_abg[2]*c_abg[2] + 2 * c_abg[0] * c_abg[1] * c_abg[2] )};
-
-      double Vinv{1./V};
-      this->reciprocal_vectors *= Vinv;
-
-      Vec3_t recip1,recip2,recip3;
-
-      this->crossproduct(this->cell_vectors.col(1),
-                         this->cell_vectors.col(2),recip1);
-
-      this->crossproduct(this->cell_vectors.col(2),
-                         this->cell_vectors.col(0),recip2);
-
-      this->crossproduct(this->cell_vectors.col(0),
-                         this->cell_vectors.col(1),recip3);
-
-      for (int ii{0};ii<3;++ii) {
->>>>>>> add8ec6050ce53c013cba5723afb95fe93437ed2
         this->reciprocal_vectors(ii,0) *= recip1[ii];
         this->reciprocal_vectors(ii,1) *= recip2[ii];
         this->reciprocal_vectors(ii,2) *= recip3[ii];
       }
 
-      this->reciprocal_lenghts = this->reciprocal_vectors.colwise().norm();
+      this->reciprocal_lengths = this->reciprocal_vectors.colwise().norm();
     }
     /* ---------------------------------------------------------------------- */
     template <typename DerivedA,typename DerivedB>
     inline void crossproduct(const Eigen::MatrixBase<DerivedA> & v1,
-<<<<<<< HEAD
                              const Eigen::MatrixBase<DerivedB> & v2,
                              Vec3_t & v3) {
       v3[0] = v1[1] * v2[2] - v1[2] * v2[1];
       v3[1] = v1[2] * v2[0] - v1[0] * v2[2];
       v3[2] = v1[0] * v2[1] - v1[1] * v2[0];
-=======
-                             const Eigen::MatrixBase<DerivedB> & v2, Vec3_t & v3) {
-      v3[0] = v1[1]*v2[2] - v1[2]*v2[1];
-      v3[1] = v1[2]*v2[0] - v1[0]*v2[2];
-      v3[2] = v1[0]*v2[1] - v1[1]*v2[0];
->>>>>>> add8ec6050ce53c013cba5723afb95fe93437ed2
     }
 
     /* ---------------------------------------------------------------------- */
@@ -212,35 +184,32 @@ namespace rascal {
       //! Cell volume divided by a*b*c
       double V{std::sqrt(1 - c_abg[0]*c_abg[0] - c_abg[1]*c_abg[1]
                          - c_abg[2]*c_abg[2]
-                         + 2 * c_abg[0] * c_abg[1] * c_abg[2] )};
-      double Vinv{1/V};
-<<<<<<< HEAD
+                         + 2 * c_abg[0] * c_abg[1] * c_abg[2])};
+      double Vinv{1 / V};
 
-=======
->>>>>>> add8ec6050ce53c013cba5723afb95fe93437ed2
       //! compute transformation matrix from the cartesian system
       //! to the lattice coordinate system
-      this->cartesian2scaled(0,0) = 1.0 / this->cell_lenghts[0];
-      this->cartesian2scaled(1,0) = -c_abg[2]
-        / (this->cell_lenghts[0]*s_abg[2]);
-      this->cartesian2scaled(2,0) = Vinv
-        * ((c_abg[0]*c_abg[2]-c_abg[1]))/(s_abg[2]*this->cell_lenghts[0]);
-      this->cartesian2scaled(1,1) = 1.0 / (this->cell_lenghts[1]*s_abg[2]);
-      this->cartesian2scaled(2,1) = Vinv *
-        (c_abg[1]*c_abg[2]-c_abg[0] )/(s_abg[2]*this->cell_lenghts[1]);
-      this->cartesian2scaled(2,2) = s_abg[2]*Vinv/this->cell_lenghts[2];
+      this->cartesian2scaled(0, 0) = 1.0 / this->cell_lengths[0];
+      this->cartesian2scaled(1, 0) = -c_abg[2]
+        / (this->cell_lengths[0]*s_abg[2]);
+      this->cartesian2scaled(2, 0) = Vinv * (c_abg[0] * c_abg[2] - c_abg[1])
+        / (s_abg[2] * this->cell_lengths[0]);
+      this->cartesian2scaled(1, 1) = 1.0 / (this->cell_lengths[1] * s_abg[2]);
+      this->cartesian2scaled(2, 1) = Vinv * (c_abg[1] * c_abg[2] - c_abg[0])
+        / (s_abg[2] * this->cell_lengths[1]);
+      this->cartesian2scaled(2, 2) = s_abg[2] * Vinv / this->cell_lengths[2];
 
       /**
        * compute transformation matrix from the lattice coordinate system to
        * cartesian
        */
-      this->scaled2cartesian(0,0) = this->cell_lenghts[0];
-      this->scaled2cartesian(1,0) = this->cell_lenghts[1] * c_abg[2];
-      this->scaled2cartesian(2,0) = this->cell_lenghts[2] * c_abg[1];
-      this->scaled2cartesian(1,1) = this->cell_lenghts[1] * s_abg[2];
-      this->scaled2cartesian(2,1) = this->cell_lenghts[2]
+      this->scaled2cartesian(0, 0) = this->cell_lengths[0];
+      this->scaled2cartesian(1, 0) = this->cell_lengths[1] * c_abg[2];
+      this->scaled2cartesian(2, 0) = this->cell_lengths[2] * c_abg[1];
+      this->scaled2cartesian(1, 1) = this->cell_lengths[1] * s_abg[2];
+      this->scaled2cartesian(2, 1) = this->cell_lengths[2]
         * (c_abg[0] - c_abg[1] * c_abg[2]) / s_abg[2];
-      this->scaled2cartesian(2,2) = this->cell_lenghts[2] * V / s_abg[2];
+      this->scaled2cartesian(2, 2) = this->cell_lengths[2] * V / s_abg[2];
     }
 
     /* ---------------------------------------------------------------------- */
@@ -272,9 +241,9 @@ namespace rascal {
     //! Reciprocal lattice
     Cell_t reciprocal_vectors = Cell_t::Ones();
     //! Cell lengths
-    Vec3_t cell_lenghts = Vec3_t::Ones();
+    Vec3_t cell_lengths = Vec3_t::Ones();
     //! Reciprocal Cell lengths
-    Vec3_t reciprocal_lenghts = Vec3_t::Ones();
+    Vec3_t reciprocal_lengths = Vec3_t::Ones();
     //! alpha(b,c) beta(a,c) gamma(a,b) in radian
     Vec3_t cell_angles = Vec3_t::Ones();
     //! transformation matrix from the lattice coordinate system to cartesian

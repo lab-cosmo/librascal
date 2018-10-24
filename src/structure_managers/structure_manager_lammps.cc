@@ -34,9 +34,9 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   void StructureManagerLammps::
-  update(const int &inum, const int &tot_num, int *ilist, int *numneigh,
-         int **firstneigh, double **x, double **f, int *type,
-         double *eatom, double **vatom) {
+  update(const int &inum, const int & tot_num, int *ilist, int *numneigh,
+         int ** firstneigh, double ** x, double ** f, int * type,
+         double * eatom, double ** vatom) {
     // setting the class variables
     this->inum = inum;
     this->tot_num = tot_num;
@@ -50,7 +50,7 @@ namespace rascal {
     this->vatom = vatom;
     this->offsets.reserve(inum);
     this->offsets.resize(1);
-    for (int i{0}; i<this->inum-1 ; ++i) {
+    for (int i{0}; i < this->inum-1 ; ++i) {
       this->offsets.emplace_back(this->offsets[i] + this->numneigh[i]);
     }
     this->nb_pairs = std::accumulate(numneigh, numneigh+this->inum, 0);
@@ -84,5 +84,4 @@ namespace rascal {
       break;
     }
   }
-
 }  // rascal

@@ -32,19 +32,12 @@
 
 namespace rascal{
 
-  /**
-   * polymorphic base type for StructureManagers
-   */
-
+  //! polymorphic base type for StructureManagers
   class StructureManagerBase {
   public:
     inline decltype(auto) get_property(std::string name);
     virtual size_t nb_clusters(size_t cluster_size) const = 0;
   };
-
-
-
 }  // rascal
-
 
 #endif /* STRUCTURE_MANAGER_BASE_H */

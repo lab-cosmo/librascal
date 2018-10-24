@@ -30,7 +30,6 @@
 
 #include <Eigen/Dense>
 
-
 namespace rascal {
   // TODO: These types are not specific to dimension, etc., which means they are
   // basically useless as "basic_types". Since they are buried deep, these will

@@ -30,7 +30,6 @@
 
 #include <utility>
 
-
 namespace rascal {
   namespace internal {
 
@@ -74,14 +73,12 @@ namespace rascal {
     /* ---------------------------------------------------------------------- */
     /* A collection of useful functors to be applied to tuples somewhere
      * else in the code. */
-    /**
-     * Functor for resetting properties to zero size
-     */
+
+    //! Functor for resetting properties to zero size
     struct ResizePropertyToZero {
-      template<typename T> void operator() (T& t) {
-        t.resize_to_zero();
-      }
+      template<typename T> void operator() (T& t) { t.resize_to_zero();}
     };
+
   }  // internal
 }  // rascal
 

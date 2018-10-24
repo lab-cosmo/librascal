@@ -5,8 +5,7 @@
  *
  * @date   14 October 2018
  *
- * @brief contains the implementation of 
- * miscellaneous math functions 
+ * @brief contains the implementation of miscellaneous math functions
  *
  * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -29,14 +28,13 @@
 #ifndef MATH_UTILS_H
 #define MATH_UTILS_H
 
-
 #include "math_interface.hh"
-
 
 namespace rascal {
   namespace math {
-
-    
+    /**
+     * for now just a scaffold
+     */
   } // math
 } // rascal
 

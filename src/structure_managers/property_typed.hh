@@ -5,7 +5,7 @@
  *
  * @date   06 Aug 2018
  *
- * @brief  Implements intermediate property class for which the type of stored
+ * @brief Implements intermediate property class for which the type of stored
  *          objects is known, but not the size
  *
  * Copyright © 2018 Federico Giberti, Till Junge, COSMO (EPFL), LAMMM (EPFL)
@@ -32,9 +32,9 @@
 #include "structure_managers/property_base.hh"
 #include "structure_managers/cluster_ref_key.hh"
 
-
 namespace rascal {
 
+  /* ---------------------------------------------------------------------- */
   namespace internal {
 
     template <typename T, Dim_t NbRow, Dim_t NbCol>
@@ -74,6 +74,7 @@ namespace rascal {
       }
     };
 
+    /* ---------------------------------------------------------------------- */
     //! specialisation for scalar properties
     template <typename T>
     struct Value<T, 1, 1> {
@@ -107,18 +108,15 @@ namespace rascal {
     using Value_ref = typename Value<T, NbRow, NbCol>::reference;
 
   }  // internal
+  /* ---------------------------------------------------------------------- */
 
-
-  template <typename T,
-            size_t Order,
-            size_t PropertyLayer>
+  template <typename T, size_t Order, size_t PropertyLayer>
   class TypedProperty: public PropertyBase
   {
     using Parent = PropertyBase;
     using Value = internal::Value<T, Eigen::Dynamic, Eigen::Dynamic>;
 
   public:
-
     using value_type = typename Value::type;
     using reference = typename Value::reference;
 
@@ -132,70 +130,67 @@ namespace rascal {
     TypedProperty() = delete;
 
     //! Copy constructor
-    TypedProperty(const TypedProperty &other) = delete;
+    TypedProperty(const TypedProperty & other) = delete;
 
     //! Move constructor
-    TypedProperty(TypedProperty &&other) = default;
+    TypedProperty(TypedProperty && other) = default;
 
     //! Destructor
     virtual ~TypedProperty() = default;
 
     //! Copy assignment operator
-    TypedProperty& operator=(const TypedProperty &other) = delete;
+    TypedProperty & operator=(const TypedProperty & other) = delete;
 
     //! Move assignment operator
-    TypedProperty& operator=(TypedProperty &&other) = default;
+    TypedProperty & operator=(TypedProperty && other) = default;
 
+    /* ---------------------------------------------------------------------- */
     //! return runtime info about the stored (e.g., numerical) type
     const std::type_info & get_type_info() const override final {
       return typeid(T);
     };
 
-    /**
-     * Fill sequence for *_cluster_indices to initialize
-     */
+    //! Fill sequence for *_cluster_indices to initialize
     inline void fill_sequence() {
       this->resize();
-      for (size_t i{0}; i<this->values.size(); ++i) {
+      for (size_t i{0}; i < this->values.size(); ++i) {
         values[i] = i;
       }
     }
+
     //! Adjust size of values (only increases, never frees)
     void resize() {
-      this->values.resize(this->base_manager.nb_clusters(this->get_order()) * this->get_nb_comp());
+      auto order = this->get_order();
+      auto n_components = this->get_nb_comp();
+      auto new_size = this->base_manager.nb_clusters(order) * n_components;
+      this->values.resize(new_size);
     }
 
     /**
-     * shortens the vector so that the manager can push_back into it
-     * (capacity not reduced)
+     * shortens the vector so that the manager can push_back into it (capacity
+     * not reduced)
      */
     void resize_to_zero() {
       this->values.resize(0);
     }
 
-
-    /**
-     * Property accessor by cluster ref
-     */
+    /* ---------------------------------------------------------------------- */
+    //! Property accessor by cluster ref
     template<size_t CallerLayer>
     inline reference operator[](const ClusterRefKey<Order, CallerLayer> & id) {
       static_assert(CallerLayer >= PropertyLayer,
-                    "You are trying to access a property that "
-                    "does not exist at this depth in the "
-                    "adaptor stack.");
+                    "You are trying to access a property that does not exist at"
+                    "this depth in the adaptor stack.");
 
       return this->operator[](id.get_cluster_index(CallerLayer));
     }
 
-    /**
-     * Accessor for property by index for dynamically sized properties
-     */
+    //! Accessor for property by index for dynamically sized properties
     reference operator[](const size_t & index) {
-      return Value::get_ref(this->values[index*this->get_nb_comp()],
+      return Value::get_ref(this->values[index * this->get_nb_comp()],
                             this->get_nb_row(),
                             this->get_nb_col());
     }
-
 
   protected:
     std::vector<T> values{}; //!< storage for properties

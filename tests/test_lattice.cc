@@ -161,7 +161,7 @@ namespace rascal {
 
     Vec3_t reciprocal_lenghts_true;
     reciprocal_lenghts_true << 0.17356276881481585983,0.16417692074942269453,0.13679890560875518357;
-    Vec3_t reciprocal_lenghts = lattice.get_reciprocal_lenghts();
+    Vec3_t reciprocal_lenghts = lattice.get_reciprocal_lengths();
 
     for (int jj{0};jj<3;++jj) {
       for (int ii{0};ii<3;++ii) {

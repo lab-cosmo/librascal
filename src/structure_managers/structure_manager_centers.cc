@@ -2,12 +2,13 @@
  * file   structure_manager_centers.cc
  *
  * @author Felix Musil <felix.musil@epfl.ch>
+ * @author Markus Stricker <markus.stricker@epfl.ch>
  *
  * @date   06 August 2018
  *
  * @brief Manager with atoms and centers
  *
- * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2018  Felix Musil, Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
  *
  * rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -58,7 +59,7 @@ namespace rascal {
     this->atoms_object.set_structure(positions, atom_types, cell, pbc);
 
     StructureManagerCenters::build();
-    
+
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
     atom_cluster_indices.fill_sequence();
   }
@@ -67,18 +68,18 @@ namespace rascal {
   void StructureManagerCenters::build() {
 
     this->atoms_object.atoms_type.resize(this->natoms);
-    //set the references to the particles positions
+    //! set the references to the particles positions
     for (size_t id{0}; id < this->natoms; ++id){
       this->atoms_index[0].push_back(id);
       this->offsets.push_back(id);
     }
+
     Cell_t lat = this->atoms_object.cell;
     this->lattice.set_cell(lat);
   }
 
   /* ---------------------------------------------------------------------- */
-  size_t StructureManagerCenters::get_nb_clusters(size_t /*order*/)
-    const {
+  size_t StructureManagerCenters::get_nb_clusters(size_t /*order*/) const {
     return this->natoms;
   }
 

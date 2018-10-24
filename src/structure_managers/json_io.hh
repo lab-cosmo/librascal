@@ -28,43 +28,53 @@
 #ifndef JSON_IO_H
 #define JSON_IO_H
 
-// An external header-library/header-class, which makes it easy to use
-// the JSON as a first class data type. See
-// https://github.com/nlohmann/json for documentation.
+/**
+ * An external header-library/header-class, which makes it easy to use the JSON
+ * as a first class data type. See https://github.com/nlohmann/json for
+ * documentation.
+ */
 #include "json.hpp"
 
-// For convenience
+//! For convenience
 using json = nlohmann::json;
 
-// All functions and classes are in the namespace <code>rascal</code>,
-// which ensures that they don't clash with other libraries one might
-// use in conjunction.
+/**
+ * All functions and classes are in the namespace <code>rascal</code>, which
+ * ensures that they don't clash with other libraries one might use in
+ * conjunction.
+ */
 namespace rascal {
   namespace json_io {
-    // To read from a JSON file and deserialize the content, the used
-    // class needs a <code>struct</code> with standard data types.
+    /**
+     * To read from a JSON file and deserialize the content, the used class
+     * needs a <code>struct</code> with standard data types.
+     */
     struct AtomicStructure {
       /**
-         \param cell is a vector a vector of vectors which holds the cell unit
-         vectors.
-         \param type a vector of integers which holds the atomic type
-         (coordination number).
-         \param pbc is a 0/1 vector which says, where periodic boundary
-         conditions are applied.
-         \param position is a vector of vectors which holds the atomic
-         positions.
-      */
+       *  \param cell is a vector a vector of vectors which holds the cell unit
+       *  vectors.
+       *
+       *  \param type a vector of integers which holds the atomic type (atomic
+       *  number from periodic table).
+       *
+       *  \param pbc is a 0/1 vector which says, where periodic boundary
+       *  conditions are applied.
+       *
+       *  \param position is a vector of vectors which holds the atomic
+       *  positions.
+       */
       std::vector<std::vector<double>> cell{};
       std::vector<int> type{};
       std::vector<int> pbc{};
       std::vector<std::vector<double>> position{};
     };
 
-    // This function is used to convert to the JSON format with the
-    // given keywords. It is an overload of the function defined in the header
-    // class json.hpp.
-    // Inline needed, otherwise it is a multiple definition
-    inline void to_json(json & j, AtomicStructure& s) {
+    /**
+     * This function is used to convert to the JSON format with the given
+     * keywords. It is an overload of the function defined in the header class
+     * json.hpp. Inline needed, otherwise it is a multiple definition
+     */
+    inline void to_json(json & j, AtomicStructure & s) {
       j = json{
         {"cell", s.cell},
         {"numbers", s.type},
@@ -73,10 +83,12 @@ namespace rascal {
       };
     }
 
-    // This function is used to read from the JSON file and convert
-    // the data into standard types. It is an overload of the function defined
-    // in json.hpp class header.
-    inline void from_json(const json& j, AtomicStructure& s) {
+    /**
+     * This function is used to read from the JSON file and convert the data
+     * into standard types. It is an overload of the function defined in
+     * json.hpp class header.
+     */
+    inline void from_json(const json & j, AtomicStructure & s) {
       s.cell = j.at("cell").get<std::vector<std::vector<double>>>();
       s.type = j.at("numbers").get<std::vector<int>>();
       s.pbc = j.at("pbc").get<std::vector<int>>();
@@ -84,6 +96,5 @@ namespace rascal {
     }
   }
 } // rascal
-
 
 #endif /* JSON_IO_H */
