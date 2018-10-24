@@ -50,13 +50,18 @@ namespace rascal {
      *  positions.
      */
     using Cell_t = Eigen::Matrix<double, Dim, Dim, Eigen::ColMajor>;
+
     using AtomTypes_t = Eigen::Matrix<int, 1, Eigen::Dynamic>;
+
     using PBC_t = Eigen::Matrix<int, Dim, 1>;
+
     using Positions_t = Eigen::Matrix<double, Dim,
                                       Eigen::Dynamic, Eigen::ColMajor>;
+
     using PositionsInput_t =
       Eigen::Ref<const Eigen::MatrixXd, 0,
                  Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>>;
+
     using AtomTypesInput_t =
       Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1>>;
 
