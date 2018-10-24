@@ -43,9 +43,9 @@ namespace rascal {
      *  \param cell is a vector a vector of vectors which holds the cell unit
      *  vectors.
      *  \param type a vector of integers which holds the atomic type
-     *  (coordination number).
-     *  \param pbc is a 0/1 vector which says, where periodic boundary
-     *  conditions are applied.
+     *  (atomic number as per periodic table).
+     *  \param pbc is a 0/1 vector which defines the periodicity of the given
+     *  structure for each dimension
      *  \param position is a vector of vectors which holds the atomic
      *  positions.
      */
