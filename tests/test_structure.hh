@@ -264,14 +264,14 @@ namespace rascal {
     using Manager_t = StructureManagerChain;
 
     ManagerFixture()
-      : manager_chain{}, cutoff{1.0} {
-        manager_chain.read_structure_from_json("simple_cubic_8.json");
-        manager_chain.update(cutoff);
+      : manager{}, cutoff{1.0} {
+        manager.read_structure_from_json("simple_cubic_8.json");
+        manager.update(cutoff);
       }
 
     ~ManagerFixture() {BOOST_TEST_MESSAGE("teardown ManagerChain fixture");}
 
-    Manager_t manager_chain;
+    Manager_t manager;
     double cutoff;
   };
 
@@ -281,14 +281,14 @@ namespace rascal {
   {
     using Manager_t = StructureManagerJson;
     ManagerFixture()
-      : manager_json{}, cutoff{1.5} {
-      manager_json.read_structure_from_json("simple_cubic_8.json");
-      manager_json.update();
+      : manager{}, cutoff{1.5} {
+      manager.read_structure_from_json("simple_cubic_8.json");
+      manager.update();
     }
 
     ~ManagerFixture () {BOOST_TEST_MESSAGE("teardown ManagerJson fixture");}
 
-    Manager_t manager_json;
+    Manager_t manager;
     double cutoff;
   };
 
@@ -301,7 +301,6 @@ namespace rascal {
 
     ManagerFixture():
       positions(22, 3), numbers(22), cell(3, 3), pbc{{true,true,true}},
-      // positions(3,8), numbers(8), cell(3, 3), pbc{{true,true,true}},
       cutoff{2.}
     {
       cell <<

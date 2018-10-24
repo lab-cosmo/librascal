@@ -212,6 +212,11 @@ namespace rascal {
                       this->cell_data.size()/traits::Dim);
     }
 
+    inline int get_atom_type(const int index) {
+      auto t = this->get_atom_types();
+      return t(index);
+    }
+   
     //! Returns the type of a given atom, given an AtomRef
     inline int get_atom_type(const AtomRef_t& atom) {
       auto index{atom.get_index()};

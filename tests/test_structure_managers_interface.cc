@@ -32,13 +32,13 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(structure_managers_interface);  
   
-  // 
   // gets a list of fixtures for all the different possible structure managers
   using fixtures = boost::mpl::list<
                      ManagerFixture<StructureManagerCenters>, 
-                     ManagerFixture<StructureManagerLammps> 
+                     ManagerFixture<StructureManagerLammps>,
+                     ManagerFixture<StructureManagerJson>,
+                     ManagerFixture<StructureManagerChain>
                      >;
-  
   
   // just checks that the structure managers can be constructed
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_constructor_test, Fix, 
@@ -61,7 +61,6 @@ namespace rascal {
       auto type = atom.get_atom_type(); // checks get_atom_type exists
       BOOST_CHECK_EQUAL(type, manager.atom_type(index)); // cluster size should be 1! 
       
-      
       // checks that multiple ways of accessing positions are equivalent
       auto position_error = (atom.get_position() - 
                              manager.position(index)).norm();      
@@ -71,31 +70,7 @@ namespace rascal {
       BOOST_CHECK(position_error < tol / 100);
     }
   }
-  /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(interface_test,
-                          ManagerFixture<StructureManagerCenters>) {
-
-    auto natoms = manager.size();
-    auto natoms2 = manager.get_size();
-    auto natoms3 = manager.get_nb_clusters(1);
-    BOOST_CHECK_EQUAL(natoms, natoms2);
-    BOOST_CHECK_EQUAL(natoms, natoms3);
-
-    for (auto atom : manager) {
-      auto index = atom.get_atom_index();
-      auto type = atom.get_atom_type();
-      BOOST_CHECK_EQUAL(type, numbers[index]);
-
-      auto cluster_size = manager.get_cluster_size(atom);
-      BOOST_CHECK_EQUAL(cluster_size, 1);
-
-      auto pos = atom.get_position();
-      auto pos_reference = positions.col(index);
-      auto position_error = (pos - pos_reference).norm();
-      BOOST_CHECK(position_error < tol / 100);
-    }
-  }
-
+  
   /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();
 }  // rascal
