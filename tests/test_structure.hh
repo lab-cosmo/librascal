@@ -42,6 +42,14 @@
 
 namespace rascal {
 
+  /* This file generates fixtures for all the classes in structure_managers
+   * that need to be tested. Fixtures should be as compatible as possible in
+   * terms of interface, so that the tests can be easily templated. 
+   * This is a list of conventions that are expected in tests:
+   * - If a fixture generates an object that should be accessible with a 
+   *   structure_manager interface, it has to be called "manager"
+   */
+   
   // TODO: this is not a general case of a manager fixture. Should not be so
   // complicated
   // TODO: change this to a usage case of the ManagerFixture
