@@ -58,12 +58,6 @@ pipeline {
             }
         }
 
-        stage ('Warnings gcc') {
-            steps {
-                warnings(consoleParsers: [[parserName: 'GNU Make + GNU C Compiler (gcc)']])
-            }
-        }
-
         stage ('test') {
             parallel {
                 ////////////////////////////////////////////////////
@@ -76,11 +70,6 @@ pipeline {
 	            }
 		    steps {
                         run_test('testing', 'g++')
-                    }
-                    post {
-                        always {
-                            collect_test_results('testing', 'g++')
-                        }
                     }
                 }
             }
@@ -150,12 +139,6 @@ curl -X POST \
 -d "token=${RTD_TOKEN}" \
 https://readthedocs.org/api/v2/webhook/muspectre/26537/
 """
-}
-
-
-def collect_test_results(container_name, cxx_compiler) {
-    def BUILD_DIR = "build_${container_name}"
-    junit "${BUILD_DIR}_${cxx_compiler}/test_results*.xml"
 }
 
 def createartifact() {
