@@ -40,6 +40,7 @@ namespace rascal{
   public:
     inline decltype(auto) get_property(std::string name);
     virtual size_t nb_clusters(size_t cluster_size) const = 0;
+    virtual ~StructureManagerBase() = default; 
   };
 
 

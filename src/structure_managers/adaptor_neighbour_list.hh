@@ -343,22 +343,7 @@ namespace rascal {
       return retval;
     }
 
-    /* ---------------------------------------------------------------------- */
-    //! get the dim-index array from a linear index
-    template <size_t Dim>
-    constexpr std::array<int, Dim>
-    get_ccoord(const std::array<int, Dim> & sizes,
-               const std::array<int, Dim> & origin, int index) {
-      std::array<int, Dim> retval{{0}};
-      int factor{1};
-      for (size_t i = Dim-1; i >=0; --i) {
-        retval[i] = index/factor%sizes[i] + origin[i];
-        if (i != 0 ) {
-          factor *= sizes[i];
-        }
-      }
-      return retval;
-    }
+
 
     /* ---------------------------------------------------------------------- */
     //! test if position inside

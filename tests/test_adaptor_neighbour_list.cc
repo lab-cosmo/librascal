@@ -240,6 +240,7 @@ namespace rascal {
        * atom does not allow for comparison with other atom's number of
        * neighbours
        */
+      
       BOOST_CHECK_EQUAL(neighbours_per_atom1[0],
                         neighbours_per_atom2[0]);
       if (verbose) {
