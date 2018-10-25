@@ -25,6 +25,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
+/*
+ * ==================================================
+ *  OBSOLETE NOT NECESSARY TO CHANGE, EOL DETERMINED
+ *  TO BE MERGED INTO structure_manager_centers
+ * ==================================================
+ */
+
+
 //! Always use header guards
 #ifndef STRUCTURE_MANAGER_JSON_H
 #define STRUCTURE_MANAGER_JSON_H

@@ -35,7 +35,7 @@
 namespace rascal {
 
   /* ---------------------------------------------------------------------- */
-  /**
+  /*
    * After reading the <code>atoms_object</code> from the file, the cell vectors
    * as well as the atomic positions are put into contiguous a
    * <code>std::vector</code> data structure to ensure fast access via the
@@ -46,7 +46,6 @@ namespace rascal {
    * and access them with the map. Using the vector type automatically ensures
    * contiguity
    */
-
   void StructureManagerCenters::
   update(const Eigen::Ref<const Eigen::MatrixXd, 0,
          Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>> positions,
@@ -65,6 +64,9 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  /*
+   * function for setting the internal data structures
+   */
   void StructureManagerCenters::build() {
 
     this->atoms_object.atoms_type.resize(this->natoms);
@@ -79,6 +81,7 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  // returns the number of cluster at Order=1, which is the number of atoms
   size_t StructureManagerCenters::get_nb_clusters(size_t /*order*/) const {
     return this->natoms;
   }

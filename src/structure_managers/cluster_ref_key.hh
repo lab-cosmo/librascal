@@ -38,11 +38,13 @@
 #include <iostream>
 
 namespace rascal {
+  /* ---------------------------------------------------------------------- */
   /**
    * Layer calculations and manipulations
    */
   /* ---------------------------------------------------------------------- */
-  //! Computes layer by cluster dimension for new adaptor layer
+  //! Computes layer by cluster dimension for new adaptor layer, depending on
+  //! existing layer by order.
   template <size_t MaxOrder, class T>
   struct LayerIncreaser{};
 
@@ -72,10 +74,7 @@ namespace rascal {
     typename LayerExtender<MaxOrder, std::index_sequence<Ints...>>::type;
 
   /* ---------------------------------------------------------------------- */
-  /**
-   * Dynamic access to all layers by cluster dimension (probably not
-   * necessary)
-   */
+  //! Dynamic access to all layers by cluster dimension (probably not necessary)
   template <size_t MaxOrder, size_t... Ints>
   constexpr std::array<size_t, MaxOrder>
   get_layers(std::index_sequence<Ints...>) {
@@ -123,7 +122,10 @@ namespace rascal {
       using type = typename Extractor_t::type;
     };
   }  // internal
+
   /* ---------------------------------------------------------------------- */
+  //! returns the cluster layer for accessing properties at a specific layer in
+  //! a stack
   template <size_t Order, size_t... Ints>
   constexpr size_t compute_cluster_layer(const std::index_sequence<Ints...> &) {
     using ActiveDimensions = typename internal::HeadExtractor
@@ -150,18 +152,20 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   namespace internal {
+    //! extracts the head of the layer by order
     template <size_t Layer, size_t HiLayer,typename T, size_t... Ints>
     std::array<T, Layer>
     head_helper(const std::array<T, HiLayer> & arr,
                 std::index_sequence<Ints...>) {
       return std::array<T, Layer> {arr[Ints]...};
     }
-
+    //! specialization of the head extractor
     template <size_t Layer, size_t HiLayer,typename T>
     std::array<T, Layer> head(const std::array<T, HiLayer> & arr) {
       return head_helper(arr, std::make_index_sequence<Layer>{});
     }
   }  // internal
+
   /* ---------------------------------------------------------------------- */
   /**
    * Accessor class for a reference to a cluster, i.e. a tuple of atoms (atoms,
@@ -219,23 +223,30 @@ namespace rascal {
     //! Move assignment operator
     ClusterRefKey & operator=(ClusterRefKey && other) = default;
 
+    //! returns the atom indices of the current cluster
     const inline std::array<int, Order> & get_atom_indices() const {
       return this->atom_indices;
     }
 
+    //! returns the first atom index in this cluster
     const int & front() const{return this->atom_indices.front();}
+    //! returns the last atom index in this cluster
     const int & back() const{return this->atom_indices.back();}
 
+    //! returns the cluster's index, given a specific layer
     inline size_t get_cluster_index(const size_t layer) const {
       return this->cluster_indices(layer);
     }
 
+    //! returns the complete cluster indices (stacking history)
     inline IndexConstArray get_cluster_indices() const {
       return this->cluster_indices;
     }
 
+    //! returns the order of the current cluster
     constexpr static inline size_t order() {return Order;}
 
+    //! returns the layer of the current cluster
     constexpr static inline size_t cluster_layer() {return Layer;}
 
   protected:

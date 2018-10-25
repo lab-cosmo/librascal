@@ -29,15 +29,16 @@
 #ifndef STRUCTURE_MANAGER_CENTERS_H
 #define STRUCTURE_MANAGER_CENTERS_H
 
+// inclusion of our librascal data structure
 #include "structure_managers/structure_manager.hh"
 #include "lattice.hh"
 #include "atomic_structure.hh"
 #include "basic_types.hh"
 
-//! Some data types and operations are based on the Eigen library
+// data types and operations are based on the Eigen library
 #include <Eigen/Dense>
 
-//! And standard header inclusion
+// standard header inclusion
 #include <stdexcept>
 #include <vector>
 #include <array>
@@ -51,16 +52,17 @@ namespace rascal {
   //! forward declaration for traits
   class StructureManagerCenters;
 
-  //! traits specialisation for ManagerCenters
   /**
-   * The traits are used for vector allocation and further down the processing
-   * chain to determine what functionality the given StructureManager already
-   * contains to avoid recomputation. See also the implementation of adaptors.
+   * traits specialisation for ManagerCenters: traits are used for vector
+   * allocation and further down the processing chain to determine what
+   * functionality the given StructureManager already contains to avoid
+   * recomputation. See also the implementation of adaptors.
    */
   template <>
   struct StructureManager_traits<StructureManagerCenters> {
+    // this manager only works with 3D data (positions, cell)
     constexpr static int Dim{3};
-    //! MaxOrder is set to 1 because it has just atoms
+    // MaxOrder is set to 1 because it has just atoms
     constexpr static size_t MaxOrder{1};
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDirectionVectors{false};
@@ -74,22 +76,20 @@ namespace rascal {
    * a hint of what it is about.
    */
   class StructureManagerCenters:
-    //! It inherits publicly everything from the base class
+    // public inheritance the base class
     public StructureManager<StructureManagerCenters>
   {
-    /**
-     * Publicly accessible variables and function of the class are given
-     * here. These provide the interface to access the neighbourhood.
-     */
+     // Publicly accessible variables and function of the class are given
+     // here. These provide the interface to access the neighbourhood.
   public:
-    //! For convenience, the names are shortened
+    // for convenience, the names are shortened
     using traits = StructureManager_traits<StructureManagerCenters>;
     using Parent = StructureManager<StructureManagerCenters>;
-    //! Here you see why -- definition of used function return types
+    // here you see why -- definition of used function return types
     using Vector_ref = typename Parent::Vector_ref;
     using AtomRef_t = typename Parent::AtomRef;
 
-    /**
+    /*
      * Eigen::Map is a convenient way to access data in the 'Eigen-way', if it
      * is already stored in a contiguous array.  The positions of the JSON file
      * and the cell vectors are put into contiguous arrays, which are member
@@ -109,7 +109,7 @@ namespace rascal {
     using Positions_t = AtomicStructure<traits::Dim>::Positions_t;
     using Positions_ref = typename Eigen::Map<Positions_t>;
 
-    /**
+    /*
      * Here, the types for internal data structures are defined, based on
      * standard types.  In general, we try to use as many standard types, where
      * possible. It reduces the dependance on external libraries. If you want to
@@ -130,7 +130,7 @@ namespace rascal {
     template <size_t Order>
     using ClusterRef_t = typename Parent::template ClusterRef<Order>;
 
-    //! Default constructor //TODO: all empty initializers??
+    //! Default constructor, values are set during .update() function
     StructureManagerCenters()
       : atoms_object{}, atoms_index{}, lattice{}, offsets{}, natoms{}
     {};
@@ -153,7 +153,7 @@ namespace rascal {
     operator=(StructureManagerCenters && other) = default;
 
     /**
-     * This member function invokes the reinitialisation of data. E.g. when the
+     * invokes the reinitialisation and initlalization of data. E.g. when the
      * atom positions are provided by a simulation method, which evolves in
      * time, this function updates the data.
      */
@@ -163,6 +163,7 @@ namespace rascal {
                 const Eigen::Ref<const Eigen::MatrixXd> cell,
                 const Eigen::Ref<const PBC_t> pbc);
 
+    // TODO: build/update ambiguity
     //! makes atom index lists and offsets
     void build();
 
@@ -177,7 +178,6 @@ namespace rascal {
       auto dim{traits::Dim};
       return Cell_ref(this->atoms_object.cell.data(), dim,
                       this->atoms_object.cell.size() / dim);
-      // return retval;
     }
 
     //! Returns the type of a given atom, given an AtomRef
@@ -243,11 +243,10 @@ namespace rascal {
       return 1;
     }
 
+    //! dummy function, since no neighbours are present her
     inline int get_cluster_neighbour(const Parent& /*cluster*/,
                                      size_t index) const {
-      /**
-       * dummy function, which returns an atom
-       */
+      // dummy argument is the atom itself
       return this->atoms_index[0][index];
     }
 
@@ -286,11 +285,14 @@ namespace rascal {
      */
     std::array<std::vector<int>, traits::MaxOrder> atoms_index;
 
+    //! Lattice type for storing the cell and querying cell-related data
     Lattice lattice;
 
     /**
      * A vector which stores the absolute offsets for each atom to access the
-     * correct variables in the neighbourlist.
+     * correct variables in the neighbourlist. Here they are just the 1, 2, 3,
+     * etc. corresponding to the sequence in which the atoms are provided during
+     * construction.
      */
     std::vector<size_t> offsets{};
 

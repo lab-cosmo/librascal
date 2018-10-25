@@ -58,9 +58,9 @@ namespace rascal {
     constexpr static bool HasDirectionVectors{
       ManagerImplementation::traits::HasDirectionVectors};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
-    //! New MaxOrder upon construction
+    // New MaxOrder upon construction
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder+1};
-    //! Extend the layer by one with the new MaxOrder
+    // Extend the layer by one with the new MaxOrder
     using LayerByOrder =
       typename LayerExtender<MaxOrder,
                              typename
@@ -141,7 +141,7 @@ namespace rascal {
      */
     template<size_t Order>
     inline size_t get_offset_impl(const std::array<size_t, Order>
-				  & counters) const;
+                                  & counters) const;
 
     //! Returns the number of clusters of size cluster_size
     inline size_t get_nb_clusters(size_t cluster_size) const {
@@ -294,7 +294,7 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
-  //! Construction of the next level manager
+  //! Constructor of the next level manager
   template <class ManagerImplementation>
   AdaptorMaxOrder<ManagerImplementation>::
   AdaptorMaxOrder(ManagerImplementation & manager):
@@ -325,7 +325,7 @@ namespace rascal {
       ClusterRef<Order>;
 
     using NextOrderLoop = AddOrderLoop<Order+1,
-				       (Order+1 == OldMaxOrder)>;
+                                       (Order+1 == OldMaxOrder)>;
 
     static void loop(ClusterRef_t & cluster,
                      AdaptorMaxOrder<ManagerImplementation> & manager) {
@@ -336,8 +336,8 @@ namespace rascal {
         auto & next_cluster_indices {std::get<next_cluster.order()-1>
             (manager.cluster_indices_container)};
 
+        // keep copying underlying cluster indices, they are not changed
         auto indices{next_cluster.get_cluster_indices()};
-
         next_cluster_indices.push_back(indices);
 
         NextOrderLoop::loop(next_cluster, manager);
@@ -365,6 +365,8 @@ namespace rascal {
 
     using traits = typename AdaptorMaxOrder<ManagerImplementation>::traits;
 
+    //! loop through the orders to get to the maximum order, this is agnostic to
+    //! the underlying MaxOrder, just goes to the maximum
     static void loop(ClusterRef_t & cluster,
                      AdaptorMaxOrder<ManagerImplementation> & manager) {
 
@@ -383,13 +385,12 @@ namespace rascal {
       // access to underlying manager for access to atom pairs
       auto & manager_tmp{cluster.get_manager()};
 
-
       for (auto atom_index : i_atoms) {
         current_i_atoms.push_back(atom_index);
         size_t access_index = manager.get_cluster_neighbour(manager,
                                                             atom_index);
 
-        // build a shifted iterator to constuct a ClusterRef<1>
+        // construct a shifted iterator to constuct a ClusterRef<1>
         auto iterator_at_position{manager_tmp.get_iterator_at(access_index)};
 
         // ClusterRef<1> as dereference from iterator to get pairs of the

@@ -28,17 +28,17 @@
 #ifndef JSON_IO_H
 #define JSON_IO_H
 
-/**
+/*
  * An external header-library/header-class, which makes it easy to use the JSON
  * as a first class data type. See https://github.com/nlohmann/json for
  * documentation.
  */
 #include "json.hpp"
 
-//! For convenience
+// For convenience
 using json = nlohmann::json;
 
-/**
+/*
  * All functions and classes are in the namespace <code>rascal</code>, which
  * ensures that they don't clash with other libraries one might use in
  * conjunction.
@@ -46,8 +46,8 @@ using json = nlohmann::json;
 namespace rascal {
   namespace json_io {
     /**
-     * To read from a JSON file and deserialize the content, the used class
-     * needs a <code>struct</code> with standard data types.
+     * Object to read from a JSON file and deserialize the content, the used
+     * class needs a <code>struct</code> with standard data types.
      */
     struct AtomicStructure {
       /**
@@ -70,8 +70,8 @@ namespace rascal {
     };
 
     /**
-     * This function is used to convert to the JSON format with the given
-     * keywords. It is an overload of the function defined in the header class
+     * Function used to convert to the JSON format with the given keywords. It
+     * is an overload of the function defined in the header class
      * json.hpp. Inline needed, otherwise it is a multiple definition
      */
     inline void to_json(json & j, AtomicStructure & s) {
@@ -84,9 +84,9 @@ namespace rascal {
     }
 
     /**
-     * This function is used to read from the JSON file and convert the data
-     * into standard types. It is an overload of the function defined in
-     * json.hpp class header.
+     * Function used to read from the JSON file and convert the data into
+     * standard types. It is an overload of the function defined in json.hpp
+     * class header.
      */
     inline void from_json(const json & j, AtomicStructure & s) {
       s.cell = j.at("cell").get<std::vector<std::vector<double>>>();

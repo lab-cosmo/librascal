@@ -37,19 +37,26 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   namespace internal {
 
+    /**
+     * Structure providing access to a ``property`` and also access data stored
+     * in a property
+     */
     template <typename T, Dim_t NbRow, Dim_t NbCol>
     struct Value {
       using type = Eigen::Map<Eigen::Matrix<T, NbRow, NbCol>>;
       using reference = type;
 
+      //! get a reference to specific value at row and colum
       static reference get_ref(T & value, int nb_row, int nb_col) {
         return type(&value, nb_row, nb_col);
       }
 
+      //! get a reference
       static reference get_ref(T & value) {
         return type(&value);
       }
 
+      //! push back data into ``property``
       static void push_in_vector(std::vector<T> & vec, reference ref) {
         for (size_t j{0}; j < NbCol; ++j) {
           for (size_t i{0}; i < NbRow; ++i) {
@@ -58,7 +65,7 @@ namespace rascal {
         }
       }
 
-      // Used for extending cluster_indices
+      //! Used for extending cluster_indices
       template<typename Derived>
       static void push_in_vector(std::vector<T> & vec,
                                  const Eigen::DenseBase<Derived> & ref) {
@@ -83,13 +90,15 @@ namespace rascal {
       using type = T;
       using reference = T&;
 
+      //! get a reference to a scalar value
       static reference get_ref(T & value) {return value;}
 
+      //! push a scalar in a vector
       static void push_in_vector(std::vector<T> & vec, reference ref) {
         vec.push_back(ref);
       }
 
-      // Used for extending cluster_indices
+      //! Used for extending cluster_indices
       template<typename Derived>
       static void push_in_vector(std::vector<T> & vec,
                                  const Eigen::DenseBase<Derived> & ref) {
@@ -108,8 +117,11 @@ namespace rascal {
     using Value_ref = typename Value<T, NbRow, NbCol>::reference;
 
   }  // internal
-  /* ---------------------------------------------------------------------- */
 
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Typed ``property`` class definition, inherits from the base property class
+   */
   template <typename T, size_t Order, size_t PropertyLayer>
   class TypedProperty: public PropertyBase
   {
@@ -150,7 +162,7 @@ namespace rascal {
       return typeid(T);
     };
 
-    //! Fill sequence for *_cluster_indices to initialize
+    //! Fill sequence, used for *_cluster_indices initialization
     inline void fill_sequence() {
       this->resize();
       for (size_t i{0}; i < this->values.size(); ++i) {

@@ -83,10 +83,8 @@ namespace rascal {
     using traits = StructureManager_traits<AdaptorHalfList>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
 
-    /*
-     * The stacking of this Adaptor is only possible on a manager which has a
-     * pair list (MaxOrder=2). This is ensured here.
-     */
+    // The stacking of this Adaptor is only possible on a manager which has a
+    // pair list (MaxOrder=2). This is ensured here.
     static_assert(traits::MaxOrder > 1,
                   "AdaptorHalfList needs pairs.");
     static_assert(traits::MaxOrder < 3,
@@ -129,6 +127,7 @@ namespace rascal {
      */
     inline double get_cutoff() const {return this->manager.get_cutoff();}
 
+    //! returns the number of atoms or pairs
     inline size_t get_nb_clusters(int cluster_size) const {
       switch (cluster_size) {
       case 1: {
@@ -145,6 +144,7 @@ namespace rascal {
       }
     }
 
+    //! returns the number of atoms
     inline size_t get_size() const {return this->get_nb_clusters(1);}
 
     //! returns position of the given atom index
@@ -186,14 +186,14 @@ namespace rascal {
         return IncreaseHelper_t::get_cluster_neighbour(this->manager, cluster,
                                                        index);
       } else {
-	auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
-	return this->neighbours[offset + index];
+        auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
+        return this->neighbours[offset + index];
       }
     }
 
     //! get atom_index of the index-th atom in manager
     inline int get_cluster_neighbour(const Parent & /*parent*/,
-				     size_t index) const {
+                                     size_t index) const {
       return this->manager.get_cluster_neighbour(this->manager, index);
     }
 
@@ -223,27 +223,25 @@ namespace rascal {
      */
     template<size_t Order>
     inline size_t get_offset_impl(const std::array<size_t, Order>
-				  & counters) const {
-      /*
-       * The static assert with <= is necessary, because the template parameter
-       * ``Order`` is one Order higher than the MaxOrder at the current
-       * level. The return type of this function is used to build the next Order
-       * iteration.
-       */
+                                  & counters) const {
+
+      // The static assert with <= is necessary, because the template parameter
+      // ``Order`` is one Order higher than the MaxOrder at the current
+      // level. The return type of this function is used to build the next Order
+      // iteration.
       static_assert(Order <= traits::MaxOrder,
                     "this implementation handles only up to the respective"
                     " MaxOrder");
-      /*
-       * Order is determined by the ClusterRef building iterator, not by the Order
-       * of the built iterator.
-       */
+
+      // Order is determined by the ClusterRef building iterator, not by the
+      // Order of the built iterator.
       return this->offsets[counters.front()];
     }
 
     //! Returns the number of neighbours of a given cluster
     template<size_t Order, size_t Layer>
     inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
-				   & cluster) const {
+                                   & cluster) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
       /*
@@ -252,7 +250,6 @@ namespace rascal {
        * level. The return type of this function is used to build the next Order
        * iteration.
        */
-
       static_assert(Order <= traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
 
@@ -284,7 +281,7 @@ namespace rascal {
   private:
   };
 
-  //----------------------------------------------------------------------------//
+  /* ---------------------------------------------------------------------- */
   //! constructor implementations
   template <class ManagerImplementation>
   AdaptorHalfList<ManagerImplementation>::
@@ -364,6 +361,7 @@ namespace rascal {
           this->neighbours.push_back(index_j);
           nneigh++;
 
+          // get underlying cluster indices to add at this layer
           Eigen::Matrix<size_t, PairLayer+1, 1> indices_pair;
           indices_pair.template head<PairLayer>() = pair.get_cluster_indices();
           indices_pair(PairLayer) = pair_counter;

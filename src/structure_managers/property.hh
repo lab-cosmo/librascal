@@ -43,6 +43,11 @@ namespace rascal {
   template <class Manager>
   struct StructureManager_traits;
 
+  /**
+   * Class definition of `property`. This is a container of data (specifiable),
+   * which can be access with clusters directly, without the need for dealing
+   * with indices.
+   */
   template <typename T,
             size_t Order,
             size_t PropertyLayer,
@@ -97,7 +102,7 @@ namespace rascal {
      */
     static inline Property & check_compatibility(PropertyBase & other) {
 
-      //! check ``type`` compatibility
+      // check ``type`` compatibility
       if (not (other.get_type_info().hash_code() == typeid(T).hash_code())) {
         std::stringstream err_str{};
         err_str << "Incompatible types: '" << other.get_type_info().name()
@@ -105,7 +110,7 @@ namespace rascal {
         throw std::runtime_error (err_str.str());
       }
 
-      //! check ``order`` compatibility
+      // check ``order`` compatibility
       if (not (other.get_order() == Order)) {
         std::stringstream err_str{};
         err_str << "Incompatible property order: input is of order "
@@ -114,7 +119,7 @@ namespace rascal {
         throw std::runtime_error (err_str.str());
       }
 
-      //! check property ``layer`` compatibility
+      // check property ``layer`` compatibility
       if (not (other.get_property_layer() == PropertyLayer)) {
         std::stringstream err_str{};
         err_str << "At wrong layer in stack: input is at layer "
@@ -123,7 +128,7 @@ namespace rascal {
         throw std::runtime_error (err_str.str());
       }
 
-      //! check size compatibility
+      // check size compatibility
       if (not ((other.get_nb_row() == NbRow) and
                (other.get_nb_col() == NbCol))) {
         std::stringstream err_str{};

@@ -30,6 +30,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
+/*
+ * ==================================================
+ *  OBSOLETE NOT NECESSARY TO CHANGE, EOL DETERMINED
+ * ==================================================
+ */
+
 #ifndef SPECIES_MANAGER_H
 #define SPECIES_MANAGER_H
 
@@ -42,7 +48,6 @@ namespace rascal {
   class SpeciesManager
   {
   public:
-
     using Species_t = int;
     using Dummy_t = char;
     using SubManagerType =

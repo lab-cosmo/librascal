@@ -59,8 +59,8 @@ namespace rascal {
 
   protected:
 
-    const size_t order; //! cluster order: atom, pair, ...
-    const size_t layer; //! cluster layer
+    const size_t order; //!< cluster order: atom, pair, ...
+    const size_t layer; //!< cluster layer
 
     //! constructor
     ClusterRefBase(size_t order, size_t layer):

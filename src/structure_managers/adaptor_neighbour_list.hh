@@ -2,13 +2,14 @@
  * file   adaptor_neighbour_list.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
+ * @author Till Junge <till.junge@epfl.ch>
  *
  * @date   04 Oct 2018
  *
  * @brief implements an adaptor for structure_managers, which
  * creates a full or half neighbourlist if there is none
  *
- * Copyright © 2018 Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2018 Markus Stricker, Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
  * librascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -57,9 +58,9 @@ namespace rascal {
     constexpr static bool HasDirectionVectors{
       ManagerImplementation::traits::HasDirectionVectors};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
-    //! New MaxOrder upon construction, by construction should be 2
+    // New MaxOrder upon construction, by construction should be 2
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder+1};
-    //! extending the layer for the new order
+    // extending the layer for the new order
     using LayerByOrder =
       typename LayerExtender<MaxOrder,
                              typename
@@ -68,7 +69,7 @@ namespace rascal {
 
   namespace internal {
     /* ---------------------------------------------------------------------- */
-    //! integer based to-the-power function
+    //! integer base-to-the-power function
     template <typename R, typename I>
     constexpr R ipow(R base, I exponent) {
       static_assert(std::is_integral<I>::value, "Type must be integer");
@@ -80,7 +81,7 @@ namespace rascal {
     }
     /* ---------------------------------------------------------------------- */
     /**
-     * stencil iterator for simple, dimension dependent stencils to access the
+     * stencil iterator for simple, dimension-dependent stencils to access the
      * neighbouring boxes of the cell algorithm
      */
     template <size_t Dim>
@@ -218,8 +219,9 @@ namespace rascal {
 
     /* ---------------------------------------------------------------------- */
     /**
-     * Mesh bounding coordinates iterator for easy access to the cornes for
-     * evaluating the multipliers necessary to build periodic images.
+     * Mesh bounding coordinates iterator for easy access to the corners of the
+     * mesh for evaluating the multipliers necessary to build necessary periodic
+     * images, depending on periodicity.
      */
     template <size_t Dim>
     class MeshBounds {
@@ -280,7 +282,8 @@ namespace rascal {
     };
 
     /* ---------------------------------------------------------------------- */
-    //! get dimension dependent neighbour indices
+    //! get dimension dependent neighbour indices (surrounding cell and the cell
+    //! itself
     template<size_t Dim, class Container_t>
     std::vector<size_t> get_neighbours(const int current_atom_index,
                                        const std::array<int, Dim> & ccoord,
@@ -288,7 +291,7 @@ namespace rascal {
       std::vector<size_t> neighbours;
       for (auto && s: Stencil<Dim>{ccoord}) {
         for (const auto & neigh : boxes[s]) {
-          //! avoid adding the current i atom to the neighbour list
+          // avoid adding the current i atom to the neighbour list
           if (neigh != current_atom_index) {
             neighbours.push_back(neigh);
           }
@@ -331,6 +334,11 @@ namespace rascal {
 
     /* ---------------------------------------------------------------------- */
     //! get the dim-index array from a linear index
+    /*
+     * ================================
+     * EOL not used, should be deleted
+     * ================================
+     */
     template <size_t Dim>
     constexpr std::array<int, Dim>
     get_ccoord(const std::array<int, Dim> & sizes,
@@ -356,7 +364,7 @@ namespace rascal {
       auto pos_lower = pos.array() - min.array();
       auto pos_greater = pos.array() - max.array();
 
-      // check if shifted position inside mesh
+      // check if shifted position inside maximum mesh positions
       auto f_lt = (pos_lower.array() > 0.).all();
       auto f_gt = (pos_greater.array() < 0.).all();
 
@@ -463,7 +471,8 @@ namespace rascal {
     virtual ~AdaptorNeighbourList() = default;
 
     //! Copy assignment operator
-    AdaptorNeighbourList & operator=(const AdaptorNeighbourList & other) = delete;
+    AdaptorNeighbourList &
+    operator=(const AdaptorNeighbourList & other) = delete;
 
     //! Move assignment operator
     AdaptorNeighbourList & operator=(AdaptorNeighbourList && other) = default;
@@ -491,7 +500,7 @@ namespace rascal {
      */
     template<size_t Order>
     inline size_t get_offset_impl(const std::array<size_t, Order>
-				  & counters) const;
+                                  & counters) const;
 
     //! Returns the number of clusters of size cluster_size
     inline size_t get_nb_clusters(size_t cluster_size) const {
@@ -543,6 +552,7 @@ namespace rascal {
       return p(atom_index);
     }
 
+    //! provides access to the atomic types of ghost atoms
     inline AtomTypes_ref get_ghost_types() {
       AtomTypes_ref val(this->ghost_types.data(), 1, this->ghost_types.size());
       return val;
@@ -554,6 +564,7 @@ namespace rascal {
       return this->manager.get_position(atom.get_index());
     }
 
+    //! EOL: OBSOLETE, should be deleted, during merging of structure managers
     template<size_t Order, size_t Layer>
     inline Vector_ref get_neighbour_position(const ClusterRefKey<Order, Layer>
                                              & cluster) {
@@ -570,19 +581,19 @@ namespace rascal {
      * the full structure/atoms object, i.e. simply the id of the index-th atom
      */
     inline int get_cluster_neighbour(const Parent& /*parent*/,
-				     size_t index) const {
+                                     size_t index) const {
       return this->manager.get_cluster_neighbour(this->manager, index);
     }
 
     //! Returns the id of the index-th neighbour atom of a given cluster
     template<size_t Order, size_t Layer>
     inline int get_cluster_neighbour(const ClusterRefKey<Order, Layer>
-				     & cluster,
-				     size_t index) const {
+                                     & cluster,
+                                     size_t index) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles up to traits::MaxOrder");
 
-      // necessary construct for static branching
+      // necessary helper construct for static branching
       using IncreaseHelper_t =
         internal::IncreaseHelper<Order == (traits::MaxOrder-1)>;
 
@@ -590,8 +601,8 @@ namespace rascal {
         return IncreaseHelper_t::get_cluster_neighbour(this->manager, cluster,
                                                        index);
       } else {
-	auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
-	return this->neighbours[offset + index];
+        auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
+        return this->neighbours[offset + index];
       }
     }
 
@@ -613,15 +624,14 @@ namespace rascal {
                     "this implementation handles only the respective MaxOrder");
 
       if (Order < (traits::MaxOrder-1)) {
-	return this->manager.get_cluster_size(cluster);
+        return this->manager.get_cluster_size(cluster);
       } else {
         auto access_index = cluster.get_cluster_index(Layer);
-	return nb_neigh[access_index];
+        return nb_neigh[access_index];
       }
     }
 
   protected:
-
     /* ---------------------------------------------------------------------- */
     /**
      * This function, including the storage of ghost atom positions is
@@ -666,39 +676,31 @@ namespace rascal {
     }
 
     /* ---------------------------------------------------------------------- */
-    //! full neighbour list with cell algorithm if Order==1
+    //! full neighbour list with linked cell algorithm
     void make_full_neighbour_list();
 
     /* ---------------------------------------------------------------------- */
+    //! reference to underlying structure manager
     ManagerImplementation & manager;
 
-    //! Cutoff radius of manager
+    //! Cutoff radius for neighbour list
     const double cutoff;
-
-    template<size_t Order, bool IsDummy> struct AddOrderLoop;
-
-    /**
-     * Compile time decision, if a new neighbour list is built or if an existing
-     * one is extended to the next Order.
-     */
-    template <size_t Order, bool IsDummy> struct IncreaseMaxOrder;
 
     //! Stores additional atom indices of current Order (only ghost atoms)
     std::vector<size_t> ghost_atom_indices{};
 
-    //! Stores the number of neighbours for every traits::MaxOrder-1-*plets
+    //! Stores the number of neighbours for every atom
     std::vector<size_t> nb_neigh{};
 
-    //! Stores all neighbours of traits::MaxOrder-1-*plets
+    //! Stores all neighbours (atomic indices) in a list in sequence of atoms
     std::vector<size_t> neighbours{};
 
-    //! Stores the offsets of traits::MaxOrder-1-*plets for accessing
-    //! `neighbours`, from where nb_neigh can be counted
+    //! Stores the offset for each atom to accessing `neighbours`, this variable
+    //! provides the entry point in the neighbour list, `nb_neigh` the number
+    //! from the entry point
     std::vector<size_t> offsets{};
 
-    size_t cluster_counter{0};
-
-    //! number of i atoms, i.e. centers
+    //! number of i atoms, i.e. centers from underlying manager
     size_t n_i_atoms{};
 
     /**
@@ -716,8 +718,7 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
-  //! Construction of the pair list manager
-
+  //! Constructor of the pair list manager
   template <class ManagerImplementation>
   AdaptorNeighbourList<ManagerImplementation>::
   AdaptorNeighbourList(ManagerImplementation & manager, double cutoff):
@@ -735,21 +736,23 @@ namespace rascal {
     n_j_atoms = 0;
   }
 
-
   /* ---------------------------------------------------------------------- */
+  /**
+   * build a neighbour list based on atomic positions, types and indices, in the
+   * following the needed data structures are initialized, after construction,
+   * this function must be called to invoke the neighbour list algorithm
+   */
   template <class ManagerImplementation>
   void AdaptorNeighbourList<ManagerImplementation>::update() {
-    /**
-     * build a neighbour list based on atomic positions, types and indices, in
-     * the following the needed data structures are initialized
-     */
+    // initialize necessary data structure
     this->nb_neigh.resize(0);
     this->offsets.resize(0);
     this->neighbours.resize(0);
     this->ghost_types.resize(0);
-    //! actual call for building the neighbour list
+    // actual call for building the neighbour list
     this->make_full_neighbour_list();
   }
+
   /* ---------------------------------------------------------------------- */
   /**
    * Builds full neighbour list. Triclinicity is accounted for. The general idea
@@ -824,19 +827,19 @@ namespace rascal {
       mesh_bounds[i+dim] = mesh_max[i];
     }
 
-    //1 Get the mesh bounds to solve for the multiplicators
+    // Get the mesh bounds to solve for the multiplicators
     int n{0};
     for (auto && coord : internal::MeshBounds<dim>{mesh_bounds}) {
       xpos.col(n) = Eigen::Map<Eigen::Matrix<double, dim, 1>> (coord.data());
       n++;
     }
-    //1 solve for all multipliers
+    // solve for all multipliers
     auto multiplicator = cell.ldlt().solve(xpos);
     auto xmin = multiplicator.rowwise().minCoeff();
     auto xmax = multiplicator.rowwise().maxCoeff();
 
     for (auto i{0}; i < dim; ++i) {
-      //! +/- 1 because of the "zero" cell, the cell itself
+      // +/- 1 because of the "zero" cell, the cell itself
       m_min[i] = std::floor(xmin(i)) - 1;
       m_max[i] = std::ceil(xmax(i)) + 1;
     }
@@ -880,7 +883,7 @@ namespace rascal {
         if(ncheck > 0) {
           Vector_t pos_ghost = pos;
 
-          for (auto i{0}; i< dim; ++i) {
+          for (auto i{0}; i < dim; ++i) {
             pos_ghost += cell.col(i) * p_image[i];
           }
 
@@ -899,7 +902,7 @@ namespace rascal {
     // neighbour boxes
     internal::IndexContainer<dim> atom_id_cell{nboxes_per_dim};
 
-    // i-atoms sorting into boxes
+    // sorting i-atoms into boxes
     for (size_t i{0}; i < this->n_i_atoms; ++i) {
       Vector_t pos = this->get_position(i);
       Vector_t dpos = pos - mesh_min;
@@ -907,7 +910,7 @@ namespace rascal {
       atom_id_cell[idx].push_back(i);
     }
 
-    // ghost atoms sorting into boxes
+    // sorting ghost atoms into boxes
     for (size_t i{0}; i < this->n_j_atoms; ++i) {
       Vector_t ghost_pos = this->get_ghost_position(i);
       Vector_t dpos = ghost_pos - mesh_min;
@@ -916,7 +919,7 @@ namespace rascal {
       atom_id_cell[idx].push_back(ghost_atom_index);
     }
 
-    // go through atoms and build neighbour list
+    // go through all atoms and build neighbour list
     int offset{0};
     for (size_t i{0}; i < this->n_i_atoms; ++i) {
       int nneigh{0};

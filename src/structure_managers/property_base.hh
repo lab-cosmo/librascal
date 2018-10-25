@@ -38,6 +38,9 @@
 
 namespace rascal {
 
+  /**
+   * Base class defintion of a ``property``, defining an interface.
+   */
   class PropertyBase
   {
   public:
@@ -82,7 +85,8 @@ namespace rascal {
 
   protected:
 
-    StructureManagerBase & base_manager; //!< base-class reference to StructureManager
+    //! base-class reference to StructureManager
+    StructureManagerBase & base_manager;
     const Dim_t nb_row;  //!< number of rows stored
     const Dim_t nb_col;  //!< number of columns stored
     const Dim_t nb_comp; //!< number of dofs stored
@@ -101,7 +105,6 @@ namespace rascal {
 
   private:
   };
-
 }  // rascal
 
 #endif /* PROPERTY_BASE_H */
