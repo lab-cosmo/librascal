@@ -31,18 +31,20 @@
 
 #include "structure_managers/cluster_ref_base.hh"
 
-#include <tuple>
-#include <array>
-
 #include <Eigen/Dense>
 
+#include <tuple>
+#include <array>
 #include <iostream>
 
 namespace rascal {
+  /* ---------------------------------------------------------------------- */
   /**
    * Layer calculations and manipulations
    */
-  // Computes layer by cluster dimension for new adaptor layer
+  /* ---------------------------------------------------------------------- */
+  //! Computes layer by cluster dimension for new adaptor layer, depending on
+  //! existing layer by order.
   template <size_t MaxOrder, class T>
   struct LayerIncreaser{};
 
@@ -56,9 +58,8 @@ namespace rascal {
   using LayerIncreaser_t =
     typename LayerIncreaser<MaxOrder, std::index_sequence<Ints...>>::type;
 
-  /**
-   * Extends layer by cluster for an additional cluster dimension
-   */
+  /* ---------------------------------------------------------------------- */
+  //! Extends layer by cluster for an additional cluster dimension
   template <size_t MaxOrder, class T>
   struct LayerExtender{};
 
@@ -72,16 +73,16 @@ namespace rascal {
   using LayerExtender_t =
     typename LayerExtender<MaxOrder, std::index_sequence<Ints...>>::type;
 
-  /**
-   * Dynamic access to all layers by cluster dimension (probably not
-   * necessary)
-   */
+  /* ---------------------------------------------------------------------- */
+  //! Dynamic access to all layers by cluster dimension (probably not necessary)
   template <size_t MaxOrder, size_t... Ints>
   constexpr std::array<size_t, MaxOrder>
   get_layers(std::index_sequence<Ints...>) {
     return std::array<size_t, MaxOrder>{Ints...};
   }
 
+  /* ---------------------------------------------------------------------- */
+  //! extractors helpers for cluster layers
   namespace internal {
     template <size_t head, size_t... tail>
     struct Min {
@@ -122,7 +123,9 @@ namespace rascal {
     };
   }  // internal
 
-  // TODO please explain the logic allowing to resolve the layer of a cluster
+  /* ---------------------------------------------------------------------- */
+  //! returns the cluster layer for accessing properties at a specific layer in
+  //! a stack
   template <size_t Order, size_t... Ints>
   constexpr size_t compute_cluster_layer(const std::index_sequence<Ints...> &) {
     using ActiveDimensions = typename internal::HeadExtractor
@@ -130,10 +133,7 @@ namespace rascal {
     return internal::MinExtractor<ActiveDimensions>::value;
   }
 
-  /**
-   * Dynamic access to layer by cluster dimension (possibly not
-   * necessary)
-   */
+  //! Dynamic access to layer by cluster dimension (possibly not necessary)
   template <size_t MaxOrder, size_t... Ints>
   constexpr size_t
   get_layer(size_t index, std::index_sequence<Ints...>) {
@@ -142,29 +142,31 @@ namespace rascal {
   }
 
   /**
-   * Static access to layer by cluster dimension (e.g., for defining
-   * template parameter `NbRow` for a property
+   * Static access to layer by cluster dimension (e.g., for defining template
+   * parameter `NbRow` for a property
    */
   template <size_t index, size_t... Ints>
   constexpr size_t get(std::index_sequence<Ints...>) {
     return get<index>(std::make_tuple(Ints...));
   }
 
+  /* ---------------------------------------------------------------------- */
   namespace internal {
+    //! extracts the head of the layer by order
     template <size_t Layer, size_t HiLayer,typename T, size_t... Ints>
     std::array<T, Layer>
     head_helper(const std::array<T, HiLayer> & arr,
                 std::index_sequence<Ints...>) {
       return std::array<T, Layer> {arr[Ints]...};
     }
-
+    //! specialization of the head extractor
     template <size_t Layer, size_t HiLayer,typename T>
     std::array<T, Layer> head(const std::array<T, HiLayer> & arr) {
       return head_helper(arr, std::make_index_sequence<Layer>{});
     }
-
   }  // internal
 
+  /* ---------------------------------------------------------------------- */
   /**
    * Accessor class for a reference to a cluster, i.e. a tuple of atoms (atoms,
    * pairs, triples, ...). The reference does not store data about the actual
@@ -221,23 +223,30 @@ namespace rascal {
     //! Move assignment operator
     ClusterRefKey & operator=(ClusterRefKey && other) = default;
 
+    //! returns the atom indices of the current cluster
     const inline std::array<int, Order> & get_atom_indices() const {
       return this->atom_indices;
     }
 
+    //! returns the first atom index in this cluster
     const int & front() const{return this->atom_indices.front();}
+    //! returns the last atom index in this cluster
     const int & back() const{return this->atom_indices.back();}
 
+    //! returns the cluster's index, given a specific layer
     inline size_t get_cluster_index(const size_t layer) const {
       return this->cluster_indices(layer);
     }
 
+    //! returns the complete cluster indices (stacking history)
     inline IndexConstArray get_cluster_indices() const {
       return this->cluster_indices;
     }
 
+    //! returns the order of the current cluster
     constexpr static inline size_t order() {return Order;}
 
+    //! returns the layer of the current cluster
     constexpr static inline size_t cluster_layer() {return Layer;}
 
   protected:
@@ -248,8 +257,8 @@ namespace rascal {
      */
     std::array<int, Order> atom_indices;
     /**
-     * Cluster indices by layer order, highest layer, means last
-     * adaptor, and mean last entry (.back())
+     * Cluster indices by layer order, highest layer, means last adaptor, and
+     * means last entry (.back())
      */
     IndexConstArray cluster_indices;
 

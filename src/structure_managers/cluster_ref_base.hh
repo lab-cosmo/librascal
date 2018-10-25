@@ -25,7 +25,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef CLUSTER_REF_BASE_H
 #define CLUSTER_REF_BASE_H
 
@@ -60,8 +59,8 @@ namespace rascal {
 
   protected:
 
-    const size_t order; //! cluster order: atom, pair, triplet?
-    const size_t layer; //! cluster layer
+    const size_t order; //!< cluster order: atom, pair, ...
+    const size_t layer; //!< cluster layer
 
     //! constructor
     ClusterRefBase(size_t order, size_t layer):

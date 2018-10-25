@@ -25,6 +25,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
+/*
+ * ==================================================
+ *  OBSOLETE NOT NECESSARY TO CHANGE, EOL DETERMINED
+ * ==================================================
+ */
+
 #include "structure_managers/structure_manager_minimal.hh"
 #include "structure_managers/structure_manager_cell.hh"
 

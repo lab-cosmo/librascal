@@ -29,10 +29,12 @@
 #ifndef ATOMIC_STRUCTURE_H
 #define ATOMIC_STRUCTURE_H
 
-#include <Eigen/Dense>
-#include <basic_types.hh>
-#include <cmath>
+#include "basic_types.hh"
 #include "structure_managers/json_io.hh"
+
+#include <Eigen/Dense>
+
+#include <cmath>
 #include <stdexcept>
 
 namespace rascal {
@@ -43,20 +45,25 @@ namespace rascal {
      *  \param cell is a vector a vector of vectors which holds the cell unit
      *  vectors.
      *  \param type a vector of integers which holds the atomic type
-     *  (coordination number).
-     *  \param pbc is a 0/1 vector which says, where periodic boundary
-     *  conditions are applied.
+     *  (atomic number as per periodic table).
+     *  \param pbc is a 0/1 vector which defines the periodicity of the given
+     *  structure for each dimension
      *  \param position is a vector of vectors which holds the atomic
      *  positions.
      */
     using Cell_t = Eigen::Matrix<double, Dim, Dim, Eigen::ColMajor>;
+
     using AtomTypes_t = Eigen::Matrix<int, 1, Eigen::Dynamic>;
+
     using PBC_t = Eigen::Matrix<int, Dim, 1>;
+
     using Positions_t = Eigen::Matrix<double, Dim,
                                       Eigen::Dynamic, Eigen::ColMajor>;
+
     using PositionsInput_t =
       Eigen::Ref<const Eigen::MatrixXd, 0,
                  Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>>;
+
     using AtomTypesInput_t =
       Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1>>;
 
