@@ -2,13 +2,14 @@
  * file   adaptor_neighbour_list.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
+ * @outhor Till Junge <till.junge@epfl.ch>
  *
  * @date   04 Oct 2018
  *
  * @brief implements an adaptor for structure_managers, which
  * creates a full or half neighbourlist if there is none
  *
- * Copyright © 2018 Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2018 Markus Stricker, Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
  * librascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -703,12 +704,12 @@ namespace rascal {
     size_t cluster_counter{0};
 
     //! number of i atoms, i.e. centers
-    size_t n_i_atoms{};
+    size_t n_i_atoms;
     /**
      * number of ghost atoms (given by periodicity) filled during full
      * neighbourlist build
      */
-    size_t n_j_atoms{};
+    size_t n_j_atoms;
 
     //! ghost atom positions
     std::vector<double> ghost_positions{};
@@ -728,14 +729,12 @@ namespace rascal {
     cutoff{cutoff},
     atom_indices{},
     nb_neigh{},
-    offsets{}
+    offsets{},
+    n_i_atoms{manager.get_size()},
+    n_j_atoms{0}
   {
-    if (traits::MaxOrder < 1) {
-      throw std::runtime_error("No atom list in manager.");
-    }
-    //! reset number of center atoms and initialize number of ghosts
-    n_i_atoms = this->manager.get_size();
-    n_j_atoms = 0;
+    static_assert(not(traits::MaxOrder < 1),
+                  "No atom list in manager");
   }
 
 
@@ -772,7 +771,7 @@ namespace rascal {
     using Vector_t = Eigen::Matrix<double, traits::Dim, 1>;
 
     //! short hands for variable
-    const auto dim{traits::Dim};
+    constexpr auto dim{traits::Dim};
 
     auto cell{this->manager.get_cell()};
     double cutoff{this->cutoff};
@@ -786,18 +785,15 @@ namespace rascal {
      * triclinicity and cutoff, coordinates of the mesh are relative to the
      * origin of the given cell.
      */
-    Vector_t mesh_min(dim);
-    Vector_t mesh_max(dim);
-
-    mesh_min.setZero();
-    mesh_max.setZero();
+    Vector_t mesh_min{Vector_t::Zero()};
+    Vector_t mesh_max{Vector_t::Zero()};
 
     /**
      * max and min multipliers for number of cells in mesh per dimension in
      * units of cell vectors
      */
-    std::array<int, dim> m_min;
-    std::array<int, dim> m_max;
+    std::array<int, dim> m_min{};
+    std::array<int, dim> m_max{};
 
     /**
      * Mesh related stuff for neighbour boxes. Calculate min and max of the mesh
@@ -828,8 +824,8 @@ namespace rascal {
      * in units of cell vectors. m_min and m_max give the number of repetitions
      * of the cell in each cell vector direction
      */
-    int ncorners = internal::ipow(2, dim);
-    Eigen::MatrixXd xpos(dim, ncorners);
+    constexpr int ncorners = internal::ipow(2, dim);
+    Eigen::Matrix<double, dim, ncorners> xpos{};
     std::array<double, dim*2> mesh_bounds{};
     for (auto i{0}; i<dim; ++i) {
       mesh_bounds[i] = mesh_min[i];
@@ -842,7 +838,7 @@ namespace rascal {
       n++;
     }
     //! solve for all multipliers
-    auto multiplicator = cell.ldlt().solve(xpos);
+    auto multiplicator{cell.ldlt().solve(xpos).eval()};
     auto xmin = multiplicator.rowwise().minCoeff();
     auto xmax = multiplicator.rowwise().maxCoeff();
 
