@@ -280,11 +280,6 @@ namespace rascal {
      * ``nb_neigh`` can be accessed
      */
     std::vector<size_t> offsets;
-    /* ---------------------------------------------------------------------- */
-    //! vector to gather all neighbours of an atom before building the neighbour
-    //! list
-    std::vector<std::vector<int>> new_neighbours;
-
 
   private:
   };
@@ -298,7 +293,6 @@ namespace rascal {
     nb_neigh{},
     neighbours{},
     offsets{},
-    new_neighbours{}
   {}
 
   /* ---------------------------------------------------------------------- */
@@ -317,6 +311,10 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   void AdaptorFullList<ManagerImplementation>::update() {
+
+    // vector to locally gather all neighbours of an atom before building the
+    // neighbour list
+    std::vector<std::vector<int>> new_neighbours;
 
     // Reset cluster_indices for adaptor to fill with push back.
     internal::for_each(this->cluster_indices_container,
