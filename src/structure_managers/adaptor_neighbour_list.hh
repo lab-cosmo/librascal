@@ -2,7 +2,7 @@
  * file   adaptor_neighbour_list.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
- * @outhor Till Junge <till.junge@epfl.ch>
+ * @author Till Junge <till.junge@epfl.ch>
  *
  * @date   04 Oct 2018
  *
