@@ -27,7 +27,7 @@ make all
 ctest -V
 ```
 
-
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_TESTS=ON  CMAKE_C_FLAGS_RELWITHDEBUBINFO="-03 -g -DNDEBUG" ..
 * Special flags:
   + INSTALL:
     + empty (default) -> install rascal in the build folder
