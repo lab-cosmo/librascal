@@ -292,7 +292,7 @@ namespace rascal {
     manager{manager},
     nb_neigh{},
     neighbours{},
-    offsets{},
+    offsets{}
   {}
 
   /* ---------------------------------------------------------------------- */
@@ -328,8 +328,8 @@ namespace rascal {
 
     // prepare data structure to collect neighbours
     auto natoms = manager.get_size();
-    this->new_neighbours.resize(natoms);
-    for (auto & vector : this->new_neighbours) {
+    new_neighbours.resize(natoms);
+    for (auto & vector : new_neighbours) {
         // start with an empty list per atom
         vector.resize(0);
     }
@@ -344,7 +344,7 @@ namespace rascal {
 
         // add indices to their reciprocal list
         // -> already exists: this->new_neighbours[index_1].push_back(index_2);
-        this->new_neighbours[index_2].push_back(index_1);
+        new_neighbours[index_2].push_back(index_1);
       }
     }
 
@@ -395,7 +395,7 @@ namespace rascal {
       constexpr static auto ActiveLayer{
         compute_cluster_layer<PairOrder>(typename traits::LayerByOrder{})};
 
-      for (auto index_j : this->new_neighbours[index_i]) {
+      for (auto index_j : new_neighbours[index_i]) {
         this->neighbours.push_back(index_j);
         nneigh++;
 
