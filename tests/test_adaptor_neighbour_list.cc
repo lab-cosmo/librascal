@@ -2,13 +2,14 @@
  * file   test_adaptor_neighbour_list.cc
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
+ * @author Till Junge <till.junge@epfl.ch>
  *
  * @date   05 Oct 2018
  *
  * @brief tests the implementation of the adaptor for building a
  * neighbour list, depends on traits if it is full of minimal
  *
- * Copyright © 2018 Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2018 Markus Stricker, Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
  * librascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -206,14 +207,17 @@ namespace rascal {
       for (auto atom : pair_manager1) {
         neighbours_per_atom1.push_back(0);
         for (auto pair : atom) {
-          if (verbose) {
-            std::cout << "1 pair "
-                      << atom.back() << " "
-                      << pair.back() << std::endl;
-          }
           double dist = {(atom.get_position()
                           - pair.get_position()).norm()};
-          if (dist < cutoff_tmp) {
+          bool is_in{dist < cutoff_tmp};
+          if (verbose) {
+            std::cout << "1 pair ("
+                      << atom.get_position().transpose() << ", "
+                      << pair.get_position().transpose() << ", "
+                      << dist << ", " << cutoff_tmp << ", " << is_in
+                      << ")" <<std::endl;
+          }
+          if (is_in) {
             neighbours_per_atom1.back()++;
           }
         }
@@ -222,14 +226,17 @@ namespace rascal {
       for (auto atom : pair_manager2) {
         neighbours_per_atom2.push_back(0);
         for (auto pair : atom) {
-          if (verbose) {
-            std::cout << "2 pair "
-                      << atom.back() << " "
-                      << pair.back() << std::endl;
-          }
           double dist = {(atom.get_position()
                           - pair.get_position()).norm()};
-          if (dist < cutoff_tmp) {
+          bool is_in{dist < cutoff_tmp};
+          if (verbose) {
+            std::cout << "2 pair ("
+                      << atom.get_position().transpose() << ", "
+                      << pair.get_position().transpose() << ", "
+                      << dist << ", " << cutoff_tmp << ", " << is_in
+                      << ")" <<std::endl;
+          }
+          if (is_in) {
             neighbours_per_atom2.back()++;
           }
         }
@@ -240,6 +247,7 @@ namespace rascal {
        * atom does not allow for comparison with other atom's number of
        * neighbours
        */
+
       BOOST_CHECK_EQUAL(neighbours_per_atom1[0],
                         neighbours_per_atom2[0]);
       if (verbose) {
