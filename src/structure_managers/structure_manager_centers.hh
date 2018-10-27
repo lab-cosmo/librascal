@@ -175,9 +175,7 @@ namespace rascal {
      * structure.
      */
     inline Cell_ref get_cell() {
-      auto dim{traits::Dim};
-      return Cell_ref(this->atoms_object.cell.data(), dim,
-                      this->atoms_object.cell.size() / dim);
+      return Cell_ref(this->atoms_object.cell.data());
     }
 
     //! Returns the type of a given atom, given an AtomRef
@@ -253,7 +251,7 @@ namespace rascal {
     //! Dummy function, since neighbours are not present at this Order
     template<size_t Order, size_t Layer>
     inline int get_cluster_neighbour(const ClusterRefKey<Order, Layer>
-                                     & /*cluster*/, size_t index) const {
+                                     & /*cluster*/, size_t ) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms.");
       return 0;

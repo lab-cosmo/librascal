@@ -1,5 +1,5 @@
 /**
- * file   test_structure_manager_chain.cc
+ * file   test_structure_manager.cc
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *
@@ -36,7 +36,7 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(ManagerJsonTests);
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(manager_json_constructor_test,
+  BOOST_FIXTURE_TEST_CASE(manager_constructor_test,
                           ManagerFixture<StructureManagerJson>) {
   }
 
@@ -45,13 +45,13 @@ namespace rascal {
     // Reference values
     constexpr int natoms{9};
 
-    BOOST_CHECK_EQUAL(manager_json.get_size(), natoms);
-    BOOST_CHECK_EQUAL(manager_json.get_nb_clusters(1), natoms);
+    BOOST_CHECK_EQUAL(manager.get_size(), natoms);
+    BOOST_CHECK_EQUAL(manager.get_nb_clusters(1), natoms);
 
     int atom_counter{};
     //    constexpr bool verbose{false};
 
-    for (auto atom_cluster : manager_json) {
+    for (auto atom_cluster : manager) {
       BOOST_CHECK_EQUAL(atom_counter, atom_cluster.get_global_index());
       ++atom_counter;
     }
