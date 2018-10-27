@@ -56,7 +56,7 @@ namespace rascal {
                   "can currently only handle arithmetic types");
   public:
     using Parent = TypedProperty<T, Order, PropertyLayer>;
-    constexpr static size_t NbComp{NbRow*NbCol};
+    //constexpr static size_t NbComp{NbRow*NbCol};
 
     using Value = internal::Value<T, NbRow, NbCol>;
     static_assert(std::is_same<Value, internal::Value<T, NbRow, NbCol>>::value,
@@ -126,12 +126,12 @@ namespace rascal {
       }
 
       // check size compatibility
-      if (not ((other.get_nb_row() == NbRow) and
-               (other.get_nb_col() == NbCol))) {
+      if (not ((other.get_nb_row() == this->get_nb_row()) and
+               (other.get_nb_col() == this->get_nb_col()))) {
         std::stringstream err_str{};
         err_str << "Incompatible sizes: input is " << other.get_nb_row() << "×"
-                << other.get_nb_col() << ", but should be " << NbRow << "×"
-                << NbCol  << ".";
+                << other.get_nb_col() << ", but should be " << this->get_nb_row() << "×"
+                << this->get_nb_col()  << ".";
         throw std::runtime_error (err_str.str());
       }
       return static_cast<Property& > (other);
@@ -143,6 +143,7 @@ namespace rascal {
      * neighbourhood.
      */
     inline void push_back(reference ref) {
+      // make the switch using template argument
       Value::push_in_vector(this->values, ref);
     }
 
@@ -152,9 +153,9 @@ namespace rascal {
     template<typename Derived>
     inline void
     push_back(const Eigen::DenseBase<Derived> & ref) {
-      static_assert(Derived::RowsAtCompileTime==NbRow,
+      static_assert(Derived::RowsAtCompileTime==this->get_nb_row(),
                     "NbRow has incorrect size.");
-      static_assert(Derived::ColsAtCompileTime==NbCol,
+      static_assert(Derived::ColsAtCompileTime==this->get_nb_col(),
                     "NbCol has incorrect size.");
 
       Value::push_in_vector(this->values, ref);
@@ -176,7 +177,7 @@ namespace rascal {
      * Accessor for property by index for statically sized properties
      */
     inline reference operator[](const size_t & index) {
-      return Value::get_ref(this->values[index*NbComp]);
+      return Value::get_ref(this->values[index*this->get_nb_comp()]);
     }
 
   protected:

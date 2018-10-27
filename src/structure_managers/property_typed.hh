@@ -100,6 +100,11 @@ namespace rascal {
       }
     };
 
+    // TODO take the case of dynamically sized Value 
+    // Probably a switch between the static and dynamic version 
+    // of the push_in_vector 
+    // 
+
     template<typename T, size_t NbRow, size_t NbCol>
     using Value_t = typename Value<T, NbRow, NbCol>::type;
 
