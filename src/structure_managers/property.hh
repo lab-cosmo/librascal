@@ -30,21 +30,24 @@
 #ifndef NEIGHBOURHOOD_PROPERTY_H
 #define NEIGHBOURHOOD_PROPERTY_H
 
-#include <Eigen/Dense>
-#include <type_traits>
-#include <vector>
+#include "structure_managers/property_typed.hh"
 #include <basic_types.hh>
 
-#include "structure_managers/property_typed.hh"
+#include <Eigen/Dense>
+
+#include <type_traits>
 
 namespace rascal {
 
-
-  // Forward declaration of traits to use `Property`.
+  //! Forward declaration of traits to use `Property`.
   template <class Manager>
   struct StructureManager_traits;
 
-
+  /**
+   * Class definition of `property`. This is a container of data (specifiable),
+   * which can be access with clusters directly, without the need for dealing
+   * with indices.
+   */
   template <typename T,
             size_t Order,
             size_t PropertyLayer,
@@ -56,7 +59,7 @@ namespace rascal {
                   "can currently only handle arithmetic types");
   public:
     using Parent = TypedProperty<T, Order, PropertyLayer>;
-    constexpr static size_t NbComp{NbRow*NbCol};
+    constexpr static size_t NbComp{NbRow * NbCol};
 
     using Value = internal::Value<T, NbRow, NbCol>;
     static_assert(std::is_same<Value, internal::Value<T, NbRow, NbCol>>::value,
@@ -65,8 +68,8 @@ namespace rascal {
     using value_type = typename Value::type;
     using reference = typename Value::reference;
 
-    static constexpr bool IsStaticallySized{(NbCol != Eigen::Dynamic)
-        and (NbRow != Eigen::Dynamic)};
+    static constexpr bool
+    IsStaticallySized{(NbCol != Eigen::Dynamic) and (NbRow != Eigen::Dynamic)};
 
     //! Default constructor
     Property() = delete;
@@ -91,24 +94,24 @@ namespace rascal {
     //! Move assignment operator
     Property & operator=(Property && other) = delete;
 
+    /* ---------------------------------------------------------------------- */
     /**
-     * Cast operator: takes polymorphic base class reference, and
-     * returns properly casted fully typed and sized reference, or
-     * throws a runttime error
+     * Cast operator: takes polymorphic base class reference, and returns
+     * properly casted fully typed and sized reference, or throws a runttime
+     * error
      */
     static inline Property & check_compatibility(PropertyBase & other) {
-      // check type compatibility
 
-      if (not (other.get_type_info().hash_code() ==
-               typeid(T).hash_code())) {
+      // check ``type`` compatibility
+      if (not (other.get_type_info().hash_code() == typeid(T).hash_code())) {
         std::stringstream err_str{};
         err_str << "Incompatible types: '" << other.get_type_info().name()
                 << "' != '" << typeid(T).name() << "'." ;
         throw std::runtime_error (err_str.str());
       }
 
-      // check order compatibility
-      if (not (other.get_order() == Order )) {
+      // check ``order`` compatibility
+      if (not (other.get_order() == Order)) {
         std::stringstream err_str{};
         err_str << "Incompatible property order: input is of order "
                 << other.get_order() << ", this property is of order "
@@ -116,8 +119,8 @@ namespace rascal {
         throw std::runtime_error (err_str.str());
       }
 
-      // check property layer compatibility
-      if (not (other.get_property_layer() == PropertyLayer )) {
+      // check property ``layer`` compatibility
+      if (not (other.get_property_layer() == PropertyLayer)) {
         std::stringstream err_str{};
         err_str << "At wrong layer in stack: input is at layer "
                 << other.get_property_layer() << ", this property is at layer "
@@ -137,7 +140,7 @@ namespace rascal {
       return static_cast<Property& > (other);
     }
 
-
+    /* ---------------------------------------------------------------------- */
     /**
      * allows to add a value to `Property` during construction of the
      * neighbourhood.
@@ -146,19 +149,22 @@ namespace rascal {
       Value::push_in_vector(this->values, ref);
     }
 
+    /* ---------------------------------------------------------------------- */
     /**
      * Function for adding Eigen-based matrix data to `property`
      */
     template<typename Derived>
     inline void
     push_back(const Eigen::DenseBase<Derived> & ref) {
-      static_assert(Derived::RowsAtCompileTime==NbRow,
+      static_assert(Derived::RowsAtCompileTime == NbRow,
                     "NbRow has incorrect size.");
-      static_assert(Derived::ColsAtCompileTime==NbCol,
+      static_assert(Derived::ColsAtCompileTime == NbCol,
                     "NbCol has incorrect size.");
 
       Value::push_in_vector(this->values, ref);
     }
+
+    /* ---------------------------------------------------------------------- */
     /**
      * Property accessor by cluster ref
      */
@@ -176,7 +182,7 @@ namespace rascal {
      * Accessor for property by index for statically sized properties
      */
     inline reference operator[](const size_t & index) {
-      return Value::get_ref(this->values[index*NbComp]);
+      return Value::get_ref(this->values[index * NbComp]);
     }
 
   protected:

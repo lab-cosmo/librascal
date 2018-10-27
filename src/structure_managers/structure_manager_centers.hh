@@ -2,12 +2,13 @@
  * file   structure_manager_centers.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
+ * @author Markus Stricker <markus.stricker@epfl.ch>
  *
  * @date   06 August 2018
  *
  * @brief Manager with atoms and centers
  *
- * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2018 Felix Musil, Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
  *
  * rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -25,20 +26,19 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef STRUCTURE_MANAGER_CENTERS_H
 #define STRUCTURE_MANAGER_CENTERS_H
 
+// inclusion of our librascal data structure
 #include "structure_managers/structure_manager.hh"
-
 #include "lattice.hh"
 #include "atomic_structure.hh"
 #include "basic_types.hh"
 
-//! Some data types and operations are based on the Eigen library
+// data types and operations are based on the Eigen library
 #include <Eigen/Dense>
 
-//! And standard header inclusion
+// standard header inclusion
 #include <stdexcept>
 #include <vector>
 #include <array>
@@ -52,16 +52,17 @@ namespace rascal {
   //! forward declaration for traits
   class StructureManagerCenters;
 
-  //! traits specialisation for ManagerCenters
-
   /**
-   * The traits are used for vector allocation and further down the processing
-   * chain to determine what functionality the given StructureManager already
-   * contains to avoid recomputation.  See also the implementation of adaptors.
+   * traits specialisation for ManagerCenters: traits are used for vector
+   * allocation and further down the processing chain to determine what
+   * functionality the given StructureManager already contains to avoid
+   * recomputation. See also the implementation of adaptors.
    */
   template <>
   struct StructureManager_traits<StructureManagerCenters> {
+    // this manager only works with 3D data (positions, cell)
     constexpr static int Dim{3};
+    // MaxOrder is set to 1 because it has just atoms
     constexpr static size_t MaxOrder{1};
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDirectionVectors{false};
@@ -75,22 +76,20 @@ namespace rascal {
    * a hint of what it is about.
    */
   class StructureManagerCenters:
-    //! It inherits publicly everything from the base class
+    // public inheritance the base class
     public StructureManager<StructureManagerCenters>
   {
-    /**
-     * Publicly accessible variables and function of the class are given
-     * here. These provide the interface to access the neighbourhood.
-     */
+     // Publicly accessible variables and function of the class are given
+     // here. These provide the interface to access the neighbourhood.
   public:
-    //! For convenience, the names are shortened
+    // for convenience, the names are shortened
     using traits = StructureManager_traits<StructureManagerCenters>;
     using Parent = StructureManager<StructureManagerCenters>;
-    //! Here you see why -- definition of used function return types
+    // here you see why -- definition of used function return types
     using Vector_ref = typename Parent::Vector_ref;
     using AtomRef_t = typename Parent::AtomRef;
 
-    /**
+    /*
      * Eigen::Map is a convenient way to access data in the 'Eigen-way', if it
      * is already stored in a contiguous array.  The positions of the JSON file
      * and the cell vectors are put into contiguous arrays, which are member
@@ -110,7 +109,7 @@ namespace rascal {
     using Positions_t = AtomicStructure<traits::Dim>::Positions_t;
     using Positions_ref = typename Eigen::Map<Positions_t>;
 
-    /**
+    /*
      * Here, the types for internal data structures are defined, based on
      * standard types.  In general, we try to use as many standard types, where
      * possible. It reduces the dependance on external libraries. If you want to
@@ -131,30 +130,30 @@ namespace rascal {
     template <size_t Order>
     using ClusterRef_t = typename Parent::template ClusterRef<Order>;
 
-    //! Default constructor //TODO: all empty initializers??
+    //! Default constructor, values are set during .update() function
     StructureManagerCenters()
       : atoms_object{}, atoms_index{}, lattice{}, offsets{}, natoms{}
     {};
 
     //! Copy constructor
-    StructureManagerCenters(const StructureManagerCenters &other) = delete;
+    StructureManagerCenters(const StructureManagerCenters & other) = delete;
 
     //! Move constructor
-    StructureManagerCenters(StructureManagerCenters &&other) = default;
+    StructureManagerCenters(StructureManagerCenters && other) = default;
 
     //! Destructor
     virtual ~StructureManagerCenters() = default;
 
     //! Copy assignment operator
-    StructureManagerCenters&
-    operator=(const StructureManagerCenters &other) = delete;
+    StructureManagerCenters &
+    operator=(const StructureManagerCenters & other) = delete;
 
     //! Move assignment operator
-    StructureManagerCenters&
-    operator=(StructureManagerCenters &&other) = default;
+    StructureManagerCenters &
+    operator=(StructureManagerCenters && other) = default;
 
     /**
-     * This member function invokes the reinitialisation of data. E.g. when the
+     * invokes the reinitialisation and initlalization of data. E.g. when the
      * atom positions are provided by a simulation method, which evolves in
      * time, this function updates the data.
      */
@@ -164,6 +163,7 @@ namespace rascal {
                 const Eigen::Ref<const Eigen::MatrixXd> cell,
                 const Eigen::Ref<const PBC_t> pbc);
 
+    // TODO: build/update ambiguity
     //! makes atom index lists and offsets
     void build();
 
@@ -226,14 +226,13 @@ namespace rascal {
     //! returns a map to all atomic positions.
     inline Positions_ref get_positions() {
       return Positions_ref(this->atoms_object.positions.data(), traits::Dim,
-                           this->atoms_object.positions.size()/traits::Dim);
+                           this->atoms_object.positions.size() / traits::Dim);
     }
 
     //! returns number of I atoms in the list
     inline size_t get_size() const {return this->natoms;}
 
     //! returns the number of neighbours of a given i atom
-    //! TODO: not sure if this is the correct way to solve this??
     template<size_t Order, size_t Layer>
     inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
                                    & /*cluster*/) const {
@@ -242,18 +241,20 @@ namespace rascal {
       return 1;
     }
 
+    //! dummy function, since no neighbours are present her
     inline int get_cluster_neighbour(const Parent& /*cluster*/,
                                      size_t index) const {
+      // dummy argument is the atom itself
       return this->atoms_index[0][index];
     }
 
-    //! Dummy function, since neighbours not present at this Order
+    //! Dummy function, since neighbours are not present at this Order
     template<size_t Order, size_t Layer>
     inline int get_cluster_neighbour(const ClusterRefKey<Order, Layer>
-                                     & /*cluster*/, size_t index) const {
+                                     & /*cluster*/, size_t ) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms.");
-      return this->atoms_index[0][index];
+      return 0;
     }
 
     /**
@@ -261,8 +262,8 @@ namespace rascal {
      * appears in an iteration
      */
     template<size_t Order>
-    inline size_t get_offset_impl(const std::array<size_t, Order>
-                                  & counters) const;
+    inline size_t
+    get_offset_impl(const std::array<size_t, Order> & counters) const;
 
     //! Function for returning the number of atoms
     size_t get_nb_clusters(size_t cluster_size) const;
@@ -278,15 +279,18 @@ namespace rascal {
     /**
      * store atoms index per order,i.e.
      *   - atoms_index[0] lists all i-atoms
-     *   - etc
+     * the structure here is only used for conformance, could just be a vector.
      */
     std::array<std::vector<int>, traits::MaxOrder> atoms_index;
 
+    //! Lattice type for storing the cell and querying cell-related data
     Lattice lattice;
 
     /**
      * A vector which stores the absolute offsets for each atom to access the
-     * correct variables in the neighbourlist.
+     * correct variables in the neighbourlist. Here they are just the 1, 2, 3,
+     * etc. corresponding to the sequence in which the atoms are provided during
+     * construction.
      */
     std::vector<size_t> offsets{};
 
@@ -305,7 +309,6 @@ namespace rascal {
                    "this manager only handles atoms.");
     return 0;
   }
-
 }  // rascal
 
 #endif /* STRUCTURE_MANAGER_CENTERS_H */

@@ -38,6 +38,7 @@
 using namespace rascal;
 namespace py=pybind11;
 
+//! templated function for adding clusters of different orders
 template<size_t Order, typename StructureManagerImplementation>
 decltype(auto) add_cluster(py::module & m) {
   using ClusterRef = typename StructureManager<
@@ -60,6 +61,7 @@ decltype(auto) add_cluster(py::module & m) {
   return py_cluster;
 }
 
+//! structure manager centers python binding
 void add_manager_centers(py::module & m){
   m.doc() = "binding for the Structure Manager Centers" ;
   py::class_<StructureManager<StructureManagerCenters>>
@@ -68,7 +70,7 @@ void add_manager_centers(py::module & m){
              StructureManager<StructureManagerCenters>>
     (m, "StructureManagerCenters")
     .def(py::init<>())
-    //! interface can handle both row- and col-major matrices
+    // interface can handle both row- and col-major matrices
     .def("update", [] (StructureManagerCenters & v,
                        const py::EigenDRef<const Eigen::MatrixXd> & positions,
                        const py::EigenDRef<const Eigen::VectorXi> & atom_types,
