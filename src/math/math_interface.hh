@@ -29,7 +29,6 @@
 #ifndef MATH_INTERFACE_H
 #define MATH_INTERFACE_H
 
-#include "math/cephes/mconf.h"
 
 namespace rascal {
   namespace math {

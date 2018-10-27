@@ -26,7 +26,13 @@ cmake -DCMAKE_BUILD_TYPE=debug  -DENABLE_DOC=ON -DBUILD_TESTS=ON ..
 make all
 ctest -V
 ```
-
+* To build with optimization and debug info:
+```Shell
+cd build 
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_TESTS=ON  CMAKE_C_FLAGS_RELWITHDEBUBINFO="-03 -g -DNDEBUG" ..
+make -j 4
+ctest -V
+```
 
 * Special flags:
   + INSTALL:

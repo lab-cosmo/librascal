@@ -49,6 +49,8 @@ namespace rascal {
     constexpr static int Dim{3};
     constexpr static size_t MaxOrder{2};
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
+    constexpr static bool HasDistances{false};
+    constexpr static bool HasDirectionVectors{false};
     using LayerByOrder = std::index_sequence<0, 0>;
   };
 
