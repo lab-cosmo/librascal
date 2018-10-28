@@ -25,6 +25,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
+
+/*
+ * ==================================================
+ *  OBSOLETE NOT NECESSARY TO CHANGE, EOL DETERMINED
+ * ==================================================
+ */
+
+
 #include "structure_managers/structure_manager_cell.hh"
 
 namespace rascal {
@@ -71,7 +79,7 @@ namespace rascal {
     Cell_t lat = cell;
     this->lattice.set_cell(lat);
     this->cell = lat;
-    Vec3_t reciprocal_lenghts = this->lattice.get_reciprocal_lenghts();
+    Vec3_t reciprocal_lenghts = this->lattice.get_reciprocal_lengths();
     double bin_size{cutoff_max};
     Vec3i_t nbins_c,neigh_search;
     Vec3_t nbins_cd;

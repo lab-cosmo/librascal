@@ -26,6 +26,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
+/*
+ * ==================================================
+ *  OBSOLETE NOT NECESSARY TO CHANGE, EOL DETERMINED
+ *  TO BE MERGED INTO structure_manager_centers
+ * ==================================================
+ */
+
 #include "structure_managers/structure_manager_json.hh"
 
 #include <numeric>

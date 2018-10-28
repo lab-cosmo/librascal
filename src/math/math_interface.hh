@@ -5,8 +5,8 @@
  *
  * @date   14 October 2018
  *
- * @brief defines interface function to other math 
- * library like cephes
+ * @brief defines an interface to other math library like cephes to separate the
+ *        namespaces
  *
  * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -26,18 +26,15 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef MATH_INTERFACE_H
 #define MATH_INTERFACE_H
 
-#include "math/cephes/mconf.h"
 
 namespace rascal {
   namespace math {
 
     double hyp2f1(double& a, double& b, double& c, double& x);
-    
-  
+
   }
 }
 
