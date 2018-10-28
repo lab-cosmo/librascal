@@ -71,6 +71,8 @@ namespace rascal {
     static constexpr bool
     IsStaticallySized{(NbCol != Eigen::Dynamic) and (NbRow != Eigen::Dynamic)};
 
+    //! Empty type for tag dispatching to differenciate between 
+    //! the Dynamic and Static size case
     struct DynamicSize {};
     struct StaticSize {};
 
