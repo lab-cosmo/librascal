@@ -32,25 +32,25 @@
 namespace rascal {
   BOOST_AUTO_TEST_SUITE(representation_sorted_coulomb_test);
   /* ---------------------------------------------------------------------- */
-  // BOOST_FIXTURE_TEST_CASE(constructor_test,
-  // RepresentationFixture<StructureManagerJson>)
-  // { 
+  BOOST_FIXTURE_TEST_CASE(constructor_test,
+  RepresentationFixture<StructureManagerCenters>)
+  { 
     
-  //   AdaptorNeighbourList<StructureManagerJson> nl{manager_json,cutoff};
-  //   nl.update();
-  //   AdaptorStrict<AdaptorNeighbourList<
-  //                             StructureManagerJson>> strict_nl{nl,cutoff};
-  //   strict_nl.update();
+    AdaptorNeighbourList<StructureManagerCenters> nl{manager,cutoff_max};
+    nl.update();
+    AdaptorStrict<AdaptorNeighbourList<
+                              StructureManagerCenters>> strict_nl{nl,cutoff_max};
+    strict_nl.update();
 
-  //   using Representation_t = RepresentationManagerSortedCoulomb<
-  //                  AdaptorStrict<AdaptorNeighbourList<StructureManagerJson>>>;
+    using Representation_t = RepresentationManagerSortedCoulomb<
+                   AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
 
-  //   Representation_t representation(strict_nl,central_decay,
-  //                                   interaction_cutoff,interaction_decay,size);
-  //   representation.compute();
+    Representation_t representation{strict_nl,central_decay,
+                                    interaction_cutoff,interaction_decay,size};
+    representation.compute();
 
 
-  // }
+  }
 
 
   BOOST_AUTO_TEST_SUITE_END();

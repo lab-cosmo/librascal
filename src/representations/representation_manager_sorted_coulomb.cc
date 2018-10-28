@@ -40,36 +40,6 @@ namespace rascal {
     this->size = hyper["size"];
   };
 
-  template<class Mngr>
-  void RepresentationManagerSortedCoulomb<Mngr>::compute(){
-    
-    // upper diag of the coulomb mat
-    Eigen::MatrixXd lin_coulomb{};
-    lin_coulomb.resize(this->size*(this->size+1)/2);
-
-    // upper diag of the coulomb mat
-    std::vector<double> distances_to_sort{};
-    //! initialise the coulomb_matrices storage
-    this->coulomb_matrices.resize_to_zero();
-
-    for (auto center: this->structure_manager){
-
-      for (auto neigh_i: center){
-        int ii{neigh_i.get_index()};
-        auto dik{this->structure_manager.get_distance(neigh_i)};
-        distances_to_sort.push_back(dik);
-        auto Zi{neigh_i.get_atom_type()};
-        lin_coulomb(ii*this->size) = 0.5*std::pow(Zi,2.4);
-        for (auto neigh_j: center){
-          int jj{neigh_j.get_index()};
-          // work only on the lower diagonal
-          if (ii >= jj) continue;
-          auto Zj{neigh_i.get_atom_type()};
-          auto dij{(neigh_i.get_position()-neigh_j.get_position()).norm};
-          lin_coulomb(ii*this->size+jj) = Zi*Zj/dij;
-        }
-      }
-    }
-  }
+  
 
 }

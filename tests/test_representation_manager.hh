@@ -73,19 +73,20 @@ template<class StructureManager>
         3.307475712744203, 5.323662899811682, 1.982236671758393;
       numbers << 20, 20, 24, 24, 15, 15, 15, 15,  8,  8,  8,
         8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8;
-      center_ids << 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-        12, 13, 14, 15, 16, 17, 18, 19, 20, 21;
-      manager.update(positions,numbers,center_ids,cell,pbc,cutoff_max);
+      // center_ids << 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+      //   12, 13, 14, 15, 16, 17, 18, 19, 20, 21;
+      manager.update(positions,numbers,cell,
+                    Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
 
     }
 
     ~RepresentationFixture() {
     }
     
-    using Manager_t = typename StructureManager::Manager_t;
+    using Manager_t = StructureManager;
     Manager_t manager{};
     
-    std::array<bool, 3> pbc;
+    std::array<int, 3> pbc;
     double cutoff_max;
     Eigen::VectorXi center_ids;
     Eigen::MatrixXd cell;

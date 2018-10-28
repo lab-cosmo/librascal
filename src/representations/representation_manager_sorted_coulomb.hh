@@ -45,10 +45,6 @@ namespace rascal {
     using Property_t = Property<double, 1, 1, Eigen::Dynamic, 1>;
     using Manager_t = StructureManager;
 
-
-    // get representation
-    void compute();
-
     //! Default constructor 
     RepresentationManagerSortedCoulomb(Manager_t &sm, 
       double central_decay , double interaction_cutoff, 
@@ -88,6 +84,11 @@ namespace rascal {
     RepresentationManagerSortedCoulomb& operator=(
       RepresentationManagerSortedCoulomb && other) = default;
     
+
+    // get representation
+    void compute();
+
+
     // TODO think of a generic input type for the hypers
     void set_hyperparameters(const hypers_t & );
 
@@ -105,6 +106,40 @@ namespace rascal {
   protected:
   private:
   };
+
+
+  template<class Mngr>
+  void RepresentationManagerSortedCoulomb<Mngr>::compute(){
+    
+    // upper diag of the coulomb mat
+    Eigen::MatrixXd lin_coulomb(this->size,this->size);
+    // lin_coulomb.resize(this->size*(this->size+1)/2);
+    // lin_coulomb.resize(this->size*this->size);
+
+    // upper diag of the coulomb mat
+    std::vector<double> distances_to_sort{};
+    //! initialise the coulomb_matrices storage
+    this->coulomb_matrices.resize_to_zero();
+
+    for (auto center: this->structure_manager){
+
+      for (auto neigh_i: center){
+        size_t ii{neigh_i.get_index()};
+        auto dik{this->structure_manager.get_distance(neigh_i)};
+        distances_to_sort.push_back(dik);
+        auto Zi{neigh_i.get_atom_type()};
+        lin_coulomb(ii*this->size) = 0.5*std::pow(Zi,2.4);
+        for (auto neigh_j: center){
+          size_t jj{neigh_j.get_index()};
+          // work only on the lower diagonal
+          if (ii > jj) continue;
+          auto Zj{neigh_i.get_atom_type()};
+          auto dij{(neigh_i.get_position()-neigh_j.get_position()).norm()};
+          lin_coulomb(ii*this->size+jj) = Zi*Zj/dij;
+        }
+      }
+    }
+  }
 
 }
 
