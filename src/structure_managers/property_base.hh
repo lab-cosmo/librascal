@@ -114,7 +114,7 @@ namespace rascal {
     //! constructor
     PropertyBase(StructureManagerBase & manager, Dim_t nb_row, Dim_t nb_col,
                  size_t order, size_t layer, std::string metadata="no metadata"):
-      base_manager{manager}, nb_row{nb_row}, nb_col{nb_col},
+      base_manager{manager}, nb_col{nb_col}, nb_row{nb_row},
       nb_comp{nb_row * nb_col}, order{order}, property_layer{layer},
       metadata{metadata}
     {}

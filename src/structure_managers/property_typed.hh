@@ -65,6 +65,16 @@ namespace rascal {
         }
       }
 
+      //! Dynamic size overloading of push back data into ``property``
+      static void push_in_vector(std::vector<T> & vec, reference ref,
+                                 Dim_t& nb_row,  Dim_t& nb_col) {
+        for (Dim_t j{0}; j < nb_col; ++j) {
+          for (Dim_t i{0}; i < nb_row; ++i) {
+            vec.push_back(ref(i,j));
+          }
+        }
+      }
+
       //! Used for extending cluster_indices
       template<typename Derived>
       static void push_in_vector(std::vector<T> & vec,
@@ -75,6 +85,19 @@ namespace rascal {
                       "NbCol has incorrect size.");
         for (size_t j{0}; j < NbCol; ++j) {
           for (size_t i{0}; i < NbRow; ++i) {
+            vec.push_back(ref(i,j));
+          }
+        }
+      }
+
+      //! Dynamic size overloading of push back data into ``property``
+      template<typename Derived>
+      static void push_in_vector(std::vector<T> & vec,
+                                 const Eigen::DenseBase<Derived> & ref,
+                                const Dim_t& nb_row, const Dim_t& nb_col) {
+        
+        for (Dim_t j{0}; j < nb_col; ++j) {
+          for (Dim_t i{0}; i < nb_row; ++i) {
             vec.push_back(ref(i,j));
           }
         }

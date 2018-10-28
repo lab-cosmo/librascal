@@ -2,6 +2,7 @@
  * file   property.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
+ * @author Felix Musil <felix.musil@epfl.ch>
  *
  * @date   05 Apr 2018
  *
@@ -9,7 +10,7 @@
  *
  * @section LICENSE
  *
- * Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2018 Till Junge, Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
  * rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -32,7 +33,7 @@
 
 #include "structure_managers/property_typed.hh"
 #include <basic_types.hh>
-
+#include <cassert>
 #include <Eigen/Dense>
 
 #include <type_traits>
@@ -59,8 +60,7 @@ namespace rascal {
                   "can currently only handle arithmetic types");
   public:
     using Parent = TypedProperty<T, Order, PropertyLayer>;
-    //constexpr static size_t NbComp{NbRow*NbCol};
-
+    
     using Value = internal::Value<T, NbRow, NbCol>;
     static_assert(std::is_same<Value, internal::Value<T, NbRow, NbCol>>::value,
                   "type alias failed");
@@ -70,6 +70,9 @@ namespace rascal {
 
     static constexpr bool
     IsStaticallySized{(NbCol != Eigen::Dynamic) and (NbRow != Eigen::Dynamic)};
+
+    struct DynamicSize {};
+    struct StaticSize {};
 
     //! Default constructor
     Property() = delete;
@@ -100,8 +103,8 @@ namespace rascal {
      * properly casted fully typed and sized reference, or throws a runttime
      * error
      */
+    // TODO Need to make an equivalent for dynamic sized property
     static inline Property & check_compatibility(PropertyBase & other) {
-
       // check ``type`` compatibility
       if (not (other.get_type_info().hash_code() == typeid(T).hash_code())) {
         std::stringstream err_str{};
@@ -129,12 +132,12 @@ namespace rascal {
       }
 
       // check size compatibility
-      if (not ((other.get_nb_row() == this->get_nb_row()) and
-               (other.get_nb_col() == this->get_nb_col()))) {
+      if (not ((other.get_nb_row() == NbRow) and
+               (other.get_nb_col() == NbCol))) {
         std::stringstream err_str{};
         err_str << "Incompatible sizes: input is " << other.get_nb_row() << "×"
-                << other.get_nb_col() << ", but should be " << this->get_nb_row() << "×"
-                << this->get_nb_col()  << ".";
+                << other.get_nb_col() << ", but should be " << NbRow << "×"
+                << NbCol  << ".";
         throw std::runtime_error (err_str.str());
       }
       return static_cast<Property& > (other);
@@ -146,8 +149,11 @@ namespace rascal {
      * neighbourhood.
      */
     inline void push_back(reference ref) {
-      // make the switch using template argument
-      Value::push_in_vector(this->values, ref);
+      // use tag dispatch to use the proper definition
+      // of the push_in_vector function
+      this->push_back(ref, 
+          std::conditional_t<(IsStaticallySized), 
+                              StaticSize, DynamicSize>{});
     }
 
     /* ---------------------------------------------------------------------- */
@@ -155,16 +161,14 @@ namespace rascal {
      * Function for adding Eigen-based matrix data to `property`
      */
     template<typename Derived>
-    inline void
-    push_back(const Eigen::DenseBase<Derived> & ref) {
-      static_assert(Derived::RowsAtCompileTime==this->get_nb_row(),
-                    "NbRow has incorrect size.");
-      static_assert(Derived::ColsAtCompileTime==this->get_nb_col(),
-                    "NbCol has incorrect size.");
-
-      Value::push_in_vector(this->values, ref);
+    inline void push_back(const Eigen::DenseBase<Derived> & ref) {
+      // use tag dispatch to use the proper definition
+      // of the push_in_vector function
+      this->push_back(ref, 
+          std::conditional_t<(IsStaticallySized), 
+                              StaticSize, DynamicSize>{});
     }
-
+    
     /* ---------------------------------------------------------------------- */
     /**
      * Property accessor by cluster ref
@@ -183,10 +187,46 @@ namespace rascal {
      * Accessor for property by index for statically sized properties
      */
     inline reference operator[](const size_t & index) {
-      return Value::get_ref(this->values[index*this->get_nb_comp()]);
+      // use tag dispatch to use the proper definition
+      // of the get function
+      return this->get(index,
+                        std::conditional_t<(IsStaticallySized), 
+                          StaticSize, DynamicSize>{});
     }
 
   protected:
+
+    inline void push_back(reference ref, StaticSize) {
+        Value::push_in_vector(this->values, ref);
+    }
+
+    inline void push_back(reference ref, DynamicSize) {
+      Value::push_in_vector(this->values, ref,
+                            this->get_nb_row(),this->get_nb_col());
+    }
+
+    template<typename Derived>
+    inline void push_back(const Eigen::DenseBase<Derived> & ref, StaticSize) {
+      static_assert(Derived::RowsAtCompileTime==NbRow,
+                      "NbRow has incorrect size.");
+      static_assert(Derived::ColsAtCompileTime==NbCol,
+                      "NbCol has incorrect size.");
+      Value::push_in_vector(this->values, ref);
+    }
+    template<typename Derived>
+    inline void push_back(const Eigen::DenseBase<Derived> & ref, DynamicSize) {
+      Value::push_in_vector(this->values, ref,
+                              this->get_nb_row(),this->get_nb_col());
+    }
+
+    inline reference get(const size_t & index, StaticSize) {
+      return Value::get_ref(this->values[index*NbRow*NbCol]);
+    }
+
+    inline reference get(const size_t & index, DynamicSize) {
+      return Value::get_ref(this->values[index*this->get_nb_comp()]);
+    }
+
   private:
   };
 
