@@ -34,14 +34,15 @@
 
 namespace rascal {
 
-  BOOST_AUTO_TEST_SUITE(ManagerJsonTests);
+  BOOST_AUTO_TEST_SUITE(ManagerJsonFileTests);
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(manager_constructor_test,
-                          ManagerFixture<StructureManagerJson>) {
+                          ManagerFixtureFile<StructureManagerCenters>) {
   }
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(iterator_test, ManagerFixture<StructureManagerJson>) {
+  BOOST_FIXTURE_TEST_CASE(iterator_test,
+                          ManagerFixtureFile<StructureManagerCenters>) {
     // Reference values
     constexpr int natoms{9};
 
@@ -58,7 +59,8 @@ namespace rascal {
     BOOST_CHECK_EQUAL(atom_counter, natoms);
   }
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(test_get_cell, ManagerFixture<StructureManagerJson>) {
+  BOOST_FIXTURE_TEST_CASE(test_get_cell,
+                          ManagerFixtureFile<StructureManagerCenters>) {
   }
 
   /* ---------------------------------------------------------------------- */

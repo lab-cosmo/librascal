@@ -29,8 +29,8 @@
 #define JSON_IO_H
 
 /*
- * An external header-library/header-class, which makes it easy to use the JSON
- * as a first class data type. See https://github.com/nlohmann/json for
+ * interface to external header-library/header-class, which makes it easy to use
+ * the JSON as a first class data type. See https://github.com/nlohmann/json for
  * documentation.
  */
 #include "json.hpp"
@@ -49,7 +49,7 @@ namespace rascal {
      * Object to read from a JSON file and deserialize the content, the used
      * class needs a <code>struct</code> with standard data types.
      */
-    struct AtomicStructure {
+    struct AtomicJsonData {
       /**
        *  \param cell is a vector a vector of vectors which holds the cell unit
        *  vectors.
@@ -74,7 +74,7 @@ namespace rascal {
      * is an overload of the function defined in the header class
      * json.hpp. Inline needed, otherwise it is a multiple definition
      */
-    inline void to_json(json & j, AtomicStructure & s) {
+    inline void to_json(json & j, AtomicJsonData & s) {
       j = json{
         {"cell", s.cell},
         {"numbers", s.type},
@@ -88,7 +88,7 @@ namespace rascal {
      * standard types. It is an overload of the function defined in json.hpp
      * class header.
      */
-    inline void from_json(const json & j, AtomicStructure & s) {
+    inline void from_json(const json & j, AtomicJsonData & s) {
       s.cell = j.at("cell").get<std::vector<std::vector<double>>>();
       s.type = j.at("numbers").get<std::vector<int>>();
       s.pbc = j.at("pbc").get<std::vector<int>>();

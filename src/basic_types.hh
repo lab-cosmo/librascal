@@ -30,11 +30,11 @@
 
 namespace rascal {
   /**
-   * Static integer scalar to store the number of real space
-   * dimensions of the system.
+   * integer scalar type to store the number of real space dimensions of the
+   * system.
    */
   using Dim_t = int;
 
-}
+} // rascal
 
 #endif /* BASIC_TYPES_H */

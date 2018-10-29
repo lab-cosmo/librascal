@@ -2,13 +2,14 @@
  * file   atomic_structure.hh
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
+ * @author  Markus Stricker <markus.stricker@epfl.ch>
  *
  * @date   08 August 2018
  *
- * @brief Lattice class used to compute face distances within the cell and to
- *        scale and unscale positions
+ * @brief common data type for atomic structure data including positions, types,
+ *        cell and periodic boundary conditions
  *
- * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2018  Felix Musil, Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
  *
  * rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -30,7 +31,7 @@
 #define ATOMIC_STRUCTURE_H
 
 #include "basic_types.hh"
-#include "structure_managers/json_io.hh"
+#include "json_io.hh"
 
 #include <Eigen/Dense>
 
@@ -51,14 +52,18 @@ namespace rascal {
      *  \param position is a vector of vectors which holds the atomic
      *  positions.
      */
-    using Cell_t = Eigen::Matrix<double, Dim, Dim, Eigen::ColMajor>;
+    using Cell_t = Eigen::Matrix<double, Dim, Dim>;
+    using Cell_ref = Eigen::Map<Cell_t>;
 
     using AtomTypes_t = Eigen::Matrix<int, 1, Eigen::Dynamic>;
+    using AtomTypes_ref = Eigen::Map<AtomTypes_t>;
 
     using PBC_t = Eigen::Matrix<int, Dim, 1>;
+    using PBC_ref = Eigen::Map<PBC_t>;
 
     using Positions_t = Eigen::Matrix<double, Dim,
-                                      Eigen::Dynamic, Eigen::ColMajor>;
+                                      Eigen::Dynamic>;
+    using Positions_ref = Eigen::Map<Positions_t>;
 
     using PositionsInput_t =
       Eigen::Ref<const Eigen::MatrixXd, 0,
@@ -75,7 +80,14 @@ namespace rascal {
     Cell_t cell;
     PBC_t pbc;
 
-    //! method for initializing data, beware: copy!
+    // contiguous storage
+    std::vector<double> cell_data{};
+    std::vector<int> type_data{};
+    std::vector<int> pbc_data{};
+    std::vector<double> pos_data{};
+
+    //! method for initializing structure data from raw Eigen types, beware:
+    //! copy!
     void set_structure(const PositionsInput_t & positions,
                        const AtomTypesInput_t &  atoms_type,
                        const Eigen::Ref<const Eigen::MatrixXd> cell,
@@ -85,6 +97,50 @@ namespace rascal {
       this->atoms_type = atoms_type;
       this->pbc = pbc;
       this->positions = positions;
+    }
+
+    //! method for initializing structure from a json object, beware: copy
+    void set_structure(const json_io::AtomicJsonData & s) {
+
+      // check for empty data sets
+      try {
+        auto pos_size = s.position.size();
+        if (pos_size == 0) {
+          throw std::runtime_error("No atomic structure defined. "
+                                   "Read structure first!");
+        }
+      } catch (const std::exception & e) {
+        std::cerr << e.what() << std::endl;
+        std::exit(EXIT_FAILURE);
+      }
+
+      // get data out of the json object to access with Eigen::Map
+      for (auto vec : s.cell) {
+        for (auto coord : vec) {
+          this->cell_data.push_back(coord);
+        }
+      }
+
+      for (auto val : s.type) {
+        this->type_data.push_back(val);
+      }
+
+      for (auto val : s.pbc) {
+        this->pbc_data.push_back(val);
+      }
+
+      for (auto pos : s.position) {
+        for (auto coord : pos) {
+          this->pos_data.push_back(coord);
+        }
+      }
+
+      this->cell = Cell_ref(this->cell_data.data());
+      this->atoms_type = AtomTypes_ref(this->type_data.data(),
+                                       this->type_data.size());
+      this->pbc = PBC_ref(this->pbc_data.data());
+      this->positions = Positions_ref(this->pos_data.data(), Dim,
+                                      this->pos_data.size() / Dim);
     }
   };
 

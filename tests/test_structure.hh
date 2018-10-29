@@ -1,5 +1,5 @@
 /**
- * file   test_structure.hh
+ * file test_structure.hh
  *
  * @author Till Junge <till.junge@altermail.ch>
  *
@@ -33,7 +33,6 @@
 #include "structure_managers/structure_manager_base.hh"
 #include "structure_managers/structure_manager_lammps.hh"
 #include "structure_managers/structure_manager_chain.hh"
-#include "structure_managers/structure_manager_json.hh"
 #include "structure_managers/structure_manager_centers.hh"
 #include "structure_managers/adaptor_strict.hh"
 #include "structure_managers/adaptor_increase_maxorder.hh"
@@ -41,14 +40,15 @@
 
 namespace rascal {
 
-  /* This file generates fixtures for all the classes in structure_managers
+  /**
+   * This file generates fixtures for all the classes in structure_managers
    * that need to be tested. Fixtures should be as compatible as possible in
-   * terms of interface, so that the tests can be easily templated. 
-   * This is a list of conventions that are expected in tests:
-   * - If a fixture generates an object that should be accessible with a 
-   *   structure_manager interface, it has to be called "manager"
+   * terms of interface, so that the tests can be easily templated.  This is a
+   * list of conventions that are expected in tests: - If a fixture generates an
+   * object that should be accessible with a structure_manager interface, it has
+   * to be called "manager"
    */
-   
+
   // TODO: this is not a general case of a manager fixture. Should not be so
   // complicated
   // TODO: change this to a usage case of the ManagerFixture
@@ -60,7 +60,7 @@ namespace rascal {
       cell(3, 3), positions(3, 22), numbers(22)
     {
       cell <<
-	      6.19, 2.41, 0.21,
+        6.19, 2.41, 0.21,
         0.00, 6.15, 1.02,
         0.00, 0.00, 7.31;
       positions <<
@@ -90,7 +90,7 @@ namespace rascal {
         8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8;
       center_ids << 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
         12, 13, 14, 15, 16, 17, 18, 19, 20, 21;
-      manager.update(positions,numbers,center_ids,cell,pbc,cutoff_max);
+      manager.update(positions, numbers, center_ids, cell, pbc, cutoff_max);
 
     }
 
@@ -107,14 +107,37 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * general case of a manager fixture, which reads the structure information
+   * from a file
+   */
   template<class ManagerImplementation>
-  struct ManagerNLFixture: public ManagerFixture<ManagerImplementation> {
+  struct ManagerFixtureFile
+  {
+    ManagerFixtureFile():
+      cutoff{1.}, filename{"simple_cubic_8.json"}
+    {
+      manager.update(filename);
+    }
+
+    ~ManagerFixtureFile()  {}
+
+    double cutoff;
+    ManagerImplementation manager{};
+    std::string filename{};
+  };
+
+  /* ---------------------------------------------------------------------- */
+  template<class ManagerImplementation>
+  struct ManagerNeighbourListFixture
+    : public ManagerFixture<ManagerImplementation> {
     using Manager_t = ManagerImplementation;
 
-    static_assert(ManagerImplementation::traits::MaxOrder == 1,"");
+    static_assert(ManagerImplementation::traits::MaxOrder == 1,
+                  "Lowest layer manager has MaxOrder != 1");
 
-    ManagerNLFixture()
-      :ManagerFixture<ManagerImplementation>{}, pair_manager{this->manager,3.}
+    ManagerNeighbourListFixture()
+      :ManagerFixture<ManagerImplementation>{}, pair_manager{this->manager, 3.}
     {
       this->pair_manager.update();
     }
@@ -272,6 +295,13 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
+  // TODO: this is potentially obsolete, since StructureManagerCenters can now
+  // also read from a json file. But the StructureManagerChain build a very
+  // neighbour list. So a substitution of this is something like
+  // NeighbourListManager as used in the test_property
+  /**
+   * fixture for testing neighbourhood increasers, see above
+   */
   template <>
   struct ManagerFixture<StructureManagerChain>
   {
@@ -280,27 +310,9 @@ namespace rascal {
     ManagerFixture()
       : manager{}, cutoff{1.0} {
         manager.read_structure_from_json("simple_cubic_8.json");
-        manager.update(cutoff);
       }
 
     ~ManagerFixture() {BOOST_TEST_MESSAGE("teardown ManagerChain fixture");}
-
-    Manager_t manager;
-    double cutoff;
-  };
-
-  /* ---------------------------------------------------------------------- */
-  template <>
-  struct ManagerFixture<StructureManagerJson>
-  {
-    using Manager_t = StructureManagerJson;
-    ManagerFixture()
-      : manager{}, cutoff{1.5} {
-      manager.read_structure_from_json("simple_cubic_8.json");
-      manager.update();
-    }
-
-    ~ManagerFixture () {BOOST_TEST_MESSAGE("teardown ManagerJson fixture");}
 
     Manager_t manager;
     double cutoff;
@@ -321,7 +333,7 @@ namespace rascal {
         6.19, 2.41, 0.21,
         0.00, 6.15, 1.02,
         0.00, 0.00, 7.31;
-      // cell.transposeInPlace();
+
       positions <<
         3.689540159937393, 5.123016813620886, 1.994119731169116,
         6.818437242389163, 2.630056617829216, 6.182500355729062,
@@ -349,17 +361,6 @@ namespace rascal {
       positions.transposeInPlace();
       numbers << 20, 20, 24, 24, 15, 15, 15, 15, 8, 8, 8,
         8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8;
-      // cell <<
-      //   2., 0., 0.,
-      //   0., 2., 0.,
-      //   0., 0., 2.;
-
-      // positions <<
-      //   0.4, 1.4, 0.4, 1.4, 0.4, 1.4, 0.4, 1.4,
-      //   0.4, 0.4, 1.4, 1.4, 0.4, 0.4, 1.4, 1.4,
-      //   0.4, 0.4, 0.4, 0.4, 1.4, 1.4, 1.4, 1.4;
-
-      // numbers << 1, 2, 3, 4, 5, 6, 7, 8;
 
       manager.update(positions, numbers, cell,
                      Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
@@ -577,46 +578,6 @@ namespace rascal {
 
     const int natoms{8};
   };
-
-  // template<>
-  // struct ManagerFixtureSimple<StructureManagerCenters>
-  // {
-
-  //   using Manager_t = StructureManagerCenters;
-
-  //   ManagerFixtureSimple():
-  //     pbc{{true,false,false}}, cell(3, 3), positions(3, 2), numbers(2),
-  //     cutoff{5.0}
-  //   {
-  //     cell <<
-  //       1.99, 0.99, 0.,
-  //       0.99, 1.99, 0.,
-  //       0., 0., 1.99;
-
-  //     positions <<
-  //       0.5, 1.5,
-  //       0.5, 1.5,
-  //       0.5, 0.5;
-
-  //     numbers << 1, 1;//, 1, 1, 1, 1, 1, 1;
-
-  //     manager.update(positions, numbers, cell,
-  //                    Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
-  //   }
-
-  //   ~ManagerFixtureSimple() {}
-
-  //   Manager_t manager{};
-  //   std::array<int, 3> pbc;
-  //   Eigen::MatrixXd cell;
-  //   Eigen::MatrixXd positions;
-  //   Eigen::VectorXi numbers;
-
-  //   double cutoff;
-
-  //   const int natoms{2};
-  // };
-
 }  // rascal
 
 #endif /* TEST_NEIGHBOURHOOD_H */

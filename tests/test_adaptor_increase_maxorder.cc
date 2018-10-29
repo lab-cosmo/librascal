@@ -94,7 +94,7 @@ namespace rascal {
       natoms++;
       if (verbose) {
         std::cout << atom.back()
-        	  << std::endl;
+                  << std::endl;
       }
 
       if (verbose) std::cout << "position: " << atom.get_position
@@ -186,11 +186,11 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(simple_cubic_8_extension,
-                          ManagerFixture<StructureManagerJson>) {
+                          ManagerFixtureFile<StructureManagerCenters>) {
 
     constexpr bool verbose{false};
 
-    AdaptorNeighbourList<StructureManagerJson> SM2{manager, cutoff};
+    AdaptorNeighbourList<StructureManagerCenters> SM2{manager, cutoff};
     SM2.update();
 
     auto npairs = SM2.get_nb_clusters(2);

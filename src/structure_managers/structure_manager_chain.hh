@@ -54,7 +54,7 @@
  * interface ´structure_manager.hh´
  */
 #include "structure_managers/structure_manager.hh"
-#include "structure_managers/json_io.hh"
+#include "json_io.hh"
 
 //! Some data types and operations are based on the Eigen library
 #include <Eigen/Dense>
@@ -216,7 +216,7 @@ namespace rascal {
       auto t = this->get_atom_types();
       return t(index);
     }
-   
+
     //! Returns the type of a given atom, given an AtomRef
     inline int get_atom_type(const AtomRef_t& atom) {
       auto index{atom.get_index()};
@@ -328,7 +328,7 @@ namespace rascal {
      * 'Atoms objects'.  It is first class C++ data structure, which 'feels'
      * like JSON.
      */
-    json_io::AtomicStructure atoms_object{};
+    json_io::AtomicJsonData atoms_object{};
 
     /**
      * Since the data from the <code>atoms_object</code>, especially the

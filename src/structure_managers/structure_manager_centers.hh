@@ -6,7 +6,8 @@
  *
  * @date   06 August 2018
  *
- * @brief Manager with atoms and centers
+ * @brief basic manager implementation with atoms and centers with ability to
+ *        read from json file and be constructed from existing data
  *
  * Copyright © 2018 Felix Musil, Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -29,13 +30,12 @@
 #ifndef STRUCTURE_MANAGER_CENTERS_H
 #define STRUCTURE_MANAGER_CENTERS_H
 
-// inclusion of our librascal data structure
+// inclusion of librascal data structure
 #include "structure_managers/structure_manager.hh"
 #include "lattice.hh"
 #include "atomic_structure.hh"
 #include "basic_types.hh"
-#include "structure_managers/json_io.hh"
-
+#include "json_io.hh"
 
 // data types and operations are based on the Eigen library
 #include <Eigen/Dense>
@@ -91,25 +91,26 @@ namespace rascal {
     using Vector_ref = typename Parent::Vector_ref;
     using AtomRef_t = typename Parent::AtomRef;
 
-    /*
+    /**
      * Eigen::Map is a convenient way to access data in the 'Eigen-way', if it
      * is already stored in a contiguous array.  The positions of the JSON file
      * and the cell vectors are put into contiguous arrays, which are member
      * variables of this class. Access is provided via the Eigen::Maps
      *
-     * The following types are defined to access the data. Since they cost
-     * almost nothing to build, they are created on the fly via e.g. the
-     * .get_positions() member function, if needed. Access to the cell vectors,
-     * defined in the JSON file.
+     * The following types are defined globally in atomic_structure.hh as common
+     * return types for accessing atom and cell related data.
      */
     using Cell_t = AtomicStructure<traits::Dim>::Cell_t;
-    using Cell_ref = typename Eigen::Map<Cell_t>;
+    using Cell_ref = AtomicStructure<traits::Dim>::Cell_ref;
+
     using AtomTypes_t = AtomicStructure<traits::Dim>::AtomTypes_t;
-    using AtomTypes_ref = typename Eigen::Map<AtomTypes_t>;
+    using AtomTypes_ref = AtomicStructure<traits::Dim>::AtomTypes_ref;
+
     using PBC_t = AtomicStructure<traits::Dim>::PBC_t;
-    using PBC_ref = typename Eigen::Map<PBC_t>;
+    using PBC_ref = AtomicStructure<traits::Dim>::PBC_ref;
+
     using Positions_t = AtomicStructure<traits::Dim>::Positions_t;
-    using Positions_ref = typename Eigen::Map<Positions_t>;
+    using Positions_ref = AtomicStructure<traits::Dim>::Positions_ref;
 
     /*
      * Here, the types for internal data structures are defined, based on
@@ -164,6 +165,12 @@ namespace rascal {
                 const Eigen::Ref<const Eigen::VectorXi> atom_types,
                 const Eigen::Ref<const Eigen::MatrixXd> cell,
                 const Eigen::Ref<const PBC_t> pbc);
+
+    /**
+     * invokes an update from a file, which holds a structure in the format of
+     * the ASE atoms object
+     */
+    void update(const std::string filename);
 
     // TODO: build/update ambiguity
     //! makes atom index lists and offsets
@@ -259,10 +266,13 @@ namespace rascal {
     size_t get_nb_clusters(size_t cluster_size) const;
 
     /**
-     * Function to read from a JSON file. Based on the above mentioned header
-     * class
+     * Function for reading data from a JSON file in the ASE format. See the
+     * definition of <code>AtomicStructure</code> and adapt the fields, which
+     * should be read to your case.
      */
-    // void read_structure_from_json(const std::string filename);
+    void read_structure_from_json(const std::string filename);
+
+    // TODO: add function to read from XYZ files
 
   protected:
     /**
