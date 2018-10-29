@@ -29,10 +29,12 @@
 #define TEST_LATTICE_H
 
 #include "lattice.hh"
-#include "basic_types.hh"
-
 
 namespace rascal {
+
+  // TODO: make dimension dependent
+  constexpr static auto Dim{3};
+  using Vec3_t = Eigen::Matrix<double, Dim, 1>;
 
   struct ManagerFixture_lattice
   {

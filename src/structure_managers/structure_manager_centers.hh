@@ -248,7 +248,7 @@ namespace rascal {
     }
 
     /**
-     * Return the linear index of cluster (i.e., the count at which 
+     * Return the linear index of cluster (i.e., the count at which
      * this cluster appears in an iteration
      */
     template<size_t Order>

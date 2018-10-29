@@ -83,6 +83,7 @@ namespace rascal {
     using traits = StructureManager_traits<AdaptorFullList>;
     using parent_traits = typename ManagerImplementation::traits;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
+    using Vector_ref = typename Parent::Vector_ref;
 
     // The stacking of this Adaptor is only possible on a manager which has a
     // pair list (MaxOrder=2). This is ensured here.

@@ -38,8 +38,11 @@ namespace rascal {
     Vec3_t cell_angles = lattice.get_cell_angles();
     Vec3_t cell_lengths_true;
     Vec3_t cell_angles_true;
-    cell_lengths_true << 6.190000000000000, 6.6053463194597155, 7.383806606351496;
-    cell_angles_true <<  1.4313508192414794, 1.5423518764040736, 1.1973182286702833; // angle in radian
+    cell_lengths_true <<
+      6.190000000000000, 6.6053463194597155, 7.383806606351496;
+    // angle in radian
+    cell_angles_true <<
+      1.4313508192414794, 1.5423518764040736, 1.1973182286702833;
 
     for (int ii{0};ii<3;++ii) {
       auto error{std::abs(cell_lengths[ii]-cell_lengths_true[ii])};

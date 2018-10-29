@@ -54,7 +54,7 @@ namespace rascal {
     using LayerByOrder = std::index_sequence<0, 0>;
   };
 
-  //----------------------------------------------------------------------------//
+  /* ---------------------------------------------------------------------- */
   //! Definition of the new StructureManagerLammps class.
   class StructureManagerLammps:
     public StructureManager<StructureManagerLammps>
@@ -101,7 +101,8 @@ namespace rascal {
      *
      * @param numneigh Property `numneigh` in the lammps `NeighList` structure
      *
-     * @param firstneigh Property `firstneigh` in the lammps `NeighList` structure
+     * @param firstneigh Property `firstneigh` in the lammps `NeighList`
+     * structure
      *
      * @param x Property `x` in the lammps `Atom` structure
      *

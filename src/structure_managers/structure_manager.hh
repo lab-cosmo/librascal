@@ -587,11 +587,11 @@ namespace rascal {
       return this->atoms;
     }
 
-    /** 
-    * Returns the position of the last atom in the cluster, e.g. 
-    * when cluster order==1 it is the atom position,
-    * when cluster order==2 it is the neighbour position, etc. 
-    */
+    /**
+     * Returns the position of the last atom in the cluster, e.g. when cluster
+     * order==1 it is the atom position, when cluster order==2 it is the
+     * neighbour position, etc.
+     */
     inline decltype(auto) get_position() {
       return this->get_manager().position(this->get_atom_index());
     }

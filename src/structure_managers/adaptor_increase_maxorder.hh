@@ -89,7 +89,6 @@ namespace rascal {
     using ClusterRef_t =
       typename ManagerImplementation::template ClusterRef<Order>;
     using Vector_ref = typename Parent::Vector_ref;
-    using Vector_t = typename Parent::Vector_t;
 
     static_assert(traits::MaxOrder > 2,
                   "ManagerImplementation needs at least a pair list for"

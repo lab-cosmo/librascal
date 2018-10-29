@@ -6,7 +6,7 @@
  * @date   08 August 2018
  *
  * @brief Lattice class used to compute face distances within the cell and to
- * scale and unscale positions
+ *        scale and unscale positions
  *
  * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *

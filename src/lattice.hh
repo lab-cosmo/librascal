@@ -29,7 +29,7 @@
 #ifndef LATTICE_H
 #define LATTICE_H
 
-#include <basic_types.hh>
+//#include <basic_types.hh>
 #include <atomic_structure.hh>
 
 #include <Eigen/Dense>
@@ -45,6 +45,15 @@ namespace rascal {
    */
   class Lattice {
   public:
+
+    // TODO: make dimension dependend on a template parameter
+    constexpr static auto Dim{3};
+    using Cell_t = typename AtomicStructure<Dim>::Cell_t;
+    using AtomTypes_t = typename AtomicStructure<Dim>::AtomTypes_t;
+    using PBC_t = typename AtomicStructure<Dim>::PBC_t;
+    using Positions_t = typename AtomicStructure<Dim>::Positions_t;
+    using Vec3_t = Eigen::Matrix<double, Dim, 1>;
+
     //! Default constructor
     Lattice() = default;
 
@@ -253,7 +262,8 @@ namespace rascal {
     Cell_t cartesian2scaled = Cell_t::Zero();
     double pi{EIGEN_PI};
 
-    constexpr static int Dim{3};
+    // TODO: put this in template parameter
+    //constexpr static int Dim{3};
   };
 } // rascal
 
