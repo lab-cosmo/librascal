@@ -124,18 +124,6 @@ namespace rascal {
       return Vector_ref(xval);
     }
 
-    //! return position vector of the last atom in the cluster
-    template<size_t Order, size_t Layer>
-    inline Vector_ref get_neighbour_position(const ClusterRefKey<Order,
-                                             Layer> & cluster) {
-      static_assert(Order > 1,
-                    "Only possible for Order > 1.");
-      static_assert(Order <= traits::MaxOrder,
-                    "Order too large, not available.");
-
-      return this->get_position(cluster.back());
-    }
-
     //! get const atom type reference given an atom_index
     inline const int & get_atom_type(const int & atom_index) const {
       return this->type[atom_index];

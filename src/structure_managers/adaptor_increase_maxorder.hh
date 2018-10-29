@@ -171,17 +171,6 @@ namespace rascal {
       return this->manager.get_position(atom.get_index());
     }
 
-    template<size_t Order, size_t Layer>
-    inline Vector_ref
-    get_neighbour_position(const ClusterRefKey<Order, Layer> & cluster) {
-      static_assert(Order > 1,
-                    "Only possible for Order > 1.");
-      static_assert(Order <= traits::MaxOrder,
-                    "this implementation should only work up to MaxOrder.");
-
-      return this->get_position(cluster.back());
-    }
-
     //! get atom type from underlying manager
     inline const int & get_atom_type(const int & atom_index) const {
       return this->manager.get_atom_type(atom_index);

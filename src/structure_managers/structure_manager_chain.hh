@@ -250,21 +250,6 @@ namespace rascal {
       return Vector_ref(xval);
     }
 
-    /**
-     * Returns the position of a neighbour. In case of periodic boundary
-     * conditions, the get_neighbour_position should return a different
-     * position, if it is a ghost atom.
-     */
-    template<size_t Order, size_t Layer>
-    inline Vector_ref get_neighbour_position(const ClusterRefKey<Order, Layer>
-                                             & cluster) {
-      static_assert(Order > 1,
-                    "Only possible for Order > 1.");
-      static_assert(Order <= traits::MaxOrder,
-                    "this implementation should only work up to MaxOrder.");
-      return this->get_position(cluster.back());
-    }
-
     //! returns a map to all atomic positions.
     inline Positions_ref get_positions() {
       return Positions_ref(this->pos_data.data(), traits::Dim,
