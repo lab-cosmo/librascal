@@ -156,7 +156,7 @@ namespace rascal {
     operator=(StructureManagerCenters && other) = default;
 
     /**
-     * invokes the reinitialisation and initlalization of data. E.g. when the
+     * invokes the reinitialisation based on existing data. E.g. when the
      * atom positions are provided by a simulation method, which evolves in
      * time, this function updates the data.
      */
