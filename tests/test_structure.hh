@@ -32,7 +32,6 @@
 
 #include "structure_managers/structure_manager_base.hh"
 #include "structure_managers/structure_manager_lammps.hh"
-#include "structure_managers/structure_manager_cell.hh"
 #include "structure_managers/structure_manager_chain.hh"
 #include "structure_managers/structure_manager_json.hh"
 #include "structure_managers/structure_manager_centers.hh"
@@ -61,7 +60,7 @@ namespace rascal {
       cell(3, 3), positions(3, 22), numbers(22)
     {
       cell <<
-	6.19, 2.41, 0.21,
+	      6.19, 2.41, 0.21,
         0.00, 6.15, 1.02,
         0.00, 0.00, 7.31;
       positions <<
@@ -96,7 +95,6 @@ namespace rascal {
     }
 
     ~ManagerFixture() {
-
     }
 
     ManagerImplementation manager{};
@@ -106,6 +104,22 @@ namespace rascal {
     Eigen::MatrixXd cell;
     Eigen::MatrixXd positions; // 3, 22
     Eigen::VectorXi numbers;
+  };
+
+  /* ---------------------------------------------------------------------- */
+  template<class ManagerImplementation>
+  struct ManagerNLFixture: public ManagerFixture<ManagerImplementation> {
+    using Manager_t = ManagerImplementation;
+
+    static_assert(ManagerImplementation::traits::MaxOrder == 1,"");
+
+    ManagerNLFixture()
+      :ManagerFixture<ManagerImplementation>{}, pair_manager{this->manager,3.}
+    {
+      this->pair_manager.update();
+    }
+
+    AdaptorNeighbourList<ManagerImplementation> pair_manager;
   };
 
   /* ---------------------------------------------------------------------- */

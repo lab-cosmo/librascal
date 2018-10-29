@@ -34,6 +34,8 @@
 #include "lattice.hh"
 #include "atomic_structure.hh"
 #include "basic_types.hh"
+#include "structure_managers/json_io.hh"
+
 
 // data types and operations are based on the Eigen library
 #include <Eigen/Dense>
@@ -267,6 +269,12 @@ namespace rascal {
 
     //! Function for returning the number of atoms
     size_t get_nb_clusters(size_t cluster_size) const;
+
+    /**
+     * Function to read from a JSON file. Based on the above mentioned header
+     * class
+     */
+    // void read_structure_from_json(const std::string filename);
 
   protected:
     /**
