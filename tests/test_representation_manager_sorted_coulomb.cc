@@ -32,6 +32,77 @@
 namespace rascal {
   BOOST_AUTO_TEST_SUITE(representation_sorted_coulomb_test);
   /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE(internal_test,
+  RepresentationFixture<StructureManagerCenters>)
+  {
+    typedef std::vector<double>::const_iterator myiter;
+    typedef Eigen::Matrix<double,10,1> vec;
+
+    vec  numbers = vec::Random();
+    vec  numbers2 = vec::Random();
+    std::vector<double> index{};
+    std::vector<double> index2{};
+    std::cout << "Test simple sorting " << std::endl;
+    for (int ii{0}; ii < numbers.size(); ii++){
+        index.push_back(numbers(ii));
+        index2.push_back(numbers2(ii));
+        std::cout << numbers(ii) << ", " ;
+    }
+    std::cout << std::endl;
+
+    std::vector<pair<size_t, myiter> > order(index.size());
+
+    size_t n{0};
+    for (myiter it = index.begin(); it != index.end(); ++it, ++n)
+        {order[n] = make_pair(n, it);}
+
+    std::sort(order.begin(), order.end(), internal::ordering());
+    auto sorted_index = internal::sort_from_ref(index,order);
+    auto sorted_index2 = internal::sort_from_ref(index2,order);
+    for (size_t ii{0}; ii < sorted_index.size(); ii++){
+        std::cout << sorted_index[ii] << ", " ;
+    }
+    std::cout << std::endl;
+    for (size_t ii{0}; ii < sorted_index2.size(); ii++){
+        std::cout << index2[ii] << ", " ;
+    }
+    std::cout << std::endl;
+
+    for (size_t ii{0}; ii < sorted_index2.size(); ii++){
+        std::cout << sorted_index2[ii] << ", " ;
+    }
+    std::cout << std::endl;
+
+    std::cout << "Test upper diag sorting " << std::endl;
+    typedef Eigen::Matrix<double,5,5> matrix;
+    typedef Eigen::Matrix<double,5*(5+1)/2,1> lin_mat;
+
+    matrix  mat0 = matrix::Random();
+    lin_mat  mat1 = lin_mat::Ones();
+    std::vector<double> dists{{2,4,0,1,3}};
+    
+    std::vector<pair<size_t, myiter> > order_mat(dists.size());
+
+    size_t n_{0};
+    for (myiter it = dists.begin(); it != dists.end(); ++it, ++n_)
+        {order_mat[n_] = make_pair(n_, it);}
+
+    std::sort(order_mat.begin(), order_mat.end(), internal::ordering());
+    internal::sort_coulomb_matrix(mat0,mat1,order_mat);
+    for (int ii{0}; ii < mat0.rows(); ii++){
+      for (int jj{0}; jj < mat0.cols(); jj++){
+         std::cout << mat0(ii,jj) << ",\t" ;
+      }
+      std::cout << std::endl;
+    }
+
+    for (int jj{0}; jj < mat1.rows(); jj++){
+        std::cout << mat1(jj)<< ", " ;
+    }
+    std::cout << std::endl;
+
+  }
+  /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
   RepresentationFixture<StructureManagerCenters>)
   { 

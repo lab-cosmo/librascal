@@ -32,9 +32,58 @@
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/property.hh"
 #include <vector>
+#include <algorithm>
 
 namespace rascal {
 
+  namespace internal {
+
+    typedef std::vector<double>::const_iterator myiter;
+
+    struct ordering {
+      bool operator ()(std::pair<size_t, myiter> const& a, 
+                              std::pair<size_t, myiter> const& b) {
+          return *(a.second) < *(b.second);
+      }
+    };
+
+
+    template <typename T>
+    std::vector<T> sort_from_ref(
+        std::vector<T> const& in,
+        std::vector<std::pair<size_t, myiter> > const& reference) {
+        std::vector<T> ret(in.size());
+
+        size_t const size = in.size();
+        for (size_t i{0}; i < size; ++i)
+          {
+            ret[i] = in[reference[i].first];
+          }
+
+        return ret;
+    }
+
+    template <typename DerivedA,typename DerivedB>
+    void sort_coulomb_matrix(
+      const Eigen::DenseBase<DerivedA> & in,
+      Eigen::DenseBase<DerivedB> & out,
+      std::vector<std::pair<size_t, myiter> > const& reference) {
+      
+      
+      auto ncol = in.cols();
+      size_t ii{0};
+      // auto nn{ncol*(ncol-1)/2};
+      // std::cout <<ncol<<", "<<nn <<std::endl;
+      for (auto i{0}; i < ncol; ++i) {
+        auto col_id{reference[i].first};
+        for (auto j{col_id}; j < ncol; ++j) {
+          out(ii) = in(j,col_id);
+          ii += 1;
+        }
+      }
+    }
+
+  }
 
   template<class StructureManager>
   class RepresentationManagerSortedCoulomb: public RepresentationManagerBase
@@ -111,34 +160,56 @@ namespace rascal {
   template<class Mngr>
   void RepresentationManagerSortedCoulomb<Mngr>::compute(){
     
-    // upper diag of the coulomb mat
-    Eigen::MatrixXd lin_coulomb(this->size,this->size);
+    
     // lin_coulomb.resize(this->size*(this->size+1)/2);
     // lin_coulomb.resize(this->size*this->size);
 
     // upper diag of the coulomb mat
-    std::vector<double> distances_to_sort{};
-    //! initialise the coulomb_matrices storage
+   
+    // initialise the coulomb_matrices storage
     this->coulomb_matrices.resize_to_zero();
+    this->coulomb_matrices.set_nb_row(this->size);
+
+    typedef std::vector<double>::const_iterator distiter;
 
     for (auto center: this->structure_manager){
+      std::vector<double> distances_to_sort{};
+      // the local coulomb matrix
+      auto Nneighbours{center.size()};
+      Eigen::MatrixXd coulomb_mat(Nneighbours,Nneighbours);
+      Eigen::MatrixXd lin_sorted_coulomb_mat(this->size*(this->size+1)/2,1);
 
       for (auto neigh_i: center){
         size_t ii{neigh_i.get_index()};
         auto dik{this->structure_manager.get_distance(neigh_i)};
         distances_to_sort.push_back(dik);
         auto Zi{neigh_i.get_atom_type()};
-        lin_coulomb(ii*this->size) = 0.5*std::pow(Zi,2.4);
+        coulomb_mat(ii,ii) = 0.5*std::pow(Zi,2.4);
         for (auto neigh_j: center){
           size_t jj{neigh_j.get_index()};
           // work only on the lower diagonal
           if (ii > jj) continue;
           auto Zj{neigh_i.get_atom_type()};
           auto dij{(neigh_i.get_position()-neigh_j.get_position()).norm()};
-          lin_coulomb(ii*this->size+jj) = Zi*Zj/dij;
+          coulomb_mat(jj,ii) = Zi*Zj/dij;
         }
       }
+
+      std::vector<std::pair<size_t, distiter> > order_coulomb(distances_to_sort.size());
+
+      size_t nn{0};
+      for (distiter it{distances_to_sort.begin()}; 
+                            it != distances_to_sort.end(); ++it, ++nn)
+          {order_coulomb[nn] = make_pair(nn, it);}
+      
+      std::sort(order_coulomb.begin(), order_coulomb.end(), internal::ordering());
+
+      internal::sort_coulomb_matrix(coulomb_mat,lin_sorted_coulomb_mat,order_coulomb);
+      this->coulomb_matrices.push_back(lin_sorted_coulomb_mat);
     }
+
+
+
   }
 
 }

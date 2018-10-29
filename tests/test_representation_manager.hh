@@ -88,7 +88,6 @@ template<class StructureManager>
     
     std::array<int, 3> pbc;
     double cutoff_max;
-    Eigen::VectorXi center_ids;
     Eigen::MatrixXd cell;
     Eigen::MatrixXd positions; // 3, 22
     Eigen::VectorXi numbers;
