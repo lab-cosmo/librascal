@@ -123,8 +123,8 @@ namespace rascal {
     ~ManagerFixtureFile()  {}
 
     double cutoff;
-    ManagerImplementation manager{};
     std::string filename{};
+    ManagerImplementation manager{};
   };
 
   /* ---------------------------------------------------------------------- */
@@ -137,7 +137,7 @@ namespace rascal {
                   "Lowest layer manager has MaxOrder != 1");
 
     ManagerNeighbourListFixture()
-      :ManagerFixture<ManagerImplementation>{}, pair_manager{this->manager, 3.}
+      : ManagerFixture<ManagerImplementation>{}, pair_manager{this->manager, 3.}
     {
       this->pair_manager.update();
     }
@@ -316,6 +316,31 @@ namespace rascal {
 
     Manager_t manager;
     double cutoff;
+  };
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * fixture for providing a neighbour list from a simple manager
+   */
+  template<class ManagerImplementation>
+  struct PairFixture : public ManagerFixtureFile<ManagerImplementation> {
+    using Manager_t = ManagerImplementation;
+
+    static_assert(ManagerImplementation::traits::MaxOrder == 1,
+                  "Lower layer manager has MaxOrder needs MaxOrder = 1");
+
+    using PairManager_t = AdaptorNeighbourList<ManagerImplementation>;
+
+    PairFixture()
+      : ManagerFixtureFile<ManagerImplementation> {},
+      pair_manager{this->manager, this->cutoff}
+    {
+      this->pair_manager.update();
+    }
+
+    ~PairFixture() {}
+
+    AdaptorNeighbourList<ManagerImplementation> pair_manager;
   };
 
   /* ---------------------------------------------------------------------- */

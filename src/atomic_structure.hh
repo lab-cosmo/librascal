@@ -43,14 +43,20 @@ namespace rascal {
   template <int Dim>
   struct AtomicStructure {
     /**
-     *  \param cell is a vector a vector of vectors which holds the cell unit
-     *  vectors.
-     *  \param type a vector of integers which holds the atomic type
-     *  (atomic number as per periodic table).
+     * A common structure to access atom and cell related data, based on the
+     * idea of the atoms object in the Atomic Simulation Environment. The object
+     * contains atomic positions, the cell vectors, periodicity information as
+     * well as the atomic types (element).
+     *
+     *  \param cell is a contiguous vector which holds the cell unit vectors.
+     *
+     *  \param type a vector of integers which holds the atomic type (atomic
+     *  number as per periodic table).
+     *
      *  \param pbc is a 0/1 vector which defines the periodicity of the given
      *  structure for each dimension
-     *  \param position is a vector of vectors which holds the atomic
-     *  positions.
+     *
+     *  \param position is a vector which holds the atomic positions.
      */
     using Cell_t = Eigen::Matrix<double, Dim, Dim>;
     using Cell_ref = Eigen::Map<Cell_t>;

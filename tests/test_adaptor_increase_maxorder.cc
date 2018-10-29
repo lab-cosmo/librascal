@@ -36,14 +36,14 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
-                          ManagerFixture<StructureManagerChain>) {
-    AdaptorMaxOrder<StructureManagerChain> adaptor{manager};
+                          PairFixture<StructureManagerCenters>) {
+    AdaptorMaxOrder<PairManager_t> adaptor{this->pair_manager};
     adaptor.update();
   }
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(iterator_test,
-                          ManagerFixture<StructureManagerChain>) {
+                          PairFixture<StructureManagerCenters>) {
 
     constexpr bool verbose{false};
     constexpr bool check_below{false};
@@ -51,7 +51,7 @@ namespace rascal {
     // Check underlying manager
     if (check_below) std::cout << ">> underlying manager " << std::endl;
     size_t npairs1{0};
-    for (auto atom : manager) {
+    for (auto atom : pair_manager) {
       if (verbose) {
         std::cout << "chain atom "
                   << atom.back()
@@ -72,10 +72,10 @@ namespace rascal {
       std::cout << "<< underlying manager" << std::endl;
     }
 
-    auto npairs_tmp = manager.get_nb_clusters(2);
+    auto npairs_tmp = pair_manager.get_nb_clusters(2);
     BOOST_CHECK_EQUAL(npairs_tmp, npairs1);
 
-    AdaptorMaxOrder<StructureManagerChain> adaptor{manager};
+    AdaptorMaxOrder<PairManager_t> adaptor{this->pair_manager};
     adaptor.update();
 
     //! make sure the number of pairs gets carried over to the next layer
