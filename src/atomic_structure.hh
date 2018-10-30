@@ -87,12 +87,6 @@ namespace rascal {
     Cell_t cell;
     PBC_t pbc;
 
-    // contiguous std::vector when reading from json for push_back
-    std::vector<double> cell_data{};
-    std::vector<int> type_data{};
-    std::vector<int> pbc_data{};
-    std::vector<double> pos_data{};
-
     //! method for initializing structure data from raw Eigen types, beware:
     //! copy!
     void set_structure(const PositionsInput_t & positions,
@@ -109,6 +103,13 @@ namespace rascal {
     //! method for initializing structure from a json object; data is copied
     void set_structure(const json_io::AtomicJsonData & s) {
 
+      // internal std::vector for reading from json, necessary for push_back, no
+      // direct mapping possible
+      std::vector<double> cell_data{};
+      std::vector<int> type_data{};
+      std::vector<int> pbc_data{};
+      std::vector<double> pos_data{};
+
       // check for empty data set
       try {
         auto pos_size = s.position.size();
@@ -124,30 +125,29 @@ namespace rascal {
       // get data out of the json object to access with Eigen::Map
       for (auto vec : s.cell) {
         for (auto coord : vec) {
-          this->cell_data.push_back(coord);
+          cell_data.push_back(coord);
         }
       }
       // elements
       for (auto val : s.type) {
-        this->type_data.push_back(val);
+        type_data.push_back(val);
       }
       // periodicity
       for (auto val : s.pbc) {
-        this->pbc_data.push_back(val);
+        pbc_data.push_back(val);
       }
       // positions
       for (auto pos : s.position) {
         for (auto coord : pos) {
-          this->pos_data.push_back(coord);
+          pos_data.push_back(coord);
         }
       }
-      // set them to internal data structure
-      this->cell = Cell_ref(this->cell_data.data());
-      this->atoms_type = AtomTypes_ref(this->type_data.data(),
-                                       this->type_data.size());
-      this->pbc = PBC_ref(this->pbc_data.data());
-      this->positions = Positions_ref(this->pos_data.data(), Dim,
-                                      this->pos_data.size() / Dim);
+      // associate them to internal data structure
+      this->cell = Cell_ref(cell_data.data());
+      this->atoms_type = AtomTypes_ref(type_data.data(), type_data.size());
+      this->pbc = PBC_ref(pbc_data.data());
+      this->positions = Positions_ref(pos_data.data(), Dim,
+                                      pos_data.size() / Dim);
     }
   };
 

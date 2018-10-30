@@ -62,7 +62,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   /**
    * test for checking StructureManagerCenters specific interface, ``manager``
-   * is the name of tha manager object.
+   * is the name of the manager object. it checks specifically, if the data
+   * which is read from a json file (or in the case
    */
   BOOST_FIXTURE_TEST_CASE(simple_cubic_9_neighbour_list,
                           ManagerFixtureFile<StructureManagerCenters>) {
