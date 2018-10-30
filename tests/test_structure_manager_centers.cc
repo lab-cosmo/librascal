@@ -60,6 +60,34 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * test for checking StructureManagerCenters specific interface, ``manager``
+   * is the name of tha manager object.
+   */
+  BOOST_FIXTURE_TEST_CASE(simple_cubic_9_neighbour_list,
+                          ManagerFixtureFile<StructureManagerCenters>) {
+
+    constexpr bool verbose{false};
+    if (verbose) std::cout << "StructureManagerCenters interface" << std::endl;
+
+    auto dim{manager.dim()};
+    if (verbose) std::cout << "dimension: " << dim << std::endl;
+
+    auto cell{manager.get_cell()};
+    if (verbose) std::cout << "cell:\n" << cell << std::endl;
+
+    auto atom_types{manager.get_atom_types()};
+    if (verbose) std::cout << "atom types:\n" << atom_types << std::endl;
+
+    auto positions{manager.get_positions()};
+    if (verbose) std::cout << "atom positions:\n" << positions << std::endl;
+
+    auto periodicity{manager.get_periodic_boundary_conditions()};
+    if (verbose) std::cout << "periodicity (x,y,z):\n"
+                           << periodicity << std::endl;
+  }
+
+  /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(manager_update_test,
                           ManagerFixture<StructureManagerCenters>) {
 

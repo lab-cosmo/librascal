@@ -81,6 +81,7 @@ namespace rascal {
     using PBCInput_t =
       Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1>>;
 
+    // Eigen types for construction with existing data in Eigen format
     Positions_t positions;
     AtomTypes_t atoms_type;
     Cell_t cell;
@@ -126,21 +127,21 @@ namespace rascal {
           this->cell_data.push_back(coord);
         }
       }
-
+      // elements
       for (auto val : s.type) {
         this->type_data.push_back(val);
       }
-
+      // periodicity
       for (auto val : s.pbc) {
         this->pbc_data.push_back(val);
       }
-
+      // positions
       for (auto pos : s.position) {
         for (auto coord : pos) {
           this->pos_data.push_back(coord);
         }
       }
-
+      // set them to internal data structure
       this->cell = Cell_ref(this->cell_data.data());
       this->atoms_type = AtomTypes_ref(this->type_data.data(),
                                        this->type_data.size());
