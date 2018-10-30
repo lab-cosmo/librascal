@@ -195,7 +195,7 @@ namespace rascal {
 
     //! Returns an a map with all atom types.
     inline AtomTypes_ref get_atom_types() {
-      AtomTypes_ref val(this->atoms_object.atoms_type.data(),
+      AtomTypes_ref val(this->atoms_object.atom_types.data(),
                         1, this->natoms);
       return val;
     }

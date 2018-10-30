@@ -36,8 +36,8 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(neighbour_list_adaptor_test);
 
   /* ---------------------------------------------------------------------- */
-  /**
-   * very simple 9 atom neighbourlist build without periodicity
+  /*
+   * very simple 9 atom neighbour list build without periodicity
    */
   BOOST_FIXTURE_TEST_CASE(simple_cubic_9_neighbour_list,
                           ManagerFixtureFile<StructureManagerCenters>) {
@@ -114,7 +114,7 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  /**
+  /*
    * test if two differently defined 2-atom units cells of hcp crystal structure
    * yield the same number of neighbours per atom, if the cutoff is increased.
    */
@@ -208,7 +208,7 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  /**
+  /*
    * Test if two differently defined 1-atom and 4-atom units cells of fcc
    * crystal structure yield the same number of neighbours per atom at the
    * origin, if the cutoff is increased. ``manager_1`` has one atom at the
@@ -298,6 +298,8 @@ namespace rascal {
       }
     }
   }
+
+  // TODO: add test for different skewedness of an originally rectangular box
 
   BOOST_AUTO_TEST_SUITE_END();
 

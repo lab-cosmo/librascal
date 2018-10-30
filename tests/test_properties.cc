@@ -31,7 +31,6 @@
 #include "test_structure.hh"
 #include "structure_managers/property.hh"
 
-
 namespace rascal {
 
   BOOST_AUTO_TEST_SUITE (Property_tests);
@@ -182,7 +181,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * test for
+   * test for distances
    */
   BOOST_FIXTURE_TEST_CASE(compute_distances,
                           PropertyFixture<StructureManagerCenters>) {

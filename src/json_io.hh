@@ -47,7 +47,7 @@ namespace rascal {
   namespace json_io {
     /**
      * Object to deserialize the content of a JSON file containing Atomic
-     * Simulation Environment (ASE) type atomic structures, the nlohmann::json (
+     * Simulation Environment (ASE) type atomic structures, the nlohmann::json
      * needs a <code>struct</code> with standard data types for deserialization
      */
     struct AtomicJsonData {

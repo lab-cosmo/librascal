@@ -34,17 +34,21 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(half_neighbourlist_adaptor_test);
   /* ---------------------------------------------------------------------- */
+  /*
+   * test the reduction of a full to a half neighbour list
+   */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
                           ManagerFixture<StructureManagerLammps>) {
 
-    //! TODO: should this be included in the constructor?
-    // I don't think so because if it fails in the Fixture is is harder
-    // to undertand where the error comes from
     AdaptorHalfList<StructureManagerLammps> adaptor{manager};
     adaptor.update();
   }
 
   /* ---------------------------------------------------------------------- */
+  /*
+   * test if sum of distances are the same in the full list and 2 x the half
+   * list
+   */
   BOOST_FIXTURE_TEST_CASE(iteration_and_distance_half_list,
                           ManagerFixture<StructureManagerLammps>) {
 

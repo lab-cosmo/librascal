@@ -32,10 +32,12 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(ManagerCentersTests);
   /* ---------------------------------------------------------------------- */
+  // checking the constructor
   BOOST_FIXTURE_TEST_CASE(manager_centers_constructor_test,
                           ManagerFixture<StructureManagerCenters>){}
 
   /* ---------------------------------------------------------------------- */
+  // checking iteration
   BOOST_FIXTURE_TEST_CASE(iterator_test,
                           ManagerFixture<StructureManagerCenters>) {
 
@@ -89,6 +91,7 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  // checking update
   BOOST_FIXTURE_TEST_CASE(manager_update_test,
                           ManagerFixture<StructureManagerCenters>) {
 

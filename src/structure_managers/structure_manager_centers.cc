@@ -64,27 +64,21 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-
   // overloading the update function to be able to update from a file
   void StructureManagerCenters::update(const std::string filename) {
     this->read_structure_from_json(filename);
 
-    this->natoms = this->atoms_object.positions.size()/traits::Dim;
+    this->natoms = this->atoms_object.positions.size() / traits::Dim;
     StructureManagerCenters::build();
 
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
     atom_cluster_indices.fill_sequence();
   }
 
-
   /* ---------------------------------------------------------------------- */
-  /*
-   * function for setting the internal data structures
-   */
+  // function for setting the internal data structures
   void StructureManagerCenters::build() {
-
-    this->atoms_object.atoms_type.resize(this->natoms);
-    //! set the references to the particles positions
+    // set the references to the particles positions
     for (size_t id{0}; id < this->natoms; ++id){
       this->atoms_index[0].push_back(id);
       this->offsets.push_back(id);

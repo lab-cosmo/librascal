@@ -35,7 +35,7 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(maxlevel_increase_adaptor_test);
 
   /* ---------------------------------------------------------------------- */
-  /**
+  /*
    * test if the PairFixtureFile is constructed properly and accepts the adaptor
    * to increase the MaxOrder to 3
    */
@@ -46,7 +46,7 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  /**
+  /*
    * test if iteration of MaxOrder=3 adaptor is iterable and yields the same
    * pairs as the underlying pair_manager.
    */
@@ -136,7 +136,7 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  /**
+  /*
    * Test with 3 atoms, included stacking: full pair list -> half pair list ->
    * triplet list; SM is used as a shorthand for StructureManager. Checked
    * positions are specific to StructureManagerLammps and therefore hardcoded.

@@ -37,22 +37,24 @@ namespace rascal {
     ManagerFixture<StructureManagerCenters>,
     ManagerFixture<StructureManagerLammps>>;
 
-
+  /* ---------------------------------------------------------------------- */
   // just checks that the structure managers can be constructed
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_constructor_test, Fix,
-                                   fixtures, Fix) { }
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_constructor_test, Fix, fixtures,
+                                   Fix) { }
 
+  /* ---------------------------------------------------------------------- */
   // the size of the manager should correspond to the number of size 1 clusters
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_size_consistency, Fix,
-                                   fixtures, Fix) {
-    auto &manager = Fix::manager;
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_size_consistency, Fix, fixtures,
+                                   Fix) {
+    auto & manager = Fix::manager;
     BOOST_CHECK_EQUAL(manager.size(), manager.nb_clusters(1));
   }
 
+  /* ---------------------------------------------------------------------- */
   // loops over the centers in the manager making sure positions are consistent
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_atom_indexing, Fix,
-                                   fixtures, Fix) {
-    auto &manager = Fix::manager;
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_atom_indexing, Fix, fixtures,
+                                   Fix) {
+    auto & manager = Fix::manager;
     for (auto atom : manager) {
       // checks get_atom_index exists
       auto index = atom.get_atom_index();
@@ -66,8 +68,9 @@ namespace rascal {
       auto position_error = (atom.get_position() -
                              manager.position(index)).norm();
       BOOST_CHECK(position_error < tol / 100);
+
       position_error = (atom.get_position() -
-                             manager.position(atom.back())).norm();
+                        manager.position(atom.back())).norm();
       BOOST_CHECK(position_error < tol / 100);
     }
   }

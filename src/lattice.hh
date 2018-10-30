@@ -243,7 +243,6 @@ namespace rascal {
       position = this->scaled2cartesian.transpose() * position_sc;
     }
 
-
   protected:
     //! lattice vectors
     Cell_t cell_vectors = Cell_t::Ones();

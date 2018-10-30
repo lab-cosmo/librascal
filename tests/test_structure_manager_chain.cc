@@ -32,6 +32,11 @@
 
 #include <iostream>
 
+/**
+ * EOL determined: this manager including its tests is an example and should
+ * will be moved to the examples section
+ */
+
 namespace rascal {
 
   // BOOST_AUTO_TEST_SUITE(ManagerChainTests);

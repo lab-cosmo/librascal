@@ -81,21 +81,21 @@ namespace rascal {
     using PBCInput_t =
       Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1>>;
 
-    // Eigen types for construction with existing data in Eigen format
+    // Eigen types for saving atomic structure data
     Positions_t positions;
-    AtomTypes_t atoms_type;
+    AtomTypes_t atom_types;
     Cell_t cell;
     PBC_t pbc;
 
     //! method for initializing structure data from raw Eigen types, beware:
     //! copy!
     void set_structure(const PositionsInput_t & positions,
-                       const AtomTypesInput_t &  atoms_type,
+                       const AtomTypesInput_t &  atom_types,
                        const Eigen::Ref<const Eigen::MatrixXd> cell,
                        const PBCInput_t & pbc) {
 
       this->cell = cell;
-      this->atoms_type = atoms_type;
+      this->atom_types = atom_types;
       this->pbc = pbc;
       this->positions = positions;
     }
@@ -144,13 +144,12 @@ namespace rascal {
       }
       // associate them to internal data structure
       this->cell = Cell_ref(cell_data.data());
-      this->atoms_type = AtomTypes_ref(type_data.data(), type_data.size());
+      this->atom_types = AtomTypes_ref(type_data.data(), type_data.size());
       this->pbc = PBC_ref(pbc_data.data());
       this->positions = Positions_ref(pos_data.data(), Dim,
                                       pos_data.size() / Dim);
     }
   };
-
 } // rascal
 
 #endif /* ATOMIC_STRUCTURE_H */
