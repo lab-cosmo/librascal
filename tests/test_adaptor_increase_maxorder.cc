@@ -35,6 +35,10 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(maxlevel_increase_adaptor_test);
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * test if the PairFixture is constructed properly and accepts the adaptor to
+   * increase the MaxOrder to 3
+   */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
                           PairFixture<StructureManagerCenters>) {
     AdaptorMaxOrder<PairManager_t> adaptor{this->pair_manager};
@@ -42,6 +46,10 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * test if iteration of MaxOrder=3 adaptor is iterable and yields the same
+   * pairs as the underlying pair_manager.
+   */
   BOOST_FIXTURE_TEST_CASE(iterator_test,
                           PairFixture<StructureManagerCenters>) {
 
@@ -131,7 +139,7 @@ namespace rascal {
   /**
    * Test with 3 atoms, included stacking: full pair list -> half pair list ->
    * triplet list; SM is used as a shorthand for StructureManager. Checked
-   * positions are specific to StructureManagerLammps.
+   * positions are specific to StructureManagerLammps and therefore hardcoded.
    */
   BOOST_FIXTURE_TEST_CASE(pair_to_triplet_extension,
                           ManagerFixture<StructureManagerLammps>) {
@@ -182,28 +190,6 @@ namespace rascal {
         }
       }
     }
-  }
-
-  /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(simple_cubic_8_extension,
-                          ManagerFixtureFile<StructureManagerCenters>) {
-
-    constexpr bool verbose{false};
-
-    AdaptorNeighbourList<StructureManagerCenters> SM2{manager, cutoff};
-    SM2.update();
-
-    auto npairs = SM2.get_nb_clusters(2);
-
-    if (verbose) std::cout << "npairs " << npairs << std::endl;
-
-    int np{0};
-    for (auto atom : SM2) {
-      for (auto pair : atom) {
-        np++;
-      }
-    }
-    if (verbose) std::cout << "np " << np << std::endl;
   }
 
   BOOST_AUTO_TEST_SUITE_END();

@@ -93,11 +93,11 @@ if (${BUILD_TESTS})
   target_link_libraries(main_test_suite ${Boost_LIBRARIES} rascal)
   add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
   configure_file("tests/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
-  configure_file("tests/simple_cubic_8.json" ${CMAKE_BINARY_DIR} COPYONLY)
+  configure_file("tests/simple_cubic_9.json" ${CMAKE_BINARY_DIR} COPYONLY)
 endif(${BUILD_TESTS})
 
 # compile the library
-# add_compile_options(-Werror) # warnings are errors! 
+# add_compile_options(-Werror) # warnings are errors!
 add_subdirectory(
   ${CMAKE_SOURCE_DIR}/src/
   )

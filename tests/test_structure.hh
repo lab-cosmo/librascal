@@ -109,13 +109,14 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   /**
    * general case of a manager fixture, which reads the structure information
-   * from a file
+   * from a file, atomic structure contains 9 atoms in a very simple cubic unit
+   * cell, no periodicity
    */
   template<class ManagerImplementation>
   struct ManagerFixtureFile
   {
     ManagerFixtureFile():
-      cutoff{1.}, filename{"simple_cubic_8.json"}
+      cutoff{1.}, filename{"simple_cubic_9.json"}
     {
       manager.update(filename);
     }
@@ -309,7 +310,7 @@ namespace rascal {
 
     ManagerFixture()
       : manager{}, cutoff{1.0} {
-        manager.read_structure_from_json("simple_cubic_8.json");
+        manager.read_structure_from_json("simple_cubic_9.json");
       }
 
     ~ManagerFixture() {BOOST_TEST_MESSAGE("teardown ManagerChain fixture");}
@@ -419,7 +420,7 @@ namespace rascal {
       pbc{{true, true, true}}, cell_1(3, 3), cell_2(3, 3),
       positions_1(3, 2), positions_2(3, 2), numbers(2), cutoff{0.7}
     {
-      /**
+      /*
        * hcp crystal with lattice parameter a = 1, c = sqrt(8/3), defined in two
        * unit cells: basal and prismatic 1. The neighbourlist is built with the
        * same cutoff. The test checks, if all atoms have the same number of
@@ -499,7 +500,7 @@ namespace rascal {
       cutoff{0.7}, // start with zero neighbours
       natoms_1{1}, natoms_2{4}
     {
-      /**
+      /*
        * fcc unit cells: first cell consists of only one atom, which is
        * repeated, second cell is the conventional 4 atoms. This test checks, if
        * the found number of neighbours with increasing cutoff is the same for

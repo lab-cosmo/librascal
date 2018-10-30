@@ -36,18 +36,49 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(neighbour_list_adaptor_test);
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(constructor_test_fcc,
-                          ManagerFixtureNeighbourCheckFcc
-                          <StructureManagerCenters>) {
+  /**
+   * very simple 9 atom neighbourlist build without periodicity
+   */
+  BOOST_FIXTURE_TEST_CASE(simple_cubic_9_neighbour_list,
+                          ManagerFixtureFile<StructureManagerCenters>) {
+
+    constexpr bool verbose{false};
+
+    AdaptorNeighbourList<StructureManagerCenters> SM2{manager, cutoff};
+    SM2.update();
+
+    auto npairs = SM2.get_nb_clusters(2);
+
+    if (verbose) std::cout << "npairs " << npairs << std::endl;
+
+    int np{0};
+    for (auto atom : SM2) {
+      for (auto pair : atom) {
+        np++;
+      }
+    }
+    if (verbose) std::cout << "np " << np << std::endl;
   }
 
   /* ---------------------------------------------------------------------- */
+  //! test if hcp managers are constructed
   BOOST_FIXTURE_TEST_CASE(constructor_test_hcp,
                           ManagerFixtureNeighbourCheckHcp
                           <StructureManagerCenters>) {
   }
 
   /* ---------------------------------------------------------------------- */
+  //! test if fcc managers are constructed
+  BOOST_FIXTURE_TEST_CASE(constructor_test_fcc,
+                          ManagerFixtureNeighbourCheckFcc
+                          <StructureManagerCenters>) {
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * simple neighbourhood test with periodicity only in x-direction and a check
+   * for internal consistency
+   */
   BOOST_FIXTURE_TEST_CASE(test_build_neighbour_list_from_atoms,
                           ManagerFixtureSimple<StructureManagerCenters>){
 
@@ -83,11 +114,15 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * test if two differently defined 2-atom units cells of hcp crystal structure
+   * yield the same number of neighbours per atom, if the cutoff is increased.
+   */
   BOOST_FIXTURE_TEST_CASE(neighbourlist_test_hcp,
                           ManagerFixtureNeighbourCheckHcp
                           <StructureManagerCenters>) {
 
-    /**
+    /*
      * Note: since the cell vectors are different, it is possible that one of
      * the two atoms is repeated into a different cell due to periodicity. This
      * leads to a difference in number of neighbours. Therefore the strict
@@ -173,6 +208,13 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * Test if two differently defined 1-atom and 4-atom units cells of fcc
+   * crystal structure yield the same number of neighbours per atom at the
+   * origin, if the cutoff is increased. ``manager_1`` has one atom at the
+   * origin,``manager_2`` has 4 atoms (tetraeder). This is done to check if
+   * skewed-ness affects the neighbour list algorithm.
+   */
   BOOST_FIXTURE_TEST_CASE(neighbourlist_test_fcc,
                           ManagerFixtureNeighbourCheckFcc
                           <StructureManagerCenters>) {
@@ -242,12 +284,11 @@ namespace rascal {
         }
       }
 
-      /**
+      /*
        * only the first index atom can be checked, since the cell with only one
        * atom does not allow for comparison with other atom's number of
        * neighbours
        */
-
       BOOST_CHECK_EQUAL(neighbours_per_atom1[0],
                         neighbours_per_atom2[0]);
       if (verbose) {

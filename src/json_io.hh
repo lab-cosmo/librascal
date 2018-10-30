@@ -46,8 +46,9 @@ using json = nlohmann::json;
 namespace rascal {
   namespace json_io {
     /**
-     * Object to read from a JSON file and deserialize the content, the used
-     * class needs a <code>struct</code> with standard data types.
+     * Object to deserialize the content of a JSON file containing Atomic
+     * Simulation Environment (ASE) type atomic structures, the nlohmann::json (
+     * needs a <code>struct</code> with standard data types for deserialization
      */
     struct AtomicJsonData {
       /**
@@ -70,9 +71,9 @@ namespace rascal {
     };
 
     /**
-     * Function used to convert to the JSON format with the given keywords. It
+     * Function to convert to a JSON object format with the given keywords. It
      * is an overload of the function defined in the header class
-     * json.hpp. Inline needed, otherwise it is a multiple definition
+     * json.hpp. Inline needed, otherwise it is a multiple definition.
      */
     inline void to_json(json & j, AtomicJsonData & s) {
       j = json{
@@ -84,9 +85,9 @@ namespace rascal {
     }
 
     /**
-     * Function used to read from the JSON file and convert the data into
-     * standard types. It is an overload of the function defined in json.hpp
-     * class header.
+     * Function used to read from the JSON file, given the keywords and convert
+     * the data into standard types. Overload of the function defined in
+     * json.hpp class header.
      */
     inline void from_json(const json & j, AtomicJsonData & s) {
       s.cell = j.at("cell").get<std::vector<std::vector<double>>>();

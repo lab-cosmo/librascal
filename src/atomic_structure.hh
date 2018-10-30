@@ -86,7 +86,7 @@ namespace rascal {
     Cell_t cell;
     PBC_t pbc;
 
-    // contiguous storage
+    // contiguous std::vector when reading from json for push_back
     std::vector<double> cell_data{};
     std::vector<int> type_data{};
     std::vector<int> pbc_data{};
@@ -105,10 +105,10 @@ namespace rascal {
       this->positions = positions;
     }
 
-    //! method for initializing structure from a json object, beware: copy
+    //! method for initializing structure from a json object; data is copied
     void set_structure(const json_io::AtomicJsonData & s) {
 
-      // check for empty data sets
+      // check for empty data set
       try {
         auto pos_size = s.position.size();
         if (pos_size == 0) {
