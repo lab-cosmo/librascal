@@ -28,6 +28,8 @@
 
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/structure_manager_centers.hh"
+#include "structure_managers/adaptor_strict.hh"
+#include "structure_managers/adaptor_neighbour_list.hh"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
@@ -82,4 +84,28 @@ void add_manager_centers(py::module & m){
         return py::make_iterator(v.begin(),v.end());
       }, py::keep_alive<0, 1>()); /* Keep vector alive while iterator is used */
   add_cluster<1,StructureManagerCenters>(m);
+
+  // adaptor neighbour list binding
+  using AdaptedManager1_t = AdaptorNeighbourList<StructureManagerCenters>;
+  py::class_<StructureManager<AdaptedManager1_t>>(m,"")
+      .def(py::init<>());
+  py::class_<AdaptedManager1_t,
+              StructureManager<AdaptedManager1_t>> (m, 
+                    "AdaptorNeighbourList StructureManagerCenters")
+    .def(py::init<StructureManagerCenters& , double >())
+    .def("update", [](AdaptedManager1_t& v){
+        v.update();
+    } ); 
+
+  using AdaptedManager2_t = AdaptorStrict<
+                AdaptorNeighbourList<StructureManagerCenters>>;
+  py::class_<StructureManager<AdaptedManager2_t>>(m,"")
+      .def(py::init<>());
+  py::class_<AdaptedManager2_t,
+              StructureManager<AdaptedManager2_t>> (m, 
+                    "AdaptorStrict AdaptorNeighbourList StructureManagerCenters")
+    .def(py::init<AdaptedManager1_t& , double >())
+    .def("update", [](AdaptedManager2_t& v){
+        v.update();
+    } ); 
 };

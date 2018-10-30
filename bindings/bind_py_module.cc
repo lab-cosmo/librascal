@@ -35,6 +35,7 @@ namespace py=pybind11;
 extern void add_manager_centers(py::module&);
 extern void utils_binding(py::module&);
 extern void math_binding(py::module&);
+extern void add_sorted_coulomb(py::module&);
 
 PYBIND11_MODULE(_rascal, mod) {
   mod.doc() = "Python bindings for the Rascal library";
@@ -42,4 +43,5 @@ PYBIND11_MODULE(_rascal, mod) {
   add_manager_centers(mod);
   utils_binding(mod);
   math_binding(mod);
+  add_sorted_coulomb(mod);
 }

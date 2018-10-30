@@ -232,6 +232,7 @@ namespace rascal {
                             this->get_nb_col());
     }
 
+    // TODO make getter for values as Eigen map of the vector with the proper shape
   protected:
     std::vector<T> values{}; //!< storage for properties
   private:

@@ -70,19 +70,18 @@ namespace rascal {
       std::vector<std::pair<size_t, myiter> > const& reference) {
       
       
-      auto ncol = in.cols();
+      size_t ncol = in.cols();
       size_t ii{0};
       // auto nn{ncol*(ncol-1)/2};
       // std::cout <<ncol<<", "<<nn <<std::endl;
-      for (auto i{0}; i < ncol; ++i) {
+      for (size_t i{0}; i < ncol; ++i) {
         auto col_id{reference[i].first};
-        for (auto j{col_id}; j < ncol; ++j) {
+        for (size_t j{col_id}; j < ncol; ++j) {
           out(ii) = in(j,col_id);
           ii += 1;
         }
       }
     }
-
   }
 
   template<class StructureManager>
@@ -103,7 +102,7 @@ namespace rascal {
       interaction_decay{interaction_decay},size{size},
       coulomb_matrices{sm}
       {
-        // this->compute();
+        
       }
 
     RepresentationManagerSortedCoulomb(Manager_t &sm,const hypers_t& hyper)
@@ -137,10 +136,13 @@ namespace rascal {
     // get representation
     void compute();
 
+    //! getter for the representation
+    Property_t::reference get_representation() {
+      return this->coulomb_matrices;
+    }
 
     // TODO think of a generic input type for the hypers
     void set_hyperparameters(const hypers_t & );
-
 
     Manager_t& structure_manager;
     //hypers_t hyperparmeters;
