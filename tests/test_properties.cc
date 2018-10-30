@@ -36,10 +36,15 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE (Property_tests);
 
-
+  /* ---------------------------------------------------------------------- */
+  /**
+   * A fixture for testing proterties. It is based on the PairFixture, which is
+   * basically a fixture which provides a pair neighbour list based on positions
+   * which are initialized in the tests.
+   */
   template<class ManagerImplementation>
   struct PropertyFixture
-    : public ManagerNeighbourListFixture<ManagerImplementation> {
+    : public PairFixture<ManagerImplementation> {
     // TODO make the type not hard coded
     using Manager_t = AdaptorNeighbourList<ManagerImplementation>;
 
@@ -59,7 +64,7 @@ namespace rascal {
     std::string dynamic_property2_metadata{"distances"};
 
     PropertyFixture()
-      :ManagerNeighbourListFixture<ManagerImplementation>{},
+      :PairFixture<ManagerImplementation>{},
       pair_property{this->pair_manager},
       atom_property{this->pair_manager, atom_property_metadata},
       dynamic_property{this->pair_manager, DynSize(), 1,
@@ -79,6 +84,9 @@ namespace rascal {
                           PropertyFixture<StructureManagerCenters>) {}
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * checks if the properties associated with atoms and pairs can be filled
+   */
   BOOST_FIXTURE_TEST_CASE(fill_test_simple,
                           PropertyFixture<StructureManagerCenters>) {
     pair_property.resize();
@@ -102,6 +110,9 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * test, if metadata can be assigned to properties
+   */
   BOOST_FIXTURE_TEST_CASE(meta_data_test,
                           PropertyFixture<StructureManagerCenters> ) {
     auto atom_metadata = atom_property.get_metadata();
@@ -114,6 +125,11 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * test filling statically and dynamically sized properties with actual data
+   * and comparing if retrieval of those is consistent with the data that was
+   * put in
+   */
   BOOST_FIXTURE_TEST_CASE(fill_test_complex,
                           PropertyFixture<StructureManagerCenters>) {
     pair_property.resize();
@@ -121,12 +137,12 @@ namespace rascal {
     dynamic_property.resize();
     dynamic_property2.resize();
 
-    BOOST_CHECK_THROW(
-          AtomVectorProperty_t::check_compatibility(dynamic_property),
+    BOOST_CHECK_THROW(AtomVectorProperty_t
+                      ::check_compatibility(dynamic_property),
                       std::runtime_error) ;
 
-    BOOST_CHECK_NO_THROW(
-          AtomVectorProperty_t::check_compatibility(atom_property));
+    BOOST_CHECK_NO_THROW(AtomVectorProperty_t
+                         ::check_compatibility(atom_property));
 
     int pair_property_counter{};
     size_t counter{};
@@ -165,6 +181,9 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * test for
+   */
   BOOST_FIXTURE_TEST_CASE(compute_distances,
                           PropertyFixture<StructureManagerCenters>) {
     pair_property.resize();

@@ -36,11 +36,11 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * test if the PairFixture is constructed properly and accepts the adaptor to
-   * increase the MaxOrder to 3
+   * test if the PairFixtureFile is constructed properly and accepts the adaptor
+   * to increase the MaxOrder to 3
    */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
-                          PairFixture<StructureManagerCenters>) {
+                          PairFixtureFile<StructureManagerCenters>) {
     AdaptorMaxOrder<PairManager_t> adaptor{this->pair_manager};
     adaptor.update();
   }
@@ -51,7 +51,7 @@ namespace rascal {
    * pairs as the underlying pair_manager.
    */
   BOOST_FIXTURE_TEST_CASE(iterator_test,
-                          PairFixture<StructureManagerCenters>) {
+                          PairFixtureFile<StructureManagerCenters>) {
 
     constexpr bool verbose{false};
     constexpr bool check_below{false};

@@ -96,7 +96,7 @@ namespace rascal {
 
     BOOST_CHECK_EQUAL(npairs_full, 4);
     BOOST_CHECK_EQUAL(npairs_half, 2);
-    BOOST_CHECK(relative_error < tol * tol);
+    BOOST_CHECK(relative_error < tol * tol / 100 / 100);
 
   }
 
@@ -176,7 +176,7 @@ namespace rascal {
     auto val{distance_sum_full - distance_sum_full_half_full};
     auto relative_error = val * val / (distance_sum_full * distance_sum_full);
     // check if the sum and square of all distances is the same
-    BOOST_CHECK(relative_error < tol * tol);
+    BOOST_CHECK(relative_error < tol * tol / 100 / 100);
 
     // check counted number of pairs during iteration
     BOOST_CHECK_EQUAL(npairs, npairs_adapted);

@@ -296,35 +296,38 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
-  // TODO: this is potentially obsolete, since StructureManagerCenters can now
-  // also read from a json file. But the StructureManagerChain build a very
-  // neighbour list. So a substitution of this is something like
-  // NeighbourListManager as used in the test_property
   /**
-   * fixture for testing neighbourhood increasers, see above
+   * fixture for providing a neighbour list from a simple manager, which is read
+   * from a JSON file
    */
-  template <>
-  struct ManagerFixture<StructureManagerChain>
-  {
-    using Manager_t = StructureManagerChain;
+  template<class ManagerImplementation>
+  struct PairFixtureFile : public ManagerFixtureFile<ManagerImplementation> {
+    using Manager_t = ManagerImplementation;
 
-    ManagerFixture()
-      : manager{}, cutoff{1.0} {
-        manager.read_structure_from_json("simple_cubic_9.json");
-      }
+    static_assert(ManagerImplementation::traits::MaxOrder == 1,
+                  "Lower layer manager has MaxOrder needs MaxOrder = 1");
 
-    ~ManagerFixture() {BOOST_TEST_MESSAGE("teardown ManagerChain fixture");}
+    using PairManager_t = AdaptorNeighbourList<ManagerImplementation>;
 
-    Manager_t manager;
-    double cutoff;
+    PairFixtureFile()
+      : ManagerFixtureFile<ManagerImplementation> {},
+      pair_manager{this->manager, this->cutoff}
+    {
+      this->pair_manager.update();
+    }
+
+    ~PairFixtureFile() {}
+
+    AdaptorNeighbourList<ManagerImplementation> pair_manager;
   };
 
   /* ---------------------------------------------------------------------- */
   /**
-   * fixture for providing a neighbour list from a simple manager
+   * fixture for providing a neighbour list from a manager which is built with
+   * positions in its fixture
    */
   template<class ManagerImplementation>
-  struct PairFixture : public ManagerFixtureFile<ManagerImplementation> {
+  struct PairFixture : public ManagerFixture<ManagerImplementation> {
     using Manager_t = ManagerImplementation;
 
     static_assert(ManagerImplementation::traits::MaxOrder == 1,
@@ -333,8 +336,8 @@ namespace rascal {
     using PairManager_t = AdaptorNeighbourList<ManagerImplementation>;
 
     PairFixture()
-      : ManagerFixtureFile<ManagerImplementation> {},
-      pair_manager{this->manager, this->cutoff}
+      : ManagerFixture<ManagerImplementation> {},
+      pair_manager{this->manager, 3.}
     {
       this->pair_manager.update();
     }
