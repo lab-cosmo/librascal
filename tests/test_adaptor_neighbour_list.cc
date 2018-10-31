@@ -65,8 +65,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   //! test if hcp managers are constructed
   BOOST_FIXTURE_TEST_CASE(constructor_test_hcp,
-                          ManagerFixtureNeighbourCheckHcp
-                          <StructureManagerCenters>) {
+                          ManagerFixtureNeighbourTwoHcp) {
   }
 
   /* ---------------------------------------------------------------------- */
@@ -126,8 +125,7 @@ namespace rascal {
    * crystal system.
    */
   BOOST_FIXTURE_TEST_CASE(neighbourlist_test_hcp,
-                          ManagerFixtureNeighbourCheckHcp
-                          <StructureManagerCenters>) {
+                          ManagerFixtureNeighbourTwoHcp) {
 
     /*
      * Note: since the cell vectors are different, it is possible that one of

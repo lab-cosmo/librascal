@@ -199,8 +199,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(strict_test_hcp,
-                          ManagerFixtureNeighbourCheckHcp
-                          <StructureManagerCenters>) {
+                          ManagerFixtureNeighbourTwoHcp) {
     /*
      * Note: since the cell vectors are different, it is possible that one of
      * the two atoms is repeated into a different cell due to periodicity. This
