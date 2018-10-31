@@ -297,8 +297,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(neighbourlist_test_fcc,
-                          ManagerFixtureNeighbourCheckFcc
-                          <StructureManagerCenters>) {
+                          ManagerFixtureNeighbourTwoFcc) {
 
     constexpr bool verbose{false};
 

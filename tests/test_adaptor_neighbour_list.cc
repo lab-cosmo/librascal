@@ -71,8 +71,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   //! test if fcc managers are constructed
   BOOST_FIXTURE_TEST_CASE(constructor_test_fcc,
-                          ManagerFixtureNeighbourCheckFcc
-                          <StructureManagerCenters>) {
+                          ManagerFixtureNeighbourTwoFcc) {
   }
 
   /* ---------------------------------------------------------------------- */
@@ -224,8 +223,7 @@ namespace rascal {
    * crystal system.
    */
   BOOST_FIXTURE_TEST_CASE(neighbourlist_test_fcc,
-                          ManagerFixtureNeighbourCheckFcc
-                          <StructureManagerCenters>) {
+                          ManagerFixtureNeighbourTwoFcc) {
 
     constexpr bool verbose{false};
 

@@ -188,34 +188,82 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
-  template<class ManagerImplementation>
-  struct ManagerFixtureNeighbourCheckFcc
+  /**
+   * Fixture which provides two managers ``manager_1`` and ``manager_2``, which
+   * both have a face centered cubic lattice, but with different unit cells
+   * (vectors) with one and four atoms. It is another test to ensure that the
+   * neighbour list algorithm is robust with respect to the unit cell.
+   */
+  struct ManagerFixtureNeighbourTwoFcc
+    : public ManagerFixtureDouble<StructureManagerCenters>
   {
-    ManagerFixtureNeighbourCheckFcc():
-      pbc{{true,true,true}}, cutoff{1.},
-      center_ids_1(natoms_1), center_ids_2(natoms_2),
-      cell_1(dim, dim), cell_2(dim, dim),
-      positions_1(dim, natoms_1), positions_2(dim, natoms_1),
-      atom_types_1(natoms_2), atom_types_2(natoms_2)
-    {}
+    ManagerFixtureNeighbourTwoFcc():
+      ManagerFixtureDouble<StructureManagerCenters> {},
+      pbc{{true, true, true}}, cell_1(3, 3), cell_2(3, 3),
+      positions_1(3, 1), positions_2(3, 4),
+      atom_types_1(1), atom_types_2(4),
+      cutoff{0.7}, // starting with zero neighbours
+      natoms_1{1}, natoms_2{4}
+    {
+      /*
+       * fcc unit cells: first cell consists of only one atom, which is
+       * repeated, second cell is the conventional 4 atoms. This test checks, if
+       * the found number of neighbours with increasing cutoff is the same for
+       * the atom at position (0, 0, 0).
+       */
+      auto a{1.};
 
-    ~ManagerFixtureNeighbourCheckFcc() {}
+      cell_1 <<
+        a,  0.5*a, 0.5*a,
+        0., 0.5*a, 0.   ,
+        0., 0.,    0.5*a;
 
-    ManagerImplementation manager_1{};
-    ManagerImplementation manager_2{};
-    std::array<bool, 3> pbc;
-    double cutoff;
-    Eigen::VectorXi center_ids_1;
-    Eigen::VectorXi center_ids_2;
+      cell_2 <<
+        a,   0., 0.,
+        0.,  a,  0.,
+        0.,  0., a ;
+
+      positions_1 <<
+        0.,
+        0.,
+        0.;
+
+      auto p_2 = 0.5 * cell_2.col(0) + 0.5 * cell_2.col(1);
+      auto p_3 = 0.5 * cell_2.col(0) + 0.5 * cell_2.col(2);
+      auto p_4 = 0.5 * cell_2.col(1) + 0.5 * cell_2.col(2);
+
+      positions_2 <<
+        0.0, p_2[0], p_3[0], p_4[0],
+        0.0, p_2[1], p_3[1], p_4[1],
+        0.0, p_2[2], p_3[2], p_4[2];
+
+      atom_types_1 << 1;
+      atom_types_2 << 1, 1, 1, 1;
+
+      manager_1.update(positions_1, atom_types_1, cell_1,
+                       Eigen::Map<Eigen::Matrix<int, 3, 1>>
+                       {pbc.data()});
+
+      manager_2.update(positions_2, atom_types_1, cell_2,
+                       Eigen::Map<Eigen::Matrix<int, 3, 1>>
+                       {pbc.data()});
+    }
+
+    ~ManagerFixtureNeighbourTwoFcc() {}
+
+
+    std::array<int, 3> pbc;
     Eigen::MatrixXd cell_1;
     Eigen::MatrixXd cell_2;
     Eigen::MatrixXd positions_1;
     Eigen::MatrixXd positions_2;
     Eigen::VectorXi atom_types_1;
     Eigen::VectorXi atom_types_2;
-    int natoms_1;
-    int natoms_2;
-    int dim;
+
+    double cutoff;
+
+    const int natoms_1;
+    const int natoms_2;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -401,84 +449,6 @@ namespace rascal {
     double cutoff;
 
     //int natoms{22};
-  };
-
-  /* ---------------------------------------------------------------------- */
-  /**
-   * Comparison of two fcc cells to check if the zeroth level the AdaptorMaxOrder
-   * (building the neighbourlist) works properly
-   */
-  template<>
-  struct ManagerFixtureNeighbourCheckFcc<StructureManagerCenters>
-  {
-    using Manager_t = StructureManagerCenters;
-
-    ManagerFixtureNeighbourCheckFcc():
-      pbc{{true, true, true}},
-      cell_1(3, 3), cell_2(3, 3),
-      positions_1(3, 1), positions_2(3, 4),
-      atom_types_1(1), atom_types_2(4),
-      cutoff{0.7}, // start with zero neighbours
-      natoms_1{1}, natoms_2{4}
-    {
-      /*
-       * fcc unit cells: first cell consists of only one atom, which is
-       * repeated, second cell is the conventional 4 atoms. This test checks, if
-       * the found number of neighbours with increasing cutoff is the same for
-       * the atom at position (0, 0, 0).
-       */
-      auto a{1.};
-
-      cell_1 <<
-        a,  0.5*a, 0.5*a,
-        0., 0.5*a, 0.   ,
-        0., 0.,    0.5*a;
-
-      cell_2 <<
-        a,   0., 0.,
-        0.,  a,  0.,
-        0.,  0., a ;
-
-      positions_1 <<
-        0.,
-        0.,
-        0.;
-
-      auto p_2 = 0.5 * cell_2.col(0) + 0.5 * cell_2.col(1);
-      auto p_3 = 0.5 * cell_2.col(0) + 0.5 * cell_2.col(2);
-      auto p_4 = 0.5 * cell_2.col(1) + 0.5 * cell_2.col(2);
-
-      positions_2 <<
-        0.0, p_2[0], p_3[0], p_4[0],
-        0.0, p_2[1], p_3[1], p_4[1],
-        0.0, p_2[2], p_3[2], p_4[2];
-
-      atom_types_1 << 1;
-      atom_types_2 << 1, 1, 1, 1;
-
-      manager_1.update(positions_1, atom_types_1, cell_1,
-                       Eigen::Map<Eigen::Matrix<int, 3, 1>>
-                       {pbc.data()});
-
-      manager_2.update(positions_2, atom_types_1, cell_2,
-                       Eigen::Map<Eigen::Matrix<int, 3, 1>>
-                       {pbc.data()});
-    }
-    Manager_t manager_1{};
-    Manager_t manager_2{};
-    std::array<int, 3> pbc;
-    Eigen::MatrixXd cell_1;
-    Eigen::MatrixXd cell_2;
-    Eigen::MatrixXd positions_1;
-    Eigen::MatrixXd positions_2;
-    Eigen::VectorXi atom_types_1;
-    Eigen::VectorXi atom_types_2;
-
-    double cutoff;
-
-    const int natoms_1{1};
-    const int natoms_2{4};
-
   };
 
   /* ---------------------------------------------------------------------- */
