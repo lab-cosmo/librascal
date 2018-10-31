@@ -79,7 +79,8 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  // loops over the centers in the manager making sure positions are consistent
+  // loops over the centers in the manager making global atom indices are
+  // contiguous
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_atom_global_indexing, Fix,
                                    fixtures, Fix) {
     auto & manager = Fix::manager;
