@@ -73,10 +73,10 @@ namespace rascal {
    * managers are of the same class.
    */
   template<class ManagerImplementation>
-  struct ManagerFixtureDouble
+  struct ManagerFixtureTwo
   {
-    ManagerFixtureDouble() {} // ctor
-    ~ManagerFixtureDouble() {} // dtor
+    ManagerFixtureTwo() {} // ctor
+    ~ManagerFixtureTwo() {} // dtor
 
     ManagerImplementation manager_1{};
     ManagerImplementation manager_2{};
@@ -114,10 +114,10 @@ namespace rascal {
    * with respect to the unit cell.
    */
   struct ManagerFixtureNeighbourTwoHcp
-    : public ManagerFixtureDouble<StructureManagerCenters>
+    : public ManagerFixtureTwo<StructureManagerCenters>
   {
     ManagerFixtureNeighbourTwoHcp():
-      ManagerFixtureDouble<StructureManagerCenters> {},
+      ManagerFixtureTwo<StructureManagerCenters> {},
       pbc{{true,true,true}}, cell_1(3,3), cell_2(3,3),
       positions_1(3, 2), positions_2(3, 2),
       atom_types(2), cutoff{0.7}
@@ -195,10 +195,10 @@ namespace rascal {
    * neighbour list algorithm is robust with respect to the unit cell.
    */
   struct ManagerFixtureNeighbourTwoFcc
-    : public ManagerFixtureDouble<StructureManagerCenters>
+    : public ManagerFixtureTwo<StructureManagerCenters>
   {
     ManagerFixtureNeighbourTwoFcc():
-      ManagerFixtureDouble<StructureManagerCenters> {},
+      ManagerFixtureTwo<StructureManagerCenters> {},
       pbc{{true, true, true}}, cell_1(3, 3), cell_2(3, 3),
       positions_1(3, 1), positions_2(3, 4),
       atom_types_1(1), atom_types_2(4),
@@ -339,7 +339,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   /**
    * fixture for providing a neighbour list from a simple manager, which is read
-   * from a JSON file
+   * from a JSON file. This fixture provides iteration over the variable
+   * ``pair_manager``
    */
   template<class ManagerImplementation>
   struct PairFixtureFile : public ManagerFixtureFile<ManagerImplementation>
@@ -366,7 +367,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   /**
    * fixture for providing a neighbour list from a manager which is built with
-   * positions in its fixture
+   * positions in its fixture. this fixture provides iteration over the variable
+   * ``pair_manager``.
    */
   template<class ManagerImplementation>
   struct PairFixture : public ManagerFixture<ManagerImplementation> {
@@ -390,6 +392,10 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * Specialization of ManagerFixture for StructureManagerCenters with input
+   * data directly given.
+   */
   template<>
   struct ManagerFixture<StructureManagerCenters>
   {
@@ -437,9 +443,7 @@ namespace rascal {
                      Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
     }
 
-    ~ManagerFixture() {
-
-    }
+    ~ManagerFixture() {}
 
     Manager_t manager{};
     Eigen::MatrixXd positions;
@@ -447,24 +451,20 @@ namespace rascal {
     Eigen::MatrixXd cell;
     std::array<int, 3> pbc;
     double cutoff;
-
-    //int natoms{22};
   };
 
   /* ---------------------------------------------------------------------- */
   /**
-   * A simple manager using ManagerCenters to check the neighbourlist algorithm
+   * A simple fixture using ManagerCenters to check the neighbourlist algorithm
    * with simple positions and a periodicity only in x-direction.
    *
    */
-  template<class ManagerImplementation>
-  struct ManagerFixtureSimple : public ManagerFixture<ManagerImplementation>
+  struct ManagerFixtureSimple : public ManagerFixture<StructureManagerCenters>
   {
-
     ManagerFixtureSimple() :
-      ManagerFixture<ManagerImplementation> {},
+      ManagerFixture<StructureManagerCenters> {},
       pbc{{true, false, false}}, cell(3, 3), positions(3, 8), atom_types(8),
-      cutoff{2.1}
+      cutoff{2.1}, natoms{8}
     {
       cell <<
         2., 0., 0.,
@@ -491,7 +491,7 @@ namespace rascal {
 
     double cutoff;
 
-    const int natoms{8};
+    const int natoms;
   };
 
   /* ---------------------------------------------------------------------- */

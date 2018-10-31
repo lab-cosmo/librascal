@@ -39,7 +39,8 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
                           ManagerFixture<StructureManagerCenters>) {
-    // TODO: should this not be in the fixture?
+
+    // TODO: add fixture with strict neighbourhood and fix the rest below
     double cutoff{3.5};
     AdaptorNeighbourList<StructureManagerCenters> pair_manager{manager, cutoff};
     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>

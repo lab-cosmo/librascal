@@ -82,7 +82,7 @@ namespace rascal {
    * ``manager`` is a StructureManager with MaxOrder=1
    */
   BOOST_FIXTURE_TEST_CASE(test_build_neighbour_list_from_atoms,
-                          ManagerFixtureSimple<StructureManagerCenters>){
+                          ManagerFixtureSimple){
 
     constexpr bool verbose{false};
 

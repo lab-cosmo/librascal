@@ -36,7 +36,9 @@ namespace rascal {
   using fixtures = boost::mpl::list<
     ManagerFixture<StructureManagerCenters>,
     ManagerFixture<StructureManagerLammps>,
-    ManagerFixtureFile<StructureManagerCenters>>;
+    ManagerFixtureFile<StructureManagerCenters>,
+    // not templated single manager fixtures
+    ManagerFixtureSimple>;
 
   /* ---------------------------------------------------------------------- */
   // just checks that the structure managers can be constructed
@@ -93,7 +95,6 @@ namespace rascal {
       BOOST_CHECK_EQUAL(index_reference, index);
       index_reference++;
     }
-
   }
 
 
