@@ -49,133 +49,45 @@ namespace rascal {
    * to be called "manager"
    */
 
-  // TODO: this is not a general case of a manager fixture. Should not be so
-  // complicated
-  // TODO: change this to a usage case of the ManagerFixture
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Most basic fixture. This is only to guarantee, that the manager, which is
+   * built with existing data and not adapted is always accessible with the
+   * variable ``manager``.
+   */
   template<class ManagerImplementation>
   struct ManagerFixture
   {
-    ManagerFixture():
-      pbc{{true,true,true}}, cutoff_max{3}, center_ids(22),
-      cell(3, 3), positions(3, 22), numbers(22)
-    {
-      cell <<
-        6.19, 2.41, 0.21,
-        0.00, 6.15, 1.02,
-        0.00, 0.00, 7.31;
-      positions <<
-        3.689540159937393, 5.123016813620886, 1.994119731169116,
-        6.818437242389163, 2.630056617829216, 6.182500355729062,
-        2.114977334498767, 6.697579639059512, 1.392155450018263,
-        7.420401523540017, 2.432242071439904, 6.380314902118375,
-        1.112656394115962, 7.699900579442317, 3.569715877854675,
-        5.242841095703604, 3.122826344932127, 5.689730628626151,
-        3.248684682453303, 5.563872291104976, 2.608353462112637,
-        6.204203511445642, 5.035681855581504, 2.134827911489532,
-        0.946910011088814, 6.223599755982222, 4.168634519120968,
-        3.001875247950068, 1.980327734683430, 5.190182032387606,
-        2.943861424421339, 4.226648342649697, 5.457161501166098,
-        1.713348265904937, 1.501663178733906, 5.668846588337130,
-        5.208365510425203, 1.962144256645833, 2.728127406527150,
-        4.442382360543885, 2.839975217222644, 4.330534549848392,
-        0.744216089807768, 6.426293677263268, 4.643695520786083,
-        2.662204050783991, 1.250682335857938, 6.055217235712136,
-        0.860905287815103, 6.444994283754972, 4.536108843695142,
-        2.769790727874932, 5.609177455068640, 1.696722116501434,
-        6.703053268421970, 0.602846303148105, 3.487609972580834,
-        3.818289598989240, 1.436734374347541, 5.869165197222533,
-        1.054504320562138, 6.251395251007936, 3.998423858825871,
-        3.307475712744203, 5.323662899811682, 1.982236671758393;
-      numbers << 20, 20, 24, 24, 15, 15, 15, 15,  8,  8,  8,
-        8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8;
-      center_ids << 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-        12, 13, 14, 15, 16, 17, 18, 19, 20, 21;
-      manager.update(positions, numbers, center_ids, cell, pbc, cutoff_max);
-
-    }
-
-    ~ManagerFixture() {
-    }
+    ManagerFixture() {} // ctor
+    ~ManagerFixture() {} // dtor
 
     ManagerImplementation manager{};
-    std::array<bool, 3> pbc;
-    double cutoff_max;
-    Eigen::VectorXi center_ids;
-    Eigen::MatrixXd cell;
-    Eigen::MatrixXd positions; // 3, 22
-    Eigen::VectorXi numbers;
   };
 
   /* ---------------------------------------------------------------------- */
   /**
    * general case of a manager fixture, which reads the structure information
    * from a file, atomic structure contains 9 atoms in a very simple cubic unit
-   * cell, no periodicity
+   * cell, no periodicity, it inherits publicly from the ManagerFixture, which
+   * provides access to the variable ``manager``.
    */
   template<class ManagerImplementation>
-  struct ManagerFixtureFile
+  struct ManagerFixtureFile : public ManagerFixture<ManagerImplementation>
   {
-    ManagerFixtureFile():
-      cutoff{1.}, filename{"simple_cubic_9.json"}
+    ManagerFixtureFile() :
+      ManagerFixture<ManagerImplementation> {}, // initialize manager variable
+      cutoff{1.}, filename{"simple_cubic_9.json"} // initialize current fixture
     {
-      manager.update(filename);
+      this->manager.update(filename);
     }
 
     ~ManagerFixtureFile()  {}
 
+    // additional variables for present fixture
     double cutoff;
     std::string filename{};
-    ManagerImplementation manager{};
   };
-
-  /* ---------------------------------------------------------------------- */
-  template<class ManagerImplementation>
-  struct ManagerNeighbourListFixture
-    : public ManagerFixture<ManagerImplementation> {
-    using Manager_t = ManagerImplementation;
-
-    static_assert(ManagerImplementation::traits::MaxOrder == 1,
-                  "Lowest layer manager has MaxOrder != 1");
-
-    ManagerNeighbourListFixture()
-      : ManagerFixture<ManagerImplementation>{}, pair_manager{this->manager, 3.}
-    {
-      this->pair_manager.update();
-    }
-
-    AdaptorNeighbourList<ManagerImplementation> pair_manager;
-  };
-
-  /* ---------------------------------------------------------------------- */
-  template<class ManagerImplementation>
-  struct ManagerFixtureSimple
-  {
-    ManagerFixtureSimple():
-      pbc{{true,true,true}}, cutoff{1.}, center_ids(natoms),
-      cell(dim, dim), positions(dim, natoms), atom_types(natoms)
-    {}
-
-    ~ManagerFixtureSimple() {}
-
-    ManagerImplementation manager{};
-    std::array<bool, 3> pbc;
-    double cutoff;
-    Eigen::VectorXi center_ids;
-    Eigen::MatrixXd cell;
-    Eigen::MatrixXd positions;
-    Eigen::VectorXi atom_types;
-    int natoms;
-    int dim;
-  };
-
-  // /* ---------------------------------------------------------------------- */
-  // template<class ManagerImplementation>
-  // struct ManagerFixtureVariableCell
-  // {
-  //   ManagerFixtureVariableCell():
-  //     pbc{{true, true, true}}, cutoff{3.}, atom_ids(natoms),
-  //     cell(dim, dim), positions(dim, natoms),
-  // };
 
   /* ---------------------------------------------------------------------- */
   template<class ManagerImplementation>
@@ -310,7 +222,8 @@ namespace rascal {
    * from a JSON file
    */
   template<class ManagerImplementation>
-  struct PairFixtureFile : public ManagerFixtureFile<ManagerImplementation> {
+  struct PairFixtureFile : public ManagerFixtureFile<ManagerImplementation>
+  {
     using Manager_t = ManagerImplementation;
 
     static_assert(ManagerImplementation::traits::MaxOrder == 1,
@@ -364,7 +277,7 @@ namespace rascal {
     using Manager_t = StructureManagerCenters;
 
     ManagerFixture():
-      positions(22, 3), numbers(22), cell(3, 3), pbc{{true,true,true}},
+      positions(22, 3), atom_types(22), cell(3, 3), pbc{{true,true,true}},
       cutoff{2.}
     {
       cell <<
@@ -397,10 +310,10 @@ namespace rascal {
         3.307475712744203, 5.323662899811682, 1.982236671758393;
 
       positions.transposeInPlace();
-      numbers << 20, 20, 24, 24, 15, 15, 15, 15, 8, 8, 8,
+      atom_types << 20, 20, 24, 24, 15, 15, 15, 15, 8, 8, 8,
         8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8;
 
-      manager.update(positions, numbers, cell,
+      manager.update(positions, atom_types, cell,
                      Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
     }
 
@@ -410,7 +323,7 @@ namespace rascal {
 
     Manager_t manager{};
     Eigen::MatrixXd positions;
-    Eigen::VectorXi numbers;
+    Eigen::VectorXi atom_types;
     Eigen::MatrixXd cell;
     std::array<int, 3> pbc;
     double cutoff;
@@ -430,7 +343,7 @@ namespace rascal {
 
     ManagerFixtureNeighbourCheckHcp():
       pbc{{true, true, true}}, cell_1(3, 3), cell_2(3, 3),
-      positions_1(3, 2), positions_2(3, 2), numbers(2), cutoff{0.7}
+      positions_1(3, 2), positions_2(3, 2), atom_types(2), cutoff{0.7}
     {
       /*
        * hcp crystal with lattice parameter a = 1, c = sqrt(8/3), defined in two
@@ -451,7 +364,8 @@ namespace rascal {
         0.,  c,             0.,
         0.,  0.,  std::sqrt(3.)/2.*a;
 
-      auto p_1 = 2./3. * cell_1.col(0)
+      auto p_1 =
+        2./3. * cell_1.col(0)
         + 1./3. * cell_1.col(1)
         + 1./2. * cell_1.col(2);
 
@@ -460,7 +374,8 @@ namespace rascal {
         0.0, p_1[1],
         0.0, p_1[2];
 
-      auto p_2 = -1./3. * cell_2.col(0)
+      auto p_2 =
+        -1./3. * cell_2.col(0)
         + 1./2. * cell_2.col(1)
         + 2./3. * cell_2.col(2);
 
@@ -469,13 +384,13 @@ namespace rascal {
         0.0, p_2[1],
         0.0, p_2[2];
 
-      numbers << 1, 1;
+      atom_types << 1, 1;
 
-      manager_1.update(positions_1, numbers, cell_1,
+      manager_1.update(positions_1, atom_types, cell_1,
                        Eigen::Map<Eigen::Matrix<int, 3, 1>>
                        {pbc.data()});
 
-      manager_2.update(positions_2, numbers, cell_2,
+      manager_2.update(positions_2, atom_types, cell_2,
                        Eigen::Map<Eigen::Matrix<int, 3, 1>>
                        {pbc.data()});
     }
@@ -486,7 +401,7 @@ namespace rascal {
     Eigen::MatrixXd cell_2;
     Eigen::MatrixXd positions_1;
     Eigen::MatrixXd positions_2;
-    Eigen::VectorXi numbers;
+    Eigen::VectorXi atom_types;
 
     double cutoff;
 
@@ -508,7 +423,7 @@ namespace rascal {
       pbc{{true, true, true}},
       cell_1(3, 3), cell_2(3, 3),
       positions_1(3, 1), positions_2(3, 4),
-      numbers_1(1), numbers_2(4),
+      atom_types_1(1), atom_types_2(4),
       cutoff{0.7}, // start with zero neighbours
       natoms_1{1}, natoms_2{4}
     {
@@ -544,14 +459,14 @@ namespace rascal {
         0.0, p_2[1], p_3[1], p_4[1],
         0.0, p_2[2], p_3[2], p_4[2];
 
-      numbers_1 << 1;
-      numbers_2 << 1, 1, 1, 1;
+      atom_types_1 << 1;
+      atom_types_2 << 1, 1, 1, 1;
 
-      manager_1.update(positions_1, numbers_1, cell_1,
+      manager_1.update(positions_1, atom_types_1, cell_1,
                        Eigen::Map<Eigen::Matrix<int, 3, 1>>
                        {pbc.data()});
 
-      manager_2.update(positions_2, numbers_1, cell_2,
+      manager_2.update(positions_2, atom_types_1, cell_2,
                        Eigen::Map<Eigen::Matrix<int, 3, 1>>
                        {pbc.data()});
     }
@@ -562,8 +477,8 @@ namespace rascal {
     Eigen::MatrixXd cell_2;
     Eigen::MatrixXd positions_1;
     Eigen::MatrixXd positions_2;
-    Eigen::VectorXi numbers_1;
-    Eigen::VectorXi numbers_2;
+    Eigen::VectorXi atom_types_1;
+    Eigen::VectorXi atom_types_2;
 
     double cutoff;
 
@@ -578,14 +493,13 @@ namespace rascal {
    * with simple positions and a periodicity only in x-direction.
    *
    */
-  template<>
-  struct ManagerFixtureSimple<StructureManagerCenters>
+  template<class ManagerImplementation>
+  struct ManagerFixtureSimple : public ManagerFixture<ManagerImplementation>
   {
 
-    using Manager_t = StructureManagerCenters;
-
-    ManagerFixtureSimple():
-      pbc{{true, false, false}}, cell(3, 3), positions(3, 8), numbers(8),
+    ManagerFixtureSimple() :
+      ManagerFixture<ManagerImplementation> {},
+      pbc{{true, false, false}}, cell(3, 3), positions(3, 8), atom_types(8),
       cutoff{2.1}
     {
       cell <<
@@ -598,19 +512,18 @@ namespace rascal {
         0.4, 0.4, 1.4, 1.4, 0.4, 0.4, 1.4, 1.4,
         0.4, 0.4, 0.4, 0.4, 1.4, 1.4, 1.4, 1.4;
 
-      numbers << 1, 1, 1, 1, 1, 1, 1, 1;
+      atom_types << 1, 1, 1, 1, 1, 1, 1, 1;
 
-      manager.update(positions, numbers, cell,
-                     Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
+      this->manager.update(positions, atom_types, cell,
+                           Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
     }
 
     ~ManagerFixtureSimple() {}
 
-    Manager_t manager{};
     std::array<int, 3> pbc;
     Eigen::MatrixXd cell;
     Eigen::MatrixXd positions;
-    Eigen::VectorXi numbers;
+    Eigen::VectorXi atom_types;
 
     double cutoff;
 
@@ -619,19 +532,16 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * A manager using ManagerCenters to check the neighbourlist algorithm with
-   * increasing skewedness of the cell as well as a shift of the positions. The
-   * manager is built and constructed inside the loop which skews the cells in
-   * the actual test.
-   *
+   * A fixture to check the neighbourlist algorithm with increasing skewedness
+   * of the cell as well as a shift of the positions. The manager is built and
+   * constructed inside the loop which skews the cells in the actual test,
+   * therefore it is not templated.
    */
-  template<class ManagerImplementation>
   struct ManagerFixtureSkew
   {
-    using Manager_t = ManagerImplementation;
 
     ManagerFixtureSkew():
-      pbc{{true, true, true}}, cell(3, 3), positions(3, 4), numbers(4),
+      pbc{{true, true, true}}, cell(3, 3), positions(3, 4), atom_types(4),
       cutoff{1.3}, natoms{4}, skew_multiplier(3, 3)
     {
       cell <<
@@ -644,7 +554,7 @@ namespace rascal {
         0.01, 0.51, 0.01, 0.51,
         0.01, 0.01, 0.01, 0.01;
 
-      numbers << 1, 1, 1, 1;
+      atom_types << 1, 1, 1, 1;
 
       // entry (0,1) gives the skewing factor in the x/y plane in the loop
       // building the cells
@@ -659,7 +569,7 @@ namespace rascal {
     std::array<int, 3> pbc;
     Eigen::MatrixXd cell;
     Eigen::MatrixXd positions;
-    Eigen::VectorXi numbers;
+    Eigen::VectorXi atom_types;
 
     double cutoff;
 

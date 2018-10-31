@@ -315,13 +315,14 @@ namespace rascal {
    * neighbours than the non-skewed one. Skewing is achieved by the
    * multiplier.
    *
-   * The fixture does not provide a manager. Instead, it provied a a cell,
-   * positions and the shear transformation ``skew_multiplier`` for the unit
-   * cell. This is used in the loop to construct increasingly skewed unit cells;
-   * positions are shifted accordingly to stay inside the new unit cell.
+   * The fixture does not provide a manager. Instead, it provies basic cubic
+   * unit cell, positions and the shear transformation ``skew_multiplier`` for
+   * the unit cell. This is used in the loop to construct increasingly skewed
+   * unit cells; positions are shifted accordingly to stay inside the new unit
+   * cell.
    */
   BOOST_FIXTURE_TEST_CASE(test_neighbour_list_skewed,
-                          ManagerFixtureSkew<StructureManagerCenters>) {
+                          ManagerFixtureSkew) {
 
     constexpr static bool verbose{false};
 
@@ -381,7 +382,7 @@ namespace rascal {
       }
 
       // construct manager with skewed unit cell and shifted positions
-      manager.update(pos_skw, numbers, cell_skw,
+      manager.update(pos_skw, atom_types, cell_skw,
                      Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
 
       // build neighbourlist
