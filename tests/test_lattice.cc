@@ -33,7 +33,7 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(LatticeTests);
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(lattice_constructor_test, ManagerFixture_lattice) {
+  BOOST_FIXTURE_TEST_CASE(lattice_constructor_test, ManagerFixtureLattice) {
     Vec3_t cell_lengths = lattice.get_cell_lengths();
     Vec3_t cell_angles = lattice.get_cell_angles();
     Vec3_t cell_lengths_true;
@@ -55,7 +55,7 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(cell_lenght_test, ManagerFixture_lattice) {
+  BOOST_FIXTURE_TEST_CASE(cell_lenght_test, ManagerFixtureLattice) {
     Vec3_t cell_lengths = lattice.get_cell_lengths();
     Vec3_t cell_lengths_true;
     cell_lengths_true
@@ -67,7 +67,7 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(cell_angles_test, ManagerFixture_lattice) {
+  BOOST_FIXTURE_TEST_CASE(cell_angles_test, ManagerFixtureLattice) {
     Vec3_t cell_angles = lattice.get_cell_angles();
     Vec3_t cell_angles_true;
     // angle in radian
@@ -80,7 +80,7 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(transformation_matrix_test, ManagerFixture_lattice) {
+  BOOST_FIXTURE_TEST_CASE(transformation_matrix_test, ManagerFixtureLattice) {
     Cell_t cartesian2scaled = lattice.get_cartesian2scaled_matrix();
     Cell_t cartesian2scaled_true;
     cartesian2scaled_true
@@ -105,7 +105,7 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(get_cartesian2scaled_test, ManagerFixture_lattice) {
+  BOOST_FIXTURE_TEST_CASE(get_cartesian2scaled_test, ManagerFixtureLattice) {
     Eigen::MatrixXd positions_test(3,22);
     positions_test <<
       3.689540159937393, 5.123016813620886, 1.994119731169116,
@@ -168,7 +168,7 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(get_scaled2cartesian_test, ManagerFixture_lattice) {
+  BOOST_FIXTURE_TEST_CASE(get_scaled2cartesian_test, ManagerFixtureLattice) {
     Eigen::MatrixXd positions_sc_true(3,22);
     positions_sc_true <<
       3.689540159937393, 5.123016813620886, 1.994119731169116,
@@ -230,7 +230,7 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(crossproduct_test, ManagerFixture_lattice) {
+  BOOST_FIXTURE_TEST_CASE(crossproduct_test, ManagerFixtureLattice) {
     Vec3_t v_true;
     v_true << -0.23767568374958059, 0.24116413754264393, -0.063589340753780477;
     Vec3_t v1;
@@ -247,7 +247,7 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(set_reciprocal_vectors_test, ManagerFixture_lattice) {
+  BOOST_FIXTURE_TEST_CASE(set_reciprocal_vectors_test, ManagerFixtureLattice) {
     Cell_t reciprocical_vectors_true; // 3,22
     reciprocical_vectors_true <<
       0.16155088852988697123, -0.0000000000000000, 0.0000000000000000,

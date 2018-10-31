@@ -38,6 +38,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   /*
    * very simple 9 atom neighbour list build without periodicity
+   *
+   * ``manager`` is a MaxOrder=1 atom manager
    */
   BOOST_FIXTURE_TEST_CASE(simple_cubic_9_neighbour_list,
                           ManagerFixtureFile<StructureManagerCenters>) {
@@ -78,6 +80,8 @@ namespace rascal {
   /**
    * simple neighbourhood test with periodicity only in x-direction and a check
    * for internal consistency
+   *
+   * ``manager`` is a StructureManager with MaxOrder=1
    */
   BOOST_FIXTURE_TEST_CASE(test_build_neighbour_list_from_atoms,
                           ManagerFixtureSimple<StructureManagerCenters>){
@@ -117,6 +121,9 @@ namespace rascal {
   /*
    * test if two differently defined 2-atom units cells of hcp crystal structure
    * yield the same number of neighbours per atom, if the cutoff is increased.
+   *
+   * ``manager_1`` and ``manager_2`` each hold a different unit cell for a hcp
+   * crystal system.
    */
   BOOST_FIXTURE_TEST_CASE(neighbourlist_test_hcp,
                           ManagerFixtureNeighbourCheckHcp
@@ -214,6 +221,9 @@ namespace rascal {
    * origin, if the cutoff is increased. ``manager_1`` has one atom at the
    * origin,``manager_2`` has 4 atoms (tetraeder). This is done to check if
    * skewed-ness affects the neighbour list algorithm.
+   *
+   * ``manager_1`` and ``manager_2`` each hold a different unit cell for a fcc
+   * crystal system.
    */
   BOOST_FIXTURE_TEST_CASE(neighbourlist_test_fcc,
                           ManagerFixtureNeighbourCheckFcc
@@ -304,6 +314,11 @@ namespace rascal {
    * Test if an increasingly skewed unit cell gives the same number of
    * neighbours than the non-skewed one. Skewing is achieved by the
    * multiplier.
+   *
+   * The fixture does not provide a manager. Instead, it provied a a cell,
+   * positions and the shear transformation ``skew_multiplier`` for the unit
+   * cell. This is used in the loop to construct increasingly skewed unit cells;
+   * positions are shifted accordingly to stay inside the new unit cell.
    */
   BOOST_FIXTURE_TEST_CASE(test_neighbour_list_skewed,
                           ManagerFixtureSkew<StructureManagerCenters>) {
@@ -354,7 +369,8 @@ namespace rascal {
         if (verbose) {
           std::cout << " mult \n" << mult.transpose() << std::endl;
           std::cout << "  mult_floor \n" << m.transpose() << std::endl;
-          std::cout << "  skewed position  <<<<<<<\n" << p.transpose() << std::endl;
+          std::cout << "  skewed position  <<<<<<<\n" << p.transpose()
+                    << std::endl;
         }
         // set new position
         pos_skw.col(j) = p + cell_skw * m;

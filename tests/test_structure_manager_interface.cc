@@ -35,7 +35,8 @@ namespace rascal {
   // gets a list of fixtures for all the different possible structure managers
   using fixtures = boost::mpl::list<
     ManagerFixture<StructureManagerCenters>,
-    ManagerFixture<StructureManagerLammps>>;
+    ManagerFixture<StructureManagerLammps>,
+    ManagerFixtureFile<StructureManagerCenters>>;
 
   /* ---------------------------------------------------------------------- */
   // just checks that the structure managers can be constructed
@@ -61,12 +62,14 @@ namespace rascal {
 
       // checks get_atom_type exists
       auto type = atom.get_atom_type();
+
       // cluster size should be 1!
       BOOST_CHECK_EQUAL(type, manager.atom_type(index));
 
       // checks that multiple ways of accessing positions are equivalent
       auto position_error = (atom.get_position() -
                              manager.position(index)).norm();
+
       BOOST_CHECK(position_error < tol / 100);
 
       position_error = (atom.get_position() -
@@ -74,6 +77,24 @@ namespace rascal {
       BOOST_CHECK(position_error < tol / 100);
     }
   }
+
+  /* ---------------------------------------------------------------------- */
+  // loops over the centers in the manager making sure positions are consistent
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_atom_global_indexing, Fix,
+                                   fixtures, Fix) {
+    auto & manager = Fix::manager;
+
+    auto index_reference{0};
+
+    for (auto atom : manager) {
+      // checks get_atom_index exists
+      auto index = atom.get_global_index();
+      BOOST_CHECK_EQUAL(index_reference, index);
+      index_reference++;
+    }
+
+  }
+
 
   /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();

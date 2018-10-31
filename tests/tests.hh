@@ -11,7 +11,7 @@
 
 namespace rascal {
 
-  const double tol = 1e-14*100; //it's in percent
+  const double tol = 1e-14 * 100; //it's in percent
 
 }  // rascal
 
