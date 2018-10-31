@@ -29,6 +29,8 @@
 #define RASCAL_UTILITY_H
 
 #include <utility>
+#include <string>
+#include <regex>
 
 namespace rascal {
   namespace internal {
@@ -78,6 +80,49 @@ namespace rascal {
     struct ResizePropertyToZero {
       template<typename T> void operator() (T& t) { t.resize_to_zero();}
     };
+
+    /* ---------------------------------------------------------------------- */
+    // inspiered from 
+    // https://blog.molecular-matters.com/2015/12/11/getting-
+    // the-type-of-a-template-argument-as-string-without-rtti/
+    template <typename T>
+    struct GetTypeNameHelper
+    {
+      static const std::string GetTypeName(void)
+      { 
+        // TODO define the same macro but for clang
+        #define FUNCTION_MACRO __PRETTY_FUNCTION__
+        #define PREFIX "static const string rascal::internal::GetTypeNameHelper<T>::GetTypeName() [with T = "
+        #define SUFFIX_1 "; std::__cxx11::string = std::__cxx11::basic_string<char>]"
+        #define SUFFIX_2 ""
+        #define NUM_TYPE_REPEATS 1
+          
+        const size_t funcNameLength{sizeof(FUNCTION_MACRO) - 1u};
+        const size_t prefixLength{sizeof(PREFIX) - 1u};
+        const size_t suffixLength{sizeof(SUFFIX_1) - 1u + sizeof(SUFFIX_2) - 1u};
+        const size_t typeLength{(funcNameLength - (prefixLength + suffixLength)) / NUM_TYPE_REPEATS};
+        std::string typeName{FUNCTION_MACRO + prefixLength, typeLength};
+        return typeName;
+        #undef FUNCTION_MACRO
+        #undef PREFIX
+        #undef SUFFIX_1
+        #undef SUFFIX_2
+        #undef NUM_TYPE_REPEATS
+      }
+    };
+    //! return a pretty form of the template typename
+    template <typename T>
+    std::string GetTypeName(void)
+    {
+      std::string full_typeName = GetTypeNameHelper<T>::GetTypeName();
+      
+      std::string tn1{std::regex_replace( full_typeName, 
+                                    std::regex("rascal::"), "" )};
+      std::string tn2{std::regex_replace( tn1, std::regex("<"), "." )};
+      std::string tn3{std::regex_replace( tn2, std::regex(">"), "" )};
+      std::string tn4{std::regex_replace( tn3, std::regex(" "), "" )};
+			return tn4;
+    }
 
   }  // internal
 }  // rascal

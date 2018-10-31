@@ -26,30 +26,24 @@
  */
 
 
-#include "structure_managers/structure_manager.hh"
-#include "structure_managers/structure_manager_centers.hh"
-#include "structure_managers/adaptor_strict.hh"
-#include "structure_managers/adaptor_neighbour_list.hh"
+#include "bind_include.hh"
 
-#include <pybind11/pybind11.h>
-#include <pybind11/eigen.h>
-#include <pybind11/stl.h>
-#include <Eigen/Dense>
-#include <basic_types.hh>
-
-using namespace rascal;
-namespace py=pybind11;
 
 //! templated function for adding clusters of different orders
 template<size_t Order, typename StructureManagerImplementation>
 decltype(auto) add_cluster(py::module & m) {
   using ClusterRef = typename StructureManager<
     StructureManagerImplementation>::template ClusterRef<Order>;
-  // TODO: change the exposed name to a convertion of the
-  // StructureManagerImplementation type to a string
-  py::class_<ClusterRef>
-    py_cluster (m, (Order == 1)
-                ? "StructureManager.Center" : "StructureManager.Neighbour");
+  
+  std::string cluster_name = 
+                internal::GetTypeName<StructureManagerImplementation>();
+  if (Order==1){
+    cluster_name += std::string(".Center");
+  } else if (Order==2) {
+    cluster_name += std::string(".Neighbour");
+  }
+   
+  py::class_<ClusterRef> py_cluster (m, cluster_name.c_str());
   py_cluster.def_property_readonly("atom_index", & ClusterRef::get_atom_index,
                                    py::return_value_policy::reference)
     .def_property_readonly("atom_type", & ClusterRef::get_atom_type,
@@ -87,25 +81,35 @@ void add_manager_centers(py::module & m){
 
   // adaptor neighbour list binding
   using AdaptedManager1_t = AdaptorNeighbourList<StructureManagerCenters>;
-  py::class_<StructureManager<AdaptedManager1_t>>(m,"")
+  py::class_<StructureManager<AdaptedManager1_t>>
+      (m,"StructureManager_AdaptorNeighbourList<StructureManagerCenters>")
       .def(py::init<>());
   py::class_<AdaptedManager1_t,
               StructureManager<AdaptedManager1_t>> (m, 
-                    "AdaptorNeighbourList StructureManagerCenters")
+                    "AdaptorNeighbourList_StructureManagerCenters")
     .def(py::init<StructureManagerCenters& , double >())
     .def("update", [](AdaptedManager1_t& v){
         v.update();
-    } ); 
+    } )
+    .def("__iter__", [] (StructureManager<AdaptedManager1_t> & v) {
+        return py::make_iterator(v.begin(),v.end());
+      }, py::keep_alive<0, 1>()); /* Keep vector alive while iterator is used */
+  add_cluster<1,AdaptedManager1_t>(m);
 
   using AdaptedManager2_t = AdaptorStrict<
                 AdaptorNeighbourList<StructureManagerCenters>>;
-  py::class_<StructureManager<AdaptedManager2_t>>(m,"")
+  py::class_<StructureManager<AdaptedManager2_t>>
+      (m,"StructureManager_AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>")
       .def(py::init<>());
   py::class_<AdaptedManager2_t,
               StructureManager<AdaptedManager2_t>> (m, 
-                    "AdaptorStrict AdaptorNeighbourList StructureManagerCenters")
+                    "AdaptorStrict_AdaptorNeighbourList_StructureManagerCenters")
     .def(py::init<AdaptedManager1_t& , double >())
     .def("update", [](AdaptedManager2_t& v){
         v.update();
-    } ); 
+    } )
+    .def("__iter__", [] (StructureManager<AdaptedManager2_t> & v) {
+        return py::make_iterator(v.begin(),v.end());
+      }, py::keep_alive<0, 1>()); /* Keep vector alive while iterator is used */
+    add_cluster<1,AdaptedManager2_t>(m); 
 };

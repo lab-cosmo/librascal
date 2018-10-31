@@ -36,7 +36,7 @@
 #include "structure_managers/structure_manager_base.hh"
 #include "structure_managers/property.hh"
 #include "structure_managers/cluster_ref_key.hh"
-
+#include "rascal_utility.hh"
 //! Some data types and operations are based on the Eigen library
 #include <Eigen/Dense>
 
@@ -283,6 +283,14 @@ namespace rascal {
     inline int atom_type(const int & atom_index) {
       return this->implementation().get_atom_type(atom_index);
     }
+
+    //! getter for the Manager Implementation name
+    inline decltype(auto) get_implementation_name(){
+      return this->type_name;
+    }
+
+    //! string with a human readable implementation class name
+    const std::string type_name = internal::GetTypeName<ManagerImplementation>();
 
   protected:
     //! returns the current layer

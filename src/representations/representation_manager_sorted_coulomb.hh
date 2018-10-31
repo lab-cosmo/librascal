@@ -28,11 +28,15 @@
 #ifndef BASIS_REPRESENTATION_MANAGER_SORTED_COULOMB_H
 #define BASIS_REPRESENTATION_MANAGER_SORTED_COULOMB_H
 
+
 #include "representations/representation_manager_base.hh"
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/property.hh"
+#include "rascal_utility.hh"
 #include <vector>
 #include <algorithm>
+#include <string>
+
 
 namespace rascal {
 
@@ -69,7 +73,6 @@ namespace rascal {
       Eigen::DenseBase<DerivedB> & out,
       std::vector<std::pair<size_t, myiter> > const& reference) {
       
-      
       size_t ncol = in.cols();
       size_t ii{0};
       // auto nn{ncol*(ncol-1)/2};
@@ -102,7 +105,15 @@ namespace rascal {
       interaction_decay{interaction_decay},size{size},
       coulomb_matrices{sm}
       {
-        
+        for (auto center: this->structure_manager){
+          auto Nneighbours{center.size()};
+          if (Nneighbours > this->size){
+              std::cout << "size is too small for this "
+                           "structure and has been reset to: " 
+                        << Nneighbours << std::endl;
+              this->size = Nneighbours;
+          }
+        }
       }
 
     RepresentationManagerSortedCoulomb(Manager_t &sm,const hypers_t& hyper)
@@ -133,12 +144,17 @@ namespace rascal {
       RepresentationManagerSortedCoulomb && other) = default;
     
 
-    // get representation
+    //! compute representation
     void compute();
 
     //! getter for the representation
-    Property_t::reference get_representation() {
-      return this->coulomb_matrices;
+    Eigen::Map<Eigen::MatrixXd> get_representation_full() {
+      auto Nb_centers{this->structure_manager.nb_clusters(1)};
+      auto Nb_features{this->size};
+      auto& raw_data{this->coulomb_matrices.get_raw_data()};
+      Eigen::Map<Eigen::MatrixXd> representation(raw_data.data(),Nb_features,Nb_centers);
+      std::cout <<"Sizes: "<< representation.size()<<", "<< Nb_features<<", "<<Nb_centers<<std::endl;
+      return representation;
     }
 
     // TODO think of a generic input type for the hypers
@@ -152,6 +168,8 @@ namespace rascal {
     // first dimension of the largest coulomb mat
     size_t size;
 
+    const std::string name = internal::GetTypeName<StructureManager>();
+
     Property_t coulomb_matrices;
 
   protected:
@@ -161,20 +179,23 @@ namespace rascal {
 
   template<class Mngr>
   void RepresentationManagerSortedCoulomb<Mngr>::compute(){
-    
-    
-    // lin_coulomb.resize(this->size*(this->size+1)/2);
-    // lin_coulomb.resize(this->size*this->size);
-
-    // upper diag of the coulomb mat
-   
     // initialise the coulomb_matrices storage
+
     this->coulomb_matrices.resize_to_zero();
     this->coulomb_matrices.set_nb_row(this->size);
-
+    std::cout << "name is: " << this->name << std::endl;
     typedef std::vector<double>::const_iterator distiter;
+    std::cout << this->structure_manager.nb_clusters(1)<< ", "<<
+                  this->structure_manager.nb_clusters(2)  <<", "<<
+                 this->structure_manager.size() <<std::endl;
 
     for (auto center: this->structure_manager){
+
+      // auto pos = center.get_position();
+      // for (auto jj{0}; jj < pos.size(); ++jj){
+      //       std::cout << pos(jj) << ",\t";
+      // }
+      // std::cout << std::endl;
       std::vector<double> distances_to_sort{};
       // the local coulomb matrix
       auto Nneighbours{center.size()};
@@ -190,7 +211,7 @@ namespace rascal {
         for (auto neigh_j: center){
           size_t jj{neigh_j.get_index()};
           // work only on the lower diagonal
-          if (ii > jj) continue;
+          if (ii >= jj) continue;
           auto Zj{neigh_i.get_atom_type()};
           auto dij{(neigh_i.get_position()-neigh_j.get_position()).norm()};
           coulomb_mat(jj,ii) = Zi*Zj/dij;
@@ -208,6 +229,18 @@ namespace rascal {
 
       internal::sort_coulomb_matrix(coulomb_mat,lin_sorted_coulomb_mat,order_coulomb);
       this->coulomb_matrices.push_back(lin_sorted_coulomb_mat);
+      // std::cout << "Compute atomic CM: "<< center.get_atom_index() << std::endl;
+      // for (auto ii{0}; ii < coulomb_mat.cols(); ++ii){
+      //   for (auto jj{0}; jj < coulomb_mat.rows(); ++jj){
+      //       std::cout << coulomb_mat(jj,ii) << ",\t";
+      //   }
+      //   std::cout << std::endl;
+      // }
+      // std::cout << "Compute atomic CM: "<< center.get_atom_index() << std::endl;
+      // for (auto jj{0}; jj < lin_sorted_coulomb_mat.rows(); ++jj){
+      //           std::cout << lin_sorted_coulomb_mat(jj,0) << ", ";
+      //       }
+      //       std::cout << std::endl;
     }
 
 

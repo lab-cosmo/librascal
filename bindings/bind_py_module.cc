@@ -26,19 +26,15 @@
  */
 
 
-
-#include <pybind11/pybind11.h>
+#include "bind_include.hh"
 
 using namespace pybind11::literals;
-namespace py=pybind11;
 
-extern void add_manager_centers(py::module&);
-extern void utils_binding(py::module&);
-extern void math_binding(py::module&);
-extern void add_sorted_coulomb(py::module&);
 
 PYBIND11_MODULE(_rascal, mod) {
   mod.doc() = "Python bindings for the Rascal library";
+
+  py::add_ostream_redirect(mod, "ostream_redirect");
 
   add_manager_centers(mod);
   utils_binding(mod);

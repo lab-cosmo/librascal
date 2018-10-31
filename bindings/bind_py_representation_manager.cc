@@ -26,26 +26,14 @@
  */
 
 
-#include "representations/representation_manager_base.hh"
-#include "representations/representation_manager_sorted_coulomb.hh"
-#include "structure_managers/structure_manager_centers.hh"
-#include "structure_managers/adaptor_strict.hh"
-#include "structure_managers/adaptor_neighbour_list.hh"
 
-
-#include <pybind11/pybind11.h>
-#include <pybind11/eigen.h>
-#include <pybind11/stl.h>
-#include <Eigen/Dense>
-
-using namespace rascal;
-namespace py=pybind11;
+#include "bind_include.hh"
 
 
 //! Sorted Coulomb representation python binding
 void add_sorted_coulomb(py::module & m){
   m.doc() = "binding for the Sorted Coulomb Representation" ;
-  py::class_<RepresentationManagerBase>(m," ")
+  py::class_<RepresentationManagerBase>(m,"RepresentationManagerBase")
       .def(py::init<>());
 
   using Manager_t = AdaptorStrict<AdaptorNeighbourList<
@@ -53,13 +41,15 @@ void add_sorted_coulomb(py::module & m){
   
   py::class_<RepresentationManagerSortedCoulomb<Manager_t>,
               RepresentationManagerBase> (m, 
-                      "Sorted Coulomb Representation")
+                      "SortedCoulombRepresentation")
     .def(py::init<Manager_t &, double , 
       double , double , 
       size_t  >())
     .def("compute",
         &RepresentationManagerSortedCoulomb<Manager_t>::compute)
-    .def("get_representation",
-        &RepresentationManagerSortedCoulomb<Manager_t>::get_representation);
-    
+    .def("get_representation_full",
+        &RepresentationManagerSortedCoulomb<Manager_t>::get_representation_full,
+        py::return_value_policy::copy);
+    //py::keep_alive<1,0>(),
+        
 };

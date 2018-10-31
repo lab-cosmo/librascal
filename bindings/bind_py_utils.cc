@@ -26,12 +26,9 @@
  */
 
 
-#include <pybind11/pybind11.h>
-#include <pybind11/eigen.h>
-#include "utils/sparsify_utilities.hh"
+#include "bind_include.hh"
 
-using namespace rascal;
-namespace py=pybind11;
+
 
 void utils_binding(py::module & m){
     m.def("fps", & utils::select_fps, "Selects points from a NxD dimensional"

@@ -35,6 +35,7 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(internal_test,
   RepresentationFixture<StructureManagerCenters>)
   {
+    bool verbose{false};
     typedef std::vector<double>::const_iterator myiter;
     typedef Eigen::Matrix<double,10,1> vec;
 
@@ -42,13 +43,14 @@ namespace rascal {
     vec  numbers2 = vec::Random();
     std::vector<double> index{};
     std::vector<double> index2{};
-    std::cout << "Test simple sorting " << std::endl;
+
+    if (verbose) std::cout << "Test simple sorting " << std::endl;
     for (int ii{0}; ii < numbers.size(); ii++){
         index.push_back(numbers(ii));
         index2.push_back(numbers2(ii));
-        std::cout << numbers(ii) << ", " ;
+        if (verbose) std::cout << numbers(ii) << ", " ;
     }
-    std::cout << std::endl;
+    if (verbose) std::cout << std::endl;
 
     std::vector<pair<size_t, myiter> > order(index.size());
 
@@ -60,27 +62,27 @@ namespace rascal {
     auto sorted_index = internal::sort_from_ref(index,order);
     auto sorted_index2 = internal::sort_from_ref(index2,order);
     for (size_t ii{0}; ii < sorted_index.size(); ii++){
-        std::cout << sorted_index[ii] << ", " ;
+        if (verbose) std::cout << sorted_index[ii] << ", " ;
     }
-    std::cout << std::endl;
+    if (verbose) std::cout << std::endl;
     for (size_t ii{0}; ii < sorted_index2.size(); ii++){
-        std::cout << index2[ii] << ", " ;
+        if (verbose) std::cout << index2[ii] << ", " ;
     }
-    std::cout << std::endl;
+    if (verbose) std::cout << std::endl;
 
     for (size_t ii{0}; ii < sorted_index2.size(); ii++){
-        std::cout << sorted_index2[ii] << ", " ;
+        if (verbose) std::cout << sorted_index2[ii] << ", " ;
     }
-    std::cout << std::endl;
+    if (verbose) std::cout << std::endl;
 
-    std::cout << "Test upper diag sorting " << std::endl;
+    if (verbose) std::cout << "Test upper diag sorting " << std::endl;
     typedef Eigen::Matrix<double,5,5> matrix;
     typedef Eigen::Matrix<double,5*(5+1)/2,1> lin_mat;
 
     matrix  mat0 = matrix::Random();
     lin_mat  mat1 = lin_mat::Ones();
     std::vector<double> dists{{2,4,0,1,3}};
-    
+
     std::vector<pair<size_t, myiter> > order_mat(dists.size());
 
     size_t n_{0};
@@ -91,22 +93,40 @@ namespace rascal {
     internal::sort_coulomb_matrix(mat0,mat1,order_mat);
     for (int ii{0}; ii < mat0.rows(); ii++){
       for (int jj{0}; jj < mat0.cols(); jj++){
-         std::cout << mat0(ii,jj) << ",\t" ;
+         if (verbose) std::cout << mat0(ii,jj) << ",\t" ;
       }
-      std::cout << std::endl;
+      if (verbose) std::cout << std::endl;
     }
 
     for (int jj{0}; jj < mat1.rows(); jj++){
-        std::cout << mat1(jj)<< ", " ;
+        if (verbose) std::cout << mat1(jj)<< ", " ;
     }
-    std::cout << std::endl;
+    if (verbose) std::cout << std::endl;
 
   }
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
   RepresentationFixture<StructureManagerCenters>)
-  { 
-    
+  {
+
+    AdaptorNeighbourList<StructureManagerCenters> nl{manager,cutoff_max};
+    nl.update();
+    AdaptorStrict<AdaptorNeighbourList<
+                              StructureManagerCenters>> strict_nl{nl,cutoff_max};
+    strict_nl.update();
+
+    using Representation_t = RepresentationManagerSortedCoulomb<
+                   AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
+
+    Representation_t representation{strict_nl,central_decay,
+                                    interaction_cutoff,interaction_decay,size};
+
+  }
+    /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE(compute_test,
+  RepresentationFixture<StructureManagerCenters>)
+  {
+    bool verbose{false};
     AdaptorNeighbourList<StructureManagerCenters> nl{manager,cutoff_max};
     nl.update();
     AdaptorStrict<AdaptorNeighbourList<
@@ -120,9 +140,18 @@ namespace rascal {
                                     interaction_cutoff,interaction_decay,size};
     representation.compute();
 
+    auto rep = representation.get_representation_full();
+    if (verbose){
+        std::cout << rep.size() <<", "<< rep.cols() <<", "<< rep.rows()<< std::endl;
+        for (auto ii{0}; ii < rep.cols(); ++ii){
+            for (auto jj{0}; jj < rep.rows(); ++jj){
+                std::cout << rep(jj,ii) << ", ";
+            }
+            std::cout << std::endl;
+        }
+    }
 
   }
-
 
   BOOST_AUTO_TEST_SUITE_END();
 } // RASCAL

@@ -1,6 +1,7 @@
 import unittest
 import numpy as np
 import sys
+import faulthandler
 
 sys.path.insert(0,'../tests/')
 
@@ -35,6 +36,17 @@ class TestStructureManagerCenters(unittest.TestCase):
         TEST constructor wrapper
         """
         rc.StructureManagerCenters()
+    
+    def test_update(self):
+        """
+        TEST constructor wrapper
+        """
+        manager =  rc.StructureManagerCenters()
+        centers = np.array([it for it in range(self.Natom)], dtype=np.int32)
+        manager.update(np.array(self.positions.T,order='F'),
+                       self.numbers.reshape(-1,1),
+                       np.array(self.cell.T,order='F'),
+                       self.pbc[0].reshape(3,1))
 
     def test_manager_iteration(self):
         manager =  rc.StructureManagerCenters()
@@ -50,7 +62,105 @@ class TestStructureManagerCenters(unittest.TestCase):
             self.assertTrue(np.allclose(self.positions[ii], center.position))
             ii += 1
 
+class TestNL(unittest.TestCase):
+    def setUp(self):
+        """
+        builds the test case. Test the order=1 structure manager implementation
+        against a triclinic crystal.
+        """
 
+        fn = '../tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
+        self.frame = load_json_frame(fn)
+
+        self.cell = self.frame['cell']
+        self.positions = self.frame['positions']
+        self.numbers = self.frame['numbers']
+        self.pbc = np.array([ [1, 1, 1], [0, 0, 0],
+                              [0, 1, 0], [1, 0, 1],
+                              [1, 1, 0], [0, 0, 1],
+                              [1, 0, 0], [0, 1, 0] ]).astype(int)
+
+        self.Natom = self.positions.shape[0]
+        self.cutoffs = [3.]*self.Natom
+        self.max_cutoff = np.max(self.cutoffs)
+
+        self.manager =  rc.StructureManagerCenters()
+        self.manager.update(np.array(self.positions.T,order='F'),
+                       self.numbers.reshape(-1,1),
+                       np.array(self.cell.T,order='F'),
+                       self.pbc[0].reshape(3,1))
+
+    def test_constructor(self):
+        """
+        TEST constructor wrapper
+        """
+        rc.AdaptorNeighbourList_StructureManagerCenters(self.manager,self.max_cutoff)
+    
+    def test_update(self):
+        manager =  rc.AdaptorNeighbourList_StructureManagerCenters(self.manager,self.max_cutoff)
+        manager.update()
+
+    def test_manager_iteration(self):
+        manager =  rc.AdaptorNeighbourList_StructureManagerCenters(self.manager,self.max_cutoff)
+        manager.update()
+
+        ii = 0
+        for center in manager:
+            self.assertTrue(ii == center.atom_index)
+            self.assertTrue(self.numbers[ii] == center.atom_type)
+            self.assertTrue(np.allclose(self.positions[ii], center.position))
+            ii += 1
+
+class TestNLStrict(unittest.TestCase):
+    def setUp(self):
+        """
+        builds the test case. Test the order=1 structure manager implementation
+        against a triclinic crystal.
+        """
+
+        fn = '../tests/reference_data/simple_cubic_8.json'
+        self.frame = load_json_frame(fn)
+
+        self.cell = self.frame['cell']
+        self.positions = self.frame['positions']
+        self.numbers = self.frame['numbers']
+        self.pbc = np.array([ [1, 1, 1], [0, 0, 0],
+                              [0, 1, 0], [1, 0, 1],
+                              [1, 1, 0], [0, 0, 1],
+                              [1, 0, 0], [0, 1, 0] ]).astype(int)
+
+        self.Natom = self.positions.shape[0]
+        self.cutoffs = [3.]*self.Natom
+        self.max_cutoff = np.max(self.cutoffs)
+
+        self.managerC =  rc.StructureManagerCenters()
+        self.managerC.update(np.array(self.positions.T,order='F'),
+                       self.numbers.reshape(-1,1),
+                       np.array(self.cell.T,order='F'),
+                       self.pbc[0].reshape(3,1))
+        self.manager = rc.AdaptorNeighbourList_StructureManagerCenters(self.managerC,self.max_cutoff) 
+        self.manager.update()
+
+    def test_constructor(self):
+        """
+        TEST constructor wrapper
+        """
+        rc.AdaptorStrict_AdaptorNeighbourList_StructureManagerCenters(self.manager,self.max_cutoff)
+    
+    def test_a_update(self):
+        manager =  rc.AdaptorStrict_AdaptorNeighbourList_StructureManagerCenters(self.manager,self.max_cutoff)
+        manager.update()
+
+    def test_manager_iteration(self):
+        manager = rc.AdaptorStrict_AdaptorNeighbourList_StructureManagerCenters(self.manager,self.max_cutoff)
+        manager.update()
+
+        ii = 0
+        for center in manager:
+            self.assertTrue(ii == center.atom_index)
+            self.assertTrue(self.numbers[ii] == center.atom_type)
+            self.assertTrue(np.allclose(self.positions[ii], center.position))
+            ii += 1
 
 
 

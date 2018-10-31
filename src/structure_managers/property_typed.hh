@@ -232,7 +232,11 @@ namespace rascal {
                             this->get_nb_col());
     }
 
-    // TODO make getter for values as Eigen map of the vector with the proper shape
+    //! getter to the underlying data storage
+    inline std::vector<T>& get_raw_data(){
+      return this->values;
+    }
+
   protected:
     std::vector<T> values{}; //!< storage for properties
   private:
