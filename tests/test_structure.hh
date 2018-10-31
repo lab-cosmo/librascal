@@ -168,6 +168,15 @@ namespace rascal {
     int dim;
   };
 
+  // /* ---------------------------------------------------------------------- */
+  // template<class ManagerImplementation>
+  // struct ManagerFixtureVariableCell
+  // {
+  //   ManagerFixtureVariableCell():
+  //     pbc{{true, true, true}}, cutoff{3.}, atom_ids(natoms),
+  //     cell(dim, dim), positions(dim, natoms),
+  // };
+
   /* ---------------------------------------------------------------------- */
   template<class ManagerImplementation>
   struct ManagerFixtureNeighbourCheckHcp
@@ -606,6 +615,58 @@ namespace rascal {
     double cutoff;
 
     const int natoms{8};
+  };
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * A manager using ManagerCenters to check the neighbourlist algorithm with
+   * increasing skewedness of the cell as well as a shift of the positions. The
+   * manager is built and constructed inside the loop which skews the cells in
+   * the actual test.
+   *
+   */
+  template<class ManagerImplementation>
+  struct ManagerFixtureSkew
+  {
+    using Manager_t = ManagerImplementation;
+
+    ManagerFixtureSkew():
+      pbc{{true, true, true}}, cell(3, 3), positions(3, 4), numbers(4),
+      cutoff{1.3}, natoms{4}, skew_multiplier(3, 3)
+    {
+      cell <<
+        1.0, 0.0, 0.0,
+        0.0, 1.0, 0.0,
+        0.0, 0.0, 0.5;
+
+      positions <<
+        0.01, 0.01, 0.51, 0.51,
+        0.01, 0.51, 0.01, 0.51,
+        0.01, 0.01, 0.01, 0.01;
+
+      numbers << 1, 1, 1, 1;
+
+      // entry (0,1) gives the skewing factor in the x/y plane in the loop
+      // building the cells
+      skew_multiplier <<
+        1.0, 1.0, 0.0,
+        0.0, 1.0, 0.0,
+        0.0, 0.0, 1.0;
+    }
+
+    ~ManagerFixtureSkew() {}
+
+    std::array<int, 3> pbc;
+    Eigen::MatrixXd cell;
+    Eigen::MatrixXd positions;
+    Eigen::VectorXi numbers;
+
+    double cutoff;
+
+    const int natoms;
+
+    // helper for increasing skewedness of unit cell in loop
+    Eigen::MatrixXd skew_multiplier;
   };
 }  // rascal
 

@@ -299,7 +299,114 @@ namespace rascal {
     }
   }
 
-  // TODO: add test for different skewedness of an originally rectangular box
+  /* ---------------------------------------------------------------------- */
+  /*
+   * Test if an increasingly skewed unit cell gives the same number of
+   * neighbours than the non-skewed one. Skewing is achieved by the
+   * multiplier.
+   */
+  BOOST_FIXTURE_TEST_CASE(test_neighbour_list_skewed,
+                          ManagerFixtureSkew<StructureManagerCenters>) {
+
+    constexpr static bool verbose{false};
+
+    int ncells{3};
+
+    // container for storing the number of neighbours per atom in all cells
+    std::vector<std::vector<int>> neighbours;
+    neighbours.resize(ncells);
+
+    // loop over cells
+    for (int i{0}; i < ncells; ++i) {
+      // manager constructed within this loop
+      StructureManagerCenters manager;
+
+      if (verbose) std::cout << "------------ cells " << i << std::endl;
+
+      // get reference data
+      auto skewer{skew_multiplier};
+      // change shear multiplier
+      skewer(0,1) *= i;
+      // calculate unit cell
+      auto cell_skw = skewer * cell;
+      auto cell_skw_inv{cell_skw.inverse().eval()};
+
+      if (verbose) {
+        std::cout << "cell and inverse " << std::endl;
+        std::cout << cell_skw << std::endl;
+        std::cout << cell_skw_inv << std::endl;
+      }
+
+      // change initial atomic positions according to skewedness
+      auto pos_skw{positions};
+      for (int j{0}; j < natoms; ++j) {
+        auto p = pos_skw.col(j);
+        if (verbose) {
+          std::cout << " >>>>>>> original position atom " << j << "\n"
+                    << p.transpose() << std::endl;
+        }
+        // find minimal multiplier to project position out of cubic unit cell
+        auto mult{(cell_skw_inv * p).eval()};
+        auto mult_floor{mult};
+        for (auto m{0}; m < 3; ++m) {mult_floor[m] = std::floor(mult[m]);}
+        auto m{mult_floor.cwiseAbs().eval()};
+
+        if (verbose) {
+          std::cout << " mult \n" << mult.transpose() << std::endl;
+          std::cout << "  mult_floor \n" << m.transpose() << std::endl;
+          std::cout << "  skewed position  <<<<<<<\n" << p.transpose() << std::endl;
+        }
+        // set new position
+        pos_skw.col(j) = p + cell_skw * m;
+      }
+
+      if (verbose) {
+        std::cout << "positions skewed \n" << pos_skw << std::endl;
+      }
+
+      // construct manager with skewed unit cell and shifted positions
+      manager.update(pos_skw, numbers, cell_skw,
+                     Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
+
+      // build neighbourlist
+      AdaptorNeighbourList<StructureManagerCenters> pair_manager{manager,
+          cutoff};
+      pair_manager.update();
+
+      // make strict for counting neighbours
+      AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>
+        adaptor_strict{pair_manager, cutoff};
+      adaptor_strict.update();
+
+      // count strict neighbours
+      for (auto atom : adaptor_strict) {
+        neighbours[i].push_back(0);
+        for (auto pair : atom) {
+          neighbours[i].back()++;
+        }
+      }
+    }
+    for (auto i{0}; i < ncells; ++i) {
+
+    }
+    // check neighbours
+    for (auto i{1}; i < ncells; ++i) {
+      if (verbose) {
+        std::cout << "cell " << i << std::endl;
+        for (auto neigh_per_atom : neighbours[i]) {
+          std::cout << neigh_per_atom << " ";
+        }
+        std::cout << std::endl;
+      }
+
+      // neighbours[i] are the skewed unit cells with adapted positions
+      BOOST_CHECK_EQUAL_COLLECTIONS(neighbours[i].begin(),
+                                    neighbours[i].end(),
+                                    // expected values from unskewed cell
+                                    neighbours[0].begin(),
+                                    neighbours[0].end());
+    }
+  }
 
   BOOST_AUTO_TEST_SUITE_END();
 

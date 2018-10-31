@@ -288,7 +288,7 @@ namespace rascal {
     std::vector<size_t> get_neighbours(const int current_atom_index,
                                        const std::array<int, Dim> & ccoord,
                                        const Container_t & boxes) {
-      std::vector<size_t> neighbours;
+      std::vector<size_t> neighbours{};
       for (auto && s: Stencil<Dim>{ccoord}) {
         for (const auto & neigh : boxes[s]) {
           // avoid adding the current i atom to the neighbour list
@@ -542,7 +542,7 @@ namespace rascal {
     inline Vector_ref get_position(const AtomRef_t & atom) {
       return this->manager.get_position(atom.get_index());
     }
-    
+
     /**
      * Returns the id of the index-th (neighbour) atom of the cluster that is
      * the full structure/atoms object, i.e. simply the id of the index-th atom
