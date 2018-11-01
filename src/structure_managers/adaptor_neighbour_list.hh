@@ -624,14 +624,6 @@ namespace rascal {
       this->nb_neigh.push_back(0);
     }
 
-    //! Adds a given atom index as new cluster neighbour
-    inline void add_neighbour_of_cluster(const int atom_index) {
-      //! adds `atom_index` to neighbours
-      this->neighbours.push_back(atom_index);
-      //! increases the number of neighbours
-      this->nb_neigh.back()++;
-    }
-
     //! Sets the correct offsets for accessing neighbours
     inline void set_offsets() {
       auto n_tuples{nb_neigh.size()};
@@ -717,6 +709,13 @@ namespace rascal {
     this->ghost_types.resize(0);
     // actual call for building the neighbour list
     this->make_full_neighbour_list();
+
+    // std::cout << ">>> ghost positions " << std::endl;
+    // for (auto gidx : this->ghost_atom_indices) {
+    //   auto pos = this->get_position(gidx);
+    //   std::cout << pos.transpose() << std::endl;
+    // }
+    // std::cout << "<<< ghost positions " << std::endl;
   }
 
   /* ---------------------------------------------------------------------- */
@@ -744,6 +743,8 @@ namespace rascal {
     auto cell{this->manager.get_cell()};
     double cutoff{this->cutoff};
 
+    auto positions{this->manager.get_positions()};
+
     std::array<int, dim> nboxes_per_dim{};
 
     // vector for storing the atom indices of each box
@@ -760,6 +761,16 @@ namespace rascal {
     std::array<int, dim> m_min{};
     std::array<int, dim> m_max{};
 
+    // test for triclinicity
+    std::cout << "---" << std::endl;
+    for (auto i{0}; i < dim; ++i) {
+      double val{0.};
+      for (auto j{0}; j < dim; ++j) {
+        val += cell.col(i)(j) * cell.col((i+1)%dim)(j);
+      }
+      std::cout << val << std::endl;
+    }
+
     // Mesh related stuff for neighbour boxes. Calculate min and max of the mesh
     // in cartesian coordinates and relative to the cell origin.  mesh_min is
     // the origin of the mesh; mesh_max is the maximum coordinate of the mesh;
@@ -769,11 +780,15 @@ namespace rascal {
       auto min_coord = std::min(0., cell.row(i).minCoeff());
       auto max_coord = std::max(0., cell.row(i).maxCoeff());
 
+      // ensure coverage, even in extremly skewed cases
+      auto delta = std::fabs(max_coord - min_coord);
+      auto mult = std::ceil(delta/cutoff);
+
       // minimum is given by -cutoff and a delta to avoid ambiguity during cell
       // sorting of atom position e.g. at x = (0,0,0).
       auto epsilon = 0.25 * cutoff;
-      mesh_min[i] = min_coord - cutoff - epsilon;
-      auto lmesh = std::fabs(mesh_min[i]) + max_coord + cutoff;
+      mesh_min[i] = min_coord - mult*cutoff - epsilon;
+      auto lmesh = std::fabs(mesh_min[i]) + max_coord + 2*cutoff;
       int n = std::ceil(lmesh / cutoff);
       auto lmax = n * cutoff - std::fabs(mesh_min[i]);
       mesh_max[i] = lmax;
@@ -842,9 +857,9 @@ namespace rascal {
 
         int ncheck{0};
         for (auto i{0}; i < dim; ++i) ncheck += std::abs(p_image[i]);
-
         // exclude cell itself
         if(ncheck > 0) {
+          // std::cout << p_image[0] << p_image[1] << p_image[2] <<  std::endl;
           Vector_t pos_ghost = pos;
 
           for (auto i{0}; i < dim; ++i) {
