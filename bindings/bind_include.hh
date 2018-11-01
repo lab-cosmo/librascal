@@ -30,15 +30,6 @@
 #ifndef BIND_INCLUDE_H
 #define BIND_INCLUDE_H
 
-#include <pybind11/pybind11.h>
-#include <pybind11/stl_bind.h>
-#include <pybind11/eigen.h>
-#include <pybind11/stl.h>
-#include <pybind11/iostream.h>
-
-#include <Eigen/Dense>
-#include <vector>
-
 #include "utils/sparsify_utilities.hh"
 
 #include "math/math_interface.hh"
@@ -54,6 +45,16 @@
 
 #include "basic_types.hh"
 #include "rascal_utility.hh"
+
+#include <pybind11/pybind11.h>
+#include <pybind11/stl_bind.h>
+#include <pybind11/eigen.h>
+#include <pybind11/stl.h>
+#include <pybind11/iostream.h>
+
+#include <Eigen/Dense>
+#include <vector>
+
 
 // PYBIND11_MAKE_OPAQUE(std::vector<double>);
 
