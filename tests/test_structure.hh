@@ -46,6 +46,8 @@ namespace rascal {
    * that need to be tested. Fixtures should be as compatible as possible in
    * terms of interface, so that the tests can be easily templated. 
    * This is a list of conventions that are expected in tests:
+   * - A fixture for a given manager F should be defined as ManagerFixture<F>
+   * - The manager implementation should be accessible as Manager_t
    * - If a fixture generates an object that should be accessible with a 
    *   structure_manager interface, it has to be called "manager"
    */

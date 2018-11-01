@@ -51,16 +51,18 @@ namespace rascal {
     BOOST_CHECK_EQUAL(manager.size(), manager.nb_clusters(1));
   }
 
-  // loops over the centers in the manager making sure positions are consistent
+  // loops over the centers in the manager making sure indexing works
+  // and that different ways of accessing atom properties are consistent
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_atom_indexing, Fix, 
                                    fixtures, Fix) {
     auto &manager = Fix::manager;
     for (auto atom : manager) {
-      auto index = atom.get_atom_index();  // checks get_atom_index exists
+      auto index = atom.get_atom_index();  // checks get_atom_index exists      
+      
       
       auto type = atom.get_atom_type(); // checks get_atom_type exists
-      BOOST_CHECK_EQUAL(type, manager.atom_type(index)); // cluster size should be 1! 
-      
+      BOOST_CHECK_EQUAL(type, manager.atom_type(index)); 
+                      
       // checks that multiple ways of accessing positions are equivalent
       auto position_error = (atom.get_position() - 
                              manager.position(index)).norm();      
@@ -69,7 +71,14 @@ namespace rascal {
                              manager.position(atom.back())).norm();      
       BOOST_CHECK(position_error < tol / 100);
     }
+    
+    if (Fix::Manager_t::traits::MaxOrder > 1) {
+      for (auto atom : manager) {
+        auto ncls = manager.nb_clusters(1);
+      }
+    }
   }
+  
   
   /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();
