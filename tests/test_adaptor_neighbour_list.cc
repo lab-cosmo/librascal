@@ -29,7 +29,9 @@
 
 #include "tests.hh"
 #include "test_structure.hh"
+#include "test_adaptor.hh"
 #include "structure_managers/adaptor_neighbour_list.hh"
+
 
 namespace rascal {
 
@@ -42,19 +44,16 @@ namespace rascal {
    * ``manager`` is a MaxOrder=1 atom manager
    */
   BOOST_FIXTURE_TEST_CASE(simple_cubic_9_neighbour_list,
-                          ManagerFixtureFile<StructureManagerCenters>) {
+                          PairFixtureSimple<StructureManagerCenters>) {
 
     constexpr bool verbose{false};
 
-    AdaptorNeighbourList<StructureManagerCenters> SM2{manager, cutoff};
-    SM2.update();
-
-    auto npairs = SM2.get_nb_clusters(2);
+    auto npairs = pair_manager.get_nb_clusters(2);
 
     if (verbose) std::cout << "npairs " << npairs << std::endl;
 
     int np{0};
-    for (auto atom : SM2) {
+    for (auto atom : pair_manager) {
       for (auto pair : atom) {
         np++;
       }
@@ -64,14 +63,12 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   //! test if hcp managers are constructed
-  BOOST_FIXTURE_TEST_CASE(constructor_test_hcp,
-                          ManagerFixtureNeighbourTwoHcp) {
+  BOOST_FIXTURE_TEST_CASE(constructor_test_hcp, ManagerFixtureTwoHcp) {
   }
 
   /* ---------------------------------------------------------------------- */
   //! test if fcc managers are constructed
-  BOOST_FIXTURE_TEST_CASE(constructor_test_fcc,
-                          ManagerFixtureNeighbourTwoFcc) {
+  BOOST_FIXTURE_TEST_CASE(constructor_test_fcc, ManagerFixtureTwoFcc) {
   }
 
   /* ---------------------------------------------------------------------- */
@@ -81,23 +78,17 @@ namespace rascal {
    *
    * ``manager`` is a StructureManager with MaxOrder=1
    */
-  BOOST_FIXTURE_TEST_CASE(test_build_neighbour_list_from_atoms,
-                          ManagerFixtureSimple){
+  BOOST_FIXTURE_TEST_CASE(test_build_neighbour_simple,
+                          PairFixtureSimple<StructureManagerCenters>) {
 
     constexpr bool verbose{false};
 
-    if (verbose) std::cout << "===> zeroth order manager " << std::endl;
     //! testing iteration of zerot-th order manager
     for (auto atom : manager) {
       if (verbose) {
         std::cout << "atom " << atom.back() << std::endl;
       }
     }
-
-    if (verbose) std::cout << "<== zeroth order manager " << std::endl;
-
-    AdaptorNeighbourList<StructureManagerCenters> pair_manager{manager, cutoff};
-    pair_manager.update();
 
     auto n_pairs{0};
     for (auto atom : pair_manager) {
@@ -123,8 +114,7 @@ namespace rascal {
    * ``manager_1`` and ``manager_2`` each hold a different unit cell for a hcp
    * crystal system.
    */
-  BOOST_FIXTURE_TEST_CASE(neighbourlist_test_hcp,
-                          ManagerFixtureNeighbourTwoHcp) {
+  BOOST_FIXTURE_TEST_CASE(neighbourlist_test_hcp, ManagerFixtureTwoHcp) {
 
     /*
      * Note: since the cell vectors are different, it is possible that one of
@@ -222,8 +212,7 @@ namespace rascal {
    * ``manager_1`` and ``manager_2`` each hold a different unit cell for a fcc
    * crystal system.
    */
-  BOOST_FIXTURE_TEST_CASE(neighbourlist_test_fcc,
-                          ManagerFixtureNeighbourTwoFcc) {
+  BOOST_FIXTURE_TEST_CASE(neighbourlist_test_fcc, ManagerFixtureTwoFcc) {
 
     constexpr bool verbose{false};
 

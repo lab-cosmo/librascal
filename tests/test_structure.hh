@@ -113,10 +113,10 @@ namespace rascal {
    * two atoms. It is used to ensure that the neighbour list algorithm is robust
    * with respect to the unit cell.
    */
-  struct ManagerFixtureNeighbourTwoHcp
+  struct ManagerFixtureTwoHcp
     : public ManagerFixtureTwo<StructureManagerCenters>
   {
-    ManagerFixtureNeighbourTwoHcp():
+    ManagerFixtureTwoHcp():
       ManagerFixtureTwo<StructureManagerCenters> {},
       pbc{{true,true,true}}, cell_1(3,3), cell_2(3,3),
       positions_1(3, 2), positions_2(3, 2),
@@ -172,7 +172,7 @@ namespace rascal {
                        {pbc.data()});
     }
 
-    ~ManagerFixtureNeighbourTwoHcp() {}
+    ~ManagerFixtureTwoHcp() {}
 
     std::array<int, 3> pbc;
     Eigen::MatrixXd cell_1;
@@ -194,10 +194,10 @@ namespace rascal {
    * (vectors) with one and four atoms. It is another test to ensure that the
    * neighbour list algorithm is robust with respect to the unit cell.
    */
-  struct ManagerFixtureNeighbourTwoFcc
+  struct ManagerFixtureTwoFcc
     : public ManagerFixtureTwo<StructureManagerCenters>
   {
-    ManagerFixtureNeighbourTwoFcc():
+    ManagerFixtureTwoFcc():
       ManagerFixtureTwo<StructureManagerCenters> {},
       pbc{{true, true, true}}, cell_1(3, 3), cell_2(3, 3),
       positions_1(3, 1), positions_2(3, 4),
@@ -249,7 +249,7 @@ namespace rascal {
                        {pbc.data()});
     }
 
-    ~ManagerFixtureNeighbourTwoFcc() {}
+    ~ManagerFixtureTwoFcc() {}
 
 
     std::array<int, 3> pbc;
