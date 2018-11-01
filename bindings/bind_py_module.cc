@@ -34,10 +34,22 @@ using namespace pybind11::literals;
 PYBIND11_MODULE(_rascal, mod) {
   mod.doc() = "Python bindings for the Rascal library";
 
-  py::add_ostream_redirect(mod, "ostream_redirect");
+  py::module m_strc_mng = mod.def_submodule("StructureManager");
+  m_strc_mng.doc() = "Structure Manager Classes" ;
+  py::module m_adp = mod.def_submodule("Adaptor");
+  m_adp.doc() = "Adaptor Classes" ;
+  py::module m_rpr_mng = mod.def_submodule("RepresentationManager");
+  m_rpr_mng.doc() = "Representation Manager Classes" ;
+  py::module m_utl = mod.def_submodule("utils");
+  py::module m_math = mod.def_submodule("math");
+  m_math.doc() = "Collection of math functions" ;
+  py::module m_garbage = mod.def_submodule("garbage");
+  m_garbage.doc() = "Collection of bindings that are needed but not functional";
 
-  add_manager_centers(mod);
-  utils_binding(mod);
-  math_binding(mod);
-  add_sorted_coulomb(mod);
+  py::add_ostream_redirect(m_utl, "ostream_redirect");
+
+  add_structure_managers(m_strc_mng,m_adp,m_garbage);
+  add_representation_managers(m_rpr_mng,m_garbage);
+  utils_binding(m_utl);
+  math_binding(m_math);
 }

@@ -419,6 +419,7 @@ namespace rascal {
     using Base = StructureManager<AdaptorNeighbourList<ManagerImplementation>>;
     using Parent =
       StructureManager<AdaptorNeighbourList<ManagerImplementation>>;
+    using Implementation_t = ManagerImplementation;
     using traits = StructureManager_traits<AdaptorNeighbourList>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
@@ -483,14 +484,12 @@ namespace rascal {
 
     //! Returns the number of clusters of size cluster_size
     inline size_t get_nb_clusters(size_t cluster_size) const {
-      switch (cluster_size) {
-      case traits::MaxOrder: {
-        return this->neighbours.size();
-        break;
-      }
-      default:
+      if (cluster_size == 1) {
         return this->manager.get_nb_clusters(cluster_size);
-        break;
+      } else if (cluster_size == 2) {
+        return this->neighbours.size();
+      } else {
+        throw std::string("ERREUR : cluster_size > 2");
       }
     }
 
@@ -599,11 +598,14 @@ namespace rascal {
     inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
                                    & cluster) const {
 
-      static_assert(Order < traits::MaxOrder,
+      static_assert(Order <= traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
 
-      if (Order < (traits::MaxOrder-1)) {
-        return this->manager.get_cluster_size(cluster);
+      if (Order == 1){
+        // since it is the neighbour list step, this->manager is of Order 1
+        // using this->manager to get this answer forces compilation of 
+        // get_cluster_size with order==2 which raise an assert
+        return 1;
       } else {
         auto access_index = cluster.get_cluster_index(Layer);
         return nb_neigh[access_index];

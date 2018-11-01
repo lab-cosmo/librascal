@@ -80,6 +80,7 @@ namespace rascal {
   public:
     using Parent =
       StructureManager<AdaptorHalfList<ManagerImplementation>>;
+    using Implementation_t = ManagerImplementation;
     using traits = StructureManager_traits<AdaptorHalfList>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
 

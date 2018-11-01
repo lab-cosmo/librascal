@@ -83,6 +83,7 @@ namespace rascal {
 
     using Parent =
       StructureManager<AdaptorMaxOrder<ManagerImplementation>>;
+    using Implementation_t = ManagerImplementation;
     using traits = StructureManager_traits<AdaptorMaxOrder>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     template<size_t Order>

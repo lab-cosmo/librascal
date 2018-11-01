@@ -118,12 +118,24 @@ namespace rascal {
       
       std::string tn1{std::regex_replace( full_typeName, 
                                     std::regex("rascal::"), "" )};
-      std::string tn2{std::regex_replace( tn1, std::regex("<"), "." )};
+      std::string tn2{std::regex_replace( tn1, std::regex("<"), "_" )};
       std::string tn3{std::regex_replace( tn2, std::regex(">"), "" )};
       std::string tn4{std::regex_replace( tn3, std::regex(" "), "" )};
 			return tn4;
     }
 
+
+    template <typename T>
+    std::string GetBindingTypeName(void) {
+      std::string typeName = GetTypeName<T>();
+      std::string tn1{std::regex_replace( typeName, 
+                        std::regex("StructureManager"), "" )};
+      std::string tn2{std::regex_replace( tn1, 
+                        std::regex("Adaptor"), "" )};
+      std::string tn3{std::regex_replace( tn2, 
+                        std::regex("RepresentationManager"), "" )};
+			return tn3;
+    }
   }  // internal
 }  // rascal
 

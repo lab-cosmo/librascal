@@ -80,6 +80,7 @@ namespace rascal {
   public:
     using Parent =
       StructureManager<AdaptorStrict<ManagerImplementation>>;
+    using Implementation_t = ManagerImplementation;
     using traits = StructureManager_traits<AdaptorStrict>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     template <size_t Order>
@@ -221,7 +222,7 @@ namespace rascal {
     template<size_t Order, size_t Layer>
     inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
 				   & cluster) const {
-      static_assert(Order <= traits::MaxOrder-1,
+      static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
       return this->nb_neigh[Order][cluster.back()];
     }

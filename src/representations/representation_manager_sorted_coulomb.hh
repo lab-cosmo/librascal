@@ -35,8 +35,6 @@
 #include "rascal_utility.hh"
 #include <vector>
 #include <algorithm>
-#include <string>
-
 
 namespace rascal {
 
@@ -168,8 +166,6 @@ namespace rascal {
     // first dimension of the largest coulomb mat
     size_t size;
 
-    const std::string name = internal::GetTypeName<StructureManager>();
-
     Property_t coulomb_matrices;
 
   protected:
@@ -183,7 +179,7 @@ namespace rascal {
 
     this->coulomb_matrices.resize_to_zero();
     this->coulomb_matrices.set_nb_row(this->size);
-    std::cout << "name is: " << this->name << std::endl;
+    // std::cout << "name is: " << this->name << std::endl;
     typedef std::vector<double>::const_iterator distiter;
     std::cout << this->structure_manager.nb_clusters(1)<< ", "<<
                   this->structure_manager.nb_clusters(2)  <<", "<<

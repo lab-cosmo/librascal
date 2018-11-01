@@ -29,16 +29,16 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
         self.cutoffs = [4.]*self.Natom
         self.max_cutoff = np.max(self.cutoffs)
         
-        self.managerC =  rc.StructureManagerCenters()
+        self.managerC =  rc.StructureManager.Centers()
         self.managerC.update(np.array(self.positions.T,order='F'),
                        self.numbers.reshape(-1,1),
                        np.array(self.cell.T,order='F'),
                        self.pbc[0].reshape(3,1))
 
-        self.managerLC = rc.AdaptorNeighbourList_StructureManagerCenters(self.managerC,self.max_cutoff) 
+        self.managerLC = rc.Adaptor.NeighbourList_Centers(self.managerC,self.max_cutoff) 
         self.managerLC.update()
 
-        self.manager = rc.AdaptorStrict_AdaptorNeighbourList_StructureManagerCenters(self.managerLC,self.max_cutoff)
+        self.manager = rc.Adaptor.Strict_NeighbourList_Centers(self.managerLC,self.max_cutoff)
         self.manager.update()
 
         self.central_decay = 0.5
@@ -50,23 +50,26 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
         """
         TEST constructor wrapper
         """
-        rc.SortedCoulombRepresentation(self.manager,self.central_decay,self.interaction_cutoff,
-                                        self.interaction_decay,self.size)
+        rc.RepresentationManager.SortedCoulomb_Strict_NeighbourList_Centers(
+                        self.manager,self.central_decay,self.interaction_cutoff,
+                        self.interaction_decay,self.size)
     
     def test_compute(self):
         """
         TEST compute wrapper
         """
-        cm = rc.SortedCoulombRepresentation(self.manager,self.central_decay,self.interaction_cutoff,
-                                        self.interaction_decay,self.size)
+        cm = rc.RepresentationManager.SortedCoulomb_Strict_NeighbourList_Centers(
+                        self.manager,self.central_decay,self.interaction_cutoff,
+                        self.interaction_decay,self.size)
         cm.compute()
     
     def test_get_representation(self):
         """
         TEST compute wrapper
         """
-        cm = rc.SortedCoulombRepresentation(self.manager,self.central_decay,self.interaction_cutoff,
-                                        self.interaction_decay,self.size)
+        cm = rc.RepresentationManager.SortedCoulomb_Strict_NeighbourList_Centers(
+                        self.manager,self.central_decay,self.interaction_cutoff,
+                        self.interaction_decay,self.size)
         
         cm.compute()
     

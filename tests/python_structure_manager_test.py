@@ -35,13 +35,13 @@ class TestStructureManagerCenters(unittest.TestCase):
         """
         TEST constructor wrapper
         """
-        rc.StructureManagerCenters()
+        rc.StructureManager.Centers()
     
     def test_update(self):
         """
         TEST constructor wrapper
         """
-        manager =  rc.StructureManagerCenters()
+        manager =  rc.StructureManager.Centers()
         centers = np.array([it for it in range(self.Natom)], dtype=np.int32)
         manager.update(np.array(self.positions.T,order='F'),
                        self.numbers.reshape(-1,1),
@@ -49,7 +49,7 @@ class TestStructureManagerCenters(unittest.TestCase):
                        self.pbc[0].reshape(3,1))
 
     def test_manager_iteration(self):
-        manager =  rc.StructureManagerCenters()
+        manager =  rc.StructureManager.Centers()
         centers = np.array([it for it in range(self.Natom)], dtype=np.int32)
         manager.update(np.array(self.positions.T,order='F'),
                        self.numbers.reshape(-1,1),
@@ -84,7 +84,7 @@ class TestNL(unittest.TestCase):
         self.cutoffs = [3.]*self.Natom
         self.max_cutoff = np.max(self.cutoffs)
 
-        self.manager =  rc.StructureManagerCenters()
+        self.manager =  rc.StructureManager.Centers()
         self.manager.update(np.array(self.positions.T,order='F'),
                        self.numbers.reshape(-1,1),
                        np.array(self.cell.T,order='F'),
@@ -94,14 +94,14 @@ class TestNL(unittest.TestCase):
         """
         TEST constructor wrapper
         """
-        rc.AdaptorNeighbourList_StructureManagerCenters(self.manager,self.max_cutoff)
+        rc.Adaptor.NeighbourList_Centers(self.manager,self.max_cutoff)
     
     def test_update(self):
-        manager =  rc.AdaptorNeighbourList_StructureManagerCenters(self.manager,self.max_cutoff)
+        manager =  rc.Adaptor.NeighbourList_Centers(self.manager,self.max_cutoff)
         manager.update()
 
     def test_manager_iteration(self):
-        manager =  rc.AdaptorNeighbourList_StructureManagerCenters(self.manager,self.max_cutoff)
+        manager =  rc.Adaptor.NeighbourList_Centers(self.manager,self.max_cutoff)
         manager.update()
 
         ii = 0
@@ -133,26 +133,26 @@ class TestNLStrict(unittest.TestCase):
         self.cutoffs = [3.]*self.Natom
         self.max_cutoff = np.max(self.cutoffs)
 
-        self.managerC =  rc.StructureManagerCenters()
+        self.managerC =  rc.StructureManager.Centers()
         self.managerC.update(np.array(self.positions.T,order='F'),
                        self.numbers.reshape(-1,1),
                        np.array(self.cell.T,order='F'),
                        self.pbc[0].reshape(3,1))
-        self.manager = rc.AdaptorNeighbourList_StructureManagerCenters(self.managerC,self.max_cutoff) 
+        self.manager = rc.Adaptor.NeighbourList_Centers(self.managerC,self.max_cutoff) 
         self.manager.update()
 
     def test_constructor(self):
         """
         TEST constructor wrapper
         """
-        rc.AdaptorStrict_AdaptorNeighbourList_StructureManagerCenters(self.manager,self.max_cutoff)
+        rc.Adaptor.Strict_NeighbourList_Centers(self.manager,self.max_cutoff)
     
     def test_a_update(self):
-        manager =  rc.AdaptorStrict_AdaptorNeighbourList_StructureManagerCenters(self.manager,self.max_cutoff)
+        manager =  rc.Adaptor.Strict_NeighbourList_Centers(self.manager,self.max_cutoff)
         manager.update()
 
-    def test_manager_iteration(self):
-        manager = rc.AdaptorStrict_AdaptorNeighbourList_StructureManagerCenters(self.manager,self.max_cutoff)
+    def test_manager_iteration_1(self):
+        manager = rc.Adaptor.Strict_NeighbourList_Centers(self.manager,self.max_cutoff)
         manager.update()
 
         ii = 0
@@ -161,6 +161,15 @@ class TestNLStrict(unittest.TestCase):
             self.assertTrue(self.numbers[ii] == center.atom_type)
             self.assertTrue(np.allclose(self.positions[ii], center.position))
             ii += 1
+    
+    def test_manager_iteration_2(self):
+        manager = rc.Adaptor.Strict_NeighbourList_Centers(self.manager,self.max_cutoff)
+        manager.update()
+
+        ii = 0
+        for center in manager:
+            for neigh in center:
+                pass
 
 
 

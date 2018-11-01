@@ -289,9 +289,6 @@ namespace rascal {
       return this->type_name;
     }
 
-    //! string with a human readable implementation class name
-    const std::string type_name = internal::GetTypeName<ManagerImplementation>();
-
   protected:
     //! returns the current layer
     template <size_t Order>

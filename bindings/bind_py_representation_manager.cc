@@ -30,26 +30,39 @@
 #include "bind_include.hh"
 
 
+
+
+template<typename RepresentationManager>
+decltype(auto) add_representation_manager(py::module & mod,py::module & ){
+  using Manager_t = typename RepresentationManager::Manager_t;
+
+  std::string representation_name = 
+        internal::GetBindingTypeName<RepresentationManager>();
+
+  py::class_<RepresentationManager, 
+             RepresentationManagerBase> 
+             representation(mod, representation_name.c_str());
+  representation.def(py::init<Manager_t &, double , double , double , size_t  >());
+  representation.def("compute", &RepresentationManager::compute);
+  
+  return representation;
+};
+
+
 //! Sorted Coulomb representation python binding
-void add_sorted_coulomb(py::module & m){
-  m.doc() = "binding for the Sorted Coulomb Representation" ;
-  py::class_<RepresentationManagerBase>(m,"RepresentationManagerBase")
+void add_representation_managers(py::module & mod,py::module & m_garbage){
+  
+  py::class_<RepresentationManagerBase>(m_garbage,"RepresentationManagerBase")
       .def(py::init<>());
 
-  using Manager_t = AdaptorStrict<AdaptorNeighbourList<
-                            StructureManagerCenters>>;
+  using Representation_t = RepresentationManagerSortedCoulomb<
+        AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
   
-  py::class_<RepresentationManagerSortedCoulomb<Manager_t>,
-              RepresentationManagerBase> (m, 
-                      "SortedCoulombRepresentation")
-    .def(py::init<Manager_t &, double , 
-      double , double , 
-      size_t  >())
-    .def("compute",
-        &RepresentationManagerSortedCoulomb<Manager_t>::compute)
-    .def("get_representation_full",
-        &RepresentationManagerSortedCoulomb<Manager_t>::get_representation_full,
-        py::return_value_policy::copy);
-    //py::keep_alive<1,0>(),
+  auto representation = add_representation_manager<
+                                    Representation_t>(mod,m_garbage);
+  // TODO will have to change to an external data structure handler
+  representation.def("get_representation_full", 
+         &Representation_t::get_representation_full,
+         py::return_value_policy::reference_internal,py::keep_alive<1,0>());
         
 };

@@ -39,6 +39,7 @@
 #include "representations/representation_manager_sorted_coulomb.hh"
 
 #include "structure_managers/structure_manager_centers.hh"
+#include "structure_managers/structure_manager_lammps.hh"
 #include "structure_managers/adaptor_strict.hh"
 #include "structure_managers/adaptor_neighbour_list.hh"
 #include "structure_managers/structure_manager.hh"
@@ -61,10 +62,12 @@
 using namespace rascal;
 namespace py=pybind11;
 
-void add_manager_centers(py::module&);
+void add_structure_managers(py::module&,py::module&,py::module&);
+void add_representation_managers(py::module&,py::module&);
+
 void utils_binding(py::module&);
 void math_binding(py::module&);
-void add_sorted_coulomb(py::module&);
+
 
 
 #endif /* BIND_INCLUDE_H */
