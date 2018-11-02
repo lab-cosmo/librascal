@@ -483,14 +483,12 @@ namespace rascal {
 
     //! Returns the number of clusters of size cluster_size
     inline size_t get_nb_clusters(size_t cluster_size) const {
-      switch (cluster_size) {
-      case traits::MaxOrder: {
-        return this->neighbours.size();
-        break;
-      }
-      default:
+      if (cluster_size == 1) {
         return this->manager.get_nb_clusters(cluster_size);
-        break;
+      } else if (cluster_size == 2) {
+        return this->neighbours.size();
+      } else {
+        throw std::string("ERREUR : cluster_size > 2");
       }
     }
 
@@ -590,12 +588,8 @@ namespace rascal {
       static_assert(Order < traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
 
-      if (Order < (traits::MaxOrder-1)) {
-        return this->manager.get_cluster_size(cluster);
-      } else {
-        auto access_index = cluster.get_cluster_index(Layer);
-        return nb_neigh[access_index];
-      }
+      auto access_index = cluster.get_cluster_index(Layer);
+      return nb_neigh[access_index];
     }
 
   protected:
