@@ -33,7 +33,7 @@ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_TESTS=ON  CMAKE_C_FLAGS_RELWITHD
 make -j 4
 ctest -V
 ```
-
+cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang-6.0 ..
 * Special flags:
   + INSTALL:
     + empty (default) -> install rascal in the build folder

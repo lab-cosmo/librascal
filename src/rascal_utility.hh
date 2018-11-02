@@ -28,6 +28,13 @@
 #ifndef RASCAL_UTILITY_H
 #define RASCAL_UTILITY_H
 
+#if defined(__clang__)
+#define CLANG_COMPILER
+#elif defined(__GNUC__) || defined(__GNUG__)
+#define GCC_COMPILER
+#endif
+
+
 #include <utility>
 #include <string>
 #include <regex>
@@ -90,11 +97,21 @@ namespace rascal {
       static const std::string GetTypeName(void)
       { 
         // TODO define the same macro but for clang
+#if defined(GCC_COMPILER)
         #define FUNCTION_MACRO __PRETTY_FUNCTION__
         #define PREFIX "static const string rascal::internal::GetTypeNameHelper<T>::GetTypeName() [with T = "
         #define SUFFIX_1 "; std::__cxx11::string = std::__cxx11::basic_string<char>]"
         #define SUFFIX_2 ""
         #define NUM_TYPE_REPEATS 1
+#elif defined(CLANG_COMPILER)
+        #define FUNCTION_MACRO __PRETTY_FUNCTION__
+        #define PREFIX "static const std::string rascal::internal::GetTypeNameHelper<"
+        #define SUFFIX_1 ">::GetTypeName() [T ="
+        #define SUFFIX_2 "]"
+        #define NUM_TYPE_REPEATS 2
+#else
+        #error "No implementation for current compiler"
+#endif
           
         const size_t funcNameLength{sizeof(FUNCTION_MACRO) - 1u};
         const size_t prefixLength{sizeof(PREFIX) - 1u};
@@ -115,25 +132,25 @@ namespace rascal {
     {
       std::string full_typeName = GetTypeNameHelper<T>::GetTypeName();
       
-      std::string tn1{std::regex_replace( full_typeName, 
-                                    std::regex("rascal::"), "" )};
-      std::string tn2{std::regex_replace( tn1, std::regex("<"), "_" )};
-      std::string tn3{std::regex_replace( tn2, std::regex(">"), "" )};
-      std::string tn4{std::regex_replace( tn3, std::regex(" "), "" )};
-			return tn4;
+      // std::string tn1{std::regex_replace( full_typeName, 
+      //                               std::regex("rascal::"), "" )};
+      // std::string tn2{std::regex_replace( tn1, std::regex("<"), "_" )};
+      // std::string tn3{std::regex_replace( tn2, std::regex(">"), "" )};
+      // std::string tn4{std::regex_replace( tn3, std::regex(" "), "" )};
+			return full_typeName;
     }
 
 
     template <typename T>
     std::string GetBindingTypeName(void) {
       std::string typeName = GetTypeName<T>();
-      std::string tn1{std::regex_replace( typeName, 
-                        std::regex("StructureManager"), "" )};
-      std::string tn2{std::regex_replace( tn1, 
-                        std::regex("Adaptor"), "" )};
-      std::string tn3{std::regex_replace( tn2, 
-                        std::regex("RepresentationManager"), "" )};
-			return tn3;
+      // std::string tn1{std::regex_replace( typeName, 
+      //                   std::regex("StructureManager"), "" )};
+      // std::string tn2{std::regex_replace( tn1, 
+      //                   std::regex("Adaptor"), "" )};
+      // std::string tn3{std::regex_replace( tn2, 
+      //                   std::regex("RepresentationManager"), "" )};
+			return typeName;
     }
   }  // internal
 }  // rascal

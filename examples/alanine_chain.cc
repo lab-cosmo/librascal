@@ -32,6 +32,7 @@
 
 #include <iostream>
 #include <vector>
+#include <cmath>
 
 using Manager_t = rascal::StructureManagerChain;
 
@@ -76,12 +77,12 @@ int main() {
     auto arg1 = ((b1.cross(b2)).cross(b2.cross(b3))).dot(b2 / b2.norm());
     auto arg2 = (b1.cross(b2)).dot(b2.cross(b3));
 
-    auto angle = atan2(arg1, arg2);
+    auto angle = std::atan2(arg1, arg2);
 
     dihedral_angles.push_back(angle);
 
     std::cout << "atan2 " << angle << std::endl;
-    std::cout << "cos " << acos(na.dot(nb) / na.norm() / nb.norm())
+    std::cout << "cos " << std::acos(na.dot(nb) / na.norm() / nb.norm())
               << std::endl;
   }
 
