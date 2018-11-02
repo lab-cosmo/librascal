@@ -28,6 +28,7 @@
 #ifndef RASCAL_UTILITY_H
 #define RASCAL_UTILITY_H
 
+// Detects which compiler is used
 #if defined(__clang__)
 #define CLANG_COMPILER
 #elif defined(__GNUC__) || defined(__GNUG__)
@@ -96,7 +97,8 @@ namespace rascal {
     {
       static const std::string GetTypeName()
       { 
-        // TODO define the same macro but for clang
+        // The output of of Pretty Function depends on the compiler 
+        // the #define strings is a pain to split
 #if defined(GCC_COMPILER)
         #define FUNCTION_MACRO __PRETTY_FUNCTION__
         #define PREFIX "static const string rascal::internal::GetTypeNameHelper<T>::GetTypeName() [with T = "
@@ -115,8 +117,10 @@ namespace rascal {
           
         const size_t funcNameLength{sizeof(FUNCTION_MACRO) - 1u};
         const size_t prefixLength{sizeof(PREFIX) - 1u};
-        const size_t suffixLength{sizeof(SUFFIX_1) - 1u + sizeof(SUFFIX_2) - 1u};
-        const size_t typeLength{(funcNameLength - (prefixLength + suffixLength)) / NUM_TYPE_REPEATS};
+        const size_t suffixLength{sizeof(SUFFIX_1) - 1u + 
+                                            sizeof(SUFFIX_2) - 1u};
+        const size_t typeLength{(funcNameLength - 
+                        (prefixLength + suffixLength)) / NUM_TYPE_REPEATS};
         std::string typeName{FUNCTION_MACRO + prefixLength, typeLength};
         return typeName;
         #undef FUNCTION_MACRO
