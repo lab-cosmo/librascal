@@ -94,7 +94,7 @@ namespace rascal {
     template <typename T>
     struct GetTypeNameHelper
     {
-      static const std::string GetTypeName(void)
+      static const std::string GetTypeName()
       { 
         // TODO define the same macro but for clang
 #if defined(GCC_COMPILER)
@@ -128,29 +128,29 @@ namespace rascal {
     };
     //! return a pretty form of the template typename
     template <typename T>
-    std::string GetTypeName(void)
+    std::string GetTypeName()
     {
       std::string full_typeName = GetTypeNameHelper<T>::GetTypeName();
       
-      // std::string tn1{std::regex_replace( full_typeName, 
-      //                               std::regex("rascal::"), "" )};
-      // std::string tn2{std::regex_replace( tn1, std::regex("<"), "_" )};
-      // std::string tn3{std::regex_replace( tn2, std::regex(">"), "" )};
-      // std::string tn4{std::regex_replace( tn3, std::regex(" "), "" )};
-			return full_typeName;
+      std::string tn1{std::regex_replace( full_typeName, 
+                                    std::regex("rascal::"), "" )};
+      std::string tn2{std::regex_replace( tn1, std::regex("<"), "_" )};
+      std::string tn3{std::regex_replace( tn2, std::regex(">"), "" )};
+      std::string tn4{std::regex_replace( tn3, std::regex(" "), "" )};
+			return tn4;
     }
 
 
     template <typename T>
-    std::string GetBindingTypeName(void) {
+    std::string GetBindingTypeName() {
       std::string typeName = GetTypeName<T>();
-      // std::string tn1{std::regex_replace( typeName, 
-      //                   std::regex("StructureManager"), "" )};
-      // std::string tn2{std::regex_replace( tn1, 
-      //                   std::regex("Adaptor"), "" )};
-      // std::string tn3{std::regex_replace( tn2, 
-      //                   std::regex("RepresentationManager"), "" )};
-			return typeName;
+      std::string tn1{std::regex_replace( typeName, 
+                        std::regex("StructureManager"), "" )};
+      std::string tn2{std::regex_replace( tn1, 
+                        std::regex("Adaptor"), "" )};
+      std::string tn3{std::regex_replace( tn2, 
+                        std::regex("RepresentationManager"), "" )};
+			return tn3;
     }
   }  // internal
 }  // rascal
