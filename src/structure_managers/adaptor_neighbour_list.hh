@@ -761,16 +761,6 @@ namespace rascal {
     std::array<int, dim> m_min{};
     std::array<int, dim> m_max{};
 
-    // test for triclinicity
-    std::cout << "---" << std::endl;
-    for (auto i{0}; i < dim; ++i) {
-      double val{0.};
-      for (auto j{0}; j < dim; ++j) {
-        val += cell.col(i)(j) * cell.col((i+1)%dim)(j);
-      }
-      std::cout << val << std::endl;
-    }
-
     // Mesh related stuff for neighbour boxes. Calculate min and max of the mesh
     // in cartesian coordinates and relative to the cell origin.  mesh_min is
     // the origin of the mesh; mesh_max is the maximum coordinate of the mesh;
@@ -779,15 +769,34 @@ namespace rascal {
     for (auto i{0}; i < dim; ++i) {
       auto min_coord = std::min(0., cell.row(i).minCoeff());
       auto max_coord = std::max(0., cell.row(i).maxCoeff());
+      auto min_atom_pos = std::min(0., positions.row(i).minCoeff());
+      auto max_atom_pos = std::max(0., positions.row(i).maxCoeff());
+
+      std::cout << "min coord " << min_coord << std::endl;
+      std::cout << "max coord " << max_coord << std::endl;
+      std::cout << "min pos " << min_atom_pos << std::endl;
+      std::cout << "max pos " << max_atom_pos << std::endl;
 
       // ensure coverage, even in extremly skewed cases
       auto delta = std::fabs(max_coord - min_coord);
-      auto mult = std::ceil(delta/cutoff);
+      // double mult{(max_atom_pos-min_atom_pos) / (max_coord-min_coord)};
+      double mult{10.};
+      // auto mult{0.};
+      // if (delta > cutoff) {
+      //    mult = std::ceil(delta/cutoff);
+      // } else {
+      //   mult = std::ceil(cutoff/delta);
+      // }
+      // mult = std::max(2., mult);
+      // // auto mult{1.};//std::max(1., std::ceil(val[i]))};
+      // std::cout << "delta, cutoff: " << delta << ", " << cutoff << std::endl;
+      // std::cout << "mult " << mult << std::endl;
+
 
       // minimum is given by -cutoff and a delta to avoid ambiguity during cell
       // sorting of atom position e.g. at x = (0,0,0).
       auto epsilon = 0.25 * cutoff;
-      mesh_min[i] = min_coord - mult*cutoff - epsilon;
+      mesh_min[i] = min_coord - mult*cutoff - epsilon - delta;
       auto lmesh = std::fabs(mesh_min[i]) + max_coord + 2*cutoff;
       int n = std::ceil(lmesh / cutoff);
       auto lmax = n * cutoff - std::fabs(mesh_min[i]);
@@ -871,6 +880,7 @@ namespace rascal {
 
           if (flag_inside) {
             // next atom index is size, since start is at index = 0
+            std::cout << "pos_ghost " << pos_ghost.transpose() << std::endl;
             auto new_atom_index = this->get_size_with_ghosts();
             this->add_ghost_atom(new_atom_index, pos_ghost, atom_type);
           }

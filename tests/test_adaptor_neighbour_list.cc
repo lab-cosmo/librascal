@@ -310,31 +310,44 @@ namespace rascal {
 
     constexpr static bool verbose{true};
 
-    int ncells{30};
+    constexpr static int ncells{3};
+
+    // helper for increasing skewedness of unit cell in loop entry (0,1) gives
+    // the skewing factor in the x/y plane in the loop building the cells
+    Eigen::MatrixXd unity{Eigen::MatrixXd::Identity(3, 3)};
+    std::array<double, ncells> shears{0, 1, 5};
+
+    // multipliers for different cutoffs: original cutoff is barely below
+    // minimum atom distance
+    std::array<int, 3> n_cutoff{1, 5, 10};
 
     // container for storing the number of neighbours per atom in all cells
-    std::vector<std::vector<int>> neighbours;
+    std::vector<std::vector<int>> neighbours{};
     neighbours.resize(ncells);
 
     // loop over cells
     for (int i{0}; i < ncells; ++i) {
+
+      // check different cutoffs
+      double cutoff_tmp{4.9};
+
       // manager constructed within this loop
       StructureManagerCenters manager;
 
-      if (verbose) std::cout << "------------ cells " << i << std::endl;
+      if (verbose) std::cout << "------------ cells " << i
+                             << " shear " << shears[i] << std::endl;
 
       // get reference data
-      auto skewer{skew_multiplier};
+      auto skewer{unity};
       // change shear multiplier
-      skewer(0,1) *= i;
+      skewer(0,1) = shears[i];
       // calculate unit cell
       auto cell_skw = skewer * cell;
       auto cell_skw_inv{cell_skw.inverse().eval()};
 
       if (verbose) {
-        std::cout << "cell and inverse " << std::endl;
+        std::cout << "cell vectors " << std::endl;
         std::cout << cell_skw << std::endl;
-        std::cout << cell_skw_inv << std::endl;
       }
 
       // change initial atomic positions according to skewedness
@@ -371,12 +384,12 @@ namespace rascal {
 
       // build neighbourlist
       AdaptorNeighbourList<StructureManagerCenters> pair_manager{manager,
-          cutoff};
+          cutoff_tmp};
       pair_manager.update();
 
       // make strict for counting neighbours
       AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>
-        adaptor_strict{pair_manager, cutoff};
+        adaptor_strict{pair_manager, cutoff_tmp};
       adaptor_strict.update();
 
       // count strict neighbours
@@ -386,19 +399,24 @@ namespace rascal {
           neighbours[i].back()++;
         }
       }
-    }
-    for (auto i{0}; i < ncells; ++i) {
-
-    }
-    // check neighbours
-    for (auto i{1}; i < ncells; ++i) {
-      if (verbose) {
-        std::cout << "cell " << i << std::endl;
-        for (auto neigh_per_atom : neighbours[i]) {
-          std::cout << neigh_per_atom << " ";
-        }
-        std::cout << std::endl;
+      // check neighbours for this cutoff
+      std::cout << "===== Result =====" << std::endl;
+      std::cout << "cutoff_tmp " << cutoff_tmp << std::endl;
+      std::cout << ">> cell 0" << " " << "neighbours " << std::endl;
+      for (auto neigh_per_atom : neighbours[0]) {
+        std::cout << neigh_per_atom << " ";
       }
+      std::cout << std::endl;
+      for (auto i{1}; i < ncells; ++i) {
+        if (verbose) {
+          std::cout << ">> cell " << i << " " << "neighbours " << std::endl;
+          for (auto neigh_per_atom : neighbours[i]) {
+            std::cout << neigh_per_atom << " ";
+          }
+          std::cout << std::endl;
+        }
+      }
+
 
       // neighbours[i] are the skewed unit cells with adapted positions
       BOOST_CHECK_EQUAL_COLLECTIONS(neighbours[i].begin(),

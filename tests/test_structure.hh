@@ -505,35 +505,20 @@ namespace rascal {
   {
 
     ManagerFixtureSkew():
-      // pbc{{true, true, true}}, cell(3, 3), positions(3, 4), atom_types(4),
-      // cutoff{1.3}, natoms{4}, skew_multiplier(3, 3)
       pbc{{true, true, false}}, cell(3, 3), positions(3, 2), atom_types(2),
-      cutoff{1.1}, natoms{2}, skew_multiplier(3, 3)
+      cutoff{0.49}, natoms{2}
     {
       cell <<
         1.0, 0.0, 0.0,
         0.0, 1.0, 0.0,
         0.0, 0.0, 0.5;
 
-      // positions <<
-      //   0.01, 0.01, 0.51, 0.51,
-      //   0.01, 0.51, 0.01, 0.51,
-      //   0.01, 0.01, 0.01, 0.01;
-
       positions <<
         0.01, 0.01,
         0.01, 0.51,
         0.01, 0.01;
 
-      // atom_types << 1, 1, 1, 1;
       atom_types << 1, 1;
-
-      // entry (0,1) gives the skewing factor in the x/y plane in the loop
-      // building the cells
-      skew_multiplier <<
-        1.0, 1.0, 0.0,
-        0.0, 1.0, 0.0,
-        0.0, 0.0, 1.0;
     }
 
     ~ManagerFixtureSkew() {}
@@ -546,9 +531,6 @@ namespace rascal {
     double cutoff;
 
     const int natoms;
-
-    // helper for increasing skewedness of unit cell in loop
-    Eigen::MatrixXd skew_multiplier;
   };
 }  // rascal
 
