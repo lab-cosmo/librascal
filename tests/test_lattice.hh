@@ -56,7 +56,7 @@ namespace rascal {
 
     }
 
-    Lattice lattice{};
+    Lattice<Dim> lattice{};
 
   };
 }  // rascal

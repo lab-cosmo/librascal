@@ -34,7 +34,6 @@
 #include "json_io.hh"
 
 #include <Eigen/Dense>
-
 #include <cmath>
 #include <stdexcept>
 

@@ -290,7 +290,7 @@ namespace rascal {
     std::array<std::vector<int>, traits::MaxOrder> atoms_index;
 
     //! Lattice type for storing the cell and querying cell-related data
-    Lattice lattice;
+    Lattice<traits::Dim> lattice;
 
     /**
      * A vector which stores the absolute offsets for each atom to access the
