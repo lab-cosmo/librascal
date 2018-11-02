@@ -16,6 +16,7 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
         """
 
         fn = '../tests/reference_data/simple_cubic_8.json'
+        # fn = '../tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
         self.frame = load_json_frame(fn)
         self.cell = self.frame['cell']
         self.positions = self.frame['positions']

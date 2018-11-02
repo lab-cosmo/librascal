@@ -9,6 +9,56 @@ from test_utils import load_json_frame, BoxList, Box
 from python_import_rascal import _rascal as rc
 
 
+def get_NL_reference(cutoff,cell,pbc,positions,numbers):
+    list_box = BoxList(cutoff,cell,pbc,positions)
+
+    neighlist = [[] for it in range(len(numbers))]
+    neighpos = [[] for it in range(len(numbers))]
+    neighshift = [[] for it in range(len(numbers))]
+    neighdist = [[] for it in range(len(numbers))]
+    neightype = [[] for it in range(len(numbers))]
+    dirVec = [[] for it in range(len(numbers))]
+    for box in list_box.iter_box():
+        for icenter in box.icenters:
+            for jneigh,box_shift in box.iter_neigh_box():
+            
+                nnp = positions[jneigh]+ np.dot(box_shift.reshape((1,3)),cell).reshape((1,3))
+                rr = nnp - positions[icenter].reshape((1,3))
+                dist = np.linalg.norm(rr)
+
+                neighpos[icenter].extend(nnp)
+                neighlist[icenter].append(jneigh)
+                neightype[icenter].append(numbers[jneigh])
+                neighdist[icenter].append(dist)
+                
+    return neighpos,neighlist,neightype,neighdist
+
+def get_NL_strict_reference(cutoff,cell,pbc,positions,numbers):
+    list_box = BoxList(cutoff,cell,pbc,positions)
+
+    neighlist = [[] for it in range(len(numbers))]
+    neighpos = [[] for it in range(len(numbers))]
+    neighshift = [[] for it in range(len(numbers))]
+    neighdist = [[] for it in range(len(numbers))]
+    neightype = [[] for it in range(len(numbers))]
+    dirVec = [[] for it in range(len(numbers))]
+    for box in list_box.iter_box():
+        for icenter in box.icenters:
+            for jneigh,box_shift in box.iter_neigh_box():
+            
+                nnp = positions[jneigh]+ np.dot(box_shift.reshape((1,3)),cell).reshape((1,3))
+                rr = nnp - positions[icenter].reshape((1,3))
+                dist = np.linalg.norm(rr)
+
+                if cutoff > dist and dist > 0:
+                    neighpos[icenter].extend(nnp)
+                    neighlist[icenter].append(jneigh)
+                    neighdist[icenter].append(dist)
+                    neightype[icenter].append(numbers[jneigh])
+                    dirVec[icenter].append(rr/dist)
+    return neighpos,neighlist,neightype,neighdist,dirVec
+
+
 class TestStructureManagerCenters(unittest.TestCase):
     def setUp(self):
         """
@@ -100,7 +150,7 @@ class TestNL(unittest.TestCase):
         manager =  rc.Adaptor.NeighbourList_Centers(self.manager,self.max_cutoff)
         manager.update()
 
-    def test_manager_iteration(self):
+    def test_manager_iteration_1(self):
         manager =  rc.Adaptor.NeighbourList_Centers(self.manager,self.max_cutoff)
         manager.update()
 
@@ -111,6 +161,20 @@ class TestNL(unittest.TestCase):
             self.assertTrue(np.allclose(self.positions[ii], center.position))
             ii += 1
 
+    def test_manager_iteration_2(self):
+        manager =  rc.Adaptor.NeighbourList_Centers(self.manager,self.max_cutoff)
+        manager.update()
+        
+        neighpos,neighlist,neightype,neighdist = get_NL_reference(
+                    self.max_cutoff,self.cell,self.pbc,self.positions,self.numbers)
+
+        for ii,center in enumerate(manager):
+            for jj,neigh in enumerate(center):
+                dist = np.linalg.norm(neigh.position-center.position)
+                
+
+        
+
 class TestNLStrict(unittest.TestCase):
     def setUp(self):
         """
@@ -118,7 +182,7 @@ class TestNLStrict(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = '../tests/reference_data/simple_cubic_8.json'
+        fn = '../tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
         self.frame = load_json_frame(fn)
 
         self.cell = self.frame['cell']
@@ -157,7 +221,6 @@ class TestNLStrict(unittest.TestCase):
 
         ii = 0
         for center in manager:
-            print(ii,' ',center.atom_index)
             self.assertEqual(ii,center.atom_index)
             self.assertTrue(self.numbers[ii] == center.atom_type)
             self.assertTrue(np.allclose(self.positions[ii], center.position))
@@ -167,10 +230,21 @@ class TestNLStrict(unittest.TestCase):
         manager = rc.Adaptor.Strict_NeighbourList_Centers(self.manager,self.max_cutoff)
         manager.update()
 
-        ii = 0
-        for center in manager:
-            for neigh in center:
-                pass
+        neighpos,neighlist,neightype,neighdist,dirVec = get_NL_strict_reference(
+                    self.max_cutoff,self.cell,self.pbc,self.positions,self.numbers)
+
+        for ii,center in enumerate(manager):
+            print('Center idx: ',center.atom_index)
+            dists = []
+            for jj,neigh in enumerate(center):
+                dist = np.linalg.norm(neigh.position-center.position)
+                print('\tneigh idx: {}/{} \t dist: {}/{}'.format(
+                        neigh.atom_index,neighlist[ii][jj],dist,neighdist[ii][jj]))
+                dists.append(dist)
+            ref_dists, dists = np.array(neighdist[ii]),np.array(dists)
+            sort_ids = np.argsort(dists)
+            self.assertEqual(np.allclose(ref_dists[sort_ids],dists[sort_ids])
+            break
 
 
 
