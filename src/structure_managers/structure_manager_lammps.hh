@@ -54,7 +54,7 @@ namespace rascal {
     using LayerByOrder = std::index_sequence<0, 0>;
   };
 
-  //----------------------------------------------------------------------------//
+  /* ---------------------------------------------------------------------- */
   //! Definition of the new StructureManagerLammps class.
   class StructureManagerLammps:
     public StructureManager<StructureManagerLammps>
@@ -101,7 +101,8 @@ namespace rascal {
      *
      * @param numneigh Property `numneigh` in the lammps `NeighList` structure
      *
-     * @param firstneigh Property `firstneigh` in the lammps `NeighList` structure
+     * @param firstneigh Property `firstneigh` in the lammps `NeighList`
+     * structure
      *
      * @param x Property `x` in the lammps `Atom` structure
      *
@@ -122,18 +123,6 @@ namespace rascal {
     inline Vector_ref get_position(const size_t & atom_index) {
       auto * xval{this->x[atom_index]};
       return Vector_ref(xval);
-    }
-
-    //! return position vector of the last atom in the cluster
-    template<size_t Order, size_t Layer>
-    inline Vector_ref get_neighbour_position(const ClusterRefKey<Order,
-                                             Layer> & cluster) {
-      static_assert(Order > 1,
-                    "Only possible for Order > 1.");
-      static_assert(Order <= traits::MaxOrder,
-                    "Order too large, not available.");
-
-      return this->get_position(cluster.back());
     }
 
     //! get const atom type reference given an atom_index

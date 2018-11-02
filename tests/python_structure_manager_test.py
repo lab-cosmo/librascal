@@ -157,7 +157,8 @@ class TestNLStrict(unittest.TestCase):
 
         ii = 0
         for center in manager:
-            self.assertTrue(ii == center.atom_index)
+            print(ii,' ',center.atom_index)
+            self.assertEqual(ii,center.atom_index)
             self.assertTrue(self.numbers[ii] == center.atom_type)
             self.assertTrue(np.allclose(self.positions[ii], center.position))
             ii += 1

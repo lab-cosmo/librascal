@@ -29,7 +29,7 @@
 #define BASIS_REPRESENTATION_MANAGER_BASE_H
 
 #include "structure_managers/structure_manager_base.hh"
-#include "structure_managers/json_io.hh"
+#include "json_io.hh"
 #include <string>
 #include <vector>
 

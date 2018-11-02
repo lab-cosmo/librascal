@@ -90,7 +90,6 @@ namespace rascal {
     using ClusterRef_t =
       typename ManagerImplementation::template ClusterRef<Order>;
     using Vector_ref = typename Parent::Vector_ref;
-    using Vector_t = typename Parent::Vector_t;
 
     static_assert(traits::MaxOrder > 2,
                   "ManagerImplementation needs at least a pair list for"
@@ -170,17 +169,6 @@ namespace rascal {
     //! Returns position of the given atom object (useful for users)
     inline Vector_ref get_position(const AtomRef_t & atom) {
       return this->manager.get_position(atom.get_index());
-    }
-
-    template<size_t Order, size_t Layer>
-    inline Vector_ref
-    get_neighbour_position(const ClusterRefKey<Order, Layer> & cluster) {
-      static_assert(Order > 1,
-                    "Only possible for Order > 1.");
-      static_assert(Order <= traits::MaxOrder,
-                    "this implementation should only work up to MaxOrder.");
-
-      return this->get_position(cluster.back());
     }
 
     //! get atom type from underlying manager

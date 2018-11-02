@@ -271,13 +271,6 @@ namespace rascal {
       return this->implementation().get_position(atom);
     }
 
-    // TODO: EOL: obsolete??
-    template <size_t Order, size_t Layer>
-    inline decltype(auto)
-    neighbour_position(ClusterRefKey<Order, Layer> & cluster) {
-      return this->implementation().get_neighbour_position(cluster);
-    }
-
     //! returns the atom type (convention is atomic number, but nothing is
     //! imposed apart from being an integer
     inline int atom_type(const int & atom_index) {
@@ -396,27 +389,6 @@ namespace rascal {
       return append_array_helper(arr, std::forward<T>(t),
                                  std::make_integer_sequence<int, Size>{});
     }
-
-    /* ---------------------------------------------------------------------- */
-    /**
-     * Depending on the Order of the ClusterRef (Order=1 or higher), the cluster
-     * can be a ghost cluster. If it is a ghost-cluster, i.e. the position of a
-     * periodic image will be returned automatically. The decision is made here.
-     */
-    template <size_t Order, class ClusterRef>
-    struct PositionGetter {
-      static inline decltype(auto) get_position(ClusterRef & cluster) {
-        return cluster.get_manager().neighbour_position(cluster);
-      };
-    };
-    //! specialization for Order=1
-    template <class ClusterRef>
-    struct PositionGetter<1, ClusterRef> {
-      using Vector_ref = typename ClusterRef::Manager_t::Vector_ref;
-      static inline Vector_ref get_position(ClusterRef & cluster) {
-        return cluster.get_manager().position(cluster.back());
-      };
-    };
 
     /* ---------------------------------------------------------------------- */
     /**
@@ -620,21 +592,17 @@ namespace rascal {
       return this->atoms;
     }
 
-    //! returns all atom indices of the current cluster
-    const std::array<int, Order> & get_atoms_ids() const {
-      return this->atom_indices;
-    }
-
-    /* There are 2 cases:
-     * center (Order == 1)-> position is in the cell
-     * neighbour (Order > 1) -> position might have an offset (ghost atom)
+    /**
+     * Returns the position of the last atom in the cluster, e.g. when cluster
+     * order==1 it is the atom position, when cluster order==2 it is the
+     * neighbour position, etc.
      */
     inline decltype(auto) get_position() {
-      return internal::PositionGetter<Order, ClusterRef>::get_position(*this);
+      return this->get_manager().position(this->get_atom_index());
     }
     //! returns the type of the last atom in the cluster
     inline decltype(auto) get_atom_type() {
-      auto && id{this->atom_indices.back()};
+      auto && id{this->get_atom_index()};
       return this->get_manager().atom_type(id);
     }
 

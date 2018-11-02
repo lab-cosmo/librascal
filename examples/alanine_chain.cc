@@ -73,7 +73,7 @@ int main() {
     auto na = b1.cross(b2);
     auto nb = b2.cross(b3);
 
-    auto arg1 = ((b1.cross(b2)).cross(b2.cross(b3))).dot(b2/b2.norm());
+    auto arg1 = ((b1.cross(b2)).cross(b2.cross(b3))).dot(b2 / b2.norm());
     auto arg2 = (b1.cross(b2)).dot(b2.cross(b3));
 
     auto angle = atan2(arg1, arg2);

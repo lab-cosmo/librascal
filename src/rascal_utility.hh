@@ -73,8 +73,7 @@ namespace rascal {
     }
 
     /* ---------------------------------------------------------------------- */
-    /* A collection of useful functors to be applied to tuples somewhere
-     * else in the code. */
+    // useful functors to be applied to tuples somewhere else in the code
 
     //! Functor for resetting properties to zero size
     struct ResizePropertyToZero {

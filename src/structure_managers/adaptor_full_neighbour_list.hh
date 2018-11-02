@@ -1,13 +1,13 @@
 /**
- * file   adaptor_half_neighbour_list.hh
+ * file   adaptor_full_neighbour_list.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *
- * @date   04 Oct 2018
+ * @date   25 Oct 2018
  *
- * @brief implements an adaptor for structure_managers, filtering the original
- *        manager so that the neighbourlist contains each pair only once i.e. a
- *        half neighbour list
+ * @brief implements an adaptor for structure_managers, extending the original
+ *        manager so that the neighbourlist contains each pair twice, i.e. all
+ *        permutations are present
  *
  * Copyright © 2018 Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -27,8 +27,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef ADAPTOR_HALF_LIST_H
-#define ADAPTOR_HALF_LIST_H
+#ifndef ADAPTOR_FULL_LIST_H
+#define ADAPTOR_FULL_LIST_H
 
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/property.hh"
@@ -39,13 +39,13 @@ namespace rascal {
    * forward declaration for traits
    */
   template <class ManagerImplementation>
-  class AdaptorHalfList;
+  class AdaptorFullList;
 
   /**
-   * specialisation of traits for half neighbour list adaptor
+   * specialisation of traits for full neighbour list adaptor
    */
   template <class ManagerImplementation>
-  struct StructureManager_traits<AdaptorHalfList<ManagerImplementation>> {
+  struct StructureManager_traits<AdaptorFullList<ManagerImplementation>> {
 
     constexpr static AdaptorTraits::Strict Strict{
       ManagerImplementation::traits::Strict};
@@ -57,7 +57,7 @@ namespace rascal {
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
 
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
-      AdaptorTraits::NeighbourListType::half};
+      AdaptorTraits::NeighbourListType::full};
     // TODO: Future optimisation: do not increase depth for atoms
     // (they are all kept anyways, so no duplication necessary).
     using LayerByOrder = typename
@@ -67,21 +67,20 @@ namespace rascal {
   };
 
   /**
-   * This adaptor guarantees, that each pair is contained only once without
+   * This adaptor guarantees, that each pair is contained twice, i.e. including
    * permutations.
    *
    * This interface should be implemented by all managers with the trait
-   * AdaptorTraits::NeighbourListType{AdaptorTraits::NeighbourListType::half}
+   * AdaptorTraits::NeighbourListType{AdaptorTraits::NeighbourListType::full}
    */
   template <class ManagerImplementation>
-  class AdaptorHalfList: public
-  StructureManager<AdaptorHalfList<ManagerImplementation>>
+  class AdaptorFullList: public
+  StructureManager<AdaptorFullList<ManagerImplementation>>
   {
   public:
     using Parent =
-      StructureManager<AdaptorHalfList<ManagerImplementation>>;
-    using Implementation_t = ManagerImplementation;
-    using traits = StructureManager_traits<AdaptorHalfList>;
+      StructureManager<AdaptorFullList<ManagerImplementation>>;
+    using traits = StructureManager_traits<AdaptorFullList>;
     using parent_traits = typename ManagerImplementation::traits;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
@@ -89,39 +88,34 @@ namespace rascal {
     // The stacking of this Adaptor is only possible on a manager which has a
     // pair list (MaxOrder=2). This is ensured here.
     static_assert(traits::MaxOrder > 1,
-                  "AdaptorHalfList needs pairs.");
+                  "AdaptorFullList needs pairs.");
     static_assert(traits::MaxOrder < 3,
-                  "AdaptorHalfList does not work with Order > 2.");
-
-    // TODO: add this to all structure managers
+                  "AdaptorFullList does not work with Order > 2.");
+    // TODO: add this trait to all structure managers
     // static_assert(parent_traits::NeighbourListType
-    //               == AdaptorTraits::NeighbourListType::full,
-    //               "adapts only a full neighbour list.");
-
+    //               == AdaptorTraits::NeighbourListType::half,
+    //               "extends only a minimal neighbour list.");
 
     //! Default constructor
-    AdaptorHalfList() = delete;
+    AdaptorFullList() = delete;
 
-    /**
-     * Reduce a full neighbour list to a half neighbour list (sometimes also
-     * called minimal).
-     */
-    AdaptorHalfList(ManagerImplementation & manager);
+     //! Extend a minimal/half neighbour list to a full neighbour list.
+    AdaptorFullList(ManagerImplementation & manager);
 
     //! Copy constructor
-    AdaptorHalfList(const AdaptorHalfList & other) = delete;
+    AdaptorFullList(const AdaptorFullList & other) = delete;
 
     //! Move constructor
-    AdaptorHalfList(AdaptorHalfList && other) = default;
+    AdaptorFullList(AdaptorFullList && other) = default;
 
     //! Destructor
-    virtual ~AdaptorHalfList() = default;
+    virtual ~AdaptorFullList() = default;
 
     //! Copy assignment operator
-    AdaptorHalfList& operator=(const AdaptorHalfList & other) = delete;
+    AdaptorFullList& operator=(const AdaptorFullList & other) = delete;
 
     //! Move assignment operator
-    AdaptorHalfList& operator=(AdaptorHalfList && other) = default;
+    AdaptorFullList& operator=(AdaptorFullList && other) = default;
 
     //! update just the adaptor assuming the underlying manager was updated
     void update();
@@ -259,7 +253,7 @@ namespace rascal {
     }
 
   protected:
-
+    /* ---------------------------------------------------------------------- */
     //! Reference to the underlying manager
     ManagerImplementation & manager;
 
@@ -275,14 +269,15 @@ namespace rascal {
      * ``nb_neigh`` can be accessed
      */
     std::vector<size_t> offsets;
+
   private:
   };
 
   /* ---------------------------------------------------------------------- */
   //! constructor implementations
   template <class ManagerImplementation>
-  AdaptorHalfList<ManagerImplementation>::
-  AdaptorHalfList(ManagerImplementation & manager):
+  AdaptorFullList<ManagerImplementation>::
+  AdaptorFullList(ManagerImplementation & manager):
     manager{manager},
     nb_neigh{},
     neighbours{},
@@ -293,18 +288,22 @@ namespace rascal {
   //! update function, which updates based on underlying manager
   template <class ManagerImplementation>
   template <class ... Args>
-  void AdaptorHalfList<ManagerImplementation>::update(Args&&... arguments) {
+  void AdaptorFullList<ManagerImplementation>::update(Args&&... arguments) {
     this->manager.update(std::forward<Args>(arguments)...);
     this->update();
   }
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Update functions, which involes the reduction of the neighbour list to one
-   * which does not include permutations of pairs
+   * Update functions, which involes the extension of the neighbour list to one
+   * which does includes all permutations of the pair
    */
   template <class ManagerImplementation>
-  void AdaptorHalfList<ManagerImplementation>::update() {
+  void AdaptorFullList<ManagerImplementation>::update() {
+
+    // vector to locally gather all neighbours of an atom before building the
+    // neighbour list
+    std::vector<std::vector<int>> new_neighbours;
 
     // Reset cluster_indices for adaptor to fill with push back.
     internal::for_each(this->cluster_indices_container,
@@ -316,18 +315,41 @@ namespace rascal {
     this->offsets.resize(0);
     this->neighbours.resize(0);
 
-    // fill the list, at least pairs are mandatory for this to work
+    // prepare data structure to collect neighbours
+    auto natoms = manager.get_size();
+    new_neighbours.resize(natoms);
+    for (auto & vector : new_neighbours) {
+        // start with an empty list per atom
+        vector.resize(0);
+    }
+
+    /* ---------------------------------------------------------------------- */
+    // loop through all atoms and pairs and collect all neighbours in vector
+    for (auto atom: this->manager) {
+      auto index_1{atom.get_atom_index()};
+
+      for (auto pair: atom) {
+        auto index_2{pair.get_atom_index()};
+
+        // add indices to their reciprocal list
+        // -> already exists: this->new_neighbours[index_1].push_back(index_2);
+        new_neighbours[index_2].push_back(index_1);
+      }
+    }
+
+    /* ---------------------------------------------------------------------- */
+    // reference to cluster indices
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
+    // build new neighbour list
     int offset{0};
-    // counter for total number of pairs (minimal list) for cluster_indices
-    size_t pair_counter{0};
+    int pair_counter{0};
 
-    for (auto atom: this->manager) {
+    for (auto atom : this->manager) {
+      auto index_i = atom.get_atom_index();
 
-      // Add new depth layer for atoms (see LayerByOrder for possible
-      // optimisation).
+      // Add new depth layer for atoms
       constexpr auto AtomLayer{
         compute_cluster_layer<atom.order()>
           (typename traits::LayerByOrder{})};
@@ -337,42 +359,52 @@ namespace rascal {
       indices(AtomLayer) = indices(AtomLayer-1);
       atom_cluster_indices.push_back(indices);
 
-      auto index_i{atom.get_atom_index()};
-
-      // neighbours per atom counter to correct for offsets
       int nneigh{0};
-
-      for (auto pair: atom) {
+      for (auto pair : atom) {
+        // add existing pairs
+        auto index_j = pair.get_atom_index();
+        this->neighbours.push_back(index_j);
+        nneigh++;
 
         constexpr auto PairLayer{
           compute_cluster_layer<pair.order()>
             (typename traits::LayerByOrder{})};
 
-        auto index_j{pair.get_atom_index()};
-
-        // This is the actual check for the half neighbour list: only pairs with
-        // higher index_j than index_i are used. It should in principle ensure a
-        // minimal neighbour list.
-        if (index_i < index_j) {
-
-          this->neighbours.push_back(index_j);
-          nneigh++;
-
-          // get underlying cluster indices to add at this layer
-          Eigen::Matrix<size_t, PairLayer+1, 1> indices_pair;
-          indices_pair.template head<PairLayer>() = pair.get_cluster_indices();
-          indices_pair(PairLayer) = pair_counter;
-          pair_cluster_indices.push_back(indices_pair);
-
-          pair_counter++;
-        }
+        Eigen::Matrix<size_t, PairLayer+1, 1> indices_pair;
+        indices_pair.template head<PairLayer>() = pair.get_cluster_indices();
+        indices_pair(PairLayer) = pair_counter;
+        pair_cluster_indices.push_back(indices_pair);
+        pair_counter++;
       }
+
+      // static expression for template parameter in cluster layer computation
+      constexpr static auto PairOrder{2};
+      // statically compute stacking height of pairs, which is to be increased
+      // through extending the neighbour list
+      constexpr static auto ActiveLayer{
+        compute_cluster_layer<PairOrder>(typename traits::LayerByOrder{})};
+
+      for (auto index_j : new_neighbours[index_i]) {
+        this->neighbours.push_back(index_j);
+        nneigh++;
+
+        Eigen::Matrix<size_t, ActiveLayer+1, 1> indices_pair;
+        // set cluster indices of the new pair to zero, since it does not exist
+        // at the lower levels
+        // TODO: not sure, this is right
+        for (size_t i{0}; i < ActiveLayer; ++i) {
+          indices_pair(i) = 0;
+        }
+        indices_pair(ActiveLayer) = pair_counter;
+        pair_cluster_indices.push_back(indices_pair);
+        pair_counter++;
+      }
+      // adjust offsets for correct access
       this->nb_neigh.push_back(nneigh);
       this->offsets.push_back(offset);
-
       offset += nneigh;
     }
   }
 }  // rascal
 
-#endif /* ADAPTOR_HALF_LIST_H */
+#endif /* ADAPTOR_FULL_LIST_H */

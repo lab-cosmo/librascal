@@ -52,7 +52,7 @@ namespace rascal {
     }
     if (verbose) std::cout << std::endl;
 
-    std::vector<pair<size_t, myiter> > order(index.size());
+    std::vector<std::pair<size_t, myiter> > order(index.size());
 
     size_t n{0};
     for (myiter it = index.begin(); it != index.end(); ++it, ++n)
@@ -83,7 +83,7 @@ namespace rascal {
     lin_mat  mat1 = lin_mat::Ones();
     std::vector<double> dists{{2,4,0,1,3}};
 
-    std::vector<pair<size_t, myiter> > order_mat(dists.size());
+    std::vector<std::pair<size_t, myiter> > order_mat(dists.size());
 
     size_t n_{0};
     for (myiter it = dists.begin(); it != dists.end(); ++it, ++n_)

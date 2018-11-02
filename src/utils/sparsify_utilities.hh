@@ -30,6 +30,8 @@
 
 #include "basic_types.hh"
 
+#include <Eigen/Dense>
+
 namespace rascal {
   namespace utils {
     using RowMatrixXd = Eigen::Matrix<double, Eigen::Dynamic,

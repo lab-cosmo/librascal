@@ -99,32 +99,7 @@ template<class StructureManager>
   };
 
 /* ---------------------------------------------------------------------- */
-  template <>
-  struct RepresentationFixture<StructureManagerJson>
-  {
-    using Manager_t = StructureManagerJson;
-    
-    RepresentationFixture()
-      : manager_json{},
-      cutoff{1.1},central_decay{0.5}, 
-      interaction_cutoff{3}, interaction_decay{0.5},size{50} {
-
-      manager_json.read_structure_from_json("simple_cubic_8.json");
-      manager_json.update();
-      
-    }
-
-    ~RepresentationFixture () {BOOST_TEST_MESSAGE("teardown ManagerJson fixture");}
-
-    Manager_t manager_json;
-    double cutoff;
-    double central_decay;
-    double interaction_cutoff;
-    double interaction_decay;
-    size_t size;
-  };
-
-
+  
 } // RASCAL
 
 #endif /* TEST_REPRESENTATION_H */

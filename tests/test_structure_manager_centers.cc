@@ -32,10 +32,12 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(ManagerCentersTests);
   /* ---------------------------------------------------------------------- */
+  // checking the constructor
   BOOST_FIXTURE_TEST_CASE(manager_centers_constructor_test,
                           ManagerFixture<StructureManagerCenters>){}
 
   /* ---------------------------------------------------------------------- */
+  // checking iteration
   BOOST_FIXTURE_TEST_CASE(iterator_test,
                           ManagerFixture<StructureManagerCenters>) {
 
@@ -60,6 +62,36 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * test for checking StructureManagerCenters specific interface, ``manager``
+   * is the name of the manager object. it checks specifically, if the data
+   * which is read from a json file (or in the case
+   */
+  BOOST_FIXTURE_TEST_CASE(simple_cubic_9_neighbour_list,
+                          ManagerFixtureFile<StructureManagerCenters>) {
+
+    constexpr bool verbose{false};
+    if (verbose) std::cout << "StructureManagerCenters interface" << std::endl;
+
+    auto dim{manager.dim()};
+    if (verbose) std::cout << "dimension: " << dim << std::endl;
+
+    auto cell{manager.get_cell()};
+    if (verbose) std::cout << "cell:\n" << cell << std::endl;
+
+    auto atom_types{manager.get_atom_types()};
+    if (verbose) std::cout << "atom types:\n" << atom_types << std::endl;
+
+    auto positions{manager.get_positions()};
+    if (verbose) std::cout << "atom positions:\n" << positions << std::endl;
+
+    auto periodicity{manager.get_periodic_boundary_conditions()};
+    if (verbose) std::cout << "periodicity (x,y,z):\n"
+                           << periodicity << std::endl;
+  }
+
+  /* ---------------------------------------------------------------------- */
+  // checking update
   BOOST_FIXTURE_TEST_CASE(manager_update_test,
                           ManagerFixture<StructureManagerCenters>) {
 
