@@ -35,7 +35,7 @@ namespace rascal {
   // gets a list of fixtures for all the different possible structure managers
   using fixtures = boost::mpl::list<
     ManagerFixture<StructureManagerCenters>,
-    ManagerFixture<StructureManagerLammps>>;
+    ManagerFixture<StructureManagerLammps> >;
 
   /* ---------------------------------------------------------------------- */
   // just checks that the structure managers can be constructed
