@@ -16,7 +16,7 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
         """
 
         fn = '../tests/reference_data/simple_cubic_8.json'
-        # fn = '../tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
+        fn = '../tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
         self.frame = load_json_frame(fn)
         self.cell = self.frame['cell']
         self.positions = self.frame['positions']
@@ -27,7 +27,7 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
                               [1, 0, 0], [0, 1, 0] ]).astype(int)
 
         self.Natom = self.positions.shape[0]
-        self.cutoffs = [4.]*self.Natom
+        self.cutoffs = [3.]*self.Natom
         self.max_cutoff = np.max(self.cutoffs)
         
         self.managerC =  rc.StructureManager.Centers()
