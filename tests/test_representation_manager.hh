@@ -40,8 +40,8 @@ template<class StructureManager>
   struct RepresentationFixture
   {
     RepresentationFixture():
-      pbc{{true,true,true}}, cutoff_max{3}, 
-      cell(3, 3), positions(3, 22), numbers(22), central_decay{0.5}, 
+      pbc{{true,true,true}}, cutoff_max{4}, 
+      cell(3, 3), positions(22,3), numbers(22), central_decay{0.5}, 
       interaction_cutoff{3},interaction_decay{0.5},size{50}
     {
       cell <<
@@ -73,8 +73,7 @@ template<class StructureManager>
         3.307475712744203, 5.323662899811682, 1.982236671758393;
       numbers << 20, 20, 24, 24, 15, 15, 15, 15,  8,  8,  8,
         8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8;
-      // center_ids << 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-      //   12, 13, 14, 15, 16, 17, 18, 19, 20, 21;
+      positions.transposeInPlace();
       manager.update(positions,numbers,cell,
                     Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
 

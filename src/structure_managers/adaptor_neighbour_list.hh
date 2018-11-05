@@ -115,7 +115,7 @@ namespace rascal {
           constexpr int size{3};
           std::array<int, Dim> retval{{0}};
           int factor{1};
-          for (int i = Dim-1; i >=0; --i) {
+          for (int i{Dim-1}; i >=0; --i) {
             //! -1 for offset of stencil
             retval[i] = this->index/factor%size + this->stencil.origin[i] - 1;
             if (i != 0 ) {
@@ -289,8 +289,8 @@ namespace rascal {
                                        const std::array<int, Dim> & ccoord,
                                        const Container_t & boxes) {
       std::vector<size_t> neighbours;
-      for (auto && s: Stencil<Dim>{ccoord}) {
-        for (const auto & neigh : boxes[s]) {
+      for (std::array<int, Dim> s: Stencil<Dim>{ccoord}) {
+        for (const int & neigh : boxes[s]) {
           // avoid adding the current i atom to the neighbour list
           if (neigh != current_atom_index) {
             neighbours.push_back(neigh);
@@ -325,6 +325,7 @@ namespace rascal {
       Dim_t factor{1};
       for (Dim_t i = Dim-1; i >= 0; --i) {
         retval += ccoord[i] * factor;
+        // TODO remove the useless if
         if (i != 0) {
           factor *= sizes[i];
         }

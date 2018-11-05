@@ -171,8 +171,6 @@ class TestNL(unittest.TestCase):
         for ii,center in enumerate(manager):
             for jj,neigh in enumerate(center):
                 dist = np.linalg.norm(neigh.position-center.position)
-                
-      
 
 class TestNLStrict(unittest.TestCase):
     def setUp(self):

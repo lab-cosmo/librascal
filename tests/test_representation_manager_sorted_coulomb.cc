@@ -112,7 +112,7 @@ namespace rascal {
     AdaptorNeighbourList<StructureManagerCenters> nl{manager,cutoff_max};
     nl.update();
     AdaptorStrict<AdaptorNeighbourList<
-                              StructureManagerCenters>> strict_nl{nl,cutoff_max};
+                              StructureManagerCenters>> strict_nl{nl,cutoff_max*0.9};
     strict_nl.update();
 
     using Representation_t = RepresentationManagerSortedCoulomb<
