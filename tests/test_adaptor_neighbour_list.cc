@@ -315,7 +315,7 @@ namespace rascal {
     // helper for increasing skewedness of unit cell in loop entry (0,1) gives
     // the skewing factor in the x/y plane in the loop building the cells
     Eigen::MatrixXd unity{Eigen::MatrixXd::Identity(3, 3)};
-    std::array<double, ncells> shears{0, 1, 5};
+    std::array<double, ncells> shears{0, 1, 10};
 
     // multipliers for different cutoffs: original cutoff is barely below
     // minimum atom distance
@@ -326,10 +326,12 @@ namespace rascal {
     neighbours.resize(ncells);
 
     // loop over cells
+
+    for (int k{0}; k < 3; ++k) {
     for (int i{0}; i < ncells; ++i) {
 
       // check different cutoffs
-      double cutoff_tmp{4.9};
+      double cutoff_tmp{cutoff*n_cutoff[k]};
 
       // manager constructed within this loop
       StructureManagerCenters manager;
@@ -424,6 +426,7 @@ namespace rascal {
                                     // expected values from unskewed cell
                                     neighbours[0].begin(),
                                     neighbours[0].end());
+    }
     }
   }
 
