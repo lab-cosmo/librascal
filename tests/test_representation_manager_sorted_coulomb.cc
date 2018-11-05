@@ -110,6 +110,7 @@ namespace rascal {
   {
 
     AdaptorNeighbourList<StructureManagerCenters> nl{manager,cutoff_max};
+    std::cout << "cutoff_max " << cutoff_max << std::endl;
     nl.update();
     AdaptorStrict<AdaptorNeighbourList<
                               StructureManagerCenters>> strict_nl{nl,cutoff_max*0.9};

@@ -288,9 +288,9 @@ namespace rascal {
     std::vector<size_t> get_neighbours(const int current_atom_index,
                                        const std::array<int, Dim> & ccoord,
                                        const Container_t & boxes) {
-      std::vector<size_t> neighbours;
-      for (std::array<int, Dim> s: Stencil<Dim>{ccoord}) {
-        for (const int & neigh : boxes[s]) {
+      std::vector<size_t> neighbours{};
+      for (auto && s: Stencil<Dim>{ccoord}) {
+        for (const auto & neigh : boxes[s]) {
           // avoid adding the current i atom to the neighbour list
           if (neigh != current_atom_index) {
             neighbours.push_back(neigh);
@@ -485,12 +485,14 @@ namespace rascal {
 
     //! Returns the number of clusters of size cluster_size
     inline size_t get_nb_clusters(size_t cluster_size) const {
-      if (cluster_size == 1) {
-        return this->manager.get_nb_clusters(cluster_size);
-      } else if (cluster_size == 2) {
+      switch (cluster_size) {
+      case traits::MaxOrder: {
         return this->neighbours.size();
-      } else {
-        throw std::string("ERREUR : cluster_size > 2");
+        break;
+      }
+      default:
+        return this->manager.get_nb_clusters(cluster_size);
+        break;
       }
     }
 
@@ -542,7 +544,7 @@ namespace rascal {
     inline Vector_ref get_position(const AtomRef_t & atom) {
       return this->manager.get_position(atom.get_index());
     }
-    
+
     /**
      * Returns the id of the index-th (neighbour) atom of the cluster that is
      * the full structure/atoms object, i.e. simply the id of the index-th atom
@@ -769,7 +771,7 @@ namespace rascal {
       // sorting of atom position e.g. at x = (0,0,0).
       auto epsilon = 0.25 * cutoff;
       mesh_min[i] = min_coord - cutoff - epsilon;
-      auto lmesh = std::fabs(mesh_min[i]) + max_coord + cutoff;
+      auto lmesh = std::fabs(mesh_min[i]) + max_coord + 2*cutoff;
       int n = std::ceil(lmesh / cutoff);
       auto lmax = n * cutoff - std::fabs(mesh_min[i]);
       mesh_max[i] = lmax;
