@@ -115,7 +115,7 @@ namespace rascal {
           constexpr int size{3};
           std::array<int, Dim> retval{{0}};
           int factor{1};
-          for (int i = Dim-1; i >=0; --i) {
+          for (int i{Dim-1}; i >=0; --i) {
             //! -1 for offset of stencil
             retval[i] = this->index/factor%size + this->stencil.origin[i] - 1;
             if (i != 0 ) {
@@ -419,6 +419,7 @@ namespace rascal {
     using Base = StructureManager<AdaptorNeighbourList<ManagerImplementation>>;
     using Parent =
       StructureManager<AdaptorNeighbourList<ManagerImplementation>>;
+    using Implementation_t = ManagerImplementation;
     using traits = StructureManager_traits<AdaptorNeighbourList>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
