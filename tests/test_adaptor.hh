@@ -62,9 +62,35 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * Fixture for testing AdaptorStrict constructor and update
+   */
+  template<class ManagerImplementation>
+  struct PairFixtureStrict : public ManagerFixture<ManagerImplementation>
+  {
+    using Manager_t = ManagerImplementation;
 
+    static_assert(ManagerImplementation::traits::MaxOrder == 1,
+                  "Lower layer manager has to be a collection of atoms, i.e."
+                  " MaxOrder=1");
 
+    using PairManager_t = AdaptorNeighbourList<ManagerImplementation>;
+    using Adaptor_t = AdaptorStrict<PairManager_t>;
 
+    PairFixtureStrict()
+      : ManagerFixture<ManagerImplementation> {}, cutoff{3.5},
+      pair_manager{this->manager, cutoff}, adaptor_strict{this->pair_manager, cutoff}
+    {
+      this->pair_manager.update();
+      this->adaptor_strict.update();
+    }
+
+    ~PairFixtureStrict() {}
+
+    double cutoff;
+    PairManager_t pair_manager;
+    Adaptor_t adaptor_strict;
+  };
 }  // rascal
 
 

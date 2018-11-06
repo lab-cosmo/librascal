@@ -125,6 +125,8 @@ namespace rascal {
 
     constexpr bool verbose{false};
 
+    using PairManager_t = AdaptorNeighbourList<StructureManagerCenters>;
+
     if(verbose) std::cout << "HCP test " << cutoff << std::endl;
 
     int mult = 10;
@@ -142,12 +144,10 @@ namespace rascal {
         std::cout << "hcp test cutoff " << cutoff_tmp << std::endl;
       }
 
-      AdaptorNeighbourList<StructureManagerCenters> pair_manager1{manager_1,
-          cutoff_tmp};
+      PairManager_t pair_manager1{manager_1, cutoff_tmp};
       pair_manager1.update();
 
-      AdaptorNeighbourList<StructureManagerCenters> pair_manager2{manager_2,
-          cutoff_tmp};
+      PairManager_t pair_manager2{manager_2, cutoff_tmp};
       pair_manager2.update();
 
       if (verbose) std::cout << "Manager 1" << std::endl;
@@ -216,6 +216,8 @@ namespace rascal {
 
     constexpr bool verbose{false};
 
+    using PairManager_t = AdaptorNeighbourList<StructureManagerCenters>;
+
     if (verbose) std::cout << "FCC test " << std::endl;
 
     int mult = 8;
@@ -233,12 +235,10 @@ namespace rascal {
         std::cout << "fcc cutoff " << cutoff_tmp << std::endl;
       }
 
-      AdaptorNeighbourList<StructureManagerCenters> pair_manager1{manager_1,
-          cutoff_tmp};
+      PairManager_t pair_manager1{manager_1, cutoff_tmp};
       pair_manager1.update();
 
-      AdaptorNeighbourList<StructureManagerCenters> pair_manager2{manager_2,
-          cutoff_tmp};
+      PairManager_t pair_manager2{manager_2, cutoff_tmp};
       pair_manager2.update();
 
       for (auto atom : pair_manager1) {
@@ -297,14 +297,18 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   /*
    * Test if an increasingly skewed unit cell gives the same number of
-   * neighbours than the non-skewed one. Skewing is achieved by the
-   * multiplier.
+   * neighbours than the non-skewed one. Skewing is achieved by the `shear`
+   * multiplier. The position of the two atoms in the unit cell are shifted
+   * accordingly to reflect the skewing.
    *
    * The fixture does not provide a manager. Instead, it provies basic cubic
-   * unit cell, positions and the shear transformation ``skew_multiplier`` for
+   * unit cell, positions and the shear transformation ``shears`` for
    * the unit cell. This is used in the loop to construct increasingly skewed
    * unit cells; positions are shifted accordingly to stay inside the new unit
    * cell.
+   *
+   * The test increases the shear and and cutoff of the basic values in two
+   * loops to check different cutoffs with the skewedness.
    */
   BOOST_FIXTURE_TEST_CASE(test_neighbour_list_skewed, ManagerFixtureSkew) {
 
@@ -382,16 +386,16 @@ namespace rascal {
         }
 
         // construct manager with skewed unit cell and shifted positions
-        manager.update(pos_skw, atom_types, cell_skw,
-                     Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
+        using PBC_t = Eigen::Map<Eigen::Matrix<int, 3, 1>>;
+        manager.update(pos_skw, atom_types, cell_skw, PBC_t{pbc.data()});
 
         // build neighbourlist
-        using PairList_t = AdaptorNeighbourList<StructureManagerCenters>;
-        PairList_t pair_manager{manager, cutoff_tmp};
+        using PairManager_t = AdaptorNeighbourList<StructureManagerCenters>;
+        PairManager_t pair_manager{manager, cutoff_tmp};
         pair_manager.update();
 
         // make strict for counting neighbours
-        AdaptorStrict<PairList_t> adaptor_strict{pair_manager, cutoff_tmp};
+        AdaptorStrict<PairManager_t> adaptor_strict{pair_manager, cutoff_tmp};
         adaptor_strict.update();
 
         // count strict neighbours

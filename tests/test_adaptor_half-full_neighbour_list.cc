@@ -127,12 +127,14 @@ namespace rascal {
     double distance_sum_full_half_full{0.};
 
     // half list construction
-    AdaptorHalfList<StructureManagerLammps> adaptor_half{manager};
+    using AdaptorHalf_t = AdaptorHalfList<StructureManagerLammps>;
+    AdaptorHalf_t adaptor_half{manager};
     adaptor_half.update();
 
     // back to full list again
-    AdaptorFullList<AdaptorHalfList<StructureManagerLammps>>
-      adaptor_full{adaptor_half};
+    using AdaptorFull_t = AdaptorFullList<AdaptorHalf_t>;
+
+    AdaptorFull_t adaptor_full{adaptor_half};
     adaptor_full.update();
 
     // iterate over initial manager with full list

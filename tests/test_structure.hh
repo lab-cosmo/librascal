@@ -51,9 +51,9 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Most basic fixture. This is only to guarantee, that the manager, which is
-   * built with existing data and not adapted is always accessible with the
-   * variable ``manager``.
+   * Most basic fixture. This is only to guarantee, that the lowest Layer
+   * manager, which is initialized with existing data and not `adapted` is
+   * always accessible with the variable ``manager``.
    */
   template<class ManagerImplementation>
   struct ManagerFixture
@@ -62,23 +62,6 @@ namespace rascal {
     ~ManagerFixture() {} // dtor
 
     ManagerImplementation manager{};
-  };
-
-  /* ---------------------------------------------------------------------- */
-  /**
-   * Basic fixture for using two manager to compare things. This is to
-   * guarantee, that the managers, built with existing data and not adapted is
-   * always accessible with the variable ``manager_1`` and ``manager_2``. Both
-   * managers are of the same class.
-   */
-  template<class ManagerImplementation>
-  struct ManagerFixtureTwo
-  {
-    ManagerFixtureTwo() {} // ctor
-    ~ManagerFixtureTwo() {} // dtor
-
-    ManagerImplementation manager_1{};
-    ManagerImplementation manager_2{};
   };
 
   /* ---------------------------------------------------------------------- */
@@ -100,17 +83,35 @@ namespace rascal {
 
     ~ManagerFixtureFile()  {}
 
-    // additional variables for present fixture
+    // additional variables for current fixture
     double cutoff;
     std::string filename{};
   };
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Fixture which provides two managers ``manager_1`` and ``manager_2``, which
-   * both have a hexagonal lattice, but with different unit cells (vectors) with
-   * two atoms. It is used to ensure that the neighbour list algorithm is robust
-   * with respect to the unit cell.
+   * Basic fixture for using two manager to compare e.g. two crystal
+   * structures. This is to guarantee, that the managers, built with existing
+   * data and not adapted is always accessible with the variable ``manager_1``
+   * and ``manager_2``. Both managers are of the same class.
+   */
+  template<class ManagerImplementation>
+  struct ManagerFixtureTwo
+  {
+    ManagerFixtureTwo() {} // ctor
+    ~ManagerFixtureTwo() {} // dtor
+
+    ManagerImplementation manager_1{};
+    ManagerImplementation manager_2{};
+  };
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Fixture providing two managers ``manager_1`` and ``manager_2``, which both
+   * have a hexagonal lattice, but with different unit cells (vectors), each
+   * with two atoms. It is used to ensure that the neighbour list algorithm is
+   * robust with respect to the unit cell. Same crystal structure and cutoff
+   * should yield the same number of neighbours.
    */
   struct ManagerFixtureTwoHcp
     : public ManagerFixtureTwo<StructureManagerCenters>
@@ -162,13 +163,11 @@ namespace rascal {
 
       atom_types << 1, 1;
 
-      manager_1.update(positions_1, atom_types, cell_1,
-                       Eigen::Map<Eigen::Matrix<int, 3, 1>>
-                       {pbc.data()});
+      using PBC_t = Eigen::Map<Eigen::Matrix<int, 3, 1>>;
 
-      manager_2.update(positions_2, atom_types, cell_2,
-                       Eigen::Map<Eigen::Matrix<int, 3, 1>>
-                       {pbc.data()});
+      manager_1.update(positions_1, atom_types, cell_1, PBC_t{pbc.data()});
+
+      manager_2.update(positions_2, atom_types, cell_2, PBC_t{pbc.data()});
     }
 
     ~ManagerFixtureTwoHcp() {}
@@ -191,7 +190,7 @@ namespace rascal {
    * Fixture which provides two managers ``manager_1`` and ``manager_2``, which
    * both have a face centered cubic lattice, but with different unit cells
    * (vectors) with one and four atoms. It is another test to ensure that the
-   * neighbour list algorithm is robust with respect to the unit cell.
+   * neighbour list algorithm is robust with respect to the unit cell. Here
    */
   struct ManagerFixtureTwoFcc
     : public ManagerFixtureTwo<StructureManagerCenters>
@@ -239,13 +238,11 @@ namespace rascal {
       atom_types_1 << 1;
       atom_types_2 << 1, 1, 1, 1;
 
-      manager_1.update(positions_1, atom_types_1, cell_1,
-                       Eigen::Map<Eigen::Matrix<int, 3, 1>>
-                       {pbc.data()});
+      using PBC_t = Eigen::Map<Eigen::Matrix<int, 3, 1>>;
 
-      manager_2.update(positions_2, atom_types_1, cell_2,
-                       Eigen::Map<Eigen::Matrix<int, 3, 1>>
-                       {pbc.data()});
+      manager_1.update(positions_1, atom_types_1, cell_1, PBC_t{pbc.data()});
+
+      manager_2.update(positions_2, atom_types_1, cell_2, PBC_t{pbc.data()});
     }
 
     ~ManagerFixtureTwoFcc() {}
@@ -266,6 +263,12 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * Specialisation for the ManagerFixture for usage with the structure manager
+   * with the Lammps interface. Data structures for a 3-atom structure are built
+   * here and the manager is initialised.
+   */
+  // TODO: as of Nov 2018, this interface is outdated with respect to lammps.
   template <>
   struct ManagerFixture<StructureManagerLammps>
   {
@@ -438,8 +441,8 @@ namespace rascal {
       atom_types << 20, 20, 24, 24, 15, 15, 15, 15, 8, 8, 8,
         8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8;
 
-      manager.update(positions, atom_types, cell,
-                     Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
+      using PBC_t = Eigen::Map<Eigen::Matrix<int, 3, 1>>;
+      manager.update(positions, atom_types, cell, PBC_t{pbc.data()});
     }
 
     ~ManagerFixture() {}
@@ -477,8 +480,8 @@ namespace rascal {
 
       atom_types << 1, 1, 1, 1, 1, 1, 1, 1;
 
-      this->manager.update(positions, atom_types, cell,
-                           Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
+      using PBC_t = Eigen::Map<Eigen::Matrix<int, 3, 1>>;
+      this->manager.update(positions, atom_types, cell, PBC_t{pbc.data()});
     }
 
     ~ManagerFixtureSimple() {}

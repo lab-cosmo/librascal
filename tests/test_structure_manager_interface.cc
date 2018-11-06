@@ -32,13 +32,22 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(structure_managers_interface);
 
-  // gets a list of fixtures for all the different possible structure managers
+  /* ---------------------------------------------------------------------- */
+  // a list of fixtures for all the different possible structure managers
+  // and test the atom (Order=1) related interface.
   using fixtures = boost::mpl::list<
     ManagerFixture<StructureManagerCenters>,
     ManagerFixture<StructureManagerLammps>,
     ManagerFixtureFile<StructureManagerCenters>,
     // not templated single manager fixtures
     ManagerFixtureSimple>;
+
+  /* ---------------------------------------------------------------------- */
+  // a list of fixtures for pair managers for testing pair related interface
+  using pair_fixtures = boost::mpl::list<
+    ManagerFixture<StructureManagerLammps>
+    >;
+
 
   /* ---------------------------------------------------------------------- */
   // just checks that the structure managers can be constructed
@@ -74,8 +83,8 @@ namespace rascal {
 
       BOOST_CHECK(position_error < tol / 100);
 
-      position_error = (atom.get_position() -
-                        manager.position(atom.back())).norm();
+      position_error = (atom.get_position()
+                        - manager.position(atom.back())).norm();
       BOOST_CHECK(position_error < tol / 100);
     }
   }
@@ -97,6 +106,40 @@ namespace rascal {
     }
   }
 
+  /* ---------------------------------------------------------------------- */
+  // test template for pairs
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_pair_global_indexing, Fix,
+                                    pair_fixtures, Fix) {
+
+    auto & manager = Fix::manager;
+    auto pair_reference{0};
+
+    for (auto atom : manager) {
+      for (auto pair : atom) {
+        auto global_index = pair.get_global_index();
+        BOOST_CHECK_EQUAL(pair_reference, global_index);
+        pair_reference++;
+
+        // check index access
+        auto index = pair.get_atom_index();
+
+        // check atom type access
+        auto type = pair.get_atom_type();
+
+        BOOST_CHECK_EQUAL(type, manager.atom_type(index));
+
+        // check positions
+        auto position_error = (pair.get_position()
+                               - manager.position(index)).norm();
+        BOOST_CHECK(position_error < tol / 100);
+
+        position_error = (pair.get_position()
+                          - manager.position(pair.back())).norm();
+        BOOST_CHECK(position_error < tol / 100);
+
+      }
+    }
+  }
 
   /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();
