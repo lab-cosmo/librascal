@@ -588,15 +588,12 @@ namespace rascal {
     inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
                                    & cluster) const {
 
-      static_assert(Order < traits::MaxOrder,
+      static_assert(Order <= traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
 
-      if (Order < (traits::MaxOrder-1)) {
-        return this->manager.get_cluster_size(cluster);
-      } else {
-        auto access_index = cluster.get_cluster_index(Layer);
-        return nb_neigh[access_index];
-      }
+      // TODO: what happens for cluster order 1?
+      auto access_index = cluster.get_cluster_index(Layer);
+      return nb_neigh[access_index];
     }
 
   protected:
@@ -767,7 +764,7 @@ namespace rascal {
       // sorting of atom position e.g. at x = (0,0,0).
       auto epsilon = 0.25 * cutoff;
       mesh_min[i] = min_coord - cutoff  - epsilon;
-      auto lmesh = std::fabs(mesh_min[i]) + max_coord + cutoff;
+      auto lmesh = std::fabs(mesh_min[i]) + max_coord + 2*cutoff;
       int n = std::ceil(lmesh / cutoff);
       auto lmax = n * cutoff - std::fabs(mesh_min[i]);
       mesh_max[i] = lmax;
