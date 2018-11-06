@@ -257,7 +257,7 @@ namespace rascal {
     inline size_t size() const {return this->implementation().get_size();}
 
     //! number of atoms, pairs, triplets in respective manager
-    inline size_t nb_clusters(size_t cluster_size) const override final{
+    inline size_t nb_clusters(size_t cluster_size) const override final {
       return this->implementation().get_nb_clusters(cluster_size);
     }
 
@@ -266,7 +266,7 @@ namespace rascal {
       return this->implementation().get_position(atom_index);
     }
 
-    //! returns position of an atom with an AtomRef
+    //! returns position of an atom with an AtomRef ``atom``
     inline Vector_ref position(const AtomRef & atom) {
       return this->implementation().get_position(atom);
     }
@@ -318,6 +318,7 @@ namespace rascal {
 
     //! returns a reference to itself
     inline StructureManager & get_manager() {return *this;}
+
     //! necessary casting of the type
     inline ManagerImplementation & implementation() {
       return static_cast<ManagerImplementation&>(*this);

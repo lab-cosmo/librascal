@@ -39,6 +39,9 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
                           ManagerFixture<StructureManagerCenters>) {
+
+    // TODO: add fixture with strict neighbourhood and fix the rest below
+    double cutoff{3.5};
     AdaptorNeighbourList<StructureManagerCenters> pair_manager{manager, cutoff};
     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>
       adaptor_strict{pair_manager, cutoff};
@@ -47,6 +50,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   /*
    * test if the update function works
+   *
+   * ``manager`` is a MaxOrder=1 StructureManager
    */
   BOOST_FIXTURE_TEST_CASE(update_test,
                           ManagerFixture<StructureManagerCenters>) {
@@ -60,6 +65,8 @@ namespace rascal {
   /*
    * Compare the strict neighbour list with the linked cell one
    * selecting only the atoms within a cutoff radius
+   *
+   * ``manager`` is a MaxOrder=1 StructureManager
    */
   BOOST_FIXTURE_TEST_CASE(strict_test,
                           ManagerFixture<StructureManagerCenters>) {
@@ -76,12 +83,6 @@ namespace rascal {
       std::vector<std::vector<double>> neigh_dist{};
       std::vector<std::vector<int>> neigh_ids_strict{};
       std::vector<std::vector<double>> neigh_dist_strict{};
-
-      // TODO re-initiallization in the loop of the pair manager results in a
-      // segmentation fault, is it expected ?
-      // AdaptorNeighbourList<StructureManagerCenters> pair_manager{manager,
-      //     cutoff_tmp};
-      // pair_manager.update();
 
       if (verbose) std::cout << "Setting up strict manager with rc = "
                              <<cutoff_tmp << std::endl;
@@ -191,17 +192,15 @@ namespace rascal {
           int a1{neigh_ids_strict[ii][jj]};
           double d0{neigh_dist[ii][jj]};
           double d1{neigh_dist_strict[ii][jj]};
-          BOOST_CHECK_EQUAL(a0,a1);
-          BOOST_CHECK_EQUAL(d0,d1);
+          BOOST_CHECK_EQUAL(a0, a1);
+          BOOST_CHECK_EQUAL(d0, d1);
         }
       }
     }
   }
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(strict_test_hcp,
-                          ManagerFixtureNeighbourCheckHcp
-                          <StructureManagerCenters>) {
+  BOOST_FIXTURE_TEST_CASE(strict_test_hcp, ManagerFixtureTwoHcp) {
     /*
      * Note: since the cell vectors are different, it is possible that one of
      * the two atoms is repeated into a different cell due to periodicity. This
@@ -266,7 +265,6 @@ namespace rascal {
           }
           adaptor_strict1.get_distance(pair);
           neighbours_per_atom1.back()++;
-
         }
       }
 
@@ -280,7 +278,6 @@ namespace rascal {
           }
 
           neighbours_per_atom2.back()++;
-
         }
       }
 
@@ -300,9 +297,7 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(neighbourlist_test_fcc,
-                          ManagerFixtureNeighbourCheckFcc
-                          <StructureManagerCenters>) {
+  BOOST_FIXTURE_TEST_CASE(neighbourlist_test_fcc, ManagerFixtureTwoFcc) {
 
     constexpr bool verbose{false};
 

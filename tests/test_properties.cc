@@ -38,7 +38,7 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE (Property_tests);
 
   /* ---------------------------------------------------------------------- */
-  /**
+  /*
    * A fixture for testing proterties. It is based on the PairFixture, which is
    * basically a fixture which provides a pair neighbour list based on positions
    * which are initialized in the tests.
@@ -85,7 +85,7 @@ namespace rascal {
                           PropertyFixture<StructureManagerCenters>) {}
 
   /* ---------------------------------------------------------------------- */
-  /**
+  /*
    * checks if the properties associated with atoms and pairs can be filled
    */
   BOOST_FIXTURE_TEST_CASE(fill_test_simple,
@@ -126,7 +126,7 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  /**
+  /*
    * test filling statically and dynamically sized properties with actual data
    * and comparing if retrieval of those is consistent with the data that was
    * put in
@@ -182,8 +182,9 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  /**
-   * test for distances
+  /*
+   * test for retrieval of information from property: is it the same that was
+   * put in?
    */
   BOOST_FIXTURE_TEST_CASE(compute_distances,
                           PropertyFixture<StructureManagerCenters>) {
@@ -199,8 +200,8 @@ namespace rascal {
     for (auto atom: pair_manager) {
       for (auto pair: atom) {
         auto dist{(atom.get_position() - pair.get_position()).norm()};
-        auto error = pair_property[pair] - dist;
-        BOOST_CHECK_LE(error, tol*100);
+        auto error{pair_property[pair] - dist};
+        BOOST_CHECK_LE(error, tol / 100);
       }
     }
   }

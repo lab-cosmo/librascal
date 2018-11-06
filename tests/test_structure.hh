@@ -49,15 +49,19 @@ namespace rascal {
    * to be called "manager"
    */
 
-  // TODO: this is not a general case of a manager fixture. Should not be so
-  // complicated
-  // TODO: change this to a usage case of the ManagerFixture
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Most basic fixture. This is only to guarantee, that the manager, which is
+   * built with existing data and not adapted is always accessible with the
+   * variable ``manager``.
+   */
   template<class ManagerImplementation>
   struct ManagerFixture
   {
     ManagerFixture():
       pbc{{true,true,true}}, cell(3, 3), positions(22, 3), 
-      numbers(22), cutoff{2.}
+      atom_types(22), cutoff{2.}
     {
       cell <<
         6.19, 2.41, 0.21,
@@ -87,10 +91,10 @@ namespace rascal {
         1.054504320562138, 6.251395251007936, 3.998423858825871,
         3.307475712744203, 5.323662899811682, 1.982236671758393;
       positions.transposeInPlace();
-      numbers << 20, 20, 24, 24, 15, 15, 15, 15,  8,  8,  8,
+      atom_types << 20, 20, 24, 24, 15, 15, 15, 15,  8,  8,  8,
         8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8;
       
-      manager.update(positions, numbers, cell, 
+      manager.update(positions, atom_types, cell, 
               Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
     }
     
@@ -100,127 +104,209 @@ namespace rascal {
     std::array<int, 3> pbc;
     Eigen::MatrixXd cell;
     Eigen::MatrixXd positions; // 3, 22
-    Eigen::VectorXi numbers;
+    Eigen::VectorXi atom_types;
     double cutoff;
+  };
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Basic fixture for using two manager to compare things. This is to
+   * guarantee, that the managers, built with existing data and not adapted is
+   * always accessible with the variable ``manager_1`` and ``manager_2``. Both
+   * managers are of the same class.
+   */
+  template<class ManagerImplementation>
+  struct ManagerFixtureTwo
+  {
+    ManagerFixtureTwo() {} // ctor
+    ~ManagerFixtureTwo() {} // dtor
+
+    ManagerImplementation manager_1{};
+    ManagerImplementation manager_2{};
   };
 
   /* ---------------------------------------------------------------------- */
   /**
    * general case of a manager fixture, which reads the structure information
    * from a file, atomic structure contains 9 atoms in a very simple cubic unit
-   * cell, no periodicity
+   * cell, no periodicity, it inherits publicly from the ManagerFixture, which
+   * provides access to the variable ``manager``.
    */
   template<class ManagerImplementation>
-  struct ManagerFixtureFile
+  struct ManagerFixtureFile : public ManagerFixture<ManagerImplementation>
   {
-    ManagerFixtureFile():
-      cutoff{1.}, filename{"simple_cubic_9.json"}
+    ManagerFixtureFile() :
+      ManagerFixture<ManagerImplementation> {}, // initialize manager variable
+      cutoff{1.}, filename{"simple_cubic_9.json"} // initialize current fixture
     {
-      manager.update(filename);
+      this->manager.update(filename);
     }
 
     ~ManagerFixtureFile()  {}
 
+    // additional variables for present fixture
     double cutoff;
     std::string filename{};
-    ManagerImplementation manager{};
   };
 
   /* ---------------------------------------------------------------------- */
-  template<class ManagerImplementation>
-  struct ManagerNeighbourListFixture
-    : public ManagerFixture<ManagerImplementation> {
-    using Manager_t = ManagerImplementation;
-
-    static_assert(ManagerImplementation::traits::MaxOrder == 1,
-                  "Lowest layer manager has MaxOrder != 1");
-
-    ManagerNeighbourListFixture()
-      : ManagerFixture<ManagerImplementation>{}, pair_manager{this->manager, 3.}
+  /**
+   * Fixture which provides two managers ``manager_1`` and ``manager_2``, which
+   * both have a hexagonal lattice, but with different unit cells (vectors) with
+   * two atoms. It is used to ensure that the neighbour list algorithm is robust
+   * with respect to the unit cell.
+   */
+  struct ManagerFixtureTwoHcp
+    : public ManagerFixtureTwo<StructureManagerCenters>
+  {
+    ManagerFixtureTwoHcp():
+      ManagerFixtureTwo<StructureManagerCenters> {},
+      pbc{{true,true,true}}, cell_1(3,3), cell_2(3,3),
+      positions_1(3, 2), positions_2(3, 2),
+      atom_types(2), cutoff{0.7}
     {
-      this->pair_manager.update();
+      /*
+       * hcp crystal with lattice parameter a = 1, c = sqrt(8/3), defined in two
+       * unit cells: basal and prismatic 1. The neighbourlist is built with the
+       * same cutoff. The test checks, if all atoms have the same number of
+       * neighbours.
+       */
+      auto a{1.};
+      auto c{std::sqrt(8./3.)};
+
+      cell_1 <<
+        a,  -0.5*a ,            0.,
+        0., std::sqrt(3.)/2.*a, 0.,
+        0.,  0.,                c;
+
+      cell_2 <<
+        a,   0.,         0.5*a,
+        0.,  c,             0.,
+        0.,  0.,  std::sqrt(3.)/2.*a;
+
+      auto p_1 =
+        2./3. * cell_1.col(0)
+        + 1./3. * cell_1.col(1)
+        + 1./2. * cell_1.col(2);
+
+      positions_1 <<
+        0.0, p_1[0],
+        0.0, p_1[1],
+        0.0, p_1[2];
+
+      auto p_2 =
+        -1./3. * cell_2.col(0)
+        + 1./2. * cell_2.col(1)
+        + 2./3. * cell_2.col(2);
+
+      positions_2 <<
+        0.0, p_2[0],
+        0.0, p_2[1],
+        0.0, p_2[2];
+
+      atom_types << 1, 1;
+
+      manager_1.update(positions_1, atom_types, cell_1,
+                       Eigen::Map<Eigen::Matrix<int, 3, 1>>
+                       {pbc.data()});
+
+      manager_2.update(positions_2, atom_types, cell_2,
+                       Eigen::Map<Eigen::Matrix<int, 3, 1>>
+                       {pbc.data()});
     }
 
-    AdaptorNeighbourList<ManagerImplementation> pair_manager;
-  };
+    ~ManagerFixtureTwoHcp() {}
 
-  /* ---------------------------------------------------------------------- */
-  template<class ManagerImplementation>
-  struct ManagerFixtureSimple
-  {
-    ManagerFixtureSimple():
-      pbc{{true,true,true}}, cutoff{1.}, center_ids(natoms),
-      cell(dim, dim), positions(dim, natoms), atom_types(natoms)
-    {}
-
-    ~ManagerFixtureSimple() {}
-
-    ManagerImplementation manager{};
-    std::array<bool, 3> pbc;
-    double cutoff;
-    Eigen::VectorXi center_ids;
-    Eigen::MatrixXd cell;
-    Eigen::MatrixXd positions;
-    Eigen::VectorXi atom_types;
-    int natoms;
-    int dim;
-  };
-
-  /* ---------------------------------------------------------------------- */
-  template<class ManagerImplementation>
-  struct ManagerFixtureNeighbourCheckHcp
-  {
-    ManagerFixtureNeighbourCheckHcp():
-      pbc{{true,true,true}}, cutoff{1.}, center_ids(natoms),
-      cell_1(dim, dim), cell_2(dim, dim),
-      positions_1(dim, natoms), positions_2(dim, natoms), atom_types(natoms)
-    {}
-
-    ~ManagerFixtureNeighbourCheckHcp() {}
-
-    ManagerImplementation manager_1{};
-    ManagerImplementation manager_2{};
-    std::array<bool, 3> pbc;
-    double cutoff;
-    Eigen::VectorXi center_ids;
+    std::array<int, 3> pbc;
     Eigen::MatrixXd cell_1;
     Eigen::MatrixXd cell_2;
     Eigen::MatrixXd positions_1;
     Eigen::MatrixXd positions_2;
+    // same number of atoms, therefore only one necessary
     Eigen::VectorXi atom_types;
-    int natoms;
-    int dim;
+
+    double cutoff;
+
+    const int natoms{2};
   };
 
   /* ---------------------------------------------------------------------- */
-  template<class ManagerImplementation>
-  struct ManagerFixtureNeighbourCheckFcc
+  /**
+   * Fixture which provides two managers ``manager_1`` and ``manager_2``, which
+   * both have a face centered cubic lattice, but with different unit cells
+   * (vectors) with one and four atoms. It is another test to ensure that the
+   * neighbour list algorithm is robust with respect to the unit cell.
+   */
+  struct ManagerFixtureTwoFcc
+    : public ManagerFixtureTwo<StructureManagerCenters>
   {
-    ManagerFixtureNeighbourCheckFcc():
-      pbc{{true,true,true}}, cutoff{1.},
-      center_ids_1(natoms_1), center_ids_2(natoms_2),
-      cell_1(dim, dim), cell_2(dim, dim),
-      positions_1(dim, natoms_1), positions_2(dim, natoms_1),
-      atom_types_1(natoms_2), atom_types_2(natoms_2)
-    {}
+    ManagerFixtureTwoFcc():
+      ManagerFixtureTwo<StructureManagerCenters> {},
+      pbc{{true, true, true}}, cell_1(3, 3), cell_2(3, 3),
+      positions_1(3, 1), positions_2(3, 4),
+      atom_types_1(1), atom_types_2(4),
+      cutoff{0.7}, // starting with zero neighbours
+      natoms_1{1}, natoms_2{4}
+    {
+      /*
+       * fcc unit cells: first cell consists of only one atom, which is
+       * repeated, second cell is the conventional 4 atoms. This test checks, if
+       * the found number of neighbours with increasing cutoff is the same for
+       * the atom at position (0, 0, 0).
+       */
+      auto a{1.};
 
-    ~ManagerFixtureNeighbourCheckFcc() {}
+      cell_1 <<
+        a,  0.5*a, 0.5*a,
+        0., 0.5*a, 0.   ,
+        0., 0.,    0.5*a;
 
-    ManagerImplementation manager_1{};
-    ManagerImplementation manager_2{};
-    std::array<bool, 3> pbc;
-    double cutoff;
-    Eigen::VectorXi center_ids_1;
-    Eigen::VectorXi center_ids_2;
+      cell_2 <<
+        a,   0., 0.,
+        0.,  a,  0.,
+        0.,  0., a ;
+
+      positions_1 <<
+        0.,
+        0.,
+        0.;
+
+      auto p_2 = 0.5 * cell_2.col(0) + 0.5 * cell_2.col(1);
+      auto p_3 = 0.5 * cell_2.col(0) + 0.5 * cell_2.col(2);
+      auto p_4 = 0.5 * cell_2.col(1) + 0.5 * cell_2.col(2);
+
+      positions_2 <<
+        0.0, p_2[0], p_3[0], p_4[0],
+        0.0, p_2[1], p_3[1], p_4[1],
+        0.0, p_2[2], p_3[2], p_4[2];
+
+      atom_types_1 << 1;
+      atom_types_2 << 1, 1, 1, 1;
+
+      manager_1.update(positions_1, atom_types_1, cell_1,
+                       Eigen::Map<Eigen::Matrix<int, 3, 1>>
+                       {pbc.data()});
+
+      manager_2.update(positions_2, atom_types_1, cell_2,
+                       Eigen::Map<Eigen::Matrix<int, 3, 1>>
+                       {pbc.data()});
+    }
+
+    ~ManagerFixtureTwoFcc() {}
+
+
+    std::array<int, 3> pbc;
     Eigen::MatrixXd cell_1;
     Eigen::MatrixXd cell_2;
     Eigen::MatrixXd positions_1;
     Eigen::MatrixXd positions_2;
     Eigen::VectorXi atom_types_1;
     Eigen::VectorXi atom_types_2;
-    int natoms_1;
-    int natoms_2;
-    int dim;
+
+    double cutoff;
+
+    const int natoms_1;
+    const int natoms_2;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -296,10 +382,12 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   /**
    * fixture for providing a neighbour list from a simple manager, which is read
-   * from a JSON file
+   * from a JSON file. This fixture provides iteration over the variable
+   * ``pair_manager``
    */
   template<class ManagerImplementation>
-  struct PairFixtureFile : public ManagerFixtureFile<ManagerImplementation> {
+  struct PairFixtureFile : public ManagerFixtureFile<ManagerImplementation>
+  {
     using Manager_t = ManagerImplementation;
 
     static_assert(ManagerImplementation::traits::MaxOrder == 1,
@@ -322,7 +410,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   /**
    * fixture for providing a neighbour list from a manager which is built with
-   * positions in its fixture
+   * positions in its fixture. this fixture provides iteration over the variable
+   * ``pair_manager``.
    */
   template<class ManagerImplementation>
   struct PairFixture : public ManagerFixture<ManagerImplementation> {
@@ -347,173 +436,16 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Comparison of two cells to check if the zeroth level the AdaptorMaxOrder
-   * (building the neighbourlist) works properly
-   */
-  template<>
-  struct ManagerFixtureNeighbourCheckHcp<StructureManagerCenters>
-  {
-    using Manager_t = StructureManagerCenters;
-
-    ManagerFixtureNeighbourCheckHcp():
-      pbc{{true, true, true}}, cell_1(3, 3), cell_2(3, 3),
-      positions_1(3, 2), positions_2(3, 2), numbers(2), cutoff{0.7}
-    {
-      /*
-       * hcp crystal with lattice parameter a = 1, c = sqrt(8/3), defined in two
-       * unit cells: basal and prismatic 1. The neighbourlist is built with the
-       * same cutoff. The test checks, if all atoms have the same number of
-       * neighbours.
-       */
-      auto a{1.};
-      auto c{std::sqrt(8./3.)};
-
-      cell_1 <<
-        a,  -0.5*a ,            0.,
-        0., std::sqrt(3.)/2.*a, 0.,
-        0.,  0.,                c;
-
-      cell_2 <<
-        a,   0.,         0.5*a,
-        0.,  c,             0.,
-        0.,  0.,  std::sqrt(3.)/2.*a;
-
-      auto p_1 = 2./3. * cell_1.col(0)
-        + 1./3. * cell_1.col(1)
-        + 1./2. * cell_1.col(2);
-
-      positions_1 <<
-        0.0, p_1[0],
-        0.0, p_1[1],
-        0.0, p_1[2];
-
-      auto p_2 = -1./3. * cell_2.col(0)
-        + 1./2. * cell_2.col(1)
-        + 2./3. * cell_2.col(2);
-
-      positions_2 <<
-        0.0, p_2[0],
-        0.0, p_2[1],
-        0.0, p_2[2];
-
-      numbers << 1, 1;
-
-      manager_1.update(positions_1, numbers, cell_1,
-                       Eigen::Map<Eigen::Matrix<int, 3, 1>>
-                       {pbc.data()});
-
-      manager_2.update(positions_2, numbers, cell_2,
-                       Eigen::Map<Eigen::Matrix<int, 3, 1>>
-                       {pbc.data()});
-    }
-    Manager_t manager_1{};
-    Manager_t manager_2{};
-    std::array<int, 3> pbc;
-    Eigen::MatrixXd cell_1;
-    Eigen::MatrixXd cell_2;
-    Eigen::MatrixXd positions_1;
-    Eigen::MatrixXd positions_2;
-    Eigen::VectorXi numbers;
-
-    double cutoff;
-
-    const int natoms{2};
-
-  };
-
-  /* ---------------------------------------------------------------------- */
-  /**
-   * Comparison of two fcc cells to check if the zeroth level the AdaptorMaxOrder
-   * (building the neighbourlist) works properly
-   */
-  template<>
-  struct ManagerFixtureNeighbourCheckFcc<StructureManagerCenters>
-  {
-    using Manager_t = StructureManagerCenters;
-
-    ManagerFixtureNeighbourCheckFcc():
-      pbc{{true, true, true}},
-      cell_1(3, 3), cell_2(3, 3),
-      positions_1(3, 1), positions_2(3, 4),
-      numbers_1(1), numbers_2(4),
-      cutoff{0.7}, // start with zero neighbours
-      natoms_1{1}, natoms_2{4}
-    {
-      /*
-       * fcc unit cells: first cell consists of only one atom, which is
-       * repeated, second cell is the conventional 4 atoms. This test checks, if
-       * the found number of neighbours with increasing cutoff is the same for
-       * the atom at position (0, 0, 0).
-       */
-      auto a{1.};
-
-      cell_1 <<
-        a,  0.5*a, 0.5*a,
-        0., 0.5*a, 0.   ,
-        0., 0.,    0.5*a;
-
-      cell_2 <<
-        a,   0., 0.,
-        0.,  a,  0.,
-        0.,  0., a ;
-
-      positions_1 <<
-        0.,
-        0.,
-        0.;
-
-      auto p_2 = 0.5 * cell_2.col(0) + 0.5 * cell_2.col(1);
-      auto p_3 = 0.5 * cell_2.col(0) + 0.5 * cell_2.col(2);
-      auto p_4 = 0.5 * cell_2.col(1) + 0.5 * cell_2.col(2);
-
-      positions_2 <<
-        0.0, p_2[0], p_3[0], p_4[0],
-        0.0, p_2[1], p_3[1], p_4[1],
-        0.0, p_2[2], p_3[2], p_4[2];
-
-      numbers_1 << 1;
-      numbers_2 << 1, 1, 1, 1;
-
-      manager_1.update(positions_1, numbers_1, cell_1,
-                       Eigen::Map<Eigen::Matrix<int, 3, 1>>
-                       {pbc.data()});
-
-      manager_2.update(positions_2, numbers_1, cell_2,
-                       Eigen::Map<Eigen::Matrix<int, 3, 1>>
-                       {pbc.data()});
-    }
-    Manager_t manager_1{};
-    Manager_t manager_2{};
-    std::array<int, 3> pbc;
-    Eigen::MatrixXd cell_1;
-    Eigen::MatrixXd cell_2;
-    Eigen::MatrixXd positions_1;
-    Eigen::MatrixXd positions_2;
-    Eigen::VectorXi numbers_1;
-    Eigen::VectorXi numbers_2;
-
-    double cutoff;
-
-    const int natoms_1{1};
-    const int natoms_2{4};
-
-  };
-
-  /* ---------------------------------------------------------------------- */
-  /**
-   * A simple manager using ManagerCenters to check the neighbourlist algorithm
+   * A simple fixture using ManagerCenters to check the neighbourlist algorithm
    * with simple positions and a periodicity only in x-direction.
    *
    */
-  template<>
-  struct ManagerFixtureSimple<StructureManagerCenters>
+  struct ManagerFixtureSimple : public ManagerFixture<StructureManagerCenters>
   {
-
-    using Manager_t = StructureManagerCenters;
-
-    ManagerFixtureSimple():
-      pbc{{true, false, false}}, cell(3, 3), positions(3, 8), numbers(8),
-      cutoff{2.1}
+    ManagerFixtureSimple() :
+      ManagerFixture<StructureManagerCenters> {},
+      pbc{{true, false, false}}, cell(3, 3), positions(3, 8), atom_types(8),
+      cutoff{2.1}, natoms{8}
     {
       cell <<
         2., 0., 0.,
@@ -525,23 +457,62 @@ namespace rascal {
         0.4, 0.4, 1.4, 1.4, 0.4, 0.4, 1.4, 1.4,
         0.4, 0.4, 0.4, 0.4, 1.4, 1.4, 1.4, 1.4;
 
-      numbers << 1, 1, 1, 1, 1, 1, 1, 1;
+      atom_types << 1, 1, 1, 1, 1, 1, 1, 1;
 
-      manager.update(positions, numbers, cell,
-                     Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
+      this->manager.update(positions, atom_types, cell,
+                           Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
     }
 
     ~ManagerFixtureSimple() {}
 
-    Manager_t manager{};
     std::array<int, 3> pbc;
     Eigen::MatrixXd cell;
     Eigen::MatrixXd positions;
-    Eigen::VectorXi numbers;
+    Eigen::VectorXi atom_types;
 
     double cutoff;
 
-    const int natoms{8};
+    const int natoms;
+  };
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * A fixture to check the neighbourlist algorithm with increasing skewedness
+   * of the cell as well as a shift of the positions. The manager is built and
+   * constructed inside the loop in the test: it skews the cells, therefore it
+   * is not templated. The initial cutoff here is chosen to be smaller than the
+   * atomic distance in this case to ensure to start with zero neighbours.
+   */
+  struct ManagerFixtureSkew
+  {
+
+    ManagerFixtureSkew():
+      pbc{{true, true, false}}, cell(3, 3), positions(3, 2), atom_types(2),
+      cutoff{0.49}, natoms{2}
+    {
+      cell <<
+        1.0, 0.0, 0.0,
+        0.0, 1.0, 0.0,
+        0.0, 0.0, 0.5;
+
+      positions <<
+        0.01, 0.01,
+        0.01, 0.51,
+        0.01, 0.01;
+
+      atom_types << 1, 1;
+    }
+
+    ~ManagerFixtureSkew() {}
+
+    std::array<int, 3> pbc;
+    Eigen::MatrixXd cell;
+    Eigen::MatrixXd positions;
+    Eigen::VectorXi atom_types;
+
+    double cutoff;
+
+    const int natoms;
   };
 }  // rascal
 

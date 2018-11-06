@@ -29,7 +29,9 @@
 
 #include "tests.hh"
 #include "test_structure.hh"
+#include "test_adaptor.hh"
 #include "structure_managers/adaptor_neighbour_list.hh"
+
 
 namespace rascal {
 
@@ -38,21 +40,20 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   /*
    * very simple 9 atom neighbour list build without periodicity
+   *
+   * ``manager`` is a MaxOrder=1 atom manager
    */
   BOOST_FIXTURE_TEST_CASE(simple_cubic_9_neighbour_list,
-                          ManagerFixtureFile<StructureManagerCenters>) {
+                          PairFixtureSimple<StructureManagerCenters>) {
 
     constexpr bool verbose{false};
 
-    AdaptorNeighbourList<StructureManagerCenters> SM2{manager, cutoff};
-    SM2.update();
-
-    auto npairs = SM2.get_nb_clusters(2);
+    auto npairs = pair_manager.get_nb_clusters(2);
 
     if (verbose) std::cout << "npairs " << npairs << std::endl;
 
     int np{0};
-    for (auto atom : SM2) {
+    for (auto atom : pair_manager) {
       for (auto pair : atom) {
         np++;
       }
@@ -62,40 +63,32 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   //! test if hcp managers are constructed
-  BOOST_FIXTURE_TEST_CASE(constructor_test_hcp,
-                          ManagerFixtureNeighbourCheckHcp
-                          <StructureManagerCenters>) {
+  BOOST_FIXTURE_TEST_CASE(constructor_test_hcp, ManagerFixtureTwoHcp) {
   }
 
   /* ---------------------------------------------------------------------- */
   //! test if fcc managers are constructed
-  BOOST_FIXTURE_TEST_CASE(constructor_test_fcc,
-                          ManagerFixtureNeighbourCheckFcc
-                          <StructureManagerCenters>) {
+  BOOST_FIXTURE_TEST_CASE(constructor_test_fcc, ManagerFixtureTwoFcc) {
   }
 
   /* ---------------------------------------------------------------------- */
   /**
    * simple neighbourhood test with periodicity only in x-direction and a check
    * for internal consistency
+   *
+   * ``manager`` is a StructureManager with MaxOrder=1
    */
-  BOOST_FIXTURE_TEST_CASE(test_build_neighbour_list_from_atoms,
-                          ManagerFixtureSimple<StructureManagerCenters>){
+  BOOST_FIXTURE_TEST_CASE(test_build_neighbour_simple,
+                          PairFixtureSimple<StructureManagerCenters>) {
 
     constexpr bool verbose{false};
 
-    if (verbose) std::cout << "===> zeroth order manager " << std::endl;
     //! testing iteration of zerot-th order manager
     for (auto atom : manager) {
       if (verbose) {
         std::cout << "atom " << atom.back() << std::endl;
       }
     }
-
-    if (verbose) std::cout << "<== zeroth order manager " << std::endl;
-
-    AdaptorNeighbourList<StructureManagerCenters> pair_manager{manager, cutoff};
-    pair_manager.update();
 
     auto n_pairs{0};
     for (auto atom : pair_manager) {
@@ -117,10 +110,11 @@ namespace rascal {
   /*
    * test if two differently defined 2-atom units cells of hcp crystal structure
    * yield the same number of neighbours per atom, if the cutoff is increased.
+   *
+   * ``manager_1`` and ``manager_2`` each hold a different unit cell for a hcp
+   * crystal system.
    */
-  BOOST_FIXTURE_TEST_CASE(neighbourlist_test_hcp,
-                          ManagerFixtureNeighbourCheckHcp
-                          <StructureManagerCenters>) {
+  BOOST_FIXTURE_TEST_CASE(neighbourlist_test_hcp, ManagerFixtureTwoHcp) {
 
     /*
      * Note: since the cell vectors are different, it is possible that one of
@@ -214,10 +208,11 @@ namespace rascal {
    * origin, if the cutoff is increased. ``manager_1`` has one atom at the
    * origin,``manager_2`` has 4 atoms (tetraeder). This is done to check if
    * skewed-ness affects the neighbour list algorithm.
+   *
+   * ``manager_1`` and ``manager_2`` each hold a different unit cell for a fcc
+   * crystal system.
    */
-  BOOST_FIXTURE_TEST_CASE(neighbourlist_test_fcc,
-                          ManagerFixtureNeighbourCheckFcc
-                          <StructureManagerCenters>) {
+  BOOST_FIXTURE_TEST_CASE(neighbourlist_test_fcc, ManagerFixtureTwoFcc) {
 
     constexpr bool verbose{false};
 
@@ -299,7 +294,139 @@ namespace rascal {
     }
   }
 
-  // TODO: add test for different skewedness of an originally rectangular box
+  /* ---------------------------------------------------------------------- */
+  /*
+   * Test if an increasingly skewed unit cell gives the same number of
+   * neighbours than the non-skewed one. Skewing is achieved by the
+   * multiplier.
+   *
+   * The fixture does not provide a manager. Instead, it provies basic cubic
+   * unit cell, positions and the shear transformation ``skew_multiplier`` for
+   * the unit cell. This is used in the loop to construct increasingly skewed
+   * unit cells; positions are shifted accordingly to stay inside the new unit
+   * cell.
+   */
+  BOOST_FIXTURE_TEST_CASE(test_neighbour_list_skewed, ManagerFixtureSkew) {
+
+    constexpr static bool verbose{false};
+
+    constexpr static int ncells{4};
+
+    // helper for increasing skewedness of unit cell in loop entry (0,1) gives
+    // the skewing factor in the x/y plane in the loop building the cells
+    Eigen::MatrixXd unity{Eigen::MatrixXd::Identity(3, 3)};
+    std::array<double, ncells> shears{0, 1, 10, 50};
+
+    // multipliers for different cutoffs: original cutoff is barely below
+    // minimum atom distance, leading to zero neighbours
+    std::array<int, 3> n_cutoff{1, 5, 25};
+
+    // loop over 3 different cutoffs
+    for (int k{0}; k < 3; ++k) {
+      // container for storing the number of neighbours per atom in all cells
+      std::vector<std::vector<int>> neighbours{};
+      neighbours.resize(ncells);
+
+      // loop over cells of different skews
+      for (int i{0}; i < ncells; ++i) {
+
+        // check different cutoffs
+        //double cutoff_tmp{cutoff*n_cutoff[k]};
+        double cutoff_tmp{cutoff*n_cutoff[k]};
+
+        // manager constructed within this loop
+        StructureManagerCenters manager;
+
+        if (verbose) std::cout << "------------ cells " << i
+                             << " shear " << shears[i] << std::endl;
+
+        // get reference data
+        auto skewer{unity};
+        // change shear multiplier
+        skewer(0,1) = shears[i];
+        // calculate unit cell
+        auto cell_skw = skewer * cell;
+        auto cell_skw_inv{cell_skw.inverse().eval()};
+
+        if (verbose) {
+          std::cout << "cell vectors " << std::endl;
+          std::cout << cell_skw << std::endl;
+        }
+
+        // change initial atomic positions according to skewedness
+        auto pos_skw{positions};
+        for (int j{0}; j < natoms; ++j) {
+          auto p = pos_skw.col(j);
+          if (verbose) {
+            std::cout << " >>>>>>> original position atom " << j << "\n"
+                      << p.transpose() << std::endl;
+          }
+          // find minimal multiplier to project position out of cubic unit cell
+          auto mult{(cell_skw_inv * p).eval()};
+          auto mult_floor{mult};
+          for (auto m{0}; m < 3; ++m) {mult_floor[m] = std::floor(mult[m]);}
+          auto m{mult_floor.cwiseAbs().eval()};
+
+          if (verbose) {
+            std::cout << " mult \n" << mult.transpose() << std::endl;
+            std::cout << "  mult_floor \n" << m.transpose() << std::endl;
+            std::cout << "  skewed position  <<<<<<<\n" << p.transpose()
+                      << std::endl;
+          }
+          // set new position
+          pos_skw.col(j) = p + cell_skw * m;
+        }
+
+        if (verbose) {
+          std::cout << "positions skewed \n" << pos_skw << std::endl;
+        }
+
+        // construct manager with skewed unit cell and shifted positions
+        manager.update(pos_skw, atom_types, cell_skw,
+                     Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
+
+        // build neighbourlist
+        using PairList_t = AdaptorNeighbourList<StructureManagerCenters>;
+        PairList_t pair_manager{manager, cutoff_tmp};
+        pair_manager.update();
+
+        // make strict for counting neighbours
+        AdaptorStrict<PairList_t> adaptor_strict{pair_manager, cutoff_tmp};
+        adaptor_strict.update();
+
+        // count strict neighbours
+        for (auto atom : adaptor_strict) {
+          neighbours[i].push_back(0);
+          for (auto pair : atom) {
+            neighbours[i].back()++;
+          }
+        }
+
+        // neighbours[i] are the skewed unit cells with adapted positions,
+        // neighbours [0] is the unskewed reference cell.
+        BOOST_CHECK_EQUAL_COLLECTIONS(neighbours[i].begin(),
+                                      neighbours[i].end(),
+                                      // expected values from unskewed cell
+                                      neighbours[0].begin(),
+                                      neighbours[0].end());
+      }
+      if (verbose) {
+        std::cout << "===== Neighbour list result =====" << std::endl;
+        std::cout << "neighbours cell 0" << std::endl;
+        for (auto neigh_per_atom : neighbours[0]) {
+          std::cout << neigh_per_atom << " ";
+        }
+        std::cout << std::endl;
+        for (auto i{1}; i < ncells; ++i) {
+          std::cout << "neighbours cell " << i << std::endl;
+          for (auto neigh_per_atom : neighbours[i]) {
+            std::cout << neigh_per_atom << " ";
+          }
+          std::cout << std::endl;
+        }
+      }
+    }
+  }
 
   BOOST_AUTO_TEST_SUITE_END();
 

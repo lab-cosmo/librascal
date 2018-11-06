@@ -582,14 +582,14 @@ namespace rascal {
       }
     }
 
+    // TODO: there might be a mismatch between name and functionality
+    // more details needed
     //! Returns the number of neighbors of a given cluster
     template<size_t Order, size_t Layer>
     inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
                                    & cluster) const {
-
       static_assert(Order <= traits::MaxOrder,
-                    "this implementation handles only the respective MaxOrder");
-
+                  "this implementation handles only the respective MaxOrder");
       auto access_index = cluster.get_cluster_index(Layer);
       return nb_neigh[access_index];
     }
@@ -618,14 +618,6 @@ namespace rascal {
     //! Extends the list containing the number of neighbours with a 0
     inline void add_entry_number_of_neighbours() {
       this->nb_neigh.push_back(0);
-    }
-
-    //! Adds a given atom index as new cluster neighbour
-    inline void add_neighbour_of_cluster(const int atom_index) {
-      //! adds `atom_index` to neighbours
-      this->neighbours.push_back(atom_index);
-      //! increases the number of neighbours
-      this->nb_neigh.back()++;
     }
 
     //! Sets the correct offsets for accessing neighbours
@@ -752,7 +744,8 @@ namespace rascal {
     Vector_t mesh_max{Vector_t::Zero()};
 
     // max and min multipliers for number of cells in mesh per dimension in
-    // units of cell vectors
+    // units of cell vectors to be filled from max/min mesh positions and used
+    // to construct ghost positions
     std::array<int, dim> m_min{};
     std::array<int, dim> m_max{};
 
@@ -793,15 +786,17 @@ namespace rascal {
       xpos.col(n) = Eigen::Map<Eigen::Matrix<double, dim, 1>> (coord.data());
       n++;
     }
-    // solve for all multipliers
-    auto multiplicator{cell.ldlt().solve(xpos).eval()};
+
+    // solve inverse problem for all multipliers
+    auto cell_inv{cell.inverse().eval()};
+    auto multiplicator{cell_inv*xpos.eval()};
     auto xmin = multiplicator.rowwise().minCoeff();
     auto xmax = multiplicator.rowwise().maxCoeff();
 
+    // find max and min multipliers for cell vectors
     for (auto i{0}; i < dim; ++i) {
-      // +/- 1 because of the "zero" cell, the cell itself
-      m_min[i] = std::floor(xmin(i)) - 1;
-      m_max[i] = std::ceil(xmax(i)) + 1;
+      m_min[i] = std::floor(xmin(i));
+      m_max[i] = std::ceil(xmax(i));
     }
 
     // TODO possible future optimization for cells large triclinicity: use
@@ -838,10 +833,9 @@ namespace rascal {
 
         int ncheck{0};
         for (auto i{0}; i < dim; ++i) ncheck += std::abs(p_image[i]);
-
         // exclude cell itself
         if(ncheck > 0) {
-          Vector_t pos_ghost = pos;
+          Vector_t pos_ghost{pos};
 
           for (auto i{0}; i < dim; ++i) {
             pos_ghost += cell.col(i) * p_image[i];
