@@ -30,7 +30,8 @@
 #ifndef STRUCTURE_MANAGER_CENTERS_H
 #define STRUCTURE_MANAGER_CENTERS_H
 
-// inclusion of librascal data structure
+// inclusion of librascal data structure, each manager is based on the interface
+// given in `structure_manager.hh`
 #include "structure_managers/structure_manager.hh"
 #include "lattice.hh"
 #include "atomic_structure.hh"
@@ -112,7 +113,7 @@ namespace rascal {
     using Positions_t = AtomicStructure<traits::Dim>::Positions_t;
     using Positions_ref = AtomicStructure<traits::Dim>::Positions_ref;
 
-    /*
+    /**
      * Here, the types for internal data structures are defined, based on
      * standard types.  In general, we try to use as many standard types, where
      * possible. It reduces the dependance on external libraries. If you want to
@@ -121,9 +122,7 @@ namespace rascal {
      * arrays of the internally saved data. It should be straight forward to
      * even include native <code>Eigen</code> types, since the compilation
      * checks for the library by default.
-     */
-
-    /**
+     *
      * A ClusterRef_t is a return type for iterators. It gives a light-weight
      * reference to an atom, a pair, a triplet,... to the AtomRefs of all
      * implicated atoms.  The template parameters Order and MaxOrder give the
@@ -156,9 +155,9 @@ namespace rascal {
     operator=(StructureManagerCenters && other) = default;
 
     /**
-     * invokes the reinitialisation based on existing data. E.g. when the
-     * atom positions are provided by a simulation method, which evolves in
-     * time, this function updates the data.
+     * invokes the initialisation/reinitialisation based on existing
+     * data. E.g. when the atom positions are provided by a simulation method,
+     * which evolves in time, this function updates the data.
      */
     void update(const Eigen::Ref<const Eigen::MatrixXd,
                 0, Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>> positions,
@@ -167,8 +166,8 @@ namespace rascal {
                 const Eigen::Ref<const PBC_t> pbc);
 
     /**
-     * invokes an update from a file, which holds a structure in the format of
-     * the ASE atoms object
+     * Overload of the update function invokes an update from a file, which
+     * holds a structure in the format of the ASE atoms object
      */
     void update(const std::string filename);
 

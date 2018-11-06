@@ -25,7 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <structure_managers/structure_manager_chain.hh>
+#include <structure_managers/structure_manager_centers.hh>
+#include <structure_managers/adaptor_neighbour_list.hh>
 #include <structure_managers/property.hh>
 
 #include "json.hpp"
@@ -33,7 +34,8 @@
 #include <iostream>
 #include <vector>
 
-using Manager_t = rascal::StructureManagerChain;
+using Manager_t = rascal::StructureManagerCenters;
+using PairManager_t = rascal::AdaptorNeighbourList<Manager_t>;
 
 int main() {
 
@@ -54,21 +56,23 @@ int main() {
   double cutoff{1.0};
 
   // read atomic structure from the JSON file
-  manager.read_structure_from_json("alanine-X.json");
-  manager.update(cutoff);
+  // manager.read_structure_from_json("alanine-X.json");
+  manager.update("alanine-X.json");
 
-  // Get the positions to work with. The return type is an
-  // <code>Eigen::Map</code> to the underlying array. This means, that
-  // all the <code>Eigen</code> magic works on the structure, e.g. dot
-  // and cross products or norms.
-  auto positions = manager.get_positions();
+  PairManager_t pair_manager{manager, cutoff};
+  pair_manager.update();
 
   // Loop over the defined quadruplets and calculate the respective
   // angles with atan2 and cosine definition.
   for (auto q : quadruplets) {
-    auto b1 = positions.col(q[1]) - positions.col(q[0]);
-    auto b2 = positions.col(q[1]) - positions.col(q[2]);
-    auto b3 = positions.col(q[3]) - positions.col(q[2]);
+    auto pos0 = pair_manager.get_position(q[0]);
+    auto pos1 = pair_manager.get_position(q[1]);
+    auto pos2 = pair_manager.get_position(q[2]);
+    auto pos3 = pair_manager.get_position(q[3]);
+
+    auto b1 = pos1 - pos0;
+    auto b2 = pos1 - pos2;
+    auto b3 = pos3 - pos2;
 
     auto na = b1.cross(b2);
     auto nb = b2.cross(b3);
@@ -85,7 +89,7 @@ int main() {
               << std::endl;
   }
 
-  std::cout << "Dihedral angles in alanine unit \n";
+  std::cout << "Dihedral angles in alanine data\n";
   for (auto a : dihedral_angles) {
     std::cout << a << " ";
   }
