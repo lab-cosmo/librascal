@@ -591,7 +591,6 @@ namespace rascal {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
 
-      // TODO: what happens for cluster order 1?
       auto access_index = cluster.get_cluster_index(Layer);
       return nb_neigh[access_index];
     }
