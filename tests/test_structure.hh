@@ -498,8 +498,9 @@ namespace rascal {
   /**
    * A fixture to check the neighbourlist algorithm with increasing skewedness
    * of the cell as well as a shift of the positions. The manager is built and
-   * constructed inside the loop which skews the cells in the actual test,
-   * therefore it is not templated.
+   * constructed inside the loop in the test: it skews the cells, therefore it
+   * is not templated. The initial cutoff here is chosen to be smaller than the
+   * atomic distance in this case to ensure to start with zero neighbours.
    */
   struct ManagerFixtureSkew
   {
