@@ -737,8 +737,6 @@ namespace rascal {
     auto cell{this->manager.get_cell()};
     double cutoff{this->cutoff};
 
-    auto positions{this->manager.get_positions()};
-
     std::array<int, dim> nboxes_per_dim{};
 
     // vector for storing the atom indices of each box
@@ -844,9 +842,9 @@ namespace rascal {
         if(ncheck > 0) {
           Vector_t pos_ghost{pos};
 
-          pos_ghost += cell.col(0) * p_image[0]
-            + cell.col(1) * p_image[1]
-            + cell.col(2) * p_image[2];
+          for (auto i{0}; i < dim; ++i) {
+            pos_ghost += cell.col(i) * p_image[i];
+          }
 
           auto flag_inside =
             internal::position_in_bounds(mesh_min, mesh_max, pos_ghost);
