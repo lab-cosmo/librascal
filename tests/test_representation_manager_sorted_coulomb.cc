@@ -142,6 +142,12 @@ namespace rascal {
     representation.compute();
 
     auto rep = representation.get_representation_full();
+
+    for (auto center : strict_nl){
+        auto cm = representation.get_coulomb_matrix(center);
+
+    }
+
     if (verbose){
         std::cout << rep.size() <<", "<< rep.cols() <<", "<< rep.rows()<< std::endl;
         for (auto ii{0}; ii < rep.cols(); ++ii){

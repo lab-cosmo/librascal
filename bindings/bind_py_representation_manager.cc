@@ -64,5 +64,7 @@ void add_representation_managers(py::module & mod,py::module & m_garbage){
   representation.def("get_representation_full", 
          &Representation_t::get_representation_full,
          py::return_value_policy::reference_internal,py::keep_alive<1,0>());
-        
+  representation.def("get_coulomb_matrix",
+          &Representation_t::get_coulomb_matrix<1,1>,
+          py::return_value_policy::reference_internal,py::keep_alive<1,0>());
 };
