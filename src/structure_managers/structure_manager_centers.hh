@@ -6,7 +6,8 @@
  *
  * @date   06 August 2018
  *
- * @brief Manager with atoms and centers
+ * @brief basic manager implementation with atoms and centers with ability to
+ *        read from json file and be constructed from existing data
  *
  * Copyright © 2018 Felix Musil, Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -29,11 +30,12 @@
 #ifndef STRUCTURE_MANAGER_CENTERS_H
 #define STRUCTURE_MANAGER_CENTERS_H
 
-// inclusion of our librascal data structure
+// inclusion of librascal data structure
 #include "structure_managers/structure_manager.hh"
 #include "lattice.hh"
 #include "atomic_structure.hh"
 #include "basic_types.hh"
+#include "json_io.hh"
 
 // data types and operations are based on the Eigen library
 #include <Eigen/Dense>
@@ -89,25 +91,26 @@ namespace rascal {
     using Vector_ref = typename Parent::Vector_ref;
     using AtomRef_t = typename Parent::AtomRef;
 
-    /*
+    /**
      * Eigen::Map is a convenient way to access data in the 'Eigen-way', if it
      * is already stored in a contiguous array.  The positions of the JSON file
      * and the cell vectors are put into contiguous arrays, which are member
      * variables of this class. Access is provided via the Eigen::Maps
      *
-     * The following types are defined to access the data. Since they cost
-     * almost nothing to build, they are created on the fly via e.g. the
-     * .get_positions() member function, if needed. Access to the cell vectors,
-     * defined in the JSON file.
+     * The following types are defined globally in atomic_structure.hh as common
+     * return types for accessing atom and cell related data.
      */
     using Cell_t = AtomicStructure<traits::Dim>::Cell_t;
-    using Cell_ref = typename Eigen::Map<Cell_t>;
+    using Cell_ref = AtomicStructure<traits::Dim>::Cell_ref;
+
     using AtomTypes_t = AtomicStructure<traits::Dim>::AtomTypes_t;
-    using AtomTypes_ref = typename Eigen::Map<AtomTypes_t>;
+    using AtomTypes_ref = AtomicStructure<traits::Dim>::AtomTypes_ref;
+
     using PBC_t = AtomicStructure<traits::Dim>::PBC_t;
-    using PBC_ref = typename Eigen::Map<PBC_t>;
+    using PBC_ref = AtomicStructure<traits::Dim>::PBC_ref;
+
     using Positions_t = AtomicStructure<traits::Dim>::Positions_t;
-    using Positions_ref = typename Eigen::Map<Positions_t>;
+    using Positions_ref = AtomicStructure<traits::Dim>::Positions_ref;
 
     /*
      * Here, the types for internal data structures are defined, based on
@@ -153,7 +156,7 @@ namespace rascal {
     operator=(StructureManagerCenters && other) = default;
 
     /**
-     * invokes the reinitialisation and initlalization of data. E.g. when the
+     * invokes the reinitialisation based on existing data. E.g. when the
      * atom positions are provided by a simulation method, which evolves in
      * time, this function updates the data.
      */
@@ -162,6 +165,12 @@ namespace rascal {
                 const Eigen::Ref<const Eigen::VectorXi> atom_types,
                 const Eigen::Ref<const Eigen::MatrixXd> cell,
                 const Eigen::Ref<const PBC_t> pbc);
+
+    /**
+     * invokes an update from a file, which holds a structure in the format of
+     * the ASE atoms object
+     */
+    void update(const std::string filename);
 
     // TODO: build/update ambiguity
     //! makes atom index lists and offsets
@@ -186,7 +195,7 @@ namespace rascal {
 
     //! Returns an a map with all atom types.
     inline AtomTypes_ref get_atom_types() {
-      AtomTypes_ref val(this->atoms_object.atoms_type.data(),
+      AtomTypes_ref val(this->atoms_object.atom_types.data(),
                         1, this->natoms);
       return val;
     }
@@ -209,18 +218,6 @@ namespace rascal {
       auto p = this->get_positions();
       auto * xval{p.col(atom_index).data()};
       return Vector_ref(xval);
-    }
-
-    /**
-     * Returns the position of a neighbour. In case of periodic boundary
-     * conditions, the get_neighbour_position should return a different
-     * position, if it is a ghost atom. Here, it is not necessary, because no
-     * neighbours are present. Just ensuring compliance with the interface.
-     */
-    template<size_t Order, size_t Layer>
-    inline void get_neighbour_position(const ClusterRefKey<Order, Layer> & ) {
-      static_assert(Order == 1,
-                    "this implementation only handles atoms.");
     }
 
     //! returns a map to all atomic positions.
@@ -258,7 +255,7 @@ namespace rascal {
     }
 
     /**
-     * Return the linear index of cluster (i.e., the count at which 
+     * Return the linear index of cluster (i.e., the count at which
      * this cluster appears in an iteration
      */
     template<size_t Order>
@@ -267,6 +264,15 @@ namespace rascal {
 
     //! Function for returning the number of atoms
     size_t get_nb_clusters(size_t cluster_size) const;
+
+    /**
+     * Function for reading data from a JSON file in the ASE format. See the
+     * definition of <code>AtomicStructure</code> and adapt the fields, which
+     * should be read to your case.
+     */
+    void read_structure_from_json(const std::string filename);
+
+    // TODO: add function to read from XYZ files
 
   protected:
     /**
@@ -284,7 +290,7 @@ namespace rascal {
     std::array<std::vector<int>, traits::MaxOrder> atoms_index;
 
     //! Lattice type for storing the cell and querying cell-related data
-    Lattice lattice;
+    Lattice<traits::Dim> lattice;
 
     /**
      * A vector which stores the absolute offsets for each atom to access the

@@ -30,47 +30,51 @@
 
 namespace rascal {
 
-  BOOST_AUTO_TEST_SUITE(structure_managers_interface);  
-  
+  BOOST_AUTO_TEST_SUITE(structure_managers_interface);
+
   // gets a list of fixtures for all the different possible structure managers
   using fixtures = boost::mpl::list<
-                     ManagerFixture<StructureManagerCenters>, 
-                     ManagerFixture<StructureManagerLammps>,
-                     ManagerFixture<StructureManagerJson>,
-                     ManagerFixture<StructureManagerChain>
-                     >;
-  
+    ManagerFixture<StructureManagerCenters>,
+    ManagerFixture<StructureManagerLammps> >;
+
+  /* ---------------------------------------------------------------------- */
   // just checks that the structure managers can be constructed
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_constructor_test, Fix, 
-                                   fixtures, Fix) { }
-    
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_constructor_test, Fix, fixtures,
+                                   Fix) { }
+
+  /* ---------------------------------------------------------------------- */
   // the size of the manager should correspond to the number of size 1 clusters
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_size_consistency, Fix, 
-                                   fixtures, Fix) {
-    auto &manager = Fix::manager;
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_size_consistency, Fix, fixtures,
+                                   Fix) {
+    auto & manager = Fix::manager;
     BOOST_CHECK_EQUAL(manager.size(), manager.nb_clusters(1));
   }
 
+  /* ---------------------------------------------------------------------- */
   // loops over the centers in the manager making sure positions are consistent
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_atom_indexing, Fix, 
-                                   fixtures, Fix) {
-    auto &manager = Fix::manager;
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_atom_indexing, Fix, fixtures,
+                                   Fix) {
+    auto & manager = Fix::manager;
     for (auto atom : manager) {
-      auto index = atom.get_atom_index();  // checks get_atom_index exists
-      
-      auto type = atom.get_atom_type(); // checks get_atom_type exists
-      BOOST_CHECK_EQUAL(type, manager.atom_type(index)); // cluster size should be 1! 
-      
+      // checks get_atom_index exists
+      auto index = atom.get_atom_index();
+
+      // checks get_atom_type exists
+      auto type = atom.get_atom_type();
+      // cluster size should be 1!
+      BOOST_CHECK_EQUAL(type, manager.atom_type(index));
+
       // checks that multiple ways of accessing positions are equivalent
-      auto position_error = (atom.get_position() - 
-                             manager.position(index)).norm();      
+      auto position_error = (atom.get_position() -
+                             manager.position(index)).norm();
       BOOST_CHECK(position_error < tol / 100);
-      position_error = (atom.get_position() - 
-                             manager.position(atom.back())).norm();      
+
+      position_error = (atom.get_position() -
+                        manager.position(atom.back())).norm();
       BOOST_CHECK(position_error < tol / 100);
     }
   }
-  
+
   /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();
 }  // rascal

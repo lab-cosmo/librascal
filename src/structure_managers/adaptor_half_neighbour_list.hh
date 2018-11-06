@@ -83,6 +83,7 @@ namespace rascal {
     using traits = StructureManager_traits<AdaptorHalfList>;
     using parent_traits = typename ManagerImplementation::traits;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
+    using Vector_ref = typename Parent::Vector_ref;
 
     // The stacking of this Adaptor is only possible on a manager which has a
     // pair list (MaxOrder=2). This is ensured here.
@@ -164,18 +165,6 @@ namespace rascal {
       return this->manager.get_position(atom.get_index());
     }
 
-    //! return position vector of the last atom in the cluster
-    template<size_t Order, size_t Layer>
-    inline Vector_ref
-    get_neighbour_position(const ClusterRefKey<Order, Layer> & cluster) {
-
-      static_assert(Order > 1,
-                    "Only possible for Order > 1.");
-      static_assert(Order <= traits::MaxOrder,
-                    "Order too large, not available.");
-
-      return this->get_position(cluster.back());
-    }
 
     //! Returns the id of the index-th neighbour atom of a given cluster
     template<size_t Order, size_t Layer>

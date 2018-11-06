@@ -54,7 +54,7 @@
  * interface ´structure_manager.hh´
  */
 #include "structure_managers/structure_manager.hh"
-#include "structure_managers/json_io.hh"
+#include "json_io.hh"
 
 //! Some data types and operations are based on the Eigen library
 #include <Eigen/Dense>
@@ -216,7 +216,7 @@ namespace rascal {
       auto t = this->get_atom_types();
       return t(index);
     }
-   
+
     //! Returns the type of a given atom, given an AtomRef
     inline int get_atom_type(const AtomRef_t& atom) {
       auto index{atom.get_index()};
@@ -248,21 +248,6 @@ namespace rascal {
       auto p = this->get_positions();
       auto * xval{p.col(atom_index).data()};
       return Vector_ref(xval);
-    }
-
-    /**
-     * Returns the position of a neighbour. In case of periodic boundary
-     * conditions, the get_neighbour_position should return a different
-     * position, if it is a ghost atom.
-     */
-    template<size_t Order, size_t Layer>
-    inline Vector_ref get_neighbour_position(const ClusterRefKey<Order, Layer>
-                                             & cluster) {
-      static_assert(Order > 1,
-                    "Only possible for Order > 1.");
-      static_assert(Order <= traits::MaxOrder,
-                    "this implementation should only work up to MaxOrder.");
-      return this->get_position(cluster.back());
     }
 
     //! returns a map to all atomic positions.
@@ -343,7 +328,7 @@ namespace rascal {
      * 'Atoms objects'.  It is first class C++ data structure, which 'feels'
      * like JSON.
      */
-    json_io::AtomicStructure atoms_object{};
+    json_io::AtomicJsonData atoms_object{};
 
     /**
      * Since the data from the <code>atoms_object</code>, especially the

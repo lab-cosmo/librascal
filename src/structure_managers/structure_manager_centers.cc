@@ -64,13 +64,21 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  /*
-   * function for setting the internal data structures
-   */
-  void StructureManagerCenters::build() {
+  // overloading the update function to be able to update from a file
+  void StructureManagerCenters::update(const std::string filename) {
+    this->read_structure_from_json(filename);
 
-    this->atoms_object.atoms_type.resize(this->natoms);
-    //! set the references to the particles positions
+    this->natoms = this->atoms_object.positions.size() / traits::Dim;
+    StructureManagerCenters::build();
+
+    auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
+    atom_cluster_indices.fill_sequence();
+  }
+
+  /* ---------------------------------------------------------------------- */
+  // function for setting the internal data structures
+  void StructureManagerCenters::build() {
+    // set the references to the particles positions
     for (size_t id{0}; id < this->natoms; ++id){
       this->atoms_index[0].push_back(id);
       this->offsets.push_back(id);
@@ -85,5 +93,44 @@ namespace rascal {
   size_t StructureManagerCenters::get_nb_clusters(size_t /*order*/) const {
     return this->natoms;
   }
+
+  /* ---------------------------------------------------------------------- */
+  /*
+   * One peculiarity should be mentioned: The type <code>std::fstream</code>
+   * does not throw an exception, if the file is not read. That is the reason
+   * for the try/catch block -- to make sure, the file is opened.
+   */
+  void StructureManagerCenters::
+  read_structure_from_json(const std::string filename) {
+    // atoms object do hold read data from a file
+    json_io::AtomicJsonData json_atoms_object{};
+
+    json j;
+
+    try {
+      std::ifstream f(filename);
+      if (!f.is_open()) throw std::ios::failure("Error opening JSON file!");
+      f >> j;
+    } catch (const std::exception& e) {
+      std::cerr << e.what() << std::endl;
+      std::exit(EXIT_FAILURE);
+    }
+
+    /*
+     * ASE json format is nested - here, first entry is actual data
+     * structure. If in any case you should have multiple
+     * <code>atoms_objects</code> in your file, which you want to read, the
+     * following line has to be adapted. Nesting on the first level is
+     * structure1, structure 2, etc. These could be a time series of a
+     * simulation, but also just different structures you want to read in from
+     * different simulation runs.  Each structure should contain the necessary
+     * fields for the <code>AtomicStructure</code> object defined in the header
+     * belonging to this file. Here, just the first one is read.
+     */
+    json_atoms_object = j.begin().value();
+    this->atoms_object.set_structure(json_atoms_object);
+  }
+
+  /* ---------------------------------------------------------------------- */
 
 } // rascal

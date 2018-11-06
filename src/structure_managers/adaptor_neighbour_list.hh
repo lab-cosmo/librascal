@@ -483,14 +483,12 @@ namespace rascal {
 
     //! Returns the number of clusters of size cluster_size
     inline size_t get_nb_clusters(size_t cluster_size) const {
-      switch (cluster_size) {
-      case traits::MaxOrder: {
-        return this->neighbours.size();
-        break;
-      }
-      default:
+      if (cluster_size == 1) {
         return this->manager.get_nb_clusters(cluster_size);
-        break;
+      } else if (cluster_size == 2) {
+        return this->neighbours.size();
+      } else {
+        throw std::string("ERREUR : cluster_size > 2");
       }
     }
 
@@ -542,19 +540,7 @@ namespace rascal {
     inline Vector_ref get_position(const AtomRef_t & atom) {
       return this->manager.get_position(atom.get_index());
     }
-
-    //! EOL: OBSOLETE, should be deleted, during merging of structure managers
-    template<size_t Order, size_t Layer>
-    inline Vector_ref get_neighbour_position(const ClusterRefKey<Order, Layer>
-                                             & cluster) {
-      static_assert(Order > 1,
-                    "Only possible for Order > 1.");
-      static_assert(Order <= traits::MaxOrder,
-                    "this implementation should only work up to MaxOrder.");
-
-      return this->get_position(cluster.back());
-    }
-
+    
     /**
      * Returns the id of the index-th (neighbour) atom of the cluster that is
      * the full structure/atoms object, i.e. simply the id of the index-th atom
@@ -602,12 +588,8 @@ namespace rascal {
       static_assert(Order < traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
 
-      if (Order < (traits::MaxOrder-1)) {
-        return this->manager.get_cluster_size(cluster);
-      } else {
-        auto access_index = cluster.get_cluster_index(Layer);
-        return nb_neigh[access_index];
-      }
+      auto access_index = cluster.get_cluster_index(Layer);
+      return nb_neigh[access_index];
     }
 
   protected:

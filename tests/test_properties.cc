@@ -34,12 +34,23 @@
 namespace rascal {
 
   BOOST_AUTO_TEST_SUITE (Property_tests);
-  template<class ManagerImplementation>
-  struct PropertyFixture: public ManagerFixture<ManagerImplementation> {
-    using Manager_t = ManagerImplementation;
 
-    using PairScalarProperty_t = typename Manager_t::template Property_t<double, 2>;
-    using AtomVectorProperty_t = typename Manager_t::template Property_t<double, 1, 3, 1>;
+  /* ---------------------------------------------------------------------- */
+  /**
+   * A fixture for testing proterties. It is based on the PairFixture, which is
+   * basically a fixture which provides a pair neighbour list based on positions
+   * which are initialized in the tests.
+   */
+  template<class ManagerImplementation>
+  struct PropertyFixture
+    : public PairFixture<ManagerImplementation> {
+    // TODO make the type not hard coded
+    using Manager_t = AdaptorNeighbourList<ManagerImplementation>;
+
+    using PairScalarProperty_t =
+      typename Manager_t::template Property_t<double, 2>;
+    using AtomVectorProperty_t =
+      typename Manager_t::template Property_t<double, 1, 3, 1>;
     using AtomDynamicProperty_t =
       typename Manager_t::template TypedProperty_t<size_t, 1>;
     using AtomDynamicProperty2_t =
@@ -52,10 +63,13 @@ namespace rascal {
     std::string dynamic_property2_metadata{"distances"};
 
     PropertyFixture()
-      :ManagerFixture<ManagerImplementation>{}, pair_property{this->manager},
-      atom_property{this->manager, atom_property_metadata},
-      dynamic_property{this->manager, DynSize(), 1, dynamic_property_metadata},
-      dynamic_property2{this->manager, DynSize(), 1, dynamic_property2_metadata}
+      :PairFixture<ManagerImplementation>{},
+      pair_property{this->pair_manager},
+      atom_property{this->pair_manager, atom_property_metadata},
+      dynamic_property{this->pair_manager, DynSize(), 1,
+          dynamic_property_metadata},
+      dynamic_property2{this->pair_manager, DynSize(), 1,
+          dynamic_property2_metadata}
     {}
 
     PairScalarProperty_t pair_property;
@@ -65,14 +79,19 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(constructor_test_cell, PropertyFixture<StructureManagerCell>) {}
+  BOOST_FIXTURE_TEST_CASE(constructor_test,
+                          PropertyFixture<StructureManagerCenters>) {}
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(fill_test_cell, PropertyFixture<StructureManagerCell>) {
+  /**
+   * checks if the properties associated with atoms and pairs can be filled
+   */
+  BOOST_FIXTURE_TEST_CASE(fill_test_simple,
+                          PropertyFixture<StructureManagerCenters>) {
     pair_property.resize();
     atom_property.resize();
     int pair_property_counter{};
-    for (auto atom: manager) {
+    for (auto atom: pair_manager) {
       atom_property[atom] = atom.get_position();
       for (auto pair: atom) {
         pair_property[pair] = ++pair_property_counter;
@@ -80,17 +99,21 @@ namespace rascal {
     }
 
     pair_property_counter = 0;
-    for (auto atom: manager) {
+    for (auto atom: pair_manager) {
       auto error = (atom_property[atom] - atom.get_position()).norm();
-      BOOST_CHECK_EQUAL(error, 0);
+      BOOST_CHECK_LE(error, tol*100);
       for (auto pair: atom) {
         BOOST_CHECK_EQUAL(pair_property[pair], ++pair_property_counter);
       }
     }
   }
 
+  /* ---------------------------------------------------------------------- */
+  /**
+   * test, if metadata can be assigned to properties
+   */
   BOOST_FIXTURE_TEST_CASE(meta_data_test,
-                          PropertyFixture<StructureManagerCell> ) {
+                          PropertyFixture<StructureManagerCenters> ) {
     auto atom_metadata = atom_property.get_metadata();
     auto dynamic_metadata = dynamic_property.get_metadata();
     auto dynamic_metadata2 = dynamic_property2.get_metadata();
@@ -99,26 +122,30 @@ namespace rascal {
     BOOST_CHECK_EQUAL(dynamic_metadata, dynamic_property_metadata);
     BOOST_CHECK_EQUAL(dynamic_metadata2, dynamic_property2_metadata);
   }
-  /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(constructor_test_lammps,
-                          PropertyFixture<StructureManagerLammps>) {}
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(fill_test_lammps,
-                          PropertyFixture<StructureManagerLammps>) {
+  /**
+   * test filling statically and dynamically sized properties with actual data
+   * and comparing if retrieval of those is consistent with the data that was
+   * put in
+   */
+  BOOST_FIXTURE_TEST_CASE(fill_test_complex,
+                          PropertyFixture<StructureManagerCenters>) {
     pair_property.resize();
     atom_property.resize();
     dynamic_property.resize();
     dynamic_property2.resize();
 
-    BOOST_CHECK_THROW(AtomVectorProperty_t::check_compatibility(dynamic_property),
+    BOOST_CHECK_THROW(AtomVectorProperty_t
+                      ::check_compatibility(dynamic_property),
                       std::runtime_error) ;
 
-    BOOST_CHECK_NO_THROW(AtomVectorProperty_t::check_compatibility(atom_property));
+    BOOST_CHECK_NO_THROW(AtomVectorProperty_t
+                         ::check_compatibility(atom_property));
 
     int pair_property_counter{};
     size_t counter{};
-    for (auto atom: manager) {
+    for (auto atom: pair_manager) {
       atom_property[atom] = atom.get_position();
       dynamic_property2[atom] = atom.get_position();
 
@@ -133,9 +160,9 @@ namespace rascal {
 
     pair_property_counter = 0;
     counter = 0;
-    for (auto atom: manager) {
+    for (auto atom: pair_manager) {
       auto error = (atom_property[atom] - atom.get_position()).norm();
-      BOOST_CHECK_EQUAL(error, 0);
+      BOOST_CHECK_LE(error, tol*100);
       Eigen::Matrix<size_t, DynSize(), Eigen::Dynamic> tmp(DynSize(), 1);
       tmp << counter++, counter, counter;
 
@@ -143,9 +170,9 @@ namespace rascal {
       BOOST_CHECK_EQUAL(ierror, 0);
 
       error = (atom_property[atom] - dynamic_property2[atom]).norm();
-      BOOST_CHECK_EQUAL(error, 0);
+      BOOST_CHECK_LE(error, tol*100);
       error = (atom_property[atom] - FakeSizedProperty[atom]).norm();
-      BOOST_CHECK_EQUAL(error, 0);
+      BOOST_CHECK_LE(error, tol*100);
       for (auto pair: atom) {
         BOOST_CHECK_EQUAL(pair_property[pair], ++pair_property_counter);
       }
@@ -153,19 +180,25 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(compute_distances_lammps, PropertyFixture<StructureManagerLammps>) {
+  /**
+   * test for distances
+   */
+  BOOST_FIXTURE_TEST_CASE(compute_distances,
+                          PropertyFixture<StructureManagerCenters>) {
     pair_property.resize();
 
-    for (auto atom: manager) {
+    for (auto atom: pair_manager) {
       for (auto pair: atom) {
-        pair_property[pair] = (atom.get_position() - pair.get_position()).norm();
+        pair_property[pair] =
+          (atom.get_position() - pair.get_position()).norm();
       }
     }
 
-    for (auto atom: manager) {
+    for (auto atom: pair_manager) {
       for (auto pair: atom) {
-        auto error = pair_property[pair] - 1.;
-        BOOST_CHECK_LE(error, 1e-12);
+        auto dist{(atom.get_position() - pair.get_position()).norm()};
+        auto error = pair_property[pair] - dist;
+        BOOST_CHECK_LE(error, tol*100);
       }
     }
   }
