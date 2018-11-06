@@ -39,7 +39,41 @@ namespace rascal {
    * test strict neighbourhood constructor and update
    */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
-                          PairFixtureStrict<StructureManagerCenters>) {
+                          PairFixtureCentersStrict) {
+  }
+
+  /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE(iterator_test,
+                          PairFixtureCentersStrict) {
+
+    int atom_counter{};
+    int pair_counter{};
+    constexpr bool verbose{true};
+
+    for (auto atom: adaptor_strict) {
+      auto index{atom.get_global_index()};
+      std::cout << "index " << index << std::endl;
+      BOOST_CHECK_EQUAL(index, atom_counter);
+
+      auto type{atom.get_atom_type()};
+      std::cout << "type " << type << std::endl;
+      BOOST_CHECK_EQUAL(type, this->atom_types[index]);
+      ++atom_counter;
+
+      for (auto pair: atom) {
+        auto pair_offset{pair.get_global_index()};
+        if (verbose) {
+          std::cout << "pair (" << atom.back()
+                    << ", " << pair.back()
+                    << "), pair_counter = " << pair_counter
+                    << ", pair_offset = " << pair_offset << std::endl;
+        }
+
+        BOOST_CHECK_EQUAL(pair_counter, pair_offset);
+        ++pair_counter;
+
+      }
+    }
   }
   /* ---------------------------------------------------------------------- */
   /*
@@ -223,8 +257,6 @@ namespace rascal {
 
       if (verbose) std::cout << "Setting up strict manager 1 " << std::endl;
 
-
-
       Adaptor_t adaptor_strict1{pair_manager1, cutoff_tmp};
       adaptor_strict1.update();
 
@@ -306,8 +338,6 @@ namespace rascal {
       pair_manager1.update();
 
       if (verbose) std::cout << "Setting up strict manager 1 " << std::endl;
-
-
 
       Adaptor_t adaptor_strict1{pair_manager1, cutoff_tmp};
       adaptor_strict1.update();

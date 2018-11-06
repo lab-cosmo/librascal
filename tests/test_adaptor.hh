@@ -61,34 +61,50 @@ namespace rascal {
     PairManager_t pair_manager;
   };
 
+
+  /**
+   * PairFixture based on StructureManagerCenters
+   */
+  struct PairFixtureCenters : public ManagerFixture<StructureManagerCenters>
+  {
+    using Manager_t = StructureManagerCenters;
+
+    static_assert(StructureManagerCenters::traits::MaxOrder == 1,
+                  "Lower layer manager has to be a collection of atoms, i.e."
+                  " MaxOrder=1");
+
+    using PairManager_t = AdaptorNeighbourList<StructureManagerCenters>;
+
+    PairFixtureCenters()
+      : ManagerFixture<StructureManagerCenters> {},
+      cutoff{3.5}, pair_manager{this->manager, this->cutoff}
+    {
+      this->pair_manager.update();
+    }
+
+    ~PairFixtureCenters() {}
+
+    double cutoff;
+    PairManager_t pair_manager;
+  };
+
   /* ---------------------------------------------------------------------- */
   /**
    * Fixture for testing AdaptorStrict constructor and update
    */
-  template<class ManagerImplementation>
-  struct PairFixtureStrict : public ManagerFixture<ManagerImplementation>
+  struct PairFixtureCentersStrict : public PairFixtureCenters
   {
-    using Manager_t = ManagerImplementation;
 
-    static_assert(ManagerImplementation::traits::MaxOrder == 1,
-                  "Lower layer manager has to be a collection of atoms, i.e."
-                  " MaxOrder=1");
-
-    using PairManager_t = AdaptorNeighbourList<ManagerImplementation>;
     using Adaptor_t = AdaptorStrict<PairManager_t>;
 
-    PairFixtureStrict()
-      : ManagerFixture<ManagerImplementation> {}, cutoff{3.5},
-      pair_manager{this->manager, cutoff}, adaptor_strict{this->pair_manager, cutoff}
+    PairFixtureCentersStrict()
+      : adaptor_strict{this->pair_manager, cutoff}
     {
-      this->pair_manager.update();
       this->adaptor_strict.update();
     }
 
-    ~PairFixtureStrict() {}
+    ~PairFixtureCentersStrict() {}
 
-    double cutoff;
-    PairManager_t pair_manager;
     Adaptor_t adaptor_strict;
   };
 }  // rascal

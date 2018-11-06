@@ -63,7 +63,6 @@ namespace rascal {
 
         BOOST_CHECK_EQUAL(pair_counter, pair_offset);
         ++pair_counter;
-
       }
     }
   }
