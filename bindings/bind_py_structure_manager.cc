@@ -28,25 +28,72 @@
 
 #include "bind_include.hh"
 
-template<typename StructureManagerImplementation, size_t Order>
-using ClusterRef_t = typename StructureManager<
-    StructureManagerImplementation>::template ClusterRef<Order>;
+template<typename SMI>
+using LayerByOrder = typename SMI::traits::LayerByOrder;
 
-template<typename StructureManagerImplementation, size_t Order>
+template<typename SMI, size_t Order>
+struct HelperLayer {
+  static constexpr size_t layer{compute_cluster_layer<Order>(LayerByOrder<SMI>{})};
+};
+
+template<typename SMI, size_t Order>
+using ClusterRefKey_t = ClusterRefKey<Order,HelperLayer<SMI,Order>::layer>;
+
+template<typename SMI, size_t Order>
+using ClusterRef_t = 
+    typename StructureManager<SMI>::template ClusterRef<Order>;
+
+
+template<typename SMI, size_t Order>
 using PyClusterRef = py::class_<
-              ClusterRef_t<StructureManagerImplementation,Order>>;
+              ClusterRef_t<SMI,Order>,ClusterRefKey_t<SMI,Order>>;
 
 template<typename StructureManagerImplementation>
 using PyManager = py::class_<StructureManagerImplementation,
       StructureManager<StructureManagerImplementation>>;
 
-//! templated function for adding clusters of different orders
-template<size_t Order, typename StructureManagerImplementation>
-decltype(auto) add_cluster(py::module & m) {
-  using ClusterRef = ClusterRef_t<StructureManagerImplementation,Order>;
+
+template<size_t Order, size_t Layer>
+void add_cluster_ref(py::module & m) {
+
+  std::string cluster_parent_name = 
+      internal::GetBindingTypeName<ClusterRefKey<Order,Layer>>();
+  // cluster_parent_name += std::string("._ClusterRefKey");
+  // using AtomIndex_t = typename ClusterRefKey::AtomIndex_t;
+  // using IndexConstArray_t = typename ClusterRefKey::IndexConstArray;
+  py::class_<ClusterRefKey<Order,Layer>,ClusterRefBase> 
+                        (m,cluster_parent_name.c_str());
+  // clusterRef.def(py::init<AtomIndex_t,IndexConstArray_t>());
+  // return clusterRef;
+}
+
+template<size_t Order, size_t Layer, size_t Layer_nd>
+struct add_cluster_refs
+{ 
+  //! starts recursion 
+  static void static_for(py::module & m) {  
+    add_cluster_ref<Order,Layer>(m); 
+    add_cluster_refs<Order,Layer+1,Layer_nd>::static_for(m); 
+  }
   
+};
+
+//! Stop the recursion
+template<size_t Order,size_t Layer_nd>
+struct add_cluster_refs<Order,Layer_nd,Layer_nd>
+{
+    static void static_for(py::module &) {}
+};
+
+//! templated function for adding clusters of different orders
+template<size_t Order, typename SMI>
+decltype(auto) add_cluster(py::module & m) {
+  using ClusterRef = ClusterRef_t<SMI,Order>;
+  using ClusterRefKey = ClusterRefKey_t<SMI,Order>;
+
   std::string cluster_name = 
-                internal::GetBindingTypeName<StructureManagerImplementation>();
+                internal::GetBindingTypeName<SMI>();
+  
   if (Order==1){
     cluster_name += std::string(".Center");
   } else if (Order==2) {
@@ -56,8 +103,9 @@ decltype(auto) add_cluster(py::module & m) {
   } else if (Order==4) {
     cluster_name += std::string(".Quadruplet");
   }
-  
-  py::class_<ClusterRef> py_cluster (m, cluster_name.c_str());
+
+  py::class_<ClusterRef,ClusterRefKey>
+                      py_cluster (m, cluster_name.c_str());
   py_cluster.def_property_readonly("atom_index", & ClusterRef::get_atom_index,
                                    py::return_value_policy::reference)
     .def_property_readonly("atom_type", & ClusterRef::get_atom_type,
@@ -237,9 +285,24 @@ void bind_structure_manager(py::module & m_str_mng,py::module & m_adp,
   add_adaptors<StructureManagerImplementation>(m_adp,m_garbage);
 }
 
+void bind_cluster_ref_base(py::module & m_garbage){
+  py::class_<ClusterRefBase> (m_garbage, "ClusterRefBase");
+          // .def(py::init<size_t,size_t>());
+}
+
+void bind_cluster_refs(py::module & m_garbage){
+  add_cluster_refs<1,0,6>::static_for(m_garbage);
+  add_cluster_refs<2,0,6>::static_for(m_garbage);
+  add_cluster_refs<3,0,6>::static_for(m_garbage);
+  add_cluster_refs<4,0,6>::static_for(m_garbage);
+}
+
 //! Main function to add StructureManagers and theirs Adaptors
 void add_structure_managers(py::module & m_str_mng, py::module & m_adp, 
                             py::module & m_garbage){
+  
+  bind_cluster_ref_base(m_garbage);
+  bind_cluster_refs(m_garbage);
   
   bind_structure_manager<StructureManagerCenters>(m_str_mng,m_adp,m_garbage);
   
