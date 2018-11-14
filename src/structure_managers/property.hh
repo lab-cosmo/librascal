@@ -186,7 +186,7 @@ namespace rascal {
     }
 
     /**
-     * Accessor for property by index for statically sized properties
+     * Accessor for property by index for properties
      */
     inline reference operator[](const size_t & index) {
       // use tag dispatch to use the proper definition

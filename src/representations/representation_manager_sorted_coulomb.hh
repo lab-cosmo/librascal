@@ -89,12 +89,13 @@ namespace rascal {
   class RepresentationManagerSortedCoulomb: public RepresentationManagerBase
   {
   public:
+
     // TODO make a traits mechanism
     using hypers_t = RepresentationManagerBase::hypers_t;
     using Property_t = Property<double, 1, 1, Eigen::Dynamic, 1>;
     using Property_1_t = Property<double, 1, 1, Eigen::Dynamic, Eigen::Dynamic>;
     using Manager_t = StructureManager;
-
+    using Parent = RepresentationManagerBase;
     //! Default constructor 
     RepresentationManagerSortedCoulomb(Manager_t &sm, 
       double central_decay , double interaction_cutoff, 
@@ -149,12 +150,13 @@ namespace rascal {
     //! getter for the representation
     Eigen::Map<Eigen::MatrixXd> get_representation_full() {
       auto Nb_centers{this->structure_manager.nb_clusters(1)};
-      auto Nb_features{this->size*(this->size+1)/2};
+      auto Nb_features{this->get_n_feature()};
       auto& raw_data{this->coulomb_matrices.get_raw_data()};
       Eigen::Map<Eigen::MatrixXd> representation(raw_data.data(),Nb_features,Nb_centers);
       std::cout <<"Sizes: "<< representation.size()<<", "<< Nb_features<<", "<<Nb_centers<<std::endl;
       return representation;
     }
+    
     template <size_t Order, size_t Layer> 
     Eigen::Map<Eigen::MatrixXd> get_coulomb_matrix(const ClusterRefKey<Order, Layer>& center){
       auto& raw_data{this->coulomb_matrices_full.get_raw_data()};
@@ -168,6 +170,14 @@ namespace rascal {
 
     // TODO think of a generic input type for the hypers
     void set_hyperparameters(const hypers_t & );
+
+    Property_t& get_property() {
+      return this->coulomb_matrices;
+    }
+
+    inline size_t get_n_feature(){
+      return this->size*(this->size+1)/2;
+    }
 
     Manager_t& structure_manager;
     //hypers_t hyperparmeters;
