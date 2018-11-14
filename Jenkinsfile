@@ -117,40 +117,40 @@ def run_test(container_name, cxx_compiler) {
     sh "cd ${BUILD_DIR}_${cxx_compiler} && ctest || true"
 }
 
-def send_fail_pass(state) {
-    sh """
-set +x
-curl https://c4science.ch/api/harbormaster.sendmessage \
--d api.token=${API_TOKEN} \
--d buildTargetPHID=${TARGET_PHID} \
--d type=${state}
-"""
-}
+//def send_fail_pass(state) {
+//    sh """
+//set +x
+//curl https://c4science.ch/api/harbormaster.sendmessage \
+//-d api.token=${API_TOKEN} \
+//-d buildTargetPHID=${TARGET_PHID} \
+//-d type=${state}
+//"""
+//}
 
-def trigger_readthedocs() {
-    sh """
-set +x
-curl -X POST \
--d "token=${RTD_TOKEN}" \
--d "branches=master" \
-https://readthedocs.org/api/v2/webhook/muspectre/26537/
+//def trigger_readthedocs() {
+//    sh """
+//set +x
+//curl -X POST \
+//-d "token=${RTD_TOKEN}" \
+//-d "branches=master" \
+//https://readthedocs.org/api/v2/webhook/muspectre/26537/
+//
+//curl -X POST \
+//-d "token=${RTD_TOKEN}" \
+//https://readthedocs.org/api/v2/webhook/muspectre/26537/
+//"""
+//}
 
-curl -X POST \
--d "token=${RTD_TOKEN}" \
-https://readthedocs.org/api/v2/webhook/muspectre/26537/
-"""
-}
-
-def createartifact() {
-    sh """ set +x
-curl https://c4science.ch/api/harbormaster.createartifact \
--d api.token=${API_TOKEN} \
--d buildTargetPHID=${TARGET_PHID} \
--d artifactKey="Jenkins URI" \
--d artifactType=uri \
--d artifactData[uri]=${BUILD_URL} \
--d artifactData[name]="View Jenkins result" \
--d artifactData[ui.external]=1
-"""
-}
+//def createartifact() {
+//    sh """ set +x
+//curl https://c4science.ch/api/harbormaster.createartifact \
+//-d api.token=${API_TOKEN} \
+//-d buildTargetPHID=${TARGET_PHID} \
+//-d artifactKey="Jenkins URI" \
+//-d artifactType=uri \
+//-d artifactData[uri]=${BUILD_URL} \
+//-d artifactData[name]="View Jenkins result" \
+//-d artifactData[ui.external]=1
+//"""
+//}
 
