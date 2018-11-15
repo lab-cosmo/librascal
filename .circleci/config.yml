@@ -3,12 +3,6 @@ jobs:
         build: 
                 docker:
                         - image: ubuntu:18.04
-                          environment:
-                                  PIPENV_VENV_IN_PROJECT: true
-                branches:
-                        only:
-                                - master
-                                - test_CI
                 steps:
                         - checkout
                         - run: 
@@ -49,16 +43,23 @@ jobs:
         test: 
                 docker:
                         - image: ubuntu:18.04
-                          environment:
-                                  PIPENV_VENV_IN_PROJECT: true
-                branches:
-                        only:
-                                - master
-                                - test_CI
                 steps:
                         - checkout
                         - run: 
                                 command: |
                                         cd build 
                                         ctest -V
+
+workflows:
+        version: 2
+        build-test:
+                jobs:
+                        - build:
+                                filters:
+                                        branches:
+                                                only: test_CI
+                        - test:
+                                filters:
+                                        branches:
+                                                only: test_CI
 
