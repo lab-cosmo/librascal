@@ -40,6 +40,11 @@ jobs:
                                 command: |
                                         cd build 
                                         make dev_doc
+        test: 
+                docker:
+                        - image: ubuntu:18.04
+                steps:
+                        - checkout
                         - run: 
                                 command: |
                                         cd build 
@@ -56,4 +61,7 @@ workflows:
         build-test:
                 jobs:
                         - build
+                        - test:
+                                requires:
+                                        - build
 
