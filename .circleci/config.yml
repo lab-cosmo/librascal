@@ -49,7 +49,7 @@ general:
         branches:
                 only:
                         - master
-                        - test_CI
+                        - feat/test_CI
 
 workflows:
         version: 2
