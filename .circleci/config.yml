@@ -9,7 +9,6 @@ jobs:
                         only:
                                 - master
                                 - test_CI
-
                 steps:
                         - checkout
                         - run: 
@@ -46,11 +45,20 @@ jobs:
                         - run: 
                                 command: |
                                         cd build 
-                                        ctest -V
+                                        make dev_doc
+        test: 
+                docker:
+                        - image: ubuntu:18.04
+                          environment:
+                                  PIPENV_VENV_IN_PROJECT: true
+                branches:
+                        only:
+                                - master
+                                - test_CI
+                steps:
+                        - checkout
                         - run: 
                                 command: |
                                         cd build 
-                                        make dev_doc
-
-                                        
+                                        ctest -V
 
