@@ -1,6 +1,6 @@
 version: 2
 jobs:
-        configure:
+        build:
                 branches:
                         only:
                                 - master
@@ -29,14 +29,6 @@ jobs:
                                 command: |
                                         python3.6 -m pip install --upgrade pip
                                         python3.6 -m pip install numpy scipy sphinx breathe sphinx_rtd_theme
-        make:
-               branches:
-                       only:
-                               - master
-                               - test_CI
-               docker:
-                        - image: ubuntu:18.04
-               steps:
                         - run: 
                                 command: |
                                         rm -rf build 
