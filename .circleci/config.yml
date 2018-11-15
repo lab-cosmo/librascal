@@ -8,6 +8,7 @@ jobs:
                 branches:
                         only:
                                 - master
+                                - test_CI
 
                 steps:
                         - checkout
