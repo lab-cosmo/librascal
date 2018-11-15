@@ -1,13 +1,15 @@
 version: 2
 jobs:
-        build:
+        test: 
+                docker:
+                        - image: ubuntu:18.04
+                          environment:
+                                  PIPENV_VENV_IN_PROJECT: true
                 branches:
                         only:
                                 - master
-                                - test_CI
-                docker:
-                        - image: ubuntu:18.04
-                steps: 
+
+                steps:
                         - checkout
                         - run: 
                                 name: setting up apt-get properly
@@ -43,17 +45,11 @@ jobs:
                         - run: 
                                 command: |
                                         cd build 
-                                        make dev_doc
-        test:
-               branches:
-                       only:
-                               - master
-                               - test_CI
-               docker:
-                        - image: ubuntu:18.04
-               steps:
+                                        ctest -V
                         - run: 
                                 command: |
                                         cd build 
-                                        ctest -V
+                                        make dev_doc
+
+                                        
 
