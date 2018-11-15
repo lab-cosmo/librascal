@@ -56,5 +56,3 @@ jobs:
                                 command: |
                                         cd build 
                                         ctest -V
-
-
