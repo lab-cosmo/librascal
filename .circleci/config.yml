@@ -1,6 +1,12 @@
 version: 2
 jobs:
         build: 
+                filters:
+                        branches:
+                                only: 
+                                        - master
+                                        - /*/test_CI
+
                 docker:
                         - image: ubuntu:18.04
                 steps:
@@ -43,11 +49,4 @@ jobs:
                                         cd build 
                                         ctest -V
 
-workflows:
-        version: 2
-        build-test:
-                jobs:
-                        - build:
-                                filters:
-                                        branches:
-                                                only: /feat/test_CI
+
