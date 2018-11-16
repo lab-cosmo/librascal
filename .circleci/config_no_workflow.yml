@@ -48,4 +48,13 @@ jobs:
                                 command: |
                                         cd build 
                                         ctest -V
-
+#workflows:
+#        version: 2
+#        build-deploy:
+#                jobs:
+#                        - build:
+#                                filters:
+#                                        branches:
+#                                                only: 
+#                                                        - master
+#                                                        - /*/test_CI
