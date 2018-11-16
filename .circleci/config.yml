@@ -43,15 +43,14 @@ jobs:
                                         cd build 
                                         ctest -V
 
-general:
-        branches:
-                only:
-                        - master
-                        - feat/test_CI
-
 workflows:
         version: 2
         build-test:
                 jobs:
-                        - build
+                        - build:
+                                filters:
+                                        branches:
+                                                only:
+                                                        - master
+                                                        - feat/test_CI
 
