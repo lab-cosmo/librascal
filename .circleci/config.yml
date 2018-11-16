@@ -47,8 +47,4 @@ workflows:
         version: 2
         build-test:
                 jobs:
-                        - build:
-                                filters:
-                                        branches:
-                                                only: feat/test_CI
-
+                        - build
