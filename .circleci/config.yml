@@ -52,5 +52,5 @@ workflows:
                                         branches:
                                                 only:
                                                         - master
-                                                        - feat/test_CI
+                                                        - */*_CI
 
