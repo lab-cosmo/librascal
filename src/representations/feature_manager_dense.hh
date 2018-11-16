@@ -29,6 +29,7 @@
 #ifndef FEATURE_MANAGER_DENSE_H
 #define FEATURE_MANAGER_DENSE_H
 
+
 #include "representations/feature_manager_base.hh"
 
 
@@ -40,8 +41,8 @@ class FeatureManagerDense: public FeatureManagerBase {
 
     using RepresentationManager_t = RepresentationManager;
     using hyper_t = typename RepresentationManager::hyper_t;
-    using Feature_Matrix_t = typename Eigen::MatrixXd;
-    using Feature_Matrix_ref = typename Eigen::Map<Eigen::MatrixXd>;
+    using Feature_Matrix_t = Eigen::MatrixXd;
+    using Feature_Matrix_ref = Eigen::Map<Eigen::MatrixXd>;
 
     FeatureManagerDense(size_t n_feature, hyper_t hypers)
     :feature_matrix{},n_feature{n_feature},n_center{0},hypers{hypers}
@@ -75,24 +76,25 @@ class FeatureManagerDense: public FeatureManagerBase {
     
       auto n_feature{property.get_nb_comp()};
       if (n_feature != this->n_feature){
-        throw std::length_error("Incompatible number of features")
+        throw std::length_error("Incompatible number of features");
       }
       this->n_center += n_elem;
       this->feature_matrix.insert(this->feature_matrix.end(),
-                        std::move_iterator{raw_data.begin()}, 
-                        std::move_iterator{raw_data.end()});
+                        std::make_move_iterator(raw_data.begin()), 
+                        std::make_move_iterator(raw_data.end())
+                        );
     }
 
     //! move data from a feature vector
     void push_back(std::vector<T> feature_vector){
       auto n_feature{feature_vector.size()};
       if (n_feature != this->n_feature){
-        throw std::length_error("Incompatible number of features")
+        throw std::length_error("Incompatible number of features");
       }
       this->n_center += 1;
       this->feature_matrix.insert(this->feature_matrix.end(),
-                    std::move_iterator{feature_vector.begin()}, 
-                    std::move_iterator{feature_vector.end()});
+                    std::make_move_iterator(feature_vector.begin()), 
+                    std::make_move_iterator(feature_vector.end()));
     }
 
     inline size_t get_nb_comp(){

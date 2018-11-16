@@ -54,7 +54,7 @@ namespace rascal {
     RepresentationManagerBase(const RepresentationManagerBase &other) = delete;
 
     //! Move constructor
-    RepresentationManagerBase(RepresentationManagerBase &&other) = delete;
+    RepresentationManagerBase(RepresentationManagerBase &&other) = default;
 
     //! Destructor
     virtual ~RepresentationManagerBase()  = default;
@@ -63,7 +63,7 @@ namespace rascal {
     RepresentationManagerBase& operator=(const RepresentationManagerBase &other) = delete;
 
     //! Move assignment operator
-    RepresentationManagerBase& operator=(RepresentationManagerBase && other) = delete;
+    RepresentationManagerBase& operator=(RepresentationManagerBase && other) = default;
 
     // Resolves the mismatch between the expected traits 
     // and the effective traits of the Structure Manager

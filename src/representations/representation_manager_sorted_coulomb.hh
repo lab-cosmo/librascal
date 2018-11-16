@@ -156,13 +156,13 @@ namespace rascal {
       std::cout <<"Sizes: "<< representation.size()<<", "<< Nb_features<<", "<<Nb_centers<<std::endl;
       return representation;
     }
-    
+
     template <size_t Order, size_t Layer> 
     Eigen::Map<Eigen::MatrixXd> get_coulomb_matrix(const ClusterRefKey<Order, Layer>& center){
       auto& raw_data{this->coulomb_matrices_full.get_raw_data()};
       auto Nb_centers{this->structure_manager.nb_clusters(1)};
       auto stride{this->size*this->size};
-      for (auto icenter{0};icenter < Nb_centers;icenter++){
+      for (size_t icenter{0};icenter < Nb_centers;icenter++){
         std::cout << raw_data[icenter*stride]<<", "<< raw_data[icenter*stride+1]<< std::endl;
       }
       return this->coulomb_matrices_full[center];

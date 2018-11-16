@@ -28,7 +28,7 @@
 #ifndef TEST_FEATURE_MANAGER_H
 #define TEST_FEATURE_MANAGER_H
 
-#include "tests.hh"
+
 #include "test_structure.hh"
 #include "test_representation_manager.hh"
 #include "representations/feature_manager_base.hh"
@@ -37,64 +37,74 @@
 
 namespace rascal {
 
-template<class StructureManager>
-  struct RepresentationFixture
+  template<typename StructureManager>
+  struct MultipleStrictStructureManager
   {
-    RepresentationFixture():
-      pbc{{true,true,true}}, cutoff_max{4}, 
-      cell(3, 3), positions(22,3), numbers(22), central_decay{0.5}, 
-      interaction_cutoff{3},interaction_decay{0.5},size{50}
+    using Manager1_t = StructureManager; 
+    using Manager2_t = AdaptorNeighbourList<Manager1_t>;
+    using Manager_t = AdaptorStrict<Manager2_t>;
+
+    MultipleStrictStructureManager(
+          std::vector<std::string> filenames,
+          std::vector<double> cutoffs) {
+      for (auto filename : filenames){
+        for (auto cutoff : cutoffs){
+          Manager1_t m1{};
+          m1.update(filename);
+          Manager2_t m2{m1,cutoff};
+          m2.update();
+          Manager_t m3{m2,cutoff};
+          m3.update();
+
+          managers1.push_back(std::move(m1));
+          managers2.push_back(std::move(m2));
+          managers.push_back(std::move(m3));
+        }
+      }
+
+    }
+
+    ~MultipleStrictStructureManager() {}
+    
+    std::vector<Manager1_t> managers1{};
+    std::vector<Manager2_t> managers2{};
+    std::vector<Manager_t> managers{};
+        
+  };
+
+
+
+template<template<typename> typename RepresentationManager>
+  struct FeatureFixture: public MultipleStrictStructureManager<StructureManagerCenters>
+  { 
+    using Manager_t = typename MultipleStrictStructureManager<StructureManagerCenters>::Manager_t;
+    using Representation_t = RepresentationManager<Manager_t>;
+    FeatureFixture():
+      MultipleStrictStructureManager{this->filenames,this->cutoffs}
     {
-      cell <<
-	      6.19, 2.41, 0.21,
-        0.00, 6.15, 1.02,
-        0.00, 0.00, 7.31;
-      positions <<
-        3.689540159937393, 5.123016813620886, 1.994119731169116,
-        6.818437242389163, 2.630056617829216, 6.182500355729062,
-        2.114977334498767, 6.697579639059512, 1.392155450018263,
-        7.420401523540017, 2.432242071439904, 6.380314902118375,
-        1.112656394115962, 7.699900579442317, 3.569715877854675,
-        5.242841095703604, 3.122826344932127, 5.689730628626151,
-        3.248684682453303, 5.563872291104976, 2.608353462112637,
-        6.204203511445642, 5.035681855581504, 2.134827911489532,
-        0.946910011088814, 6.223599755982222, 4.168634519120968,
-        3.001875247950068, 1.980327734683430, 5.190182032387606,
-        2.943861424421339, 4.226648342649697, 5.457161501166098,
-        1.713348265904937, 1.501663178733906, 5.668846588337130,
-        5.208365510425203, 1.962144256645833, 2.728127406527150,
-        4.442382360543885, 2.839975217222644, 4.330534549848392,
-        0.744216089807768, 6.426293677263268, 4.643695520786083,
-        2.662204050783991, 1.250682335857938, 6.055217235712136,
-        0.860905287815103, 6.444994283754972, 4.536108843695142,
-        2.769790727874932, 5.609177455068640, 1.696722116501434,
-        6.703053268421970, 0.602846303148105, 3.487609972580834,
-        3.818289598989240, 1.436734374347541, 5.869165197222533,
-        1.054504320562138, 6.251395251007936, 3.998423858825871,
-        3.307475712744203, 5.323662899811682, 1.982236671758393;
-      numbers << 20, 20, 24, 24, 15, 15, 15, 15,  8,  8,  8,
-        8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8;
-      positions.transposeInPlace();
-      manager.update(positions,numbers,cell,
-                    Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
-
+      for (Manager_t& manager : this->managers){
+        Representation_t rp{manager,central_decay,
+                interaction_cutoff,interaction_decay,size};
+        rp.compute();
+        this->representations.push_back(std::move(rp));
+      }
+      
     }
 
-    ~RepresentationFixture() {
-    }
+    ~FeatureFixture() {}
+  
+    std::vector<Representation_t> representations{};
     
-    using Manager_t = StructureManager;
-    Manager_t manager{};
-    
-    std::array<int, 3> pbc;
-    double cutoff_max;
-    Eigen::MatrixXd cell;
-    Eigen::MatrixXd positions; // 3, 22
-    Eigen::VectorXi numbers;
-    double central_decay;
-    double interaction_cutoff;
-    double interaction_decay;
-    size_t size;
+    std::vector<std::string> filenames{
+      {"./reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
+       "./reference_data/simple_cubic_8.json"}
+                                        };
+    std::vector<double> cutoffs{{1,2,3,4,5,6}};
+
+    double central_decay{0.5};
+    double interaction_cutoff{3};
+    double interaction_decay{0.5};
+    size_t size{16};
 
   };
 

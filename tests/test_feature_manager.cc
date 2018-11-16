@@ -25,13 +25,20 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
+#include "tests.hh"
 #include "test_feature_manager.hh"
 
 
 namespace rascal {
+
   BOOST_AUTO_TEST_SUITE(feature_dense_test);
   /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE(constructor_feature_dense_test, 
+                          FeatureFixture<RepresentationManagerSortedCoulomb>) {
+
+  }
+
+
 
   BOOST_AUTO_TEST_SUITE_END();
 } // rascal
