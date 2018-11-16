@@ -12,6 +12,8 @@ jobs:
                         - run:
                                 name: Installing dependencies
                                 command: |
+                                        #add-apt-repository -y ppa:ubuntu-toolchain-r/test 
+                                        #apt-get install -y gcc-5 g++-5 
                                         apt-get install -y cmake
                                         apt-get install -y python3-pip
                                         apt-get install -y python3.6
