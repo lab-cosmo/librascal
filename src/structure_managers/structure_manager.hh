@@ -277,11 +277,6 @@ namespace rascal {
       return this->implementation().get_atom_type(atom_index);
     }
 
-    //! getter for the Manager Implementation name
-    inline decltype(auto) get_implementation_name(){
-      return this->type_name;
-    }
-
   protected:
     //! returns the current layer
     template <size_t Order>

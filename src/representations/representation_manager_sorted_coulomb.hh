@@ -105,15 +105,15 @@ namespace rascal {
       interaction_decay{interaction_decay},size{size},
       coulomb_matrices{sm},coulomb_matrices_full{sm}
       {
-        // for (auto center: this->structure_manager){
-        //   auto Nneighbours{center.size()};
-          // if (Nneighbours > this->size){
-              // std::cout << "size is too small for this "
-              //              "structure and has been reset to: " 
-              //           << Nneighbours << std::endl;
-              // this->size = Nneighbours;
-          // }
-        // }
+        for (auto center: this->structure_manager){
+          auto Nneighbours{center.size()};
+          if (Nneighbours > this->size){
+              std::cout << "size is too small for this "
+                           "structure and has been reset to: " 
+                        << Nneighbours << std::endl;
+              this->size = Nneighbours;
+          }
+        }
       }
 
     RepresentationManagerSortedCoulomb(Manager_t &sm,const hypers_t& hyper)
@@ -203,6 +203,7 @@ namespace rascal {
     this->coulomb_matrices.resize_to_zero();
     this->coulomb_matrices.set_nb_row(this->size*(this->size+1)/2);
     
+    this->coulomb_matrices_full.resize_to_zero();
     this->coulomb_matrices_full.set_nb_row(this->size);
     this->coulomb_matrices_full.set_nb_col(this->size);
     // std::cout << "name is: " << this->name << std::endl;
@@ -228,19 +229,19 @@ namespace rascal {
 
       for (auto neigh_i: center){
         size_t ii{neigh_i.get_index()};
-        auto dik{this->structure_manager.get_distance(neigh_i)};
+        double dik{this->structure_manager.get_distance(neigh_i)};
         distances_to_sort.push_back(dik);
-        auto Zi{neigh_i.get_atom_type()};
+        int Zi{neigh_i.get_atom_type()};
         coulomb_mat(ii,ii) = 0.5*std::pow(Zi,2.4);
         for (auto neigh_j: center){
           size_t jj{neigh_j.get_index()};
           // work only on the lower diagonal
           if (ii >= jj) continue;
-          auto Zj{neigh_i.get_atom_type()};
-          auto dij{(neigh_i.get_position()-neigh_j.get_position()).norm()};
+          int Zj{neigh_i.get_atom_type()};
+          double dij{(neigh_i.get_position()-neigh_j.get_position()).norm()};
           // if (dij < 0.0000000001) continue;
           coulomb_mat(jj,ii) = Zi*Zj/dij;
-          // coulomb_mat(ii,jj) = coulomb_mat(jj,ii);
+          coulomb_mat(ii,jj) = coulomb_mat(jj,ii);
         }
       }
       

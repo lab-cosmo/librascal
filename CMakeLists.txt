@@ -94,6 +94,9 @@ if (${BUILD_TESTS})
   add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
   configure_file("tests/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
   configure_file("tests/simple_cubic_9.json" ${CMAKE_BINARY_DIR} COPYONLY)
+
+  file(COPY "tests/reference_data" DESTINATION ${CMAKE_BINARY_DIR})
+
 endif(${BUILD_TESTS})
 
 # compile the library
