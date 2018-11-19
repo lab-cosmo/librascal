@@ -27,8 +27,9 @@
 # Boston, MA 02111-1307, USA.
 #
 
-
 set(representation_SRC
+  representations/representation_manager_base.cc
+  representations/representation_manager_sorted_coulomb.cc
   )
 
 target_sources(rascal PRIVATE ${representation_SRC})

@@ -9,7 +9,6 @@ set(BUILD_SHARED_LIBS ON)
 
 
 add_compile_options(-Wall -Wextra)
-add_compile_options(-Werror)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weffc++")
 # to avoid conflicts with built-in functions
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-builtin")
@@ -94,10 +93,11 @@ if (${BUILD_TESTS})
   target_link_libraries(main_test_suite ${Boost_LIBRARIES} rascal)
   add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
   configure_file("tests/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
-  configure_file("tests/simple_cubic_8.json" ${CMAKE_BINARY_DIR} COPYONLY)
+  configure_file("tests/simple_cubic_9.json" ${CMAKE_BINARY_DIR} COPYONLY)
 endif(${BUILD_TESTS})
 
 # compile the library
+# add_compile_options(-Werror) # warnings are errors!
 add_subdirectory(
   ${CMAKE_SOURCE_DIR}/src/
   )

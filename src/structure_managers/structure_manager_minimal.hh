@@ -25,6 +25,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
+/*
+ * ==================================================
+ *  OBSOLETE NOT NECESSARY TO CHANGE, EOL DETERMINED
+ * ==================================================
+ */
 
 #ifndef STRUCTURE_MANAGER_MINIMAL_H
 #define STRUCTURE_MANAGER_MINIMAL_H
@@ -56,6 +61,7 @@ namespace rascal {
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     using LayerByDimension = std::integer_sequence<size_t, 0, 0>;
   };
+  
   class StructureManagerMinimal: public StructureManager<StructureManagerMinimal>
   {
   public:
@@ -168,8 +174,8 @@ namespace rascal {
     inline size_t get_offset_impl(const std::array<size_t, Order>
                                   & counters) const;
 
-    void update(const Eigen::Ref<const Eigen::MatrixXd> positions,const Eigen::Ref<const VecXi>  particule_types,
-                const Eigen::Ref<const VecXi> center_ids,
+    void update(const Eigen::Ref<const Eigen::MatrixXd> positions,const Eigen::Ref<const VectorXi>  particule_types,
+                const Eigen::Ref<const VectorXi> center_ids,
                 const Eigen::Ref<const Eigen::MatrixXd> cell,const std::array<bool,3>& pbc, const double& cutoff_max);
 
     //Box get_box(const int& bin_id);
@@ -178,8 +184,8 @@ namespace rascal {
 
   protected:
 
-    void build(const Eigen::Ref<const Eigen::MatrixXd> positions, const Eigen::Ref<const VecXi>  particule_types,
-               const Eigen::Ref<const VecXi> center_ids,
+    void build(const Eigen::Ref<const Eigen::MatrixXd> positions, const Eigen::Ref<const VectorXi>  particule_types,
+               const Eigen::Ref<const VectorXi> center_ids,
                const Eigen::Ref<const Eigen::MatrixXd> cell,const std::array<bool,3>& pbc, const double& cutoff_max);
 
     void set_positions(const Eigen::Ref<const Eigen::MatrixXd> pos){

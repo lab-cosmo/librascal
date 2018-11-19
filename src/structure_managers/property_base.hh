@@ -5,8 +5,8 @@
  *
  * @date   03 Aug 2018
  *
- * @brief implementation of non-templated base class for Properties,
- *        Properties are atom-, pair-, triplet-, etc-related values
+ * @brief implementation of non-templated base class for Properties, Properties
+ *        are atom-, pair-, triplet-, etc-related values
  *
  * Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -29,16 +29,18 @@
 #ifndef PROPERTY_BASE_H
 #define PROPERTY_BASE_H
 
-#include <typeinfo>
-
 #include "basic_types.hh"
 #include "structure_managers/structure_manager_base.hh"
 
 #include <string>
+#include <typeinfo>
+#include <vector>
 
 namespace rascal {
 
-
+  /**
+   * Base class defintion of a ``property``, defining an interface.
+   */
   class PropertyBase
   {
   public:
@@ -66,11 +68,28 @@ namespace rascal {
     //! returns the number of degrees of freedom stored per cluster
     inline Dim_t get_nb_comp() const {return this->nb_comp;}
 
+    //! updates the number of degrees of freedom stored per cluster
+    inline void update_nb_comp() { 
+      this->nb_comp = this->nb_row*this->nb_row;
+      }
+
     //! returns the number of rows stored per cluster
     inline Dim_t get_nb_row() const {return this->nb_row;}
 
+    //! sets the number of rows stored per cluster
+    inline void set_nb_row(const Dim_t& nb_row) { 
+      this->nb_row = nb_row;
+      this->update_nb_comp();
+      }
+
     //! returns the number of columns stored per cluster
     inline Dim_t get_nb_col() const {return this->nb_col;}
+
+    //! sets the number of columns stored per cluster
+    inline void set_nb_col(const Dim_t& nb_col) { 
+      this->nb_col = nb_col;
+      this->update_nb_comp();
+      }
 
     //! returns the cluster order
     inline Dim_t get_order() const {return this->order;}
@@ -84,9 +103,9 @@ namespace rascal {
   protected:
 
     StructureManagerBase & base_manager; //!< base-class reference to StructureManager
-    const Dim_t nb_row;  //!< number of rows stored
-    const Dim_t nb_col;  //!< number of columns stored
-    const Dim_t nb_comp; //!< number of dofs stored
+    Dim_t nb_col;  //!< number of columns stored
+    Dim_t nb_row;  //!< number of rows stored
+    Dim_t nb_comp; //!< number of dofs stored
     const size_t order;  //!< order of the clusters
     //! layer in the stack at which property is attached
     const size_t property_layer;
@@ -95,16 +114,13 @@ namespace rascal {
     //! constructor
     PropertyBase(StructureManagerBase & manager, Dim_t nb_row, Dim_t nb_col,
                  size_t order, size_t layer, std::string metadata="no metadata"):
-      base_manager{manager}, nb_row{nb_row}, nb_col{nb_col},
-      nb_comp{nb_row*nb_col}, order{order}, property_layer{layer},
+      base_manager{manager}, nb_col{nb_col}, nb_row{nb_row},
+      nb_comp{nb_row * nb_col}, order{order}, property_layer{layer},
       metadata{metadata}
     {}
 
-
-
   private:
   };
-
 }  // rascal
 
 #endif /* PROPERTY_BASE_H */

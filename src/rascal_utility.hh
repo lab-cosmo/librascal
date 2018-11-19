@@ -28,15 +28,26 @@
 #ifndef RASCAL_UTILITY_H
 #define RASCAL_UTILITY_H
 
-#include <utility>
+// Detects which compiler is used
+#if defined(__clang__)
+#define CLANG_COMPILER
+#elif defined(__GNUC__) || defined(__GNUG__)
+#define GCC_COMPILER
+#endif
 
+
+#include <utility>
+#include <string>
+#include <regex>
 
 namespace rascal {
   namespace internal {
+
     /* ---------------------------------------------------------------------- */
-    /** Helper functions to apply a functor to all items in a tuple.
-     * The actual function is for_each, other functions construct the
-     * template loop over the items in the tuple.
+    /**
+     * Helper functions to apply a functor to all items in a tuple. The actual
+     * function is ``for_each``, other functions construct the template loop over
+     * the items in the tuple.
      */
     template<typename Func, typename Last>
     inline void for_each_impl(Func&& f, Last&& last) {
@@ -51,17 +62,16 @@ namespace rascal {
 
     template<typename Func, size_t ... Indices, typename ... Args>
     inline void for_each_helper(Func&& f,
-                         std::index_sequence<Indices...>,
-                         std::tuple<Args...>&& tup) {
+                                std::index_sequence<Indices...>,
+                                std::tuple<Args...>&& tup) {
       for_each_impl(std::forward<Func>(f),
                     std::forward<Args>(std::get<Indices>(tup))...);
     }
 
     /**
-     * Utility for applying a function to individual tuple elements.
-     * `tup` is a tuple that can be templated with an arbitrary number
-     * of arguments. `f` is the function that should be applied to each
-     * element of the tuple.
+     * Utility for applying a function to individual tuple elements. `tup` is a
+     * tuple that can be templated with an arbitrary number of arguments. `f` is
+     * the function that should be applied to each element of the tuple.
      */
     template<typename Func, typename ... Args>
     inline void for_each(std::tuple<Args...>& tup, Func&& f) {
@@ -69,18 +79,83 @@ namespace rascal {
                       std::index_sequence_for<Args...>{},
                       std::forward<std::tuple<Args...>>(tup));
     }
+
     /* ---------------------------------------------------------------------- */
-    /* A collection of useful functors to be applied to tuples somewhere
-     * else in the code. */
-     /**
-     * Functor for resetting properties to zero size
-     */
+    // useful functors to be applied to tuples somewhere else in the code
+
+    //! Functor for resetting properties to zero size
     struct ResizePropertyToZero {
-      template<typename T>
-      void operator() (T& t) {
-        t.resize_to_zero();
+      template<typename T> void operator() (T& t) { t.resize_to_zero();}
+    };
+
+    /* ---------------------------------------------------------------------- */
+    // inspiered from 
+    // https://blog.molecular-matters.com/2015/12/11/getting-
+    // the-type-of-a-template-argument-as-string-without-rtti/
+    template <typename T>
+    struct GetTypeNameHelper
+    {
+      static const std::string GetTypeName()
+      { 
+        // The output of of Pretty Function depends on the compiler 
+        // the #define strings is a pain to split
+#if defined(GCC_COMPILER)
+        #define FUNCTION_MACRO __PRETTY_FUNCTION__
+        #define PREFIX "static const string rascal::internal::GetTypeNameHelper<T>::GetTypeName() [with T = "
+        #define SUFFIX_1 "; std::__cxx11::string = std::__cxx11::basic_string<char>]"
+        #define SUFFIX_2 ""
+        #define NUM_TYPE_REPEATS 1
+#elif defined(CLANG_COMPILER)
+        #define FUNCTION_MACRO __PRETTY_FUNCTION__
+        #define PREFIX "static const std::string rascal::internal::GetTypeNameHelper<"
+        #define SUFFIX_1 ">::GetTypeName() [T ="
+        #define SUFFIX_2 "]"
+        #define NUM_TYPE_REPEATS 2
+#else
+        #error "No implementation for current compiler"
+#endif
+          
+        const size_t funcNameLength{sizeof(FUNCTION_MACRO) - 1u};
+        const size_t prefixLength{sizeof(PREFIX) - 1u};
+        const size_t suffixLength{sizeof(SUFFIX_1) - 1u + 
+                                            sizeof(SUFFIX_2) - 1u};
+        const size_t typeLength{(funcNameLength - 
+                        (prefixLength + suffixLength)) / NUM_TYPE_REPEATS};
+        std::string typeName{FUNCTION_MACRO + prefixLength, typeLength};
+        return typeName;
+        #undef FUNCTION_MACRO
+        #undef PREFIX
+        #undef SUFFIX_1
+        #undef SUFFIX_2
+        #undef NUM_TYPE_REPEATS
       }
     };
+    //! return a pretty form of the template typename
+    template <typename T>
+    std::string GetTypeName()
+    {
+      std::string full_typeName = GetTypeNameHelper<T>::GetTypeName();
+      
+      std::string tn1{std::regex_replace( full_typeName, 
+                                    std::regex("rascal::"), "" )};
+      std::string tn2{std::regex_replace( tn1, std::regex("<"), "_" )};
+      std::string tn3{std::regex_replace( tn2, std::regex(">"), "" )};
+      std::string tn4{std::regex_replace( tn3, std::regex(" "), "" )};
+			return tn4;
+    }
+
+
+    template <typename T>
+    std::string GetBindingTypeName() {
+      std::string typeName = GetTypeName<T>();
+      std::string tn1{std::regex_replace( typeName, 
+                        std::regex("StructureManager"), "" )};
+      std::string tn2{std::regex_replace( tn1, 
+                        std::regex("Adaptor"), "" )};
+      std::string tn3{std::regex_replace( tn2, 
+                        std::regex("RepresentationManager"), "" )};
+			return tn3;
+    }
   }  // internal
 }  // rascal
 

@@ -26,24 +26,27 @@
  */
 
 
-#include <pybind11/pybind11.h>
-#include <pybind11/eigen.h>
-#include "utils/sparsify_utilities.hh"
-
-using namespace rascal;
-namespace py=pybind11;
+#include "bind_include.hh"
 
 
-void utils_binding(py::module& m){
-    m.def("fps", &utils::select_fps, 
-          "Selects points from a NxD dimensional feature matrix \
-          by farthest point sampling (N is the number of sample in a D dimentional space).",
-          py::arg("feature_matrix"), py::arg("n_sparse"), 
-          py::arg("i_first_point") );
-          
-    m.def("fps_voronoi", &utils::select_fps_voronoi, 
-          "Selects points from a NxD dimensional feature matrix \
-          by farthest point sampling, using a Voronoi cell method (N is the number of sample in a D dimentional space).",
-          py::arg("feature_matrix"), py::arg("n_sparse"), 
-          py::arg("i_first_point") );
+
+void utils_binding(py::module & mod){
+
+  py::module m_utls_sps = mod.def_submodule("sparsification");
+  m_utls_sps.doc() = "Sparsification Routines" ;
+  
+  m_utls_sps.def("fps", & utils::select_fps, 
+        "Selects points from a NxD dimensional"
+        " feature matrix by farthest point sampling (N is the number of"
+        " sample in a D dimensional space).",
+        py::arg("feature_matrix"), py::arg("n_sparse"),
+        py::arg("i_first_point") );
+
+  m_utls_sps.def("fps_voronoi", & utils::select_fps_voronoi, 
+        "Selects points from a"
+        " NxD dimensional feature matrix by farthest point sampling, using"
+        " a Voronoi cell method (N is the number of sample in a D dimensional"
+        " space).",
+        py::arg("feature_matrix"), py::arg("n_sparse"),
+        py::arg("i_first_point") );
 }

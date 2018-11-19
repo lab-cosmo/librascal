@@ -32,28 +32,29 @@
 
 #include <iostream>
 #include <vector>
+#include <cmath>
 
 using Manager_t = rascal::StructureManagerChain;
 
 int main() {
 
-  // These integer lists contain the definition of the quadruplets for
-  // the calculation of the dihedral angles in the alanine-unit.
+  // integer lists containing the definition of the quadruplets for the
+  // calculation of the dihedral angles in the alanine-unit.
   std::vector<int> phi{4, 3, 19, 1};
   std::vector<int> psi{19, 1, 0, 18};
-  // Put them in a container for iteration
+  // put them in a container for iteration
   std::vector<std::vector<int>> quadruplets{};
   quadruplets.push_back(phi);
   quadruplets.push_back(psi);
 
-  // A solution vector for the dihedral angles
+  // solution vector for the dihedral angles
   std::vector<double> dihedral_angles{};
 
-  // Initialize the manager
+  // initialize the manager
   Manager_t manager;
   double cutoff{1.0};
 
-  // Get the structure from the JSON file
+  // read atomic structure from the JSON file
   manager.read_structure_from_json("alanine-X.json");
   manager.update(cutoff);
 
@@ -73,16 +74,16 @@ int main() {
     auto na = b1.cross(b2);
     auto nb = b2.cross(b3);
 
-    auto arg1 = ((b1.cross(b2)).cross(b2.cross(b3))).dot(b2/b2.norm());
+    auto arg1 = ((b1.cross(b2)).cross(b2.cross(b3))).dot(b2 / b2.norm());
     auto arg2 = (b1.cross(b2)).dot(b2.cross(b3));
 
-    auto angle = atan2(arg1, arg2);
+    auto angle = std::atan2(arg1, arg2);
 
     dihedral_angles.push_back(angle);
 
     std::cout << "atan2 " << angle << std::endl;
-    std::cout << "cos " << acos(na.dot(nb) / na.norm() / nb.norm())
-	      << std::endl;
+    std::cout << "cos " << std::acos(na.dot(nb) / na.norm() / nb.norm())
+              << std::endl;
   }
 
   std::cout << "Dihedral angles in alanine unit \n";

@@ -27,7 +27,7 @@ class TestMath(unittest.TestCase):
         
         for ii in range(self.Ntest):
             ref = sps.hyp2f1(*inps[ii,:])
-            test = rc.hyp2f1(*inps[ii,:])
+            test = rc.math.hyp2f1(*inps[ii,:])
 
             self.assertTrue(np.allclose(ref,test,atol=self.atol))
             

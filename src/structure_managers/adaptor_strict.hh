@@ -79,12 +79,13 @@ namespace rascal {
   public:
     using Parent =
       StructureManager<AdaptorStrict<ManagerImplementation>>;
+    using Implementation_t = ManagerImplementation;
     using traits = StructureManager_traits<AdaptorStrict>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     template <size_t Order>
     using ClusterRef_t =
       typename ManagerImplementation::template ClusterRef<Order>;
-    using PairRef_t = ClusterRef_t<2>;
+    using Vector_ref = typename Parent::Vector_ref;
 
     static_assert(traits::MaxOrder > 1,
                   "ManagerImlementation needs to handle pairs");
@@ -160,23 +161,11 @@ namespace rascal {
       return this->manager.get_position(index);
     }
 
-    template<size_t Order, size_t Layer>
-    inline Vector_ref get_neighbour_position(const ClusterRefKey<Order, Layer>
-                                             & cluster) {
-      static_assert(Order > 1,
-                    "Only possible for Order > 1.");
-      static_assert(Order <= traits::MaxOrder,
-                    "this implementation should only work up to MaxOrder.");
-
-      return this->get_position(cluster.back());
- 
-    }
-
     //! get atom_index of index-th neighbour of this cluster
     template<size_t Order, size_t Layer>
     inline int get_cluster_neighbour(const ClusterRefKey<Order, Layer>
-				     & cluster,
-				     int index) const {
+                                     & cluster,
+                                     int index) const {
       static_assert(Order <= traits::MaxOrder-1,
                     "this implementation only handles upto traits::MaxOrder");
       auto && offset = this->offsets[Order][cluster.get_cluster_index(Layer)];
@@ -185,7 +174,7 @@ namespace rascal {
 
     //! get atom_index of the index-th atom in manager
     inline int get_cluster_neighbour(const Parent& /*parent*/,
-				     size_t index) const {
+                                     size_t index) const {
       return this->atom_indices[0][index];
     }
 
@@ -208,13 +197,15 @@ namespace rascal {
     }
 
     //! Returns atom type given an atom index
-    inline int & get_atom_type(const int& atom_id) {
-      auto && type{this->manager.get_atom_type(atom_id)};
+    // TODO find how to return a reference and get a reference
+    // from managerCenters. copies are made atm 
+    inline int get_atom_type(const int& atom_id) {
+      int type{this->manager.get_atom_type(atom_id)};
       return type;
     }
 
     //! Returns a constant atom type given an atom index
-    inline const int & get_atom_type( int& atom_id) const {
+    inline const int & get_atom_type(const int& atom_id) const {
       auto && type{this->manager.get_atom_type(atom_id)};
       return type;
     }
@@ -232,7 +223,7 @@ namespace rascal {
     template<size_t Order, size_t Layer>
     inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
 				   & cluster) const {
-      static_assert(Order <= traits::MaxOrder-1,
+      static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
       return this->nb_neigh[Order][cluster.back()];
     }
@@ -275,10 +266,7 @@ namespace rascal {
     struct HelperLoop;
 
     ManagerImplementation & manager;
-    // distance between center and neighbours within the cutoff distance
     typename AdaptorStrict::template Property_t<double, 2> distance;
-    // direction vector between center and neighbours within 
-    // the cutoff distance
     typename AdaptorStrict::template Property_t<double, 2, 3> dirVec;
     const double  cutoff;
 
@@ -373,7 +361,8 @@ namespace rascal {
                                      (Order+1 == MaxOrder)>;
 
     static void loop(ClusterRef_t & cluster, AdaptorStrict& manager) {
-      auto & next_cluster_indices{std::get<Order>(manager.cluster_indices)};
+      auto & next_cluster_indices{
+        std::get<Order>(manager.cluster_indices_container)};
       size_t cluster_counter{0};
 
       for (auto next_cluster: cluster) {
@@ -388,6 +377,7 @@ namespace rascal {
 
 
         // TODO: check for distance missing
+        // TODO: wrong assert?
         static_assert(NextClusterLayer == (NextClusterLayer + 1),
                       "Layer not correct");
         Eigen::Matrix<size_t, NextClusterLayer+1, 1> indices_cluster;
@@ -459,13 +449,12 @@ namespace rascal {
           };
 
       Eigen::Matrix<size_t, AtomLayer+1, 1> indices;
-      // since head is a templated member, the keyword template 
+      // since head is a templated member, the keyword template
       // has to be used if the matrix type is also a template parameter
       // TODO explain the advantage of this syntax
       indices.template head<AtomLayer>() = atom.get_cluster_indices();
       indices(AtomLayer) = indices(AtomLayer-1);
       atom_cluster_indices.push_back(indices);
-      
       double rc2{this->cutoff*this->cutoff};
       for (auto pair: atom) {
         constexpr auto PairLayer{
@@ -487,7 +476,7 @@ namespace rascal {
           indices_pair.template head<PairLayer>() = pair.get_cluster_indices();
           indices_pair(PairLayer) = pair_counter;
           pair_cluster_indices.push_back(indices_pair);
-        
+
           pair_counter++;
         }
         using HelperLoop = HelperLoop<pair.order(),

@@ -36,19 +36,7 @@ using hrclock = std::chrono::high_resolution_clock;
 
 namespace rascal {
   namespace utils {
-    /**
-     * Farthest Point Sampling selection of points given the feature matrix
-     *
-     * @param feature_matrix is a NxD matrix containing N inputs with D features
-     *        each. Defaults to numpy row-major type
-     * @param n_sparse specifies how many points should be selected. The default
-     *        value of zero sorts the whole set of inputs
-     * @param i_first_point indicates the index of the first FPS selection.
-     *        Defaults to zero
-     * @return a tuple containing the list of n_sparse indices of the selected
-     *        points, and a list of the maximum minimum distance obtained at
-     *        each stage
-     */
+
     std::tuple<Eigen::ArrayXi, Eigen::ArrayXd>
     select_fps(const Eigen::Ref<const RowMatrixXd>& feature_matrix,
                int n_sparse, int i_first_point) {
@@ -109,26 +97,10 @@ namespace rascal {
       return std::make_tuple(sparse_indices, sparse_minmax_d2);
     }
 
-    /**
-     * Farthest Point Sampling selection of points given the feature
-     * matrix. Uses a Voronoi cell algorithm that can be faster when selecting
-     * many points, or the dimensionality is relatively low.
-     *
-     * @param feature_matrix is a NxD matrix containing N inputs with D features
-     *        each. Defaults to numpy row-major type
-     * @param n_sparse specifies how many points should be selected. The default
-     *        value of zero sorts the whole set of inputs
-     * @param i_first_point indicates the index of the first FPS selection.
-     *        Defaults to zero
-     * @return a tuple containing the list of n_sparse indices of the selected
-     *        points, a list of the maximum minimum distance obtained at each
-     *        stage, a list of the assignment of each of the input points to the
-     *        FPS selected inputs, and the radius of each Voronoi cell
-     */
+    /* ---------------------------------------------------------------------- */
     std::tuple<Eigen::ArrayXi, Eigen::ArrayXd, Eigen::ArrayXi, Eigen::ArrayXd>
     select_fps_voronoi(const Eigen::Ref<const RowMatrixXd>& feature_matrix,
                        int n_sparse, int i_first_point) {
-
       // number of inputs
       int n_inputs = feature_matrix.rows();
       // number of features
@@ -199,7 +171,7 @@ namespace rascal {
 #ifdef DO_TIMING
         auto tstart = hrclock::now();
 #endif
-        /**
+        /*
          * find the maximum minimum distance and the corresponding point.  this
          * is our next FPS. The maxmin point must be one of the voronoi
          * radii. So we pick it from this smaller array. Note we only act on the
@@ -218,13 +190,13 @@ namespace rascal {
         sparse_indices(i) = i_new;
         sparse_minmax_d2(i-1) = d2max_new;
         feature_new = feature_matrix.row(i_new);
-        /**
+        /*
          * we store indices of the selected features because we can then compute
          * some of the distances with contiguous array operations
          */
         feature_sel.row(i) = feature_new;
 
-        /**
+        /*
          * now we find the "active" Voronoi cells, i.e. those
          * that might change due to the new selection.
          */
@@ -234,7 +206,7 @@ namespace rascal {
         tstart = hrclock::now();
         ndist_active += i;
 #endif
-        /**
+        /*
          * must compute distance of the new point to all the previous FPS.  some
          * of these might have been computed already, but bookkeeping could be
          * worse that recomputing (TODO: verify!)
@@ -247,7 +219,7 @@ namespace rascal {
         list_sel_d2q.head(i) *= 0.25;  // triangle inequality: voronoi_r < d/2
 
         for (ssize_t j=0; j<i; ++j) {
-          /**
+          /*
            * computes distances to previously selected points and uses triangle
            * inequality to find which voronoi sets might be affected by the
            * newly selected point divide by four so we don't have to do that
@@ -277,7 +249,7 @@ namespace rascal {
           int voronoi_idx_j = voronoi_indices(j);
           // only considers "active" points
           if (f_active(voronoi_idx_j) > 0) {
-            /**
+            /*
              * check if we can skip this check for point j. this is a tighter
              * bound on the distance, since |x_j-x_sel|<rvoronoi_sel
              */
@@ -287,7 +259,7 @@ namespace rascal {
 #ifdef DO_TIMING
               ndist_eval ++;
 #endif
-              /**
+              /*
                * we have to reassign point j to the new selection. also, the
                * voronoi center is actually that of the new selection
                */

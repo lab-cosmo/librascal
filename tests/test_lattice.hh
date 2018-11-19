@@ -29,14 +29,19 @@
 #define TEST_LATTICE_H
 
 #include "lattice.hh"
-#include "basic_types.hh"
-
+#include "atomic_structure.hh"
 
 namespace rascal {
 
-  struct ManagerFixture_lattice
+  // TODO: make dimension dependent
+  // short hands for types, which were deleted from basic types
+  constexpr static auto Dim{3};
+  using Vec3_t = Eigen::Matrix<double, Dim, 1>;
+  using Cell_t = typename AtomicStructure<Dim>::Cell_t;
+
+  struct ManagerFixtureLattice
   {
-    ManagerFixture_lattice(){
+    ManagerFixtureLattice(){
       Cell_t cell;
       cell << 6.19,2.41,0.21,
               0.00,6.15,1.02,
@@ -45,13 +50,9 @@ namespace rascal {
 
     }
 
+    ~ManagerFixtureLattice() {}
 
-
-    ~ManagerFixture_lattice() {
-
-    }
-
-    Lattice lattice{};
+    Lattice<Dim> lattice{};
 
   };
 }  // rascal

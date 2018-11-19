@@ -31,7 +31,6 @@
 
 #include <boost/mpl/list.hpp>
 
-
 namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(base_tests);
@@ -39,7 +38,6 @@ namespace rascal {
   BOOST_AUTO_TEST_CASE(base_test) {
     BOOST_CHECK_EQUAL(1, 2-1);
   }
-
 
   template <int Dim>
   struct DemoTestFixture {
@@ -50,13 +48,13 @@ namespace rascal {
       :val{Dim}
     {}
 
-
     int val;
   };
 
   using fixtures = boost::mpl::list<DemoTestFixture<2>, DemoTestFixture<3>>;
 
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_basic_fixture_test, Fix, fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_basic_fixture_test, Fix, fixtures,
+                                   Fix) {
     BOOST_CHECK_EQUAL(Fix::val, Fix::dim());
   }
 
