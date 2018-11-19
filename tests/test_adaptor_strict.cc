@@ -27,6 +27,7 @@
 
 #include "tests.hh"
 #include "test_structure.hh"
+#include "test_adaptor.hh"
 #include <vector>
 
 namespace rascal {
@@ -70,7 +71,7 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(strict_test,
                           ManagerFixture<StructureManagerCenters>) {
-
+    
     bool verbose{true};
     int mult = 10;
     double rc_max{mult*0.5 + cutoff};
@@ -81,9 +82,13 @@ namespace rascal {
       auto cutoff_tmp = i*0.5 + cutoff;
       std::vector<std::vector<int>> neigh_ids{};
       std::vector<std::vector<double>> neigh_dist{};
+      std::vector<std::vector<std::array<double,3>>> neigh_dirVec{};
       std::vector<std::vector<int>> neigh_ids_strict{};
       std::vector<std::vector<double>> neigh_dist_strict{};
+      std::vector<std::vector<std::array<double,3>>> neigh_dirVec_strict{};
 
+      // TODO re-initiallization in the loop of the pair manager results in a 
+      // segmentation fault, is it to be expected ?
       if (verbose) std::cout << "Setting up strict manager with rc = "
                              <<cutoff_tmp << std::endl;
       AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>
@@ -96,7 +101,7 @@ namespace rascal {
       for (auto center : pair_manager) {
         std::vector<int> indices{};
         std::vector<double> distances{};
-
+        std::vector<std::array<double,3>> dirVecs{};
 
         if (verbose) {
           // get_index returns iteration index
@@ -116,6 +121,9 @@ namespace rascal {
           if (distance <= cutoff_tmp) {
             indices.push_back(neigh.get_atom_index());
             distances.push_back(distance);
+            auto dirVec{(neigh.get_position() - center.get_position()).array()/distance};
+            std::array<double,3> aa{{dirVec(0),dirVec(1),dirVec(2)}};
+            dirVecs.push_back(aa);
             if (verbose) {
               std::cout << "cell neigh out " << neigh.get_index();
               std::cout << " " << neigh.get_atom_index() << " " ;
@@ -130,6 +138,7 @@ namespace rascal {
         }
         neigh_ids.push_back(indices);
         neigh_dist.push_back(distances);
+        neigh_dirVec.push_back(dirVecs);
         // break;
       }
 
@@ -138,6 +147,150 @@ namespace rascal {
         // auto icenter{center.get_index()};
         std::vector<int> indices_{};
         std::vector<double> distances_{};
+        std::vector<std::array<double,3>> dirVecs_{};
+
+        if (verbose) {
+          // get_index returns iteration index
+          std::cout << "strict atom out "
+                    << center.get_index();
+          // get_atom_index returns index from
+          std::cout << " " << center.get_atom_index() << " " ;
+
+          for (int ii{0}; ii < 3; ++ii){
+            std::cout << center.get_position()[ii] << " ";
+          }
+          std::cout << " " << center.get_atom_type() << std::endl;
+
+        }
+
+        for (auto neigh : center) {
+          double distance{adaptor_strict.get_distance(neigh)};
+
+          indices_.push_back(neigh.get_atom_index());
+          distances_.push_back(distance);
+          auto dirVec{adaptor_strict.get_direction_vector(neigh)};
+          std::array<double,3> bb{{dirVec(0),dirVec(1),dirVec(2)}};
+          dirVecs_.push_back(bb);
+          
+          if (verbose) {
+            std::cout << "strict neigh out " << neigh.get_index();
+            std::cout << " " << neigh.get_atom_index() << "\t " ;
+
+            for (int ii{0}; ii < 3; ++ii){
+              std::cout << neigh.get_position()[ii] << ", ";
+            }
+            std::cout << "\t dist=" << distance;
+            std::cout << "\t " << neigh.get_atom_type() << std::endl;
+          }
+        }
+
+        if (verbose) {
+          std::cout << "Number of Neighbourg: " << indices_.size() << std::endl;
+        }
+
+        neigh_ids_strict.push_back(indices_);
+        neigh_dist_strict.push_back(distances_);
+        neigh_dirVec_strict.push_back(dirVecs_);
+        // if (icenter > 1) break;
+      }
+
+
+      BOOST_CHECK_EQUAL(neigh_ids.size(),neigh_ids_strict.size());
+
+      for (size_t ii{0}; ii < neigh_ids.size(); ++ii){
+        BOOST_CHECK_EQUAL(neigh_ids[ii].size(),neigh_ids_strict[ii].size());
+
+        for (size_t jj{0}; jj < neigh_ids[ii].size(); ++jj){
+          int a0{neigh_ids[ii][jj]};
+          int a1{neigh_ids_strict[ii][jj]};
+          double d0{neigh_dist[ii][jj]};
+          double d1{neigh_dist_strict[ii][jj]};
+          BOOST_CHECK_EQUAL(a0,a1);
+          BOOST_CHECK_EQUAL(d0,d1);
+          for (size_t kk{0};kk<neigh_dirVec[ii][jj].size();++kk){
+            double dv0{neigh_dirVec[ii][jj][kk]};
+            double dv1{neigh_dirVec_strict[ii][jj][kk]};
+            BOOST_CHECK_EQUAL(dv0,dv1);
+          }
+        }
+      }
+    }
+  }
+
+
+  BOOST_FIXTURE_TEST_CASE(multiple_strict_test,
+          MultipleStructureManagerNLFixture<StructureManagerCenters>) {
+
+    bool verbose{false};
+
+    for (auto& pair_manager : this->managers_pair) {
+      double cutoff{pair_manager.get_cutoff()};
+      std::vector<std::vector<int>> neigh_ids{};
+      std::vector<std::vector<double>> neigh_dist{};
+      std::vector<std::vector<std::array<double,3>>> neigh_dirVec{};
+      std::vector<std::vector<int>> neigh_ids_strict{};
+      std::vector<std::vector<double>> neigh_dist_strict{};
+      std::vector<std::vector<std::array<double,3>>> neigh_dirVec_strict{};
+
+      if (verbose) std::cout << "Setting up strict manager with rc = "
+                             <<cutoff << std::endl;
+      AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>
+        adaptor_strict{pair_manager, cutoff};
+      adaptor_strict.update();
+
+      if (verbose) std::cout << "Setting up comparison list with rc = "
+                             << cutoff << std::endl;
+
+      for (auto center : pair_manager) {
+        std::vector<int> indices{};
+        std::vector<double> distances{};
+        std::vector<std::array<double,3>> dirVecs{};
+
+        if (verbose) {
+          // get_index returns iteration index
+          std::cout << "cell atom out " << center.get_index();
+          // get_atom_index returns index from
+          std::cout << " " << center.get_atom_index() << " " ;
+
+          for (int ii{0}; ii < 3; ++ii){
+            std::cout << center.get_position()[ii] << " ";
+          }
+          std::cout << " " << center.get_atom_type() << std::endl;
+        }
+
+        for (auto neigh : center) {
+          double distance{(center.get_position()
+                           - neigh.get_position()).norm()};
+          if (distance <= cutoff) {
+            indices.push_back(neigh.get_atom_index());
+            distances.push_back(distance);
+            auto dirVec{(neigh.get_position() - center.get_position()).array()/distance};
+            std::array<double,3> aa{{dirVec(0),dirVec(1),dirVec(2)}};
+            dirVecs.push_back(aa);
+            if (verbose) {
+              std::cout << "cell neigh out " << neigh.get_index();
+              std::cout << " " << neigh.get_atom_index() << " " ;
+
+              for (int ii{0}; ii < 3; ++ii){
+                std::cout << neigh.get_position()[ii] << " ";
+              }
+              std::cout << " " << neigh.get_atom_type() << std::endl;
+            }
+          }
+
+        }
+        neigh_ids.push_back(indices);
+        neigh_dist.push_back(distances);
+        neigh_dirVec.push_back(dirVecs);
+        // break;
+      }
+
+      if (verbose) std::cout << "Setting get adaptor_strict info" << std::endl;
+      for (auto center : adaptor_strict) {
+        // auto icenter{center.get_index()};
+        std::vector<int> indices_{};
+        std::vector<double> distances_{};
+        std::vector<std::array<double,3>> dirVecs_{};
 
         if (verbose) {
           // get_index returns iteration index
@@ -159,6 +312,9 @@ namespace rascal {
 
           indices_.push_back(neigh.get_atom_index());
           distances_.push_back(distance);
+          auto dirVec{adaptor_strict.get_direction_vector(neigh)};
+          std::array<double,3> bb{{dirVec(0),dirVec(1),dirVec(2)}};
+          dirVecs_.push_back(bb); 
 
           if (verbose) {
             std::cout << "strict neigh out " << neigh.get_index();
@@ -178,6 +334,7 @@ namespace rascal {
 
         neigh_ids_strict.push_back(indices_);
         neigh_dist_strict.push_back(distances_);
+        neigh_dirVec_strict.push_back(dirVecs_);
         // if (icenter > 1) break;
       }
 
@@ -194,10 +351,16 @@ namespace rascal {
           double d1{neigh_dist_strict[ii][jj]};
           BOOST_CHECK_EQUAL(a0, a1);
           BOOST_CHECK_EQUAL(d0, d1);
+          for (size_t kk{0};kk<neigh_dirVec[ii][jj].size();++kk){
+            double dv0{neigh_dirVec[ii][jj][kk]};
+            double dv1{neigh_dirVec_strict[ii][jj][kk]};
+            BOOST_CHECK_EQUAL(dv0,dv1);
+          }
         }
       }
     }
   }
+
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(strict_test_hcp, ManagerFixtureTwoHcp) {

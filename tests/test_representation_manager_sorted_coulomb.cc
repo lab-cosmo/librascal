@@ -105,60 +105,60 @@ namespace rascal {
 
   }
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(constructor_test,
-  RepresentationFixture<StructureManagerCenters>)
-  {
+//   BOOST_FIXTURE_TEST_CASE(constructor_test,
+//   RepresentationFixture<StructureManagerCenters>)
+//   {
 
-    AdaptorNeighbourList<StructureManagerCenters> nl{manager,cutoff_max};
-    std::cout << "cutoff_max " << cutoff_max << std::endl;
-    nl.update();
-    AdaptorStrict<AdaptorNeighbourList<
-                              StructureManagerCenters>> strict_nl{nl,cutoff_max*0.9};
-    strict_nl.update();
+//     AdaptorNeighbourList<StructureManagerCenters> nl{manager,cutoff_max};
+//     std::cout << "cutoff_max " << cutoff_max << std::endl;
+//     nl.update();
+//     AdaptorStrict<AdaptorNeighbourList<
+//                               StructureManagerCenters>> strict_nl{nl,cutoff_max*0.9};
+//     strict_nl.update();
 
-    using Representation_t = RepresentationManagerSortedCoulomb<
-                   AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
+//     using Representation_t = RepresentationManagerSortedCoulomb<
+//                    AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
 
-    Representation_t representation{strict_nl,central_decay,
-                                    interaction_cutoff,interaction_decay,size};
+//     Representation_t representation{strict_nl,central_decay,
+//                                     interaction_cutoff,interaction_decay,size};
 
-  }
-    /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(compute_test,
-  RepresentationFixture<StructureManagerCenters>)
-  {
-    bool verbose{false};
-    AdaptorNeighbourList<StructureManagerCenters> nl{manager,cutoff_max};
-    nl.update();
-    AdaptorStrict<AdaptorNeighbourList<
-                              StructureManagerCenters>> strict_nl{nl,cutoff_max};
-    strict_nl.update();
+//   }
+//     /* ---------------------------------------------------------------------- */
+//   BOOST_FIXTURE_TEST_CASE(compute_test,
+//   RepresentationFixture<StructureManagerCenters>)
+//   {
+//     bool verbose{false};
+//     AdaptorNeighbourList<StructureManagerCenters> nl{manager,cutoff_max};
+//     nl.update();
+//     AdaptorStrict<AdaptorNeighbourList<
+//                               StructureManagerCenters>> strict_nl{nl,cutoff_max};
+//     strict_nl.update();
 
-    using Representation_t = RepresentationManagerSortedCoulomb<
-                   AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
+//     using Representation_t = RepresentationManagerSortedCoulomb<
+//                    AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
 
-    Representation_t representation{strict_nl,central_decay,
-                                    interaction_cutoff,interaction_decay,size};
-    representation.compute();
+//     Representation_t representation{strict_nl,central_decay,
+//                                     interaction_cutoff,interaction_decay,size};
+//     representation.compute();
 
-    auto rep = representation.get_representation_full();
+//     auto rep = representation.get_representation_full();
 
-    // for (auto center : strict_nl){
-    //     auto cm = representation.get_coulomb_matrix(center);
+//     // for (auto center : strict_nl){
+//     //     auto cm = representation.get_coulomb_matrix(center);
 
-    // }
+//     // }
 
-    if (verbose){
-        std::cout << rep.size() <<", "<< rep.cols() <<", "<< rep.rows()<< std::endl;
-        for (auto ii{0}; ii < rep.cols(); ++ii){
-            for (auto jj{0}; jj < rep.rows(); ++jj){
-                std::cout << rep(jj,ii) << ", ";
-            }
-            std::cout << std::endl;
-        }
-    }
+//     if (verbose){
+//         std::cout << rep.size() <<", "<< rep.cols() <<", "<< rep.rows()<< std::endl;
+//         for (auto ii{0}; ii < rep.cols(); ++ii){
+//             for (auto jj{0}; jj < rep.rows(); ++jj){
+//                 std::cout << rep(jj,ii) << ", ";
+//             }
+//             std::cout << std::endl;
+//         }
+//     }
 
-  }
+//   }
 
   BOOST_AUTO_TEST_SUITE_END();
 } // RASCAL

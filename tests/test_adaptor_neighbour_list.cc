@@ -106,6 +106,29 @@ namespace rascal {
     BOOST_CHECK_EQUAL(n_pairs, pair_manager.get_nb_clusters(2));
   }
 
+  BOOST_FIXTURE_TEST_CASE(test_build_neighbour_multiple,
+            MultipleStructureManagerNLFixture<StructureManagerCenters>) {
+
+    constexpr bool verbose{false};
+    for (auto& pair_manager : this->managers_pair) {
+          
+      auto n_pairs{0};
+      for (auto atom : pair_manager) {
+        if (verbose) std::cout << "atom " << atom.back() << std::endl;
+        for (auto pair : atom) {
+          n_pairs++;
+          if (verbose) {
+            std::cout << "   complete pair "
+                      << atom.back() << " " << pair.back()
+                      << " glob " << pair.get_global_index() << std::endl;
+          }
+        }
+      }
+      if (verbose) std::cout << "Number of pairs " << n_pairs << std::endl;
+      BOOST_CHECK_EQUAL(n_pairs, pair_manager.get_nb_clusters(2));
+    }
+  }
+
   /* ---------------------------------------------------------------------- */
   /*
    * test if two differently defined 2-atom units cells of hcp crystal structure

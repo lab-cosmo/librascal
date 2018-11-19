@@ -55,24 +55,24 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
                         self.manager,self.central_decay,self.interaction_cutoff,
                         self.interaction_decay,self.size)
     
-    def test_compute(self):
-        """
-        TEST compute wrapper
-        """
-        cm = rc.RepresentationManager.SortedCoulomb_Strict_NeighbourList_Centers(
-                        self.manager,self.central_decay,self.interaction_cutoff,
-                        self.interaction_decay,self.size)
-        cm.compute()
+    # def test_compute(self):
+    #     """
+    #     TEST compute wrapper
+    #     """
+    #     cm = rc.RepresentationManager.SortedCoulomb_Strict_NeighbourList_Centers(
+    #                     self.manager,self.central_decay,self.interaction_cutoff,
+    #                     self.interaction_decay,self.size)
+    #     cm.compute()
     
-    def test_get_representation(self):
-        """
-        TEST compute wrapper
-        """
-        cm = rc.RepresentationManager.SortedCoulomb_Strict_NeighbourList_Centers(
-                        self.manager,self.central_decay,self.interaction_cutoff,
-                        self.interaction_decay,self.size)
+    # def test_get_representation(self):
+    #     """
+    #     TEST compute wrapper
+    #     """
+    #     cm = rc.RepresentationManager.SortedCoulomb_Strict_NeighbourList_Centers(
+    #                     self.manager,self.central_decay,self.interaction_cutoff,
+    #                     self.interaction_decay,self.size)
         
-        cm.compute()
+    #     cm.compute()
     
-        rep = cm.get_representation_full()
+    #     rep = cm.get_representation_full()
         

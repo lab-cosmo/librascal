@@ -36,8 +36,96 @@
 namespace rascal {
   /**
    * This file generates fixtures for testing adators, it is based on previously
-   * defined fixtures for `NeighbourHoodManager`s in test_structure.hh
+   * defined fixtures for `StructureManager`s in test_structure.hh
    */
+
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Streamline the test on several structures and cutoffs 
+   */
+
+  
+  struct MultipleStructureManagerBaseFixture
+  {
+    MultipleStructureManagerBaseFixture() = default;
+    ~MultipleStructureManagerBaseFixture() = default;
+
+    std::vector<std::string> filenames{
+      "reference_data/CaCrP2O7_mvc-11955_symmetrized_.json",
+      "reference_data/simple_cubic_8_.json"};
+    std::vector<double> cutoffs{{1,2,3,4,5,6}};
+  };
+
+  template<class StructureManager>
+  struct MultipleStructureManagerCenterFixture: 
+    MultipleStructureManagerBaseFixture
+  {
+    using Parent = MultipleStructureManagerBaseFixture;
+    using Manager_t = StructureManager;
+    using Manager_T_t = AdaptorNeighbourList<Manager_t>;
+
+    MultipleStructureManagerCenterFixture() :Parent{}
+    {
+      for (auto filename : this->filenames){
+        this->managers_center.emplace_back();
+        this->managers_center.back().update(filename);         
+      }
+    }
+
+    ~MultipleStructureManagerCenterFixture() = default;
+
+    std::list<Manager_t> managers_center{};
+           
+  };
+
+  template<class StructureManager>
+  struct MultipleStructureManagerNLFixture: 
+  MultipleStructureManagerCenterFixture<StructureManager>
+  { 
+    using Parent = MultipleStructureManagerCenterFixture<StructureManager>;
+    using Manager_P_t = typename Parent::Manager_t;
+    using Manager_t = AdaptorNeighbourList<Manager_P_t>;
+    using Manager_T_t = AdaptorStrict<Manager_t>;
+   
+    MultipleStructureManagerNLFixture() :Parent{}
+    { 
+      for (Manager_P_t& manager : this->managers_center){
+        for (double cutoff : this->cutoffs){
+          this->managers_pair.emplace_back(manager,cutoff);
+          this->managers_pair.back().update();
+        }
+      }
+    }
+
+    ~MultipleStructureManagerNLFixture() = default;
+  
+    std::list<Manager_t> managers_pair{};
+  };
+
+  template<class StructureManager>
+  struct MultipleStructureManagerStrictFixture: 
+  MultipleStructureManagerNLFixture<StructureManager>
+  { 
+    using Parent = MultipleStructureManagerNLFixture<StructureManager>;
+    using Manager_P_t = typename Parent::Manager_t;
+    using Manager_t = AdaptorStrict<Manager_P_t>;
+    // using Manager_T_t = AdaptorStrict<Manager_t>;
+   
+    MultipleStructureManagerStrictFixture() :Parent{}
+    { 
+      for (Manager_P_t& manager : this->managers_pair){
+          this->managers_strict.emplace_back(manager,manager.get_cutoff());
+          this->managers_strict.back().update();
+      }
+    }
+
+    ~MultipleStructureManagerStrictFixture() = default;
+  
+    std::list<Manager_t> managers_strict{};
+  };
+
+
   template<class ManagerImplementation>
   struct PairFixtureSimple : public ManagerFixtureFile<ManagerImplementation>
   {
