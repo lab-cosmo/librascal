@@ -53,7 +53,7 @@ include_directories(SYSTEM
 
 set(ENABLE_DOC "OFF" CACHE BOOL
   "If on, a target 'dev_doc' (which builds the documentation) is added")
-set(BUILD_TESTS "OFF" CACHE BOOL
+set(BUILD_TESTS "ON" CACHE BOOL
   "If on, builds the unit tests")
 set(SUPPRESS_LIBRARY_WARNINGS "ON" CACHE BOOL
   "Suppress warnings from  Boost library")

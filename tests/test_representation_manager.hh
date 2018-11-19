@@ -47,7 +47,7 @@ namespace rascal {
       // "reference_data/CaCrP2O7_mvc-11955_symmetrized_.json",
       "reference_data/simple_cubic_8_.json"};
     std::vector<double> cutoffs{{1.9}};
-    
+
     double central_decay{0.5};
     double interaction_cutoff{10};
     double interaction_decay{0.5};
