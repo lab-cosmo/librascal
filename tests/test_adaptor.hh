@@ -57,11 +57,11 @@ namespace rascal {
     std::vector<double> cutoffs{{1,2,3,4,5,6}};
   };
 
-  template<class StructureManager>
-  struct MultipleStructureManagerCenterFixture: 
-    MultipleStructureManagerBaseFixture
+  template<class StructureManager, class BaseFixture>
+  struct MultipleStructureManagerCenterFixture: BaseFixture
+    //MultipleStructureManagerBaseFixture
   {
-    using Parent = MultipleStructureManagerBaseFixture;
+    using Parent = BaseFixture;
     using Manager_t = StructureManager;
     using Manager_T_t = AdaptorNeighbourList<Manager_t>;
 
@@ -79,11 +79,12 @@ namespace rascal {
            
   };
 
-  template<class StructureManager>
+  template<class StructureManager, class BaseFixture>
   struct MultipleStructureManagerNLFixture: 
-  MultipleStructureManagerCenterFixture<StructureManager>
+  MultipleStructureManagerCenterFixture<StructureManager,BaseFixture>
   { 
-    using Parent = MultipleStructureManagerCenterFixture<StructureManager>;
+    using Parent = 
+        MultipleStructureManagerCenterFixture<StructureManager,BaseFixture>;
     using Manager_P_t = typename Parent::Manager_t;
     using Manager_t = AdaptorNeighbourList<Manager_P_t>;
     using Manager_T_t = AdaptorStrict<Manager_t>;
@@ -103,11 +104,12 @@ namespace rascal {
     std::list<Manager_t> managers_pair{};
   };
 
-  template<class StructureManager>
+  template<class StructureManager, class BaseFixture>
   struct MultipleStructureManagerStrictFixture: 
-  MultipleStructureManagerNLFixture<StructureManager>
+  MultipleStructureManagerNLFixture<StructureManager,BaseFixture>
   { 
-    using Parent = MultipleStructureManagerNLFixture<StructureManager>;
+    using Parent = 
+        MultipleStructureManagerNLFixture<StructureManager,BaseFixture>;
     using Manager_P_t = typename Parent::Manager_t;
     using Manager_t = AdaptorStrict<Manager_P_t>;
     // using Manager_T_t = AdaptorStrict<Manager_t>;

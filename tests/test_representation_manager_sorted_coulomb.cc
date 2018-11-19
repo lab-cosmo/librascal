@@ -32,8 +32,7 @@
 namespace rascal {
   BOOST_AUTO_TEST_SUITE(representation_sorted_coulomb_test);
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(internal_test,
-  RepresentationFixture<StructureManagerCenters>)
+  BOOST_TEST_CASE_TEMPLATE_FUNCTION(test_internals,T)
   {
     bool verbose{false};
     typedef std::vector<double>::const_iterator myiter;
@@ -105,6 +104,40 @@ namespace rascal {
 
   }
   /* ---------------------------------------------------------------------- */
+
+  // TODO define more test that could be streamlined
+  // gets a list of fixtures for all the different possible structure managers
+  using multiple_fixtures = boost::mpl::list<
+    RepresentationFixture<StructureManagerCenters,
+                          RepresentationManagerSortedCoulomb,
+                          MultipleStructureSortedCoulomb>>;
+
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_constructor_test,
+            Fix, multiple_fixtures,Fix) {
+    auto & managers = Fix::managers_strict;
+    auto& representations = Fix::representations;
+    for (auto& manager : managers){
+      representations.emplace_back(manager,Fix::central_decay,
+                                    Fix::interaction_cutoff,
+                                    Fix::interaction_decay,
+                                    Fix::size);
+    }
+  }
+
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_compute_test,
+            Fix, multiple_fixtures,Fix) {
+    auto & managers = Fix::managers_strict;
+    auto& representations = Fix::representations;
+    for (auto& manager : managers){
+      representations.emplace_back(manager,Fix::central_decay,
+                                    Fix::interaction_cutoff,
+                                    Fix::interaction_decay,
+                                    Fix::size);
+      representations.back().compute();
+    }
+  }
+
+   /* ---------------------------------------------------------------------- */
 //   BOOST_FIXTURE_TEST_CASE(constructor_test,
 //   RepresentationFixture<StructureManagerCenters>)
 //   {

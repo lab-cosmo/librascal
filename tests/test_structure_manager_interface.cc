@@ -35,9 +35,9 @@ namespace rascal {
 
   // gets a list of fixtures for all the different possible structure managers
   using multiple_fixtures = boost::mpl::list<
-    MultipleStructureManagerCenterFixture<StructureManagerCenters>,
-    MultipleStructureManagerNLFixture<StructureManagerCenters>,
-    MultipleStructureManagerStrictFixture<StructureManagerCenters>>;
+    MultipleStructureManagerCenterFixture<StructureManagerCenters,MultipleStructureManagerBaseFixture>,
+    MultipleStructureManagerNLFixture<StructureManagerCenters,MultipleStructureManagerBaseFixture>,
+    MultipleStructureManagerStrictFixture<StructureManagerCenters,MultipleStructureManagerBaseFixture>>;
 
   /* ---------------------------------------------------------------------- */
   // just checks that the structure managers can be constructed

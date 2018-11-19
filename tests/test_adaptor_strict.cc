@@ -72,7 +72,7 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(strict_test,
                           ManagerFixture<StructureManagerCenters>) {
     
-    bool verbose{true};
+    bool verbose{false};
     int mult = 10;
     double rc_max{mult*0.5 + cutoff};
     AdaptorNeighbourList<StructureManagerCenters> pair_manager{manager, rc_max};
@@ -217,13 +217,19 @@ namespace rascal {
     }
   }
 
+  // TODO define more test that could be streamlined
+  // gets a list of fixtures for all the different possible structure managers
+  using multiple_fixtures = boost::mpl::list<
+    MultipleStructureManagerNLFixture<StructureManagerCenters,
+                                      MultipleStructureManagerBaseFixture>>;
 
-  BOOST_FIXTURE_TEST_CASE(multiple_strict_test,
-          MultipleStructureManagerNLFixture<StructureManagerCenters>) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_strict_test,
+            Fix, multiple_fixtures,Fix) {
 
     bool verbose{false};
+    auto & managers = Fix::managers_pair;
 
-    for (auto& pair_manager : this->managers_pair) {
+    for (auto& pair_manager : managers) {
       double cutoff{pair_manager.get_cutoff()};
       std::vector<std::vector<int>> neigh_ids{};
       std::vector<std::vector<double>> neigh_dist{};
@@ -264,7 +270,8 @@ namespace rascal {
           if (distance <= cutoff) {
             indices.push_back(neigh.get_atom_index());
             distances.push_back(distance);
-            auto dirVec{(neigh.get_position() - center.get_position()).array()/distance};
+            auto dirVec{(neigh.get_position() - 
+                      center.get_position()).array()/distance};
             std::array<double,3> aa{{dirVec(0),dirVec(1),dirVec(2)}};
             dirVecs.push_back(aa);
             if (verbose) {
@@ -329,7 +336,7 @@ namespace rascal {
         }
 
         if (verbose) {
-          std::cout << "Number of Neighbourg: " << indices_.size() << std::endl;
+          std::cout << "Number of Neighbourg: " << indices_.size()<< std::endl;
         }
 
         neigh_ids_strict.push_back(indices_);
