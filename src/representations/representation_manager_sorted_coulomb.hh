@@ -199,41 +199,44 @@ namespace rascal {
 
   template<class Mngr>
   void RepresentationManagerSortedCoulomb<Mngr>::compute(){
-    // initialise the coulomb_matrices storage
-    bool verbose{false};
+    
+    // bool verbose{false};
+    // initialise the sorted coulomb_matrices in linear storage
     this->coulomb_matrices.resize_to_zero();
     this->coulomb_matrices.set_nb_row(this->size*(this->size+1)/2);
     
-    // this->coulomb_matrices_full.resize_to_zero();
-    // this->coulomb_matrices_full.set_nb_row(this->size);
-    // this->coulomb_matrices_full.set_nb_col(this->size);
-    // std::cout << "name is: " << this->name << std::endl;
+    // initialize the sorting map
     typedef std::vector<double>::const_iterator distiter;
-    if (verbose){
-    std::cout << this->structure_manager.nb_clusters(1)<< ", "<<
-                  this->structure_manager.nb_clusters(2)  <<", "<<
-                 this->structure_manager.size() <<std::endl;
-                 }
-    Eigen::MatrixXd coulomb_mat_d(this->size,this->size);
+    // if (verbose){
+    // std::cout << this->structure_manager.nb_clusters(1)<< ", "<<
+    //               this->structure_manager.nb_clusters(2)  <<", "<<
+    //              this->structure_manager.size() <<std::endl;
+    //              }
+
+    // initialize the sorted linear coulomb matrix 
     Eigen::MatrixXd lin_sorted_coulomb_mat(this->size*(this->size+1)/2,1);
 
+    // loop over the centers
     for (auto center: this->structure_manager){
-      if (verbose){
-        auto pos = center.get_position();
-        for (auto jj{0}; jj < pos.size(); ++jj){
-              std::cout << pos(jj) << ",\t";
-        }
-        std::cout << std::endl;
-      }
+      // if (verbose){
+      //   auto pos = center.get_position();
+      //   for (auto jj{0}; jj < pos.size(); ++jj){
+      //         std::cout << pos(jj) << ",\t";
+      //   }
+      //   std::cout << std::endl;
+      // }
       
+      // initialize the distances to be sorted. the center is always first
       std::vector<double> distances_to_sort{0};
+      // Nneighbour counts the central atom and the neighbours
       size_t Nneighbour{center.size()+1};
       
-      // the local coulomb matrix
-      coulomb_mat_d = Eigen::MatrixXd::Zero(this->size,this->size);
+      // re-use the temporary coulomb mat in linear storage
       lin_sorted_coulomb_mat = Eigen::MatrixXd::Zero(this->size*(this->size+1)/2,1);
+      // the local coulomb matrix
       Eigen::MatrixXd coulomb_mat = Eigen::MatrixXd::Zero(Nneighbour,Nneighbour);
 
+      // the coulomb mat first row and col corresponds to central atom to neighbours
       int Zk{center.get_atom_type()};
       coulomb_mat(0,0) = 0.5*std::pow(Zk,2.4);
       for (auto neigh_i: center){
@@ -245,16 +248,15 @@ namespace rascal {
         coulomb_mat(0,ii) = coulomb_mat(ii,0);
       }
 
+      // find the sorting order
       std::vector<std::pair<size_t, distiter> > order_coulomb(distances_to_sort.size());
-
       size_t nn{0};
       for (distiter it{distances_to_sort.begin()}; 
                             it != distances_to_sort.end(); ++it, ++nn)
           {order_coulomb[nn] = make_pair(nn, it);}
-      
       std::sort(order_coulomb.begin(), order_coulomb.end(), internal::ordering());
 
-
+      // compute the neighbour to neighbour part of the coulomb matrix
       for (auto neigh_i: center){
         size_t ii{neigh_i.get_index()+1};
         int Zi{neigh_i.get_atom_type()};
@@ -270,25 +272,26 @@ namespace rascal {
         }
       }
       
+      // inject the coulomb matrix into the sorted linear storage
       internal::sort_coulomb_matrix(coulomb_mat,lin_sorted_coulomb_mat,order_coulomb);
 
       this->coulomb_matrices.push_back(lin_sorted_coulomb_mat);
 
-      if (verbose){
+      // if (verbose){
             
-        std::cout << "Compute atomic CM: "<< center.get_atom_index() << std::endl;
-        for (auto ii{0}; ii < coulomb_mat.cols(); ++ii){
-          for (auto jj{0}; jj < coulomb_mat.rows(); ++jj){
-              std::cout << coulomb_mat(jj,ii) << ",\t";
-          }
-          std::cout << std::endl;
-        }
-        std::cout << "Compute atomic CM: "<< center.get_atom_index() << std::endl;
-        for (auto jj{0}; jj < lin_sorted_coulomb_mat.rows(); ++jj){
-                  std::cout << lin_sorted_coulomb_mat(jj,0) << ", ";
-              }
-        std::cout << std::endl;
-      }
+      //   std::cout << "Compute atomic CM: "<< center.get_atom_index() << std::endl;
+      //   for (auto ii{0}; ii < coulomb_mat.cols(); ++ii){
+      //     for (auto jj{0}; jj < coulomb_mat.rows(); ++jj){
+      //         std::cout << coulomb_mat(jj,ii) << ",\t";
+      //     }
+      //     std::cout << std::endl;
+      //   }
+      //   std::cout << "Compute atomic CM: "<< center.get_atom_index() << std::endl;
+      //   for (auto jj{0}; jj < lin_sorted_coulomb_mat.rows(); ++jj){
+      //             std::cout << lin_sorted_coulomb_mat(jj,0) << ", ";
+      //         }
+      //   std::cout << std::endl;
+      // }
 
     }
   }
