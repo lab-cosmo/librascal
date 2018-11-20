@@ -29,12 +29,15 @@
 #define MATH_UTILS_H
 
 #include "math_interface.hh"
+#include <cmath>
 
 namespace rascal {
   namespace math {
-    /**
-     * for now just a scaffold
-     */
+
+    /// Pi to more digits than anyone could possibly need
+    const double PI = 3.14159265358979323846264338327950288419716939937510;
+    const double SQRT_TWO = std::sqrt((double)2.0);
+
   } // math
 } // rascal
 

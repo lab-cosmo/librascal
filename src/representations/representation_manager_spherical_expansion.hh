@@ -39,20 +39,21 @@
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/property.hh"
 #include "rascal_utility.hh"
+#include "math/math_utils.hh"
 #include <algorithm>
 #include <cmath>
-#include <boost/math/special_functions/factorial.hpp>
 #include <Eigen/Eigenvalues>
 #include <vector>
-#include <algorithm>
 
 namespace rascal {
 
   namespace internal {
 
-    const double SQRT_TWO = std::sqrt(2.0);
-    const double PI = 3.1415926535897932384626433832795028841971; // OK I think that's enough
+  }
 
+  enum RadialBasisType {
+    GaussianType = 0;
+    PolynomialBasis = 1;
   }
 
   template<class StructureManager>
@@ -63,7 +64,6 @@ namespace rascal {
     // TODO make a traits mechanism
     using hypers_t = RepresentationManagerBase::hypers_t;
     using Property_t = Property<double, 1, 1, Eigen::Dynamic, Eigen::Dynamic>;
-    //using Property_1_t = Property<double, 1, 1, Eigen::Dynamic, Eigen::Dynamic>;
     using Manager_t = StructureManager;
 
     //! Default constructor
@@ -94,6 +94,7 @@ namespace rascal {
               * std::pow(this->radial_sigmas[radial_n], 3.0 * 2.0*radial_n));
         }
 
+        // Compute the radial overlap matrix for later orthogonalization
         //radial_ortho_matrix.resize(this->max_radial, this->max_radial);
         Eigen::MatrixXd overlap(this->max_radial, this->max_radial);
         for (radial_n1 = 0; radial_n1 < this->max_radial; radial_n1++) {
@@ -111,15 +112,17 @@ namespace rascal {
                           * std::tgamma(1.5 + radial_n2));
           }
         }
+
+        // Compute the inverse square root of the overlap matrix
         Eigen::SelfAdjointEigenSolver<MatrixXd> eigensolver(overlap);
         if (eigensolver.info() != Eigen::Success) {
-          cout << "Warning: Could not diagonalize radial overlap matrix.";
-          // TODO How are we doing error handling again?
+          throw std::runtime_error("Warning: Could not diagonalize "
+                                   "radial overlap matrix.");
           // And in a constructor, no less.  Maybe we should move this work
           // somewhere else, like in a "precompute" method?
+          // Add this line: @throws runtime_error
+          //                if the overlap matrix cannot be diagonalized.
         }
-        // The orthogonalization matrix has eigenvalues 1/sqrt() of the
-        // overlap matrix, and is otherwise its inverse
         eigenvalues = eigensolver.eigenvalues();
         Eigen::VectorXd eigs_invsqrt(this->max_radial);
         for (radial_n = 0; radial_n < this->max_radial; radial_n++) {
@@ -200,6 +203,8 @@ namespace rascal {
   template<class Mngr>
   void RepresentationManagerSphericalExpansion<Mngr>::compute(){
 
+    using namespace rascal::math;
+
     this->soap_vectors.resize_to_zero();
     this->soap_vectors.set_nb_row(this->n_species * this->max_radial);
     this->soap_vectors.set_nb_col(std::pow(this->max_angular + 1, 2));
@@ -234,16 +239,17 @@ namespace rascal {
 
         // Precompute exponential factor
         double exp_factor = std::exp(-0.5 * std::pow(
-              dist / this->get_gaussian_sigma(), 2));
+              dist / this->get_gaussian_sigma(neigh), 2));
 
         // Precompute spherical harmonics TODO maths seems a little low-level
         // for here, move into its own function?
         // The cosine against the z-axis is just the z-component of the
         // direction vector
         double cos_theta = direction[2];
-        // Only really useful with the multiple-angle formulae, whose cost
-        // scales linearly with m (and includes combinatorial numbers)
         double phi = std::atan2(direction[1], direction[0]);
+        // TODO (at some point): Research multiple-angle formulae and see
+        // if they're more efficient.  The lines below compute cos(phi) and
+        // sin(phi) very efficiently, but we need cos(m*phi) and sin(m*phi)...
         //double inv_sqrt_xy = 1.0 / std::sqrt(std::pow(direction[0], 2) +
                                              //std::pow(direction[1], 2));
         //double cos_phi = direction[0] * inv_sqrt_xy;
@@ -259,13 +265,19 @@ namespace rascal {
               harmonics(angular_l, m_array_idx) = assoc_legendre_polynom(
                   angular_l, m_count);
             } else {
+              // Calculate ((l + m)! / (l - m)!) prefactor
+              size_t factorial_quotient = 1;
+              for (size_t accum = (angular_l - m_count); accum < (angular_l + m_count + 1); accum++) {
+                if (accum > 0) {
+                  factorial_quotient *= accum;
+                }
+              }
               harmonics(angular_l, m_array_idx) = assoc_legendre_polynom(
                   angular_l, m_count) * -1.0 * std::sin(m_count * phi)
-                  * std::sqrt(2.0 * (2.0*angular_l + 1) / (4.0 * PI));
+                  * std::sqrt(2.0 * (2.0*angular_l + 1.0) / (4.0 * PI));
               harmonics(angular_l, m_array_idx - 2*m_count) = assoc_legendre_polynom(
                   angular_l, m_count) * std::cos(m_count * phi)
-                  * boost::math::factorial<int>(angular_l + m_count)
-                  / boost::math::factorial<int>(angular_l - m_count)
+                  * factorial_quotient
                   * std::sqrt(2.0 * (2.0*angular_l + 1.0) / (4.0 * PI));
               if ((m_count % 2) == 1) {
                 // Factor of (-1)^m that goes with negative-m entries
@@ -288,10 +300,21 @@ namespace rascal {
     } // for (center : structure_manager)
   }
 
-  //TODO what's the type of the argument?
-  template<class Mngr>
-  void RepresentationManagerSphericalExpansion<Mngr>::get_gaussian_sigma(){
-
+  /**
+   * Return the width of the atomic Gaussian for each neighbour
+   *
+   * This is `sigma' in the definition `f(r) = A exp(r / (2 sigma^2))'.
+   * The width may depend both on the atomic species of the neighbour as well
+   * as the distance.
+   *
+   * @param pair Atom pair defining the neighbour, as e.g. returned by
+   *             iteration over neighbours of a centre
+   *
+   */
+  template<class Mngr, size_t Order, size_t Layer>
+  void RepresentationManagerSphericalExpansion<Mngr>::get_gaussian_sigma(
+        ClusterRefKey<Order, Layer> & pair) {
+    // return 1.0;
   }
 
 }
