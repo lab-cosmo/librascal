@@ -153,9 +153,9 @@
     8
   ],
   "pbc": [
-    true,
-    true,
-    true
+    false,
+    false,
+    false
   ]
 },
 "ids": [1],

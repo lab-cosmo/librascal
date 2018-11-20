@@ -71,15 +71,16 @@ namespace rascal {
       Eigen::DenseBase<DerivedB> & out,
       std::vector<std::pair<size_t, myiter> > const& reference) {
       
-      size_t ncol = in.cols();
-      size_t ii{0};
+      auto Nneigh{in.cols()};
+      size_t lin_id{0};
       // auto nn{ncol*(ncol-1)/2};
       // std::cout <<ncol<<", "<<nn <<std::endl;
-      for (size_t i{0}; i < ncol; ++i) {
-        auto col_id{reference[i].first};
-        for (size_t j{col_id}; j < ncol; ++j) {
-          out(ii) = in(j,col_id);
-          ii += 1;
+      for (int ii{0}; ii < Nneigh; ++ii) {
+        size_t iis{reference[ii].first};
+        for (int jj{0}; jj < ii+1; ++jj) {
+          size_t jjs{reference[jj].first};
+          out(lin_id) = in(iis,jjs);
+          lin_id += 1;
         } 
       }
     }
@@ -103,7 +104,7 @@ namespace rascal {
       :structure_manager{sm},central_decay{central_decay},
       interaction_cutoff{interaction_cutoff},
       interaction_decay{interaction_decay},size{size},
-      coulomb_matrices{sm},coulomb_matrices_full{sm}
+      coulomb_matrices{sm}
       {
         for (auto center: this->structure_manager){
           auto Nneighbours{center.size()};
@@ -157,16 +158,16 @@ namespace rascal {
       return representation;
     }
 
-    template <size_t Order, size_t Layer> 
-    Eigen::Map<Eigen::MatrixXd> get_coulomb_matrix(const ClusterRefKey<Order, Layer>& center){
-      auto& raw_data{this->coulomb_matrices_full.get_raw_data()};
-      auto Nb_centers{this->structure_manager.nb_clusters(1)};
-      auto stride{this->size*this->size};
-      for (size_t icenter{0};icenter < Nb_centers;icenter++){
-        std::cout << raw_data[icenter*stride]<<", "<< raw_data[icenter*stride+1]<< std::endl;
-      }
-      return this->coulomb_matrices_full[center];
-    }
+    // template <size_t Order, size_t Layer> 
+    // Eigen::Map<Eigen::MatrixXd> get_coulomb_matrix(const ClusterRefKey<Order, Layer>& center){
+    //   auto& raw_data{this->coulomb_matrices_full.get_raw_data()};
+    //   auto Nb_centers{this->structure_manager.nb_clusters(1)};
+    //   auto stride{this->size*this->size};
+    //   for (size_t icenter{0};icenter < Nb_centers;icenter++){
+    //     std::cout << raw_data[icenter*stride]<<", "<< raw_data[icenter*stride+1]<< std::endl;
+    //   }
+    //   return this->coulomb_matrices_full[center];
+    // }
 
     // TODO think of a generic input type for the hypers
     void set_hyperparameters(const hypers_t & );
@@ -189,7 +190,7 @@ namespace rascal {
 
     Property_t coulomb_matrices;
 
-    Property_1_t coulomb_matrices_full;
+    // Property_1_t coulomb_matrices_full;
 
   protected:
   private:
@@ -203,9 +204,9 @@ namespace rascal {
     this->coulomb_matrices.resize_to_zero();
     this->coulomb_matrices.set_nb_row(this->size*(this->size+1)/2);
     
-    this->coulomb_matrices_full.resize_to_zero();
-    this->coulomb_matrices_full.set_nb_row(this->size);
-    this->coulomb_matrices_full.set_nb_col(this->size);
+    // this->coulomb_matrices_full.resize_to_zero();
+    // this->coulomb_matrices_full.set_nb_row(this->size);
+    // this->coulomb_matrices_full.set_nb_col(this->size);
     // std::cout << "name is: " << this->name << std::endl;
     typedef std::vector<double>::const_iterator distiter;
     if (verbose){
@@ -214,10 +215,9 @@ namespace rascal {
                  this->structure_manager.size() <<std::endl;
                  }
     Eigen::MatrixXd coulomb_mat_d(this->size,this->size);
-    Eigen::MatrixXd coulomb_mat(this->size,this->size);
     Eigen::MatrixXd lin_sorted_coulomb_mat(this->size*(this->size+1)/2,1);
-    for (auto center: this->structure_manager){
 
+    for (auto center: this->structure_manager){
       if (verbose){
         auto pos = center.get_position();
         for (auto jj{0}; jj < pos.size(); ++jj){
@@ -225,41 +225,25 @@ namespace rascal {
         }
         std::cout << std::endl;
       }
-
-      std::vector<double> distances_to_sort{};
-      size_t Nneighbour{0};
-      for (auto neigh_i: center){
-        Nneighbour += 1;
-      }
+      
+      std::vector<double> distances_to_sort{0};
+      size_t Nneighbour{center.size()+1};
+      
       // the local coulomb matrix
-      // auto Nneighbours{center.size()};
-      // auto asdf{this->structure_manager.get_cluster_size(center)};
-      std::cout << Nneighbour << ",\t";
       coulomb_mat_d = Eigen::MatrixXd::Zero(this->size,this->size);
       lin_sorted_coulomb_mat = Eigen::MatrixXd::Zero(this->size*(this->size+1)/2,1);
       Eigen::MatrixXd coulomb_mat = Eigen::MatrixXd::Zero(Nneighbour,Nneighbour);
-      // Eigen::MatrixXd lin_sorted_coulomb_mat(this->size*(this->size+1)/2,1);
 
+      int Zk{center.get_atom_type()};
+      coulomb_mat(0,0) = 0.5*std::pow(Zk,2.4);
       for (auto neigh_i: center){
-        size_t ii{neigh_i.get_index()};
+        size_t ii{neigh_i.get_index()+1};
+        int Zi{neigh_i.get_atom_type()};
         double dik{this->structure_manager.get_distance(neigh_i)};
         distances_to_sort.push_back(dik);
-        int Zi{neigh_i.get_atom_type()};
-        coulomb_mat(ii,ii) = 0.5*std::pow(Zi,2.4);
-        for (auto neigh_j: center){
-          size_t jj{neigh_j.get_index()};
-          // work only on the lower diagonal
-          if (ii >= jj) continue;
-          int Zj{neigh_i.get_atom_type()};
-          double dij{(neigh_i.get_position()-neigh_j.get_position()).norm()};
-          
-          coulomb_mat(jj,ii) = Zi*Zj/dij;
-          coulomb_mat(ii,jj) = coulomb_mat(jj,ii);
-          coulomb_mat_d(ii,jj) = coulomb_mat(jj,ii);
-          coulomb_mat_d(jj,ii) = coulomb_mat(jj,ii);
-        }
+        coulomb_mat(ii,0) = Zi*Zk/dik;
+        coulomb_mat(0,ii) = coulomb_mat(ii,0);
       }
-      this->coulomb_matrices_full.push_back(coulomb_mat_d);
 
       std::vector<std::pair<size_t, distiter> > order_coulomb(distances_to_sort.size());
 
@@ -270,6 +254,22 @@ namespace rascal {
       
       std::sort(order_coulomb.begin(), order_coulomb.end(), internal::ordering());
 
+
+      for (auto neigh_i: center){
+        size_t ii{neigh_i.get_index()+1};
+        int Zi{neigh_i.get_atom_type()};
+        coulomb_mat(ii,ii) = 0.5*std::pow(Zi,2.4);
+        for (auto neigh_j: center){
+          size_t jj{neigh_j.get_index()+1};
+          // work only on the lower diagonal
+          if (ii >= jj) continue;
+          int Zj{neigh_j.get_atom_type()};
+          double dij{(neigh_i.get_position()-neigh_j.get_position()).norm()};
+          coulomb_mat(jj,ii) = Zi*Zj/dij;
+          coulomb_mat(ii,jj) = coulomb_mat(jj,ii);
+        }
+      }
+      
       internal::sort_coulomb_matrix(coulomb_mat,lin_sorted_coulomb_mat,order_coulomb);
 
       this->coulomb_matrices.push_back(lin_sorted_coulomb_mat);

@@ -44,14 +44,15 @@ namespace rascal {
     ~MultipleStructureSortedCoulomb() = default;
 
     std::vector<std::string> filenames{
-      // "reference_data/CaCrP2O7_mvc-11955_symmetrized_.json",
-      "reference_data/simple_cubic_8_.json"};
-    std::vector<double> cutoffs{{1.9}};
+      "reference_data/CaCrP2O7_mvc-11955_symmetrized_.json",
+      //"reference_data/simple_cubic_8_.json"
+      };
+    std::vector<double> cutoffs{3};
 
     double central_decay{0.5};
     double interaction_cutoff{10};
     double interaction_decay{0.5};
-    size_t size{15};
+    size_t size{10};
   };
 
   template< class StructureManager,

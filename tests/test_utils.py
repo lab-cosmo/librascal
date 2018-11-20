@@ -45,6 +45,7 @@ class BoxList(object):
             self.bin2icenters[bin_id].append(icenter)
             self.part2bin[icenter] = bin_id
             self.list = []
+        print(self.nbins)
         for bin_id in range(self.nbins):
             self.list.append(Box(bin_id,self.nbins_c,self.neigh_search,self.bin2icenters[bin_id],pbc,self))
 
@@ -67,16 +68,18 @@ class Box(object):
         self.mult_pos = self.lin2cell(lin_pos)
         self.boxlist = boxlist
         self.search_idx = []
-        for ii in range(3):
-            p = self.pbc[ii]
-
+        for ii,p in enumerate(self.pbc):
+            
             if 0 == self.mult_pos[ii] and p is False:
                 self.search_idx.append([self.mult_pos[ii]+jj for jj in range(self.neigh_search[ii]+1)])
             elif self.nbins_c[ii]-1 == self.mult_pos[ii] and p is False:
                 self.search_idx.append([self.mult_pos[ii]+jj for jj in range(-self.neigh_search[ii],0+1)])
             else:
-                self.search_idx.append([self.mult_pos[ii]+jj for jj in range(-self.neigh_search[ii], self.neigh_search[ii]+1)])
-                self.neighbour_bin_index,self.neighbour_bin_shift = [],[]
+                self.search_idx.append([self.mult_pos[ii]+jj for jj in 
+                        range(-self.neigh_search[ii], self.neigh_search[ii]+1)])
+        print(self.mult_pos,self.neigh_search,self.nbins_c,self.search_idx)
+
+        self.neighbour_bin_index,self.neighbour_bin_shift = [],[]
         for ii in self.search_idx[0]:
             for jj in self.search_idx[1]:
                 for kk in self.search_idx[2]:
