@@ -33,7 +33,7 @@ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_TESTS=ON  CMAKE_C_FLAGS_RELWITHD
 make -j 4
 ctest -V
 ```
-cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang-6.0 ..
+cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DBUILD_TESTS=ON ..
 * Special flags:
   + INSTALL:
     + empty (default) -> install rascal in the build folder
@@ -88,3 +88,5 @@ typically we will do operations like diag (AB) where A and B are matrices of the
 TODO:
 
 have NL tests (1-3) that really test all possible features of the implementation
+=======
+

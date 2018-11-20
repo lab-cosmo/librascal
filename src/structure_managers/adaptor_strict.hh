@@ -262,13 +262,10 @@ namespace rascal {
       return this->template add_atom <Order-1>(cluster.back());
     }
 
-    template <size_t Order, bool IsDummy>
-    struct HelperLoop;
-
     ManagerImplementation & manager;
     typename AdaptorStrict::template Property_t<double, 2> distance;
     typename AdaptorStrict::template Property_t<double, 2, 3> dirVec;
-    const double  cutoff;
+    const double cutoff;
 
     /**
      * store atom indices per order,i.e.
@@ -295,8 +292,8 @@ namespace rascal {
     template<bool IsStrict, class ManagerImplementation>
     struct CutOffChecker {
       static bool check(const ManagerImplementation & manager,
-                        double  cutoff) {
-        return  cutoff < manager.get_cutoff();
+                        double cutoff) {
+        return cutoff < manager.get_cutoff();
       }
     };
 
@@ -304,7 +301,7 @@ namespace rascal {
     template<class ManagerImplementation>
     struct CutOffChecker<false, ManagerImplementation> {
       static bool check(const ManagerImplementation & /*manager*/,
-                        double /* cutoff*/) {
+                        double /*cutoff*/) {
         return true;
       }
     };
@@ -312,22 +309,22 @@ namespace rascal {
     /* ---------------------------------------------------------------------- */
     template <class ManagerImplementation>
     bool inline check_cutoff(const ManagerImplementation & manager,
-                              double  cutoff) {
+                              double cutoff) {
       constexpr bool IsStrict{(ManagerImplementation::traits::Strict ==
                                AdaptorTraits::Strict::yes)};
       return CutOffChecker<IsStrict, ManagerImplementation>::
-        check(manager,  cutoff);
+        check(manager, cutoff);
     }
   }  // internal
 
   //----------------------------------------------------------------------------//
   template <class ManagerImplementation>
   AdaptorStrict<ManagerImplementation>::
-  AdaptorStrict(ManagerImplementation & manager, double  cutoff):
+  AdaptorStrict(ManagerImplementation & manager, double cutoff):
     manager{manager},
     distance{*this},
     dirVec{*this},
-    cutoff{ cutoff},
+    cutoff{cutoff},
     atom_indices{},
     nb_neigh{},
     offsets{}
@@ -346,67 +343,6 @@ namespace rascal {
     this->manager.update(std::forward<Args>(arguments)...);
     this->update();
   }
-
-
-  /* ---------------------------------------------------------------------- */
-  template <class ManagerImplementation>
-  template <size_t Order, bool IsDummy>
-  struct AdaptorStrict<ManagerImplementation>::HelperLoop {
-    static constexpr size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
-    using ClusterRef_t = typename ManagerImplementation::template
-      ClusterRef<Order>;
-    using traits = typename AdaptorStrict<ManagerImplementation>::traits;
-
-    using NextOrderLoop = HelperLoop<Order+1,
-                                     (Order+1 == MaxOrder)>;
-
-    static void loop(ClusterRef_t & cluster, AdaptorStrict& manager) {
-      auto & next_cluster_indices{
-        std::get<Order>(manager.cluster_indices_container)};
-      size_t cluster_counter{0};
-
-      for (auto next_cluster: cluster) {
-        // add atom
-        manager.add_atom(next_cluster);
-
-        // get new layer and add index at this depth
-        constexpr auto NextClusterLayer{
-          compute_cluster_layer<next_cluster.order()>
-            (typename traits::LayerByOrder{})
-            };
-
-
-        // TODO: check for distance missing
-        // TODO: wrong assert?
-        static_assert(NextClusterLayer == (NextClusterLayer + 1),
-                      "Layer not correct");
-        Eigen::Matrix<size_t, NextClusterLayer+1, 1> indices_cluster;
-        indices_cluster.template head<NextClusterLayer>()
-          = cluster.get_cluster_indices();
-        indices_cluster(NextClusterLayer) = cluster_counter;
-        next_cluster_indices.push_back(indices_cluster);
-        cluster_counter++;
-
-        NextOrderLoop::loop(next_cluster, manager);
-      }
-    }
-  };
-
-  /* ---------------------------------------------------------------------- */
-  /**
-   * End of recursion for making a strict neighbourlist
-   */
-  template <class ManagerImplementation>
-  template <size_t Order>
-  struct AdaptorStrict<ManagerImplementation>::HelperLoop<Order, true> {
-    static constexpr size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
-    using ClusterRef_t = typename ManagerImplementation::template
-      ClusterRef<Order>;
-    static void loop(ClusterRef_t & /*cluster*/,
-                     AdaptorStrict<ManagerImplementation>& /*manager*/) {
-      // do nothing
-    }
-  };
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
@@ -468,7 +404,7 @@ namespace rascal {
         if (distance2 <= rc2) {
           this->add_atom(pair);
           double distance{std::sqrt(distance2)};
-          // vec_ij /= distance;
+
           this->dirVec.push_back((vec_ij.array()/distance).matrix());
           this->distance.push_back(distance);
 
@@ -479,9 +415,6 @@ namespace rascal {
 
           pair_counter++;
         }
-        using HelperLoop = HelperLoop<pair.order(),
-                                      pair.order() >= traits::MaxOrder>;
-        HelperLoop::loop(pair, *this);
       }
     }
   }

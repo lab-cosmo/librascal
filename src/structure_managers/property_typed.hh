@@ -237,6 +237,10 @@ namespace rascal {
       return this->values;
     }
 
+
+    //! get number of different distinct element in the property
+    inline size_t get_nb_item() const {return values.size()/this->get_nb_comp(); }
+
   protected:
     std::vector<T> values{}; //!< storage for properties
   private:

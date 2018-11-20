@@ -37,6 +37,7 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(neighbour_list_adaptor_test);
 
+
   /* ---------------------------------------------------------------------- */
   /*
    * very simple 9 atom neighbour list build without periodicity
@@ -104,6 +105,37 @@ namespace rascal {
     }
     if (verbose) std::cout << "Number of pairs " << n_pairs << std::endl;
     BOOST_CHECK_EQUAL(n_pairs, pair_manager.get_nb_clusters(2));
+  }
+
+  // TODO define more test that could be streamlined
+  // gets a list of fixtures for all the different possible structure managers
+  using multiple_fixtures = boost::mpl::list<
+    MultipleStructureManagerNLFixture<StructureManagerCenters,
+                                      MultipleStructureManagerBaseFixture>>;
+
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(test_build_neighbour_multiple,
+            Fix, multiple_fixtures,Fix) {
+    
+    auto & managers = Fix::managers_pair;
+    
+    constexpr bool verbose{false};
+    for (auto& pair_manager : managers) {
+          
+      auto n_pairs{0};
+      for (auto atom : pair_manager) {
+        if (verbose) std::cout << "atom " << atom.back() << std::endl;
+        for (auto pair : atom) {
+          n_pairs++;
+          if (verbose) {
+            std::cout << "   complete pair "
+                      << atom.back() << " " << pair.back()
+                      << " glob " << pair.get_global_index() << std::endl;
+          }
+        }
+      }
+      if (verbose) std::cout << "Number of pairs " << n_pairs << std::endl;
+      BOOST_CHECK_EQUAL(n_pairs, pair_manager.get_nb_clusters(2));
+    }
   }
 
   /* ---------------------------------------------------------------------- */

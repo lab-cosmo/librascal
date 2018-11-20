@@ -53,7 +53,7 @@ include_directories(SYSTEM
 
 set(ENABLE_DOC "OFF" CACHE BOOL
   "If on, a target 'dev_doc' (which builds the documentation) is added")
-set(BUILD_TESTS "OFF" CACHE BOOL
+set(BUILD_TESTS "ON" CACHE BOOL
   "If on, builds the unit tests")
 set(SUPPRESS_LIBRARY_WARNINGS "ON" CACHE BOOL
   "Suppress warnings from  Boost library")
@@ -94,6 +94,9 @@ if (${BUILD_TESTS})
   add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
   configure_file("tests/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
   configure_file("tests/simple_cubic_9.json" ${CMAKE_BINARY_DIR} COPYONLY)
+
+  file(COPY "tests/reference_data" DESTINATION ${CMAKE_BINARY_DIR})
+
 endif(${BUILD_TESTS})
 
 # compile the library
