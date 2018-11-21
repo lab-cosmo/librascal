@@ -33,12 +33,39 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(feature_dense_test);
   /* ---------------------------------------------------------------------- */
-  // BOOST_FIXTURE_TEST_CASE(constructor_feature_dense_test, 
-  //                         FeatureFixture<RepresentationManagerSortedCoulomb>) {
+  // TODO define more test that could be streamlined
+  // gets a list of fixtures for all the different possible structure managers
+  using multiple_fixtures = boost::mpl::list<
+    FeatureFixture<double,FeatureManagerDense,
+                  StructureManagerCenters,
+                  RepresentationManagerSortedCoulomb,
+                  TestFeatureData>>;
 
-  // }
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_constructor_test,
+            Fix, multiple_fixtures,Fix) {
+    auto& features = Fix::features;
+    auto& hypers = Fix::hypers;
+    auto& Nfeature = Fix::Nfeature;
+    for (auto& hyper : hypers){
+      features.emplace_back(Nfeature,hyper);
+    }
+    
+  }
 
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(representation_aggregate_test,
+            Fix, multiple_fixtures,Fix) {
+    auto& features = Fix::features;
+    auto& hypers = Fix::hypers;
+    auto& Nfeature = Fix::Nfeature;
+    for (auto& hyper : hypers){
+      features.emplace_back(Nfeature,hyper);
+    }
 
+    auto& representations = Fix::representations;
+    for (auto& representation : representations){
+      features.front().push_back(representation);
+    }
+  }
 
   BOOST_AUTO_TEST_SUITE_END();
 } // rascal

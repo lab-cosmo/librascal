@@ -30,15 +30,7 @@
 
 namespace rascal {
 
-  template<class Mngr>
-  void RepresentationManagerSortedCoulomb<Mngr>::set_hyperparameters(
-          const RepresentationManagerSortedCoulomb<Mngr>::hypers_t & hyper){
-
-    this->central_decay = hyper["central_decay"];
-    this->interaction_cutoff = hyper["interaction_cutoff"];
-    this->interaction_decay = hyper["interaction_decay"];
-    this->size = hyper["size"];
-  };
+  
 
   
 

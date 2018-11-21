@@ -45,14 +45,20 @@ namespace rascal {
 
     std::vector<std::string> filenames{
       "reference_data/CaCrP2O7_mvc-11955_symmetrized_.json",
-      //"reference_data/simple_cubic_8_.json"
+      "reference_data/simple_cubic_8_.json"
       };
-    std::vector<double> cutoffs{3};
+    std::vector<double> cutoffs{{1,2,3}};
 
-    double central_decay{0.5};
-    double interaction_cutoff{10};
-    double interaction_decay{0.5};
-    size_t size{10};
+    std::list<json> hypers{
+      {{"central_decay",0.5},
+      {"interaction_cutoff",10},
+      {"interaction_decay",0.5},
+      {"size",30}},
+      {{"central_decay",0.5},
+      {"interaction_cutoff",3},
+      {"interaction_decay",0.5},
+      {"size",30}},
+      };
   };
 
   template< class StructureManager,

@@ -40,7 +40,7 @@ namespace rascal {
   struct RepresentationManager_traits
   {};
 
-  // template <class RepresentationImplementation>
+
   class RepresentationManagerBase
   {
   public:

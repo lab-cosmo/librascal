@@ -40,11 +40,11 @@ class FeatureManagerDense: public FeatureManagerBase {
   public:
 
     using RepresentationManager_t = RepresentationManager;
-    using hyper_t = typename RepresentationManager::hyper_t;
+    using hypers_t = typename RepresentationManager::hypers_t;
     using Feature_Matrix_t = Eigen::MatrixXd;
     using Feature_Matrix_ref = Eigen::Map<Eigen::MatrixXd>;
 
-    FeatureManagerDense(size_t n_feature, hyper_t hypers)
+    FeatureManagerDense(int n_feature, hypers_t hypers)
     :feature_matrix{},n_feature{n_feature},n_center{0},hypers{hypers}
     {}
 
@@ -64,7 +64,7 @@ class FeatureManagerDense: public FeatureManagerBase {
     FeatureManagerDense& operator=(FeatureManagerDense && other) = default;
 
     //! pre-allocate memory
-    void reserve(size_t n_center){
+    void reserve(int n_center){
       this->feature_matrix.reserve(n_center*this->n_feature);
     }
 
@@ -97,11 +97,11 @@ class FeatureManagerDense: public FeatureManagerBase {
                     std::make_move_iterator(feature_vector.end()));
     }
 
-    inline size_t get_nb_comp(){
+    inline int get_nb_comp(){
       return this->feature_matrix.size();
     }
 
-    inline size_t get_nb_center(){
+    inline int get_nb_center(){
       return this->feature_matrix.size()/this->n_feature;
     }
 
@@ -112,9 +112,9 @@ class FeatureManagerDense: public FeatureManagerBase {
 
   protected:
     std::vector<T> feature_matrix;
-    size_t n_feature;
-    size_t n_center;
-    hyper_t hypers;
+    int n_feature;
+    int n_center;
+    hypers_t hypers;
   
 };
 
