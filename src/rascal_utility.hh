@@ -141,7 +141,8 @@ namespace rascal {
       std::string tn2{std::regex_replace( tn1, std::regex("<"), "_" )};
       std::string tn3{std::regex_replace( tn2, std::regex(">"), "" )};
       std::string tn4{std::regex_replace( tn3, std::regex(" "), "" )};
-			return tn4;
+      std::string tn5{std::regex_replace( tn4, std::regex(","), "_" )};
+			return tn5;
     }
 
 

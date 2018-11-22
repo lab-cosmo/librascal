@@ -117,12 +117,16 @@ int main() {
 
   for (auto& manager : meta.managers){
    
-    double central_decay{10};
-    double interaction_cutoff{10};
-    double interaction_decay{10};
-    size_t size{50};
-    Representation_t representation{manager,central_decay,
-                                    interaction_cutoff,interaction_decay,size};
+    // double central_decay{10};
+    // double interaction_cutoff{10};
+    // double interaction_decay{10};
+    // size_t size{50};
+    json hypers{
+      {"central_decay",10},
+      {"interaction_cutoff",10},
+      {"interaction_decay",10},
+      {"size",50}};
+    Representation_t representation{manager,hypers};
     representation.compute();
 
     auto rep = representation.get_representation_full();

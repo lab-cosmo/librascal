@@ -42,7 +42,7 @@ decltype(auto) add_representation_manager(py::module & mod,py::module & ){
   py::class_<RepresentationManager, 
              RepresentationManagerBase> 
              representation(mod, representation_name.c_str());
-  representation.def(py::init<Manager_t &, double , double , double , size_t  >());
+  representation.def(py::init<Manager_t &, std::string  >());
   representation.def("compute", &RepresentationManager::compute);
   
   return representation;
@@ -53,14 +53,17 @@ template<template<typename,typename> typename FeatureManager_t,
           typename T, typename RepresentationManager>
 decltype(auto) bind_feature_manager(py::module & mod,py::module & ){
   using Feature = FeatureManager_t<T,RepresentationManager>;
-  using hypers_t = typename Feature::hypers_t;
+
   std::string feature_name = 
         internal::GetBindingTypeName<Feature>();
 
   py::class_<Feature,FeatureManagerBase> 
              feature(mod, feature_name.c_str());
-  feature.def(py::init<int , hypers_t >());
-  feature.def("reserve", &Feature::reserve);
+  feature.def(py::init<int , std::string >());
+  feature.def("reserve", 
+      [](Feature & v,int Ncenter ) {
+           v.reserve(Ncenter);
+         });
   feature.def("append",
         (void (Feature::*)(RepresentationManager&)) &Feature::push_back);
   feature.def("get_nb_comp", &Feature::get_nb_comp);

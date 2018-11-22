@@ -45,17 +45,16 @@ namespace rascal {
 
     std::vector<std::string> filenames{
       "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-      "reference_data/simple_cubic_8.json"
+      "reference_data/simple_cubic_8.json",
+      "reference_data/small_molecule.json"
       };
     std::vector<double> cutoffs{{1,2,3}};
 
     std::list<json> hypers{
-      { 
-        {"central_decay",0.5},
-        {"interaction_cutoff",10},
-        {"interaction_decay",0.5},
-        {"size",50}
-      }
+      {{"central_decay",0.5},
+      {"interaction_cutoff",10},
+      {"interaction_decay",0.5},
+      {"size",120}}
       };
   };
 
@@ -78,22 +77,26 @@ namespace rascal {
     FeatureFixture() :Parent{}
     { 
       std::vector<size_t> Nfeatures{};
+      
       auto& representations = this->representations;
-      for (auto& hyper : this->hypers){
-        for (auto& manager : this->managers_strict){
+      
+      for (auto& manager : this->managers_strict){
+        for (auto& hyper : this->hypers){
+          Ncenter += manager.size();
+          
           representations.emplace_back(manager,hyper);
           representations.back().compute();
           Nfeatures.push_back(representations.back().get_n_feature());
-          std::cout << representations.back().get_n_feature()<< ", ";
+          // std::cout << representations.back().get_n_feature()<< ", ";
         }
       }
       
-      Nfeature = *std::max_element(std::begin(Nfeatures), std::end(Nfeatures));
+      this->Nfeature = *std::max_element(std::begin(Nfeatures), std::end(Nfeatures));
       
     }
 
     ~FeatureFixture() = default;
-    
+    size_t Ncenter{0};
     size_t Nfeature{};
     std::list<Feature_t> features{};
     

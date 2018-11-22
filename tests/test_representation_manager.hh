@@ -54,7 +54,7 @@ namespace rascal {
       {{"central_decay",0.5},
       {"interaction_cutoff",10},
       {"interaction_decay",0.5},
-      {"size",50}}
+      {"size",120}}
       };
   };
 

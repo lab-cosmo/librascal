@@ -99,16 +99,16 @@ namespace rascal {
     using Parent = RepresentationManagerBase;
     using hypers_t = typename Parent::hypers_t;
     //! Default constructor 
-    RepresentationManagerSortedCoulomb(Manager_t &sm, 
-      double central_decay , double interaction_cutoff, 
-      double interaction_decay, size_t size)
-      :structure_manager{sm},central_decay{central_decay},
-      interaction_cutoff{interaction_cutoff},
-      interaction_decay{interaction_decay},size{size},
-      coulomb_matrices{sm}
-      {
-        this->check_size_compatibility();
-      }
+    // RepresentationManagerSortedCoulomb(Manager_t &sm, 
+    //   double central_decay , double interaction_cutoff, 
+    //   double interaction_decay, size_t size)
+    //   :structure_manager{sm},central_decay{central_decay},
+    //   interaction_cutoff{interaction_cutoff},
+    //   interaction_decay{interaction_decay},size{size},
+    //   coulomb_matrices{sm}
+    //   {
+    //     this->check_size_compatibility();
+    //   }
     
 
     RepresentationManagerSortedCoulomb(Manager_t &sm, const hypers_t& hyper)
@@ -117,6 +117,15 @@ namespace rascal {
       interaction_decay{},coulomb_matrices{sm}
       {
         this->set_hyperparameters(hyper);
+        this->check_size_compatibility();
+      }
+    
+    RepresentationManagerSortedCoulomb(Manager_t &sm, const std::string& hyper_str)
+      :structure_manager{sm},central_decay{},
+      interaction_cutoff{},
+      interaction_decay{},coulomb_matrices{sm}
+      {
+        this->set_hyperparameters(hyper_str);
         this->check_size_compatibility();
       }
 
@@ -145,6 +154,7 @@ namespace rascal {
 
     //! set hypers
     void set_hyperparameters(const hypers_t & );
+    void set_hyperparameters(const std::string & );
 
     //! getter for the representation
     Eigen::Map<Eigen::MatrixXd> get_representation_full() {
@@ -152,7 +162,6 @@ namespace rascal {
       auto Nb_features{this->get_n_feature()};
       auto& raw_data{this->coulomb_matrices.get_raw_data()};
       Eigen::Map<Eigen::MatrixXd> representation(raw_data.data(),Nb_features,Nb_centers);
-      std::cout <<"Sizes: "<< representation.size()<<", "<< Nb_features<<", "<<Nb_centers<<std::endl;
       return representation;
     }
 
@@ -204,7 +213,19 @@ namespace rascal {
     this->interaction_cutoff = hyper["interaction_cutoff"];
     this->interaction_decay = hyper["interaction_decay"];
     this->size = hyper["size"];
-    this->hypers = hypers; 
+    this->hypers = hyper; 
+  };
+
+  template<class Mngr>
+  void RepresentationManagerSortedCoulomb<Mngr>::set_hyperparameters(
+          const std::string & hyper_str){
+    
+    this->hypers = json::parse(hyper_str); 
+    this->central_decay = this->hypers["central_decay"];
+    this->interaction_cutoff = this->hypers["interaction_cutoff"];
+    this->interaction_decay = this->hypers["interaction_decay"];
+    this->size = this->hypers["size"];
+    
   };
 
   /* ---------------------------------------------------------------------- */
@@ -214,7 +235,7 @@ namespace rascal {
     
     // initialise the sorted coulomb_matrices in linear storage
     this->coulomb_matrices.resize_to_zero();
-    this->coulomb_matrices.set_nb_row(this->size*(this->size+1)/2);
+    this->coulomb_matrices.set_nb_row(this->get_n_feature());
     
     // initialize the sorting map
     typedef std::vector<double>::const_iterator distiter;

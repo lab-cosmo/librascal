@@ -48,6 +48,12 @@ class FeatureManagerDense: public FeatureManagerBase {
     :feature_matrix{},n_feature{n_feature},n_center{0},hypers{hypers}
     {}
 
+    FeatureManagerDense(int n_feature, std::string hypers_str)
+    :feature_matrix{},n_feature{n_feature},n_center{0},hypers{}
+    {
+      hypers = json::parse(hypers_str);
+    }
+
     //! Copy constructor
     FeatureManagerDense(const FeatureManagerDense &other) = delete;
 
@@ -64,14 +70,15 @@ class FeatureManagerDense: public FeatureManagerBase {
     FeatureManagerDense& operator=(FeatureManagerDense && other) = default;
 
     //! pre-allocate memory
-    void reserve(int n_center){
+    template <typename S>
+    void reserve(S& n_center){
       this->feature_matrix.reserve(n_center*this->n_feature);
     }
 
     //! move data from the representation manager property 
     void push_back(RepresentationManager_t& rm){
       auto& property{rm.get_property()};
-      auto& raw_data{property.get_raw_data()};
+      auto raw_data{property.get_raw_data()};
       auto n_elem{property.get_nb_item()};
     
       int n_feature{property.get_nb_comp()};
@@ -79,10 +86,12 @@ class FeatureManagerDense: public FeatureManagerBase {
         throw std::length_error("Incompatible number of features");
       }
       this->n_center += n_elem;
+      // this->feature_matrix.insert(this->feature_matrix.end(),
+      //                   std::make_move_iterator(raw_data.begin()), 
+      //                   std::make_move_iterator(raw_data.end())
+      //                   );
       this->feature_matrix.insert(this->feature_matrix.end(),
-                        std::make_move_iterator(raw_data.begin()), 
-                        std::make_move_iterator(raw_data.end())
-                        );
+                                  raw_data.begin(),raw_data.end());
     }
 
     //! move data from a feature vector
