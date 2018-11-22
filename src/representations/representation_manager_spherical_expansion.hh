@@ -103,7 +103,8 @@ namespace rascal {
       {
         this->radial_ortho_matrix.resize(this->max_radial, this->max_radial);
         this->radial_sigmas.resize(this->max_radial, 1);
-        this->prefactors.resize(this->max_radial, 1);
+        this->radial_norm_factors.resize(this->max_radial, 1);
+        this->radial_nl_factors.resize(this->max_radial, this->max_angular + 1);
         // TODO(max-veit) the type of Gaussian sigma should not be determined
         // using constructor overloading.  Better convert
         // RepManSphExpn::get_gaussian_sigma() to its own class let that switch
@@ -151,17 +152,9 @@ namespace rascal {
         compute_spherical_harmonics(Eigen::Vector3d direction);
 
     //! getter for the representation TODO(max-veit) update
-    Eigen::Map<Eigen::MatrixXd> get_representation_full() {
-      auto Nb_centers{this->structure_manager.nb_clusters(1)};
-      auto Nb_features{this->size};
-      auto& raw_data{this->coulomb_matrices.get_raw_data()};
-      Eigen::Map<Eigen::MatrixXd> representation(raw_data.data(),Nb_features,Nb_centers);
-      std::cout <<"Sizes: "<< representation.size()<<", "<< Nb_features<<", "<<Nb_centers<<std::endl;
-      return representation;
-    }
     template <size_t Order, size_t Layer> 
-    Eigen::Map<Eigen::MatrixXd> get_coulomb_matrix(const ClusterRefKey<Order, Layer>& center){
-      return this->coulomb_matrices_full[center];
+    Eigen::Map<Eigen::MatrixXd> get_soap_vector(const ClusterRefKey<Order, Layer>& center){
+      return this->soap_vectors[center];
     }
 
     // TODO think of a generic input type for the hypers
@@ -175,7 +168,9 @@ namespace rascal {
     GaussianSigmaType gaussian_sigma_type;
     // TODO(max-veit) these are specific to the radial Gaussian basis
     Eigen::MatrixXd<Eigen::Dynamic, 1> radial_sigmas;
-    Eigen::MatrixXd<Eigen::Dynamic, 1> prefactors;
+    Eigen::MatrixXd<Eigen::Dynamic, 1> radial_norm_factors;
+    Eigen::MatrixXd<Eigen::Dynamic, 1> radial_sigma_factors;
+    Eigen::MatrixXd<Eigen::Dynamic, Eigen::Dynamic> radial_nl_factors;
     Eigen::MatrixXd<Eigen::Dynamic, Eigen::Dynamic> radial_ortho_matrix;
     size_t n_species;
     size_t max_radial;
@@ -188,7 +183,7 @@ namespace rascal {
   };
 
 
-  /** Compute the widths of the radial Gaussian basis functions */
+  /** Compute common prefactors for the radial Gaussian basis functions */
   template<class Mngr>
   void RepresentationManagerSphericalExpansion<Mngr>::
       precompute_radial_sigmas(){
@@ -198,18 +193,24 @@ namespace rascal {
     using std::pow;
 
     size_t radial_n;
+    size_t angular_l;
 
-    for (radial_n = 0; radial_n < max_radial; radial_n += 1) {
+    for (radial_n = 0; radial_n < this->max_radial; radial_n += 1) {
       this->radial_sigmas[radial_n] = std::max(
             std::sqrt((double)radial_n), 1.0)
-          * this->interaction_cutoff / (double)max_angular;
+          * this->interaction_cutoff / (double)this->max_radial;
     }
 
     // Precompute common prefactors
     for (radial_n = 0; radial_n < this->max_radial; radial_n++) {
-      this->prefactors(radial_n) = std::sqrt(
-        2.0 / std::tgamma(1.5 + radial_n)
-        * pow(this->radial_sigmas[radial_n], 3.0 * 2.0*radial_n));
+      this->radial_norm_factors(radial_n) = std::sqrt(
+          2.0 / std::tgamma(1.5 + radial_n)
+          * pow(this->radial_sigmas[radial_n], 3.0 + 2.0*radial_n));
+      for (angular_l = 0; angular_l < this->max_angular + 1; angular_l++) {
+        this->radial_nl_fators(radial_n, angular_l) =
+            std::exp2(-0.5 * (1.0 + angular_l - radial_n))
+            * std::tgamma(0.5 * (3.0 + angular_l + radial_n))
+            / std::tgamma(1.5 + angular_l);
     }
   }
 
@@ -228,6 +229,8 @@ namespace rascal {
     size_t radial_n1;
     size_t radial_n2;
 
+    //TODO(max-veit) see if we can replace the gammas with their natural logs,
+    //since it'll overflow for relatively small n (n1 + n2 >~ 300)
     Eigen::MatrixXd overlap(this->max_radial, this->max_radial);
     for (radial_n1 = 0; radial_n1 < this->max_radial; radial_n1++) {
       for (radial_n2 = 0; radial_n2 < this->max_radial; radial_n2++) {
@@ -250,8 +253,6 @@ namespace rascal {
     if (eigensolver.info() != Eigen::Success) {
       throw std::runtime_error("Warning: Could not diagonalize "
                                "radial overlap matrix.");
-      // Add this line: @throws runtime_error
-      //                if the overlap matrix cannot be diagonalized.
     }
     //TODO(max-veit) check whether this is the right way to do this in Eigen
     Eigen::MatrixXd eigenvalues = eigensolver.eigenvalues();
@@ -262,59 +263,121 @@ namespace rascal {
                                 eigs_invsqrt.matrix().asDiagonal() * unitary;
   }
 
-
+  /**
+   * Compute a full set of spherical harmonics given a direction vector
+   *
+   * Follows the algorithm described in https://arxiv.org/abs/1410.1748
+   *
+   * @param direction Unit vector giving the argument of the Ylm functions
+   */
   template<class Mngr>
   void RepresentationManagerSphericalExpansion<Mngr>::
-      compute_spherical_harmonics() {
+      compute_spherical_harmonics(Eigen::Vector3d direction) {
 
     using math::PI;
+    using math::SQRT_THREE;
     using std::pow;
     using std::sqrt;
 
     size_t radial_n;
     size_t angular_l;
+    size_t m_count;
+    size_t m_array_idx;
 
+    const double SQRT_INV_2PI = sqrt(0.5 / PI);
     // The cosine against the z-axis is just the z-component of the
     // direction vector
     double cos_theta = direction[2];
-    double phi = std::atan2(direction[1], direction[0]);
+    double sin_theta = sqrt(1.0 - pow(cos_theta, 2));
+    //double phi = std::atan2(direction[1], direction[0]);
     // TODO(max-veit) (at some point): Research multiple-angle formulae and
     // see if they're more efficient.  The lines below compute cos(phi) and
     // sin(phi) very efficiently, but we need cos(m*phi) and sin(m*phi)...
-    //double inv_sqrt_xy = 1.0 / std::sqrt(pow(direction[0], 2) +
-                                         //pow(direction[1], 2));
-    //double cos_phi = direction[0] * inv_sqrt_xy;
-    //double sin_phi = direction[1] * inv_sqrt_xy;
-    MatrixXd harmonics(max_angular+1, 2*max_angular + 1);
-    // Associated Legendre polynomials include the Condon-Shortley phase
-    // TODO(max-veit) use the recurrence relations to compute P_l^m(cos theta)
-    MatrixXd assoc_legendre_polynom(max_angular+1, 2*max_angular + 1);
-    for(angular_l = 0; angular_l < this->max_angular + 1; angular_l++) {
-      size_t m_array_idx = 0;
-      for (m_count = -1.0*angular_l; m_count < 1; m_count++) {
+    double inv_sqrt_xy = 1.0 / std::hypot(direction[0], direction[1]);
+    double cos_phi = direction[0] * inv_sqrt_xy;
+    double sin_phi = direction[1] * inv_sqrt_xy;
+    MatrixXd harmonics(this->max_angular+1, 2*this->max_angular + 1);
+
+    // TODO(max-veit) move into its own function if this gets too long
+    MatrixXd assoc_legendre_polynom(this->max_angular+1, 2*this->max_angular + 1);
+    MatrixXd coeff_a(this->max_angular + 1, 2*this->max_angular + 1);
+    MatrixXd coeff_b(this->max_angular + 1, 2*this->max_angular + 1);
+
+    // Coefficients for computing the associated Legendre polynomials
+    for (angular_l = 0; angular_l < this->max_angular + 1; angular_l++) {
+      double lsq = angular_l*angular_l;
+      double lm1sq = (angular_l-1)*(angular_l-1);
+      for (m_count = 0; m_count < angular_l + 1; m_count++) {
+        double msq = m_count*m_count;
+        coeff_a(angular_l, m_count) = sqrt((4*lsq - 1.0) / (lsq - msq));
+        coeff_b(angular_l, m_count) = -1.0*sqrt((lm1sq - msq)
+                                                / (4*lm1sq - 1.0));
+      }
+    }
+
+    // Compute the associated Legendre polynomials: l < 2 are special cases
+    // These include the normalization factors usually needed in the spherical
+    // harmonics
+    double l_accum = SQRT_INV_2PI;
+    for (angular_l = 0; angular_l < this->max_angular + 1; angular_l++) {
+      if (angular_l == 0) {
+        assoc_legendre_polynom(angular_l, 0) = SQRT_INV_2PI;
+        continue;
+      } else if (angular_l == 1) {
+        assoc_legendre_polynom(angular_l, 0) = cos_theta * SQRT_THREE *
+                                               SQRT_INV_2PI;
+        l_accum = l_accum * -1.0*sqrt(3.0 / 2.0) * sin_theta;
+        assoc_legendre_polynom(angular_l, 1) = l_accum;
+        continue;
+      }
+      // for l > 1 : Use the recurrence relation
+      for (m_count = 0; m_count < angular_l - 1; m_count++) {
+        assoc_legendre_polynom(angular_l, m_count) =
+            coeff_a(angular_l, m_count) *
+            (cos_theta*assoc_legendre_polynom(angular_l - 1, m_count)
+             + coeff_b(angular_l, m_count)*assoc_legendre_polynom(
+                angular_l - 1, m_count));
+      }
+      assoc_legendre_polynom(angular_l, angular_l - 1) =
+          cos_theta * sqrt(2.0*(angular_l - 1) + 3) * l_accum;
+      l_accum = l_accum * sin_theta * -1.0*sqrt(1.0 + 0.5/angular_l);
+      assoc_legendre_polynom(angular_l, angular_l) = l_accum;
+    }
+
+    for (angular_l = 0; angular_l < this->max_angular + 1; angular_l++) {
+      m_array_idx = angular_l;
+      //for (m_count = -1.0*angular_l; m_count < 1; m_count++) {
+      for (m_count = 0; m_count < angular_l + 1; m_count++) {
         if (m_count == 0) {
           harmonics(angular_l, m_array_idx) = assoc_legendre_polynom(
               angular_l, m_count);
         } else {
           // Calculate ((l + m)! / (l - m)!) prefactor
           size_t factorial_quotient = 1;
-          for (size_t accum = (angular_l - m_count);
-              accum < (angular_l + m_count + 1); accum++) {
-            if (accum > 0) {
-              factorial_quotient *= accum;
+          for (size_t fac_counter = (angular_l - m_count);
+               fac_counter < (angular_l + m_count + 1); fac_counter++) {
+            if (fac_counter > 0) {
+              factorial_quotient *= fac_counter;
             }
           }
-          harmonics(angular_l, m_array_idx) = assoc_legendre_polynom(
-              angular_l, m_count) * -1.0 * std::sin(m_count * phi)
-              * sqrt(2.0 * (2.0*angular_l + 1.0) / (4.0 * PI));
-          harmonics(angular_l, m_array_idx - 2*m_count) =
+          // TODO(max-veit) check the normalization of the harmonics!
+          // (especially since the ALPs computed above are already normalized
+          // to a real SphHarmonics convention very similar to what we're using,
+          // i.e. real components (cosines) in positive m and imaginary (sines)
+          // in negative m.  Still not sure why the m=0 term has an extra
+          // sqrt(2) in it though...
+          harmonics(angular_l, angular_l + m_count) =
               assoc_legendre_polynom(angular_l, m_count)
-              * std::cos(m_count * phi)
-              * factorial_quotient
+              * std::sin(m_count * phi)
+              * sqrt(2.0 * (2.0*angular_l + 1.0) / (4.0 * PI));
+          harmonics(angular_l, angular_l - m_count) =
+              assoc_legendre_polynom(angular_l, m_count)
+              * std::cos(m_count * phi) / factorial_quotient
               * sqrt(2.0 * (2.0*angular_l + 1.0) / (4.0 * PI));
           if ((m_count % 2) == 1) {
             // Factor of (-1)^m that goes with negative-m entries
-            harmonics(angular_l, m_array_idx - 2*m_count) *= -1.0;
+            // (the Condon-Shortley phase)
+            harmonics(angular_l, m_array_idx - m_count) *= -1.0;
           }
         } // if (m_count == 0)
       } // for (m_count in [-l, 0])
@@ -336,43 +399,79 @@ namespace rascal {
     size_t radial_n;
     size_t angular_l;
     size_t m_count;
+    size_t lm_collective_idx;
+    double sigma2;
+    double radial_sigma_factor;
 
     for (auto center : this->structure_manager) {
 
       Eigen::MatrixXd soap_vector = Eigen::MatrixXd::Zero(
           this->n_species * this->max_radial,
           pow(this->max_angular + 1, 2));
+      //TODO(max-veit) merge these two
+      Eigen::MatrixXd radial_integral(this->max_radial, this->max_angular + 1);
 
       // Start the accumulator with the central atom
       // All terms where l =/= 0 cancel
-      double sigma2 = pow(this->get_gaussian_sigma(), 2);
+      sigma2 = pow(this->get_gaussian_sigma(center), 2);
+      // TODO(max-veit) this is specific to the Gaussian radial basis
+      // (along with the matching computation below)
+      // And ditto on the gamma functions (potential overflow)
       for (radial_n = 0; radial_n < this->max_radial; radial_n++) {
         // TODO(max-veit) remember to update when we do multiple n_species!
-        soap_vector(radial_n, 0) = prefactors(radial_n)
-            * std::exp2(-0.5 * (1.0 - radial_n))
+        radial_integral(radial_n, 0) = radial_norm_factors(radial_n)
+            * radial_nl_fators(radial_n, 0)
             * pow(1.0/sigma2 + 1.0/this->radial_sigmas[radial_n]**2,
-                       -0.5 * (3.0 + radial_n))
-            * std::tgamma(0.5 * (3.0 + radial_n))
-            * prefactors(radial_n) / std::sqrt(4.0 * PI);
+                       -0.5 * (3.0 + radial_n));
       }
-      // TODO(max-veit) don't forget to orthogonalize!
+      soap_vector.col(0) = this->radial_ortho_matrix *
+                           radial_integral.col(0) / sqrt(4.0 * PI);
 
       for (auto neigh : center) {
         auto dist{this->structure_manager.get_distance(neigh)};
         auto direction{this->structure_manager.get_direction_vector(neigh)};
+        double exp_factor = std::exp(-0.5 * pow(dist, 2) / sigma2);
+        sigma2 = pow(this->get_gaussian_sigma(neigh), 2);
 
-        // Precompute exponential factor
-        double exp_factor = std::exp(-0.5 * pow(
-              dist / this->get_gaussian_sigma(neigh), 2));
-
-        // Precompute spherical harmonics TODO(max-veit) maths seems a little low-level
+        // Note: the copy _should_ be optimized out (RVO)
         MatrixXd harmonics = this->compute_spherical_harmonics(direction);
 
-        //TODO(max-veit) how does this work with SpeciesFilter?
-        for (size_t radial_n = 0; radial_n < this->max_radial; radial_n++) {
-          for(size_t angular_l = 0; angular_l < this->max_angular + 1; angular_l++) {
-            for (size_t idx_m = 0; idx_m < this->angular_l + 1; idx_m++) {
-              // Compute SOAP coefficients (use your imagination for now)
+        // Precompute radial factors that also depend on the Gaussian sigma
+        VectorXd radial_sigma_factors(this->max_radial);
+        for (radial_n = 0; radial_n < this->max_radial; radial_n++) {
+          radial_sigma_factors(radial_n) = (pow(sigma2, 2) +
+                                 sigma2*pow(this->radial_sigmas(radial_n), 2))
+                                / pow(this->radial_sigmas(radial_n), 2);
+        }
+
+        for (radial_n = 0; radial_n < this->max_radial; radial_n++) {
+          // TODO(max-veit) this is all specific to the Gaussian radial basis
+          // (doing just the angular integration would instead spit out
+          // spherical Bessel functions below)
+          //TODO(max-veit) how does this work with SpeciesFilter?
+          for(angular_l = 0; angular_l < this->max_angular + 1; angular_l++) {
+            radial_integral(radial_n, angular_l) =
+                exp_factor * radial_nl_fators(radial_n, angular_l)
+                * pow(1.0/sigma2 + 1.0/pow(this->radial_sigmas(radial_n), 2),
+                      -0.5 * (3.0 + angular_l + radial_n))
+                * pow(dist / sigma2, angular_l)
+                * math::hyp1f1(0.5 * (3.0 + angular_l * radial_n),
+                               1.5 + angular_l,
+                               0.5 * pow(dist, 2)
+                                   / radial_sigma_factors(radial_n));
+          }
+        }
+        radial_integral = this->radial_ortho_matrix * radial_integral;
+
+        for (radial_n = 0; radial_n < this->max_radial; radial_n++) {
+          lm_collective_idx = 0;
+          for(angular_l = 0; angular_l < this->max_angular + 1; angular_l++) {
+            for (size_t m_array_idx = 0; m_array_idx < 2*this->angular_l + 1;
+                m_array_idx++) {
+              soap_vector(n, lm_collective_idx) +=
+                  radial_integral(radial_n, angular_l)
+                  * harmonics(angular_l, m_array_idx);
+              ++lm_collective_idx;
             }
           }
         }

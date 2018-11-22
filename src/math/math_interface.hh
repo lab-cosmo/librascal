@@ -34,6 +34,7 @@ namespace rascal {
   namespace math {
 
     double hyp2f1(double& a, double& b, double& c, double& x);
+    double hyp1f1(double& a, double& b, double& x);
 
   }
 }

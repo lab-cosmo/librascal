@@ -37,6 +37,7 @@ namespace rascal {
     /// Pi to more digits than anyone could possibly need
     const double PI = 3.14159265358979323846264338327950288419716939937510;
     const double SQRT_TWO = std::sqrt((double)2.0);
+    const double SQRT_THREE = std::sqrt((double)3.0);
 
   } // math
 } // rascal

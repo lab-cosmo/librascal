@@ -33,8 +33,13 @@
 namespace rascal {
   namespace math {
 
-    double hyp2f1(double & a, double & b, double & c, double & x ){
+    double hyp2f1(double & a, double & b, double & c, double & x ) {
       return cephes::hyp2f1(a, b, c, x);
     }
+
+    double hyp1f1(double& a, double& b, double& x) {
+      return cephes::hyperg(a, b, x);
+    }
+
   } // math
 } // rascal
