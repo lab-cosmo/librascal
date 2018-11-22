@@ -185,9 +185,8 @@ namespace rascal {
     }
 
     //! Returns atom type given an atom index
-    inline int & get_atom_type(const int& atom_id) {
-      auto && type{this->manager.get_atom_type(atom_id)};
-      return type;
+    inline int get_atom_type(const int& atom_id) {
+      return this->manager.get_atom_type(atom_id);
     }
 
     //! Returns a constant atom type given an atom index

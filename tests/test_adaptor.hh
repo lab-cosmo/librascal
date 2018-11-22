@@ -36,7 +36,9 @@
 namespace rascal {
   /**
    * This file generates fixtures for testing adators, it is based on previously
-   * defined fixtures for `NeighbourHoodManager`s in test_structure.hh
+   * defined fixtures for `NeighbourHoodManager`s in test_structure.hh, it is
+   * used in checking the building of the neighbour list in an easy
+   * configuration based on 9 atoms.
    */
   template<class ManagerImplementation>
   struct PairFixtureSimple : public ManagerFixtureFile<ManagerImplementation>
@@ -87,27 +89,6 @@ namespace rascal {
     double cutoff;
     PairManager_t pair_manager;
   };
-
-  /* ---------------------------------------------------------------------- */
-  /**
-   * Fixture for testing AdaptorStrict constructor and update
-   */
-  // TODO: ask till about initialization
-  // struct PairFixtureCentersStrict : public PairFixtureCenters
-  // {
-
-  //   using Adaptor_t = AdaptorStrict<PairManager_t>;
-
-  //   PairFixtureCentersStrict()
-  //     : adaptor_strict{this->pair_manager, cutoff}
-  //   {
-  //     this->adaptor_strict.update();
-  //   }
-
-  //   ~PairFixtureCentersStrict() {}
-
-  //   Adaptor_t adaptor_strict;
-  // };
 }  // rascal
 
 

@@ -336,7 +336,7 @@ namespace rascal {
 
         // check different cutoffs
         //double cutoff_tmp{cutoff*n_cutoff[k]};
-        double cutoff_tmp{cutoff*n_cutoff[k]};
+        double cutoff_tmp{cutoff * n_cutoff[k]};
 
         // manager constructed within this loop
         StructureManagerCenters manager;
@@ -347,7 +347,7 @@ namespace rascal {
         // get reference data
         auto skewer{unity};
         // change shear multiplier
-        skewer(0,1) = shears[i];
+        skewer(0, 1) = shears[i];
         // calculate unit cell
         auto cell_skw = skewer * cell;
         auto cell_skw_inv{cell_skw.inverse().eval()};

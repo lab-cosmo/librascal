@@ -37,15 +37,27 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * test strict neighbourhood constructor and update, this is done here instead
+   * test strict neighbourhood constructor, this is done here instead
    * of in the Fixture, because of the default constructor is deleted.
    */
   BOOST_FIXTURE_TEST_CASE(constructor_test, PairFixtureCenters) {
+    AdaptorStrict<PairManager_t> adaptor_strict{pair_manager, cutoff};
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Update test
+   */
+  BOOST_FIXTURE_TEST_CASE(update_test, PairFixtureCenters) {
     AdaptorStrict<PairManager_t> adaptor_strict{pair_manager, cutoff};
     adaptor_strict.update();
   }
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * Iteration test for strict adaptor. It also checks if the positions and
+   * types of the original atoms are accessed correctly.
+   */
   BOOST_FIXTURE_TEST_CASE(iterator_test, PairFixtureCenters) {
 
     AdaptorStrict<PairManager_t> adaptor_strict{pair_manager, cutoff};
@@ -53,30 +65,29 @@ namespace rascal {
 
     int atom_counter{};
     int pair_counter{};
-    constexpr bool verbose{true};
+    constexpr bool verbose{false};
 
     for (auto atom: adaptor_strict) {
       auto index{atom.get_global_index()};
-      std::cout << "index " << index << std::endl;
       BOOST_CHECK_EQUAL(index, atom_counter);
 
       auto type{atom.get_atom_type()};
-      std::cout << "type " << type << std::endl;
       BOOST_CHECK_EQUAL(type, this->atom_types[index]);
       ++atom_counter;
 
       for (auto pair: atom) {
         auto pair_offset{pair.get_global_index()};
+        auto pair_type{pair.get_atom_type()};
         if (verbose) {
           std::cout << "pair (" << atom.back()
                     << ", " << pair.back()
                     << "), pair_counter = " << pair_counter
-                    << ", pair_offset = " << pair_offset << std::endl;
+                    << ", pair_offset = " << pair_offset
+                    << ", atom types = " << type << ", " << pair_type << std::endl;
         }
 
         BOOST_CHECK_EQUAL(pair_counter, pair_offset);
         ++pair_counter;
-
       }
     }
   }
@@ -154,7 +165,6 @@ namespace rascal {
 
       if (verbose) std::cout << "Setting get adaptor_strict info" << std::endl;
       for (auto center : adaptor_strict) {
-        // auto icenter{center.get_index()};
         std::vector<int> indices_{};
         std::vector<double> distances_{};
 
