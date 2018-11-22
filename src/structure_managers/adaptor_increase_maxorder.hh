@@ -364,11 +364,11 @@ namespace rascal {
 
       // vector of existing i_atoms in `cluster` to avoid doubling of atoms in
       // final list
-      std::vector<size_t> current_i_atoms;
+      std::vector<size_t> current_i_atoms{};
 
       // a set of new neighbours for the cluster, which will be added to extend
       // the cluster
-      std::set<size_t> current_j_atoms;
+      std::set<size_t> current_j_atoms{};
 
       // access to underlying manager for access to atom pairs
       auto & manager_tmp{cluster.get_manager()};

@@ -46,6 +46,8 @@ int main() {
   double cutoff{7.};
   std::string filename{"crystal_structure.json"};
 
+  std::cout << "filename " << filename << std::endl;
+
   manager.update(filename);
 
   PairManager_t pair_manager{manager, cutoff};
@@ -66,7 +68,7 @@ int main() {
     }
   }
 
-  TripletManager_t triplet_manager{strict_manager};
+  TripletManager2_t triplet_manager{pair_manager};
   triplet_manager.update();
 
   std::cout << "Iteration over triplet manager " << std::endl;

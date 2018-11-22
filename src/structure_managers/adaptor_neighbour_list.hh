@@ -616,17 +616,18 @@ namespace rascal {
       this->n_j_atoms++;
     }
 
-    //! Extends the list containing the number of neighbours with a 0
-    inline void add_entry_number_of_neighbours() {
-      this->nb_neigh.push_back(0);
-    }
+    // //! Extends the list containing the number of neighbours with a 0
+    // inline void add_entry_number_of_neighbours() {
+    //   this->nb_neigh.push_back(0);
+    // }
 
     //! Sets the correct offsets for accessing neighbours
     inline void set_offsets() {
       auto n_tuples{nb_neigh.size()};
       this->offsets.reserve(n_tuples);
       this->offsets.resize(1);
-      for (size_t i{0}; i < n_tuples; ++i) {
+      for (size_t i{0}; i < n_tuples-1; ++i) {
+        std::cout << this->offsets[i] + this->nb_neigh[i] << std::endl;
         this->offsets.emplace_back(this->offsets[i] + this->nb_neigh[i]);
       }
     }
@@ -701,11 +702,13 @@ namespace rascal {
   void AdaptorNeighbourList<ManagerImplementation>::update() {
     // initialize necessary data structure
     this->nb_neigh.resize(0);
-    this->offsets.resize(0);
+    this->offsets.resize(1);
+    //this->offsets.push_back(0);
     this->neighbours.resize(0);
     this->ghost_types.resize(0);
     // actual call for building the neighbour list
     this->make_full_neighbour_list();
+    //this->set_offsets();
   }
 
   /* ---------------------------------------------------------------------- */
@@ -883,8 +886,10 @@ namespace rascal {
       auto idx = internal::get_box_index(dpos, cutoff);
       auto current_j_atoms = internal::get_neighbours(i, idx, atom_id_cell);
 
+      std::cout << "i " << i << std::endl;
       for (auto j : current_j_atoms) {
         this->neighbours.push_back(j);
+        // std::cout << "  j " << j << std::endl;
         nneigh++;
       }
       this->nb_neigh.push_back(nneigh);
