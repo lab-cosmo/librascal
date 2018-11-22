@@ -45,6 +45,7 @@ int main() {
   Manager_t manager;
   double cutoff{7.};
   std::string filename{"crystal_structure.json"};
+  //std::string filename{"polyalanine.json"};
 
   std::cout << "filename " << filename << std::endl;
 
@@ -55,7 +56,7 @@ int main() {
 
   for (auto atom : pair_manager) {
     for (auto pair : atom) {
-      std::cout << "pair" << std::endl;
+      //std::cout << "pair" << std::endl;
     }
   }
 
@@ -64,7 +65,9 @@ int main() {
 
   for (auto atom : strict_manager) {
     for (auto pair : atom) {
-      std::cout << "strict pair" << std::endl;
+      std::cout << "strict pair " << atom.get_atom_index()
+                << ", " << pair.get_atom_index()
+                << " global index " << pair.get_global_index() << std::endl;
     }
   }
 

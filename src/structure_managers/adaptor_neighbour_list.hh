@@ -627,7 +627,7 @@ namespace rascal {
       this->offsets.reserve(n_tuples);
       this->offsets.resize(1);
       for (size_t i{0}; i < n_tuples-1; ++i) {
-        std::cout << this->offsets[i] + this->nb_neigh[i] << std::endl;
+        std::cout << "next offset " << this->offsets[i] + this->nb_neigh[i] << std::endl;
         this->offsets.emplace_back(this->offsets[i] + this->nb_neigh[i]);
       }
     }
@@ -702,13 +702,13 @@ namespace rascal {
   void AdaptorNeighbourList<ManagerImplementation>::update() {
     // initialize necessary data structure
     this->nb_neigh.resize(0);
-    this->offsets.resize(1);
+    this->offsets.resize(0);
     //this->offsets.push_back(0);
     this->neighbours.resize(0);
     this->ghost_types.resize(0);
     // actual call for building the neighbour list
     this->make_full_neighbour_list();
-    //this->set_offsets();
+    this->set_offsets();
   }
 
   /* ---------------------------------------------------------------------- */
@@ -878,7 +878,7 @@ namespace rascal {
     }
 
     // go through all atoms and build neighbour list
-    int offset{0};
+    //int offset{0};
     for (size_t i{0}; i < this->n_i_atoms; ++i) {
       int nneigh{0};
       Vector_t pos = this->get_position(i);
@@ -893,8 +893,8 @@ namespace rascal {
         nneigh++;
       }
       this->nb_neigh.push_back(nneigh);
-      this->offsets.push_back(offset);
-      offset += nneigh;
+      //this->offsets.push_back(offset);
+      //offset += nneigh;
     }
 
     // get cluster indices and fill them up in the first order
