@@ -77,6 +77,7 @@ class Box(object):
         self.mult_pos = self.lin2cell(lin_pos)
         self.boxlist = boxlist
         self.search_idx = []
+        
         for ii,p in enumerate(self.pbc):
             
             if 0 == self.mult_pos[ii] and p is False:
@@ -86,8 +87,7 @@ class Box(object):
             else:
                 self.search_idx.append([self.mult_pos[ii]+jj for jj in 
                         range(-self.neigh_search[ii], self.neigh_search[ii]+1)])
-        print(self.mult_pos,self.neigh_search,self.nbins_c,self.search_idx)
-
+        
         self.neighbour_bin_index,self.neighbour_bin_shift = [],[]
         for ii in self.search_idx[0]:
             for jj in self.search_idx[1]:

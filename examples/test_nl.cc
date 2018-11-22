@@ -58,7 +58,7 @@ struct MultipleStrictStructureManager
 
   MultipleStrictStructureManager() {
     std::vector<std::string> filenames{
-      {"reference_data/CaCrP2O7_mvc-11955_symmetrized_.json"}
+      {"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"}
                                         };
     std::vector<double> cutoffs{{3,4}};
     for (auto filename : filenames){

@@ -44,8 +44,8 @@ namespace rascal {
     ~MultipleStructureSortedCoulomb() = default;
 
     std::vector<std::string> filenames{
-      "reference_data/CaCrP2O7_mvc-11955_symmetrized_.json",
-      "reference_data/simple_cubic_8_.json",
+      "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
+      "reference_data/simple_cubic_8.json",
       "reference_data/small_molecule.json"
       };
     std::vector<double> cutoffs{{1,2,3}};

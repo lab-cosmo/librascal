@@ -125,7 +125,7 @@ class TestNL(unittest.TestCase):
         self.cell = self.frame['cell']
         self.positions = self.frame['positions']
         self.numbers = self.frame['numbers']
-        self.pbc = np.array([ [1, 1, 1], [0, 0, 0],
+        self.pbcs = np.array([ [1, 1, 1], [0, 0, 0],
                               [0, 1, 0], [1, 0, 1],
                               [1, 1, 0], [0, 0, 1],
                               [1, 0, 0], [0, 1, 0] ]).astype(int)
@@ -138,7 +138,7 @@ class TestNL(unittest.TestCase):
         self.manager.update(np.array(self.positions.T,order='F'),
                        self.numbers.reshape(-1,1),
                        np.array(self.cell.T,order='F'),
-                       self.pbc[0].reshape(3,1))
+                       self.pbcs[0].reshape(3,1))
 
     def test_constructor(self):
         """
@@ -166,7 +166,7 @@ class TestNL(unittest.TestCase):
         manager.update()
         
         neighpos,neighlist,neightype,neighdist = get_NL_reference(
-                    self.max_cutoff,self.cell,self.pbc,self.positions,self.numbers)
+                    self.max_cutoff,self.cell,self.pbcs[0],self.positions,self.numbers)
 
         for ii,center in enumerate(manager):
             for jj,neigh in enumerate(center):
@@ -185,7 +185,7 @@ class TestNLStrict(unittest.TestCase):
         self.cell = self.frame['cell']
         self.positions = self.frame['positions']
         self.numbers = self.frame['numbers']
-        self.pbc = np.array([ [1, 1, 1], [0, 0, 0],
+        self.pbcs = np.array([ [1, 1, 1], [0, 0, 0],
                               [0, 1, 0], [1, 0, 1],
                               [1, 1, 0], [0, 0, 1],
                               [1, 0, 0], [0, 1, 0] ]).astype(int)
@@ -198,7 +198,7 @@ class TestNLStrict(unittest.TestCase):
         self.managerC.update(np.array(self.positions.T,order='F'),
                        self.numbers.reshape(-1,1),
                        np.array(self.cell.T,order='F'),
-                       self.pbc[0].reshape(3,1))
+                       self.pbcs[0].reshape(3,1))
         self.manager = rc.Adaptor.NeighbourList_Centers(self.managerC,self.max_cutoff) 
         self.manager.update()
 
@@ -232,7 +232,7 @@ class TestNLStrict(unittest.TestCase):
         manager.update()
 
         neighpos,neighlist,neightype,neighdist,neighdirVec = get_NL_strict_reference(
-                    self.max_cutoff,self.cell,self.pbc,self.positions,self.numbers)
+                    self.max_cutoff,self.cell,self.pbcs[0],self.positions,self.numbers)
 
         for ii,center in enumerate(manager):
             dists,dirVecs = [],[]
