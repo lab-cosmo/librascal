@@ -1,18 +1,27 @@
 import json
 import numpy as np
+from collections import Iterable
 
-def dump_json_frame(fn,frame):
-
-    with open(fn,'w') as f:
-        json.dump(dict(positions = frame.get_positions().tolist(),
+def dump_json_frame(fn,frames):
+    if not isinstance(frames, Iterable):
+        frames = [frames]
+    data = dict()
+    for ii,frame in enumerate(frames):
+        data[ii] = dict(positions = frame.get_positions().tolist(),
                        cell = frame.get_cell().tolist(),
                        numbers = frame.get_atomic_numbers().tolist(),
-                       pbc = frame.get_pbc().tolist()),
-                  f,indent=2, separators=(',', ': '))
+                       pbc = frame.get_pbc().tolist())
+                        
+    data['ids'] = np.arange(len(frames)).tolist()
+    data['nextid'] = 2
+    with open(fn,'w') as f:
+        json.dump(data,f,indent=2, separators=(',', ': '))
+    
 def load_json_frame(fn):
     with open(fn,'r') as f:
         data = json.load(f)
-    return {key:np.array(val) for key,val in data.items()}
+    ids = data['ids']
+    return {key:np.array(val) for idx in ids for key,val in data[str(idx)].items()}
 
 class BoxList(object):
     def __init__(self,max_cutoff,cell,pbc,centers):

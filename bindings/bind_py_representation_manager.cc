@@ -1,5 +1,5 @@
 /**
- * @file   bind_py_neighbour_manager.cc
+ * @file   bind_py_representation_manager.cc
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
@@ -49,11 +49,36 @@ decltype(auto) add_representation_manager(py::module & mod,py::module & ){
 };
 
 
+template<template<typename,typename> typename FeatureManager_t,
+          typename T, typename RepresentationManager>
+decltype(auto) bind_feature_manager(py::module & mod,py::module & ){
+  using Feature = FeatureManager_t<T,RepresentationManager>;
+  using hypers_t = typename Feature::hypers_t;
+  std::string feature_name = 
+        internal::GetBindingTypeName<Feature>();
+
+  py::class_<Feature,FeatureManagerBase> 
+             feature(mod, feature_name.c_str());
+  feature.def(py::init<int , hypers_t >());
+  feature.def("reserve", &Feature::reserve);
+  feature.def("append",
+        (void (Feature::*)(RepresentationManager&)) &Feature::push_back);
+  feature.def("get_nb_comp", &Feature::get_nb_comp);
+  feature.def("get_nb_center", &Feature::get_nb_center);
+  feature.def("get_feature_matrix", &Feature::get_feature_matrix,
+        py::return_value_policy::reference_internal,py::keep_alive<1,0>());
+
+  return feature;
+};
+
 //! Sorted Coulomb representation python binding
 void add_representation_managers(py::module & mod,py::module & m_garbage){
   
   py::class_<RepresentationManagerBase>(m_garbage,"RepresentationManagerBase")
       .def(py::init<>());
+  py::class_<FeatureManagerBase>(m_garbage,"FeatureManagerBase")
+      .def(py::init<>());
+
 
   using Representation_t = RepresentationManagerSortedCoulomb<
         AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
@@ -64,7 +89,8 @@ void add_representation_managers(py::module & mod,py::module & m_garbage){
   representation.def("get_representation_full", 
          &Representation_t::get_representation_full,
          py::return_value_policy::reference_internal,py::keep_alive<1,0>());
-//   representation.def("get_coulomb_matrix",
-//           &Representation_t::get_coulomb_matrix<1,1>,
-//           py::return_value_policy::reference_internal,py::keep_alive<1,0>());
+  
+  auto feature = bind_feature_manager<FeatureManagerDense,
+                            double,Representation_t>(mod,m_garbage);
+
 };

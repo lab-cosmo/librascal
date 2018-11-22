@@ -54,14 +54,8 @@ namespace rascal {
         {"central_decay",0.5},
         {"interaction_cutoff",10},
         {"interaction_decay",0.5},
-        {"size",60}
-      },
-      { 
-        {"central_decay",0.5},
-        {"interaction_cutoff",3},
-        {"interaction_decay",0.5},
-        {"size",60}
-      },
+        {"size",200}
+      }
       };
   };
 
@@ -90,11 +84,12 @@ namespace rascal {
           representations.emplace_back(manager,hyper);
           representations.back().compute();
           Nfeatures.push_back(representations.back().get_n_feature());
+          std::cout << representations.back().get_n_feature()<< ", ";
         }
       }
       
-      auto Nfeature{max_element(std::begin(Nfeatures), std::end(Nfeatures))};
-
+      Nfeature = *std::max_element(std::begin(Nfeatures), std::end(Nfeatures));
+      
     }
 
     ~FeatureFixture() = default;

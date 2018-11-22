@@ -70,7 +70,7 @@ namespace rascal {
 
     //! updates the number of degrees of freedom stored per cluster
     inline void update_nb_comp() { 
-      this->nb_comp = this->nb_row*this->nb_row;
+      this->nb_comp = this->nb_row*this->nb_col;
       }
 
     //! returns the number of rows stored per cluster

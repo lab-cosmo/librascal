@@ -74,7 +74,7 @@ class FeatureManagerDense: public FeatureManagerBase {
       auto& raw_data{property.get_raw_data()};
       auto n_elem{property.get_nb_item()};
     
-      auto n_feature{property.get_nb_comp()};
+      int n_feature{property.get_nb_comp()};
       if (n_feature != this->n_feature){
         throw std::length_error("Incompatible number of features");
       }
@@ -87,7 +87,7 @@ class FeatureManagerDense: public FeatureManagerBase {
 
     //! move data from a feature vector
     void push_back(std::vector<T> feature_vector){
-      auto n_feature{feature_vector.size()};
+      int n_feature{feature_vector.size()};
       if (n_feature != this->n_feature){
         throw std::length_error("Incompatible number of features");
       }

@@ -45,7 +45,8 @@ namespace rascal {
 
     std::vector<std::string> filenames{
       "reference_data/CaCrP2O7_mvc-11955_symmetrized_.json",
-      "reference_data/simple_cubic_8_.json"
+      "reference_data/simple_cubic_8_.json",
+      "reference_data/small_molecule.json"
       };
     std::vector<double> cutoffs{{1,2,3}};
 
@@ -53,11 +54,7 @@ namespace rascal {
       {{"central_decay",0.5},
       {"interaction_cutoff",10},
       {"interaction_decay",0.5},
-      {"size",30}},
-      {{"central_decay",0.5},
-      {"interaction_cutoff",3},
-      {"interaction_decay",0.5},
-      {"size",30}},
+      {"size",50}}
       };
   };
 
