@@ -28,6 +28,7 @@
 #include "tests.hh"
 #include "test_structure.hh"
 #include "test_adaptor.hh"
+#include "structure_managers/adaptor_strict.hh"
 #include <vector>
 
 namespace rascal {
@@ -36,15 +37,19 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * test strict neighbourhood constructor and update
+   * test strict neighbourhood constructor and update, this is done here instead
+   * of in the Fixture, because of the default constructor is deleted.
    */
-  BOOST_FIXTURE_TEST_CASE(constructor_test,
-                          PairFixtureCentersStrict) {
+  BOOST_FIXTURE_TEST_CASE(constructor_test, PairFixtureCenters) {
+    AdaptorStrict<PairManager_t> adaptor_strict{pair_manager, cutoff};
+    adaptor_strict.update();
   }
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(iterator_test,
-                          PairFixtureCentersStrict) {
+  BOOST_FIXTURE_TEST_CASE(iterator_test, PairFixtureCenters) {
+
+    AdaptorStrict<PairManager_t> adaptor_strict{pair_manager, cutoff};
+    adaptor_strict.update();
 
     int atom_counter{};
     int pair_counter{};

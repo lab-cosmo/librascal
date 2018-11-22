@@ -92,21 +92,22 @@ namespace rascal {
   /**
    * Fixture for testing AdaptorStrict constructor and update
    */
-  struct PairFixtureCentersStrict : public PairFixtureCenters
-  {
+  // TODO: ask till about initialization
+  // struct PairFixtureCentersStrict : public PairFixtureCenters
+  // {
 
-    using Adaptor_t = AdaptorStrict<PairManager_t>;
+  //   using Adaptor_t = AdaptorStrict<PairManager_t>;
 
-    PairFixtureCentersStrict()
-      : adaptor_strict{this->pair_manager, cutoff}
-    {
-      this->adaptor_strict.update();
-    }
+  //   PairFixtureCentersStrict()
+  //     : adaptor_strict{this->pair_manager, cutoff}
+  //   {
+  //     this->adaptor_strict.update();
+  //   }
 
-    ~PairFixtureCentersStrict() {}
+  //   ~PairFixtureCentersStrict() {}
 
-    Adaptor_t adaptor_strict;
-  };
+  //   Adaptor_t adaptor_strict;
+  // };
 }  // rascal
 
 
