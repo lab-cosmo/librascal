@@ -613,6 +613,16 @@ namespace rascal {
      * function will need to branch, depending on the atom_index > n_i_atoms and
      * offset with n_j_atoms to access ghost positions.
      */
+
+    /**
+     * Function for adding existing i-atoms and ghost atoms additionally. This
+     * is needed, because ghost atoms are also included in the buildup of the
+     * pair list.
+     */
+    // inline void add_atom(int atom_index) {
+    //   this->atom_indices.push_back(atom_index);
+    // }
+
     inline void add_ghost_atom(const int & atom_index,
                                const Vector_t & position,
                                const int & atom_type) {
@@ -649,6 +659,9 @@ namespace rascal {
 
     //! Cutoff radius for neighbour list
     const double cutoff;
+
+    //! stores i-atom and ghost atom indices
+    //std::vector<int> atom_indices{};
 
     //! Stores additional atom indices of current Order (only ghost atoms)
     std::vector<size_t> ghost_atom_indices{};
@@ -689,6 +702,7 @@ namespace rascal {
   AdaptorNeighbourList(ManagerImplementation & manager, double cutoff):
     manager{manager},
     cutoff{cutoff},
+    //atom_indices{},
     ghost_atom_indices{},
     nb_neigh{},
     offsets{},
@@ -850,6 +864,22 @@ namespace rascal {
       repetitions[i] = nrep_in_dim;
       ntot *= nrep_in_dim;
     }
+
+
+    // before generating ghost atoms, all existing atoms are added to the list
+    // of current atoms to start the full list of current i-atoms and ghosts
+    // auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
+    // for (auto atom : this->get_manager()) {
+    //   auto index_i = atom.get_atom_index();
+    //   this->add_atom(index_i);
+    //   constexpr auto AtomLayer{
+    //           compute_cluster_layer<atom.order()>
+    //             (typename traits::LayerByOrder{})};
+    //   Eigen::Matrix<size_t, AtomLayer+1, 1> indices;
+    //   indices.template head<AtomLayer>() = atom.get_cluster_indices();
+    //   indices(AtomLayer) = indices(AtomLayer-1);
+    //   atom_cluster_indices.push_back(indices);
+    // }
 
     // generate ghost atom indices and positions
     for (auto atom : this->get_manager()) {
