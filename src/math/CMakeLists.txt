@@ -35,6 +35,7 @@ install(TARGETS cephes DESTINATION lib)
 
 
 add_library(rascal-math "")
+target_link_libraries(rascal-math PUBLIC Eigen3::Eigen)
 
 install(TARGETS rascal-math DESTINATION lib)
 

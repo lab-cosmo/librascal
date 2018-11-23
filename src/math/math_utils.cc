@@ -31,7 +31,6 @@
 namespace rascal {
   namespace math {
 
-
     /**
      * Compute a set of normalized associated Legendre polynomials
      *
@@ -44,18 +43,25 @@ namespace rascal {
      *
      * @param max_angular Compute up to this angular momentum number (l_max)
      *
-     * @return An (Eigen)matrix of evaluated polynomials of size l_max by
-     *         (2*lmax + 1); the row is indexed by l and the column by m >= 0.
+     * @param assoc_legendre_polynom
+     *        An (Eigen)matrix to contain the evaluated polynomials; it will be
+     *        resized to l_max by (2*lmax + 1).  The row is indexed by l and the
+     *        column by m >= 0.
      */
-    decltype(auto) compute_assoc_legendre_polynom(double cos_theta,
-                                                  size_t max_angular) {
+    template<typename DerivedR>
+    void compute_assoc_legendre_polynom(
+        double cos_theta, size_t max_angular,
+        Eigen::MatrixBase<DerivedR> &assoc_legendre_polynom) {
       using std::pow;
       using std::sqrt;
       size_t angular_l;
       size_t m_count;
-      MatrixXd assoc_legendre_polynom(max_angular+1, max_angular + 1);
-      MatrixXd coeff_a(max_angular + 1, 2*max_angular + 1);
-      MatrixXd coeff_b(max_angular + 1, 2*max_angular + 1);
+      /// Technically abs(sin(θ)), but θ only goes from [0, π)
+      double sin_theta = sqrt(1.0 - pow(cos_theta, 2));
+      //Eigen::MatrixXd assoc_legendre_polynom(max_angular+1, max_angular + 1);
+      assoc_legendre_polynom.resize(max_angular+1, max_angular + 1);
+      Eigen::MatrixXd coeff_a(max_angular + 1, 2*max_angular + 1);
+      Eigen::MatrixXd coeff_b(max_angular + 1, 2*max_angular + 1);
       const double SQRT_INV_2PI = sqrt(0.5 / PI);
 
       // Coefficients for computing the associated Legendre polynomials
@@ -98,7 +104,6 @@ namespace rascal {
         l_accum = l_accum * sin_theta * -1.0*sqrt(1.0 + 0.5/angular_l);
         assoc_legendre_polynom(angular_l, angular_l) = l_accum;
       }
-      return assoc_legendre_polynom;
     }
 
     /**
@@ -118,19 +123,22 @@ namespace rascal {
      *
      * @param max_m Compute up to a maximum value of max_m (inclusive)
      *
-     * @return Matrix of size max_m by 2 containing the cos(mφ) in the first
-     *         column and sin(mφ) in the second column, m being the row index
+     * @param cos_sin_m_phi
+     *        (Eigen)matrix to store the results; it will be resized to max_m
+     *        by 2 with the cos(mφ) stored in the first column and sin(mφ) in
+     *        the second column, m being the row index
      */
-    decltype(auto) compute_cos_sin_angle_multiples(
-        double cos_phi, double sin_phi, size_t max_m) {
-      Eigen::MatrixXd cos_sin_m_phi(max_m + 1, 2);
+    template<typename DerivedR>
+    void compute_cos_sin_angle_multiples(
+        double cos_phi, double sin_phi, size_t max_m,
+        Eigen::MatrixBase<DerivedR> &cos_sin_m_phi) {
+      //Eigen::MatrixXd cos_sin_m_phi(max_m + 1, 2);
+      cos_sin_m_phi.resize(max_m + 1, 2);
       for (size_t m_count{0}; m_count < max_m + 1; m_count++) {
         if (m_count == 0) {
-          cos_m_phi(m_count) = 1.0;
-          sin_m_phi(m_count) = 0.0;
+          cos_sin_m_phi.row(m_count) << 1.0, 0.0;
         } else if (m_count == 1) {
-          cos_m_phi(m_count) = cos_phi;
-          sin_m_phi(m_count) = sin_phi;
+          cos_sin_m_phi.row(m_count) << cos_phi, sin_phi;
         } else {
           cos_sin_m_phi.row(m_count) =
               2.0*cos_phi*cos_sin_m_phi.row(m_count - 1)
@@ -169,10 +177,14 @@ namespace rascal {
      *
      * @param max_angular Compute up to this angular momentum number (l_max)
      *
-     * @return An (Eigen)matrix
+     * @param harmonics (Eigen)matrix in which to store the results.  It will be
+     *                  resized to l_max+1 by 2l_max+1, the row index
+     *                  corresponding to l numbers and the column index to m.
      */
-    decltype(auto) compute_spherical_harmonics(Eigen::Vector3d direction,
-                                               size_t max_angular) {
+    template<typename Derived, typename DerivedR>
+    void compute_spherical_harmonics(
+        const Eigen::MatrixBase<Derived> &direction, size_t max_angular,
+        Eigen::MatrixBase<DerivedR> &harmonics) {
 
       using std::pow;
       using std::sqrt;
@@ -182,11 +194,12 @@ namespace rascal {
       size_t m_count;
       size_t m_array_idx;
 
+      if (direction.size() != 3) {
+        throw std::length_error("Direction must be a vector in R^3");
+      }
       // The cosine against the z-axis is just the z-component of the
       // direction vector
       double cos_theta = direction[2];
-      /// Technically abs(sin(θ)), but θ only goes from [0, π)
-      double sin_theta = sqrt(1.0 - pow(cos_theta, 2));
       //double phi = std::atan2(direction[1], direction[0]);
       double sqrt_xy = std::hypot(direction[0], direction[1]);
       double cos_phi, sin_phi;
@@ -198,12 +211,14 @@ namespace rascal {
         cos_phi = direction[0] / sqrt_xy;
         sin_phi = direction[1] / sqrt_xy;
       }
-      MatrixXd harmonics(max_angular+1, 2*max_angular + 1);
-      MatrixXd assoc_legendre_polynom =
-          compute_assoc_legendre_polynom(cos_theta, max_angular);
-      MatrixXd cos_sin_m_phi =
-          compute_cos_sin_angle_multiples(cos_phi, sin_phi, max_angular);
-
+      //Eigen::MatrixXd harmonics(max_angular+1, 2*max_angular + 1);
+      harmonics.resize(max_angular+1, 2*max_angular + 1);
+      Eigen::MatrixXd assoc_legendre_polynom;
+      Eigen::MatrixXd cos_sin_m_phi;
+      compute_assoc_legendre_polynom(
+          cos_theta, max_angular, assoc_legendre_polynom);
+      compute_cos_sin_angle_multiples(
+          cos_phi, sin_phi, max_angular, cos_sin_m_phi);
 
       for (size_t angular_l{0}; angular_l < max_angular + 1;
            angular_l++) {
@@ -236,7 +251,6 @@ namespace rascal {
           } // if (m_count == 0)
         } // for (m_count in [0, l])
       } // for (l in [0, lmax])
-      return harmonics;
     } // compute_spherical_harmonics()
 
   } // math
