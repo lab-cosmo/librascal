@@ -28,8 +28,12 @@
 #ifndef TEST_MATH_H
 #define TEST_MATH_H
 
+#include "tests.hh"
+#include "json_io.hh"
 #include "math/math_interface.hh"
+#include "math/math_utils.hh"
 
+#include <fstream>
 #include <Eigen/Dense>
 
 namespace rascal {
@@ -61,6 +65,26 @@ namespace rascal {
     Eigen::Matrix<double, 3, Eigen::Dynamic>  results_airy;
     bool vebose{false};
 
+  };
+
+  struct SphericalHarmonicsRefFixture
+  {
+    SphericalHarmonicsRefFixture() {
+      json ref_data;
+      std::ifstream ref_file(this->ref_filename);
+      ref_file >> ref_data;
+      unit_vectors = ref_data.at("unit_vectors").get<StdVector2D_t>();
+      harmonics = ref_data.at("harmonics").get<StdVector3D_t>();
+    }
+
+    ~SphericalHarmonicsRefFixture() = default;
+
+    std::string ref_filename = "reference_data/spherical_harmonics_test.json";
+
+    using StdVector2D_t = std::vector<std::vector<double>>;
+    using StdVector3D_t = std::vector<std::vector<std::vector<double>>>;
+    StdVector2D_t unit_vectors;
+    StdVector3D_t harmonics;
   };
 }  // rascal
 
