@@ -373,6 +373,7 @@ namespace rascal {
       // access to underlying manager for access to atom pairs
       auto & manager_tmp{cluster.get_manager()};
 
+      // careful: i_atoms can include ghosts, these have to be
       for (auto atom_index : i_atoms) {
         current_i_atoms.push_back(atom_index);
         size_t access_index = manager.get_cluster_neighbour(manager,
@@ -380,6 +381,7 @@ namespace rascal {
 
         // construct a shifted iterator to constuct a ClusterRef<1>
         auto iterator_at_position{manager_tmp.get_iterator_at(access_index)};
+        std::cout << "iterator at position " << access_index << std::endl;
 
         // ClusterRef<1> as dereference from iterator to get pairs of the
         // i_atoms

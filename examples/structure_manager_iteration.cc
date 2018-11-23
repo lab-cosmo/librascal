@@ -28,6 +28,7 @@
 
 #include <structure_managers/structure_manager_centers.hh>
 #include <structure_managers/adaptor_neighbour_list.hh>
+#include <structure_managers/adaptor_half_neighbour_list.hh>
 #include <structure_managers/adaptor_strict.hh>
 #include <structure_managers/adaptor_increase_maxorder.hh>
 #include <structure_managers/property.hh>
@@ -37,13 +38,15 @@
  */
 using Manager_t = rascal::StructureManagerCenters;
 using PairManager_t = rascal::AdaptorNeighbourList<Manager_t>;
+using PairManagerHalf_t = rascal::AdaptorHalfList<PairManager_t>;
+
 using StrictPairManager_t = rascal::AdaptorStrict<PairManager_t>;
 using TripletManager_t = rascal::AdaptorMaxOrder<StrictPairManager_t>;
 using TripletManager2_t = rascal::AdaptorMaxOrder<PairManager_t>;
 
 int main() {
   Manager_t manager;
-  double cutoff{7.};
+  double cutoff{5.};
   std::string filename{"crystal_structure.json"};
   //std::string filename{"polyalanine.json"};
 
@@ -59,6 +62,9 @@ int main() {
       //std::cout << "pair" << std::endl;
     }
   }
+
+  // PairManagerHalf_t pair_manager_half{pair_manager};
+  // pair_manager_half.update();
 
   StrictPairManager_t strict_manager{pair_manager, cutoff};
   strict_manager.update();
