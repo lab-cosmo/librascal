@@ -484,6 +484,8 @@ namespace rascal {
 
     //! Returns the number of clusters of size cluster_size
     inline size_t get_nb_clusters(size_t cluster_size) const {
+      std::cout << "cluster_size " << cluster_size << std::endl;
+      std::cout << "neighbours.size() "<< neighbours.size() << std::endl;
       switch (cluster_size) {
       case traits::MaxOrder: {
         return this->neighbours.size();
@@ -495,8 +497,13 @@ namespace rascal {
       }
     }
 
+    // TODO: this is a ambiguous, because new i-atoms are added as ghost. They
+    // are needed because the if the maxorder is increased, we need the neighbour
+    // of the neighbour, but they are not originally i-atoms
+
     //! Returns number of clusters of the original manager
     inline size_t get_size() const {
+      //return this->n_i_atoms+this->n_j_atoms;
       return this->manager.get_size();
     }
 
@@ -592,6 +599,7 @@ namespace rascal {
                     "this implementation handles only the respective MaxOrder");
 
       auto access_index = cluster.get_cluster_index(Layer);
+      std::cout << "access_index " << access_index << std::endl;
       return nb_neigh[access_index];
     }
 
@@ -616,10 +624,10 @@ namespace rascal {
       this->n_j_atoms++;
     }
 
-    // //! Extends the list containing the number of neighbours with a 0
-    // inline void add_entry_number_of_neighbours() {
-    //   this->nb_neigh.push_back(0);
-    // }
+    //! Extends the list containing the number of neighbours with a 0
+    inline void add_entry_number_of_neighbours() {
+      this->nb_neigh.push_back(0);
+    }
 
     //! Sets the correct offsets for accessing neighbours
     inline void set_offsets() {
@@ -627,7 +635,6 @@ namespace rascal {
       this->offsets.reserve(n_tuples);
       this->offsets.resize(1);
       for (size_t i{0}; i < n_tuples-1; ++i) {
-        std::cout << "next offset " << this->offsets[i] + this->nb_neigh[i] << std::endl;
         this->offsets.emplace_back(this->offsets[i] + this->nb_neigh[i]);
       }
     }
@@ -703,7 +710,6 @@ namespace rascal {
     // initialize necessary data structure
     this->nb_neigh.resize(0);
     this->offsets.resize(0);
-    //this->offsets.push_back(0);
     this->neighbours.resize(0);
     this->ghost_types.resize(0);
     // actual call for building the neighbour list
@@ -741,11 +747,15 @@ namespace rascal {
     // vector for storing the atom indices of each box
     std::vector<std::vector<int>> atoms_in_box{};
 
-    // minimum/maximum coordinate of mesh for neighbour list; depends on cell
-    // triclinicity and cutoff, coordinates of the mesh are relative to the
-    // origin of the given cell.
+    // minimum/maximum coordinate of mesh for neighbour list, it is larger by
+    // one cell to be able to provide a neighbour list also over ghost atoms;
+    // depends on cell triclinicity and cutoff, coordinates of the mesh are
+    // relative to the origin of the given cell. ghost_min is used for placing
+    // ghost atoms within the given ´skin´.
     Vector_t mesh_min{Vector_t::Zero()};
     Vector_t mesh_max{Vector_t::Zero()};
+    Vector_t ghost_min{Vector_t::Zero()};
+    Vector_t ghost_max{Vector_t::Zero()};
 
     // max and min multipliers for number of cells in mesh per dimension in
     // units of cell vectors to be filled from max/min mesh positions and used
@@ -765,12 +775,27 @@ namespace rascal {
       // minimum is given by -cutoff and a delta to avoid ambiguity during cell
       // sorting of atom position e.g. at x = (0,0,0).
       auto epsilon = 0.25 * cutoff;
-      mesh_min[i] = min_coord - cutoff  - epsilon;
-      auto lmesh = std::fabs(mesh_min[i]) + max_coord + 2*cutoff;
+      // 2 cutoff for extra layer of emtpy cells
+      mesh_min[i] = min_coord - 2*cutoff  - epsilon;
+
+      // outer mesh, including one layer of emtpy cells
+      auto lmesh = std::fabs(mesh_min[i]) + max_coord + 3*cutoff;
       int n = std::ceil(lmesh / cutoff);
       auto lmax = n * cutoff - std::fabs(mesh_min[i]);
       mesh_max[i] = lmax;
       nboxes_per_dim[i] = n;
+
+      // positions min/max for ghost atoms
+      ghost_min[i] = mesh_min[i] + cutoff;
+      auto lghost = lmesh - 2*cutoff; //std::fabs(mesh_min[i]) + max_coord + 2*cutoff;
+      int n_ghosts = std::ceil(lghost / cutoff);
+      ghost_max[i] = n_ghosts * cutoff - std::fabs(ghost_min[i]);
+
+      auto ndelta = n - n_ghosts;
+      if (ndelta != 2) {
+        std::cout << "mesh and ghost n " << n << " " << n_ghosts << std::endl;
+      }
+
     }
 
     // Periodicity related multipliers. Now the mesh coordinates are calculated
@@ -846,7 +871,7 @@ namespace rascal {
           }
 
           auto flag_inside =
-            internal::position_in_bounds(mesh_min, mesh_max, pos_ghost);
+            internal::position_in_bounds(ghost_min, ghost_max, pos_ghost);
 
           if (flag_inside) {
             // next atom index is size, since start is at index = 0
@@ -878,23 +903,23 @@ namespace rascal {
     }
 
     // go through all atoms and build neighbour list
-    //int offset{0};
-    for (size_t i{0}; i < this->n_i_atoms; ++i) {
+    int offset{0};
+    //    for (size_t i{0}; i < this->n_i_atoms; ++i) {
+    // iteration over all atoms is necessary for possible increase of maxorder
+    for (size_t i{0}; i < this->get_size_with_ghosts(); ++i) {
       int nneigh{0};
       Vector_t pos = this->get_position(i);
       Vector_t dpos = pos - mesh_min;
       auto idx = internal::get_box_index(dpos, cutoff);
       auto current_j_atoms = internal::get_neighbours(i, idx, atom_id_cell);
 
-      std::cout << "i " << i << std::endl;
       for (auto j : current_j_atoms) {
         this->neighbours.push_back(j);
-        // std::cout << "  j " << j << std::endl;
         nneigh++;
       }
       this->nb_neigh.push_back(nneigh);
       //this->offsets.push_back(offset);
-      //offset += nneigh;
+      offset += nneigh;
     }
 
     // get cluster indices and fill them up in the first order

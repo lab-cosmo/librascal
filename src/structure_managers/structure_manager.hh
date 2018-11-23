@@ -144,7 +144,7 @@ namespace rascal {
     template <typename Tup, typename Manager>
     struct ClusterIndexConstructor {};
 
-    //! Overload  to build the tuple
+    //! Overload to build the tuple
     template <typename... PropertyTypes, typename Manager>
     struct ClusterIndexConstructor<std::tuple<PropertyTypes...>, Manager> {
       static inline decltype(auto) make(Manager & manager) {
@@ -368,6 +368,37 @@ namespace rascal {
 
   private:
   };
+
+  // template <ManagerBase>
+  // class StructureManagerProxy
+  // {
+  // public:
+  //   //! Default constructor
+  //   StructureManagerProxy() = delete;
+
+  //   //! Copy constructor
+  //   StructureManagerProxy(const StructureManagerProxy &other) = delete;
+
+  //   //! Move constructor
+  //   StructureManagerProxy(StructureManagerProxy &&other) = default;
+
+  //   //! Destructor
+  //   ~StructureManagerProxy() {};
+
+  //   //! Copy assignment operator
+  //   StructureManagerProxy& operator=(const StructureManagerProxy &other) = delete;
+
+  //   //! Move assignment operator
+  //   StructureManagerProxy& operator=(StructureManagerProxy &&other) = default;
+
+
+  //   inline iterator begin()
+
+  // protected:
+  //   Manager_t & manager;
+  // private:
+  // };
+
 
   /* ---------------------------------------------------------------------- */
   namespace internal {

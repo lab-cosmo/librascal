@@ -59,13 +59,15 @@ int main() {
 
   for (auto atom : pair_manager) {
     for (auto pair : atom) {
-      //std::cout << "pair" << std::endl;
+      std::cout << "pair (" << atom.get_atom_index() << ", "
+                << pair.get_atom_index() << " )" << std::endl;
     }
   }
 
   // PairManagerHalf_t pair_manager_half{pair_manager};
   // pair_manager_half.update();
 
+  std::cout << "Building strict manager" << std::endl;
   StrictPairManager_t strict_manager{pair_manager, cutoff};
   strict_manager.update();
 
@@ -77,6 +79,7 @@ int main() {
     }
   }
 
+  std::cout << "Building triplet manager" << std::endl;
   TripletManager2_t triplet_manager{pair_manager};
   triplet_manager.update();
 
