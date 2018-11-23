@@ -29,8 +29,10 @@
 #define MATH_UTILS_H
 
 #include "math_interface.hh"
+#include "structure_managers/structure_manager.hh"
 #include <cmath>
 #include <limits>
+// #include <Eigen/Dense> fails -- WTF?!
 
 namespace rascal {
   namespace math {
@@ -38,6 +40,7 @@ namespace rascal {
     /// Pi to more digits than anyone could possibly need
     const double PI = 3.14159265358979323846264338327950288419716939937510;
     const double SQRT_TWO = std::sqrt((double)2.0);
+    const double INV_SQRT_TWO = std::sqrt((double)0.5);
     const double SQRT_THREE = std::sqrt((double)3.0);
 
     /// How small a number must be to be considered effectively zero
