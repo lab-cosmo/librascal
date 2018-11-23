@@ -30,6 +30,7 @@
 
 #include "math_interface.hh"
 #include <cmath>
+#include <limits>
 
 namespace rascal {
   namespace math {
@@ -39,6 +40,11 @@ namespace rascal {
     const double SQRT_TWO = std::sqrt((double)2.0);
     const double SQRT_THREE = std::sqrt((double)3.0);
 
+    /// How small a number must be to be considered effectively zero
+    const double dbl_ftol = 100.0 * std::numeric_limits<double>::epsilon();
+
+    decltype(auto) compute_spherical_harmonics(Eigen::Vector3d direction,
+                                               size_t max_angular);
   } // math
 } // rascal
 
