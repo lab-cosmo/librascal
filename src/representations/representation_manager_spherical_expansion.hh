@@ -268,7 +268,24 @@ namespace rascal {
    *
    * Follows the algorithm described in https://arxiv.org/abs/1410.1748
    *
-   * @param direction Unit vector giving the argument of the Ylm functions
+   * In brief, this computes the real spherical harmonics where the imaginary
+   * components of the usual complex functions are instead stored in the
+   * negative-m indices:
+   *
+   *               ╭ √((2l+1)/(2*π) * (l+m)!/(l-m)!) P_l^-m(cos(θ)) sin(-mφ) for m<0
+   *               |
+   * Y_l^m(θ, φ) = ┤ √((2l+1)/(4*π)) P_l(cos(θ))                             for m==0
+   *               |
+   *               ╰ √((2l+1)/(2*π) * (l-m)!/(l+m)!) P_l^m(cos(θ)) cos(mφ)   for m>0
+   *
+   * In case you're wondering why it's 1/2π on the m=/=0 components (instead of
+   * 1/4π), there's an extra factor of 1/2 that comes from integrating cos² or
+   * sin² over the full circle of φ, so these are indeed normalized in the same
+   * sense as the complex spherical harmonics:
+   *
+   * ∫∫_(Sphere) dΩ Y_l^m(θ, φ) Y_l'^m'(θ, φ) = δ_(ll')δ_(mm')
+   *
+   * @param direction Unit vector giving the angles (arguments for the Y_l^m)
    */
   template<class Mngr>
   void RepresentationManagerSphericalExpansion<Mngr>::
@@ -290,9 +307,6 @@ namespace rascal {
     double cos_theta = direction[2];
     double sin_theta = sqrt(1.0 - pow(cos_theta, 2));
     //double phi = std::atan2(direction[1], direction[0]);
-    // TODO(max-veit) (at some point): Research multiple-angle formulae and
-    // see if they're more efficient.  The lines below compute cos(phi) and
-    // sin(phi) very efficiently, but we need cos(m*phi) and sin(m*phi)...
     double inv_sqrt_xy = 1.0 / std::hypot(direction[0], direction[1]);
     double cos_phi = direction[0] * inv_sqrt_xy;
     double sin_phi = direction[1] * inv_sqrt_xy;
@@ -344,6 +358,27 @@ namespace rascal {
       assoc_legendre_polynom(angular_l, angular_l) = l_accum;
     }
 
+    // Calulate cos(m*phi) and sin(m*phi) with the Chebyshev polynomial
+    // recurrence relations:
+    // cos(m*phi) = 2*cos(phi)*cos((m-1)*phi) - cos((m-2)*phi)
+    // sin(m*phi) = 2*cos(phi)*sin((m-1)*phi) - sin((m-1)*phi)
+    VectorXd cos_m_phi(this->max_angular + 1); // cos(m*phi) for all 0<=m<=l_max
+    VectorXd sin_m_phi(this->max_angular + 1); // sin(m*phi) "
+    for (m_count = 0; m_count < this->max_angular + 1; m_count++) {
+      if (m_count == 0) {
+        cos_m_phi(m_count) = 1.0;
+        sin_m_phi(m_count) = 0.0;
+      } else if (m_count == 1) {
+        cos_m_phi(m_count) = cos_phi;
+        sin_m_phi(m_count) = sin_phi;
+      } else {
+        cos_m_phi(m_count) = 2.0*cos_phi*cos_m_phi(m_count - 1)
+                             - cos_m_phi(m_count - 2);
+        sin_m_phi(m_count) = 2.0*cos_phi*sin_m_phi(m_count - 1)
+                             - sin_m_phi(m_count - 2);
+      }
+    }
+
     for (angular_l = 0; angular_l < this->max_angular + 1; angular_l++) {
       m_array_idx = angular_l;
       //for (m_count = -1.0*angular_l; m_count < 1; m_count++) {
@@ -368,20 +403,24 @@ namespace rascal {
           // sqrt(2) in it though...
           harmonics(angular_l, angular_l + m_count) =
               assoc_legendre_polynom(angular_l, m_count)
-              * std::sin(m_count * phi)
-              * sqrt(2.0 * (2.0*angular_l + 1.0) / (4.0 * PI));
+              * cos_m_phi(m_count);
+              //* sqrt(2.0 * (2.0*angular_l + 1.0) / (4.0 * PI));
+          // TODO(max-veit) I'm also skeptical about whether the factorial
+          // quotient is needed here -- we don't ever _need_ P_l^m for negative
+          // m in our definition of the real spherical harmonics
           harmonics(angular_l, angular_l - m_count) =
               assoc_legendre_polynom(angular_l, m_count)
-              * std::cos(m_count * phi) / factorial_quotient
-              * sqrt(2.0 * (2.0*angular_l + 1.0) / (4.0 * PI));
+              * sin_m_phi(m_count);
+              //* sqrt(2.0 * (2.0*angular_l + 1.0) / (4.0 * PI))
+              /// factorial_quotient;
           if ((m_count % 2) == 1) {
             // Factor of (-1)^m that goes with negative-m entries
             // (the Condon-Shortley phase)
             harmonics(angular_l, m_array_idx - m_count) *= -1.0;
           }
         } // if (m_count == 0)
-      } // for (m_count in [-l, 0])
-    } // for (l in [0, n))
+      } // for (m_count in [0, l])
+    } // for (l in [0, lmax])
     return harmonics;
   } // compute_spherical_harmonics()
 
