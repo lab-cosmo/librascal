@@ -373,26 +373,30 @@ namespace rascal {
       // access to underlying manager for access to atom pairs
       auto & manager_tmp{cluster.get_manager()};
 
-      // careful: i_atoms can include ghosts, these have to be
+      // careful: i_atoms can include ghosts: ghosts have to be ignored, since
+      // they to not have a neighbour list themselves, they are only neighbours
       for (auto atom_index : i_atoms) {
-        current_i_atoms.push_back(atom_index);
-        size_t access_index = manager.get_cluster_neighbour(manager,
+        std::cout << "manager.size() " << manager.size() << std::endl;
+        if ( atom_index < (int) manager.size() ) {
+          current_i_atoms.push_back(atom_index);
+          size_t access_index = manager.get_cluster_neighbour(manager,
                                                             atom_index);
 
         // construct a shifted iterator to constuct a ClusterRef<1>
-        auto iterator_at_position{manager_tmp.get_iterator_at(access_index)};
-        std::cout << "iterator at position " << access_index << std::endl;
+          auto iterator_at_position{manager_tmp.get_iterator_at(access_index)};
+          std::cout << "iterator at position " << access_index << std::endl;
 
-        // ClusterRef<1> as dereference from iterator to get pairs of the
-        // i_atoms
-        auto && j_cluster{*iterator_at_position};
+          // ClusterRef<1> as dereference from iterator to get pairs of the
+          // i_atoms
+          auto && j_cluster{*iterator_at_position};
 
-        // collect all possible neighbours of the cluster: collection of all
-        // neighbours of current_i_atoms
-        for (auto pair : j_cluster) {
-          auto j_add = pair.back();
-          if (j_add > i_atoms.back()) {
-            current_j_atoms.insert(j_add);
+          // collect all possible neighbours of the cluster: collection of all
+          // neighbours of current_i_atoms
+          for (auto pair : j_cluster) {
+            auto j_add = pair.back();
+            if (j_add > i_atoms.back()) {
+              current_j_atoms.insert(j_add);
+            }
           }
         }
       }
