@@ -1,11 +1,12 @@
 /**
- * file   
+ * file feature_manager_dense.hh
  *
  * @author Musil Felix <musil.felix@epfl.ch>
  *
  * @date   14 November 2018
  *
- * @brief  
+ * @brief Generic manager aimed to aggregate the features computed
+ *  with a representation on one or more atomic structures
  *
  * Copyright © 2018 Musil Felix, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -35,6 +36,14 @@
 
 namespace rascal {
 
+
+
+/**
+   * Handles the aggragation of features from compatible representation
+   * managers using a dense underlying data storage.
+   *
+   */
+// Todo remove the RepresentationManager template argument
 template<typename T, typename RepresentationManager>
 class FeatureManagerDense: public FeatureManagerBase {
   public:
@@ -44,10 +53,18 @@ class FeatureManagerDense: public FeatureManagerBase {
     using Feature_Matrix_t = Eigen::MatrixXd;
     using Feature_Matrix_ref = Eigen::Map<Eigen::MatrixXd>;
 
+    
+    /**Default constructor where hypers contains all relevant informations
+     * to setup a new RepresentationManager.
+     */
     FeatureManagerDense(int n_feature, hypers_t hypers)
     :feature_matrix{},n_feature{n_feature},n_center{0},hypers{hypers}
     {}
 
+    /**Constructor meant for initialization from python.
+     * hypers_str should be a string containing a serialized 
+     * json version of hypers above
+     */
     FeatureManagerDense(int n_feature, std::string hypers_str)
     :feature_matrix{},n_feature{n_feature},n_center{0},hypers{}
     {
@@ -106,23 +123,33 @@ class FeatureManagerDense: public FeatureManagerBase {
                     std::make_move_iterator(feature_vector.end()));
     }
 
+    //! return number of elements of the flattened array
     inline int get_nb_comp(){
       return this->feature_matrix.size();
     }
 
+    //! return the number of samples in the feature matrix
     inline int get_nb_center(){
       return this->feature_matrix.size()/this->n_feature;
     }
 
+    //! return the feature matrix as an Map over Eigen MatrixXd
     inline Feature_Matrix_ref get_feature_matrix(){
       return Feature_Matrix_ref(this->feature_matrix.data(),
                                 this->n_feature,this->n_center);
     }
 
   protected:
+    //! underlying data container for the feature matrix 
     std::vector<T> feature_matrix;
+    //! Number of feature. 
+    //TODO make it possible to change it after construction 
     int n_feature;
+    //! Number of samples in the feature matrix
     int n_center;
+    /** Contain all relevant information to initialize 
+    * a compatible RepresentationManager
+    */
     hypers_t hypers;
   
 };

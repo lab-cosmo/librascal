@@ -5,7 +5,7 @@
  *
  * @date   14 September 2018
  *
- * @brief  base class for representation managers
+ * @brief  Implements the Sorted Coulomb representation
  *
  * Copyright © 2018 Musil Felix, COSMO (EPFL), LAMMM (EPFL)
  *

@@ -1,5 +1,5 @@
 /**
- * file   .cc
+ * file  feature_manager_base.hh
  *
  * @author Musil Felix <musil.felix@epfl.ch>
  *

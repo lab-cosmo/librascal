@@ -5,7 +5,7 @@
  *
  * @date   14 September 2018
  *
- * @brief  base class for representation managers
+ * @brief  Implements the Sorted Coulomb representation
  *
  * Copyright © 2018 Musil Felix, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -42,6 +42,9 @@ namespace rascal {
 
     typedef std::vector<double>::const_iterator myiter;
 
+    /** Function for the sorting of a container using the order 
+     * from another container
+     */
     struct ordering {
       bool operator ()(std::pair<size_t, myiter> const& a, 
                               std::pair<size_t, myiter> const& b) {
@@ -49,7 +52,12 @@ namespace rascal {
       }
     };
 
-
+    /** Use the ordering from a sorted container to sort another one
+     * 
+     * @params in Container to sort
+     * @params referece Contains the sort order from the other container
+     * @returns copy of in that has been sorted
+     */
     template <typename T>
     std::vector<T> sort_from_ref(
         std::vector<T> const& in,
@@ -64,7 +72,13 @@ namespace rascal {
 
         return ret;
     }
-
+    /** Sort the coulomb matrix using the distance to the central atom
+     * as reference order and linearize it.
+     * 
+     * @params in Eigen Matrix to sort
+     * @params out Eigen Matrix that will contain the result
+     * @params reference  Contains the sort order from the other container
+     */
     template <typename DerivedA,typename DerivedB>
     void sort_coulomb_matrix(
       const Eigen::DenseBase<DerivedA> & in,
