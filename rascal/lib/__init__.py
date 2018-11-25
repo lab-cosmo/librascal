@@ -1,1 +1,2 @@
-from ._rascal import fps, fps_voronoi
+from ._rascal import (StructureManager,Adaptor,RepresentationManager,utils,math)
+from ._rascal.utils import sparsification
