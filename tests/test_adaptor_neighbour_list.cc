@@ -2,13 +2,14 @@
  * file   test_adaptor_neighbour_list.cc
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
+ * @author Till Junge <till.junge@epfl.ch>
  *
  * @date   05 Oct 2018
  *
  * @brief tests the implementation of the adaptor for building a
  * neighbour list, depends on traits if it is full of minimal
  *
- * Copyright © 2018 Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2018 Markus Stricker, Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
  * librascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -35,7 +36,50 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(neighbour_list_adaptor_test);
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(constructor_test_order_zero,
+  /*
+   * very simple 9 atom neighbour list build without periodicity
+   */
+  BOOST_FIXTURE_TEST_CASE(simple_cubic_9_neighbour_list,
+                          ManagerFixtureFile<StructureManagerCenters>) {
+
+    constexpr bool verbose{false};
+
+    AdaptorNeighbourList<StructureManagerCenters> SM2{manager, cutoff};
+    SM2.update();
+
+    auto npairs = SM2.get_nb_clusters(2);
+
+    if (verbose) std::cout << "npairs " << npairs << std::endl;
+
+    int np{0};
+    for (auto atom : SM2) {
+      for (auto pair : atom) {
+        np++;
+      }
+    }
+    if (verbose) std::cout << "np " << np << std::endl;
+  }
+
+  /* ---------------------------------------------------------------------- */
+  //! test if hcp managers are constructed
+  BOOST_FIXTURE_TEST_CASE(constructor_test_hcp,
+                          ManagerFixtureNeighbourCheckHcp
+                          <StructureManagerCenters>) {
+  }
+
+  /* ---------------------------------------------------------------------- */
+  //! test if fcc managers are constructed
+  BOOST_FIXTURE_TEST_CASE(constructor_test_fcc,
+                          ManagerFixtureNeighbourCheckFcc
+                          <StructureManagerCenters>) {
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * simple neighbourhood test with periodicity only in x-direction and a check
+   * for internal consistency
+   */
+  BOOST_FIXTURE_TEST_CASE(test_build_neighbour_list_from_atoms,
                           ManagerFixtureSimple<StructureManagerCenters>){
 
     constexpr bool verbose{false};
@@ -66,14 +110,19 @@ namespace rascal {
       }
     }
     if (verbose) std::cout << "Number of pairs " << n_pairs << std::endl;
+    BOOST_CHECK_EQUAL(n_pairs, pair_manager.get_nb_clusters(2));
   }
 
   /* ---------------------------------------------------------------------- */
+  /*
+   * test if two differently defined 2-atom units cells of hcp crystal structure
+   * yield the same number of neighbours per atom, if the cutoff is increased.
+   */
   BOOST_FIXTURE_TEST_CASE(neighbourlist_test_hcp,
-                          ManagerFixtureNeighbourComparison
+                          ManagerFixtureNeighbourCheckHcp
                           <StructureManagerCenters>) {
 
-    /**
+    /*
      * Note: since the cell vectors are different, it is possible that one of
      * the two atoms is repeated into a different cell due to periodicity. This
      * leads to a difference in number of neighbours. Therefore the strict
@@ -159,6 +208,13 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  /*
+   * Test if two differently defined 1-atom and 4-atom units cells of fcc
+   * crystal structure yield the same number of neighbours per atom at the
+   * origin, if the cutoff is increased. ``manager_1`` has one atom at the
+   * origin,``manager_2`` has 4 atoms (tetraeder). This is done to check if
+   * skewed-ness affects the neighbour list algorithm.
+   */
   BOOST_FIXTURE_TEST_CASE(neighbourlist_test_fcc,
                           ManagerFixtureNeighbourCheckFcc
                           <StructureManagerCenters>) {
@@ -193,14 +249,17 @@ namespace rascal {
       for (auto atom : pair_manager1) {
         neighbours_per_atom1.push_back(0);
         for (auto pair : atom) {
-          if (verbose) {
-            std::cout << "1 pair "
-                      << atom.back() << " "
-                      << pair.back() << std::endl;
-          }
           double dist = {(atom.get_position()
                           - pair.get_position()).norm()};
-          if (dist < cutoff_tmp) {
+          bool is_in{dist < cutoff_tmp};
+          if (verbose) {
+            std::cout << "1 pair ("
+                      << atom.get_position().transpose() << ", "
+                      << pair.get_position().transpose() << ", "
+                      << dist << ", " << cutoff_tmp << ", " << is_in
+                      << ")" <<std::endl;
+          }
+          if (is_in) {
             neighbours_per_atom1.back()++;
           }
         }
@@ -209,20 +268,23 @@ namespace rascal {
       for (auto atom : pair_manager2) {
         neighbours_per_atom2.push_back(0);
         for (auto pair : atom) {
-          if (verbose) {
-            std::cout << "2 pair "
-                      << atom.back() << " "
-                      << pair.back() << std::endl;
-          }
           double dist = {(atom.get_position()
                           - pair.get_position()).norm()};
-          if (dist < cutoff_tmp) {
+          bool is_in{dist < cutoff_tmp};
+          if (verbose) {
+            std::cout << "2 pair ("
+                      << atom.get_position().transpose() << ", "
+                      << pair.get_position().transpose() << ", "
+                      << dist << ", " << cutoff_tmp << ", " << is_in
+                      << ")" <<std::endl;
+          }
+          if (is_in) {
             neighbours_per_atom2.back()++;
           }
         }
       }
 
-      /**
+      /*
        * only the first index atom can be checked, since the cell with only one
        * atom does not allow for comparison with other atom's number of
        * neighbours
@@ -236,6 +298,8 @@ namespace rascal {
       }
     }
   }
+
+  // TODO: add test for different skewedness of an originally rectangular box
 
   BOOST_AUTO_TEST_SUITE_END();
 

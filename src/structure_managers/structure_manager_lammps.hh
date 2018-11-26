@@ -38,33 +38,32 @@ namespace rascal {
   //! forward declaration for traits
   class StructureManagerLammps;
 
-  /**
+  /*
    * traits specialisation for Lammps manager The traits are used for vector
    * allocation and further down the processing chain to determine what
    * functionality the given StructureManager already contains to avoid
-   * recomputation.  See also the implementation of adaptors.
+   * recomputation. See also the implementation of adaptors.
    */
   template <>
   struct StructureManager_traits<StructureManagerLammps> {
     constexpr static int Dim{3};
     constexpr static size_t MaxOrder{2};
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
+    constexpr static bool HasDistances{false};
+    constexpr static bool HasDirectionVectors{false};
     using LayerByOrder = std::index_sequence<0, 0>;
   };
 
-  //----------------------------------------------------------------------------//
+  /* ---------------------------------------------------------------------- */
   //! Definition of the new StructureManagerLammps class.
   class StructureManagerLammps:
-    //! It inherits publicly everything from the base class
     public StructureManager<StructureManagerLammps>
   {
   public:
     using traits = StructureManager_traits<StructureManagerLammps>;
     using Parent = StructureManager<StructureManagerLammps>;
     using Vector_ref = typename Parent::Vector_ref;
-    // using AtomRef_t = typename Parent::AtomRef;
-    // template <size_t Order>
-    // using ClusterRef_t = typename Parent::template ClusterRef<Order>;
+    using AtomRef_t = typename Parent::AtomRef;
 
     //! Default constructor
     StructureManagerLammps() = default;
@@ -102,7 +101,8 @@ namespace rascal {
      *
      * @param numneigh Property `numneigh` in the lammps `NeighList` structure
      *
-     * @param firstneigh Property `firstneigh` in the lammps `NeighList` structure
+     * @param firstneigh Property `firstneigh` in the lammps `NeighList`
+     * structure
      *
      * @param x Property `x` in the lammps `Atom` structure
      *
@@ -119,24 +119,20 @@ namespace rascal {
                 double ** x, double ** f, int * type,
                 double * eatom, double ** vatom);
 
-
-
     //! return position vector of an atom given the atom index
     inline Vector_ref get_position(const size_t & atom_index) {
       auto * xval{this->x[atom_index]};
       return Vector_ref(xval);
     }
 
-    //! return position vector of the last atom in the cluster
-    template<size_t Order, size_t Layer>
-    inline Vector_ref get_neighbour_position(const ClusterRefKey<Order,
-                                             Layer> & cluster) {
-      static_assert(Order > 1,
-                    "Only possible for Order > 1.");
-      static_assert(Order <= traits::MaxOrder,
-                    "Order too large, not available.");
+    //! get const atom type reference given an atom_index
+    inline const int & get_atom_type(const int & atom_index) const {
+      return this->type[atom_index];
+    }
 
-      return this->get_position(cluster.back());
+    //! Returns atom type given an atom index
+    inline int & get_atom_type(const int & atom_index) {
+      return this->type[atom_index];
     }
 
     //! return number of I atoms in the list
@@ -153,15 +149,15 @@ namespace rascal {
       return this->numneigh[cluster.back()];
     }
 
-    //! return the index-th neighbour of the last atom
-    //! in a cluster with cluster_size = 1 (atoms)
-    //! which can be used to construct pairs
+    //! return the index-th neighbour of the last atom in a cluster with
+    //! cluster_size = 1 (atoms) which can be used to construct pairs
     template<size_t Order, size_t Layer>
     inline int get_cluster_neighbour(const ClusterRefKey<Order, Layer>
                                      & cluster,
                                      size_t index) const {
       static_assert(Order == traits::MaxOrder-1,
-                    "this implementation only handles atoms and identify its index-th neighbour.");
+                    "this implementation only handles atoms and identify its "
+                    "index-th neighbour.");
       auto && i_atom_id{cluster.back()};
       return this->firstneigh[std::move(i_atom_id)][index];
     }
@@ -177,50 +173,50 @@ namespace rascal {
     }
 
     /**
-     * provided an atom, returns the cumulative numbers of pairs
-     * up to the first pair in which the atom is the I atom
-     * this only works for atom
+     * provided an atom, returns the cumulative numbers of pairs up to the first
+     * pair in which the atom is the I atom this only works for atom
      */
     template<size_t Order>
     inline size_t get_offset_impl(const std::array<size_t, Order>
                                   & counters) const;
 
     /**
-     * return the number of clusters of size cluster_size.
-     * Can only handle cluster_size 1 (atoms) and cluster_size 2 (pairs).
-    */
+     * return the number of clusters of size cluster_size.  Can only handle
+     * cluster_size 1 (atoms) and cluster_size 2 (pairs).
+     */
     size_t get_nb_clusters(int cluster_size) const;
 
   protected:
-    int inum{};
-    int tot_num{}; //includes ghosts
-    int * ilist{};
-    int * numneigh{};
-    int ** firstneigh{};
-    double **x{}; //! pointer to pointer
-    double **f{};
-    int * type{};
-    double * eatom{};
-    double ** vatom{};
+    int inum{}; //!< total numer of atoms
+    int tot_num{}; //!< total number, includes ghosts
+    int * ilist{}; //!< atomic indices
+    int * numneigh{}; //!< number of neighbours per atom
+    int ** firstneigh{}; //!< pointer to first neighbour
+    double ** x{}; //!< atomic positions
+    double ** f{}; //!< atomic forces
+    int * type{}; //!< atom types
+    double * eatom{}; //!< energy of atoms
+    double ** vatom{}; //!< virial stress of atoms
     int nb_pairs{}; //! number of clusters with cluster_size=2 (pairs)
-    std::vector<int> offsets{};
+    std::vector<int> offsets{}; //! offset per atom to access neighbour list
 
   private:
   };
 
-
-  /*
-   * provided an atom, returns the cumulative numbers of pairs
-   * up to the first pair in which the atom is the I atom
-   * this only works for atom
+  /**
+   * provided an atom, returns the cumulative numbers of pairs up to the first
+   * pair in which the atom is the I atom this only works for atom
    */
   template<size_t Order>
   inline size_t StructureManagerLammps::
   get_offset_impl(const std::array<size_t, Order> & counters) const {
-    static_assert (Order == 1, "this manager can only give the offset "
-                   "(= starting index) for a pair iterator, given the i atom "
-                   "of the pair");
-      return this->offsets[counters.front()];
+    // The static assert with <= is necessary, because the template parameter
+    // ``Order`` is one Order higher than the MaxOrder at the current level. The
+    // return type of this function is used to build the next Order iteration.
+    static_assert (Order <= traits::MaxOrder,
+                   "this manager can only give the offset (= starting index)"
+                   " for a pair iterator, given the i atom of the pair");
+    return this->offsets[counters.front()];
   }
 }  // rascal
 

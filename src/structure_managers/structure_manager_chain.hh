@@ -54,7 +54,7 @@
  * interface ´structure_manager.hh´
  */
 #include "structure_managers/structure_manager.hh"
-#include "structure_managers/json_io.hh"
+#include "json_io.hh"
 
 //! Some data types and operations are based on the Eigen library
 #include <Eigen/Dense>
@@ -212,6 +212,11 @@ namespace rascal {
                       this->cell_data.size()/traits::Dim);
     }
 
+    inline int get_atom_type(const int index) {
+      auto t = this->get_atom_types();
+      return t(index);
+    }
+
     //! Returns the type of a given atom, given an AtomRef
     inline int get_atom_type(const AtomRef_t& atom) {
       auto index{atom.get_index()};
@@ -245,21 +250,6 @@ namespace rascal {
       return Vector_ref(xval);
     }
 
-    /**
-     * Returns the position of a neighbour. In case of periodic boundary
-     * conditions, the get_neighbour_position should return a different
-     * position, if it is a ghost atom.
-     */
-    template<size_t Order, size_t Layer>
-    inline Vector_ref get_neighbour_position(const ClusterRefKey<Order, Layer>
-                                             & cluster) {
-      static_assert(Order > 1,
-                    "Only possible for Order > 1.");
-      static_assert(Order <= traits::MaxOrder,
-                    "this implementation should only work up to MaxOrder.");
-      return this->get_position(cluster.back());
-    }
-
     //! returns a map to all atomic positions.
     inline Positions_ref get_positions() {
       return Positions_ref(this->pos_data.data(), traits::Dim,
@@ -276,14 +266,9 @@ namespace rascal {
     inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
                                    & cluster) const {
       // TODO: Check for <= or < ?!
-      static_assert(Order <= traits::MaxOrder,
+      static_assert(Order < traits::MaxOrder,
                     "this implementation only handles atoms and pairs.");
       return this->numneigh[cluster.back()];
-    }
-
-    //! Cluster size is the number of neighbours here
-    inline size_t get_cluster_size(const int & atom_index) const {
-      return this->numneigh[atom_index];
     }
 
     //! return the index-th neighbour of cluster
@@ -343,7 +328,7 @@ namespace rascal {
      * 'Atoms objects'.  It is first class C++ data structure, which 'feels'
      * like JSON.
      */
-    json_io::AtomicStructure atoms_object{};
+    json_io::AtomicJsonData atoms_object{};
 
     /**
      * Since the data from the <code>atoms_object</code>, especially the
@@ -429,10 +414,15 @@ namespace rascal {
   template<size_t Order>
   inline size_t StructureManagerChain::
   get_offset_impl(const std::array<size_t, Order> & counters) const {
-    // TODO: Check this static_assert for validity
-    // static_assert (Order == 1, "this manager can only give the offset "
-    //                "(= starting index) for a pair iterator, given the i atom "
-    //                "of the pair");
+    /**
+     * The static assert with <= is necessary, because the template parameter
+     * ``Order`` is one Order higher than the MaxOrder at the current
+     * level. The return type of this function is used to build the next Order
+     * iteration.
+     */
+    static_assert (Order <= traits::MaxOrder, "this manager can only give the"
+                   " offset (= starting index) for a pair iterator, given the"
+                   " i atom of the pair");
     return this->offsets[counters.front()];
   }
 

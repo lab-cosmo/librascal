@@ -5,8 +5,8 @@
  *
  * @date   03 Aug 2018
  *
- * @brief implementation of non-templated base class for Properties,
- *        Properties are atom-, pair-, triplet-, etc-related values
+ * @brief implementation of non-templated base class for Properties, Properties
+ *        are atom-, pair-, triplet-, etc-related values
  *
  * Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -29,16 +29,18 @@
 #ifndef PROPERTY_BASE_H
 #define PROPERTY_BASE_H
 
-#include <typeinfo>
-
 #include "basic_types.hh"
 #include "structure_managers/structure_manager_base.hh"
 
 #include <string>
+#include <typeinfo>
+#include <vector>
 
 namespace rascal {
 
-
+  /**
+   * Base class defintion of a ``property``, defining an interface.
+   */
   class PropertyBase
   {
   public:
@@ -83,7 +85,8 @@ namespace rascal {
 
   protected:
 
-    StructureManagerBase & base_manager; //!< base-class reference to StructureManager
+    //! base-class reference to StructureManager
+    StructureManagerBase & base_manager;
     const Dim_t nb_row;  //!< number of rows stored
     const Dim_t nb_col;  //!< number of columns stored
     const Dim_t nb_comp; //!< number of dofs stored
@@ -96,15 +99,12 @@ namespace rascal {
     PropertyBase(StructureManagerBase & manager, Dim_t nb_row, Dim_t nb_col,
                  size_t order, size_t layer, std::string metadata="no metadata"):
       base_manager{manager}, nb_row{nb_row}, nb_col{nb_col},
-      nb_comp{nb_row*nb_col}, order{order}, property_layer{layer},
+      nb_comp{nb_row * nb_col}, order{order}, property_layer{layer},
       metadata{metadata}
     {}
 
-
-
   private:
   };
-
 }  // rascal
 
 #endif /* PROPERTY_BASE_H */

@@ -34,35 +34,40 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(strict_adaptor_test);
 
   /* ---------------------------------------------------------------------- */
-
+  /*
+   * test if a strict list can be constructed
+   */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
                           ManagerFixture<StructureManagerCenters>) {
-    double cutoff{3.5};
     AdaptorNeighbourList<StructureManagerCenters> pair_manager{manager, cutoff};
-    AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>> 
-                                      adaptor_strict{pair_manager, cutoff};                        
+    AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>
+      adaptor_strict{pair_manager, cutoff};
   }
-  /* ---------------------------------------------------------------------- */
 
+  /* ---------------------------------------------------------------------- */
+  /*
+   * test if the update function works
+   */
   BOOST_FIXTURE_TEST_CASE(update_test,
                           ManagerFixture<StructureManagerCenters>) {
-    double cutoff{3.5};
     AdaptorNeighbourList<StructureManagerCenters> pair_manager{manager, cutoff};
     pair_manager.update();
-    AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>> 
-                                      adaptor_strict{pair_manager, cutoff};             
+    AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>
+      adaptor_strict{pair_manager, cutoff};
     adaptor_strict.update();
   }
   /* ---------------------------------------------------------------------- */
-  // Compare the strict neighbour list with the linked cell one 
-  // selecting only the atoms within a cutoff radius
+  /*
+   * Compare the strict neighbour list with the linked cell one
+   * selecting only the atoms within a cutoff radius
+   */
   BOOST_FIXTURE_TEST_CASE(strict_test,
                           ManagerFixture<StructureManagerCenters>) {
-    
+
     bool verbose{false};
     int mult = 10;
     double rc_max{mult*0.5 + cutoff};
-    AdaptorNeighbourList<StructureManagerCenters> pair_manager{manager, rc_max };
+    AdaptorNeighbourList<StructureManagerCenters> pair_manager{manager, rc_max};
     pair_manager.update();
 
     for (auto i{0}; i < mult; ++i) {
@@ -72,23 +77,31 @@ namespace rascal {
       std::vector<std::vector<int>> neigh_ids_strict{};
       std::vector<std::vector<double>> neigh_dist_strict{};
 
-      // TODO re-initiallization in the loop of the pair manager results in a 
+      // TODO re-initiallization in the loop of the pair manager results in a
       // segmentation fault, is it expected ?
-      // AdaptorNeighbourList<StructureManagerCenters> pair_manager{manager, cutoff_tmp};
+      // AdaptorNeighbourList<StructureManagerCenters> pair_manager{manager,
+      //     cutoff_tmp};
       // pair_manager.update();
-      if (verbose) std::cout << "Setting up strict manager with rc="<<cutoff_tmp << std::endl;
-      AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>> 
-                                        adaptor_strict{pair_manager, cutoff_tmp};
+
+      if (verbose) std::cout << "Setting up strict manager with rc = "
+                             <<cutoff_tmp << std::endl;
+      AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>
+        adaptor_strict{pair_manager, cutoff_tmp};
       adaptor_strict.update();
 
-      if (verbose) std::cout << "Setting up comparison list with rc="<<cutoff_tmp<< std::endl;
+      if (verbose) std::cout << "Setting up comparison list with rc = "
+                             <<cutoff_tmp<< std::endl;
+
       for (auto center : pair_manager) {
         std::vector<int> indices{};
         std::vector<double> distances{};
         if (verbose) {
-          std::cout << "cell atom out " << center.get_index(); // get_index returns iteration index
-          std::cout << " " << center.get_atom_index() << " " ; // get_atom_index returns index from        
-          for (int ii{0};ii<3;++ii){
+          // get_index returns iteration index
+          std::cout << "cell atom out " << center.get_index();
+          // get_atom_index returns index from
+          std::cout << " " << center.get_atom_index() << " " ;
+
+          for (int ii{0}; ii < 3; ++ii){
             std::cout << center.get_position()[ii] << " ";
           }
           std::cout << " " << center.get_atom_type() << std::endl;
@@ -96,21 +109,21 @@ namespace rascal {
 
         for (auto neigh : center) {
           double distance{(center.get_position()
-                          - neigh.get_position()).norm()};
-          if (distance <= cutoff_tmp) {              
+                           - neigh.get_position()).norm()};
+          if (distance <= cutoff_tmp) {
             indices.push_back(neigh.get_atom_index());
             distances.push_back(distance);
             if (verbose) {
               std::cout << "cell neigh out " << neigh.get_index();
               std::cout << " " << neigh.get_atom_index() << " " ;
-                
-              for (int ii{0};ii<3;++ii){
+
+              for (int ii{0}; ii < 3; ++ii){
                 std::cout << neigh.get_position()[ii] << " ";
               }
               std::cout << " " << neigh.get_atom_type() << std::endl;
             }
           }
-          
+
         }
         neigh_ids.push_back(indices);
         neigh_dist.push_back(distances);
@@ -122,34 +135,38 @@ namespace rascal {
         // auto icenter{center.get_index()};
         std::vector<int> indices_{};
         std::vector<double> distances_{};
-        
+
         if (verbose) {
-          std::cout << "strict atom out " << center.get_index(); // get_index returns iteration index
-          std::cout << " " << center.get_atom_index() << " " ; // get_atom_index returns index from        
-          for (int ii{0};ii<3;++ii){
+          // get_index returns iteration index
+          std::cout << "strict atom out "
+                    << center.get_index();
+          // get_atom_index returns index from
+          std::cout << " " << center.get_atom_index() << " " ;
+
+          for (int ii{0}; ii < 3; ++ii){
             std::cout << center.get_position()[ii] << " ";
           }
           std::cout << " " << center.get_atom_type() << std::endl;
-          
+
         }
-        
+
         for (auto neigh : center) {
           double distance{(center.get_position()
-                          - neigh.get_position()).norm()};
+                           - neigh.get_position()).norm()};
 
           indices_.push_back(neigh.get_atom_index());
           distances_.push_back(distance);
-          
+
           if (verbose) {
-              std::cout << "strict neigh out " << neigh.get_index();
-              std::cout << " " << neigh.get_atom_index() << "\t " ;
-              
-              for (int ii{0};ii<3;++ii){
-                std::cout << neigh.get_position()[ii] << ", ";
-              }
-              std::cout << "\t dist=" << distance;
-              std::cout << "\t " << neigh.get_atom_type() << std::endl;
+            std::cout << "strict neigh out " << neigh.get_index();
+            std::cout << " " << neigh.get_atom_index() << "\t " ;
+
+            for (int ii{0}; ii < 3; ++ii){
+              std::cout << neigh.get_position()[ii] << ", ";
             }
+            std::cout << "\t dist=" << distance;
+            std::cout << "\t " << neigh.get_atom_type() << std::endl;
+          }
         }
 
         if (verbose) {
@@ -161,11 +178,13 @@ namespace rascal {
         // if (icenter > 1) break;
       }
 
-      
+
       BOOST_CHECK_EQUAL(neigh_ids.size(),neigh_ids_strict.size());
-      for (size_t ii{0};ii<neigh_ids.size();++ii){
+
+      for (size_t ii{0}; ii < neigh_ids.size(); ++ii){
         BOOST_CHECK_EQUAL(neigh_ids[ii].size(),neigh_ids_strict[ii].size());
-        for (size_t jj{0};jj<neigh_ids[ii].size();++jj){
+
+        for (size_t jj{0}; jj < neigh_ids[ii].size(); ++jj){
           int a0{neigh_ids[ii][jj]};
           int a1{neigh_ids_strict[ii][jj]};
           double d0{neigh_dist[ii][jj]};
@@ -179,10 +198,9 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(strict_test_hcp,
-                          ManagerFixtureNeighbourComparison
+                          ManagerFixtureNeighbourCheckHcp
                           <StructureManagerCenters>) {
-
-    /**
+    /*
      * Note: since the cell vectors are different, it is possible that one of
      * the two atoms is repeated into a different cell due to periodicity. This
      * leads to a difference in number of neighbours. Therefore the strict
@@ -219,18 +237,23 @@ namespace rascal {
       AdaptorNeighbourList<StructureManagerCenters> pair_manager1{manager_1,
           cutoff_tmp};
       pair_manager1.update();
+
       if (verbose) std::cout << "Setting up strict manager 1 " << std::endl;
-      AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>> 
-                                        adaptor_strict1{pair_manager1, cutoff_tmp};
+
+      AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>
+        adaptor_strict1{pair_manager1, cutoff_tmp};
       adaptor_strict1.update();
-      AdaptorNeighbourList<StructureManagerCenters> pair_manager2{manager_2,
-          cutoff_tmp};
+
+      AdaptorNeighbourList<StructureManagerCenters>
+        pair_manager2{manager_2, cutoff_tmp};
       pair_manager2.update();
+
       if (verbose) std::cout << "Setting up strict manager 2 " << std::endl;
-      AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>> 
-                                        adaptor_strict2{pair_manager2, cutoff_tmp};
+
+      AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>
+        adaptor_strict2{pair_manager2, cutoff_tmp};
       adaptor_strict2.update();
-      
+
       for (auto atom : adaptor_strict1) {
         neighbours_per_atom1.push_back(0);
         for (auto pair : atom) {
@@ -241,7 +264,7 @@ namespace rascal {
           }
           adaptor_strict1.get_distance(pair);
           neighbours_per_atom1.back()++;
-          
+
         }
       }
 
@@ -253,9 +276,9 @@ namespace rascal {
                       << atom.back() << " "
                       << pair.back() << std::endl;
           }
-          
+
           neighbours_per_atom2.back()++;
-          
+
         }
       }
 
@@ -298,19 +321,24 @@ namespace rascal {
         std::cout << "fcc cutoff " << cutoff_tmp << std::endl;
       }
 
-      AdaptorNeighbourList<StructureManagerCenters> pair_manager1{manager_1,
-          cutoff_tmp};
+      AdaptorNeighbourList<StructureManagerCenters>
+        pair_manager1{manager_1, cutoff_tmp};
       pair_manager1.update();
+
       if (verbose) std::cout << "Setting up strict manager 1 " << std::endl;
-      AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>> 
-                                        adaptor_strict1{pair_manager1, cutoff_tmp};
+
+      AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>
+        adaptor_strict1{pair_manager1, cutoff_tmp};
       adaptor_strict1.update();
-      AdaptorNeighbourList<StructureManagerCenters> pair_manager2{manager_2,
-          cutoff_tmp};
+
+      AdaptorNeighbourList<StructureManagerCenters>
+        pair_manager2{manager_2, cutoff_tmp};
       pair_manager2.update();
+
       if (verbose) std::cout << "Setting up strict manager 2 " << std::endl;
-      AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>> 
-                                        adaptor_strict2{pair_manager2, cutoff_tmp};
+
+      AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>
+        adaptor_strict2{pair_manager2, cutoff_tmp};
       adaptor_strict2.update();
 
       for (auto atom : adaptor_strict1) {
@@ -345,7 +373,7 @@ namespace rascal {
         }
       }
 
-      /**
+      /*
        * only the first index atom can be checked, since the cell with only one
        * atom does not allow for comparison with other atom's number of
        * neighbours

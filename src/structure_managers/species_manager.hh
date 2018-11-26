@@ -87,19 +87,19 @@ namespace rascal {
     SpeciesManager(ManagerImplementation& manager, double cutoff);
 
     //! Copy constructor
-    SpeciesManager(const SpeciesManager &other) = delete;
+    SpeciesManager(const SpeciesManager & other) = delete;
 
     //! Move constructor
-    SpeciesManager(SpeciesManager &&other) = default;
+    SpeciesManager(SpeciesManager && other) = default;
 
     //! Destructor
     virtual ~SpeciesManager() = default;
 
     //! Copy assignment operator
-    SpeciesManager& operator=(const SpeciesManager &other) = delete;
+    SpeciesManager & operator=(const SpeciesManager & other) = delete;
 
     //! Move assignment operator
-    SpeciesManager& operator=(SpeciesManager &&other) = default;
+    SpeciesManager & operator=(SpeciesManager && other) = default;
 
     /**
      * Updates just the adaptor assuming the underlying manager was
