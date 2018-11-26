@@ -32,6 +32,7 @@
 
 
 #include "representations/feature_manager_base.hh"
+#include "representations/representation_manager_base.hh"
 
 
 namespace rascal {
@@ -44,12 +45,13 @@ namespace rascal {
    *
    */
 // Todo remove the RepresentationManager template argument
-template<typename T, typename RepresentationManager>
+template<typename T>
 class FeatureManagerDense: public FeatureManagerBase {
   public:
 
-    using RepresentationManager_t = RepresentationManager;
-    using hypers_t = typename RepresentationManager::hypers_t;
+    using Parent = FeatureManagerBase;
+    using RepresentationManager_t = typename Parent::RepresentationManager_t;
+    using hypers_t = typename RepresentationManager_t::hypers_t;
     using Feature_Matrix_t = Eigen::MatrixXd;
     using Feature_Matrix_ref = Eigen::Map<Eigen::MatrixXd>;
 
@@ -94,15 +96,14 @@ class FeatureManagerDense: public FeatureManagerBase {
 
     //! move data from the representation manager property 
     void push_back(RepresentationManager_t& rm){
-      auto& property{rm.get_property()};
-      auto raw_data{property.get_raw_data()};
-      auto n_elem{property.get_nb_item()};
-    
-      int n_feature{property.get_nb_comp()};
+      auto& raw_data{rm.get_representation_raw_data()};
+      auto n_center{rm.get_center_size()};
+      int n_feature{static_cast<int>(rm.get_feature_size())};
+
       if (n_feature != this->n_feature){
         throw std::length_error("Incompatible number of features");
       }
-      this->n_center += n_elem;
+      this->n_center += n_center;
       // this->feature_matrix.insert(this->feature_matrix.end(),
       //                   std::make_move_iterator(raw_data.begin()), 
       //                   std::make_move_iterator(raw_data.end())
@@ -113,7 +114,7 @@ class FeatureManagerDense: public FeatureManagerBase {
 
     //! move data from a feature vector
     void push_back(std::vector<T> feature_vector){
-      int n_feature{feature_vector.size()};
+      int n_feature{static_cast<int>(feature_vector.size())};
       if (n_feature != this->n_feature){
         throw std::length_error("Incompatible number of features");
       }
@@ -124,19 +125,28 @@ class FeatureManagerDense: public FeatureManagerBase {
     }
 
     //! return number of elements of the flattened array
-    inline int get_nb_comp(){
+    inline int size() {
       return this->feature_matrix.size();
     }
 
     //! return the number of samples in the feature matrix
-    inline int get_nb_center(){
-      return this->feature_matrix.size()/this->n_feature;
+    inline int sample_size(){
+      return this->size()/this->n_feature;
+    }
+
+    //! return the number of feature in the feature matrix
+    inline int feature_size(){
+      return this->n_feature;
+    }
+
+    inline std::tuple<int,int> shape(){
+      return std::make_tuple(this->sample_size(),this->feature_size());
     }
 
     //! return the feature matrix as an Map over Eigen MatrixXd
     inline Feature_Matrix_ref get_feature_matrix(){
       return Feature_Matrix_ref(this->feature_matrix.data(),
-                                this->n_feature,this->n_center);
+                                this->feature_size(),this->sample_size());
     }
 
   protected:

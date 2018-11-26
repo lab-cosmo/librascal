@@ -2,7 +2,7 @@ import numpy as np
 import json
 
 from ..utils import get_strict_neighbourlist
-from ..lib import RepresentationManager
+from ..lib import RepresentationManager,FeatureManager
 
 class SortedCoulombMatrix(object):
     """
@@ -73,7 +73,7 @@ class SortedCoulombMatrix(object):
         inp = json.dumps(self.get_params())
         
         Nfeature = self.get_Nfeature()
-        features = RepresentationManager.FeatureManagerDense_double_SortedCoulomb_Strict_NeighbourList_Centers(Nfeature,inp)
+        features = FeatureManager.Dense_double(Nfeature,inp)
         
         cms = map(RepresentationManager.SortedCoulomb_Strict_NeighbourList_Centers,
                      managers,[inp]*Nframe)

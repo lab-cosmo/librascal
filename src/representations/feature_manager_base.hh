@@ -30,6 +30,7 @@
 #define FEATURE_MANAGER_BASE_H
 
 #include "structure_managers/structure_manager_base.hh"
+#include "representations/representation_manager_base.hh"
 #include "json_io.hh"
 
 #include <vector>
@@ -41,6 +42,10 @@ namespace rascal {
 
 class FeatureManagerBase {
   public:
+    
+    using RepresentationManager_t = RepresentationManagerBase;
+    using hypers_t = typename RepresentationManagerBase::hypers_t;
+
     FeatureManagerBase() = default;
 
     //! Copy constructor

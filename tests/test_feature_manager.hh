@@ -60,7 +60,7 @@ namespace rascal {
 
 
   template< typename T,
-            template<typename,typename> class FeatureManager,
+            template<typename> class FeatureManager,
             class StructureManager,
             template<typename> class RepresentationManager,
             class BaseFixture>
@@ -71,7 +71,7 @@ namespace rascal {
                                   RepresentationManager, BaseFixture>;
     using Manager_t = typename Parent::Manager_t;
     using Representation_t = typename Parent::Representation_t;
-    using Feature_t = FeatureManager<T,Representation_t>;
+    using Feature_t = FeatureManager<T>;
     using hypers_t = typename Representation_t::hypers_t;
 
     FeatureFixture() :Parent{}

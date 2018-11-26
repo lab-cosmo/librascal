@@ -106,25 +106,13 @@ namespace rascal {
   public:
 
     // TODO make a traits mechanism
-   
-    using Property_t = Property<double, 1, 1, Eigen::Dynamic, 1>;
-    using Property_1_t = Property<double, 1, 1, Eigen::Dynamic, Eigen::Dynamic>;
     using Manager_t = StructureManager;
     using Parent = RepresentationManagerBase;
     using hypers_t = typename Parent::hypers_t;
-    //! Default constructor 
-    // RepresentationManagerSortedCoulomb(Manager_t &sm, 
-    //   double central_decay , double interaction_cutoff, 
-    //   double interaction_decay, size_t size)
-    //   :structure_manager{sm},central_decay{central_decay},
-    //   interaction_cutoff{interaction_cutoff},
-    //   interaction_decay{interaction_decay},size{size},
-    //   coulomb_matrices{sm}
-    //   {
-    //     this->check_size_compatibility();
-    //   }
+    using precision_t = typename Parent::precision_t;
+    using Property_t = Property<precision_t, 1, 1, Eigen::Dynamic, 1>;
     
-
+    //! Default constructor 
     RepresentationManagerSortedCoulomb(Manager_t &sm, const hypers_t& hyper)
       :structure_manager{sm},central_decay{},
       interaction_cutoff{},
@@ -134,7 +122,8 @@ namespace rascal {
         this->check_size_compatibility();
       }
     
-    RepresentationManagerSortedCoulomb(Manager_t &sm, const std::string& hyper_str)
+    RepresentationManagerSortedCoulomb(Manager_t &sm, 
+                                      const std::string& hyper_str)
       :structure_manager{sm},central_decay{},
       interaction_cutoff{},
       interaction_decay{},coulomb_matrices{sm}
@@ -179,7 +168,22 @@ namespace rascal {
       return representation;
     }
 
-    void check_size_compatibility(){
+    //! get the raw data of the representation
+    std::vector<precision_t>& get_representation_raw_data(){
+      return this->coulomb_matrices.get_raw_data();
+    }
+
+    //! get the size of a feature vector
+    size_t get_feature_size(){
+      return this->coulomb_matrices.get_nb_comp();
+    }
+
+    //! get the number of centers for the representation
+    size_t get_center_size(){
+      return this->coulomb_matrices.get_nb_item();
+    }
+
+     void check_size_compatibility(){
       for (auto center: this->structure_manager){
         auto Nneighbours{center.size()};
         if (Nneighbours > this->size){
@@ -191,12 +195,8 @@ namespace rascal {
       }
     }
 
-    //! get the underlying data structure 
-    //! contating the representation
-    Property_t& get_property() {
-      return this->coulomb_matrices;
-    }
-
+    //! get the size of a feature vector from the hyper
+    //! parameters
     inline size_t get_n_feature(){
       return this->size*(this->size+1)/2;
     }
