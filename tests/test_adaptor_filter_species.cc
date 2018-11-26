@@ -27,7 +27,7 @@
 
 #include "tests.hh"
 #include "test_structure.hh"
-#include "structure_managers/adaptor_filter_species.hh"
+
 
 namespace rascal {
 

@@ -33,6 +33,7 @@
 
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/cluster_ref_key.hh"
+#include "rascal_utility.hh"
 
 #include <type_traits>
 
@@ -41,28 +42,29 @@ namespace rascal {
   /**
    * Forward declaration for traits
    */
-  template <class StructureManagerImplementation, size_t MaxOrder>
+  template <class ManagerImplementation, size_t MaxOrder>
   class AdaptorFilter;
 
   /**
    * Specialisation of traits for increase <code>MaxOrder</code> adaptor
    */
-  template <class ManagerImplementation, size_t MaxOrder>
-  struct StructureManager_traits<AdaptorFilter<ManagerImplementation, MaxOrder>> {
+  template <class ManagerImplementation, size_t MaxOrder_>
+  struct StructureManager_traits<
+    AdaptorFilter<ManagerImplementation, MaxOrder_>> {
 
-    using traits = StructureManager_traits<AdaptorImplementation::ManagerImplementation>;
-    constexpr static AdaptorTraits::Strict Strict{traits::Strict};
-    constexpr static bool HasDistances{traits::HasDistances};
-    constexpr static bool HasDirectionVectors{traits::HasDirectionVectors};
-    constexpr static int Dim{traits::Dim};
+    using parent_traits = StructureManager_traits<ManagerImplementation>;
+    constexpr static AdaptorTraits::Strict Strict{parent_traits::Strict};
+    constexpr static bool HasDistances{parent_traits::HasDistances};
+    constexpr static bool HasDirectionVectors{parent_traits::HasDirectionVectors};
+    constexpr static int Dim{parent_traits::Dim};
     //! New MaxOrder upon construction!
-    constexpr static size_t MaxOrder{MaxOrder};
+    constexpr static size_t MaxOrder{MaxOrder_};
     //! New Layer
     //! TODO: Is this the correct way to initialize the increased order?
     using LayerByOrder =
-      typename LayerIncreaser<MaxOrder,
+      typename LayerIncreaser<MaxOrder_,
                               typename
-                              ManagerImplementation::traits::LayerByOrder>::type;
+                              parent_traits::LayerByOrder>::type;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -74,12 +76,14 @@ namespace rascal {
    */
   template <class ManagerImplementation, size_t MaxOrder>
   class AdaptorFilter: public
-  StructureManager<AdaptorFilter<ManagerImplementation>>
+  StructureManager<AdaptorFilter<ManagerImplementation, MaxOrder>>
   {
   public:
-    using Parent = StructureManager<AdaptorFilter<ManagerImplementation>>;
+    using Parent = StructureManager<
+      AdaptorFilter<ManagerImplementation, MaxOrder>>;
     using traits = StructureManager_traits<AdaptorFilter>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
+    using Vector_ref = typename Parent::Vector_ref;
     template <size_t Order>
     using InputClusterRef_t =
       typename ManagerImplementation::template ClusterRef<Order>;
@@ -91,7 +95,9 @@ namespace rascal {
     AdaptorFilter() = delete;
 
     //! constructor underlying manager
-    AdaptorFilter(ManagerImplementation & manager): manager{manager} {}
+    AdaptorFilter(ManagerImplementation & manager): manager{manager} {
+      this->update();
+    }
 
     //! Copy constructor
     AdaptorFilter(const AdaptorFilter &other) = delete;
@@ -115,11 +121,14 @@ namespace rascal {
     inline void update();
 
     //! returns the distance between atoms in a given pair
-    template <size_t Order, size_t Layer>
-    inline const std::enable_if_t<traits::HasDistances, double> &
+    template <size_t Order, size_t Layer,
+              bool DummyHasDistances = traits::HasDistances>
+    inline const std::enable_if_t<DummyHasDistances, double> &
     get_distance(const ClusterRefKey<Order, Layer> &
                                        pair) const {
-      return this->distance[pair];
+      static_assert(DummyHasDistances == traits::HasDistances,
+                    "SFINAE, do not specify");
+      return this->manager.get_distance(pair);
     }
 
     inline size_t get_nb_clusters(int cluster_size) const {
@@ -235,17 +244,17 @@ namespace rascal {
      */
     template <size_t Order>
     inline void add_atom(int atom_index) {
-      static_assert(Order <= traits::MaxOrder,
+      static_assert(Order-1 <= traits::MaxOrder,
                     "you can only add neighbours to the n-th degree defined by "
                     "MaxOrder of the underlying manager");
 
       // add new atom at this Order
-      this->atom_indices[Order].push_back(atom_index);
+      this->atom_indices[Order-1].push_back(atom_index);
       // count that this atom is a new neighbour
-      this->nb_neigh[Order].back()++;
-      this->offsets[Order].back()++;
+      this->nb_neigh[Order-1].back()++;
+      this->offsets[Order-1].back()++;
 
-      for (auto i{Order+1}; i < traits::MaxOrder; ++i) {
+      for (auto i{Order}; i < traits::MaxOrder; ++i) {
         // make sure that this atom starts with zero lower-Order neighbours
         this->nb_neigh[i].push_back(0);
         // update the offsets
@@ -255,9 +264,8 @@ namespace rascal {
     }
 
     template <size_t Order>
-    inline void add_atom(const typename ManagerImplementation::template
-                         InputClusterRef_t<Order> & cluster) {
-      return this->template add_atom <Order-1>(cluster.back());
+    inline void add_atom(const InputClusterRef_t<Order> & cluster) {
+      return this->template add_atom <Order>(cluster.back());
     }
 
     ManagerImplementation & manager;
@@ -269,16 +277,16 @@ namespace rascal {
      *   - atom_indices[2] lists all k-atoms
      *   - etc
      */
-    std::array<std::vector<int>, traits::MaxOrder> atom_indices;
+    std::array<std::vector<int>, traits::MaxOrder> atom_indices{};
     /**
      * store the number of j-atoms for every i-atom (nb_neigh[1]), the number of
      * k-atoms for every j-atom (nb_neigh[2]), etc
      */
-    std::array<std::vector<size_t>, traits::MaxOrder> nb_neigh;
+    std::array<std::vector<size_t>, traits::MaxOrder> nb_neigh{};
     /**
      * store the offsets from where the nb_neigh can be counted
      */
-    std::array<std::vector<size_t>, traits::MaxOrder>  offsets;
+    std::array<std::vector<size_t>, traits::MaxOrder>  offsets{};
   private:
   };
 
@@ -287,14 +295,14 @@ namespace rascal {
     template <size_t Order, class ManagerImplementation, size_t MaxOrder>
     struct ClusterAdder
     {
-      using Manager_t = typename AdaptorFilter<ManagerImplementation, MaxOrder>;
+      using Manager_t = AdaptorFilter<ManagerImplementation, MaxOrder>;
       using ClusterRef_t = typename Manager_t::
         template InputClusterRef_t<Order>;
       inline static void add_parent(Manager_t & manager,
                                     const ClusterRef_t & cluster) {
         // e.g., the pair (i,j) for a triplet (i,j,k), or the atom i
         // for a pair (i,j)
-        auto & parent_cluster{*cluster.get_iterator()};
+        const auto & parent_cluster{cluster.get_iterator().get_container()};
         if (not manager.has_cluster(parent_cluster)) {
           manager.add_cluster(parent_cluster);
         }
@@ -302,14 +310,14 @@ namespace rascal {
     };
 
     template <class ManagerImplementation, size_t MaxOrder>
-    struct ClusterAdder<1>
+    struct ClusterAdder<1, ManagerImplementation, MaxOrder>
     {
       static constexpr size_t Order{1};
-      using Manager_t = typename AdaptorFilter<ManagerImplementation, MaxOrder>;
+      using Manager_t = AdaptorFilter<ManagerImplementation, MaxOrder>;
       using ClusterRef_t = typename Manager_t::
         template InputClusterRef_t<Order>;
       inline static void add_parent(Manager_t & /*ignored manager*/,
-                             const ClusterRef_t & /*ignored atom*/) {};
+                                    const ClusterRef_t & /*ignored atom*/) {};
     };
 
   }  // internal
@@ -318,22 +326,23 @@ namespace rascal {
   template <class ManagerImplementation, size_t MaxOrder>
   template <size_t Order>
   void AdaptorFilter<ManagerImplementation, MaxOrder>::
-  add_cluster<Order, Layer>(const InputClusterRef_t<Order> & cluster) {
+  add_cluster(const InputClusterRef_t<Order> & cluster) {
     // The following calls this method recursively on the parent
     // clusters of this cluster, until this method is called with an
     // Order=1 cluster (atom), in which case add_parent does nothing.
-    internal::ClusterAdder<Order>::add_parent(*this, cluster);
+    internal::ClusterAdder<Order, ManagerImplementation, MaxOrder>::
+      add_parent(*this, cluster);
     this->add_atom(cluster);
 
     /**
      * Add new Layer for clusters of size Order
      */
     constexpr auto ClusterLayer{
-      compute_cluster_layer<cluster.order()> (typename traits::LayerByOrder{})};
+      compute_cluster_layer<Order> (typename traits::LayerByOrder{})};
 
-    Eigen::Matrix<size_t, ClusterLayer+1, 1> indices;
+    Eigen::Matrix<size_t, ClusterLayer+1, 1> indices{};
     indices.template head<ClusterLayer>() = cluster.get_cluster_indices();
-    indices(ClusterLayer) = this->atom_indices[Order-1].size();
+    indices(ClusterLayer) = this->atom_indices[Order-1].size()-1;
     auto & indices_container{
       std::get<Order-1>(this->cluster_indices_container)};
     indices_container.push_back(indices);
@@ -344,11 +353,14 @@ namespace rascal {
   template <class ManagerImplementation, size_t MaxOrder>
   template <size_t Order>
   bool AdaptorFilter<ManagerImplementation, MaxOrder>::
-  has_cluster<Order, Layer>(const InputClusterRef_t<Order> & cluster) {
+  has_cluster(const InputClusterRef_t<Order> & cluster) {
     constexpr auto Layer{cluster.cluster_layer()};
 
-    auto && indices_container{
+    auto & indices_container{
       std::get<Order-1>(this->cluster_indices_container)};
+    if (indices_container.size() == 0) {
+      return false;
+    }
     auto && last_cluster_index{indices_container.back()(Layer)};
 
     return last_cluster_index == cluster.get_cluster_index(Layer);
@@ -365,6 +377,12 @@ namespace rascal {
       this->nb_neigh[i].clear();
       this->offsets[i].clear();
     }
+
+    this->nb_neigh[0].push_back(0);
+    for (auto & vector: this->offsets) {
+      vector.push_back(0);
+    }
+
   }
 }  // rascal
 

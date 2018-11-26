@@ -403,8 +403,8 @@ namespace rascal {
     //! initialise the neighbourlist
     for (size_t i{0}; i < traits::MaxOrder; ++i) {
       this->atom_indices[i].clear();
-      this->nb_neigh[i].resize(0);
-      this->offsets[i].resize(0);
+      this->nb_neigh[i].clear();
+      this->offsets[i].clear();
     }
     this->nb_neigh[0].push_back(0);
     for (auto & vector: this->offsets) {

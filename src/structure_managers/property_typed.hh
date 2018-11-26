@@ -45,6 +45,7 @@ namespace rascal {
     struct Value {
       using type = Eigen::Map<Eigen::Matrix<T, NbRow, NbCol>>;
       using reference = type;
+      using const_reference = const type;
 
       //! get a reference to specific value at row and colum
       static reference get_ref(T & value, int nb_row, int nb_col) {
@@ -55,6 +56,7 @@ namespace rascal {
       static reference get_ref(T & value) {
         return type(&value);
       }
+
 
       //! push back data into ``property``
       static void push_in_vector(std::vector<T> & vec, reference ref) {
@@ -89,9 +91,13 @@ namespace rascal {
       constexpr static Dim_t NbCol{1};
       using type = T;
       using reference = T&;
+      using const_reference = const T &;
 
       //! get a reference to a scalar value
       static reference get_ref(T & value) {return value;}
+
+      //! get a reference to a scalar value
+      static const_reference get_ref(const T & value) {return value;}
 
       //! push a scalar in a vector
       static void push_in_vector(std::vector<T> & vec, reference ref) {
@@ -176,6 +182,11 @@ namespace rascal {
       auto n_components = this->get_nb_comp();
       auto new_size = this->base_manager.nb_clusters(order) * n_components;
       this->values.resize(new_size);
+    }
+
+    //! Adjust size of values (only increases, never frees)
+    size_t size() const {
+      return this->values.size()/this->get_nb_comp();
     }
 
     /**
