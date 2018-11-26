@@ -36,6 +36,30 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(MathUtilsTests);
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * Check the spherical harmonics implementation
+   *
+   * The spherical harmonics are checked against the equivalents computed using
+   * SciPy, adjusted to use our normalization for the real harmonics.  They can
+   * be generated with the following Python code:
+   *
+   * ```python
+   * import numpy as np
+   * from scipy import special as spf
+   * harmonics = np.zeros((lmax+1, 2*lmax + 1, unit_vectors.shape[0]))
+   * for l in range(lmax+1):
+   *     harmonics[l, l, :] = spf.sph_harm(0, l, phis, thetas)
+   *     for m in range(1, l+1):
+   *         complex_harmonics = spf.sph_harm(m, l, phis, thetas)
+   *         harmonics[l, l+m, :] = np.real(complex_harmonics)*np.sqrt(2)
+   *         harmonics[l, l-m, :] = np.imag(complex_harmonics)*np.sqrt(2)
+   * ```
+   *
+   * where `lmax` denotes the maximum angular momentum number to compute them
+   * up to, and `thetas` and `phis` are lists (arrays) of angles at which to
+   * compute the harmonics; `theta` is the angle off the z-axis and `phi` is the
+   * angle (projected into the x-y plane) off the x-axis.
+   */
   BOOST_FIXTURE_TEST_CASE(math_spherical_harmonics_test,
                           SphericalHarmonicsRefFixture) {
     for (size_t vec_idx{0}; vec_idx < unit_vectors.size(); vec_idx++) {
@@ -69,6 +93,31 @@ namespace rascal {
     }
   }
 
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Check the Associated Legendre Polynomials recurrent implementation
+   *
+   * The ALPs are checked against the equivalents computed using
+   * SciPy, adjusted to use our normalization (see
+   * https://arxiv.org/pdf/1410.1748.pdf; these functions are $\bar{P}_l^m$ in
+   * their notation).  They can be generated using the following Python code:
+   *
+   * ```python
+   * import numpy as np
+   * from scipy import special as spf
+   * alp_normfacts = np.zeros((lmax+1, lmax+1))
+   * for l in range(lmax+1):
+   *     for m in range(l+1):
+   *         alp_normfacts[l, m] = np.sqrt(
+   *             (2*l + 1)/(2*np.pi) / np.prod(np.arange(l-m+1, l+m+1)))
+   * for d_idx in range(n_directions):
+   *     alps[:, :, d_idx] = (spf.lpmn(l, l, np.cos(thetas[d_idx]))[0].T
+   *                          * alp_normfacts[:, :, np.newaxis])
+   * ```
+   *
+   * where `lmax` and `thetas` are defined as above and the matrix product at
+   * the end is taken elementwise.
+   */
   BOOST_FIXTURE_TEST_CASE(math_alp_test, SphericalHarmonicsRefFixture) {
     for (size_t vec_idx{0}; vec_idx < unit_vectors.size(); vec_idx++) {
       Eigen::Vector3d direction(unit_vectors[vec_idx].data());
@@ -98,6 +147,7 @@ namespace rascal {
     }
   }
 
+  /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(math_cos_sin_mphi_test,
                           SphericalHarmonicsRefFixture) {
     size_t max_m = 10;
