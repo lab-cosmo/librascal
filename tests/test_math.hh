@@ -75,6 +75,7 @@ namespace rascal {
       ref_file >> ref_data;
       unit_vectors = ref_data.at("unit_vectors").get<StdVector2D_t>();
       harmonics = ref_data.at("harmonics").get<StdVector3D_t>();
+      alps = ref_data.at("alps").get<StdVector3D_t>();
     }
 
     ~SphericalHarmonicsRefFixture() = default;
@@ -83,8 +84,10 @@ namespace rascal {
 
     using StdVector2D_t = std::vector<std::vector<double>>;
     using StdVector3D_t = std::vector<std::vector<std::vector<double>>>;
-    StdVector2D_t unit_vectors;
-    StdVector3D_t harmonics;
+    StdVector2D_t unit_vectors{};
+    StdVector3D_t harmonics{};
+    StdVector3D_t alps{};
+    bool verbose{true};
   };
 }  // rascal
 

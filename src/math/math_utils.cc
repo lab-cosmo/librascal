@@ -43,23 +43,21 @@ namespace rascal {
      *
      * @param max_angular Compute up to this angular momentum number (l_max)
      *
-     * @param assoc_legendre_polynom
-     *        An (Eigen)matrix to contain the evaluated polynomials; it will be
-     *        resized to l_max by (2*lmax + 1).  The row is indexed by l and the
+     * @return assoc_legendre_polynom
+     *        An (Eigen)matrix containing the evaluated polynomials.
+     *        Sized l_max by (2*lmax + 1); the row is indexed by l and the
      *        column by m >= 0.
      */
-    template<typename DerivedR>
-    void compute_assoc_legendre_polynom(
-        double cos_theta, size_t max_angular,
-        Eigen::MatrixBase<DerivedR> &assoc_legendre_polynom) {
+    Eigen::MatrixXd compute_assoc_legendre_polynom(
+        double cos_theta, size_t max_angular) {
       using std::pow;
       using std::sqrt;
       size_t angular_l;
       size_t m_count;
       /// Technically abs(sin(θ)), but θ only goes from [0, π)
       double sin_theta = sqrt(1.0 - pow(cos_theta, 2));
-      //Eigen::MatrixXd assoc_legendre_polynom(max_angular+1, max_angular + 1);
-      assoc_legendre_polynom.resize(max_angular+1, max_angular + 1);
+      Eigen::MatrixXd assoc_legendre_polynom(max_angular+1, max_angular + 1);
+      //assoc_legendre_polynom.resize(max_angular+1, max_angular + 1);
       Eigen::MatrixXd coeff_a(max_angular + 1, 2*max_angular + 1);
       Eigen::MatrixXd coeff_b(max_angular + 1, 2*max_angular + 1);
       const double SQRT_INV_2PI = sqrt(0.5 / PI);
@@ -92,18 +90,19 @@ namespace rascal {
         }
         // for l > 1 : Use the recurrence relation
         // TODO don't bother calculating m =/= 0 if sin(theta) == 0 (z-axis)
-        for (m_count = 0; m_count < angular_l - 1; m_count++) {
+        for (m_count = 0; m_count < angular_l-1; m_count++) {
           assoc_legendre_polynom(angular_l, m_count) =
               coeff_a(angular_l, m_count) *
-              (cos_theta*assoc_legendre_polynom(angular_l - 1, m_count)
+              (cos_theta*assoc_legendre_polynom(angular_l-1, m_count)
                + coeff_b(angular_l, m_count)*assoc_legendre_polynom(
-                  angular_l - 1, m_count));
+                                                 angular_l-2, m_count));
         }
-        assoc_legendre_polynom(angular_l, angular_l - 1) =
-            cos_theta * sqrt(2.0*(angular_l - 1) + 3) * l_accum;
+        assoc_legendre_polynom(angular_l, angular_l-1) =
+            cos_theta * sqrt(2.0*(angular_l-1) + 3) * l_accum;
         l_accum = l_accum * sin_theta * -1.0*sqrt(1.0 + 0.5/angular_l);
         assoc_legendre_polynom(angular_l, angular_l) = l_accum;
       }
+      return assoc_legendre_polynom;
     }
 
     /**
@@ -123,17 +122,15 @@ namespace rascal {
      *
      * @param max_m Compute up to a maximum value of max_m (inclusive)
      *
-     * @param cos_sin_m_phi
-     *        (Eigen)matrix to store the results; it will be resized to max_m
-     *        by 2 with the cos(mφ) stored in the first column and sin(mφ) in
-     *        the second column, m being the row index
+     * @return cos_sin_m_phi
+     *        (Eigen)matrix containing the results.
+     *        Sized max_m by 2 with the cos(mφ) stored in the first column
+     *        and sin(mφ) in the second column, m being the row index
      */
-    template<typename DerivedR>
-    void compute_cos_sin_angle_multiples(
-        double cos_phi, double sin_phi, size_t max_m,
-        Eigen::MatrixBase<DerivedR> &cos_sin_m_phi) {
-      //Eigen::MatrixXd cos_sin_m_phi(max_m + 1, 2);
-      cos_sin_m_phi.resize(max_m + 1, 2);
+    Eigen::MatrixXd compute_cos_sin_angle_multiples(
+        double cos_phi, double sin_phi, size_t max_m) {
+      Eigen::MatrixXd cos_sin_m_phi(max_m + 1, 2);
+      //cos_sin_m_phi.resize(max_m + 1, 2);
       for (size_t m_count{0}; m_count < max_m + 1; m_count++) {
         if (m_count == 0) {
           cos_sin_m_phi.row(m_count) << 1.0, 0.0;
@@ -145,6 +142,7 @@ namespace rascal {
               - cos_sin_m_phi.row(m_count - 2);
         }
       }
+      return cos_sin_m_phi;
     }
 
     /**
@@ -177,22 +175,16 @@ namespace rascal {
      *
      * @param max_angular Compute up to this angular momentum number (l_max)
      *
-     * @param harmonics (Eigen)matrix in which to store the results.  It will be
-     *                  resized to l_max+1 by 2l_max+1, the row index
-     *                  corresponding to l numbers and the column index to m.
+     * @return  (Eigen)matrix containing the results.
+     *          Sized l_max+1 by 2l_max+1, the row index
+     *          corresponding to l numbers and the column index to m.
      */
-    template<typename Derived, typename DerivedR>
-    void compute_spherical_harmonics(
-        const Eigen::MatrixBase<Derived> &direction, size_t max_angular,
-        Eigen::MatrixBase<DerivedR> &harmonics) {
+    Eigen::MatrixXd compute_spherical_harmonics(
+        const Eigen::Ref<const Eigen::Vector3d> &direction,
+        size_t max_angular) {
 
       using std::pow;
       using std::sqrt;
-
-      size_t radial_n;
-      size_t angular_l;
-      size_t m_count;
-      size_t m_array_idx;
 
       if (direction.size() != 3) {
         throw std::length_error("Direction must be a vector in R^3");
@@ -211,18 +203,16 @@ namespace rascal {
         cos_phi = direction[0] / sqrt_xy;
         sin_phi = direction[1] / sqrt_xy;
       }
-      //Eigen::MatrixXd harmonics(max_angular+1, 2*max_angular + 1);
-      harmonics.resize(max_angular+1, 2*max_angular + 1);
-      Eigen::MatrixXd assoc_legendre_polynom;
-      Eigen::MatrixXd cos_sin_m_phi;
-      compute_assoc_legendre_polynom(
-          cos_theta, max_angular, assoc_legendre_polynom);
-      compute_cos_sin_angle_multiples(
-          cos_phi, sin_phi, max_angular, cos_sin_m_phi);
+      Eigen::MatrixXd harmonics(max_angular+1, 2*max_angular + 1);
+      //harmonics.resize(max_angular+1, 2*max_angular + 1);
+      Eigen::MatrixXd assoc_legendre_polynom = compute_assoc_legendre_polynom(
+          cos_theta, max_angular);
+      Eigen::MatrixXd cos_sin_m_phi = compute_cos_sin_angle_multiples(
+          cos_phi, sin_phi, max_angular);
 
       for (size_t angular_l{0}; angular_l < max_angular + 1;
            angular_l++) {
-        for (m_count = 0; m_count < angular_l + 1; m_count++) {
+        for (size_t m_count{0}; m_count < angular_l + 1; m_count++) {
           if (m_count == 0) {
             harmonics(angular_l, angular_l) = assoc_legendre_polynom(
                 angular_l, m_count) * INV_SQRT_TWO;
@@ -251,7 +241,7 @@ namespace rascal {
           } // if (m_count == 0)
         } // for (m_count in [0, l])
       } // for (l in [0, lmax])
+      return harmonics;
     } // compute_spherical_harmonics()
-
   } // math
 } // rascal

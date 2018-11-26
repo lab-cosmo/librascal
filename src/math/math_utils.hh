@@ -46,20 +46,15 @@ namespace rascal {
     /// How small a number must be to be considered effectively zero
     const double dbl_ftol = 100.0 * std::numeric_limits<double>::epsilon();
 
-    template<typename DerivedR>
-    void compute_assoc_legendre_polynom(
-        double cos_theta, size_t max_angular,
-        Eigen::MatrixBase<DerivedR> &assoc_legendre_polynom);
+    Eigen::MatrixXd compute_assoc_legendre_polynom(
+        double cos_theta, size_t max_angular);
 
-    template<typename DerivedR>
-    void compute_cos_sin_angle_multiples(
-        double cos_phi, double sin_phi, size_t max_m,
-        Eigen::MatrixBase<DerivedR> &cos_sin_m_phi);
+    Eigen::MatrixXd compute_cos_sin_angle_multiples(
+        double cos_phi, double sin_phi, size_t max_m);
 
-    template<typename Derived, typename DerivedR>
-    void compute_spherical_harmonics(
-        const Eigen::MatrixBase<Derived> &direction, size_t max_angular,
-        Eigen::MatrixBase<DerivedR> &harmonics);
+    Eigen::MatrixXd compute_spherical_harmonics(
+        const Eigen::Ref<const Eigen::Vector3d> &direction,
+        size_t max_angular);
   } // math
 } // rascal
 
