@@ -196,6 +196,16 @@ namespace rascal {
                             this->get_nb_col());
     }
 
+    /**
+     * Accessor for last pushed entry for dynamically sized properties
+     */
+    reference back() {
+      auto && index{this->values.size() - this->get_nb_comp()};
+      return Value::get_ref(this->values[index*this->get_nb_comp()],
+                            this->get_nb_row(),
+                            this->get_nb_col());
+    }
+
 
   protected:
     std::vector<T> values{}; //!< storage for properties

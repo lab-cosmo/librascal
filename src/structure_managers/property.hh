@@ -179,6 +179,14 @@ namespace rascal {
       return Value::get_ref(this->values[index*NbComp]);
     }
 
+    /**
+     * Accessor for last pushed entry for statically sized properties
+     */
+    inline reference back() {
+      auto && index{this->values.size()-NbComp};
+      return Value::get_ref(this->values[index]);
+    }
+
   protected:
   private:
   };

@@ -612,6 +612,8 @@ namespace rascal {
       return this->atom_indices;
     }
 
+    inline Iterator_t & get_iterator() {return this->it;}
+
   protected:
     inline std::array<size_t, 1> get_counters() const {
       return this->it.get_counters();

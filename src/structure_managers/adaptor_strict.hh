@@ -116,7 +116,7 @@ namespace rascal {
     AdaptorStrict& operator=(AdaptorStrict &&other) = default;
 
     //! update just the adaptor assuming the underlying manager was updated
-    void update();
+    inline void update();
 
     //! update the underlying manager as well as the adaptor
     template<class ... Args>
@@ -158,7 +158,7 @@ namespace rascal {
                     "this implementation should only work up to MaxOrder.");
 
       return this->get_position(cluster.back());
- 
+
     }
 
     //! get atom_index of index-th neighbour of this cluster
@@ -432,7 +432,7 @@ namespace rascal {
     for (auto atom: this->manager) {
       this->add_atom(atom);
       /**
-       * Add new depth layer for atoms (see LayerByOrder for
+       * Add new layer for atoms (see LayerByOrder for
        * possible optimisation).
        */
 
@@ -442,13 +442,13 @@ namespace rascal {
           };
 
       Eigen::Matrix<size_t, AtomLayer+1, 1> indices;
-      // since head is a templated member, the keyword template 
+      // since head is a templated member, the keyword template
       // has to be used if the matrix type is also a template parameter
       // TODO explain the advantage of this syntax
       indices.template head<AtomLayer>() = atom.get_cluster_indices();
       indices(AtomLayer) = indices(AtomLayer-1);
       atom_cluster_indices.push_back(indices);
-      
+
       // auto icenter{atom.get_index()};
 
       for (auto pair: atom) {
@@ -468,7 +468,7 @@ namespace rascal {
           indices_pair.template head<PairLayer>() = pair.get_cluster_indices();
           indices_pair(PairLayer) = pair_counter;
           pair_cluster_indices.push_back(indices_pair);
-        
+
           pair_counter++;
         }
         using HelperLoop = HelperLoop<pair.order(),
