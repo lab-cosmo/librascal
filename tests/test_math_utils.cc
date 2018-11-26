@@ -59,6 +59,8 @@ namespace rascal {
    * up to, and `thetas` and `phis` are lists (arrays) of angles at which to
    * compute the harmonics; `theta` is the angle off the z-axis and `phi` is the
    * angle (projected into the x-y plane) off the x-axis.
+   *
+   * The code above works with SciPy v1.1.0.
    */
   BOOST_FIXTURE_TEST_CASE(math_spherical_harmonics_test,
                           SphericalHarmonicsRefFixture) {

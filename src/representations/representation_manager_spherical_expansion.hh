@@ -148,10 +148,6 @@ namespace rascal {
     //! Precompute radial orthogonalization matrix (NB specific to basis!)
     void precompute_radial_overlap();
 
-    //! Compute a full set of spherical harmonics for the direction vector
-    Eigen::MatrixXd<Eigen::Dynamic, Eigen::Dynamic>
-        compute_spherical_harmonics(Eigen::Vector3d direction);
-
     //! getter for the representation TODO(max-veit) update
     template <size_t Order, size_t Layer> 
     Eigen::Map<Eigen::MatrixXd> get_soap_vector(const ClusterRefKey<Order, Layer>& center){
@@ -217,7 +213,7 @@ namespace rascal {
 
   /** Compute the radial overlap matrix for later orthogonalization.
    *
-   *  @throws runtime_error if the overlap matrix cannot be diagonalized
+   *  @throw runtime_error if the overlap matrix cannot be diagonalized
    */
   template<class Mngr>
   void RepresentationManagerSphericalExpansion<Mngr>::
@@ -369,7 +365,7 @@ namespace rascal {
    * @param pair Atom pair defining the neighbour, as e.g. returned by
    *             iteration over neighbours of a centre
    *
-   * @throws logic_error if the requested sigma type has not been implemented
+   * @throw logic_error if the requested sigma type has not been implemented
    *
    */
   template<class Mngr, size_t Order, size_t Layer>
