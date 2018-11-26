@@ -54,7 +54,6 @@ class FeatureManagerDense: public FeatureManagerBase {
     using Feature_Matrix_t = Eigen::MatrixXd;
     using Feature_Matrix_ref = Eigen::Map<Eigen::MatrixXd>;
 
-    
     /**Default constructor where hypers contains all relevant informations
      * to setup a new RepresentationManager.
      */

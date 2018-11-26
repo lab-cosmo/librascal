@@ -52,16 +52,11 @@ decltype(auto) add_representation_manager(py::module & mod,py::module & ){
 void add_representation_managers(py::module & mod,py::module & m_garbage){
   
   py::class_<RepresentationManagerBase>(m_garbage,"RepresentationManagerBase");
-
-  using Representation_t = RepresentationManagerSortedCoulomb<
-        AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
+  using Manager_t = AdaptorStrict<AdaptorNeighbourList<
+                                                StructureManagerCenters>>;
+  using Representation_t = RepresentationManagerSortedCoulomb<Manager_t>;
   
-  auto representation = add_representation_manager<
+  auto rep_sorted_coulomb = add_representation_manager<
                                     Representation_t>(mod,m_garbage);
-  // TODO will have to change to an external data structure handler
-  representation.def("get_representation_full", 
-         &Representation_t::get_representation_full,
-         py::return_value_policy::reference_internal,py::keep_alive<1,0>());
-  
 
 };

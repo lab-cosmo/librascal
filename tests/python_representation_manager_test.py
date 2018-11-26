@@ -70,14 +70,3 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
                         self.manager,self.inp)
         cm.compute()
     
-    def test_get_representation(self):
-        """
-        TEST compute wrapper
-        """
-        cm = rc.RepresentationManager.SortedCoulomb_Strict_NeighbourList_Centers(
-                        self.manager,self.inp)
-        
-        cm.compute()
-    
-        rep = cm.get_representation_full()
-        
