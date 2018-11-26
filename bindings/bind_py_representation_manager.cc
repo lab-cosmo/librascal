@@ -1,5 +1,5 @@
 /**
- * @file   bind_py_neighbour_manager.cc
+ * @file   bind_py_representation_manager.cc
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
@@ -31,7 +31,6 @@
 
 
 
-
 template<typename RepresentationManager>
 decltype(auto) add_representation_manager(py::module & mod,py::module & ){
   using Manager_t = typename RepresentationManager::Manager_t;
@@ -42,7 +41,7 @@ decltype(auto) add_representation_manager(py::module & mod,py::module & ){
   py::class_<RepresentationManager, 
              RepresentationManagerBase> 
              representation(mod, representation_name.c_str());
-  representation.def(py::init<Manager_t &, double , double , double , size_t  >());
+  representation.def(py::init<Manager_t &, std::string  >());
   representation.def("compute", &RepresentationManager::compute);
   
   return representation;
@@ -52,8 +51,7 @@ decltype(auto) add_representation_manager(py::module & mod,py::module & ){
 //! Sorted Coulomb representation python binding
 void add_representation_managers(py::module & mod,py::module & m_garbage){
   
-  py::class_<RepresentationManagerBase>(m_garbage,"RepresentationManagerBase")
-      .def(py::init<>());
+  py::class_<RepresentationManagerBase>(m_garbage,"RepresentationManagerBase");
 
   using Representation_t = RepresentationManagerSortedCoulomb<
         AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
@@ -64,7 +62,6 @@ void add_representation_managers(py::module & mod,py::module & m_garbage){
   representation.def("get_representation_full", 
          &Representation_t::get_representation_full,
          py::return_value_policy::reference_internal,py::keep_alive<1,0>());
-  representation.def("get_coulomb_matrix",
-          &Representation_t::get_coulomb_matrix<1,1>,
-          py::return_value_policy::reference_internal,py::keep_alive<1,0>());
+  
+
 };

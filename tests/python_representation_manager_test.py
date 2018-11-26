@@ -1,6 +1,7 @@
 import unittest
 import numpy as np
 import sys
+import json
 
 sys.path.insert(0,'../tests/')
 
@@ -47,32 +48,25 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
         self.interaction_decay = 20.
         self.size = 50
 
+        self.inp = json.dumps(
+                        dict(central_decay=self.central_decay,
+                        interaction_cutoff=self.interaction_cutoff,
+                        interaction_decay=self.interaction_decay,
+                        size=self.size)
+                        )
+
     def test_constructor(self):
         """
         TEST constructor wrapper
         """
         rc.RepresentationManager.SortedCoulomb_Strict_NeighbourList_Centers(
-                        self.manager,self.central_decay,self.interaction_cutoff,
-                        self.interaction_decay,self.size)
-
-    # def test_compute(self):
-    #     """
-    #     TEST compute wrapper
-    #     """
-    #     cm = rc.RepresentationManager.SortedCoulomb_Strict_NeighbourList_Centers(
-    #                     self.manager,self.central_decay,self.interaction_cutoff,
-    #                     self.interaction_decay,self.size)
-    #     cm.compute()
+                        self.manager,self.inp)
     
-    # def test_get_representation(self):
-    #     """
-    #     TEST compute wrapper
-    #     """
-    #     cm = rc.RepresentationManager.SortedCoulomb_Strict_NeighbourList_Centers(
-    #                     self.manager,self.central_decay,self.interaction_cutoff,
-    #                     self.interaction_decay,self.size)
-        
-    #     cm.compute()
+    def test_compute(self):
+        """
+        TEST compute wrapper
+        """
+        cm = rc.RepresentationManager.SortedCoulomb_Strict_NeighbourList_Centers(
+                        self.manager,self.inp)
+        cm.compute()
     
-    #     rep = cm.get_representation_full()
-        

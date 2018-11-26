@@ -1,5 +1,5 @@
 /**
- * file   .cc
+ * file  feature_manager_base.hh
  *
  * @author Musil Felix <musil.felix@epfl.ch>
  *
@@ -30,6 +30,7 @@
 #define FEATURE_MANAGER_BASE_H
 
 #include "structure_managers/structure_manager_base.hh"
+#include "representations/representation_manager_base.hh"
 #include "json_io.hh"
 
 #include <vector>
@@ -39,8 +40,17 @@
 
 namespace rascal {
 
+
+/** 
+ * Base class of the Feature Managers. Defines the basic interface and 
+ * some common short hand types.
+ */
 class FeatureManagerBase {
   public:
+    
+    using RepresentationManager_t = RepresentationManagerBase;
+    using hypers_t = typename RepresentationManagerBase::hypers_t;
+  
     FeatureManagerBase() = default;
 
     //! Copy constructor
@@ -57,6 +67,25 @@ class FeatureManagerBase {
 
     //! Move assignment operator
     FeatureManagerBase& operator=(FeatureManagerBase && other) = delete;
+
+    //! pre-allocate memory
+    virtual void reserve(size_t& ) = 0;
+
+    //! move data from the representation manager property 
+    virtual void push_back(RepresentationManager_t& ) = 0;
+
+    //! return number of elements of the flattened array
+    virtual inline int size() = 0;
+
+    //! return the number of samples in the feature matrix
+    virtual inline int sample_size() = 0;
+
+    //! return the number of feature in the feature matrix
+    virtual inline int feature_size() = 0;
+
+    //! get the shape of the feature matrix (Nrow,Ncol)
+    virtual inline std::tuple<int,int> shape() = 0;
+
   
 };
 

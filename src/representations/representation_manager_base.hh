@@ -40,14 +40,17 @@ namespace rascal {
   struct RepresentationManager_traits
   {};
 
-  // template <class RepresentationImplementation>
+
   class RepresentationManagerBase
   {
   public:
 
-
+    //! type for the hyper parameter class
     using hypers_t = json;
-    
+    //! type for representation
+    // TODO Should the user have freedom for the type ?
+    using precision_t = double;
+
     RepresentationManagerBase() = default;
 
     //! Copy constructor
@@ -65,21 +68,28 @@ namespace rascal {
     //! Move assignment operator
     RepresentationManagerBase& operator=(RepresentationManagerBase && other) = default;
 
-    // Resolves the mismatch between the expected traits 
-    // and the effective traits of the Structure Manager
+    //! Resolves the mismatch between the expected traits 
+    //! and the effective traits of the Structure Manager
+    // TODO make it into a function outside this class
     template <class Mngr>
     void check_traits_compatibility(Mngr &structure_manager);
 
-    // Pure Virtual Function to set hyperparameters of the representation
-    // TODO think of a generic input type for the hypers
-    // make class similar to atomic_structure 
-    // to handle the hyper io (json format from python and files)
-    // virtual void set_hyperparameters(const hypers_t & ) = 0;
-        
-  
+    //! Pure Virtual Function to set hyperparameters of the representation
+    virtual void set_hyperparameters(const hypers_t & ) = 0;
+    virtual void set_hyperparameters(const std::string & ) = 0;
+    
+    //! Compute the representation using a StructureManager
+    virtual void compute() = 0;
 
-  protected:
-  private:
+    //! get the raw data of the representation
+    virtual std::vector<precision_t>& get_representation_raw_data() = 0;
+
+    //! get the size of a feature vector
+    virtual size_t get_feature_size() = 0;
+
+    //! get the number of centers for the representation
+    virtual size_t get_center_size() = 0;
+    
   };
 
 }

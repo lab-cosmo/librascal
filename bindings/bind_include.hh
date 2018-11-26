@@ -38,6 +38,9 @@
 #include "representations/representation_manager_base.hh"
 #include "representations/representation_manager_sorted_coulomb.hh"
 
+#include "representations/feature_manager_base.hh"
+#include "representations/feature_manager_dense.hh"
+
 #include "structure_managers/structure_manager_centers.hh"
 #include "structure_managers/structure_manager_lammps.hh"
 #include "structure_managers/adaptor_strict.hh"
@@ -64,6 +67,7 @@ namespace py=pybind11;
 
 void add_structure_managers(py::module&,py::module&,py::module&);
 void add_representation_managers(py::module&,py::module&);
+void add_feature_managers(py::module&, py::module&);
 
 void utils_binding(py::module&);
 void math_binding(py::module&);

@@ -40,6 +40,9 @@ PYBIND11_MODULE(_rascal, mod) {
   m_adp.doc() = "Adaptor Classes" ;
   py::module m_rpr_mng = mod.def_submodule("RepresentationManager");
   m_rpr_mng.doc() = "Representation Manager Classes" ;
+  py::module m_feat_mng = mod.def_submodule("FeatureManager");
+  m_feat_mng.doc() = "Feature Manager Classes" ;
+  
   py::module m_utl = mod.def_submodule("utils");
   py::module m_math = mod.def_submodule("math");
   m_math.doc() = "Collection of math functions" ;
@@ -50,6 +53,7 @@ PYBIND11_MODULE(_rascal, mod) {
 
   add_structure_managers(m_strc_mng,m_adp,m_garbage);
   add_representation_managers(m_rpr_mng,m_garbage);
+  add_feature_managers(m_feat_mng,m_garbage);
   utils_binding(m_utl);
   math_binding(m_math);
 }

@@ -92,6 +92,13 @@ namespace rascal {
     // inspiered from 
     // https://blog.molecular-matters.com/2015/12/11/getting-
     // the-type-of-a-template-argument-as-string-without-rtti/
+    /**
+     * Transforms the template typename to a string. 
+     * This functionality is compiler dependant so for the moment
+     * clang and gcc are compatible.
+     * @template T type that should be stringifyied 
+     * @returns std::string name of the type
+     */
     template <typename T>
     struct GetTypeNameHelper
     {
@@ -141,10 +148,19 @@ namespace rascal {
       std::string tn2{std::regex_replace( tn1, std::regex("<"), "_" )};
       std::string tn3{std::regex_replace( tn2, std::regex(">"), "" )};
       std::string tn4{std::regex_replace( tn3, std::regex(" "), "" )};
-			return tn4;
+      std::string tn5{std::regex_replace( tn4, std::regex(","), "_" )};
+			return tn5;
     }
 
 
+    /**
+     * Transforms the template type to a string for the pyhton bindings. 
+     * There are submodules in the python bindings with the class
+     * tittle so to avoid redundancy they are removed from the 
+     * typename.
+     * @template T type that should be stringifyied 
+     * @returns std::string name of the type
+     */
     template <typename T>
     std::string GetBindingTypeName() {
       std::string typeName = GetTypeName<T>();
@@ -153,8 +169,10 @@ namespace rascal {
       std::string tn2{std::regex_replace( tn1, 
                         std::regex("Adaptor"), "" )};
       std::string tn3{std::regex_replace( tn2, 
-                        std::regex("RepresentationManager"), "" )};
-			return tn3;
+                        std::regex("RepresentationManager"), "" )}; 
+      std::string tn4{std::regex_replace( tn3, 
+                        std::regex("FeatureManager"), "" )};
+			return tn4;
     }
   }  // internal
 }  // rascal

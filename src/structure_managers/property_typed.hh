@@ -238,8 +238,11 @@ namespace rascal {
     }
 
 
-    //! get number of different distinct element in the property
-    inline size_t get_nb_item() const {return values.size()/this->get_nb_comp(); }
+    //! get number of different distinct element in the property 
+    //! (typically the number of center)
+    inline size_t get_nb_item() const {
+      return values.size()/this->get_nb_comp(); 
+    }
 
   protected:
     std::vector<T> values{}; //!< storage for properties

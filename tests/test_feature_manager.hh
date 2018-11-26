@@ -38,87 +38,68 @@
 
 namespace rascal {
 
-  template<class StructureManager>
-  struct MultipleStrictStructureManager
+  struct TestFeatureData
   {
-    using Manager1_t = StructureManager; 
-    using Manager2_t = AdaptorNeighbourList<Manager1_t>;
-    using Manager_t = AdaptorStrict<Manager2_t>;
+    TestFeatureData() = default;
+    ~TestFeatureData() = default;
 
-    MultipleStrictStructureManager() {
-      std::vector<std::string> filenames{
-      // "reference_data/CaCrP2O7_mvc-11955_symmetrized_.json",
-      "reference_data/simple_cubic_8_.json"};
-      std::vector<double> cutoffs{{3}};
-      for (auto filename : filenames){
-        for (auto cutoff : cutoffs){
-          this->managers1.emplace_back();
-          this->managers1.back().update(filename);
-          this->managers2.emplace_back(managers1.back(),cutoff);
-          this->managers2.back().update();
-          this->managers.emplace_back(managers2.back(),cutoff);
-          this->managers.back().update();
-        }
-      }
-      
-    }
+    std::vector<std::string> filenames{
+      "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
+      "reference_data/simple_cubic_8.json",
+      "reference_data/small_molecule.json"
+      };
+    std::vector<double> cutoffs{{1,2,3}};
 
-    ~MultipleStrictStructureManager() {}
-
-    std::list<Manager1_t> managers1{};
-    std::list<Manager2_t> managers2{};
-    std::list<Manager_t> managers{};
-    
+    std::list<json> hypers{
+      {{"central_decay",0.5},
+      {"interaction_cutoff",10},
+      {"interaction_decay",0.5},
+      {"size",120}}
+      };
   };
 
 
-
-  template<template<typename> typename RepresentationManager>
-  struct FeatureFixture: public MultipleStrictStructureManager<StructureManagerCenters>
-  { 
-    using Parent = MultipleStrictStructureManager<StructureManagerCenters>;
+  template< typename T,
+            template<typename> class FeatureManager,
+            class StructureManager,
+            template<typename> class RepresentationManager,
+            class BaseFixture>
+  struct FeatureFixture
+  :RepresentationFixture<StructureManager,RepresentationManager, BaseFixture>
+  {
+    using Parent = RepresentationFixture<StructureManager,
+                                  RepresentationManager, BaseFixture>;
     using Manager_t = typename Parent::Manager_t;
-    using Representation_t = RepresentationManager<Manager_t>;
-   
-    FeatureFixture() 
-    :Parent{}
+    using Representation_t = typename Parent::Representation_t;
+    using Feature_t = FeatureManager<T>;
+    using hypers_t = typename Representation_t::hypers_t;
+
+    FeatureFixture() :Parent{}
     { 
+      std::vector<size_t> Nfeatures{};
+      
+      auto& representations = this->representations;
+      
+      for (auto& manager : this->managers_strict){
+        for (auto& hyper : this->hypers){
+          Ncenter += manager.size();
+          
+          representations.emplace_back(manager,hyper);
+          representations.back().compute();
+          Nfeatures.push_back(representations.back().get_n_feature());
 
-      for (Manager_t& manager : this->managers){
-        
-        Representation_t rep{manager,central_decay,
-                 interaction_cutoff,interaction_decay,size};
-        rep.compute();
-        // this->representations.emplace_back(manager,central_decay,
-        //         interaction_cutoff,interaction_decay,size);
-        // std::cout << "############2222222222222222"<<std::endl;
-        // std::cout << manager.nb_clusters(1)<< ", "<<
-        //           manager.nb_clusters(2)  <<", "<<
-        //          manager.size() <<std::endl;
-        
-        // // for (auto center : manager){
-        // //   std::cout << "############ "<<std::endl;
-        // //   for (auto neigh : center){
-        // //     std::cout << manager.get_distance(neigh)<< ", ";
-        // //   }
-        // //   std::cout <<std::endl;
-        // // }
-
-
-        // this->representations.back().compute();
+        }
       }
+      
+      this->Nfeature = *std::max_element(std::begin(Nfeatures), std::end(Nfeatures));
       
     }
 
-    ~FeatureFixture() {}
-  
-    std::list<Representation_t> representations{};
-
-    double central_decay{0.5};
-    double interaction_cutoff{3};
-    double interaction_decay{0.5};
-    size_t size{20};
-
+    ~FeatureFixture() = default;
+    size_t Ncenter{0};
+    size_t Nfeature{};
+    std::list<Feature_t> features{};
+    
   };
 
 /* ---------------------------------------------------------------------- */

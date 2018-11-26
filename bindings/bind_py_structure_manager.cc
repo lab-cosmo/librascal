@@ -58,13 +58,10 @@ void add_cluster_ref(py::module & m) {
 
   std::string cluster_parent_name = 
       internal::GetBindingTypeName<ClusterRefKey<Order,Layer>>();
-  // cluster_parent_name += std::string("._ClusterRefKey");
-  // using AtomIndex_t = typename ClusterRefKey::AtomIndex_t;
-  // using IndexConstArray_t = typename ClusterRefKey::IndexConstArray;
+  
   py::class_<ClusterRefKey<Order,Layer>,ClusterRefBase> 
                         (m,cluster_parent_name.c_str());
-  // clusterRef.def(py::init<AtomIndex_t,IndexConstArray_t>());
-  // return clusterRef;
+ 
 }
 
 template<size_t Order, size_t Layer, size_t Layer_nd>
@@ -229,7 +226,10 @@ decltype(auto) add_adaptor(py::module & m, py::module & m_garbage) {
   std::string adaptor_name = 
               internal::GetBindingTypeName<Child>();
   py::class_<Child,Parent>  adaptor(m, adaptor_name.c_str());
-  adaptor.def(py::init<Implementation_t&,ConstructorPack...>());
+  // bind constructor making sure the input Manager stays alive
+  // as long as the class is alive
+  adaptor.def(py::init<Implementation_t&,ConstructorPack...>(),
+              py::keep_alive<1, 2>()); 
   adaptor.def("update", [](Child& v){ v.update(); } );
   // bind clusterRefs so that one can loop over adaptor
   // MaxOrder+1 because recursion stops at Val-1 
@@ -287,7 +287,7 @@ void bind_structure_manager(py::module & m_str_mng,py::module & m_adp,
 
 void bind_cluster_ref_base(py::module & m_garbage){
   py::class_<ClusterRefBase> (m_garbage, "ClusterRefBase");
-          // .def(py::init<size_t,size_t>());
+        
 }
 
 void bind_cluster_refs(py::module & m_garbage){

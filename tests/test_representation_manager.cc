@@ -105,6 +105,7 @@ namespace rascal {
   }
   /* ---------------------------------------------------------------------- */
 
+  
   // TODO define more test that could be streamlined
   // gets a list of fixtures for all the different possible structure managers
   using multiple_fixtures = boost::mpl::list<
@@ -114,13 +115,15 @@ namespace rascal {
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_constructor_test,
             Fix, multiple_fixtures,Fix) {
+
     auto & managers = Fix::managers_strict;
     auto& representations = Fix::representations;
+    auto& hypers = Fix::hypers;
+
     for (auto& manager : managers){
-      representations.emplace_back(manager,Fix::central_decay,
-                                    Fix::interaction_cutoff,
-                                    Fix::interaction_decay,
-                                    Fix::size);
+      for (auto& hyper : hypers){
+        representations.emplace_back(manager,hyper);
+      }
     }
   }
 
@@ -128,70 +131,15 @@ namespace rascal {
             Fix, multiple_fixtures,Fix) {
     auto & managers = Fix::managers_strict;
     auto& representations = Fix::representations;
+    auto& hypers = Fix::hypers;
     for (auto& manager : managers){
-      representations.emplace_back(manager,Fix::central_decay,
-                                    Fix::interaction_cutoff,
-                                    Fix::interaction_decay,
-                                    Fix::size);
-      representations.back().compute();
+      for (auto& hyper : hypers){
+        representations.emplace_back(manager,hyper);
+        representations.back().compute();
+      }
     }
   }
 
-   /* ---------------------------------------------------------------------- */
-//   BOOST_FIXTURE_TEST_CASE(constructor_test,
-//   RepresentationFixture<StructureManagerCenters>)
-//   {
-
-//     AdaptorNeighbourList<StructureManagerCenters> nl{manager,cutoff_max};
-//     std::cout << "cutoff_max " << cutoff_max << std::endl;
-//     nl.update();
-//     AdaptorStrict<AdaptorNeighbourList<
-//                               StructureManagerCenters>> strict_nl{nl,cutoff_max*0.9};
-//     strict_nl.update();
-
-//     using Representation_t = RepresentationManagerSortedCoulomb<
-//                    AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
-
-//     Representation_t representation{strict_nl,central_decay,
-//                                     interaction_cutoff,interaction_decay,size};
-
-//   }
-//     /* ---------------------------------------------------------------------- */
-//   BOOST_FIXTURE_TEST_CASE(compute_test,
-//   RepresentationFixture<StructureManagerCenters>)
-//   {
-//     bool verbose{false};
-//     AdaptorNeighbourList<StructureManagerCenters> nl{manager,cutoff_max};
-//     nl.update();
-//     AdaptorStrict<AdaptorNeighbourList<
-//                               StructureManagerCenters>> strict_nl{nl,cutoff_max};
-//     strict_nl.update();
-
-//     using Representation_t = RepresentationManagerSortedCoulomb<
-//                    AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
-
-//     Representation_t representation{strict_nl,central_decay,
-//                                     interaction_cutoff,interaction_decay,size};
-//     representation.compute();
-
-//     auto rep = representation.get_representation_full();
-
-//     // for (auto center : strict_nl){
-//     //     auto cm = representation.get_coulomb_matrix(center);
-
-//     // }
-
-//     if (verbose){
-//         std::cout << rep.size() <<", "<< rep.cols() <<", "<< rep.rows()<< std::endl;
-//         for (auto ii{0}; ii < rep.cols(); ++ii){
-//             for (auto jj{0}; jj < rep.rows(); ++jj){
-//                 std::cout << rep(jj,ii) << ", ";
-//             }
-//             std::cout << std::endl;
-//         }
-//     }
-
-//   }
 
   BOOST_AUTO_TEST_SUITE_END();
 } // RASCAL

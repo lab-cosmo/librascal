@@ -1,10 +1,9 @@
-# trahs
+# trash
 *.swp
 .vscode
 .idea
 *.ipynb_checkpoints
 build*/
-*.ipynb
 docs/_build
 *__pycache__
 *_rascal.*
