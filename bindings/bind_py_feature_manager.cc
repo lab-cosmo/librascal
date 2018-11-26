@@ -1,11 +1,11 @@
 /**
- * @file   bind_py_representation_manager.cc
+ * @file   bind_py_feature_manager.cc
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
  * @date   30 Oct 2018
  *
- * @brief  File for binding the Representation Managers
+ * @brief  File for binding the Feature Managers
  *
  * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -42,10 +42,7 @@ decltype(auto) bind_feature_manager(py::module & mod,py::module & ){
   py::class_<Feature,FeatureManagerBase> 
              feature(mod, feature_name.c_str());
   feature.def(py::init<int , std::string >());
-  feature.def("reserve", 
-      [](Feature & v,int Ncenter ) {
-           v.reserve(Ncenter);
-         });
+  feature.def("reserve", &Feature::reserve);
   feature.def("append",
         (void (Feature::*)(RepresentationManagerBase&)) &Feature::push_back);
   feature.def("size", &Feature::size);
@@ -59,9 +56,8 @@ decltype(auto) bind_feature_manager(py::module & mod,py::module & ){
 //! Feature aggregator python binding
 void add_feature_managers(py::module & mod, py::module & m_garbage){
   
-      
   py::class_<FeatureManagerBase>(m_garbage,"FeatureManagerBase");
-      
+  
   auto feature_double = bind_feature_manager<FeatureManagerDense,double>(mod,m_garbage);
   //TODO make the float version work !
   //auto feature_float = bind_feature_manager<FeatureManagerDense,float>(mod,m_garbage);

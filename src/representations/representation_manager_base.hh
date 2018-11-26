@@ -48,7 +48,7 @@ namespace rascal {
     //! type for the hyper parameter class
     using hypers_t = json;
     //! type for representation
-    // TODO Should the user have freedom here ?
+    // TODO Should the user have freedom for the type ?
     using precision_t = double;
 
     RepresentationManagerBase() = default;

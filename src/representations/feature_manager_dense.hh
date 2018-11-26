@@ -44,7 +44,6 @@ namespace rascal {
    * managers using a dense underlying data storage.
    *
    */
-// Todo remove the RepresentationManager template argument
 template<typename T>
 class FeatureManagerDense: public FeatureManagerBase {
   public:
@@ -89,8 +88,7 @@ class FeatureManagerDense: public FeatureManagerBase {
     FeatureManagerDense& operator=(FeatureManagerDense && other) = default;
 
     //! pre-allocate memory
-    template <typename S>
-    void reserve(S& n_center){
+    void reserve(size_t& n_center){
       this->feature_matrix.reserve(n_center*this->n_feature);
     }
 
@@ -139,6 +137,7 @@ class FeatureManagerDense: public FeatureManagerBase {
       return this->n_feature;
     }
 
+    //! get the shape of the feature matrix (Nrow,Ncol)
     inline std::tuple<int,int> shape(){
       return std::make_tuple(this->sample_size(),this->feature_size());
     }
