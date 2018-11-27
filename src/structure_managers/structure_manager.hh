@@ -250,7 +250,7 @@ namespace rascal {
     //! end of iterator
     inline Iterator_t end() {
       return Iterator_t(*this,
-                        this->implementation().size(),
+                        this->implementation().get_size(),
                         std::numeric_limits<size_t>::max());}
 
     //! i.e. number of atoms

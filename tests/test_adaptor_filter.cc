@@ -72,7 +72,14 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_test, Fix, Fixtures, Fix) {
   }
 
-  /* ---------------------------------------------------------------------- */
+  /**
+   * This test iterates over a Structure manager's atoms, randomly
+   * filters them or not using AdaptorFilter, and stores the indices
+   * of the retained atoms in a separate backup vector. In a second
+   * loop, we check that the content of the AdaptorFilter is identical
+   * to the backup vector. The random filtering is meant to catch all
+   * corner cases which might have been missed the authors.
+   */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(filter_1_test, Fix, FixturesMax1, Fix) {
     std::random_device rd{};
     std::uniform_int_distribution<int> dist(0, 1);
@@ -90,42 +97,61 @@ namespace rascal {
     for (auto atom: Fix::manager) {
       BOOST_CHECK_EQUAL(atom.get_atom_index(), atom_indices[counter]);
       counter++;
+      const auto & pos_a{atom.get_position()};
+      const auto & pos_b{
+        this->fixture.manager.get_position(atom.get_atom_index())};
+      const auto error{(pos_a-pos_b).norm()};
+      BOOST_CHECK_EQUAL(error, 0.);
+
+      const auto & atom_type_a{atom.get_atom_type()};
+      const auto & atom_type_b{
+        this->fixture.manager.get_atom_type(atom.back())};
+      BOOST_CHECK_EQUAL(atom_type_a, atom_type_b);
     }
   }
 
-  /* ---------------------------------------------------------------------- */
+  /**
+   * This test iterates over a Structure manager's pairs, randomly
+   * filters them or not using AdaptorFilter, and stores the atom
+   * indices of the retained atom pairs in a separate backup
+   * vector. In a second loop, we check that the content of the
+   * AdaptorFilter is identical to the backup vector. The random
+   * filtering is meant to catch all corner cases which might have
+   * been missed the authors.
+   */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(filter_2_test, Fix, FixturesMax2, Fix) {
-    //std::random_device rd{};
-    //std::uniform_int_distribution<int> dist(0, 1);
+    std::random_device rd{};
+    std::uniform_int_distribution<int> dist(0, 1);
     std::vector<std::array<int, 2>> atom_indices{};
 
-    std::array<bool, 4> selection {false, true, false, true};
-    size_t counter{0};
+
     for (auto atom: Fix::fixture.manager) {
       for (auto pair: atom) {
-        bool include{selection[counter++]};
+        const bool include{dist(rd)};
         if (include) {
-          std::cout << "adding " << atom.get_atom_index() << ", "
-                    << pair.get_atom_index()  << std::endl;
           Fix::manager.add_cluster(pair);
           atom_indices.push_back(pair.get_atom_indices());
         }
       }
     }
 
-    counter = 0;
+    size_t counter{0};
     for (auto atom: Fix::manager) {
       for (auto pair: atom) {
         auto && a{pair.get_atom_indices()};
         auto && b{atom_indices[counter]};
         BOOST_CHECK_EQUAL_COLLECTIONS(a.begin(), a.end(), b.begin(), b.end());
-        bool equality{(a[0] == b[0]) and (a[1] == b[1])};
-        if (equality) {
-          std::cout << "Succes on pair :" << a[0] << ", " << a[1] << std::endl;
-        } else  {
-          std::cout << "FAIL on pair :" << a[0] << ", " << a[1] << std::endl;
-        }
 
+        const auto & pos_a{pair.get_position()};
+        const auto & pos_b{
+          this->fixture.manager.get_position(pair.get_atom_index())};
+        const auto error{(pos_a-pos_b).norm()};
+        BOOST_CHECK_EQUAL(error, 0.);
+
+        const auto & atom_type_a{pair.get_atom_type()};
+        const auto & atom_type_b{
+          this->fixture.manager.get_atom_type(pair.back())};
+        BOOST_CHECK_EQUAL(atom_type_a, atom_type_b);
         counter++;
       }
     }

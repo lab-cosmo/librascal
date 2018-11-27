@@ -67,6 +67,38 @@ namespace rascal {
                               parent_traits::LayerByOrder>::type;
   };
 
+  namespace internal {
+
+    template <size_t Order, class ManagerImplementation, size_t MaxOrder>
+    struct ClusterAdder
+    {
+      using Manager_t = AdaptorFilter<ManagerImplementation, MaxOrder>;
+      using ClusterRef_t = typename Manager_t::
+        template InputClusterRef_t<Order>;
+      inline static void add_parent(Manager_t & manager,
+                                    const ClusterRef_t & cluster) {
+        // e.g., the pair (i,j) for a triplet (i,j,k), or the atom i
+        // for a pair (i,j)
+        const auto & parent_cluster{cluster.get_iterator().get_container()};
+        if (not manager.has_cluster(parent_cluster)) {
+          manager.add_cluster(parent_cluster);
+        }
+      }
+    };
+
+    template <class ManagerImplementation, size_t MaxOrder>
+    struct ClusterAdder<1, ManagerImplementation, MaxOrder>
+    {
+      static constexpr size_t Order{1};
+      using Manager_t = AdaptorFilter<ManagerImplementation, MaxOrder>;
+      using ClusterRef_t = typename Manager_t::
+        template InputClusterRef_t<Order>;
+      inline static void add_parent(Manager_t & /*ignored manager*/,
+                                    const ClusterRef_t & /*ignored atom*/) {};
+    };
+
+  }  // internal
+
   /* ---------------------------------------------------------------------- */
   /**
    * Adaptor that increases the MaxOrder of an existing StructureManager. This
@@ -79,6 +111,9 @@ namespace rascal {
   StructureManager<AdaptorFilter<ManagerImplementation, MaxOrder>>
   {
   public:
+    template <size_t Order_, class ManagerImplementation_, size_t MaxOrder_>
+    friend struct internal::ClusterAdder;
+
     using Parent = StructureManager<
       AdaptorFilter<ManagerImplementation, MaxOrder>>;
     using traits = StructureManager_traits<AdaptorFilter>;
@@ -143,18 +178,6 @@ namespace rascal {
       return this->manager.get_position(index);
     }
 
-    template<size_t Order, size_t Layer>
-    inline Vector_ref get_neighbour_position(const ClusterRefKey<Order, Layer>
-                                             & cluster) {
-      static_assert(Order > 1,
-                    "Only possible for Order > 1.");
-      static_assert(Order <= traits::MaxOrder,
-                    "this implementation should only work up to MaxOrder.");
-
-      return this->get_position(cluster.back());
-
-    }
-
     //! get atom_index of index-th neighbour of this cluster
     template<size_t Order, size_t Layer>
     inline int get_cluster_neighbour(const ClusterRefKey<Order, Layer>
@@ -212,21 +235,28 @@ namespace rascal {
     }
 
     //! return the number of neighbours of a given atom
-    template<size_t Order, size_t Layer>
-    inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
+    template<size_t Order, size_t CallingLayer>
+    inline size_t get_cluster_size(const ClusterRefKey<Order, CallingLayer>
 				   & cluster) const {
       static_assert(Order <= traits::MaxOrder-1,
                     "Order exceeds maxorder for this filter.");
-      return this->nb_neigh[Order][cluster.back()];
+      constexpr auto nb_neigh_layer{
+        compute_cluster_layer<Order> (typename traits::LayerByOrder{})};
+      return this->nb_neigh[Order][cluster.get_cluster_index(nb_neigh_layer)];
     }
 
 
     /**
-     * add a cluster to the filter
+     * add a cluster to the filter. This is the main use of this
+     * class. You can iterate over the StructureManager you're
+     * filtering, and add the atoms/pairs/triplet... you wish to
+     * retain in the filtered version using this method
      */
     template <size_t Order>
     inline void add_cluster(const InputClusterRef_t<Order> & cluster);
 
+
+  protected:
     /**
      * check whether a cluster has been added already (Only check the
      * last inserted cluster, relying on the underlying iteration
@@ -235,7 +265,6 @@ namespace rascal {
     template <size_t Order>
     inline bool has_cluster(const InputClusterRef_t<Order> & cluster);
 
-  protected:
     /**
      * main function during construction of a neighbourlist.
      * @param atom the atom to add to the list
@@ -289,38 +318,6 @@ namespace rascal {
     std::array<std::vector<size_t>, traits::MaxOrder>  offsets{};
   private:
   };
-
-  namespace internal {
-
-    template <size_t Order, class ManagerImplementation, size_t MaxOrder>
-    struct ClusterAdder
-    {
-      using Manager_t = AdaptorFilter<ManagerImplementation, MaxOrder>;
-      using ClusterRef_t = typename Manager_t::
-        template InputClusterRef_t<Order>;
-      inline static void add_parent(Manager_t & manager,
-                                    const ClusterRef_t & cluster) {
-        // e.g., the pair (i,j) for a triplet (i,j,k), or the atom i
-        // for a pair (i,j)
-        const auto & parent_cluster{cluster.get_iterator().get_container()};
-        if (not manager.has_cluster(parent_cluster)) {
-          manager.add_cluster(parent_cluster);
-        }
-      }
-    };
-
-    template <class ManagerImplementation, size_t MaxOrder>
-    struct ClusterAdder<1, ManagerImplementation, MaxOrder>
-    {
-      static constexpr size_t Order{1};
-      using Manager_t = AdaptorFilter<ManagerImplementation, MaxOrder>;
-      using ClusterRef_t = typename Manager_t::
-        template InputClusterRef_t<Order>;
-      inline static void add_parent(Manager_t & /*ignored manager*/,
-                                    const ClusterRef_t & /*ignored atom*/) {};
-    };
-
-  }  // internal
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation, size_t MaxOrder>
