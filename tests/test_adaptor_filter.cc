@@ -127,7 +127,7 @@ namespace rascal {
 
     for (auto atom: Fix::fixture.manager) {
       for (auto pair: atom) {
-        const bool include{dist(rd)};
+        const bool include(dist(rd));
         if (include) {
           Fix::manager.add_cluster(pair);
           atom_indices.push_back(pair.get_atom_indices());

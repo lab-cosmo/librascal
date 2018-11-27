@@ -273,7 +273,13 @@ namespace rascal {
 
     //! returns the atom type (convention is atomic number, but nothing is
     //! imposed apart from being an integer
-    inline int atom_type(const int & atom_index) {
+    inline const int& atom_type(const int & atom_index) const {
+      return this->implementation().get_atom_type(atom_index);
+    }
+
+    //! returns the atom type (convention is atomic number, but nothing is
+    //! imposed apart from being an integer
+    inline int& atom_type(const int & atom_index) {
       return this->implementation().get_atom_type(atom_index);
     }
 
@@ -493,7 +499,14 @@ namespace rascal {
      * return atom type (idea: corresponding atomic number, but is allowed to be
      * arbitrary as long as it is an integer)
      */
-    inline int get_atom_type() const {
+    inline const int & get_atom_type() const {
+      return this->manager.atom_type(this->index);
+    }
+    /**
+     * return atom type (idea: corresponding atomic number, but is allowed to be
+     * arbitrary as long as it is an integer)
+     */
+    inline int & get_atom_type() {
       return this->manager.atom_type(this->index);
     }
 
@@ -600,8 +613,15 @@ namespace rascal {
     inline decltype(auto) get_position() {
       return this->get_manager().position(this->get_atom_index());
     }
+
     //! returns the type of the last atom in the cluster
-    inline decltype(auto) get_atom_type() {
+    inline int & get_atom_type() {
+      auto && id{this->get_atom_index()};
+      return this->get_manager().atom_type(id);
+    }
+
+    //! returns the type of the last atom in the cluster
+    inline const int & get_atom_type() const {
       auto && id{this->get_atom_index()};
       return this->get_manager().atom_type(id);
     }
@@ -609,16 +629,11 @@ namespace rascal {
     /**
      * build a array of atom types from the atoms in this cluster
      */
-    std::array<int, Order> get_atom_types() const {
-      auto aggregator{[this](auto ... indices){
-          return std::array<int, Order>{this->get_manager().atom_type(indices)...};
-        }};
-      return aggregator(this->atom_indices);
-    }
+    std::array<int, Order> get_atom_types() const;
 
     //! return the index of the atom/pair/etc. it is always the last one, since
     //! the other ones are accessed an Order above.
-    inline int get_atom_index() {
+    inline int get_atom_index() const {
       return this->back();
     }
     //! returns a reference to the manager with the maximum layer
@@ -667,6 +682,37 @@ namespace rascal {
     Iterator_t & it;
   private:
   };
+
+
+  namespace internal {
+    template <class Manager, size_t Order, size_t... Indices>
+    std::array<int, Order>
+    species_aggregator_helper(const std::array<int, Order> & array,
+                              const Manager & manager,
+                              std::index_sequence<Indices...> /*indices*/){
+      return std::array<int, Order>{
+        manager.atom_type(array[Indices])...};
+    }
+
+    template <class Manager, size_t Order, size_t... Indices>
+    std::array<int, Order>
+    species_aggregator(const std::array<int, Order> &index_array,
+                       const Manager & manager) {
+      return species_aggregator_helper<Manager>
+        (index_array,
+         manager,
+         std::make_index_sequence<index_array.size()>{});
+    }
+  }; // internal
+
+  template <class ManagerImplementation>
+  template <size_t Order>
+  std::array<int, Order> StructureManager<ManagerImplementation>::
+  ClusterRef<Order>::get_atom_types() const
+   {
+     return internal::species_aggregator<StructureManager>(this->atom_indices,
+                                                           this->get_manager());
+   }
 
   /* ---------------------------------------------------------------------- */
   /**

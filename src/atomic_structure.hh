@@ -62,6 +62,7 @@ namespace rascal {
 
     using AtomTypes_t = Eigen::Matrix<int, 1, Eigen::Dynamic>;
     using AtomTypes_ref = Eigen::Map<AtomTypes_t>;
+    using ConstAtomTypes_ref = Eigen::Map<const AtomTypes_t>;
 
     using PBC_t = Eigen::Matrix<int, Dim, 1>;
     using PBC_ref = Eigen::Map<PBC_t>;

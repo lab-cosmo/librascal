@@ -55,10 +55,11 @@ namespace rascal {
       using Map_t = std::map<Key_t<Order>, Value_t<Order, ManagerImplementation>>;
     }
 
-    template<class ManagerImplementation, size_t... Orders>
-    auto get_filter_container_helper(std::index_sequence<Orders...> /*orders*/)
+    template<class ManagerImplementation, size_t... OrdersMinusOne>
+    auto get_filter_container_helper
+      (std::index_sequence<OrdersMinusOne...> /*orders*/)
       -> decltype(auto) {
-      return std::tuple<Map_t<Orders, ManagerImplementation>...>{} ;
+      return std::tuple<Map_t<OrdersMinusOne+1, ManagerImplementation>...>{} ;
     }
 
     template <class ManagerImplementation, size_t MaxOrder>
@@ -149,12 +150,13 @@ namespace rascal {
 
       if (location == filter_map.end()) {
         // this species combo is not yet in the container
-        filter_map.insert({species_indices,
-              std::make_unique<Filter_t<Order>>(this->structure_manager)});
+        auto new_filter{
+          std::make_unique<Filter_t<Order>>(this->structure_manager)};
+        auto new_location{
+          std::get<0>(filter_map.insert({species_indices, std::move(new_filter)}))};
+        return *std::get<1>(*new_location);
       } else {
-        // location is an iterator to a unique_ptr to a Filter, hence
-        // the double dereference
-        return *(*location);
+        return *std::get<1>(*location);
       }
     }
 
