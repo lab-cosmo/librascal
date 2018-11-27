@@ -87,7 +87,7 @@ namespace rascal {
     StdVector2D_t unit_vectors{};
     StdVector3D_t harmonics{};
     StdVector3D_t alps{};
-    bool verbose{true};
+    bool verbose{false};
   };
 }  // rascal
 

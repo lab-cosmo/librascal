@@ -1,0 +1,9 @@
+{
+  "comment": "Example hyperparameter set for the spherical expansion representation manager",
+  "interaction_cutoff": 6.0,
+  "cutoff_smooth_width": 1.0,
+  "max_radial": 10,
+  "max_angular": 8,
+  "gaussian_sigma_type": "Constant",
+  "gaussian_sigma": 0.5
+}

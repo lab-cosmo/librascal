@@ -142,4 +142,29 @@ namespace rascal {
 
 
   BOOST_AUTO_TEST_SUITE_END();
+
+  /* ---------------------------------------------------------------------- */
+
+  BOOST_AUTO_TEST_SUITE(representation_spherical_expansion_test);
+
+  using multiple_fixtures = boost::mpl::list<
+    RepresentationFixture<StructureManagerCenters,
+                          RepresentationManagerSphericalExpansion,
+                          MultipleStructureSphericalExpansion>>;
+
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(
+      multiple_constructor_test, Fix, multiple_fixtures, Fix) {
+
+    auto& managers = Fix::managers_strict;
+    auto& representations = Fix::representations;
+    auto& hypers = Fix::hypers;
+
+    for (auto& manager : managers) {
+      for (auto& hyper : hypers) {
+        representations.emplace_back(manager, hyper);
+      }
+    }
+  }
+
+  BOOST_AUTO_TEST_SUITE_END();
 } // RASCAL

@@ -78,40 +78,18 @@ namespace rascal {
      *  numerically evaluated but better conditioned.
      */
     enum RadialBasisType {
-      GaussianType = 0;
-      PolynomialBasis = 1;
+      GaussianType = 0,
+      PolynomialBasis = 1
     };
 
     /** Describes how the Gaussian sigma (width) is specified.  Options
      *  are constant, species-dependent, or radially-dependent.
      */
     enum GaussianSigmaType {
-      Constant = 0;
-      PerSpecies = 1;
-      Radial = 2;
+      Constant = 0,
+      PerSpecies = 1,
+      Radial = 2
     };
-
-    //! Default constructor.  Assumes constant Gaussian sigma (width).
-    RepresentationManagerSphericalExpansion(Manager_t &sm, 
-        double interaction_cutoff, double cutoff_smooth_width,
-        size_t n_species, size_t max_radial, size_t max_angular,
-        double gaussian_sigma)
-        :structure_manager{sm}, interaction_cutoff{interaction_cutoff},
-        cutoff_smooth_width{cutoff_smooth_width},
-        max_radial{max_radial}, max_angular{max_angular},
-        n_species{n_species}, soap_vectors{sm},
-        constant_gaussian_sigma{gaussian_sigma}, gaussian_sigma_type{Constant},
-        is_precomputed{false}
-    {
-      this->radial_ortho_matrix.resize(this->max_radial, this->max_radial);
-      this->radial_sigmas.resize(this->max_radial, 1);
-      this->radial_norm_factors.resize(this->max_radial, 1);
-      this->radial_nl_factors.resize(this->max_radial, this->max_angular + 1);
-      // TODO(max-veit) the type of Gaussian sigma should not be determined
-      // using constructor overloading.  Better convert
-      // RepManSphExpn::get_gaussian_sigma() to its own class & let that switch
-      // on the Gaussian sigma type
-    }
 
     /**
      * Set the hyperparameters of this descriptor from a json object.
@@ -127,21 +105,29 @@ namespace rascal {
       this->max_angular = hypers.at("max_angular");
       if (hypers.find("n_species") != hypers.end()){
         this->n_species = hypers.at("n_species");
+      } else {
+        this->n_species = 1; // default: no species distinction
       }
       this->interaction_cutoff = hypers.at("interaction_cutoff");
       this->cutoff_smooth_width = hypers.at("cutoff_smooth_width");
-      if (hypers.at("gaussian_sigma_type").compare("Constant") == 0) {
-        this->gaussian_sigma_type = GaussianSigmaType.Constant;
+      auto gaussian_sigma_str =
+          hypers.at("gaussian_sigma_type").get<std::string>();
+      if (gaussian_sigma_str.compare("Constant") == 0) {
+        this->gaussian_sigma_type = Constant;
         this->constant_gaussian_sigma = hypers.at("gaussian_sigma");
       } else {
         throw std::logic_error("Requested Gaussian sigma type \'"
-                               + hypers.at("gaussian_sigma_type")
+                               + gaussian_sigma_str
                                + "\' has not been implemented.");
       }
       this->radial_ortho_matrix.resize(this->max_radial, this->max_radial);
       this->radial_sigmas.resize(this->max_radial, 1);
       this->radial_norm_factors.resize(this->max_radial, 1);
       this->radial_nl_factors.resize(this->max_radial, this->max_angular + 1);
+      this->soap_vectors.resize_to_zero();
+      //this->soap_vectors.resize(this->n_species * this->max_radial,
+                                //pow(this->max_angular + 1, 2));
+      this->is_precomputed = false;
     }
 
     /**
@@ -171,9 +157,7 @@ namespace rascal {
      */
     RepresentationManagerSphericalExpansion(Manager_t &sm,
                                             const hypers_t& hyper)
-        :structure_manager{sm}, interaction_cutoff{}, cutoff_smooth_width{},
-        max_radial{}, max_angular{}, n_species{}, soap_vectors{sm},
-        is_precomputed{false}
+        :structure_manager{sm}, soap_vectors{sm}
     {
       this->set_hyperparameters(hyper);
     }
@@ -206,6 +190,9 @@ namespace rascal {
     //! Precompute radial orthogonalization matrix (NB specific to basis!)
     void precompute_radial_overlap();
 
+    //! Precompute everything that doesn't depend on the structure
+    void precompute();
+
     //! getter for the representation
     template <size_t Order, size_t Layer> 
     Eigen::Map<Eigen::MatrixXd> get_soap_vector(
@@ -213,8 +200,18 @@ namespace rascal {
       return this->soap_vectors[center];
     }
 
-    std::vector<precision_t&> get_representation_raw_data() {
-      return this->soap_vector.get_raw_data();
+    std::vector<precision_t>& get_representation_raw_data() {
+      return this->soap_vectors.get_raw_data();
+    }
+
+    size_t get_feature_size() {
+      // (should be) equivalent:
+      //return this->n_species * this->max_radial * pow(this->max_angular + 1, 2);
+      return this->soap_vectors.get_nb_comp();
+    }
+
+    size_t get_center_size() {
+      return this->soap_vectors.get_nb_item();
     }
 
     /**
@@ -231,25 +228,28 @@ namespace rascal {
     }
 
   protected:
-  private:
-    Manager_t& structure_manager;
-    //hypers_t hyperparmeters;
-    double interaction_cutoff;
-    double cutoff_smooth_width;
-    double constant_gaussian_sigma;
-    GaussianSigmaType gaussian_sigma_type;
-    // TODO(max-veit) these are specific to the radial Gaussian basis
-    Eigen::MatrixXd<Eigen::Dynamic, 1> radial_sigmas;
-    Eigen::MatrixXd<Eigen::Dynamic, 1> radial_norm_factors;
-    Eigen::MatrixXd<Eigen::Dynamic, 1> radial_sigma_factors;
-    Eigen::MatrixXd<Eigen::Dynamic, Eigen::Dynamic> radial_nl_factors;
-    Eigen::MatrixXd<Eigen::Dynamic, Eigen::Dynamic> radial_ortho_matrix;
-    size_t n_species;
-    size_t max_radial;
-    size_t max_angular;
-    bool is_precomputed;
+    template<size_t Order, size_t Layer>
+    double get_gaussian_sigma(ClusterRefKey<Order, Layer> & pair);
 
-    Property_t soap_vectors;
+  private:
+    //hypers_t hyperparmeters;
+    double interaction_cutoff{};
+    double cutoff_smooth_width{};
+    size_t max_radial{};
+    size_t max_angular{};
+    size_t n_species{};
+    double constant_gaussian_sigma{};
+    GaussianSigmaType gaussian_sigma_type{};
+    // TODO(max-veit) these are specific to the radial Gaussian basis
+    Eigen::VectorXd radial_sigmas{};
+    Eigen::VectorXd radial_norm_factors{};
+    Eigen::VectorXd radial_sigma_factors{};
+    Eigen::MatrixXd radial_nl_factors{};
+    Eigen::MatrixXd radial_ortho_matrix{};
+    bool is_precomputed{false};
+
+    Manager_t& structure_manager;
+    Property_t soap_vectors{};
   };
 
 
@@ -258,8 +258,6 @@ namespace rascal {
   void RepresentationManagerSphericalExpansion<Mngr>::
       precompute_radial_sigmas(){
 
-    using math::PI;
-    using math::SQRT_TWO;
     using std::pow;
 
     size_t radial_n;
@@ -277,16 +275,18 @@ namespace rascal {
           2.0 / std::tgamma(1.5 + radial_n)
           * pow(this->radial_sigmas[radial_n], 3.0 + 2.0*radial_n));
       for (angular_l = 0; angular_l < this->max_angular + 1; angular_l++) {
-        this->radial_nl_fators(radial_n, angular_l) =
+        this->radial_nl_factors(radial_n, angular_l) =
             std::exp2(-0.5 * (1.0 + angular_l - radial_n))
             * std::tgamma(0.5 * (3.0 + angular_l + radial_n))
             / std::tgamma(1.5 + angular_l);
+      }
     }
   }
 
-  /** Compute the radial overlap matrix for later orthogonalization.
+  /**
+   * Compute the radial overlap matrix for later orthogonalization.
    *
-   *  @throw runtime_error if the overlap matrix cannot be diagonalized
+   * @throw runtime_error if the overlap matrix cannot be diagonalized
    */
   template<class Mngr>
   void RepresentationManagerSphericalExpansion<Mngr>::
@@ -294,7 +294,7 @@ namespace rascal {
 
     using std::pow;
     using std::sqrt;
-    using gamma = std::tgamma;
+    using std::tgamma;
 
     size_t radial_n1;
     size_t radial_n2;
@@ -310,24 +310,23 @@ namespace rascal {
                 -0.5*(3.0 + radial_n1 + radial_n2))
             / (pow(this->radial_sigmas[radial_n1], radial_n1) +
                pow(this->radial_sigmas[radial_n2], radial_n2))
-            * gamma(0.5 * (3.0 + radial_n1 + radial_n2))
+            * tgamma(0.5 * (3.0 + radial_n1 + radial_n2))
             / pow(this->radial_sigmas[radial_n1] *
                        this->radial_sigmas[radial_n2], 1.5)
-            * sqrt(gamma(1.5 + radial_n1)
-                 * gamma(1.5 + radial_n2));
+            * sqrt(tgamma(1.5 + radial_n1)
+                 * tgamma(1.5 + radial_n2));
       }
     }
 
     // Compute the inverse square root of the overlap matrix
-    Eigen::SelfAdjointEigenSolver<MatrixXd> eigensolver(overlap);
+    Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigensolver(overlap);
     if (eigensolver.info() != Eigen::Success) {
       throw std::runtime_error("Warning: Could not diagonalize "
                                "radial overlap matrix.");
     }
     //TODO(max-veit) check whether this is the right way to do this in Eigen
     Eigen::MatrixXd eigenvalues = eigensolver.eigenvalues();
-    Eigen::ArrayXd eigs_invsqrt(this->max_radial) =
-        eigenvalues.array().sqrt().inverse();
+    Eigen::ArrayXd eigs_invsqrt = eigenvalues.array().sqrt().inverse();
     Eigen::MatrixXd unitary = eigensolver.eigenvectors();
     this->radial_ortho_matrix = unitary.adjoint() *
                                 eigs_invsqrt.matrix().asDiagonal() * unitary;
@@ -354,21 +353,15 @@ namespace rascal {
 
 
   template<class Mngr>
-  void RepresentationManagerSphericalExpansion<Mngr>::compute(){
+  void RepresentationManagerSphericalExpansion<Mngr>::compute() {
 
     using math::PI;
     using std::pow;
 
-    this->soap_vectors.resize_to_zero();
-    this->soap_vectors.set_nb_row(this->n_species * this->max_radial);
-    this->soap_vectors.set_nb_col(pow(this->max_angular + 1, 2));
-
     size_t radial_n;
     size_t angular_l;
-    size_t m_count;
     size_t lm_collective_idx;
     double sigma2;
-    double radial_sigma_factor;
 
     if (not this->is_precomputed) {
       this->precompute();
@@ -390,8 +383,8 @@ namespace rascal {
       for (radial_n = 0; radial_n < this->max_radial; radial_n++) {
         // TODO(max-veit) remember to update when we do multiple n_species!
         radial_integral(radial_n, 0) = radial_norm_factors(radial_n)
-            * radial_nl_fators(radial_n, 0)
-            * pow(1.0/sigma2 + 1.0/this->radial_sigmas[radial_n]**2,
+            * radial_nl_factors(radial_n, 0)
+            * pow(1.0/sigma2 + pow(this->radial_sigmas[radial_n], -2),
                        -0.5 * (3.0 + radial_n));
       }
       soap_vector.col(0) = this->radial_ortho_matrix *
@@ -404,11 +397,11 @@ namespace rascal {
         sigma2 = pow(this->get_gaussian_sigma(neigh), 2);
 
         // Note: the copy _should_ be optimized out (RVO)
-        MatrixXd harmonics = math::compute_spherical_harmonics(
+        Eigen::MatrixXd harmonics = math::compute_spherical_harmonics(
             direction, this->max_angular);
 
         // Precompute radial factors that also depend on the Gaussian sigma
-        VectorXd radial_sigma_factors(this->max_radial);
+        Eigen::VectorXd radial_sigma_factors(this->max_radial);
         for (radial_n = 0; radial_n < this->max_radial; radial_n++) {
           radial_sigma_factors(radial_n) = (pow(sigma2, 2) +
                                  sigma2*pow(this->radial_sigmas(radial_n), 2))
@@ -422,7 +415,7 @@ namespace rascal {
           //TODO(max-veit) how does this work with SpeciesFilter?
           for(angular_l = 0; angular_l < this->max_angular + 1; angular_l++) {
             radial_integral(radial_n, angular_l) =
-                exp_factor * radial_nl_fators(radial_n, angular_l)
+                exp_factor * radial_nl_factors(radial_n, angular_l)
                 * pow(1.0/sigma2 + 1.0/pow(this->radial_sigmas(radial_n), 2),
                       -0.5 * (3.0 + angular_l + radial_n))
                 * pow(dist / sigma2, angular_l)
@@ -437,9 +430,9 @@ namespace rascal {
         for (radial_n = 0; radial_n < this->max_radial; radial_n++) {
           lm_collective_idx = 0;
           for(angular_l = 0; angular_l < this->max_angular + 1; angular_l++) {
-            for (size_t m_array_idx = 0; m_array_idx < 2*this->angular_l + 1;
+            for (size_t m_array_idx = 0; m_array_idx < 2*angular_l + 1;
                 m_array_idx++) {
-              soap_vector(n, lm_collective_idx) +=
+              soap_vector(radial_n, lm_collective_idx) +=
                   radial_integral(radial_n, angular_l)
                   * harmonics(angular_l, m_array_idx);
               ++lm_collective_idx;
@@ -447,7 +440,7 @@ namespace rascal {
           }
         }
       } // for (neigh : center)
-      this->soap_vectors.push_back(soap_vector)
+      this->soap_vectors.push_back(soap_vector);
     } // for (center : structure_manager)
   } // compute()
 
@@ -464,8 +457,10 @@ namespace rascal {
    * @throw logic_error if the requested sigma type has not been implemented
    *
    */
-  template<class Mngr, size_t Order, size_t Layer>
-  void RepresentationManagerSphericalExpansion<Mngr>::get_gaussian_sigma(
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+  template<class Mngr>
+  template<size_t Order, size_t Layer>
+  double RepresentationManagerSphericalExpansion<Mngr>::get_gaussian_sigma(
         ClusterRefKey<Order, Layer> & pair) {
     switch (this->gaussian_sigma_type) {
     case (Constant) : {
@@ -479,6 +474,8 @@ namespace rascal {
       break;
     }
     }
+    // control never reaches here, but just make the compiler happy...
+    return -1;
   }
 
 }

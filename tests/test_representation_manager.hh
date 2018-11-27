@@ -7,7 +7,7 @@
  *
  * @brief  test representation managers
  *
- * Copyright © 2018 Musil Felix, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2018 Musil Felix, Max Veit, COSMO (EPFL), LAMMM (EPFL)
  *
  * rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -33,6 +33,7 @@
 #include "test_adaptor.hh"
 #include "representations/representation_manager_base.hh"
 #include "representations/representation_manager_sorted_coulomb.hh"
+#include "representations/representation_manager_spherical_expansion.hh"
 
 
 namespace rascal {
@@ -58,6 +59,27 @@ namespace rascal {
       };
   };
 
+  struct MultipleStructureSphericalExpansion
+  {
+    MultipleStructureSphericalExpansion() = default;
+    ~MultipleStructureSphericalExpansion() = default;
+
+    std::vector<std::string> filenames {
+      "reference_data/simple_cubic_8.json",
+      "reference_data/small_molecule.json"
+    };
+    std::vector<double> cutoffs{{1,2,3}};
+
+    std::list<json> hypers{ {
+      {"interaction_cutoff", 6.0},
+      {"cutoff_smooth_width", 1.0},
+      {"max_radial", 10},
+      {"max_angular", 8},
+      {"gaussian_sigma_type", "Constant"},
+      {"gaussian_sigma", 0.5}
+    }};
+  };
+
   template< class StructureManager,
             template<typename> class RepresentationManager,
             class BaseFixture>
@@ -68,15 +90,15 @@ namespace rascal {
                     BaseFixture>;
     using Manager_t = typename Parent::Manager_t;
     using Representation_t = RepresentationManager<Manager_t>;
-    
+
     RepresentationFixture() = default;
     ~RepresentationFixture() = default;
-    
+
     std::list<Representation_t> representations{};
   };
 
 /* ---------------------------------------------------------------------- */
-  
+
 } // RASCAL
 
 #endif /* TEST_REPRESENTATION_H */
