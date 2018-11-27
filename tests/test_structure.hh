@@ -286,7 +286,7 @@ namespace rascal {
     int ** firstneigh;
     double **x;
     double **f;
-    int type[nb]{1, 1, 1};
+    int type[nb]{1, 2, -9};
     double  eatom[3]{2, 1, 1};
     double ** vatom;
     Manager_t manager;

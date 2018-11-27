@@ -606,6 +606,16 @@ namespace rascal {
       return this->get_manager().atom_type(id);
     }
 
+    /**
+     * build a array of atom types from the atoms in this cluster
+     */
+    std::array<int, Order> get_atom_types() const {
+      auto aggregator{[this](auto ... indices){
+          return std::array<int, Order>{this->get_manager().atom_type(indices)...};
+        }};
+      return aggregator(this->atom_indices);
+    }
+
     //! return the index of the atom/pair/etc. it is always the last one, since
     //! the other ones are accessed an Order above.
     inline int get_atom_index() {
