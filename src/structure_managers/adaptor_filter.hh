@@ -364,7 +364,7 @@ namespace rascal {
   template <size_t Order>
   bool AdaptorFilter<ManagerImplementation, MaxOrder>::
   has_cluster(const InputClusterRef_t<Order> & cluster) {
-    constexpr auto Layer{cluster.cluster_layer()};
+    constexpr auto Layer{InputClusterRef_t<Order>::cluster_layer()};
 
     auto & indices_container{
       std::get<Order-1>(this->cluster_indices_container)};

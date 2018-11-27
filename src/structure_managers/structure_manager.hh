@@ -701,7 +701,7 @@ namespace rascal {
       return species_aggregator_helper<Manager>
         (index_array,
          manager,
-         std::make_index_sequence<index_array.size()>{});
+         std::make_index_sequence<Order>{});
     }
   }; // internal
 
