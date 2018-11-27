@@ -82,9 +82,6 @@ namespace rascal {
     using Implementation_t = ManagerImplementation;
     using traits = StructureManager_traits<AdaptorStrict>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
-    template <size_t Order>
-    using ClusterRef_t =
-      typename ManagerImplementation::template ClusterRef<Order>;
     using Vector_ref = typename Parent::Vector_ref;
 
     static_assert(traits::MaxOrder > 1,

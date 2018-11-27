@@ -82,14 +82,7 @@ namespace rascal {
     lin_mat  mat1 = lin_mat::Ones();
     std::vector<double> dists{{2,4,0,1,3}};
 
-    std::vector<std::pair<size_t, myiter> > order_mat(dists.size());
-
-    size_t n_{0};
-    for (myiter it = dists.begin(); it != dists.end(); ++it, ++n_)
-        {order_mat[n_] = make_pair(n_, it);}
-
-    std::sort(order_mat.begin(), order_mat.end(), internal::ordering());
-    internal::sort_coulomb_matrix(mat0,mat1,order_mat);
+    internal::sort_coulomb_matrix(mat0,mat1,dists);
     for (int ii{0}; ii < mat0.rows(); ii++){
       for (int jj{0}; jj < mat0.cols(); jj++){
          if (verbose) std::cout << mat0(ii,jj) << ",\t" ;

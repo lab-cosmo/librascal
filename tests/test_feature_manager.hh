@@ -86,7 +86,7 @@ namespace rascal {
           
           representations.emplace_back(manager,hyper);
           representations.back().compute();
-          Nfeatures.push_back(representations.back().get_n_feature());
+          Nfeatures.push_back(representations.back().get_feature_size());
 
         }
       }

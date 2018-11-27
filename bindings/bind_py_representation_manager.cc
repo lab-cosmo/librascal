@@ -48,7 +48,7 @@ decltype(auto) add_representation_manager(py::module & mod,py::module & ){
 };
 
 
-//! Sorted Coulomb representation python binding
+//! Representation python binding
 void add_representation_managers(py::module & mod,py::module & m_garbage){
   
   py::class_<RepresentationManagerBase>(m_garbage,"RepresentationManagerBase");
