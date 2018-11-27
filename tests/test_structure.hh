@@ -478,7 +478,7 @@ namespace rascal {
                        Eigen::Map<Eigen::Matrix<int, 3, 1>>
                        {pbc.data()});
 
-      manager_2.update(positions_2, numbers_1, cell_2,
+      manager_2.update(positions_2, numbers_2, cell_2,
                        Eigen::Map<Eigen::Matrix<int, 3, 1>>
                        {pbc.data()});
     }
