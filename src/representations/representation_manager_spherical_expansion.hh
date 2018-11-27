@@ -93,32 +93,90 @@ namespace rascal {
 
     //! Default constructor.  Assumes constant Gaussian sigma (width).
     RepresentationManagerSphericalExpansion(Manager_t &sm, 
-      double interaction_cutoff, double cutoff_smooth_width,
-      size_t n_species, size_t max_radial, size_t max_angular,
-      double gaussian_sigma)
-      :structure_manager{sm}, interaction_cutoff{interaction_cutoff},
-      cutoff_smooth_width{cutoff_smooth_width},
-      max_radial{max_radial}, max_angular{max_angular},
-      n_species{n_species}, soap_vectors{sm},
-      constant_gaussian_sigma{gaussian_sigma}, gaussian_sigma_type{Constant}
-      {
-        this->radial_ortho_matrix.resize(this->max_radial, this->max_radial);
-        this->radial_sigmas.resize(this->max_radial, 1);
-        this->radial_norm_factors.resize(this->max_radial, 1);
-        this->radial_nl_factors.resize(this->max_radial, this->max_angular + 1);
-        // TODO(max-veit) the type of Gaussian sigma should not be determined
-        // using constructor overloading.  Better convert
-        // RepManSphExpn::get_gaussian_sigma() to its own class let that switch
-        // on the Gaussian sigma type
-      }
+        double interaction_cutoff, double cutoff_smooth_width,
+        size_t n_species, size_t max_radial, size_t max_angular,
+        double gaussian_sigma)
+        :structure_manager{sm}, interaction_cutoff{interaction_cutoff},
+        cutoff_smooth_width{cutoff_smooth_width},
+        max_radial{max_radial}, max_angular{max_angular},
+        n_species{n_species}, soap_vectors{sm},
+        constant_gaussian_sigma{gaussian_sigma}, gaussian_sigma_type{Constant},
+        is_precomputed{false}
+    {
+      this->radial_ortho_matrix.resize(this->max_radial, this->max_radial);
+      this->radial_sigmas.resize(this->max_radial, 1);
+      this->radial_norm_factors.resize(this->max_radial, 1);
+      this->radial_nl_factors.resize(this->max_radial, this->max_angular + 1);
+      // TODO(max-veit) the type of Gaussian sigma should not be determined
+      // using constructor overloading.  Better convert
+      // RepManSphExpn::get_gaussian_sigma() to its own class & let that switch
+      // on the Gaussian sigma type
+    }
 
-    RepresentationManagerSphericalExpansion(Manager_t &sm,const hypers_t& hyper)
-      :structure_manager{sm},central_decay{},
-      interaction_cutoff{},
-      interaction_decay{},coulomb_matrices{sm}
-      {
-        this->set_hyperparameters(hyper);
+    /**
+     * Set the hyperparameters of this descriptor from a json object.
+     *
+     * @param hypers structure (usually parsed from json) containing the
+     *               options and hyperparameters
+     *
+     * @throw logic_error if an invalid option or combination of options is
+     *                    specified in the structure
+     */
+    void set_hyperparameters(const hypers_t& hypers) {
+      this->max_radial = hypers.at("max_radial");
+      this->max_angular = hypers.at("max_angular");
+      if (hypers.find("n_species") != hypers.end()){
+        this->n_species = hypers.at("n_species");
       }
+      this->interaction_cutoff = hypers.at("interaction_cutoff");
+      this->cutoff_smooth_width = hypers.at("cutoff_smooth_width");
+      if (hypers.at("gaussian_sigma_type").compare("Constant") == 0) {
+        this->gaussian_sigma_type = GaussianSigmaType.Constant;
+        this->constant_gaussian_sigma = hypers.at("gaussian_sigma");
+      } else {
+        throw std::logic_error("Requested Gaussian sigma type \'"
+                               + hypers.at("gaussian_sigma_type")
+                               + "\' has not been implemented.");
+      }
+      this->radial_ortho_matrix.resize(this->max_radial, this->max_radial);
+      this->radial_sigmas.resize(this->max_radial, 1);
+      this->radial_norm_factors.resize(this->max_radial, 1);
+      this->radial_nl_factors.resize(this->max_radial, this->max_angular + 1);
+    }
+
+    /**
+     * Set the hyperparameters of this descriptor from a json string
+     *
+     * @param hypers json string containing the options and hyperparameters
+     *               The string will be parsed into a json container.
+     *
+     * @throw logic_error if an invalid option or combination of options is
+     *                    specified in the string
+     *
+     * @throw json.exception.parse_error if the string is not valid json
+     */
+    void set_hyperparameters(const std::string& hypers) {
+      hypers_t hypers_structure = json::parse(hypers);
+      this->set_hyperparameters(hypers_structure);
+    }
+
+    /**
+     * Construct a new RepresentationManager using a hyperparameters container
+     *
+     * @param hypers container (usually parsed from json) for the options and
+     *               hyperparameters
+     *
+     * @throw logic_error if an invalid option or combination of options is
+     *                    specified in the container
+     */
+    RepresentationManagerSphericalExpansion(Manager_t &sm,
+                                            const hypers_t& hyper)
+        :structure_manager{sm}, interaction_cutoff{}, cutoff_smooth_width{},
+        max_radial{}, max_angular{}, n_species{}, soap_vectors{sm},
+        is_precomputed{false}
+    {
+      this->set_hyperparameters(hyper);
+    }
 
     //! Copy constructor
     RepresentationManagerSphericalExpansion(
@@ -148,15 +206,32 @@ namespace rascal {
     //! Precompute radial orthogonalization matrix (NB specific to basis!)
     void precompute_radial_overlap();
 
-    //! getter for the representation TODO(max-veit) update
+    //! getter for the representation
     template <size_t Order, size_t Layer> 
-    Eigen::Map<Eigen::MatrixXd> get_soap_vector(const ClusterRefKey<Order, Layer>& center){
+    Eigen::Map<Eigen::MatrixXd> get_soap_vector(
+        const ClusterRefKey<Order, Layer>& center) {
       return this->soap_vectors[center];
     }
 
-    // TODO think of a generic input type for the hypers
-    void set_hyperparameters(const hypers_t & );
+    std::vector<precision_t&> get_representation_raw_data() {
+      return this->soap_vector.get_raw_data();
+    }
 
+    /**
+     * Return whether the radial sigmas and overlap matrix have been precomputed
+     *
+     * This only needs to be done once on initialization, but it is not done in
+     * the constructor to avoid spending time and possibly throwing exceptions
+     * there.  Instead, by default, it is done once on the first call of the
+     * compute() method and the precomputed results are saved for subsequent
+     * calls.
+     */
+    bool get_is_precomputed() {
+      return this->is_precomputed;
+    }
+
+  protected:
+  private:
     Manager_t& structure_manager;
     //hypers_t hyperparmeters;
     double interaction_cutoff;
@@ -172,11 +247,9 @@ namespace rascal {
     size_t n_species;
     size_t max_radial;
     size_t max_angular;
+    bool is_precomputed;
 
     Property_t soap_vectors;
-
-  protected:
-  private:
   };
 
 
@@ -258,6 +331,25 @@ namespace rascal {
     Eigen::MatrixXd unitary = eigensolver.eigenvectors();
     this->radial_ortho_matrix = unitary.adjoint() *
                                 eigs_invsqrt.matrix().asDiagonal() * unitary;
+    this->is_precomputed = true;
+  }
+
+  /**
+   * Precompute everything that doesn't depend on the atomic structure
+   * (only on the hyperparameters)
+   *
+   * Calls the methods precompute_radial_sigmas() and
+   * precompute_radial_overlap(); if either of those methods throws exceptions,
+   * they will be passed on from here.
+   *
+   * @throw runtime_error if the overlap matrix cannot be diagonalized
+   */
+  template<class Mngr>
+  void RepresentationManagerSphericalExpansion<Mngr>::precompute() {
+    this->precompute_radial_sigmas();
+    this->precompute_radial_overlap();
+    // Only if none of the above failed (threw exceptions)
+    this->is_precomputed = true;
   }
 
 
@@ -277,6 +369,10 @@ namespace rascal {
     size_t lm_collective_idx;
     double sigma2;
     double radial_sigma_factor;
+
+    if (not this->is_precomputed) {
+      this->precompute();
+    }
 
     for (auto center : this->structure_manager) {
 

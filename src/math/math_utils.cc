@@ -57,6 +57,7 @@ namespace rascal {
       /// Technically abs(sin(θ)), but θ only goes from [0, π)
       double sin_theta = sqrt(1.0 - pow(cos_theta, 2));
       Eigen::MatrixXd assoc_legendre_polynom(max_angular+1, max_angular + 1);
+      //TODO zero upper triangular entries (m > l); otherwise they're undefined
       //assoc_legendre_polynom.resize(max_angular+1, max_angular + 1);
       Eigen::MatrixXd coeff_a(max_angular + 1, 2*max_angular + 1);
       Eigen::MatrixXd coeff_b(max_angular + 1, 2*max_angular + 1);
@@ -204,6 +205,8 @@ namespace rascal {
         sin_phi = direction[1] / sqrt_xy;
       }
       Eigen::MatrixXd harmonics(max_angular+1, 2*max_angular + 1);
+      //TODO zero upper triangular entries (m > 2l+1); otherwise they're
+      //undefined
       //harmonics.resize(max_angular+1, 2*max_angular + 1);
       Eigen::MatrixXd assoc_legendre_polynom = compute_assoc_legendre_polynom(
           cos_theta, max_angular);
