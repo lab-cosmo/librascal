@@ -149,11 +149,14 @@ namespace rascal {
       auto location{filter_map.find(species_indices)};
 
       if (location == filter_map.end()) {
-        // this species combo is not yet in the container
+        // this species combo is not yet in the container, therefore
+        // create new empty one
         auto new_filter{
           std::make_unique<Filter_t<Order>>(this->structure_manager)};
+        // insertion returns a ridiculous type, see spec
         auto new_location{
-          std::get<0>(filter_map.insert({species_indices, std::move(new_filter)}))};
+          std::get<0>(filter_map.insert({
+                species_indices, std::move(new_filter)}))};
         return *std::get<1>(*new_location);
       } else {
         return *std::get<1>(*location);
@@ -162,7 +165,9 @@ namespace rascal {
 
   protected:
 
+    //! underlying structure manager to be filtered upon update()
     ManagerImplementation & structure_manager;
+    //! storage by cluster order for the filtered managers
     internal::FilterContainer_t<ManagerImplementation, MaxOrder> filters;
   private:
   };
@@ -177,8 +182,13 @@ namespace rascal {
   {}
 
   namespace internal {
-
-
+    /**
+     * Helper struct that loops over a cluster or manager, and
+     * segregates the iteratee (i.e. the next higher order clusters)
+     * by species. If the loop has not reached the highest cluster
+     * order (i.e. MaxOrder), it recursively loops also over the next
+     * higher order clusters.
+     */
     template<class ManagerImplementation, size_t MaxOrder,
              size_t Remaining = MaxOrder>
     struct FilterSpeciesLoop
@@ -198,6 +208,9 @@ namespace rascal {
       };
     };
 
+    /**
+     * Recursion tail of the helper loop which does nothing at all
+     */
     template<class ManagerImplementation, size_t MaxOrder>
     struct FilterSpeciesLoop<ManagerImplementation, MaxOrder, 0>
     {
@@ -208,9 +221,13 @@ namespace rascal {
     };
 
   }  // internal
+
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation, size_t MaxOrder>
   void SpeciesManager<ManagerImplementation, MaxOrder>::update() {
+    // number of levels to be descended into is know at compile time,
+    // but not at writing time, hence the indirection to
+    // FilterSpeciesLoop
     using FilterSpeciesLoop =
       internal::FilterSpeciesLoop<ManagerImplementation, MaxOrder>;
     FilterSpeciesLoop::loop(this->structure_manager, *this);
