@@ -22,8 +22,15 @@ make dev_doc
 * To build for development:
 ```Shell
 cd build 
-cmake -DCMAKE_BUILD_TYPE=Debug  -DENABLE_DOC=ON -DBUILD_TESTS=ON ..
+cmake -DCMAKE_BUILD_TYPE=debug  -DENABLE_DOC=ON -DBUILD_TESTS=ON ..
 make all
+ctest -V
+```
+* To build with optimization and debug info:
+```Shell
+cd build 
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_TESTS=ON  CMAKE_C_FLAGS_RELWITHDEBUBINFO="-03 -g -DNDEBUG" ..
+make -j 4
 ctest -V
 ```
 
@@ -39,7 +46,6 @@ ctest -V
   + -DCMAKE_BUILD_TYPE
   + -DENABLE_DOC
   + -DBUILD_TESTS
-
 
 
 To remove all the cmake files/folders except for the external library (enable glob and remove):
@@ -82,3 +88,5 @@ typically we will do operations like diag (AB) where A and B are matrices of the
 TODO:
 
 have NL tests (1-3) that really test all possible features of the implementation
+=======
+

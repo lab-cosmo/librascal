@@ -27,7 +27,6 @@
 # Boston, MA 02111-1307, USA.
 #
 
-
 set(representation_SRC
   )
 

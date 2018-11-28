@@ -28,81 +28,67 @@
 
 #include "tests.hh"
 #include "test_structure.hh"
-#include "structure_managers/adaptor_increase_maxorder.hh"
+#include "structure_managers/adaptor_half_neighbour_list.hh"
 
 namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(maxlevel_increase_adaptor_test);
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(constructor_test_order_zero,
-                          ManagerFixtureSimple<StructureManagerCenters>){
-
-    constexpr bool verbose{false};
-
-    if (verbose) std::cout << "===> zeroth order manager " << std::endl;
-    //! testing iteration of zerot-th order manager
-    for (auto atom : manager) {
-      if (verbose) {
-        std::cout << "atom " << atom.back() << std::endl;
-      }
-    }
-
-    if (verbose) std::cout << "<== zeroth order manager " << std::endl;
-
-    AdaptorMaxOrder<StructureManagerCenters> pair_manager{manager, cutoff};
-    pair_manager.update();
-
-    auto n_pairs{0};
-    for (auto atom : pair_manager) {
-      if (verbose) std::cout << "atom " << atom.back() << std::endl;
-      for (auto pair : atom) {
-        n_pairs++;
-        if (verbose) {
-          std::cout << "   complete pair "
-                    << atom.back() << " " << pair.back()
-                    << " glob " << pair.get_global_index() << std::endl;
-        }
-      }
-    }
-    if (verbose) std::cout << "Number of pairs " << n_pairs << std::endl;
+  /*
+   * test if the PairFixtureFile is constructed properly and accepts the adaptor
+   * to increase the MaxOrder to 3
+   */
+  BOOST_FIXTURE_TEST_CASE(constructor_test,
+                          PairFixtureFile<StructureManagerCenters>) {
+    AdaptorMaxOrder<PairManager_t> adaptor{this->pair_manager};
+    adaptor.update();
   }
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(constructor_test,
-                          ManagerFixture<StructureManagerChain>){
+  /*
+   * test if iteration of MaxOrder=3 adaptor is iterable and yields the same
+   * pairs as the underlying pair_manager.
+   */
+  BOOST_FIXTURE_TEST_CASE(iterator_test,
+                          PairFixtureFile<StructureManagerCenters>) {
 
     constexpr bool verbose{false};
     constexpr bool check_below{false};
 
     // Check underlying manager
-    if (check_below) std::cout << ">============ below" << std::endl;
+    if (check_below) std::cout << ">> underlying manager " << std::endl;
     size_t npairs1{0};
-    if (check_below) {
-      for (auto atom : manager_chain) {
+    for (auto atom : pair_manager) {
+      if (verbose) {
+        std::cout << "chain atom "
+                  << atom.back()
+                  << std::endl;
+      }
+      for (auto pair : atom) {
+        npairs1++;
         if (verbose) {
-          std::cout << "chain atom "
-                    << atom.back()
+          std::cout << " chain pair "
+                    << pair.back()
+                    << " glob " << pair.get_global_index()
                     << std::endl;
-        }
-        for (auto pair : atom) {
-          npairs1++;
-          if (verbose) {
-            std::cout << " chain pair "
-                      << pair.back()
-                      << " glob " << pair.get_global_index()
-                      << std::endl;
-          }
         }
       }
     }
     if (check_below) {
       std::cout << "number of pairs " << npairs1 << std::endl;
-      std::cout << "<============ below" << std::endl;
+      std::cout << "<< underlying manager" << std::endl;
     }
 
-    AdaptorMaxOrder<StructureManagerChain> adaptor{manager_chain, cutoff};
+    auto npairs_tmp = pair_manager.get_nb_clusters(2);
+    BOOST_CHECK_EQUAL(npairs_tmp, npairs1);
+
+    AdaptorMaxOrder<PairManager_t> adaptor{this->pair_manager};
     adaptor.update();
+
+    //! make sure the number of pairs gets carried over to the next layer
+    auto npairs_adaptor = adaptor.get_nb_clusters(2);
+    BOOST_CHECK_EQUAL(npairs_adaptor, npairs_tmp);
 
     if (verbose) {
       std::cout << "Adaptor increase MaxOrder" << std::endl;
@@ -111,14 +97,16 @@ namespace rascal {
     auto natoms{0};
     auto npairs{0};
     auto n_triplets{0};
+
     for (auto atom : adaptor) {
       natoms++;
       if (verbose) {
         std::cout << atom.back()
-        	  << std::endl;
+                  << std::endl;
       }
 
-      if (verbose) std::cout << "position: " << atom.get_position() << std::endl;
+      if (verbose) std::cout << "position: " << atom.get_position
+                     () << std::endl;
 
       for (auto pair : atom) {
         npairs++;
@@ -143,170 +131,63 @@ namespace rascal {
       }
     }
     if(verbose) std::cout << "Number of triplets: " << n_triplets << std::endl;
+
+    // TODO: check for consistency in number of tuples
   }
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(neighbourlist_test_hcp,
-                          ManagerFixtureNeighbourComparison
-                          <StructureManagerCenters>) {
-
-    /**
-     * Note: since the cell vectors are different, it is possible that one of
-     * the two atoms is repeated into a different cell due to periodicity. This
-     * leads to a difference in number of neighbours. Therefore the strict
-     * cutoff is check to ensure the exakt same number of neighbours.
-     */
+  /*
+   * Test with 3 atoms, included stacking: full pair list -> half pair list ->
+   * triplet list; SM is used as a shorthand for StructureManager. Checked
+   * positions are specific to StructureManagerLammps and therefore hardcoded.
+   */
+  BOOST_FIXTURE_TEST_CASE(pair_to_triplet_extension,
+                          ManagerFixture<StructureManagerLammps>) {
 
     constexpr bool verbose{false};
 
-    if(verbose) std::cout << "HCP test " << cutoff << std::endl;
+    if (verbose) std::cout << ">> pair to triplet extension" << std::endl;
 
-    int mult = 10;
+    // TODO: should this be in a fixture?
+    AdaptorHalfList<StructureManagerLammps> SM2{manager};
+    SM2.update();
+    AdaptorMaxOrder<AdaptorHalfList<StructureManagerLammps>> SM3{SM2};
+    SM3.update();
 
-    for (auto i{1}; i < mult; ++i) {
-      auto cutoff_tmp = i * cutoff;
+    // make sure number of pairs are carried over, since they are are not changed
+    BOOST_CHECK_EQUAL(SM2.get_nb_clusters(2), SM3.get_nb_clusters(2));
 
-      std::vector<int> neighbours_per_atom1{};
-      std::vector<int> neighbours_per_atom2{};
+    // only one possible triplet in this case?
+    BOOST_CHECK_EQUAL(SM3.get_nb_clusters(3), 1);
 
-      neighbours_per_atom1.resize(0);
-      neighbours_per_atom1.resize(0);
+    for (auto atom : SM3) {
+      auto atom_index = atom.get_atom_index();
+      auto atom_type = atom.get_atom_type();
+      BOOST_CHECK_EQUAL(atom_type, type[atom_index]);
 
-      if (verbose) {
-        std::cout << "hcp test cutoff " << cutoff_tmp << std::endl;
-      }
+      auto atom_position = atom.get_position();
+      for (auto pair : atom) {
+        auto pair_index = pair.get_atom_index();
+        auto pair_type = pair.get_atom_type();
+        BOOST_CHECK_EQUAL(pair_type, type[pair_index]);
 
-      AdaptorMaxOrder<StructureManagerCenters> pair_manager1{manager_1,
-          cutoff_tmp};
-      pair_manager1.update();
+        auto pair_position = pair.get_position();
+        auto diff_pos_pair = (pair_position - atom_position).norm();
+        BOOST_CHECK_CLOSE(diff_pos_pair, 1., tol);
 
-      AdaptorMaxOrder<StructureManagerCenters> pair_manager2{manager_2,
-          cutoff_tmp};
-      pair_manager2.update();
-
-      //std::cout << "Manager 1" << std::endl;
-      for (auto atom : pair_manager1) {
-        neighbours_per_atom1.push_back(0);
-        for (auto pair : atom) {
+        for (auto triplet : pair) {
           if (verbose) {
-            std::cout << "1 pair "
-                      << atom.back() << " "
-                      << pair.back() << std::endl;
+            std::cout << "triplet " << atom.back() << " "
+                    << pair.back() << " " << triplet.back() << std::endl;
           }
-          double dist = {(atom.get_position()
-                          - pair.get_position()).norm()};
-          if (dist < cutoff_tmp) {
-            neighbours_per_atom1.back()++;
-          }
+          auto triplet_index = triplet.get_atom_index();
+          auto triplet_type = triplet.get_atom_type();
+          BOOST_CHECK_EQUAL(triplet_type, type[triplet_index]);
+
+          auto triplet_position = triplet.get_position();
+          auto diff_pos_triplet = (triplet_position - atom_position).norm();
+          BOOST_CHECK_CLOSE(diff_pos_triplet, 1., tol);
         }
-      }
-      //std::cout << "Manager 2" << std::endl;
-      for (auto atom : pair_manager2) {
-        neighbours_per_atom2.push_back(0);
-        for (auto pair : atom) {
-          if (verbose) {
-            std::cout << "2 pair "
-                      << atom.back() << " "
-                      << pair.back() << std::endl;
-          }
-          double dist = {(atom.get_position()
-                          - pair.get_position()).norm()};
-          if (dist < cutoff_tmp) {
-            neighbours_per_atom2.back()++;
-          }
-        }
-      }
-
-      BOOST_CHECK_EQUAL_COLLECTIONS(neighbours_per_atom1.begin(),
-                                    neighbours_per_atom1.end(),
-                                    neighbours_per_atom2.begin(),
-                                    neighbours_per_atom2.end());
-
-      for (auto i{0}; i < natoms; ++i) {
-        if (verbose) {
-          std::cout << "neigh1/neigh2: i " << i << " "
-                    << neighbours_per_atom1[i] << "/"
-                    << neighbours_per_atom2[i] << std::endl;
-        }
-      }
-    }
-  }
-
-  /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(neighbourlist_test_fcc,
-                          ManagerFixtureNeighbourCheckFcc
-                          <StructureManagerCenters>) {
-
-    constexpr bool verbose{false};
-
-    if (verbose) std::cout << "FCC test " << std::endl;
-
-    int mult = 8;
-
-    for (auto i{1}; i < mult; ++i) {
-      auto cutoff_tmp = i * cutoff;
-
-      std::vector<int> neighbours_per_atom1{};
-      std::vector<int> neighbours_per_atom2{};
-
-      neighbours_per_atom1.resize(0);
-      neighbours_per_atom1.resize(0);
-
-      if (verbose) {
-        std::cout << "fcc cutoff " << cutoff_tmp << std::endl;
-      }
-
-      AdaptorMaxOrder<StructureManagerCenters> pair_manager1{manager_1,
-          cutoff_tmp};
-      pair_manager1.update();
-
-      AdaptorMaxOrder<StructureManagerCenters> pair_manager2{manager_2,
-          cutoff_tmp};
-      pair_manager2.update();
-
-      for (auto atom : pair_manager1) {
-        neighbours_per_atom1.push_back(0);
-        for (auto pair : atom) {
-          if (verbose) {
-            std::cout << "1 pair "
-                      << atom.back() << " "
-                      << pair.back() << std::endl;
-          }
-          double dist = {(atom.get_position()
-                          - pair.get_position()).norm()};
-          if (dist < cutoff_tmp) {
-            neighbours_per_atom1.back()++;
-          }
-        }
-      }
-
-      for (auto atom : pair_manager2) {
-        neighbours_per_atom2.push_back(0);
-        for (auto pair : atom) {
-          if (verbose) {
-            std::cout << "2 pair "
-                      << atom.back() << " "
-                      << pair.back() << std::endl;
-          }
-          double dist = {(atom.get_position()
-                          - pair.get_position()).norm()};
-          if (dist < cutoff_tmp) {
-            neighbours_per_atom2.back()++;
-          }
-        }
-      }
-
-      /**
-       * only the first index atom can be checked, since the cell with only one
-       * atom does not allow for comparison with other atom's number of
-       * neighbours
-       */
-      BOOST_CHECK_EQUAL(neighbours_per_atom1[0],
-                        neighbours_per_atom2[0]);
-      if (verbose) {
-        std::cout << "neigh1/neigh2: "
-                  << neighbours_per_atom1[0] << "/"
-                  << neighbours_per_atom2[0] << std::endl;
       }
     }
   }

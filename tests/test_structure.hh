@@ -1,11 +1,11 @@
 /**
- * file   test_structure.hh
+ * file test_structure.hh
  *
  * @author Till Junge <till.junge@altermail.ch>
  *
  * @date   05 Apr 2018
  *
- * @brief  Common headers for tests related to `NeighbourhoodManager`
+ * @brief  Common headers for tests related to `StructureManager`
  *
  * @section LICENSE
  *
@@ -32,24 +32,35 @@
 
 #include "structure_managers/structure_manager_base.hh"
 #include "structure_managers/structure_manager_lammps.hh"
-#include "structure_managers/structure_manager_cell.hh"
 #include "structure_managers/structure_manager_chain.hh"
-#include "structure_managers/structure_manager_json.hh"
 #include "structure_managers/structure_manager_centers.hh"
+#include "structure_managers/adaptor_strict.hh"
+#include "structure_managers/adaptor_increase_maxorder.hh"
+#include "structure_managers/adaptor_neighbour_list.hh"
 
 namespace rascal {
 
+  /**
+   * This file generates fixtures for all the classes in structure_managers
+   * that need to be tested. Fixtures should be as compatible as possible in
+   * terms of interface, so that the tests can be easily templated.  This is a
+   * list of conventions that are expected in tests: - If a fixture generates an
+   * object that should be accessible with a structure_manager interface, it has
+   * to be called "manager"
+   */
+
   // TODO: this is not a general case of a manager fixture. Should not be so
   // complicated
+  // TODO: change this to a usage case of the ManagerFixture
   template<class ManagerImplementation>
   struct ManagerFixture
   {
     ManagerFixture():
-      pbc{{true,true,true}}, cutoff_max{3}, center_ids(22),
-      cell(3, 3), positions(3, 22), numbers(22)
+      pbc{{true,true,true}}, cell(3, 3), positions(22, 3), 
+      numbers(22), cutoff{2.}
     {
       cell <<
-	6.19, 2.41, 0.21,
+        6.19, 2.41, 0.21,
         0.00, 6.15, 1.02,
         0.00, 0.00, 7.31;
       positions <<
@@ -75,25 +86,62 @@ namespace rascal {
         3.818289598989240, 1.436734374347541, 5.869165197222533,
         1.054504320562138, 6.251395251007936, 3.998423858825871,
         3.307475712744203, 5.323662899811682, 1.982236671758393;
+      positions.transposeInPlace();
       numbers << 20, 20, 24, 24, 15, 15, 15, 15,  8,  8,  8,
         8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8;
-      center_ids << 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-        12, 13, 14, 15, 16, 17, 18, 19, 20, 21;
-      manager.update(positions,numbers,center_ids,cell,pbc,cutoff_max);
-
+      
+      manager.update(positions, numbers, cell, 
+              Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
     }
-
-    ~ManagerFixture() {
-
-    }
+    
+    ~ManagerFixture() { }
 
     ManagerImplementation manager{};
-    std::array<bool, 3> pbc;
-    double cutoff_max;
-    VecXi center_ids;
+    std::array<int, 3> pbc;
     Eigen::MatrixXd cell;
     Eigen::MatrixXd positions; // 3, 22
-    VecXi numbers;
+    Eigen::VectorXi numbers;
+    double cutoff;
+  };
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * general case of a manager fixture, which reads the structure information
+   * from a file, atomic structure contains 9 atoms in a very simple cubic unit
+   * cell, no periodicity
+   */
+  template<class ManagerImplementation>
+  struct ManagerFixtureFile
+  {
+    ManagerFixtureFile():
+      cutoff{1.}, filename{"simple_cubic_9.json"}
+    {
+      manager.update(filename);
+    }
+
+    ~ManagerFixtureFile()  {}
+
+    double cutoff;
+    std::string filename{};
+    ManagerImplementation manager{};
+  };
+
+  /* ---------------------------------------------------------------------- */
+  template<class ManagerImplementation>
+  struct ManagerNeighbourListFixture
+    : public ManagerFixture<ManagerImplementation> {
+    using Manager_t = ManagerImplementation;
+
+    static_assert(ManagerImplementation::traits::MaxOrder == 1,
+                  "Lowest layer manager has MaxOrder != 1");
+
+    ManagerNeighbourListFixture()
+      : ManagerFixture<ManagerImplementation>{}, pair_manager{this->manager, 3.}
+    {
+      this->pair_manager.update();
+    }
+
+    AdaptorNeighbourList<ManagerImplementation> pair_manager;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -110,36 +158,36 @@ namespace rascal {
     ManagerImplementation manager{};
     std::array<bool, 3> pbc;
     double cutoff;
-    VecXi center_ids;
+    Eigen::VectorXi center_ids;
     Eigen::MatrixXd cell;
     Eigen::MatrixXd positions;
-    VecXi atom_types;
+    Eigen::VectorXi atom_types;
     int natoms;
     int dim;
   };
 
   /* ---------------------------------------------------------------------- */
   template<class ManagerImplementation>
-  struct ManagerFixtureNeighbourComparison
+  struct ManagerFixtureNeighbourCheckHcp
   {
-    ManagerFixtureNeighbourComparison():
+    ManagerFixtureNeighbourCheckHcp():
       pbc{{true,true,true}}, cutoff{1.}, center_ids(natoms),
       cell_1(dim, dim), cell_2(dim, dim),
       positions_1(dim, natoms), positions_2(dim, natoms), atom_types(natoms)
     {}
 
-    ~ManagerFixtureNeighbourComparison() {}
+    ~ManagerFixtureNeighbourCheckHcp() {}
 
     ManagerImplementation manager_1{};
     ManagerImplementation manager_2{};
     std::array<bool, 3> pbc;
     double cutoff;
-    VecXi center_ids;
+    Eigen::VectorXi center_ids;
     Eigen::MatrixXd cell_1;
     Eigen::MatrixXd cell_2;
     Eigen::MatrixXd positions_1;
     Eigen::MatrixXd positions_2;
-    VecXi atom_types;
+    Eigen::VectorXi atom_types;
     int natoms;
     int dim;
   };
@@ -162,14 +210,14 @@ namespace rascal {
     ManagerImplementation manager_2{};
     std::array<bool, 3> pbc;
     double cutoff;
-    VecXi center_ids_1;
-    VecXi center_ids_2;
+    Eigen::VectorXi center_ids_1;
+    Eigen::VectorXi center_ids_2;
     Eigen::MatrixXd cell_1;
     Eigen::MatrixXd cell_2;
     Eigen::MatrixXd positions_1;
     Eigen::MatrixXd positions_2;
-    VecXi atom_types_1;
-    VecXi atom_types_2;
+    Eigen::VectorXi atom_types_1;
+    Eigen::VectorXi atom_types_2;
     int natoms_1;
     int natoms_2;
     int dim;
@@ -246,100 +294,55 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
-  template <>
-  struct ManagerFixture<StructureManagerChain>
-  {
-    using Manager_t = StructureManagerChain;
+  /**
+   * fixture for providing a neighbour list from a simple manager, which is read
+   * from a JSON file
+   */
+  template<class ManagerImplementation>
+  struct PairFixtureFile : public ManagerFixtureFile<ManagerImplementation> {
+    using Manager_t = ManagerImplementation;
 
-    ManagerFixture()
-      : manager_chain{}, cutoff{1.0} {
-        manager_chain.read_structure_from_json("simple_cubic_8.json");
-        manager_chain.update(cutoff);
-      }
+    static_assert(ManagerImplementation::traits::MaxOrder == 1,
+                  "Lower layer manager has MaxOrder needs MaxOrder = 1");
 
-    ~ManagerFixture() {BOOST_TEST_MESSAGE("teardown ManagerChain fixture");}
+    using PairManager_t = AdaptorNeighbourList<ManagerImplementation>;
 
-    Manager_t manager_chain;
-    double cutoff;
-  };
-
-  /* ---------------------------------------------------------------------- */
-  template <>
-  struct ManagerFixture<StructureManagerJson>
-  {
-    using Manager_t = StructureManagerJson;
-    ManagerFixture()
-      : manager_json{}, cutoff{1.1} {
-      manager_json.read_structure_from_json("simple_cubic_8.json");
-      manager_json.update();
-    }
-
-    ~ManagerFixture () {BOOST_TEST_MESSAGE("teardown ManagerJson fixture");}
-
-    Manager_t manager_json;
-    double cutoff;
-  };
-
-  /* ---------------------------------------------------------------------- */
-  template<>
-  struct ManagerFixture<StructureManagerCenters>
-  {
-
-    using Manager_t = StructureManagerCenters;
-
-    ManagerFixture():
-      positions(3, 22), numbers(22), cell(3, 3), pbc{{true,true,true}},
-      cutoff{3.}
+    PairFixtureFile()
+      : ManagerFixtureFile<ManagerImplementation> {},
+      pair_manager{this->manager, this->cutoff}
     {
-      cell <<
-        6.19, 2.41, 0.21,
-        0.00, 6.15, 1.02,
-        0.00, 0.00, 7.31;
-
-      positions <<
-        3.689540159937393, 5.123016813620886, 1.994119731169116,
-        6.818437242389163, 2.630056617829216, 6.182500355729062,
-        2.114977334498767, 6.697579639059512, 1.392155450018263,
-        7.420401523540017, 2.432242071439904, 6.380314902118375,
-        1.112656394115962, 7.699900579442317, 3.569715877854675,
-        5.242841095703604, 3.122826344932127, 5.689730628626151,
-        3.248684682453303, 5.563872291104976, 2.608353462112637,
-        6.204203511445642, 5.035681855581504, 2.134827911489532,
-        0.946910011088814, 6.223599755982222, 4.168634519120968,
-        3.001875247950068, 1.980327734683430, 5.190182032387606,
-        2.943861424421339, 4.226648342649697, 5.457161501166098,
-        1.713348265904937, 1.501663178733906, 5.668846588337130,
-        5.208365510425203, 1.962144256645833, 2.728127406527150,
-        4.442382360543885, 2.839975217222644, 4.330534549848392,
-        0.744216089807768, 6.426293677263268, 4.643695520786083,
-        2.662204050783991, 1.250682335857938, 6.055217235712136,
-        0.860905287815103, 6.444994283754972, 4.536108843695142,
-        2.769790727874932, 5.609177455068640, 1.696722116501434,
-        6.703053268421970, 0.602846303148105, 3.487609972580834,
-        3.818289598989240, 1.436734374347541, 5.869165197222533,
-        1.054504320562138, 6.251395251007936, 3.998423858825871,
-        3.307475712744203, 5.323662899811682, 1.982236671758393;
-
-      numbers << 20, 20, 24, 24, 15, 15, 15, 15, 8, 8, 8,
-        8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8;
-
-      manager.update(positions, numbers, cell,
-                     Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
+      this->pair_manager.update();
     }
 
-    ~ManagerFixture() {
+    ~PairFixtureFile() {}
 
+    AdaptorNeighbourList<ManagerImplementation> pair_manager;
+  };
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * fixture for providing a neighbour list from a manager which is built with
+   * positions in its fixture
+   */
+  template<class ManagerImplementation>
+  struct PairFixture : public ManagerFixture<ManagerImplementation> {
+    using Manager_t = ManagerImplementation;
+
+    static_assert(ManagerImplementation::traits::MaxOrder == 1,
+                  "Lower layer manager has MaxOrder needs MaxOrder = 1");
+
+    using PairManager_t = AdaptorNeighbourList<ManagerImplementation>;
+
+    PairFixture()
+      : ManagerFixture<ManagerImplementation> {},
+      pair_manager{this->manager, 3.}
+    {
+      this->pair_manager.update();
     }
 
-    Manager_t manager{};
-    Eigen::MatrixXd positions;
-    VecXi numbers;
-    Eigen::MatrixXd cell;
-    std::array<int, 3> pbc;
+    ~PairFixture() {}
 
-    double cutoff;
-
-    int natoms{22};
+    AdaptorNeighbourList<ManagerImplementation> pair_manager;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -348,15 +351,15 @@ namespace rascal {
    * (building the neighbourlist) works properly
    */
   template<>
-  struct ManagerFixtureNeighbourComparison<StructureManagerCenters>
+  struct ManagerFixtureNeighbourCheckHcp<StructureManagerCenters>
   {
     using Manager_t = StructureManagerCenters;
 
-    ManagerFixtureNeighbourComparison():
+    ManagerFixtureNeighbourCheckHcp():
       pbc{{true, true, true}}, cell_1(3, 3), cell_2(3, 3),
       positions_1(3, 2), positions_2(3, 2), numbers(2), cutoff{0.7}
     {
-      /**
+      /*
        * hcp crystal with lattice parameter a = 1, c = sqrt(8/3), defined in two
        * unit cells: basal and prismatic 1. The neighbourlist is built with the
        * same cutoff. The test checks, if all atoms have the same number of
@@ -410,7 +413,7 @@ namespace rascal {
     Eigen::MatrixXd cell_2;
     Eigen::MatrixXd positions_1;
     Eigen::MatrixXd positions_2;
-    VecXi numbers;
+    Eigen::VectorXi numbers;
 
     double cutoff;
 
@@ -436,7 +439,7 @@ namespace rascal {
       cutoff{0.7}, // start with zero neighbours
       natoms_1{1}, natoms_2{4}
     {
-      /**
+      /*
        * fcc unit cells: first cell consists of only one atom, which is
        * repeated, second cell is the conventional 4 atoms. This test checks, if
        * the found number of neighbours with increasing cutoff is the same for
@@ -486,8 +489,8 @@ namespace rascal {
     Eigen::MatrixXd cell_2;
     Eigen::MatrixXd positions_1;
     Eigen::MatrixXd positions_2;
-    VecXi numbers_1;
-    VecXi numbers_2;
+    Eigen::VectorXi numbers_1;
+    Eigen::VectorXi numbers_2;
 
     double cutoff;
 
@@ -534,52 +537,12 @@ namespace rascal {
     std::array<int, 3> pbc;
     Eigen::MatrixXd cell;
     Eigen::MatrixXd positions;
-    VecXi numbers;
+    Eigen::VectorXi numbers;
 
     double cutoff;
 
     const int natoms{8};
   };
-
-  // template<>
-  // struct ManagerFixtureSimple<StructureManagerCenters>
-  // {
-
-  //   using Manager_t = StructureManagerCenters;
-
-  //   ManagerFixtureSimple():
-  //     pbc{{true,false,false}}, cell(3, 3), positions(3, 2), numbers(2),
-  //     cutoff{5.0}
-  //   {
-  //     cell <<
-  //       1.99, 0.99, 0.,
-  //       0.99, 1.99, 0.,
-  //       0., 0., 1.99;
-
-  //     positions <<
-  //       0.5, 1.5,
-  //       0.5, 1.5,
-  //       0.5, 0.5;
-
-  //     numbers << 1, 1;//, 1, 1, 1, 1, 1, 1;
-
-  //     manager.update(positions, numbers, cell,
-  //                    Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
-  //   }
-
-  //   ~ManagerFixtureSimple() {}
-
-  //   Manager_t manager{};
-  //   std::array<int, 3> pbc;
-  //   Eigen::MatrixXd cell;
-  //   Eigen::MatrixXd positions;
-  //   VecXi numbers;
-
-  //   double cutoff;
-
-  //   const int natoms{2};
-  // };
-
 }  // rascal
 
 #endif /* TEST_NEIGHBOURHOOD_H */

@@ -36,17 +36,20 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(ManagerTests);
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(constructor_test, ManagerFixture<StructureManagerLammps>) {
+  BOOST_FIXTURE_TEST_CASE(constructor_test,
+                          ManagerFixture<StructureManagerLammps>) {
   }
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(iterator_test, ManagerFixture<StructureManagerLammps>) {
+  BOOST_FIXTURE_TEST_CASE(iterator_test,
+                          ManagerFixture<StructureManagerLammps>) {
     int atom_counter{};
     int pair_counter{};
     constexpr bool verbose{false};
 
     for (auto atom_cluster: manager) {
       BOOST_CHECK_EQUAL(atom_counter, atom_cluster.get_global_index());
+      BOOST_CHECK_EQUAL(atom_cluster.get_atom_type(), 1);
       ++atom_counter;
 
       for (auto pair_cluster: atom_cluster) {
@@ -62,6 +65,23 @@ namespace rascal {
         ++pair_counter;
 
       }
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE(interface_test,
+                          ManagerFixture<StructureManagerLammps>) {
+    auto natoms = manager.size();
+    auto natoms2 = manager.get_size();
+    BOOST_CHECK_EQUAL(natoms, natoms2);
+
+    for (auto atom : manager) {
+      auto index = atom.get_atom_index();
+      auto atom_type = atom.get_atom_type();
+      BOOST_CHECK_EQUAL(atom_type, type[index]);
+      // auto index_size = manager.get_cluster_size(index);
+      // auto cluster_size = manager.get_cluster_size(atom);
+      // BOOST_CHECK_EQUAL(index_size, cluster_size);
     }
   }
 

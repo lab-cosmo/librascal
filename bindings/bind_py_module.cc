@@ -33,12 +33,13 @@ using namespace pybind11::literals;
 namespace py = pybind11;
 
 extern void add_manager_centers(py::module&);
-
 extern void utils_binding(py::module&);
+extern void math_binding(py::module&);
 
 PYBIND11_MODULE(_rascal, mod) {
   mod.doc() = "Python bindings for the Rascal library";
 
   add_manager_centers(mod);
   utils_binding(mod);
+  math_binding(mod);
 }

@@ -7,18 +7,24 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(BUILD_SHARED_LIBS ON)
 
-add_compile_options(-Wall -Wextra -Weffc++)
+
+add_compile_options(-Wall -Wextra)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weffc++")
+# to avoid conflicts with built-in functions
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-builtin")
+
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 include(rascalTools)
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang") 
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
   # using Clang
   add_compile_options(-Wno-missing-braces)
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   # using GCC
-  add_compile_options(-Wno-non-virtual-dtor)
+  # add_compile_options(-Wno-non-virtual-dtor)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-non-virtual-dtor")
   string( TOLOWER "${CMAKE_BUILD_TYPE}" build_type )
   if ("release" STREQUAL "${build_type}" )
     add_compile_options(-march=native)
@@ -87,11 +93,11 @@ if (${BUILD_TESTS})
   target_link_libraries(main_test_suite ${Boost_LIBRARIES} rascal)
   add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
   configure_file("tests/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
-  configure_file("tests/simple_cubic_8.json" ${CMAKE_BINARY_DIR} COPYONLY)
+  configure_file("tests/simple_cubic_9.json" ${CMAKE_BINARY_DIR} COPYONLY)
 endif(${BUILD_TESTS})
 
 # compile the library
-add_compile_options(-Werror)
+# add_compile_options(-Werror) # warnings are errors!
 add_subdirectory(
   ${CMAKE_SOURCE_DIR}/src/
   )

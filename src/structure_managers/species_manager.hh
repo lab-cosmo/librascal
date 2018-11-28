@@ -30,7 +30,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
+/*
+ * ==================================================
+ *  OBSOLETE NOT NECESSARY TO CHANGE, EOL DETERMINED
+ * ==================================================
+ */
 
 #ifndef SPECIES_MANAGER_H
 #define SPECIES_MANAGER_H
@@ -56,28 +60,26 @@ namespace rascal {
     explicit SpeciesManager(NeighManager & manager);
 
     //! Copy constructor
-    SpeciesManager(const SpeciesManager &other) = delete;
+    SpeciesManager(const SpeciesManager & other) = delete;
 
     //! Move constructor
-    SpeciesManager(SpeciesManager &&other) = default;
+    SpeciesManager(SpeciesManager && other) = default;
 
     //! Destructor
     virtual ~SpeciesManager()  = default;
 
     //! Copy assignment operator
-    SpeciesManager& operator=(const SpeciesManager &other) = delete;
+    SpeciesManager & operator=(const SpeciesManager & other) = delete;
 
     //! Move assignment operator
-    SpeciesManager& operator=(SpeciesManager &&other) = default;
+    SpeciesManager & operator=(SpeciesManager && other) = default;
 
     //! get the symmetry functions and the corresponding StructureManager
     std::map<Species_t, BasisFunManager> & get_symmetry_functions();
 
     //! get the next depth layer
     template <bool NotAtMaxLayer = (Layer != MaxLayer)>
-    std::map<Species_t,
-             std::enable_if_t<NotAtMaxLayer,
-                              SubManagerType>>
+    std::map<Species_t, std::enable_if_t<NotAtMaxLayer, SubManagerType>>
     & get_next_order();
 
    protected:
