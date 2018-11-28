@@ -20,8 +20,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -51,7 +51,7 @@ namespace rascal {
       static void push_in_vector(std::vector<T> & vec, reference ref) {
         for (size_t j{0}; j < NbCol; ++j) {
           for (size_t i{0}; i < NbRow; ++i) {
-            vec.push_back(ref(i,j));
+            vec.push_back(ref(i, j));
           }
         }
       }
@@ -60,13 +60,13 @@ namespace rascal {
       template<typename Derived>
       static void push_in_vector(std::vector<T> & vec,
                                  const Eigen::DenseBase<Derived> & ref) {
-        static_assert(Derived::RowsAtCompileTime==NbRow,
+        static_assert(Derived::RowsAtCompileTime == NbRow,
                       "NbRow has incorrect size.");
-        static_assert(Derived::ColsAtCompileTime==NbCol,
+        static_assert(Derived::ColsAtCompileTime == NbCol,
                       "NbCol has incorrect size.");
         for (size_t j{0}; j < NbCol; ++j) {
           for (size_t i{0}; i < NbRow; ++i) {
-            vec.push_back(ref(i,j));
+            vec.push_back(ref(i, j));
           }
         }
       }
@@ -90,11 +90,11 @@ namespace rascal {
       template<typename Derived>
       static void push_in_vector(std::vector<T> & vec,
                                  const Eigen::DenseBase<Derived> & ref) {
-        static_assert(Derived::RowsAtCompileTime==NbRow,
+        static_assert(Derived::RowsAtCompileTime == NbRow,
                       "NbRow has incorrect size.");
-        static_assert(Derived::ColsAtCompileTime==NbCol,
+        static_assert(Derived::ColsAtCompileTime == NbCol,
                       "NbCol has incorrect size.");
-        vec.push_back(ref(0,0));
+        vec.push_back(ref(0, 0));
       }
     };
 
@@ -110,19 +110,17 @@ namespace rascal {
   template <typename T,
             size_t Order,
             size_t PropertyLayer>
-  class TypedProperty: public PropertyBase
-  {
+  class TypedProperty: public PropertyBase {
     using Parent = PropertyBase;
     using Value = internal::Value<T, Eigen::Dynamic, Eigen::Dynamic>;
 
-  public:
-
+   public:
     using value_type = typename Value::type;
     using reference = typename Value::reference;
 
     //! constructor
-    TypedProperty(StructureManagerBase & manager, Dim_t nb_row, Dim_t nb_col=1,
-                  std::string metadata="no metadata"):
+    TypedProperty(StructureManagerBase & manager, Dim_t nb_row,
+                  Dim_t nb_col = 1, std::string metadata = "no metadata"):
       Parent{manager, nb_row, nb_col, Order, PropertyLayer, metadata}
     {}
 
@@ -154,13 +152,15 @@ namespace rascal {
      */
     inline void fill_sequence() {
       this->resize();
-      for (size_t i{0}; i<this->values.size(); ++i) {
+      for (size_t i{0}; i < this->values.size(); ++i) {
         values[i] = i;
       }
     }
     //! Adjust size of values (only increases, never frees)
     void resize() {
-      this->values.resize(this->base_manager.nb_clusters(this->get_order()) * this->get_nb_comp());
+      this->values.resize(
+          this->base_manager.nb_clusters(this->get_order()) *
+          this->get_nb_comp());
     }
 
     /**
@@ -195,9 +195,8 @@ namespace rascal {
     }
 
 
-  protected:
+   protected:
     std::vector<T> values{}; //!< storage for properties
-  private:
   };
 
 }  // rascal

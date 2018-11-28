@@ -20,8 +20,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -39,9 +39,8 @@
 namespace rascal {
 
 
-  class PropertyBase
-  {
-  public:
+  class PropertyBase {
+   public:
     //! Default constructor
     PropertyBase() = delete;
 
@@ -81,9 +80,9 @@ namespace rascal {
     //! returns the metadata string
     inline std::string get_metadata() const {return this->metadata;}
 
-  protected:
-
-    StructureManagerBase & base_manager; //!< base-class reference to StructureManager
+   protected:
+    //!< base-class reference to StructureManager
+    StructureManagerBase & base_manager;
     const Dim_t nb_row;  //!< number of rows stored
     const Dim_t nb_col;  //!< number of columns stored
     const Dim_t nb_comp; //!< number of dofs stored
@@ -94,15 +93,12 @@ namespace rascal {
     const std::string metadata;
     //! constructor
     PropertyBase(StructureManagerBase & manager, Dim_t nb_row, Dim_t nb_col,
-                 size_t order, size_t layer, std::string metadata="no metadata"):
+                 size_t order, size_t layer,
+                 std::string metadata = "no metadata"):
       base_manager{manager}, nb_row{nb_row}, nb_col{nb_col},
       nb_comp{nb_row*nb_col}, order{order}, property_layer{layer},
       metadata{metadata}
     {}
-
-
-
-  private:
   };
 
 }  // rascal
