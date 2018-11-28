@@ -192,7 +192,7 @@ namespace rascal {
   template<class ManagerImplementation>
   struct ManagerFixtureNeighbourCheckFcc {
     ManagerFixtureNeighbourCheckFcc():
-      pbc{{true,true,true}}, cutoff{1.},
+      pbc{{true, true, true}}, cutoff{1.},
       center_ids_1(natoms_1), center_ids_2(natoms_2),
       cell_1(dim, dim), cell_2(dim, dim),
       positions_1(dim, natoms_1), positions_2(dim, natoms_1),
@@ -445,7 +445,7 @@ namespace rascal {
       cell_2 <<
         a,   0., 0.,
         0.,  a,  0.,
-        0.,  0., a ;
+        0.,  0., a;
 
       positions_1 <<
         0.,
@@ -486,7 +486,6 @@ namespace rascal {
 
     const int natoms_1{1};
     const int natoms_2{4};
-
   };
 
   /* ---------------------------------------------------------------------- */
@@ -496,11 +495,8 @@ namespace rascal {
    *
    */
   template<>
-  struct ManagerFixtureSimple<StructureManagerCenters>
-  {
-
+  struct ManagerFixtureSimple<StructureManagerCenters> {
     using Manager_t = StructureManagerCenters;
-
     ManagerFixtureSimple():
       pbc{{true, false, false}}, cell(3, 3), positions(3, 8), numbers(8),
       cutoff{2.1}

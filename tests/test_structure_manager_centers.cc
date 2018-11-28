@@ -34,24 +34,23 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   // checking the constructor
   BOOST_FIXTURE_TEST_CASE(manager_centers_constructor_test,
-                          ManagerFixture<StructureManagerCenters>){}
+                          ManagerFixture<StructureManagerCenters>) {}
 
   /* ---------------------------------------------------------------------- */
   // checking iteration
   BOOST_FIXTURE_TEST_CASE(iterator_test,
                           ManagerFixture<StructureManagerCenters>) {
-
     BOOST_CHECK_EQUAL(manager.get_size(), numbers.size());
     BOOST_CHECK_EQUAL(manager.get_nb_clusters(1), numbers.size());
 
     int atom_counter{};
     constexpr bool verbose{false};
 
-    for (auto atom_cluster: manager) {
+    for (auto atom_cluster : manager) {
       BOOST_CHECK_EQUAL(atom_counter, atom_cluster.get_index());
       ++atom_counter;
-      for (int ii{3};ii<3;++ii){
-        BOOST_CHECK_EQUAL(positions(ii,atom_cluster.get_index()),
+      for (int ii{3}; ii < 3; ++ii) {
+        BOOST_CHECK_EQUAL(positions(ii, atom_cluster.get_index()),
                           atom_cluster.get_position()[ii]);
       }
       if (verbose) std::cout << "atom (" << atom_cluster.back()
@@ -69,7 +68,6 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(simple_cubic_9_neighbour_list,
                           ManagerFixtureFile<StructureManagerCenters>) {
-
     constexpr bool verbose{false};
     if (verbose) std::cout << "StructureManagerCenters interface" << std::endl;
 
@@ -94,7 +92,6 @@ namespace rascal {
   // checking update
   BOOST_FIXTURE_TEST_CASE(manager_update_test,
                           ManagerFixture<StructureManagerCenters>) {
-
     auto natoms = manager.size();
     auto natoms2 = manager.get_size();
     auto natoms3 = manager.get_nb_clusters(1);

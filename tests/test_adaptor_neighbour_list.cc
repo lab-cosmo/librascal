@@ -41,7 +41,6 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(simple_cubic_9_neighbour_list,
                           ManagerFixtureFile<StructureManagerCenters>) {
-
     constexpr bool verbose{false};
 
     AdaptorNeighbourList<StructureManagerCenters> SM2{manager, cutoff};
@@ -80,8 +79,7 @@ namespace rascal {
    * for internal consistency
    */
   BOOST_FIXTURE_TEST_CASE(test_build_neighbour_list_from_atoms,
-                          ManagerFixtureSimple<StructureManagerCenters>){
-
+                          ManagerFixtureSimple<StructureManagerCenters>) {
     constexpr bool verbose{false};
 
     if (verbose) std::cout << "===> zeroth order manager " << std::endl;
@@ -121,7 +119,6 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(neighbourlist_test_hcp,
                           ManagerFixtureNeighbourCheckHcp
                           <StructureManagerCenters>) {
-
     /*
      * Note: since the cell vectors are different, it is possible that one of
      * the two atoms is repeated into a different cell due to periodicity. This
@@ -131,7 +128,7 @@ namespace rascal {
 
     constexpr bool verbose{false};
 
-    if(verbose) std::cout << "HCP test " << cutoff << std::endl;
+    if (verbose) std::cout << "HCP test " << cutoff << std::endl;
 
     int mult = 10;
 
@@ -218,7 +215,6 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(neighbourlist_test_fcc,
                           ManagerFixtureNeighbourCheckFcc
                           <StructureManagerCenters>) {
-
     constexpr bool verbose{false};
 
     if (verbose) std::cout << "FCC test " << std::endl;
@@ -299,7 +295,8 @@ namespace rascal {
     }
   }
 
-  // TODO: add test for different skewedness of an originally rectangular box
+  // TODO(markus): add test for different skewedness of
+  // an originally rectangular box
 
   BOOST_AUTO_TEST_SUITE_END();
 

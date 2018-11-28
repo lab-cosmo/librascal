@@ -52,7 +52,6 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(iterator_test,
                           PairFixtureFile<StructureManagerCenters>) {
-
     constexpr bool verbose{false};
     constexpr bool check_below{false};
 
@@ -130,9 +129,8 @@ namespace rascal {
         }
       }
     }
-    if(verbose) std::cout << "Number of triplets: " << n_triplets << std::endl;
-
-    // TODO: check for consistency in number of tuples
+    if (verbose) std::cout << "Number of triplets: " << n_triplets << std::endl;
+    // TODO(markus): check for consistency in number of tuples
   }
 
   /* ---------------------------------------------------------------------- */
@@ -143,18 +141,18 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(pair_to_triplet_extension,
                           ManagerFixture<StructureManagerLammps>) {
-
     constexpr bool verbose{false};
 
     if (verbose) std::cout << ">> pair to triplet extension" << std::endl;
 
-    // TODO: should this be in a fixture?
+    // TODO(markus): should this be in a fixture?
     AdaptorHalfList<StructureManagerLammps> SM2{manager};
     SM2.update();
     AdaptorMaxOrder<AdaptorHalfList<StructureManagerLammps>> SM3{SM2};
     SM3.update();
 
-    // make sure number of pairs are carried over, since they are are not changed
+    // make sure number of pairs are carried over,
+    // since they are are not changed
     BOOST_CHECK_EQUAL(SM2.get_nb_clusters(2), SM3.get_nb_clusters(2));
 
     // only one possible triplet in this case?

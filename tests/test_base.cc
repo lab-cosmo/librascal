@@ -42,9 +42,7 @@ namespace rascal {
 
   template <int Dim>
   struct DemoTestFixture {
-
-    static constexpr int dim(){return Dim;}
-
+    static constexpr int dim() {return Dim;}
     DemoTestFixture()
       :val{Dim}
     {}

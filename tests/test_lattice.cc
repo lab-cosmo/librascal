@@ -51,7 +51,6 @@ namespace rascal {
       error = std::abs(cell_angles[ii] - cell_angles_true[ii]);
       BOOST_CHECK_LE(error, lattice_tol);
     }
-
   }
 
   /* ---------------------------------------------------------------------- */
@@ -73,7 +72,7 @@ namespace rascal {
     // angle in radian
     cell_angles_true
       <<  1.4313508192414794, 1.5423518764040736, 1.1973182286702833;
-    for (int ii{0};ii<3;++ii) {
+    for (int ii{0}; ii < 3; ++ii) {
       auto error{std::abs(cell_angles[ii]-cell_angles_true[ii])};
       BOOST_CHECK_LE(error, lattice_tol);
     }
@@ -85,7 +84,7 @@ namespace rascal {
     Cell_t cartesian2scaled_true;
     cartesian2scaled_true
       <<  0.161550888529887, 0.00, 0.000,
-      -0.063306933553988, 0.162601626016260,0.000,
+      -0.063306933553988, 0.162601626016260, 0.000,
       0.004192528814472, -0.022688598979013, 0.136798905608755;
     Cell_t scaled2cartesian = lattice.get_scaled2cartesian_matrix();
     Cell_t scaled2cartesian_true;
@@ -106,7 +105,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(get_cartesian2scaled_test, ManagerFixture_lattice) {
-    Eigen::MatrixXd positions_test(3,22);
+    Eigen::MatrixXd positions_test(3, 22);
     positions_test <<
       3.689540159937393, 5.123016813620886, 1.994119731169116,
       6.818437242389163, 2.630056617829216, 6.182500355729062,
@@ -133,7 +132,7 @@ namespace rascal {
 
     Vec3_t positions_sc;
 
-    Eigen::MatrixXd positions_sc_true(3,22);
+    Eigen::MatrixXd positions_sc_true(3, 22);
     positions_sc_true <<
       0.296723741750796, 0.703639876645053, 0.267449366982580,
       0.732914251413269, 0.164593885207063, 0.835769733188786,
@@ -169,7 +168,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(get_scaled2cartesian_test, ManagerFixture_lattice) {
-    Eigen::MatrixXd positions_sc_true(3,22);
+    Eigen::MatrixXd positions_sc_true(3, 22);
     positions_sc_true <<
       3.689540159937393, 5.123016813620886, 1.994119731169116,
       6.818437242389163, 2.630056617829216, 6.182500355729062,
@@ -196,7 +195,7 @@ namespace rascal {
 
     Vec3_t position;
 
-    Eigen::MatrixXd positions_sc_test(3,22);
+    Eigen::MatrixXd positions_sc_test(3, 22);
     positions_sc_test <<
       0.296723741750796, 0.703639876645053, 0.267449366982580,
       0.732914251413269, 0.164593885207063, 0.835769733188786,
@@ -221,10 +220,10 @@ namespace rascal {
       0.144255037012604, 0.855184028865655, 0.546980008047315,
       0.452459057830944, 0.728271258524170, 0.271167807354089;
 
-    for (int jj{0};jj<22;++jj) {
-      lattice.get_scaled2cartesian(positions_sc_test.col(jj),position);
-      for (int ii{0};ii<3;++ii) {
-        BOOST_CHECK_CLOSE(positions_sc_true(ii, jj), position[ii],lattice_tol);
+    for (int jj{0}; jj < 22; ++jj) {
+      lattice.get_scaled2cartesian(positions_sc_test.col(jj), position);
+      for (int ii{0}; ii < 3 ; ++ii) {
+        BOOST_CHECK_CLOSE(positions_sc_true(ii, jj), position[ii], lattice_tol);
       }
     }
   }
@@ -262,7 +261,7 @@ namespace rascal {
     Vec3_t reciprocal_lenghts = lattice.get_reciprocal_lengths();
 
     for (int jj{0}; jj < 3; ++jj) {
-      for (int ii{0};ii < 3; ++ii) {
+      for (int ii{0}; ii < 3; ++ii) {
         BOOST_CHECK_CLOSE(reciprocical_vectors_true(ii, jj),
                           reciprocical_vectors(ii, jj), lattice_tol);
       }
