@@ -31,9 +31,8 @@
 
 namespace rascal {
 
-  class ClusterRefBase
-  {
-  public:
+  class ClusterRefBase {
+   public:
     //! Default constructor
     ClusterRefBase() = delete;
 
@@ -58,8 +57,7 @@ namespace rascal {
     //! returns the layer of the cluster
     inline size_t get_cluster_layer() const {return this->layer;}
 
-  protected:
-
+   protected:
     const size_t order; //! cluster order: atom, pair, triplet?
     const size_t layer; //! cluster layer
 
@@ -67,7 +65,6 @@ namespace rascal {
     ClusterRefBase(size_t order, size_t layer):
       order{order}, layer{layer}
     {}
-  private:
   };
 
 } // rascal
