@@ -40,11 +40,9 @@
 
 namespace rascal {
 
-  template <class NeighManager, int MaxLayer, int Layer=0>
-  class SpeciesManager
-  {
-  public:
-
+  template <class NeighManager, int MaxLayer, int Layer = 0>
+  class SpeciesManager {
+   public:
     using Species_t = int;
     using Dummy_t = char;
     using SubManagerType =
@@ -55,7 +53,7 @@ namespace rascal {
     SpeciesManager() = delete;
 
     //! Construct from an existing StructureManager
-    SpeciesManager(NeighManager & manager);
+    explicit SpeciesManager(NeighManager & manager);
 
     //! Copy constructor
     SpeciesManager(const SpeciesManager &other) = delete;
@@ -82,11 +80,10 @@ namespace rascal {
                               SubManagerType>>
     & get_next_order();
 
-  protected:
+   protected:
     std::array<Species_t, Layer> fixed_species;
     std::map<Species_t, BasisFunManager>;
     std::map<Species_t, SubManagerType>;
-  private:
   };
 
 }  // rascal

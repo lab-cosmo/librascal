@@ -76,13 +76,12 @@ namespace rascal {
    */
   class StructureManagerCenters:
     //! It inherits publicly everything from the base class
-    public StructureManager<StructureManagerCenters>
-  {
+    public StructureManager<StructureManagerCenters> {
     /**
      * Publicly accessible variables and function of the class are given
      * here. These provide the interface to access the neighbourhood.
      */
-  public:
+   public:
     //! For convenience, the names are shortened
     using traits = StructureManager_traits<StructureManagerCenters>;
     using Parent = StructureManager<StructureManagerCenters>;
@@ -134,7 +133,7 @@ namespace rascal {
     //! Default constructor //TODO: all empty initializers??
     StructureManagerCenters()
       : atoms_object{}, atoms_index{}, lattice{}, offsets{}, natoms{}
-    {};
+    {}
 
     //! Copy constructor
     StructureManagerCenters(const StructureManagerCenters &other) = delete;
@@ -273,7 +272,7 @@ namespace rascal {
     //! Function for returning the number of atoms
     size_t get_nb_clusters(size_t cluster_size) const;
 
-  protected:
+   protected:
     /**
      * Object which can interface to the json header to read and write atom
      * related data in the ASE format: positions, cell, periodicity, atom types
@@ -298,8 +297,6 @@ namespace rascal {
 
     //! Total number of atoms in structure
     size_t natoms{};
-
-  private:
   };
 
   /* ---------------------------------------------------------------------- */
@@ -307,7 +304,7 @@ namespace rascal {
   template<size_t Order>
   inline size_t StructureManagerCenters::
   get_offset_impl(const std::array<size_t, Order> & /*counters*/) const {
-    static_assert (Order == 1,
+    static_assert(Order == 1,
                    "this manager only handles atoms.");
     return 0;
   }

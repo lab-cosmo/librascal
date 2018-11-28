@@ -52,7 +52,6 @@ namespace rascal {
          const Eigen::Ref<const VecXi> atom_types,
          const Eigen::Ref<const Eigen::MatrixXd> cell,
          const Eigen::Ref<const PBC_t> pbc) {
-
     Eigen::Index Natom{positions.cols()};
     this->natoms = Natom;
 
@@ -65,10 +64,9 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   void StructureManagerCenters::build() {
-
     this->atoms_object.atoms_type.resize(this->natoms);
     //set the references to the particles positions
-    for (size_t id{0}; id < this->natoms; ++id){
+    for (size_t id{0}; id < this->natoms; ++id) {
       this->atoms_index[0].push_back(id);
       this->offsets.push_back(id);
     }

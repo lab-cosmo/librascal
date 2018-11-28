@@ -56,9 +56,8 @@ namespace rascal {
   //! Definition of the new StructureManagerLammps class.
   class StructureManagerLammps:
     //! It inherits publicly everything from the base class
-    public StructureManager<StructureManagerLammps>
-  {
-  public:
+    public StructureManager<StructureManagerLammps> {
+   public:
     using traits = StructureManager_traits<StructureManagerLammps>;
     using Parent = StructureManager<StructureManagerLammps>;
     using Vector_ref = typename Parent::Vector_ref;
@@ -161,7 +160,8 @@ namespace rascal {
                                      & cluster,
                                      size_t index) const {
       static_assert(Order == traits::MaxOrder-1,
-                    "this implementation only handles atoms and identify its index-th neighbour.");
+          R"(this implementation only handles atoms and identify
+            its index-th neighbour.)");
       auto && i_atom_id{cluster.back()};
       return this->firstneigh[std::move(i_atom_id)][index];
     }
@@ -191,7 +191,7 @@ namespace rascal {
     */
     size_t get_nb_clusters(int cluster_size) const;
 
-  protected:
+   protected:
     int inum{};
     int tot_num{}; //includes ghosts
     int * ilist{};
@@ -204,8 +204,6 @@ namespace rascal {
     double ** vatom{};
     int nb_pairs{}; //! number of clusters with cluster_size=2 (pairs)
     std::vector<int> offsets{};
-
-  private:
   };
 
 
@@ -217,7 +215,7 @@ namespace rascal {
   template<size_t Order>
   inline size_t StructureManagerLammps::
   get_offset_impl(const std::array<size_t, Order> & counters) const {
-    static_assert (Order == 1, "this manager can only give the offset "
+    static_assert(Order == 1, "this manager can only give the offset "
                    "(= starting index) for a pair iterator, given the i atom "
                    "of the pair");
       return this->offsets[counters.front()];
