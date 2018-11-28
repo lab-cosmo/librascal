@@ -59,15 +59,15 @@ namespace rascal {
   };
 
   template< class StructureManager,
-            template<typename> class RepresentationManager,
-            class BaseFixture>
+            template<typename ... > class RepresentationManager,
+            class BaseFixture, typename ...Options>
   struct RepresentationFixture
   :MultipleStructureManagerStrictFixture<StructureManager, BaseFixture>
   {
     using Parent = MultipleStructureManagerStrictFixture<StructureManager,
                     BaseFixture>;
     using Manager_t = typename Parent::Manager_t;
-    using Representation_t = RepresentationManager<Manager_t>;
+    using Representation_t = RepresentationManager<Manager_t,Options...>;
     
     RepresentationFixture() = default;
     ~RepresentationFixture() = default;

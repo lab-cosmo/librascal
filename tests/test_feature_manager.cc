@@ -39,7 +39,7 @@ namespace rascal {
     FeatureFixture<double,FeatureManagerDense,
                   StructureManagerCenters,
                   RepresentationManagerSortedCoulomb,
-                  TestFeatureData>>;
+                  TestFeatureData,CMoptions::Distance>>;
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_setup_test,
             Fix, multiple_fixtures,Fix) {

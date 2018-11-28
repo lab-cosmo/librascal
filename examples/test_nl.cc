@@ -46,7 +46,8 @@ constexpr static int dim{3};
 using Vector_t = Eigen::Matrix<double, dim, 1>;
 
 using Representation_t = RepresentationManagerSortedCoulomb<
-                   AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
+                   AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>,
+                  CMoptions::Distance>;
 
 
 template<class StructureManager>

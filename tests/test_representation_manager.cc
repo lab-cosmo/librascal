@@ -104,7 +104,8 @@ namespace rascal {
   using multiple_fixtures = boost::mpl::list<
     RepresentationFixture<StructureManagerCenters,
                           RepresentationManagerSortedCoulomb,
-                          MultipleStructureSortedCoulomb>>;
+                          MultipleStructureSortedCoulomb,
+                          CMoptions::Distance>>;
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_constructor_test,
             Fix, multiple_fixtures,Fix) {
