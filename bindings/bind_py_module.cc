@@ -30,7 +30,7 @@
 #include <pybind11/pybind11.h>
 
 using namespace pybind11::literals;
-namespace py=pybind11;
+namespace py = pybind11;
 
 extern void add_manager_centers(py::module&);
 

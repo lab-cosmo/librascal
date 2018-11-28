@@ -36,7 +36,7 @@
 #include <basic_types.hh>
 
 using namespace rascal;
-namespace py=pybind11;
+namespace py = pybind11;
 
 template<size_t Order, typename StructureManagerImplementation>
 decltype(auto) add_cluster(py::module & m) {
@@ -45,7 +45,7 @@ decltype(auto) add_cluster(py::module & m) {
   // TODO: change the exposed name to a convertion of the
   // StructureManagerImplementation type to a string
   py::class_<ClusterRef>
-    py_cluster (m, (Order == 1)
+    py_cluster(m, (Order == 1)
                 ? "StructureManager.Center" : "StructureManager.Neighbour");
   py_cluster.def_property_readonly("atom_index", & ClusterRef::get_atom_index,
                                    py::return_value_policy::reference)
@@ -61,7 +61,7 @@ decltype(auto) add_cluster(py::module & m) {
 }
 
 void add_manager_centers(py::module & m){
-  m.doc() = "binding for the Structure Manager Centers" ;
+  m.doc() = "binding for the Structure Manager Centers";
   py::class_<StructureManager<StructureManagerCenters>>
     (m, "StructureManagerBase_Centers").def(py::init<>());
   py::class_<StructureManagerCenters,
@@ -77,7 +77,7 @@ void add_manager_centers(py::module & m){
            v.update(positions, atom_types, cell, pbc);
          })
     .def("__iter__", [] (StructureManager<StructureManagerCenters> & v) {
-        return py::make_iterator(v.begin(),v.end());
+        return py::make_iterator(v.begin(), v.end());
       }, py::keep_alive<0, 1>()); /* Keep vector alive while iterator is used */
-  add_cluster<1,StructureManagerCenters>(m);
-};
+  add_cluster<1, StructureManagerCenters>(m);
+}

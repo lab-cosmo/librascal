@@ -45,6 +45,7 @@
 #include <type_traits>
 #include <utility>
 #include <limits>
+#include<tuple>
 
 namespace rascal {
 
@@ -134,11 +135,12 @@ namespace rascal {
     template <typename... PropertyTypes, typename Manager>
     struct ClusterIndexConstructor<std::tuple<PropertyTypes...>, Manager> {
       static inline decltype(auto) make(Manager & manager) {
-        return std::tuple<PropertyTypes...>(std::move(PropertyTypes(manager))...);
+        return std::tuple<PropertyTypes...>(
+                      std::move(PropertyTypes(manager))...);
       }
     };
 
-  }  // internal
+  }  // namespace internal
 
   /**
    * Base class interface for neighbourhood managers. The actual implementation
@@ -151,9 +153,8 @@ namespace rascal {
    * class implementation
    */
   template <class ManagerImplementation>
-  class StructureManager: public StructureManagerBase
-  {
-  public:
+  class StructureManager: public StructureManagerBase {
+   public:
     using traits = StructureManager_traits<ManagerImplementation>;
     //! type used to represent spatial coordinates, etc
     using Vector_t = Eigen::Matrix<double, traits::Dim, 1>;
@@ -228,7 +229,7 @@ namespace rascal {
      * Get an iterator for a ClusterRef<1> to access pairs of an atom
      */
     inline Iterator_t get_iterator_at(const size_t index,
-                                      const size_t offset=0) {
+                                      const size_t offset = 0) {
       return Iterator_t(*this, index, offset);
     }
 
@@ -239,7 +240,7 @@ namespace rascal {
                         std::numeric_limits<size_t>::max());}
     inline size_t size() const {return this->implementation().get_size();}
 
-    inline size_t nb_clusters(size_t cluster_size) const override final{
+    inline size_t nb_clusters(size_t cluster_size) const override final {
       return this->implementation().get_nb_clusters(cluster_size);
     }
 
@@ -261,9 +262,9 @@ namespace rascal {
       return this->implementation().get_atom_type(atom_index);
     }
 
-  protected:
+   protected:
     template <size_t Order>
-    constexpr static size_t cluster_layer(){
+    constexpr static size_t cluster_layer() {
       return compute_cluster_layer<Order>(typename traits::LayerByOrder{});
     }
 
@@ -346,7 +347,7 @@ namespace rascal {
      */
     /// TODO: possible: tuple of shared pointer. adaptor_increase_maxleve makes
     /// a copy
-    // TODO: this should be named cluster_indices_container. a
+    // TODO(tjunge): this should be named cluster_indices_container. a
     /// cluster_ref_base maps onto a column of this, which referes to the
     /// current cluster
     ClusterIndex_t cluster_indices_container;
@@ -357,7 +358,7 @@ namespace rascal {
 
 
 
-  private:
+   private:
   };
 
 
@@ -372,7 +373,7 @@ namespace rascal {
 
     //! This template function allows to add an element to an array
     template <typename T, size_t Size>
-    decltype(auto) append_array (const std::array<T, Size> & arr, T &&  t) {
+    decltype(auto) append_array(const std::array<T, Size> & arr, T &&  t) {
       return append_array_helper(arr, std::forward<T>(t),
                                  std::make_integer_sequence<int, Size>{});
     }
@@ -386,7 +387,8 @@ namespace rascal {
 
     // template <size_t Order, class AtomRef_t> std::array<int, Order>
     // get_indices(const std::array<AtomRef_t, Order> & atoms) {
-    //   return get_indices_from_list(atoms, std::make_integer_sequence<int, Order>{});
+    //   return get_indices_from_list(
+    //  atoms, std::make_integer_sequence<int, Order>{});
     // }
 
     /**
@@ -398,7 +400,7 @@ namespace rascal {
     struct PositionGetter {
       static inline decltype(auto) get_position(ClusterRef & cluster) {
         return cluster.get_manager().neighbour_position(cluster);
-      };
+      }
     };
 
     template <class ClusterRef>
@@ -406,14 +408,13 @@ namespace rascal {
       using Vector_ref = typename ClusterRef::Manager_t::Vector_ref;
       static inline Vector_ref get_position(ClusterRef & cluster) {
         return cluster.get_manager().position(cluster.back());
-      };
+      }
     };
-  }  // internal
+  }  // namespace internal
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
-  class StructureManager<ManagerImplementation>::AtomRef
-  {
-  public:
+  class StructureManager<ManagerImplementation>::AtomRef {
+   public:
     using Vector_t = Eigen::Matrix<double, ManagerImplementation::dim(), 1>;
     using Vector_ref = Eigen::Map<Vector_t>;
     using Manager_t = StructureManager<ManagerImplementation>;
@@ -431,7 +432,7 @@ namespace rascal {
     AtomRef(AtomRef && other) = default;
 
     //! Destructor
-    ~AtomRef(){};
+    ~AtomRef() {}
 
     //! Copy assignment operator
     AtomRef & operator=(const AtomRef & other) = delete;
@@ -452,7 +453,7 @@ namespace rascal {
       return this->manager.atom_type(this->index);
     }
 
-  protected:
+   protected:
     Manager_t & manager;
     /**
      * The meaning of `index` is manager-dependent. There are no guaranties
@@ -460,7 +461,8 @@ namespace rascal {
      * atom-related properties.
      */
     int index;
-  private:
+
+   private:
   };
 
 
@@ -473,8 +475,7 @@ namespace rascal {
   template <size_t Order>
   class StructureManager<ManagerImplementation>::ClusterRef :
     public ClusterRefKey<Order,
-                         ManagerImplementation::template cluster_layer<Order>()>
-  {
+                  ManagerImplementation::template cluster_layer<Order>()> {
   public:
     using Manager_t = StructureManager<ManagerImplementation>;
     using Parent =
@@ -517,7 +518,7 @@ namespace rascal {
                const std::array<int, Order> & atom_indices,
                const size_t & cluster_index) :
 
-      Parent{atom_indices, IndexConstArray_t (& cluster_index)}, it{it} {}
+      Parent{atom_indices, IndexConstArray_t(& cluster_index)}, it{it} {}
 
     // needed to construct a ClusterRef<1> with the correct offset:
 
@@ -529,8 +530,8 @@ namespace rascal {
      * function here is self referencing right now. A ClusterRefKey with
      * Order=1 is needed to construct it ?!
      */
-    template <bool FirstOrder=(Order==1)>
-    ClusterRef(std::enable_if_t<FirstOrder, ClusterRefKey<1,0>> & cluster,
+    template <bool FirstOrder=(Order == 1)>
+    ClusterRef(std::enable_if_t<FirstOrder, ClusterRefKey<1, 0>> & cluster,
                Manager_t & manager):
       Parent(cluster.get_atom_indices(), cluster.get_cluster_indices()),
       it(manager) {}
@@ -562,7 +563,9 @@ namespace rascal {
       return this->atoms;
     }
 
-    const std::array<int, Order> & get_atoms_ids() const {return this->atom_indices;};
+    const std::array<int, Order> & get_atoms_ids() const {
+      return this->atom_indices;
+      }
 
     /* There are 2 cases:
      * center (Order== 1)-> position is in the cell
@@ -626,9 +629,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
   template <size_t Order>
-  class StructureManager<ManagerImplementation>::iterator
-  {
-  public:
+  class StructureManager<ManagerImplementation>::iterator {
+   public:
     using Manager_t = StructureManager<ManagerImplementation>;
     friend Manager_t;
     using ClusterRef_t = typename Manager_t::template ClusterRef<Order>;
@@ -670,13 +672,13 @@ namespace rascal {
     iterator & operator=(iterator && other) = default;
 
     //! pre-increment
-    inline iterator & operator ++ () {
+    inline iterator & operator ++() {
       ++this->index;
       return *this;
     }
 
     //! pre-decrement
-    inline iterator & operator -- () {
+    inline iterator & operator --() {
       --this->index;
       return *this;
     }
@@ -687,7 +689,8 @@ namespace rascal {
       auto & cluster_indices_properties =
         std::get<Order-1>(this->get_manager().get_cluster_indices_container());
       using Ref_t = typename
-        std::remove_reference_t<decltype(cluster_indices_properties)>::reference;
+        std::remove_reference_t<decltype(
+          cluster_indices_properties)>::reference;
       Ref_t cluster_indices =
         cluster_indices_properties[this->get_cluster_index()];
       return ClusterRef_t(*this, this->get_atom_indices(), cluster_indices);
@@ -703,7 +706,7 @@ namespace rascal {
       return not (*this == other);
     }
 
-  protected:
+   protected:
     //! constructor with container ref and starting point
     iterator(Container_t & cont, size_t start, size_t offset)
       :container{cont}, index{start}, offset{offset} {}
@@ -742,9 +745,9 @@ namespace rascal {
     Container_t & container;
     size_t index; // + offset from earlier pairs.
     const size_t offset;
-  private:
-  };
 
-}  // rascal
+   private:
+  };
+}  // namespace rascal
 
 #endif /* STRUCTURE_MANAGER_H */

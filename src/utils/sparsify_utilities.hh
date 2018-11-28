@@ -26,6 +26,7 @@
  */
 
 #include "basic_types.hh"
+#include<tuple>
 
 namespace rascal {
   namespace utils {
@@ -34,10 +35,10 @@ namespace rascal {
 
     std::tuple<Eigen::ArrayXi, Eigen::ArrayXd>
     select_fps(const Eigen::Ref<const RowMatrixXd>& feature_matrix,
-               int n_sparse=0, int i_first_point=0);
+               int n_sparse = 0, int i_first_point = 0);
 
     std::tuple<Eigen::ArrayXi, Eigen::ArrayXd, Eigen::ArrayXi, Eigen::ArrayXd>
     select_fps_voronoi(const Eigen::Ref<const RowMatrixXd>& feature_matrix,
-                       int n_sparse=0, int i_first_point=0);
-  } // namespace utils
-} // namespace rascal
+                       int n_sparse = 0, int i_first_point = 0);
+  }  // namespace utils
+}  // namespace rascal

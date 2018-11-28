@@ -26,6 +26,7 @@
  */
 
 #include <utility>
+#include<tuple>
 
 namespace rascal {
   namespace internal {
@@ -42,7 +43,7 @@ namespace rascal {
     template<typename Func, typename Head, typename ... Tail>
     inline void for_each_impl(Func&& f, Head&& head, Tail&&...tail) {
       f(head);
-      for_each_impl( std::forward<Func>(f), tail...);
+      for_each_impl(std::forward<Func>(f), tail...);
     }
 
     template<typename Func, size_t ... Indices, typename ... Args>
@@ -77,5 +78,5 @@ namespace rascal {
         t.resize_to_zero();
       }
     };
-  }  // internal
-}  // rascal
+  }  // namespace internal
+}  // namespace rascal

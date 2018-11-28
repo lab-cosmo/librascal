@@ -29,11 +29,16 @@
 #ifndef ATOMIC_STRUCTURE_H
 #define ATOMIC_STRUCTURE_H
 
-#include <Eigen/Dense>
-#include <basic_types.hh>
-#include <cmath>
+
 #include "structure_managers/json_io.hh"
+#include "basic_types.hh"
+
+#include <Eigen/Dense>
+
 #include <stdexcept>
+#include <cmath>
+
+
 
 namespace rascal {
 
@@ -81,6 +86,6 @@ namespace rascal {
     }
   };
 
-} // rascal
+}  // namespace rascal
 
 #endif /* ATOMIC_STRUCTURE_H */

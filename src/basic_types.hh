@@ -25,6 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#ifndef BASIC_TYPES_H
+#define BASIC_TYPES_H
 
 #include <Eigen/Dense>
 
@@ -37,7 +39,7 @@ namespace rascal {
   //! Static double matrix for storing the lattice vectors.
   using Cell_t = Eigen::Matrix<double, 3, 3, Eigen::ColMajor>;
   //! Static double vector to store a position, an angle etc..
-  using Vec3_t = Eigen::Matrix<double, 3,1>;
+  using Vec3_t = Eigen::Matrix<double, 3, 1>;
   //! Reference vector defined using Eigen Map function
   using Vector_ref = Eigen::Map<Vec3_t>;
   /** Static integer vector to store the three indices
@@ -51,4 +53,6 @@ namespace rascal {
    */
   using Dim_t = int;
 
-}
+}  // namespace rascal
+
+#endif  // BASIC_TYPES_H

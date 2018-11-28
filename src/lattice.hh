@@ -40,14 +40,14 @@ namespace rascal {
    * absolute coordinates.
    */
   class Lattice {
-  public:
+   public:
     //! Default constructor
     Lattice() = default;
 
     //! Initializes the cell via set_cell function
-    Lattice(const Cell_t& cell) {
+    explicit Lattice(const Cell_t& cell) {
       this->set_cell(cell);
-    };
+    }
 
     //! Copy constructor
     Lattice(const Lattice &other) = delete;
@@ -68,7 +68,7 @@ namespace rascal {
      *  in a 3x3 matrix, as well as the reciprocal vectors and the
      *  transformation matrix.
      */
-    void set_cell(const Cell_t& cell){
+    void set_cell(const Cell_t& cell) {
       this->cell_vectors = cell;
       this->cell_lenghts = cell.colwise().norm();
       this->cell_angles[0] = std::acos(this->cell_vectors.col(1).dot(this->cell_vectors.col(2))/this->cell_lenghts[1]/this->cell_lenghts[2]);
@@ -118,25 +118,29 @@ namespace rascal {
      * cartesian real space lattice vectors and
      * the reciprocal space cell lengths
      */
-    inline void set_reciprocal_vectors(){
+    inline void set_reciprocal_vectors() {
       Vec3_t c_abg = cell_angles.array().cos();
-      double V{ this->cell_lenghts[0] *this->cell_lenghts[1] *this->cell_lenghts[2] *  std::sqrt(1 - c_abg[0]*c_abg[0] - c_abg[1]*c_abg[1] - c_abg[2]*c_abg[2] + 2 * c_abg[0] * c_abg[1] * c_abg[2] )}; //! Cell volume
+      double V{ this->cell_lenghts[0] *this->cell_lenghts[1] *this->cell_lenghts[2] *  std::sqrt(1 - c_abg[0]*c_abg[0] - c_abg[1]*c_abg[1] - c_abg[2]*c_abg[2] + 2 * c_abg[0] * c_abg[1] * c_abg[2])};   //! Cell volume
       double Vinv{1./V};
       this->reciprocal_vectors *= Vinv;
-      Vec3_t recip1,recip2,recip3;
-      this->crossproduct(this->cell_vectors.col(1),this->cell_vectors.col(2),recip1);
-      this->crossproduct(this->cell_vectors.col(2),this->cell_vectors.col(0),recip2);
-      this->crossproduct(this->cell_vectors.col(0),this->cell_vectors.col(1),recip3);
-      for (int ii{0};ii<3;++ii) {
-        this->reciprocal_vectors(ii,0) *= recip1[ii];
-        this->reciprocal_vectors(ii,1) *= recip2[ii];
-        this->reciprocal_vectors(ii,2) *= recip3[ii];
+      Vec3_t recip1, recip2, recip3;
+      this->crossproduct(this->cell_vectors.col(1),
+        this->cell_vectors.col(2), recip1);
+      this->crossproduct(this->cell_vectors.col(2),
+        this->cell_vectors.col(0), recip2);
+      this->crossproduct(this->cell_vectors.col(0),
+        this->cell_vectors.col(1), recip3);
+      for (int ii{0}; ii < 3; ++ii) {
+        this->reciprocal_vectors(ii, 0) *= recip1[ii];
+        this->reciprocal_vectors(ii, 1) *= recip2[ii];
+        this->reciprocal_vectors(ii, 2) *= recip3[ii];
       }
       this->reciprocal_lenghts = this->reciprocal_vectors.colwise().norm();
     }
 
-    template <typename DerivedA,typename DerivedB>
-    inline void crossproduct(const Eigen::MatrixBase<DerivedA>& v1, const Eigen::MatrixBase<DerivedB>& v2, Vec3_t& v3){
+    template <typename DerivedA, typename DerivedB>
+    inline void crossproduct(const Eigen::MatrixBase<DerivedA>& v1,
+     const Eigen::MatrixBase<DerivedB>& v2, Vec3_t& v3) {
       v3[0] = v1[1]*v2[2] - v1[2]*v2[1];
       v3[1] = v1[2]*v2[0] - v1[0]*v2[2];
       v3[2] = v1[0]*v2[1] - v1[1]*v2[0];
@@ -145,34 +149,34 @@ namespace rascal {
     /** Calculates the transformation matrix to transform
      * absolute cartesian coordinates to fractional/scaled coordinates
      */
-    inline void set_transformation_matrix(){
+    inline void set_transformation_matrix() {
       Vec3_t c_abg = cell_angles.array().cos();
       Vec3_t s_abg = cell_angles.array().sin();
       //! Cell volume divided by a*b*c
       double V{std::sqrt(1 - c_abg[0]*c_abg[0] - c_abg[1]*c_abg[1]
                          - c_abg[2]*c_abg[2]
-                         + 2 * c_abg[0] * c_abg[1] * c_abg[2] )};
+                         + 2 * c_abg[0] * c_abg[1] * c_abg[2])};
       double Vinv{1/V};
       //! compute transformation matrix from the cartesian system to the lattice
       //! coordinate system
-      this->cartesian2scaled(0,0) = 1.0 / this->cell_lenghts[0];
-      this->cartesian2scaled(1,0) = -c_abg[2]
+      this->cartesian2scaled(0, 0) = 1.0 / this->cell_lenghts[0];
+      this->cartesian2scaled(1, 0) = -c_abg[2]
         / (this->cell_lenghts[0]*s_abg[2]);
-      this->cartesian2scaled(2,0) = Vinv
+      this->cartesian2scaled(2, 0) = Vinv
         * ((c_abg[0]*c_abg[2]-c_abg[1]))/(s_abg[2]*this->cell_lenghts[0]);
-      this->cartesian2scaled(1,1) = 1.0 / (this->cell_lenghts[1]*s_abg[2]);
-      this->cartesian2scaled(2,1) = Vinv *
-        (c_abg[1]*c_abg[2]-c_abg[0] )/(s_abg[2]*this->cell_lenghts[1]);
-      this->cartesian2scaled(2,2) = s_abg[2]*Vinv/this->cell_lenghts[2];
+      this->cartesian2scaled(1, 1) = 1.0 / (this->cell_lenghts[1]*s_abg[2]);
+      this->cartesian2scaled(2, 1) = Vinv *
+        (c_abg[1]*c_abg[2]-c_abg[0])/(s_abg[2]*this->cell_lenghts[1]);
+      this->cartesian2scaled(2, 2) = s_abg[2]*Vinv/this->cell_lenghts[2];
       //! compute transformation matrix from the lattice coordinate system to
       //! cartesian
-      this->scaled2cartesian(0,0) = this->cell_lenghts[0];
-      this->scaled2cartesian(1,0) = this->cell_lenghts[1] * c_abg[2];
-      this->scaled2cartesian(2,0) = this->cell_lenghts[2] * c_abg[1];
-      this->scaled2cartesian(1,1) = this->cell_lenghts[1] * s_abg[2];
-      this->scaled2cartesian(2,1) = this->cell_lenghts[2]
+      this->scaled2cartesian(0, 0) = this->cell_lenghts[0];
+      this->scaled2cartesian(1, 0) = this->cell_lenghts[1] * c_abg[2];
+      this->scaled2cartesian(2, 0) = this->cell_lenghts[2] * c_abg[1];
+      this->scaled2cartesian(1, 1) = this->cell_lenghts[1] * s_abg[2];
+      this->scaled2cartesian(2, 1) = this->cell_lenghts[2]
         * (c_abg[0] - c_abg[1] * c_abg[2]) / s_abg[2];
-      this->scaled2cartesian(2,2) = this->cell_lenghts[2] * V / s_abg[2];
+      this->scaled2cartesian(2, 2) = this->cell_lenghts[2] * V / s_abg[2];
     }
 
     /** Calculates the fractional/scaled coordinates (position_sc)
@@ -188,15 +192,15 @@ namespace rascal {
     /** Calculates the absolute cartesian coordinates (position)
      * from the fractional/scaled coordinates (position_sc)
      */
-    template <typename DerivedA,typename DerivedB>
+    template <typename DerivedA, typename DerivedB>
     inline void get_scaled2cartesian(const Eigen::MatrixBase<DerivedA> &
                                      position_sc,
-                                     Eigen::MatrixBase<DerivedB>& position){
+                                     Eigen::MatrixBase<DerivedB>& position) {
       position = this->scaled2cartesian.transpose() * position_sc;
     }
 
 
-  protected:
+   protected:
     //! lattice vectors
     Cell_t cell_vectors = Cell_t::Ones();
     //! Reciprocal lattice
@@ -219,6 +223,6 @@ namespace rascal {
   };
 
 
-} // rascal
+}  // namespace rascal
 
 #endif /* LATTICE_H */
