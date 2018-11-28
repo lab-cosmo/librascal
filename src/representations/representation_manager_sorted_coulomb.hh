@@ -84,7 +84,7 @@ namespace rascal {
     void sort_coulomb_matrix(
       const Eigen::DenseBase<DerivedA> & in,
       Eigen::DenseBase<DerivedB> & out,
-      std::vector<double> const& distances_to_sort) {
+      const std::vector<double> & distances_to_sort) {
       
       // find the sorting order
       std::vector<std::pair<size_t, distiter> > order_coulomb(distances_to_sort.size());
@@ -272,14 +272,22 @@ namespace rascal {
     
     // initialize the sorted linear coulomb matrix 
     Eigen::MatrixXd lin_sorted_coulomb_mat(this->size*(this->size+1)/2,1);
-    Eigen::MatrixXd coulomb_mat(this->size,this->size);
+    //Eigen::MatrixXd coulomb_mat(this->size,this->size);
 
     // loop over the centers
     for (auto center: this->structure_manager){
       
       // re-use the temporary coulomb mat in linear storage
       // need to be zeroed because old data might not be overwritten
-      lin_sorted_coulomb_mat = Eigen::MatrixXd::Zero(this->size*(this->size+1)/2,1);
+      lin_sorted_coulomb_mat = 
+              Eigen::MatrixXd::Zero(this->size*(this->size+1)/2,1);
+
+      // Nneighbour counts the central atom and the neighbours
+      size_t Nneighbour{center.size()+1};
+      
+      // the local coulomb matrix
+      Eigen::MatrixXd coulomb_mat = 
+              Eigen::MatrixXd::Zero(Nneighbour,Nneighbour);
 
       // initialize the distances to be sorted. the center is always first
       std::vector<double> distances_to_sort{0};
@@ -299,28 +307,13 @@ namespace rascal {
 
     }
   }
-
-  // template<class Mngr>
-  // void RepresentationManagerSortedCoulomb<Mngr>::transform_coulomb_matrix(
-  //         const Eigen::Ref<const Eigen::MatrixXd>& coulomb_mat,
-  //         Eigen::Ref<const Eigen::MatrixXd>& lin_sorted_coulomb_mat){
-          
-          
-  // }
-      
+     
 
   template<class Mngr>
   void RepresentationManagerSortedCoulomb<Mngr>::get_coulomb_matrix(
       RepresentationManagerSortedCoulomb<Mngr>::ClusterRef_t<1>& center, 
       Eigen::Ref<Eigen::MatrixXd> coulomb_mat){
     
-    // Nneighbour counts the central atom and the neighbours
-    size_t Nneighbour{center.size()+1};
-    
-    // the local coulomb matrix
-    coulomb_mat.resize(Nneighbour,Nneighbour);
-    coulomb_mat = Eigen::MatrixXd::Zero(Nneighbour,Nneighbour);
-
     // the coulomb mat first row and col corresponds to central atom to neighbours
     int Zk{center.get_atom_type()};
     coulomb_mat(0,0) = 0.5*std::pow(Zk,2.4);
