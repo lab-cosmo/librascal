@@ -19,8 +19,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -30,19 +30,18 @@
 
 
 
-void utils_binding(py::module & mod){
-
+void utils_binding(py::module & mod) {
   py::module m_utls_sps = mod.def_submodule("sparsification");
-  m_utls_sps.doc() = "Sparsification Routines" ;
-  
-  m_utls_sps.def("fps", & utils::select_fps, 
+  m_utls_sps.doc() = "Sparsification Routines";
+
+  m_utls_sps.def("fps", & utils::select_fps,
         "Selects points from a NxD dimensional"
         " feature matrix by farthest point sampling (N is the number of"
         " sample in a D dimensional space).",
         py::arg("feature_matrix"), py::arg("n_sparse"),
         py::arg("i_first_point") );
 
-  m_utls_sps.def("fps_voronoi", & utils::select_fps_voronoi, 
+  m_utls_sps.def("fps_voronoi", & utils::select_fps_voronoi,
         "Selects points from a"
         " NxD dimensional feature matrix by farthest point sampling, using"
         " a Voronoi cell method (N is the number of sample in a D dimensional"

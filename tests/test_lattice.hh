@@ -19,8 +19,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -39,21 +39,18 @@ namespace rascal {
   using Vec3_t = Eigen::Matrix<double, Dim, 1>;
   using Cell_t = typename AtomicStructure<Dim>::Cell_t;
 
-  struct ManagerFixtureLattice
-  {
-    ManagerFixtureLattice(){
+  struct ManagerFixtureLattice {
+    ManagerFixtureLattice() {
       Cell_t cell;
-      cell << 6.19,2.41,0.21,
-              0.00,6.15,1.02,
-              0.00,0.00,7.31;
+      cell << 6.19, 2.41, 0.21,
+              0.00, 6.15, 1.02,
+              0.00, 0.00, 7.31;
       lattice.set_cell(cell);
-
     }
 
     ~ManagerFixtureLattice() {}
 
     Lattice<Dim> lattice{};
-
   };
 }  // rascal
 

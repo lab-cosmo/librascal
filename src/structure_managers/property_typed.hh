@@ -20,8 +20,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -60,7 +60,7 @@ namespace rascal {
       static void push_in_vector(std::vector<T> & vec, reference ref) {
         for (size_t j{0}; j < NbCol; ++j) {
           for (size_t i{0}; i < NbRow; ++i) {
-            vec.push_back(ref(i,j));
+            vec.push_back(ref(i, j));
           }
         }
       }
@@ -70,7 +70,7 @@ namespace rascal {
                                  Dim_t& nb_row,  Dim_t& nb_col) {
         for (Dim_t j{0}; j < nb_col; ++j) {
           for (Dim_t i{0}; i < nb_row; ++i) {
-            vec.push_back(ref(i,j));
+            vec.push_back(ref(i, j));
           }
         }
       }
@@ -79,13 +79,13 @@ namespace rascal {
       template<typename Derived>
       static void push_in_vector(std::vector<T> & vec,
                                  const Eigen::DenseBase<Derived> & ref) {
-        static_assert(Derived::RowsAtCompileTime==NbRow,
+        static_assert(Derived::RowsAtCompileTime == NbRow,
                       "NbRow has incorrect size.");
-        static_assert(Derived::ColsAtCompileTime==NbCol,
+        static_assert(Derived::ColsAtCompileTime == NbCol,
                       "NbCol has incorrect size.");
         for (size_t j{0}; j < NbCol; ++j) {
           for (size_t i{0}; i < NbRow; ++i) {
-            vec.push_back(ref(i,j));
+            vec.push_back(ref(i, j));
           }
         }
       }
@@ -95,10 +95,9 @@ namespace rascal {
       static void push_in_vector(std::vector<T> & vec,
                                  const Eigen::DenseBase<Derived> & ref,
                                 const Dim_t& nb_row, const Dim_t& nb_col) {
-        
         for (Dim_t j{0}; j < nb_col; ++j) {
           for (Dim_t i{0}; i < nb_row; ++i) {
-            vec.push_back(ref(i,j));
+            vec.push_back(ref(i, j));
           }
         }
       }
@@ -125,18 +124,18 @@ namespace rascal {
       template<typename Derived>
       static void push_in_vector(std::vector<T> & vec,
                                  const Eigen::DenseBase<Derived> & ref) {
-        static_assert(Derived::RowsAtCompileTime==NbRow,
+        static_assert(Derived::RowsAtCompileTime == NbRow,
                       "NbRow has incorrect size.");
-        static_assert(Derived::ColsAtCompileTime==NbCol,
+        static_assert(Derived::ColsAtCompileTime == NbCol,
                       "NbCol has incorrect size.");
-        vec.push_back(ref(0,0));
+        vec.push_back(ref(0, 0));
       }
     };
 
-    // TODO take the case of dynamically sized Value 
-    // Probably a switch between the static and dynamic version 
-    // of the push_in_vector 
-    // 
+    // TODO take the case of dynamically sized Value
+    // Probably a switch between the static and dynamic version
+    // of the push_in_vector
+    //
 
     template<typename T, size_t NbRow, size_t NbCol>
     using Value_t = typename Value<T, NbRow, NbCol>::type;
@@ -151,18 +150,17 @@ namespace rascal {
    * Typed ``property`` class definition, inherits from the base property class
    */
   template <typename T, size_t Order, size_t PropertyLayer>
-  class TypedProperty: public PropertyBase
-  {
+  class TypedProperty: public PropertyBase {
     using Parent = PropertyBase;
     using Value = internal::Value<T, Eigen::Dynamic, Eigen::Dynamic>;
 
-  public:
+   public:
     using value_type = typename Value::type;
     using reference = typename Value::reference;
 
     //! constructor
-    TypedProperty(StructureManagerBase & manager, Dim_t nb_row, Dim_t nb_col=1,
-                  std::string metadata="no metadata"):
+    TypedProperty(StructureManagerBase & manager, Dim_t nb_row,
+                  Dim_t nb_col = 1, std::string metadata = "no metadata"):
       Parent{manager, nb_row, nb_col, Order, PropertyLayer, metadata}
     {}
 
@@ -233,20 +231,19 @@ namespace rascal {
     }
 
     //! getter to the underlying data storage
-    inline std::vector<T>& get_raw_data(){
+    inline std::vector<T>& get_raw_data() {
       return this->values;
     }
 
 
-    //! get number of different distinct element in the property 
+    //! get number of different distinct element in the property
     //! (typically the number of center)
     inline size_t get_nb_item() const {
-      return values.size()/this->get_nb_comp(); 
+      return values.size()/this->get_nb_comp();
     }
 
-  protected:
+   protected:
     std::vector<T> values{}; //!< storage for properties
-  private:
   };
 
 }  // rascal

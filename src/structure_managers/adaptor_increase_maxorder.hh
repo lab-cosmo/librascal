@@ -21,8 +21,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -52,7 +52,6 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   struct StructureManager_traits<AdaptorMaxOrder<ManagerImplementation>> {
-
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDistances{false};
     constexpr static bool HasDirectionVectors{
@@ -76,9 +75,8 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   class AdaptorMaxOrder: public
-  StructureManager<AdaptorMaxOrder<ManagerImplementation>>
-  {
-  public:
+  StructureManager<AdaptorMaxOrder<ManagerImplementation>> {
+   public:
     using Base = StructureManager<AdaptorMaxOrder<ManagerImplementation>>;
 
     using Parent =
@@ -104,7 +102,7 @@ namespace rascal {
      * cutoff is needed, the cutoff is implicitly given by the neighbourlist,
      * which was built
      */
-    AdaptorMaxOrder(ManagerImplementation & manager);
+    explicit AdaptorMaxOrder(ManagerImplementation & manager);
 
     //! Copy constructor
     AdaptorMaxOrder(const AdaptorMaxOrder & other) = delete;
@@ -185,16 +183,15 @@ namespace rascal {
      * Returns the id of the index-th (neighbour) atom of the cluster that is
      * the full structure/atoms object, i.e. simply the id of the index-th atom
      */
-    inline int
-    get_cluster_neighbour(const Parent& /*parent*/, size_t index) const {
+    inline int get_cluster_neighbour(
+                          const Parent& /*parent*/, size_t index) const {
       return this->manager.get_cluster_neighbour(this->manager, index);
     }
 
     //! Returns the id of the index-th neighbour atom of a given cluster
     template<size_t Order, size_t Layer>
-    inline int
-    get_cluster_neighbour(const ClusterRefKey<Order, Layer> & cluster,
-                          size_t index) const {
+    inline int get_cluster_neighbour(
+            const ClusterRefKey<Order, Layer> & cluster, size_t index) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles up to traits::MaxOrder");
 
@@ -235,8 +232,7 @@ namespace rascal {
       }
     }
 
-  protected:
-
+   protected:
     //! Extends the list containing the number of neighbours with a 0
     inline void add_entry_number_of_neighbours() {
       this->nb_neigh.push_back(0);
@@ -278,8 +274,6 @@ namespace rascal {
      * `neighbours`, from where nb_neigh can be counted
      */
     std::vector<size_t> offsets{};
-
-  private:
   };
 
   /* ---------------------------------------------------------------------- */
@@ -318,10 +312,8 @@ namespace rascal {
 
     static void loop(ClusterRef_t & cluster,
                      AdaptorMaxOrder<ManagerImplementation> & manager) {
-
-      //! do nothing, if MaxOrder is not reached, except call the next order
+      // do nothing, if MaxOrder is not reached, except call the next order
       for (auto next_cluster : cluster) {
-
         auto & next_cluster_indices {std::get<next_cluster.order()-1>
             (manager.cluster_indices_container)};
 
@@ -358,7 +350,6 @@ namespace rascal {
     //! the underlying MaxOrder, just goes to the maximum
     static void loop(ClusterRef_t & cluster,
                      AdaptorMaxOrder<ManagerImplementation> & manager) {
-
       // get all i_atoms to find neighbours to extend the cluster to the next
       // order
       auto i_atoms = cluster.get_atom_indices();
@@ -418,7 +409,6 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   void AdaptorMaxOrder<ManagerImplementation>::update() {
-
     static_assert(traits::MaxOrder > 2,
                   "No neighbourlist present; extension not possible.");
 
@@ -464,7 +454,6 @@ namespace rascal {
   template<size_t Order>
   inline size_t AdaptorMaxOrder<ManagerImplementation>::
   get_offset_impl(const std::array<size_t, Order> & counters) const {
-
     static_assert(Order < traits::MaxOrder,
                   "this implementation handles only up to the respective"
                   " MaxOrder");

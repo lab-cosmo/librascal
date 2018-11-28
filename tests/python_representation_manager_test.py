@@ -30,14 +30,14 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
         self.Natom = self.positions.shape[0]
         self.cutoffs = [3.]*self.Natom
         self.max_cutoff = np.max(self.cutoffs)
-        
+
         self.managerC =  rc.StructureManager.Centers()
         self.managerC.update(np.array(self.positions.T,order='F'),
                        self.numbers.reshape(-1,1),
                        np.array(self.cell.T,order='F'),
                        self.pbc[0].reshape(3,1))
 
-        self.managerLC = rc.Adaptor.NeighbourList_Centers(self.managerC,self.max_cutoff) 
+        self.managerLC = rc.Adaptor.NeighbourList_Centers(self.managerC,self.max_cutoff)
         self.managerLC.update()
 
         self.manager = rc.Adaptor.Strict_NeighbourList_Centers(self.managerLC,self.max_cutoff)
@@ -59,14 +59,13 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
         """
         TEST constructor wrapper
         """
-        rc.RepresentationManager.SortedCoulomb_Strict_NeighbourList_Centers(
+        rc.RepresentationManager.SortedCoulomb_Strict_NeighbourList_Centers_Distance(
                         self.manager,self.inp)
-    
+
     def test_compute(self):
         """
         TEST compute wrapper
         """
-        cm = rc.RepresentationManager.SortedCoulomb_Strict_NeighbourList_Centers(
+        cm = rc.RepresentationManager.SortedCoulomb_Strict_NeighbourList_Centers_Distance(
                         self.manager,self.inp)
         cm.compute()
-    

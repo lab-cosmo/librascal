@@ -20,8 +20,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -138,7 +138,7 @@ namespace rascal {
   constexpr size_t
   get_layer(size_t index, std::index_sequence<Ints...>) {
     constexpr size_t arr[] {Ints...};
-    return arr [index];
+    return arr[index];
   }
 
   /**
@@ -153,14 +153,14 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   namespace internal {
     //! extracts the head of the layer by order
-    template <size_t Layer, size_t HiLayer,typename T, size_t... Ints>
+    template <size_t Layer, size_t HiLayer, typename T, size_t... Ints>
     std::array<T, Layer>
     head_helper(const std::array<T, HiLayer> & arr,
                 std::index_sequence<Ints...>) {
       return std::array<T, Layer> {arr[Ints]...};
     }
     //! specialization of the head extractor
-    template <size_t Layer, size_t HiLayer,typename T>
+    template <size_t Layer, size_t HiLayer, typename T>
     std::array<T, Layer> head(const std::array<T, HiLayer> & arr) {
       return head_helper(arr, std::make_index_sequence<Layer>{});
     }
@@ -183,9 +183,8 @@ namespace rascal {
    * cluster reference is introduced.
    */
   template<size_t Order, size_t Layer>
-  class ClusterRefKey: public ClusterRefBase
-  {
-  public:
+  class ClusterRefKey: public ClusterRefBase {
+   public:
     /**
      * Index array types need both a constant and a non-constant version. The
      * non-const version can and needs to be cast into a const version in
@@ -229,9 +228,9 @@ namespace rascal {
     }
 
     //! returns the first atom index in this cluster
-    const int & front() const{return this->atom_indices.front();}
+    const int & front() const {return this->atom_indices.front();}
     //! returns the last atom index in this cluster
-    const int & back() const{return this->atom_indices.back();}
+    const int & back() const {return this->atom_indices.back();}
 
     //! returns the cluster's index, given a specific layer
     inline size_t get_cluster_index(const size_t layer) const {
@@ -249,7 +248,7 @@ namespace rascal {
     //! returns the layer of the current cluster
     constexpr static inline size_t cluster_layer() {return Layer;}
 
-  protected:
+   protected:
     /**
      *  Array with unique atom indices. These can be user defined to refer to
      *  the exact same atom, e.g. in a Monte-Carlo simulation, where atoms are
@@ -261,8 +260,6 @@ namespace rascal {
      * means last entry (.back())
      */
     IndexConstArray cluster_indices;
-
-  private:
   };
 
 } // rascal

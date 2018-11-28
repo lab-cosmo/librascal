@@ -19,8 +19,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -29,6 +29,7 @@
 #define SPARSIFY_UTILITIES_H
 
 #include "basic_types.hh"
+#include<tuple>
 
 #include <Eigen/Dense>
 
@@ -51,7 +52,7 @@ namespace rascal {
      */
     std::tuple<Eigen::ArrayXi, Eigen::ArrayXd>
     select_fps(const Eigen::Ref<const RowMatrixXd> & feature_matrix,
-               int n_sparse=0, int i_first_point=0);
+               int n_sparse = 0, int i_first_point = 0);
 
     /**
      * Farthest Point Sampling selection of points given the feature
@@ -71,7 +72,7 @@ namespace rascal {
      */
     std::tuple<Eigen::ArrayXi, Eigen::ArrayXd, Eigen::ArrayXi, Eigen::ArrayXd>
     select_fps_voronoi(const Eigen::Ref<const RowMatrixXd> & feature_matrix,
-                       int n_sparse=0, int i_first_point=0);
+                       int n_sparse = 0, int i_first_point = 0);
   } // namespace utils
 } // namespace rascal
 #endif /* SPARSIFY_UTILITIES_H */

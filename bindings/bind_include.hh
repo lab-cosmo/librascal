@@ -63,7 +63,7 @@
 // PYBIND11_MAKE_OPAQUE(std::vector<double>);
 
 using namespace rascal;
-namespace py=pybind11;
+namespace py = pybind11;
 
 void add_structure_managers(py::module&,py::module&,py::module&);
 void add_representation_managers(py::module&,py::module&);

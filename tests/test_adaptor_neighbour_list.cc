@@ -46,7 +46,6 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(simple_cubic_9_neighbour_list,
                           PairFixtureSimple<StructureManagerCenters>) {
-
     constexpr bool verbose{false};
 
     auto npairs = pair_manager.get_nb_clusters(2);
@@ -81,7 +80,6 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(test_build_neighbour_simple,
                           PairFixtureSimple<StructureManagerCenters>) {
-
     constexpr bool verbose{false};
 
     //! testing iteration of zerot-th order manager
@@ -114,13 +112,11 @@ namespace rascal {
                                       MultipleStructureManagerBaseFixture>>;
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(test_build_neighbour_multiple,
-            Fix, multiple_fixtures,Fix) {
-    
+            Fix, multiple_fixtures, Fix) {
     auto & managers = Fix::managers_pair;
-    
+
     constexpr bool verbose{false};
     for (auto& pair_manager : managers) {
-          
       auto n_pairs{0};
       for (auto atom : pair_manager) {
         if (verbose) std::cout << "atom " << atom.back() << std::endl;
@@ -147,7 +143,6 @@ namespace rascal {
    * crystal system.
    */
   BOOST_FIXTURE_TEST_CASE(neighbourlist_test_hcp, ManagerFixtureTwoHcp) {
-
     /*
      * Note: since the cell vectors are different, it is possible that one of
      * the two atoms is repeated into a different cell due to periodicity. This
@@ -157,7 +152,7 @@ namespace rascal {
 
     constexpr bool verbose{false};
 
-    if(verbose) std::cout << "HCP test " << cutoff << std::endl;
+    if (verbose) std::cout << "HCP test " << cutoff << std::endl;
 
     int mult = 10;
 
@@ -245,7 +240,6 @@ namespace rascal {
    * crystal system.
    */
   BOOST_FIXTURE_TEST_CASE(neighbourlist_test_fcc, ManagerFixtureTwoFcc) {
-
     constexpr bool verbose{false};
 
     if (verbose) std::cout << "FCC test " << std::endl;
@@ -339,7 +333,6 @@ namespace rascal {
    * cell.
    */
   BOOST_FIXTURE_TEST_CASE(test_neighbour_list_skewed, ManagerFixtureSkew) {
-
     constexpr static bool verbose{false};
 
     constexpr static int ncells{4};
@@ -361,7 +354,6 @@ namespace rascal {
 
       // loop over cells of different skews
       for (int i{0}; i < ncells; ++i) {
-
         // check different cutoffs
         //double cutoff_tmp{cutoff*n_cutoff[k]};
         double cutoff_tmp{cutoff*n_cutoff[k]};
@@ -375,7 +367,7 @@ namespace rascal {
         // get reference data
         auto skewer{unity};
         // change shear multiplier
-        skewer(0,1) = shears[i];
+        skewer(0, 1) = shears[i];
         // calculate unit cell
         auto cell_skw = skewer * cell;
         auto cell_skw_inv{cell_skw.inverse().eval()};
@@ -461,5 +453,4 @@ namespace rascal {
   }
 
   BOOST_AUTO_TEST_SUITE_END();
-
 }  // rascal

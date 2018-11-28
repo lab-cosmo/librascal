@@ -21,8 +21,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -57,12 +57,10 @@ namespace rascal {
    * variable ``manager``.
    */
   template<class ManagerImplementation>
-  struct ManagerFixture
-  {
+  struct ManagerFixture {
     ManagerFixture():
-      pbc{{true,true,true}}, cell(3, 3), positions(22, 3), 
-      atom_types(22), cutoff{2.}
-    {
+      pbc{{true, true, true}}, cell(3, 3), positions(22, 3),
+      atom_types(22), cutoff{2.} {
       cell <<
         6.19, 2.41, 0.21,
         0.00, 6.15, 1.02,
@@ -93,11 +91,11 @@ namespace rascal {
       positions.transposeInPlace();
       atom_types << 20, 20, 24, 24, 15, 15, 15, 15,  8,  8,  8,
         8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8;
-      
-      manager.update(positions, atom_types, cell, 
+
+      manager.update(positions, atom_types, cell,
               Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
     }
-    
+
     ~ManagerFixture() { }
 
     ManagerImplementation manager{};
@@ -116,8 +114,7 @@ namespace rascal {
    * managers are of the same class.
    */
   template<class ManagerImplementation>
-  struct ManagerFixtureTwo
-  {
+  struct ManagerFixtureTwo {
     ManagerFixtureTwo() {} // ctor
     ~ManagerFixtureTwo() {} // dtor
 
@@ -133,8 +130,7 @@ namespace rascal {
    * provides access to the variable ``manager``.
    */
   template<class ManagerImplementation>
-  struct ManagerFixtureFile : public ManagerFixture<ManagerImplementation>
-  {
+  struct ManagerFixtureFile : public ManagerFixture<ManagerImplementation> {
     ManagerFixtureFile() :
       ManagerFixture<ManagerImplementation> {}, // initialize manager variable
       cutoff{1.}, filename{"simple_cubic_9.json"} // initialize current fixture
@@ -157,11 +153,10 @@ namespace rascal {
    * with respect to the unit cell.
    */
   struct ManagerFixtureTwoHcp
-    : public ManagerFixtureTwo<StructureManagerCenters>
-  {
+    : public ManagerFixtureTwo<StructureManagerCenters> {
     ManagerFixtureTwoHcp():
       ManagerFixtureTwo<StructureManagerCenters> {},
-      pbc{{true,true,true}}, cell_1(3,3), cell_2(3,3),
+      pbc{{true, true, true}}, cell_1(3, 3), cell_2(3, 3),
       positions_1(3, 2), positions_2(3, 2),
       atom_types(2), cutoff{0.7}
     {
@@ -238,8 +233,7 @@ namespace rascal {
    * neighbour list algorithm is robust with respect to the unit cell.
    */
   struct ManagerFixtureTwoFcc
-    : public ManagerFixtureTwo<StructureManagerCenters>
-  {
+    : public ManagerFixtureTwo<StructureManagerCenters> {
     ManagerFixtureTwoFcc():
       ManagerFixtureTwo<StructureManagerCenters> {},
       pbc{{true, true, true}}, cell_1(3, 3), cell_2(3, 3),
@@ -264,7 +258,7 @@ namespace rascal {
       cell_2 <<
         a,   0., 0.,
         0.,  a,  0.,
-        0.,  0., a ;
+        0.,  0., a;
 
       positions_1 <<
         0.,
@@ -311,8 +305,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template <>
-  struct ManagerFixture<StructureManagerLammps>
-  {
+  struct ManagerFixture<StructureManagerLammps> {
     using Manager_t = StructureManagerLammps;
     constexpr static int nb{3};
     constexpr static int dim{3};
@@ -376,7 +369,6 @@ namespace rascal {
     double  eatom[3]{2, 1, 1};
     double ** vatom;
     Manager_t manager;
-
   };
 
   /* ---------------------------------------------------------------------- */
@@ -386,8 +378,7 @@ namespace rascal {
    * ``pair_manager``
    */
   template<class ManagerImplementation>
-  struct PairFixtureFile : public ManagerFixtureFile<ManagerImplementation>
-  {
+  struct PairFixtureFile : public ManagerFixtureFile<ManagerImplementation> {
     using Manager_t = ManagerImplementation;
 
     static_assert(ManagerImplementation::traits::MaxOrder == 1,
@@ -440,13 +431,11 @@ namespace rascal {
    * with simple positions and a periodicity only in x-direction.
    *
    */
-  struct ManagerFixtureSimple : public ManagerFixture<StructureManagerCenters>
-  {
+  struct ManagerFixtureSimple : public ManagerFixture<StructureManagerCenters> {
     ManagerFixtureSimple() :
       ManagerFixture<StructureManagerCenters> {},
       pbc{{true, false, false}}, cell(3, 3), positions(3, 8), atom_types(8),
-      cutoff{2.1}, natoms{8}
-    {
+      cutoff{2.1}, natoms{8} {
       cell <<
         2., 0., 0.,
         0., 2., 0.,
@@ -483,9 +472,7 @@ namespace rascal {
    * is not templated. The initial cutoff here is chosen to be smaller than the
    * atomic distance in this case to ensure to start with zero neighbours.
    */
-  struct ManagerFixtureSkew
-  {
-
+  struct ManagerFixtureSkew {
     ManagerFixtureSkew():
       pbc{{true, true, false}}, cell(3, 3), positions(3, 2), atom_types(2),
       cutoff{0.49}, natoms{2}
