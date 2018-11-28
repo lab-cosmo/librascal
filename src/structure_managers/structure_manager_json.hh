@@ -77,13 +77,12 @@ namespace rascal {
    */
   class StructureManagerJson:
     // It inherits publicly everything from the base class
-    public StructureManager<StructureManagerJson>
-  {
+    public StructureManager<StructureManagerJson> {
     /**
      * Publicly accessible variables and function of the class are given
      * here. These provide the interface to access the neighbourhood.
      */
-  public:
+   public:
     //! For convenience, the names are shortened
     using traits = StructureManager_traits<StructureManagerJson>;
     using Parent = StructureManager<StructureManagerJson>;
@@ -228,8 +227,7 @@ namespace rascal {
     //                                  & cluster,
     //                                  size_t index) const {
     inline int get_cluster_neighbour(const ClusterRefKey<Order, Layer>
-                                     & ,
-                                     size_t ) const {                                  
+                                     & , size_t) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs.");
       return 0;
@@ -259,8 +257,8 @@ namespace rascal {
     void read_structure_from_json(const std::string filename);
 
     //! Behind the interface.
-  protected:
 
+   protected:
     /**
      * The variable for the JSON object is called <code>atoms_object</code>,
      * because ASE (see above) calls it's read/write function an iterator for
@@ -293,8 +291,6 @@ namespace rascal {
      * processes.
      */
     constexpr static bool verbose{false};
-
-  private:
   };
 
   /* ---------------------------------------------------------------------- */
@@ -302,9 +298,9 @@ namespace rascal {
   template<size_t Order>
   inline size_t StructureManagerJson::
   //get_offset_impl(const std::array<size_t, Order> & counters) const {
-    get_offset_impl(const std::array<size_t, Order> & ) const {
+    get_offset_impl(const std::array<size_t, Order> &) const {
     // TODO: Check this static_assert for validity
-    static_assert (Order == 1, "this manager can not provide any offsets.");
+    static_assert(Order == 1, "this manager can not provide any offsets.");
     return 0;
   }
 
