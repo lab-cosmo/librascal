@@ -55,17 +55,32 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
                         size=self.size)
                         )
 
-    def test_constructor(self):
+    def test_constructor1(self):
         """
         TEST constructor wrapper
         """
-        rc.RepresentationManager.SortedCoulomb_Strict_NeighbourList_Centers_Distance(
+        rc.RepresentationManager.SortedCoulomb_Strict_NeighbourList_Centers_SortDistance(
                         self.manager,self.inp)
 
-    def test_compute(self):
+    def test_compute1(self):
         """
         TEST compute wrapper
         """
-        cm = rc.RepresentationManager.SortedCoulomb_Strict_NeighbourList_Centers_Distance(
+        cm = rc.RepresentationManager.SortedCoulomb_Strict_NeighbourList_Centers_SortDistance(
+                        self.manager,self.inp)
+        cm.compute()
+
+    def test_constructor2(self):
+        """
+        TEST constructor wrapper
+        """
+        rc.RepresentationManager.SortedCoulomb_Strict_NeighbourList_Centers_SortRowNorm(
+                        self.manager,self.inp)
+
+    def test_compute2(self):
+        """
+        TEST compute wrapper
+        """
+        cm = rc.RepresentationManager.SortedCoulomb_Strict_NeighbourList_Centers_SortRowNorm(
                         self.manager,self.inp)
         cm.compute()

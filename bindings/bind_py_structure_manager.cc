@@ -87,6 +87,7 @@ decltype(auto) add_cluster(py::module & m) {
   std::string cluster_name =
                 internal::GetBindingTypeName<SMI>();
 
+  // TODO(felix) switch case with throw
   if (Order == 1) {
     cluster_name += std::string(".Center");
   } else if (Order == 2) {

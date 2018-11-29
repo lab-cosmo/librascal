@@ -35,11 +35,14 @@
 #define GCC_COMPILER
 #endif
 
+#include "representations/representation_manager_base.hh"
+
 
 #include <utility>
 #include <string>
 #include <regex>
 #include <tuple>
+#include <map>
 
 namespace rascal {
   namespace internal {
@@ -141,10 +144,8 @@ namespace rascal {
     std::string GetTypeName() {
       std::string full_typeName = GetTypeNameHelper<T>::GetTypeName();
 
-      std::string tn1{std::regex_replace(full_typeName,
+      std::string tn2{std::regex_replace(full_typeName,
                                     std::regex("rascal::"), "")};
-      std::string tn2{std::regex_replace(tn1,
-                                    std::regex("CMoptions::"), "")};
       std::string tn3{std::regex_replace(tn2, std::regex("<"), "_")};
       std::string tn4{std::regex_replace(tn3, std::regex(">"), "")};
       std::string tn5{std::regex_replace(tn4, std::regex(" "), "")};
@@ -152,28 +153,6 @@ namespace rascal {
       return tn6;
     }
 
-
-    /**
-     * Transforms the template type to a string for the pyhton bindings.
-     * There are submodules in the python bindings with the class
-     * tittle so to avoid redundancy they are removed from the
-     * typename.
-     * @template T type that should be stringifyied
-     * @returns std::string name of the type
-     */
-    template <typename T>
-    std::string GetBindingTypeName() {
-      std::string typeName = GetTypeName<T>();
-      std::string tn1{std::regex_replace(typeName,
-                        std::regex("StructureManager"), "")};
-      std::string tn2{std::regex_replace(tn1,
-                        std::regex("Adaptor"), "")};
-      std::string tn3{std::regex_replace(tn2,
-                        std::regex("RepresentationManager"), "")};
-      std::string tn4{std::regex_replace(tn3,
-                        std::regex("FeatureManager"), "")};
-      return tn4;
-    }
   }  // internal
 }  // rascal
 

@@ -5,7 +5,7 @@
  *
  * @date   14 November 2018
  *
- * @brief  
+ * @brief
  *
  * Copyright © 2018 Musil Felix, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -36,21 +36,20 @@
 #include <vector>
 #include <stdexcept>
 #include <iterator>
-		
+
 
 namespace rascal {
 
 
-/** 
- * Base class of the Feature Managers. Defines the basic interface and 
+/**
+ * Base class of the Feature Managers. Defines the basic interface and
  * some common short hand types.
  */
-class FeatureManagerBase {
-  public:
-    
+  class FeatureManagerBase {
+   public:
     using RepresentationManager_t = RepresentationManagerBase;
     using hypers_t = typename RepresentationManagerBase::hypers_t;
-  
+
     FeatureManagerBase() = default;
 
     //! Copy constructor
@@ -69,10 +68,10 @@ class FeatureManagerBase {
     FeatureManagerBase& operator=(FeatureManagerBase && other) = delete;
 
     //! pre-allocate memory
-    virtual void reserve(size_t& ) = 0;
+    virtual void reserve(size_t&) = 0;
 
-    //! move data from the representation manager property 
-    virtual void push_back(RepresentationManager_t& ) = 0;
+    //! move data from the representation manager property
+    virtual void push_back(RepresentationManager_t&) = 0;
 
     //! return number of elements of the flattened array
     virtual inline int size() = 0;
@@ -84,10 +83,8 @@ class FeatureManagerBase {
     virtual inline int feature_size() = 0;
 
     //! get the shape of the feature matrix (Nrow,Ncol)
-    virtual inline std::tuple<int,int> shape() = 0;
-
-  
-};
+    virtual inline std::tuple<int, int> shape() = 0;
+  };
 
 
 } // rascal

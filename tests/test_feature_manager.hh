@@ -38,8 +38,7 @@
 
 namespace rascal {
 
-  struct TestFeatureData
-  {
+  struct TestFeatureData {
     TestFeatureData() = default;
     ~TestFeatureData() = default;
 
@@ -48,13 +47,13 @@ namespace rascal {
       "reference_data/simple_cubic_8.json",
       "reference_data/small_molecule.json"
       };
-    std::vector<double> cutoffs{{1,2,3}};
+    std::vector<double> cutoffs{{1, 2, 3}};
 
     std::list<json> hypers{
-      {{"central_decay",0.5},
-      {"interaction_cutoff",10},
-      {"interaction_decay",0.5},
-      {"size",120}}
+      {{"central_decay", 0.5},
+      {"interaction_cutoff", 10},
+      {"interaction_decay", 0.5},
+      {"size", 120}}
       };
   };
 
@@ -62,51 +61,47 @@ namespace rascal {
   template< typename T,
             template<typename> class FeatureManager,
             class StructureManager,
-            template<typename ...> class RepresentationManager,
+            template<typename, Option ... opts > class RepresentationManager,
             class BaseFixture,
-            typename ...Options>
+            Option ...options>
   struct FeatureFixture
-  :RepresentationFixture<StructureManager, RepresentationManager, 
-                          BaseFixture, Options...>
-  {
-    using Parent = RepresentationFixture<StructureManager, 
+  :RepresentationFixture<StructureManager, RepresentationManager,
+                          BaseFixture, options...> {
+    using Parent = RepresentationFixture<StructureManager,
                                     RepresentationManager,
-                                    BaseFixture,Options...>;
+                                    BaseFixture, options...>;
     using Manager_t = typename Parent::Manager_t;
     using Representation_t = typename Parent::Representation_t;
     using Feature_t = FeatureManager<T>;
     using hypers_t = typename Representation_t::hypers_t;
 
-    FeatureFixture() :Parent{}
-    { 
+    FeatureFixture() :Parent{} {
       std::vector<size_t> Nfeatures{};
-      
+
       auto& representations = this->representations;
-      
-      for (auto& manager : this->managers_strict){
-        for (auto& hyper : this->hypers){
+
+      for (auto& manager : this->managers_strict) {
+        for (auto& hyper : this->hypers) {
           Ncenter += manager.size();
-          
-          representations.emplace_back(manager,hyper);
+
+          representations.emplace_back(manager, hyper);
           representations.back().compute();
           Nfeatures.push_back(representations.back().get_feature_size());
-
         }
       }
-      
-      this->Nfeature = *std::max_element(std::begin(Nfeatures), std::end(Nfeatures));
-      
+
+      this->Nfeature =
+           *std::max_element(std::begin(Nfeatures), std::end(Nfeatures));
     }
 
     ~FeatureFixture() = default;
     size_t Ncenter{0};
     size_t Nfeature{};
     std::list<Feature_t> features{};
-    
   };
 
 /* ---------------------------------------------------------------------- */
-  
+
 } // RASCAL
 
 #endif /* TEST_FEATURE_MANAGER_H */

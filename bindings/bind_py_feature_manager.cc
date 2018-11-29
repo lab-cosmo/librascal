@@ -29,37 +29,37 @@
 
 #include "bind_include.hh"
 
-/** 
+/**
  * Bind a feature manager
  */
 template<template<typename> typename FeatureManager_t, typename T>
-decltype(auto) bind_feature_manager(py::module & mod,py::module & ){
+decltype(auto) bind_feature_manager(py::module & mod, py::module & ) {
   using Feature = FeatureManager_t<T>;
 
-  std::string feature_name = 
+  std::string feature_name =
         internal::GetBindingTypeName<Feature>();
 
-  py::class_<Feature,FeatureManagerBase> 
+  py::class_<Feature, FeatureManagerBase>
              feature(mod, feature_name.c_str());
   feature.def(py::init<int , std::string >());
   feature.def("reserve", &Feature::reserve);
   feature.def("append",
         (void (Feature::*)(RepresentationManagerBase&)) &Feature::push_back);
   feature.def("size", &Feature::size);
-  feature.def("shape",&Feature::shape);
+  feature.def("shape", &Feature::shape);
   feature.def("get_feature_matrix", &Feature::get_feature_matrix,
-        py::return_value_policy::reference_internal,py::keep_alive<1,0>());
+        py::return_value_policy::reference_internal, py::keep_alive<1, 0>());
 
   return feature;
-};
+}
 
 //! Feature aggregator python binding
-void add_feature_managers(py::module & mod, py::module & m_garbage){
-  
-  py::class_<FeatureManagerBase>(m_garbage,"FeatureManagerBase");
-  
-  auto feature_double = bind_feature_manager<FeatureManagerDense,double>(mod,m_garbage);
-  //TODO make the float version work !
-  //auto feature_float = bind_feature_manager<FeatureManagerDense,float>(mod,m_garbage);
+void add_feature_managers(py::module & mod, py::module & m_garbage) {
+  py::class_<FeatureManagerBase>(m_garbage, "FeatureManagerBase");
 
-};
+  auto feature_double =
+         bind_feature_manager<FeatureManagerDense, double>(mod, m_garbage);
+  //TODO(felix) make the float version work !
+  //auto feature_float =
+  //     bind_feature_manager<FeatureManagerDense, float>(mod, m_garbage);
+}

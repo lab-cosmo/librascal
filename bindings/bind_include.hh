@@ -62,16 +62,64 @@
 
 // PYBIND11_MAKE_OPAQUE(std::vector<double>);
 
-using namespace rascal;
+// using namespace rascal;
 namespace py = pybind11;
 
-void add_structure_managers(py::module&,py::module&,py::module&);
-void add_representation_managers(py::module&,py::module&);
+void add_structure_managers(py::module&, py::module&, py::module&);
+void add_representation_managers(py::module&, py::module&);
 void add_feature_managers(py::module&, py::module&);
 
 void utils_binding(py::module&);
 void math_binding(py::module&);
 
+namespace rascal {
+  namespace internal {
+    //! Convert an Option into a string
+    static const std::string to_string(const Option opt) {
+      return std::to_string(static_cast<int>(opt));
+    }
 
+    /** Mapping to search and replace in type names
+    * when giving binding name
+    */
+    struct SubstitutionMap {
+      using Map = std::map<std::string, std::string>;
+      Map mapping = {
+        {"StructureManager", ""},
+        {"Adaptor", ""},
+        {"RepresentationManager", ""},
+        {"FeatureManager", ""},
+        {R"(\([^()]*\))", ""},
+        {to_string(Option::CMSortDistance), "SortDistance"},
+        {to_string(Option::CMSortRowNorm), "SortRowNorm"}
+      };
+    };
+
+
+    /**
+      * Transforms the template type to a string for the pyhton bindings.
+      * There are submodules in the python bindings with the class
+      * tittle so to avoid redundancy they are removed from the
+      * typename.
+      * @template T type that should be stringifyied
+      * @returns std::string name of the type
+      */
+    template <typename T>
+    std::string GetBindingTypeName() {
+      std::string typeName = GetTypeName<T>();
+      SubstitutionMap ojb{};
+      std::vector<std::string> names{typeName};
+      for (const auto& map : ojb.mapping) {
+        std::cout << map.first << ", " << map.second<< std::endl;
+        names.push_back(std::regex_replace(names.back(),
+                std::regex(map.first.c_str()), map.second.c_str()));
+      }
+
+      return names.back();
+    }
+  }
+}
+
+using namespace rascal;
 
 #endif /* BIND_INCLUDE_H */
