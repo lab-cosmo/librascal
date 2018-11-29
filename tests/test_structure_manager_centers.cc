@@ -73,19 +73,19 @@ namespace rascal {
     constexpr bool verbose{false};
     if (verbose) std::cout << "StructureManagerCenters interface" << std::endl;
 
-    auto dim{manager.dim()};
+    auto && dim{manager.dim()};
     if (verbose) std::cout << "dimension: " << dim << std::endl;
 
-    auto cell{manager.get_cell()};
+    auto && cell{manager.get_cell()};
     if (verbose) std::cout << "cell:\n" << cell << std::endl;
 
-    auto atom_types{manager.get_atom_types()};
+    auto && atom_types{manager.get_atom_types()};
     if (verbose) std::cout << "atom types:\n" << atom_types << std::endl;
 
-    auto positions{manager.get_positions()};
+    auto && positions{manager.get_positions()};
     if (verbose) std::cout << "atom positions:\n" << positions << std::endl;
 
-    auto periodicity{manager.get_periodic_boundary_conditions()};
+    auto && periodicity{manager.get_periodic_boundary_conditions()};
     if (verbose) std::cout << "periodicity (x,y,z):\n"
                            << periodicity << std::endl;
   }

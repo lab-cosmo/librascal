@@ -32,6 +32,7 @@
 
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/property.hh"
+#include "atomic_structure.hh"
 #include "rascal_utility.hh"
 #include "lattice.hh"
 #include "basic_types.hh"
@@ -426,7 +427,7 @@ namespace rascal {
     using Vector_t = typename Parent::Vector_t;
     using Positions_ref = Eigen::Map<Eigen::Matrix<double, traits::Dim,
                                                    Eigen::Dynamic>>;
-    using AtomTypes_ref = Eigen::Map<Eigen::Matrix<int, 1, Eigen::Dynamic>>;
+    //using AtomTypes_ref = AtomicStructure<traits::Dim>::AtomTypes_ref;
 
     static_assert(traits::MaxOrder == 2,
                   "ManagerImplementation needs an atom list "
@@ -535,17 +536,17 @@ namespace rascal {
                            this->ghost_positions.size() / traits::Dim);
     }
 
-    //! ghost types are only available for MaxOrder=2
-    inline int & get_ghost_type(const size_t & atom_index) {
-      auto p = this->get_ghost_types();
-      return p(atom_index);
-    }
+    // //! ghost types are only available for MaxOrder=2
+    // inline int & get_ghost_type(const size_t & atom_index) {
+    //   auto p = this->get_ghost_types();
+    //   return this->ghost_min p(atom_index);
+    // }
 
-    //! provides access to the atomic types of ghost atoms
-    inline AtomTypes_ref get_ghost_types() {
-      AtomTypes_ref val(this->ghost_types.data(), 1, this->ghost_types.size());
-      return val;
-    }
+    // //! provides access to the atomic types of ghost atoms
+    // inline AtomTypes_ref get_ghost_types() {
+    //   AtomTypes_ref val(this->ghost_types.data(), 1, this->ghost_types.size());
+    //   return val;
+    // }
 
 
     //! Returns position of the given atom object (useful for users)
@@ -584,8 +585,13 @@ namespace rascal {
     }
 
     //! Returns atom type given an atom index, also works for ghost atoms
-    inline int get_atom_type(const size_t & atom_index) {
-      return this->manager.get_atom_type(atom_index);
+    inline int & get_atom_type(const size_t & atom_index) {
+      return this->atom_types[atom_index];
+    }
+
+    //! Returns the type of a given atom, given an AtomRef
+    inline const int & get_atom_type(const int & atom_index) const {
+      return this->atom_types[atom_index];
     }
 
     //! Returns the number of neighbors of a given cluster
