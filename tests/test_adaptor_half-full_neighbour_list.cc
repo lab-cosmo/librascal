@@ -42,7 +42,6 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
                           ManagerFixture<StructureManagerLammps>) {
-
     AdaptorHalfList<StructureManagerLammps> adaptor{manager};
     adaptor.update();
   }
@@ -57,7 +56,6 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(iteration_and_distance_half_list,
                           ManagerFixture<StructureManagerLammps>) {
-
     constexpr bool verbose{false};
 
     double distance_sum_full{0.};
@@ -84,7 +82,6 @@ namespace rascal {
     for (auto atom : adaptor) {
       if (verbose) std::cout << "type " << atom.get_atom_type() << std::endl;
       for (auto pair : atom) {
-
         double dist = {(atom.get_position() - pair.get_position()).norm()};
         distance_sum_half += dist;
 
@@ -107,7 +104,6 @@ namespace rascal {
     BOOST_CHECK_EQUAL(npairs_full, 4);
     BOOST_CHECK_EQUAL(npairs_half, 2);
     BOOST_CHECK(relative_error < tol * tol / 100 / 100);
-
   }
 
   /* ---------------------------------------------------------------------- */
@@ -119,7 +115,6 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(full_to_half_to_full_neighbour_list,
                           ManagerFixture<StructureManagerLammps>) {
-
     constexpr bool verbose{false};
 
     // variable for summation for test position differences

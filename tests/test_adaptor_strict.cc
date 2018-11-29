@@ -19,8 +19,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -71,7 +71,6 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(strict_test,
                           ManagerFixture<StructureManagerCenters>) {
-
     bool verbose{false};
     int mult = 10;
     double rc_max{mult*0.5 + cutoff};
@@ -107,9 +106,9 @@ namespace rascal {
           // get_index returns iteration index
           std::cout << "cell atom out " << center.get_index();
           // get_atom_index returns index from
-          std::cout << " " << center.get_atom_index() << " " ;
+          std::cout << " " << center.get_atom_index() << " ";
 
-          for (int ii{0}; ii < 3; ++ii){
+          for (int ii{0}; ii < 3; ++ii) {
             std::cout << center.get_position()[ii] << " ";
           }
           std::cout << " " << center.get_atom_type() << std::endl;
@@ -126,15 +125,14 @@ namespace rascal {
             dirVecs.push_back(aa);
             if (verbose) {
               std::cout << "cell neigh out " << neigh.get_index();
-              std::cout << " " << neigh.get_atom_index() << " " ;
+              std::cout << " " << neigh.get_atom_index() << " ";
 
-              for (int ii{0}; ii < 3; ++ii){
+              for (int ii{0}; ii < 3; ++ii) {
                 std::cout << neigh.get_position()[ii] << " ";
               }
               std::cout << " " << neigh.get_atom_type() << std::endl;
             }
           }
-
         }
         neigh_ids.push_back(indices);
         neigh_dist.push_back(distances);
@@ -154,13 +152,12 @@ namespace rascal {
           std::cout << "strict atom out "
                     << center.get_index();
           // get_atom_index returns index from
-          std::cout << " " << center.get_atom_index() << " " ;
+          std::cout << " " << center.get_atom_index() << " ";
 
-          for (int ii{0}; ii < 3; ++ii){
+          for (int ii{0}; ii < 3; ++ii) {
             std::cout << center.get_position()[ii] << " ";
           }
           std::cout << " " << center.get_atom_type() << std::endl;
-
         }
 
         for (auto neigh : center) {
@@ -174,9 +171,9 @@ namespace rascal {
           
           if (verbose) {
             std::cout << "strict neigh out " << neigh.get_index();
-            std::cout << " " << neigh.get_atom_index() << "\t " ;
+            std::cout << " " << neigh.get_atom_index() << "\t ";
 
-            for (int ii{0}; ii < 3; ++ii){
+            for (int ii{0}; ii < 3; ++ii) {
               std::cout << neigh.get_position()[ii] << ", ";
             }
             std::cout << "\t dist=" << distance;
@@ -195,18 +192,18 @@ namespace rascal {
       }
 
 
-      BOOST_CHECK_EQUAL(neigh_ids.size(),neigh_ids_strict.size());
+      BOOST_CHECK_EQUAL(neigh_ids.size(), neigh_ids_strict.size());
 
-      for (size_t ii{0}; ii < neigh_ids.size(); ++ii){
-        BOOST_CHECK_EQUAL(neigh_ids[ii].size(),neigh_ids_strict[ii].size());
+      for (size_t ii{0}; ii < neigh_ids.size(); ++ii) {
+        BOOST_CHECK_EQUAL(neigh_ids[ii].size(), neigh_ids_strict[ii].size());
 
-        for (size_t jj{0}; jj < neigh_ids[ii].size(); ++jj){
+        for (size_t jj{0}; jj < neigh_ids[ii].size(); ++jj) {
           int a0{neigh_ids[ii][jj]};
           int a1{neigh_ids_strict[ii][jj]};
           double d0{neigh_dist[ii][jj]};
           double d1{neigh_dist_strict[ii][jj]};
-          BOOST_CHECK_EQUAL(a0,a1);
-          BOOST_CHECK_EQUAL(d0,d1);
+          BOOST_CHECK_EQUAL(a0, a1);
+          BOOST_CHECK_EQUAL(d0, d1);
           for (size_t kk{0};kk<neigh_dirVec[ii][jj].size();++kk){
             double dv0{neigh_dirVec[ii][jj][kk]};
             double dv1{neigh_dirVec_strict[ii][jj][kk]};
@@ -379,7 +376,7 @@ namespace rascal {
 
     constexpr bool verbose{false};
 
-    if(verbose) std::cout << "HCP test " << cutoff << std::endl;
+    if (verbose) std::cout << "HCP test " << cutoff << std::endl;
 
     int mult = 10;
 
@@ -467,7 +464,6 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(neighbourlist_test_fcc, ManagerFixtureTwoFcc) {
-
     constexpr bool verbose{false};
 
     if (verbose) std::cout << "FCC test " << std::endl;

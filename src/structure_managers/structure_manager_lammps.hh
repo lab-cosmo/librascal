@@ -19,8 +19,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -57,9 +57,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   //! Definition of the new StructureManagerLammps class.
   class StructureManagerLammps:
-    public StructureManager<StructureManagerLammps>
-  {
-  public:
+    public StructureManager<StructureManagerLammps> {
+   public:
     using traits = StructureManager_traits<StructureManagerLammps>;
     using Parent = StructureManager<StructureManagerLammps>;
     using Vector_ref = typename Parent::Vector_ref;
@@ -186,7 +185,7 @@ namespace rascal {
      */
     size_t get_nb_clusters(int cluster_size) const;
 
-  protected:
+   protected:
     int inum{}; //!< total numer of atoms
     int tot_num{}; //!< total number, includes ghosts
     int * ilist{}; //!< atomic indices
@@ -199,8 +198,6 @@ namespace rascal {
     double ** vatom{}; //!< virial stress of atoms
     int nb_pairs{}; //! number of clusters with cluster_size=2 (pairs)
     std::vector<int> offsets{}; //! offset per atom to access neighbour list
-
-  private:
   };
 
   /**
@@ -213,7 +210,7 @@ namespace rascal {
     // The static assert with <= is necessary, because the template parameter
     // ``Order`` is one Order higher than the MaxOrder at the current level. The
     // return type of this function is used to build the next Order iteration.
-    static_assert (Order <= traits::MaxOrder,
+    static_assert(Order <= traits::MaxOrder,
                    "this manager can only give the offset (= starting index)"
                    " for a pair iterator, given the i atom of the pair");
     return this->offsets[counters.front()];

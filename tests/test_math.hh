@@ -38,11 +38,9 @@
 
 namespace rascal {
 
-  struct ManagerFixture_math
-  {
+  struct ManagerFixture_math {
     ManagerFixture_math()
-      :numbers(4,3),results_hyp2f1(3),results_airy(3,4)
-    {
+    :numbers(4,3),results_hyp2f1(3),results_airy(3,4) {
       numbers <<
         1, 0.1, 2,
         1, 3, 9,
@@ -58,13 +56,13 @@ namespace rascal {
         -0.05309038443365388, 3.2980949999782143, 4.10068204993289;
     }
 
-    ~ManagerFixture_math() {}
+    ~ManagerFixture_math() {
+    }
 
     Eigen::Matrix<double, 4, Eigen::Dynamic>  numbers;
     Eigen::Matrix<double, 1, Eigen::Dynamic>  results_hyp2f1;
     Eigen::Matrix<double, 3, Eigen::Dynamic>  results_airy;
     bool vebose{false};
-
   };
 
   struct SphericalHarmonicsRefFixture

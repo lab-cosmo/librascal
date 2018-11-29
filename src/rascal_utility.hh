@@ -19,8 +19,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -37,6 +37,7 @@
 
 
 #include <utility>
+#include<tuple>
 #include <string>
 #include <regex>
 
@@ -57,7 +58,7 @@ namespace rascal {
     template<typename Func, typename Head, typename ... Tail>
     inline void for_each_impl(Func&& f, Head&& head, Tail&&...tail) {
       f(head);
-      for_each_impl( std::forward<Func>(f), tail...);
+      for_each_impl(std::forward<Func>(f), tail...);
     }
 
     template<typename Func, size_t ... Indices, typename ... Args>
@@ -89,7 +90,7 @@ namespace rascal {
     };
 
     /* ---------------------------------------------------------------------- */
-    // inspiered from 
+    // inspired from 
     // https://blog.molecular-matters.com/2015/12/11/getting-
     // the-type-of-a-template-argument-as-string-without-rtti/
     /**
@@ -174,7 +175,7 @@ namespace rascal {
                         std::regex("FeatureManager"), "" )};
 			return tn4;
     }
-  }  // internal
-}  // rascal
+  }  // namespace internal
+}  // namespace rascal
 
 #endif /* RASCAL_UTILITY_H */

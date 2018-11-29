@@ -19,8 +19,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -29,6 +29,7 @@
 #include "bind_include.hh"
 
 using namespace pybind11::literals;
+namespace py = pybind11;
 
 
 PYBIND11_MODULE(_rascal, mod) {
@@ -42,7 +43,7 @@ PYBIND11_MODULE(_rascal, mod) {
   m_rpr_mng.doc() = "Representation Manager Classes" ;
   py::module m_feat_mng = mod.def_submodule("FeatureManager");
   m_feat_mng.doc() = "Feature Manager Classes" ;
-  
+
   py::module m_utl = mod.def_submodule("utils");
   py::module m_math = mod.def_submodule("math");
   m_math.doc() = "Collection of math functions" ;

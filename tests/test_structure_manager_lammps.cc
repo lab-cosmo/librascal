@@ -21,8 +21,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -47,12 +47,12 @@ namespace rascal {
     int pair_counter{};
     constexpr bool verbose{false};
 
-    for (auto atom_cluster: manager) {
+    for (auto atom_cluster : manager) {
       BOOST_CHECK_EQUAL(atom_counter, atom_cluster.get_global_index());
       BOOST_CHECK_EQUAL(atom_cluster.get_atom_type(), 1);
       ++atom_counter;
 
-      for (auto pair_cluster: atom_cluster) {
+      for (auto pair_cluster : atom_cluster) {
         auto pair_offset{pair_cluster.get_global_index()};
         if (verbose) {
           std::cout << "pair (" << atom_cluster.back()
@@ -63,7 +63,6 @@ namespace rascal {
 
         BOOST_CHECK_EQUAL(pair_counter, pair_offset);
         ++pair_counter;
-
       }
     }
   }

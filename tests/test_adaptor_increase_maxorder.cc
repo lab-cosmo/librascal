@@ -20,8 +20,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -60,7 +60,6 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(iterator_test,
                           PairFixtureFile<StructureManagerCenters>) {
-
     constexpr bool verbose{false};
     constexpr bool check_below{false};
 
@@ -138,9 +137,8 @@ namespace rascal {
         }
       }
     }
-    if(verbose) std::cout << "Number of triplets: " << n_triplets << std::endl;
-
-    // TODO: check for consistency in number of tuples
+    if (verbose) std::cout << "Number of triplets: " << n_triplets << std::endl;
+    // TODO(markus): check for consistency in number of tuples
   }
 
   /* ---------------------------------------------------------------------- */
@@ -153,17 +151,18 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(pair_to_triplet_extension,
                           ManagerFixture<StructureManagerLammps>) {
-
     constexpr bool verbose{false};
 
     if (verbose) std::cout << ">> pair to triplet extension" << std::endl;
 
+    // TODO(markus): should this be in a fixture?
     AdaptorHalfList<StructureManagerLammps> SM2{manager};
     SM2.update();
     AdaptorMaxOrder<AdaptorHalfList<StructureManagerLammps>> SM3{SM2};
     SM3.update();
 
-    // make sure number of pairs are carried over, since they are are not changed
+    // make sure number of pairs are carried over,
+    // since they are are not changed
     BOOST_CHECK_EQUAL(SM2.get_nb_clusters(2), SM3.get_nb_clusters(2));
 
     // only one possible triplet in this case?

@@ -46,7 +46,6 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(simple_cubic_9_neighbour_list,
                           PairFixtureSimple<StructureManagerCenters>) {
-
     constexpr bool verbose{false};
 
     auto npairs = pair_manager.get_nb_clusters(2);
@@ -81,7 +80,6 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(test_build_neighbour_simple,
                           PairFixtureSimple<StructureManagerCenters>) {
-
     constexpr bool verbose{false};
 
     //! testing iteration of zerot-th order manager
@@ -147,7 +145,6 @@ namespace rascal {
    * crystal system.
    */
   BOOST_FIXTURE_TEST_CASE(neighbourlist_test_hcp, ManagerFixtureTwoHcp) {
-
     /*
      * Note: since the cell vectors are different, it is possible that one of
      * the two atoms is repeated into a different cell due to periodicity. This
@@ -157,7 +154,7 @@ namespace rascal {
 
     constexpr bool verbose{false};
 
-    if(verbose) std::cout << "HCP test " << cutoff << std::endl;
+    if (verbose) std::cout << "HCP test " << cutoff << std::endl;
 
     int mult = 10;
 
@@ -245,7 +242,6 @@ namespace rascal {
    * crystal system.
    */
   BOOST_FIXTURE_TEST_CASE(neighbourlist_test_fcc, ManagerFixtureTwoFcc) {
-
     constexpr bool verbose{false};
 
     if (verbose) std::cout << "FCC test " << std::endl;
