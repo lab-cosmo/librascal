@@ -129,7 +129,7 @@ namespace rascal {
 
     if(verbose) std::cout << "HCP test " << cutoff << std::endl;
 
-    int mult = 10;
+    int mult = 3;
 
     for (auto i{1}; i < mult; ++i) {
       auto cutoff_tmp = i * cutoff;
@@ -220,7 +220,7 @@ namespace rascal {
 
     if (verbose) std::cout << "FCC test " << std::endl;
 
-    int mult = 8;
+    int mult = 3;
 
     for (auto i{1}; i < mult; ++i) {
       auto cutoff_tmp = i * cutoff;
@@ -314,16 +314,16 @@ namespace rascal {
 
     constexpr static bool verbose{false};
 
-    constexpr static int ncells{4};
+    constexpr static int ncells{3};
 
     // helper for increasing skewedness of unit cell in loop entry (0,1) gives
     // the skewing factor in the x/y plane in the loop building the cells
     Eigen::MatrixXd unity{Eigen::MatrixXd::Identity(3, 3)};
-    std::array<double, ncells> shears{0, 1, 10, 50};
+    std::array<double, ncells> shears{0, 1, 10};
 
     // multipliers for different cutoffs: original cutoff is barely below
     // minimum atom distance, leading to zero neighbours
-    std::array<int, 3> n_cutoff{1, 5, 25};
+    std::array<int, 3> n_cutoff{1, 5, 15};
 
     // loop over 3 different cutoffs
     for (int k{0}; k < 3; ++k) {

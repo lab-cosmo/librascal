@@ -116,7 +116,8 @@ namespace rascal {
           int factor{1};
           for (int i{Dim-1}; i >=0; --i) {
             //! -1 for offset of stencil
-            retval[i] = this->index/factor%size + this->stencil.origin[i] - 1;
+            retval[i] = this->index / factor%size
+              + this->stencil.origin[i] - 1;
             if (i != 0 ) {
               factor *= size;
             }
@@ -595,7 +596,7 @@ namespace rascal {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
 
-      auto access_index = cluster.get_cluster_index(Layer);
+      auto && access_index = cluster.get_cluster_index(Layer);
       return nb_neigh[access_index];
     }
 
@@ -639,7 +640,7 @@ namespace rascal {
 
     //! Sets the correct offsets for accessing neighbours
     inline void set_offsets() {
-      auto n_tuples{nb_neigh.size()};
+      auto && n_tuples{nb_neigh.size()};
       this->offsets.reserve(n_tuples);
       this->offsets.resize(1);
       for (size_t i{0}; i < n_tuples-1; ++i) {
@@ -924,21 +925,21 @@ namespace rascal {
     internal::IndexContainer<dim> atom_id_cell{nboxes_per_dim};
 
     // sorting i-atoms into boxes
-    for (size_t i{0}; i < this->n_centers; ++i) {
+    for (size_t i{0}; i < this->get_size_with_ghosts(); ++i) {
       Vector_t pos = this->get_position(i);
       Vector_t dpos = pos - mesh_min;
       auto idx = internal::get_box_index(dpos, cutoff);
       atom_id_cell[idx].push_back(i);
     }
 
-    // sorting ghost atoms into boxes
-    for (size_t i{0}; i < this->n_ghosts; ++i) {
-      Vector_t ghost_pos = this->get_ghost_position(i);
-      Vector_t dpos = ghost_pos - mesh_min;
-      auto idx  = internal::get_box_index(dpos, cutoff);
-      auto ghost_atom_index = i + this->n_centers;
-      atom_id_cell[idx].push_back(ghost_atom_index);
-    }
+    // // sorting ghost atoms into boxes
+    // for (size_t i{0}; i < this->n_ghosts; ++i) {
+    //   Vector_t ghost_pos = this->get_ghost_position(i);
+    //   Vector_t dpos = ghost_pos - mesh_min;
+    //   auto idx  = internal::get_box_index(dpos, cutoff);
+    //   auto ghost_atom_index = i + this->n_centers;
+    //   atom_id_cell[idx].push_back(ghost_atom_index);
+    // }
 
     // go through all atoms and build neighbour list
     int offset{0};
@@ -949,7 +950,7 @@ namespace rascal {
       Vector_t pos = this->get_position(i);
       Vector_t dpos = pos - mesh_min;
       auto idx = internal::get_box_index(dpos, cutoff);
-      auto current_j_atoms = internal::get_neighbours(i, idx, atom_id_cell);
+      auto && current_j_atoms = internal::get_neighbours(i, idx, atom_id_cell);
 
       for (auto j : current_j_atoms) {
         this->neighbours.push_back(j);
