@@ -239,9 +239,9 @@ namespace rascal {
     //! dummy function, since no neighbours are present her
     inline int get_cluster_neighbour(const Parent& /*cluster*/,
                                      size_t index) const {
-      // dummy argument is the atom itself
-      // std::cout << "index, atoms_index " << index << ", " << this->atoms_index[0][index] << std::endl;
-      // return this->atoms_index[0][index];
+      // dummy argument is the atom itself std::cout << "index, atoms_index " <<
+      // index << ", " << this->atoms_index[0][index] << std::endl; return
+      // this->atoms_index[0][index];
       return index;
     }
 

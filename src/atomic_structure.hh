@@ -38,6 +38,9 @@
 #include <cmath>
 #include <stdexcept>
 
+
+// TODO: CHECK for skewedness and add a function for rescaling the positions for
+// internal use
 namespace rascal {
 
   template <int Dim>

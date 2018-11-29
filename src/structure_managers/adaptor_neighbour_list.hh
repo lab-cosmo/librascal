@@ -60,11 +60,10 @@ namespace rascal {
     constexpr static int Dim{ManagerImplementation::traits::Dim};
     // New MaxOrder upon construction, by construction should be 2
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder+1};
-    // extending the layer for the new order
-    using LayerByOrder =
-      typename LayerExtender<MaxOrder,
-                             typename
-                             ManagerImplementation::traits::LayerByOrder>::type;
+    // When using periodic boundary conditions, it is possible that atoms are
+    // added upon construction of the neighbour list. Therefore the layering
+    // sequence is reset: here is layer 0 again.
+    using LayerByOrder = std::index_sequence<0, 0>;
   };
 
   namespace internal {
@@ -484,15 +483,17 @@ namespace rascal {
 
     //! Returns the number of clusters of size cluster_size
     inline size_t get_nb_clusters(size_t cluster_size) const {
-      std::cout << "cluster_size " << cluster_size << std::endl;
-      std::cout << "neighbours.size() "<< neighbours.size() << std::endl;
       switch (cluster_size) {
-      case traits::MaxOrder: {
+      case 1: {
+        return this->n_centers;// + this->n_ghosts;
+        break;
+      }
+      case 2: {
         return this->neighbours.size();
         break;
       }
       default:
-        return this->manager.get_nb_clusters(cluster_size);
+        throw std::runtime_error("Can only handle single atoms and pairs.");
         break;
       }
     }
@@ -503,21 +504,21 @@ namespace rascal {
 
     //! Returns number of clusters of the original manager
     inline size_t get_size() const {
-      //return this->n_i_atoms+this->n_j_atoms;
-      return this->manager.get_size();
+      return this->n_centers;//+this->n_ghosts;
+      //return this->manager.get_size();
     }
 
     //! total number of atoms used for neighbour list, including ghosts
     inline size_t get_size_with_ghosts() const{
-      return this->n_i_atoms+this->n_j_atoms;
+      return this->n_centers+this->n_ghosts;
     }
 
     //! Returns position of an atom with index atom_index
     inline Vector_ref get_position(const size_t & atom_index) {
-      if (atom_index < n_i_atoms) {
+      if (atom_index < n_centers) {
         return this->manager.get_position(atom_index);
       } else {
-        return this->get_ghost_position(atom_index - this->n_i_atoms);
+        return this->get_ghost_position(atom_index - this->n_centers);
       }
     }
 
@@ -583,11 +584,7 @@ namespace rascal {
 
     //! Returns atom type given an atom index, also works for ghost atoms
     inline int get_atom_type(const size_t & atom_index) {
-      if (atom_index < this->n_i_atoms) {
-        return this->manager.get_atom_type(atom_index);
-      } else {
-        return this->get_ghost_type(atom_index - this->n_i_atoms);
-      }
+      return this->manager.get_atom_type(atom_index);
     }
 
     //! Returns the number of neighbors of a given cluster
@@ -599,7 +596,6 @@ namespace rascal {
                     "this implementation handles only the respective MaxOrder");
 
       auto access_index = cluster.get_cluster_index(Layer);
-      std::cout << "access_index " << access_index << std::endl;
       return nb_neigh[access_index];
     }
 
@@ -610,8 +606,8 @@ namespace rascal {
      * necessary, because the underlying manager is not known at this
      * layer. Therefore we can not add positions to the existing array, but have
      * to add positions to a ghost array. This also means, that the get_position
-     * function will need to branch, depending on the atom_index > n_i_atoms and
-     * offset with n_j_atoms to access ghost positions.
+     * function will need to branch, depending on the atom_index > n_centers and
+     * offset with n_ghosts to access ghost positions.
      */
 
     /**
@@ -619,19 +615,21 @@ namespace rascal {
      * is needed, because ghost atoms are also included in the buildup of the
      * pair list.
      */
-    // inline void add_atom(int atom_index) {
-    //   this->atom_indices.push_back(atom_index);
-    // }
 
     inline void add_ghost_atom(const int & atom_index,
                                const Vector_t & position,
                                const int & atom_type) {
+      // first add it to the list of atoms
+      this->atom_indices.push_back(atom_index);
+      this->atom_types.push_back(atom_type);
+      // add it to the ghost atom container
+      // TODO: DELETE those containers, just work with n_centers/n_ghosts
       this->ghost_atom_indices.push_back(atom_index);
       this->ghost_types.push_back(atom_type);
       for (auto dim{0}; dim < traits::Dim; ++dim) {
         this->ghost_positions.push_back(position(dim));
       }
-      this->n_j_atoms++;
+      this->n_ghosts++;
     }
 
     //! Extends the list containing the number of neighbours with a 0
@@ -661,7 +659,9 @@ namespace rascal {
     const double cutoff;
 
     //! stores i-atom and ghost atom indices
-    //std::vector<int> atom_indices{};
+    std::vector<int> atom_indices{};
+
+    std::vector<int> atom_types{};
 
     //! Stores additional atom indices of current Order (only ghost atoms)
     std::vector<size_t> ghost_atom_indices{};
@@ -680,12 +680,12 @@ namespace rascal {
     size_t cluster_counter{0};
 
     //! number of i atoms, i.e. centers from underlying manager
-    size_t n_i_atoms;
+    size_t n_centers;
     /**
      * number of ghost atoms (given by periodicity) filled during full
      * neighbourlist build
      */
-    size_t n_j_atoms;
+    size_t n_ghosts;
 
     //! ghost atom positions
     std::vector<double> ghost_positions{};
@@ -702,12 +702,14 @@ namespace rascal {
   AdaptorNeighbourList(ManagerImplementation & manager, double cutoff):
     manager{manager},
     cutoff{cutoff},
-    //atom_indices{},
+    atom_indices{},
+    atom_types{},
     ghost_atom_indices{},
     nb_neigh{},
+    neighbours{},
     offsets{},
-    n_i_atoms{manager.get_size()},
-    n_j_atoms{0}
+    n_centers{manager.get_size()},
+    n_ghosts{0}
   {
     static_assert(not(traits::MaxOrder < 1),
                   "No atom list in manager");
@@ -721,14 +723,30 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   void AdaptorNeighbourList<ManagerImplementation>::update() {
+    //! Reset cluster_indices for adaptor to fill with push back.
+    internal::for_each(this->cluster_indices_container,
+                       internal::ResizePropertyToZero());
+
     // initialize necessary data structure
-    this->nb_neigh.resize(0);
-    this->offsets.resize(0);
-    this->neighbours.resize(0);
-    this->ghost_types.resize(0);
+    this->atom_indices.clear();
+    this->atom_types.clear();
+    this->ghost_atom_indices.clear();
+    this->nb_neigh.clear();
+    this->neighbours.clear();
+    this->offsets.clear();
+    this->ghost_positions.clear();
+    this->ghost_types.clear();
     // actual call for building the neighbour list
     this->make_full_neighbour_list();
     this->set_offsets();
+
+    // layering is started from the beginning, therefore all clusters and
+    // centers+ghost atoms are in the right order.
+    auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
+    auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
+
+    atom_cluster_indices.fill_sequence();
+    pair_cluster_indices.fill_sequence();
   }
 
   /* ---------------------------------------------------------------------- */
@@ -789,7 +807,7 @@ namespace rascal {
       // minimum is given by -cutoff and a delta to avoid ambiguity during cell
       // sorting of atom position e.g. at x = (0,0,0).
       auto epsilon = 0.25 * cutoff;
-      // 2 cutoff for extra layer of emtpy cells
+      // 2 cutoff for extra layer of emtpy cells (because of stencil iteration)
       mesh_min[i] = min_coord - 2*cutoff  - epsilon;
 
       // outer mesh, including one layer of emtpy cells
@@ -801,15 +819,9 @@ namespace rascal {
 
       // positions min/max for ghost atoms
       ghost_min[i] = mesh_min[i] + cutoff;
-      auto lghost = lmesh - 2*cutoff; //std::fabs(mesh_min[i]) + max_coord + 2*cutoff;
+      auto lghost = lmesh - 2 * cutoff;
       int n_ghosts = std::ceil(lghost / cutoff);
       ghost_max[i] = n_ghosts * cutoff - std::fabs(ghost_min[i]);
-
-      auto ndelta = n - n_ghosts;
-      if (ndelta != 2) {
-        std::cout << "mesh and ghost n " << n << " " << n_ghosts << std::endl;
-      }
-
     }
 
     // Periodicity related multipliers. Now the mesh coordinates are calculated
@@ -817,10 +829,10 @@ namespace rascal {
     // of the cell in each cell vector direction
     constexpr int ncorners = internal::ipow(2, dim);
     Eigen::Matrix<double, dim, ncorners> xpos{};
-    std::array<double, dim*2> mesh_bounds{};
+    std::array<double, 2 * dim> mesh_bounds{};
     for (auto i{0}; i < dim; ++i) {
       mesh_bounds[i] = mesh_min[i];
-      mesh_bounds[i+dim] = mesh_max[i];
+      mesh_bounds[i + dim] = mesh_max[i];
     }
 
     // Get the mesh bounds to solve for the multiplicators
@@ -868,18 +880,14 @@ namespace rascal {
 
     // before generating ghost atoms, all existing atoms are added to the list
     // of current atoms to start the full list of current i-atoms and ghosts
-    // auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
-    // for (auto atom : this->get_manager()) {
-    //   auto index_i = atom.get_atom_index();
-    //   this->add_atom(index_i);
-    //   constexpr auto AtomLayer{
-    //           compute_cluster_layer<atom.order()>
-    //             (typename traits::LayerByOrder{})};
-    //   Eigen::Matrix<size_t, AtomLayer+1, 1> indices;
-    //   indices.template head<AtomLayer>() = atom.get_cluster_indices();
-    //   indices(AtomLayer) = indices(AtomLayer-1);
-    //   atom_cluster_indices.push_back(indices);
-    // }
+    // This is done before the ghost atom generation, to have them all
+    // contiguously at the beginning of the list.
+    for (auto atom : this->get_manager()) {
+      auto atom_index = atom.get_atom_index();
+      auto atom_type = atom.get_atom_type();
+      this->atom_indices.push_back(atom_index);
+      this->atom_types.push_back(atom_type);
+    }
 
     // generate ghost atom indices and positions
     for (auto atom : this->get_manager()) {
@@ -916,7 +924,7 @@ namespace rascal {
     internal::IndexContainer<dim> atom_id_cell{nboxes_per_dim};
 
     // sorting i-atoms into boxes
-    for (size_t i{0}; i < this->n_i_atoms; ++i) {
+    for (size_t i{0}; i < this->n_centers; ++i) {
       Vector_t pos = this->get_position(i);
       Vector_t dpos = pos - mesh_min;
       auto idx = internal::get_box_index(dpos, cutoff);
@@ -924,17 +932,17 @@ namespace rascal {
     }
 
     // sorting ghost atoms into boxes
-    for (size_t i{0}; i < this->n_j_atoms; ++i) {
+    for (size_t i{0}; i < this->n_ghosts; ++i) {
       Vector_t ghost_pos = this->get_ghost_position(i);
       Vector_t dpos = ghost_pos - mesh_min;
       auto idx  = internal::get_box_index(dpos, cutoff);
-      auto ghost_atom_index = i + this->n_i_atoms;
+      auto ghost_atom_index = i + this->n_centers;
       atom_id_cell[idx].push_back(ghost_atom_index);
     }
 
     // go through all atoms and build neighbour list
     int offset{0};
-    //    for (size_t i{0}; i < this->n_i_atoms; ++i) {
+    //    for (size_t i{0}; i < this->n_centers; ++i) {
     // iteration over all atoms is necessary for possible increase of maxorder
     for (size_t i{0}; i < this->get_size_with_ghosts(); ++i) {
       int nneigh{0};
@@ -951,12 +959,6 @@ namespace rascal {
       //this->offsets.push_back(offset);
       offset += nneigh;
     }
-
-    // get cluster indices and fill them up in the first order
-    auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
-    auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
-    atom_cluster_indices.fill_sequence();
-    pair_cluster_indices.fill_sequence();
   }
 
   /* ---------------------------------------------------------------------- */

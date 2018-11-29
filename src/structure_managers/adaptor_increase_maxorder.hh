@@ -382,7 +382,6 @@ namespace rascal {
 
         // construct a shifted iterator to constuct a ClusterRef<1>
         auto iterator_at_position{manager_tmp.get_iterator_at(access_index)};
-        std::cout << "iterator at position " << access_index << std::endl;
 
         // ClusterRef<1> as dereference from iterator to get pairs of the
         // i_atoms
