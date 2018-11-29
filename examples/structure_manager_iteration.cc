@@ -86,12 +86,12 @@ int main() {
   std::cout << "Iteration over triplet manager " << std::endl;
 
   for (auto atom : triplet_manager) {
-    auto pos1{atom.get_position()};
+    //auto pos1{atom.get_position()};
     std::cout << "atom" << std::endl;
 
     for (auto pair : atom) {
       std::cout << "pair" << std::endl;
-      auto pos2{pair.get_position()};
+      //auto pos2{pair.get_position()};
 
       for (auto triplet : pair) {
         auto pos3{triplet.get_position()};

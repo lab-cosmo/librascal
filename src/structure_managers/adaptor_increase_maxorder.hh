@@ -175,6 +175,11 @@ namespace rascal {
       return this->manager.get_atom_type(atom_index);
     }
 
+    //! get atom type from underlying manager
+    inline int & get_atom_type(const int & atom_index) {
+      return this->manager.get_atom_type(atom_index);
+    }
+
     //! return atom type
     inline int & get_atom_type(const AtomRef_t & atom) {
       return this->manager.get_atom_type(atom.get_atom_index());

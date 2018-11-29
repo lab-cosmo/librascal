@@ -457,8 +457,9 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * A simple fixture using ManagerCenters to check the neighbourlist algorithm
-   * with simple positions and a periodicity only in x-direction.
+   * A simple manager using ManagerCenters to check the neighbourlist algorithm
+   * with simple positions and a periodicity only in x-direction. This manager
+   * is also used to check the species filter.
    *
    */
   struct ManagerFixtureSimple : public ManagerFixture<StructureManagerCenters>
@@ -478,7 +479,7 @@ namespace rascal {
         0.4, 0.4, 1.4, 1.4, 0.4, 0.4, 1.4, 1.4,
         0.4, 0.4, 0.4, 0.4, 1.4, 1.4, 1.4, 1.4;
 
-      atom_types << 1, 1, 1, 1, 1, 1, 1, 1;
+      atom_types << 1, 3, 2, 1, 1, 2, 2, 3;
 
       using PBC_t = Eigen::Map<Eigen::Matrix<int, 3, 1>>;
       this->manager.update(positions, atom_types, cell, PBC_t{pbc.data()});

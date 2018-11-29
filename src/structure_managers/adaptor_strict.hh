@@ -185,7 +185,7 @@ namespace rascal {
     }
 
     //! Returns atom type given an atom index
-    inline int get_atom_type(const int& atom_id) {
+    inline int & get_atom_type(const int& atom_id) {
       return this->manager.get_atom_type(atom_id);
     }
 
@@ -200,14 +200,14 @@ namespace rascal {
      */
     template<size_t Order>
     inline size_t get_offset_impl(const std::array<size_t, Order>
-				  & counters) const {
+                                  & counters) const {
       return this->offsets[Order][counters.back()];
     }
 
     //! return the number of neighbours of a given atom
     template<size_t Order, size_t Layer>
     inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
-				   & cluster) const {
+                                   & cluster) const {
       static_assert(Order <= traits::MaxOrder-1,
                     "this implementation only handles atoms and pairs");
       return this->nb_neigh[Order][cluster.back()];

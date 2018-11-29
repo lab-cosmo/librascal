@@ -273,13 +273,13 @@ namespace rascal {
 
     //! returns the atom type (convention is atomic number, but nothing is
     //! imposed apart from being an integer
-    inline int & atom_type(const int & atom_index) {
+    inline const int & atom_type(const int & atom_index) const {
       return this->implementation().get_atom_type(atom_index);
     }
 
     //! returns the atom type (convention is atomic number, but nothing is
     //! imposed apart from being an integer
-    inline const int & atom_type(const int & atom_index) const {
+    inline int & atom_type(const int & atom_index) {
       return this->implementation().get_atom_type(atom_index);
     }
 

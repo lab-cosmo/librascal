@@ -536,19 +536,6 @@ namespace rascal {
                            this->ghost_positions.size() / traits::Dim);
     }
 
-    // //! ghost types are only available for MaxOrder=2
-    // inline int & get_ghost_type(const size_t & atom_index) {
-    //   auto p = this->get_ghost_types();
-    //   return this->ghost_min p(atom_index);
-    // }
-
-    // //! provides access to the atomic types of ghost atoms
-    // inline AtomTypes_ref get_ghost_types() {
-    //   AtomTypes_ref val(this->ghost_types.data(), 1, this->ghost_types.size());
-    //   return val;
-    // }
-
-
     //! Returns position of the given atom object (useful for users)
     inline Vector_ref get_position(const AtomRef_t & atom) {
       return this->manager.get_position(atom.get_index());
@@ -585,7 +572,7 @@ namespace rascal {
     }
 
     //! Returns atom type given an atom index, also works for ghost atoms
-    inline int & get_atom_type(const size_t & atom_index) {
+    inline int & get_atom_type(const int & atom_index) {
       return this->atom_types[atom_index];
     }
 
@@ -889,7 +876,7 @@ namespace rascal {
     // of current atoms to start the full list of current i-atoms and ghosts
     // This is done before the ghost atom generation, to have them all
     // contiguously at the beginning of the list.
-    for (auto atom : this->get_manager()) {
+    for (auto atom : this->manager) {
       auto atom_index = atom.get_atom_index();
       auto atom_type = atom.get_atom_type();
       this->atom_indices.push_back(atom_index);
