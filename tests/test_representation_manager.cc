@@ -166,5 +166,20 @@ namespace rascal {
     }
   }
 
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(
+      multiple_compute_test, Fix, multiple_fixtures, Fix) {
+
+    auto& managers = Fix::managers_strict;
+    auto& representations = Fix::representations;
+    auto& hypers = Fix::hypers;
+
+    for (auto& manager : managers) {
+      for (auto& hyper : hypers) {
+        representations.emplace_back(manager, hyper);
+        representations.back().compute();
+      }
+    }
+  }
+
   BOOST_AUTO_TEST_SUITE_END();
 } // RASCAL

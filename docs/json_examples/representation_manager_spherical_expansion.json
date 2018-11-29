@@ -5,5 +5,6 @@
   "max_radial": 10,
   "max_angular": 8,
   "gaussian_sigma_type": "Constant",
-  "gaussian_sigma": 0.5
+  "gaussian_sigma": 0.5,
+  "radial_basis_type": "Gaussian"
 }
