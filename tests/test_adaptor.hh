@@ -41,7 +41,7 @@ namespace rascal {
    * configuration based on 9 atoms.
    */
   template<class ManagerImplementation>
-  struct PairFixtureSimple : public ManagerFixtureFile<ManagerImplementation>
+  struct PairFixtureSimple
   {
     using Manager_t = ManagerImplementation;
 
@@ -51,15 +51,15 @@ namespace rascal {
 
     using PairManager_t = AdaptorNeighbourList<ManagerImplementation>;
 
-    PairFixtureSimple()
-      : ManagerFixtureFile<ManagerImplementation> {},
-      pair_manager{this->manager, 1.}
+    PairFixtureSimple():
+      pair_manager{fixture.manager, 1.}
     {
       this->pair_manager.update();
     }
 
-    ~PairFixtureSimple() {}
+    ~PairFixtureSimple() = default;
 
+    ManagerFixtureFile<ManagerImplementation> fixture{};
     PairManager_t pair_manager;
   };
 

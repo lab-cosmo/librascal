@@ -94,6 +94,17 @@ namespace rascal {
                        const Eigen::Ref<const Eigen::MatrixXd> cell,
                        const PBCInput_t & pbc) {
 
+      // check data consistency
+      auto npos{positions.cols()};
+      auto ntypes{atom_types.rows()};
+      if (npos != ntypes) {
+        std::stringstream err_str{};
+        err_str << "Number of atom positions and atom types is not the same: '"
+                << npos
+                << "' != '" << ntypes << "'." ;
+        throw std::runtime_error (err_str.str());
+      }
+
       this->cell = cell;
       this->atom_types = atom_types;
       this->pbc = pbc;
@@ -141,6 +152,17 @@ namespace rascal {
         for (auto coord : pos) {
           pos_data.push_back(coord);
         }
+      }
+
+      // check data consistency
+      auto npos{positions.size()/Dim};
+      auto ntypes{atom_types.size()};
+      if (npos != ntypes) {
+        std::stringstream err_str{};
+        err_str << "Number of atom positions and atom types is not the same: '"
+                << npos
+                << "' != '" << ntypes << "'." ;
+        throw std::runtime_error (err_str.str());
       }
       // associate them to internal data structure
       this->cell = Cell_ref(cell_data.data());

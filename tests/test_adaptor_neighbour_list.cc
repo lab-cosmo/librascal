@@ -84,7 +84,7 @@ namespace rascal {
     constexpr bool verbose{false};
 
     //! testing iteration of zerot-th order manager
-    for (auto atom : manager) {
+    for (auto atom : fixture.manager) {
       if (verbose) {
         std::cout << "atom " << atom.back() << std::endl;
       }

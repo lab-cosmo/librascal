@@ -242,7 +242,7 @@ namespace rascal {
 
       manager_1.update(positions_1, atom_types_1, cell_1, PBC_t{pbc.data()});
 
-      manager_2.update(positions_2, atom_types_1, cell_2, PBC_t{pbc.data()});
+      manager_2.update(positions_2, atom_types_2, cell_2, PBC_t{pbc.data()});
     }
 
     ~ManagerFixtureTwoFcc() {}
