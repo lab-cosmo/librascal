@@ -53,6 +53,13 @@ namespace rascal {
       }
     };
 
+    struct ordering_descending {
+      bool operator() (std::pair<size_t, distiter> const& a,
+                              std::pair<size_t, distiter> const& b) {
+          return *(a.second) > *(b.second);
+      }
+    };
+
     /** Use the ordering from a sorted container to sort another one
      *
      * @params in Container to sort
@@ -141,7 +148,6 @@ namespace rascal {
 
       std::sort(order_coulomb.begin(), order_coulomb.end(),
                                               internal::ordering());
-
       return order_coulomb;
     }
   };
@@ -149,16 +155,17 @@ namespace rascal {
   template<>
   struct SortCoulomMatrix<Option::CMSortRowNorm> {
     static decltype(auto) get_coulom_matrix_sorting_order(
-                    const Eigen::Ref< const Eigen::MatrixXd>& distance_mat) {
+                    const Eigen::Ref< const Eigen::MatrixXd>& coulomb_mat) {
       using distiter = typename std::vector<double>::const_iterator;
       // initialize the distances to be sorted. the center is always first
-      std::vector<double> distances_to_sort{0};
-      distances_to_sort.reserve(distance_mat.cols());
+      std::vector<double> distances_to_sort{};
+      distances_to_sort.reserve(coulomb_mat.cols());
 
-      for (auto ii{1}; ii < distance_mat.cols(); ++ii) {
-        distances_to_sort.push_back(distance_mat(ii, 0));
+      auto row_norms = coulomb_mat.colwise().squaredNorm().eval();
+      row_norms(0) = 1e200;
+      for (auto ii{0}; ii < coulomb_mat.cols(); ++ii) {
+        distances_to_sort.push_back(row_norms(ii));
       }
-
       // find the sorting order
       std::vector<std::pair<size_t, distiter> >
                             order_coulomb(distances_to_sort.size());
@@ -168,8 +175,7 @@ namespace rascal {
           {order_coulomb[nn] = make_pair(nn, it);}
 
       std::sort(order_coulomb.begin(), order_coulomb.end(),
-                                              internal::ordering());
-
+                                              internal::ordering_descending());
       return order_coulomb;
     }
   };
@@ -391,13 +397,24 @@ namespace rascal {
       coulomb_mat = type_factor_mat.array() / distance_mat.array();
 
       using Sorter = SortCoulomMatrix<SortAlgo>;
-      auto sort_order = Sorter::get_coulom_matrix_sorting_order(distance_mat);
-
-      // inject the coulomb matrix into the sorted linear storage
-      this->sort_and_linearize_coulomb_matrix(coulomb_mat,
+      switch (SortAlgo) {
+        case Option::CMSortDistance: {
+          auto sort_order{
+                Sorter::get_coulom_matrix_sorting_order(distance_mat)};
+          // inject the coulomb matrix into the sorted linear storage
+          this->sort_and_linearize_coulomb_matrix(coulomb_mat,
                 lin_sorted_coulomb_mat, sort_order);
-      // internal::sort_coulomb_matrix(coulomb_mat,lin_sorted_coulomb_mat,
-      //                               distances_to_sort);
+          break;
+        }
+        case Option::CMSortRowNorm: {
+          auto sort_order{
+                Sorter::get_coulom_matrix_sorting_order(coulomb_mat)};
+          // inject the coulomb matrix into the sorted linear storage
+          this->sort_and_linearize_coulomb_matrix(coulomb_mat,
+                lin_sorted_coulomb_mat, sort_order);
+          break;
+        }
+      }
 
       this->coulomb_matrices.push_back(lin_sorted_coulomb_mat);
     }
@@ -420,8 +437,8 @@ namespace rascal {
       double dik{this->structure_manager.get_distance(neigh_i)};
       // distances_to_sort.push_back(dik);
       type_factor_mat(ii, 0) = Zk*Zi;
-      type_factor_mat(0, ii) = type_factor_mat(ii, 0);
       distance_mat(ii, 0) = dik;
+      type_factor_mat(0, ii) = type_factor_mat(ii, 0);
       distance_mat(0, ii) = distance_mat(ii, 0);
     }
 
@@ -436,9 +453,9 @@ namespace rascal {
         if (ii >= jj) continue;
         int Zj{neigh_j.get_atom_type()};
         double dij{(neigh_i.get_position()-neigh_j.get_position()).norm()};
-        type_factor_mat(ii, jj) = Zj*Zi;
-        type_factor_mat(jj, ii) = type_factor_mat(ii, 0);
+        type_factor_mat(jj, ii) = Zj*Zi;
         distance_mat(jj, ii) = dij;
+        type_factor_mat(ii, jj) = type_factor_mat(jj, ii);
         distance_mat(ii, jj) = distance_mat(jj, ii);
       }
     }
