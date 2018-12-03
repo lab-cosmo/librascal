@@ -9,12 +9,12 @@
  *
  * Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
- * rascal is free software; you can redistribute it and/or
+ * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
- * rascal is distributed in the hope that it will be useful, but
+ * Rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
@@ -58,9 +58,6 @@ namespace rascal {
     enum class NeighbourListType {full, half};
     //! strictness of a neighbourlist with respect to a given cutoff
     enum class Strict:bool {yes = true, no = false}; //
-
-    // TODO: needed?
-    class Type; // type_id
   }  // AdaptorTraits
   /* ---------------------------------------------------------------------- */
 
@@ -258,7 +255,7 @@ namespace rascal {
     inline size_t size() const {return this->implementation().get_size();}
 
     //! number of atoms, pairs, triplets in respective manager
-    inline size_t nb_clusters(size_t cluster_size) const override final{
+    inline size_t nb_clusters(size_t cluster_size) const final {
       return this->implementation().get_nb_clusters(cluster_size);
     }
 
