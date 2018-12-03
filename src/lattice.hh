@@ -11,17 +11,17 @@
  * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
  * rascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
+ * modify it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
  * rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -43,10 +43,9 @@ namespace rascal {
    */
   template<size_t Dim>
   class Lattice {
-  public:
-
-    // TODO: implement the specialization for the 2D case
-    static_assert(Dim == 3,"2D lattice is not implemented yet");
+   public:
+    // TODO(felix): implement the specialization for the 2D case
+    static_assert(Dim == 3, "2D lattice is not implemented yet");
     using Cell_t = typename AtomicStructure<Dim>::Cell_t;
     using AtomTypes_t = typename AtomicStructure<Dim>::AtomTypes_t;
     using PBC_t = typename AtomicStructure<Dim>::PBC_t;
@@ -57,9 +56,9 @@ namespace rascal {
     Lattice() = default;
 
     //! Initializes the cell via set_cell function
-    Lattice(const Cell_t & cell) {
+    explicit Lattice(const Cell_t& cell) {
       this->set_cell(cell);
-    };
+    }
 
     //! Copy constructor
     Lattice(const Lattice & other) = delete;
@@ -146,7 +145,7 @@ namespace rascal {
       double V{this->cell_lengths[0] * this->cell_lengths[1] *
           this->cell_lengths[2] *
           std::sqrt(1 - c_abg[0] * c_abg[0] - c_abg[1] * c_abg[1] -
-                    c_abg[2]*c_abg[2] + 2 * c_abg[0] * c_abg[1] * c_abg[2] )};
+                    c_abg[2]*c_abg[2] + 2 * c_abg[0] * c_abg[1] * c_abg[2])};
 
       double Vinv{1. / V};
       this->reciprocal_vectors *= Vinv;
@@ -163,15 +162,15 @@ namespace rascal {
                          this->cell_vectors.col(1), recip3);
 
       for (int ii{0}; ii < 3; ++ii) {
-        this->reciprocal_vectors(ii,0) *= recip1[ii];
-        this->reciprocal_vectors(ii,1) *= recip2[ii];
-        this->reciprocal_vectors(ii,2) *= recip3[ii];
+        this->reciprocal_vectors(ii, 0) *= recip1[ii];
+        this->reciprocal_vectors(ii, 1) *= recip2[ii];
+        this->reciprocal_vectors(ii, 2) *= recip3[ii];
       }
 
       this->reciprocal_lengths = this->reciprocal_vectors.colwise().norm();
     }
     /* ---------------------------------------------------------------------- */
-    template <typename DerivedA,typename DerivedB>
+    template <typename DerivedA, typename DerivedB>
     inline void crossproduct(const Eigen::MatrixBase<DerivedA> & v1,
                              const Eigen::MatrixBase<DerivedB> & v2,
                              Vec_t & v3) {
@@ -235,14 +234,15 @@ namespace rascal {
     /** Calculates the absolute cartesian coordinates (position)
      * from the fractional/scaled coordinates (position_sc)
      */
-    template <typename DerivedA,typename DerivedB>
+    template <typename DerivedA, typename DerivedB>
     inline void get_scaled2cartesian(const Eigen::MatrixBase<DerivedA> &
                                      position_sc,
                                      Eigen::MatrixBase<DerivedB>& position) {
       position = this->scaled2cartesian.transpose() * position_sc;
     }
 
-  protected:
+
+   protected:
     //! lattice vectors
     Cell_t cell_vectors = Cell_t::Ones();
     //! Reciprocal lattice
@@ -259,13 +259,7 @@ namespace rascal {
     //! coordinate system
     Cell_t cartesian2scaled = Cell_t::Zero();
     double pi{EIGEN_PI};
-
-    // TODO: put this in template parameter
-    //constexpr static int Dim{3};
   };
-
-
-
-} // rascal
+}  // namespace rascal
 
 #endif /* LATTICE_H */

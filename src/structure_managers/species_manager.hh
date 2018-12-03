@@ -15,17 +15,17 @@
  * Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
  * librascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
+ * modify it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
  * librascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -44,10 +44,9 @@
 
 namespace rascal {
 
-  template <class NeighManager, int MaxLayer, int Layer=0>
-  class SpeciesManager
-  {
-  public:
+  template <class NeighManager, int MaxLayer, int Layer = 0>
+  class SpeciesManager {
+   public:
     using Species_t = int;
     using Dummy_t = char;
     using SubManagerType =
@@ -58,7 +57,7 @@ namespace rascal {
     SpeciesManager() = delete;
 
     //! Construct from an existing StructureManager
-    SpeciesManager(NeighManager & manager);
+    explicit SpeciesManager(NeighManager & manager);
 
     //! Copy constructor
     SpeciesManager(const SpeciesManager & other) = delete;
@@ -83,11 +82,10 @@ namespace rascal {
     std::map<Species_t, std::enable_if_t<NotAtMaxLayer, SubManagerType>>
     & get_next_order();
 
-  protected:
+   protected:
     std::array<Species_t, Layer> fixed_species;
     std::map<Species_t, BasisFunManager>;
     std::map<Species_t, SubManagerType>;
-  private:
   };
 
 }  // rascal

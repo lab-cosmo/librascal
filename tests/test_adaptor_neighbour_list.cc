@@ -12,16 +12,16 @@
  * Copyright © 2018 Markus Stricker, Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
  * librascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
+ * modify it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
  * librascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with GNU Emacs; see the file COPYING. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
@@ -41,7 +41,6 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(simple_cubic_9_neighbour_list,
                           ManagerFixtureFile<StructureManagerCenters>) {
-
     constexpr bool verbose{false};
 
     AdaptorNeighbourList<StructureManagerCenters> SM2{manager, cutoff};
@@ -80,8 +79,7 @@ namespace rascal {
    * for internal consistency
    */
   BOOST_FIXTURE_TEST_CASE(test_build_neighbour_list_from_atoms,
-                          ManagerFixtureSimple<StructureManagerCenters>){
-
+                          ManagerFixtureSimple<StructureManagerCenters>) {
     constexpr bool verbose{false};
 
     if (verbose) std::cout << "===> zeroth order manager " << std::endl;
@@ -121,7 +119,6 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(neighbourlist_test_hcp,
                           ManagerFixtureNeighbourCheckHcp
                           <StructureManagerCenters>) {
-
     /*
      * Note: since the cell vectors are different, it is possible that one of
      * the two atoms is repeated into a different cell due to periodicity. This
@@ -131,7 +128,7 @@ namespace rascal {
 
     constexpr bool verbose{false};
 
-    if(verbose) std::cout << "HCP test " << cutoff << std::endl;
+    if (verbose) std::cout << "HCP test " << cutoff << std::endl;
 
     int mult = 10;
 
@@ -218,7 +215,6 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(neighbourlist_test_fcc,
                           ManagerFixtureNeighbourCheckFcc
                           <StructureManagerCenters>) {
-
     constexpr bool verbose{false};
 
     if (verbose) std::cout << "FCC test " << std::endl;
@@ -299,7 +295,8 @@ namespace rascal {
     }
   }
 
-  // TODO: add test for different skewedness of an originally rectangular box
+  // TODO(markus): add test for different skewedness of
+  // an originally rectangular box
 
   BOOST_AUTO_TEST_SUITE_END();
 
