@@ -33,7 +33,6 @@
 #include <Eigen/Dense>
 #include <cmath>
 #include <limits>
-// #include <Eigen/Dense> fails -- WTF?!
 
 namespace rascal {
   namespace math {

@@ -25,12 +25,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-// Checklist (to get this working):
-// * Implement associated Legendre polynomials
-// * Orthogonalize the radial coefficients
-// * Implement the accumulator
-// * Write some basic tests
-
 #ifndef BASIS_REPRESENTATION_MANAGER_SPHERICAL_EXPANSION_H
 #define BASIS_REPRESENTATION_MANAGER_SPHERICAL_EXPANSION_H
 
