@@ -326,7 +326,7 @@ namespace rascal {
     offsets{}
 
   {
-    if (!internal::check_cutoff(manager, cut_off)) {
+    if (!internal::check_cutoff(manager, cutoff)) {
       throw std::runtime_error("underlying manager already has a smaller "
                                "cut off");
     }

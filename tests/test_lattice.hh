@@ -39,7 +39,6 @@ namespace rascal {
   using Vec3_t = Eigen::Matrix<double, Dim, 1>;
   using Cell_t = typename AtomicStructure<Dim>::Cell_t;
 
-<<<<<<< HEAD
   struct ManagerFixtureLattice {
     ManagerFixtureLattice() {
       Cell_t cell;

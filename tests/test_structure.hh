@@ -60,7 +60,7 @@ namespace rascal {
   struct ManagerFixture {
     ManagerFixture():
       pbc{{true, true, true}}, cell(3, 3), positions(22, 3),
-      numbers(22), cutoff{2.}
+      atom_types(22), cutoff{2.}
     {
       cell <<
         6.19, 2.41, 0.21,

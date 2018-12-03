@@ -34,7 +34,7 @@ namespace rascal {
   namespace math {
 
     double hyp2f1(const double & a, const double & b, const double & c,
-                  const double & x );
+                  const double & x ) {
       return cephes::hyp2f1(a, b, c, x);
     }
 
