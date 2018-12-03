@@ -157,7 +157,7 @@ namespace rascal {
 
     /* ---------------------------------------------------------------------- */
     //! return runtime info about the stored (e.g., numerical) type
-    const std::type_info & get_type_info() const override final {
+    const std::type_info & get_type_info() const final {
       return typeid(T);
     };
 

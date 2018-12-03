@@ -58,9 +58,6 @@ namespace rascal {
     enum class NeighbourListType {full, half};
     //! strictness of a neighbourlist with respect to a given cutoff
     enum class Strict:bool {yes = true, no = false}; //
-
-    // TODO: needed?
-    class Type; // type_id
   }  // AdaptorTraits
   /* ---------------------------------------------------------------------- */
 
@@ -258,7 +255,7 @@ namespace rascal {
     inline size_t size() const {return this->implementation().get_size();}
 
     //! number of atoms, pairs, triplets in respective manager
-    inline size_t nb_clusters(size_t cluster_size) const override final{
+    inline size_t nb_clusters(size_t cluster_size) const final {
       return this->implementation().get_nb_clusters(cluster_size);
     }
 

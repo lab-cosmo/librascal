@@ -232,12 +232,11 @@ namespace rascal {
             f_active(j) = 1;
             //! size of active cells will have to be recomputed
             voronoi_r2(j) = 0;
-          }
 #ifdef DO_TIMING
-          else {
+          } else {
             ++npoint_skip;
-          }
 #endif
+          }
         }
 
 #ifdef DO_TIMING
