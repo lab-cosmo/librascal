@@ -52,7 +52,7 @@ namespace rascal {
     using PairManager_t = AdaptorNeighbourList<ManagerImplementation>;
 
     PairFixtureSimple():
-      pair_manager{fixture.manager, 1.}
+      cutoff{1.}, pair_manager{fixture.manager, this->cutoff}
     {
       this->pair_manager.update();
     }
@@ -60,35 +60,55 @@ namespace rascal {
     ~PairFixtureSimple() = default;
 
     ManagerFixtureFile<ManagerImplementation> fixture{};
+    double cutoff;
     PairManager_t pair_manager;
   };
 
-
+  /* ---------------------------------------------------------------------- */
   /**
    * PairFixture based on StructureManagerCenters
    */
-  struct PairFixtureCenters : public ManagerFixture<StructureManagerCenters>
+  struct PairFixtureCenters
   {
     using Manager_t = StructureManagerCenters;
+    using PairManager_t = AdaptorNeighbourList<StructureManagerCenters>;
 
     static_assert(StructureManagerCenters::traits::MaxOrder == 1,
                   "Lower layer manager has to be a collection of atoms, i.e."
                   " MaxOrder=1");
 
-    using PairManager_t = AdaptorNeighbourList<StructureManagerCenters>;
-
     PairFixtureCenters()
-      : ManagerFixture<StructureManagerCenters> {},
-      cutoff{3.5}, pair_manager{this->manager, this->cutoff}
+      : cutoff{3.5}, pair_manager{this->fixture.manager, this->cutoff}
     {
       this->pair_manager.update();
     }
 
     ~PairFixtureCenters() {}
 
+    ManagerFixture<StructureManagerCenters> fixture{};
+
     double cutoff;
     PairManager_t pair_manager;
   };
+
+  /* ---------------------------------------------------------------------- */
+  template <class ManagerImplementation>
+  struct PairFixtureStrict
+  {
+    using AdaptorStrict_t = AdaptorStrict<ManagerImplementation>;
+
+    PairFixtureStrict():
+      adaptor_strict{this->fixture.pair_manager, this->fixture.cutoff}
+    {}
+
+    ~PairFixtureStrict() = default;
+
+    // TODO: different fixtures?, streamline fixtures to always work with
+    // ´manager´ as an iterator
+    PairFixture<ManagerImplementation> fixture{};
+    AdaptorStrict_t adaptor_strict;
+  };
+
 }  // rascal
 
 

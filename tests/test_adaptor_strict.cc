@@ -33,7 +33,18 @@
 
 namespace rascal {
 
+
+  using Fixtures = boost::mpl::list<
+    PairFixtureStrict<PairFixtureSimple<StructureManagerCenters>>,
+    PairFixtureStrict<PairFixtureCenters>
+    //PairFixtureStrict<ManagerFixture<StructureManagerLammps>>
+    >;
+
   BOOST_AUTO_TEST_SUITE(strict_adaptor_test);
+
+  /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_test, Fix, Fixtures, Fix) {
+  }
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -72,7 +83,7 @@ namespace rascal {
       BOOST_CHECK_EQUAL(index, atom_counter);
 
       auto type{atom.get_atom_type()};
-      BOOST_CHECK_EQUAL(type, this->atom_types[index]);
+      BOOST_CHECK_EQUAL(type, this->fixture.atom_types[index]);
       ++atom_counter;
 
       for (auto pair: atom) {

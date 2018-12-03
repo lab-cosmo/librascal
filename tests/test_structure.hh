@@ -345,7 +345,7 @@ namespace rascal {
    * ``pair_manager``
    */
   template<class ManagerImplementation>
-  struct PairFixtureFile : public ManagerFixtureFile<ManagerImplementation>
+  struct PairFixtureFile
   {
     using Manager_t = ManagerImplementation;
 
@@ -355,14 +355,14 @@ namespace rascal {
     using PairManager_t = AdaptorNeighbourList<ManagerImplementation>;
 
     PairFixtureFile()
-      : ManagerFixtureFile<ManagerImplementation> {},
-      pair_manager{this->manager, this->cutoff}
+      : pair_manager{this->fixture.manager, this->fixture.cutoff}
     {
       this->pair_manager.update();
     }
 
     ~PairFixtureFile() {}
 
+    ManagerFixtureFile<ManagerImplementation> fixture{};
     AdaptorNeighbourList<ManagerImplementation> pair_manager;
   };
 
@@ -373,7 +373,7 @@ namespace rascal {
    * ``pair_manager``.
    */
   template<class ManagerImplementation>
-  struct PairFixture : public ManagerFixture<ManagerImplementation> {
+  struct PairFixture {
     using Manager_t = ManagerImplementation;
 
     static_assert(ManagerImplementation::traits::MaxOrder == 1,
@@ -382,14 +382,14 @@ namespace rascal {
     using PairManager_t = AdaptorNeighbourList<ManagerImplementation>;
 
     PairFixture()
-      : ManagerFixture<ManagerImplementation> {},
-      pair_manager{this->manager, 3.}
+      : pair_manager{this->fixture.manager, 3.}
     {
       this->pair_manager.update();
     }
 
     ~PairFixture() {}
 
+    ManagerFixture<ManagerImplementation> fixture{};
     AdaptorNeighbourList<ManagerImplementation> pair_manager;
   };
 
