@@ -10,17 +10,17 @@
  * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
  * rascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
+ * modify it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
  * rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -34,24 +34,23 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   // checking the constructor
   BOOST_FIXTURE_TEST_CASE(manager_centers_constructor_test,
-                          ManagerFixture<StructureManagerCenters>){}
+                          ManagerFixture<StructureManagerCenters>) {}
 
   /* ---------------------------------------------------------------------- */
   // checking iteration
   BOOST_FIXTURE_TEST_CASE(iterator_test,
                           ManagerFixture<StructureManagerCenters>) {
-
     BOOST_CHECK_EQUAL(manager.get_size(), numbers.size());
     BOOST_CHECK_EQUAL(manager.get_nb_clusters(1), numbers.size());
 
     int atom_counter{};
     constexpr bool verbose{false};
 
-    for (auto atom_cluster: manager) {
+    for (auto atom_cluster : manager) {
       BOOST_CHECK_EQUAL(atom_counter, atom_cluster.get_index());
       ++atom_counter;
-      for (int ii{3};ii<3;++ii){
-        BOOST_CHECK_EQUAL(positions(ii,atom_cluster.get_index()),
+      for (int ii{3}; ii < 3; ++ii) {
+        BOOST_CHECK_EQUAL(positions(ii, atom_cluster.get_index()),
                           atom_cluster.get_position()[ii]);
       }
       if (verbose) std::cout << "atom (" << atom_cluster.back()
@@ -69,7 +68,6 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(simple_cubic_9_neighbour_list,
                           ManagerFixtureFile<StructureManagerCenters>) {
-
     constexpr bool verbose{false};
     if (verbose) std::cout << "StructureManagerCenters interface" << std::endl;
 
@@ -94,7 +92,6 @@ namespace rascal {
   // checking update
   BOOST_FIXTURE_TEST_CASE(manager_update_test,
                           ManagerFixture<StructureManagerCenters>) {
-
     auto natoms = manager.size();
     auto natoms2 = manager.get_size();
     auto natoms3 = manager.get_nb_clusters(1);

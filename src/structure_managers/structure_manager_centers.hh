@@ -12,17 +12,17 @@
  * Copyright © 2018 Felix Musil, Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
  *
  * rascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
+ * modify it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
  * rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -79,11 +79,10 @@ namespace rascal {
    */
   class StructureManagerCenters:
     // public inheritance the base class
-    public StructureManager<StructureManagerCenters>
-  {
+    public StructureManager<StructureManagerCenters> {
      // Publicly accessible variables and function of the class are given
      // here. These provide the interface to access the neighbourhood.
-  public:
+   public:
     // for convenience, the names are shortened
     using traits = StructureManager_traits<StructureManagerCenters>;
     using Parent = StructureManager<StructureManagerCenters>;
@@ -137,7 +136,7 @@ namespace rascal {
     //! Default constructor, values are set during .update() function
     StructureManagerCenters()
       : atoms_object{}, atoms_index{}, lattice{}, offsets{}, natoms{}
-    {};
+    {}
 
     //! Copy constructor
     StructureManagerCenters(const StructureManagerCenters & other) = delete;
@@ -173,7 +172,7 @@ namespace rascal {
      */
     void update(const std::string filename);
 
-    // TODO: build/update ambiguity
+    // TODO(felix): build/update ambiguity
     //! makes atom index lists and offsets
     void build();
 
@@ -260,7 +259,7 @@ namespace rascal {
     //! Dummy function, since neighbours are not present at this Order
     template<size_t Order, size_t Layer>
     inline int get_cluster_neighbour(const ClusterRefKey<Order, Layer>
-                                     & /*cluster*/, size_t ) const {
+                                     & /*cluster*/, size_t) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms.");
       return 0;
@@ -284,9 +283,9 @@ namespace rascal {
      */
     void read_structure_from_json(const std::string filename);
 
-    // TODO: add function to read from XYZ files
+    // TODO(markus): add function to read from XYZ files
 
-  protected:
+   protected:
     /**
      * Object which can interface to the json header to read and write atom
      * related data in the ASE format: positions, cell, periodicity, atom types
@@ -314,8 +313,6 @@ namespace rascal {
 
     //! Total number of atoms in structure
     size_t natoms{};
-
-  private:
   };
 
   /* ---------------------------------------------------------------------- */
@@ -323,7 +320,7 @@ namespace rascal {
   template<size_t Order>
   inline size_t StructureManagerCenters::
   get_offset_impl(const std::array<size_t, Order> & /*counters*/) const {
-    static_assert (Order == 1,
+    static_assert(Order == 1,
                    "this manager only handles atoms.");
     return 0;
   }

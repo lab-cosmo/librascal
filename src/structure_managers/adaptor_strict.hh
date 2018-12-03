@@ -12,21 +12,20 @@
  * Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
  * librascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
+ * modify it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
  * librascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
-
 
 #ifndef ADAPTOR_STRICT_H
 #define ADAPTOR_STRICT_H
@@ -47,14 +46,13 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   struct StructureManager_traits<AdaptorStrict<ManagerImplementation>> {
-
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::yes};
     constexpr static bool HasDistances{true};
     constexpr static bool HasDirectionVectors{
       ManagerImplementation::traits::HasDirectionVectors};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
-    // TODO: Future optimisation: do not increase depth for atoms
+    // TODO(felix): Future optimisation: do not increase depth for atoms
     // (they are all kept anyways, so no duplication necessary).
     using LayerByOrder = typename
       LayerIncreaser<MaxOrder,
@@ -75,9 +73,8 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   class AdaptorStrict: public
-  StructureManager<AdaptorStrict<ManagerImplementation>>
-  {
-  public:
+  StructureManager<AdaptorStrict<ManagerImplementation>> {
+   public:
     using Parent =
       StructureManager<AdaptorStrict<ManagerImplementation>>;
     using traits = StructureManager_traits<AdaptorStrict>;
@@ -201,7 +198,7 @@ namespace rascal {
      */
     template<size_t Order>
     inline size_t get_offset_impl(const std::array<size_t, Order>
-				  & counters) const {
+          & counters) const {
       return this->offsets[Order][counters.back()];
     }
 
@@ -216,7 +213,7 @@ namespace rascal {
       return this->nb_neigh[Order][cluster.get_cluster_index(nb_neigh_layer)];
     }
 
-  protected:
+   protected:
     /**
      * main function during construction of a neighbourlist.
      * @param atom the atom to add to the list
@@ -274,7 +271,6 @@ namespace rascal {
      * store the offsets from where the nb_neigh can be counted
      */
     std::array<std::vector<size_t>, traits::MaxOrder>  offsets;
-  private:
   };
 
   namespace internal {
@@ -319,7 +315,7 @@ namespace rascal {
     offsets{}
 
   {
-    if (not internal::check_cut_off(manager, cut_off)) {
+    if (!internal::check_cut_off(manager, cut_off)) {
       throw std::runtime_error("underlying manager already has a smaller "
                                "cut off");
     }
@@ -351,7 +347,7 @@ namespace rascal {
         std::get<Order>(manager.cluster_indices_container)};
       size_t cluster_counter{0};
 
-      for (auto next_cluster: cluster) {
+      for (auto next_cluster : cluster) {
         // add atom
         manager.add_atom(next_cluster);
 
@@ -361,9 +357,7 @@ namespace rascal {
             (typename traits::LayerByOrder{})
             };
 
-
-        // TODO: check for distance missing
-        // TODO: wrong assert?
+        // TODO(felix): check for distance missing
         static_assert(NextClusterLayer == (NextClusterLayer + 1),
                       "Layer not correct");
         Eigen::Matrix<size_t, NextClusterLayer+1, 1> indices_cluster;
@@ -397,7 +391,6 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
   void AdaptorStrict<ManagerImplementation>::update() {
-
     //! Reset cluster_indices for adaptor to fill with push back.
     internal::for_each(this->cluster_indices_container,
                        internal::ResizePropertyToZero());
@@ -409,7 +402,7 @@ namespace rascal {
       this->offsets[i].clear();
     }
     this->nb_neigh[0].push_back(0);
-    for (auto & vector: this->offsets) {
+    for (auto & vector : this->offsets) {
       vector.push_back(0);
     }
 
@@ -421,7 +414,7 @@ namespace rascal {
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
     size_t pair_counter{0};
-    for (auto atom: this->manager) {
+    for (auto atom : this->manager) {
       this->add_atom(atom);
       /**
        * Add new layer for atoms (see LayerByOrder for
@@ -441,9 +434,7 @@ namespace rascal {
       indices(AtomLayer) = indices(AtomLayer-1);
       atom_cluster_indices.push_back(indices);
 
-      // auto icenter{atom.get_index()};
-
-      for (auto pair: atom) {
+      for (auto pair : atom) {
         constexpr auto PairLayer{
           compute_cluster_layer<pair.order()>
             (typename traits::LayerByOrder{})

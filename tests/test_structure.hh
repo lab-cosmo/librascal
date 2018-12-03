@@ -12,17 +12,17 @@
  * Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
  * rascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
+ * modify it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
  * rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -53,10 +53,9 @@ namespace rascal {
   // complicated
   // TODO: change this to a usage case of the ManagerFixture
   template<class ManagerImplementation>
-  struct ManagerFixture
-  {
+  struct ManagerFixture {
     ManagerFixture():
-      pbc{{true,true,true}}, cell(3, 3), positions(22, 3), 
+      pbc{{true, true, true}}, cell(3, 3), positions(22, 3),
       numbers(22), cutoff{2.}
     {
       cell <<
@@ -89,11 +88,11 @@ namespace rascal {
       positions.transposeInPlace();
       numbers << 20, 20, 24, 24, 15, 15, 15, 15,  8,  8,  8,
         8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8;
-      
-      manager.update(positions, numbers, cell, 
+
+      manager.update(positions, numbers, cell,
               Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
     }
-    
+
     ~ManagerFixture() { }
 
     ManagerImplementation manager{};
@@ -111,8 +110,7 @@ namespace rascal {
    * cell, no periodicity
    */
   template<class ManagerImplementation>
-  struct ManagerFixtureFile
-  {
+  struct ManagerFixtureFile {
     ManagerFixtureFile():
       cutoff{1.}, filename{"simple_cubic_9.json"}
     {
@@ -146,10 +144,9 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template<class ManagerImplementation>
-  struct ManagerFixtureSimple
-  {
+  struct ManagerFixtureSimple {
     ManagerFixtureSimple():
-      pbc{{true,true,true}}, cutoff{1.}, center_ids(natoms),
+      pbc{{true, true, true}}, cutoff{1.}, center_ids(natoms),
       cell(dim, dim), positions(dim, natoms), atom_types(natoms)
     {}
 
@@ -168,10 +165,9 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template<class ManagerImplementation>
-  struct ManagerFixtureNeighbourCheckHcp
-  {
+  struct ManagerFixtureNeighbourCheckHcp {
     ManagerFixtureNeighbourCheckHcp():
-      pbc{{true,true,true}}, cutoff{1.}, center_ids(natoms),
+      pbc{{true, true, true}}, cutoff{1.}, center_ids(natoms),
       cell_1(dim, dim), cell_2(dim, dim),
       positions_1(dim, natoms), positions_2(dim, natoms), atom_types(natoms)
     {}
@@ -194,10 +190,9 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template<class ManagerImplementation>
-  struct ManagerFixtureNeighbourCheckFcc
-  {
+  struct ManagerFixtureNeighbourCheckFcc {
     ManagerFixtureNeighbourCheckFcc():
-      pbc{{true,true,true}}, cutoff{1.},
+      pbc{{true, true, true}}, cutoff{1.},
       center_ids_1(natoms_1), center_ids_2(natoms_2),
       cell_1(dim, dim), cell_2(dim, dim),
       positions_1(dim, natoms_1), positions_2(dim, natoms_1),
@@ -225,8 +220,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template <>
-  struct ManagerFixture<StructureManagerLammps>
-  {
+  struct ManagerFixture<StructureManagerLammps> {
     using Manager_t = StructureManagerLammps;
     constexpr static int nb{3};
     constexpr static int dim{3};
@@ -290,7 +284,6 @@ namespace rascal {
     double  eatom[3]{2, 1, 1};
     double ** vatom;
     Manager_t manager;
-
   };
 
   /* ---------------------------------------------------------------------- */
@@ -351,8 +344,7 @@ namespace rascal {
    * (building the neighbourlist) works properly
    */
   template<>
-  struct ManagerFixtureNeighbourCheckHcp<StructureManagerCenters>
-  {
+  struct ManagerFixtureNeighbourCheckHcp<StructureManagerCenters> {
     using Manager_t = StructureManagerCenters;
 
     ManagerFixtureNeighbourCheckHcp():
@@ -418,7 +410,6 @@ namespace rascal {
     double cutoff;
 
     const int natoms{2};
-
   };
 
   /* ---------------------------------------------------------------------- */
@@ -427,8 +418,7 @@ namespace rascal {
    * (building the neighbourlist) works properly
    */
   template<>
-  struct ManagerFixtureNeighbourCheckFcc<StructureManagerCenters>
-  {
+  struct ManagerFixtureNeighbourCheckFcc<StructureManagerCenters> {
     using Manager_t = StructureManagerCenters;
 
     ManagerFixtureNeighbourCheckFcc():
@@ -455,7 +445,7 @@ namespace rascal {
       cell_2 <<
         a,   0., 0.,
         0.,  a,  0.,
-        0.,  0., a ;
+        0.,  0., a;
 
       positions_1 <<
         0.,
@@ -496,7 +486,6 @@ namespace rascal {
 
     const int natoms_1{1};
     const int natoms_2{4};
-
   };
 
   /* ---------------------------------------------------------------------- */
@@ -507,11 +496,8 @@ namespace rascal {
    *
    */
   template<>
-  struct ManagerFixtureSimple<StructureManagerCenters>
-  {
-
+  struct ManagerFixtureSimple<StructureManagerCenters> {
     using Manager_t = StructureManagerCenters;
-
     ManagerFixtureSimple():
       pbc{{true, false, false}}, cell(3, 3), positions(3, 8), numbers(8),
       cutoff{2.1}
