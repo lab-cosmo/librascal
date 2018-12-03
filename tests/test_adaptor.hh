@@ -71,7 +71,7 @@ namespace rascal {
   struct PairFixtureCenters
   {
     using Manager_t = StructureManagerCenters;
-    using PairManager_t = AdaptorNeighbourList<StructureManagerCenters>;
+    using PairManager_t = AdaptorNeighbourList<Manager_t>;
 
     static_assert(StructureManagerCenters::traits::MaxOrder == 1,
                   "Lower layer manager has to be a collection of atoms, i.e."
@@ -104,7 +104,7 @@ namespace rascal {
     ~PairFixtureStrict() = default;
 
     // TODO: different fixtures?, streamline fixtures to always work with
-    // ´manager´ as an iterator
+    // ´manager´ as an iterator?
     PairFixture<ManagerImplementation> fixture{};
     AdaptorStrict_t adaptor_strict;
   };

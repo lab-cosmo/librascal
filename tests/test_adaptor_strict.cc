@@ -43,8 +43,8 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(strict_adaptor_test);
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_test, Fix, Fixtures, Fix) {
-  }
+  // BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_test, Fix, Fixtures, Fix) {
+  // }
 
   /* ---------------------------------------------------------------------- */
   /**
