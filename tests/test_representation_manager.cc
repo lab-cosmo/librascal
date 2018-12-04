@@ -105,7 +105,7 @@ namespace rascal {
   }
   /* ---------------------------------------------------------------------- */
 
-  
+
   // TODO define more test that could be streamlined
   // gets a list of fixtures for all the different possible structure managers
   using multiple_fixtures = boost::mpl::list<
@@ -167,6 +167,27 @@ namespace rascal {
   }
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(
+      multiple_precompute_test, Fix, multiple_fixtures, Fix) {
+    auto& managers = Fix::managers_strict;
+    auto& representations = Fix::representations;
+    const auto& hypers = Fix::hypers;
+
+    for (auto& manager : managers) {
+      for (const auto& hyper : hypers) {
+        representations.emplace_back(manager, hyper);
+        BOOST_TEST(representations.back().get_is_precomputed() == false);
+        representations.back().precompute();
+        BOOST_TEST(representations.back().get_is_precomputed() == true);
+        // And now test automatic precomputation
+        representations.emplace_back(manager, hyper);
+        BOOST_TEST(representations.back().get_is_precomputed() == false);
+        representations.back().compute();
+        BOOST_TEST(representations.back().get_is_precomputed() == true);
+      }
+    }
+  }
+
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(
       multiple_compute_test, Fix, multiple_fixtures, Fix) {
 
     auto& managers = Fix::managers_strict;
@@ -199,6 +220,11 @@ namespace rascal {
         // TODO(max-veit) make that its own test case
         //representations.back().precompute();
         representations.back().compute();
+        // Check dimensions of the storage array
+        size_t max_radial = hyper.at("max_radial");
+        size_t max_angular =  hyper.at("max_angular");
+        BOOST_TEST(representations.back().get_feature_size() ==
+          max_radial * (max_angular + 1) * (max_angular + 1));
         if (verbose) {
           size_t center_idx{0};
           for (auto center : manager) {

@@ -198,10 +198,10 @@ namespace rascal {
     template <size_t Order, size_t Layer>
     void print_soap_vector(
         const ClusterRefKey<Order, Layer>& center, std::ostream& stream) {
-      stream << "Soap vector size " << this->get_feature_size();
+      stream << "Soap vector size " << this->get_feature_size() << std::endl;
       for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
         stream << "n = " << radial_n << std::endl;
-        //stream << this->soap_vectors[center].row(radial_n) << std::endl;
+        stream << this->soap_vectors[center].row(radial_n) << std::endl;
       }
     }
 
@@ -365,6 +365,8 @@ namespace rascal {
     if (not this->is_precomputed) {
       this->precompute();
     }
+    this->soap_vectors.set_nb_row(this->n_species * this->max_radial);
+    this->soap_vectors.set_nb_col(pow(this->max_angular + 1, 2));
 
     for (auto center : this->structure_manager) {
       Eigen::MatrixXd soap_vector = Eigen::MatrixXd::Zero(
