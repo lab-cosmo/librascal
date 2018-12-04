@@ -258,11 +258,13 @@ namespace rascal {
                         this->implementation().size(),
                         std::numeric_limits<size_t>::max());}
 
-    //! Usage of iterator including ghosts
-    inline ProxyOnlyGhosts ghosts() {return ProxyWithGhosts{*this};}
+    //! Usage of iterator including ghosts; in case no ghost atoms exist, it is
+    //! an iteration over all existing center atoms
+    inline ProxyOnlyGhosts with_ghosts() {return ProxyWithGhosts{*this};}
 
-    //! Usage of iterator for only ghosts
-    inline ProxyWithGhosts with_ghosts() {return ProxyOnlyGhosts{*this};}
+    //! Usage of iterator for only ghosts, in case no ghosts exist, the iterator
+    //! is empty
+    inline ProxyWithGhosts only_ghosts() {return ProxyOnlyGhosts{*this};}
 
     //! i.e. number of atoms
     inline size_t size() const {return this->implementation().get_size();}

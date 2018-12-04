@@ -203,13 +203,6 @@ namespace rascal {
       return val;
     }
 
-    // //! Returns an a map with all atom types.
-    // inline ConstAtomTypes_ref get_atom_types() const {
-    //   ConstAtomTypes_ref val(this->atoms_object.atom_types.data(),
-    //                          1, this->natoms);
-    //   return val;
-    // }
-
     //! Returns a map of size traits::Dim with 0/1 for periodicity
     inline PBC_ref get_periodic_boundary_conditions() {
       return Eigen::Map<PBC_t>(this->atoms_object.pbc.data());
@@ -238,6 +231,10 @@ namespace rascal {
 
     //! returns number of I atoms in the list
     inline size_t get_size() const {return this->natoms;}
+
+    //! returns number of I atoms in the list, since at this level, center atoms
+    //! and ghost atoms are not distinguishable.
+    inline size_t get_size_with_ghosts() const {return this->natoms;}
 
     //! returns the number of neighbours of a given i atom
     template<size_t Order, size_t Layer>
