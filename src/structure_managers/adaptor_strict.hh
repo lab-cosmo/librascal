@@ -205,7 +205,7 @@ namespace rascal {
     //! return the number of neighbours of a given atom
     template<size_t Order, size_t CallingLayer>
     inline size_t get_cluster_size(const ClusterRefKey<Order, CallingLayer>
-				   & cluster) const {
+           & cluster) const {
       static_assert(Order <= traits::MaxOrder-1,
                     "this implementation only handles atoms and pairs");
       constexpr auto nb_neigh_layer{

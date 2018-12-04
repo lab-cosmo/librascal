@@ -50,8 +50,7 @@ namespace rascal {
    */
   template <class ManagerImplementation, size_t MaxOrder_>
   struct StructureManager_traits<
-    AdaptorFilter<ManagerImplementation, MaxOrder_>> {
-
+      AdaptorFilter<ManagerImplementation, MaxOrder_>> {
     using parent_traits = StructureManager_traits<ManagerImplementation>;
     constexpr static AdaptorTraits::Strict Strict{parent_traits::Strict};
     constexpr static bool HasDistances{parent_traits::HasDistances};
@@ -75,8 +74,7 @@ namespace rascal {
      * the pair) has already been added. This structure checks this recursively.
      */
     template <size_t Order, class ManagerImplementation, size_t MaxOrder>
-    struct ClusterAdder
-    {
+    struct ClusterAdder {
       using Manager_t = AdaptorFilter<ManagerImplementation, MaxOrder>;
       using ClusterRef_t = typename Manager_t::
         template InputClusterRef_t<Order>;
@@ -95,8 +93,7 @@ namespace rascal {
      * Recursion end, where nothing has to be done
      */
     template <class ManagerImplementation, size_t MaxOrder>
-    struct ClusterAdder<1, ManagerImplementation, MaxOrder>
-    {
+    struct ClusterAdder<1, ManagerImplementation, MaxOrder> {
       static constexpr size_t Order{1};
       using Manager_t = AdaptorFilter<ManagerImplementation, MaxOrder>;
       using ClusterRef_t = typename Manager_t::
@@ -114,8 +111,7 @@ namespace rascal {
    */
   template <class ManagerImplementation, size_t MaxOrder>
   class AdaptorFilter: public
-  StructureManager<AdaptorFilter<ManagerImplementation, MaxOrder>>
-  {
+  StructureManager<AdaptorFilter<ManagerImplementation, MaxOrder>> {
   public:
     template <size_t Order_, class ManagerImplementation_, size_t MaxOrder_>
     friend struct internal::ClusterAdder;
@@ -236,7 +232,7 @@ namespace rascal {
     }
 
     //! Returns a constant atom type given an atom index
-    inline const int & get_atom_type( int& atom_id) const {
+    inline const int & get_atom_type(int& atom_id) const {
       auto && type{this->manager.get_atom_type(atom_id)};
       return type;
     }
@@ -272,7 +268,6 @@ namespace rascal {
     inline void add_cluster(const InputClusterRef_t<Order> & cluster);
 
   protected:
-
     /**
      * check whether a cluster has been added already (Only check the
      * last inserted cluster, relying on the underlying iteration
@@ -356,7 +351,6 @@ namespace rascal {
     auto & indices_container{
       std::get<Order-1>(this->cluster_indices_container)};
     indices_container.push_back(indices);
-
   }
 
   /* ---------------------------------------------------------------------- */
@@ -389,10 +383,9 @@ namespace rascal {
     }
 
     this->nb_neigh[0].push_back(0);
-    for (auto & vector: this->offsets) {
+    for (auto & vector : this->offsets) {
       vector.push_back(0);
     }
-
   }
 }  // rascal
 

@@ -52,14 +52,15 @@ namespace rascal {
       using Value_t = std::unique_ptr<
         AdaptorFilter<ManagerImplementation, Order>>;
       template <size_t Order, class ManagerImplementation>
-      using Map_t = std::map<Key_t<Order>, Value_t<Order, ManagerImplementation>>;
+      using Map_t = std::map<Key_t<Order>, Value_t<Order,
+                                                   ManagerImplementation>>;
     }
 
     template<class ManagerImplementation, size_t... OrdersMinusOne>
     auto get_filter_container_helper
       (std::index_sequence<OrdersMinusOne...> /*orders*/)
       -> decltype(auto) {
-      return std::tuple<Map_t<OrdersMinusOne+1, ManagerImplementation>...>{} ;
+      return std::tuple<Map_t<OrdersMinusOne+1, ManagerImplementation>...>{};
     }
 
     template <class ManagerImplementation, size_t MaxOrder>
@@ -99,8 +100,7 @@ namespace rascal {
    * ```
    */
   template <class ManagerImplementation, size_t MaxOrder>
-  class SpeciesManager
-  {
+  class SpeciesManager {
   public:
     using traits = StructureManager_traits<ManagerImplementation>;
     template <size_t Order>
@@ -144,7 +144,8 @@ namespace rascal {
     }
 
     template <size_t Order>
-    Filter_t<Order> & operator[](const std::array<int, Order> & species_indices){
+    Filter_t<Order> & operator[](const std::array<int, Order> &
+                                    species_indices) {
       auto & filter_map{std::get<Order-1>(this->filters)};
       auto location{filter_map.find(species_indices)};
 
@@ -164,11 +165,11 @@ namespace rascal {
     }
 
   protected:
-
     //! underlying structure manager to be filtered upon update()
     ManagerImplementation & structure_manager;
     //! storage by cluster order for the filtered managers
     internal::FilterContainer_t<ManagerImplementation, MaxOrder> filters;
+
   private:
   };
 
@@ -191,8 +192,7 @@ namespace rascal {
      */
     template<class ManagerImplementation, size_t MaxOrder,
              size_t Remaining = MaxOrder>
-    struct FilterSpeciesLoop
-    {
+    struct FilterSpeciesLoop {
       using SpeciesManager_t = SpeciesManager<ManagerImplementation, MaxOrder>;
       using NextFilterSpeciesLoop =
         FilterSpeciesLoop<ManagerImplementation, MaxOrder,
@@ -200,7 +200,7 @@ namespace rascal {
       template <class Cluster>
       static void loop(Cluster & cluster,
                        SpeciesManager_t & species_manager) {
-        for (auto && next_cluster: cluster) {
+        for (auto && next_cluster : cluster) {
           auto && species_indices{next_cluster.get_atom_types()};
           species_manager[species_indices].add_cluster(next_cluster);
           NextFilterSpeciesLoop::loop(next_cluster, species_manager);
@@ -212,8 +212,7 @@ namespace rascal {
      * Recursion tail of the helper loop which does nothing at all
      */
     template<class ManagerImplementation, size_t MaxOrder>
-    struct FilterSpeciesLoop<ManagerImplementation, MaxOrder, 0>
-    {
+    struct FilterSpeciesLoop<ManagerImplementation, MaxOrder, 0> {
       using SpeciesManager_t = SpeciesManager<ManagerImplementation, MaxOrder>;
       template <class Cluster>
       static void loop(Cluster & /*cluster*/,

@@ -678,7 +678,7 @@ namespace rascal {
     std::array<int, Order>
     species_aggregator_helper(const std::array<int, Order> & array,
                               const Manager & manager,
-                              std::index_sequence<Indices...> /*indices*/){
+                              std::index_sequence<Indices...> /*indices*/) {
       return std::array<int, Order>{
         manager.atom_type(array[Indices])...};
     }
@@ -697,11 +697,10 @@ namespace rascal {
   template <class ManagerImplementation>
   template <size_t Order>
   std::array<int, Order> StructureManager<ManagerImplementation>::
-  ClusterRef<Order>::get_atom_types() const
-   {
-     return internal::species_aggregator<StructureManager>(this->atom_indices,
-                                                           this->get_manager());
-   }
+      ClusterRef<Order>::get_atom_types() const {
+    return internal::species_aggregator<StructureManager>(this->atom_indices,
+                                                          this->get_manager());
+  }
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -792,7 +791,8 @@ namespace rascal {
       Ref_t cluster_indices =
         cluster_indices_properties[this->get_cluster_index()];
       const auto indices{this->get_atom_indices()};
-      return ClusterRef_t(const_cast<iterator&>(*this), indices, cluster_indices);
+      return ClusterRef_t(const_cast<iterator&>(*this),
+                          indices, cluster_indices);
     }
 
     //! equality
