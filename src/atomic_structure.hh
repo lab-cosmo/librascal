@@ -11,18 +11,18 @@
  *
  * Copyright © 2018  Felix Musil, Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
  *
- * rascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
+ * Rascal is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
- * rascal is distributed in the hope that it will be useful, but
+ * Rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -37,10 +37,13 @@
 
 #include <cmath>
 #include <stdexcept>
+#include <cmath>
 
 
-// TODO: CHECK for skewedness and add a function for rescaling the positions for
-// internal use
+
+
+// TODO(markus): CHECK for skewedness and add a function for rescaling the
+// positions for internal use
 namespace rascal {
 
   template <int Dim>
@@ -97,7 +100,6 @@ namespace rascal {
                        const AtomTypesInput_t &  atom_types,
                        const Eigen::Ref<const Eigen::MatrixXd> cell,
                        const PBCInput_t & pbc) {
-
       // check data consistency
       auto npos{positions.cols()};
       auto ntypes{atom_types.rows()};
@@ -105,8 +107,8 @@ namespace rascal {
         std::stringstream err_str{};
         err_str << "Number of atom positions and atom types is not the same: '"
                 << npos
-                << "' != '" << ntypes << "'." ;
-        throw std::runtime_error (err_str.str());
+                << "' != '" << ntypes << "'.";
+        throw std::runtime_error(err_str.str());
       }
 
       this->cell = cell;
@@ -117,7 +119,6 @@ namespace rascal {
 
     //! method for initializing structure from a json object; data is copied
     void set_structure(const json_io::AtomicJsonData & s) {
-
       // internal std::vector for reading from json, necessary for push_back, no
       // direct mapping possible
       std::vector<double> cell_data{};
@@ -165,8 +166,8 @@ namespace rascal {
         std::stringstream err_str{};
         err_str << "Number of atom positions and atom types is not the same: '"
                 << npos
-                << "' != '" << ntypes << "'." ;
-        throw std::runtime_error (err_str.str());
+                << "' != '" << ntypes << "'.";
+        throw std::runtime_error(err_str.str());
       }
       // associate them to internal data structure
       this->cell = Cell_ref(cell_data.data());

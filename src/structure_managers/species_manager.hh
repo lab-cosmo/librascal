@@ -12,18 +12,18 @@
  *
  * Copyright © 2018 Markus Stricker, Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
- * librascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
+ * Rascal is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
- * librascal is distributed in the hope that it will be useful, but
+ * Rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -64,8 +64,7 @@ namespace rascal {
    * ```
    */
   template <class ManagerImplementation>
-  class SpeciesManager
-  {
+  class SpeciesManager {
   public:
     using Manager_t = StructureManager<ManagerImplementation>;
     using traits = StructureManager_traits<SpeciesManager>;
@@ -84,7 +83,8 @@ namespace rascal {
     //! Default constructor
     SpeciesManager() = delete;
 
-    SpeciesManager(ManagerImplementation& manager, double cutoff);
+    //! Construct from an existing StructureManager
+    explicit SpeciesManager(NeighManager & manager);
 
     //! Copy constructor
     SpeciesManager(const SpeciesManager & other) = delete;
@@ -124,7 +124,7 @@ namespace rascal {
      */
     template<size_t Order>
     inline size_t get_offset_impl(const std::array<size_t, Order>
-				  & counters) const;
+                                  & counters) const;
 
     //! Returns the number of clusters of size cluster_size
     //?
@@ -170,18 +170,18 @@ namespace rascal {
      * the full structure/atoms object, i.e. simply the id of the index-th atom
      */
     inline int get_cluster_neighbour(const Parent& /*parent*/,
-				     size_t index) const {
+                                     size_t index) const {
       return this->manager.get_cluster_neighbour(this->manager, index);
     }
 
     //! Returns the id of the index-th neighbour atom of a given cluster
     template<size_t Order, size_t Layer>
     inline int get_cluster_neighbour(const ClusterRefKey<Order, Layer>
-				     & cluster,
-				     size_t index) const {
+                                     & cluster,
+                                     size_t index) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles up to traits::MaxOrder");
-	return this->manager.get_cluster_neighbour(cluster, index);
+      return this->manager.get_cluster_neighbour(cluster, index);
     }
 
     //! Returns atom type given an atom object AtomRef
@@ -208,25 +208,10 @@ namespace rascal {
       return this->manager.get_cluster_size(atom_index);
     }
 
-  protected:
-
-    ManagerImplementation & manager;
-
-    //! Stores atom indices of current Order
-    std::vector<size_t> atom_indices{}; //akin to ilist[]
-
-    //! Stores the number of neighbours for every traits::MaxOrder-1-*plets
-    std::vector<size_t> nb_neigh{};
-
-    //! Stores all neighbours of traits::MaxOrder-1-*plets
-    std::vector<size_t> neighbours{};
-
-    //! Stores the offsets of traits::MaxOrder-1-*plets for accessing
-    //! `neighbours`, from where nb_neigh can be counted
-    std::vector<size_t> offsets{};
-
-    size_t cluster_counter{0};
-  private:
+   protected:
+    std::array<Species_t, Layer> fixed_species;
+    std::map<Species_t, BasisFunManager>;
+    std::map<Species_t, SubManagerType>;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -253,15 +238,13 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * Standard case, e.g. read a structure increase an existing neighbour list
+   * or triplet list to a higher Order.
+   */
   template <class ManagerImplementation>
-  void SpeciesManager<ManagerImplementation>::update() {
-    /**
-     * Standard case, increase an existing neighbour list or triplet list to a
-     * higher Order
-     */
+  void SpeciesManager<ManagerImplementation>::update() {}
 
-    //TODO
-  }
 
   /* ---------------------------------------------------------------------- */
   /* Returns the linear indices of the clusters (whose atom indices
@@ -274,7 +257,6 @@ namespace rascal {
   template<size_t Order>
   inline size_t SpeciesManager<ManagerImplementation>::
   get_offset_impl(const std::array<size_t, Order> & counters) const {
-
     static_assert(Order < traits::MaxOrder,
                   "this implementation handles only up to "
                   "the respective MaxOrder");

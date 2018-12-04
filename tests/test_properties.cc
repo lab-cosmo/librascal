@@ -11,18 +11,18 @@
  *
  * Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
- * rascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
+ * Rascal is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
- * rascal is distributed in the hope that it will be useful, but
+ * Rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -33,7 +33,7 @@
 
 namespace rascal {
 
-  BOOST_AUTO_TEST_SUITE (Property_tests);
+  BOOST_AUTO_TEST_SUITE(Property_tests);
 
   /* ---------------------------------------------------------------------- */
   /*
@@ -91,18 +91,18 @@ namespace rascal {
     pair_property.resize();
     atom_property.resize();
     int pair_property_counter{};
-    for (auto atom: pair_manager) {
+    for (auto atom : pair_manager) {
       atom_property[atom] = atom.get_position();
-      for (auto pair: atom) {
+      for (auto pair : atom) {
         pair_property[pair] = ++pair_property_counter;
       }
     }
 
     pair_property_counter = 0;
-    for (auto atom: pair_manager) {
+    for (auto atom : pair_manager) {
       auto error = (atom_property[atom] - atom.get_position()).norm();
       BOOST_CHECK_LE(error, tol*100);
-      for (auto pair: atom) {
+      for (auto pair : atom) {
         BOOST_CHECK_EQUAL(pair_property[pair], ++pair_property_counter);
       }
     }
@@ -138,19 +138,19 @@ namespace rascal {
 
     BOOST_CHECK_THROW(AtomVectorProperty_t
                       ::check_compatibility(dynamic_property),
-                      std::runtime_error) ;
+                      std::runtime_error);
 
     BOOST_CHECK_NO_THROW(AtomVectorProperty_t
                          ::check_compatibility(atom_property));
 
     int pair_property_counter{};
     size_t counter{};
-    for (auto atom: pair_manager) {
+    for (auto atom : pair_manager) {
       atom_property[atom] = atom.get_position();
       dynamic_property2[atom] = atom.get_position();
 
       dynamic_property[atom] << counter++, counter, counter;
-      for (auto pair: atom) {
+      for (auto pair : atom) {
         pair_property[pair] = ++pair_property_counter;
       }
     }
@@ -160,7 +160,7 @@ namespace rascal {
 
     pair_property_counter = 0;
     counter = 0;
-    for (auto atom: pair_manager) {
+    for (auto atom : pair_manager) {
       auto error = (atom_property[atom] - atom.get_position()).norm();
       BOOST_CHECK_LE(error, tol*100);
       Eigen::Matrix<size_t, DynSize(), Eigen::Dynamic> tmp(DynSize(), 1);
@@ -173,7 +173,7 @@ namespace rascal {
       BOOST_CHECK_LE(error, tol*100);
       error = (atom_property[atom] - FakeSizedProperty[atom]).norm();
       BOOST_CHECK_LE(error, tol*100);
-      for (auto pair: atom) {
+      for (auto pair : atom) {
         BOOST_CHECK_EQUAL(pair_property[pair], ++pair_property_counter);
       }
     }
@@ -188,15 +188,15 @@ namespace rascal {
                           PropertyFixture<StructureManagerCenters>) {
     pair_property.resize();
 
-    for (auto atom: pair_manager) {
-      for (auto pair: atom) {
+    for (auto atom : pair_manager) {
+      for (auto pair : atom) {
         pair_property[pair] =
           (atom.get_position() - pair.get_position()).norm();
       }
     }
 
-    for (auto atom: pair_manager) {
-      for (auto pair: atom) {
+    for (auto atom : pair_manager) {
+      for (auto pair : atom) {
         auto dist{(atom.get_position() - pair.get_position()).norm()};
         auto error{pair_property[pair] - dist};
         BOOST_CHECK_LE(error, tol / 100);
@@ -204,6 +204,6 @@ namespace rascal {
     }
   }
 
-  BOOST_AUTO_TEST_SUITE_END ();
+  BOOST_AUTO_TEST_SUITE_END();
 
 }  // rascal

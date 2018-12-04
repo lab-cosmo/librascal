@@ -45,9 +45,10 @@ namespace rascal {
    * Specialisation of traits for increase <code>MaxOrder</code> adaptor
    */
   template <class ManagerImplementation, size_t MaxOrder>
-  struct StructureManager_traits<AdaptorFilter<ManagerImplementation, MaxOrder>> {
-
-    using traits = StructureManager_traits<AdaptorImplementation::ManagerImplementation>;
+  struct StructureManager_traits
+  <AdaptorFilter<ManagerImplementation, MaxOrder>> {
+    using traits =
+      StructureManager_traits<AdaptorImplementation::ManagerImplementation>;
     constexpr static AdaptorTraits::Strict Strict{traits::Strict};
     constexpr static bool HasDistances{traits::HasDistances};
     constexpr static bool HasDirectionVectors{traits::HasDirectionVectors};
@@ -57,9 +58,8 @@ namespace rascal {
     //! New Layer
     //! TODO: Is this the correct way to initialize the increased order?
     using LayerByOrder =
-      typename LayerIncreaser<MaxOrder,
-                              typename
-                              ManagerImplementation::traits::LayerByOrder>::type;
+      typename LayerIncreaser
+      <MaxOrder, typename ManagerImplementation::traits::LayerByOrder>::type;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -71,8 +71,7 @@ namespace rascal {
    */
   template <class ManagerImplementation, size_t MaxOrder>
   class AdaptorFilter: public
-  StructureManager<AdaptorFilter<ManagerImplementation>>
-  {
+  StructureManager<AdaptorFilter<ManagerImplementation>> {
   public:
     using Parent = StructureManager<AdaptorFilter<ManagerImplementation>>;
     using traits = StructureManager_traits<AdaptorFilter>;
@@ -88,7 +87,7 @@ namespace rascal {
     AdaptorFilter() = delete;
 
     //! constructor underlying manager
-    AdaptorFilter(ManagerImplementation & manager): manager{manager} {}
+    explicit AdaptorFilter(ManagerImplementation & manager): manager{manager} {}
 
     //! Copy constructor
     AdaptorFilter(const AdaptorFilter &other) = delete;

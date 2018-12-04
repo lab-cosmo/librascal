@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(BUILD_SHARED_LIBS ON)
+set(RASCAL_PYTHON_MAJOR_VERSION 3)
 
 
 add_compile_options(-Wall -Wextra)
@@ -129,3 +130,24 @@ foreach(pybin ${pybins})
     "${CMAKE_BINARY_DIR}/${binaryname}.py"
     COPYONLY)
 endforeach(pybin ${pybins})
+
+
+# add custom target for cpp linter
+find_package(PythonInterp ${RASCAL_PYTHON_MAJOR_VERSION} REQUIRED)
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/external/cpplint.py
+  ${CMAKE_BINARY_DIR}/cpplint.py
+  COPYONLY)
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/CPPLINT.cfg
+  ${CMAKE_BINARY_DIR}/CPPLINT.cfg
+  COPYONLY)
+file( GLOB_RECURSE ALL_HDR "${CMAKE_SOURCE_DIR}/src/*.hh")
+file( GLOB_RECURSE ALL_SRC "${CMAKE_SOURCE_DIR}/src/*.cc")
+add_custom_target(lint
+  ${PYTHON_EXECUTABLE} cpplint.py --root=${CMAKE_BINARY_DIR} ${ALL_SRC}
+  ${ALL_HDR}
+  COMMAND
+  ${PYTHON_EXECUTABLE} cpplint.py --root=${CMAKE_BINARY_DIR}
+  filter=-build/namespaces ${ALL_EXAMPLES}
+  )
