@@ -170,13 +170,44 @@ namespace rascal {
       multiple_compute_test, Fix, multiple_fixtures, Fix) {
 
     auto& managers = Fix::managers_strict;
+    auto& cutoffs = Fix::cutoffs;
     auto& representations = Fix::representations;
-    auto& hypers = Fix::hypers;
+    const auto& filenames = Fix::filenames;
+    const auto& hypers = Fix::hypers;
+    bool verbose{true};
+
+    auto filename_it{filenames.begin()};
+    auto cutoff_it{cutoffs.begin()};
 
     for (auto& manager : managers) {
-      for (auto& hyper : hypers) {
+      if (verbose) {
+        if (filename_it != filenames.end()) {
+          std::cout << "Structure: " << *filename_it;
+          std::cout << " with cutoff " << *cutoff_it << std::endl;
+          ++cutoff_it;
+          if (cutoff_it == cutoffs.end()) {
+            cutoff_it = cutoffs.begin();
+            ++filename_it;
+          }
+        } else {
+          std::cout << "Structure: Filename unknown" << std::endl;
+        }
+      }
+      for (const auto& hyper : hypers) {
         representations.emplace_back(manager, hyper);
+        // Should be done automatically in compute()
+        // TODO(max-veit) make that its own test case
+        //representations.back().precompute();
         representations.back().compute();
+        if (verbose) {
+          size_t center_idx{0};
+          for (auto center : manager) {
+            std::cout << "Soap vector for center: " << center_idx++;
+            std::cout << std::endl;
+            representations.back().print_soap_vector(center, std::cout);
+            //std::cout << std::endl;
+          }
+        }
       }
     }
   }

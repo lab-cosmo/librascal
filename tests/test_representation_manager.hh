@@ -68,6 +68,7 @@ namespace rascal {
     std::vector<std::string> filenames {
       "reference_data/simple_cubic_8.json",
       "reference_data/small_molecule.json"
+      //"reference_data/methane.json"
     };
     std::vector<double> cutoffs{{1,2,3}};
 

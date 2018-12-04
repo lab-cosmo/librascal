@@ -188,10 +188,21 @@ namespace rascal {
     void precompute();
 
     //! getter for the representation
-    template <size_t Order, size_t Layer> 
+    template <size_t Order, size_t Layer>
     Eigen::Map<Eigen::MatrixXd> get_soap_vector(
         const ClusterRefKey<Order, Layer>& center) {
       return this->soap_vectors[center];
+    }
+
+    //TODO(max-veit) overload operator<< instead? But we need the center...
+    template <size_t Order, size_t Layer>
+    void print_soap_vector(
+        const ClusterRefKey<Order, Layer>& center, std::ostream& stream) {
+      stream << "Soap vector size " << this->get_feature_size();
+      for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
+        stream << "n = " << radial_n << std::endl;
+        //stream << this->soap_vectors[center].row(radial_n) << std::endl;
+      }
     }
 
     std::vector<precision_t>& get_representation_raw_data() {
@@ -251,9 +262,7 @@ namespace rascal {
   template<class Mngr>
   void RepresentationManagerSphericalExpansion<Mngr>::
       precompute_radial_sigmas(){
-
     using std::pow;
-
     size_t radial_n;
     size_t angular_l;
 
@@ -285,11 +294,9 @@ namespace rascal {
   template<class Mngr>
   void RepresentationManagerSphericalExpansion<Mngr>::
       precompute_radial_overlap(){
-
     using std::pow;
     using std::sqrt;
     using std::tgamma;
-
     size_t radial_n1;
     size_t radial_n2;
 
@@ -348,10 +355,8 @@ namespace rascal {
 
   template<class Mngr>
   void RepresentationManagerSphericalExpansion<Mngr>::compute() {
-
     using math::PI;
     using std::pow;
-
     size_t radial_n;
     size_t angular_l;
     size_t lm_collective_idx;
@@ -362,7 +367,6 @@ namespace rascal {
     }
 
     for (auto center : this->structure_manager) {
-
       Eigen::MatrixXd soap_vector = Eigen::MatrixXd::Zero(
           this->n_species * this->max_radial,
           pow(this->max_angular + 1, 2));
