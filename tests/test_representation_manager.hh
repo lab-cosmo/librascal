@@ -60,8 +60,7 @@ namespace rascal {
       };
   };
 
-  struct MultipleStructureSphericalExpansion
-  {
+  struct MultipleStructureSphericalExpansion {
     MultipleStructureSphericalExpansion() = default;
     ~MultipleStructureSphericalExpansion() = default;
 
@@ -70,7 +69,7 @@ namespace rascal {
       "reference_data/small_molecule.json"
       //"reference_data/methane.json"
     };
-    std::vector<double> cutoffs{{1,2,3}};
+    std::vector<double> cutoffs{{1, 2, 3}};
 
     std::list<json> hypers{ {
       {"interaction_cutoff", 6.0},
@@ -86,8 +85,7 @@ namespace rascal {
             template<typename> class RepresentationManager,
             class BaseFixture>
   struct RepresentationFixture
-  :MultipleStructureManagerStrictFixture<StructureManager, BaseFixture>
-  {
+  :MultipleStructureManagerStrictFixture<StructureManager, BaseFixture> {
     using Parent = MultipleStructureManagerStrictFixture<StructureManager,
                     BaseFixture>;
     using Manager_t = typename Parent::Manager_t;

@@ -59,9 +59,8 @@ namespace rascal {
    */
   template<class StructureManager>
   class RepresentationManagerSphericalExpansion:
-    public RepresentationManagerBase
-  {
-  public:
+    public RepresentationManagerBase {
+   public:
     // TODO make a traits mechanism
     using hypers_t = RepresentationManagerBase::hypers_t;
     using Property_t = Property<double, 1, 1, Eigen::Dynamic, Eigen::Dynamic>;
@@ -97,7 +96,7 @@ namespace rascal {
     void set_hyperparameters(const hypers_t& hypers) {
       this->max_radial = hypers.at("max_radial");
       this->max_angular = hypers.at("max_angular");
-      if (hypers.find("n_species") != hypers.end()){
+      if (hypers.find("n_species") != hypers.end()) {
         this->n_species = hypers.at("n_species");
       } else {
         this->n_species = 1; // default: no species distinction
@@ -232,11 +231,11 @@ namespace rascal {
       return this->is_precomputed;
     }
 
-  protected:
+   protected:
     template<size_t Order, size_t Layer>
     double get_gaussian_sigma(ClusterRefKey<Order, Layer> & pair);
 
-  private:
+   private:
     //hypers_t hyperparmeters;
     double interaction_cutoff{};
     double cutoff_smooth_width{};
@@ -261,15 +260,15 @@ namespace rascal {
   /** Compute common prefactors for the radial Gaussian basis functions */
   template<class Mngr>
   void RepresentationManagerSphericalExpansion<Mngr>::
-      precompute_radial_sigmas(){
+      precompute_radial_sigmas() {
     using std::pow;
     size_t radial_n;
     size_t angular_l;
 
     for (radial_n = 0; radial_n < this->max_radial; radial_n += 1) {
       this->radial_sigmas[radial_n] = std::max(
-            std::sqrt((double)radial_n), 1.0)
-          * this->interaction_cutoff / (double)this->max_radial;
+            std::sqrt(static_cast<double>(radial_n)), 1.0)
+          * this->interaction_cutoff / static_cast<double>(this->max_radial);
     }
 
     // Precompute common prefactors
@@ -293,7 +292,7 @@ namespace rascal {
    */
   template<class Mngr>
   void RepresentationManagerSphericalExpansion<Mngr>::
-      precompute_radial_overlap(){
+      precompute_radial_overlap() {
     using std::pow;
     using std::sqrt;
     using std::tgamma;
@@ -413,7 +412,7 @@ namespace rascal {
           // (doing just the angular integration would instead spit out
           // spherical Bessel functions below)
           //TODO(max-veit) how does this work with SpeciesFilter?
-          for(angular_l = 0; angular_l < this->max_angular + 1; angular_l++) {
+          for (angular_l = 0; angular_l < this->max_angular + 1; angular_l++) {
             radial_integral(radial_n, angular_l) =
                 exp_factor * radial_nl_factors(radial_n, angular_l)
                 * pow(1.0/sigma2 + 1.0/pow(this->radial_sigmas(radial_n), 2),
@@ -429,7 +428,7 @@ namespace rascal {
 
         for (radial_n = 0; radial_n < this->max_radial; radial_n++) {
           lm_collective_idx = 0;
-          for(angular_l = 0; angular_l < this->max_angular + 1; angular_l++) {
+          for (angular_l = 0; angular_l < this->max_angular + 1; angular_l++) {
             for (size_t m_array_idx = 0; m_array_idx < 2*angular_l + 1;
                 m_array_idx++) {
               soap_vector(radial_n, lm_collective_idx) +=

@@ -37,11 +37,12 @@
 namespace rascal {
   namespace math {
 
+    // Reminder: C++ floating-point literals are automatically of type double
     /// Pi to more digits than anyone could possibly need
     const double PI = 3.14159265358979323846264338327950288419716939937510;
-    const double SQRT_TWO = std::sqrt((double)2.0);
-    const double INV_SQRT_TWO = std::sqrt((double)0.5);
-    const double SQRT_THREE = std::sqrt((double)3.0);
+    const double SQRT_TWO = std::sqrt(2.0);
+    const double INV_SQRT_TWO = std::sqrt(0.5);
+    const double SQRT_THREE = std::sqrt(3.0);
 
     /// How small a number must be to be considered effectively zero
     const double dbl_ftol = 100.0 * std::numeric_limits<double>::epsilon();
