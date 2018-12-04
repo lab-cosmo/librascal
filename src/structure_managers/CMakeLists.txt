@@ -30,7 +30,6 @@
 set (manager_SRC
   ${CMAKE_CURRENT_SOURCE_DIR}/structure_manager_lammps.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/structure_manager_centers.cc
-  ${CMAKE_CURRENT_SOURCE_DIR}/structure_manager_chain.cc
   )
 
 target_sources(rascal PRIVATE ${manager_SRC})
