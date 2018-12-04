@@ -10,15 +10,15 @@
  *
  * Copyright © 2018 Federico Giberti, Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
- * librascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
+ * Rascal is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
- * librascal is distributed in the hope that it will be useful, but
+ * Rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
+ * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this software; see the file LICENSE. If not, write to the
@@ -185,7 +185,7 @@ namespace rascal {
 
     /* ---------------------------------------------------------------------- */
     //! return runtime info about the stored (e.g., numerical) type
-    const std::type_info & get_type_info() const override final {
+    const std::type_info & get_type_info() const final {
       return typeid(T);
     };
 
