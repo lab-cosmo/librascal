@@ -810,7 +810,7 @@ namespace rascal {
      */
     inline const Container_t & get_container() const {return this->container;}
 
-  protected:
+   protected:
     //! constructor with container ref and starting point
     iterator(Container_t & cont, size_t start, size_t offset)
       :container{cont}, index{start}, offset{offset} {}

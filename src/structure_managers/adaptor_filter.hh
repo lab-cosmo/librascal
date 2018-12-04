@@ -99,7 +99,7 @@ namespace rascal {
       using ClusterRef_t = typename Manager_t::
         template InputClusterRef_t<Order>;
       inline static void add_parent(Manager_t & /*ignored manager*/,
-                                    const ClusterRef_t & /*ignored atom*/) {};
+                                    const ClusterRef_t & /*ignored atom*/) {}
     };
 
   }  // internal
@@ -112,7 +112,7 @@ namespace rascal {
   template <class ManagerImplementation, size_t MaxOrder>
   class AdaptorFilter: public
   StructureManager<AdaptorFilter<ManagerImplementation, MaxOrder>> {
-  public:
+   public:
     template <size_t Order_, class ManagerImplementation_, size_t MaxOrder_>
     friend struct internal::ClusterAdder;
 
@@ -267,7 +267,7 @@ namespace rascal {
     template <size_t Order>
     inline void add_cluster(const InputClusterRef_t<Order> & cluster);
 
-  protected:
+   protected:
     /**
      * check whether a cluster has been added already (Only check the
      * last inserted cluster, relying on the underlying iteration
@@ -324,7 +324,7 @@ namespace rascal {
      * store the offsets from where the nb_neigh can be counted
      */
     std::array<std::vector<size_t>, traits::MaxOrder>  offsets{};
-  private:
+   private:
   };
 
   /* ---------------------------------------------------------------------- */

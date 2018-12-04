@@ -224,7 +224,7 @@ namespace rascal {
                             this->get_nb_col());
     }
 
-  protected:
+   protected:
     std::vector<T> values{}; //!< storage for properties
   };
 

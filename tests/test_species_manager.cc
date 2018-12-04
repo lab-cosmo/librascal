@@ -38,12 +38,11 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(adaptor_filter_species_test);
 
   template<class ManagerImplementation, size_t MaxOrder>
-  struct SpeciesManagerFixture
-  {
+  struct SpeciesManagerFixture {
     using SpeciesManager_t = SpeciesManager<ManagerImplementation, MaxOrder>;
 
     SpeciesManagerFixture():
-      species_manager{fixture.manager}{}
+      species_manager{fixture.manager} {}
 
     ~SpeciesManagerFixture() = default;
 
@@ -79,7 +78,8 @@ namespace rascal {
     for (auto && tup: species_counter) {
       auto species{tup.first};
       auto nb_atoms{tup.second};
-      auto nb_filtered{Fix::species_manager[std::array<int,1>{species}].size()};
+      auto nb_filtered{
+          Fix::species_manager[std::array<int, 1>{species}].size()};
       BOOST_CHECK_EQUAL(nb_atoms, nb_filtered);
     }
   }

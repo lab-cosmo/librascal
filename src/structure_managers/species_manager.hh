@@ -101,7 +101,7 @@ namespace rascal {
    */
   template <class ManagerImplementation, size_t MaxOrder>
   class SpeciesManager {
-  public:
+   public:
     using traits = StructureManager_traits<ManagerImplementation>;
     template <size_t Order>
     using Filter_t = AdaptorFilter<ManagerImplementation, Order>;
@@ -164,13 +164,13 @@ namespace rascal {
       }
     }
 
-  protected:
+   protected:
     //! underlying structure manager to be filtered upon update()
     ManagerImplementation & structure_manager;
     //! storage by cluster order for the filtered managers
     internal::FilterContainer_t<ManagerImplementation, MaxOrder> filters;
 
-  private:
+   private:
   };
 
 
@@ -205,7 +205,7 @@ namespace rascal {
           species_manager[species_indices].add_cluster(next_cluster);
           NextFilterSpeciesLoop::loop(next_cluster, species_manager);
         }
-      };
+      }
     };
 
     /**
@@ -216,7 +216,7 @@ namespace rascal {
       using SpeciesManager_t = SpeciesManager<ManagerImplementation, MaxOrder>;
       template <class Cluster>
       static void loop(Cluster & /*cluster*/,
-                       SpeciesManager_t & /*species_manager*/) {};
+                       SpeciesManager_t & /*species_manager*/) {}
     };
 
   }  // internal

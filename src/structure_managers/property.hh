@@ -204,8 +204,8 @@ namespace rascal {
       return Value::get_ref(this->values[index]);
     }
 
-  protected:
-  private:
+   protected:
+   private:
   };
 
 }  // rascal
