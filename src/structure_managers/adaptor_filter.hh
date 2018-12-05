@@ -132,7 +132,7 @@ namespace rascal {
     AdaptorFilter() = delete;
 
     //! constructor underlying manager
-    AdaptorFilter(ManagerImplementation & manager): manager{manager} {
+    explicit AdaptorFilter(ManagerImplementation & manager): manager{manager} {
       this->update();
     }
 

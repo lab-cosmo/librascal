@@ -45,7 +45,7 @@ namespace rascal {
 
   namespace internal {
 
-    namespace {
+    namespace detail {
       template <size_t Order>
       using Key_t = std::array<int, Order>;
       template <size_t Order, class ManagerImplementation>
@@ -54,13 +54,14 @@ namespace rascal {
       template <size_t Order, class ManagerImplementation>
       using Map_t = std::map<Key_t<Order>, Value_t<Order,
                                                    ManagerImplementation>>;
-    }
+    } // detail
 
     template<class ManagerImplementation, size_t... OrdersMinusOne>
     auto get_filter_container_helper
       (std::index_sequence<OrdersMinusOne...> /*orders*/)
       -> decltype(auto) {
-      return std::tuple<Map_t<OrdersMinusOne+1, ManagerImplementation>...>{};
+      return std::tuple<detail::Map_t<OrdersMinusOne+1,
+                                      ManagerImplementation>...>{};
     }
 
     template <class ManagerImplementation, size_t MaxOrder>
@@ -112,7 +113,7 @@ namespace rascal {
     //! Default constructor
     SpeciesManager() = delete;
 
-    SpeciesManager(ManagerImplementation& manager);
+    explicit SpeciesManager(ManagerImplementation& manager);
 
     //! Copy constructor
     SpeciesManager(const SpeciesManager & other) = delete;

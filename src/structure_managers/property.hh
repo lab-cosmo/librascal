@@ -203,9 +203,6 @@ namespace rascal {
       auto && index{this->values.size()-NbComp};
       return Value::get_ref(this->values[index]);
     }
-
-   protected:
-   private:
   };
 
 }  // rascal
