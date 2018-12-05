@@ -32,8 +32,7 @@
 #include "structure_managers/property.hh"
 
 namespace rascal {
-
-  // TODO rethink the test of property to adhere 
+  // TODO rethink the test of property to adhere
   // to the manager/adaptor paradigm
   // TODO test dynamic sized Property
   BOOST_AUTO_TEST_SUITE(Property_tests);

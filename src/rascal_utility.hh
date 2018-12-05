@@ -35,11 +35,14 @@
 #define GCC_COMPILER
 #endif
 
+#include "representations/representation_manager_base.hh"
+
 
 #include <utility>
-#include<tuple>
 #include <string>
 #include <regex>
+#include <tuple>
+#include <map>
 
 namespace rascal {
   namespace internal {
@@ -90,22 +93,20 @@ namespace rascal {
     };
 
     /* ---------------------------------------------------------------------- */
-    // inspired from 
+    // inspiered from
     // https://blog.molecular-matters.com/2015/12/11/getting-
     // the-type-of-a-template-argument-as-string-without-rtti/
     /**
-     * Transforms the template typename to a string. 
+     * Transforms the template typename to a string.
      * This functionality is compiler dependant so for the moment
      * clang and gcc are compatible.
-     * @template T type that should be stringifyied 
+     * @template T type that should be stringifyied
      * @returns std::string name of the type
      */
     template <typename T>
-    struct GetTypeNameHelper
-    {
-      static const std::string GetTypeName()
-      { 
-        // The output of of Pretty Function depends on the compiler 
+    struct GetTypeNameHelper {
+      static const std::string GetTypeName() {
+        // The output of of Pretty Function depends on the compiler
         // the #define strings is a pain to split
 #if defined(GCC_COMPILER)
         #define FUNCTION_MACRO __PRETTY_FUNCTION__
@@ -122,12 +123,12 @@ namespace rascal {
 #else
         #error "No implementation for current compiler"
 #endif
-          
+
         const size_t funcNameLength{sizeof(FUNCTION_MACRO) - 1u};
         const size_t prefixLength{sizeof(PREFIX) - 1u};
-        const size_t suffixLength{sizeof(SUFFIX_1) - 1u + 
+        const size_t suffixLength{sizeof(SUFFIX_1) - 1u +
                                             sizeof(SUFFIX_2) - 1u};
-        const size_t typeLength{(funcNameLength - 
+        const size_t typeLength{(funcNameLength -
                         (prefixLength + suffixLength)) / NUM_TYPE_REPEATS};
         std::string typeName{FUNCTION_MACRO + prefixLength, typeLength};
         return typeName;
@@ -140,40 +141,16 @@ namespace rascal {
     };
     //! return a pretty form of the template typename
     template <typename T>
-    std::string GetTypeName()
-    {
+    std::string GetTypeName() {
       std::string full_typeName = GetTypeNameHelper<T>::GetTypeName();
-      
-      std::string tn1{std::regex_replace( full_typeName, 
-                                    std::regex("rascal::"), "" )};
-      std::string tn2{std::regex_replace( tn1, std::regex("<"), "_" )};
-      std::string tn3{std::regex_replace( tn2, std::regex(">"), "" )};
-      std::string tn4{std::regex_replace( tn3, std::regex(" "), "" )};
-      std::string tn5{std::regex_replace( tn4, std::regex(","), "_" )};
-			return tn5;
-    }
 
-
-    /**
-     * Transforms the template type to a string for the pyhton bindings. 
-     * There are submodules in the python bindings with the class
-     * tittle so to avoid redundancy they are removed from the 
-     * typename.
-     * @template T type that should be stringifyied 
-     * @returns std::string name of the type
-     */
-    template <typename T>
-    std::string GetBindingTypeName() {
-      std::string typeName = GetTypeName<T>();
-      std::string tn1{std::regex_replace( typeName, 
-                        std::regex("StructureManager"), "" )};
-      std::string tn2{std::regex_replace( tn1, 
-                        std::regex("Adaptor"), "" )};
-      std::string tn3{std::regex_replace( tn2, 
-                        std::regex("RepresentationManager"), "" )}; 
-      std::string tn4{std::regex_replace( tn3, 
-                        std::regex("FeatureManager"), "" )};
-			return tn4;
+      std::string tn2{std::regex_replace(full_typeName,
+                                    std::regex("rascal::"), "")};
+      std::string tn3{std::regex_replace(tn2, std::regex("<"), "_")};
+      std::string tn4{std::regex_replace(tn3, std::regex(">"), "")};
+      std::string tn5{std::regex_replace(tn4, std::regex(" "), "")};
+      std::string tn6{std::regex_replace(tn5, std::regex(","), "_")};
+      return tn6;
     }
   }  // namespace internal
 }  // namespace rascal

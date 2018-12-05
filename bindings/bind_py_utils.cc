@@ -28,22 +28,19 @@
 
 #include "bind_include.hh"
 
-using namespace rascal;
-namespace py = pybind11;
 
-void utils_binding(py::module & mod){
-
+void utils_binding(py::module & mod) {
   py::module m_utls_sps = mod.def_submodule("sparsification");
-  m_utls_sps.doc() = "Sparsification Routines" ;
-  
-  m_utls_sps.def("fps", & utils::select_fps, 
+  m_utls_sps.doc() = "Sparsification Routines";
+
+  m_utls_sps.def("fps", & utils::select_fps,
         "Selects points from a NxD dimensional"
         " feature matrix by farthest point sampling (N is the number of"
         " sample in a D dimensional space).",
         py::arg("feature_matrix"), py::arg("n_sparse"),
         py::arg("i_first_point") );
 
-  m_utls_sps.def("fps_voronoi", & utils::select_fps_voronoi, 
+  m_utls_sps.def("fps_voronoi", & utils::select_fps_voronoi,
         "Selects points from a"
         " NxD dimensional feature matrix by farthest point sampling, using"
         " a Voronoi cell method (N is the number of sample in a D dimensional"

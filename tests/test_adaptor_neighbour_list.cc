@@ -112,13 +112,11 @@ namespace rascal {
                                       MultipleStructureManagerBaseFixture>>;
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(test_build_neighbour_multiple,
-            Fix, multiple_fixtures,Fix) {
-    
+            Fix, multiple_fixtures, Fix) {
     auto & managers = Fix::managers_pair;
-    
+
     constexpr bool verbose{false};
     for (auto& pair_manager : managers) {
-          
       auto n_pairs{0};
       for (auto atom : pair_manager) {
         if (verbose) std::cout << "atom " << atom.back() << std::endl;
@@ -335,7 +333,6 @@ namespace rascal {
    * cell.
    */
   BOOST_FIXTURE_TEST_CASE(test_neighbour_list_skewed, ManagerFixtureSkew) {
-
     constexpr static bool verbose{false};
 
     constexpr static int ncells{4};
@@ -357,7 +354,6 @@ namespace rascal {
 
       // loop over cells of different skews
       for (int i{0}; i < ncells; ++i) {
-
         // check different cutoffs
         //double cutoff_tmp{cutoff*n_cutoff[k]};
         double cutoff_tmp{cutoff*n_cutoff[k]};
@@ -371,7 +367,7 @@ namespace rascal {
         // get reference data
         auto skewer{unity};
         // change shear multiplier
-        skewer(0,1) = shears[i];
+        skewer(0, 1) = shears[i];
         // calculate unit cell
         auto cell_skw = skewer * cell;
         auto cell_skw_inv{cell_skw.inverse().eval()};
@@ -457,5 +453,4 @@ namespace rascal {
   }
 
   BOOST_AUTO_TEST_SUITE_END();
-
 }  // rascal

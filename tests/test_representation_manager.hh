@@ -40,8 +40,7 @@
 namespace rascal {
 
 
-  struct MultipleStructureSortedCoulomb
-  {
+  struct MultipleStructureSortedCoulomb {
     MultipleStructureSortedCoulomb() = default;
     ~MultipleStructureSortedCoulomb() = default;
 
@@ -50,13 +49,13 @@ namespace rascal {
       "reference_data/simple_cubic_8.json",
       "reference_data/small_molecule.json"
       };
-    std::vector<double> cutoffs{{1,2,3}};
+    std::vector<double> cutoffs{{1, 2, 3}};
 
     std::list<json> hypers{
-      {{"central_decay",0.5},
-      {"interaction_cutoff",10},
-      {"interaction_decay",0.5},
-      {"size",120}}
+      {{"central_decay", 0.5},
+      {"interaction_cutoff", 10},
+      {"interaction_decay", 0.5},
+      {"size", 120}}
       };
   };
 
@@ -82,14 +81,14 @@ namespace rascal {
   };
 
   template< class StructureManager,
-            template<typename> class RepresentationManager,
-            class BaseFixture>
+            template<typename, Option ...opts > class RepresentationManager,
+            class BaseFixture, Option ...options>
   struct RepresentationFixture
   :MultipleStructureManagerStrictFixture<StructureManager, BaseFixture> {
     using Parent = MultipleStructureManagerStrictFixture<StructureManager,
                     BaseFixture>;
     using Manager_t = typename Parent::Manager_t;
-    using Representation_t = RepresentationManager<Manager_t>;
+    using Representation_t = RepresentationManager<Manager_t, options...>;
 
     RepresentationFixture() = default;
     ~RepresentationFixture() = default;

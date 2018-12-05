@@ -48,8 +48,7 @@ namespace rascal {
       lattice.set_cell(cell);
     }
 
-    ~ManagerFixtureLattice() {
-    }
+    ~ManagerFixtureLattice() {}
 
     Lattice<Dim> lattice{};
   };

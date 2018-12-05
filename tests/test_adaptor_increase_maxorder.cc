@@ -155,7 +155,6 @@ namespace rascal {
 
     if (verbose) std::cout << ">> pair to triplet extension" << std::endl;
 
-    // TODO(markus): should this be in a fixture?
     AdaptorHalfList<StructureManagerLammps> SM2{manager};
     SM2.update();
     AdaptorMaxOrder<AdaptorHalfList<StructureManagerLammps>> SM3{SM2};

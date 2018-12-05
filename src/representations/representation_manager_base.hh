@@ -36,19 +36,26 @@
 
 namespace rascal {
 
+
+  enum class Option {
+    // Coulomb Matrix Options
+      CMSortDistance,
+      CMSortRowNorm,
+    };
+
+
+
   template <class RepresentationImplementation>
   struct RepresentationManager_traits
   {};
 
 
-  class RepresentationManagerBase
-  {
-  public:
-
+  class RepresentationManagerBase {
+   public:
     //! type for the hyper parameter class
     using hypers_t = json;
     //! type for representation
-    // TODO Should the user have freedom for the type ?
+    // TODO(felix) Should the user have freedom for the type ?
     using precision_t = double;
 
     RepresentationManagerBase() = default;
@@ -63,20 +70,22 @@ namespace rascal {
     virtual ~RepresentationManagerBase()  = default;
 
     //! Copy assignment operator
-    RepresentationManagerBase& operator=(const RepresentationManagerBase &other) = delete;
+    RepresentationManagerBase&
+                 operator=(const RepresentationManagerBase &other) = delete;
 
     //! Move assignment operator
-    RepresentationManagerBase& operator=(RepresentationManagerBase && other) = default;
+    RepresentationManagerBase&
+                 operator=(RepresentationManagerBase && other) = default;
 
-    //! Resolves the mismatch between the expected traits 
+    //! Resolves the mismatch between the expected traits
     //! and the effective traits of the Structure Manager
-    // TODO make it into a function outside this class
+    // TODO(felix) make it into a function outside this class
     template <class Mngr>
     void check_traits_compatibility(Mngr &structure_manager);
 
     //! Pure Virtual Function to set hyperparameters of the representation
-    virtual void set_hyperparameters(const hypers_t & ) = 0;
-    virtual void set_hyperparameters(const std::string & ) = 0;
+    virtual void set_hyperparameters(const hypers_t &) = 0;
+    virtual void set_hyperparameters(const std::string &) = 0;
 
     //! Compute the representation using a StructureManager
     virtual void compute() = 0;
@@ -89,7 +98,6 @@ namespace rascal {
 
     //! get the number of centers for the representation
     virtual size_t get_center_size() = 0;
-    
   };
 
 }

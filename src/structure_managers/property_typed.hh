@@ -70,7 +70,7 @@ namespace rascal {
                                  Dim_t& nb_row,  Dim_t& nb_col) {
         for (Dim_t j{0}; j < nb_col; ++j) {
           for (Dim_t i{0}; i < nb_row; ++i) {
-            vec.push_back(ref(i,j));
+            vec.push_back(ref(i, j));
           }
         }
       }
@@ -95,10 +95,9 @@ namespace rascal {
       static void push_in_vector(std::vector<T> & vec,
                                  const Eigen::DenseBase<Derived> & ref,
                                 const Dim_t& nb_row, const Dim_t& nb_col) {
-        
         for (Dim_t j{0}; j < nb_col; ++j) {
           for (Dim_t i{0}; i < nb_row; ++i) {
-            vec.push_back(ref(i,j));
+            vec.push_back(ref(i, j));
           }
         }
       }
@@ -133,10 +132,10 @@ namespace rascal {
       }
     };
 
-    // TODO take the case of dynamically sized Value 
-    // Probably a switch between the static and dynamic version 
-    // of the push_in_vector 
-    // 
+    // TODO take the case of dynamically sized Value
+    // Probably a switch between the static and dynamic version
+    // of the push_in_vector
+    //
 
     template<typename T, size_t NbRow, size_t NbCol>
     using Value_t = typename Value<T, NbRow, NbCol>::type;
@@ -232,15 +231,15 @@ namespace rascal {
     }
 
     //! getter to the underlying data storage
-    inline std::vector<T>& get_raw_data(){
+    inline std::vector<T>& get_raw_data() {
       return this->values;
     }
 
 
-    //! get number of different distinct element in the property 
+    //! get number of different distinct element in the property
     //! (typically the number of center)
     inline size_t get_nb_item() const {
-      return values.size()/this->get_nb_comp(); 
+      return values.size()/this->get_nb_comp();
     }
 
    protected:

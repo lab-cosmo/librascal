@@ -82,14 +82,7 @@ namespace rascal {
     lin_mat  mat1 = lin_mat::Ones();
     std::vector<double> dists{{2,4,0,1,3}};
 
-    std::vector<std::pair<size_t, myiter> > order_mat(dists.size());
-
-    size_t n_{0};
-    for (myiter it = dists.begin(); it != dists.end(); ++it, ++n_)
-        {order_mat[n_] = make_pair(n_, it);}
-
-    std::sort(order_mat.begin(), order_mat.end(), internal::ordering());
-    internal::sort_coulomb_matrix(mat0,mat1,order_mat);
+    internal::sort_coulomb_matrix(mat0,mat1,dists);
     for (int ii{0}; ii < mat0.rows(); ii++){
       for (int jj{0}; jj < mat0.cols(); jj++){
          if (verbose) std::cout << mat0(ii,jj) << ",\t" ;
@@ -111,30 +104,34 @@ namespace rascal {
   using multiple_fixtures = boost::mpl::list<
     RepresentationFixture<StructureManagerCenters,
                           RepresentationManagerSortedCoulomb,
-                          MultipleStructureSortedCoulomb>>;
+                          MultipleStructureSortedCoulomb,
+                          Option::CMSortDistance>,
+    RepresentationFixture<StructureManagerCenters,
+                          RepresentationManagerSortedCoulomb,
+                          MultipleStructureSortedCoulomb,
+                          Option::CMSortRowNorm>>;
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_constructor_test,
-            Fix, multiple_fixtures,Fix) {
-
+            Fix, multiple_fixtures, Fix) {
     auto & managers = Fix::managers_strict;
     auto& representations = Fix::representations;
     auto& hypers = Fix::hypers;
 
-    for (auto& manager : managers){
-      for (auto& hyper : hypers){
-        representations.emplace_back(manager,hyper);
+    for (auto& manager : managers) {
+      for (auto& hyper : hypers) {
+        representations.emplace_back(manager, hyper);
       }
     }
   }
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_compute_test,
-            Fix, multiple_fixtures,Fix) {
+            Fix, multiple_fixtures, Fix) {
     auto & managers = Fix::managers_strict;
     auto& representations = Fix::representations;
     auto& hypers = Fix::hypers;
-    for (auto& manager : managers){
-      for (auto& hyper : hypers){
-        representations.emplace_back(manager,hyper);
+    for (auto& manager : managers) {
+      for (auto& hyper : hypers) {
+        representations.emplace_back(manager, hyper);
         representations.back().compute();
       }
     }

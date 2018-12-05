@@ -33,11 +33,11 @@ def fps(feature_matrix,Nselect,starting_index=None,flavour='simple'):
         starting_index = 0
 
     if flavour == 'simple':
-        sparse_indices,sparse_minmax_d2 = 
+        sparse_indices,sparse_minmax_d2 = \
                 sparsification.fps(feature_matrix,Nselect,starting_index)
         
     elif flavour == 'voronoi':
-        sparse_indices, sparse_minmax_d2, voronoi_indices, voronoi_r2 =
+        sparse_indices, sparse_minmax_d2, voronoi_indices, voronoi_r2 = \
                 sparsification.fps_voronoi(feature_matrix,Nselect,starting_index)
     
     else:

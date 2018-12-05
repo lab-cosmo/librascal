@@ -46,13 +46,14 @@ constexpr static int dim{3};
 using Vector_t = Eigen::Matrix<double, dim, 1>;
 
 using Representation_t = RepresentationManagerSortedCoulomb<
-                   AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
+                   AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>,
+                  Option::CMSortDistance>;
 
 
 template<class StructureManager>
 struct MultipleStrictStructureManager
 {
-  using Manager1_t = StructureManager; 
+  using Manager1_t = StructureManager;
   using Manager2_t = AdaptorNeighbourList<Manager1_t>;
   using Manager_t = AdaptorStrict<Manager2_t>;
 
@@ -78,7 +79,7 @@ struct MultipleStrictStructureManager
   std::list<Manager1_t> managers1{};
   std::list<Manager2_t> managers2{};
   std::list<Manager_t> managers{};
-      
+
 };
 
 int main() {
@@ -86,7 +87,7 @@ int main() {
   bool verbose{false};
   bool verbose_rep{true};
   //"reference_data/CaCrP2O7_mvc-11955_symmetrized_.json",
- 
+
   MultipleStrictStructureManager<StructureManagerCenters> meta{};
 
   if (verbose) {
@@ -104,7 +105,7 @@ int main() {
     for (auto& manager : meta.managers){
       std::cout << "################################# 1"<< std::endl;
       std::cout << manager.nb_clusters(1)<<std::endl;
-    
+
       for (auto center : manager) {
         std::cout << center.get_atom_type()<< std::endl;
         std::cout << "################################# 2"<< std::endl;
@@ -116,7 +117,7 @@ int main() {
   }
 
   for (auto& manager : meta.managers){
-   
+
     // double central_decay{10};
     // double interaction_cutoff{10};
     // double interaction_decay{10};
@@ -267,7 +268,7 @@ int main() {
   //   }
   // }
 
-  
+
 
 
   return(0);

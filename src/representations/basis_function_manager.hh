@@ -30,6 +30,7 @@
 #define BASIS_FUNCTION_MANAGER_H
 
 namespace rascal {
+
   class BasisFunManager {
    public:
     enum class BasisFunType: int;

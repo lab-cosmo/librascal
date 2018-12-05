@@ -184,7 +184,7 @@ namespace rascal {
    */
   template<size_t Order, size_t Layer>
   class ClusterRefKey: public ClusterRefBase {
-    public:
+   public:
     /**
      * Index array types need both a constant and a non-constant version. The
      * non-const version can and needs to be cast into a const version in

@@ -79,9 +79,6 @@ namespace rascal {
     using Implementation_t = ManagerImplementation;
     using traits = StructureManager_traits<AdaptorStrict>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
-    template <size_t Order>
-    using ClusterRef_t =
-      typename ManagerImplementation::template ClusterRef<Order>;
     using Vector_ref = typename Parent::Vector_ref;
 
     static_assert(traits::MaxOrder > 1,
@@ -136,13 +133,14 @@ namespace rascal {
 
     //! returns the direction vector between atoms in a given pair
     template <size_t Order, size_t Layer>
-    inline const Vector_ref  get_direction_vector(const ClusterRefKey<Order, Layer> &
-                                       pair) const {
+    inline const Vector_ref  get_direction_vector(
+          const ClusterRefKey<Order, Layer> &pair) const {
       return this->dirVec[pair];
     }
 
     template <size_t Order, size_t Layer>
-    inline Vector_ref  get_direction_vector(const ClusterRefKey<Order, Layer>& pair) {
+    inline Vector_ref  get_direction_vector(
+                        const ClusterRefKey<Order, Layer>& pair) {
       return this->dirVec[pair];
     }
 
@@ -195,7 +193,7 @@ namespace rascal {
 
     //! Returns atom type given an atom index
     // TODO find how to return a reference and get a reference
-    // from managerCenters. copies are made atm 
+    // from managerCenters. copies are made atm
     inline int get_atom_type(const int& atom_id) {
       int type{this->manager.get_atom_type(atom_id)};
       return type;
@@ -326,7 +324,7 @@ namespace rascal {
     offsets{}
 
   {
-    if (!internal::check_cutoff(manager, cutoff)) {
+    if (not internal::check_cutoff(manager, cutoff)) {
       throw std::runtime_error("underlying manager already has a smaller "
                                "cut off");
     }

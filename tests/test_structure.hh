@@ -59,8 +59,7 @@ namespace rascal {
   struct ManagerFixture {
     ManagerFixture():
       pbc{{true, true, true}}, cell(3, 3), positions(22, 3),
-      atom_types(22), cutoff{2.}
-    {
+      atom_types(22), cutoff{2.} {
       cell <<
         6.19, 2.41, 0.21,
         0.00, 6.15, 1.02,
@@ -114,8 +113,7 @@ namespace rascal {
    * managers are of the same class.
    */
   template<class ManagerImplementation>
-  struct ManagerFixtureTwo
-  {
+  struct ManagerFixtureTwo {
     ManagerFixtureTwo() {} // ctor
     ~ManagerFixtureTwo() {} // dtor
 
@@ -154,11 +152,10 @@ namespace rascal {
    * with respect to the unit cell.
    */
   struct ManagerFixtureTwoHcp
-    : public ManagerFixtureTwo<StructureManagerCenters>
-  {
+    : public ManagerFixtureTwo<StructureManagerCenters> {
     ManagerFixtureTwoHcp():
       ManagerFixtureTwo<StructureManagerCenters> {},
-      pbc{{true,true,true}}, cell_1(3,3), cell_2(3,3),
+      pbc{{true, true, true}}, cell_1(3, 3), cell_2(3, 3),
       positions_1(3, 2), positions_2(3, 2),
       atom_types(2), cutoff{0.7}
     {
@@ -235,8 +232,7 @@ namespace rascal {
    * neighbour list algorithm is robust with respect to the unit cell.
    */
   struct ManagerFixtureTwoFcc
-    : public ManagerFixtureTwo<StructureManagerCenters>
-  {
+    : public ManagerFixtureTwo<StructureManagerCenters> {
     ManagerFixtureTwoFcc():
       ManagerFixtureTwo<StructureManagerCenters> {},
       pbc{{true, true, true}}, cell_1(3, 3), cell_2(3, 3),
@@ -261,7 +257,7 @@ namespace rascal {
       cell_2 <<
         a,   0., 0.,
         0.,  a,  0.,
-        0.,  0., a ;
+        0.,  0., a;
 
       positions_1 <<
         0.,
@@ -381,8 +377,7 @@ namespace rascal {
    * ``pair_manager``
    */
   template<class ManagerImplementation>
-  struct PairFixtureFile : public ManagerFixtureFile<ManagerImplementation>
-  {
+  struct PairFixtureFile : public ManagerFixtureFile<ManagerImplementation> {
     using Manager_t = ManagerImplementation;
 
     static_assert(ManagerImplementation::traits::MaxOrder == 1,
@@ -439,8 +434,7 @@ namespace rascal {
     ManagerFixtureSimple() :
       ManagerFixture<StructureManagerCenters> {},
       pbc{{true, false, false}}, cell(3, 3), positions(3, 8), atom_types(8),
-      cutoff{2.1}, natoms{8}
-    {
+      cutoff{2.1}, natoms{8} {
       cell <<
         2., 0., 0.,
         0., 2., 0.,

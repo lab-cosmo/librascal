@@ -44,30 +44,28 @@ namespace rascal {
    * managers using a dense underlying data storage.
    *
    */
-template<typename T>
-class FeatureManagerDense: public FeatureManagerBase {
-  public:
-
+  template<typename T>
+  class FeatureManagerDense: public FeatureManagerBase {
+   public:
     using Parent = FeatureManagerBase;
     using RepresentationManager_t = typename Parent::RepresentationManager_t;
     using hypers_t = typename RepresentationManager_t::hypers_t;
     using Feature_Matrix_t = Eigen::MatrixXd;
     using Feature_Matrix_ref = Eigen::Map<Eigen::MatrixXd>;
 
-    
     /**Default constructor where hypers contains all relevant informations
      * to setup a new RepresentationManager.
      */
     FeatureManagerDense(int n_feature, hypers_t hypers)
-    :feature_matrix{},n_feature{n_feature},n_center{0},hypers{hypers}
+    :feature_matrix{}, n_feature{n_feature}, n_center{0}, hypers{hypers}
     {}
 
     /**Constructor meant for initialization from python.
-     * hypers_str should be a string containing a serialized 
+     * hypers_str should be a string containing a serialized
      * json version of hypers above
      */
     FeatureManagerDense(int n_feature, std::string hypers_str)
-    :feature_matrix{},n_feature{n_feature},n_center{0},hypers{}
+    :feature_matrix{},  n_feature{n_feature}, n_center{0}, hypers{}
     {
       hypers = json::parse(hypers_str);
     }
@@ -88,37 +86,37 @@ class FeatureManagerDense: public FeatureManagerBase {
     FeatureManagerDense& operator=(FeatureManagerDense && other) = default;
 
     //! pre-allocate memory
-    void reserve(size_t& n_center){
+    void reserve(size_t& n_center) {
       this->feature_matrix.reserve(n_center*this->n_feature);
     }
 
-    //! move data from the representation manager property 
-    void push_back(RepresentationManager_t& rm){
+    //! move data from the representation manager property
+    void push_back(RepresentationManager_t& rm) {
       auto& raw_data{rm.get_representation_raw_data()};
       auto n_center{rm.get_center_size()};
       int n_feature{static_cast<int>(rm.get_feature_size())};
 
-      if (n_feature != this->n_feature){
+      if (n_feature != this->n_feature) {
         throw std::length_error("Incompatible number of features");
       }
       this->n_center += n_center;
       // this->feature_matrix.insert(this->feature_matrix.end(),
-      //                   std::make_move_iterator(raw_data.begin()), 
+      //                   std::make_move_iterator(raw_data.begin()),
       //                   std::make_move_iterator(raw_data.end())
       //                   );
       this->feature_matrix.insert(this->feature_matrix.end(),
-                                  raw_data.begin(),raw_data.end());
+                                  raw_data.begin(), raw_data.end());
     }
 
     //! move data from a feature vector
-    void push_back(std::vector<T> feature_vector){
+    void push_back(std::vector<T> feature_vector) {
       int n_feature{static_cast<int>(feature_vector.size())};
-      if (n_feature != this->n_feature){
+      if (n_feature != this->n_feature) {
         throw std::length_error("Incompatible number of features");
       }
       this->n_center += 1;
       this->feature_matrix.insert(this->feature_matrix.end(),
-                    std::make_move_iterator(feature_vector.begin()), 
+                    std::make_move_iterator(feature_vector.begin()),
                     std::make_move_iterator(feature_vector.end()));
     }
 
@@ -128,40 +126,39 @@ class FeatureManagerDense: public FeatureManagerBase {
     }
 
     //! return the number of samples in the feature matrix
-    inline int sample_size(){
+    inline int sample_size() {
       return this->size()/this->n_feature;
     }
 
     //! return the number of feature in the feature matrix
-    inline int feature_size(){
+    inline int feature_size() {
       return this->n_feature;
     }
 
     //! get the shape of the feature matrix (Nrow,Ncol)
-    inline std::tuple<int,int> shape(){
-      return std::make_tuple(this->sample_size(),this->feature_size());
+    inline std::tuple<int, int> shape() {
+      return std::make_tuple(this->sample_size(), this->feature_size());
     }
 
     //! return the feature matrix as an Map over Eigen MatrixXd
-    inline Feature_Matrix_ref get_feature_matrix(){
+    inline Feature_Matrix_ref get_feature_matrix() {
       return Feature_Matrix_ref(this->feature_matrix.data(),
-                                this->feature_size(),this->sample_size());
+                                this->feature_size(), this->sample_size());
     }
 
-  protected:
-    //! underlying data container for the feature matrix 
+   protected:
+    //! underlying data container for the feature matrix
     std::vector<T> feature_matrix;
-    //! Number of feature. 
-    //TODO make it possible to change it after construction 
+    //! Number of feature.
+    //TODO(felix) make it possible to change it after construction
     int n_feature;
     //! Number of samples in the feature matrix
     int n_center;
-    /** Contain all relevant information to initialize 
+    /** Contain all relevant information to initialize
     * a compatible RepresentationManager
     */
     hypers_t hypers;
-  
-};
+  };
 
 
 } // rascal

@@ -60,19 +60,19 @@ namespace rascal {
 
    public:
     using Parent = TypedProperty<T, Order, PropertyLayer>;
-    
+
     using Value = internal::Value<T, NbRow, NbCol>;
     static_assert(std::is_same<Value, internal::Value<T, NbRow, NbCol>>::value,
                   "type alias failed");
 
     using value_type = typename Value::type;
     using reference = typename Value::reference;
-    
+
     static constexpr bool
     IsStaticallySized{ (NbCol != Eigen::Dynamic) and
                        (NbRow != Eigen::Dynamic) };
 
-    //! Empty type for tag dispatching to differenciate between 
+    //! Empty type for tag dispatching to differenciate between
     //! the Dynamic and Static size case
     struct DynamicSize {};
     struct StaticSize {};
@@ -155,8 +155,8 @@ namespace rascal {
     inline void push_back(reference ref) {
       // use tag dispatch to use the proper definition
       // of the push_in_vector function
-      this->push_back(ref, 
-          std::conditional_t<(IsStaticallySized), 
+      this->push_back(ref,
+          std::conditional_t<(IsStaticallySized),
                               StaticSize, DynamicSize>{});
     }
 
@@ -168,8 +168,8 @@ namespace rascal {
     inline void push_back(const Eigen::DenseBase<Derived> & ref) {
       // use tag dispatch to use the proper definition
       // of the push_in_vector function
-      this->push_back(ref, 
-          std::conditional_t<(IsStaticallySized), 
+      this->push_back(ref,
+          std::conditional_t<(IsStaticallySized),
                               StaticSize, DynamicSize>{});
     }
 
@@ -194,33 +194,32 @@ namespace rascal {
       // use tag dispatch to use the proper definition
       // of the get function
       return this->get(index,
-                       std::conditional_t<(IsStaticallySized),
-                       StaticSize, DynamicSize>{});
+                        std::conditional_t<(IsStaticallySized),
+                          StaticSize, DynamicSize>{});
     }
 
-    protected:
-
+   protected:
     inline void push_back(reference ref, StaticSize) {
         Value::push_in_vector(this->values, ref);
     }
 
     inline void push_back(reference ref, DynamicSize) {
       Value::push_in_vector(this->values, ref,
-                            this->get_nb_row(),this->get_nb_col());
+                            this->get_nb_row(), this->get_nb_col());
     }
 
     template<typename Derived>
     inline void push_back(const Eigen::DenseBase<Derived> & ref, StaticSize) {
-      static_assert(Derived::RowsAtCompileTime==NbRow,
+      static_assert(Derived::RowsAtCompileTime == NbRow,
                       "NbRow has incorrect size.");
-      static_assert(Derived::ColsAtCompileTime==NbCol,
+      static_assert(Derived::ColsAtCompileTime == NbCol,
                       "NbCol has incorrect size.");
       Value::push_in_vector(this->values, ref);
     }
     template<typename Derived>
     inline void push_back(const Eigen::DenseBase<Derived> & ref, DynamicSize) {
       Value::push_in_vector(this->values, ref,
-                              this->get_nb_row(),this->get_nb_col());
+                              this->get_nb_row(), this->get_nb_col());
     }
 
     inline reference get(const size_t & index, StaticSize) {
@@ -233,10 +232,8 @@ namespace rascal {
 
     //! get a reference
     reference get_ref(T & value) {
-      return reference(&value,this->get_nb_row(),this->get_nb_col());
+      return reference(&value, this->get_nb_row(), this->get_nb_col());
     }
-
-  private:
   };
 
 }  // rascal
