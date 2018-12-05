@@ -159,7 +159,7 @@ struct add_iterators {
     auto py_cluster =
           add_iterator<StructureManagerImplementation, Order>(m, manager);
     add_iterators<
-      StructureManagerImplementation, Order+1, To>::static_for(m, py_cluster);
+      StructureManagerImplementation, Order+1, MaxOrder>::static_for(m, py_cluster);
   }
   //! following recursion
   static void static_for(py::module & m,
