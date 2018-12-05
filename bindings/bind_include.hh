@@ -121,6 +121,6 @@ namespace rascal {
   }
 }
 
-using namespace rascal;
+using namespace rascal; // NOLINT(build/namespaces)
 
 #endif /* BIND_INCLUDE_H */
