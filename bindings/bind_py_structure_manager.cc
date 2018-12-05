@@ -151,7 +151,7 @@ decltype(auto) add_iterator(py::module & m,
  * Use signature overloading to dispatch to the proper function.
  * Use iteration by recursion to iterate from Order to To-1 staticaly
 */
-template<typename StructureManagerImplementation, size_t Order, size_t To>
+template<typename StructureManagerImplementation, size_t Order, size_t MaxOrder>
 struct add_iterators {
   //! starts recursion
   static void static_for(py::module & m,
