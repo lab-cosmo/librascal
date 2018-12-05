@@ -35,10 +35,10 @@ class SphericalExpansion(object):
         Fast and Accurate Modeling of Molecular Atomization Energies with Machine Learning.
         Physical Review Letters, 108(5), 58301. https://doi.org/10.1103/PhysRevLett.108.058301
     """
-    def __init__(self,cutoff,sort='rownorm',size=10,central_decay=-1,
+    def __init__(self,cutoff,size=10,central_decay=-1,
                     interaction_cutoff=10,interaction_decay=-1):
-        self.name = 'coulomb'
-        self.sort = sort
+        self.name = 'sphericalexpansion'
+        self.options = 'expansion'
         self.cutoff = cutoff
         self.central_decay = central_decay
         self.interaction_cutoff = interaction_cutoff
