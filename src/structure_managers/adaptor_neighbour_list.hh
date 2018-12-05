@@ -596,7 +596,7 @@ namespace rascal {
     template<size_t Order, size_t Layer>
     inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
                                    & cluster) const {
-      static_assert(Order < traits::MaxOrder,
+      static_assert(Order <= traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
 
       auto access_index = cluster.get_cluster_index(Layer);
