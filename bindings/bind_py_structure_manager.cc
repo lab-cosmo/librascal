@@ -151,7 +151,7 @@ decltype(auto) add_iterator(py::module & m,
  * Use signature overloading to dispatch to the proper function.
  * Use iteration by recursion to iterate from Order to To-1 staticaly
 */
-template<typename StructureManagerImplementation, size_t Order, size_t To>
+template<typename StructureManagerImplementation, size_t Order, size_t MaxOrder>
 struct add_iterators {
   //! starts recursion
   static void static_for(py::module & m,
@@ -159,7 +159,7 @@ struct add_iterators {
     auto py_cluster =
           add_iterator<StructureManagerImplementation, Order>(m, manager);
     add_iterators<
-      StructureManagerImplementation, Order+1, To>::static_for(m, py_cluster);
+      StructureManagerImplementation, Order+1, MaxOrder>::static_for(m, py_cluster);
   }
   //! following recursion
   static void static_for(py::module & m,
@@ -254,7 +254,7 @@ void add_structure_manager(py::module & mod, py::module & m_garbage) {
          });
 }
 
-//! Function defining which adaptors are binded on top of the
+//! Function defining which adaptors are stacked on top of each and then the binding is done for the 
 //! structure manager
 template<typename StructureManagerImplementation>
 void add_adaptors(py::module & mod, py::module & m_garbage) {
