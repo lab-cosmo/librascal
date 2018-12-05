@@ -286,7 +286,7 @@ Decision:
 Unnamed Namespaces and Static Variables
 ---------------------------------------
 
-When definitions do not need to be referenced outside that file, place them in an unnamed namespace or declare them static.
+When definitions in a ``.cc`` file do not need to be referenced outside that file, place them in an unnamed namespace or declare them static. Do not use either of these constructs in ``.hh`` files.
 
 All declarations can be given internal linkage by placing them in unnamed namespaces. Functions and variables can also be given internal linkage by declaring them static. This means that anything you're declaring can't be accessed from another file. If a different file declares something with the same name, then the two entities are completely independent.
 
