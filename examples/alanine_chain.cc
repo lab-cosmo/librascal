@@ -25,7 +25,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <structure_managers/structure_manager_chain.hh>
 #include <structure_managers/property.hh>
 
 #include "json.hpp"
@@ -37,7 +36,6 @@
 using Manager_t = rascal::StructureManagerChain;
 
 int main() {
-
   // integer lists containing the definition of the quadruplets for the
   // calculation of the dihedral angles in the alanine-unit.
   std::vector<int> phi{4, 3, 19, 1};

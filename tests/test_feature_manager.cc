@@ -33,7 +33,7 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(feature_dense_test);
   /* ---------------------------------------------------------------------- */
-  // TODO define more test that could be streamlined
+  // TODO(felix) define more test that could be streamlined
   // gets a list of fixtures for all the different possible structure managers
   using multiple_fixtures = boost::mpl::list<
     FeatureFixture<double, FeatureManagerDense,
@@ -57,7 +57,6 @@ namespace rascal {
     for (auto& hyper : hypers) {
       features.emplace_back(Nfeature, hyper);
     }
-
   }
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(representation_aggregate_test,
@@ -67,7 +66,7 @@ namespace rascal {
     auto& Nfeature = Fix::Nfeature;
     auto& Ncenter = Fix::Ncenter;
     for (auto& hyper : hypers) {
-      features.emplace_back(Nfeature ,hyper);
+      features.emplace_back(Nfeature, hyper);
       features.back().reserve(Ncenter);
     }
 
