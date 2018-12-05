@@ -107,7 +107,7 @@ namespace rascal {
      * properly casted fully typed and sized reference, or throws a runttime
      * error
      */
-    // TODO Need to make an equivalent for dynamic sized property
+    // TODO(felix) Need to make an equivalent for dynamic sized property
     static inline Property & check_compatibility(PropertyBase & other) {
       // check ``type`` compatibility
       if (not(other.get_type_info().hash_code() == typeid(T).hash_code())) {

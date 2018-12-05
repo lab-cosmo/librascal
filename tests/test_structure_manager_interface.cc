@@ -35,32 +35,34 @@ namespace rascal {
 
   // gets a list of fixtures for all the different possible structure managers
   using multiple_fixtures = boost::mpl::list<
-    MultipleStructureManagerCenterFixture<StructureManagerCenters,MultipleStructureManagerBaseFixture>,
-    MultipleStructureManagerNLFixture<StructureManagerCenters,MultipleStructureManagerBaseFixture>,
-    MultipleStructureManagerStrictFixture<StructureManagerCenters,MultipleStructureManagerBaseFixture>>;
+    MultipleStructureManagerCenterFixture<StructureManagerCenters,
+                          MultipleStructureManagerBaseFixture>,
+    MultipleStructureManagerNLFixture<StructureManagerCenters,
+                          MultipleStructureManagerBaseFixture>,
+    MultipleStructureManagerStrictFixture<StructureManagerCenters,
+                          MultipleStructureManagerBaseFixture>>;
 
   /* ---------------------------------------------------------------------- */
   // just checks that the structure managers can be constructed
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_constructor_test, Fix, multiple_fixtures,
-                                   Fix) { }
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_constructor_test,
+                                              Fix, multiple_fixtures, Fix) { }
 
   /* ---------------------------------------------------------------------- */
   // the size of the manager should correspond to the number of size 1 clusters
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_size_consistency, Fix, multiple_fixtures,
-                                   Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_size_consistency, Fix,
+                                                    multiple_fixtures, Fix) {
     auto & managers = Fix::managers_center;
-    for (auto& manager : managers){
+    for (auto& manager : managers) {
       BOOST_CHECK_EQUAL(manager.size(), manager.nb_clusters(1));
     }
-    
   }
 
   /* ---------------------------------------------------------------------- */
   // loops over the centers in the manager making sure positions are consistent
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_atom_indexing, Fix, multiple_fixtures,
-                                   Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_atom_indexing, Fix,
+                                                      multiple_fixtures, Fix) {
     auto & managers = Fix::managers_center;
-    for (auto& manager : managers){
+    for (auto& manager : managers) {
       for (auto atom : manager) {
         // checks get_atom_index exists
         auto index = atom.get_atom_index();
@@ -89,10 +91,9 @@ namespace rascal {
   // contiguous
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_atom_global_indexing, Fix,
                                    multiple_fixtures, Fix) {
-    
     auto & managers = Fix::managers_center;
-    
-    for (auto& manager : managers){
+
+    for (auto& manager : managers) {
       auto index_reference{0};
       for (auto atom : manager) {
         // checks get_atom_index exists

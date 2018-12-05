@@ -2,12 +2,12 @@
  * file   rascal_utility.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
- *
+ * @author Felix Musil <felix.musil@epfl.ch>
  * @date   16 Jul 2018
  *
  * @brief  utilities for rascal
  *
- * Copyright © 2018 Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2018 Markus Stricker, Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -40,7 +40,7 @@
 
 #include <utility>
 #include <string>
-#include <regex>
+#include <regex> // NOLINT
 #include <tuple>
 #include <map>
 
@@ -110,13 +110,13 @@ namespace rascal {
         // the #define strings is a pain to split
 #if defined(GCC_COMPILER)
         #define FUNCTION_MACRO __PRETTY_FUNCTION__
-        #define PREFIX "static const string rascal::internal::GetTypeNameHelper<T>::GetTypeName() [with T = "
-        #define SUFFIX_1 "; std::__cxx11::string = std::__cxx11::basic_string<char>]"
+        #define PREFIX "static const string rascal::internal::GetTypeNameHelper<T>::GetTypeName() [with T = " // NOLINT
+        #define SUFFIX_1 "; std::__cxx11::string = std::__cxx11::basic_string<char>]" // NOLINT
         #define SUFFIX_2 ""
         #define NUM_TYPE_REPEATS 1
 #elif defined(CLANG_COMPILER)
         #define FUNCTION_MACRO __PRETTY_FUNCTION__
-        #define PREFIX "static const std::string rascal::internal::GetTypeNameHelper<"
+        #define PREFIX "static const std::string rascal::internal::GetTypeNameHelper<" // NOLINT
         #define SUFFIX_1 ">::GetTypeName() [T ="
         #define SUFFIX_2 "]"
         #define NUM_TYPE_REPEATS 2

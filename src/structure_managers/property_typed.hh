@@ -2,13 +2,14 @@
  * file   property_typed.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
+ * @author Felix Musil <felix.musil@epfl.ch>
  *
  * @date   06 Aug 2018
  *
  * @brief Implements intermediate property class for which the type of stored
  *          objects is known, but not the size
  *
- * Copyright © 2018 Federico Giberti, Till Junge, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2018 Federico Giberti, Till Junge, Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -131,11 +132,6 @@ namespace rascal {
         vec.push_back(ref(0, 0));
       }
     };
-
-    // TODO take the case of dynamically sized Value
-    // Probably a switch between the static and dynamic version
-    // of the push_in_vector
-    //
 
     template<typename T, size_t NbRow, size_t NbCol>
     using Value_t = typename Value<T, NbRow, NbCol>::type;

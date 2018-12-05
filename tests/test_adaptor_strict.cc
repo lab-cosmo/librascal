@@ -2,12 +2,13 @@
  * file   test_adaptor_strict.cc
  *
  * @author Till Junge <till.junge@epfl.ch>
+ * @author Felix Musil <felix.musil@epfl.ch>
  *
  * @date   04 Jun 2018
  *
  * @brief  tests the implementation of the strict structure adaptor
  *
- * Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2018 Till Junge, Felix Musil COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -40,7 +41,6 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
                           ManagerFixture<StructureManagerCenters>) {
-    // TODO: add fixture with strict neighbourhood and fix the rest below
     double cutoff{3.5};
     AdaptorNeighbourList<StructureManagerCenters> pair_manager{manager, cutoff};
     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>
@@ -85,8 +85,6 @@ namespace rascal {
       std::vector<std::vector<double>> neigh_dist_strict{};
       std::vector<std::vector<std::array<double, 3>>> neigh_dirVec_strict{};
 
-      // TODO re-initiallization in the loop of the pair manager results in a
-      // segmentation fault, is it to be expected ?
       if (verbose) std::cout << "Setting up strict manager with rc = "
                              <<cutoff_tmp << std::endl;
       AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>
@@ -166,7 +164,7 @@ namespace rascal {
           indices_.push_back(neigh.get_atom_index());
           distances_.push_back(distance);
           auto dirVec{adaptor_strict.get_direction_vector(neigh)};
-          std::array<double,3> bb{{dirVec(0), dirVec(1), dirVec(2)}};
+          std::array<double, 3> bb{{dirVec(0), dirVec(1), dirVec(2)}};
           dirVecs_.push_back(bb);
 
           if (verbose) {
@@ -214,8 +212,6 @@ namespace rascal {
     }
   }
 
-  // TODO define more test that could be streamlined
-  // gets a list of fixtures for all the different possible structure managers
   using multiple_fixtures = boost::mpl::list<
     MultipleStructureManagerNLFixture<StructureManagerCenters,
                                       MultipleStructureManagerBaseFixture>>;
@@ -352,7 +348,7 @@ namespace rascal {
           double d1{neigh_dist_strict[ii][jj]};
           BOOST_CHECK_EQUAL(a0, a1);
           BOOST_CHECK_EQUAL(d0, d1);
-          for (size_t kk{0};kk<neigh_dirVec[ii][jj].size();++kk) {
+          for (size_t kk{0}; kk < neigh_dirVec[ii][jj].size(); ++kk) {
             double dv0{neigh_dirVec[ii][jj][kk]};
             double dv1{neigh_dirVec_strict[ii][jj][kk]};
             BOOST_CHECK_EQUAL(dv0, dv1);
@@ -383,14 +379,6 @@ namespace rascal {
 
       std::vector<int> neighbours_per_atom1{};
       std::vector<int> neighbours_per_atom2{};
-      // TODO use the sorted distances order to check wether the
-      // direction vectors are the same
-      // https://stackoverflow.com/questions/236172/how-do-i-sort-a-stdvector-
-      // by-the-values-of-a-different-stdvector
-      // std::vector<std::vector<double>> distances_atom1{};
-      // std::vector<std::vector<double>> distances_atom2{};
-      // std::vector<std::vector<std::array<double,3>>> dirVec_atom1{};
-      // std::vector<std::vector<std::array<double,3>>> dirVec_atom2{};
 
       neighbours_per_atom1.resize(0);
       neighbours_per_atom1.resize(0);

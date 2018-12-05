@@ -77,4 +77,4 @@ namespace rascal {
   }
 
   BOOST_AUTO_TEST_SUITE_END();
-} // rascal
+} // namespace rascal

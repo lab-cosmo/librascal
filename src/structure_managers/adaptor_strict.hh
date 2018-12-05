@@ -2,14 +2,15 @@
  * file   adaptor_strict.hh
  *
  * @author Till Junge <till.junge@altermail.ch>
- *
+ * @author Felix Musil <felix.musil@epfl.ch>
+ * 
  * @date   04 Jun 2018
  *
  * @brief implements an adaptor for structure_managers, filtering
  * the original manager so that only neighbours that are strictly
  * within r_cut are retained
  *
- * Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2018 Till Junge, Felix Musil COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -192,7 +193,7 @@ namespace rascal {
     }
 
     //! Returns atom type given an atom index
-    // TODO find how to return a reference and get a reference
+    // TODO(markus) find how to return a reference and get a reference
     // from managerCenters. copies are made atm
     inline int get_atom_type(const int& atom_id) {
       int type{this->manager.get_atom_type(atom_id)};
