@@ -28,10 +28,4 @@
 
 #include "representations/representation_manager_sorted_coulomb.hh"
 
-namespace rascal {
-
-  
-
-  
-
-}
+namespace rascal { }

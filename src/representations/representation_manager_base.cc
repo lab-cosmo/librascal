@@ -31,9 +31,8 @@
 namespace rascal {
 
   template<class StructureManager>
-  void RepresentationManagerBase::check_traits_compatibility(StructureManager &){
+  void RepresentationManagerBase::check_traits_compatibility(
+                                          StructureManager &) {
     // Hello !
-
-  };
-
+  }
 }

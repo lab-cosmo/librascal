@@ -46,7 +46,6 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   struct StructureManager_traits<AdaptorHalfList<ManagerImplementation>> {
-
     constexpr static AdaptorTraits::Strict Strict{
       ManagerImplementation::traits::Strict};
     constexpr static bool HasDistances{
@@ -58,7 +57,7 @@ namespace rascal {
 
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
       AdaptorTraits::NeighbourListType::half};
-    // TODO: Future optimisation: do not increase depth for atoms
+    // TODO(markus): Future optimisation: do not increase depth for atoms
     // (they are all kept anyways, so no duplication necessary).
     using LayerByOrder = typename
       LayerIncreaser<MaxOrder,
@@ -75,9 +74,8 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   class AdaptorHalfList: public
-  StructureManager<AdaptorHalfList<ManagerImplementation>>
-  {
-  public:
+  StructureManager<AdaptorHalfList<ManagerImplementation>> {
+   public:
     using Parent =
       StructureManager<AdaptorHalfList<ManagerImplementation>>;
     using Implementation_t = ManagerImplementation;
@@ -93,7 +91,7 @@ namespace rascal {
     static_assert(traits::MaxOrder < 3,
                   "AdaptorHalfList does not work with Order > 2.");
 
-    // TODO: add this to all structure managers
+    // TODO(markus): add this to all structure managers
     // static_assert(parent_traits::NeighbourListType
     //               == AdaptorTraits::NeighbourListType::full,
     //               "adapts only a full neighbour list.");
@@ -106,7 +104,7 @@ namespace rascal {
      * Reduce a full neighbour list to a half neighbour list (sometimes also
      * called minimal).
      */
-    AdaptorHalfList(ManagerImplementation & manager);
+    explicit AdaptorHalfList(ManagerImplementation & manager)
 
     //! Copy constructor
     AdaptorHalfList(const AdaptorHalfList & other) = delete;
@@ -221,7 +219,6 @@ namespace rascal {
     template<size_t Order>
     inline size_t get_offset_impl(const std::array<size_t, Order>
                                   & counters) const {
-
       // The static assert with <= is necessary, because the template parameter
       // ``Order`` is one Order higher than the MaxOrder at the current
       // level. The return type of this function is used to build the next Order
@@ -258,8 +255,7 @@ namespace rascal {
       }
     }
 
-  protected:
-
+   protected:
     //! Reference to the underlying manager
     ManagerImplementation & manager;
 
@@ -275,7 +271,7 @@ namespace rascal {
      * ``nb_neigh`` can be accessed
      */
     std::vector<size_t> offsets;
-  private:
+   private:
   };
 
   /* ---------------------------------------------------------------------- */
@@ -305,7 +301,6 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   void AdaptorHalfList<ManagerImplementation>::update() {
-
     // Reset cluster_indices for adaptor to fill with push back.
     internal::for_each(this->cluster_indices_container,
                        internal::ResizePropertyToZero());
@@ -324,8 +319,7 @@ namespace rascal {
     // counter for total number of pairs (minimal list) for cluster_indices
     size_t pair_counter{0};
 
-    for (auto atom: this->manager) {
-
+    for (auto atom : this->manager) {
       // Add new depth layer for atoms (see LayerByOrder for possible
       // optimisation).
       constexpr auto AtomLayer{
@@ -342,8 +336,7 @@ namespace rascal {
       // neighbours per atom counter to correct for offsets
       int nneigh{0};
 
-      for (auto pair: atom) {
-
+      for (auto pair : atom) {
         constexpr auto PairLayer{
           compute_cluster_layer<pair.order()>
             (typename traits::LayerByOrder{})};
@@ -354,7 +347,6 @@ namespace rascal {
         // higher index_j than index_i are used. It should in principle ensure a
         // minimal neighbour list.
         if (index_i < index_j) {
-
           this->neighbours.push_back(index_j);
           nneigh++;
 

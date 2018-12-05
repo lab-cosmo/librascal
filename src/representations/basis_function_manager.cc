@@ -28,14 +28,14 @@
 
 
 
-#include "representations/basis_function_manager.cc"
+#include "representations/basis_function_manager.hh"
 
 #include <cmath>
 
-using unit = BasisFunManager::unit;
-using BasisFunType = BasisFunManager::BasisFunType;
+using unit = rascal::BasisFunManager::unit;
+using BasisFunType = rascal::BasisFunManager::BasisFunType;
 
-namespace rascal {
+namespace rascal { // NOLINT
   /* ---------------------------------------------------------------------- */
   enum class BasisFunManager::BasisFunType: int {
       One = 0; // yields only cutoff function
@@ -240,3 +240,4 @@ namespace rascal {
     }
     }
   }
+} // namespace rascal
