@@ -45,8 +45,10 @@ decltype(auto) bind_feature_manager(py::module & mod, py::module & ) {
   feature.def("reserve", &Feature::reserve);
   feature.def("append",
         (void (Feature::*)(RepresentationManagerBase&)) &Feature::push_back);
-  feature.def("size", &Feature::size);
-  feature.def("shape", &Feature::shape);
+  feature.def_property_readonly("size", &Feature::size,
+                              py::return_value_policy::copy);
+  feature.def_property_readonly("shape", &Feature::shape,
+                              py::return_value_policy::copy);
   feature.def("get_feature_matrix", &Feature::get_feature_matrix,
         py::return_value_policy::reference_internal, py::keep_alive<1, 0>());
 

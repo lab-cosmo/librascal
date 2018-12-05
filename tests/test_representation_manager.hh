@@ -39,8 +39,19 @@ namespace rascal {
 
 
   struct MultipleStructureSortedCoulomb {
-    MultipleStructureSortedCoulomb() = default;
+    MultipleStructureSortedCoulomb() {
+      json ref_data;
+      std::ifstream ref_file(this->ref_filename[0]);
+      ref_file >> ref_data;
+      unit_vectors = ref_data.at("unit_vectors").get<StdVector2D_t>();
+      harmonics = ref_data.at("harmonics").get<StdVector3D_t>();
+      alps = ref_data.at("alps").get<StdVector3D_t>();
+    }
     ~MultipleStructureSortedCoulomb() = default;
+
+    std::vector<std::string> ref_filename{
+      "reference_data/sorted_coulomb_matrix.json"
+      };
 
     std::vector<std::string> filenames{
       "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
