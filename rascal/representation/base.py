@@ -1,6 +1,9 @@
 from ..lib import RepresentationManager
 
-_representations_dict = {"coulomb":[["distance","rownorm"]]}
+_representations_dict = {
+    "coulomb":[["distance","rownorm"]],
+    "sphericalexpansion":[["expansion"]]
+    }
 
 
 _representations = {}
