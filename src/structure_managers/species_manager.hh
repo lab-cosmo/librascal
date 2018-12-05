@@ -157,8 +157,8 @@ namespace rascal {
           std::make_unique<Filter_t<Order>>(this->structure_manager)};
         // insertion returns a ridiculous type, see spec
         auto new_location{
-          std::get<0>(filter_map.insert({
-                species_indices, std::move(new_filter)}))};
+          std::get<0>(filter_map.emplace(species_indices,
+                                         std::move(new_filter)))};
         return *std::get<1>(*new_location);
       } else {
         return *std::get<1>(*location);
