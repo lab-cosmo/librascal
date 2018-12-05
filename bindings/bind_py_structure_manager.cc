@@ -254,7 +254,7 @@ void add_structure_manager(py::module & mod, py::module & m_garbage) {
          });
 }
 
-//! Function defining which adaptors are binded on top of the
+//! Function defining which adaptors are stacked on top of each and then the binding is done for the 
 //! structure manager
 template<typename StructureManagerImplementation>
 void add_adaptors(py::module & mod, py::module & m_garbage) {
