@@ -12,7 +12,7 @@ Rascal as of now is thought as standalone code. However, we aim to provide enoug
 
 Although at the moment is a serial-only code, we aim to write it in MPI so that it will be possible to take advantage of parallelization to speed up the calculations significantly.
 
-It comes with a GNU lesser general public license of version 3, which means that it can be modified and freely distributed, although we take no responsibility for its misuse.
+It comes with a GNU Lesser General Public License of version 3, which means that it can be modified and freely distributed, although we take no responsibility for its misuse.
 
 
 Compile the Code

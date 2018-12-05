@@ -11,18 +11,18 @@
  *
  * Copyright © 2018 Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
  *
- * librascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
+ * Rascal is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
- * librascal is distributed in the hope that it will be useful, but
+ * Rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -57,8 +57,6 @@ namespace rascal {
 
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
       AdaptorTraits::NeighbourListType::full};
-    // TODO(markus): Future optimisation: do not increase depth for atoms
-    // (they are all kept anyways, so no duplication necessary).
     using LayerByOrder = typename
       LayerIncreaser<MaxOrder,
                      typename
@@ -98,7 +96,7 @@ namespace rascal {
     AdaptorFullList() = delete;
 
      //! Extend a minimal/half neighbour list to a full neighbour list.
-    explicit AdaptorFullList(ManagerImplementation & manager)
+    explicit AdaptorFullList(ManagerImplementation & manager);
 
     //! Copy constructor
     AdaptorFullList(const AdaptorFullList & other) = delete;

@@ -10,15 +10,15 @@
  *
  * Copyright © 2018 Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
  *
- * rascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
+ * Rascal is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
- * rascal is distributed in the hope that it will be useful, but
+ * Rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
+ * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this software; see the file LICENSE. If not, write to the
@@ -43,33 +43,34 @@ namespace rascal { // NOLINT
       cosine = 2;
       angular1 = 3; // depends on 3 distances
       angular2 = 4; // depends on 2 distances
+  };
+
+  enum class BasisFunManager::CutoffFunType: int {
+    cosine = 1;
+    cosine_with_shift = 2; // as used by Kobayashi et al 2017
+    tanh = 3;
+  };
+
+  /* ------------------------------------------------------------------ */
+  constexpr unint
+  BasisFunManager::get_nhyper(const BasisFunType & fun_type) {
+    switch (fun_type) {
+    case BasisFunType::One:
+      return 0;
+    case BasisFunType::Gaussian:
+      return 2;
+    case BasisFunType::cosine:
+      return 1;
+    case BasisFunType::angular1:
+      return 3;
+    case BasisFunType::angular2:
+      return 3;
+    default:
+      return 0;
     }
-    enum class BasisFunManager::CutoffFunType: int {
-        cosine = 1;
-        cosine_with_shift = 2; // as used by Kobayashi et al 2017
-        tanh = 3;
-      }
+  }
 
-    /* ---------------------------------------------------------------------- */
-      constexpr unint
-      BasisFunManager::get_nhyper(const BasisFunType & fun_type) {
-        switch (fun_type) {
-        case BasisFunType::One:
-          return 0;
-        case BasisFunType::Gaussian:
-          return 2;
-        case BasisFunType::cosine:
-          return 1;
-        case BasisFunType::angular1:
-          return 3;
-        case BasisFunType::angular2:
-          return 3;
-        default:
-          return 0;
-        }
-      }
-
-  /* ---------------------------------------------------------------------- */
+  /* -------------------------------------------------------------------- */
   template<BasisFunType fun_type>
   inline double BasisFunManager::comp_fun(const double * const param,
           const double * const rij) {
@@ -99,7 +100,7 @@ namespace rascal { // NOLINT
       const auto & Rik = rij[2];
       const auto & Rjk = rij[3];
       return pow(2., 1 - zeta) * pow(1. + lambda * cos(thetaijk), zeta)
-  * exp(-eta * (Rij*Rij + Rik*Rik + Rjk*Rjk));
+        * exp(-eta * (Rij*Rij + Rik*Rik + Rjk*Rjk));
     }
       // remark: possible direct use of cosine?
     case BasisFunType::angular2: {
@@ -110,14 +111,14 @@ namespace rascal { // NOLINT
       const auto & Rij = rij[1];
       const auto & Rik = rij[2];
       return pow(2., 1 - zeta) * pow(1. + lambda * cos(thetaijk), zeta)
-  * exp(-eta * (Rij * Rij + Rik * Rik));
+        * exp(-eta * (Rij * Rij + Rik * Rik));
     }
     default:
       throw std::runtime_error("Basis function not specified")
         }
   }
 
-  /* ---------------------------------------------------------------------- */
+  /* -------------------------------------------------------------------- */
   template<BasisFunType fun_type, T>
   // Return type should be templated - as input type * input type
   decltype(auto) BasisFunManager::comp_Dfun(const double * const param,
@@ -138,35 +139,34 @@ namespace rascal { // NOLINT
       const auto & Rij = rij[0];
       return -kappa * sin(kappa * Rij);  // returns double
     }
-    case BasisFunType::angular1: {
-      const auto & zeta = param[0];
-      const auto & lambda = param[1];
-      const auto & eta = param[2];
-      const auto & thetaijk = rij[0];
-      const auto & Rij = rij[1];
-      const auto & Rik = rij[2];
-      const auto & Rjk = rij[3];
-      return  // returns double * 3
-	/* 3 /* pow(2., 1 - zeta) * pow(1. + lambda * cos(thetaijk), zeta)
-         * exp(-eta * (Rij*Rij + Rik*Rik + Rjk*Rjk)); */
-        }
-    case BasisFunType::angular2: {
-      const auto & zeta = param[0];
-      const auto & lambda = param[1];
-      const auto & eta = param[2];
-      const auto & thetaijk = rij[0];
-      const auto & Rij = rij[1];
-      const auto & Rik = rij[2];
-      return  // returns double * 2
-	/* pow(2., 1 - zeta) * pow(1. + lambda * cos(thetaijk), zeta)
-         * exp(-eta * (Rij*Rij + Rik*Rik)) */;
-    }
+    // case BasisFunType::angular1: {
+    //   const auto & zeta = param[0];
+    //   const auto & lambda = param[1];
+    //   const auto & eta = param[2];
+    //   const auto & thetaijk = rij[0];
+    //   const auto & Rij = rij[1];
+    //   const auto & Rik = rij[2];
+    //   const auto & Rjk = rij[3];
+    //   return 3 * pow(2., 1 - zeta) * pow(1. + lambda * cos(thetaijk), zeta)
+    //        * exp(-eta * (Rij*Rij + Rik*Rik + Rjk*Rjk));
+    // }
+    // case BasisFunType::angular2: {
+    //   const auto & zeta = param[0];
+    //   const auto & lambda = param[1];
+    //   const auto & eta = param[2];
+    //   const auto & thetaijk = rij[0];
+    //   const auto & Rij = rij[1];
+    //   const auto & Rik = rij[2];
+    //   return  // returns double * 2
+    // /* pow(2., 1 - zeta) * pow(1. + lambda * cos(thetaijk), zeta)
+    //      * exp(-eta * (Rij*Rij + Rik*Rik)) */;
+    // }
     default:
-      throw std::runtime_error("Basis function not specified")
-        }
+      throw std::runtime_error("Basis function not specified");
+    }
   }
 
-  /* ---------------------------------------------------------------------- */
+  /* -------------------------------------------------------------------- */
   template<CutoffFunType cfun_type>
   inline double BasisFunManager::comp_fc(const double * const param,
           const double * const rij) {
@@ -203,7 +203,7 @@ namespace rascal { // NOLINT
     }
   }
 
-  /* ---------------------------------------------------------------------- */
+  /* -------------------------------------------------------------------- */
   template<CutoffFunType cfun_type>
   inline double BasisFunManager::comp_Dfc(const double * const param,
             const double * const rij) {
