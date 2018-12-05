@@ -253,7 +253,7 @@ namespace rascal {
     bool is_precomputed{false};
 
     Manager_t& structure_manager;
-    Property_t soap_vectors{};
+    Property_t soap_vectors;
   };
 
 

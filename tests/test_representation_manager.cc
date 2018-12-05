@@ -172,14 +172,14 @@ namespace rascal {
     for (auto& manager : managers) {
       for (const auto& hyper : hypers) {
         representations.emplace_back(manager, hyper);
-        BOOST_TEST(representations.back().get_is_precomputed() == false);
+        BOOST_CHECK(representations.back().get_is_precomputed() == false);
         representations.back().precompute();
-        BOOST_TEST(representations.back().get_is_precomputed() == true);
+        BOOST_CHECK(representations.back().get_is_precomputed() == true);
         // And now test automatic precomputation
         representations.emplace_back(manager, hyper);
-        BOOST_TEST(representations.back().get_is_precomputed() == false);
+        BOOST_CHECK(representations.back().get_is_precomputed() == false);
         representations.back().compute();
-        BOOST_TEST(representations.back().get_is_precomputed() == true);
+        BOOST_CHECK(representations.back().get_is_precomputed() == true);
       }
     }
   }
@@ -220,7 +220,7 @@ namespace rascal {
         // Check dimensions of the storage array
         size_t max_radial = hyper.at("max_radial");
         size_t max_angular =  hyper.at("max_angular");
-        BOOST_TEST(representations.back().get_feature_size() ==
+        BOOST_CHECK(representations.back().get_feature_size() ==
           max_radial * (max_angular + 1) * (max_angular + 1));
         if (verbose) {
           size_t center_idx{0};

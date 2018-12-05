@@ -59,7 +59,7 @@ namespace rascal {
     FeatureManagerBase(FeatureManagerBase &&other) = delete;
 
     //! Destructor
-    ~FeatureManagerBase() = default;
+    virtual ~FeatureManagerBase() = default;
 
     //! Copy assignment operator
     FeatureManagerBase& operator=(const FeatureManagerBase &other) = delete;
