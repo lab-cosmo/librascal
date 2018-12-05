@@ -31,7 +31,7 @@
 
 
 void utils_binding(py::module & mod) {
-  py::module m_utls_sps = mod.def_submodule("sparsification");
+  py::module m_utlis_sparse = mod.def_submodule("sparsification");
   m_utls_sps.doc() = "Sparsification Routines";
 
   m_utls_sps.def("fps", & utils::select_fps,
