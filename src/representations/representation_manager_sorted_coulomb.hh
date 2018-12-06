@@ -48,15 +48,15 @@ namespace rascal {
      */
     struct ordering {
       bool operator() (std::pair<size_t, distiter> const& a,
-                              std::pair<size_t, distiter> const& b) {
-          return *(a.second) < *(b.second);
+                       std::pair<size_t, distiter> const& b) {
+        return *(a.second) < *(b.second);
       }
     };
 
     struct ordering_descending {
       bool operator() (std::pair<size_t, distiter> const& a,
-                              std::pair<size_t, distiter> const& b) {
-          return *(a.second) > *(b.second);
+                       std::pair<size_t, distiter> const& b) {
+        return *(a.second) > *(b.second);
       }
     };
 
@@ -66,18 +66,17 @@ namespace rascal {
      * @params referece Contains the sort order from the other container
      * @returns copy of in that has been sorted
      */
-    template <typename T>
-    std::vector<T> sort_from_ref(
-        std::vector<T> const& in,
-        std::vector<std::pair<size_t, distiter> > const& reference) {
-        std::vector<T> ret(in.size());
+    template <typename T> std::vector<T> sort_from_ref
+    (std::vector<T> const & in,
+     std::vector<std::pair<size_t, distiter> > const & reference) {
+      std::vector<T> ret(in.size());
 
-        size_t const size = in.size();
-        for (size_t i{0}; i < size; ++i) {
-            ret[i] = in[reference[i].first];
-          }
+      size_t const size = in.size();
+      for (size_t i{0}; i < size; ++i) {
+        ret[i] = in[reference[i].first];
+      }
 
-        return ret;
+      return ret;
     }
 
     /** Sort the coulomb matrix using the distance to the central atom
@@ -88,17 +87,16 @@ namespace rascal {
      * @params distances_to_sort  list of the distances to the central atom
      */
     template <typename DerivedA, typename DerivedB>
-    void sort_coulomb_matrix(
-      const Eigen::DenseBase<DerivedA> & in,
-      Eigen::DenseBase<DerivedB> & out,
-      const std::vector<double> & distances_to_sort) {
+    void sort_coulomb_matrix(const Eigen::DenseBase<DerivedA> & in,
+                             Eigen::DenseBase<DerivedB> & out,
+                             const std::vector<double> & distances_to_sort) {
       // find the sorting order
       std::vector<std::pair<size_t, distiter> >
-                  order_coulomb(distances_to_sort.size());
+        order_coulomb(distances_to_sort.size());
       size_t nn{0};
       for (distiter it{distances_to_sort.begin()};
-                            it != distances_to_sort.end(); ++it, ++nn)
-          {order_coulomb[nn] = make_pair(nn, it);}
+           it != distances_to_sort.end(); ++it, ++nn)
+        {order_coulomb[nn] = make_pair(nn, it);}
 
       std::sort(order_coulomb.begin(), order_coulomb.end(), ordering());
 
@@ -127,8 +125,8 @@ namespace rascal {
 
   template<>
   struct SortCoulomMatrix<Option::CMSortDistance> {
-    static decltype(auto) get_coulom_matrix_sorting_order(
-                    const Eigen::Ref< const Eigen::MatrixXd>& distance_mat) {
+    static decltype(auto) get_coulom_matrix_sorting_order
+    (const Eigen::Ref< const Eigen::MatrixXd>& distance_mat) {
       using distiter = typename std::vector<double>::const_iterator;
       // initialize the distances to be sorted. the center is always first
       std::vector<double> distances_to_sort{0};
@@ -140,22 +138,22 @@ namespace rascal {
 
       // find the sorting order
       std::vector<std::pair<size_t, distiter> >
-                            order_coulomb(distances_to_sort.size());
+        order_coulomb(distances_to_sort.size());
       size_t nn{0};
       for (distiter it{distances_to_sort.begin()};
-                            it != distances_to_sort.end(); ++it, ++nn)
-          {order_coulomb[nn] = make_pair(nn, it);}
+           it != distances_to_sort.end(); ++it, ++nn)
+        {order_coulomb[nn] = make_pair(nn, it);}
 
       std::sort(order_coulomb.begin(), order_coulomb.end(),
-                                              internal::ordering());
+                internal::ordering());
       return order_coulomb;
     }
   };
 
   template<>
   struct SortCoulomMatrix<Option::CMSortRowNorm> {
-    static decltype(auto) get_coulom_matrix_sorting_order(
-                    const Eigen::Ref< const Eigen::MatrixXd>& coulomb_mat) {
+    static decltype(auto) get_coulom_matrix_sorting_order
+    (const Eigen::Ref< const Eigen::MatrixXd>& coulomb_mat) {
       using distiter = typename std::vector<double>::const_iterator;
       // initialize the distances to be sorted. the center is always first
       std::vector<double> distances_to_sort{};
@@ -168,14 +166,14 @@ namespace rascal {
       }
       // find the sorting order
       std::vector<std::pair<size_t, distiter> >
-                            order_coulomb(distances_to_sort.size());
+        order_coulomb(distances_to_sort.size());
       size_t nn{0};
       for (distiter it{distances_to_sort.begin()};
-                            it != distances_to_sort.end(); ++it, ++nn)
-          {order_coulomb[nn] = make_pair(nn, it);}
+           it != distances_to_sort.end(); ++it, ++nn)
+        {order_coulomb[nn] = make_pair(nn, it);}
 
       std::sort(order_coulomb.begin(), order_coulomb.end(),
-                                              internal::ordering_descending());
+                internal::ordering_descending());
       return order_coulomb;
     }
   };
@@ -187,7 +185,7 @@ namespace rascal {
    */
   template<class StructureManager, Option SortingAlgo>
   class RepresentationManagerSortedCoulomb: public RepresentationManagerBase {
-   public:
+  public:
     // TODO(felix) make a traits mechanism
     // TODO(Felix) allow for different kind of CM
     using Manager_t = StructureManager;
@@ -202,41 +200,41 @@ namespace rascal {
     //! Default constructor
     RepresentationManagerSortedCoulomb(Manager_t &sm, const hypers_t& hyper)
       :structure_manager{sm}, central_decay{},
-      interaction_cutoff{},
-      interaction_decay{}, coulomb_matrices{sm}
-      {
-        this->set_hyperparameters(hyper);
-        this->check_size_compatibility();
-      }
+       interaction_cutoff{},
+       interaction_decay{}, coulomb_matrices{sm}
+    {
+      this->set_hyperparameters(hyper);
+      this->check_size_compatibility();
+    }
 
     RepresentationManagerSortedCoulomb(Manager_t &sm,
-                                      const std::string& hyper_str)
+                                       const std::string& hyper_str)
       :structure_manager{sm}, central_decay{},
-      interaction_cutoff{},
-      interaction_decay{}, coulomb_matrices{sm}
-      {
-        this->set_hyperparameters(hyper_str);
-        this->check_size_compatibility();
-      }
+       interaction_cutoff{},
+       interaction_decay{}, coulomb_matrices{sm}
+    {
+      this->set_hyperparameters(hyper_str);
+      this->check_size_compatibility();
+    }
 
     //! Copy constructor
-    RepresentationManagerSortedCoulomb(
-      const RepresentationManagerSortedCoulomb &other) = delete;
+    RepresentationManagerSortedCoulomb
+    (const RepresentationManagerSortedCoulomb &other) = delete;
 
     //! Move constructor
-    RepresentationManagerSortedCoulomb(
-      RepresentationManagerSortedCoulomb &&other) = default;
+    RepresentationManagerSortedCoulomb
+    (RepresentationManagerSortedCoulomb && other) = default;
 
     //! Destructor
     virtual ~RepresentationManagerSortedCoulomb()  = default;
 
     //! Copy assignment operator
-    RepresentationManagerSortedCoulomb& operator=(
-      const RepresentationManagerSortedCoulomb &other) = delete;
+    RepresentationManagerSortedCoulomb& operator=
+    (const RepresentationManagerSortedCoulomb &other) = delete;
 
     //! Move assignment operator
-    RepresentationManagerSortedCoulomb& operator=(
-      RepresentationManagerSortedCoulomb && other) = default;
+    RepresentationManagerSortedCoulomb & operator=
+    (RepresentationManagerSortedCoulomb && other) = default;
 
 
     //! compute representation
@@ -250,14 +248,14 @@ namespace rascal {
     Eigen::Map<Eigen::MatrixXd> get_representation_full() {
       auto Nb_centers{this->structure_manager.nb_clusters(1)};
       auto Nb_features{this->get_n_feature()};
-      auto& raw_data{this->coulomb_matrices.get_raw_data()};
+      auto & raw_data{this->coulomb_matrices.get_raw_data()};
       Eigen::Map<Eigen::MatrixXd> representation(raw_data.data(),
                                                  Nb_features, Nb_centers);
       return representation;
     }
 
     //! get the raw data of the representation
-    std::vector<precision_t>& get_representation_raw_data() {
+    std::vector<precision_t> & get_representation_raw_data() {
       return this->coulomb_matrices.get_raw_data();
     }
 
@@ -271,21 +269,21 @@ namespace rascal {
       return this->coulomb_matrices.get_nb_item();
     }
 
-     void check_size_compatibility() {
+    void check_size_compatibility() {
       for (auto center : this->structure_manager) {
         auto Nneighbours{center.size()};
         if (Nneighbours > this->size) {
-            std::cout << "size is too small for this "
-                          "structure and has been reset to: "
-                      << Nneighbours << std::endl;
-            this->size = Nneighbours;
+          std::cout << "size is too small for this "
+            "structure and has been reset to: "
+                    << Nneighbours << std::endl;
+          this->size = Nneighbours;
         }
       }
     }
 
     void get_distance_matrix(ClusterRef_t<1> & center,
-          Eigen::Ref<Eigen::MatrixXd> distance_mat,
-          Eigen::Ref<Eigen::MatrixXd> type_factor_mat);
+                             Eigen::Ref<Eigen::MatrixXd> distance_mat,
+                             Eigen::Ref<Eigen::MatrixXd> type_factor_mat);
 
 
     /** Sort the coulomb matrix using the distance to the central atom
@@ -296,10 +294,10 @@ namespace rascal {
      * @params order_coulomb  map to the sorted order order
      */
     template <typename DerivedA, typename DerivedB>
-    void sort_and_linearize_coulomb_matrix(
-      const Eigen::DenseBase<DerivedA> & square_coulomb,
-      Eigen::DenseBase<DerivedB> & linear_coulomb,
-      const std::vector<std::pair<size_t, distiter> > & order_coulomb) {
+    void sort_and_linearize_coulomb_matrix
+    (const Eigen::DenseBase<DerivedA> & square_coulomb,
+     Eigen::DenseBase<DerivedB> & linear_coulomb,
+     const std::vector<std::pair<size_t, distiter> > & order_coulomb) {
       auto Nneigh{square_coulomb.cols()};
       size_t lin_id{0};
 
@@ -334,11 +332,12 @@ namespace rascal {
 
   template<class Mngr, Option SortAlgo>
   using RMImpl = RepresentationManagerSortedCoulomb<Mngr, SortAlgo>;
-  /* ---------------------------------------------------------------------- */
 
+  /* ---------------------------------------------------------------------- */
   template<class Mngr, Option SortAlgo>
-  void RepresentationManagerSortedCoulomb<Mngr, SortAlgo>::set_hyperparameters(
-  const RepresentationManagerSortedCoulomb<Mngr, SortAlgo>::hypers_t & hyper) {
+  void RepresentationManagerSortedCoulomb<Mngr, SortAlgo>::
+  set_hyperparameters(const RepresentationManagerSortedCoulomb<Mngr, SortAlgo>::
+                      hypers_t & hyper) {
     this->central_decay = hyper["central_decay"];
     this->interaction_cutoff = hyper["interaction_cutoff"];
     this->interaction_decay = hyper["interaction_decay"];
@@ -347,8 +346,8 @@ namespace rascal {
   }
 
   template<class Mngr, Option SortAlgo>
-  void RepresentationManagerSortedCoulomb<Mngr, SortAlgo>::set_hyperparameters(
-          const std::string & hyper_str) {
+  void RepresentationManagerSortedCoulomb<Mngr, SortAlgo>::
+  set_hyperparameters(const std::string & hyper_str) {
     this->hypers = json::parse(hyper_str);
     this->central_decay = this->hypers["central_decay"];
     this->interaction_cutoff = this->hypers["interaction_cutoff"];
@@ -357,7 +356,6 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-
   template<class Mngr, Option SortAlgo>
   void RepresentationManagerSortedCoulomb<Mngr, SortAlgo>::compute() {
     // initialise the sorted coulomb_matrices in linear storage
@@ -374,21 +372,21 @@ namespace rascal {
       // re-use the temporary coulomb mat in linear storage
       // need to be zeroed because old data might not be overwritten
       lin_sorted_coulomb_mat =
-              Eigen::MatrixXd::Zero(this->size*(this->size+1)/2, 1);
+        Eigen::MatrixXd::Zero(this->size*(this->size+1)/2, 1);
 
       // Nneighbour counts the central atom and the neighbours
       size_t Nneighbour{center.size()+1};
 
       // the local distance matrix. Ones to avoid overflow in the div.
       Eigen::MatrixXd distance_mat =
-              Eigen::MatrixXd::Ones(Nneighbour, Nneighbour);
+        Eigen::MatrixXd::Ones(Nneighbour, Nneighbour);
       // the matrix with the prefactor on the .
       Eigen::MatrixXd type_factor_mat =
-              Eigen::MatrixXd::Zero(Nneighbour, Nneighbour);
+        Eigen::MatrixXd::Zero(Nneighbour, Nneighbour);
 
       // the local coulomb matrix
       Eigen::MatrixXd coulomb_mat =
-              Eigen::MatrixXd::Ones(Nneighbour, Nneighbour);
+        Eigen::MatrixXd::Ones(Nneighbour, Nneighbour);
 
 
       this->get_distance_matrix(center, distance_mat, type_factor_mat);
@@ -398,22 +396,24 @@ namespace rascal {
 
       using Sorter = SortCoulomMatrix<SortAlgo>;
       switch (SortAlgo) {
-        case Option::CMSortDistance: {
-          auto sort_order{
-                Sorter::get_coulom_matrix_sorting_order(distance_mat)};
-          // inject the coulomb matrix into the sorted linear storage
-          this->sort_and_linearize_coulomb_matrix(coulomb_mat,
-                lin_sorted_coulomb_mat, sort_order);
-          break;
-        }
-        case Option::CMSortRowNorm: {
-          auto sort_order{
-                Sorter::get_coulom_matrix_sorting_order(coulomb_mat)};
-          // inject the coulomb matrix into the sorted linear storage
-          this->sort_and_linearize_coulomb_matrix(coulomb_mat,
-                lin_sorted_coulomb_mat, sort_order);
-          break;
-        }
+      case Option::CMSortDistance: {
+        auto sort_order{
+          Sorter::get_coulom_matrix_sorting_order(distance_mat)};
+        // inject the coulomb matrix into the sorted linear storage
+        this->sort_and_linearize_coulomb_matrix(coulomb_mat,
+                                                lin_sorted_coulomb_mat,
+                                                sort_order);
+        break;
+      }
+      case Option::CMSortRowNorm: {
+        auto sort_order{
+          Sorter::get_coulom_matrix_sorting_order(coulomb_mat)};
+        // inject the coulomb matrix into the sorted linear storage
+        this->sort_and_linearize_coulomb_matrix(coulomb_mat,
+                                                lin_sorted_coulomb_mat,
+                                                sort_order);
+        break;
+      }
       }
 
       this->coulomb_matrices.push_back(lin_sorted_coulomb_mat);
@@ -422,10 +422,11 @@ namespace rascal {
 
 
   template<class Mngr, Option SortAlgo>
-  void RepresentationManagerSortedCoulomb<Mngr, SortAlgo>::get_distance_matrix(
-    RepresentationManagerSortedCoulomb<Mngr, SortAlgo>::ClusterRef_t<1>& center,
-    Eigen::Ref<Eigen::MatrixXd> distance_mat,
-    Eigen::Ref<Eigen::MatrixXd> type_factor_mat) {
+  void RepresentationManagerSortedCoulomb<Mngr, SortAlgo>::
+  get_distance_matrix
+  (RepresentationManagerSortedCoulomb<Mngr, SortAlgo>::ClusterRef_t<1> & center,
+   Eigen::Ref<Eigen::MatrixXd> distance_mat,
+   Eigen::Ref<Eigen::MatrixXd> type_factor_mat) {
 
     // the coulomb mat first row and col corresponds
     // to central atom to neighbours
@@ -464,4 +465,3 @@ namespace rascal {
 }
 
 #endif /* BASIS_REPRESENTATION_MANAGER_SORTED_COULOMB_H */
-
