@@ -60,7 +60,7 @@ set(BUILD_TESTS "ON" CACHE BOOL
 set(SUPPRESS_LIBRARY_WARNINGS "ON" CACHE BOOL
   "Suppress warnings from  Boost library")
 
-set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT true CACHE BOOL
+set(INSTALL "build" CACHE STRING
   "Use the default install path")
 
 set(PYTHON_BUILD_PATH "${CMAKE_BINARY_DIR}/rascal/")

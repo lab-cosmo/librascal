@@ -29,6 +29,8 @@
 
 #include "bind_include.hh"
 
+using namespace rascal; // NOLINT
+
 /**
  * Bind a feature manager
  */

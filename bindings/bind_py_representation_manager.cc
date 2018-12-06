@@ -29,7 +29,7 @@
 
 #include "bind_include.hh"
 
-
+using namespace rascal; // NOLINT
 
 template<typename RepresentationManager>
 decltype(auto) add_representation_manager(py::module & mod, py::module & ) {

@@ -28,6 +28,8 @@
 
 #include "bind_include.hh"
 
+using namespace rascal; // NOLINT
+
 /**
  * In this file SMI stands for StructureManagerImplementation.
  */

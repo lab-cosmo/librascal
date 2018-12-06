@@ -28,6 +28,7 @@
 
 #include "bind_include.hh"
 
+namespace utils = rascal::utils;
 
 
 void utils_binding(py::module & mod) {

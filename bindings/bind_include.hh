@@ -126,6 +126,4 @@ namespace rascal {
   }
 }
 
-using namespace rascal; // NOLINT
-
 #endif /* BIND_INCLUDE_H */
