@@ -124,7 +124,7 @@ foreach(binaryfile ${binaries})
   target_link_libraries(${binaryname} ${Boost_LIBRARIES} rascal)
 endforeach(binaryfile ${binaries})
 
-#or copy them
+# or copy them
 file (GLOB pybins "${CMAKE_SOURCE_DIR}/bin/*.py")
 foreach(pybin ${pybins})
   get_filename_component(binaryname  ${pybin} NAME_WE)
