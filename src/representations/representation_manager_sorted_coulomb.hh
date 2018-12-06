@@ -100,14 +100,14 @@ namespace rascal {
 
       std::sort(order_coulomb.begin(), order_coulomb.end(), ordering());
 
-      auto Nneigh{in.cols()};
+      auto n_neigh{in.cols()};
       size_t lin_id{0};
 
-      for (int ii{0}; ii < Nneigh; ++ii) {
-        size_t iis{order_coulomb[ii].first};
-        for (int jj{0}; jj < ii+1; ++jj) {
-          size_t jjs{order_coulomb[jj].first};
-          out(lin_id) = in(iis, jjs);
+      for (int i{0}; i < n_neigh; ++i) {
+        size_t is{order_coulomb[i].first};
+        for (int j{0}; j < i+1; ++j) {
+          size_t js{order_coulomb[j].first};
+          out(lin_id) = in(is, js);
           lin_id += 1;
         }
       }
@@ -132,8 +132,8 @@ namespace rascal {
       std::vector<double> distances_to_sort{0};
       distances_to_sort.reserve(distance_mat.cols());
 
-      for (auto ii{1}; ii < distance_mat.cols(); ++ii) {
-        distances_to_sort.push_back(distance_mat(ii, 0));
+      for (auto i{1}; i < distance_mat.cols(); ++i) {
+        distances_to_sort.push_back(distance_mat(i, 0));
       }
 
       // find the sorting order
@@ -161,8 +161,8 @@ namespace rascal {
 
       auto row_norms = coulomb_mat.colwise().squaredNorm().eval();
       row_norms(0) = 1e200;
-      for (auto ii{0}; ii < coulomb_mat.cols(); ++ii) {
-        distances_to_sort.push_back(row_norms(ii));
+      for (auto i{0}; i < coulomb_mat.cols(); ++i) {
+        distances_to_sort.push_back(row_norms(i));
       }
       // find the sorting order
       std::vector<std::pair<size_t, distiter> >
@@ -271,12 +271,12 @@ namespace rascal {
 
     void check_size_compatibility() {
       for (auto center : this->structure_manager) {
-        auto Nneighbours{center.size()};
-        if (Nneighbours > this->size) {
+        auto n_neighbours{center.size()};
+        if (n_neighbours > this->size) {
           std::cout << "size is too small for this "
             "structure and has been reset to: "
-                    << Nneighbours << std::endl;
-          this->size = Nneighbours;
+                    << n_neighbours << std::endl;
+          this->size = n_neighbours;
         }
       }
     }
@@ -301,11 +301,11 @@ namespace rascal {
       auto Nneigh{square_coulomb.cols()};
       size_t lin_id{0};
 
-      for (int ii{0}; ii < Nneigh; ++ii) {
-        size_t iis{order_coulomb[ii].first};
-        for (int jj{0}; jj < ii+1; ++jj) {
-          size_t jjs{order_coulomb[jj].first};
-          linear_coulomb(lin_id) = square_coulomb(iis, jjs);
+      for (int i{0}; i < Nneigh; ++i) {
+        size_t is{order_coulomb[i].first};
+        for (int j{0}; j < i+1; ++j) {
+          size_t js{order_coulomb[j].first};
+          linear_coulomb(lin_id) = square_coulomb(is, js);
           lin_id += 1;
         }
       }
@@ -433,35 +433,35 @@ namespace rascal {
     int Zk{center.get_atom_type()};
     type_factor_mat(0, 0) = 0.5*std::pow(Zk, 2.4);
     for (auto neigh_i : center) {
-      size_t ii{neigh_i.get_index()+1};
+      size_t i{neigh_i.get_index()+1};
       int Zi{neigh_i.get_atom_type()};
       double dik{this->structure_manager.get_distance(neigh_i)};
       // distances_to_sort.push_back(dik);
-      type_factor_mat(ii, 0) = Zk*Zi;
-      distance_mat(ii, 0) = dik;
-      type_factor_mat(0, ii) = type_factor_mat(ii, 0);
-      distance_mat(0, ii) = distance_mat(ii, 0);
+      type_factor_mat(i, 0) = Zk*Zi;
+      distance_mat(i, 0) = dik;
+      type_factor_mat(0, i) = type_factor_mat(i, 0);
+      distance_mat(0, i) = distance_mat(i, 0);
     }
 
     // compute the neighbour to neighbour part of the coulomb matrix
     for (auto neigh_i : center) {
-      size_t ii{neigh_i.get_index()+1};
+      size_t i{neigh_i.get_index()+1};
       int Zi{neigh_i.get_atom_type()};
-      type_factor_mat(ii, ii) = 0.5*std::pow(Zi, 2.4);
+      type_factor_mat(i, i) = 0.5*std::pow(Zi, 2.4);
       for (auto neigh_j : center) {
-        size_t jj{neigh_j.get_index()+1};
+        size_t j{neigh_j.get_index()+1};
         // work only on the lower diagonal
-        if (ii >= jj) continue;
+        if (i >= j) continue;
         int Zj{neigh_j.get_atom_type()};
-        double dij{(neigh_i.get_position()-neigh_j.get_position()).norm()};
-        type_factor_mat(jj, ii) = Zj*Zi;
-        distance_mat(jj, ii) = dij;
-        type_factor_mat(ii, jj) = type_factor_mat(jj, ii);
-        distance_mat(ii, jj) = distance_mat(jj, ii);
+        double dij{(neigh_i.get_position() - neigh_j.get_position()).norm()};
+        type_factor_mat(j, i) = Zj*Zi;
+        distance_mat(j, i) = dij;
+        type_factor_mat(i, j) = type_factor_mat(j, i);
+        distance_mat(i, j) = distance_mat(j, i);
       }
     }
   }
 
-}
+} // rascal
 
 #endif /* BASIS_REPRESENTATION_MANAGER_SORTED_COULOMB_H */
