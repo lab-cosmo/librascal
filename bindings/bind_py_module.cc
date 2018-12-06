@@ -28,8 +28,8 @@
 
 #include "bind_include.hh"
 
-using namespace pybind11::literals; // NOLINT
-
+using namespace pybind11::literals; //NOLINT (is recommended use of pybind11)
+namespace py = pybind11;
 
 PYBIND11_MODULE(_rascal, mod) {
   mod.doc() = "Python bindings for the Rascal library";
