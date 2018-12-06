@@ -31,12 +31,11 @@
 #include "math/math_interface.hh"
 #include "math/math_utils.hh"
 
-using namespace rascal;
-namespace py=pybind11;
+namespace math = rascal::math;
+namespace py = pybind11;
 
 
-void math_binding(py::module& m){
+void math_binding(py::module& m) {
     m.def(
-      "hyp2f1", &math::hyp2f1, "y = hyp2f1( a, b, c, x )"
-    );
+      "hyp2f1", &math::hyp2f1, "y = hyp2f1( a, b, c, x )");
 }
