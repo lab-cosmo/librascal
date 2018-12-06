@@ -44,9 +44,9 @@ namespace rascal {
 
     if (verbose) std::cout << "Test simple sorting " << std::endl;
     for (int ii{0}; ii < numbers.size(); ii++) {
-        index.push_back(numbers(ii));
-        index2.push_back(numbers2(ii));
-        if (verbose) std::cout << numbers(ii) << ", ";
+      index.push_back(numbers(ii));
+      index2.push_back(numbers2(ii));
+      if (verbose) std::cout << numbers(ii) << ", ";
     }
     if (verbose) std::cout << std::endl;
 
@@ -54,22 +54,22 @@ namespace rascal {
 
     size_t n{0};
     for (myiter it = index.begin(); it != index.end(); ++it, ++n)
-        {order[n] = make_pair(n, it);}
+      {order[n] = make_pair(n, it);}
 
     std::sort(order.begin(), order.end(), internal::ordering());
     auto sorted_index = internal::sort_from_ref(index, order);
     auto sorted_index2 = internal::sort_from_ref(index2, order);
     for (size_t ii{0}; ii < sorted_index.size(); ii++) {
-        if (verbose) std::cout << sorted_index[ii] << ", ";
+      if (verbose) std::cout << sorted_index[ii] << ", ";
     }
     if (verbose) std::cout << std::endl;
     for (size_t ii{0}; ii < sorted_index2.size(); ii++) {
-        if (verbose) std::cout << index2[ii] << ", ";
+      if (verbose) std::cout << index2[ii] << ", ";
     }
     if (verbose) std::cout << std::endl;
 
     for (size_t ii{0}; ii < sorted_index2.size(); ii++) {
-        if (verbose) std::cout << sorted_index2[ii] << ", ";
+      if (verbose) std::cout << sorted_index2[ii] << ", ";
     }
     if (verbose) std::cout << std::endl;
 
@@ -84,13 +84,13 @@ namespace rascal {
     internal::sort_coulomb_matrix(mat0, mat1, dists);
     for (int ii{0}; ii < mat0.rows(); ii++) {
       for (int jj{0}; jj < mat0.cols(); jj++) {
-         if (verbose) std::cout << mat0(ii, jj) << ",\t";
+        if (verbose) std::cout << mat0(ii, jj) << ",\t";
       }
       if (verbose) std::cout << std::endl;
     }
 
     for (int jj{0}; jj < mat1.rows(); jj++) {
-        if (verbose) std::cout << mat1(jj)<< ", ";
+      if (verbose) std::cout << mat1(jj)<< ", ";
     }
     if (verbose) std::cout << std::endl;
   }
@@ -107,20 +107,20 @@ namespace rascal {
                           Option::CMSortRowNorm>>;
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_constructor_test,
-            Fix, multiple_fixtures, Fix) {
+                                   Fix, multiple_fixtures, Fix) {
     auto & managers = Fix::managers_strict;
-    auto& representations = Fix::representations;
-    auto& hypers = Fix::hypers;
+    auto & representations = Fix::representations;
+    auto & hypers = Fix::hypers;
 
-    for (auto& manager : managers) {
-      for (auto& hyper : hypers) {
+    for (auto & manager : managers) {
+      for (auto & hyper : hypers) {
         representations.emplace_back(manager, hyper);
       }
     }
   }
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_compute_test,
-            Fix, multiple_fixtures, Fix) {
+                                   Fix, multiple_fixtures, Fix) {
     auto & managers = Fix::managers_strict;
     auto& representations = Fix::representations;
     auto& hypers = Fix::hypers;
