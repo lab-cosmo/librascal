@@ -146,7 +146,7 @@ namespace rascal {
 
     template <size_t Order>
     Filter_t<Order> & operator[](const std::array<int, Order> &
-                                    species_indices) {
+                                 species_indices) {
       auto & filter_map{std::get<Order-1>(this->filters)};
       auto location{filter_map.find(species_indices)};
 

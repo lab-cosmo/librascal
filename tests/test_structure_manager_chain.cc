@@ -40,12 +40,12 @@
 namespace rascal {
 
   // BOOST_AUTO_TEST_SUITE(ManagerChainTests);
-  // /* ---------------------------------------------------------------------- */
+  // /* --------------------------------------------------------------------- */
   // BOOST_FIXTURE_TEST_CASE(manager_constructor_test,
   //                         ManagerFixture<StructureManagerChain>) {
   // }
 
-  // /* ---------------------------------------------------------------------- */
+  // /* --------------------------------------------------------------------- */
   // BOOST_FIXTURE_TEST_CASE(iterator_test,
   //                         ManagerFixture<StructureManagerChain>) {
   //   // Reference values
@@ -79,8 +79,9 @@ namespace rascal {
   //   BOOST_CHECK_EQUAL(atom_counter, natoms);
   //   BOOST_CHECK_EQUAL(pair_counter, npairs);
   // }
-  // /* ---------------------------------------------------------------------- */
-  // // BOOST_FIXTURE_TEST_CASE(neighbourlist_test, ManagerFixture<StructureManagerChain>) {
+  // /* --------------------------------------------------------------------- */
+  // // BOOST_FIXTURE_TEST_CASE(neighbourlist_test,
+  // //                         ManagerFixture<StructureManagerChain>) {
   // //   std::vector<std::vector<int>> neighbours(9);
   // //   neighbours[0] = {1, 5, 3, 7, 2, 6, 4, 8};
   // //   neighbours[1] = {0, 5, 3, 7, 2, 6, 4, 8};
@@ -98,11 +99,12 @@ namespace rascal {
 
 
   // // }
-  // /* ---------------------------------------------------------------------- */
-  // BOOST_FIXTURE_TEST_CASE(test_get_cell, ManagerFixture<StructureManagerChain>) {
+  // /* --------------------------------------------------------------------- */
+  // BOOST_FIXTURE_TEST_CASE(test_get_cell,
+  //                         ManagerFixture<StructureManagerChain>) {
   // }
 
-  // /* ---------------------------------------------------------------------- */
+  // /* --------------------------------------------------------------------- */
   // BOOST_AUTO_TEST_SUITE_END();
 
 }  // rascal

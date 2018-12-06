@@ -85,7 +85,7 @@ namespace rascal {
      */
     template <size_t Dim>
     class Stencil {
-    public:
+     public:
       //! constructor
       explicit Stencil(const std::array<int, Dim> & origin)
         : origin{origin}{};
@@ -98,7 +98,7 @@ namespace rascal {
 
       //! iterators over `` dereferences to cell coordinates
       class iterator {
-      public:
+       public:
         using value_type = std::array<int, Dim>; //!< stl conformance
         using const_value_type = const value_type; //!< stl conformance
         using pointer = value_type*; //!< stl conformance
@@ -129,7 +129,7 @@ namespace rascal {
           return this->index != other.index;
         }
 
-      protected:
+       protected:
         //! ref to stencils
         const Stencil & stencil;
         //! index of currect pointed-to voxel
@@ -142,7 +142,7 @@ namespace rascal {
       //! stl conformance
       inline size_t size() const {return ipow(3, Dim);}
 
-    protected:
+     protected:
       //! locations of this domain
       const std::array<int, Dim> origin;
     };
@@ -154,7 +154,7 @@ namespace rascal {
      */
     template <size_t Dim>
     class PeriodicImages {
-    public:
+     public:
       //! constructor
       PeriodicImages(const std::array<int, Dim> & origin,
                      const std::array<int, Dim> & nrepetitions,
@@ -168,7 +168,7 @@ namespace rascal {
 
       //! iterators over `` dereferences to cell coordinates
       class iterator {
-      public:
+       public:
         using value_type = std::array<int, Dim>; //!< stl conformance
         using const_value_type = const value_type; //!< stl conformance
         using pointer = value_type*; //!< stl conformance
@@ -201,7 +201,7 @@ namespace rascal {
           return this->index != other.index;
         }
 
-      protected:
+       protected:
         const PeriodicImages & periodic_images; //!< ref to periodic images
         size_t index; //!< index of currect pointed-to pixel
       };
@@ -212,7 +212,7 @@ namespace rascal {
       //! stl conformance
       inline size_t size() const {return this->ntot;}
 
-    protected:
+     protected:
       const std::array<int, Dim> origin; //!< minimum repetitions
       //! repetitions in each dimension
       const std::array<int, Dim> nrepetitions;
@@ -227,7 +227,7 @@ namespace rascal {
      */
     template <size_t Dim>
     class MeshBounds {
-    public:
+     public:
       //! constructor
       explicit MeshBounds(const std::array<double, 2*Dim> & extent)
         : extent{extent} {};
@@ -239,7 +239,7 @@ namespace rascal {
 
       //! iterators over `` dereferences to mesh bound coordinate
       class iterator {
-      public:
+       public:
         using value_type = std::array<double, Dim>; //!< stl conformance
         using const_value_type = const value_type; //!< stl conformance
         using pointer = value_type*; //!< stl conformance
@@ -269,7 +269,7 @@ namespace rascal {
           return this->index != other.index;
         }
 
-      protected:
+       protected:
         const MeshBounds & mesh_bounds; //!< ref to periodic images
         size_t index; //!< index of currect pointed-to voxel
       };
@@ -280,7 +280,7 @@ namespace rascal {
       //! stl conformance
       inline size_t size() const {return ipow(2, Dim);}
 
-    protected:
+     protected:
       const std::array<double, 2*Dim> extent; //!< repetitions in each dimension
     };
 
@@ -362,7 +362,7 @@ namespace rascal {
      */
     template<int Dim>
     class IndexContainer {
-    public:
+     public:
       //! Default constructor
       IndexContainer() = delete;
 
@@ -396,13 +396,13 @@ namespace rascal {
         return this->data[index];
       }
 
-    protected:
+     protected:
       //! a vector of atom indices for every box
       std::vector<std::vector<int>> data{};
       //! number of boxes in each dimension
       std::array<int, Dim> nboxes{};
 
-    private:
+     private:
     };
   }  // internal
 
@@ -415,7 +415,7 @@ namespace rascal {
   template <class ManagerImplementation>
   class AdaptorNeighbourList: public
   StructureManager<AdaptorNeighbourList<ManagerImplementation>> {
-  public:
+   public:
     using Base = StructureManager<AdaptorNeighbourList<ManagerImplementation>>;
     using Parent =
       StructureManager<AdaptorNeighbourList<ManagerImplementation>>;
@@ -600,7 +600,7 @@ namespace rascal {
       return nb_neigh[access_index];
     }
 
-  protected:
+   protected:
     /* ---------------------------------------------------------------------- */
     /**
      * This function, including the storage of ghost atom positions is
@@ -684,7 +684,7 @@ namespace rascal {
 
     //! ghost atom type
     std::vector<int> ghost_types{};
-  private:
+   private:
   };
 
   /* ---------------------------------------------------------------------- */

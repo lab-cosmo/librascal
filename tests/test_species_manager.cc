@@ -69,13 +69,13 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_species_test, Fix, FixturesMax1, Fix) {
     std::map<int, int> species_counter{};
-    for (auto && atom: Fix::fixture.manager) {
+    for (auto && atom : Fix::fixture.manager) {
       species_counter[atom.get_atom_type()]++;
     }
 
     Fix::species_manager.update();
 
-    for (auto && tup: species_counter) {
+    for (auto && tup : species_counter) {
       auto species{tup.first};
       auto nb_atoms{tup.second};
       auto nb_filtered{
@@ -87,15 +87,15 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(pair_species_test, Fix, FixturesMax2, Fix) {
     std::map<std::array<int, 2>, int> species_counter{};
-    for (auto && atom: Fix::fixture.manager) {
-      for (auto && pair: atom) {
+    for (auto && atom : Fix::fixture.manager) {
+      for (auto && pair : atom) {
         species_counter[pair.get_atom_types()]++;
       }
     }
 
     Fix::species_manager.update();
 
-    for (auto && tup: species_counter) {
+    for (auto && tup : species_counter) {
       auto species{tup.first};
       auto nb_atoms{tup.second};
       auto nb_filtered{Fix::species_manager[species].size()};

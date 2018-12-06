@@ -74,7 +74,7 @@ namespace rascal {
   template <class ManagerImplementation>
   class AdaptorHalfList: public
   StructureManager<AdaptorHalfList<ManagerImplementation>> {
-  public:
+   public:
     using Parent =
       StructureManager<AdaptorHalfList<ManagerImplementation>>;
     using traits = StructureManager_traits<AdaptorHalfList>;
@@ -253,7 +253,7 @@ namespace rascal {
       }
     }
 
-  protected:
+   protected:
     //! Reference to the underlying manager
     ManagerImplementation & manager;
 
@@ -269,7 +269,7 @@ namespace rascal {
      * ``nb_neigh`` can be accessed
      */
     std::vector<size_t> offsets;
-  private:
+   private:
   };
 
   /* ---------------------------------------------------------------------- */

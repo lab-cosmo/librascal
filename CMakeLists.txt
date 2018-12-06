@@ -141,12 +141,18 @@ configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/CPPLINT.cfg
   ${CMAKE_BINARY_DIR}/CPPLINT.cfg
   COPYONLY)
-file( GLOB_RECURSE ALL_HDR "${CMAKE_SOURCE_DIR}/src/*.hh")
-file( GLOB_RECURSE ALL_SRC "${CMAKE_SOURCE_DIR}/src/*.cc")
+file( GLOB_RECURSE ALL_HDR
+  "${CMAKE_SOURCE_DIR}/src/*.hh"
+  "${CMAKE_SOURCE_DIR}/tests/*.hh")
+file( GLOB_RECURSE ALL_SRC
+  "${CMAKE_SOURCE_DIR}/src/*.cc"
+  "${CMAKE_SOURCE_DIR}/tests/*.cc")
+file( GLOB_RECURSE ALL_EXAMPLES "${CMAKE_SOURCE_DIR}/examples/*.cc")
+
 add_custom_target(lint
   ${PYTHON_EXECUTABLE} cpplint.py --root=${CMAKE_BINARY_DIR} ${ALL_SRC}
   ${ALL_HDR}
   COMMAND
-  ${PYTHON_EXECUTABLE} cpplint.py --root=${CMAKE_BINARY_DIR}
-  filter=-build/namespaces ${ALL_EXAMPLES}
+  ${PYTHON_EXECUTABLE} cpplint.py --filter=-build/namespaces --root=${CMAKE_BINARY_DIR}
+  ${ALL_EXAMPLES}
   )

@@ -27,7 +27,7 @@
 
 
 #include "structure_managers/adaptor_filter.hh"
-// TODO: replace the following line after the branch feat/better_tests
+// TODO(markus): replace the following line after the branch feat/better_tests
 // is merged into master
 #include "test_structure.hh"
 #include "tests.hh"
@@ -84,7 +84,7 @@ namespace rascal {
     std::uniform_int_distribution<int> dist(0, 1);
     std::vector<int> atom_indices{};
 
-    for (auto atom: Fix::fixture.manager) {
+    for (auto atom : Fix::fixture.manager) {
       const bool include(dist(rd));
       if (include) {
         Fix::manager.add_cluster(atom);
@@ -93,7 +93,7 @@ namespace rascal {
     }
 
     size_t counter{0};
-    for (auto atom: Fix::manager) {
+    for (auto atom : Fix::manager) {
       BOOST_CHECK_EQUAL(atom.get_atom_index(), atom_indices[counter]);
       counter++;
       const auto & pos_a{atom.get_position()};
@@ -124,8 +124,8 @@ namespace rascal {
     std::vector<std::array<int, 2>> atom_indices{};
 
 
-    for (auto atom: Fix::fixture.manager) {
-      for (auto pair: atom) {
+    for (auto atom : Fix::fixture.manager) {
+      for (auto pair : atom) {
         const bool include(dist(rd));
         if (include) {
           Fix::manager.add_cluster(pair);
@@ -135,8 +135,8 @@ namespace rascal {
     }
 
     size_t counter{0};
-    for (auto atom: Fix::manager) {
-      for (auto pair: atom) {
+    for (auto atom : Fix::manager) {
+      for (auto pair : atom) {
         auto && a{pair.get_atom_indices()};
         auto && b{atom_indices[counter]};
         BOOST_CHECK_EQUAL_COLLECTIONS(a.begin(), a.end(), b.begin(), b.end());

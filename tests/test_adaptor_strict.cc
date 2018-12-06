@@ -76,8 +76,8 @@ namespace rascal {
       std::vector<std::vector<int>> neigh_ids_strict{};
       std::vector<std::vector<double>> neigh_dist_strict{};
 
-      // TODO re-initiallization in the loop of the pair manager results in a
-      // segmentation fault, is it expected ?
+      // TODO(musil) re-initiallization in the loop of the pair manager results
+      // in a segmentation fault, is it expected ?
       // AdaptorNeighbourList<StructureManagerCenters> pair_manager{manager,
       //     cutoff_tmp};
       // pair_manager.update();
@@ -215,7 +215,7 @@ namespace rascal {
 
       std::vector<int> neighbours_per_atom1{};
       std::vector<int> neighbours_per_atom2{};
-      // TODO use the sorted distances order to check wether the
+      // TODO(musil) use the sorted distances order to check wether the
       // direction vectors are the same
       // https://stackoverflow.com/questions/236172/how-do-i-sort-a-stdvector-
       // by-the-values-of-a-different-stdvector
