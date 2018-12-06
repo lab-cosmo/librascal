@@ -47,15 +47,15 @@ namespace rascal {
      * from another container
      */
     struct ordering {
-      bool operator() (std::pair<size_t, distiter> const& a,
-                       std::pair<size_t, distiter> const& b) {
+      bool operator() (std::pair<size_t, distiter> const & a,
+                       std::pair<size_t, distiter> const & b) {
         return *(a.second) < *(b.second);
       }
     };
 
     struct ordering_descending {
-      bool operator() (std::pair<size_t, distiter> const& a,
-                       std::pair<size_t, distiter> const& b) {
+      bool operator() (std::pair<size_t, distiter> const & a,
+                       std::pair<size_t, distiter> const & b) {
         return *(a.second) > *(b.second);
       }
     };
@@ -126,7 +126,7 @@ namespace rascal {
   template<>
   struct SortCoulomMatrix<Option::CMSortDistance> {
     static decltype(auto) get_coulom_matrix_sorting_order
-    (const Eigen::Ref< const Eigen::MatrixXd>& distance_mat) {
+    (const Eigen::Ref< const Eigen::MatrixXd> & distance_mat) {
       using distiter = typename std::vector<double>::const_iterator;
       // initialize the distances to be sorted. the center is always first
       std::vector<double> distances_to_sort{0};
@@ -153,7 +153,7 @@ namespace rascal {
   template<>
   struct SortCoulomMatrix<Option::CMSortRowNorm> {
     static decltype(auto) get_coulom_matrix_sorting_order
-    (const Eigen::Ref< const Eigen::MatrixXd>& coulomb_mat) {
+    (const Eigen::Ref< const Eigen::MatrixXd> & coulomb_mat) {
       using distiter = typename std::vector<double>::const_iterator;
       // initialize the distances to be sorted. the center is always first
       std::vector<double> distances_to_sort{};
@@ -198,7 +198,7 @@ namespace rascal {
 
     using distiter = typename std::vector<double>::const_iterator;
     //! Default constructor
-    RepresentationManagerSortedCoulomb(Manager_t &sm, const hypers_t& hyper)
+    RepresentationManagerSortedCoulomb(Manager_t & sm, const hypers_t & hyper)
       :structure_manager{sm}, central_decay{},
        interaction_cutoff{},
        interaction_decay{}, coulomb_matrices{sm}
@@ -207,8 +207,8 @@ namespace rascal {
       this->check_size_compatibility();
     }
 
-    RepresentationManagerSortedCoulomb(Manager_t &sm,
-                                       const std::string& hyper_str)
+    RepresentationManagerSortedCoulomb(Manager_t & sm,
+                                       const std::string & hyper_str)
       :structure_manager{sm}, central_decay{},
        interaction_cutoff{},
        interaction_decay{}, coulomb_matrices{sm}
@@ -219,7 +219,7 @@ namespace rascal {
 
     //! Copy constructor
     RepresentationManagerSortedCoulomb
-    (const RepresentationManagerSortedCoulomb &other) = delete;
+    (const RepresentationManagerSortedCoulomb & other) = delete;
 
     //! Move constructor
     RepresentationManagerSortedCoulomb
@@ -229,8 +229,8 @@ namespace rascal {
     virtual ~RepresentationManagerSortedCoulomb()  = default;
 
     //! Copy assignment operator
-    RepresentationManagerSortedCoulomb& operator=
-    (const RepresentationManagerSortedCoulomb &other) = delete;
+    RepresentationManagerSortedCoulomb & operator=
+    (const RepresentationManagerSortedCoulomb & other) = delete;
 
     //! Move assignment operator
     RepresentationManagerSortedCoulomb & operator=
@@ -317,7 +317,7 @@ namespace rascal {
       return this->size*(this->size+1)/2;
     }
 
-    Manager_t& structure_manager;
+    Manager_t & structure_manager;
     //hypers_t hyperparmeters;
     double central_decay{};
     double interaction_cutoff{};
