@@ -115,13 +115,9 @@ namespace rascal {
 
   } // internal
 
-
-
-
-
+  /* ---------------------------------------------------------------------- */
   template<Option Method>
   struct SortCoulomMatrix {};
-
 
   template<>
   struct SortCoulomMatrix<Option::CMSortDistance> {
@@ -178,8 +174,7 @@ namespace rascal {
     }
   };
 
-
-
+  /* ---------------------------------------------------------------------- */
   /**
    * Implementation of the Environmental Coulomb Matrix
    */
@@ -420,7 +415,7 @@ namespace rascal {
     }
   }
 
-
+  /* ---------------------------------------------------------------------- */
   template<class Mngr, Option SortAlgo>
   void RepresentationManagerSortedCoulomb<Mngr, SortAlgo>::
   get_distance_matrix
