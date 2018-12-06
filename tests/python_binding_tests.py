@@ -23,6 +23,6 @@ class SimpleCheck(unittest.TestCase):
 
 if __name__ == '__main__':
     faulthandler.enable()
-    
+
     unittest.main()
 

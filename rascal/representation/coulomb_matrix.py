@@ -36,7 +36,7 @@ class SortedCoulombMatrix(object):
         Physical Review Letters, 108(5), 58301. https://doi.org/10.1103/PhysRevLett.108.058301
     """
     def __init__(self, cutoff, sort='rownorm', size=10, central_decay=-1,
-                    interaction_cutoff=10,interaction_decay=-1):
+                    interaction_cutoff=10, interaction_decay=-1):
         self.name = 'coulomb'
         self.sort = sort
         self.cutoff = cutoff
@@ -48,10 +48,10 @@ class SortedCoulombMatrix(object):
     def get_params(self):
         params = dict(name=self.name,sort=self.sort,
                     cutoff=self.cutoff,
-                      central_decay=self.central_decay,
-                        interaction_cutoff=self.interaction_cutoff,
-                        interaction_decay=self.interaction_decay,
-                        size=self.size)
+                    central_decay=self.central_decay,
+                    interaction_cutoff=self.interaction_cutoff,
+                    interaction_decay=self.interaction_decay,
+                    size=self.size)
         return params
 
     def transform(self,frames):

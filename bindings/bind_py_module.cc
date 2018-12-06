@@ -28,7 +28,7 @@
 
 #include "bind_include.hh"
 
-using namespace pybind11::literals;
+using namespace pybind11::literals; // NOLINT
 
 
 PYBIND11_MODULE(_rascal, mod) {

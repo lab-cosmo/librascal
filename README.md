@@ -3,37 +3,51 @@ A scalable and versatile fingerprint and machine-learning code
 
 How to install:
 * Need to have the programs git, gcc (or other c++14 compiler), boost (unit_test_framework, see BOOST.md for further details on how to install the boost library), doxygen
-* Need the python packages Sphinx, Breathe 
+* Need the python packages Sphinx, Breathe
 * You can use either cmake or (recommended) ccmake to configure the Makefile. If using ccmake, you should press *c* one or more times until the option to generate the configuration appears, then type *g*.
-* To build the program: 
+* To build the program:
 ```Shell
-mkdir build 
-cd build 
-ccmake .. 
+mkdir build
+cd build
+ccmake ..
 make
-``` 
+```
+
+* Python requirements: python3.5 and newer, numpy, scipy, ASE (https://wiki.fysik.dtu.dk/ase/index.html), cpplint, Sphinx(optional). To install these packages you could run:
+```Shell
+pip install cpplint numpy scipy ase sphinx sphinx_rtd_theme
+```
+
 * To make development documentation: first enable the documentation building with ccmake, then
 ```Shell
-cd build 
+cd build
 ccmake ..
 make dev_doc
-``` 
+```
 
 * To build for development:
 ```Shell
-cd build 
+cd build
 cmake -DCMAKE_BUILD_TYPE=Debug  -DENABLE_DOC=ON -DBUILD_TESTS=ON ..
 make all
 ctest -V
 ```
+
+* To check for conformity with the c++ code convention:
+ ```Shell
+cd build
+cmake -DCMAKE_BUILD_TYPE=Debug  -DENABLE_DOC=ON -DBUILD_TESTS=ON ..
+make lint
+```
+
 * To build with optimization and debug info:
 ```Shell
-cd build 
+cd build
 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_TESTS=ON  CMAKE_C_FLAGS_RELWITHDEBUBINFO="-03 -g -DNDEBUG" ..
 make -j 4
 ctest -V
 ```
-cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DBUILD_TESTS=ON ..
+
 * Special flags:
   + INSTALL:
     + empty (default) -> install rascal in the build folder
@@ -51,7 +65,7 @@ cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER
 To remove all the cmake files/folders except for the external library (enable glob and remove):
 ```
 shopt -s extglob
-rm -fr -- !(external|third-party) 
+rm -fr -- !(external|third-party)
 ```
 In order to have the readthedocs.org theme for the documentation, please install the following python package:
 ```Shell
@@ -63,12 +77,12 @@ To build libRascal with as docker environement:
 sudo docker build -t test -f ./docker/install_env.dockerfile  .
 sudo docker run -it -v /path/to/repo/:/home/user/  test
 ```
-And then follow the instruction in BOOST.md for compilation with boost from conda 
+And then follow the instruction in BOOST.md for compilation with boost from conda
 
 
 TILL:
 Management of derivative relations for fields
-"Functional dependency" management to obtain automatically derivatives with chain rule 
+"Functional dependency" management to obtain automatically derivatives with chain rule
 Federico:
 try to enable CI on github with travis (finalize, enable and think what to do with CI)
 Felix:

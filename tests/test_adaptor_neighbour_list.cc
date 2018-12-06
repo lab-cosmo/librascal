@@ -105,8 +105,6 @@ namespace rascal {
     BOOST_CHECK_EQUAL(n_pairs, pair_manager.get_nb_clusters(2));
   }
 
-  // TODO define more test that could be streamlined
-  // gets a list of fixtures for all the different possible structure managers
   using multiple_fixtures = boost::mpl::list<
     MultipleStructureManagerNLFixture<StructureManagerCenters,
                                       MultipleStructureManagerBaseFixture>>;

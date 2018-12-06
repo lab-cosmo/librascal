@@ -137,4 +137,5 @@ endforeach(pybin ${pybins})
 
 cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/src" "")
 cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
+cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
 cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/examples" "--filter=-build/namespaces")
