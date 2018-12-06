@@ -1,14 +1,10 @@
 version: 2
 jobs:
         build: 
-                filters:
-                        branches:
-                                only:
-                                        - master
-                                        - /*/test_CI
-
                 docker:
                         - image: ubuntu:18.04
+                          environment:
+                                  PIPENV_VENV_IN_PROJECT: true
                 steps:
                         - checkout
                         - run: 
@@ -28,7 +24,7 @@ jobs:
                                 name: installing python packages
                                 command: |
                                         python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx breathe sphinx_rtd_theme
+                                        python3.6 -m pip install numpy scipy sphinx breathe sphinx_rtd_theme cpplint
                         - run: 
                                 command: |
                                         rm -rf build 
@@ -36,6 +32,10 @@ jobs:
                                         cd build 
                                         cmake -DENABLE_DOC=ON -DBUILD_TESTS=ON .. 
                         - run: pwd
+                        - run:
+                                command: | 
+                                        cd build 
+                                        make lint
                         - run: 
                                 command: |
                                         cd build 
@@ -43,9 +43,9 @@ jobs:
                         - run: 
                                 command: |
                                         cd build 
-                                        make dev_doc
+                                        ctest -V
                         - run: 
                                 command: |
                                         cd build 
-                                        ctest -V
-                                                        - /*/test_CI
+                                        make dev_doc
+                        

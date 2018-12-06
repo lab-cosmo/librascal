@@ -26,30 +26,39 @@ jobs:
                                         apt-get install -y git
                                         apt-get install -y libboost-test-dev
                                         apt-get install -y doxygen
-                        - run: 
-                                name: installing python packages
-                                command: |
-                                        python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx breathe sphinx_rtd_theme
-                        - run: 
-                                command: |
-                                        rm -rf build 
-                                        mkdir build 
-                                        cd build 
-                                        cmake -DENABLE_DOC=ON -DBUILD_TESTS=ON .. 
-                        - run: pwd
-                        - run: 
-                                command: |
-                                        cd build 
-                                        make 
-                        - run: 
-                                command: |
-                                        cd build 
-                                        ctest -V
-                        - run: 
-                                command: |
-                                        cd build 
-                                        make dev_doc
-
-                                        
-
+                                        sudo apt-get remove clang
+                                        sudo apt-get install clang-5.0 libclang-common-5.0-dev libllvm5.0
+                        - run:
+                                command: | 
+                                        clang --version
+                                #                        - run: 
+                                #                                name: installing python packages
+                                #                                command: |
+                                #                                        python3.6 -m pip install --upgrade pip
+                                #                                        python3.6 -m pip install numpy scipy sphinx breathe sphinx_rtd_theme
+                                #                        - run: 
+                                #                                command: |
+                                #                                        rm -rf build 
+                                #                                        mkdir build 
+                                #                                        cd build 
+                                #                                        cmake -DENABLE_DOC=ON -DBUILD_TESTS=ON .. 
+                                #                        - run: pwd
+                                #                        - run:
+                                #                                command: | 
+                                #                                        cd build 
+                                #                                        make lint
+                                #                        - run: 
+                                #                                command: |
+                                #                                        cd build 
+                                #                                        make 
+                                #                        - run: 
+                                #                                command: |
+                                #                                        cd build 
+                                #                                        ctest -V
+                                #                        - run: 
+                                #                                command: |
+                                #                                        cd build 
+                                #                                        make dev_doc
+                                #
+                                #                                        
+                                #
