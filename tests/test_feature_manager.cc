@@ -1,5 +1,5 @@
 /**
- * file   .hh
+ * file    test_feature_manager.hh
  *
  * @author Musil Felix <musil.felix@epfl.ch>
  *
@@ -37,20 +37,20 @@ namespace rascal {
   // gets a list of fixtures for all the different possible structure managers
   using multiple_fixtures = boost::mpl::list<
     FeatureFixture<double, FeatureManagerDense,
-                  StructureManagerCenters,
-                  RepresentationManagerSortedCoulomb,
-                  TestFeatureData, Option::CMSortDistance>,
+                   StructureManagerCenters,
+                   RepresentationManagerSortedCoulomb,
+                   TestFeatureData, Option::CMSortDistance>,
     FeatureFixture<double, FeatureManagerDense,
-                  StructureManagerCenters,
-                  RepresentationManagerSortedCoulomb,
-                  TestFeatureData, Option::CMSortRowNorm>>;
+                   StructureManagerCenters,
+                   RepresentationManagerSortedCoulomb,
+                   TestFeatureData, Option::CMSortRowNorm>>;
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_setup_test,
-            Fix, multiple_fixtures, Fix) {
+                                   Fix, multiple_fixtures, Fix) {
   }
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_constructor_test,
-            Fix, multiple_fixtures, Fix) {
+                                   Fix, multiple_fixtures, Fix) {
     auto& features = Fix::features;
     auto& hypers = Fix::hypers;
     auto& Nfeature = Fix::Nfeature;
@@ -60,7 +60,7 @@ namespace rascal {
   }
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(representation_aggregate_test,
-            Fix, multiple_fixtures, Fix) {
+                                   Fix, multiple_fixtures, Fix) {
     auto& features = Fix::features;
     auto& hypers = Fix::hypers;
     auto& Nfeature = Fix::Nfeature;
