@@ -59,10 +59,12 @@ namespace rascal {
     std::sort(order.begin(), order.end(), internal::ordering());
     auto sorted_index = internal::sort_from_ref(index, order);
     auto sorted_index2 = internal::sort_from_ref(index2, order);
+
     for (size_t ii{0}; ii < sorted_index.size(); ii++) {
       if (verbose) std::cout << sorted_index[ii] << ", ";
     }
     if (verbose) std::cout << std::endl;
+
     for (size_t ii{0}; ii < sorted_index2.size(); ii++) {
       if (verbose) std::cout << index2[ii] << ", ";
     }
@@ -79,7 +81,7 @@ namespace rascal {
 
     matrix  mat0 = matrix::Random();
     lin_mat  mat1 = lin_mat::Ones();
-    std::vector<double> dists{{2, 4, 0, 1, 3}};
+    std::vector<double> dists{{2., 4., 0., 1., 3.}};
 
     internal::sort_coulomb_matrix(mat0, mat1, dists);
     for (int ii{0}; ii < mat0.rows(); ii++) {
