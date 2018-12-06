@@ -85,7 +85,6 @@ namespace rascal {
 
     //! Pure Virtual Function to set hyperparameters of the representation
     virtual void set_hyperparameters(const hypers_t &) = 0;
-    virtual void set_hyperparameters(const std::string &) = 0;
 
     //! Compute the representation using a StructureManager
     virtual void compute() = 0;

@@ -192,23 +192,14 @@ namespace rascal {
     using ClusterRef_t = typename Manager_t::template ClusterRef<Order>;
 
     using distiter = typename std::vector<double>::const_iterator;
-    //! Default constructor
+
+    //! Constructor
     RepresentationManagerSortedCoulomb(Manager_t & sm, const hypers_t & hyper)
       :structure_manager{sm}, central_decay{},
        interaction_cutoff{},
        interaction_decay{}, coulomb_matrices{sm}
     {
       this->set_hyperparameters(hyper);
-      this->check_size_compatibility();
-    }
-
-    RepresentationManagerSortedCoulomb(Manager_t & sm,
-                                       const std::string & hyper_str)
-      :structure_manager{sm}, central_decay{},
-       interaction_cutoff{},
-       interaction_decay{}, coulomb_matrices{sm}
-    {
-      this->set_hyperparameters(hyper_str);
       this->check_size_compatibility();
     }
 
@@ -237,7 +228,6 @@ namespace rascal {
 
     //! set hypers
     void set_hyperparameters(const hypers_t &);
-    void set_hyperparameters(const std::string &);
 
     //! getter for the representation
     Eigen::Map<Eigen::MatrixXd> get_representation_full() {
@@ -340,15 +330,6 @@ namespace rascal {
     this->hypers = hyper;
   }
 
-  template<class Mngr, Option SortAlgo>
-  void RepresentationManagerSortedCoulomb<Mngr, SortAlgo>::
-  set_hyperparameters(const std::string & hyper_str) {
-    this->hypers = json::parse(hyper_str);
-    this->central_decay = this->hypers["central_decay"];
-    this->interaction_cutoff = this->hypers["interaction_cutoff"];
-    this->interaction_decay = this->hypers["interaction_decay"];
-    this->size = this->hypers["size"];
-  }
 
   /* ---------------------------------------------------------------------- */
   template<class Mngr, Option SortAlgo>

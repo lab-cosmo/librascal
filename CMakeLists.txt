@@ -134,7 +134,7 @@ foreach(pybin ${pybins})
     COPYONLY)
 endforeach(pybin ${pybins})
 
-
+# register the folders to check for cpp code conventions compliance
 cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/src" "")
 cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
 cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")

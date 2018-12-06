@@ -49,6 +49,7 @@
 
 #include "basic_types.hh"
 #include "rascal_utility.hh"
+#include "json_io.hh"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl_bind.h>
