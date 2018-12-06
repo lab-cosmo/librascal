@@ -32,7 +32,7 @@
 /**
  * Bind a feature manager
  */
-template<template<typename> typename FeatureManager_t, typename T>
+template<template<class> class FeatureManager_t, typename T>
 decltype(auto) bind_feature_manager(py::module & mod, py::module & ) {
   using Feature = FeatureManager_t<T>;
 

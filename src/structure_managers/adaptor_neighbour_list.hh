@@ -435,7 +435,6 @@ namespace rascal {
     using Vector_t = typename Parent::Vector_t;
     using Positions_ref = Eigen::Map<Eigen::Matrix<double, traits::Dim,
                                                    Eigen::Dynamic>>;
-    using AtomTypes_ref = Eigen::Map<Eigen::Matrix<int, 1, Eigen::Dynamic>>;
 
     static_assert(traits::MaxOrder == 2,
                   "ManagerImplementation needs an atom list "
@@ -534,15 +533,25 @@ namespace rascal {
     }
 
     //! ghost types are only available for MaxOrder=2
-    inline int & get_ghost_type(const size_t & atom_index) {
-      auto p = this->get_ghost_types();
-      return p(atom_index);
+    inline const int&  get_ghost_type(const size_t & atom_index) const {
+      auto&& p{this->get_ghost_types()};
+      return p[atom_index];
+    }
+
+    //! ghost types are only available for MaxOrder=2
+    inline int&  get_ghost_type(const size_t & atom_index) {
+      auto&& p{this->get_ghost_types()};
+      return p[atom_index];
     }
 
     //! provides access to the atomic types of ghost atoms
-    inline AtomTypes_ref get_ghost_types() {
-      AtomTypes_ref val(this->ghost_types.data(), 1, this->ghost_types.size());
-      return val;
+    inline std::vector<int>& get_ghost_types() {
+      return this->ghost_types;
+    }
+
+    //! provides access to the atomic types of ghost atoms
+    inline const std::vector<int>& get_ghost_types() const {
+      return this->ghost_types;
     }
 
 

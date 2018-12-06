@@ -79,9 +79,10 @@ namespace rascal {
       return std::to_string(static_cast<int>(opt));
     }
 
-    /** Mapping to search and replace in type names
-    * when giving binding name
-    */
+    /**
+     * Mapping to search and replace in type names
+     * when giving binding name
+     */
     struct SubstitutionMap {
       using Map = std::map<std::string, std::string>;
       Map mapping = {
@@ -89,9 +90,14 @@ namespace rascal {
         {"Adaptor", ""},
         {"RepresentationManager", ""},
         {"FeatureManager", ""},
+        // with gcc Option::CMSortDistance -> (Options)1
         {R"(\([^()]*\))", ""},
         {to_string(Option::CMSortDistance), "SortDistance"},
-        {to_string(Option::CMSortRowNorm), "SortRowNorm"}
+        {to_string(Option::CMSortRowNorm), "SortRowNorm"},
+        // with clang
+        // Option::CMSortDistance -> "Option::CMSortDistance"
+        {"Option::CMSortDistance", "SortDistance"},
+        {"Option::CMSortRowNorm", "SortRowNorm"}
       };
     };
 
@@ -110,7 +116,6 @@ namespace rascal {
       SubstitutionMap ojb{};
       std::vector<std::string> names{typeName};
       for (const auto& map : ojb.mapping) {
-        std::cout << map.first << ", " << map.second<< std::endl;
         names.push_back(std::regex_replace(names.back(),
                 std::regex(map.first.c_str()), map.second.c_str()));
       }
@@ -120,6 +125,6 @@ namespace rascal {
   }
 }
 
-using namespace rascal;
+using namespace rascal; // NOLINT
 
 #endif /* BIND_INCLUDE_H */
