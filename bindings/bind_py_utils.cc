@@ -30,19 +30,20 @@
 #include <pybind11/eigen.h>
 #include "utils/sparsify_utilities.hh"
 
-using namespace rascal;
+using rascal::utils::select_fps;
+using rascal::utils::select_fps_voronoi;
 namespace py = pybind11;
 
 
 void utils_binding(py::module& m) {
-    m.def("fps", &utils::select_fps,
+    m.def("fps", &select_fps,
           R"(Selects points from a NxD dimensional feature matrix \
           by farthest point sampling (N is the number of sample \
           in a D dimentional space).)",
           py::arg("feature_matrix"), py::arg("n_sparse"),
           py::arg("i_first_point"));
 
-    m.def("fps_voronoi", &utils::select_fps_voronoi,
+    m.def("fps_voronoi", &select_fps_voronoi,
           R"(Selects points from a NxD dimensional feature matrix \
           by farthest point sampling, using a Voronoi cell method \
           (N is the number of sample in a D dimentional space).)",

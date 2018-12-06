@@ -35,7 +35,8 @@
 #include <Eigen/Dense>
 #include <basic_types.hh>
 
-using namespace rascal;
+using rascal::StructureManager;
+using rascal::StructureManagerCenters;
 namespace py = pybind11;
 
 //! templated function for adding clusters of different orders
@@ -43,7 +44,7 @@ template<size_t Order, typename StructureManagerImplementation>
 decltype(auto) add_cluster(py::module & m) {
   using ClusterRef = typename StructureManager<
     StructureManagerImplementation>::template ClusterRef<Order>;
-  // TODO: change the exposed name to a convertion of the
+  // TODO(musil): change the exposed name to a convertion of the
   // StructureManagerImplementation type to a string
   py::class_<ClusterRef>
     py_cluster(m, (Order == 1)
@@ -68,7 +69,7 @@ decltype(auto) add_cluster(py::module & m) {
 }
 
 //! structure manager centers python binding
-void add_manager_centers(py::module & m){
+void add_manager_centers(py::module & m) {
   m.doc() = "binding for the Structure Manager Centers";
   py::class_<StructureManager<StructureManagerCenters>>
     (m, "StructureManagerBase_Centers").def(py::init<>());

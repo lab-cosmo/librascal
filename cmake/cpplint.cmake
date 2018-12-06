@@ -67,7 +67,7 @@ endif()
 
 
 # common target to concatenate all cpplint.py targets
-add_custom_target(${CPPLINT_TARGET} ALL)
+add_custom_target(${CPPLINT_TARGET})
 
 
 # use cpplint.py to check source code files inside DIR directory

@@ -29,7 +29,7 @@
 
 #include <pybind11/pybind11.h>
 
-using namespace pybind11::literals;
+using namespace pybind11::literals; //NOLINT (is recommended use of pybind11)
 namespace py = pybind11;
 
 extern void add_manager_centers(py::module&);
