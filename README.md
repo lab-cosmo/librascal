@@ -13,9 +13,9 @@ ccmake ..
 make
 ```
 
-* Python requirements: python3.5 and newer, numpy, scipy, ASE (https://wiki.fysik.dtu.dk/ase/index.html), cpplint, Sphinx(optional). To install these packages you could run:
+* Python requirements: python3.5 and newer, numpy, scipy, ASE (https://wiki.fysik.dtu.dk/ase/index.html), cpplint(optional), Sphinx(optional). To install these packages you could run:
 ```Shell
-pip install cpplint numpy scipy ase sphinx sphinx_rtd_theme
+pip install numpy scipy ase cpplint sphinx sphinx_rtd_theme
 ```
 
 * To make development documentation: first enable the documentation building with ccmake, then
@@ -34,7 +34,7 @@ ctest -V
 ```
 
 * To check for conformity with the c++ code convention:
- ```Shell
+```Shell
 cd build
 cmake -DCMAKE_BUILD_TYPE=Debug  -DENABLE_DOC=ON -DBUILD_TESTS=ON ..
 make lint
