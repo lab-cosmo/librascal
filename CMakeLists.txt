@@ -123,7 +123,7 @@ foreach(binaryfile ${binaries})
   target_link_libraries(${binaryname} ${Boost_LIBRARIES} rascal)
 endforeach(binaryfile ${binaries})
 
-#or copy them
+# or copy them
 file (GLOB pybins "${CMAKE_SOURCE_DIR}/bin/*.py")
 foreach(pybin ${pybins})
   get_filename_component(binaryname  ${pybin} NAME_WE)
@@ -132,7 +132,6 @@ foreach(pybin ${pybins})
     "${CMAKE_BINARY_DIR}/${binaryname}.py"
     COPYONLY)
 endforeach(pybin ${pybins})
-
 
 # add custom target for cpp linter
 find_package(PythonInterp ${RASCAL_PYTHON_MAJOR_VERSION} REQUIRED)
@@ -152,4 +151,11 @@ add_custom_target(lint
   COMMAND
   ${PYTHON_EXECUTABLE} cpplint.py --root=${CMAKE_BINARY_DIR}
   filter=-build/namespaces ${ALL_EXAMPLES}
+  )
+
+# make python library of rascal usable in build folder
+add_custom_target(pyrascalcopy ALL)
+add_custom_command(TARGET pyrascalcopy POST_BUILD
+  COMMAND cp -R
+  ${CMAKE_SOURCE_DIR}/rascal ${CMAKE_BINARY_DIR}
   )
