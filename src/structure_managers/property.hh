@@ -67,6 +67,7 @@ namespace rascal {
 
     using value_type = typename Value::type;
     using reference = typename Value::reference;
+    using const_reference = typename Value::const_reference;
 
     static constexpr bool
     IsStaticallySized{ (NbCol != Eigen::Dynamic) and
@@ -184,6 +185,23 @@ namespace rascal {
      */
     inline reference operator[](const size_t & index) {
       return Value::get_ref(this->values[index * NbComp]);
+    }
+
+    /**
+     * Accessor for property by index for statically sized properties
+     */
+    inline const_reference operator[](const size_t & index)  const {
+      const auto & value{this->values[index * NbComp]};
+      const auto & ret_val{Value::get_ref(value)};
+      return ret_val;
+    }
+
+    /**
+     * Accessor for last pushed entry for statically sized properties
+     */
+    inline reference back() {
+      auto && index{this->values.size()-NbComp};
+      return Value::get_ref(this->values[index]);
     }
   };
 

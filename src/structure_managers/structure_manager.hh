@@ -248,7 +248,7 @@ namespace rascal {
     //! end of iterator
     inline Iterator_t end() {
       return Iterator_t(*this,
-                        this->implementation().size(),
+                        this->implementation().get_size(),
                         std::numeric_limits<size_t>::max());}
 
     //! i.e. number of atoms
@@ -271,7 +271,13 @@ namespace rascal {
 
     //! returns the atom type (convention is atomic number, but nothing is
     //! imposed apart from being an integer
-    inline int atom_type(const int & atom_index) {
+    inline const int& atom_type(const int & atom_index) const {
+      return this->implementation().get_atom_type(atom_index);
+    }
+
+    //! returns the atom type (convention is atomic number, but nothing is
+    //! imposed apart from being an integer
+    inline int& atom_type(const int & atom_index) {
       return this->implementation().get_atom_type(atom_index);
     }
 
@@ -350,6 +356,11 @@ namespace rascal {
       return this->cluster_indices_container;
     }
 
+    //! access to cluster_indices_container
+    inline const ClusterIndex_t & get_cluster_indices_container() const  {
+      return this->cluster_indices_container;
+    }
+
     /**
      * Tuple which contains MaxOrder number of cluster_index lists for reference
      * with increasing layer depth. It is filled upon construction of the
@@ -358,10 +369,6 @@ namespace rascal {
      * adaptors accordingly via the lower level indices and a Order-dependend
      * index is appended to the array.
      */
-    // TODO(till): possible: tuple of shared pointer.
-    // adaptor_increase_maxleve makes a
-    // copy; cluster_ref_base maps onto a column of this, which referes to the
-    // current cluster
     ClusterIndex_t cluster_indices_container;
   };
 
@@ -483,7 +490,14 @@ namespace rascal {
      * return atom type (idea: corresponding atomic number, but is allowed to be
      * arbitrary as long as it is an integer)
      */
-    inline int get_atom_type() const {
+    inline const int & get_atom_type() const {
+      return this->manager.atom_type(this->index);
+    }
+    /**
+     * return atom type (idea: corresponding atomic number, but is allowed to be
+     * arbitrary as long as it is an integer)
+     */
+    inline int & get_atom_type() {
       return this->manager.atom_type(this->index);
     }
 
@@ -512,9 +526,12 @@ namespace rascal {
                   ManagerImplementation::template cluster_layer<Order>()> {
   public:
     using Manager_t = StructureManager<ManagerImplementation>;
+    using traits = StructureManager_traits<ManagerImplementation>;
+    constexpr static auto ClusterLayer{
+      ManagerImplementation::template cluster_layer<Order>()};
     using Parent =
       ClusterRefKey<Order,
-                    ManagerImplementation::template cluster_layer<Order>()>;
+                    ClusterLayer>;
     using AtomRef_t = typename Manager_t::AtomRef;
     using Iterator_t = typename Manager_t::template iterator<Order>;
     using Atoms_t = std::array<AtomRef_t, Order>;
@@ -523,9 +540,6 @@ namespace rascal {
 
     using IndexConstArray_t = typename Parent::IndexConstArray;
     using IndexArray_t = typename Parent::IndexArray;
-
-    static_assert(Order <= traits::MaxOrder,
-                  "Order > MaxOrder, impossible iterator");
 
     //! Default constructor
     ClusterRef() = delete;
@@ -552,7 +566,7 @@ namespace rascal {
     /**
      * This is a ClusterRef of Order=1, constructed from a higher Order.  This
      * function here is self referencing right now. A ClusterRefKey with
-     * Order=1 is needed to construct it ?!
+     * Order=1 is noeeded to construct it ?!
      */
     template <bool FirstOrder = (Order == 1)>
     ClusterRef(std::enable_if_t<FirstOrder, ClusterRefKey<1, 0>> & cluster,
@@ -588,15 +602,27 @@ namespace rascal {
     inline decltype(auto) get_position() {
       return this->get_manager().position(this->get_atom_index());
     }
+
     //! returns the type of the last atom in the cluster
-    inline decltype(auto) get_atom_type() {
+    inline int & get_atom_type() {
       auto && id{this->get_atom_index()};
       return this->get_manager().atom_type(id);
     }
 
+    //! returns the type of the last atom in the cluster
+    inline const int & get_atom_type() const {
+      auto && id{this->get_atom_index()};
+      return this->get_manager().atom_type(id);
+    }
+
+    /**
+     * build a array of atom types from the atoms in this cluster
+     */
+    std::array<int, Order> get_atom_types() const;
+
     //! return the index of the atom/pair/etc. it is always the last one, since
     //! the other ones are accessed an Order above.
-    inline int get_atom_index() {
+    inline int get_atom_index() const {
       return this->back();
     }
     //! returns a reference to the manager with the maximum layer
@@ -633,6 +659,9 @@ namespace rascal {
       return this->atom_indices;
     }
 
+    inline Iterator_t & get_iterator() {return this->it;}
+    inline const Iterator_t & get_iterator() const {return this->it;}
+
   protected:
     //! counters for access
     inline std::array<size_t, 1> get_counters() const {
@@ -642,6 +671,36 @@ namespace rascal {
     Iterator_t & it;
   private:
   };
+
+
+  namespace internal {
+    template <class Manager, size_t Order, size_t... Indices>
+    std::array<int, Order>
+    species_aggregator_helper(const std::array<int, Order> & array,
+                              const Manager & manager,
+                              std::index_sequence<Indices...> /*indices*/) {
+      return std::array<int, Order>{
+        manager.atom_type(array[Indices])...};
+    }
+
+    template <class Manager, size_t Order, size_t... Indices>
+    std::array<int, Order>
+    species_aggregator(const std::array<int, Order> &index_array,
+                       const Manager & manager) {
+      return species_aggregator_helper<Manager>
+        (index_array,
+         manager,
+         std::make_index_sequence<Order>{});
+    }
+  }; // internal
+
+  template <class ManagerImplementation>
+  template <size_t Order>
+  std::array<int, Order> StructureManager<ManagerImplementation>::
+      ClusterRef<Order>::get_atom_types() const {
+    return internal::species_aggregator<StructureManager>(this->atom_indices,
+                                                          this->get_manager());
+  }
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -667,6 +726,9 @@ namespace rascal {
        typename Manager_t::template
        ClusterRef<Order-1>>;
     static_assert(Order > 0, "Order has to be positive");
+
+    static_assert(Order <= traits::MaxOrder,
+                  "Order > MaxOrder, impossible iterator");
 
     using AtomRef_t = typename Manager_t::AtomRef;
 
@@ -719,6 +781,20 @@ namespace rascal {
       return ClusterRef_t(*this, this->get_atom_indices(), cluster_indices);
     }
 
+    //! dereference: calculate cluster indices
+    inline const value_type operator * () const {
+      const auto & cluster_indices_properties =
+        std::get<Order-1>(this->get_manager().get_cluster_indices_container());
+      using Ref_t = typename
+        std::remove_reference_t<decltype(cluster_indices_properties)>::
+        const_reference;
+      Ref_t cluster_indices =
+        cluster_indices_properties[this->get_cluster_index()];
+      const auto indices{this->get_atom_indices()};
+      return ClusterRef_t(const_cast<iterator&>(*this),
+                          indices, cluster_indices);
+    }
+
     //! equality
     inline bool operator == (const iterator & other) const {
       return this->index == other.index;
@@ -729,6 +805,11 @@ namespace rascal {
       return not (*this == other);
     }
 
+    /**
+     * const access to container
+     */
+    inline const Container_t & get_container() const {return this->container;}
+
    protected:
     //! constructor with container ref and starting point
     iterator(Container_t & cont, size_t start, size_t offset)
@@ -736,6 +817,13 @@ namespace rascal {
 
     //! add atomic indices in current iteration
     std::array<int, Order> get_atom_indices() {
+      return internal::append_array
+        (container.get_atom_indices(),
+         this->get_manager().cluster_neighbour(container, this->index));
+    }
+
+    //! add atomic indices in current iteration
+    std::array<int, Order> get_atom_indices() const {
       return internal::append_array
         (container.get_atom_indices(),
          this->get_manager().cluster_neighbour(container, this->index));

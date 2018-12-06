@@ -49,7 +49,7 @@ namespace rascal {
 
     for (auto atom_cluster : manager) {
       BOOST_CHECK_EQUAL(atom_counter, atom_cluster.get_global_index());
-      BOOST_CHECK_EQUAL(atom_cluster.get_atom_type(), 1);
+      BOOST_CHECK_EQUAL(atom_cluster.get_atom_type(), type[atom_counter]);
       ++atom_counter;
 
       for (auto pair_cluster : atom_cluster) {

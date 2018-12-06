@@ -240,6 +240,7 @@ namespace rascal {
 
       AdaptorNeighbourList<StructureManagerCenters> pair_manager2{manager_2,
           cutoff_tmp};
+
       pair_manager2.update();
 
       for (auto atom : pair_manager1) {

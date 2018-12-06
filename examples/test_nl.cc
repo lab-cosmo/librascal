@@ -47,7 +47,7 @@ int main() {
   Eigen::MatrixXd positions(22, 3);
   Eigen::Matrix<int, Eigen::Dynamic, 1> numbers(22);
   Eigen::MatrixXd cell(3, 3);
-  std::array<int, 3> pbc{{true,true,true}};
+  std::array<int, 3> pbc{{true, true, true}};
   bool verbose{false};
 
   // definition of unit cell vectors
@@ -108,7 +108,7 @@ int main() {
     std::vector<std::vector<int>> neigh_ids_strict;
     std::vector<std::vector<double>> neigh_dist_strict;
 
-    std::cout << "Setting up strict manager with rc="<<cutoff_tmp << std::endl;
+    std::cout << "Setting up strict manager with rc="<< cutoff_tmp << std::endl;
     // make strict neighbour list
     rascal::AdaptorStrict<
       rascal::AdaptorNeighbourList<rascal::StructureManagerCenters>>
@@ -127,9 +127,9 @@ int main() {
         // get_index returns iteration index
         std::cout << "strict atom out " << center.get_index();
         // get_atom_index returns index from
-        std::cout << " " << center.get_atom_index() << " " ;
+        std::cout << " " << center.get_atom_index() << " ";
 
-        for (int ii{0};ii<3;++ii){
+        for (int ii{0}; ii < 3; ++ii) {
           std::cout << center.get_position()[ii] << " ";
         }
         std::cout << " " << center.get_atom_type() << std::endl;
@@ -145,15 +145,14 @@ int main() {
 
         if (verbose) {
           std::cout << "strict neigh out " << neigh.get_index();
-          std::cout << " " << neigh.get_atom_index() << "\t " ;
+          std::cout << " " << neigh.get_atom_index() << "\t ";
 
-          for (int ii{0};ii<3;++ii){
+          for (int ii{0}; ii < 3; ++ii) {
             std::cout << neigh.get_position()[ii] << ", ";
           }
           std::cout << "\t dist=" << distance;
           std::cout << "\t " << neigh.get_atom_type() << std::endl;
         }
-
       }
 
       std::cout << "Number of Neighbourg: " << Nneigh << std::endl;

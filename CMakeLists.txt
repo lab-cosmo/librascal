@@ -17,6 +17,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-builtin")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 include(rascalTools)
+include(cpplint)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
   # using Clang
@@ -131,22 +132,6 @@ foreach(pybin ${pybins})
 endforeach(pybin ${pybins})
 
 
-# add custom target for cpp linter
-find_package(PythonInterp ${RASCAL_PYTHON_MAJOR_VERSION} REQUIRED)
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/external/cpplint.py
-  ${CMAKE_BINARY_DIR}/cpplint.py
-  COPYONLY)
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/CPPLINT.cfg
-  ${CMAKE_BINARY_DIR}/CPPLINT.cfg
-  COPYONLY)
-file( GLOB_RECURSE ALL_HDR "${CMAKE_SOURCE_DIR}/src/*.hh")
-file( GLOB_RECURSE ALL_SRC "${CMAKE_SOURCE_DIR}/src/*.cc")
-add_custom_target(lint
-  ${PYTHON_EXECUTABLE} cpplint.py --root=${CMAKE_BINARY_DIR} ${ALL_SRC}
-  ${ALL_HDR}
-  COMMAND
-  ${PYTHON_EXECUTABLE} cpplint.py --root=${CMAKE_BINARY_DIR}
-  filter=-build/namespaces ${ALL_EXAMPLES}
-  )
+cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/src" "")
+cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
+cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/examples" "--filter=-build/namespaces")

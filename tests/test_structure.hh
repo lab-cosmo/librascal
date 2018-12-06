@@ -48,9 +48,9 @@ namespace rascal {
    * to be called "manager"
    */
 
-  // TODO: this is not a general case of a manager fixture. Should not be so
-  // complicated
-  // TODO: change this to a usage case of the ManagerFixture
+  // TODO(markus): this is not a general case of a manager fixture. Should not
+  // be so complicated
+  // TODO(markus): change this to a usage case of the ManagerFixture
   template<class ManagerImplementation>
   struct ManagerFixture {
     ManagerFixture():
@@ -279,7 +279,7 @@ namespace rascal {
     int ** firstneigh;
     double **x;
     double **f;
-    int type[nb]{1, 1, 1};
+    int type[nb]{1, 2, -9};
     double  eatom[3]{2, 1, 1};
     double ** vatom;
     Manager_t manager;
@@ -467,7 +467,7 @@ namespace rascal {
                        Eigen::Map<Eigen::Matrix<int, 3, 1>>
                        {pbc.data()});
 
-      manager_2.update(positions_2, numbers_1, cell_2,
+      manager_2.update(positions_2, numbers_2, cell_2,
                        Eigen::Map<Eigen::Matrix<int, 3, 1>>
                        {pbc.data()});
     }
@@ -490,7 +490,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   /**
    * A simple manager using ManagerCenters to check the neighbourlist algorithm
-   * with simple positions and a periodicity only in x-direction.
+   * with simple positions and a periodicity only in x-direction. This manager
+   * is also used to check the species filter.
    *
    */
   template<>
@@ -510,7 +511,7 @@ namespace rascal {
         0.4, 0.4, 1.4, 1.4, 0.4, 0.4, 1.4, 1.4,
         0.4, 0.4, 0.4, 0.4, 1.4, 1.4, 1.4, 1.4;
 
-      numbers << 1, 1, 1, 1, 1, 1, 1, 1;
+      numbers << 1, 3, 2, 1, 1, 2, 2, 3;
 
       manager.update(positions, numbers, cell,
                      Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
