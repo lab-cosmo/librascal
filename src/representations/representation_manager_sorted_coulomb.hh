@@ -180,7 +180,7 @@ namespace rascal {
    */
   template<class StructureManager, Option SortingAlgo>
   class RepresentationManagerSortedCoulomb: public RepresentationManagerBase {
-  public:
+   public:
     // TODO(felix) make a traits mechanism
     // TODO(Felix) allow for different kind of CM
     using Manager_t = StructureManager;
