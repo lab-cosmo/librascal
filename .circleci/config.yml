@@ -99,10 +99,18 @@ jobs:
                                 command: |
                                         cd build 
                                         make dev_doc
-                        
+         build_macos_clang: 
+                macos:
+                        xcode: "10.0"
+                steps:
+                        - checkout
+                       
 workflows:
         version: 2
         ubuntu:
                 jobs:
                         - build_ubuntu_g++
                         - build_ubuntu_clang
+        macos:
+                jobs:
+                        - build_macos_clang
