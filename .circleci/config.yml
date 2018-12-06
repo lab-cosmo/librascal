@@ -99,7 +99,7 @@ jobs:
                                 command: |
                                         cd build 
                                         make dev_doc
-         build_macos_clang: 
+        build_macos_clang:
                 macos:
                         xcode: "10.0"
                 steps:
