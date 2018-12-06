@@ -67,6 +67,7 @@ namespace rascal {
 
     using value_type = typename Value::type;
     using reference = typename Value::reference;
+    using const_reference = typename Value::const_reference;
 
     static constexpr bool
     IsStaticallySized{ (NbCol != Eigen::Dynamic) and
@@ -231,7 +232,7 @@ namespace rascal {
     }
 
     //! get a reference
-    reference get_ref(T & value) {
+    inline reference get_ref(T & value) {
       return reference(&value, this->get_nb_row(), this->get_nb_col());
     }
   };

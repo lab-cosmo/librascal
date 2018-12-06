@@ -33,7 +33,7 @@
 
 namespace rascal {
 
-  // TODO(felix): make dimension dependent
+  // TODO(markus): make dimension dependent
   // short hands for types, which were deleted from basic types
   constexpr static auto Dim{3};
   using Vec3_t = Eigen::Matrix<double, Dim, 1>;

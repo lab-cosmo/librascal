@@ -280,7 +280,7 @@ namespace rascal {
                        Eigen::Map<Eigen::Matrix<int, 3, 1>>
                        {pbc.data()});
 
-      manager_2.update(positions_2, atom_types_1, cell_2,
+      manager_2.update(positions_2, atom_types_2, cell_2,
                        Eigen::Map<Eigen::Matrix<int, 3, 1>>
                        {pbc.data()});
     }
@@ -364,7 +364,7 @@ namespace rascal {
     int ** firstneigh;
     double **x;
     double **f;
-    int type[nb]{1, 1, 1};
+    int type[nb]{1, 2, -9};
     double  eatom[3]{2, 1, 1};
     double ** vatom;
     Manager_t manager;
@@ -434,7 +434,8 @@ namespace rascal {
     ManagerFixtureSimple() :
       ManagerFixture<StructureManagerCenters> {},
       pbc{{true, false, false}}, cell(3, 3), positions(3, 8), atom_types(8),
-      cutoff{2.1}, natoms{8} {
+      cutoff{2.1}, natoms{8}
+    {
       cell <<
         2., 0., 0.,
         0., 2., 0.,
@@ -445,10 +446,10 @@ namespace rascal {
         0.4, 0.4, 1.4, 1.4, 0.4, 0.4, 1.4, 1.4,
         0.4, 0.4, 0.4, 0.4, 1.4, 1.4, 1.4, 1.4;
 
-      atom_types << 1, 1, 1, 1, 1, 1, 1, 1;
+      atom_types << 1, 3, 2, 1, 1, 2, 2, 3;
 
-      this->manager.update(positions, atom_types, cell,
-                           Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
+      using PBC_t = Eigen::Map<Eigen::Matrix<int, 3, 1>>;
+      this->manager.update(positions, atom_types, cell, PBC_t{pbc.data()});
     }
 
     ~ManagerFixtureSimple() {}
@@ -465,11 +466,10 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * A fixture to check the neighbourlist algorithm with increasing skewedness
-   * of the cell as well as a shift of the positions. The manager is built and
-   * constructed inside the loop in the test: it skews the cells, therefore it
-   * is not templated. The initial cutoff here is chosen to be smaller than the
-   * atomic distance in this case to ensure to start with zero neighbours.
+   * A simple manager using ManagerCenters to check the neighbourlist algorithm
+   * with simple positions and a periodicity only in x-direction. This manager
+   * is also used to check the species filter.
+   *
    */
   struct ManagerFixtureSkew {
     ManagerFixtureSkew():

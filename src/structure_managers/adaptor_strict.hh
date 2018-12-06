@@ -3,7 +3,7 @@
  *
  * @author Till Junge <till.junge@altermail.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
- * 
+ *
  * @date   04 Jun 2018
  *
  * @brief implements an adaptor for structure_managers, filtering
@@ -111,7 +111,7 @@ namespace rascal {
     AdaptorStrict& operator=(AdaptorStrict &&other) = default;
 
     //! update just the adaptor assuming the underlying manager was updated
-    void update();
+    inline void update();
 
     //! update the underlying manager as well as the adaptor
     template<class ... Args>
@@ -195,8 +195,8 @@ namespace rascal {
     //! Returns atom type given an atom index
     // TODO(markus) find how to return a reference and get a reference
     // from managerCenters. copies are made atm
-    inline int get_atom_type(const int& atom_id) {
-      int type{this->manager.get_atom_type(atom_id)};
+    inline int& get_atom_type(const int& atom_id) {
+      auto && type{this->manager.get_atom_type(atom_id)};
       return type;
     }
 
@@ -216,12 +216,14 @@ namespace rascal {
     }
 
     //! return the number of neighbours of a given atom
-    template<size_t Order, size_t Layer>
-    inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
+    template<size_t Order, size_t CallingLayer>
+    inline size_t get_cluster_size(const ClusterRefKey<Order, CallingLayer>
            & cluster) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
-      return this->nb_neigh[Order][cluster.back()];
+      constexpr auto nb_neigh_layer{
+        compute_cluster_layer<Order> (typename traits::LayerByOrder{})};
+      return this->nb_neigh[Order][cluster.get_cluster_index(nb_neigh_layer)];
     }
 
    protected:
@@ -349,8 +351,8 @@ namespace rascal {
     //! initialise the neighbourlist
     for (size_t i{0}; i < traits::MaxOrder; ++i) {
       this->atom_indices[i].clear();
-      this->nb_neigh[i].resize(0);
-      this->offsets[i].resize(0);
+      this->nb_neigh[i].clear();
+      this->offsets[i].clear();
     }
     this->nb_neigh[0].push_back(0);
     for (auto & vector : this->offsets) {
@@ -369,7 +371,7 @@ namespace rascal {
     for (auto atom : this->manager) {
       this->add_atom(atom);
       /**
-       * Add new depth layer for atoms (see LayerByOrder for
+       * Add new layer for atoms (see LayerByOrder for
        * possible optimisation).
        */
 

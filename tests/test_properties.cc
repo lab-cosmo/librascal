@@ -46,7 +46,6 @@ namespace rascal {
   template<class ManagerImplementation>
   struct PropertyFixture
     : public PairFixture<ManagerImplementation> {
-
     using Manager_t = AdaptorNeighbourList<ManagerImplementation>;
 
     using PairScalarProperty_t =

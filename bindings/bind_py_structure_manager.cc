@@ -28,6 +28,10 @@
 
 #include "bind_include.hh"
 
+/**
+ * In this file SMI stands for StructureManagerImplementation.
+ */
+
 template<typename SMI>
 using LayerByOrder = typename SMI::traits::LayerByOrder;
 
@@ -102,9 +106,15 @@ decltype(auto) add_cluster(py::module & m) {
                       py_cluster(m, cluster_name.c_str());
   py_cluster.def_property_readonly("atom_index", & ClusterRef::get_atom_index,
                                    py::return_value_policy::reference)
-    .def_property_readonly("atom_type", & ClusterRef::get_atom_type,
+    .def_property_readonly("atom_type",
+                           [](const ClusterRef & cluster) {
+                             return cluster.get_atom_type();
+                           },
                            py::return_value_policy::reference)
-    .def_property_readonly("index", & ClusterRef::get_index,
+    .def_property_readonly("index",
+                           [](const ClusterRef & cluster) {
+                             return cluster.get_index();
+                           },
                            py::return_value_policy::reference)
     .def_property_readonly("size", & ClusterRef::size,
                            py::return_value_policy::reference)

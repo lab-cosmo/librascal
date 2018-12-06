@@ -104,6 +104,7 @@ namespace rascal {
 
     using AtomTypes_t = AtomicStructure<traits::Dim>::AtomTypes_t;
     using AtomTypes_ref = AtomicStructure<traits::Dim>::AtomTypes_ref;
+    using ConstAtomTypes_ref = AtomicStructure<traits::Dim>::ConstAtomTypes_ref;
 
     using PBC_t = AtomicStructure<traits::Dim>::PBC_t;
     using PBC_ref = AtomicStructure<traits::Dim>::PBC_ref;
@@ -187,14 +188,25 @@ namespace rascal {
     }
 
     //! Returns the type of a given atom, given an AtomRef
-    inline int get_atom_type(const int & atom_index) {
-      auto t = this->get_atom_types();
-      return t(atom_index);
+    inline int & get_atom_type(const int & atom_index) {
+      return this->atoms_object.atom_types(atom_index);
+    }
+
+    //! Returns the type of a given atom, given an AtomRef
+    inline const int & get_atom_type(const int & atom_index) const {
+      return this->atoms_object.atom_types(atom_index);
     }
 
     //! Returns an a map with all atom types.
     inline AtomTypes_ref get_atom_types() {
       AtomTypes_ref val(this->atoms_object.atom_types.data(),
+                        1, this->natoms);
+      return val;
+    }
+
+    //! Returns an a map with all atom types.
+    inline ConstAtomTypes_ref get_atom_types() const {
+      ConstAtomTypes_ref val(this->atoms_object.atom_types.data(),
                         1, this->natoms);
       return val;
     }

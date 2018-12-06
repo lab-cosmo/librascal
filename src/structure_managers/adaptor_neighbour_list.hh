@@ -582,7 +582,16 @@ namespace rascal {
     }
 
     //! Returns atom type given an atom index, also works for ghost atoms
-    inline int get_atom_type(const size_t & atom_index) {
+    inline int & get_atom_type(const size_t & atom_index) {
+      if (atom_index < this->n_i_atoms) {
+        return this->manager.get_atom_type(atom_index);
+      } else {
+        return this->get_ghost_type(atom_index - this->n_i_atoms);
+      }
+    }
+
+    //! Returns atom type given an atom index, also works for ghost atoms
+    inline const int & get_atom_type(const size_t & atom_index) const {
       if (atom_index < this->n_i_atoms) {
         return this->manager.get_atom_type(atom_index);
       } else {
