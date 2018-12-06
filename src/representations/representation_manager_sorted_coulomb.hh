@@ -91,7 +91,7 @@ namespace rascal {
                              Eigen::DenseBase<DerivedB> & out,
                              const std::vector<double> & distances_to_sort) {
       // find the sorting order
-      std::vector<std::pair<size_t, distiter> >
+      std::vector<std::pair<size_t, distiter>>
         order_coulomb(distances_to_sort.size());
       size_t nn{0};
       for (distiter it{distances_to_sort.begin()};
@@ -133,7 +133,7 @@ namespace rascal {
       }
 
       // find the sorting order
-      std::vector<std::pair<size_t, distiter> >
+      std::vector<std::pair<size_t, distiter>>
         order_coulomb(distances_to_sort.size());
       size_t nn{0};
       for (distiter it{distances_to_sort.begin()};
