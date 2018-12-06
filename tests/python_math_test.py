@@ -11,23 +11,22 @@ from python_import_rascal import _rascal as rc
 class TestMath(unittest.TestCase):
     def setUp(self):
         """
-        
+
         """
         np.random.seed(10)
         self.Ntest = 100
         self.atol = 1e-14
-        
+
 
     def test_hyp2f1(self):
         """
-        TEST 
+        TEST
         """
-        
+
         inps = np.random.rand(self.Ntest,4)
-        
+
         for ii in range(self.Ntest):
             ref = sps.hyp2f1(*inps[ii,:])
             test = rc.math.hyp2f1(*inps[ii,:])
 
             self.assertTrue(np.allclose(ref,test,atol=self.atol))
-            
