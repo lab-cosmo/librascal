@@ -58,13 +58,13 @@ namespace rascal {
       "reference_data/simple_cubic_8.json",
       "reference_data/small_molecule.json"
       };
-    std::vector<double> cutoffs{{1, 2, 3}};
+    std::vector<double> cutoffs{{1., 2., 3.}};
 
     std::list<json> hypers{
       {{"central_decay", 0.5},
-      {"interaction_cutoff", 10},
+      {"interaction_cutoff", 10.},
       {"interaction_decay", 0.5},
-      {"size", 120}}
+      {"size", 120.}}
       };
   };
 
