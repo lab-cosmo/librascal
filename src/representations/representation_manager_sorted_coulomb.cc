@@ -25,7 +25,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #include "representations/representation_manager_sorted_coulomb.hh"
 
-namespace rascal { }
+namespace rascal {}
