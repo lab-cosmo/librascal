@@ -36,13 +36,9 @@
 
 
 namespace rascal {
-
-
-
-/**
-   * Handles the aggragation of features from compatible representation
-   * managers using a dense underlying data storage.
-   *
+  /**
+   * Handles the aggragation of features from compatible representation managers
+   * using a dense underlying data storage.
    */
   template<typename T>
   class FeatureManagerDense: public FeatureManagerBase {
@@ -53,46 +49,48 @@ namespace rascal {
     using Feature_Matrix_t = Eigen::MatrixXd;
     using Feature_Matrix_ref = Eigen::Map<Eigen::MatrixXd>;
 
-    /**Default constructor where hypers contains all relevant informations
+    /**
+     * Default constructor where hypers contains all relevant informations
      * to setup a new RepresentationManager.
      */
     FeatureManagerDense(int n_feature, hypers_t hypers)
-    :feature_matrix{}, n_feature{n_feature}, n_center{0}, hypers{hypers}
+      :feature_matrix{}, n_feature{n_feature}, n_center{0}, hypers{hypers}
     {}
 
-    /**Constructor meant for initialization from python.
+    /**
+     * Constructor meant for initialization from python.
      * hypers_str should be a string containing a serialized
      * json version of hypers above
      */
     FeatureManagerDense(int n_feature, std::string hypers_str)
-    :feature_matrix{},  n_feature{n_feature}, n_center{0}, hypers{}
+      :feature_matrix{},  n_feature{n_feature}, n_center{0}, hypers{}
     {
       hypers = json::parse(hypers_str);
     }
 
     //! Copy constructor
-    FeatureManagerDense(const FeatureManagerDense &other) = delete;
+    FeatureManagerDense(const FeatureManagerDense & other) = delete;
 
     //! Move constructor
-    FeatureManagerDense(FeatureManagerDense &&other) = default;
+    FeatureManagerDense(FeatureManagerDense && other) = default;
 
     //! Destructor
     ~FeatureManagerDense() = default;
 
     //! Copy assignment operator
-    FeatureManagerDense& operator=(const FeatureManagerDense &other) = delete;
+    FeatureManagerDense & operator=(const FeatureManagerDense & other) = delete;
 
     //! Move assignment operator
-    FeatureManagerDense& operator=(FeatureManagerDense && other) = default;
+    FeatureManagerDense & operator=(FeatureManagerDense && other) = default;
 
     //! pre-allocate memory
-    void reserve(size_t& n_center) {
+    void reserve(size_t & n_center) {
       this->feature_matrix.reserve(n_center*this->n_feature);
     }
 
     //! move data from the representation manager property
-    void push_back(RepresentationManager_t& rm) {
-      auto& raw_data{rm.get_representation_raw_data()};
+    void push_back(RepresentationManager_t & rm) {
+      auto & raw_data{rm.get_representation_raw_data()};
       auto n_center{rm.get_center_size()};
       int n_feature{static_cast<int>(rm.get_feature_size())};
 
@@ -100,10 +98,6 @@ namespace rascal {
         throw std::length_error("Incompatible number of features");
       }
       this->n_center += n_center;
-      // this->feature_matrix.insert(this->feature_matrix.end(),
-      //                   std::make_move_iterator(raw_data.begin()),
-      //                   std::make_move_iterator(raw_data.end())
-      //                   );
       this->feature_matrix.insert(this->feature_matrix.end(),
                                   raw_data.begin(), raw_data.end());
     }
@@ -115,9 +109,10 @@ namespace rascal {
         throw std::length_error("Incompatible number of features");
       }
       this->n_center += 1;
-      this->feature_matrix.insert(this->feature_matrix.end(),
-                    std::make_move_iterator(feature_vector.begin()),
-                    std::make_move_iterator(feature_vector.end()));
+      this->feature_matrix.insert
+        (this->feature_matrix.end(),
+         std::make_move_iterator(feature_vector.begin()),
+         std::make_move_iterator(feature_vector.end()));
     }
 
     //! return number of elements of the flattened array
@@ -154,9 +149,10 @@ namespace rascal {
     int n_feature;
     //! Number of samples in the feature matrix
     int n_center;
-    /** Contain all relevant information to initialize
-    * a compatible RepresentationManager
-    */
+    /**
+     * Contain all relevant information to initialize a compatible
+     * RepresentationManager
+     */
     hypers_t hypers;
   };
 

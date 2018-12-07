@@ -5,7 +5,7 @@
  *
  * @date   14 November 2018
  *
- * @brief
+ * @brief base class for storage of features from multiple managers
  *
  * Copyright © 2018 Musil Felix, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -39,17 +39,16 @@
 
 
 namespace rascal {
-
-
-/**
- * Base class of the Feature Managers. Defines the basic interface and
- * some common short hand types.
- */
+  /**
+   * Base class of the Feature Managers. Defines the basic interface and some
+   * common short hand types.
+   */
   class FeatureManagerBase {
    public:
     using RepresentationManager_t = RepresentationManagerBase;
     using hypers_t = typename RepresentationManagerBase::hypers_t;
 
+    //! Default constructor
     FeatureManagerBase() = default;
 
     //! Copy constructor
@@ -62,7 +61,7 @@ namespace rascal {
     virtual ~FeatureManagerBase() = default;
 
     //! Copy assignment operator
-    FeatureManagerBase& operator=(const FeatureManagerBase &other) = delete;
+    FeatureManagerBase& operator=(const FeatureManagerBase & other) = delete;
 
     //! Move assignment operator
     FeatureManagerBase& operator=(FeatureManagerBase && other) = delete;
