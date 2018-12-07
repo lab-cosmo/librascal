@@ -20,8 +20,7 @@ jobs:
                                         apt-get install -y git
                                         apt-get install -y libboost-test-dev
                                         apt-get install -y doxygen
-                                        apt-get remove -y clang
-                                        apt-get install -y clang-5.0 libclang-common-5.0-dev libllvm5.0 libc++-dev
+                                        apt-get install -y gcc-5 g++-5
                         - run: 
                                 name: installing python packages
                                 command: |
@@ -32,7 +31,7 @@ jobs:
                                         rm -rf build 
                                         mkdir build 
                                         cd build 
-                                        cmake -DENABLE_DOC=ON -DBUILD_TESTS=ON -DCMAKE_C_COMPILER=clang-5.0 -DCMAKE_CXX_COMPILER=clang++-5.0 ..
+                                        cmake -DENABLE_DOC=ON -DBUILD_TESTS=ON -DCMAKE_C_COMPILER=gcc-5 -DCMAKE_CXX_COMPILER=g++-5 .. 
                         - run: pwd
                         - run:
                                 command: | 

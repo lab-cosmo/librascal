@@ -20,8 +20,14 @@ jobs:
                                         apt-get install -y git
                                         apt-get install -y libboost-test-dev
                                         apt-get install -y doxygen
-                                        apt-get remove -y clang
-                                        apt-get install -y clang-5.0 libclang-common-5.0-dev libllvm5.0 libc++-dev
+                                        apt-get install -y software-properties-common
+                                        apt-get update -y
+                                        apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 15CF4D18AF4F7421
+                                        add-apt-repository 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main'
+                                        #add-apt-repository 'deb-src http://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main' 
+                                        apt-get install -y libllvm-7-ocaml-dev libllvm7 llvm-7 llvm-7-dev llvm-7-doc llvm-7-examples llvm-7-runtime
+                                        apt-get install -y clang-7 clang-tools-7 clang-7-doc libclang-common-7-dev libclang-7-dev libclang1-7 clang-format-7 python-clang-7
+                                        apt-get install -y libc++-7-dev libc++abi-7-dev
                         - run: 
                                 name: installing python packages
                                 command: |
@@ -32,7 +38,7 @@ jobs:
                                         rm -rf build 
                                         mkdir build 
                                         cd build 
-                                        cmake -DENABLE_DOC=ON -DBUILD_TESTS=ON -DCMAKE_C_COMPILER=clang-5.0 -DCMAKE_CXX_COMPILER=clang++-5.0 ..
+                                        cmake -DENABLE_DOC=ON -DBUILD_TESTS=ON -DCMAKE_C_COMPILER=clang-7 -DCMAKE_CXX_COMPILER=clang-7 ..
                         - run: pwd
                         - run:
                                 command: | 
