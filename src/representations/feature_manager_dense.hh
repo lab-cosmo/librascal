@@ -26,22 +26,18 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef FEATURE_MANAGER_DENSE_H
 #define FEATURE_MANAGER_DENSE_H
 
-
 #include "representations/feature_manager_base.hh"
 #include "representations/representation_manager_base.hh"
-
 
 namespace rascal {
   /**
    * Handles the aggragation of features from compatible representation managers
    * using a dense underlying data storage.
    */
-  template<typename T>
-  class FeatureManagerDense: public FeatureManagerBase {
+  template <typename T> class FeatureManagerDense : public FeatureManagerBase {
    public:
     using Parent = FeatureManagerBase;
     using RepresentationManager_t = typename Parent::RepresentationManager_t;
@@ -54,8 +50,7 @@ namespace rascal {
      * to setup a new RepresentationManager.
      */
     FeatureManagerDense(int n_feature, hypers_t hypers)
-      :feature_matrix{}, n_feature{n_feature}, n_center{0}, hypers{hypers}
-    {}
+        : feature_matrix{}, n_feature{n_feature}, n_center{0}, hypers{hypers} {}
 
     /**
      * Constructor meant for initialization from python.
@@ -63,8 +58,7 @@ namespace rascal {
      * json version of hypers above
      */
     FeatureManagerDense(int n_feature, std::string hypers_str)
-      :feature_matrix{},  n_feature{n_feature}, n_center{0}, hypers{}
-    {
+        : feature_matrix{}, n_feature{n_feature}, n_center{0}, hypers{} {
       hypers = json::parse(hypers_str);
     }
 
@@ -85,7 +79,7 @@ namespace rascal {
 
     //! pre-allocate memory
     void reserve(size_t & n_center) {
-      this->feature_matrix.reserve(n_center*this->n_feature);
+      this->feature_matrix.reserve(n_center * this->n_feature);
     }
 
     //! move data from the representation manager property
@@ -98,8 +92,8 @@ namespace rascal {
         throw std::length_error("Incompatible number of features");
       }
       this->n_center += n_center;
-      this->feature_matrix.insert(this->feature_matrix.end(),
-                                  raw_data.begin(), raw_data.end());
+      this->feature_matrix.insert(this->feature_matrix.end(), raw_data.begin(),
+                                  raw_data.end());
     }
 
     //! move data from a feature vector
@@ -109,26 +103,20 @@ namespace rascal {
         throw std::length_error("Incompatible number of features");
       }
       this->n_center += 1;
-      this->feature_matrix.insert
-        (this->feature_matrix.end(),
-         std::make_move_iterator(feature_vector.begin()),
-         std::make_move_iterator(feature_vector.end()));
+      this->feature_matrix.insert(
+          this->feature_matrix.end(),
+          std::make_move_iterator(feature_vector.begin()),
+          std::make_move_iterator(feature_vector.end()));
     }
 
     //! return number of elements of the flattened array
-    inline int size() {
-      return this->feature_matrix.size();
-    }
+    inline int size() { return this->feature_matrix.size(); }
 
     //! return the number of samples in the feature matrix
-    inline int sample_size() {
-      return this->size()/this->n_feature;
-    }
+    inline int sample_size() { return this->size() / this->n_feature; }
 
     //! return the number of feature in the feature matrix
-    inline int feature_size() {
-      return this->n_feature;
-    }
+    inline int feature_size() { return this->n_feature; }
 
     //! get the shape of the feature matrix (Nrow,Ncol)
     inline std::tuple<int, int> shape() {
@@ -145,7 +133,7 @@ namespace rascal {
     //! underlying data container for the feature matrix
     std::vector<T> feature_matrix;
     //! Number of feature.
-    //TODO(felix) make it possible to change it after construction
+    // TODO(felix) make it possible to change it after construction
     int n_feature;
     //! Number of samples in the feature matrix
     int n_center;
@@ -156,7 +144,6 @@ namespace rascal {
     hypers_t hypers;
   };
 
-
-} // rascal
+}  // namespace rascal
 
 #endif /* FEATURE_MANAGER_DENSE_H */

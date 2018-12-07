@@ -30,25 +30,20 @@
 
 #include "structure_managers/structure_manager_base.hh"
 #include "json_io.hh"
+
 #include <string>
 #include <vector>
 
-
 namespace rascal {
-
 
   enum class Option {
     // Coulomb Matrix Options
-      CMSortDistance,
-      CMSortRowNorm,
-    };
-
-
+    CMSortDistance,
+    CMSortRowNorm,
+  };
 
   template <class RepresentationImplementation>
-  struct RepresentationManager_traits
-  {};
-
+  struct RepresentationManager_traits {};
 
   class RepresentationManagerBase {
    public:
@@ -61,27 +56,27 @@ namespace rascal {
     RepresentationManagerBase() = default;
 
     //! Copy constructor
-    RepresentationManagerBase(const RepresentationManagerBase &other) = delete;
+    RepresentationManagerBase(const RepresentationManagerBase & other) = delete;
 
     //! Move constructor
-    RepresentationManagerBase(RepresentationManagerBase &&other) = default;
+    RepresentationManagerBase(RepresentationManagerBase && other) = default;
 
     //! Destructor
-    virtual ~RepresentationManagerBase()  = default;
+    virtual ~RepresentationManagerBase() = default;
 
     //! Copy assignment operator
-    RepresentationManagerBase&
-                 operator=(const RepresentationManagerBase &other) = delete;
+    RepresentationManagerBase &
+    operator=(const RepresentationManagerBase & other) = delete;
 
     //! Move assignment operator
-    RepresentationManagerBase&
-                 operator=(RepresentationManagerBase && other) = default;
+    RepresentationManagerBase &
+    operator=(RepresentationManagerBase && other) = default;
 
     //! Resolves the mismatch between the expected traits
     //! and the effective traits of the Structure Manager
     // TODO(felix) make it into a function outside this class
     template <class Mngr>
-    void check_traits_compatibility(Mngr &structure_manager);
+    void check_traits_compatibility(Mngr & structure_manager);
 
     //! Pure Virtual Function to set hyperparameters of the representation
     virtual void set_hyperparameters(const hypers_t &) = 0;
@@ -90,7 +85,7 @@ namespace rascal {
     virtual void compute() = 0;
 
     //! get the raw data of the representation
-    virtual std::vector<precision_t>& get_representation_raw_data() = 0;
+    virtual std::vector<precision_t> & get_representation_raw_data() = 0;
 
     //! get the size of a feature vector
     virtual size_t get_feature_size() = 0;
@@ -99,7 +94,6 @@ namespace rascal {
     virtual size_t get_center_size() = 0;
   };
 
-}
+}  // namespace rascal
 
 #endif /* REPRESENTATION_MANAGER_BASE_H */
-
