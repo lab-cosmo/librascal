@@ -97,8 +97,8 @@ namespace rascal {
     }
     if (verbose) std::cout << std::endl;
   }
-  /* ---------------------------------------------------------------------- */
 
+  /* ---------------------------------------------------------------------- */
   using multiple_fixtures = boost::mpl::list<
     RepresentationFixture<StructureManagerCenters,
                           RepresentationManagerSortedCoulomb,
@@ -109,6 +109,7 @@ namespace rascal {
                           MultipleStructureSortedCoulomb,
                           Option::CMSortRowNorm>>;
 
+  /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_constructor_test,
                                    Fix, multiple_fixtures, Fix) {
     auto & managers = Fix::managers_strict;
@@ -122,6 +123,7 @@ namespace rascal {
     }
   }
 
+  /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_compute_test,
                                    Fix, multiple_fixtures, Fix) {
     auto & managers = Fix::managers_strict;
