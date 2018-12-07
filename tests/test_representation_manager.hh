@@ -74,7 +74,7 @@ namespace rascal {
   struct RepresentationFixture
   :MultipleStructureManagerStrictFixture<StructureManager, BaseFixture> {
     using Parent = MultipleStructureManagerStrictFixture<StructureManager,
-                    BaseFixture>;
+                                                         BaseFixture>;
     using Manager_t = typename Parent::Manager_t;
     using Representation_t = RepresentationManager<Manager_t, options...>;
 

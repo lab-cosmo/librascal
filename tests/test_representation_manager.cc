@@ -33,12 +33,13 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(representation_sorted_coulomb_test);
   /* ---------------------------------------------------------------------- */
   BOOST_TEST_CASE_TEMPLATE_FUNCTION(test_internals, T) {
-    bool verbose{false};
+    constexpr bool verbose{true};
+
     typedef std::vector<double>::const_iterator myiter;
     typedef Eigen::Matrix<double, 10, 1> vec;
 
-    vec  numbers = vec::Random();
-    vec  numbers2 = vec::Random();
+    vec numbers = vec::Random();
+    vec numbers2 = vec::Random();
     std::vector<double> index{};
     std::vector<double> index2{};
 
@@ -124,8 +125,8 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_compute_test,
                                    Fix, multiple_fixtures, Fix) {
     auto & managers = Fix::managers_strict;
-    auto& representations = Fix::representations;
-    auto& hypers = Fix::hypers;
+    auto & representations = Fix::representations;
+    auto & hypers = Fix::hypers;
     for (auto& manager : managers) {
       for (auto& hyper : hypers) {
         representations.emplace_back(manager, hyper);
