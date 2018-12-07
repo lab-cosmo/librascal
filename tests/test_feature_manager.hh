@@ -65,8 +65,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   /**
    * A templated Fixture, inherits from the ReperesentationFixture. It provides
-   * access to different data structures, which is used to check the aggregation
-   * of data from multiple structures.
+   * access to different data structures. They are used to check the aggregation
+   * of calculated feature data from multiple structures.
    */
   template<typename T,
            template<typename> class FeatureManager,

@@ -86,7 +86,7 @@ namespace rascal {
       std::vector<std::vector<std::array<double, 3>>> neigh_dirVec_strict{};
 
       if (verbose) std::cout << "Setting up strict manager with rc = "
-                             <<cutoff_tmp << std::endl;
+                             << cutoff_tmp << std::endl;
       AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>
         adaptor_strict{pair_manager, cutoff_tmp};
       adaptor_strict.update();
@@ -217,7 +217,7 @@ namespace rascal {
                                       MultipleStructureManagerBaseFixture>>;
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_strict_test,
-            Fix, multiple_fixtures, Fix) {
+                                   Fix, multiple_fixtures, Fix) {
     bool verbose{false};
     auto & managers = Fix::managers_pair;
 
@@ -263,7 +263,7 @@ namespace rascal {
             indices.push_back(neigh.get_atom_index());
             distances.push_back(distance);
             auto dirVec{(neigh.get_position() -
-                      center.get_position()).array()/distance};
+                         center.get_position()).array()/distance};
             std::array<double, 3> aa{{dirVec(0), dirVec(1), dirVec(2)}};
             dirVecs.push_back(aa);
             if (verbose) {
@@ -367,7 +367,6 @@ namespace rascal {
      * leads to a difference in number of neighbours. Therefore the strict
      * cutoff is check to ensure the exakt same number of neighbours.
      */
-
     constexpr bool verbose{false};
 
     if (verbose) std::cout << "HCP test " << cutoff << std::endl;
