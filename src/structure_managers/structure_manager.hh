@@ -249,11 +249,11 @@ namespace rascal {
 
     //! Usage of iterator including ghosts; in case no ghost atoms exist, it is
     //! an iteration over all existing center atoms
-    inline ProxyOnlyGhosts with_ghosts() { return ProxyWithGhosts{*this}; }
+    inline ProxyWithGhosts with_ghosts() { return ProxyWithGhosts{*this}; }
 
     //! Usage of iterator for only ghosts, in case no ghosts exist, the iterator
     //! is empty
-    inline ProxyWithGhosts only_ghosts() { return ProxyOnlyGhosts{*this}; }
+    inline ProxyOnlyGhosts only_ghosts() { return ProxyOnlyGhosts{*this}; }
 
     //! i.e. number of atoms
     inline size_t size() const { return this->implementation().get_size(); }
@@ -853,6 +853,10 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * A class which provides the iteration range from start to the end of the
+   * atoms including additional ghost atoms.
+   */
   template <class ManagerImplementation>
   class StructureManager<ManagerImplementation>::ProxyWithGhosts {
    public:
@@ -862,7 +866,7 @@ namespace rascal {
     //! Default constructor
     ProxyWithGhosts() = delete;
 
-    //!
+    //! Constructor
     ProxyWithGhosts(ManagerImplementation & manager) : manager{manager} {};
 
     //! Copy constructor
@@ -896,6 +900,10 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * A class which provides the iteration range from for all ghost atoms in the
+   * structure. If no ghost atoms exist, the iterator is of size zero.
+   */
   template <class ManagerImplementation>
   class StructureManager<ManagerImplementation>::ProxyOnlyGhosts
       : public StructureManager<ManagerImplementation>::ProxyWithGhosts {

@@ -3,7 +3,7 @@
     "ctime": 7.77,
     "mtime": 7.77,
     "numbers": [1, 1, 1, 1, 1, 1, 1, 1, 1],
-    "pbc": [false, false, false],
+    "pbc": [true, false, false],
     "positions": [
         [0.5, 0.4, 0.5],
         [0.5, 0.5, 0.5],

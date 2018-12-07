@@ -508,9 +508,7 @@ namespace rascal {
     // the neighbour of the neighbour, but they are not originally i-atoms
 
     //! Returns number of clusters of the original manager
-    inline size_t get_size() const {
-      return this->n_centers;
-    }
+    inline size_t get_size() const { return this->n_centers; }
 
     //! total number of atoms used for neighbour list, including ghosts
     inline size_t get_size_with_ghosts() const {
