@@ -149,8 +149,15 @@ namespace rascal {
       }
     }
 
+    //! returns the number of center atoms
+    inline size_t get_size() const {
+      return this->manager.get_size();
+    }
+
     //! returns the number of atoms
-    inline size_t get_size() const {return this->get_nb_clusters(1);}
+    inline size_t get_size_with_ghosts() const {
+      return this->manager.get_size_with_ghosts();
+    }
 
     //! returns position of the given atom index
     inline Vector_ref get_position(const int & index) {

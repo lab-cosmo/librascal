@@ -124,8 +124,7 @@ namespace rascal {
 
     using PairManager_t = AdaptorNeighbourList<StructureManagerCenters>;
 
-    if (verbose)
-      std::cout << "HCP test " << cutoff << std::endl;
+    if (verbose) std::cout << "HCP test " << cutoff << std::endl;
 
     int mult = 3;
 

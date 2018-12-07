@@ -227,6 +227,12 @@ namespace rascal {
      */
     template <size_t Order> class ClusterRef;
 
+    //! A proxy class which provides iteration access to atoms and ghost atoms
+    class ProxyWithGhosts;
+
+    //! A proxy class which provides iteration acces to only ghost atoms
+    class ProxyOnlyGhosts;
+
     //! Get an iterator for a ClusterRef<1> to access pairs of an atom
     inline Iterator_t get_iterator_at(const size_t index,
                                       const size_t offset = 0) {
@@ -241,8 +247,21 @@ namespace rascal {
                         std::numeric_limits<size_t>::max());
     }
 
+    //! Usage of iterator including ghosts; in case no ghost atoms exist, it is
+    //! an iteration over all existing center atoms
+    inline ProxyOnlyGhosts with_ghosts() { return ProxyWithGhosts{*this}; }
+
+    //! Usage of iterator for only ghosts, in case no ghosts exist, the iterator
+    //! is empty
+    inline ProxyWithGhosts only_ghosts() { return ProxyOnlyGhosts{*this}; }
+
     //! i.e. number of atoms
     inline size_t size() const { return this->implementation().get_size(); }
+
+    //! number of atoms including ghosts
+    inline size_t size_with_ghosts() const {
+      return this->implementation().get_size_with_ghosts();
+    }
 
     //! number of atoms, pairs, triplets in respective manager
     inline size_t nb_clusters(size_t cluster_size) const final {
@@ -831,6 +850,87 @@ namespace rascal {
     size_t index;
     //! offset for access in a neighbour list during construction of the begin()
     const size_t offset;
+  };
+
+  /* ---------------------------------------------------------------------- */
+  template <class ManagerImplementation>
+  class StructureManager<ManagerImplementation>::ProxyWithGhosts {
+   public:
+    using Iterator_t =
+        typename StructureManager<ManagerImplementation>::Iterator_t;
+
+    //! Default constructor
+    ProxyWithGhosts() = delete;
+
+    //!
+    ProxyWithGhosts(ManagerImplementation & manager) : manager{manager} {};
+
+    //! Copy constructor
+    ProxyWithGhosts(const ProxyWithGhosts & other) = delete;
+
+    //! Move constructor
+    ProxyWithGhosts(ProxyWithGhosts && other) = default;
+
+    //! Destructor
+    virtual ~ProxyWithGhosts() = default;
+
+    //! Copy assignment operator
+    ProxyWithGhosts & operator=(const ProxyWithGhosts & other) = delete;
+
+    //! Move assignment operator
+    ProxyWithGhosts & operator=(ProxyWithGhosts && other) = default;
+
+    //! Start of atom list
+    inline Iterator_t begin() { return this->manager.begin(); }
+
+    //! End is all atoms including ghosts
+    inline Iterator_t end() {
+      return Iterator_t(this->manager, this->manager.size_with_ghosts(),
+                        std::numeric_limits<size_t>::max());
+    }
+
+   protected:
+    ManagerImplementation & manager;
+
+   private:
+  };
+
+  /* ---------------------------------------------------------------------- */
+  template <class ManagerImplementation>
+  class StructureManager<ManagerImplementation>::ProxyOnlyGhosts
+      : public StructureManager<ManagerImplementation>::ProxyWithGhosts {
+   public:
+    using Iterator_t =
+        typename StructureManager<ManagerImplementation>::Iterator_t;
+    using Parent =
+        typename StructureManager<ManagerImplementation>::ProxyWithGhosts;
+
+    //! Default constructor
+    ProxyOnlyGhosts() = delete;
+
+    //!
+    ProxyOnlyGhosts(ManagerImplementation & manager) : Parent{manager} {};
+
+    //! Copy constructor
+    ProxyOnlyGhosts(const ProxyOnlyGhosts & other) = delete;
+
+    //! Move constructor
+    ProxyOnlyGhosts(ProxyOnlyGhosts && other) = default;
+
+    //! Destructor
+    virtual ~ProxyOnlyGhosts() = default;
+
+    //! Copy assignment operator
+    ProxyOnlyGhosts & operator=(const ProxyOnlyGhosts & other) = delete;
+
+    //! Move assignment operator
+    ProxyOnlyGhosts & operator=(ProxyOnlyGhosts && other) = default;
+
+    //! Start iteration at first ghost atom
+    inline Iterator_t begin() { return this->manager.end(); }
+
+   protected:
+   private:
   };
 }  // namespace rascal
 
