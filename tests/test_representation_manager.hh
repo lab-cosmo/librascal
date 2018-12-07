@@ -33,7 +33,10 @@
 #include "test_adaptor.hh"
 #include "representations/representation_manager_base.hh"
 #include "representations/representation_manager_sorted_coulomb.hh"
+#include "json_io.hh"
+#include "rascal_utility.hh"
 
+#include <tuple>
 
 namespace rascal {
 
@@ -41,10 +44,6 @@ namespace rascal {
   struct MultipleStructureSortedCoulomb {
     MultipleStructureSortedCoulomb() {}
     ~MultipleStructureSortedCoulomb() = default;
-
-    std::vector<std::string> ref_filename{
-      "reference_data/sorted_coulomb_matrix.json"
-      };
 
     std::vector<std::string> filenames{
       "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
@@ -61,20 +60,42 @@ namespace rascal {
       };
   };
 
+  struct SortedCoulombTestData {
+    SortedCoulombTestData() {
+      std::vector<std::uint8_t> ref_data_ubjson;
+      internal::read_binary_file(this->ref_filename, ref_data_ubjson);
+      json ref_data = json::from_ubjson(ref_data_ubjson);
+      filenames = ref_data.at("filenames").get<std::vector<std::string>>();
+      cutoffs = ref_data.at("cutoffs").get<std::vector<double>>();
+      data_sort_distance = ref_data.at("distance").get<json>();
+      data_sort_rownorm = ref_data.at("rownorm").get<json>();
+    }
+    ~SortedCoulombTestData() = default;
+
+    std::string ref_filename{"reference_data/sorted_coulomb_reference.ubjson" };
+    std::vector<std::string> filenames{};
+    std::vector<double> cutoffs{};
+    json data_sort_distance{};
+    json data_sort_rownorm{};
+    json hypers{};
+    json feature_matrices{};
+  };
+
   template< class StructureManager,
             template<typename, Option ...opts > class RepresentationManager,
-            class BaseFixture, Option ...options>
+            class BaseFixture, Option ...options_>
   struct RepresentationFixture
   :MultipleStructureManagerStrictFixture<StructureManager, BaseFixture> {
     using Parent = MultipleStructureManagerStrictFixture<StructureManager,
                                                          BaseFixture>;
     using Manager_t = typename Parent::Manager_t;
-    using Representation_t = RepresentationManager<Manager_t, options...>;
+    using Representation_t = RepresentationManager<Manager_t, options_...>;
 
     RepresentationFixture() = default;
     ~RepresentationFixture() = default;
 
     std::list<Representation_t> representations{};
+    std::vector<Option> options{options_...};
   };
 
 /* ---------------------------------------------------------------------- */

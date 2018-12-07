@@ -43,6 +43,7 @@
 #include <regex> // NOLINT
 #include <tuple>
 #include <map>
+#include <fstream>
 
 namespace rascal {
   namespace internal {
@@ -151,6 +152,35 @@ namespace rascal {
       std::string tn5{std::regex_replace(tn4, std::regex(" "), "")};
       std::string tn6{std::regex_replace(tn5, std::regex(","), "_")};
       return tn6;
+    }
+
+    /**
+     * Reads a binary file and puts it into a vector
+     * Taken from https://stackoverflow.com/questions/15138353/how-to-read-a-binary-file-into-a-vector-of-unsigned-chars // NOLINT
+     */
+    template<typename BINARY>
+    void read_binary_file(const std::string & filename,
+                           std::vector<BINARY> & vec) {
+    // open the file:
+    std::ifstream file(filename, std::ios::binary);
+
+    // Stop eating new lines in binary mode!!!
+    file.unsetf(std::ios::skipws);
+
+    // get its size:
+    std::streampos fileSize;
+
+    file.seekg(0, std::ios::end);
+    fileSize = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    // reserve capacity
+    vec.reserve(fileSize);
+
+    // read the data:
+    vec.insert(vec.begin(),
+               std::istream_iterator<BINARY>(file),
+               std::istream_iterator<BINARY>());
     }
 
   }  // internal

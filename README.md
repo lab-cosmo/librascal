@@ -57,7 +57,7 @@ ctest -V
 
 * Special flags:
   + -DINSTALL:
-    + (default) -> install rascal in the build folder
+    + build (default) -> install rascal in the build folder
     + local -> install rascal in the site-package folder of the found python binary
     + pydevelop -> install rascal in the librascal/rascal/lib folder
 

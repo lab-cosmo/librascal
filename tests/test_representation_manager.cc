@@ -31,74 +31,9 @@
 
 namespace rascal {
   BOOST_AUTO_TEST_SUITE(representation_sorted_coulomb_test);
-  /* ---------------------------------------------------------------------- */
-  BOOST_TEST_CASE_TEMPLATE_FUNCTION(test_internals, T) {
-    constexpr bool verbose{true};
-
-    typedef std::vector<double>::const_iterator myiter;
-    typedef Eigen::Matrix<double, 10, 1> vec;
-
-    vec numbers = vec::Random();
-    vec numbers2 = vec::Random();
-    std::vector<double> index{};
-    std::vector<double> index2{};
-
-    if (verbose) std::cout << "Test simple sorting " << std::endl;
-    for (int ii{0}; ii < numbers.size(); ii++) {
-      index.push_back(numbers(ii));
-      index2.push_back(numbers2(ii));
-      if (verbose) std::cout << numbers(ii) << ", ";
-    }
-    if (verbose) std::cout << std::endl;
-
-    std::vector<std::pair<size_t, myiter> > order(index.size());
-
-    size_t n{0};
-    for (myiter it = index.begin(); it != index.end(); ++it, ++n)
-      {order[n] = make_pair(n, it);}
-
-    std::sort(order.begin(), order.end(), internal::ordering());
-    auto sorted_index = internal::sort_from_ref(index, order);
-    auto sorted_index2 = internal::sort_from_ref(index2, order);
-
-    for (size_t ii{0}; ii < sorted_index.size(); ii++) {
-      if (verbose) std::cout << sorted_index[ii] << ", ";
-    }
-    if (verbose) std::cout << std::endl;
-
-    for (size_t ii{0}; ii < sorted_index2.size(); ii++) {
-      if (verbose) std::cout << index2[ii] << ", ";
-    }
-    if (verbose) std::cout << std::endl;
-
-    for (size_t ii{0}; ii < sorted_index2.size(); ii++) {
-      if (verbose) std::cout << sorted_index2[ii] << ", ";
-    }
-    if (verbose) std::cout << std::endl;
-
-    if (verbose) std::cout << "Test upper diag sorting " << std::endl;
-    typedef Eigen::Matrix<double, 5, 5> matrix;
-    typedef Eigen::Matrix<double, 5*(5+1)/2, 1> lin_mat;
-
-    matrix  mat0 = matrix::Random();
-    lin_mat  mat1 = lin_mat::Ones();
-    std::vector<double> dists{{2., 4., 0., 1., 3.}};
-
-    internal::sort_coulomb_matrix(mat0, mat1, dists);
-    for (int ii{0}; ii < mat0.rows(); ii++) {
-      for (int jj{0}; jj < mat0.cols(); jj++) {
-        if (verbose) std::cout << mat0(ii, jj) << ",\t";
-      }
-      if (verbose) std::cout << std::endl;
-    }
-
-    for (int jj{0}; jj < mat1.rows(); jj++) {
-      if (verbose) std::cout << mat1(jj)<< ", ";
-    }
-    if (verbose) std::cout << std::endl;
-  }
 
   /* ---------------------------------------------------------------------- */
+  // test if it runs without seg fault and all
   using multiple_fixtures = boost::mpl::list<
     RepresentationFixture<StructureManagerCenters,
                           RepresentationManagerSortedCoulomb,
@@ -107,6 +42,12 @@ namespace rascal {
     RepresentationFixture<StructureManagerCenters,
                           RepresentationManagerSortedCoulomb,
                           MultipleStructureSortedCoulomb,
+                          Option::CMSortRowNorm>>;
+  // test if it reproduces the reference values
+  using fixtures_ref_test = boost::mpl::list<
+    RepresentationFixture<StructureManagerCenters,
+                          RepresentationManagerSortedCoulomb,
+                          SortedCoulombTestData,
                           Option::CMSortRowNorm>>;
 
   /* ---------------------------------------------------------------------- */
@@ -137,6 +78,66 @@ namespace rascal {
     }
   }
 
+  /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_reference_test,
+                                   Fix, fixtures_ref_test, Fix) {
+    auto & managers = Fix::managers_strict;
+    auto & representations = Fix::representations;
+    auto & options = Fix::options;
+    auto & hypers = Fix::hypers;
+    auto & feature_matrices = Fix::feature_matrices;
+
+    // Choose the data depending on the current options
+    using Std2DArray_t = std::vector<std::vector<double>>;
+
+    if (options[0] == Option::CMSortDistance) {
+      hypers = Fix::data_sort_distance["hypers"];
+      feature_matrices =
+              Fix::data_sort_distance["feature_matrices"];
+    } else if (options[0] == Option::CMSortRowNorm) {
+      hypers = Fix::data_sort_rownorm["hypers"];
+      feature_matrices =
+              Fix::data_sort_rownorm["feature_matrices"];
+    } else {
+      hypers = Fix::data_sort_distance["hypers"];
+      feature_matrices =
+              Fix::data_sort_distance["feature_matrices"];
+    }
+
+    size_t manager_i{0};
+    for (auto& manager : managers) {
+      representations.emplace_back(manager,
+                  hypers[manager_i].get<json>());
+      representations.back().compute();
+      const auto & ref_representation =
+              feature_matrices[manager_i].get<Std2DArray_t>();
+
+      const auto & test_representation =
+                    representations.back().get_representation_full();
+
+      if (manager_i == 2) {
+      BOOST_CHECK_EQUAL(ref_representation.size(),
+                        test_representation.rows());
+      for (size_t row_i{0}; row_i < ref_representation.size(); row_i++) {
+        BOOST_CHECK_EQUAL(ref_representation[row_i].size(),
+                        test_representation.cols());
+        for (size_t col_i{0}; col_i < ref_representation[row_i].size(); col_i++) {
+          std::cout << std::abs(test_representation(row_i, col_i) - ref_representation[row_i][col_i]) << ", ";
+          // BOOST_CHECK_EQUAL(ref_representation[row_i][col_i],
+          //               test_representation(row_i, col_i));
+        }
+        std::cout << std::endl;
+        if (row_i < 20) continue;
+        if (row_i > 40) break;
+      }
+      std::cout << "#####################################################"<<std::endl;
+
+      break;
+      }
+
+      manager_i += 1;
+    }
+  }
 
   BOOST_AUTO_TEST_SUITE_END();
 } // RASCAL

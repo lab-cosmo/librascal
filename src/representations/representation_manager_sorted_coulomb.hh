@@ -233,11 +233,11 @@ namespace rascal {
     void set_hyperparameters(const hypers_t &);
 
     //! getter for the representation
-    Eigen::Map<Eigen::MatrixXd> get_representation_full() {
+    Eigen::Map<const Eigen::MatrixXd> get_representation_full() {
       auto Nb_centers{this->structure_manager.nb_clusters(1)};
       auto Nb_features{this->get_n_feature()};
       auto & raw_data{this->coulomb_matrices.get_raw_data()};
-      Eigen::Map<Eigen::MatrixXd> representation(raw_data.data(),
+      Eigen::Map<const Eigen::MatrixXd> representation(raw_data.data(),
                                                  Nb_features, Nb_centers);
       return representation;
     }

@@ -63,7 +63,8 @@ set(SUPPRESS_LIBRARY_WARNINGS "ON" CACHE BOOL
 set(INSTALL "build" CACHE STRING
   "Use the default install path")
 
-set(PYTHON_BUILD_PATH "${CMAKE_BINARY_DIR}/rascal/")
+set(PYTHON_BUILD_PATH "${CMAKE_BINARY_DIR}/rascal/" CACHE STRING
+    "Default install folder")
 
 
 if (${BUILD_TESTS})
