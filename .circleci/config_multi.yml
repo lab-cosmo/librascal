@@ -1,6 +1,6 @@
 version: 2
 jobs:
-        build_ubuntu_g++-5.0:
+        build_ubuntu_gcc-5.0: 
                 docker:
                         - image: ubuntu:18.04
                           environment:
@@ -20,7 +20,6 @@ jobs:
                                         apt-get install -y git
                                         apt-get install -y libboost-test-dev
                                         apt-get install -y doxygen
-                                        apt-get install -y gcc-5 g++-5
                         - run: 
                                 name: installing python packages
                                 command: |
@@ -31,7 +30,7 @@ jobs:
                                         rm -rf build 
                                         mkdir build 
                                         cd build 
-                                        cmake -DENABLE_DOC=ON -DBUILD_TESTS=ON -DCMAKE_C_COMPILER=gcc-5 -DCMAKE_CXX_COMPILER=g++-5 .. 
+                                        cmake -DENABLE_DOC=ON -DBUILD_TESTS=ON -DCMAKE_C_COMPILER= -DCMAKE_CXX_COMPILER=clang++-5. .. 
                         - run: pwd
                         - run:
                                 command: | 
@@ -49,7 +48,8 @@ jobs:
                                 command: |
                                         cd build 
                                         make dev_doc
-        build_ubuntu_g++-7.3:
+
+        build_ubuntu_gcc-7.3: 
                 docker:
                         - image: ubuntu:18.04
                           environment:
@@ -97,66 +97,8 @@ jobs:
                                 command: |
                                         cd build 
                                         make dev_doc
-                        
-        build_ubuntu_clang-7.0:
-                docker:
-                        - image: ubuntu:18.04
-                          environment:
-                                  PIPENV_VENV_IN_PROJECT: true
-                steps:
-                        - checkout
-                        - run: 
-                                name: setting up apt-get properly
-                                command: |
-                                        apt-get update -y
-                        - run:
-                                name: Installing dependencies
-                                command: |
-                                        apt-get install -y cmake
-                                        apt-get install -y python3-pip
-                                        apt-get install -y python3.6
-                                        apt-get install -y git
-                                        apt-get install -y libboost-test-dev
-                                        apt-get install -y doxygen
-                                        apt-get install -y software-properties-common
-                                        apt-get update -y
-                                        apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 15CF4D18AF4F7421
-                                        add-apt-repository 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main'
-                                        #add-apt-repository 'deb-src http://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main' 
-                                        apt-get install -y libllvm-7-ocaml-dev libllvm7 llvm-7 llvm-7-dev llvm-7-doc llvm-7-examples llvm-7-runtime
-                                        apt-get install -y clang-7 clang-tools-7 clang-7-doc libclang-common-7-dev libclang-7-dev libclang1-7 clang-format-7 python-clang-7
-                                        apt-get install -y libc++-7-dev libc++abi-7-dev
-                        - run: 
-                                name: installing python packages
-                                command: |
-                                        python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx breathe sphinx_rtd_theme cpplint
-                        - run: 
-                                command: |
-                                        rm -rf build 
-                                        mkdir build 
-                                        cd build 
-                                        cmake -DENABLE_DOC=ON -DBUILD_TESTS=ON -DCMAKE_C_COMPILER=clang-7 -DCMAKE_CXX_COMPILER=clang++-7 ..
-                        - run: pwd
-                        - run:
-                                command: | 
-                                        cd build 
-                                        make lint
-                        - run: 
-                                command: |
-                                        cd build 
-                                        make 
-                        - run: 
-                                command: |
-                                        cd build 
-                                        ctest -V
-                        - run: 
-                                command: |
-                                        cd build 
-                                        make dev_doc
-                        
 
-        build_ubuntu_clang-5.0:
+        build_ubuntu_clang-5.0: 
                 docker:
                         - image: ubuntu:18.04
                           environment:
@@ -210,7 +152,5 @@ workflows:
         version: 2
         ubuntu:
                 jobs:
-                        - build_ubuntu_g++-5.0
-                        - build_ubuntu_g++-7.3
-                        - build_ubuntu_clang-5.0
-                        - build_ubuntu_clang-7.0
+                        - build_ubuntu_g++
+                        - build_ubuntu_clang

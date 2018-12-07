@@ -3,6 +3,8 @@ jobs:
         build: 
                 docker:
                         - image: ubuntu:18.04
+                          environment:
+                                  PIPENV_VENV_IN_PROJECT: true
                 steps:
                         - checkout
                         - run: 
@@ -12,26 +14,30 @@ jobs:
                         - run:
                                 name: Installing dependencies
                                 command: |
-                                        #add-apt-repository -y ppa:ubuntu-toolchain-r/test 
-                                        #apt-get install -y gcc-5 g++-5 
                                         apt-get install -y cmake
                                         apt-get install -y python3-pip
                                         apt-get install -y python3.6
                                         apt-get install -y git
                                         apt-get install -y libboost-test-dev
                                         apt-get install -y doxygen
+                                        apt-get remove -y clang
+                                        apt-get install -y clang-5.0 libclang-common-5.0-dev libllvm5.0 libc++-dev
                         - run: 
                                 name: installing python packages
                                 command: |
                                         python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx breathe sphinx_rtd_theme
+                                        python3.6 -m pip install numpy scipy sphinx breathe sphinx_rtd_theme cpplint
                         - run: 
                                 command: |
                                         rm -rf build 
                                         mkdir build 
                                         cd build 
-                                        cmake -DENABLE_DOC=ON -DBUILD_TESTS=ON .. 
+                                        cmake -DENABLE_DOC=ON -DBUILD_TESTS=ON -DCMAKE_C_COMPILER=clang-5.0 -DCMAKE_CXX_COMPILER=clang++-5.0 ..
                         - run: pwd
+                        - run:
+                                command: | 
+                                        cd build 
+                                        make lint
                         - run: 
                                 command: |
                                         cd build 
@@ -39,21 +45,9 @@ jobs:
                         - run: 
                                 command: |
                                         cd build 
-                                        make dev_doc
+                                        ctest -V
                         - run: 
                                 command: |
                                         cd build 
-                                        ctest -V
-
-general:
-        branches:
-                only:
-                        - master
-                        - feat/test_CI
-
-workflows:
-        version: 2
-        build-test:
-                jobs:
-                        - build
-
+                                        make dev_doc
+                        
