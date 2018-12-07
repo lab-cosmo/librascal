@@ -709,7 +709,7 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   void AdaptorNeighbourList<ManagerImplementation>::update() {
-    //! Reset cluster_indices for adaptor to fill with push back.
+    //! Reset cluster_indices for adaptor to fill with sequence
     internal::for_each(this->cluster_indices_container,
                        internal::ResizePropertyToZero());
 
@@ -726,7 +726,7 @@ namespace rascal {
     this->make_full_neighbour_list();
     this->set_offsets();
 
-    // layering is started from the beginning, therefore all clusters and
+    // layering is started from the scratch, therefore all clusters and
     // centers+ghost atoms are in the right order.
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
@@ -864,12 +864,16 @@ namespace rascal {
     // of current atoms to start the full list of current i-atoms and ghosts
     // This is done before the ghost atom generation, to have them all
     // contiguously at the beginning of the list.
+    int ntot_atoms{0};
     for (auto atom : this->manager) {
       auto atom_index = atom.get_atom_index();
       auto atom_type = atom.get_atom_type();
       this->atom_indices.push_back(atom_index);
       this->atom_types.push_back(atom_type);
+      ntot_atoms++;
     }
+
+    std::cout << "total number of atoms original " << ntot_atoms << std::endl;
 
     // generate ghost atom indices and positions
     for (auto atom : this->get_manager()) {
@@ -895,12 +899,15 @@ namespace rascal {
           if (flag_inside) {
             // next atom index is size, since start is at index = 0
             auto new_atom_index = this->get_size_with_ghosts();
+            std::cout << "new atom index " << new_atom_index << std::endl;
             this->add_ghost_atom(new_atom_index, pos_ghost, atom_type);
+            ntot_atoms++;
           }
         }
       }
     }
 
+    std::cout << "total number of atoms added " << ntot_atoms << std::endl;
     // neighbour boxes
     internal::IndexContainer<dim> atom_id_cell{nboxes_per_dim};
 
@@ -922,23 +929,25 @@ namespace rascal {
     // }
 
     // go through all atoms and build neighbour list
-    int offset{0};
+    // int offset{0};
     //    for (size_t i{0}; i < this->n_centers; ++i) {
     // iteration over all atoms is necessary for possible increase of maxorder
-    for (size_t i{0}; i < this->get_size_with_ghosts(); ++i) {
+    for (size_t atom_index{0}; atom_index < this->get_size_with_ghosts();
+         ++atom_index) {
       int nneigh{0};
-      Vector_t pos = this->get_position(i);
+      Vector_t pos = this->get_position(atom_index);
       Vector_t dpos = pos - mesh_min;
-      auto idx = internal::get_box_index(dpos, cutoff);
-      auto && current_j_atoms = internal::get_neighbours(i, idx, atom_id_cell);
+      auto box_index = internal::get_box_index(dpos, cutoff);
+      auto && current_j_atoms =
+          internal::get_neighbours(atom_index, box_index, atom_id_cell);
 
-      for (auto j : current_j_atoms) {
-        this->neighbours.push_back(j);
+      for (auto j_atom_index : current_j_atoms) {
+        this->neighbours.push_back(j_atom_index);
         nneigh++;
       }
       this->nb_neigh.push_back(nneigh);
       // this->offsets.push_back(offset);
-      offset += nneigh;
+      // offset += nneigh;
     }
   }
 

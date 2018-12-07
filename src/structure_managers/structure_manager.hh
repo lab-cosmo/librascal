@@ -249,11 +249,15 @@ namespace rascal {
 
     //! Usage of iterator including ghosts; in case no ghost atoms exist, it is
     //! an iteration over all existing center atoms
-    inline ProxyWithGhosts with_ghosts() { return ProxyWithGhosts{*this}; }
+    inline ProxyWithGhosts with_ghosts() {
+      return ProxyWithGhosts{this->implementation()};
+    }
 
     //! Usage of iterator for only ghosts, in case no ghosts exist, the iterator
     //! is empty
-    inline ProxyOnlyGhosts only_ghosts() { return ProxyOnlyGhosts{*this}; }
+    inline ProxyOnlyGhosts only_ghosts() {
+      return ProxyOnlyGhosts{this->implementation()};
+    }
 
     //! i.e. number of atoms
     inline size_t size() const { return this->implementation().get_size(); }

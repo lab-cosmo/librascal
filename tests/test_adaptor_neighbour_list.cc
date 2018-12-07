@@ -84,14 +84,14 @@ namespace rascal {
     //! testing iteration of zerot-th order manager
     for (auto atom : fixture.manager) {
       if (verbose) {
-        std::cout << "atom " << atom.back() << std::endl;
+        std::cout << "fixture atom " << atom.back() << std::endl;
       }
     }
 
     auto n_pairs{0};
     for (auto atom : pair_manager.with_ghosts()) {
       if (verbose)
-        std::cout << "atom " << atom.back() << std::endl;
+        std::cout << "pair manager atom " << atom.back() << std::endl;
       for (auto pair : atom) {
         n_pairs++;
         if (verbose) {
