@@ -11,18 +11,18 @@
  *
  * Copyright © 2018 Markus Stricker, Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
- * librascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
+ * Rascal is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
- * librascal is distributed in the hope that it will be useful, but
+ * Rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -31,7 +31,6 @@
 #include "test_structure.hh"
 #include "test_adaptor.hh"
 #include "structure_managers/adaptor_neighbour_list.hh"
-
 
 namespace rascal {
 
@@ -45,12 +44,12 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(simple_cubic_9_neighbour_list,
                           PairFixtureSimple<StructureManagerCenters>) {
-
     constexpr bool verbose{false};
 
     auto npairs = pair_manager.get_nb_clusters(2);
 
-    if (verbose) std::cout << "npairs " << npairs << std::endl;
+    if (verbose)
+      std::cout << "npairs " << npairs << std::endl;
 
     int np{0};
     for (auto atom : pair_manager) {
@@ -58,18 +57,17 @@ namespace rascal {
         np++;
       }
     }
-    if (verbose) std::cout << "np " << np << std::endl;
+    if (verbose)
+      std::cout << "np " << np << std::endl;
   }
 
   /* ---------------------------------------------------------------------- */
   //! test if hcp managers are constructed
-  BOOST_FIXTURE_TEST_CASE(constructor_test_hcp, ManagerFixtureTwoHcp) {
-  }
+  BOOST_FIXTURE_TEST_CASE(constructor_test_hcp, ManagerFixtureTwoHcp) {}
 
   /* ---------------------------------------------------------------------- */
   //! test if fcc managers are constructed
-  BOOST_FIXTURE_TEST_CASE(constructor_test_fcc, ManagerFixtureTwoFcc) {
-  }
+  BOOST_FIXTURE_TEST_CASE(constructor_test_fcc, ManagerFixtureTwoFcc) {}
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -80,7 +78,6 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(test_build_neighbour_simple,
                           PairFixtureSimple<StructureManagerCenters>) {
-
     constexpr bool verbose{false};
 
     //! testing iteration of zerot-th order manager
@@ -92,17 +89,18 @@ namespace rascal {
 
     auto n_pairs{0};
     for (auto atom : pair_manager) {
-      if (verbose) std::cout << "atom " << atom.back() << std::endl;
+      if (verbose)
+        std::cout << "atom " << atom.back() << std::endl;
       for (auto pair : atom) {
         n_pairs++;
         if (verbose) {
-          std::cout << "   complete pair "
-                    << atom.back() << " " << pair.back()
+          std::cout << "   complete pair " << atom.back() << " " << pair.back()
                     << " glob " << pair.get_global_index() << std::endl;
         }
       }
     }
-    if (verbose) std::cout << "Number of pairs " << n_pairs << std::endl;
+    if (verbose)
+      std::cout << "Number of pairs " << n_pairs << std::endl;
     BOOST_CHECK_EQUAL(n_pairs, pair_manager.get_nb_clusters(2));
   }
 
@@ -115,7 +113,6 @@ namespace rascal {
    * crystal system.
    */
   BOOST_FIXTURE_TEST_CASE(neighbourlist_test_hcp, ManagerFixtureTwoHcp) {
-
     /*
      * Note: since the cell vectors are different, it is possible that one of
      * the two atoms is repeated into a different cell due to periodicity. This
@@ -127,7 +124,8 @@ namespace rascal {
 
     using PairManager_t = AdaptorNeighbourList<StructureManagerCenters>;
 
-    if(verbose) std::cout << "HCP test " << cutoff << std::endl;
+    if (verbose)
+      std::cout << "HCP test " << cutoff << std::endl;
 
     int mult = 3;
 
@@ -150,52 +148,49 @@ namespace rascal {
       PairManager_t pair_manager2{manager_2, cutoff_tmp};
       pair_manager2.update();
 
-      if (verbose) std::cout << "Manager 1" << std::endl;
+      if (verbose)
+        std::cout << "Manager 1" << std::endl;
 
       for (auto atom : pair_manager1) {
         neighbours_per_atom1.push_back(0);
         for (auto pair : atom) {
           if (verbose) {
-            std::cout << "1 pair "
-                      << atom.back() << " "
-                      << pair.back() << std::endl;
+            std::cout << "1 pair " << atom.back() << " " << pair.back()
+                      << std::endl;
           }
-          double dist = {(atom.get_position()
-                          - pair.get_position()).norm()};
+          double dist = {(atom.get_position() - pair.get_position()).norm()};
           if (dist < cutoff_tmp) {
             neighbours_per_atom1.back()++;
           }
         }
       }
 
-      if (verbose) std::cout << "Manager 2" << std::endl;
+      if (verbose)
+        std::cout << "Manager 2" << std::endl;
 
       for (auto atom : pair_manager2) {
         neighbours_per_atom2.push_back(0);
         for (auto pair : atom) {
           if (verbose) {
-            std::cout << "2 pair "
-                      << atom.back() << " "
-                      << pair.back() << std::endl;
+            std::cout << "2 pair " << atom.back() << " " << pair.back()
+                      << std::endl;
           }
-          double dist = {(atom.get_position()
-                          - pair.get_position()).norm()};
+          double dist = {(atom.get_position() - pair.get_position()).norm()};
           if (dist < cutoff_tmp) {
             neighbours_per_atom2.back()++;
           }
         }
       }
 
-      BOOST_CHECK_EQUAL_COLLECTIONS(neighbours_per_atom1.begin(),
-                                    neighbours_per_atom1.end(),
-                                    neighbours_per_atom2.begin(),
-                                    neighbours_per_atom2.end());
+      BOOST_CHECK_EQUAL_COLLECTIONS(
+          neighbours_per_atom1.begin(), neighbours_per_atom1.end(),
+          neighbours_per_atom2.begin(), neighbours_per_atom2.end());
 
       for (auto i{0}; i < natoms; ++i) {
         if (verbose) {
           std::cout << "neigh1/neigh2: i " << i << " "
-                    << neighbours_per_atom1[i] << "/"
-                    << neighbours_per_atom2[i] << std::endl;
+                    << neighbours_per_atom1[i] << "/" << neighbours_per_atom2[i]
+                    << std::endl;
         }
       }
     }
@@ -213,12 +208,12 @@ namespace rascal {
    * crystal system.
    */
   BOOST_FIXTURE_TEST_CASE(neighbourlist_test_fcc, ManagerFixtureTwoFcc) {
-
     constexpr bool verbose{false};
 
     using PairManager_t = AdaptorNeighbourList<StructureManagerCenters>;
 
-    if (verbose) std::cout << "FCC test " << std::endl;
+    if (verbose)
+      std::cout << "FCC test " << std::endl;
 
     int mult = 3;
 
@@ -244,15 +239,12 @@ namespace rascal {
       for (auto atom : pair_manager1) {
         neighbours_per_atom1.push_back(0);
         for (auto pair : atom) {
-          double dist = {(atom.get_position()
-                          - pair.get_position()).norm()};
+          double dist = {(atom.get_position() - pair.get_position()).norm()};
           bool is_in{dist < cutoff_tmp};
           if (verbose) {
-            std::cout << "1 pair ("
-                      << atom.get_position().transpose() << ", "
-                      << pair.get_position().transpose() << ", "
-                      << dist << ", " << cutoff_tmp << ", " << is_in
-                      << ")" <<std::endl;
+            std::cout << "1 pair (" << atom.get_position().transpose() << ", "
+                      << pair.get_position().transpose() << ", " << dist << ", "
+                      << cutoff_tmp << ", " << is_in << ")" << std::endl;
           }
           if (is_in) {
             neighbours_per_atom1.back()++;
@@ -263,15 +255,12 @@ namespace rascal {
       for (auto atom : pair_manager2) {
         neighbours_per_atom2.push_back(0);
         for (auto pair : atom) {
-          double dist = {(atom.get_position()
-                          - pair.get_position()).norm()};
+          double dist = {(atom.get_position() - pair.get_position()).norm()};
           bool is_in{dist < cutoff_tmp};
           if (verbose) {
-            std::cout << "2 pair ("
-                      << atom.get_position().transpose() << ", "
-                      << pair.get_position().transpose() << ", "
-                      << dist << ", " << cutoff_tmp << ", " << is_in
-                      << ")" <<std::endl;
+            std::cout << "2 pair (" << atom.get_position().transpose() << ", "
+                      << pair.get_position().transpose() << ", " << dist << ", "
+                      << cutoff_tmp << ", " << is_in << ")" << std::endl;
           }
           if (is_in) {
             neighbours_per_atom2.back()++;
@@ -284,11 +273,9 @@ namespace rascal {
        * atom does not allow for comparison with other atom's number of
        * neighbours
        */
-      BOOST_CHECK_EQUAL(neighbours_per_atom1[0],
-                        neighbours_per_atom2[0]);
+      BOOST_CHECK_EQUAL(neighbours_per_atom1[0], neighbours_per_atom2[0]);
       if (verbose) {
-        std::cout << "neigh1/neigh2: "
-                  << neighbours_per_atom1[0] << "/"
+        std::cout << "neigh1/neigh2: " << neighbours_per_atom1[0] << "/"
                   << neighbours_per_atom2[0] << std::endl;
       }
     }
@@ -311,7 +298,6 @@ namespace rascal {
    * loops to check different cutoffs with the skewedness.
    */
   BOOST_FIXTURE_TEST_CASE(test_neighbour_list_skewed, ManagerFixtureSkew) {
-
     constexpr static bool verbose{false};
 
     constexpr static int ncells{3};
@@ -333,15 +319,15 @@ namespace rascal {
 
       // loop over cells of different skews
       for (int i{0}; i < ncells; ++i) {
-
         // check different cutoffs
         double cutoff_tmp{cutoff * n_cutoff[k]};
 
         // manager constructed within this loop
         StructureManagerCenters manager;
 
-        if (verbose) std::cout << "------------ cells " << i
-                               << " shear " << shears[i] << std::endl;
+        if (verbose)
+          std::cout << "------------ cells " << i << " shear " << shears[i]
+                    << std::endl;
 
         // get reference data
         auto skewer{unity};
@@ -367,14 +353,16 @@ namespace rascal {
           // find minimal multiplier to project position out of cubic unit cell
           auto mult{(cell_skw_inv * p).eval()};
           auto mult_floor{mult};
-          for (auto m{0}; m < 3; ++m) {mult_floor[m] = std::floor(mult[m]);}
+          for (auto m{0}; m < 3; ++m) {
+            mult_floor[m] = std::floor(mult[m]);
+          }
           auto m{mult_floor.cwiseAbs().eval()};
 
           if (verbose) {
             std::cout << " mult \n" << mult.transpose() << std::endl;
             std::cout << "  mult_floor \n" << m.transpose() << std::endl;
-            std::cout << "  skewed position  <<<<<<<\n" << p.transpose()
-                      << std::endl;
+            std::cout << "  skewed position  <<<<<<<\n"
+                      << p.transpose() << std::endl;
           }
           // set new position
           pos_skw.col(j) = p + cell_skw * m;
@@ -407,11 +395,10 @@ namespace rascal {
 
         // neighbours[i] are the skewed unit cells with adapted positions,
         // neighbours [0] is the unskewed reference cell.
-        BOOST_CHECK_EQUAL_COLLECTIONS(neighbours[i].begin(),
-                                      neighbours[i].end(),
-                                      // expected values from unskewed cell
-                                      neighbours[0].begin(),
-                                      neighbours[0].end());
+        BOOST_CHECK_EQUAL_COLLECTIONS(
+            neighbours[i].begin(), neighbours[i].end(),
+            // expected values from unskewed cell
+            neighbours[0].begin(), neighbours[0].end());
       }
       if (verbose) {
         std::cout << "===== Neighbour list result =====" << std::endl;
@@ -433,4 +420,4 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE_END();
 
-}  // rascal
+}  // namespace rascal

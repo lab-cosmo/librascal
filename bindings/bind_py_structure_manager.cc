@@ -10,17 +10,17 @@
  * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
+ * modify it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
  * Rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -35,24 +35,31 @@
 #include <Eigen/Dense>
 #include <basic_types.hh>
 
-using namespace rascal;
-namespace py=pybind11;
+using rascal::StructureManager;
+using rascal::StructureManagerCenters;
+namespace py = pybind11;
 
 //! templated function for adding clusters of different orders
 template<size_t Order, typename StructureManagerImplementation>
 decltype(auto) add_cluster(py::module & m) {
   using ClusterRef = typename StructureManager<
     StructureManagerImplementation>::template ClusterRef<Order>;
-  // TODO: change the exposed name to a convertion of the
+  // TODO(musil): change the exposed name to a convertion of the
   // StructureManagerImplementation type to a string
   py::class_<ClusterRef>
-    py_cluster (m, (Order == 1)
+    py_cluster(m, (Order == 1)
                 ? "StructureManager.Center" : "StructureManager.Neighbour");
   py_cluster.def_property_readonly("atom_index", & ClusterRef::get_atom_index,
                                    py::return_value_policy::reference)
-    .def_property_readonly("atom_type", & ClusterRef::get_atom_type,
+    .def_property_readonly("atom_type",
+                           [](const ClusterRef & cluster) {
+                             return cluster.get_atom_type();
+                           },
                            py::return_value_policy::reference)
-    .def_property_readonly("index", & ClusterRef::get_index,
+    .def_property_readonly("index",
+                           [](const ClusterRef & cluster) {
+                             return cluster.get_index();
+                           },
                            py::return_value_policy::reference)
     .def_property_readonly("size", & ClusterRef::size,
                            py::return_value_policy::reference)
@@ -62,8 +69,8 @@ decltype(auto) add_cluster(py::module & m) {
 }
 
 //! structure manager centers python binding
-void add_manager_centers(py::module & m){
-  m.doc() = "binding for the Structure Manager Centers" ;
+void add_manager_centers(py::module & m) {
+  m.doc() = "binding for the Structure Manager Centers";
   py::class_<StructureManager<StructureManagerCenters>>
     (m, "StructureManagerBase_Centers").def(py::init<>());
   py::class_<StructureManagerCenters,
@@ -79,7 +86,7 @@ void add_manager_centers(py::module & m){
            v.update(positions, atom_types, cell, pbc);
          })
     .def("__iter__", [] (StructureManager<StructureManagerCenters> & v) {
-        return py::make_iterator(v.begin(),v.end());
+        return py::make_iterator(v.begin(), v.end());
       }, py::keep_alive<0, 1>()); /* Keep vector alive while iterator is used */
-  add_cluster<1,StructureManagerCenters>(m);
-};
+  add_cluster<1, StructureManagerCenters>(m);
+}

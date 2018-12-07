@@ -40,9 +40,7 @@ namespace rascal {
    * used in checking the building of the neighbour list in an easy
    * configuration based on 9 atoms.
    */
-  template<class ManagerImplementation>
-  struct PairFixtureSimple
-  {
+  template <class ManagerImplementation> struct PairFixtureSimple {
     using Manager_t = ManagerImplementation;
 
     static_assert(ManagerImplementation::traits::MaxOrder == 1,
@@ -51,9 +49,8 @@ namespace rascal {
 
     using PairManager_t = AdaptorNeighbourList<ManagerImplementation>;
 
-    PairFixtureSimple():
-      cutoff{1.}, pair_manager{fixture.manager, this->cutoff}
-    {
+    PairFixtureSimple()
+        : cutoff{1.}, pair_manager{fixture.manager, this->cutoff} {
       this->pair_manager.update();
     }
 
@@ -68,8 +65,7 @@ namespace rascal {
   /**
    * PairFixture based on StructureManagerCenters
    */
-  struct PairFixtureCenters
-  {
+  struct PairFixtureCenters {
     using Manager_t = StructureManagerCenters;
     using PairManager_t = AdaptorNeighbourList<Manager_t>;
 
@@ -78,8 +74,7 @@ namespace rascal {
                   " MaxOrder=1");
 
     PairFixtureCenters()
-      : cutoff{3.5}, pair_manager{this->fixture.manager, this->cutoff}
-    {
+        : cutoff{3.5}, pair_manager{this->fixture.manager, this->cutoff} {
       this->pair_manager.update();
     }
 
@@ -92,24 +87,20 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
-  template <class ManagerImplementation>
-  struct PairFixtureStrict
-  {
+  template <class ManagerImplementation> struct PairFixtureStrict {
     using AdaptorStrict_t = AdaptorStrict<ManagerImplementation>;
 
-    PairFixtureStrict():
-      adaptor_strict{this->fixture.pair_manager, this->fixture.cutoff}
-    {}
+    PairFixtureStrict()
+        : adaptor_strict{this->fixture.pair_manager, this->fixture.cutoff} {}
 
     ~PairFixtureStrict() = default;
 
-    // TODO: different fixtures?, streamline fixtures to always work with
-    // ´manager´ as an iterator?
+    // TODO(markus): different fixtures?, streamline fixtures to always work
+    // with ´manager´ as an iterator?
     PairFixture<ManagerImplementation> fixture{};
     AdaptorStrict_t adaptor_strict;
   };
 
-}  // rascal
-
+}  // namespace rascal
 
 #endif /* TEST_NEIGHBOURHOOD_H */

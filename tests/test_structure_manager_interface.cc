@@ -9,18 +9,18 @@
  *
  * Copyright © 2018  Michele Ceriotti, COSMO (EPFL), LAMMM (EPFL)
  *
- * rascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
+ * Rascal is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
- * rascal is distributed in the hope that it will be useful, but
+ * Rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -110,7 +110,6 @@ namespace rascal {
   // test template for pairs
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_pair_global_indexing, Fix,
                                     pair_fixtures, Fix) {
-
     auto & manager = Fix::manager;
     auto pair_reference{0};
 
@@ -136,7 +135,6 @@ namespace rascal {
         position_error = (pair.get_position()
                           - manager.position(pair.back())).norm();
         BOOST_CHECK(position_error < tol / 100);
-
       }
     }
   }

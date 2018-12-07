@@ -38,7 +38,6 @@ using Manager_t = rascal::StructureManagerCenters;
 using PairManager_t = rascal::AdaptorNeighbourList<Manager_t>;
 
 int main() {
-
   // integer lists containing the definition of the quadruplets for the
   // calculation of the dihedral angles in the alanine-unit.
   std::vector<int> phi{4, 3, 19, 1};
@@ -94,4 +93,4 @@ int main() {
     std::cout << a << " ";
   }
   std::cout << std::endl;
-} // end main
+}  // end main

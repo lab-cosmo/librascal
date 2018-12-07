@@ -10,18 +10,18 @@
  *
  * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
- * rascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
+ * Rascal is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
- * rascal is distributed in the hope that it will be useful, but
+ * Rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -29,11 +29,9 @@
 #ifndef LATTICE_H
 #define LATTICE_H
 
-//#include <basic_types.hh>
-#include <atomic_structure.hh>
+#include "atomic_structure.hh"
 
 #include <Eigen/Dense>
-
 #include <cmath>
 
 namespace rascal {
@@ -43,24 +41,24 @@ namespace rascal {
    * angles). Also translate absolute to fractional and fractional to absolute
    * coordinates.
    */
+  template<size_t Dim>
   class Lattice {
-  public:
-
-    // TODO: make dimension dependend on a template parameter
-    constexpr static auto Dim{3};
+   public:
+    // TODO(felix): implement the specialization for the 2D case
+    static_assert(Dim == 3, "2D lattice is not implemented yet");
     using Cell_t = typename AtomicStructure<Dim>::Cell_t;
     using AtomTypes_t = typename AtomicStructure<Dim>::AtomTypes_t;
     using PBC_t = typename AtomicStructure<Dim>::PBC_t;
     using Positions_t = typename AtomicStructure<Dim>::Positions_t;
-    using Vec3_t = Eigen::Matrix<double, Dim, 1>;
+    using Vec_t = Eigen::Matrix<double, Dim, 1>;
 
     //! Default constructor
     Lattice() = default;
 
     //! Initializes the cell via set_cell function
-    Lattice(const Cell_t & cell) {
+    explicit Lattice(const Cell_t& cell) {
       this->set_cell(cell);
-    };
+    }
 
     //! Copy constructor
     Lattice(const Lattice & other) = delete;
@@ -100,12 +98,12 @@ namespace rascal {
 
     /* ---------------------------------------------------------------------- */
     //! Returns the cell lengths
-    const Vec3_t get_cell_lengths() {
+    const Vec_t get_cell_lengths() {
       return this->cell_lengths;
     }
 
     //! Returns the cell angles
-    const Vec3_t get_cell_angles() {
+    const Vec_t get_cell_angles() {
       return this->cell_angles;
     }
 
@@ -131,7 +129,7 @@ namespace rascal {
     }
 
     //! Returns the reciprocal space cell lengths
-    const Vec3_t get_reciprocal_lengths() {
+    const Vec_t get_reciprocal_lengths() {
       return this->reciprocal_lengths;
     }
 
@@ -141,18 +139,18 @@ namespace rascal {
      * space lattice vectors and the reciprocal space cell lengths
      */
     inline void set_reciprocal_vectors() {
-      Vec3_t c_abg = cell_angles.array().cos();
+      Vec_t c_abg = cell_angles.array().cos();
 
       //! Cell volume
       double V{this->cell_lengths[0] * this->cell_lengths[1] *
           this->cell_lengths[2] *
           std::sqrt(1 - c_abg[0] * c_abg[0] - c_abg[1] * c_abg[1] -
-                    c_abg[2]*c_abg[2] + 2 * c_abg[0] * c_abg[1] * c_abg[2] )};
+                    c_abg[2]*c_abg[2] + 2 * c_abg[0] * c_abg[1] * c_abg[2])};
 
       double Vinv{1. / V};
       this->reciprocal_vectors *= Vinv;
 
-      Vec3_t recip1, recip2, recip3;
+      Vec_t recip1, recip2, recip3;
 
       this->crossproduct(this->cell_vectors.col(1),
                          this->cell_vectors.col(2), recip1);
@@ -164,21 +162,21 @@ namespace rascal {
                          this->cell_vectors.col(1), recip3);
 
       for (int ii{0}; ii < 3; ++ii) {
-        this->reciprocal_vectors(ii,0) *= recip1[ii];
-        this->reciprocal_vectors(ii,1) *= recip2[ii];
-        this->reciprocal_vectors(ii,2) *= recip3[ii];
+        this->reciprocal_vectors(ii, 0) *= recip1[ii];
+        this->reciprocal_vectors(ii, 1) *= recip2[ii];
+        this->reciprocal_vectors(ii, 2) *= recip3[ii];
       }
 
       this->reciprocal_lengths = this->reciprocal_vectors.colwise().norm();
     }
     /* ---------------------------------------------------------------------- */
-    template <typename DerivedA,typename DerivedB>
+    template <typename DerivedA, typename DerivedB>
     inline void crossproduct(const Eigen::MatrixBase<DerivedA> & v1,
                              const Eigen::MatrixBase<DerivedB> & v2,
-                             Vec3_t & v3) {
-      v3[0] = v1[1] * v2[2] - v1[2] * v2[1];
-      v3[1] = v1[2] * v2[0] - v1[0] * v2[2];
-      v3[2] = v1[0] * v2[1] - v1[1] * v2[0];
+                             Vec_t & v3) {
+        v3[0] = v1[1] * v2[2] - v1[2] * v2[1];
+        v3[1] = v1[2] * v2[0] - v1[0] * v2[2];
+        v3[2] = v1[0] * v2[1] - v1[1] * v2[0];
     }
 
     /* ---------------------------------------------------------------------- */
@@ -187,8 +185,8 @@ namespace rascal {
      * coordinates to fractional/scaled coordinates
      */
     inline void set_transformation_matrix() {
-      Vec3_t c_abg = cell_angles.array().cos();
-      Vec3_t s_abg = cell_angles.array().sin();
+      Vec_t c_abg = cell_angles.array().cos();
+      Vec_t s_abg = cell_angles.array().sin();
 
       //! Cell volume divided by a*b*c
       double V{std::sqrt(1 - c_abg[0]*c_abg[0] - c_abg[1]*c_abg[1]
@@ -236,34 +234,32 @@ namespace rascal {
     /** Calculates the absolute cartesian coordinates (position)
      * from the fractional/scaled coordinates (position_sc)
      */
-    template <typename DerivedA,typename DerivedB>
+    template <typename DerivedA, typename DerivedB>
     inline void get_scaled2cartesian(const Eigen::MatrixBase<DerivedA> &
                                      position_sc,
                                      Eigen::MatrixBase<DerivedB>& position) {
       position = this->scaled2cartesian.transpose() * position_sc;
     }
 
-  protected:
+
+   protected:
     //! lattice vectors
     Cell_t cell_vectors = Cell_t::Ones();
     //! Reciprocal lattice
     Cell_t reciprocal_vectors = Cell_t::Ones();
     //! Cell lengths
-    Vec3_t cell_lengths = Vec3_t::Ones();
+    Vec_t cell_lengths = Vec_t::Ones();
     //! Reciprocal Cell lengths
-    Vec3_t reciprocal_lengths = Vec3_t::Ones();
+    Vec_t reciprocal_lengths = Vec_t::Ones();
     //! alpha(b,c) beta(a,c) gamma(a,b) in radian
-    Vec3_t cell_angles = Vec3_t::Ones();
+    Vec_t cell_angles = Vec_t::Ones();
     //! transformation matrix from the lattice coordinate system to cartesian
     Cell_t scaled2cartesian = Cell_t::Zero();
     //! transformation matrix from the cartesian system to the lattice
     //! coordinate system
     Cell_t cartesian2scaled = Cell_t::Zero();
     double pi{EIGEN_PI};
-
-    // TODO: put this in template parameter
-    //constexpr static int Dim{3};
   };
-} // rascal
+}  // namespace rascal
 
 #endif /* LATTICE_H */

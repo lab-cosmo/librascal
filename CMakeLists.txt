@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(BUILD_SHARED_LIBS ON)
+set(RASCAL_PYTHON_MAJOR_VERSION 3)
 
 
 add_compile_options(-Wall -Wextra)
@@ -16,6 +17,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-builtin")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 include(rascalTools)
+include(cpplint)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
   # using Clang
@@ -129,3 +131,10 @@ foreach(pybin ${pybins})
     "${CMAKE_BINARY_DIR}/${binaryname}.py"
     COPYONLY)
 endforeach(pybin ${pybins})
+
+
+cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/src" "")
+cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
+cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
+cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/examples"
+  "--filter=-build/namespaces")

@@ -10,17 +10,17 @@
  * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
+ * modify it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
  * Rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -31,12 +31,11 @@
 #include "math/math_interface.hh"
 #include "math/math_utils.hh"
 
-using namespace rascal;
-namespace py=pybind11;
+namespace math = rascal::math;
+namespace py = pybind11;
 
 
-void math_binding(py::module& m){
+void math_binding(py::module& m) {
     m.def(
-      "hyp2f1", &math::hyp2f1, "y = hyp2f1( a, b, c, x )"
-    );
+      "hyp2f1", &math::hyp2f1, "y = hyp2f1( a, b, c, x )");
 }

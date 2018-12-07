@@ -9,18 +9,18 @@
  *
  * Copyright © 2018 Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
- * rascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
+ * Rascal is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
- * rascal is distributed in the hope that it will be useful, but
+ * Rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -47,7 +47,7 @@ int main() {
   Eigen::MatrixXd positions(22, 3);
   Eigen::Matrix<int, Eigen::Dynamic, 1> numbers(22);
   Eigen::MatrixXd cell(3, 3);
-  std::array<int, 3> pbc{{true,true,true}};
+  std::array<int, 3> pbc{{true, true, true}};
   bool verbose{false};
 
   // definition of unit cell vectors
@@ -108,7 +108,7 @@ int main() {
     std::vector<std::vector<int>> neigh_ids_strict;
     std::vector<std::vector<double>> neigh_dist_strict;
 
-    std::cout << "Setting up strict manager with rc="<<cutoff_tmp << std::endl;
+    std::cout << "Setting up strict manager with rc="<< cutoff_tmp << std::endl;
     // make strict neighbour list
     rascal::AdaptorStrict<
       rascal::AdaptorNeighbourList<rascal::StructureManagerCenters>>
@@ -127,9 +127,9 @@ int main() {
         // get_index returns iteration index
         std::cout << "strict atom out " << center.get_index();
         // get_atom_index returns index from
-        std::cout << " " << center.get_atom_index() << " " ;
+        std::cout << " " << center.get_atom_index() << " ";
 
-        for (int ii{0};ii<3;++ii){
+        for (int ii{0}; ii < 3; ++ii) {
           std::cout << center.get_position()[ii] << " ";
         }
         std::cout << " " << center.get_atom_type() << std::endl;
@@ -145,15 +145,14 @@ int main() {
 
         if (verbose) {
           std::cout << "strict neigh out " << neigh.get_index();
-          std::cout << " " << neigh.get_atom_index() << "\t " ;
+          std::cout << " " << neigh.get_atom_index() << "\t ";
 
-          for (int ii{0};ii<3;++ii){
+          for (int ii{0}; ii < 3; ++ii) {
             std::cout << neigh.get_position()[ii] << ", ";
           }
           std::cout << "\t dist=" << distance;
           std::cout << "\t " << neigh.get_atom_type() << std::endl;
         }
-
       }
 
       std::cout << "Number of Neighbourg: " << Nneigh << std::endl;

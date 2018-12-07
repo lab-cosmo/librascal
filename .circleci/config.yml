@@ -1,0 +1,51 @@
+version: 2
+jobs:
+        build: 
+                filters:
+                        branches:
+                                only:
+                                        - master
+                                        - /*/test_CI
+
+                docker:
+                        - image: ubuntu:18.04
+                steps:
+                        - checkout
+                        - run: 
+                                name: setting up apt-get properly
+                                command: |
+                                        apt-get update -y
+                        - run:
+                                name: Installing dependencies
+                                command: |
+                                        apt-get install -y cmake
+                                        apt-get install -y python3-pip
+                                        apt-get install -y python3.6
+                                        apt-get install -y git
+                                        apt-get install -y libboost-test-dev
+                                        apt-get install -y doxygen
+                        - run: 
+                                name: installing python packages
+                                command: |
+                                        python3.6 -m pip install --upgrade pip
+                                        python3.6 -m pip install numpy scipy sphinx breathe sphinx_rtd_theme cpplint
+                        - run: 
+                                command: |
+                                        rm -rf build 
+                                        mkdir build 
+                                        cd build 
+                                        cmake -DENABLE_DOC=ON -DBUILD_TESTS=ON .. 
+                        - run: pwd
+                        - run: 
+                                command: |
+                                        cd build 
+                                        make 
+                        - run: 
+                                command: |
+                                        cd build 
+                                        make dev_doc
+                        - run: 
+                                command: |
+                                        cd build 
+                                        ctest -V
+
