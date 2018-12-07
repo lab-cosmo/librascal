@@ -22,7 +22,6 @@ class TestMath(unittest.TestCase):
         """
         TEST
         """
-
         inps = np.random.rand(self.Ntest,4)
 
         for ii in range(self.Ntest):

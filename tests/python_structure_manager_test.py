@@ -21,7 +21,7 @@ def get_NL_reference(cutoff,cell,pbc,positions,numbers):
     for box in list_box.iter_box():
         for icenter in box.icenters:
             for jneigh,box_shift in box.iter_neigh_box():
-            
+
                 nnp = positions[jneigh]+ np.dot(box_shift.reshape((1,3)),cell).reshape((1,3))
                 rr = nnp - positions[icenter].reshape((1,3))
                 dist = np.linalg.norm(rr)
@@ -30,7 +30,7 @@ def get_NL_reference(cutoff,cell,pbc,positions,numbers):
                 neighlist[icenter].append(jneigh)
                 neightype[icenter].append(numbers[jneigh])
                 neighdist[icenter].append(dist)
-                
+
     return neighpos,neighlist,neightype,neighdist
 
 def get_NL_strict_reference(cutoff,cell,pbc,positions,numbers):
@@ -45,7 +45,7 @@ def get_NL_strict_reference(cutoff,cell,pbc,positions,numbers):
     for box in list_box.iter_box():
         for icenter in box.icenters:
             for jneigh,box_shift in box.iter_neigh_box():
-            
+
                 nnp = positions[jneigh]+ np.dot(box_shift.reshape((1,3)),cell).reshape((1,3))
                 rr = nnp - positions[icenter].reshape((1,3))
                 dist = np.linalg.norm(rr)
@@ -86,7 +86,7 @@ class TestStructureManagerCenters(unittest.TestCase):
         TEST constructor wrapper
         """
         rc.StructureManager.Centers()
-    
+
     def test_update(self):
         """
         TEST constructor wrapper
@@ -145,7 +145,7 @@ class TestNL(unittest.TestCase):
         TEST constructor wrapper
         """
         rc.Adaptor.NeighbourList_Centers(self.manager,self.max_cutoff)
-    
+
     def test_update(self):
         manager =  rc.Adaptor.NeighbourList_Centers(self.manager,self.max_cutoff)
         manager.update()
@@ -164,7 +164,7 @@ class TestNL(unittest.TestCase):
     def test_manager_iteration_2(self):
         manager =  rc.Adaptor.NeighbourList_Centers(self.manager,self.max_cutoff)
         manager.update()
-        
+
         neighpos,neighlist,neightype,neighdist = get_NL_reference(
                     self.max_cutoff,self.cell,self.pbcs[0],self.positions,self.numbers)
 
@@ -199,7 +199,7 @@ class TestNLStrict(unittest.TestCase):
                        self.numbers.reshape(-1,1),
                        np.array(self.cell.T,order='F'),
                        self.pbcs[0].reshape(3,1))
-        self.manager = rc.Adaptor.NeighbourList_Centers(self.managerC,self.max_cutoff) 
+        self.manager = rc.Adaptor.NeighbourList_Centers(self.managerC,self.max_cutoff)
         self.manager.update()
 
     def test_constructor(self):
@@ -207,7 +207,7 @@ class TestNLStrict(unittest.TestCase):
         TEST constructor wrapper
         """
         rc.Adaptor.Strict_NeighbourList_Centers(self.manager,self.max_cutoff)
-    
+
     def test_a_update(self):
         manager =  rc.Adaptor.Strict_NeighbourList_Centers(self.manager,self.max_cutoff)
         manager.update()
@@ -222,11 +222,11 @@ class TestNLStrict(unittest.TestCase):
             self.assertTrue(self.numbers[ii] == center.atom_type)
             self.assertTrue(np.allclose(self.positions[ii], center.position))
             ii += 1
-    
+
     def test_manager_iteration_2(self):
         '''
-        Compare the distances and direction vector between the reference and 
-        librascal sctrict neighbourlist 
+        Compare the distances and direction vector between the reference and
+        librascal sctrict neighbourlist
         '''
         manager = rc.Adaptor.Strict_NeighbourList_Centers(self.manager,self.max_cutoff)
         manager.update()
@@ -247,4 +247,3 @@ class TestNLStrict(unittest.TestCase):
             ref_sort_ids,sort_ids = np.argsort(ref_dists),np.argsort(dists)
             self.assertTrue(np.allclose(ref_dists[ref_sort_ids],dists[sort_ids]))
             self.assertTrue(np.allclose(ref_dirVecs[ref_sort_ids],dirVecs[sort_ids]))
-            
