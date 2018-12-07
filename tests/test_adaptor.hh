@@ -3,7 +3,7 @@
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
- * 
+ *
  * @date   01 Nov 2018
  *
  * @brief Common headers for tests related to `Adaptors`
@@ -55,7 +55,7 @@ namespace rascal {
       "reference_data/simple_cubic_8.json",
       "reference_data/small_molecule.json"
       };
-    std::vector<double> cutoffs{{1, 2, 3, 4, 5, 6}};
+    std::vector<double> cutoffs{{1., 2., 3., 4., 5., 6.}};
   };
 
   template<class StructureManager, class BaseFixture>

@@ -38,6 +38,11 @@
 
 namespace rascal {
 
+  /* ---------------------------------------------------------------------- */
+  /**
+   * A fixture providing access to different structures, read in from
+   * json. These are used in a feature fixture to have data at hand.
+   */
   struct TestFeatureData {
     TestFeatureData() = default;
     ~TestFeatureData() = default;
@@ -47,56 +52,61 @@ namespace rascal {
       "reference_data/simple_cubic_8.json",
       "reference_data/small_molecule.json"
       };
-    std::vector<double> cutoffs{{1, 2, 3}};
+    std::vector<double> cutoffs{{1., 2., 3.}};
 
     std::list<json> hypers{
       {{"central_decay", 0.5},
-      {"interaction_cutoff", 10},
-      {"interaction_decay", 0.5},
-      {"size", 120}}
-      };
+       {"interaction_cutoff", 10.},
+       {"interaction_decay", 0.5},
+       {"size", 120}}
+    };
   };
 
-
-  template< typename T,
-            template<typename> class FeatureManager,
-            class StructureManager,
-            template<typename, Option ... opts > class RepresentationManager,
-            class BaseFixture,
-            Option ...options>
+  /* ---------------------------------------------------------------------- */
+  /**
+   * A templated Fixture, inherits from the ReperesentationFixture. It provides
+   * access to different data structures, which is used to check the aggregation
+   * of data from multiple structures.
+   */
+  template<typename T,
+           template<typename> class FeatureManager,
+           class StructureManager,
+           template<typename, Option ... opts> class RepresentationManager,
+           class BaseFixture,
+           Option ...options>
   struct FeatureFixture
   :RepresentationFixture<StructureManager, RepresentationManager,
-                          BaseFixture, options...> {
+                         BaseFixture, options...> {
     using Parent = RepresentationFixture<StructureManager,
-                                    RepresentationManager,
-                                    BaseFixture, options...>;
+                                         RepresentationManager,
+                                         BaseFixture, options...>;
     using Manager_t = typename Parent::Manager_t;
     using Representation_t = typename Parent::Representation_t;
     using Feature_t = FeatureManager<T>;
     using hypers_t = typename Representation_t::hypers_t;
 
     FeatureFixture() :Parent{} {
-      std::vector<size_t> Nfeatures{};
+      std::vector<size_t> n_features{};
 
-      auto& representations = this->representations;
+      auto & representations = this->representations;
 
-      for (auto& manager : this->managers_strict) {
-        for (auto& hyper : this->hypers) {
-          Ncenter += manager.size();
+      for (auto & manager : this->managers_strict) {
+        for (auto & hyper : this->hypers) {
+          n_center += manager.size();
 
           representations.emplace_back(manager, hyper);
           representations.back().compute();
-          Nfeatures.push_back(representations.back().get_feature_size());
+          n_features.push_back(representations.back().get_feature_size());
         }
       }
 
-      this->Nfeature =
-           *std::max_element(std::begin(Nfeatures), std::end(Nfeatures));
+      this->n_feature = *std::max_element(std::begin(n_features),
+                                          std::end(n_features));
     }
 
     ~FeatureFixture() = default;
-    size_t Ncenter{0};
-    size_t Nfeature{};
+    size_t n_center{0};
+    size_t n_feature{};
     std::list<Feature_t> features{};
   };
 

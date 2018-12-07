@@ -45,36 +45,44 @@ namespace rascal {
                    RepresentationManagerSortedCoulomb,
                    TestFeatureData, Option::CMSortRowNorm>>;
 
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Test if the Fixture with multiple structures is setup
+   */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_setup_test,
                                    Fix, multiple_fixtures, Fix) {
   }
 
+  /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_constructor_test,
                                    Fix, multiple_fixtures, Fix) {
-    auto& features = Fix::features;
-    auto& hypers = Fix::hypers;
-    auto& Nfeature = Fix::Nfeature;
-    for (auto& hyper : hypers) {
-      features.emplace_back(Nfeature, hyper);
+    auto & features = Fix::features;
+    auto & hypers = Fix::hypers;
+    auto & n_feature = Fix::n_feature;
+    for (auto & hyper : hypers) {
+      features.emplace_back(n_feature, hyper);
     }
   }
 
+  /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(representation_aggregate_test,
                                    Fix, multiple_fixtures, Fix) {
-    auto& features = Fix::features;
-    auto& hypers = Fix::hypers;
-    auto& Nfeature = Fix::Nfeature;
-    auto& Ncenter = Fix::Ncenter;
-    for (auto& hyper : hypers) {
-      features.emplace_back(Nfeature, hyper);
-      features.back().reserve(Ncenter);
+    auto & features = Fix::features;
+    auto & hypers = Fix::hypers;
+    auto & n_feature = Fix::n_feature;
+    auto & n_center = Fix::n_center;
+
+    for (auto & hyper : hypers) {
+      features.emplace_back(n_feature, hyper);
+      features.back().reserve(n_center);
     }
 
-    auto& representations = Fix::representations;
-    for (auto& representation : representations) {
+    auto & representations = Fix::representations;
+    for (auto & representation : representations) {
       features.front().push_back(representation);
     }
   }
 
+  /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();
 } // namespace rascal
