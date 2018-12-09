@@ -33,7 +33,53 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(representation_sorted_coulomb_test);
 
   /* ---------------------------------------------------------------------- */
-  // test if it runs without seg fault and all
+  /**
+   * Test the row norm sorting
+   */
+  BOOST_AUTO_TEST_CASE(rownorm_sort_test) {
+    Eigen::MatrixXd test_matrix(4, 5);
+    test_matrix << 0, 6, 1, 4, 3,
+                   0, 7, 2, 5, 4,
+                   1, 8, 3, 6, 2,
+                   2, 9, 4, 7, 1;
+
+    Eigen::MatrixXd true_order(5, 1);
+    // use of stable sort so 2 goes before 4
+    true_order << 0, 1, 3, 2, 4;
+
+    auto test_order = internal::SortCoulomMatrix<
+      Option::CMSortRowNorm>::get_coulom_matrix_sorting_order(test_matrix);
+
+    for (auto idx_i{0}; idx_i < true_order.size(); ++idx_i) {
+          BOOST_CHECK_EQUAL(true_order(idx_i), test_order[idx_i].first);
+    }
+  }
+  /**
+   * Test the distance from the central atom sorting.
+   * assumes the center is on row 0.
+   */
+  BOOST_AUTO_TEST_CASE(distance_sort_test) {
+    Eigen::MatrixXd test_matrix(4, 4);
+    test_matrix << 0.,         1.68624958, 1.43774399, 1.12522187,
+                   1.68624958,         0., 1.6850887 , 1.15322292,
+                   1.43774399, 1.6850887 ,         0., 0.98009938,
+                   1.12522187, 1.15322292, 0.98009938,         0.;
+
+    Eigen::MatrixXd true_order(4, 1);
+    // use of stable sort so 2 goes before 4
+    true_order << 0, 3, 2, 1;
+
+    auto test_order = internal::SortCoulomMatrix<
+      Option::CMSortDistance>::get_coulom_matrix_sorting_order(test_matrix);
+
+    for (auto idx_i{0}; idx_i < true_order.size(); ++idx_i) {
+          BOOST_CHECK_EQUAL(true_order(idx_i), test_order[idx_i].first);
+    }
+  }
+
+
+  /* ---------------------------------------------------------------------- */
+
   using multiple_fixtures = boost::mpl::list<
     RepresentationFixture<StructureManagerCenters,
                           RepresentationManagerSortedCoulomb,
@@ -48,9 +94,16 @@ namespace rascal {
     RepresentationFixture<StructureManagerCenters,
                           RepresentationManagerSortedCoulomb,
                           SortedCoulombTestData,
-                          Option::CMSortRowNorm>>;
+                          Option::CMSortRowNorm>,
+    RepresentationFixture<StructureManagerCenters,
+                          RepresentationManagerSortedCoulomb,
+                          SortedCoulombTestData,
+                          Option::CMSortDistance>>;
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * Test if the constructor runs
+   */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_constructor_test,
                                    Fix, multiple_fixtures, Fix) {
     auto & managers = Fix::managers_strict;
@@ -65,6 +118,9 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * Test if the compute function runs
+   */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_compute_test,
                                    Fix, multiple_fixtures, Fix) {
     auto & managers = Fix::managers_strict;
@@ -79,6 +135,9 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * Test if the representation computed is equal to a reference from a file
+   */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_reference_test,
                                    Fix, fixtures_ref_test, Fix) {
     auto & managers = Fix::managers_strict;
@@ -107,32 +166,25 @@ namespace rascal {
     size_t manager_i{0};
     for (auto& manager : managers) {
       representations.emplace_back(manager,
-                  hypers[manager_i].get<json>());
+                  hypers[manager_i].template get<json>());
       representations.back().compute();
       const auto & ref_representation =
-              feature_matrices[manager_i].get<Std2DArray_t>();
+            feature_matrices[manager_i].template get<Std2DArray_t>();
 
       const auto & test_representation =
                     representations.back().get_representation_full();
 
-      if (manager_i == 2) {
       BOOST_CHECK_EQUAL(ref_representation.size(),
                         test_representation.rows());
       for (size_t row_i{0}; row_i < ref_representation.size(); row_i++) {
         BOOST_CHECK_EQUAL(ref_representation[row_i].size(),
                         test_representation.cols());
-        for (size_t col_i{0}; col_i < ref_representation[row_i].size(); col_i++) {
-          std::cout << std::abs(test_representation(row_i, col_i) - ref_representation[row_i][col_i]) << ", ";
-          // BOOST_CHECK_EQUAL(ref_representation[row_i][col_i],
-          //               test_representation(row_i, col_i));
+        for (size_t col_i{0}; col_i < ref_representation[row_i].size();
+                                                              col_i++) {
+          auto diff{std::abs(ref_representation[row_i][col_i] -
+                             test_representation(row_i, col_i))};
+          BOOST_CHECK_LE(diff, 1e-12);
         }
-        std::cout << std::endl;
-        if (row_i < 20) continue;
-        if (row_i > 40) break;
-      }
-      std::cout << "#####################################################"<<std::endl;
-
-      break;
       }
 
       manager_i += 1;

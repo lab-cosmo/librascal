@@ -72,6 +72,48 @@ namespace rascal {
     }
     ~SortedCoulombTestData() = default;
 
+    // name of the file containing the reference data. it has been generated
+    // with the following python code:
+    /*
+    import ubjson
+    from copy import copy
+    import numpy as np
+    import sys, os
+    path = '/local/git/librascal/' # should be changed
+    sys.path.insert(0, os.path.join(path, 'build/'))
+    sys.path.insert(0, os.path.join(path, 'tests/'))
+    from rascal.representation import SortedCoulombMatrix
+    from test_utils import load_json_frame
+    def json2ase(f):
+        from ase import Atoms
+        return Atoms(**{k:f[k] for k in ['positions','numbers','pbc','cell'] })
+
+    cutoffs = [2,3,4,5]
+    sorts = ['rownorm','distance']
+
+    fns = [
+        path+"tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
+        path+"tests/reference_data/small_molecule.json"]
+    fns_to_write = [
+        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
+        "reference_data/small_molecule.json"
+    ]
+    data = dict(filenames=fns_to_write,cutoffs=cutoffs)
+    hypers = dict(central_decay=0.5,interaction_cutoff=10,interaction_decay=0.5,size=10)
+    for sort in sorts:
+        data[sort] = dict(feature_matrices=[],hypers=[])
+        for fn in fns:
+            for cutoff in cutoffs:
+                rep = SortedCoulombMatrix(cutoff,sort=sort)
+                frame = [json2ase(load_json_frame(fn))]
+                features = rep.transform(frame)
+                test = features.get_feature_matrix()
+                data[sort]['feature_matrices'].append(test.tolist())
+                hypers['size'] = rep.size
+                data[sort]['hypers'].append(copy(hypers))
+    with open(path+"tests/reference_data/sorted_coulomb_reference.ubjson",'wb') as f:
+        ubjson.dump(data,f)
+    */
     std::string ref_filename{"reference_data/sorted_coulomb_reference.ubjson" };
     std::vector<std::string> filenames{};
     std::vector<double> cutoffs{};
