@@ -57,6 +57,17 @@ namespace rascal {
       typename LayerIncreaser<MaxOrder, std::index_sequence<Ints...>>::type;
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * Dynamic access to depth by cluster order
+   */
+
+  template <size_t MaxLevel, size_t... Ints>
+  constexpr size_t get_depth(size_t index, std::index_sequence<Ints...>) {
+    constexpr size_t arr[]{Ints...};
+    return arr[index];
+  }
+
+  /* ---------------------------------------------------------------------- */
   //! Extends layer by cluster for an additional cluster dimension
   template <size_t MaxOrder, class T> struct LayerExtender {};
 

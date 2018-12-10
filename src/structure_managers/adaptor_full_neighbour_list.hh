@@ -57,11 +57,11 @@ namespace rascal {
         AdaptorTraits::NeighbourListType::full};
     // New pairs are added at this layer, which did not exist before. Therefore
     // the layering has to be reset.
-    using LayerByOrder = typename LayerIncreaser<
-        MaxOrder, typename ManagerImplementation::traits::LayerByOrder>::type;
-    // constexpr static size_t MaxAtomLayer =
-    //     ManagerImplementation::traits::LayerByOrder.front();
-    // using LayerByOrder = std::index_sequence<MaxAtomLayer + 1, 0>;
+    constexpr static size_t AtomLayer{
+        get<0>(typename LayerIncreaser<
+               MaxOrder,
+               typename ManagerImplementation::traits::LayerByOrder>::type{})};
+    using LayerByOrder = std::index_sequence<AtomLayer, 0>;
   };
 
   /**
@@ -352,11 +352,11 @@ namespace rascal {
         this->neighbours.push_back(index_j);
         nneigh++;
 
-        constexpr auto PairLayer{compute_cluster_layer<pair.order()>(
-            typename traits::LayerByOrder{})};
-
+        // The layer of pairs is reinitialized with this adaptor. Therefore the
+        // sice of the cluster indices is just "1". No need to copy underlying
+        // indices, because they do not make sense in the stack.
+        constexpr auto PairLayer{0};
         Eigen::Matrix<size_t, PairLayer + 1, 1> indices_pair;
-        indices_pair.template head<PairLayer>() = pair.get_cluster_indices();
         indices_pair(PairLayer) = pair_counter;
         pair_cluster_indices.push_back(indices_pair);
         pair_counter++;
