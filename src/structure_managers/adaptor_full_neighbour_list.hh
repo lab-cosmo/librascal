@@ -59,9 +59,9 @@ namespace rascal {
     // the layering has to be reset.
     using LayerByOrder = typename LayerIncreaser<
         MaxOrder, typename ManagerImplementation::traits::LayerByOrder>::type;
-    constexpr static MaxAtomLayer =
-        ManagerImplementation::traits::LayerByOrder.front();
-    using LayerByOrder = std::index_sequence<MaxAtomLayer + 1, 0>;
+    // constexpr static size_t MaxAtomLayer =
+    //     ManagerImplementation::traits::LayerByOrder.front();
+    // using LayerByOrder = std::index_sequence<MaxAtomLayer + 1, 0>;
   };
 
   /**
