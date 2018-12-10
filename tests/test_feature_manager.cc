@@ -79,6 +79,8 @@ namespace rascal {
     auto & n_feature = Fix::n_feature;
     auto & n_center = Fix::n_center;
 
+    // build the feature managers. only the 1st
+    // one will be used
     for (auto & hyper : hypers) {
       features.emplace_back(n_feature, hyper);
       features.back().reserve(n_center);
@@ -89,7 +91,7 @@ namespace rascal {
     std::vector<std::vector<double>> original_data{};
     std::vector<int> n_centers{};
     std::vector<int> n_features{};
-
+    // extract the feature matrices in a ref vector
     for (auto & representation : representations) {
       original_data.emplace_back(
             representation.get_representation_raw_data());
@@ -97,25 +99,25 @@ namespace rascal {
       n_features.push_back(representation.get_feature_size());
     }
 
+    // move the features into the feature manager
     for (auto & representation : representations) {
       features.front().push_back(representation);
     }
 
-    auto feature_matrix = features.get_feature_matrix();
+    // check if the features have been moved properly
+    auto feature_matrix = features.front().get_feature_matrix();
     int stride{0};
-    for (int it{0}; it < original_data.size(); ++it) {
+    for (size_t it{0}; it < original_data.size(); ++it) {
       for (int icenter{0}; icenter < n_centers[it]; ++icenter) {
         for (int ifeature{0}; ifeature < n_features[it]; ++ifeature) {
           int lin_idx{icenter * n_features[it] + ifeature};
-          auto diff{original_data[it][lin_idx] -
-                    feature_matrix(stride + icenter, ifeature)};
+          double diff{original_data[it][lin_idx] -
+                    feature_matrix(ifeature, stride + icenter)};
+          BOOST_CHECK_LE(diff, 1e-14);
         }
       }
-
       stride += n_centers[it];
-
     }
-
   }
 
   /* ---------------------------------------------------------------------- */
