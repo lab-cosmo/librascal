@@ -47,13 +47,16 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Test if the Fixture with multiple structures is setup
+   * Test if the Fixture with multiple structures builds
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_setup_test,
                                    Fix, multiple_fixtures, Fix) {
   }
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * Test the construction of the feature manager
+   */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_constructor_test,
                                    Fix, multiple_fixtures, Fix) {
     auto & features = Fix::features;
@@ -65,6 +68,10 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * Test pushing back the feature matrices of several representations in the
+   * feature manager and check if the data is properly set.
+   */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(representation_aggregate_test,
                                    Fix, multiple_fixtures, Fix) {
     auto & features = Fix::features;
@@ -78,9 +85,37 @@ namespace rascal {
     }
 
     auto & representations = Fix::representations;
+
+    std::vector<std::vector<double>> original_data{};
+    std::vector<int> n_centers{};
+    std::vector<int> n_features{};
+
+    for (auto & representation : representations) {
+      original_data.emplace_back(
+            representation.get_representation_raw_data());
+      n_centers.push_back(representation.get_center_size());
+      n_features.push_back(representation.get_feature_size());
+    }
+
     for (auto & representation : representations) {
       features.front().push_back(representation);
     }
+
+    auto feature_matrix = features.get_feature_matrix();
+    int stride{0};
+    for (int it{0}; it < original_data.size(); ++it) {
+      for (int icenter{0}; icenter < n_centers[it]; ++icenter) {
+        for (int ifeature{0}; ifeature < n_features[it]; ++ifeature) {
+          int lin_idx{icenter * n_features[it] + ifeature};
+          auto diff{original_data[it][lin_idx] -
+                    feature_matrix(stride + icenter, ifeature)};
+        }
+      }
+
+      stride += n_centers[it];
+
+    }
+
   }
 
   /* ---------------------------------------------------------------------- */
