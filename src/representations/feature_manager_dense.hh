@@ -91,9 +91,11 @@ namespace rascal {
       if (n_feature != this->n_feature) {
         throw std::length_error("Incompatible number of features");
       }
+
       this->n_center += n_center;
-      this->feature_matrix.insert(this->feature_matrix.end(), raw_data.begin(),
-                                  raw_data.end());
+      this->feature_matrix.insert(this->feature_matrix.end(),
+          std::make_move_iterator(raw_data.begin()),
+          std::make_move_iterator(raw_data.end()));
     }
 
     //! move data from a feature vector
