@@ -490,7 +490,8 @@ namespace rascal {
     inline size_t get_nb_clusters(size_t cluster_size) const {
       switch (cluster_size) {
       case 1: {
-        return this->n_centers;  // + this->n_ghosts;
+        return this->n_centers +
+               this->n_ghosts;  // TODO(markus) here +n_ghosts?
         break;
       }
       case 2: {
@@ -873,8 +874,6 @@ namespace rascal {
       ntot_atoms++;
     }
 
-    std::cout << "total number of atoms original " << ntot_atoms << std::endl;
-
     // generate ghost atom indices and positions
     for (auto atom : this->get_manager()) {
       auto pos = atom.get_position();
@@ -899,7 +898,6 @@ namespace rascal {
           if (flag_inside) {
             // next atom index is size, since start is at index = 0
             auto new_atom_index = this->get_size_with_ghosts();
-            std::cout << "new atom index " << new_atom_index << std::endl;
             this->add_ghost_atom(new_atom_index, pos_ghost, atom_type);
             ntot_atoms++;
           }
@@ -907,7 +905,6 @@ namespace rascal {
       }
     }
 
-    std::cout << "total number of atoms added " << ntot_atoms << std::endl;
     // neighbour boxes
     internal::IndexContainer<dim> atom_id_cell{nboxes_per_dim};
 

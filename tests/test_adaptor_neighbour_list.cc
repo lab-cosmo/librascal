@@ -79,7 +79,7 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(test_build_neighbour_simple,
                           PairFixtureSimple<StructureManagerCenters>) {
-    constexpr bool verbose{true};
+    constexpr bool verbose{false};
 
     //! testing iteration of zerot-th order manager
     for (auto atom : fixture.manager) {
@@ -90,8 +90,9 @@ namespace rascal {
 
     auto n_pairs{0};
     for (auto atom : pair_manager.with_ghosts()) {
-      if (verbose)
+      if (verbose) {
         std::cout << "pair manager atom " << atom.back() << std::endl;
+      }
       for (auto pair : atom) {
         n_pairs++;
         if (verbose) {
@@ -126,8 +127,9 @@ namespace rascal {
 
     using PairManager_t = AdaptorNeighbourList<StructureManagerCenters>;
 
-    if (verbose) std::cout << "HCP test " << cutoff << std::endl;
-
+    if (verbose) {
+      std::cout << "HCP test " << cutoff << std::endl;
+    }
     int mult = 3;
 
     for (auto i{1}; i < mult; ++i) {
@@ -149,9 +151,9 @@ namespace rascal {
       PairManager_t pair_manager2{manager_2, cutoff_tmp};
       pair_manager2.update();
 
-      if (verbose)
+      if (verbose) {
         std::cout << "Manager 1" << std::endl;
-
+      }
       for (auto atom : pair_manager1) {
         neighbours_per_atom1.push_back(0);
         for (auto pair : atom) {
@@ -166,9 +168,9 @@ namespace rascal {
         }
       }
 
-      if (verbose)
+      if (verbose) {
         std::cout << "Manager 2" << std::endl;
-
+      }
       for (auto atom : pair_manager2) {
         neighbours_per_atom2.push_back(0);
         for (auto pair : atom) {
@@ -213,9 +215,9 @@ namespace rascal {
 
     using PairManager_t = AdaptorNeighbourList<StructureManagerCenters>;
 
-    if (verbose)
+    if (verbose) {
       std::cout << "FCC test " << std::endl;
-
+    }
     int mult = 3;
 
     for (auto i{1}; i < mult; ++i) {
@@ -306,7 +308,7 @@ namespace rascal {
     // helper for increasing skewedness of unit cell in loop entry (0,1) gives
     // the skewing factor in the x/y plane in the loop building the cells
     Eigen::MatrixXd unity{Eigen::MatrixXd::Identity(3, 3)};
-    std::array<double, ncells> shears{0, 1, 5};
+    std::array<double, ncells> shears{0., 1., 5.};
 
     // multipliers for different cutoffs: original cutoff is barely below
     // minimum atom distance, leading to zero neighbours
@@ -326,9 +328,10 @@ namespace rascal {
         // manager constructed within this loop
         StructureManagerCenters manager;
 
-        if (verbose)
+        if (verbose) {
           std::cout << "------------ cells " << i << " shear " << shears[i]
                     << std::endl;
+        }
 
         // get reference data
         auto skewer{unity};

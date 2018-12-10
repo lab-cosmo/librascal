@@ -2,6 +2,7 @@
  * file   cluster_ref_key.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
+ * @author Markus Stricer <markus.stricker@epfl.ch>
  *
  * @date   21 Jun 2018
  *
@@ -42,36 +43,31 @@ namespace rascal {
   /**
    * Layer calculations and manipulations
    */
-  /* ---------------------------------------------------------------------- */
   //! Computes layer by cluster dimension for new adaptor layer, depending on
   //! existing layer by order.
-  template <size_t MaxOrder, class T>
-  struct LayerIncreaser{};
+  template <size_t MaxOrder, class T> struct LayerIncreaser {};
 
   template <size_t MaxOrder, size_t... Ints>
-  struct LayerIncreaser<MaxOrder,
-                        std::index_sequence<Ints...>> {
-    using type = std::index_sequence<(Ints+1)...>;
+  struct LayerIncreaser<MaxOrder, std::index_sequence<Ints...>> {
+    using type = std::index_sequence<(Ints + 1)...>;
   };
 
   template <size_t MaxOrder, size_t... Ints>
   using LayerIncreaser_t =
-    typename LayerIncreaser<MaxOrder, std::index_sequence<Ints...>>::type;
+      typename LayerIncreaser<MaxOrder, std::index_sequence<Ints...>>::type;
 
   /* ---------------------------------------------------------------------- */
   //! Extends layer by cluster for an additional cluster dimension
-  template <size_t MaxOrder, class T>
-  struct LayerExtender{};
+  template <size_t MaxOrder, class T> struct LayerExtender {};
 
   template <size_t MaxOrder, size_t... Ints>
-  struct LayerExtender<MaxOrder,
-                       std::index_sequence<Ints...>>{
+  struct LayerExtender<MaxOrder, std::index_sequence<Ints...>> {
     using type = std::index_sequence<Ints..., 0>;
   };
 
   template <size_t MaxOrder, size_t... Ints>
   using LayerExtender_t =
-    typename LayerExtender<MaxOrder, std::index_sequence<Ints...>>::type;
+      typename LayerExtender<MaxOrder, std::index_sequence<Ints...>>::type;
 
   /* ---------------------------------------------------------------------- */
   //! Dynamic access to all layers by cluster dimension (probably not necessary)
@@ -84,60 +80,54 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   //! extractors helpers for cluster layers
   namespace internal {
-    template <size_t head, size_t... tail>
-    struct Min {
-      constexpr static
-      size_t value{ head < Min<tail...>::value ? head : Min<tail...>::value};
+    template <size_t head, size_t... tail> struct Min {
+      constexpr static size_t value{
+          head < Min<tail...>::value ? head : Min<tail...>::value};
     };
 
-    template <size_t head>
-    struct Min<head> {
+    template <size_t head> struct Min<head> {
       constexpr static size_t value{head};
     };
 
-    template <class Sequence>
-    struct MinExtractor {};
+    template <class Sequence> struct MinExtractor {};
 
     template <size_t... Ints>
     struct MinExtractor<std::index_sequence<Ints...>> {
-      constexpr static size_t value {Min<Ints...>::value};
+      constexpr static size_t value{Min<Ints...>::value};
     };
 
     template <size_t Order, class Sequence, size_t... Ints>
     struct HeadExtractor {};
 
-    template <size_t... seq>
-    struct HeadExtractorTail {
+    template <size_t... seq> struct HeadExtractorTail {
       using type = std::index_sequence<seq...>;
     };
 
     template <size_t Order, size_t head, size_t... tail, size_t... seq>
     struct HeadExtractor<Order, std::index_sequence<seq...>, head, tail...> {
-      using Extractor_t = std::conditional_t
-        <(Order > 1),
-        HeadExtractor<Order-1,
-                      std::index_sequence<seq..., head>,
-                      tail...>,
-        HeadExtractorTail<seq..., head>>;
+      using Extractor_t = std::conditional_t<
+          (Order > 1),
+          HeadExtractor<Order - 1, std::index_sequence<seq..., head>, tail...>,
+          HeadExtractorTail<seq..., head>>;
       using type = typename Extractor_t::type;
     };
-  }  // internal
+  }  // namespace internal
 
   /* ---------------------------------------------------------------------- */
   //! returns the cluster layer for accessing properties at a specific layer in
   //! a stack
   template <size_t Order, size_t... Ints>
   constexpr size_t compute_cluster_layer(const std::index_sequence<Ints...> &) {
-    using ActiveDimensions = typename internal::HeadExtractor
-      <Order, std::index_sequence<>, Ints...>::type;
+    using ActiveDimensions =
+        typename internal::HeadExtractor<Order, std::index_sequence<>,
+                                         Ints...>::type;
     return internal::MinExtractor<ActiveDimensions>::value;
   }
 
   //! Dynamic access to layer by cluster dimension (possibly not necessary)
   template <size_t MaxOrder, size_t... Ints>
-  constexpr size_t
-  get_layer(size_t index, std::index_sequence<Ints...>) {
-    constexpr size_t arr[] {Ints...};
+  constexpr size_t get_layer(size_t index, std::index_sequence<Ints...>) {
+    constexpr size_t arr[]{Ints...};
     return arr[index];
   }
 
@@ -154,17 +144,16 @@ namespace rascal {
   namespace internal {
     //! extracts the head of the layer by order
     template <size_t Layer, size_t HiLayer, typename T, size_t... Ints>
-    std::array<T, Layer>
-    head_helper(const std::array<T, HiLayer> & arr,
-                std::index_sequence<Ints...>) {
-      return std::array<T, Layer> {arr[Ints]...};
+    std::array<T, Layer> head_helper(const std::array<T, HiLayer> & arr,
+                                     std::index_sequence<Ints...>) {
+      return std::array<T, Layer>{arr[Ints]...};
     }
     //! specialization of the head extractor
     template <size_t Layer, size_t HiLayer, typename T>
     std::array<T, Layer> head(const std::array<T, HiLayer> & arr) {
       return head_helper(arr, std::make_index_sequence<Layer>{});
     }
-  }  // internal
+  }  // namespace internal
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -182,8 +171,7 @@ namespace rascal {
    * many layers of managers/adaptors are stacked at the point at which the
    * cluster reference is introduced.
    */
-  template<size_t Order, size_t Layer>
-  class ClusterRefKey: ClusterRefBase {
+  template <size_t Order, size_t Layer> class ClusterRefKey : ClusterRefBase {
    public:
     /**
      * Index array types need both a constant and a non-constant version. The
@@ -191,8 +179,9 @@ namespace rascal {
      * argument.
      */
     using Parent = ClusterRefBase;
-    using IndexConstArray = Eigen::Map<const Eigen::Matrix<size_t, Layer+1, 1>>;
-    using IndexArray = Eigen::Map<Eigen::Matrix<size_t, Layer+1, 1>>;
+    using IndexConstArray =
+        Eigen::Map<const Eigen::Matrix<size_t, Layer + 1, 1>>;
+    using IndexArray = Eigen::Map<Eigen::Matrix<size_t, Layer + 1, 1>>;
 
     //! Default constructor
     ClusterRefKey() = delete;
@@ -202,10 +191,9 @@ namespace rascal {
      * and a cluster reference data
      */
     ClusterRefKey(std::array<int, Order> atom_indices,
-                  IndexConstArray cluster_indices) :
-      Parent{Order, Layer}, atom_indices{atom_indices},
-      cluster_indices{cluster_indices.data()}
-    {}
+                  IndexConstArray cluster_indices)
+        : Parent{Order, Layer}, atom_indices{atom_indices},
+          cluster_indices{cluster_indices.data()} {}
 
     //! Copy constructor
     ClusterRefKey(const ClusterRefKey & other) = default;
@@ -228,9 +216,9 @@ namespace rascal {
     }
 
     //! returns the first atom index in this cluster
-    const int & front() const {return this->atom_indices.front();}
+    const int & front() const { return this->atom_indices.front(); }
     //! returns the last atom index in this cluster
-    const int & back() const {return this->atom_indices.back();}
+    const int & back() const { return this->atom_indices.back(); }
 
     //! returns the cluster's index, given a specific layer
     inline size_t get_cluster_index(const size_t layer) const {
@@ -243,10 +231,10 @@ namespace rascal {
     }
 
     //! returns the order of the current cluster
-    constexpr static inline size_t order() {return Order;}
+    constexpr static inline size_t order() { return Order; }
 
     //! returns the layer of the current cluster
-    constexpr static inline size_t cluster_layer() {return Layer;}
+    constexpr static inline size_t cluster_layer() { return Layer; }
 
    protected:
     /**
@@ -262,6 +250,6 @@ namespace rascal {
     IndexConstArray cluster_indices;
   };
 
-} // rascal
+}  // namespace rascal
 
 #endif /* CLUSTERREFBASE_H */

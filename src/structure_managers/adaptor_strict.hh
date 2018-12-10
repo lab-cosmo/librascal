@@ -139,11 +139,7 @@ namespace rascal {
     }
 
     inline size_t get_size() const {
-      return this->manager.get_size();
-    }
-
-    inline size_t get_size_with_ghosts() const {
-      return this->manager.get_size_with_ghosts();
+      return this->get_nb_clusters(1);
     }
 
     inline Vector_ref get_position(const int & index) {
@@ -201,14 +197,24 @@ namespace rascal {
      */
     template<size_t Order>
     inline size_t get_offset_impl(const std::array<size_t, Order>
+<<<<<<< HEAD
                                   & counters) const {
+=======
+          & counters) const {
+>>>>>>> origin/master
       return this->offsets[Order][counters.back()];
     }
 
     //! return the number of neighbours of a given atom
+<<<<<<< HEAD
     template<size_t Order, size_t Layer>
     inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
                                    & cluster) const {
+=======
+    template<size_t Order, size_t CallingLayer>
+    inline size_t get_cluster_size(const ClusterRefKey<Order, CallingLayer>
+           & cluster) const {
+>>>>>>> origin/master
       static_assert(Order <= traits::MaxOrder-1,
                     "this implementation only handles atoms and pairs");
       constexpr auto nb_neigh_layer{
