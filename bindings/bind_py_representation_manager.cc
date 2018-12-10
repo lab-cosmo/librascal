@@ -41,7 +41,6 @@ decltype(auto) add_representation_manager(py::module & mod, py::module & ) {
   py::class_<RepresentationManager,
              RepresentationManagerBase>
              representation(mod, representation_name.c_str());
-//   representation.def(py::init<Manager_t &, std::string  >());
   // use custom constructor to pass json formated string as initializer
   // an alternative would be to convert python dict to json internally
   // but needs some workon in the pybind machinery

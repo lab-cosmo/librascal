@@ -40,7 +40,15 @@ namespace rascal {
                    StructureManagerCenters,
                    RepresentationManagerSortedCoulomb,
                    TestFeatureData, Option::CMSortDistance>,
+    FeatureFixture<float, FeatureManagerDense,
+                   StructureManagerCenters,
+                   RepresentationManagerSortedCoulomb,
+                   TestFeatureData, Option::CMSortDistance>,
     FeatureFixture<double, FeatureManagerDense,
+                   StructureManagerCenters,
+                   RepresentationManagerSortedCoulomb,
+                   TestFeatureData, Option::CMSortRowNorm>,
+    FeatureFixture<float, FeatureManagerDense,
                    StructureManagerCenters,
                    RepresentationManagerSortedCoulomb,
                    TestFeatureData, Option::CMSortRowNorm>>;
@@ -74,6 +82,7 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(representation_aggregate_test,
                                    Fix, multiple_fixtures, Fix) {
+    using precision_t = typename Fix::precision_t;
     auto & features = Fix::features;
     auto & hypers = Fix::hypers;
     auto & n_feature = Fix::n_feature;
@@ -88,13 +97,13 @@ namespace rascal {
 
     auto & representations = Fix::representations;
 
-    std::vector<std::vector<double>> original_data{};
+    std::vector<std::vector<precision_t>> original_data{};
     std::vector<int> n_centers{};
     std::vector<int> n_features{};
     // extract the feature matrices in a ref vector
     for (auto & representation : representations) {
-      original_data.emplace_back(
-            representation.get_representation_raw_data());
+      auto&& raw_data{representation.get_representation_raw_data()};
+      original_data.emplace_back(raw_data.begin(), raw_data.end());
       n_centers.push_back(representation.get_center_size());
       n_features.push_back(representation.get_feature_size());
     }

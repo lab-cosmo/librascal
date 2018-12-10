@@ -37,30 +37,21 @@ namespace rascal {
    * Handles the aggragation of features from compatible representation managers
    * using a dense underlying data storage.
    */
-  template <typename T> class FeatureManagerDense : public FeatureManagerBase {
+  template <typename T>
+  class FeatureManagerDense : public FeatureManagerBase<T> {
    public:
-    using Parent = FeatureManagerBase;
+    using Parent = FeatureManagerBase<T>;
     using RepresentationManager_t = typename Parent::RepresentationManager_t;
     using hypers_t = typename RepresentationManager_t::hypers_t;
-    using Feature_Matrix_t = Eigen::MatrixXd;
-    using Feature_Matrix_ref = Eigen::Map<Eigen::MatrixXd>;
-
+    using Feature_Matrix_t = typename Parent::Feature_Matrix_t;
+    using Feature_Matrix_ref = typename Parent::Feature_Matrix_ref;
+    using precision_t = typename Parent::precision_t;
     /**
-     * Default constructor where hypers contains all relevant informations
+     * Constructor where hypers contains all relevant informations
      * to setup a new RepresentationManager.
      */
     FeatureManagerDense(int n_feature, hypers_t hypers)
         : feature_matrix{}, n_feature{n_feature}, n_center{0}, hypers{hypers} {}
-
-    /**
-     * Constructor meant for initialization from python.
-     * hypers_str should be a string containing a serialized
-     * json version of hypers above
-     */
-    FeatureManagerDense(int n_feature, std::string hypers_str)
-        : feature_matrix{}, n_feature{n_feature}, n_center{0}, hypers{} {
-      hypers = json::parse(hypers_str);
-    }
 
     //! Copy constructor
     FeatureManagerDense(const FeatureManagerDense & other) = delete;

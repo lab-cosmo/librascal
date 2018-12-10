@@ -41,9 +41,16 @@ decltype(auto) bind_feature_manager(py::module & mod, py::module & ) {
   std::string feature_name =
         internal::GetBindingTypeName<Feature>();
 
-  py::class_<Feature, FeatureManagerBase>
+  py::class_<Feature, FeatureManagerBase<T> >
              feature(mod, feature_name.c_str());
-  feature.def(py::init<int , std::string >());
+  // use custom constructor to pass json formated string as initializer
+  // an alternative would be to convert python dict to json internally
+  // but needs some workon in the pybind machinery
+  feature.def(py::init([](int & n_feature, std::string& hyper_str) {
+        // convert to json
+        json hypers = json::parse(hyper_str);
+        return std::make_unique<Feature>(n_feature, hypers);
+            }));
   feature.def("reserve", &Feature::reserve);
   feature.def("append",
         (void (Feature::*)(RepresentationManagerBase&)) &Feature::push_back);
@@ -59,11 +66,19 @@ decltype(auto) bind_feature_manager(py::module & mod, py::module & ) {
 
 //! Feature aggregator python binding
 void add_feature_managers(py::module & mod, py::module & m_garbage) {
-  py::class_<FeatureManagerBase>(m_garbage, "FeatureManagerBase");
-
+  using FeatureBase_0 = FeatureManagerBase<double>;
+  std::string featurebase_0_name =
+        internal::GetBindingTypeName<FeatureBase_0>();
+  py::class_<FeatureManagerBase<double>>(m_garbage,
+                                          featurebase_0_name.c_str());
   auto feature_double =
          bind_feature_manager<FeatureManagerDense, double>(mod, m_garbage);
-  //TODO(felix) make the float version work !
-  //auto feature_float =
-  //     bind_feature_manager<FeatureManagerDense, float>(mod, m_garbage);
+
+  using FeatureBase_1 = FeatureManagerBase<float>;
+  std::string featurebase_1_name =
+        internal::GetBindingTypeName<FeatureBase_1>();
+  py::class_<FeatureManagerBase<float>>(m_garbage,
+                                        featurebase_1_name.c_str());
+  auto feature_float =
+      bind_feature_manager<FeatureManagerDense, float>(mod, m_garbage);
 }

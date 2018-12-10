@@ -84,6 +84,7 @@ namespace rascal {
     using Representation_t = typename Parent::Representation_t;
     using Feature_t = FeatureManager<T>;
     using hypers_t = typename Representation_t::hypers_t;
+    using precision_t = T;
 
     FeatureFixture() :Parent{} {
       std::vector<size_t> n_features{};
