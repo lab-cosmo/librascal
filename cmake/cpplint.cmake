@@ -59,15 +59,16 @@ set(CPPLINT_PROJECT_ROOT ${PROJECT_SOURCE_DIR} CACHE STRING "Project ROOT direct
 find_file(CPPLINT name cpplint HINTS $ENV{HOME}.local/bin)
 if(CPPLINT)
     message(STATUS "cpplint parser: ${CPPLINT}")
+    # common target to concatenate all cpplint.py targets
+    add_custom_target(${CPPLINT_TARGET})
+    set(CPPLINT_FOUND TRUE)
 else()
-    message(FATAL_ERROR "cpplint script: NOT FOUND! "
-                        "Please install cpplint as described on https://pypi.python.org/pypi/cpplint. "
-			"In most cases command 'sudo pip install cpplint' should be sufficent.")
+    message(STATUS "The optional cpplint parser has not been found. "
+                    "For more information see https://pypi.python.org/pypi/cpplint")
+    set(CPPLINT_FOUND FALSE)
 endif()
 
 
-# common target to concatenate all cpplint.py targets
-add_custom_target(${CPPLINT_TARGET})
 
 
 # use cpplint.py to check source code files inside DIR directory
