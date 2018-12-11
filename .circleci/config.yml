@@ -128,6 +128,7 @@ jobs:
                                         # apt-get install -y libllvm-7-ocaml-dev libllvm7 llvm-7 llvm-7-dev llvm-7-doc llvm-7-examples llvm-7-runtime
                                         apt-get install -y clang-7 lldb-7 lld-7
                                         apt-get install -y libc++-7-dev libc++abi-7-dev
+                                        # for some reason the execution rights are not set properly by default
                                         chmod 777 /usr/bin/clang*
                                         chmod 777 /usr/lib/llvm-7/bin/clang*
                         - run:
