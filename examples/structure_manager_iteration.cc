@@ -10,18 +10,18 @@
  *
  * Copyright © 2018 markus Stricker, COSMO (EPFL), LAMMM (EPFL)
  *
- * librascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
+ * Rascal is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
- * librascal is distributed in the hope that it will be useful, but
+ * Rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -46,9 +46,9 @@ using TripletManager2_t = rascal::AdaptorMaxOrder<PairManager_t>;
 
 int main() {
   Manager_t manager;
-  double cutoff{5.};
-  std::string filename{"crystal_structure.json"};
-  //std::string filename{"polyalanine.json"};
+  double cutoff{8.};
+  // std::string filename{"crystal_structure.json"};
+  std::string filename{"alanine-X.json"};
 
   std::cout << "filename " << filename << std::endl;
 
@@ -73,33 +73,28 @@ int main() {
 
   for (auto atom : strict_manager) {
     for (auto pair : atom) {
-      std::cout << "strict pair " << atom.get_atom_index()
-                << ", " << pair.get_atom_index()
-                << " global index " << pair.get_global_index() << std::endl;
+      std::cout << "strict pair " << atom.get_atom_index() << ", "
+                << pair.get_atom_index() << " global index "
+                << pair.get_global_index() << std::endl;
     }
   }
 
   std::cout << "Building triplet manager" << std::endl;
-  TripletManager2_t triplet_manager{pair_manager};
+  TripletManager_t triplet_manager{strict_manager};
   triplet_manager.update();
 
   std::cout << "Iteration over triplet manager " << std::endl;
 
   for (auto atom : triplet_manager) {
-    //auto pos1{atom.get_position()};
-    std::cout << "atom" << std::endl;
+    std::cout << "atom " << atom.get_atom_index() << std::endl;
 
     for (auto pair : atom) {
-      std::cout << "pair" << std::endl;
-      //auto pos2{pair.get_position()};
+      std::cout << "pair " << pair.get_atom_index() << std::endl;
 
       for (auto triplet : pair) {
-        auto pos3{triplet.get_position()};
-        std::cout << pos3 << std::endl;
-        std::cout << "triplet ("
-                  << atom.get_atom_index() << ", "
-                  << pair.get_atom_index() << ", "
-                  << triplet.get_atom_index() << ")" << std::endl;
+        std::cout << "triplet (" << atom.get_atom_index() << ", "
+                  << pair.get_atom_index() << ", " << triplet.get_atom_index()
+                  << ")" << std::endl;
       }
     }
   }

@@ -142,6 +142,10 @@ namespace rascal {
       return this->get_nb_clusters(1);
     }
 
+    inline size_t get_size_with_ghosts() const {
+      return this->get_nb_clusters(1);
+    }
+
     inline Vector_ref get_position(const int & index) {
       return this->manager.get_position(index);
     }
@@ -413,7 +417,7 @@ namespace rascal {
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
     size_t pair_counter{0};
-    for (auto atom : this->manager) {
+    for (auto atom : this->manager/*.with_ghosts()*/) {
       this->add_atom(atom);
       /**
        * Add new layer for atoms (see LayerByOrder for
