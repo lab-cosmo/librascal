@@ -99,7 +99,7 @@ namespace rascal {
         "reference_data/small_molecule.json"
     ]
     data = dict(filenames=fns_to_write,cutoffs=cutoffs)
-    hypers = dict(central_decay=0.5,interaction_cutoff=10,interaction_decay=0.5,size=10)
+    hypers = dict(central_decay=-1,interaction_cutoff=-1,interaction_decay=-1,size=10)
     for sort in sorts:
         data[sort] = dict(feature_matrices=[],hypers=[])
         for fn in fns:

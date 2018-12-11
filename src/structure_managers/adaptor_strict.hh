@@ -118,7 +118,7 @@ namespace rascal {
     void update(Args&&... arguments);
 
     //! returns the (strict) cutoff for the adaptor
-    inline double get_cutoff() const {return this->cutoff;}
+    inline const double & get_cutoff() const {return this->cutoff;}
 
     //! returns the distance between atoms in a given pair
     template <size_t Order, size_t Layer>

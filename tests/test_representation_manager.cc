@@ -90,15 +90,20 @@ namespace rascal {
                           MultipleStructureSortedCoulomb,
                           Option::CMSortRowNorm>>;
   // test if it reproduces the reference values
-  using fixtures_ref_test = boost::mpl::list<
+  // using fixtures_ref_test = boost::mpl::list<
+  //   RepresentationFixture<StructureManagerCenters,
+  //                         RepresentationManagerSortedCoulomb,
+  //                         SortedCoulombTestData,
+  //                         Option::CMSortRowNorm>,
+  //   RepresentationFixture<StructureManagerCenters,
+  //                         RepresentationManagerSortedCoulomb,
+  //                         SortedCoulombTestData,
+  //                         Option::CMSortDistance>>;
+     using fixtures_ref_test = boost::mpl::list<
     RepresentationFixture<StructureManagerCenters,
                           RepresentationManagerSortedCoulomb,
                           SortedCoulombTestData,
-                          Option::CMSortRowNorm>,
-    RepresentationFixture<StructureManagerCenters,
-                          RepresentationManagerSortedCoulomb,
-                          SortedCoulombTestData,
-                          Option::CMSortDistance>>;
+                          Option::CMSortRowNorm>>;
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -179,6 +184,7 @@ namespace rascal {
       for (size_t row_i{0}; row_i < ref_representation.size(); row_i++) {
         BOOST_CHECK_EQUAL(ref_representation[row_i].size(),
                         test_representation.cols());
+
         for (size_t col_i{0}; col_i < ref_representation[row_i].size();
                                                               col_i++) {
           auto diff{std::abs(ref_representation[row_i][col_i] -

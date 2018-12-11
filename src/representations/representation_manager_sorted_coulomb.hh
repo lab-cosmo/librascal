@@ -33,8 +33,10 @@
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/property.hh"
 #include "rascal_utility.hh"
+
 #include <vector>
 #include <algorithm>
+#include <math.h>
 
 
 namespace rascal {
@@ -257,6 +259,21 @@ namespace rascal {
       }
     }
 
+    inline double get_cutoff_factor(const double & distance,
+                                    const double & cutoff,
+                                    const double & decay) {
+      if (distance <= cutoff - decay) {
+        return 1.;
+      } else if (distance > cutoff) {
+        return 0.;
+      } else if (distance > cutoff - decay) {
+        return 0.5 * (1 +
+              std::cos(M_PI * (distance - cutoff + decay) / decay));
+      } else {
+        throw std::runtime_error("Something went wrong...");
+      }
+    }
+
     //! get the size of a feature vector from the hyper
     //! parameters
     inline size_t get_n_feature() {
@@ -284,11 +301,40 @@ namespace rascal {
   void RepresentationManagerSortedCoulomb<Mngr, SortAlgo>::
   set_hyperparameters(const RepresentationManagerSortedCoulomb<Mngr, SortAlgo>::
                       hypers_t & hyper) {
-    this->central_decay = hyper["central_decay"];
-    this->interaction_cutoff = hyper["interaction_cutoff"];
-    this->interaction_decay = hyper["interaction_decay"];
-    this->size = hyper["size"];
     this->hypers = hyper;
+    auto&& central_cutoff{this->structure_manager.get_cutoff()};
+
+    this->size = hyper["size"];
+    // this->interaction_cutoff = hyper["interaction_cutoff"];
+    // this->central_decay = hyper["central_decay"];
+    // this->interaction_decay = hyper["interaction_decay"];
+    if ((hyper["interaction_cutoff"] < 0) or
+         hyper["interaction_cutoff"] > 2 * central_cutoff) {
+      this->interaction_cutoff = 2 * central_cutoff;
+      this->hypers["interaction_cutoff"] = this->interaction_cutoff;
+    } else {
+      this->interaction_cutoff = hyper["interaction_cutoff"];
+    }
+
+    if (hyper["central_decay"] < 0) {
+      this->central_decay = 0.;
+      this->hypers["central_decay"] = this->central_decay;
+    } else if (hyper["central_decay"] > central_cutoff) {
+      this->central_decay = central_cutoff;
+      this->hypers["central_decay"] = central_cutoff;
+    } else {
+      this->central_decay = hyper["central_decay"];
+    }
+
+    if (hyper["interaction_decay"] < 0) {
+      this->interaction_decay = 0.;
+      this->hypers["interaction_decay"] = this->interaction_decay;
+    } else if (hyper["interaction_decay"] > this->interaction_cutoff) {
+      this->interaction_decay = this->interaction_cutoff;
+      this->hypers["interaction_decay"] = this->interaction_cutoff;
+    } else {
+      this->interaction_decay = hyper["interaction_decay"];
+    }
   }
 
 
@@ -366,13 +412,18 @@ namespace rascal {
     // the coulomb mat first row and col corresponds
     // to central atom to neighbours
     auto&& Zk{center.get_atom_type()};
+    auto&& central_cutoff{this->structure_manager.get_cutoff()};
+
     type_factor_mat(0, 0) = 0.5*std::pow(Zk, 2.4);
     for (auto neigh_i : center) {
       size_t idx_i{neigh_i.get_index()+1};
       auto&& Zi{neigh_i.get_atom_type()};
-      double dik{this->structure_manager.get_distance(neigh_i)};
+      double& dik{this->structure_manager.get_distance(neigh_i)};
+      double fac_ik{get_cutoff_factor(dik, central_cutoff,
+                                      this->central_decay)};
 
-      type_factor_mat(idx_i, 0) = Zk*Zi;
+      type_factor_mat(idx_i, 0) = Zk * Zi * fac_ik * fac_ik;
+      type_factor_mat(idx_i, idx_i) = 0.5*std::pow(Zi, 2.4) * fac_ik * fac_ik;
       distance_mat(idx_i, 0) = dik;
       type_factor_mat(0, idx_i) = type_factor_mat(idx_i, 0);
       distance_mat(0, idx_i) = distance_mat(idx_i, 0);
@@ -382,14 +433,24 @@ namespace rascal {
     for (auto neigh_i : center) {
       size_t idx_i{neigh_i.get_index()+1};
       auto&& Zi{neigh_i.get_atom_type()};
-      type_factor_mat(idx_i, idx_i) = 0.5*std::pow(Zi, 2.4);
+      double& dik{this->structure_manager.get_distance(neigh_i)};
+      double fac_ik{get_cutoff_factor(dik, central_cutoff,
+                                      this->central_decay)};
+
       for (auto neigh_j : center) {
         size_t idx_j{neigh_j.get_index()+1};
         // work only on the lower diagonal
         if (idx_i >= idx_j) continue;
         auto&& Zj{neigh_j.get_atom_type()};
         double dij{(neigh_i.get_position() - neigh_j.get_position()).norm()};
-        type_factor_mat(idx_j, idx_i) = Zj*Zi;
+        double fac_ij{get_cutoff_factor(dij, this->interaction_cutoff,
+                                             this->interaction_decay)};
+
+        double djk{(center.get_position() - neigh_j.get_position()).norm()};
+        double fac_jk{get_cutoff_factor(djk, this->interaction_cutoff,
+                                             this->interaction_decay)};
+
+        type_factor_mat(idx_j, idx_i) = Zj * Zi * fac_ij * fac_ik * fac_jk;
         distance_mat(idx_j, idx_i) = dij;
         type_factor_mat(idx_i, idx_j) = type_factor_mat(idx_j, idx_i);
         distance_mat(idx_i, idx_j) = distance_mat(idx_j, idx_i);
