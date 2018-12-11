@@ -69,18 +69,18 @@ void add_cluster_ref(py::module & m) {
                         (m, cluster_parent_name.c_str());
 }
 
-template<size_t Order, size_t Layer, size_t Layer_nd>
+template<size_t Order, size_t Layer, size_t LayerEnd>
 struct add_cluster_refs {
   //! starts recursion
   static void static_for(py::module & m) {
     add_cluster_ref<Order, Layer>(m);
-    add_cluster_refs<Order, Layer+1, Layer_nd>::static_for(m);
+    add_cluster_refs<Order, Layer+1, LayerEnd>::static_for(m);
   }
 };
 
 //! Stop the recursion
-template<size_t Order, size_t Layer_nd>
-struct add_cluster_refs<Order, Layer_nd, Layer_nd> {
+template<size_t Order, size_t LayerEnd>
+struct add_cluster_refs<Order, LayerEnd, LayerEnd> {
     static void static_for(py::module &) {}
 };
 
@@ -314,4 +314,3 @@ void add_structure_managers(py::module & m_str_mng, py::module & m_adp,
 
   bind_structure_manager<StructureManagerCenters>(m_str_mng, m_adp, m_garbage);
 }
-
