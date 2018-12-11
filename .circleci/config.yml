@@ -129,7 +129,7 @@ jobs:
                                         apt-get install -y clang-7 lldb-7 lld-7
                                         apt-get install -y libc++-7-dev libc++abi-7-dev
                                         chown 777 /usr/bin/clang*
-                                        chown 777 /usr/bin/lib/llvm-7/bin/clang*
+                                        chown 777 /usr/lib/llvm-7/bin/clang*
                         - run:
                                 name: installing python packages
                                 command: |
