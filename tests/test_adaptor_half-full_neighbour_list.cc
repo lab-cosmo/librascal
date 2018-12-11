@@ -36,6 +36,9 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   /*
    * test the reduction of a full to a half neighbour list
+   *
+   * ``manager`` is an object of type StructureManagerLammps, it has 3 atoms and
+   * a full neighbour list (MaxOrder=2).
    */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
                           ManagerFixture<StructureManagerLammps>) {
@@ -47,6 +50,9 @@ namespace rascal {
   /*
    * test if sum of distances are the same in the full list and 2 x the half
    * list
+   *
+   * ``manager`` is an object of type StructureManagerLammps, which has
+   * MaxOrder=2 and a full neighbourlist.
    */
   BOOST_FIXTURE_TEST_CASE(iteration_and_distance_half_list,
                           ManagerFixture<StructureManagerLammps>) {

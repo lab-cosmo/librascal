@@ -26,10 +26,7 @@
  */
 
 
-#include <pybind11/pybind11.h>
-#include <pybind11/eigen.h>
-#include "math/math_interface.hh"
-#include "math/math_utils.hh"
+#include "bind_include.hh"
 
 namespace math = rascal::math;
 namespace py = pybind11;

@@ -183,7 +183,7 @@ namespace rascal {
    * cluster reference is introduced.
    */
   template<size_t Order, size_t Layer>
-  class ClusterRefKey: ClusterRefBase {
+  class ClusterRefKey: public ClusterRefBase {
    public:
     /**
      * Index array types need both a constant and a non-constant version. The
@@ -193,7 +193,7 @@ namespace rascal {
     using Parent = ClusterRefBase;
     using IndexConstArray = Eigen::Map<const Eigen::Matrix<size_t, Layer+1, 1>>;
     using IndexArray = Eigen::Map<Eigen::Matrix<size_t, Layer+1, 1>>;
-
+    using AtomIndex_t = std::array<int, Order>;
     //! Default constructor
     ClusterRefKey() = delete;
 
@@ -201,7 +201,7 @@ namespace rascal {
      * direct constructor. Initialized with an array of atoms indices,
      * and a cluster reference data
      */
-    ClusterRefKey(std::array<int, Order> atom_indices,
+    ClusterRefKey(AtomIndex_t atom_indices,
                   IndexConstArray cluster_indices) :
       Parent{Order, Layer}, atom_indices{atom_indices},
       cluster_indices{cluster_indices.data()}
@@ -223,7 +223,7 @@ namespace rascal {
     ClusterRefKey & operator=(ClusterRefKey && other) = default;
 
     //! returns the atom indices of the current cluster
-    const inline std::array<int, Order> & get_atom_indices() const {
+    const inline AtomIndex_t & get_atom_indices() const {
       return this->atom_indices;
     }
 
@@ -254,7 +254,7 @@ namespace rascal {
      *  the exact same atom, e.g. in a Monte-Carlo simulation, where atoms are
      *  swapped.
      */
-    std::array<int, Order> atom_indices;
+    AtomIndex_t atom_indices;
     /**
      * Cluster indices by layer order, highest layer, means last adaptor, and
      * means last entry (.back())

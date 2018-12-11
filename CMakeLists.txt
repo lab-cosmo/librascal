@@ -17,7 +17,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-builtin")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 include(rascalTools)
-include(cpplint)
+
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
   # using Clang
@@ -43,6 +43,8 @@ endif()
 add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
 add_external_package(pybind11 VERSION 2.2.2 CONFIG)
 
+# Try to find optional cpp linter
+include(cpplint)
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/tests
@@ -55,15 +57,16 @@ include_directories(SYSTEM
 
 set(ENABLE_DOC "OFF" CACHE BOOL
   "If on, a target 'dev_doc' (which builds the documentation) is added")
-set(BUILD_TESTS "OFF" CACHE BOOL
+set(BUILD_TESTS "ON" CACHE BOOL
   "If on, builds the unit tests")
 set(SUPPRESS_LIBRARY_WARNINGS "ON" CACHE BOOL
   "Suppress warnings from  Boost library")
 
-set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT true CACHE BOOL
+set(INSTALL "build" CACHE STRING
   "Use the default install path")
 
-set(PYTHON_BUILD_PATH "${CMAKE_BINARY_DIR}/rascal/")
+set(PYTHON_BUILD_PATH "${CMAKE_BINARY_DIR}/rascal/" CACHE STRING
+    "Default install folder")
 
 
 if (${BUILD_TESTS})
@@ -96,6 +99,9 @@ if (${BUILD_TESTS})
   add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
   configure_file("tests/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
   configure_file("tests/simple_cubic_9.json" ${CMAKE_BINARY_DIR} COPYONLY)
+
+  file(COPY "tests/reference_data" DESTINATION ${CMAKE_BINARY_DIR})
+
 endif(${BUILD_TESTS})
 
 # compile the library
@@ -121,7 +127,7 @@ foreach(binaryfile ${binaries})
   target_link_libraries(${binaryname} ${Boost_LIBRARIES} rascal)
 endforeach(binaryfile ${binaries})
 
-#or copy them
+# or copy them
 file (GLOB pybins "${CMAKE_SOURCE_DIR}/bin/*.py")
 foreach(pybin ${pybins})
   get_filename_component(binaryname  ${pybin} NAME_WE)
@@ -132,8 +138,12 @@ foreach(pybin ${pybins})
 endforeach(pybin ${pybins})
 
 
-cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/src" "")
-cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
-cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
-cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/examples"
+if(CPPLINT_FOUND)
+  # register the folders to check for cpp code conventions compliance
+  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/src" "")
+  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
+  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
+  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/examples"
   "--filter=-build/namespaces")
+endif()
+

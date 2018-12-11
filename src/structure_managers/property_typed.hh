@@ -2,13 +2,14 @@
  * file   property_typed.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
+ * @author Felix Musil <felix.musil@epfl.ch>
  *
  * @date   06 Aug 2018
  *
  * @brief Implements intermediate property class for which the type of stored
  *          objects is known, but not the size
  *
- * Copyright © 2018 Federico Giberti, Till Junge, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2018 Federico Giberti, Till Junge, Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -67,6 +68,16 @@ namespace rascal {
         }
       }
 
+      //! Dynamic size overloading of push back data into ``property``
+      static void push_in_vector(std::vector<T> & vec, reference ref,
+                                 Dim_t& nb_row,  Dim_t& nb_col) {
+        for (Dim_t j{0}; j < nb_col; ++j) {
+          for (Dim_t i{0}; i < nb_row; ++i) {
+            vec.push_back(ref(i, j));
+          }
+        }
+      }
+
       //! Used for extending cluster_indices
       template<typename Derived>
       static void push_in_vector(std::vector<T> & vec,
@@ -77,6 +88,18 @@ namespace rascal {
                       "NbCol has incorrect size.");
         for (size_t j{0}; j < NbCol; ++j) {
           for (size_t i{0}; i < NbRow; ++i) {
+            vec.push_back(ref(i, j));
+          }
+        }
+      }
+
+      //! Dynamic size overloading of push back data into ``property``
+      template<typename Derived>
+      static void push_in_vector(std::vector<T> & vec,
+                                 const Eigen::DenseBase<Derived> & ref,
+                                const Dim_t& nb_row, const Dim_t& nb_col) {
+        for (Dim_t j{0}; j < nb_col; ++j) {
+          for (Dim_t i{0}; i < nb_row; ++i) {
             vec.push_back(ref(i, j));
           }
         }
@@ -214,6 +237,17 @@ namespace rascal {
                             this->get_nb_col());
     }
 
+    //! getter to the underlying data storage
+    inline std::vector<T>& get_raw_data() {
+      return this->values;
+    }
+
+    //! get number of different distinct element in the property
+    //! (typically the number of center)
+    inline size_t get_nb_item() const {
+      return values.size()/this->get_nb_comp();
+    }
+
     /**
      * Accessor for last pushed entry for dynamically sized properties
      */
@@ -227,7 +261,6 @@ namespace rascal {
    protected:
     std::vector<T> values{}; //!< storage for properties
   };
-
-}  // rascal
+}  // namespace rascal
 
 #endif /* PROPERTY_TYPED_H */

@@ -54,8 +54,7 @@ namespace rascal {
   struct StructureManager_traits<AdaptorNeighbourList<ManagerImplementation>> {
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDistances{false};
-    constexpr static bool HasDirectionVectors{
-      ManagerImplementation::traits::HasDirectionVectors};
+    constexpr static bool HasDirectionVectors{false};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
     // New MaxOrder upon construction, by construction should be 2
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder+1};
@@ -113,7 +112,7 @@ namespace rascal {
           constexpr int size{3};
           std::array<int, Dim> retval{{0}};
           int factor{1};
-          for (int i = Dim-1; i >=0; --i) {
+          for (int i{Dim-1}; i >=0; --i) {
             //! -1 for offset of stencil
             retval[i] = this->index/factor%size + this->stencil.origin[i] - 1;
             if (i != 0) {
@@ -123,7 +122,10 @@ namespace rascal {
           return retval;
         }
         //! pre-increment
-        iterator & operator++() {this->index++; return *this;}
+        iterator & operator++() {
+          this->index++;
+          return *this;
+        }
         //! inequality
         inline bool operator!=(const iterator & other) const {
           return this->index != other.index;
@@ -195,7 +197,10 @@ namespace rascal {
           return retval;
         }
         //! pre-increment
-        iterator & operator++() {this->index++; return *this;}
+        iterator & operator++() {
+          this->index++;
+         return *this;
+        }
         //! inequality
         inline bool operator!=(const iterator & other) const {
           return this->index != other.index;
@@ -263,7 +268,10 @@ namespace rascal {
           return retval;
         }
         //! pre-increment
-        iterator & operator++() {this->index++; return *this;}
+        iterator & operator++() {
+          this->index++;
+          return *this;
+        }
         //! inequality
         inline bool operator!=(const iterator & other) const {
           return this->index != other.index;
@@ -327,6 +335,7 @@ namespace rascal {
       Dim_t factor{1};
       for (Dim_t i = Dim-1; i >= 0; --i) {
         retval += ccoord[i] * factor;
+        // TODO(markus) remove the useless if
         if (i != 0) {
           factor *= sizes[i];
         }
@@ -419,13 +428,13 @@ namespace rascal {
     using Base = StructureManager<AdaptorNeighbourList<ManagerImplementation>>;
     using Parent =
       StructureManager<AdaptorNeighbourList<ManagerImplementation>>;
+    using Implementation_t = ManagerImplementation;
     using traits = StructureManager_traits<AdaptorNeighbourList>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
     using Vector_t = typename Parent::Vector_t;
     using Positions_ref = Eigen::Map<Eigen::Matrix<double, traits::Dim,
                                                    Eigen::Dynamic>>;
-    using AtomTypes_ref = Eigen::Map<Eigen::Matrix<int, 1, Eigen::Dynamic>>;
 
     static_assert(traits::MaxOrder == 2,
                   "ManagerImplementation needs an atom list "
@@ -524,15 +533,25 @@ namespace rascal {
     }
 
     //! ghost types are only available for MaxOrder=2
-    inline int & get_ghost_type(const size_t & atom_index) {
-      auto p = this->get_ghost_types();
-      return p(atom_index);
+    inline const int&  get_ghost_type(const size_t & atom_index) const {
+      auto&& p{this->get_ghost_types()};
+      return p[atom_index];
+    }
+
+    //! ghost types are only available for MaxOrder=2
+    inline int&  get_ghost_type(const size_t & atom_index) {
+      auto&& p{this->get_ghost_types()};
+      return p[atom_index];
     }
 
     //! provides access to the atomic types of ghost atoms
-    inline AtomTypes_ref get_ghost_types() {
-      AtomTypes_ref val(this->ghost_types.data(), 1, this->ghost_types.size());
-      return val;
+    inline std::vector<int>& get_ghost_types() {
+      return this->ghost_types;
+    }
+
+    //! provides access to the atomic types of ghost atoms
+    inline const std::vector<int>& get_ghost_types() const {
+      return this->ghost_types;
     }
 
 
@@ -589,11 +608,13 @@ namespace rascal {
       }
     }
 
+    // TODO(markus): there might be a mismatch between name and functionality
+    // more details needed
     //! Returns the number of neighbors of a given cluster
     template<size_t Order, size_t Layer>
     inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
                                    & cluster) const {
-      static_assert(Order < traits::MaxOrder,
+      static_assert(Order <= traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
 
       auto access_index = cluster.get_cluster_index(Layer);
@@ -624,14 +645,6 @@ namespace rascal {
     //! Extends the list containing the number of neighbours with a 0
     inline void add_entry_number_of_neighbours() {
       this->nb_neigh.push_back(0);
-    }
-
-    //! Adds a given atom index as new cluster neighbour
-    inline void add_neighbour_of_cluster(const int atom_index) {
-      //! adds `atom_index` to neighbours
-      this->neighbours.push_back(atom_index);
-      //! increases the number of neighbours
-      this->nb_neigh.back()++;
     }
 
     //! Sets the correct offsets for accessing neighbours
@@ -758,7 +771,8 @@ namespace rascal {
     Vector_t mesh_max{Vector_t::Zero()};
 
     // max and min multipliers for number of cells in mesh per dimension in
-    // units of cell vectors
+    // units of cell vectors to be filled from max/min mesh positions and used
+    // to construct ghost positions
     std::array<int, dim> m_min{};
     std::array<int, dim> m_max{};
 
@@ -775,7 +789,7 @@ namespace rascal {
       // sorting of atom position e.g. at x = (0,0,0).
       auto epsilon = 0.25 * cutoff;
       mesh_min[i] = min_coord - cutoff - epsilon;
-      auto lmesh = std::fabs(mesh_min[i]) + max_coord + cutoff;
+      auto lmesh = std::fabs(mesh_min[i]) + max_coord + 2*cutoff;
       int n = std::ceil(lmesh / cutoff);
       auto lmax = n * cutoff - std::fabs(mesh_min[i]);
       mesh_max[i] = lmax;
@@ -799,15 +813,17 @@ namespace rascal {
       xpos.col(n) = Eigen::Map<Eigen::Matrix<double, dim, 1>> (coord.data());
       n++;
     }
-    // solve for all multipliers
-    auto multiplicator{cell.ldlt().solve(xpos).eval()};
+
+    // solve inverse problem for all multipliers
+    auto cell_inv{cell.inverse().eval()};
+    auto multiplicator{cell_inv*xpos.eval()};
     auto xmin = multiplicator.rowwise().minCoeff();
     auto xmax = multiplicator.rowwise().maxCoeff();
 
+    // find max and min multipliers for cell vectors
     for (auto i{0}; i < dim; ++i) {
-      // +/- 1 because of the "zero" cell, the cell itself
-      m_min[i] = std::floor(xmin(i)) - 1;
-      m_max[i] = std::ceil(xmax(i)) + 1;
+      m_min[i] = std::floor(xmin(i));
+      m_max[i] = std::ceil(xmax(i));
     }
 
 
@@ -840,10 +856,9 @@ namespace rascal {
         {periodic_min, repetitions, ntot}) {
         int ncheck{0};
         for (auto i{0}; i < dim; ++i) ncheck += std::abs(p_image[i]);
-
         // exclude cell itself
         if (ncheck > 0) {
-          Vector_t pos_ghost = pos;
+          Vector_t pos_ghost{pos};
 
           for (auto i{0}; i < dim; ++i) {
             pos_ghost += cell.col(i) * p_image[i];

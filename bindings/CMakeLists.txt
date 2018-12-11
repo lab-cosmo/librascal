@@ -32,6 +32,8 @@ set (PY_BINDING_SRCS
   ${CMAKE_CURRENT_SOURCE_DIR}/bind_py_structure_manager.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/bind_py_utils.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/bind_py_math.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/bind_py_representation_manager.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/bind_py_feature_manager.cc
   )
 
 find_package(PythonLibsNew 3 MODULE REQUIRED)
@@ -43,7 +45,7 @@ execute_process ( COMMAND python -c "from distutils.sysconfig import \
   )
 
 # By default the python lib rascal is installed into the build folder
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+if("${INSTALL}" STREQUAL "build")
   set(CMAKE_INSTALL_PREFIX "${PYTHON_BUILD_PATH}" CACHE PATH "..." FORCE)
   install(DIRECTORY "${CMAKE_SOURCE_DIR}/rascal/" DESTINATION ./
           PATTERN "*__pycache__" EXCLUDE

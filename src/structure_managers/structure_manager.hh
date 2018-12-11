@@ -36,7 +36,7 @@
 #include "structure_managers/structure_manager_base.hh"
 #include "structure_managers/property.hh"
 #include "structure_managers/cluster_ref_key.hh"
-
+#include "rascal_utility.hh"
 //! Some data types and operations are based on the Eigen library
 #include <Eigen/Dense>
 
@@ -264,7 +264,7 @@ namespace rascal {
       return this->implementation().get_position(atom_index);
     }
 
-    //! returns position of an atom with an AtomRef
+    //! returns position of an atom with an AtomRef ``atom``
     inline Vector_ref position(const AtomRef & atom) {
       return this->implementation().get_position(atom);
     }
@@ -317,6 +317,7 @@ namespace rascal {
 
     //! returns a reference to itself
     inline StructureManager & get_manager() {return *this;}
+
     //! necessary casting of the type
     inline ManagerImplementation & implementation() {
       return static_cast<ManagerImplementation&>(*this);

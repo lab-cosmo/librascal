@@ -57,7 +57,6 @@ namespace rascal {
 
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
       AdaptorTraits::NeighbourListType::half};
-
     using LayerByOrder = typename
       LayerIncreaser<MaxOrder,
                      typename
@@ -77,6 +76,7 @@ namespace rascal {
    public:
     using Parent =
       StructureManager<AdaptorHalfList<ManagerImplementation>>;
+    using Implementation_t = ManagerImplementation;
     using traits = StructureManager_traits<AdaptorHalfList>;
     using parent_traits = typename ManagerImplementation::traits;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
