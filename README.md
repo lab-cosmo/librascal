@@ -9,7 +9,7 @@ How to install:
 ```Shell
 mkdir build
 cd build
-ccmake ..
+cmake -DCMAKE_BUILD_TYPE=Release ..
 make
 ```
 
