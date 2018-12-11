@@ -305,9 +305,6 @@ namespace rascal {
     auto&& central_cutoff{this->structure_manager.get_cutoff()};
 
     this->size = hyper["size"];
-    // this->interaction_cutoff = hyper["interaction_cutoff"];
-    // this->central_decay = hyper["central_decay"];
-    // this->interaction_decay = hyper["interaction_decay"];
     if ((hyper["interaction_cutoff"] < 0) or
          hyper["interaction_cutoff"] > 2 * central_cutoff) {
       this->interaction_cutoff = 2 * central_cutoff;
