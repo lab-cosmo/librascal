@@ -122,14 +122,14 @@ jobs:
                                         apt-get install -y gcc-5 g++-5
                                         apt-get update -y
                                         apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 15CF4D18AF4F7421
-                                        add-apt-repository 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main'
+                                        add-apt-repository "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main"
                                         #add-apt-repository 'deb-src http://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main'
                                         apt-get update -y
                                         # apt-get install -y libllvm-7-ocaml-dev libllvm7 llvm-7 llvm-7-dev llvm-7-doc llvm-7-examples llvm-7-runtime
                                         apt-get install -y clang-7 lldb-7 lld-7
                                         apt-get install -y libc++-7-dev libc++abi-7-dev
-                                        chown 777 /usr/bin/clang*
-                                        chown 777 /usr/lib/llvm-7/bin/clang*
+                                        chmod 777 /usr/bin/clang*
+                                        chmod 777 /usr/lib/llvm-7/bin/clang*
                         - run:
                                 name: installing python packages
                                 command: |
