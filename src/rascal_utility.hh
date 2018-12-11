@@ -110,19 +110,23 @@ namespace rascal {
         // The output of of Pretty Function depends on the compiler
         // the #define strings is a pain to split
 #if defined(GCC_COMPILER)
-        #define FUNCTION_MACRO __PRETTY_FUNCTION__
-        #define PREFIX "static const string rascal::internal::GetTypeNameHelper<T>::GetTypeName() [with T = " // NOLINT
-        #define SUFFIX_1 "; std::__cxx11::string = std::__cxx11::basic_string<char>]" // NOLINT
-        #define SUFFIX_2 ""
-        #define NUM_TYPE_REPEATS 1
+#define FUNCTION_MACRO __PRETTY_FUNCTION__
+#define PREFIX                                                                 \
+  "static const string rascal::internal::GetTypeNameHelper<T>::GetTypeName() " \
+  "[with T = "
+#define SUFFIX_1                                                               \
+  "; std::__cxx11::string = std::__cxx11::basic_string<char>]"
+#define SUFFIX_2 ""
+#define NUM_TYPE_REPEATS 1
 #elif defined(CLANG_COMPILER)
-        #define FUNCTION_MACRO __PRETTY_FUNCTION__
-        #define PREFIX "static const std::string rascal::internal::GetTypeNameHelper<" // NOLINT
-        #define SUFFIX_1 ">::GetTypeName() [T ="
-        #define SUFFIX_2 "]"
-        #define NUM_TYPE_REPEATS 2
+#define FUNCTION_MACRO __PRETTY_FUNCTION__
+#define PREFIX                                                                 \
+  "static const std::string rascal::internal::GetTypeNameHelper<"
+#define SUFFIX_1 ">::GetTypeName() [T ="
+#define SUFFIX_2 "]"
+#define NUM_TYPE_REPEATS 2
 #else
-        #error "No implementation for current compiler"
+#error "No implementation for current compiler"
 #endif
 
         const size_t funcNameLength{sizeof(FUNCTION_MACRO) - 1u};
