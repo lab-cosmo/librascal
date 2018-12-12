@@ -127,10 +127,11 @@ namespace rascal {
       std::vector<std::vector<double>> neigh_dist_strict{};
       std::vector<std::vector<std::array<double, 3>>> neigh_dir_vec_strict{};
 
-      if (verbose) std::cout << "Setting up strict manager with rc = "
-                             << cutoff_tmp << std::endl;
+      if (verbose)
+        std::cout << "Setting up strict manager with rc = " << cutoff_tmp
+                  << std::endl;
       AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>
-        adaptor_strict{pair_manager, cutoff_tmp};
+          adaptor_strict{pair_manager, cutoff_tmp};
       adaptor_strict.update();
 
       if (verbose)
@@ -160,8 +161,8 @@ namespace rascal {
           if (distance <= cutoff_tmp) {
             indices.push_back(neigh.get_atom_index());
             distances.push_back(distance);
-            auto dirVec{
-              (neigh.get_position() - center.get_position()).array()/distance};
+            auto dirVec{(neigh.get_position() - center.get_position()).array() /
+                        distance};
             std::array<double, 3> aa{{dirVec(0), dirVec(1), dirVec(2)}};
             dirVecs.push_back(aa);
             if (verbose) {
@@ -190,8 +191,7 @@ namespace rascal {
 
         if (verbose) {
           // get_index returns iteration index
-          std::cout << "strict atom out "
-                    << center.get_index();
+          std::cout << "strict atom out " << center.get_index();
           // get_atom_index returns index from
           std::cout << " " << center.get_atom_index() << " ";
 
@@ -232,7 +232,6 @@ namespace rascal {
         // if (icenter > 1) break;
       }
 
-
       BOOST_CHECK_EQUAL(neigh_ids.size(), neigh_ids_strict.size());
 
       for (size_t ii{0}; ii < neigh_ids.size(); ++ii) {
@@ -255,16 +254,15 @@ namespace rascal {
     }
   }
 
-  using multiple_fixtures = boost::mpl::list<
-    MultipleStructureManagerNLFixture<StructureManagerCenters,
-                                      MultipleStructureManagerBaseFixture>>;
+  using multiple_fixtures = boost::mpl::list<MultipleStructureManagerNLFixture<
+      StructureManagerCenters, MultipleStructureManagerBaseFixture>>;
 
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_strict_test,
-                                   Fix, multiple_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_strict_test, Fix, multiple_fixtures,
+                                   Fix) {
     bool verbose{false};
     auto & managers = Fix::managers_pair;
 
-    for (auto& pair_manager : managers) {
+    for (auto & pair_manager : managers) {
       double cutoff{pair_manager.get_cutoff()};
       std::vector<std::vector<int>> neigh_ids{};
       std::vector<std::vector<double>> neigh_dist{};
@@ -273,14 +271,16 @@ namespace rascal {
       std::vector<std::vector<double>> neigh_dist_strict{};
       std::vector<std::vector<std::array<double, 3>>> neigh_dir_vec_strict{};
 
-      if (verbose) std::cout << "Setting up strict manager with rc = "
-                             <<cutoff << std::endl;
+      if (verbose)
+        std::cout << "Setting up strict manager with rc = " << cutoff
+                  << std::endl;
       AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>
-        adaptor_strict{pair_manager, cutoff};
+          adaptor_strict{pair_manager, cutoff};
       adaptor_strict.update();
 
-      if (verbose) std::cout << "Setting up comparison list with rc = "
-                             << cutoff << std::endl;
+      if (verbose)
+        std::cout << "Setting up comparison list with rc = " << cutoff
+                  << std::endl;
 
       for (auto center : pair_manager) {
         std::vector<int> indices{};
@@ -300,13 +300,13 @@ namespace rascal {
         }
 
         for (auto neigh : center) {
-          double distance{(center.get_position()
-                           - neigh.get_position()).norm()};
+          double distance{
+              (center.get_position() - neigh.get_position()).norm()};
           if (distance <= cutoff) {
             indices.push_back(neigh.get_atom_index());
             distances.push_back(distance);
-            auto dirVec{(neigh.get_position() -
-                         center.get_position()).array()/distance};
+            auto dirVec{(neigh.get_position() - center.get_position()).array() /
+                        distance};
             std::array<double, 3> aa{{dirVec(0), dirVec(1), dirVec(2)}};
             dirVecs.push_back(aa);
             if (verbose) {
@@ -326,7 +326,8 @@ namespace rascal {
         // break;
       }
 
-      if (verbose) std::cout << "Setting get adaptor_strict info" << std::endl;
+      if (verbose)
+        std::cout << "Setting get adaptor_strict info" << std::endl;
       for (auto center : adaptor_strict) {
         // auto icenter{center.get_index()};
         std::vector<int> indices_{};
@@ -368,7 +369,7 @@ namespace rascal {
         }
 
         if (verbose) {
-          std::cout << "Number of Neighbourg: " << indices_.size()<< std::endl;
+          std::cout << "Number of Neighbourg: " << indices_.size() << std::endl;
         }
 
         neigh_ids_strict.push_back(indices_);
@@ -398,7 +399,6 @@ namespace rascal {
       }
     }
   }
-
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(strict_test_hcp, ManagerFixtureTwoHcp) {

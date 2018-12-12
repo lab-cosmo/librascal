@@ -61,8 +61,7 @@ namespace rascal {
    * functionality the given StructureManager already contains to avoid
    * recomputation. See also the implementation of adaptors.
    */
-  template <>
-  struct StructureManager_traits<StructureManagerCenters> {
+  template <> struct StructureManager_traits<StructureManagerCenters> {
     // this manager only works with 3D data (positions, cell)
     constexpr static int Dim{3};
     // MaxOrder is set to 1 because it has just atoms
@@ -78,11 +77,11 @@ namespace rascal {
    * to the convention of using 'StructureManagerYours', where 'Yours' will give
    * a hint of what it is about.
    */
-  class StructureManagerCenters:
-    // public inheritance the base class
-    public StructureManager<StructureManagerCenters> {
-     // Publicly accessible variables and function of the class are given
-     // here. These provide the interface to access the neighbourhood.
+  class StructureManagerCenters :
+      // public inheritance the base class
+      public StructureManager<StructureManagerCenters> {
+    // Publicly accessible variables and function of the class are given
+    // here. These provide the interface to access the neighbourhood.
    public:
     // for convenience, the names are shortened
     using traits = StructureManager_traits<StructureManagerCenters>;
@@ -134,8 +133,7 @@ namespace rascal {
 
     //! Default constructor, values are set during .update() function
     StructureManagerCenters()
-      : atoms_object{}, atoms_index{}, lattice{}, offsets{}, natoms{}
-    {}
+        : atoms_object{}, atoms_index{}, lattice{}, offsets{}, natoms{} {}
 
     //! Copy constructor
     StructureManagerCenters(const StructureManagerCenters & other) = delete;
@@ -159,8 +157,9 @@ namespace rascal {
      * data. E.g. when the atom positions are provided by a simulation method,
      * which evolves in time, this function updates the data.
      */
-    void update(const Eigen::Ref<const Eigen::MatrixXd,
-                0, Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>> positions,
+    void update(const Eigen::Ref<const Eigen::MatrixXd, 0,
+                                 Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>>
+                    positions,
                 const Eigen::Ref<const Eigen::VectorXi> atom_types,
                 const Eigen::Ref<const Eigen::MatrixXd> cell,
                 const Eigen::Ref<const PBC_t> pbc);
@@ -176,7 +175,7 @@ namespace rascal {
     void build();
 
     //! required for the construction of vectors, etc
-    constexpr static int dim() {return traits::Dim;}
+    constexpr static int dim() { return traits::Dim; }
 
     /**
      * Returns a traits::Dim by traits::Dim matrix with the cell vectors of the
@@ -198,15 +197,14 @@ namespace rascal {
 
     //! Returns an a map with all atom types.
     inline AtomTypes_ref get_atom_types() {
-      AtomTypes_ref val(this->atoms_object.atom_types.data(),
-                        1, this->natoms);
+      AtomTypes_ref val(this->atoms_object.atom_types.data(), 1, this->natoms);
       return val;
     }
 
     //! Returns an a map with all atom types.
     inline ConstAtomTypes_ref get_atom_types() const {
-      ConstAtomTypes_ref val(this->atoms_object.atom_types.data(),
-                        1, this->natoms);
+      ConstAtomTypes_ref val(this->atoms_object.atom_types.data(), 1,
+                             this->natoms);
       return val;
     }
 
@@ -237,34 +235,34 @@ namespace rascal {
     }
 
     //! returns number of I atoms in the list
-    inline size_t get_size() const {return this->natoms;}
+    inline size_t get_size() const { return this->natoms; }
 
     //! returns number of I atoms in the list, since at this level, center atoms
     //! and ghost atoms are not distinguishable.
-    inline size_t get_size_with_ghosts() const {return this->natoms;}
+    inline size_t get_size_with_ghosts() const { return this->natoms; }
 
     //! returns the number of neighbours of a given i atom
-    template<size_t Order, size_t Layer>
-    inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
-                                   & /*cluster*/) const {
+    template <size_t Order, size_t Layer>
+    inline size_t
+    get_cluster_size(const ClusterRefKey<Order, Layer> & /*cluster*/) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms.");
       return 1;
     }
 
     //! dummy function, since no neighbours are present her
-    inline int get_cluster_neighbour(const Parent& /*cluster*/,
+    inline int get_cluster_neighbour(const Parent & /*cluster*/,
                                      size_t index) const {
-      // dummy argument is the atom itself std::cout << "index, atoms_index " <<
-      // index << ", " << this->atoms_index[0][index] << std::endl; return
-      // this->atoms_index[0][index];
+      // dummy argument is the atom itself, because if does not make sense at
+      // this order
       return index;
     }
 
     //! Dummy function, since neighbours are not present at this Order
-    template<size_t Order, size_t Layer>
-    inline int get_cluster_neighbour(const ClusterRefKey<Order, Layer>
-                                     & /*cluster*/, size_t) const {
+    template <size_t Order, size_t Layer>
+    inline int
+    get_cluster_neighbour(const ClusterRefKey<Order, Layer> & /*cluster*/,
+                          size_t) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms.");
       return 0;
@@ -274,7 +272,7 @@ namespace rascal {
      * Return the linear index of cluster (i.e., the count at which
      * this cluster appears in an iteration
      */
-    template<size_t Order>
+    template <size_t Order>
     inline size_t
     get_offset_impl(const std::array<size_t, Order> & counters) const;
 
@@ -322,13 +320,12 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   //! used for construction (not for iteration)
-  template<size_t Order>
-  inline size_t StructureManagerCenters::
-  get_offset_impl(const std::array<size_t, Order> & /*counters*/) const {
-    static_assert(Order == 1,
-                   "this manager only handles atoms.");
+  template <size_t Order>
+  inline size_t StructureManagerCenters::get_offset_impl(
+      const std::array<size_t, Order> & /*counters*/) const {
+    static_assert(Order == 1, "this manager only handles atoms.");
     return 0;
   }
-}  // rascal
+}  // namespace rascal
 
 #endif /* STRUCTURE_MANAGER_CENTERS_H */

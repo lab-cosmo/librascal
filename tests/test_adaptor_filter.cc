@@ -25,7 +25,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #include "structure_managers/adaptor_filter.hh"
 // TODO(markus): replace the following line after the branch feat/better_tests
 // is merged into master
@@ -38,38 +37,33 @@
 
 namespace rascal {
 
-  template<class ManagerImplementation, size_t MaxOrder>
-  struct FilterFixture {
+  template <class ManagerImplementation, size_t MaxOrder> struct FilterFixture {
     using Filter_t = AdaptorFilter<ManagerImplementation, MaxOrder>;
 
-    FilterFixture():
-      manager{fixture.manager} {}
+    FilterFixture() : manager{fixture.manager} {}
 
     ~FilterFixture() = default;
 
-    size_t get_MaxOrder() {return MaxOrder;}
+    size_t get_MaxOrder() { return MaxOrder; }
 
     ManagerFixture<ManagerImplementation> fixture{};
     Filter_t manager;
   };
 
-  using Fixtures = boost::mpl::list<
-    FilterFixture<StructureManagerCenters, 1>,
-    FilterFixture<StructureManagerLammps, 2> >;
+  using Fixtures = boost::mpl::list<FilterFixture<StructureManagerCenters, 1>,
+                                    FilterFixture<StructureManagerLammps, 2>>;
 
-  using FixturesMax1 = boost::mpl::list<
-    FilterFixture<StructureManagerCenters, 1>>;
-  using FixturesMax2 = boost::mpl::list<
-    FilterFixture<StructureManagerLammps, 2>>;
+  using FixturesMax1 =
+      boost::mpl::list<FilterFixture<StructureManagerCenters, 1>>;
+  using FixturesMax2 =
+      boost::mpl::list<FilterFixture<StructureManagerLammps, 2>>;
   using FixturesMax3 = boost::mpl::list<>;
-
 
   /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE(test_adaptor_filter);
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_test, Fix, Fixtures, Fix) {
-  }
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_test, Fix, Fixtures, Fix) {}
 
   /**
    * This test iterates over a Structure manager's atoms, randomly
@@ -98,13 +92,13 @@ namespace rascal {
       counter++;
       const auto & pos_a{atom.get_position()};
       const auto & pos_b{
-        this->fixture.manager.get_position(atom.get_atom_index())};
-      const auto error{(pos_a-pos_b).norm()};
+          this->fixture.manager.get_position(atom.get_atom_index())};
+      const auto error{(pos_a - pos_b).norm()};
       BOOST_CHECK_EQUAL(error, 0.);
 
       const auto & atom_type_a{atom.get_atom_type()};
       const auto & atom_type_b{
-        this->fixture.manager.get_atom_type(atom.back())};
+          this->fixture.manager.get_atom_type(atom.back())};
       BOOST_CHECK_EQUAL(atom_type_a, atom_type_b);
     }
   }
@@ -122,7 +116,6 @@ namespace rascal {
     std::random_device rd{};
     std::uniform_int_distribution<int> dist(0, 1);
     std::vector<std::array<int, 2>> atom_indices{};
-
 
     for (auto atom : Fix::fixture.manager) {
       for (auto pair : atom) {
@@ -143,21 +136,20 @@ namespace rascal {
 
         const auto & pos_a{pair.get_position()};
         const auto & pos_b{
-          this->fixture.manager.get_position(pair.get_atom_index())};
-        const auto error{(pos_a-pos_b).norm()};
+            this->fixture.manager.get_position(pair.get_atom_index())};
+        const auto error{(pos_a - pos_b).norm()};
         BOOST_CHECK_EQUAL(error, 0.);
 
         const auto & atom_type_a{pair.get_atom_type()};
         const auto & atom_type_b{
-          this->fixture.manager.get_atom_type(pair.back())};
+            this->fixture.manager.get_atom_type(pair.back())};
         BOOST_CHECK_EQUAL(atom_type_a, atom_type_b);
         counter++;
       }
     }
   }
 
-
   /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();
 
-}  // rascal
+}  // namespace rascal

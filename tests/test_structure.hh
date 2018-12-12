@@ -68,10 +68,9 @@ namespace rascal {
    * always accessible with the variable ``manager_1`` and ``manager_2``. Both
    * managers are of the same class.
    */
-  template<class ManagerImplementation>
-  struct ManagerFixtureTwo {
-    ManagerFixtureTwo() {} // ctor
-    ~ManagerFixtureTwo() {} // dtor
+  template <class ManagerImplementation> struct ManagerFixtureTwo {
+    ManagerFixtureTwo() {}   // ctor
+    ~ManagerFixtureTwo() {}  // dtor
 
     ManagerImplementation manager_1{};
     ManagerImplementation manager_2{};
@@ -123,37 +122,21 @@ namespace rascal {
        * neighbours.
        */
       auto a{1.};
-      auto c{std::sqrt(8./3.)};
+      auto c{std::sqrt(8. / 3.)};
 
-      cell_1 <<
-        a,  -0.5*a ,            0.,
-        0., std::sqrt(3.)/2.*a, 0.,
-        0.,  0.,                c;
+      cell_1 << a, -0.5 * a, 0., 0., std::sqrt(3.) / 2. * a, 0., 0., 0., c;
 
-      cell_2 <<
-        a,   0.,         0.5*a,
-        0.,  c,             0.,
-        0.,  0.,  std::sqrt(3.)/2.*a;
+      cell_2 << a, 0., 0.5 * a, 0., c, 0., 0., 0., std::sqrt(3.) / 2. * a;
 
-      auto p_1 =
-        2./3. * cell_1.col(0)
-        + 1./3. * cell_1.col(1)
-        + 1./2. * cell_1.col(2);
+      auto p_1 = 2. / 3. * cell_1.col(0) + 1. / 3. * cell_1.col(1) +
+                 1. / 2. * cell_1.col(2);
 
-      positions_1 <<
-        0.0, p_1[0],
-        0.0, p_1[1],
-        0.0, p_1[2];
+      positions_1 << 0.0, p_1[0], 0.0, p_1[1], 0.0, p_1[2];
 
-      auto p_2 =
-        -1./3. * cell_2.col(0)
-        + 1./2. * cell_2.col(1)
-        + 2./3. * cell_2.col(2);
+      auto p_2 = -1. / 3. * cell_2.col(0) + 1. / 2. * cell_2.col(1) +
+                 2. / 3. * cell_2.col(2);
 
-      positions_2 <<
-        0.0, p_2[0],
-        0.0, p_2[1],
-        0.0, p_2[2];
+      positions_2 << 0.0, p_2[0], 0.0, p_2[1], 0.0, p_2[2];
 
       atom_types << 1, 1;
 
@@ -202,29 +185,18 @@ namespace rascal {
        */
       auto a{1.};
 
-      cell_1 <<
-        a,  0.5*a, 0.5*a,
-        0., 0.5*a, 0.   ,
-        0., 0.,    0.5*a;
+      cell_1 << a, 0.5 * a, 0.5 * a, 0., 0.5 * a, 0., 0., 0., 0.5 * a;
 
-      cell_2 <<
-        a,   0., 0.,
-        0.,  a,  0.,
-        0.,  0., a;
+      cell_2 << a, 0., 0., 0., a, 0., 0., 0., a;
 
-      positions_1 <<
-        0.,
-        0.,
-        0.;
+      positions_1 << 0., 0., 0.;
 
       auto p_2 = 0.5 * cell_2.col(0) + 0.5 * cell_2.col(1);
       auto p_3 = 0.5 * cell_2.col(0) + 0.5 * cell_2.col(2);
       auto p_4 = 0.5 * cell_2.col(1) + 0.5 * cell_2.col(2);
 
-      positions_2 <<
-        0.0, p_2[0], p_3[0], p_4[0],
-        0.0, p_2[1], p_3[1], p_4[1],
-        0.0, p_2[2], p_3[2], p_4[2];
+      positions_2 << 0.0, p_2[0], p_3[0], p_4[0], 0.0, p_2[1], p_3[1], p_4[1],
+          0.0, p_2[2], p_3[2], p_4[2];
 
       atom_types_1 << 1;
       atom_types_2 << 1, 1, 1, 1;
@@ -435,15 +407,10 @@ namespace rascal {
     ManagerFixtureSimple()
         : ManagerFixture<StructureManagerCenters>{}, pbc{{true, false, false}},
           cell(3, 3), positions(3, 8), atom_types(8), cutoff{2.1}, natoms{8} {
-      cell <<
-        1.0, 0.0, 0.0,
-        0.0, 1.0, 0.0,
-        0.0, 0.0, 0.5;
+      cell << 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.5;
 
-      positions <<
-        0.4, 1.4, 0.4, 1.4, 0.4, 1.4, 0.4, 1.4,
-        0.4, 0.4, 1.4, 1.4, 0.4, 0.4, 1.4, 1.4,
-        0.4, 0.4, 0.4, 0.4, 1.4, 1.4, 1.4, 1.4;
+      positions << 0.4, 1.4, 0.4, 1.4, 0.4, 1.4, 0.4, 1.4, 0.4, 0.4, 1.4, 1.4,
+          0.4, 0.4, 1.4, 1.4, 0.4, 0.4, 0.4, 0.4, 1.4, 1.4, 1.4, 1.4;
 
       atom_types << 1, 3, 2, 1, 1, 2, 2, 3;
 
@@ -475,15 +442,9 @@ namespace rascal {
     ManagerFixtureSkew()
         : pbc{{true, true, false}}, cell(3, 3), positions(3, 2),
           atom_types(2), cutoff{0.49}, natoms{2} {
-      cell <<
-        1.0, 0.0, 0.0,
-        0.0, 1.0, 0.0,
-        0.0, 0.0, 0.5;
+      cell << 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.5;
 
-      positions <<
-        0.01, 0.01,
-        0.01, 0.51,
-        0.01, 0.01;
+      positions << 0.01, 0.01, 0.01, 0.51, 0.01, 0.01;
 
       atom_types << 1, 1;
     }
