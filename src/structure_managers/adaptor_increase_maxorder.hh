@@ -476,7 +476,8 @@ namespace rascal {
 
       // TODO(markus): this is probably not necessary seems like the template
       // parameter "Order" is not deduced correctly?!
-      std::cout << "counters " << counters[0] << ", " << counters[1] << std::endl;
+      std::cout << "counters " << counters[0] << ", " << counters[1]
+                << std::endl;
       auto i{this->manager.get_offset_impl(counters)};
       auto j{counters[Order - 1]};
       auto tuple_index{i + j};

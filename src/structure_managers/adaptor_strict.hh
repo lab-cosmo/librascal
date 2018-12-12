@@ -203,7 +203,8 @@ namespace rascal {
     template<size_t Order>
     inline size_t get_offset_impl(const std::array<size_t, Order>
                                   & counters) const {
-      std::cout << "strict counters " << counters.size() << ": " << counters[0] << std::endl;
+      std::cout << "strict counters " << counters.size() << ": " << counters[0]
+                << std::endl;
       return this->offsets[Order][counters.back()];
     }
 
