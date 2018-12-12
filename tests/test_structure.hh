@@ -63,6 +63,22 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
+   * Basic fixture for using two manager to compare things. This is to
+   * guarantee, that the managers, built with existing data and not adapted is
+   * always accessible with the variable ``manager_1`` and ``manager_2``. Both
+   * managers are of the same class.
+   */
+  template<class ManagerImplementation>
+  struct ManagerFixtureTwo {
+    ManagerFixtureTwo() {} // ctor
+    ~ManagerFixtureTwo() {} // dtor
+
+    ManagerImplementation manager_1{};
+    ManagerImplementation manager_2{};
+  };
+
+  /* ---------------------------------------------------------------------- */
+  /**
    * general case of a manager fixture, which reads the structure information
    * from a file, atomic structure contains 9 atoms in a very simple cubic unit
    * cell, no periodicity, it inherits publicly from the ManagerFixture, which
@@ -84,21 +100,6 @@ namespace rascal {
     // additional variables for current fixture
     double cutoff;
     std::string filename{};
-  };
-
-  /* ---------------------------------------------------------------------- */
-  /**
-   * Basic fixture for using two manager to compare e.g. two crystal
-   * structures. This is to guarantee, that the managers, built with existing
-   * data and not adapted is always accessible with the variable ``manager_1``
-   * and ``manager_2``. Both managers are of the same class.
-   */
-  template <class ManagerImplementation> struct ManagerFixtureTwo {
-    ManagerFixtureTwo() {}   // ctor
-    ~ManagerFixtureTwo() {}  // dtor
-
-    ManagerImplementation manager_1{};
-    ManagerImplementation manager_2{};
   };
 
   /* ---------------------------------------------------------------------- */
@@ -183,7 +184,7 @@ namespace rascal {
    * Fixture which provides two managers ``manager_1`` and ``manager_2``, which
    * both have a face centered cubic lattice, but with different unit cells
    * (vectors) with one and four atoms. It is another test to ensure that the
-   * neighbour list algorithm is robust with respect to the unit cell. Here
+   * neighbour list algorithm is robust with respect to the unit cell.
    */
   struct ManagerFixtureTwoFcc
       : public ManagerFixtureTwo<StructureManagerCenters> {
@@ -220,8 +221,10 @@ namespace rascal {
       auto p_3 = 0.5 * cell_2.col(0) + 0.5 * cell_2.col(2);
       auto p_4 = 0.5 * cell_2.col(1) + 0.5 * cell_2.col(2);
 
-      positions_2 << 0.0, p_2[0], p_3[0], p_4[0], 0.0, p_2[1], p_3[1], p_4[1],
-          0.0, p_2[2], p_3[2], p_4[2];
+      positions_2 <<
+        0.0, p_2[0], p_3[0], p_4[0],
+        0.0, p_2[1], p_3[1], p_4[1],
+        0.0, p_2[2], p_3[2], p_4[2];
 
       atom_types_1 << 1;
       atom_types_2 << 1, 1, 1, 1;
@@ -433,9 +436,9 @@ namespace rascal {
         : ManagerFixture<StructureManagerCenters>{}, pbc{{true, false, false}},
           cell(3, 3), positions(3, 8), atom_types(8), cutoff{2.1}, natoms{8} {
       cell <<
-        2., 0., 0.,
-        0., 2., 0.,
-        0., 0., 2.;
+        1.0, 0.0, 0.0,
+        0.0, 1.0, 0.0,
+        0.0, 0.0, 0.5;
 
       positions <<
         0.4, 1.4, 0.4, 1.4, 0.4, 1.4, 0.4, 1.4,
@@ -477,7 +480,10 @@ namespace rascal {
         0.0, 1.0, 0.0,
         0.0, 0.0, 0.5;
 
-      positions << 0.01, 0.01, 0.01, 0.51, 0.01, 0.01;
+      positions <<
+        0.01, 0.01,
+        0.01, 0.51,
+        0.01, 0.01;
 
       atom_types << 1, 1;
     }

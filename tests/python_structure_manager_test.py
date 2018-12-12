@@ -1,11 +1,62 @@
 import unittest
 import numpy as np
 import sys
+import faulthandler
 
 sys.path.insert(0,'../tests/')
 
 from test_utils import load_json_frame, BoxList, Box
 from python_import_rascal import _rascal as rc
+
+
+def get_NL_reference(cutoff,cell,pbc,positions,numbers):
+    list_box = BoxList(cutoff,cell,pbc,positions)
+
+    neighlist = [[] for it in range(len(numbers))]
+    neighpos = [[] for it in range(len(numbers))]
+    neighshift = [[] for it in range(len(numbers))]
+    neighdist = [[] for it in range(len(numbers))]
+    neightype = [[] for it in range(len(numbers))]
+    dirVec = [[] for it in range(len(numbers))]
+    for box in list_box.iter_box():
+        for icenter in box.icenters:
+            for jneigh,box_shift in box.iter_neigh_box():
+
+                nnp = positions[jneigh]+ np.dot(box_shift.reshape((1,3)),cell).reshape((1,3))
+                rr = nnp - positions[icenter].reshape((1,3))
+                dist = np.linalg.norm(rr)
+
+                neighpos[icenter].extend(nnp)
+                neighlist[icenter].append(jneigh)
+                neightype[icenter].append(numbers[jneigh])
+                neighdist[icenter].append(dist)
+
+    return neighpos,neighlist,neightype,neighdist
+
+def get_NL_strict_reference(cutoff,cell,pbc,positions,numbers):
+    list_box = BoxList(cutoff,cell,pbc,positions)
+
+    neighlist = [[] for it in range(len(numbers))]
+    neighpos = [[] for it in range(len(numbers))]
+    neighshift = [[] for it in range(len(numbers))]
+    neighdist = [[] for it in range(len(numbers))]
+    neightype = [[] for it in range(len(numbers))]
+    dirVec = [[] for it in range(len(numbers))]
+    for box in list_box.iter_box():
+        for icenter in box.icenters:
+            for jneigh,box_shift in box.iter_neigh_box():
+
+                nnp = positions[jneigh]+ np.dot(box_shift.reshape((1,3)),cell).reshape((1,3))
+                rr = nnp - positions[icenter].reshape((1,3))
+                dist = np.linalg.norm(rr)
+
+                if cutoff > dist and dist > 0:
+                    neighpos[icenter].extend(nnp)
+                    neighlist[icenter].append(jneigh)
+                    neighdist[icenter].append(dist)
+                    neightype[icenter].append(numbers[jneigh])
+                    dirVec[icenter].append(rr/dist)
+    return neighpos,neighlist,neightype,neighdist,dirVec
 
 
 class TestStructureManagerCenters(unittest.TestCase):
@@ -34,10 +85,21 @@ class TestStructureManagerCenters(unittest.TestCase):
         """
         TEST constructor wrapper
         """
-        rc.StructureManagerCenters()
+        rc.StructureManager.Centers()
+
+    def test_update(self):
+        """
+        TEST constructor wrapper
+        """
+        manager =  rc.StructureManager.Centers()
+        centers = np.array([it for it in range(self.Natom)], dtype=np.int32)
+        manager.update(np.array(self.positions.T,order='F'),
+                       self.numbers.reshape(-1,1),
+                       np.array(self.cell.T,order='F'),
+                       self.pbc[0].reshape(3,1))
 
     def test_manager_iteration(self):
-        manager =  rc.StructureManagerCenters()
+        manager =  rc.StructureManager.Centers()
         centers = np.array([it for it in range(self.Natom)], dtype=np.int32)
         manager.update(np.array(self.positions.T,order='F'),
                        self.numbers.reshape(-1,1),
@@ -50,93 +112,138 @@ class TestStructureManagerCenters(unittest.TestCase):
             self.assertTrue(np.allclose(self.positions[ii], center.position))
             ii += 1
 
+class TestNL(unittest.TestCase):
+    def setUp(self):
+        """
+        builds the test case. Test the order=1 structure manager implementation
+        against a triclinic crystal.
+        """
 
+        fn = '../tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
+        self.frame = load_json_frame(fn)
 
+        self.cell = self.frame['cell']
+        self.positions = self.frame['positions']
+        self.numbers = self.frame['numbers']
+        self.pbcs = np.array([ [1, 1, 1], [0, 0, 0],
+                              [0, 1, 0], [1, 0, 1],
+                              [1, 1, 0], [0, 0, 1],
+                              [1, 0, 0], [0, 1, 0] ]).astype(int)
 
+        self.Natom = self.positions.shape[0]
+        self.cutoffs = [3.]*self.Natom
+        self.max_cutoff = np.max(self.cutoffs)
 
-# class TestStructureManagerCell(unittest.TestCase):
-#     def setUp(self):
-#         """builds the test case. Test the cell neighbourlist implementation against a triclinic crystal using
-#         a custom pyhton implementation as a reference (which was tested against ase neighbourlist).
+        self.manager =  rc.StructureManager.Centers()
+        self.manager.update(np.array(self.positions.T,order='F'),
+                       self.numbers.reshape(-1,1),
+                       np.array(self.cell.T,order='F'),
+                       self.pbcs[0].reshape(3,1))
 
-#         """
+    def test_constructor(self):
+        """
+        TEST constructor wrapper
+        """
+        rc.Adaptor.NeighbourList_Centers(self.manager,self.max_cutoff)
 
-#         fn = '../tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
-#         self.frame = load_json_frame(fn)
+    def test_update(self):
+        manager =  rc.Adaptor.NeighbourList_Centers(self.manager,self.max_cutoff)
+        manager.update()
 
-#         self.cell = self.frame['cell']
-#         self.positions = self.frame['positions']
-#         self.numbers = self.frame['numbers']
-#         self.pbc = [[True,True,True],[False,False,False],
-#                     [False,True,True],[True,False,True],[True,True,False],
-#                     [False,False,True],[True,False,False],[False,True,False]]
-#         self.Natom = self.positions.shape[0]
-#         self.cutoffs = [3.]*self.Natom
-#         self.max_cutoff = np.max(self.cutoffs)
+    def test_manager_iteration_1(self):
+        manager =  rc.Adaptor.NeighbourList_Centers(self.manager,self.max_cutoff)
+        manager.update()
 
-#     def get_reference(self,pbc):
-#         list_box = BoxList(self.max_cutoff,self.cell,pbc,self.positions)
-#         neighlist = [[] for it in range(self.Natom)]
-#         neighpos = [[] for it in range(self.Natom)]
-#         neighshift = [[] for it in range(self.Natom)]
-#         for box in list_box.iter_box():
-#             for icenter in box.icenters:
-#                 for jneigh,box_shift in box.iter_neigh_box():
+        ii = 0
+        for center in manager:
+            self.assertTrue(ii == center.atom_index)
+            self.assertTrue(self.numbers[ii] == center.atom_type)
+            self.assertTrue(np.allclose(self.positions[ii], center.position))
+            ii += 1
 
-#                     nnp = self.positions[jneigh] + np.dot(box_shift.reshape((1,3)),self.cell).reshape((1,3))
-#                     #rr = nnp - self.positions[icenter].reshape((1,3))
-#                     #dist = np.linalg.norm(rr,axis=1)
-#                     neighpos[icenter].extend(nnp)
-#                     neighlist[icenter].append(jneigh)
-#                     neighshift[icenter].append(box_shift)
-#         return neighpos,neighlist,neighshift
+    def test_manager_iteration_2(self):
+        manager =  rc.Adaptor.NeighbourList_Centers(self.manager,self.max_cutoff)
+        manager.update()
 
-#     def test_constructor(self):
-#         """
-#         TEST constructor wrapper
-#         """
-#         rc.StructureManagerCell()
+        neighpos,neighlist,neightype,neighdist = get_NL_reference(
+                    self.max_cutoff,self.cell,self.pbcs[0],self.positions,self.numbers)
 
-#     def test_manager_iteration(self):
-#         manager =  rc.StructureManagerCell()
-#         centers = np.array([it for it in range(self.Natom)],dtype=np.int32)
-#         manager.update(np.array(self.positions.T,order='F'),self.numbers,centers,
-#                       np.array(self.cell.T,order='F'),self.pbc[0],self.max_cutoff)
-#         ii = 0
-#         for center in manager:
-#             self.assertTrue(ii == center.atom_index)
-#             self.assertTrue(self.numbers[ii] == center.atom_type)
-#             self.assertTrue(np.allclose(self.positions[ii], center.position))
-#             ii += 1
+        for ii,center in enumerate(manager):
+            for jj,neigh in enumerate(center):
+                dist = np.linalg.norm(neigh.position-center.position)
 
-#     def test_neighbour_iteration(self):
-#         for pbc in self.pbc:
-#             neighpos,neighlist,neighshift = self.get_reference(pbc)
+class TestNLStrict(unittest.TestCase):
+    def setUp(self):
+        """
+        builds the test case. Test the order=1 structure manager implementation
+        against a triclinic crystal.
+        """
 
-#             manager =  rc.StructureManagerCell()
-#             centers = np.array([it for it in range(self.Natom)],dtype=np.int32)
-#             manager.update(np.array(self.positions.T,order='F'),self.numbers,centers,
-#                             np.array(self.cell.T,order='F'),pbc,self.max_cutoff)
+        fn = '../tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
+        self.frame = load_json_frame(fn)
 
-#             for center in manager:
-#                 icenter = center.atom_index
-#                 for ii,neigh in enumerate(center):
-#                     ineigh = neigh.atom_index
-#                     try:
-#                         self.assertTrue(neighlist[icenter][ii] == neigh.atom_index)
-#                     except Exception as error:
-#                         raise Exception ("neigh.atom_index ={} {}".format(neigh.atom_index, error))
+        self.cell = self.frame['cell']
+        self.positions = self.frame['positions']
+        self.numbers = self.frame['numbers']
+        self.pbcs = np.array([ [1, 1, 1], [0, 0, 0],
+                              [0, 1, 0], [1, 0, 1],
+                              [1, 1, 0], [0, 0, 1],
+                              [1, 0, 0], [0, 1, 0] ]).astype(int)
 
+        self.Natom = self.positions.shape[0]
+        self.cutoffs = [3.]*self.Natom
+        self.max_cutoff = np.max(self.cutoffs)
 
+        self.managerC =  rc.StructureManager.Centers()
+        self.managerC.update(np.array(self.positions.T,order='F'),
+                       self.numbers.reshape(-1,1),
+                       np.array(self.cell.T,order='F'),
+                       self.pbcs[0].reshape(3,1))
+        self.manager = rc.Adaptor.NeighbourList_Centers(self.managerC,self.max_cutoff)
+        self.manager.update()
 
-#                     self.assertEqual(self.numbers[ineigh], neigh.atom_type)
+    def test_constructor(self):
+        """
+        TEST constructor wrapper
+        """
+        rc.Adaptor.Strict_NeighbourList_Centers(self.manager,self.max_cutoff)
 
-#                     val = (neighpos[icenter][ii] == neigh.position).all()
-#                     ## TODO: this test fails due to a referenced bug
-#                     ## in get_neighbour_position in
-#                     ## structure_manager_cell.hh:128
-#                     if not val:
-#                         #print ("neighpos {}, neigh.pos{}".format(neighpos[icenter][ii], neigh.position))
-#                         pass
+    def test_a_update(self):
+        manager =  rc.Adaptor.Strict_NeighbourList_Centers(self.manager,self.max_cutoff)
+        manager.update()
 
-#                     #self.assertTrue(val)
+    def test_manager_iteration_1(self):
+        manager = rc.Adaptor.Strict_NeighbourList_Centers(self.manager,self.max_cutoff)
+        manager.update()
+
+        ii = 0
+        for center in manager:
+            self.assertEqual(ii,center.atom_index)
+            self.assertTrue(self.numbers[ii] == center.atom_type)
+            self.assertTrue(np.allclose(self.positions[ii], center.position))
+            ii += 1
+
+    def test_manager_iteration_2(self):
+        '''
+        Compare the distances and direction vector between the reference and
+        librascal sctrict neighbourlist
+        '''
+        manager = rc.Adaptor.Strict_NeighbourList_Centers(self.manager,self.max_cutoff)
+        manager.update()
+
+        neighpos,neighlist,neightype,neighdist,neighdirVec = get_NL_strict_reference(
+                    self.max_cutoff,self.cell,self.pbcs[0],self.positions,self.numbers)
+
+        for ii,center in enumerate(manager):
+            dists,dirVecs = [],[]
+            for jj,neigh in enumerate(center):
+                dist = np.linalg.norm(neigh.position-center.position)
+                dists.append(dist)
+                dirVecs.append((neigh.position-center.position)/dist)
+
+            ref_dists, dists = np.array(neighdist[ii]),np.array(dists)
+            ref_dirVecs, dirVecs = np.array(neighdirVec[ii]).reshape((-1,3)),np.array(dirVecs)
+            # sort because the order is not the same
+            ref_sort_ids,sort_ids = np.argsort(ref_dists),np.argsort(dists)
+            self.assertTrue(np.allclose(ref_dists[ref_sort_ids],dists[sort_ids]))
+            self.assertTrue(np.allclose(ref_dirVecs[ref_sort_ids],dirVecs[sort_ids]))

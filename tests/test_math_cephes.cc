@@ -35,8 +35,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(math_hyp2f1_test, ManagerFixtureMath) {
     for (int ii{0}; ii < 3; ++ii) {
-      double val{math::hyp2f1(numbers(0, ii), numbers(1, ii),
-                              numbers(2, ii), numbers(3, ii))};
+      double val{math::hyp2f1(numbers(0, ii), numbers(1, ii), numbers(2, ii),
+                              numbers(3, ii))};
       if (vebose) {
         std::cout << std::setprecision(14) << val <<", ";
       }

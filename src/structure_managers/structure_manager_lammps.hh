@@ -148,7 +148,7 @@ namespace rascal {
     template<size_t Order, size_t Layer>
     inline size_t get_cluster_size(const ClusterRefKey<Order, Layer> & cluster)
       const {
-      static_assert(Order < traits::MaxOrder,
+      static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
       return this->numneigh[cluster.back()];
     }

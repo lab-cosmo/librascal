@@ -54,8 +54,7 @@ namespace rascal {
   struct StructureManager_traits<AdaptorNeighbourList<ManagerImplementation>> {
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDistances{false};
-    constexpr static bool HasDirectionVectors{
-        ManagerImplementation::traits::HasDirectionVectors};
+    constexpr static bool HasDirectionVectors{false};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
     // New MaxOrder upon construction, by construction should be 2
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder +
@@ -334,6 +333,7 @@ namespace rascal {
       Dim_t factor{1};
       for (Dim_t i = Dim - 1; i >= 0; --i) {
         retval += ccoord[i] * factor;
+        // TODO(markus) remove the useless if
         if (i != 0) {
           factor *= sizes[i];
         }
@@ -537,6 +537,29 @@ namespace rascal {
                            this->ghost_positions.size() / traits::Dim);
     }
 
+    //! ghost types are only available for MaxOrder=2
+    inline const int&  get_ghost_type(const size_t & atom_index) const {
+      auto&& p{this->get_ghost_types()};
+      return p[atom_index];
+    }
+
+    //! ghost types are only available for MaxOrder=2
+    inline int&  get_ghost_type(const size_t & atom_index) {
+      auto&& p{this->get_ghost_types()};
+      return p[atom_index];
+    }
+
+    //! provides access to the atomic types of ghost atoms
+    inline std::vector<int>& get_ghost_types() {
+      return this->ghost_types;
+    }
+
+    //! provides access to the atomic types of ghost atoms
+    inline const std::vector<int>& get_ghost_types() const {
+      return this->ghost_types;
+    }
+
+
     //! Returns position of the given atom object (useful for users)
     inline Vector_ref get_position(const AtomRef_t & atom) {
       return this->manager.get_position(atom.get_index());
@@ -582,6 +605,8 @@ namespace rascal {
       return this->atom_types[atom_index];
     }
 
+    // TODO(markus): there might be a mismatch between name and functionality
+    // more details needed
     //! Returns the number of neighbors of a given cluster
     template <size_t Order, size_t Layer>
     inline size_t
@@ -882,8 +907,9 @@ namespace rascal {
       for (auto && p_image :
            internal::PeriodicImages<dim>{periodic_min, repetitions, ntot}) {
         int ncheck{0};
-        for (auto i{0}; i < dim; ++i)
+        for (auto i{0}; i < dim; ++i) {
           ncheck += std::abs(p_image[i]);
+        }
         // exclude cell itself
         if (ncheck > 0) {
           Vector_t pos_ghost{pos};

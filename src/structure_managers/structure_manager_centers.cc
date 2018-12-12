@@ -89,8 +89,12 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   // returns the number of cluster at Order=1, which is the number of atoms
-  size_t StructureManagerCenters::get_nb_clusters(size_t /*order*/) const {
-    return this->natoms;
+  size_t StructureManagerCenters::get_nb_clusters(size_t order) const {
+    if (order == 1) {
+      return this->natoms;
+    } else {
+      throw std::string("ERREUR : Order != 1");
+    }
   }
 
   /* ---------------------------------------------------------------------- */
