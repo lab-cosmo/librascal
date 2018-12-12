@@ -139,7 +139,8 @@ namespace rascal {
     }
 
     inline size_t get_size() const {
-      return this->get_nb_clusters(1);
+      return this->manager.get_size();
+      // return this->get_nb_clusters(1);
     }
 
     inline size_t get_size_with_ghosts() const {
@@ -202,6 +203,7 @@ namespace rascal {
     template<size_t Order>
     inline size_t get_offset_impl(const std::array<size_t, Order>
                                   & counters) const {
+      std::cout << "strict counters " << counters.size() << ": " << counters[0] << std::endl;
       return this->offsets[Order][counters.back()];
     }
 
@@ -417,7 +419,7 @@ namespace rascal {
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
     size_t pair_counter{0};
-    for (auto atom : this->manager/*.with_ghosts()*/) {
+    for (auto atom : this->manager.with_ghosts()) {
       this->add_atom(atom);
       /**
        * Add new layer for atoms (see LayerByOrder for

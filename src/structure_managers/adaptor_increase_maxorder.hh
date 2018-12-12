@@ -414,9 +414,9 @@ namespace rascal {
     internal::for_each(this->cluster_indices_container,
                        internal::ResizePropertyToZero());
 
-    this->nb_neigh.resize(0);
-    this->offsets.resize(0);
-    this->neighbours.resize(0);
+    this->nb_neigh.clear();
+    this->offsets.clear();
+    this->neighbours.clear();
 
     for (auto atom : this->manager) {
       //  Order 1, but variable Order is at 0, atoms, index 0
@@ -471,13 +471,18 @@ namespace rascal {
       // order manager or push through to lower levels, if adaptors are stacked.
       return IncreaseHelper_t::get_offset_impl(this->manager, counters);
     } else {
-      // Counters as an array to call parent offset multiplet. This can then be
+      // Counters is an array to call parent offset multiplet. This can then be
       // used to access the actual offset for the Order which was built here.
+
+      // TODO(markus): this is probably not necessary seems like the template
+      // parameter "Order" is not deduced correctly?!
+      std::cout << "counters " << counters[0] << ", " << counters[1] << std::endl;
       auto i{this->manager.get_offset_impl(counters)};
       auto j{counters[Order - 1]};
       auto tuple_index{i + j};
       auto main_offset{this->offsets[tuple_index]};
       return main_offset;
+      // auto main_offset{this->offsets[counters.back()]};//tuple_index]};
     }
   }
 }  // namespace rascal
