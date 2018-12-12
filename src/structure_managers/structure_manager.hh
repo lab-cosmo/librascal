@@ -423,7 +423,7 @@ namespace rascal {
       get_cluster_neighbour(const Manager_t & /*manager*/,
                             const Counters_t & /*counters*/, size_t /*index*/) {
         throw std::runtime_error("This branch should never exist"
-                                 "(cluster neigbour).");
+                                 " (cluster neigbour).");
       }
     };
 

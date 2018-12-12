@@ -146,7 +146,6 @@ namespace rascal {
 
     inline size_t get_size() const {
       return this->manager.get_size();
-      // return this->get_nb_clusters(1);
     }
 
     inline size_t get_size_with_ghosts() const {
@@ -209,9 +208,16 @@ namespace rascal {
     template <size_t Order>
     inline size_t
     get_offset_impl(const std::array<size_t, Order> & counters) const {
-      std::cout << "strict counters " << counters.size() << ": " << counters[0]
-                << std::endl;
-      return this->offsets[Order][counters.back()];
+      // static_assert(Order < traits::MaxOrder,
+      //               "Calling this function with the wrong order cluster");
+      // std::cout << "strict counters " << counters.size() << ": " << counters[0]
+      //           << " / : " << counters[1] << std::endl;
+      // std::cout << "offsets size" << this->offsets.size() << std::endl;
+      if (Order < traits::MaxOrder) {
+        return this->offsets[Order][counters.back()];
+      } else {
+        return this->offsets[Order - 1][counters.back()];
+      }
     }
 
     //! return the number of neighbours of a given atom

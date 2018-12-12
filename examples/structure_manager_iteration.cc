@@ -45,7 +45,7 @@ using TripletManager_t = rascal::AdaptorMaxOrder<StrictPairManager_t>;
 using TripletManager2_t = rascal::AdaptorMaxOrder<PairManager_t>;
 
 int main() {
-  Manager_t manager;
+  Manager_t manager{};
   double cutoff{1.};
   // std::string filename{"crystal_structure.json"};
   // std::string filename{"alanine-X.json"};
