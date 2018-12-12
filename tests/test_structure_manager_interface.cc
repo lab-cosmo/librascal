@@ -35,24 +35,21 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   // a list of fixtures for all the different possible structure managers
   // and test the atom (Order=1) related interface.
-  using fixtures = boost::mpl::list<
-    ManagerFixture<StructureManagerCenters>,
-    ManagerFixture<StructureManagerLammps>,
-    ManagerFixtureFile<StructureManagerCenters>,
-    // not templated single manager fixtures
-    ManagerFixtureSimple>;
+  using fixtures = boost::mpl::list<ManagerFixture<StructureManagerCenters>,
+                                    ManagerFixture<StructureManagerLammps>,
+                                    ManagerFixtureFile<StructureManagerCenters>,
+                                    // not templated single manager fixtures
+                                    ManagerFixtureSimple>;
 
   /* ---------------------------------------------------------------------- */
   // a list of fixtures for pair managers for testing pair related interface
-  using pair_fixtures = boost::mpl::list<
-    ManagerFixture<StructureManagerLammps>
-    >;
-
+  using pair_fixtures =
+      boost::mpl::list<ManagerFixture<StructureManagerLammps>>;
 
   /* ---------------------------------------------------------------------- */
   // just checks that the structure managers can be constructed
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_constructor_test, Fix, fixtures,
-                                   Fix) { }
+                                   Fix) {}
 
   /* ---------------------------------------------------------------------- */
   // the size of the manager should correspond to the number of size 1 clusters
@@ -78,13 +75,13 @@ namespace rascal {
       BOOST_CHECK_EQUAL(type, manager.atom_type(index));
 
       // checks that multiple ways of accessing positions are equivalent
-      auto position_error = (atom.get_position() -
-                             manager.position(index)).norm();
+      auto position_error =
+          (atom.get_position() - manager.position(index)).norm();
 
       BOOST_CHECK(position_error < tol / 100);
 
-      position_error = (atom.get_position()
-                        - manager.position(atom.back())).norm();
+      position_error =
+          (atom.get_position() - manager.position(atom.back())).norm();
       BOOST_CHECK(position_error < tol / 100);
     }
   }
@@ -109,7 +106,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   // test template for pairs
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_pair_global_indexing, Fix,
-                                    pair_fixtures, Fix) {
+                                   pair_fixtures, Fix) {
     auto & manager = Fix::manager;
     auto pair_reference{0};
 
@@ -128,12 +125,12 @@ namespace rascal {
         BOOST_CHECK_EQUAL(type, manager.atom_type(index));
 
         // check positions
-        auto position_error = (pair.get_position()
-                               - manager.position(index)).norm();
+        auto position_error =
+            (pair.get_position() - manager.position(index)).norm();
         BOOST_CHECK(position_error < tol / 100);
 
-        position_error = (pair.get_position()
-                          - manager.position(pair.back())).norm();
+        position_error =
+            (pair.get_position() - manager.position(pair.back())).norm();
         BOOST_CHECK(position_error < tol / 100);
       }
     }
@@ -141,4 +138,4 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();
-}  // rascal
+}  // namespace rascal

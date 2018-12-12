@@ -2,6 +2,7 @@
  * file test_structure.hh
  *
  * @author Till Junge <till.junge@altermail.ch>
+ * @author Markus Stricker <markus.stricker@epfl.ch>
  *
  * @date   05 Apr 2018
  *
@@ -9,7 +10,7 @@
  *
  * @section LICENSE
  *
- * Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2018 Till Junge, Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
