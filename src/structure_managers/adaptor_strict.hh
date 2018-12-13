@@ -363,7 +363,7 @@ namespace rascal {
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
     size_t pair_counter{0};
-    for (auto atom : this->manager.with_ghosts()) {
+    for (auto atom : this->manager) {
       this->add_atom(atom);
       /**
        * Add new layer for atoms (see LayerByOrder for
