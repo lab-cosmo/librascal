@@ -48,10 +48,10 @@ namespace rascal {
   class RepresentationManagerBase {
    public:
     //! type for the hyper parameter class
-    using hypers_t = json;
+    using Hypers_t = json;
     //! type for representation
     // TODO(felix) Should the user have freedom for the type ?
-    using precision_t = double;
+    using Precision_t = double;
 
     RepresentationManagerBase() = default;
 
@@ -79,13 +79,13 @@ namespace rascal {
     void check_traits_compatibility(Mngr & structure_manager);
 
     //! Pure Virtual Function to set hyperparameters of the representation
-    virtual void set_hyperparameters(const hypers_t &) = 0;
+    virtual void set_hyperparameters(const Hypers_t &) = 0;
 
     //! Compute the representation using a StructureManager
     virtual void compute() = 0;
 
     //! get the raw data of the representation
-    virtual std::vector<precision_t> & get_representation_raw_data() = 0;
+    virtual std::vector<Precision_t> & get_representation_raw_data() = 0;
 
     //! get the size of a feature vector
     virtual size_t get_feature_size() = 0;

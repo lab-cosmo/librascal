@@ -146,16 +146,16 @@ namespace rascal {
     // TODO(Felix) allow for different kind of CM
     using Manager_t = StructureManager;
     using Parent = RepresentationManagerBase;
-    using hypers_t = typename Parent::hypers_t;
-    using precision_t = typename Parent::precision_t;
-    using Property_t = Property<precision_t, 1, 1, Eigen::Dynamic, 1>;
+    using Hypers_t = typename Parent::Hypers_t;
+    using Precision_t = typename Parent::Precision_t;
+    using Property_t = Property<Precision_t, 1, 1, Eigen::Dynamic, 1>;
     template<size_t Order>
     using ClusterRef_t = typename Manager_t::template ClusterRef<Order>;
 
     // using distiter = typename std::vector<double>::const_iterator;
 
     //! Constructor
-    RepresentationManagerSortedCoulomb(Manager_t & sm, const hypers_t & hyper)
+    RepresentationManagerSortedCoulomb(Manager_t & sm, const Hypers_t & hyper)
       :structure_manager{sm}, central_decay{},
        interaction_cutoff{},
        interaction_decay{}, coulomb_matrices{sm}
@@ -188,7 +188,7 @@ namespace rascal {
     void compute();
 
     //! set hypers
-    void set_hyperparameters(const hypers_t &);
+    void set_hyperparameters(const Hypers_t &);
 
     //! getter for the representation
     Eigen::Map<const Eigen::MatrixXd> get_representation_full() {
@@ -201,7 +201,7 @@ namespace rascal {
     }
 
     //! get the raw data of the representation
-    std::vector<precision_t> & get_representation_raw_data() {
+    std::vector<Precision_t> & get_representation_raw_data() {
       return this->coulomb_matrices.get_raw_data();
     }
 
@@ -281,14 +281,14 @@ namespace rascal {
     }
 
     Manager_t & structure_manager;
-    //hypers_t hyperparmeters;
+    //Hypers_t hyperparmeters;
     double central_decay{};
     double interaction_cutoff{};
     double interaction_decay{};
     // at least equal to the largest number of neighours
     size_t size{};
 
-    hypers_t hypers{};
+    Hypers_t hypers{};
 
     Property_t coulomb_matrices;
   };
@@ -300,7 +300,7 @@ namespace rascal {
   template<class Mngr, Option SortAlgo>
   void RepresentationManagerSortedCoulomb<Mngr, SortAlgo>::
   set_hyperparameters(const RepresentationManagerSortedCoulomb<Mngr, SortAlgo>::
-                      hypers_t & hyper) {
+                      Hypers_t & hyper) {
     this->hypers = hyper;
     auto&& central_cutoff{this->structure_manager.get_cutoff()};
 
