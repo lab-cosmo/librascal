@@ -124,7 +124,7 @@ namespace rascal {
 
     for (auto & pair_manager : managers) {
       auto n_pairs{0};
-      for (auto atom : pair_manager.with_ghosts()) {
+      for (auto atom : pair_manager) {
         if (verbose)
           std::cout << "atom " << atom.back() << std::endl;
         for (auto pair : atom) {
