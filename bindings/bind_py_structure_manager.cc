@@ -226,6 +226,9 @@ decltype(auto) add_adaptor(py::module & m, py::module & m_garbage) {
   py::class_<Child, Parent>  adaptor(m, adaptor_name.c_str());
   // bind constructor making sure the input Manager stays alive
   // as long as the class is alive
+  // adaptor.def(py::init<Implementation_t&, ConstructorPack...>(),
+  //             py::arg("consider_ghost_neighbours") = false,
+  //             py::keep_alive<1, 2>());
   adaptor.def(py::init<Implementation_t&, ConstructorPack...>(),
               py::keep_alive<1, 2>());
   adaptor.def("update", [](Child& v){v.update();});

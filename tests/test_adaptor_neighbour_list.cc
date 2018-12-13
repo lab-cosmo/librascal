@@ -417,7 +417,7 @@ namespace rascal {
 
         // build neighbourlist
         using PairManager_t = AdaptorNeighbourList<StructureManagerCenters>;
-        PairManager_t pair_manager{manager, cutoff_tmp};
+        PairManager_t pair_manager{manager, cutoff_tmp, true};
         pair_manager.update();
 
         // make strict for counting neighbours
