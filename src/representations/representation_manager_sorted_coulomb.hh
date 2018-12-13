@@ -350,8 +350,6 @@ namespace rascal {
       // n_neighbour counts the central atom and the neighbours
       size_t n_neighbour{center.size() + 1};
 
-      std::cout << "n_neighbour " << n_neighbour << std::endl;
-
       // the local distance matrix. Ones to avoid overflow in the div.
       Eigen::MatrixXd distance_mat =
           Eigen::MatrixXd::Ones(n_neighbour, n_neighbour);

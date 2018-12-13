@@ -208,11 +208,8 @@ namespace rascal {
     template <size_t Order>
     inline size_t
     get_offset_impl(const std::array<size_t, Order> & counters) const {
-      // static_assert(Order < traits::MaxOrder,
-      //               "Calling this function with the wrong order cluster");
-      // std::cout << "strict counters " << counters.size() << ": " << counters[0]
-      //           << " / : " << counters[1] << std::endl;
-      // std::cout << "offsets size" << this->offsets.size() << std::endl;
+      static_assert(Order <= traits::MaxOrder,
+                    "Calling this function with the wrong order cluster");
       if (Order < traits::MaxOrder) {
         return this->offsets[Order][counters.back()];
       } else {

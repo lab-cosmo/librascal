@@ -34,30 +34,57 @@
 #include <structure_managers/property.hh>
 
 /**
- * Shorthands for templated types.
+ * This small example highlight the possibilities of adapting a structure
+ * (e.g. read in from a file) to certain iterations. By stacking `Manager` and
+ * `Adaptors`, the necessary strictness of a neighbour list or maximum Order
+ * (e.g. triplets) can be constructed. It is all backwards compatible, i.e. one
+ * can always iterate over atoms, but then increasingly higher Orders, depending
+ * on the stacking.
  */
+
+// Shorthands for templated types for readability.
 using Manager_t = rascal::StructureManagerCenters;
 using PairManager_t = rascal::AdaptorNeighbourList<Manager_t>;
-using PairManagerHalf_t = rascal::AdaptorHalfList<PairManager_t>;
 
 using StrictPairManager_t = rascal::AdaptorStrict<PairManager_t>;
 using TripletManager_t = rascal::AdaptorMaxOrder<StrictPairManager_t>;
-using TripletManager2_t = rascal::AdaptorMaxOrder<PairManager_t>;
 
 int main() {
   Manager_t manager{};
   double cutoff{1.};
+  /**
+   * These structures here are sample structures and can be used to iterate
+   * over.
+   *
+   * `crystal_structure.json` is a fully periodic metallic hcp structure.
+   *
+   * `alanine-X.json` is a unit cell of a polyalanine chain.
+   *
+   * `simple_cubic_9.json` is an artificial 9-atom test structure.
+   */
+
   // std::string filename{"crystal_structure.json"};
   // std::string filename{"alanine-X.json"};
   std::string filename{"simple_cubic_9.json"};
 
-  std::cout << "filename " << filename << std::endl;
+  std::cout << "Reading structure " << filename << std::endl;
 
+  // `manager` is the data object which reads, stores and gives access to atom
+  // positions, types. It also provides iteration over all atom.
   manager.update(filename);
 
+  // Iteration over `manager`
+  std::cout << "manager iteration over atoms" << std::endl;
+  for (auto atom : manager) {
+    std::cout << "atom " << atom.get_atom_index() << std::endl;
+  }
+
+  // `pair_manager` is constructed with the `manager` and a `cutoff`.
   PairManager_t pair_manager{manager, cutoff};
+  // By invoking the `.update()` method, a neighbour list is built.
   pair_manager.update();
 
+  // `pair_manager` provides iteration over atoms and pairs
   for (auto atom : pair_manager) {
     for (auto pair : atom) {
       std::cout << "pair (" << atom.get_atom_index() << ", "
@@ -65,13 +92,13 @@ int main() {
     }
   }
 
-  // PairManagerHalf_t pair_manager_half{pair_manager};
-  // pair_manager_half.update();
-
-  std::cout << "Building strict manager" << std::endl;
+  // `strict_manager` is constructed with a `pair_manager`.
   StrictPairManager_t strict_manager{pair_manager, cutoff};
+  // calling the `.update()` method triggers the build of a strict neighbourlist
+  // (all pairs are within the specified cutoff)
   strict_manager.update();
 
+  // `strict_manager` provides iteration over atoms and strict pairs
   for (auto atom : strict_manager) {
     for (auto pair : atom) {
       std::cout << "strict pair " << atom.get_atom_index() << ", "
@@ -80,18 +107,16 @@ int main() {
     }
   }
 
-  std::cout << "Building triplet manager" << std::endl;
+  // `triplet_manager` is constructed with a pair list (strict or not, here
+  // strict)
   TripletManager_t triplet_manager{strict_manager};
+  // `.update()` triggers the extension of the pair list to triplets
   triplet_manager.update();
 
-  std::cout << "Iteration over triplet manager " << std::endl;
-
+  // `triplet_manager` provides iteration over atoms, strict pairs and strict
+  // triplets
   for (auto atom : triplet_manager) {
-    std::cout << "atom " << atom.get_atom_index() << std::endl;
-
     for (auto pair : atom) {
-      std::cout << "pair " << pair.get_atom_index() << std::endl;
-
       for (auto triplet : pair) {
         std::cout << "triplet (" << atom.get_atom_index() << ", "
                   << pair.get_atom_index() << ", " << triplet.get_atom_index()

@@ -53,9 +53,10 @@ namespace rascal {
         BOOST_CHECK_EQUAL(positions(ii, atom_cluster.get_index()),
                           atom_cluster.get_position()[ii]);
       }
-      if (verbose)
+      if (verbose) {
         std::cout << "atom (" << atom_cluster.back()
                   << "), atom counter = " << atom_counter << std::endl;
+      }
     }
   }
 
@@ -72,24 +73,29 @@ namespace rascal {
       std::cout << "StructureManagerCenters interface" << std::endl;
 
     auto && dim{manager.dim()};
-    if (verbose)
+    if (verbose) {
       std::cout << "dimension: " << dim << std::endl;
+    }
 
     auto && cell{manager.get_cell()};
-    if (verbose)
+    if (verbose) {
       std::cout << "cell:\n" << cell << std::endl;
+    }
 
     auto && atom_types{manager.get_atom_types()};
-    if (verbose)
+    if (verbose) {
       std::cout << "atom types:\n" << atom_types << std::endl;
+    }
 
     auto && positions{manager.get_positions()};
-    if (verbose)
+    if (verbose) {
       std::cout << "atom positions:\n" << positions << std::endl;
+    }
 
     auto && periodicity{manager.get_periodic_boundary_conditions()};
-    if (verbose)
+    if (verbose) {
       std::cout << "periodicity (x,y,z):\n" << periodicity << std::endl;
+    }
   }
 
   /* ---------------------------------------------------------------------- */
