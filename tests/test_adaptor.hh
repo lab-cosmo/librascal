@@ -76,7 +76,7 @@ namespace rascal {
                   " MaxOrder=1");
 
     PairFixtureCenters()
-        : cutoff{3.5}, pair_manager{this->fixture.manager, this->cutoff} {
+      : cutoff{3.5}, pair_manager{this->fixture.manager, this->cutoff, true} {
       this->pair_manager.update();
     }
 

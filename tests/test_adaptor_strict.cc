@@ -115,7 +115,7 @@ namespace rascal {
     int mult = 2;
     double rc_max{mult * 0.5 + cutoff};
     using PairManager_t = AdaptorNeighbourList<StructureManagerCenters>;
-    PairManager_t pair_manager{manager, rc_max};
+    PairManager_t pair_manager{manager, rc_max, true};
     pair_manager.update();
 
     for (auto i{0}; i < mult; ++i) {
@@ -489,7 +489,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(neighbourlist_test_fcc, ManagerFixtureTwoFcc) {
-    constexpr bool verbose{false};
+    constexpr bool verbose{true};
 
     if (verbose)
       std::cout << "FCC test " << std::endl;
