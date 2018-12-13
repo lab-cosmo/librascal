@@ -116,7 +116,7 @@ namespace rascal {
         "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
         "reference_data/simple_cubic_8.json",
         "reference_data/small_molecule.json"};
-    std::vector<double> cutoffs{{1., 2., 3., 4., 5., 6.}};
+    std::vector<double> cutoffs{{1., 2., 3.}};
   };
 
   template <class StructureManager, class BaseFixture>

@@ -117,6 +117,11 @@ namespace rascal {
     auto & managers = Fix::managers_pair;
 
     constexpr bool verbose{false};
+
+    if (verbose) {
+      std::cout << "Multiple structures " << std::endl;
+    }
+
     for (auto & pair_manager : managers) {
       auto n_pairs{0};
       for (auto atom : pair_manager.with_ghosts()) {
@@ -160,7 +165,7 @@ namespace rascal {
     if (verbose) {
       std::cout << "HCP test " << cutoff << std::endl;
     }
-    int mult = 3;
+    int mult = 2;
 
     for (auto i{1}; i < mult; ++i) {
       auto cutoff_tmp = i * cutoff;
@@ -248,7 +253,7 @@ namespace rascal {
     if (verbose) {
       std::cout << "FCC test " << std::endl;
     }
-    int mult = 3;
+    int mult = 2;
 
     for (auto i{1}; i < mult; ++i) {
       auto cutoff_tmp = i * cutoff;
@@ -338,11 +343,11 @@ namespace rascal {
     // helper for increasing skewedness of unit cell in loop entry (0,1) gives
     // the skewing factor in the x/y plane in the loop building the cells
     Eigen::MatrixXd unity{Eigen::MatrixXd::Identity(3, 3)};
-    std::array<double, ncells> shears{0., 1., 5.};
+    std::array<double, ncells> shears{0., 1., 3.};
 
     // multipliers for different cutoffs: original cutoff is barely below
     // minimum atom distance, leading to zero neighbours
-    std::array<int, 3> n_cutoff{1, 5, 15};
+    std::array<int, 3> n_cutoff{1, 2, 3};
 
     // loop over 3 different cutoffs
     for (int k{0}; k < 3; ++k) {

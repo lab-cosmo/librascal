@@ -112,7 +112,7 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(strict_test,
                           ManagerFixture<StructureManagerCenters>) {
     bool verbose{false};
-    int mult = 10;
+    int mult = 2;
     double rc_max{mult * 0.5 + cutoff};
     using PairManager_t = AdaptorNeighbourList<StructureManagerCenters>;
     PairManager_t pair_manager{manager, rc_max};
@@ -413,7 +413,7 @@ namespace rascal {
     if (verbose)
       std::cout << "HCP test " << cutoff << std::endl;
 
-    int mult = 10;
+    int mult = 2;
 
     for (auto i{1}; i < mult; ++i) {
       auto cutoff_tmp = i * 0.5 + cutoff;
@@ -494,7 +494,7 @@ namespace rascal {
     if (verbose)
       std::cout << "FCC test " << std::endl;
 
-    int mult = 8;
+    int mult = 2;
 
     for (auto i{1}; i < mult; ++i) {
       auto cutoff_tmp = i * 0.5 + cutoff;
