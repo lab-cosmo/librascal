@@ -228,6 +228,34 @@ decltype(auto) add_adaptor(py::module & m, py::module & m_garbage) {
   // as long as the class is alive
   adaptor.def(py::init<Implementation_t&, ConstructorPack...>(),
               py::keep_alive<1, 2>());
+
+  adaptor.def("update", [](Child& v){v.update();});
+  // bind clusterRefs so that one can loop over adaptor
+  // MaxOrder+1 because recursion stops at Val-1
+  add_iterators<Child, 1, MaxOrder+1>::static_for(m_garbage, adaptor);
+  return adaptor;
+}
+
+//! for adding an adaptor Neighbourlist
+// TODO(felix) come up with a more streamlined solution
+template<typename Manager>
+decltype(auto) add_adaptor_NL(py::module & m, py::module & m_garbage) {
+  using Child = AdaptorNeighbourList<Manager>;
+  using Parent = typename Child::Parent;
+  using Implementation_t = typename Child::Implementation_t;
+  constexpr static size_t MaxOrder = Child::traits::MaxOrder;
+
+  std::string adaptor_name =
+              internal::GetBindingTypeName<Child>();
+  py::class_<Child, Parent>  adaptor(m, adaptor_name.c_str());
+  // bind constructor making sure the input Manager stays alive
+  // as long as the class is alive
+  adaptor.def(py::init<Implementation_t&, double, bool>(),
+              py::arg("manager"),
+              py::arg("cutoff"),
+              py::arg("consider_ghost_neighbours") = false,
+             py::keep_alive<1, 2>());
+
   adaptor.def("update", [](Child& v){v.update();});
   // bind clusterRefs so that one can loop over adaptor
   // MaxOrder+1 because recursion stops at Val-1
@@ -268,7 +296,7 @@ void add_adaptors(py::module & mod, py::module & m_garbage) {
   // bind parent class
   add_structure_manager_interface<AdaptedManager_0_t>(m_garbage);
   // bind implementation class
-  add_adaptor<AdaptedManager_0_t, double>(mod, m_garbage);
+  add_adaptor_NL<Manager_t>(mod, m_garbage);
 
   using AdaptedManager_1_t = AdaptorStrict<AdaptedManager_0_t>;
   // bind parent class
