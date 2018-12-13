@@ -168,9 +168,6 @@ namespace rascal {
 
       BOOST_CHECK_EQUAL(ref_representation.size(), test_representation.rows());
       for (size_t row_i{0}; row_i < ref_representation.size(); row_i++) {
-        std::cout << "ref " << ref_representation[row_i].size() << " / test "
-                  << test_representation.cols() << std::endl;
-
         BOOST_CHECK_EQUAL(ref_representation[row_i].size(),
                           test_representation.cols());
 

@@ -333,7 +333,6 @@ namespace rascal {
       Dim_t factor{1};
       for (Dim_t i = Dim - 1; i >= 0; --i) {
         retval += ccoord[i] * factor;
-        // TODO(markus) remove the useless if
         if (i != 0) {
           factor *= sizes[i];
         }
@@ -504,10 +503,6 @@ namespace rascal {
       }
     }
 
-    // TODO(markus): this is a ambiguous, because new i-atoms are added as
-    // ghost. They are needed because the if the maxorder is increased, we need
-    // the neighbour of the neighbour, but they are not originally i-atoms
-
     //! Returns number of clusters of the original manager
     inline size_t get_size() const { return this->n_centers; }
 
@@ -605,8 +600,6 @@ namespace rascal {
       return this->atom_types[atom_index];
     }
 
-    // TODO(markus): there might be a mismatch between name and functionality
-    // more details needed
     //! Returns the number of neighbors of a given cluster
     template <size_t Order, size_t Layer>
     inline size_t
@@ -642,8 +635,6 @@ namespace rascal {
       this->atom_indices.push_back(atom_index);
       this->atom_types.push_back(atom_type);
       // add it to the ghost atom container
-      // TODO(markus): DELETE those containers, just work with
-      // n_centers/n_ghosts
       this->ghost_atom_indices.push_back(atom_index);
       this->ghost_types.push_back(atom_type);
       for (auto dim{0}; dim < traits::Dim; ++dim) {

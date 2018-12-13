@@ -376,7 +376,6 @@ namespace rascal {
         Eigen::Matrix<size_t, ActiveLayer + 1, 1> indices_pair;
         // set cluster indices of the new pair to zero, since it does not exist
         // at the lower levels
-        // TODO(markus): not sure, this is right
         for (size_t i{0}; i < ActiveLayer; ++i) {
           indices_pair(i) = 0;
         }

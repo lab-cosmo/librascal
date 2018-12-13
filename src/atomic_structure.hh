@@ -38,8 +38,7 @@
 #include <cmath>
 #include <stdexcept>
 
-// TODO(markus): CHECK for skewedness and add a function for rescaling the
-// positions for internal use
+// TODO(markus): CHECK for skewedness
 namespace rascal {
 
   template <int Dim> struct AtomicStructure {
