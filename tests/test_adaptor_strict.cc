@@ -489,7 +489,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(neighbourlist_test_fcc, ManagerFixtureTwoFcc) {
-    constexpr bool verbose{true};
+    constexpr bool verbose{false};
 
     if (verbose)
       std::cout << "FCC test " << std::endl;
