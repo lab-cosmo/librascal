@@ -1,6 +1,6 @@
 version: 2
 jobs:
-        build_ubuntu_g++-5.0:
+        build_ubuntu_g++-5.4:
                 docker:
                         - image: ubuntu:18.04
                           environment:
@@ -50,7 +50,7 @@ jobs:
                                         cd build 
                                         make dev_doc
 
-        build_ubuntu_g++-6.0:
+        build_ubuntu_g++-6.4:
                 docker:
                         - image: ubuntu:18.04
                           environment:
@@ -205,6 +205,56 @@ jobs:
                                         cd build 
                                         make dev_doc
                         
+        build_ubuntu_clang-6.0:
+                docker:
+                        - image: ubuntu:18.04
+                          environment:
+                                  PIPENV_VENV_IN_PROJECT: true
+                steps:
+                        - checkout
+                        - run: 
+                                name: setting up apt-get properly
+                                command: |
+                                        apt-get update -y
+                        - run:
+                                name: Installing dependencies
+                                command: |
+                                        apt-get install -y cmake
+                                        apt-get install -y python3-pip
+                                        apt-get install -y python3.6
+                                        apt-get install -y git
+                                        apt-get install -y libboost-test-dev
+                                        apt-get install -y doxygen
+                                        apt-get remove -y clang
+                                        apt-get install -y clang-6.0 libclang-common-6.0-dev libllvm6.0 libc++-dev
+                        - run: 
+                                name: installing python packages
+                                command: |
+                                        python3.6 -m pip install --upgrade pip
+                                        python3.6 -m pip install numpy scipy sphinx breathe sphinx_rtd_theme cpplint
+                        - run: 
+                                command: |
+                                        rm -rf build 
+                                        mkdir build 
+                                        cd build 
+                                        cmake -DENABLE_DOC=ON -DBUILD_TESTS=ON -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 ..
+                        - run: pwd
+                        - run:
+                                command: | 
+                                        cd build 
+                                        make lint
+                        - run: 
+                                command: |
+                                        cd build 
+                                        make 
+                        - run: 
+                                command: |
+                                        cd build 
+                                        ctest -V
+                        - run: 
+                                command: |
+                                        cd build 
+                                        make dev_doc
 
         build_ubuntu_clang-5.0:
                 docker:
@@ -315,9 +365,10 @@ workflows:
         version: 2
         ubuntu:
                 jobs:
-                        - build_ubuntu_g++-5.0
-                        - build_ubuntu_g++-6.0
+                        - build_ubuntu_g++-5.4
+                        - build_ubuntu_g++-6.4
                         - build_ubuntu_g++-7.3
                         - build_ubuntu_clang-4.0
                         - build_ubuntu_clang-5.0
+                        - build_ubuntu_clang-6.0
                         - build_ubuntu_clang-7.0
