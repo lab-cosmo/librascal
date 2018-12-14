@@ -127,17 +127,18 @@ namespace rascal {
       std::vector<std::vector<double>> neigh_dist_strict{};
       std::vector<std::vector<std::array<double, 3>>> neigh_dir_vec_strict{};
 
-      if (verbose)
+      if (verbose) {
         std::cout << "Setting up strict manager with rc = " << cutoff_tmp
                   << std::endl;
+      }
       AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>
           adaptor_strict{pair_manager, cutoff_tmp};
       adaptor_strict.update();
 
-      if (verbose)
+      if (verbose) {
         std::cout << "Setting up comparison list with rc = " << cutoff_tmp
                   << std::endl;
-
+      }
       for (auto center : pair_manager) {
         std::vector<int> indices{};
         std::vector<double> distances{};
@@ -161,8 +162,9 @@ namespace rascal {
           if (distance <= cutoff_tmp) {
             indices.push_back(neigh.get_atom_index());
             distances.push_back(distance);
-            auto dir_vec{(neigh.get_position() - center.get_position()).array() /
-                        distance};
+            auto dir_vec{
+                (neigh.get_position() - center.get_position()).array() /
+                distance};
             std::array<double, 3> aa{{dir_vec(0), dir_vec(1), dir_vec(2)}};
             dir_vecs.push_back(aa);
             if (verbose) {
@@ -182,8 +184,9 @@ namespace rascal {
         // break;
       }
 
-      if (verbose)
+      if (verbose) {
         std::cout << "Setting get adaptor_strict info" << std::endl;
+      }
       for (auto center : adaptor_strict) {
         std::vector<int> indices_{};
         std::vector<double> distances_{};
@@ -271,17 +274,18 @@ namespace rascal {
       std::vector<std::vector<double>> neigh_dist_strict{};
       std::vector<std::vector<std::array<double, 3>>> neigh_dir_vec_strict{};
 
-      if (verbose)
+      if (verbose) {
         std::cout << "Setting up strict manager with rc = " << cutoff
                   << std::endl;
+      }
       AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>
           adaptor_strict{pair_manager, cutoff};
       adaptor_strict.update();
 
-      if (verbose)
+      if (verbose) {
         std::cout << "Setting up comparison list with rc = " << cutoff
                   << std::endl;
-
+      }
       for (auto center : pair_manager) {
         std::vector<int> indices{};
         std::vector<double> distances{};
@@ -305,8 +309,9 @@ namespace rascal {
           if (distance <= cutoff) {
             indices.push_back(neigh.get_atom_index());
             distances.push_back(distance);
-            auto dir_vec{(neigh.get_position() - center.get_position()).array() /
-                        distance};
+            auto dir_vec{
+                (neigh.get_position() - center.get_position()).array() /
+                distance};
             std::array<double, 3> aa{{dir_vec(0), dir_vec(1), dir_vec(2)}};
             dir_vecs.push_back(aa);
             if (verbose) {
@@ -326,8 +331,9 @@ namespace rascal {
         // break;
       }
 
-      if (verbose)
+      if (verbose) {
         std::cout << "Setting get adaptor_strict info" << std::endl;
+      }
       for (auto center : adaptor_strict) {
         // auto icenter{center.get_index()};
         std::vector<int> indices_{};
@@ -410,9 +416,9 @@ namespace rascal {
      */
     constexpr bool verbose{false};
 
-    if (verbose)
+    if (verbose) {
       std::cout << "HCP test " << cutoff << std::endl;
-
+    }
     int mult = 10;
 
     for (auto i{1}; i < mult; ++i) {
@@ -434,8 +440,9 @@ namespace rascal {
       PairManager_t pair_manager1{manager_1, cutoff_tmp};
       pair_manager1.update();
 
-      if (verbose)
+      if (verbose) {
         std::cout << "Setting up strict manager 1 " << std::endl;
+      }
 
       Adaptor_t adaptor_strict1{pair_manager1, cutoff_tmp};
       adaptor_strict1.update();
@@ -443,9 +450,9 @@ namespace rascal {
       PairManager_t pair_manager2{manager_2, cutoff_tmp};
       pair_manager2.update();
 
-      if (verbose)
+      if (verbose) {
         std::cout << "Setting up strict manager 2 " << std::endl;
-
+      }
       Adaptor_t adaptor_strict2{pair_manager2, cutoff_tmp};
       adaptor_strict2.update();
 
@@ -491,9 +498,9 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(neighbourlist_test_fcc, ManagerFixtureTwoFcc) {
     constexpr bool verbose{false};
 
-    if (verbose)
+    if (verbose) {
       std::cout << "FCC test " << std::endl;
-
+    }
     int mult = 8;
 
     for (auto i{1}; i < mult; ++i) {
@@ -515,18 +522,18 @@ namespace rascal {
       PairManager_t pair_manager1{manager_1, cutoff_tmp};
       pair_manager1.update();
 
-      if (verbose)
+      if (verbose) {
         std::cout << "Setting up strict manager 1 " << std::endl;
-
+      }
       Adaptor_t adaptor_strict1{pair_manager1, cutoff_tmp};
       adaptor_strict1.update();
 
       PairManager_t pair_manager2{manager_2, cutoff_tmp};
       pair_manager2.update();
 
-      if (verbose)
+      if (verbose) {
         std::cout << "Setting up strict manager 2 " << std::endl;
-
+      }
       Adaptor_t adaptor_strict2{pair_manager2, cutoff_tmp};
       adaptor_strict2.update();
 
