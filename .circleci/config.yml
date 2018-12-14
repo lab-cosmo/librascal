@@ -280,7 +280,7 @@ jobs:
                                         apt-get update -y
                                         apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 15CF4D18AF4F7421
                                         apt-add-repository "deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-3.8 main"
-                                        apt-get install llvm-3.8-dev clang-3.8 lldb-3.8
+                                        apt-get install -y clang-3.8 #lldb-3.8 #llvm-3.8-dev 
                         - run: 
                                 name: installing python packages
                                 command: |
