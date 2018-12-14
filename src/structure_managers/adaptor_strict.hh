@@ -39,7 +39,8 @@ namespace rascal {
   /*
    * forward declaration for traits
    */
-  template <class ManagerImplementation> class AdaptorStrict;
+  template <class ManagerImplementation>
+  class AdaptorStrict;
 
   /*
    * specialisation of traits for strict adaptor
@@ -51,8 +52,6 @@ namespace rascal {
     constexpr static bool HasDirectionVectors{true};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
-    // TODO(felix): Future optimisation: do not increase depth for atoms
-    // (they are all kept anyways, so no duplication necessary).
     using LayerByOrder = typename LayerIncreaser<
         MaxOrder, typename ManagerImplementation::traits::LayerByOrder>::type;
   };
@@ -110,7 +109,8 @@ namespace rascal {
     inline void update();
 
     //! update the underlying manager as well as the adaptor
-    template <class... Args> void update(Args &&... arguments);
+    template <class... Args>
+    void update(Args &&... arguments);
 
     //! returns the (strict) cutoff for the adaptor
     inline const double & get_cutoff() const { return this->cutoff; }
@@ -144,9 +144,7 @@ namespace rascal {
       return this->atom_indices[cluster_size - 1].size();
     }
 
-    inline size_t get_size() const {
-      return this->manager.get_size();
-    }
+    inline size_t get_size() const { return this->manager.get_size(); }
 
     inline size_t get_size_with_ghosts() const {
       return this->get_nb_clusters(1);
@@ -208,13 +206,9 @@ namespace rascal {
     template <size_t Order>
     inline size_t
     get_offset_impl(const std::array<size_t, Order> & counters) const {
-      static_assert(Order <= traits::MaxOrder,
+      static_assert(Order < traits::MaxOrder,
                     "Calling this function with the wrong order cluster");
-      if (Order < traits::MaxOrder) {
-        return this->offsets[Order][counters.back()];
-      } else {
-        return this->offsets[Order - 1][counters.back()];
-      }
+      return this->offsets[Order][counters.back()];
     }
 
     //! return the number of neighbours of a given atom
@@ -235,7 +229,8 @@ namespace rascal {
      * @param Order select whether it is an i-atom (order=1), j-atom (order=2),
      * or ...
      */
-    template <size_t Order> inline void add_atom(int atom_index) {
+    template <size_t Order>
+    inline void add_atom(int atom_index) {
       static_assert(Order <= traits::MaxOrder,
                     "you can only add neighbours to the n-th degree defined by "
                     "MaxOrder of the underlying manager");
@@ -288,7 +283,8 @@ namespace rascal {
 
   namespace internal {
     /* ---------------------------------------------------------------------- */
-    template <bool IsStrict, class ManagerImplementation> struct CutOffChecker {
+    template <bool IsStrict, class ManagerImplementation>
+    struct CutOffChecker {
       static bool check(const ManagerImplementation & manager, double cutoff) {
         return cutoff < manager.get_cutoff();
       }
@@ -363,7 +359,7 @@ namespace rascal {
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
     size_t pair_counter{0};
-    for (auto atom : this->manager) {
+    for (auto atom : this->manager/*.with_ghosts()*/) {
       this->add_atom(atom);
       /**
        * Add new layer for atoms (see LayerByOrder for

@@ -45,7 +45,8 @@ namespace rascal {
   /**
    * Forward declaration for traits
    */
-  template <class ManagerImplementation> class AdaptorNeighbourList;
+  template <class ManagerImplementation>
+  class AdaptorNeighbourList;
 
   /**
    * Specialisation of traits for increase <code>MaxOrder</code> adaptor
@@ -68,7 +69,8 @@ namespace rascal {
   namespace internal {
     /* ---------------------------------------------------------------------- */
     //! integer base-to-the-power function
-    template <typename R, typename I> constexpr R ipow(R base, I exponent) {
+    template <typename R, typename I>
+    constexpr R ipow(R base, I exponent) {
       static_assert(std::is_integral<I>::value, "Type must be integer");
       R retval{1};
       for (I i = 0; i < exponent; ++i) {
@@ -81,7 +83,8 @@ namespace rascal {
      * stencil iterator for simple, dimension-dependent stencils to access the
      * neighbouring boxes of the cell algorithm
      */
-    template <size_t Dim> class Stencil {
+    template <size_t Dim>
+    class Stencil {
      public:
       //! constructor
       explicit Stencil(const std::array<int, Dim> & origin) : origin{origin} {};
@@ -153,7 +156,8 @@ namespace rascal {
      * Periodic image iterator for easy access to how many images have to be
      * added for ghost atoms.
      */
-    template <size_t Dim> class PeriodicImages {
+    template <size_t Dim>
+    class PeriodicImages {
      public:
       //! constructor
       PeriodicImages(const std::array<int, Dim> & origin,
@@ -230,7 +234,8 @@ namespace rascal {
      * mesh for evaluating the multipliers necessary to build necessary periodic
      * images, depending on periodicity.
      */
-    template <size_t Dim> class MeshBounds {
+    template <size_t Dim>
+    class MeshBounds {
      public:
       //! constructor
       explicit MeshBounds(const std::array<double, 2 * Dim> & extent)
@@ -365,7 +370,8 @@ namespace rascal {
      * storage for cell coordinates of atoms depending on the number of
      * dimensions
      */
-    template <int Dim> class IndexContainer {
+    template <int Dim>
+    class IndexContainer {
      public:
       //! Default constructor
       IndexContainer() = delete;
@@ -470,7 +476,8 @@ namespace rascal {
     void update();
 
     //! Updates the underlying manager as well as the adaptor
-    template <class... Args> void update(Args &&... arguments);
+    template <class... Args>
+    void update(Args &&... arguments);
 
     //! Returns cutoff radius of the neighbourhood manager
     inline double get_cutoff() const { return this->cutoff; }
@@ -514,6 +521,15 @@ namespace rascal {
 
     //! total number of atoms used for neighbour list, including ghosts
     inline size_t get_size_with_ghosts() const {
+      // auto nb_atoms{this->consider_ghost_neighbours ? this->n_centers +
+      // n_ghosts
+      //                                               : this->get_size()};
+      // return nb_atoms;
+      // if (not this->consider_ghost_neighbours) {
+      //   return this->n_centers;
+      // } else {
+      //   return this->n_centers + this->n_ghosts;
+      // }
       return this->n_centers + this->n_ghosts;
     }
 
@@ -899,7 +915,7 @@ namespace rascal {
     }
 
     // generate ghost atom indices and positions
-    for (auto atom : this->get_manager()) {
+    for (auto atom : this->get_manager().with_ghosts()) {
       auto pos = atom.get_position();
       auto atom_type = atom.get_atom_type();
 
@@ -956,6 +972,7 @@ namespace rascal {
     // iteration over all atoms is necessary for possible increase of maxorder
     auto nb_atoms{this->consider_ghost_neighbours ? this->get_size_with_ghosts()
                                                   : this->get_size()};
+
     for (size_t atom_index{0}; atom_index < nb_atoms; ++atom_index) {
       int nneigh{0};
       Vector_t pos = this->get_position(atom_index);

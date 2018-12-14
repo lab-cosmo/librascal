@@ -44,7 +44,8 @@ namespace rascal {
   /**
    * Forward declaration for traits
    */
-  template <class ManagerImplementation> class AdaptorMaxOrder;
+  template <class ManagerImplementation>
+  class AdaptorMaxOrder;
 
   /**
    * Specialisation of traits for increase <code>MaxOrder</code> adaptor
@@ -124,7 +125,8 @@ namespace rascal {
     void update();
 
     //! Updates the underlying manager as well as the adaptor
-    template <class... Args> void update(Args &&... arguments);
+    template <class... Args>
+    void update(Args &&... arguments);
 
     /**
      * Returns the linear indices of the clusters (whose atom indices are stored
@@ -251,8 +253,7 @@ namespace rascal {
       auto n_tuples{nb_neigh.size()};
       this->offsets.reserve(n_tuples);
       this->offsets.resize(1);
-      this->offsets.push_back(0);
-      for (size_t i{0}; i < n_tuples; ++i) {
+      for (size_t i{0}; i < n_tuples - 1; ++i) {
         this->offsets.emplace_back(this->offsets[i] + this->nb_neigh[i]);
       }
     }
@@ -261,7 +262,8 @@ namespace rascal {
     ManagerImplementation & manager;
 
     //! Construct for reaching the MaxOrder and adding neighbours of at MaxOrder
-    template <size_t Order, bool IsDummy> struct AddOrderLoop;
+    template <size_t Order, bool IsDummy>
+    struct AddOrderLoop;
 
     //! Stores the number of neighbours for every traits::MaxOrder-1-clusters
     std::vector<size_t> nb_neigh{};
@@ -363,6 +365,9 @@ namespace rascal {
       // access to underlying manager for access to atom pairs
       auto & manager_tmp{cluster.get_manager()};
 
+      // add an entry for the current clusters' neighbours
+      manager.add_entry_number_of_neighbours();
+
       // careful: i_atoms can include ghosts: ghosts have to be ignored, since
       // they to not have a neighbour list themselves, they are only neighbours
       for (auto atom_index : i_atoms) {
@@ -393,7 +398,6 @@ namespace rascal {
                           current_i_atoms.begin(), current_i_atoms.end(),
                           std::inserter(atoms_to_add, atoms_to_add.begin()));
 
-      manager.add_entry_number_of_neighbours();
       if (atoms_to_add.size() > 0) {
         for (auto j : atoms_to_add) {
           manager.add_neighbour_of_cluster(j);
@@ -474,10 +478,15 @@ namespace rascal {
     } else {
       // Counters is an array to call parent offset multiplet. This can then be
       // used to access the actual offset for the Order which was built here.
-
-      // TODO(markus): check with Till for automatic deduction of template
-      // parameter
-      auto i{this->manager.get_offset_impl(counters)};
+      // It needs to be cast into a smaller one to access the order of this
+      // Cluster(Order-1) from the manager below
+      std::array<size_t, Order - 1> counters_below{};
+      for (size_t c_index{0}; c_index < Order - 1; ++c_index) {
+        counters_below[c_index] = counters[c_index];
+      }
+      // Linear index of the Cluster (Order-1)
+      auto i{this->manager.get_offset_impl(counters_below)};
+      // Number of cluster in its current iteration
       auto j{counters[Order - 1]};
       auto tuple_index{i + j};
       auto main_offset{this->offsets[tuple_index]};

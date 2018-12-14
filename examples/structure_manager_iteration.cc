@@ -76,11 +76,12 @@ int main() {
   // Iteration over `manager`
   std::cout << "manager iteration over atoms" << std::endl;
   for (auto atom : manager) {
-    std::cout << "atom " << atom.get_atom_index() << std::endl;
+    std::cout << "atom " << atom.get_atom_index() << " global index "
+              << atom.get_global_index() << std::endl;
   }
 
   // `pair_manager` is constructed with the `manager` and a `cutoff`.
-  PairManager_t pair_manager{manager, cutoff};
+  PairManager_t pair_manager{manager, cutoff, true};
   // By invoking the `.update()` method, a neighbour list is built.
   pair_manager.update();
 
@@ -88,7 +89,8 @@ int main() {
   for (auto atom : pair_manager) {
     for (auto pair : atom) {
       std::cout << "pair (" << atom.get_atom_index() << ", "
-                << pair.get_atom_index() << " )" << std::endl;
+                << pair.get_atom_index() << " ) global index "
+                << pair.get_global_index() << std::endl;
     }
   }
 
@@ -101,8 +103,8 @@ int main() {
   // `strict_manager` provides iteration over atoms and strict pairs
   for (auto atom : strict_manager) {
     for (auto pair : atom) {
-      std::cout << "strict pair " << atom.get_atom_index() << ", "
-                << pair.get_atom_index() << " global index "
+      std::cout << "strict pair (" << atom.get_atom_index() << ", "
+                << pair.get_atom_index() << ") global index "
                 << pair.get_global_index() << std::endl;
     }
   }
@@ -120,7 +122,8 @@ int main() {
       for (auto triplet : pair) {
         std::cout << "triplet (" << atom.get_atom_index() << ", "
                   << pair.get_atom_index() << ", " << triplet.get_atom_index()
-                  << ")" << std::endl;
+                  << ") global index " << triplet.get_global_index()
+                  << std::endl;
       }
     }
   }
