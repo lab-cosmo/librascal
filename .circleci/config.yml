@@ -276,6 +276,7 @@ jobs:
                                         apt-get install -y git
                                         apt-get install -y libboost-test-dev
                                         apt-get install -y doxygen
+                                        apt-get install -y software-properties-common
                                         apt-get update -y
                                         #apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 15CF4D18AF4F7421
                                         apt-add-repository "deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-3.8 main"
