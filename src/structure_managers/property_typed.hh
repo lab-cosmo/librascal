@@ -9,7 +9,8 @@
  * @brief Implements intermediate property class for which the type of stored
  *          objects is known, but not the size
  *
- * Copyright © 2018 Federico Giberti, Till Junge, Felix Musil, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2018 Federico Giberti, Till Junge, Felix Musil, COSMO (EPFL),
+ * LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -54,10 +55,7 @@ namespace rascal {
       }
 
       //! get a reference
-      static reference get_ref(T & value) {
-        return type(&value);
-      }
-
+      static reference get_ref(T & value) { return type(&value); }
 
       //! push back data into ``property``
       static void push_in_vector(std::vector<T> & vec, reference ref) {
@@ -70,7 +68,7 @@ namespace rascal {
 
       //! Dynamic size overloading of push back data into ``property``
       static void push_in_vector(std::vector<T> & vec, reference ref,
-                                 Dim_t& nb_row,  Dim_t& nb_col) {
+                                 Dim_t & nb_row, Dim_t & nb_col) {
         for (Dim_t j{0}; j < nb_col; ++j) {
           for (Dim_t i{0}; i < nb_row; ++i) {
             vec.push_back(ref(i, j));
@@ -79,7 +77,7 @@ namespace rascal {
       }
 
       //! Used for extending cluster_indices
-      template<typename Derived>
+      template <typename Derived>
       static void push_in_vector(std::vector<T> & vec,
                                  const Eigen::DenseBase<Derived> & ref) {
         static_assert(Derived::RowsAtCompileTime == NbRow,
@@ -94,10 +92,10 @@ namespace rascal {
       }
 
       //! Dynamic size overloading of push back data into ``property``
-      template<typename Derived>
+      template <typename Derived>
       static void push_in_vector(std::vector<T> & vec,
                                  const Eigen::DenseBase<Derived> & ref,
-                                const Dim_t& nb_row, const Dim_t& nb_col) {
+                                 const Dim_t & nb_row, const Dim_t & nb_col) {
         for (Dim_t j{0}; j < nb_col; ++j) {
           for (Dim_t i{0}; i < nb_row; ++i) {
             vec.push_back(ref(i, j));
@@ -113,14 +111,14 @@ namespace rascal {
       constexpr static Dim_t NbRow{1};
       constexpr static Dim_t NbCol{1};
       using type = T;
-      using reference = T&;
+      using reference = T &;
       using const_reference = const T &;
 
       //! get a reference to a scalar value
-      static reference get_ref(T & value) {return value;}
+      static reference get_ref(T & value) { return value; }
 
       //! get a reference to a scalar value
-      static const_reference get_ref(const T & value) {return value;}
+      static const_reference get_ref(const T & value) { return value; }
 
       //! push a scalar in a vector
       static void push_in_vector(std::vector<T> & vec, reference ref) {
@@ -128,7 +126,7 @@ namespace rascal {
       }
 
       //! Used for extending cluster_indices
-      template<typename Derived>
+      template <typename Derived>
       static void push_in_vector(std::vector<T> & vec,
                                  const Eigen::DenseBase<Derived> & ref) {
         static_assert(Derived::RowsAtCompileTime == NbRow,
@@ -139,20 +137,20 @@ namespace rascal {
       }
     };
 
-    template<typename T, size_t NbRow, size_t NbCol>
+    template <typename T, size_t NbRow, size_t NbCol>
     using Value_t = typename Value<T, NbRow, NbCol>::type;
 
-    template<typename T, size_t NbRow, size_t NbCol>
+    template <typename T, size_t NbRow, size_t NbCol>
     using Value_ref = typename Value<T, NbRow, NbCol>::reference;
 
-  }  // internal
+  }  // namespace internal
 
   /* ---------------------------------------------------------------------- */
   /**
    * Typed ``property`` class definition, inherits from the base property class
    */
   template <typename T, size_t Order, size_t PropertyLayer>
-  class TypedProperty: public PropertyBase {
+  class TypedProperty : public PropertyBase {
     using Parent = PropertyBase;
     using Value = internal::Value<T, Eigen::Dynamic, Eigen::Dynamic>;
 
@@ -162,9 +160,8 @@ namespace rascal {
 
     //! constructor
     TypedProperty(StructureManagerBase & manager, Dim_t nb_row,
-                  Dim_t nb_col = 1, std::string metadata = "no metadata"):
-      Parent{manager, nb_row, nb_col, Order, PropertyLayer, metadata}
-    {}
+                  Dim_t nb_col = 1, std::string metadata = "no metadata")
+        : Parent{manager, nb_row, nb_col, Order, PropertyLayer, metadata} {}
 
     //! Default constructor
     TypedProperty() = delete;
@@ -186,9 +183,7 @@ namespace rascal {
 
     /* ---------------------------------------------------------------------- */
     //! return runtime info about the stored (e.g., numerical) type
-    const std::type_info & get_type_info() const final {
-      return typeid(T);
-    };
+    const std::type_info & get_type_info() const final { return typeid(T); };
 
     //! Fill sequence, used for *_cluster_indices initialization
     inline void fill_sequence() {
@@ -207,21 +202,17 @@ namespace rascal {
     }
 
     //! Adjust size of values (only increases, never frees)
-    size_t size() const {
-      return this->values.size()/this->get_nb_comp();
-    }
+    size_t size() const { return this->values.size() / this->get_nb_comp(); }
 
     /**
      * shortens the vector so that the manager can push_back into it (capacity
      * not reduced)
      */
-    void resize_to_zero() {
-      this->values.resize(0);
-    }
+    void resize_to_zero() { this->values.resize(0); }
 
     /* ---------------------------------------------------------------------- */
     //! Property accessor by cluster ref
-    template<size_t CallerLayer>
+    template <size_t CallerLayer>
     inline reference operator[](const ClusterRefKey<Order, CallerLayer> & id) {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
@@ -233,19 +224,16 @@ namespace rascal {
     //! Accessor for property by index for dynamically sized properties
     reference operator[](const size_t & index) {
       return Value::get_ref(this->values[index * this->get_nb_comp()],
-                            this->get_nb_row(),
-                            this->get_nb_col());
+                            this->get_nb_row(), this->get_nb_col());
     }
 
     //! getter to the underlying data storage
-    inline std::vector<T>& get_raw_data() {
-      return this->values;
-    }
+    inline std::vector<T> & get_raw_data() { return this->values; }
 
     //! get number of different distinct element in the property
     //! (typically the number of center)
     inline size_t get_nb_item() const {
-      return values.size()/this->get_nb_comp();
+      return values.size() / this->get_nb_comp();
     }
 
     /**
@@ -253,13 +241,12 @@ namespace rascal {
      */
     reference back() {
       auto && index{this->values.size() - this->get_nb_comp()};
-      return Value::get_ref(this->values[index*this->get_nb_comp()],
-                            this->get_nb_row(),
-                            this->get_nb_col());
+      return Value::get_ref(this->values[index * this->get_nb_comp()],
+                            this->get_nb_row(), this->get_nb_col());
     }
 
    protected:
-    std::vector<T> values{}; //!< storage for properties
+    std::vector<T> values{};  //!< storage for properties
   };
 }  // namespace rascal
 

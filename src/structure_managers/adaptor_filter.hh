@@ -41,7 +41,8 @@ namespace rascal {
   /**
    * Forward declaration for traits
    */
-  template <class ManagerImplementation, size_t MaxOrder> class AdaptorFilter;
+  template <class ManagerImplementation, size_t MaxOrder>
+  class AdaptorFilter;
 
   /**
    * Specialisation of traits for increase <code>MaxOrder</code> adaptor

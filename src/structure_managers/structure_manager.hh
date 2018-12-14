@@ -65,7 +65,8 @@ namespace rascal {
    * traits structure to avoid incomplete types in crtp Empty because it is not
    * known what it will contain
    */
-  template <class ManagerImplementation> struct StructureManager_traits {};
+  template <class ManagerImplementation>
+  struct StructureManager_traits {};
 
   /* ---------------------------------------------------------------------- */
   namespace internal {
@@ -134,7 +135,8 @@ namespace rascal {
      * Empty template helper structure is created to construct cluster indices
      * tuples
      */
-    template <typename Tup, typename Manager> struct ClusterIndexConstructor {};
+    template <typename Tup, typename Manager>
+    struct ClusterIndexConstructor {};
 
     //! Overload to build the tuple
     template <typename... PropertyTypes, typename Manager>
@@ -211,7 +213,8 @@ namespace rascal {
      * like these can be used as indices for random access in atom-, pair,
      * ... -related properties.
      */
-    template <size_t Order> class iterator;
+    template <size_t Order>
+    class iterator;
     using Iterator_t = iterator<1>;
     friend Iterator_t;
 
@@ -225,7 +228,8 @@ namespace rascal {
      * return type for iterators: a light-weight pair, triplet, etc reference,
      * giving access to the AtomRefs of all implicated atoms
      */
-    template <size_t Order> class ClusterRef;
+    template <size_t Order>
+    class ClusterRef;
 
     //! A proxy class which provides iteration access to atoms and ghost atoms
     class ProxyWithGhosts;
@@ -296,7 +300,8 @@ namespace rascal {
 
    protected:
     //! returns the current layer
-    template <size_t Order> constexpr static size_t cluster_layer() {
+    template <size_t Order>
+    constexpr static size_t cluster_layer() {
       return compute_cluster_layer<Order>(typename traits::LayerByOrder{});
     }
 
@@ -405,7 +410,8 @@ namespace rascal {
      * offsets and neighbours. Used later by adaptors which modify or extend the
      * neighbourlist to access the correct offset.
      */
-    template <bool AtMaxOrder> struct IncreaseHelper {
+    template <bool AtMaxOrder>
+    struct IncreaseHelper {
       template <class Manager_t, class Cluster_t>
       inline static size_t get_cluster_size(const Manager_t & /*manager*/,
                                             const Cluster_t & /*cluster*/) {
@@ -429,7 +435,8 @@ namespace rascal {
 
     //! specialization for not at MaxOrder, these refer to the underlying
     //! manager
-    template <> struct IncreaseHelper<false> {
+    template <>
+    struct IncreaseHelper<false> {
       template <class Manager_t, class Cluster_t>
       inline static size_t get_cluster_size(const Manager_t & manager,
                                             const Cluster_t & cluster) {

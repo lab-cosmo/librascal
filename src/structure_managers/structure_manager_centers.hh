@@ -61,7 +61,8 @@ namespace rascal {
    * functionality the given StructureManager already contains to avoid
    * recomputation. See also the implementation of adaptors.
    */
-  template <> struct StructureManager_traits<StructureManagerCenters> {
+  template <>
+  struct StructureManager_traits<StructureManagerCenters> {
     // this manager only works with 3D data (positions, cell)
     constexpr static int Dim{3};
     // MaxOrder is set to 1 because it has just atoms

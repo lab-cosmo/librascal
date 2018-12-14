@@ -41,7 +41,8 @@
 // TODO(markus): CHECK for skewedness
 namespace rascal {
 
-  template <int Dim> struct AtomicStructure {
+  template <int Dim>
+  struct AtomicStructure {
     /**
      * A common structure to access atom and cell related data, based on the
      * idea of the atoms object in the Atomic Simulation Environment. The object

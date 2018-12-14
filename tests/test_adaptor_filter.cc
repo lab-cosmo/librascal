@@ -37,7 +37,8 @@
 
 namespace rascal {
 
-  template <class ManagerImplementation, size_t MaxOrder> struct FilterFixture {
+  template <class ManagerImplementation, size_t MaxOrder>
+  struct FilterFixture {
     using Filter_t = AdaptorFilter<ManagerImplementation, MaxOrder>;
 
     FilterFixture() : manager{fixture.manager} {}

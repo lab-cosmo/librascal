@@ -38,7 +38,8 @@ namespace rascal {
   /**
    * forward declaration for traits
    */
-  template <class ManagerImplementation> class AdaptorFullList;
+  template <class ManagerImplementation>
+  class AdaptorFullList;
 
   /**
    * specialisation of traits for full neighbour list adaptor
@@ -116,7 +117,8 @@ namespace rascal {
     void update();
 
     //! update the underlying manager as well as the adaptor
-    template <class... Args> void update(Args &&... arguments);
+    template <class... Args>
+    void update(Args &&... arguments);
 
     /**
      * returns the cutoff from the underlying manager which built the
