@@ -112,10 +112,10 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(strict_test,
                           ManagerFixture<StructureManagerCenters>) {
     bool verbose{false};
-    int mult = 2;
+    int mult = 10;
     double rc_max{mult * 0.5 + cutoff};
     using PairManager_t = AdaptorNeighbourList<StructureManagerCenters>;
-    PairManager_t pair_manager{manager, rc_max, true};
+    PairManager_t pair_manager{manager, rc_max};
     pair_manager.update();
 
     for (auto i{0}; i < mult; ++i) {
@@ -141,7 +141,7 @@ namespace rascal {
       for (auto center : pair_manager) {
         std::vector<int> indices{};
         std::vector<double> distances{};
-        std::vector<std::array<double, 3>> dirVecs{};
+        std::vector<std::array<double, 3>> dir_vecs{};
 
         if (verbose) {
           // get_index returns iteration index
@@ -161,10 +161,10 @@ namespace rascal {
           if (distance <= cutoff_tmp) {
             indices.push_back(neigh.get_atom_index());
             distances.push_back(distance);
-            auto dirVec{(neigh.get_position() - center.get_position()).array() /
+            auto dir_vec{(neigh.get_position() - center.get_position()).array() /
                         distance};
-            std::array<double, 3> aa{{dirVec(0), dirVec(1), dirVec(2)}};
-            dirVecs.push_back(aa);
+            std::array<double, 3> aa{{dir_vec(0), dir_vec(1), dir_vec(2)}};
+            dir_vecs.push_back(aa);
             if (verbose) {
               std::cout << "cell neigh out " << neigh.get_index();
               std::cout << " " << neigh.get_atom_index() << " ";
@@ -178,7 +178,7 @@ namespace rascal {
         }
         neigh_ids.push_back(indices);
         neigh_dist.push_back(distances);
-        neigh_dir_vec.push_back(dirVecs);
+        neigh_dir_vec.push_back(dir_vecs);
         // break;
       }
 
@@ -187,7 +187,7 @@ namespace rascal {
       for (auto center : adaptor_strict) {
         std::vector<int> indices_{};
         std::vector<double> distances_{};
-        std::vector<std::array<double, 3>> dirVecs_{};
+        std::vector<std::array<double, 3>> dir_vecs_{};
 
         if (verbose) {
           // get_index returns iteration index
@@ -206,9 +206,9 @@ namespace rascal {
 
           indices_.push_back(neigh.get_atom_index());
           distances_.push_back(distance);
-          auto dirVec{adaptor_strict.get_direction_vector(neigh)};
-          std::array<double, 3> bb{{dirVec(0), dirVec(1), dirVec(2)}};
-          dirVecs_.push_back(bb);
+          auto dir_vec{adaptor_strict.get_direction_vector(neigh)};
+          std::array<double, 3> bb{{dir_vec(0), dir_vec(1), dir_vec(2)}};
+          dir_vecs_.push_back(bb);
 
           if (verbose) {
             std::cout << "strict neigh out " << neigh.get_index();
@@ -228,7 +228,7 @@ namespace rascal {
 
         neigh_ids_strict.push_back(indices_);
         neigh_dist_strict.push_back(distances_);
-        neigh_dir_vec_strict.push_back(dirVecs_);
+        neigh_dir_vec_strict.push_back(dir_vecs_);
         // if (icenter > 1) break;
       }
 
@@ -285,7 +285,7 @@ namespace rascal {
       for (auto center : pair_manager) {
         std::vector<int> indices{};
         std::vector<double> distances{};
-        std::vector<std::array<double, 3>> dirVecs{};
+        std::vector<std::array<double, 3>> dir_vecs{};
 
         if (verbose) {
           // get_index returns iteration index
@@ -305,10 +305,10 @@ namespace rascal {
           if (distance <= cutoff) {
             indices.push_back(neigh.get_atom_index());
             distances.push_back(distance);
-            auto dirVec{(neigh.get_position() - center.get_position()).array() /
+            auto dir_vec{(neigh.get_position() - center.get_position()).array() /
                         distance};
-            std::array<double, 3> aa{{dirVec(0), dirVec(1), dirVec(2)}};
-            dirVecs.push_back(aa);
+            std::array<double, 3> aa{{dir_vec(0), dir_vec(1), dir_vec(2)}};
+            dir_vecs.push_back(aa);
             if (verbose) {
               std::cout << "cell neigh out " << neigh.get_index();
               std::cout << " " << neigh.get_atom_index() << " ";
@@ -322,7 +322,7 @@ namespace rascal {
         }
         neigh_ids.push_back(indices);
         neigh_dist.push_back(distances);
-        neigh_dir_vec.push_back(dirVecs);
+        neigh_dir_vec.push_back(dir_vecs);
         // break;
       }
 
@@ -332,7 +332,7 @@ namespace rascal {
         // auto icenter{center.get_index()};
         std::vector<int> indices_{};
         std::vector<double> distances_{};
-        std::vector<std::array<double, 3>> dirVecs_{};
+        std::vector<std::array<double, 3>> dir_vecs_{};
 
         if (verbose) {
           // get_index returns iteration index
@@ -352,9 +352,9 @@ namespace rascal {
 
           indices_.push_back(neigh.get_atom_index());
           distances_.push_back(distance);
-          auto dirVec{adaptor_strict.get_direction_vector(neigh)};
-          std::array<double, 3> bb{{dirVec(0), dirVec(1), dirVec(2)}};
-          dirVecs_.push_back(bb);
+          auto dir_vec{adaptor_strict.get_direction_vector(neigh)};
+          std::array<double, 3> bb{{dir_vec(0), dir_vec(1), dir_vec(2)}};
+          dir_vecs_.push_back(bb);
 
           if (verbose) {
             std::cout << "strict neigh out " << neigh.get_index();
@@ -374,7 +374,7 @@ namespace rascal {
 
         neigh_ids_strict.push_back(indices_);
         neigh_dist_strict.push_back(distances_);
-        neigh_dir_vec_strict.push_back(dirVecs_);
+        neigh_dir_vec_strict.push_back(dir_vecs_);
         // if (icenter > 1) break;
       }
 
@@ -413,7 +413,7 @@ namespace rascal {
     if (verbose)
       std::cout << "HCP test " << cutoff << std::endl;
 
-    int mult = 2;
+    int mult = 10;
 
     for (auto i{1}; i < mult; ++i) {
       auto cutoff_tmp = i * 0.5 + cutoff;
@@ -494,7 +494,7 @@ namespace rascal {
     if (verbose)
       std::cout << "FCC test " << std::endl;
 
-    int mult = 2;
+    int mult = 8;
 
     for (auto i{1}; i < mult; ++i) {
       auto cutoff_tmp = i * 0.5 + cutoff;

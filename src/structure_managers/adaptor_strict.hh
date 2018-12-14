@@ -359,7 +359,9 @@ namespace rascal {
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
     size_t pair_counter{0};
-    for (auto atom : this->manager/*.with_ghosts()*/) {
+    // depending on the underlying neighbourlist, the proxy `.with_ghosts()` is
+    // either actually with ghosts, or only returns the number of centers.
+    for (auto atom : this->manager.with_ghosts()) {
       this->add_atom(atom);
       /**
        * Add new layer for atoms (see LayerByOrder for

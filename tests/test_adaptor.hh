@@ -42,7 +42,8 @@ namespace rascal {
    * used in checking the building of the neighbour list in an easy
    * configuration based on 9 atoms.
    */
-  template <class ManagerImplementation> struct PairFixtureSimple {
+  template <class ManagerImplementation>
+  struct PairFixtureSimple {
     using Manager_t = ManagerImplementation;
 
     static_assert(ManagerImplementation::traits::MaxOrder == 1,
@@ -76,7 +77,7 @@ namespace rascal {
                   " MaxOrder=1");
 
     PairFixtureCenters()
-      : cutoff{3.5}, pair_manager{this->fixture.manager, this->cutoff, true} {
+        : cutoff{3.5}, pair_manager{this->fixture.manager, this->cutoff, true} {
       this->pair_manager.update();
     }
 
@@ -89,7 +90,8 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
-  template <class ManagerImplementation> struct PairFixtureStrict {
+  template <class ManagerImplementation>
+  struct PairFixtureStrict {
     using AdaptorStrict_t = AdaptorStrict<ManagerImplementation>;
 
     PairFixtureStrict()

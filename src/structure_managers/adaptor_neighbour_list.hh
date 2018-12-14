@@ -521,16 +521,16 @@ namespace rascal {
 
     //! total number of atoms used for neighbour list, including ghosts
     inline size_t get_size_with_ghosts() const {
-      // auto nb_atoms{this->consider_ghost_neighbours ? this->n_centers +
-      // n_ghosts
-      //                                               : this->get_size()};
-      // return nb_atoms;
-      // if (not this->consider_ghost_neighbours) {
-      //   return this->n_centers;
-      // } else {
-      //   return this->n_centers + this->n_ghosts;
-      // }
-      return this->n_centers + this->n_ghosts;
+      // The return type of this function depends on the construction of the
+      // adaptor. If the adaptor is constructed without considering the
+      // neighbours of ghosts, only the number of atoms are returned to avoid
+      // ambiguity and false access. In case the adaptor is constructed
+      // considering the neighbours of ghosts, it is possible to iterate over
+      // all atoms including ghosts using the proxy `.with_ghosts`, which takes
+      // its `.end()` from here`
+      auto nb_atoms{this->consider_ghost_neighbours ? this->n_centers + n_ghosts
+                                                    : this->get_size()};
+      return nb_atoms;
     }
 
     //! Returns position of an atom with index atom_index
@@ -938,7 +938,8 @@ namespace rascal {
 
           if (flag_inside) {
             // next atom index is size, since start is at index = 0
-            auto new_atom_index = this->get_size_with_ghosts();
+            auto new_atom_index = this->n_centers + this->n_ghosts;
+            // get_size_with_ghosts();
             this->add_ghost_atom(new_atom_index, pos_ghost, atom_type);
             ntot_atoms++;
           }
@@ -950,28 +951,19 @@ namespace rascal {
     internal::IndexContainer<dim> atom_id_cell{nboxes_per_dim};
 
     // sorting i-atoms into boxes
-    for (size_t i{0}; i < this->get_size_with_ghosts(); ++i) {
+    auto nb_atoms_tot{this->n_centers + this->n_ghosts};
+    for (size_t i{0}; i < nb_atoms_tot; ++i) {
       Vector_t pos = this->get_position(i);
       Vector_t dpos = pos - mesh_min;
       auto idx = internal::get_box_index(dpos, cutoff);
       atom_id_cell[idx].push_back(i);
     }
 
-    // // sorting ghost atoms into boxes
-    // for (size_t i{0}; i < this->n_ghosts; ++i) {
-    //   Vector_t ghost_pos = this->get_ghost_position(i);
-    //   Vector_t dpos = ghost_pos - mesh_min;
-    //   auto idx  = internal::get_box_index(dpos, cutoff);
-    //   auto ghost_atom_index = i + this->n_centers;
-    //   atom_id_cell[idx].push_back(ghost_atom_index);
-    // }
-
-    // go through all atoms and build neighbour list
-    // int offset{0};
-    //    for (size_t i{0}; i < this->n_centers; ++i) {
-    // iteration over all atoms is necessary for possible increase of maxorder
-    auto nb_atoms{this->consider_ghost_neighbours ? this->get_size_with_ghosts()
-                                                  : this->get_size()};
+    // go through all atoms and/or ghosts to build neighbour list, depending on
+    // the runtime decision flag
+    auto nb_atoms{this->consider_ghost_neighbours
+                      ? this->n_centers + this->n_ghosts
+                      : this->get_size()};
 
     for (size_t atom_index{0}; atom_index < nb_atoms; ++atom_index) {
       int nneigh{0};
@@ -986,8 +978,6 @@ namespace rascal {
         nneigh++;
       }
       this->nb_neigh.push_back(nneigh);
-      // this->offsets.push_back(offset);
-      // offset += nneigh;
     }
   }
 

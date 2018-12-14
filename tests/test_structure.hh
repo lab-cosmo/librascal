@@ -55,7 +55,8 @@ namespace rascal {
    * manager, which is initialized with existing data and not `adapted` is
    * always accessible with the variable ``manager``.
    */
-  template <class ManagerImplementation> struct ManagerFixture {
+  template <class ManagerImplementation>
+  struct ManagerFixture {
     ManagerFixture() {}   // ctor
     ~ManagerFixture() {}  // dtor
 
@@ -69,7 +70,8 @@ namespace rascal {
    * always accessible with the variable ``manager_1`` and ``manager_2``. Both
    * managers are of the same class.
    */
-  template <class ManagerImplementation> struct ManagerFixtureTwo {
+  template <class ManagerImplementation>
+  struct ManagerFixtureTwo {
     ManagerFixtureTwo() {}   // ctor
     ~ManagerFixtureTwo() {}  // dtor
 
@@ -233,7 +235,8 @@ namespace rascal {
    */
   // TODO(markus): as of Nov 2018, this interface is outdated with respect to
   // lammps.
-  template <> struct ManagerFixture<StructureManagerLammps> {
+  template <>
+  struct ManagerFixture<StructureManagerLammps> {
     using Manager_t = StructureManagerLammps;
     constexpr static int nb{3};
     constexpr static int dim{3};
@@ -300,7 +303,8 @@ namespace rascal {
    * from a JSON file. This fixture provides iteration over the variable
    * ``pair_manager``
    */
-  template <class ManagerImplementation> struct PairFixtureFile {
+  template <class ManagerImplementation>
+  struct PairFixtureFile {
     using Manager_t = ManagerImplementation;
 
     static_assert(ManagerImplementation::traits::MaxOrder == 1,
@@ -309,7 +313,7 @@ namespace rascal {
     using PairManager_t = AdaptorNeighbourList<ManagerImplementation>;
 
     PairFixtureFile()
-        : pair_manager{this->fixture.manager, this->fixture.cutoff} {
+        : pair_manager{this->fixture.manager, this->fixture.cutoff, true} {
       this->pair_manager.update();
     }
 
@@ -325,7 +329,8 @@ namespace rascal {
    * positions in its fixture. this fixture provides iteration over the variable
    * ``pair_manager``.
    */
-  template <class ManagerImplementation> struct PairFixture {
+  template <class ManagerImplementation>
+  struct PairFixture {
     using Manager_t = ManagerImplementation;
 
     static_assert(ManagerImplementation::traits::MaxOrder == 1,
@@ -348,7 +353,8 @@ namespace rascal {
    * Specialization of ManagerFixture for StructureManagerCenters with input
    * data directly given.
    */
-  template <> struct ManagerFixture<StructureManagerCenters> {
+  template <>
+  struct ManagerFixture<StructureManagerCenters> {
     using Manager_t = StructureManagerCenters;
 
     ManagerFixture()
