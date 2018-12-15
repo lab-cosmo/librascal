@@ -31,7 +31,6 @@
 
 #include <boost/mpl/list.hpp>
 
-
 namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(base_tests);

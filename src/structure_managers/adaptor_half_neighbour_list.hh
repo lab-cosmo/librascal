@@ -57,7 +57,6 @@ namespace rascal {
 
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
       AdaptorTraits::NeighbourListType::half};
-
     using LayerByOrder = typename
       LayerIncreaser<MaxOrder,
                      typename
@@ -74,9 +73,10 @@ namespace rascal {
   template <class ManagerImplementation>
   class AdaptorHalfList: public
   StructureManager<AdaptorHalfList<ManagerImplementation>> {
-  public:
+   public:
     using Parent =
       StructureManager<AdaptorHalfList<ManagerImplementation>>;
+    using Implementation_t = ManagerImplementation;
     using traits = StructureManager_traits<AdaptorHalfList>;
     using parent_traits = typename ManagerImplementation::traits;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
@@ -253,7 +253,7 @@ namespace rascal {
       }
     }
 
-  protected:
+   protected:
     //! Reference to the underlying manager
     ManagerImplementation & manager;
 
@@ -269,7 +269,7 @@ namespace rascal {
      * ``nb_neigh`` can be accessed
      */
     std::vector<size_t> offsets;
-  private:
+   private:
   };
 
   /* ---------------------------------------------------------------------- */

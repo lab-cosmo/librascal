@@ -2,13 +2,14 @@
  * file   property_typed.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
+ * @author Felix Musil <felix.musil@epfl.ch>
  *
  * @date   06 Aug 2018
  *
  * @brief Implements intermediate property class for which the type of stored
  *          objects is known, but not the size
  *
- * Copyright © 2018 Federico Giberti, Till Junge, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2018 Federico Giberti, Till Junge, Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -45,6 +46,7 @@ namespace rascal {
     struct Value {
       using type = Eigen::Map<Eigen::Matrix<T, NbRow, NbCol>>;
       using reference = type;
+      using const_reference = const type;
 
       //! get a reference to specific value at row and colum
       static reference get_ref(T & value, int nb_row, int nb_col) {
@@ -56,10 +58,21 @@ namespace rascal {
         return type(&value);
       }
 
+
       //! push back data into ``property``
       static void push_in_vector(std::vector<T> & vec, reference ref) {
         for (size_t j{0}; j < NbCol; ++j) {
           for (size_t i{0}; i < NbRow; ++i) {
+            vec.push_back(ref(i, j));
+          }
+        }
+      }
+
+      //! Dynamic size overloading of push back data into ``property``
+      static void push_in_vector(std::vector<T> & vec, reference ref,
+                                 Dim_t& nb_row,  Dim_t& nb_col) {
+        for (Dim_t j{0}; j < nb_col; ++j) {
+          for (Dim_t i{0}; i < nb_row; ++i) {
             vec.push_back(ref(i, j));
           }
         }
@@ -79,6 +92,18 @@ namespace rascal {
           }
         }
       }
+
+      //! Dynamic size overloading of push back data into ``property``
+      template<typename Derived>
+      static void push_in_vector(std::vector<T> & vec,
+                                 const Eigen::DenseBase<Derived> & ref,
+                                const Dim_t& nb_row, const Dim_t& nb_col) {
+        for (Dim_t j{0}; j < nb_col; ++j) {
+          for (Dim_t i{0}; i < nb_row; ++i) {
+            vec.push_back(ref(i, j));
+          }
+        }
+      }
     };
 
     /* ---------------------------------------------------------------------- */
@@ -89,9 +114,13 @@ namespace rascal {
       constexpr static Dim_t NbCol{1};
       using type = T;
       using reference = T&;
+      using const_reference = const T &;
 
       //! get a reference to a scalar value
       static reference get_ref(T & value) {return value;}
+
+      //! get a reference to a scalar value
+      static const_reference get_ref(const T & value) {return value;}
 
       //! push a scalar in a vector
       static void push_in_vector(std::vector<T> & vec, reference ref) {
@@ -177,6 +206,11 @@ namespace rascal {
       this->values.resize(new_size);
     }
 
+    //! Adjust size of values (only increases, never frees)
+    size_t size() const {
+      return this->values.size()/this->get_nb_comp();
+    }
+
     /**
      * shortens the vector so that the manager can push_back into it (capacity
      * not reduced)
@@ -203,10 +237,30 @@ namespace rascal {
                             this->get_nb_col());
     }
 
+    //! getter to the underlying data storage
+    inline std::vector<T>& get_raw_data() {
+      return this->values;
+    }
+
+    //! get number of different distinct element in the property
+    //! (typically the number of center)
+    inline size_t get_nb_item() const {
+      return values.size()/this->get_nb_comp();
+    }
+
+    /**
+     * Accessor for last pushed entry for dynamically sized properties
+     */
+    reference back() {
+      auto && index{this->values.size() - this->get_nb_comp()};
+      return Value::get_ref(this->values[index*this->get_nb_comp()],
+                            this->get_nb_row(),
+                            this->get_nb_col());
+    }
+
    protected:
     std::vector<T> values{}; //!< storage for properties
   };
-
-}  // rascal
+}  // namespace rascal
 
 #endif /* PROPERTY_TYPED_H */

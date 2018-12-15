@@ -30,7 +30,7 @@
 #define DO_TIMING 1
 #ifdef DO_TIMING
 #include <iostream>
-#include <chrono>
+#include <chrono> // NOLINT
 #include<tuple>
 using hrclock = std::chrono::high_resolution_clock;
 #endif

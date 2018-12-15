@@ -40,8 +40,8 @@ namespace rascal {
   // checking iteration
   BOOST_FIXTURE_TEST_CASE(iterator_test,
                           ManagerFixture<StructureManagerCenters>) {
-    BOOST_CHECK_EQUAL(manager.get_size(), numbers.size());
-    BOOST_CHECK_EQUAL(manager.get_nb_clusters(1), numbers.size());
+    BOOST_CHECK_EQUAL(manager.get_size(), atom_types.size());
+    BOOST_CHECK_EQUAL(manager.get_nb_clusters(1), atom_types.size());
 
     int atom_counter{};
     constexpr bool verbose{false};
@@ -101,7 +101,7 @@ namespace rascal {
     for (auto atom : manager) {
       auto index = atom.get_atom_index();
       auto type = atom.get_atom_type();
-      BOOST_CHECK_EQUAL(type, numbers[index]);
+      BOOST_CHECK_EQUAL(type, atom_types[index]);
 
       auto cluster_size = manager.get_cluster_size(atom);
       BOOST_CHECK_EQUAL(cluster_size, 1);

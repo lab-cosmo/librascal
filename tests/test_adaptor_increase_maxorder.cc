@@ -36,8 +36,10 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /*
-   * test if the PairFixtureFile is constructed properly and accepts the adaptor
-   * to increase the MaxOrder to 3
+   * test if the PairFixtureFile is constructed properly
+   *
+   * ``pair_manager`` is a StructureManager with MaxOrder=2 and a half neighbour
+   * list. It is increased to MaxOrder=3
    */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
                           PairFixtureFile<StructureManagerCenters>) {
@@ -49,6 +51,12 @@ namespace rascal {
   /*
    * test if iteration of MaxOrder=3 adaptor is iterable and yields the same
    * pairs as the underlying pair_manager.
+   *
+   * ``pair_manager`` is a StructureManager with MaxOrder=2 and a half neighbour
+   * list
+   *
+   * ``adaptor`` is a MaxOrder=3 manager, based on the neighbourlist of
+   * pair_manager
    */
   BOOST_FIXTURE_TEST_CASE(iterator_test,
                           PairFixtureFile<StructureManagerCenters>) {
@@ -138,6 +146,8 @@ namespace rascal {
    * Test with 3 atoms, included stacking: full pair list -> half pair list ->
    * triplet list; SM is used as a shorthand for StructureManager. Checked
    * positions are specific to StructureManagerLammps and therefore hardcoded.
+   *
+   * ``manager`` is a StructureManager with MaxOrder=2 and full neighbour list
    */
   BOOST_FIXTURE_TEST_CASE(pair_to_triplet_extension,
                           ManagerFixture<StructureManagerLammps>) {
@@ -145,7 +155,6 @@ namespace rascal {
 
     if (verbose) std::cout << ">> pair to triplet extension" << std::endl;
 
-    // TODO(markus): should this be in a fixture?
     AdaptorHalfList<StructureManagerLammps> SM2{manager};
     SM2.update();
     AdaptorMaxOrder<AdaptorHalfList<StructureManagerLammps>> SM3{SM2};

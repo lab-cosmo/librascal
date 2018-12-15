@@ -5,7 +5,7 @@
  *
  * @date   14 October 2018
  *
- * @brief defines bridge between the cephes C# library and 
+ * @brief defines bridge between the cephes C# library and
  * librascal
  *
  * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
@@ -32,7 +32,7 @@
 
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
   namespace rascal {
     namespace cephes {
 

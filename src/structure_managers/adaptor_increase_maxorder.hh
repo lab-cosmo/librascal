@@ -81,6 +81,7 @@ namespace rascal {
 
     using Parent =
       StructureManager<AdaptorMaxOrder<ManagerImplementation>>;
+    using Implementation_t = ManagerImplementation;
     using traits = StructureManager_traits<AdaptorMaxOrder>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     template<size_t Order>
@@ -170,6 +171,11 @@ namespace rascal {
 
     //! get atom type from underlying manager
     inline const int & get_atom_type(const int & atom_index) const {
+      return this->manager.get_atom_type(atom_index);
+    }
+
+    //! get atom type from underlying manager
+    inline int & get_atom_type(const int & atom_index) {
       return this->manager.get_atom_type(atom_index);
     }
 

@@ -73,7 +73,7 @@ namespace rascal {
   template <class ManagerImplementation>
   class AdaptorFullList: public
   StructureManager<AdaptorFullList<ManagerImplementation>> {
-  public:
+   public:
     using Parent =
       StructureManager<AdaptorFullList<ManagerImplementation>>;
     using traits = StructureManager_traits<AdaptorFullList>;
@@ -247,7 +247,7 @@ namespace rascal {
       }
     }
 
-  protected:
+   protected:
     /* ---------------------------------------------------------------------- */
     //! Reference to the underlying manager
     ManagerImplementation & manager;
@@ -265,7 +265,7 @@ namespace rascal {
      */
     std::vector<size_t> offsets;
 
-  private:
+   private:
   };
 
   /* ---------------------------------------------------------------------- */
