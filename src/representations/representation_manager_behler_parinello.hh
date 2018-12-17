@@ -72,7 +72,7 @@ namespace rascal {
     //! Copy assignment operator
     BehlerParinello & operator=(const BehlerParinello & other);
 
-    //! Move assignment operator
+9    //! Move assignment operator
     BehlerParinello & operator=(BehlerParinello && other) = default;
 
     /**
