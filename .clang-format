@@ -4,3 +4,4 @@ NamespaceIndentation: All
 SortIncludes: false
 PointerAlignment: Middle
 AlwaysBreakTemplateDeclarations: true
+ColumnLimit: 80
