@@ -38,13 +38,11 @@ using hrclock = std::chrono::high_resolution_clock;
 namespace rascal {
   namespace utils {
 
-    std::tuple<Eigen::ArrayXi, Eigen::ArrayXd>
-    select_fps(const Eigen::Ref<const RowMatrixXd>& feature_matrix,
+
+   FPSReturnTuple
+   select_fps(const Eigen::Ref<const RowMatrixXd>& feature_matrix,
                int n_sparse, int i_first_point,
-               const std::tuple<const Eigen::ArrayXi,
-                  const Eigen::ArrayXd, const Eigen::ArrayXd>& restart,
-               std::tuple<Eigen::ArrayXi,
-                  Eigen::ArrayXd, Eigen::ArrayXd>& save_restart) {
+               const FPSReturnTuple_const& restart) {
 
       // number of inputs
       int n_inputs = feature_matrix.rows();
@@ -72,30 +70,41 @@ namespace rascal {
       int i_new{};
       double d2max_new{};
 
-      // restart the FPS calculation from previous run, if requested
+      // computes the squared modulus of input points
+      feature_x2 = feature_matrix.cwiseAbs2().rowwise().sum();
+
+      // extracts (possibly empty) restart arrays
       auto i_restart = std::get<0>(restart);
       auto d_restart = std::get<1>(restart);
+      auto ld_restart = std::get<2>(restart);
+      ssize_t i_start_index = 1;
       if (i_restart.size() > 0) {
+         // restart the FPS calculation from previous run, if requested
          if (d_restart.size() != i_restart.size())
             std::runtime_error("Restart indices & distances mismatch");
          if (i_restart.size()>=n_sparse)
             std::runtime_error("Restart arrays larger than target ");
 
+         // sets the part of the data we know already
+         sparse_indices.head(i_restart.size()) = i_restart;
+         sparse_minmax_d2.head(i_restart.size()) = d_restart;
+         list_min_d2 = ld_restart;
+
+         i_start_index = i_restart.size();
+      }
+      else
+      {
+         // standard initialization
+         // initializes arrays taking the first point provided in input
+         sparse_indices(0) = i_first_point;
+         //  distance square to the selected point
+         list_new_d2 = feature_x2 + feature_x2(i_first_point) -
+           2*(feature_matrix*feature_matrix.row(i_first_point)
+              .transpose()).array();
+         list_min_d2 = list_new_d2;  // we only have this point....
       }
 
-
-      // computes the squared modulus of input points
-      feature_x2 = feature_matrix.cwiseAbs2().rowwise().sum();
-
-      // initializes arrays taking the first point provided in input
-      sparse_indices(0) = i_first_point;
-      //  distance square to the selected point
-      list_new_d2 = feature_x2 + feature_x2(i_first_point) -
-        2*(feature_matrix*feature_matrix.row(i_first_point)
-           .transpose()).array();
-      list_min_d2 = list_new_d2;  // we only have this point....
-
-      for (ssize_t i=1 ; i < n_sparse; ++i) {
+      for (ssize_t i=i_start_index ; i < n_sparse; ++i) {
         // picks max dist and its index
         d2max_new = list_min_d2.maxCoeff(&i_new);
         sparse_indices(i) = i_new;
@@ -114,18 +123,8 @@ namespace rascal {
       }
       sparse_minmax_d2(n_sparse-1) = 0;
 
-      // stores restart information in the return array (if provided)
-      if (&save_restart != &save_restart_dummy)
-      {
-         std::get<0>(save_restart).resize(n_sparse);
-         std::get<0>(save_restart) = sparse_indices;
-         std::get<1>(save_restart).resize(n_sparse);
-         std::get<1>(save_restart) = sparse_minmax_d2;
-         std::get<2>(save_restart).resize(n_inputs);
-         std::get<2>(save_restart) = list_new_d2;
-      }
-
-      return std::make_tuple(sparse_indices, sparse_minmax_d2);
+      return std::make_tuple(sparse_indices, sparse_minmax_d2,
+                             list_min_d2);
     }
 
     /* ---------------------------------------------------------------------- */

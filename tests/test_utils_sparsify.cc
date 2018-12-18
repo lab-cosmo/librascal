@@ -51,7 +51,8 @@ namespace rascal {
 
       Eigen::ArrayXi ifps;
       Eigen::ArrayXd dfps;
-      std::tie(ifps, dfps) =
+      Eigen::ArrayXd ldmin2;
+      std::tie(ifps, dfps, ldmin2) =
          utils::select_fps(feature_matrix, 5, 0);
 
       for (unsigned int i = 0; i < fps_order.size(); ++i) {

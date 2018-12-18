@@ -35,9 +35,6 @@
 
 namespace rascal {
   namespace utils {
-    std::tuple<Eigen::ArrayXi,Eigen::ArrayXd, Eigen::ArrayXd>
-       save_restart_dummy = std::make_tuple(Eigen::ArrayXi(0),
-                     Eigen::ArrayXd(0), Eigen::ArrayXd(0));
 
     using RowMatrixXd = Eigen::Matrix<double, Eigen::Dynamic,
                                       Eigen::Dynamic, Eigen::RowMajor>;
@@ -54,16 +51,21 @@ namespace rascal {
      *        points, and a list of the maximum minimum distance obtained at
      *        each stage
      */
-    std::tuple<Eigen::ArrayXi, Eigen::ArrayXd>
+
+    typedef std::tuple<Eigen::ArrayXi, Eigen::ArrayXd, Eigen::ArrayXd>
+        FPSReturnTuple;
+
+    typedef std::tuple<const Eigen::ArrayXi, const Eigen::ArrayXd,
+            const Eigen::ArrayXd>
+        FPSReturnTuple_const;
+
+
+    FPSReturnTuple
     select_fps(const Eigen::Ref<const RowMatrixXd> & feature_matrix,
                int n_sparse = 0, int i_first_point = 0,
-               const std::tuple<const Eigen::ArrayXi,
-                  const Eigen::ArrayXd, const Eigen::ArrayXd>&
+               const utils::FPSReturnTuple_const&
                   restart = std::make_tuple(Eigen::ArrayXi(0),
-                     Eigen::ArrayXd(0), Eigen::ArrayXd(0)),
-               std::tuple<Eigen::ArrayXi,
-                  Eigen::ArrayXd, Eigen::ArrayXd>&
-                  save_restart = save_restart_dummy
+                     Eigen::ArrayXd(0), Eigen::ArrayXd(0))
                );
 
     /**

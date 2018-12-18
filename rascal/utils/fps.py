@@ -1,7 +1,7 @@
 from ..lib import sparsification
 
 def fps(feature_matrix, n_select, starting_index=None,
-        algorithm='simple'):
+        method='simple', restart = None):
     """
     Farthest Point Sampling [1] routine using librascal.
 
@@ -14,7 +14,7 @@ def fps(feature_matrix, n_select, starting_index=None,
     starting_index : int, optional
         Index of the first sample to select (the default is None,
                            which corresponds to starting_index == 0)
-    algorithm : str, optional
+    method : str, optional
         Select which kind of FPS selection to perform:
         + 'simple' is the basic fps selection [1].
         + 'voronoi' uses voronoi polyhedra to avoid some
@@ -26,6 +26,9 @@ def fps(feature_matrix, n_select, starting_index=None,
         Selected indices refering to the feature_matrix order.
     sparse_minmax_d2 : numpy.ndarray[float64[n_select]]
         MIN-MAX distance at each step in the selection
+    lmin_d2: numpy.ndarray[float64[n]]
+        array of Hausdorff distances between the n points and the
+        n_select FPS points
 
 
 
@@ -38,19 +41,25 @@ def fps(feature_matrix, n_select, starting_index=None,
     if starting_index is None:
         starting_index = 0
 
-    if algorithm == 'simple':
-        sparse_indices,sparse_minmax_d2,sparse_min_d2 = \
-            sparsification.fps(feature_matrix,
-                n_select,starting_index)
 
-    elif algorithm == 'voronoi':
+    if method == 'simple':
+        if restart is None:
+            sparse_indices,sparse_minmax_d2,lmin_d2 = \
+             sparsification.fps(feature_matrix,n_select,starting_index)
+        else:
+            sparse_indices,sparse_minmax_d2,lmin_d2 = \
+             sparsification.fps(feature_matrix,n_select,
+              starting_index, restart)
+        print("restart indices", lmin_d2[0])
+
+    elif method == 'voronoi':
         sparse_indices, sparse_minmax_d2, \
             voronoi_indices, voronoi_r2 = \
             sparsification.fps_voronoi(feature_matrix,
                 n_select,starting_index)
 
     else:
-        raise Exception('Unknown FPS algorithm {}'.format(algorithm))
+        raise Exception('Unknown FPS algorithm {}'.format(method))
 
-    return sparse_indices,sparse_minmax_d2
+    return sparse_indices,sparse_minmax_d2,lmin_d2
 

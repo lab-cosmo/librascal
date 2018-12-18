@@ -27,7 +27,6 @@
 
 
 #include "bind_include.hh"
-
 namespace utils = rascal::utils;
 
 
@@ -35,6 +34,7 @@ void utils_binding(py::module & mod) {
   py::module m_utils_sparse = mod.def_submodule("sparsification");
   m_utils_sparse.doc() = "Sparsification Routines";
 
+  //py::class_<utils::FPSReturnTuple>(m_utils_sparse, "FPSReturnTuple");
   m_utils_sparse.def("fps", &utils::select_fps,
         "Selects points from a NxD dimensional"
         " feature matrix by farthest point sampling (N is the number of"
@@ -42,8 +42,7 @@ void utils_binding(py::module & mod) {
         py::arg("feature_matrix"), py::arg("n_sparse")=0,
         py::arg("i_first_point")=0,
         py::arg("restart") = std::make_tuple(Eigen::ArrayXi(0),
-                                Eigen::ArrayXd(0), Eigen::ArrayXd(0)),
-        py::arg("save_restart").noconvert() = utils::save_restart_dummy );
+                                Eigen::ArrayXd(0), Eigen::ArrayXd(0)) );
 
   m_utils_sparse.def("fps_voronoi", &utils::select_fps_voronoi,
         "Selects points from a"
