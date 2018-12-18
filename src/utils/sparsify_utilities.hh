@@ -47,9 +47,15 @@ namespace rascal {
      *        value of zero sorts the whole set of inputs
      * @param i_first_point indicates the index of the first FPS selection.
      *        Defaults to zero
+     * @param restart is a tuple containing the outputs of a previous
+     *        select_fps call (indices, distance decay, haussdorf dist),
+     *        that can be used to restart the calculation.
+     *        Defaults to empty arrays, signaling to start from scratch.
+     *        If the distance arrays are empty, they are recalculated.
      * @return a tuple containing the list of n_sparse indices of the selected
-     *        points, and a list of the maximum minimum distance obtained at
-     *        each stage
+     *        points, a list of the maximum minimum distance obtained at
+     *        each stage, and a list of the Hausdorff distances between all the
+     *        inputs and the selected set
      */
 
     typedef std::tuple<Eigen::ArrayXi, Eigen::ArrayXd, Eigen::ArrayXd>
@@ -63,7 +69,7 @@ namespace rascal {
     FPSReturnTuple
     select_fps(const Eigen::Ref<const RowMatrixXd> & feature_matrix,
                int n_sparse = 0, int i_first_point = 0,
-               const utils::FPSReturnTuple_const&
+               const FPSReturnTuple_const&
                   restart = std::make_tuple(Eigen::ArrayXi(0),
                      Eigen::ArrayXd(0), Eigen::ArrayXd(0))
                );

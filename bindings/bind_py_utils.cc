@@ -34,7 +34,6 @@ void utils_binding(py::module & mod) {
   py::module m_utils_sparse = mod.def_submodule("sparsification");
   m_utils_sparse.doc() = "Sparsification Routines";
 
-  //py::class_<utils::FPSReturnTuple>(m_utils_sparse, "FPSReturnTuple");
   m_utils_sparse.def("fps", &utils::select_fps,
         "Selects points from a NxD dimensional"
         " feature matrix by farthest point sampling (N is the number of"

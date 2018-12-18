@@ -79,18 +79,55 @@ namespace rascal {
       auto ld_restart = std::get<2>(restart);
       ssize_t i_start_index = 1;
       if (i_restart.size() > 0) {
-         // restart the FPS calculation from previous run, if requested
-         if (d_restart.size() != i_restart.size())
-            std::runtime_error("Restart indices & distances mismatch");
          if (i_restart.size()>=n_sparse)
-            std::runtime_error("Restart arrays larger than target ");
+            throw std::runtime_error("Restart arrays larger\
+                                     than target ");
 
-         // sets the part of the data we know already
          sparse_indices.head(i_restart.size()) = i_restart;
-         sparse_minmax_d2.head(i_restart.size()) = d_restart;
-         list_min_d2 = ld_restart;
-
          i_start_index = i_restart.size();
+
+         if (d_restart.size() > 0) {
+            // restart the FPS calculation from previous run.
+            // all information is available
+            if (d_restart.size() != i_restart.size())
+               throw std::runtime_error("Restart indices and \
+                                         distances mismatch");
+
+            // sets the part of the data we know already
+            sparse_minmax_d2.head(i_restart.size()) = d_restart;
+            list_min_d2 = ld_restart;
+         }
+         else {
+            // distances are not available, so we recompute them.
+            // note that this is as expensive as re-running a full
+            // FPS, but it allows us to extend an existing FPS set
+            list_new_d2 = feature_x2 + feature_x2(i_restart[0]) -
+                 2*(feature_matrix*feature_matrix.row(i_restart[0])
+                    .transpose()).array();
+            list_min_d2 = list_new_d2;
+            // this is basically the standard algorithm below, only that
+            // it is run on the first i_start_index points. see below
+            // for comments
+            for (ssize_t i=1 ; i < i_start_index; ++i) {
+
+               // if the feature matrix has been expanded, the data will
+               // not be selected in the same order, so we have to
+               // override the selection
+               i_new = i_restart[i];
+               d2max_new = list_min_d2[i_new];
+               //std::cerr<<i<<","<<i_new<<","<<i_restart[i]<<"\n";
+               /*d2max_new = list_min_d2.maxCoeff(&i_new);
+               if (i_new != i_restart[i])
+                  throw std::runtime_error("Reconstructed distances \
+                   are inconsistent with restart array");*/
+               sparse_indices(i) = i_new;
+               sparse_minmax_d2(i-1) = d2max_new;
+               list_new_d2 = feature_x2 + feature_x2(i_new) -
+                  2*(feature_matrix*
+                       feature_matrix.row(i_new).transpose()).array();
+               list_min_d2 = list_min_d2.min(list_new_d2);
+            }
+         }
       }
       else
       {
