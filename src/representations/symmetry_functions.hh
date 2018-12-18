@@ -81,7 +81,12 @@ namespace rascal {
     SymmetryFunEvaluator() = delete;
 
     //! construction from json input
-    SymmetryFunEvaluator(const json & hypers);
+    SymmetryFunEvaluator(StructureManager & structure) :
+      structure{structure},
+      params{},
+      function_values{this->structure, 1},
+      derivative_values{this->structure, Dim, 1}
+    {}
 
     //! Copy constructor
     SymmetryFunEvaluator(const SymmetryFunEvaluator & other) = delete;
@@ -99,6 +104,11 @@ namespace rascal {
     //! Move assignment operator
     SymmetryFunEvaluator & operator=(SymmetryFunEvaluator && other) = default;
 
+
+    void add_params(const json &  params) {this->raw_params.push_back(params)};
+
+    void init();
+
    protected:
     static constexpr size_t AtomOrder{1};
     static constexpr size_t PairOrder{2};
@@ -107,11 +117,11 @@ namespace rascal {
     static constexpr size_t PairLayer{
         std::get<1>(StructureManager::traits::LayerByOrder::type)};
 
+    StructureManager & structure;
+    std::vector<json> raw_params;
     ParamStorage params;
     TypedProperty<double, AtomOrder, AtomLayer> function_values;
     TypedProperty<double, PairOrder, PairLayer> derivative_values;
-
-   private:
   };
 
   /* ---------------------------------------------------------------------- */

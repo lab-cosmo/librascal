@@ -1,8 +1,57 @@
 {
-    "_comment" : "Sigmoid refers to cutoff function; order of parameters: eta, r_s, r_c",
-    "Sigmoid": "CosineShifted",
-    "params": [
-        [0.1, 0.0, 8.0],
-        [0.25, 5.6, 8.0]
-    ]
+    "_comment" :
+    "Sigmoid refers to cutoff function; order of parameters: eta, r_s, r_c",
+    "Sigmoid" : "CosineShifted",
+    "params" : [ [ 0.1, 0.0, 8.0 ], [ 0.25, 5.6, 8.0 ] ]
+}
+
+{
+    "InputLayer": {
+        "Sigmoid_Function" : {
+            "type": "CosineShifted",
+            "_comment" : "params is usually empty, except for CosineShifted"
+            "params": { "alpha": .9},
+            "Functions_by_r_cut" :
+            [ {"value": 8.0,
+               "Symmetry_Functions" :
+               [{
+                   "type" : "Gaussian",
+                   "params" : {
+                       "eta" : 0.1,
+                       "r_s" : 5.6
+                   }
+                   "species" : [ "Mg", "Si" ]
+               },
+                {
+                    "type" : "Gaussian",
+                    "params" : {
+                        "eta" : 0.2,
+                        "r_s" : 5.6
+                    }
+                    "species" : [ "Mg", "Si" ]
+                }
+               ]
+              },
+              "value": 12.0,
+              "Symmetry_Functions" :
+              [{
+                  "type" : "Gaussian",
+                  "params" : {
+                      "eta" : 0.1,
+                      "r_s" : 5.6
+                  }
+                  "species" : [ "Mg", "Si" ]
+              },
+               {
+                   "type" : "Gaussian",
+                   "params" : {
+                       "eta" : 0.2,
+                       "r_s" : 5.6
+                   }
+                   "species" : [ "Mg", "Si" ]
+               }
+              ]
+            }
+        }
+    }
 }

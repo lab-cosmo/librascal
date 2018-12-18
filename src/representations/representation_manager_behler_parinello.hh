@@ -26,10 +26,13 @@
  */
 
 #include "representation_manager_base.hh"
+#include "sigmoid_functions.hh"
 #include "structure_managers/species_manager.hh"
+#include "structure_managers/adaptor_filter.hh"
 #include "structure_managers/property.hh"
 
 #include <string>
+#include <vector>
 
 #ifndef REPRESENTATION_MANAGER_BEHLER_PARINELLO_H
 #define REPRESENTATION_MANAGER_BEHLER_PARINELLO_H
@@ -42,10 +45,15 @@ namespace rascal {
     static constexpr size_t MaxOrder{StructureManager::traits::MaxOrder};
     static constexpr size_t Dim{StructureManager::traits::Dim};
     static constexpr size_t ForceLayer{
-      std::get<0>(StructureManager::traits::LayerByOrder::type)};
+        std::get<0>(StructureManager::traits::LayerByOrder::type)};
 
     using Parent = RepresentationManagerBase;
-    using Force_t = Property<double, 1
+    using Force_t = Property<double, 1, ForceLayer, Dim>;
+
+    /**
+     * structuremanagers are filtered by cutoff for performance reasons
+     */
+    using StoredStructure_t = AdaptorFilter<StructureManager, MaxOrder>;
 
     //! Default constructor
     BehlerParinello() = delete;
@@ -72,7 +80,7 @@ namespace rascal {
     //! Copy assignment operator
     BehlerParinello & operator=(const BehlerParinello & other);
 
-9    //! Move assignment operator
+    //! Move assignment operator
     BehlerParinello & operator=(BehlerParinello && other) = default;
 
     /**
@@ -102,13 +110,13 @@ namespace rascal {
     size_t get_center_size() final { return this->structure.size(); }
 
    protected:
+    const SigmoidFuntype SigFunType;
     StructureManager & structure;
-    SpeciesManager<StructureManager> species;
-
+    std::vector<SpeciesManager<StoredStructure_t>> species;
   };
-
-#endif /* REPRESENTATION_MANAGER_BEHLER_PARINELLO_H */
 
 }  // namespace rascal
 
 #include "representation_manager_behler_parinello_impl.hh"
+
+#endif /* REPRESENTATION_MANAGER_BEHLER_PARINELLO_H */
