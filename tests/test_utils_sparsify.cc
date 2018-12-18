@@ -51,7 +51,8 @@ namespace rascal {
 
       Eigen::ArrayXi ifps;
       Eigen::ArrayXd dfps;
-      std::tie(ifps, dfps) = utils::select_fps(feature_matrix, 5, 0);
+      std::tie(ifps, dfps) =
+         utils::select_fps(feature_matrix, 5, 0);
 
       for (unsigned int i = 0; i < fps_order.size(); ++i) {
         BOOST_CHECK_EQUAL(ifps(i), fps_order[i]);

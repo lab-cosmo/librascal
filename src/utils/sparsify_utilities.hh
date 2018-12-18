@@ -35,6 +35,10 @@
 
 namespace rascal {
   namespace utils {
+    std::tuple<Eigen::ArrayXi,Eigen::ArrayXd, Eigen::ArrayXd>
+       save_restart_dummy = std::make_tuple(Eigen::ArrayXi(0),
+                     Eigen::ArrayXd(0), Eigen::ArrayXd(0));
+
     using RowMatrixXd = Eigen::Matrix<double, Eigen::Dynamic,
                                       Eigen::Dynamic, Eigen::RowMajor>;
     /**
@@ -52,7 +56,15 @@ namespace rascal {
      */
     std::tuple<Eigen::ArrayXi, Eigen::ArrayXd>
     select_fps(const Eigen::Ref<const RowMatrixXd> & feature_matrix,
-               int n_sparse = 0, int i_first_point = 0);
+               int n_sparse = 0, int i_first_point = 0,
+               const std::tuple<const Eigen::ArrayXi,
+                  const Eigen::ArrayXd, const Eigen::ArrayXd>&
+                  restart = std::make_tuple(Eigen::ArrayXi(0),
+                     Eigen::ArrayXd(0), Eigen::ArrayXd(0)),
+               std::tuple<Eigen::ArrayXi,
+                  Eigen::ArrayXd, Eigen::ArrayXd>&
+                  save_restart = save_restart_dummy
+               );
 
     /**
      * Farthest Point Sampling selection of points given the feature

@@ -40,12 +40,18 @@ namespace rascal {
 
     std::tuple<Eigen::ArrayXi, Eigen::ArrayXd>
     select_fps(const Eigen::Ref<const RowMatrixXd>& feature_matrix,
-               int n_sparse, int i_first_point) {
+               int n_sparse, int i_first_point,
+               const std::tuple<const Eigen::ArrayXi,
+                  const Eigen::ArrayXd, const Eigen::ArrayXd>& restart,
+               std::tuple<Eigen::ArrayXi,
+                  Eigen::ArrayXd, Eigen::ArrayXd>& save_restart) {
+
       // number of inputs
       int n_inputs = feature_matrix.rows();
 
       // n. of sparse points. defaults to full sorting of the inputs
       if (n_sparse == 0) n_sparse = n_inputs;
+
       // TODO(ceriottm) <- use the exception mechanism
       // for librascal whatever it is
       if (n_sparse > n_inputs)
@@ -65,6 +71,18 @@ namespace rascal {
       auto list_min_d2 = Eigen::ArrayXd(n_inputs);
       int i_new{};
       double d2max_new{};
+
+      // restart the FPS calculation from previous run, if requested
+      auto i_restart = std::get<0>(restart);
+      auto d_restart = std::get<1>(restart);
+      if (i_restart.size() > 0) {
+         if (d_restart.size() != i_restart.size())
+            std::runtime_error("Restart indices & distances mismatch");
+         if (i_restart.size()>=n_sparse)
+            std::runtime_error("Restart arrays larger than target ");
+
+      }
+
 
       // computes the squared modulus of input points
       feature_x2 = feature_matrix.cwiseAbs2().rowwise().sum();
@@ -95,6 +113,17 @@ namespace rascal {
         list_min_d2 = list_min_d2.min(list_new_d2);
       }
       sparse_minmax_d2(n_sparse-1) = 0;
+
+      // stores restart information in the return array (if provided)
+      if (&save_restart != &save_restart_dummy)
+      {
+         std::get<0>(save_restart).resize(n_sparse);
+         std::get<0>(save_restart) = sparse_indices;
+         std::get<1>(save_restart).resize(n_sparse);
+         std::get<1>(save_restart) = sparse_minmax_d2;
+         std::get<2>(save_restart).resize(n_inputs);
+         std::get<2>(save_restart) = list_new_d2;
+      }
 
       return std::make_tuple(sparse_indices, sparse_minmax_d2);
     }
