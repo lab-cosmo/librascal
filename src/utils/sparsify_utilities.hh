@@ -71,8 +71,7 @@ namespace rascal {
                int n_sparse = 0, int i_first_point = 0,
                const FPSReturnTuple_const&
                   restart = std::make_tuple(Eigen::ArrayXi(0),
-                     Eigen::ArrayXd(0), Eigen::ArrayXd(0))
-               );
+                     Eigen::ArrayXd(0), Eigen::ArrayXd(0)) );
 
     /**
      * Farthest Point Sampling selection of points given the feature

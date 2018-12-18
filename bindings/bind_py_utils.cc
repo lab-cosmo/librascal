@@ -38,8 +38,8 @@ void utils_binding(py::module & mod) {
         "Selects points from a NxD dimensional"
         " feature matrix by farthest point sampling (N is the number of"
         " sample in a D dimensional space).",
-        py::arg("feature_matrix"), py::arg("n_sparse")=0,
-        py::arg("i_first_point")=0,
+        py::arg("feature_matrix"), py::arg("n_sparse") = 0,
+        py::arg("i_first_point") = 0,
         py::arg("restart") = std::make_tuple(Eigen::ArrayXi(0),
                                 Eigen::ArrayXd(0), Eigen::ArrayXd(0)) );
 
