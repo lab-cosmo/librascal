@@ -58,18 +58,19 @@ namespace rascal {
      *        inputs and the selected set
      */
 
-    typedef std::tuple<Eigen::ArrayXi, Eigen::ArrayXd, Eigen::ArrayXd>
-        FPSReturnTuple;
+    using FPSReturnTuple =  std::tuple<Eigen::ArrayXi,
+                                       Eigen::ArrayXd,
+                                       Eigen::ArrayXd>;
 
-    typedef std::tuple<const Eigen::ArrayXi, const Eigen::ArrayXd,
-            const Eigen::ArrayXd>
-        FPSReturnTuple_const;
+    using FPSReturnTupleConst = std::tuple<const Eigen::ArrayXi,
+                                           const Eigen::ArrayXd,
+                                           const Eigen::ArrayXd>;
 
 
     FPSReturnTuple
     select_fps(const Eigen::Ref<const RowMatrixXd> & feature_matrix,
                int n_sparse = 0, int i_first_point = 0,
-               const FPSReturnTuple_const&
+               const FPSReturnTupleConst&
                   restart = std::make_tuple(Eigen::ArrayXi(0),
                      Eigen::ArrayXd(0), Eigen::ArrayXd(0)) );
 

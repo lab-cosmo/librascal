@@ -40,7 +40,7 @@ namespace rascal {
     FPSReturnTuple
     select_fps(const Eigen::Ref<const RowMatrixXd>& feature_matrix,
                int n_sparse, int i_first_point,
-               const FPSReturnTuple_const& restart) {
+               const FPSReturnTupleConst& restart) {
       // number of inputs
       int n_inputs = feature_matrix.rows();
 
