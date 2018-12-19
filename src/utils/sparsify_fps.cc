@@ -49,8 +49,9 @@ namespace rascal {
 
       // TODO(ceriottm) <- use the exception mechanism
       // for librascal whatever it is
-      if (n_sparse > n_inputs)
+      if (n_sparse > n_inputs) {
         throw std::runtime_error("Cannot FPS more inputs than those provided");
+      }
 
       /* return arrays */
       // FPS indices
@@ -76,8 +77,9 @@ namespace rascal {
       auto ld_restart = std::get<2>(restart);
       ssize_t i_start_index = 1;
       if (i_restart.size() > 0) {
-        if (i_restart.size() >= n_sparse)
+        if (i_restart.size() >= n_sparse) {
           throw std::runtime_error("Restart arrays larger than target ");
+        }
 
         sparse_indices.head(i_restart.size()) = i_restart;
         i_start_index = i_restart.size();
@@ -85,8 +87,9 @@ namespace rascal {
         if (d_restart.size() > 0) {
           // restart the FPS calculation from previous run.
           // all information is available
-          if (d_restart.size() != i_restart.size())
+          if (d_restart.size() != i_restart.size()) {
             throw std::runtime_error("Restart indices and distances mismatch");
+          }
 
           // sets the part of the data we know already
           sparse_minmax_d2.head(i_restart.size()) = d_restart;
