@@ -97,8 +97,9 @@ if (${BUILD_TESTS})
   target_include_directories(main_test_suite SYSTEM PRIVATE ${Boost_INCLUDE_DIR})
   target_link_libraries(main_test_suite ${Boost_LIBRARIES} rascal)
   add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
-  configure_file("tests/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
-  configure_file("tests/simple_cubic_9.json" ${CMAKE_BINARY_DIR} COPYONLY)
+  configure_file("tests/reference_data/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
+  configure_file("tests/reference_data/simple_cubic_9.json" ${CMAKE_BINARY_DIR} COPYONLY)
+  configure_file("tests/reference_data/atoms.xyz" ${CMAKE_BINARY_DIR} COPYONLY)
 
   file(COPY "tests/reference_data" DESTINATION ${CMAKE_BINARY_DIR})
 
@@ -146,4 +147,3 @@ if(CPPLINT_FOUND)
   cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/examples"
   "--filter=-build/namespaces")
 endif()
-
