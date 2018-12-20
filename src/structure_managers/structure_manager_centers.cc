@@ -6,7 +6,7 @@
  *
  * @date   06 August 2018
  *
- * @brief Manager with atoms and centers
+ * @brief Manager for center atoms from file or external
  *
  * Copyright © 2018  Felix Musil, Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -31,6 +31,7 @@
 #include <numeric>
 #include <fstream>
 #include <iostream>
+#include <string>
 
 namespace rascal {
 
@@ -46,12 +47,13 @@ namespace rascal {
    * and access them with the map. Using the vector type automatically ensures
    * contiguity
    */
-  void StructureManagerCenters::
-  update(const Eigen::Ref<const Eigen::MatrixXd, 0,
-         Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>> positions,
-         const Eigen::Ref<const Eigen::VectorXi> atom_types,
-         const Eigen::Ref<const Eigen::MatrixXd> cell,
-         const Eigen::Ref<const PBC_t> pbc) {
+  void StructureManagerCenters::update(
+      const Eigen::Ref<const Eigen::MatrixXd, 0,
+                       Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>>
+          positions,
+      const Eigen::Ref<const Eigen::VectorXi> atom_types,
+      const Eigen::Ref<const Eigen::MatrixXd> cell,
+      const Eigen::Ref<const PBC_t> pbc) {
     Eigen::Index Natom{positions.cols()};
     this->natoms = Natom;
     this->atoms_object.set_structure(positions, atom_types, cell, pbc);
@@ -103,18 +105,19 @@ namespace rascal {
    * does not throw an exception, if the file is not read. That is the reason
    * for the try/catch block -- to make sure, the file is opened.
    */
-  void StructureManagerCenters::
-  read_structure_from_json(const std::string filename) {
+  void StructureManagerCenters::read_structure_from_json(
+      const std::string filename) {
     // atoms object do hold read data from a file
     json_io::AtomicJsonData json_atoms_object{};
 
-    json j;
+    json json_tmp;
 
     try {
-      std::ifstream f(filename);
-      if (!f.is_open()) throw std::ios::failure("Error opening JSON file!");
-      f >> j;
-    } catch (const std::exception& e) {
+      std::ifstream file_handle(filename);
+      if (!file_handle.is_open())
+        throw std::ios::failure("Error opening JSON file!");
+      file_handle >> json_tmp;
+    } catch (const std::exception & e) {
       std::cerr << e.what() << std::endl;
       std::exit(EXIT_FAILURE);
     }
@@ -130,13 +133,39 @@ namespace rascal {
      * fields for the <code>AtomicStructure</code> object defined in the header
      * belonging to this file. Here, just the first one is read.
      */
-    json_atoms_object = j.begin().value();
+    json_atoms_object = json_tmp.begin().value();
     this->atoms_object.set_structure(json_atoms_object);
   }
 
   /* ---------------------------------------------------------------------- */
-  void StructureManagerCenters::
-  read_structure_from_xyz(const std::string filename) {
-    //tdb
+  void
+  StructureManagerCenters::read_structure_from_xyz(const std::string filename) {
+
+    //
+    // storing atom related data from file
+    std::vector<double> positions;
+    std::vector<int> atom_types;
+    std::vector<double> cell;
+    std::vector<int> pbc;
+
+    try {
+      std::ifstream file_handle(filename);
+      if (!file_handle.is_open())
+        throw std::ios::failure("Error opening XYZ file!");
+
+      std::string line_string{};
+      std::vector<string> split_line{};
+
+      std::getline(file_handle, line_string);
+      std::reduce
+
+      while (std::getline(file_handle, line_string)) {
+        std::cout << "reading xyz file" << std::endl;
+        std::cout << line_string << std::endl;
+      }
+    } catch (const std::exception & e) {
+      std::cerr << e.what() << std::endl;
+      std::exit(EXIT_FAILURE);
+    }
   }
-} // rascal
+}  // namespace rascal
