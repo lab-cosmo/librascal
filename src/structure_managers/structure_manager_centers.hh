@@ -283,7 +283,11 @@ namespace rascal {
      */
     void read_structure_from_json(const std::string filename);
 
-    // TODO(markus): add function to read from XYZ files
+    /**
+     * Function for reading data from an XYZ file format. See defition
+     * [here](https://en.wikipedia.org/wiki/XYZ_file_format).
+     */
+    void read_structure_from_xyz(const std::string filename);
 
    protected:
     /**

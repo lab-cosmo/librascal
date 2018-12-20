@@ -135,5 +135,8 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-
+  void StructureManagerCenters::
+  read_structure_from_xyz(const std::string filename) {
+    //tdb
+  }
 } // rascal
