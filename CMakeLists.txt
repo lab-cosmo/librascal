@@ -147,3 +147,9 @@ if(CPPLINT_FOUND)
   "--filter=-build/namespaces")
 endif()
 
+# make python library of rascal usable in build folder
+add_custom_target(pyrascalcopy ALL)
+add_custom_command(TARGET pyrascalcopy POST_BUILD
+  COMMAND cp -R
+  ${CMAKE_SOURCE_DIR}/rascal ${CMAKE_BINARY_DIR}
+  )
