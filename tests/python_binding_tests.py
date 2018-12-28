@@ -11,6 +11,8 @@ from python_representation_manager_test import (
 )
 from python_math_test import TestMath
 
+from python_test_sparsify_fps import TestFPS
+
 class SimpleCheck(unittest.TestCase):
     def setUp(self):
         self.truth = True

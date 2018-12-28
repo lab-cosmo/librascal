@@ -30,22 +30,23 @@
 #define DO_TIMING 1
 #ifdef DO_TIMING
 #include <iostream>
-#include <chrono> // NOLINT
-#include<tuple>
+#include <chrono>  // NOLINT
+#include <tuple>
 using hrclock = std::chrono::high_resolution_clock;
 #endif
 
 namespace rascal {
   namespace utils {
     FPSReturnTuple
-    select_fps(const Eigen::Ref<const RowMatrixXd>& feature_matrix,
+    select_fps(const Eigen::Ref<const RowMatrixXd> & feature_matrix,
                int n_sparse, int i_first_point,
-               const FPSReturnTupleConst& restart) {
+               const FPSReturnTupleConst & restart) {
       // number of inputs
       int n_inputs = feature_matrix.rows();
 
       // n. of sparse points. defaults to full sorting of the inputs
-      if (n_sparse == 0) n_sparse = n_inputs;
+      if (n_sparse == 0)
+        n_sparse = n_inputs;
 
       // TODO(ceriottm) <- use the exception mechanism
       // for librascal whatever it is
@@ -99,13 +100,14 @@ namespace rascal {
           // note that this is as expensive as re-running a full
           // FPS, but it allows us to extend an existing FPS set
           list_new_d2 = feature_x2 + feature_x2(i_restart[0]) -
-                 2*(feature_matrix*feature_matrix.row(i_restart[0])
-                    .transpose()).array();
+                        2 * (feature_matrix *
+                             feature_matrix.row(i_restart[0]).transpose())
+                                .array();
           list_min_d2 = list_new_d2;
           // this is basically the standard algorithm below, only that
           // it is run on the first i_start_index points. see below
           // for comments
-          for (ssize_t i=1 ; i < i_start_index; ++i) {
+          for (ssize_t i = 1; i < i_start_index; ++i) {
             // if the feature matrix has been expanded, the data will
             // not be selected in the same order, so we have to
             // override the selection
@@ -116,9 +118,11 @@ namespace rascal {
              throw std::runtime_error("Reconstructed distances \
               are inconsistent with restart array");*/
             sparse_indices(i) = i_new;
-            sparse_minmax_d2(i-1) = d2max_new;
-            list_new_d2 = feature_x2 + feature_x2(i_new) -
-               2*(feature_matrix*feature_matrix.row(i_new).transpose()).array();
+            sparse_minmax_d2(i - 1) = d2max_new;
+            list_new_d2 =
+                feature_x2 + feature_x2(i_new) -
+                2 * (feature_matrix * feature_matrix.row(i_new).transpose())
+                        .array();
             list_min_d2 = list_min_d2.min(list_new_d2);
           }
         }
@@ -127,37 +131,41 @@ namespace rascal {
         // initializes arrays taking the first point provided in input
         sparse_indices(0) = i_first_point;
         //  distance square to the selected point
-        list_new_d2 = feature_x2 + feature_x2(i_first_point) - 2*(feature_matrix
-           *feature_matrix.row(i_first_point).transpose()).array();
+        list_new_d2 =
+            feature_x2 + feature_x2(i_first_point) -
+            2 * (feature_matrix * feature_matrix.row(i_first_point).transpose())
+                    .array();
         list_min_d2 = list_new_d2;  // we only have this point....
       }
 
-      for (ssize_t i=i_start_index ; i < n_sparse; ++i) {
+      for (ssize_t i = i_start_index; i < n_sparse; ++i) {
         // picks max dist and its index
         d2max_new = list_min_d2.maxCoeff(&i_new);
         sparse_indices(i) = i_new;
-        sparse_minmax_d2(i-1) = d2max_new;
+        sparse_minmax_d2(i - 1) = d2max_new;
 
         // compute distances^2 to the new point
         // TODO(ceriottm): encapsulate the distance calculation
         // into an interface function
         // dispatching to the proper distance/kernel needed
-        list_new_d2 = feature_x2 + feature_x2(i_new) -
-          2*(feature_matrix*feature_matrix.row(i_new).transpose()).array();
+        list_new_d2 =
+            feature_x2 + feature_x2(i_new) -
+            2 * (feature_matrix * feature_matrix.row(i_new).transpose())
+                    .array();
 
         // this actually returns a list with the element-wise minimum between
         // list_min_d2(i) and list_new_d2(i)
         list_min_d2 = list_min_d2.min(list_new_d2);
       }
-      sparse_minmax_d2(n_sparse-1) = 0;
+      sparse_minmax_d2(n_sparse - 1) = 0;
 
-      return std::make_tuple(sparse_indices, sparse_minmax_d2,
-                             list_min_d2);
+      return std::make_tuple(sparse_indices, sparse_minmax_d2, list_min_d2);
     }
 
     /* ---------------------------------------------------------------------- */
-    std::tuple<Eigen::ArrayXi, Eigen::ArrayXd, Eigen::ArrayXi, Eigen::ArrayXd>
-    select_fps_voronoi(const Eigen::Ref<const RowMatrixXd>& feature_matrix,
+    std::tuple<Eigen::ArrayXi, Eigen::ArrayXd, Eigen::ArrayXd, Eigen::ArrayXi,
+               Eigen::ArrayXd>
+    select_fps_voronoi(const Eigen::Ref<const RowMatrixXd> & feature_matrix,
                        int n_sparse, int i_first_point) {
       // number of inputs
       int n_inputs = feature_matrix.rows();
@@ -165,8 +173,9 @@ namespace rascal {
       int n_features = feature_matrix.cols();
 
       // defaults to full sorting of the inputs
-      if (n_sparse == 0) n_sparse = n_inputs;
-      //TODO(ceriottm) <- use the exception mechanism
+      if (n_sparse == 0)
+        n_sparse = n_inputs;
+      // TODO(ceriottm) <- use the exception mechanism
       // for librascal whatever it is
       if (n_sparse > n_inputs)
         throw std::runtime_error("Cannot FPS more inputs than those provided");
@@ -208,9 +217,10 @@ namespace rascal {
       // initializes arrays taking the first point provided in input
       sparse_indices(0) = i_first_point;
       //  distance square to the selected point
-      list_new_d2 = feature_x2 + feature_x2(i_first_point) -
-        2*(feature_matrix*feature_matrix.row(i_first_point)
-           .transpose()).array();
+      list_new_d2 =
+          feature_x2 + feature_x2(i_first_point) -
+          2 * (feature_matrix * feature_matrix.row(i_first_point).transpose())
+                  .array();
       list_min_d2 = list_new_d2;  // we only have this point....
 
       voronoi_r2 = 0.0;
@@ -226,7 +236,7 @@ namespace rascal {
       int64_t ndist_eval{0}, npoint_skip{0}, ndist_active{0};
       auto gtstart = hrclock::now();
 #endif
-      for (int i=1 ; i < n_sparse; ++i) {
+      for (int i = 1; i < n_sparse; ++i) {
 #ifdef DO_TIMING
         auto tstart = hrclock::now();
 #endif
@@ -242,12 +252,13 @@ namespace rascal {
         i_new = voronoi_i_far(i_new);
 #ifdef DO_TIMING
         auto tend = hrclock::now();
-        tmax += std::chrono::duration_cast<std::chrono::nanoseconds>
-          (tend-tstart).count();
+        tmax +=
+            std::chrono::duration_cast<std::chrono::nanoseconds>(tend - tstart)
+                .count();
 #endif
         // store properties of the new FPS selection
         sparse_indices(i) = i_new;
-        sparse_minmax_d2(i-1) = d2max_new;
+        sparse_minmax_d2(i - 1) = d2max_new;
         feature_new = feature_matrix.row(i_new);
         /*
          * we store indices of the selected features because we can then compute
@@ -270,14 +281,15 @@ namespace rascal {
          * of these might have been computed already, but bookkeeping could be
          * worse that recomputing (TODO: verify!)
          */
-        list_sel_d2q.head(i) = feature_x2(i_new) -
-          2*(feature_sel.topRows(i)*feature_new).array();
-        for (ssize_t j=0; j < i; ++j) {
+        list_sel_d2q.head(i) =
+            feature_x2(i_new) -
+            2 * (feature_sel.topRows(i) * feature_new).array();
+        for (ssize_t j = 0; j < i; ++j) {
           list_sel_d2q(j) += feature_x2(sparse_indices(j));
         }
         list_sel_d2q.head(i) *= 0.25;  // triangle inequality: voronoi_r < d/2
 
-        for (ssize_t j=0; j < i; ++j) {
+        for (ssize_t j = 0; j < i; ++j) {
           /*
            * computes distances to previously selected points and uses triangle
            * inequality to find which voronoi sets might be affected by the
@@ -297,13 +309,14 @@ namespace rascal {
 
 #ifdef DO_TIMING
         tend = hrclock::now();
-        tactive += std::chrono::duration_cast<std::chrono::nanoseconds>
-          (tend-tstart).count();
+        tactive +=
+            std::chrono::duration_cast<std::chrono::nanoseconds>(tend - tstart)
+                .count();
 
         tstart = hrclock::now();
 #endif
 
-        for (ssize_t j=0; j < n_inputs; ++j) {
+        for (ssize_t j = 0; j < n_inputs; ++j) {
           int voronoi_idx_j = voronoi_indices(j);
           // only considers "active" points
           if (f_active(voronoi_idx_j) > 0) {
@@ -312,8 +325,8 @@ namespace rascal {
              * bound on the distance, since |x_j-x_sel|<rvoronoi_sel
              */
             if (list_sel_d2q(voronoi_idx_j) < list_min_d2(j)) {
-              double d2_j = feature_x2(i_new) + feature_x2(j)
-                - 2*feature_new.dot(feature_matrix.row(j));
+              double d2_j = feature_x2(i_new) + feature_x2(j) -
+                            2 * feature_new.dot(feature_matrix.row(j));
 #ifdef DO_TIMING
               ndist_eval++;
 #endif
@@ -321,13 +334,13 @@ namespace rascal {
                * we have to reassign point j to the new selection. also, the
                * voronoi center is actually that of the new selection
                */
-              if ( d2_j < list_min_d2(j) ) {
+              if (d2_j < list_min_d2(j)) {
                 list_min_d2(j) = d2_j;
                 voronoi_indices(j) = voronoi_idx_j = i;
               }
             }
             // also must update the voronoi radius
-            if ( list_min_d2(j) > voronoi_r2(voronoi_idx_j) ) {
+            if (list_min_d2(j) > voronoi_r2(voronoi_idx_j)) {
               voronoi_r2(voronoi_idx_j) = list_min_d2(j);
               // stores the index of the FP of the cell
               voronoi_i_far(voronoi_idx_j) = j;
@@ -337,34 +350,39 @@ namespace rascal {
 
 #ifdef DO_TIMING
         tend = hrclock::now();
-        tloop += std::chrono::duration_cast<std::chrono::nanoseconds>
-          (tend-tstart).count();
+        tloop +=
+            std::chrono::duration_cast<std::chrono::nanoseconds>(tend - tstart)
+                .count();
 #endif
       }
-      sparse_minmax_d2(n_sparse-1) = 0;
+      sparse_minmax_d2(n_sparse - 1) = 0;
 
 #ifdef DO_TIMING
       auto gtend = hrclock::now();
 
       std::cout << "Skipped " << npoint_skip << " FPS centers of "
-               << n_sparse*(n_sparse-1)/2 << " - "
-               << npoint_skip*100./(n_sparse*(n_sparse-1)/2) << "%\n";
+                << n_sparse * (n_sparse - 1) / 2 << " - "
+                << npoint_skip * 100. / (n_sparse * (n_sparse - 1) / 2)
+                << "%\n";
       std::cout << "Computed " << ndist_eval << " distances rather than "
-               << n_inputs*n_sparse << " - "
-               << ndist_eval*100./(n_inputs*n_sparse) << " %\n";
+                << n_inputs * n_sparse << " - "
+                << ndist_eval * 100. / (n_inputs * n_sparse) << " %\n";
 
-      std::cout << "Time total " <<
-        std::chrono::duration_cast<std::chrono::nanoseconds>
-        (gtend-gtstart).count()*1e-9 << "\n";
-      std::cout << "Time looking for max " << tmax*1e-9 << "\n";
-      std::cout << "Time looking for active " << tactive*1e-9 << " with "
-               << ndist_active << " distances\n";
-      std::cout << "Time general loop " << tloop*1e-9 << "\n";
+      std::cout << "Time total "
+                << std::chrono::duration_cast<std::chrono::nanoseconds>(gtend -
+                                                                        gtstart)
+                           .count() *
+                       1e-9
+                << "\n";
+      std::cout << "Time looking for max " << tmax * 1e-9 << "\n";
+      std::cout << "Time looking for active " << tactive * 1e-9 << " with "
+                << ndist_active << " distances\n";
+      std::cout << "Time general loop " << tloop * 1e-9 << "\n";
 #endif
 
-      return std::make_tuple(sparse_indices, sparse_minmax_d2,
+      return std::make_tuple(sparse_indices, sparse_minmax_d2, list_min_d2,
                              voronoi_indices, voronoi_r2);
     }
 
-  } // namespace utils
-} // namespace rascal
+  }  // namespace utils
+}  // namespace rascal

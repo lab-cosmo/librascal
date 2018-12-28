@@ -29,15 +29,15 @@
 #define SPARSIFY_UTILITIES_H
 
 #include "basic_types.hh"
-#include<tuple>
+#include <tuple>
 
 #include <Eigen/Dense>
 
 namespace rascal {
   namespace utils {
 
-    using RowMatrixXd = Eigen::Matrix<double, Eigen::Dynamic,
-                                      Eigen::Dynamic, Eigen::RowMajor>;
+    using RowMatrixXd =
+        Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
     /**
      * Farthest Point Sampling selection of points given the feature matrix
      *
@@ -58,21 +58,18 @@ namespace rascal {
      *        inputs and the selected set
      */
 
-    using FPSReturnTuple =  std::tuple<Eigen::ArrayXi,
-                                       Eigen::ArrayXd,
-                                       Eigen::ArrayXd>;
+    using FPSReturnTuple =
+        std::tuple<Eigen::ArrayXi, Eigen::ArrayXd, Eigen::ArrayXd>;
 
-    using FPSReturnTupleConst = std::tuple<const Eigen::ArrayXi,
-                                           const Eigen::ArrayXd,
-                                           const Eigen::ArrayXd>;
-
+    using FPSReturnTupleConst =
+        std::tuple<const Eigen::ArrayXi, const Eigen::ArrayXd,
+                   const Eigen::ArrayXd>;
 
     FPSReturnTuple
     select_fps(const Eigen::Ref<const RowMatrixXd> & feature_matrix,
                int n_sparse = 0, int i_first_point = 0,
-               const FPSReturnTupleConst&
-                  restart = std::make_tuple(Eigen::ArrayXi(0),
-                     Eigen::ArrayXd(0), Eigen::ArrayXd(0)) );
+               const FPSReturnTupleConst & restart = std::make_tuple(
+                   Eigen::ArrayXi(0), Eigen::ArrayXd(0), Eigen::ArrayXd(0)));
 
     /**
      * Farthest Point Sampling selection of points given the feature
@@ -90,9 +87,10 @@ namespace rascal {
      *        stage, a list of the assignment of each of the input points to the
      *        FPS selected inputs, and the radius of each Voronoi cell
      */
-    std::tuple<Eigen::ArrayXi, Eigen::ArrayXd, Eigen::ArrayXi, Eigen::ArrayXd>
+    std::tuple<Eigen::ArrayXi, Eigen::ArrayXd, Eigen::ArrayXd, Eigen::ArrayXi,
+               Eigen::ArrayXd>
     select_fps_voronoi(const Eigen::Ref<const RowMatrixXd> & feature_matrix,
                        int n_sparse = 0, int i_first_point = 0);
-  } // namespace utils
-} // namespace rascal
+  }  // namespace utils
+}  // namespace rascal
 #endif /* SPARSIFY_UTILITIES_H */
