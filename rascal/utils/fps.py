@@ -38,7 +38,12 @@ def fps(feature_matrix, n_select, starting_index=None,
     "fps_hausforff_d2": numpy.ndarray[float64[n]]
         array of Hausdorff distances between the n points and the
         n_select FPS points
-
+    In addition, when method="voronoi", the following arrays are returned
+    "fps_voronoi_indices": numpy.ndarray[int[n]]
+        the indices that assign each of the n inputs to the closest FPS point
+    "fps_voronoi_r2": numpy.ndarray[float64[n_select]]
+        the squared "Voronoi radius" of each FPS point (the largest distance to
+        one of the points associated to its Voronoi cell
 
 
     .. [1] Ceriotti, M., Tribello, G. A., & Parrinello, M. (2013).
