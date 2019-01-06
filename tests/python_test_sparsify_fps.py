@@ -1,6 +1,4 @@
-# please change this to your local librascal folder
-import sys, os
-from rascal.utils import fps #, fps_voronoi
+from rascal.utils import fps
 import numpy as np
 
 import unittest

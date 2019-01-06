@@ -84,8 +84,10 @@ namespace rascal {
      *        Defaults to zero
      * @return a tuple containing the list of n_sparse indices of the selected
      *        points, a list of the maximum minimum distance obtained at each
-     *        stage, a list of the assignment of each of the input points to the
-     *        FPS selected inputs, and the radius of each Voronoi cell
+     *        stage, the list of Hausdorff distances between all the inputs and
+     *        the selected set, a list of the assignment of each of the input
+     *        points to the FPS selected inputs, and the radius of each Voronoi
+     *        cell
      */
     std::tuple<Eigen::ArrayXi, Eigen::ArrayXd, Eigen::ArrayXd, Eigen::ArrayXi,
                Eigen::ArrayXd>
