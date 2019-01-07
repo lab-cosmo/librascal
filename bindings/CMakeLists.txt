@@ -54,7 +54,7 @@ execute_process ( COMMAND "${PYTHON_EXECUTABLE}" -c "import site; \
 if("${INSTALL_PATH}" STREQUAL "" AND NOT ${USER_INSTALL})
   set(CMAKE_INSTALL_PREFIX "${PYTHON_SITE_PACKAGES}/rascal/"
     CACHE PATH "..." FORCE)
-  install(DIRECTORY "${CMAKE_SOURCE_DIR}/rascal/" DESTINATION ./
+  install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/rascal/" DESTINATION ./
           PATTERN "*__pycache__" EXCLUDE
           PATTERN "*.so" EXCLUDE
           PATTERN "*.dylib" EXCLUDE)
@@ -62,13 +62,17 @@ if("${INSTALL_PATH}" STREQUAL "" AND NOT ${USER_INSTALL})
 elseif("${INSTALL_PATH}" STREQUAL "" AND ${USER_INSTALL})
   set(CMAKE_INSTALL_PREFIX "${PYTHON_USER_SITE_PACKAGES}/rascal/"
   CACHE PATH "..." FORCE)
-  install(DIRECTORY "${CMAKE_SOURCE_DIR}/rascal/" DESTINATION ./
+  install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/rascal/" DESTINATION ./
       PATTERN "*__pycache__" EXCLUDE
       PATTERN "*.so" EXCLUDE
       PATTERN "*.dylib" EXCLUDE)
 # install in the specified path
 elseif(NOT "${INSTALL_PATH}" STREQUAL "")
   set(CMAKE_INSTALL_PREFIX "${INSTALL_PATH}/rascal/" CACHE PATH "..." FORCE)
+  install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/rascal/" DESTINATION ./
+      PATTERN "*__pycache__" EXCLUDE
+      PATTERN "*.so" EXCLUDE
+      PATTERN "*.dylib" EXCLUDE)
 endif()
 
 
@@ -92,7 +96,7 @@ install(TARGETS pyRascal DESTINATION lib)
 # Copy rascal in the build folder as part of the make process of bindings build
 add_custom_command(TARGET pyRascal POST_BUILD
   COMMAND cp -R
-  ${CMAKE_SOURCE_DIR}/rascal ${CMAKE_BINARY_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/rascal ${CMAKE_BINARY_DIR}
   )
 # Copy the resulting bindings lib in the python wrapper lib folder
 add_custom_command(TARGET pyRascal POST_BUILD
