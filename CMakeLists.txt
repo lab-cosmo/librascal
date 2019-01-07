@@ -62,11 +62,13 @@ set(BUILD_TESTS "ON" CACHE BOOL
 set(SUPPRESS_LIBRARY_WARNINGS "ON" CACHE BOOL
   "Suppress warnings from  Boost library")
 
-set(INSTALL "build" CACHE STRING
-  "Use the default install path")
+set(INSTALL_PATH "" CACHE STRING
+  "Path to install the python library. By default installs in the detected python lib directory.")
 
-set(PYTHON_BUILD_PATH "${CMAKE_BINARY_DIR}/rascal/" CACHE STRING
-    "Default install folder")
+set(USER_INSTALL "OFF" CACHE BOOL
+  "Switch installation from the main python site-packages to the user site-packages")
+
+
 
 
 if (${BUILD_TESTS})
@@ -146,10 +148,3 @@ if(CPPLINT_FOUND)
   cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/examples"
   "--filter=-build/namespaces")
 endif()
-
-# make python library of rascal usable in build folder
-add_custom_target(pyrascalcopy ALL)
-add_custom_command(TARGET pyrascalcopy POST_BUILD
-  COMMAND cp -R
-  ${CMAKE_SOURCE_DIR}/rascal ${CMAKE_BINARY_DIR}
-  )
