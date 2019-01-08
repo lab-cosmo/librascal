@@ -36,54 +36,20 @@ set (PY_BINDING_SRCS
   ${CMAKE_CURRENT_SOURCE_DIR}/bind_py_feature_manager.cc
   )
 
-find_package(PythonLibsNew 3 MODULE REQUIRED)
 
-# Get where python site-packages is
-execute_process ( COMMAND "${PYTHON_EXECUTABLE}" -c "from distutils.sysconfig import \
-                  get_python_lib; print(get_python_lib())"
-  OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE
-  )
 
-# Get where python local site-packages is
-execute_process ( COMMAND "${PYTHON_EXECUTABLE}" -c "import site; \
-                   print(site.USER_SITE)"
-  OUTPUT_VARIABLE PYTHON_USER_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE
-  )
-
-# Default install in site package of the detected python library
-if("${INSTALL_PATH}" STREQUAL "" AND NOT ${USER_INSTALL})
-  set(CMAKE_INSTALL_PREFIX "${PYTHON_SITE_PACKAGES}/rascal/"
-    CACHE PATH "..." FORCE)
-  install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/rascal/" DESTINATION ./
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/rascal/" DESTINATION ./
           PATTERN "*__pycache__" EXCLUDE
           PATTERN "*.so" EXCLUDE
           PATTERN "*.dylib" EXCLUDE)
-# install in the user's site package of the detected python library
-elseif("${INSTALL_PATH}" STREQUAL "" AND ${USER_INSTALL})
-  set(CMAKE_INSTALL_PREFIX "${PYTHON_USER_SITE_PACKAGES}/rascal/"
-  CACHE PATH "..." FORCE)
-  install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/rascal/" DESTINATION ./
-      PATTERN "*__pycache__" EXCLUDE
-      PATTERN "*.so" EXCLUDE
-      PATTERN "*.dylib" EXCLUDE)
-# install in the specified path
-elseif(NOT "${INSTALL_PATH}" STREQUAL "")
-  set(CMAKE_INSTALL_PREFIX "${INSTALL_PATH}/rascal/" CACHE PATH "..." FORCE)
-  install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/rascal/" DESTINATION ./
-      PATTERN "*__pycache__" EXCLUDE
-      PATTERN "*.so" EXCLUDE
-      PATTERN "*.dylib" EXCLUDE)
-endif()
-
-
 # see for more details on the linking path handling in Linux and MacOS when
 # installing:
 # https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
 # forces the writing of absolute rpath into the library when installing
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH "ON")
+#set(CMAKE_INSTALL_RPATH_USE_LINK_PATH "ON")
 # set(CMAKE_SKIP_RPATH "OFF")
-set(CMAKE_MACOSX_RPATH "ON")
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/")
+#set(CMAKE_MACOSX_RPATH "ON")
+# set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/")
 
 # builds the python bindings (must be after setting up the rpath)
 pybind11_add_module(pyRascal ${PY_BINDING_SRCS})
