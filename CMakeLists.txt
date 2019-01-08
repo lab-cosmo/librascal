@@ -63,6 +63,7 @@ add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
 include(cpplint)
 
 include_directories(
+  ${CMAKE_SOURCE_DIR}/tests
   ${CMAKE_SOURCE_DIR}/src
  )
 
@@ -128,11 +129,6 @@ endif()
 
 # set up the tests
 if (${BUILD_TESTS})
-
-  add_subdirectory(
-    ${CMAKE_SOURCE_DIR}/tests
-  )
-
   find_package(Boost REQUIRED COMPONENTS unit_test_framework )
   enable_testing()
   # copy python test
