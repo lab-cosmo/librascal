@@ -50,19 +50,23 @@ ctest -V
 
 * Common cmake flag:
   + -DCMAKE_C_COMPILER
+  + -DBUILD_BINDINGS
+  + -DUSER
   + -DINSTALL_PATH
-  + -DUSER_INSTALL
   + -DCMAKE_BUILD_TYPE
   + -DENABLE_DOC
   + -DBUILD_TESTS
 
 * Special flags:
+  + -DBUILD_BINDINGS:
+    + ON (default) -> build python binding
+    + OFF -> does not build python binding
   + -DINSTALL_PATH:
-    + empty (default) -> install rascal in the detected python lib folder
-    + custom string -> path to where rascal will be installed
-  + -DUSER_INSTALL:
+    + empty (default) -> does not install in a custom folder
+    + custom string -> root path for the installation
+  + -DUSER:
     + OFF (default) -> changes nothing
-    + ON -> install in the user's site package of the detected python library
+    + ON -> install root is in the user's home directory, i.e. ~/.local/
 
 To remove all the cmake files/folders except for the external library (enable glob and remove):
 ```
