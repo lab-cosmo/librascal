@@ -120,13 +120,6 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
 
-# set up bindings
-if(BUILD_BINDINGS)
-  add_subdirectory(
-    ${CMAKE_SOURCE_DIR}/bindings/
-  )
-endif()
-
 # set up the tests
 if (${BUILD_TESTS})
   find_package(Boost REQUIRED COMPONENTS unit_test_framework )
@@ -172,6 +165,13 @@ add_compile_options(-Werror) # warnings are errors!
 add_subdirectory(
   ${CMAKE_SOURCE_DIR}/src/
   )
+
+# set up bindings
+if(BUILD_BINDINGS)
+add_subdirectory(
+  ${CMAKE_SOURCE_DIR}/bindings/
+)
+endif()
 
 # set up documentation
 if (${ENABLE_DOC})
