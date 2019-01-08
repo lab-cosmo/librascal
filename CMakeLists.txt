@@ -57,7 +57,7 @@ include_directories(SYSTEM
 
 set(ENABLE_DOC "OFF" CACHE BOOL
   "If on, a target 'dev_doc' (which builds the documentation) is added")
-set(BUILD_TESTS "ON" CACHE BOOL
+set(BUILD_TESTS "OFF" CACHE BOOL
   "If on, builds the unit tests")
 set(SUPPRESS_LIBRARY_WARNINGS "ON" CACHE BOOL
   "Suppress warnings from  Boost library")
@@ -68,8 +68,9 @@ set(INSTALL_PATH "" CACHE STRING
 set(USER_INSTALL "OFF" CACHE BOOL
   "Switch installation from the main python site-packages to the user site-packages")
 
-
-
+add_subdirectory(
+    ${CMAKE_SOURCE_DIR}/bindings/
+    )
 
 if (${BUILD_TESTS})
 
@@ -110,9 +111,6 @@ endif(${BUILD_TESTS})
 # add_compile_options(-Werror) # warnings are errors!
 add_subdirectory(
   ${CMAKE_SOURCE_DIR}/src/
-  )
-add_subdirectory(
-  ${CMAKE_SOURCE_DIR}/bindings/
   )
 
 if (${ENABLE_DOC})
