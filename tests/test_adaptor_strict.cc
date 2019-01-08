@@ -201,11 +201,11 @@ namespace rascal {
           double d0{neigh_dist[ii][jj]};
           double d1{neigh_dist_strict[ii][jj]};
           BOOST_CHECK_EQUAL(a0, a1);
-          BOOST_CHECK_EQUAL(d0, d1);
+          BOOST_CHECK_CLOSE(d0, d1, tol);
           for (size_t kk{0}; kk < neigh_dirVec[ii][jj].size(); ++kk) {
             double dv0{neigh_dirVec[ii][jj][kk]};
             double dv1{neigh_dirVec_strict[ii][jj][kk]};
-            BOOST_CHECK_EQUAL(dv0, dv1);
+            BOOST_CHECK_CLOSE(dv0, dv1, tol);
           }
         }
       }
@@ -347,11 +347,11 @@ namespace rascal {
           double d0{neigh_dist[ii][jj]};
           double d1{neigh_dist_strict[ii][jj]};
           BOOST_CHECK_EQUAL(a0, a1);
-          BOOST_CHECK_EQUAL(d0, d1);
+          BOOST_CHECK_CLOSE(d0, d1, tol);
           for (size_t kk{0}; kk < neigh_dirVec[ii][jj].size(); ++kk) {
             double dv0{neigh_dirVec[ii][jj][kk]};
             double dv1{neigh_dirVec_strict[ii][jj][kk]};
-            BOOST_CHECK_EQUAL(dv0, dv1);
+            BOOST_CHECK_CLOSE(dv0, dv1, tol);
           }
         }
       }

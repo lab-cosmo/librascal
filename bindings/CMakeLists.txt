@@ -87,7 +87,7 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/")
 
 # builds the python bindings (must be after setting up the rpath)
 pybind11_add_module(pyRascal ${PY_BINDING_SRCS})
-target_link_libraries(pyRascal PRIVATE rascal)
+target_link_libraries(pyRascal PRIVATE rascal cephes)
 # Want to rename the output, so that the python module is called _rascal
 set_target_properties(pyRascal PROPERTIES OUTPUT_NAME _rascal)
 # Sets rule to install the bindings library in the rascal folder

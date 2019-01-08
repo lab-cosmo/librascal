@@ -97,7 +97,7 @@ if (${BUILD_TESTS})
   ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK)
 
   target_include_directories(main_test_suite SYSTEM PRIVATE ${Boost_INCLUDE_DIR})
-  target_link_libraries(main_test_suite ${Boost_LIBRARIES} rascal)
+  target_link_libraries(main_test_suite ${Boost_LIBRARIES} rascal cephes)
   add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
   configure_file("tests/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
   configure_file("tests/simple_cubic_9.json" ${CMAKE_BINARY_DIR} COPYONLY)
@@ -126,7 +126,7 @@ file( GLOB binaries "${CMAKE_SOURCE_DIR}/examples/*.cc")
 foreach(binaryfile ${binaries})
   get_filename_component(binaryname  ${binaryfile} NAME_WE)
   add_executable(${binaryname} ${binaryfile})
-  target_link_libraries(${binaryname} ${Boost_LIBRARIES} rascal)
+  target_link_libraries(${binaryname} ${Boost_LIBRARIES} rascal cephes)
 endforeach(binaryfile ${binaries})
 
 # or copy them
