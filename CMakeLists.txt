@@ -68,6 +68,47 @@ set(INSTALL_PATH "" CACHE STRING
 set(USER_INSTALL "OFF" CACHE BOOL
   "Switch installation from the main python site-packages to the user site-packages")
 
+
+  find_package(PythonLibsNew 3 MODULE REQUIRED)
+
+  # Get where python site-packages is
+  execute_process ( COMMAND "${PYTHON_EXECUTABLE}" -c "from distutils.sysconfig import \
+                    get_python_lib; print(get_python_lib())"
+    OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+  # Get where python local site-packages is
+  execute_process ( COMMAND "${PYTHON_EXECUTABLE}" -c "import site; \
+                     print(site.USER_SITE)"
+    OUTPUT_VARIABLE PYTHON_USER_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+  # Default install in site package of the detected python library
+  if("${INSTALL_PATH}" STREQUAL "" AND NOT ${USER_INSTALL})
+    set(CMAKE_INSTALL_PREFIX "${PYTHON_SITE_PACKAGES}/rascal/"
+      CACHE PATH "..." FORCE)
+
+  # install in the user's site package of the detected python library
+  elseif("${INSTALL_PATH}" STREQUAL "" AND ${USER_INSTALL})
+    set(CMAKE_INSTALL_PREFIX "${PYTHON_USER_SITE_PACKAGES}/rascal/"
+    CACHE PATH "..." FORCE)
+
+  # install in the specified path
+  elseif(NOT "${INSTALL_PATH}" STREQUAL "")
+    set(CMAKE_INSTALL_PREFIX "${INSTALL_PATH}/rascal/" CACHE PATH "..." FORCE)
+
+  endif()
+
+  set(CMAKE_SKIP_BUILD_RPATH  FALSE)
+  set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+  LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+  if("${isSystemDir}" STREQUAL "-1")
+     set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+  endif()
+
+  message(STATUS "######### ${CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES}")
+
 add_subdirectory(
     ${CMAKE_SOURCE_DIR}/bindings/
     )
