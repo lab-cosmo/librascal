@@ -8,16 +8,31 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(BUILD_SHARED_LIBS ON)
 set(RASCAL_PYTHON_MAJOR_VERSION 3)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
+include(rascalTools)
 
+########## MAIN VARIABLE TO CHANGE THE BUILD AND INSTALL OF THE LIBRARY ############
+set(BUILD_BINDINGS "ON" CACHE BOOL
+  "If on, the python bindings will be built.")
+
+set(USER "OFF" CACHE BOOL
+  "Switch installation folder")
+
+set(INSTALL_PATH "" CACHE STRING
+  "Path to install the libraries")
+
+set(ENABLE_DOC "OFF" CACHE BOOL
+  "If on, a target 'dev_doc' (which builds the documentation) is added.")
+
+set(BUILD_TESTS "OFF" CACHE BOOL
+  "If on, builds the unit tests")
+
+
+########## COMPILATION FLAGS ##########
 add_compile_options(-Wall -Wextra)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weffc++")
 # to avoid conflicts with built-in functions
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-builtin")
-
-
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
-include(rascalTools)
-
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
   # using Clang
@@ -40,14 +55,14 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   # using Visual Studio C++
 endif()
 
+########## START CONFIGURATION ##########
+
 add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
-add_external_package(pybind11 VERSION 2.2.2 CONFIG)
 
 # Try to find optional cpp linter
 include(cpplint)
 
 include_directories(
-  ${CMAKE_SOURCE_DIR}/tests
   ${CMAKE_SOURCE_DIR}/src
  )
 
@@ -55,65 +70,68 @@ include_directories(SYSTEM
   ${CMAKE_SOURCE_DIR}/external
   )
 
-set(ENABLE_DOC "OFF" CACHE BOOL
-  "If on, a target 'dev_doc' (which builds the documentation) is added")
-set(BUILD_TESTS "OFF" CACHE BOOL
-  "If on, builds the unit tests")
-set(SUPPRESS_LIBRARY_WARNINGS "ON" CACHE BOOL
-  "Suppress warnings from  Boost library")
-
-set(INSTALL_PATH "" CACHE STRING
-  "Path to install the python library. By default installs in the detected python lib directory.")
-
-set(USER_INSTALL "OFF" CACHE BOOL
-  "Switch installation from the main python site-packages to the user site-packages")
-
+# set up bindings
+if(BUILD_BINDINGS)
+  add_external_package(pybind11 VERSION 2.2.2 CONFIG)
 
   find_package(PythonLibsNew 3 MODULE REQUIRED)
-
-  # Get where python site-packages is
-  execute_process ( COMMAND "${PYTHON_EXECUTABLE}" -c "from distutils.sysconfig import \
-                    get_python_lib; print(get_python_lib())"
-    OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-
-  # Get where python local site-packages is
-  execute_process ( COMMAND "${PYTHON_EXECUTABLE}" -c "import site; \
-                     print(site.USER_SITE)"
-    OUTPUT_VARIABLE PYTHON_USER_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-
-  # Default install in site package of the detected python library
-  if("${INSTALL_PATH}" STREQUAL "" AND NOT ${USER_INSTALL})
-    set(CMAKE_INSTALL_PREFIX "${PYTHON_SITE_PACKAGES}/rascal/"
-      CACHE PATH "..." FORCE)
-
-  # install in the user's site package of the detected python library
-  elseif("${INSTALL_PATH}" STREQUAL "" AND ${USER_INSTALL})
-    set(CMAKE_INSTALL_PREFIX "${PYTHON_USER_SITE_PACKAGES}/rascal/"
-    CACHE PATH "..." FORCE)
-
-  # install in the specified path
-  elseif(NOT "${INSTALL_PATH}" STREQUAL "")
-    set(CMAKE_INSTALL_PREFIX "${INSTALL_PATH}/rascal/" CACHE PATH "..." FORCE)
-
+    # Get where python site-packages is
+    if(NOT USER)
+    execute_process ( COMMAND "${PYTHON_EXECUTABLE}" -c "from distutils.sysconfig import \
+                      get_python_lib; print(get_python_lib())"
+      OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE
+      )
+  else()
+    # Get where python local site-packages is
+    execute_process ( COMMAND "${PYTHON_EXECUTABLE}" -c "import site; \
+                      print(site.USER_SITE)"
+      OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE
+      )
   endif()
 
-  set(CMAKE_SKIP_BUILD_RPATH  FALSE)
-  set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-  LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
-  if("${isSystemDir}" STREQUAL "-1")
-     set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-  endif()
+  execute_process ( COMMAND "${PYTHON_EXECUTABLE}" -c "import sys; \
+                    print(sys.prefix)"
+    OUTPUT_VARIABLE PACKAGE_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+endif()
 
-  message(STATUS "######### ${CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES}")
+# figure out where to install the library
+if(NOT "${INSTALL_PATH}" STREQUAL "")
+  set(CMAKE_INSTALL_PREFIX "${INSTALL_PATH}")
+elseif(NOT BUILD_BINDINGS AND NOT USER)
+  set(CMAKE_INSTALL_PREFIX "/usr")
+  message(STATUS "INSTALLATION REQUIRES SUDO RIGHTS")
+elseif(NOT BUILD_BINDINGS AND USER)
+  set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local")
+elseif(BUILD_BINDINGS AND NOT USER)
+  set(CMAKE_INSTALL_PREFIX "${PACKAGE_PREFIX}")
+elseif(BUILD_BINDINGS AND USER)
+  set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local")
+endif()
 
-add_subdirectory(
+message(STATUS "Installation ROOT: ${CMAKE_INSTALL_PREFIX}")
+
+
+# Always use full RPATH
+# https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
+set(CMAKE_SKIP_BUILD_RPATH  FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+
+
+# set up bindings
+if(BUILD_BINDINGS)
+  add_subdirectory(
     ${CMAKE_SOURCE_DIR}/bindings/
-    )
+  )
+endif()
 
+# set up the tests
 if (${BUILD_TESTS})
+
+  add_subdirectory(
+    ${CMAKE_SOURCE_DIR}/tests
+  )
 
   find_package(Boost REQUIRED COMPONENTS unit_test_framework )
   enable_testing()
@@ -128,7 +146,10 @@ if (${BUILD_TESTS})
       "${CMAKE_BINARY_DIR}/${pytest_name}"
       COPYONLY)
   endforeach(pytest ${PY_TEST_SRCS})
-  add_test(python_binding_test python_binding_tests.py)
+
+  if(BUILD_BINDINGS)
+    add_test(python_binding_test python_binding_tests.py)
+  endif()
 
   #build tests
   file( GLOB TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/test_*.cc")
@@ -148,12 +169,15 @@ if (${BUILD_TESTS})
 
 endif(${BUILD_TESTS})
 
+# put it there to avoid warnings from boost tests
+add_compile_options(-Werror) # warnings are errors!
+
 # compile the library
-# add_compile_options(-Werror) # warnings are errors!
 add_subdirectory(
   ${CMAKE_SOURCE_DIR}/src/
   )
 
+# set up documentation
 if (${ENABLE_DOC})
   add_subdirectory(
     ${CMAKE_SOURCE_DIR}/docs/

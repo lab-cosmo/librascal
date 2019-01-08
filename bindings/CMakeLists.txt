@@ -37,19 +37,13 @@ set (PY_BINDING_SRCS
   )
 
 
-
-install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/rascal/" DESTINATION ./
+# copy rascal folder in the python distribution
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/rascal" DESTINATION "${PYTHON_SITE_PACKAGES}"
           PATTERN "*__pycache__" EXCLUDE
+          PATTERN "*.pyc" EXCLUDE
           PATTERN "*.so" EXCLUDE
           PATTERN "*.dylib" EXCLUDE)
-# see for more details on the linking path handling in Linux and MacOS when
-# installing:
-# https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
-# forces the writing of absolute rpath into the library when installing
-#set(CMAKE_INSTALL_RPATH_USE_LINK_PATH "ON")
-# set(CMAKE_SKIP_RPATH "OFF")
-#set(CMAKE_MACOSX_RPATH "ON")
-# set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/")
+
 
 # builds the python bindings (must be after setting up the rpath)
 pybind11_add_module(pyRascal ${PY_BINDING_SRCS})
@@ -57,7 +51,7 @@ target_link_libraries(pyRascal PRIVATE rascal cephes)
 # Want to rename the output, so that the python module is called _rascal
 set_target_properties(pyRascal PROPERTIES OUTPUT_NAME _rascal)
 # Sets rule to install the bindings library in the rascal folder
-install(TARGETS pyRascal DESTINATION lib)
+install(TARGETS pyRascal DESTINATION "${PYTHON_SITE_PACKAGES}/rascal/lib")
 
 # Copy rascal in the build folder as part of the make process of bindings build
 add_custom_command(TARGET pyRascal POST_BUILD
