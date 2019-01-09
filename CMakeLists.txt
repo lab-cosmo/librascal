@@ -33,6 +33,7 @@ set(ENABLE_DOC "OFF" CACHE BOOL
 set(BUILD_TESTS "OFF" CACHE BOOL
   "If on, builds the unit tests")
 
+message(STATUS "Build type is: ${CMAKE_BUILD_TYPE}")
 
 ########## COMPILATION FLAGS ##########
 add_compile_options(-Wall -Wextra)
