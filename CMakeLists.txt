@@ -9,8 +9,8 @@ set(BUILD_SHARED_LIBS ON)
 set(RASCAL_PYTHON_MAJOR_VERSION 3)
 
 
-add_compile_options(-Wall -Wextra)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weffc++")
+add_compile_options(-Wall -Wextra -fopenmp)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -Weffc++")
 # to avoid conflicts with built-in functions
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-builtin")
 

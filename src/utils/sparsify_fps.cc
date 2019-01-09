@@ -44,6 +44,13 @@ namespace rascal {
       // number of inputs
       int n_inputs = feature_matrix.rows();
 
+      Eigen::MatrixXd transpose_2x = 2 * feature_matrix.transpose();
+      long int n_features{feature_matrix.cols()};
+      auto xi = Eigen::MatrixXd(1, n_features);
+#ifdef _OPENMP
+      std::cerr << "OPENMP ACTIVE " << Eigen::nbThreads() << "  " << n_features
+                << "\n";
+#endif
       // n. of sparse points. defaults to full sorting of the inputs
       if (n_sparse == 0) {
         n_sparse = n_inputs;
@@ -100,10 +107,14 @@ namespace rascal {
           // distances are not available, so we recompute them.
           // note that this is as expensive as re-running a full
           // FPS, but it allows us to extend an existing FPS set
-          list_new_d2 = feature_x2 + feature_x2(i_restart[0]) -
-                        2 * (feature_matrix *
-                             feature_matrix.row(i_restart[0]).transpose())
-                                .array();
+
+          xi = feature_matrix.row(i_restart[0]);
+          list_new_d2 = feature_x2 + feature_x2(i_restart[0]) +
+                        (xi * transpose_2x).array();
+          // list_new_d2 = feature_x2 + feature_x2(i_restart[0]) -
+          //              2 * (xi*transpose_x).array();
+          //    feature_matrix.row(i_restart[0]).transpose())
+          //       .array();
           list_min_d2 = list_new_d2;
           // this is basically the standard algorithm below, only that
           // it is run on the first i_start_index points. see below
@@ -149,10 +160,19 @@ namespace rascal {
         // TODO(ceriottm): encapsulate the distance calculation
         // into an interface function
         // dispatching to the proper distance/kernel needed
+        /*
+        xi = feature_matrix.row(i_new);
+        list_new_d2 = feature_x2 + feature_x2(i_new);
+        list_new_d2 -= (xi*transpose_2x).array();
+
         list_new_d2 =
-            feature_x2 + feature_x2(i_new) -
-            2 * (feature_matrix * feature_matrix.row(i_new).transpose())
-                    .array();
+                feature_x2 + feature_x2(i_new) -
+                2 * (feature_matrix * feature_matrix.row(i_new).transpose())
+                        .array();
+        */
+        xi = feature_matrix.row(i_new);
+        list_new_d2 = feature_x2 + feature_x2(i_new) -
+                      (xi * transpose_2x).transpose().array();
 
         // this actually returns a list with the element-wise minimum between
         // list_min_d2(i) and list_new_d2(i)
