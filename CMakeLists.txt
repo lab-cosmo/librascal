@@ -43,6 +43,8 @@ endif()
 add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
 add_external_package(pybind11 VERSION 2.2.2 CONFIG)
 
+find_package(PythonInterp ${RASCAL_PYTHON_MAJOR_VERSION} REQUIRED)
+
 # Try to find optional cpp linter
 include(cpplint)
 
