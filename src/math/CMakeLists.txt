@@ -34,17 +34,9 @@ add_subdirectory(cephes)
 install(TARGETS cephes DESTINATION lib)
 
 
-#add_library(rascal-math "")
-
-#install(TARGETS rascal-math DESTINATION lib/rascal)
-
 set (math_SRC
   ${CMAKE_CURRENT_SOURCE_DIR}/math_utils.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/math_interface.cc
   )
 
 target_sources(rascal PRIVATE ${math_SRC})
-
-
-
-#target_link_libraries(rascal-math PRIVATE cephes)
