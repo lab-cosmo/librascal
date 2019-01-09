@@ -15,6 +15,9 @@ include(rascalTools)
 set(BUILD_BINDINGS "ON" CACHE BOOL
   "If on, the python bindings will be built.")
 
+set(CMAKE_BUILD_TYPE "Release" CACHE BOOL
+  "Type of build for the code. Can be Release, Debug or RelWithDebInfo.")
+
 set(USER "OFF" CACHE BOOL
   "Switch installation folder")
 
