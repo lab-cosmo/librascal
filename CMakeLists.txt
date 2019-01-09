@@ -15,8 +15,11 @@ include(rascalTools)
 set(BUILD_BINDINGS "ON" CACHE BOOL
   "If on, the python bindings will be built.")
 
-set(CMAKE_BUILD_TYPE "Release" CACHE BOOL
-  "Type of build for the code. Can be Release, Debug or RelWithDebInfo.")
+set(CMAKE_BUILD_TYPE "Release" CACHE STRING
+  "Type of build for the code. Can be Release, Debug, MinSizeRel or RelWithDebInfo." FORCE)
+# Set the possible values of build type for cmake-gui
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+"Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 
 set(USER "OFF" CACHE BOOL
   "Switch installation folder")
@@ -43,7 +46,6 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   # using GCC
-  # add_compile_options(-Wno-non-virtual-dtor)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-non-virtual-dtor")
   string( TOLOWER "${CMAKE_BUILD_TYPE}" build_type )
   if ("release" STREQUAL "${build_type}" )
