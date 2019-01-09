@@ -1,5 +1,25 @@
 cmake_minimum_required(VERSION 3.0)
 
+# https://cmake.org/pipermail/cmake/2008-September/023808.html
+# If the user specifies -DCMAKE_BUILD_TYPE on the command line, take their
+# definition
+# and dump it in the cache along with proper documentation, otherwise set
+# CMAKE_BUILD_TYPE
+# to Debug prior to calling PROJECT()
+#
+IF(DEFINED CMAKE_BUILD_TYPE)
+   SET(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Choose the type of
+build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug
+Release RelWithDebInfo MinSizeRel.")
+ELSE()
+   SET(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build,
+options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release
+RelWithDebInfo MinSizeRel.")
+ENDIF()
+# Set the possible values of build type for cmake-gui
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+"Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+
 project(rascal)
 
 set(CMAKE_CXX_STANDARD 14)
@@ -14,12 +34,6 @@ include(rascalTools)
 ########## MAIN VARIABLE TO CHANGE THE BUILD AND INSTALL OF THE LIBRARY ############
 set(BUILD_BINDINGS "ON" CACHE BOOL
   "If on, the python bindings will be built.")
-
-set(CMAKE_BUILD_TYPE "Release" CACHE STRING
-  "Type of build for the code. Can be Release, Debug, MinSizeRel or RelWithDebInfo." FORCE)
-# Set the possible values of build type for cmake-gui
-set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
-"Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 
 set(USER "OFF" CACHE BOOL
   "Switch installation folder")
