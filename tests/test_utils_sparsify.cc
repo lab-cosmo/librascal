@@ -52,7 +52,7 @@ namespace rascal {
     Eigen::ArrayXd ldmin2;
     std::tie(ifps, dfps, ldmin2) = utils::select_fps(feature_matrix, 5, 0);
 
-    for (unsigned int i = 0; i < fps_order.size(); ++i) {
+    for (size_t i = 0; i < fps_order.size(); ++i) {
       BOOST_CHECK_EQUAL(ifps(i), fps_order[i]);
     }
 
@@ -64,12 +64,12 @@ namespace rascal {
     std::tie(v_ifps, v_dfps, v_ldmin2, v_ivor, v_rvor) =
         utils::select_fps_voronoi(feature_matrix, 5, 0);
 
-    for (unsigned int i = 0; i < fps_order.size(); ++i) {
+    for (size_t i = 0; i < fps_order.size(); ++i) {
       BOOST_CHECK_EQUAL(ifps(i), v_ifps[i]);
       BOOST_CHECK_EQUAL(dfps(i), v_dfps[i]);
     }
 
-    for (unsigned int i = 0; i < ldmin2.size(); ++i) {
+    for (size_t i = 0; i < ldmin2.size(); ++i) {
       BOOST_CHECK_EQUAL(ldmin2(i), v_ldmin2[i]);
     }
   }

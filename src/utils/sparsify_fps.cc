@@ -45,8 +45,9 @@ namespace rascal {
       int n_inputs = feature_matrix.rows();
 
       // n. of sparse points. defaults to full sorting of the inputs
-      if (n_sparse == 0)
+      if (n_sparse == 0) {
         n_sparse = n_inputs;
+      }
 
       // TODO(ceriottm) <- use the exception mechanism
       // for librascal whatever it is
@@ -173,12 +174,15 @@ namespace rascal {
       int n_features = feature_matrix.cols();
 
       // defaults to full sorting of the inputs
-      if (n_sparse == 0)
+      if (n_sparse == 0) {
         n_sparse = n_inputs;
+      }
+
       // TODO(ceriottm) <- use the exception mechanism
       // for librascal whatever it is
-      if (n_sparse > n_inputs)
+      if (n_sparse > n_inputs) {
         throw std::runtime_error("Cannot FPS more inputs than those provided");
+      }
 
       // return arrays
       // FPS indices
