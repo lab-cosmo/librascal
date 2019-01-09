@@ -69,7 +69,7 @@ namespace rascal {
       BOOST_CHECK_EQUAL(dfps(i), v_dfps[i]);
     }
 
-    for (size_t i = 0; i < ldmin2.size(); ++i) {
+    for (size_t i = 0; i < (size_t) ldmin2.size(); ++i) {
       BOOST_CHECK_EQUAL(ldmin2(i), v_ldmin2[i]);
     }
   }
