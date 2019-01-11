@@ -352,8 +352,22 @@ namespace rascal {
   }
 
 
+  /**
+   * Compute the spherical expansion
+   *
+   * Note that this dispatches to one of several templated implementations
+   * based off of the Gaussian sigma type of this class.  This saves computer
+   * time by specializing right away (rather than having a switch case called
+   * each time the sigma is needed).
+   */
   template<class Mngr>
   void RepresentationManagerSphericalExpansion<Mngr>::compute() {
+    this->compute_by_gaussian_sigma_type<this->gaussian_sigma_type>();
+  }
+
+  template<class Mngr, GaussianSigmaType gaussian_sigma_type>
+  void RepresentationManagerSphericalExpansion<Mngr>::
+      compute_by_gaussian_sigma_type() {
     using math::PI;
     using std::pow;
     size_t radial_n;
@@ -375,7 +389,7 @@ namespace rascal {
 
       // Start the accumulator with the central atom
       // All terms where l =/= 0 cancel
-      sigma2 = pow(this->get_gaussian_sigma(center), 2);
+      sigma2 = pow(this->get_gaussian_sigma<gaussian_sigma_type>(center), 2);
       // TODO(max-veit) this is specific to the Gaussian radial basis
       // (along with the matching computation below)
       // And ditto on the gamma functions (potential overflow)
@@ -393,7 +407,7 @@ namespace rascal {
         auto dist{this->structure_manager.get_distance(neigh)};
         auto direction{this->structure_manager.get_direction_vector(neigh)};
         double exp_factor = std::exp(-0.5 * pow(dist, 2) / sigma2);
-        sigma2 = pow(this->get_gaussian_sigma(neigh), 2);
+        sigma2 = pow(this->get_gaussian_sigma<gaussian_sigma_type>(neigh), 2);
 
         // Note: the copy _should_ be optimized out (RVO)
         Eigen::MatrixXd harmonics = math::compute_spherical_harmonics(
@@ -450,34 +464,46 @@ namespace rascal {
    * The width may depend both on the atomic species of the neighbour as well
    * as the distance.
    *
+   * Note that this function is template-specialized by Gaussian sigma type
+   * (constant, per-species, or radially dependent).
+   *
    * @param pair Atom pair defining the neighbour, as e.g. returned by
    *             iteration over neighbours of a centre
    *
    * @throw logic_error if the requested sigma type has not been implemented
    *
    */
-#pragma GCC diagnostic ignored "-Wunused-parameter"
   template<class Mngr>
   template<size_t Order, size_t Layer>
-  double RepresentationManagerSphericalExpansion<Mngr>::get_gaussian_sigma(
-        ClusterRefKey<Order, Layer> & pair) {
-    switch (this->gaussian_sigma_type) {
-    case (Constant) : {
-      return this->constant_gaussian_sigma;
-      break;
-    }
-    case (PerSpecies) :
-    case (Radial) : {
-      throw std::logic_error("Requested a sigma type that has not yet "
-                             "been implemented");
-      break;
-    }
-    }
-    // control never reaches here, but just make the compiler happy...
+  double RepresentationManagerSphericalExpansion<Mngr>::
+        get_gaussian_sigma<GaussianSigmaType::Constant>(
+        ClusterRefKey<Order, Layer> & /* pair */) {
+    return this->constant_gaussian_sigma;
+  }
+
+  /** Per-species template specialization of the above */
+  template<class Mngr>
+  template<size_t Order, size_t Layer>
+  double RepresentationManagerSphericalExpansion<Mngr>::
+        get_gaussian_sigma<GaussianSigmaType::PerSpecies>(
+        ClusterRefKey<Order, Layer> & /* pair */) {
+    throw std::logic_error("Requested a sigma type that has not yet "
+                           "been implemented");
     return -1;
   }
 
-}
+  /** Radially-dependent template specialization of the above */
+  template<class Mngr>
+  template<size_t Order, size_t Layer>
+  double RepresentationManagerSphericalExpansion<Mngr>::
+        get_gaussian_sigma<GaussianSigmaType::Radial>(
+        ClusterRefKey<Order, Layer> & /* pair */) {
+    throw std::logic_error("Requested a sigma type that has not yet "
+                           "been implemented");
+    return -1;
+  }
+
+} // namespace rascal
 
 #endif /* BASIS_REPRESENTATION_MANAGER_SPHERICAL_EXPANSION_H */
 
