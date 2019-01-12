@@ -32,11 +32,51 @@
 #include <iostream>
 #include <chrono>  // NOLINT
 #include <tuple>
+#include <omp.h>
 using hrclock = std::chrono::high_resolution_clock;
 #endif
 
 namespace rascal {
   namespace utils {
+
+    template<class T> class FeatureDistance {
+     public:
+      FeatureDistance(const Eigen::Ref<const T> & feature_matrix) :
+        feat_x{feature_matrix}, n_inputs{}, n_features{}, feature_norm2{}
+        {
+          n_features = feat_x.cols();
+          n_inputs = feat_x.rows();
+          feature_norm2 = feat_x.cwiseAbs2().rowwise().sum();
+        }
+
+      void get_d2(int i, Eigen::ArrayXd& rd2);
+
+     protected:
+      const Eigen::Ref<const T> & feat_x;
+      int n_inputs, n_features;
+      Eigen::ArrayXd feature_norm2;
+    };
+
+    template<>
+    void FeatureDistance<RowMatrixXd>::get_d2(int i, Eigen::ArrayXd& rd2)
+      {
+        Eigen::VectorXd xi = feat_x.row(i).transpose();
+
+#       pragma omp parallel
+        {
+          int n_threads = omp_get_num_threads();
+          int i_thread = omp_get_thread_num();
+          int i_start = (n_inputs*i_thread)/n_threads;
+          int i_end = (n_inputs*(i_thread+1))/n_threads;
+          auto feat_block = feat_x.middleRows(i_start, i_end-i_start);
+          rd2.middleRows(i_start, i_end-i_start) =
+            -2*(feat_block * xi).array();
+          rd2.middleRows(i_start, i_end-i_start) +=
+            feature_norm2.middleRows(i_start, i_end-i_start)
+            + feature_norm2(i);
+        }
+      }
+
     FPSReturnTuple
     select_fps(const Eigen::Ref<const RowMatrixXd> & feature_matrix,
                int n_sparse, int i_first_point,
@@ -45,7 +85,7 @@ namespace rascal {
       int n_inputs = feature_matrix.rows();
 
       Eigen::MatrixXd transpose_2x = 2 * feature_matrix.transpose();
-      long int n_features{feature_matrix.cols()};
+      Eigen::Index n_features{feature_matrix.cols()};
       auto xi = Eigen::MatrixXd(1, n_features);
 #ifdef _OPENMP
       std::cerr << "OPENMP ACTIVE " << Eigen::nbThreads() << "  " << n_features
@@ -67,6 +107,9 @@ namespace rascal {
       auto sparse_indices = Eigen::ArrayXi(n_sparse);
       // minmax distances (squared)
       auto sparse_minmax_d2 = Eigen::ArrayXd(n_sparse);
+
+      // class to compute distances between feature vectors
+      auto feat_calculator = FeatureDistance<RowMatrixXd>(feature_matrix);
 
       // square moduli of inputs
       auto feature_x2 = Eigen::ArrayXd(n_inputs);
@@ -108,9 +151,10 @@ namespace rascal {
           // note that this is as expensive as re-running a full
           // FPS, but it allows us to extend an existing FPS set
 
-          xi = feature_matrix.row(i_restart[0]);
-          list_new_d2 = feature_x2 + feature_x2(i_restart[0]) +
-                        (xi * transpose_2x).array();
+          feat_calculator.get_d2(i_restart[0], list_new_d2);
+//          xi = feature_matrix.row(i_restart[0]);
+//          list_new_d2 = feature_x2 + feature_x2(i_restart[0]) +
+//                        (xi * transpose_2x).array();
           // list_new_d2 = feature_x2 + feature_x2(i_restart[0]) -
           //              2 * (xi*transpose_x).array();
           //    feature_matrix.row(i_restart[0]).transpose())
@@ -131,10 +175,11 @@ namespace rascal {
               are inconsistent with restart array");*/
             sparse_indices(i) = i_new;
             sparse_minmax_d2(i - 1) = d2max_new;
-            list_new_d2 =
+            feat_calculator.get_d2(i_new, list_new_d2);
+            /*list_new_d2 =
                 feature_x2 + feature_x2(i_new) -
                 2 * (feature_matrix * feature_matrix.row(i_new).transpose())
-                        .array();
+                        .array();*/
             list_min_d2 = list_min_d2.min(list_new_d2);
           }
         }
@@ -143,10 +188,11 @@ namespace rascal {
         // initializes arrays taking the first point provided in input
         sparse_indices(0) = i_first_point;
         //  distance square to the selected point
-        list_new_d2 =
+        feat_calculator.get_d2(i_first_point, list_new_d2);
+        /*list_new_d2 =
             feature_x2 + feature_x2(i_first_point) -
             2 * (feature_matrix * feature_matrix.row(i_first_point).transpose())
-                    .array();
+                    .array();*/
         list_min_d2 = list_new_d2;  // we only have this point....
       }
 
@@ -169,11 +215,12 @@ namespace rascal {
                 feature_x2 + feature_x2(i_new) -
                 2 * (feature_matrix * feature_matrix.row(i_new).transpose())
                         .array();
-        */
+
         xi = feature_matrix.row(i_new);
         list_new_d2 = feature_x2 + feature_x2(i_new) -
                       (xi * transpose_2x).transpose().array();
-
+        */
+        feat_calculator.get_d2(i_new, list_new_d2);
         // this actually returns a list with the element-wise minimum between
         // list_min_d2(i) and list_new_d2(i)
         list_min_d2 = list_min_d2.min(list_new_d2);
