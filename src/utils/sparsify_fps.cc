@@ -32,24 +32,27 @@
 #include <iostream>
 #include <chrono>  // NOLINT
 #include <tuple>
-#include <omp.h>
 using hrclock = std::chrono::high_resolution_clock;
+#endif
+
+#ifdef _OPENMP
+#include <omp.h>
 #endif
 
 namespace rascal {
   namespace utils {
 
-    template<class T> class FeatureDistance {
+    template <class T>
+    class FeatureDistance {
      public:
-      FeatureDistance(const Eigen::Ref<const T> & feature_matrix) :
-        feat_x{feature_matrix}, n_inputs{}, n_features{}, feature_norm2{}
-        {
-          n_features = feat_x.cols();
-          n_inputs = feat_x.rows();
-          feature_norm2 = feat_x.cwiseAbs2().rowwise().sum();
-        }
+      explicit FeatureDistance(const Eigen::Ref<const T> & feature_matrix)
+          : feat_x{feature_matrix}, n_inputs{}, n_features{}, feature_norm2{} {
+        n_features = feat_x.cols();
+        n_inputs = feat_x.rows();
+        feature_norm2 = feat_x.cwiseAbs2().rowwise().sum();
+      }
 
-      void get_d2(int i, Eigen::ArrayXd& rd2);
+      void get_d2(int i, Eigen::ArrayXd & rd2);
 
      protected:
       const Eigen::Ref<const T> & feat_x;
@@ -57,25 +60,27 @@ namespace rascal {
       Eigen::ArrayXd feature_norm2;
     };
 
-    template<>
-    void FeatureDistance<RowMatrixXd>::get_d2(int i, Eigen::ArrayXd& rd2)
+    template <>
+    void FeatureDistance<RowMatrixXd>::get_d2(int i, Eigen::ArrayXd & rd2) {
+      Eigen::VectorXd xi = feat_x.row(i).transpose();
+#ifdef _OPENMP
+#pragma omp parallel
       {
-        Eigen::VectorXd xi = feat_x.row(i).transpose();
-
-#       pragma omp parallel
-        {
-          int n_threads = omp_get_num_threads();
-          int i_thread = omp_get_thread_num();
-          int i_start = (n_inputs*i_thread)/n_threads;
-          int i_end = (n_inputs*(i_thread+1))/n_threads;
-          auto feat_block = feat_x.middleRows(i_start, i_end-i_start);
-          rd2.middleRows(i_start, i_end-i_start) =
-            -2*(feat_block * xi).array();
-          rd2.middleRows(i_start, i_end-i_start) +=
-            feature_norm2.middleRows(i_start, i_end-i_start)
-            + feature_norm2(i);
-        }
+        int n_threads = omp_get_num_threads();
+        int i_thread = omp_get_thread_num();
+        int i_start = (n_inputs * i_thread) / n_threads;
+        int i_end = (n_inputs * (i_thread + 1)) / n_threads;
+        auto feat_block = feat_x.middleRows(i_start, i_end - i_start);
+        rd2.middleRows(i_start, i_end - i_start) =
+            -2 * (feat_block * xi).array();
+        rd2.middleRows(i_start, i_end - i_start) +=
+            feature_norm2.middleRows(i_start, i_end - i_start) +
+            feature_norm2(i);
       }
+#else
+      rd2 = feature_norm2 + feature_norm2(i) - 2 * (feat_x * xi).array();
+#endif
+    }
 
     FPSReturnTuple
     select_fps(const Eigen::Ref<const RowMatrixXd> & feature_matrix,
@@ -87,10 +92,7 @@ namespace rascal {
       Eigen::MatrixXd transpose_2x = 2 * feature_matrix.transpose();
       Eigen::Index n_features{feature_matrix.cols()};
       auto xi = Eigen::MatrixXd(1, n_features);
-#ifdef _OPENMP
-      std::cerr << "OPENMP ACTIVE " << Eigen::nbThreads() << "  " << n_features
-                << "\n";
-#endif
+
       // n. of sparse points. defaults to full sorting of the inputs
       if (n_sparse == 0) {
         n_sparse = n_inputs;
@@ -152,9 +154,9 @@ namespace rascal {
           // FPS, but it allows us to extend an existing FPS set
 
           feat_calculator.get_d2(i_restart[0], list_new_d2);
-//          xi = feature_matrix.row(i_restart[0]);
-//          list_new_d2 = feature_x2 + feature_x2(i_restart[0]) +
-//                        (xi * transpose_2x).array();
+          //          xi = feature_matrix.row(i_restart[0]);
+          //          list_new_d2 = feature_x2 + feature_x2(i_restart[0]) +
+          //                        (xi * transpose_2x).array();
           // list_new_d2 = feature_x2 + feature_x2(i_restart[0]) -
           //              2 * (xi*transpose_x).array();
           //    feature_matrix.row(i_restart[0]).transpose())
