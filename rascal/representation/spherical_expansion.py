@@ -7,7 +7,7 @@ from .base import RepresentationFactory
 
 class SphericalExpansion(object):
     """
-    Computes the Sorted Coulomb matrix representation [1].
+    Computes the spherical expansion of the neighbour density [soap]
 
     Attributes
     ----------
@@ -31,9 +31,9 @@ class SphericalExpansion(object):
         Compute the representation for a list of ase.Atoms object.
 
 
-    .. [1] Rupp, M., Tkatchenko, A., Müller, K.-R., & von Lilienfeld, O. A. (2011).
-        Fast and Accurate Modeling of Molecular Atomization Energies with Machine Learning.
-        Physical Review Letters, 108(5), 58301. https://doi.org/10.1103/PhysRevLett.108.058301
+    .. [soap] Bartók, Kondor, and Csányi, "On representing chemical
+        environments", Phys. Rev. B. 87(18), p. 184115
+        http://link.aps.org/doi/10.1103/PhysRevB.87.184115
     """
     def __init__(self,cutoff,size=10,central_decay=-1,
                     interaction_cutoff=10,interaction_decay=-1):
