@@ -41,6 +41,10 @@ namespace rascal {
     // Coulomb Matrix Options
       CMSortDistance,
       CMSortRowNorm,
+    // Spherical Expansion
+      GaussianSigmaTypeConstant,
+      GaussianSigmaTypePerSpecies,
+      GaussianSigmaTypeRadial,
     };
 
 

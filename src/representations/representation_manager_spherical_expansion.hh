@@ -45,6 +45,70 @@ namespace rascal {
 
   namespace internal {
 
+    /**
+     * Return the width of the atomic Gaussian for each neighbour
+     *
+     * This is `sigma' in the definition `f(r) = A exp(r / (2 sigma^2))'.
+     * The width may depend both on the atomic species of the neighbour as well
+     * as the distance.
+     *
+     * Note that this function is template-specialized by Gaussian sigma type
+     * (constant, per-species, or radially dependent).
+     *
+     * @param pair Atom pair defining the neighbour, as e.g. returned by
+     *             iteration over neighbours of a centre
+     *
+     * @throw logic_error if the requested sigma type has not been implemented
+     *
+     */
+
+    template<Option Type>
+    struct GaussianHelper {};
+
+    template<>
+    struct GaussianHelper<Option::GaussianSigmaTypeConstant> {
+      explicit GaussianHelper(json hypers) {
+        this->constant_gaussian_sigma = hypers["constant_gaussian_sigma"];
+      }
+      template<size_t Order, size_t Layer>
+      double get_gaussian_sigma(
+            ClusterRefKey<Order, Layer> & /* pair */) {
+        return this->constant_gaussian_sigma;
+      }
+      double constant_gaussian_sigma{0.};
+    };
+
+    /** Per-species template specialization of the above */
+
+    template<>
+    struct GaussianHelper<Option::GaussianSigmaTypePerSpecies> {
+      explicit GaussianHelper(json ) {
+      }
+      template<size_t Order, size_t Layer>
+      double get_gaussian_sigma(
+            ClusterRefKey<Order, Layer> & /* pair */) {
+        throw std::logic_error("Requested a sigma type that has not yet "
+                              "been implemented");
+        return -1;
+      }
+    };
+
+    /** Radially-dependent template specialization of the above */
+    template<>
+    struct GaussianHelper<Option::GaussianSigmaTypeRadial> {
+      explicit GaussianHelper(json ) {
+      }
+      template<size_t Order, size_t Layer>
+      double get_gaussian_sigma(
+            ClusterRefKey<Order, Layer> & /* pair */) {
+        throw std::logic_error("Requested a sigma type that has not yet "
+                              "been implemented");
+        return -1;
+      }
+    };
+
+
+
   }
 
   /**
@@ -57,7 +121,8 @@ namespace rascal {
    * (again, as in SOAP) or one of the more recent bases currently under
    * development.
    */
-  template<class StructureManager>
+
+  template<class StructureManager, Option SigmaType>
   class RepresentationManagerSphericalExpansion:
     public RepresentationManagerBase {
    public:
@@ -65,24 +130,6 @@ namespace rascal {
     using hypers_t = RepresentationManagerBase::hypers_t;
     using Property_t = Property<double, 1, 1, Eigen::Dynamic, Eigen::Dynamic>;
     using Manager_t = StructureManager;
-
-    /** Describes the radial basis options.  Analytical integration is
-     *  available for the Gaussian-type basis; the polynomial basis is
-     *  numerically evaluated but better conditioned.
-     */
-    enum RadialBasisType {
-      GaussianType = 0,
-      PolynomialBasis = 1
-    };
-
-    /** Describes how the Gaussian sigma (width) is specified.  Options
-     *  are constant, species-dependent, or radially-dependent.
-     */
-    enum GaussianSigmaType {
-      Constant = 0,
-      PerSpecies = 1,
-      Radial = 2
-    };
 
     /**
      * Set the hyperparameters of this descriptor from a json object.
@@ -103,16 +150,7 @@ namespace rascal {
       }
       this->interaction_cutoff = hypers.at("interaction_cutoff");
       this->cutoff_smooth_width = hypers.at("cutoff_smooth_width");
-      auto gaussian_sigma_str =
-          hypers.at("gaussian_sigma_type").get<std::string>();
-      if (gaussian_sigma_str.compare("Constant") == 0) {
-        this->gaussian_sigma_type = Constant;
-        this->constant_gaussian_sigma = hypers.at("gaussian_sigma");
-      } else {
-        throw std::logic_error("Requested Gaussian sigma type \'"
-                               + gaussian_sigma_str
-                               + "\' has not been implemented.");
-      }
+
       this->radial_ortho_matrix.resize(this->max_radial, this->max_radial);
       this->radial_sigmas.resize(this->max_radial, 1);
       this->radial_norm_factors.resize(this->max_radial, 1);
@@ -121,6 +159,8 @@ namespace rascal {
       //this->soap_vectors.resize(this->n_species * this->max_radial,
                                 //pow(this->max_angular + 1, 2));
       this->is_precomputed = false;
+
+      this->hypers = hypers;
     }
 
     /**
@@ -150,7 +190,7 @@ namespace rascal {
      */
     RepresentationManagerSphericalExpansion(Manager_t &sm,
                                             const hypers_t& hyper)
-        :structure_manager{sm}, soap_vectors{sm}
+        :structure_manager{sm}, soap_vectors{sm}, gaussian_helper{hyper}
     {
       this->set_hyperparameters(hyper);
     }
@@ -232,18 +272,14 @@ namespace rascal {
     }
 
    protected:
-    template<size_t Order, size_t Layer>
-    double get_gaussian_sigma(ClusterRefKey<Order, Layer> & pair);
 
    private:
-    //hypers_t hyperparmeters;
+
     double interaction_cutoff{};
     double cutoff_smooth_width{};
     size_t max_radial{};
     size_t max_angular{};
     size_t n_species{};
-    double constant_gaussian_sigma{};
-    GaussianSigmaType gaussian_sigma_type{};
     // TODO(max-veit) these are specific to the radial Gaussian basis
     Eigen::VectorXd radial_sigmas{};
     Eigen::VectorXd radial_norm_factors{};
@@ -254,12 +290,15 @@ namespace rascal {
 
     Manager_t& structure_manager;
     Property_t soap_vectors;
+    internal::GaussianHelper<SigmaType> gaussian_helper;
+    
+    hypers_t hypers{};
   };
 
 
   /** Compute common prefactors for the radial Gaussian basis functions */
-  template<class Mngr>
-  void RepresentationManagerSphericalExpansion<Mngr>::
+  template<class Mngr, Option SigmaType>
+  void RepresentationManagerSphericalExpansion<Mngr, SigmaType>::
       precompute_radial_sigmas() {
     using std::pow;
     size_t radial_n;
@@ -290,8 +329,8 @@ namespace rascal {
    *
    * @throw runtime_error if the overlap matrix cannot be diagonalized
    */
-  template<class Mngr>
-  void RepresentationManagerSphericalExpansion<Mngr>::
+  template<class Mngr, Option SigmaType>
+  void RepresentationManagerSphericalExpansion<Mngr, SigmaType>::
       precompute_radial_overlap() {
     using std::pow;
     using std::sqrt;
@@ -343,8 +382,8 @@ namespace rascal {
    *
    * @throw runtime_error if the overlap matrix cannot be diagonalized
    */
-  template<class Mngr>
-  void RepresentationManagerSphericalExpansion<Mngr>::precompute() {
+  template<class Mngr, Option SigmaType>
+  void RepresentationManagerSphericalExpansion<Mngr, SigmaType>::precompute() {
     this->precompute_radial_sigmas();
     this->precompute_radial_overlap();
     // Only if none of the above failed (threw exceptions)
@@ -355,19 +394,9 @@ namespace rascal {
   /**
    * Compute the spherical expansion
    *
-   * Note that this dispatches to one of several templated implementations
-   * based off of the Gaussian sigma type of this class.  This saves computer
-   * time by specializing right away (rather than having a switch case called
-   * each time the sigma is needed).
    */
-  template<class Mngr>
-  void RepresentationManagerSphericalExpansion<Mngr>::compute() {
-    this->compute_by_gaussian_sigma_type<this->gaussian_sigma_type>();
-  }
-
-  template<class Mngr, GaussianSigmaType gaussian_sigma_type>
-  void RepresentationManagerSphericalExpansion<Mngr>::
-      compute_by_gaussian_sigma_type() {
+  template<class Mngr, Option SigmaType>
+  void RepresentationManagerSphericalExpansion<Mngr, SigmaType>::compute() {
     using math::PI;
     using std::pow;
     size_t radial_n;
@@ -389,7 +418,7 @@ namespace rascal {
 
       // Start the accumulator with the central atom
       // All terms where l =/= 0 cancel
-      sigma2 = pow(this->get_gaussian_sigma<gaussian_sigma_type>(center), 2);
+      sigma2 = pow(gaussian_helper.get_gaussian_sigma(center), 2);
       // TODO(max-veit) this is specific to the Gaussian radial basis
       // (along with the matching computation below)
       // And ditto on the gamma functions (potential overflow)
@@ -407,7 +436,7 @@ namespace rascal {
         auto dist{this->structure_manager.get_distance(neigh)};
         auto direction{this->structure_manager.get_direction_vector(neigh)};
         double exp_factor = std::exp(-0.5 * pow(dist, 2) / sigma2);
-        sigma2 = pow(this->get_gaussian_sigma<gaussian_sigma_type>(neigh), 2);
+        sigma2 = pow(gaussian_helper.get_gaussian_sigma(neigh), 2);
 
         // Note: the copy _should_ be optimized out (RVO)
         Eigen::MatrixXd harmonics = math::compute_spherical_harmonics(
@@ -457,51 +486,7 @@ namespace rascal {
     } // for (center : structure_manager)
   } // compute()
 
-  /**
-   * Return the width of the atomic Gaussian for each neighbour
-   *
-   * This is `sigma' in the definition `f(r) = A exp(r / (2 sigma^2))'.
-   * The width may depend both on the atomic species of the neighbour as well
-   * as the distance.
-   *
-   * Note that this function is template-specialized by Gaussian sigma type
-   * (constant, per-species, or radially dependent).
-   *
-   * @param pair Atom pair defining the neighbour, as e.g. returned by
-   *             iteration over neighbours of a centre
-   *
-   * @throw logic_error if the requested sigma type has not been implemented
-   *
-   */
-  template<class Mngr>
-  template<size_t Order, size_t Layer>
-  double RepresentationManagerSphericalExpansion<Mngr>::
-        get_gaussian_sigma<GaussianSigmaType::Constant>(
-        ClusterRefKey<Order, Layer> & /* pair */) {
-    return this->constant_gaussian_sigma;
-  }
 
-  /** Per-species template specialization of the above */
-  template<class Mngr>
-  template<size_t Order, size_t Layer>
-  double RepresentationManagerSphericalExpansion<Mngr>::
-        get_gaussian_sigma<GaussianSigmaType::PerSpecies>(
-        ClusterRefKey<Order, Layer> & /* pair */) {
-    throw std::logic_error("Requested a sigma type that has not yet "
-                           "been implemented");
-    return -1;
-  }
-
-  /** Radially-dependent template specialization of the above */
-  template<class Mngr>
-  template<size_t Order, size_t Layer>
-  double RepresentationManagerSphericalExpansion<Mngr>::
-        get_gaussian_sigma<GaussianSigmaType::Radial>(
-        ClusterRefKey<Order, Layer> & /* pair */) {
-    throw std::logic_error("Requested a sigma type that has not yet "
-                           "been implemented");
-    return -1;
-  }
 
 } // namespace rascal
 

@@ -2,7 +2,7 @@ from ..lib import RepresentationManager
 
 _representations_dict = {
     "coulomb":[["distance","rownorm"]],
-    "sphericalexpansion":[["expansion"]]
+    "sphericalexpansion":[["constant"]]
     }
 
 

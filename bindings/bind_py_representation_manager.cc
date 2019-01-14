@@ -66,7 +66,8 @@ void add_representation_managers(py::module & mod, py::module & m_garbage) {
                                     Representation2_t>(mod, m_garbage);
 
   using Representation3_t =
-        RepresentationManagerSphericalExpansion<Manager_t>;
+          RepresentationManagerSphericalExpansion<
+                  Manager_t, Option::GaussianSigmaTypeConstant>;
 
   auto rep_spherical_expansion = add_representation_manager<Representation3_t>(
     mod, m_garbage);
