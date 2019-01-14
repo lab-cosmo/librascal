@@ -26,7 +26,7 @@
  */
 
 #include "representation_manager_base.hh"
-#include "sigmoid_functions.hh"
+#include "cutoff_functions.hh"
 #include "structure_managers/species_manager.hh"
 #include "structure_managers/adaptor_filter.hh"
 #include "structure_managers/property.hh"
@@ -110,7 +110,7 @@ namespace rascal {
     size_t get_center_size() final { return this->structure.size(); }
 
    protected:
-    const SigmoidFuntype SigFunType;
+    const CutoffFuntype SigFunType;
     StructureManager & structure;
     std::vector<SpeciesManager<StoredStructure_t>> species;
   };

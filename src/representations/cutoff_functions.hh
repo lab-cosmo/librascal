@@ -1,11 +1,11 @@
 /**
- * file   sigmoid_functions.hh
+ * file   cutoff_functions.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
  * @date   17 Dec 2018
  *
- * @brief  implementation of sigmoid functions for neural nets
+ * @brief  implementation of cutoff functions for neural nets
  *
  * Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -29,13 +29,16 @@
 
 namespace rascal {
 
-  enum class SigmoidFunType { Cosine, CosineShifted, Tanh };
+  /* ---------------------------------------------------------------------- */
+  enum class CutoffFunType { Cosine, CosineShifted, Tanh };
 
-  template <SigmoidFunType FunType>
-  struct SigmoidFun {};
+  /* ---------------------------------------------------------------------- */
+  template <CutoffFunType FunType>
+  struct CutoffFun {};
 
+  /* ---------------------------------------------------------------------- */
   template <>
-  struct SigmoidFun<SigmoidFunType::Cosine> {
+  struct CutoffFun<CutoffFunType::Cosine> {
     static constexpr size_t NbParams{1};
     using ParamShape = Eigen::MatrixBase<double, NbParams, 1>;
 
@@ -60,8 +63,9 @@ namespace rascal {
     }
   };
 
+  /* ---------------------------------------------------------------------- */
   template <>
-  struct SigmoidFun<SigmoidFunType::CosineShifted> {
+  struct CutoffFun<CutoffFunType::CosineShifted> {
     static constexpr size_t NbParams{2};
     using ParamShape = Eigen::MatrixBase<double, NbParams, 1>;
 
@@ -95,8 +99,9 @@ namespace rascal {
     }
   };
 
+  /* ---------------------------------------------------------------------- */
   template <>
-  struct SigmoidFun<SigmoidFunType::Tanh> {
+  struct CutoffFun<CutoffFunType::Tanh> {
     static constexpr size_t NbParams{1};
     using ParamShape = Eigen::MatrixBase<double, NbParams, 1>;
 
