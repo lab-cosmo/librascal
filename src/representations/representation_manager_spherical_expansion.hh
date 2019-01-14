@@ -2,12 +2,13 @@
  * file   representation_manager_spherical_expansion.hh
  *
  * @author Max Veit <max.veit@epfl.ch>
+ * @author Felix Musil <felix.musil@epfl.ch>
  *
  * @date   19 October 2018
  *
  * @brief  Compute the spherical harmonics expansion of the local atom density
  *
- * Copyright © 2018 Max Veit, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2018 Max Veit, Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
  * rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -291,7 +292,7 @@ namespace rascal {
     Manager_t& structure_manager;
     Property_t soap_vectors;
     internal::GaussianHelper<SigmaType> gaussian_helper;
-    
+
     hypers_t hypers{};
   };
 
