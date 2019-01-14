@@ -37,8 +37,12 @@ namespace rascal {
    */
   BOOST_AUTO_TEST_CASE(rownorm_sort_test) {
     Eigen::MatrixXd test_matrix(4, 5);
-    test_matrix << 0, 6, 1, 4, 3, 0, 7, 2, 5, 4, 1, 8, 3, 6, 2, 2, 9, 4, 7, 1;
-
+    // clang-format off
+    test_matrix << 0, 6, 1, 4, 3,
+                   0, 7, 2, 5, 4,
+                   1, 8, 3, 6, 2,
+                   2, 9, 4, 7, 1;
+    // clang-format on
     Eigen::MatrixXd true_order(5, 1);
     // use of stable sort so 2 goes before 4
     true_order << 0, 1, 3, 2, 4;
@@ -56,10 +60,12 @@ namespace rascal {
    */
   BOOST_AUTO_TEST_CASE(distance_sort_test) {
     Eigen::MatrixXd test_matrix(4, 4);
-    test_matrix << 0., 1.68624958, 1.43774399, 1.12522187, 1.68624958, 0.,
-        1.6850887, 1.15322292, 1.43774399, 1.6850887, 0., 0.98009938,
-        1.12522187, 1.15322292, 0.98009938, 0.;
-
+    // clang-format off
+    test_matrix << 0.        , 1.68624958, 1.43774399, 1.12522187,
+                   1.68624958,         0.,  1.6850887, 1.15322292,
+                    1.43774399, 1.6850887,         0., 0.98009938,
+                    1.12522187, 1.15322292, 0.98009938,         0.;
+    // clang-format on
     Eigen::MatrixXd true_order(4, 1);
     // use of stable sort so 2 goes before 4
     true_order << 0, 3, 2, 1;

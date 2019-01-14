@@ -88,11 +88,10 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   struct ManagerFixtureFile : public ManagerFixture<ManagerImplementation> {
+    // initialize manager variable
     ManagerFixtureFile()
-        : ManagerFixture<ManagerImplementation>{},  // initialize manager
-                                                    // variable
-          cutoff{1.}, filename{"simple_cubic_9.json"}
-    // initialize current fixture
+        : ManagerFixture<ManagerImplementation>{}, cutoff{1.},
+          filename{"simple_cubic_9.json"} // initialize current fixture
     {
       this->manager.update(filename);
     }
@@ -126,11 +125,15 @@ namespace rascal {
        */
       auto a{1.};
       auto c{std::sqrt(8. / 3.)};
+      // clang-format off
+      cell_1 << a,                -0.5 * a, 0.,
+                0., std::sqrt(3.) / 2. * a, 0.,
+                0., 0.,                      c;
 
-      cell_1 << a, -0.5 * a, 0., 0., std::sqrt(3.) / 2. * a, 0., 0., 0., c;
-
-      cell_2 << a, 0., 0.5 * a, 0., c, 0., 0., 0., std::sqrt(3.) / 2. * a;
-
+      cell_2 << a,  0.,                0.5 * a,
+                0.,  c,                     0.,
+                0., 0., std::sqrt(3.) / 2. * a;
+      // clang-format on
       auto p_1 = 2. / 3. * cell_1.col(0) + 1. / 3. * cell_1.col(1) +
                  1. / 2. * cell_1.col(2);
 
@@ -187,20 +190,26 @@ namespace rascal {
        * the atom at position (0, 0, 0).
        */
       auto a{1.};
+      // clang-format off
+      cell_1 <<  a , 0.5 * a, 0.5 * a,
+                 0., 0.5 * a, 0.     ,
+                 0., 0.,      0.5 * a;
 
-      cell_1 << a, 0.5 * a, 0.5 * a, 0., 0.5 * a, 0., 0., 0., 0.5 * a;
-
-      cell_2 << a, 0., 0., 0., a, 0., 0., 0., a;
-
+      cell_2 << a,  0., 0.,
+                0., a,  0.,
+                0., 0., a;
+      // clang-format on
       positions_1 << 0., 0., 0.;
 
       auto p_2 = 0.5 * cell_2.col(0) + 0.5 * cell_2.col(1);
       auto p_3 = 0.5 * cell_2.col(0) + 0.5 * cell_2.col(2);
       auto p_4 = 0.5 * cell_2.col(1) + 0.5 * cell_2.col(2);
-
-      positions_2 << 0.0, p_2[0], p_3[0], p_4[0], 0.0, p_2[1], p_3[1], p_4[1],
-          0.0, p_2[2], p_3[2], p_4[2];
-
+      // clang-format off
+      positions_2 <<    0.0, p_2[0], p_3[0],
+                     p_4[0],    0.0, p_2[1],
+                     p_3[1], p_4[1],    0.0,
+                     p_2[2], p_3[2], p_4[2];
+      // clang-format on
       atom_types_1 << 1;
       atom_types_2 << 1, 1, 1, 1;
 
@@ -362,6 +371,7 @@ namespace rascal {
           cell(3, 3), pbc{{true, true, true}}, cutoff{2.} {
       cell << 6.19, 2.41, 0.21, 0.00, 6.15, 1.02, 0.00, 0.00, 7.31;
 
+      // clang-format off
       positions << 3.689540159937393, 5.123016813620886, 1.994119731169116,
           6.818437242389163, 2.630056617829216, 6.182500355729062,
           2.114977334498767, 6.697579639059512, 1.392155450018263,
@@ -384,7 +394,7 @@ namespace rascal {
           3.818289598989240, 1.436734374347541, 5.869165197222533,
           1.054504320562138, 6.251395251007936, 3.998423858825871,
           3.307475712744203, 5.323662899811682, 1.982236671758393;
-
+      // clang-format on
       positions.transposeInPlace();
       atom_types << 20, 20, 24, 24, 15, 15, 15, 15, 8, 8, 8, 8, 8, 8, 8, 8, 8,
           8, 8, 8, 8, 8;
@@ -414,11 +424,19 @@ namespace rascal {
     ManagerFixtureSimple()
         : ManagerFixture<StructureManagerCenters>{}, pbc{{true, false, false}},
           cell(3, 3), positions(3, 8), atom_types(8), cutoff{2.1}, natoms{8} {
-      cell << 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.5;
-
-      positions << 0.4, 1.4, 0.4, 1.4, 0.4, 1.4, 0.4, 1.4, 0.4, 0.4, 1.4, 1.4,
-          0.4, 0.4, 1.4, 1.4, 0.4, 0.4, 0.4, 0.4, 1.4, 1.4, 1.4, 1.4;
-
+      cell << 1.0, 0.0, 0.0,
+              0.0, 1.0, 0.0,
+              0.0, 0.0, 0.5;
+      // clang-format off
+      positions << 0.4, 1.4, 0.4,
+                   1.4, 0.4, 1.4,
+                   0.4, 1.4, 0.4,
+                   0.4, 1.4, 1.4,
+                   0.4, 0.4, 1.4,
+                   1.4, 0.4, 0.4,
+                   0.4, 0.4, 1.4,
+                   1.4, 1.4, 1.4;
+      // clang-format on
       atom_types << 1, 3, 2, 1, 1, 2, 2, 3;
 
       using PBC_t = Eigen::Map<Eigen::Matrix<int, 3, 1>>;
@@ -450,8 +468,10 @@ namespace rascal {
         : pbc{{true, true, false}}, cell(3, 3), positions(3, 2),
           atom_types(2), cutoff{0.49}, natoms{2} {
       cell << 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.5;
-
-      positions << 0.01, 0.01, 0.01, 0.51, 0.01, 0.01;
+      // clang-format off
+      positions << 0.01, 0.01, 0.01,
+                   0.51, 0.01, 0.01;
+      // clang-format on
 
       atom_types << 1, 1;
     }

@@ -64,8 +64,9 @@ namespace rascal {
     constexpr bool check_below{false};
 
     // Check underlying manager
-    if (check_below)
+    if (check_below) {
       std::cout << ">> underlying manager " << std::endl;
+    }
     size_t npairs1{0};
     for (auto atom : pair_manager.with_ghosts()) {
       if (verbose) {

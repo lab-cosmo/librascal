@@ -125,8 +125,9 @@ namespace rascal {
     for (auto & pair_manager : managers) {
       auto n_pairs{0};
       for (auto atom : pair_manager) {
-        if (verbose)
+        if (verbose) {
           std::cout << "atom " << atom.back() << std::endl;
+        }
         for (auto pair : atom) {
           n_pairs++;
           if (verbose) {
@@ -136,8 +137,9 @@ namespace rascal {
           }
         }
       }
-      if (verbose)
+      if (verbose) {
         std::cout << "Number of pairs " << n_pairs << std::endl;
+      }
       BOOST_CHECK_EQUAL(n_pairs, pair_manager.get_nb_clusters(2));
     }
   }
