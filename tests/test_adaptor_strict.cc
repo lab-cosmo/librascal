@@ -375,7 +375,7 @@ namespace rascal {
         }
 
         if (verbose) {
-          std::cout << "Number of Neighbourg: " << indices_.size() << std::endl;
+          std::cout << "Number of Neighbours: " << indices_.size() << std::endl;
         }
 
         neigh_ids_strict.push_back(indices_);
