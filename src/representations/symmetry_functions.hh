@@ -32,10 +32,43 @@
 #include "Eigen/Dense"
 #include "json_io.hh"
 
+#include <sstream>
+#include <string>
+
 namespace rascal {
 
   enum class SymmetryFunType { One, Gaussian, Cosine, Angular1, Angular2 };
 
+  /* ---------------------------------------------------------------------- */
+  std::string get_name(SymmetryFunType fun_type) {
+    switch (fun_type) {
+    case SymmetryFunType::One: {
+      return "One";
+      break;
+    }
+    case SymmetryFunType::Gaussian: {
+      return "Gaussian";
+      break;
+    }
+    case SymmetryFunType::Cosine: {
+      return "Cosine";
+      break;
+    }
+    case SymmetryFunType::Angular1: {
+      return "Angular1";
+      break;
+    }
+    case SymmetryFunType::Angular2: {
+      return "Angular2";
+      break;
+    }
+    default:
+      throw std::runtime_error("undefined symmetry function type");
+      break;
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
   template <SymmetryFunType FunType>
   struct SymmetryFun {};
 
@@ -71,22 +104,90 @@ namespace rascal {
     }
   };
 
-  template <SymmetryFunType FunType, class StructureManager>
-  class SymmetryFunEvaluator final {
+  template<class StructureManager>
+  class SymmetryFunEvaluatorBase
+  {
    public:
+
+    template <size_t Order>
+    using ClusterRef_t = typename StructureManager::template ClusterRef<Order>;
+
+    //! Default constructor
+    SymmetryFunEvaluatorBase() = delete;
+
+    //! Constructor with symmetry function type
+    SymmetryFunEvaluatorBase(const SymmetryFunType sym_fun_type)
+        : sym_fun_type{sym_fun_type} {}
+
+    //! Copy constructor
+    SymmetryFunEvaluatorBase(const SymmetryFunEvaluatorBase &other);
+
+    //! Move constructor
+    SymmetryFunEvaluatorBase(SymmetryFunEvaluatorBase &&other) noexcept;
+
+    //! Destructor
+    virtual ~SymmetryFunEvaluatorBase() noexcept;
+
+    //! Copy assignment operator
+    SymmetryFunEvaluatorBase& operator=(const SymmetryFunEvaluatorBase &other);
+
+    //! Move assignment operator
+    SymmetryFunEvaluatorBase &
+    operator=(SymmetryFunEvaluatorBase && other) noexcept;
+
+    //! needs to be called after reading the input file and prior to the first
+    //! evaluation
+    virtual void init() = 0;
+
+    //! insert a parameter (sub-)json
+    void add_params(const json & params) {
+      const auto & type{params.at("type").get<std::string>()};
+      if (type != get_name(FunType)) {
+        std::stringstream error{};
+        error << "Parameter set for function type '" << type
+              << "' assigned to function of type '"
+              << get_name(this->sym_fun_type) << "'.";
+        throw std::runtime_error(error.str());
+      }
+      this->raw_params.push_back(params);
+    };
+
+    //! Main worker (raison d'être)
+    template <size_t Order>
+    void apply(ClusterRef_t<Order> & cluster) {
+      static_assert((Order == 1) or (Order == 2),
+                    "only handles pairs and triplets");
+      switch (Order) {
+      case 1: {
+        this->apply_pair(cluster);
+        break;
+      }
+      case 2: {
+        this->apply_triplet(cluster);
+        break;
+      }
+      default: {};
+      }
+    }
+
+   protected:
+    virtual void apply_pair(ClusterRef_t<1> & cluster) = 0;
+    virtual void apply_triplet(ClusterRef_t<2> & cluster) = 0;
+    std::vector<json> raw_params{};
+    const SymmetryFunType sym_fun_type;
+  };
+
+  /* ---------------------------------------------------------------------- */
+  template <SymmetryFunType FunType, class StructureManager>
+  class SymmetryFunEvaluator final: public SymmetryFunEvaluatorBase {
+   public:
+
+    using Parent = SymmetryFunEvaluatorBase;
     using ParamStorage =
         Eigen::Matrix<double, FunType::NbParams, Eigen::Dynamic>;
 
     //! Default constructor
-    SymmetryFunEvaluator() = delete;
-
-    //! construction from json input
-    SymmetryFunEvaluator(StructureManager & structure) :
-      structure{structure},
-      params{},
-      function_values{this->structure, 1},
-      derivative_values{this->structure, Dim, 1}
-    {}
+    SymmetryFunEvaluator() : Parent(FunType) {}
 
     //! Copy constructor
     SymmetryFunEvaluator(const SymmetryFunEvaluator & other) = delete;
@@ -104,10 +205,7 @@ namespace rascal {
     //! Move assignment operator
     SymmetryFunEvaluator & operator=(SymmetryFunEvaluator && other) = default;
 
-
-    void add_params(const json &  params) {this->raw_params.push_back(params)};
-
-    void init();
+    void init() final;
 
    protected:
     static constexpr size_t AtomOrder{1};
@@ -117,35 +215,18 @@ namespace rascal {
     static constexpr size_t PairLayer{
         std::get<1>(StructureManager::traits::LayerByOrder::type)};
 
-    StructureManager & structure;
-    std::vector<json> raw_params;
-    ParamStorage params;
-    TypedProperty<double, AtomOrder, AtomLayer> function_values;
-    TypedProperty<double, PairOrder, PairLayer> derivative_values;
+    ParamStorage params{};
   };
 
+
   /* ---------------------------------------------------------------------- */
-  /**
-   * Constructor to size the property according to json objects content
-   */
-  template <SymmetryFunType FunType, class StructureManager>
-  SymmetryFunEvaluator<FunType, StructureManager>::SymmetryFunEvaluator(
-      const json & hypers)
-      : {
-    // get number of hyper parameters from json object
+  template<SymmetryFunType FunType, class StructureManager>
+  void SymmetryFunEvaluator<FunType, StructureManager>::init() {
+    // start by resizing the parameter storage
+    this->params = params.Zero(FunType::NbParams, this->raw_params.size());
 
-    // Nested structure for similar hyper parameters? Is `hyper` the complete
-    // json input file?
-
-    // NbParams is already sized?
-    // NbParams is different, with pair or triplets
-
-    std::vector<std::vector<double>> params_tmp{
-        hypers.at("params").get<std::vector<std::vector<double>>>()};
-    size_t n_symfun{params_tmp.size()};
-
-    // possible to directly construct `params` from json or is this intermediate
-    // step necessary?
+    for (const auto & raw_param: this->raw_params) {
+      }
   }
 
 }  // namespace rascal

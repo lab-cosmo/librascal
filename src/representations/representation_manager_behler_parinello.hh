@@ -33,6 +33,7 @@
 
 #include <string>
 #include <vector>
+#include <limits>
 
 #ifndef REPRESENTATION_MANAGER_BEHLER_PARINELLO_H
 #define REPRESENTATION_MANAGER_BEHLER_PARINELLO_H
@@ -110,9 +111,33 @@ namespace rascal {
     size_t get_center_size() final { return this->structure.size(); }
 
    protected:
-    const CutoffFuntype SigFunType;
+    constexpr size_t Invalid{std::numeric_limits<size_t>::max()};
     StructureManager & structure;
-    std::vector<SpeciesManager<StoredStructure_t>> species;
+    SpeciesManager<StructureManager> species;
+
+    // neural net topology
+    //! uninque cutoff function used for all input nodes
+    CutoffFuntype cutoff_fun{};
+    //! set of all cutoff values for optimisation
+    std::set<double> cutoffs{};
+    //! number of hidden layers in the network
+    size_t nb_hidden_layers{Invalid};
+    //! number of species represented by the network (some species might be
+    //! missing at runtime)
+    size_t nb_species{Invalid};
+    //! number of nodes per hidden layer, counting in direction of output coming
+    //! from input
+    std::vector<size_t> nb_per_hidden{Invalid};
+    //! per species: number of symmetry functions defined with that same species
+    //! defined as primary
+    std::map<int, size_t> nb_sym_per_species{Invalid};
+
+    std::map<double, SymmetryFunction> sym
+    
+    
+    std::map<double,
+             typename SpeciesManager<StructureManager>::FilterContainer_t>
+        manager_by_cutoff;
   };
 
 }  // namespace rascal

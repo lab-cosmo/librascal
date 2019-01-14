@@ -107,6 +107,9 @@ namespace rascal {
     template <size_t Order>
     using Filter_t = AdaptorFilter<ManagerImplementation, Order>;
 
+    using FilterContainer_t =
+        internal::FilterContainer_t<ManagerImplementation, MaxOrder>;
+
     static_assert(traits::MaxOrder <= MaxOrder,
                   "MaxOrder of underlying manager is insufficient.");
 
@@ -169,9 +172,7 @@ namespace rascal {
     //! underlying structure manager to be filtered upon update()
     ManagerImplementation & structure_manager;
     //! storage by cluster order for the filtered managers
-    internal::FilterContainer_t<ManagerImplementation, MaxOrder> filters;
-
-   private:
+    FilterContainer_t filters;
   };
 
 
