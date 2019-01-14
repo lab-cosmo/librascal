@@ -38,20 +38,14 @@ class SphericalExpansion(object):
     def __init__(self,cutoff,size=10,central_decay=-1,
                     interaction_cutoff=10,interaction_decay=-1):
         self.name = 'sphericalexpansion'
-        self.options = 'expansion'
+        self.options = 'constant'
         self.cutoff = cutoff
-        self.central_decay = central_decay
-        self.interaction_cutoff = interaction_cutoff
-        self.interaction_decay = interaction_decay
-        self.size = int(size)
+
 
     def get_params(self):
-        params = dict(name=self.name,sort=self.sort,
+        params = dict(name=self.name,
                     cutoff=self.cutoff,
-                      central_decay=self.central_decay,
-                        interaction_cutoff=self.interaction_cutoff,
-                        interaction_decay=self.interaction_decay,
-                        size=self.size)
+                      )
         return params
 
     def transform(self,frames):
@@ -72,14 +66,12 @@ class SphericalExpansion(object):
 
         managers = list(map(get_strict_neighbourlist,frames,[self.cutoff]*Nframe))
 
-        self.size = self.get_size(managers)
-
         inp = json.dumps(self.get_params())
 
         Nfeature = self.get_Nfeature()
         features = FeatureManager.Dense_double(Nfeature,inp)
 
-        cms = map(RepresentationFactory(self.name,self.sort),
+        cms = map(RepresentationFactory(self.name,self.options),
                      managers,[inp]*Nframe)
 
         for cm in cms:
@@ -89,12 +81,5 @@ class SphericalExpansion(object):
         return features
 
     def get_Nfeature(self):
-        return int(self.size*(self.size+1)/2)
+        return
 
-    def get_size(self,managers):
-        Nneigh = []
-        for manager in managers:
-            for center in manager:
-                Nneigh.append(center.size+1)
-        size = int(np.max(Nneigh))
-        return size

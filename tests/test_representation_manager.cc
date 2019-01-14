@@ -30,7 +30,7 @@
 
 
 namespace rascal {
-  BOOST_AUTO_TEST_SUITE(representation_sorted_coulomb_test);
+  BOOST_AUTO_TEST_SUITE(representation_test);
   /* ---------------------------------------------------------------------- */
   BOOST_TEST_CASE_TEMPLATE_FUNCTION(test_internals,T)
   {
@@ -109,7 +109,11 @@ namespace rascal {
     RepresentationFixture<StructureManagerCenters,
                           RepresentationManagerSortedCoulomb,
                           MultipleStructureSortedCoulomb,
-                          Option::CMSortRowNorm>>;
+                          Option::CMSortRowNorm>,
+    RepresentationFixture<StructureManagerCenters,
+                          RepresentationManagerSphericalExpansion,
+                          MultipleStructureSphericalExpansion,
+                          Option::GaussianSigmaTypeConstant>>;
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_constructor_test,
             Fix, multiple_fixtures, Fix) {
@@ -147,21 +151,9 @@ namespace rascal {
   using multiple_fixtures = boost::mpl::list<
     RepresentationFixture<StructureManagerCenters,
                           RepresentationManagerSphericalExpansion,
-                          MultipleStructureSphericalExpansion>>;
+                          MultipleStructureSphericalExpansion,
+                          Option::GaussianSigmaTypeConstant>>;
 
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(
-      multiple_constructor_test, Fix, multiple_fixtures, Fix) {
-
-    auto& managers = Fix::managers_strict;
-    auto& representations = Fix::representations;
-    auto& hypers = Fix::hypers;
-
-    for (auto& manager : managers) {
-      for (auto& hyper : hypers) {
-        representations.emplace_back(manager, hyper);
-      }
-    }
-  }
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(
       multiple_precompute_test, Fix, multiple_fixtures, Fix) {

@@ -90,9 +90,20 @@ namespace rascal {
         {"Adaptor", ""},
         {"RepresentationManager", ""},
         {"FeatureManager", ""},
+        // with gcc Option::CMSortDistance -> (Options)1
         {R"(\([^()]*\))", ""},
         {to_string(Option::CMSortDistance), "SortDistance"},
-        {to_string(Option::CMSortRowNorm), "SortRowNorm"}
+        {to_string(Option::CMSortRowNorm), "SortRowNorm"},
+        {to_string(Option::GaussianSigmaTypeConstant), "Constant"},
+        {to_string(Option::GaussianSigmaTypePerSpecies), "PerSpecies"},
+        {to_string(Option::GaussianSigmaTypeRadial), "Radial"},
+        // with clang
+        // Option::CMSortDistance -> "Option::CMSortDistance"
+        {"Option::CMSortDistance", "SortDistance"},
+        {"Option::CMSortRowNorm", "SortRowNorm"},
+        {"Option::GaussianSigmaTypeConstant", "Constant"},
+        {"Option::GaussianSigmaTypePerSpecies", "PerSpecies"},
+        {"Option::GaussianSigmaTypeRadial", "Radial"}
       };
     };
 
@@ -111,7 +122,6 @@ namespace rascal {
       SubstitutionMap ojb{};
       std::vector<std::string> names{typeName};
       for (const auto& map : ojb.mapping) {
-        std::cout << map.first << ", " << map.second<< std::endl;
         names.push_back(std::regex_replace(names.back(),
                 std::regex(map.first.c_str()), map.second.c_str()));
       }
