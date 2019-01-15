@@ -37,8 +37,7 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(ManagerTests);
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
-                          ManagerFixture<StructureManagerLammps>) {
-  }
+                          ManagerFixture<StructureManagerLammps>) {}
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(iterator_test,
@@ -55,8 +54,8 @@ namespace rascal {
       for (auto pair_cluster : atom_cluster) {
         auto pair_offset{pair_cluster.get_global_index()};
         if (verbose) {
-          std::cout << "pair (" << atom_cluster.back()
-                    << ", " << pair_cluster.back()
+          std::cout << "pair (" << atom_cluster.back() << ", "
+                    << pair_cluster.back()
                     << "), pair_counter = " << pair_counter
                     << ", pair_offset = " << pair_offset << std::endl;
         }
@@ -87,4 +86,4 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();
 
-}  // rascal
+}  // namespace rascal

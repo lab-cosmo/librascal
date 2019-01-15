@@ -64,21 +64,19 @@ namespace rascal {
     constexpr bool check_below{false};
 
     // Check underlying manager
-    if (check_below) std::cout << ">> underlying manager " << std::endl;
+    if (check_below) {
+      std::cout << ">> underlying manager " << std::endl;
+    }
     size_t npairs1{0};
-    for (auto atom : pair_manager) {
+    for (auto atom : pair_manager.with_ghosts()) {
       if (verbose) {
-        std::cout << "chain atom "
-                  << atom.back()
-                  << std::endl;
+        std::cout << "atom " << atom.back() << std::endl;
       }
       for (auto pair : atom) {
         npairs1++;
         if (verbose) {
-          std::cout << " chain pair "
-                    << pair.back()
-                    << " glob " << pair.get_global_index()
-                    << std::endl;
+          std::cout << " pair " << pair.back() << " glob "
+                    << pair.get_global_index() << std::endl;
         }
       }
     }
@@ -108,37 +106,34 @@ namespace rascal {
     for (auto atom : adaptor) {
       natoms++;
       if (verbose) {
-        std::cout << atom.back()
-                  << std::endl;
+        std::cout << atom.back() << std::endl;
       }
 
-      if (verbose) std::cout << "position: " << atom.get_position
-                     () << std::endl;
+      if (verbose) {
+        std::cout << "position: " << atom.get_position() << std::endl;
+      }
 
       for (auto pair : atom) {
         npairs++;
         if (verbose) {
-          std::cout << "   complete pair "
-                    << atom.back() << " " << pair.back()
+          std::cout << "   complete pair " << atom.back() << " " << pair.back()
                     << " glob " << pair.get_global_index() << std::endl;
         }
         for (auto triplet : pair) {
           n_triplets++;
           if (verbose) {
-            std::cout << "             triplet "
-                      << triplet.back()
-                      << " global " << triplet.get_global_index()
+            std::cout << "             triplet " << triplet.back() << " global "
+                      << triplet.get_global_index() << std::endl;
+            std::cout << "                         complete " << atom.back()
+                      << " " << pair.back() << " " << triplet.back()
                       << std::endl;
-            std::cout << "                         complete "
-                      << atom.back() << " "
-                      << pair.back() << " "
-                      << triplet.back() << std::endl;
           }
         }
       }
     }
-    if (verbose) std::cout << "Number of triplets: " << n_triplets << std::endl;
-    // TODO(markus): check for consistency in number of tuples
+    if (verbose) {
+      std::cout << "Number of triplets: " << n_triplets << std::endl;
+    }
   }
 
   /* ---------------------------------------------------------------------- */
@@ -153,7 +148,9 @@ namespace rascal {
                           ManagerFixture<StructureManagerLammps>) {
     constexpr bool verbose{false};
 
-    if (verbose) std::cout << ">> pair to triplet extension" << std::endl;
+    if (verbose) {
+      std::cout << ">> pair to triplet extension" << std::endl;
+    }
 
     AdaptorHalfList<StructureManagerLammps> SM2{manager};
     SM2.update();
@@ -184,8 +181,8 @@ namespace rascal {
 
         for (auto triplet : pair) {
           if (verbose) {
-            std::cout << "triplet " << atom.back() << " "
-                    << pair.back() << " " << triplet.back() << std::endl;
+            std::cout << "triplet " << atom.back() << " " << pair.back() << " "
+                      << triplet.back() << std::endl;
           }
           auto triplet_index = triplet.get_atom_index();
           auto triplet_type = triplet.get_atom_type();
@@ -201,4 +198,4 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE_END();
 
-}  // rascal
+}  // namespace rascal
