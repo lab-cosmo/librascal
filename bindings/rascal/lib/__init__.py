@@ -3,4 +3,3 @@ from ._rascal import (StructureManager, FeatureManager, Adaptor,
 
 from ._rascal.utils import sparsification
 
-import _rascal
