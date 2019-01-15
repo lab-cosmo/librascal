@@ -39,7 +39,7 @@ set (PY_BINDING_SRCS
 find_package(PythonLibsNew 3 MODULE REQUIRED)
 
 # Get where python local site-packages is
-execute_process ( COMMAND PythonInterp -c "from distutils.sysconfig import \
+execute_process ( COMMAND python -c "from distutils.sysconfig import \
                   get_python_lib; print(get_python_lib())"
   lOUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE
   )

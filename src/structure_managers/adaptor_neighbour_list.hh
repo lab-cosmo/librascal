@@ -30,15 +30,14 @@
 #ifndef ADAPTOR_NEIGHBOUR_LIST_H
 #define ADAPTOR_NEIGHBOUR_LIST_H
 
-#include "atomic_structure.hh"
-#include "basic_types.hh"
-#include "lattice.hh"
-#include "rascal_utility.hh"
-#include "structure_managers/property.hh"
 #include "structure_managers/structure_manager.hh"
+#include "structure_managers/property.hh"
+#include "rascal_utility.hh"
+#include "lattice.hh"
+#include "basic_types.hh"
 
-#include <set>
 #include <typeinfo>
+#include <set>
 #include <vector>
 
 namespace rascal {
@@ -58,12 +57,12 @@ namespace rascal {
     constexpr static bool HasDirectionVectors{false};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
     // New MaxOrder upon construction, by construction should be 2
-    constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder +
-                                     1};
-    // When using periodic boundary conditions, it is possible that atoms are
-    // added upon construction of the neighbour list. Therefore the layering
-    // sequence is reset: here is layer 0 again.
-    using LayerByOrder = std::index_sequence<0, 0>;
+    constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder+1};
+    // extending the layer for the new order
+    using LayerByOrder =
+      typename LayerExtender<MaxOrder,
+                             typename
+                             ManagerImplementation::traits::LayerByOrder>::type;
   };
 
   namespace internal {
@@ -87,7 +86,8 @@ namespace rascal {
     class Stencil {
      public:
       //! constructor
-      explicit Stencil(const std::array<int, Dim> & origin) : origin{origin} {};
+      explicit Stencil(const std::array<int, Dim> & origin)
+        : origin{origin}{};
       //! copy constructor
       Stencil(const Stencil & other) = default;
       //! assignment operator
@@ -98,14 +98,13 @@ namespace rascal {
       //! iterators over `` dereferences to cell coordinates
       class iterator {
        public:
-        using value_type = std::array<int, Dim>;    //!< stl conformance
-        using const_value_type = const value_type;  //!< stl conformance
-        using pointer = value_type *;               //!< stl conformance
-        using iterator_category =
-            std::forward_iterator_tag;  //!< stl conformance
+        using value_type = std::array<int, Dim>; //!< stl conformance
+        using const_value_type = const value_type; //!< stl conformance
+        using pointer = value_type*; //!< stl conformance
+        using iterator_category = std::forward_iterator_tag;//!<stl conformance
         //! constructor
         explicit iterator(const Stencil & stencil, bool begin = true)
-            : stencil{stencil}, index{begin ? 0 : stencil.size()} {}
+          : stencil{stencil}, index{begin? 0: stencil.size()} {}
         //! destructor
         ~iterator() {}
         //! dereferencing
@@ -113,10 +112,9 @@ namespace rascal {
           constexpr int size{3};
           std::array<int, Dim> retval{{0}};
           int factor{1};
-          for (int i{Dim - 1}; i >= 0; --i) {
+          for (int i{Dim-1}; i >=0; --i) {
             //! -1 for offset of stencil
-            retval[i] =
-                this->index / factor % size + this->stencil.origin[i] - 1;
+            retval[i] = this->index/factor%size + this->stencil.origin[i] - 1;
             if (i != 0) {
               factor *= size;
             }
@@ -140,11 +138,11 @@ namespace rascal {
         size_t index;
       };
       //! stl conformance
-      inline iterator begin() const { return iterator(*this); }
+      inline iterator begin() const {return iterator(*this);}
       //! stl conformance
-      inline iterator end() const { return iterator(*this, false); }
+      inline iterator end() const {return iterator(*this, false);}
       //! stl conformance
-      inline size_t size() const { return ipow(3, Dim); }
+      inline size_t size() const {return ipow(3, Dim);}
 
      protected:
       //! locations of this domain
@@ -163,7 +161,7 @@ namespace rascal {
       PeriodicImages(const std::array<int, Dim> & origin,
                      const std::array<int, Dim> & nrepetitions,
                      const size_t & ntot)
-          : origin{origin}, nrepetitions{nrepetitions}, ntot{ntot} {};
+        : origin{origin}, nrepetitions{nrepetitions}, ntot{ntot} {};
       //! copy constructor
       PeriodicImages(const PeriodicImages & other) = default;
       //! assignment operator
@@ -173,27 +171,25 @@ namespace rascal {
       //! iterators over `` dereferences to cell coordinates
       class iterator {
        public:
-        using value_type = std::array<int, Dim>;    //!< stl conformance
-        using const_value_type = const value_type;  //!< stl conformance
-        using pointer = value_type *;               //!< stl conformance
-        using iterator_category =
-            std::forward_iterator_tag;  //!< stl conformance
+        using value_type = std::array<int, Dim>; //!< stl conformance
+        using const_value_type = const value_type; //!< stl conformance
+        using pointer = value_type*; //!< stl conformance
+        using iterator_category = std::forward_iterator_tag;//!<stl conformance
 
         //! constructor
         explicit iterator(const PeriodicImages & periodic_images,
                           bool begin = true)
-            : periodic_images{periodic_images},
-              index{begin ? 0 : periodic_images.size()} {}
+          : periodic_images{periodic_images},
+            index{begin? 0: periodic_images.size()} {}
 
         ~iterator() {}
         //! dereferencing
         value_type operator*() const {
           std::array<int, Dim> retval{{0}};
           int factor{1};
-          for (int i = Dim - 1; i >= 0; --i) {
-            retval[i] =
-                this->index / factor % this->periodic_images.nrepetitions[i] +
-                this->periodic_images.origin[i];
+          for (int i = Dim-1; i >=0; --i) {
+            retval[i] = this->index/factor%this->periodic_images.nrepetitions[i]
+              + this->periodic_images.origin[i];
             if (i != 0) {
               factor *= this->periodic_images.nrepetitions[i];
             }
@@ -203,7 +199,7 @@ namespace rascal {
         //! pre-increment
         iterator & operator++() {
           this->index++;
-          return *this;
+         return *this;
         }
         //! inequality
         inline bool operator!=(const iterator & other) const {
@@ -211,18 +207,18 @@ namespace rascal {
         }
 
        protected:
-        const PeriodicImages & periodic_images;  //!< ref to periodic images
-        size_t index;  //!< index of currect pointed-to pixel
+        const PeriodicImages & periodic_images; //!< ref to periodic images
+        size_t index; //!< index of currect pointed-to pixel
       };
       //! stl conformance
-      inline iterator begin() const { return iterator(*this); }
+      inline iterator begin() const {return iterator(*this);}
       //! stl conformance
-      inline iterator end() const { return iterator(*this, false); }
+      inline iterator end() const {return iterator(*this, false);}
       //! stl conformance
-      inline size_t size() const { return this->ntot; }
+      inline size_t size() const {return this->ntot;}
 
      protected:
-      const std::array<int, Dim> origin;  //!< minimum repetitions
+      const std::array<int, Dim> origin; //!< minimum repetitions
       //! repetitions in each dimension
       const std::array<int, Dim> nrepetitions;
       const size_t ntot;
@@ -238,8 +234,8 @@ namespace rascal {
     class MeshBounds {
      public:
       //! constructor
-      explicit MeshBounds(const std::array<double, 2 * Dim> & extent)
-          : extent{extent} {};
+      explicit MeshBounds(const std::array<double, 2*Dim> & extent)
+        : extent{extent} {};
       //! copy constructor
       MeshBounds(const MeshBounds & other) = default;
       //! assignment operator
@@ -249,15 +245,16 @@ namespace rascal {
       //! iterators over `` dereferences to mesh bound coordinate
       class iterator {
        public:
-        using value_type = std::array<double, Dim>;  //!< stl conformance
-        using const_value_type = const value_type;   //!< stl conformance
-        using pointer = value_type *;                //!< stl conformance
-        using iterator_category =
-            std::forward_iterator_tag;  //!< stl conformance
+        using value_type = std::array<double, Dim>; //!< stl conformance
+        using const_value_type = const value_type; //!< stl conformance
+        using pointer = value_type*; //!< stl conformance
+        using iterator_category = std::forward_iterator_tag;//!<stl conformance
 
         //! constructor
-        explicit iterator(const MeshBounds & mesh_bounds, bool begin = true)
-            : mesh_bounds{mesh_bounds}, index{begin ? 0 : mesh_bounds.size()} {}
+        explicit iterator(const MeshBounds & mesh_bounds,
+                          bool begin = true)
+          : mesh_bounds{mesh_bounds},
+            index{begin? 0: mesh_bounds.size()} {}
         //! destructor
         ~iterator() {}
         //! dereferencing
@@ -265,7 +262,7 @@ namespace rascal {
           std::array<double, Dim> retval{{0}};
           constexpr int size{2};
           for (size_t i{0}; i < Dim; ++i) {
-            int idx = (this->index / ipow(size, i)) % size * Dim + i;
+            int idx = (this->index/ipow(size, i))%size * Dim + i;
             retval[i] = this->mesh_bounds.extent[idx];
           }
           return retval;
@@ -281,29 +278,28 @@ namespace rascal {
         }
 
        protected:
-        const MeshBounds & mesh_bounds;  //!< ref to periodic images
-        size_t index;                    //!< index of currect pointed-to voxel
+        const MeshBounds & mesh_bounds; //!< ref to periodic images
+        size_t index; //!< index of currect pointed-to voxel
       };
       //! stl conformance
-      inline iterator begin() const { return iterator(*this); }
+      inline iterator begin() const {return iterator(*this);}
       //! stl conformance
-      inline iterator end() const { return iterator(*this, false); }
+      inline iterator end() const {return iterator(*this, false);}
       //! stl conformance
-      inline size_t size() const { return ipow(2, Dim); }
+      inline size_t size() const {return ipow(2, Dim);}
 
      protected:
-      const std::array<double, 2 * Dim>
-          extent;  //!< repetitions in each dimension
+      const std::array<double, 2*Dim> extent; //!< repetitions in each dimension
     };
 
     /* ---------------------------------------------------------------------- */
     //! get dimension dependent neighbour indices (surrounding cell and the cell
     //! itself
-    template <size_t Dim, class Container_t>
+    template<size_t Dim, class Container_t>
     std::vector<size_t> get_neighbours(const int current_atom_index,
                                        const std::array<int, Dim> & ccoord,
                                        const Container_t & boxes) {
-      std::vector<size_t> neighbours{};
+      std::vector<size_t> neighbours;
       for (auto && s : Stencil<Dim>{ccoord}) {
         for (const auto & neigh : boxes[s]) {
           // avoid adding the current i atom to the neighbour list
@@ -317,8 +313,9 @@ namespace rascal {
 
     /* ---------------------------------------------------------------------- */
     //! get the cell index for a position
-    template <class Vector_t>
-    decltype(auto) get_box_index(const Vector_t & position, const double & rc) {
+    template<class Vector_t>
+    decltype(auto) get_box_index(const Vector_t & position,
+                                 const double & rc) {
       auto constexpr dimension{Vector_t::SizeAtCompileTime};
 
       std::array<int, dimension> nidx{};
@@ -336,14 +333,16 @@ namespace rascal {
                               const std::array<int, Dim> & ccoord) {
       Dim_t retval{0};
       Dim_t factor{1};
-      for (Dim_t i = Dim - 1; i >= 0; --i) {
+      for (Dim_t i = Dim-1; i >= 0; --i) {
         retval += ccoord[i] * factor;
+        // TODO(markus) remove the useless if
         if (i != 0) {
           factor *= sizes[i];
         }
       }
       return retval;
     }
+
 
     /* ---------------------------------------------------------------------- */
     //! test if position inside
@@ -370,7 +369,7 @@ namespace rascal {
      * storage for cell coordinates of atoms depending on the number of
      * dimensions
      */
-    template <int Dim>
+    template<int Dim>
     class IndexContainer {
      public:
       //! Default constructor
@@ -378,30 +377,30 @@ namespace rascal {
 
       //! Constructor with size
       explicit IndexContainer(const std::array<int, Dim> & nboxes)
-          : nboxes{nboxes} {
-        auto ntot = std::accumulate(nboxes.begin(), nboxes.end(), 1,
-                                    std::multiplies<int>());
+        : nboxes{nboxes} {
+        auto ntot = std::accumulate(nboxes.begin(), nboxes.end(),
+                                    1, std::multiplies<int>());
         data.resize(ntot);
       }
 
       //! Copy constructor
-      IndexContainer(const IndexContainer & other) = delete;
+      IndexContainer(const IndexContainer &other) = delete;
       //! Move constructor
-      IndexContainer(IndexContainer && other) = delete;
+      IndexContainer(IndexContainer &&other) = delete;
       //! Destructor
       ~IndexContainer() {}
       //! Copy assignment operator
-      IndexContainer & operator=(const IndexContainer & other) = delete;
+      IndexContainer& operator=(const IndexContainer &other) = delete;
       //! Move assignment operator
-      IndexContainer & operator=(IndexContainer && other) = default;
+      IndexContainer& operator=(IndexContainer &&other) = default;
       //! brackets operator
-      std::vector<int> & operator[](const std::array<int, Dim> & ccoord) {
+      std::vector<int> & operator[](const std::array<int, Dim>& ccoord) {
         auto index = get_index(this->nboxes, ccoord);
         return data[index];
       }
 
-      const std::vector<int> &
-      operator[](const std::array<int, Dim> & ccoord) const {
+      const std::vector<int> & operator[](const std::array<int,
+                                          Dim>& ccoord) const {
         auto index = get_index(this->nboxes, ccoord);
         return this->data[index];
       }
@@ -414,7 +413,7 @@ namespace rascal {
 
      private:
     };
-  }  // namespace internal
+  }  // internal
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -423,20 +422,19 @@ namespace rascal {
    * exists, triplets, quadruplets, etc. lists are created.
    */
   template <class ManagerImplementation>
-  class AdaptorNeighbourList
-      : public StructureManager<AdaptorNeighbourList<ManagerImplementation>> {
+  class AdaptorNeighbourList: public
+  StructureManager<AdaptorNeighbourList<ManagerImplementation>> {
    public:
     using Base = StructureManager<AdaptorNeighbourList<ManagerImplementation>>;
     using Parent =
-        StructureManager<AdaptorNeighbourList<ManagerImplementation>>;
+      StructureManager<AdaptorNeighbourList<ManagerImplementation>>;
     using Implementation_t = ManagerImplementation;
     using traits = StructureManager_traits<AdaptorNeighbourList>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
     using Vector_t = typename Parent::Vector_t;
-    using Positions_ref =
-        Eigen::Map<Eigen::Matrix<double, traits::Dim, Eigen::Dynamic>>;
-    // using AtomTypes_ref = AtomicStructure<traits::Dim>::AtomTypes_ref;
+    using Positions_ref = Eigen::Map<Eigen::Matrix<double, traits::Dim,
+                                                   Eigen::Dynamic>>;
 
     static_assert(traits::MaxOrder == 2,
                   "ManagerImplementation needs an atom list "
@@ -449,8 +447,7 @@ namespace rascal {
      * Constructs a full neighbourhood list from a given manager and cut-off
      * radius or extends an existing neighbourlist to the next order
      */
-    AdaptorNeighbourList(ManagerImplementation & manager, double cutoff,
-                         bool consider_ghost_neighbours = false);
+    AdaptorNeighbourList(ManagerImplementation & manager, double cutoff);
 
     //! Copy constructor
     AdaptorNeighbourList(const AdaptorNeighbourList & other) = delete;
@@ -476,16 +473,11 @@ namespace rascal {
     void update();
 
     //! Updates the underlying manager as well as the adaptor
-    template <class... Args>
-    void update(Args &&... arguments);
+    template<class ... Args>
+    void update(Args&&... arguments);
 
     //! Returns cutoff radius of the neighbourhood manager
-    inline double get_cutoff() const { return this->cutoff; }
-
-    //! check whether neighbours of ghosts were considered
-    inline bool get_consider_ghost_neighbours() const {
-      return this->consider_ghost_neighbours;
-    }
+    inline double get_cutoff() const {return this->cutoff;}
 
     /**
      * Returns the linear indices of the clusters (whose atom indices are stored
@@ -494,51 +486,37 @@ namespace rascal {
      * (i.e. specifying pairs), for each pair of indices i,j it returns the
      * number entries in the list of pairs before i,j appears.
      */
-    template <size_t Order>
-    inline size_t
-    get_offset_impl(const std::array<size_t, Order> & counters) const;
+    template<size_t Order>
+    inline size_t get_offset_impl(const std::array<size_t, Order>
+                                  & counters) const;
 
     //! Returns the number of clusters of size cluster_size
     inline size_t get_nb_clusters(size_t cluster_size) const {
-      switch (cluster_size) {
-      case 1: {
-        return this->n_centers +
-               this->n_ghosts;  // TODO(markus) here +n_ghosts?
-        break;
-      }
-      case 2: {
+      if (cluster_size == 1) {
+        return this->manager.get_nb_clusters(cluster_size);
+      } else if (cluster_size == 2) {
         return this->neighbours.size();
-        break;
-      }
-      default:
-        throw std::runtime_error("Can only handle single atoms and pairs.");
-        break;
+      } else {
+        throw std::string("ERREUR : cluster_size > 2");
       }
     }
 
     //! Returns number of clusters of the original manager
-    inline size_t get_size() const { return this->n_centers; }
+    inline size_t get_size() const {
+      return this->manager.get_size();
+    }
 
     //! total number of atoms used for neighbour list, including ghosts
     inline size_t get_size_with_ghosts() const {
-      // The return type of this function depends on the construction of the
-      // adaptor. If the adaptor is constructed without considering the
-      // neighbours of ghosts, only the number of atoms are returned to avoid
-      // ambiguity and false access. In case the adaptor is constructed
-      // considering the neighbours of ghosts, it is possible to iterate over
-      // all atoms including ghosts using the proxy `.with_ghosts`, which takes
-      // its `.end()` from here`
-      auto nb_atoms{this->consider_ghost_neighbours ? this->n_centers + n_ghosts
-                                                    : this->get_size()};
-      return nb_atoms;
+      return this->n_i_atoms+this->n_j_atoms;
     }
 
     //! Returns position of an atom with index atom_index
     inline Vector_ref get_position(const size_t & atom_index) {
-      if (atom_index < n_centers) {
+      if (atom_index < n_i_atoms) {
         return this->manager.get_position(atom_index);
       } else {
-        return this->get_ghost_position(atom_index - this->n_centers);
+        return this->get_ghost_position(atom_index - this->n_i_atoms);
       }
     }
 
@@ -555,24 +533,27 @@ namespace rascal {
     }
 
     //! ghost types are only available for MaxOrder=2
-    inline const int & get_ghost_type(const size_t & atom_index) const {
-      auto && p{this->get_ghost_types()};
+    inline const int&  get_ghost_type(const size_t & atom_index) const {
+      auto&& p{this->get_ghost_types()};
       return p[atom_index];
     }
 
     //! ghost types are only available for MaxOrder=2
-    inline int & get_ghost_type(const size_t & atom_index) {
-      auto && p{this->get_ghost_types()};
+    inline int&  get_ghost_type(const size_t & atom_index) {
+      auto&& p{this->get_ghost_types()};
       return p[atom_index];
     }
 
     //! provides access to the atomic types of ghost atoms
-    inline std::vector<int> & get_ghost_types() { return this->ghost_types; }
-
-    //! provides access to the atomic types of ghost atoms
-    inline const std::vector<int> & get_ghost_types() const {
+    inline std::vector<int>& get_ghost_types() {
       return this->ghost_types;
     }
+
+    //! provides access to the atomic types of ghost atoms
+    inline const std::vector<int>& get_ghost_types() const {
+      return this->ghost_types;
+    }
+
 
     //! Returns position of the given atom object (useful for users)
     inline Vector_ref get_position(const AtomRef_t & atom) {
@@ -583,24 +564,24 @@ namespace rascal {
      * Returns the id of the index-th (neighbour) atom of the cluster that is
      * the full structure/atoms object, i.e. simply the id of the index-th atom
      */
-    inline int get_cluster_neighbour(const Parent & /*parent*/,
+    inline int get_cluster_neighbour(const Parent& /*parent*/,
                                      size_t index) const {
       return this->manager.get_cluster_neighbour(this->manager, index);
     }
 
     //! Returns the id of the index-th neighbour atom of a given cluster
-    template <size_t Order, size_t Layer>
-    inline int
-    get_cluster_neighbour(const ClusterRefKey<Order, Layer> & cluster,
-                          size_t index) const {
+    template<size_t Order, size_t Layer>
+    inline int get_cluster_neighbour(const ClusterRefKey<Order, Layer>
+                                     & cluster,
+                                     size_t index) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles up to traits::MaxOrder");
 
       // necessary helper construct for static branching
       using IncreaseHelper_t =
-          internal::IncreaseHelper<Order == (traits::MaxOrder - 1)>;
+        internal::IncreaseHelper<Order == (traits::MaxOrder-1)>;
 
-      if (Order < (traits::MaxOrder - 1)) {
+      if (Order < (traits::MaxOrder-1)) {
         return IncreaseHelper_t::get_cluster_neighbour(this->manager, cluster,
                                                        index);
       } else {
@@ -610,23 +591,33 @@ namespace rascal {
     }
 
     //! Returns atom type given an atom index, also works for ghost atoms
-    inline int & get_atom_type(const int & atom_index) {
-      return this->atom_types[atom_index];
+    inline int & get_atom_type(const size_t & atom_index) {
+      if (atom_index < this->n_i_atoms) {
+        return this->manager.get_atom_type(atom_index);
+      } else {
+        return this->get_ghost_type(atom_index - this->n_i_atoms);
+      }
     }
 
-    //! Returns the type of a given atom, given an AtomRef
-    inline const int & get_atom_type(const int & atom_index) const {
-      return this->atom_types[atom_index];
+    //! Returns atom type given an atom index, also works for ghost atoms
+    inline const int & get_atom_type(const size_t & atom_index) const {
+      if (atom_index < this->n_i_atoms) {
+        return this->manager.get_atom_type(atom_index);
+      } else {
+        return this->get_ghost_type(atom_index - this->n_i_atoms);
+      }
     }
 
+    // TODO(markus): there might be a mismatch between name and functionality
+    // more details needed
     //! Returns the number of neighbors of a given cluster
-    template <size_t Order, size_t Layer>
-    inline size_t
-    get_cluster_size(const ClusterRefKey<Order, Layer> & cluster) const {
+    template<size_t Order, size_t Layer>
+    inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
+                                   & cluster) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
 
-      auto && access_index = cluster.get_cluster_index(Layer);
+      auto access_index = cluster.get_cluster_index(Layer);
       return nb_neigh[access_index];
     }
 
@@ -637,29 +628,18 @@ namespace rascal {
      * necessary, because the underlying manager is not known at this
      * layer. Therefore we can not add positions to the existing array, but have
      * to add positions to a ghost array. This also means, that the get_position
-     * function will need to branch, depending on the atom_index > n_centers and
-     * offset with n_ghosts to access ghost positions.
+     * function will need to branch, depending on the atom_index > n_i_atoms and
+     * offset with n_j_atoms to access ghost positions.
      */
-
-    /**
-     * Function for adding existing i-atoms and ghost atoms additionally. This
-     * is needed, because ghost atoms are also included in the buildup of the
-     * pair list.
-     */
-
     inline void add_ghost_atom(const int & atom_index,
                                const Vector_t & position,
                                const int & atom_type) {
-      // first add it to the list of atoms
-      this->atom_indices.push_back(atom_index);
-      this->atom_types.push_back(atom_type);
-      // add it to the ghost atom container
       this->ghost_atom_indices.push_back(atom_index);
       this->ghost_types.push_back(atom_type);
       for (auto dim{0}; dim < traits::Dim; ++dim) {
         this->ghost_positions.push_back(position(dim));
       }
-      this->n_ghosts++;
+      this->n_j_atoms++;
     }
 
     //! Extends the list containing the number of neighbours with a 0
@@ -669,10 +649,10 @@ namespace rascal {
 
     //! Sets the correct offsets for accessing neighbours
     inline void set_offsets() {
-      auto && n_tuples{nb_neigh.size()};
+      auto n_tuples{nb_neigh.size()};
       this->offsets.reserve(n_tuples);
       this->offsets.resize(1);
-      for (size_t i{0}; i < n_tuples - 1; ++i) {
+      for (size_t i{0}; i < n_tuples; ++i) {
         this->offsets.emplace_back(this->offsets[i] + this->nb_neigh[i]);
       }
     }
@@ -687,11 +667,6 @@ namespace rascal {
 
     //! Cutoff radius for neighbour list
     const double cutoff;
-
-    //! stores i-atom and ghost atom indices
-    std::vector<int> atom_indices{};
-
-    std::vector<int> atom_types{};
 
     //! Stores additional atom indices of current Order (only ghost atoms)
     std::vector<size_t> ghost_atom_indices{};
@@ -710,36 +685,36 @@ namespace rascal {
     size_t cluster_counter{0};
 
     //! number of i atoms, i.e. centers from underlying manager
-    size_t n_centers;
+    size_t n_i_atoms;
     /**
      * number of ghost atoms (given by periodicity) filled during full
      * neighbourlist build
      */
-    size_t n_ghosts;
+    size_t n_j_atoms;
 
     //! ghost atom positions
     std::vector<double> ghost_positions{};
 
     //! ghost atom type
     std::vector<int> ghost_types{};
-
-    //! whether or not to consider neighbours of ghost atoms
-    const bool consider_ghost_neighbours;
-
    private:
   };
 
   /* ---------------------------------------------------------------------- */
   //! Constructor of the pair list manager
   template <class ManagerImplementation>
-  AdaptorNeighbourList<ManagerImplementation>::AdaptorNeighbourList(
-      ManagerImplementation & manager, double cutoff,
-      bool consider_ghost_neighbours)
-      : manager{manager}, cutoff{cutoff}, atom_indices{}, atom_types{},
-        ghost_atom_indices{}, nb_neigh{},
-        neighbours{}, offsets{}, n_centers{manager.get_size()}, n_ghosts{0},
-        consider_ghost_neighbours{consider_ghost_neighbours} {
-    static_assert(not(traits::MaxOrder < 1), "No atom list in manager");
+  AdaptorNeighbourList<ManagerImplementation>::
+  AdaptorNeighbourList(ManagerImplementation & manager, double cutoff):
+    manager{manager},
+    cutoff{cutoff},
+    ghost_atom_indices{},
+    nb_neigh{},
+    offsets{},
+    n_i_atoms{manager.get_size()},
+    n_j_atoms{0}
+  {
+    static_assert(not(traits::MaxOrder < 1),
+                  "No atom list in manager");
   }
 
   /* ---------------------------------------------------------------------- */
@@ -750,30 +725,13 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   void AdaptorNeighbourList<ManagerImplementation>::update() {
-    //! Reset cluster_indices for adaptor to fill with sequence
-    internal::for_each(this->cluster_indices_container,
-                       internal::ResizePropertyToZero());
-
     // initialize necessary data structure
-    this->atom_indices.clear();
-    this->atom_types.clear();
-    this->ghost_atom_indices.clear();
-    this->nb_neigh.clear();
-    this->neighbours.clear();
-    this->offsets.clear();
-    this->ghost_positions.clear();
-    this->ghost_types.clear();
+    this->nb_neigh.resize(0);
+    this->offsets.resize(0);
+    this->neighbours.resize(0);
+    this->ghost_types.resize(0);
     // actual call for building the neighbour list
     this->make_full_neighbour_list();
-    this->set_offsets();
-
-    // layering is started from the scratch, therefore all clusters and
-    // centers+ghost atoms are in the right order.
-    auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
-    auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
-
-    atom_cluster_indices.fill_sequence();
-    pair_cluster_indices.fill_sequence();
   }
 
   /* ---------------------------------------------------------------------- */
@@ -806,15 +764,11 @@ namespace rascal {
     // vector for storing the atom indices of each box
     std::vector<std::vector<int>> atoms_in_box{};
 
-    // minimum/maximum coordinate of mesh for neighbour list, it is larger by
-    // one cell to be able to provide a neighbour list also over ghost atoms;
-    // depends on cell triclinicity and cutoff, coordinates of the mesh are
-    // relative to the origin of the given cell. ghost_min is used for placing
-    // ghost atoms within the given ´skin´.
+    // minimum/maximum coordinate of mesh for neighbour list; depends on cell
+    // triclinicity and cutoff, coordinates of the mesh are relative to the
+    // origin of the given cell.
     Vector_t mesh_min{Vector_t::Zero()};
     Vector_t mesh_max{Vector_t::Zero()};
-    Vector_t ghost_min{Vector_t::Zero()};
-    Vector_t ghost_max{Vector_t::Zero()};
 
     // max and min multipliers for number of cells in mesh per dimension in
     // units of cell vectors to be filled from max/min mesh positions and used
@@ -834,21 +788,12 @@ namespace rascal {
       // minimum is given by -cutoff and a delta to avoid ambiguity during cell
       // sorting of atom position e.g. at x = (0,0,0).
       auto epsilon = 0.25 * cutoff;
-      // 2 cutoff for extra layer of emtpy cells (because of stencil iteration)
-      mesh_min[i] = min_coord - 2 * cutoff - epsilon;
-
-      // outer mesh, including one layer of emtpy cells
-      auto lmesh = std::fabs(mesh_min[i]) + max_coord + 3 * cutoff;
+      mesh_min[i] = min_coord - cutoff - epsilon;
+      auto lmesh = std::fabs(mesh_min[i]) + max_coord + 2*cutoff;
       int n = std::ceil(lmesh / cutoff);
       auto lmax = n * cutoff - std::fabs(mesh_min[i]);
       mesh_max[i] = lmax;
       nboxes_per_dim[i] = n;
-
-      // positions min/max for ghost atoms
-      ghost_min[i] = mesh_min[i] + cutoff;
-      auto lghost = lmesh - 2 * cutoff;
-      int n_ghosts = std::ceil(lghost / cutoff);
-      ghost_max[i] = n_ghosts * cutoff - std::fabs(ghost_min[i]);
     }
 
     // Periodicity related multipliers. Now the mesh coordinates are calculated
@@ -856,22 +801,22 @@ namespace rascal {
     // of the cell in each cell vector direction
     constexpr int ncorners = internal::ipow(2, dim);
     Eigen::Matrix<double, dim, ncorners> xpos{};
-    std::array<double, 2 * dim> mesh_bounds{};
+    std::array<double, dim*2> mesh_bounds{};
     for (auto i{0}; i < dim; ++i) {
       mesh_bounds[i] = mesh_min[i];
-      mesh_bounds[i + dim] = mesh_max[i];
+      mesh_bounds[i+dim] = mesh_max[i];
     }
 
     // Get the mesh bounds to solve for the multiplicators
     int n{0};
     for (auto && coord : internal::MeshBounds<dim>{mesh_bounds}) {
-      xpos.col(n) = Eigen::Map<Eigen::Matrix<double, dim, 1>>(coord.data());
+      xpos.col(n) = Eigen::Map<Eigen::Matrix<double, dim, 1>> (coord.data());
       n++;
     }
 
     // solve inverse problem for all multipliers
     auto cell_inv{cell.inverse().eval()};
-    auto multiplicator{cell_inv * xpos.eval()};
+    auto multiplicator{cell_inv*xpos.eval()};
     auto xmin = multiplicator.rowwise().minCoeff();
     auto xmax = multiplicator.rowwise().maxCoeff();
 
@@ -880,6 +825,7 @@ namespace rascal {
       m_min[i] = std::floor(xmin(i));
       m_max[i] = std::ceil(xmax(i));
     }
+
 
     std::array<int, dim> periodic_max{};
     std::array<int, dim> periodic_min{};
@@ -901,30 +847,15 @@ namespace rascal {
       ntot *= nrep_in_dim;
     }
 
-    // before generating ghost atoms, all existing atoms are added to the list
-    // of current atoms to start the full list of current i-atoms and ghosts
-    // This is done before the ghost atom generation, to have them all
-    // contiguously at the beginning of the list.
-    int ntot_atoms{0};
-    for (auto atom : this->manager) {
-      auto atom_index = atom.get_atom_index();
-      auto atom_type = atom.get_atom_type();
-      this->atom_indices.push_back(atom_index);
-      this->atom_types.push_back(atom_type);
-      ntot_atoms++;
-    }
-
     // generate ghost atom indices and positions
-    for (auto atom : this->get_manager().with_ghosts()) {
+    for (auto atom : this->get_manager()) {
       auto pos = atom.get_position();
       auto atom_type = atom.get_atom_type();
 
-      for (auto && p_image :
-           internal::PeriodicImages<dim>{periodic_min, repetitions, ntot}) {
+      for (auto && p_image : internal::PeriodicImages<dim>
+        {periodic_min, repetitions, ntot}) {
         int ncheck{0};
-        for (auto i{0}; i < dim; ++i) {
-          ncheck += std::abs(p_image[i]);
-        }
+        for (auto i{0}; i < dim; ++i) ncheck += std::abs(p_image[i]);
         // exclude cell itself
         if (ncheck > 0) {
           Vector_t pos_ghost{pos};
@@ -934,14 +865,12 @@ namespace rascal {
           }
 
           auto flag_inside =
-              internal::position_in_bounds(ghost_min, ghost_max, pos_ghost);
+            internal::position_in_bounds(mesh_min, mesh_max, pos_ghost);
 
           if (flag_inside) {
             // next atom index is size, since start is at index = 0
-            auto new_atom_index = this->n_centers + this->n_ghosts;
-            // get_size_with_ghosts();
+            auto new_atom_index = this->get_size_with_ghosts();
             this->add_ghost_atom(new_atom_index, pos_ghost, atom_type);
-            ntot_atoms++;
           }
         }
       }
@@ -951,34 +880,45 @@ namespace rascal {
     internal::IndexContainer<dim> atom_id_cell{nboxes_per_dim};
 
     // sorting i-atoms into boxes
-    auto nb_atoms_tot{this->n_centers + this->n_ghosts};
-    for (size_t i{0}; i < nb_atoms_tot; ++i) {
+    for (size_t i{0}; i < this->n_i_atoms; ++i) {
       Vector_t pos = this->get_position(i);
       Vector_t dpos = pos - mesh_min;
       auto idx = internal::get_box_index(dpos, cutoff);
       atom_id_cell[idx].push_back(i);
     }
 
-    // go through all atoms and/or ghosts to build neighbour list, depending on
-    // the runtime decision flag
-    auto nb_atoms{this->consider_ghost_neighbours
-                      ? this->n_centers + this->n_ghosts
-                      : this->get_size()};
+    // sorting ghost atoms into boxes
+    for (size_t i{0}; i < this->n_j_atoms; ++i) {
+      Vector_t ghost_pos = this->get_ghost_position(i);
+      Vector_t dpos = ghost_pos - mesh_min;
+      auto idx  = internal::get_box_index(dpos, cutoff);
+      auto ghost_atom_index = i + this->n_i_atoms;
+      atom_id_cell[idx].push_back(ghost_atom_index);
+    }
 
-    for (size_t atom_index{0}; atom_index < nb_atoms; ++atom_index) {
+    // go through all atoms and build neighbour list
+    int offset{0};
+    for (size_t i{0}; i < this->n_i_atoms; ++i) {
       int nneigh{0};
-      Vector_t pos = this->get_position(atom_index);
+      Vector_t pos = this->get_position(i);
       Vector_t dpos = pos - mesh_min;
-      auto box_index = internal::get_box_index(dpos, cutoff);
-      auto && current_j_atoms =
-          internal::get_neighbours(atom_index, box_index, atom_id_cell);
+      auto idx = internal::get_box_index(dpos, cutoff);
+      auto current_j_atoms = internal::get_neighbours(i, idx, atom_id_cell);
 
-      for (auto j_atom_index : current_j_atoms) {
-        this->neighbours.push_back(j_atom_index);
+      for (auto j : current_j_atoms) {
+        this->neighbours.push_back(j);
         nneigh++;
       }
       this->nb_neigh.push_back(nneigh);
+      this->offsets.push_back(offset);
+      offset += nneigh;
     }
+
+    // get cluster indices and fill them up in the first order
+    auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
+    auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
+    atom_cluster_indices.fill_sequence();
+    pair_cluster_indices.fill_sequence();
   }
 
   /* ---------------------------------------------------------------------- */
@@ -989,10 +929,10 @@ namespace rascal {
    * of indices (i.e. specifying pairs), for each pair of indices i,j it returns
    * the number entries in the list of pairs before i,j appears.
    */
-  template <class ManagerImplementation>
-  template <size_t Order>
-  inline size_t AdaptorNeighbourList<ManagerImplementation>::get_offset_impl(
-      const std::array<size_t, Order> & counters) const {
+  template<class ManagerImplementation>
+  template<size_t Order>
+  inline size_t AdaptorNeighbourList<ManagerImplementation>::
+  get_offset_impl(const std::array<size_t, Order> & counters) const {
     // The static assert with <= is necessary, because the template parameter
     // ``Order`` is one Order higher than the MaxOrder at the current
     // level. The return type of this function is used to build the next Order
@@ -1002,6 +942,6 @@ namespace rascal {
                   " MaxOrder");
     return this->offsets[counters.front()];
   }
-}  // namespace rascal
+}  // rascal
 
 #endif /* ADAPTOR_NEIGHBOUR_LIST_H */

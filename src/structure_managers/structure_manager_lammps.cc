@@ -33,11 +33,10 @@
 namespace rascal {
 
   /* ---------------------------------------------------------------------- */
-  void StructureManagerLammps::update(const int & inum, const int & tot_num,
-                                      int * ilist, int * numneigh,
-                                      int ** firstneigh, double ** x,
-                                      double ** f, int * type, double * eatom,
-                                      double ** vatom) {
+  void StructureManagerLammps::
+  update(const int &inum, const int & tot_num, int *ilist, int *numneigh,
+         int ** firstneigh, double ** x, double ** f, int * type,
+         double * eatom, double ** vatom) {
     // setting the class variables
     this->inum = inum;
     this->tot_num = tot_num;
@@ -51,10 +50,10 @@ namespace rascal {
     this->vatom = vatom;
     this->offsets.reserve(inum);
     this->offsets.resize(1);
-    for (int i{0}; i < this->inum - 1; ++i) {
+    for (int i{0}; i < this->inum-1 ; ++i) {
       this->offsets.emplace_back(this->offsets[i] + this->numneigh[i]);
     }
-    this->nb_pairs = std::accumulate(numneigh, numneigh + this->inum, 0);
+    this->nb_pairs = std::accumulate(numneigh, numneigh+this->inum, 0);
 
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
@@ -63,12 +62,14 @@ namespace rascal {
     pair_cluster_indices.fill_sequence();
   }
 
+
   /* ---------------------------------------------------------------------- */
   /*
    * Return the number of clusters of size cluster_size.  Can only handle
    * cluster_size 1 (atoms) and cluster_size 2 (pairs).
    */
-  size_t StructureManagerLammps::get_nb_clusters(int cluster_size) const {
+  size_t StructureManagerLammps::
+  get_nb_clusters(int cluster_size) const  {
     switch (cluster_size) {
     case 1: {
       return inum;
@@ -83,4 +84,4 @@ namespace rascal {
       break;
     }
   }
-}  // namespace rascal
+}  // rascal

@@ -25,9 +25,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
+
 #include "bind_include.hh"
 
-using namespace pybind11::literals;  // NOLINT (is recommended use of pybind11)
+using namespace pybind11::literals; //NOLINT (is recommended use of pybind11)
 namespace py = pybind11;
 
 PYBIND11_MODULE(_rascal, mod) {
