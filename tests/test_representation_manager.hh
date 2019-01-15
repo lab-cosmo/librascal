@@ -123,13 +123,13 @@ namespace rascal {
     json feature_matrices{};
   };
 
-  template< class StructureManager,
-            template<typename, Option ...opts > class RepresentationManager,
-            class BaseFixture, Option ...options_>
+  template <class StructureManager,
+            template <typename, Option... opts> class RepresentationManager,
+            class BaseFixture, Option... options_>
   struct RepresentationFixture
-  :MultipleStructureManagerStrictFixture<StructureManager, BaseFixture> {
-    using Parent = MultipleStructureManagerStrictFixture<StructureManager,
-                                                         BaseFixture>;
+      : MultipleStructureManagerStrictFixture<StructureManager, BaseFixture> {
+    using Parent =
+        MultipleStructureManagerStrictFixture<StructureManager, BaseFixture>;
     using Manager_t = typename Parent::Manager_t;
     using Representation_t = RepresentationManager<Manager_t, options_...>;
 

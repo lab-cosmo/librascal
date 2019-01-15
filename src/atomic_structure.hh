@@ -37,10 +37,8 @@
 
 #include <cmath>
 #include <stdexcept>
-#include <cmath>
 
-
-
+// TODO(markus): CHECK for skewedness
 namespace rascal {
 
   template <int Dim>
@@ -71,19 +69,17 @@ namespace rascal {
     using PBC_t = Eigen::Matrix<int, Dim, 1>;
     using PBC_ref = Eigen::Map<PBC_t>;
 
-    using Positions_t = Eigen::Matrix<double, Dim,
-                                      Eigen::Dynamic>;
+    using Positions_t = Eigen::Matrix<double, Dim, Eigen::Dynamic>;
     using Positions_ref = Eigen::Map<Positions_t>;
 
     using PositionsInput_t =
-      Eigen::Ref<const Eigen::MatrixXd, 0,
-                 Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>>;
+        Eigen::Ref<const Eigen::MatrixXd, 0,
+                   Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>>;
 
     using AtomTypesInput_t =
-      Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1>>;
+        Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1>>;
 
-    using PBCInput_t =
-      Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1>>;
+    using PBCInput_t = Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1>>;
 
     // Eigen types for saving atomic structure data
     Positions_t positions;
@@ -94,9 +90,19 @@ namespace rascal {
     //! method for initializing structure data from raw Eigen types, beware:
     //! copy!
     void set_structure(const PositionsInput_t & positions,
-                       const AtomTypesInput_t &  atom_types,
+                       const AtomTypesInput_t & atom_types,
                        const Eigen::Ref<const Eigen::MatrixXd> cell,
                        const PBCInput_t & pbc) {
+      // check data consistency
+      auto npos{positions.cols()};
+      auto ntypes{atom_types.rows()};
+      if (npos != ntypes) {
+        std::stringstream err_str{};
+        err_str << "Number of atom positions and atom types is not the same: '"
+                << npos << "' != '" << ntypes << "'.";
+        throw std::runtime_error(err_str.str());
+      }
+
       this->cell = cell;
       this->atom_types = atom_types;
       this->pbc = pbc;
@@ -144,14 +150,24 @@ namespace rascal {
           pos_data.push_back(coord);
         }
       }
+
+      // check data consistency
+      auto npos{positions.size() / Dim};
+      auto ntypes{atom_types.size()};
+      if (npos != ntypes) {
+        std::stringstream err_str{};
+        err_str << "Number of atom positions and atom types is not the same: '"
+                << npos << "' != '" << ntypes << "'.";
+        throw std::runtime_error(err_str.str());
+      }
       // associate them to internal data structure
       this->cell = Cell_ref(cell_data.data());
       this->atom_types = AtomTypes_ref(type_data.data(), type_data.size());
       this->pbc = PBC_ref(pbc_data.data());
-      this->positions = Positions_ref(pos_data.data(), Dim,
-                                      pos_data.size() / Dim);
+      this->positions =
+          Positions_ref(pos_data.data(), Dim, pos_data.size() / Dim);
     }
   };
-} // rascal
+}  // namespace rascal
 
 #endif /* ATOMIC_STRUCTURE_H */

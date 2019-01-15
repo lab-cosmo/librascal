@@ -76,12 +76,10 @@ namespace rascal {
      * json.hpp. Inline needed, otherwise it is a multiple definition.
      */
     inline void to_json(json & j, AtomicJsonData & s) {
-      j = json{
-        {"cell", s.cell},
-        {"numbers", s.type},
-        {"pbc", s.pbc},
-        {"positions", s.position}
-      };
+      j = json{{"cell", s.cell},
+               {"numbers", s.type},
+               {"pbc", s.pbc},
+               {"positions", s.position}};
     }
 
     /**
@@ -95,7 +93,7 @@ namespace rascal {
       s.pbc = j.at("pbc").get<std::vector<int>>();
       s.position = j.at("positions").get<std::vector<std::vector<double>>>();
     }
-  }
-} // rascal
+  }  // namespace json_io
+}  // namespace rascal
 
 #endif /* JSON_IO_H */

@@ -29,14 +29,15 @@
 #define SPARSIFY_UTILITIES_H
 
 #include "basic_types.hh"
-#include<tuple>
+#include <tuple>
 
 #include <Eigen/Dense>
 
 namespace rascal {
   namespace utils {
-    using RowMatrixXd = Eigen::Matrix<double, Eigen::Dynamic,
-                                      Eigen::Dynamic, Eigen::RowMajor>;
+
+    using RowMatrixXd =
+        Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
     /**
      * Farthest Point Sampling selection of points given the feature matrix
      *
@@ -46,13 +47,29 @@ namespace rascal {
      *        value of zero sorts the whole set of inputs
      * @param i_first_point indicates the index of the first FPS selection.
      *        Defaults to zero
+     * @param restart is a tuple containing the outputs of a previous
+     *        select_fps call (indices, distance decay, haussdorf dist),
+     *        that can be used to restart the calculation.
+     *        Defaults to empty arrays, signaling to start from scratch.
+     *        If the distance arrays are empty, they are recalculated.
      * @return a tuple containing the list of n_sparse indices of the selected
-     *        points, and a list of the maximum minimum distance obtained at
-     *        each stage
+     *        points, a list of the maximum minimum distance obtained at
+     *        each stage, and a list of the Hausdorff distances between all the
+     *        inputs and the selected set
      */
-    std::tuple<Eigen::ArrayXi, Eigen::ArrayXd>
+
+    using FPSReturnTuple =
+        std::tuple<Eigen::ArrayXi, Eigen::ArrayXd, Eigen::ArrayXd>;
+
+    using FPSReturnTupleConst =
+        std::tuple<const Eigen::ArrayXi, const Eigen::ArrayXd,
+                   const Eigen::ArrayXd>;
+
+    FPSReturnTuple
     select_fps(const Eigen::Ref<const RowMatrixXd> & feature_matrix,
-               int n_sparse = 0, int i_first_point = 0);
+               int n_sparse = 0, int i_first_point = 0,
+               const FPSReturnTupleConst & restart = std::make_tuple(
+                   Eigen::ArrayXi(0), Eigen::ArrayXd(0), Eigen::ArrayXd(0)));
 
     /**
      * Farthest Point Sampling selection of points given the feature
@@ -67,12 +84,15 @@ namespace rascal {
      *        Defaults to zero
      * @return a tuple containing the list of n_sparse indices of the selected
      *        points, a list of the maximum minimum distance obtained at each
-     *        stage, a list of the assignment of each of the input points to the
-     *        FPS selected inputs, and the radius of each Voronoi cell
+     *        stage, the list of Hausdorff distances between all the inputs and
+     *        the selected set, a list of the assignment of each of the input
+     *        points to the FPS selected inputs, and the radius of each Voronoi
+     *        cell
      */
-    std::tuple<Eigen::ArrayXi, Eigen::ArrayXd, Eigen::ArrayXi, Eigen::ArrayXd>
+    std::tuple<Eigen::ArrayXi, Eigen::ArrayXd, Eigen::ArrayXd, Eigen::ArrayXi,
+               Eigen::ArrayXd>
     select_fps_voronoi(const Eigen::Ref<const RowMatrixXd> & feature_matrix,
                        int n_sparse = 0, int i_first_point = 0);
-  } // namespace utils
-} // namespace rascal
+  }  // namespace utils
+}  // namespace rascal
 #endif /* SPARSIFY_UTILITIES_H */

@@ -79,6 +79,8 @@ endif()
 
 add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
 
+find_package(PythonInterp ${RASCAL_PYTHON_MAJOR_VERSION} REQUIRED)
+
 # Try to find optional cpp linter
 include(cpplint)
 
@@ -160,7 +162,7 @@ if (${BUILD_TESTS})
     add_test(python_binding_test python_binding_tests.py)
   endif()
 
-  #build tests
+  # build c++ tests and add to test suite
   file( GLOB TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/test_*.cc")
 
   add_executable(main_test_suite tests/main_test_suite.cc ${TEST_SRCS})
@@ -173,8 +175,20 @@ if (${BUILD_TESTS})
   add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
   configure_file("tests/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
   configure_file("tests/simple_cubic_9.json" ${CMAKE_BINARY_DIR} COPYONLY)
-
+  configure_file("examples/crystal_structure.json" ${CMAKE_BINARY_DIR} COPYONLY)
   file(COPY "tests/reference_data" DESTINATION ${CMAKE_BINARY_DIR})
+
+  # copy and add python test to suite
+  file( GLOB PY_TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/python_*.py")
+
+  foreach(pytest ${PY_TEST_SRCS})
+    get_filename_component(pytest_name ${pytest} NAME)
+    configure_file(
+      ${pytest}
+      "${CMAKE_BINARY_DIR}/${pytest_name}"
+      COPYONLY)
+  endforeach(pytest ${PY_TEST_SRCS})
+  add_test(python_binding_test python_binding_tests.py)
 
 endif(${BUILD_TESTS})
 
