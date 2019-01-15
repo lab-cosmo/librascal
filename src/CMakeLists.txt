@@ -30,6 +30,13 @@
 
 
 add_library(rascal "") # ${rascal_SRC})
+
+set(rascal_SRC
+  ${CMAKE_CURRENT_SOURCE_DIR}/json_io.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/units.cc
+  )
+target_sources(rascal PRIVATE ${rascal_SRC})
+
 target_link_libraries(rascal PUBLIC Eigen3::Eigen)
 target_link_libraries(rascal PUBLIC rascal-math)
 

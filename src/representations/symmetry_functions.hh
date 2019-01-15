@@ -31,11 +31,15 @@
 
 #include "Eigen/Dense"
 #include "json_io.hh"
+#include "units.hh"
+#include "utils/tuple_standardisation.hh"
 
 #include <sstream>
 #include <string>
 
 namespace rascal {
+
+  using units::UnitStyle;
 
   enum class SymmetryFunType { One, Gaussian, Cosine, Angular1, Angular2 };
 
@@ -74,11 +78,11 @@ namespace rascal {
 
   template <>
   struct SymmetryFun<SymmetryFunType::Gaussian> {
-
+    static constexpr size_t Order{2};
     static constexpr size_t NbParams{2};
     using ParamShape = Eigen::MatrixBase<double, NbParams, 1>;
     /**
-     * usually, derivatives are alligned with the distance vector, in which case
+     * usually, derivatives are aligned with the distance vector, in which case
      * a scalar return type is sufficient. (important for triplet-related
      * functions)
      */
@@ -102,131 +106,59 @@ namespace rascal {
       auto && delta_r{r_ij - r_s};
       return n_ij * (-2. * eta * delta_r * exp(-eta * delta_r * delta_r));
     }
+
+    static Eigen::Matrix<double, NbParams, 1>
+    read(const json & params, const UnitStyle & units) {
+      Eigen::Matrix<double, NbParams, 1> retval{};
+      retval(0) = json_io::check_units(units.distance(-1, 2), param.at("eta"));
+      retval(1) = json_io::check_units(units.distance(), param.at("r_s"));
+      return retval;
+    }
   };
 
-  template<class StructureManager>
-  class SymmetryFunEvaluatorBase
-  {
-   public:
+  template <>
+  struct SymmetryFun<SymmetryFunType::Angular1> {
+    static constexpr size_t Order{3};
+    static constexpr size_t NbParams{3};
+    using ParamShape = Eigen::MatrixBase<double, NbParams, 1>;
+    /**
+     * usually, derivatives are aligned with the distance vector, in which case
+     * a scalar return type is sufficient. (important for triplet-related
+     * functions)
+     */
+    static constexpr bool DerivativeIsCollinear{false};
 
-    template <size_t Order>
-    using ClusterRef_t = typename StructureManager::template ClusterRef<Order>;
+    static double eval_function(const Eigen::MatrixBase<ParamShape> & params,
+                                const double & r_ij, const double & r_jk,
+                                const double & r_ik, const double cos_theta) {
+      auto && zeta{params(0)};
+      auto && eta{params(1)};
+      auto && lambda{params(2)};
+      auto && delta_r = r_ij - r_s;
+      return exp(-eta * delta_r * delta_r);
+    }
 
-    //! Default constructor
-    SymmetryFunEvaluatorBase() = delete;
+    template <class Derived>
+    static auto eval_derivative(const Eigen::MatrixBase<ParamShape> & params,
+                                const double & r_ij,
+                                const Eigen::MatrixBase<Derived> & n_ij)
+        -> decltype(auto) {
+      auto && eta{params(0)};
+      auto && r_s{params(1)};
+      auto && delta_r{r_ij - r_s};
+      return n_ij * (-2. * eta * delta_r * exp(-eta * delta_r * delta_r));
+    }
 
-    //! Constructor with symmetry function type
-    SymmetryFunEvaluatorBase(const SymmetryFunType sym_fun_type)
-        : sym_fun_type{sym_fun_type} {}
-
-    //! Copy constructor
-    SymmetryFunEvaluatorBase(const SymmetryFunEvaluatorBase &other);
-
-    //! Move constructor
-    SymmetryFunEvaluatorBase(SymmetryFunEvaluatorBase &&other) noexcept;
-
-    //! Destructor
-    virtual ~SymmetryFunEvaluatorBase() noexcept;
-
-    //! Copy assignment operator
-    SymmetryFunEvaluatorBase& operator=(const SymmetryFunEvaluatorBase &other);
-
-    //! Move assignment operator
-    SymmetryFunEvaluatorBase &
-    operator=(SymmetryFunEvaluatorBase && other) noexcept;
-
-    //! needs to be called after reading the input file and prior to the first
-    //! evaluation
-    virtual void init() = 0;
-
-    //! insert a parameter (sub-)json
-    void add_params(const json & params) {
-      const auto & type{params.at("type").get<std::string>()};
-      if (type != get_name(FunType)) {
-        std::stringstream error{};
-        error << "Parameter set for function type '" << type
-              << "' assigned to function of type '"
-              << get_name(this->sym_fun_type) << "'.";
-        throw std::runtime_error(error.str());
-      }
-      this->raw_params.push_back(params);
-    };
-
-    //! Main worker (raison d'être)
-    template <size_t Order>
-    void apply(ClusterRef_t<Order> & cluster) {
-      static_assert((Order == 1) or (Order == 2),
-                    "only handles pairs and triplets");
-      switch (Order) {
-      case 1: {
-        this->apply_pair(cluster);
-        break;
-      }
-      case 2: {
-        this->apply_triplet(cluster);
-        break;
-      }
-      default: {};
-      }
+    static Eigen::Matrix<double, NbParams, 1>
+    read(const json & params, const UnitStyle & units) {
+      Eigen::Matrix<double, NbParams, 1> retval{};
+      retval(0) = json_io::check_units(units.distance(-1, 2), param.at("eta"));
+      retval(1) = json_io::check_units(units.distance(), param.at("r_s"));
+      return retval;
     }
 
    protected:
-    virtual void apply_pair(ClusterRef_t<1> & cluster) = 0;
-    virtual void apply_triplet(ClusterRef_t<2> & cluster) = 0;
-    std::vector<json> raw_params{};
-    const SymmetryFunType sym_fun_type;
+    
   };
-
-  /* ---------------------------------------------------------------------- */
-  template <SymmetryFunType FunType, class StructureManager>
-  class SymmetryFunEvaluator final: public SymmetryFunEvaluatorBase {
-   public:
-
-    using Parent = SymmetryFunEvaluatorBase;
-    using ParamStorage =
-        Eigen::Matrix<double, FunType::NbParams, Eigen::Dynamic>;
-
-    //! Default constructor
-    SymmetryFunEvaluator() : Parent(FunType) {}
-
-    //! Copy constructor
-    SymmetryFunEvaluator(const SymmetryFunEvaluator & other) = delete;
-
-    //! Move constructor
-    SymmetryFunEvaluator(SymmetryFunEvaluator && other) = default;
-
-    //! Destructor
-    ~SymmetryFunEvaluator() = default;
-
-    //! Copy assignment operator
-    SymmetryFunEvaluator &
-    operator=(const SymmetryFunEvaluator & other) = delete;
-
-    //! Move assignment operator
-    SymmetryFunEvaluator & operator=(SymmetryFunEvaluator && other) = default;
-
-    void init() final;
-
-   protected:
-    static constexpr size_t AtomOrder{1};
-    static constexpr size_t PairOrder{2};
-    static constexpr size_t AtomLayer{
-        std::get<0>(StructureManager::traits::LayerByOrder::type)};
-    static constexpr size_t PairLayer{
-        std::get<1>(StructureManager::traits::LayerByOrder::type)};
-
-    ParamStorage params{};
-  };
-
-
-  /* ---------------------------------------------------------------------- */
-  template<SymmetryFunType FunType, class StructureManager>
-  void SymmetryFunEvaluator<FunType, StructureManager>::init() {
-    // start by resizing the parameter storage
-    this->params = params.Zero(FunType::NbParams, this->raw_params.size());
-
-    for (const auto & raw_param: this->raw_params) {
-      }
-  }
 
 }  // namespace rascal

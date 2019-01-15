@@ -30,6 +30,7 @@
 #include "structure_managers/species_manager.hh"
 #include "structure_managers/adaptor_filter.hh"
 #include "structure_managers/property.hh"
+#include "utils/tuple_standardisation.hh"
 
 #include <string>
 #include <vector>
@@ -50,6 +51,7 @@ namespace rascal {
 
     using Parent = RepresentationManagerBase;
     using Force_t = Property<double, 1, ForceLayer, Dim>;
+    using StdTypes = TupleStandardisation<MaxOrder>;
 
     /**
      * structuremanagers are filtered by cutoff for performance reasons
@@ -132,12 +134,7 @@ namespace rascal {
     //! defined as primary
     std::map<int, size_t> nb_sym_per_species{Invalid};
 
-    std::map<double, SymmetryFunction> sym
-    
-    
-    std::map<double,
-             typename SpeciesManager<StructureManager>::FilterContainer_t>
-        manager_by_cutoff;
+    std::map<StdTypes, std::vector<InputNodeContributionBase>> symmetry_functions;
   };
 
 }  // namespace rascal

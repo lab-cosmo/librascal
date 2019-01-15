@@ -242,6 +242,7 @@ namespace rascal {
       // careful, atom refers to our local index, for the manager, we need its
       // index:
       auto && original_atom{this->atom_indices[0][atom.get_index()]};
+      return this->manager.get_atom_type(original_atom);
     }
 
     //! Returns atom type given an atom index

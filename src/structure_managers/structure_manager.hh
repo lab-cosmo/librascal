@@ -46,7 +46,8 @@
 #include <type_traits>
 #include <utility>
 #include <limits>
-#include<tuple>
+#include <tuple>
+#include <sstream>
 
 namespace rascal {
 
@@ -281,6 +282,39 @@ namespace rascal {
       return this->implementation().get_atom_type(atom_index);
     }
 
+    void attach_property(const std::string & name,
+                         std::shared_ptr<PropertyBase> property) {
+      if (this->has_property(name)) {
+        std::stringstream error {};
+        error << "A property of name '" << name
+              << "' has already been registered";
+        throw std::runtime_error(error.str());
+      }
+      this->properties[name] = property;
+    }
+
+    bool has_property(const std::string & name) {
+      return not (this->properties.find(name) == this->properties.end());
+    }
+
+    std::shared_ptr<PropertyBase> get_property(const std::string & name) {
+      if (this->has_property(name)) {
+        std::stringstream error {};
+        error << "No property of name '" << name
+              << "' has been registered";
+        throw std::runtime_error(error.str());
+      }
+      return this->properties[name];
+    }
+
+    bool is_property_fresh(const std::string & name) {
+      return this->property_fresh[name];
+    }
+
+    void set_property_fresh(const std::string & name) {
+      this->property_fresh[name] = true;
+    }
+
    protected:
     //! returns the current layer
     template <size_t Order>
@@ -371,6 +405,9 @@ namespace rascal {
      * index is appended to the array.
      */
     ClusterIndex_t cluster_indices_container;
+
+    std::map<std::string, std::shared_ptr<PropertyBase>> properties{};
+    std::map<std::string, bool> property_fresh{};
   };
 
   /* ---------------------------------------------------------------------- */

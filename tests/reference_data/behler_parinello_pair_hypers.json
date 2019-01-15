@@ -38,16 +38,19 @@
                 "index": 0,
                 "unit": "eV",
                 "params": {
-                    "eta": 0.1,
+                    "eta": {
+                        "value": 0.1,
+                        "unit": "(Å)^(-2)"
+                    }
                     "r_s": {
                         "value": 5.6,
-                        "unit": "angstrom"
+                        "unit": "Å"
                     }
                 },
                 "species": ["Mg", "Si"],
                 "r_cut": {
                     "value": 8.0,
-                    "unit": "angstrom"
+                    "unit": "Å"
                 }
 
             },
@@ -56,16 +59,19 @@
                 "index": 1,
                 "unit": "eV",
                 "params": {
-                    "eta": 0.2,
+                    "eta": {
+                        "value": 0.2,
+                        "unit": "(Å)^(-2)"
+                    }
                     "r_s": {
                         "value": 5.6,
-                        "unit": "angstrom"
+                        "unit": "Å"
                     }
                 },
                 "species": ["Mg", "Si"],
                 "r_cut": {
                     "value": 8.0,
-                    "unit": "angstrom"
+                    "unit": "Å"
                 }
             },
             {
@@ -73,16 +79,19 @@
                 "index": 2,
                 "unit": "eV",
                 "params": {
-                    "eta": 0.1,
+                    "eta": {
+                        "value": 0.1,
+                        "unit": "(Å)^(-2)"
+                    }
                     "r_s": {
                         "value": 5.6,
-                        "unit": "angstrom"
+                        "unit": "Å"
                     }
                 },
                 "species": ["Mg", "Si"],
                 "r_cut": {
                     "value": 12.0,
-                    "unit": "angstrom"
+                    "unit": "Å"
                 }
             },
             {
@@ -90,16 +99,19 @@
                 "index": 3,
                 "unit": "eV",
                 "params": {
-                    "eta": 0.2,
+                    "eta": {
+                        "value": 0.2,
+                        "unit": "(Å)^(-2)"
+                    }
                     "r_s": {
                         "value": 5.6,
-                        "unit": "angstrom"
+                        "unit": "Å"
                     }
                 },
                 "species": ["Mg", "Si"],
                 "r_cut": {
                     "value": 12.0,
-                    "unit": "angstrom"
+                    "unit": "Å"
                 }
             }
         ]

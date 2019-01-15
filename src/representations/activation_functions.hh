@@ -44,7 +44,9 @@ namespace rascal {
     using ParamShape = Eigen::MatrixBase<double, NbParams, 0>;
 
     static Arr_t eval_function(const Eigen::ArrayBase<Derived> & x) { return x; }
-    static Arr_t eval_derivative(const Eigen::ArrayBase<Derived> & x) { return 1.; }
+    static Arr_t eval_derivative(const Eigen::ArrayBase<Derived> & x) {
+      return 1.;
+    }
   }
 
   /* ---------------------------------------------------------------------- */
@@ -53,7 +55,9 @@ namespace rascal {
     static constexpr size_t NbParams{0};
     using ParamShape = Eigen::MatrixBase<double, NbParams, 0>;
 
-    static Arr_t eval_function(const Eigen::ArrayBase<Derived> & x) { return 1. / (1. + exp(-x)); }
+    static Arr_t eval_function(const Eigen::ArrayBase<Derived> & x) {
+      return 1. / (1. + exp(-x));
+    }
     static Arr_t eval_derivative(const Eigen::ArrayBase<Derived> & x) {
       auto && f_val{eval_function(x)};
       return f_val*(1.-f_val);

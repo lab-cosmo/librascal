@@ -25,12 +25,39 @@
  * Boston, MA 02111-1307, USA.
  */
 
+
+#include "utils/for_each_at_order.hh"
 namespace rascal {
 
   template <class StructureManager>
-  BehlerParinello<StructureManager>::BehlerParinello(StructureManager & structure,
-                                                     const json & hypers)
-    : structure{structure}, species{structure} {
+  BehlerParinello<StructureManager>::BehlerParinello(
+      StructureManager & structure, const json & hypers)
+      : structure{structure}, species{structure} {}
+
+  
+  /* ---------------------------------------------------------------------- */
+  template <class StructureManager>
+  void BehlerParinello<StructureManager>::compute() {
+    using utils::for_each_at_order;
+
+    for (const auto && species_key_val : this->symmetry_functions) {
+      const auto & species_combo{key_val.first()};
+      const auto & functions_by_cutoff{key_val.second()};
+
+      auto & manager{this->species[species_combo]};
+      const auto & order{species_combo.get_order()};
+
+      switch (order) {
+      case 2: {
+        for_each_at_order<2>(function, manager, functions_by_cutoff);
+        break;
+      }
+      case 3: {
+        for_each_at_order<3>(function, manager, functions_by_cutoff);
+        break;
+      }
+      }
+    }
   }
 
-}  // rascal
+}  // namespace rascal

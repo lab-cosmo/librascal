@@ -83,7 +83,7 @@ namespace rascal {
     using Manager_t = typename Parent::Manager_t;
     using Representation_t = typename Parent::Representation_t;
     using Feature_t = FeatureManager<T>;
-    using hypers_t = typename Representation_t::hypers_t;
+    using Hypers_t = typename Representation_t::Hypers_t;
     using precision_t = T;
 
     FeatureFixture() :Parent{} {

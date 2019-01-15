@@ -25,6 +25,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
+
+#ifndef _SRC_REPRESENTATIONS_CUTOFF_FUNCTIONS_HH_
+#define _SRC_REPRESENTATIONS_CUTOFF_FUNCTIONS_HH_
 #include <cmath>
 
 namespace rascal {
@@ -128,3 +131,6 @@ namespace rascal {
   };
 
 }  // namespace rascal
+
+
+#endif  // _SRC_REPRESENTATIONS_CUTOFF_FUNCTIONS_HH_

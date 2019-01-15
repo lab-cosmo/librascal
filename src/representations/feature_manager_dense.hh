@@ -42,7 +42,7 @@ namespace rascal {
    public:
     using Parent = FeatureManagerBase<T>;
     using RepresentationManager_t = typename Parent::RepresentationManager_t;
-    using hypers_t = typename RepresentationManager_t::hypers_t;
+    using Hypers_t = typename RepresentationManager_t::Hypers_t;
     using Feature_Matrix_t = typename Parent::Feature_Matrix_t;
     using Feature_Matrix_ref = typename Parent::Feature_Matrix_ref;
     using precision_t = typename Parent::precision_t;
@@ -50,7 +50,7 @@ namespace rascal {
      * Constructor where hypers contains all relevant informations
      * to setup a new RepresentationManager.
      */
-    FeatureManagerDense(int n_feature, hypers_t hypers)
+    FeatureManagerDense(int n_feature, Hypers_t hypers)
         : feature_matrix{}, n_feature{n_feature}, n_center{0}, hypers{hypers} {}
 
     //! Copy constructor
@@ -134,7 +134,7 @@ namespace rascal {
      * Contain all relevant information to initialize a compatible
      * RepresentationManager
      */
-    hypers_t hypers;
+    Hypers_t hypers;
   };
 
 }  // namespace rascal
