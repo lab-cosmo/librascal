@@ -202,7 +202,7 @@ if(CLANG_FORMAT_FOUND)
 endif()
 
 # Add python files for autoformatting with autopep8
-if(CLANG_FORMAT_FOUND)
+if(AUTOPEP8_FOUND)
   # register the folders to apply clang-format with given configuration
   # .clang-format in project root folder
   clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/src" "")
