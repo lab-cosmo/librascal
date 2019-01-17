@@ -191,7 +191,7 @@ if(CPPLINT_FOUND)
   "--filter=-build/namespaces")
 endif()
 
-# necessary '
+# Add all hh/cc files for autoformatting with clang-format
 if(CLANG_FORMAT_FOUND)
   # register the folders to apply clang-format with given configuration
   # .clang-format in project root folder
@@ -201,7 +201,17 @@ if(CLANG_FORMAT_FOUND)
   clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/examples")
 endif()
 
+# Add python files for autoformatting with autopep8
+if(CLANG_FORMAT_FOUND)
+  # register the folders to apply clang-format with given configuration
+  # .clang-format in project root folder
+  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/src" "")
+  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
+  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
+  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/examples")
+endif()
 
+################################################################################
 # make python library of rascal usable in build folder
 add_custom_target(pyrascalcopy ALL)
 add_custom_command(TARGET pyrascalcopy POST_BUILD
