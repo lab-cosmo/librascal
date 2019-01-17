@@ -25,8 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef STRUCTURE_MANAGER_BASE_H
-#define STRUCTURE_MANAGER_BASE_H
+#ifndef SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_BASE_HH_
+#define SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_BASE_HH_
 
 #include <string>
 
@@ -41,6 +41,6 @@ namespace rascal {
     virtual size_t nb_clusters(size_t cluster_size) const = 0;
     virtual ~StructureManagerBase() = default;
   };
-}  // rascal
+}  // namespace rascal
 
-#endif /* STRUCTURE_MANAGER_BASE_H */
+#endif  // SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_BASE_HH_

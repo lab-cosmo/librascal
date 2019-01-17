@@ -38,7 +38,7 @@ namespace rascal {
       double val{math::hyp2f1(numbers(0, ii), numbers(1, ii), numbers(2, ii),
                               numbers(3, ii))};
       if (vebose) {
-        std::cout << std::setprecision(14) << val <<", ";
+        std::cout << std::setprecision(14) << val << ", ";
       }
       auto error{std::abs(val - results_hyp2f1[ii])};
       BOOST_CHECK_LE(error, math_tol);
@@ -48,4 +48,4 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();
 
-}  // rascal
+}  // namespace rascal

@@ -33,5 +33,5 @@ namespace rascal {
     /**
      * for now just a scaffold
      */
-  } // math
-} // rascal
+  }  // namespace math
+}  // namespace rascal

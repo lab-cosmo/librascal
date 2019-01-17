@@ -25,10 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
-
-#ifndef BIND_INCLUDE_H
-#define BIND_INCLUDE_H
+#ifndef BINDINGS_BIND_INCLUDE_HH_
+#define BINDINGS_BIND_INCLUDE_HH_
 
 #include "utils/sparsify_utilities.hh"
 
@@ -60,18 +58,17 @@
 #include <Eigen/Dense>
 #include <vector>
 
-
 // PYBIND11_MAKE_OPAQUE(std::vector<double>);
 
 // using namespace rascal;
 namespace py = pybind11;
 
-void add_structure_managers(py::module&, py::module&, py::module&);
-void add_representation_managers(py::module&, py::module&);
-void add_feature_managers(py::module&, py::module&);
+void add_structure_managers(py::module &, py::module &, py::module &);
+void add_representation_managers(py::module &, py::module &);
+void add_feature_managers(py::module &, py::module &);
 
-void utils_binding(py::module&);
-void math_binding(py::module&);
+void utils_binding(py::module &);
+void math_binding(py::module &);
 
 namespace rascal {
   namespace internal {
@@ -86,44 +83,41 @@ namespace rascal {
      */
     struct SubstitutionMap {
       using Map = std::map<std::string, std::string>;
-      Map mapping = {
-        {"StructureManager", ""},
-        {"Adaptor", ""},
-        {"RepresentationManager", ""},
-        {"FeatureManager", ""},
-        // with gcc Option::CMSortDistance -> (Options)1
-        {R"(\([^()]*\))", ""},
-        {to_string(Option::CMSortDistance), "SortDistance"},
-        {to_string(Option::CMSortRowNorm), "SortRowNorm"},
-        // with clang
-        // Option::CMSortDistance -> "Option::CMSortDistance"
-        {"Option::CMSortDistance", "SortDistance"},
-        {"Option::CMSortRowNorm", "SortRowNorm"}
-      };
+      Map mapping = {{"StructureManager", ""},
+                     {"Adaptor", ""},
+                     {"RepresentationManager", ""},
+                     {"FeatureManager", ""},
+                     // with gcc Option::CMSortDistance -> (Options)1
+                     {R"(\([^()]*\))", ""},
+                     {to_string(Option::CMSortDistance), "SortDistance"},
+                     {to_string(Option::CMSortRowNorm), "SortRowNorm"},
+                     // with clang
+                     // Option::CMSortDistance -> "Option::CMSortDistance"
+                     {"Option::CMSortDistance", "SortDistance"},
+                     {"Option::CMSortRowNorm", "SortRowNorm"}};
     };
 
-
     /**
-      * Transforms the template type to a string for the pyhton bindings.
-      * There are submodules in the python bindings with the class
-      * tittle so to avoid redundancy they are removed from the
-      * typename.
-      * @template T type that should be stringifyied
-      * @returns std::string name of the type
-      */
+     * Transforms the template type to a string for the pyhton bindings.
+     * There are submodules in the python bindings with the class
+     * tittle so to avoid redundancy they are removed from the
+     * typename.
+     * @template T type that should be stringifyied
+     * @returns std::string name of the type
+     */
     template <typename T>
     std::string GetBindingTypeName() {
       std::string typeName = GetTypeName<T>();
       SubstitutionMap ojb{};
       std::vector<std::string> names{typeName};
-      for (const auto& map : ojb.mapping) {
-        names.push_back(std::regex_replace(names.back(),
-                std::regex(map.first.c_str()), map.second.c_str()));
+      for (const auto & map : ojb.mapping) {
+        names.push_back(std::regex_replace(
+            names.back(), std::regex(map.first.c_str()), map.second.c_str()));
       }
 
       return names.back();
     }
-  }
-}
+  }  // namespace internal
+}  // namespace rascal
 
-#endif /* BIND_INCLUDE_H */
+#endif  // BINDINGS_BIND_INCLUDE_HH_

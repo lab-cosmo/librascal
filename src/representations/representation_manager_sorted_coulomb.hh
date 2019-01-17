@@ -25,9 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef BASIS_REPRESENTATION_MANAGER_SORTED_COULOMB_H
-#define BASIS_REPRESENTATION_MANAGER_SORTED_COULOMB_H
-
+#ifndef SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SORTED_COULOMB_HH_
+#define SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SORTED_COULOMB_HH_
 
 #include "representations/representation_manager_base.hh"
 #include "structure_managers/structure_manager.hh"
@@ -37,7 +36,6 @@
 #include <vector>
 #include <algorithm>
 #include <math.h>
-
 
 namespace rascal {
 
@@ -62,7 +60,8 @@ namespace rascal {
     };
 
     /* ---------------------------------------------------------------------- */
-    template <Option Method> struct SortCoulomMatrix {};
+    template <Option Method>
+    struct SortCoulomMatrix {};
 
     /**
      * Sort the coulomb matrix using the distance to the central atom
@@ -71,7 +70,8 @@ namespace rascal {
      * @params distance_mat distance matrix between all the atoms in the
      *                      neighbourhood
      */
-    template <> struct SortCoulomMatrix<Option::CMSortDistance> {
+    template <>
+    struct SortCoulomMatrix<Option::CMSortDistance> {
       static decltype(auto) get_coulom_matrix_sorting_order(
           const Eigen::Ref<const Eigen::MatrixXd> & distance_mat) {
         // initialize the distances to be sorted. the center is always first
@@ -105,7 +105,8 @@ namespace rascal {
      * @params coulomb_mat coulomb matris between all the atoms in the
      *                      neighbourhood
      */
-    template <> struct SortCoulomMatrix<Option::CMSortRowNorm> {
+    template <>
+    struct SortCoulomMatrix<Option::CMSortRowNorm> {
       static decltype(auto) get_coulom_matrix_sorting_order(
           const Eigen::Ref<const Eigen::MatrixXd> & coulomb_mat) {
         // initialize the distances to be sorted. the center is always first
@@ -138,8 +139,8 @@ namespace rascal {
   /**
    * Implementation of the Environmental Coulomb Matrix
    */
-  template<class StructureManager, Option SortingAlgo>
-  class RepresentationManagerSortedCoulomb: public RepresentationManagerBase {
+  template <class StructureManager, Option SortingAlgo>
+  class RepresentationManagerSortedCoulomb : public RepresentationManagerBase {
    public:
     // TODO(felix) make a traits mechanism
     // TODO(Felix) allow for different kind of CM
@@ -148,7 +149,7 @@ namespace rascal {
     using hypers_t = typename Parent::hypers_t;
     using precision_t = typename Parent::precision_t;
     using Property_t = Property<precision_t, 1, 1, Eigen::Dynamic, 1>;
-    template<size_t Order>
+    template <size_t Order>
     using ClusterRef_t = typename Manager_t::template ClusterRef<Order>;
 
     // using distiter = typename std::vector<double>::const_iterator;
@@ -162,23 +163,23 @@ namespace rascal {
     }
 
     //! Copy constructor
-    RepresentationManagerSortedCoulomb
-    (const RepresentationManagerSortedCoulomb & other) = delete;
+    RepresentationManagerSortedCoulomb(
+        const RepresentationManagerSortedCoulomb & other) = delete;
 
     //! Move constructor
-    RepresentationManagerSortedCoulomb
-    (RepresentationManagerSortedCoulomb && other) = default;
+    RepresentationManagerSortedCoulomb(
+        RepresentationManagerSortedCoulomb && other) = default;
 
     //! Destructor
-    virtual ~RepresentationManagerSortedCoulomb()  = default;
+    virtual ~RepresentationManagerSortedCoulomb() = default;
 
     //! Copy assignment operator
-    RepresentationManagerSortedCoulomb & operator=
-    (const RepresentationManagerSortedCoulomb & other) = delete;
+    RepresentationManagerSortedCoulomb &
+    operator=(const RepresentationManagerSortedCoulomb & other) = delete;
 
     //! Move assignment operator
-    RepresentationManagerSortedCoulomb & operator=
-    (RepresentationManagerSortedCoulomb && other) = default;
+    RepresentationManagerSortedCoulomb &
+    operator=(RepresentationManagerSortedCoulomb && other) = default;
 
     //! compute representation
     void compute();
@@ -202,14 +203,10 @@ namespace rascal {
     }
 
     //! get the size of a feature vector
-    size_t get_feature_size() {
-      return this->coulomb_matrices.get_nb_comp();
-    }
+    size_t get_feature_size() { return this->coulomb_matrices.get_nb_comp(); }
 
     //! get the number of centers for the representation
-    size_t get_center_size() {
-      return this->coulomb_matrices.get_nb_item();
-    }
+    size_t get_center_size() { return this->coulomb_matrices.get_nb_item(); }
 
     //! check if size of representation manager is enough for current structure
     //! manager
@@ -287,7 +284,7 @@ namespace rascal {
     Property_t coulomb_matrices;
   };
 
-  template<class Mngr, Option SortAlgo>
+  template <class Mngr, Option SortAlgo>
   using RMImpl = RepresentationManagerSortedCoulomb<Mngr, SortAlgo>;
 
   /* ---------------------------------------------------------------------- */
@@ -397,19 +394,19 @@ namespace rascal {
       Eigen::Ref<Eigen::MatrixXd> type_factor_mat) {
     // the coulomb mat first row and col corresponds
     // to central atom to neighbours
-    auto&& Zk{center.get_atom_type()};
-    auto&& central_cutoff{this->structure_manager.get_cutoff()};
+    auto && Zk{center.get_atom_type()};
+    auto && central_cutoff{this->structure_manager.get_cutoff()};
 
-    type_factor_mat(0, 0) = 0.5*std::pow(Zk, 2.4);
+    type_factor_mat(0, 0) = 0.5 * std::pow(Zk, 2.4);
     for (auto neigh_i : center) {
-      size_t idx_i{neigh_i.get_index()+1};
-      auto&& Zi{neigh_i.get_atom_type()};
-      double& dik{this->structure_manager.get_distance(neigh_i)};
-      double fac_ik{get_cutoff_factor(dik, central_cutoff,
-                                      this->central_decay)};
+      size_t idx_i{neigh_i.get_index() + 1};
+      auto && Zi{neigh_i.get_atom_type()};
+      double & dik{this->structure_manager.get_distance(neigh_i)};
+      double fac_ik{
+          get_cutoff_factor(dik, central_cutoff, this->central_decay)};
 
       type_factor_mat(idx_i, 0) = Zk * Zi * fac_ik * fac_ik;
-      type_factor_mat(idx_i, idx_i) = 0.5*std::pow(Zi, 2.4) * fac_ik * fac_ik;
+      type_factor_mat(idx_i, idx_i) = 0.5 * std::pow(Zi, 2.4) * fac_ik * fac_ik;
       distance_mat(idx_i, 0) = dik;
       type_factor_mat(0, idx_i) = type_factor_mat(idx_i, 0);
       distance_mat(0, idx_i) = distance_mat(idx_i, 0);
@@ -444,7 +441,6 @@ namespace rascal {
       }
     }
   }
+}  // namespace rascal
 
-} // rascal
-
-#endif /* BASIS_REPRESENTATION_MANAGER_SORTED_COULOMB_H */
+#endif  // SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SORTED_COULOMB_HH_

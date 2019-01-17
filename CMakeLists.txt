@@ -1,3 +1,34 @@
+# =============================================================================
+# file   CMakeLists.txt
+#
+# @author Till Junge <till.junge@epfl.ch
+# @author Felix Musil <felix.musil@epfl.ch>
+# @author Markus Stricker <markus.stricker@epfl.ch>
+#
+# @date   17 Jan 2019
+#
+# @brief  Main configuration file
+#
+# @section LICENSE
+#
+# Copyright © 2018 Till Junge
+#
+# Rascal is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public License as
+# published by the Free Software Foundation, either version 3, or (at
+# your option) any later version.
+#
+# Rascal is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with Rascal; see the file COPYING. If not, write to the
+# Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+# Boston, MA 02111-1307, USA.
+# =============================================================================
+
 cmake_minimum_required(VERSION 3.0)
 
 project(rascal)
@@ -19,7 +50,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 include(rascalTools)
 
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang"
+    OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
   # using Clang
   add_compile_options(-Wno-missing-braces)
 
@@ -47,6 +79,9 @@ find_package(PythonInterp ${RASCAL_PYTHON_MAJOR_VERSION} REQUIRED)
 
 # Try to find optional cpp linter
 include(cpplint)
+
+# Check for clang-format
+include(clangformat)
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/tests
@@ -76,6 +111,7 @@ if (${BUILD_TESTS})
   find_package(Boost REQUIRED COMPONENTS unit_test_framework )
   enable_testing()
 
+  ####################################################################
   # build c++ tests and add to test suite
   file( GLOB TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/test_*.cc")
 
@@ -86,12 +122,18 @@ if (${BUILD_TESTS})
 
   target_include_directories(main_test_suite SYSTEM PRIVATE ${Boost_INCLUDE_DIR})
   target_link_libraries(main_test_suite ${Boost_LIBRARIES} rascal)
-  add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
+  add_test(main_test_suite main_test_suite
+    --report_level=detailed
+    --build_info=TRUE
+    )
+
+  # copy reference data
   configure_file("tests/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
   configure_file("tests/simple_cubic_9.json" ${CMAKE_BINARY_DIR} COPYONLY)
   configure_file("examples/crystal_structure.json" ${CMAKE_BINARY_DIR} COPYONLY)
   file(COPY "tests/reference_data" DESTINATION ${CMAKE_BINARY_DIR})
 
+  ####################################################################
   # copy and add python test to suite
   file( GLOB PY_TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/python_*.py")
 
@@ -139,7 +181,7 @@ foreach(pybin ${pybins})
     COPYONLY)
 endforeach(pybin ${pybins})
 
-
+# Checking hh/cc files for compliance with coding conventions
 if(CPPLINT_FOUND)
   # register the folders to check for cpp code conventions compliance
   cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/src" "")
@@ -148,6 +190,17 @@ if(CPPLINT_FOUND)
   cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/examples"
   "--filter=-build/namespaces")
 endif()
+
+# necessary '
+if(CLANG_FORMAT_FOUND)
+  # register the folders to apply clang-format with given configuration
+  # .clang-format in project root folder
+  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/src" "")
+  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
+  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
+  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/examples")
+endif()
+
 
 # make python library of rascal usable in build folder
 add_custom_target(pyrascalcopy ALL)

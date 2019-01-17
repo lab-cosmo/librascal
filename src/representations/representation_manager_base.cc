@@ -25,14 +25,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #include "representations/representation_manager_base.hh"
 
 namespace rascal {
 
-  template<class StructureManager>
-  void RepresentationManagerBase::check_traits_compatibility(
-                                          StructureManager &) {
+  template <class StructureManager>
+  void
+  RepresentationManagerBase::check_traits_compatibility(StructureManager &) {
     // Hello !
   }
-}
+}  // namespace rascal

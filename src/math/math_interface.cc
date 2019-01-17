@@ -29,12 +29,11 @@
 #include "math_interface.hh"
 #include "math/cephes/mconf.h"
 
-
 namespace rascal {
   namespace math {
 
-    double hyp2f1(double & a, double & b, double & c, double & x ) {
+    double hyp2f1(double & a, double & b, double & c, double & x) {
       return cephes::hyp2f1(a, b, c, x);
     }
-  } // math
-} // rascal
+  }  // namespace math
+}  // namespace rascal

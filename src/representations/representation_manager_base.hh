@@ -25,8 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef BASIS_REPRESENTATION_MANAGER_BASE_H
-#define BASIS_REPRESENTATION_MANAGER_BASE_H
+#ifndef SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_BASE_HH_
+#define SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_BASE_HH_
 
 #include "structure_managers/structure_manager_base.hh"
 #include "json_io.hh"
@@ -96,4 +96,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif /* REPRESENTATION_MANAGER_BASE_H */
+#endif  // SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_BASE_HH_

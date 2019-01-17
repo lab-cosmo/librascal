@@ -26,16 +26,15 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef MATH_INTERFACE_H
-#define MATH_INTERFACE_H
-
+#ifndef SRC_MATH_MATH_INTERFACE_HH_
+#define SRC_MATH_MATH_INTERFACE_HH_
 
 namespace rascal {
   namespace math {
 
-    double hyp2f1(double& a, double& b, double& c, double& x);
+    double hyp2f1(double & a, double & b, double & c, double & x);
 
   }
-}
+}  // namespace rascal
 
-#endif /* MATH_INTERFACE_H */
+#endif  // SRC_MATH_MATH_INTERFACE_HH_

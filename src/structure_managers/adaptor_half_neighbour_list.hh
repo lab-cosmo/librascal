@@ -27,8 +27,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef ADAPTOR_HALF_LIST_H
-#define ADAPTOR_HALF_LIST_H
+#ifndef SRC_STRUCTURE_MANAGERS_ADAPTOR_HALF_NEIGHBOUR_LIST_HH_
+#define SRC_STRUCTURE_MANAGERS_ADAPTOR_HALF_NEIGHBOUR_LIST_HH_
 
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/property.hh"
@@ -359,4 +359,4 @@ namespace rascal {
   }
 }  // namespace rascal
 
-#endif /* ADAPTOR_HALF_LIST_H */
+#endif  // SRC_STRUCTURE_MANAGERS_ADAPTOR_HALF_NEIGHBOUR_LIST_HH_

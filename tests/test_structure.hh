@@ -28,8 +28,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef TEST_NEIGHBOURHOOD_H
-#define TEST_NEIGHBOURHOOD_H
+#ifndef TESTS_TEST_STRUCTURE_HH_
+#define TESTS_TEST_STRUCTURE_HH_
 
 #include "structure_managers/structure_manager_base.hh"
 #include "structure_managers/structure_manager_lammps.hh"
@@ -91,7 +91,7 @@ namespace rascal {
     // initialize manager variable
     ManagerFixtureFile()
         : ManagerFixture<ManagerImplementation>{}, cutoff{1.},
-          filename{"simple_cubic_9.json"} // initialize current fixture
+          filename{"simple_cubic_9.json"}  // initialize current fixture
     {
       this->manager.update(filename);
     }
@@ -369,9 +369,11 @@ namespace rascal {
     ManagerFixture()
         : positions(22, 3), atom_types(22),
           cell(3, 3), pbc{{true, true, true}}, cutoff{2.} {
-      cell << 6.19, 2.41, 0.21, 0.00, 6.15, 1.02, 0.00, 0.00, 7.31;
-
       // clang-format off
+      cell << 6.19, 2.41, 0.21,
+              0.00, 6.15, 1.02,
+              0.00, 0.00, 7.31;
+
       positions << 3.689540159937393, 5.123016813620886, 1.994119731169116,
           6.818437242389163, 2.630056617829216, 6.182500355729062,
           2.114977334498767, 6.697579639059512, 1.392155450018263,
@@ -424,9 +426,7 @@ namespace rascal {
     ManagerFixtureSimple()
         : ManagerFixture<StructureManagerCenters>{}, pbc{{true, false, false}},
           cell(3, 3), positions(3, 8), atom_types(8), cutoff{2.1}, natoms{8} {
-      cell << 1.0, 0.0, 0.0,
-              0.0, 1.0, 0.0,
-              0.0, 0.0, 0.5;
+      cell << 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.5;
       // clang-format off
       positions << 0.4, 1.4, 0.4,
                    1.4, 0.4, 1.4,
@@ -467,8 +467,11 @@ namespace rascal {
     ManagerFixtureSkew()
         : pbc{{true, true, false}}, cell(3, 3), positions(3, 2),
           atom_types(2), cutoff{0.49}, natoms{2} {
-      cell << 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.5;
       // clang-format off
+      cell << 1.0, 0.0, 0.0,
+              0.0, 1.0, 0.0,
+              0.0, 0.0, 0.5;
+
       positions << 0.01, 0.01, 0.01,
                    0.51, 0.01, 0.01;
       // clang-format on
@@ -489,4 +492,4 @@ namespace rascal {
   };
 }  // namespace rascal
 
-#endif /* TEST_NEIGHBOURHOOD_H */
+#endif  // TESTS_TEST_STRUCTURE_HH_

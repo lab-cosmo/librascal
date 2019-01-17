@@ -25,8 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef MATH_UTILS_H
-#define MATH_UTILS_H
+#ifndef SRC_MATH_MATH_UTILS_HH_
+#define SRC_MATH_MATH_UTILS_HH_
 
 #include "math_interface.hh"
 
@@ -35,7 +35,7 @@ namespace rascal {
     /**
      * for now just a scaffold
      */
-  } // math
-} // rascal
+  }  // namespace math
+}  // namespace rascal
 
-#endif /* MATH_UTILS_H */
+#endif  // SRC_MATH_MATH_UTILS_HH_

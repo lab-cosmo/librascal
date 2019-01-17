@@ -1,8 +1,8 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#ifndef TESTS_H
-#define TESTS_H
+#ifndef TESTS_TESTS_HH_
+#define TESTS_TESTS_HH_
 
 #include <iostream>
 #include <iomanip>
@@ -11,9 +11,8 @@
 
 namespace rascal {
 
-  const double tol = 1e-14 * 100; //it's in percent
+  const double tol = 1e-14 * 100;  // it's in percent
 
-}  // rascal
+}  // namespace rascal
 
-
-#endif /* TESTS_H */
+#endif  // TESTS_TESTS_HH_

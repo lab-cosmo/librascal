@@ -78,28 +78,4 @@ sudo docker run -it -v /path/to/repo/:/home/user/  test
 ```
 And then follow the instruction in BOOST.md for compilation with boost from conda
 
-
-TILL:
-Management of derivative relations for fields
-"Functional dependency" management to obtain automatically derivatives with chain rule
-Federico:
-try to enable CI on github with travis (finalize, enable and think what to do with CI)
-Felix:
-merge hackaton to master but don't remove the branch
-install target (TBD with Till)
-start pulling the reference implementation in Python (with Andrea G)
-Michele:
-Write a whitepaper section
-Chiheb:
-clean-up and update the tutorial
-Everyone:
-Make sure new and existing doxygen documentation refers correctly to Order and Layer rather than to Level and Depth
-*EFFICIENCY OF BULK KERNEL EVALUATION*
-typically we will do operations like diag (AB) where A and B are matrices of the order of 10'000x10'000
-
-
-TODO:
-
-have NL tests (1-3) that really test all possible features of the implementation
 =======
-
