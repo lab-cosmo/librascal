@@ -165,6 +165,10 @@ namespace rascal {
                 const Eigen::Ref<const Eigen::MatrixXd> cell,
                 const Eigen::Ref<const PBC_t> pbc);
 
+    void update_tree () final {
+      this->update_tree_root();
+    }
+
     /**
      * Overload of the update function invokes an update from a file, which
      * holds a structure in the format of the ASE atoms object

@@ -298,7 +298,22 @@ namespace rascal {
       return this->implementation().get_atom_type(atom_index);
     }
 
+    virtual void update_tree() {
+      this->implementation().get_manager().update_tree();
+    }
    protected:
+    void update_tree_root() {
+      this->update_children();
+    }
+
+    virtual void update_children() {
+      this->implementation().update_adaptor();
+      for (auto && child : this->children) {
+        child.lock()->update_children();
+      }
+    }
+
+    std::vector<std::weak_ptr<StructureManagerBase>> children{};
     //! returns the current layer
     template <size_t Order>
     constexpr static size_t cluster_layer() {
