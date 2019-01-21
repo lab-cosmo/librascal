@@ -18,7 +18,7 @@ RelWithDebInfo MinSizeRel.")
 ENDIF()
 # Set the possible values of build type for cmake-gui
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
-"Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+"Release" "Debug" "RelWithDebInfo" "MinSizeRel")
 
 project(rascal)
 
@@ -77,6 +77,15 @@ endif()
 
 ########## START CONFIGURATION ##########
 
+# set the name of the c++ libraries
+if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+  set(LIBRASCAL_NAME "rascal-dbg")
+  set(LIBCEPHES_NAME "cephes-dbg")
+else()
+  set(LIBRASCAL_NAME "rascal")
+  set(LIBCEPHES_NAME "cephes")
+endif()
+
 add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
 
 # Try to find optional cpp linter
@@ -94,6 +103,20 @@ include_directories(SYSTEM
 # set up bindings
 if(BUILD_BINDINGS)
   find_package(PythonLibsNew 3 MODULE REQUIRED)
+
+  # warning about potential side effects of the installation of the python library
+  if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+    if(NOT PYTHON_IS_DEBUG)
+      message(WARNING "The current configuration will build debug libraries "
+              "not linked to a debug python interpreter. "
+              "Installation target might overwrite the python bindings "
+              "library with a debug build !"
+              "see https://wiki.ubuntu.com/PyDbgBuilds or "
+              "https://gist.github.com/bombs-kim/c9848c2b09962f2fd753b48b6d2cd87ffor sources and "
+              "https://jml.io/2015/08/debugging-python-with-gdb.html for more informations "
+              " on how to debug c++ code from python.")
+    endif()
+  endif()
 
   add_external_package(pybind11 VERSION 2.2.2 CONFIG)
 
@@ -170,7 +193,7 @@ if (${BUILD_TESTS})
   ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK)
 
   target_include_directories(main_test_suite SYSTEM PRIVATE ${Boost_INCLUDE_DIR})
-  target_link_libraries(main_test_suite ${Boost_LIBRARIES} rascal)
+  target_link_libraries(main_test_suite ${Boost_LIBRARIES} "${LIBRASCAL_NAME}")
   add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
   configure_file("tests/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
   configure_file("tests/simple_cubic_9.json" ${CMAKE_BINARY_DIR} COPYONLY)
@@ -218,7 +241,7 @@ file( GLOB binaries "${CMAKE_SOURCE_DIR}/examples/*.cc")
 foreach(binaryfile ${binaries})
   get_filename_component(binaryname  ${binaryfile} NAME_WE)
   add_executable(${binaryname} ${binaryfile})
-  target_link_libraries(${binaryname} ${Boost_LIBRARIES} rascal)
+  target_link_libraries(${binaryname} ${Boost_LIBRARIES} "${LIBRASCAL_NAME}")
 endforeach(binaryfile ${binaries})
 
 # or copy them

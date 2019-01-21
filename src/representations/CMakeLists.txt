@@ -32,4 +32,4 @@ set(representation_SRC
   ${CMAKE_CURRENT_SOURCE_DIR}/representation_manager_sorted_coulomb.cc
   )
 
-target_sources(rascal PRIVATE ${representation_SRC})
+target_sources("${LIBRASCAL_NAME}" PRIVATE ${representation_SRC})
