@@ -291,6 +291,7 @@ namespace rascal {
         throw std::runtime_error(error.str());
       }
       this->properties[name] = property;
+      this->property_fresh[name] = false;
     }
 
     bool has_property(const std::string & name) {

@@ -104,6 +104,9 @@ namespace rascal {
   class SpeciesManager {
    public:
     using traits = StructureManager_traits<ManagerImplementation>;
+    template <size_t NbElements>
+    using SpeciesMap_t =
+        internal::detail::Map_t<NbElements, ManagerImplementation>;
     template <size_t Order>
     using Filter_t = AdaptorFilter<ManagerImplementation, Order>;
 
@@ -166,6 +169,11 @@ namespace rascal {
       } else {
         return *std::get<1>(*location);
       }
+    }
+
+    template <size_t NbElements>
+    SpeciesMap_t<NbElements> & filters_by_nb_elements(){
+        return std::get<NbElements>(this->filters);
     }
 
    protected:

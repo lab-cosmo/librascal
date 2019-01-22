@@ -25,7 +25,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #include "utils/for_each_at_order.hh"
 namespace rascal {
 
@@ -34,28 +33,97 @@ namespace rascal {
       StructureManager & structure, const json & hypers)
       : structure{structure}, species{structure} {}
 
-  
+  /* ---------------------------------------------------------------------- */
+  template <class StructureManager>
+  void BehlerParinello<StructureManager>::update() {
+    this->species.update();
+    for (auto && tup : this->species.filters_by_nb_elements<1>()) {
+      auto && species{tup.first};
+      auto && filter{tup.second};
+
+      // make sure all storage properties exist
+      using GProperty_t = TypedProperty<double, AtomOrder>;
+      std::shared_ptr<GProperty_t> G_values{}, dG_values{};
+      if (not filter.has_property(this->symmetry_function_key)) {
+        constexpr size_t AtomOrder{1};
+
+        G_values = std::make_shared<GProperty_t>(
+            filter, this->nb_sym_per_species[std::get<0>(species)]);
+        filter.attach_property(this->symmetry_function_key, G_values);
+
+        dG_values = std::make_shared<GProperty_t>(
+            filter, this->nb_sym_per_species[std::get<0>(species)], Dim);
+        filter.attach_property(this->symmetry_derivative_key, G_values);
+      } else {
+        G_values = filter.get_property(this->symmetry_function_key);
+        dG_values = filter.get_property(this->symmetry_derivative_key);
+      }
+
+      // resize storage properties to updated species managers
+      G_values.resize();
+      dG_values.resize();
+    }
+  }
+
   /* ---------------------------------------------------------------------- */
   template <class StructureManager>
   void BehlerParinello<StructureManager>::compute() {
     using utils::for_each_at_order;
 
-    for (const auto && species_key_val : this->symmetry_functions) {
-      const auto & species_combo{key_val.first()};
-      const auto & functions_by_cutoff{key_val.second()};
+    //! precompute precomputable values
+    for (const auto && species_key_val: this->symmetry_functions) {
+      auto && sym_fun{species_key_val.second};
+      sym_fun.prepare(this->structure);
+    }
 
-      auto & manager{this->species[species_combo]};
+    constexpr auto PairOrder{2};
+    constexpr auto TripletOrder{3};
+    for (const auto && species_key_val : this->symmetry_functions) {
+      auto && species_combo{species_key_val.first};
+      auto && sym_fun{species_key_val.second};
+
       const auto & order{species_combo.get_order()};
 
       switch (order) {
-      case 2: {
-        for_each_at_order<2>(function, manager, functions_by_cutoff);
+      case PairOrder: {
+        this->evaluate_pair_symmetry_function_group(sym_fun);
         break;
       }
-      case 3: {
-        for_each_at_order<3>(function, manager, functions_by_cutoff);
+      case TripletOrder: {
+        this->evaluate_triplet_symmetry_function_group(sym_fun);
         break;
       }
+      default:
+        break;
+      }
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  template <class StructureManager>
+  template <size_t Order>
+  void BehlerParinello<StructureManager>::evaluate_pair_symmetry_function_group(
+      std::vector<InputNodeContributionBase> & symmetry_funs) {
+    for (auto && symmetry_fun : symmetry_funs) {
+      this->evaluate_sym_fun<Permutation<0, 1>>((symmetry_fun));
+      this->evaluate_sym_fun<Permutation<1, 0>>((symmetry_fun));
+    }
+  }
+  /* ---------------------------------------------------------------------- */
+  template <class StructureManager>
+  template <size_t Order>
+  void
+  BehlerParinello<StructureManager>::evaluate_triplet_symmetry_function_group(
+      std::vector<InputNodeContributionBase> & symmetry_funs) {
+    for (auto && symmetry_fun : symmetry_funs) {
+      this->evaluate_sym_fun<Permutation<0, 1, 2>>((symmetry_fun));
+      this->evaluate_sym_fun<Permutation<1, 2, 0>>((symmetry_fun));
+      this->evaluate_sym_fun<Permutation<2, 0, 1>>((symmetry_fun));
+
+      if (not this->legacy_behaviour) {
+        this->evaluate_sym_fun<Permutation<2, 1, 0>>((symmetry_fun));
+        this->evaluate_sym_fun<Permutation<1, 0, 2>>((symmetry_fun));
+        this->evaluate_sym_fun<Permutation<0, 2, 1>>((symmetry_fun));
       }
     }
   }

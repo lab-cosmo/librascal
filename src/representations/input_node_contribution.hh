@@ -43,7 +43,7 @@ namespace rascal {
     template <size_t Order>
     using ClusterRef_t = typename StructureManager::template ClusterRef<Order>;
 
-    using StdTypes = TupleStandardisation<StructureManager::traits::MaxOrder>;
+    using StdSpecies = TupleStandardisation<StructureManager::traits::MaxOrder>;
 
     //! Default constructor
     InputNodeContributionBase() = delete;
@@ -116,6 +116,8 @@ namespace rascal {
         std::map<double,
                  Eigen::Matrix<double, SymFun::NbParams, Eigen::Dynamic>>;
 
+    constexpr static size_t MaxOrder{Parent::traits::MaxOrder};
+
     //! Default constructor
     InputNodeContribution() : Parent(SymFun) {}
 
@@ -139,6 +141,9 @@ namespace rascal {
     void prepare(StructureManager & manager) final;
 
     void apply(StructureManager & manager) const;
+
+    StdSpecies get_species_combo() const; //to implement
+    size_t get_index() const; //to implement
 
    protected:
     inline void eval_cluster(StructureManager & manager, ClusterRef_t cluster

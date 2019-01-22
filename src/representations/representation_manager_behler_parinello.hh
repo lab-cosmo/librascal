@@ -87,6 +87,14 @@ namespace rascal {
     BehlerParinello & operator=(BehlerParinello && other) = default;
 
     /**
+     * make sure data structures for the compute step are ready. The arguments
+     * here are passed up the chain to the structure manager at the root of this
+     * stack.
+     */
+    template <class... Args>
+    void update(Args &&... args);
+
+    /**
      * Evaluate all features
      */
     void compute() final;
@@ -113,6 +121,8 @@ namespace rascal {
     size_t get_center_size() final { return this->structure.size(); }
 
    protected:
+    void evaluate_pair_symmetry_function_group(
+        std::vector<InputNodeContributionBase> & symmetry_funs);
     constexpr size_t Invalid{std::numeric_limits<size_t>::max()};
     StructureManager & structure;
     SpeciesManager<StructureManager> species;
@@ -134,7 +144,11 @@ namespace rascal {
     //! defined as primary
     std::map<int, size_t> nb_sym_per_species{Invalid};
 
-    std::map<StdTypes, std::vector<InputNodeContributionBase>> symmetry_functions;
+    std::map<StdTypes, std::vector<InputNodeContributionBase>>
+        symmetry_functions;
+
+    const std::string symmetry_function_key{"symmetry function values"};
+    const std::string symmetry_derivative_key{"symmetry function derivatives"};
   };
 
 }  // namespace rascal
