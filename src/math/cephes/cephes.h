@@ -174,9 +174,9 @@ extern "C" {
 
 
 #ifdef __cplusplus
-    }
-  }// cephes
-} // rascal
+    } //cephes
+  }// rascal
+} // extern "C"
 #endif
 
 #endif /* CEPHES_H */

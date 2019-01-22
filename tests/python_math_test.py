@@ -5,7 +5,7 @@ import sys
 
 sys.path.insert(0,'../tests/')
 
-from python_import_rascal import _rascal as rc
+import rascal.lib._rascal as rc
 
 
 class TestMath(unittest.TestCase):

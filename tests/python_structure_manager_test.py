@@ -6,7 +6,8 @@ import faulthandler
 sys.path.insert(0,'../tests/')
 
 from test_utils import load_json_frame, BoxList, Box
-from python_import_rascal import _rascal as rc
+import rascal.lib._rascal as rc
+
 
 
 def get_NL_reference(cutoff,cell,pbc,positions,numbers):

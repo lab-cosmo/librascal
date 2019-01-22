@@ -28,6 +28,16 @@
 
 #ifndef SRC_MATH_MATH_INTERFACE_HH_
 #define SRC_MATH_MATH_INTERFACE_HH_
+/*
+ * Cephes polutes the namespace with extern definitions so we don't link to it
+ * directly. math_interface.cc includes math/cephes/mconf.h which in turns
+ * includes math/cephes/cephes.h (the main header with all the functions). It
+ * also redefines the functions needed, e.g. hyp2f1, which is exposed in
+ * math_interface.hh. So when calling rascal::math::hyp2f1 you call a function
+ * from librascal which uses a function from libcephes. That is how the
+ * namespace is not polluted because only math_interface.cc sees it and it is a
+ * .cc
+ */
 
 namespace rascal {
   namespace math {
