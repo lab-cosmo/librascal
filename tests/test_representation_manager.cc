@@ -139,7 +139,7 @@ namespace rascal {
     // Choose the data depending on the current options
     using Std2DArray_t = std::vector<std::vector<double>>;
 
-    const auto& data{ref_data.at("rep_info").get<json>()};
+    const auto& data{ref_data.at("rep_info").template get<json>()};
     // feature_matrices = data["feature_matrices"];
 
     size_t manager_i{0};
