@@ -100,6 +100,7 @@ include_directories(SYSTEM
   ${CMAKE_SOURCE_DIR}/external
   )
 
+
 # set up bindings
 if(BUILD_BINDINGS)
   find_package(PythonLibsNew 3 MODULE REQUIRED)

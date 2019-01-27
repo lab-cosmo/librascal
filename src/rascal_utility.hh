@@ -37,7 +37,6 @@
 
 #include "representations/representation_manager_base.hh"
 
-
 #include <utility>
 #include <string>
 #include <regex> // NOLINT
