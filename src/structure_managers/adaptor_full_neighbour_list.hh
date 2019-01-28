@@ -114,7 +114,7 @@ namespace rascal {
     AdaptorFullList & operator=(AdaptorFullList && other) = default;
 
     //! update just the adaptor assuming the underlying manager was updated
-    void update();
+    void update_adaptor();
 
     //! update the underlying manager as well as the adaptor
     template <class... Args>
@@ -280,7 +280,6 @@ namespace rascal {
   template <class... Args>
   void AdaptorFullList<ManagerImplementation>::update(Args &&... arguments) {
     this->manager.update(std::forward<Args>(arguments)...);
-    this->update();
   }
 
   /* ---------------------------------------------------------------------- */
@@ -289,7 +288,7 @@ namespace rascal {
    * which does includes all permutations of the pair
    */
   template <class ManagerImplementation>
-  void AdaptorFullList<ManagerImplementation>::update() {
+  void AdaptorFullList<ManagerImplementation>::update_adaptor() {
     // vector to locally gather all neighbours of an atom before building the
     // neighbour list
     std::vector<std::vector<int>> new_neighbours;

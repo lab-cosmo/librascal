@@ -64,11 +64,9 @@ struct MultipleStrictStructureManager {
     for (auto filename : filenames) {
       for (auto cutoff : cutoffs) {
         this->managers1.emplace_back();
-        this->managers1.back().update(filename);
         this->managers2.emplace_back(managers1.back(), cutoff);
-        this->managers2.back().update();
         this->managers.emplace_back(managers2.back(), cutoff);
-        this->managers.back().update();
+        this->managers.back().update(filename);
       }
     }
   }

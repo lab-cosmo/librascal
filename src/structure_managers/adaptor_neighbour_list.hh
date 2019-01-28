@@ -473,7 +473,7 @@ namespace rascal {
      * updated. this function invokes building either the neighbour list or to
      * make triplets, quadruplets, etc. depending on the MaxOrder
      */
-    void update();
+    void update_adaptor();
 
     //! Updates the underlying manager as well as the adaptor
     template <class... Args>
@@ -744,12 +744,22 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
+   * Update function that recursively pass its argument to the base
+   * (Centers or Lammps). The base will then update the whole tree from the top.
+   */
+  template <class ManagerImplementation>
+  template <class... Args>
+  void AdaptorNeighbourList<ManagerImplementation>::update(Args &&... arguments) {
+    this->manager.update(std::forward<Args>(arguments)...);
+  }
+  /* ---------------------------------------------------------------------- */
+  /**
    * build a neighbour list based on atomic positions, types and indices, in the
    * following the needed data structures are initialized, after construction,
    * this function must be called to invoke the neighbour list algorithm
    */
   template <class ManagerImplementation>
-  void AdaptorNeighbourList<ManagerImplementation>::update() {
+  void AdaptorNeighbourList<ManagerImplementation>::update_adaptor() {
     //! Reset cluster_indices for adaptor to fill with sequence
     internal::for_each(this->cluster_indices_container,
                        internal::ResizePropertyToZero());

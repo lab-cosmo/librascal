@@ -115,7 +115,7 @@ namespace rascal {
     AdaptorHalfList & operator=(AdaptorHalfList && other) = default;
 
     //! update just the adaptor assuming the underlying manager was updated
-    void update();
+    void update_adaptor();
 
     //! update the underlying manager as well as the adaptor
     template <class... Args>
@@ -285,7 +285,6 @@ namespace rascal {
   template <class... Args>
   void AdaptorHalfList<ManagerImplementation>::update(Args &&... arguments) {
     this->manager.update(std::forward<Args>(arguments)...);
-    this->update();
   }
 
   /* ---------------------------------------------------------------------- */
@@ -294,7 +293,7 @@ namespace rascal {
    * which does not include permutations of pairs
    */
   template <class ManagerImplementation>
-  void AdaptorHalfList<ManagerImplementation>::update() {
+  void AdaptorHalfList<ManagerImplementation>::update_adaptor() {
     // Reset cluster_indices for adaptor to fill with push back.
     internal::for_each(this->cluster_indices_container,
                        internal::ResizePropertyToZero());

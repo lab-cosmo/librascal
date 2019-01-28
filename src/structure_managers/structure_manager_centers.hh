@@ -90,6 +90,8 @@ namespace rascal {
     // here you see why -- definition of used function return types
     using Vector_ref = typename Parent::Vector_ref;
     using AtomRef_t = typename Parent::AtomRef;
+    using Children_t = typename Parent::Children_t;
+
 
     /**
      * Eigen::Map is a convenient way to access data in the 'Eigen-way', if it
@@ -164,20 +166,19 @@ namespace rascal {
                 const Eigen::Ref<const Eigen::VectorXi> atom_types,
                 const Eigen::Ref<const Eigen::MatrixXd> cell,
                 const Eigen::Ref<const PBC_t> pbc);
-
-    void update_tree () final {
-      this->update_tree_root();
-    }
-
     /**
      * Overload of the update function invokes an update from a file, which
      * holds a structure in the format of the ASE atoms object
      */
     void update(const std::string filename);
 
-    // TODO(felix): build/update ambiguity
-    //! makes atom index lists and offsets
-    void build();
+
+    void update_tree() final {
+      this->update_tree_root();
+    }
+
+    void update_adaptor() final {}
+
 
     //! required for the construction of vectors, etc
     constexpr static int dim() { return traits::Dim; }
@@ -289,11 +290,13 @@ namespace rascal {
      * definition of <code>AtomicStructure</code> and adapt the fields, which
      * should be read to your case.
      */
-    void read_structure_from_json(const std::string filename);
+    decltype(auto) read_structure_from_json(const std::string filename);
 
     // TODO(markus): add function to read from XYZ files
 
    protected:
+    //! makes atom index lists and offsets
+    void build();
     /**
      * Object which can interface to the json header to read and write atom
      * related data in the ASE format: positions, cell, periodicity, atom types

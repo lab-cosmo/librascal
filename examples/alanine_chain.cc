@@ -56,10 +56,10 @@ int main() {
 
   // read atomic structure from the JSON file
   // manager.read_structure_from_json("alanine-X.json");
-  manager.update("alanine-X.json");
+  // manager.update("alanine-X.json");
 
   PairManager_t pair_manager{manager, cutoff};
-  pair_manager.update();
+  pair_manager.update("alanine-X.json");
 
   // Loop over the defined quadruplets and calculate the respective
   // angles with atan2 and cosine definition.

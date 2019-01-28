@@ -118,6 +118,12 @@ namespace rascal {
                 double ** x, double ** f, int * type,
                 double * eatom, double ** vatom);
 
+    void update_tree() final {
+      this->update_tree_root();
+    }
+
+    void update_adaptor() final {}
+
     //! return position vector of an atom given the atom index
     inline Vector_ref get_position(const size_t & atom_index) {
       auto * xval{this->x[atom_index]};

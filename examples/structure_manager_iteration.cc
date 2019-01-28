@@ -71,7 +71,25 @@ int main() {
 
   // `manager` is the data object which reads, stores and gives access to atom
   // positions, types. It also provides iteration over all atom.
-  manager.update(filename);
+//  manager.update(filename);
+
+  // `pair_manager` is constructed with the `manager` and a `cutoff`.
+  PairManager_t pair_manager{manager, cutoff, true};
+  // By invoking the `.update()` method, a neighbour list is built.
+//  pair_manager.update();
+
+  // `strict_manager` is constructed with a `pair_manager`.
+  StrictPairManager_t strict_manager{pair_manager, cutoff};
+  // calling the `.update()` method triggers the build of a strict neighbourlist
+  // (all pairs are within the specified cutoff)
+//  strict_manager.update();
+
+  // `triplet_manager` is constructed with a pair list (strict or not, here
+  // strict)
+  TripletManager_t triplet_manager{strict_manager};
+  // `.update()` triggers the extension of the pair list to triplets
+  triplet_manager.update(filename);
+
 
   // Iteration over `manager`
   std::cout << "manager iteration over atoms" << std::endl;
@@ -79,11 +97,6 @@ int main() {
     std::cout << "atom " << atom.get_atom_index() << " global index "
               << atom.get_global_index() << std::endl;
   }
-
-  // `pair_manager` is constructed with the `manager` and a `cutoff`.
-  PairManager_t pair_manager{manager, cutoff, true};
-  // By invoking the `.update()` method, a neighbour list is built.
-  pair_manager.update();
 
   // `pair_manager` provides iteration over atoms and pairs
   for (auto atom : pair_manager) {
@@ -94,12 +107,6 @@ int main() {
     }
   }
 
-  // `strict_manager` is constructed with a `pair_manager`.
-  StrictPairManager_t strict_manager{pair_manager, cutoff};
-  // calling the `.update()` method triggers the build of a strict neighbourlist
-  // (all pairs are within the specified cutoff)
-  strict_manager.update();
-
   // `strict_manager` provides iteration over atoms and strict pairs
   for (auto atom : strict_manager) {
     for (auto pair : atom) {
@@ -108,12 +115,6 @@ int main() {
                 << pair.get_global_index() << std::endl;
     }
   }
-
-  // `triplet_manager` is constructed with a pair list (strict or not, here
-  // strict)
-  TripletManager_t triplet_manager{strict_manager};
-  // `.update()` triggers the extension of the pair list to triplets
-  triplet_manager.update();
 
   // `triplet_manager` provides iteration over atoms, strict pairs and strict
   // triplets

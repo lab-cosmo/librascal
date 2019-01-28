@@ -172,6 +172,7 @@ namespace rascal {
     using ClusterConstructor_t =
         typename internal::ClusterIndexConstructor<ClusterIndex_t,
                                                    StructureManager>;
+    using Children_t = std::weak_ptr<StructureManagerBase>;
 
     //! helper type for Property creation
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
@@ -313,7 +314,7 @@ namespace rascal {
       }
     }
 
-    std::vector<std::weak_ptr<StructureManagerBase>> children{};
+    std::vector<Children_t> children{};
     //! returns the current layer
     template <size_t Order>
     constexpr static size_t cluster_layer() {

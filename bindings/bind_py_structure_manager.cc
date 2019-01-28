@@ -237,7 +237,7 @@ decltype(auto) add_adaptor(py::module & m, py::module & m_garbage) {
   //             py::keep_alive<1, 2>());
   adaptor.def(py::init<Implementation_t &, ConstructorPack...>(),
               py::keep_alive<1, 2>());
-
+  // TODO(felix) bind the update with parameter pack
   adaptor.def("update", [](Child & v) { v.update(); });
   // bind clusterRefs so that one can loop over adaptor
   // MaxOrder+1 because recursion stops at Val-1
@@ -261,7 +261,7 @@ decltype(auto) add_adaptor_NL(py::module & m, py::module & m_garbage) {
   adaptor.def(py::init<Implementation_t &, double, bool>(), py::arg("manager"),
               py::arg("cutoff"), py::arg("consider_ghost_neighbours") = false,
               py::keep_alive<1, 2>());
-
+  // TODO(felix) bind the update with parameter pack
   adaptor.def("update", [](Child & v) { v.update(); });
   // bind clusterRefs so that one can loop over adaptor
   // MaxOrder+1 because recursion stops at Val-1
@@ -282,6 +282,7 @@ void add_structure_manager(py::module & mod, py::module & m_garbage) {
   // bind implementation class
   auto manager =
       add_structure_manager_implementation<Manager_t>(mod, m_garbage);
+  // TODO(felix) bind the update with parameter pack
   manager.def("update",
               [](Manager_t & v,
                  const py::EigenDRef<const Eigen::MatrixXd> & positions,

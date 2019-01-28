@@ -40,8 +40,9 @@ namespace rascal {
     //! only? virtual function needed.
     virtual size_t nb_clusters(size_t cluster_size) const = 0;
     virtual ~StructureManagerBase() = default;
-   protected:
     virtual void update_children() = 0;
+   protected:
+//    virtual void update_children() = 0;
     virtual void update_adaptor() = 0;
     };
 }  // rascal
