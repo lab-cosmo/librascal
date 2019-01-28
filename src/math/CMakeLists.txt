@@ -27,22 +27,16 @@
 # Boston, MA 02111-1307, USA.
 #
 
-add_library(cephes "")
+add_library("${LIBCEPHES_NAME}" "")
 
 add_subdirectory(cephes)
 
-install(TARGETS cephes DESTINATION lib)
+install(TARGETS "${LIBCEPHES_NAME}" DESTINATION lib)
 
-
-add_library(rascal-math "")
-
-install(TARGETS rascal-math DESTINATION lib)
 
 set (math_SRC
-  math_utils.cc
-  math_interface.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/math_utils.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/math_interface.cc
   )
 
-target_sources(rascal-math PRIVATE ${math_SRC})
-
-target_link_libraries(rascal-math PRIVATE cephes)
+target_sources("${LIBRASCAL_NAME}" PRIVATE ${math_SRC})

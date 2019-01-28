@@ -56,7 +56,7 @@ set(CPPLINT_PROJECT_ROOT ${PROJECT_SOURCE_DIR} CACHE STRING "Project ROOT direct
 
 
 # find cpplint.py script
-find_file(CPPLINT name cpplint HINTS $ENV{HOME}.local/bin)
+find_file(CPPLINT name cpplint HINTS $ENV{HOME}/.local/bin /usr/bin  )
 if(CPPLINT)
     message(STATUS "cpplint parser: ${CPPLINT}")
     # common target to concatenate all cpplint.py targets
