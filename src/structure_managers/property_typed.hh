@@ -9,7 +9,7 @@
  * @brief Implements intermediate property class for which the type of stored
  *          objects is known, but not the size
  *
- * Copyright © 2018 Federico Giberti, Till Junge, Felix Musil, COSMO (EPFL),
+ * Copyright  2018 Federico Giberti, Till Junge, Felix Musil, COSMO (EPFL),
  * LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or

@@ -8,7 +8,7 @@
  * @brief Generic manager aimed to aggregate the features computed
  *  with a representation on one or more atomic structures
  *
- * Copyright © 2018 Musil Felix, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright  2018 Musil Felix, COSMO (EPFL), LAMMM (EPFL)
  *
  * rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as

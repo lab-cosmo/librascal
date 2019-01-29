@@ -10,7 +10,7 @@
 #
 # @section LICENSE
 #
-# Copyright © 2018 Till Junge
+# Copyright  2018 Till Junge
 #
 # rascal is free software; HANDLE LICENSES HERE
 #

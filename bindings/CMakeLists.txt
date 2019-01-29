@@ -9,7 +9,7 @@
 #
 # @section LICENSE
 #
-# Copyright © 2018 Till Junge
+# Copyright  2018 Till Junge
 #
 # Rascal is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public License as
