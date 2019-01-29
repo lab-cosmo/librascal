@@ -112,8 +112,7 @@ namespace rascal {
                           Option::CMSortRowNorm>,
     RepresentationFixture<StructureManagerCenters,
                           RepresentationManagerSphericalExpansion,
-                          MultipleStructureSphericalExpansion,
-                          Option::GaussianSigmaTypeConstant>>;
+                          MultipleStructureSphericalExpansion>>;
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_constructor_test,
             Fix, multiple_fixtures, Fix) {
@@ -151,8 +150,7 @@ namespace rascal {
   using multiple_fixtures = boost::mpl::list<
     RepresentationFixture<StructureManagerCenters,
                           RepresentationManagerSphericalExpansion,
-                          MultipleStructureSphericalExpansion,
-                          Option::GaussianSigmaTypeConstant>>;
+                          MultipleStructureSphericalExpansion>>;
 
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(

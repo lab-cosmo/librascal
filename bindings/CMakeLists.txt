@@ -2,6 +2,7 @@
 # file   CMakeLists.txt
 #
 # @author Till Junge <till.junge@epfl.ch>
+# @authorFelix Musil <felix.musil@epfl.ch>
 #
 # @date   08 Jan 2018
 #
@@ -9,7 +10,7 @@
 #
 # @section LICENSE
 #
-# Copyright © 2018 Till Junge
+# Copyright © 2018 Till Junge, Felix Musil, COSMO (EPFL), LAMMM (EPFL)
 #
 # Rascal is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public License as
