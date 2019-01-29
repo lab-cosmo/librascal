@@ -197,7 +197,6 @@ if (${BUILD_TESTS})
   add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
   configure_file("tests/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
   configure_file("tests/simple_cubic_9.json" ${CMAKE_BINARY_DIR} COPYONLY)
-  configure_file("examples/crystal_structure.json" ${CMAKE_BINARY_DIR} COPYONLY)
   file(COPY "tests/reference_data" DESTINATION ${CMAKE_BINARY_DIR})
 
   # copy and add python test to suite
@@ -241,8 +240,12 @@ file( GLOB binaries "${CMAKE_SOURCE_DIR}/examples/*.cc")
 foreach(binaryfile ${binaries})
   get_filename_component(binaryname  ${binaryfile} NAME_WE)
   add_executable(${binaryname} ${binaryfile})
-  target_link_libraries(${binaryname} ${Boost_LIBRARIES} "${LIBRASCAL_NAME}")
+  target_link_libraries(${binaryname} "${LIBRASCAL_NAME}")
 endforeach(binaryfile ${binaries})
+configure_file("${CMAKE_SOURCE_DIR}/examples/crystal_structure.json" ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file("${CMAKE_SOURCE_DIR}/examples/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
+
+
 
 # or copy them
 file (GLOB pybins "${CMAKE_SOURCE_DIR}/bin/*.py")

@@ -72,7 +72,7 @@ namespace rascal {
       : public StructureManager<AdaptorStrict<ManagerImplementation>> {
    public:
     using Parent = StructureManager<AdaptorStrict<ManagerImplementation>>;
-    using Implementation_t = ManagerImplementation;
+    using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorStrict>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
@@ -88,7 +88,7 @@ namespace rascal {
      * specifies the strict cutoff radius. all clusters with distances above
      * this parameter will be skipped
      */
-    AdaptorStrict(ManagerImplementation & manager, double cutoff);
+    AdaptorStrict(ImplementationPtr_t manager, double cutoff);
 
     //! Copy constructor
     AdaptorStrict(const AdaptorStrict & other) = delete;
@@ -144,14 +144,14 @@ namespace rascal {
       return this->atom_indices[cluster_size - 1].size();
     }
 
-    inline size_t get_size() const { return this->manager.get_size(); }
+    inline size_t get_size() const { return this->manager->get_size(); }
 
     inline size_t get_size_with_ghosts() const {
       return this->get_nb_clusters(1);
     }
 
     inline Vector_ref get_position(const int & index) {
-      return this->manager.get_position(index);
+      return this->manager->get_position(index);
     }
 
     //! get atom_index of index-th neighbour of this cluster
@@ -178,7 +178,7 @@ namespace rascal {
        * index:
        */
       auto && original_atom{this->atom_indices[0][atom.get_index()]};
-      return this->manager.get_atom_type(original_atom);
+      return this->manager->get_atom_type(original_atom);
     }
 
     //! return atom type
@@ -186,17 +186,17 @@ namespace rascal {
       // careful, atom refers to our local index, for the manager, we need its
       // index:
       auto && original_atom{this->atom_indices[0][atom.get_index()]};
-      return this->manager.get_atom_type(original_atom);
+      return this->manager->get_atom_type(original_atom);
     }
 
     //! Returns atom type given an atom index
     inline int & get_atom_type(const int & atom_id) {
-      return this->manager.get_atom_type(atom_id);
+      return this->manager->get_atom_type(atom_id);
     }
 
     //! Returns a constant atom type given an atom index
     inline const int & get_atom_type(const int & atom_id) const {
-      auto && type{this->manager.get_atom_type(atom_id)};
+      auto && type{this->manager->get_atom_type(atom_id)};
       return type;
     }
     /**
@@ -257,7 +257,7 @@ namespace rascal {
       return this->template add_atom<Order - 1>(cluster.back());
     }
 
-    ManagerImplementation & manager;
+    ImplementationPtr_t manager;
     typename AdaptorStrict::template Property_t<double, 2> distance;
     typename AdaptorStrict::template Property_t<double, 2, 3> dir_vec;
     const double cutoff;
@@ -285,15 +285,16 @@ namespace rascal {
     /* ---------------------------------------------------------------------- */
     template <bool IsStrict, class ManagerImplementation>
     struct CutOffChecker {
-      static bool check(const ManagerImplementation & manager, double cutoff) {
-        return cutoff < manager.get_cutoff();
+      static bool check(const std::shared_ptr<ManagerImplementation> & manager,
+                        double cutoff) {
+        return cutoff < manager->get_cutoff();
       }
     };
 
     /* ---------------------------------------------------------------------- */
     template <class ManagerImplementation>
     struct CutOffChecker<false, ManagerImplementation> {
-      static bool check(const ManagerImplementation & /*manager*/,
+      static bool check(const std::shared_ptr<ManagerImplementation> & /*manager*/,
                         double /*cutoff*/) {
         return true;
       }
@@ -301,7 +302,7 @@ namespace rascal {
 
     /* ---------------------------------------------------------------------- */
     template <class ManagerImplementation>
-    bool inline check_cutoff(const ManagerImplementation & manager,
+    bool inline check_cutoff(const std::shared_ptr<ManagerImplementation> & manager,
                              double cutoff) {
       constexpr bool IsStrict{(ManagerImplementation::traits::Strict ==
                                AdaptorTraits::Strict::yes)};
@@ -313,22 +314,23 @@ namespace rascal {
   /*--------------------------------------------------------------------------*/
   template <class ManagerImplementation>
   AdaptorStrict<ManagerImplementation>::AdaptorStrict(
-      ManagerImplementation & manager, double cutoff)
-      : manager{manager}, distance{*this}, dir_vec{*this}, cutoff{cutoff},
+          ImplementationPtr_t manager, double cutoff)
+      : manager{std::move(manager)}, distance{*this}, dir_vec{*this}, cutoff{cutoff},
         atom_indices{}, nb_neigh{}, offsets{}
 
   {
-    if (not internal::check_cutoff(manager, cutoff)) {
+    if (not internal::check_cutoff(this->manager, cutoff)) {
       throw std::runtime_error("underlying manager already has a smaller "
                                "cut off");
     }
+    this->manager->add_child(std::make_shared<ManagerImplementation>(this));
   }
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
   template <class... Args>
   void AdaptorStrict<ManagerImplementation>::update(Args &&... arguments) {
-    this->manager.update(std::forward<Args>(arguments)...);
+    this->manager->update(std::forward<Args>(arguments)...);
   }
 
   /* ---------------------------------------------------------------------- */
@@ -360,7 +362,7 @@ namespace rascal {
     size_t pair_counter{0};
     // depending on the underlying neighbourlist, the proxy `.with_ghosts()` is
     // either actually with ghosts, or only returns the number of centers.
-    for (auto atom : this->manager.with_ghosts()) {
+    for (auto atom : this->manager->with_ghosts()) {
       this->add_atom(atom);
       /**
        * Add new layer for atoms (see LayerByOrder for

@@ -144,6 +144,7 @@ namespace rascal {
     // TODO(felix) make a traits mechanism
     // TODO(Felix) allow for different kind of CM
     using Manager_t = StructureManager;
+    using ManagerPtr_t = std::shared_ptr<Manager_t>;
     using Parent = RepresentationManagerBase;
     using hypers_t = typename Parent::hypers_t;
     using precision_t = typename Parent::precision_t;
@@ -154,8 +155,8 @@ namespace rascal {
     // using distiter = typename std::vector<double>::const_iterator;
 
     //! Constructor
-    RepresentationManagerSortedCoulomb(Manager_t & sm, const hypers_t & hyper)
-        : structure_manager{sm}, central_decay{}, interaction_cutoff{},
+    RepresentationManagerSortedCoulomb(ManagerPtr_t sm, const hypers_t & hyper)
+        : structure_manager{std::move(sm)}, central_decay{}, interaction_cutoff{},
           interaction_decay{}, coulomb_matrices{sm} {
       this->set_hyperparameters(hyper);
       this->check_size_compatibility();
@@ -188,7 +189,7 @@ namespace rascal {
 
     //! getter for the representation
     Eigen::Map<const Eigen::MatrixXd> get_representation_full() {
-      auto nb_centers{this->structure_manager.size()};
+      auto nb_centers{this->structure_manager->size()};
       auto nb_features{this->get_n_feature()};
       auto & raw_data{this->coulomb_matrices.get_raw_data()};
       Eigen::Map<const Eigen::MatrixXd> representation(raw_data.data(),
@@ -214,7 +215,7 @@ namespace rascal {
     //! check if size of representation manager is enough for current structure
     //! manager
     void check_size_compatibility() {
-      for (auto center : this->structure_manager) {
+      for (auto center : this->structure_manager.get()) {
         auto n_neighbours{center.size()};
         if (n_neighbours > this->size) {
           std::cout << "size is too small for this "
@@ -275,7 +276,7 @@ namespace rascal {
     //! get the size of a feature vector from the hyper parameters
     inline size_t get_n_feature() { return this->size * (this->size + 1) / 2; }
 
-    Manager_t & structure_manager;
+    ManagerPtr_t structure_manager;
     double central_decay{};
     double interaction_cutoff{};
     double interaction_decay{};
@@ -296,7 +297,7 @@ namespace rascal {
       const RepresentationManagerSortedCoulomb<Mngr, SortAlgo>::hypers_t &
           hyper) {
     this->hypers = hyper;
-    auto && central_cutoff{this->structure_manager.get_cutoff()};
+    auto && central_cutoff{this->structure_manager->get_cutoff()};
 
     this->size = hyper["size"];
     if ((hyper["interaction_cutoff"] < 0) or
@@ -341,7 +342,7 @@ namespace rascal {
     // Eigen::MatrixXd coulomb_mat(this->size,this->size);
 
     // loop over the centers
-    for (auto center : this->structure_manager) {
+    for (auto center : this->structure_manager.get()) {
       // re-use the temporary coulomb mat in linear storage
       // need to be zeroed because old data might not be overwritten
       lin_sorted_coulomb_mat =
@@ -398,13 +399,13 @@ namespace rascal {
     // the coulomb mat first row and col corresponds
     // to central atom to neighbours
     auto&& Zk{center.get_atom_type()};
-    auto&& central_cutoff{this->structure_manager.get_cutoff()};
+    auto&& central_cutoff{this->structure_manager->get_cutoff()};
 
     type_factor_mat(0, 0) = 0.5*std::pow(Zk, 2.4);
     for (auto neigh_i : center) {
       size_t idx_i{neigh_i.get_index()+1};
       auto&& Zi{neigh_i.get_atom_type()};
-      double& dik{this->structure_manager.get_distance(neigh_i)};
+      double& dik{this->structure_manager->get_distance(neigh_i)};
       double fac_ik{get_cutoff_factor(dik, central_cutoff,
                                       this->central_decay)};
 
@@ -419,7 +420,7 @@ namespace rascal {
     for (auto neigh_i : center) {
       size_t idx_i{neigh_i.get_index() + 1};
       auto && Zi{neigh_i.get_atom_type()};
-      double & dik{this->structure_manager.get_distance(neigh_i)};
+      double & dik{this->structure_manager->get_distance(neigh_i)};
       double fac_ik{
           get_cutoff_factor(dik, central_cutoff, this->central_decay)};
 

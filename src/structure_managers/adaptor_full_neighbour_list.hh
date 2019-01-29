@@ -78,6 +78,7 @@ namespace rascal {
    public:
     using Parent = StructureManager<AdaptorFullList<ManagerImplementation>>;
     using traits = StructureManager_traits<AdaptorFullList>;
+    using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using parent_traits = typename ManagerImplementation::traits;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
@@ -96,8 +97,9 @@ namespace rascal {
     AdaptorFullList() = delete;
 
     //! Extend a minimal/half neighbour list to a full neighbour list.
-    explicit AdaptorFullList(ManagerImplementation & manager);
+    explicit AdaptorFullList(ImplementationPtr_t manager);
 
+    
     //! Copy constructor
     AdaptorFullList(const AdaptorFullList & other) = delete;
 
@@ -124,13 +126,13 @@ namespace rascal {
      * returns the cutoff from the underlying manager which built the
      * neighbourlist
      */
-    inline double get_cutoff() const { return this->manager.get_cutoff(); }
+    inline double get_cutoff() const { return this->manager->get_cutoff(); }
 
     //! returns the number of atoms or pairs
     inline size_t get_nb_clusters(int cluster_size) const {
       switch (cluster_size) {
       case 1: {
-        return this->manager.get_nb_clusters(cluster_size);
+        return this->manager->get_nb_clusters(cluster_size);
         break;
       }
       case 2: {
@@ -148,12 +150,12 @@ namespace rascal {
 
     //! returns position of the given atom index
     inline Vector_ref get_position(const int & index) {
-      return this->manager.get_position(index);
+      return this->manager->get_position(index);
     }
 
     //! returns position of the given atom object
     inline Vector_ref get_position(const AtomRef_t & atom) {
-      return this->manager.get_position(atom.get_index());
+      return this->manager->get_position(atom.get_index());
     }
 
     //! Returns the id of the index-th neighbour atom of a given cluster
@@ -180,27 +182,27 @@ namespace rascal {
     //! get atom_index of the index-th atom in manager
     inline int get_cluster_neighbour(const Parent & /*parent*/,
                                      size_t index) const {
-      return this->manager.get_cluster_neighbour(this->manager, index);
+      return this->manager->get_cluster_neighbour(this->manager, index);
     }
 
     //! return atom type
     inline int & get_atom_type(const AtomRef_t & atom) {
-      return this->manager.get_atom_type(atom.get_index());
+      return this->manager->get_atom_type(atom.get_index());
     }
 
     //! return atom type, const ref
     inline const int & get_atom_type(const AtomRef_t & atom) const {
-      return this->manager.get_atom_type(atom.get_index());
+      return this->manager->get_atom_type(atom.get_index());
     }
 
     //! Returns atom type given an atom index
     inline int & get_atom_type(const int & atom_id) {
-      return this->manager.get_atom_type(atom_id);
+      return this->manager->get_atom_type(atom_id);
     }
 
     //! Returns a constant atom type given an atom index
     inline const int & get_atom_type(const int & atom_id) const {
-      return this->manager.get_atom_type(atom_id);
+      return this->manager->get_atom_type(atom_id);
     }
 
     /**
@@ -239,7 +241,7 @@ namespace rascal {
                     "this implementation handles only the respective MaxOrder");
 
       if (Order < (traits::MaxOrder - 1)) {
-        return this->manager.get_cluster_size(cluster);
+        return this->manager->get_cluster_size(cluster);
       } else {
         auto access_index = cluster.get_cluster_index(Layer);
         return nb_neigh[access_index];
@@ -249,7 +251,7 @@ namespace rascal {
    protected:
     /* ---------------------------------------------------------------------- */
     //! Reference to the underlying manager
-    ManagerImplementation & manager;
+    ImplementationPtr_t manager;
 
     //! Stores the number of neighbours for every atom after sorting
     std::vector<size_t> nb_neigh;
@@ -271,15 +273,17 @@ namespace rascal {
   //! constructor implementations
   template <class ManagerImplementation>
   AdaptorFullList<ManagerImplementation>::AdaptorFullList(
-      ManagerImplementation & manager)
-      : manager{manager}, nb_neigh{}, neighbours{}, offsets{} {}
+          ImplementationPtr_t manager)
+      : manager{std::move(manager)}, nb_neigh{}, neighbours{}, offsets{} {
+    this->manager->add_child(std::make_shared<ManagerImplementation>(this));
+      }
 
   /* ---------------------------------------------------------------------- */
   //! update function, which updates based on underlying manager
   template <class ManagerImplementation>
   template <class... Args>
   void AdaptorFullList<ManagerImplementation>::update(Args &&... arguments) {
-    this->manager.update(std::forward<Args>(arguments)...);
+    this->manager->update(std::forward<Args>(arguments)...);
   }
 
   /* ---------------------------------------------------------------------- */

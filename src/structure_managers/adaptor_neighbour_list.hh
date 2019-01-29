@@ -429,7 +429,7 @@ namespace rascal {
     using Base = StructureManager<AdaptorNeighbourList<ManagerImplementation>>;
     using Parent =
         StructureManager<AdaptorNeighbourList<ManagerImplementation>>;
-    using Implementation_t = ManagerImplementation;
+    using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorNeighbourList>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
@@ -449,8 +449,9 @@ namespace rascal {
      * Constructs a full neighbourhood list from a given manager and cut-off
      * radius or extends an existing neighbourlist to the next order
      */
-    AdaptorNeighbourList(ManagerImplementation & manager, double cutoff,
+    AdaptorNeighbourList(ImplementationPtr_t manager, double cutoff,
                          bool consider_ghost_neighbours = false);
+
 
     //! Copy constructor
     AdaptorNeighbourList(const AdaptorNeighbourList & other) = delete;
@@ -536,7 +537,7 @@ namespace rascal {
     //! Returns position of an atom with index atom_index
     inline Vector_ref get_position(const size_t & atom_index) {
       if (atom_index < n_centers) {
-        return this->manager.get_position(atom_index);
+        return this->manager->get_position(atom_index);
       } else {
         return this->get_ghost_position(atom_index - this->n_centers);
       }
@@ -576,7 +577,7 @@ namespace rascal {
 
     //! Returns position of the given atom object (useful for users)
     inline Vector_ref get_position(const AtomRef_t & atom) {
-      return this->manager.get_position(atom.get_index());
+      return this->manager->get_position(atom.get_index());
     }
 
     /**
@@ -585,7 +586,7 @@ namespace rascal {
      */
     inline int get_cluster_neighbour(const Parent & /*parent*/,
                                      size_t index) const {
-      return this->manager.get_cluster_neighbour(this->manager, index);
+      return this->manager->get_cluster_neighbour(this->manager, index);
     }
 
     //! Returns the id of the index-th neighbour atom of a given cluster
@@ -683,7 +684,7 @@ namespace rascal {
 
     /* ---------------------------------------------------------------------- */
     //! reference to underlying structure manager
-    ManagerImplementation & manager;
+    ImplementationPtr_t manager;
 
     //! Cutoff radius for neighbour list
     const double cutoff;
@@ -733,13 +734,14 @@ namespace rascal {
   //! Constructor of the pair list manager
   template <class ManagerImplementation>
   AdaptorNeighbourList<ManagerImplementation>::AdaptorNeighbourList(
-      ManagerImplementation & manager, double cutoff,
+          ImplementationPtr_t manager, double cutoff,
       bool consider_ghost_neighbours)
-      : manager{manager}, cutoff{cutoff}, atom_indices{}, atom_types{},
+      : manager{std::move(manager)}, cutoff{cutoff}, atom_indices{}, atom_types{},
         ghost_atom_indices{}, nb_neigh{},
-        neighbours{}, offsets{}, n_centers{manager.get_size()}, n_ghosts{0},
+        neighbours{}, offsets{}, n_centers{manager->get_size()}, n_ghosts{0},
         consider_ghost_neighbours{consider_ghost_neighbours} {
     static_assert(not(traits::MaxOrder < 1), "No atom list in manager");
+    this->manager->add_child(std::make_shared<ManagerImplementation>(this));
   }
 
   /* ---------------------------------------------------------------------- */
@@ -750,7 +752,7 @@ namespace rascal {
   template <class ManagerImplementation>
   template <class... Args>
   void AdaptorNeighbourList<ManagerImplementation>::update(Args &&... arguments) {
-    this->manager.update(std::forward<Args>(arguments)...);
+    this->manager->update(std::forward<Args>(arguments)...);
   }
   /* ---------------------------------------------------------------------- */
   /**
@@ -808,7 +810,7 @@ namespace rascal {
     // short hands for variable
     constexpr auto dim{traits::Dim};
 
-    auto cell{this->manager.get_cell()};
+    auto cell{this->manager->get_cell()};
     double cutoff{this->cutoff};
 
     std::array<int, dim> nboxes_per_dim{};
@@ -894,7 +896,7 @@ namespace rascal {
     std::array<int, dim> periodic_max{};
     std::array<int, dim> periodic_min{};
     std::array<int, dim> repetitions{};
-    auto periodicity = this->manager.get_periodic_boundary_conditions();
+    auto periodicity = this->manager->get_periodic_boundary_conditions();
     size_t ntot{1};
 
     // calculate number of actual repetitions of cell, depending on periodicity

@@ -302,6 +302,14 @@ namespace rascal {
     virtual void update_tree() {
       this->implementation().get_manager().update_tree();
     }
+
+    void add_child(std::shared_ptr<StructureManagerBase> child) {
+      this->children.emplace_back(std::weak_ptr<StructureManagerBase>(child));
+    }
+
+    void add_child(const StructureManagerBase& child) {
+      this->add_child(std::make_shared<StructureManagerBase>(child));
+    }
    protected:
     void update_tree_root() {
       this->update_children();
@@ -315,6 +323,8 @@ namespace rascal {
     }
 
     std::vector<Children_t> children{};
+
+
     //! returns the current layer
     template <size_t Order>
     constexpr static size_t cluster_layer() {

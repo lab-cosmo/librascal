@@ -163,7 +163,7 @@ namespace rascal {
     get_distance(const ClusterRefKey<Order, Layer> & pair) const {
       static_assert(DummyHasDistances == traits::HasDistances,
                     "SFINAE, do not specify");
-      return this->manager.get_distance(pair);
+      return this->manager->get_distance(pair);
     }
 
     /**
@@ -183,7 +183,7 @@ namespace rascal {
      * return the position of a given atom
      */
     inline Vector_ref get_position(const int & index) {
-      return this->manager.get_position(index);
+      return this->manager->get_position(index);
     }
 
     //! get atom_index of index-th neighbour of this cluster
@@ -210,7 +210,7 @@ namespace rascal {
        * index:
        */
       auto && original_atom{this->atom_indices[0][atom.get_index()]};
-      return this->manager.get_atom_type(original_atom);
+      return this->manager->get_atom_type(original_atom);
     }
 
     //! return atom type
@@ -218,18 +218,18 @@ namespace rascal {
       // careful, atom refers to our local index, for the manager, we need its
       // index:
       auto && original_atom{this->atom_indices[0][atom.get_index()]};
-      return this->manager.get_atom_type(original_atom);
+      return this->manager->get_atom_type(original_atom);
     }
 
     //! Returns atom type given an atom index
     inline int & get_atom_type(const int & atom_id) {
-      auto && type{this->manager.get_atom_type(atom_id)};
+      auto && type{this->manager->get_atom_type(atom_id)};
       return type;
     }
 
     //! Returns a constant atom type given an atom index
     inline const int & get_atom_type(int & atom_id) const {
-      auto && type{this->manager.get_atom_type(atom_id)};
+      auto && type{this->manager->get_atom_type(atom_id)};
       return type;
     }
 

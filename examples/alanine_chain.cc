@@ -59,7 +59,8 @@ int main() {
   // manager.update("alanine-X.json");
 
   PairManager_t pair_manager{manager, cutoff};
-  pair_manager.update("alanine-X.json");
+  std::string filename{"alanine-X.json"};
+  pair_manager.update(filename);
 
   // Loop over the defined quadruplets and calculate the respective
   // angles with atan2 and cosine definition.
