@@ -81,7 +81,7 @@ namespace rascal {
      */
     template <>
     struct SortCoulomMatrix<CMSortAlgorithm::Distance> {
-      static decltype(auto) get_coulom_matrix_sorting_order(
+      static decltype(auto) get_coulomb_matrix_sorting_order(
           const Eigen::Ref<const Eigen::MatrixXd> & distance_mat,
           const Eigen::Ref<const Eigen::MatrixXd> & ) {
         // initialize the distances to be sorted. the center is always first
@@ -117,7 +117,7 @@ namespace rascal {
      */
     template <>
     struct SortCoulomMatrix<CMSortAlgorithm::RowNorm> {
-      static decltype(auto) get_coulom_matrix_sorting_order(
+      static decltype(auto) get_coulomb_matrix_sorting_order(
           const Eigen::Ref<const Eigen::MatrixXd> & ,
           const Eigen::Ref<const Eigen::MatrixXd> & coulomb_mat) {
         // initialize the distances to be sorted. the center is always first
@@ -410,7 +410,7 @@ namespace rascal {
 
       using Sorter = internal::SortCoulomMatrix<AlgorithmType>;
       auto sort_order{
-        Sorter::get_coulom_matrix_sorting_order(distance_mat, coulomb_mat)};
+        Sorter::get_coulomb_matrix_sorting_order(distance_mat, coulomb_mat)};
       // inject the coulomb matrix into the sorted linear storage
       this->sort_and_linearize_coulomb_matrix(
           coulomb_mat, lin_sorted_coulomb_mat, sort_order);

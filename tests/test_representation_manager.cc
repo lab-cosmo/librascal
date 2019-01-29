@@ -72,7 +72,7 @@ namespace rascal {
     true_order << 0, 3, 2, 1;
 
     auto test_order = internal::SortCoulomMatrix<
-        internal::CMSortAlgorithm::Distance>::get_coulom_matrix_sorting_order(
+        internal::CMSortAlgorithm::Distance>::get_coulomb_matrix_sorting_order(
                   test_matrix, test_matrix);
 
     for (auto idx_i{0}; idx_i < true_order.size(); ++idx_i) {
