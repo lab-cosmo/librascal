@@ -8,7 +8,7 @@ For more details about the methods, the interfaces and the classes implemented i
 .. contents::
    :local:
 
-Descriptors
+Representation
 ***********
 
 Interfaces

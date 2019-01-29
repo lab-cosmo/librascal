@@ -22,7 +22,7 @@ It comes with a GNU Lesser General Public License of version 3, which means that
    whitepaper
    installation
    tutorials
-   descriptors
+   representations
    models
    neighbor-list-manager
    developer

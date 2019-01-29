@@ -13,9 +13,9 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 make
 ```
 
-* Python requirements: python3.5 and newer, numpy, scipy, ASE (https://wiki.fysik.dtu.dk/ase/index.html), cpplint(optional), Sphinx(optional). To install these packages you could run:
+* Python requirements: python3.5 or newer, numpy, scipy, ASE (https://wiki.fysik.dtu.dk/ase/index.html), cpplint(optional), Sphinx(optional), breathe(optional). To install these packages you could run:
 ```Shell
-pip install numpy scipy ase cpplint sphinx sphinx_rtd_theme
+pip install numpy scipy ase cpplint sphinx sphinx_rtd_theme breathe
 ```
 
 * To make development documentation: first enable the documentation building with ccmake, then

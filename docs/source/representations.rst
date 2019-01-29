@@ -1,9 +1,9 @@
-.. _descriptors:
+.. _representations:
 
-Descriptors
+Representations
 ===========
 
-In this section, we summarize the descriptors implemented in Rascal.
+In this section, we summarize the representation implemented in Rascal.
 
 .. contents::
    :local:
@@ -17,7 +17,7 @@ SOAP
 BP symmetry functions
 *********************
 
-Voronoi descriptors
+Voronoi representation
 *******************
 
 Coulomb matrices
