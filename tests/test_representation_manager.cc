@@ -48,7 +48,7 @@ namespace rascal {
     true_order << 0, 1, 3, 2, 4;
 
     auto test_order = internal::SortCoulomMatrix<
-      internal::CMSortAlgorithm::RowNorm>::get_coulom_matrix_sorting_order(
+      internal::CMSortAlgorithm::RowNorm>::get_coulomb_matrix_sorting_order(
                                               test_matrix, test_matrix);
 
     for (auto idx_i{0}; idx_i < true_order.size(); ++idx_i) {
