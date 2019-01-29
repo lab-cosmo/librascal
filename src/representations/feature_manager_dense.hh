@@ -26,86 +26,67 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef FEATURE_MANAGER_DENSE_H
 #define FEATURE_MANAGER_DENSE_H
-
 
 #include "representations/feature_manager_base.hh"
 #include "representations/representation_manager_base.hh"
 
-
 namespace rascal {
-
-
-
-/**
-   * Handles the aggragation of features from compatible representation
-   * managers using a dense underlying data storage.
-   *
+  /**
+   * Handles the aggragation of features from compatible representation managers
+   * using a dense underlying data storage.
    */
-  template<typename T>
-  class FeatureManagerDense: public FeatureManagerBase {
+  template <typename T>
+  class FeatureManagerDense : public FeatureManagerBase<T> {
    public:
-    using Parent = FeatureManagerBase;
+    using Parent = FeatureManagerBase<T>;
     using RepresentationManager_t = typename Parent::RepresentationManager_t;
     using hypers_t = typename RepresentationManager_t::hypers_t;
-    using Feature_Matrix_t = Eigen::MatrixXd;
-    using Feature_Matrix_ref = Eigen::Map<Eigen::MatrixXd>;
-
-    /**Default constructor where hypers contains all relevant informations
+    using Feature_Matrix_t = typename Parent::Feature_Matrix_t;
+    using Feature_Matrix_ref = typename Parent::Feature_Matrix_ref;
+    using precision_t = typename Parent::precision_t;
+    /**
+     * Constructor where hypers contains all relevant informations
      * to setup a new RepresentationManager.
      */
     FeatureManagerDense(int n_feature, hypers_t hypers)
-    :feature_matrix{}, n_feature{n_feature}, n_center{0}, hypers{hypers}
-    {}
-
-    /**Constructor meant for initialization from python.
-     * hypers_str should be a string containing a serialized
-     * json version of hypers above
-     */
-    FeatureManagerDense(int n_feature, std::string hypers_str)
-    :feature_matrix{},  n_feature{n_feature}, n_center{0}, hypers{}
-    {
-      hypers = json::parse(hypers_str);
-    }
+        : feature_matrix{}, n_feature{n_feature}, n_center{0}, hypers{hypers} {}
 
     //! Copy constructor
-    FeatureManagerDense(const FeatureManagerDense &other) = delete;
+    FeatureManagerDense(const FeatureManagerDense & other) = delete;
 
     //! Move constructor
-    FeatureManagerDense(FeatureManagerDense &&other) = default;
+    FeatureManagerDense(FeatureManagerDense && other) = default;
 
     //! Destructor
     ~FeatureManagerDense() = default;
 
     //! Copy assignment operator
-    FeatureManagerDense& operator=(const FeatureManagerDense &other) = delete;
+    FeatureManagerDense & operator=(const FeatureManagerDense & other) = delete;
 
     //! Move assignment operator
-    FeatureManagerDense& operator=(FeatureManagerDense && other) = default;
+    FeatureManagerDense & operator=(FeatureManagerDense && other) = default;
 
     //! pre-allocate memory
-    void reserve(size_t& n_center) {
-      this->feature_matrix.reserve(n_center*this->n_feature);
+    void reserve(size_t & n_center) {
+      this->feature_matrix.reserve(n_center * this->n_feature);
     }
 
     //! move data from the representation manager property
-    void push_back(RepresentationManager_t& rm) {
-      auto& raw_data{rm.get_representation_raw_data()};
+    void push_back(RepresentationManager_t & rm) {
+      auto & raw_data{rm.get_representation_raw_data()};
       auto n_center{rm.get_center_size()};
       int n_feature{static_cast<int>(rm.get_feature_size())};
 
       if (n_feature != this->n_feature) {
         throw std::length_error("Incompatible number of features");
       }
+
       this->n_center += n_center;
-      // this->feature_matrix.insert(this->feature_matrix.end(),
-      //                   std::make_move_iterator(raw_data.begin()),
-      //                   std::make_move_iterator(raw_data.end())
-      //                   );
       this->feature_matrix.insert(this->feature_matrix.end(),
-                                  raw_data.begin(), raw_data.end());
+          std::make_move_iterator(raw_data.begin()),
+          std::make_move_iterator(raw_data.end()));
     }
 
     //! move data from a feature vector
@@ -115,25 +96,20 @@ namespace rascal {
         throw std::length_error("Incompatible number of features");
       }
       this->n_center += 1;
-      this->feature_matrix.insert(this->feature_matrix.end(),
-                    std::make_move_iterator(feature_vector.begin()),
-                    std::make_move_iterator(feature_vector.end()));
+      this->feature_matrix.insert(
+          this->feature_matrix.end(),
+          std::make_move_iterator(feature_vector.begin()),
+          std::make_move_iterator(feature_vector.end()));
     }
 
     //! return number of elements of the flattened array
-    inline int size() {
-      return this->feature_matrix.size();
-    }
+    inline int size() { return this->feature_matrix.size(); }
 
     //! return the number of samples in the feature matrix
-    inline int sample_size() {
-      return this->size()/this->n_feature;
-    }
+    inline int sample_size() { return this->size() / this->n_feature; }
 
     //! return the number of feature in the feature matrix
-    inline int feature_size() {
-      return this->n_feature;
-    }
+    inline int feature_size() { return this->n_feature; }
 
     //! get the shape of the feature matrix (Nrow,Ncol)
     inline std::tuple<int, int> shape() {
@@ -150,17 +126,17 @@ namespace rascal {
     //! underlying data container for the feature matrix
     std::vector<T> feature_matrix;
     //! Number of feature.
-    //TODO(felix) make it possible to change it after construction
+    // TODO(felix) make it possible to change it after construction
     int n_feature;
     //! Number of samples in the feature matrix
     int n_center;
-    /** Contain all relevant information to initialize
-    * a compatible RepresentationManager
-    */
+    /**
+     * Contain all relevant information to initialize a compatible
+     * RepresentationManager
+     */
     hypers_t hypers;
   };
 
-
-} // rascal
+}  // namespace rascal
 
 #endif /* FEATURE_MANAGER_DENSE_H */

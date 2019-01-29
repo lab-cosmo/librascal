@@ -45,6 +45,5 @@ build*/
 *.out
 *.app
 *~
-/build/
-/debug/
-Untitled.ipynb
+debug*/
+Untitled*.ipynb

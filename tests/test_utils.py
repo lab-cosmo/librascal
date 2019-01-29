@@ -11,12 +11,12 @@ def dump_json_frame(fn,frames):
                        cell = frame.get_cell().tolist(),
                        numbers = frame.get_atomic_numbers().tolist(),
                        pbc = frame.get_pbc().tolist())
-                        
+
     data['ids'] = np.arange(len(frames)).tolist()
     data['nextid'] = 2
     with open(fn,'w') as f:
         json.dump(data,f,indent=2, separators=(',', ': '))
-    
+
 def load_json_frame(fn):
     with open(fn,'r') as f:
         data = json.load(f)
@@ -77,17 +77,17 @@ class Box(object):
         self.mult_pos = self.lin2cell(lin_pos)
         self.boxlist = boxlist
         self.search_idx = []
-        
+
         for ii,p in enumerate(self.pbc):
-            
+
             if 0 == self.mult_pos[ii] and p is False:
                 self.search_idx.append([self.mult_pos[ii]+jj for jj in range(self.neigh_search[ii]+1)])
             elif self.nbins_c[ii]-1 == self.mult_pos[ii] and p is False:
                 self.search_idx.append([self.mult_pos[ii]+jj for jj in range(-self.neigh_search[ii],0+1)])
             else:
-                self.search_idx.append([self.mult_pos[ii]+jj for jj in 
+                self.search_idx.append([self.mult_pos[ii]+jj for jj in
                         range(-self.neigh_search[ii], self.neigh_search[ii]+1)])
-        
+
         self.neighbour_bin_index,self.neighbour_bin_shift = [],[]
         for ii in self.search_idx[0]:
             for jj in self.search_idx[1]:

@@ -2,12 +2,12 @@
  * file   rascal_utility.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
- *
+ * @author Felix Musil <felix.musil@epfl.ch>
  * @date   16 Jul 2018
  *
  * @brief  utilities for rascal
  *
- * Copyright © 2018 Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2018 Markus Stricker, Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -37,12 +37,12 @@
 
 #include "representations/representation_manager_base.hh"
 
-
 #include <utility>
 #include <string>
-#include <regex>
+#include <regex> // NOLINT
 #include <tuple>
 #include <map>
+#include <fstream>
 
 namespace rascal {
   namespace internal {
@@ -109,19 +109,19 @@ namespace rascal {
         // The output of of Pretty Function depends on the compiler
         // the #define strings is a pain to split
 #if defined(GCC_COMPILER)
-        #define FUNCTION_MACRO __PRETTY_FUNCTION__
-        #define PREFIX "static const string rascal::internal::GetTypeNameHelper<T>::GetTypeName() [with T = "
-        #define SUFFIX_1 "; std::__cxx11::string = std::__cxx11::basic_string<char>]"
-        #define SUFFIX_2 ""
-        #define NUM_TYPE_REPEATS 1
+#define FUNCTION_MACRO __PRETTY_FUNCTION__
+#define PREFIX "static const string rascal::internal::GetTypeNameHelper<T>::GetTypeName() [with T = " // NOLINT
+#define SUFFIX_1 "; std::__cxx11::string = std::__cxx11::basic_string<char>]" // NOLINT
+#define SUFFIX_2 ""
+#define NUM_TYPE_REPEATS 1
 #elif defined(CLANG_COMPILER)
-        #define FUNCTION_MACRO __PRETTY_FUNCTION__
-        #define PREFIX "static const std::string rascal::internal::GetTypeNameHelper<"
-        #define SUFFIX_1 ">::GetTypeName() [T ="
-        #define SUFFIX_2 "]"
-        #define NUM_TYPE_REPEATS 2
+#define FUNCTION_MACRO __PRETTY_FUNCTION__
+#define PREFIX "static const std::string rascal::internal::GetTypeNameHelper<"
+#define SUFFIX_1 ">::GetTypeName() [T ="
+#define SUFFIX_2 "]"
+#define NUM_TYPE_REPEATS 2
 #else
-        #error "No implementation for current compiler"
+#error "No implementation for current compiler"
 #endif
 
         const size_t funcNameLength{sizeof(FUNCTION_MACRO) - 1u};
@@ -152,7 +152,37 @@ namespace rascal {
       std::string tn6{std::regex_replace(tn5, std::regex(","), "_")};
       return tn6;
     }
-  }  // namespace internal
-}  // namespace rascal
+
+    /**
+     * Reads a binary file and puts it into a vector
+     * Taken from https://stackoverflow.com/questions/15138353/how-to-read-a-binary-file-into-a-vector-of-unsigned-chars // NOLINT
+     */
+    template<typename BINARY>
+    void read_binary_file(const std::string & filename,
+                           std::vector<BINARY> & vec) {
+    // open the file:
+    std::ifstream file(filename, std::ios::binary);
+
+    // Stop eating new lines in binary mode!!!
+    file.unsetf(std::ios::skipws);
+
+    // get its size:
+    std::streampos fileSize;
+
+    file.seekg(0, std::ios::end);
+    fileSize = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    // reserve capacity
+    vec.reserve(fileSize);
+
+    // read the data:
+    vec.insert(vec.begin(),
+               std::istream_iterator<BINARY>(file),
+               std::istream_iterator<BINARY>());
+    }
+
+  }  // internal
+}  // rascal
 
 #endif /* RASCAL_UTILITY_H */

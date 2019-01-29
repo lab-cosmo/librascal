@@ -30,7 +30,8 @@
 #ifndef STRUCTURE_MANAGER_CENTERS_H
 #define STRUCTURE_MANAGER_CENTERS_H
 
-// inclusion of librascal data structure
+// inclusion of librascal data structure, each manager is based on the interface
+// given in `structure_manager.hh`
 #include "structure_managers/structure_manager.hh"
 #include "lattice.hh"
 #include "atomic_structure.hh"
@@ -77,11 +78,11 @@ namespace rascal {
    * to the convention of using 'StructureManagerYours', where 'Yours' will give
    * a hint of what it is about.
    */
-  class StructureManagerCenters:
-    // public inheritance the base class
-    public StructureManager<StructureManagerCenters> {
-     // Publicly accessible variables and function of the class are given
-     // here. These provide the interface to access the neighbourhood.
+  class StructureManagerCenters :
+      // public inheritance the base class
+      public StructureManager<StructureManagerCenters> {
+    // Publicly accessible variables and function of the class are given
+    // here. These provide the interface to access the neighbourhood.
    public:
     // for convenience, the names are shortened
     using traits = StructureManager_traits<StructureManagerCenters>;
@@ -104,6 +105,7 @@ namespace rascal {
 
     using AtomTypes_t = AtomicStructure<traits::Dim>::AtomTypes_t;
     using AtomTypes_ref = AtomicStructure<traits::Dim>::AtomTypes_ref;
+    using ConstAtomTypes_ref = AtomicStructure<traits::Dim>::ConstAtomTypes_ref;
 
     using PBC_t = AtomicStructure<traits::Dim>::PBC_t;
     using PBC_ref = AtomicStructure<traits::Dim>::PBC_ref;
@@ -111,7 +113,7 @@ namespace rascal {
     using Positions_t = AtomicStructure<traits::Dim>::Positions_t;
     using Positions_ref = AtomicStructure<traits::Dim>::Positions_ref;
 
-    /*
+    /**
      * Here, the types for internal data structures are defined, based on
      * standard types.  In general, we try to use as many standard types, where
      * possible. It reduces the dependance on external libraries. If you want to
@@ -120,9 +122,7 @@ namespace rascal {
      * arrays of the internally saved data. It should be straight forward to
      * even include native <code>Eigen</code> types, since the compilation
      * checks for the library by default.
-     */
-
-    /**
+     *
      * A ClusterRef_t is a return type for iterators. It gives a light-weight
      * reference to an atom, a pair, a triplet,... to the AtomRefs of all
      * implicated atoms.  The template parameters Order and MaxOrder give the
@@ -134,8 +134,7 @@ namespace rascal {
 
     //! Default constructor, values are set during .update() function
     StructureManagerCenters()
-      : atoms_object{}, atoms_index{}, lattice{}, offsets{}, natoms{}
-    {}
+        : atoms_object{}, atoms_index{}, lattice{}, offsets{}, natoms{} {}
 
     //! Copy constructor
     StructureManagerCenters(const StructureManagerCenters & other) = delete;
@@ -155,19 +154,20 @@ namespace rascal {
     operator=(StructureManagerCenters && other) = default;
 
     /**
-     * invokes the reinitialisation based on existing data. E.g. when the
-     * atom positions are provided by a simulation method, which evolves in
-     * time, this function updates the data.
+     * invokes the initialisation/reinitialisation based on existing
+     * data. E.g. when the atom positions are provided by a simulation method,
+     * which evolves in time, this function updates the data.
      */
-    void update(const Eigen::Ref<const Eigen::MatrixXd,
-                0, Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>> positions,
+    void update(const Eigen::Ref<const Eigen::MatrixXd, 0,
+                                 Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>>
+                    positions,
                 const Eigen::Ref<const Eigen::VectorXi> atom_types,
                 const Eigen::Ref<const Eigen::MatrixXd> cell,
                 const Eigen::Ref<const PBC_t> pbc);
 
     /**
-     * invokes an update from a file, which holds a structure in the format of
-     * the ASE atoms object
+     * Overload of the update function invokes an update from a file, which
+     * holds a structure in the format of the ASE atoms object
      */
     void update(const std::string filename);
 
@@ -176,7 +176,7 @@ namespace rascal {
     void build();
 
     //! required for the construction of vectors, etc
-    constexpr static int dim() {return traits::Dim;}
+    constexpr static int dim() { return traits::Dim; }
 
     /**
      * Returns a traits::Dim by traits::Dim matrix with the cell vectors of the
@@ -187,15 +187,25 @@ namespace rascal {
     }
 
     //! Returns the type of a given atom, given an AtomRef
-    inline int get_atom_type(const int & atom_index) {
-      auto t = this->get_atom_types();
-      return t(atom_index);
+    inline int & get_atom_type(const int & atom_index) {
+      return this->atoms_object.atom_types(atom_index);
+    }
+
+    //! Returns the type of a given atom, given an AtomRef
+    inline const int & get_atom_type(const int & atom_index) const {
+      return this->atoms_object.atom_types(atom_index);
     }
 
     //! Returns an a map with all atom types.
     inline AtomTypes_ref get_atom_types() {
-      AtomTypes_ref val(this->atoms_object.atom_types.data(),
-                        1, this->natoms);
+      AtomTypes_ref val(this->atoms_object.atom_types.data(), 1, this->natoms);
+      return val;
+    }
+
+    //! Returns an a map with all atom types.
+    inline ConstAtomTypes_ref get_atom_types() const {
+      ConstAtomTypes_ref val(this->atoms_object.atom_types.data(), 1,
+                             this->natoms);
       return val;
     }
 
@@ -226,28 +236,34 @@ namespace rascal {
     }
 
     //! returns number of I atoms in the list
-    inline size_t get_size() const {return this->natoms;}
+    inline size_t get_size() const { return this->natoms; }
+
+    //! returns number of I atoms in the list, since at this level, center atoms
+    //! and ghost atoms are not distinguishable.
+    inline size_t get_size_with_ghosts() const { return this->natoms; }
 
     //! returns the number of neighbours of a given i atom
-    template<size_t Order, size_t Layer>
-    inline size_t get_cluster_size(const ClusterRefKey<Order, Layer>
-                                   & /*cluster*/) const {
+    template <size_t Order, size_t Layer>
+    inline size_t
+    get_cluster_size(const ClusterRefKey<Order, Layer> & /*cluster*/) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms.");
       return 1;
     }
 
     //! dummy function, since no neighbours are present her
-    inline int get_cluster_neighbour(const Parent& /*cluster*/,
+    inline int get_cluster_neighbour(const Parent & /*cluster*/,
                                      size_t index) const {
-      // dummy argument is the atom itself
-      return this->atoms_index[0][index];
+      // dummy argument is the atom itself, because if does not make sense at
+      // this order
+      return index;
     }
 
     //! Dummy function, since neighbours are not present at this Order
-    template<size_t Order, size_t Layer>
-    inline int get_cluster_neighbour(const ClusterRefKey<Order, Layer>
-                                     & /*cluster*/, size_t) const {
+    template <size_t Order, size_t Layer>
+    inline int
+    get_cluster_neighbour(const ClusterRefKey<Order, Layer> & /*cluster*/,
+                          size_t) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms.");
       return 0;
@@ -257,7 +273,7 @@ namespace rascal {
      * Return the linear index of cluster (i.e., the count at which
      * this cluster appears in an iteration
      */
-    template<size_t Order>
+    template <size_t Order>
     inline size_t
     get_offset_impl(const std::array<size_t, Order> & counters) const;
 
@@ -305,13 +321,12 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   //! used for construction (not for iteration)
-  template<size_t Order>
-  inline size_t StructureManagerCenters::
-  get_offset_impl(const std::array<size_t, Order> & /*counters*/) const {
-    static_assert(Order == 1,
-                   "this manager only handles atoms.");
+  template <size_t Order>
+  inline size_t StructureManagerCenters::get_offset_impl(
+      const std::array<size_t, Order> & /*counters*/) const {
+    static_assert(Order == 1, "this manager only handles atoms.");
     return 0;
   }
-}  // rascal
+}  // namespace rascal
 
 #endif /* STRUCTURE_MANAGER_CENTERS_H */

@@ -92,7 +92,7 @@ namespace rascal {
   size_t StructureManagerCenters::get_nb_clusters(size_t order) const {
     if (order == 1) {
       return this->natoms;
-    } else{
+    } else {
       throw std::string("ERREUR : Order != 1");
     }
   }

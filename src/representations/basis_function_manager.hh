@@ -35,7 +35,7 @@ namespace rascal {
    public:
     enum class BasisFunType: int;
     enum class CutoffFunType: int;
-    using uint = insigned int;
+    using uint = unsigned int;
 
     //! Default constructor
     BasisFunManager() = delete;
@@ -63,7 +63,7 @@ namespace rascal {
     void set_random_hyperparameters(const int);
 
     //! Number of hyperparameters per basis function type
-    constexpr static unit get_nhyper(const BasisFunType& fun_type);
+    constexpr static uint get_nhyper(const BasisFunType& fun_type);
 
     //! Basis functions and derivative
     template<BasisFunType fun_type>
@@ -74,7 +74,7 @@ namespace rascal {
            const double * const rij);
 // inline double comp_Dfun(const double * const param,
 //     const double * const rij);
-  }
+  };
 
 }  // namespace rascal
 

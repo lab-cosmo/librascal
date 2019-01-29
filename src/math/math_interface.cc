@@ -28,8 +28,6 @@
 
 #include "math_interface.hh"
 #include "math/cephes/mconf.h"
-
-
 namespace rascal {
   namespace math {
 

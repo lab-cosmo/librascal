@@ -28,123 +28,161 @@
 #include "tests.hh"
 #include "test_representation_manager.hh"
 
-
 namespace rascal {
-  BOOST_AUTO_TEST_SUITE(representation_test);
+  BOOST_AUTO_TEST_SUITE(representation_sorted_coulomb_test);
+
   /* ---------------------------------------------------------------------- */
-  BOOST_TEST_CASE_TEMPLATE_FUNCTION(test_internals,T)
-  {
-    bool verbose{false};
-    typedef std::vector<double>::const_iterator myiter;
-    typedef Eigen::Matrix<double,10,1> vec;
+  /**
+   * Test the row norm sorting
+   */
+  BOOST_AUTO_TEST_CASE(rownorm_sort_test) {
+    Eigen::MatrixXd test_matrix(4, 5);
+    // clang-format off
+    test_matrix << 0, 6, 1, 4, 3,
+                   0, 7, 2, 5, 4,
+                   1, 8, 3, 6, 2,
+                   2, 9, 4, 7, 1;
+    // clang-format on
+    Eigen::MatrixXd true_order(5, 1);
+    // use of stable sort so 2 goes before 4
+    true_order << 0, 1, 3, 2, 4;
 
-    vec  numbers = vec::Random();
-    vec  numbers2 = vec::Random();
-    std::vector<double> index{};
-    std::vector<double> index2{};
+    auto test_order = internal::SortCoulomMatrix<
+      internal::CMSortAlgorithm::RowNorm>::get_coulomb_matrix_sorting_order(
+                                              test_matrix, test_matrix);
 
-    if (verbose) std::cout << "Test simple sorting " << std::endl;
-    for (int ii{0}; ii < numbers.size(); ii++){
-        index.push_back(numbers(ii));
-        index2.push_back(numbers2(ii));
-        if (verbose) std::cout << numbers(ii) << ", " ;
+    for (auto idx_i{0}; idx_i < true_order.size(); ++idx_i) {
+      BOOST_CHECK_EQUAL(true_order(idx_i), test_order[idx_i].first);
     }
-    if (verbose) std::cout << std::endl;
-
-    std::vector<std::pair<size_t, myiter> > order(index.size());
-
-    size_t n{0};
-    for (myiter it = index.begin(); it != index.end(); ++it, ++n)
-        {order[n] = make_pair(n, it);}
-
-    std::sort(order.begin(), order.end(), internal::ordering());
-    auto sorted_index = internal::sort_from_ref(index,order);
-    auto sorted_index2 = internal::sort_from_ref(index2,order);
-    for (size_t ii{0}; ii < sorted_index.size(); ii++){
-        if (verbose) std::cout << sorted_index[ii] << ", " ;
-    }
-    if (verbose) std::cout << std::endl;
-    for (size_t ii{0}; ii < sorted_index2.size(); ii++){
-        if (verbose) std::cout << index2[ii] << ", " ;
-    }
-    if (verbose) std::cout << std::endl;
-
-    for (size_t ii{0}; ii < sorted_index2.size(); ii++){
-        if (verbose) std::cout << sorted_index2[ii] << ", " ;
-    }
-    if (verbose) std::cout << std::endl;
-
-    if (verbose) std::cout << "Test upper diag sorting " << std::endl;
-    typedef Eigen::Matrix<double,5,5> matrix;
-    typedef Eigen::Matrix<double,5*(5+1)/2,1> lin_mat;
-
-    matrix  mat0 = matrix::Random();
-    lin_mat  mat1 = lin_mat::Ones();
-    std::vector<double> dists{{2,4,0,1,3}};
-
-    internal::sort_coulomb_matrix(mat0,mat1,dists);
-    for (int ii{0}; ii < mat0.rows(); ii++){
-      for (int jj{0}; jj < mat0.cols(); jj++){
-         if (verbose) std::cout << mat0(ii,jj) << ",\t" ;
-      }
-      if (verbose) std::cout << std::endl;
-    }
-
-    for (int jj{0}; jj < mat1.rows(); jj++){
-        if (verbose) std::cout << mat1(jj)<< ", " ;
-    }
-    if (verbose) std::cout << std::endl;
-
   }
+  /**
+   * Test the distance from the central atom sorting.
+   * assumes the center is on row 0.
+   */
+  BOOST_AUTO_TEST_CASE(distance_sort_test) {
+    Eigen::MatrixXd test_matrix(4, 4);
+    // clang-format off
+    test_matrix << 0.        , 1.68624958, 1.43774399, 1.12522187,
+                   1.68624958,         0.,  1.6850887, 1.15322292,
+                   1.43774399,  1.6850887,         0., 0.98009938,
+                   1.12522187, 1.15322292, 0.98009938,         0.;
+    // clang-format on
+    Eigen::MatrixXd true_order(4, 1);
+    // use of stable sort so 2 goes before 4
+    true_order << 0, 3, 2, 1;
+
+    auto test_order = internal::SortCoulomMatrix<
+        internal::CMSortAlgorithm::Distance>::get_coulomb_matrix_sorting_order(
+                  test_matrix, test_matrix);
+
+    for (auto idx_i{0}; idx_i < true_order.size(); ++idx_i) {
+      BOOST_CHECK_EQUAL(true_order(idx_i), test_order[idx_i].first);
+    }
+  }
+
   /* ---------------------------------------------------------------------- */
 
-
-  // TODO define more test that could be streamlined
-  // gets a list of fixtures for all the different possible structure managers
   using multiple_fixtures = boost::mpl::list<
-    RepresentationFixture<StructureManagerCenters,
-                          RepresentationManagerSortedCoulomb,
-                          MultipleStructureSortedCoulomb,
-                          Option::CMSortDistance>,
-    RepresentationFixture<StructureManagerCenters,
-                          RepresentationManagerSortedCoulomb,
-                          MultipleStructureSortedCoulomb,
-                          Option::CMSortRowNorm>,
-    RepresentationFixture<StructureManagerCenters,
-                          RepresentationManagerSphericalExpansion,
-                          MultipleStructureSphericalExpansion>>;
+      RepresentationFixture<
+          StructureManagerCenters, RepresentationManagerSortedCoulomb,
+          MultipleStructureSortedCoulomb>,
+      RepresentationFixture<StructureManagerCenters,
+                            RepresentationManagerSphericalExpansion,
+                            MultipleStructureSphericalExpansion>>;
 
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_constructor_test,
-            Fix, multiple_fixtures, Fix) {
+  using fixtures_ref_test = boost::mpl::list<RepresentationFixture<
+      StructureManagerCenters, RepresentationManagerSortedCoulomb,
+      SortedCoulombTestData>>;
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Test if the constructor runs
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_constructor_test, Fix,
+                                   multiple_fixtures, Fix) {
     auto & managers = Fix::managers_strict;
-    auto& representations = Fix::representations;
-    auto& hypers = Fix::hypers;
+    auto & representations = Fix::representations;
+    auto & hypers = Fix::hypers;
 
-    for (auto& manager : managers) {
-      for (auto& hyper : hypers) {
+    for (auto & manager : managers) {
+      for (auto & hyper : hypers) {
         representations.emplace_back(manager, hyper);
       }
     }
   }
 
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_compute_test,
-            Fix, multiple_fixtures, Fix) {
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Test if the compute function runs
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_compute_test, Fix,
+                                   multiple_fixtures, Fix) {
     auto & managers = Fix::managers_strict;
-    auto& representations = Fix::representations;
-    auto& hypers = Fix::hypers;
-    for (auto& manager : managers) {
-      for (auto& hyper : hypers) {
+    auto & representations = Fix::representations;
+    auto & hypers = Fix::hypers;
+    for (auto & manager : managers) {
+      for (auto & hyper : hypers) {
         representations.emplace_back(manager, hyper);
         representations.back().compute();
       }
     }
   }
 
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Test if the representation computed is equal to a reference from a file
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_reference_test, Fix,
+                                   fixtures_ref_test, Fix) {
+    auto & managers = Fix::managers_strict;
+    auto & representations = Fix::representations;
+    auto & ref_data = Fix::ref_data;
+
+
+    // Choose the data depending on the current options
+    using Std2DArray_t = std::vector<std::vector<double>>;
+
+    const auto& data{ref_data.at("rep_info").template get<json>()};
+    // feature_matrices = data["feature_matrices"];
+
+    size_t manager_i{0};
+    for (auto & manager : managers) {
+      for (const auto& config : data.at(manager_i)) {
+        const auto & hypers = config.at("hypers").template get<json>();
+        const auto & ref_representation =
+                config.at("feature_matrix").template get<Std2DArray_t>();
+
+        representations.emplace_back(manager, hypers);
+        representations.back().compute();
+
+        const auto & test_representation =
+            representations.back().get_representation_full();
+
+        BOOST_CHECK_EQUAL(ref_representation.size(),
+                          test_representation.rows());
+        for (size_t row_i{0}; row_i < ref_representation.size(); row_i++) {
+          BOOST_CHECK_EQUAL(ref_representation[row_i].size(),
+                            test_representation.cols());
+
+          for (size_t col_i{0}; col_i < ref_representation[row_i].size();
+              ++col_i) {
+            auto diff{std::abs(ref_representation[row_i][col_i] -
+                              test_representation(row_i, col_i))};
+            BOOST_CHECK_LE(diff, 1e-12);
+          }
+        }
+      }
+      manager_i += 1;
+    }
+  }
 
   BOOST_AUTO_TEST_SUITE_END();
 
   /* ---------------------------------------------------------------------- */
 
+  /* Tests specific to the spherical expansion representation
+   * TODO(max-veit) merge with the general versions above, where possible
+   */
   BOOST_AUTO_TEST_SUITE(representation_spherical_expansion_test);
 
   using multiple_fixtures = boost::mpl::list<
@@ -174,6 +212,8 @@ namespace rascal {
     }
   }
 
+  //TODO(max-veit) see if this is made redundant by the general "check
+  //               representation against file" template above
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(
       multiple_compute_test, Fix, multiple_fixtures, Fix) {
 
@@ -225,5 +265,4 @@ namespace rascal {
     }
   }
 
-  BOOST_AUTO_TEST_SUITE_END();
-} // RASCAL
+}  // namespace rascal

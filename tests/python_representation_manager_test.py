@@ -6,7 +6,8 @@ import json
 sys.path.insert(0,'../tests/')
 
 from test_utils import load_json_frame, BoxList, Box
-from python_import_rascal import _rascal as rc
+import rascal.lib._rascal as rc
+
 
 
 class TestSortedCoulombRepresentation(unittest.TestCase):
@@ -54,33 +55,3 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
                         interaction_decay=self.interaction_decay,
                         size=self.size)
                         )
-
-    def test_constructor1(self):
-        """
-        TEST constructor wrapper
-        """
-        rc.RepresentationManager.SortedCoulomb_Strict_NeighbourList_Centers_SortDistance(
-                        self.manager,self.inp)
-
-    def test_compute1(self):
-        """
-        TEST compute wrapper
-        """
-        cm = rc.RepresentationManager.SortedCoulomb_Strict_NeighbourList_Centers_SortDistance(
-                        self.manager,self.inp)
-        cm.compute()
-
-    def test_constructor2(self):
-        """
-        TEST constructor wrapper
-        """
-        rc.RepresentationManager.SortedCoulomb_Strict_NeighbourList_Centers_SortRowNorm(
-                        self.manager,self.inp)
-
-    def test_compute2(self):
-        """
-        TEST compute wrapper
-        """
-        cm = rc.RepresentationManager.SortedCoulomb_Strict_NeighbourList_Centers_SortRowNorm(
-                        self.manager,self.inp)
-        cm.compute()

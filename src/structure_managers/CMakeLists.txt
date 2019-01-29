@@ -32,4 +32,4 @@ set (manager_SRC
   ${CMAKE_CURRENT_SOURCE_DIR}/structure_manager_centers.cc
   )
 
-target_sources(rascal PRIVATE ${manager_SRC})
+target_sources("${LIBRASCAL_NAME}" PRIVATE ${manager_SRC})

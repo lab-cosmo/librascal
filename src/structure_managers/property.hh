@@ -49,11 +49,9 @@ namespace rascal {
    * which can be access with clusters directly, without the need for dealing
    * with indices.
    */
-  template <typename T,
-            size_t Order,
-            size_t PropertyLayer,
-            Dim_t NbRow = 1, Dim_t NbCol = 1>
-  class Property: public TypedProperty<T, Order, PropertyLayer> {
+  template <typename T, size_t Order, size_t PropertyLayer, Dim_t NbRow = 1,
+            Dim_t NbCol = 1>
+  class Property : public TypedProperty<T, Order, PropertyLayer> {
     static_assert((std::is_arithmetic<T>::value ||
                    std::is_same<T, std::complex<double>>::value),
                   "can currently only handle arithmetic types");
@@ -67,10 +65,10 @@ namespace rascal {
 
     using value_type = typename Value::type;
     using reference = typename Value::reference;
+    using const_reference = typename Value::const_reference;
 
-    static constexpr bool
-    IsStaticallySized{ (NbCol != Eigen::Dynamic) and
-                       (NbRow != Eigen::Dynamic) };
+    static constexpr bool IsStaticallySized{(NbCol != Eigen::Dynamic) and
+                                            (NbRow != Eigen::Dynamic)};
 
     //! Empty type for tag dispatching to differenciate between
     //! the Dynamic and Static size case
@@ -82,9 +80,8 @@ namespace rascal {
 
     //! Constructor with Manager
     Property(StructureManagerBase & manager,
-              std::string metadata = "no metadata")
-      :Parent{manager, NbRow, NbCol, metadata}
-    {}
+             std::string metadata = "no metadata")
+        : Parent{manager, NbRow, NbCol, metadata} {}
 
     //! Copy constructor
     Property(const Property & other) = delete;
@@ -107,7 +104,7 @@ namespace rascal {
      * properly casted fully typed and sized reference, or throws a runttime
      * error
      */
-    // TODO Need to make an equivalent for dynamic sized property
+    // TODO(felix) Need to make an equivalent for dynamic sized property
     static inline Property & check_compatibility(PropertyBase & other) {
       // check ``type`` compatibility
       if (not(other.get_type_info().hash_code() == typeid(T).hash_code())) {
@@ -121,8 +118,8 @@ namespace rascal {
       if (not(other.get_order() == Order)) {
         std::stringstream err_str{};
         err_str << "Incompatible property order: input is of order "
-                << other.get_order() << ", this property is of order "
-                << Order << ".";
+                << other.get_order() << ", this property is of order " << Order
+                << ".";
         throw std::runtime_error(err_str.str());
       }
 
@@ -137,14 +134,14 @@ namespace rascal {
 
       // check size compatibility
       if (not((other.get_nb_row() == NbRow) and
-               (other.get_nb_col() == NbCol))) {
+              (other.get_nb_col() == NbCol))) {
         std::stringstream err_str{};
         err_str << "Incompatible sizes: input is " << other.get_nb_row() << "×"
                 << other.get_nb_col() << ", but should be " << NbRow << "×"
-                << NbCol  << ".";
+                << NbCol << ".";
         throw std::runtime_error(err_str.str());
       }
-      return static_cast<Property& > (other);
+      return static_cast<Property &>(other);
     }
 
     /* ---------------------------------------------------------------------- */
@@ -155,29 +152,29 @@ namespace rascal {
     inline void push_back(reference ref) {
       // use tag dispatch to use the proper definition
       // of the push_in_vector function
-      this->push_back(ref,
-          std::conditional_t<(IsStaticallySized),
-                              StaticSize, DynamicSize>{});
+      this->push_back(
+          ref,
+          std::conditional_t<(IsStaticallySized), StaticSize, DynamicSize>{});
     }
 
     /* ---------------------------------------------------------------------- */
     /**
      * Function for adding Eigen-based matrix data to `property`
      */
-    template<typename Derived>
+    template <typename Derived>
     inline void push_back(const Eigen::DenseBase<Derived> & ref) {
       // use tag dispatch to use the proper definition
       // of the push_in_vector function
-      this->push_back(ref,
-          std::conditional_t<(IsStaticallySized),
-                              StaticSize, DynamicSize>{});
+      this->push_back(
+          ref,
+          std::conditional_t<(IsStaticallySized), StaticSize, DynamicSize>{});
     }
 
     /* ---------------------------------------------------------------------- */
     /**
      * Property accessor by cluster ref
      */
-    template<size_t CallerLayer>
+    template <size_t CallerLayer>
     inline reference operator[](const ClusterRefKey<Order, CallerLayer> & id) {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that "
@@ -193,49 +190,49 @@ namespace rascal {
     inline reference operator[](const size_t & index) {
       // use tag dispatch to use the proper definition
       // of the get function
-      return this->get(index,
-                        std::conditional_t<(IsStaticallySized),
-                          StaticSize, DynamicSize>{});
+      return this->get(
+          index,
+          std::conditional_t<(IsStaticallySized), StaticSize, DynamicSize>{});
     }
 
    protected:
     inline void push_back(reference ref, StaticSize) {
-        Value::push_in_vector(this->values, ref);
+      Value::push_in_vector(this->values, ref);
     }
 
     inline void push_back(reference ref, DynamicSize) {
-      Value::push_in_vector(this->values, ref,
-                            this->get_nb_row(), this->get_nb_col());
+      Value::push_in_vector(this->values, ref, this->get_nb_row(),
+                            this->get_nb_col());
     }
 
-    template<typename Derived>
+    template <typename Derived>
     inline void push_back(const Eigen::DenseBase<Derived> & ref, StaticSize) {
       static_assert(Derived::RowsAtCompileTime == NbRow,
-                      "NbRow has incorrect size.");
+                    "NbRow has incorrect size.");
       static_assert(Derived::ColsAtCompileTime == NbCol,
-                      "NbCol has incorrect size.");
+                    "NbCol has incorrect size.");
       Value::push_in_vector(this->values, ref);
     }
-    template<typename Derived>
+    template <typename Derived>
     inline void push_back(const Eigen::DenseBase<Derived> & ref, DynamicSize) {
-      Value::push_in_vector(this->values, ref,
-                              this->get_nb_row(), this->get_nb_col());
+      Value::push_in_vector(this->values, ref, this->get_nb_row(),
+                            this->get_nb_col());
     }
 
     inline reference get(const size_t & index, StaticSize) {
-      return Value::get_ref(this->values[index*NbRow*NbCol]);
+      return Value::get_ref(this->values[index * NbRow * NbCol]);
     }
 
     inline reference get(const size_t & index, DynamicSize) {
-      return get_ref(this->values[index*this->get_nb_comp()]);
+      return get_ref(this->values[index * this->get_nb_comp()]);
     }
 
     //! get a reference
-    reference get_ref(T & value) {
+    inline reference get_ref(T & value) {
       return reference(&value, this->get_nb_row(), this->get_nb_col());
     }
   };
 
-}  // rascal
+}  // namespace rascal
 
 #endif /* NEIGHBOURHOOD_PROPERTY_H */

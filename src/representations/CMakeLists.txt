@@ -2,7 +2,6 @@
 # file   CMakeLists.txt
 #
 # @author Till Junge <till.junge@epfl.ch>
-# @author Felix Musil <felix.musil@epfl.ch>
 #
 # @date   04 May 2018
 #
@@ -10,7 +9,7 @@
 #
 # @section LICENSE
 #
-# Copyright © 2018 Till Junge, Felix Musil, COSMO (EPFL), LAMMM (EPFL)
+# Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
 #
 # librascal is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public License as
@@ -29,8 +28,8 @@
 #
 
 set(representation_SRC
-${CMAKE_CURRENT_SOURCE_DIR}/representation_manager_base.cc
-${CMAKE_CURRENT_SOURCE_DIR}/representation_manager_sorted_coulomb.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/representation_manager_base.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/representation_manager_sorted_coulomb.cc
   )
 
-target_sources(rascal PRIVATE ${representation_SRC})
+target_sources("${LIBRASCAL_NAME}" PRIVATE ${representation_SRC})

@@ -5,7 +5,7 @@
  *
  * @date   14 November 2018
  *
- * @brief
+ * @brief base class for storage of features from multiple managers
  *
  * Copyright © 2018 Musil Felix, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -39,17 +39,21 @@
 
 
 namespace rascal {
-
-
-/**
- * Base class of the Feature Managers. Defines the basic interface and
- * some common short hand types.
- */
+  /**
+   * Base class of the Feature Managers. Defines the basic interface and some
+   * common short hand types.
+   */
+  template<typename T>
   class FeatureManagerBase {
    public:
     using RepresentationManager_t = RepresentationManagerBase;
     using hypers_t = typename RepresentationManagerBase::hypers_t;
+    using precision_t = T;
+    using Feature_Matrix_t = Eigen::Matrix<precision_t, Eigen::Dynamic,
+                                    Eigen::Dynamic, Eigen::ColMajor>;
+    using Feature_Matrix_ref = Eigen::Map<const Feature_Matrix_t>;
 
+    //! Default constructor
     FeatureManagerBase() = default;
 
     //! Copy constructor
@@ -62,7 +66,7 @@ namespace rascal {
     virtual ~FeatureManagerBase() = default;
 
     //! Copy assignment operator
-    FeatureManagerBase& operator=(const FeatureManagerBase &other) = delete;
+    FeatureManagerBase& operator=(const FeatureManagerBase & other) = delete;
 
     //! Move assignment operator
     FeatureManagerBase& operator=(FeatureManagerBase && other) = delete;
@@ -84,6 +88,9 @@ namespace rascal {
 
     //! get the shape of the feature matrix (Nrow,Ncol)
     virtual inline std::tuple<int, int> shape() = 0;
+
+    //! expose the feature matrix
+    virtual inline Feature_Matrix_ref get_feature_matrix() = 0;
   };
 
 

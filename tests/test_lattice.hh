@@ -33,7 +33,7 @@
 
 namespace rascal {
 
-  // TODO: make dimension dependent
+  // TODO(markus): make dimension dependent
   // short hands for types, which were deleted from basic types
   constexpr static auto Dim{3};
   using Vec3_t = Eigen::Matrix<double, Dim, 1>;
@@ -42,9 +42,7 @@ namespace rascal {
   struct ManagerFixtureLattice {
     ManagerFixtureLattice() {
       Cell_t cell;
-      cell << 6.19, 2.41, 0.21,
-              0.00, 6.15, 1.02,
-              0.00, 0.00, 7.31;
+      cell << 6.19, 2.41, 0.21, 0.00, 6.15, 1.02, 0.00, 0.00, 7.31;
       lattice.set_cell(cell);
     }
 
@@ -52,6 +50,6 @@ namespace rascal {
 
     Lattice<Dim> lattice{};
   };
-}  // rascal
+}  // namespace rascal
 
 #endif /* TEST_LATTICE_H */

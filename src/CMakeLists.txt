@@ -30,13 +30,14 @@
 
 
 
-add_library(rascal "") # ${rascal_SRC})
-target_link_libraries(rascal PUBLIC Eigen3::Eigen)
-target_link_libraries(rascal PUBLIC rascal-math)
+add_library("${LIBRASCAL_NAME}" "")
+
+target_link_libraries("${LIBRASCAL_NAME}" PUBLIC Eigen3::Eigen)
+target_link_libraries("${LIBRASCAL_NAME}" PRIVATE "${LIBCEPHES_NAME}")
 
 add_subdirectory(structure_managers)
 add_subdirectory(representations)
 add_subdirectory(utils)
 add_subdirectory(math)
 
-install(TARGETS rascal DESTINATION lib)
+install(TARGETS "${LIBRASCAL_NAME}" DESTINATION lib)

@@ -32,9 +32,9 @@
 #include "structure_managers/property.hh"
 
 namespace rascal {
-  // TODO rethink the test of property to adhere
+  // TODO(felix) rethink the test of property to adhere
   // to the manager/adaptor paradigm
-  // TODO test dynamic sized Property
+  // TODO(felix) test dynamic sized Property
   BOOST_AUTO_TEST_SUITE(Property_tests);
 
   /* ---------------------------------------------------------------------- */
@@ -46,7 +46,6 @@ namespace rascal {
   template<class ManagerImplementation>
   struct PropertyFixture
     : public PairFixture<ManagerImplementation> {
-    // TODO make the type not hard coded
     using Manager_t = AdaptorNeighbourList<ManagerImplementation>;
 
     using PairScalarProperty_t =

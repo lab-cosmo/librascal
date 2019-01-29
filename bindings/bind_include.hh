@@ -50,6 +50,7 @@
 
 #include "basic_types.hh"
 #include "rascal_utility.hh"
+#include "json_io.hh"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl_bind.h>
@@ -75,38 +76,20 @@ void math_binding(py::module&);
 
 namespace rascal {
   namespace internal {
-    //! Convert an Option into a string
-    static const std::string to_string(const Option opt) {
-      return std::to_string(static_cast<int>(opt));
-    }
 
-    /** Mapping to search and replace in type names
-    * when giving binding name
-    */
+    /**
+     * Mapping to search and replace in type names
+     * when giving binding name
+     */
     struct SubstitutionMap {
       using Map = std::map<std::string, std::string>;
       Map mapping = {
         {"StructureManager", ""},
         {"Adaptor", ""},
         {"RepresentationManager", ""},
-        {"FeatureManager", ""},
-        // with gcc Option::CMSortDistance -> (Options)1
-        {R"(\([^()]*\))", ""},
-        {to_string(Option::CMSortDistance), "SortDistance"},
-        {to_string(Option::CMSortRowNorm), "SortRowNorm"},
-        {to_string(Option::GaussianSigmaTypeConstant), "Constant"},
-        {to_string(Option::GaussianSigmaTypePerSpecies), "PerSpecies"},
-        {to_string(Option::GaussianSigmaTypeRadial), "Radial"},
-        // with clang
-        // Option::CMSortDistance -> "Option::CMSortDistance"
-        {"Option::CMSortDistance", "SortDistance"},
-        {"Option::CMSortRowNorm", "SortRowNorm"},
-        {"Option::GaussianSigmaTypeConstant", "Constant"},
-        {"Option::GaussianSigmaTypePerSpecies", "PerSpecies"},
-        {"Option::GaussianSigmaTypeRadial", "Radial"}
+        {"FeatureManager", ""}
       };
     };
-
 
     /**
       * Transforms the template type to a string for the pyhton bindings.
@@ -130,7 +113,5 @@ namespace rascal {
     }
   }
 }
-
-using namespace rascal; // NOLINT(build/namespaces)
 
 #endif /* BIND_INCLUDE_H */

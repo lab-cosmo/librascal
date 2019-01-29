@@ -3,55 +3,75 @@ A scalable and versatile fingerprint and machine-learning code
 
 How to install:
 * Need to have the programs git, gcc (or other c++14 compiler), boost (unit_test_framework, see BOOST.md for further details on how to install the boost library), doxygen
-* Need the python packages Sphinx, Breathe 
+* Need the python packages Sphinx, Breathe
 * You can use either cmake or (recommended) ccmake to configure the Makefile. If using ccmake, you should press *c* one or more times until the option to generate the configuration appears, then type *g*.
-* To build the program: 
+* To build the program:
 ```Shell
-mkdir build 
-cd build 
-ccmake .. 
+mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
 make
-``` 
+```
+
+* Python requirements: python3.5 and newer, numpy, scipy, ASE (https://wiki.fysik.dtu.dk/ase/index.html), cpplint(optional), Sphinx(optional). To install these packages you could run:
+```Shell
+pip install numpy scipy ase cpplint sphinx sphinx_rtd_theme
+```
+
 * To make development documentation: first enable the documentation building with ccmake, then
 ```Shell
-cd build 
+cd build
 ccmake ..
 make dev_doc
-``` 
+```
 
 * To build for development:
 ```Shell
-cd build 
+cd build
 cmake -DCMAKE_BUILD_TYPE=Debug  -DENABLE_DOC=ON -DBUILD_TESTS=ON ..
 make all
 ctest -V
 ```
+
+* To check for conformity with the c++ code convention:
+```Shell
+cd build
+cmake -DCMAKE_BUILD_TYPE=Debug  -DENABLE_DOC=ON -DBUILD_TESTS=ON ..
+make lint
+```
+
 * To build with optimization and debug info:
 ```Shell
-cd build 
+cd build
 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_TESTS=ON  CMAKE_C_FLAGS_RELWITHDEBUBINFO="-03 -g -DNDEBUG" ..
 make -j 4
 ctest -V
 ```
-cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DBUILD_TESTS=ON ..
-* Special flags:
-  + INSTALL:
-    + empty (default) -> install rascal in the build folder
-    + local -> install rascal in the site-package folder of the found python binary
-    + pydevelop -> install rascal in the librascal/rascal/lib folder
 
 * Common cmake flag:
   + -DCMAKE_C_COMPILER
-  + -DINSTALL
+  + -DBUILD_BINDINGS
+  + -DUSER
+  + -DINSTALL_PATH
   + -DCMAKE_BUILD_TYPE
   + -DENABLE_DOC
   + -DBUILD_TESTS
 
+* Special flags:
+  + -DBUILD_BINDINGS:
+    + ON (default) -> build python binding
+    + OFF -> does not build python binding
+  + -DINSTALL_PATH:
+    + empty (default) -> does not install in a custom folder
+    + custom string -> root path for the installation
+  + -DUSER:
+    + OFF (default) -> changes nothing
+    + ON -> install root is in the user's home directory, i.e. ~/.local/
 
 To remove all the cmake files/folders except for the external library (enable glob and remove):
 ```
 shopt -s extglob
-rm -fr -- !(external|third-party) 
+rm -fr -- !(external|third-party)
 ```
 In order to have the readthedocs.org theme for the documentation, please install the following python package:
 ```Shell
@@ -63,30 +83,5 @@ To build libRascal with as docker environement:
 sudo docker build -t test -f ./docker/install_env.dockerfile  .
 sudo docker run -it -v /path/to/repo/:/home/user/  test
 ```
-And then follow the instruction in BOOST.md for compilation with boost from conda 
-
-
-TILL:
-Management of derivative relations for fields
-"Functional dependency" management to obtain automatically derivatives with chain rule 
-Federico:
-try to enable CI on github with travis (finalize, enable and think what to do with CI)
-Felix:
-merge hackaton to master but don't remove the branch
-install target (TBD with Till)
-start pulling the reference implementation in Python (with Andrea G)
-Michele:
-Write a whitepaper section
-Chiheb:
-clean-up and update the tutorial
-Everyone:
-Make sure new and existing doxygen documentation refers correctly to Order and Layer rather than to Level and Depth
-*EFFICIENCY OF BULK KERNEL EVALUATION*
-typically we will do operations like diag (AB) where A and B are matrices of the order of 10'000x10'000
-
-
-TODO:
-
-have NL tests (1-3) that really test all possible features of the implementation
-=======
+And then follow the instruction in BOOST.md for compilation with boost from conda
 

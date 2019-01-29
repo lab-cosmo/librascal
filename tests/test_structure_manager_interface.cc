@@ -9,119 +9,47 @@
  *
  * Copyright © 2018  Michele Ceriotti, COSMO (EPFL), LAMMM (EPFL)
  *
- * rascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
+ * Rascal is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
- * rascal is distributed in the hope that it will be useful, but
+ * Rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
 
 #include "tests.hh"
 #include "test_structure.hh"
-#include "test_adaptor.hh"
 
 namespace rascal {
 
-  BOOST_AUTO_TEST_SUITE(multiple_adaptor_managers_interface);
-
-  // gets a list of fixtures for all the different possible structure managers
-  using multiple_fixtures = boost::mpl::list<
-    MultipleStructureManagerCenterFixture<StructureManagerCenters,MultipleStructureManagerBaseFixture>,
-    MultipleStructureManagerNLFixture<StructureManagerCenters,MultipleStructureManagerBaseFixture>,
-    MultipleStructureManagerStrictFixture<StructureManagerCenters,MultipleStructureManagerBaseFixture>>;
-
-  /* ---------------------------------------------------------------------- */
-  // just checks that the structure managers can be constructed
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_constructor_test, Fix, multiple_fixtures,
-                                   Fix) { }
-
-  /* ---------------------------------------------------------------------- */
-  // the size of the manager should correspond to the number of size 1 clusters
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_size_consistency, Fix, multiple_fixtures,
-                                   Fix) {
-    auto & managers = Fix::managers_center;
-    for (auto& manager : managers){
-      BOOST_CHECK_EQUAL(manager.size(), manager.nb_clusters(1));
-    }
-    
-  }
-
-  /* ---------------------------------------------------------------------- */
-  // loops over the centers in the manager making sure positions are consistent
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_atom_indexing, Fix, multiple_fixtures,
-                                   Fix) {
-    auto & managers = Fix::managers_center;
-    for (auto& manager : managers){
-      for (auto atom : manager) {
-        // checks get_atom_index exists
-        auto index = atom.get_atom_index();
-
-        // checks get_atom_type exists
-        auto type = atom.get_atom_type();
-
-        // cluster size should be 1!
-        BOOST_CHECK_EQUAL(type, manager.atom_type(index));
-
-        // checks that multiple ways of accessing positions are equivalent
-        auto position_error = (atom.get_position() -
-                              manager.position(index)).norm();
-
-        BOOST_CHECK(position_error < tol / 100);
-
-        position_error = (atom.get_position() -
-                          manager.position(atom.back())).norm();
-        BOOST_CHECK(position_error < tol / 100);
-      }
-    }
-  }
-
-  /* ---------------------------------------------------------------------- */
-  // loops over the centers in the manager making global atom indices are
-  // contiguous
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_atom_global_indexing, Fix,
-                                   multiple_fixtures, Fix) {
-    
-    auto & managers = Fix::managers_center;
-    
-    for (auto& manager : managers){
-      auto index_reference{0};
-      for (auto atom : manager) {
-        // checks get_atom_index exists
-        auto index = atom.get_global_index();
-        BOOST_CHECK_EQUAL(index_reference, index);
-        index_reference++;
-      }
-    }
-  }
-
-
-  /* ---------------------------------------------------------------------- */
-  BOOST_AUTO_TEST_SUITE_END();
-
-
   BOOST_AUTO_TEST_SUITE(structure_managers_interface);
 
-  // gets a list of fixtures for all the different possible structure managers
-  using fixtures = boost::mpl::list<
-    ManagerFixture<StructureManagerCenters>,
-    ManagerFixture<StructureManagerLammps>,
-    ManagerFixtureFile<StructureManagerCenters>,
-    // not templated single manager fixtures
-    ManagerFixtureSimple>;
+  /* ---------------------------------------------------------------------- */
+  // a list of fixtures for all the different possible structure managers
+  // and test the atom (Order=1) related interface.
+  using fixtures = boost::mpl::list<ManagerFixture<StructureManagerCenters>,
+                                    ManagerFixture<StructureManagerLammps>,
+                                    ManagerFixtureFile<StructureManagerCenters>,
+                                    // not templated single manager fixtures
+                                    ManagerFixtureSimple>;
+
+  /* ---------------------------------------------------------------------- */
+  // a list of fixtures for pair managers for testing pair related interface
+  using pair_fixtures =
+      boost::mpl::list<ManagerFixture<StructureManagerLammps>>;
 
   /* ---------------------------------------------------------------------- */
   // just checks that the structure managers can be constructed
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_constructor_test, Fix, fixtures,
-                                   Fix) { }
+                                   Fix) {}
 
   /* ---------------------------------------------------------------------- */
   // the size of the manager should correspond to the number of size 1 clusters
@@ -147,13 +75,13 @@ namespace rascal {
       BOOST_CHECK_EQUAL(type, manager.atom_type(index));
 
       // checks that multiple ways of accessing positions are equivalent
-      auto position_error = (atom.get_position() -
-                             manager.position(index)).norm();
+      auto position_error =
+          (atom.get_position() - manager.position(index)).norm();
 
       BOOST_CHECK(position_error < tol / 100);
 
-      position_error = (atom.get_position() -
-                        manager.position(atom.back())).norm();
+      position_error =
+          (atom.get_position() - manager.position(atom.back())).norm();
       BOOST_CHECK(position_error < tol / 100);
     }
   }
@@ -175,7 +103,39 @@ namespace rascal {
     }
   }
 
+  /* ---------------------------------------------------------------------- */
+  // test template for pairs
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_pair_global_indexing, Fix,
+                                   pair_fixtures, Fix) {
+    auto & manager = Fix::manager;
+    auto pair_reference{0};
+
+    for (auto atom : manager) {
+      for (auto pair : atom) {
+        auto global_index = pair.get_global_index();
+        BOOST_CHECK_EQUAL(pair_reference, global_index);
+        pair_reference++;
+
+        // check index access
+        auto index = pair.get_atom_index();
+
+        // check atom type access
+        auto type = pair.get_atom_type();
+
+        BOOST_CHECK_EQUAL(type, manager.atom_type(index));
+
+        // check positions
+        auto position_error =
+            (pair.get_position() - manager.position(index)).norm();
+        BOOST_CHECK(position_error < tol / 100);
+
+        position_error =
+            (pair.get_position() - manager.position(pair.back())).norm();
+        BOOST_CHECK(position_error < tol / 100);
+      }
+    }
+  }
 
   /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();
-}  // rascal
+}  // namespace rascal

@@ -38,8 +38,8 @@
 
 namespace rascal {
 
-  struct ManagerFixture_math {
-    ManagerFixture_math()
+  struct ManagerFixtureMath {
+    ManagerFixtureMath()
       :numbers(4, 3), results_hyp2f1(3), results_airy(3, 4) {
       numbers <<
         1, 0.1, 2,
@@ -55,6 +55,8 @@ namespace rascal {
         0.659861690194189, 0.45151263114964657, 0.03492413042327436,
         -0.05309038443365388, 3.2980949999782143, 4.10068204993289;
     }
+
+    ~ManagerFixtureMath() {}
 
     Eigen::Matrix<double, 4, Eigen::Dynamic>  numbers;
     Eigen::Matrix<double, 1, Eigen::Dynamic>  results_hyp2f1;
