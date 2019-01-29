@@ -39,19 +39,11 @@ namespace rascal {
     FeatureFixture<double, FeatureManagerDense,
                    StructureManagerCenters,
                    RepresentationManagerSortedCoulomb,
-                   TestFeatureData, Option::CMSortDistance>,
+                   TestFeatureData>,
     FeatureFixture<float, FeatureManagerDense,
                    StructureManagerCenters,
                    RepresentationManagerSortedCoulomb,
-                   TestFeatureData, Option::CMSortDistance>,
-    FeatureFixture<double, FeatureManagerDense,
-                   StructureManagerCenters,
-                   RepresentationManagerSortedCoulomb,
-                   TestFeatureData, Option::CMSortRowNorm>,
-    FeatureFixture<float, FeatureManagerDense,
-                   StructureManagerCenters,
-                   RepresentationManagerSortedCoulomb,
-                   TestFeatureData, Option::CMSortRowNorm>>;
+                   TestFeatureData>>;
 
   /* ---------------------------------------------------------------------- */
   /**

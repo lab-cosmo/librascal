@@ -56,7 +56,13 @@ namespace rascal {
       {{"central_decay", 0.5},
       {"interaction_cutoff", 10.},
       {"interaction_decay", 0.5},
-      {"size", 120}}
+      {"size", 120},
+      {"sorting_algorithm", "distance"}},
+      {{"central_decay", 0.5},
+      {"interaction_cutoff", 10.},
+      {"interaction_decay", 0.5},
+      {"size", 120},
+      {"sorting_algorithm", "row_norm"}}
       };
   };
 
@@ -64,11 +70,10 @@ namespace rascal {
     SortedCoulombTestData() {
       std::vector<std::uint8_t> ref_data_ubjson;
       internal::read_binary_file(this->ref_filename, ref_data_ubjson);
-      json ref_data = json::from_ubjson(ref_data_ubjson);
-      filenames = ref_data.at("filenames").get<std::vector<std::string>>();
+      ref_data = json::from_ubjson(ref_data_ubjson);
+      filenames =
+            ref_data.at("filenames").get<std::vector<std::string>>();
       cutoffs = ref_data.at("cutoffs").get<std::vector<double>>();
-      data_sort_distance = ref_data.at("distance").get<json>();
-      data_sort_rownorm = ref_data.at("rownorm").get<json>();
     }
     ~SortedCoulombTestData() = default;
 
@@ -117,27 +122,23 @@ namespace rascal {
     std::string ref_filename{"reference_data/sorted_coulomb_reference.ubjson" };
     std::vector<std::string> filenames{};
     std::vector<double> cutoffs{};
-    json data_sort_distance{};
-    json data_sort_rownorm{};
-    json hypers{};
-    json feature_matrices{};
+    json ref_data{};
   };
 
   template <class StructureManager,
-            template <typename, Option... opts> class RepresentationManager,
-            class BaseFixture, Option... options_>
+            template <typename> class RepresentationManager,
+            class BaseFixture>
   struct RepresentationFixture
       : MultipleStructureManagerStrictFixture<StructureManager, BaseFixture> {
     using Parent =
         MultipleStructureManagerStrictFixture<StructureManager, BaseFixture>;
     using Manager_t = typename Parent::Manager_t;
-    using Representation_t = RepresentationManager<Manager_t, options_...>;
+    using Representation_t = RepresentationManager<Manager_t>;
 
     RepresentationFixture() = default;
     ~RepresentationFixture() = default;
 
     std::list<Representation_t> representations{};
-    std::vector<Option> options{options_...};
   };
 
 /* ---------------------------------------------------------------------- */

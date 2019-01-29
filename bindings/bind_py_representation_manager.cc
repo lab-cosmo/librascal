@@ -61,14 +61,7 @@ void add_representation_managers(py::module & mod, py::module & m_garbage) {
   using Manager_t = AdaptorStrict<AdaptorNeighbourList<
                                                 StructureManagerCenters>>;
   using Representation1_t =
-        RepresentationManagerSortedCoulomb<Manager_t, Option::CMSortDistance>;
-
-  auto rep_sorted_coulomb1 = add_representation_manager<
+        RepresentationManagerSortedCoulomb<Manager_t>;
+  auto rep_sorted_coulomb = add_representation_manager<
                                     Representation1_t>(mod, m_garbage);
-
-  using Representation2_t =
-        RepresentationManagerSortedCoulomb<Manager_t, Option::CMSortRowNorm>;
-
-  auto rep_sorted_coulomb2 = add_representation_manager<
-                                    Representation2_t>(mod, m_garbage);
 }
