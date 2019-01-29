@@ -59,7 +59,7 @@ namespace rascal {
        {"interaction_cutoff", 10.},
        {"interaction_decay", 0.5},
        {"size", 120},
-      {"sorting_algorithm", "distance"}},
+       {"sorting_algorithm", "distance"}},
       {{"central_decay", 0.5},
        {"interaction_cutoff", 10.},
        {"interaction_decay", 0.5},
