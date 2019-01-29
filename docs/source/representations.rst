@@ -1,7 +1,7 @@
 .. _representations:
 
 Representations
-===========
+===============
 
 In this section, we summarize the representation implemented in Rascal.
 
@@ -18,7 +18,7 @@ BP symmetry functions
 *********************
 
 Voronoi representation
-*******************
+**********************
 
 Coulomb matrices
 ****************
