@@ -55,6 +55,7 @@ namespace rascal {
       BOOST_CHECK_EQUAL(true_order(idx_i), test_order[idx_i].first);
     }
   }
+
   /**
    * Test the distance from the central atom sorting.
    * assumes the center is on row 0.
@@ -265,4 +266,7 @@ namespace rascal {
     }
   }
 
+  BOOST_AUTO_TEST_SUITE_END();
+
 }  // namespace rascal
+
