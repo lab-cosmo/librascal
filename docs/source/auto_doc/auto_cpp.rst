@@ -1,15 +1,12 @@
-.. _auto:
+.. _auto_cpp:
 
-Auto Documentation
-==================
+C++
+---
 
-For more details about the methods, the interfaces and the classes implemented in Rascal, please check the following:
-
-.. contents::
-   :local:
+.. .. doxygenfile:: src/structure_managers/structure_manager_centers.hh
 
 Representation
-***********
+**************
 
 Interfaces
 ~~~~~~~~~~~
@@ -35,6 +32,6 @@ Interfaces
 Classes
 ~~~~~~~
 
-.. doxygenindex::
+.. .. doxygenindex::
     :project: rascal
 

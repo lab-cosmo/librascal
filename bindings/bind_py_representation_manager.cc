@@ -55,13 +55,27 @@ decltype(auto) add_representation_manager(py::module & mod, py::module & ) {
 }
 
 
-//! Representation python binding
+/**
+ * Function to bind the representation managers to python
+ *
+ * @params mod pybind11 representation of the python module the represenation
+ *             managers will be included to
+ * @params m_garbage pybind11 representation of the python module that are
+ *                  needed but not useful to use on the python side
+ *
+ */
 void add_representation_managers(py::module & mod, py::module & m_garbage) {
   py::class_<RepresentationManagerBase>(m_garbage, "RepresentationManagerBase");
+  /*-------------------- rep-bind-start --------------------*/
+  // Defines a particular structure manager type
   using Manager_t = AdaptorStrict<AdaptorNeighbourList<
                                                 StructureManagerCenters>>;
+  // Defines the representation manager type for the particular structure
+  // manager
   using Representation1_t =
         RepresentationManagerSortedCoulomb<Manager_t>;
+  // Bind the interface of this representation manager
   auto rep_sorted_coulomb = add_representation_manager<
                                     Representation1_t>(mod, m_garbage);
+  /*-------------------- rep-bind-end --------------------*/
 }

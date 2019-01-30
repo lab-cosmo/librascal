@@ -17,6 +17,7 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
+import sys
 import subprocess
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
@@ -36,17 +37,26 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.todo',
               'sphinx.ext.mathjax',
               'sphinx.ext.viewcode',
-              'breathe']
+              'sphinx.ext.napoleon',
+              'sphinx.ext.autosummary',
+              'breathe',
+              ]
 
 ## this line detects whether the script is run on readthedocs.io, where it
 ## needs to run in-place
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 
-if read_the_docs_build:
+if read_the_docs_build is True:
     rascal_path = "."
 else:
     rascal_path = "@CMAKE_CURRENT_BINARY_DIR@"
     os.makedirs("@CMAKE_CURRENT_BINARY_DIR@/_static", exist_ok=True)
+
+import_path = "@CMAKE_BINARY_DIR@"
+print("import_path = '{}'".format(import_path))
+sys.path.insert(0,import_path)
+
+
 print("rascal_path = '{}'".format(rascal_path))
 subprocess.call('ls; pwd', shell=True)
 subprocess.call("cd {} && doxygen".format(rascal_path), shell=True)

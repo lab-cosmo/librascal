@@ -63,7 +63,7 @@ namespace rascal {
 
     /* ---------------------------------------------------------------------- */
 
-    // rep-options-def-start
+    /* -------------------- rep-options-def-start -------------------- */
     // Enum class defining the several possible sorting options of the Coulomb Matrix
     enum class CMSortAlgorithm {
       Distance, // sort according to the distance from the central atom
@@ -73,9 +73,9 @@ namespace rascal {
     // Empty general template class implementing the determination of the
     // sorting order for the coulomb matrix. It should never be instantiated.
     template <CMSortAlgorithm Method> struct SortCoulomMatrix {};
-    // rep-options-def-end
+    /* -------------------- rep-options-def-end -------------------- */
 
-    // rep-options-impl-start
+    /* -------------------- rep-options-impl-start -------------------- */
     /**
      * Sort the coulomb matrix using the distance to the central atom
      * as reference order.
@@ -149,11 +149,11 @@ namespace rascal {
         return order_coulomb;
       }
     };
-    // rep-options-impl-end
+    /* -------------------- rep-options-impl-end -------------------- */
 
   }  // namespace internal
   /* ---------------------------------------------------------------------- */
-  // rep-preamble-start
+  /* -------------------- rep-preamble-start -------------------- */
   /**
    * Implementation of the Environmental Coulomb Matrix
    */
@@ -173,9 +173,9 @@ namespace rascal {
     using ClusterRef_t = typename Manager_t::template ClusterRef<Order>;
     // type of the datastructure used to register the list of valid hyperparameters
     using reference_hypers_t = Parent::reference_hypers_t;
-    // rep-preamble-end
+    /* -------------------- rep-preamble-end -------------------- */
 
-    // rep-construc-start
+    /* -------------------- rep-construc-start -------------------- */
     //! Constructor
     RepresentationManagerSortedCoulomb(Manager_t & sm, const hypers_t & hyper)
         : structure_manager{sm}, coulomb_matrices{sm} {
@@ -205,9 +205,9 @@ namespace rascal {
     //! Move assignment operator
     RepresentationManagerSortedCoulomb & operator=
     (RepresentationManagerSortedCoulomb && other) = default;
-    // rep-construc-end
+    /* -------------------- rep-construc-end -------------------- */
 
-    // rep-interface-start
+    /* -------------------- rep-interface-start -------------------- */
     //! compute representation
     void compute();
 
@@ -228,7 +228,7 @@ namespace rascal {
     size_t get_center_size() {
       return this->coulomb_matrices.get_nb_item();
     }
-    // rep-interface-end
+    /* -------------------- rep-interface-end -------------------- */
 
     //! Implementation of compute representation
     template<internal::CMSortAlgorithm AlgorithmType>
@@ -309,7 +309,7 @@ namespace rascal {
     //! get the size of a feature vector from the hyper parameters
     inline size_t get_n_feature() { return this->size * (this->size + 1) / 2; }
 
-    //rep-variables-start
+    /* -------------------- rep-variables-start -------------------- */
     // Reference to the structure manager
     Manager_t & structure_manager;
     // list of hyperparameters specific to the coulomb matrix
@@ -332,7 +332,7 @@ namespace rascal {
       {"size", {}},
       {"sorting_algorithm", {"distance", "row_norm"}},
     };
-    //rep-variables-end
+    /*-------------------- rep-variables-end -------------------- */
   };
 
 
@@ -381,7 +381,7 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  // rep-options-compute-start
+  /* -------------------- rep-options-compute-start-------------------- */
   template <class Mngr>
   void RepresentationManagerSortedCoulomb<Mngr>::compute() {
     auto option{this->options["sorting_algorithm"]};
@@ -396,9 +396,9 @@ namespace rascal {
       throw std::invalid_argument(error_message.c_str());
     }
   }
-  // rep-options-compute-end
+  /* -------------------- rep-options-compute-end -------------------- */
   /* ---------------------------------------------------------------------- */
-  // rep-options-compute-impl-start
+  /* -------------------- rep-options-compute-impl-start -------------------- */
   template <class Mngr>
   template <internal::CMSortAlgorithm AlgorithmType>
   void RepresentationManagerSortedCoulomb<Mngr>::compute_helper() {
@@ -447,7 +447,7 @@ namespace rascal {
       this->coulomb_matrices.push_back(lin_sorted_coulomb_mat);
     }
   }
-  // rep-options-compute-impl-end
+  /* -------------------- rep-options-compute-impl-end -------------------- */
 
   /* ---------------------------------------------------------------------- */
   template <class Mngr>
