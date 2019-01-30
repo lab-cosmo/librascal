@@ -32,31 +32,118 @@ First of all, think about what you need and check if is already implemented (for
 
 When you know what is necessary for your method, you can proceed in the implementation.
 
-The new method should be written in C++ in the **src** folder and should be named in a way that is clear what the method does (no method_3_bis.cc etc..). The file should start with a header reporting a few information such as the author, date, etc.. You can check the other .cc files in the directory for a quick reference.
-Bofore, jumping into the next paragraphs, please respect our :ref:`coding convention <coding-convention>`.
+The new method should be written in C++14 in the **src** folder and should be named in a way that is clear what the method does (no method_3_bis.cc etc..). The file should start with a header reporting a few information such as the author, date, etc.. You can check the other .cc files in the directory for a quick reference.
+Before, jumping into the next paragraphs, please respect our :ref:`coding convention <coding-convention>`.
 
-:cpp:class:`rascal::RepresentationManagerSortedCoulomb`
 
 Write the C++ method
 ^^^^^^^^^^^^^^^^^^^^
 
-At this point, you can code the method in the way that you want, but we remind you that it should be included in the ``namespace rascal {...}``. So for example, your file(s) ``mymethod.h`` will contain:
+At this point, you can code the method in the way that you want, but we remind you that it should be included in the ``namespace rascal {...}``. So for example, your file(s) ``mymethod.hh`` will contain:
 
 .. code-block:: c++
 
-    #include <wathever_is_needed>
+  #include <wathever_is_needed>
 
-    namespace rascal {
-        /**
-        * Remember to put comments in a form that Doxygen
-        * so that is clear what they do
-        */
-        void function(type& args){
-            ...
-        }
-    }
+  namespace rascal {
+      /**
+      * Remember to put comments in a form that Doxygen
+      * so that is clear what they do
+      */
+      void function(type& args){
+          ...
+      }
+  }
 
-Once that the method that you need as been coded, you can save the file(s) and proceed. There is no need to change the CMake file.
+Once that the method that you need as been coded, you can save the file(s) and proceed. Note that adding a ``.cc`` file requires its registration in the folder's CMakeLists.txt so that it can be compiled.
+
+Write a RepresentationManager
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A representation manager is an object that builds a representation of the atomic structure contained in *a* structure manager. This class:
+
+- inherits publicly from :cpp:class:`rascal::RepresentationManagerBase` to follow its interface and use some of the common utilies shared by such class.
+
+- is templated by a structure manager to be able to build the representation efficiently.
+
+- uses the :cpp:class:`rascal::Property` class to store the representation's features.
+
+The behaviour of a representation manager is defined at construction by a structure manager and a structure containing a set of parameters. Within these parameters some
+  - define behaviours or options for the class, e.g. choosing a particular implementation from a set of conceptually equivalent methods.
+  - set the hyperparameters of the representation.
+
+Note that there is one representation manager per structure manager.
+
+To illustrate the basic structure that a new representation that would be implemented in ``representation_manager_custom.hh`` should follow, let's take the example of the :cpp:class:`rascal::RepresentationManagerSortedCoulomb`. A detailed discussion of the sorted coulomb matrix representation can be found in [#one]_ and [#two]_.
+
+
+The representation starts with the definition of some useful short hands
+
+.. literalinclude:: ../../src/representations/representation_manager_sorted_coulomb.hh
+    :language: c++
+    :start-after: rep-preamble-start
+    :end-before: rep-preamble-end
+    :dedent: 2
+
+followed by the definition of its constructors and destructor
+
+.. literalinclude:: ../../src/representations/representation_manager_sorted_coulomb.hh
+    :language: c++
+    :start-after: rep-construc-start
+    :end-before: rep-construc-end
+    :dedent: 2
+
+the declaration of the concrete implementation of the RepresentationManager interface
+
+.. literalinclude:: ../../src/representations/representation_manager_sorted_coulomb.hh
+    :language: c++
+    :start-after: rep-interface-start
+    :end-before: rep-interface-end
+    :dedent: 2
+
+and the declaration of some functions for internal use in the protected section.
+
+The end of the class contains the different internal variables needed by the class
+
+.. literalinclude:: ../../src/representations/representation_manager_sorted_coulomb.hh
+    :language: c++
+    :start-after: rep-variables-start
+    :end-before: rep-variables-end
+    :dedent: 2
+
+Efficient Implementation of Options
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The switch between several implementations of conceptually equivalent parts of a representation can be implemented through several mechanisms such a virtual inheritance. We detail here how to implement such switch efficiently using the :cpp:class:`rascal::RepresentationManagerSortedCoulomb` as an example.
+
+To make the coulomb matrix invariant with respect to permutation Ref. [#two]_ proposes to sort the upper triangular part of the coulomb matrix according to the norm of each rows or the distance from the central atom (see [#one]_ for details).
+
+The implementation of these two behaviour is encapsulated in the :cpp:struct:`rascal::internal::SortCoulomMatrix` class and the choice between them is done with a template parameter using template specialization. Note that a in this particular case templated functions could be sufficient but to underline how to implement the most general case a class is used.
+
+.. literalinclude:: ../../src/representations/representation_manager_sorted_coulomb.hh
+    :language: c++
+    :start-after: rep-options-def-start
+    :end-before: rep-options-def-end
+    :dedent: 4
+
+The specific implementation of the two options is done in with template specialization
+
+.. literalinclude:: ../../src/representations/representation_manager_sorted_coulomb.hh
+    :language: c++
+    :start-after: rep-options-impl-start
+    :end-before: rep-options-impl-end
+    :dedent: 4
+
+Finally, the switch between the two behaviours is done in the :cpp:func:`rascal::RepresentationManagerSortedCoulomb::compute()` by calling the templated function :cpp:func:`rascal::RepresentationManagerSortedCoulomb::compute_helper()` where the computation of the representation is actually implemented
+
+.. literalinclude:: ../../src/representations/representation_manager_sorted_coulomb.hh
+    :language: c++
+    :start-after: rep-options-compute-start
+    :end-before: rep-options-compute-end
+    :dedent: 2
+
+
+
 
 Write the binding to the C++ method
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -66,7 +153,7 @@ The second task that you need to accomplish is to create a python binding to the
 .. code-block:: c++
 
     #include <pybind11/pybind11.h>
-    #include "mymethod.h"
+    #include "mymethod.hh"
 
     using namespace rascal;
     namespace py=pybind11;
@@ -294,3 +381,12 @@ How to run the tests
 --------------------
 
 All tests are added as targets during  compilation by default. You can run all tests by executing ``ctest`` in the build folder. If the tests fail, you can re-run them verbosely using ``ctest -V`` to get a detailed account of which tests have failed.
+
+
+
+
+.. [#one] http://www.qmlcode.org/qml.html#module-qml.representations.
+
+.. [#two] Rupp, M., Tkatchenko, A., Müller, K.-R., & von Lilienfeld, O. A. (2011).
+        Fast and Accurate Modeling of Molecular Atomization Energies with Machine Learning.
+        Physical Review Letters, 108(5), 58301. https://doi.org/10.1103/PhysRevLett.108.058301

@@ -68,7 +68,7 @@ namespace rascal {
     //! Pure Virtual Function to set hyperparameters of the representation
     virtual void set_hyperparameters(const hypers_t &) = 0;
 
-    //! Pure Virtual Function to set hyperparameters of the representation
+    //! Check if the input hyperparameters is valid
     void check_hyperparameters(const reference_hypers_t &,
                                     const hypers_t &);
 
