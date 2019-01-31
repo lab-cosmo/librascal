@@ -113,10 +113,11 @@ namespace rascal {
     //!< e.g. a JSON formatted string
     const std::string metadata;
     //! constructor
-    PropertyBase(const std::weak_ptr<StructureManagerBase> manager,
+    PropertyBase(std::shared_ptr<StructureManagerBase> manager,
               Dim_t nb_row, Dim_t nb_col,
               size_t order, size_t layer, std::string metadata = "no metadata"):
-      base_manager{std::move(manager)}, nb_col{nb_col}, nb_row{nb_row},
+      base_manager{std::weak_ptr<StructureManagerBase>(manager)},
+      nb_col{nb_col}, nb_row{nb_row},
       nb_comp{nb_row * nb_col}, order{order}, property_layer{layer},
       metadata{metadata}
     {}
