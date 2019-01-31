@@ -584,13 +584,13 @@ namespace rascal {
      * Returns the id of the index-th (neighbour) atom of the cluster that is
      * the full structure/atoms object, i.e. simply the id of the index-th atom
      */
-    inline int get_cluster_neighbour(std::shared_ptr<const Parent> &,
+    inline int get_cluster_neighbour(const std::shared_ptr<Parent> &,
                                      size_t index) const {
       return this->manager->get_cluster_neighbour(this->manager, index);
     }
 
     //! get atom_index of the index-th atom in manager
-    inline int get_cluster_neighbour(std::shared_ptr<const Implementation> &,
+    inline int get_cluster_neighbour(const ImplementationPtr_t &,
                                      size_t index) const {
       return this->manager->get_cluster_neighbour(this->manager, index);
     }
@@ -746,7 +746,7 @@ namespace rascal {
   template <class Implementation>
   AdaptorNeighbourList<Implementation>::AdaptorNeighbourList(
           std::shared_ptr<Implementation> manager, double cutoff,
-      bool consider_ghost_neighbours)
+          bool consider_ghost_neighbours)
       : manager{std::move(manager)}, cutoff{cutoff}, atom_indices{}, atom_types{},
         ghost_atom_indices{}, nb_neigh{},
         neighbours{}, offsets{}, n_centers{manager->get_size()}, n_ghosts{0},

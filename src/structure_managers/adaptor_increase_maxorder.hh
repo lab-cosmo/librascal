@@ -184,13 +184,14 @@ namespace rascal {
      * Returns the id of the index-th (neighbour) atom of the cluster that is
      * the full structure/atoms object, i.e. simply the id of the index-th atom
      */
-    inline int get_cluster_neighbour(std::shared_ptr<const Parent> &,
+    inline int get_cluster_neighbour(const std::shared_ptr<Parent> &,
                                      size_t index) const {
       return this->manager->get_cluster_neighbour(this->manager, index);
     }
 
     //! get atom_index of the index-th atom in manager
-    inline int get_cluster_neighbour(std::shared_ptr<const Implementation> &,
+    inline int get_cluster_neighbour(
+                const ImplementationPtr_t &,
                                      size_t index) const {
       return this->manager->get_cluster_neighbour(this->manager, index);
     }
@@ -440,7 +441,8 @@ namespace rascal {
       using AddOrderLoop =
           AddOrderLoop<atom.order(), atom.order() == (traits::MaxOrder - 1)>;
 
-      auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
+      auto & atom_cluster_indices{
+                        std::get<0>(this->cluster_indices_container)};
 
       auto indices = atom.get_cluster_indices();
       atom_cluster_indices.push_back(indices);

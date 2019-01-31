@@ -180,13 +180,13 @@ namespace rascal {
     }
 
     //! get atom_index of the index-th atom in manager
-    inline int get_cluster_neighbour(std::shared_ptr<const Parent> &,
+    inline int get_cluster_neighbour(const std::shared_ptr<Parent> &,
                                      size_t index) const {
       return this->manager->get_cluster_neighbour(this->manager, index);
     }
 
     //! get atom_index of the index-th atom in manager
-    inline int get_cluster_neighbour(std::shared_ptr<const Implementation> &,
+    inline int get_cluster_neighbour(const ImplementationPtr_t &,
                                      size_t index) const {
       return this->manager->get_cluster_neighbour(this->manager, index);
     }

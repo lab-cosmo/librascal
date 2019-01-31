@@ -39,21 +39,21 @@ namespace rascal {
   /*
    * forward declaration for traits
    */
-  template <class Implementation>
+  template <class ManagerImplementation>
   class AdaptorStrict;
 
   /*
    * specialisation of traits for strict adaptor
    */
-  template <class Implementation>
-  struct StructureManager_traits<AdaptorStrict<Implementation>> {
+  template <class ManagerImplementation>
+  struct StructureManager_traits<AdaptorStrict<ManagerImplementation>> {
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::yes};
     constexpr static bool HasDistances{true};
     constexpr static bool HasDirectionVectors{true};
-    constexpr static int Dim{Implementation::traits::Dim};
-    constexpr static size_t MaxOrder{Implementation::traits::MaxOrder};
+    constexpr static int Dim{ManagerImplementation::traits::Dim};
+    constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
     using LayerByOrder = typename LayerIncreaser<
-        MaxOrder, typename Implementation::traits::LayerByOrder>::type;
+        MaxOrder, typename ManagerImplementation::traits::LayerByOrder>::type;
   };
 
   /**
@@ -67,14 +67,14 @@ namespace rascal {
    * This interface should be implemented by all managers with the trait
    * AdaptorTraits::Strict::yes
    */
-  template <class Implementation>
+  template <class ManagerImplementation>
   class AdaptorStrict
-      : public StructureManager<AdaptorStrict<Implementation>> {
+      : public StructureManager<AdaptorStrict<ManagerImplementation>> {
    public:
-    using Parent = StructureManager<AdaptorStrict<Implementation>>;
-    using ImplementationPtr_t = std::shared_ptr<Implementation>;
+    using Parent = StructureManager<AdaptorStrict<ManagerImplementation>>;
+    using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorStrict>;
-    using AtomRef_t = typename Implementation::AtomRef_t;
+    using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
 
     static_assert(traits::MaxOrder > 1,
@@ -166,13 +166,13 @@ namespace rascal {
     }
 
     //! get atom_index of the index-th atom in manager
-    inline int get_cluster_neighbour(std::shared_ptr<const Parent> &,
+    inline int get_cluster_neighbour(const std::shared_ptr<Parent> &,
                                      size_t index) const {
       return this->atom_indices[0][index];
     }
 
     //! get atom_index of the index-th atom in manager
-    inline int get_cluster_neighbour(std::shared_ptr<const Implementation> &,
+    inline int get_cluster_neighbour(const ImplementationPtr_t &,
                                      size_t index) const {
       return this->atom_indices[0][index];
     }
@@ -263,7 +263,7 @@ namespace rascal {
 
     template <size_t Order>
     inline void
-    add_atom(const typename Implementation::template ClusterRef<Order> &
+    add_atom(const typename ManagerImplementation::template ClusterRef<Order> &
                  cluster) {
       return this->template add_atom<Order - 1>(cluster.back());
     }
@@ -294,38 +294,40 @@ namespace rascal {
 
   namespace internal {
     /* ---------------------------------------------------------------------- */
-    template <bool IsStrict, class Implementation>
+    template <bool IsStrict, class ManagerImplementation>
     struct CutOffChecker {
-      static bool check(const std::shared_ptr<Implementation> & manager,
+      static bool check(const std::shared_ptr<ManagerImplementation> & manager,
                         double cutoff) {
         return cutoff < manager->get_cutoff();
       }
     };
 
     /* ---------------------------------------------------------------------- */
-    template <class Implementation>
-    struct CutOffChecker<false, Implementation> {
-      static bool check(const std::shared_ptr<Implementation> & /*manager*/,
+    template <class ManagerImplementation>
+    struct CutOffChecker<false, ManagerImplementation> {
+      static bool check(
+              const std::shared_ptr<ManagerImplementation> & /*manager*/,
                         double /*cutoff*/) {
         return true;
       }
     };
 
     /* ---------------------------------------------------------------------- */
-    template <class Implementation>
-    bool inline check_cutoff(const std::shared_ptr<Implementation> & manager,
+    template <class ManagerImplementation>
+    bool inline check_cutoff(
+            const std::shared_ptr<ManagerImplementation> & manager,
                              double cutoff) {
-      constexpr bool IsStrict{(Implementation::traits::Strict ==
+      constexpr bool IsStrict{(ManagerImplementation::traits::Strict ==
                                AdaptorTraits::Strict::yes)};
-      return CutOffChecker<IsStrict, Implementation>::check(manager,
+      return CutOffChecker<IsStrict, ManagerImplementation>::check(manager,
                                                                    cutoff);
     }
   }  // namespace internal
 
   /*--------------------------------------------------------------------------*/
-  template <class Implementation>
-  AdaptorStrict<Implementation>::AdaptorStrict(
-          std::shared_ptr<Implementation> manager, double cutoff)
+  template <class ManagerImplementation>
+  AdaptorStrict<ManagerImplementation>::AdaptorStrict(
+          std::shared_ptr<ManagerImplementation> manager, double cutoff)
       : manager{std::move(manager)}, distance{this->get_weak_ptr()},
           dir_vec{this->get_weak_ptr()}, cutoff{cutoff},
         atom_indices{}, nb_neigh{}, offsets{}
@@ -339,15 +341,15 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  template <class Implementation>
+  template <class ManagerImplementation>
   template <class... Args>
-  void AdaptorStrict<Implementation>::update(Args &&... arguments) {
+  void AdaptorStrict<ManagerImplementation>::update(Args &&... arguments) {
     this->manager->update(std::forward<Args>(arguments)...);
   }
 
   /* ---------------------------------------------------------------------- */
-  template <class Implementation>
-  void AdaptorStrict<Implementation>::update_adaptor() {
+  template <class ManagerImplementation>
+  void AdaptorStrict<ManagerImplementation>::update_adaptor() {
     //! Reset cluster_indices for adaptor to fill with push back.
     internal::for_each(this->cluster_indices_container,
                        internal::ResizePropertyToZero());

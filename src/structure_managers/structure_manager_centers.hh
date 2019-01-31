@@ -257,7 +257,7 @@ namespace rascal {
     }
 
     //! dummy function, since no neighbours are present her
-    inline int get_cluster_neighbour(std::shared_ptr<const Parent> &,
+    inline int get_cluster_neighbour(const std::shared_ptr<Parent> &,
                                      size_t index) const {
       // dummy argument is the atom itself, because if does not make sense at
       // this order
