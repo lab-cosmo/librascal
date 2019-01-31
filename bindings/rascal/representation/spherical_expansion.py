@@ -1,4 +1,3 @@
-import numpy as np
 import json
 
 from ..utils import get_strict_neighbourlist
@@ -25,6 +24,9 @@ class SphericalExpansion(object):
     max_angular : int
         Highest angular momentum number (l) in the expansion
 
+    n_species : int
+        Number of species to be considered separately
+
     gaussian_sigma_type : str
         How the Gaussian atom sigmas (smearing widths) are allowed to
         vary -- fixed ('Constant'), by species ('PerSpecies'), or by
@@ -48,24 +50,23 @@ class SphericalExpansion(object):
 
     def __init__(self, interaction_cutoff, cutoff_smooth_width,
                  max_radial, max_angular, gaussian_sigma_type,
-                 gaussian_sigma_constant=-1.)
+                 gaussian_sigma_constant=0., n_species=1):
         """Construct a SphericalExpansion representation
 
         Required arguments are all the hyperparameters named in the
         class documentation
         """
         self.name = 'sphericalexpansion'
-        #TODO is this really necessary if the underlying C++ object
-        #     stores all the hypers in dict-like format anyway?
-        self.hypers_dict = dict()
+        self.hypers = dict()
         self.update_hyperparameters(
             interaction_cutoff=interaction_cutoff,
             cutoff_smooth_width=cutoff_smooth_width,
             max_radial=max_radial, max_angular=max_angular,
             gaussian_sigma_type=gaussian_sigma_type,
-            gaussian_sigma_constant=gaussian_sigma_constant)
+            gaussian_sigma_constant=gaussian_sigma_constant,
+            n_species=n_species)
 
-    def update_hyperparameters(self, **hypers)
+    def update_hyperparameters(self, **hypers):
         """Store the given dict of hyperparameters
 
         Also updates the internal json-like representation
@@ -73,8 +74,9 @@ class SphericalExpansion(object):
         """
         allowed_keys = {'interaction_cutoff', 'cutoff_smooth_width',
                         'max_radial', 'max_angular', 'gaussian_sigma_type',
-                        'gaussian_sigma_width'}
-        hypers_clean = {key: hypers[key] if key in allowed_keys}
+                        'gaussian_sigma_constant', 'n_species'}
+        hypers_clean = {key: hypers[key] for key in hypers
+                                         if key in allowed_keys}
         self.hypers.update(hypers_clean)
         return
 
@@ -93,27 +95,25 @@ class SphericalExpansion(object):
 
         """
         n_frames = len(frames)
-
         managers = list(map(
             get_strict_neighbourlist,
-            frames, [self.hypers['interaction_cutoff'], ]*n_frames))
-
+            frames, [self.hypers['interaction_cutoff'], ] * n_frames))
         hypers_str = json.dumps(self.hypers)
-
         n_features = self.get_num_components()
         features = FeatureManager.Dense_double(n_features, hypers_str)
-
-        cms = map(RepresentationFactory(self.name,self.options),
-                     managers,[inp]*Nframe)
-
+        cms = map(RepresentationFactory(self.name),
+                  managers, [hypers_str, ] * n_frames)
         for cm in cms:
             cm.compute()
             features.append(cm)
-
         return features
 
-    #TODO deprecate in favour of get_feature_size() and get_center_size()
-    #     already exposed through the bindings?
     def get_num_components(self):
-        return 
+        """Return the number of components in the spherical expansion
+
+        (this is the descriptor size per atomic centre)
+
+        """
+        return (self.hypers['n_species'] * self.hypers['max_radial']
+                * (self.hypers['max_angular'] + 1)**2)
 

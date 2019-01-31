@@ -76,7 +76,7 @@ namespace rascal {
     struct AtomicSmearingSpecification<GaussianSigmaType::Constant> {
       explicit AtomicSmearingSpecification(json hypers) {
         this->constant_gaussian_sigma =
-            hypers.at("gaussian_sigma").get<double>();
+            hypers.at("gaussian_sigma_constant").get<double>();
       }
       template<size_t Order, size_t Layer>
       double get_gaussian_sigma(
@@ -172,7 +172,7 @@ namespace rascal {
         throw std::logic_error("Requested Gaussian sigma type \'"
                                + gaussian_sigma_str
                                + "\' has not been implemented.  Must be one of"
-                               + ": \'Constant\'");
+                               + ": \'Constant\'.");
       }
     }
 
@@ -289,9 +289,7 @@ namespace rascal {
     }
 
    protected:
-
    private:
-
     double interaction_cutoff{};
     double cutoff_smooth_width{};
     size_t max_radial{};
