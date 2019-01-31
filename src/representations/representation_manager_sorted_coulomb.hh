@@ -64,7 +64,8 @@ namespace rascal {
     /* ---------------------------------------------------------------------- */
 
     /* -------------------- rep-options-def-start -------------------- */
-    // Enum class defining the several possible sorting options of the Coulomb Matrix
+    // Enum class defining the several possible sorting options of the Coulomb
+    // Matrix
     enum class CMSortAlgorithm {
       Distance, // sort according to the distance from the central atom
       RowNorm, // sort according to the norm of the coulomb matrix rows
@@ -171,7 +172,8 @@ namespace rascal {
     template<size_t Order>
     // short hand type to help the iteration over the structure manager
     using ClusterRef_t = typename Manager_t::template ClusterRef<Order>;
-    // type of the datastructure used to register the list of valid hyperparameters
+    // type of the datastructure used to register the list of valid
+    // hyperparameters
     using reference_hypers_t = Parent::reference_hypers_t;
     /* -------------------- rep-preamble-end -------------------- */
 
