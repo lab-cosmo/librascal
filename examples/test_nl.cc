@@ -64,10 +64,12 @@ struct MultipleStrictStructureManager {
     for (auto filename : filenames) {
       for (auto cutoff : cutoffs) {
         this->managers1.emplace_back();
-        this->managers2.emplace_back(std::make_shared<Manager2_t>(this->managers1.back(), cutoff));
+        this->managers2.emplace_back(
+          std::make_shared<Manager2_t>(this->managers1.back(), cutoff));
         // Manager1_t managers1{};
         // Manager2_t managers2{managers1, cutoff};
-        this->managers.emplace_back(std::make_shared<Manager_t>(this->managers2.back(), cutoff));
+        this->managers.emplace_back(
+          std::make_shared<Manager_t>(this->managers2.back(), cutoff));
         this->managers.back()->update(filename);
       }
     }
@@ -92,7 +94,7 @@ int main() {
       std::cout << "#################################"<< std::endl;
       std::cout << manager->nb_clusters(1) << std::endl;
       std::cout << "#################################"<< std::endl;
-      for (auto center : manager.get()) {
+      for (auto&& center : *manager) {
       //for (auto center = manager->begin(); center!=manager->end(); ++center)
 
         std::cout << center.get_atom_type()<< std::endl;
@@ -103,7 +105,7 @@ int main() {
       std::cout << "################################# 1"<< std::endl;
       std::cout << manager->nb_clusters(1) << std::endl;
 
-      for (auto center : manager.get()) {
+      for (auto&& center : *manager) {
         std::cout << center.get_atom_type() << std::endl;
         std::cout << "################################# 2"<< std::endl;
         for (auto neigh : center) {

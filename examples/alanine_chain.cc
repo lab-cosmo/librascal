@@ -37,6 +37,9 @@
 using Manager_t = rascal::StructureManagerCenters;
 using PairManager_t = rascal::AdaptorNeighbourList<Manager_t>;
 
+using ManagerPtr_t = std::shared_ptr<Manager_t>;
+using PairManagerPtr_t = std::shared_ptr<PairManager_t>;
+
 int main() {
   // integer lists containing the definition of the quadruplets for the
   // calculation of the dihedral angles in the alanine-unit.
@@ -51,24 +54,23 @@ int main() {
   std::vector<double> dihedral_angles{};
 
   // initialize the manager
-  Manager_t manager;
+  auto manager{std::make_shared<Manager_t>()};
   double cutoff{1.0};
 
   // read atomic structure from the JSON file
   // manager.read_structure_from_json("alanine-X.json");
   // manager.update("alanine-X.json");
-
-  PairManager_t pair_manager{manager, cutoff};
+  auto pair_manager{std::make_shared<PairManager_t>(manager, cutoff)};
   std::string filename{"alanine-X.json"};
-  pair_manager.update(filename);
+  pair_manager->update(filename);
 
   // Loop over the defined quadruplets and calculate the respective
   // angles with atan2 and cosine definition.
   for (auto q : quadruplets) {
-    auto pos0 = pair_manager.get_position(q[0]);
-    auto pos1 = pair_manager.get_position(q[1]);
-    auto pos2 = pair_manager.get_position(q[2]);
-    auto pos3 = pair_manager.get_position(q[3]);
+    auto pos0 = pair_manager->get_position(q[0]);
+    auto pos1 = pair_manager->get_position(q[1]);
+    auto pos2 = pair_manager->get_position(q[2]);
+    auto pos3 = pair_manager->get_position(q[3]);
 
     auto b1 = pos1 - pos0;
     auto b2 = pos1 - pos2;
