@@ -127,7 +127,8 @@ namespace rascal {
       Eigen::MatrixXd computed_alps = math::compute_assoc_legendre_polynom(
           direction[2], max_angular);
       if (verbose) {
-        std::cout << "Testing unit vector: " << direction.transpose() << std::endl;
+        std::cout << "Testing unit vector: " << direction.transpose();
+        std::cout << std::endl;
         std::cout << "Max angular momentum: l_max=" << max_angular << std::endl;
         std::cout << "Computed harmonics size: " << computed_alps.rows();
         std::cout << " by " << computed_alps.cols() << std::endl;
@@ -160,7 +161,7 @@ namespace rascal {
       double sin_phi = std::sin(phi_test(phi_idx));
       Eigen::MatrixXd cos_sin_m_phi = math::compute_cos_sin_angle_multiples(
           cos_phi, sin_phi, max_m);
-      if(verbose) {
+      if (verbose) {
         std::cout << "Cos | sin (mφ), φ=" << phi_test(phi_idx) << std::endl;
         std::cout << cos_sin_m_phi.transpose() << std::endl;
       }

@@ -217,7 +217,6 @@ namespace rascal {
   //               representation against file" template above
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(
       multiple_compute_test, Fix, multiple_fixtures, Fix) {
-
     auto& managers = Fix::managers_strict;
     auto& cutoffs = Fix::cutoffs;
     auto& representations = Fix::representations;

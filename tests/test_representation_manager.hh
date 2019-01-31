@@ -81,13 +81,13 @@ namespace rascal {
     };
     std::vector<double> cutoffs{{1, 2, 3}};
 
-    std::list<json> hypers{ {
+    std::list<json> hypers{{
       {"interaction_cutoff", 6.0},
       {"cutoff_smooth_width", 1.0},
       {"max_radial", 10},
       {"max_angular", 8},
       {"gaussian_sigma_type", "Constant"},
-      {"gaussian_sigma", 0.5}
+      {"gaussian_sigma_constant", 0.5}
     }};
   };
 

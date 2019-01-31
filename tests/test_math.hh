@@ -64,8 +64,7 @@ namespace rascal {
     bool vebose{false};
   };
 
-  struct SphericalHarmonicsRefFixture
-  {
+  struct SphericalHarmonicsRefFixture {
     SphericalHarmonicsRefFixture() {
       json ref_data;
       std::ifstream ref_file(this->ref_filename);
