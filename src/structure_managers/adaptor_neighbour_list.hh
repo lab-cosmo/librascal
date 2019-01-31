@@ -45,20 +45,20 @@ namespace rascal {
   /**
    * Forward declaration for traits
    */
-  template <class ManagerImplementation>
+  template <class Implementation>
   class AdaptorNeighbourList;
 
   /**
    * Specialisation of traits for increase <code>MaxOrder</code> adaptor
    */
-  template <class ManagerImplementation>
-  struct StructureManager_traits<AdaptorNeighbourList<ManagerImplementation>> {
+  template <class Implementation>
+  struct StructureManager_traits<AdaptorNeighbourList<Implementation>> {
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDistances{false};
     constexpr static bool HasDirectionVectors{false};
-    constexpr static int Dim{ManagerImplementation::traits::Dim};
+    constexpr static int Dim{Implementation::traits::Dim};
     // New MaxOrder upon construction, by construction should be 2
-    constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder +
+    constexpr static size_t MaxOrder{Implementation::traits::MaxOrder +
                                      1};
     // When using periodic boundary conditions, it is possible that atoms are
     // added upon construction of the neighbour list. Therefore the layering
@@ -422,16 +422,16 @@ namespace rascal {
    * means, if the manager does not have a neighbourlist, it is created, if it
    * exists, triplets, quadruplets, etc. lists are created.
    */
-  template <class ManagerImplementation>
+  template <class Implementation>
   class AdaptorNeighbourList
-      : public StructureManager<AdaptorNeighbourList<ManagerImplementation>> {
+      : public StructureManager<AdaptorNeighbourList<Implementation>> {
    public:
-    using Base = StructureManager<AdaptorNeighbourList<ManagerImplementation>>;
+    using Base = StructureManager<AdaptorNeighbourList<Implementation>>;
     using Parent =
-        StructureManager<AdaptorNeighbourList<ManagerImplementation>>;
-    using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
+        StructureManager<AdaptorNeighbourList<Implementation>>;
+    using ImplementationPtr_t = std::shared_ptr<Implementation>;
     using traits = StructureManager_traits<AdaptorNeighbourList>;
-    using AtomRef_t = typename ManagerImplementation::AtomRef_t;
+    using AtomRef_t = typename Implementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
     using Vector_t = typename Parent::Vector_t;
     using Positions_ref =
@@ -439,7 +439,7 @@ namespace rascal {
     // using AtomTypes_ref = AtomicStructure<traits::Dim>::AtomTypes_ref;
 
     static_assert(traits::MaxOrder == 2,
-                  "ManagerImplementation needs an atom list "
+                  "Implementation needs an atom list "
                   " and can only build a neighbour list (pairs).");
 
     //! Default constructor
@@ -589,6 +589,17 @@ namespace rascal {
       return this->manager->get_cluster_neighbour(this->manager, index);
     }
 
+    //! get atom_index of the index-th atom in manager
+    inline int get_cluster_neighbour(std::shared_ptr<const Implementation> &,
+                                     size_t index) const {
+      return this->manager->get_cluster_neighbour(this->manager, index);
+    }
+
+    //! get atom_index of the index-th atom in manager
+    inline int get_cluster_neighbour(const Parent &, size_t index) const {
+      return this->manager->get_cluster_neighbour(this->manager, index);
+    }
+
     //! Returns the id of the index-th neighbour atom of a given cluster
     template <size_t Order, size_t Layer>
     inline int
@@ -732,9 +743,9 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   //! Constructor of the pair list manager
-  template <class ManagerImplementation>
-  AdaptorNeighbourList<ManagerImplementation>::AdaptorNeighbourList(
-          std::shared_ptr<ManagerImplementation> manager, double cutoff,
+  template <class Implementation>
+  AdaptorNeighbourList<Implementation>::AdaptorNeighbourList(
+          std::shared_ptr<Implementation> manager, double cutoff,
       bool consider_ghost_neighbours)
       : manager{std::move(manager)}, cutoff{cutoff}, atom_indices{}, atom_types{},
         ghost_atom_indices{}, nb_neigh{},
@@ -749,9 +760,9 @@ namespace rascal {
    * Update function that recursively pass its argument to the base
    * (Centers or Lammps). The base will then update the whole tree from the top.
    */
-  template <class ManagerImplementation>
+  template <class Implementation>
   template <class... Args>
-  void AdaptorNeighbourList<ManagerImplementation>::update(Args &&... arguments) {
+  void AdaptorNeighbourList<Implementation>::update(Args &&... arguments) {
     this->manager->update(std::forward<Args>(arguments)...);
   }
   /* ---------------------------------------------------------------------- */
@@ -760,8 +771,8 @@ namespace rascal {
    * following the needed data structures are initialized, after construction,
    * this function must be called to invoke the neighbour list algorithm
    */
-  template <class ManagerImplementation>
-  void AdaptorNeighbourList<ManagerImplementation>::update_adaptor() {
+  template <class Implementation>
+  void AdaptorNeighbourList<Implementation>::update_adaptor() {
     //! Reset cluster_indices for adaptor to fill with sequence
     internal::for_each(this->cluster_indices_container,
                        internal::ResizePropertyToZero());
@@ -803,8 +814,8 @@ namespace rascal {
    * periodicity is ensured by the placement of the ghost atoms. The resulting
    * neighbourlist is full and not strict.
    */
-  template <class ManagerImplementation>
-  void AdaptorNeighbourList<ManagerImplementation>::make_full_neighbour_list() {
+  template <class Implementation>
+  void AdaptorNeighbourList<Implementation>::make_full_neighbour_list() {
     using Vector_t = Eigen::Matrix<double, traits::Dim, 1>;
 
     // short hands for variable
@@ -1001,9 +1012,9 @@ namespace rascal {
    * of indices (i.e. specifying pairs), for each pair of indices i,j it returns
    * the number entries in the list of pairs before i,j appears.
    */
-  template <class ManagerImplementation>
+  template <class Implementation>
   template <size_t Order>
-  inline size_t AdaptorNeighbourList<ManagerImplementation>::get_offset_impl(
+  inline size_t AdaptorNeighbourList<Implementation>::get_offset_impl(
       const std::array<size_t, Order> & counters) const {
     // The static assert with <= is necessary, because the template parameter
     // ``Order`` is one Order higher than the MaxOrder at the current

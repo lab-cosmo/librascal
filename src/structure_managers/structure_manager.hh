@@ -353,8 +353,14 @@ namespace rascal {
     }
 
     //! get atom_index of the index-th atom in manager
+    inline int cluster_neighbour(const StructureManager & cluster,
+                                 size_t & index) const {
+      return this->implementation().get_cluster_neighbour(cluster, index);
+    }
+
+    //! get atom_index of the index-th atom in manager
     inline int cluster_neighbour(
-                  std::shared_ptr<const StructureManager> & cluster,
+              std::shared_ptr<const StructureManager> & cluster,
                                  size_t & index) const {
       return this->implementation().get_cluster_neighbour(cluster, index);
     }
@@ -463,7 +469,7 @@ namespace rascal {
       }
       template <class Manager_t, class Counters_t>
       inline static size_t
-      get_cluster_neighbour(std::shared_ptr<const Manager_t> & /*manager*/,
+      get_cluster_neighbour(const Manager_t & /*manager*/,
                             const Counters_t & /*counters*/, size_t /*index*/) {
         throw std::runtime_error("This branch should never exist"
                                  " (cluster neigbour).");
@@ -487,8 +493,7 @@ namespace rascal {
       }
 
       template <class Manager_t, class Counters_t>
-      inline static size_t get_cluster_neighbour(
-        std::shared_ptr<const Manager_t> & manager,
+      inline static size_t get_cluster_neighbour(const Manager_t & manager,
                                                  const Counters_t & counters,
                                                  size_t index) {
         return manager.get_cluster_neighbour(counters, index);

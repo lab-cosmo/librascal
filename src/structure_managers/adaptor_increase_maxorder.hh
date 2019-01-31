@@ -189,6 +189,17 @@ namespace rascal {
       return this->manager->get_cluster_neighbour(this->manager, index);
     }
 
+    //! get atom_index of the index-th atom in manager
+    inline int get_cluster_neighbour(std::shared_ptr<const Implementation> &,
+                                     size_t index) const {
+      return this->manager->get_cluster_neighbour(this->manager, index);
+    }
+
+    //! get atom_index of the index-th atom in manager
+    inline int get_cluster_neighbour(const Parent &, size_t index) const {
+      return this->manager->get_cluster_neighbour(this->manager, index);
+    }
+
     //! Returns the id of the index-th neighbour atom of a given cluster
     template <size_t Order, size_t Layer>
     inline int

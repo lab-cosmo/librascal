@@ -182,6 +182,17 @@ namespace rascal {
       return this->ilist[index];
     }
 
+    inline int get_cluster_neighbour(
+      std::shared_ptr<StructureManagerLammps> &,
+                                     size_t index) const {
+      return this->ilist[index];
+    }
+
+    inline int get_cluster_neighbour(const Parent &,
+                                     size_t index) const {
+      return this->ilist[index];
+    }
+
     /**
      * provided an atom, returns the cumulative numbers of pairs up to the first
      * pair in which the atom is the I atom this only works for atom
