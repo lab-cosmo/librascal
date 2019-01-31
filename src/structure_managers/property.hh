@@ -79,9 +79,14 @@ namespace rascal {
     Property() = delete;
 
     //! Constructor with Manager
-    Property(StructureManagerBase & manager,
+    Property(const std::weak_ptr<StructureManagerBase> manager,
              std::string metadata = "no metadata")
         : Parent{manager, NbRow, NbCol, metadata} {}
+
+    // Property(std::shared_ptr<StructureManagerBase> & manager,
+    //          std::string metadata = "no metadata")
+    // :Property(std::weak_ptr<StructureManagerBase>(manager), metadata)
+    // {}
 
     //! Copy constructor
     Property(const Property & other) = delete;

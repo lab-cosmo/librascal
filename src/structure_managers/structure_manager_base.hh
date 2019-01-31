@@ -29,6 +29,7 @@
 #define STRUCTURE_MANAGER_BASE_H
 
 #include <string>
+#include <memory>
 
 namespace rascal {
 

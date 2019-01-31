@@ -163,8 +163,10 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   class StructureManager : public StructureManagerBase,
-      public std::enable_shared_from_this<ManagerImplementation> {
+      public std::enable_shared_from_this<
+                                StructureManager<ManagerImplementation>> {
    public:
+    using StructureManager_t = StructureManager<ManagerImplementation>;
     using traits = StructureManager_traits<ManagerImplementation>;
     //! type used to represent spatial coordinates, etc
     using Vector_t = Eigen::Matrix<double, traits::Dim, 1>;
@@ -173,7 +175,7 @@ namespace rascal {
         StructureManager, typename traits::LayerByOrder>::type;
     using ClusterConstructor_t =
         typename internal::ClusterIndexConstructor<ClusterIndex_t,
-                                                   StructureManager>;
+                                       const std::weak_ptr<StructureManager>>;
     using Children_t = std::weak_ptr<StructureManagerBase>;
 
     //! helper type for Property creation
@@ -191,7 +193,8 @@ namespace rascal {
 
     //! Default constructor
     StructureManager()
-        : cluster_indices_container{ClusterConstructor_t::make(*this)} {}
+        : cluster_indices_container{
+          ClusterConstructor_t::make(this->get_weak_ptr())} {}
 
     //! Copy constructor
     StructureManager(const StructureManager & other) = delete;
@@ -377,14 +380,18 @@ namespace rascal {
       return static_cast<const ManagerImplementation &>(*this);
     }
 
-    std::shared_ptr<ManagerImplementation> get_shared_ptr() {
+    std::shared_ptr<StructureManager_t> get_shared_ptr() {
         return this->shared_from_this();
     }
 
-    std::weak_ptr<ManagerImplementation> get_weak_ptr() {
-        std::weak_ptr<ManagerImplementation> this_ptr{this->shared_from_this()};
-        return this_ptr;
+    std::weak_ptr<StructureManager_t> get_weak_ptr() {
+        return std::weak_ptr<StructureManager_t>(this->get_shared_ptr());
     }
+
+    std::weak_ptr<StructureManager_t> get_weak_ptr() const {
+        return std::weak_ptr<StructureManager_t>(this->get_shared_ptr());
+    }
+
     //! get an array with all atoms inside
     std::array<AtomRef, 0> get_atoms() const {
       return std::array<AtomRef, 0>{};
