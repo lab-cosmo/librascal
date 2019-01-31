@@ -166,7 +166,7 @@ namespace rascal {
     }
 
     //! get atom_index of the index-th atom in manager
-    inline int get_cluster_neighbour(const Parent & /*parent*/,
+    inline int get_cluster_neighbour(std::shared_ptr<const Parent> &,
                                      size_t index) const {
       return this->atom_indices[0][index];
     }
@@ -314,7 +314,7 @@ namespace rascal {
   /*--------------------------------------------------------------------------*/
   template <class ManagerImplementation>
   AdaptorStrict<ManagerImplementation>::AdaptorStrict(
-          ImplementationPtr_t manager, double cutoff)
+          std::shared_ptr<ManagerImplementation> manager, double cutoff)
       : manager{std::move(manager)}, distance{*this}, dir_vec{*this}, cutoff{cutoff},
         atom_indices{}, nb_neigh{}, offsets{}
 
@@ -323,7 +323,7 @@ namespace rascal {
       throw std::runtime_error("underlying manager already has a smaller "
                                "cut off");
     }
-    this->manager->add_child(std::make_shared<ManagerImplementation>(this));
+    this->manager->add_child(this->get_weak_ptr());
   }
 
   /* ---------------------------------------------------------------------- */
@@ -362,7 +362,7 @@ namespace rascal {
     size_t pair_counter{0};
     // depending on the underlying neighbourlist, the proxy `.with_ghosts()` is
     // either actually with ghosts, or only returns the number of centers.
-    for (auto atom : this->manager->with_ghosts()) {
+    for (auto atom : this->manager.get()->with_ghosts()) {
       this->add_atom(atom);
       /**
        * Add new layer for atoms (see LayerByOrder for

@@ -47,6 +47,7 @@
 #include <utility>
 #include <limits>
 #include <tuple>
+#include <memory>
 
 namespace rascal {
 
@@ -161,7 +162,8 @@ namespace rascal {
    * class implementation
    */
   template <class ManagerImplementation>
-  class StructureManager : public StructureManagerBase {
+  class StructureManager : public StructureManagerBase,
+      public std::enable_shared_from_this<ManagerImplementation> {
    public:
     using traits = StructureManager_traits<ManagerImplementation>;
     //! type used to represent spatial coordinates, etc
@@ -303,13 +305,11 @@ namespace rascal {
       this->implementation().get_manager().update_tree();
     }
 
-    void add_child(std::shared_ptr<StructureManagerBase> child) {
-      this->children.emplace_back(std::weak_ptr<StructureManagerBase>(child));
+    void add_child(std::weak_ptr<StructureManagerBase> child) {
+      this->children.emplace_back(child);
     }
 
-    void add_child(const StructureManagerBase& child) {
-      this->add_child(std::make_shared<StructureManagerBase>(child));
-    }
+
    protected:
     void update_tree_root() {
       this->update_children();
@@ -353,7 +353,8 @@ namespace rascal {
     }
 
     //! get atom_index of the index-th atom in manager
-    inline int cluster_neighbour(StructureManager & cluster,
+    inline int cluster_neighbour(
+                  std::shared_ptr<const StructureManager> & cluster,
                                  size_t & index) const {
       return this->implementation().get_cluster_neighbour(cluster, index);
     }
@@ -368,6 +369,15 @@ namespace rascal {
     //! returns a reference for access of the implementation
     inline const ManagerImplementation & implementation() const {
       return static_cast<const ManagerImplementation &>(*this);
+    }
+
+    std::shared_ptr<ManagerImplementation> get_shared_ptr() {
+        return this->shared_from_this();
+    }
+
+    std::weak_ptr<ManagerImplementation> get_weak_ptr() {
+        std::weak_ptr<ManagerImplementation> this_ptr{this->shared_from_this()};
+        return this_ptr;
     }
     //! get an array with all atoms inside
     std::array<AtomRef, 0> get_atoms() const {
@@ -439,6 +449,7 @@ namespace rascal {
     template <bool AtMaxOrder>
     struct IncreaseHelper {
       template <class Manager_t, class Cluster_t>
+
       inline static size_t get_cluster_size(const Manager_t & /*manager*/,
                                             const Cluster_t & /*cluster*/) {
         throw std::runtime_error("This branch should never exist"
@@ -452,7 +463,7 @@ namespace rascal {
       }
       template <class Manager_t, class Counters_t>
       inline static size_t
-      get_cluster_neighbour(const Manager_t & /*manager*/,
+      get_cluster_neighbour(std::shared_ptr<const Manager_t> & /*manager*/,
                             const Counters_t & /*counters*/, size_t /*index*/) {
         throw std::runtime_error("This branch should never exist"
                                  " (cluster neigbour).");
@@ -476,7 +487,8 @@ namespace rascal {
       }
 
       template <class Manager_t, class Counters_t>
-      inline static size_t get_cluster_neighbour(const Manager_t & manager,
+      inline static size_t get_cluster_neighbour(
+        std::shared_ptr<const Manager_t> & manager,
                                                  const Counters_t & counters,
                                                  size_t index) {
         return manager.get_cluster_neighbour(counters, index);

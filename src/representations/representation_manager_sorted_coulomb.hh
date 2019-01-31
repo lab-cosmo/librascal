@@ -342,7 +342,7 @@ namespace rascal {
     // Eigen::MatrixXd coulomb_mat(this->size,this->size);
 
     // loop over the centers
-    for (auto center : this->structure_manager.get()) {
+    for (const auto& center : *this->structure_manager) {
       // re-use the temporary coulomb mat in linear storage
       // need to be zeroed because old data might not be overwritten
       lin_sorted_coulomb_mat =
@@ -402,7 +402,7 @@ namespace rascal {
     auto&& central_cutoff{this->structure_manager->get_cutoff()};
 
     type_factor_mat(0, 0) = 0.5*std::pow(Zk, 2.4);
-    for (auto neigh_i : center) {
+    for (const auto& neigh_i : center) {
       size_t idx_i{neigh_i.get_index()+1};
       auto&& Zi{neigh_i.get_atom_type()};
       double& dik{this->structure_manager->get_distance(neigh_i)};
@@ -417,14 +417,14 @@ namespace rascal {
     }
 
     // compute the neighbour to neighbour part of the coulomb matrix
-    for (auto neigh_i : center) {
+    for (const auto& neigh_i : center) {
       size_t idx_i{neigh_i.get_index() + 1};
       auto && Zi{neigh_i.get_atom_type()};
       double & dik{this->structure_manager->get_distance(neigh_i)};
       double fac_ik{
           get_cutoff_factor(dik, central_cutoff, this->central_decay)};
 
-      for (auto neigh_j : center) {
+      for (const auto& neigh_j : center) {
         size_t idx_j{neigh_j.get_index() + 1};
         // work only on the lower diagonal
         if (idx_i >= idx_j)

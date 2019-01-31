@@ -184,7 +184,7 @@ namespace rascal {
      * Returns the id of the index-th (neighbour) atom of the cluster that is
      * the full structure/atoms object, i.e. simply the id of the index-th atom
      */
-    inline int get_cluster_neighbour(const Parent & /*parent*/,
+    inline int get_cluster_neighbour(std::shared_ptr<const Parent> &,
                                      size_t index) const {
       return this->manager->get_cluster_neighbour(this->manager, index);
     }
@@ -282,14 +282,14 @@ namespace rascal {
   //! Constructor of the next level manager
   template <class ManagerImplementation>
   AdaptorMaxOrder<ManagerImplementation>::AdaptorMaxOrder(
-          ImplementationPtr_t manager)
+          std::shared_ptr<ManagerImplementation> manager)
       : manager{std::move(manager)}, nb_neigh{}, neighbours{}, offsets{} {
 
     if (traits::MaxOrder < 3) {
       throw std::runtime_error("Increase MaxOrder: No pair list in underlying"
                                " manager.");
     }
-    this->manager->add_child(std::make_shared<ManagerImplementation>(this));
+    this->manager->add_child(this->get_weak_ptr());
   }
 
   /* ---------------------------------------------------------------------- */
@@ -424,7 +424,7 @@ namespace rascal {
     this->offsets.clear();
     this->neighbours.clear();
 
-    for (auto atom : this->manager) {
+    for (auto atom : *this->manager) {
       //  Order 1, but variable Order is at 0, atoms, index 0
       using AddOrderLoop =
           AddOrderLoop<atom.order(), atom.order() == (traits::MaxOrder - 1)>;

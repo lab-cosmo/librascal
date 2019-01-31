@@ -584,7 +584,7 @@ namespace rascal {
      * Returns the id of the index-th (neighbour) atom of the cluster that is
      * the full structure/atoms object, i.e. simply the id of the index-th atom
      */
-    inline int get_cluster_neighbour(const Parent & /*parent*/,
+    inline int get_cluster_neighbour(std::shared_ptr<const Parent> &,
                                      size_t index) const {
       return this->manager->get_cluster_neighbour(this->manager, index);
     }
@@ -734,14 +734,14 @@ namespace rascal {
   //! Constructor of the pair list manager
   template <class ManagerImplementation>
   AdaptorNeighbourList<ManagerImplementation>::AdaptorNeighbourList(
-          ImplementationPtr_t manager, double cutoff,
+          std::shared_ptr<ManagerImplementation> manager, double cutoff,
       bool consider_ghost_neighbours)
       : manager{std::move(manager)}, cutoff{cutoff}, atom_indices{}, atom_types{},
         ghost_atom_indices{}, nb_neigh{},
         neighbours{}, offsets{}, n_centers{manager->get_size()}, n_ghosts{0},
         consider_ghost_neighbours{consider_ghost_neighbours} {
     static_assert(not(traits::MaxOrder < 1), "No atom list in manager");
-    this->manager->add_child(std::make_shared<ManagerImplementation>(this));
+    this->manager->add_child(this->get_weak_ptr());
   }
 
   /* ---------------------------------------------------------------------- */
@@ -918,7 +918,7 @@ namespace rascal {
     // This is done before the ghost atom generation, to have them all
     // contiguously at the beginning of the list.
     int ntot_atoms{0};
-    for (auto atom : this->manager) {
+    for (auto atom : *this->manager) {
       auto atom_index = atom.get_atom_index();
       auto atom_type = atom.get_atom_type();
       this->atom_indices.push_back(atom_index);

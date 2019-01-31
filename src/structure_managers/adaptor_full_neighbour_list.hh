@@ -99,7 +99,7 @@ namespace rascal {
     //! Extend a minimal/half neighbour list to a full neighbour list.
     explicit AdaptorFullList(ImplementationPtr_t manager);
 
-    
+
     //! Copy constructor
     AdaptorFullList(const AdaptorFullList & other) = delete;
 
@@ -180,7 +180,7 @@ namespace rascal {
     }
 
     //! get atom_index of the index-th atom in manager
-    inline int get_cluster_neighbour(const Parent & /*parent*/,
+    inline int get_cluster_neighbour(std::shared_ptr<const Parent> &,
                                      size_t index) const {
       return this->manager->get_cluster_neighbour(this->manager, index);
     }
@@ -273,9 +273,9 @@ namespace rascal {
   //! constructor implementations
   template <class ManagerImplementation>
   AdaptorFullList<ManagerImplementation>::AdaptorFullList(
-          ImplementationPtr_t manager)
+          std::shared_ptr<ManagerImplementation> manager)
       : manager{std::move(manager)}, nb_neigh{}, neighbours{}, offsets{} {
-    this->manager->add_child(std::make_shared<ManagerImplementation>(this));
+    this->manager->add_child(this->get_weak_ptr());
       }
 
   /* ---------------------------------------------------------------------- */
@@ -317,7 +317,7 @@ namespace rascal {
 
     /* ---------------------------------------------------------------------- */
     // loop through all atoms and pairs and collect all neighbours in vector
-    for (auto atom : this->manager) {
+    for (auto atom : *this->manager) {
       auto index_1{atom.get_atom_index()};
 
       for (auto pair : atom) {
@@ -338,7 +338,7 @@ namespace rascal {
     int offset{0};
     int pair_counter{0};
 
-    for (auto atom : this->manager) {
+    for (auto atom : *this->manager) {
       auto index_i = atom.get_atom_index();
 
       // Add new depth layer for atoms
