@@ -184,21 +184,21 @@ namespace rascal {
      * Returns the id of the index-th (neighbour) atom of the cluster that is
      * the full structure/atoms object, i.e. simply the id of the index-th atom
      */
-    inline int get_cluster_neighbour(const std::shared_ptr<Parent> &,
-                                     size_t index) const {
-      return this->manager->get_cluster_neighbour(this->manager, index);
-    }
+    // inline int get_cluster_neighbour(const std::shared_ptr<Parent> &,
+    //                                  size_t index) const {
+    //   return this->manager->get_cluster_neighbour(this->manager, index);
+    // }
 
-    //! get atom_index of the index-th atom in manager
-    inline int get_cluster_neighbour(
-                const ImplementationPtr_t &,
-                                     size_t index) const {
-      return this->manager->get_cluster_neighbour(this->manager, index);
-    }
+    // //! get atom_index of the index-th atom in manager
+    // inline int get_cluster_neighbour(
+    //             const ImplementationPtr_t &,
+    //                                  size_t index) const {
+    //   return this->manager->get_cluster_neighbour(this->manager, index);
+    // }
 
     //! get atom_index of the index-th atom in manager
     inline int get_cluster_neighbour(const Parent &, size_t index) const {
-      return this->manager->get_cluster_neighbour(this->manager, index);
+      return this->manager->get_cluster_neighbour(*this->manager, index);
     }
 
     //! Returns the id of the index-th neighbour atom of a given cluster
@@ -214,7 +214,7 @@ namespace rascal {
           internal::IncreaseHelper<Order == (traits::MaxOrder - 1)>;
 
       if (Order < (traits::MaxOrder - 1)) {
-        return IncreaseHelper_t::get_cluster_neighbour(this->manager, cluster,
+        return IncreaseHelper_t::get_cluster_neighbour(*this->manager, cluster,
                                                        index);
       } else {
         auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
@@ -239,7 +239,7 @@ namespace rascal {
           internal::IncreaseHelper<Order == (traits::MaxOrder - 1)>;
 
       if (Order < (traits::MaxOrder - 1)) {
-        return IncreaseHelper_t::get_cluster_size(this->manager, cluster);
+        return IncreaseHelper_t::get_cluster_size(*this->manager, cluster);
       } else {
         auto access_index = cluster.get_cluster_index(Layer);
         return this->nb_neigh[access_index];
@@ -488,7 +488,7 @@ namespace rascal {
     if (Order < (traits::MaxOrder - 1)) {
       // If not accessible at this order, call lower Order offsets from lower
       // order manager or push through to lower levels, if adaptors are stacked.
-      return IncreaseHelper_t::get_offset_impl(this->manager, counters);
+      return IncreaseHelper_t::get_offset_impl(*this->manager, counters);
     } else {
       // Counters is an array to call parent offset multiplet. This can then be
       // used to access the actual offset for the Order which was built here.

@@ -175,7 +175,7 @@ namespace rascal {
           internal::IncreaseHelper<Order == (traits::MaxOrder - 1)>;
 
       if (Order < (traits::MaxOrder - 1)) {
-        return IncreaseHelper_t::get_cluster_neighbour(this->manager, cluster,
+        return IncreaseHelper_t::get_cluster_neighbour(*this->manager, cluster,
                                                        index);
       } else {
         auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
@@ -183,22 +183,22 @@ namespace rascal {
       }
     }
 
-    //! get atom_index of the index-th atom in manager
-    inline int get_cluster_neighbour(const std::shared_ptr<Parent> &,
-                                     size_t index) const {
-      return this->manager->get_cluster_neighbour(this->manager, index);
-    }
+    // //! get atom_index of the index-th atom in manager
+    // inline int get_cluster_neighbour(const std::shared_ptr<Parent> &,
+    //                                  size_t index) const {
+    //   return this->manager->get_cluster_neighbour(this->manager, index);
+    // }
 
-    //! get atom_index of the index-th atom in manager
-    inline int get_cluster_neighbour(
-            const ImplementationPtr_t &,
-                                     size_t index) const {
-      return this->manager->get_cluster_neighbour(this->manager, index);
-    }
+    // //! get atom_index of the index-th atom in manager
+    // inline int get_cluster_neighbour(
+    //         const ImplementationPtr_t &,
+    //                                  size_t index) const {
+    //   return this->manager->get_cluster_neighbour(this->manager, index);
+    // }
 
     //! get atom_index of the index-th atom in manager
     inline int get_cluster_neighbour(const Parent &, size_t index) const {
-      return this->manager->get_cluster_neighbour(this->manager, index);
+      return this->manager->get_cluster_neighbour(*this->manager, index);
     }
 
     //! return atom type

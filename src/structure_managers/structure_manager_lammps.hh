@@ -177,16 +177,16 @@ namespace rascal {
      * dummy and is used for consistency in other words, atom_index is the
      * global LAMMPS atom index.
      */
-    inline int get_cluster_neighbour(const std::shared_ptr<Parent> &,
-                                     size_t index) const {
-      return this->ilist[index];
-    }
+    // inline int get_cluster_neighbour(const std::shared_ptr<Parent> &,
+    //                                  size_t index) const {
+    //   return this->ilist[index];
+    // }
 
-    inline int get_cluster_neighbour(
-      std::shared_ptr<StructureManagerLammps> &,
-                                     size_t index) const {
-      return this->ilist[index];
-    }
+    // inline int get_cluster_neighbour(
+    //   std::shared_ptr<StructureManagerLammps> &,
+    //                                  size_t index) const {
+    //   return this->ilist[index];
+    // }
 
     inline int get_cluster_neighbour(const Parent &,
                                      size_t index) const {

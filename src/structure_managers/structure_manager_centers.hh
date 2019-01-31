@@ -256,22 +256,22 @@ namespace rascal {
       return 1;
     }
 
-    //! dummy function, since no neighbours are present her
-    inline int get_cluster_neighbour(const std::shared_ptr<Parent> &,
-                                     size_t index) const {
-      // dummy argument is the atom itself, because if does not make sense at
-      // this order
-      return index;
-    }
+    // //! dummy function, since no neighbours are present her
+    // inline int get_cluster_neighbour(const std::shared_ptr<Parent> &,
+    //                                  size_t index) const {
+    //   // dummy argument is the atom itself, because if does not make sense at
+    //   // this order
+    //   return index;
+    // }
 
-    //! get atom_index of the index-th atom in manager
-    inline int get_cluster_neighbour(
-      const std::shared_ptr<StructureManagerCenters> &,
-                                     size_t index)  {
-       // dummy argument is the atom itself, because if does not make sense at
-      // this order
-      return index;
-    }
+    // //! get atom_index of the index-th atom in manager
+    // inline int get_cluster_neighbour(
+    //   const std::shared_ptr<StructureManagerCenters> &,
+    //                                  size_t index)  {
+    //    // dummy argument is the atom itself, because if does not make sense at
+    //   // this order
+    //   return index;
+    // }
 
     //! dummy function, since no neighbours are present her
     inline int get_cluster_neighbour(const Parent &, size_t index) const {
