@@ -163,8 +163,7 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   class StructureManager : public StructureManagerBase,
-      public std::enable_shared_from_this<
-                                StructureManager<ManagerImplementation>> {
+      public std::enable_shared_from_this<ManagerImplementation> {
    public:
     using StructureManager_t = StructureManager<ManagerImplementation>;
     using traits = StructureManager_traits<ManagerImplementation>;
@@ -194,7 +193,8 @@ namespace rascal {
     //! Default constructor
     StructureManager()
         : cluster_indices_container{
-          ClusterConstructor_t::make(this->get_shared_ptr())} {}
+          // ClusterConstructor_t::make(this->get_shared_ptr())} {}
+          ClusterConstructor_t::make(*this)} {}
 
     //! Copy constructor
     StructureManager(const StructureManager & other) = delete;
@@ -380,12 +380,12 @@ namespace rascal {
       return static_cast<const ManagerImplementation &>(*this);
     }
 
-    std::shared_ptr<StructureManager> get_shared_ptr() {
+    std::shared_ptr<ManagerImplementation> get_shared_ptr() {
         return this->shared_from_this();
     }
 
-    std::weak_ptr<StructureManager> get_weak_ptr() {
-        return std::weak_ptr<StructureManager>(this->get_shared_ptr());
+    std::weak_ptr<ManagerImplementation> get_weak_ptr() {
+        return std::weak_ptr<ManagerImplementation>(this->get_shared_ptr());
     }
 
     // std::weak_ptr<StructureManager_t> get_weak_ptr() const {

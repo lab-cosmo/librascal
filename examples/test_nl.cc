@@ -63,13 +63,15 @@ struct MultipleStrictStructureManager {
     std::vector<double> cutoffs{{3, 4}};
     for (auto filename : filenames) {
       for (auto cutoff : cutoffs) {
-        this->managers1.emplace_back();
-        this->managers2.emplace_back(
-          std::make_shared<Manager2_t>(this->managers1.back(), cutoff));
+        // this->managers1.emplace_back();
+        // this->managers2.emplace_back(
+        //   std::make_shared<Manager2_t>(this->managers1.back(), cutoff));
         // Manager1_t managers1{};
         // Manager2_t managers2{managers1, cutoff};
+        auto m1{std::make_shared<Manager1_t>()};
+        auto m2{std::make_shared<Manager2_t>(m1, cutoff)};
         this->managers.emplace_back(
-          std::make_shared<Manager_t>(this->managers2.back(), cutoff));
+          std::make_shared<Manager_t>(m2, cutoff));
         this->managers.back()->update(filename);
       }
     }
@@ -77,8 +79,8 @@ struct MultipleStrictStructureManager {
 
   ~MultipleStrictStructureManager() {}
 
-  std::list<std::shared_ptr<Manager1_t>> managers1{};
-  std::list<std::shared_ptr<Manager2_t>> managers2{};
+  // std::list<std::shared_ptr<Manager1_t>> managers1{};
+  // std::list<std::shared_ptr<Manager2_t>> managers2{};
   std::list<std::shared_ptr<Manager_t>> managers{};
 };
 
@@ -90,16 +92,16 @@ int main() {
   MultipleStrictStructureManager<StructureManagerCenters> meta{};
 
   if (verbose) {
-    for (auto& manager : meta.managers1) {
-      std::cout << "#################################"<< std::endl;
-      std::cout << manager->nb_clusters(1) << std::endl;
-      std::cout << "#################################"<< std::endl;
-      for (auto&& center : *manager) {
-      //for (auto center = manager->begin(); center!=manager->end(); ++center)
+    // for (auto& manager : meta.managers1) {
+    //   std::cout << "#################################"<< std::endl;
+    //   std::cout << manager->nb_clusters(1) << std::endl;
+    //   std::cout << "#################################"<< std::endl;
+    //   for (auto&& center : *manager) {
+    //   //for (auto center = manager->begin(); center!=manager->end(); ++center)
 
-        std::cout << center.get_atom_type()<< std::endl;
-      }
-    }
+    //     std::cout << center.get_atom_type()<< std::endl;
+    //   }
+    // }
 
     for (auto& manager : meta.managers) {
       std::cout << "################################# 1"<< std::endl;

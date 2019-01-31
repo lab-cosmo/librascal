@@ -103,7 +103,8 @@ namespace rascal {
 
    protected:
      //!< base-class reference to StructureManager
-    std::weak_ptr<StructureManagerBase> base_manager;
+    // std::weak_ptr<StructureManagerBase> base_manager;
+    StructureManagerBase & base_manager;
     Dim_t nb_col;  //!< number of columns stored
     Dim_t nb_row;  //!< number of rows stored
     Dim_t nb_comp; //!< number of dofs stored
@@ -113,10 +114,18 @@ namespace rascal {
     //!< e.g. a JSON formatted string
     const std::string metadata;
     //! constructor
-    PropertyBase(std::shared_ptr<StructureManagerBase> manager,
+    // PropertyBase(std::shared_ptr<StructureManagerBase> manager,
+    //           Dim_t nb_row, Dim_t nb_col,
+    //           size_t order, size_t layer, std::string metadata = "no metadata"):
+    //   base_manager{std::weak_ptr<StructureManagerBase>(manager)},
+    //   nb_col{nb_col}, nb_row{nb_row},
+    //   nb_comp{nb_row * nb_col}, order{order}, property_layer{layer},
+    //   metadata{metadata}
+    // {}
+    PropertyBase(StructureManagerBase & manager,
               Dim_t nb_row, Dim_t nb_col,
               size_t order, size_t layer, std::string metadata = "no metadata"):
-      base_manager{std::weak_ptr<StructureManagerBase>(manager)},
+      base_manager{manager},
       nb_col{nb_col}, nb_row{nb_row},
       nb_comp{nb_row * nb_col}, order{order}, property_layer{layer},
       metadata{metadata}

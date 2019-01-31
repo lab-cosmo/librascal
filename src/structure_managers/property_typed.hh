@@ -159,7 +159,11 @@ namespace rascal {
     using reference = typename Value::reference;
 
     //! constructor
-    TypedProperty(std::shared_ptr<StructureManagerBase> manager,
+    // TypedProperty(std::shared_ptr<StructureManagerBase> manager,
+    //               Dim_t nb_row,
+    //               Dim_t nb_col = 1, std::string metadata = "no metadata")
+    //     : Parent{manager, nb_row, nb_col, Order, PropertyLayer, metadata} {}
+    TypedProperty(StructureManagerBase & manager,
                   Dim_t nb_row,
                   Dim_t nb_col = 1, std::string metadata = "no metadata")
         : Parent{manager, nb_row, nb_col, Order, PropertyLayer, metadata} {}
