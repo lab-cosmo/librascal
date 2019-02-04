@@ -1,13 +1,11 @@
+import rascal.lib._rascal as rc
+from test_utils import load_json_frame, BoxList, Box
 import unittest
 import numpy as np
 import sys
 import json
 
-sys.path.insert(0,'../tests/')
-
-from test_utils import load_json_frame, BoxList, Box
-import rascal.lib._rascal as rc
-
+sys.path.insert(0, '../tests/')
 
 
 class TestSortedCoulombRepresentation(unittest.TestCase):
@@ -23,25 +21,27 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
         self.cell = self.frame['cell']
         self.positions = self.frame['positions']
         self.numbers = self.frame['numbers']
-        self.pbc = np.array([ [1, 1, 1], [0, 0, 0],
-                              [0, 1, 0], [1, 0, 1],
-                              [1, 1, 0], [0, 0, 1],
-                              [1, 0, 0], [0, 1, 0] ]).astype(int)
+        self.pbc = np.array([[1, 1, 1], [0, 0, 0],
+                             [0, 1, 0], [1, 0, 1],
+                             [1, 1, 0], [0, 0, 1],
+                             [1, 0, 0], [0, 1, 0]]).astype(int)
 
         self.Natom = self.positions.shape[0]
         self.cutoffs = [3.]*self.Natom
         self.max_cutoff = np.max(self.cutoffs)
 
-        self.managerC =  rc.StructureManager.Centers()
-        self.managerC.update(np.array(self.positions.T,order='F'),
-                       self.numbers.reshape(-1,1),
-                       np.array(self.cell.T,order='F'),
-                       self.pbc[0].reshape(3,1))
+        self.managerC = rc.StructureManager.Centers()
+        self.managerC.update(np.array(self.positions.T, order='F'),
+                             self.numbers.reshape(-1, 1),
+                             np.array(self.cell.T, order='F'),
+                             self.pbc[0].reshape(3, 1))
 
-        self.managerLC = rc.Adaptor.NeighbourList_Centers(self.managerC,self.max_cutoff)
+        self.managerLC = rc.Adaptor.NeighbourList_Centers(
+            self.managerC, self.max_cutoff)
         self.managerLC.update()
 
-        self.manager = rc.Adaptor.Strict_NeighbourList_Centers(self.managerLC,self.max_cutoff)
+        self.manager = rc.Adaptor.Strict_NeighbourList_Centers(
+            self.managerLC, self.max_cutoff)
         self.manager.update()
 
         self.central_decay = 0.5
@@ -50,8 +50,8 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
         self.size = 50
 
         self.inp = json.dumps(
-                        dict(central_decay=self.central_decay,
-                        interaction_cutoff=self.interaction_cutoff,
-                        interaction_decay=self.interaction_decay,
-                        size=self.size)
-                        )
+            dict(central_decay=self.central_decay,
+                 interaction_cutoff=self.interaction_cutoff,
+                 interaction_decay=self.interaction_decay,
+                 size=self.size)
+        )

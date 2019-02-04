@@ -2,8 +2,9 @@ import numpy as np
 import json
 
 from ..utils import get_strict_neighbourlist
-from ..lib import RepresentationManager,FeatureManager
+from ..lib import RepresentationManager, FeatureManager
 from .base import RepresentationFactory
+
 
 class SortedCoulombMatrix(object):
     """
@@ -35,8 +36,9 @@ class SortedCoulombMatrix(object):
         Fast and Accurate Modeling of Molecular Atomization Energies with Machine Learning.
         Physical Review Letters, 108(5), 58301. https://doi.org/10.1103/PhysRevLett.108.058301
     """
+
     def __init__(self, cutoff, sorting_algorithm='rownorm', size=10, central_decay=-1,
-                    interaction_cutoff=10, interaction_decay=-1):
+                 interaction_cutoff=10, interaction_decay=-1):
         self.name = 'coulomb'
         self.sorting_algorithm = sorting_algorithm
         self.cutoff = cutoff
@@ -46,15 +48,15 @@ class SortedCoulombMatrix(object):
         self.size = int(size)
 
     def get_params(self):
-        params = dict(name=self.name,sorting_algorithm=self.sorting_algorithm,
-                    cutoff=self.cutoff,
-                    central_decay=self.central_decay,
-                    interaction_cutoff=self.interaction_cutoff,
-                    interaction_decay=self.interaction_decay,
-                    size=self.size)
+        params = dict(name=self.name, sorting_algorithm=self.sorting_algorithm,
+                      cutoff=self.cutoff,
+                      central_decay=self.central_decay,
+                      interaction_cutoff=self.interaction_cutoff,
+                      interaction_decay=self.interaction_decay,
+                      size=self.size)
         return params
 
-    def transform(self,frames):
+    def transform(self, frames):
         """
         Compute the representation.
 
@@ -70,17 +72,18 @@ class SortedCoulombMatrix(object):
         """
         Nframe = len(frames)
 
-        managers = list(map(get_strict_neighbourlist,frames,[self.cutoff]*Nframe))
+        managers = list(map(get_strict_neighbourlist,
+                            frames, [self.cutoff]*Nframe))
 
         self.size = self.get_size(managers)
 
         inp = json.dumps(self.get_params())
 
         Nfeature = self.get_Nfeature()
-        features = FeatureManager.Dense_double(Nfeature,inp)
+        features = FeatureManager.Dense_double(Nfeature, inp)
 
         cms = map(RepresentationFactory(self.name),
-                     managers,[inp]*Nframe)
+                  managers, [inp]*Nframe)
 
         for cm in cms:
             cm.compute()
@@ -91,7 +94,7 @@ class SortedCoulombMatrix(object):
     def get_Nfeature(self):
         return int(self.size*(self.size+1)/2)
 
-    def get_size(self,managers):
+    def get_size(self, managers):
         Nneigh = []
         for manager in managers:
             for center in manager:
