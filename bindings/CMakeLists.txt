@@ -2,7 +2,7 @@
 # file   CMakeLists.txt
 #
 # @author Till Junge <till.junge@epfl.ch>
-# @authorFelix Musil <felix.musil@epfl.ch>
+# @author Felix Musil <felix.musil@epfl.ch>
 #
 # @date   08 Jan 2018
 #

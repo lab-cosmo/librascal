@@ -99,7 +99,7 @@ class SphericalExpansion(object):
             get_strict_neighbourlist,
             frames, [self.hypers['interaction_cutoff'], ] * n_frames))
         hypers_str = json.dumps(self.hypers)
-        n_features = self.get_num_components()
+        n_features = self.get_num_coefficients()
         features = FeatureManager.Dense_double(n_features, hypers_str)
         cms = map(RepresentationFactory(self.name),
                   managers, [hypers_str, ] * n_frames)
@@ -108,8 +108,8 @@ class SphericalExpansion(object):
             features.append(cm)
         return features
 
-    def get_num_components(self):
-        """Return the number of components in the spherical expansion
+    def get_num_coefficients(self):
+        """Return the number of coefficients in the spherical expansion
 
         (this is the descriptor size per atomic centre)
 
