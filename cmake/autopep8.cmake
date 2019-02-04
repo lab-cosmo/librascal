@@ -45,7 +45,7 @@
 # SOFTWARE.
 
 # target to run autopep8.py for all configured sources
-set(AUTOPEP8_TARGET lint CACHE STRING "Name of python auto formatter")
+set(AUTOPEP8_TARGET prettypython CACHE STRING "Name of python autoformatter")
 
 # project root directory
 set(AUTOPEP8_PROJECT_ROOT ${PROJECT_SOURCE_DIR}
@@ -70,14 +70,13 @@ endif()
 
 
 # use autopep8.py to check source code files inside DIR directory
-function(autopep8_add_subdirectory DIR FLAGS)
+function(autopep8_add_subdirectory DIR)
     # create relative path to the directory
     set(ABSOLUTE_DIR ${DIR})
 
-    set(EXTENSIONS cc,hh)
+    set(EXTENSIONS py)
     set(FILES_TO_CHECK ${FILES_TO_CHECK}
-      ${ABSOLUTE_DIR}/*.cc
-      ${ABSOLUTE_DIR}/*.hh
+      ${ABSOLUTE_DIR}/*.py
       )
 
     # find all source files inside project
@@ -89,15 +88,13 @@ function(autopep8_add_subdirectory DIR FLAGS)
 
     # perform autopep8 check
     add_custom_target(${TARGET_NAME}
-        COMMAND ${AUTOPEP8} "--extensions=${EXTENSIONS}"
-                           "--root=${AUTOPEP8_PROJECT_ROOT}"
-                           "${FLAGS}"
+        COMMAND ${AUTOPEP8} "--in-place"
                            ${LIST_OF_FILES}
         DEPENDS ${LIST_OF_FILES}
         COMMENT "autopep8: Checking source code style"
     )
 
-    # run this target, when `pretty python` is
+    # run this target, when `prettypython` is
     add_dependencies(${AUTOPEP8_TARGET} ${TARGET_NAME})
 
 endfunction()

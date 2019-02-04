@@ -11,7 +11,8 @@
 #
 # @section LICENSE
 #
-# Copyright © 2018 Till Junge
+# Copyright © 2018 Till Junge, Felix Musil, Markus Stricker, COSMO (EPFL), LAMMM
+# (EPFL)
 #
 # Rascal is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public License as
@@ -127,6 +128,9 @@ include(cpplint)
 
 # Check for clang-format
 include(clangformat)
+
+# CHeck for autopep8
+include(autopep8)
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/tests
@@ -316,10 +320,8 @@ endif()
 
 # Add python files for autoformatting with autopep8
 if(AUTOPEP8_FOUND)
-  # register the folders to apply clang-format with given configuration
-  # .clang-format in project root folder
-  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/src" "")
-  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
-  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
-  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/examples")
+  # register the folders to apply autopep8 with given configuration
+  # .pycodestyle in project root folder
+  autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
+  autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
 endif()

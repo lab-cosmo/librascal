@@ -52,7 +52,8 @@ set(CLANG_FORMAT_TARGET pretty CACHE STRING "Name of C++ autoformatter")
 
 # project root directory
 set(CLANG_FORMAT_PROJECT_ROOT
-  ${PROJECT_SOURCE_DIR} CACHE STRING "Project ROOT directory")
+  ${PROJECT_SOURCE_DIR} CACHE STRING "Project ROOT directory"
+  )
 
 # find clang-format executable
 find_file(CLANG_FORMAT name clang-format HINTS $ENV/usr/bin)
