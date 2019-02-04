@@ -90,7 +90,7 @@ namespace rascal {
 
     template<>
     struct AtomicSmearingSpecification<GaussianSigmaType::PerSpecies> {
-      explicit AtomicSmearingSpecification(json ) {
+      explicit AtomicSmearingSpecification(json /* hypers */) {
       }
       template<size_t Order, size_t Layer>
       double get_gaussian_sigma(ClusterRefKey<Order, Layer> & /* pair */) {
@@ -161,8 +161,6 @@ namespace rascal {
       this->radial_norm_factors.resize(this->max_radial, 1);
       this->radial_nl_factors.resize(this->max_radial, this->max_angular + 1);
       this->soap_vectors.resize_to_zero();
-      //this->soap_vectors.resize(this->n_species * this->max_radial,
-                                //pow(this->max_angular + 1, 2));
       this->is_precomputed = false;
 
       this->hypers = hypers;
