@@ -52,10 +52,18 @@ namespace rascal {
         "reference_data/small_molecule.json"};
     std::vector<double> cutoffs{{1., 2., 3.}};
 
-    std::list<json> hypers{{{"central_decay", 0.5},
-                            {"interaction_cutoff", 10.},
-                            {"interaction_decay", 0.5},
-                            {"size", 120}}};
+    std::list<json> hypers{
+      {{"central_decay", 0.5},
+       {"interaction_cutoff", 10.},
+       {"interaction_decay", 0.5},
+       {"size", 120},
+       {"sorting_algorithm", "distance"}},
+      {{"central_decay", 0.5},
+       {"interaction_cutoff", 10.},
+       {"interaction_decay", 0.5},
+       {"size", 120},
+      {"sorting_algorithm", "row_norm"}}
+    };
   };
 
   /* ---------------------------------------------------------------------- */
@@ -64,16 +72,17 @@ namespace rascal {
    * access to different data structures. They are used to check the aggregation
    * of calculated feature data from multiple structures.
    */
-  template <typename T, template <typename> class FeatureManager,
-            class StructureManager,
-            template <typename, Option... opts> class RepresentationManager,
-            class BaseFixture, Option... options>
+  template<typename T,
+           template<typename> class FeatureManager,
+           class StructureManager,
+           template<typename> class RepresentationManager,
+           class BaseFixture>
   struct FeatureFixture
-      : RepresentationFixture<StructureManager, RepresentationManager,
-                              BaseFixture, options...> {
-    using Parent =
-        RepresentationFixture<StructureManager, RepresentationManager,
-                              BaseFixture, options...>;
+  :RepresentationFixture<StructureManager, RepresentationManager,
+                         BaseFixture> {
+    using Parent = RepresentationFixture<StructureManager,
+                                         RepresentationManager,
+                                         BaseFixture>;
     using Manager_t = typename Parent::Manager_t;
     using Representation_t = typename Parent::Representation_t;
     using Feature_t = FeatureManager<T>;

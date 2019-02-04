@@ -84,5 +84,3 @@ sudo docker build -t test -f ./docker/install_env.dockerfile  .
 sudo docker run -it -v /path/to/repo/:/home/user/  test
 ```
 And then follow the instruction in BOOST.md for compilation with boost from conda
-
-=======

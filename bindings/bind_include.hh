@@ -72,10 +72,6 @@ void math_binding(py::module &);
 
 namespace rascal {
   namespace internal {
-    //! Convert an Option into a string
-    static const std::string to_string(const Option opt) {
-      return std::to_string(static_cast<int>(opt));
-    }
 
     /**
      * Mapping to search and replace in type names
@@ -83,18 +79,12 @@ namespace rascal {
      */
     struct SubstitutionMap {
       using Map = std::map<std::string, std::string>;
-      Map mapping = {{"StructureManager", ""},
-                     {"Adaptor", ""},
-                     {"RepresentationManager", ""},
-                     {"FeatureManager", ""},
-                     // with gcc Option::CMSortDistance -> (Options)1
-                     {R"(\([^()]*\))", ""},
-                     {to_string(Option::CMSortDistance), "SortDistance"},
-                     {to_string(Option::CMSortRowNorm), "SortRowNorm"},
-                     // with clang
-                     // Option::CMSortDistance -> "Option::CMSortDistance"
-                     {"Option::CMSortDistance", "SortDistance"},
-                     {"Option::CMSortRowNorm", "SortRowNorm"}};
+      Map mapping = {
+        {"StructureManager", ""},
+        {"Adaptor", ""},
+        {"RepresentationManager", ""},
+        {"FeatureManager", ""}
+      };
     };
 
     /**

@@ -35,18 +35,14 @@ namespace rascal {
   // TODO(felix) define more test that could be streamlined
   // gets a list of fixtures for all the different possible structure managers
   using multiple_fixtures = boost::mpl::list<
-      FeatureFixture<double, FeatureManagerDense, StructureManagerCenters,
-                     RepresentationManagerSortedCoulomb, TestFeatureData,
-                     Option::CMSortDistance>,
-      FeatureFixture<float, FeatureManagerDense, StructureManagerCenters,
-                     RepresentationManagerSortedCoulomb, TestFeatureData,
-                     Option::CMSortDistance>,
-      FeatureFixture<double, FeatureManagerDense, StructureManagerCenters,
-                     RepresentationManagerSortedCoulomb, TestFeatureData,
-                     Option::CMSortRowNorm>,
-      FeatureFixture<float, FeatureManagerDense, StructureManagerCenters,
-                     RepresentationManagerSortedCoulomb, TestFeatureData,
-                     Option::CMSortRowNorm>>;
+    FeatureFixture<double, FeatureManagerDense,
+                   StructureManagerCenters,
+                   RepresentationManagerSortedCoulomb,
+                   TestFeatureData>,
+    FeatureFixture<float, FeatureManagerDense,
+                   StructureManagerCenters,
+                   RepresentationManagerSortedCoulomb,
+                   TestFeatureData>>;
 
   /* ---------------------------------------------------------------------- */
   /**

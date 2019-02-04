@@ -35,10 +35,10 @@ class SortedCoulombMatrix(object):
         Fast and Accurate Modeling of Molecular Atomization Energies with Machine Learning.
         Physical Review Letters, 108(5), 58301. https://doi.org/10.1103/PhysRevLett.108.058301
     """
-    def __init__(self, cutoff, sort='rownorm', size=10, central_decay=-1,
+    def __init__(self, cutoff, sorting_algorithm='rownorm', size=10, central_decay=-1,
                     interaction_cutoff=10, interaction_decay=-1):
         self.name = 'coulomb'
-        self.sort = sort
+        self.sorting_algorithm = sorting_algorithm
         self.cutoff = cutoff
         self.central_decay = central_decay
         self.interaction_cutoff = interaction_cutoff
@@ -46,7 +46,7 @@ class SortedCoulombMatrix(object):
         self.size = int(size)
 
     def get_params(self):
-        params = dict(name=self.name,sort=self.sort,
+        params = dict(name=self.name,sorting_algorithm=self.sorting_algorithm,
                     cutoff=self.cutoff,
                     central_decay=self.central_decay,
                     interaction_cutoff=self.interaction_cutoff,
@@ -79,7 +79,7 @@ class SortedCoulombMatrix(object):
         Nfeature = self.get_Nfeature()
         features = FeatureManager.Dense_double(Nfeature,inp)
 
-        cms = map(RepresentationFactory(self.name,self.sort),
+        cms = map(RepresentationFactory(self.name),
                      managers,[inp]*Nframe)
 
         for cm in cms:
