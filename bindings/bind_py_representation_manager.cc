@@ -56,8 +56,7 @@ void add_representation_managers(py::module & mod, py::module & m_garbage) {
   py::class_<RepresentationManagerBase>(m_garbage, "RepresentationManagerBase");
   using Manager_t =
       AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>;
-  using Representation1_t =
-        RepresentationManagerSortedCoulomb<Manager_t>;
-  auto rep_sorted_coulomb = add_representation_manager<
-                                    Representation1_t>(mod, m_garbage);
+  using Representation1_t = RepresentationManagerSortedCoulomb<Manager_t>;
+  auto rep_sorted_coulomb =
+      add_representation_manager<Representation1_t>(mod, m_garbage);
 }

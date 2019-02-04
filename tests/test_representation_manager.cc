@@ -47,9 +47,9 @@ namespace rascal {
     // use of stable sort so 2 goes before 4
     true_order << 0, 1, 3, 2, 4;
 
-    auto test_order = internal::SortCoulomMatrix<
-      internal::CMSortAlgorithm::RowNorm>::get_coulomb_matrix_sorting_order(
-                                              test_matrix, test_matrix);
+    auto test_order =
+        internal::SortCoulomMatrix<internal::CMSortAlgorithm::RowNorm>::
+            get_coulomb_matrix_sorting_order(test_matrix, test_matrix);
 
     for (auto idx_i{0}; idx_i < true_order.size(); ++idx_i) {
       BOOST_CHECK_EQUAL(true_order(idx_i), test_order[idx_i].first);
@@ -71,9 +71,9 @@ namespace rascal {
     // use of stable sort so 2 goes before 4
     true_order << 0, 3, 2, 1;
 
-    auto test_order = internal::SortCoulomMatrix<
-        internal::CMSortAlgorithm::Distance>::get_coulomb_matrix_sorting_order(
-                  test_matrix, test_matrix);
+    auto test_order =
+        internal::SortCoulomMatrix<internal::CMSortAlgorithm::Distance>::
+            get_coulomb_matrix_sorting_order(test_matrix, test_matrix);
 
     for (auto idx_i{0}; idx_i < true_order.size(); ++idx_i) {
       BOOST_CHECK_EQUAL(true_order(idx_i), test_order[idx_i].first);
@@ -82,14 +82,15 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
 
-  using multiple_fixtures = boost::mpl::list<
-      RepresentationFixture<
-          StructureManagerCenters, RepresentationManagerSortedCoulomb,
-          MultipleStructureSortedCoulomb>>;
+  using multiple_fixtures =
+      boost::mpl::list<RepresentationFixture<StructureManagerCenters,
+                                             RepresentationManagerSortedCoulomb,
+                                             MultipleStructureSortedCoulomb>>;
 
-  using fixtures_ref_test = boost::mpl::list<RepresentationFixture<
-      StructureManagerCenters, RepresentationManagerSortedCoulomb,
-      SortedCoulombTestData>>;
+  using fixtures_ref_test =
+      boost::mpl::list<RepresentationFixture<StructureManagerCenters,
+                                             RepresentationManagerSortedCoulomb,
+                                             SortedCoulombTestData>>;
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -135,19 +136,18 @@ namespace rascal {
     auto & representations = Fix::representations;
     auto & ref_data = Fix::ref_data;
 
-
     // Choose the data depending on the current options
     using Std2DArray_t = std::vector<std::vector<double>>;
 
-    const auto& data{ref_data.at("rep_info").template get<json>()};
+    const auto & data{ref_data.at("rep_info").template get<json>()};
     // feature_matrices = data["feature_matrices"];
 
     size_t manager_i{0};
     for (auto & manager : managers) {
-      for (const auto& config : data.at(manager_i)) {
+      for (const auto & config : data.at(manager_i)) {
         const auto & hypers = config.at("hypers").template get<json>();
         const auto & ref_representation =
-                config.at("feature_matrix").template get<Std2DArray_t>();
+            config.at("feature_matrix").template get<Std2DArray_t>();
 
         representations.emplace_back(manager, hypers);
         representations.back().compute();
@@ -162,9 +162,9 @@ namespace rascal {
                             test_representation.cols());
 
           for (size_t col_i{0}; col_i < ref_representation[row_i].size();
-              ++col_i) {
+               ++col_i) {
             auto diff{std::abs(ref_representation[row_i][col_i] -
-                              test_representation(row_i, col_i))};
+                               test_representation(row_i, col_i))};
             BOOST_CHECK_LE(diff, 1e-12);
           }
         }

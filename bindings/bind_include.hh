@@ -79,12 +79,10 @@ namespace rascal {
      */
     struct SubstitutionMap {
       using Map = std::map<std::string, std::string>;
-      Map mapping = {
-        {"StructureManager", ""},
-        {"Adaptor", ""},
-        {"RepresentationManager", ""},
-        {"FeatureManager", ""}
-      };
+      Map mapping = {{"StructureManager", ""},
+                     {"Adaptor", ""},
+                     {"RepresentationManager", ""},
+                     {"FeatureManager", ""}};
     };
 
     /**

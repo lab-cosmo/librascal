@@ -50,18 +50,16 @@ namespace rascal {
         "reference_data/small_molecule.json"};
     std::vector<double> cutoffs{{1., 2., 3.}};
 
-    std::list<json> hypers{
-      {{"central_decay", 0.5},
-      {"interaction_cutoff", 10.},
-      {"interaction_decay", 0.5},
-      {"size", 120},
-      {"sorting_algorithm", "distance"}},
-      {{"central_decay", 0.5},
-      {"interaction_cutoff", 10.},
-      {"interaction_decay", 0.5},
-      {"size", 120},
-      {"sorting_algorithm", "row_norm"}}
-      };
+    std::list<json> hypers{{{"central_decay", 0.5},
+                            {"interaction_cutoff", 10.},
+                            {"interaction_decay", 0.5},
+                            {"size", 120},
+                            {"sorting_algorithm", "distance"}},
+                           {{"central_decay", 0.5},
+                            {"interaction_cutoff", 10.},
+                            {"interaction_decay", 0.5},
+                            {"size", 120},
+                            {"sorting_algorithm", "row_norm"}}};
   };
 
   struct SortedCoulombTestData {
@@ -69,8 +67,7 @@ namespace rascal {
       std::vector<std::uint8_t> ref_data_ubjson;
       internal::read_binary_file(this->ref_filename, ref_data_ubjson);
       ref_data = json::from_ubjson(ref_data_ubjson);
-      filenames =
-            ref_data.at("filenames").get<std::vector<std::string>>();
+      filenames = ref_data.at("filenames").get<std::vector<std::string>>();
       cutoffs = ref_data.at("cutoffs").get<std::vector<double>>();
     }
     ~SortedCoulombTestData() = default;
@@ -125,8 +122,7 @@ namespace rascal {
   };
 
   template <class StructureManager,
-            template <typename> class RepresentationManager,
-            class BaseFixture>
+            template <typename> class RepresentationManager, class BaseFixture>
   struct RepresentationFixture
       : MultipleStructureManagerStrictFixture<StructureManager, BaseFixture> {
     using Parent =
