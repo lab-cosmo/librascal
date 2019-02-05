@@ -48,6 +48,8 @@
 #include <limits>
 #include <tuple>
 #include <memory>
+#include <cstdlib>
+#include <cxxabi.h>
 
 namespace rascal {
 
@@ -148,6 +150,15 @@ namespace rascal {
       }
     };
 
+    std::string demangle(const char *name) {
+      int status = -4; // some arbitrary value to eliminate the compiler warning
+
+      std::unique_ptr<char, void (*)(void *)> res{
+          abi::__cxa_demangle(name, NULL, NULL, &status), std::free};
+
+      return (status == 0) ? res.get() : name;
+    }
+
   }  // namespace internal
 
   /* ---------------------------------------------------------------------- */
@@ -162,9 +173,9 @@ namespace rascal {
    * class implementation
    */
   template <class ManagerImplementation>
-  class StructureManager : public StructureManagerBase {
-  // class StructureManager : public StructureManagerBase,
-  //     public std::enable_shared_from_this<ManagerImplementation> {
+  // class StructureManager : public StructureManagerBase {
+  class StructureManager : public StructureManagerBase,
+      public std::enable_shared_from_this<ManagerImplementation> {
    public:
     using StructureManager_t = StructureManager<ManagerImplementation>;
     using traits = StructureManager_traits<ManagerImplementation>;
@@ -314,11 +325,15 @@ namespace rascal {
     }
 
     std::shared_ptr<ManagerImplementation> get_shared_ptr() {
-        return this->implementation().get_shared_ptr();
+        return this->shared_from_this();
     }
 
     std::weak_ptr<ManagerImplementation> get_weak_ptr() {
         return std::weak_ptr<ManagerImplementation>(this->get_shared_ptr());
+    }
+
+    decltype(auto) get_name() {
+        return demangle(typeid(ManagerImplementation).name());
     }
 
    protected:

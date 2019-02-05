@@ -424,8 +424,7 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   class AdaptorNeighbourList
-      : public StructureManager<AdaptorNeighbourList<ManagerImplementation>>,
-  public std::enable_shared_from_this<AdaptorNeighbourList<ManagerImplementation>> {
+      : public StructureManager<AdaptorNeighbourList<ManagerImplementation>> {
    public:
     using Base = StructureManager<AdaptorNeighbourList<ManagerImplementation>>;
     using Parent =
@@ -454,6 +453,12 @@ namespace rascal {
     AdaptorNeighbourList(ImplementationPtr_t manager, double cutoff,
                          bool consider_ghost_neighbours = false);
 
+    AdaptorNeighbourList(ImplementationPtr_t manager, std::tuple<double> tp)
+    :AdaptorNeighbourList(manager, std::get<0>(tp)) {}
+
+    AdaptorNeighbourList(ImplementationPtr_t manager,
+                        std::tuple<double, bool> tp)
+    :AdaptorNeighbourList(manager, std::get<0>(tp), std::get<1>(tp)) {}
 
     //! Copy constructor
     AdaptorNeighbourList(const AdaptorNeighbourList & other) = delete;
@@ -488,11 +493,6 @@ namespace rascal {
     //! check whether neighbours of ghosts were considered
     inline bool get_consider_ghost_neighbours() const {
       return this->consider_ghost_neighbours;
-    }
-
-
-    std::shared_ptr<Adaptor_t> get_shared_ptr() {
-        return this->shared_from_this();
     }
 
     /**
@@ -759,7 +759,7 @@ namespace rascal {
         neighbours{}, offsets{}, n_centers{0}, n_ghosts{0},
         consider_ghost_neighbours{consider_ghost_neighbours} {
     static_assert(not(traits::MaxOrder < 1), "No atom list in manager");
-    this->manager->add_child(this->get_weak_ptr());
+    // this->manager->add_child(this->get_weak_ptr());
   }
 
   /* ---------------------------------------------------------------------- */

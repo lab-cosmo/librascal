@@ -74,8 +74,7 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   class AdaptorFullList
-      : public StructureManager<AdaptorFullList<ManagerImplementation>>,
-  public std::enable_shared_from_this<AdaptorFullList<ManagerImplementation>> {
+      : public StructureManager<AdaptorFullList<ManagerImplementation>> {
    public:
     using Parent = StructureManager<AdaptorFullList<ManagerImplementation>>;
     using traits = StructureManager_traits<AdaptorFullList>;
@@ -101,6 +100,8 @@ namespace rascal {
     //! Extend a minimal/half neighbour list to a full neighbour list.
     explicit AdaptorFullList(ImplementationPtr_t manager);
 
+    AdaptorFullList(ImplementationPtr_t manager, std::tuple<> tp)
+    :AdaptorFullList(manager) {}
 
     //! Copy constructor
     AdaptorFullList(const AdaptorFullList & other) = delete;
@@ -123,12 +124,6 @@ namespace rascal {
     //! update the underlying manager as well as the adaptor
     template <class... Args>
     void update(Args &&... arguments);
-
-
-    std::shared_ptr<Adaptor_t> get_shared_ptr() {
-        return this->shared_from_this();
-    }
-
 
     /**
      * returns the cutoff from the underlying manager which built the
@@ -295,7 +290,7 @@ namespace rascal {
   AdaptorFullList<ManagerImplementation>::AdaptorFullList(
           std::shared_ptr<ManagerImplementation> manager)
       : manager{std::move(manager)}, nb_neigh{}, neighbours{}, offsets{} {
-    this->manager->add_child(this->get_weak_ptr());
+    // this->manager->add_child(this->get_weak_ptr());
       }
 
   /* ---------------------------------------------------------------------- */

@@ -90,6 +90,9 @@ namespace rascal {
      */
     AdaptorStrict(ImplementationPtr_t manager, double cutoff);
 
+    AdaptorMaxOrder(ImplementationPtr_t manager, std::tuple<double> tp)
+    :AdaptorMaxOrder(manager, std::get<0>(tp)) {}
+
     //! Copy constructor
     AdaptorStrict(const AdaptorStrict & other) = delete;
 
@@ -328,8 +331,8 @@ namespace rascal {
   template <class ManagerImplementation>
   AdaptorStrict<ManagerImplementation>::AdaptorStrict(
           std::shared_ptr<ManagerImplementation> manager, double cutoff)
-      : manager{std::move(manager)}, distance{*this->get_shared_ptr()},
-          dir_vec{*this->get_shared_ptr()}, cutoff{cutoff},
+      : manager{std::move(manager)}, distance{*this},
+          dir_vec{*this}, cutoff{cutoff},
         atom_indices{}, nb_neigh{}, offsets{}
 
   {
@@ -337,7 +340,7 @@ namespace rascal {
       throw std::runtime_error("underlying manager already has a smaller "
                                "cut off");
     }
-    this->manager->add_child(this->get_weak_ptr());
+    // this->manager->add_child(this->get_weak_ptr());
   }
 
   /* ---------------------------------------------------------------------- */

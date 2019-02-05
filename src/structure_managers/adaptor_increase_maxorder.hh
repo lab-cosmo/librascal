@@ -74,8 +74,7 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   class AdaptorMaxOrder
-      : public StructureManager<AdaptorMaxOrder<ManagerImplementation>>,
-  public std::enable_shared_from_this<AdaptorMaxOrder<ManagerImplementation>> {
+      : public StructureManager<AdaptorMaxOrder<ManagerImplementation>> {
    public:
     using Base = StructureManager<AdaptorMaxOrder<ManagerImplementation>>;
 
@@ -104,6 +103,9 @@ namespace rascal {
      */
     explicit AdaptorMaxOrder(ImplementationPtr_t manager);
 
+    AdaptorMaxOrder(ImplementationPtr_t manager, std::tuple<> tp)
+    :AdaptorMaxOrder(manager) {}
+
     //! Copy constructor
     AdaptorMaxOrder(const AdaptorMaxOrder & other) = delete;
 
@@ -129,12 +131,6 @@ namespace rascal {
     //! Updates the underlying manager as well as the adaptor
     template <class... Args>
     void update(Args &&... arguments);
-
-
-    std::shared_ptr<Adaptor_t> get_shared_ptr() {
-        return this->shared_from_this();
-    }
-
 
     /**
      * Returns the linear indices of the clusters (whose atom indices are stored
@@ -309,7 +305,7 @@ namespace rascal {
       throw std::runtime_error("Increase MaxOrder: No pair list in underlying"
                                " manager.");
     }
-    this->manager->add_child(this->get_weak_ptr());
+    // this->manager->add_child(this->get_weak_ptr());
   }
 
   /* ---------------------------------------------------------------------- */
