@@ -74,10 +74,12 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   class AdaptorFullList
-      : public StructureManager<AdaptorFullList<ManagerImplementation>> {
+      : public StructureManager<AdaptorFullList<ManagerImplementation>>,
+  public std::enable_shared_from_this<AdaptorFullList<ManagerImplementation>> {
    public:
     using Parent = StructureManager<AdaptorFullList<ManagerImplementation>>;
     using traits = StructureManager_traits<AdaptorFullList>;
+    using Adaptor_t = AdaptorFullList<ManagerImplementation>;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using parent_traits = typename ManagerImplementation::traits;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
@@ -121,6 +123,12 @@ namespace rascal {
     //! update the underlying manager as well as the adaptor
     template <class... Args>
     void update(Args &&... arguments);
+
+
+    std::shared_ptr<Adaptor_t> get_shared_ptr() {
+        return this->shared_from_this();
+    }
+
 
     /**
      * returns the cutoff from the underlying manager which built the

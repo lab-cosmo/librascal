@@ -157,7 +157,7 @@ namespace rascal {
     //! Constructor
     RepresentationManagerSortedCoulomb(ManagerPtr_t sm, const hypers_t & hyper)
         : structure_manager{std::move(sm)}, central_decay{}, interaction_cutoff{},
-          interaction_decay{}, coulomb_matrices{sm} {
+          interaction_decay{}, coulomb_matrices{*sm->get_shared_ptr()} {
       this->set_hyperparameters(hyper);
       this->check_size_compatibility();
     }

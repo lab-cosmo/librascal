@@ -57,7 +57,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   //! Definition of the new StructureManagerLammps class.
   class StructureManagerLammps:
-    public StructureManager<StructureManagerLammps> {
+    public StructureManager<StructureManagerLammps>,
+    public std::enable_shared_from_this<StructureManagerLammps> {
    public:
     using traits = StructureManager_traits<StructureManagerLammps>;
     using Parent = StructureManager<StructureManagerLammps>;
@@ -83,6 +84,10 @@ namespace rascal {
     //! Move assignment operator
     StructureManagerLammps
     & operator=(StructureManagerLammps && other) = default;
+
+    std::shared_ptr<StructureManagerLammps> get_shared_ptr() {
+        return this->shared_from_this();
+    }
 
     /**
      * resetting is required every time the list changes. Here, this

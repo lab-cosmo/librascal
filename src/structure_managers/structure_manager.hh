@@ -142,7 +142,7 @@ namespace rascal {
     //! Overload to build the tuple
     template <typename... PropertyTypes, typename Manager>
     struct ClusterIndexConstructor<std::tuple<PropertyTypes...>, Manager> {
-      static inline decltype(auto) make(Manager  manager) {
+      static inline decltype(auto) make(Manager & manager) {
         return std::tuple<PropertyTypes...>(
             std::move(PropertyTypes(manager))...);
       }
@@ -162,8 +162,9 @@ namespace rascal {
    * class implementation
    */
   template <class ManagerImplementation>
-  class StructureManager : public StructureManagerBase,
-      public std::enable_shared_from_this<ManagerImplementation> {
+  class StructureManager : public StructureManagerBase {
+  // class StructureManager : public StructureManagerBase,
+  //     public std::enable_shared_from_this<ManagerImplementation> {
    public:
     using StructureManager_t = StructureManager<ManagerImplementation>;
     using traits = StructureManager_traits<ManagerImplementation>;
@@ -174,7 +175,7 @@ namespace rascal {
         StructureManager, typename traits::LayerByOrder>::type;
     using ClusterConstructor_t =
         typename internal::ClusterIndexConstructor<ClusterIndex_t,
-                                       std::shared_ptr<StructureManagerBase>>;
+                                       StructureManagerBase>;
     using Children_t = std::weak_ptr<StructureManagerBase>;
 
     //! helper type for Property creation
@@ -193,8 +194,8 @@ namespace rascal {
     //! Default constructor
     StructureManager()
         : cluster_indices_container{
-          // ClusterConstructor_t::make(this->get_shared_ptr())} {}
           ClusterConstructor_t::make(*this)} {}
+          // ClusterConstructor_t::make(*this)} {}
 
     //! Copy constructor
     StructureManager(const StructureManager & other) = delete;
@@ -312,6 +313,13 @@ namespace rascal {
       this->children.emplace_back(child);
     }
 
+    std::shared_ptr<ManagerImplementation> get_shared_ptr() {
+        return this->implementation().get_shared_ptr();
+    }
+
+    std::weak_ptr<ManagerImplementation> get_weak_ptr() {
+        return std::weak_ptr<ManagerImplementation>(this->get_shared_ptr());
+    }
 
    protected:
     void update_tree_root() {
@@ -380,17 +388,6 @@ namespace rascal {
       return static_cast<const ManagerImplementation &>(*this);
     }
 
-    std::shared_ptr<ManagerImplementation> get_shared_ptr() {
-        return this->shared_from_this();
-    }
-
-    std::weak_ptr<ManagerImplementation> get_weak_ptr() {
-        return std::weak_ptr<ManagerImplementation>(this->get_shared_ptr());
-    }
-
-    // std::weak_ptr<StructureManager_t> get_weak_ptr() const {
-    //     return std::weak_ptr<StructureManager_t>(this->get_shared_ptr());
-    // }
 
     //! get an array with all atoms inside
     std::array<AtomRef, 0> get_atoms() const {

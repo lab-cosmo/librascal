@@ -202,7 +202,8 @@ namespace rascal {
     void resize() {
       auto order = this->get_order();
       auto n_components = this->get_nb_comp();
-      auto new_size = this->base_manager.lock()->nb_clusters(order) * n_components;
+      // auto new_size = this->base_manager.lock()->nb_clusters(order) * n_components;
+      auto new_size = this->base_manager.nb_clusters(order) * n_components;
       this->values.resize(new_size);
     }
 

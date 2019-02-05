@@ -74,11 +74,13 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   class AdaptorMaxOrder
-      : public StructureManager<AdaptorMaxOrder<ManagerImplementation>> {
+      : public StructureManager<AdaptorMaxOrder<ManagerImplementation>>,
+  public std::enable_shared_from_this<AdaptorMaxOrder<ManagerImplementation>> {
    public:
     using Base = StructureManager<AdaptorMaxOrder<ManagerImplementation>>;
 
     using Parent = StructureManager<AdaptorMaxOrder<ManagerImplementation>>;
+    using Adaptor_t = AdaptorMaxOrder<ManagerImplementation>;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorMaxOrder>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
@@ -127,6 +129,12 @@ namespace rascal {
     //! Updates the underlying manager as well as the adaptor
     template <class... Args>
     void update(Args &&... arguments);
+
+
+    std::shared_ptr<Adaptor_t> get_shared_ptr() {
+        return this->shared_from_this();
+    }
+
 
     /**
      * Returns the linear indices of the clusters (whose atom indices are stored
