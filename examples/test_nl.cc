@@ -137,7 +137,7 @@ int main() {
 
   MultipleStrictStructureManager<StructureManagerCenters> meta{};
 
-  if (verbose) {
+
     // for (auto& manager : meta.managers1) {
     //   std::cout << "#################################"<< std::endl;
     //   std::cout << manager->nb_clusters(1) << std::endl;
@@ -149,17 +149,23 @@ int main() {
     //   }
     // }
 
-    for (auto&& manager : meta.managers) {
-      // manager->update("alanine-X.json");
-      // manager->update(positions, atom_types, cell, PBC_t{pbc.data()});
-
+  for (auto&& manager : meta.managers) {
+    // manager->update("alanine-X.json");
+    // manager->update(positions, atom_types, cell, PBC_t{pbc.data()});
+    if (verbose) {
       std::cout << "################################# 1"<< std::endl;
       std::cout << manager->size() << std::endl;
+    }
+    auto lower_manager = extract_underlying_manager<-2>(manager);
+    std::cout << lower_manager->get_name()<< std::endl;
 
-      for (auto&& center : manager) {
+    for (auto&& center : manager) {
+      if (verbose) {
         std::cout << center.get_atom_type() << std::endl;
         std::cout << "################################# 2"<< std::endl;
-        for (auto neigh : center) {
+      }
+      for (auto neigh : center) {
+        if (verbose) {
           std::cout << neigh.get_atom_type() << std::endl;
         }
       }

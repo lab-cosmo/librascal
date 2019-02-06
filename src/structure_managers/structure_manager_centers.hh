@@ -91,7 +91,7 @@ namespace rascal {
     using Vector_ref = typename Parent::Vector_ref;
     using AtomRef_t = typename Parent::AtomRef;
     using Children_t = typename Parent::Children_t;
-
+    using ImplementationPtr_t = std::shared_ptr<StructureManagerCenters>;
 
     /**
      * Eigen::Map is a convenient way to access data in the 'Eigen-way', if it
@@ -174,7 +174,6 @@ namespace rascal {
 
     //! it is not an adaptor so there is nothing to update
     void update_adaptor() final {}
-
 
     //! required for the construction of vectors, etc
     constexpr static int dim() { return traits::Dim; }

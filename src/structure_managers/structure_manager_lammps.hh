@@ -63,6 +63,7 @@ namespace rascal {
     using Parent = StructureManager<StructureManagerLammps>;
     using Vector_ref = typename Parent::Vector_ref;
     using AtomRef_t = typename Parent::AtomRef;
+    using ImplementationPtr_t = std::shared_ptr<StructureManagerLammps>;
 
     //! Default constructor
     StructureManagerLammps() = default;
