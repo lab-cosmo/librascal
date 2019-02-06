@@ -305,31 +305,38 @@ namespace rascal {
       return this->implementation().get_atom_type(atom_index);
     }
 
+    //! Send the update signal from the root to all branches
     virtual void update_tree() {
       this->implementation().get_manager().update_tree();
     }
 
+    //! Add a child node to a node
     void add_child(std::weak_ptr<StructureManagerBase> child) {
       this->children.emplace_back(child);
     }
 
+    //! Create a new shared pointer to the object
     std::shared_ptr<ManagerImplementation> get_shared_ptr() {
         return this->shared_from_this();
     }
 
+    //! Create a new weak pointer to the object
     std::weak_ptr<ManagerImplementation> get_weak_ptr() {
         return std::weak_ptr<ManagerImplementation>(this->get_shared_ptr());
     }
 
+    //! Get the full type of the structure manager
     static decltype(auto) get_name() {
       return internal::GetTypeName<ManagerImplementation>();
     }
 
    protected:
+    //! Send update signal from a root, e.g. StructureManagerCenters
     void update_tree_root() {
       this->update_children();
     }
 
+    //! Update itself and send update signal to children nodes
     virtual void update_children() {
       this->implementation().update_adaptor();
       for (auto && child : this->children) {
@@ -337,6 +344,7 @@ namespace rascal {
       }
     }
 
+    //! List of children nodes
     std::vector<Children_t> children{};
 
 

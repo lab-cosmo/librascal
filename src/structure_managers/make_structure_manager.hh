@@ -101,7 +101,7 @@ namespace rascal {
     std::cout  <<std::endl;
     std::cout << manager->get_name() <<std::endl;
 
-    // manager->update(arg);
+    manager->update(arg);
 
     return manager;
   }
