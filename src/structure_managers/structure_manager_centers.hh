@@ -172,11 +172,7 @@ namespace rascal {
      */
     void update(const std::string filename);
 
-
-    void update_tree() final {
-      this->update_tree_root();
-    }
-
+    //! it is not an adaptor so there is nothing to update
     void update_adaptor() final {}
 
 

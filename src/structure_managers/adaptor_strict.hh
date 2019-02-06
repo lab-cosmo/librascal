@@ -225,6 +225,11 @@ namespace rascal {
       return this->nb_neigh[Order][cluster.get_cluster_index(nb_neigh_layer)];
     }
 
+    //! Get the manager used to build the instance
+    std::shared_ptr<ManagerImplementation> get_previous_manager() {
+      return this->manager->get_shared_ptr();
+    }
+
    protected:
     /**
      * main function during construction of a neighbourlist.

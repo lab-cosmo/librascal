@@ -637,6 +637,11 @@ namespace rascal {
       return nb_neigh[access_index];
     }
 
+    //! Get the manager used to build the instance
+    std::shared_ptr<ManagerImplementation> get_previous_manager() {
+      return this->manager->get_shared_ptr();
+    }
+
    protected:
     /* ---------------------------------------------------------------------- */
     /**

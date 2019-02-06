@@ -62,7 +62,7 @@ namespace rascal {
     atom_cluster_indices.fill_sequence();
     pair_cluster_indices.fill_sequence();
 
-    StructureManagerLammps::update_tree();
+    StructureManagerLammps::update_children();
   }
 
   /* ---------------------------------------------------------------------- */

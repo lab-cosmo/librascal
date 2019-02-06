@@ -237,6 +237,11 @@ namespace rascal {
       }
     }
 
+    //! Get the manager used to build the instance
+    std::shared_ptr<ManagerImplementation> get_previous_manager() {
+      return this->manager->get_shared_ptr();
+    }
+
    protected:
     //! Extends the list containing the number of neighbours with a 0
     inline void add_entry_number_of_neighbours() {
