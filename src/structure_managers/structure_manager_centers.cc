@@ -45,30 +45,17 @@ namespace rascal {
     // atoms object do hold read data from a file
     json_io::AtomicJsonData json_atoms_object{};
 
-    // json j;
-    std::ifstream reader("alanine-X.json");
-    std::string str((std::istreambuf_iterator<char>(reader)),
-                   std::istreambuf_iterator<char>());
-    std::cout << str;
-    reader.close();
-    auto j = json::parse(str);
-    // reader.open("alanine-X.json");
-    // reader >> j;
-    std::cout << j.dump() << std::endl;
-    // reader.close();
+    json j;
 
-    // try {
-    //   // std::ifstream reader(filename);
-    //   std::ifstream reader("alanine-X.json");
-    //   auto bb{reader.is_open()};
-    //   // if (!reader.is_open()) throw std::ios::failure("Error opening JSON file!");
-    //   reader >> j;
-    //   std::cout << j.dump(2);
-    //   reader.close();
-    // } catch (const std::exception& e) {
-    //   std::cerr << e.what() << std::endl;
-    //   std::exit(EXIT_FAILURE);
-    // }
+    try {
+      std::ifstream reader(filename);
+      if (!reader.is_open()) throw std::ios::failure("Error opening JSON file!");
+      reader >> j;
+      reader.close();
+    } catch (const std::exception& e) {
+      std::cerr << e.what() << std::endl;
+      std::exit(EXIT_FAILURE);
+    }
 
     /*
      * ASE json format is nested - here, first entry is actual data

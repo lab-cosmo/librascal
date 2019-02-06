@@ -188,19 +188,6 @@ namespace rascal {
      * Returns the id of the index-th (neighbour) atom of the cluster that is
      * the full structure/atoms object, i.e. simply the id of the index-th atom
      */
-    // inline int get_cluster_neighbour(const std::shared_ptr<Parent> &,
-    //                                  size_t index) const {
-    //   return this->manager->get_cluster_neighbour(this->manager, index);
-    // }
-
-    // //! get atom_index of the index-th atom in manager
-    // inline int get_cluster_neighbour(
-    //             const ImplementationPtr_t &,
-    //                                  size_t index) const {
-    //   return this->manager->get_cluster_neighbour(this->manager, index);
-    // }
-
-    //! get atom_index of the index-th atom in manager
     inline int get_cluster_neighbour(const Parent &, size_t index) const {
       return this->manager->get_cluster_neighbour(*this->manager, index);
     }
@@ -305,7 +292,6 @@ namespace rascal {
       throw std::runtime_error("Increase MaxOrder: No pair list in underlying"
                                " manager.");
     }
-    // this->manager->add_child(this->get_weak_ptr());
   }
 
   /* ---------------------------------------------------------------------- */

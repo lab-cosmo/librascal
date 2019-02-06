@@ -169,18 +169,6 @@ namespace rascal {
       return this->atom_indices[Order][offset + index];
     }
 
-    // //! get atom_index of the index-th atom in manager
-    // inline int get_cluster_neighbour(const std::shared_ptr<Parent> &,
-    //                                  size_t index) const {
-    //   return this->atom_indices[0][index];
-    // }
-
-    // //! get atom_index of the index-th atom in manager
-    // inline int get_cluster_neighbour(const ImplementationPtr_t &,
-    //                                  size_t index) const {
-    //   return this->atom_indices[0][index];
-    // }
-
     //! get atom_index of the index-th atom in manager
     inline int get_cluster_neighbour(const Parent &, size_t index) const {
       return this->atom_indices[0][index];;
@@ -341,7 +329,6 @@ namespace rascal {
       throw std::runtime_error("underlying manager already has a smaller "
                                "cut off");
     }
-    // this->manager->add_child(this->get_weak_ptr());
   }
 
   /* ---------------------------------------------------------------------- */

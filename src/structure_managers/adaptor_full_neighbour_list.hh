@@ -182,18 +182,6 @@ namespace rascal {
       }
     }
 
-    // //! get atom_index of the index-th atom in manager
-    // inline int get_cluster_neighbour(const std::shared_ptr<Parent> &,
-    //                                  size_t index) const {
-    //   return this->manager->get_cluster_neighbour(*this->manager, index);
-    // }
-
-    // //! get atom_index of the index-th atom in manager
-    // inline int get_cluster_neighbour(const ImplementationPtr_t &,
-    //                                  size_t index) const {
-    //   return this->manager->get_cluster_neighbour(this->manager, index);
-    // }
-
     //! get atom_index of the index-th atom in manager
     inline int get_cluster_neighbour(const Parent &,
                                      size_t index) const {
@@ -289,9 +277,7 @@ namespace rascal {
   template <class ManagerImplementation>
   AdaptorFullList<ManagerImplementation>::AdaptorFullList(
           std::shared_ptr<ManagerImplementation> manager)
-      : manager{std::move(manager)}, nb_neigh{}, neighbours{}, offsets{} {
-    // this->manager->add_child(this->get_weak_ptr());
-      }
+      : manager{std::move(manager)}, nb_neigh{}, neighbours{}, offsets{} {}
 
   /* ---------------------------------------------------------------------- */
   //! update function, which updates based on underlying manager
