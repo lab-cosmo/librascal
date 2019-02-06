@@ -90,8 +90,9 @@ namespace rascal {
      */
     AdaptorStrict(ImplementationPtr_t manager, double cutoff);
 
-    AdaptorMaxOrder(ImplementationPtr_t manager, std::tuple<double> tp)
-    :AdaptorMaxOrder(manager, std::get<0>(tp)) {}
+    AdaptorStrict(ImplementationPtr_t manager, std::tuple<double> tp)
+    :AdaptorStrict(manager, std::get<0>(tp))
+    {}
 
     //! Copy constructor
     AdaptorStrict(const AdaptorStrict & other) = delete;

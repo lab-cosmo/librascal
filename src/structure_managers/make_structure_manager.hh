@@ -47,6 +47,7 @@ namespace rascal {
       :manager{std::make_shared<Manager_t>(m,arg)},
       next_stack{manager, args...}
       {
+        m->add_child(this->manager->get_weak_ptr());
         std::cout<<this->manager->get_name()<<std::endl;
       }
 
@@ -55,6 +56,7 @@ namespace rascal {
       :manager{std::make_shared<Manager_t>(m,arg1)},
       next_stack{manager, arg2}
       {
+        m->add_child(this->manager->get_weak_ptr());
         std::cout<<this->manager->get_name()<<std::endl;
       }
 
@@ -77,6 +79,7 @@ namespace rascal {
       AdaptorFactory(ImplementationPtr_t& m, Arg& arg)
       :manager{std::make_shared<Manager_t>(m,arg)}
       {
+        m->add_child(this->manager->get_weak_ptr());
         std::cout<<this->manager->get_name()<<std::endl;
       }
 
@@ -87,18 +90,18 @@ namespace rascal {
       }
   };
 
-  template <typename ManagerImplementation, template<class> class AdaptorImplementation, template<class> class ... AdaptorImplementationPack, typename Arg, typename ...Args >
+  template <typename Manager, template<class> class ... AdaptorImplementationPack, typename Arg, typename ...Args >
   decltype(auto) make_structure_manager(Arg arg, Args ...args) {
-    auto manager_base = std::make_shared<ManagerImplementation>(ManagerImplementation{});
+    auto manager_base = std::make_shared<Manager>();
 
-    auto test = AdaptorFactory<AdaptorImplementation, AdaptorImplementationPack... >(manager_base, args...);
+    auto test = AdaptorFactory<Manager, AdaptorImplementationPack... >(manager_base, args...);
 
     auto manager = test.get_manager();
 
     std::cout  <<std::endl;
     std::cout << manager->get_name() <<std::endl;
 
-    manager->update(arg);
+    // manager->update(arg);
 
     return manager;
   }

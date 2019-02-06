@@ -48,8 +48,7 @@
 #include <limits>
 #include <tuple>
 #include <memory>
-#include <cstdlib>
-#include <cxxabi.h>
+
 
 namespace rascal {
 
@@ -150,15 +149,6 @@ namespace rascal {
       }
     };
 
-    std::string demangle(const char *name) {
-      int status = -4; // some arbitrary value to eliminate the compiler warning
-
-      std::unique_ptr<char, void (*)(void *)> res{
-          abi::__cxa_demangle(name, NULL, NULL, &status), std::free};
-
-      return (status == 0) ? res.get() : name;
-    }
-
   }  // namespace internal
 
   /* ---------------------------------------------------------------------- */
@@ -206,7 +196,6 @@ namespace rascal {
     StructureManager()
         : cluster_indices_container{
           ClusterConstructor_t::make(*this)} {}
-          // ClusterConstructor_t::make(*this)} {}
 
     //! Copy constructor
     StructureManager(const StructureManager & other) = delete;
@@ -332,8 +321,8 @@ namespace rascal {
         return std::weak_ptr<ManagerImplementation>(this->get_shared_ptr());
     }
 
-    decltype(auto) get_name() {
-        return demangle(typeid(ManagerImplementation).name());
+    static decltype(auto) get_name() {
+      return internal::GetTypeName<ManagerImplementation>();
     }
 
    protected:
@@ -768,6 +757,23 @@ namespace rascal {
     return internal::species_aggregator<StructureManager>(this->atom_indices,
                                                           this->get_manager());
   }
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   *
+   *
+   *
+   */
+  template<typename T>
+  auto inline begin(std::shared_ptr<T> ptr) -> typename T::Iterator_t {
+      return ptr->begin();
+  }
+
+  template<typename T>
+  auto inline end(std::shared_ptr<T> ptr) -> typename T::Iterator_t {
+      return ptr->end();
+  }
+
 
   /* ---------------------------------------------------------------------- */
   /**
