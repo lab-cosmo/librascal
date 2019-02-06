@@ -56,6 +56,8 @@
 #include <pybind11/eigen.h>
 #include <pybind11/stl.h>
 #include <pybind11/iostream.h>
+// for the hasattr function to test the module namespace
+#include <pybind11/pytypes.h>
 
 #include <Eigen/Dense>
 #include <vector>

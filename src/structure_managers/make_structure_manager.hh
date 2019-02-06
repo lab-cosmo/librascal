@@ -34,6 +34,12 @@
 
 namespace rascal {
 
+  /**
+   * Given an instanciated structure manager, recurcivelly stack adaptors on it
+   * while instanciating them and create backward links (add_child).
+   * It assumes the adaptors arguments needed for constructions
+   * are gathered in tuples.
+   */
   template< typename ManagerImplementation,  template<class> class AdaptorImplementation,
                               template<class> class ... AdaptorImplementationPack>
   struct AdaptorFactory {
@@ -42,20 +48,11 @@ namespace rascal {
       using ManagerPtr = std::shared_ptr<Manager_t>;
       using type = AdaptorFactory<Manager_t,AdaptorImplementationPack...>;
 
+      //! General case
       template<typename Arg, typename ...Args>
       AdaptorFactory(ImplementationPtr_t& m, Arg& arg, Args& ...args)
       :manager{std::make_shared<Manager_t>(m,arg)},
-      next_stack{manager, args...}
-      {
-        m->add_child(this->manager->get_weak_ptr());
-        std::cout<<this->manager->get_name()<<std::endl;
-      }
-
-      template<typename Arg1, typename Arg2>
-      AdaptorFactory(ImplementationPtr_t& m, Arg1& arg1, Arg2& arg2)
-      :manager{std::make_shared<Manager_t>(m,arg1)},
-      next_stack{manager, arg2}
-      {
+      next_stack{manager, args...} {
         m->add_child(this->manager->get_weak_ptr());
         std::cout<<this->manager->get_name()<<std::endl;
       }
@@ -75,10 +72,10 @@ namespace rascal {
       using ManagerPtr = std::shared_ptr<Manager_t>;
       using type = Manager_t;
 
+      //! End of recursion
       template<typename Arg>
       AdaptorFactory(ImplementationPtr_t& m, Arg& arg)
-      :manager{std::make_shared<Manager_t>(m,arg)}
-      {
+      :manager{std::make_shared<Manager_t>(m,arg)} {
         m->add_child(this->manager->get_weak_ptr());
         std::cout<<this->manager->get_name()<<std::endl;
       }
@@ -90,17 +87,33 @@ namespace rascal {
       }
   };
 
+
+  /**
+   * Factory function to build a structure managers.
+   *
+   * @tparams Manager type of the base manager, e.g. StructureManagerCenters
+   * @tparams AdaptorImplementationPack list of adaptors to stack on the base
+   * manager type
+   * @params arg argument to update the structure of the base structure manager
+   * @params args list of arguments to build the adaptor (packed in tuples and
+   *  in the same order as in AdaptorImplementationPack)
+   */
   template <typename Manager, template<class> class ... AdaptorImplementationPack, typename Arg, typename ...Args >
   decltype(auto) make_structure_manager(Arg arg, Args ...args) {
+    // instanciate the base manager
     auto manager_base = std::make_shared<Manager>();
 
-    auto test = AdaptorFactory<Manager, AdaptorImplementationPack... >(manager_base, args...);
-
-    auto manager = test.get_manager();
+    // build the stack of adaptors
+    auto factory =
+      AdaptorFactory<Manager, AdaptorImplementationPack... >(manager_base, args...);
+    // get the manager with the full stack
+    auto manager = factory.get_manager();
 
     std::cout  <<std::endl;
     std::cout << manager->get_name() <<std::endl;
 
+    // give aa structure to the underlying base manager
+    // and update all the stack of adaptors
     manager->update(arg);
 
     return manager;

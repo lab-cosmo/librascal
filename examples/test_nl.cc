@@ -82,7 +82,7 @@ struct MultipleStrictStructureManager {
 };
 
 int main() {
-  bool verbose{true};
+  bool verbose{false};
   bool verbose_rep{false};
   //"reference_data/CaCrP2O7_mvc-11955_symmetrized_.json",
 
@@ -152,7 +152,7 @@ int main() {
     for (auto&& manager : meta.managers) {
       // manager->update("alanine-X.json");
       // manager->update(positions, atom_types, cell, PBC_t{pbc.data()});
-      
+
       std::cout << "################################# 1"<< std::endl;
       std::cout << manager->size() << std::endl;
 
