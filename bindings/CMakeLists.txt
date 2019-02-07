@@ -53,13 +53,23 @@ set_target_properties(pyRascal PROPERTIES OUTPUT_NAME _rascal)
 # Sets rule to install the bindings library in the rascal folder
 install(TARGETS pyRascal DESTINATION "${PYTHON_SITE_PACKAGES}/rascal/lib")
 
-# Copy rascal in the build folder as part of the make process of bindings build
+
+
+file( GLOB RASCAL_PY "${CMAKE_CURRENT_SOURCE_DIR}/rascal/*")
+
 add_custom_command(TARGET pyRascal POST_BUILD
   COMMAND cp -R
   ${CMAKE_CURRENT_SOURCE_DIR}/rascal ${CMAKE_BINARY_DIR}
+  DEPENDS ${RASCAL_PY}
   )
 # Copy the resulting bindings lib in the python wrapper lib folder
 add_custom_command(TARGET pyRascal POST_BUILD
   COMMAND cp
   ${CMAKE_BINARY_DIR}/bindings/_rascal.* ${CMAKE_BINARY_DIR}/rascal/lib/
+  DEPENDS ${CMAKE_BINARY_DIR}/bindings/_rascal.*
   )
+
+
+
+
+

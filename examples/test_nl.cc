@@ -47,8 +47,7 @@ constexpr static int dim{3};
 using Vector_t = Eigen::Matrix<double, dim, 1>;
 
 using Representation_t = RepresentationManagerSortedCoulomb<
-                   AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>,
-                  Option::CMSortDistance>;
+              AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
 
 
 template<class StructureManager>
@@ -181,7 +180,9 @@ int main() {
       {"central_decay", 10},
       {"interaction_cutoff", 10},
       {"interaction_decay", 10},
-      {"size", 50}};
+      {"size", 50},
+      {"sorting_algorithm", "distance"}
+    };
     Representation_t representation{manager, hypers};
     representation.compute();
 

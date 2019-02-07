@@ -58,7 +58,13 @@ namespace rascal {
       {{"central_decay", 0.5},
        {"interaction_cutoff", 10.},
        {"interaction_decay", 0.5},
-       {"size", 120}}
+       {"size", 120},
+       {"sorting_algorithm", "distance"}},
+      {{"central_decay", 0.5},
+       {"interaction_cutoff", 10.},
+       {"interaction_decay", 0.5},
+       {"size", 120},
+      {"sorting_algorithm", "row_norm"}}
     };
   };
 
@@ -71,15 +77,14 @@ namespace rascal {
   template<typename T,
            template<typename> class FeatureManager,
            class StructureManager,
-           template<typename, Option ... opts> class RepresentationManager,
-           class BaseFixture,
-           Option ...options>
+           template<typename> class RepresentationManager,
+           class BaseFixture>
   struct FeatureFixture
   :RepresentationFixture<StructureManager, RepresentationManager,
-                         BaseFixture, options...> {
+                         BaseFixture> {
     using Parent = RepresentationFixture<StructureManager,
                                          RepresentationManager,
-                                         BaseFixture, options...>;
+                                         BaseFixture>;
     using Manager_t = typename Parent::Manager_t;
     using Representation_t = typename Parent::Representation_t;
     using Feature_t = FeatureManager<T>;
