@@ -62,7 +62,7 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(update_test, PairFixtureCenters) {
     AdaptorStrict<PairManager_t> adaptor_strict{pair_manager, cutoff};
-    adaptor_strict.update();
+    adaptor_strict->update();
   }
 
   /* ---------------------------------------------------------------------- */
@@ -72,7 +72,7 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(iterator_test, PairFixtureCenters) {
     AdaptorStrict<PairManager_t> adaptor_strict{pair_manager, cutoff};
-    adaptor_strict.update();
+    adaptor_strict->update();
 
     int atom_counter{};
     int pair_counter{};
@@ -116,7 +116,7 @@ namespace rascal {
     double rc_max{mult * 0.5 + cutoff};
     using PairManager_t = AdaptorNeighbourList<StructureManagerCenters>;
     PairManager_t pair_manager{manager, rc_max};
-    pair_manager.update();
+    pair_manager->update();
 
     for (auto i{0}; i < mult; ++i) {
       auto cutoff_tmp = i * 0.5 + cutoff;
@@ -133,7 +133,7 @@ namespace rascal {
       }
       AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>
           adaptor_strict{pair_manager, cutoff_tmp};
-      adaptor_strict.update();
+      adaptor_strict->update();
 
       if (verbose) {
         std::cout << "Setting up comparison list with rc = " << cutoff_tmp
@@ -205,11 +205,11 @@ namespace rascal {
         }
 
         for (auto neigh : center) {
-          double distance{adaptor_strict.get_distance(neigh)};
+          double distance{adaptor_strict->get_distance(neigh)};
 
           indices_.push_back(neigh.get_atom_index());
           distances_.push_back(distance);
-          auto dir_vec{adaptor_strict.get_direction_vector(neigh)};
+          auto dir_vec{adaptor_strict->get_direction_vector(neigh)};
           std::array<double, 3> bb{{dir_vec(0), dir_vec(1), dir_vec(2)}};
           dir_vecs_.push_back(bb);
 
@@ -266,7 +266,7 @@ namespace rascal {
     auto & managers = Fix::managers_pair;
 
     for (auto & pair_manager : managers) {
-      double cutoff{pair_manager.get_cutoff()};
+      double cutoff{pair_manager->get_cutoff()};
       std::vector<std::vector<int>> neigh_ids{};
       std::vector<std::vector<double>> neigh_dist{};
       std::vector<std::vector<std::array<double, 3>>> neigh_dir_vec{};
@@ -280,7 +280,7 @@ namespace rascal {
       }
       AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>
           adaptor_strict{pair_manager, cutoff};
-      adaptor_strict.update();
+      adaptor_strict->update();
 
       if (verbose) {
         std::cout << "Setting up comparison list with rc = " << cutoff
@@ -358,7 +358,7 @@ namespace rascal {
 
           indices_.push_back(neigh.get_atom_index());
           distances_.push_back(distance);
-          auto dir_vec{adaptor_strict.get_direction_vector(neigh)};
+          auto dir_vec{adaptor_strict->get_direction_vector(neigh)};
           std::array<double, 3> bb{{dir_vec(0), dir_vec(1), dir_vec(2)}};
           dir_vecs_.push_back(bb);
 

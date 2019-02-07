@@ -63,7 +63,7 @@ struct MultipleStrictStructureManager {
     std::vector<double> cutoffs{{3, 4}};
     for (auto filename : filenames) {
       for (auto cutoff : cutoffs) {
-        auto manager = make_structure_manager<
+        auto manager = make_structure_manager_stack<
               StructureManager,AdaptorNeighbourList,AdaptorStrict>
                 (filename, std::make_tuple(cutoff), std::make_tuple(cutoff));
         this->managers.emplace_back(
@@ -260,7 +260,7 @@ int main() {
   // rascal::AdaptorNeighbourList<rascal::StructureManagerCenters>
   //   pair_manager{manager, rc_max };
   // // update to execute the build
-  // pair_manager.update();
+  // pair_manager->update();
 
   // for (auto i{0}; i < mult; ++i) {
   //   auto cutoff_tmp = i*0.5 + cut_off;
@@ -277,7 +277,7 @@ int main() {
   //     rascal::AdaptorNeighbourList<rascal::StructureManagerCenters>>
   //     adaptor_strict{pair_manager, cutoff_tmp};
   //   // execute
-  //   adaptor_strict.update();
+  //   adaptor_strict->update();
 
 
   //   if (verbose) std::cout << "Setting get adaptor_strict info" << std::endl;
@@ -304,7 +304,7 @@ int main() {
   //                        - neigh.get_position()).norm()};
   //       Nneigh += 1;
   //       indices_.push_back(neigh.get_atom_index());
-  //       distances_.push_back(adaptor_strict.get_distance(neigh));
+  //       distances_.push_back(adaptor_strict->get_distance(neigh));
 
   //       if (verbose) {
   //         std::cout << "strict neigh out " << neigh.get_index();

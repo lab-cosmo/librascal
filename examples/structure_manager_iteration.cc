@@ -77,7 +77,7 @@ int main() {
   // `pair_manager` is constructed with the `manager` and a `cutoff`.
   auto pair_manager{std::make_shared<PairManager_t>(manager, cutoff, true)};
   // By invoking the `.update()` method, a neighbour list is built.
-//  pair_manager.update();
+//  pair_manager->update();
 
   // `strict_manager` is constructed with a `pair_manager`.
   auto strict_manager{

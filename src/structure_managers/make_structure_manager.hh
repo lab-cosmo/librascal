@@ -35,6 +35,19 @@
 namespace rascal {
 
   /**
+   * Factory function to make an adapted structure manager
+   * @tparams Manager type of the structure manager
+   * @params arg input structure manager
+   * @params args additional argument for the constructructor
+   */
+  template<typename Manager,typename Arg, typename ...Args>
+  decltype(auto) make_structure_manager(Arg& arg, Args ...args) {
+    auto manager{std::make_shared<Manager>(arg, args...)};
+    arg->add_child(manager->get_weak_ptr());
+    return manager;
+  }
+
+  /**
    * Given an instanciated structure manager, recurcivelly stack adaptors on it
    * while instanciating them and create backward links (add_child).
    * It assumes the adaptors arguments needed for constructions
@@ -100,7 +113,7 @@ namespace rascal {
    * @return shared pointer to the fully built structure manager
    */
   template <typename Manager, template<class> class ... AdaptorImplementationPack, typename Arg, typename ...Args >
-  decltype(auto) make_structure_manager(Arg arg, Args ...args) {
+  decltype(auto) make_structure_manager_stack(Arg arg, Args ...args) {
     // instanciate the base manager
     auto manager_base = std::make_shared<Manager>();
 
@@ -119,6 +132,7 @@ namespace rascal {
 
     return manager;
   }
+
 
   /**
    * Factory function to stack adaptors on a structure managers with a valid

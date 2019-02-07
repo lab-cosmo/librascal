@@ -42,8 +42,9 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
                           ManagerFixture<StructureManagerLammps>) {
-    AdaptorHalfList<StructureManagerLammps> adaptor{manager};
-    adaptor.update();
+    using AdaptorHalf_t = AdaptorHalfList<StructureManagerLammps>;
+    auto adaptor = make_structure_manager<AdaptorHalf_t>(manager);
+    adaptor->update();
   }
 
   /* ---------------------------------------------------------------------- */
@@ -60,6 +61,8 @@ namespace rascal {
 
     double distance_sum_full{0.};
 
+    using AdaptorHalf_t = AdaptorHalfList<StructureManagerLammps>;
+
     int npairs_full{0};
     for (auto atom : manager) {
       for (auto pair : atom) {
@@ -73,8 +76,8 @@ namespace rascal {
       std::cout << "Setting up half neighbourlist manager" << std::endl;
     }
 
-    AdaptorHalfList<StructureManagerLammps> adaptor{manager};
-    adaptor.update();
+    auto adaptor = make_structure_manager<AdaptorHalf_t>(manager);
+    adaptor->update();
 
     double distance_sum_half{0.};
 
@@ -123,14 +126,14 @@ namespace rascal {
 
     // half list construction
     using AdaptorHalf_t = AdaptorHalfList<StructureManagerLammps>;
-    AdaptorHalf_t adaptor_half{manager};
-    adaptor_half.update();
+    auto adaptor_half = make_structure_manager<AdaptorHalf_t>(manager);
+    adaptor_half->update();
 
     // back to full list again
     using AdaptorFull_t = AdaptorFullList<AdaptorHalf_t>;
 
-    AdaptorFull_t adaptor_full{adaptor_half};
-    adaptor_full.update();
+    auto adaptor_full = make_structure_manager<AdaptorFull_t>(adaptor_half);
+    adaptor_full->update();
 
     // iterate over initial manager with full list
     if (verbose) {
@@ -191,13 +194,13 @@ namespace rascal {
     // check counted number of pairs during iteration
     BOOST_CHECK_EQUAL(npairs, npairs_adapted);
     // check for same number of atoms
-    BOOST_CHECK_EQUAL(manager->size(), adaptor_full.size());
+    BOOST_CHECK_EQUAL(manager->size(), adaptor_full->size());
     // check for number of atoms
     BOOST_CHECK_EQUAL(manager->get_nb_clusters(1),
-                      adaptor_full.get_nb_clusters(1));
+                      adaptor_full->get_nb_clusters(1));
     // check for number of pairs
     BOOST_CHECK_EQUAL(manager->get_nb_clusters(2),
-                      adaptor_full.get_nb_clusters(2));
+                      adaptor_full->get_nb_clusters(2));
   }
 
   BOOST_AUTO_TEST_SUITE_END();

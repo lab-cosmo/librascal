@@ -50,18 +50,19 @@ namespace rascal {
                   "Lower layer manager has to be a collection of atoms, i.e."
                   " MaxOrder=1");
 
-    using PairManager_t = AdaptorNeighbourList<ManagerImplementation>;
+    using PairManager_t = AdaptorNeighbourList<Manager_t>;
 
     PairFixtureSimple()
-        : cutoff{1.}, pair_manager{fixture.manager, this->cutoff} {
-      this->pair_manager.update();
+        : cutoff{1.}, pair_manager{std::make_shared<PairManager_t>(fixture.manager, this->cutoff)} {
+      fixture.manager->add_child(this->pair_manager);
+      this->pair_manager->update();
     }
 
     ~PairFixtureSimple() = default;
 
-    ManagerFixtureFile<ManagerImplementation> fixture{};
+    ManagerFixtureFile<Manager_t> fixture{};
     double cutoff;
-    PairManager_t pair_manager;
+    std::shared_ptr<PairManager_t> pair_manager;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -77,8 +78,9 @@ namespace rascal {
                   " MaxOrder=1");
 
     PairFixtureCenters()
-        : cutoff{3.5}, pair_manager{this->fixture.manager, this->cutoff, true} {
-      this->pair_manager.update();
+        : cutoff{3.5}, pair_manager{std::make_shared<PairManager_t>(this->fixture.manager, this->cutoff, true)} {
+      fixture.manager->add_child(this->pair_manager);
+      this->pair_manager->update();
     }
 
     ~PairFixtureCenters() {}
@@ -86,7 +88,7 @@ namespace rascal {
     ManagerFixture<StructureManagerCenters> fixture{};
 
     double cutoff;
-    PairManager_t pair_manager;
+    std::shared_ptr<PairManager_t> pair_manager;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -95,14 +97,16 @@ namespace rascal {
     using AdaptorStrict_t = AdaptorStrict<ManagerImplementation>;
 
     PairFixtureStrict()
-        : adaptor_strict{this->fixture.pair_manager, this->fixture.cutoff} {}
+        : adaptor_strict{std::make_shared<AdaptorStrict_t>(this->fixture.pair_manager, this->fixture.cutoff)} {
+          fixture.pair_manager->add_child(this->adaptor_strict);
+        }
 
     ~PairFixtureStrict() = default;
 
     // TODO(markus): different fixtures?, streamline fixtures to always work
     // with ´manager´ as an iterator?
     PairFixture<ManagerImplementation> fixture{};
-    AdaptorStrict_t adaptor_strict;
+    std::shared_ptr<AdaptorStrict_t> adaptor_strict;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -111,76 +115,47 @@ namespace rascal {
    */
 
   struct MultipleStructureManagerBaseFixture {
-    MultipleStructureManagerBaseFixture() = default;
-    ~MultipleStructureManagerBaseFixture() = default;
+    using Factory_t = std::tuple<std::string,std::tuple<double>>;
 
-    std::vector<std::string> filenames{
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-        "reference_data/simple_cubic_8.json",
-        "reference_data/small_molecule.json"};
-    std::vector<double> cutoffs{{1., 2., 3.}};
-  };
-
-  template <class StructureManager, class BaseFixture>
-  struct MultipleStructureManagerCenterFixture : BaseFixture {
-    using Parent = BaseFixture;
-    using Manager_t = StructureManager;
-    using Manager_T_t = AdaptorNeighbourList<Manager_t>;
-
-    MultipleStructureManagerCenterFixture() : Parent{} {
-      for (auto filename : this->filenames) {
-        this->managers_center.emplace_back();
-        this->managers_center.back().update(filename);
-      }
-    }
-
-    ~MultipleStructureManagerCenterFixture() = default;
-
-    std::list<Manager_t> managers_center{};
-  };
-
-  template <class StructureManager, class BaseFixture>
-  struct MultipleStructureManagerNLFixture
-      : MultipleStructureManagerCenterFixture<StructureManager, BaseFixture> {
-    using Parent =
-        MultipleStructureManagerCenterFixture<StructureManager, BaseFixture>;
-    using Manager_P_t = typename Parent::Manager_t;
-    using Manager_t = AdaptorNeighbourList<Manager_P_t>;
-    using Manager_T_t = AdaptorStrict<Manager_t>;
-
-    MultipleStructureManagerNLFixture() : Parent{} {
-      for (Manager_P_t & manager : this->managers_center) {
-        for (double cutoff : this->cutoffs) {
-          this->managers_pair.emplace_back(manager, cutoff);
-          this->managers_pair.back().update();
+    MultipleStructureManagerBaseFixture() {
+      for (auto&& filename : this->filenames) {
+        for (auto&& cutoff : this->cutoffs) {
+          std::tuple<double> a1{cutoff};
+          this->factory_args.emplace_back(filename, a1);
         }
       }
     }
 
-    ~MultipleStructureManagerNLFixture() = default;
+    ~MultipleStructureManagerBaseFixture() = default;
 
-    std::list<Manager_t> managers_pair{};
+    const std::vector<std::string> filenames{
+        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
+        "reference_data/simple_cubic_8.json",
+        "reference_data/small_molecule.json"};
+    const std::vector<double> cutoffs{{1., 2., 3.}};
+
+    std::vector<Factory_t> factory_args{};
+
   };
 
-  template <class StructureManager, class BaseFixture>
-  struct MultipleStructureManagerStrictFixture
-      : MultipleStructureManagerNLFixture<StructureManager, BaseFixture> {
-    using Parent =
-        MultipleStructureManagerNLFixture<StructureManager, BaseFixture>;
-    using Manager_P_t = typename Parent::Manager_t;
-    using Manager_t = AdaptorStrict<Manager_P_t>;
-    // using Manager_T_t = AdaptorStrict<Manager_t>;
+  template <class BaseFixture, class StructureManager, template<class> class ... AdaptorImplementationPack>
+  struct MultipleStructureFixture : BaseFixture {
+    using Parent = BaseFixture;
+    using Manager_t = typename internal::AdaptorTypeStacker<StructureManager,AdaptorImplementationPack...>::type;
 
-    MultipleStructureManagerStrictFixture() : Parent{} {
-      for (Manager_P_t & manager : this->managers_pair) {
-        this->managers_strict.emplace_back(manager, manager->get_cutoff());
-        this->managers_strict.back().update();
+    MultipleStructureFixture() : Parent{} {
+      for (auto factory_arg : this->factory_args) {
+        this->managers.emplace_back(
+            std::apply(make_structure_manager_stack<StructureManager, AdaptorImplementationPack...>, factory_arg)
+        );
       }
     }
 
-    ~MultipleStructureManagerStrictFixture() = default;
+    
 
-    std::list<Manager_t> managers_strict{};
+    ~MultipleStructureFixture() = default;
+
+    std::list<std::shared_ptr<Manager_t>> managers{};
   };
 
 }  // namespace rascal

@@ -39,6 +39,9 @@
 #include "structure_managers/adaptor_strict.hh"
 #include "structure_managers/adaptor_increase_maxorder.hh"
 #include "structure_managers/adaptor_neighbour_list.hh"
+#include "structure_managers/make_structure_manager.hh"
+#include "rascal_utility.hh"
+
 
 namespace rascal {
 
@@ -327,15 +330,14 @@ namespace rascal {
     using PairManager_t = AdaptorNeighbourList<Manager_t>;
 
     PairFixtureFile()
-        : pair_manager{this->fixture.manager, this->fixture.cutoff, true} {
-      this->fixture.manager->add_child(this->pair_manager);
+        : pair_manager{make_structure_manager<PairManager_t>(this->fixture.manager, this->fixture.cutoff, true)} {
       this->pair_manager->update();
     }
 
     ~PairFixtureFile() {}
 
     ManagerFixtureFile<Manager_t> fixture{};
-    std:shared_ptr<PairManager_t> pair_manager;
+    std::shared_ptr<PairManager_t> pair_manager;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -353,15 +355,14 @@ namespace rascal {
 
     using PairManager_t = AdaptorNeighbourList<Manager_t>;
 
-    PairFixture() : pair_manager{this->fixture.manager, 3.} {
-      this->fixture.manager->add_child(this->pair_manager);
+    PairFixture() : pair_manager{make_structure_manager<PairManager_t>(this->fixture.manager, 3.)} {
       this->pair_manager->update();
     }
 
     ~PairFixture() {}
 
     ManagerFixture<ManagerImplementation> fixture{};
-    std:shared_ptr<PairManager_t> pair_manager;
+    std::shared_ptr<PairManager_t> pair_manager;
   };
 
   /* ---------------------------------------------------------------------- */

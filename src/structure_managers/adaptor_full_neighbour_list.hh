@@ -79,7 +79,7 @@ namespace rascal {
    public:
     using Parent = StructureManager<AdaptorFullList<ManagerImplementation>>;
     using traits = StructureManager_traits<AdaptorFullList>;
-    using Adaptor_t = AdaptorFullList<ManagerImplementation>;
+    using Manager_t = AdaptorFullList<ManagerImplementation>;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using parent_traits = typename ManagerImplementation::traits;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
@@ -118,6 +118,16 @@ namespace rascal {
 
     //! Move assignment operator
     AdaptorFullList & operator=(AdaptorFullList && other) = default;
+
+    //! Create a new shared pointer to the object
+    std::shared_ptr<Manager_t> get_shared_ptr() {
+        return this->shared_from_this();
+    }
+
+    //! Create a new weak pointer to the object
+    std::weak_ptr<Manager_t> get_weak_ptr() {
+        return std::weak_ptr<Manager_t>(this->get_shared_ptr());
+    }
 
     //! update just the adaptor assuming the underlying manager was updated
     void update_adaptor();
@@ -315,7 +325,7 @@ namespace rascal {
     this->neighbours.resize(0);
 
     // prepare data structure to collect neighbours
-    auto natoms = manager.get_size();
+    auto natoms = this->manager->get_size();
     new_neighbours.resize(natoms);
     for (auto & vector : new_neighbours) {
       // start with an empty list per atom

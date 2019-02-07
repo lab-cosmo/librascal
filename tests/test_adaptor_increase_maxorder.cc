@@ -43,8 +43,9 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
                           PairFixtureFile<StructureManagerCenters>) {
-    AdaptorMaxOrder<PairManager_t> adaptor{this->pair_manager};
-    adaptor.update();
+    using Manager_t = AdaptorMaxOrder<PairManager_t>;
+    auto adaptor{make_structure_manager<Manager_t>(this->pair_manager)};
+    adaptor->update();
   }
 
   /* ---------------------------------------------------------------------- */
@@ -68,7 +69,7 @@ namespace rascal {
       std::cout << ">> underlying manager " << std::endl;
     }
     size_t npairs1{0};
-    for (auto atom : pair_manager.with_ghosts()) {
+    for (auto atom : pair_manager->with_ghosts()) {
       if (verbose) {
         std::cout << "atom " << atom.back() << std::endl;
       }
@@ -85,14 +86,15 @@ namespace rascal {
       std::cout << "<< underlying manager" << std::endl;
     }
 
-    auto npairs_tmp = pair_manager.get_nb_clusters(2);
+    auto npairs_tmp = pair_manager->get_nb_clusters(2);
     BOOST_CHECK_EQUAL(npairs_tmp, npairs1);
 
-    AdaptorMaxOrder<PairManager_t> adaptor{this->pair_manager};
-    adaptor.update();
+    using Manager_t = AdaptorMaxOrder<PairManager_t>;
+    auto adaptor{make_structure_manager<Manager_t>(this->pair_manager)};
+    adaptor->update();
 
     //! make sure the number of pairs gets carried over to the next layer
-    auto npairs_adaptor = adaptor.get_nb_clusters(2);
+    auto npairs_adaptor = adaptor->get_nb_clusters(2);
     BOOST_CHECK_EQUAL(npairs_adaptor, npairs_tmp);
 
     if (verbose) {
@@ -152,17 +154,18 @@ namespace rascal {
       std::cout << ">> pair to triplet extension" << std::endl;
     }
 
-    AdaptorHalfList<StructureManagerLammps> SM2{manager};
-    SM2.update();
-    AdaptorMaxOrder<AdaptorHalfList<StructureManagerLammps>> SM3{SM2};
-    SM3.update();
+    using SM2_t = AdaptorHalfList<StructureManagerLammps>;
+    using SM3_t = AdaptorMaxOrder<SM2_t>;
+    auto SM2{make_structure_manager<SM2_t>(manager)};
+    auto SM3{make_structure_manager<SM3_t>(SM2)};
+    SM3->update();
 
     // make sure number of pairs are carried over,
     // since they are are not changed
-    BOOST_CHECK_EQUAL(SM2.get_nb_clusters(2), SM3.get_nb_clusters(2));
+    BOOST_CHECK_EQUAL(SM2->get_nb_clusters(2), SM3->get_nb_clusters(2));
 
     // only one possible triplet in this case?
-    BOOST_CHECK_EQUAL(SM3.get_nb_clusters(3), 1);
+    BOOST_CHECK_EQUAL(SM3->get_nb_clusters(3), 1);
 
     for (auto atom : SM3) {
       auto atom_index = atom.get_atom_index();
