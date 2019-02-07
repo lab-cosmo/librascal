@@ -33,6 +33,8 @@ using namespace rascal;  // NOLINT
  * In this file SMI stands for StructureManagerImplementation.
  */
 
+
+// Collection of typedefs to simplify the bindings
 template <typename SMI>
 using LayerByOrder = typename SMI::traits::LayerByOrder;
 
@@ -56,6 +58,7 @@ template <typename StructureManagerImplementation>
 using PyManager = py::class_<StructureManagerImplementation,
                              StructureManager<StructureManagerImplementation>>;
 
+//! Bind a ClusterRef (to enable the acces to properties such as distances)
 template <size_t Order, size_t Layer>
 void add_cluster_ref(py::module & m) {
   std::string cluster_parent_name =
@@ -65,6 +68,7 @@ void add_cluster_ref(py::module & m) {
       m, cluster_parent_name.c_str());
 }
 
+//! Bind many cluster refs of a given order using template recursion
 template <size_t Order, size_t Layer, size_t LayerEnd>
 struct add_cluster_refs {
   //! starts recursion
@@ -80,7 +84,8 @@ struct add_cluster_refs<Order, LayerEnd, LayerEnd> {
   static void static_for(py::module &) {}
 };
 
-//! templated function for adding clusters of different orders
+//! Bind clusters of different orders
+//! (up to quadruplet)
 template <size_t Order, typename SMI>
 decltype(auto) add_cluster(py::module & m) {
   using ClusterRef = ClusterRef_t<SMI, Order>;
@@ -88,7 +93,8 @@ decltype(auto) add_cluster(py::module & m) {
 
   std::string cluster_name = internal::GetBindingTypeName<SMI>();
 
-  // TODO(felix) switch case with throw
+  static_assert(Order < 5, "Can't bind more than quadruplet as it is.")
+
   if (Order == 1) {
     cluster_name += std::string(".Center");
   } else if (Order == 2) {
@@ -118,7 +124,7 @@ decltype(auto) add_cluster(py::module & m) {
   return py_cluster;
 }
 
-//! bind iterator and ClusterRef for Order >= 2
+//! Bind iterator and ClusterRef for Order >= 2
 template <typename StructureManagerImplementation, size_t Order>
 decltype(auto) add_iterator(
     py::module & m,
@@ -212,7 +218,7 @@ decltype(auto) add_structure_manager_implementation(py::module & m,
   constexpr static size_t MaxOrder = Child::traits::MaxOrder;
 
   std::string manager_name = internal::GetBindingTypeName<Child>();
-  py::class_<Child, Parent> manager(m, manager_name.c_str());
+  py::class_<Child, Parent, std::shared_ptr<Child>> manager(m, manager_name.c_str());
   manager.def(py::init<>());
 
   // MaxOrder+1 because it stops at Val-1
@@ -220,61 +226,206 @@ decltype(auto) add_structure_manager_implementation(py::module & m,
   return manager;
 }
 
-//! templated function for adding an adaptor
-template <typename Adaptor, typename... ConstructorPack>
-decltype(auto) add_adaptor(py::module & m, py::module & m_garbage) {
-  using Child = Adaptor;
-  using Parent = typename Child::Parent;
-  using Implementation_t = typename Child::Implementation_t;
-  constexpr static size_t MaxOrder = Child::traits::MaxOrder;
 
-  std::string adaptor_name = internal::GetBindingTypeName<Child>();
-  py::class_<Child, Parent> adaptor(m, adaptor_name.c_str());
-  // bind constructor making sure the input Manager stays alive
-  // as long as the class is alive
-  // adaptor.def(py::init<Implementation_t&, ConstructorPack...>(),
-  //             py::arg("consider_ghost_neighbours") = false,
-  //             py::keep_alive<1, 2>());
-  adaptor.def(py::init<Implementation_t &, ConstructorPack...>(),
-              py::keep_alive<1, 2>());
-  // TODO(felix) bind the update with parameter pack
-  adaptor.def("update", [](Child & v) { v.update(); });
-  // bind clusterRefs so that one can loop over adaptor
-  // MaxOrder+1 because recursion stops at Val-1
-  add_iterators<Child, 1, MaxOrder + 1>::static_for(m_garbage, adaptor);
-  return adaptor;
+template <typename StructureManagerImplementation, typename PyClass>
+void bind_update_unpacked(PyClass & manager) {
+  manager.def("update",
+        [](StructureManagerImplementation & v,
+            const py::EigenDRef<const Eigen::MatrixXd> & positions,
+            const py::EigenDRef<const Eigen::VectorXi> & atom_types,
+            const py::EigenDRef<const Eigen::MatrixXd> & cell,
+            const py::EigenDRef<const Eigen::MatrixXi> & pbc) {
+          v.update(positions, atom_types, cell, pbc);
+        });
 }
 
-//! for adding an adaptor Neighbourlist
-// TODO(felix) come up with a more streamlined solution
-template <typename Manager>
-decltype(auto) add_adaptor_NL(py::module & m, py::module & m_garbage) {
-  using Child = AdaptorNeighbourList<Manager>;
-  using Parent = typename Child::Parent;
-  using Implementation_t = typename Child::Implementation_t;
-  constexpr static size_t MaxOrder = Child::traits::MaxOrder;
-
-  std::string adaptor_name = internal::GetBindingTypeName<Child>();
-  py::class_<Child, Parent> adaptor(m, adaptor_name.c_str());
-  // bind constructor making sure the input Manager stays alive
-  // as long as the class is alive
-  adaptor.def(py::init<Implementation_t &, double, bool>(), py::arg("manager"),
-              py::arg("cutoff"), py::arg("consider_ghost_neighbours") = false,
-              py::keep_alive<1, 2>());
-  // TODO(felix) bind the update with parameter pack
-  adaptor.def("update", [](Child & v) { v.update(); });
-  // bind clusterRefs so that one can loop over adaptor
-  // MaxOrder+1 because recursion stops at Val-1
-  add_iterators<Child, 1, MaxOrder + 1>::static_for(m_garbage, adaptor);
-  return adaptor;
+template <typename StructureManagerImplementation, typename PyClass>
+void bind_update_empty(PyClass & manager) {
+  manager.def("update",
+          [](StructureManagerImplementation & v) { v.update(); });
 }
+
+/**
+ * Binding utility for the construction of adaptors.
+ * Uses partial specialization to define how to bind the constructor of each
+ * adaptors.
+ */
+template <template<class> class Adaptor, typename Implementation_t>
+struct BindAdaptor {};
+
+template <typename Implementation_t>
+struct BindAdaptor<AdaptorStrict, Implementation_t> {
+  template<typename PyClass>
+  void bind_adaptor_init(PyClass & adaptor) {
+    adaptor.def(
+        py::init<std::shared_ptr<Implementation_t>, double>(),
+                py::keep_alive<1, 2>()
+    );
+  }
+};
+
+template <typename Implementation_t>
+struct BindAdaptor<AdaptorMaxOrder, Implementation_t> {
+  template<typename PyClass>
+  void bind_adaptor_init(PyClass & adaptor) {
+    adaptor.def(
+        py::init<std::shared_ptr<Implementation_t>>(),
+                py::keep_alive<1, 2>()
+    );
+  }
+};
+
+template <typename Implementation_t>
+struct BindAdaptor<AdaptorHalfList, Implementation_t> {
+  template<typename PyClass>
+  void bind_adaptor_init(PyClass & adaptor) {
+    adaptor.def(
+        py::init<std::shared_ptr<Implementation_t>, double>(),
+                py::keep_alive<1, 2>()
+    );
+  }
+};
+
+template <typename Implementation_t>
+struct BindAdaptor<AdaptorFullList, Implementation_t> {
+  template<typename PyClass>
+  void bind_adaptor_init(PyClass & adaptor) {
+    adaptor.def(
+        py::init<std::shared_ptr<Implementation_t>, double>(),
+                py::keep_alive<1, 2>()
+    );
+  }
+};
+
+
+template <typename Implementation_t>
+struct BindAdaptor<AdaptorNeighbourList, Implementation_t> {
+  template<typename PyClass>
+  void bind_adaptor_init(PyClass & adaptor) {
+    adaptor.def(
+      py::init<std::shared_ptr<Implementation_t> &, double, bool>(),
+        py::arg("manager"),
+        py::arg("cutoff"), py::arg("consider_ghost_neighbours") = false,
+        py::keep_alive<1, 2>()
+    );
+  }
+};
+
+// //! templated function for adding an adaptor
+// template <typename Adaptor, typename... ConstructorPack>
+// decltype(auto) add_adaptor(py::module & m, py::module & m_garbage) {
+//   using Child = Adaptor;
+//   using Parent = typename Child::Parent;
+//   using ImplementationPtr_t = typename Child::ImplementationPtr_t;
+//   constexpr static size_t MaxOrder = Child::traits::MaxOrder;
+
+//   std::string adaptor_name = internal::GetBindingTypeName<Child>();
+//   py::class_<Child, Parent, std::shared_ptr<Child>> adaptor(m, adaptor_name.c_str());
+//   // bind constructor making sure the input Manager stays alive
+//   // as long as the class is alive
+//   adaptor.def(py::init<ImplementationPtr_t &, ConstructorPack...>(),
+//               py::keep_alive<1, 2>());
+//   // TODO(felix) bind the update with parameter pack
+//   bind_update_empty<Child>(adaptor);
+//   // bind clusterRefs so that one can loop over adaptor
+//   // MaxOrder+1 because recursion stops at Val-1
+//   add_iterators<Child, 1, MaxOrder + 1>::static_for(m_garbage, adaptor);
+//   return adaptor;
+// }
+
+// //! for adding an adaptor Neighbourlist
+// // TODO(felix) come up with a more streamlined solution
+// template <typename Manager>
+// decltype(auto) add_adaptor_NL(py::module & m, py::module & m_garbage) {
+//   using Child = AdaptorNeighbourList<Manager>;
+//   using Parent = typename Child::Parent;
+//   using ImplementationPtr_t = typename Child::ImplementationPtr_t;
+//   constexpr static size_t MaxOrder = Child::traits::MaxOrder;
+
+//   std::string adaptor_name = internal::GetBindingTypeName<Child>();
+//   py::class_<Child, Parent, std::shared_ptr<Child>> adaptor(m, adaptor_name.c_str());
+//   // bind constructor making sure the input Manager stays alive
+//   // as long as the class is alive
+//   adaptor.def(py::init<ImplementationPtr_t &, double, bool>(), py::arg("manager"),
+//               py::arg("cutoff"), py::arg("consider_ghost_neighbours") = false,
+//               py::keep_alive<1, 2>());
+//   // TODO(felix) bind the update with parameter pack
+//   bind_update_empty<Child>(adaptor);
+//   // bind clusterRefs so that one can loop over adaptor
+//   // MaxOrder+1 because recursion stops at Val-1
+//   add_iterators<Child, 1, MaxOrder + 1>::static_for(m_garbage, adaptor);
+//   return adaptor;
+// }
+
+/**
+ * Bind a list of adaptors by stacking them using template recursion.
+ * @tparams ManagerImplementation a fully typed manager
+ * @tparams AdaptorImplementationPack list of adaptor partial type
+ */
+template<typename ManagerImplementation,  template<class> class AdaptorImplementation, template<class> class ... AdaptorImplementationPack>
+struct BindAdaptorStack {
+  using Manager_t = AdaptorImplementation<ManagerImplementation>;
+  using Parent = typename Manager_t::Parent;
+  constexpr static size_t MaxOrder = Manager_t::traits::MaxOrder;
+  using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
+  using ManagerPtr = std::shared_ptr<Manager_t>;
+  using type = BindStack<Manager_t, AdaptorImplementationPack...>;
+
+  BindStack(py::module & m_adaptor, py::module & m_garbage)
+  :next_stack{m_adaptor, m_garbage} {
+    add_structure_manager_interface<Manager_t>(m_garbage);
+
+    std::string adaptor_name = internal::GetBindingTypeName<Manager_t>();
+    py::class_<
+      Manager_t, Parent, std::shared_ptr<Manager_t>>
+                  adaptor(m, adaptor_name.c_str());
+    BindAdaptor<AdaptorImplementation,
+                ManagerImplementation>::bind_adaptor_init(adaptor);
+    bind_update_empty<Manager_t>(adaptor);
+    bind_update_unpacked<Manager_t>(adaptor);
+    // bind clusterRefs so that one can loop over adaptor
+    // MaxOrder+1 because recursion stops at Val-1
+    add_iterators<Manager_t, 1, MaxOrder + 1>::static_for(m_garbage, adaptor);
+  }
+
+  type next_stack;
+};
+
+//! End of recursion
+template<typename ManagerImplementation,  template<class> class AdaptorImplementation>
+struct BindStack<ManagerImplementation, AdaptorImplementation> {
+  using Manager_t = AdaptorImplementation<ManagerImplementation>;
+  using Parent = typename Manager_t::Parent;
+  constexpr static size_t MaxOrder = Manager_t::traits::MaxOrder;
+  using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
+  using ManagerPtr = std::shared_ptr<Manager_t>;
+
+  BindStack(py::module & m_adaptor, py::module & m_garbage) {
+    add_structure_manager_interface<Manager_t>(m_garbage);
+
+    std::string adaptor_name = internal::GetBindingTypeName<Manager_t>();
+    py::class_<
+      Manager_t, Parent, std::shared_ptr<Manager_t>>
+                  adaptor(m, adaptor_name.c_str());
+    BindAdaptor<AdaptorImplementation,
+                ManagerImplementation>::bind_adaptor_init(adaptor);
+    bind_update_empty<Manager_t>(adaptor);
+    bind_update_unpacked<Manager_t>(adaptor);
+    // bind clusterRefs so that one can loop over adaptor
+    // MaxOrder+1 because recursion stops at Val-1
+    add_iterators<Manager_t, 1, MaxOrder + 1>::static_for(m_garbage, adaptor);
+  }
+
+
+};
+
 
 //! Template overloading of the binding of the structure managers
 template <typename StructureManagerImplementation>
-void add_structure_manager(py::module & mod, py::module & m_garbage);
+void bind_structure_manager(py::module & mod, py::module & m_garbage);
 
 template <typename StructureManagerCenters>
-void add_structure_manager(py::module & mod, py::module & m_garbage) {
+void bind_structure_manager(py::module & mod, py::module & m_garbage) {
   using Manager_t = StructureManagerCenters;
 
   // bind parent class
@@ -282,49 +433,46 @@ void add_structure_manager(py::module & mod, py::module & m_garbage) {
   // bind implementation class
   auto manager =
       add_structure_manager_implementation<Manager_t>(mod, m_garbage);
-  // TODO(felix) bind the update with parameter pack
-  manager.def("update",
-              [](Manager_t & v,
-                 const py::EigenDRef<const Eigen::MatrixXd> & positions,
-                 const py::EigenDRef<const Eigen::VectorXi> & atom_types,
-                 const py::EigenDRef<const Eigen::MatrixXd> & cell,
-                 const py::EigenDRef<const Eigen::MatrixXi> & pbc) {
-                v.update(positions, atom_types, cell, pbc);
-              });
+  //
+  bind_update_unpacked<Manager_t>(manager);
 }
 
-//! Function defining which adaptors are stacked on top
-//! of each and then the binding is done for the
-//! structure manager
-template <typename StructureManagerImplementation>
-void add_adaptors(py::module & mod, py::module & m_garbage) {
-  using Manager_t = StructureManagerImplementation;
 
-  using AdaptedManager_0_t = AdaptorNeighbourList<Manager_t>;
-  // bind parent class
-  add_structure_manager_interface<AdaptedManager_0_t>(m_garbage);
-  // bind implementation class
-  add_adaptor_NL<Manager_t>(mod, m_garbage);
 
-  using AdaptedManager_1_t = AdaptorStrict<AdaptedManager_0_t>;
-  // bind parent class
-  add_structure_manager_interface<AdaptedManager_1_t>(m_garbage);
-  // bind implementation class
-  add_adaptor<AdaptedManager_1_t, double>(mod, m_garbage);
-}
+// //! Function defining which adaptors are stacked on top
+// //! of each and then the binding is done for the
+// //! structure manager
+// template <typename StructureManagerImplementation>
+// void add_adaptors(py::module & mod, py::module & m_garbage) {
+//   using Manager_t = StructureManagerImplementation;
 
-//! Utility function allowing template differentiation on the structure_manager
-template <typename StructureManagerImplementation>
-void bind_structure_manager(py::module & m_str_mng, py::module & m_adp,
-                            py::module & m_garbage) {
-  add_structure_manager<StructureManagerImplementation>(m_str_mng, m_garbage);
-  add_adaptors<StructureManagerImplementation>(m_adp, m_garbage);
-}
+//   using AdaptedManager_0_t = AdaptorNeighbourList<Manager_t>;
+//   // bind parent class
+//   add_structure_manager_interface<AdaptedManager_0_t>(m_garbage);
+//   // bind implementation class
+//   add_adaptor_NL<Manager_t>(mod, m_garbage);
 
+//   using AdaptedManager_1_t = AdaptorStrict<AdaptedManager_0_t>;
+//   // bind parent class
+//   add_structure_manager_interface<AdaptedManager_1_t>(m_garbage);
+//   // bind implementation class
+//   add_adaptor<AdaptedManager_1_t, double>(mod, m_garbage);
+// }
+
+// //! Utility function allowing template differentiation on the structure_manager
+// template <typename StructureManagerImplementation>
+// void bind_structure_manager(py::module & m_str_mng, py::module & m_adp,
+//                             py::module & m_garbage) {
+//   add_structure_manager<StructureManagerImplementation>(m_str_mng, m_garbage);
+//   add_adaptors<StructureManagerImplementation>(m_adp, m_garbage);
+// }
+
+//! Bind ClusterRefBase
 void bind_cluster_ref_base(py::module & m_garbage) {
   py::class_<ClusterRefBase>(m_garbage, "ClusterRefBase");
 }
 
+//! Bind the ClusterRef up to order 4 and from Layer 0 to 6
 void bind_cluster_refs(py::module & m_garbage) {
   add_cluster_refs<1, 0, 6>::static_for(m_garbage);
   add_cluster_refs<2, 0, 6>::static_for(m_garbage);
@@ -337,6 +485,8 @@ void add_structure_managers(py::module & m_str_mng, py::module & m_adp,
                             py::module & m_garbage) {
   bind_cluster_ref_base(m_garbage);
   bind_cluster_refs(m_garbage);
+  using Manager_t = StructureManagerCenters;
+  add_structure_manager<Manager_t>(m_str_mng, m_garbage);
 
-  bind_structure_manager<StructureManagerCenters>(m_str_mng, m_adp, m_garbage);
+  BindStack<Manager_t, AdaptorNeighbourList, AdaptorStrict> adaptor_stack_1{m_adp, m_garbage};
 }

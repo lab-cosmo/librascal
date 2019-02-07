@@ -54,7 +54,7 @@ namespace rascal {
       :manager{std::make_shared<Manager_t>(m,arg)},
       next_stack{manager, args...} {
         m->add_child(this->manager->get_weak_ptr());
-        std::cout<<this->manager->get_name()<<std::endl;
+        // std::cout<<this->manager->get_name()<<std::endl;
       }
 
       ManagerPtr manager;
@@ -77,7 +77,7 @@ namespace rascal {
       AdaptorFactory(ImplementationPtr_t& m, Arg& arg)
       :manager{std::make_shared<Manager_t>(m,arg)} {
         m->add_child(this->manager->get_weak_ptr());
-        std::cout<<this->manager->get_name()<<std::endl;
+        // std::cout<<this->manager->get_name()<<std::endl;
       }
 
       ManagerPtr manager;
