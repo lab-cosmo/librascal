@@ -141,17 +141,34 @@ namespace rascal {
   template <class BaseFixture, class StructureManager, template<class> class ... AdaptorImplementationPack>
   struct MultipleStructureFixture : BaseFixture {
     using Parent = BaseFixture;
+    using Factory_t = typename Parent::Factory_t;
     using Manager_t = typename internal::AdaptorTypeStacker<StructureManager,AdaptorImplementationPack...>::type;
+    using ManagerPtr_t = std::shared_ptr<Manager_t>;
 
     MultipleStructureFixture() : Parent{} {
       for (auto factory_arg : this->factory_args) {
-        this->managers.emplace_back(
-            std::apply(make_structure_manager_stack<StructureManager, AdaptorImplementationPack...>, factory_arg)
-        );
+        auto manager{call_with_tuple<Factory_t>().make_manager_stack(factory_arg)};
+        this->managers.push_back(manager);
       }
     }
 
-    
+    template<typename T>
+    struct call_with_tuple;
+
+    template<typename ...T>
+    struct call_with_tuple<std::tuple<T...>> {
+      ManagerPtr_t make_manager_stack(std::tuple<T...> tuple) {
+        return helper(tuple, std::index_sequence_for<T...>());
+      }
+     protected:
+      template<std::size_t... Is>
+      ManagerPtr_t helper(std::tuple<T...> tuple, std::index_sequence<Is...>) {
+        ManagerPtr_t manager{make_structure_manager_stack<StructureManager, AdaptorImplementationPack...>(std::get<Is>(tuple)...)};
+        return manager;
+      }
+
+    };
+
 
     ~MultipleStructureFixture() = default;
 
