@@ -82,7 +82,7 @@ namespace rascal {
     for (auto atom : Fix::fixture.manager) {
       const bool include(dist(rd));
       if (include) {
-        Fix::manager.add_cluster(atom);
+        Fix::manager->add_cluster(atom);
         atom_indices.push_back(atom.get_atom_index());
       }
     }
@@ -93,13 +93,13 @@ namespace rascal {
       counter++;
       const auto & pos_a{atom.get_position()};
       const auto & pos_b{
-          this->fixture.manager.get_position(atom.get_atom_index())};
+          this->fixture.manager->get_position(atom.get_atom_index())};
       const auto error{(pos_a - pos_b).norm()};
       BOOST_CHECK_EQUAL(error, 0.);
 
       const auto & atom_type_a{atom.get_atom_type()};
       const auto & atom_type_b{
-          this->fixture.manager.get_atom_type(atom.back())};
+          this->fixture.manager->get_atom_type(atom.back())};
       BOOST_CHECK_EQUAL(atom_type_a, atom_type_b);
     }
   }
@@ -122,7 +122,7 @@ namespace rascal {
       for (auto pair : atom) {
         const bool include(dist(rd));
         if (include) {
-          Fix::manager.add_cluster(pair);
+          Fix::manager->add_cluster(pair);
           atom_indices.push_back(pair.get_atom_indices());
         }
       }
@@ -137,13 +137,13 @@ namespace rascal {
 
         const auto & pos_a{pair.get_position()};
         const auto & pos_b{
-            this->fixture.manager.get_position(pair.get_atom_index())};
+            this->fixture.manager->get_position(pair.get_atom_index())};
         const auto error{(pos_a - pos_b).norm()};
         BOOST_CHECK_EQUAL(error, 0.);
 
         const auto & atom_type_a{pair.get_atom_type()};
         const auto & atom_type_b{
-            this->fixture.manager.get_atom_type(pair.back())};
+            this->fixture.manager->get_atom_type(pair.back())};
         BOOST_CHECK_EQUAL(atom_type_a, atom_type_b);
         counter++;
       }

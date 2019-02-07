@@ -107,6 +107,12 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  // overloading the update function
+  void StructureManagerCenters::update() {
+    StructureManagerCenters::update_children();
+  }
+
+  /* ---------------------------------------------------------------------- */
   // function for setting the internal data structures
   void StructureManagerCenters::build() {
 

@@ -120,6 +120,36 @@ namespace rascal {
     return manager;
   }
 
+  /**
+   * Factory function to stack adaptors on a structure managers with a valid
+   *  structure already registered.
+   *
+   * @tparams Manager type of the base manager, e.g. StructureManagerCenters
+   * @tparams AdaptorImplementationPack list of adaptors to stack on the base
+   * manager type
+   * @params arg argument to update the structure of the base structure manager
+   * @params args list of arguments to build the adaptor (packed in tuples and
+   *  in the same order as in AdaptorImplementationPack)
+   * @return shared pointer to the fully built structure manager
+   */
+  template <typename Manager, template<class> class ... AdaptorImplementationPack, typename ...Args >
+  decltype(auto) stack_adaptors(std::shared_ptr<Manager>& manager_base, Args ...args) {
+
+    // build the stack of adaptors
+    auto factory =
+      AdaptorFactory<Manager, AdaptorImplementationPack... >(manager_base, args...);
+    // get the manager with the full stack
+    auto manager = factory.get_manager();
+
+    // TODO(felix) make sure that when updating adaptors without a new
+    // structure that the whole tree is not regenerated again but only
+    // the parts that needs it
+    // update all the stack of adaptors
+    manager->update();
+
+    return manager;
+  }
+
   template<typename StructureManagerPtr, int TargetLevel>
   struct UnderlyingManagerExtractor {
     using ManagerPtr_t = typename StructureManagerPtr::element_type::ImplementationPtr_t;

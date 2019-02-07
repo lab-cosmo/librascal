@@ -173,7 +173,7 @@ namespace rascal {
 
     MultipleStructureManagerStrictFixture() : Parent{} {
       for (Manager_P_t & manager : this->managers_pair) {
-        this->managers_strict.emplace_back(manager, manager.get_cutoff());
+        this->managers_strict.emplace_back(manager, manager->get_cutoff());
         this->managers_strict.back().update();
       }
     }

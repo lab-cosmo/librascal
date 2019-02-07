@@ -164,8 +164,6 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   class StructureManager : public StructureManagerBase {
-  // class StructureManager : public StructureManagerBase,
-  //     public std::enable_shared_from_this<StructureManager<ManagerImplementation>> {
    public:
     using StructureManager_t = StructureManager<ManagerImplementation>;
     using traits = StructureManager_traits<ManagerImplementation>;

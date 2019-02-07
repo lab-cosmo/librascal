@@ -66,6 +66,12 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  // overloading the update function
+  void StructureManagerLammps::update() {
+    StructureManagerLammps::update_children();
+  }
+
+  /* ---------------------------------------------------------------------- */
   /*
    * Return the number of clusters of size cluster_size.  Can only handle
    * cluster_size 1 (atoms) and cluster_size 2 (pairs).

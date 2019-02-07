@@ -415,7 +415,7 @@ namespace rascal {
 
         // construct manager with skewed unit cell and shifted positions
         using PBC_t = Eigen::Map<Eigen::Matrix<int, 3, 1>>;
-        manager.update(pos_skw, atom_types, cell_skw, PBC_t{pbc.data()});
+        manager->update(pos_skw, atom_types, cell_skw, PBC_t{pbc.data()});
 
         // build neighbourlist
         using PairManager_t = AdaptorNeighbourList<StructureManagerCenters>;

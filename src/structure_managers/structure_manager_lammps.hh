@@ -130,6 +130,9 @@ namespace rascal {
                 double ** x, double ** f, int * type,
                 double * eatom, double ** vatom);
 
+    //! overload of update that does not change the underlying structure
+    void update();
+
     //! it is not an adaptor so there is nothing to update
     void update_adaptor() {}
 

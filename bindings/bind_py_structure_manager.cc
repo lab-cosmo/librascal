@@ -332,13 +332,13 @@ template<typename ManagerImplementation,  template<class> class AdaptorImplement
 struct AdaptorTypeStacker {
   using Manager_t = ManagerImplementation<AdaptorImplementation>;
   using type = AdaptorTypeStacker<Manager_t, AdaptorImplementationPack...>;
-}
+};
 
 template<typename ManagerImplementation,  template<class> class AdaptorImplementation>
-struct AdaptorTypeStacker {
+struct AdaptorTypeStacker<ManagerImplementation, AdaptorImplementation> {
   using Manager_t = ManagerImplementation<AdaptorImplementation>;
   using type = Manager_t;
-}
+};
 //TODO(felix) use this function
 template<typename ManagerImplementation, template<class> class ... AdaptorImplementationPack, typename ...Args>
 void bind_structure_manager_factory(py::module & m_adaptor) {
@@ -346,7 +346,7 @@ void bind_structure_manager_factory(py::module & m_adaptor) {
   std::string factory_name = "StructureManagerFactory_";
   factory_name += internal::GetBindingTypeName<Manager_t>();
   m_adaptor.def(factory_name.c_str(),
-        [](Args...& args) {
+        [](Args& ...args) {
           return make_structure_manager<ManagerImplementation,
         AdaptorImplementationPack...>(args...);
         },

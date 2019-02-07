@@ -132,7 +132,7 @@ int main() {
   //     8, 8, 8, 8, 8;
 
   // using PBC_t = Eigen::Map<Eigen::Matrix<int, 3, 1>>;
-  // manager.update(positions, atom_types, cell, PBC_t{pbc.data()});
+  // manager->update(positions, atom_types, cell, PBC_t{pbc.data()});
 
   MultipleStrictStructureManager<StructureManagerCenters> meta{};
 
@@ -249,7 +249,7 @@ int main() {
   // positions.transposeInPlace();
 
   // // setting up the manager
-  // manager.update(positions, numbers, cell,
+  // manager->update(positions, numbers, cell,
   //                Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
 
   // double cut_off{2};

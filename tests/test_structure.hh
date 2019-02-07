@@ -3,6 +3,7 @@
  *
  * @author Till Junge <till.junge@altermail.ch>
  * @author Markus Stricker <markus.stricker@epfl.ch>
+ * @author Felix Musil <felix.musil@epfl.ch>
  *
  * @date   05 Apr 2018
  *
@@ -10,7 +11,8 @@
  *
  * @section LICENSE
  *
- * Copyright © 2018 Till Junge, Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2018 Till Junge, Markus Stricker, Felix Musil,
+ * COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -60,7 +62,8 @@ namespace rascal {
     ManagerFixture() {}   // ctor
     ~ManagerFixture() {}  // dtor
 
-    ManagerImplementation manager{};
+    std::shared_ptr<ManagerImplementation> manager{
+      std::make_shared<ManagerImplementation>()};
   };
 
   /* ---------------------------------------------------------------------- */
@@ -75,8 +78,10 @@ namespace rascal {
     ManagerFixtureTwo() {}   // ctor
     ~ManagerFixtureTwo() {}  // dtor
 
-    ManagerImplementation manager_1{};
-    ManagerImplementation manager_2{};
+    std::shared_ptr<ManagerImplementation> manager_1{
+      std::make_shared<ManagerImplementation>()};
+    std::shared_ptr<ManagerImplementation> manager_2{
+      std::make_shared<ManagerImplementation>()};
   };
 
   /* ---------------------------------------------------------------------- */
@@ -93,7 +98,7 @@ namespace rascal {
         : ManagerFixture<ManagerImplementation>{}, cutoff{1.},
           filename{"simple_cubic_9.json"} // initialize current fixture
     {
-      this->manager.update(filename);
+      this->manager->update(filename);
     }
 
     ~ManagerFixtureFile() {}
@@ -148,9 +153,9 @@ namespace rascal {
 
       using PBC_t = Eigen::Map<Eigen::Matrix<int, 3, 1>>;
 
-      manager_1.update(positions_1, atom_types, cell_1, PBC_t{pbc.data()});
+      manager_1->update(positions_1, atom_types, cell_1, PBC_t{pbc.data()});
 
-      manager_2.update(positions_2, atom_types, cell_2, PBC_t{pbc.data()});
+      manager_2->update(positions_2, atom_types, cell_2, PBC_t{pbc.data()});
     }
 
     ~ManagerFixtureTwoHcp() {}
@@ -215,9 +220,9 @@ namespace rascal {
 
       using PBC_t = Eigen::Map<Eigen::Matrix<int, 3, 1>>;
 
-      manager_1.update(positions_1, atom_types_1, cell_1, PBC_t{pbc.data()});
+      manager_1->update(positions_1, atom_types_1, cell_1, PBC_t{pbc.data()});
 
-      manager_2.update(positions_2, atom_types_2, cell_2, PBC_t{pbc.data()});
+      manager_2->update(positions_2, atom_types_2, cell_2, PBC_t{pbc.data()});
     }
 
     ~ManagerFixtureTwoFcc() {}
@@ -253,8 +258,8 @@ namespace rascal {
 
     ManagerFixture()
         : firstneigh{new int *[nb]}, x{new double *[nb]}, f{new double *[nb]},
-          vatom{new double *[nb]}, manager{} {
-      manager.update(inum, tot_num, ilist, numneigh,
+          vatom{new double *[nb]}, manager{std::make_shared<Manager_t>()} {
+      manager->update(inum, tot_num, ilist, numneigh,
                      static_cast<int **>(firstneigh), ptr_t(x), ptr_t(f), type,
                      eatom, static_cast<double **>(vatom));
       firstneigh[0] = new int[2];
@@ -303,7 +308,7 @@ namespace rascal {
     int type[nb]{1, 2, -9};
     double eatom[3]{2, 1, 1};
     double ** vatom;
-    Manager_t manager;
+    std::shared_ptr<Manager_t> manager;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -316,20 +321,21 @@ namespace rascal {
   struct PairFixtureFile {
     using Manager_t = ManagerImplementation;
 
-    static_assert(ManagerImplementation::traits::MaxOrder == 1,
+    static_assert(Manager_t::traits::MaxOrder == 1,
                   "Lower layer manager has MaxOrder needs MaxOrder = 1");
 
-    using PairManager_t = AdaptorNeighbourList<ManagerImplementation>;
+    using PairManager_t = AdaptorNeighbourList<Manager_t>;
 
     PairFixtureFile()
         : pair_manager{this->fixture.manager, this->fixture.cutoff, true} {
-      this->pair_manager.update();
+      this->fixture.manager->add_child(this->pair_manager);
+      this->pair_manager->update();
     }
 
     ~PairFixtureFile() {}
 
-    ManagerFixtureFile<ManagerImplementation> fixture{};
-    AdaptorNeighbourList<ManagerImplementation> pair_manager;
+    ManagerFixtureFile<Manager_t> fixture{};
+    std:shared_ptr<PairManager_t> pair_manager;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -342,19 +348,20 @@ namespace rascal {
   struct PairFixture {
     using Manager_t = ManagerImplementation;
 
-    static_assert(ManagerImplementation::traits::MaxOrder == 1,
+    static_assert(Manager_t::traits::MaxOrder == 1,
                   "Lower layer manager has MaxOrder needs MaxOrder = 1");
 
-    using PairManager_t = AdaptorNeighbourList<ManagerImplementation>;
+    using PairManager_t = AdaptorNeighbourList<Manager_t>;
 
     PairFixture() : pair_manager{this->fixture.manager, 3.} {
-      this->pair_manager.update();
+      this->fixture.manager->add_child(this->pair_manager);
+      this->pair_manager->update();
     }
 
     ~PairFixture() {}
 
     ManagerFixture<ManagerImplementation> fixture{};
-    AdaptorNeighbourList<ManagerImplementation> pair_manager;
+    std:shared_ptr<PairManager_t> pair_manager;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -400,12 +407,12 @@ namespace rascal {
           8, 8, 8, 8, 8;
 
       using PBC_t = Eigen::Map<Eigen::Matrix<int, 3, 1>>;
-      manager.update(positions, atom_types, cell, PBC_t{pbc.data()});
+      manager->update(positions, atom_types, cell, PBC_t{pbc.data()});
     }
 
     ~ManagerFixture() {}
 
-    Manager_t manager{};
+    std::shared_ptr<Manager_t> manager{std::make_shared<Manager_t>()};
     Eigen::MatrixXd positions;
     Eigen::VectorXi atom_types;
     Eigen::MatrixXd cell;
@@ -418,7 +425,6 @@ namespace rascal {
    * A simple manager using ManagerCenters to check the neighbourlist algorithm
    * with simple positions and a periodicity only in x-direction. This manager
    * is also used to check the species filter.
-   *
    */
   struct ManagerFixtureSimple : public ManagerFixture<StructureManagerCenters> {
     ManagerFixtureSimple()
@@ -440,7 +446,7 @@ namespace rascal {
       atom_types << 1, 3, 2, 1, 1, 2, 2, 3;
 
       using PBC_t = Eigen::Map<Eigen::Matrix<int, 3, 1>>;
-      this->manager.update(positions, atom_types, cell, PBC_t{pbc.data()});
+      this->manager->update(positions, atom_types, cell, PBC_t{pbc.data()});
     }
 
     ~ManagerFixtureSimple() {}

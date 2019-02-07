@@ -183,6 +183,9 @@ namespace rascal {
      */
     void update(const std::string filename);
 
+    //! overload of update that does not change the underlying structure
+    void update();
+
     //! it is not an adaptor so there is nothing to update
     void update_adaptor() {}
 

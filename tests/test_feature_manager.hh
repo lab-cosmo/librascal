@@ -98,7 +98,7 @@ namespace rascal {
 
       for (auto & manager : this->managers_strict) {
         for (auto & hyper : this->hypers) {
-          n_center += manager.size();
+          n_center += manager->size();
 
           representations.emplace_back(manager, hyper);
           representations.back().compute();
