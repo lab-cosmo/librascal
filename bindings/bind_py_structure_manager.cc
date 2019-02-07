@@ -327,6 +327,33 @@ struct BindAdaptor<AdaptorNeighbourList, Implementation_t> {
 };
 
 
+
+template<typename ManagerImplementation,  template<class> class AdaptorImplementation, template<class> class ... AdaptorImplementationPack>
+struct AdaptorTypeStacker {
+  using Manager_t = ManagerImplementation<AdaptorImplementation>;
+  using type = AdaptorTypeStacker<Manager_t, AdaptorImplementationPack...>;
+}
+
+template<typename ManagerImplementation,  template<class> class AdaptorImplementation>
+struct AdaptorTypeStacker {
+  using Manager_t = ManagerImplementation<AdaptorImplementation>;
+  using type = Manager_t;
+}
+//TODO(felix) use this function
+template<typename ManagerImplementation, template<class> class ... AdaptorImplementationPack, typename ...Args>
+void bind_structure_manager_factory(py::module & m_adaptor) {
+  using Manager_t = typename AdaptorTypeStacker<ManagerImplementation,AdaptorImplementationPack...>::type;
+  std::string factory_name = "StructureManagerFactory_";
+  factory_name += internal::GetBindingTypeName<Manager_t>();
+  m_adaptor.def(factory_name.c_str(),
+        [](Args...& args) {
+          return make_structure_manager<ManagerImplementation,
+        AdaptorImplementationPack...>(args...);
+        },
+        py::return_value_policy::copy);
+}
+
+
 /**
  * Bind a list of adaptors by stacking them using template recursion.
  * @tparams ManagerImplementation a fully typed manager
