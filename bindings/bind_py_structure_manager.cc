@@ -209,7 +209,11 @@ decltype(auto) add_manager(py::module & mod) {
   return manager;
 }
 
-//! templated function for adding a StructureManager interface
+/**
+ * templated function for adding a StructureManager interface
+ * to allow using the iteration over the manager in python, the interface
+ * of the structure manager need to be binded.
+ */
 template <typename StructureManagerImplementation>
 decltype(auto) add_structure_manager_interface(py::module & m) {
   using Child = StructureManagerImplementation;
@@ -339,7 +343,7 @@ struct BindAdaptorStack {
 
   BindAdaptorStack(py::module & m_adaptor, py::module & m_garbage)
   :next_stack{m_adaptor, m_garbage} {
-    // add_structure_manager_interface<Manager_t>(m_garbage);
+    add_structure_manager_interface<Manager_t>(m_garbage);
 
     auto adaptor = add_manager<Manager_t>(m_adaptor);
     BindAdaptor<AdaptorImplementation,
@@ -364,7 +368,7 @@ struct BindAdaptorStack<ManagerImplementation, AdaptorImplementation> {
   using ManagerPtr = std::shared_ptr<Manager_t>;
 
   BindAdaptorStack(py::module & m_adaptor, py::module & m_garbage) {
-    // add_structure_manager_interface<Manager_t>(m_garbage);
+    add_structure_manager_interface<Manager_t>(m_garbage);
 
     auto adaptor = add_manager<Manager_t>(m_adaptor);
     BindAdaptor<AdaptorImplementation,
@@ -386,17 +390,12 @@ void bind_structure_manager(py::module & mod, py::module & m_garbage) {
   using Manager_t = StructureManagerCenters;
 
   // bind parent class
-  // add_structure_manager_interface<Manager_t>(m_garbage);
+  add_structure_manager_interface<Manager_t>(m_garbage);
   // bind implementation class
   auto manager =
       add_structure_manager_implementation<Manager_t>(mod, m_garbage);
   //
   bind_update_unpacked<Manager_t>(manager);
-}
-
-//! Bind ClusterRefBase
-void bind_cluster_ref_base(py::module & m_garbage) {
-  py::class_<ClusterRefBase>(m_garbage, "ClusterRefBase");
 }
 
 //! Bind the ClusterRef up to order 4 and from Layer 0 to 6
@@ -410,8 +409,12 @@ void bind_cluster_refs(py::module & m_garbage) {
 //! Main function to add StructureManagers and their Adaptors
 void add_structure_managers(py::module & m_str_mng, py::module & m_adp,
                             py::module & m_garbage) {
-  bind_cluster_ref_base(m_garbage);
+  // Bind StructureManagerBase
+  py::class_<StructureManagerBase, std::shared_ptr<StructureManagerBase>>(m_garbage, "StructureManagerBase");
+  // Bind ClusterRefBase
+  py::class_<ClusterRefBase>(m_garbage, "ClusterRefBase");
   bind_cluster_refs(m_garbage);
+
   using Manager_t = StructureManagerCenters;
   bind_structure_manager<Manager_t>(m_str_mng, m_garbage);
 

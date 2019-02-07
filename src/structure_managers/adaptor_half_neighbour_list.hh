@@ -70,9 +70,11 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   class AdaptorHalfList
-      : public StructureManager<AdaptorHalfList<ManagerImplementation>> {
+      : public StructureManager<AdaptorHalfList<ManagerImplementation>>,
+      public std::enable_shared_from_this<AdaptorHalfList<ManagerImplementation>> {
    public:
-    using Parent = StructureManager<AdaptorHalfList<ManagerImplementation>>;
+    using Manager_t = AdaptorHalfList<ManagerImplementation>;
+    using Parent = StructureManager<Manager_t>;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorHalfList>;
     using parent_traits = typename ManagerImplementation::traits;
@@ -117,6 +119,16 @@ namespace rascal {
 
     //! Move assignment operator
     AdaptorHalfList & operator=(AdaptorHalfList && other) = default;
+
+    //! Create a new shared pointer to the object
+    std::shared_ptr<Manager_t> get_shared_ptr() {
+        return this->shared_from_this();
+    }
+
+    //! Create a new weak pointer to the object
+    std::weak_ptr<Manager_t> get_weak_ptr() {
+        return std::weak_ptr<Manager_t>(this->get_shared_ptr());
+    }
 
     //! update just the adaptor assuming the underlying manager was updated
     void update_adaptor();

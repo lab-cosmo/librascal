@@ -80,7 +80,8 @@ namespace rascal {
    */
   class StructureManagerCenters :
       // public inheritance the base class
-      public StructureManager<StructureManagerCenters> {
+      public StructureManager<StructureManagerCenters>,
+      public std::enable_shared_from_this<StructureManagerCenters> {
     // Publicly accessible variables and function of the class are given
     // here. These provide the interface to access the neighbourhood.
    public:
@@ -154,6 +155,16 @@ namespace rascal {
     //! Move assignment operator
     StructureManagerCenters &
     operator=(StructureManagerCenters && other) = default;
+
+    //! Create a new shared pointer to the object
+    std::shared_ptr<StructureManagerCenters> get_shared_ptr() {
+        return this->shared_from_this();
+    }
+
+    //! Create a new weak pointer to the object
+    std::weak_ptr<StructureManagerCenters> get_weak_ptr() {
+        return std::weak_ptr<StructureManagerCenters>(this->get_shared_ptr());
+    }
 
     /**
      * invokes the initialisation/reinitialisation based on existing

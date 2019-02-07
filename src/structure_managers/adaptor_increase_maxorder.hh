@@ -74,12 +74,11 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   class AdaptorMaxOrder
-      : public StructureManager<AdaptorMaxOrder<ManagerImplementation>> {
+      : public StructureManager<AdaptorMaxOrder<ManagerImplementation>>,
+      public std::enable_shared_from_this<AdaptorMaxOrder<ManagerImplementation>> {
    public:
-    using Base = StructureManager<AdaptorMaxOrder<ManagerImplementation>>;
-
-    using Parent = StructureManager<AdaptorMaxOrder<ManagerImplementation>>;
-    using Adaptor_t = AdaptorMaxOrder<ManagerImplementation>;
+    using Manager_t = AdaptorMaxOrder<ManagerImplementation>;
+    using Parent = StructureManager<Manager_t>;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorMaxOrder>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
@@ -120,6 +119,16 @@ namespace rascal {
 
     //! Move assignment operator
     AdaptorMaxOrder & operator=(AdaptorMaxOrder && other) = default;
+
+    //! Create a new shared pointer to the object
+    std::shared_ptr<Manager_t> get_shared_ptr() {
+        return this->shared_from_this();
+    }
+
+    //! Create a new weak pointer to the object
+    std::weak_ptr<Manager_t> get_weak_ptr() {
+        return std::weak_ptr<Manager_t>(this->get_shared_ptr());
+    }
 
     /**
      * Updates just the adaptor assuming the underlying manager was

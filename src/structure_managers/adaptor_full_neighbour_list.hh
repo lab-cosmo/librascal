@@ -74,7 +74,8 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   class AdaptorFullList
-      : public StructureManager<AdaptorFullList<ManagerImplementation>> {
+      : public StructureManager<AdaptorFullList<ManagerImplementation>>,
+      public std::enable_shared_from_this<AdaptorFullList<ManagerImplementation>> {
    public:
     using Parent = StructureManager<AdaptorFullList<ManagerImplementation>>;
     using traits = StructureManager_traits<AdaptorFullList>;

@@ -424,12 +424,11 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   class AdaptorNeighbourList
-      : public StructureManager<AdaptorNeighbourList<ManagerImplementation>> {
+      : public StructureManager<AdaptorNeighbourList<ManagerImplementation>>,
+      public std::enable_shared_from_this<AdaptorNeighbourList<ManagerImplementation>> {
    public:
-    using Base = StructureManager<AdaptorNeighbourList<ManagerImplementation>>;
-    using Parent =
-        StructureManager<AdaptorNeighbourList<ManagerImplementation>>;
-    using Adaptor_t = AdaptorNeighbourList<ManagerImplementation>;
+   using Manager_t = AdaptorNeighbourList<ManagerImplementation>;
+    using Parent = StructureManager<Manager_t>;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorNeighbourList>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
@@ -475,6 +474,16 @@ namespace rascal {
 
     //! Move assignment operator
     AdaptorNeighbourList & operator=(AdaptorNeighbourList && other) = default;
+
+    //! Create a new shared pointer to the object
+    std::shared_ptr<Manager_t> get_shared_ptr() {
+        return this->shared_from_this();
+    }
+
+    //! Create a new weak pointer to the object
+    std::weak_ptr<Manager_t> get_weak_ptr() {
+        return std::weak_ptr<Manager_t>(this->get_shared_ptr());
+    }
 
     /**
      * Updates just the adaptor assuming the underlying manager was
