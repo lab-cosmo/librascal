@@ -100,7 +100,7 @@ namespace rascal {
     //! Extend a minimal/half neighbour list to a full neighbour list.
     explicit AdaptorFullList(ImplementationPtr_t manager);
 
-    AdaptorFullList(ImplementationPtr_t manager, std::tuple<> tp)
+    AdaptorFullList(ImplementationPtr_t manager, std::tuple<> )
     :AdaptorFullList(manager) {}
 
     //! Copy constructor

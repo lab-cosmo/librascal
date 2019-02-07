@@ -103,7 +103,7 @@ namespace rascal {
      */
     explicit AdaptorMaxOrder(ImplementationPtr_t manager);
 
-    AdaptorMaxOrder(ImplementationPtr_t manager, std::tuple<> tp)
+    AdaptorMaxOrder(ImplementationPtr_t manager, std::tuple<> )
     :AdaptorMaxOrder(manager) {}
 
     //! Copy constructor

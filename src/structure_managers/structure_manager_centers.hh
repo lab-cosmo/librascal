@@ -173,7 +173,7 @@ namespace rascal {
     void update(const std::string filename);
 
     //! it is not an adaptor so there is nothing to update
-    void update_adaptor() final {}
+    void update_adaptor() {}
 
     //! required for the construction of vectors, etc
     constexpr static int dim() { return traits::Dim; }

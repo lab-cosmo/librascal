@@ -120,7 +120,7 @@ namespace rascal {
                 double * eatom, double ** vatom);
 
     //! it is not an adaptor so there is nothing to update
-    void update_adaptor() final {}
+    void update_adaptor() {}
 
     //! return position vector of an atom given the atom index
     inline Vector_ref get_position(const size_t & atom_index) {

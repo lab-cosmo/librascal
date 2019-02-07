@@ -100,7 +100,7 @@ namespace rascal {
     explicit AdaptorHalfList(ImplementationPtr_t manager);
 
 
-    AdaptorHalfList(ImplementationPtr_t manager, std::tuple<> tp)
+    AdaptorHalfList(ImplementationPtr_t manager, std::tuple<> )
     :AdaptorHalfList(manager) {}
 
     //! Copy constructor
