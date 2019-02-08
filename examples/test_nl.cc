@@ -166,45 +166,6 @@ struct call_with_typeholders<std::tuple<T...>, std::tuple<Args...>> {
   };
 };
 
-  // template<typename MI, typename TemplateTypeHolder_>
-  // struct TypeExtractor;
-
-  // template<typename MI, template<class> class ...Ti>
-  // struct TypeExtractor<MI, AdaptorTypeHolder<Ti...>> {
-  //   using Manager_t = typename internal::AdaptorTypeStacker<MI,Ti...>::type;
-  //   using ManagerPtr_t = std::shared_ptr<Manager_t>;
-
-  //   template<typename ...Args_>
-  //   static ManagerPtr_t apply(std::tuple<Args_...> tuple) {
-  //     return helper(tuple, std::index_sequence_for<Args_...>());
-  //   }
-
-  //   template<typename ...Args_, std::size_t... Is>
-  //   static ManagerPtr_t helper(std::tuple<Args_...> tuple, std::index_sequence<Is...>) {
-  //     return make_structure_manager_stack<MI, Ti...>(std::get<Is>(tuple)...);
-  //   }
-  // };
-
-
-  // template<typename T>
-  // struct call_with_tuple;
-
-  // template<typename ...T>
-  // struct call_with_tuple<std::tuple<T...>> {
-  // static ManagerPtr_t make_manager_stack(std::tuple<T...> tuple) {
-  //   return helper(tuple, std::index_sequence_for<T...>());
-  // }
-
-  // template<std::size_t... Is>
-  // static ManagerPtr_t helper(std::tuple<T...> tuple, std::index_sequence<Is...>) {
-  //   ManagerPtr_t manager{make_structure_manager_stack<StructureManager, AdaptorImplementationPack...>(std::get<Is>(tuple)...)};
-  //   return manager;
-  // }
-
-
-
-
-
 
 int main() {
   bool verbose{false};
