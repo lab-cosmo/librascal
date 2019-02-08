@@ -109,15 +109,13 @@ namespace rascal {
     BOOST_CHECK_EQUAL(n_pairs, pair_manager->get_nb_clusters(2));
   }
 
-  // using multiple_fixtures = boost::mpl::list<MultipleStructureManagerNLFixture<
-  //     StructureManagerCenters, MultipleStructureManagerBaseFixture>>;
   using multiple_fixtures = boost::mpl::list<
-      MultipleStructureFixture<MultipleStructureManagerBaseFixture, StructureManagerCenters, AdaptorNeighbourList>
+      MultipleStructureFixture<MultipleStructureManagerNLFixture, StructureManagerCenters, AdaptorNeighbourList>
       >;
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(test_build_neighbour_multiple, Fix,
                                    multiple_fixtures, Fix) {
-    auto & managers = Fix::managers_pair;
+    auto & managers = Fix::managers;
 
     constexpr bool verbose{false};
 
@@ -425,7 +423,7 @@ namespace rascal {
         auto pair_manager{make_structure_manager<PairManager_t>(manager, cutoff_tmp, true)};
 
         // make strict for counting neighbours
-        auto pair_manager{make_structure_manager<AdaptorStrict<PairManager_t>>(pair_manager, cutoff_tmp)};
+        auto adaptor_strict{make_structure_manager<AdaptorStrict<PairManager_t>>(pair_manager, cutoff_tmp)};
         adaptor_strict->update(pos_skw, atom_types, cell_skw, PBC_t{pbc.data()});
 
         // count strict neighbours

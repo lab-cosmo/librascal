@@ -41,16 +41,13 @@
 namespace rascal {
 
 
-  struct MultipleStructureSortedCoulomb {
-    MultipleStructureSortedCoulomb() {}
-    ~MultipleStructureSortedCoulomb() = default;
+  struct MultipleStructureSortedCoulomb
+    :MultipleStructureManagerNLStrictFixture {
+    using Parent = MultipleStructureManagerNLStrictFixture;
+    using Factory_t = Parent::Factory_t
 
-    std::vector<std::string> filenames{
-      "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-      "reference_data/simple_cubic_8.json",
-      "reference_data/small_molecule.json"
-      };
-    std::vector<double> cutoffs{{1., 2., 3.}};
+    MultipleStructureSortedCoulomb() = default;
+    ~MultipleStructureSortedCoulomb() = default;
 
     std::list<json> hypers{
       {{"central_decay", 0.5},
@@ -119,19 +116,20 @@ namespace rascal {
     with open(path+"tests/reference_data/sorted_coulomb_reference.ubjson",'wb') as f:
         ubjson.dump(data,f)
     */
-    std::string ref_filename{"reference_data/sorted_coulomb_reference.ubjson" };
+    std::string ref_filename{"reference_data/sorted_coulomb_reference.ubjson"};
     std::vector<std::string> filenames{};
     std::vector<double> cutoffs{};
     json ref_data{};
   };
 
-  template <class StructureManager,
-            template <typename> class RepresentationManager,
-            class BaseFixture>
+  template <class BaseFixture, class StructureManager, template<class> class ... AdaptorImplementationPack>
+  struct MultipleStructureFixture
+
+  template <class StructureManager, template<class> class ... AdaptorImplementationPack, template <typename> class RepresentationManager, class BaseFixture>
   struct RepresentationFixture
-      : MultipleStructureManagerStrictFixture<StructureManager, BaseFixture> {
+      : MultipleStructureFixture<BaseFixture , StructureManager, AdaptorImplementationPack...> {
     using Parent =
-        MultipleStructureManagerStrictFixture<StructureManager, BaseFixture>;
+        MultipleStructureFixture<BaseFixture, StructureManager, BaseFixture>;
     using Manager_t = typename Parent::Manager_t;
     using Representation_t = RepresentationManager<Manager_t>;
 

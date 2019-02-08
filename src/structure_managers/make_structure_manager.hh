@@ -41,7 +41,7 @@ namespace rascal {
    * @params args additional argument for the constructructor
    */
   template<typename Manager,typename Arg, typename ...Args>
-  decltype(auto) make_structure_manager(Arg& arg, Args ...args) {
+  decltype(auto) make_structure_manager(Arg arg, Args ...args) {
     auto manager{std::make_shared<Manager>(arg, args...)};
     arg->add_child(manager->get_weak_ptr());
     return manager;

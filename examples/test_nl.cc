@@ -29,6 +29,7 @@
 #include "structure_managers/adaptor_strict.hh"
 #include "structure_managers/adaptor_neighbour_list.hh"
 #include "structure_managers/make_structure_manager.hh"
+#include "rascal_utility.hh"
 #include "representations/representation_manager_sorted_coulomb.hh"
 #include "basic_types.hh"
 
@@ -80,9 +81,148 @@ struct MultipleStrictStructureManager {
   std::list<std::shared_ptr<Manager_t>> managers{};
 };
 
+template<template<class> class ...AdaptorImplementation>
+struct AdaptorTypeHolder;
+
+template<typename MI, template<class> class ...AdaptorImplementation>
+struct TypeHolder {
+  using type = std::tuple<MI,AdaptorTypeHolder<AdaptorImplementation...>>;
+};
+
+
+// template<template<class...>class U, typename MI, typename typeholder>
+// struct test;
+
+// template<template<class...>class U, typename MI, template<class> class ...T>
+// struct test<U, MI, AdaptorTypeHolder<T...>> {
+//   template<typename ...Args>
+//   static decltype(auto) func(Args ...args) {
+//     return U<MI, T...>::apply(args...);
+//   }
+// };
+
+
+
+// template<typename TemplateTypeHolder>
+// struct call_with_typeholders;
+
+// template<typename ...T>
+// struct call_with_typeholders<std::tuple<T...>> {
+
+//   template<typename ...Args>
+//   static decltype(auto) make_manager_stack(Args ...args) {
+//     return TypeExtractor<T...>::apply(args...);
+//   }
+
+//  protected:
+
+//   template<typename MI, typename TemplateTypeHolder_>
+//   struct TypeExtractor;
+
+//   template<typename MI, template<class> class ...Ti>
+//   struct TypeExtractor<MI, AdaptorTypeHolder<Ti...>> {
+//     using Manager_t = typename internal::AdaptorTypeStacker<MI,Ti...>::type;
+//     using ManagerPtr_t = std::shared_ptr<Manager_t>;
+
+//     template<typename ...Args>
+//     static ManagerPtr_t apply(Args ...args) {
+//       return helper(args...);
+//     }
+
+//     template<typename ...Args>
+//     static ManagerPtr_t helper(Args ...args) {
+//       return make_structure_manager_stack<MI, Ti...>(args...);
+//     }
+//   };
+// };
+
+template<typename TemplateTypeHolder, typename ArgsTypeHolder>
+struct call_with_typeholders;
+
+template<typename ...T, typename ...Args>
+struct call_with_typeholders<std::tuple<T...>, std::tuple<Args...>> {
+
+  static decltype(auto) make_manager_stack(std::tuple<Args...> tuple) {
+    return TypeExtractor<T...>::apply(tuple);
+  }
+
+ protected:
+
+  template<typename MI, typename TemplateTypeHolder_>
+  struct TypeExtractor;
+
+  template<typename MI, template<class> class ...Ti>
+  struct TypeExtractor<MI, AdaptorTypeHolder<Ti...>> {
+    using Manager_t = typename internal::AdaptorTypeStacker<MI,Ti...>::type;
+    using ManagerPtr_t = std::shared_ptr<Manager_t>;
+
+    static ManagerPtr_t apply(std::tuple<Args...> tuple) {
+      return helper(tuple, std::index_sequence_for<Args...>());
+    }
+    template<std::size_t... Is>
+    static ManagerPtr_t helper(std::tuple<Args...> tuple, std::index_sequence<Is...>) {
+      return make_structure_manager_stack<MI, Ti...>(std::get<Is>(tuple)...);
+    }
+  };
+};
+
+  // template<typename MI, typename TemplateTypeHolder_>
+  // struct TypeExtractor;
+
+  // template<typename MI, template<class> class ...Ti>
+  // struct TypeExtractor<MI, AdaptorTypeHolder<Ti...>> {
+  //   using Manager_t = typename internal::AdaptorTypeStacker<MI,Ti...>::type;
+  //   using ManagerPtr_t = std::shared_ptr<Manager_t>;
+
+  //   template<typename ...Args_>
+  //   static ManagerPtr_t apply(std::tuple<Args_...> tuple) {
+  //     return helper(tuple, std::index_sequence_for<Args_...>());
+  //   }
+
+  //   template<typename ...Args_, std::size_t... Is>
+  //   static ManagerPtr_t helper(std::tuple<Args_...> tuple, std::index_sequence<Is...>) {
+  //     return make_structure_manager_stack<MI, Ti...>(std::get<Is>(tuple)...);
+  //   }
+  // };
+
+
+  // template<typename T>
+  // struct call_with_tuple;
+
+  // template<typename ...T>
+  // struct call_with_tuple<std::tuple<T...>> {
+  // static ManagerPtr_t make_manager_stack(std::tuple<T...> tuple) {
+  //   return helper(tuple, std::index_sequence_for<T...>());
+  // }
+
+  // template<std::size_t... Is>
+  // static ManagerPtr_t helper(std::tuple<T...> tuple, std::index_sequence<Is...>) {
+  //   ManagerPtr_t manager{make_structure_manager_stack<StructureManager, AdaptorImplementationPack...>(std::get<Is>(tuple)...)};
+  //   return manager;
+  // }
+
+
+
+
+
+
 int main() {
   bool verbose{false};
   bool verbose_rep{false};
+  double cutoff{2.};
+  std::string filename{"alanine-X.json"};
+  auto a1 = std::make_tuple(cutoff);
+
+  // using AdaptorTypeHolder_t = AdaptorTypeHolder<AdaptorNeighbourList, AdaptorStrict>;
+  using Factory_t = std::tuple<std::string,std::tuple<double>,std::tuple<double>>;
+  using AdaptorTypeHolder_t = typename TypeHolder<StructureManagerCenters, AdaptorNeighbourList, AdaptorStrict>::type;
+  auto aa = std::make_tuple(filename, a1, a1);
+  // auto man{call_with_typeholders<AdaptorTypeHolder_t>::make_manager_stack(filename, a1, a1)};
+  auto man{call_with_typeholders<AdaptorTypeHolder_t,Factory_t>::make_manager_stack(aa)};
+  // auto man{call_with_typeholders<Factory_t, AdaptorTypeHolder_t>::make_structure_manager_stack(aa)};
+  std::cout << man->get_name()<< std::endl;
+
+
   //"reference_data/CaCrP2O7_mvc-11955_symmetrized_.json",
 
   // std::ifstream reader("alanine-X.json");
@@ -133,6 +273,10 @@ int main() {
 
   // using PBC_t = Eigen::Map<Eigen::Matrix<int, 3, 1>>;
   // manager->update(positions, atom_types, cell, PBC_t{pbc.data()});
+
+
+
+
 
   MultipleStrictStructureManager<StructureManagerCenters> meta{};
 

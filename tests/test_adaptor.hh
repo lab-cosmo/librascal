@@ -114,10 +114,10 @@ namespace rascal {
    * Streamline the test on several structures and cutoffs
    */
 
-  struct MultipleStructureManagerBaseFixture {
+  struct MultipleStructureManagerNLFixture {
     using Factory_t = std::tuple<std::string,std::tuple<double>>;
-
-    MultipleStructureManagerBaseFixture() {
+    using AdaptorTypeHolder_t = AdaptorTypeHolder<StructureManagerCenters, AdaptorNeighbourList>;
+    MultipleStructureManagerNLFixture() {
       for (auto&& filename : this->filenames) {
         for (auto&& cutoff : this->cutoffs) {
           std::tuple<double> a1{cutoff};
@@ -126,7 +126,7 @@ namespace rascal {
       }
     }
 
-    ~MultipleStructureManagerBaseFixture() = default;
+    ~MultipleStructureManagerNLFixture() = default;
 
     const std::vector<std::string> filenames{
         "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
@@ -135,7 +135,30 @@ namespace rascal {
     const std::vector<double> cutoffs{{1., 2., 3.}};
 
     std::vector<Factory_t> factory_args{};
+  };
 
+  struct MultipleStructureManagerNLStrictFixture {
+    using Factory_t = std::tuple<std::string,std::tuple<double>,std::tuple<double>>;
+    using AdaptorTypeHolder_t = AdaptorTypeHolder<StructureManagerCenters, AdaptorNeighbourList, AdaptorStrict>;
+
+    MultipleStructureManagerNLStrictFixture() {
+      for (auto&& filename : this->filenames) {
+        for (auto&& cutoff : this->cutoffs) {
+          std::tuple<double> a1{cutoff};
+          this->factory_args.emplace_back(filename, a1, a1);
+        }
+      }
+    }
+
+    ~MultipleStructureManagerNLStrictFixture() = default;
+
+    const std::vector<std::string> filenames{
+        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
+        "reference_data/simple_cubic_8.json",
+        "reference_data/small_molecule.json"};
+    const std::vector<double> cutoffs{{1., 2., 3.}};
+
+    std::vector<Factory_t> factory_args{};
   };
 
   template <class BaseFixture, class StructureManager, template<class> class ... AdaptorImplementationPack>
@@ -147,7 +170,7 @@ namespace rascal {
 
     MultipleStructureFixture() : Parent{} {
       for (auto factory_arg : this->factory_args) {
-        auto manager{call_with_tuple<Factory_t>().make_manager_stack(factory_arg)};
+        auto manager{call_with_tuple<Factory_t>::make_manager_stack(factory_arg)};
         this->managers.push_back(manager);
       }
     }
@@ -157,12 +180,12 @@ namespace rascal {
 
     template<typename ...T>
     struct call_with_tuple<std::tuple<T...>> {
-      ManagerPtr_t make_manager_stack(std::tuple<T...> tuple) {
+      static ManagerPtr_t make_manager_stack(std::tuple<T...> tuple) {
         return helper(tuple, std::index_sequence_for<T...>());
       }
      protected:
       template<std::size_t... Is>
-      ManagerPtr_t helper(std::tuple<T...> tuple, std::index_sequence<Is...>) {
+      static ManagerPtr_t helper(std::tuple<T...> tuple, std::index_sequence<Is...>) {
         ManagerPtr_t manager{make_structure_manager_stack<StructureManager, AdaptorImplementationPack...>(std::get<Is>(tuple)...)};
         return manager;
       }
