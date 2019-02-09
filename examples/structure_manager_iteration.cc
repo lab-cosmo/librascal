@@ -30,6 +30,7 @@
 #include <structure_managers/adaptor_neighbour_list.hh>
 #include <structure_managers/adaptor_half_neighbour_list.hh>
 #include <structure_managers/adaptor_strict.hh>
+#include <structure_managers/make_structure_manager.hh>
 #include <structure_managers/adaptor_increase_maxorder.hh>
 #include <structure_managers/property.hh>
 
@@ -51,7 +52,7 @@ using TripletManager_t = rascal::AdaptorMaxOrder<StrictPairManager_t>;
 
 int main() {
 
-  auto manager{std::make_shared<Manager_t>()};
+  auto manager{rascal::make_structure_manager<Manager_t>()};
   double cutoff{1.};
   /**
    * These structures here are sample structures and can be used to iterate
@@ -66,7 +67,7 @@ int main() {
 
   // std::string filename{"crystal_structure.json"};
   // std::string filename{"alanine-X.json"};
-  std::string filename{"simple_cubic_9.json"};
+  std::string filename{"crystal_structure.json"};
 
   std::cout << "Reading structure " << filename << std::endl;
 
@@ -75,13 +76,13 @@ int main() {
 //  manager.update(filename);
 
   // `pair_manager` is constructed with the `manager` and a `cutoff`.
-  auto pair_manager{std::make_shared<PairManager_t>(manager, cutoff, true)};
+  auto pair_manager{rascal::make_adapted_manager<rascal::AdaptorNeighbourList>(manager, cutoff, true)};
   // By invoking the `.update()` method, a neighbour list is built.
 //  pair_manager->update();
 
   // `strict_manager` is constructed with a `pair_manager`.
   auto strict_manager{
-        std::make_shared<StrictPairManager_t>(pair_manager, cutoff)};
+        rascal::make_adapted_manager<rascal::AdaptorStrict>(pair_manager, cutoff)};
   // calling the `.update()` method triggers the build of a strict neighbourlist
   // (all pairs are within the specified cutoff)
 //  strict_manager.update();
@@ -89,20 +90,20 @@ int main() {
   // `triplet_manager` is constructed with a pair list (strict or not, here
   // strict)
   auto triplet_manager{
-        std::make_shared<TripletManager_t>(strict_manager)};
+        rascal::make_adapted_manager<rascal::AdaptorMaxOrder>(strict_manager)};
   // `.update()` triggers the extension of the pair list to triplets
   triplet_manager->update(filename);
 
 
   // Iteration over `manager`
   std::cout << "manager iteration over atoms" << std::endl;
-  for (auto atom : *manager) {
+  for (auto atom : manager) {
     std::cout << "atom " << atom.get_atom_index() << " global index "
               << atom.get_global_index() << std::endl;
   }
 
   // `pair_manager` provides iteration over atoms and pairs
-  for (auto atom : *pair_manager) {
+  for (auto atom : pair_manager) {
     for (auto pair : atom) {
       std::cout << "pair (" << atom.get_atom_index() << ", "
                 << pair.get_atom_index() << " ) global index "
@@ -111,7 +112,7 @@ int main() {
   }
 
   // `strict_manager` provides iteration over atoms and strict pairs
-  for (auto atom : *strict_manager) {
+  for (auto atom : strict_manager) {
     for (auto pair : atom) {
       std::cout << "strict pair (" << atom.get_atom_index() << ", "
                 << pair.get_atom_index() << ") global index "
@@ -121,7 +122,7 @@ int main() {
 
   // `triplet_manager` provides iteration over atoms, strict pairs and strict
   // triplets
-  for (auto atom : *triplet_manager) {
+  for (auto atom : triplet_manager) {
     for (auto pair : atom) {
       for (auto triplet : pair) {
         std::cout << "triplet (" << atom.get_atom_index() << ", "

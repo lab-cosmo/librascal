@@ -26,6 +26,7 @@
  */
 
 #include <structure_managers/structure_manager_centers.hh>
+#include <structure_managers/make_structure_manager.hh>
 #include <structure_managers/adaptor_neighbour_list.hh>
 #include <structure_managers/property.hh>
 
@@ -36,9 +37,6 @@
 
 using Manager_t = rascal::StructureManagerCenters;
 using PairManager_t = rascal::AdaptorNeighbourList<Manager_t>;
-
-using ManagerPtr_t = std::shared_ptr<Manager_t>;
-using PairManagerPtr_t = std::shared_ptr<PairManager_t>;
 
 int main() {
   // integer lists containing the definition of the quadruplets for the
@@ -54,13 +52,13 @@ int main() {
   std::vector<double> dihedral_angles{};
 
   // initialize the manager
-  auto manager{std::make_shared<Manager_t>()};
+  auto manager{rascal::make_structure_manager<Manager_t>()};
   double cutoff{1.0};
 
   // read atomic structure from the JSON file
   // manager.read_structure_from_json("alanine-X.json");
   // manager.update("alanine-X.json");
-  auto pair_manager{std::make_shared<PairManager_t>(manager, cutoff)};
+  auto pair_manager{rascal::make_adapted_manager<rascal::AdaptorNeighbourList>(manager, cutoff)};
   std::string filename{"alanine-X.json"};
   pair_manager->update(filename);
 

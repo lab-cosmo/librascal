@@ -36,15 +36,27 @@ namespace rascal {
 
   /**
    * Factory function to make an adapted structure manager
-   * @tparams Manager type of the structure manager
-   * @params arg input structure manager
+   * @tparams Adaptor partial type of the adaptor
+   * @params Manager input structure manager
    * @params args additional argument for the constructructor
    */
-  template<typename Manager,typename Arg, typename ...Args>
-  decltype(auto) make_structure_manager(Arg arg, Args ...args) {
-    auto manager{std::make_shared<Manager>(arg, args...)};
+  template<template<class>class Adaptor, typename Manager, typename ...Args>
+  std::shared_ptr<Adaptor<Manager>> make_adapted_manager(std::shared_ptr<Manager>& arg, Args ...args) {
+    auto manager{std::make_shared<Adaptor<Manager>>(arg, args...)};
     arg->add_child(manager->get_weak_ptr());
     return manager;
+  }
+
+
+  /**
+   * Factory function to make a structure manager
+   * @tparams Adaptor partial type of the adaptor
+   * @params Manager input structure manager
+   * @params args additional argument for the constructructor
+   */
+  template<typename Manager>
+  std::shared_ptr<Manager> make_structure_manager() {
+    return std::make_shared<Manager>();
   }
 
   /**
@@ -64,9 +76,9 @@ namespace rascal {
       //! General case
       template<typename Arg, typename ...Args>
       AdaptorFactory(ImplementationPtr_t& m, Arg& arg, Args& ...args)
-      :manager{std::make_shared<Manager_t>(m,arg)},
+      :manager{make_adapted_manager<AdaptorImplementation>(m,arg)},
       next_stack{manager, args...} {
-        m->add_child(this->manager->get_weak_ptr());
+        // m->add_child(this->manager->get_weak_ptr());
         // std::cout<<this->manager->get_name()<<std::endl;
       }
 
@@ -88,8 +100,8 @@ namespace rascal {
       //! End of recursion
       template<typename Arg>
       AdaptorFactory(ImplementationPtr_t& m, Arg& arg)
-      :manager{std::make_shared<Manager_t>(m,arg)} {
-        m->add_child(this->manager->get_weak_ptr());
+      :manager{make_adapted_manager<AdaptorImplementation>(m,arg)} {
+        // m->add_child(this->manager->get_weak_ptr());
         // std::cout<<this->manager->get_name()<<std::endl;
       }
 
@@ -115,7 +127,7 @@ namespace rascal {
   template <typename Manager, template<class> class ... AdaptorImplementationPack, typename Arg, typename ...Args >
   decltype(auto) make_structure_manager_stack(Arg arg, Args ...args) {
     // instanciate the base manager
-    auto manager_base = std::make_shared<Manager>();
+    auto manager_base = make_structure_manager<Manager>();
 
     // build the stack of adaptors
     auto factory =

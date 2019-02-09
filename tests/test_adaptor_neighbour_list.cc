@@ -163,8 +163,6 @@ namespace rascal {
 
     constexpr bool verbose{false};
 
-    using PairManager_t = AdaptorNeighbourList<StructureManagerCenters>;
-
     if (verbose) {
       std::cout << "HCP test " << cutoff << std::endl;
     }
@@ -183,10 +181,10 @@ namespace rascal {
         std::cout << "hcp test cutoff " << cutoff_tmp << std::endl;
       }
 
-      auto pair_manager1{make_structure_manager<PairManager_t>(manager_1, cutoff_tmp)};
+      auto pair_manager1{make_adapted_manager<AdaptorNeighbourList>(manager_1, cutoff_tmp)};
       pair_manager1->update();
 
-      auto pair_manager2{make_structure_manager<PairManager_t>(manager_2, cutoff_tmp)};
+      auto pair_manager2{make_adapted_manager<AdaptorNeighbourList>(manager_2, cutoff_tmp)};
       pair_manager2->update();
 
       if (verbose) {
@@ -251,8 +249,6 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(neighbourlist_test_fcc, ManagerFixtureTwoFcc) {
     constexpr bool verbose{false};
 
-    using PairManager_t = AdaptorNeighbourList<StructureManagerCenters>;
-
     if (verbose) {
       std::cout << "FCC test " << std::endl;
     }
@@ -271,10 +267,10 @@ namespace rascal {
         std::cout << "fcc cutoff " << cutoff_tmp << std::endl;
       }
 
-      auto pair_manager1{make_structure_manager<PairManager_t>(manager_1, cutoff_tmp)};
+      auto pair_manager1{make_adapted_manager<AdaptorNeighbourList>(manager_1, cutoff_tmp)};
       pair_manager1->update();
 
-      auto pair_manager2{make_structure_manager<PairManager_t>(manager_2, cutoff_tmp)};
+      auto pair_manager2{make_adapted_manager<AdaptorNeighbourList>(manager_2, cutoff_tmp)};
       pair_manager2->update();
 
       for (auto atom : pair_manager1) {
@@ -364,7 +360,6 @@ namespace rascal {
         double cutoff_tmp{cutoff * n_cutoff[k]};
 
         // // manager constructed within this loop
-        // auto manager{std::make_shared<StructureManagerCenters>()};
 
         if (verbose) {
           std::cout << "------------ cells " << i << " shear " << shears[i]
@@ -415,15 +410,14 @@ namespace rascal {
         }
 
         // construct manager with skewed unit cell and shifted positions
-        auto manager{std::make_shared<StructureManagerCenters>()};
+        auto manager{make_structure_manager<StructureManagerCenters>()};
         using PBC_t = Eigen::Map<Eigen::Matrix<int, 3, 1>>;
 
         // build neighbourlist
-        using PairManager_t = AdaptorNeighbourList<StructureManagerCenters>;
-        auto pair_manager{make_structure_manager<PairManager_t>(manager, cutoff_tmp, true)};
+        auto pair_manager{make_adapted_manager<AdaptorNeighbourList>(manager, cutoff_tmp, true)};
 
         // make strict for counting neighbours
-        auto adaptor_strict{make_structure_manager<AdaptorStrict<PairManager_t>>(pair_manager, cutoff_tmp)};
+        auto adaptor_strict{make_adapted_manager<AdaptorStrict>(pair_manager, cutoff_tmp)};
         adaptor_strict->update(pos_skw, atom_types, cell_skw, PBC_t{pbc.data()});
 
         // count strict neighbours

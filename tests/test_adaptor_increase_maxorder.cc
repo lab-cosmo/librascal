@@ -43,8 +43,7 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
                           PairFixtureFile<StructureManagerCenters>) {
-    using Manager_t = AdaptorMaxOrder<PairManager_t>;
-    auto adaptor{make_structure_manager<Manager_t>(this->pair_manager)};
+    auto adaptor{make_adapted_manager<AdaptorMaxOrder>(this->pair_manager)};
     adaptor->update();
   }
 
@@ -89,8 +88,7 @@ namespace rascal {
     auto npairs_tmp = pair_manager->get_nb_clusters(2);
     BOOST_CHECK_EQUAL(npairs_tmp, npairs1);
 
-    using Manager_t = AdaptorMaxOrder<PairManager_t>;
-    auto adaptor{make_structure_manager<Manager_t>(this->pair_manager)};
+    auto adaptor{make_adapted_manager<AdaptorMaxOrder>(this->pair_manager)};
     adaptor->update();
 
     //! make sure the number of pairs gets carried over to the next layer
@@ -154,10 +152,8 @@ namespace rascal {
       std::cout << ">> pair to triplet extension" << std::endl;
     }
 
-    using SM2_t = AdaptorHalfList<StructureManagerLammps>;
-    using SM3_t = AdaptorMaxOrder<SM2_t>;
-    auto SM2{make_structure_manager<SM2_t>(manager)};
-    auto SM3{make_structure_manager<SM3_t>(SM2)};
+    auto SM2{make_adapted_manager<AdaptorHalfList>(manager)};
+    auto SM3{make_adapted_manager<AdaptorMaxOrder>(SM2)};
     SM3->update();
 
     // make sure number of pairs are carried over,

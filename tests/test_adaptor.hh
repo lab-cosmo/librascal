@@ -53,7 +53,7 @@ namespace rascal {
     using PairManager_t = AdaptorNeighbourList<Manager_t>;
 
     PairFixtureSimple()
-        : cutoff{1.}, pair_manager{std::make_shared<PairManager_t>(fixture.manager, this->cutoff)} {
+        : cutoff{1.}, pair_manager{make_adapted_manager<AdaptorNeighbourList>(fixture.manager, this->cutoff)} {
       fixture.manager->add_child(this->pair_manager);
       this->pair_manager->update();
     }
@@ -78,7 +78,7 @@ namespace rascal {
                   " MaxOrder=1");
 
     PairFixtureCenters()
-        : cutoff{3.5}, pair_manager{std::make_shared<PairManager_t>(this->fixture.manager, this->cutoff, true)} {
+        : cutoff{3.5}, pair_manager{make_adapted_manager<AdaptorNeighbourList>(this->fixture.manager, this->cutoff, true)} {
       fixture.manager->add_child(this->pair_manager);
       this->pair_manager->update();
     }
@@ -97,7 +97,7 @@ namespace rascal {
     using AdaptorStrict_t = AdaptorStrict<ManagerImplementation>;
 
     PairFixtureStrict()
-        : adaptor_strict{std::make_shared<AdaptorStrict_t>(this->fixture.pair_manager, this->fixture.cutoff)} {
+        : adaptor_strict{make_adapted_manager<AdaptorStrict>(this->fixture.pair_manager, this->fixture.cutoff)} {
           fixture.pair_manager->add_child(this->adaptor_strict);
         }
 

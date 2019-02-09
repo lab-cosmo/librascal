@@ -65,8 +65,8 @@ namespace rascal {
     ManagerFixture() {}   // ctor
     ~ManagerFixture() {}  // dtor
 
-    std::shared_ptr<ManagerImplementation> manager{
-      std::make_shared<ManagerImplementation>()};
+    auto manager{
+      make_structure_manager<ManagerImplementation>()};
   };
 
   /* ---------------------------------------------------------------------- */
@@ -81,10 +81,10 @@ namespace rascal {
     ManagerFixtureTwo() {}   // ctor
     ~ManagerFixtureTwo() {}  // dtor
 
-    std::shared_ptr<ManagerImplementation> manager_1{
-      std::make_shared<ManagerImplementation>()};
-    std::shared_ptr<ManagerImplementation> manager_2{
-      std::make_shared<ManagerImplementation>()};
+    auto manager_1{
+      make_structure_manager<ManagerImplementation>()};
+    auto manager_2{
+      make_structure_manager<ManagerImplementation>()};
   };
 
   /* ---------------------------------------------------------------------- */
@@ -261,7 +261,7 @@ namespace rascal {
 
     ManagerFixture()
         : firstneigh{new int *[nb]}, x{new double *[nb]}, f{new double *[nb]},
-          vatom{new double *[nb]}, manager{std::make_shared<Manager_t>()} {
+          vatom{new double *[nb]}, manager{make_structure_manager<Manager_t>()} {
       manager->update(inum, tot_num, ilist, numneigh,
                      static_cast<int **>(firstneigh), ptr_t(x), ptr_t(f), type,
                      eatom, static_cast<double **>(vatom));
@@ -330,7 +330,7 @@ namespace rascal {
     using PairManager_t = AdaptorNeighbourList<Manager_t>;
 
     PairFixtureFile()
-        : pair_manager{make_structure_manager<PairManager_t>(this->fixture.manager, this->fixture.cutoff, true)} {
+        : pair_manager{make_adapted_manager<AdaptorNeighbourList>(this->fixture.manager, this->fixture.cutoff, true)} {
       this->pair_manager->update();
     }
 
@@ -355,13 +355,13 @@ namespace rascal {
 
     using PairManager_t = AdaptorNeighbourList<Manager_t>;
 
-    PairFixture() : pair_manager{make_structure_manager<PairManager_t>(this->fixture.manager, 3.)} {
+    PairFixture() : pair_manager{make_adapted_manager<AdaptorNeighbourList>(this->fixture.manager, 3.)} {
       this->pair_manager->update();
     }
 
     ~PairFixture() {}
 
-    ManagerFixture<ManagerImplementation> fixture{};
+    ManagerFixture<Manager_t> fixture{};
     std::shared_ptr<PairManager_t> pair_manager;
   };
 
@@ -413,7 +413,7 @@ namespace rascal {
 
     ~ManagerFixture() {}
 
-    std::shared_ptr<Manager_t> manager{std::make_shared<Manager_t>()};
+    auto manager{make_structure_manager<Manager_t>()};
     Eigen::MatrixXd positions;
     Eigen::VectorXi atom_types;
     Eigen::MatrixXd cell;

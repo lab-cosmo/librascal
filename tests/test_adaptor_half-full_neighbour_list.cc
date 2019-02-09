@@ -42,8 +42,7 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
                           ManagerFixture<StructureManagerLammps>) {
-    using AdaptorHalf_t = AdaptorHalfList<StructureManagerLammps>;
-    auto adaptor = make_structure_manager<AdaptorHalf_t>(manager);
+    auto adaptor = make_adapted_manager<AdaptorHalfList>(manager);
     adaptor->update();
   }
 
@@ -61,8 +60,6 @@ namespace rascal {
 
     double distance_sum_full{0.};
 
-    using AdaptorHalf_t = AdaptorHalfList<StructureManagerLammps>;
-
     int npairs_full{0};
     for (auto atom : manager) {
       for (auto pair : atom) {
@@ -76,7 +73,7 @@ namespace rascal {
       std::cout << "Setting up half neighbourlist manager" << std::endl;
     }
 
-    auto adaptor = make_structure_manager<AdaptorHalf_t>(manager);
+    auto adaptor = make_adapted_manager<AdaptorHalfList>(manager);
     adaptor->update();
 
     double distance_sum_half{0.};
@@ -125,14 +122,11 @@ namespace rascal {
     double distance_sum_full_half_full{0.};
 
     // half list construction
-    using AdaptorHalf_t = AdaptorHalfList<StructureManagerLammps>;
-    auto adaptor_half = make_structure_manager<AdaptorHalf_t>(manager);
+    auto adaptor_half = make_adapted_manager<AdaptorHalfList>(manager);
     adaptor_half->update();
 
     // back to full list again
-    using AdaptorFull_t = AdaptorFullList<AdaptorHalf_t>;
-
-    auto adaptor_full = make_structure_manager<AdaptorFull_t>(adaptor_half);
+    auto adaptor_full = make_adapted_manager<AdaptorFullList>(adaptor_half);
     adaptor_full->update();
 
     // iterate over initial manager with full list
