@@ -50,7 +50,7 @@ namespace rascal {
 
     /* ---------------------------------------------------------------------- */
     /**
-     *
+     * Utility to deduce the type of a Manager with a list of Adaptors
      */
     template<typename ManagerImplementation,  template<class> class AdaptorImplementation, template<class> class ... AdaptorImplementationPack>
     struct AdaptorTypeStacker {
@@ -64,6 +64,54 @@ namespace rascal {
     };
 
     /* ---------------------------------------------------------------------- */
+    /**
+     * Implement the generation of an index sequence from Min to Max
+     */
+
+    template<size_t N, size_t... Seq>
+    constexpr std::index_sequence<N + Seq ...>
+    add_to_sequence(std::index_sequence<Seq...>)
+    { return {}; }
+
+    template<size_t Min, size_t Max>
+    using make_index_range = decltype(add_to_sequence<Min>(std::make_index_sequence<Max-Min>()));
+
+    /* ---------------------------------------------------------------------- */
+    //! Implementation of index_apply
+    template <class F, size_t... Is>
+    constexpr auto index_apply_impl(F func,
+                                    std::index_sequence<Is...>) {
+        return func(std::integral_constant<size_t, Is> {}...);
+    }
+
+    /**
+     * index_apply and its implementation take a callable of type F and return
+     * it evaluated with an index sequence starting from Min to Max
+     */
+    template <size_t Min, size_t Max, class F>
+    constexpr auto index_apply(F func) {
+        return index_apply_impl(func, make_index_range<Min,Max>{});
+    }
+
+    /**
+     * Extract the elements of a tuple from Min to Max
+     */
+    template <size_t Min, size_t Max, class Tuple>
+    constexpr auto take_range(Tuple t) {
+      static_assert(Min <= Max, "Min should be smaller or equal than Max");
+      return index_apply<Min,Max>([&](auto... Is) {
+          return make_tuple(get<Is>(t)...);
+      });
+    }
+
+    /**
+     * Evaluate a callable of type F with the elements of the Tuple
+     */
+    template <class Tuple, class F>
+    constexpr auto apply(F func, Tuple t) {
+      return index_apply<0,std::tuple_size<Tuple>{}>(
+          [&](auto... Is) { return func(std::get<Is>(t)...); });
+    }
 
 
 

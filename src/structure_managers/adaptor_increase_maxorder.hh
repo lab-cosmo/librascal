@@ -57,6 +57,7 @@ namespace rascal {
     constexpr static bool HasDirectionVectors{
         ManagerImplementation::traits::HasDirectionVectors};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
+    constexpr static size_t NbInitParams{0};
     // New MaxOrder upon construction
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder +
                                      1};

@@ -47,7 +47,6 @@ namespace rascal {
     return manager;
   }
 
-
   /**
    * Factory function to make a structure manager
    * @tparams Adaptor partial type of the adaptor
@@ -59,59 +58,101 @@ namespace rascal {
     return std::make_shared<Manager>();
   }
 
-  /**
-   * Given an instanciated structure manager, recurcivelly stack adaptors on it
-   * while instanciating them and create backward links (add_child).
-   * It assumes the adaptors arguments needed for constructions
-   * are gathered in tuples.
-   */
-  template< typename ManagerImplementation,  template<class> class AdaptorImplementation,
-                              template<class> class ... AdaptorImplementationPack>
-  struct AdaptorFactory {
+  /* ---------------------------------------------------------------------- */
+  //! Utility to hold a list of Adaptors partial types
+  template<template<class> class ...AdaptorImplementation>
+  struct AdaptorTypeHolder;
+  //! Utility to hold a fully typed structure manager and a list of Adaptors
+  template<typename MI, template<class> class ...AdaptorImplementation>
+  struct StructureManagerTypeHolder {
+    using type = std::tuple<MI,AdaptorTypeHolder<AdaptorImplementation...>>;
+  };
+  /* ---------------------------------------------------------------------- */
+
+  namespace internal {
+    /**
+     * Make an adapted structure manager with the elements of the Tuple
+     * from Min to Max and the provided Args
+     */
+    template <template<class>class Adaptor, size_t Min, size_t Max>
+    struct make_adapted_manager_util {
+      template <typename Manager, typename ...Argst>
+      static constexpr auto apply(Manager& manager, std::tuple<Argst...>& tuple) {
+        static_assert(Min < Max, "Min should be smaller than Max");
+        return index_apply<Min, Max>(
+            [&](auto... Is) { return make_adapted_manager<Adaptor>(manager, std::get<Is>(tuple)...); });
+      }
+    };
+    // case Min == Max
+    template <template<class>class Adaptor, size_t Val>
+    struct make_adapted_manager_util<Adaptor,Val,Val> {
+      template <typename Manager, typename ...Argst>
+      static constexpr auto apply(Manager& manager, std::tuple<Argst...>& tuple) {
+        return make_adapted_manager<Adaptor>(manager);
+      }
+    };
+
+    //! unpack the tuple elements and give them to the update function of the
+    //! manager
+    template <class ManagerPtr, class Tuple>
+    constexpr void apply_update_util(ManagerPtr& manager, Tuple t) {
+      return index_apply<0,std::tuple_size<Tuple>{}>(
+          [&](auto... Is) { manager->update(std::get<Is>(t)...); });
+    }
+
+    /**
+     * Given an instanciated structure manager, recurcivelly stack adaptors
+     * on it
+     * while instanciating them and create backward links (add_child).
+     * It assumes the adaptors arguments needed for constructions
+     * are gathered in tuples.
+     */
+    template<size_t CurrentPosition, typename ManagerImplementation,  template<class> class AdaptorImplementation,
+                                template<class> class ... AdaptorImplementationPack>
+    struct AdaptorFactory {
+      // static_assert(CurrentPosition < TotalLenght, "Problem in the recursion")
       using Manager_t = AdaptorImplementation<ManagerImplementation>;
       using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
-      using ManagerPtr = std::shared_ptr<Manager_t>;
-      using type = AdaptorFactory<Manager_t,AdaptorImplementationPack...>;
+      using ManagerPtr_t = std::shared_ptr<Manager_t>;
+      constexpr static size_t NextPosition{CurrentPosition + Manager_t::traits::NbInitParams};
+
+      using type = AdaptorFactory<NextPosition,Manager_t,AdaptorImplementationPack...>;
 
       //! General case
-      template<typename Arg, typename ...Args>
-      AdaptorFactory(ImplementationPtr_t& m, Arg& arg, Args& ...args)
-      :manager{make_adapted_manager<AdaptorImplementation>(m,arg)},
-      next_stack{manager, args...} {
-        // m->add_child(this->manager->get_weak_ptr());
-        // std::cout<<this->manager->get_name()<<std::endl;
-      }
+      template<typename ...Args>
+      AdaptorFactory(ImplementationPtr_t& m, std::tuple<Args...>& tuple)
+      :manager{make_adapted_manager_util<AdaptorImplementation,CurrentPosition,NextPosition>::apply(m,tuple)},
+      next_stack{manager, tuple} { }
 
-      ManagerPtr manager;
+      ManagerPtr_t manager;
       type next_stack;
 
       decltype(auto) get_manager() {
-          return this->next_stack.get_manager();
+        return this->next_stack.get_manager();
       }
-  };
+    };
 
-  template< typename ManagerImplementation,  template<class> class AdaptorImplementation>
-  struct AdaptorFactory<ManagerImplementation,AdaptorImplementation> {
+    //! End of recursion
+    template<size_t CurrentPosition, typename ManagerImplementation,  template<class> class AdaptorImplementation>
+    struct AdaptorFactory<CurrentPosition,ManagerImplementation,AdaptorImplementation> {
       using Manager_t = AdaptorImplementation<ManagerImplementation>;
       using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
-      using ManagerPtr = std::shared_ptr<Manager_t>;
+      using ManagerPtr_t = std::shared_ptr<Manager_t>;
       using type = Manager_t;
+      constexpr static size_t NextPosition{CurrentPosition + Manager_t::traits::NbInitParams};
 
-      //! End of recursion
-      template<typename Arg>
-      AdaptorFactory(ImplementationPtr_t& m, Arg& arg)
-      :manager{make_adapted_manager<AdaptorImplementation>(m,arg)} {
-        // m->add_child(this->manager->get_weak_ptr());
-        // std::cout<<this->manager->get_name()<<std::endl;
-      }
+      template<typename ...Args>
+      AdaptorFactory(ImplementationPtr_t& m, std::tuple<Args...>& tuple)
+      :manager{make_adapted_manager_util<AdaptorImplementation,CurrentPosition,NextPosition>::apply(m,tuple)} { }
 
-      ManagerPtr manager;
+      ManagerPtr_t manager;
 
-      decltype(auto) get_manager() {
+      ManagerPtr_t get_manager() {
           return this->manager;
       }
-  };
+    };
 
+  }
 
   /**
    * Factory function to build a structure managers.
@@ -119,31 +160,84 @@ namespace rascal {
    * @tparams Manager type of the base manager, e.g. StructureManagerCenters
    * @tparams AdaptorImplementationPack list of adaptors to stack on the base
    * manager type
-   * @params arg argument to update the structure of the base structure manager
-   * @params args list of arguments to build the adaptor (packed in tuples and
-   *  in the same order as in AdaptorImplementationPack)
+   * @params structure argument to update the structure of the
+   * base structure manager. It should be a tuple if several arguments are
+   * needed.
+   * @params adaptor_inputs list of arguments to build the adaptor
+   * in the same order as AdaptorImplementationPack (the order of the
+   * constructors signature need to be followed too).
    * @return shared pointer to the fully built structure manager
    */
-  template <typename Manager, template<class> class ... AdaptorImplementationPack, typename Arg, typename ...Args >
-  decltype(auto) make_structure_manager_stack(Arg arg, Args ...args) {
+  template <typename Manager, template<class> class ... AdaptorImplementationPack, typename Structure, typename ...Args >
+  decltype(auto) make_structure_manager_stack(Structure structure, Args ...adaptor_inputs) {
+    auto tuple{std::make_tuple(adaptor_inputs...)};
     // instanciate the base manager
     auto manager_base = make_structure_manager<Manager>();
-
     // build the stack of adaptors
     auto factory =
-      AdaptorFactory<Manager, AdaptorImplementationPack... >(manager_base, args...);
+      internal::AdaptorFactory<0, Manager, AdaptorImplementationPack... >(manager_base, tuple);
     // get the manager with the full stack
     auto manager = factory.get_manager();
-
-    // std::cout  <<std::endl;
-    // std::cout << manager->get_name() <<std::endl;
-
-    // give aa structure to the underlying base manager
+    // give a structure to the underlying base manager
     // and update all the stack of adaptors
-    manager->update(arg);
+    manager->update(structure);
 
     return manager;
   }
+
+  //! same as make_structure_manager_stack but with a tuple input
+  template <typename Manager, template<class> class ... AdaptorImplementationPack, typename ...Structure, typename ...AdaptorInputs >
+  decltype(auto) make_structure_manager_stack_with_tuple(std::tuple<std::tuple<Structure...>,std::tuple<AdaptorInputs...>>& tuple) {
+    auto& structure{std::get<0>(tuple)};
+    auto& adaptor_inputs{std::get<1>(tuple)};
+    // instanciate the base manager
+    auto manager_base = make_structure_manager<Manager>();
+    // build the stack of adaptors
+    auto factory =
+      internal::AdaptorFactory<0, Manager, AdaptorImplementationPack... >(manager_base, adaptor_inputs);
+    // get the manager with the full stack
+    auto manager = factory.get_manager();
+    // give a structure to the underlying base manager
+    // and update all the stack of adaptors
+    internal::apply_update_util(manager,structure);
+
+    return manager;
+  }
+
+
+  namespace internal {
+    /**
+     * Allow to provide a StructureManagerTypeHolder instead of the list types
+     * to make_structure_manager_stack.
+     */
+    template<typename MI, typename AdaptorTypeHolder_>
+    struct make_structure_manager_stack_with_tuple_util;
+
+    template<typename MI, template<class> class ...Ti>
+    struct make_structure_manager_stack_with_tuple_util<MI, AdaptorTypeHolder<Ti...>> {
+      using Manager_t = typename AdaptorTypeStacker<MI,Ti...>::type;
+      using ManagerPtr_t = std::shared_ptr<Manager_t>;
+
+      template<typename Tuple>
+      static ManagerPtr_t apply(Tuple& tuple) {
+        return make_structure_manager_stack_with_tuple<MI, Ti...>(tuple);
+      }
+    };
+  }
+  /**
+   *
+   */
+  template<typename StructureManagerTypeHolder_>
+  struct make_structure_manager_stack_with_tuple_and_typeholder;
+
+  template<typename ...T>
+  struct make_structure_manager_stack_with_tuple_and_typeholder<std::tuple<T...>> {
+    template<typename Tuple>
+    static decltype(auto) apply(Tuple& tuple) {
+      return internal::make_structure_manager_stack_with_tuple_util<T...>::apply(tuple);
+    }
+  };
+
 
 
   /**
@@ -163,7 +257,7 @@ namespace rascal {
 
     // build the stack of adaptors
     auto factory =
-      AdaptorFactory<Manager, AdaptorImplementationPack... >(manager_base, args...);
+      internal::AdaptorFactory<0, Manager, AdaptorImplementationPack... >(manager_base, std::make_tuple(args...));
     // get the manager with the full stack
     auto manager = factory.get_manager();
 
