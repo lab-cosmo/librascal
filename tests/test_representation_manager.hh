@@ -44,7 +44,6 @@ namespace rascal {
   struct MultipleStructureSortedCoulomb
     :MultipleStructureManagerNLStrictFixture {
     using Parent = MultipleStructureManagerNLStrictFixture;
-    using Factory_t = Parent::Factory_t
 
     MultipleStructureSortedCoulomb() = default;
     ~MultipleStructureSortedCoulomb() = default;
@@ -64,13 +63,23 @@ namespace rascal {
   };
 
   struct SortedCoulombTestData {
+    using Factory_t = std::tuple<std::tuple<std::string>,std::tuple<double,bool,bool>>;
+    using ManagerTypeHolder_t = StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList, AdaptorStrict>;
     SortedCoulombTestData() {
       std::vector<std::uint8_t> ref_data_ubjson;
       internal::read_binary_file(this->ref_filename, ref_data_ubjson);
       ref_data = json::from_ubjson(ref_data_ubjson);
-      filenames =
+      auto filenames =
             ref_data.at("filenames").get<std::vector<std::string>>();
-      cutoffs = ref_data.at("cutoffs").get<std::vector<double>>();
+      auto cutoffs = ref_data.at("cutoffs").get<std::vector<double>>();
+
+      for (auto&& filename : filenames) {
+        for (auto&& cutoff : cutoffs) {
+          auto a0{std::make_tuple(filename)};
+          auto a1{std::make_tuple(cutoff,consider_ghost_neighbours,cutoff)};
+          this->factory_args.emplace_back(a0, a1);
+        }
+      }
     }
     ~SortedCoulombTestData() = default;
 
@@ -116,20 +125,20 @@ namespace rascal {
     with open(path+"tests/reference_data/sorted_coulomb_reference.ubjson",'wb') as f:
         ubjson.dump(data,f)
     */
+    const bool consider_ghost_neighbours{false};
     std::string ref_filename{"reference_data/sorted_coulomb_reference.ubjson"};
-    std::vector<std::string> filenames{};
-    std::vector<double> cutoffs{};
+    // std::vector<std::string> filenames{};
+    // std::vector<double> cutoffs{};
     json ref_data{};
+    std::vector<Factory_t> factory_args{};
   };
 
-  template <class BaseFixture, class StructureManager, template<class> class ... AdaptorImplementationPack>
-  struct MultipleStructureFixture
 
-  template <class StructureManager, template<class> class ... AdaptorImplementationPack, template <typename> class RepresentationManager, class BaseFixture>
+  template <class BaseFixture, template <class> class RepresentationManager>
   struct RepresentationFixture
-      : MultipleStructureFixture<BaseFixture , StructureManager, AdaptorImplementationPack...> {
+      : MultipleStructureFixture<BaseFixture> {
     using Parent =
-        MultipleStructureFixture<BaseFixture, StructureManager, BaseFixture>;
+        MultipleStructureFixture<BaseFixture>;
     using Manager_t = typename Parent::Manager_t;
     using Representation_t = RepresentationManager<Manager_t>;
 

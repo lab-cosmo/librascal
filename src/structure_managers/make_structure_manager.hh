@@ -63,9 +63,10 @@ namespace rascal {
   template<template<class> class ...AdaptorImplementation>
   struct AdaptorTypeHolder;
   //! Utility to hold a fully typed structure manager and a list of Adaptors
-  template<typename MI, template<class> class ...AdaptorImplementation>
+  template<typename Manager, template<class> class ...AdaptorImplementation>
   struct StructureManagerTypeHolder {
-    using type = std::tuple<MI,AdaptorTypeHolder<AdaptorImplementation...>>;
+    using type_list = std::tuple<Manager,AdaptorTypeHolder<AdaptorImplementation...>>;
+    using type = typename internal::AdaptorTypeStacker<Manager,AdaptorImplementation...>::type;
   };
   /* ---------------------------------------------------------------------- */
 

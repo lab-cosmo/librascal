@@ -49,7 +49,7 @@ namespace rascal {
 
     try {
       std::ifstream reader(filename);
-      if (!reader.is_open()) throw std::ios::failure("Error opening JSON file!");
+      // if (!reader.is_open()) throw std::ios::failure("Error opening JSON file!");
       reader >> j;
       reader.close();
     } catch (const std::exception& e) {

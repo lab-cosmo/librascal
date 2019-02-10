@@ -115,19 +115,21 @@ namespace rascal {
    */
 
   struct MultipleStructureManagerNLFixture {
-    using Factory_t = std::tuple<std::string,std::tuple<double>>;
-    using AdaptorTypeHolder_t = AdaptorTypeHolder<StructureManagerCenters, AdaptorNeighbourList>;
+    using Factory_t = std::tuple<std::tuple<std::string>,std::tuple<double,bool>>;
+    using ManagerTypeHolder_t = StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList>;
     MultipleStructureManagerNLFixture() {
       for (auto&& filename : this->filenames) {
         for (auto&& cutoff : this->cutoffs) {
-          std::tuple<double> a1{cutoff};
-          this->factory_args.emplace_back(filename, a1);
+          auto a0{std::make_tuple(filename)};
+          auto a1{std::make_tuple(cutoff,consider_ghost_neighbours)};
+          this->factory_args.emplace_back(a0, a1);
         }
       }
     }
 
     ~MultipleStructureManagerNLFixture() = default;
 
+    const bool consider_ghost_neighbours{false};
     const std::vector<std::string> filenames{
         "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
         "reference_data/simple_cubic_8.json",
@@ -138,20 +140,21 @@ namespace rascal {
   };
 
   struct MultipleStructureManagerNLStrictFixture {
-    using Factory_t = std::tuple<std::string,std::tuple<double>,std::tuple<double>>;
-    using AdaptorTypeHolder_t = AdaptorTypeHolder<StructureManagerCenters, AdaptorNeighbourList, AdaptorStrict>;
+    using Factory_t = std::tuple<std::tuple<std::string>,std::tuple<double,bool,bool>>;
+    using ManagerTypeHolder_t = StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList, AdaptorStrict>;
 
     MultipleStructureManagerNLStrictFixture() {
       for (auto&& filename : this->filenames) {
         for (auto&& cutoff : this->cutoffs) {
-          std::tuple<double> a1{cutoff};
-          this->factory_args.emplace_back(filename, a1, a1);
+          auto a0{std::make_tuple(filename)};
+          auto a1{std::make_tuple(cutoff,consider_ghost_neighbours,cutoff)};
+          this->factory_args.emplace_back(a0, a1);
         }
       }
     }
 
     ~MultipleStructureManagerNLStrictFixture() = default;
-
+    const bool consider_ghost_neighbours{false};
     const std::vector<std::string> filenames{
         "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
         "reference_data/simple_cubic_8.json",
@@ -161,41 +164,23 @@ namespace rascal {
     std::vector<Factory_t> factory_args{};
   };
 
-  template <class BaseFixture, class StructureManager, template<class> class ... AdaptorImplementationPack>
+  template <class BaseFixture>
   struct MultipleStructureFixture : BaseFixture {
     using Parent = BaseFixture;
-    using Factory_t = typename Parent::Factory_t;
-    using Manager_t = typename internal::AdaptorTypeStacker<StructureManager,AdaptorImplementationPack...>::type;
+    using ManagerTypeList_t = typename Parent::ManagerTypeHolder_t::type_list;
+    using Manager_t = typename Parent::ManagerTypeHolder_t::type;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
 
-    MultipleStructureFixture() : Parent{} {
+    MultipleStructureFixture() :Parent{} {
       for (auto factory_arg : this->factory_args) {
-        auto manager{call_with_tuple<Factory_t>::make_manager_stack(factory_arg)};
+        auto manager{make_structure_manager_stack_with_tuple_and_typeholder<ManagerTypeList_t>::apply(factory_arg)};
         this->managers.push_back(manager);
       }
     }
 
-    template<typename T>
-    struct call_with_tuple;
-
-    template<typename ...T>
-    struct call_with_tuple<std::tuple<T...>> {
-      static ManagerPtr_t make_manager_stack(std::tuple<T...> tuple) {
-        return helper(tuple, std::index_sequence_for<T...>());
-      }
-     protected:
-      template<std::size_t... Is>
-      static ManagerPtr_t helper(std::tuple<T...> tuple, std::index_sequence<Is...>) {
-        ManagerPtr_t manager{make_structure_manager_stack<StructureManager, AdaptorImplementationPack...>(std::get<Is>(tuple)...)};
-        return manager;
-      }
-
-    };
-
-
     ~MultipleStructureFixture() = default;
 
-    std::list<std::shared_ptr<Manager_t>> managers{};
+    std::list<ManagerPtr_t> managers{};
   };
 
 }  // namespace rascal

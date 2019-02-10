@@ -441,7 +441,7 @@ namespace rascal {
     this->offsets.clear();
     this->neighbours.clear();
 
-    for (auto atom : *this->manager) {
+    for (auto atom : this->manager) {
       //  Order 1, but variable Order is at 0, atoms, index 0
       using AddOrderLoop =
           AddOrderLoop<atom.order(), atom.order() == (traits::MaxOrder - 1)>;

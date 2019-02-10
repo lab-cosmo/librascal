@@ -149,7 +149,7 @@ int main() {
   auto a0 = std::make_tuple(filename);
   // using AdaptorTypeHolder_t = AdaptorTypeHolder<AdaptorNeighbourList, AdaptorStrict>;
   //using Factory_t = std::tuple<std::string,std::tuple<double>,std::tuple<double>>;
-  using AdaptorTypeHolder_t = typename StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList, AdaptorStrict>::type;
+  using AdaptorTypeHolder_t = typename StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList, AdaptorStrict>::type_list;
   auto aa = std::make_tuple(a0, a1);
   auto man{make_structure_manager_stack_with_tuple_and_typeholder<AdaptorTypeHolder_t>::apply(aa)};
   std::cout << man->get_name()<< std::endl;

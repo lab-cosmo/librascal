@@ -38,35 +38,6 @@
 
 namespace rascal {
 
-  /* ---------------------------------------------------------------------- */
-  /**
-   * A fixture providing access to different structures, read in from
-   * json. These are used in a feature fixture to have data at hand.
-   */
-  struct TestFeatureData {
-    TestFeatureData() = default;
-    ~TestFeatureData() = default;
-
-    std::vector<std::string> filenames{
-      "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-      "reference_data/simple_cubic_8.json",
-      "reference_data/small_molecule.json"
-      };
-    std::vector<double> cutoffs{{1., 2., 3.}};
-
-    std::list<json> hypers{
-      {{"central_decay", 0.5},
-       {"interaction_cutoff", 10.},
-       {"interaction_decay", 0.5},
-       {"size", 120},
-       {"sorting_algorithm", "distance"}},
-      {{"central_decay", 0.5},
-       {"interaction_cutoff", 10.},
-       {"interaction_decay", 0.5},
-       {"size", 120},
-      {"sorting_algorithm", "row_norm"}}
-    };
-  };
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -76,15 +47,12 @@ namespace rascal {
    */
   template<typename T,
            template<typename> class FeatureManager,
-           class StructureManager,
            template<typename> class RepresentationManager,
            class BaseFixture>
   struct FeatureFixture
-  :RepresentationFixture<StructureManager, RepresentationManager,
-                         BaseFixture> {
-    using Parent = RepresentationFixture<StructureManager,
-                                         RepresentationManager,
-                                         BaseFixture>;
+  :RepresentationFixture<BaseFixture, RepresentationManager> {
+    using Parent = RepresentationFixture<BaseFixture,
+                                         RepresentationManager>;
     using Manager_t = typename Parent::Manager_t;
     using Representation_t = typename Parent::Representation_t;
     using Feature_t = FeatureManager<T>;
@@ -96,7 +64,7 @@ namespace rascal {
 
       auto & representations = this->representations;
 
-      for (auto & manager : this->managers_strict) {
+      for (auto & manager : this->managers) {
         for (auto & hyper : this->hypers) {
           n_center += manager->size();
 

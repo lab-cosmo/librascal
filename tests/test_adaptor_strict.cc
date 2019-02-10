@@ -40,7 +40,7 @@ namespace rascal {
       // PairFixtureStrict<ManagerFixture<StructureManagerLammps>>
       >;
 
-  
+
   BOOST_AUTO_TEST_SUITE(strict_adaptor_test);
 
   /* ---------------------------------------------------------------------- */
@@ -258,7 +258,7 @@ namespace rascal {
   }
 
   using multiple_fixtures = boost::mpl::list<
-      MultipleStructureFixture<MultipleStructureManagerNLFixture, StructureManagerCenters, AdaptorNeighbourList>
+      MultipleStructureFixture<MultipleStructureManagerNLFixture>
       >;
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_strict_test, Fix, multiple_fixtures, Fix) {
     bool verbose{false};

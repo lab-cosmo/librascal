@@ -62,10 +62,11 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   struct ManagerFixture {
+    using ManagerPtr_t = std::shared_ptr<ManagerImplementation>;
     ManagerFixture() {}   // ctor
     ~ManagerFixture() {}  // dtor
 
-    auto manager{
+    ManagerPtr_t manager{
       make_structure_manager<ManagerImplementation>()};
   };
 
@@ -78,12 +79,13 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   struct ManagerFixtureTwo {
+    using ManagerPtr_t = std::shared_ptr<ManagerImplementation>;
     ManagerFixtureTwo() {}   // ctor
     ~ManagerFixtureTwo() {}  // dtor
 
-    auto manager_1{
+    ManagerPtr_t manager_1{
       make_structure_manager<ManagerImplementation>()};
-    auto manager_2{
+    ManagerPtr_t manager_2{
       make_structure_manager<ManagerImplementation>()};
   };
 
@@ -375,7 +377,8 @@ namespace rascal {
     using Manager_t = StructureManagerCenters;
 
     ManagerFixture()
-        : positions(22, 3), atom_types(22),
+        : manager{make_structure_manager<Manager_t>()},
+          positions(22, 3), atom_types(22),
           cell(3, 3), pbc{{true, true, true}}, cutoff{2.} {
       cell << 6.19, 2.41, 0.21, 0.00, 6.15, 1.02, 0.00, 0.00, 7.31;
 
@@ -413,7 +416,7 @@ namespace rascal {
 
     ~ManagerFixture() {}
 
-    auto manager{make_structure_manager<Manager_t>()};
+    std::shared_ptr<Manager_t> manager;
     Eigen::MatrixXd positions;
     Eigen::VectorXi atom_types;
     Eigen::MatrixXd cell;

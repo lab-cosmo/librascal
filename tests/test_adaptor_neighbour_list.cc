@@ -110,7 +110,7 @@ namespace rascal {
   }
 
   using multiple_fixtures = boost::mpl::list<
-      MultipleStructureFixture<MultipleStructureManagerNLFixture, StructureManagerCenters, AdaptorNeighbourList>
+      MultipleStructureFixture<MultipleStructureManagerNLFixture>
       >;
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(test_build_neighbour_multiple, Fix,
