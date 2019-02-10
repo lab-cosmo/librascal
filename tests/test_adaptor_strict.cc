@@ -114,7 +114,7 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(strict_test,
                           ManagerFixture<StructureManagerCenters>) {
     bool verbose{false};
-    int mult = 10;
+    int mult = 6;
     double rc_max{mult * 0.5 + cutoff};
     auto pair_manager{make_adapted_manager<AdaptorNeighbourList>(manager, rc_max)};
     pair_manager->update();

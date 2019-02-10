@@ -110,7 +110,7 @@ namespace rascal {
 
     // additional variables for current fixture
     double cutoff;
-    std::string filename{};
+    std::string filename;
   };
 
   /* ---------------------------------------------------------------------- */

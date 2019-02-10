@@ -54,8 +54,6 @@ namespace rascal {
 
     PairFixtureSimple()
         : cutoff{1.}, pair_manager{make_adapted_manager<AdaptorNeighbourList>(fixture.manager, this->cutoff)} {
-      fixture.manager->add_child(this->pair_manager);
-      this->pair_manager->update();
     }
 
     ~PairFixtureSimple() = default;
@@ -79,8 +77,6 @@ namespace rascal {
 
     PairFixtureCenters()
         : cutoff{3.5}, pair_manager{make_adapted_manager<AdaptorNeighbourList>(this->fixture.manager, this->cutoff, true)} {
-      fixture.manager->add_child(this->pair_manager);
-      this->pair_manager->update();
     }
 
     ~PairFixtureCenters() {}
@@ -98,7 +94,6 @@ namespace rascal {
 
     PairFixtureStrict()
         : adaptor_strict{make_adapted_manager<AdaptorStrict>(this->fixture.pair_manager, this->fixture.cutoff)} {
-          fixture.pair_manager->add_child(this->adaptor_strict);
         }
 
     ~PairFixtureStrict() = default;

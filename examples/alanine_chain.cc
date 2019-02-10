@@ -53,7 +53,13 @@ int main() {
 
   // initialize the manager
   auto manager{rascal::make_structure_manager<Manager_t>()};
-  double cutoff{1.0};
+  double cutoff{2.0};
+  /*
+   * TODO(markus) bug with cutoff==1.0
+   * in adaptor_neighbour_list.hh:992, at some point idx is assigned a
+   * coordinate that does not exist leading to a seg fault when trying to
+   * access it.
+   */
 
   // read atomic structure from the JSON file
   // manager.read_structure_from_json("alanine-X.json");

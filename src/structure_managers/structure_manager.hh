@@ -319,7 +319,9 @@ namespace rascal {
     void update_children() final {
       this->implementation().update_adaptor();
       for (auto && child : this->children) {
-        child.lock()->update_children();
+        if (not child.expired()) {
+          child.lock()->update_children();
+        }
       }
     }
 
