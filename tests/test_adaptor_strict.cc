@@ -116,8 +116,8 @@ namespace rascal {
     bool verbose{false};
     int mult = 6;
     double rc_max{mult * 0.5 + cutoff};
-    auto pair_manager{make_adapted_manager<AdaptorNeighbourList>(manager, rc_max)};
-    pair_manager->update();
+    // auto pair_manager{make_adapted_manager<AdaptorNeighbourList>(manager, rc_max)};
+    // pair_manager->update();
 
     for (auto i{0}; i < mult; ++i) {
       auto cutoff_tmp = i * 0.5 + cutoff;
@@ -132,8 +132,9 @@ namespace rascal {
         std::cout << "Setting up strict manager with rc = " << cutoff_tmp
                   << std::endl;
       }
+      auto pair_manager{make_adapted_manager<AdaptorNeighbourList>(manager, cutoff_tmp)};
       auto adaptor_strict{make_adapted_manager<AdaptorStrict>(pair_manager, cutoff_tmp)};
-      adaptor_strict->update();
+      adaptor_strict->update(structure);
 
       if (verbose) {
         std::cout << "Setting up comparison list with rc = " << cutoff_tmp

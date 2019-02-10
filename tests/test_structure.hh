@@ -90,6 +90,7 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
+
   /**
    * general case of a manager fixture, which reads the structure information
    * from a file, atomic structure contains 9 atoms in a very simple cubic unit
@@ -157,6 +158,7 @@ namespace rascal {
       atom_types << 1, 1;
 
       using PBC_t = Eigen::Map<Eigen::Matrix<int, 3, 1>>;
+
 
       manager_1->update(positions_1, atom_types, cell_1, PBC_t{pbc.data()});
 
@@ -412,10 +414,11 @@ namespace rascal {
 
       using PBC_t = Eigen::Map<Eigen::Matrix<int, 3, 1>>;
       manager->update(positions, atom_types, cell, PBC_t{pbc.data()});
+      structure.set_structure(positions, atom_types, cell, PBC_t{pbc.data()});
     }
 
     ~ManagerFixture() {}
-
+    AtomicStructure<3> structure{};
     std::shared_ptr<Manager_t> manager;
     Eigen::MatrixXd positions;
     Eigen::VectorXi atom_types;

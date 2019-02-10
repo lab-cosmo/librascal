@@ -113,6 +113,14 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  // overloading the update function
+  void StructureManagerCenters::update(AtomicStructure<traits::Dim>& structure) {
+    this->atoms_object = structure;
+    StructureManagerCenters::build();
+  }
+ 
+
+  /* ---------------------------------------------------------------------- */
   // function for setting the internal data structures
   void StructureManagerCenters::build() {
 
