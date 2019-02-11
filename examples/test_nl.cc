@@ -144,7 +144,8 @@ int main() {
   bool verbose{false};
   bool verbose_rep{false};
   double cutoff{2.};
-  std::string filename{"crystal_structure.json"};
+  // std::string filename{"crystal_structure.json"};
+  std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
 
   auto manager{make_structure_manager<StructureManagerCenters>()};
   manager->update(filename);

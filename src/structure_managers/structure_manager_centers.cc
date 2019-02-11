@@ -119,6 +119,13 @@ namespace rascal {
   void StructureManagerCenters::build() {
 
     this->natoms = this->atoms_object.positions.size() / traits::Dim;
+
+    // initialize necessary data structure
+    this->atoms_index[0].clear();
+    this->offsets.clear();
+    internal::for_each(this->cluster_indices_container,
+                       internal::ResizePropertyToZero());
+
     // set the references to the particles positions
     for (size_t id{0}; id < this->natoms; ++id) {
       this->atoms_index[0].push_back(id);

@@ -790,7 +790,8 @@ namespace rascal {
   template <class ManagerImplementation>
   void AdaptorNeighbourList<ManagerImplementation>::update_adaptor() {
     // set the number of centers
-    this->n_centers = manager->get_size();
+    this->n_centers = this->manager->get_size();
+    this->n_ghosts = 0;
     //! Reset cluster_indices for adaptor to fill with sequence
     internal::for_each(this->cluster_indices_container,
                        internal::ResizePropertyToZero());
