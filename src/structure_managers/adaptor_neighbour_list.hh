@@ -692,10 +692,12 @@ namespace rascal {
     //! Sets the correct offsets for accessing neighbours
     inline void set_offsets() {
       auto && n_tuples{nb_neigh.size()};
-      this->offsets.reserve(n_tuples);
-      this->offsets.resize(1);
-      for (size_t i{0}; i < n_tuples - 1; ++i) {
-        this->offsets.emplace_back(this->offsets[i] + this->nb_neigh[i]);
+      if (n_tuples > 0) {
+        this->offsets.reserve(n_tuples);
+        this->offsets.resize(1);
+        for (size_t i{0}; i < n_tuples - 1; ++i) {
+          this->offsets.emplace_back(this->offsets[i] + this->nb_neigh[i]);
+        }
       }
     }
 
