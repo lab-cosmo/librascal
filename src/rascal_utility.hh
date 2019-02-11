@@ -99,9 +99,8 @@ namespace rascal {
     template <size_t Min, size_t Max, class Tuple>
     constexpr auto take_range(Tuple t) {
       static_assert(Min <= Max, "Min should be smaller or equal than Max");
-      return index_apply<Min,Max>([&](auto... Is) {
-          return make_tuple(get<Is>(t)...);
-      });
+      return index_apply<Min, Max>(
+          [&](auto... Is) { return make_tuple(std::get<Is>(t)...); });
     }
 
     /**
