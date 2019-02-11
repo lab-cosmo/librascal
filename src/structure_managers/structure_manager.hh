@@ -315,13 +315,15 @@ namespace rascal {
 
    protected:
 
-    //! Update itself and send update signal to children nodes
+    /**
+     * Update itself and send update signal to children nodes
+     * Should only be used in the StructureManagerRoot
+     */
     void update_children() final {
       if (not this->get_is_up_to_date()) {
         this->implementation().update_adaptor();
         this->set_is_up_to_date(true);
       }
-
       for (auto && child : this->children) {
         if (not child.expired()) {
           child.lock()->update_children();
@@ -329,15 +331,34 @@ namespace rascal {
       }
     }
 
+    /**
+     * When the underlying structure has changed, send this fact to the tree.
+     * Should only be used in the StructureManagerRoot
+     */
+    void send_changed_structure_signal() {
+      this->set_is_up_to_date(true);
+      for (auto && child : this->children) {
+        if (not child.expired()) {
+          child.lock()->set_is_up_to_date(false);
+        }
+      }
+    }
+
     //! List of children nodes
     std::vector<Children_t> children{};
 
+    /**
+     * Stores the state of the StructureManager with respect to the underlying
+     * structure. It avoids updating Adaptors when the structure did not change
+     * but an update was called.
+     */
     bool is_up_to_date;
 
-    inline void set_is_up_to_date(const bool sig) {
+    //! setter for is_up_to_date
+    inline void set_is_up_to_date(const bool sig) final {
       this->is_up_to_date = sig;
     }
-
+    //! getter for is_up_to_date
     inline bool get_is_up_to_date() const {
       return this->is_up_to_date;
     }
