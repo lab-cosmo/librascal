@@ -306,6 +306,11 @@ namespace rascal {
   template <class ManagerImplementation>
   template <class... Args>
   void AdaptorHalfList<ManagerImplementation>::update(Args &&... arguments) {
+    // if sizeof...(arguments) == 0 then the underlying structure
+    // is not changed
+    if (sizeof...(arguments) > 0) {
+      this->set_is_up_to_date(false);
+    }
     this->manager->update(std::forward<Args>(arguments)...);
   }
 

@@ -192,7 +192,7 @@ namespace rascal {
 
     //! Default constructor
     StructureManager()
-        : cluster_indices_container{
+        : is_up_to_date{false}, cluster_indices_container{
           ClusterConstructor_t::make(*this)} {}
 
     //! Copy constructor
@@ -317,7 +317,11 @@ namespace rascal {
 
     //! Update itself and send update signal to children nodes
     void update_children() final {
-      this->implementation().update_adaptor();
+      if (not this->get_is_up_to_date()) {
+        this->implementation().update_adaptor();
+        this->set_is_up_to_date(true);
+      }
+
       for (auto && child : this->children) {
         if (not child.expired()) {
           child.lock()->update_children();
@@ -327,6 +331,16 @@ namespace rascal {
 
     //! List of children nodes
     std::vector<Children_t> children{};
+
+    bool is_up_to_date;
+
+    inline void set_is_up_to_date(const bool sig) {
+      this->is_up_to_date = sig;
+    }
+
+    inline bool get_is_up_to_date() const {
+      return this->is_up_to_date;
+    }
 
 
     //! returns the current layer

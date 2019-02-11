@@ -96,42 +96,17 @@ namespace rascal {
         return std::weak_ptr<StructureManagerLammps>(this->get_shared_ptr());
     }
 
-    /**
-     * resetting is required every time the list changes. Here, this
-     * is implemented without explicit dependency to lammps. The
-     * signature could be simplified by including lammps as a
-     * dependency, but it is unclear that the convenience would
-     * outweigh the hassle of maintaining the dependency.
-     *
-     * @param inum Property `inum` in the lammps `NeighList` structure
-     *
-     * @param tot_num sum of the properties `nlocal` and `nghost` in the
-     *                lammps `Atom` structure
-     *
-     * @param ilist Property `ilist` in the lammps `NeighList` structure
-     *
-     * @param numneigh Property `numneigh` in the lammps `NeighList` structure
-     *
-     * @param firstneigh Property `firstneigh` in the lammps `NeighList`
-     * structure
-     *
-     * @param x Property `x` in the lammps `Atom` structure
-     *
-     * @param f Property `f` in the lammps `Atom` structure
-     *
-     * @param type Property `type` in the lammps `Atom` structure
-     *
-     * @param eatom per-atom energy
-     *
-     * @param vatom per-atom virial
-     */
-    void update(const int & inum, const int & tot_num,
-                int * ilist, int * numneigh, int ** firstneigh,
-                double ** x, double ** f, int * type,
-                double * eatom, double ** vatom);
-
-    //! overload of update that does not change the underlying structure
-    void update();
+    //! Updates the manager using the impl
+    template <class... Args>
+    void update(Args &&... arguments) {
+      if (sizeof...(arguments) > 0) {
+        this->set_is_up_to_date(false);
+      }
+      // update the underlying structure
+      this->update_impl(std::forward<Args>(arguments)...);
+      // send the update signal to the tree
+      this->update_children();
+    }
 
     //! it is not an adaptor so there is nothing to update
     void update_adaptor() {}
@@ -209,6 +184,43 @@ namespace rascal {
     size_t get_nb_clusters(int cluster_size) const;
 
    protected:
+    /**
+     * resetting is required every time the list changes. Here, this
+     * is implemented without explicit dependency to lammps. The
+     * signature could be simplified by including lammps as a
+     * dependency, but it is unclear that the convenience would
+     * outweigh the hassle of maintaining the dependency.
+     *
+     * @param inum Property `inum` in the lammps `NeighList` structure
+     *
+     * @param tot_num sum of the properties `nlocal` and `nghost` in the
+     *                lammps `Atom` structure
+     *
+     * @param ilist Property `ilist` in the lammps `NeighList` structure
+     *
+     * @param numneigh Property `numneigh` in the lammps `NeighList` structure
+     *
+     * @param firstneigh Property `firstneigh` in the lammps `NeighList`
+     * structure
+     *
+     * @param x Property `x` in the lammps `Atom` structure
+     *
+     * @param f Property `f` in the lammps `Atom` structure
+     *
+     * @param type Property `type` in the lammps `Atom` structure
+     *
+     * @param eatom per-atom energy
+     *
+     * @param vatom per-atom virial
+     */
+    void update_impl(const int & inum, const int & tot_num,
+                int * ilist, int * numneigh, int ** firstneigh,
+                double ** x, double ** f, int * type,
+                double * eatom, double ** vatom);
+
+    //! overload of update that does not change the underlying structure
+    void update_impl();
+
     int inum{}; //!< total numer of atoms
     int tot_num{}; //!< total number, includes ghosts
     int * ilist{}; //!< atomic indices

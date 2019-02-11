@@ -86,7 +86,7 @@ namespace rascal {
    * contiguity
    */
   void StructureManagerCenters::
-  update(const Eigen::Ref<const Eigen::MatrixXd, 0,
+  update_impl(const Eigen::Ref<const Eigen::MatrixXd, 0,
          Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>> positions,
          const Eigen::Ref<const Eigen::VectorXi> atom_types,
          const Eigen::Ref<const Eigen::MatrixXd> cell,
@@ -99,7 +99,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   // overloading the update function to be able to update from a file
-  void StructureManagerCenters::update(const std::string filename) {
+  void StructureManagerCenters::update_impl(const std::string filename) {
     auto json_atoms_object{this->read_structure_from_json(filename)};
     this->atoms_object.set_structure(json_atoms_object);
 
@@ -108,17 +108,11 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   // overloading the update function
-  void StructureManagerCenters::update() {
-    StructureManagerCenters::update_children();
-  }
-
-  /* ---------------------------------------------------------------------- */
-  // overloading the update function
-  void StructureManagerCenters::update(AtomicStructure<traits::Dim>& structure) {
+  void StructureManagerCenters::update_impl(AtomicStructure<traits::Dim>& structure) {
     this->atoms_object = structure;
     StructureManagerCenters::build();
   }
- 
+
 
   /* ---------------------------------------------------------------------- */
   // function for setting the internal data structures
@@ -136,8 +130,6 @@ namespace rascal {
 
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
     atom_cluster_indices.fill_sequence();
-
-    StructureManagerCenters::update_children();
   }
 
   /* ---------------------------------------------------------------------- */
