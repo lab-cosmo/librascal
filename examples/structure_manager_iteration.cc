@@ -26,13 +26,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <structure_managers/structure_manager_centers.hh>
-#include <structure_managers/adaptor_neighbour_list.hh>
 #include <structure_managers/adaptor_half_neighbour_list.hh>
+#include <structure_managers/adaptor_increase_maxorder.hh>
+#include <structure_managers/adaptor_neighbour_list.hh>
 #include <structure_managers/adaptor_strict.hh>
 #include <structure_managers/make_structure_manager.hh>
-#include <structure_managers/adaptor_increase_maxorder.hh>
 #include <structure_managers/property.hh>
+#include <structure_managers/structure_manager_centers.hh>
 
 /**
  * This small example highlight the possibilities of adapting a structure
@@ -75,13 +75,14 @@ int main() {
   //  manager.update(filename);
 
   // `pair_manager` is constructed with the `manager` and a `cutoff`.
-  auto pair_manager{rascal::make_adapted_manager<rascal::AdaptorNeighbourList>(manager, cutoff, true)};
+  auto pair_manager{rascal::make_adapted_manager<rascal::AdaptorNeighbourList>(
+      manager, cutoff, true)};
   // By invoking the `.update()` method, a neighbour list is built.
   //  pair_manager->update();
 
   // `strict_manager` is constructed with a `pair_manager`.
-  auto strict_manager{
-        rascal::make_adapted_manager<rascal::AdaptorStrict>(pair_manager, cutoff)};
+  auto strict_manager{rascal::make_adapted_manager<rascal::AdaptorStrict>(
+      pair_manager, cutoff)};
   // calling the `.update()` method triggers the build of a strict neighbourlist
   // (all pairs are within the specified cutoff)
   //  strict_manager.update();
@@ -89,11 +90,10 @@ int main() {
   // `triplet_manager` is constructed with a pair list (strict or not, here
   // strict)
   auto triplet_manager{
-        rascal::make_adapted_manager<rascal::AdaptorMaxOrder>(strict_manager)};
+      rascal::make_adapted_manager<rascal::AdaptorMaxOrder>(strict_manager)};
   // `.update()` triggers the extension of the pair list to triplets
   // triplet_manager->update(positions, atom_types, cell, PBC_t{pbc.data()});
   triplet_manager->update(filename);
-
 
   // Iteration over `manager`
   std::cout << "manager iteration over atoms" << std::endl;
