@@ -242,7 +242,6 @@ decltype(auto) add_structure_manager_implementation(py::module & m,
 }
 
 
-
 template <typename StructureManagerImplementation>
 void bind_update_unpacked(PyManager<StructureManagerImplementation> & manager) {
   manager.def("update",
@@ -271,51 +270,97 @@ struct BindAdaptor {};
 
 template <typename Implementation_t>
 struct BindAdaptor<AdaptorStrict, Implementation_t> {
-  using PyManager_t = PyManager<AdaptorStrict<Implementation_t>>;
+  using Manager_t = AdaptorStrict<Implementation_t>;
+  using ImplementationPtr_t = std::shared_ptr<Implementation_t>;
+  using PyManager_t = PyManager<Manager_t>;
   static void bind_adaptor_init(PyManager_t & adaptor) {
     adaptor.def(
         py::init<std::shared_ptr<Implementation_t>, double>(),
                 py::keep_alive<1, 2>()
     );
   }
+
+  static void bind_adapted_manager_maker(const std::string& name, py::module & m_adaptor) {
+    m_adaptor.def(name.c_str(),
+      [](ImplementationPtr_t& manager, const double& cutoff) {
+          return make_adapted_manager<AdaptorStrict, Implementation_t>(manager,cutoff);
+        },
+      py::arg("manager"), py::arg("cutoff"),
+      py::return_value_policy::copy);
+  }
 };
 
 template <typename Implementation_t>
 struct BindAdaptor<AdaptorMaxOrder, Implementation_t> {
-  using PyManager_t = PyManager<AdaptorMaxOrder<Implementation_t>>;
+  using Manager_t = AdaptorMaxOrder<Implementation_t>;
+  using ImplementationPtr_t = std::shared_ptr<Implementation_t>;
+  using PyManager_t = PyManager<Manager_t>;
   static void bind_adaptor_init(PyManager_t & adaptor) {
     adaptor.def(
         py::init<std::shared_ptr<Implementation_t>>(),
                 py::keep_alive<1, 2>()
     );
   }
+
+  static void bind_adapted_manager_maker(const std::string& name, py::module & m_adaptor) {
+    m_adaptor.def(name.c_str(),
+      [](ImplementationPtr_t& manager) {
+          return make_adapted_manager<AdaptorMaxOrder, Implementation_t>(manager);
+        },
+      py::arg("manager"),
+      py::return_value_policy::copy);
+  }
 };
 
 template <typename Implementation_t>
 struct BindAdaptor<AdaptorHalfList, Implementation_t> {
-  using PyManager_t = PyManager<AdaptorHalfList<Implementation_t>>;
+  using Manager_t = AdaptorHalfList<Implementation_t>;
+  using ImplementationPtr_t = std::shared_ptr<Implementation_t>;
+  using PyManager_t = PyManager<Manager_t>;
   static void bind_adaptor_init(PyManager_t & adaptor) {
     adaptor.def(
-        py::init<std::shared_ptr<Implementation_t>, double>(),
+        py::init<std::shared_ptr<Implementation_t>>(),
                 py::keep_alive<1, 2>()
     );
+  }
+
+  static void bind_adapted_manager_maker(const std::string& name, py::module & m_adaptor) {
+    m_adaptor.def(name.c_str(),
+      [](ImplementationPtr_t& manager) {
+          return make_adapted_manager<AdaptorHalfList, Implementation_t>(manager);
+        },
+      py::arg("manager"),
+      py::return_value_policy::copy);
   }
 };
 
 template <typename Implementation_t>
 struct BindAdaptor<AdaptorFullList, Implementation_t> {
-  using PyManager_t = PyManager<AdaptorFullList<Implementation_t>>;
+  using Manager_t = AdaptorFullList<Implementation_t>;
+  using ImplementationPtr_t = std::shared_ptr<Implementation_t>;
+  using PyManager_t = PyManager<Manager_t>;
   static void bind_adaptor_init(PyManager_t & adaptor) {
     adaptor.def(
-        py::init<std::shared_ptr<Implementation_t>, double>(),
+        py::init<std::shared_ptr<Implementation_t>>(),
                 py::keep_alive<1, 2>()
     );
+  }
+
+  static void bind_adapted_manager_maker(const std::string& name, py::module & m_adaptor) {
+    m_adaptor.def(name.c_str(),
+      [](ImplementationPtr_t& manager) {
+          return make_adapted_manager<AdaptorFullList, Implementation_t>(manager);
+        },
+      py::arg("manager"),
+      py::return_value_policy::copy);
   }
 };
 
 template <typename Implementation_t>
 struct BindAdaptor<AdaptorNeighbourList, Implementation_t> {
-  using PyManager_t = PyManager<AdaptorNeighbourList<Implementation_t>>;
+  using Manager_t = AdaptorNeighbourList<Implementation_t>;
+  using ImplementationPtr_t = std::shared_ptr<Implementation_t>;
+  using PyManager_t = PyManager<Manager_t>;
   static void bind_adaptor_init(PyManager_t & adaptor) {
     adaptor.def(
       py::init<std::shared_ptr<Implementation_t> , double, bool>(),
@@ -324,21 +369,32 @@ struct BindAdaptor<AdaptorNeighbourList, Implementation_t> {
         py::keep_alive<1, 2>()
     );
   }
+
+  static void bind_adapted_manager_maker(const std::string& name, py::module & m_adaptor) {
+    m_adaptor.def(name.c_str(),
+      [](ImplementationPtr_t manager, const double& cutoff, const bool& consider_ghost_neighbours) {
+          return make_adapted_manager<AdaptorNeighbourList, Implementation_t>(manager, cutoff, consider_ghost_neighbours);
+        },
+      py::arg("manager"),
+      py::arg("cutoff"), py::arg("consider_ghost_neighbours") = false,
+      py::return_value_policy::copy);
+  }
 };
 
-
-//TODO(felix) use this function
-template<typename ManagerImplementation, template<class> class ... AdaptorImplementationPack, typename ...Args>
-void bind_structure_manager_factory(py::module & m_adaptor) {
-  using Manager_t = typename internal::AdaptorTypeStacker<ManagerImplementation,AdaptorImplementationPack...>::type;
-  std::string factory_name = "StructureManagerFactory_";
+template<typename Manager_t>
+void bind_make_structure_manager(py::module & m_str_mng) {
+  std::string factory_name = "make_structure_manager_";
   factory_name += internal::GetBindingTypeName<Manager_t>();
-  m_adaptor.def(factory_name.c_str(),
-        [](Args& ...args) {
-          return make_structure_manager_stack<ManagerImplementation,
-        AdaptorImplementationPack...>(args...);
-        },
-        py::return_value_policy::copy);
+  m_str_mng.def(factory_name.c_str(),
+      &make_structure_manager<Manager_t>,
+      py::return_value_policy::copy);
+}
+
+template<template<class>class Adaptor, typename Manager_t>
+void bind_make_adapted_manager(py::module & m_adaptor) {
+  std::string factory_name = "make_adapted_manager_";
+  factory_name += internal::GetBindingTypeName<Adaptor<Manager_t>>();
+  BindAdaptor<Adaptor, Manager_t>::bind_adapted_manager_maker(factory_name, m_adaptor);
 }
 
 
@@ -356,8 +412,8 @@ struct BindAdaptorStack {
   using ManagerPtr = std::shared_ptr<Manager_t>;
   using type = BindAdaptorStack<Manager_t, AdaptorImplementationPack...>;
 
-  BindAdaptorStack(py::module & m_adaptor, py::module & m_garbage)
-  :next_stack{m_adaptor, m_garbage} {
+  BindAdaptorStack(py::module & m_nl, py::module & m_adaptor, py::module & m_garbage)
+  :next_stack{m_nl, m_adaptor, m_garbage} {
     add_structure_manager_interface<Manager_t>(m_garbage);
 
     auto adaptor = add_manager<Manager_t>(m_adaptor);
@@ -368,6 +424,8 @@ struct BindAdaptorStack {
     // bind clusterRefs so that one can loop over adaptor
     // MaxOrder+1 because recursion stops at Val-1
     add_iterators<Manager_t, 1, MaxOrder + 1>::static_for(m_garbage, adaptor);
+    // bind the factory function
+    bind_make_adapted_manager<AdaptorImplementation, ManagerImplementation>(m_nl);
   }
 
   type next_stack;
@@ -382,17 +440,19 @@ struct BindAdaptorStack<ManagerImplementation, AdaptorImplementation> {
   using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
   using ManagerPtr = std::shared_ptr<Manager_t>;
 
-  BindAdaptorStack(py::module & m_adaptor, py::module & m_garbage) {
+  BindAdaptorStack(py::module & m_nl, py::module & m_adaptor, py::module & m_garbage) {
     add_structure_manager_interface<Manager_t>(m_garbage);
 
     auto adaptor = add_manager<Manager_t>(m_adaptor);
     BindAdaptor<AdaptorImplementation,
                 ManagerImplementation>::bind_adaptor_init(adaptor);
-    // bind_update_empty<Manager_t>(adaptor);
+    bind_update_empty<Manager_t>(adaptor);
     bind_update_unpacked<Manager_t>(adaptor);
     // bind clusterRefs so that one can loop over adaptor
     // MaxOrder+1 because recursion stops at Val-1
     add_iterators<Manager_t, 1, MaxOrder + 1>::static_for(m_garbage, adaptor);
+    // bind the factory function
+    bind_make_adapted_manager<AdaptorImplementation, ManagerImplementation>(m_nl);
   }
 };
 
@@ -422,16 +482,23 @@ void bind_cluster_refs(py::module & m_garbage) {
 }
 
 //! Main function to add StructureManagers and their Adaptors
-void add_structure_managers(py::module & m_str_mng, py::module & m_adp,
-                            py::module & m_garbage) {
-  // Bind StructureManagerBase
+void add_structure_managers(py::module & m_nl, py::module & m_garbage) {
+  // Bind StructureManagerBase (needed for virtual inheritance)
   py::class_<StructureManagerBase, std::shared_ptr<StructureManagerBase>>(m_garbage, "StructureManagerBase");
-  // Bind ClusterRefBase
+  // Bind ClusterRefBase (needed for virtual inheritance)
   py::class_<ClusterRefBase>(m_garbage, "ClusterRefBase");
   bind_cluster_refs(m_garbage);
 
-  using Manager_t = StructureManagerCenters;
-  bind_structure_manager<Manager_t>(m_str_mng, m_garbage);
+  py::module m_strc_mng = m_nl.def_submodule("StructureManager");
+  m_strc_mng.doc() = "Structure Manager Classes";
+  py::module m_adp = m_nl.def_submodule("Adaptor");
+  m_adp.doc() = "Adaptor Classes";
 
-  BindAdaptorStack<Manager_t, AdaptorNeighbourList, AdaptorStrict> adaptor_stack_1{m_adp, m_garbage};
+  using Manager_t = StructureManagerCenters;
+  bind_structure_manager<Manager_t>(m_strc_mng, m_garbage);
+
+  // bind the factory function
+  bind_make_structure_manager<Manager_t>(m_nl);
+
+  BindAdaptorStack<Manager_t, AdaptorNeighbourList, AdaptorStrict> adaptor_stack_1{m_nl, m_strc_mng, m_garbage};
 }

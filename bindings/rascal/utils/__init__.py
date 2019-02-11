@@ -1,2 +1,2 @@
-from .structure_manager import (ase2rascal,get_strict_neighbourlist)
-from .fps import fps 
+from .fps import fps
+from ..lib.utils import ostream_redirect

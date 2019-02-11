@@ -169,21 +169,6 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 if (${BUILD_TESTS})
   find_package(Boost REQUIRED COMPONENTS unit_test_framework )
   enable_testing()
-  # copy python test
-
-  file( GLOB PY_TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/python_*.py")
-
-  foreach(pytest ${PY_TEST_SRCS})
-    get_filename_component(pytest_name ${pytest} NAME)
-    configure_file(
-      ${pytest}
-      "${CMAKE_BINARY_DIR}/${pytest_name}"
-      COPYONLY)
-  endforeach(pytest ${PY_TEST_SRCS})
-
-  if(BUILD_BINDINGS)
-    add_test(python_binding_test python_binding_tests.py)
-  endif()
 
   # build c++ tests and add to test suite
   file( GLOB TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/test_*.cc")
@@ -200,17 +185,19 @@ if (${BUILD_TESTS})
   configure_file("tests/simple_cubic_9.json" ${CMAKE_BINARY_DIR} COPYONLY)
   file(COPY "tests/reference_data" DESTINATION ${CMAKE_BINARY_DIR})
 
-  # copy and add python test to suite
-  file( GLOB PY_TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/python_*.py")
+  if(BUILD_BINDINGS)
+    # copy python test
+    file( GLOB PY_TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/python_*.py")
+    foreach(pytest ${PY_TEST_SRCS})
+      get_filename_component(pytest_name ${pytest} NAME)
+      configure_file(
+        ${pytest}
+        "${CMAKE_BINARY_DIR}/${pytest_name}"
+        COPYONLY)
+    endforeach(pytest ${PY_TEST_SRCS})
+    add_test(python_binding_test python_binding_tests.py)
+  endif()
 
-  foreach(pytest ${PY_TEST_SRCS})
-    get_filename_component(pytest_name ${pytest} NAME)
-    configure_file(
-      ${pytest}
-      "${CMAKE_BINARY_DIR}/${pytest_name}"
-      COPYONLY)
-  endforeach(pytest ${PY_TEST_SRCS})
-  add_test(python_binding_test python_binding_tests.py)
 
 endif(${BUILD_TESTS})
 

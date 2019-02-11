@@ -33,20 +33,6 @@
 #include "rascal_utility.hh"
 
 namespace rascal {
-
-  /**
-   * Factory function to make an adapted structure manager
-   * @tparams Adaptor partial type of the adaptor
-   * @params Manager input structure manager
-   * @params args additional argument for the constructructor
-   */
-  template<template<class>class Adaptor, typename Manager, typename ...Args>
-  std::shared_ptr<Adaptor<Manager>> make_adapted_manager(std::shared_ptr<Manager>& arg, Args ...args) {
-    auto manager{std::make_shared<Adaptor<Manager>>(arg, args...)};
-    arg->add_child(manager->get_weak_ptr());
-    return manager;
-  }
-
   /**
    * Factory function to make a structure manager
    * @tparams Adaptor partial type of the adaptor
@@ -58,16 +44,19 @@ namespace rascal {
     return std::make_shared<Manager>();
   }
 
-  /* ---------------------------------------------------------------------- */
-  //! Utility to hold a list of Adaptors partial types
-  template<template<class> class ...AdaptorImplementation>
-  struct AdaptorTypeHolder;
-  //! Utility to hold a fully typed structure manager and a list of Adaptors
-  template<typename Manager, template<class> class ...AdaptorImplementation>
-  struct StructureManagerTypeHolder {
-    using type_list = std::tuple<Manager,AdaptorTypeHolder<AdaptorImplementation...>>;
-    using type = typename internal::AdaptorTypeStacker<Manager,AdaptorImplementation...>::type;
-  };
+  /**
+   * Factory function to make an adapted structure manager
+   * @tparams Adaptor partial type of the adaptor
+   * @params Manager input structure manager
+   * @params args additional argument for the constructructor
+   */
+  template<template<class>class Adaptor, typename Manager, typename ...Args>
+  std::shared_ptr<Adaptor<Manager>> make_adapted_manager(std::shared_ptr<Manager>& arg, const Args& ...args) {
+    auto manager{std::make_shared<Adaptor<Manager>>(arg, args...)};
+    arg->add_child(manager->get_weak_ptr());
+    return manager;
+  }
+
   /* ---------------------------------------------------------------------- */
 
   namespace internal {
@@ -205,6 +194,16 @@ namespace rascal {
     return manager;
   }
 
+  /* ---------------------------------------------------------------------- */
+  //! Utility to hold a list of Adaptors partial types
+  template<template<class> class ...AdaptorImplementation>
+  struct AdaptorTypeHolder;
+  //! Utility to hold a fully typed structure manager and a list of Adaptors
+  template<typename Manager, template<class> class ...AdaptorImplementation>
+  struct StructureManagerTypeHolder {
+    using type_list = std::tuple<Manager,AdaptorTypeHolder<AdaptorImplementation...>>;
+    using type = typename internal::AdaptorTypeStacker<Manager,AdaptorImplementation...>::type;
+  };
 
   namespace internal {
     /**
@@ -226,7 +225,9 @@ namespace rascal {
     };
   }
   /**
-   *
+   * Factory function to make a manager with its types provided with
+   * a StructureManagerTypeHolder and arguments packaged such as
+   * tuple<tuple<StructureArgs>,tuple<AdaptorConstructorArgs>>.
    */
   template<typename StructureManagerTypeHolder_>
   struct make_structure_manager_stack_with_tuple_and_typeholder;

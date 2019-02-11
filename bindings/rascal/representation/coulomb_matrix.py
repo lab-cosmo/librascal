@@ -1,7 +1,7 @@
 import numpy as np
 import json
 
-from ..utils import get_strict_neighbourlist
+# from ..utils import get_strict_neighbourlist
 from ..lib import RepresentationManager,FeatureManager
 from .base import RepresentationFactory
 

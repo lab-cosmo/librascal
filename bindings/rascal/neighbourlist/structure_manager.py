@@ -1,6 +1,8 @@
 import numpy as np
 
-from ..lib import StructureManager,Adaptor
+from ..lib import NeighbourList
+
+
 
 
 def ase2rascal(frame):
