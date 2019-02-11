@@ -383,15 +383,6 @@ namespace rascal {
       // access to underlying manager for access to atom pairs
       auto & manager_tmp{cluster.get_manager()};
 
-      /*
-       * TODO(markus) seg fault when running structure_manager_iteration with
-       * cutoff == 1.
-       * The problem is that it is not called if there are no neighbours
-       * leading
-       * to a seg fault in set_offsets because n_tuples == 0 and tries to
-       * access this->nb_neigh[0] which does not exist.
-       * I am not sure it is the best way to fix it.
-       */
       // add an entry for the current clusters' neighbours
       manager.add_entry_number_of_neighbours();
 
