@@ -63,7 +63,7 @@ namespace rascal {
   };
 
   struct SortedCoulombTestData {
-    using Factory_t = std::tuple<std::tuple<std::string>,std::tuple<double,bool,bool>>;
+    using Factory_t = std::tuple<std::tuple<std::string>,std::tuple<double,bool,double>>;
     using ManagerTypeHolder_t = StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList, AdaptorStrict>;
     SortedCoulombTestData() {
       std::vector<std::uint8_t> ref_data_ubjson;
@@ -86,11 +86,7 @@ namespace rascal {
     // name of the file containing the reference data. it has been generated
     // with the following python code:
     /*
-    import ubjson
-    from copy import copy
-    import numpy as np
-    import sys, os
-    path = '/local/git/librascal/' # should be changed
+    path = os.path.abspath('/local/git/librascal') # should be changed
     sys.path.insert(0, os.path.join(path, 'build/'))
     sys.path.insert(0, os.path.join(path, 'tests/'))
     from rascal.representation import SortedCoulombMatrix
@@ -100,35 +96,37 @@ namespace rascal {
         return Atoms(**{k:f[k] for k in ['positions','numbers','pbc','cell'] })
 
     cutoffs = [2,3,4,5]
-    sorts = ['rownorm','distance']
+    sorts = ['row_norm','distance']
 
     fns = [
-        path+"tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-        path+"tests/reference_data/small_molecule.json"]
+        os.path.join(path,"tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json"),
+        os.path.join(path,"tests/reference_data/small_molecule.json")]
     fns_to_write = [
         "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
         "reference_data/small_molecule.json"
     ]
-    data = dict(filenames=fns_to_write,cutoffs=cutoffs)
-    hypers = dict(central_decay=-1,interaction_cutoff=-1,interaction_decay=-1,size=10)
-    for sort in sorts:
-        data[sort] = dict(feature_matrices=[],hypers=[])
-        for fn in fns:
-            for cutoff in cutoffs:
-                rep = SortedCoulombMatrix(cutoff,sort=sort)
+    data = dict(filenames=fns_to_write,cutoffs=cutoffs,rep_info=[])
+    hypers = dict(central_decay=-1,interaction_cutoff=-1,interaction_decay=-1,size=10,sorting_algorithm='')
+
+    for fn in fns:
+        for cutoff in cutoffs:
+            print(fn,cutoff)
+            data['rep_info'].append([])
+            for sort in sorts:
+                rep = SortedCoulombMatrix(cutoff,sorting_algorithm=sort)
                 frame = [json2ase(load_json_frame(fn))]
                 features = rep.transform(frame)
                 test = features.get_feature_matrix()
-                data[sort]['feature_matrices'].append(test.tolist())
                 hypers['size'] = rep.size
-                data[sort]['hypers'].append(copy(hypers))
-    with open(path+"tests/reference_data/sorted_coulomb_reference.ubjson",'wb') as f:
+                print(rep.size)
+                hypers['sorting_algorithm'] = sort
+                data['rep_info'][-1].append(dict(feature_matrix=test.tolist(),hypers=copy(hypers)))
+
+    with open(os.path.join(path,"tests/reference_data/sorted_coulomb_reference.ubjson"),'wb') as f:
         ubjson.dump(data,f)
     */
     const bool consider_ghost_neighbours{false};
     std::string ref_filename{"reference_data/sorted_coulomb_reference.ubjson"};
-    // std::vector<std::string> filenames{};
-    // std::vector<double> cutoffs{};
     json ref_data{};
     std::vector<Factory_t> factory_args{};
   };
@@ -142,7 +140,7 @@ namespace rascal {
     using Manager_t = typename Parent::Manager_t;
     using Representation_t = RepresentationManager<Manager_t>;
 
-    RepresentationFixture() = default;
+    RepresentationFixture(): Parent{} {}
     ~RepresentationFixture() = default;
 
     std::list<Representation_t> representations{};

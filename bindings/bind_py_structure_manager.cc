@@ -245,13 +245,16 @@ decltype(auto) add_structure_manager_implementation(py::module & m,
 template <typename StructureManagerImplementation>
 void bind_update_unpacked(PyManager<StructureManagerImplementation> & manager) {
   manager.def("update",
-        [](StructureManagerImplementation & v,
-            const py::EigenDRef<const Eigen::MatrixXd> & positions,
-            const py::EigenDRef<const Eigen::VectorXi> & atom_types,
-            const py::EigenDRef<const Eigen::MatrixXd> & cell,
-            const py::EigenDRef<const Eigen::MatrixXi> & pbc) {
-          v.update(positions, atom_types, cell, pbc);
-        });
+      [](StructureManagerImplementation & manager,
+          const py::EigenDRef<const Eigen::MatrixXd> & positions,
+          const py::EigenDRef<const Eigen::VectorXi> & atom_types,
+          const py::EigenDRef<const Eigen::MatrixXd> & cell,
+          const py::EigenDRef<const Eigen::MatrixXi> & pbc) {
+        manager.update(positions, atom_types, cell, pbc);
+      },
+      py::arg("positions"),py::arg("atom_types"),
+      py::arg("cell"),py::arg("pbc")
+  );
 }
 
 template <typename StructureManagerImplementation>

@@ -84,7 +84,7 @@ namespace rascal {
 
   using multiple_fixtures = boost::mpl::list<
       RepresentationFixture<
-          MultipleStructureSortedCoulomb,RepresentationManagerSortedCoulomb>>;
+          MultipleStructureSortedCoulomb, RepresentationManagerSortedCoulomb>>;
 
   using fixtures_ref_test = boost::mpl::list<
       RepresentationFixture<
@@ -150,7 +150,7 @@ namespace rascal {
 
         representations.emplace_back(manager, hypers);
         representations.back().compute();
-
+        auto aa{hypers.dump(2)};
         const auto & test_representation =
             representations.back().get_representation_full();
 

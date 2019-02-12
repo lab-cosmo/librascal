@@ -1,11 +1,7 @@
 import numpy as np
+from .base import NeighbourListFactory
 
-from ..lib import NeighbourList
-
-
-
-
-def ase2rascal(frame):
+def unpack_ase(frame):
     """
     Convert ASE Atoms object to rascal's equivalent
 
@@ -24,36 +20,28 @@ def ase2rascal(frame):
     numbers = frame.get_atomic_numbers()
     pbc = frame.get_pbc().astype(int)
 
-    managerC =  StructureManager.Centers()
-    managerC.update(np.array(positions.T,order='F'),
-                   numbers.reshape(-1,1),
-                   np.array(cell.T,order='F'),
-                   pbc.reshape(3,1))
-    return managerC
+    cell = np.array(cell.T,order='F')
+    positions = np.array(positions.T,order='F')
+    numbers = numbers.reshape(-1,1)
+    pbc = pbc.reshape(3,1)
+    return dict(cell=cell,positions=positions,atom_types=numbers,pbc=pbc)
 
-def get_strict_neighbourlist(frame,cutoff):
-    """
-    Generate a strict neighbourlist Structure Manager.
+def get_neighbourlist(frame,options):
+    names = []
+    args = []
+    full_name = []
+    for opt in options:
+        full_name.insert(0,opt['name'])
+        name = '_'.join(full_name)
+        names.append(name)
+        args.append(opt['args'])
 
-    Parameters
-    ----------
-    frame : ase.Atoms
-        Atomic structure
-    cutoff : float
-        Cutoff radius for the strict neighbourlist
+    structure = unpack_ase(frame)
 
-    Returns
-    -------
-    Strict_NeighbourList_Centers
-        strict neighbourlist StructureManager
-    """
-
-    managerC = ase2rascal(frame)
-
-    managerNL = Adaptor.NeighbourList_Centers(managerC,cutoff)
-    managerNL.update()
-
-    manager = Adaptor.Strict_NeighbourList_Centers(managerNL,cutoff)
-    manager.update()
-
-    return manager
+    managers = [NeighbourListFactory(names[0],*args[0])]
+    for name,arg in zip(names[1:],args[1:]):
+        manager = NeighbourListFactory(name,managers[-1],*arg)
+        managers.append(manager)
+    manager = managers[-1]
+    manager.update(**structure)
+    return managers[-1]
