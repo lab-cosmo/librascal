@@ -77,7 +77,7 @@ namespace rascal {
      */
     inline void to_json(json & j, AtomicJsonData & s) {
       j = json{{"cell", s.cell},
-               {"numbers", s.type},
+               {"atom_types", s.type},
                {"pbc", s.pbc},
                {"positions", s.position}};
     }
@@ -89,7 +89,7 @@ namespace rascal {
      */
     inline void from_json(const json & j, AtomicJsonData & s) {
       s.cell = j.at("cell").get<std::vector<std::vector<double>>>();
-      s.type = j.at("numbers").get<std::vector<int>>();
+      s.type = j.at("atom_types").get<std::vector<int>>();
       s.pbc = j.at("pbc").get<std::vector<int>>();
       s.position = j.at("positions").get<std::vector<std::vector<double>>>();
     }

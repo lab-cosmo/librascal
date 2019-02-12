@@ -54,10 +54,6 @@ set_target_properties(pyRascal PROPERTIES OUTPUT_NAME _rascal)
 # Sets rule to install the bindings library in the rascal folder
 install(TARGETS pyRascal DESTINATION "${PYTHON_SITE_PACKAGES}/rascal/lib")
 
-
-
-file(GLOB_RECURSE RASCAL_PY "${CMAKE_CURRENT_SOURCE_DIR}/rascal/*")
-
 # force cmake to run these commands at every make
 # https://stackoverflow.com/questions/13920072/how-to-always-run-command-when-building-regardless-of-any-dependency
 add_custom_target(librascal ALL
@@ -85,9 +81,10 @@ add_custom_command(OUTPUT copy_py_bind
 add_custom_command(
     OUTPUT always_rebuild
     COMMAND ${CMAKE_COMMAND} -E echo
-    )
+)
 
 
+# file(GLOB_RECURSE RASCAL_PY "${CMAKE_CURRENT_SOURCE_DIR}/rascal/*")
 # add_custom_command(TARGET pyRascal POST_BUILD
 #   COMMAND cp -R
 #   ${CMAKE_CURRENT_SOURCE_DIR}/rascal ${CMAKE_BINARY_DIR}

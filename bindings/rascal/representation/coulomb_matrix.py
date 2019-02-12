@@ -46,7 +46,7 @@ class SortedCoulombMatrix(object):
 
         self.nl_options = [
                 dict(name='centers',args=[]),
-                dict(name='neighbourlist',args=[cutoff,False]),
+                dict(name='neighbourlist',args=[cutoff]),
                 dict(name='strict',args=[cutoff])
         ]
 

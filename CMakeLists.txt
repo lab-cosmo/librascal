@@ -186,15 +186,34 @@ if (${BUILD_TESTS})
   file(COPY "tests/reference_data" DESTINATION ${CMAKE_BINARY_DIR})
 
   if(BUILD_BINDINGS)
+
+    add_custom_target(py_test ALL
+      DEPENDS
+        copy_test_py
+      )
+
+    add_dependencies(py_test main_test_suite)
+
+    add_custom_command(OUTPUT copy_test_py
+      COMMAND ${CMAKE_COMMAND} -E copy_directory
+      ${CMAKE_SOURCE_DIR}/tests/python ${CMAKE_BINARY_DIR}/
+      DEPENDS
+          always_rebuild
+    )
+
+    add_custom_command(
+      OUTPUT always_rebuild
+      COMMAND ${CMAKE_COMMAND} -E echo
+    )
     # copy python test
-    file( GLOB PY_TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/python_*.py")
-    foreach(pytest ${PY_TEST_SRCS})
-      get_filename_component(pytest_name ${pytest} NAME)
-      configure_file(
-        ${pytest}
-        "${CMAKE_BINARY_DIR}/${pytest_name}"
-        COPYONLY)
-    endforeach(pytest ${PY_TEST_SRCS})
+    # file( GLOB PY_TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/python_*.py")
+    # foreach(pytest ${PY_TEST_SRCS})
+    #   get_filename_component(pytest_name ${pytest} NAME)
+    #   configure_file(
+    #     ${pytest}
+    #     "${CMAKE_BINARY_DIR}/${pytest_name}"
+    #     COPYONLY)
+    # endforeach(pytest ${PY_TEST_SRCS})
     add_test(python_binding_test python_binding_tests.py)
   endif()
 

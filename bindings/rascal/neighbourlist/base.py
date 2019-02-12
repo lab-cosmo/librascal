@@ -12,3 +12,40 @@ def NeighbourListFactory(name,*args):
     if name not in _neighbourlists:
         raise NameError('The neighbourlist factory {} has not been registered. The available combinations are: {}'.format(name,list(_neighbourlists.keys())))
     return _neighbourlists[name](*args)
+
+def is_valid_structure(structure):
+    keys = ['cell','positions','atom_types','pbc']
+    is_valid = True
+    if isinstance(structure, dict):
+        for k in keys:
+            if k not in structure:
+                is_valid = False
+    else:
+        is_valid = False
+
+    return is_valid
+
+def unpack_ase(frame):
+    """
+    Convert ASE Atoms object to rascal's equivalent
+
+    Parameters
+    ----------
+    frame : ase.Atoms
+        Atomic structure
+
+    Returns
+    -------
+    StructureManagerCenters
+        base structure manager.
+    """
+    cell = frame.get_cell()
+    positions = frame.get_positions()
+    numbers = frame.get_atomic_numbers()
+    pbc = frame.get_pbc().astype(int)
+
+    cell = np.array(cell.T,order='F')
+    positions = np.array(positions.T,order='F')
+    numbers = numbers.reshape(-1,1)
+    pbc = pbc.reshape(3,1)
+    return dict(cell=cell,positions=positions,atom_types=numbers,pbc=pbc)

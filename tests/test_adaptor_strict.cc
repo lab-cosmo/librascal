@@ -115,7 +115,7 @@ namespace rascal {
                           ManagerFixture<StructureManagerCenters>) {
     bool verbose{false};
     int mult = 6;
-    double rc_max{mult * 0.5 + cutoff};
+    // double rc_max{mult * 0.5 + cutoff};
     // auto pair_manager{make_adapted_manager<AdaptorNeighbourList>(manager, rc_max)};
     // pair_manager->update();
 
@@ -134,7 +134,7 @@ namespace rascal {
       }
       auto pair_manager{make_adapted_manager<AdaptorNeighbourList>(manager, cutoff_tmp)};
       auto adaptor_strict{make_adapted_manager<AdaptorStrict>(pair_manager, cutoff_tmp)};
-      adaptor_strict->update(structure);
+      adaptor_strict->update();
 
       if (verbose) {
         std::cout << "Setting up comparison list with rc = " << cutoff_tmp
