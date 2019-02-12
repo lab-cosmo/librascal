@@ -177,22 +177,6 @@ namespace rascal {
     }
 
     /**
-     * Set the hyperparameters of this descriptor from a json string
-     *
-     * @param hypers json string containing the options and hyperparameters
-     *               The string will be parsed into a json container.
-     *
-     * @throw logic_error if an invalid option or combination of options is
-     *                    specified in the string
-     *
-     * @throw json.exception.parse_error if the string is not valid json
-     */
-    void set_hyperparameters(const std::string& hypers) {
-      hypers_t hypers_structure = json::parse(hypers);
-      this->set_hyperparameters(hypers_structure);
-    }
-
-    /**
      * Construct a new RepresentationManager using a hyperparameters container
      *
      * @param hypers container (usually parsed from json) for the options and
@@ -233,10 +217,10 @@ namespace rascal {
     template<internal::GaussianSigmaType SigmaType>
     void compute_by_gaussian_sigma();
 
-    //! Precompute radial Gaussian widths (NB specific to basis!)
+    //! Precompute radial Gaussian widths (NOTE specific to basis!)
     void precompute_radial_sigmas();
 
-    //! Precompute radial orthogonalization matrix (NB specific to basis!)
+    //! Precompute radial orthogonalization matrix (NOTE specific to basis!)
     void precompute_radial_overlap();
 
     //! Precompute everything that doesn't depend on the structure
@@ -317,21 +301,20 @@ namespace rascal {
   void RepresentationManagerSphericalExpansion<Mngr>::
       precompute_radial_sigmas() {
     using std::pow;
-    size_t radial_n;
-    size_t angular_l;
 
-    for (radial_n = 0; radial_n < this->max_radial; radial_n += 1) {
+    for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
       this->radial_sigmas[radial_n] = std::max(
             std::sqrt(static_cast<double>(radial_n)), 1.0)
           * this->interaction_cutoff / static_cast<double>(this->max_radial);
     }
 
     // Precompute common prefactors
-    for (radial_n = 0; radial_n < this->max_radial; radial_n++) {
+    for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
       this->radial_norm_factors(radial_n) = std::sqrt(
           2.0 / std::tgamma(1.5 + radial_n)
           * pow(this->radial_sigmas[radial_n], 3.0 + 2.0*radial_n));
-      for (angular_l = 0; angular_l < this->max_angular + 1; angular_l++) {
+      for (size_t angular_l{0}; angular_l < this->max_angular + 1;
+           ++angular_l) {
         this->radial_nl_factors(radial_n, angular_l) =
             std::exp2(-0.5 * (1.0 + angular_l - radial_n))
             * std::tgamma(0.5 * (3.0 + angular_l + radial_n))
@@ -351,14 +334,12 @@ namespace rascal {
     using std::pow;
     using std::sqrt;
     using std::tgamma;
-    size_t radial_n1;
-    size_t radial_n2;
 
     //TODO(max-veit) see if we can replace the gammas with their natural logs,
     //since it'll overflow for relatively small n (n1 + n2 >~ 300)
     Eigen::MatrixXd overlap(this->max_radial, this->max_radial);
-    for (radial_n1 = 0; radial_n1 < this->max_radial; radial_n1++) {
-      for (radial_n2 = 0; radial_n2 < this->max_radial; radial_n2++) {
+    for (size_t radial_n1{0}; radial_n1 < this->max_radial; radial_n1++) {
+      for (size_t radial_n2{0}; radial_n2 < this->max_radial; radial_n2++) {
         overlap(radial_n1, radial_n2) =
             pow(0.5/pow(this->radial_sigmas[radial_n1], 2)
                    + 0.5/pow(this->radial_sigmas[radial_n2], 2),
@@ -379,7 +360,6 @@ namespace rascal {
       throw std::runtime_error("Warning: Could not diagonalize "
                                "radial overlap matrix.");
     }
-    //TODO(max-veit) check whether this is the right way to do this in Eigen
     Eigen::MatrixXd eigenvalues = eigensolver.eigenvalues();
     Eigen::ArrayXd eigs_invsqrt = eigenvalues.array().sqrt().inverse();
     Eigen::MatrixXd unitary = eigensolver.eigenvectors();
@@ -436,10 +416,6 @@ namespace rascal {
       compute_by_gaussian_sigma() {
     using math::PI;
     using std::pow;
-    size_t radial_n;
-    size_t angular_l;
-    size_t lm_collective_idx;
-    double sigma2;
 
     internal::AtomicSmearingSpecification<SigmaType> gaussian_spec{
         this->hypers};
@@ -459,11 +435,11 @@ namespace rascal {
 
       // Start the accumulator with the central atom
       // All terms where l =/= 0 cancel
-      sigma2 = pow(gaussian_spec.get_gaussian_sigma(center), 2);
+      double sigma2 = pow(gaussian_spec.get_gaussian_sigma(center), 2);
       // TODO(max-veit) this is specific to the Gaussian radial basis
       // (along with the matching computation below)
       // And ditto on the gamma functions (potential overflow)
-      for (radial_n = 0; radial_n < this->max_radial; radial_n++) {
+      for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
         // TODO(max-veit) remember to update when we do multiple n_species!
         radial_integral(radial_n, 0) = radial_norm_factors(radial_n)
             * radial_nl_factors(radial_n, 0)
@@ -485,18 +461,19 @@ namespace rascal {
 
         // Precompute radial factors that also depend on the Gaussian sigma
         Eigen::VectorXd radial_sigma_factors(this->max_radial);
-        for (radial_n = 0; radial_n < this->max_radial; radial_n++) {
+        for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           radial_sigma_factors(radial_n) = (pow(sigma2, 2) +
                                  sigma2*pow(this->radial_sigmas(radial_n), 2))
                                 / pow(this->radial_sigmas(radial_n), 2);
         }
 
-        for (radial_n = 0; radial_n < this->max_radial; radial_n++) {
+        for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           // TODO(max-veit) this is all specific to the Gaussian radial basis
           // (doing just the angular integration would instead spit out
           // spherical Bessel functions below)
           //TODO(max-veit) how does this work with SpeciesFilter?
-          for (angular_l = 0; angular_l < this->max_angular + 1; angular_l++) {
+          for (size_t angular_l{0}; angular_l < this->max_angular + 1;
+               angular_l++) {
             radial_integral(radial_n, angular_l) =
                 exp_factor * radial_nl_factors(radial_n, angular_l)
                 * pow(1.0/sigma2 + 1.0/pow(this->radial_sigmas(radial_n), 2),
@@ -510,10 +487,11 @@ namespace rascal {
         }
         radial_integral = this->radial_ortho_matrix * radial_integral;
 
-        for (radial_n = 0; radial_n < this->max_radial; radial_n++) {
-          lm_collective_idx = 0;
-          for (angular_l = 0; angular_l < this->max_angular + 1; angular_l++) {
-            for (size_t m_array_idx = 0; m_array_idx < 2*angular_l + 1;
+        for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
+          size_t lm_collective_idx{0};
+          for (size_t angular_l{0}; angular_l < this->max_angular + 1;
+               angular_l++) {
+            for (size_t m_array_idx{0}; m_array_idx < 2*angular_l + 1;
                 m_array_idx++) {
               soap_vector(radial_n, lm_collective_idx) +=
                   radial_integral(radial_n, angular_l)

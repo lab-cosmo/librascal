@@ -53,8 +53,6 @@ namespace rascal {
         double cos_theta, size_t max_angular) {
       using std::pow;
       using std::sqrt;
-      size_t angular_l;
-      size_t m_count;
       /// Technically abs(sin(θ)), but θ only goes from [0, π)
       double sin_theta = sqrt(1.0 - pow(cos_theta, 2));
       Eigen::MatrixXd assoc_legendre_polynom(max_angular+1, max_angular + 1);
@@ -66,10 +64,10 @@ namespace rascal {
       const double SQRT_INV_2PI = sqrt(0.5 / PI);
 
       // Coefficients for computing the associated Legendre polynomials
-      for (angular_l = 0; angular_l < max_angular + 1; angular_l++) {
+      for (size_t angular_l{0}; angular_l < max_angular + 1; angular_l++) {
         double lsq = angular_l*angular_l;
         double lm1sq = (angular_l-1)*(angular_l-1);
-        for (m_count = 0; m_count < angular_l + 1; m_count++) {
+        for (size_t m_count{0}; m_count < angular_l + 1; m_count++) {
           double msq = m_count*m_count;
           coeff_a(angular_l, m_count) = sqrt((4*lsq - 1.0) / (lsq - msq));
           coeff_b(angular_l, m_count) = -1.0*sqrt((lm1sq - msq)
@@ -80,7 +78,7 @@ namespace rascal {
       // These include the normalization factors usually needed in the spherical
       // harmonics
       double l_accum{SQRT_INV_2PI};
-      for (angular_l = 0; angular_l < max_angular + 1; angular_l++) {
+      for (size_t angular_l{0}; angular_l < max_angular + 1; angular_l++) {
         if (angular_l == 0) {
           assoc_legendre_polynom(angular_l, 0) = SQRT_INV_2PI;
           continue;
@@ -94,7 +92,7 @@ namespace rascal {
         // for l > 1 : Use the recurrence relation
         // TODO(max-veit) don't bother calculating m =/= 0 if sin(theta) == 0
         //                (z-axis)
-        for (m_count = 0; m_count < angular_l-1; m_count++) {
+        for (size_t m_count{0}; m_count < angular_l-1; m_count++) {
           assoc_legendre_polynom(angular_l, m_count) =
               coeff_a(angular_l, m_count) *
               (cos_theta*assoc_legendre_polynom(angular_l-1, m_count)
@@ -195,21 +193,17 @@ namespace rascal {
       // The cosine against the z-axis is just the z-component of the
       // direction vector
       double cos_theta = direction[2];
-      //double phi = std::atan2(direction[1], direction[0]);
+      // The less efficient, but more intuitive implementation:
+      // double phi = std::atan2(direction[1], direction[0]);
       double sqrt_xy = std::hypot(direction[0], direction[1]);
-      double cos_phi, sin_phi;
-      if (sqrt_xy < math::dbl_ftol) {
-        // For a vector along the z-axis, define phi=0
-        cos_phi = 1.0;
-        sin_phi = 0.0;
-      } else {
+      // For a vector along the z-axis, define phi=0
+      double cos_phi{1.0}, sin_phi{0.0};
+      if (sqrt_xy >= math::dbl_ftol) {
         cos_phi = direction[0] / sqrt_xy;
         sin_phi = direction[1] / sqrt_xy;
       }
-      Eigen::MatrixXd harmonics(max_angular+1, 2*max_angular + 1);
-      //TODO(max-veit) zero upper triangular entries (m > 2l+1); otherwise
-      //               they're undefined
-      //harmonics.resize(max_angular+1, 2*max_angular + 1);
+      Eigen::MatrixXd harmonics =
+          Eigen::MatrixXd::Zero(max_angular+1, 2*max_angular + 1);
       Eigen::MatrixXd assoc_legendre_polynom = compute_assoc_legendre_polynom(
           cos_theta, max_angular);
       Eigen::MatrixXd cos_sin_m_phi = compute_cos_sin_angle_multiples(
@@ -222,27 +216,12 @@ namespace rascal {
             harmonics(angular_l, angular_l) = assoc_legendre_polynom(
                 angular_l, m_count) * INV_SQRT_TWO;
           } else {
-            // TODO(max-veit) check the normalization of the harmonics!
-            // (especially since the ALPs computed above are already normalized
-            // to a real SphHarmonics convention very similar to what we're
-            // using, i.e. real components (cosines) in positive m and
-            // imaginary (sines) in negative m.)
-            // I'm also skeptical about whether the factorial
-            // quotient is needed here -- we don't ever _need_ P_l^m for
-            // negative m in our definition of the real spherical harmonics
             harmonics(angular_l, angular_l + m_count) =
                 assoc_legendre_polynom(angular_l, m_count)
                 * cos_sin_m_phi(m_count, 0);
-                //* sqrt(2.0 * (2.0*angular_l + 1.0) / (4.0 * PI));
             harmonics(angular_l, angular_l - m_count) =
                 assoc_legendre_polynom(angular_l, m_count)
                 * cos_sin_m_phi(m_count, 1);
-                //* sqrt(2.0 * (2.0*angular_l + 1.0) / (4.0 * PI))
-                /// factorial_quotient;
-            // We don't need the Condon-Shortley phase with real harmonics (?)
-            //if ((m_count % 2) == 1) {
-            //  harmonics(angular_l, angular_l - m_count) *= -1.0;
-            //}
           } // if (m_count == 0)
         } // for (m_count in [0, l])
       } // for (l in [0, lmax])

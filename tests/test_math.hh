@@ -69,20 +69,20 @@ namespace rascal {
       json ref_data;
       std::ifstream ref_file(this->ref_filename);
       ref_file >> ref_data;
-      unit_vectors = ref_data.at("unit_vectors").get<StdVector2D_t>();
-      harmonics = ref_data.at("harmonics").get<StdVector3D_t>();
-      alps = ref_data.at("alps").get<StdVector3D_t>();
+      unit_vectors = ref_data.at("unit_vectors").get<StdVector2Dim_t>();
+      harmonics = ref_data.at("harmonics").get<StdVector3Dim_t>();
+      alps = ref_data.at("alps").get<StdVector3Dim_t>();
     }
 
     ~SphericalHarmonicsRefFixture() = default;
 
     std::string ref_filename = "reference_data/spherical_harmonics_test.json";
 
-    using StdVector2D_t = std::vector<std::vector<double>>;
-    using StdVector3D_t = std::vector<std::vector<std::vector<double>>>;
-    StdVector2D_t unit_vectors{};
-    StdVector3D_t harmonics{};
-    StdVector3D_t alps{};
+    using StdVector2Dim_t = std::vector<std::vector<double>>;
+    using StdVector3Dim_t = std::vector<std::vector<std::vector<double>>>;
+    StdVector2Dim_t unit_vectors{};
+    StdVector3Dim_t harmonics{};
+    StdVector3Dim_t alps{};
     bool verbose{false};
   };
 }  // rascal
