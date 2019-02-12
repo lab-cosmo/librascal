@@ -50,6 +50,8 @@
 # target to run cpplint.py for all configured sources
 set(CLANG_FORMAT_TARGET pretty CACHE STRING "Name of C++ autoformatter")
 
+mark_as_advanced(CLANG_FORMAT_TARGET)
+
 # project root directory
 set(CLANG_FORMAT_PROJECT_ROOT
   ${PROJECT_SOURCE_DIR} CACHE STRING "Project ROOT directory"

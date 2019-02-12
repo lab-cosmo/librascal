@@ -47,6 +47,8 @@
 # target to run autopep8.py for all configured sources
 set(AUTOPEP8_TARGET prettypython CACHE STRING "Name of python autoformatter")
 
+mark_as_advanced(AUTOPEP8_TARGET)
+
 # project root directory
 set(AUTOPEP8_PROJECT_ROOT ${PROJECT_SOURCE_DIR}
   CACHE STRING "Project ROOT directory"

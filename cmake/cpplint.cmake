@@ -50,6 +50,7 @@
 
 # target to run cpplint.py for all configured sources
 set(CPPLINT_TARGET lint CACHE STRING "Name of C++ style checker target")
+mark_as_advanced(CPPLINT_TARGET)
 
 # project root directory
 set(CPPLINT_PROJECT_ROOT ${PROJECT_SOURCE_DIR} CACHE STRING "Project ROOT directory")
