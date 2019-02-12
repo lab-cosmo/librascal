@@ -64,4 +64,8 @@ void add_representation_managers(py::module & mod, py::module & m_garbage) {
         RepresentationManagerSortedCoulomb<Manager_t>;
   auto rep_sorted_coulomb = add_representation_manager<
                                     Representation1_t>(mod, m_garbage);
+  using Representation3_t =
+          RepresentationManagerSphericalExpansion<Manager_t>;
+  auto rep_spherical_expansion = add_representation_manager<Representation3_t>(
+    mod, m_garbage);
 }

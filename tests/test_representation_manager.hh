@@ -2,25 +2,26 @@
  * file   test_representation_manager_base.hh
  *
  * @author Musil Felix <musil.felix@epfl.ch>
+ * @author Max Veit <max.veit@epfl.ch>
  *
  * @date   14 September 2018
  *
  * @brief  test representation managers
  *
- * Copyright © 2018 Musil Felix, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2018 Musil Felix, Max Veit, COSMO (EPFL), LAMMM (EPFL)
  *
  * rascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
+ * modify it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
  * rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
@@ -33,6 +34,8 @@
 #include "test_adaptor.hh"
 #include "representations/representation_manager_base.hh"
 #include "representations/representation_manager_sorted_coulomb.hh"
+#include "representations/representation_manager_spherical_expansion.hh"
+
 #include "json_io.hh"
 #include "rascal_utility.hh"
 
@@ -50,6 +53,7 @@ namespace rascal {
       "reference_data/simple_cubic_8.json",
       "reference_data/small_molecule.json"
       };
+
     std::vector<double> cutoffs{{1., 2., 3.}};
 
     std::list<json> hypers{
@@ -64,6 +68,27 @@ namespace rascal {
       {"size", 120},
       {"sorting_algorithm", "row_norm"}}
       };
+  };
+
+  struct MultipleStructureSphericalExpansion {
+    MultipleStructureSphericalExpansion() = default;
+    ~MultipleStructureSphericalExpansion() = default;
+
+    std::vector<std::string> filenames {
+      "reference_data/simple_cubic_8.json",
+      "reference_data/small_molecule.json"
+      //"reference_data/methane.json"
+    };
+    std::vector<double> cutoffs{{1, 2, 3}};
+
+    std::list<json> hypers{{
+      {"interaction_cutoff", 6.0},
+      {"cutoff_smooth_width", 1.0},
+      {"max_radial", 10},
+      {"max_angular", 8},
+      {"gaussian_sigma_type", "Constant"},
+      {"gaussian_sigma_constant", 0.5}
+    }};
   };
 
   struct SortedCoulombTestData {

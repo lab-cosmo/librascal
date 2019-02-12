@@ -55,6 +55,7 @@ namespace rascal {
       BOOST_CHECK_EQUAL(true_order(idx_i), test_order[idx_i].first);
     }
   }
+
   /**
    * Test the distance from the central atom sorting.
    * assumes the center is on row 0.
@@ -85,7 +86,10 @@ namespace rascal {
   using multiple_fixtures = boost::mpl::list<
       RepresentationFixture<
           StructureManagerCenters, RepresentationManagerSortedCoulomb,
-          MultipleStructureSortedCoulomb>>;
+          MultipleStructureSortedCoulomb>,
+      RepresentationFixture<StructureManagerCenters,
+                            RepresentationManagerSphericalExpansion,
+                            MultipleStructureSphericalExpansion>>;
 
   using fixtures_ref_test = boost::mpl::list<RepresentationFixture<
       StructureManagerCenters, RepresentationManagerSortedCoulomb,
@@ -174,4 +178,94 @@ namespace rascal {
   }
 
   BOOST_AUTO_TEST_SUITE_END();
+
+  /* ---------------------------------------------------------------------- */
+
+  /* Tests specific to the spherical expansion representation
+   * TODO(max-veit) merge with the general versions above, where possible
+   */
+  BOOST_AUTO_TEST_SUITE(representation_spherical_expansion_test);
+
+  using multiple_fixtures = boost::mpl::list<
+    RepresentationFixture<StructureManagerCenters,
+                          RepresentationManagerSphericalExpansion,
+                          MultipleStructureSphericalExpansion>>;
+
+
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(
+      multiple_precompute_test, Fix, multiple_fixtures, Fix) {
+    auto& managers = Fix::managers_strict;
+    auto& representations = Fix::representations;
+    const auto& hypers = Fix::hypers;
+
+    for (auto& manager : managers) {
+      for (const auto& hyper : hypers) {
+        representations.emplace_back(manager, hyper);
+        BOOST_CHECK(representations.back().get_is_precomputed() == false);
+        representations.back().precompute();
+        BOOST_CHECK(representations.back().get_is_precomputed() == true);
+        // And now test automatic precomputation
+        representations.emplace_back(manager, hyper);
+        BOOST_CHECK(representations.back().get_is_precomputed() == false);
+        representations.back().compute();
+        BOOST_CHECK(representations.back().get_is_precomputed() == true);
+      }
+    }
+  }
+
+  //TODO(max-veit) see if this is made redundant by the general "check
+  //               representation against file" template above
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(
+      multiple_compute_test, Fix, multiple_fixtures, Fix) {
+    auto& managers = Fix::managers_strict;
+    auto& cutoffs = Fix::cutoffs;
+    auto& representations = Fix::representations;
+    const auto& filenames = Fix::filenames;
+    const auto& hypers = Fix::hypers;
+    bool verbose{true};
+
+    auto filename_it{filenames.begin()};
+    auto cutoff_it{cutoffs.begin()};
+
+    for (auto& manager : managers) {
+      if (verbose) {
+        if (filename_it != filenames.end()) {
+          std::cout << "Structure: " << *filename_it;
+          std::cout << " with cutoff " << *cutoff_it << std::endl;
+          ++cutoff_it;
+          if (cutoff_it == cutoffs.end()) {
+            cutoff_it = cutoffs.begin();
+            ++filename_it;
+          }
+        } else {
+          std::cout << "Structure: Filename unknown" << std::endl;
+        }
+      }
+      for (const auto& hyper : hypers) {
+        representations.emplace_back(manager, hyper);
+        // Should be done automatically in compute()
+        // TODO(max-veit) make that its own test case
+        //representations.back().precompute();
+        representations.back().compute();
+        // Check dimensions of the storage array
+        size_t max_radial = hyper.at("max_radial");
+        size_t max_angular =  hyper.at("max_angular");
+        BOOST_CHECK(representations.back().get_feature_size() ==
+          max_radial * (max_angular + 1) * (max_angular + 1));
+        if (verbose) {
+          size_t center_idx{0};
+          for (auto center : manager) {
+            std::cout << "Soap vector for center: " << center_idx++;
+            std::cout << std::endl;
+            representations.back().print_soap_vector(center, std::cout);
+            //std::cout << std::endl;
+          }
+        }
+      }
+    }
+  }
+
+  BOOST_AUTO_TEST_SUITE_END();
+
 }  // namespace rascal
+
