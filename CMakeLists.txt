@@ -205,15 +205,7 @@ if (${BUILD_TESTS})
       OUTPUT always_rebuild
       COMMAND ${CMAKE_COMMAND} -E echo
     )
-    # copy python test
-    # file( GLOB PY_TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/python_*.py")
-    # foreach(pytest ${PY_TEST_SRCS})
-    #   get_filename_component(pytest_name ${pytest} NAME)
-    #   configure_file(
-    #     ${pytest}
-    #     "${CMAKE_BINARY_DIR}/${pytest_name}"
-    #     COPYONLY)
-    # endforeach(pytest ${PY_TEST_SRCS})
+
     add_test(python_binding_test python_binding_tests.py)
   endif()
 

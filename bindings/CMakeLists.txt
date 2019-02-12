@@ -83,21 +83,3 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E echo
 )
 
-
-# file(GLOB_RECURSE RASCAL_PY "${CMAKE_CURRENT_SOURCE_DIR}/rascal/*")
-# add_custom_command(TARGET pyRascal POST_BUILD
-#   COMMAND cp -R
-#   ${CMAKE_CURRENT_SOURCE_DIR}/rascal ${CMAKE_BINARY_DIR}
-#   DEPENDS ${RASCAL_PY}
-#   )
-# # Copy the resulting bindings lib in the python wrapper lib folder
-# add_custom_command(TARGET pyRascal POST_BUILD
-#   COMMAND cp
-#   ${CMAKE_BINARY_DIR}/bindings/_rascal.* ${CMAKE_BINARY_DIR}/rascal/lib/
-#   DEPENDS ${CMAKE_BINARY_DIR}/bindings/_rascal.*
-#   )
-
-
-
-
-

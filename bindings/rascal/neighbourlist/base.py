@@ -25,6 +25,13 @@ def is_valid_structure(structure):
 
     return is_valid
 
+def adapt_structure(cell, positions, atom_types, pbc):
+    cell = np.array(cell.T,order='F')
+    positions = np.array(positions.T,order='F')
+    atom_types = atom_types.reshape(-1,1)
+    pbc = pbc.reshape(3,1)
+    return dict(cell=cell,positions=positions,atom_types=atom_types,pbc=pbc)
+
 def unpack_ase(frame):
     """
     Convert ASE Atoms object to rascal's equivalent
@@ -44,8 +51,4 @@ def unpack_ase(frame):
     numbers = frame.get_atomic_numbers()
     pbc = frame.get_pbc().astype(int)
 
-    cell = np.array(cell.T,order='F')
-    positions = np.array(positions.T,order='F')
-    numbers = numbers.reshape(-1,1)
-    pbc = pbc.reshape(3,1)
-    return dict(cell=cell,positions=positions,atom_types=numbers,pbc=pbc)
+    return adapt_structure(cell=cell,positions=positions,atom_types=numbers,pbc=pbc)
