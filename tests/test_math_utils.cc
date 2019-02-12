@@ -120,7 +120,8 @@ namespace rascal {
    * where `lmax` and `thetas` are defined as above and the matrix product at
    * the end is taken elementwise.
    */
-  BOOST_FIXTURE_TEST_CASE(math_alp_test, SphericalHarmonicsRefFixture) {
+  BOOST_FIXTURE_TEST_CASE(math_associated_legendre_polynomial_test,
+                          SphericalHarmonicsRefFixture) {
     for (size_t vec_idx{0}; vec_idx < unit_vectors.size(); vec_idx++) {
       Eigen::Vector3d direction(unit_vectors[vec_idx].data());
       size_t max_angular = harmonics[vec_idx].size() - 1;
