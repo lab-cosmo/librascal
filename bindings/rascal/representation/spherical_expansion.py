@@ -68,9 +68,9 @@ class SphericalExpansion(object):
             n_species=n_species)
 
         self.nl_options = [
-                dict(name='centers',args=[]),
-                dict(name='neighbourlist',args=[interaction_cutoff]),
-                dict(name='strict',args=[interaction_cutoff])
+            dict(name='centers', args=[]),
+            dict(name='neighbourlist', args=[interaction_cutoff]),
+            dict(name='strict', args=[interaction_cutoff])
         ]
 
         neighbourlist_full_name = get_neighbourlist_full_name(self.nl_options)
@@ -105,11 +105,12 @@ class SphericalExpansion(object):
 
         """
         n_frames = len(frames)
-        managers = list(map(get_neighbourlist,frames,[self.nl_options]*n_frames))
+        managers = list(map(get_neighbourlist, frames,
+                            [self.nl_options]*n_frames))
         hypers_str = json.dumps(self.hypers)
         n_features = self.get_num_coefficients()
         features = FeatureManager.Dense_double(n_features, hypers_str)
-        cms = map(RepresentationFactory,[self.name]*n_frames,
+        cms = map(RepresentationFactory, [self.name]*n_frames,
                   managers, [hypers_str, ] * n_frames)
         for cm in cms:
             cm.compute()

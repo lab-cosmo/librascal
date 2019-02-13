@@ -9,9 +9,11 @@ for k, v in RepresentationManager.__dict__.items():
         kl = k.lower()
         for name in _representations_list:
             if name in kl:
-                 _representations[kl] = v
+                _representations[kl] = v
 
-def RepresentationFactory(name,*args):
+
+def RepresentationFactory(name, *args):
     if name not in _representations:
-        raise NameError('The representations factory {} has not been registered. The available combinations are: {}'.format(name,list(_representations.keys())))
+        raise NameError('The representations factory {} has not been registered. The available combinations are: {}'.format(
+            name, list(_representations.keys())))
     return _representations[name](*args)

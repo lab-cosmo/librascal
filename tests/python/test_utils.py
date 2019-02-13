@@ -2,22 +2,24 @@ import json
 import numpy as np
 from collections import Iterable
 
-def adapt_structure(cell, positions, atom_types, pbc):
-    cell = np.array(cell.T,order='F')
-    positions = np.array(positions.T,order='F')
-    atom_types = atom_types.reshape(-1,1)
-    pbc = pbc.reshape(3,1)
-    return dict(cell=cell,positions=positions,atom_types=atom_types,pbc=pbc)
 
-def dump_json_frame(fn,frames):
+def adapt_structure(cell, positions, atom_types, pbc):
+    cell = np.array(cell.T, order='F')
+    positions = np.array(positions.T, order='F')
+    atom_types = atom_types.reshape(-1, 1)
+    pbc = pbc.reshape(3, 1)
+    return dict(cell=cell, positions=positions, atom_types=atom_types, pbc=pbc)
+
+
+def dump_json_frame(fn, frames):
     if not isinstance(frames, Iterable):
         frames = [frames]
     data = dict()
-    for ii,frame in enumerate(frames):
-        data[ii] = dict(positions = frame.get_positions().tolist(),
-                       cell = frame.get_cell().tolist(),
-                       atom_types = frame.get_atomic_numbers().tolist(),
-                       pbc = frame.get_pbc().tolist())
+    for ii, frame in enumerate(frames):
+        data[ii] = dict(positions=frame.get_positions().tolist(),
+                        cell=frame.get_cell().tolist(),
+                        atom_types=frame.get_atomic_numbers().tolist(),
+                        pbc=frame.get_pbc().tolist())
 
     data['ids'] = np.arange(len(frames)).tolist()
     data['nextid'] = 2
@@ -29,9 +31,11 @@ def load_json_frame(fn):
     with open(fn, 'r') as f:
         data = json.load(f)
     ids = data['ids']
-    structure = {key:np.array(val) for idx in ids for key,val in data[str(idx)].items()}
+    structure = {key: np.array(val)
+                 for idx in ids for key, val in data[str(idx)].items()}
 
     return adapt_structure(**structure)
+
 
 class BoxList(object):
     def __init__(self, max_cutoff, cell, pbc, centers):

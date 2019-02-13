@@ -1,13 +1,11 @@
+from rascal.representation import SortedCoulombMatrix
+from test_utils import load_json_frame, BoxList, Box
 import unittest
 import numpy as np
 import sys
 import json
 
-sys.path.insert(0,'../tests/')
-
-from test_utils import load_json_frame, BoxList, Box
-from rascal.representation import SortedCoulombMatrix
-
+sys.path.insert(0, '../tests/')
 
 
 class TestSortedCoulombRepresentation(unittest.TestCase):
@@ -21,8 +19,8 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
         self.frame = load_json_frame(fn)
 
         self.hypers = dict(cutoff=3., sorting_algorithm='row_norm',
-                        size=50, central_decay=0.5,
-                        interaction_cutoff=3, interaction_decay=-1)
+                           size=50, central_decay=0.5,
+                           interaction_cutoff=3, interaction_decay=-1)
 
     def test_representation_transform(self):
 
@@ -31,5 +29,3 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
         features = rep.transform([self.frame])
 
         test = features.get_feature_matrix().T
-
-
