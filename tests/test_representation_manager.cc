@@ -84,9 +84,9 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
 
   using multiple_fixtures = boost::mpl::list<
-      RepresentationFixture<
-          StructureManagerCenters, RepresentationManagerSortedCoulomb,
-          MultipleStructureSortedCoulomb>,
+      RepresentationFixture<StructureManagerCenters,
+                            RepresentationManagerSortedCoulomb,
+                            MultipleStructureSortedCoulomb>,
       RepresentationFixture<StructureManagerCenters,
                             RepresentationManagerSphericalExpansion,
                             MultipleStructureSphericalExpansion>>;
@@ -186,20 +186,18 @@ namespace rascal {
    */
   BOOST_AUTO_TEST_SUITE(representation_spherical_expansion_test);
 
-  using multiple_fixtures = boost::mpl::list<
-    RepresentationFixture<StructureManagerCenters,
-                          RepresentationManagerSphericalExpansion,
-                          MultipleStructureSphericalExpansion>>;
+  using multiple_fixtures = boost::mpl::list<RepresentationFixture<
+      StructureManagerCenters, RepresentationManagerSphericalExpansion,
+      MultipleStructureSphericalExpansion>>;
 
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_precompute_test, Fix,
+                                   multiple_fixtures, Fix) {
+    auto & managers = Fix::managers_strict;
+    auto & representations = Fix::representations;
+    const auto & hypers = Fix::hypers;
 
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(
-      multiple_precompute_test, Fix, multiple_fixtures, Fix) {
-    auto& managers = Fix::managers_strict;
-    auto& representations = Fix::representations;
-    const auto& hypers = Fix::hypers;
-
-    for (auto& manager : managers) {
-      for (const auto& hyper : hypers) {
+    for (auto & manager : managers) {
+      for (const auto & hyper : hypers) {
         representations.emplace_back(manager, hyper);
         BOOST_CHECK(representations.back().get_is_precomputed() == false);
         representations.back().precompute();
@@ -213,21 +211,21 @@ namespace rascal {
     }
   }
 
-  //TODO(max-veit) see if this is made redundant by the general "check
+  // TODO(max-veit) see if this is made redundant by the general "check
   //               representation against file" template above
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(
-      multiple_compute_test, Fix, multiple_fixtures, Fix) {
-    auto& managers = Fix::managers_strict;
-    auto& cutoffs = Fix::cutoffs;
-    auto& representations = Fix::representations;
-    const auto& filenames = Fix::filenames;
-    const auto& hypers = Fix::hypers;
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_compute_test, Fix,
+                                   multiple_fixtures, Fix) {
+    auto & managers = Fix::managers_strict;
+    auto & cutoffs = Fix::cutoffs;
+    auto & representations = Fix::representations;
+    const auto & filenames = Fix::filenames;
+    const auto & hypers = Fix::hypers;
     bool verbose{true};
 
     auto filename_it{filenames.begin()};
     auto cutoff_it{cutoffs.begin()};
 
-    for (auto& manager : managers) {
+    for (auto & manager : managers) {
       if (verbose) {
         if (filename_it != filenames.end()) {
           std::cout << "Structure: " << *filename_it;
@@ -241,24 +239,24 @@ namespace rascal {
           std::cout << "Structure: Filename unknown" << std::endl;
         }
       }
-      for (const auto& hyper : hypers) {
+      for (const auto & hyper : hypers) {
         representations.emplace_back(manager, hyper);
         // Should be done automatically in compute()
         // TODO(max-veit) make that its own test case
-        //representations.back().precompute();
+        // representations.back().precompute();
         representations.back().compute();
         // Check dimensions of the storage array
         size_t max_radial = hyper.at("max_radial");
-        size_t max_angular =  hyper.at("max_angular");
+        size_t max_angular = hyper.at("max_angular");
         BOOST_CHECK(representations.back().get_feature_size() ==
-          max_radial * (max_angular + 1) * (max_angular + 1));
+                    max_radial * (max_angular + 1) * (max_angular + 1));
         if (verbose) {
           size_t center_idx{0};
           for (auto center : manager) {
             std::cout << "Soap vector for center: " << center_idx++;
             std::cout << std::endl;
             representations.back().print_soap_vector(center, std::cout);
-            //std::cout << std::endl;
+            // std::cout << std::endl;
           }
         }
       }

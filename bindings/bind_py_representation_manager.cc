@@ -54,14 +54,12 @@ decltype(auto) add_representation_manager(py::module & mod, py::module &) {
 //! Representation python binding
 void add_representation_managers(py::module & mod, py::module & m_garbage) {
   py::class_<RepresentationManagerBase>(m_garbage, "RepresentationManagerBase");
-  using Manager_t = AdaptorStrict<AdaptorNeighbourList<
-                                                StructureManagerCenters>>;
-  using Representation1_t =
-        RepresentationManagerSortedCoulomb<Manager_t>;
-  auto rep_sorted_coulomb = add_representation_manager<
-                                    Representation1_t>(mod, m_garbage);
-  using Representation3_t =
-          RepresentationManagerSphericalExpansion<Manager_t>;
-  auto rep_spherical_expansion = add_representation_manager<Representation3_t>(
-    mod, m_garbage);
+  using Manager_t =
+      AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>;
+  using Representation1_t = RepresentationManagerSortedCoulomb<Manager_t>;
+  auto rep_sorted_coulomb =
+      add_representation_manager<Representation1_t>(mod, m_garbage);
+  using Representation3_t = RepresentationManagerSphericalExpansion<Manager_t>;
+  auto rep_spherical_expansion =
+      add_representation_manager<Representation3_t>(mod, m_garbage);
 }

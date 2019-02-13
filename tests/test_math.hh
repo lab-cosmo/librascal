@@ -87,6 +87,6 @@ namespace rascal {
     StdVector3Dim_t alps{};
     bool verbose{false};
   };
-}  // rascal
+}  // namespace rascal
 
 #endif  // TESTS_TEST_MATH_HH_

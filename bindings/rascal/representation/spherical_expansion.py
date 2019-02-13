@@ -4,6 +4,7 @@ from ..utils import get_strict_neighbourlist
 from ..lib import RepresentationManager, FeatureManager
 from .base import RepresentationFactory
 
+
 class SphericalExpansion(object):
 
     """
@@ -76,11 +77,11 @@ class SphericalExpansion(object):
                         'max_radial', 'max_angular', 'gaussian_sigma_type',
                         'gaussian_sigma_constant', 'n_species'}
         hypers_clean = {key: hypers[key] for key in hypers
-                                         if key in allowed_keys}
+                        if key in allowed_keys}
         self.hypers.update(hypers_clean)
         return
 
-    def transform(self,frames):
+    def transform(self, frames):
         """Compute the representation.
 
         Parameters
@@ -116,4 +117,3 @@ class SphericalExpansion(object):
         """
         return (self.hypers['n_species'] * self.hypers['max_radial']
                 * (self.hypers['max_angular'] + 1)**2)
-
