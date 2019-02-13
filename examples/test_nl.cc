@@ -43,7 +43,6 @@
 // using namespace std;
 using namespace rascal;  // NOLINT
 
-// using Manager_t = StructureManagerCenters;
 constexpr static int dim{3};
 using Vector_t = Eigen::Matrix<double, dim, 1>;
 
@@ -62,9 +61,6 @@ struct MultipleStrictStructureManager {
     bool consider_ghost_neighbours{false};
     for (auto filename : filenames) {
       for (auto cutoff : cutoffs) {
-        // auto manager = make_structure_manager_stack<
-        //       StructureManager,AdaptorNeighbourList,AdaptorStrict>
-        //         (filename, std::make_tuple(cutoff), std::make_tuple(cutoff));
         auto manager =
             make_structure_manager_stack<StructureManager, AdaptorNeighbourList,
                                          AdaptorStrict>(
@@ -76,67 +72,18 @@ struct MultipleStrictStructureManager {
 
   ~MultipleStrictStructureManager() {}
 
-  // std::list<std::shared_ptr<Manager1_t>> managers1{};
-  // std::list<std::shared_ptr<Manager2_t>> managers2{};
   std::list<std::shared_ptr<Manager_t>> managers{};
 };
-
-// template<template<class...>class U, typename MI, typename typeholder>
-// struct test;
-
-// template<template<class...>class U, typename MI, template<class> class ...T>
-// struct test<U, MI, AdaptorTypeHolder<T...>> {
-//   template<typename ...Args>
-//   static decltype(auto) func(Args ...args) {
-//     return U<MI, T...>::apply(args...);
-//   }
-// };
-
-// template<typename TemplateTypeHolder>
-// struct call_with_typeholders;
-
-// template<typename ...T>
-// struct call_with_typeholders<std::tuple<T...>> {
-
-//   template<typename ...Args>
-//   static decltype(auto) make_manager_stack(Args ...args) {
-//     return TypeExtractor<T...>::apply(args...);
-//   }
-
-//  protected:
-
-// };
-
-// template<typename TemplateTypeHolder, typename ArgsTypeHolder>
-// struct call_with_typeholders;
-
-// template<typename ...T, typename ...Args>
-// struct call_with_typeholders<std::tuple<T...>, std::tuple<Args...>> {
-
-//   static decltype(auto) make_manager_stack(std::tuple<Args...> tuple) {
-//     return TypeExtractor<T...>::apply(tuple);
-//   }
-
-//  protected:
-
-//   template<typename MI, typename TemplateTypeHolder_>
-//   struct TypeExtractor;
-
-//   template<typename MI, template<class> class ...Ti>
-//   struct TypeExtractor<MI, AdaptorTypeHolder<Ti...>> {
-//     using Manager_t = typename internal::AdaptorTypeStacker<MI,Ti...>::type;
-//     using ManagerPtr_t = std::shared_ptr<Manager_t>;
-
-//   };
-// };
 
 int main() {
   bool verbose{false};
   bool verbose_rep{false};
   double cutoff{2.};
+  bool consider_ghost_neighbours{false};
   // std::string filename{"crystal_structure.json"};
   std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
 
+  // Initialize by hand
   auto manager{make_structure_manager<StructureManagerCenters>()};
   manager->update(filename);
   auto pair_manager{
@@ -148,22 +95,23 @@ int main() {
 
   auto a1 = std::make_tuple(cutoff, false, cutoff);
   auto a0 = std::make_tuple(filename);
-  // using AdaptorTypeHolder_t = AdaptorTypeHolder<AdaptorNeighbourList,
-  // AdaptorStrict>;
-  // using Factory_t =
-  // std::tuple<std::string,std::tuple<double>,std::tuple<double>>;
+
+  // Or use a fancier helper to do it in 1 line here
   using AdaptorTypeHolder_t = typename StructureManagerTypeHolder<
       StructureManagerCenters, AdaptorNeighbourList, AdaptorStrict>::type_list;
   auto aa = std::make_tuple(a0, a1);
   auto man{make_structure_manager_stack_with_tuple_and_typeholder<
       AdaptorTypeHolder_t>::apply(aa)};
   std::cout << man->get_name() << std::endl;
+  // and there
+  auto mmmm = make_structure_manager_stack<
+      StructureManagerCenters, AdaptorNeighbourList,AdaptorStrict>(
+                filename, cutoff, consider_ghost_neighbours, cutoff);
 
   MultipleStrictStructureManager<StructureManagerCenters> meta{};
 
   for (auto && manager : meta.managers) {
-    // manager->update("alanine-X.json");
-    // manager->update(positions, atom_types, cell, PBC_t{pbc.data()});
+
     if (verbose) {
       std::cout << "################################# 1" << std::endl;
       std::cout << manager->size() << std::endl;

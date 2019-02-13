@@ -265,7 +265,8 @@ namespace rascal {
           T...>::apply(tuple);
     }
   };
-
+  // TODO(felix) write a
+  // make_structure_manager_stack_with_hypers_t_and_typeholder
   /**
    * Factory function to stack adaptors on a structure managers with a valid
    *  structure already registered.

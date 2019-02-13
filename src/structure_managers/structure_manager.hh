@@ -792,8 +792,6 @@ namespace rascal {
   /**
    * Helper functions to avoid needing dereferencing a manager in a shared_ptr
    * to loop over the centers.
-   * It might have some side effects due to non conformity of the iterator
-   * type with respect to STL iterators
    */
   template <typename T>
   auto inline begin(std::shared_ptr<T> ptr) -> typename T::iterator {
