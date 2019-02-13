@@ -37,21 +37,17 @@
 
 namespace rascal {
 
-
   /* ---------------------------------------------------------------------- */
   /**
    * A templated Fixture, inherits from the ReperesentationFixture. It provides
    * access to different data structures. They are used to check the aggregation
    * of calculated feature data from multiple structures.
    */
-  template<typename T,
-           template<typename> class FeatureManager,
-           template<typename> class RepresentationManager,
-           class BaseFixture>
+  template <typename T, template <typename> class FeatureManager,
+            template <typename> class RepresentationManager, class BaseFixture>
   struct FeatureFixture
-  :RepresentationFixture<BaseFixture, RepresentationManager> {
-    using Parent = RepresentationFixture<BaseFixture,
-                                         RepresentationManager>;
+      : RepresentationFixture<BaseFixture, RepresentationManager> {
+    using Parent = RepresentationFixture<BaseFixture, RepresentationManager>;
     using Manager_t = typename Parent::Manager_t;
     using Representation_t = typename Parent::Representation_t;
     using Feature_t = FeatureManager<T>;

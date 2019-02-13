@@ -55,9 +55,9 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   //! Definition of the new StructureManagerLammps class.
-  class StructureManagerLammps:
-    public StructureManager<StructureManagerLammps>,
-      public std::enable_shared_from_this<StructureManagerLammps> {
+  class StructureManagerLammps
+      : public StructureManager<StructureManagerLammps>,
+        public std::enable_shared_from_this<StructureManagerLammps> {
    public:
     using traits = StructureManager_traits<StructureManagerLammps>;
     using Parent = StructureManager<StructureManagerLammps>;
@@ -87,12 +87,12 @@ namespace rascal {
 
     //! Create a new shared pointer to the object
     std::shared_ptr<StructureManagerLammps> get_shared_ptr() {
-        return this->shared_from_this();
+      return this->shared_from_this();
     }
 
     //! Create a new weak pointer to the object
     std::weak_ptr<StructureManagerLammps> get_weak_ptr() {
-        return std::weak_ptr<StructureManagerLammps>(this->get_shared_ptr());
+      return std::weak_ptr<StructureManagerLammps>(this->get_shared_ptr());
     }
 
     //! Updates the manager using the impl
@@ -160,8 +160,7 @@ namespace rascal {
      * dummy and is used for consistency in other words, atom_index is the
      * global LAMMPS atom index.
      */
-    inline int get_cluster_neighbour(const Parent &,
-                                     size_t index) const {
+    inline int get_cluster_neighbour(const Parent &, size_t index) const {
       return this->ilist[index];
     }
 
@@ -209,26 +208,25 @@ namespace rascal {
      *
      * @param vatom per-atom virial
      */
-    void update_impl(const int & inum, const int & tot_num,
-                int * ilist, int * numneigh, int ** firstneigh,
-                double ** x, double ** f, int * type,
-                double * eatom, double ** vatom);
+    void update_impl(const int & inum, const int & tot_num, int * ilist,
+                     int * numneigh, int ** firstneigh, double ** x,
+                     double ** f, int * type, double * eatom, double ** vatom);
 
     //! overload of update that does not change the underlying structure
     void update_impl();
 
-    int inum{}; //!< total numer of atoms
-    int tot_num{}; //!< total number, includes ghosts
-    int * ilist{}; //!< atomic indices
-    int * numneigh{}; //!< number of neighbours per atom
-    int ** firstneigh{}; //!< pointer to first neighbour
-    double ** x{}; //!< atomic positions
-    double ** f{}; //!< atomic forces
-    int * type{}; //!< atom types
-    double * eatom{}; //!< energy of atoms
-    double ** vatom{}; //!< virial stress of atoms
-    int nb_pairs{}; //! number of clusters with cluster_size=2 (pairs)
-    std::vector<int> offsets{}; //! offset per atom to access neighbour list
+    int inum{};           //!< total numer of atoms
+    int tot_num{};        //!< total number, includes ghosts
+    int * ilist{};        //!< atomic indices
+    int * numneigh{};     //!< number of neighbours per atom
+    int ** firstneigh{};  //!< pointer to first neighbour
+    double ** x{};        //!< atomic positions
+    double ** f{};        //!< atomic forces
+    int * type{};         //!< atom types
+    double * eatom{};     //!< energy of atoms
+    double ** vatom{};    //!< virial stress of atoms
+    int nb_pairs{};       //! number of clusters with cluster_size=2 (pairs)
+    std::vector<int> offsets{};  //! offset per atom to access neighbour list
   };
 
   /**

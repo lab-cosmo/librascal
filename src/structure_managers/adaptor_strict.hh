@@ -71,7 +71,8 @@ namespace rascal {
   template <class ManagerImplementation>
   class AdaptorStrict
       : public StructureManager<AdaptorStrict<ManagerImplementation>>,
-      public std::enable_shared_from_this<AdaptorStrict<ManagerImplementation>> {
+        public std::enable_shared_from_this<
+            AdaptorStrict<ManagerImplementation>> {
    public:
     using Manager_t = AdaptorStrict<ManagerImplementation>;
     using Parent = StructureManager<Manager_t>;
@@ -94,8 +95,7 @@ namespace rascal {
     AdaptorStrict(ImplementationPtr_t manager, double cutoff);
 
     AdaptorStrict(ImplementationPtr_t manager, std::tuple<double> tp)
-    :AdaptorStrict(manager, std::get<0>(tp))
-    {}
+        : AdaptorStrict(manager, std::get<0>(tp)) {}
 
     //! Copy constructor
     AdaptorStrict(const AdaptorStrict & other) = delete;
@@ -114,12 +114,12 @@ namespace rascal {
 
     //! Create a new shared pointer to the object
     std::shared_ptr<Manager_t> get_shared_ptr() {
-        return this->shared_from_this();
+      return this->shared_from_this();
     }
 
     //! Create a new weak pointer to the object
     std::weak_ptr<Manager_t> get_weak_ptr() {
-        return std::weak_ptr<Manager_t>(this->get_shared_ptr());
+      return std::weak_ptr<Manager_t>(this->get_shared_ptr());
     }
 
     //! update just the adaptor assuming the underlying manager was updated
@@ -184,7 +184,7 @@ namespace rascal {
 
     //! get atom_index of the index-th atom in manager
     inline int get_cluster_neighbour(const Parent &, size_t index) const {
-      return this->atom_indices[0][index];;
+      return this->atom_indices[0][index];
     }
 
     //! return atom type
@@ -315,9 +315,9 @@ namespace rascal {
     /* ---------------------------------------------------------------------- */
     template <class ManagerImplementation>
     struct CutOffChecker<false, ManagerImplementation> {
-      static bool check(
-              const std::shared_ptr<ManagerImplementation> & /*manager*/,
-                        double /*cutoff*/) {
+      static bool
+      check(const std::shared_ptr<ManagerImplementation> & /*manager*/,
+            double /*cutoff*/) {
         return true;
       }
     };
@@ -325,8 +325,7 @@ namespace rascal {
     /* ---------------------------------------------------------------------- */
     template <class ManagerImplementation>
     bool inline check_cutoff(
-            const std::shared_ptr<ManagerImplementation> & manager,
-                             double cutoff) {
+        const std::shared_ptr<ManagerImplementation> & manager, double cutoff) {
       constexpr bool IsStrict{(ManagerImplementation::traits::Strict ==
                                AdaptorTraits::Strict::yes)};
       return CutOffChecker<IsStrict, ManagerImplementation>::check(manager,
@@ -337,10 +336,9 @@ namespace rascal {
   /*--------------------------------------------------------------------------*/
   template <class ManagerImplementation>
   AdaptorStrict<ManagerImplementation>::AdaptorStrict(
-          std::shared_ptr<ManagerImplementation> manager, double cutoff)
-      : manager{std::move(manager)}, distance{*this},
-          dir_vec{*this}, cutoff{cutoff},
-        atom_indices{}, nb_neigh{}, offsets{}
+      std::shared_ptr<ManagerImplementation> manager, double cutoff)
+      : manager{std::move(manager)}, distance{*this}, dir_vec{*this},
+        cutoff{cutoff}, atom_indices{}, nb_neigh{}, offsets{}
 
   {
     if (not internal::check_cutoff(this->manager, cutoff)) {

@@ -177,9 +177,8 @@ namespace rascal {
      *                    specified in the container
      */
     RepresentationManagerSphericalExpansion(ManagerPtr_t sm,
-                                            const hypers_t& hyper)
-        :structure_manager{std::move(sm)}, soap_vectors{*sm}
-    {
+                                            const hypers_t & hyper)
+        : structure_manager{std::move(sm)}, soap_vectors{*sm} {
       this->set_hyperparameters(hyper);
     }
 
@@ -490,4 +489,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif // SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SPHERICAL_EXPANSION_HH_
+#endif  // SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SPHERICAL_EXPANSION_HH_

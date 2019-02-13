@@ -110,8 +110,7 @@ namespace rascal {
   }
 
   using multiple_fixtures = boost::mpl::list<
-      MultipleStructureFixture<MultipleStructureManagerNLFixture>
-      >;
+      MultipleStructureFixture<MultipleStructureManagerNLFixture>>;
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(test_build_neighbour_multiple, Fix,
                                    multiple_fixtures, Fix) {
@@ -181,10 +180,12 @@ namespace rascal {
         std::cout << "hcp test cutoff " << cutoff_tmp << std::endl;
       }
 
-      auto pair_manager1{make_adapted_manager<AdaptorNeighbourList>(manager_1, cutoff_tmp)};
+      auto pair_manager1{
+          make_adapted_manager<AdaptorNeighbourList>(manager_1, cutoff_tmp)};
       pair_manager1->update();
 
-      auto pair_manager2{make_adapted_manager<AdaptorNeighbourList>(manager_2, cutoff_tmp)};
+      auto pair_manager2{
+          make_adapted_manager<AdaptorNeighbourList>(manager_2, cutoff_tmp)};
       pair_manager2->update();
 
       if (verbose) {
@@ -267,10 +268,12 @@ namespace rascal {
         std::cout << "fcc cutoff " << cutoff_tmp << std::endl;
       }
 
-      auto pair_manager1{make_adapted_manager<AdaptorNeighbourList>(manager_1, cutoff_tmp)};
+      auto pair_manager1{
+          make_adapted_manager<AdaptorNeighbourList>(manager_1, cutoff_tmp)};
       pair_manager1->update();
 
-      auto pair_manager2{make_adapted_manager<AdaptorNeighbourList>(manager_2, cutoff_tmp)};
+      auto pair_manager2{
+          make_adapted_manager<AdaptorNeighbourList>(manager_2, cutoff_tmp)};
       pair_manager2->update();
 
       for (auto atom : pair_manager1) {
@@ -414,11 +417,14 @@ namespace rascal {
         using PBC_t = Eigen::Map<Eigen::Matrix<int, 3, 1>>;
 
         // build neighbourlist
-        auto pair_manager{make_adapted_manager<AdaptorNeighbourList>(manager, cutoff_tmp, true)};
+        auto pair_manager{make_adapted_manager<AdaptorNeighbourList>(
+            manager, cutoff_tmp, true)};
 
         // make strict for counting neighbours
-        auto adaptor_strict{make_adapted_manager<AdaptorStrict>(pair_manager, cutoff_tmp)};
-        adaptor_strict->update(pos_skw, atom_types, cell_skw, PBC_t{pbc.data()});
+        auto adaptor_strict{
+            make_adapted_manager<AdaptorStrict>(pair_manager, cutoff_tmp)};
+        adaptor_strict->update(pos_skw, atom_types, cell_skw,
+                               PBC_t{pbc.data()});
 
         // count strict neighbours
         for (auto atom : adaptor_strict) {

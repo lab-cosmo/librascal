@@ -71,9 +71,9 @@
 // using namespace rascal;
 namespace py = pybind11;
 
-void add_structure_managers(py::module&, py::module&);
-void add_representation_managers(py::module&, py::module&);
-void add_feature_managers(py::module&, py::module&);
+void add_structure_managers(py::module &, py::module &);
+void add_representation_managers(py::module &, py::module &);
+void add_feature_managers(py::module &, py::module &);
 
 void utils_binding(py::module &);
 void math_binding(py::module &);

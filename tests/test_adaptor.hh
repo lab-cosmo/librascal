@@ -53,8 +53,8 @@ namespace rascal {
     using PairManager_t = AdaptorNeighbourList<Manager_t>;
 
     PairFixtureSimple()
-        : cutoff{1.}, pair_manager{make_adapted_manager<AdaptorNeighbourList>(fixture.manager, this->cutoff)} {
-    }
+        : cutoff{1.}, pair_manager{make_adapted_manager<AdaptorNeighbourList>(
+                          fixture.manager, this->cutoff)} {}
 
     ~PairFixtureSimple() = default;
 
@@ -76,8 +76,8 @@ namespace rascal {
                   " MaxOrder=1");
 
     PairFixtureCenters()
-        : cutoff{3.5}, pair_manager{make_adapted_manager<AdaptorNeighbourList>(this->fixture.manager, this->cutoff, true)} {
-    }
+        : cutoff{3.5}, pair_manager{make_adapted_manager<AdaptorNeighbourList>(
+                           this->fixture.manager, this->cutoff, true)} {}
 
     ~PairFixtureCenters() {}
 
@@ -93,8 +93,8 @@ namespace rascal {
     using AdaptorStrict_t = AdaptorStrict<ManagerImplementation>;
 
     PairFixtureStrict()
-        : adaptor_strict{make_adapted_manager<AdaptorStrict>(this->fixture.pair_manager, this->fixture.cutoff)} {
-        }
+        : adaptor_strict{make_adapted_manager<AdaptorStrict>(
+              this->fixture.pair_manager, this->fixture.cutoff)} {}
 
     ~PairFixtureStrict() = default;
 
@@ -110,13 +110,16 @@ namespace rascal {
    */
 
   struct MultipleStructureManagerNLFixture {
-    using Factory_t = std::tuple<std::tuple<std::string>,std::tuple<double,bool>>;
-    using ManagerTypeHolder_t = StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList>;
+    using Factory_t =
+        std::tuple<std::tuple<std::string>, std::tuple<double, bool>>;
+    using ManagerTypeHolder_t =
+        StructureManagerTypeHolder<StructureManagerCenters,
+                                   AdaptorNeighbourList>;
     MultipleStructureManagerNLFixture() {
-      for (auto&& filename : this->filenames) {
-        for (auto&& cutoff : this->cutoffs) {
+      for (auto && filename : this->filenames) {
+        for (auto && cutoff : this->cutoffs) {
           auto a0{std::make_tuple(filename)};
-          auto a1{std::make_tuple(cutoff,consider_ghost_neighbours)};
+          auto a1{std::make_tuple(cutoff, consider_ghost_neighbours)};
           this->factory_args.emplace_back(a0, a1);
         }
       }
@@ -135,14 +138,17 @@ namespace rascal {
   };
 
   struct MultipleStructureManagerNLStrictFixture {
-    using Factory_t = std::tuple<std::tuple<std::string>,std::tuple<double,bool,bool>>;
-    using ManagerTypeHolder_t = StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList, AdaptorStrict>;
+    using Factory_t =
+        std::tuple<std::tuple<std::string>, std::tuple<double, bool, bool>>;
+    using ManagerTypeHolder_t =
+        StructureManagerTypeHolder<StructureManagerCenters,
+                                   AdaptorNeighbourList, AdaptorStrict>;
 
     MultipleStructureManagerNLStrictFixture() {
-      for (auto&& filename : this->filenames) {
-        for (auto&& cutoff : this->cutoffs) {
+      for (auto && filename : this->filenames) {
+        for (auto && cutoff : this->cutoffs) {
           auto a0{std::make_tuple(filename)};
-          auto a1{std::make_tuple(cutoff,consider_ghost_neighbours,cutoff)};
+          auto a1{std::make_tuple(cutoff, consider_ghost_neighbours, cutoff)};
           this->factory_args.emplace_back(a0, a1);
         }
       }
@@ -166,9 +172,10 @@ namespace rascal {
     using Manager_t = typename Parent::ManagerTypeHolder_t::type;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
 
-    MultipleStructureFixture() :Parent{} {
+    MultipleStructureFixture() : Parent{} {
       for (auto factory_arg : this->factory_args) {
-        auto manager{make_structure_manager_stack_with_tuple_and_typeholder<ManagerTypeList_t>::apply(factory_arg)};
+        auto manager{make_structure_manager_stack_with_tuple_and_typeholder<
+            ManagerTypeList_t>::apply(factory_arg)};
         this->managers.push_back(manager);
       }
     }

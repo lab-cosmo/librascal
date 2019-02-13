@@ -84,13 +84,13 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
 
   using multiple_fixtures = boost::mpl::list<
-      RepresentationFixture<
-          MultipleStructureSortedCoulomb, RepresentationManagerSortedCoulomb>,
-          RepresentationFixture<MultipleStructureSphericalExpansion,RepresentationManagerSphericalExpansion>>;
+      RepresentationFixture<MultipleStructureSortedCoulomb,
+                            RepresentationManagerSortedCoulomb>,
+      RepresentationFixture<MultipleStructureSphericalExpansion,
+                            RepresentationManagerSphericalExpansion>>;
 
-  using fixtures_ref_test = boost::mpl::list<
-      RepresentationFixture<
-          SortedCoulombTestData, RepresentationManagerSortedCoulomb>>;
+  using fixtures_ref_test = boost::mpl::list<RepresentationFixture<
+      SortedCoulombTestData, RepresentationManagerSortedCoulomb>>;
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -139,15 +139,15 @@ namespace rascal {
     // Choose the data depending on the current options
     using Std2DArray_t = std::vector<std::vector<double>>;
 
-    const auto& rep_infos{ref_data.at("rep_info").template get<json>()};
+    const auto & rep_infos{ref_data.at("rep_info").template get<json>()};
     // feature_matrices = data["feature_matrices"];
 
     size_t manager_i{0};
     for (auto & manager : managers) {
-      for (const auto& rep_info : rep_infos.at(manager_i)) {
+      for (const auto & rep_info : rep_infos.at(manager_i)) {
         const auto & hypers = rep_info.at("hypers").template get<json>();
         const auto & ref_representation =
-                rep_info.at("feature_matrix").template get<Std2DArray_t>();
+            rep_info.at("feature_matrix").template get<Std2DArray_t>();
 
         representations.emplace_back(manager, hypers);
         representations.back().compute();
@@ -183,15 +183,14 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(representation_spherical_expansion_test);
 
   using multiple_fixtures = boost::mpl::list<
-    RepresentationFixture<MultipleStructureSphericalExpansion,RepresentationManagerSphericalExpansion
-                          >>;
+      RepresentationFixture<MultipleStructureSphericalExpansion,
+                            RepresentationManagerSphericalExpansion>>;
 
-
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(
-      multiple_precompute_test, Fix, multiple_fixtures, Fix) {
-    auto& managers = Fix::managers;
-    auto& representations = Fix::representations;
-    const auto& hypers = Fix::hypers;
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_precompute_test, Fix,
+                                   multiple_fixtures, Fix) {
+    auto & managers = Fix::managers;
+    auto & representations = Fix::representations;
+    const auto & hypers = Fix::hypers;
 
     for (auto & manager : managers) {
       for (const auto & hyper : hypers) {
@@ -210,13 +209,13 @@ namespace rascal {
 
   // TODO(max-veit) see if this is made redundant by the general "check
   //               representation against file" template above
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(
-      multiple_compute_test, Fix, multiple_fixtures, Fix) {
-    auto& managers = Fix::managers;
-    auto& cutoffs = Fix::cutoffs;
-    auto& representations = Fix::representations;
-    const auto& filenames = Fix::filenames;
-    const auto& hypers = Fix::hypers;
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_compute_test, Fix,
+                                   multiple_fixtures, Fix) {
+    auto & managers = Fix::managers;
+    auto & cutoffs = Fix::cutoffs;
+    auto & representations = Fix::representations;
+    const auto & filenames = Fix::filenames;
+    const auto & hypers = Fix::hypers;
     bool verbose{true};
 
     auto filename_it{filenames.begin()};

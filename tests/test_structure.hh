@@ -42,7 +42,6 @@
 #include "structure_managers/make_structure_manager.hh"
 #include "rascal_utility.hh"
 
-
 namespace rascal {
 
   /**
@@ -66,8 +65,7 @@ namespace rascal {
     ManagerFixture() {}   // ctor
     ~ManagerFixture() {}  // dtor
 
-    ManagerPtr_t manager{
-      make_structure_manager<ManagerImplementation>()};
+    ManagerPtr_t manager{make_structure_manager<ManagerImplementation>()};
   };
 
   /* ---------------------------------------------------------------------- */
@@ -83,10 +81,8 @@ namespace rascal {
     ManagerFixtureTwo() {}   // ctor
     ~ManagerFixtureTwo() {}  // dtor
 
-    ManagerPtr_t manager_1{
-      make_structure_manager<ManagerImplementation>()};
-    ManagerPtr_t manager_2{
-      make_structure_manager<ManagerImplementation>()};
+    ManagerPtr_t manager_1{make_structure_manager<ManagerImplementation>()};
+    ManagerPtr_t manager_2{make_structure_manager<ManagerImplementation>()};
   };
 
   /* ---------------------------------------------------------------------- */
@@ -158,7 +154,6 @@ namespace rascal {
       atom_types << 1, 1;
 
       using PBC_t = Eigen::Map<Eigen::Matrix<int, 3, 1>>;
-
 
       manager_1->update(positions_1, atom_types, cell_1, PBC_t{pbc.data()});
 
@@ -265,10 +260,11 @@ namespace rascal {
 
     ManagerFixture()
         : firstneigh{new int *[nb]}, x{new double *[nb]}, f{new double *[nb]},
-          vatom{new double *[nb]}, manager{make_structure_manager<Manager_t>()} {
+          vatom{new double *[nb]}, manager{
+                                       make_structure_manager<Manager_t>()} {
       manager->update(inum, tot_num, ilist, numneigh,
-                     static_cast<int **>(firstneigh), ptr_t(x), ptr_t(f), type,
-                     eatom, static_cast<double **>(vatom));
+                      static_cast<int **>(firstneigh), ptr_t(x), ptr_t(f), type,
+                      eatom, static_cast<double **>(vatom));
       firstneigh[0] = new int[2];
       firstneigh[0][0] = 1;
       firstneigh[0][1] = 2;
@@ -334,7 +330,8 @@ namespace rascal {
     using PairManager_t = AdaptorNeighbourList<Manager_t>;
 
     PairFixtureFile()
-        : pair_manager{make_adapted_manager<AdaptorNeighbourList>(this->fixture.manager, this->fixture.cutoff, true)} {
+        : pair_manager{make_adapted_manager<AdaptorNeighbourList>(
+              this->fixture.manager, this->fixture.cutoff, true)} {
       this->pair_manager->update();
     }
 
@@ -359,7 +356,9 @@ namespace rascal {
 
     using PairManager_t = AdaptorNeighbourList<Manager_t>;
 
-    PairFixture() : pair_manager{make_adapted_manager<AdaptorNeighbourList>(this->fixture.manager, 3.)} {
+    PairFixture()
+        : pair_manager{make_adapted_manager<AdaptorNeighbourList>(
+              this->fixture.manager, 3.)} {
       this->pair_manager->update();
     }
 
@@ -379,9 +378,8 @@ namespace rascal {
     using Manager_t = StructureManagerCenters;
 
     ManagerFixture()
-        : manager{make_structure_manager<Manager_t>()},
-          positions(22, 3), atom_types(22),
-          cell(3, 3), pbc{{true, true, true}}, cutoff{2.} {
+        : manager{make_structure_manager<Manager_t>()}, positions(22, 3),
+          atom_types(22), cell(3, 3), pbc{{true, true, true}}, cutoff{2.} {
       // clang-format off
       cell << 6.19, 2.41, 0.21,
               0.00, 6.15, 1.02,

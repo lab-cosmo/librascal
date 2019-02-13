@@ -32,7 +32,6 @@
 
 // #include <map>
 
-
 // namespace rascal {
 
 //   BOOST_AUTO_TEST_SUITE(adaptor_filter_species_test);
@@ -62,12 +61,13 @@
 //     SpeciesManagerFixture<StructureManagerLammps, 2>>;
 //   using FixturesMax3 = boost::mpl::list<>;
 
-//   /* ---------------------------------------------------------------------- */
-//   BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_test, Fix, Fixtures, Fix) {
+//   /* ----------------------------------------------------------------------
+//   */ BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_test, Fix, Fixtures, Fix) {
 //   }
 
-//   /* ---------------------------------------------------------------------- */
-//   BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_species_test, Fix, FixturesMax1, Fix) {
+//   /* ----------------------------------------------------------------------
+//   */ BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_species_test, Fix, FixturesMax1,
+//   Fix) {
 //     std::map<int, int> species_counter{};
 //     for (auto && atom : Fix::fixture.manager) {
 //       species_counter[atom.get_atom_type()]++;
@@ -84,8 +84,9 @@
 //     }
 //   }
 
-//   /* ---------------------------------------------------------------------- */
-//   BOOST_FIXTURE_TEST_CASE_TEMPLATE(pair_species_test, Fix, FixturesMax2, Fix) {
+//   /* ----------------------------------------------------------------------
+//   */ BOOST_FIXTURE_TEST_CASE_TEMPLATE(pair_species_test, Fix, FixturesMax2,
+//   Fix) {
 //     std::map<std::array<int, 2>, int> species_counter{};
 //     for (auto && atom : Fix::fixture.manager) {
 //       for (auto && pair : atom) {
@@ -104,7 +105,5 @@
 //   }
 
 //   BOOST_AUTO_TEST_SUITE_END();
-
-
 
 // }  // rascal

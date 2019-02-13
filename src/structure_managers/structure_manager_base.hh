@@ -46,8 +46,7 @@ namespace rascal {
     // virtual void update_adaptor() = 0;
 
    protected:
-
-    };
-}  // rascal
+  };
+}  // namespace rascal
 
 #endif  // SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_BASE_HH_

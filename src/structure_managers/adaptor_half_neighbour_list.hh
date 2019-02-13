@@ -71,7 +71,8 @@ namespace rascal {
   template <class ManagerImplementation>
   class AdaptorHalfList
       : public StructureManager<AdaptorHalfList<ManagerImplementation>>,
-      public std::enable_shared_from_this<AdaptorHalfList<ManagerImplementation>> {
+        public std::enable_shared_from_this<
+            AdaptorHalfList<ManagerImplementation>> {
    public:
     using Manager_t = AdaptorHalfList<ManagerImplementation>;
     using Parent = StructureManager<Manager_t>;
@@ -101,9 +102,8 @@ namespace rascal {
      */
     explicit AdaptorHalfList(ImplementationPtr_t manager);
 
-
-    AdaptorHalfList(ImplementationPtr_t manager, std::tuple<> )
-    :AdaptorHalfList(manager) {}
+    AdaptorHalfList(ImplementationPtr_t manager, std::tuple<>)
+        : AdaptorHalfList(manager) {}
 
     //! Copy constructor
     AdaptorHalfList(const AdaptorHalfList & other) = delete;
@@ -122,12 +122,12 @@ namespace rascal {
 
     //! Create a new shared pointer to the object
     std::shared_ptr<Manager_t> get_shared_ptr() {
-        return this->shared_from_this();
+      return this->shared_from_this();
     }
 
     //! Create a new weak pointer to the object
     std::weak_ptr<Manager_t> get_weak_ptr() {
-        return std::weak_ptr<Manager_t>(this->get_shared_ptr());
+      return std::weak_ptr<Manager_t>(this->get_shared_ptr());
     }
 
     //! update just the adaptor assuming the underlying manager was updated
@@ -296,10 +296,10 @@ namespace rascal {
   //! constructor implementations
   template <class ManagerImplementation>
   AdaptorHalfList<ManagerImplementation>::AdaptorHalfList(
-          std::shared_ptr<ManagerImplementation> manager)
+      std::shared_ptr<ManagerImplementation> manager)
       : manager{std::move(manager)}, nb_neigh{}, neighbours{}, offsets{} {
-        // this->manager->add_child(this->get_weak_ptr());
-      }
+    // this->manager->add_child(this->get_weak_ptr());
+  }
 
   /* ---------------------------------------------------------------------- */
   //! update function, which updates based on underlying manager

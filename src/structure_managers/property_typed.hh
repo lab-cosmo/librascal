@@ -163,8 +163,7 @@ namespace rascal {
     //               Dim_t nb_row,
     //               Dim_t nb_col = 1, std::string metadata = "no metadata")
     //     : Parent{manager, nb_row, nb_col, Order, PropertyLayer, metadata} {}
-    TypedProperty(StructureManagerBase & manager,
-                  Dim_t nb_row,
+    TypedProperty(StructureManagerBase & manager, Dim_t nb_row,
                   Dim_t nb_col = 1, std::string metadata = "no metadata")
         : Parent{manager, nb_row, nb_col, Order, PropertyLayer, metadata} {}
 
@@ -202,7 +201,8 @@ namespace rascal {
     void resize() {
       auto order = this->get_order();
       auto n_components = this->get_nb_comp();
-      // auto new_size = this->base_manager.lock()->nb_clusters(order) * n_components;
+      // auto new_size = this->base_manager.lock()->nb_clusters(order) *
+      // n_components;
       auto new_size = this->base_manager.nb_clusters(order) * n_components;
       this->values.resize(new_size);
     }

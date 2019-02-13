@@ -76,7 +76,8 @@ namespace rascal {
   template <class ManagerImplementation>
   class AdaptorFullList
       : public StructureManager<AdaptorFullList<ManagerImplementation>>,
-      public std::enable_shared_from_this<AdaptorFullList<ManagerImplementation>> {
+        public std::enable_shared_from_this<
+            AdaptorFullList<ManagerImplementation>> {
    public:
     using Parent = StructureManager<AdaptorFullList<ManagerImplementation>>;
     using traits = StructureManager_traits<AdaptorFullList>;
@@ -102,8 +103,8 @@ namespace rascal {
     //! Extend a minimal/half neighbour list to a full neighbour list.
     explicit AdaptorFullList(ImplementationPtr_t manager);
 
-    AdaptorFullList(ImplementationPtr_t manager, std::tuple<> )
-    :AdaptorFullList(manager) {}
+    AdaptorFullList(ImplementationPtr_t manager, std::tuple<>)
+        : AdaptorFullList(manager) {}
 
     //! Copy constructor
     AdaptorFullList(const AdaptorFullList & other) = delete;
@@ -122,12 +123,12 @@ namespace rascal {
 
     //! Create a new shared pointer to the object
     std::shared_ptr<Manager_t> get_shared_ptr() {
-        return this->shared_from_this();
+      return this->shared_from_this();
     }
 
     //! Create a new weak pointer to the object
     std::weak_ptr<Manager_t> get_weak_ptr() {
-        return std::weak_ptr<Manager_t>(this->get_shared_ptr());
+      return std::weak_ptr<Manager_t>(this->get_shared_ptr());
     }
 
     //! update just the adaptor assuming the underlying manager was updated
@@ -195,8 +196,7 @@ namespace rascal {
     }
 
     //! get atom_index of the index-th atom in manager
-    inline int get_cluster_neighbour(const Parent &,
-                                     size_t index) const {
+    inline int get_cluster_neighbour(const Parent &, size_t index) const {
       return this->manager->get_cluster_neighbour(*this->manager, index);
     }
 
@@ -293,7 +293,7 @@ namespace rascal {
   //! constructor implementations
   template <class ManagerImplementation>
   AdaptorFullList<ManagerImplementation>::AdaptorFullList(
-          std::shared_ptr<ManagerImplementation> manager)
+      std::shared_ptr<ManagerImplementation> manager)
       : manager{std::move(manager)}, nb_neigh{}, neighbours{}, offsets{} {}
 
   /* ---------------------------------------------------------------------- */
@@ -305,7 +305,7 @@ namespace rascal {
     // is not changed
     if (sizeof...(arguments) > 0) {
       this->set_is_up_to_date(false);
-    } 
+    }
     this->manager->update(std::forward<Args>(arguments)...);
   }
 

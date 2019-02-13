@@ -76,7 +76,8 @@ namespace rascal {
   template <class ManagerImplementation>
   class AdaptorMaxOrder
       : public StructureManager<AdaptorMaxOrder<ManagerImplementation>>,
-      public std::enable_shared_from_this<AdaptorMaxOrder<ManagerImplementation>> {
+        public std::enable_shared_from_this<
+            AdaptorMaxOrder<ManagerImplementation>> {
    public:
     using Manager_t = AdaptorMaxOrder<ManagerImplementation>;
     using Parent = StructureManager<Manager_t>;
@@ -103,8 +104,8 @@ namespace rascal {
      */
     explicit AdaptorMaxOrder(ImplementationPtr_t manager);
 
-    AdaptorMaxOrder(ImplementationPtr_t manager, std::tuple<> )
-    :AdaptorMaxOrder(manager) {}
+    AdaptorMaxOrder(ImplementationPtr_t manager, std::tuple<>)
+        : AdaptorMaxOrder(manager) {}
 
     //! Copy constructor
     AdaptorMaxOrder(const AdaptorMaxOrder & other) = delete;
@@ -123,12 +124,12 @@ namespace rascal {
 
     //! Create a new shared pointer to the object
     std::shared_ptr<Manager_t> get_shared_ptr() {
-        return this->shared_from_this();
+      return this->shared_from_this();
     }
 
     //! Create a new weak pointer to the object
     std::weak_ptr<Manager_t> get_weak_ptr() {
-        return std::weak_ptr<Manager_t>(this->get_shared_ptr());
+      return std::weak_ptr<Manager_t>(this->get_shared_ptr());
     }
 
     /**
@@ -302,9 +303,8 @@ namespace rascal {
   //! Constructor of the next level manager
   template <class ManagerImplementation>
   AdaptorMaxOrder<ManagerImplementation>::AdaptorMaxOrder(
-          std::shared_ptr<ManagerImplementation> manager)
+      std::shared_ptr<ManagerImplementation> manager)
       : manager{std::move(manager)}, nb_neigh{}, neighbours{}, offsets{} {
-
     if (traits::MaxOrder < 3) {
       throw std::runtime_error("Increase MaxOrder: No pair list in underlying"
                                " manager.");
@@ -453,8 +453,7 @@ namespace rascal {
       using AddOrderLoop =
           AddOrderLoop<atom.order(), atom.order() == (traits::MaxOrder - 1)>;
 
-      auto & atom_cluster_indices{
-                        std::get<0>(this->cluster_indices_container)};
+      auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
 
       auto indices = atom.get_cluster_indices();
       atom_cluster_indices.push_back(indices);

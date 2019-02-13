@@ -50,7 +50,6 @@
 #include <tuple>
 #include <memory>
 
-
 namespace rascal {
 
   /* ---------------------------------------------------------------------- */
@@ -175,7 +174,7 @@ namespace rascal {
         StructureManager, typename traits::LayerByOrder>::type;
     using ClusterConstructor_t =
         typename internal::ClusterIndexConstructor<ClusterIndex_t,
-                                       StructureManagerBase>;
+                                                   StructureManagerBase>;
     using Children_t = std::weak_ptr<StructureManagerBase>;
 
     //! helper type for Property creation
@@ -194,7 +193,7 @@ namespace rascal {
     //! Default constructor
     StructureManager()
         : is_up_to_date{false}, cluster_indices_container{
-          ClusterConstructor_t::make(*this)} {}
+                                    ClusterConstructor_t::make(*this)} {}
 
     //! Copy constructor
     StructureManager(const StructureManager & other) = delete;
@@ -315,7 +314,6 @@ namespace rascal {
     }
 
    protected:
-
     /**
      * Update itself and send update signal to children nodes
      * Should only be used in the StructureManagerRoot
@@ -360,10 +358,7 @@ namespace rascal {
       this->is_up_to_date = sig;
     }
     //! getter for is_up_to_date
-    inline bool get_is_up_to_date() const {
-      return this->is_up_to_date;
-    }
-
+    inline bool get_is_up_to_date() const { return this->is_up_to_date; }
 
     //! returns the current layer
     template <size_t Order>
@@ -416,7 +411,6 @@ namespace rascal {
     inline const ManagerImplementation & implementation() const {
       return static_cast<const ManagerImplementation &>(*this);
     }
-
 
     //! get an array with all atoms inside
     std::array<AtomRef, 0> get_atoms() const {
@@ -790,16 +784,15 @@ namespace rascal {
    * It might have some side effects due to non conformity of the iterator
    * type with respect to STL iterators
    */
-  template<typename T>
+  template <typename T>
   auto inline begin(std::shared_ptr<T> ptr) -> typename T::Iterator_t {
-      return ptr->begin();
+    return ptr->begin();
   }
 
-  template<typename T>
+  template <typename T>
   auto inline end(std::shared_ptr<T> ptr) -> typename T::Iterator_t {
-      return ptr->end();
+    return ptr->end();
   }
-
 
   /* ---------------------------------------------------------------------- */
   /**

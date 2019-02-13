@@ -37,7 +37,6 @@
 #include <typeinfo>
 #include <vector>
 
-
 namespace rascal {
 
   /**

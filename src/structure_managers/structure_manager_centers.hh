@@ -158,12 +158,12 @@ namespace rascal {
 
     //! Create a new shared pointer to the object
     std::shared_ptr<StructureManagerCenters> get_shared_ptr() {
-        return this->shared_from_this();
+      return this->shared_from_this();
     }
 
     //! Create a new weak pointer to the object
     std::weak_ptr<StructureManagerCenters> get_weak_ptr() {
-        return std::weak_ptr<StructureManagerCenters>(this->get_shared_ptr());
+      return std::weak_ptr<StructureManagerCenters>(this->get_shared_ptr());
     }
 
     //! Updates the manager using the impl
@@ -303,7 +303,8 @@ namespace rascal {
      * data. E.g. when the atom positions are provided by a simulation method,
      * which evolves in time, this function updates the data.
      */
-    void update_impl(const Eigen::Ref<const Eigen::MatrixXd, 0,
+    void
+    update_impl(const Eigen::Ref<const Eigen::MatrixXd, 0,
                                  Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>>
                     positions,
                 const Eigen::Ref<const Eigen::VectorXi> atom_types,
@@ -316,7 +317,7 @@ namespace rascal {
     void update_impl(const std::string filename);
 
     //! overload of update that does not change the underlying structure
-    void update_impl(AtomicStructure<traits::Dim>& structure);
+    void update_impl(AtomicStructure<traits::Dim> & structure);
 
     //! overload of update that does not change the underlying structure
     void update_impl() {}

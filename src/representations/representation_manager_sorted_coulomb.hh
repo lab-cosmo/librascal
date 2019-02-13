@@ -163,7 +163,8 @@ namespace rascal {
 
     //! Constructor
     RepresentationManagerSortedCoulomb(ManagerPtr_t sm, const hypers_t & hyper)
-        : structure_manager{std::move(sm)}, central_decay{}, interaction_cutoff{}, interaction_decay{}, coulomb_matrices{*sm} {
+        : structure_manager{std::move(sm)}, central_decay{},
+          interaction_cutoff{}, interaction_decay{}, coulomb_matrices{*sm} {
       this->check_hyperparameters(this->reference_hypers, hyper);
       this->set_hyperparameters(hyper);
       this->check_size_compatibility();
@@ -419,16 +420,16 @@ namespace rascal {
       Eigen::Ref<Eigen::MatrixXd> type_factor_mat) {
     // the coulomb mat first row and col corresponds
     // to central atom to neighbours
-    auto&& Zk{center.get_atom_type()};
-    auto&& central_cutoff{this->structure_manager->get_cutoff()};
+    auto && Zk{center.get_atom_type()};
+    auto && central_cutoff{this->structure_manager->get_cutoff()};
 
     type_factor_mat(0, 0) = 0.5 * std::pow(Zk, 2.4);
     for (auto neigh_i : center) {
-      size_t idx_i{neigh_i.get_index()+1};
-      auto&& Zi{neigh_i.get_atom_type()};
-      double& dik{this->structure_manager->get_distance(neigh_i)};
-      double fac_ik{get_cutoff_factor(dik, central_cutoff,
-                                      this->central_decay)};
+      size_t idx_i{neigh_i.get_index() + 1};
+      auto && Zi{neigh_i.get_atom_type()};
+      double & dik{this->structure_manager->get_distance(neigh_i)};
+      double fac_ik{
+          get_cutoff_factor(dik, central_cutoff, this->central_decay)};
 
       type_factor_mat(idx_i, 0) = Zk * Zi * fac_ik * fac_ik;
       type_factor_mat(idx_i, idx_i) = 0.5 * std::pow(Zi, 2.4) * fac_ik * fac_ik;

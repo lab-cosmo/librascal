@@ -43,9 +43,8 @@
 
 namespace rascal {
 
-
   struct MultipleStructureSortedCoulomb
-    :MultipleStructureManagerNLStrictFixture {
+      : MultipleStructureManagerNLStrictFixture {
     using Parent = MultipleStructureManagerNLStrictFixture;
 
     MultipleStructureSortedCoulomb() = default;
@@ -64,8 +63,8 @@ namespace rascal {
   };
 
   struct MultipleStructureSphericalExpansion
-   :MultipleStructureManagerNLStrictFixture {
-     using Parent = MultipleStructureManagerNLStrictFixture;
+      : MultipleStructureManagerNLStrictFixture {
+    using Parent = MultipleStructureManagerNLStrictFixture;
     MultipleStructureSphericalExpansion() = default;
     ~MultipleStructureSphericalExpansion() = default;
 
@@ -85,20 +84,22 @@ namespace rascal {
   };
 
   struct SortedCoulombTestData {
-    using Factory_t = std::tuple<std::tuple<std::string>,std::tuple<double,bool,double>>;
-    using ManagerTypeHolder_t = StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList, AdaptorStrict>;
+    using Factory_t =
+        std::tuple<std::tuple<std::string>, std::tuple<double, bool, double>>;
+    using ManagerTypeHolder_t =
+        StructureManagerTypeHolder<StructureManagerCenters,
+                                   AdaptorNeighbourList, AdaptorStrict>;
     SortedCoulombTestData() {
       std::vector<std::uint8_t> ref_data_ubjson;
       internal::read_binary_file(this->ref_filename, ref_data_ubjson);
       ref_data = json::from_ubjson(ref_data_ubjson);
-      auto filenames =
-            ref_data.at("filenames").get<std::vector<std::string>>();
+      auto filenames = ref_data.at("filenames").get<std::vector<std::string>>();
       auto cutoffs = ref_data.at("cutoffs").get<std::vector<double>>();
 
-      for (auto&& filename : filenames) {
-        for (auto&& cutoff : cutoffs) {
+      for (auto && filename : filenames) {
+        for (auto && cutoff : cutoffs) {
           auto a0{std::make_tuple(filename)};
-          auto a1{std::make_tuple(cutoff,consider_ghost_neighbours,cutoff)};
+          auto a1{std::make_tuple(cutoff, consider_ghost_neighbours, cutoff)};
           this->factory_args.emplace_back(a0, a1);
         }
       }
@@ -128,7 +129,8 @@ namespace rascal {
         "reference_data/small_molecule.json"
     ]
     data = dict(filenames=fns_to_write,cutoffs=cutoffs,rep_info=[])
-    hypers = dict(central_decay=-1,interaction_cutoff=-1,interaction_decay=-1,size=10,sorting_algorithm='')
+    hypers =
+    dict(central_decay=-1,interaction_cutoff=-1,interaction_decay=-1,size=10,sorting_algorithm='')
 
     for fn in fns:
         for cutoff in cutoffs:
@@ -144,8 +146,9 @@ namespace rascal {
                 hypers['sorting_algorithm'] = sort
                 data['rep_info'][-1].append(dict(feature_matrix=test.tolist(),hypers=copy(hypers)))
 
-    with open(os.path.join(path,"tests/reference_data/sorted_coulomb_reference.ubjson"),'wb') as f:
-        ubjson.dump(data,f)
+    with
+    open(os.path.join(path,"tests/reference_data/sorted_coulomb_reference.ubjson"),'wb')
+    as f: ubjson.dump(data,f)
     */
     const bool consider_ghost_neighbours{false};
     std::string ref_filename{"reference_data/sorted_coulomb_reference.ubjson"};
@@ -153,16 +156,13 @@ namespace rascal {
     std::vector<Factory_t> factory_args{};
   };
 
-
   template <class BaseFixture, template <class> class RepresentationManager>
-  struct RepresentationFixture
-      : MultipleStructureFixture<BaseFixture> {
-    using Parent =
-        MultipleStructureFixture<BaseFixture>;
+  struct RepresentationFixture : MultipleStructureFixture<BaseFixture> {
+    using Parent = MultipleStructureFixture<BaseFixture>;
     using Manager_t = typename Parent::Manager_t;
     using Representation_t = RepresentationManager<Manager_t>;
 
-    RepresentationFixture(): Parent{} {}
+    RepresentationFixture() : Parent{} {}
     ~RepresentationFixture() = default;
 
     std::list<Representation_t> representations{};

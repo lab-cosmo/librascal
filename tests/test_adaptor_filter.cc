@@ -26,7 +26,8 @@
 //  */
 
 // #include "structure_managers/adaptor_filter.hh"
-// // TODO(markus): replace the following line after the branch feat/better_tests
+// // TODO(markus): replace the following line after the branch
+// feat/better_tests
 // // is merged into master
 // #include "test_structure.hh"
 // #include "tests.hh"
@@ -51,8 +52,10 @@
 //     Filter_t manager;
 //   };
 
-//   using Fixtures = boost::mpl::list<FilterFixture<StructureManagerCenters, 1>,
-//                                     FilterFixture<StructureManagerLammps, 2>>;
+//   using Fixtures = boost::mpl::list<FilterFixture<StructureManagerCenters,
+//   1>,
+//                                     FilterFixture<StructureManagerLammps,
+//                                     2>>;
 
 //   using FixturesMax1 =
 //       boost::mpl::list<FilterFixture<StructureManagerCenters, 1>>;
@@ -60,11 +63,12 @@
 //       boost::mpl::list<FilterFixture<StructureManagerLammps, 2>>;
 //   using FixturesMax3 = boost::mpl::list<>;
 
-//   /* ---------------------------------------------------------------------- */
-//   BOOST_AUTO_TEST_SUITE(test_adaptor_filter);
+//   /* ----------------------------------------------------------------------
+//   */ BOOST_AUTO_TEST_SUITE(test_adaptor_filter);
 
-//   /* ---------------------------------------------------------------------- */
-//   BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_test, Fix, Fixtures, Fix) {}
+//   /* ----------------------------------------------------------------------
+//   */ BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_test, Fix, Fixtures, Fix)
+//   {}
 
 //   /**
 //    * This test iterates over a Structure manager's atoms, randomly
@@ -133,7 +137,8 @@
 //       for (auto pair : atom) {
 //         auto && a{pair.get_atom_indices()};
 //         auto && b{atom_indices[counter]};
-//         BOOST_CHECK_EQUAL_COLLECTIONS(a.begin(), a.end(), b.begin(), b.end());
+//         BOOST_CHECK_EQUAL_COLLECTIONS(a.begin(), a.end(), b.begin(),
+//         b.end());
 
 //         const auto & pos_a{pair.get_position()};
 //         const auto & pos_b{
@@ -150,7 +155,7 @@
 //     }
 //   }
 
-//   /* ---------------------------------------------------------------------- */
-//   BOOST_AUTO_TEST_SUITE_END();
+//   /* ----------------------------------------------------------------------
+//   */ BOOST_AUTO_TEST_SUITE_END();
 
 // }  // namespace rascal

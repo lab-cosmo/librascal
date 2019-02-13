@@ -47,18 +47,22 @@
 namespace rascal {
   namespace internal {
 
-
     /* ---------------------------------------------------------------------- */
     /**
      * Utility to deduce the type of a Manager with a list of Adaptors
      */
-    template<typename ManagerImplementation,  template<class> class AdaptorImplementation, template<class> class ... AdaptorImplementationPack>
+    template <typename ManagerImplementation,
+              template <class> class AdaptorImplementation,
+              template <class> class... AdaptorImplementationPack>
     struct AdaptorTypeStacker {
       using Manager_t = AdaptorImplementation<ManagerImplementation>;
-      using type = typename AdaptorTypeStacker<Manager_t, AdaptorImplementationPack...>::type;
+      using type =
+          typename AdaptorTypeStacker<Manager_t,
+                                      AdaptorImplementationPack...>::type;
     };
 
-    template<typename ManagerImplementation,  template<class> class AdaptorImplementation>
+    template <typename ManagerImplementation,
+              template <class> class AdaptorImplementation>
     struct AdaptorTypeStacker<ManagerImplementation, AdaptorImplementation> {
       using type = AdaptorImplementation<ManagerImplementation>;
     };
@@ -68,20 +72,21 @@ namespace rascal {
      * Implement the generation of an index sequence from Min to Max
      */
 
-    template<size_t N, size_t... Seq>
-    constexpr std::index_sequence<N + Seq ...>
-    add_to_sequence(std::index_sequence<Seq...>)
-    { return {}; }
+    template <size_t N, size_t... Seq>
+    constexpr std::index_sequence<N + Seq...>
+    add_to_sequence(std::index_sequence<Seq...>) {
+      return {};
+    }
 
-    template<size_t Min, size_t Max>
-    using make_index_range = decltype(add_to_sequence<Min>(std::make_index_sequence<Max-Min>()));
+    template <size_t Min, size_t Max>
+    using make_index_range =
+        decltype(add_to_sequence<Min>(std::make_index_sequence<Max - Min>()));
 
     /* ---------------------------------------------------------------------- */
     //! Implementation of index_apply
     template <class F, size_t... Is>
-    constexpr auto index_apply_impl(F func,
-                                    std::index_sequence<Is...>) {
-        return func(std::integral_constant<size_t, Is> {}...);
+    constexpr auto index_apply_impl(F func, std::index_sequence<Is...>) {
+      return func(std::integral_constant<size_t, Is>{}...);
     }
 
     /**
@@ -90,7 +95,7 @@ namespace rascal {
      */
     template <size_t Min, size_t Max, class F>
     constexpr auto index_apply(F func) {
-        return index_apply_impl(func, make_index_range<Min,Max>{});
+      return index_apply_impl(func, make_index_range<Min, Max>{});
     }
 
     /**
@@ -108,11 +113,9 @@ namespace rascal {
      */
     template <class Tuple, class F>
     constexpr auto apply(F func, Tuple t) {
-      return index_apply<0,std::tuple_size<Tuple>{}>(
+      return index_apply<0, std::tuple_size<Tuple>{}>(
           [&](auto... Is) { return func(std::get<Is>(t)...); });
     }
-
-
 
     /* ---------------------------------------------------------------------- */
     /**

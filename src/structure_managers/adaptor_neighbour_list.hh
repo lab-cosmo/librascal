@@ -426,9 +426,10 @@ namespace rascal {
   template <class ManagerImplementation>
   class AdaptorNeighbourList
       : public StructureManager<AdaptorNeighbourList<ManagerImplementation>>,
-      public std::enable_shared_from_this<AdaptorNeighbourList<ManagerImplementation>> {
+        public std::enable_shared_from_this<
+            AdaptorNeighbourList<ManagerImplementation>> {
    public:
-   using Manager_t = AdaptorNeighbourList<ManagerImplementation>;
+    using Manager_t = AdaptorNeighbourList<ManagerImplementation>;
     using Parent = StructureManager<Manager_t>;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorNeighbourList>;
@@ -454,11 +455,11 @@ namespace rascal {
                          bool consider_ghost_neighbours = false);
 
     AdaptorNeighbourList(ImplementationPtr_t manager, std::tuple<double> tp)
-    :AdaptorNeighbourList(manager, std::get<0>(tp)) {}
+        : AdaptorNeighbourList(manager, std::get<0>(tp)) {}
 
     AdaptorNeighbourList(ImplementationPtr_t manager,
-                        std::tuple<double, bool> tp)
-    :AdaptorNeighbourList(manager, std::get<0>(tp), std::get<1>(tp)) {}
+                         std::tuple<double, bool> tp)
+        : AdaptorNeighbourList(manager, std::get<0>(tp), std::get<1>(tp)) {}
 
     //! Copy constructor
     AdaptorNeighbourList(const AdaptorNeighbourList & other) = delete;
@@ -478,12 +479,12 @@ namespace rascal {
 
     //! Create a new shared pointer to the object
     std::shared_ptr<Manager_t> get_shared_ptr() {
-        return this->shared_from_this();
+      return this->shared_from_this();
     }
 
     //! Create a new weak pointer to the object
     std::weak_ptr<Manager_t> get_weak_ptr() {
-        return std::weak_ptr<Manager_t>(this->get_shared_ptr());
+      return std::weak_ptr<Manager_t>(this->get_shared_ptr());
     }
 
     /**
@@ -757,12 +758,12 @@ namespace rascal {
   //! Constructor of the pair list manager
   template <class ManagerImplementation>
   AdaptorNeighbourList<ManagerImplementation>::AdaptorNeighbourList(
-          std::shared_ptr<ManagerImplementation> manager, double cutoff,
-          bool consider_ghost_neighbours)
-      : manager{std::move(manager)}, cutoff{cutoff}, atom_indices{}, atom_types{},
-        ghost_atom_indices{}, nb_neigh{},
-        neighbours{}, offsets{}, n_centers{0}, n_ghosts{0},
-        consider_ghost_neighbours{consider_ghost_neighbours} {
+      std::shared_ptr<ManagerImplementation> manager, double cutoff,
+      bool consider_ghost_neighbours)
+      : manager{std::move(manager)}, cutoff{cutoff}, atom_indices{},
+        atom_types{}, ghost_atom_indices{}, nb_neigh{}, neighbours{}, offsets{},
+        n_centers{0}, n_ghosts{0}, consider_ghost_neighbours{
+                                       consider_ghost_neighbours} {
     static_assert(not(traits::MaxOrder < 1), "No atom list in manager");
   }
 
@@ -773,7 +774,8 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   template <class... Args>
-  void AdaptorNeighbourList<ManagerImplementation>::update(Args &&... arguments) {
+  void
+  AdaptorNeighbourList<ManagerImplementation>::update(Args &&... arguments) {
     this->manager->update(std::forward<Args>(arguments)...);
   }
   /* ---------------------------------------------------------------------- */

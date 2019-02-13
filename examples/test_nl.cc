@@ -57,9 +57,7 @@ struct MultipleStrictStructureManager {
   using Manager_t = AdaptorStrict<Manager2_t>;
 
   MultipleStrictStructureManager() {
-    std::vector<std::string> filenames{
-      {"alanine-X.json"}
-                                        };
+    std::vector<std::string> filenames{{"alanine-X.json"}};
     std::vector<double> cutoffs{{3, 4}};
     bool consider_ghost_neighbours{false};
     for (auto filename : filenames) {
@@ -67,12 +65,11 @@ struct MultipleStrictStructureManager {
         // auto manager = make_structure_manager_stack<
         //       StructureManager,AdaptorNeighbourList,AdaptorStrict>
         //         (filename, std::make_tuple(cutoff), std::make_tuple(cutoff));
-        auto manager = make_structure_manager_stack<
-              StructureManager,AdaptorNeighbourList,AdaptorStrict>
-                (filename, cutoff, consider_ghost_neighbours, cutoff);
-        this->managers.emplace_back(
-                manager
-                );
+        auto manager =
+            make_structure_manager_stack<StructureManager, AdaptorNeighbourList,
+                                         AdaptorStrict>(
+                filename, cutoff, consider_ghost_neighbours, cutoff);
+        this->managers.emplace_back(manager);
       }
     }
   }
@@ -84,7 +81,6 @@ struct MultipleStrictStructureManager {
   std::list<std::shared_ptr<Manager_t>> managers{};
 };
 
-
 // template<template<class...>class U, typename MI, typename typeholder>
 // struct test;
 
@@ -95,8 +91,6 @@ struct MultipleStrictStructureManager {
 //     return U<MI, T...>::apply(args...);
 //   }
 // };
-
-
 
 // template<typename TemplateTypeHolder>
 // struct call_with_typeholders;
@@ -110,7 +104,6 @@ struct MultipleStrictStructureManager {
 //   }
 
 //  protected:
-
 
 // };
 
@@ -134,10 +127,8 @@ struct MultipleStrictStructureManager {
 //     using Manager_t = typename internal::AdaptorTypeStacker<MI,Ti...>::type;
 //     using ManagerPtr_t = std::shared_ptr<Manager_t>;
 
-
 //   };
 // };
-
 
 int main() {
   bool verbose{false};
@@ -148,42 +139,42 @@ int main() {
 
   auto manager{make_structure_manager<StructureManagerCenters>()};
   manager->update(filename);
-  auto pair_manager{make_adapted_manager<AdaptorNeighbourList>(manager, cutoff)};
+  auto pair_manager{
+      make_adapted_manager<AdaptorNeighbourList>(manager, cutoff)};
   pair_manager->update();
-  auto adaptor_strict{make_adapted_manager<AdaptorStrict>(pair_manager, cutoff)};
+  auto adaptor_strict{
+      make_adapted_manager<AdaptorStrict>(pair_manager, cutoff)};
   adaptor_strict->update(filename);
 
-
-
-
-
-
-  auto a1 = std::make_tuple(cutoff,false, cutoff);
+  auto a1 = std::make_tuple(cutoff, false, cutoff);
   auto a0 = std::make_tuple(filename);
-  // using AdaptorTypeHolder_t = AdaptorTypeHolder<AdaptorNeighbourList, AdaptorStrict>;
-  //using Factory_t = std::tuple<std::string,std::tuple<double>,std::tuple<double>>;
-  using AdaptorTypeHolder_t = typename StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList, AdaptorStrict>::type_list;
+  // using AdaptorTypeHolder_t = AdaptorTypeHolder<AdaptorNeighbourList,
+  // AdaptorStrict>;
+  // using Factory_t =
+  // std::tuple<std::string,std::tuple<double>,std::tuple<double>>;
+  using AdaptorTypeHolder_t = typename StructureManagerTypeHolder<
+      StructureManagerCenters, AdaptorNeighbourList, AdaptorStrict>::type_list;
   auto aa = std::make_tuple(a0, a1);
-  auto man{make_structure_manager_stack_with_tuple_and_typeholder<AdaptorTypeHolder_t>::apply(aa)};
-  std::cout << man->get_name()<< std::endl;
-
+  auto man{make_structure_manager_stack_with_tuple_and_typeholder<
+      AdaptorTypeHolder_t>::apply(aa)};
+  std::cout << man->get_name() << std::endl;
 
   MultipleStrictStructureManager<StructureManagerCenters> meta{};
 
-  for (auto&& manager : meta.managers) {
+  for (auto && manager : meta.managers) {
     // manager->update("alanine-X.json");
     // manager->update(positions, atom_types, cell, PBC_t{pbc.data()});
     if (verbose) {
-      std::cout << "################################# 1"<< std::endl;
+      std::cout << "################################# 1" << std::endl;
       std::cout << manager->size() << std::endl;
     }
     auto lower_manager = extract_underlying_manager<-2>(manager);
-    std::cout << lower_manager->get_name()<< std::endl;
+    std::cout << lower_manager->get_name() << std::endl;
 
-    for (auto&& center : manager) {
+    for (auto && center : manager) {
       if (verbose) {
         std::cout << center.get_atom_type() << std::endl;
-        std::cout << "################################# 2"<< std::endl;
+        std::cout << "################################# 2" << std::endl;
       }
       for (auto neigh : center) {
         if (verbose) {
@@ -219,5 +210,5 @@ int main() {
     }
   }
 
-  return(0);
+  return (0);
 }

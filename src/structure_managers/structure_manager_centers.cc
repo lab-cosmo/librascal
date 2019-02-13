@@ -40,8 +40,8 @@ namespace rascal {
    * does not throw an exception, if the file is not read. That is the reason
    * for the try/catch block -- to make sure, the file is opened.
    */
-  decltype(auto) StructureManagerCenters::
-  read_structure_from_json(const std::string filename) {
+  decltype(auto) StructureManagerCenters::read_structure_from_json(
+      const std::string filename) {
     // atoms object do hold read data from a file
     json_io::AtomicJsonData json_atoms_object{};
 
@@ -49,10 +49,11 @@ namespace rascal {
 
     try {
       std::ifstream reader(filename);
-      // if (!reader.is_open()) throw std::ios::failure("Error opening JSON file!");
+      // if (!reader.is_open()) throw std::ios::failure("Error opening JSON
+      // file!");
       reader >> j;
       reader.close();
-    } catch (const std::exception& e) {
+    } catch (const std::exception & e) {
       std::cerr << e.what() << std::endl;
       std::exit(EXIT_FAILURE);
     }
@@ -85,13 +86,13 @@ namespace rascal {
    * and access them with the map. Using the vector type automatically ensures
    * contiguity
    */
-  void StructureManagerCenters::
-  update_impl(const Eigen::Ref<const Eigen::MatrixXd, 0,
-         Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>> positions,
-         const Eigen::Ref<const Eigen::VectorXi> atom_types,
-         const Eigen::Ref<const Eigen::MatrixXd> cell,
-         const Eigen::Ref<const PBC_t> pbc) {
-
+  void StructureManagerCenters::update_impl(
+      const Eigen::Ref<const Eigen::MatrixXd, 0,
+                       Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>>
+          positions,
+      const Eigen::Ref<const Eigen::VectorXi> atom_types,
+      const Eigen::Ref<const Eigen::MatrixXd> cell,
+      const Eigen::Ref<const PBC_t> pbc) {
     this->atoms_object.set_structure(positions, atom_types, cell, pbc);
 
     StructureManagerCenters::build();
@@ -108,16 +109,15 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   // overloading the update function
-  void StructureManagerCenters::update_impl(AtomicStructure<traits::Dim>& structure) {
+  void StructureManagerCenters::update_impl(
+      AtomicStructure<traits::Dim> & structure) {
     this->atoms_object = structure;
     StructureManagerCenters::build();
   }
 
-
   /* ---------------------------------------------------------------------- */
   // function for setting the internal data structures
   void StructureManagerCenters::build() {
-
     this->natoms = this->atoms_object.positions.size() / traits::Dim;
 
     // initialize necessary data structure
@@ -137,8 +137,6 @@ namespace rascal {
 
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
     atom_cluster_indices.fill_sequence();
-
-
   }
 
   /* ---------------------------------------------------------------------- */

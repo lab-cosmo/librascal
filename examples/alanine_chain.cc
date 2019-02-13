@@ -64,7 +64,8 @@ int main() {
   // read atomic structure from the JSON file
   // manager.read_structure_from_json("alanine-X.json");
   // manager.update("alanine-X.json");
-  auto pair_manager{rascal::make_adapted_manager<rascal::AdaptorNeighbourList>(manager, cutoff)};
+  auto pair_manager{rascal::make_adapted_manager<rascal::AdaptorNeighbourList>(
+      manager, cutoff)};
   std::string filename{"alanine-X.json"};
   pair_manager->update(filename);
 
