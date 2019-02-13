@@ -6,7 +6,7 @@ import json
 sys.path.insert(0,'../tests/')
 
 from test_utils import load_json_frame, BoxList, Box
-import rascal.lib._rascal as rc
+from rascal.representation import SortedCoulombMatrix
 
 
 
@@ -19,28 +19,17 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
 
         fn = '../tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
         self.frame = load_json_frame(fn)
-        self.structure = unpack_ase(self.frame)
-        self.cutoffs = [3.]*self.Natom
-        self.cutoff = np.max(self.cutoffs)
 
-        self.nl_options = [
-            dict(name='centers',args=[]),
-            dict(name='neighbourlist',args=[cutoff]),
-            dict(name='strict',args=[cutoff])
-        ]
+        self.hypers = dict(cutoff=3., sorting_algorithm='row_norm',
+                        size=50, central_decay=0.5,
+                        interaction_cutoff=3, interaction_decay=-1)
 
-        self.manager =  get_neighbourlist(self.frame,self.nl_options)
+    def test_representation_transform(self):
 
-        self.central_decay = 0.5
-        self.interaction_cutoff = 10.
-        self.interaction_decay = 20.
-        self.size = 50
+        rep = SortedCoulombMatrix(**self.hypers)
 
-        self.inp = json.dumps(
-                        dict(central_decay=self.central_decay,
-                        interaction_cutoff=self.interaction_cutoff,
-                        interaction_decay=self.interaction_decay,
-                        size=self.size)
-                        )
-    def test_manager_iteration(self):
-        
+        features = rep.transform([self.frame])
+
+        test = features.get_feature_matrix().T
+
+

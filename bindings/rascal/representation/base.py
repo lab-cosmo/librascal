@@ -12,4 +12,6 @@ for k,v in RepresentationManager.__dict__.items():
                  _representations[kl] = v
 
 def RepresentationFactory(name,*args):
+    if name not in _representations:
+        raise NameError('The representations factory {} has not been registered. The available combinations are: {}'.format(name,list(_representations.keys())))
     return _representations[name](*args)
