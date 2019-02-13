@@ -65,7 +65,9 @@ namespace rascal {
       };
   };
 
-  struct MultipleStructureSphericalExpansion {
+  struct MultipleStructureSphericalExpansion
+   :MultipleStructureManagerNLStrictFixture {
+     using Parent = MultipleStructureManagerNLStrictFixture;
     MultipleStructureSphericalExpansion() = default;
     ~MultipleStructureSphericalExpansion() = default;
 

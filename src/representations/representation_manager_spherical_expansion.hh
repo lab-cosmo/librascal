@@ -131,9 +131,12 @@ namespace rascal {
   class RepresentationManagerSphericalExpansion:
     public RepresentationManagerBase {
    public:
-    using hypers_t = RepresentationManagerBase::hypers_t;
-    using Property_t = Property<double, 1, 1, Eigen::Dynamic, Eigen::Dynamic>;
+    using Parent = RepresentationManagerBase;
     using Manager_t = StructureManager;
+    using ManagerPtr_t = std::shared_ptr<Manager_t>;
+    using hypers_t = Parent::hypers_t;
+    using Property_t = Property<double, 1, 1, Eigen::Dynamic, Eigen::Dynamic>;
+    using reference_hypers_t = Parent::reference_hypers_t;
 
     /**
      * Set the hyperparameters of this descriptor from a json object.
@@ -183,9 +186,9 @@ namespace rascal {
      * @throw logic_error if an invalid option or combination of options is
      *                    specified in the container
      */
-    RepresentationManagerSphericalExpansion(Manager_t &sm,
+    RepresentationManagerSphericalExpansion(ManagerPtr_t sm,
                                             const hypers_t& hyper)
-        :structure_manager{sm}, soap_vectors{sm}
+        :structure_manager{std::move(sm)}, soap_vectors{*sm}
     {
       this->set_hyperparameters(hyper);
     }
@@ -286,7 +289,7 @@ namespace rascal {
     Eigen::MatrixXd radial_ortho_matrix{};
     bool is_precomputed{false};
 
-    Manager_t& structure_manager;
+    ManagerPtr_t structure_manager;
     Property_t soap_vectors;
     internal::GaussianSigmaType gaussian_sigma_type{};
 
@@ -448,8 +451,8 @@ namespace rascal {
                            radial_integral.col(0) / sqrt(4.0 * PI);
 
       for (auto neigh : center) {
-        auto dist{this->structure_manager.get_distance(neigh)};
-        auto direction{this->structure_manager.get_direction_vector(neigh)};
+        auto dist{this->structure_manager->get_distance(neigh)};
+        auto direction{this->structure_manager->get_direction_vector(neigh)};
         double exp_factor = std::exp(-0.5 * pow(dist, 2) / sigma2);
         sigma2 = pow(gaussian_spec.get_gaussian_sigma(neigh), 2);
 

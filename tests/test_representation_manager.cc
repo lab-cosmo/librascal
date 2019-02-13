@@ -184,14 +184,13 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(representation_spherical_expansion_test);
 
   using multiple_fixtures = boost::mpl::list<
-    RepresentationFixture<StructureManagerCenters,
-                          RepresentationManagerSphericalExpansion,
-                          MultipleStructureSphericalExpansion>>;
+    RepresentationFixture<MultipleStructureSphericalExpansion,RepresentationManagerSphericalExpansion
+                          >>;
 
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(
       multiple_precompute_test, Fix, multiple_fixtures, Fix) {
-    auto& managers = Fix::managers_strict;
+    auto& managers = Fix::managers;
     auto& representations = Fix::representations;
     const auto& hypers = Fix::hypers;
 
@@ -214,7 +213,7 @@ namespace rascal {
   //               representation against file" template above
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(
       multiple_compute_test, Fix, multiple_fixtures, Fix) {
-    auto& managers = Fix::managers_strict;
+    auto& managers = Fix::managers;
     auto& cutoffs = Fix::cutoffs;
     auto& representations = Fix::representations;
     const auto& filenames = Fix::filenames;

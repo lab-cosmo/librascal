@@ -23,3 +23,9 @@ def get_neighbourlist(frame,options):
     manager = managers[-1]
     manager.update(**structure)
     return managers[-1]
+
+def get_neighbourlist_full_name(options):
+    full_name = []
+    for opt in options:
+        full_name.insert(0,opt['name'])
+    return '_'.join(full_name)

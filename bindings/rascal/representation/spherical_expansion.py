@@ -1,6 +1,6 @@
 import json
 
-from ..utils import get_strict_neighbourlist
+from ..utils import get_neighbourlist, get_neighbourlist_full_name
 from ..lib import RepresentationManager, FeatureManager
 from .base import RepresentationFactory
 
@@ -66,6 +66,15 @@ class SphericalExpansion(object):
             gaussian_sigma_constant=gaussian_sigma_constant,
             n_species=n_species)
 
+        self.nl_options = [
+                dict(name='centers',args=[]),
+                dict(name='neighbourlist',args=[interaction_cutoff]),
+                dict(name='strict',args=[interaction_cutoff])
+        ]
+
+        neighbourlist_full_name = get_neighbourlist_full_name(self.nl_options)
+        self.name = self.name + '_' + neighbourlist_full_name
+
     def update_hyperparameters(self, **hypers):
         """Store the given dict of hyperparameters
 
@@ -95,9 +104,7 @@ class SphericalExpansion(object):
 
         """
         n_frames = len(frames)
-        managers = list(map(
-            get_strict_neighbourlist,
-            frames, [self.hypers['interaction_cutoff'], ] * n_frames))
+        managers = list(map(get_neighbourlist,frames,[self.nl_options]*Nframe))
         hypers_str = json.dumps(self.hypers)
         n_features = self.get_num_coefficients()
         features = FeatureManager.Dense_double(n_features, hypers_str)

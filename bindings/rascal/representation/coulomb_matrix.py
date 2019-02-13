@@ -1,7 +1,7 @@
 import numpy as np
 import json
 
-from ..neighbourlist import get_neighbourlist
+from ..neighbourlist import get_neighbourlist, get_neighbourlist_full_name
 from ..lib import RepresentationManager,FeatureManager
 from .base import RepresentationFactory
 
@@ -49,6 +49,9 @@ class SortedCoulombMatrix(object):
                 dict(name='neighbourlist',args=[cutoff]),
                 dict(name='strict',args=[cutoff])
         ]
+
+        self.neighbourlist_full_name = get_neighbourlist_full_name(self.nl_options)
+        self.name = self.name + '_' + neighbourlist_full_name
 
     def get_params(self):
         params = dict(name=self.name,sorting_algorithm=self.sorting_algorithm,
