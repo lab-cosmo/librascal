@@ -117,5 +117,4 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();
-} // namespace rascal
-
+}  // namespace rascal
