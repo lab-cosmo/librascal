@@ -42,7 +42,10 @@
 namespace rascal {
   namespace math {
 
-    double hyp2f1(double & a, double & b, double & c, double & x);
+    double hyp2f1(const double& a, const double& b, const double& c,
+                  const double& x);
+    double hyp1f1(const double& a, const double& b, const double& x);
+
   }
 }  // namespace rascal
 
