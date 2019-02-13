@@ -45,7 +45,7 @@
 # SOFTWARE.
 
 # target to run autopep8.py for all configured sources
-set(AUTOPEP8_TARGET prettypython CACHE STRING "Name of python autoformatter")
+set(AUTOPEP8_TARGET pretty-python CACHE STRING "Name of python autoformatter")
 
 mark_as_advanced(AUTOPEP8_TARGET)
 
@@ -99,7 +99,7 @@ function(autopep8_add_subdirectory DIR)
         COMMENT "autopep8: Checking source code style"
     )
 
-    # run this target, when `prettypython` is
+    # run this target, when `pretty-python` is
     add_dependencies(${AUTOPEP8_TARGET} ${TARGET_NAME})
 
 endfunction()
