@@ -49,29 +49,31 @@ namespace rascal {
      *        Sized l_max by (2*lmax + 1); the row is indexed by l and the
      *        column by m >= 0.
      */
-    Eigen::MatrixXd compute_assoc_legendre_polynom(
-        double cos_theta, size_t max_angular) {
+    Eigen::MatrixXd compute_assoc_legendre_polynom(double cos_theta,
+                                                   size_t max_angular) {
       using std::pow;
       using std::sqrt;
       /// Technically abs(sin(θ)), but θ only goes from [0, π)
       double sin_theta = sqrt(1.0 - pow(cos_theta, 2));
-      Eigen::MatrixXd assoc_legendre_polynom(max_angular+1, max_angular + 1);
-      //TODO(max-veit) zero upper triangular entries (m > l); otherwise they're
-      //               undefined
-      //assoc_legendre_polynom.resize(max_angular+1, max_angular + 1);
-      Eigen::MatrixXd coeff_a(max_angular + 1, 2*max_angular + 1);
-      Eigen::MatrixXd coeff_b(max_angular + 1, 2*max_angular + 1);
+      // Eigen::MatrixXd assoc_legendre_polynom(max_angular + 1, max_angular +
+      // 1);
+      Eigen::MatrixXd assoc_legendre_polynom =
+          Eigen::MatrixXd::Zero(max_angular + 1, max_angular + 1);
+      Eigen::MatrixXd coeff_a =
+          Eigen::MatrixXd::Zero(max_angular + 1, 2 * max_angular + 1);
+      Eigen::MatrixXd coeff_b =
+          Eigen::MatrixXd::Zero(max_angular + 1, 2 * max_angular + 1);
       const double SQRT_INV_2PI = sqrt(0.5 / PI);
 
       // Coefficients for computing the associated Legendre polynomials
       for (size_t angular_l{0}; angular_l < max_angular + 1; angular_l++) {
-        double lsq = angular_l*angular_l;
-        double lm1sq = (angular_l-1)*(angular_l-1);
+        double lsq = angular_l * angular_l;
+        double lm1sq = (angular_l - 1) * (angular_l - 1);
         for (size_t m_count{0}; m_count < angular_l + 1; m_count++) {
-          double msq = m_count*m_count;
-          coeff_a(angular_l, m_count) = sqrt((4*lsq - 1.0) / (lsq - msq));
-          coeff_b(angular_l, m_count) = -1.0*sqrt((lm1sq - msq)
-                                                  / (4*lm1sq - 1.0));
+          double msq = m_count * m_count;
+          coeff_a(angular_l, m_count) = sqrt((4 * lsq - 1.0) / (lsq - msq));
+          coeff_b(angular_l, m_count) =
+              -1.0 * sqrt((lm1sq - msq) / (4 * lm1sq - 1.0));
         }
       }
       // Compute the associated Legendre polynomials: l < 2 are special cases
@@ -83,25 +85,25 @@ namespace rascal {
           assoc_legendre_polynom(angular_l, 0) = SQRT_INV_2PI;
           continue;
         } else if (angular_l == 1) {
-          assoc_legendre_polynom(angular_l, 0) = cos_theta * SQRT_THREE *
-                                                 SQRT_INV_2PI;
-          l_accum = l_accum * -1.0*sqrt(3.0 / 2.0) * sin_theta;
+          assoc_legendre_polynom(angular_l, 0) =
+              cos_theta * SQRT_THREE * SQRT_INV_2PI;
+          l_accum = l_accum * -1.0 * sqrt(3.0 / 2.0) * sin_theta;
           assoc_legendre_polynom(angular_l, 1) = l_accum;
           continue;
         }
         // for l > 1 : Use the recurrence relation
         // TODO(max-veit) don't bother calculating m =/= 0 if sin(theta) == 0
         //                (z-axis)
-        for (size_t m_count{0}; m_count < angular_l-1; m_count++) {
+        for (size_t m_count{0}; m_count < angular_l - 1; m_count++) {
           assoc_legendre_polynom(angular_l, m_count) =
               coeff_a(angular_l, m_count) *
-              (cos_theta*assoc_legendre_polynom(angular_l-1, m_count)
-               + coeff_b(angular_l, m_count)*assoc_legendre_polynom(
-                                                 angular_l-2, m_count));
+              (cos_theta * assoc_legendre_polynom(angular_l - 1, m_count) +
+               coeff_b(angular_l, m_count) *
+                   assoc_legendre_polynom(angular_l - 2, m_count));
         }
-        assoc_legendre_polynom(angular_l, angular_l-1) =
-            cos_theta * sqrt(2.0*(angular_l-1) + 3) * l_accum;
-        l_accum = l_accum * sin_theta * -1.0*sqrt(1.0 + 0.5/angular_l);
+        assoc_legendre_polynom(angular_l, angular_l - 1) =
+            cos_theta * sqrt(2.0 * (angular_l - 1) + 3) * l_accum;
+        l_accum = l_accum * sin_theta * -1.0 * sqrt(1.0 + 0.5 / angular_l);
         assoc_legendre_polynom(angular_l, angular_l) = l_accum;
       }
       return assoc_legendre_polynom;
@@ -129,10 +131,11 @@ namespace rascal {
      *        Sized max_m by 2 with the cos(mφ) stored in the first column
      *        and sin(mφ) in the second column, m being the row index
      */
-    Eigen::MatrixXd compute_cos_sin_angle_multiples(
-        double cos_phi, double sin_phi, size_t max_m) {
+    Eigen::MatrixXd compute_cos_sin_angle_multiples(double cos_phi,
+                                                    double sin_phi,
+                                                    size_t max_m) {
       Eigen::MatrixXd cos_sin_m_phi(max_m + 1, 2);
-      //cos_sin_m_phi.resize(max_m + 1, 2);
+      // cos_sin_m_phi.resize(max_m + 1, 2);
       for (size_t m_count{0}; m_count < max_m + 1; m_count++) {
         if (m_count == 0) {
           cos_sin_m_phi.row(m_count) << 1.0, 0.0;
@@ -140,8 +143,8 @@ namespace rascal {
           cos_sin_m_phi.row(m_count) << cos_phi, sin_phi;
         } else {
           cos_sin_m_phi.row(m_count) =
-              2.0*cos_phi*cos_sin_m_phi.row(m_count - 1)
-              - cos_sin_m_phi.row(m_count - 2);
+              2.0 * cos_phi * cos_sin_m_phi.row(m_count - 1) -
+              cos_sin_m_phi.row(m_count - 2);
         }
       }
       return cos_sin_m_phi;
@@ -156,16 +159,18 @@ namespace rascal {
      * components of the usual complex functions are instead stored in the
      * negative-m indices:
      *
-     *               ╭ √((2l+1)/(2*π) * (l+m)!/(l-m)!) P_l^-m(cos(θ)) sin(-mφ) for m<0
+     *               ╭ √((2l+1)/(2*π) * (l+m)!/(l-m)!) P_l^-m(cos(θ)) sin(-mφ)
+     * for m<0
      *               |
-     * Y_l^m(θ, φ) = ┤ √((2l+1)/(4*π)) P_l(cos(θ))                             for m==0
+     * Y_l^m(θ, φ) = ┤ √((2l+1)/(4*π)) P_l(cos(θ)) for m==0
      *               |
-     *               ╰ √((2l+1)/(2*π) * (l-m)!/(l+m)!) P_l^m(cos(θ)) cos(mφ)   for m>0
+     *               ╰ √((2l+1)/(2*π) * (l-m)!/(l+m)!) P_l^m(cos(θ)) cos(mφ) for
+     * m>0
      *
-     * In case you're wondering why it's 1/2π on the m=/=0 components (instead of
-     * 1/4π), there's an extra factor of 1/2 that comes from integrating cos² or
-     * sin² over the full circle of φ, so these are indeed normalized in the same
-     * sense as the complex spherical harmonics:
+     * In case you're wondering why it's 1/2π on the m=/=0 components (instead
+     * of 1/4π), there's an extra factor of 1/2 that comes from integrating cos²
+     * or sin² over the full circle of φ, so these are indeed normalized in the
+     * same sense as the complex spherical harmonics:
      *
      * ∫∫_(Sphere) dΩ Y_l^m(θ, φ) Y_l'^m'(θ, φ) = δ_(ll')δ_(mm')
      *
@@ -182,7 +187,7 @@ namespace rascal {
      *          corresponding to l numbers and the column index to m.
      */
     Eigen::MatrixXd compute_spherical_harmonics(
-        const Eigen::Ref<const Eigen::Vector3d> &direction,
+        const Eigen::Ref<const Eigen::Vector3d> & direction,
         size_t max_angular) {
       using std::pow;
       using std::sqrt;
@@ -203,29 +208,28 @@ namespace rascal {
         sin_phi = direction[1] / sqrt_xy;
       }
       Eigen::MatrixXd harmonics =
-          Eigen::MatrixXd::Zero(max_angular+1, 2*max_angular + 1);
-      Eigen::MatrixXd assoc_legendre_polynom = compute_assoc_legendre_polynom(
-          cos_theta, max_angular);
-      Eigen::MatrixXd cos_sin_m_phi = compute_cos_sin_angle_multiples(
-          cos_phi, sin_phi, max_angular);
+          Eigen::MatrixXd::Zero(max_angular + 1, 2 * max_angular + 1);
+      Eigen::MatrixXd assoc_legendre_polynom =
+          compute_assoc_legendre_polynom(cos_theta, max_angular);
+      Eigen::MatrixXd cos_sin_m_phi =
+          compute_cos_sin_angle_multiples(cos_phi, sin_phi, max_angular);
 
-      for (size_t angular_l{0}; angular_l < max_angular + 1;
-           angular_l++) {
+      for (size_t angular_l{0}; angular_l < max_angular + 1; angular_l++) {
         for (size_t m_count{0}; m_count < angular_l + 1; m_count++) {
           if (m_count == 0) {
-            harmonics(angular_l, angular_l) = assoc_legendre_polynom(
-                angular_l, m_count) * INV_SQRT_TWO;
+            harmonics(angular_l, angular_l) =
+                assoc_legendre_polynom(angular_l, m_count) * INV_SQRT_TWO;
           } else {
             harmonics(angular_l, angular_l + m_count) =
-                assoc_legendre_polynom(angular_l, m_count)
-                * cos_sin_m_phi(m_count, 0);
+                assoc_legendre_polynom(angular_l, m_count) *
+                cos_sin_m_phi(m_count, 0);
             harmonics(angular_l, angular_l - m_count) =
-                assoc_legendre_polynom(angular_l, m_count)
-                * cos_sin_m_phi(m_count, 1);
-          } // if (m_count == 0)
-        } // for (m_count in [0, l])
-      } // for (l in [0, lmax])
+                assoc_legendre_polynom(angular_l, m_count) *
+                cos_sin_m_phi(m_count, 1);
+          }  // if (m_count == 0)
+        }    // for (m_count in [0, l])
+      }      // for (l in [0, lmax])
       return harmonics;
-    } // compute_spherical_harmonics()
-  } // math
-} // rascal
+    }  // compute_spherical_harmonics()
+  }    // namespace math
+}  // namespace rascal
