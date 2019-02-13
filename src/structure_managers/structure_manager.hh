@@ -313,6 +313,16 @@ namespace rascal {
       return internal::GetTypeName<ManagerImplementation>();
     }
 
+    //! Create a new shared pointer to the object
+    std::shared_ptr<ManagerImplementation> get_shared_ptr() {
+      return this->implementation().shared_from_this();
+    }
+
+    //! Create a new weak pointer to the object
+    std::weak_ptr<ManagerImplementation> get_weak_ptr() {
+      return std::weak_ptr<ManagerImplementation>(this->get_shared_ptr());
+    }
+
    protected:
     /**
      * Update itself and send update signal to children nodes

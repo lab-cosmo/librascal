@@ -156,16 +156,6 @@ namespace rascal {
     StructureManagerCenters &
     operator=(StructureManagerCenters && other) = default;
 
-    //! Create a new shared pointer to the object
-    std::shared_ptr<StructureManagerCenters> get_shared_ptr() {
-      return this->shared_from_this();
-    }
-
-    //! Create a new weak pointer to the object
-    std::weak_ptr<StructureManagerCenters> get_weak_ptr() {
-      return std::weak_ptr<StructureManagerCenters>(this->get_shared_ptr());
-    }
-
     //! Updates the manager using the impl
     template <class... Args>
     void update(Args &&... arguments) {

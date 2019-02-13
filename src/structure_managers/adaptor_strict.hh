@@ -112,16 +112,6 @@ namespace rascal {
     //! Move assignment operator
     AdaptorStrict & operator=(AdaptorStrict && other) = default;
 
-    //! Create a new shared pointer to the object
-    std::shared_ptr<Manager_t> get_shared_ptr() {
-      return this->shared_from_this();
-    }
-
-    //! Create a new weak pointer to the object
-    std::weak_ptr<Manager_t> get_weak_ptr() {
-      return std::weak_ptr<Manager_t>(this->get_shared_ptr());
-    }
-
     //! update just the adaptor assuming the underlying manager was updated
     inline void update_adaptor();
 
