@@ -105,13 +105,12 @@ int main() {
   std::cout << man->get_name() << std::endl;
   // and there
   auto mmmm = make_structure_manager_stack<
-      StructureManagerCenters, AdaptorNeighbourList,AdaptorStrict>(
+      StructureManagerCenters, AdaptorNeighbourList, AdaptorStrict>(
                 filename, cutoff, consider_ghost_neighbours, cutoff);
 
   MultipleStrictStructureManager<StructureManagerCenters> meta{};
 
   for (auto && manager : meta.managers) {
-
     if (verbose) {
       std::cout << "################################# 1" << std::endl;
       std::cout << manager->size() << std::endl;
