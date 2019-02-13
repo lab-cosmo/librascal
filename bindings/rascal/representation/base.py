@@ -1,6 +1,6 @@
 from ..lib import RepresentationManager
 
-_representations_list = ["coulomb"]
+_representations_list = ["coulomb", "sphericalexpansion"]
 
 
 _representations = {}
