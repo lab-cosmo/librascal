@@ -57,6 +57,9 @@ set(CLANG_FORMAT_PROJECT_ROOT
   ${PROJECT_SOURCE_DIR} CACHE STRING "Project ROOT directory"
   )
 
+mark_as_advanced(CLANG_FORMAT_PROJECT_ROOT)
+mark_as_advanced(CLANG_FORMAT)
+
 # find clang-format executable
 find_file(CLANG_FORMAT name clang-format HINTS $ENV/usr/bin)
 if(CLANG_FORMAT)

@@ -54,6 +54,9 @@ set(AUTOPEP8_PROJECT_ROOT ${PROJECT_SOURCE_DIR}
   CACHE STRING "Project ROOT directory"
   )
 
+mark_as_advanced(AUTOPEP8_PROJECT_ROOT)
+mark_as_advanced(AUTOPEP8)
+
 # find autopep8.py script
 find_file(AUTOPEP8 name autopep8 HINTS $ENV{HOME}.local/bin)
 if(AUTOPEP8)
