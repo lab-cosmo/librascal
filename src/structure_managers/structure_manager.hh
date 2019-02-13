@@ -219,9 +219,10 @@ namespace rascal {
      * ... -related properties.
      */
     template <size_t Order>
-    class iterator;
-    using Iterator_t = iterator<1>;
+    class Iterator;
+    using Iterator_t = Iterator<1>;
     friend Iterator_t;
+    using iterator = Iterator_t;
 
     /**
      * return type for iterators: a light-weight atom reference, giving access
@@ -625,9 +626,9 @@ namespace rascal {
         ManagerImplementation::template cluster_layer<Order>()};
     using Parent = ClusterRefKey<Order, ClusterLayer>;
     using AtomRef_t = typename Manager_t::AtomRef;
-    using Iterator_t = typename Manager_t::template iterator<Order>;
+    using Iterator_t = typename Manager_t::template Iterator<Order>;
     using Atoms_t = std::array<AtomRef_t, Order>;
-    using iterator = typename Manager_t::template iterator<Order + 1>;
+    using iterator = typename Manager_t::template Iterator<Order + 1>;
     friend iterator;
 
     using IndexConstArray_t = typename Parent::IndexConstArray;
@@ -795,12 +796,12 @@ namespace rascal {
    * type with respect to STL iterators
    */
   template <typename T>
-  auto inline begin(std::shared_ptr<T> ptr) -> typename T::Iterator_t {
+  auto inline begin(std::shared_ptr<T> ptr) -> typename T::iterator {
     return ptr->begin();
   }
 
   template <typename T>
-  auto inline end(std::shared_ptr<T> ptr) -> typename T::Iterator_t {
+  auto inline end(std::shared_ptr<T> ptr) -> typename T::iterator {
     return ptr->end();
   }
 
@@ -813,7 +814,7 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   template <size_t Order>
-  class StructureManager<ManagerImplementation>::iterator {
+  class StructureManager<ManagerImplementation>::Iterator {
    public:
     using Manager_t = StructureManager<ManagerImplementation>;
     friend Manager_t;
@@ -839,31 +840,31 @@ namespace rascal {
     using reference = value_type;
 
     //! Default constructor
-    iterator() = delete;
+    Iterator() = delete;
 
     //! Copy constructor
-    iterator(const iterator & other) = default;
+    Iterator(const Iterator & other) = default;
 
     //! Move constructor
-    iterator(iterator && other) = default;
+    Iterator(Iterator && other) = default;
 
     //! Destructor
-    virtual ~iterator() = default;
+    virtual ~Iterator() = default;
 
     //! Copy assignment operator
-    iterator & operator=(const iterator & other) = default;
+    Iterator & operator=(const Iterator & other) = default;
 
     //! Move assignment operator
-    iterator & operator=(iterator && other) = default;
+    Iterator & operator=(Iterator && other) = default;
 
     //! pre-increment
-    inline iterator & operator++() {
+    inline Iterator & operator++() {
       ++this->index;
       return *this;
     }
 
     //! pre-decrement
-    inline iterator & operator--() {
+    inline Iterator & operator--() {
       --this->index;
       return *this;
     }
@@ -888,17 +889,17 @@ namespace rascal {
       Ref_t cluster_indices =
           cluster_indices_properties[this->get_cluster_index()];
       const auto indices{this->get_atom_indices()};
-      return ClusterRef_t(const_cast<iterator &>(*this), indices,
+      return ClusterRef_t(const_cast<Iterator &>(*this), indices,
                           cluster_indices);
     }
 
     //! equality
-    inline bool operator==(const iterator & other) const {
+    inline bool operator==(const Iterator & other) const {
       return this->index == other.index;
     }
 
     //! inequality
-    inline bool operator!=(const iterator & other) const {
+    inline bool operator!=(const Iterator & other) const {
       return not(*this == other);
     }
 
@@ -909,7 +910,7 @@ namespace rascal {
 
    protected:
     //! constructor with container ref and starting point
-    iterator(Container_t & cont, size_t start, size_t offset)
+    Iterator(Container_t & cont, size_t start, size_t offset)
         : container{cont}, index{start}, offset{offset} {}
 
     //! add atomic indices in current iteration
