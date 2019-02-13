@@ -28,8 +28,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SPECIES_MANAGER_H
-#define SPECIES_MANAGER_H
+#ifndef SRC_STRUCTURE_MANAGERS_SPECIES_MANAGER_HH_
+#define SRC_STRUCTURE_MANAGERS_SPECIES_MANAGER_HH_
 
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/adaptor_filter.hh"
@@ -46,7 +46,8 @@ namespace rascal {
   namespace internal {
 
     namespace detail {
-      template <size_t Order> using Key_t = std::array<int, Order>;
+      template <size_t Order>
+      using Key_t = std::array<int, Order>;
       template <size_t Order, class ManagerImplementation>
       using Value_t =
           std::unique_ptr<AdaptorFilter<ManagerImplementation, Order>>;
@@ -98,7 +99,8 @@ namespace rascal {
    * fun(species_manager[species_indices])
    * ```
    */
-  template <class ManagerImplementation, size_t MaxOrder> class SpeciesManager {
+  template <class ManagerImplementation, size_t MaxOrder>
+  class SpeciesManager {
    public:
     using traits = StructureManager_traits<ManagerImplementation>;
     template <size_t Order>
@@ -135,7 +137,8 @@ namespace rascal {
     void update();
 
     //! Updates the underlying manager as well as the adaptor
-    template <class... Args> void update(Args &&... arguments) {
+    template <class... Args>
+    void update(Args &&... arguments) {
       this->update();
       this->structure_manager.update(arguments...);
     }
@@ -228,4 +231,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif /* SPECIES_MANAGER_H */
+#endif  // SRC_STRUCTURE_MANAGERS_SPECIES_MANAGER_HH_

@@ -25,8 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef JSON_IO_H
-#define JSON_IO_H
+#ifndef SRC_JSON_IO_HH_
+#define SRC_JSON_IO_HH_
 
 /*
  * interface to external header-library/header-class, which makes it easy to use
@@ -96,4 +96,4 @@ namespace rascal {
   }  // namespace json_io
 }  // namespace rascal
 
-#endif /* JSON_IO_H */
+#endif  // SRC_JSON_IO_HH_

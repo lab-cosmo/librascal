@@ -25,8 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SPARSIFY_UTILITIES_H
-#define SPARSIFY_UTILITIES_H
+#ifndef SRC_UTILS_SPARSIFY_UTILITIES_HH_
+#define SRC_UTILS_SPARSIFY_UTILITIES_HH_
 
 #include "basic_types.hh"
 #include <tuple>
@@ -95,4 +95,4 @@ namespace rascal {
                        int n_sparse = 0, int i_first_point = 0);
   }  // namespace utils
 }  // namespace rascal
-#endif /* SPARSIFY_UTILITIES_H */
+#endif  // SRC_UTILS_SPARSIFY_UTILITIES_HH_

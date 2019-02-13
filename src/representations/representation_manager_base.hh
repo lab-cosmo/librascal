@@ -25,8 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef BASIS_REPRESENTATION_MANAGER_BASE_H
-#define BASIS_REPRESENTATION_MANAGER_BASE_H
+#ifndef SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_BASE_HH_
+#define SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_BASE_HH_
 
 #include "structure_managers/structure_manager_base.hh"
 #include "json_io.hh"
@@ -69,8 +69,7 @@ namespace rascal {
     virtual void set_hyperparameters(const hypers_t &) = 0;
 
     //! Pure Virtual Function to set hyperparameters of the representation
-    void check_hyperparameters(const reference_hypers_t &,
-                                    const hypers_t &);
+    void check_hyperparameters(const reference_hypers_t &, const hypers_t &);
 
     //! Compute the representation using a StructureManager
     virtual void compute() = 0;
@@ -98,11 +97,6 @@ namespace rascal {
     std::map<std::string, std::string> options{};
   };
 
-
-
 }  // namespace rascal
 
-
-
-
-#endif /* REPRESENTATION_MANAGER_BASE_H */
+#endif  // SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_BASE_HH_

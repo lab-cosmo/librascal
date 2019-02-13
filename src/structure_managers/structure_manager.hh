@@ -26,8 +26,8 @@
  */
 
 //! header guards
-#ifndef STRUCTURE_MANAGER_H
-#define STRUCTURE_MANAGER_H
+#ifndef SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_HH_
+#define SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_HH_
 
 /**
  * Each actual implementation of a StructureManager is based on the given
@@ -37,6 +37,7 @@
 #include "structure_managers/property.hh"
 #include "structure_managers/cluster_ref_key.hh"
 #include "rascal_utility.hh"
+
 //! Some data types and operations are based on the Eigen library
 #include <Eigen/Dense>
 
@@ -953,4 +954,4 @@ namespace rascal {
   };
 }  // namespace rascal
 
-#endif /* STRUCTURE_MANAGER_H */
+#endif  // SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_HH_

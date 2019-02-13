@@ -4,12 +4,13 @@ _representations_list = ["coulomb", "sphericalexpansion"]
 
 
 _representations = {}
-for k,v in RepresentationManager.__dict__.items():
+for k, v in RepresentationManager.__dict__.items():
     if "pybind11_builtins.pybind11_type" in str(type(v)):
         kl = k.lower()
         for name in _representations_list:
             if name in kl:
-                 _representations[name] = v
+                _representations[name] = v
 
-def RepresentationFactory(name,*options):
+
+def RepresentationFactory(name, *options):
     return _representations[name]

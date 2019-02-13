@@ -48,6 +48,34 @@ make -j 4
 ctest -V
 ```
 
+* To help developers conform their contribution to the coding convention, the formating of new functionalities can be automated using clang-format (for the c++ files) and autopep8 (for the python files). The .clang-format and .pycodestyle files define common settings to be used. To enable these functionalities (optional) you can install these tools with:
+```Shell
+sudo apt-get install clang-format
+pip install autopep8
+```
+* The automatic formating of the c++ and python files can be trigered by:
+```Shell
+cd build
+cmake ..
+make pretty-cpp
+make pretty-python
+```
+Please use these tools with caution as they can potentially introduce unwanted changes to the code.
+If code needs to be specifically excluded from auto formatting, e.g. a matrix which should be human-readable, code comments tells the formatters to ignore lines:
+
+C++
+```
+// clang-format off
+SOME CODE TO IGNORE
+// clang-format on
+```
+
+python
+```
+SOME LINE TO IGNORE # noqa
+```
+where `noqa` stands for `no` `q`uality `a`ssurance.
+
 * Common cmake flag:
   + -DCMAKE_C_COMPILER
   + -DBUILD_BINDINGS
@@ -84,4 +112,3 @@ sudo docker build -t test -f ./docker/install_env.dockerfile  .
 sudo docker run -it -v /path/to/repo/:/home/user/  test
 ```
 And then follow the instruction in BOOST.md for compilation with boost from conda
-

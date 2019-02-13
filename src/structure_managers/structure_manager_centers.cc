@@ -46,12 +46,13 @@ namespace rascal {
    * and access them with the map. Using the vector type automatically ensures
    * contiguity
    */
-  void StructureManagerCenters::
-  update(const Eigen::Ref<const Eigen::MatrixXd, 0,
-         Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>> positions,
-         const Eigen::Ref<const Eigen::VectorXi> atom_types,
-         const Eigen::Ref<const Eigen::MatrixXd> cell,
-         const Eigen::Ref<const PBC_t> pbc) {
+  void StructureManagerCenters::update(
+      const Eigen::Ref<const Eigen::MatrixXd, 0,
+                       Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>>
+          positions,
+      const Eigen::Ref<const Eigen::VectorXi> atom_types,
+      const Eigen::Ref<const Eigen::MatrixXd> cell,
+      const Eigen::Ref<const PBC_t> pbc) {
     Eigen::Index Natom{positions.cols()};
     this->natoms = Natom;
     this->atoms_object.set_structure(positions, atom_types, cell, pbc);
@@ -103,8 +104,8 @@ namespace rascal {
    * does not throw an exception, if the file is not read. That is the reason
    * for the try/catch block -- to make sure, the file is opened.
    */
-  void StructureManagerCenters::
-  read_structure_from_json(const std::string filename) {
+  void StructureManagerCenters::read_structure_from_json(
+      const std::string filename) {
     // atoms object do hold read data from a file
     json_io::AtomicJsonData json_atoms_object{};
 
@@ -112,9 +113,10 @@ namespace rascal {
 
     try {
       std::ifstream f(filename);
-      if (!f.is_open()) throw std::ios::failure("Error opening JSON file!");
+      if (!f.is_open())
+        throw std::ios::failure("Error opening JSON file!");
       f >> j;
-    } catch (const std::exception& e) {
+    } catch (const std::exception & e) {
       std::cerr << e.what() << std::endl;
       std::exit(EXIT_FAILURE);
     }
@@ -136,4 +138,4 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
 
-} // rascal
+}  // namespace rascal
