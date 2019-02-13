@@ -28,7 +28,6 @@
 #include "tests.hh"
 #include "test_feature_manager.hh"
 
-
 namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(feature_dense_test);
@@ -47,16 +46,15 @@ namespace rascal {
   /**
    * Test if the Fixture with multiple structures builds
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_setup_test,
-                                   Fix, multiple_fixtures, Fix) {
-  }
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_setup_test, Fix, multiple_fixtures,
+                                   Fix) {}
 
   /* ---------------------------------------------------------------------- */
   /**
    * Test the construction of the feature manager
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_constructor_test,
-                                   Fix, multiple_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_constructor_test, Fix,
+                                   multiple_fixtures, Fix) {
     auto & features = Fix::features;
     auto & hypers = Fix::hypers;
     auto & n_feature = Fix::n_feature;
@@ -70,8 +68,8 @@ namespace rascal {
    * Test pushing back the feature matrices of several representations in the
    * feature manager and check if the data is properly set.
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(representation_aggregate_test,
-                                   Fix, multiple_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(representation_aggregate_test, Fix,
+                                   multiple_fixtures, Fix) {
     using precision_t = typename Fix::precision_t;
     auto & features = Fix::features;
     auto & hypers = Fix::hypers;
@@ -92,7 +90,7 @@ namespace rascal {
     std::vector<int> n_features{};
     // extract the feature matrices in a ref vector
     for (auto & representation : representations) {
-      auto&& raw_data{representation.get_representation_raw_data()};
+      auto && raw_data{representation.get_representation_raw_data()};
       original_data.emplace_back(raw_data.begin(), raw_data.end());
       n_centers.push_back(representation.get_center_size());
       n_features.push_back(representation.get_feature_size());
@@ -111,7 +109,7 @@ namespace rascal {
         for (int ifeature{0}; ifeature < n_features[it]; ++ifeature) {
           int lin_idx{icenter * n_features[it] + ifeature};
           double diff{original_data[it][lin_idx] -
-                    feature_matrix(ifeature, stride + icenter)};
+                      feature_matrix(ifeature, stride + icenter)};
           BOOST_CHECK_LE(diff, 1e-14);
         }
       }
@@ -121,5 +119,4 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();
-} // namespace rascal
-
+}  // namespace rascal

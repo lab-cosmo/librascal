@@ -25,9 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef TEST_FEATURE_MANAGER_H
-#define TEST_FEATURE_MANAGER_H
-
+#ifndef TESTS_TEST_FEATURE_MANAGER_HH_
+#define TESTS_TEST_FEATURE_MANAGER_HH_
 
 #include "test_structure.hh"
 #include "test_representation_manager.hh"
@@ -59,7 +58,7 @@ namespace rascal {
     using hypers_t = typename Representation_t::hypers_t;
     using precision_t = T;
 
-    FeatureFixture() :Parent{} {
+    FeatureFixture() : Parent{} {
       std::vector<size_t> n_features{};
 
       auto & representations = this->representations;
@@ -74,8 +73,8 @@ namespace rascal {
         }
       }
 
-      this->n_feature = *std::max_element(std::begin(n_features),
-                                          std::end(n_features));
+      this->n_feature =
+          *std::max_element(std::begin(n_features), std::end(n_features));
     }
 
     ~FeatureFixture() = default;
@@ -84,8 +83,8 @@ namespace rascal {
     std::list<Feature_t> features{};
   };
 
-/* ---------------------------------------------------------------------- */
+  /* ---------------------------------------------------------------------- */
 
-} // RASCAL
+}  // namespace rascal
 
-#endif /* TEST_FEATURE_MANAGER_H */
+#endif  // TESTS_TEST_FEATURE_MANAGER_HH_

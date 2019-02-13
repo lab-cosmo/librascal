@@ -10,11 +10,10 @@
 #
 # Copyright (c) 2016 Piotr L. Figlarek
 #
-# Usage
-# -----
-# Include this module via CMake include(...) command and then add each source directory
-# via introduced by this module cpplint_add_subdirectory(...) function. Added directory
-# will be recursivelly scanned and all available files will be checked.
+# Usage ----- Include this module via CMake include(...) command and then add
+# each source directory via introduced by this module
+# cpplint_add_subdirectory(...) function. Added directory will be recursivelly
+# scanned and all available files will be checked.
 #
 # Example
 # -------
@@ -45,64 +44,62 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+# target to run autopep8.py for all configured sources
+set(AUTOPEP8_TARGET pretty-python CACHE STRING "Name of python autoformatter")
 
-# select files extensions to check
-
-# target to run cpplint.py for all configured sources
-set(CPPLINT_TARGET lint CACHE STRING "Name of C++ style checker target")
-
-mark_as_advanced(CPPLINT_TARGET)
+mark_as_advanced(AUTOPEP8_TARGET)
 
 # project root directory
-set(CPPLINT_PROJECT_ROOT ${PROJECT_SOURCE_DIR} CACHE STRING "Project ROOT directory")
+set(AUTOPEP8_PROJECT_ROOT ${PROJECT_SOURCE_DIR}
+  CACHE STRING "Project ROOT directory"
+  )
 
-mark_as_advanced(CPPLINT_PROJECT_ROOT)
-mark_as_advanced(CPPLINT)
+mark_as_advanced(AUTOPEP8_PROJECT_ROOT)
+mark_as_advanced(AUTOPEP8)
 
-# find cpplint.py script
-find_file(CPPLINT name cpplint HINTS $ENV{HOME}/.local/bin /usr/bin  )
-if(CPPLINT)
-    message(STATUS "cpplint parser: ${CPPLINT}")
-    # common target to concatenate all cpplint.py targets
-    add_custom_target(${CPPLINT_TARGET})
-    set(CPPLINT_FOUND TRUE)
+# find autopep8.py script
+find_file(AUTOPEP8 name autopep8 HINTS $ENV{HOME}.local/bin)
+if(AUTOPEP8)
+    message(STATUS "autopep8 auto formatter: ${AUTOPEP8}")
+    # common target to concatenate all autopep8.py targets
+    add_custom_target(${AUTOPEP8_TARGET})
+    set(AUTOPEP8_FOUND TRUE)
 else()
-    message(STATUS "The optional cpplint parser has not been found. "
-                    "For more information see https://pypi.python.org/pypi/cpplint")
-    set(CPPLINT_FOUND FALSE)
+    message(STATUS "The optional autopep8 parser has not been found. "
+      "For more information see"
+      " https://github.com/hhatto/autopep8")
+    set(AUTOPEP8_FOUND FALSE)
 endif()
 
 
 
 
-# use cpplint.py to check source code files inside DIR directory
-function(cpplint_add_subdirectory DIR FLAGS)
+# use autopep8.py to check source code files inside DIR directory
+function(autopep8_add_subdirectory DIR)
     # create relative path to the directory
     set(ABSOLUTE_DIR ${DIR})
 
-    set(EXTENSIONS cc,hh)
-    set(FILES_TO_CHECK ${FILES_TO_CHECK} ${ABSOLUTE_DIR}/*.cc ${ABSOLUTE_DIR}/*.hh)
+    set(EXTENSIONS py)
+    set(FILES_TO_CHECK ${FILES_TO_CHECK}
+      ${ABSOLUTE_DIR}/*.py
+      )
 
     # find all source files inside project
     file(GLOB_RECURSE LIST_OF_FILES ${FILES_TO_CHECK})
 
     # create valid target name for this check
     string(REGEX REPLACE "/" "." TEST_NAME ${DIR})
-    set(TARGET_NAME ${CPPLINT_TARGET}.${TEST_NAME})
+    set(TARGET_NAME ${AUTOPEP8_TARGET}.${TEST_NAME})
 
-    # perform cpplint check
+    # perform autopep8 check
     add_custom_target(${TARGET_NAME}
-        COMMAND ${CPPLINT} "--extensions=${EXTENSIONS}"
-                           "--root=${CPPLINT_PROJECT_ROOT}"
-                           "${FLAGS}"
+        COMMAND ${AUTOPEP8} "--in-place"
                            ${LIST_OF_FILES}
         DEPENDS ${LIST_OF_FILES}
-        COMMENT "cpplint: Checking source code style"
+        COMMENT "autopep8: Checking source code style"
     )
 
-    # run this target when root cpplint.py test is triggered
-    add_dependencies(${CPPLINT_TARGET} ${TARGET_NAME})
+    # run this target, when `pretty-python` is
+    add_dependencies(${AUTOPEP8_TARGET} ${TARGET_NAME})
 
-    # add this test to CTest
-    add_test(${TARGET_NAME} ${CMAKE_MAKE_PROGRAM} ${TARGET_NAME})
 endfunction()

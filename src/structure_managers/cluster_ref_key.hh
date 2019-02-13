@@ -27,8 +27,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef CLUSTERREFKEY_H
-#define CLUSTERREFKEY_H
+#ifndef SRC_STRUCTURE_MANAGERS_CLUSTER_REF_KEY_HH_
+#define SRC_STRUCTURE_MANAGERS_CLUSTER_REF_KEY_HH_
 
 #include "structure_managers/cluster_ref_base.hh"
 
@@ -45,7 +45,8 @@ namespace rascal {
    */
   //! Computes layer by cluster dimension for new adaptor layer, depending on
   //! existing layer by order.
-  template <size_t MaxOrder, class T> struct LayerIncreaser {};
+  template <size_t MaxOrder, class T>
+  struct LayerIncreaser {};
 
   template <size_t MaxOrder, size_t... Ints>
   struct LayerIncreaser<MaxOrder, std::index_sequence<Ints...>> {
@@ -69,7 +70,8 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   //! Extends layer by cluster for an additional cluster dimension
-  template <size_t MaxOrder, class T> struct LayerExtender {};
+  template <size_t MaxOrder, class T>
+  struct LayerExtender {};
 
   template <size_t MaxOrder, size_t... Ints>
   struct LayerExtender<MaxOrder, std::index_sequence<Ints...>> {
@@ -91,16 +93,19 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   //! extractors helpers for cluster layers
   namespace internal {
-    template <size_t head, size_t... tail> struct Min {
+    template <size_t head, size_t... tail>
+    struct Min {
       constexpr static size_t value{
           head < Min<tail...>::value ? head : Min<tail...>::value};
     };
 
-    template <size_t head> struct Min<head> {
+    template <size_t head>
+    struct Min<head> {
       constexpr static size_t value{head};
     };
 
-    template <class Sequence> struct MinExtractor {};
+    template <class Sequence>
+    struct MinExtractor {};
 
     template <size_t... Ints>
     struct MinExtractor<std::index_sequence<Ints...>> {
@@ -110,7 +115,8 @@ namespace rascal {
     template <size_t Order, class Sequence, size_t... Ints>
     struct HeadExtractor {};
 
-    template <size_t... seq> struct HeadExtractorTail {
+    template <size_t... seq>
+    struct HeadExtractorTail {
       using type = std::index_sequence<seq...>;
     };
 
@@ -264,4 +270,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif /* CLUSTERREFBASE_H */
+#endif  // SRC_STRUCTURE_MANAGERS_CLUSTER_REF_KEY_HH_

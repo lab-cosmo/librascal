@@ -28,8 +28,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef NEIGHBOURHOOD_PROPERTY_H
-#define NEIGHBOURHOOD_PROPERTY_H
+#ifndef SRC_STRUCTURE_MANAGERS_PROPERTY_HH_
+#define SRC_STRUCTURE_MANAGERS_PROPERTY_HH_
 
 #include "structure_managers/property_typed.hh"
 #include <basic_types.hh>
@@ -243,4 +243,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif /* NEIGHBOURHOOD_PROPERTY_H */
+#endif  // SRC_STRUCTURE_MANAGERS_PROPERTY_HH_

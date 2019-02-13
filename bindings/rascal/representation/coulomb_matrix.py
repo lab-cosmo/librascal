@@ -5,6 +5,7 @@ from ..neighbourlist import get_neighbourlist, get_neighbourlist_full_name
 from ..lib import RepresentationManager,FeatureManager
 from .base import RepresentationFactory
 
+
 class SortedCoulombMatrix(object):
     """
     Computes the Sorted Coulomb matrix representation [1].
@@ -62,7 +63,7 @@ class SortedCoulombMatrix(object):
                     size=self.size)
         return params
 
-    def transform(self,frames):
+    def transform(self, frames):
         """
         Compute the representation.
 
@@ -85,7 +86,7 @@ class SortedCoulombMatrix(object):
         inp = json.dumps(self.get_params())
 
         Nfeature = self.get_Nfeature()
-        features = FeatureManager.Dense_double(Nfeature,inp)
+        features = FeatureManager.Dense_double(Nfeature, inp)
 
         cms = map(RepresentationFactory,[self.name]*Nframe,
                      managers,[inp]*Nframe)
@@ -99,7 +100,7 @@ class SortedCoulombMatrix(object):
     def get_Nfeature(self):
         return int(self.size*(self.size+1)/2)
 
-    def get_size(self,managers):
+    def get_size(self, managers):
         Nneigh = []
         for manager in managers:
             for center in manager:

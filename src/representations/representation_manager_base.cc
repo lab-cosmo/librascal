@@ -25,14 +25,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #include "representations/representation_manager_base.hh"
 
 namespace rascal {
 
   std::string RepresentationManagerBase::get_options_string() {
     std::string out{};
-    for (const auto& item : this->options) {
+    for (const auto & item : this->options) {
       out += item.second + std::string(" ");
     }
     if (not out.empty()) {
@@ -48,9 +47,9 @@ namespace rascal {
   void RepresentationManagerBase::check_hyperparameters(
       const RepresentationManagerBase::reference_hypers_t & reference_items,
       const RepresentationManagerBase::hypers_t & hypers) {
-    for (const auto& reference_item : reference_items) {
-      auto&& key{reference_item.first};
-      auto&& val{reference_item.second};
+    for (const auto & reference_item : reference_items) {
+      auto && key{reference_item.first};
+      auto && val{reference_item.second};
 
       // check if the registered key belongs to the input dictionary
 
@@ -59,26 +58,26 @@ namespace rascal {
         // check if at least one is in hypers
         if (not val.empty()) {
           bool is_valid_value{false};
-          for (const auto& value : val) {
+          for (const auto & value : val) {
             if (value == hypers[key].get<std::string>()) {
               is_valid_value = true;
             }
           }
           // if the value does not appear in the list of possible values
           if (not is_valid_value) {
-            auto error_message{std::string("Option ") +
-                key + std::string(" with value ") +
-                hypers[key].get<std::string>() +
-                std::string(" is not implemented")};
+            auto error_message{std::string("Option ") + key +
+                               std::string(" with value ") +
+                               hypers[key].get<std::string>() +
+                               std::string(" is not implemented")};
             throw std::invalid_argument(error_message.c_str());
           }
         }
       } else {
-        auto error_message{std::string("Parameter '") +
-            key + std::string("' is missing from the inputs.")};
-          throw std::invalid_argument(error_message.c_str());
+        auto error_message{std::string("Parameter '") + key +
+                           std::string("' is missing from the inputs.")};
+        throw std::invalid_argument(error_message.c_str());
       }
     }
   }
 
-} // namesape rascal
+}  // namespace rascal

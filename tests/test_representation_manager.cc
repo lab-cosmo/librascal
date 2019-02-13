@@ -47,9 +47,9 @@ namespace rascal {
     // use of stable sort so 2 goes before 4
     true_order << 0, 1, 3, 2, 4;
 
-    auto test_order = internal::SortCoulomMatrix<
-      internal::CMSortAlgorithm::RowNorm>::get_coulomb_matrix_sorting_order(
-                                              test_matrix, test_matrix);
+    auto test_order =
+        internal::SortCoulomMatrix<internal::CMSortAlgorithm::RowNorm>::
+            get_coulomb_matrix_sorting_order(test_matrix, test_matrix);
 
     for (auto idx_i{0}; idx_i < true_order.size(); ++idx_i) {
       BOOST_CHECK_EQUAL(true_order(idx_i), test_order[idx_i].first);
@@ -72,9 +72,9 @@ namespace rascal {
     // use of stable sort so 2 goes before 4
     true_order << 0, 3, 2, 1;
 
-    auto test_order = internal::SortCoulomMatrix<
-        internal::CMSortAlgorithm::Distance>::get_coulomb_matrix_sorting_order(
-                  test_matrix, test_matrix);
+    auto test_order =
+        internal::SortCoulomMatrix<internal::CMSortAlgorithm::Distance>::
+            get_coulomb_matrix_sorting_order(test_matrix, test_matrix);
 
     for (auto idx_i{0}; idx_i < true_order.size(); ++idx_i) {
       BOOST_CHECK_EQUAL(true_order(idx_i), test_order[idx_i].first);
@@ -136,7 +136,6 @@ namespace rascal {
     auto & representations = Fix::representations;
     auto & ref_data = Fix::ref_data;
 
-
     // Choose the data depending on the current options
     using Std2DArray_t = std::vector<std::vector<double>>;
 
@@ -163,9 +162,9 @@ namespace rascal {
                             test_representation.cols());
 
           for (size_t col_i{0}; col_i < ref_representation[row_i].size();
-              ++col_i) {
+               ++col_i) {
             auto diff{std::abs(ref_representation[row_i][col_i] -
-                              test_representation(row_i, col_i))};
+                               test_representation(row_i, col_i))};
             BOOST_CHECK_LE(diff, 1e-12);
           }
         }
@@ -194,8 +193,8 @@ namespace rascal {
     auto& representations = Fix::representations;
     const auto& hypers = Fix::hypers;
 
-    for (auto& manager : managers) {
-      for (const auto& hyper : hypers) {
+    for (auto & manager : managers) {
+      for (const auto & hyper : hypers) {
         representations.emplace_back(manager, hyper);
         BOOST_CHECK(representations.back().get_is_precomputed() == false);
         representations.back().precompute();
@@ -209,7 +208,7 @@ namespace rascal {
     }
   }
 
-  //TODO(max-veit) see if this is made redundant by the general "check
+  // TODO(max-veit) see if this is made redundant by the general "check
   //               representation against file" template above
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(
       multiple_compute_test, Fix, multiple_fixtures, Fix) {
@@ -223,7 +222,7 @@ namespace rascal {
     auto filename_it{filenames.begin()};
     auto cutoff_it{cutoffs.begin()};
 
-    for (auto& manager : managers) {
+    for (auto & manager : managers) {
       if (verbose) {
         if (filename_it != filenames.end()) {
           std::cout << "Structure: " << *filename_it;
@@ -237,24 +236,25 @@ namespace rascal {
           std::cout << "Structure: Filename unknown" << std::endl;
         }
       }
-      for (const auto& hyper : hypers) {
+      for (const auto & hyper : hypers) {
         representations.emplace_back(manager, hyper);
         // Should be done automatically in compute()
         // TODO(max-veit) make that its own test case
-        //representations.back().precompute();
+        // representations.back().precompute();
         representations.back().compute();
         // Check dimensions of the storage array
         size_t max_radial = hyper.at("max_radial");
-        size_t max_angular =  hyper.at("max_angular");
+        size_t max_angular = hyper.at("max_angular");
         BOOST_CHECK(representations.back().get_feature_size() ==
-          max_radial * (max_angular + 1) * (max_angular + 1));
+                    max_radial * (max_angular + 1) * (max_angular + 1));
         if (verbose) {
           size_t center_idx{0};
           for (auto center : manager) {
             std::cout << "Soap vector for center: " << center_idx++;
             std::cout << std::endl;
-            representations.back().print_soap_vector(center, std::cout);
-            //std::cout << std::endl;
+            if (verbose) {
+              representations.back().print_soap_vector(center, std::cout);
+            }
           }
         }
       }
@@ -264,4 +264,3 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE_END();
 
 }  // namespace rascal
-

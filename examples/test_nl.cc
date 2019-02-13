@@ -40,18 +40,17 @@
 #include <cmath>
 #include <list>
 
-//using namespace std;
-using namespace rascal; // NOLINT
+// using namespace std;
+using namespace rascal;  // NOLINT
 
-//using Manager_t = StructureManagerCenters;
+// using Manager_t = StructureManagerCenters;
 constexpr static int dim{3};
 using Vector_t = Eigen::Matrix<double, dim, 1>;
 
 using Representation_t = RepresentationManagerSortedCoulomb<
-              AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
+    AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
 
-
-template<class StructureManager>
+template <class StructureManager>
 struct MultipleStrictStructureManager {
   using Manager1_t = StructureManager;
   using Manager2_t = AdaptorNeighbourList<Manager1_t>;
@@ -194,31 +193,29 @@ int main() {
     }
   }
 
-  for (auto& manager : meta.managers) {
+  for (auto & manager : meta.managers) {
     // double central_decay{10};
     // double interaction_cutoff{10};
     // double interaction_decay{10};
     // size_t size{50};
-    json hypers{
-      {"central_decay", 10},
-      {"interaction_cutoff", 10},
-      {"interaction_decay", 10},
-      {"size", 50},
-      {"sorting_algorithm", "distance"}
-    };
+    json hypers{{"central_decay", 10},
+                {"interaction_cutoff", 10},
+                {"interaction_decay", 10},
+                {"size", 50},
+                {"sorting_algorithm", "distance"}};
     Representation_t representation{manager, hypers};
     representation.compute();
 
     auto rep = representation.get_representation_full();
     if (verbose_rep) {
-        std::cout << rep.size() <<", "<< rep.cols() <<", "
-                                    << rep.rows() << std::endl;
-        for (auto ii{0}; ii < rep.cols(); ++ii) {
-            for (auto jj{0}; jj < rep.rows(); ++jj) {
-                std::cout << rep(jj, ii) << ", ";
-            }
-            std::cout << std::endl;
+      std::cout << rep.size() << ", " << rep.cols() << ", " << rep.rows()
+                << std::endl;
+      for (auto ii{0}; ii < rep.cols(); ++ii) {
+        for (auto jj{0}; jj < rep.rows(); ++jj) {
+          std::cout << rep(jj, ii) << ", ";
         }
+        std::cout << std::endl;
+      }
     }
   }
 

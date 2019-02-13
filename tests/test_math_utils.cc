@@ -31,7 +31,7 @@
 namespace rascal {
   // Double ftol defined in test_math.hh (currently 100*eps, so about the same
   // as below)
-  //constexpr static double math_tol{1e-14};
+  // constexpr static double math_tol{1e-14};
 
   BOOST_AUTO_TEST_SUITE(MathUtilsTests);
 
@@ -67,8 +67,8 @@ namespace rascal {
     for (size_t vec_idx{0}; vec_idx < unit_vectors.size(); vec_idx++) {
       Eigen::Vector3d direction(unit_vectors[vec_idx].data());
       size_t max_angular = harmonics[vec_idx].size() - 1;
-      Eigen::MatrixXd computed_harmonics = math::compute_spherical_harmonics(
-          direction, max_angular);
+      Eigen::MatrixXd computed_harmonics =
+          math::compute_spherical_harmonics(direction, max_angular);
       if (verbose) {
         std::cout << "Testing unit vector: " << direction << std::endl;
         std::cout << "Max angular momentum: l_max=" << max_angular << std::endl;
@@ -79,14 +79,14 @@ namespace rascal {
         if (verbose) {
           std::cout << std::setprecision(10) << "Coefficients for l=";
           std::cout << angular_l << ": ";
-          std::cout << computed_harmonics.block(
-                          angular_l, 0, 1, 2*angular_l + 1);
+          std::cout << computed_harmonics.block(angular_l, 0, 1,
+                                                2 * angular_l + 1);
           std::cout << std::endl;
         }
-        for (size_t m_idx{0}; m_idx < 2*angular_l + 1; m_idx++) {
+        for (size_t m_idx{0}; m_idx < 2 * angular_l + 1; m_idx++) {
           // Check both the harmonics and their order in memory
-          auto error{std::abs(computed_harmonics(angular_l, m_idx)
-                              - harmonics[vec_idx][angular_l][m_idx])};
+          auto error{std::abs(computed_harmonics(angular_l, m_idx) -
+                              harmonics[vec_idx][angular_l][m_idx])};
 
           BOOST_CHECK_LE(error, math::dbl_ftol);
         }
@@ -125,8 +125,8 @@ namespace rascal {
     for (size_t vec_idx{0}; vec_idx < unit_vectors.size(); vec_idx++) {
       Eigen::Vector3d direction(unit_vectors[vec_idx].data());
       size_t max_angular = harmonics[vec_idx].size() - 1;
-      Eigen::MatrixXd computed_alps = math::compute_assoc_legendre_polynom(
-          direction[2], max_angular);
+      Eigen::MatrixXd computed_alps =
+          math::compute_assoc_legendre_polynom(direction[2], max_angular);
       if (verbose) {
         std::cout << "Testing unit vector: " << direction.transpose();
         std::cout << std::endl;
@@ -143,8 +143,8 @@ namespace rascal {
         }
         for (size_t m_idx{0}; m_idx < angular_l + 1; m_idx++) {
           // Check both the ALPs and their order in memory
-          auto error{std::abs(computed_alps(angular_l, m_idx)
-                              - alps[vec_idx][angular_l][m_idx])};
+          auto error{std::abs(computed_alps(angular_l, m_idx) -
+                              alps[vec_idx][angular_l][m_idx])};
           BOOST_CHECK_LE(error, math::dbl_ftol);
         }
       }
@@ -156,21 +156,21 @@ namespace rascal {
                           SphericalHarmonicsRefFixture) {
     size_t max_m = 10;
     Eigen::VectorXd phi_test(5);
-    phi_test << 0, 0.1, math::PI/4, math::PI, math::PI*2;
+    phi_test << 0, 0.1, math::PI / 4, math::PI, math::PI * 2;
     for (size_t phi_idx{0}; phi_idx < 5; phi_idx++) {
       double cos_phi = std::cos(phi_test(phi_idx));
       double sin_phi = std::sin(phi_test(phi_idx));
-      Eigen::MatrixXd cos_sin_m_phi = math::compute_cos_sin_angle_multiples(
-          cos_phi, sin_phi, max_m);
+      Eigen::MatrixXd cos_sin_m_phi =
+          math::compute_cos_sin_angle_multiples(cos_phi, sin_phi, max_m);
       if (verbose) {
         std::cout << "Cos | sin (mφ), φ=" << phi_test(phi_idx) << std::endl;
         std::cout << cos_sin_m_phi.transpose() << std::endl;
       }
       for (size_t m_idx{0}; m_idx < max_m; m_idx++) {
         auto cos_error{std::abs(cos_sin_m_phi(m_idx, 0) -
-                                std::cos(m_idx*phi_test(phi_idx)))};
+                                std::cos(m_idx * phi_test(phi_idx)))};
         auto sin_error{std::abs(cos_sin_m_phi(m_idx, 1) -
-                                std::sin(m_idx*phi_test(phi_idx)))};
+                                std::sin(m_idx * phi_test(phi_idx)))};
         BOOST_CHECK_LE(cos_error, math::dbl_ftol);
         BOOST_CHECK_LE(sin_error, math::dbl_ftol);
       }
@@ -180,4 +180,4 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();
 
-}  // rascal
+}  // namespace rascal

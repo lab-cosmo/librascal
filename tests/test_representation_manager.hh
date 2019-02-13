@@ -26,8 +26,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef TEST_REPRESENTATION_H
-#define TEST_REPRESENTATION_H
+#ifndef TESTS_TEST_REPRESENTATION_MANAGER_HH_
+#define TESTS_TEST_REPRESENTATION_MANAGER_HH_
 
 #include "tests.hh"
 #include "test_structure.hh"
@@ -51,18 +51,16 @@ namespace rascal {
     MultipleStructureSortedCoulomb() = default;
     ~MultipleStructureSortedCoulomb() = default;
 
-    std::list<json> hypers{
-      {{"central_decay", 0.5},
-      {"interaction_cutoff", 10.},
-      {"interaction_decay", 0.5},
-      {"size", 120},
-      {"sorting_algorithm", "distance"}},
-      {{"central_decay", 0.5},
-      {"interaction_cutoff", 10.},
-      {"interaction_decay", 0.5},
-      {"size", 120},
-      {"sorting_algorithm", "row_norm"}}
-      };
+    std::list<json> hypers{{{"central_decay", 0.5},
+                            {"interaction_cutoff", 10.},
+                            {"interaction_decay", 0.5},
+                            {"size", 120},
+                            {"sorting_algorithm", "distance"}},
+                           {{"central_decay", 0.5},
+                            {"interaction_cutoff", 10.},
+                            {"interaction_decay", 0.5},
+                            {"size", 120},
+                            {"sorting_algorithm", "row_norm"}}};
   };
 
   struct MultipleStructureSphericalExpansion
@@ -71,21 +69,19 @@ namespace rascal {
     MultipleStructureSphericalExpansion() = default;
     ~MultipleStructureSphericalExpansion() = default;
 
-    std::vector<std::string> filenames {
-      "reference_data/simple_cubic_8.json",
-      "reference_data/small_molecule.json"
-      //"reference_data/methane.json"
+    std::vector<std::string> filenames{
+        "reference_data/simple_cubic_8.json",
+        "reference_data/small_molecule.json"
+        //"reference_data/methane.json"
     };
     std::vector<double> cutoffs{{1, 2, 3}};
 
-    std::list<json> hypers{{
-      {"interaction_cutoff", 6.0},
-      {"cutoff_smooth_width", 1.0},
-      {"max_radial", 10},
-      {"max_angular", 8},
-      {"gaussian_sigma_type", "Constant"},
-      {"gaussian_sigma_constant", 0.5}
-    }};
+    std::list<json> hypers{{{"interaction_cutoff", 6.0},
+                            {"cutoff_smooth_width", 1.0},
+                            {"max_radial", 10},
+                            {"max_angular", 8},
+                            {"gaussian_sigma_type", "Constant"},
+                            {"gaussian_sigma_constant", 0.5}}};
   };
 
   struct SortedCoulombTestData {
@@ -172,8 +168,8 @@ namespace rascal {
     std::list<Representation_t> representations{};
   };
 
-/* ---------------------------------------------------------------------- */
+  /* ---------------------------------------------------------------------- */
 
-} // RASCAL
+}  // namespace rascal
 
-#endif /* TEST_REPRESENTATION_H */
+#endif  // TESTS_TEST_REPRESENTATION_MANAGER_HH_

@@ -26,8 +26,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef MATH_UTILS_H
-#define MATH_UTILS_H
+#ifndef SRC_MATH_MATH_UTILS_HH_
+#define SRC_MATH_MATH_UTILS_HH_
 
 #include "math_interface.hh"
 #include <Eigen/Dense>
@@ -47,16 +47,17 @@ namespace rascal {
     /// How small a number must be to be considered effectively zero
     const double dbl_ftol = 100.0 * std::numeric_limits<double>::epsilon();
 
-    Eigen::MatrixXd compute_assoc_legendre_polynom(
-        double cos_theta, size_t max_angular);
+    Eigen::MatrixXd compute_assoc_legendre_polynom(double cos_theta,
+                                                   size_t max_angular);
 
-    Eigen::MatrixXd compute_cos_sin_angle_multiples(
-        double cos_phi, double sin_phi, size_t max_m);
+    Eigen::MatrixXd compute_cos_sin_angle_multiples(double cos_phi,
+                                                    double sin_phi,
+                                                    size_t max_m);
 
     Eigen::MatrixXd compute_spherical_harmonics(
-        const Eigen::Ref<const Eigen::Vector3d> &direction,
+        const Eigen::Ref<const Eigen::Vector3d> & direction,
         size_t max_angular);
-  } // math
-} // rascal
+  }  // namespace math
+}  // namespace rascal
 
-#endif /* MATH_UTILS_H */
+#endif  // SRC_MATH_MATH_UTILS_HH_

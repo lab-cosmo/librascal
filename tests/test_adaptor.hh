@@ -28,8 +28,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef TEST_ADAPTOR_H
-#define TEST_ADAPTOR_H
+#ifndef TESTS_TEST_ADAPTOR_HH_
+#define TESTS_TEST_ADAPTOR_HH_
 
 #include "tests.hh"
 #include "test_structure.hh"
@@ -180,4 +180,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif /* TEST_NEIGHBOURHOOD_H */
+#endif  // TESTS_TEST_ADAPTOR_HH_

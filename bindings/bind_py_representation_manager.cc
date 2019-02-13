@@ -25,22 +25,19 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
-
 #include "bind_include.hh"
 
-using namespace rascal; // NOLINT
+using namespace rascal;  // NOLINT
 
-template<typename RepresentationManager>
-decltype(auto) add_representation_manager(py::module & mod, py::module & ) {
+template <typename RepresentationManager>
+decltype(auto) add_representation_manager(py::module & mod, py::module &) {
   using Manager_t = typename RepresentationManager::Manager_t;
 
   std::string representation_name =
-        internal::GetBindingTypeName<RepresentationManager>();
+      internal::GetBindingTypeName<RepresentationManager>();
 
-  py::class_<RepresentationManager,
-             RepresentationManagerBase>
-             representation(mod, representation_name.c_str());
+  py::class_<RepresentationManager, RepresentationManagerBase> representation(
+      mod, representation_name.c_str());
   // use custom constructor to pass json formated string as initializer
   // an alternative would be to convert python dict to json internally
   // but needs some workon in the pybind machinery
@@ -53,7 +50,6 @@ decltype(auto) add_representation_manager(py::module & mod, py::module & ) {
 
   return representation;
 }
-
 
 //! Representation python binding
 void add_representation_managers(py::module & mod, py::module & m_garbage) {

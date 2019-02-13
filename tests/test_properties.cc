@@ -43,21 +43,20 @@ namespace rascal {
    * basically a fixture which provides a pair neighbour list based on positions
    * which are initialized in the tests.
    */
-  template<class ManagerImplementation>
-  struct PropertyFixture
-    : public PairFixture<ManagerImplementation> {
+  template <class ManagerImplementation>
+  struct PropertyFixture : public PairFixture<ManagerImplementation> {
     using Manager_t = AdaptorNeighbourList<ManagerImplementation>;
 
     using PairScalarProperty_t =
-      typename Manager_t::template Property_t<double, 2>;
+        typename Manager_t::template Property_t<double, 2>;
     using AtomVectorProperty_t =
-      typename Manager_t::template Property_t<double, 1, 3, 1>;
+        typename Manager_t::template Property_t<double, 1, 3, 1>;
     using AtomDynamicProperty_t =
-      typename Manager_t::template TypedProperty_t<size_t, 1>;
+        typename Manager_t::template TypedProperty_t<size_t, 1>;
     using AtomDynamicProperty2_t =
-      typename Manager_t::template TypedProperty_t<double, 1>;
+        typename Manager_t::template TypedProperty_t<double, 1>;
 
-    constexpr static Dim_t DynSize() {return 3;}
+    constexpr static Dim_t DynSize() { return 3; }
 
     std::string atom_property_metadata{"positions"};
     std::string dynamic_property_metadata{"arbitrary counters"};
@@ -102,7 +101,7 @@ namespace rascal {
     pair_property_counter = 0;
     for (auto atom : pair_manager) {
       auto error = (atom_property[atom] - atom.get_position()).norm();
-      BOOST_CHECK_LE(error, tol*100);
+      BOOST_CHECK_LE(error, tol * 100);
       for (auto pair : atom) {
         BOOST_CHECK_EQUAL(pair_property[pair], ++pair_property_counter);
       }
@@ -114,7 +113,7 @@ namespace rascal {
    * test, if metadata can be assigned to properties
    */
   BOOST_FIXTURE_TEST_CASE(meta_data_test,
-                          PropertyFixture<StructureManagerCenters> ) {
+                          PropertyFixture<StructureManagerCenters>) {
     auto atom_metadata = atom_property.get_metadata();
     auto dynamic_metadata = dynamic_property.get_metadata();
     auto dynamic_metadata2 = dynamic_property2.get_metadata();
@@ -137,12 +136,12 @@ namespace rascal {
     dynamic_property.resize();
     dynamic_property2.resize();
 
-    BOOST_CHECK_THROW(AtomVectorProperty_t
-                      ::check_compatibility(dynamic_property),
-                      std::runtime_error);
+    BOOST_CHECK_THROW(
+        AtomVectorProperty_t ::check_compatibility(dynamic_property),
+        std::runtime_error);
 
-    BOOST_CHECK_NO_THROW(AtomVectorProperty_t
-                         ::check_compatibility(atom_property));
+    BOOST_CHECK_NO_THROW(
+        AtomVectorProperty_t ::check_compatibility(atom_property));
 
     int pair_property_counter{};
     size_t counter{};
@@ -157,13 +156,13 @@ namespace rascal {
     }
 
     auto & FakeSizedProperty{
-      AtomVectorProperty_t::check_compatibility(dynamic_property2)};
+        AtomVectorProperty_t::check_compatibility(dynamic_property2)};
 
     pair_property_counter = 0;
     counter = 0;
     for (auto atom : pair_manager) {
       auto error = (atom_property[atom] - atom.get_position()).norm();
-      BOOST_CHECK_LE(error, tol*100);
+      BOOST_CHECK_LE(error, tol * 100);
       Eigen::Matrix<size_t, DynSize(), Eigen::Dynamic> tmp(DynSize(), 1);
       tmp << counter++, counter, counter;
 
@@ -171,9 +170,9 @@ namespace rascal {
       BOOST_CHECK_EQUAL(ierror, 0);
 
       error = (atom_property[atom] - dynamic_property2[atom]).norm();
-      BOOST_CHECK_LE(error, tol*100);
+      BOOST_CHECK_LE(error, tol * 100);
       error = (atom_property[atom] - FakeSizedProperty[atom]).norm();
-      BOOST_CHECK_LE(error, tol*100);
+      BOOST_CHECK_LE(error, tol * 100);
       for (auto pair : atom) {
         BOOST_CHECK_EQUAL(pair_property[pair], ++pair_property_counter);
       }
@@ -192,7 +191,7 @@ namespace rascal {
     for (auto atom : pair_manager) {
       for (auto pair : atom) {
         pair_property[pair] =
-          (atom.get_position() - pair.get_position()).norm();
+            (atom.get_position() - pair.get_position()).norm();
       }
     }
 
@@ -207,4 +206,4 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE_END();
 
-}  // rascal
+}  // namespace rascal

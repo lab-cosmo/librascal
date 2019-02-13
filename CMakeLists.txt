@@ -1,3 +1,35 @@
+# =============================================================================
+# file   CMakeLists.txt
+#
+# @author Till Junge <till.junge@epfl.ch
+# @author Felix Musil <felix.musil@epfl.ch>
+# @author Markus Stricker <markus.stricker@epfl.ch>
+#
+# @date   17 Jan 2019
+#
+# @brief  Main configuration file
+#
+# @section LICENSE
+#
+# Copyright © 2018 Till Junge, Felix Musil, Markus Stricker, COSMO (EPFL), LAMMM
+# (EPFL)
+#
+# Rascal is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public License as
+# published by the Free Software Foundation, either version 3, or (at
+# your option) any later version.
+#
+# Rascal is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with Rascal; see the file COPYING. If not, write to the
+# Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+# Boston, MA 02111-1307, USA.
+# =============================================================================
+
 cmake_minimum_required(VERSION 3.0)
 
 # https://cmake.org/pipermail/cmake/2008-September/023808.html
@@ -31,7 +63,7 @@ set(RASCAL_PYTHON_MAJOR_VERSION 3)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 include(rascalTools)
 
-########## MAIN VARIABLE TO CHANGE THE BUILD AND INSTALL OF THE LIBRARY ############
+########## MAIN VARIABLE TO CHANGE THE BUILD AND INSTALL OF THE LIBRARY ########
 set(BUILD_BINDINGS "ON" CACHE BOOL
   "If on, the python bindings will be built.")
 
@@ -55,7 +87,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weffc++")
 # to avoid conflicts with built-in functions
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-builtin")
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang"
+    OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
   # using Clang
   add_compile_options(-Wno-missing-braces)
 
@@ -78,7 +112,8 @@ endif()
 ########## START CONFIGURATION ##########
 
 # set the name of the c++ libraries
-if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR
+    CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
   set(LIBRASCAL_NAME "rascal-dbg")
   set(LIBCEPHES_NAME "cephes-dbg")
 else()
@@ -90,6 +125,12 @@ add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
 
 # Try to find optional cpp linter
 include(cpplint)
+
+# Check for clang-format
+include(clangformat)
+
+# CHeck for autopep8
+include(autopep8)
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/tests
@@ -106,7 +147,8 @@ if(BUILD_BINDINGS)
   find_package(PythonLibsNew 3 MODULE REQUIRED)
 
   # warning about potential side effects of the installation of the python library
-  if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+  if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR
+      CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     if(NOT PYTHON_IS_DEBUG)
       message(WARNING "The current configuration will build debug libraries "
               "not linked to a debug python interpreter. "
@@ -169,7 +211,6 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 if (${BUILD_TESTS})
   find_package(Boost REQUIRED COMPONENTS unit_test_framework )
   enable_testing()
-
   # build c++ tests and add to test suite
   file( GLOB TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/test_*.cc")
 
@@ -256,7 +297,7 @@ foreach(pybin ${pybins})
     COPYONLY)
 endforeach(pybin ${pybins})
 
-
+# Checking hh/cc files for compliance with coding conventions
 if(CPPLINT_FOUND)
   # register the folders to check for cpp code conventions compliance
   cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/src" "")
@@ -264,4 +305,22 @@ if(CPPLINT_FOUND)
   cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
   cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/examples"
   "--filter=-build/namespaces")
+endif()
+
+# Add all hh/cc files for autoformatting with clang-format
+if(CLANG_FORMAT_FOUND)
+  # register the folders to apply clang-format with given configuration
+  # .clang-format in project root folder
+  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/src" "")
+  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
+  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
+  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/examples")
+endif()
+
+# Add python files for autoformatting with autopep8
+if(AUTOPEP8_FOUND)
+  # register the folders to apply autopep8 with given configuration
+  # .pycodestyle in project root folder
+  autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
+  autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
 endif()

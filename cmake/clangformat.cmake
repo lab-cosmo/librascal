@@ -10,11 +10,10 @@
 #
 # Copyright (c) 2016 Piotr L. Figlarek
 #
-# Usage
-# -----
-# Include this module via CMake include(...) command and then add each source directory
-# via introduced by this module cpplint_add_subdirectory(...) function. Added directory
-# will be recursivelly scanned and all available files will be checked.
+# Usage ----- Include this module via CMake include(...) command and then add
+# each source directory via introduced by this module
+# cpplint_add_subdirectory(...) function. Added directory will be recursivelly
+# scanned and all available files will be checked.
 #
 # Example
 # -------
@@ -45,64 +44,61 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-
-# select files extensions to check
+# Custom target to invoke clang-format on all c++ files in the project
+# The style is customized in the /.clang-format file in project root
 
 # target to run cpplint.py for all configured sources
-set(CPPLINT_TARGET lint CACHE STRING "Name of C++ style checker target")
+set(CLANG_FORMAT_TARGET pretty-cpp CACHE STRING "Name of C++ autoformatter")
 
-mark_as_advanced(CPPLINT_TARGET)
+mark_as_advanced(CLANG_FORMAT_TARGET)
 
 # project root directory
-set(CPPLINT_PROJECT_ROOT ${PROJECT_SOURCE_DIR} CACHE STRING "Project ROOT directory")
+set(CLANG_FORMAT_PROJECT_ROOT
+  ${PROJECT_SOURCE_DIR} CACHE STRING "Project ROOT directory"
+  )
 
-mark_as_advanced(CPPLINT_PROJECT_ROOT)
-mark_as_advanced(CPPLINT)
+mark_as_advanced(CLANG_FORMAT_PROJECT_ROOT)
+mark_as_advanced(CLANG_FORMAT)
 
-# find cpplint.py script
-find_file(CPPLINT name cpplint HINTS $ENV{HOME}/.local/bin /usr/bin  )
-if(CPPLINT)
-    message(STATUS "cpplint parser: ${CPPLINT}")
+# find clang-format executable
+find_file(CLANG_FORMAT name clang-format HINTS $ENV/usr/bin)
+if(CLANG_FORMAT)
+    message(STATUS "clang-format executable: ${CLANG_FORMAT}")
     # common target to concatenate all cpplint.py targets
-    add_custom_target(${CPPLINT_TARGET})
-    set(CPPLINT_FOUND TRUE)
+    add_custom_target(${CLANG_FORMAT_TARGET})
+    set(CLANG_FORMAT_FOUND TRUE)
 else()
-    message(STATUS "The optional cpplint parser has not been found. "
-                    "For more information see https://pypi.python.org/pypi/cpplint")
-    set(CPPLINT_FOUND FALSE)
+  message(STATUS "The optional clang-format auto formatter has not been"
+    " found. For more information see"
+    " https://clang.llvm.org/docs/ClangFormat.html")
+    set(CLANG_FORMAT_FOUND FALSE)
 endif()
 
-
-
-
-# use cpplint.py to check source code files inside DIR directory
-function(cpplint_add_subdirectory DIR FLAGS)
+# use clang-format to autoformat source code files DIR
+function(clang_format_add_subdirectory DIR)
     # create relative path to the directory
     set(ABSOLUTE_DIR ${DIR})
 
     set(EXTENSIONS cc,hh)
-    set(FILES_TO_CHECK ${FILES_TO_CHECK} ${ABSOLUTE_DIR}/*.cc ${ABSOLUTE_DIR}/*.hh)
+    set(FILES_TO_CHECK ${FILES_TO_CHECK}
+      ${ABSOLUTE_DIR}/*.cc ${ABSOLUTE_DIR}/*.hh
+      )
 
     # find all source files inside project
     file(GLOB_RECURSE LIST_OF_FILES ${FILES_TO_CHECK})
 
     # create valid target name for this check
     string(REGEX REPLACE "/" "." TEST_NAME ${DIR})
-    set(TARGET_NAME ${CPPLINT_TARGET}.${TEST_NAME})
+    set(TARGET_NAME ${CLANG_FORMAT_TARGET}.${TEST_NAME})
 
-    # perform cpplint check
+    # autoformat all hh/cc files in project
     add_custom_target(${TARGET_NAME}
-        COMMAND ${CPPLINT} "--extensions=${EXTENSIONS}"
-                           "--root=${CPPLINT_PROJECT_ROOT}"
-                           "${FLAGS}"
-                           ${LIST_OF_FILES}
+        COMMAND ${CLANG_FORMAT} -i ${LIST_OF_FILES}
         DEPENDS ${LIST_OF_FILES}
-        COMMENT "cpplint: Checking source code style"
+        COMMENT "clang-format: autoformatting all hh/cc files"
     )
 
-    # run this target when root cpplint.py test is triggered
-    add_dependencies(${CPPLINT_TARGET} ${TARGET_NAME})
+    # run this target when `make pretty` is invoked
+    add_dependencies(${CLANG_FORMAT_TARGET} ${TARGET_NAME})
 
-    # add this test to CTest
-    add_test(${TARGET_NAME} ${CMAKE_MAKE_PROGRAM} ${TARGET_NAME})
 endfunction()

@@ -27,8 +27,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef ATOMIC_STRUCTURE_H
-#define ATOMIC_STRUCTURE_H
+#ifndef SRC_ATOMIC_STRUCTURE_HH_
+#define SRC_ATOMIC_STRUCTURE_HH_
 
 #include "basic_types.hh"
 #include "json_io.hh"
@@ -170,4 +170,4 @@ namespace rascal {
   };
 }  // namespace rascal
 
-#endif /* ATOMIC_STRUCTURE_H */
+#endif  // SRC_ATOMIC_STRUCTURE_HH_

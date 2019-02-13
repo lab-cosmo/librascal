@@ -138,7 +138,7 @@ namespace rascal {
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
     atom_cluster_indices.fill_sequence();
 
-    
+
   }
 
   /* ---------------------------------------------------------------------- */
@@ -152,4 +152,4 @@ namespace rascal {
   }
   /* ---------------------------------------------------------------------- */
 
-} // rascal
+}  // namespace rascal

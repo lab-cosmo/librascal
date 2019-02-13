@@ -27,8 +27,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef STRUCTURE_MANAGER_CENTERS_H
-#define STRUCTURE_MANAGER_CENTERS_H
+#ifndef SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_CENTERS_HH_
+#define SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_CENTERS_HH_
 
 // inclusion of librascal data structure, each manager is based on the interface
 // given in `structure_manager.hh`
@@ -362,4 +362,4 @@ namespace rascal {
   }
 }  // namespace rascal
 
-#endif /* STRUCTURE_MANAGER_CENTERS_H */
+#endif  // SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_CENTERS_HH_

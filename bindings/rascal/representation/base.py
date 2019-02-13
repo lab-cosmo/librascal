@@ -4,7 +4,7 @@ _representations_list = ["sortedcoulomb", "sphericalexpansion"]
 
 
 _representations = {}
-for k,v in RepresentationManager.__dict__.items():
+for k, v in RepresentationManager.__dict__.items():
     if "pybind11_builtins.pybind11_type" in str(type(v)):
         kl = k.lower()
         for name in _representations_list:
