@@ -1,4 +1,5 @@
 from ..lib import NeighbourList
+import numpy as np
 
 _neighbourlist_list = ["centers","neighbourlist","strict","maxorder","halflist","fulllist"]
 

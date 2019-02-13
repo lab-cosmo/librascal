@@ -11,5 +11,5 @@ for k,v in RepresentationManager.__dict__.items():
             if name in kl:
                  _representations[kl] = v
 
-def RepresentationFactory(name,*options):
-    return _representations[name]
+def RepresentationFactory(name,*args):
+    return _representations[name](*args)

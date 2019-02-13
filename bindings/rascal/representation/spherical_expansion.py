@@ -1,6 +1,6 @@
 import json
 
-from ..utils import get_neighbourlist, get_neighbourlist_full_name
+from ..neighbourlist import get_neighbourlist, get_neighbourlist_full_name
 from ..lib import RepresentationManager, FeatureManager
 from .base import RepresentationFactory
 
@@ -104,11 +104,11 @@ class SphericalExpansion(object):
 
         """
         n_frames = len(frames)
-        managers = list(map(get_neighbourlist,frames,[self.nl_options]*Nframe))
+        managers = list(map(get_neighbourlist,frames,[self.nl_options]*n_frames))
         hypers_str = json.dumps(self.hypers)
         n_features = self.get_num_coefficients()
         features = FeatureManager.Dense_double(n_features, hypers_str)
-        cms = map(RepresentationFactory(self.name),
+        cms = map(RepresentationFactory,[self.name]*n_frames,
                   managers, [hypers_str, ] * n_frames)
         for cm in cms:
             cm.compute()

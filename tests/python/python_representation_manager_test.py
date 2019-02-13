@@ -42,3 +42,5 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
                         interaction_decay=self.interaction_decay,
                         size=self.size)
                         )
+    def test_manager_iteration(self):
+        

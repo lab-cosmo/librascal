@@ -87,7 +87,7 @@ class SortedCoulombMatrix(object):
         Nfeature = self.get_Nfeature()
         features = FeatureManager.Dense_double(Nfeature,inp)
 
-        cms = map(RepresentationFactory(self.name),
+        cms = map(RepresentationFactory,[self.name]*Nframe,
                      managers,[inp]*Nframe)
 
         for cm in cms:
