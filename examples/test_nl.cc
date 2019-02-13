@@ -62,8 +62,8 @@ struct MultipleStrictStructureManager {
     for (auto filename : filenames) {
       for (auto cutoff : cutoffs) {
         auto manager =
-            make_structure_manager_stack<StructureManager, AdaptorNeighbourList,
-                                         AdaptorStrict>(
+            make_structure_manager_stack<
+            StructureManager, AdaptorNeighbourList, AdaptorStrict>(
                 filename, cutoff, consider_ghost_neighbours, cutoff);
         this->managers.emplace_back(manager);
       }
