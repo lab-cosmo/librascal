@@ -406,7 +406,7 @@ namespace rascal {
     if (not this->is_precomputed) {
       this->precompute();
     }
-
+    this->soap_vectors.resize_to_zero();
     this->soap_vectors.set_nb_row(this->n_species * this->max_radial);
     this->soap_vectors.set_nb_col(pow(this->max_angular + 1, 2));
 

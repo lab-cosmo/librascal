@@ -249,12 +249,17 @@ void bind_update_unpacked(PyManager<StructureManagerImplementation> & manager) {
                 manager.update(positions, atom_types, cell, pbc);
               },
               py::arg("positions"), py::arg("atom_types"), py::arg("cell"),
-              py::arg("pbc"));
+              py::arg("pbc"),
+              py::call_guard<py::gil_scoped_release>());
 }
 
 template <typename StructureManagerImplementation>
 void bind_update_empty(PyManager<StructureManagerImplementation> & manager) {
-  manager.def("update", [](StructureManagerImplementation & v) { v.update(); });
+  manager.def("update",
+            [](StructureManagerImplementation & v) {
+                v.update();
+            },
+            py::call_guard<py::gil_scoped_release>());
 }
 
 /**

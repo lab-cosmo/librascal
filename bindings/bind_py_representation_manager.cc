@@ -47,8 +47,8 @@ decltype(auto) add_representation_manager(py::module & mod, py::module &) {
     json hypers = json::parse(hyper_str);
     return std::make_unique<RepresentationManager>(std::move(manager), hypers);
   }));
-  representation.def("compute", &RepresentationManager::compute);
-
+  representation.def("compute", &RepresentationManager::compute,
+                    py::call_guard<py::gil_scoped_release>());
   return representation;
 }
 
