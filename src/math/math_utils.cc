@@ -134,8 +134,7 @@ namespace rascal {
     Eigen::MatrixXd compute_cos_sin_angle_multiples(double cos_phi,
                                                     double sin_phi,
                                                     size_t max_m) {
-      Eigen::MatrixXd cos_sin_m_phi =
-          Eigen::MatrixXd::Zero(max_m + 1, 2);
+      Eigen::MatrixXd cos_sin_m_phi = Eigen::MatrixXd::Zero(max_m + 1, 2);
       // cos_sin_m_phi.resize(max_m + 1, 2);
       for (size_t m_count{0}; m_count < max_m + 1; m_count++) {
         if (m_count == 0) {

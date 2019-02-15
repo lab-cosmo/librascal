@@ -351,7 +351,7 @@ namespace rascal {
   template <class Mngr>
   void RepresentationManagerSortedCoulomb<Mngr>::compute() {
     auto option{this->options["sorting_algorithm"]};
-    
+
     if (option == "distance") {
       compute_helper<internal::CMSortAlgorithm::Distance>();
     } else if (option == "row_norm") {

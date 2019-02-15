@@ -61,13 +61,13 @@ struct MultipleStrictStructureManager {
 
   MultipleStrictStructureManager() {
     std::vector<std::string> filenames{{"alanine-X.json"}};
-    std::vector<double> cutoffs{{2,3}};
+    std::vector<double> cutoffs{{2, 3}};
     bool consider_ghost_neighbours{false};
     for (auto filename : filenames) {
       for (auto cutoff : cutoffs) {
         auto manager =
-            make_structure_manager_stack<
-            StructureManager, AdaptorNeighbourList, AdaptorStrict>(
+            make_structure_manager_stack<StructureManager, AdaptorNeighbourList,
+                                         AdaptorStrict>(
                 filename, cutoff, consider_ghost_neighbours, cutoff);
         this->managers.emplace_back(manager);
       }
@@ -108,9 +108,9 @@ int main() {
       AdaptorTypeHolder_t>::apply(aa)};
   std::cout << man->get_name() << std::endl;
   // and there
-  auto mmmm = make_structure_manager_stack<
-      StructureManagerCenters, AdaptorNeighbourList, AdaptorStrict>(
-                filename, cutoff, consider_ghost_neighbours, cutoff);
+  auto mmmm = make_structure_manager_stack<StructureManagerCenters,
+                                           AdaptorNeighbourList, AdaptorStrict>(
+      filename, cutoff, consider_ghost_neighbours, cutoff);
 
   MultipleStrictStructureManager<StructureManagerCenters> meta{};
 
@@ -140,11 +140,11 @@ int main() {
   //               {"size", 20},
   //               {"sorting_algorithm", "distance"}};
   json hypers{{"interaction_cutoff", 6.0},
-                            {"cutoff_smooth_width", 1.0},
-                            {"max_radial", 10},
-                            {"max_angular", 8},
-                            {"gaussian_sigma_type", "Constant"},
-                            {"gaussian_sigma_constant", 0.5}};
+              {"cutoff_smooth_width", 1.0},
+              {"max_radial", 10},
+              {"max_angular", 8},
+              {"gaussian_sigma_type", "Constant"},
+              {"gaussian_sigma_constant", 0.5}};
 
   using Feature_t = FeatureManagerDense<double>;
   Feature_t features{810, hypers};
@@ -157,7 +157,7 @@ int main() {
 
     Representation_t representation{manager, hypers};
     representation.compute();
-    features.insert(i_center,representation);
+    features.insert(i_center, representation);
     i_center += manager->size();
     auto rep = representation.get_representation_full();
     if (verbose_rep) {
@@ -176,7 +176,7 @@ int main() {
 
   for (size_t ii{0}; ii < mat.cols(); ii++) {
     for (size_t jj{0}; jj < mat.rows(); jj++) {
-      std::cout << mat(jj,ii) << ", ";
+      std::cout << mat(jj, ii) << ", ";
     }
     std::cout << std::endl;
   }

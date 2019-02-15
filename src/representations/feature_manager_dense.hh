@@ -71,9 +71,8 @@ namespace rascal {
     void check_feature_compatibility(int & a, int & b) {
       if (a != b) {
         auto error = std::string("Incompatible number of features ") +
-                      std::to_string(a) +
-                      std::string(" != ") +
-                      std::to_string(b);
+                     std::to_string(a) + std::string(" != ") +
+                     std::to_string(b);
         throw std::length_error(error);
       }
     }
@@ -99,8 +98,8 @@ namespace rascal {
       auto iter{this->feature_matrix.begin()};
       iter += i_center * this->n_feature;
       this->feature_matrix.insert(iter,
-                            std::make_move_iterator(raw_data.begin()),
-                            std::make_move_iterator(raw_data.end()));
+                                  std::make_move_iterator(raw_data.begin()),
+                                  std::make_move_iterator(raw_data.end()));
     }
 
     void assign(size_t & i_center, RepresentationManager_t & rm) {
@@ -112,7 +111,7 @@ namespace rascal {
       size_t i_end{n_center * this->n_feature};
       size_t i_start{i_center * this->n_feature};
       for (size_t i_el{0}; i_el < i_end; i_el++) {
-        this->feature_matrix[i_start+i_el] = raw_data[i_el];
+        this->feature_matrix[i_start + i_el] = raw_data[i_el];
       }
     }
 
