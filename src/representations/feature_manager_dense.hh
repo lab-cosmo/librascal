@@ -68,9 +68,52 @@ namespace rascal {
     //! Move assignment operator
     FeatureManagerDense & operator=(FeatureManagerDense && other) = default;
 
+    void check_feature_compatibility(int & a, int & b) {
+      if (a != b) {
+        auto error = std::string("Incompatible number of features ") +
+                      std::to_string(a) +
+                      std::string(" != ") +
+                      std::to_string(b);
+        throw std::length_error(error);
+      }
+    }
+
     //! pre-allocate memory
     void reserve(size_t & n_center) {
       this->feature_matrix.reserve(n_center * this->n_feature);
+    }
+
+    //! pre-allocate memory
+    void resize(size_t & n_center) {
+      this->feature_matrix.resize(n_center * this->n_feature, 0.);
+      this->n_center += n_center;
+    }
+
+    void insert(size_t & i_center, RepresentationManager_t & rm) {
+      auto & raw_data{rm.get_representation_raw_data()};
+      auto n_feature{static_cast<int>(rm.get_feature_size())};
+      auto n_center{rm.get_center_size()};
+      this->n_center += n_center;
+      this->check_feature_compatibility(n_feature, this->n_feature);
+
+      auto iter{this->feature_matrix.begin()};
+      iter += i_center * this->n_feature;
+      this->feature_matrix.insert(iter,
+                            std::make_move_iterator(raw_data.begin()),
+                            std::make_move_iterator(raw_data.end()));
+    }
+
+    void assign(size_t & i_center, RepresentationManager_t & rm) {
+      auto & raw_data{rm.get_representation_raw_data()};
+      auto n_feature{static_cast<int>(rm.get_feature_size())};
+      auto n_center{rm.get_center_size()};
+      this->check_feature_compatibility(n_feature, this->n_feature);
+
+      size_t i_end{n_center * this->n_feature};
+      size_t i_start{i_center * this->n_feature};
+      for (size_t i_el{0}; i_el < i_end; i_el++) {
+        this->feature_matrix[i_start+i_el] = raw_data[i_el];
+      }
     }
 
     //! move data from the representation manager property
@@ -78,10 +121,7 @@ namespace rascal {
       auto & raw_data{rm.get_representation_raw_data()};
       auto n_center{rm.get_center_size()};
       int n_feature{static_cast<int>(rm.get_feature_size())};
-
-      if (n_feature != this->n_feature) {
-        throw std::length_error("Incompatible number of features");
-      }
+      this->check_feature_compatibility(n_feature, this->n_feature);
 
       this->n_center += n_center;
       this->feature_matrix.insert(this->feature_matrix.end(),
@@ -92,9 +132,7 @@ namespace rascal {
     //! move data from a feature vector
     void push_back(std::vector<T> feature_vector) {
       int n_feature{static_cast<int>(feature_vector.size())};
-      if (n_feature != this->n_feature) {
-        throw std::length_error("Incompatible number of features");
-      }
+      this->check_feature_compatibility(n_feature, this->n_feature);
       this->n_center += 1;
       this->feature_matrix.insert(
           this->feature_matrix.end(),

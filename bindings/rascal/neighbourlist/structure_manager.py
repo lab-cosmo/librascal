@@ -1,33 +1,50 @@
-import numpy as np
-from .base import NeighbourListFactory, unpack_ase, is_valid_structure
+from .base import NeighbourListFactory, is_valid_structure, adapt_structure
+import ase
 
-
-def get_neighbourlist(frame, options):
-    names = []
-    args = []
-    full_name = []
-    for opt in options:
-        full_name.insert(0, opt['name'])
-        name = '_'.join(full_name)
-        names.append(name)
-        args.append(opt['args'])
-
-    if not is_valid_structure(frame):
-        structure = unpack_ase(frame)
-    else:
-        structure = frame
-
-    managers = [NeighbourListFactory(names[0], *args[0])]
-    for name, arg in zip(names[1:], args[1:]):
-        manager = NeighbourListFactory(name, managers[-1], *arg)
-        managers.append(manager)
-    manager = managers[-1]
+def get_neighbourlist(structure, options):
+    manager = NeighbourListFactory(options)
     manager.update(**structure)
-    return managers[-1]
+    return manager
 
+def convert_to_structure(frame):
+    if is_valid_structure(frame):
+        structure = frame
+    else:
+        if is_ase_Atoms(frame):
+            structure = unpack_ase(frame)
+        else:
+            raise RuntimeError('Cannot convert structure of type {}'.format(type(frame)))
+    return structure
 
-def get_neighbourlist_full_name(options):
-    full_name = []
-    for opt in options:
-        full_name.insert(0, opt['name'])
-    return '_'.join(full_name)
+def is_ase_Atoms(frame):
+    is_ase = True
+    if not hasattr(frame, 'get_cell'):
+        is_ase = False
+    if not hasattr(frame, 'get_positions'):
+        is_ase = False
+    if not hasattr(frame, 'get_atomic_numbers'):
+        is_ase = False
+    if not hasattr(frame, 'get_pbc'):
+        is_ase = False
+    return is_ase
+
+def unpack_ase(frame):
+    """
+    Convert ASE Atoms object to rascal's equivalent
+
+    Parameters
+    ----------
+    frame : ase.Atoms
+        Atomic structure
+
+    Returns
+    -------
+    StructureManagerCenters
+        base structure manager.
+    """
+    cell = frame.get_cell()
+    positions = frame.get_positions()
+    numbers = frame.get_atomic_numbers()
+    pbc = frame.get_pbc().astype(int)
+
+    return adapt_structure(cell=cell, positions=positions, atom_types=numbers, pbc=pbc)

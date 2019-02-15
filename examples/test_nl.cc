@@ -31,6 +31,8 @@
 #include "structure_managers/make_structure_manager.hh"
 #include "rascal_utility.hh"
 #include "representations/representation_manager_sorted_coulomb.hh"
+#include "representations/representation_manager_spherical_expansion.hh"
+#include "representations/feature_manager_dense.hh"
 #include "basic_types.hh"
 
 #include <Eigen/StdVector>
@@ -46,7 +48,9 @@ using namespace rascal;  // NOLINT
 constexpr static int dim{3};
 using Vector_t = Eigen::Matrix<double, dim, 1>;
 
-using Representation_t = RepresentationManagerSortedCoulomb<
+// using Representation_t = RepresentationManagerSortedCoulomb<
+//     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
+using Representation_t = RepresentationManagerSphericalExpansion<
     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
 
 template <class StructureManager>
@@ -57,7 +61,7 @@ struct MultipleStrictStructureManager {
 
   MultipleStrictStructureManager() {
     std::vector<std::string> filenames{{"alanine-X.json"}};
-    std::vector<double> cutoffs{{3, 4}};
+    std::vector<double> cutoffs{{2,3}};
     bool consider_ghost_neighbours{false};
     for (auto filename : filenames) {
       for (auto cutoff : cutoffs) {
@@ -130,20 +134,31 @@ int main() {
       }
     }
   }
+  // json hypers{{"central_decay", 10},
+  //               {"interaction_cutoff", 10},
+  //               {"interaction_decay", 10},
+  //               {"size", 20},
+  //               {"sorting_algorithm", "distance"}};
+  json hypers{{"interaction_cutoff", 6.0},
+                            {"cutoff_smooth_width", 1.0},
+                            {"max_radial", 10},
+                            {"max_angular", 8},
+                            {"gaussian_sigma_type", "Constant"},
+                            {"gaussian_sigma_constant", 0.5}};
 
+  using Feature_t = FeatureManagerDense<double>;
+  Feature_t features{810, hypers};
+  size_t i_center{0};
   for (auto & manager : meta.managers) {
     // double central_decay{10};
     // double interaction_cutoff{10};
     // double interaction_decay{10};
     // size_t size{50};
-    json hypers{{"central_decay", 10},
-                {"interaction_cutoff", 10},
-                {"interaction_decay", 10},
-                {"size", 50},
-                {"sorting_algorithm", "distance"}};
+
     Representation_t representation{manager, hypers};
     representation.compute();
-
+    features.insert(i_center,representation);
+    i_center += manager->size();
     auto rep = representation.get_representation_full();
     if (verbose_rep) {
       std::cout << rep.size() << ", " << rep.cols() << ", " << rep.rows()
@@ -155,6 +170,15 @@ int main() {
         std::cout << std::endl;
       }
     }
+  }
+
+  auto mat = features.get_feature_matrix();
+
+  for (size_t ii{0}; ii < mat.cols(); ii++) {
+    for (size_t jj{0}; jj < mat.rows(); jj++) {
+      std::cout << mat(jj,ii) << ", ";
+    }
+    std::cout << std::endl;
   }
 
   return (0);

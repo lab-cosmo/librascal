@@ -1,1 +1,1 @@
-from .structure_manager import get_neighbourlist, get_neighbourlist_full_name
+from .structure_manager import get_neighbourlist, convert_to_structure

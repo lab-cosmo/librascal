@@ -75,6 +75,9 @@ namespace rascal {
     //! move data from the representation manager property
     virtual void push_back(RepresentationManager_t &) = 0;
 
+    //! move data from the representation manager property
+    virtual void insert(size_t &, RepresentationManager_t &) = 0;
+
     //! return number of elements of the flattened array
     virtual inline int size() = 0;
 

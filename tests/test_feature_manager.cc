@@ -40,7 +40,13 @@ namespace rascal {
                                       MultipleStructureSortedCoulomb>,
                        FeatureFixture<float, FeatureManagerDense,
                                       RepresentationManagerSortedCoulomb,
-                                      MultipleStructureSortedCoulomb>>;
+                                      MultipleStructureSortedCoulomb>,
+                       FeatureFixture<double, FeatureManagerDense,
+                                      RepresentationManagerSphericalExpansion,
+                                      MultipleStructureSphericalExpansion>,
+                       FeatureFixture<float, FeatureManagerDense,
+                                      RepresentationManagerSphericalExpansion,
+                                      MultipleStructureSphericalExpansion>>;
 
   /* ---------------------------------------------------------------------- */
   /**

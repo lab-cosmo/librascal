@@ -49,7 +49,15 @@ decltype(auto) bind_feature_manager(py::module & mod, py::module &) {
   }));
   feature.def("reserve", &Feature::reserve);
   feature.def("append", (void (Feature::*)(RepresentationManagerBase &)) &
-                            Feature::push_back);
+                            Feature::push_back,
+                            py::call_guard<py::gil_scoped_release>());
+  feature.def("insert", &Feature::insert,
+                    py::call_guard<py::gil_scoped_release>());
+  feature.def("resize", &Feature::resize,
+                py::call_guard<py::gil_scoped_release>());
+  feature.def("assign", &Feature::assign,
+                py::call_guard<py::gil_scoped_release>());
+  feature.def("assign", &Feature::assign);
   feature.def_property_readonly("size", &Feature::size,
                                 py::return_value_policy::copy);
   feature.def_property_readonly("shape", &Feature::shape,

@@ -12,11 +12,26 @@ for k, v in NeighbourList.__dict__.items():
         _neighbourlists[name] = v
 
 
-def NeighbourListFactory(name, *args):
-    if name not in _neighbourlists:
-        raise NameError('The neighbourlist factory {} has not been registered. The available combinations are: {}'.format(
-            name, list(_neighbourlists.keys())))
-    return _neighbourlists[name](*args)
+def NeighbourListFactory(nl_options):
+    names = []
+    args = []
+    full_name = []
+    for opt in nl_options:
+        full_name.insert(0, opt['name'])
+        name = '_'.join(full_name)
+        names.append(name)
+        args.append(opt['args'])
+
+        if name not in _neighbourlists:
+            raise NameError('The neighbourlist factory {} has not been registered. The available combinations are: {}'.format(
+                name, list(_neighbourlists.keys())))
+
+    managers = [_neighbourlists[names[0]]( *args[0])]
+    for name, arg in zip(names[1:], args[1:]):
+        manager = _neighbourlists[name](managers[-1], *arg)
+        managers.append(manager)
+
+    return managers[-1]
 
 
 def is_valid_structure(structure):
@@ -40,23 +55,4 @@ def adapt_structure(cell, positions, atom_types, pbc):
     return dict(cell=cell, positions=positions, atom_types=atom_types, pbc=pbc)
 
 
-def unpack_ase(frame):
-    """
-    Convert ASE Atoms object to rascal's equivalent
 
-    Parameters
-    ----------
-    frame : ase.Atoms
-        Atomic structure
-
-    Returns
-    -------
-    StructureManagerCenters
-        base structure manager.
-    """
-    cell = frame.get_cell()
-    positions = frame.get_positions()
-    numbers = frame.get_atomic_numbers()
-    pbc = frame.get_pbc().astype(int)
-
-    return adapt_structure(cell=cell, positions=positions, atom_types=numbers, pbc=pbc)
