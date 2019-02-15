@@ -112,11 +112,19 @@ namespace rascal {
     path = os.path.abspath('/local/git/librascal') # should be changed
     sys.path.insert(0, os.path.join(path, 'build/'))
     sys.path.insert(0, os.path.join(path, 'tests/'))
+    import json
+    from copy import copy
     from rascal.representation import SortedCoulombMatrix
-    from test_utils import load_json_frame
+
+    def load_json(fn):
+        with open(fn,'r') as f:
+            data = json.load(f)
+        return data[str(data['ids'][0])]
     def json2ase(f):
         from ase import Atoms
-        return Atoms(**{k:f[k] for k in ['positions','numbers','pbc','cell'] })
+        return Atoms(**{v:f[k] for k,v in
+    dict(positions='positions',atom_types='numbers',pbc='pbc',cell='cell').items()
+    })
 
     cutoffs = [2,3,4,5]
     sorts = ['row_norm','distance']
@@ -138,7 +146,7 @@ namespace rascal {
             data['rep_info'].append([])
             for sort in sorts:
                 rep = SortedCoulombMatrix(cutoff,sorting_algorithm=sort)
-                frame = [json2ase(load_json_frame(fn))]
+                frame = [json2ase(load_json(fn))]
                 features = rep.transform(frame)
                 test = features.get_feature_matrix()
                 hypers['size'] = rep.size
