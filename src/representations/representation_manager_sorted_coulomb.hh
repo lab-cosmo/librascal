@@ -355,7 +355,7 @@ namespace rascal {
     if (option == "distance") {
       compute_helper<internal::CMSortAlgorithm::Distance>();
     } else if (option == "row_norm") {
-      compute_helper<internal::CMSortAlgorithm::Distance>();
+      compute_helper<internal::CMSortAlgorithm::RowNorm>();
     } else {
       auto error_message{std::string("Option '") + option +
                          std::string("' is not implemented.")};

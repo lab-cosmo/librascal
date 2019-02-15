@@ -216,7 +216,7 @@ namespace rascal {
     auto & representations = Fix::representations;
     const auto & filenames = Fix::filenames;
     const auto & hypers = Fix::hypers;
-    bool verbose{true};
+    bool verbose{false};
 
     auto filename_it{filenames.begin()};
     auto cutoff_it{cutoffs.begin()};
@@ -249,11 +249,10 @@ namespace rascal {
         if (verbose) {
           size_t center_idx{0};
           for (auto center : manager) {
-            std::cout << "Soap vector for center: " << center_idx++;
-            std::cout << std::endl;
-            if (verbose) {
+              center_idx += 1;
+              std::cout << "Soap vector for center: " << center_idx;
+              std::cout << std::endl;
               representations.back().print_soap_vector(center, std::cout);
-            }
           }
         }
       }

@@ -109,10 +109,11 @@ namespace rascal {
     // name of the file containing the reference data. it has been generated
     // with the following python code:
     /*
+    import sys
     path = os.path.abspath('/local/git/librascal') # should be changed
     sys.path.insert(0, os.path.join(path, 'build/'))
     sys.path.insert(0, os.path.join(path, 'tests/'))
-    import json
+    import json, ubjson
     from copy import copy
     from rascal.representation import SortedCoulombMatrix
 
