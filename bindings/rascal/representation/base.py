@@ -3,6 +3,9 @@ from ..utils.pool_worker import FactoryPool
 from ..neighbourlist.base import NeighbourListFactory
 from ..neighbourlist.structure_manager import convert_to_structure
 
+import numpy as np
+import queue
+
 _representations_list = ["sortedcoulomb", "sphericalexpansion"]
 _representations = {}
 for k, v in RepresentationManager.__dict__.items():
@@ -39,9 +42,10 @@ def FeatureFactory(feature_options):
 class RepresentationRunner(object):
     def __init__(self, nl_options, rep_options, feature_options, method='thread', n_workers=1, disable_pbar=False):
         self.n_workers = n_workers
-        self.managers = [NeighbourListFactory(nl_options) for _ in range(self.n_thread)]
-        self.representations = [RepresentationFactory(manager, rep_options) for manager in managers]
+        self.managers = [NeighbourListFactory(nl_options) for _ in range(self.n_workers)]
+        self.representations = [RepresentationFactory(manager, rep_options) for manager in self.managers]
         self.feature_options = feature_options
+        self.method = method
 
     def run(self, frames):
         structures = [convert_to_structure(frame) for frame in frames]
@@ -53,12 +57,12 @@ class RepresentationRunner(object):
         features = FeatureFactory(self.feature_options)
         features.resize(n_centers)
 
-        pool = FactoryPool(method, self.n_workers)
+        pool = FactoryPool(self.method, self.n_workers)
         index_q = queue.Queue()
-        for ii in range(self.n_thread):
+        for ii in range(self.n_workers):
             index_q.put(ii)
         feature_q = queue.Queue()
-        feature_q.put(self.features)
+        feature_q.put(features)
 
         inputs = [(self.managers,self.representations,it,structure,feature_q,index_q) for it,structure in zip(structure_ids,structures)]
 
