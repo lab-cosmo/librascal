@@ -126,7 +126,20 @@ int main() {
   sp_expansion.compute();
 
   // auto rep = sp_expansion.get_representation_full();
+  auto X = sp_expansion.get_representation_full();
+  if ((X.array() > 10000000).any() == true) {
+    std::cout << "OVERFLOW HERE" << std::endl;
+  }
 
+  auto X1 = sp_expansion.get_representation_raw_data();
+  int ii{0};
+  for (auto value : X1) {
+    if (value > 10000000) {
+      std::cout << "OVERFLOW HERE" << ii  << std::endl;
+    }
+
+    ii +=1;
+  }
 
   if (verbose_rep) {
     for (auto center : adaptor_strict) {

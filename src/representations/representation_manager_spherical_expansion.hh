@@ -231,6 +231,16 @@ namespace rascal {
       }
     }
 
+    //! getter for the representation
+    Eigen::Map<const Eigen::MatrixXd> get_representation_full() {
+      auto nb_centers{this->structure_manager.size()};
+      auto nb_features{this->get_feature_size()};
+      auto & raw_data{this->soap_vectors.get_raw_data()};
+      Eigen::Map<const Eigen::MatrixXd> representation(raw_data.data(),
+                                                       nb_features, nb_centers);
+      return representation;
+    }
+
     std::vector<precision_t> & get_representation_raw_data() {
       return this->soap_vectors.get_raw_data();
     }
