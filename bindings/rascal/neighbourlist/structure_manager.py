@@ -1,5 +1,5 @@
 from .base import NeighbourListFactory, is_valid_structure, adapt_structure
-import ase
+
 
 def get_neighbourlist(structure, options):
     manager = NeighbourListFactory(options)
