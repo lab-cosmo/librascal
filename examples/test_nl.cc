@@ -28,6 +28,7 @@
 #include "structure_managers/structure_manager_centers.hh"
 #include "structure_managers/adaptor_strict.hh"
 #include "structure_managers/adaptor_neighbour_list.hh"
+#include "structure_managers/species_manager.hh"
 #include "representations/representation_manager_sorted_coulomb.hh"
 #include "basic_types.hh"
 
@@ -45,97 +46,171 @@ using namespace rascal;  // NOLINT
 constexpr static int dim{3};
 using Vector_t = Eigen::Matrix<double, dim, 1>;
 
-using Representation_t = RepresentationManagerSortedCoulomb<
-    AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
+// using Representation_t = RepresentationManagerSortedCoulomb<
+//     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
 
-template <class StructureManager>
-struct MultipleStrictStructureManager {
-  using Manager1_t = StructureManager;
-  using Manager2_t = AdaptorNeighbourList<Manager1_t>;
-  using Manager_t = AdaptorStrict<Manager2_t>;
+// template <class StructureManager>
+// struct MultipleStrictStructureManager {
+//   using Manager1_t = StructureManager;
+//   using Manager2_t = AdaptorNeighbourList<Manager1_t>;
+//   using Manager_t = AdaptorStrict<Manager2_t>;
 
-  MultipleStrictStructureManager() {
-    std::vector<std::string> filenames{
-        {"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"}};
-    std::vector<double> cutoffs{{3, 4}};
-    for (auto filename : filenames) {
-      for (auto cutoff : cutoffs) {
-        this->managers1.emplace_back();
-        this->managers1.back().update(filename);
-        this->managers2.emplace_back(managers1.back(), cutoff);
-        this->managers2.back().update();
-        this->managers.emplace_back(managers2.back(), cutoff);
-        this->managers.back().update();
-      }
-    }
-  }
+//   MultipleStrictStructureManager() {
+//     std::vector<std::string> filenames{
+//         {"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"}};
+//     std::vector<double> cutoffs{{3, 4}};
+//     for (auto filename : filenames) {
+//       for (auto cutoff : cutoffs) {
+//         this->managers1.emplace_back();
+//         this->managers1.back().update(filename);
+//         this->managers2.emplace_back(managers1.back(), cutoff);
+//         this->managers2.back().update();
+//         this->managers.emplace_back(managers2.back(), cutoff);
+//         this->managers.back().update();
+//       }
+//     }
+//   }
 
-  ~MultipleStrictStructureManager() {}
+//   ~MultipleStrictStructureManager() {}
 
-  std::list<Manager1_t> managers1{};
-  std::list<Manager2_t> managers2{};
-  std::list<Manager_t> managers{};
-};
+//   std::list<Manager1_t> managers1{};
+//   std::list<Manager2_t> managers2{};
+//   std::list<Manager_t> managers{};
+// };
 
 int main() {
-  bool verbose{false};
-  bool verbose_rep{true};
+  bool verbose{true};
+  bool verbose_rep{false};
+
+  using Manager_t = StructureManagerCenters;
+  using ManagerNL_t = AdaptorNeighbourList<Manager_t>;
+  using ManagerStrict_t = AdaptorStrict<ManagerNL_t>;
+
+  Manager_t manager{};
+  size_t Natom{22};
+  Eigen::MatrixXd positions(22,3);
+  Eigen::Matrix<int, Eigen::Dynamic, 1> numbers(Natom);
+  Eigen::MatrixXd cell(3, 3);
+  std::array<int, 3> pbc{{true,true,true}};
+
+  cell <<
+    6.19, 2.41, 0.21,
+    0.00, 6.15, 1.02,
+    0.00, 0.00, 7.31;
+  positions <<
+    3.689540159937393, 5.123016813620886, 1.994119731169116,
+    6.818437242389163, 2.630056617829216, 6.182500355729062,
+    2.114977334498767, 6.697579639059512, 1.392155450018263,
+    7.420401523540017, 2.432242071439904, 6.380314902118375,
+    1.112656394115962, 7.699900579442317, 3.569715877854675,
+    5.242841095703604, 3.122826344932127, 5.689730628626151,
+    3.248684682453303, 5.563872291104976, 2.608353462112637,
+    6.204203511445642, 5.035681855581504, 2.134827911489532,
+    0.946910011088814, 6.223599755982222, 4.168634519120968,
+    3.001875247950068, 1.980327734683430, 5.190182032387606,
+    2.943861424421339, 4.226648342649697, 5.457161501166098,
+    1.713348265904937, 1.501663178733906, 5.668846588337130,
+    5.208365510425203, 1.962144256645833, 2.728127406527150,
+    4.442382360543885, 2.839975217222644, 4.330534549848392,
+    0.744216089807768, 6.426293677263268, 4.643695520786083,
+    2.662204050783991, 1.250682335857938, 6.055217235712136,
+    0.860905287815103, 6.444994283754972, 4.536108843695142,
+    2.769790727874932, 5.609177455068640, 1.696722116501434,
+    6.703053268421970, 0.602846303148105, 3.487609972580834,
+    3.818289598989240, 1.436734374347541, 5.869165197222533,
+    1.054504320562138, 6.251395251007936, 3.998423858825871,
+    3.307475712744203, 5.323662899811682, 1.982236671758393;
+  numbers << 20, 20, 24, 24, 15, 15, 15, 15,  8,  8,  8,
+    8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8;
+  positions.transposeInPlace();
+
+  // setting up the manager
+  manager.update(positions, numbers, cell,
+                 Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
+
+  double cutoff{3.};
+
+  // build a neighbourlist
+  ManagerNL_t pair_manager{manager, cutoff};
+  // update to execute the build
+  pair_manager.update();
+
+  // make strict neighbour list
+  ManagerStrict_t adaptor_strict{pair_manager, cutoff};
+  // execute
+  adaptor_strict.update();
+
+
+  for (auto && center : adaptor_strict) {
+
+    if (verbose) {
+      // get_index returns iteration index
+      std::cout << "strict atom out " << center.get_atom_index()<< " " ;
+      for (int ii{0};ii<3;++ii){
+        std::cout << center.get_position()[ii] << " ";
+      }
+      std::cout << " " << center.get_atom_type() << std::endl;
+    }
+
+
+  }
+
   //"reference_data/CaCrP2O7_mvc-11955_symmetrized_.json",
 
-  MultipleStrictStructureManager<StructureManagerCenters> meta{};
+  // MultipleStrictStructureManager<StructureManagerCenters> meta{};
 
-  if (verbose) {
-    for (auto & manager : meta.managers1) {
-      std::cout << "#################################" << std::endl;
-      std::cout << manager.nb_clusters(1) << std::endl;
-      std::cout << "#################################" << std::endl;
-      for (auto center : manager) {
-        // for (auto center = manager->begin(); center!=manager->end();
-        // ++center)
+  // if (verbose) {
+  //   for (auto & manager : meta.managers1) {
+  //     std::cout << "#################################" << std::endl;
+  //     std::cout << manager.nb_clusters(1) << std::endl;
+  //     std::cout << "#################################" << std::endl;
+  //     for (auto center : manager) {
+  //       // for (auto center = manager->begin(); center!=manager->end();
+  //       // ++center)
 
-        std::cout << center.get_atom_type() << std::endl;
-      }
-    }
+  //       std::cout << center.get_atom_type() << std::endl;
+  //     }
+  //   }
 
-    for (auto & manager : meta.managers) {
-      std::cout << "################################# 1" << std::endl;
-      std::cout << manager.nb_clusters(1) << std::endl;
+  //   for (auto & manager : meta.managers) {
+  //     std::cout << "################################# 1" << std::endl;
+  //     std::cout << manager.nb_clusters(1) << std::endl;
 
-      for (auto center : manager) {
-        std::cout << center.get_atom_type() << std::endl;
-        std::cout << "################################# 2" << std::endl;
-        for (auto neigh : center) {
-          std::cout << neigh.get_atom_type() << std::endl;
-        }
-      }
-    }
-  }
+  //     for (auto center : manager) {
+  //       std::cout << center.get_atom_type() << std::endl;
+  //       std::cout << "################################# 2" << std::endl;
+  //       for (auto neigh : center) {
+  //         std::cout << neigh.get_atom_type() << std::endl;
+  //       }
+  //     }
+  //   }
+  // }
 
-  for (auto & manager : meta.managers) {
-    // double central_decay{10};
-    // double interaction_cutoff{10};
-    // double interaction_decay{10};
-    // size_t size{50};
-    json hypers{{"central_decay", 10},
-                {"interaction_cutoff", 10},
-                {"interaction_decay", 10},
-                {"size", 50},
-                {"sorting_algorithm", "distance"}};
-    Representation_t representation{manager, hypers};
-    representation.compute();
+  // for (auto & manager : meta.managers) {
+  //   // double central_decay{10};
+  //   // double interaction_cutoff{10};
+  //   // double interaction_decay{10};
+  //   // size_t size{50};
+  //   json hypers{{"central_decay", 10},
+  //               {"interaction_cutoff", 10},
+  //               {"interaction_decay", 10},
+  //               {"size", 50},
+  //               {"sorting_algorithm", "distance"}};
+  //   Representation_t representation{manager, hypers};
+  //   representation.compute();
 
-    auto rep = representation.get_representation_full();
-    if (verbose_rep) {
-      std::cout << rep.size() << ", " << rep.cols() << ", " << rep.rows()
-                << std::endl;
-      for (auto ii{0}; ii < rep.cols(); ++ii) {
-        for (auto jj{0}; jj < rep.rows(); ++jj) {
-          std::cout << rep(jj, ii) << ", ";
-        }
-        std::cout << std::endl;
-      }
-    }
-  }
+  //   auto rep = representation.get_representation_full();
+  //   if (verbose_rep) {
+  //     std::cout << rep.size() << ", " << rep.cols() << ", " << rep.rows()
+  //               << std::endl;
+  //     for (auto ii{0}; ii < rep.cols(); ++ii) {
+  //       for (auto jj{0}; jj < rep.rows(); ++jj) {
+  //         std::cout << rep(jj, ii) << ", ";
+  //       }
+  //       std::cout << std::endl;
+  //     }
+  //   }
+  // }
 
   // Manager_t manager{};
   // size_t Natom{22};
