@@ -30,6 +30,7 @@
 #include "structure_managers/adaptor_neighbour_list.hh"
 #include "structure_managers/species_manager.hh"
 #include "representations/representation_manager_sorted_coulomb.hh"
+#include "representations/representation_manager_spherical_expansion.hh"
 #include "basic_types.hh"
 
 #include <Eigen/StdVector>
@@ -46,41 +47,12 @@ using namespace rascal;  // NOLINT
 constexpr static int dim{3};
 using Vector_t = Eigen::Matrix<double, dim, 1>;
 
-// using Representation_t = RepresentationManagerSortedCoulomb<
-//     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
-
-// template <class StructureManager>
-// struct MultipleStrictStructureManager {
-//   using Manager1_t = StructureManager;
-//   using Manager2_t = AdaptorNeighbourList<Manager1_t>;
-//   using Manager_t = AdaptorStrict<Manager2_t>;
-
-//   MultipleStrictStructureManager() {
-//     std::vector<std::string> filenames{
-//         {"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"}};
-//     std::vector<double> cutoffs{{3, 4}};
-//     for (auto filename : filenames) {
-//       for (auto cutoff : cutoffs) {
-//         this->managers1.emplace_back();
-//         this->managers1.back().update(filename);
-//         this->managers2.emplace_back(managers1.back(), cutoff);
-//         this->managers2.back().update();
-//         this->managers.emplace_back(managers2.back(), cutoff);
-//         this->managers.back().update();
-//       }
-//     }
-//   }
-
-//   ~MultipleStrictStructureManager() {}
-
-//   std::list<Manager1_t> managers1{};
-//   std::list<Manager2_t> managers2{};
-//   std::list<Manager_t> managers{};
-// };
+using Representation_t = RepresentationManagerSphericalExpansion<
+    AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
 
 int main() {
-  bool verbose{true};
-  bool verbose_rep{false};
+  bool verbose{false};
+  bool verbose_rep{true};
 
   using Manager_t = StructureManagerCenters;
   using ManagerNL_t = AdaptorNeighbourList<Manager_t>;
@@ -124,9 +96,11 @@ int main() {
     8,  8,  8,  8,  8,  8,  8,  8,  8,  8,  8;
   positions.transposeInPlace();
 
+  std::string filename{"../tests/reference_data/small_molecule.json"};
   // setting up the manager
-  manager.update(positions, numbers, cell,
-                 Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
+  // manager.update(positions, numbers, cell,
+  //                Eigen::Map<Eigen::Matrix<int, 3, 1>>{pbc.data()});
+  manager.update(filename);
 
   double cutoff{3.};
 
@@ -140,20 +114,49 @@ int main() {
   // execute
   adaptor_strict.update();
 
+  json hypers{{"interaction_cutoff", 3.0},
+              {"cutoff_smooth_width", 1.0},
+              {"max_radial", 6},
+              {"max_angular", 6},
+              {"gaussian_sigma_type", "Constant"},
+              {"gaussian_sigma_constant", 0.5}};
 
-  for (auto && center : adaptor_strict) {
+  Representation_t sp_expansion{adaptor_strict, hypers};
 
-    if (verbose) {
+  sp_expansion.compute();
+
+  // auto rep = sp_expansion.get_representation_full();
+
+
+  if (verbose_rep) {
+    for (auto center : adaptor_strict) {
       // get_index returns iteration index
-      std::cout << "strict atom out " << center.get_atom_index()<< " " ;
+      std::cout << "center atom " << center.get_index();
+      // get_atom_index returns index from
+      std::cout << " " << center.get_atom_index() << " " ;
+
       for (int ii{0};ii<3;++ii){
         std::cout << center.get_position()[ii] << " ";
       }
       std::cout << " " << center.get_atom_type() << std::endl;
+      auto coefficients{sp_expansion.get_soap_vector(center)};
+
+      if ((coefficients.array() > 10000000).any() == true) {
+        std::cout << "OVERFLOW HERE" << std::endl;
+      }
+
+      // std::cout << "Soap vector size " << this->get_feature_size() << std::endl;
+      // for (size_t radial_n{0}; radial_n < hypers["max_radial"]; ++radial_n) {
+      //   std::cout << "n = " << radial_n << std::endl;
+      //   std::cout << this->soap_vectors[center].row(radial_n) << std::endl;
+      // }
     }
-
-
   }
+
+
+
+
+
 
   //"reference_data/CaCrP2O7_mvc-11955_symmetrized_.json",
 
