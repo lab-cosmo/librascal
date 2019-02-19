@@ -45,9 +45,10 @@ namespace rascal {
   template <typename precision_t, typename key_t, size_t Order, size_t PropertyLayer>
   class PartiallySparseProperty : public PropertyBase {
     using Parent = PropertyBase;
-    using dense_t = Eigen::Map<Eigen::Matrix<precision_t, Eigen::Dynamic, Eigen::Dynamic>>;
-    using dense_ref_t = dense_t;
-    using full_t = std::unordered_map<std::vector<precision_t>>;
+    using dense_t = Eigen::Matrix<precision_t, Eigen::Dynamic, Eigen::Dynamic>;
+    using dense_ref_t = Eigen::Map<Eigen::Matrix<precision_t, Eigen::Dynamic, Eigen::Dynamic>>;
+    using sparse_t = std::unordered_map<key_t, dense_t>;
+    using type = std::vector<sparse_t>;
 
     // using Value = internal::Value<T, Eigen::Dynamic, Eigen::Dynamic>;
 
@@ -56,9 +57,8 @@ namespace rascal {
     // using reference = typename Value::reference;
 
     //! constructor
-    PartiallySparseProperty(StructureManagerBase & manager, Dim_t nb_row,
-                  Dim_t nb_col = 1, std::string metadata = "no metadata")
-        : Parent{manager, nb_row, nb_col, Order, PropertyLayer, metadata} {}
+    PartiallySparseProperty(StructureManagerBase & manager, std::string metadata = "no metadata")
+        : Parent{manager, 0, 0, Order, PropertyLayer, metadata} {}
 
     //! Default constructor
     PartiallySparseProperty() = delete;
@@ -82,24 +82,16 @@ namespace rascal {
     //! return runtime info about the stored (e.g., numerical) type
     const std::type_info & get_type_info() const final { return typeid(precision_t); };
 
-    //! Fill sequence, used for *_cluster_indices initialization
-    inline void fill_sequence() {
-      this->resize();
-      for (size_t i{0}; i < this->values.size(); ++i) {
-        values[i] = i;
-      }
-    }
 
     //! Adjust size of values (only increases, never frees)
     void resize() {
       auto order = this->get_order();
-      auto n_components = this->get_nb_comp();
-      auto new_size = this->base_manager.nb_clusters(order) * n_components;
+      auto new_size = this->base_manager.nb_clusters(order);
       this->values.resize(new_size);
     }
 
     //! Adjust size of values (only increases, never frees)
-    size_t size() const { return this->values.size() / this->get_nb_comp(); }
+    size_t size() const { return this->values.size(); }
 
     /**
      * shortens the vector so that the manager can push_back into it (capacity
@@ -110,7 +102,7 @@ namespace rascal {
     /* ---------------------------------------------------------------------- */
     //! Property accessor by cluster ref
     template <size_t CallerLayer>
-    inline reference operator[](const ClusterRefKey<Order, CallerLayer> & id) {
+    inline sparse_t operator[](const ClusterRefKey<Order, CallerLayer> & id) {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");
@@ -119,31 +111,45 @@ namespace rascal {
     }
 
     //! Accessor for property by index for dynamically sized properties
-    reference operator[](const size_t & index) {
-      return Value::get_ref(this->values[index * this->get_nb_comp()],
-                            this->get_nb_row(), this->get_nb_col());
+    sparse_t& operator[](const size_t & index) {
+      return this->values[index];
+    }
+
+    //! Accessor for property by index for dynamically sized properties
+    sparse_t& operator()(const size_t & index) {
+      return this->values[index];
+    }
+
+    //! Accessor for property by index for dynamically sized properties
+    dense_ref_t& operator()(const size_t & index, const key_t & key) {
+      return dense_ref_t(this->values[index][key], , );
     }
 
     //! getter to the underlying data storage
-    inline std::vector<precision_t> & get_raw_data() { return this->values; }
+    inline type& get_raw_data() { return this->values; }
 
     //! get number of different distinct element in the property
     //! (typically the number of center)
     inline size_t get_nb_item() const {
-      return values.size() / this->get_nb_comp();
+      return values.size();
     }
 
     /**
      * Accessor for last pushed entry for dynamically sized properties
      */
-    reference back() {
-      auto && index{this->values.size() - this->get_nb_comp()};
-      return Value::get_ref(this->values[index * this->get_nb_comp()],
-                            this->get_nb_row(), this->get_nb_col());
+    sparse_t& back() {
+      return this->values.back();
     }
 
+    inline void push_back(sparse_t& ref) {
+      this->values.push_back(ref);
+    }
+
+
+
+
    protected:
-    std::vector<precision_t> values{};  //!< storage for properties
+    type values{};  //!< storage for properties
   };
 }  // namespace rascal
 
