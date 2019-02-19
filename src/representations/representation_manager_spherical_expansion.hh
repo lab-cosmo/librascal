@@ -303,8 +303,8 @@ namespace rascal {
     // Precompute common prefactors
     for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
       this->radial_norm_factors(radial_n) =
-          std::sqrt(2.0 / std::tgamma(1.5 + radial_n) *
-                    pow(this->radial_sigmas[radial_n], 3.0 + 2.0 * radial_n));
+          std::sqrt(2.0 / (std::tgamma(1.5 + radial_n) *
+                    pow(this->radial_sigmas[radial_n], 3.0 + 2.0 * radial_n)));
       for (size_t angular_l{0}; angular_l < this->max_angular + 1;
            ++angular_l) {
         this->radial_nl_factors(radial_n, angular_l) =
@@ -336,14 +336,15 @@ namespace rascal {
             pow(0.5 / pow(this->radial_sigmas[radial_n1], 2) +
                     0.5 / pow(this->radial_sigmas[radial_n2], 2),
                 -0.5 * (3.0 + radial_n1 + radial_n2)) /
-            (pow(this->radial_sigmas[radial_n1], radial_n1) +
+            (pow(this->radial_sigmas[radial_n1], radial_n1) *
              pow(this->radial_sigmas[radial_n2], radial_n2)) *
             tgamma(0.5 * (3.0 + radial_n1 + radial_n2)) /
-            pow(this->radial_sigmas[radial_n1] * this->radial_sigmas[radial_n2],
+            (pow(this->radial_sigmas[radial_n1] * this->radial_sigmas[radial_n2],
                 1.5) *
-            sqrt(tgamma(1.5 + radial_n1) * tgamma(1.5 + radial_n2));
+            sqrt(tgamma(1.5 + radial_n1) * tgamma(1.5 + radial_n2)));
       }
     }
+
 
     // Compute the inverse square root of the overlap matrix
     Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigensolver(overlap);
@@ -355,7 +356,7 @@ namespace rascal {
     Eigen::ArrayXd eigs_invsqrt = eigenvalues.array().sqrt().inverse();
     Eigen::MatrixXd unitary = eigensolver.eigenvectors();
     this->radial_ortho_matrix =
-        unitary.adjoint() * eigs_invsqrt.matrix().asDiagonal() * unitary;
+        unitary * eigs_invsqrt.matrix().asDiagonal() * unitary.adjoint();
     this->is_precomputed = true;
   }
 
