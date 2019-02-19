@@ -508,5 +508,5 @@ void add_structure_managers(py::module & m_nl, py::module & m_garbage) {
   bind_make_structure_manager<Manager_t>(m_nl);
 
   BindAdaptorStack<Manager_t, AdaptorNeighbourList, AdaptorStrict>
-      adaptor_stack_1{m_nl, m_strc_mng, m_garbage};
+      adaptor_stack_1{m_nl, m_adp, m_garbage};
 }

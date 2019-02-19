@@ -332,8 +332,9 @@ namespace rascal {
 
     // TODO(max-veit) see if we can replace the gammas with their natural logs,
     // since it'll overflow for relatively small n (n1 + n2 >~ 300)
-    Eigen::MatrixXd overlap =
-        Eigen::MatrixXd::Zero(this->max_radial, this->max_radial);
+    Eigen::MatrixXd overlap(this->max_radial, this->max_radial);
+    // Eigen::MatrixXd overlap =
+    //     Eigen::MatrixXd::Zero(this->max_radial, this->max_radial);
     for (size_t radial_n1{0}; radial_n1 < this->max_radial; radial_n1++) {
       for (size_t radial_n2{0}; radial_n2 < this->max_radial; radial_n2++) {
         overlap(radial_n1, radial_n2) =
@@ -424,8 +425,9 @@ namespace rascal {
     for (auto center : this->structure_manager) {
       Eigen::MatrixXd soap_vector = Eigen::MatrixXd::Zero(
           this->n_species * this->max_radial, pow(this->max_angular + 1, 2));
-      Eigen::MatrixXd radial_integral =
-          Eigen::MatrixXd::Zero(this->max_radial, this->max_angular + 1);
+      Eigen::MatrixXd radial_integral(this->max_radial, this->max_angular + 1);
+      // Eigen::MatrixXd radial_integral =
+      //     Eigen::MatrixXd::Zero(this->max_radial, this->max_angular + 1);
 
       // Start the accumulator with the central atom
       // All terms where l =/= 0 cancel
