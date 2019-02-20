@@ -52,7 +52,7 @@ namespace rascal {
    *     for m in range(1, l+1):
    *         complex_harmonics = spf.sph_harm(m, l, phis, thetas)
    *         harmonics[l, l+m, :] = np.real(complex_harmonics)*np.sqrt(2)
-   *         harmonics[l, l-m, :] = np.imag(complex_harmonics)*np.sqrt(2)
+   *         harmonics[l, l-m, :] = -1*np.imag(complex_harmonics)*np.sqrt(2)
    * ```
    *
    * where `lmax` denotes the maximum angular momentum number to compute them
