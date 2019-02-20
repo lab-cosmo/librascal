@@ -29,11 +29,13 @@
 
 #include "tests.hh"
 #include "test_structure.hh"
-#include "structure_managers/property.hh"
+#include "test_adaptor.hh"
+#include "structure_managers/property_partially_sparse.hh"
+
+#include <random>
+#include <set>
 
 namespace rascal {
-  // TODO(felix) rethink the test of property to adhere
-  // to the manager/adaptor paradigm
   // TODO(felix) test dynamic sized Property
   BOOST_AUTO_TEST_SUITE(Property_tests);
 
@@ -202,6 +204,138 @@ namespace rascal {
       }
     }
   }
+
+  BOOST_AUTO_TEST_SUITE_END();
+
+  /* ---------------------------------------------------------------------- */
+
+  /*
+   * A fixture for testing partially sparse proterties.
+   */
+  template <class ManagerImplementation>
+  struct PartiallySparsePropertyFixture : public MultipleStructureManagerCenterFixture<ManagerImplementation,
+                                MultipleStructureManagerBaseFixture> {
+    using Manager_t = ManagerImplementation;
+
+    using key_t = size_t;
+    using PartiallySparseProperty_t =
+                PartiallySparseProperty<double, key_t, 1, 0>;
+    using dense_t = typename PartiallySparseProperty_t::dense_t;
+    using input_data_t = typename PartiallySparseProperty_t::input_data_t;
+    using test_data_t = std::vector<input_data_t>;
+
+    constexpr static Dim_t DynSize() { return 3; }
+
+    std::string sparse_features_desc{"some atom centered sparse features"};
+
+    PartiallySparsePropertyFixture()
+        : MultipleStructureManagerCenterFixture<ManagerImplementation,
+                                MultipleStructureManagerBaseFixture>{}
+    {
+      std::random_device rd;
+      std::mt19937 gen{rd()};
+      auto size_dist{std::uniform_int_distribution<size_t>(1, 10)};
+      auto key_dist{std::uniform_int_distribution<key_t>(1, 100)};
+      // size_t i_manager{0};
+      for (auto& manager : this->managers_center) {
+        sparse_features.emplace_back(manager, sparse_features_desc);
+        this->keys_list.emplace_back();
+        test_data_t test_data{};
+        for (auto atom : manager) {
+          // set up random unique keys
+          auto set_max_size{size_dist(gen)};
+          std::set<key_t> keys{};
+          for (size_t ii{0}; ii < set_max_size; ii++) {
+            keys.emplace(key_dist(gen));
+          }
+
+          // set up the data to fill the property later
+          input_data_t datas{};
+          for (auto& key : keys) {
+            auto data = dense_t::Random(size_dist(gen), size_dist(gen));
+            datas.emplace(std::make_pair(key,data));
+          }
+          this->keys_list.back().push_back(keys);
+          test_data.push_back(datas);
+        }
+        this->test_datas.push_back(test_data);
+      }
+    }
+
+    std::vector<std::vector<std::set<key_t>>> keys_list{};
+    std::vector<test_data_t> test_datas{};
+    std::vector<PartiallySparseProperty_t> sparse_features{};
+  };
+
+  BOOST_AUTO_TEST_SUITE(Property_partially_sparse_tests);
+
+  /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE(constructor_test,
+                          PartiallySparsePropertyFixture<StructureManagerCenters>) {}
+
+  /* ---------------------------------------------------------------------- */
+  /*
+   * checks if the partially sparse properties associated with centers can be
+   * filled and that the data can be accessed consistently.
+   */
+  BOOST_FIXTURE_TEST_CASE(fill_test_simple,
+                          PartiallySparsePropertyFixture<StructureManagerCenters>) {
+    bool verbose{false};
+    // fill the property structures
+    auto i_manager{0};
+    for (auto& manager : managers_center) {
+      auto i_center{0};
+      for (auto center : manager) {
+        sparse_features[i_manager].push_back(test_datas[i_manager][i_center]);
+        i_center++;
+      }
+      i_manager++;
+    }
+
+    i_manager = 0;
+    for (auto& manager : managers_center) {
+      if (verbose) std::cout << "manager: " << i_manager << std::endl;
+      auto i_center{0};
+      for (auto center : manager) {
+        if (verbose) std::cout << "center: " << i_center << std::endl;
+
+        auto data = sparse_features[i_manager][center];
+        size_t start_id{0};
+        double error1{0};
+        for (auto& key : sparse_features[i_manager].get_keys(center)) {
+          auto& value{test_datas[i_manager][i_center][key]};
+          Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, 1>> test_data(value.data(),
+                              value.size());
+          error1 += (data.block(start_id, 0 , test_data.size(), 1) - test_data).squaredNorm();
+          start_id += test_data.size();
+        }
+        if (verbose) std::cout << "error1: " << error1 << std::endl;
+        BOOST_CHECK_LE(std::sqrt(error1), tol * 100);
+        for (auto& key : keys_list[i_manager][i_center]) {
+          auto error2 = (sparse_features[i_manager](center, key) -
+                      test_datas[i_manager][i_center][key]).norm();
+          if (verbose) std::cout << "error2: " << error2 << std::endl;
+          BOOST_CHECK_LE(error2, tol * 100);
+        }
+        i_center++;
+      }
+      i_manager++;
+    }
+
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * test, if metadata can be assigned to properties
+   */
+  BOOST_FIXTURE_TEST_CASE(meta_data_test,
+                          PartiallySparsePropertyFixture<StructureManagerCenters>) {
+    for (auto& sparse_feature : sparse_features) {
+      auto sparse_feature_metadata = sparse_feature.get_metadata();
+      BOOST_CHECK_EQUAL(sparse_feature_metadata, sparse_features_desc);
+    }
+  }
+
 
   BOOST_AUTO_TEST_SUITE_END();
 

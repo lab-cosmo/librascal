@@ -33,6 +33,8 @@
 #include "structure_managers/property_base.hh"
 #include "structure_managers/cluster_ref_key.hh"
 
+#include <unordered_map>
+#include <set>
 
 namespace rascal {
 
@@ -44,17 +46,15 @@ namespace rascal {
    */
   template <typename precision_t, typename key_t, size_t Order, size_t PropertyLayer>
   class PartiallySparseProperty : public PropertyBase {
+   public:
     using Parent = PropertyBase;
     using dense_t = Eigen::Matrix<precision_t, Eigen::Dynamic, Eigen::Dynamic>;
-    using dense_ref_t = Eigen::Map<Eigen::Matrix<precision_t, Eigen::Dynamic, Eigen::Dynamic>>;
-    using sparse_t = std::unordered_map<key_t, dense_t>;
-    using type = std::vector<sparse_t>;
-
-    // using Value = internal::Value<T, Eigen::Dynamic, Eigen::Dynamic>;
-
-   public:
-    // using value_type = typename Value::type;
-    // using reference = typename Value::reference;
+    using dense_ref_t = Eigen::Map<dense_t>;
+    using map_center_t = std::vector<std::pair<size_t, size_t>>;
+    using map_sparse_t = std::vector<std::unordered_map<key_t, std::pair<size_t, std::pair<size_t, size_t>>>>;
+    using keys_t = std::vector<std::list<key_t>>;
+    using data_t = std::vector<precision_t>;
+    using input_data_t = std::unordered_map<key_t, dense_t>;
 
     //! constructor
     PartiallySparseProperty(StructureManagerBase & manager, std::string metadata = "no metadata")
@@ -84,25 +84,29 @@ namespace rascal {
 
 
     //! Adjust size of values (only increases, never frees)
-    void resize() {
-      auto order = this->get_order();
-      auto new_size = this->base_manager.nb_clusters(order);
-      this->values.resize(new_size);
-    }
+    // void resize() {
+    //   auto order = this->get_order();
+    //   auto new_size = this->base_manager.nb_clusters(order);
+    //   this->values.resize(new_size);
+    // }
 
-    //! Adjust size of values (only increases, never frees)
-    size_t size() const { return this->values.size(); }
+    size_t size() const { return this->map2center.size(); }
 
     /**
-     * shortens the vector so that the manager can push_back into it (capacity
-     * not reduced)
+     * clear all the content of the property
      */
-    void resize_to_zero() { this->values.resize(0); }
+    void clear() {
+      this->values.clear();
+      this->map2centers.clear();
+      this->map2sparse.clear();
+      this->keys_list.clear();
+
+    }
 
     /* ---------------------------------------------------------------------- */
     //! Property accessor by cluster ref
     template <size_t CallerLayer>
-    inline sparse_t operator[](const ClusterRefKey<Order, CallerLayer> & id) {
+    inline decltype(auto) operator[](const ClusterRefKey<Order, CallerLayer> & id) {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");
@@ -111,45 +115,96 @@ namespace rascal {
     }
 
     //! Accessor for property by index for dynamically sized properties
-    sparse_t& operator[](const size_t & index) {
-      return this->values[index];
+    inline dense_ref_t operator[](const size_t & index) {
+      auto && start_id{this->map2centers[index].first};
+      auto && length{this->map2centers[index].second};
+      return dense_ref_t(&this->values[start_id], length, 1);
     }
 
     //! Accessor for property by index for dynamically sized properties
-    sparse_t& operator()(const size_t & index) {
-      return this->values[index];
+    inline decltype(auto) operator()(const size_t & index) {
+      return this->operator[](index);
+    }
+
+    template <size_t CallerLayer>
+    inline decltype(auto) operator()(const ClusterRefKey<Order, CallerLayer> & id, const key_t & key) {
+      static_assert(CallerLayer >= PropertyLayer,
+                    "You are trying to access a property that does not exist at"
+                    "this depth in the adaptor stack.");
+
+      return this->operator()(id.get_cluster_index(CallerLayer), key);
     }
 
     //! Accessor for property by index for dynamically sized properties
-    dense_ref_t& operator()(const size_t & index, const key_t & key) {
-      return dense_ref_t(this->values[index][key], , );
+    inline dense_ref_t operator()(const size_t & index, const key_t & key) {
+      auto && center_start_id{this->map2centers[index].first};
+      auto && sparse_start_id{center_start_id + this->map2sparse[index][key].first};
+      auto && sparse_shape{this->map2sparse[index][key].second};
+      return dense_ref_t(&this->values[sparse_start_id], sparse_shape.first, sparse_shape.second);
     }
 
     //! getter to the underlying data storage
-    inline type& get_raw_data() { return this->values; }
+    inline data_t& get_raw_data() { return this->values; }
 
     //! get number of different distinct element in the property
     //! (typically the number of center)
     inline size_t get_nb_item() const {
-      return values.size();
+      return this->map2centers.size();
     }
 
     /**
      * Accessor for last pushed entry for dynamically sized properties
      */
-    sparse_t& back() {
-      return this->values.back();
+    inline decltype(auto) back() {
+      auto && index{this->map2centers.size()-1};
+      return this->operator[](index);
     }
 
-    inline void push_back(sparse_t& ref) {
-      this->values.push_back(ref);
+    //! push back data associated to a new center atom
+    inline void push_back(input_data_t& ref) {
+      // get where the new center starts
+      auto && new_center_start_id{this->values.size()};
+      this->map2sparse.emplace_back();
+      this->keys_list.emplace_back();
+      size_t key_start{0};
+      for(const auto& element : ref) {
+        auto&& key{element.first};
+        auto&& value{element.second};
+
+        this->keys_list.back().emplace_back(key);
+        this->map2sparse.back().emplace(
+          std::make_pair(key, std::make_pair(key_start, std::make_pair(value.rows(), value.cols())))
+        );
+
+        key_start += value.size();
+
+        for (int jj{0}; jj < value.cols(); ++jj) {
+          for (int ii{0}; ii < value.rows(); ++ii) {
+            this->values.push_back(value(ii, jj));
+          }
+        }
+      }
+
+      auto center_length{key_start};
+      map2centers.push_back(
+        std::make_pair(new_center_start_id, center_length)
+      );
     }
 
-
+    template <size_t CallerLayer>
+    inline decltype(auto) get_keys(const ClusterRefKey<Order, CallerLayer> & id) const {
+      static_assert(CallerLayer >= PropertyLayer,
+                    "You are trying to access a property that does not exist at"
+                    "this depth in the adaptor stack.");
+      return this->keys_list[id.get_cluster_index(CallerLayer)];
+    }
 
 
    protected:
-    type values{};  //!< storage for properties
+    data_t values{};  //!< storage for properties
+    map_center_t map2centers{};
+    map_sparse_t map2sparse{};
+    keys_t keys_list{};
   };
 }  // namespace rascal
 
