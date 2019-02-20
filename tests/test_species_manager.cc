@@ -8,7 +8,7 @@
  *
  * @brief tests the implementation of the adaptor filter species
  *
- * Copyright © 2018 Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2018 Markus Stricker, Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -32,39 +32,36 @@
 
 #include <map>
 
-
 namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(adaptor_filter_species_test);
 
-  template<class ManagerImplementation, size_t MaxOrder>
+  template <class ManagerImplementation, size_t MaxOrder>
   struct SpeciesManagerFixture {
     using SpeciesManager_t = SpeciesManager<ManagerImplementation, MaxOrder>;
 
-    SpeciesManagerFixture():
-      species_manager{fixture.manager} {}
+    SpeciesManagerFixture() : species_manager{fixture.manager} {}
 
     ~SpeciesManagerFixture() = default;
 
-    size_t get_MaxOrder() {return MaxOrder;}
+    size_t get_MaxOrder() { return MaxOrder; }
 
     ManagerFixture<ManagerImplementation> fixture{};
     SpeciesManager_t species_manager;
   };
 
-  using Fixtures = boost::mpl::list<
-    SpeciesManagerFixture<StructureManagerCenters, 1>,
-    SpeciesManagerFixture<StructureManagerLammps, 2> >;
+  using Fixtures =
+      boost::mpl::list<SpeciesManagerFixture<StructureManagerCenters, 1>,
+                       SpeciesManagerFixture<StructureManagerLammps, 2>>;
 
-  using FixturesMax1 = boost::mpl::list<
-    SpeciesManagerFixture<StructureManagerCenters, 1>>;
-  using FixturesMax2 = boost::mpl::list<
-    SpeciesManagerFixture<StructureManagerLammps, 2>>;
+  using FixturesMax1 =
+      boost::mpl::list<SpeciesManagerFixture<StructureManagerCenters, 1>>;
+  using FixturesMax2 =
+      boost::mpl::list<SpeciesManagerFixture<StructureManagerLammps, 2>>;
   using FixturesMax3 = boost::mpl::list<>;
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_test, Fix, Fixtures, Fix) {
-  }
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_test, Fix, Fixtures, Fix) {}
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_species_test, Fix, FixturesMax1, Fix) {
@@ -97,6 +94,9 @@ namespace rascal {
 
     for (auto && tup : species_counter) {
       auto species{tup.first};
+      std::cout << "Species size " << species.size() << std::endl;
+      std::cout << "species0: " << species[0] << std::endl;
+      std::cout << "species1: " << species[1] << std::endl;
       auto nb_atoms{tup.second};
       auto nb_filtered{Fix::species_manager[species].size()};
       BOOST_CHECK_EQUAL(nb_atoms, nb_filtered);
@@ -105,6 +105,4 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE_END();
 
-
-
-}  // rascal
+}  // namespace rascal
