@@ -471,11 +471,12 @@ namespace rascal {
                     -0.5 * (3.0 + angular_l + radial_n)) *
                 pow(dist / sigma2, angular_l) *
                 math::hyp1f1(
-                    0.5 * (3.0 + angular_l * radial_n), 1.5 + angular_l,
+                    0.5 * (3.0 + angular_l + radial_n), 1.5 + angular_l,
                     0.5 * pow(dist, 2) / radial_sigma_factors(radial_n));
           }
+	  radial_integral.row(radial_n) *= radial_norm_factors(radial_n);
         }
-        radial_integral = this->radial_ortho_matrix * radial_integral;
+        radial_integral = this-> radial_ortho_matrix * radial_integral ;
 
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           size_t lm_collective_idx{0};
