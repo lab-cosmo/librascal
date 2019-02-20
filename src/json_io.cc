@@ -35,12 +35,10 @@ namespace rascal {
 
     /* ---------------------------------------------------------------------- */
     void to_json(json & j, AtomicJsonData & s) {
-      j = json{
-        {"cell", s.cell},
-        {"numbers", s.type},
-        {"pbc", s.pbc},
-        {"positions", s.position}
-      };
+      j = json{{"cell", s.cell},
+               {"numbers", s.type},
+               {"pbc", s.pbc},
+               {"positions", s.position}};
     }
 
     /* ---------------------------------------------------------------------- */
@@ -53,9 +51,9 @@ namespace rascal {
 
     /* ---------------------------------------------------------------------- */
     double check_units(const std::string & expected_unit,
-                              const json & parameter) {
+                       const json & parameter) {
       if (not(expected_unit == parameter.at("unit").get<std::string>())) {
-        std::stringstream error {};
+        std::stringstream error{};
         error << "unit '" << parameter.at("unit").get<std::string>()
               << "' differs from the expected unit '" << expected_unit << "'.";
         throw std::runtime_error(error.str());
@@ -63,8 +61,6 @@ namespace rascal {
       return parameter.at("value").get<double>();
     }
 
+  }  // namespace json_io
 
-
-  }  // json_io
-
-}  // rascal
+}  // namespace rascal

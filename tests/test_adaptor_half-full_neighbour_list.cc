@@ -80,7 +80,9 @@ namespace rascal {
 
     int npairs_half{0};
     for (auto atom : adaptor) {
-      if (verbose) std::cout << "type " << atom.get_atom_type() << std::endl;
+      if (verbose) {
+        std::cout << "type " << atom.get_atom_type() << std::endl;
+      }
       for (auto pair : atom) {
         double dist = {(atom.get_position() - pair.get_position()).norm()};
         distance_sum_half += dist;
@@ -92,10 +94,8 @@ namespace rascal {
     }
 
     if (verbose) {
-      std::cout << "Full/half "
-                << npairs_full
-                << "/"
-                << npairs_half << std::endl;
+      std::cout << "Full/half " << npairs_full << "/" << npairs_half
+                << std::endl;
     }
 
     auto val{distance_sum_full - distance_sum_half};
@@ -122,16 +122,20 @@ namespace rascal {
     double distance_sum_full_half_full{0.};
 
     // half list construction
-    AdaptorHalfList<StructureManagerLammps> adaptor_half{manager};
+    using AdaptorHalf_t = AdaptorHalfList<StructureManagerLammps>;
+    AdaptorHalf_t adaptor_half{manager};
     adaptor_half.update();
 
     // back to full list again
-    AdaptorFullList<AdaptorHalfList<StructureManagerLammps>>
-      adaptor_full{adaptor_half};
+    using AdaptorFull_t = AdaptorFullList<AdaptorHalf_t>;
+
+    AdaptorFull_t adaptor_full{adaptor_half};
     adaptor_full.update();
 
     // iterate over initial manager with full list
-    if (verbose) std::cout << "---full---" << std::endl;
+    if (verbose) {
+      std::cout << "---full---" << std::endl;
+    }
     int npairs{0};
     for (auto atom : manager) {
       for (auto pair : atom) {
@@ -140,29 +144,31 @@ namespace rascal {
         npairs++;
         if (verbose) {
           auto pair_offset{pair.get_global_index()};
-          std::cout << "pair (" << atom.back()
-                    << ", " << pair.back()
-                    << "), " << pair_offset << std::endl;
+          std::cout << "pair (" << atom.back() << ", " << pair.back() << "), "
+                    << pair_offset << std::endl;
         }
       }
     }
 
     // iterate over half list adator (only for output, if verbose to compare
     // pair indices)
-    if (verbose) std::cout << "---full/half---" << std::endl;
+    if (verbose) {
+      std::cout << "---full/half---" << std::endl;
+    }
     for (auto atom : adaptor_half) {
       for (auto pair : atom) {
         if (verbose) {
           auto pair_offset{pair.get_global_index()};
-          std::cout << "pair (" << atom.back()
-                    << ", " << pair.back()
-                    << "), " << pair_offset << std::endl;
+          std::cout << "pair (" << atom.back() << ", " << pair.back() << "), "
+                    << pair_offset << std::endl;
         }
       }
     }
 
     // iterate over extended half list adaptor
-    if (verbose) std::cout << "---full/half/full---" << std::endl;
+    if (verbose) {
+      std::cout << "---full/half/full---" << std::endl;
+    }
     int npairs_adapted{0};
     for (auto atom : adaptor_full) {
       for (auto pair : atom) {
@@ -171,9 +177,8 @@ namespace rascal {
         npairs_adapted++;
         if (verbose) {
           auto pair_offset{pair.get_global_index()};
-          std::cout << "pair (" << atom.back()
-                    << ", " << pair.back()
-                    << "), " << pair_offset << std::endl;
+          std::cout << "pair (" << atom.back() << ", " << pair.back() << "), "
+                    << pair_offset << std::endl;
         }
       }
     }
@@ -197,4 +202,4 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE_END();
 
-}  // rascal
+}  // namespace rascal

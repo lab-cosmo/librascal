@@ -28,8 +28,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SPECIES_MANAGER_H
-#define SPECIES_MANAGER_H
+#ifndef SRC_STRUCTURE_MANAGERS_SPECIES_MANAGER_HH_
+#define SRC_STRUCTURE_MANAGERS_SPECIES_MANAGER_HH_
 
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/adaptor_filter.hh"
@@ -240,4 +240,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif /* SPECIES_MANAGER_H */
+#endif  // SRC_STRUCTURE_MANAGERS_SPECIES_MANAGER_HH_

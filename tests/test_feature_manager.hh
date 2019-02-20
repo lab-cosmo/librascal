@@ -25,9 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef TEST_FEATURE_MANAGER_H
-#define TEST_FEATURE_MANAGER_H
-
+#ifndef TESTS_TEST_FEATURE_MANAGER_HH_
+#define TESTS_TEST_FEATURE_MANAGER_HH_
 
 #include "test_structure.hh"
 #include "test_representation_manager.hh"
@@ -48,18 +47,21 @@ namespace rascal {
     ~TestFeatureData() = default;
 
     std::vector<std::string> filenames{
-      "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-      "reference_data/simple_cubic_8.json",
-      "reference_data/small_molecule.json"
-      };
+        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
+        "reference_data/simple_cubic_8.json",
+        "reference_data/small_molecule.json"};
     std::vector<double> cutoffs{{1., 2., 3.}};
 
-    std::list<json> hypers{
-      {{"central_decay", 0.5},
-       {"interaction_cutoff", 10.},
-       {"interaction_decay", 0.5},
-       {"size", 120}}
-    };
+    std::list<json> hypers{{{"central_decay", 0.5},
+                            {"interaction_cutoff", 10.},
+                            {"interaction_decay", 0.5},
+                            {"size", 120},
+                            {"sorting_algorithm", "distance"}},
+                           {{"central_decay", 0.5},
+                            {"interaction_cutoff", 10.},
+                            {"interaction_decay", 0.5},
+                            {"size", 120},
+                            {"sorting_algorithm", "row_norm"}}};
   };
 
   /* ---------------------------------------------------------------------- */
@@ -68,25 +70,21 @@ namespace rascal {
    * access to different data structures. They are used to check the aggregation
    * of calculated feature data from multiple structures.
    */
-  template<typename T,
-           template<typename> class FeatureManager,
-           class StructureManager,
-           template<typename, Option ... opts> class RepresentationManager,
-           class BaseFixture,
-           Option ...options>
+  template <typename T, template <typename> class FeatureManager,
+            class StructureManager,
+            template <typename> class RepresentationManager, class BaseFixture>
   struct FeatureFixture
-  :RepresentationFixture<StructureManager, RepresentationManager,
-                         BaseFixture, options...> {
+      : RepresentationFixture<StructureManager, RepresentationManager,
+                              BaseFixture> {
     using Parent = RepresentationFixture<StructureManager,
-                                         RepresentationManager,
-                                         BaseFixture, options...>;
+                                         RepresentationManager, BaseFixture>;
     using Manager_t = typename Parent::Manager_t;
     using Representation_t = typename Parent::Representation_t;
     using Feature_t = FeatureManager<T>;
     using Hypers_t = typename Representation_t::Hypers_t;
     using precision_t = T;
 
-    FeatureFixture() :Parent{} {
+    FeatureFixture() : Parent{} {
       std::vector<size_t> n_features{};
 
       auto & representations = this->representations;
@@ -101,8 +99,8 @@ namespace rascal {
         }
       }
 
-      this->n_feature = *std::max_element(std::begin(n_features),
-                                          std::end(n_features));
+      this->n_feature =
+          *std::max_element(std::begin(n_features), std::end(n_features));
     }
 
     ~FeatureFixture() = default;
@@ -111,8 +109,8 @@ namespace rascal {
     std::list<Feature_t> features{};
   };
 
-/* ---------------------------------------------------------------------- */
+  /* ---------------------------------------------------------------------- */
 
-} // RASCAL
+}  // namespace rascal
 
-#endif /* TEST_FEATURE_MANAGER_H */
+#endif  // TESTS_TEST_FEATURE_MANAGER_HH_

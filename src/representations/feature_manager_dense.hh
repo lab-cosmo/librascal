@@ -26,8 +26,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef FEATURE_MANAGER_DENSE_H
-#define FEATURE_MANAGER_DENSE_H
+#ifndef SRC_REPRESENTATIONS_FEATURE_MANAGER_DENSE_HH_
+#define SRC_REPRESENTATIONS_FEATURE_MANAGER_DENSE_HH_
 
 #include "representations/feature_manager_base.hh"
 #include "representations/representation_manager_base.hh"
@@ -85,8 +85,8 @@ namespace rascal {
 
       this->n_center += n_center;
       this->feature_matrix.insert(this->feature_matrix.end(),
-          std::make_move_iterator(raw_data.begin()),
-          std::make_move_iterator(raw_data.end()));
+                                  std::make_move_iterator(raw_data.begin()),
+                                  std::make_move_iterator(raw_data.end()));
     }
 
     //! move data from a feature vector
@@ -139,4 +139,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif /* FEATURE_MANAGER_DENSE_H */
+#endif  // SRC_REPRESENTATIONS_FEATURE_MANAGER_DENSE_HH_

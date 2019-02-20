@@ -2,6 +2,8 @@
 # file   CMakeLists.txt
 #
 # @author Till Junge <till.junge@epfl.ch>
+# @author Felix Musil <felix.musil@epfl.ch>
+# @author Markus Stricker <markus.stricker@epfl.ch>
 #
 # @date   01 Mar 2018
 #
@@ -9,7 +11,8 @@
 #
 # @section LICENSE
 #
-# Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
+# Copyright © 2018 Till Junge, Felix Musil, Markus Stricker COSMO (EPFL),
+# LAMMM (EPFL)
 #
 # Rascal is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public License as
@@ -29,7 +32,7 @@
 
 
 
-add_library(rascal "") # ${rascal_SRC})
+add_library("${LIBRASCAL_NAME}" "")
 
 set(rascal_SRC
   ${CMAKE_CURRENT_SOURCE_DIR}/json_io.cc
@@ -37,12 +40,12 @@ set(rascal_SRC
   )
 target_sources(rascal PRIVATE ${rascal_SRC})
 
-target_link_libraries(rascal PUBLIC Eigen3::Eigen)
-target_link_libraries(rascal PUBLIC rascal-math)
+target_link_libraries("${LIBRASCAL_NAME}" PUBLIC Eigen3::Eigen)
+target_link_libraries("${LIBRASCAL_NAME}" PRIVATE "${LIBCEPHES_NAME}")
 
 add_subdirectory(structure_managers)
 add_subdirectory(representations)
 add_subdirectory(utils)
 add_subdirectory(math)
 
-install(TARGETS rascal DESTINATION lib)
+install(TARGETS "${LIBRASCAL_NAME}" DESTINATION lib)

@@ -25,8 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef _SRC_UNITS_HH_
-#define _SRC_UNITS_HH_
+#ifndef SRC_UNITS_HH_
+#define SRC_UNITS_HH_
 
 #include <string>
 
@@ -115,4 +115,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif  // _SRC_UNITS_HH_
+#endif  // SRC_UNITS_HH_

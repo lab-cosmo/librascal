@@ -51,12 +51,16 @@
 # target to run cpplint.py for all configured sources
 set(CPPLINT_TARGET lint CACHE STRING "Name of C++ style checker target")
 
+mark_as_advanced(CPPLINT_TARGET)
+
 # project root directory
 set(CPPLINT_PROJECT_ROOT ${PROJECT_SOURCE_DIR} CACHE STRING "Project ROOT directory")
 
+mark_as_advanced(CPPLINT_PROJECT_ROOT)
+mark_as_advanced(CPPLINT)
 
 # find cpplint.py script
-find_file(CPPLINT name cpplint HINTS $ENV{HOME}.local/bin)
+find_file(CPPLINT name cpplint HINTS $ENV{HOME}/.local/bin /usr/bin  )
 if(CPPLINT)
     message(STATUS "cpplint parser: ${CPPLINT}")
     # common target to concatenate all cpplint.py targets

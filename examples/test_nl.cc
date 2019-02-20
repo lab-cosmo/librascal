@@ -38,19 +38,17 @@
 #include <cmath>
 #include <list>
 
-//using namespace std;
-using namespace rascal; // NOLINT
+// using namespace std;
+using namespace rascal;  // NOLINT
 
-//using Manager_t = StructureManagerCenters;
+// using Manager_t = StructureManagerCenters;
 constexpr static int dim{3};
 using Vector_t = Eigen::Matrix<double, dim, 1>;
 
 using Representation_t = RepresentationManagerSortedCoulomb<
-                   AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>,
-                  Option::CMSortDistance>;
+    AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
 
-
-template<class StructureManager>
+template <class StructureManager>
 struct MultipleStrictStructureManager {
   using Manager1_t = StructureManager;
   using Manager2_t = AdaptorNeighbourList<Manager1_t>;
@@ -58,8 +56,7 @@ struct MultipleStrictStructureManager {
 
   MultipleStrictStructureManager() {
     std::vector<std::string> filenames{
-      {"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"}
-                                        };
+        {"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"}};
     std::vector<double> cutoffs{{3, 4}};
     for (auto filename : filenames) {
       for (auto cutoff : cutoffs) {
@@ -88,24 +85,25 @@ int main() {
   MultipleStrictStructureManager<StructureManagerCenters> meta{};
 
   if (verbose) {
-    for (auto& manager : meta.managers1) {
-      std::cout << "#################################"<< std::endl;
+    for (auto & manager : meta.managers1) {
+      std::cout << "#################################" << std::endl;
       std::cout << manager.nb_clusters(1) << std::endl;
-      std::cout << "#################################"<< std::endl;
+      std::cout << "#################################" << std::endl;
       for (auto center : manager) {
-      //for (auto center = manager->begin(); center!=manager->end(); ++center)
+        // for (auto center = manager->begin(); center!=manager->end();
+        // ++center)
 
-        std::cout << center.get_atom_type()<< std::endl;
+        std::cout << center.get_atom_type() << std::endl;
       }
     }
 
-    for (auto& manager : meta.managers) {
-      std::cout << "################################# 1"<< std::endl;
+    for (auto & manager : meta.managers) {
+      std::cout << "################################# 1" << std::endl;
       std::cout << manager.nb_clusters(1) << std::endl;
 
       for (auto center : manager) {
         std::cout << center.get_atom_type() << std::endl;
-        std::cout << "################################# 2"<< std::endl;
+        std::cout << "################################# 2" << std::endl;
         for (auto neigh : center) {
           std::cout << neigh.get_atom_type() << std::endl;
         }
@@ -113,29 +111,29 @@ int main() {
     }
   }
 
-  for (auto& manager : meta.managers) {
+  for (auto & manager : meta.managers) {
     // double central_decay{10};
     // double interaction_cutoff{10};
     // double interaction_decay{10};
     // size_t size{50};
-    json hypers{
-      {"central_decay", 10},
-      {"interaction_cutoff", 10},
-      {"interaction_decay", 10},
-      {"size", 50}};
+    json hypers{{"central_decay", 10},
+                {"interaction_cutoff", 10},
+                {"interaction_decay", 10},
+                {"size", 50},
+                {"sorting_algorithm", "distance"}};
     Representation_t representation{manager, hypers};
     representation.compute();
 
     auto rep = representation.get_representation_full();
     if (verbose_rep) {
-        std::cout << rep.size() <<", "<< rep.cols() <<", "
-                                    << rep.rows() << std::endl;
-        for (auto ii{0}; ii < rep.cols(); ++ii) {
-            for (auto jj{0}; jj < rep.rows(); ++jj) {
-                std::cout << rep(jj, ii) << ", ";
-            }
-            std::cout << std::endl;
+      std::cout << rep.size() << ", " << rep.cols() << ", " << rep.rows()
+                << std::endl;
+      for (auto ii{0}; ii < rep.cols(); ++ii) {
+        for (auto jj{0}; jj < rep.rows(); ++jj) {
+          std::cout << rep(jj, ii) << ", ";
         }
+        std::cout << std::endl;
+      }
     }
   }
 
@@ -211,14 +209,13 @@ int main() {
   //   std::vector<std::vector<double>> neigh_dist_strict;
 
   //   std::cout << "Setting up strict manager with rc="
-                          // <<cutoff_tmp << std::endl;
+  // <<cutoff_tmp << std::endl;
   //   // make strict neighbour list
   //   rascal::AdaptorStrict<
   //     rascal::AdaptorNeighbourList<rascal::StructureManagerCenters>>
   //     adaptor_strict{pair_manager, cutoff_tmp};
   //   // execute
   //   adaptor_strict.update();
-
 
   //   if (verbose) std::cout << "Setting get adaptor_strict info" << std::endl;
   //   for (auto center : adaptor_strict) {
@@ -266,8 +263,5 @@ int main() {
   //   }
   // }
 
-
-
-
-  return(0);
+  return (0);
 }

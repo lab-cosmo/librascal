@@ -28,8 +28,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef ADAPTOR_STRICT_H
-#define ADAPTOR_STRICT_H
+#ifndef SRC_STRUCTURE_MANAGERS_ADAPTOR_STRICT_HH_
+#define SRC_STRUCTURE_MANAGERS_ADAPTOR_STRICT_HH_
 
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/property.hh"
@@ -52,8 +52,6 @@ namespace rascal {
     constexpr static bool HasDirectionVectors{true};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
-    // TODO(felix): Future optimisation: do not increase depth for atoms
-    // (they are all kept anyways, so no duplication necessary).
     using LayerByOrder = typename LayerIncreaser<
         MaxOrder, typename ManagerImplementation::traits::LayerByOrder>::type;
   };
@@ -146,7 +144,11 @@ namespace rascal {
       return this->atom_indices[cluster_size - 1].size();
     }
 
-    inline size_t get_size() const { return this->get_nb_clusters(1); }
+    inline size_t get_size() const { return this->manager.get_size(); }
+
+    inline size_t get_size_with_ghosts() const {
+      return this->get_nb_clusters(1);
+    }
 
     inline Vector_ref get_position(const int & index) {
       return this->manager.get_position(index);
@@ -188,11 +190,8 @@ namespace rascal {
     }
 
     //! Returns atom type given an atom index
-    // TODO(markus) find how to return a reference and get a reference
-    // from managerCenters. copies are made atm
     inline int & get_atom_type(const int & atom_id) {
-      auto && type{this->manager.get_atom_type(atom_id)};
-      return type;
+      return this->manager.get_atom_type(atom_id);
     }
 
     //! Returns a constant atom type given an atom index
@@ -207,6 +206,8 @@ namespace rascal {
     template <size_t Order>
     inline size_t
     get_offset_impl(const std::array<size_t, Order> & counters) const {
+      static_assert(Order < traits::MaxOrder,
+                    "Calling this function with the wrong order cluster");
       return this->offsets[Order][counters.back()];
     }
 
@@ -309,7 +310,7 @@ namespace rascal {
     }
   }  // namespace internal
 
-  //----------------------------------------------------------------------------//
+  /*--------------------------------------------------------------------------*/
   template <class ManagerImplementation>
   AdaptorStrict<ManagerImplementation>::AdaptorStrict(
       ManagerImplementation & manager, double cutoff)
@@ -358,7 +359,9 @@ namespace rascal {
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
     size_t pair_counter{0};
-    for (auto atom : this->manager) {
+    // depending on the underlying neighbourlist, the proxy `.with_ghosts()` is
+    // either actually with ghosts, or only returns the number of centers.
+    for (auto atom : this->manager.with_ghosts()) {
       this->add_atom(atom);
       /**
        * Add new layer for atoms (see LayerByOrder for
@@ -400,4 +403,4 @@ namespace rascal {
   }
 }  // namespace rascal
 
-#endif /* ADAPTOR_STRICT_H */
+#endif  // SRC_STRUCTURE_MANAGERS_ADAPTOR_STRICT_HH_

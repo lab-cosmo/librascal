@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..lib import StructureManager,Adaptor
+from ..lib import StructureManager, Adaptor
 
 
 def ase2rascal(frame):
@@ -22,14 +22,15 @@ def ase2rascal(frame):
     numbers = frame.get_atomic_numbers()
     pbc = frame.get_pbc().astype(int)
 
-    managerC =  StructureManager.Centers()
-    managerC.update(np.array(positions.T,order='F'),
-                   numbers.reshape(-1,1),
-                   np.array(cell.T,order='F'),
-                   pbc.reshape(3,1))
+    managerC = StructureManager.Centers()
+    managerC.update(np.array(positions.T, order='F'),
+                    numbers.reshape(-1, 1),
+                    np.array(cell.T, order='F'),
+                    pbc.reshape(3, 1))
     return managerC
 
-def get_strict_neighbourlist(frame,cutoff):
+
+def get_strict_neighbourlist(frame, cutoff):
     """
     Generate a strict neighbourlist Structure Manager.
 
@@ -48,10 +49,10 @@ def get_strict_neighbourlist(frame,cutoff):
 
     managerC = ase2rascal(frame)
 
-    managerNL = Adaptor.NeighbourList_Centers(managerC,cutoff)
+    managerNL = Adaptor.NeighbourList_Centers(managerC, cutoff)
     managerNL.update()
 
-    manager = Adaptor.Strict_NeighbourList_Centers(managerNL,cutoff)
+    manager = Adaptor.Strict_NeighbourList_Centers(managerNL, cutoff)
     manager.update()
 
     return manager

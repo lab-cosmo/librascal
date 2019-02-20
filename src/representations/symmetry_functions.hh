@@ -27,6 +27,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#ifndef SRC_REPRESENTATIONS_SYMMETRY_FUNCTIONS_HH_
+#define SRC_REPRESENTATIONS_SYMMETRY_FUNCTIONS_HH_
+
 #include "structure_managers/property_typed.hh"
 
 #include "Eigen/Dense"
@@ -161,3 +164,5 @@ namespace rascal {
   };
 
 }  // namespace rascal
+
+#endif  // SRC_REPRESENTATIONS_SYMMETRY_FUNCTIONS_HH_

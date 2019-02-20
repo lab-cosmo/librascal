@@ -25,33 +25,26 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef BASIS_REPRESENTATION_MANAGER_BASE_H
-#define BASIS_REPRESENTATION_MANAGER_BASE_H
+#ifndef SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_BASE_HH_
+#define SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_BASE_HH_
 
 #include "structure_managers/structure_manager_base.hh"
 #include "json_io.hh"
 
 #include <string>
 #include <vector>
+#include <iostream>
 
 namespace rascal {
-
-  enum class Option {
-    // Coulomb Matrix Options
-    CMSortDistance,
-    CMSortRowNorm,
-  };
-
-  template <class RepresentationImplementation>
-  struct RepresentationManager_traits {};
 
   class RepresentationManagerBase {
    public:
     //! type for the hyper parameter class
     using Hypers_t = json;
     //! type for representation
-    // TODO(felix) Should the user have freedom for the type ?
     using Precision_t = double;
+    //! type used to register the valid key and values of Hypers_t
+    using ReferenceHypers_t = std::map<std::string, std::vector<std::string>>;
 
     RepresentationManagerBase() = default;
 
@@ -72,14 +65,11 @@ namespace rascal {
     RepresentationManagerBase &
     operator=(RepresentationManagerBase && other) = default;
 
-    //! Resolves the mismatch between the expected traits
-    //! and the effective traits of the Structure Manager
-    // TODO(felix) make it into a function outside this class
-    template <class Mngr>
-    void check_traits_compatibility(Mngr & structure_manager);
-
     //! Pure Virtual Function to set hyperparameters of the representation
     virtual void set_hyperparameters(const Hypers_t &) = 0;
+
+    //! Pure Virtual Function to set hyperparameters of the representation
+    void check_hyperparameters(const ReferenceHypers_t &, const Hypers_t &);
 
     //! Compute the representation using a StructureManager
     virtual void compute() = 0;
@@ -92,8 +82,21 @@ namespace rascal {
 
     //! get the number of centers for the representation
     virtual size_t get_center_size() = 0;
+
+    //! returns a string representation of the current options values
+    //! in alphabetical order
+    std::string get_options_string();
+
+    //! returns a string representation of the current hypers dict
+    std::string get_hypers_string();
+
+    //! stores all the hyper parameters of the representation
+    Hypers_t hypers{};
+    //! stores the hyperparameters that change
+    //! the behaviour of the representation
+    std::map<std::string, std::string> options{};
   };
 
 }  // namespace rascal
 
-#endif /* REPRESENTATION_MANAGER_BASE_H */
+#endif  // SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_BASE_HH_

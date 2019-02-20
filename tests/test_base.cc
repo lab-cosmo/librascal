@@ -35,16 +35,12 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(base_tests);
 
-  BOOST_AUTO_TEST_CASE(base_test) {
-    BOOST_CHECK_EQUAL(1, 2-1);
-  }
+  BOOST_AUTO_TEST_CASE(base_test) { BOOST_CHECK_EQUAL(1, 2 - 1); }
 
   template <int Dim>
   struct DemoTestFixture {
-    static constexpr int dim() {return Dim;}
-    DemoTestFixture()
-      :val{Dim}
-    {}
+    static constexpr int dim() { return Dim; }
+    DemoTestFixture() : val{Dim} {}
 
     int val;
   };
@@ -57,4 +53,4 @@ namespace rascal {
   }
 
   BOOST_AUTO_TEST_SUITE_END();
-}  // rascal
+}  // namespace rascal

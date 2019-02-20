@@ -48,18 +48,53 @@ make -j 4
 ctest -V
 ```
 
+* To help developers conform their contribution to the coding convention, the formating of new functionalities can be automated using clang-format (for the c++ files) and autopep8 (for the python files). The .clang-format and .pycodestyle files define common settings to be used. To enable these functionalities (optional) you can install these tools with:
+```Shell
+sudo apt-get install clang-format
+pip install autopep8
+```
+* The automatic formating of the c++ and python files can be trigered by:
+```Shell
+cd build
+cmake ..
+make pretty-cpp
+make pretty-python
+```
+Please use these tools with caution as they can potentially introduce unwanted changes to the code.
+If code needs to be specifically excluded from auto formatting, e.g. a matrix which should be human-readable, code comments tells the formatters to ignore lines:
+
+C++
+```
+// clang-format off
+SOME CODE TO IGNORE
+// clang-format on
+```
+
+python
+```
+SOME LINE TO IGNORE # noqa
+```
+where `noqa` stands for `no` `q`uality `a`ssurance.
+
 * Common cmake flag:
   + -DCMAKE_C_COMPILER
-  + -DINSTALL
+  + -DBUILD_BINDINGS
+  + -DUSER
+  + -DINSTALL_PATH
   + -DCMAKE_BUILD_TYPE
   + -DENABLE_DOC
   + -DBUILD_TESTS
 
 * Special flags:
-  + -DINSTALL:
-    + build (default) -> install rascal in the build folder
-    + local -> install rascal in the site-package folder of the found python binary
-    + pydevelop -> install rascal in the librascal/rascal/lib folder
+  + -DBUILD_BINDINGS:
+    + ON (default) -> build python binding
+    + OFF -> does not build python binding
+  + -DINSTALL_PATH:
+    + empty (default) -> does not install in a custom folder
+    + custom string -> root path for the installation
+  + -DUSER:
+    + OFF (default) -> changes nothing
+    + ON -> install root is in the user's home directory, i.e. ~/.local/
 
 To remove all the cmake files/folders except for the external library (enable glob and remove):
 ```
@@ -77,29 +112,3 @@ sudo docker build -t test -f ./docker/install_env.dockerfile  .
 sudo docker run -it -v /path/to/repo/:/home/user/  test
 ```
 And then follow the instruction in BOOST.md for compilation with boost from conda
-
-
-TILL:
-Management of derivative relations for fields
-"Functional dependency" management to obtain automatically derivatives with chain rule
-Federico:
-try to enable CI on github with travis (finalize, enable and think what to do with CI)
-Felix:
-merge hackaton to master but don't remove the branch
-install target (TBD with Till)
-start pulling the reference implementation in Python (with Andrea G)
-Michele:
-Write a whitepaper section
-Chiheb:
-clean-up and update the tutorial
-Everyone:
-Make sure new and existing doxygen documentation refers correctly to Order and Layer rather than to Level and Depth
-*EFFICIENCY OF BULK KERNEL EVALUATION*
-typically we will do operations like diag (AB) where A and B are matrices of the order of 10'000x10'000
-
-
-TODO:
-
-have NL tests (1-3) that really test all possible features of the implementation
-=======
-

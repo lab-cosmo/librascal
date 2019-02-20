@@ -26,8 +26,8 @@
  */
 
 //! header guards
-#ifndef STRUCTURE_MANAGER_H
-#define STRUCTURE_MANAGER_H
+#ifndef SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_HH_
+#define SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_HH_
 
 /**
  * Each actual implementation of a StructureManager is based on the given
@@ -37,6 +37,7 @@
 #include "structure_managers/property.hh"
 #include "structure_managers/cluster_ref_key.hh"
 #include "rascal_utility.hh"
+
 //! Some data types and operations are based on the Eigen library
 #include <Eigen/Dense>
 
@@ -54,12 +55,12 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   namespace AdaptorTraits {
     //! signals if neighbours are sorted by distance
-    enum class SortedByDistance: bool {yes = true, no = false};
+    enum class SortedByDistance : bool { yes = true, no = false };
     //! full neighbourlist or minimal neighbourlist (no permutation of clusters)
-    enum class NeighbourListType {full, half};
+    enum class NeighbourListType { full, half };
     //! strictness of a neighbourlist with respect to a given cutoff
-    enum class Strict:bool {yes = true, no = false}; //
-  }  // AdaptorTraits
+    enum class Strict : bool { yes = true, no = false };  //
+  }  // namespace AdaptorTraits
   /* ---------------------------------------------------------------------- */
 
   /**
@@ -67,8 +68,7 @@ namespace rascal {
    * known what it will contain
    */
   template <class ManagerImplementation>
-  struct StructureManager_traits
-  {};
+  struct StructureManager_traits {};
 
   /* ---------------------------------------------------------------------- */
   namespace internal {
@@ -93,18 +93,18 @@ namespace rascal {
      */
     template <typename Manager, size_t Order, size_t LayersHead,
               size_t... LayersTail, typename... TupComp>
-    struct ClusterIndexPropertyComputer_Helper<Manager, Order,
-                                               std::index_sequence
-                                               <LayersHead, LayersTail...>,
-                                               std::tuple<TupComp...>> {
+    struct ClusterIndexPropertyComputer_Helper<
+        Manager, Order, std::index_sequence<LayersHead, LayersTail...>,
+        std::tuple<TupComp...>> {
       using traits = typename Manager::traits;
       constexpr static auto ActiveLayer{
-        compute_cluster_layer<Order>(typename traits::LayerByOrder{})};
+          compute_cluster_layer<Order>(typename traits::LayerByOrder{})};
 
-      using Property_t = Property<size_t, Order, ActiveLayer, LayersHead+1, 1>;
-      using type = typename ClusterIndexPropertyComputer_Helper
-        <Manager, Order+1, std::index_sequence<LayersTail...>,
-         std::tuple<TupComp..., Property_t>>::type;
+      using Property_t =
+          Property<size_t, Order, ActiveLayer, LayersHead + 1, 1>;
+      using type = typename ClusterIndexPropertyComputer_Helper<
+          Manager, Order + 1, std::index_sequence<LayersTail...>,
+          std::tuple<TupComp..., Property_t>>::type;
     };
 
     /**
@@ -113,15 +113,15 @@ namespace rascal {
      */
     template <typename Manager, size_t Order, size_t LayersHead,
               typename... TupComp>
-    struct ClusterIndexPropertyComputer_Helper<Manager,
-                                               Order,
+    struct ClusterIndexPropertyComputer_Helper<Manager, Order,
                                                std::index_sequence<LayersHead>,
                                                std::tuple<TupComp...>> {
       using traits = typename Manager::traits;
       constexpr static auto ActiveLayer{
-        compute_cluster_layer<Order>(typename traits::LayerByOrder{})};
+          compute_cluster_layer<Order>(typename traits::LayerByOrder{})};
 
-      using Property_t = Property<size_t, Order, ActiveLayer, LayersHead+1, 1>;
+      using Property_t =
+          Property<size_t, Order, ActiveLayer, LayersHead + 1, 1>;
       using type = std::tuple<TupComp..., Property_t>;
     };
 
@@ -129,11 +129,8 @@ namespace rascal {
     template <typename Manager, size_t... Layers>
     struct ClusterIndexPropertyComputer<Manager,
                                         std::index_sequence<Layers...>> {
-      using type =
-        typename
-        ClusterIndexPropertyComputer_Helper<Manager, 1,
-                                            std::index_sequence<Layers...>,
-                                            std::tuple<>>::type;
+      using type = typename ClusterIndexPropertyComputer_Helper<
+          Manager, 1, std::index_sequence<Layers...>, std::tuple<>>::type;
     };
 
     /**
@@ -143,12 +140,12 @@ namespace rascal {
     template <typename Tup, typename Manager>
     struct ClusterIndexConstructor {};
 
-    //! Overload  to build the tuple
+    //! Overload to build the tuple
     template <typename... PropertyTypes, typename Manager>
     struct ClusterIndexConstructor<std::tuple<PropertyTypes...>, Manager> {
       static inline decltype(auto) make(Manager & manager) {
         return std::tuple<PropertyTypes...>(
-                      std::move(PropertyTypes(manager))...);
+            std::move(PropertyTypes(manager))...);
       }
     };
 
@@ -166,34 +163,34 @@ namespace rascal {
    * class implementation
    */
   template <class ManagerImplementation>
-  class StructureManager: public StructureManagerBase {
+  class StructureManager : public StructureManagerBase {
    public:
     using traits = StructureManager_traits<ManagerImplementation>;
     //! type used to represent spatial coordinates, etc
     using Vector_t = Eigen::Matrix<double, traits::Dim, 1>;
     using Vector_ref = Eigen::Map<Vector_t>;
-    using ClusterIndex_t = typename internal::ClusterIndexPropertyComputer
-      <StructureManager, typename traits::LayerByOrder>::type;
-    using ClusterConstructor_t = typename internal::ClusterIndexConstructor
-      <ClusterIndex_t, StructureManager>;
+    using ClusterIndex_t = typename internal::ClusterIndexPropertyComputer<
+        StructureManager, typename traits::LayerByOrder>::type;
+    using ClusterConstructor_t =
+        typename internal::ClusterIndexConstructor<ClusterIndex_t,
+                                                   StructureManager>;
 
     //! helper type for Property creation
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
-    using Property_t = Property<T, Order,
-                                compute_cluster_layer<Order>
-                                (typename traits::LayerByOrder{}),
-                                NbRow, NbCol>;
+    using Property_t =
+        Property<T, Order,
+                 compute_cluster_layer<Order>(typename traits::LayerByOrder{}),
+                 NbRow, NbCol>;
 
     //! helper type for Property creation
     template <typename T, size_t Order>
     using TypedProperty_t = TypedProperty<T, Order,
-                                          compute_cluster_layer<Order>
-                                          (typename traits::LayerByOrder{})>;
+                                          compute_cluster_layer<Order>(
+                                              typename traits::LayerByOrder{})>;
 
     //! Default constructor
-    StructureManager() :
-      cluster_indices_container{ClusterConstructor_t::make(*this)} {
-    }
+    StructureManager()
+        : cluster_indices_container{ClusterConstructor_t::make(*this)} {}
 
     //! Copy constructor
     StructureManager(const StructureManager & other) = delete;
@@ -205,15 +202,13 @@ namespace rascal {
     virtual ~StructureManager() = default;
 
     //! Copy assignment operator
-    StructureManager
-    & operator=(const StructureManager & other) = delete;
+    StructureManager & operator=(const StructureManager & other) = delete;
 
     //! Move assignment operator
-    StructureManager
-    & operator=(StructureManager && other)  = default;
+    StructureManager & operator=(StructureManager && other) = default;
 
     // required for the construction of vectors, etc
-    constexpr static int dim() {return traits::Dim;}
+    constexpr static int dim() { return traits::Dim; }
 
     /**
      * iterator over the atoms, pairs, triplets, etc in the manager. Iterators
@@ -238,6 +233,12 @@ namespace rascal {
     template <size_t Order>
     class ClusterRef;
 
+    //! A proxy class which provides iteration access to atoms and ghost atoms
+    class ProxyWithGhosts;
+
+    //! A proxy class which provides iteration acces to only ghost atoms
+    class ProxyOnlyGhosts;
+
     //! Get an iterator for a ClusterRef<1> to access pairs of an atom
     inline Iterator_t get_iterator_at(const size_t index,
                                       const size_t offset = 0) {
@@ -245,15 +246,32 @@ namespace rascal {
     }
 
     //! start of iterator
-    inline Iterator_t begin() {return Iterator_t(*this, 0, 0);}
+    inline Iterator_t begin() { return Iterator_t(*this, 0, 0); }
     //! end of iterator
     inline Iterator_t end() {
-      return Iterator_t(*this,
-                        this->implementation().get_size(),
-                        std::numeric_limits<size_t>::max());}
+      return Iterator_t(*this, this->implementation().get_size(),
+                        std::numeric_limits<size_t>::max());
+    }
+
+    //! Usage of iterator including ghosts; in case no ghost atoms exist, it is
+    //! an iteration over all existing center atoms
+    inline ProxyWithGhosts with_ghosts() {
+      return ProxyWithGhosts{this->implementation()};
+    }
+
+    //! Usage of iterator for only ghosts, in case no ghosts exist, the iterator
+    //! is empty
+    inline ProxyOnlyGhosts only_ghosts() {
+      return ProxyOnlyGhosts{this->implementation()};
+    }
 
     //! i.e. number of atoms
-    inline size_t size() const {return this->implementation().get_size();}
+    inline size_t size() const { return this->implementation().get_size(); }
+
+    //! number of atoms including ghosts
+    inline size_t size_with_ghosts() const {
+      return this->implementation().get_size_with_ghosts();
+    }
 
     //! number of atoms, pairs, triplets in respective manager
     inline size_t nb_clusters(size_t cluster_size) const final {
@@ -272,20 +290,20 @@ namespace rascal {
 
     //! returns the atom type (convention is atomic number, but nothing is
     //! imposed apart from being an integer
-    inline const int& atom_type(const int & atom_index) const {
+    inline const int & atom_type(const int & atom_index) const {
       return this->implementation().get_atom_type(atom_index);
     }
 
     //! returns the atom type (convention is atomic number, but nothing is
     //! imposed apart from being an integer
-    inline int& atom_type(const int & atom_index) {
+    inline int & atom_type(const int & atom_index) {
       return this->implementation().get_atom_type(atom_index);
     }
 
     void attach_property(const std::string & name,
                          std::shared_ptr<PropertyBase> property) {
       if (this->has_property(name)) {
-        std::stringstream error {};
+        std::stringstream error{};
         error << "A property of name '" << name
               << "' has already been registered";
         throw std::runtime_error(error.str());
@@ -295,14 +313,13 @@ namespace rascal {
     }
 
     bool has_property(const std::string & name) {
-      return not (this->properties.find(name) == this->properties.end());
+      return not(this->properties.find(name) == this->properties.end());
     }
 
     std::shared_ptr<PropertyBase> get_property(const std::string & name) {
       if (this->has_property(name)) {
-        std::stringstream error {};
-        error << "No property of name '" << name
-              << "' has been registered";
+        std::stringstream error{};
+        error << "No property of name '" << name << "' has been registered";
         throw std::runtime_error(error.str());
       }
       return this->properties[name];
@@ -351,30 +368,27 @@ namespace rascal {
     }
 
     //! returns a reference to itself
-    inline StructureManager & get_manager() {return *this;}
+    inline StructureManager & get_manager() { return *this; }
 
     //! necessary casting of the type
     inline ManagerImplementation & implementation() {
-      return static_cast<ManagerImplementation&>(*this);
+      return static_cast<ManagerImplementation &>(*this);
     }
     //! returns a reference for access of the implementation
     inline const ManagerImplementation & implementation() const {
-      return static_cast<const ManagerImplementation&>(*this);
+      return static_cast<const ManagerImplementation &>(*this);
     }
     //! get an array with all atoms inside
     std::array<AtomRef, 0> get_atoms() const {
       return std::array<AtomRef, 0>{};
     }
     //! Starting array for builing container in iterator
-    std::array<int, 0> get_atom_ids() const {
-      return std::array<int, 0>{};
-    }
+    std::array<int, 0> get_atom_ids() const { return std::array<int, 0>{}; }
     //! Access to offsets for access of cluster-related properties
     template <size_t Order, size_t CallerLayer>
-    inline size_t get_offset(const ClusterRefKey<Order,
-                             CallerLayer> & cluster) const {
-      constexpr auto
-        layer{StructureManager::template cluster_layer<Order>()};
+    inline size_t
+    get_offset(const ClusterRefKey<Order, CallerLayer> & cluster) const {
+      constexpr auto layer{StructureManager::template cluster_layer<Order>()};
       return cluster.get_cluster_index(layer);
     }
 
@@ -393,7 +407,7 @@ namespace rascal {
     }
 
     //! access to cluster_indices_container
-    inline const ClusterIndex_t & get_cluster_indices_container() const  {
+    inline const ClusterIndex_t & get_cluster_indices_container() const {
       return this->cluster_indices_container;
     }
 
@@ -416,14 +430,14 @@ namespace rascal {
     //! helper function that allows to append extra elements to an array It
     //! returns the given array, plus one element
     template <typename T, size_t Size, int... Indices>
-    decltype(auto) append_array_helper(const std::array<T, Size> & arr, T &&  t,
+    decltype(auto) append_array_helper(const std::array<T, Size> & arr, T && t,
                                        std::integer_sequence<int, Indices...>) {
-      return std::array<T, Size+1> {arr[Indices]..., std::forward<T>(t)};
+      return std::array<T, Size + 1>{arr[Indices]..., std::forward<T>(t)};
     }
 
     //! template function allows to add an element to an array
     template <typename T, size_t Size>
-    decltype(auto) append_array(const std::array<T, Size> & arr, T &&  t) {
+    decltype(auto) append_array(const std::array<T, Size> & arr, T && t) {
       return append_array_helper(arr, std::forward<T>(t),
                                  std::make_integer_sequence<int, Size>{});
     }
@@ -434,54 +448,53 @@ namespace rascal {
      * offsets and neighbours. Used later by adaptors which modify or extend the
      * neighbourlist to access the correct offset.
      */
-    template<bool AtMaxOrder>
+    template <bool AtMaxOrder>
     struct IncreaseHelper {
-      template<class Manager_t, class Cluster_t>
+      template <class Manager_t, class Cluster_t>
       inline static size_t get_cluster_size(const Manager_t & /*manager*/,
                                             const Cluster_t & /*cluster*/) {
         throw std::runtime_error("This branch should never exist"
                                  " (cluster size).");
       }
-      template<class Manager_t, class Counters_t>
+      template <class Manager_t, class Counters_t>
       inline static size_t get_offset_impl(const Manager_t & /*manager*/,
                                            const Counters_t & /*counters*/) {
         throw std::runtime_error("This branch should never exist"
                                  " (offset implementation).");
       }
-      template<class Manager_t, class Counters_t>
-      inline static
-      size_t get_cluster_neighbour(const Manager_t & /*manager*/,
-                                   const Counters_t & /*counters*/,
-                                   size_t /*index*/) {
+      template <class Manager_t, class Counters_t>
+      inline static size_t
+      get_cluster_neighbour(const Manager_t & /*manager*/,
+                            const Counters_t & /*counters*/, size_t /*index*/) {
         throw std::runtime_error("This branch should never exist"
-                                 "(cluster neigbour).");
+                                 " (cluster neigbour).");
       }
     };
 
     //! specialization for not at MaxOrder, these refer to the underlying
     //! manager
-    template<>
+    template <>
     struct IncreaseHelper<false> {
-      template<class Manager_t, class Cluster_t>
+      template <class Manager_t, class Cluster_t>
       inline static size_t get_cluster_size(const Manager_t & manager,
                                             const Cluster_t & cluster) {
         return manager.get_cluster_size(cluster);
       }
 
-      template<class Manager_t, class Counters_t>
+      template <class Manager_t, class Counters_t>
       inline static size_t get_offset_impl(const Manager_t & manager,
                                            const Counters_t & counters) {
         return manager.get_offset_impl(counters);
       }
 
-      template<class Manager_t, class Counters_t>
+      template <class Manager_t, class Counters_t>
       inline static size_t get_cluster_neighbour(const Manager_t & manager,
                                                  const Counters_t & counters,
                                                  size_t index) {
         return manager.get_cluster_neighbour(counters, index);
       }
     };
-  }  // internal
+  }  // namespace internal
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -500,7 +513,7 @@ namespace rascal {
 
     //! constructor from iterator
     AtomRef(Manager_t & manager, const int & id)
-      : manager{manager}, index{id} {}
+        : manager{manager}, index{id} {}
 
     //! Copy constructor
     AtomRef(const AtomRef & other) = default;
@@ -518,7 +531,7 @@ namespace rascal {
     AtomRef & operator=(AtomRef && other) = default;
 
     //! return index of the atom
-    inline const int & get_index() const {return this->index;}
+    inline const int & get_index() const { return this->index; }
 
     //! return position vector of the atom
     inline Vector_ref get_position() {
@@ -560,21 +573,19 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   template <size_t Order>
-  class StructureManager<ManagerImplementation>::ClusterRef :
-    public ClusterRefKey<Order,
-                  ManagerImplementation::template cluster_layer<Order>()> {
-  public:
+  class StructureManager<ManagerImplementation>::ClusterRef
+      : public ClusterRefKey<
+            Order, ManagerImplementation::template cluster_layer<Order>()> {
+   public:
     using Manager_t = StructureManager<ManagerImplementation>;
     using traits = StructureManager_traits<ManagerImplementation>;
     constexpr static auto ClusterLayer{
-      ManagerImplementation::template cluster_layer<Order>()};
-    using Parent =
-      ClusterRefKey<Order,
-                    ClusterLayer>;
+        ManagerImplementation::template cluster_layer<Order>()};
+    using Parent = ClusterRefKey<Order, ClusterLayer>;
     using AtomRef_t = typename Manager_t::AtomRef;
     using Iterator_t = typename Manager_t::template iterator<Order>;
     using Atoms_t = std::array<AtomRef_t, Order>;
-    using iterator = typename Manager_t::template iterator<Order+1>;
+    using iterator = typename Manager_t::template iterator<Order + 1>;
     friend iterator;
 
     using IndexConstArray_t = typename Parent::IndexConstArray;
@@ -584,23 +595,22 @@ namespace rascal {
     ClusterRef() = delete;
 
     //! ClusterRef for multiple atoms with const IndexArray
-    ClusterRef(Iterator_t & it,
-               const std::array<int, Order> & atom_indices,
-               const IndexConstArray_t & cluster_indices) :
-      Parent{atom_indices, cluster_indices}, it{it} {}
+    ClusterRef(Iterator_t & it, const std::array<int, Order> & atom_indices,
+               const IndexConstArray_t & cluster_indices)
+        : Parent{atom_indices, cluster_indices}, it{it} {}
 
     //! ClusterRef for multiple atoms with non const IndexArray
-    ClusterRef(Iterator_t & it,
-               const std::array<int, Order> & atom_indices,
-               IndexArray_t & cluster_indices) :
-      Parent{atom_indices, IndexConstArray_t(cluster_indices.data())}, it{it} {}
+    ClusterRef(Iterator_t & it, const std::array<int, Order> & atom_indices,
+               IndexArray_t & cluster_indices)
+        : Parent{atom_indices, IndexConstArray_t(cluster_indices.data())},
+          it{it} {}
 
     //! ClusterRef for single atom, see `cluster_index`
-    ClusterRef(Iterator_t & it,
-               const std::array<int, Order> & atom_indices,
-               const size_t & cluster_index) :
+    ClusterRef(Iterator_t & it, const std::array<int, Order> & atom_indices,
+               const size_t & cluster_index)
+        :
 
-      Parent{atom_indices, IndexConstArray_t(& cluster_index)}, it{it} {}
+          Parent{atom_indices, IndexConstArray_t(&cluster_index)}, it{it} {}
 
     /**
      * This is a ClusterRef of Order=1, constructed from a higher Order.  This
@@ -609,9 +619,9 @@ namespace rascal {
      */
     template <bool FirstOrder = (Order == 1)>
     ClusterRef(std::enable_if_t<FirstOrder, ClusterRefKey<1, 0>> & cluster,
-               Manager_t & manager):
-      Parent(cluster.get_atom_indices(), cluster.get_cluster_indices()),
-      it(manager) {}
+               Manager_t & manager)
+        : Parent(cluster.get_atom_indices(), cluster.get_cluster_indices()),
+          it(manager) {}
 
     //! Copy constructor
     ClusterRef(const ClusterRef & other) = delete;
@@ -661,11 +671,9 @@ namespace rascal {
 
     //! return the index of the atom/pair/etc. it is always the last one, since
     //! the other ones are accessed an Order above.
-    inline int get_atom_index() const {
-      return this->back();
-    }
+    inline int get_atom_index() const { return this->back(); }
     //! returns a reference to the manager with the maximum layer
-    inline Manager_t & get_manager() {return this->it.get_manager();}
+    inline Manager_t & get_manager() { return this->it.get_manager(); }
 
     //! return a const reference to the manager with maximum layer
     inline const Manager_t & get_manager() const {
@@ -682,12 +690,10 @@ namespace rascal {
       return iterator(*this, this->size(), std::numeric_limits<size_t>::max());
     }
     //! returns its own size
-    inline size_t size() {return this->get_manager().cluster_size(*this);}
+    inline size_t size() { return this->get_manager().cluster_size(*this); }
     //! return iterator index - this is used in cluster_indices_container as
     //! well as accessing properties
-    inline size_t get_index() const {
-      return this->it.index;
-    }
+    inline size_t get_index() const { return this->it.index; }
     //! returns the clusters index (e.g. the 4-th pair of all pairs in this
     //! iteration)
     inline size_t get_global_index() const {
@@ -698,19 +704,19 @@ namespace rascal {
       return this->atom_indices;
     }
 
-    inline Iterator_t & get_iterator() {return this->it;}
-    inline const Iterator_t & get_iterator() const {return this->it;}
+    inline Iterator_t & get_iterator() { return this->it; }
+    inline const Iterator_t & get_iterator() const { return this->it; }
 
-  protected:
+   protected:
     //! counters for access
     inline std::array<size_t, 1> get_counters() const {
       return this->it.get_counters();
     }
     //!`atom_cluster_indices` is an initially contiguous numbering of atoms
     Iterator_t & it;
-  private:
-  };
 
+   private:
+  };
 
   namespace internal {
     template <class Manager, size_t Order, size_t... Indices>
@@ -718,25 +724,23 @@ namespace rascal {
     species_aggregator_helper(const std::array<int, Order> & array,
                               const Manager & manager,
                               std::index_sequence<Indices...> /*indices*/) {
-      return std::array<int, Order>{
-        manager.atom_type(array[Indices])...};
+      return std::array<int, Order>{manager.atom_type(array[Indices])...};
     }
 
     template <class Manager, size_t Order, size_t... Indices>
     std::array<int, Order>
-    species_aggregator(const std::array<int, Order> &index_array,
+    species_aggregator(const std::array<int, Order> & index_array,
                        const Manager & manager) {
-      return species_aggregator_helper<Manager>
-        (index_array,
-         manager,
-         std::make_index_sequence<Order>{});
+      return species_aggregator_helper<Manager>(
+          index_array, manager, std::make_index_sequence<Order>{});
     }
-  }; // internal
+  };  // namespace internal
 
   template <class ManagerImplementation>
   template <size_t Order>
-  std::array<int, Order> StructureManager<ManagerImplementation>::
-      ClusterRef<Order>::get_atom_types() const {
+  std::array<int, Order>
+  StructureManager<ManagerImplementation>::ClusterRef<Order>::get_atom_types()
+      const {
     return internal::species_aggregator<StructureManager>(this->atom_indices,
                                                           this->get_manager());
   }
@@ -759,11 +763,8 @@ namespace rascal {
     friend ClusterRef_t;
     // determine the container type
     using Container_t =
-      std::conditional_t
-      <Order == 1,
-       Manager_t,
-       typename Manager_t::template
-       ClusterRef<Order-1>>;
+        std::conditional_t<Order == 1, Manager_t,
+                           typename Manager_t::template ClusterRef<Order - 1>>;
     static_assert(Order > 0, "Order has to be positive");
 
     static_assert(Order <= traits::MaxOrder,
@@ -797,75 +798,73 @@ namespace rascal {
     iterator & operator=(iterator && other) = default;
 
     //! pre-increment
-    inline iterator & operator ++() {
+    inline iterator & operator++() {
       ++this->index;
       return *this;
     }
 
     //! pre-decrement
-    inline iterator & operator --() {
+    inline iterator & operator--() {
       --this->index;
       return *this;
     }
 
     //! dereference: calculate cluster indices
-    inline value_type operator * () {
-      auto & cluster_indices_properties =
-        std::get<Order-1>(this->get_manager().get_cluster_indices_container());
-      using Ref_t = typename
-        std::remove_reference_t<decltype(
+    inline value_type operator*() {
+      auto & cluster_indices_properties = std::get<Order - 1>(
+          this->get_manager().get_cluster_indices_container());
+      using Ref_t = typename std::remove_reference_t<decltype(
           cluster_indices_properties)>::reference;
       Ref_t cluster_indices =
-        cluster_indices_properties[this->get_cluster_index()];
+          cluster_indices_properties[this->get_cluster_index()];
       return ClusterRef_t(*this, this->get_atom_indices(), cluster_indices);
     }
 
     //! dereference: calculate cluster indices
-    inline const value_type operator * () const {
-      const auto & cluster_indices_properties =
-        std::get<Order-1>(this->get_manager().get_cluster_indices_container());
-      using Ref_t = typename
-        std::remove_reference_t<decltype(cluster_indices_properties)>::
-        const_reference;
+    inline const value_type operator*() const {
+      const auto & cluster_indices_properties = std::get<Order - 1>(
+          this->get_manager().get_cluster_indices_container());
+      using Ref_t = typename std::remove_reference_t<decltype(
+          cluster_indices_properties)>::const_reference;
       Ref_t cluster_indices =
-        cluster_indices_properties[this->get_cluster_index()];
+          cluster_indices_properties[this->get_cluster_index()];
       const auto indices{this->get_atom_indices()};
-      return ClusterRef_t(const_cast<iterator&>(*this),
-                          indices, cluster_indices);
+      return ClusterRef_t(const_cast<iterator &>(*this), indices,
+                          cluster_indices);
     }
 
     //! equality
-    inline bool operator == (const iterator & other) const {
+    inline bool operator==(const iterator & other) const {
       return this->index == other.index;
     }
 
     //! inequality
-    inline bool operator != (const iterator & other) const {
-      return not (*this == other);
+    inline bool operator!=(const iterator & other) const {
+      return not(*this == other);
     }
 
     /**
      * const access to container
      */
-    inline const Container_t & get_container() const {return this->container;}
+    inline const Container_t & get_container() const { return this->container; }
 
    protected:
     //! constructor with container ref and starting point
     iterator(Container_t & cont, size_t start, size_t offset)
-      :container{cont}, index{start}, offset{offset} {}
+        : container{cont}, index{start}, offset{offset} {}
 
     //! add atomic indices in current iteration
     std::array<int, Order> get_atom_indices() {
-      return internal::append_array
-        (container.get_atom_indices(),
-         this->get_manager().cluster_neighbour(container, this->index));
+      return internal::append_array(
+          container.get_atom_indices(),
+          this->get_manager().cluster_neighbour(container, this->index));
     }
 
     //! add atomic indices in current iteration
     std::array<int, Order> get_atom_indices() const {
-      return internal::append_array
-        (container.get_atom_indices(),
-         this->get_manager().cluster_neighbour(container, this->index));
+      return internal::append_array(
+          container.get_atom_indices(),
+          this->get_manager().cluster_neighbour(container, this->index));
     }
 
     //! returns the current index of the cluster in iteration
@@ -873,7 +872,7 @@ namespace rascal {
       return this->index + this->offset;
     }
     //! returns a reference to the underlying manager at every Order
-    inline Manager_t & get_manager() {return this->container.get_manager();}
+    inline Manager_t & get_manager() { return this->container.get_manager(); }
     //! returns a const reference to the underlying manager at every Order
     inline const Manager_t & get_manager() const {
       return this->container.get_manager();
@@ -882,7 +881,7 @@ namespace rascal {
     //! returns the counters - which is the position in a list at each Order.
     inline std::array<size_t, Order> get_counters() {
       std::array<size_t, Order> counters;
-      counters[Order-1] = this->index;
+      counters[Order - 1] = this->index;
       if (Order == 1) {
         return counters;
       } else {
@@ -901,6 +900,95 @@ namespace rascal {
     //! offset for access in a neighbour list during construction of the begin()
     const size_t offset;
   };
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * A class which provides the iteration range from start to the end of the
+   * atoms including additional ghost atoms.
+   */
+  template <class ManagerImplementation>
+  class StructureManager<ManagerImplementation>::ProxyWithGhosts {
+   public:
+    using Iterator_t =
+        typename StructureManager<ManagerImplementation>::Iterator_t;
+
+    //! Default constructor
+    ProxyWithGhosts() = delete;
+
+    //! Constructor
+    ProxyWithGhosts(ManagerImplementation & manager) : manager{manager} {};
+
+    //! Copy constructor
+    ProxyWithGhosts(const ProxyWithGhosts & other) = delete;
+
+    //! Move constructor
+    ProxyWithGhosts(ProxyWithGhosts && other) = default;
+
+    //! Destructor
+    virtual ~ProxyWithGhosts() = default;
+
+    //! Copy assignment operator
+    ProxyWithGhosts & operator=(const ProxyWithGhosts & other) = delete;
+
+    //! Move assignment operator
+    ProxyWithGhosts & operator=(ProxyWithGhosts && other) = default;
+
+    //! Start of atom list
+    inline Iterator_t begin() { return this->manager.begin(); }
+
+    //! End is all atoms including ghosts
+    inline Iterator_t end() {
+      return Iterator_t(this->manager, this->manager.size_with_ghosts(),
+                        std::numeric_limits<size_t>::max());
+    }
+
+   protected:
+    ManagerImplementation & manager;
+
+   private:
+  };
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * A class which provides the iteration range from for all ghost atoms in the
+   * structure. If no ghost atoms exist, the iterator is of size zero.
+   */
+  template <class ManagerImplementation>
+  class StructureManager<ManagerImplementation>::ProxyOnlyGhosts
+      : public StructureManager<ManagerImplementation>::ProxyWithGhosts {
+   public:
+    using Iterator_t =
+        typename StructureManager<ManagerImplementation>::Iterator_t;
+    using Parent =
+        typename StructureManager<ManagerImplementation>::ProxyWithGhosts;
+
+    //! Default constructor
+    ProxyOnlyGhosts() = delete;
+
+    //!
+    ProxyOnlyGhosts(ManagerImplementation & manager) : Parent{manager} {};
+
+    //! Copy constructor
+    ProxyOnlyGhosts(const ProxyOnlyGhosts & other) = delete;
+
+    //! Move constructor
+    ProxyOnlyGhosts(ProxyOnlyGhosts && other) = default;
+
+    //! Destructor
+    virtual ~ProxyOnlyGhosts() = default;
+
+    //! Copy assignment operator
+    ProxyOnlyGhosts & operator=(const ProxyOnlyGhosts & other) = delete;
+
+    //! Move assignment operator
+    ProxyOnlyGhosts & operator=(ProxyOnlyGhosts && other) = default;
+
+    //! Start iteration at first ghost atom
+    inline Iterator_t begin() { return this->manager.end(); }
+
+   protected:
+   private:
+  };
 }  // namespace rascal
 
-#endif /* STRUCTURE_MANAGER_H */
+#endif  // SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_HH_

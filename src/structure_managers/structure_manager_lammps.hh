@@ -25,9 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
-#ifndef STRUCTURE_MANAGER_LAMMPS_H
-#define STRUCTURE_MANAGER_LAMMPS_H
+#ifndef SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_LAMMPS_HH_
+#define SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_LAMMPS_HH_
 
 #include "structure_managers/structure_manager.hh"
 
@@ -56,8 +55,8 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   //! Definition of the new StructureManagerLammps class.
-  class StructureManagerLammps:
-    public StructureManager<StructureManagerLammps> {
+  class StructureManagerLammps
+      : public StructureManager<StructureManagerLammps> {
    public:
     using traits = StructureManager_traits<StructureManagerLammps>;
     using Parent = StructureManager<StructureManagerLammps>;
@@ -77,12 +76,12 @@ namespace rascal {
     virtual ~StructureManagerLammps() = default;
 
     //! Copy assignment operator
-    StructureManagerLammps
-    & operator=(const StructureManagerLammps & other) = delete;
+    StructureManagerLammps &
+    operator=(const StructureManagerLammps & other) = delete;
 
     //! Move assignment operator
-    StructureManagerLammps
-    & operator=(StructureManagerLammps && other) = default;
+    StructureManagerLammps &
+    operator=(StructureManagerLammps && other) = default;
 
     /**
      * resetting is required every time the list changes. Here, this
@@ -113,10 +112,9 @@ namespace rascal {
      *
      * @param vatom per-atom virial
      */
-    void update(const int & inum, const int & tot_num,
-                int * ilist, int * numneigh, int ** firstneigh,
-                double ** x, double ** f, int * type,
-                double * eatom, double ** vatom);
+    void update(const int & inum, const int & tot_num, int * ilist,
+                int * numneigh, int ** firstneigh, double ** x, double ** f,
+                int * type, double * eatom, double ** vatom);
 
     //! return position vector of an atom given the atom index
     inline Vector_ref get_position(const size_t & atom_index) {
@@ -135,14 +133,15 @@ namespace rascal {
     }
 
     //! return number of I atoms in the list
-    inline size_t get_size() const {
-      return this->inum;
-    }
+    inline size_t get_size() const { return this->inum; }
+
+    //! return number of center and ghost atoms
+    inline size_t get_size_with_ghosts() const { return this->tot_num; }
 
     //! return the number of neighbours of a given atom
-    template<size_t Order, size_t Layer>
-    inline size_t get_cluster_size(const ClusterRefKey<Order, Layer> & cluster)
-      const {
+    template <size_t Order, size_t Layer>
+    inline size_t
+    get_cluster_size(const ClusterRefKey<Order, Layer> & cluster) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
       return this->numneigh[cluster.back()];
@@ -150,11 +149,11 @@ namespace rascal {
 
     //! return the index-th neighbour of the last atom in a cluster with
     //! cluster_size = 1 (atoms) which can be used to construct pairs
-    template<size_t Order, size_t Layer>
-    inline int get_cluster_neighbour(const ClusterRefKey<Order, Layer>
-                                     & cluster,
-                                     size_t index) const {
-      static_assert(Order == traits::MaxOrder-1,
+    template <size_t Order, size_t Layer>
+    inline int
+    get_cluster_neighbour(const ClusterRefKey<Order, Layer> & cluster,
+                          size_t index) const {
+      static_assert(Order == traits::MaxOrder - 1,
                     "this implementation only handles atoms and identify its "
                     "index-th neighbour.");
       auto && i_atom_id{cluster.back()};
@@ -175,9 +174,9 @@ namespace rascal {
      * provided an atom, returns the cumulative numbers of pairs up to the first
      * pair in which the atom is the I atom this only works for atom
      */
-    template<size_t Order>
-    inline size_t get_offset_impl(const std::array<size_t, Order>
-                                  & counters) const;
+    template <size_t Order>
+    inline size_t
+    get_offset_impl(const std::array<size_t, Order> & counters) const;
 
     /**
      * return the number of clusters of size cluster_size.  Can only handle
@@ -186,35 +185,35 @@ namespace rascal {
     size_t get_nb_clusters(int cluster_size) const;
 
    protected:
-    int inum{}; //!< total numer of atoms
-    int tot_num{}; //!< total number, includes ghosts
-    int * ilist{}; //!< atomic indices
-    int * numneigh{}; //!< number of neighbours per atom
-    int ** firstneigh{}; //!< pointer to first neighbour
-    double ** x{}; //!< atomic positions
-    double ** f{}; //!< atomic forces
-    int * type{}; //!< atom types
-    double * eatom{}; //!< energy of atoms
-    double ** vatom{}; //!< virial stress of atoms
-    int nb_pairs{}; //! number of clusters with cluster_size=2 (pairs)
-    std::vector<int> offsets{}; //! offset per atom to access neighbour list
+    int inum{};           //!< total numer of atoms
+    int tot_num{};        //!< total number, includes ghosts
+    int * ilist{};        //!< atomic indices
+    int * numneigh{};     //!< number of neighbours per atom
+    int ** firstneigh{};  //!< pointer to first neighbour
+    double ** x{};        //!< atomic positions
+    double ** f{};        //!< atomic forces
+    int * type{};         //!< atom types
+    double * eatom{};     //!< energy of atoms
+    double ** vatom{};    //!< virial stress of atoms
+    int nb_pairs{};       //! number of clusters with cluster_size=2 (pairs)
+    std::vector<int> offsets{};  //! offset per atom to access neighbour list
   };
 
   /**
    * provided an atom, returns the cumulative numbers of pairs up to the first
    * pair in which the atom is the I atom this only works for atom
    */
-  template<size_t Order>
-  inline size_t StructureManagerLammps::
-  get_offset_impl(const std::array<size_t, Order> & counters) const {
+  template <size_t Order>
+  inline size_t StructureManagerLammps::get_offset_impl(
+      const std::array<size_t, Order> & counters) const {
     // The static assert with <= is necessary, because the template parameter
     // ``Order`` is one Order higher than the MaxOrder at the current level. The
     // return type of this function is used to build the next Order iteration.
     static_assert(Order <= traits::MaxOrder,
-                   "this manager can only give the offset (= starting index)"
-                   " for a pair iterator, given the i atom of the pair");
+                  "this manager can only give the offset (= starting index)"
+                  " for a pair iterator, given the i atom of the pair");
     return this->offsets[counters.front()];
   }
-}  // rascal
+}  // namespace rascal
 
-#endif /* STRUCTURE_MANAGER_LAMMPS_H */
+#endif  // SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_LAMMPS_HH_
