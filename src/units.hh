@@ -25,7 +25,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef _SRC_UNITS_HH_
 #define _SRC_UNITS_HH_
 
@@ -35,8 +34,7 @@ namespace rascal {
 
   namespace units {
 
-    class UnitStyle
-    {
+    class UnitStyle {
      public:
       //! Default constructor
       UnitStyle() = delete;
@@ -56,17 +54,16 @@ namespace rascal {
       UnitStyle(const UnitStyle & other) = default;
 
       //! Move constructor
-      UnitStyle(UnitStyle &&other) = default;
+      UnitStyle(UnitStyle && other) = default;
 
       //! Destructor
       virtual ~UnitStyle() = default;
 
       //! Copy assignment operator
-      UnitStyle& operator=(const UnitStyle &other) = default;
+      UnitStyle & operator=(const UnitStyle & other) = default;
 
       //! Move assignment operator
       UnitStyle & operator=(UnitStyle && other) = default;
-
 
       /**
        * returns a string representation of the given unit with a optional
@@ -75,18 +72,15 @@ namespace rascal {
        * `simple distance()` returns 'Å'.
        */
       const std::string mass(int numerator = 1, int denominator = 1) const;
-      const std::string distance(int numerator = 1,
-                                 int denominator = 1) const;
+      const std::string distance(int numerator = 1, int denominator = 1) const;
       const std::string time(int numerator = 1, int denominator = 1) const;
       const std::string energy(int numerator = 1, int denominator = 1) const;
-      const std::string velocity(int numerator = 1,
-                                 int denominator = 1) const;
+      const std::string velocity(int numerator = 1, int denominator = 1) const;
       const std::string force(int numerator = 1, int denominator = 1) const;
       const std::string torque(int numerator = 1, int denominator = 1) const;
       const std::string temperature(int numerator = 1,
                                     int denominator = 1) const;
-      const std::string pressure(int numerator = 1,
-                                 int denominator = 1) const;
+      const std::string pressure(int numerator = 1, int denominator = 1) const;
       const std::string dynamic_viscosity(int numerator = 1,
                                           int denominator = 1) const;
       const std::string charge(int numerator = 1, int denominator = 1) const;
@@ -114,12 +108,11 @@ namespace rascal {
       const std::string _density;
     };
 
-
     extern const UnitStyle metal;
     extern const UnitStyle electron;
 
-  }  // units
+  }  // namespace units
 
-}  // rascal
+}  // namespace rascal
 
 #endif  // _SRC_UNITS_HH_

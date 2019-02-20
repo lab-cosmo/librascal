@@ -107,8 +107,8 @@ namespace rascal {
       return n_ij * (-2. * eta * delta_r * exp(-eta * delta_r * delta_r));
     }
 
-    static Eigen::Matrix<double, NbParams, 1>
-    read(const json & params, const UnitStyle & units) {
+    static Eigen::Matrix<double, NbParams, 1> read(const json & params,
+                                                   const UnitStyle & units) {
       Eigen::Matrix<double, NbParams, 1> retval{};
       retval(0) = json_io::check_units(units.distance(-1, 2), param.at("eta"));
       retval(1) = json_io::check_units(units.distance(), param.at("r_s"));
@@ -149,8 +149,8 @@ namespace rascal {
       return n_ij * (-2. * eta * delta_r * exp(-eta * delta_r * delta_r));
     }
 
-    static Eigen::Matrix<double, NbParams, 1>
-    read(const json & params, const UnitStyle & units) {
+    static Eigen::Matrix<double, NbParams, 1> read(const json & params,
+                                                   const UnitStyle & units) {
       Eigen::Matrix<double, NbParams, 1> retval{};
       retval(0) = json_io::check_units(units.distance(-1, 2), param.at("eta"));
       retval(1) = json_io::check_units(units.distance(), param.at("r_s"));
@@ -158,7 +158,6 @@ namespace rascal {
     }
 
    protected:
-    
   };
 
 }  // namespace rascal
