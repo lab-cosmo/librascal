@@ -160,12 +160,11 @@ namespace rascal {
      * negative-m indices:
      *
      *               ╭ √((2l+1)/(2*π) * (l+m)!/(l-m)!) P_l^-m(cos(θ)) sin(-mφ)
-     * for m<0
-     *               |
+     *               |                                                  for m<0
      * Y_l^m(θ, φ) = ┤ √((2l+1)/(4*π)) P_l(cos(θ)) for m==0
      *               |
-     *               ╰ √((2l+1)/(2*π) * (l-m)!/(l+m)!) P_l^m(cos(θ)) cos(mφ) for
-     * m>0
+     *               ╰ √((2l+1)/(2*π) * (l-m)!/(l+m)!) P_l^m(cos(θ)) cos(mφ)
+     *                                                                  for m>0
      *
      * In case you're wondering why it's 1/2π on the m=/=0 components (instead
      * of 1/4π), there's an extra factor of 1/2 that comes from integrating cos²
@@ -227,6 +226,11 @@ namespace rascal {
                 assoc_legendre_polynom(angular_l, m_count) *
                 cos_sin_m_phi(m_count, 1);
           }  // if (m_count == 0)
+          if ((m_count % 2) == 1) {
+            // weird phase factor to be consistent with soapfast
+            harmonics(angular_l, angular_l - m_count) *= -1;
+            harmonics(angular_l, angular_l + m_count) *= -1;
+          }
         }    // for (m_count in [0, l])
       }      // for (l in [0, lmax])
       return harmonics;
