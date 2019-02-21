@@ -35,6 +35,7 @@
 
 #include <unordered_map>
 #include <set>
+#include <list>
 
 namespace rascal {
 

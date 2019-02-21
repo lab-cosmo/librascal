@@ -40,6 +40,7 @@
 #include <vector>
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
+#include "structure_managers/property_partially_sparse.hh"
 
 namespace rascal {
 
@@ -125,6 +126,8 @@ namespace rascal {
     using hypers_t = RepresentationManagerBase::hypers_t;
     using Property_t = Property<double, 1, 1, Eigen::Dynamic, Eigen::Dynamic>;
     using Manager_t = StructureManager;
+    using dense_t = Eigen::Matrix<precision_t, Eigen::Dynamic, Eigen::Dynamic>;
+    using input_data_t = std::unordered_map<key_t, dense_t>;
 
     /**
      * Set the hyperparameters of this descriptor from a json object.
@@ -151,7 +154,9 @@ namespace rascal {
       this->radial_sigmas.resize(this->max_radial, 1);
       this->radial_norm_factors.resize(this->max_radial, 1);
       this->radial_nl_factors.resize(this->max_radial, this->max_angular + 1);
-      this->soap_vectors.resize_to_zero();
+      //MJW
+      //this->soap_vectors.resize_to_zero();
+      //MJW
       this->is_precomputed = false;
 
       this->hypers = hypers;
@@ -282,7 +287,8 @@ namespace rascal {
     bool is_precomputed{false};
 
     Manager_t & structure_manager;
-    Property_t soap_vectors;
+    using PartiallySparseProperty_t = PartiallySparseProperty<double, key_t, 1, 0>;
+    PartiallySparseProperty_t soap_vectors;
     internal::GaussianSigmaType gaussian_sigma_type{};
 
     hypers_t hypers{};
@@ -419,9 +425,12 @@ namespace rascal {
     this->soap_vectors.set_nb_col(pow(this->max_angular + 1, 2));
 
     for (auto center : this->structure_manager) {
-      Eigen::MatrixXd soap_vector = Eigen::MatrixXd::Zero(
-          this->n_species * this->max_radial, pow(this->max_angular + 1, 2));
+      using input_data_t = typename PartiallySparseProperty_t::input_data_t;
+      input_data_t soap_vector;
+      //Eigen::MatrixXd soap_vector = Eigen::MatrixXd::Zero(
+      //    this->n_species * this->max_radial, pow(this->max_angular + 1, 2));
       Eigen::MatrixXd radial_integral(this->max_radial, this->max_angular + 1);
+      int ctype = center.get_atom_type();
 
       // Start the accumulator with the central atom
       // All terms where l =/= 0 cancel
@@ -436,14 +445,19 @@ namespace rascal {
             pow(1.0 / sigma2 + pow(this->radial_sigmas[radial_n], -2),
                 -0.5 * (3.0 + radial_n));
       }
-      soap_vector.col(0) =
+      soap_vector[ctype].col(0) =
           this->radial_ortho_matrix * radial_integral.col(0) / sqrt(4.0 * PI);
+
+//      for (key_t key: soap_vector.enum_keys()) {
+//          std::cout << soap_vector[key] << std::endl;
+//      }
 
       for (auto neigh : center) {
         auto dist{this->structure_manager.get_distance(neigh)};
         auto direction{this->structure_manager.get_direction_vector(neigh)};
         double exp_factor = std::exp(-0.5 * pow(dist, 2) / sigma2);
         sigma2 = pow(gaussian_spec.get_gaussian_sigma(neigh), 2);
+        int ntype = neigh.get_atom_type();
 
         // Note: the copy _should_ be optimized out (RVO)
         Eigen::MatrixXd harmonics =
@@ -484,9 +498,10 @@ namespace rascal {
                angular_l++) {
             for (size_t m_array_idx{0}; m_array_idx < 2 * angular_l + 1;
                  m_array_idx++) {
-              soap_vector(radial_n, lm_collective_idx) +=
+              soap_vector[ntype](radial_n, lm_collective_idx) +=
                   radial_integral(radial_n, angular_l) *
                   harmonics(angular_l, m_array_idx);
+              std::cout << soap_vector[ntype] << std::endl;
               ++lm_collective_idx;
             }
           }

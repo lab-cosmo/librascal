@@ -213,6 +213,7 @@ namespace rascal {
 
   // TODO(max-veit) see if this is made redundant by the general "check
   //               representation against file" template above
+  /*
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_compute_test, Fix,
                                    multiple_fixtures, Fix) {
     auto & managers = Fix::managers_strict;
@@ -263,6 +264,7 @@ namespace rascal {
       }
     }
   }
+  */
 
   BOOST_AUTO_TEST_SUITE_END();
 
