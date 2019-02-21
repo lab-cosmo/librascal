@@ -125,6 +125,7 @@ namespace rascal {
     using hypers_t = RepresentationManagerBase::hypers_t;
     using Property_t = Property<double, 1, 1, Eigen::Dynamic, Eigen::Dynamic>;
     using Manager_t = StructureManager;
+    using key_t = size_t;
 
     /**
      * Set the hyperparameters of this descriptor from a json object.
@@ -212,6 +213,16 @@ namespace rascal {
 
     //! Precompute everything that doesn't depend on the structure
     void precompute();
+
+    //! get the unique keys for the whole structure
+    std::set<key_t> get_all_unique_keys() override {
+      std::set<key_t> unique_keys{};
+      for (auto center : this->structure_manager) {
+        auto keys{this->soap_vectors.get_keys(center)};
+        unique_keys.insert(keys.begin(), keys.last());
+      }
+      return unique_keys;
+    }
 
     //! getter for the representation
     template <size_t Order, size_t Layer>

@@ -91,6 +91,11 @@ namespace rascal {
       this->update_nb_comp();
     }
 
+    inline decltype(auto) get_shape() {
+      std::array<size_t, 2> shape{this->nb_row, this->nb_col};
+      return shape;
+    }
+
     //! returns the cluster order
     inline Dim_t get_order() const { return this->order; }
 

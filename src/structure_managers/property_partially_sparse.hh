@@ -100,8 +100,8 @@ namespace rascal {
       this->map2centers.clear();
       this->map2sparse.clear();
       this->keys_list.clear();
-
     }
+
 
     /* ---------------------------------------------------------------------- */
     //! Property accessor by cluster ref
@@ -202,8 +202,11 @@ namespace rascal {
 
    protected:
     data_t values{};  //!< storage for properties
+    //! map center idx to position and size in values
     map_center_t map2centers{};
+    //! map center idx + key to relative position and size in values
     map_sparse_t map2sparse{};
+    //! list of the registered keys for each centers
     keys_t keys_list{};
   };
 }  // namespace rascal

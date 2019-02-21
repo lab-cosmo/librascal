@@ -42,7 +42,7 @@ namespace rascal {
    public:
     using Parent = FeatureManagerBase<T>;
     using RepresentationManager_t = typename Parent::RepresentationManager_t;
-    using hypers_t = typename RepresentationManager_t::hypers_t;
+    using hypers_t = typename Parent::hypers_t;
     using Feature_Matrix_t = typename Parent::Feature_Matrix_t;
     using Feature_Matrix_ref = typename Parent::Feature_Matrix_ref;
     using precision_t = typename Parent::precision_t;
