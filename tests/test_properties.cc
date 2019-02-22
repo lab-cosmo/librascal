@@ -252,7 +252,7 @@ namespace rascal {
           // set up the data to fill the property later
           input_data_t datas{};
           for (auto& key : keys) {
-            auto data = dense_t::Random(size_dist(gen), size_dist(gen));
+            auto data = dense_t::Random(21, 8);
             datas.emplace(std::make_pair(key,data));
           }
           this->keys_list.back().push_back(keys);
@@ -285,6 +285,7 @@ namespace rascal {
     auto i_manager{0};
     for (auto& manager : managers_center) {
       auto i_center{0};
+      sparse_features[i_manager].set_shape(21, 8);
       for (auto center : manager) {
         sparse_features[i_manager].push_back(test_datas[i_manager][i_center]);
         i_center++;
@@ -300,14 +301,14 @@ namespace rascal {
         if (verbose) std::cout << "center: " << i_center << std::endl;
 
         auto data = sparse_features[i_manager][center];
-        size_t start_id{0};
+        size_t key_id{0};
         double error1{0};
         for (auto& key : sparse_features[i_manager].get_keys(center)) {
           auto& value{test_datas[i_manager][i_center][key]};
           Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, 1>> test_data(value.data(),
                               value.size());
-          error1 += (data.block(start_id, 0 , test_data.size(), 1) - test_data).squaredNorm();
-          start_id += test_data.size();
+          error1 += (data.col(key_id) - test_data).squaredNorm();
+          key_id += 1;
         }
         if (verbose) std::cout << "error1: " << error1 << std::endl;
         BOOST_CHECK_LE(std::sqrt(error1), tol * 100);

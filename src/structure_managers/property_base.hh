@@ -92,9 +92,10 @@ namespace rascal {
       this->update_nb_comp();
     }
 
-    inline decltype(auto) get_shape() {
-      std::array<Dim_t, 2> shape{this->nb_row, this->nb_col};
-      return shape;
+    inline void set_shape(const Dim_t & nb_row, const Dim_t & nb_col) {
+      this->nb_row = nb_row;
+      this->nb_col = nb_col;
+      this->update_nb_comp();
     }
 
     //! returns the cluster order

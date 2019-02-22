@@ -220,24 +220,14 @@ namespace rascal {
     //! Precompute everything that doesn't depend on the structure
     void precompute();
 
-    //! get the unique keys for the whole structure
-    std::set<key_t> get_all_unique_keys() override {
-      std::set<key_t> unique_keys{};
-      for (auto center : this->structure_manager) {
-        auto keys{this->soap_vectors.get_keys(center)};
-        unique_keys.insert(keys.begin(), keys.end());
-      }
-      return unique_keys;
-    }
-
     //! getter for the representation
     template <size_t Order, size_t Layer>
-    Eigen::Map<Eigen::MatrixXd>
+    Eigen::MatrixXd
     get_soap_vector(const ClusterRefKey<Order, Layer> & center) {
       return this->soap_vectors[center];
     }
 
-    Eigen::Map<Eigen::MatrixXd> get_soap_vector(const size_t & i_center) {
+    Eigen::MatrixXd get_soap_vector(const size_t & i_center) {
       return this->soap_vectors[i_center];
     }
 
@@ -257,6 +247,11 @@ namespace rascal {
     }
 
     std::vector<precision_t> & get_representation_raw_data() {
+      std::vector<precision_t> aa{};
+      return aa;
+    }
+
+    auto& get_representation_sparse_raw_data() {
       return this->soap_vectors.get_raw_data();
     }
 

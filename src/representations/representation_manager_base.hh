@@ -84,12 +84,6 @@ namespace rascal {
     //! get the number of centers for the representation
     virtual size_t get_center_size() = 0;
 
-    //! if the representation manager has sparse type of storage
-    virtual std::set<key_t> get_all_unique_keys() {
-      static_assert("this function should not be used.");
-      return std::set<key_t>();
-    }
-
     //! returns a string representation of the current options values
     //! in alphabetical order
     std::string get_options_string();
