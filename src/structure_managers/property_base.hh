@@ -36,6 +36,7 @@
 #include <string>
 #include <typeinfo>
 #include <vector>
+#include <array>
 
 namespace rascal {
 
@@ -92,7 +93,7 @@ namespace rascal {
     }
 
     inline decltype(auto) get_shape() {
-      std::array<size_t, 2> shape{this->nb_row, this->nb_col};
+      std::array<Dim_t, 2> shape{this->nb_row, this->nb_col};
       return shape;
     }
 

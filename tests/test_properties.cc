@@ -30,7 +30,7 @@
 #include "tests.hh"
 #include "test_structure.hh"
 #include "test_adaptor.hh"
-#include "structure_managers/property_partially_sparse.hh"
+#include "structure_managers/property_block_sparse.hh"
 
 #include <random>
 #include <set>
@@ -213,22 +213,22 @@ namespace rascal {
    * A fixture for testing partially sparse proterties.
    */
   template <class ManagerImplementation>
-  struct PartiallySparsePropertyFixture : public MultipleStructureManagerCenterFixture<ManagerImplementation,
+  struct BlockSparsePropertyFixture : public MultipleStructureManagerCenterFixture<ManagerImplementation,
                                 MultipleStructureManagerBaseFixture> {
     using Manager_t = ManagerImplementation;
 
     using key_t = size_t;
-    using PartiallySparseProperty_t =
-                PartiallySparseProperty<double, key_t, 1, 0>;
-    using dense_t = typename PartiallySparseProperty_t::dense_t;
-    using input_data_t = typename PartiallySparseProperty_t::input_data_t;
+    using BlockSparseProperty_t =
+                BlockSparseProperty<double, key_t, 1, 0>;
+    using dense_t = typename BlockSparseProperty_t::dense_t;
+    using input_data_t = typename BlockSparseProperty_t::input_data_t;
     using test_data_t = std::vector<input_data_t>;
 
     constexpr static Dim_t DynSize() { return 3; }
 
     std::string sparse_features_desc{"some atom centered sparse features"};
 
-    PartiallySparsePropertyFixture()
+    BlockSparsePropertyFixture()
         : MultipleStructureManagerCenterFixture<ManagerImplementation,
                                 MultipleStructureManagerBaseFixture>{}
     {
@@ -264,14 +264,14 @@ namespace rascal {
 
     std::vector<std::vector<std::set<key_t>>> keys_list{};
     std::vector<test_data_t> test_datas{};
-    std::vector<PartiallySparseProperty_t> sparse_features{};
+    std::vector<BlockSparseProperty_t> sparse_features{};
   };
 
   BOOST_AUTO_TEST_SUITE(Property_partially_sparse_tests);
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
-                          PartiallySparsePropertyFixture<StructureManagerCenters>) {}
+                          BlockSparsePropertyFixture<StructureManagerCenters>) {}
 
   /* ---------------------------------------------------------------------- */
   /*
@@ -279,7 +279,7 @@ namespace rascal {
    * filled and that the data can be accessed consistently.
    */
   BOOST_FIXTURE_TEST_CASE(fill_test_simple,
-                          PartiallySparsePropertyFixture<StructureManagerCenters>) {
+                          BlockSparsePropertyFixture<StructureManagerCenters>) {
     bool verbose{false};
     // fill the property structures
     auto i_manager{0};
@@ -329,7 +329,7 @@ namespace rascal {
    * test, if metadata can be assigned to properties
    */
   BOOST_FIXTURE_TEST_CASE(meta_data_test,
-                          PartiallySparsePropertyFixture<StructureManagerCenters>) {
+                          BlockSparsePropertyFixture<StructureManagerCenters>) {
     for (auto& sparse_feature : sparse_features) {
       auto sparse_feature_metadata = sparse_feature.get_metadata();
       BOOST_CHECK_EQUAL(sparse_feature_metadata, sparse_features_desc);

@@ -27,8 +27,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_STRUCTURE_MANAGERS_PROPERTY_PARTIALLY_SPARSE_HH_
-#define SRC_STRUCTURE_MANAGERS_PROPERTY_PARTIALLY_SPARSE_HH_
+#ifndef SRC_STRUCTURE_MANAGERS_PROPERTY_BLOCK_SPARSE_HH_
+#define SRC_STRUCTURE_MANAGERS_PROPERTY_BLOCK_SPARSE_HH_
 
 #include "structure_managers/property_base.hh"
 #include "structure_managers/cluster_ref_key.hh"
@@ -46,7 +46,7 @@ namespace rascal {
    * Typed ``property`` class definition, inherits from the base property class
    */
   template <typename precision_t, typename key_t, size_t Order, size_t PropertyLayer>
-  class PartiallySparseProperty : public PropertyBase {
+  class BlockSparseProperty : public PropertyBase {
    public:
     using Parent = PropertyBase;
     using dense_t = Eigen::Matrix<precision_t, Eigen::Dynamic, Eigen::Dynamic>;
@@ -58,26 +58,26 @@ namespace rascal {
     using input_data_t = std::unordered_map<key_t, dense_t>;
 
     //! constructor
-    PartiallySparseProperty(StructureManagerBase & manager, std::string metadata = "no metadata")
+    BlockSparseProperty(StructureManagerBase & manager, std::string metadata = "no metadata")
         : Parent{manager, 0, 0, Order, PropertyLayer, metadata} {}
 
     //! Default constructor
-    PartiallySparseProperty() = delete;
+    BlockSparseProperty() = delete;
 
     //! Copy constructor
-    PartiallySparseProperty(const PartiallySparseProperty & other) = delete;
+    BlockSparseProperty(const BlockSparseProperty & other) = delete;
 
     //! Move constructor
-    PartiallySparseProperty(PartiallySparseProperty && other) = default;
+    BlockSparseProperty(BlockSparseProperty && other) = default;
 
     //! Destructor
-    virtual ~PartiallySparseProperty() = default;
+    virtual ~BlockSparseProperty() = default;
 
     //! Copy assignment operator
-    PartiallySparseProperty & operator=(const PartiallySparseProperty & other) = delete;
+    BlockSparseProperty & operator=(const BlockSparseProperty & other) = delete;
 
     //! Move assignment operator
-    PartiallySparseProperty & operator=(PartiallySparseProperty && other) = default;
+    BlockSparseProperty & operator=(BlockSparseProperty && other) = default;
 
     /* ---------------------------------------------------------------------- */
     //! return runtime info about the stored (e.g., numerical) type
@@ -212,4 +212,4 @@ namespace rascal {
   };
 }  // namespace rascal
 
-#endif  // SRC_STRUCTURE_MANAGERS_PROPERTY_PARTIALLY_SPARSE_HH_
+#endif  // SRC_STRUCTURE_MANAGERS_PROPERTY_BLOCK_SPARSE_HH_

@@ -40,7 +40,7 @@
 #include <vector>
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
-#include "structure_managers/property_partially_sparse.hh"
+#include "structure_managers/property_block_sparse.hh"
 
 namespace rascal {
 
@@ -127,10 +127,9 @@ namespace rascal {
     using Property_t = Property<double, 1, 1, Eigen::Dynamic, Eigen::Dynamic>;
     using Manager_t = StructureManager;
     using key_t = int;
-    using PartiallySparseProperty_t = PartiallySparseProperty<double, key_t, 1, 0>;
-    using input_data_t = typename PartiallySparseProperty_t::input_data_t;
-    using dense_t = typename PartiallySparseProperty_t::dense_t;
-    using input_data_t = std::unordered_map<key_t, dense_t>;
+    using BlockSparseProperty_t = BlockSparseProperty<double, key_t, 1, 0>;
+    using input_data_t = typename BlockSparseProperty_t::input_data_t;
+    using dense_t = typename BlockSparseProperty_t::dense_t;
 
     /**
      * Set the hyperparameters of this descriptor from a json object.
@@ -226,7 +225,7 @@ namespace rascal {
       std::set<key_t> unique_keys{};
       for (auto center : this->structure_manager) {
         auto keys{this->soap_vectors.get_keys(center)};
-        unique_keys.insert(keys.begin(), keys.last());
+        unique_keys.insert(keys.begin(), keys.end());
       }
       return unique_keys;
     }
@@ -236,6 +235,10 @@ namespace rascal {
     Eigen::Map<Eigen::MatrixXd>
     get_soap_vector(const ClusterRefKey<Order, Layer> & center) {
       return this->soap_vectors[center];
+    }
+
+    Eigen::Map<Eigen::MatrixXd> get_soap_vector(const size_t & i_center) {
+      return this->soap_vectors[i_center];
     }
 
     // TODO(max-veit) overload operator<< instead? But we need the center...
@@ -295,7 +298,7 @@ namespace rascal {
 
     Manager_t & structure_manager;
 
-    PartiallySparseProperty_t soap_vectors;
+    BlockSparseProperty_t soap_vectors;
     internal::GaussianSigmaType gaussian_sigma_type{};
 
     hypers_t hypers{};
@@ -428,33 +431,32 @@ namespace rascal {
       this->precompute();
     }
 
+    auto n_row{this->max_radial};
+    auto n_col{pow(this->max_angular + 1, 2)};
     this->soap_vectors.clear();
-    this->soap_vectors.set_nb_row(this->n_species * this->max_radial);
-    this->soap_vectors.set_nb_col(pow(this->max_angular + 1, 2));
+    this->soap_vectors.set_nb_row(n_row);
+    this->soap_vectors.set_nb_col(n_col);
 
     for (auto center : this->structure_manager) {
 
       input_data_t soap_vector{};
 
       key_t center_type{center.get_atom_type()};
-      dense_t m1 = dense_t::Zero(
-        this->n_species * this->max_radial, pow(this->max_angular + 1, 2));
-      soap_vector.emplace(std::make_pair(center_type, m1));
+      // dense_t m1 = ;
+      soap_vector.emplace(
+          std::make_pair(center_type, dense_t::Zero(n_row, n_col)));
       for (auto neigh : center) {
         key_t neigh_type{neigh.get_atom_type()};
-        dense_t m2 = dense_t::Zero(
-        this->n_species * this->max_radial, pow(this->max_angular + 1, 2));
-        soap_vector.emplace(std::make_pair(neigh_type, m2));
+        // dense_t m2 = dense_t::Zero(n_row, n_col);
+        soap_vector.emplace(
+            std::make_pair(neigh_type, dense_t::Zero(n_row, n_col)));
       }
 
-      //Eigen::MatrixXd soap_vector = Eigen::MatrixXd::Zero(
-      //    this->n_species * this->max_radial, pow(this->max_angular + 1, 2));
       Eigen::MatrixXd radial_integral(this->max_radial, this->max_angular + 1);
-      // int ctype = center.get_atom_type();
 
       // Start the accumulator with the central atom
       // All terms where l =/= 0 cancel
-      double sigma2 = pow(gaussian_spec.get_gaussian_sigma(center), 2);
+      double sigma2{pow(gaussian_spec.get_gaussian_sigma(center), 2)};
       // TODO(max-veit) this is specific to the Gaussian radial basis
       // (along with the matching computation below)
       // And ditto on the gamma functions (potential overflow)
