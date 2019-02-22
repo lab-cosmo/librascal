@@ -32,37 +32,11 @@
 #include "test_representation_manager.hh"
 #include "representations/feature_manager_base.hh"
 #include "representations/feature_manager_dense.hh"
+#include "representations/feature_manager_block_sparse.hh"
 
 #include <list>
 
 namespace rascal {
-
-  /* ---------------------------------------------------------------------- */
-  /**
-   * A fixture providing access to different structures, read in from
-   * json. These are used in a feature fixture to have data at hand.
-   */
-  struct TestFeatureData {
-    TestFeatureData() = default;
-    ~TestFeatureData() = default;
-
-    std::vector<std::string> filenames{
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-        "reference_data/simple_cubic_8.json",
-        "reference_data/small_molecule.json"};
-    std::vector<double> cutoffs{{1., 2., 3.}};
-
-    std::list<json> hypers{{{"central_decay", 0.5},
-                            {"interaction_cutoff", 10.},
-                            {"interaction_decay", 0.5},
-                            {"size", 120},
-                            {"sorting_algorithm", "distance"}},
-                           {{"central_decay", 0.5},
-                            {"interaction_cutoff", 10.},
-                            {"interaction_decay", 0.5},
-                            {"size", 120},
-                            {"sorting_algorithm", "row_norm"}}};
-  };
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -107,6 +81,43 @@ namespace rascal {
     size_t n_center{0};
     size_t n_feature{};
     std::list<Feature_t> features{};
+  };
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * A templated Fixture, inherits from the ReperesentationFixture. It provides
+   * access to different data structures. They are used to check the aggregation
+   * of calculated feature data from multiple structures.
+   */
+  template <typename T, template <typename, typename> class FeatureManager,
+            class StructureManager,
+            template <typename> class RepresentationManager, class BaseFixture>
+  struct SparseFeatureFixture
+      : MultipleStructureManagerStrictFixture<StructureManager,
+                              BaseFixture> {
+    using Parent = MultipleStructureManagerStrictFixture<StructureManager,  BaseFixture>;
+    using Manager_t = typename Parent::Manager_t;
+    using Representation_t = RepresentationManager<Manager_t>;
+    using key_t = typename Representation_t::key_t;
+    using Feature_t = FeatureManager<T, key_t>;
+    using hypers_t = typename Representation_t::hypers_t;
+    using precision_t = T;
+
+    SparseFeatureFixture() : Parent{} {
+      for (auto & hyper : this->hypers) {
+        this->representations.emplace_back();
+        for (auto & manager : this->managers_strict) {
+          this->representations.back().emplace_back(manager, hyper);
+          this->representations.back().back().compute();
+        }
+        this->inner_sizes.emplace_back(this->representations.back().back().get_feature_size());
+      }
+    }
+
+    ~SparseFeatureFixture() = default;
+    std::vector<std::vector<Representation_t>> representations{};
+    std::vector<Feature_t> features{};
+    std::vector<size_t> inner_sizes{};
   };
 
   /* ---------------------------------------------------------------------- */

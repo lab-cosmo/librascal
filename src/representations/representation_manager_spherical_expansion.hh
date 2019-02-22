@@ -127,10 +127,10 @@ namespace rascal {
     using Property_t = Property<double, 1, 1, Eigen::Dynamic, Eigen::Dynamic>;
     using Manager_t = StructureManager;
     using key_t = int;
-    using BlockSparseProperty_t = BlockSparseProperty<double, key_t, 1, 0>;
-    using input_data_t = typename BlockSparseProperty_t::input_data_t;
-    using dense_t = typename BlockSparseProperty_t::dense_t;
-
+    using SparseProperty_t = BlockSparseProperty<double, key_t, 1, 0>;
+    using input_data_t = typename SparseProperty_t::input_data_t;
+    using dense_t = typename SparseProperty_t::dense_t;
+    using data_t = typename SparseProperty_t::data_t;
     /**
      * Set the hyperparameters of this descriptor from a json object.
      *
@@ -156,9 +156,7 @@ namespace rascal {
       this->radial_sigmas.resize(this->max_radial, 1);
       this->radial_norm_factors.resize(this->max_radial, 1);
       this->radial_nl_factors.resize(this->max_radial, this->max_angular + 1);
-      //MJW
-      //this->soap_vectors.resize_to_zero();
-      //MJW
+      this->soap_vectors.clear();
       this->is_precomputed = false;
 
       this->hypers = hypers;
@@ -220,16 +218,16 @@ namespace rascal {
     //! Precompute everything that doesn't depend on the structure
     void precompute();
 
-    //! getter for the representation
-    template <size_t Order, size_t Layer>
-    Eigen::MatrixXd
-    get_soap_vector(const ClusterRefKey<Order, Layer> & center) {
-      return this->soap_vectors[center];
-    }
+    // //! getter for the representation
+    // template <size_t Order, size_t Layer>
+    // Eigen::MatrixXd
+    // get_soap_vector(const ClusterRefKey<Order, Layer> & center) {
+    //   return this->soap_vectors[center];
+    // }
 
-    Eigen::MatrixXd get_soap_vector(const size_t & i_center) {
-      return this->soap_vectors[i_center];
-    }
+    // Eigen::MatrixXd get_soap_vector(const size_t & i_center) {
+    //   return this->soap_vectors[i_center];
+    // }
 
     // TODO(max-veit) overload operator<< instead? But we need the center...
     template <size_t Order, size_t Layer>
@@ -251,7 +249,7 @@ namespace rascal {
       return aa;
     }
 
-    auto& get_representation_sparse_raw_data() {
+    data_t& get_representation_sparse_raw_data() {
       return this->soap_vectors.get_raw_data();
     }
 
@@ -293,7 +291,7 @@ namespace rascal {
 
     Manager_t & structure_manager;
 
-    BlockSparseProperty_t soap_vectors;
+    SparseProperty_t soap_vectors;
     internal::GaussianSigmaType gaussian_sigma_type{};
 
     hypers_t hypers{};
@@ -514,7 +512,7 @@ namespace rascal {
               soap_vector[neigh_type](radial_n, lm_collective_idx) +=
                   radial_integral(radial_n, angular_l) *
                   harmonics(angular_l, m_array_idx);
-              std::cout << soap_vector[neigh_type] << std::endl;
+              // std::cout << soap_vector[neigh_type] << std::endl;
               ++lm_collective_idx;
             }
           }

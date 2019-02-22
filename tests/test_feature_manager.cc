@@ -28,6 +28,7 @@
 #include "tests.hh"
 #include "test_feature_manager.hh"
 
+
 namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(feature_dense_test);
@@ -36,10 +37,9 @@ namespace rascal {
   // gets a list of fixtures for all the different possible structure managers
   using multiple_fixtures = boost::mpl::list<
       FeatureFixture<double, FeatureManagerDense, StructureManagerCenters,
-                     RepresentationManagerSortedCoulomb, TestFeatureData>,
+                     RepresentationManagerSortedCoulomb, MultipleStructureSortedCoulomb>,
       FeatureFixture<float, FeatureManagerDense, StructureManagerCenters,
-                     RepresentationManagerSortedCoulomb, TestFeatureData>>;
-
+                     RepresentationManagerSortedCoulomb, MultipleStructureSortedCoulomb>>;
   /* ---------------------------------------------------------------------- */
   /**
    * Test if the Fixture with multiple structures builds
@@ -60,6 +60,7 @@ namespace rascal {
       features.emplace_back(n_feature, hyper);
     }
   }
+
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -115,6 +116,115 @@ namespace rascal {
     }
   }
 
+  BOOST_AUTO_TEST_SUITE_END();
+
+
+  BOOST_AUTO_TEST_SUITE(feature_block_sparse_test);
+
+  using multiple_fixtures_sparse = boost::mpl::list<
+    SparseFeatureFixture<double, FeatureManagerBlockSparse,
+                    StructureManagerCenters,
+                    RepresentationManagerSphericalExpansion, MultipleStructureSphericalExpansion>,
+    SparseFeatureFixture<float, FeatureManagerBlockSparse,
+                    StructureManagerCenters,
+                    RepresentationManagerSphericalExpansion, MultipleStructureSphericalExpansion>>;
+
   /* ---------------------------------------------------------------------- */
+  /**
+   * Test if the Fixture with multiple structures builds
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_setup_test, Fix, multiple_fixtures_sparse,
+                                   Fix) {}
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Test the construction of the feature manager
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_constructor_test, Fix,
+                                   multiple_fixtures_sparse, Fix) {
+    auto & features = Fix::features;
+    auto & hypers = Fix::hypers;
+    auto & inner_sizes = Fix::inner_sizes;
+    int ii{0};
+    for (auto & hyper : hypers) {
+      features.emplace_back(inner_sizes[ii], hyper);
+      ii++;
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Test pushing back the feature matrices of several representations in the
+   * feature manager and check if the data is properly set.
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(representation_aggregate_test, Fix,
+                                   multiple_fixtures_sparse, Fix) {
+
+    auto & features = Fix::features;
+    auto & hypers = Fix::hypers;
+    auto & inner_sizes = Fix::inner_sizes;
+    auto & representations = Fix::representations;
+
+
+    // build the feature managers. only the 1st
+    // one will be used
+    for (size_t i_hyper{0}; i_hyper < hypers.size(); i_hyper++) {
+      features.emplace_back(inner_sizes[i_hyper], hypers[i_hyper]);
+    }
+
+    using data_t = typename Fix::Representation_t::SparseProperty_t::data_t;
+    std::vector<data_t> original_data{};
+    // extract the feature matrices in a ref vector
+    for (size_t i_hyper{0}; i_hyper < hypers.size(); i_hyper++) {
+      original_data.emplace_back();
+      for (auto & representation : representations[i_hyper]) {
+        auto & raw_data{representation.get_representation_sparse_raw_data()};
+        original_data.back().insert(
+            original_data.back().end(), raw_data.begin(), raw_data.end());
+      }
+    }
+
+
+    // move the features into the feature manager
+    for (size_t i_hyper{0}; i_hyper < hypers.size(); i_hyper++) {
+      for (size_t i_rep{0}; i_rep < representations[i_hyper].size(); i_rep++) {
+        features[i_hyper].push_back(representations[i_hyper][i_rep]);
+      }
+    }
+
+    // check if the features have been moved properly
+    for (size_t i_hyper{0}; i_hyper < hypers.size(); i_hyper++) {
+      auto feature_matrix = features[i_hyper].get_feature_matrix();
+      auto& inner_size{inner_sizes[i_hyper]};
+      std::set<int> unique_keys{};
+      for (size_t i_center{0}; i_center < original_data[i_hyper].size(); ++i_center) {
+        for (auto& element : original_data[i_hyper][i_center]) {
+          unique_keys.emplace(element.first);
+        }
+      }
+      for (size_t i_center{0}; i_center < original_data[i_hyper].size(); ++i_center) {
+        auto& data{original_data[i_hyper][i_center]};
+        int i_count{0};
+        double diff{0};
+        for (auto& key : unique_keys) {
+          // if the key exist
+          if (data.count(key) == 1) {
+            for (int i_col{0}; i_col < data[key].cols(); i_col++) {
+              for (int i_row{0}; i_row < data[key].rows(); i_row++) {
+              diff += data[key](i_row, i_col) -
+                        feature_matrix(i_center, i_count);
+              i_count++;
+              }
+            }
+          } else {
+            i_count += inner_size;
+          }
+        }
+
+        BOOST_CHECK_LE(diff, 1e-14);
+
+      }
+    }
+  }
+
   BOOST_AUTO_TEST_SUITE_END();
 }  // namespace rascal

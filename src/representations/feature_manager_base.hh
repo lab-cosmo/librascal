@@ -58,7 +58,7 @@ namespace rascal {
     FeatureManagerBase(const FeatureManagerBase & other) = delete;
 
     //! Move constructor
-    FeatureManagerBase(FeatureManagerBase && other) = delete;
+    FeatureManagerBase(FeatureManagerBase && other) = default;
 
     //! Destructor
     virtual ~FeatureManagerBase() = default;
@@ -67,7 +67,7 @@ namespace rascal {
     FeatureManagerBase & operator=(const FeatureManagerBase & other) = delete;
 
     //! Move assignment operator
-    FeatureManagerBase & operator=(FeatureManagerBase && other) = delete;
+    FeatureManagerBase & operator=(FeatureManagerBase && other) = default;
 
     //! pre-allocate memory
     virtual void reserve(size_t &) = 0;

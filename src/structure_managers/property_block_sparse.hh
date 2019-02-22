@@ -338,36 +338,36 @@ namespace rascal {
   //     return this->operator[](index);
   //   }
 
-  //   //! push back data associated to a new center atom
-  //   inline void push_back(input_data_t& ref) {
-  //     // get where the new center starts
-  //     auto && new_center_start_id{this->values.size()};
-  //     this->map2sparse.emplace_back();
-  //     this->keys_list.emplace_back();
-  //     size_t key_start{0};
-  //     for(const auto& element : ref) {
-  //       auto&& key{element.first};
-  //       auto&& value{element.second};
+    // //! push back data associated to a new center atom
+    // inline void push_back(input_data_t& ref) {
+    //   // get where the new center starts
+    //   auto && new_center_start_id{this->values.size()};
+    //   this->map2sparse.emplace_back();
+    //   this->keys_list.emplace_back();
+    //   size_t key_start{0};
+    //   for(const auto& element : ref) {
+    //     auto&& key{element.first};
+    //     auto&& value{element.second};
 
-  //       this->keys_list.back().emplace_back(key);
-  //       this->map2sparse.back().emplace(
-  //         std::make_pair(key, std::make_pair(key_start, std::make_pair(value.rows(), value.cols())))
-  //       );
+    //     this->keys_list.back().emplace_back(key);
+    //     this->map2sparse.back().emplace(
+    //       std::make_pair(key, std::make_pair(key_start, std::make_pair(value.rows(), value.cols())))
+    //     );
 
-  //       key_start += value.size();
+    //     key_start += value.size();
 
-  //       for (int jj{0}; jj < value.cols(); ++jj) {
-  //         for (int ii{0}; ii < value.rows(); ++ii) {
-  //           this->values.push_back(value(ii, jj));
-  //         }
-  //       }
-  //     }
+    //     for (int jj{0}; jj < value.cols(); ++jj) {
+    //       for (int ii{0}; ii < value.rows(); ++ii) {
+    //         this->values.push_back(value(ii, jj));
+    //       }
+    //     }
+    //   }
 
-  //     auto center_length{key_start};
-  //     map2centers.push_back(
-  //       std::make_pair(new_center_start_id, center_length)
-  //     );
-  //   }
+    //   auto center_length{key_start};
+    //   map2centers.push_back(
+    //     std::make_pair(new_center_start_id, center_length)
+    //   );
+    // }
 
   //   template <size_t CallerLayer>
   //   inline decltype(auto) get_keys(const ClusterRefKey<Order, CallerLayer> & id) const {

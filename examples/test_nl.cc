@@ -152,11 +152,11 @@ int main() {
         std::cout << center.get_position()[ii] << " ";
       }
       std::cout << " " << center.get_atom_type() << std::endl;
-      auto coefficients{sp_expansion.get_soap_vector(center)};
+      // auto coefficients{sp_expansion.get_soap_vector(center)};
 
-      if ((coefficients.array() > 10000000).any() == true) {
-        std::cout << "OVERFLOW HERE" << std::endl;
-      }
+      // if ((coefficients.array() > 10000000).any() == true) {
+      //   std::cout << "OVERFLOW HERE" << std::endl;
+      // }
 
       // std::cout << "Soap vector size " << this->get_feature_size() << std::endl;
       // for (size_t radial_n{0}; radial_n < hypers["max_radial"]; ++radial_n) {

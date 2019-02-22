@@ -35,6 +35,8 @@
 #include <vector>
 #include <iostream>
 #include <set>
+#include <unordered_map>
+#include <Eigen/Dense>
 
 namespace rascal {
 
@@ -46,6 +48,10 @@ namespace rascal {
     using precision_t = double;
     //! type used to register the valid key and values of hypers_t
     using reference_hypers_t = std::map<std::string, std::vector<std::string>>;
+
+    using dense_t = Eigen::Matrix<precision_t, Eigen::Dynamic, Eigen::Dynamic>;
+    using input_data_t = std::unordered_map<int, dense_t>;
+    using data_t = std::vector<input_data_t>;
 
     RepresentationManagerBase() = default;
 
@@ -77,6 +83,8 @@ namespace rascal {
 
     //! get the raw data of the representation
     virtual std::vector<precision_t> & get_representation_raw_data() = 0;
+
+    virtual data_t & get_representation_sparse_raw_data() = 0;
 
     //! get the size of a feature vector
     virtual size_t get_feature_size() = 0;

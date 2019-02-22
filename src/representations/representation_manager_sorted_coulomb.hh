@@ -159,6 +159,7 @@ namespace rascal {
     template <size_t Order>
     using ClusterRef_t = typename Manager_t::template ClusterRef<Order>;
     using reference_hypers_t = Parent::reference_hypers_t;
+    using data_t = typename Parent::data_t;
 
     //! Constructor
     RepresentationManagerSortedCoulomb(Manager_t & sm, const hypers_t & hyper)
@@ -210,6 +211,11 @@ namespace rascal {
     //! get the raw data of the representation
     std::vector<precision_t> & get_representation_raw_data() {
       return this->coulomb_matrices.get_raw_data();
+    }
+
+    data_t & get_representation_sparse_raw_data() {
+      data_t aa{};
+      return aa;
     }
 
     //! get the size of a feature vector

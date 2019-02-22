@@ -53,7 +53,7 @@ namespace rascal {
         "reference_data/small_molecule.json"};
     std::vector<double> cutoffs{{1., 2., 3.}};
 
-    std::list<json> hypers{{{"central_decay", 0.5},
+    std::vector<json> hypers{{{"central_decay", 0.5},
                             {"interaction_cutoff", 10.},
                             {"interaction_decay", 0.5},
                             {"size", 120},
@@ -76,7 +76,7 @@ namespace rascal {
     };
     std::vector<double> cutoffs{{1, 2, 3}};
 
-    std::list<json> hypers{{{"interaction_cutoff", 6.0},
+    std::vector<json> hypers{{{"interaction_cutoff", 6.0},
                             {"cutoff_smooth_width", 1.0},
                             {"max_radial", 10},
                             {"max_angular", 8},
