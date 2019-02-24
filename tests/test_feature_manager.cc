@@ -25,6 +25,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
+
 #include "tests.hh"
 #include "test_feature_manager.hh"
 
@@ -158,14 +159,16 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(representation_aggregate_test, Fix,
                                    multiple_fixtures_sparse, Fix) {
-
+    bool verbose{false};
     auto & features = Fix::features;
     auto & hypers = Fix::hypers;
     auto & inner_sizes = Fix::inner_sizes;
     auto & representations = Fix::representations;
+    using precision_t = typename Fix::precision_t;
+//    using mat_t = Eigen::Map<Eigen::Matrix<precision_t,-1,-1>>;
+    using mat_t = Eigen::Matrix<precision_t,-1,-1>;
 
-
-    // build the feature managers. only the 1st
+      // build the feature managers. only the 1st
     // one will be used
     for (size_t i_hyper{0}; i_hyper < hypers.size(); i_hyper++) {
       features.emplace_back(inner_sizes[i_hyper], hypers[i_hyper]);
@@ -183,7 +186,6 @@ namespace rascal {
       }
     }
 
-
     // move the features into the feature manager
     for (size_t i_hyper{0}; i_hyper < hypers.size(); i_hyper++) {
       for (size_t i_rep{0}; i_rep < representations[i_hyper].size(); i_rep++) {
@@ -193,7 +195,7 @@ namespace rascal {
 
     // check if the features have been moved properly
     for (size_t i_hyper{0}; i_hyper < hypers.size(); i_hyper++) {
-      auto feature_matrix = features[i_hyper].get_feature_matrix();
+      auto feature_matrix = features[i_hyper].get_feature_matrix_dense();
       auto& inner_size{inner_sizes[i_hyper]};
       std::set<int> unique_keys{};
       for (size_t i_center{0}; i_center < original_data[i_hyper].size(); ++i_center) {
@@ -202,26 +204,35 @@ namespace rascal {
         }
       }
       for (size_t i_center{0}; i_center < original_data[i_hyper].size(); ++i_center) {
-        auto& data{original_data[i_hyper][i_center]};
+        auto& datas{original_data[i_hyper][i_center]};
         int i_count{0};
         double diff{0};
+        if (verbose) std::cout << "Center: "<< i_center <<std::endl;
         for (auto& key : unique_keys) {
           // if the key exist
-          if (data.count(key) == 1) {
-            for (int i_col{0}; i_col < data[key].cols(); i_col++) {
-              for (int i_row{0}; i_row < data[key].rows(); i_row++) {
-              diff += data[key](i_row, i_col) -
-                        feature_matrix(i_center, i_count);
+          if (datas.count(key) == 1) {
+            if (verbose) std::cout << "Key: "<< key <<std::endl;
+            auto data = datas[key];
+            for (int i_col{0}; i_col < data.cols(); i_col++) {
+              for (int i_row{0}; i_row < data.rows(); i_row++) {
+              diff =  data(i_row, i_col)- feature_matrix(i_count, i_center);
+              if (verbose) {
+                if (diff > 1e-12) {
+                  std::cout << diff << ", ";
+                  std::cout << data(i_row, i_col) << ", ";
+                  std::cout << feature_matrix(i_count, i_center) << "/ ";
+                }
+              }
+
               i_count++;
               }
+              if (verbose) std::cout << std::endl;
             }
           } else {
             i_count += inner_size;
           }
         }
-
-        BOOST_CHECK_LE(diff, 1e-14);
-
+        BOOST_CHECK_LE(diff, 1e-11);
       }
     }
   }

@@ -122,6 +122,10 @@ namespace rascal {
                                 this->feature_size(), this->sample_size());
     }
 
+    inline Feature_Matrix_t get_feature_matrix_dense() {
+      return Feature_Matrix_t::Zero(2,2);
+    }
+
    protected:
     //! underlying data container for the feature matrix
     std::vector<T> feature_matrix;

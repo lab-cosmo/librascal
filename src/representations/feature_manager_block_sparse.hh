@@ -173,6 +173,7 @@ namespace rascal {
         size_t center_length{key_start};
         this->map2centers.emplace_back(
                 std::make_pair(new_center_start_id, center_length));
+        new_center_start_id += center_length;
       }
 
 
@@ -195,7 +196,7 @@ namespace rascal {
     }
 
     //! return the feature matrix as an Map over Eigen MatrixXd
-    inline Feature_Matrix_ref get_feature_matrix() {
+    inline Feature_Matrix_t get_feature_matrix_dense() {
       Feature_Matrix_t mat = Feature_Matrix_t::Zero(this->feature_size(), this->sample_size());
       auto inner_size{this->get_inner_size()};
       // loop center
@@ -218,7 +219,12 @@ namespace rascal {
           }
         } // keys
       } // centers
-      return Feature_Matrix_ref(mat.data(), mat.rows(), mat.cols());
+      return mat;
+    }
+
+    inline Feature_Matrix_ref get_feature_matrix() {
+      return Feature_Matrix_ref(this->feature_matrix.data(),
+                                this->feature_matrix.size(), 1);
     }
 
    protected:

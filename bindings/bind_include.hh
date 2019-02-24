@@ -39,6 +39,8 @@
 
 #include "representations/feature_manager_base.hh"
 #include "representations/feature_manager_dense.hh"
+#include "representations/feature_manager_block_sparse.hh"
+
 
 #include "structure_managers/structure_manager_centers.hh"
 #include "structure_managers/structure_manager_lammps.hh"
