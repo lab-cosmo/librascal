@@ -7,7 +7,7 @@
  *
  * @brief  File for binding the Feature Managers
  *
- * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright  2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as

@@ -1,1 +1,1 @@
-INPUT = @CMAKE_SOURCE_DIR@/src
+INPUT = @CMAKE_SOURCE_DIR@/src @CMAKE_SOURCE_DIR@/bindings @CMAKE_SOURCE_DIR@/docs/source/group_defs.dox

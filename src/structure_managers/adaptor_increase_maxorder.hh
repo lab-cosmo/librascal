@@ -9,7 +9,7 @@
  * creates a full and half neighbourlist if there is none and
  * triplets/quadruplets, etc. if existent.
  *
- * Copyright © 2018 Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright  2018 Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as

@@ -1,7 +1,7 @@
 .. _whitepaper:
 
-Implementation
-=================
+Goals & Design
+==============
 
 Rascal is built as an efficient C++ core, that can be easily accessed
 from Python. Coding philosophy and style conventions are discussed in the

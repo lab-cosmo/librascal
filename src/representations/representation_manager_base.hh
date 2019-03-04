@@ -7,7 +7,7 @@
  *
  * @brief  base class for representation managers
  *
- * Copyright © 2018 Musil Felix, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright  2018 Musil Felix, COSMO (EPFL), LAMMM (EPFL)
  *
  * rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -75,8 +75,9 @@ namespace rascal {
     //! Pure Virtual Function to set hyperparameters of the representation
     virtual void set_hyperparameters(const hypers_t &) = 0;
 
-    //! Pure Virtual Function to set hyperparameters of the representation
-    void check_hyperparameters(const reference_hypers_t &, const hypers_t &);
+    //! Check if the input hyperparameters is valid
+    void check_hyperparameters(const reference_hypers_t &,
+                                    const hypers_t &);
 
     //! Compute the representation using a StructureManager
     virtual void compute() = 0;
