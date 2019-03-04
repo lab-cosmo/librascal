@@ -62,6 +62,22 @@ The end of the class contains the different internal variables needed by the cla
     :end-before: rep-variables-end
     :dedent: 2
 
+
+Write the python bindings of the new representation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+We use ``pybind11`` to handle the generation of python bindings. The first step to register the new representation is to include the file in ``bindings/bind_include.hh``. Then, you need to explicitly register your representation manager for every possible structure manager stack that you want to make available to the python side in the :cpp:func:`add_representation_managers() <add_representation_managers>`. Here is an example on how it is done for the sorted coulomb representation
+
+.. literalinclude:: ../../../bindings/bind_py_representation_manager.cc
+    :language: c++
+    :start-after: rep-bind-start
+    :end-before: rep-bind-end
+    :dedent: 2
+
+The last step is to write a python class in ``bindings/rascal/representations/`` to simplify the use of the representation from the python side. You can use :class:`SortedCoulombMatrix` as a template
+
+
+
 Efficient Implementation of Options
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -93,21 +109,6 @@ Finally, the switch between the two behaviours is done in the :cpp:func:`compute
     :end-before: rep-options-compute-end
     :dedent: 2
 
-
-
-
-Write the python bindings of the new representation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-We use ``pybind11`` to handle the generation of python bindings. The first step to register the new representation is to include the file in ``bindings/bind_include.hh``. Then, you need to explicitly register your representation manager for every possible structure manager stack that you want to make available to the python side in the :cpp:func:`add_representation_managers() <add_representation_managers>`. Here is an example on how it is done for the sorted coulomb representation
-
-.. literalinclude:: ../../../bindings/bind_py_representation_manager.cc
-    :language: c++
-    :start-after: rep-bind-start
-    :end-before: rep-bind-end
-    :dedent: 2
-
-The last step is to write a python class in ``bindings/rascal/representations/`` to simplify the use of the representation from the python side. You can use :class:`SortedCoulombMatrix` as a template
 
 
 .. [#one] http://www.qmlcode.org/qml.html#module-qml.representations.
