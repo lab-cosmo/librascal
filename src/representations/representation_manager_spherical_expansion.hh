@@ -3,6 +3,7 @@
  *
  * @author Max Veit <max.veit@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
+ * @author Andrea Grifasi <andrea.grifasi@epfl.ch>
  *
  * @date   19 October 2018
  *
@@ -65,10 +66,10 @@ namespace rascal {
      * @throw logic_error if the requested sigma type has not been implemented
      *
      */
-    template <GaussianSigmaType SigmaType>
+    template <GaussianSigmaType SigmaType> 
     struct AtomicSmearingSpecification {};
 
-    template <>
+    template <> 
     struct AtomicSmearingSpecification<GaussianSigmaType::Constant> {
       explicit AtomicSmearingSpecification(json hypers) {
         this->constant_gaussian_sigma =
