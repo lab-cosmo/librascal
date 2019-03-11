@@ -72,7 +72,7 @@ add_custom_command(OUTPUT copy_py
   )
 # Copy the resulting bindings lib in the python wrapper lib folder
 add_custom_command(OUTPUT copy_py_bind
-  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+  COMMAND ${CMAKE_COMMAND} -E copy
   ${CMAKE_BINARY_DIR}/bindings/_rascal.* ${CMAKE_BINARY_DIR}/rascal/lib/
   DEPENDS
       always_rebuild
