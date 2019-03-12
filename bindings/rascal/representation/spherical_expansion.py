@@ -82,9 +82,11 @@ class SphericalExpansion(object):
         self.rep_options = dict(name=self.name, args=[hypers_str])
 
         n_features = self.get_num_coefficients()
-        self.feature_options = dict(name='dense_double', args=[n_features,hypers_str])
+        self.feature_options = dict(name='dense_double', args=[
+                                    n_features, hypers_str])
 
-        self.misc = dict(method=method, n_workers=n_workers, disable_pbar=disable_pbar)
+        self.misc = dict(method=method, n_workers=n_workers,
+                         disable_pbar=disable_pbar)
 
     def update_hyperparameters(self, **hypers):
         """Store the given dict of hyperparameters
@@ -114,7 +116,8 @@ class SphericalExpansion(object):
 
         """
 
-        driver = RepresentationRunner(self.nl_options,self.rep_options,self.feature_options,**self.misc)
+        driver = RepresentationRunner(
+            self.nl_options, self.rep_options, self.feature_options, **self.misc)
 
         features = driver.run(frames)
 

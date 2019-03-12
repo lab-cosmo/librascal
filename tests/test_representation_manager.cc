@@ -249,10 +249,10 @@ namespace rascal {
         if (verbose) {
           size_t center_idx{0};
           for (auto center : manager) {
-              center_idx += 1;
-              std::cout << "Soap vector for center: " << center_idx;
-              std::cout << std::endl;
-              representations.back().print_soap_vector(center, std::cout);
+            center_idx += 1;
+            std::cout << "Soap vector for center: " << center_idx;
+            std::cout << std::endl;
+            representations.back().print_soap_vector(center, std::cout);
           }
         }
       }

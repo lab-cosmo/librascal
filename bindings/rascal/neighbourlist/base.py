@@ -26,7 +26,7 @@ def NeighbourListFactory(nl_options):
             raise NameError('The neighbourlist factory {} has not been registered. The available combinations are: {}'.format(
                 name, list(_neighbourlists.keys())))
 
-    managers = [_neighbourlists[names[0]]( *args[0])]
+    managers = [_neighbourlists[names[0]](*args[0])]
     for name, arg in zip(names[1:], args[1:]):
         manager = _neighbourlists[name](managers[-1], *arg)
         managers.append(manager)
@@ -53,6 +53,3 @@ def adapt_structure(cell, positions, atom_types, pbc):
     atom_types = atom_types.reshape(-1, 1)
     pbc = pbc.reshape(3, 1)
     return dict(cell=cell, positions=positions, atom_types=atom_types, pbc=pbc)
-
-
-

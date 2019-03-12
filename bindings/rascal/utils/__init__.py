@@ -5,7 +5,6 @@ from .pool_worker import FactoryPool
 ostream_redirect = utils.__dict__['ostream_redirect']
 
 
-
 def get_full_name(options):
     full_name = []
     for opt in options:

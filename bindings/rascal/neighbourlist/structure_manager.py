@@ -6,6 +6,7 @@ def get_neighbourlist(structure, options):
     manager.update(**structure)
     return manager
 
+
 def convert_to_structure(frame):
     if is_valid_structure(frame):
         structure = frame
@@ -13,8 +14,10 @@ def convert_to_structure(frame):
         if is_ase_Atoms(frame):
             structure = unpack_ase(frame)
         else:
-            raise RuntimeError('Cannot convert structure of type {}'.format(type(frame)))
+            raise RuntimeError(
+                'Cannot convert structure of type {}'.format(type(frame)))
     return structure
+
 
 def is_ase_Atoms(frame):
     is_ase = True
@@ -27,6 +30,7 @@ def is_ase_Atoms(frame):
     if not hasattr(frame, 'get_pbc'):
         is_ase = False
     return is_ase
+
 
 def unpack_ase(frame):
     """

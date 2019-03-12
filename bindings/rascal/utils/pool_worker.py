@@ -1,6 +1,7 @@
 from multiprocessing.dummy import Pool as ThreadPool
 
-def FactoryPool(method='thread',n_workers=1,disable_pbar=False):
+
+def FactoryPool(method='thread', n_workers=1, disable_pbar=False):
     if n_workers < 2:
         pool = SerialPool()
     elif method == 'thread':
@@ -11,7 +12,7 @@ def FactoryPool(method='thread',n_workers=1,disable_pbar=False):
 
 
 class SerialPool(object):
-    def __init__(self,*args,**kwargs):
+    def __init__(self, *args, **kwargs):
         pass
 
     @staticmethod

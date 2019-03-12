@@ -251,7 +251,8 @@ namespace rascal {
     }
 
     //! dummy function, since no neighbours are present her
-    inline int get_cluster_neighbour(const Parent & /*parent*/, size_t index) const {
+    inline int get_cluster_neighbour(const Parent & /*parent*/,
+                                     size_t index) const {
       // dummy argument is the atom itself, because if does not make sense at
       // this order
       return index;
