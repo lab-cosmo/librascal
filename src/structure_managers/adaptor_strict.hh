@@ -173,7 +173,7 @@ namespace rascal {
     }
 
     //! get atom_index of the index-th atom in manager
-    inline int get_cluster_neighbour(const Parent &, size_t index) const {
+    inline int get_cluster_neighbour(const Parent & /*parent*/, size_t index) const {
       return this->atom_indices[0][index];
     }
 

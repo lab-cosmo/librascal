@@ -5,10 +5,6 @@ import numpy as np
 import sys
 import faulthandler
 
-sys.path.insert(0, '../tests/')
-
-# import rascal.lib._rascal as rc
-
 
 def get_NL_reference(cutoff, cell, pbc, positions, atom_types):
     list_box = BoxList(cutoff, np.array(cell.T, order='C'),

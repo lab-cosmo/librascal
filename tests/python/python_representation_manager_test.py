@@ -5,7 +5,7 @@ import numpy as np
 import sys
 import json
 
-sys.path.insert(0, '../tests/')
+# sys.path.insert(0, '../tests/')
 
 
 class TestSortedCoulombRepresentation(unittest.TestCase):

@@ -95,7 +95,7 @@ namespace rascal {
     }
 
     /**
-     * Given an instanciated structure manager, recurcivelly stack adaptors
+     * Given an instanciated structure manager, recursively stack adaptors
      * on it
      * while instanciating them and create backward links (add_child).
      * It assumes the adaptors arguments needed for constructions

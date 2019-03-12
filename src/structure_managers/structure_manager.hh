@@ -404,13 +404,6 @@ namespace rascal {
       return this->implementation().get_cluster_neighbour(cluster, index);
     }
 
-    // //! get atom_index of the index-th atom in manager
-    // inline int cluster_neighbour(
-    //           std::shared_ptr<const StructureManager> & cluster,
-    //                              size_t & index) const {
-    //   return this->implementation().get_cluster_neighbour(cluster, index);
-    // }
-
     //! returns a reference to itself
     inline StructureManager & get_manager() { return *this; }
 

@@ -251,7 +251,7 @@ namespace rascal {
     }
 
     //! dummy function, since no neighbours are present her
-    inline int get_cluster_neighbour(const Parent &, size_t index) const {
+    inline int get_cluster_neighbour(const Parent & /*parent*/, size_t index) const {
       // dummy argument is the atom itself, because if does not make sense at
       // this order
       return index;
@@ -261,7 +261,7 @@ namespace rascal {
     template <size_t Order, size_t Layer>
     inline int
     get_cluster_neighbour(const ClusterRefKey<Order, Layer> & /*cluster*/,
-                          size_t) const {
+                          size_t /*index*/) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms.");
       return 0;

@@ -697,7 +697,7 @@ namespace rascal {
     void make_full_neighbour_list();
 
     /* ---------------------------------------------------------------------- */
-    //! reference to underlying structure manager
+    //! pointer to underlying structure manager
     ImplementationPtr_t manager;
 
     //! Cutoff radius for neighbour list
