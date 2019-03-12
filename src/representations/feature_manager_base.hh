@@ -45,7 +45,7 @@ namespace rascal {
   class FeatureManagerBase {
    public:
     using RepresentationManager_t = RepresentationManagerBase;
-    using hypers_t = typename RepresentationManagerBase::hypers_t;
+    using Hypers_t = typename RepresentationManagerBase::Hypers_t;
     using precision_t = T;
     using Feature_Matrix_t = Eigen::Matrix<precision_t, Eigen::Dynamic,
                                            Eigen::Dynamic, Eigen::ColMajor>;

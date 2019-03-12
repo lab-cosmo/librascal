@@ -154,15 +154,15 @@ namespace rascal {
     using Manager_t = StructureManager;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
     using Parent = RepresentationManagerBase;
-    using hypers_t = typename Parent::hypers_t;
+    using Hypers_t = typename Parent::Hypers_t;
     using precision_t = typename Parent::precision_t;
     using Property_t = Property<precision_t, 1, 1, Eigen::Dynamic, 1>;
     template <size_t Order>
     using ClusterRef_t = typename Manager_t::template ClusterRef<Order>;
-    using reference_hypers_t = Parent::reference_hypers_t;
+    using reference_Hypers_t = Parent::reference_Hypers_t;
 
     //! Constructor
-    RepresentationManagerSortedCoulomb(ManagerPtr_t sm, const hypers_t & hyper)
+    RepresentationManagerSortedCoulomb(ManagerPtr_t sm, const Hypers_t & hyper)
         : structure_manager{std::move(sm)}, central_decay{},
           interaction_cutoff{}, interaction_decay{}, coulomb_matrices{*sm} {
       this->check_hyperparameters(this->reference_hypers, hyper);
@@ -197,7 +197,7 @@ namespace rascal {
     void compute_helper();
 
     //! set hypers
-    void set_hyperparameters(const hypers_t &);
+    void set_hyperparameters(const Hypers_t &);
 
     //! getter for the representation
     Eigen::Map<const Eigen::MatrixXd> get_representation_full() {
@@ -296,7 +296,7 @@ namespace rascal {
     Property_t coulomb_matrices;
 
     //! reference the requiered hypers
-    reference_hypers_t reference_hypers{
+    reference_Hypers_t reference_hypers{
         {"central_decay", {}},
         {"interaction_cutoff", {}},
         {"interaction_decay", {}},
@@ -308,7 +308,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <class Mngr>
   void RepresentationManagerSortedCoulomb<Mngr>::set_hyperparameters(
-      const RepresentationManagerSortedCoulomb<Mngr>::hypers_t & hyper) {
+      const RepresentationManagerSortedCoulomb<Mngr>::Hypers_t & hyper) {
     this->hypers = hyper;
     this->central_cutoff = this->structure_manager->get_cutoff();
     this->hypers["central_cutoff"] = this->central_cutoff;

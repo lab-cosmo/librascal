@@ -125,9 +125,9 @@ namespace rascal {
     using Parent = RepresentationManagerBase;
     using Manager_t = StructureManager;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
-    using hypers_t = Parent::hypers_t;
+    using Hypers_t = Parent::Hypers_t;
     using Property_t = Property<double, 1, 1, Eigen::Dynamic, Eigen::Dynamic>;
-    using reference_hypers_t = Parent::reference_hypers_t;
+    using reference_Hypers_t = Parent::reference_Hypers_t;
 
     /**
      * Set the hyperparameters of this descriptor from a json object.
@@ -138,7 +138,7 @@ namespace rascal {
      * @throw logic_error if an invalid option or combination of options is
      *                    specified in the structure
      */
-    void set_hyperparameters(const hypers_t & hypers) {
+    void set_hyperparameters(const Hypers_t & hypers) {
       this->max_radial = hypers.at("max_radial");
       this->max_angular = hypers.at("max_angular");
       if (hypers.find("n_species") != hypers.end()) {
@@ -177,7 +177,7 @@ namespace rascal {
      *                    specified in the container
      */
     RepresentationManagerSphericalExpansion(ManagerPtr_t sm,
-                                            const hypers_t & hyper)
+                                            const Hypers_t & hyper)
         : structure_manager{std::move(sm)}, soap_vectors{*sm} {
       this->set_hyperparameters(hyper);
     }
@@ -288,7 +288,7 @@ namespace rascal {
     Property_t soap_vectors;
     internal::GaussianSigmaType gaussian_sigma_type{};
 
-    hypers_t hypers{};
+    Hypers_t hypers{};
   };
 
   /** Compute common prefactors for the radial Gaussian basis functions */
