@@ -127,7 +127,7 @@ namespace rascal {
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
     using Hypers_t = Parent::Hypers_t;
     using Property_t = Property<double, 1, 1, Eigen::Dynamic, Eigen::Dynamic>;
-    using reference_Hypers_t = Parent::reference_Hypers_t;
+    using ReferenceHypers_t = Parent::ReferenceHypers_t;
 
     /**
      * Set the hyperparameters of this descriptor from a json object.

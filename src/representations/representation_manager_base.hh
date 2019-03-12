@@ -44,7 +44,7 @@ namespace rascal {
     //! type for representation
     using precision_t = double;
     //! type used to register the valid key and values of Hypers_t
-    using reference_Hypers_t = std::map<std::string, std::vector<std::string>>;
+    using ReferenceHypers_t = std::map<std::string, std::vector<std::string>>;
 
     RepresentationManagerBase() = default;
 
@@ -69,7 +69,7 @@ namespace rascal {
     virtual void set_hyperparameters(const Hypers_t &) = 0;
 
     //! Pure Virtual Function to set hyperparameters of the representation
-    void check_hyperparameters(const reference_Hypers_t &, const Hypers_t &);
+    void check_hyperparameters(const ReferenceHypers_t &, const Hypers_t &);
 
     //! Compute the representation using a StructureManager
     virtual void compute() = 0;

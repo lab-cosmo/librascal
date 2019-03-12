@@ -45,7 +45,7 @@ namespace rascal {
   }
   /* ---------------------------------------------------------------------- */
   void RepresentationManagerBase::check_hyperparameters(
-      const RepresentationManagerBase::reference_Hypers_t & reference_items,
+      const RepresentationManagerBase::ReferenceHypers_t & reference_items,
       const RepresentationManagerBase::Hypers_t & hypers) {
     for (const auto & reference_item : reference_items) {
       auto && key{reference_item.first};

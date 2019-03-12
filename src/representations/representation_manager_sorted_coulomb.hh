@@ -159,7 +159,7 @@ namespace rascal {
     using Property_t = Property<precision_t, 1, 1, Eigen::Dynamic, 1>;
     template <size_t Order>
     using ClusterRef_t = typename Manager_t::template ClusterRef<Order>;
-    using reference_Hypers_t = Parent::reference_Hypers_t;
+    using ReferenceHypers_t = Parent::ReferenceHypers_t;
 
     //! Constructor
     RepresentationManagerSortedCoulomb(ManagerPtr_t sm, const Hypers_t & hyper)
@@ -296,7 +296,7 @@ namespace rascal {
     Property_t coulomb_matrices;
 
     //! reference the requiered hypers
-    reference_Hypers_t reference_hypers{
+    ReferenceHypers_t reference_hypers{
         {"central_decay", {}},
         {"interaction_cutoff", {}},
         {"interaction_decay", {}},
