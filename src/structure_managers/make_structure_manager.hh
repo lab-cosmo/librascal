@@ -111,7 +111,7 @@ namespace rascal {
       using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
       using ManagerPtr_t = std::shared_ptr<Manager_t>;
       constexpr static size_t NextPosition{CurrentPosition +
-                                           Manager_t::traits::NbInitParams};
+                                           Manager_t::traits::AdaptorInitiParams};
 
       using type =
           AdaptorFactory<NextPosition, Manager_t, AdaptorImplementationPack...>;
@@ -140,7 +140,7 @@ namespace rascal {
       using ManagerPtr_t = std::shared_ptr<Manager_t>;
       using type = Manager_t;
       constexpr static size_t NextPosition{CurrentPosition +
-                                           Manager_t::traits::NbInitParams};
+                                           Manager_t::traits::AdaptorInitiParams};
 
       template <typename... Args>
       AdaptorFactory(ImplementationPtr_t & m, std::tuple<Args...> & tuple)

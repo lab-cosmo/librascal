@@ -56,7 +56,7 @@ namespace rascal {
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
         AdaptorTraits::NeighbourListType::full};
-    constexpr static size_t NbInitParams{0};
+    constexpr static size_t AdaptorInitiParams{0};
     // New pairs are added at this layer, which did not exist before. Therefore
     // the layering has to be reset.
     constexpr static size_t AtomLayer{

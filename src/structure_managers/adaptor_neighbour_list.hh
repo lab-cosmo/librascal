@@ -57,7 +57,7 @@ namespace rascal {
     constexpr static bool HasDistances{false};
     constexpr static bool HasDirectionVectors{false};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
-    constexpr static size_t NbInitParams{2};
+    constexpr static size_t AdaptorInitiParams{2};
     // New MaxOrder upon construction, by construction should be 2
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder +
                                      1};
