@@ -91,8 +91,8 @@ namespace rascal {
     void insert(size_t & i_center, RepresentationManager_t & rm) {
       auto & raw_data{rm.get_representation_raw_data()};
       auto n_feature{static_cast<int>(rm.get_feature_size())};
-      auto n_center{rm.get_center_size()};
-      this->n_center += n_center;
+      auto n_centers{rm.get_center_size()};
+      this->n_center += n_centers;
       this->check_feature_compatibility(n_feature, this->n_feature);
 
       auto iter{this->feature_matrix.begin()};

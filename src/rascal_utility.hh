@@ -69,7 +69,7 @@ namespace rascal {
 
     /* ---------------------------------------------------------------------- */
     /**
-     * Implement the generation of an index sequence from Min to Max
+     * Implementation of the generation of an index sequence from Min to Max
      */
 
     template <size_t N, size_t... Seq>

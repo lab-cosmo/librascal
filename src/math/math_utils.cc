@@ -135,7 +135,6 @@ namespace rascal {
                                                     double sin_phi,
                                                     size_t max_m) {
       Eigen::MatrixXd cos_sin_m_phi = Eigen::MatrixXd::Zero(max_m + 1, 2);
-      // cos_sin_m_phi.resize(max_m + 1, 2);
       for (size_t m_count{0}; m_count < max_m + 1; m_count++) {
         if (m_count == 0) {
           cos_sin_m_phi.row(m_count) << 1.0, 0.0;

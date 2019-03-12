@@ -223,7 +223,7 @@ namespace rascal {
     //! check if size of representation manager is enough for current structure
     //! manager
     void check_size_compatibility() {
-      for (auto center : *this->structure_manager) {
+      for (auto center : this->structure_manager) {
         auto n_neighbours{center.size()};
         if (n_neighbours > this->size) {
           std::cout << "size is too small for this "

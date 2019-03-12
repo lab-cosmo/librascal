@@ -2,19 +2,19 @@
 """
 
 import os,sys
-path = os.path.abspath('/local/git/librascal') # should be changed
+path = os.path.abspath('../')
 sys.path.insert(0, os.path.join(path, 'build/'))
 sys.path.insert(0, os.path.join(path, 'tests/'))
 import json,ubjson
 from copy import copy
 from rascal.representation import SortedCoulombMatrix
+from ase import Atoms
 
 def load_json(fn):
     with open(fn,'r') as f:
         data = json.load(f)
     return data[str(data['ids'][0])]
 def json2ase(f):
-    from ase import Atoms
     return Atoms(**{v:f[k] for k,v in
 dict(positions='positions',atom_types='numbers',pbc='pbc',cell='cell').items()
 })
