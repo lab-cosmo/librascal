@@ -274,7 +274,7 @@ namespace rascal {
    * @tparams Manager type of the base manager, e.g. StructureManagerCenters
    * @tparams AdaptorImplementationPack list of adaptors to stack on the base
    * manager type
-   * @params arg argument to update the structure of the base structure manager
+   * @params manager_base a structure manager with a structure inside
    * @params args list of arguments to build the adaptor (packed in tuples and
    *  in the same order as in AdaptorImplementationPack)
    * @return shared pointer to the fully built structure manager
