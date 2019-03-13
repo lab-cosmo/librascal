@@ -1,5 +1,5 @@
 /**
- * file   updatable_base.hh
+ * file   updateable_base.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *
@@ -26,8 +26,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_STRUCTURE_MANAGERS_UPDATABLE_BASE_HH_
-#define SRC_STRUCTURE_MANAGERS_UPDATABLE_BASE_HH_
+#ifndef SRC_STRUCTURE_MANAGERS_UPDATEABLE_BASE_HH_
+#define SRC_STRUCTURE_MANAGERS_UPDATEABLE_BASE_HH_
 
 namespace rascal {
 
@@ -64,4 +64,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif  // SRC_STRUCTURE_MANAGERS_UPDATABLE_BASE_HH
+#endif  // SRC_STRUCTURE_MANAGERS_UPDATEABLE_BASE_HH
