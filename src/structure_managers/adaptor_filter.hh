@@ -132,8 +132,10 @@ namespace rascal {
 
     //! constructor underlying manager
     explicit AdaptorFilter(ManagerImplementation & manager) : manager{manager} {
-      this->update();
+      this->reset_initial_state();
     }
+
+
 
     //! Copy constructor
     AdaptorFilter(const AdaptorFilter & other) = delete;
@@ -151,10 +153,24 @@ namespace rascal {
     AdaptorFilter & operator=(AdaptorFilter && other) = default;
 
     /**
-     * clears the state fully without deallocating any memory. Needs
-     * to be called *before* adding clusters
+     * clears the state fully without deallocating any memory. Needs to be
+     * called *before* adding clusters (i.e., also at the beginning of every
+     * update)
      */
-    inline void update();
+    inline void reset_initial_state();
+
+    //! updates the underlying adaptor
+    inline void update() {
+      this->reset_initial_state();
+      this->perform_filtering();
+    }
+
+    /**
+     * perform the actual filitering work, or send a signal to whoever performs
+     * this work. Needs to be implemented in the daughter class
+     */
+
+    virtual void perform_filtering() = 0;
 
     //! returns the distance between atoms in a given pair
     template <size_t Order, size_t Layer,
@@ -393,7 +409,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation, size_t MaxOrder>
-  void AdaptorFilter<ManagerImplementation, MaxOrder>::update() {
+  void AdaptorFilter<ManagerImplementation, MaxOrder>::reset_initial_state() {
     //! Reset cluster_indices for adaptor to fill with push back.
     internal::for_each(this->cluster_indices_container,
                        internal::ResizePropertyToZero());
