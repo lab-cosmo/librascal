@@ -56,7 +56,7 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_size_consistency, Fix, fixtures,
                                    Fix) {
     auto & manager = Fix::manager;
-    BOOST_CHECK_EQUAL(manager.size(), manager.nb_clusters(1));
+    BOOST_CHECK_EQUAL(manager->size(), manager->nb_clusters(1));
   }
 
   /* ---------------------------------------------------------------------- */
@@ -72,16 +72,16 @@ namespace rascal {
       auto type = atom.get_atom_type();
 
       // cluster size should be 1!
-      BOOST_CHECK_EQUAL(type, manager.atom_type(index));
+      BOOST_CHECK_EQUAL(type, manager->atom_type(index));
 
       // checks that multiple ways of accessing positions are equivalent
       auto position_error =
-          (atom.get_position() - manager.position(index)).norm();
+          (atom.get_position() - manager->position(index)).norm();
 
       BOOST_CHECK(position_error < tol / 100);
 
       position_error =
-          (atom.get_position() - manager.position(atom.back())).norm();
+          (atom.get_position() - manager->position(atom.back())).norm();
       BOOST_CHECK(position_error < tol / 100);
     }
   }
@@ -122,15 +122,15 @@ namespace rascal {
         // check atom type access
         auto type = pair.get_atom_type();
 
-        BOOST_CHECK_EQUAL(type, manager.atom_type(index));
+        BOOST_CHECK_EQUAL(type, manager->atom_type(index));
 
         // check positions
         auto position_error =
-            (pair.get_position() - manager.position(index)).norm();
+            (pair.get_position() - manager->position(index)).norm();
         BOOST_CHECK(position_error < tol / 100);
 
         position_error =
-            (pair.get_position() - manager.position(pair.back())).norm();
+            (pair.get_position() - manager->position(pair.back())).norm();
         BOOST_CHECK(position_error < tol / 100);
       }
     }

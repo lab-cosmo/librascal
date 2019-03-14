@@ -52,19 +52,23 @@ namespace rascal {
     //! Move assignment operator
     Updateable & operator=(Updateable && other) = default;
 
-   protected:
     /**
      * Trigger to update the tree of stacked StructureManager as well as
      * Adaptors and possible SpeciesManager and AdaptorFilters.
      */
-    virtual void update_children() const = 0;
+    virtual void update_children() = 0;
+
+    /**
+     *
+     */
+    virtual void update_adaptor() = 0;
     /**
      * When the underlying structure changes, all computations are potentially
      * invalid. This function triggers the setting of the statue variable to
      * `false` along the tree. Should only be called from the root of the tree
      * (usually a StructureManager).
      */
-    virtual void send_changed_structure_signal() = 0;
+    //virtual void send_changed_structure_signal() = 0;
 
     //! Setter function for update statue variable
     inline void set_is_up_to_date(const bool sig) { this->is_up_to_date = sig; }
@@ -72,7 +76,11 @@ namespace rascal {
     //! Getter function for update status variable.
     inline bool get_is_up_to_date() const { return this->is_up_to_date; }
 
-    //! status variable for update
+   protected:
+    /**
+     * status variable for update. avoids updating adaptors, when the
+     * underlying structure did not change, if .update() is called.
+     */
     bool is_up_to_date;
 
    private:

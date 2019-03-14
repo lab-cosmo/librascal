@@ -40,8 +40,8 @@ namespace rascal {
   // checking iteration
   BOOST_FIXTURE_TEST_CASE(iterator_test,
                           ManagerFixture<StructureManagerCenters>) {
-    BOOST_CHECK_EQUAL(manager.get_size(), atom_types.size());
-    BOOST_CHECK_EQUAL(manager.get_nb_clusters(1), atom_types.size());
+    BOOST_CHECK_EQUAL(manager->get_size(), atom_types.size());
+    BOOST_CHECK_EQUAL(manager->get_nb_clusters(1), atom_types.size());
 
     int atom_counter{};
     constexpr bool verbose{false};
@@ -72,27 +72,27 @@ namespace rascal {
     if (verbose)
       std::cout << "StructureManagerCenters interface" << std::endl;
 
-    auto && dim{manager.dim()};
+    auto && dim{manager->dim()};
     if (verbose) {
       std::cout << "dimension: " << dim << std::endl;
     }
 
-    auto && cell{manager.get_cell()};
+    auto && cell{manager->get_cell()};
     if (verbose) {
       std::cout << "cell:\n" << cell << std::endl;
     }
 
-    auto && atom_types{manager.get_atom_types()};
+    auto && atom_types{manager->get_atom_types()};
     if (verbose) {
       std::cout << "atom types:\n" << atom_types << std::endl;
     }
 
-    auto && positions{manager.get_positions()};
+    auto && positions{manager->get_positions()};
     if (verbose) {
       std::cout << "atom positions:\n" << positions << std::endl;
     }
 
-    auto && periodicity{manager.get_periodic_boundary_conditions()};
+    auto && periodicity{manager->get_periodic_boundary_conditions()};
     if (verbose) {
       std::cout << "periodicity (x,y,z):\n" << periodicity << std::endl;
     }
@@ -102,9 +102,9 @@ namespace rascal {
   // checking update
   BOOST_FIXTURE_TEST_CASE(manager_update_test,
                           ManagerFixture<StructureManagerCenters>) {
-    auto natoms = manager.size();
-    auto natoms2 = manager.get_size();
-    auto natoms3 = manager.get_nb_clusters(1);
+    auto natoms = manager->size();
+    auto natoms2 = manager->get_size();
+    auto natoms3 = manager->get_nb_clusters(1);
     BOOST_CHECK_EQUAL(natoms, natoms2);
     BOOST_CHECK_EQUAL(natoms, natoms3);
 
@@ -113,7 +113,7 @@ namespace rascal {
       auto type = atom.get_atom_type();
       BOOST_CHECK_EQUAL(type, atom_types[index]);
 
-      auto cluster_size = manager.get_cluster_size(atom);
+      auto cluster_size = manager->get_cluster_size(atom);
       BOOST_CHECK_EQUAL(cluster_size, 1);
 
       auto pos = atom.get_position();

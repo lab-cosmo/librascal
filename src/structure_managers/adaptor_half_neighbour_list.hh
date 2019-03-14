@@ -54,7 +54,7 @@ namespace rascal {
         ManagerImplementation::traits::HasDirectionVectors};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
-
+    constexpr static size_t AdaptorInitiParams{0};
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
         AdaptorTraits::NeighbourListType::half};
     using LayerByOrder = typename LayerIncreaser<
@@ -70,10 +70,13 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   class AdaptorHalfList
-      : public StructureManager<AdaptorHalfList<ManagerImplementation>> {
+      : public StructureManager<AdaptorHalfList<ManagerImplementation>>,
+        public std::enable_shared_from_this<
+            AdaptorHalfList<ManagerImplementation>> {
    public:
-    using Parent = StructureManager<AdaptorHalfList<ManagerImplementation>>;
-    using Implementation_t = ManagerImplementation;
+    using Manager_t = AdaptorHalfList<ManagerImplementation>;
+    using Parent = StructureManager<Manager_t>;
+    using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorHalfList>;
     using parent_traits = typename ManagerImplementation::traits;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
@@ -97,7 +100,10 @@ namespace rascal {
      * Reduce a full neighbour list to a half neighbour list (sometimes also
      * called minimal).
      */
-    explicit AdaptorHalfList(ManagerImplementation & manager);
+    explicit AdaptorHalfList(ImplementationPtr_t manager);
+
+    AdaptorHalfList(ImplementationPtr_t manager, std::tuple<>)
+        : AdaptorHalfList(manager) {}
 
     //! Copy constructor
     AdaptorHalfList(const AdaptorHalfList & other) = delete;
@@ -115,7 +121,7 @@ namespace rascal {
     AdaptorHalfList & operator=(AdaptorHalfList && other) = default;
 
     //! update just the adaptor assuming the underlying manager was updated
-    void update();
+    void update_adaptor();
 
     //! update the underlying manager as well as the adaptor
     template <class... Args>
@@ -125,13 +131,13 @@ namespace rascal {
      * returns the cutoff from the underlying manager which built the
      * neighbourlist
      */
-    inline double get_cutoff() const { return this->manager.get_cutoff(); }
+    inline double get_cutoff() const { return this->manager->get_cutoff(); }
 
     //! returns the number of atoms or pairs
     inline size_t get_nb_clusters(int cluster_size) const {
       switch (cluster_size) {
       case 1: {
-        return this->manager.get_nb_clusters(cluster_size);
+        return this->manager->get_nb_clusters(cluster_size);
         break;
       }
       case 2: {
@@ -145,21 +151,21 @@ namespace rascal {
     }
 
     //! returns the number of center atoms
-    inline size_t get_size() const { return this->manager.get_size(); }
+    inline size_t get_size() const { return this->manager->get_size(); }
 
     //! returns the number of atoms
     inline size_t get_size_with_ghosts() const {
-      return this->manager.get_size_with_ghosts();
+      return this->manager->get_size_with_ghosts();
     }
 
     //! returns position of the given atom index
     inline Vector_ref get_position(const int & index) {
-      return this->manager.get_position(index);
+      return this->manager->get_position(index);
     }
 
     //! returns position of the given atom object
     inline Vector_ref get_position(const AtomRef_t & atom) {
-      return this->manager.get_position(atom.get_index());
+      return this->manager->get_position(atom.get_index());
     }
 
     //! Returns the id of the index-th neighbour atom of a given cluster
@@ -175,7 +181,7 @@ namespace rascal {
           internal::IncreaseHelper<Order == (traits::MaxOrder - 1)>;
 
       if (Order < (traits::MaxOrder - 1)) {
-        return IncreaseHelper_t::get_cluster_neighbour(this->manager, cluster,
+        return IncreaseHelper_t::get_cluster_neighbour(*this->manager, cluster,
                                                        index);
       } else {
         auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
@@ -184,29 +190,28 @@ namespace rascal {
     }
 
     //! get atom_index of the index-th atom in manager
-    inline int get_cluster_neighbour(const Parent & /*parent*/,
-                                     size_t index) const {
-      return this->manager.get_cluster_neighbour(this->manager, index);
+    inline int get_cluster_neighbour(const Parent &, size_t index) const {
+      return this->manager->get_cluster_neighbour(*this->manager, index);
     }
 
     //! return atom type
     inline int & get_atom_type(const AtomRef_t & atom) {
-      return this->manager.get_atom_type(atom.get_index());
+      return this->manager->get_atom_type(atom.get_index());
     }
 
     //! return atom type, const ref
     inline const int & get_atom_type(const AtomRef_t & atom) const {
-      return this->manager.get_atom_type(atom.get_index());
+      return this->manager->get_atom_type(atom.get_index());
     }
 
     //! Returns atom type given an atom index
     inline int & get_atom_type(const int & atom_id) {
-      return this->manager.get_atom_type(atom_id);
+      return this->manager->get_atom_type(atom_id);
     }
 
     //! Returns a constant atom type given an atom index
     inline const int & get_atom_type(const int & atom_id) const {
-      return this->manager.get_atom_type(atom_id);
+      return this->manager->get_atom_type(atom_id);
     }
 
     /**
@@ -245,16 +250,21 @@ namespace rascal {
                     "this implementation handles only the respective MaxOrder");
 
       if (Order < (traits::MaxOrder - 1)) {
-        return this->manager.get_cluster_size(cluster);
+        return this->manager->get_cluster_size(cluster);
       } else {
         auto access_index = cluster.get_cluster_index(Layer);
         return nb_neigh[access_index];
       }
     }
 
+    //! Get the manager used to build the instance
+    ImplementationPtr_t get_previous_manager() {
+      return this->manager->get_shared_ptr();
+    }
+
    protected:
     //! Reference to the underlying manager
-    ManagerImplementation & manager;
+    ImplementationPtr_t manager;
 
     //! Stores the number of neighbours for every atom after sorting
     std::vector<size_t> nb_neigh;
@@ -276,16 +286,22 @@ namespace rascal {
   //! constructor implementations
   template <class ManagerImplementation>
   AdaptorHalfList<ManagerImplementation>::AdaptorHalfList(
-      ManagerImplementation & manager)
-      : manager{manager}, nb_neigh{}, neighbours{}, offsets{} {}
+      std::shared_ptr<ManagerImplementation> manager)
+      : manager{std::move(manager)}, nb_neigh{}, neighbours{}, offsets{} {
+    // this->manager->add_child(this->get_weak_ptr());
+  }
 
   /* ---------------------------------------------------------------------- */
   //! update function, which updates based on underlying manager
   template <class ManagerImplementation>
   template <class... Args>
   void AdaptorHalfList<ManagerImplementation>::update(Args &&... arguments) {
-    this->manager.update(std::forward<Args>(arguments)...);
-    this->update();
+    // if sizeof...(arguments) == 0 then the underlying structure
+    // is not changed
+    if (sizeof...(arguments) > 0) {
+      this->set_is_up_to_date(false);
+    }
+    this->manager->update(std::forward<Args>(arguments)...);
   }
 
   /* ---------------------------------------------------------------------- */
@@ -294,7 +310,7 @@ namespace rascal {
    * which does not include permutations of pairs
    */
   template <class ManagerImplementation>
-  void AdaptorHalfList<ManagerImplementation>::update() {
+  void AdaptorHalfList<ManagerImplementation>::update_adaptor() {
     // Reset cluster_indices for adaptor to fill with push back.
     internal::for_each(this->cluster_indices_container,
                        internal::ResizePropertyToZero());
@@ -313,7 +329,7 @@ namespace rascal {
     // counter for total number of pairs (minimal list) for cluster_indices
     size_t pair_counter{0};
 
-    for (auto atom : this->manager) {
+    for (auto atom : *this->manager) {
       // Add new depth layer for atoms (see LayerByOrder for possible
       // optimisation).
       constexpr auto AtomLayer{

@@ -43,15 +43,12 @@
 
 namespace rascal {
 
-  struct MultipleStructureSortedCoulomb {
-    MultipleStructureSortedCoulomb() {}
-    ~MultipleStructureSortedCoulomb() = default;
+  struct MultipleStructureSortedCoulomb
+      : MultipleStructureManagerNLStrictFixture {
+    using Parent = MultipleStructureManagerNLStrictFixture;
 
-    std::vector<std::string> filenames{
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-        "reference_data/simple_cubic_8.json",
-        "reference_data/small_molecule.json"};
-    std::vector<double> cutoffs{{1., 2., 3.}};
+    MultipleStructureSortedCoulomb() = default;
+    ~MultipleStructureSortedCoulomb() = default;
 
     std::list<json> hypers{{{"central_decay", 0.5},
                             {"interaction_cutoff", 10.},
@@ -65,7 +62,9 @@ namespace rascal {
                             {"sorting_algorithm", "row_norm"}}};
   };
 
-  struct MultipleStructureSphericalExpansion {
+  struct MultipleStructureSphericalExpansion
+      : MultipleStructureManagerNLStrictFixture {
+    using Parent = MultipleStructureManagerNLStrictFixture;
     MultipleStructureSphericalExpansion() = default;
     ~MultipleStructureSphericalExpansion() = default;
 
@@ -85,74 +84,45 @@ namespace rascal {
   };
 
   struct SortedCoulombTestData {
+    using Factory_t =
+        std::tuple<std::tuple<std::string>, std::tuple<double, bool, double>>;
+    using ManagerTypeHolder_t =
+        StructureManagerTypeHolder<StructureManagerCenters,
+                                   AdaptorNeighbourList, AdaptorStrict>;
     SortedCoulombTestData() {
       std::vector<std::uint8_t> ref_data_ubjson;
       internal::read_binary_file(this->ref_filename, ref_data_ubjson);
       ref_data = json::from_ubjson(ref_data_ubjson);
-      filenames = ref_data.at("filenames").get<std::vector<std::string>>();
-      cutoffs = ref_data.at("cutoffs").get<std::vector<double>>();
+      auto filenames = ref_data.at("filenames").get<std::vector<std::string>>();
+      auto cutoffs = ref_data.at("cutoffs").get<std::vector<double>>();
+
+      for (auto && filename : filenames) {
+        for (auto && cutoff : cutoffs) {
+          auto a0{std::make_tuple(filename)};
+          auto a1{std::make_tuple(cutoff, consider_ghost_neighbours, cutoff)};
+          this->factory_args.emplace_back(a0, a1);
+        }
+      }
     }
     ~SortedCoulombTestData() = default;
 
     // name of the file containing the reference data. it has been generated
     // with the following python code:
-    /*
-    import ubjson
-    from copy import copy
-    import numpy as np
-    import sys, os
-    path = '/local/git/librascal/' # should be changed
-    sys.path.insert(0, os.path.join(path, 'build/'))
-    sys.path.insert(0, os.path.join(path, 'tests/'))
-    from rascal.representation import SortedCoulombMatrix
-    from test_utils import load_json_frame
-    def json2ase(f):
-        from ase import Atoms
-        return Atoms(**{k:f[k] for k in ['positions','numbers','pbc','cell'] })
+    // script/generate_sorted_coulomb_ref_data.py
 
-    cutoffs = [2,3,4,5]
-    sorts = ['rownorm','distance']
-
-    fns = [
-        path+"tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-        path+"tests/reference_data/small_molecule.json"]
-    fns_to_write = [
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-        "reference_data/small_molecule.json"
-    ]
-    data = dict(filenames=fns_to_write,cutoffs=cutoffs)
-    hypers =
-    dict(central_decay=-1,interaction_cutoff=-1,interaction_decay=-1,size=10)
-    for sort in sorts:
-        data[sort] = dict(feature_matrices=[],hypers=[])
-        for fn in fns:
-            for cutoff in cutoffs:
-                rep = SortedCoulombMatrix(cutoff,sort=sort)
-                frame = [json2ase(load_json_frame(fn))]
-                features = rep.transform(frame)
-                test = features.get_feature_matrix()
-                data[sort]['feature_matrices'].append(test.tolist())
-                hypers['size'] = rep.size
-                data[sort]['hypers'].append(copy(hypers))
-    with open(path+"tests/reference_data/sorted_coulomb_reference.ubjson",'wb')
-    as f: ubjson.dump(data,f)
-    */
+    const bool consider_ghost_neighbours{false};
     std::string ref_filename{"reference_data/sorted_coulomb_reference.ubjson"};
-    std::vector<std::string> filenames{};
-    std::vector<double> cutoffs{};
     json ref_data{};
+    std::vector<Factory_t> factory_args{};
   };
 
-  template <class StructureManager,
-            template <typename> class RepresentationManager, class BaseFixture>
-  struct RepresentationFixture
-      : MultipleStructureManagerStrictFixture<StructureManager, BaseFixture> {
-    using Parent =
-        MultipleStructureManagerStrictFixture<StructureManager, BaseFixture>;
+  template <class BaseFixture, template <class> class RepresentationManager>
+  struct RepresentationFixture : MultipleStructureFixture<BaseFixture> {
+    using Parent = MultipleStructureFixture<BaseFixture>;
     using Manager_t = typename Parent::Manager_t;
     using Representation_t = RepresentationManager<Manager_t>;
 
-    RepresentationFixture() = default;
+    RepresentationFixture() : Parent{} {}
     ~RepresentationFixture() = default;
 
     std::list<Representation_t> representations{};

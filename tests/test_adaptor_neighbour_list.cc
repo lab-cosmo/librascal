@@ -46,7 +46,7 @@ namespace rascal {
                           PairFixtureSimple<StructureManagerCenters>) {
     constexpr bool verbose{false};
 
-    auto npairs = pair_manager.get_nb_clusters(2);
+    auto npairs = pair_manager->get_nb_clusters(2);
 
     if (verbose) {
       std::cout << "npairs " << npairs << std::endl;
@@ -91,7 +91,7 @@ namespace rascal {
     auto n_pairs{0};
     // iteration here is .with_ghosts(), because the get_nb_clusters(2) includes
     // ghost atom pairs, too
-    for (auto atom : pair_manager.with_ghosts()) {
+    for (auto atom : pair_manager->with_ghosts()) {
       if (verbose) {
         std::cout << "pair manager atom " << atom.back() << std::endl;
       }
@@ -106,15 +106,15 @@ namespace rascal {
     if (verbose) {
       std::cout << "Number of pairs " << n_pairs << std::endl;
     }
-    BOOST_CHECK_EQUAL(n_pairs, pair_manager.get_nb_clusters(2));
+    BOOST_CHECK_EQUAL(n_pairs, pair_manager->get_nb_clusters(2));
   }
 
-  using multiple_fixtures = boost::mpl::list<MultipleStructureManagerNLFixture<
-      StructureManagerCenters, MultipleStructureManagerBaseFixture>>;
+  using multiple_fixtures = boost::mpl::list<
+      MultipleStructureFixture<MultipleStructureManagerNLFixture>>;
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(test_build_neighbour_multiple, Fix,
                                    multiple_fixtures, Fix) {
-    auto & managers = Fix::managers_pair;
+    auto & managers = Fix::managers;
 
     constexpr bool verbose{false};
 
@@ -140,7 +140,7 @@ namespace rascal {
       if (verbose) {
         std::cout << "Number of pairs " << n_pairs << std::endl;
       }
-      BOOST_CHECK_EQUAL(n_pairs, pair_manager.get_nb_clusters(2));
+      BOOST_CHECK_EQUAL(n_pairs, pair_manager->get_nb_clusters(2));
     }
   }
 
@@ -157,12 +157,10 @@ namespace rascal {
      * Note: since the cell vectors are different, it is possible that one of
      * the two atoms is repeated into a different cell due to periodicity. This
      * leads to a difference in number of neighbours. Therefore the strict
-     * cutoff is check to ensure the exakt same number of neighbours.
+     * cutoff is check to ensure the exact same number of neighbours.
      */
 
     constexpr bool verbose{false};
-
-    using PairManager_t = AdaptorNeighbourList<StructureManagerCenters>;
 
     if (verbose) {
       std::cout << "HCP test " << cutoff << std::endl;
@@ -182,11 +180,13 @@ namespace rascal {
         std::cout << "hcp test cutoff " << cutoff_tmp << std::endl;
       }
 
-      PairManager_t pair_manager1{manager_1, cutoff_tmp};
-      pair_manager1.update();
+      auto pair_manager1{
+          make_adapted_manager<AdaptorNeighbourList>(manager_1, cutoff_tmp)};
+      pair_manager1->update();
 
-      PairManager_t pair_manager2{manager_2, cutoff_tmp};
-      pair_manager2.update();
+      auto pair_manager2{
+          make_adapted_manager<AdaptorNeighbourList>(manager_2, cutoff_tmp)};
+      pair_manager2->update();
 
       if (verbose) {
         std::cout << "Manager 1" << std::endl;
@@ -250,8 +250,6 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(neighbourlist_test_fcc, ManagerFixtureTwoFcc) {
     constexpr bool verbose{false};
 
-    using PairManager_t = AdaptorNeighbourList<StructureManagerCenters>;
-
     if (verbose) {
       std::cout << "FCC test " << std::endl;
     }
@@ -270,11 +268,13 @@ namespace rascal {
         std::cout << "fcc cutoff " << cutoff_tmp << std::endl;
       }
 
-      PairManager_t pair_manager1{manager_1, cutoff_tmp};
-      pair_manager1.update();
+      auto pair_manager1{
+          make_adapted_manager<AdaptorNeighbourList>(manager_1, cutoff_tmp)};
+      pair_manager1->update();
 
-      PairManager_t pair_manager2{manager_2, cutoff_tmp};
-      pair_manager2.update();
+      auto pair_manager2{
+          make_adapted_manager<AdaptorNeighbourList>(manager_2, cutoff_tmp)};
+      pair_manager2->update();
 
       for (auto atom : pair_manager1) {
         neighbours_per_atom1.push_back(0);
@@ -362,8 +362,7 @@ namespace rascal {
         // check different cutoffs
         double cutoff_tmp{cutoff * n_cutoff[k]};
 
-        // manager constructed within this loop
-        StructureManagerCenters manager;
+        // // manager constructed within this loop
 
         if (verbose) {
           std::cout << "------------ cells " << i << " shear " << shears[i]
@@ -414,17 +413,18 @@ namespace rascal {
         }
 
         // construct manager with skewed unit cell and shifted positions
+        auto manager{make_structure_manager<StructureManagerCenters>()};
         using PBC_t = Eigen::Map<Eigen::Matrix<int, 3, 1>>;
-        manager.update(pos_skw, atom_types, cell_skw, PBC_t{pbc.data()});
 
         // build neighbourlist
-        using PairManager_t = AdaptorNeighbourList<StructureManagerCenters>;
-        PairManager_t pair_manager{manager, cutoff_tmp, true};
-        pair_manager.update();
+        auto pair_manager{make_adapted_manager<AdaptorNeighbourList>(
+            manager, cutoff_tmp, true)};
 
         // make strict for counting neighbours
-        AdaptorStrict<PairManager_t> adaptor_strict{pair_manager, cutoff_tmp};
-        adaptor_strict.update();
+        auto adaptor_strict{
+            make_adapted_manager<AdaptorStrict>(pair_manager, cutoff_tmp)};
+        adaptor_strict->update(pos_skw, atom_types, cell_skw,
+                               PBC_t{pbc.data()});
 
         // count strict neighbours
         for (auto atom : adaptor_strict) {
