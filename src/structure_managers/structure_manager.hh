@@ -36,6 +36,7 @@
 #include "structure_managers/structure_manager_base.hh"
 #include "structure_managers/property.hh"
 #include "structure_managers/cluster_ref_key.hh"
+#include "structure_managers/updateable_base.hh"
 #include "rascal_utility.hh"
 
 //! Some data types and operations are based on the Eigen library
@@ -163,7 +164,7 @@ namespace rascal {
    * class implementation
    */
   template <class ManagerImplementation>
-  class StructureManager : public StructureManagerBase {
+  class StructureManager : public StructureManagerBase, public Updateable {
    public:
     using traits = StructureManager_traits<ManagerImplementation>;
     //! type used to represent spatial coordinates, etc

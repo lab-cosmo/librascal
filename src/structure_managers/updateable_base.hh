@@ -32,25 +32,44 @@
 namespace rascal {
 
   //! base class for updatable functionality
-  class Updatable {
+  class Updateable {
    public:
+    //! Default constructor
+    Updateable() :
+      is_up_to_date{false} {};
+
+    //! Copy constructor
+    Updateable(const Updateable & other) = delete;
+
+    //! Move constructor
+    Updateable(Updateable && other) = default;
+
+    //! Destructor
+    virtual ~Updateable() = default;
+
+    //! Copy assignment operator
+    Updateable & operator=(const Updateable & other) = delete;
+
+    //! Move assignment operator
+    Updateable & operator=(Updateable && other) = default;
+
    protected:
     /**
      * Trigger to update the tree of stacked StructureManager as well as
      * Adaptors and possible SpeciesManager and AdaptorFilters.
      */
-    void update_children() const = 0;
+    virtual void update_children() const = 0;
     /**
      * When the underlying structure changes, all computations are potentially
      * invalid. This function triggers the setting of the statue variable to
      * `false` along the tree. Should only be called from the root of the tree
      * (usually a StructureManager).
      */
-    void send_changed_structure_signal() = 0;
+    virtual void send_changed_structure_signal() = 0;
 
     //! Setter function for update statue variable
     inline void set_is_up_to_date(const bool sig) {
-      this->set_is_up_to_date = sig;
+      this->is_up_to_date = sig;
     }
 
     //! Getter function for update status variable.
