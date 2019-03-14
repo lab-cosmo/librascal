@@ -160,6 +160,10 @@ namespace rascal {
    * polymorphism without runtime cost and is called a `CRTP
    * <https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern>`_
    *
+   * It inherits from StructureManagerbase because to provide a common interface
+   * to the number of clusters and from `Updateable` to be able to update the
+   * structure by using a vector of Updateables.
+   *
    * @param ManagerImplementation
    * class implementation
    */

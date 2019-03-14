@@ -34,9 +34,8 @@ namespace rascal {
   //! base class for updatable functionality
   class Updateable {
    public:
-    //! Default constructor
-    Updateable() :
-      is_up_to_date{false} {};
+    //! Default constructor sets the status variable for update to false.
+    Updateable() : is_up_to_date{false} {};
 
     //! Copy constructor
     Updateable(const Updateable & other) = delete;
@@ -68,9 +67,7 @@ namespace rascal {
     virtual void send_changed_structure_signal() = 0;
 
     //! Setter function for update statue variable
-    inline void set_is_up_to_date(const bool sig) {
-      this->is_up_to_date = sig;
-    }
+    inline void set_is_up_to_date(const bool sig) { this->is_up_to_date = sig; }
 
     //! Getter function for update status variable.
     inline bool get_is_up_to_date() const { return this->is_up_to_date; }
