@@ -36,22 +36,129 @@
 #include <unordered_map>
 #include <set>
 #include <list>
+#include <map>
+#include <algorithm>
 
 namespace rascal {
+
+
+  namespace internal {
+    template<class K, class V>
+    class InternallySortedKeyMap {
+     public:
+      using MyMap_t = std::map<K,V>;
+
+      //! the data holder. only the overiden/essential functionalities are
+      //! directly exposed
+      MyMap_t data;
+
+      // some member types
+      using key_type = typename MyMap_t::key_type;
+      using mapped_type = typename MyMap_t::mapped_type;
+      using value_type = typename MyMap_t::value_type;
+      using size_type = typename MyMap_t::size_type;
+      using reference = typename MyMap_t::reference;
+      using const_reference = typename MyMap_t::const_reference;
+      using iterator = typename MyMap_t::iterator;
+      using const_iterator = typename MyMap_t::const_iterator;
+
+      //! Default constructor
+      InternallySortedKeyMap()  = default;
+
+      //! Copy constructor
+      InternallySortedKeyMap(const InternallySortedKeyMap & other) = default;
+
+      //! Move constructor
+      InternallySortedKeyMap(InternallySortedKeyMap && other) = default;
+
+      //! Destructor
+      ~InternallySortedKeyMap() = default;
+
+      //! Copy assignment operator
+      InternallySortedKeyMap & operator=(const InternallySortedKeyMap & other) = default;
+
+      //! Move assignment operator
+      InternallySortedKeyMap & operator=(InternallySortedKeyMap && other) = default;
+
+      /**
+       * Returns a reference to the mapped value of the element with key
+       * equivalent to key. If no such element exists, an exception of type
+       * std::out_of_range is thrown.
+       * The elements of the key are sorted in ascending order.
+       *
+       */
+      mapped_type& at( const key_type& key ){
+        std::sort(key.begin(), key.end());
+        return this->data.at(key);
+      }
+      const mapped_type& at( const key_type& key ) const{
+        std::sort(key.begin(), key.end());
+        return this->data.at(key);
+      }
+      //! access or insert specified element
+      mapped_type& operator[]( const key_type& key ){
+        std::sort(key.begin(), key.end());
+        return this->data[key];
+      }
+      mapped_type& operator[]( key_type&& key ){
+        std::sort(key.begin(), key.end());
+        return this->data[key];
+      }
+
+      //! Erases all elements from the container. After this call, size()
+      //! returns zero.
+      void clear() noexcept {
+        this->data.clear();
+      }
+      //! Returns the number of elements with key that compares equivalent to
+      //! the specified argument, which is either 1 or 0 since this container
+      //! does not allow duplicates.
+      template<typename... Args>
+      decltype(auto) count( Args&&... args ) {
+        return this->data.count( std::forward<Args>(args)... );
+      }
+
+      template<typename... Args>
+      decltype(auto) emplace( Args&&... args ) {
+        return this->data.emplace( std::forward<Args>(args)... );
+      }
+
+      iterator begin() noexcept{
+        return this->data.begin();
+      }
+      const_iterator begin() const noexcept{
+        return this->data.begin();
+      }
+      const_iterator cbegin() const noexcept{
+        return this->data.cbegin();
+      }
+      iterator end() noexcept{
+        return this->data.end();
+      }
+      const_iterator end() const noexcept{
+        return this->data.end();
+      }
+      const_iterator cend() const noexcept{
+        return this->data.cend();
+      }
+
+    };
+  }
   /* ---------------------------------------------------------------------- */
   /**
    * Typed ``property`` class definition, inherits from the base property class
    */
-  template <typename precision_t, typename key_t, size_t Order, size_t PropertyLayer>
+  template <typename precision_t, size_t Order, size_t PropertyLayer>
   class BlockSparseProperty : public PropertyBase {
    public:
     using Parent = PropertyBase;
     using dense_t = Eigen::Matrix<precision_t, Eigen::Dynamic, Eigen::Dynamic>;
     using dense_ref_t = Eigen::Map<dense_t>;
     using sizes_t = std::vector<size_t>;
+    using key_t = std::vector<int>;
     using keys_t = std::set<key_t>;
     using keys_list_t = std::vector<std::set<key_t>>;
-    using input_data_t = std::unordered_map<key_t, dense_t>;
+    using input_data_t = internal::InternallySortedKeyMap<key_t, dense_t>;
     using data_t = std::vector<input_data_t>;
 
     //! constructor
@@ -81,14 +188,23 @@ namespace rascal {
     const std::type_info & get_type_info() const final { return typeid(precision_t); };
 
 
-    //! Adjust size of values (only increases, never frees)
-    // void resize() {
-    //   auto order = this->get_order();
-    //   auto new_size = this->base_manager.nb_clusters(order);
-    //   this->values.resize(new_size);
-    // }
+    //! Adjust size so that each center are accessible
+    void resize() {
+      auto order = this->get_order();
+      auto new_size = this->base_manager.nb_clusters(order);
+      this->values.resize(new_size);
+      this->center_sizes.resize(new_size);
+      this->keys_list.resize(new_size);
+    }
 
-    size_t size() const { return this->map2center.size(); }
+    template <size_t CallerLayer>
+    void initialize_to_zeros(const ClusterRefKey<Order, CallerLayer> & id, key_t& key) {
+      auto && index{id.get_cluster_index(CallerLayer)};
+      dense_t mat = dense_t::Zero(this->get_nb_row(), this->get_nb_col());
+      this->values[index][key] = mat;
+    }
+
+    size_t size() const { return this->values.size(); }
 
     /**
      * clear all the content of the property
@@ -111,25 +227,15 @@ namespace rascal {
       return this->operator[](id.get_cluster_index(CallerLayer));
     }
 
-    // //! Accessor for property by index for dynamically sized properties
-    // inline dense_ref_t operator[](const size_t & index) {
-    //   // auto && start_id{this->map2centers[index].first};
-    //   // auto && length{this->map2centers[index].second};
-    //   auto feauture_row = dense_t::Zero(this->center_sizes[index], 1);
-    //   size_t i_pos{0};
-    //   for (auto& element : this->values[index]) {
-    //     auto& key{element.first};
-    //     auto& value{element.second};
-    //     for (auto& val : value) {
-    //       feauture_row[i_pos] = val;
-    //       i_pos++;
-    //     }
-    //   }
-    //   return feauture_row;
-    // }
+    //! Accessor for property by cluster index and return a sparse
+    //! representation of the property associated to this cluster
+    inline input_data_t& operator[](const size_t & index) {
+      return this->values[index];
+    }
 
-    //! Accessor for property by index for dynamically sized properties
-    inline dense_t operator[](const size_t & index) {
+    //! Accessor for property by cluster index and return a dense
+    //! representation of the property associated to this cluster
+    inline dense_t get_dense_row(const size_t & index) {
       dense_t feauture_row = dense_t::Zero(this->get_nb_comp(), this->keys_list[index].size());
       size_t i_col{0};
       for (const auto& key : this->keys_list[index]) {

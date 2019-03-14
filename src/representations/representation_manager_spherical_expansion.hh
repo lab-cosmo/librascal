@@ -66,10 +66,10 @@ namespace rascal {
      * @throw logic_error if the requested sigma type has not been implemented
      *
      */
-    template <GaussianSigmaType SigmaType> 
+    template <GaussianSigmaType SigmaType>
     struct AtomicSmearingSpecification {};
 
-    template <> 
+    template <>
     struct AtomicSmearingSpecification<GaussianSigmaType::Constant> {
       explicit AtomicSmearingSpecification(json hypers) {
         this->constant_gaussian_sigma =
@@ -127,8 +127,8 @@ namespace rascal {
     using hypers_t = RepresentationManagerBase::hypers_t;
     using Property_t = Property<double, 1, 1, Eigen::Dynamic, Eigen::Dynamic>;
     using Manager_t = StructureManager;
-    using key_t = int;
-    using SparseProperty_t = BlockSparseProperty<double, key_t, 1, 0>;
+    using key_t = std::vector<int>;
+    using SparseProperty_t = BlockSparseProperty<double, 1, 0>;
     using input_data_t = typename SparseProperty_t::input_data_t;
     using dense_t = typename SparseProperty_t::dense_t;
     using data_t = typename SparseProperty_t::data_t;

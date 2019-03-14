@@ -29,6 +29,7 @@
 #define SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_BASE_HH_
 
 #include "structure_managers/structure_manager_base.hh"
+#include "structure_managers/property_block_sparse.hh"
 #include "json_io.hh"
 
 #include <string>
@@ -50,7 +51,7 @@ namespace rascal {
     using reference_hypers_t = std::map<std::string, std::vector<std::string>>;
 
     using dense_t = Eigen::Matrix<precision_t, Eigen::Dynamic, Eigen::Dynamic>;
-    using input_data_t = std::unordered_map<int, dense_t>;
+    using input_data_t = internal::InternallySortedKeyMap<std::vector<int>, dense_t>;
     using data_t = std::vector<input_data_t>;
 
     RepresentationManagerBase() = default;

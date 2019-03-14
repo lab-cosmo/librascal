@@ -53,7 +53,7 @@ namespace rascal {
    * The 2nd view is a consolidated (dense) copy of the 1st where missing
    * sparse keys have been filled with zeros.
    */
-  template <typename T, typename key_t>
+  template <typename T>
   class FeatureManagerBlockSparse : public FeatureManagerBase<T> {
    public:
     using Parent = FeatureManagerBase<T>;
@@ -63,10 +63,11 @@ namespace rascal {
     using Feature_Matrix_ref = typename Parent::Feature_Matrix_ref;
     using precision_t = typename Parent::precision_t;
 
+    using key_t = std::vector<int>;
     using dense_t = Eigen::Matrix<precision_t, Eigen::Dynamic, Eigen::Dynamic>;
     using dense_ref_t = Eigen::Map<dense_t>;
     using map_center_t = std::vector<std::pair<size_t, size_t>>;
-    using map_sparse_t = std::vector<std::unordered_map<key_t, std::pair<size_t, std::pair<size_t, size_t>>>>;
+    using map_sparse_t = std::vector<std::map<key_t, std::pair<size_t, std::pair<size_t, size_t>>>>;
     using keys_t = std::vector<std::list<key_t>>;
     using data_t = std::vector<precision_t>;
 

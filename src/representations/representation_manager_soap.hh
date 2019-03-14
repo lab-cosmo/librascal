@@ -35,15 +35,17 @@
 #include "representations/representation_manager_spherical_expansion.hh"
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/property.hh"
+#include "structure_managers/property_block_sparse.hh"
 #include "rascal_utility.hh"
 #include "math/math_utils.hh"
+
 #include <algorithm>
 #include <cmath>
 #include <exception>
 #include <vector>
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
-#include "structure_managers/property_block_sparse.hh"
+
 
 namespace rascal {
 
@@ -56,13 +58,10 @@ namespace rascal {
    public:
     using Manager_t = StructureManager;
     using hypers_t = RepresentationManagerBase::hypers_t;
-    using key1_t = int;
-    using key2_t = std::tuple<key1_t, key1_t>;
-    using SparseProperty_t = BlockSparseProperty<double, key1_t, 1, 0>;
-    using SparseProperty2_t = BlockSparseProperty<double, key2_t, 1, 0>;
+    using key_t = std::vector<int>;
+    using SparseProperty_t = BlockSparseProperty<double, 1, 0>;
     using data_t = typename SparseProperty_t::data_t;
     using input_data_t = typename SparseProperty_t::input_data_t;
-    using input_data2_t = typename SparseProperty2_t::input_data_t;
 
     RepresentationManagerSoap(Manager_t & sm, const hypers_t & hyper)
         : structure_manager{sm}, soap_vectors{sm}, rep_expansion{sm, hyper} {
@@ -74,11 +73,20 @@ namespace rascal {
       this->max_angular = hypers.at("max_angular");
     }
 
+    std::vector<precision_t> & get_representation_raw_data() {
+      std::vector<precision_t> aa{};
+      return aa;
+    }
+
+    data_t& get_representation_sparse_raw_data() {
+      return this->soap_vectors.get_raw_data();
+    }
+
     void compute() {
-      SparseProperty_t expansion_coefficients;
+      // SparseProperty_t expansion_coefficients;
       rep_expansion.compute();
-      expansion_coefficients = rep_expansion.soap_vectors;
-      
+      auto expansion_coefficients{rep_expansion.soap_vectors};
+
       for (auto center : this->structure_manager) {
 	key_t center_type{center.get_atom_type()};
         input_data_t coefficients{expansion_coefficients[center]};
@@ -110,13 +118,13 @@ namespace rascal {
       this->soap_vectors.push_back(soap_vector);
       }
     }
-   
+
    protected:
    private:
     size_t max_radial{};
     size_t max_angular{};
     Manager_t & structure_manager;
-    SparseProperty_t soap_vectors; 
+    SparseProperty_t soap_vectors;
     RepresentationManagerSphericalExpansion<Manager_t> rep_expansion;
 
 

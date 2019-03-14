@@ -123,10 +123,10 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(feature_block_sparse_test);
 
   using multiple_fixtures_sparse = boost::mpl::list<
-    SparseFeatureFixture<double, FeatureManagerBlockSparse,
+    FeatureFixture<double, FeatureManagerBlockSparse,
                     StructureManagerCenters,
                     RepresentationManagerSphericalExpansion, MultipleStructureSphericalExpansion>,
-    SparseFeatureFixture<float, FeatureManagerBlockSparse,
+    FeatureFixture<float, FeatureManagerBlockSparse,
                     StructureManagerCenters,
                     RepresentationManagerSphericalExpansion, MultipleStructureSphericalExpansion>>;
 

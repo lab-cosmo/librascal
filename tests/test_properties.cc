@@ -217,9 +217,9 @@ namespace rascal {
                                 MultipleStructureManagerBaseFixture> {
     using Manager_t = ManagerImplementation;
 
-    using key_t = size_t;
+    using key_t = std::vector<int>;
     using BlockSparseProperty_t =
-                BlockSparseProperty<double, key_t, 1, 0>;
+                BlockSparseProperty<double, 1, 0>;
     using dense_t = typename BlockSparseProperty_t::dense_t;
     using input_data_t = typename BlockSparseProperty_t::input_data_t;
     using test_data_t = std::vector<input_data_t>;
@@ -235,7 +235,7 @@ namespace rascal {
       std::random_device rd;
       std::mt19937 gen{rd()};
       auto size_dist{std::uniform_int_distribution<size_t>(1, 10)};
-      auto key_dist{std::uniform_int_distribution<key_t>(1, 100)};
+      auto key_dist{std::uniform_int_distribution<int>(1, 100)};
       // size_t i_manager{0};
       for (auto& manager : this->managers_center) {
         sparse_features.emplace_back(manager, sparse_features_desc);
