@@ -52,7 +52,7 @@ namespace rascal {
     Updateable & operator=(const Updateable & other) = delete;
 
     //! Move assignment operator
-    Updateable & operator=(Updateable && other) = delete;
+    Updateable & operator=(Updateable && other) = default;
 
     /**
      * Trigger to update the tree of stacked StructureManager as well as
