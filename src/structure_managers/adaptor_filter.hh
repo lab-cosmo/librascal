@@ -109,8 +109,10 @@ namespace rascal {
    * performed based on arbitrary criteria using the add_cluster() method.
    */
   template <class ManagerImplementation, size_t MaxOrder>
-  class AdaptorFilter : public StructureManager<
-                            AdaptorFilter<ManagerImplementation, MaxOrder>> {
+  class AdaptorFilter
+      : public StructureManager<AdaptorFilter<ManagerImplementation, MaxOrder>>,
+        public std::enable_shared_from_this<
+            AdaptorFilter<ManagerImplementation, MaxOrder>> {
    public:
     template <size_t Order_, class ManagerImplementation_, size_t MaxOrder_>
     friend struct internal::ClusterAdder;
@@ -134,8 +136,6 @@ namespace rascal {
     explicit AdaptorFilter(ManagerImplementation & manager) : manager{manager} {
       this->reset_initial_state();
     }
-
-
 
     //! Copy constructor
     AdaptorFilter(const AdaptorFilter & other) = delete;

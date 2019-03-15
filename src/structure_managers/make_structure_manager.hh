@@ -30,6 +30,7 @@
 
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/property.hh"
+
 #include "rascal_utility.hh"
 
 namespace rascal {

@@ -308,6 +308,13 @@ namespace rascal {
       return this->implementation().get_atom_type(atom_index);
     }
 
+    /**
+     * Attach a property to a StructureManager. A given calculated property is
+     * only reasonable if connected with a structure. It is also connected with
+     * a sanity check so that the naming of attached properties is unique. If a
+     * property with the desired `name` already exists, a runtime error is
+     * thrown.
+     */
     void attach_property(const std::string & name,
                          std::shared_ptr<PropertyBase> property) {
       if (this->has_property(name)) {
@@ -320,14 +327,15 @@ namespace rascal {
       this->property_fresh[name] = false;
     }
 
+    /**
+     * Helper function to check if a property with the specifier `name` has
+     * already been attached.
+     */
     bool has_property(const std::string & name) {
       return not(this->properties.find(name) == this->properties.end());
     }
-    //! Add a child node to a node
-    void add_child(std::weak_ptr<StructureManagerBase> child) {
-      this->children.emplace_back(child);
-    }
 
+    //! Accessor for an attached property with a specifier as a string
     std::shared_ptr<PropertyBase> get_property(const std::string & name) {
       if (this->has_property(name)) {
         std::stringstream error{};
@@ -336,13 +344,27 @@ namespace rascal {
       }
       return this->properties[name];
     }
+
+    /**
+     * Attach update status to property. It is necessary, because the underlying
+     * structure might change and then the calculated property might be out of
+     * sync with the structure.
+     */
+    void set_property_fresh(const std::string & name) {
+      this->property_fresh[name] = true;
+    }
+
+    /**
+     * Check if the status of the property is in sync with the underlying
+     * structure
+     */
+    bool is_property_fresh(const std::string & name) {
+      return this->property_fresh[name];
+    }
+
     //! Get the full type of the structure manager
     static decltype(auto) get_name() {
       return internal::GetTypeName<ManagerImplementation>();
-    }
-
-    bool is_property_fresh(const std::string & name) {
-      return this->property_fresh[name];
     }
 
     //! Create a new shared pointer to the object
@@ -350,12 +372,27 @@ namespace rascal {
       return this->implementation().shared_from_this();
     }
 
-    void set_property_fresh(const std::string & name) {
-      this->property_fresh[name] = true;
-    }
     //! Create a new weak pointer to the object
     std::weak_ptr<ManagerImplementation> get_weak_ptr() {
       return std::weak_ptr<ManagerImplementation>(this->get_shared_ptr());
+    }
+
+    //     //! Create a new shared pointer to the object
+    // std::shared_ptr<ManagerImplementation> get_shared_ptr() {
+    //   return this->implementation().shared_from_this();
+    // }
+
+    // //! Create a new weak pointer to the object
+    // std::weak_ptr<ManagerImplementation> get_weak_ptr() {
+    //   return std::weak_ptr<ManagerImplementation>(this->get_shared_ptr());
+    // }
+
+    /**
+     * Add a stacked adaptor as a child node of the current StructureManager
+     * tree of children.
+     */
+    void add_child(std::weak_ptr<Updateable> child) {
+      this->children.emplace_back(child);
     }
 
    protected:
@@ -364,9 +401,9 @@ namespace rascal {
      * Should only be used in the StructureManagerRoot
      */
     void update_children() final {
-      if (not this->get_is_up_to_date()) {
+      if (not this->get_update_status()) {
         this->implementation().update_adaptor();
-        this->set_is_up_to_date(true);
+        this->set_update_status(true);
       }
       for (auto && child : this->children) {
         if (not child.expired()) {
@@ -380,30 +417,16 @@ namespace rascal {
      * tree. Should only be used in the StructureManagerRoot
      */
     void send_changed_structure_signal() {
-      this->set_is_up_to_date(true);
+      this->set_update_status(true);
       for (auto && child : this->children) {
         if (not child.expired()) {
-          child.lock()->set_is_up_to_date(false);
+          child.lock()->set_update_status(false);
         }
       }
     }
 
     //! List of children which are stacked on top of current object.
     std::vector<Children_t> children{};
-
-    /**
-     * Stores the state of the StructureManager with respect to the
-     * underlying structure. It avoids updating Adaptors when the structure
-     * did not change but an update was called.
-     */
-    //bool is_up_to_date;
-
-    // //! setter for is_up_to_date
-    // inline void set_is_up_to_date(const bool sig) final {
-    //   this->is_up_to_date = sig;
-    // }
-    // //! getter for is_up_to_date
-    // inline bool get_is_up_to_date() const { return this->is_up_to_date; }
 
     //! returns the current layer
     template <size_t Order>

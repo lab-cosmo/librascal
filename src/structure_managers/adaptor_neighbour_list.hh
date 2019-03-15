@@ -36,6 +36,7 @@
 #include "rascal_utility.hh"
 #include "structure_managers/property.hh"
 #include "structure_managers/structure_manager.hh"
+#include "structure_managers/updateable_base.hh"
 
 #include <set>
 #include <typeinfo>
@@ -427,7 +428,8 @@ namespace rascal {
   class AdaptorNeighbourList
       : public StructureManager<AdaptorNeighbourList<ManagerImplementation>>,
         public std::enable_shared_from_this<
-            AdaptorNeighbourList<ManagerImplementation>> {
+    AdaptorNeighbourList<ManagerImplementation>> //,
+    /*public Updateable*/ {
    public:
     using Manager_t = AdaptorNeighbourList<ManagerImplementation>;
     using Parent = StructureManager<Manager_t>;

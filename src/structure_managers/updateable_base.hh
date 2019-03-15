@@ -29,13 +29,15 @@
 #ifndef SRC_STRUCTURE_MANAGERS_UPDATEABLE_BASE_HH_
 #define SRC_STRUCTURE_MANAGERS_UPDATEABLE_BASE_HH_
 
+#include <memory>
+
 namespace rascal {
 
   //! base class for updatable functionality
-  class Updateable {
+  class Updateable /*: public std::enable_shared_from_this<Updateable> */{
    public:
     //! Default constructor sets the status variable for update to false.
-    Updateable() : is_up_to_date{false} {};
+    Updateable() : updated{false} {};
 
     //! Copy constructor
     Updateable(const Updateable & other) = delete;
@@ -50,7 +52,7 @@ namespace rascal {
     Updateable & operator=(const Updateable & other) = delete;
 
     //! Move assignment operator
-    Updateable & operator=(Updateable && other) = default;
+    Updateable & operator=(Updateable && other) = delete;
 
     /**
      * Trigger to update the tree of stacked StructureManager as well as
@@ -58,30 +60,31 @@ namespace rascal {
      */
     virtual void update_children() = 0;
 
-    /**
-     *
-     */
-    virtual void update_adaptor() = 0;
+    //virtual void get_name() = 0;
+
+    //virtual decltype(auto) get_name() = 0;
+
+    // virtual void update_adaptor() = 0;
     /**
      * When the underlying structure changes, all computations are potentially
      * invalid. This function triggers the setting of the statue variable to
      * `false` along the tree. Should only be called from the root of the tree
      * (usually a StructureManager).
      */
-    //virtual void send_changed_structure_signal() = 0;
+    // virtual void send_changed_structure_signal() = 0;
 
     //! Setter function for update statue variable
-    inline void set_is_up_to_date(const bool sig) { this->is_up_to_date = sig; }
+    inline void set_update_status(const bool sig) { this->updated = sig; }
 
     //! Getter function for update status variable.
-    inline bool get_is_up_to_date() const { return this->is_up_to_date; }
+    inline bool get_update_status() const { return this->updated; }
 
    protected:
     /**
-     * status variable for update. avoids updating adaptors, when the
+     * Status variable for the state of update. Avoids updating adaptors, when the
      * underlying structure did not change, if .update() is called.
      */
-    bool is_up_to_date;
+    bool updated;
 
    private:
   };

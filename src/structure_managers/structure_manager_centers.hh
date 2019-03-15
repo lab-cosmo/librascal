@@ -33,6 +33,7 @@
 // inclusion of librascal data structure, each manager is based on the interface
 // given in `structure_manager.hh`
 #include "structure_managers/structure_manager.hh"
+#include "structure_managers/updateable_base.hh"
 #include "lattice.hh"
 #include "atomic_structure.hh"
 #include "basic_types.hh"
@@ -81,8 +82,8 @@ namespace rascal {
   class StructureManagerCenters :
       // public inheritance of the base class
       public StructureManager<StructureManagerCenters>,
-      public std::enable_shared_from_this<StructureManagerCenters>,
-      public Updateable {
+      public std::enable_shared_from_this<StructureManagerCenters>//,
+      /*public Updateable */ {
     // Publicly accessible variables and functions of the class are given
     // here. These provide the interface to access the structure and
     // subsequently calculated neighbourhood.

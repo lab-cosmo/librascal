@@ -33,6 +33,7 @@
 
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/property.hh"
+#include "structure_managers/updateable_base.hh"
 #include "rascal_utility.hh"
 
 namespace rascal {
@@ -72,7 +73,8 @@ namespace rascal {
   class AdaptorStrict
       : public StructureManager<AdaptorStrict<ManagerImplementation>>,
         public std::enable_shared_from_this<
-            AdaptorStrict<ManagerImplementation>> {
+    AdaptorStrict<ManagerImplementation>>//,
+    /*public Updateable*/ {
    public:
     using Manager_t = AdaptorStrict<ManagerImplementation>;
     using Parent = StructureManager<Manager_t>;
@@ -345,7 +347,7 @@ namespace rascal {
     // if sizeof...(arguments) == 0 then the underlying structure
     // is not changed
     if (sizeof...(arguments) > 0) {
-      this->set_is_up_to_date(false);
+      this->set_update_status(false);
     }
     this->manager->update(std::forward<Args>(arguments)...);
   }

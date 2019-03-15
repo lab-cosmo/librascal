@@ -41,7 +41,7 @@ namespace rascal {
     virtual size_t nb_clusters(size_t cluster_size) const = 0;
     virtual ~StructureManagerBase() = default;
     //virtual void update_children() = 0;
-    // virtual void set_is_up_to_date(const bool) = 0;
+    // virtual void set_update_status(const bool) = 0;
 
    protected:
   };
