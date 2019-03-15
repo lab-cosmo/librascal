@@ -123,10 +123,10 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(feature_block_sparse_test);
 
   using multiple_fixtures_sparse = boost::mpl::list<
-    FeatureFixture<double, FeatureManagerBlockSparse,
+    SparseFeatureFixture<double, FeatureManagerBlockSparse,
                     StructureManagerCenters,
                     RepresentationManagerSphericalExpansion, MultipleStructureSphericalExpansion>,
-    FeatureFixture<float, FeatureManagerBlockSparse,
+    SparseFeatureFixture<float, FeatureManagerBlockSparse,
                     StructureManagerCenters,
                     RepresentationManagerSphericalExpansion, MultipleStructureSphericalExpansion>>;
 
@@ -197,7 +197,7 @@ namespace rascal {
     for (size_t i_hyper{0}; i_hyper < hypers.size(); i_hyper++) {
       auto feature_matrix = features[i_hyper].get_feature_matrix_dense();
       auto& inner_size{inner_sizes[i_hyper]};
-      std::set<int> unique_keys{};
+      std::set<std::vector<int>> unique_keys{};
       for (size_t i_center{0}; i_center < original_data[i_hyper].size(); ++i_center) {
         for (auto& element : original_data[i_hyper][i_center]) {
           unique_keys.emplace(element.first);
@@ -211,8 +211,8 @@ namespace rascal {
         for (auto& key : unique_keys) {
           // if the key exist
           if (datas.count(key) == 1) {
-            if (verbose) std::cout << "Key: "<< key <<std::endl;
-            auto data = datas[key];
+            if (verbose) std::cout << "Key: "<< key[0] <<std::endl;
+            auto& data = datas[key];
             for (int i_col{0}; i_col < data.cols(); i_col++) {
               for (int i_row{0}; i_row < data.rows(); i_row++) {
               diff =  data(i_row, i_col)- feature_matrix(i_count, i_center);

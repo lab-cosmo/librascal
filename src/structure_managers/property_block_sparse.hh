@@ -43,6 +43,7 @@ namespace rascal {
 
 
   namespace internal {
+
     template<class K, class V>
     class InternallySortedKeyMap {
      public:
@@ -88,21 +89,21 @@ namespace rascal {
        *
        */
       mapped_type& at( const key_type& key ){
-        std::sort(key.begin(), key.end());
-        return this->data.at(key);
+        key_type skey{this->copy_sort(key)};
+        return this->data.at(skey);
       }
       const mapped_type& at( const key_type& key ) const{
-        std::sort(key.begin(), key.end());
-        return this->data.at(key);
+        key_type skey{this->copy_sort(key)};
+        return this->data.at(skey);
       }
       //! access or insert specified element
       mapped_type& operator[]( const key_type& key ){
-        std::sort(key.begin(), key.end());
-        return this->data[key];
+        key_type skey{this->copy_sort(key)};
+        return this->data[skey];
       }
       mapped_type& operator[]( key_type&& key ){
-        std::sort(key.begin(), key.end());
-        return this->data[key];
+        key_type skey{this->copy_sort(key)};
+        return this->data[skey];
       }
 
       //! Erases all elements from the container. After this call, size()
@@ -141,6 +142,42 @@ namespace rascal {
       const_iterator cend() const noexcept{
         return this->data.cend();
       }
+
+     private:
+      /**
+       * custom hash function for vector, list...
+       * https://stackoverflow.com/questions/20511347/a-good-hash-function-for-a-vector // NOLINT
+       */
+      template<class KeyType>
+      struct hash {
+        using result_type = size_t;
+        using argument_type = KeyType;
+        result_type operator()(argument_type const& vec) const {
+          result_type seed{vec.size()};
+          for(const auto& i : vec) {
+            seed ^= i + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+          }
+          return seed;
+        }
+      };
+
+
+      key_type copy_sort( const key_type& key ) {
+        key_type skey{key};
+        if (key.size() > 1) {
+          std::sort(skey.begin(), skey.end());
+        }
+        return skey;
+      }
+
+      key_type copy_sort( key_type&& key ) {
+        key_type skey{key};
+        if (key.size() > 1) {
+          std::sort(skey.begin(), skey.end());
+        }
+        return skey;
+      }
+
 
     };
   }
@@ -235,6 +272,15 @@ namespace rascal {
 
     //! Accessor for property by cluster index and return a dense
     //! representation of the property associated to this cluster
+    template <size_t CallerLayer>
+    inline dense_t get_dense_row(const ClusterRefKey<Order, CallerLayer> & id) {
+      static_assert(CallerLayer >= PropertyLayer,
+                    "You are trying to access a property that does not exist at"
+                    "this depth in the adaptor stack.");
+
+      return this->get_dense_row(id.get_cluster_index(CallerLayer));
+    }
+
     inline dense_t get_dense_row(const size_t & index) {
       dense_t feauture_row = dense_t::Zero(this->get_nb_comp(), this->keys_list[index].size());
       size_t i_col{0};

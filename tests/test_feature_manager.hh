@@ -89,36 +89,36 @@ namespace rascal {
    * access to different data structures. They are used to check the aggregation
    * of calculated feature data from multiple structures.
    */
-  // template <typename T, template <typename> class FeatureManager,
-  //           class StructureManager,
-  //           template <typename> class RepresentationManager, class BaseFixture>
-  // struct SparseFeatureFixture
-  //     : MultipleStructureManagerStrictFixture<StructureManager,
-  //                             BaseFixture> {
-  //   using Parent = MultipleStructureManagerStrictFixture<StructureManager,  BaseFixture>;
-  //   using Manager_t = typename Parent::Manager_t;
-  //   using Representation_t = RepresentationManager<Manager_t>;
-  //   using key_t = typename Representation_t::key_t;
-  //   using Feature_t = FeatureManager<T>;
-  //   using hypers_t = typename Representation_t::hypers_t;
-  //   using precision_t = T;
+  template <typename T, template <typename> class FeatureManager,
+            class StructureManager,
+            template <typename> class RepresentationManager, class BaseFixture>
+  struct SparseFeatureFixture
+      : MultipleStructureManagerStrictFixture<StructureManager,
+                              BaseFixture> {
+    using Parent = MultipleStructureManagerStrictFixture<StructureManager,  BaseFixture>;
+    using Manager_t = typename Parent::Manager_t;
+    using Representation_t = RepresentationManager<Manager_t>;
+    using key_t = typename Representation_t::key_t;
+    using Feature_t = FeatureManager<T>;
+    using hypers_t = typename Representation_t::hypers_t;
+    using precision_t = T;
 
-  //   SparseFeatureFixture() : Parent{} {
-  //     for (auto & hyper : this->hypers) {
-  //       this->representations.emplace_back();
-  //       for (auto & manager : this->managers_strict) {
-  //         this->representations.back().emplace_back(manager, hyper);
-  //         this->representations.back().back().compute();
-  //       }
-  //       this->inner_sizes.emplace_back(this->representations.back().back().get_feature_size());
-  //     }
-  //   }
+    SparseFeatureFixture() : Parent{} {
+      for (auto & hyper : this->hypers) {
+        this->representations.emplace_back();
+        for (auto & manager : this->managers_strict) {
+          this->representations.back().emplace_back(manager, hyper);
+          this->representations.back().back().compute();
+        }
+        this->inner_sizes.emplace_back(this->representations.back().back().get_feature_size());
+      }
+    }
 
-  //   ~SparseFeatureFixture() = default;
-  //   std::vector<std::vector<Representation_t>> representations{};
-  //   std::vector<Feature_t> features{};
-  //   std::vector<size_t> inner_sizes{};
-  // };
+    ~SparseFeatureFixture() = default;
+    std::vector<std::vector<Representation_t>> representations{};
+    std::vector<Feature_t> features{};
+    std::vector<size_t> inner_sizes{};
+  };
 
   /* ---------------------------------------------------------------------- */
 

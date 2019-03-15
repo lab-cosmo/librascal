@@ -300,7 +300,7 @@ namespace rascal {
       for (auto center : manager) {
         if (verbose) std::cout << "center: " << i_center << std::endl;
 
-        auto data = sparse_features[i_manager][center];
+        auto data = sparse_features[i_manager].get_dense_row(center);
         size_t key_id{0};
         double error1{0};
         for (auto& key : sparse_features[i_manager].get_keys(center)) {
