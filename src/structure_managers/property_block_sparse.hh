@@ -51,7 +51,7 @@ namespace rascal {
 
       //! the data holder. only the overiden/essential functionalities are
       //! directly exposed
-      MyMap_t data;
+      MyMap_t data{};
 
       // some member types
       using key_type = typename MyMap_t::key_type;
@@ -342,6 +342,7 @@ namespace rascal {
       }
 
       this->values.push_back(ref);
+
       this->keys_list.emplace_back();
       size_t n_keys{0};
       for (const auto& element : ref) {

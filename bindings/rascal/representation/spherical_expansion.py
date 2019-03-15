@@ -101,7 +101,7 @@ class SphericalExpansion(object):
             frames, [self.hypers['interaction_cutoff'], ] * n_frames))
         hypers_str = json.dumps(self.hypers)
         n_features = self.get_num_coefficients()
-        features = FeatureManager.BlockSparse_double_int(n_features, hypers_str)
+        features = FeatureManager.BlockSparse_double(n_features, hypers_str)
         cms = map(RepresentationFactory(self.name),
                   managers, [hypers_str, ] * n_frames)
         for cm in cms:

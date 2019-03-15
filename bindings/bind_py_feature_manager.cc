@@ -71,7 +71,36 @@ decltype(auto) bind_feature_manager(py::module & mod, py::module &) {
   return feature;
 }
 
+/**
+ * Bind a feature manager
+ */
+template <template <typename> class FeatureManager, typename T>
+decltype(auto) bind_sparse_feature_manager(py::module & mod, py::module &) {
+  using Feature_t = FeatureManager<T>;
+  using Base_t = FeatureManagerBase<T>;
+  std::string feature_name = internal::GetBindingTypeName<Feature_t>();
+  py::class_<Feature_t, Base_t> feature(mod, feature_name.c_str());
+  // use custom constructor to pass json formated string as initializer
+  // an alternative would be to convert python dict to json internally
+  // but needs some workon in the pybind machinery
+  feature.def(py::init([](int & inner_size, std::string & hyper_str) {
+    // convert to json
+    json hypers = json::parse(hyper_str);
+    return std::make_unique<Feature_t>(inner_size, hypers);
+  }));
+  feature.def("reserve", &Feature_t::reserve);
+  feature.def("append", (void (Feature_t::*)(RepresentationManagerBase &)) &
+                            Feature_t::push_back);
+  feature.def_property_readonly("size", &Feature_t::size,
+                                py::return_value_policy::copy);
+  feature.def_property_readonly("shape", &Feature_t::shape,
+                                py::return_value_policy::copy);
+  feature.def("get_feature_matrix", &Feature_t::get_feature_matrix_dense,
+              py::return_value_policy::reference_internal,
+              py::keep_alive<1, 0>());
 
+  return feature;
+}
 
 //! Feature aggregator python binding
 void add_feature_managers(py::module & mod, py::module & m_garbage) {
@@ -84,9 +113,9 @@ void add_feature_managers(py::module & mod, py::module & m_garbage) {
   auto feature_float =
       bind_feature_manager<FeatureManagerDense, float>(mod, m_garbage);
 
-  bind_feature_manager<FeatureManagerBlockSparse, double>(mod, m_garbage);
+  bind_sparse_feature_manager<FeatureManagerBlockSparse, double>(mod, m_garbage);
 
-  bind_feature_manager<FeatureManagerBlockSparse, float>(mod, m_garbage);
+  bind_sparse_feature_manager<FeatureManagerBlockSparse, float>(mod, m_garbage);
 
 
 }
