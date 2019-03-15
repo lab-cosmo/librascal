@@ -55,7 +55,7 @@ namespace rascal {
   std::shared_ptr<Adaptor<Manager>>
   make_adapted_manager(std::shared_ptr<Manager> & arg, const Args &... args) {
     auto manager{std::make_shared<Adaptor<Manager>>(arg, args...)};
-    arg->add_child(manager->get_weak_ptr());
+    arg->add_child(manager->get_updateable_weak_ptr());
     return manager;
   }
 

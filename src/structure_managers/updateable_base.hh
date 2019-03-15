@@ -34,8 +34,10 @@
 namespace rascal {
 
   //! base class for updatable functionality
-  class Updateable /*: public std::enable_shared_from_this<Updateable> */{
+  class Updateable : public std::enable_shared_from_this<Updateable> {
    public:
+    using Children_t = std::weak_ptr<Updateable>;
+
     //! Default constructor sets the status variable for update to false.
     Updateable() : updated{false} {};
 
@@ -60,9 +62,22 @@ namespace rascal {
      */
     virtual void update_children() = 0;
 
-    //virtual void get_name() = 0;
+    //! Create a new weak pointer to `Updatable`
+    Children_t get_updateable_weak_ptr() {
+      return Children_t(this->shared_from_this());
+    }
 
-    //virtual decltype(auto) get_name() = 0;
+    /**
+     * Add a stacked adaptor as a child node of the current StructureManager
+     * tree of children.
+     */
+    void add_child(std::weak_ptr<Updateable> child) {
+      this->children.emplace_back(child);
+    }
+
+    // virtual void get_name() = 0;
+
+    // virtual decltype(auto) get_name() = 0;
 
     // virtual void update_adaptor() = 0;
     /**
@@ -80,9 +95,12 @@ namespace rascal {
     inline bool get_update_status() const { return this->updated; }
 
    protected:
+    //! List of children which are stacked on top of current object.
+    std::vector<Children_t> children{};
+
     /**
-     * Status variable for the state of update. Avoids updating adaptors, when the
-     * underlying structure did not change, if .update() is called.
+     * Status variable for the state of update. Avoids updating adaptors, when
+     * the underlying structure did not change, if .update() is called.
      */
     bool updated;
 

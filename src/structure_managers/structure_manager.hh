@@ -168,7 +168,7 @@ namespace rascal {
    * class implementation
    */
   template <class ManagerImplementation>
-  class StructureManager : public StructureManagerBase, public Updateable {
+  class StructureManager : public StructureManagerBase, protected Updateable {
    public:
     using StructureManager_t = StructureManager<ManagerImplementation>;
     using traits = StructureManager_traits<ManagerImplementation>;
@@ -387,14 +387,6 @@ namespace rascal {
     //   return std::weak_ptr<ManagerImplementation>(this->get_shared_ptr());
     // }
 
-    /**
-     * Add a stacked adaptor as a child node of the current StructureManager
-     * tree of children.
-     */
-    void add_child(std::weak_ptr<Updateable> child) {
-      this->children.emplace_back(child);
-    }
-
    protected:
     /**
      * Update itself and send update signal to children nodes
@@ -424,9 +416,6 @@ namespace rascal {
         }
       }
     }
-
-    //! List of children which are stacked on top of current object.
-    std::vector<Children_t> children{};
 
     //! returns the current layer
     template <size_t Order>

@@ -34,6 +34,7 @@
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/adaptor_filter.hh"
 #include "structure_managers/property.hh"
+#include "structure_managers/updateable_base.hh"
 
 #include <type_traits>
 #include <array>
@@ -100,7 +101,7 @@ namespace rascal {
    * ```
    */
   template <class ManagerImplementation, size_t MaxOrder>
-  class SpeciesManager {
+  class SpeciesManager : public Updateable {
    public:
     using traits = StructureManager_traits<ManagerImplementation>;
     template <size_t NbElements>
