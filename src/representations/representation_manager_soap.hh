@@ -50,10 +50,11 @@
 namespace rascal {
 
   namespace internal {
+    enum class SOAPType { RadialSpectrum, PowerSpectrum };
   }  // namespace internal
 
   template <class StructureManager>
-  class RepresentationManagerSoap
+  class RepresentationManagerSOAP
       : public RepresentationManagerBase {
    public:
     using Manager_t = StructureManager;
@@ -61,9 +62,8 @@ namespace rascal {
     using key_t = std::vector<int>;
     using SparseProperty_t = BlockSparseProperty<double, 1, 0>;
     using data_t = typename SparseProperty_t::data_t;
-    using input_data_t = typename SparseProperty_t::input_data_t;
 
-    RepresentationManagerSoap(Manager_t & sm, const hypers_t & hyper)
+    RepresentationManagerSOAP(Manager_t & sm, const hypers_t & hyper)
         : structure_manager{sm}, soap_vectors{sm}, rep_expansion{sm, hyper} {
       this->set_hyperparameters(hyper);
     }
@@ -71,6 +71,16 @@ namespace rascal {
     void set_hyperparameters(const hypers_t & hypers) {
       this->max_radial = hypers.at("max_radial");
       this->max_angular = hypers.at("max_angular");
+      this->soap_type_str =
+          hypers.at("soap_type").get<std::string>();
+
+      if (this->soap_type_str.compare("PowerSpectrum") == 0) {
+        this->soap_type = internal::SOAPType::PowerSpectrum;
+      } else {
+        throw std::logic_error(
+            "Requested SOAP type \'" + this->soap_type_str +
+            "\' has not been implemented.  Must be one of" + ": \'PowerSpectrum\'.");
+      }
     }
 
     std::vector<precision_t> & get_representation_raw_data() {
@@ -82,42 +92,15 @@ namespace rascal {
       return this->soap_vectors.get_raw_data();
     }
 
-    void compute() {
-      // SparseProperty_t expansion_coefficients;
-      rep_expansion.compute();
-      auto expansion_coefficients{rep_expansion.soap_vectors};
+    //! compute representation
+    void compute();
 
-      for (auto center : this->structure_manager) {
-	key_t center_type{center.get_atom_type()};
-        input_data_t coefficients{expansion_coefficients[center]};
-        input_data2_t soap_vector;
-	key2_t element_pair{};
-	size_t n_row{pow(this->max_radial, 2)};
-	size_t n_col{this->max_angular + 1};
+    //! compute representation \nu == 1
+    void compute_radialspectrum();
 
-	for (key1_t species1: coefficients) {
-	  for (key1_t species2: coefficients) {
-            soap_vector.emplace(
-	      std::make_pair(element_pair, dense_t::Zero(n_row, n_col)));
-	    size_t nn{0};
-	    for (size_t n1 = 0; n1 < rep_expansion.max_radial; n1++) {
-	      for (size_t n2 = 0; n2 < rep_expansion.max_radial; n2++) {
-		size_t lm{0};
-	        for (size_t l = 0; l < rep_expansion.max_angular+1; l++) {
-	          for (size_t m = 0; m < 2*rep_expansion.max_angular+1; m++) {
-	            soap_vector[element_pair][nn,l] += coefficients[species1][n1,lm] *
-						       coefficients[species2][n2,lm];
-		    lm++;
-	          }
-	        }
-		nn++;
-	      }
-	    }
-	  }
-	}
-      this->soap_vectors.push_back(soap_vector);
-      }
-    }
+    //! compute representation \nu == 2
+    void compute_powerspectrum();
+
 
    protected:
    private:
@@ -126,9 +109,126 @@ namespace rascal {
     Manager_t & structure_manager;
     SparseProperty_t soap_vectors;
     RepresentationManagerSphericalExpansion<Manager_t> rep_expansion;
+    internal::SOAPType soap_type{};
+    std::string soap_type_str{};
 
+  };
 
+  template <class Mngr>
+  void RepresentationManagerSOAP<Mngr>::compute() {
+    using internal::SOAPType;
+    switch (this->soap_type) {
+    case SOAPType::RadialSpectrum:
+      this->compute_radialspectrum();
+      break;
+    case SOAPType::PowerSpectrum:
+      this->compute_powerspectrum();
+      break;
+    default:
+      // Will never reach here (it's an enum...)
+      break;
+    }
+  }
 
+  template <class Mngr>
+  void RepresentationManagerSOAP<Mngr>::compute_powerspectrum() {
+    rep_expansion.compute();
+    auto& expansions_coefficients{rep_expansion.expansions_coefficients};
+
+    size_t n_row{pow(this->max_radial, 2)};
+    size_t n_col{this->max_angular + 1};
+
+    this->soap_vectors.clear();
+    this->soap_vectors.set_shape(n_row, n_col);
+    this->soap_vectors.resize();
+
+    for (auto center : this->structure_manager) {
+      auto& coefficients{expansions_coefficients[center]};
+      auto& soap_vector{this->soap_vectors[center]};
+      key_t pair_type{0,0};
+
+      for (const auto& el1: coefficients) {
+        pair_type[0] = el1.first[0];
+        auto& coef1{el1.second};
+        auto& species1{el1.first};
+        for (const auto& el2: coefficients) {
+          pair_type[1] = el2.first[1];
+          auto& coef2{el2.second};
+          auto& species2{el2.first};
+          /* avoid computing p^{ab} and p^{ba} since p^{ab} = p^{ba}^T
+          */
+          if (soap_vector.count(pair_type) == 0) {
+            soap_vector[pair_type] = dense_t::Zero(n_row, n_col);
+            size_t nn{0};
+            for (size_t n1 = 0; n1 < this->max_radial; n1++) {
+              for (size_t n2 = 0; n2 < this->max_radial; n2++) {
+                size_t lm{0};
+                for (size_t l = 0; l < this->max_angular+1; l++) {
+                  // TODO(andrea) pre compute l_factor
+                  double l_factor{1 / std::sqrt(2*l+1)};
+                  for (size_t m = 0; m < 2*this->max_angular+1; m++) {
+                    soap_vector[element_pair][nn,l] += l_factor *
+                                          coef1[n1,lm] * coef2[n2,lm];
+                    lm++;
+                  }
+                }
+                nn++;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  template <class Mngr>
+  void RepresentationManagerSOAP<Mngr>::compute_radialspectrum() {
+    rep_expansion.compute();
+    auto& expansions_coefficients{rep_expansion.expansions_coefficients};
+
+    size_t n_row{pow(this->max_radial, 2)};
+    size_t n_col{this->max_angular + 1};
+
+    this->soap_vectors.clear();
+    this->soap_vectors.set_shape(n_row, n_col);
+    this->soap_vectors.resize();
+
+    for (auto center : this->structure_manager) {
+      auto& coefficients{expansions_coefficients[center]};
+      auto& soap_vector{this->soap_vectors[center]};
+      key_t pair_type{0,0};
+
+      for (const auto& el1: coefficients) {
+        pair_type[0] = el1.first[0];
+        auto& coef1{el1.second};
+        auto& species1{el1.first};
+        for (const auto& el2: coefficients) {
+          pair_type[1] = el2.first[1];
+          auto& coef2{el2.second};
+          auto& species2{el2.first};
+          // TODO(andrea) write the case nu == 1
+          /* avoid computing p^{ab} and p^{ba} since p^{ab} = p^{ba}^T
+          */
+          if (soap_vector.count(pair_type) == 0) {
+            soap_vector[pair_type] = dense_t::Zero(n_row, n_col);
+            size_t nn{0};
+            for (size_t n1 = 0; n1 < this->max_radial; n1++) {
+              for (size_t n2 = 0; n2 < this->max_radial; n2++) {
+                size_t lm{0};
+                for (size_t l = 0; l < this->max_angular+1; l++) {
+                  for (size_t m = 0; m < 2*this->max_angular+1; m++) {
+                    soap_vector[element_pair][nn,l] +=
+                                          coef1[n1,lm] * coef2[n2,lm];
+                    lm++;
+                  }
+                }
+                nn++;
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
 

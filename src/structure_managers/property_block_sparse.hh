@@ -106,17 +106,19 @@ namespace rascal {
         return this->data[skey];
       }
 
+      //! Returns the number of elements with key that compares equivalent to
+      //! the specified argument, which is either 1 or 0 since this container
+      //! does not allow duplicates.
+      template< class Key >
+      decltype(auto) count( const Key& key ) {
+        key_type skey{this->copy_sort(key)};
+        return this->data.count(key);
+      }
+
       //! Erases all elements from the container. After this call, size()
       //! returns zero.
       void clear() noexcept {
         this->data.clear();
-      }
-      //! Returns the number of elements with key that compares equivalent to
-      //! the specified argument, which is either 1 or 0 since this container
-      //! does not allow duplicates.
-      template<typename... Args>
-      decltype(auto) count( Args&&... args ) {
-        return this->data.count( std::forward<Args>(args)... );
       }
 
       template<typename... Args>

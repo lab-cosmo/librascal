@@ -47,7 +47,7 @@ namespace rascal {
 
   namespace internal {
 
-    enum GaussianSigmaType { Constant, PerSpecies, Radial };
+    enum class GaussianSigmaType { Constant, PerSpecies, Radial };
 
     /**
      * Specification to hold the parameter for the atomic smearing function,
@@ -129,7 +129,6 @@ namespace rascal {
     using Manager_t = StructureManager;
     using key_t = std::vector<int>;
     using SparseProperty_t = BlockSparseProperty<double, 1, 0>;
-    using input_data_t = typename SparseProperty_t::input_data_t;
     using dense_t = typename SparseProperty_t::dense_t;
     using data_t = typename SparseProperty_t::data_t;
     /**
@@ -165,7 +164,7 @@ namespace rascal {
         this->gaussian_sigma_type = internal::GaussianSigmaType::Constant;
       } else {
         throw std::logic_error(
-            "Requested Gaussian sigma type \'" + gaussian_sigma_str +
+            "Requested Gaussian sigma type \'" + this->gaussian_sigma_str +
             "\' has not been implemented.  Must be one of" + ": \'Constant\'.");
       }
     }
@@ -181,7 +180,7 @@ namespace rascal {
      */
     RepresentationManagerSphericalExpansion(Manager_t & sm,
                                             const hypers_t & hyper)
-        : structure_manager{sm}, expansions_coefficients{sm} {
+        : expansions_coefficients{sm}, structure_manager{sm} {
       this->set_hyperparameters(hyper);
     }
 
