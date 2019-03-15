@@ -427,31 +427,20 @@ namespace rascal {
     auto n_col{pow(this->max_angular + 1, 2)};
     this->expansions_coefficients.clear();
     this->expansions_coefficients.set_shape(n_row, n_col);
-    // this->expansions_coefficients.resize();
+    this->expansions_coefficients.resize();
 
     for (auto center : this->structure_manager) {
-      // auto& expansion = this->expansions_coefficients[center];
+      auto& coefficients_center = this->expansions_coefficients[center];
 
-      // // initialize the expansion coefficients to 0
-      // key_t center_type{center.get_atom_type()};
-      // expansion[center_type] = dense_t::Zero(n_row, n_col);
-      // for (auto neigh : center) {
-      //   key_t neigh_type{neigh.get_atom_type()};
-      //   // avoid initializing again same keys
-      //   if (expansion.count(neigh_type) == 0) {
-      //     expansion[neigh_type] = dense_t::Zero(n_row, n_col);
-      //   }
-
-      // }
-
-      input_data_t expansion{};
+      // initialize the expansion coefficients to 0
       key_t center_type{center.get_atom_type()};
-      expansion.emplace(
-          std::make_pair(center_type, dense_t::Zero(n_row, n_col)));
+      coefficients_center[center_type] = dense_t::Zero(n_row, n_col);
       for (auto neigh : center) {
         key_t neigh_type{neigh.get_atom_type()};
-        expansion.emplace(
-            std::make_pair(neigh_type, dense_t::Zero(n_row, n_col)));
+        // avoid initializing again same chemical channel
+        if (coefficients_center.count(neigh_type) == 0) {
+          coefficients_center[neigh_type] = dense_t::Zero(n_row, n_col);
+        }
       }
 
       Eigen::MatrixXd radial_integral(this->max_radial, this->max_angular + 1);
@@ -469,7 +458,7 @@ namespace rascal {
             pow(1.0 / sigma2 + pow(this->radial_sigmas[radial_n], -2),
                 -0.5 * (3.0 + radial_n));
       }
-      expansion[center_type].col(0) =
+      coefficients_center[center_type].col(0) +=
           this->radial_ortho_matrix * radial_integral.col(0) / sqrt(4.0 * PI);
 
       for (auto neigh : center) {
@@ -508,7 +497,7 @@ namespace rascal {
                     0.5 * (3.0 + angular_l + radial_n), 1.5 + angular_l,
                     0.5 * pow(dist, 2) / radial_sigma_factors(radial_n));
           }
-	  radial_integral.row(radial_n) *= radial_norm_factors(radial_n);
+          radial_integral.row(radial_n) *= radial_norm_factors(radial_n);
         }
         radial_integral = this-> radial_ortho_matrix * radial_integral ;
 
@@ -518,16 +507,14 @@ namespace rascal {
                angular_l++) {
             for (size_t m_array_idx{0}; m_array_idx < 2 * angular_l + 1;
                  m_array_idx++) {
-              expansion[neigh_type](radial_n, lm_collective_idx) +=
+              coefficients_center[neigh_type](radial_n, lm_collective_idx) +=
                   radial_integral(radial_n, angular_l) *
                   harmonics(angular_l, m_array_idx);
-              // std::cout << expansion[neigh_type] << std::endl;
               ++lm_collective_idx;
             }
           }
         }
       }  // for (neigh : center)
-      this->expansions_coefficients.push_back(expansion);
     }  // for (center : structure_manager)
   }  // compute()
 
