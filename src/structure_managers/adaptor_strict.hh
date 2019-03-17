@@ -98,8 +98,9 @@ namespace rascal {
     AdaptorStrict(ImplementationPtr_t manager, std::tuple<double> tp)
         : AdaptorStrict(manager, std::get<0>(tp)) {}
 
-    AdaptorStrict(ImplementationPtr_t manager, const Hypers_t& adaptor_hypers)
-        : AdaptorStrict(manager, adaptor_hypers.at("cutoff").template get<double>()) {}
+    AdaptorStrict(ImplementationPtr_t manager, const Hypers_t & adaptor_hypers)
+        : AdaptorStrict(manager,
+                        adaptor_hypers.at("cutoff").template get<double>()) {}
 
     //! Copy constructor
     AdaptorStrict(const AdaptorStrict & other) = delete;

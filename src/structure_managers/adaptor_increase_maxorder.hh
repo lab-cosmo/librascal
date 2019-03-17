@@ -108,7 +108,8 @@ namespace rascal {
     AdaptorMaxOrder(ImplementationPtr_t manager, std::tuple<>)
         : AdaptorMaxOrder(manager) {}
 
-    AdaptorMaxOrder(ImplementationPtr_t manager, const Hypers_t& adaptor_hypers)
+    AdaptorMaxOrder(ImplementationPtr_t manager,
+                    const Hypers_t & adaptor_hypers)
         : AdaptorMaxOrder(manager) {}
 
     //! Copy constructor

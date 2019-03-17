@@ -106,7 +106,8 @@ namespace rascal {
     AdaptorHalfList(ImplementationPtr_t manager, std::tuple<>)
         : AdaptorHalfList(manager) {}
 
-    AdaptorHalfList(ImplementationPtr_t manager, const Hypers_t& adaptor_hypers)
+    AdaptorHalfList(ImplementationPtr_t manager,
+                    const Hypers_t & adaptor_hypers)
         : AdaptorHalfList(manager) {}
 
     //! Copy constructor

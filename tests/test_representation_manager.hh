@@ -97,25 +97,15 @@ namespace rascal {
       for (auto && filename : filenames) {
         for (auto && cutoff : cutoffs) {
           json parameters;
-          json structure{ {"filename", filename}};
+          json structure{{"filename", filename}};
           json adaptors;
           json ad1{
-            {"name", "AdaptorNeighbourList"},
-            {"initialization_arguments",
-              {
-                {"cutoff", cutoff},
-                {"consider_ghost_neighbours", consider_ghost_neighbours}
-              }
-            }
-          };
-          json ad2{
-            {"name", "AdaptorStrict"},
-            {"initialization_arguments",
-              {
-                {"cutoff", cutoff}
-              }
-            }
-          };
+              {"name", "AdaptorNeighbourList"},
+              {"initialization_arguments",
+               {{"cutoff", cutoff},
+                {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+          json ad2{{"name", "AdaptorStrict"},
+                   {"initialization_arguments", {{"cutoff", cutoff}}}};
           adaptors.emplace_back(ad1);
           adaptors.emplace_back(ad2);
 
