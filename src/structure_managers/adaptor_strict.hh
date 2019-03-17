@@ -80,6 +80,7 @@ namespace rascal {
     using traits = StructureManager_traits<AdaptorStrict>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
+    using Hypers_t = typename Parent::Hypers_t;
 
     static_assert(traits::MaxOrder > 1,
                   "ManagerImlementation needs to handle pairs");
@@ -96,6 +97,9 @@ namespace rascal {
 
     AdaptorStrict(ImplementationPtr_t manager, std::tuple<double> tp)
         : AdaptorStrict(manager, std::get<0>(tp)) {}
+
+    AdaptorStrict(ImplementationPtr_t manager, const Hypers_t& adaptor_hypers)
+        : AdaptorStrict(manager, adaptor_hypers.at("cutoff").template get<double>()) {}
 
     //! Copy constructor
     AdaptorStrict(const AdaptorStrict & other) = delete;

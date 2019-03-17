@@ -84,8 +84,6 @@ namespace rascal {
   };
 
   struct SortedCoulombTestData {
-    using Factory_t =
-        std::tuple<std::tuple<std::string>, std::tuple<double, bool, double>>;
     using ManagerTypeHolder_t =
         StructureManagerTypeHolder<StructureManagerCenters,
                                    AdaptorNeighbourList, AdaptorStrict>;
@@ -98,9 +96,33 @@ namespace rascal {
 
       for (auto && filename : filenames) {
         for (auto && cutoff : cutoffs) {
-          auto a0{std::make_tuple(filename)};
-          auto a1{std::make_tuple(cutoff, consider_ghost_neighbours, cutoff)};
-          this->factory_args.emplace_back(a0, a1);
+          json parameters;
+          json structure{ {"filename", filename}};
+          json adaptors;
+          json ad1{
+            {"name", "AdaptorNeighbourList"},
+            {"initialization_arguments",
+              {
+                {"cutoff", cutoff},
+                {"consider_ghost_neighbours", consider_ghost_neighbours}
+              }
+            }
+          };
+          json ad2{
+            {"name", "AdaptorStrict"},
+            {"initialization_arguments",
+              {
+                {"cutoff", cutoff}
+              }
+            }
+          };
+          adaptors.emplace_back(ad1);
+          adaptors.emplace_back(ad2);
+
+          parameters["structure"] = structure;
+          parameters["adaptors"] = adaptors;
+
+          this->factory_args.emplace_back(parameters);
         }
       }
     }
@@ -113,7 +135,7 @@ namespace rascal {
     const bool consider_ghost_neighbours{false};
     std::string ref_filename{"reference_data/sorted_coulomb_reference.ubjson"};
     json ref_data{};
-    std::vector<Factory_t> factory_args{};
+    json factory_args{};
   };
 
   template <class BaseFixture, template <class> class RepresentationManager>

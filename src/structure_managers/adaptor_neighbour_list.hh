@@ -438,6 +438,7 @@ namespace rascal {
     using Vector_t = typename Parent::Vector_t;
     using Positions_ref =
         Eigen::Map<Eigen::Matrix<double, traits::Dim, Eigen::Dynamic>>;
+    using Hypers_t = typename Parent::Hypers_t;
     // using AtomTypes_ref = AtomicStructure<traits::Dim>::AtomTypes_ref;
 
     static_assert(traits::MaxOrder == 2,
@@ -461,6 +462,9 @@ namespace rascal {
                          std::tuple<double, bool> tp)
         : AdaptorNeighbourList(manager, std::get<0>(tp), std::get<1>(tp)) {}
 
+    AdaptorNeighbourList(ImplementationPtr_t manager, const Hypers_t& adaptor_hypers)
+        : AdaptorNeighbourList(manager, adaptor_hypers.at("cutoff").template get<double>(),optional_argument(adaptor_hypers)) {}
+
     //! Copy constructor
     AdaptorNeighbourList(const AdaptorNeighbourList & other) = delete;
 
@@ -476,6 +480,15 @@ namespace rascal {
 
     //! Move assignment operator
     AdaptorNeighbourList & operator=(AdaptorNeighbourList && other) = default;
+
+
+    bool optional_argument(const Hypers_t& adaptor_hypers) {
+      bool consider_ghost_neighbours{false};
+      if (adaptor_hypers.find("consider_ghost_neighbours") != adaptor_hypers.end()) {
+        consider_ghost_neighbours = adaptor_hypers["consider_ghost_neighbours"];
+      }
+      return consider_ghost_neighbours;
+    }
 
     /**
      * Updates just the adaptor assuming the underlying manager was

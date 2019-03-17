@@ -109,6 +109,31 @@ namespace rascal {
       this->positions = positions;
     }
 
+    void set_structure(const std::string& filename) {
+      json j;
+      std::ifstream reader(filename);
+      reader >> j;
+      reader.close();
+      // take the first structure of the list
+      this->set_structure(j.begin().value());
+    }
+
+    void set_structure(const json& s) {
+      if (s.count("filename") == 1) {
+        auto filename{s["filename"].get<std::string>()};
+        this->set_structure(filename);
+      } else if (s.count("cell") == 1 and
+                  s.count("atom_types") == 1 and
+                  s.count("pbc") == 1 and
+                  s.count("positions") == 1) {
+        json_io::AtomicJsonData json_atoms_object{};
+        json_atoms_object = s;
+        this->set_structure(json_atoms_object);
+      } else {
+        throw std::runtime_error("The json input was not understood.");
+      }
+    }
+
     //! method for initializing structure from a json object; data is copied
     void set_structure(const json_io::AtomicJsonData & s) {
       // internal std::vector for reading from json, necessary for push_back, no

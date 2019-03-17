@@ -97,10 +97,37 @@ int main() {
       make_adapted_manager<AdaptorStrict>(pair_manager, cutoff)};
   adaptor_strict->update(filename);
 
+  // Or use the hyper thing
+  json adaptors_hypers = R"([
+    {"name": "AdaptorNeighbourList", "initialization_arguments":{"cutoff": 2, "consider_ghost_neighbours": false}},
+    {"name": "AdaptorStrict", "initialization_arguments":{"cutoff": 2}}
+  ])"_json;
+
+  json structure_inputs {{"filename", filename}};
+
+  auto my_man = make_structure_manager_stack_hypers<StructureManagerCenters,AdaptorNeighbourList, AdaptorStrict>(structure_inputs, adaptors_hypers);
+
+  std::cout << my_man->get_name() << std::endl;
+  auto lower_manager = extract_underlying_manager<-1>(my_man);
+  std::cout << lower_manager->get_name() << std::endl;
+
+  for (auto && center : my_man) {
+    if (verbose) {
+      std::cout << center.get_atom_type() << std::endl;
+      std::cout << "################################# 2" << std::endl;
+    }
+    for (auto neigh : center) {
+      if (verbose) {
+        std::cout << neigh.get_atom_type() << std::endl;
+      }
+    }
+  }
+
+
+  // Or use a fancier helper to do it in 1 line here
   auto a1 = std::make_tuple(cutoff, false, cutoff);
   auto a0 = std::make_tuple(filename);
 
-  // Or use a fancier helper to do it in 1 line here
   using AdaptorTypeHolder_t = typename StructureManagerTypeHolder<
       StructureManagerCenters, AdaptorNeighbourList, AdaptorStrict>::type_list;
   auto aa = std::make_tuple(a0, a1);
@@ -172,14 +199,14 @@ int main() {
     }
   }
 
-  auto mat = features.get_feature_matrix();
+  // auto mat = features.get_feature_matrix();
 
-  for (size_t ii{0}; ii < mat.cols(); ii++) {
-    for (size_t jj{0}; jj < mat.rows(); jj++) {
-      std::cout << mat(jj, ii) << ", ";
-    }
-    std::cout << std::endl;
-  }
+  // for (size_t ii{0}; ii < mat.cols(); ii++) {
+  //   for (size_t jj{0}; jj < mat.rows(); jj++) {
+  //     std::cout << mat(jj, ii) << ", ";
+  //   }
+  //   std::cout << std::endl;
+  // }
 
   return (0);
 }

@@ -35,6 +35,8 @@
  */
 #include "json.hpp"
 
+#include <fstream>
+
 // For convenience
 using json = nlohmann::json;
 

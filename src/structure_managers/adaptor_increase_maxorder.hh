@@ -88,6 +88,7 @@ namespace rascal {
     using ClusterRef_t =
         typename ManagerImplementation::template ClusterRef<Order>;
     using Vector_ref = typename Parent::Vector_ref;
+    using Hypers_t = typename Parent::Hypers_t;
 
     static_assert(traits::MaxOrder > 2,
                   "ManagerImplementation needs at least a pair list for"
@@ -105,6 +106,9 @@ namespace rascal {
     explicit AdaptorMaxOrder(ImplementationPtr_t manager);
 
     AdaptorMaxOrder(ImplementationPtr_t manager, std::tuple<>)
+        : AdaptorMaxOrder(manager) {}
+
+    AdaptorMaxOrder(ImplementationPtr_t manager, const Hypers_t& adaptor_hypers)
         : AdaptorMaxOrder(manager) {}
 
     //! Copy constructor

@@ -123,6 +123,7 @@ namespace rascal {
     template <size_t Order>
     using InputClusterRef_t =
         typename ManagerImplementation::template ClusterRef<Order>;
+    using Hypers_t = typename Parent::Hypers_t;
 
     static_assert(traits::MaxOrder <= ManagerImplementation::traits::MaxOrder,
                   "can only present view on existing clusters");

@@ -125,7 +125,7 @@ namespace rascal {
     using Parent = RepresentationManagerBase;
     using Manager_t = StructureManager;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
-    using Hypers_t = Parent::Hypers_t;
+    using Hypers_t = typename Parent::Hypers_t;
     using Property_t = Property<double, 1, 1, Eigen::Dynamic, Eigen::Dynamic>;
     using ReferenceHypers_t = Parent::ReferenceHypers_t;
 

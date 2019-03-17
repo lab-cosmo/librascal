@@ -31,6 +31,8 @@
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/property.hh"
 #include "rascal_utility.hh"
+#include "json_io.hh"
+#include "atomic_structure.hh"
 
 namespace rascal {
   /**
@@ -54,6 +56,14 @@ namespace rascal {
   std::shared_ptr<Adaptor<Manager>>
   make_adapted_manager(std::shared_ptr<Manager> & arg, const Args &... args) {
     auto manager{std::make_shared<Adaptor<Manager>>(arg, args...)};
+    arg->add_child(manager->get_weak_ptr());
+    return manager;
+  }
+
+  template <template <class> class Adaptor, typename Manager>
+  std::shared_ptr<Adaptor<Manager>>
+  make_adapted_manager_json(std::shared_ptr<Manager> & arg, const json &adaptor_hypers) {
+    auto manager{std::make_shared<Adaptor<Manager>>(arg, adaptor_hypers)};
     arg->add_child(manager->get_weak_ptr());
     return manager;
   }
@@ -190,6 +200,106 @@ namespace rascal {
     return manager;
   }
 
+
+  namespace internal {
+    /**
+     */
+    template <template <class> class Adaptor, size_t HyperPos>
+    struct make_adapted_manager_hypers_util {
+      template <typename Manager_t, typename Hypers_t>
+      static constexpr auto apply(Manager_t & manager,
+                                  const Hypers_t & adaptors_hypers) {
+        const Hypers_t& adaptor_hypers{adaptors_hypers.at(HyperPos).at("initialization_arguments")};
+        return make_adapted_manager_json<Adaptor>(manager, adaptor_hypers);
+      }
+    };
+
+    /**
+     * Given an instanciated structure manager, recursively stack adaptors
+     * on it
+     * while instanciating them and create backward links (add_child).
+     * It assumes the adaptors arguments needed for constructions
+     * are gathered in tuples.
+     */
+    template <size_t CurrentPosition, typename ManagerImplementation,
+              template <class> class AdaptorImplementation,
+              template <class> class... AdaptorImplementationPack>
+    struct AdaptorFactory_hypers {
+      // static_assert(CurrentPosition < TotalLenght, "Problem in the
+      // recursion")
+      using Manager_t = AdaptorImplementation<ManagerImplementation>;
+      using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
+      using ManagerPtr_t = std::shared_ptr<Manager_t>;
+      constexpr static size_t NextPosition{CurrentPosition + 1};
+
+      using NextFactory_t =
+          AdaptorFactory_hypers<NextPosition, Manager_t, AdaptorImplementationPack...>;
+
+      //! General case
+      template <typename... Args, typename Hypers_t>
+      AdaptorFactory_hypers(ImplementationPtr_t & m, const Hypers_t & adaptors_hypers)
+          : manager{make_adapted_manager_hypers_util<AdaptorImplementation,
+                                              CurrentPosition>::apply(m, adaptors_hypers)},
+            next_stack{manager, adaptors_hypers} {}
+
+      ManagerPtr_t manager;
+      NextFactory_t next_stack;
+
+      decltype(auto) get_manager() { return this->next_stack.get_manager(); }
+    };
+
+    //! End of recursion
+    template <size_t CurrentPosition, typename ManagerImplementation,
+              template <class> class AdaptorImplementation>
+    struct AdaptorFactory_hypers<CurrentPosition, ManagerImplementation,
+                          AdaptorImplementation> {
+      using Manager_t = AdaptorImplementation<ManagerImplementation>;
+      using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
+      using ManagerPtr_t = std::shared_ptr<Manager_t>;
+      using type = Manager_t;
+      constexpr static size_t NextPosition{CurrentPosition + 1};
+
+      template <typename... Args, typename Hypers_t>
+      AdaptorFactory_hypers(ImplementationPtr_t & m, const Hypers_t & adaptors_hypers)
+          : manager{make_adapted_manager_hypers_util<AdaptorImplementation,
+                                              CurrentPosition>::apply(m, adaptors_hypers)} {}
+
+      ManagerPtr_t manager;
+
+      ManagerPtr_t get_manager() { return this->manager; }
+    };
+  }
+
+  template <typename Manager,
+            template <class> class... AdaptorImplementationPack, typename Hypers_t>
+  decltype(auto) make_structure_manager_stack_hypers(const Hypers_t& structure_inputs,
+                                              const Hypers_t& adaptor_inputs) {
+    // check input consistency
+    if (not adaptor_inputs.is_array()) {
+      throw std::runtime_error("adaptor_inputs should be a list of dictionary like objects containing the parameters to construct the adaptors.");
+    }
+
+    if (adaptor_inputs.size() != sizeof...(AdaptorImplementationPack)) {
+      throw std::runtime_error("adaptor_inputs should have as many dictionary of parameters as there are adaptors to build.");
+    }
+
+    AtomicStructure<3> structure{};
+    structure.set_structure(structure_inputs);
+    // instanciate the base manager
+    auto manager_base = make_structure_manager<Manager>();
+    // build the stack of adaptors
+    auto factory =
+        internal::AdaptorFactory_hypers<0, Manager, AdaptorImplementationPack...>(manager_base, adaptor_inputs);
+    // get the manager with the full stack
+    auto manager = factory.get_manager();
+    // give a structure to the underlying base manager
+    // and update all the stack of adaptors
+    manager->update(structure);
+
+    return manager;
+  }
+
+
   //! same as make_structure_manager_stack but with a tuple input
   template <typename Manager,
             template <class> class... AdaptorImplementationPack,
@@ -247,7 +357,45 @@ namespace rascal {
         return make_structure_manager_stack_with_tuple<MI, Ti...>(tuple);
       }
     };
+
+    /**
+     * Allow to provide a StructureManagerTypeHolder instead of the list types
+     * to make_structure_manager_stack.
+     */
+    template <typename MI, typename AdaptorTypeHolder_>
+    struct make_structure_manager_stack_with_hypers_util;
+
+    template <typename MI, template <class> class... Ti>
+    struct make_structure_manager_stack_with_hypers_util<
+        MI, AdaptorTypeHolder<Ti...>> {
+      using Manager_t = typename AdaptorTypeStacker<MI, Ti...>::type;
+      using ManagerPtr_t = std::shared_ptr<Manager_t>;
+
+      template <typename Hypers_t>
+      static ManagerPtr_t apply(const Hypers_t& structure_inputs,
+                                const Hypers_t& adaptor_inputs) {
+        return make_structure_manager_stack_hypers<MI, Ti...>(structure_inputs, adaptor_inputs);
+      }
+    };
   }  // namespace internal
+  /**
+   * Factory function to make a manager with its types provided with
+   * a StructureManagerTypeHolder and arguments packaged in two json object.
+   */
+  template <typename StructureManagerTypeHolder_>
+  struct make_structure_manager_stack_with_hypers_and_typeholder;
+
+  template <typename... T>
+  struct make_structure_manager_stack_with_hypers_and_typeholder<
+      std::tuple<T...>> {
+    template <typename Hypers_t>
+    static decltype(auto) apply(const Hypers_t& structure_inputs,
+                                const Hypers_t& adaptor_inputs) {
+      return internal::make_structure_manager_stack_with_hypers_util<
+          T...>::apply(structure_inputs, adaptor_inputs);
+    }
+  };
+
   /**
    * Factory function to make a manager with its types provided with
    * a StructureManagerTypeHolder and arguments packaged such as
@@ -265,8 +413,7 @@ namespace rascal {
           T...>::apply(tuple);
     }
   };
-  // TODO(felix) write a
-  // make_structure_manager_stack_with_Hypers_t_and_typeholder
+
   /**
    * Factory function to stack adaptors on a structure managers with a valid
    *  structure already registered.
