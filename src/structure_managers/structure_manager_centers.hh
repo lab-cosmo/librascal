@@ -82,8 +82,7 @@ namespace rascal {
   class StructureManagerCenters :
       // public inheritance of the base class
       public StructureManager<StructureManagerCenters>,
-      public std::enable_shared_from_this<StructureManagerCenters>//,
-      /*public Updateable */ {
+      private std::enable_shared_from_this<StructureManagerCenters> {
     // Publicly accessible variables and functions of the class are given
     // here. These provide the interface to access the structure and
     // subsequently calculated neighbourhood.

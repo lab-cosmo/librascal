@@ -168,7 +168,7 @@ namespace rascal {
    * class implementation
    */
   template <class ManagerImplementation>
-  class StructureManager : public StructureManagerBase, protected Updateable {
+  class StructureManager : public StructureManagerBase, public Updateable {
    public:
     using StructureManager_t = StructureManager<ManagerImplementation>;
     using traits = StructureManager_traits<ManagerImplementation>;
@@ -369,23 +369,13 @@ namespace rascal {
 
     //! Create a new shared pointer to the object
     std::shared_ptr<ManagerImplementation> get_shared_ptr() {
-      return this->implementation().shared_from_this();
+      return this->implementation().Updateable::shared_from_this();
     }
 
     //! Create a new weak pointer to the object
     std::weak_ptr<ManagerImplementation> get_weak_ptr() {
       return std::weak_ptr<ManagerImplementation>(this->get_shared_ptr());
     }
-
-    //     //! Create a new shared pointer to the object
-    // std::shared_ptr<ManagerImplementation> get_shared_ptr() {
-    //   return this->implementation().shared_from_this();
-    // }
-
-    // //! Create a new weak pointer to the object
-    // std::weak_ptr<ManagerImplementation> get_weak_ptr() {
-    //   return std::weak_ptr<ManagerImplementation>(this->get_shared_ptr());
-    // }
 
    protected:
     /**

@@ -73,8 +73,7 @@ namespace rascal {
   class AdaptorStrict
       : public StructureManager<AdaptorStrict<ManagerImplementation>>,
         public std::enable_shared_from_this<
-    AdaptorStrict<ManagerImplementation>>//,
-    /*public Updateable*/ {
+            AdaptorStrict<ManagerImplementation>> {
    public:
     using Manager_t = AdaptorStrict<ManagerImplementation>;
     using Parent = StructureManager<Manager_t>;

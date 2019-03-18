@@ -34,7 +34,7 @@
 namespace rascal {
 
   //! base class for updatable functionality
-  class Updateable : public std::enable_shared_from_this<Updateable> {
+  class Updateable : private std::enable_shared_from_this<Updateable> {
    public:
     using Children_t = std::weak_ptr<Updateable>;
 
@@ -62,22 +62,21 @@ namespace rascal {
      */
     virtual void update_children() = 0;
 
-    //! Create a new weak pointer to `Updatable`
-    Children_t get_updateable_weak_ptr() {
-      return Children_t(this->shared_from_this());
-    }
-
     /**
      * Add a stacked adaptor as a child node of the current StructureManager
-     * tree of children.
+     * tree of children. `Children_t` is a weak pointer to a manager or adaptor.
      */
-    void add_child(std::weak_ptr<Updateable> child) {
-      this->children.emplace_back(child);
+    void add_child(Children_t child) { this->children.emplace_back(child); }
+
+    //! Create a new shared pointer to `Updatable`
+    std::shared_ptr<Updateable> get_updateable_shared_ptr() {
+      return this->shared_from_this();
     }
 
-    // virtual void get_name() = 0;
-
-    // virtual decltype(auto) get_name() = 0;
+    //! Create a new weak pointer to `Updatable`
+    std::weak_ptr<Updateable> get_updateable_weak_ptr() {
+      return std::weak_ptr<Updateable>(this->shared_from_this());
+    }
 
     // virtual void update_adaptor() = 0;
     /**

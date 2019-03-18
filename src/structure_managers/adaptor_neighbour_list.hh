@@ -428,8 +428,7 @@ namespace rascal {
   class AdaptorNeighbourList
       : public StructureManager<AdaptorNeighbourList<ManagerImplementation>>,
         public std::enable_shared_from_this<
-    AdaptorNeighbourList<ManagerImplementation>> //,
-    /*public Updateable*/ {
+    AdaptorNeighbourList<ManagerImplementation>> {
    public:
     using Manager_t = AdaptorNeighbourList<ManagerImplementation>;
     using Parent = StructureManager<Manager_t>;
