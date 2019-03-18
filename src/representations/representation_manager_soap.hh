@@ -46,7 +46,6 @@
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
 
-
 namespace rascal {
 
   namespace internal {
@@ -92,6 +91,14 @@ namespace rascal {
       return this->soap_vectors.get_raw_data();
     }
 
+    size_t get_feature_size() {
+      return this->soap_vectors.get_nb_comp();
+    }
+  
+    size_t get_center_size() { 
+      return this->soap_vectors.get_nb_item(); 
+    }
+
     //! compute representation
     void compute();
 
@@ -101,13 +108,13 @@ namespace rascal {
     //! compute representation \nu == 2
     void compute_powerspectrum();
 
+    SparseProperty_t soap_vectors;
 
    protected:
    private:
     size_t max_radial{};
     size_t max_angular{};
     Manager_t & structure_manager;
-    SparseProperty_t soap_vectors;
     RepresentationManagerSphericalExpansion<Manager_t> rep_expansion;
     internal::SOAPType soap_type{};
     std::string soap_type_str{};
@@ -150,11 +157,10 @@ namespace rascal {
       for (const auto& el1: coefficients) {
         pair_type[0] = el1.first[0];
         auto& coef1{el1.second};
-        auto& species1{el1.first};
         for (const auto& el2: coefficients) {
-          pair_type[1] = el2.first[1];
+          pair_type[1] = el2.first[0];
+          //pair_type[1] = el2.first[1];
           auto& coef2{el2.second};
-          auto& species2{el2.first};
           /* avoid computing p^{ab} and p^{ba} since p^{ab} = p^{ba}^T
           */
           if (soap_vector.count(pair_type) == 0) {
@@ -166,9 +172,16 @@ namespace rascal {
                 for (size_t l = 0; l < this->max_angular+1; l++) {
                   // TODO(andrea) pre compute l_factor
                   double l_factor{1 / std::sqrt(2*l+1)};
-                  for (size_t m = 0; m < 2*this->max_angular+1; m++) {
-                    soap_vector[element_pair][nn,l] += l_factor *
-                                          coef1[n1,lm] * coef2[n2,lm];
+                  for (size_t m = 0; m < 2*l + 1; m++) {
+                    // std::cout << n1 << std::endl;
+                    // std::cout << n2 << std::endl;
+                    // std::cout << lm << std::endl;
+                    // std::cout << coef1.rows() << std::endl;
+                    // std::cout << coef1.cols() << std::endl;
+                    // std::cout << coef2.rows() << std::endl;
+                    // std::cout << coef2.cols() << std::endl;
+                    soap_vector[pair_type](nn, l) += l_factor *
+                                          coef1(n1, lm) * coef2(n2, lm);
                     lm++;
                   }
                 }
@@ -201,11 +214,9 @@ namespace rascal {
       for (const auto& el1: coefficients) {
         pair_type[0] = el1.first[0];
         auto& coef1{el1.second};
-        auto& species1{el1.first};
         for (const auto& el2: coefficients) {
-          pair_type[1] = el2.first[1];
+          pair_type[1] = el2.first[0];
           auto& coef2{el2.second};
-          auto& species2{el2.first};
           // TODO(andrea) write the case nu == 1
           /* avoid computing p^{ab} and p^{ba} since p^{ab} = p^{ba}^T
           */
@@ -217,8 +228,8 @@ namespace rascal {
                 size_t lm{0};
                 for (size_t l = 0; l < this->max_angular+1; l++) {
                   for (size_t m = 0; m < 2*this->max_angular+1; m++) {
-                    soap_vector[element_pair][nn,l] +=
-                                          coef1[n1,lm] * coef2[n2,lm];
+                    soap_vector[pair_type](nn, l) +=
+                                          coef1(n1, lm) * coef2(n2, lm);
                     lm++;
                   }
                 }

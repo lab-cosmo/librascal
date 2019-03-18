@@ -36,11 +36,11 @@
 #include "representations/representation_manager_base.hh"
 #include "representations/representation_manager_sorted_coulomb.hh"
 #include "representations/representation_manager_spherical_expansion.hh"
+#include "representations/representation_manager_soap.hh"
 
 #include "representations/feature_manager_base.hh"
 #include "representations/feature_manager_dense.hh"
 #include "representations/feature_manager_block_sparse.hh"
-
 
 #include "structure_managers/structure_manager_centers.hh"
 #include "structure_managers/structure_manager_lammps.hh"

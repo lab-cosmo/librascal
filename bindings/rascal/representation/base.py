@@ -1,7 +1,6 @@
 from ..lib import RepresentationManager
 
-_representations_list = ["coulomb", "sphericalexpansion"]
-
+_representations_list = ["coulomb", "sphericalexpansion", "soap"]
 
 _representations = {}
 for k, v in RepresentationManager.__dict__.items():
