@@ -34,6 +34,7 @@
 #include "representations/representation_manager_spherical_expansion.hh"
 #include "representations/feature_manager_dense.hh"
 #include "basic_types.hh"
+#include "named_tuple.hh"
 
 #include <Eigen/StdVector>
 
@@ -41,6 +42,7 @@
 #include <basic_types.hh>
 #include <cmath>
 #include <list>
+#include <functional>
 
 // using namespace std;
 using namespace rascal;  // NOLINT
@@ -80,8 +82,177 @@ using Representation_t = RepresentationManagerSphericalExpansion<
 //   std::list<std::shared_ptr<Manager_t>> managers{};
 // };
 
+
+
+
+// template <size_t CurrentPosition, typename ManagerImplementation,
+//           template <class> class AdaptorImplementation,
+//           template <class> class... AdaptorImplementationPack>
+// struct FactoryMap {
+//   using Manager_t = AdaptorImplementation<ManagerImplementation>;
+//   using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
+//   using ManagerPtr_t = std::shared_ptr<Manager_t>;
+//   constexpr static size_t NextPosition{CurrentPosition + 1};
+
+//   using NextFactory_t = FactoryMap<NextPosition, Manager_t,
+//                                               AdaptorImplementationPack...>;
+
+//   //! General case
+//   template <typename... Args, typename Hypers_t>
+//   FactoryMap(ImplementationPtr_t & m,
+//                         const Hypers_t & adaptors_hypers)
+//       : manager{make_adapted_manager_hypers_util<
+//             AdaptorImplementation,
+//             CurrentPosition>::apply(m, adaptors_hypers)},
+//         next_stack{manager, adaptors_hypers} {}
+
+//   ManagerPtr_t manager;
+//   NextFactory_t next_stack;
+
+//   decltype(auto) get_manager() { return this->next_stack.get_manager(); }
+// };
+
+// //! End of recursion
+// template <size_t CurrentPosition, typename ManagerImplementation,
+//           template <class> class AdaptorImplementation>
+// struct FactoryMap<CurrentPosition, ManagerImplementation,
+//                               AdaptorImplementation> {
+//   using Manager_t = AdaptorImplementation<ManagerImplementation>;
+//   using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
+//   using ManagerPtr_t = std::shared_ptr<Manager_t>;
+//   using type = Manager_t;
+//   constexpr static size_t NextPosition{CurrentPosition + 1};
+
+//   template <typename... Args, typename Hypers_t>
+//   FactoryMap(ImplementationPtr_t & m,
+//                         const Hypers_t & adaptors_hypers)
+//       : manager{make_adapted_manager_hypers_util<
+//             AdaptorImplementation,
+//             CurrentPosition>::apply(m, adaptors_hypers)} {}
+
+//   ManagerPtr_t manager;
+
+//   ManagerPtr_t get_manager() { return this->manager; }
+// };
+
+
+// template <typename ManagerImplementation,
+//           template <class> class AdaptorImplementation,
+//           template <class> class... AdaptorImplementationPack>
+// struct AdaptorTypeList {
+//   using Manager_t = AdaptorImplementation<ManagerImplementation>;
+//   using type =
+//       typename AdaptorTypeStacker<Manager_t,
+//                                   AdaptorImplementationPack...>::type;
+// };
+
+// template <typename ManagerImplementation,
+//           template <class> class AdaptorImplementation>
+// struct AdaptorTypeList<ManagerImplementation, AdaptorImplementation> {
+//   using type = AdaptorImplementation<ManagerImplementation>;
+// };
+
+template<char x, char... xs>
+struct hash_calc {
+    static constexpr std::uint64_t apply () {
+       return  (hash_calc<xs...>::apply() ^ x) * 16777619u;
+    };
+};
+
+template<char x>
+struct hash_calc<x> {
+    static constexpr std::uint64_t apply () {
+       return  2166136261u;
+    };
+};
+
+template<char... xs>
+constexpr std::uint64_t hash () {
+    return hash_calc<xs...>::apply();
+}
+
+// only clang/gcc compatible
+template <typename Char, Char... Cs>
+constexpr auto operator""_c() {
+  // constexpr auto hash_{foonathan::string_id::detail::sid_hash(s)};
+  // return std::integral_constant<std::size_t, hash<Cs...>()>{};
+  return fn_detail::make_named_param< std::integral_constant<foonathan::string_id::detail::hash_type, hash<Cs...>()> >{};
+};
+
+
+template <typename Tuple1, size_t... Indices1, typename Tuple2, size_t... Indices2>
+decltype(auto) tuple_cat1(Tuple1&& tup1, Tuple2&& tup2,
+                std::index_sequence<Indices1...>, std::index_sequence<Indices2...>)
+{
+  auto aa = make_named_tuple(
+    get<Indices1>(std::forward<Tuple1>(tup1))...,
+    get<Indices2>(std::forward<Tuple2>(tup2))...
+  );
+  // std::cout << aa;
+  return aa;
+}
+
+template< class T >
+class named_tuple_size;
+
+template< class... Types >
+class named_tuple_size< fn_detail::named_tuple<Types...> >
+  : public std::integral_constant<std::size_t, sizeof...(Types)> { };
+
+
+template <typename Tuple1, typename Tuple2>
+decltype(auto) named_tuple_cat(Tuple1&& tup1, Tuple2&& tup2)
+{
+  tuple_cat1(
+   std::forward<Tuple1>(tup1),
+   std::forward<Tuple2>(tup2),
+   std::make_index_sequence<named_tuple_size<std::decay_t<Tuple1>>::value>{},
+   std::make_index_sequence<named_tuple_size<std::decay_t<Tuple2>>::value>{}
+  );
+}
+
+
+
 int main() {
-  bool verbose{false};
+
+
+  // auto tup1 = make_named_tuple("first"_c = 3, "second"_c = 12.7);
+  // auto first = tup1["first"_c];
+  // auto second = tup1["second"_c];
+  // std::cout << first << ", " << second << std::endl;
+  // auto tup2 = make_named_tuple("third"_c = 3.14);
+  // std::cout << tup2.get_by_index<0>()  << std::endl;
+
+  // // auto tup3 = named_tuple_cat(tup1, tup2);
+  // // auto third = tup3["third"_c];
+  // // // fn_detail::named_tuple<fn_detail::named_param<std::integral_constant<long unsigned int, 10726708487119078247>, int> , fn_detail::named_param<
+  // std::cout << third  << std::endl;
+
+  auto func1 = []( auto a, auto b ) {
+          return make_structure_manager_stack<
+          StructureManagerCenters,AdaptorNeighbourList>(a,b);
+        };
+
+  auto factory_map1 = make_named_tuple(
+      // "first"_c = aa,
+      "first"_c = func1
+    );
+
+  // std::cout << factory_map1;
+  auto func = []( auto a, auto b ) {
+          return make_structure_manager_stack<
+          StructureManagerCenters,AdaptorNeighbourList,AdaptorStrict>(a,b);
+        };
+
+  auto factory_map2 = make_named_tuple(
+      // "first"_c = aa,
+      "second"_c = func
+    );
+
+  // auto factory_map = named_tuple_cat(factory_map1, factory_map2);
+  // std::cout << named_tuple_cat(factory_map1, factory_map2);
+
+  bool verbose{true};
   bool verbose_rep{false};
   double cutoff{2.};
   bool consider_ghost_neighbours{false};
@@ -106,25 +277,27 @@ int main() {
 
   json structure_inputs{{"filename", filename}};
 
-  auto my_man =
-      make_structure_manager_stack<StructureManagerCenters,
-                                   AdaptorNeighbourList, AdaptorStrict>(
-          structure_inputs, adaptors_hypers);
-
+  // auto my_man =
+  //     make_structure_manager_stack<StructureManagerCenters,
+  //                                  AdaptorNeighbourList, AdaptorStrict>(
+  //         structure_inputs, adaptors_hypers);
+  // const auto second = factory_map2["second"_c];
+  auto my_man = factory_map2["second"_c](structure_inputs, adaptors_hypers);
   std::cout << my_man->get_name() << std::endl;
   auto lower_manager = extract_underlying_manager<-1>(my_man);
   std::cout << lower_manager->get_name() << std::endl;
 
   for (auto && center : my_man) {
     if (verbose) {
-      std::cout << center.get_atom_type() << std::endl;
       std::cout << "################################# 2" << std::endl;
+      std::cout << center.get_atom_type() << std::endl;
     }
     for (auto neigh : center) {
       if (verbose) {
-        std::cout << neigh.get_atom_type() << std::endl;
+        std::cout << neigh.get_atom_type() << ", ";
       }
     }
+    if (verbose) std::cout << std::endl;
   }
 
   // // Or use a fancier helper to do it in 1 line here

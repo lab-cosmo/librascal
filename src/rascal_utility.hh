@@ -68,6 +68,10 @@ namespace rascal {
     };
 
     /* ---------------------------------------------------------------------- */
+    /*
+     The following utilities for unpacking tuples are closely inspired by:
+     http://aherrmann.github.io/programming/2016/02/28/unpacking-tuples-in-cpp14/ // NOLINT
+    */
     /**
      * Implementation of the generation of an index sequence from Min to Max
      */
