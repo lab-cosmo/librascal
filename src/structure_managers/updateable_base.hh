@@ -29,12 +29,14 @@
 #ifndef SRC_STRUCTURE_MANAGERS_UPDATEABLE_BASE_HH_
 #define SRC_STRUCTURE_MANAGERS_UPDATEABLE_BASE_HH_
 
+
 #include <memory>
+#include <vector>
 
 namespace rascal {
 
   //! base class for updatable functionality
-  class Updateable : private std::enable_shared_from_this<Updateable> {
+  class Updateable {
    public:
     using Children_t = std::weak_ptr<Updateable>;
 
@@ -68,15 +70,15 @@ namespace rascal {
      */
     void add_child(Children_t child) { this->children.emplace_back(child); }
 
-    //! Create a new shared pointer to `Updatable`
-    std::shared_ptr<Updateable> get_updateable_shared_ptr() {
-      return this->shared_from_this();
-    }
+    // //! Create a new shared pointer to `Updatable`
+    // std::shared_ptr<Updateable> get_updateable_shared_ptr() {
+    //   return this->shared_from_this();
+    // }
 
-    //! Create a new weak pointer to `Updatable`
-    std::weak_ptr<Updateable> get_updateable_weak_ptr() {
-      return std::weak_ptr<Updateable>(this->shared_from_this());
-    }
+    // //! Create a new weak pointer to `Updatable`
+    // std::weak_ptr<Updateable> get_updateable_weak_ptr() {
+    //   return std::weak_ptr<Updateable>(this->shared_from_this());
+    // }
 
     // virtual void update_adaptor() = 0;
     /**

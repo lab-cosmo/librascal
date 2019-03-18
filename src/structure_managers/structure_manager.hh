@@ -36,7 +36,6 @@
 #include "structure_managers/structure_manager_base.hh"
 #include "structure_managers/property.hh"
 #include "structure_managers/cluster_ref_key.hh"
-#include "structure_managers/updateable_base.hh"
 #include "rascal_utility.hh"
 
 //! Some data types and operations are based on the Eigen library
@@ -168,7 +167,7 @@ namespace rascal {
    * class implementation
    */
   template <class ManagerImplementation>
-  class StructureManager : public StructureManagerBase, public Updateable {
+  class StructureManager : public StructureManagerBase {
    public:
     using StructureManager_t = StructureManager<ManagerImplementation>;
     using traits = StructureManager_traits<ManagerImplementation>;
@@ -369,7 +368,7 @@ namespace rascal {
 
     //! Create a new shared pointer to the object
     std::shared_ptr<ManagerImplementation> get_shared_ptr() {
-      return this->implementation().Updateable::shared_from_this();
+      return this->implementation().shared_from_this();
     }
 
     //! Create a new weak pointer to the object
