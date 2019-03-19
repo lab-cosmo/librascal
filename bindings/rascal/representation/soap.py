@@ -72,6 +72,9 @@ class SOAP(object):
             n_species=n_species,
             soap_type=soap_type)
 
+        if soap_type == "RadialSpectrum":
+            self.update_hyperparameters(max_angular=0)
+
     def update_hyperparameters(self, **hypers):
         """Store the given dict of hyperparameters
 
@@ -121,9 +124,11 @@ class SOAP(object):
         (this is the descriptor size per atomic centre)
 
         """
-        #assumes the representation is the power spectrum for now
+        if self.hypers['soap_type'] == 'RadialSpectrum':
+            return (self.hypers['n_species']*self.hypers['max_radial'])
         if self.hypers['soap_type'] == 'PowerSpectrum':
             return (self.hypers['n_species']**2*self.hypers['max_radial']**2
                     *(self.hypers['max_angular'] + 1))
         else:
-            raise RuntimeError('Only soap_type = PowerSpectrum implemented for now')
+            raise RuntimeError('Only soap_type = RadialSpectrum || '
+                               'PowerSpectrum implemented for now')
