@@ -16,7 +16,7 @@ import sys
 
 test_hypers = {"interaction_cutoff": 4.0,
                "cutoff_smooth_width": 0.0, 
-               "max_radial": 8,
+               "max_radial": 25,
                "max_angular": 6,
                "gaussian_sigma_type": "Constant",
                "gaussian_sigma_constant": 0.3,
@@ -24,7 +24,7 @@ test_hypers = {"interaction_cutoff": 4.0,
 
 nmax = test_hypers["max_radial"]
 lmax = test_hypers["max_angular"]
-nstr = 100
+nstr = 10
 
 ##########################################################################################
 
@@ -58,6 +58,7 @@ for i in range(ncen):
   norm = np.linalg.norm(y[i])
   if norm > 1.0e-20: y[i] /= norm
 
+#build the kernel
 kernel = np.dot(y, y.T)
 print(kernel)
-#np.save('kernel_soap_example.npy', kernel)
+np.save('kernel_soap_example.npy', kernel)

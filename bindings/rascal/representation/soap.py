@@ -7,7 +7,7 @@ from .base import RepresentationFactory
 class SOAP(object):
 
     """
-    Computes the spherical expansion of the neighbour density [soap]
+    Computes a SOAP representation, e.g. power spectrum etc.
 
     Hyperparameters
     ----------
@@ -35,6 +35,10 @@ class SOAP(object):
     gaussian_sigma_constant : float
         Specifies the atomic Gaussian widths, in the case where they're
         fixed.
+
+    soap_type : string
+        Specifies the type of representation to be computed
+        (power spectrum etc.).
 
     Methods
     -------
@@ -112,10 +116,14 @@ class SOAP(object):
         return features
 
     def get_num_coefficients(self):
-        """Return the number of coefficients in the spherical expansion
+        """Return the number of coefficients in the representation
 
         (this is the descriptor size per atomic centre)
 
         """
-        return (self.hypers['n_species']**2*self.hypers['max_radial']**2
-                *(self.hypers['max_angular'] + 1))
+        #assumes the representation is the power spectrum for now
+        if self.hypers['soap_type'] == 'PowerSpectrum':
+            return (self.hypers['n_species']**2*self.hypers['max_radial']**2
+                    *(self.hypers['max_angular'] + 1))
+        else:
+            raise RuntimeError('Only soap_type = PowerSpectrum implemented for now')

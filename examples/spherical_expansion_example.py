@@ -72,4 +72,4 @@ for icen in range(ncen):
 #build the kernel
 kernel = np.dot(power,power.T)
 print(kernel)
-#np.save("kernel_spherical_expansion_example.npy", kernel)
+np.save("kernel_spherical_expansion_example.npy", kernel)
