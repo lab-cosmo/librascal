@@ -173,43 +173,41 @@ constexpr std::uint64_t hash () {
 
 // only clang/gcc compatible
 template <typename Char, Char... Cs>
-constexpr auto operator""_c() {
+constexpr auto operator""_hash() {
   // constexpr auto hash_{foonathan::string_id::detail::sid_hash(s)};
   // return std::integral_constant<std::size_t, hash<Cs...>()>{};
   return fn_detail::make_named_param< std::integral_constant<foonathan::string_id::detail::hash_type, hash<Cs...>()> >{};
 };
 
 
-template <typename Tuple1, size_t... Indices1, typename Tuple2, size_t... Indices2>
-decltype(auto) tuple_cat1(Tuple1&& tup1, Tuple2&& tup2,
-                std::index_sequence<Indices1...>, std::index_sequence<Indices2...>)
-{
-  auto aa = make_named_tuple(
-    get<Indices1>(std::forward<Tuple1>(tup1))...,
-    get<Indices2>(std::forward<Tuple2>(tup2))...
-  );
-  // std::cout << aa;
-  return aa;
-}
+// template <typename Tuple1, size_t... Indices1, typename Tuple2, size_t... Indices2>
+// decltype(auto) tuple_cat1(Tuple1&& tup1, Tuple2&& tup2,
+//                 std::index_sequence<Indices1...>, std::index_sequence<Indices2...>)
+// {
+//   return make_named_tuple(
+//     fn_detail::get<Indices1>(std::forward<Tuple1>(tup1))...,
+//     fn_detail::get<Indices2>(std::forward<Tuple2>(tup2))...
+//   );
+// }
 
-template< class T >
-class named_tuple_size;
+// template< class T >
+// class named_tuple_size;
 
-template< class... Types >
-class named_tuple_size< fn_detail::named_tuple<Types...> >
-  : public std::integral_constant<std::size_t, sizeof...(Types)> { };
+// template< class... Types >
+// class named_tuple_size< fn_detail::named_tuple<Types...> >
+//   : public std::integral_constant<std::size_t, sizeof...(Types)> { };
 
 
-template <typename Tuple1, typename Tuple2>
-decltype(auto) named_tuple_cat(Tuple1&& tup1, Tuple2&& tup2)
-{
-  tuple_cat1(
-   std::forward<Tuple1>(tup1),
-   std::forward<Tuple2>(tup2),
-   std::make_index_sequence<named_tuple_size<std::decay_t<Tuple1>>::value>{},
-   std::make_index_sequence<named_tuple_size<std::decay_t<Tuple2>>::value>{}
-  );
-}
+// template <typename Tuple1, typename Tuple2>
+// decltype(auto) named_tuple_cat(Tuple1&& tup1, Tuple2&& tup2)
+// {
+//   return tuple_cat1(
+//    std::forward<Tuple1>(tup1),
+//    std::forward<Tuple2>(tup2),
+//    std::make_index_sequence<named_tuple_size<std::decay_t<Tuple1>>::value>{},
+//    std::make_index_sequence<named_tuple_size<std::decay_t<Tuple2>>::value>{}
+//   );
+// }
 
 
 
@@ -228,26 +226,27 @@ int main() {
   // // // fn_detail::named_tuple<fn_detail::named_param<std::integral_constant<long unsigned int, 10726708487119078247>, int> , fn_detail::named_param<
   // std::cout << third  << std::endl;
 
-  auto func1 = []( auto a, auto b ) {
+  auto func1 = []( json a, json b ) {
           return make_structure_manager_stack<
           StructureManagerCenters,AdaptorNeighbourList>(a,b);
         };
 
   auto factory_map1 = make_named_tuple(
       // "first"_c = aa,
-      "first"_c = func1
+      "first"_hash = func1
     );
 
   // std::cout << factory_map1;
-  auto func = []( auto a, auto b ) {
+  auto func = []( json a, json b ) {
           return make_structure_manager_stack<
           StructureManagerCenters,AdaptorNeighbourList,AdaptorStrict>(a,b);
         };
 
   auto factory_map2 = make_named_tuple(
       // "first"_c = aa,
-      "second"_c = func
+      "second"_hash = func
     );
+
 
   // auto factory_map = named_tuple_cat(factory_map1, factory_map2);
   // std::cout << named_tuple_cat(factory_map1, factory_map2);
@@ -277,12 +276,12 @@ int main() {
 
   json structure_inputs{{"filename", filename}};
 
-  // auto my_man =
-  //     make_structure_manager_stack<StructureManagerCenters,
-  //                                  AdaptorNeighbourList, AdaptorStrict>(
-  //         structure_inputs, adaptors_hypers);
-  // const auto second = factory_map2["second"_c];
-  auto my_man = factory_map2["second"_c](structure_inputs, adaptors_hypers);
+  auto my_man =
+      make_structure_manager_stack<StructureManagerCenters,
+                                   AdaptorNeighbourList, AdaptorStrict>(
+          structure_inputs, adaptors_hypers);
+  // const auto second = factory_map2["second"_hash];
+  // auto my_man = factory_map2["second"_hash](structure_inputs, adaptors_hypers);
   std::cout << my_man->get_name() << std::endl;
   auto lower_manager = extract_underlying_manager<-1>(my_man);
   std::cout << lower_manager->get_name() << std::endl;

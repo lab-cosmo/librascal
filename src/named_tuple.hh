@@ -28,6 +28,7 @@ namespace fn_detail {
       /// Named parameter (could be empty!)
     template <typename Hash, class... Ts>
     struct named_param {
+
       const std::tuple<std::decay_t<Ts>...> data;
 
       using hash = Hash;                                                              ///< key
@@ -41,7 +42,7 @@ namespace fn_detail {
         { };
 
       template<size_t index>
-      const NthTypeOf<index> get() const {
+      const NthTypeOf<index>& get() const {
         return std::get<index>(this->data);
       }
 
@@ -71,44 +72,46 @@ namespace fn_detail {
 
         template<std::size_t I = 0, typename Hash>
         constexpr typename std::enable_if<I == sizeof...(Params), const std::size_t>::type
-        static get_element_index()
-        {
+        static get_element_index() {
             return error;
         }
 
         template<std::size_t I = 0, typename Hash>
         constexpr typename std::enable_if<I < sizeof...(Params), const std::size_t>::type
-        static get_element_index()
-        {
+        static get_element_index() {
             using elementType = typename std::tuple_element<I, std::tuple<Params...>>::type;
             //return (typeid(typename elementType::hash) == typeid(Hash)) ? I : get_element_index<I + 1, Hash>();
             return (std::is_same<typename elementType::hash, Hash>::value) ? I : get_element_index<I + 1, Hash>();
         }
 
         template<typename Hash>
-        const auto& get() const
-        {
-            constexpr std::size_t index = get_element_index<0, Hash>();
-            static_assert((index != error), "Wrong named tuple key");
-            const auto& param = std::get< index >(this->data);
-            return param.template get<0>();
+        const auto& get() const {
+          constexpr std::size_t index = get_element_index<0, Hash>();
+          static_assert((index != error), "Wrong named tuple key");
+          const auto& param = std::get< index >(this->data);
+          return param.template get<0>();
         }
 
         template<size_t index>
-        const auto& get_by_index() const
-        {
-            // std::cout << sizeof...(Params) << std::endl;
-            static_assert((index <= sizeof...(Params)), "Wrong named tuple index");
+        const auto& get_by_index() const {
+          // std::cout << sizeof...(Params) << std::endl;
+          static_assert((index <= sizeof...(Params)), "Wrong named tuple index");
 
-            const auto& param = std::get< index >(this->data);
-            return param.template get<0>();
+          const auto& param = std::get< index >(this->data);
+          return param.template get<0>();
         }
 
+        template<size_t index>
+        const auto& get_item_by_index() const {
+          // std::cout << sizeof...(Params) << std::endl;
+          static_assert((index <= sizeof...(Params)), "Wrong named tuple index");
 
+          const auto& param = std::get< index >(this->data);
+          return param;
+        }
 
         template<typename NP>
-        const auto& operator[](NP&& /*param*/)
-        {
+        const auto& operator[](NP&& /*param*/) {
           return get<typename NP::hash>();
         }
 
@@ -126,14 +129,17 @@ namespace fn_detail {
     // }
 
     template<size_t index, typename... Params>
-    constexpr NthTypeOf<index,Params...> get(named_tuple<Params...>& tup) noexcept
+    const auto& get(const named_tuple<Params...>& tup) noexcept
     {
-      return std::get<NthTypeOf<index,Params...>>(tup.data);
+      // return std::get<NthTypeOf<index,std::decay_t<Params>...>>(tup.data);
+      // return tup.template get_item_by_index<index>();
+      using hash = typename NthTypeOf<index,std::decay_t<Params>...>::hash;
+      return tup.template get<hash>();
     }
 }
 
 template <typename... Args>
-auto make_named_tuple(Args&&... args)
+decltype(auto) make_named_tuple(Args&&... args)
 {
     return fn_detail::named_tuple<Args...>(std::forward<Args>(args)...);
 }
