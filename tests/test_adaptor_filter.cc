@@ -39,13 +39,8 @@ namespace rascal {
 
   template <class ManagerImplementation, size_t MaxOrder>
   struct FilterFixture {
-    class Filter_t : public AdaptorFilter<ManagerImplementation, MaxOrder>//,
-                     // public std::enable_shared_from_this<Filter_t>
-    {
+    class Filter_t : public AdaptorFilter<ManagerImplementation, MaxOrder> {
       using AdaptorFilter<ManagerImplementation, MaxOrder>::AdaptorFilter;
-      // using shared_parent = std::enable_shared_from_this<
-      //     AdaptorFilter<ManagerImplementation, MaxOrder>>;
-      // using shared_parent::shared_from_this;
       void perform_filtering() final{};
     };
 

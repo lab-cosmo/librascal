@@ -161,7 +161,7 @@ namespace rascal {
     inline void reset_initial_state();
 
     //! updates the underlying adaptor
-    inline void update() {
+    inline void update_adaptor() {
       this->reset_initial_state();
       this->perform_filtering();
     }
@@ -342,7 +342,7 @@ namespace rascal {
     }
 
     //! underlying manager to be filtered
-    ManagerImplementation & manager;
+    ImplementationPtr_t manager;
 
     /**
      * store atom indices per order,i.e.
