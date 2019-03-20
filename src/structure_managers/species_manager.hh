@@ -50,7 +50,6 @@ namespace rascal {
       template <size_t Order>
       using Key_t = std::array<int, Order>;
       template <size_t Order, class SpeciesManager>
-      // should this value be of Updateable type?
       using Value_t =
           std::unique_ptr<typename SpeciesManager::template Filter<Order>>;
       template <size_t Order, class SpeciesManager>
@@ -100,11 +99,16 @@ namespace rascal {
    * ```
    */
   template <class ManagerImplementation, size_t MaxOrder>
-  class SpeciesManager : public Updateable {
+  class SpeciesManager : public Updateable,
+                         public std::enable_shared_from_this<
+                             SpeciesManager<ManagerImplementation, MaxOrder>> {
    public:
     using traits = StructureManager_traits<ManagerImplementation>;
     template <size_t NbElements>
-    using SpeciesMap_t = internal::detail::Map_t<NbElements, SpeciesManager>;
+    using SpeciesMap_t =
+        internal::detail::Map_t<NbElements, ManagerImplementation>;
+    using Manager_t = SpeciesManager<ManagerImplementation, MaxOrder>;
+    using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
 
     /**
      * implementation of AdaptorFilter for species filtering
@@ -121,7 +125,7 @@ namespace rascal {
     //! Default constructor
     SpeciesManager() = delete;
 
-    explicit SpeciesManager(ManagerImplementation & manager);
+    explicit SpeciesManager(ImplementationPtr_t manager);
 
     //! Copy constructor
     SpeciesManager(const SpeciesManager & other) = delete;
@@ -152,6 +156,17 @@ namespace rascal {
       this->structure_manager.update(arguments...);
     }
 
+    /**
+     * function for updating children, which means basically filtering again
+     * based on the changes of the underlying adaptor(stack)
+     */
+    void update_children() final {
+      if (not this->get_update_status()) {
+        this->update();
+        this->set_update_status(true);
+      }
+    }
+
     template <size_t Order>
     Filter<Order> & operator[](const std::array<int, Order> & species_indices) {
       auto & filter_map{std::get<Order - 1>(this->filters)};
@@ -178,7 +193,7 @@ namespace rascal {
 
    protected:
     //! underlying structure manager to be filtered upon update()
-    ManagerImplementation & structure_manager;
+    ImplementationPtr_t structure_manager;
     //! storage by cluster order for the filtered managers
     FilterContainer_t filters;
   };
@@ -190,12 +205,13 @@ namespace rascal {
    public:
     using SpeciesManager_t = SpeciesManager<ManagerImplementation, MaxOrder>;
     using Parent = AdaptorFilter<ManagerImplementation, Order>;
+    using ImplementationPtr_t = std::shared_ptr<SpeciesManager_t>;
     //! Default constructor
     Filter() = delete;
 
-    Filter(SpeciesManager_t & species_manager)
-        : Parent{species_manager.get_manager()}, species_manager{
-                                                     species_manager} {}
+    Filter(ImplementationPtr_t species_manager)
+        : Parent{species_manager->get_manager()}, species_manager{
+                                                      species_manager} {}
 
     //! Copy constructor
     Filter(const Filter & other) = delete;
@@ -215,14 +231,14 @@ namespace rascal {
     void perform_filtering() final{};
 
    protected:
-    SpeciesManager_t & species_manager;
+    ImplementationPtr_t species_manager;
   };
 
   /* ----------------------------------------------------------------------
    */
   template <class ManagerImplementation, size_t MaxOrder>
   SpeciesManager<ManagerImplementation, MaxOrder>::SpeciesManager(
-      ManagerImplementation & manager)
+      ImplementationPtr_t manager)
       : structure_manager{manager},
         filters{
             internal::get_filter_container<ManagerImplementation, MaxOrder>()} {

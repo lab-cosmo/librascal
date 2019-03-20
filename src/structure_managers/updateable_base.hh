@@ -69,16 +69,6 @@ namespace rascal {
      */
     void add_child(Children_t child) { this->children.emplace_back(child); }
 
-    // //! Create a new shared pointer to `Updatable`
-    // std::shared_ptr<Updateable> get_updateable_shared_ptr() {
-    //   return this->shared_from_this();
-    // }
-
-    // //! Create a new weak pointer to `Updatable`
-    // std::weak_ptr<Updateable> get_updateable_weak_ptr() {
-    //   return std::weak_ptr<Updateable>(this->shared_from_this());
-    // }
-
     // virtual void update_adaptor() = 0;
     /**
      * When the underlying structure changes, all computations are potentially
