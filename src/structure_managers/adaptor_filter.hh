@@ -117,8 +117,8 @@ namespace rascal {
     template <size_t Order_, class ManagerImplementation_, size_t MaxOrder_>
     friend struct internal::ClusterAdder;
 
-    using Parent =
-        StructureManager<AdaptorFilter<ManagerImplementation, MaxOrder>>;
+    using Manager_t = AdaptorFilter<ManagerImplementation, MaxOrder>;
+    using Parent = StructureManager<Manager_t>;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorFilter>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
@@ -134,7 +134,7 @@ namespace rascal {
     AdaptorFilter() = delete;
 
     //! constructor underlying manager
-    explicit AdaptorFilter(ImplementationPtr_t & manager) : manager{manager} {
+    explicit AdaptorFilter(ImplementationPtr_t  manager) : manager{manager} {
       this->reset_initial_state();
     }
 
