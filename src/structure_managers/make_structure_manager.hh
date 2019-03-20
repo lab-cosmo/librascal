@@ -325,9 +325,7 @@ namespace rascal {
 
     ManagerPtr_t manager;
 
-    decltype(auto) get_manager() {
-      return this->manager->get_shared_ptr();
-    }
+    decltype(auto) get_manager() { return this->manager->get_shared_ptr(); }
   };
 
   template <int TargetLevel, typename StructureManagerPtr>

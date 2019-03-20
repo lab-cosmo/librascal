@@ -29,7 +29,6 @@
 #ifndef SRC_STRUCTURE_MANAGERS_UPDATEABLE_BASE_HH_
 #define SRC_STRUCTURE_MANAGERS_UPDATEABLE_BASE_HH_
 
-
 #include <memory>
 #include <vector>
 
@@ -110,4 +109,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif  // SRC_STRUCTURE_MANAGERS_UPDATEABLE_BASE_HH
+#endif  // SRC_STRUCTURE_MANAGERS_UPDATEABLE_BASE_HH_

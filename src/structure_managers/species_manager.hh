@@ -50,18 +50,17 @@ namespace rascal {
       template <size_t Order>
       using Key_t = std::array<int, Order>;
       template <size_t Order, class SpeciesManager>
+      // should this value be of Updateable type?
       using Value_t =
-        std::unique_ptr<typename SpeciesManager::template Filter<Order>>;
+          std::unique_ptr<typename SpeciesManager::template Filter<Order>>;
       template <size_t Order, class SpeciesManager>
-      using Map_t =
-          std::map<Key_t<Order>, Value_t<Order, SpeciesManager>>;
+      using Map_t = std::map<Key_t<Order>, Value_t<Order, SpeciesManager>>;
     }  // namespace detail
 
     template <class SpeciesManager, size_t... OrdersMinusOne>
     auto get_filter_container_helper(
         std::index_sequence<OrdersMinusOne...> /*orders*/) -> decltype(auto) {
-      return std::tuple<
-          detail::Map_t<OrdersMinusOne + 1, SpeciesManager>...>{};
+      return std::tuple<detail::Map_t<OrdersMinusOne + 1, SpeciesManager>...>{};
     }
 
     template <class SpeciesManager, size_t MaxOrder>
@@ -105,8 +104,7 @@ namespace rascal {
    public:
     using traits = StructureManager_traits<ManagerImplementation>;
     template <size_t NbElements>
-    using SpeciesMap_t =
-        internal::detail::Map_t<NbElements, SpeciesManager>;
+    using SpeciesMap_t = internal::detail::Map_t<NbElements, SpeciesManager>;
 
     /**
      * implementation of AdaptorFilter for species filtering
@@ -155,8 +153,7 @@ namespace rascal {
     }
 
     template <size_t Order>
-    Filter<Order> &
-    operator[](const std::array<int, Order> & species_indices) {
+    Filter<Order> & operator[](const std::array<int, Order> & species_indices) {
       auto & filter_map{std::get<Order - 1>(this->filters)};
       auto location{filter_map.find(species_indices)};
 
@@ -189,45 +186,43 @@ namespace rascal {
   template <class ManagerImplementation, size_t MaxOrder>
   template <size_t Order>
   class SpeciesManager<ManagerImplementation, MaxOrder>::Filter
-      : public AdaptorFilter<ManagerImplementation, Order>
-  {
+      : public AdaptorFilter<ManagerImplementation, Order> {
    public:
-
     using SpeciesManager_t = SpeciesManager<ManagerImplementation, MaxOrder>;
     using Parent = AdaptorFilter<ManagerImplementation, Order>;
     //! Default constructor
     Filter() = delete;
 
     Filter(SpeciesManager_t & species_manager)
-        : Parent{species_manager.get_manager()},
-          species_manager{species_manager} {}
+        : Parent{species_manager.get_manager()}, species_manager{
+                                                     species_manager} {}
 
     //! Copy constructor
-    Filter(const Filter &other) = delete;
+    Filter(const Filter & other) = delete;
 
     //! Move constructor
-    Filter(Filter &&other) = delete;
+    Filter(Filter && other) = delete;
 
     //! Destructor
     virtual ~Filter() = default;
 
     //! Copy assignment operator
-    Filter& operator=(const Filter &other) = delete;
+    Filter & operator=(const Filter & other) = delete;
 
     //! Move assignment operator
-    Filter& operator=(Filter &&other) = delete;
+    Filter & operator=(Filter && other) = delete;
 
-    void perform_filtering() final {};
+    void perform_filtering() final{};
 
    protected:
-    SpeciesManager_t& species_manager;
+    SpeciesManager_t & species_manager;
   };
 
   /* ----------------------------------------------------------------------
-       */
-      template <class ManagerImplementation, size_t MaxOrder>
-      SpeciesManager<ManagerImplementation, MaxOrder>::SpeciesManager(
-          ManagerImplementation & manager)
+   */
+  template <class ManagerImplementation, size_t MaxOrder>
+  SpeciesManager<ManagerImplementation, MaxOrder>::SpeciesManager(
+      ManagerImplementation & manager)
       : structure_manager{manager},
         filters{
             internal::get_filter_container<ManagerImplementation, MaxOrder>()} {
@@ -250,7 +245,7 @@ namespace rascal {
 
       template <class Cluster>
       static void loop(Cluster & cluster, SpeciesManager_t & species_manager) {
-        constexpr auto ClusterOrder{MaxOrder-Remaining + 1};
+        constexpr auto ClusterOrder{MaxOrder - Remaining + 1};
         // reset all filters
         for (auto && tup :
              species_manager.template filters_by_nb_elements<ClusterOrder>()) {
