@@ -39,12 +39,13 @@ namespace rascal {
 
   template <class ManagerImplementation, size_t MaxOrder>
   struct FilterFixture {
-    class Filter_t : public AdaptorFilter<ManagerImplementation, MaxOrder>,
-                     public std::enable_shared_from_this<Filter_t> {
+    class Filter_t : public AdaptorFilter<ManagerImplementation, MaxOrder>//,
+                     // public std::enable_shared_from_this<Filter_t>
+    {
       using AdaptorFilter<ManagerImplementation, MaxOrder>::AdaptorFilter;
-      using shared_parent = std::enable_shared_from_this<
-          AdaptorFilter<ManagerImplementation, MaxOrder>>;
-      using shared_parent::shared_from_this;
+      // using shared_parent = std::enable_shared_from_this<
+      //     AdaptorFilter<ManagerImplementation, MaxOrder>>;
+      // using shared_parent::shared_from_this;
       void perform_filtering() final{};
     };
 
@@ -100,13 +101,13 @@ namespace rascal {
       counter++;
       const auto & pos_a{atom.get_position()};
       const auto & pos_b{
-          this->fixture.manager.get_position(atom.get_atom_index())};
+          this->fixture.manager->get_position(atom.get_atom_index())};
       const auto error{(pos_a - pos_b).norm()};
       BOOST_CHECK_EQUAL(error, 0.);
 
       const auto & atom_type_a{atom.get_atom_type()};
       const auto & atom_type_b{
-          this->fixture.manager.get_atom_type(atom.back())};
+          this->fixture.manager->get_atom_type(atom.back())};
       BOOST_CHECK_EQUAL(atom_type_a, atom_type_b);
     }
   }
@@ -144,13 +145,13 @@ namespace rascal {
 
         const auto & pos_a{pair.get_position()};
         const auto & pos_b{
-            this->fixture.manager.get_position(pair.get_atom_index())};
+            this->fixture.manager->get_position(pair.get_atom_index())};
         const auto error{(pos_a - pos_b).norm()};
         BOOST_CHECK_EQUAL(error, 0.);
 
         const auto & atom_type_a{pair.get_atom_type()};
         const auto & atom_type_b{
-            this->fixture.manager.get_atom_type(pair.back())};
+            this->fixture.manager->get_atom_type(pair.back())};
         BOOST_CHECK_EQUAL(atom_type_a, atom_type_b);
         counter++;
       }

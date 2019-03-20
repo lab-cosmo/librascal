@@ -119,6 +119,7 @@ namespace rascal {
 
     using Parent =
         StructureManager<AdaptorFilter<ManagerImplementation, MaxOrder>>;
+    using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorFilter>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
@@ -133,7 +134,7 @@ namespace rascal {
     AdaptorFilter() = delete;
 
     //! constructor underlying manager
-    explicit AdaptorFilter(ManagerImplementation & manager) : manager{manager} {
+    explicit AdaptorFilter(ImplementationPtr_t & manager) : manager{manager} {
       this->reset_initial_state();
     }
 
