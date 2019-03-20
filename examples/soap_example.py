@@ -1,4 +1,3 @@
-#!/usr/bin/python3.6 -u
 
 import sys
 sys.path.insert(0,'../build/')
@@ -14,7 +13,7 @@ import sys
 ##########################################################################################
 
 test_hypers = {"interaction_cutoff": 4.0,
-               "cutoff_smooth_width": 0.0, 
+               "cutoff_smooth_width": 0.0,
                "max_radial": 25,
                "max_angular": 6,
                "gaussian_sigma_type": "Constant",
@@ -66,7 +65,7 @@ for i in range(ncen):
 
 #------------------------------------------nu=1------------------------------------------#
 
-test_hypers["soap_type"] = "RadialSpectrum" 
+test_hypers["soap_type"] = "RadialSpectrum"
 with lrl._rascal.utils.ostream_redirect():
     soap = rascal.representation.SOAP(**test_hypers)
     print("parameters", soap.hypers)
