@@ -1,4 +1,3 @@
-#!/usr/bin/python3.6
 
 #from matplotlib import pyplot as plt
 import sys
@@ -15,7 +14,7 @@ import sys
 ##########################################################################################
 
 test_hypers = {"interaction_cutoff": 4.0,
-               "cutoff_smooth_width": 0.0, 
+               "cutoff_smooth_width": 0.0,
                "max_radial": 8,
                "max_angular": 6,
                "gaussian_sigma_type": "Constant",
