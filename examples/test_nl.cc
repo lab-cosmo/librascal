@@ -35,6 +35,7 @@
 #include "representations/feature_manager_dense.hh"
 #include "basic_types.hh"
 #include "named_tuple.hh"
+#include "enum_map.hh"
 
 #include <Eigen/StdVector>
 
@@ -43,6 +44,7 @@
 #include <cmath>
 #include <list>
 #include <functional>
+#include <initializer_list>
 
 // using namespace std;
 using namespace rascal;  // NOLINT
@@ -152,106 +154,85 @@ using Representation_t = RepresentationManagerSphericalExpansion<
 //   using type = AdaptorImplementation<ManagerImplementation>;
 // };
 
-template<char x, char... xs>
-struct hash_calc {
-    static constexpr std::uint64_t apply () {
-       return  (hash_calc<xs...>::apply() ^ x) * 16777619u;
+template<typename StructureManagerTypeHolder>
+decltype(auto) wrap_factory() {
+  return []( const json& a, const json& b ) {
+      return make_structure_manager_stack_with_hypers_and_typeholder<
+                typename StructureManagerTypeHolder::type_list>::apply(a,b);
     };
+  }
+
+// decltype(auto) dispatch_factory(std::string name) {
+//   using SMType1 = StructureManagerTypeHolder<StructureManagerCenters,AdaptorNeighbourList>;
+//   using SMType2 = StructureManagerTypeHolder<StructureManagerCenters,AdaptorNeighbourList,AdaptorStrict>;
+//   if (name == "one") {
+//     return wrap_factory<SMType1>();
+//   } else if (name == "two") {
+//     return wrap_factory<SMType2>();
+//   }
+// }
+
+
+enum class NeighbourList {LinkedCell, Strict};
+
+constexpr std::initializer_list<
+          std::pair<NeighbourList, const char*>> mapping = {
+    {NeighbourList::LinkedCell, "LinkedCell"},
+    {NeighbourList::Strict, "StrictNL"},
 };
 
-template<char x>
-struct hash_calc<x> {
-    static constexpr std::uint64_t apply () {
-       return  2166136261u;
-    };
-};
-
-template<char... xs>
-constexpr std::uint64_t hash () {
-    return hash_calc<xs...>::apply();
+constexpr const char* get_name(NeighbourList e) {
+    for (auto& p : mapping) {
+        if (e == p.first) {
+            return p.second;
+        }
+    }
+}
+constexpr NeighbourList get_e(const char* name) {
+    for (auto& p : mapping) {
+        if (name == p.second) {
+            return p.first;
+        }
+    }
 }
 
-// only clang/gcc compatible
-template <typename Char, Char... Cs>
-constexpr auto operator""_hash() {
-  // constexpr auto hash_{foonathan::string_id::detail::sid_hash(s)};
-  // return std::integral_constant<std::size_t, hash<Cs...>()>{};
-  return fn_detail::make_named_param< std::integral_constant<foonathan::string_id::detail::hash_type, hash<Cs...>()> >{};
-};
+template<NeighbourList NL>
+decltype(auto) dispatch_factory();
 
-
-// template <typename Tuple1, size_t... Indices1, typename Tuple2, size_t... Indices2>
-// decltype(auto) tuple_cat1(Tuple1&& tup1, Tuple2&& tup2,
-//                 std::index_sequence<Indices1...>, std::index_sequence<Indices2...>)
-// {
-//   return make_named_tuple(
-//     fn_detail::get<Indices1>(std::forward<Tuple1>(tup1))...,
-//     fn_detail::get<Indices2>(std::forward<Tuple2>(tup2))...
-//   );
-// }
-
-// template< class T >
-// class named_tuple_size;
-
-// template< class... Types >
-// class named_tuple_size< fn_detail::named_tuple<Types...> >
-//   : public std::integral_constant<std::size_t, sizeof...(Types)> { };
-
-
-// template <typename Tuple1, typename Tuple2>
-// decltype(auto) named_tuple_cat(Tuple1&& tup1, Tuple2&& tup2)
-// {
-//   return tuple_cat1(
-//    std::forward<Tuple1>(tup1),
-//    std::forward<Tuple2>(tup2),
-//    std::make_index_sequence<named_tuple_size<std::decay_t<Tuple1>>::value>{},
-//    std::make_index_sequence<named_tuple_size<std::decay_t<Tuple2>>::value>{}
-//   );
-// }
-
-
+template <>
+decltype(auto) dispatch_factory<NeighbourList::Strict>() {
+  using SMType2 = StructureManagerTypeHolder<StructureManagerCenters,AdaptorNeighbourList,AdaptorStrict>;
+  return wrap_factory<SMType2>();
+}
 
 int main() {
 
+  std::cout << get_name(NeighbourList::LinkedCell) << std::endl;
+  std::cout << static_cast<int>(get_e("StrictNL")) << std::endl;
 
-  // auto tup1 = make_named_tuple("first"_c = 3, "second"_c = 12.7);
-  // auto first = tup1["first"_c];
-  // auto second = tup1["second"_c];
-  // std::cout << first << ", " << second << std::endl;
-  // auto tup2 = make_named_tuple("third"_c = 3.14);
-  // std::cout << tup2.get_by_index<0>()  << std::endl;
+  using TypeList = StructureManagerTypeList<
+    StructureManagerTypeHolder<StructureManagerCenters,AdaptorNeighbourList>,
+    StructureManagerTypeHolder<
+            StructureManagerCenters,AdaptorNeighbourList,AdaptorStrict>
+              >;
+  using SMType1 = StructureManagerTypeHolder<StructureManagerCenters,AdaptorNeighbourList>;
+  using SMType2 = StructureManagerTypeHolder<StructureManagerCenters,AdaptorNeighbourList,AdaptorStrict>;
 
-  // // auto tup3 = named_tuple_cat(tup1, tup2);
-  // // auto third = tup3["third"_c];
-  // // // fn_detail::named_tuple<fn_detail::named_param<std::integral_constant<long unsigned int, 10726708487119078247>, int> , fn_detail::named_param<
-  // std::cout << third  << std::endl;
-
-  auto func1 = []( json a, json b ) {
-          return make_structure_manager_stack<
-          StructureManagerCenters,AdaptorNeighbourList>(a,b);
-        };
-
+  auto name{
+      internal::GetTypeNameHelper<typename SMType1::type>::GetTypeName()};
+  std::cout << name;
+  // std::cout << const_hash<name>();
   auto factory_map1 = make_named_tuple(
-      // "first"_c = aa,
-      "first"_hash = func1
+      make_named_value(param("LinkedCell"), wrap_factory<SMType1>())
     );
-
-  // std::cout << factory_map1;
-  auto func = []( json a, json b ) {
-          return make_structure_manager_stack<
-          StructureManagerCenters,AdaptorNeighbourList,AdaptorStrict>(a,b);
-        };
 
   auto factory_map2 = make_named_tuple(
-      // "first"_c = aa,
-      "second"_hash = func
+      make_named_value(param("StrictNL"), wrap_factory<SMType2>())
     );
 
+  auto factory_map = named_tuple_cat(factory_map1, factory_map2);
 
-  // auto factory_map = named_tuple_cat(factory_map1, factory_map2);
-  // std::cout << named_tuple_cat(factory_map1, factory_map2);
-
-  bool verbose{true};
+  bool verbose{false};
   bool verbose_rep{false};
   double cutoff{2.};
   bool consider_ghost_neighbours{false};
@@ -274,14 +255,18 @@ int main() {
     {"name": "AdaptorStrict", "initialization_arguments":{"cutoff": 2}}
   ])"_json;
 
-  json structure_inputs{{"filename", filename}};
 
-  auto my_man =
-      make_structure_manager_stack<StructureManagerCenters,
-                                   AdaptorNeighbourList, AdaptorStrict>(
-          structure_inputs, adaptors_hypers);
-  // const auto second = factory_map2["second"_hash];
-  // auto my_man = factory_map2["second"_hash](structure_inputs, adaptors_hypers);
+  json structure_inputs{{"filename", filename}};
+  // constexpr const char* name_ = "StrictNL";
+  // auto my_man = factory_map[param(name_)](structure_inputs, adaptors_hypers);
+  json name_hypers = R"([
+    {"name": "StrictNL", "initialization_arguments":{"cutoff": 2, "consider_ghost_neighbours": false}},
+    {"name": "AdaptorStrict", "initialization_arguments":{"cutoff": 2}}
+  ])"_json;
+
+  const auto E{get_name(aa)};
+  auto my_man = dispatch_factory<E>()(structure_inputs, adaptors_hypers);
+
   std::cout << my_man->get_name() << std::endl;
   auto lower_manager = extract_underlying_manager<-1>(my_man);
   std::cout << lower_manager->get_name() << std::endl;
