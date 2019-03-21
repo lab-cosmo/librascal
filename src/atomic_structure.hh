@@ -41,7 +41,6 @@
 // TODO(markus): CHECK for skewedness
 namespace rascal {
 
-
   template <int Dim>
   struct AtomicStructure {
     /**
@@ -111,11 +110,11 @@ namespace rascal {
     }
 
     void set_structure(const std::string & filename) {
-      using namespace std::literals::string_literals;
       json j;
       std::ifstream reader(filename);
       if (not reader.is_open()) {
-        throw std::runtime_error("Could not open the file: "s + filename);
+        throw std::runtime_error(std::string("Could not open the file: ") +
+                                 filename);
       }
       reader >> j;
       reader.close();
