@@ -134,7 +134,7 @@ namespace rascal {
     AdaptorFilter() = delete;
 
     //! constructor underlying manager
-    explicit AdaptorFilter(ImplementationPtr_t  manager) : manager{manager} {
+    explicit AdaptorFilter(ImplementationPtr_t manager) : manager{manager} {
       this->reset_initial_state();
     }
 

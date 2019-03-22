@@ -49,28 +49,27 @@ namespace rascal {
     namespace detail {
       template <size_t Order>
       using Key_t = std::array<int, Order>;
-      template <size_t Order, class SpeciesManager>
-      using Value_t =
-          std::unique_ptr<typename SpeciesManager::template Filter<Order>>;
-      template <size_t Order, class SpeciesManager>
-      using Map_t = std::map<Key_t<Order>, Value_t<Order, SpeciesManager>>;
+      template <class Filter>
+      using Value_t = std::unique_ptr<Filter>;
+      template <size_t Order, template <size_t> class Filter>
+      using Map_t = std::map<Key_t<Order>, Value_t<Filter<Order>>>;
     }  // namespace detail
 
-    template <class SpeciesManager, size_t... OrdersMinusOne>
+    template <template <size_t> class Filter, size_t... OrdersMinusOne>
     auto get_filter_container_helper(
         std::index_sequence<OrdersMinusOne...> /*orders*/) -> decltype(auto) {
-      return std::tuple<detail::Map_t<OrdersMinusOne + 1, SpeciesManager>...>{};
+      return std::tuple<detail::Map_t<OrdersMinusOne + 1, Filter>...>{};
     }
 
-    template <class SpeciesManager, size_t MaxOrder>
+    template <template <size_t> class Filter, size_t MaxOrder>
     auto get_filter_container() -> decltype(auto) {
-      return get_filter_container_helper<SpeciesManager>(
+      return get_filter_container_helper<Filter>(
           std::make_index_sequence<MaxOrder>{});
     }
 
-    template <class SpeciesManager, size_t MaxOrder>
+    template <template <size_t> class Filter, size_t MaxOrder>
     using FilterContainer_t =
-        decltype(get_filter_container<SpeciesManager, MaxOrder>());
+        decltype(get_filter_container<Filter, MaxOrder>());
 
   }  // namespace internal
 
@@ -104,9 +103,6 @@ namespace rascal {
                              SpeciesManager<ManagerImplementation, MaxOrder>> {
    public:
     using traits = StructureManager_traits<ManagerImplementation>;
-    template <size_t NbElements>
-    using SpeciesMap_t =
-        internal::detail::Map_t<NbElements, ManagerImplementation>;
     using Manager_t = SpeciesManager<ManagerImplementation, MaxOrder>;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
 
@@ -116,8 +112,10 @@ namespace rascal {
     template <size_t Order>
     class Filter;
 
-    using FilterContainer_t =
-        internal::FilterContainer_t<SpeciesManager, MaxOrder>;
+    template <size_t Order>
+    using SpeciesMap_t = internal::detail::Map_t<Order, Filter>;
+
+    using FilterContainer_t = internal::FilterContainer_t<Filter, MaxOrder>;
 
     static_assert(traits::MaxOrder <= MaxOrder,
                   "MaxOrder of underlying manager is insufficient.");
@@ -176,7 +174,7 @@ namespace rascal {
         // this species combo is not yet in the container, therefore
         // create new empty one
         auto new_filter{
-            std::make_unique<Filter<Order>>(this->structure_manager)};
+            std::make_unique<Filter<Order>>(*this)};
         // insertion returns a ridiculous type, see spec
         auto new_location{std::get<0>(
             filter_map.emplace(species_indices, std::move(new_filter)))};
@@ -186,9 +184,13 @@ namespace rascal {
       }
     }
 
-    template <size_t NbElements>
-    SpeciesMap_t<NbElements> & filters_by_nb_elements() {
-      return std::get<NbElements>(this->filters);
+    template <size_t Order>
+    SpeciesMap_t<Order> & filters_by_nb_elements() {
+      return std::get<Order - 1>(this->filters);
+    }
+
+    ImplementationPtr_t get_structure_manager() const {
+      return this->structure_manager;
     }
 
    protected:
@@ -205,13 +207,14 @@ namespace rascal {
    public:
     using SpeciesManager_t = SpeciesManager<ManagerImplementation, MaxOrder>;
     using Parent = AdaptorFilter<ManagerImplementation, Order>;
-    using ImplementationPtr_t = std::shared_ptr<SpeciesManager_t>;
+    using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
+
     //! Default constructor
     Filter() = delete;
 
-    Filter(ImplementationPtr_t species_manager)
-        : Parent{species_manager->get_manager()}, species_manager{
-                                                      species_manager} {}
+    Filter(SpeciesManager_t & species_manager)
+      : Parent{species_manager.get_structure_manager()},
+          species_manager{species_manager} {}
 
     //! Copy constructor
     Filter(const Filter & other) = delete;
@@ -231,7 +234,7 @@ namespace rascal {
     void perform_filtering() final{};
 
    protected:
-    ImplementationPtr_t species_manager;
+    SpeciesManager_t & species_manager;
   };
 
   /* ----------------------------------------------------------------------
@@ -240,9 +243,7 @@ namespace rascal {
   SpeciesManager<ManagerImplementation, MaxOrder>::SpeciesManager(
       ImplementationPtr_t manager)
       : structure_manager{manager},
-        filters{
-            internal::get_filter_container<ManagerImplementation, MaxOrder>()} {
-  }
+        filters{internal::get_filter_container<Filter, MaxOrder>()} {}
 
   namespace internal {
     /**
@@ -265,10 +266,11 @@ namespace rascal {
         // reset all filters
         for (auto && tup :
              species_manager.template filters_by_nb_elements<ClusterOrder>()) {
-          static_assert(tup.first.size() == ClusterOrder,
+          static_assert(std::tuple_size<decltype(tup.first)>::value ==
+                            ClusterOrder,
                         "FilterSpeciesLoop constructed with wrong template "
                         "parameters");
-          tup.second.reset_initial_state();
+          tup.second->reset_initial_state();
         }
         // refill all filters
         for (auto && next_cluster : cluster) {

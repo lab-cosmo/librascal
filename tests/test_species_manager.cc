@@ -72,6 +72,8 @@ namespace rascal {
 
     Fix::species_manager.update();
 
+    std::cout << "FixturesMax1" << std::endl;
+
     for (auto && tup : species_counter) {
       auto species{tup.first};
       auto nb_atoms{tup.second};
@@ -89,6 +91,8 @@ namespace rascal {
         species_counter[pair.get_atom_types()]++;
       }
     }
+
+    std::cout << "FixturesMax2" << std::endl;
 
     Fix::species_manager.update();
 
