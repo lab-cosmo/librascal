@@ -38,7 +38,7 @@ set(rascal_SRC
   ${CMAKE_CURRENT_SOURCE_DIR}/json_io.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/units.cc
   )
-target_sources(rascal PRIVATE ${rascal_SRC})
+target_sources("${LIBRASCAL_NAME}" PRIVATE ${rascal_SRC})
 
 target_link_libraries("${LIBRASCAL_NAME}" PUBLIC Eigen3::Eigen)
 target_link_libraries("${LIBRASCAL_NAME}" PRIVATE "${LIBCEPHES_NAME}")
