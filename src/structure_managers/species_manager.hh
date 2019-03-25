@@ -35,6 +35,7 @@
 #include "structure_managers/adaptor_filter.hh"
 #include "structure_managers/property.hh"
 #include "structure_managers/updateable_base.hh"
+#include "utils/tuple_standardisation.hh"
 
 #include <type_traits>
 #include <array>
@@ -53,6 +54,14 @@ namespace rascal {
       using Value_t = std::unique_ptr<Filter>;
       template <size_t Order, template <size_t> class Filter>
       using Map_t = std::map<Key_t<Order>, Value_t<Filter<Order>>>;
+
+      // usage of TupleStandardisation for the
+      // std::map<TupleStandardisation(species), FilterBase>
+      template<size_t Order>
+      using Key_t = TupleStandardisation<Order>(std::array<int, Order>);
+      using Value_t = std::unique_ptr<FilterBase>;
+      template<size_t Order>
+      using Map_t = std::map<Key_t<Order>, Value_t>;
     }  // namespace detail
 
     template <template <size_t> class Filter, size_t... OrdersMinusOne>
@@ -72,6 +81,17 @@ namespace rascal {
         decltype(get_filter_container<Filter, MaxOrder>());
 
   }  // namespace internal
+
+  template <typename T, size_t dim>
+  std::ostream & operator<<(std::ostream & os,
+                            const std::array<T, dim> & index) {
+    os << "(";
+    for (size_t i = 0; i < dim - 1; ++i) {
+      os << index[i] << ", ";
+    }
+    os << index.back() << ")";
+    return os;
+  }
 
   /**
    * Takes a Structure manager and splits it into sub sets
@@ -173,19 +193,26 @@ namespace rascal {
       if (location == filter_map.end()) {
         // this species combo is not yet in the container, therefore
         // create new empty one
-        auto new_filter{
-            std::make_unique<Filter<Order>>(*this)};
+        auto new_filter{std::make_unique<Filter<Order>>(*this)};
         // insertion returns a ridiculous type, see spec
         auto new_location{std::get<0>(
             filter_map.emplace(species_indices, std::move(new_filter)))};
         return *std::get<1>(*new_location);
       } else {
+        for (auto && bla : filter_map) {
+          std::cout << "sp_map species " << bla.first << std::endl;
+          std::cout << "sp_map size " << bla.second->size() << std::endl;
+          std::cout << "sp_map nb_clusters(1) "
+                    << bla.second->get_nb_clusters(1) << std::endl;
+          std::cout << "sp_map nb_clusters(2) "
+                    << bla.second->get_nb_clusters(2) << std::endl;
+        }
         return *std::get<1>(*location);
       }
     }
 
     template <size_t Order>
-    SpeciesMap_t<Order> & filters_by_nb_elements() {
+    SpeciesMap_t<Order> & filters_by_order() {
       return std::get<Order - 1>(this->filters);
     }
 
@@ -213,7 +240,7 @@ namespace rascal {
     Filter() = delete;
 
     Filter(SpeciesManager_t & species_manager)
-      : Parent{species_manager.get_structure_manager()},
+        : Parent{species_manager.get_structure_manager()},
           species_manager{species_manager} {}
 
     //! Copy constructor
@@ -265,7 +292,7 @@ namespace rascal {
         constexpr auto ClusterOrder{MaxOrder - Remaining + 1};
         // reset all filters
         for (auto && tup :
-             species_manager.template filters_by_nb_elements<ClusterOrder>()) {
+             species_manager.template filters_by_order<ClusterOrder>()) {
           static_assert(std::tuple_size<decltype(tup.first)>::value ==
                             ClusterOrder,
                         "FilterSpeciesLoop constructed with wrong template "

@@ -33,7 +33,7 @@ namespace rascal {
   class FilterBase {
    public:
     //! Default constructor
-    FilterBase() = delete;
+    FilterBase() = default;
 
     //! Copy constructor
     FilterBase(const FilterBase & other) = delete;
@@ -48,7 +48,7 @@ namespace rascal {
     FilterBase & operator=(const FilterBase & other) = delete;
 
     //! Move assignment operator
-    FilterBase & operator=(FilterBase && other) = delete;
+    FilterBase & operator=(FilterBase && other) = default;
 
     /**
      * Virtual base class to be called e.g. in species map to clear existing
@@ -62,4 +62,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif SRC_STRUCTURE_MANAGERS_FILTER_BASE_HH_
+#endif  // SRC_STRUCTURE_MANAGERS_FILTER_BASE_HH_

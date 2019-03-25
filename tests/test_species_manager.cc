@@ -64,24 +64,24 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_test, Fix, Fixtures, Fix) {}
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_species_test, Fix, FixturesMax1, Fix) {
-    std::map<int, int> species_counter{};
-    for (auto && atom : Fix::fixture.manager) {
-      species_counter[atom.get_atom_type()]++;
-    }
+  // BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_species_test, Fix, FixturesMax1, Fix) {
+  //   std::map<int, int> species_counter{};
+  //   for (auto && atom : Fix::fixture.manager) {
+  //     species_counter[atom.get_atom_type()]++;
+  //   }
 
-    Fix::species_manager.update();
+  //   Fix::species_manager.update();
 
-    std::cout << "FixturesMax1" << std::endl;
+  //   std::cout << "FixturesMax1" << std::endl;
 
-    for (auto && tup : species_counter) {
-      auto species{tup.first};
-      auto nb_atoms{tup.second};
-      auto nb_filtered{
-          Fix::species_manager[std::array<int, 1>{species}].size()};
-      BOOST_CHECK_EQUAL(nb_atoms, nb_filtered);
-    }
-  }
+  //   for (auto && tup : species_counter) {
+  //     auto species{tup.first};
+  //     auto nb_atoms{tup.second};
+  //     auto nb_filtered{
+  //         Fix::species_manager[std::array<int, 1>{species}].size()};
+  //     BOOST_CHECK_EQUAL(nb_atoms, nb_filtered);
+  //   }
+  // }
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(pair_species_test, Fix, FixturesMax2, Fix) {
@@ -95,15 +95,20 @@ namespace rascal {
     std::cout << "FixturesMax2" << std::endl;
 
     Fix::species_manager.update();
-
+    auto ctr{0};
     for (auto && tup : species_counter) {
       auto species{tup.first};
+      std::cout << "ctr " << ctr << std::endl;
       std::cout << "Species size " << species.size() << std::endl;
-      std::cout << "species0: " << species[0] << std::endl;
-      std::cout << "species1: " << species[1] << std::endl;
-      auto nb_atoms{tup.second};
+      std::cout << "species: {" << species[0] << ", " << species[1] << "}"
+                << std::endl;
+      auto nb_clusters{tup.second};
       auto nb_filtered{Fix::species_manager[species].size()};
-      BOOST_CHECK_EQUAL(nb_atoms, nb_filtered);
+      // auto nb_filtered_atoms{
+      //     Fix::species_manager[std::array<int, 1>{species[0]}].size()};
+      // std::cout << "nb_filtered_atoms " << nb_filtered_atoms << std::endl;
+      BOOST_CHECK_EQUAL(nb_clusters, nb_filtered);
+      ctr++;
     }
   }
 

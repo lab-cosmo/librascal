@@ -32,11 +32,12 @@
 
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/cluster_ref_key.hh"
+#include "structure_managers/filter_base.hh"
 #include "rascal_utility.hh"
 
 #include <type_traits>
 
-namespace rascal {
+    namespace rascal {
 
   /**
    * Forward declaration for traits
@@ -110,7 +111,8 @@ namespace rascal {
    */
   template <class ManagerImplementation, size_t MaxOrder>
   class AdaptorFilter
-      : public StructureManager<AdaptorFilter<ManagerImplementation, MaxOrder>>,
+      : public FilterBase,
+        public StructureManager<AdaptorFilter<ManagerImplementation, MaxOrder>>,
         public std::enable_shared_from_this<
             AdaptorFilter<ManagerImplementation, MaxOrder>> {
    public:
@@ -119,6 +121,7 @@ namespace rascal {
 
     using Manager_t = AdaptorFilter<ManagerImplementation, MaxOrder>;
     using Parent = StructureManager<Manager_t>;
+    using ParentBase = FilterBase;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorFilter>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
@@ -167,7 +170,7 @@ namespace rascal {
     }
 
     /**
-     * perform the actual filitering work, or send a signal to whoever performs
+     * perform the actual filtering work, or send a signal to whoever performs
      * this work. Needs to be implemented in the daughter class
      */
 
