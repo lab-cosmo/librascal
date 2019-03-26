@@ -23,7 +23,7 @@ test_hypers = {"interaction_cutoff": 4.0,
 
 nmax = test_hypers["max_radial"]
 lmax = test_hypers["max_angular"]
-nstr = 10 #number of structures
+nstr = '' #number of structures
 
 ##########################################################################################
 
@@ -87,3 +87,59 @@ for i in range(ncen):
 kernel = np.dot(y, y.T)
 print(kernel)
 np.save('kernel_soap_example.npy', kernel)
+
+#----------------------------------------------------------------------------------------#
+#--------------------------------dump json reference data--------------------------------#
+#----------------------------------------------------------------------------------------#
+
+import ubjson
+import os
+from copy import copy
+path = '/home/willatt/codes/librascal/' #should be changed
+sys.path.insert(0, os.path.join(path, 'build/'))
+sys.path.insert(0, os.path.join(path, 'tests/'))
+
+cutoffs = [2, 3]
+gaussian_sigmas = [0.2, 0.3]
+max_radials = [8, 15]
+
+frames = ase.io.read('../tests/reference_data/methane.xyz',':')
+fns_to_write = ["reference_data/methane.json"]
+
+data = dict(filenames=fns_to_write,
+            cutoffs=cutoffs,
+            gaussian_sigmas=gaussian_sigmas,
+            max_radials=max_radials)
+
+#trying to follow the nested list structure of the coulomb matrix reference data
+rep_info = []
+d = dict(feature_matrices=[],hypers=[])
+for cutoff in cutoffs:
+    il1 = []
+    for gaussian_sigma in gaussian_sigmas:
+        il2 = []
+        for max_radial in max_radials:
+            hypers = {"interaction_cutoff": cutoff,
+                      "cutoff_smooth_width": 0.0, 
+                      "max_radial": max_radial,
+                      "max_angular": 0,
+                      "gaussian_sigma_type": "Constant",
+                      "gaussian_sigma_constant": gaussian_sigma,
+                      "soap_type": "RadialSpectrum" }
+            with lrl._rascal.utils.ostream_redirect():
+                soap = rascal.representation.SOAP(**test_hypers)
+                soap_vectors = soap.transform(frames)
+                x = soap_vectors.get_feature_matrix()
+            d['feature_matrices'].append(x.tolist())
+            d['hypers'].append(copy(hypers))
+            il2 += [d]
+        il1 += il2
+    rep_info += il1
+data['rep_info'] = rep_info
+
+with open(path+"tests/reference_data/soap_radial_spectrum_reference.ubjson",'wb') as f: 
+    ubjson.dump(data,f)
+
+#----------------------------------------------------------------------------------------#
+#--------------------------------dump json reference data--------------------------------#
+#----------------------------------------------------------------------------------------#

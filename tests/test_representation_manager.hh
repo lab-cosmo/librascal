@@ -35,6 +35,7 @@
 #include "representations/representation_manager_base.hh"
 #include "representations/representation_manager_sorted_coulomb.hh"
 #include "representations/representation_manager_spherical_expansion.hh"
+#include "representations/representation_manager_soap.hh"
 
 #include "json_io.hh"
 #include "rascal_utility.hh"
@@ -42,6 +43,94 @@
 #include <tuple>
 
 namespace rascal {
+
+  struct MultipleStructureSOAP {
+    //MultipleStructureSOAP() {}
+    MultipleStructureSOAP() = default;
+    ~MultipleStructureSOAP() = default;
+
+    std::vector<std::string> filenames{"reference_data/methane.json"};
+    std::vector<double> cutoffs{{2.0, 3.0}};
+    std::vector<double> gaussian_sigmas{{0.2, 0.3}};
+    std::vector<size_t> max_radials{{8, 15}};
+
+    std::vector<json> hypers{{{"interaction_cutoff", 2.0},
+                             {"cutoff_smooth_width", 0.0},
+                             {"max_radial", 8},
+                             {"max_angular", 0},
+                             {"gaussian_sigma_type", "Constant"},
+                             {"gaussian_sigma_constant", 0.2},
+                             {"soap_type", "RadialSpectrum"}},
+                             {{"interaction_cutoff", 2.0},
+                             {"cutoff_smooth_width", 0.0},
+                             {"max_radial", 8},
+                             {"max_angular", 0},
+                             {"gaussian_sigma_type", "Constant"},
+                             {"gaussian_sigma_constant", 0.2},
+                             {"soap_type", "RadialSpectrum"}},
+                             {{"interaction_cutoff", 2.0},
+                             {"cutoff_smooth_width", 0.0},
+                             {"max_radial", 8},
+                             {"max_angular", 0},
+                             {"gaussian_sigma_type", "Constant"},
+                             {"gaussian_sigma_constant", 0.2},
+                             {"soap_type", "RadialSpectrum"}},
+                             {{"interaction_cutoff", 2.0},
+                             {"cutoff_smooth_width", 0.0},
+                             {"max_radial", 8},
+                             {"max_angular", 0},
+                             {"gaussian_sigma_type", "Constant"},
+                             {"gaussian_sigma_constant", 0.2},
+                             {"soap_type", "RadialSpectrum"}},
+                             {{"interaction_cutoff", 3.0},
+                             {"cutoff_smooth_width", 0.0},
+                             {"max_radial", 15},
+                             {"max_angular", 0},
+                             {"gaussian_sigma_type", "Constant"},
+                             {"gaussian_sigma_constant", 0.3},
+                             {"soap_type", "RadialSpectrum"}},
+                             {{"interaction_cutoff", 3.0},
+                             {"cutoff_smooth_width", 0.0},
+                             {"max_radial", 15},
+                             {"max_angular", 0},
+                             {"gaussian_sigma_type", "Constant"},
+                             {"gaussian_sigma_constant", 0.3},
+                             {"soap_type", "RadialSpectrum"}},
+                             {{"interaction_cutoff", 3.0},
+                             {"cutoff_smooth_width", 0.0},
+                             {"max_radial", 15},
+                             {"max_angular", 0},
+                             {"gaussian_sigma_type", "Constant"},
+                             {"gaussian_sigma_constant", 0.3},
+                             {"soap_type", "RadialSpectrum"}},
+                             {{"interaction_cutoff", 3.0},
+                             {"cutoff_smooth_width", 0.0},
+                             {"max_radial", 15},
+                             {"max_angular", 0},
+                             {"gaussian_sigma_type", "Constant"},
+                             {"gaussian_sigma_constant", 0.3},
+                             {"soap_type", "RadialSpectrum"}}};
+
+  };
+
+  //should include some power spectrum and bispectrum data too
+  struct SOAPTestData {
+    SOAPTestData() {
+      std::vector<std::uint8_t> ref_data_ubjson;
+      internal::read_binary_file(this->ref_filename, ref_data_ubjson);
+      ref_data = json::from_ubjson(ref_data_ubjson);
+      cutoffs = ref_data.at("cutoffs").get<std::vector<double>>();
+      gaussian_sigmas = ref_data.at("gaussian_sigmas").get<std::vector<double>>();
+      max_radials = ref_data.at("max_radials").get<std::vector<size_t>>();
+    }
+    ~SOAPTestData() = default;
+    std::string ref_filename{"reference_data/soap_radial_spectrum_reference.ubjson"};
+    std::vector<std::string> filenames{};
+    std::vector<double> cutoffs{};
+    std::vector<double> gaussian_sigmas{};
+    std::vector<size_t> max_radials{};
+    json ref_data{};
+  };
 
   struct MultipleStructureSortedCoulomb {
     MultipleStructureSortedCoulomb() {}

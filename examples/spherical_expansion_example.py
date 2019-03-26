@@ -1,6 +1,5 @@
 #!/usr/bin/python3.6
 
-#from matplotlib import pyplot as plt
 import sys
 sys.path.insert(0,'../build/')
 sys.path.insert(0,'../build/bindings/')
