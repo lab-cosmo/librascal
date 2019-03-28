@@ -63,7 +63,7 @@ namespace rascal {
     using data_t = typename SparseProperty_t::data_t;
 
     RepresentationManagerSOAP(Manager_t & sm, const hypers_t & hyper)
-        : structure_manager{sm}, soap_vectors{sm}, rep_expansion{sm, hyper} {
+        : soap_vectors{sm}, structure_manager{sm}, rep_expansion{sm, hyper} {
       this->set_hyperparameters(hyper);
     }
 
@@ -85,8 +85,7 @@ namespace rascal {
     }
 
     std::vector<precision_t> & get_representation_raw_data() {
-      std::vector<precision_t> aa{};
-      return aa;
+      return this->dummy;
     }
 
     data_t& get_representation_sparse_raw_data() {
@@ -96,9 +95,9 @@ namespace rascal {
     size_t get_feature_size() {
       return this->soap_vectors.get_nb_comp();
     }
-  
-    size_t get_center_size() { 
-      return this->soap_vectors.get_nb_item(); 
+
+    size_t get_center_size() {
+      return this->soap_vectors.get_nb_item();
     }
 
     Eigen::Map<const Eigen::MatrixXd> get_representation_full() {
@@ -129,6 +128,7 @@ namespace rascal {
     RepresentationManagerSphericalExpansion<Manager_t> rep_expansion;
     internal::SOAPType soap_type{};
     std::string soap_type_str{};
+    std::vector<precision_t> dummy{};
 
   };
 

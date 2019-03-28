@@ -164,9 +164,6 @@ namespace rascal {
     auto & hypers = Fix::hypers;
     auto & inner_sizes = Fix::inner_sizes;
     auto & representations = Fix::representations;
-    using precision_t = typename Fix::precision_t;
-//    using mat_t = Eigen::Map<Eigen::Matrix<precision_t,-1,-1>>;
-    using mat_t = Eigen::Matrix<precision_t,-1,-1>;
 
       // build the feature managers. only the 1st
     // one will be used

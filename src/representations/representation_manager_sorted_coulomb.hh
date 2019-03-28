@@ -221,8 +221,7 @@ namespace rascal {
     }
 
     data_t & get_representation_sparse_raw_data() {
-      data_t aa{};
-      return aa;
+      return this->dummy;
     }
 
     //! get the size of a feature vector
@@ -325,6 +324,8 @@ namespace rascal {
     double interaction_decay{};
     // at least equal to the largest number of neighours
     size_t size{};
+
+    data_t dummy{};
 
     Property_t coulomb_matrices;
 

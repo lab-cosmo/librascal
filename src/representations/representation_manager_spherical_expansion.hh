@@ -245,8 +245,7 @@ namespace rascal {
     }
 
     std::vector<precision_t> & get_representation_raw_data() {
-      std::vector<precision_t> aa{};
-      return aa;
+      return this->dummy;
     }
 
     data_t& get_representation_sparse_raw_data() {
@@ -287,7 +286,8 @@ namespace rascal {
     Eigen::MatrixXd radial_nl_factors{};
     Eigen::MatrixXd radial_ortho_matrix{};
     bool is_precomputed{false};
-
+    std::vector<precision_t> dummy{};
+    
     Manager_t & structure_manager;
 
     internal::GaussianSigmaType gaussian_sigma_type{};
