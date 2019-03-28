@@ -101,6 +101,15 @@ namespace rascal {
       return this->soap_vectors.get_nb_item(); 
     }
 
+    Eigen::Map<const Eigen::MatrixXd> get_representation_full() {
+      auto nb_centers{this->structure_manager.size()};
+      auto nb_features{this->get_feature_size()};
+      auto & raw_data{this->get_representation_raw_data()};
+      Eigen::Map<const Eigen::MatrixXd> representation(raw_data.data(),
+                                                       nb_features, nb_centers);
+      return representation;
+    }
+
     //! compute representation
     void compute();
 
@@ -138,6 +147,46 @@ namespace rascal {
       break;
     }
   }
+
+/*//////////////////////////////////////////////////////////////////////////////
+
+  template <class Mngr>
+  void RepresentationManagerSOAP<Mngr>::compute_bispectrum() {
+    rep_expansion.compute();
+    auto& expansions_coefficients{rep_expansion.expansions_coefficients};
+
+    size_t n_row{pow(this->max_radial, 3)}
+    size_t n_col{*pow(this->max_angular, 3)*pow((2*this->max_angular + 1), 3)};
+
+    this->soap_vectors.clear();
+    this->soap_vectors.set_shape(n_row, n_col);
+    this->soap_vectors.resize();
+
+    for (auto center : this->structure_manager) {
+      auto& coefficients{expansions_coefficients[center]};
+      auto& soap_vector{this->soap_vectors[center]};
+      key_t triplet_type{0, 0, 0};
+      for (const auto& el1: coefficients) {
+        triplet_type[0] = el1.first[0];
+        auto& coef1{el1.second};
+        for (const auto& el2: coefficients) {
+          triplet_type[1] = el2.first[0];
+          auto& coef2{el2.second};
+          for (const auto& el2: coefficients) {
+            triplet_type[2] = el3.first[0];
+            auto& coef3{el3.second};
+
+            if (soap_vector.count(triplet_type) == 0) {
+              soap_vector[triplet_type] = dense_t::Zero(n_row, n_col);
+            }
+          }
+        }
+      }
+    }
+
+  }
+
+*///////////////////////////////////////////////////////////////////////////////
 
   template <class Mngr>
   void RepresentationManagerSOAP<Mngr>::compute_powerspectrum() {
