@@ -49,49 +49,29 @@ namespace rascal {
 
     namespace detail {
       template <size_t Order>
-      using Key_t = std::array<int, Order>;
-      template <class Filter>
-      using Value_t = std::unique_ptr<Filter>;
-      template <size_t Order, template <size_t> class Filter>
-      using Map_t = std::map<Key_t<Order>, Value_t<Filter<Order>>>;
-
-      // usage of TupleStandardisation for the
-      // std::map<TupleStandardisation(species), FilterBase>
-      template<size_t Order>
-      using Key_t = TupleStandardisation<Order>(std::array<int, Order>);
+      using Key_t = TupleStandardisation<int, Order>;
       using Value_t = std::unique_ptr<FilterBase>;
-      template<size_t Order>
+      template <size_t Order>
       using Map_t = std::map<Key_t<Order>, Value_t>;
     }  // namespace detail
 
-    template <template <size_t> class Filter, size_t... OrdersMinusOne>
-    auto get_filter_container_helper(
-        std::index_sequence<OrdersMinusOne...> /*orders*/) -> decltype(auto) {
-      return std::tuple<detail::Map_t<OrdersMinusOne + 1, Filter>...>{};
-    }
+    // build the FilterContainer_t
+    // template <template <size_t> class Filter, size_t... OrdersMinusOne>
+    // auto get_filter_container_helper(
+    //     std::index_sequence<OrdersMinusOne...> /*orders*/) -> decltype(auto) {
+    //   return std::tuple<detail::Map_t<OrdersMinusOne + 1, Filter>...>{};
+    // }
 
-    template <template <size_t> class Filter, size_t MaxOrder>
-    auto get_filter_container() -> decltype(auto) {
-      return get_filter_container_helper<Filter>(
-          std::make_index_sequence<MaxOrder>{});
-    }
+    // template <template <size_t> class Filter, size_t MaxOrder>
+    // auto get_filter_container() -> decltype(auto) {
+    //   return get_filter_container_helper<Filter>(
+    //       std::make_index_sequence<MaxOrder>{});
+    // }
 
     template <template <size_t> class Filter, size_t MaxOrder>
     using FilterContainer_t =
         decltype(get_filter_container<Filter, MaxOrder>());
-
   }  // namespace internal
-
-  template <typename T, size_t dim>
-  std::ostream & operator<<(std::ostream & os,
-                            const std::array<T, dim> & index) {
-    os << "(";
-    for (size_t i = 0; i < dim - 1; ++i) {
-      os << index[i] << ", ";
-    }
-    os << index.back() << ")";
-    return os;
-  }
 
   /**
    * Takes a Structure manager and splits it into sub sets
@@ -125,6 +105,11 @@ namespace rascal {
     using traits = StructureManager_traits<ManagerImplementation>;
     using Manager_t = SpeciesManager<ManagerImplementation, MaxOrder>;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
+    // todo(markus) another possible place for Order instead of MaxOrder
+    // was:
+    // using Key_t = internal::detail::Key_t<MaxOrder>;
+    template <size_t Order>
+    using Key_t = internal::detail::Key_t<Order>;
 
     /**
      * implementation of AdaptorFilter for species filtering
@@ -132,9 +117,11 @@ namespace rascal {
     template <size_t Order>
     class Filter;
 
-    template <size_t Order>
-    using SpeciesMap_t = internal::detail::Map_t<Order, Filter>;
-
+    // todo(markus): it seems to me that MaxOrder should be replaced by Order
+    // here. The FilterContainer_t should be agnostic of the element
+    // combinations.
+    // was:
+    // using FilterContainer_t = typename internal::detail::Map_t<MaxOrder>;
     using FilterContainer_t = internal::FilterContainer_t<Filter, MaxOrder>;
 
     static_assert(traits::MaxOrder <= MaxOrder,
@@ -187,33 +174,35 @@ namespace rascal {
 
     template <size_t Order>
     Filter<Order> & operator[](const std::array<int, Order> & species_indices) {
-      auto & filter_map{std::get<Order - 1>(this->filters)};
-      auto location{filter_map.find(species_indices)};
+      auto && location{this->filters.find(Key_t<Order>{species_indices})};
 
-      if (location == filter_map.end()) {
+      if (location == this->filters.end()) {
         // this species combo is not yet in the container, therefore
         // create new empty one
         auto new_filter{std::make_unique<Filter<Order>>(*this)};
-        // insertion returns a ridiculous type, see spec
-        auto new_location{std::get<0>(
-            filter_map.emplace(species_indices, std::move(new_filter)))};
-        return *std::get<1>(*new_location);
-      } else {
-        for (auto && bla : filter_map) {
-          std::cout << "sp_map species " << bla.first << std::endl;
-          std::cout << "sp_map size " << bla.second->size() << std::endl;
-          std::cout << "sp_map nb_clusters(1) "
-                    << bla.second->get_nb_clusters(1) << std::endl;
-          std::cout << "sp_map nb_clusters(2) "
-                    << bla.second->get_nb_clusters(2) << std::endl;
+        // insertion returns a ridiculous type: ((Key, Value), success), where
+        // Value is the filter
+        for (size_t idx{0}; idx < Order; idx++) {
+          std::cout << "###species_indices new filter idx:" << idx
+                    << " species idx: " << species_indices[idx] << std::endl;
         }
-        return *std::get<1>(*location);
+        // create a (species_indices, filter) pair and add it to the list
+        auto && retval{
+            this->filters.emplace(species_indices, std::move(new_filter))};
+        auto && new_location{retval.first};
+        return static_cast<Filter<Order> &>(*(new_location->second));
+      } else {
+        for (auto && key_filter : this->filters) {
+          auto && filter{static_cast<Filter<Order> &>(*(key_filter.second))};
+          std::cout << "sp_map species " << key_filter.first << std::endl;
+          std::cout << "sp_map size " << filter.size() << std::endl;
+          std::cout << "sp_map nb_clusters(1) " << filter.get_nb_clusters(1)
+                    << std::endl;
+          std::cout << "sp_map nb_clusters(2) " << filter.get_nb_clusters(2)
+                    << std::endl;
+        }
+        return static_cast<Filter<Order> &>(*(location->second));
       }
-    }
-
-    template <size_t Order>
-    SpeciesMap_t<Order> & filters_by_order() {
-      return std::get<Order - 1>(this->filters);
     }
 
     ImplementationPtr_t get_structure_manager() const {
@@ -224,7 +213,7 @@ namespace rascal {
     //! underlying structure manager to be filtered upon update()
     ImplementationPtr_t structure_manager;
     //! storage by cluster order for the filtered managers
-    FilterContainer_t filters;
+    FilterContainer_t filters{};
   };
 
   template <class ManagerImplementation, size_t MaxOrder>
@@ -269,8 +258,7 @@ namespace rascal {
   template <class ManagerImplementation, size_t MaxOrder>
   SpeciesManager<ManagerImplementation, MaxOrder>::SpeciesManager(
       ImplementationPtr_t manager)
-      : structure_manager{manager},
-        filters{internal::get_filter_container<Filter, MaxOrder>()} {}
+      : structure_manager{manager} {}
 
   namespace internal {
     /**
@@ -289,16 +277,6 @@ namespace rascal {
 
       template <class Cluster>
       static void loop(Cluster & cluster, SpeciesManager_t & species_manager) {
-        constexpr auto ClusterOrder{MaxOrder - Remaining + 1};
-        // reset all filters
-        for (auto && tup :
-             species_manager.template filters_by_order<ClusterOrder>()) {
-          static_assert(std::tuple_size<decltype(tup.first)>::value ==
-                            ClusterOrder,
-                        "FilterSpeciesLoop constructed with wrong template "
-                        "parameters");
-          tup.second->reset_initial_state();
-        }
         // refill all filters
         for (auto && next_cluster : cluster) {
           auto && species_indices{next_cluster.get_atom_types()};
@@ -324,6 +302,11 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation, size_t MaxOrder>
   void SpeciesManager<ManagerImplementation, MaxOrder>::update() {
+    // reset all filters before filling them again
+    for (auto && key_filter : this->filters) {
+      key_filter.second->reset_initial_state();
+    }
+
     // number of levels to be descended into is know at compile time,
     // but not at writing time, hence the indirection to
     // FilterSpeciesLoop

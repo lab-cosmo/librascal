@@ -92,15 +92,15 @@ namespace rascal {
       }
     }
 
-    std::cout << "FixturesMax2" << std::endl;
+    std::cout << "test FixturesMax2" << std::endl;
 
     Fix::species_manager.update();
     auto ctr{0};
     for (auto && tup : species_counter) {
       auto species{tup.first};
-      std::cout << "ctr " << ctr << std::endl;
-      std::cout << "Species size " << species.size() << std::endl;
-      std::cout << "species: {" << species[0] << ", " << species[1] << "}"
+      std::cout << "-----test ctr " << ctr << std::endl;
+      std::cout << "-----test Species size " << species.size() << std::endl;
+      std::cout << "-----test species: {" << species[0] << ", " << species[1] << "}"
                 << std::endl;
       auto nb_clusters{tup.second};
       auto nb_filtered{Fix::species_manager[species].size()};

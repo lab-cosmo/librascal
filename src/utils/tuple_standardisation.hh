@@ -2,11 +2,12 @@
  * file   tuple_standardisation.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
+ * @author Markus Stricker <markus.stricker@epfl.ch>
  *
  * @date   15 Jan 2019
  *
  * @brief helper class to create a common type representing std::arrays of
- * varying length for use as keys
+ * varying length for use as keys in maps
  *
  * Copyright © 2019 Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -45,14 +46,7 @@ namespace rascal {
 
     template <size_t Order>
     explicit TupleStandardisation(const std::array<T, Order> & tup)
-        : order{Order} {
-      for (size_t i{0}; i < Order; ++i) {
-        this->key[i] = std::numeric_limits<T>::min();
-      }
-      for (size_t i{0}; i < MaxOrder - Order; ++i) {
-        this->key[i + Order] = tup[i];
-      }
-    }
+        : key{TupleStandardisation::fill(tup)}, order{Order} {}
 
     //! Copy constructor
     TupleStandardisation(const TupleStandardisation & other) = default;
@@ -83,12 +77,47 @@ namespace rascal {
       return ret_val;
     }
 
+    T & operator[](const size_t index) { return this->key[index]; }
+
+    const T & operator[](const size_t index) const { return this->key[index]; }
+
     const size_t & get_order() const { return this->order; }
 
+    const T & back() const { return key.back(); }
+
    protected:
-    const std::array<T, MaxOrder> key{};
+    const std::array<T, MaxOrder> key;
     const size_t order;
+
+    //! function for filling the key of the standardised tuple, which in practise
+    //! is an array
+    template <size_t Order>
+    static std::array<T, MaxOrder> fill(const std::array<T, Order> & tup) {
+      std::array<T, MaxOrder> key;
+      for (size_t i{0}; i < Order; ++i) {
+        key[i] = std::numeric_limits<T>::min();
+      }
+      for (size_t i{0}; i < MaxOrder - Order; ++i) {
+        std::cout << "tup[i] " << tup[i] << " i+Order: " << i+Order << std::endl;
+        key[i + Order] = tup[i];
+      }
+      return key;
+    }
   };
+
+  /**
+   * Overload of stdout stream for tuple standardisation for debugging purposes
+   */
+  template <typename T, size_t Order>
+  std::ostream & operator<<(std::ostream & os,
+                            const TupleStandardisation<T, Order> & index) {
+    os << "(";
+    for (size_t i = 0; i < Order - 1; ++i) {
+      os << index[i] << ", ";
+    }
+    os << index.back() << ")";
+    return os;
+  }
 
 }  // namespace rascal
 
