@@ -134,10 +134,10 @@ namespace rascal {
     inline double get_cutoff() const { return this->manager->get_cutoff(); }
 
     //! returns the number of atoms or pairs
-    inline size_t get_nb_clusters(int cluster_size) const {
-      switch (cluster_size) {
+    inline size_t get_nb_clusters(int order) const {
+      switch (order) {
       case 1: {
-        return this->manager->get_nb_clusters(cluster_size);
+        return this->manager->get_nb_clusters(order);
         break;
       }
       case 2: {

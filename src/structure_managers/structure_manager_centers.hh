@@ -279,7 +279,7 @@ namespace rascal {
     get_offset_impl(const std::array<size_t, Order> & counters) const;
 
     //! Function for returning the number of atoms
-    size_t get_nb_clusters(size_t cluster_size) const;
+    size_t get_nb_clusters(size_t order) const;
 
     /**
      * Function for reading data from a JSON file in the ASE format. See the

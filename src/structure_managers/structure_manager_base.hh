@@ -40,7 +40,7 @@ namespace rascal {
     //! access to specific properties with a string
     inline decltype(auto) get_property(std::string name);
     //! only? virtual function needed.
-    virtual size_t nb_clusters(size_t cluster_size) const = 0;
+    virtual size_t nb_clusters(size_t order) const = 0;
     virtual ~StructureManagerBase() = default;
     // virtual void update_children() = 0;
     // virtual void set_update_status(const bool) = 0;

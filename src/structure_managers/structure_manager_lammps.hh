@@ -166,7 +166,7 @@ namespace rascal {
      * return the number of clusters of size cluster_size.  Can only handle
      * cluster_size 1 (atoms) and cluster_size 2 (pairs).
      */
-    size_t get_nb_clusters(int cluster_size) const;
+    size_t get_nb_clusters(int order) const;
 
    protected:
     /**

@@ -190,8 +190,8 @@
      * return the number of 'neighbours' (i.e., number of pairs for an atom,
      * number of triplets for a pair, etc) of a given order.
      */
-    inline size_t get_nb_clusters(int cluster_order) const {
-      return this->atom_indices[cluster_order - 1].size();
+    inline size_t get_nb_clusters(int order) const {
+      return this->atom_indices[order - 1].size();
     }
 
     /**

@@ -148,8 +148,8 @@ namespace rascal {
       return this->dir_vec[pair];
     }
 
-    inline size_t get_nb_clusters(int cluster_size) const {
-      return this->atom_indices[cluster_size - 1].size();
+    inline size_t get_nb_clusters(int order) const {
+      return this->atom_indices[order - 1].size();
     }
 
     inline size_t get_size() const { return this->manager->get_size(); }

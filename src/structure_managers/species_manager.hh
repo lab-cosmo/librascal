@@ -54,24 +54,7 @@ namespace rascal {
       template <size_t Order>
       using Map_t = std::map<Key_t<Order>, Value_t>;
     }  // namespace detail
-
-    // build the FilterContainer_t
-    // template <template <size_t> class Filter, size_t... OrdersMinusOne>
-    // auto get_filter_container_helper(
-    //     std::index_sequence<OrdersMinusOne...> /*orders*/) -> decltype(auto) {
-    //   return std::tuple<detail::Map_t<OrdersMinusOne + 1, Filter>...>{};
-    // }
-
-    // template <template <size_t> class Filter, size_t MaxOrder>
-    // auto get_filter_container() -> decltype(auto) {
-    //   return get_filter_container_helper<Filter>(
-    //       std::make_index_sequence<MaxOrder>{});
-    // }
-
-    template <template <size_t> class Filter, size_t MaxOrder>
-    using FilterContainer_t =
-        decltype(get_filter_container<Filter, MaxOrder>());
-  }  // namespace internal
+  }    // namespace internal
 
   /**
    * Takes a Structure manager and splits it into sub sets
@@ -105,11 +88,7 @@ namespace rascal {
     using traits = StructureManager_traits<ManagerImplementation>;
     using Manager_t = SpeciesManager<ManagerImplementation, MaxOrder>;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
-    // todo(markus) another possible place for Order instead of MaxOrder
-    // was:
-    // using Key_t = internal::detail::Key_t<MaxOrder>;
-    template <size_t Order>
-    using Key_t = internal::detail::Key_t<Order>;
+    using Key_t = internal::detail::Key_t<MaxOrder>;
 
     /**
      * implementation of AdaptorFilter for species filtering
@@ -117,12 +96,7 @@ namespace rascal {
     template <size_t Order>
     class Filter;
 
-    // todo(markus): it seems to me that MaxOrder should be replaced by Order
-    // here. The FilterContainer_t should be agnostic of the element
-    // combinations.
-    // was:
-    // using FilterContainer_t = typename internal::detail::Map_t<MaxOrder>;
-    using FilterContainer_t = internal::FilterContainer_t<Filter, MaxOrder>;
+    using FilterContainer_t = typename internal::detail::Map_t<MaxOrder>;
 
     static_assert(traits::MaxOrder <= MaxOrder,
                   "MaxOrder of underlying manager is insufficient.");
@@ -174,7 +148,9 @@ namespace rascal {
 
     template <size_t Order>
     Filter<Order> & operator[](const std::array<int, Order> & species_indices) {
-      auto && location{this->filters.find(Key_t<Order>{species_indices})};
+      auto && location{this->filters.find(Key_t{species_indices})};
+      // todo(markus) should this not depend on the order?
+      // auto && location{this->filters.find(Key_t<Order>{species_indices})};
 
       if (location == this->filters.end()) {
         // this species combo is not yet in the container, therefore
@@ -182,25 +158,12 @@ namespace rascal {
         auto new_filter{std::make_unique<Filter<Order>>(*this)};
         // insertion returns a ridiculous type: ((Key, Value), success), where
         // Value is the filter
-        for (size_t idx{0}; idx < Order; idx++) {
-          std::cout << "###species_indices new filter idx:" << idx
-                    << " species idx: " << species_indices[idx] << std::endl;
-        }
         // create a (species_indices, filter) pair and add it to the list
         auto && retval{
             this->filters.emplace(species_indices, std::move(new_filter))};
         auto && new_location{retval.first};
         return static_cast<Filter<Order> &>(*(new_location->second));
       } else {
-        for (auto && key_filter : this->filters) {
-          auto && filter{static_cast<Filter<Order> &>(*(key_filter.second))};
-          std::cout << "sp_map species " << key_filter.first << std::endl;
-          std::cout << "sp_map size " << filter.size() << std::endl;
-          std::cout << "sp_map nb_clusters(1) " << filter.get_nb_clusters(1)
-                    << std::endl;
-          std::cout << "sp_map nb_clusters(2) " << filter.get_nb_clusters(2)
-                    << std::endl;
-        }
         return static_cast<Filter<Order> &>(*(location->second));
       }
     }

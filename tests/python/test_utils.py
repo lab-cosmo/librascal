@@ -71,7 +71,7 @@ class BoxList(object):
             self.bin2icenters[bin_id].append(icenter)
             self.part2bin[icenter] = bin_id
             self.list = []
-        print(self.nbins)
+        # print(self.nbins)
         for bin_id in range(self.nbins):
             self.list.append(Box(
                 bin_id, self.nbins_c, self.neigh_search, self.bin2icenters[bin_id], pbc, self))

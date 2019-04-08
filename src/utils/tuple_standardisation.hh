@@ -69,12 +69,8 @@ namespace rascal {
     }
 
     template <size_t Order>
-    operator std::array<T, Order>() const {
-      std::array<T, Order> ret_val{};
-      for (size_t i{0}; i < Order; ++i) {
-        ret_val[i] = this->key[i + MaxOrder - Order];
-      }
-      return ret_val;
+    operator const std::array<T, Order> &() const {
+      return reinterpret_cast<std::array<T, Order> &>(*this);
     }
 
     T & operator[](const size_t index) { return this->key[index]; }
@@ -89,17 +85,16 @@ namespace rascal {
     const std::array<T, MaxOrder> key;
     const size_t order;
 
-    //! function for filling the key of the standardised tuple, which in practise
-    //! is an array
+    //! function for filling the key of the standardised tuple, which in
+    //! practise is an array
     template <size_t Order>
     static std::array<T, MaxOrder> fill(const std::array<T, Order> & tup) {
       std::array<T, MaxOrder> key;
-      for (size_t i{0}; i < Order; ++i) {
+      for (size_t i{Order}; i < MaxOrder; ++i) {
         key[i] = std::numeric_limits<T>::min();
       }
-      for (size_t i{0}; i < MaxOrder - Order; ++i) {
-        std::cout << "tup[i] " << tup[i] << " i+Order: " << i+Order << std::endl;
-        key[i + Order] = tup[i];
+      for (size_t i{0}; i < Order; ++i) {
+        key[i] = tup[i];
       }
       return key;
     }

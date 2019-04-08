@@ -57,6 +57,7 @@ namespace rascal {
     virtual void reset_initial_state() = 0;
 
    protected:
+    // intentionally left blank
    private:
   };
 

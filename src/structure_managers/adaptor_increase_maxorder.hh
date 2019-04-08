@@ -145,14 +145,14 @@ namespace rascal {
     get_offset_impl(const std::array<size_t, Order> & counters) const;
 
     //! Returns the number of clusters of size cluster_size
-    inline size_t get_nb_clusters(size_t cluster_size) const {
-      switch (cluster_size) {
+    inline size_t get_nb_clusters(size_t order) const {
+      switch (order) {
       case traits::MaxOrder: {
         return this->neighbours.size();
         break;
       }
       default:
-        return this->manager->get_nb_clusters(cluster_size);
+        return this->manager->get_nb_clusters(order);
         break;
       }
     }

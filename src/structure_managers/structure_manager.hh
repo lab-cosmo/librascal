@@ -281,8 +281,8 @@ namespace rascal {
     }
 
     //! number of atoms, pairs, triplets in respective manager
-    inline size_t nb_clusters(size_t cluster_size) const final {
-      return this->implementation().get_nb_clusters(cluster_size);
+    inline size_t nb_clusters(size_t order) const final {
+      return this->implementation().get_nb_clusters(order);
     }
 
     //! returns position of an atom with index ``atom_index``
