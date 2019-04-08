@@ -108,7 +108,7 @@ namespace rascal {
         : AdaptorMaxOrder(manager) {}
 
     AdaptorMaxOrder(ImplementationPtr_t manager,
-                    const Hypers_t & adaptor_hypers)
+                    const Hypers_t & /*adaptor_hypers*/)
         : AdaptorMaxOrder(manager) {}
 
     //! Copy constructor

@@ -106,7 +106,7 @@ namespace rascal {
         : AdaptorHalfList(manager) {}
 
     AdaptorHalfList(ImplementationPtr_t manager,
-                    const Hypers_t & adaptor_hypers)
+                    const Hypers_t & /*adaptor_hypers*/)
         : AdaptorHalfList(manager) {}
 
     //! Copy constructor

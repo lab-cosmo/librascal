@@ -107,7 +107,7 @@ namespace rascal {
         : AdaptorFullList(manager) {}
 
     AdaptorFullList(ImplementationPtr_t manager,
-                    const Hypers_t & adaptor_hypers)
+                    const Hypers_t & /*adaptor_hypers*/)
         : AdaptorFullList(manager) {}
 
     //! Copy constructor
