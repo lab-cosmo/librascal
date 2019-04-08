@@ -91,13 +91,11 @@ namespace rascal {
     }
 
     Fix::species_manager.update();
-    auto ctr{0};
     for (auto && tup : species_counter) {
       auto species{tup.first};
       auto nb_clusters{tup.second};
       auto nb_filtered{Fix::species_manager[species].nb_clusters(2)};
       BOOST_CHECK_EQUAL(nb_clusters, nb_filtered);
-      ctr++;
     }
   }
 

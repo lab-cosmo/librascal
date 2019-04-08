@@ -53,12 +53,12 @@ namespace rascal {
     std::list<json> hypers{{{"central_decay", 0.5},
                             {"interaction_cutoff", 10.},
                             {"interaction_decay", 0.5},
-                            {"size", 120},
+                            {"size", 10},
                             {"sorting_algorithm", "distance"}},
                            {{"central_decay", 0.5},
                             {"interaction_cutoff", 10.},
                             {"interaction_decay", 0.5},
-                            {"size", 120},
+                            {"size", 10},
                             {"sorting_algorithm", "row_norm"}}};
   };
 
