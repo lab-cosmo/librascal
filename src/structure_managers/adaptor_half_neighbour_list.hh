@@ -54,7 +54,6 @@ namespace rascal {
         ManagerImplementation::traits::HasDirectionVectors};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
-    constexpr static size_t AdaptorInitiParams{0};
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
         AdaptorTraits::NeighbourListType::half};
     using LayerByOrder = typename LayerIncreaser<
@@ -81,6 +80,7 @@ namespace rascal {
     using parent_traits = typename ManagerImplementation::traits;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
+    using Hypers_t = typename Parent::Hypers_t;
 
     // The stacking of this Adaptor is only possible on a manager which has a
     // pair list (MaxOrder=2). This is ensured here.
@@ -103,6 +103,10 @@ namespace rascal {
     explicit AdaptorHalfList(ImplementationPtr_t manager);
 
     AdaptorHalfList(ImplementationPtr_t manager, std::tuple<>)
+        : AdaptorHalfList(manager) {}
+
+    AdaptorHalfList(ImplementationPtr_t manager,
+                    const Hypers_t & adaptor_hypers)
         : AdaptorHalfList(manager) {}
 
     //! Copy constructor

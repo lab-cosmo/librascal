@@ -56,7 +56,6 @@ namespace rascal {
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
         AdaptorTraits::NeighbourListType::full};
-    constexpr static size_t AdaptorInitiParams{0};
     // New pairs are added at this layer, which did not exist before. Therefore
     // the layering has to be reset.
     constexpr static size_t AtomLayer{
@@ -86,6 +85,7 @@ namespace rascal {
     using parent_traits = typename ManagerImplementation::traits;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
+    using Hypers_t = typename Parent::Hypers_t;
 
     // The stacking of this Adaptor is only possible on a manager which has a
     // pair list (MaxOrder=2). This is ensured here.
@@ -104,6 +104,10 @@ namespace rascal {
     explicit AdaptorFullList(ImplementationPtr_t manager);
 
     AdaptorFullList(ImplementationPtr_t manager, std::tuple<>)
+        : AdaptorFullList(manager) {}
+
+    AdaptorFullList(ImplementationPtr_t manager,
+                    const Hypers_t & adaptor_hypers)
         : AdaptorFullList(manager) {}
 
     //! Copy constructor

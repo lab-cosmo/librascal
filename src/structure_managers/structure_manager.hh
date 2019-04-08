@@ -193,6 +193,8 @@ namespace rascal {
     using TypedProperty_t = TypedProperty<T, Order,
                                           compute_cluster_layer<Order>(
                                               typename traits::LayerByOrder{})>;
+    //! type for the hyper parameter class
+    using Hypers_t = json;
 
     //! Default constructor
     StructureManager()

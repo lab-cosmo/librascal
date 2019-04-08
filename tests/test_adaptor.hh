@@ -109,18 +109,55 @@ namespace rascal {
    * Streamline the test on several structures and cutoffs
    */
 
+  // struct MultipleStructureManagerNLFixture {
+  //   using Factory_t =
+  //       std::tuple<std::tuple<std::string>, std::tuple<double, bool>>;
+  //   using ManagerTypeHolder_t =
+  //       StructureManagerTypeHolder<StructureManagerCenters,
+  //                                  AdaptorNeighbourList>;
+  //   MultipleStructureManagerNLFixture() {
+  //     for (auto && filename : this->filenames) {
+  //       for (auto && cutoff : this->cutoffs) {
+  //         auto a0{std::make_tuple(filename)};
+  //         auto a1{std::make_tuple(cutoff, consider_ghost_neighbours)};
+  //         this->factory_args.emplace_back(a0, a1);
+  //       }
+  //     }
+  //   }
+
+  //   ~MultipleStructureManagerNLFixture() = default;
+
+  //   const bool consider_ghost_neighbours{false};
+  //   const std::vector<std::string> filenames{
+  //       "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
+  //       "reference_data/simple_cubic_8.json",
+  //       "reference_data/small_molecule.json"};
+  //   const std::vector<double> cutoffs{{1., 2., 3.}};
+
+  //   std::vector<Factory_t> factory_args{};
+  // };
+
   struct MultipleStructureManagerNLFixture {
-    using Factory_t =
-        std::tuple<std::tuple<std::string>, std::tuple<double, bool>>;
     using ManagerTypeHolder_t =
         StructureManagerTypeHolder<StructureManagerCenters,
                                    AdaptorNeighbourList>;
     MultipleStructureManagerNLFixture() {
       for (auto && filename : this->filenames) {
         for (auto && cutoff : this->cutoffs) {
-          auto a0{std::make_tuple(filename)};
-          auto a1{std::make_tuple(cutoff, consider_ghost_neighbours)};
-          this->factory_args.emplace_back(a0, a1);
+          json parameters;
+          json structure{{"filename", filename}};
+          json adaptors;
+          json ad1{
+              {"name", "AdaptorNeighbourList"},
+              {"initialization_arguments",
+               {{"cutoff", cutoff},
+                {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+          adaptors.push_back(ad1);
+
+          parameters["structure"] = structure;
+          parameters["adaptors"] = adaptors;
+
+          this->factory_args.emplace_back(parameters);
         }
       }
     }
@@ -134,7 +171,7 @@ namespace rascal {
         "reference_data/small_molecule.json"};
     const std::vector<double> cutoffs{{1., 2., 3.}};
 
-    std::vector<Factory_t> factory_args{};
+    json factory_args{};
   };
 
   struct MultipleStructureManagerNLStrictFixture {
@@ -147,9 +184,23 @@ namespace rascal {
     MultipleStructureManagerNLStrictFixture() {
       for (auto && filename : this->filenames) {
         for (auto && cutoff : this->cutoffs) {
-          auto a0{std::make_tuple(filename)};
-          auto a1{std::make_tuple(cutoff, consider_ghost_neighbours, cutoff)};
-          this->factory_args.emplace_back(a0, a1);
+          json parameters;
+          json structure{{"filename", filename}};
+          json adaptors;
+          json ad1{
+              {"name", "AdaptorNeighbourList"},
+              {"initialization_arguments",
+               {{"cutoff", cutoff},
+                {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+          json ad2{{"name", "AdaptorStrict"},
+                   {"initialization_arguments", {{"cutoff", cutoff}}}};
+          adaptors.emplace_back(ad1);
+          adaptors.emplace_back(ad2);
+
+          parameters["structure"] = structure;
+          parameters["adaptors"] = adaptors;
+
+          this->factory_args.emplace_back(parameters);
         }
       }
     }
@@ -162,7 +213,7 @@ namespace rascal {
         "reference_data/small_molecule.json"};
     const std::vector<double> cutoffs{{1., 2., 3.}};
 
-    std::vector<Factory_t> factory_args{};
+    json factory_args{};
   };
 
   template <class BaseFixture>
@@ -173,9 +224,10 @@ namespace rascal {
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
 
     MultipleStructureFixture() : Parent{} {
-      for (auto factory_arg : this->factory_args) {
-        auto manager{make_structure_manager_stack_with_tuple_and_typeholder<
-            ManagerTypeList_t>::apply(factory_arg)};
+      for (auto & factory_arg : this->factory_args) {
+        auto manager{make_structure_manager_stack_with_hypers_and_typeholder<
+            ManagerTypeList_t>::apply(factory_arg["structure"],
+                                      factory_arg["adaptors"])};
         this->managers.push_back(manager);
       }
     }
