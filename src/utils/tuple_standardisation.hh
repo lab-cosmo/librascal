@@ -70,6 +70,7 @@ namespace rascal {
 
     template <size_t Order>
     operator const std::array<T, Order> &() const {
+      static_assert(Order < MaxOrder, "Casting a not allowed tuple size");
       return reinterpret_cast<std::array<T, Order> &>(*this);
     }
 

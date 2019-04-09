@@ -149,8 +149,6 @@ namespace rascal {
     template <size_t Order>
     Filter<Order> & operator[](const std::array<int, Order> & species_indices) {
       auto && location{this->filters.find(Key_t{species_indices})};
-      // todo(markus) should this not depend on the order?
-      // auto && location{this->filters.find(Key_t<Order>{species_indices})};
 
       if (location == this->filters.end()) {
         // this species combo is not yet in the container, therefore
