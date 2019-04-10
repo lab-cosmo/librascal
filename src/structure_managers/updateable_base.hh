@@ -34,7 +34,34 @@
 
 namespace rascal {
 
-  //! base class for updatable functionality
+  /**
+   * Base class providing/defining the interface of an updatable object.
+   * Adaptors, StructureManagers and ManagerSpecies are,
+   * for instance updatable, objects since the underlying atomic structure
+   * can change, e.g. along a MD run, with its 'neighbour list'.
+   *
+   * Updatable objects are linked together to form a tree with a root, some
+   * branches and some number of leaves. Here is an illustration of such
+   * structure:
+   *                        ROOT
+   *               /                  \
+   *          brancheA1              brancheB1
+   *            /    \                      \
+   *    brancheA11 brancheA12              brancheB11
+   *      /   \        /   \                /
+   *  leave1 leave2 leave3 leave4        leave5
+   *
+   * The update mechanism allows to triger an update from
+   * anywhere in the tree that will send the update signal to the root which
+   * will in turn update itself and the whole tree.
+   * The sending of the upward signal to the root is handled with the update
+   * function implemented in each class inheriting Udatable. Since this
+   * function involves the templated parent structure manager and that it is
+   * itself templated it can't be defined explicitly in Updatable.
+   * So this class mainly handles the parent to child relationship while
+   * the child to parent relashionship is implementated in the classes
+   * inheriting from Udatable.
+   */
   class Updateable {
    public:
     using Children_t = std::weak_ptr<Updateable>;

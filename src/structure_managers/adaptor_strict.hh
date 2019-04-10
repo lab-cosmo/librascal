@@ -347,8 +347,6 @@ namespace rascal {
   template <class ManagerImplementation>
   template <class... Args>
   void AdaptorStrict<ManagerImplementation>::update(Args &&... arguments) {
-    // if sizeof...(arguments) == 0 then the underlying structure
-    // is not changed
     if (sizeof...(arguments) > 0) {
       this->set_update_status(false);
     }
