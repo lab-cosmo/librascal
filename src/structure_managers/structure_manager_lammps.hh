@@ -201,9 +201,7 @@ namespace rascal {
                      int * numneigh, int ** firstneigh, double ** x,
                      double ** f, int * type, double * eatom, double ** vatom);
    protected:
-    //! overload of update that does not change the underlying structure
-    // void update_self();
-
+    
     int inum{};           //!< total numer of atoms
     int tot_num{};        //!< total number, includes ghosts
     int * ilist{};        //!< atomic indices
