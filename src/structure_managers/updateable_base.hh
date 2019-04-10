@@ -96,14 +96,11 @@ namespace rascal {
      */
     void add_child(Children_t child) { this->children.emplace_back(child); }
 
-    virtual void update_self() = 0;
     /**
-     * When the underlying structure changes, all computations are potentially
-     * invalid. This function triggers the setting of the statue variable to
-     * `false` along the tree. Should only be called from the root of the tree
-     * (usually a StructureManager).
+     * Implements how the updateable updates itself.
      */
-    // virtual void send_changed_structure_signal() = 0;
+    virtual void update_self() = 0;
+    
     /**
      * When the underlying structure changes, all computations are potentially
      * invalid. This function triggers the setting of the statue variable to
