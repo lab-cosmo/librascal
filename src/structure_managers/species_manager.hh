@@ -126,25 +126,24 @@ namespace rascal {
      * updated. this function invokes building either the neighbour list or to
      * make triplets, quadruplets, etc. depending on the MaxOrder
      */
-    void update();
+    void update_self();
 
     //! Updates the underlying manager as well as the adaptor
     template <class... Args>
     void update(Args &&... arguments) {
-      this->update();
-      this->structure_manager.update(arguments...);
+      if (sizeof...(arguments) > 0) {
+        this->set_update_status(false);
+      }
+      this->structure_manager->update(std::forward<Args>(arguments)...);
+      // TODO(markus) explain why we are not following our own rational here
+      this->update_self();
     }
 
     /**
      * function for updating children, which means basically filtering again
      * based on the changes of the underlying adaptor(stack)
      */
-    void update_children() final {
-      if (not this->get_update_status()) {
-        this->update();
-        this->set_update_status(true);
-      }
-    }
+    void update_children() final {}
 
     template <size_t Order>
     Filter<Order> & operator[](const std::array<int, Order> & species_indices) {
@@ -171,7 +170,7 @@ namespace rascal {
     }
 
    protected:
-    //! underlying structure manager to be filtered upon update()
+    //! underlying structure manager to be filtered upon update_self()
     ImplementationPtr_t structure_manager;
     //! storage by cluster order for the filtered managers
     FilterContainer_t filters{};
@@ -262,7 +261,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation, size_t MaxOrder>
-  void SpeciesManager<ManagerImplementation, MaxOrder>::update() {
+  void SpeciesManager<ManagerImplementation, MaxOrder>::update_self() {
     // reset all filters before filling them again
     for (auto && key_filter : this->filters) {
       key_filter.second->reset_initial_state();

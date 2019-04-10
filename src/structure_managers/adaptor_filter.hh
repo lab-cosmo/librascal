@@ -165,7 +165,7 @@
     inline void reset_initial_state();
 
     //! updates the underlying adaptor
-    inline void update_adaptor() {
+    inline void update_self() {
       this->reset_initial_state();
       this->perform_filtering();
     }

@@ -96,7 +96,7 @@ namespace rascal {
      */
     void add_child(Children_t child) { this->children.emplace_back(child); }
 
-    // virtual void update_adaptor() = 0;
+    virtual void update_self() = 0;
     /**
      * When the underlying structure changes, all computations are potentially
      * invalid. This function triggers the setting of the statue variable to
@@ -105,8 +105,10 @@ namespace rascal {
      */
     // virtual void send_changed_structure_signal() = 0;
     /**
-     * When the underlying structure has changed, send this fact to the
-     * tree. Should only be used in the StructureManagerRoot
+     * When the underlying structure changes, all computations are potentially
+     * invalid. This function triggers the setting of the statue variable to
+     * `false` along the tree. Should only be called from the root of the tree
+     * (usually a StructureManager).
      */
     void send_changed_structure_signal() {
       this->set_update_status(true);

@@ -99,7 +99,7 @@ namespace rascal {
     }
 
     //! it is not an adaptor so there is nothing to update
-    void update_adaptor() {}
+    void update_self() {}
 
     //! return position vector of an atom given the atom index
     inline Vector_ref get_position(const size_t & atom_index) {

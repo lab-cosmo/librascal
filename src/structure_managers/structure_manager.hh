@@ -179,7 +179,6 @@ namespace rascal {
     using ClusterConstructor_t =
         typename internal::ClusterIndexConstructor<ClusterIndex_t,
                                                    StructureManagerBase>;
-    using Children_t = std::weak_ptr<Updateable>;
 
     //! helper type for Property creation
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
@@ -214,6 +213,8 @@ namespace rascal {
 
     //! Move assignment operator
     StructureManager & operator=(StructureManager && other) = default;
+
+    virtual void update_self() = 0;
 
     // required for the construction of vectors, etc
     constexpr static int dim() { return traits::Dim; }
@@ -385,7 +386,7 @@ namespace rascal {
      */
     void update_children() final {
       if (not this->get_update_status()) {
-        this->implementation().update_adaptor();
+        this->implementation().update_self();
         this->set_update_status(true);
       }
       for (auto && child : this->children) {
@@ -395,7 +396,7 @@ namespace rascal {
       }
     }
 
-    
+
 
     //! returns the current layer
     template <size_t Order>

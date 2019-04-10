@@ -118,7 +118,7 @@ namespace rascal {
     AdaptorStrict & operator=(AdaptorStrict && other) = default;
 
     //! update just the adaptor assuming the underlying manager was updated
-    inline void update_adaptor();
+    inline void update_self();
 
     //! update the underlying manager as well as the adaptor
     template <class... Args>
@@ -355,7 +355,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
-  void AdaptorStrict<ManagerImplementation>::update_adaptor() {
+  void AdaptorStrict<ManagerImplementation>::update_self() {
     //! Reset cluster_indices for adaptor to fill with push back.
     internal::for_each(this->cluster_indices_container,
                        internal::ResizePropertyToZero());

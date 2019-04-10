@@ -33,7 +33,6 @@
 // inclusion of librascal data structure, each manager is based on the interface
 // given in `structure_manager.hh`
 #include "structure_managers/structure_manager.hh"
-#include "structure_managers/updateable_base.hh"
 #include "lattice.hh"
 #include "atomic_structure.hh"
 #include "basic_types.hh"
@@ -174,7 +173,7 @@ namespace rascal {
     }
 
     //! it is not an adaptor so there is nothing to update
-    void update_adaptor() {}
+    void update_self() {}
 
     //! required for the construction of vectors, etc
     constexpr static int dim() { return traits::Dim; }

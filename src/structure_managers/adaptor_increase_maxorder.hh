@@ -131,7 +131,7 @@ namespace rascal {
      * updated. this function invokes making triplets, quadruplets,
      * etc. depending on the MaxOrder, pair list has to be present.
      */
-    void update_adaptor();
+    void update_self();
 
     //! Updates the underlying manager as well as the adaptor
     template <class... Args>
@@ -431,7 +431,7 @@ namespace rascal {
    * increases it by one (i.e. pairs->triplets, triplets->quadruplets, etc.
    */
   template <class ManagerImplementation>
-  void AdaptorMaxOrder<ManagerImplementation>::update_adaptor() {
+  void AdaptorMaxOrder<ManagerImplementation>::update_self() {
     static_assert(traits::MaxOrder > 2,
                   "No neighbourlist present; extension not possible.");
 

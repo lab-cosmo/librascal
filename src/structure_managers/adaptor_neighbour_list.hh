@@ -36,7 +36,6 @@
 #include "rascal_utility.hh"
 #include "structure_managers/property.hh"
 #include "structure_managers/structure_manager.hh"
-#include "structure_managers/updateable_base.hh"
 
 #include <set>
 #include <typeinfo>
@@ -498,7 +497,7 @@ namespace rascal {
      * updated. this function invokes building either the neighbour list or to
      * make triplets, quadruplets, etc. depending on the MaxOrder
      */
-    void update_adaptor();
+    void update_self();
 
     //! Updates the underlying manager as well as the adaptor
     template <class... Args>
@@ -791,7 +790,7 @@ namespace rascal {
    * this function must be called to invoke the neighbour list algorithm
    */
   template <class ManagerImplementation>
-  void AdaptorNeighbourList<ManagerImplementation>::update_adaptor() {
+  void AdaptorNeighbourList<ManagerImplementation>::update_self() {
     // set the number of centers
     this->n_centers = this->manager->get_size();
     this->n_ghosts = 0;
