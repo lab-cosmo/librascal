@@ -395,18 +395,7 @@ namespace rascal {
       }
     }
 
-    /**
-     * When the underlying structure has changed, send this fact to the
-     * tree. Should only be used in the StructureManagerRoot
-     */
-    void send_changed_structure_signal() {
-      this->set_update_status(true);
-      for (auto && child : this->children) {
-        if (not child.expired()) {
-          child.lock()->set_update_status(false);
-        }
-      }
-    }
+    
 
     //! returns the current layer
     template <size_t Order>

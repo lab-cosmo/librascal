@@ -104,6 +104,18 @@ namespace rascal {
      * (usually a StructureManager).
      */
     // virtual void send_changed_structure_signal() = 0;
+    /**
+     * When the underlying structure has changed, send this fact to the
+     * tree. Should only be used in the StructureManagerRoot
+     */
+    void send_changed_structure_signal() {
+      this->set_update_status(true);
+      for (auto && child : this->children) {
+        if (not child.expired()) {
+          child.lock()->set_update_status(false);
+        }
+      }
+    }
 
     //! Setter function for update statue variable
     inline void set_update_status(const bool sig) { this->updated = sig; }
