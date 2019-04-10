@@ -45,7 +45,6 @@ namespace rascal {
 
   template <size_t Order>
   struct TupleFixture {
-
     TupleFixture() : standard_tuple{indices_fixture.indices} {}
     ~TupleFixture() = default;
 
