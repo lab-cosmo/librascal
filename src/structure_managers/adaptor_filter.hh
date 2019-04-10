@@ -37,7 +37,7 @@
 
 #include <type_traits>
 
-    namespace rascal {
+namespace rascal {
 
   /**
    * Forward declaration for traits

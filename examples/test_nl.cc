@@ -170,7 +170,7 @@ int main() {
 
   using Feature_t = FeatureManagerDense<double>;
   Feature_t features{810, hypers};
-  //size_t i_center{0};
+  // size_t i_center{0};
   // for (auto & manager : meta.managers) {
   //   // double central_decay{10};
   //   // double interaction_cutoff{10};

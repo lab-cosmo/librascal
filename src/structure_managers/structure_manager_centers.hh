@@ -308,6 +308,7 @@ namespace rascal {
 
     //! overload of update that does not change the underlying structure
     void update_self() {}
+
    protected:
     //! makes atom index lists and offsets
     void build();

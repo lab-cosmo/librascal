@@ -200,8 +200,8 @@ namespace rascal {
     void update_self(const int & inum, const int & tot_num, int * ilist,
                      int * numneigh, int ** firstneigh, double ** x,
                      double ** f, int * type, double * eatom, double ** vatom);
+
    protected:
-    
     int inum{};           //!< total numer of atoms
     int tot_num{};        //!< total number, includes ghosts
     int * ilist{};        //!< atomic indices

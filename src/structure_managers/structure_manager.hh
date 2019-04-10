@@ -396,8 +396,6 @@ namespace rascal {
       }
     }
 
-
-
     //! returns the current layer
     template <size_t Order>
     constexpr static size_t cluster_layer() {
