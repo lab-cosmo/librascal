@@ -33,7 +33,7 @@
 namespace rascal {
 
   /* ---------------------------------------------------------------------- */
-  void StructureManagerLammps::update_impl(const int & inum,
+  void StructureManagerLammps::update_self(const int & inum,
                                            const int & tot_num, int * ilist,
                                            int * numneigh, int ** firstneigh,
                                            double ** x, double ** f, int * type,
@@ -62,10 +62,6 @@ namespace rascal {
     atom_cluster_indices.fill_sequence();
     pair_cluster_indices.fill_sequence();
   }
-
-  /* ---------------------------------------------------------------------- */
-  // overloading the update function
-  void StructureManagerLammps::update_impl() {}
 
   /* ---------------------------------------------------------------------- */
   /*

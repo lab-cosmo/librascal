@@ -161,7 +161,7 @@ namespace rascal {
     template <class... Args>
     void update(Args &&... arguments) {
       // update the underlying structure
-      this->update_impl(std::forward<Args>(arguments)...);
+      this->update_self(std::forward<Args>(arguments)...);
 
       if (sizeof...(arguments) > 0) {
         // the structure has changed to tell it to the whole tree
@@ -171,10 +171,6 @@ namespace rascal {
       // send the update signal to the tree
       this->update_children();
     }
-
-    //! it is not an adaptor so there is nothing to update
-    void update_self() {}
-
     //! required for the construction of vectors, etc
     constexpr static int dim() { return traits::Dim; }
 
@@ -289,14 +285,13 @@ namespace rascal {
 
     // TODO(markus): add function to read from XYZ files
 
-   protected:
     /**
      * invokes the initialisation/reinitialisation based on existing
      * data. E.g. when the atom positions are provided by a simulation method,
      * which evolves in time, this function updates the data.
      */
     void
-    update_impl(const Eigen::Ref<const Eigen::MatrixXd, 0,
+    update_self(const Eigen::Ref<const Eigen::MatrixXd, 0,
                                  Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>>
                     positions,
                 const Eigen::Ref<const Eigen::VectorXi> atom_types,
@@ -306,14 +301,14 @@ namespace rascal {
      * Overload of the update function invokes an update from a file, which
      * holds a structure in the format of the ASE atoms object
      */
-    void update_impl(const std::string filename);
+    void update_self(const std::string filename);
 
     //! overload of update that does not change the underlying structure
-    void update_impl(AtomicStructure<traits::Dim> & structure);
+    void update_self(AtomicStructure<traits::Dim> & structure);
 
     //! overload of update that does not change the underlying structure
-    void update_impl() {}
-
+    void update_self() {}
+   protected:
     //! makes atom index lists and offsets
     void build();
     /**

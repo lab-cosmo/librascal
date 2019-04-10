@@ -89,7 +89,8 @@ namespace rascal {
     template <class... Args>
     void update(Args &&... arguments) {
       // update the underlying structure
-      this->update_impl(std::forward<Args>(arguments)...);
+      this->update_self(std::forward<Args>(arguments)...);
+
       if (sizeof...(arguments) > 0) {
         // the structure has changed to tell it to the whole tree
         this->send_changed_structure_signal();
@@ -97,9 +98,6 @@ namespace rascal {
       // send the update signal to the tree
       this->update_children();
     }
-
-    //! it is not an adaptor so there is nothing to update
-    void update_self() {}
 
     //! return position vector of an atom given the atom index
     inline Vector_ref get_position(const size_t & atom_index) {
@@ -168,7 +166,8 @@ namespace rascal {
      */
     size_t get_nb_clusters(int order) const;
 
-   protected:
+    //! //! overload of update that does not change the underlying structure
+    void update_self() {}
     /**
      * resetting is required every time the list changes. Here, this
      * is implemented without explicit dependency to lammps. The
@@ -198,12 +197,12 @@ namespace rascal {
      *
      * @param vatom per-atom virial
      */
-    void update_impl(const int & inum, const int & tot_num, int * ilist,
+    void update_self(const int & inum, const int & tot_num, int * ilist,
                      int * numneigh, int ** firstneigh, double ** x,
                      double ** f, int * type, double * eatom, double ** vatom);
-
+   protected:
     //! overload of update that does not change the underlying structure
-    void update_impl();
+    // void update_self();
 
     int inum{};           //!< total numer of atoms
     int tot_num{};        //!< total number, includes ghosts

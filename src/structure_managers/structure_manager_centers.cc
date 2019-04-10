@@ -86,7 +86,7 @@ namespace rascal {
    * and access them with the map. Using the vector type automatically ensures
    * contiguity
    */
-  void StructureManagerCenters::update_impl(
+  void StructureManagerCenters::update_self(
       const Eigen::Ref<const Eigen::MatrixXd, 0,
                        Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>>
           positions,
@@ -100,7 +100,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   // overloading the update function to be able to update from a file
-  void StructureManagerCenters::update_impl(const std::string filename) {
+  void StructureManagerCenters::update_self(const std::string filename) {
     auto json_atoms_object{this->read_structure_from_json(filename)};
     this->atoms_object.set_structure(json_atoms_object);
 
@@ -109,7 +109,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   // overloading the update function
-  void StructureManagerCenters::update_impl(
+  void StructureManagerCenters::update_self(
       AtomicStructure<traits::Dim> & structure) {
     this->atoms_object = structure;
     StructureManagerCenters::build();
