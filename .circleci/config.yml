@@ -19,7 +19,7 @@ jobs:
                                         apt-get install -y python3.6
                                         apt-get install -y git
                                         apt-get install -y libboost-test-dev
-                                        apt-get install -y doxygen
+                                        apt-get install -y doxygen graphviz
                                         apt-get install -y gcc-5 g++-5
                         - run:
                                 name: installing python packages
@@ -69,7 +69,7 @@ jobs:
                                         apt-get install -y python3.6
                                         apt-get install -y git
                                         apt-get install -y libboost-test-dev
-                                        apt-get install -y doxygen
+                                        apt-get install -y doxygen graphviz
                                         apt-get install -y gcc-6 g++-6
                         - run:
                                 name: installing python packages
@@ -118,7 +118,7 @@ jobs:
                                         apt-get install -y python3.6
                                         apt-get install -y git
                                         apt-get install -y libboost-test-dev
-                                        apt-get install -y doxygen
+                                        apt-get install -y doxygen graphviz
                         - run:
                                 name: installing python packages
                                 command: |
@@ -167,7 +167,7 @@ jobs:
                                         apt-get install -y python3.6
                                         apt-get install -y git
                                         apt-get install -y libboost-test-dev
-                                        apt-get install -y doxygen
+                                        apt-get install -y doxygen graphviz
                         - run:
                                 name: installing python packages
                                 command: |
@@ -216,7 +216,7 @@ jobs:
                                         apt-get install -y python3.6
                                         apt-get install -y git
                                         apt-get install -y libboost-test-dev
-                                        apt-get install -y doxygen
+                                        apt-get install -y doxygen graphviz
                                         apt-get install -y software-properties-common
                                         apt-get install -y gcc-5 g++-5
                                         apt-get update -y
@@ -278,7 +278,7 @@ jobs:
                                         apt-get install -y python3.6
                                         apt-get install -y git
                                         apt-get install -y libboost-test-dev
-                                        apt-get install -y doxygen
+                                        apt-get install -y doxygen graphviz
                                         apt-get install -y software-properties-common
                                         apt-get install -y gcc-5 g++-5
                                         apt-get update -y
@@ -340,7 +340,7 @@ jobs:
                                         apt-get install -y python3.6
                                         apt-get install -y git
                                         apt-get install -y libboost-test-dev
-                                        apt-get install -y doxygen
+                                        apt-get install -y doxygen graphviz
                                         apt-get remove -y clang
                                         apt-get install -y clang-6.0 libclang-common-6.0-dev libllvm6.0 libc++-dev
                         - run:
@@ -392,7 +392,7 @@ jobs:
                                         apt-get install -y python3.6
                                         apt-get install -y git
                                         apt-get install -y libboost-test-dev
-                                        apt-get install -y doxygen
+                                        apt-get install -y doxygen graphviz
                                         apt-get remove -y clang
                                         apt-get install -y clang-5.0 libclang-common-5.0-dev libllvm5.0 libc++-dev
                         - run:
@@ -442,7 +442,7 @@ jobs:
                                         apt-get install -y python3.6
                                         apt-get install -y git
                                         apt-get install -y libboost-test-dev
-                                        apt-get install -y doxygen
+                                        apt-get install -y doxygen graphviz
                                         apt-get install -y clang-4.0 llvm-4.0
                                         #apt-get install -y software-properties-common
                                         #apt-get update -y
