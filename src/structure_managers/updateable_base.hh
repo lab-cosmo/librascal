@@ -100,7 +100,7 @@ namespace rascal {
      * Implements how the updateable updates itself.
      */
     virtual void update_self() = 0;
-    
+
     /**
      * When the underlying structure changes, all computations are potentially
      * invalid. This function triggers the setting of the statue variable to
