@@ -1,6 +1,6 @@
 version: 2
 jobs:
-        build_ubuntu_g++-5.4:
+        build_ubuntu_g++-5.5:
                 docker:
                         - image: ubuntu:18.04
                           environment:
@@ -484,7 +484,7 @@ workflows:
                 jobs:
                         - build_ubuntu_g++-7.3_debug
                         - build_ubuntu_clang-7.0_debug
-                        - build_ubuntu_g++-5.4
+                        - build_ubuntu_g++-5.5
                         - build_ubuntu_g++-6.4
                         - build_ubuntu_g++-7.3
                         - build_ubuntu_clang-4.0
