@@ -156,8 +156,8 @@ namespace rascal {
         // insertion returns a ridiculous type: ((Key, Value), success), where
         // Value is the filter
         // create a (species_indices, filter) pair and add it to the list
-        auto && retval{
-            this->filters.emplace(species_indices, std::move(new_filter))};
+        auto && retval{this->filters.emplace(Key_t{species_indices},
+                                             std::move(new_filter))};
         auto && new_location{retval.first};
         return static_cast<Filter<Order> &>(*(new_location->second));
       } else {
