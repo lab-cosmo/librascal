@@ -135,13 +135,22 @@ namespace rascal {
         this->set_update_status(false);
       }
       this->structure_manager->update(std::forward<Args>(arguments)...);
-      // TODO(markus) explain why we are not following our own rational here
+      /**
+       * Note that the update and update_self rational is hacked here for
+       * efficiency.
+       * The species_manager::Filter don't know how to update themselves
+       * because this functionality is defered to species_manager. For example
+       * accros a MD simulation the possible atom types might change and
+       * SpeciesManager can change dynamically the list of filters but they
+       * can't do it themselves.
+       */
       this->update_self();
     }
 
     /**
-     * function for updating children, which means basically filtering again
-     * based on the changes of the underlying adaptor(stack)
+     * This function is never called because SpeciesManager belongs to the
+     * update upward tree but only the this->filters belong to the downward
+     * tree that would typically trigger the update_self.
      */
     void update_children() final {}
 
