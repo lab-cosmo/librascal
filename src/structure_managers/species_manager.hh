@@ -35,7 +35,7 @@
 #include "structure_managers/adaptor_filter.hh"
 #include "structure_managers/property.hh"
 #include "structure_managers/updateable_base.hh"
-#include "utils/tuple_standardisation.hh"
+#include "utils/key_standardisation.hh"
 
 #include <type_traits>
 #include <array>
@@ -49,7 +49,7 @@ namespace rascal {
 
     namespace detail {
       template <size_t Order>
-      using Key_t = TupleStandardisation<int, Order>;
+      using Key_t = KeyStandardisation<int, Order>;
       using Value_t = std::unique_ptr<FilterBase>;
       template <size_t Order>
       using Map_t = std::map<Key_t<Order>, Value_t>;

@@ -1,5 +1,5 @@
 /**
- * file   tuple_standardisation.hh
+ * file   key_standardisation.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  * @author Markus Stricker <markus.stricker@epfl.ch>
@@ -27,8 +27,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_UTILS_TUPLE_STANDARDISATION_HH_
-#define SRC_UTILS_TUPLE_STANDARDISATION_HH_
+#ifndef SRC_UTILS_KEY_STANDARDISATION_HH_
+#define SRC_UTILS_KEY_STANDARDISATION_HH_
 
 #include <array>
 #include <limits>
@@ -36,35 +36,35 @@
 namespace rascal {
 
   template <typename T, size_t MaxOrder>
-  class TupleStandardisation {
+  class KeyStandardisation {
     static_assert(std::is_arithmetic<T>::value,
                   "must be an integer or float type");
 
    public:
     //! Default constructor
-    TupleStandardisation() = delete;
+    KeyStandardisation() = delete;
 
     template <size_t Order>
-    explicit TupleStandardisation(const std::array<T, Order> & tup)
-        : key{TupleStandardisation::fill(tup)}, order{Order} {}
+    explicit KeyStandardisation(const std::array<T, Order> & tup)
+        : key{KeyStandardisation::fill(tup)}, order{Order} {}
 
     //! Copy constructor
-    TupleStandardisation(const TupleStandardisation & other) = default;
+    KeyStandardisation(const KeyStandardisation & other) = default;
 
     //! Move constructor
-    TupleStandardisation(TupleStandardisation && other) = default;
+    KeyStandardisation(KeyStandardisation && other) = default;
 
     //! Destructor
-    virtual ~TupleStandardisation() = default;
+    virtual ~KeyStandardisation() = default;
 
     //! Copy assignment operator
-    TupleStandardisation &
-    operator=(const TupleStandardisation & other) = default;
+    KeyStandardisation &
+    operator=(const KeyStandardisation & other) = default;
 
     //! Move assignment operator
-    TupleStandardisation & operator=(TupleStandardisation && other) = default;
+    KeyStandardisation & operator=(KeyStandardisation && other) = default;
 
-    bool operator<(const TupleStandardisation & other) const {
+    bool operator<(const KeyStandardisation & other) const {
       return this->key < other.key;
     }
 
@@ -74,7 +74,7 @@ namespace rascal {
       return reinterpret_cast<std::array<T, Order> &>(*this);
     }
 
-    T & operator[](const size_t index) { return this->key[index]; }
+    const T & operator[](const size_t index) { return this->key[index]; }
 
     const T & operator[](const size_t index) const { return this->key[index]; }
 
@@ -106,7 +106,7 @@ namespace rascal {
    */
   template <typename T, size_t Order>
   std::ostream & operator<<(std::ostream & os,
-                            const TupleStandardisation<T, Order> & index) {
+                            const KeyStandardisation<T, Order> & index) {
     os << "(";
     for (size_t i = 0; i < Order - 1; ++i) {
       os << index[i] << ", ";
@@ -117,4 +117,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif  // SRC_UTILS_TUPLE_STANDARDISATION_HH_
+#endif  // SRC_UTILS_KEY_STANDARDISATION_HH_

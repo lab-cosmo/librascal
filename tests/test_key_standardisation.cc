@@ -1,11 +1,11 @@
 /**
- * file   test_tuple_standardisation.hh
+ * file   test_key_standardisation.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *
  * @date   08 Apr 2019
  *
- * @brief  test configuration for tuple standardisation
+ * @brief  test configuration for key standardisation
  *
  * Copyright © 2019 Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -26,11 +26,11 @@
  */
 
 #include "tests.hh"
-#include "utils/tuple_standardisation.hh"
+#include "utils/key_standardisation.hh"
 
 namespace rascal {
 
-  BOOST_AUTO_TEST_SUITE(tuple_standardisation_test);
+  BOOST_AUTO_TEST_SUITE(key_standardisation_test);
 
   template <size_t Order>
   struct IndexFixture {
@@ -44,31 +44,30 @@ namespace rascal {
   };
 
   template <size_t Order>
-  struct TupleFixture {
-    TupleFixture() : standard_tuple{indices_fixture.indices} {}
-    ~TupleFixture() = default;
+  struct KeyFixture {
+    KeyFixture() : standard_tuple{indices_fixture.indices} {}
+    ~KeyFixture() = default;
 
     IndexFixture<Order> indices_fixture{};
-    TupleStandardisation<int, Order> standard_tuple;
+    KeyStandardisation<int, Order> standard_tuple;
   };
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(constructor_test, TupleFixture<5>) {}
+  BOOST_FIXTURE_TEST_CASE(constructor_test, KeyFixture<5>) {}
 
   /* ---------------------------------------------------------------------- */
-
-  BOOST_FIXTURE_TEST_CASE(iterator_test, TupleFixture<5>) {
+  BOOST_FIXTURE_TEST_CASE(iterator_test, KeyFixture<5>) {
     std::cout << "indices " << std::endl;
     for (size_t i{0}; i < 5; ++i) {
-      std::cout << indices_fixture.indices[i] << " ";
+      auto ref_val{indices_fixture.indices[i]};
+      auto key_val{standard_tuple[i]};
+      BOOST_CHECK_EQUAL(ref_val, key_val);
     }
-    // for (auto && i : standard_tuple) {
-    //   std::cout << i << std::endl;
-    // }
-
-    std::cout << std::endl;
-    std::cout << "StandardTuple " << standard_tuple << std::endl;
   }
+
+  /* ---------------------------------------------------------------------- */
+  // todo(till): add test for access to atom, pair, etc. indices in
+  // KeyStandardisation
 
   BOOST_AUTO_TEST_SUITE_END()
 }  // namespace rascal
