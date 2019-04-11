@@ -234,7 +234,7 @@ namespace rascal {
       }
     }
 
-    std::vector<precision_t> & get_representation_raw_data() {
+    std::vector<Precision_t> & get_representation_raw_data() {
       return this->soap_vectors.get_raw_data();
     }
 

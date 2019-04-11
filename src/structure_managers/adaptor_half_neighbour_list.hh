@@ -106,7 +106,7 @@ namespace rascal {
         : AdaptorHalfList(manager) {}
 
     AdaptorHalfList(ImplementationPtr_t manager,
-                    const Hypers_t & adaptor_hypers)
+                    const Hypers_t & /*adaptor_hypers*/)
         : AdaptorHalfList(manager) {}
 
     //! Copy constructor
@@ -125,7 +125,7 @@ namespace rascal {
     AdaptorHalfList & operator=(AdaptorHalfList && other) = default;
 
     //! update just the adaptor assuming the underlying manager was updated
-    void update_adaptor();
+    void update_self();
 
     //! update the underlying manager as well as the adaptor
     template <class... Args>
@@ -138,10 +138,10 @@ namespace rascal {
     inline double get_cutoff() const { return this->manager->get_cutoff(); }
 
     //! returns the number of atoms or pairs
-    inline size_t get_nb_clusters(int cluster_size) const {
-      switch (cluster_size) {
+    inline size_t get_nb_clusters(int order) const {
+      switch (order) {
       case 1: {
-        return this->manager->get_nb_clusters(cluster_size);
+        return this->manager->get_nb_clusters(order);
         break;
       }
       case 2: {
@@ -303,7 +303,7 @@ namespace rascal {
     // if sizeof...(arguments) == 0 then the underlying structure
     // is not changed
     if (sizeof...(arguments) > 0) {
-      this->set_is_up_to_date(false);
+      this->set_update_status(false);
     }
     this->manager->update(std::forward<Args>(arguments)...);
   }
@@ -314,7 +314,7 @@ namespace rascal {
    * which does not include permutations of pairs
    */
   template <class ManagerImplementation>
-  void AdaptorHalfList<ManagerImplementation>::update_adaptor() {
+  void AdaptorHalfList<ManagerImplementation>::update_self() {
     // Reset cluster_indices for adaptor to fill with push back.
     internal::for_each(this->cluster_indices_container,
                        internal::ResizePropertyToZero());

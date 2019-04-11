@@ -42,7 +42,7 @@ namespace rascal {
     //! type for the hyper parameter class
     using Hypers_t = json;
     //! type for representation
-    using precision_t = double;
+    using Precision_t = double;
     //! type used to register the valid key and values of Hypers_t
     using ReferenceHypers_t = std::map<std::string, std::vector<std::string>>;
 
@@ -75,7 +75,7 @@ namespace rascal {
     virtual void compute() = 0;
 
     //! get the raw data of the representation
-    virtual std::vector<precision_t> & get_representation_raw_data() = 0;
+    virtual std::vector<Precision_t> & get_representation_raw_data() = 0;
 
     //! get the size of a feature vector
     virtual size_t get_feature_size() = 0;

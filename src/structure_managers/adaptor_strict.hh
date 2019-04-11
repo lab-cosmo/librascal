@@ -33,6 +33,7 @@
 
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/property.hh"
+#include "structure_managers/updateable_base.hh"
 #include "rascal_utility.hh"
 
 namespace rascal {
@@ -117,7 +118,7 @@ namespace rascal {
     AdaptorStrict & operator=(AdaptorStrict && other) = default;
 
     //! update just the adaptor assuming the underlying manager was updated
-    inline void update_adaptor();
+    inline void update_self();
 
     //! update the underlying manager as well as the adaptor
     template <class... Args>
@@ -151,8 +152,8 @@ namespace rascal {
       return this->dir_vec[pair];
     }
 
-    inline size_t get_nb_clusters(int cluster_size) const {
-      return this->atom_indices[cluster_size - 1].size();
+    inline size_t get_nb_clusters(int order) const {
+      return this->atom_indices[order - 1].size();
     }
 
     inline size_t get_size() const { return this->manager->get_size(); }
@@ -223,9 +224,9 @@ namespace rascal {
     }
 
     //! return the number of neighbours of a given atom
-    template <size_t Order, size_t Layer>
+    template <size_t Order, size_t CallingLayer>
     inline size_t
-    get_cluster_size(const ClusterRefKey<Order, Layer> & cluster) const {
+    get_cluster_size(const ClusterRefKey<Order, CallingLayer> & cluster) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
       constexpr auto nb_neigh_layer{
@@ -346,17 +347,15 @@ namespace rascal {
   template <class ManagerImplementation>
   template <class... Args>
   void AdaptorStrict<ManagerImplementation>::update(Args &&... arguments) {
-    // if sizeof...(arguments) == 0 then the underlying structure
-    // is not changed
     if (sizeof...(arguments) > 0) {
-      this->set_is_up_to_date(false);
+      this->set_update_status(false);
     }
     this->manager->update(std::forward<Args>(arguments)...);
   }
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
-  void AdaptorStrict<ManagerImplementation>::update_adaptor() {
+  void AdaptorStrict<ManagerImplementation>::update_self() {
     //! Reset cluster_indices for adaptor to fill with push back.
     internal::for_each(this->cluster_indices_container,
                        internal::ResizePropertyToZero());

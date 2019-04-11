@@ -219,7 +219,7 @@ decltype(auto) add_structure_manager_interface(py::module & m) {
   manager_name += internal::GetBindingTypeName<Child>();
   py::class_<Parent, StructureManagerBase, std::shared_ptr<Parent>> manager(
       m, manager_name.c_str());
-  manager.def(py::init<>());
+
   return manager;
 }
 

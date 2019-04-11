@@ -108,7 +108,7 @@ namespace rascal {
         : AdaptorMaxOrder(manager) {}
 
     AdaptorMaxOrder(ImplementationPtr_t manager,
-                    const Hypers_t & adaptor_hypers)
+                    const Hypers_t & /*adaptor_hypers*/)
         : AdaptorMaxOrder(manager) {}
 
     //! Copy constructor
@@ -131,7 +131,7 @@ namespace rascal {
      * updated. this function invokes making triplets, quadruplets,
      * etc. depending on the MaxOrder, pair list has to be present.
      */
-    void update_adaptor();
+    void update_self();
 
     //! Updates the underlying manager as well as the adaptor
     template <class... Args>
@@ -149,14 +149,14 @@ namespace rascal {
     get_offset_impl(const std::array<size_t, Order> & counters) const;
 
     //! Returns the number of clusters of size cluster_size
-    inline size_t get_nb_clusters(size_t cluster_size) const {
-      switch (cluster_size) {
+    inline size_t get_nb_clusters(size_t order) const {
+      switch (order) {
       case traits::MaxOrder: {
         return this->neighbours.size();
         break;
       }
       default:
-        return this->manager->get_nb_clusters(cluster_size);
+        return this->manager->get_nb_clusters(order);
         break;
       }
     }
@@ -313,7 +313,7 @@ namespace rascal {
     // if sizeof...(arguments) == 0 then the underlying structure
     // is not changed
     if (sizeof...(arguments) > 0) {
-      this->set_is_up_to_date(false);
+      this->set_update_status(false);
     }
     this->manager->update(std::forward<Args>(arguments)...);
   }
@@ -431,7 +431,7 @@ namespace rascal {
    * increases it by one (i.e. pairs->triplets, triplets->quadruplets, etc.
    */
   template <class ManagerImplementation>
-  void AdaptorMaxOrder<ManagerImplementation>::update_adaptor() {
+  void AdaptorMaxOrder<ManagerImplementation>::update_self() {
     static_assert(traits::MaxOrder > 2,
                   "No neighbourlist present; extension not possible.");
 

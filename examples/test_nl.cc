@@ -67,9 +67,9 @@ int main() {
                                  AdaptorStrict>;
 
   bool verbose{false};
-  bool verbose_rep{false};
+  // bool verbose_rep{false};
   double cutoff{2.};
-  bool consider_ghost_neighbours{false};
+  // bool consider_ghost_neighbours{false};
   // std::string filename{"crystal_structure.json"};
   std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
 
@@ -170,7 +170,7 @@ int main() {
 
   using Feature_t = FeatureManagerDense<double>;
   Feature_t features{810, hypers};
-  size_t i_center{0};
+  // size_t i_center{0};
   // for (auto & manager : meta.managers) {
   //   // double central_decay{10};
   //   // double interaction_cutoff{10};

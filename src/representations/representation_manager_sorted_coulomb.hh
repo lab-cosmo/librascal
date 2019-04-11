@@ -155,8 +155,8 @@ namespace rascal {
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
     using Parent = RepresentationManagerBase;
     using Hypers_t = typename Parent::Hypers_t;
-    using precision_t = typename Parent::precision_t;
-    using Property_t = Property<precision_t, 1, 1, Eigen::Dynamic, 1>;
+    using Precision_t = typename Parent::Precision_t;
+    using Property_t = Property<Precision_t, 1, 1, Eigen::Dynamic, 1>;
     template <size_t Order>
     using ClusterRef_t = typename Manager_t::template ClusterRef<Order>;
     using ReferenceHypers_t = Parent::ReferenceHypers_t;
@@ -210,7 +210,7 @@ namespace rascal {
     }
 
     //! get the raw data of the representation
-    std::vector<precision_t> & get_representation_raw_data() {
+    std::vector<Precision_t> & get_representation_raw_data() {
       return this->coulomb_matrices.get_raw_data();
     }
 

@@ -497,7 +497,7 @@ namespace rascal {
      * updated. this function invokes building either the neighbour list or to
      * make triplets, quadruplets, etc. depending on the MaxOrder
      */
-    void update_adaptor();
+    void update_self();
 
     //! Updates the underlying manager as well as the adaptor
     template <class... Args>
@@ -523,8 +523,8 @@ namespace rascal {
     get_offset_impl(const std::array<size_t, Order> & counters) const;
 
     //! Returns the number of clusters of size cluster_size
-    inline size_t get_nb_clusters(size_t cluster_size) const {
-      switch (cluster_size) {
+    inline size_t get_nb_clusters(size_t order) const {
+      switch (order) {
       case 1: {
         return this->n_centers +
                this->n_ghosts;  // TODO(markus) here +n_ghosts?
@@ -790,7 +790,7 @@ namespace rascal {
    * this function must be called to invoke the neighbour list algorithm
    */
   template <class ManagerImplementation>
-  void AdaptorNeighbourList<ManagerImplementation>::update_adaptor() {
+  void AdaptorNeighbourList<ManagerImplementation>::update_self() {
     // set the number of centers
     this->n_centers = this->manager->get_size();
     this->n_ghosts = 0;

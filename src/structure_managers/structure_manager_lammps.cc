@@ -33,7 +33,7 @@
 namespace rascal {
 
   /* ---------------------------------------------------------------------- */
-  void StructureManagerLammps::update_impl(const int & inum,
+  void StructureManagerLammps::update_self(const int & inum,
                                            const int & tot_num, int * ilist,
                                            int * numneigh, int ** firstneigh,
                                            double ** x, double ** f, int * type,
@@ -64,16 +64,12 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  // overloading the update function
-  void StructureManagerLammps::update_impl() {}
-
-  /* ---------------------------------------------------------------------- */
   /*
    * Return the number of clusters of size cluster_size.  Can only handle
    * cluster_size 1 (atoms) and cluster_size 2 (pairs).
    */
-  size_t StructureManagerLammps::get_nb_clusters(int cluster_size) const {
-    switch (cluster_size) {
+  size_t StructureManagerLammps::get_nb_clusters(int order) const {
+    switch (order) {
     case 1: {
       return inum;
       break;

@@ -32,6 +32,7 @@
 
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/cluster_ref_key.hh"
+#include "structure_managers/filter_base.hh"
 #include "rascal_utility.hh"
 
 #include <type_traits>
@@ -109,14 +110,19 @@ namespace rascal {
    * performed based on arbitrary criteria using the add_cluster() method.
    */
   template <class ManagerImplementation, size_t MaxOrder>
-  class AdaptorFilter : public StructureManager<
-                            AdaptorFilter<ManagerImplementation, MaxOrder>> {
+  class AdaptorFilter
+      : public FilterBase,
+        public StructureManager<AdaptorFilter<ManagerImplementation, MaxOrder>>,
+        public std::enable_shared_from_this<
+            AdaptorFilter<ManagerImplementation, MaxOrder>> {
    public:
     template <size_t Order_, class ManagerImplementation_, size_t MaxOrder_>
     friend struct internal::ClusterAdder;
 
-    using Parent =
-        StructureManager<AdaptorFilter<ManagerImplementation, MaxOrder>>;
+    using Manager_t = AdaptorFilter<ManagerImplementation, MaxOrder>;
+    using Parent = StructureManager<Manager_t>;
+    using ParentBase = FilterBase;
+    using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorFilter>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
@@ -132,8 +138,8 @@ namespace rascal {
     AdaptorFilter() = delete;
 
     //! constructor underlying manager
-    explicit AdaptorFilter(ManagerImplementation & manager) : manager{manager} {
-      this->update();
+    explicit AdaptorFilter(ImplementationPtr_t manager) : manager{manager} {
+      this->reset_initial_state();
     }
 
     //! Copy constructor
@@ -152,10 +158,24 @@ namespace rascal {
     AdaptorFilter & operator=(AdaptorFilter && other) = default;
 
     /**
-     * clears the state fully without deallocating any memory. Needs
-     * to be called *before* adding clusters
+     * clears the state fully without deallocating any memory. Needs to be
+     * called *before* adding clusters (i.e., also at the beginning of every
+     * update)
      */
-    inline void update();
+    inline void reset_initial_state();
+
+    //! updates the underlying adaptor
+    inline void update_self() {
+      this->reset_initial_state();
+      this->perform_filtering();
+    }
+
+    /**
+     * perform the actual filtering work, or send a signal to whoever performs
+     * this work. Needs to be implemented in the daughter class
+     */
+
+    virtual void perform_filtering() = 0;
 
     //! returns the distance between atoms in a given pair
     template <size_t Order, size_t Layer,
@@ -171,8 +191,8 @@ namespace rascal {
      * return the number of 'neighbours' (i.e., number of pairs for an atom,
      * number of triplets for a pair, etc) of a given order.
      */
-    inline size_t get_nb_clusters(int cluster_order) const {
-      return this->atom_indices[cluster_order - 1].size();
+    inline size_t get_nb_clusters(int order) const {
+      return this->atom_indices[order - 1].size();
     }
 
     /**
@@ -185,6 +205,30 @@ namespace rascal {
      */
     inline Vector_ref get_position(const int & index) {
       return this->manager->get_position(index);
+    }
+
+    /**
+     * return pair distance
+     */
+    template <size_t Order, size_t Layer,
+              bool HasDistances = traits::HasDistances>
+    inline std::enable_if_t<HasDistances, double &>
+    get_distance(const ClusterRefKey<Order, Layer> & pair) const {
+      static_assert(HasDistances == traits::HasDistances,
+                    "SFINAE don't touch parameter!");
+      return this->manager.get_distance(pair);
+    }
+
+    /**
+     * return direction vector
+     */
+    template <size_t Order, size_t Layer,
+              bool HasDistances = traits::HasDistances>
+    inline std::enable_if_t<HasDistances, Vector_ref>
+    get_direction_vector(const ClusterRefKey<Order, Layer> & pair) const {
+      static_assert(HasDistances == traits::HasDistances,
+                    "SFINAE don't touch parameter!");
+      return this->manager.get_direction_vector(pair);
     }
 
     //! get atom_index of index-th neighbour of this cluster
@@ -302,7 +346,7 @@ namespace rascal {
     }
 
     //! underlying manager to be filtered
-    ManagerImplementation & manager;
+    ImplementationPtr_t manager;
 
     /**
      * store atom indices per order,i.e.
@@ -370,7 +414,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation, size_t MaxOrder>
-  void AdaptorFilter<ManagerImplementation, MaxOrder>::update() {
+  void AdaptorFilter<ManagerImplementation, MaxOrder>::reset_initial_state() {
     //! Reset cluster_indices for adaptor to fill with push back.
     internal::for_each(this->cluster_indices_container,
                        internal::ResizePropertyToZero());

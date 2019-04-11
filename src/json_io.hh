@@ -75,26 +75,23 @@ namespace rascal {
     /**
      * Function to convert to a JSON object format with the given keywords. It
      * is an overload of the function defined in the header class
-     * json.hpp. Inline needed, otherwise it is a multiple definition.
+     * json.hpp.
      */
-    inline void to_json(json & j, AtomicJsonData & s) {
-      j = json{{"cell", s.cell},
-               {"atom_types", s.type},
-               {"pbc", s.pbc},
-               {"positions", s.position}};
-    }
+    void to_json(json & j, AtomicJsonData & s);
 
     /**
      * Function used to read from the JSON file, given the keywords and convert
      * the data into standard types. Overload of the function defined in
      * json.hpp class header.
      */
-    inline void from_json(const json & j, AtomicJsonData & s) {
-      s.cell = j.at("cell").get<std::vector<std::vector<double>>>();
-      s.type = j.at("atom_types").get<std::vector<int>>();
-      s.pbc = j.at("pbc").get<std::vector<int>>();
-      s.position = j.at("positions").get<std::vector<std::vector<double>>>();
-    }
+    void from_json(const json & j, AtomicJsonData & s);
+
+    /**
+     * checks a value-unit pair of form {"value": 5.6, "unit": "Å"} against the
+     * expected unit, returns value if successful and throws an error if not
+     */
+    double check_units(const std::string & expected_unit,
+                       const json & parameter);
   }  // namespace json_io
 }  // namespace rascal
 
