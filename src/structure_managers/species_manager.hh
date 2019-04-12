@@ -35,7 +35,7 @@
 #include "structure_managers/adaptor_filter.hh"
 #include "structure_managers/property.hh"
 #include "structure_managers/updateable_base.hh"
-#include "utils/tuple_standardisation.hh"
+#include "utils/key_standardisation.hh"
 
 #include <type_traits>
 #include <array>
@@ -49,7 +49,7 @@ namespace rascal {
 
     namespace detail {
       template <size_t Order>
-      using Key_t = TupleStandardisation<int, Order>;
+      using Key_t = KeyStandardisation<int, Order>;
       using Value_t = std::unique_ptr<FilterBase>;
       template <size_t Order>
       using Map_t = std::map<Key_t<Order>, Value_t>;
@@ -165,8 +165,8 @@ namespace rascal {
         // insertion returns a ridiculous type: ((Key, Value), success), where
         // Value is the filter
         // create a (species_indices, filter) pair and add it to the list
-        auto && retval{
-            this->filters.emplace(species_indices, std::move(new_filter))};
+        auto && retval{this->filters.emplace(Key_t{species_indices},
+                                             std::move(new_filter))};
         auto && new_location{retval.first};
         return static_cast<Filter<Order> &>(*(new_location->second));
       } else {
