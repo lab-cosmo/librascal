@@ -27,11 +27,16 @@
 
 #include "tests.hh"
 #include "utils/key_standardisation.hh"
+#include <boost/mpl/list.hpp>
 
 namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(key_standardisation_test);
-
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Fixture to provide the an integer array used for the construction of a
+   * `KeyStandardisation` type based on a given `Order`.
+   */
   template <size_t Order>
   struct IndexFixture {
     IndexFixture() {
@@ -43,31 +48,40 @@ namespace rascal {
     std::array<int, Order> indices{};
   };
 
-  template <size_t Order>
+  /**
+   * Fixture to provide template `Order`/`MaxOrder` combinations for a
+   * `KeyStandardisation` type.
+   */
+  template <size_t Order, size_t MaxOrder>
   struct KeyFixture {
-    KeyFixture() : standard_tuple{indices_fixture.indices} {}
+    KeyFixture() : standard_key{indices_fixture.indices} {}
     ~KeyFixture() = default;
 
     IndexFixture<Order> indices_fixture{};
-    KeyStandardisation<int, Order> standard_tuple;
+    KeyStandardisation<int, MaxOrder> standard_key;
+    static size_t get_order() { return Order; }
   };
 
-  /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(constructor_test, KeyFixture<5>) {}
+  /**
+   * List for testing different combinations of Order and MaxOrder to check the
+   * reinterpret_cast with the bracket operator.
+   */
+  using KeyFixtures =
+      boost::mpl::list<KeyFixture<1, 2>, KeyFixture<2, 2>, KeyFixture<1, 3>,
+                       KeyFixture<2, 3>, KeyFixture<3, 3>, KeyFixture<7, 8>>;
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(iterator_test, KeyFixture<5>) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_test, Fix, KeyFixtures, Fix) {}
+
+  /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(iterator_test, Fix, KeyFixtures, Fix) {
     std::cout << "indices " << std::endl;
-    for (size_t i{0}; i < 5; ++i) {
-      auto ref_val{indices_fixture.indices[i]};
-      auto key_val{standard_tuple[i]};
+    for (size_t i{0}; i < Fix::get_order(); ++i) {
+      auto ref_val{Fix::indices_fixture.indices[i]};
+      auto key_val{Fix::standard_key[i]};
       BOOST_CHECK_EQUAL(ref_val, key_val);
     }
   }
-
-  /* ---------------------------------------------------------------------- */
-  // todo(till): add test for access to atom, pair, etc. indices in
-  // KeyStandardisation
 
   BOOST_AUTO_TEST_SUITE_END()
 }  // namespace rascal
