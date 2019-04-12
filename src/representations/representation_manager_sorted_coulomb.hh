@@ -243,16 +243,6 @@ namespace rascal {
     template<internal::CMSortAlgorithm AlgorithmType>
     void compute_helper();
 
-    //! getter for the representation
-    Eigen::Map<const Eigen::MatrixXd> get_representation_full() {
-      auto nb_centers{this->structure_manager.size()};
-      auto nb_features{this->get_n_feature()};
-      auto & raw_data{this->coulomb_matrices.get_raw_data()};
-      Eigen::Map<const Eigen::MatrixXd> representation(raw_data.data(),
-                                                       nb_features, nb_centers);
-      return representation;
-    }
-
     //! check if size of representation manager is enough for current structure
     //! manager
     void check_size_compatibility() {
