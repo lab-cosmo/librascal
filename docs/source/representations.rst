@@ -3,7 +3,7 @@
 Representations
 ===============
 
-In this section, we summarize the representation implemented in Rascal.
+In this section, we summarize the representations implemented in Rascal.
 
 .. contents::
    :local:
