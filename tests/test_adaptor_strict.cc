@@ -121,7 +121,7 @@ namespace rascal {
     // rc_max)}; pair_manager->update();
 
     for (auto i{0}; i < mult; ++i) {
-      auto cutoff_tmp = i * 0.5 + cutoff;
+      auto cutoff_tmp{i * 0.5 + cutoff};
       std::vector<std::vector<int>> neigh_ids{};
       std::vector<std::vector<double>> neigh_dist{};
       std::vector<std::vector<std::array<double, 3>>> neigh_dir_vec{};

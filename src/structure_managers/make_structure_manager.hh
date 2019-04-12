@@ -225,22 +225,22 @@ namespace rascal {
      * Allow to provide a StructureManagerTypeHolder instead of the list types
      * to make_structure_manager_stack.
      *
-     * @tparams MI structure manager type
+     * @tparams SM structure manager type
      * @tparams Ti list of adaptor partial types
      */
-    template <typename MI, typename AdaptorTypeHolder_>
+    template <typename SM, typename AdaptorTypeHolder_>
     struct make_structure_manager_stack_with_hypers_util;
 
-    template <typename MI, template <class> class... Ti>
+    template <typename SM, template <class> class... Ti>
     struct make_structure_manager_stack_with_hypers_util<
-        MI, AdaptorTypeHolder<Ti...>> {
-      using Manager_t = typename AdaptorTypeStacker<MI, Ti...>::type;
+        SM, AdaptorTypeHolder<Ti...>> {
+      using Manager_t = typename AdaptorTypeStacker<SM, Ti...>::type;
       using ManagerPtr_t = std::shared_ptr<Manager_t>;
 
       template <typename Hypers_t>
       static ManagerPtr_t apply(const Hypers_t & structure_inputs,
                                 const Hypers_t & adaptor_inputs) {
-        return make_structure_manager_stack<MI, Ti...>(structure_inputs,
+        return make_structure_manager_stack<SM, Ti...>(structure_inputs,
                                                        adaptor_inputs);
       }
     };

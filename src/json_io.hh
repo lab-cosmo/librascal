@@ -54,16 +54,16 @@ namespace rascal {
      */
     struct AtomicJsonData {
       /**
-       *  \param cell is a vector a vector of vectors which holds the cell unit
+       *  @param cell is a vector a vector of vectors which holds the cell unit
        *  vectors.
        *
-       *  \param type a vector of integers which holds the atomic type (atomic
+       *  @param type a vector of integers which holds the atomic type (atomic
        *  number from periodic table).
        *
-       *  \param pbc is a 0/1 vector which says, where periodic boundary
+       *  @param pbc is a 0/1 vector which says, where periodic boundary
        *  conditions are applied.
        *
-       *  \param position is a vector of vectors which holds the atomic
+       *  @param position is a vector of vectors which holds the atomic
        *  positions.
        */
       std::vector<std::vector<double>> cell{};

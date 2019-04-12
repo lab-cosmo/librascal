@@ -280,6 +280,7 @@ namespace rascal {
      * Function for reading data from a JSON file in the ASE format. See the
      * definition of <code>AtomicStructure</code> and adapt the fields, which
      * should be read to your case.
+     * TODO(markus) move this function to AtomicStructure
      */
     decltype(auto) read_structure_from_json(const std::string filename);
 
