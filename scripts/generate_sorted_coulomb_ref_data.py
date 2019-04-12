@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.join(path, 'build/'))
 sys.path.insert(0, os.path.join(path, 'tests/'))
 import json,ubjson
 from copy import copy
-from rascal.representation import SortedCoulombMatrix
+from rascal.representations import SortedCoulombMatrix
 from ase import Atoms
 
 def load_json(fn):

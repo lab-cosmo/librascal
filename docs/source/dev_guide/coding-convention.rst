@@ -73,7 +73,7 @@ Avoid constructs that our average C++ programmer would find tricky or hard to ma
 
 Concede to optimisation when necessary
 
-    Performance is the overwhelming priority in the **core library** (i.e., data structures and low level algorithms that the typical user relies on often, but rarely uses directly). If performance optimisation is in conflict with other principles in this document, optimise. 
+    Performance is the overwhelming priority in the **core library** (i.e., data structures and low level algorithms that the typical user relies on often, but rarely uses directly). If performance optimisation is in conflict with other principles in this document, optimise.
 
 Header Files
 ============
@@ -2048,7 +2048,7 @@ Start each file with license boilerplate. e.g., for file ``common.hh`` authored 
     *
     * @section  LICENSE
     *
-    * Copyright © 2017 Till Junge, John Doe
+    * Copyright  2017 Till Junge, John Doe
     *
     * rascal is free software; you can redistribute it and/or
     * modify it under the terms of the GNU Lesser General Public License as

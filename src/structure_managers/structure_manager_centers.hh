@@ -1,5 +1,7 @@
 /**
- * file   structure_manager_centers.hh
+ * \file  src/structure_managers/structure_manager_centers.hh
+ *
+ * @ingroup group_structure_manager
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  * @author Markus Stricker <markus.stricker@epfl.ch>
@@ -9,7 +11,7 @@
  * @brief basic manager implementation with atoms and centers with ability to
  *        read from json file and be constructed from existing data
  *
- * Copyright © 2018 Felix Musil, Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright  2018 Felix Musil, Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as

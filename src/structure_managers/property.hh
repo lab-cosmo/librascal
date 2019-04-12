@@ -10,7 +10,7 @@
  *
  * @section LICENSE
  *
- * Copyright © 2018 Till Junge, Felix Musil, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright  2018 Till Junge, Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -144,8 +144,8 @@ namespace rascal {
       if (not((other.get_nb_row() == NbRow) and
               (other.get_nb_col() == NbCol))) {
         std::stringstream err_str{};
-        err_str << "Incompatible sizes: input is " << other.get_nb_row() << "×"
-                << other.get_nb_col() << ", but should be " << NbRow << "×"
+        err_str << "Incompatible sizes: input is " << other.get_nb_row() << "x"
+                << other.get_nb_col() << ", but should be " << NbRow << "x"
                 << NbCol << ".";
         throw std::runtime_error(err_str.str());
       }

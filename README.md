@@ -141,4 +141,3 @@ To build libRascal with as docker environement:
 sudo docker build -t test -f ./docker/install_env.dockerfile  .
 sudo docker run -it -v /path/to/repo/:/home/user/  test
 ```
-

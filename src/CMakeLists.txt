@@ -11,7 +11,7 @@
 #
 # @section LICENSE
 #
-# Copyright © 2018 Till Junge, Felix Musil, Markus Stricker COSMO (EPFL),
+# Copyright  2018 Till Junge, Felix Musil, Markus Stricker COSMO (EPFL),
 # LAMMM (EPFL)
 #
 # Rascal is free software; you can redistribute it and/or
