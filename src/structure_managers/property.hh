@@ -28,8 +28,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef NEIGHBOURHOOD_PROPERTY_H
-#define NEIGHBOURHOOD_PROPERTY_H
+#ifndef SRC_STRUCTURE_MANAGERS_PROPERTY_HH_
+#define SRC_STRUCTURE_MANAGERS_PROPERTY_HH_
 
 #include "structure_managers/property_typed.hh"
 #include <basic_types.hh>
@@ -82,6 +82,14 @@ namespace rascal {
     Property(StructureManagerBase & manager,
              std::string metadata = "no metadata")
         : Parent{manager, NbRow, NbCol, metadata} {}
+    // Property(std::shared_ptr<StructureManagerBase> manager,
+    //          std::string metadata = "no metadata")
+    //     : Parent{manager, NbRow, NbCol, metadata} {}
+
+    // Property(std::shared_ptr<StructureManagerBase> & manager,
+    //          std::string metadata = "no metadata")
+    // :Property(std::weak_ptr<StructureManagerBase>(manager), metadata)
+    // {}
 
     //! Copy constructor
     Property(const Property & other) = delete;
@@ -235,4 +243,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif /* NEIGHBOURHOOD_PROPERTY_H */
+#endif  // SRC_STRUCTURE_MANAGERS_PROPERTY_HH_

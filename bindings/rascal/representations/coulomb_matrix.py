@@ -1,9 +1,12 @@
 import numpy as np
 import json
 
-from ..utils import get_strict_neighbourlist
-from ..lib import RepresentationManager,FeatureManager
-from .base import RepresentationFactory
+from ..neighbourlist.base import NeighbourListFactory
+from ..neighbourlist import get_neighbourlist, convert_to_structure
+from ..lib import RepresentationManager, FeatureManager
+from .base import RepresentationFactory, FeatureFactory
+from ..utils import get_full_name, FactoryPool
+
 
 class SortedCoulombMatrix(object):
     """
@@ -35,26 +38,46 @@ class SortedCoulombMatrix(object):
         Fast and Accurate Modeling of Molecular Atomization Energies with Machine Learning.
         Physical Review Letters, 108(5), 58301. https://doi.org/10.1103/PhysRevLett.108.058301
     """
-    def __init__(self, cutoff, sorting_algorithm='rownorm', size=10, central_decay=-1,
-                    interaction_cutoff=10, interaction_decay=-1):
-        self.name = 'coulomb'
-        self.sorting_algorithm = sorting_algorithm
-        self.cutoff = cutoff
-        self.central_decay = central_decay
-        self.interaction_cutoff = interaction_cutoff
-        self.interaction_decay = interaction_decay
-        self.size = int(size)
 
-    def get_params(self):
-        params = dict(name=self.name,sorting_algorithm=self.sorting_algorithm,
-                    cutoff=self.cutoff,
-                    central_decay=self.central_decay,
-                    interaction_cutoff=self.interaction_cutoff,
-                    interaction_decay=self.interaction_decay,
-                    size=self.size)
-        return params
+    def __init__(self, cutoff, sorting_algorithm='row_norm', size=10, central_decay=-1, interaction_cutoff=10, interaction_decay=-1,
+                 method='thread', n_workers=1, disable_pbar=False):
+        self.name = 'sortedcoulomb'
+        self.size = size
+        self.hypers = dict()
+        self.update_hyperparameters(
+            sorting_algorithm=sorting_algorithm,
+            cutoff=cutoff,
+            central_decay=central_decay,
+            interaction_cutoff=interaction_cutoff,
+            interaction_decay=interaction_decay,
+            size=int(size),
+        )
 
-    def transform(self,frames):
+        self.nl_options = [
+            dict(name='centers', args=[]),
+            dict(name='neighbourlist', args=[cutoff]),
+            dict(name='strict', args=[cutoff])
+        ]
+
+        neighbourlist_full_name = get_full_name(self.nl_options)
+        self.name = self.name + '_' + neighbourlist_full_name
+
+        self.misc = dict(method=method, n_workers=n_workers,
+                         disable_pbar=disable_pbar)
+
+    def update_hyperparameters(self, **hypers):
+        """Store the given dict of hyperparameters
+
+        Also updates the internal json-like representation
+
+        """
+        allowed_keys = {'sorting_algorithm', 'cutoff', 'central_decay',
+                        'interaction_cutoff', 'interaction_decay', 'size'}
+        hypers_clean = {key: hypers[key] for key in hypers
+                        if key in allowed_keys}
+        self.hypers.update(hypers_clean)
+
+    def transform(self, frames):
         """
         Compute the representation.
 
@@ -68,22 +91,33 @@ class SortedCoulombMatrix(object):
         FeatureManager.Dense_double
             Object containing the representation
         """
-        Nframe = len(frames)
+        structures = [convert_to_structure(frame) for frame in frames]
 
-        managers = list(map(get_strict_neighbourlist,frames,[self.cutoff]*Nframe))
+        pool = FactoryPool(**self.misc)
+        inputs = [(structure, self.nl_options) for structure in structures]
+        managers = pool.starmap(get_neighbourlist, inputs)
 
         self.size = self.get_size(managers)
+        self.update_hyperparameters(size=self.size)
+        hypers_str = json.dumps(self.hypers)
+        self.rep_options = dict(name=self.name, args=[hypers_str])
 
-        inp = json.dumps(self.get_params())
+        n_features = self.get_Nfeature()
+        self.feature_options = dict(name='dense_double', args=[
+                                    n_features, hypers_str])
 
-        Nfeature = self.get_Nfeature()
-        features = FeatureManager.Dense_double(Nfeature,inp)
+        representations = [RepresentationFactory(
+            manager, self.rep_options) for manager in managers]
 
-        cms = map(RepresentationFactory(self.name),
-                     managers,[inp]*Nframe)
+        def compute_wrapper(representation): return representation.compute()
+        pool.map(compute_wrapper, representations)
 
-        for cm in cms:
-            cm.compute()
+        pool.close()
+        pool.join()
+
+        features = FeatureFactory(self.feature_options)
+
+        for cm in representations:
             features.append(cm)
 
         return features
@@ -91,7 +125,7 @@ class SortedCoulombMatrix(object):
     def get_Nfeature(self):
         return int(self.size*(self.size+1)/2)
 
-    def get_size(self,managers):
+    def get_size(self, managers):
         Nneigh = []
         for manager in managers:
             for center in manager:

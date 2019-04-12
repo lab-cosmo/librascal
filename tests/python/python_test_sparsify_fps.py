@@ -3,11 +3,13 @@ import numpy as np
 
 import unittest
 
+
 def is_sorted(a):
     for i in range(a.size-1):
-         if a[i+1] > a[i] :
-               return False
+        if a[i+1] > a[i]:
+            return False
     return True
+
 
 class TestFPS(unittest.TestCase):
 
@@ -17,13 +19,13 @@ class TestFPS(unittest.TestCase):
           dimensionality 100
         """
         np.random.seed(1234)
-        self.x = np.random.normal(size=(10000,100))
+        self.x = np.random.normal(size=(10000, 100))
 
     def fps_return_match(self, r1, r2):
         """
           Check if return values match.
         """
-        for key in [ "fps_indices", "fps_minmax_d2", "fps_hausdorff_d2" ]:
+        for key in ["fps_indices", "fps_minmax_d2", "fps_hausdorff_d2"]:
             self.assertTrue(np.allclose(r1[key], r2[key]))
 
     def test_simple_fps(self):
@@ -65,7 +67,6 @@ class TestFPS(unittest.TestCase):
 
         self.fps_return_match(r_fps, ref)
 
-
     def test_fps_restart(self):
         """
           Checks if FPS restart works as intended.
@@ -86,7 +87,7 @@ class TestFPS(unittest.TestCase):
         # check if this works also when recomputing the distances
         r_fps = fps(self.x, 50, 0, method="simple")
         r_fps = fps(self.x, 100, 0, method="simple",
-                    restart={"fps_indices":r_fps["fps_indices"]})
+                    restart={"fps_indices": r_fps["fps_indices"]})
         self.fps_return_match(r_fps, ref)
 
         # You can also add new points (in this case we reuse the same feature matrix)
@@ -95,7 +96,7 @@ class TestFPS(unittest.TestCase):
         xx = np.concatenate((self.x[r_fps["fps_indices"]], self.x))
         r_fps = fps(xx, 100, 0, method="simple",
                     restart={"fps_indices": np.asarray(range(50))})
-        self. assertTrue( np.array_equal(r_fps["fps_indices"][:50],
-                                         np.asarray(range(50))) )
-        self. assertTrue(np.array_equal( r_fps["fps_indices"][50:]-50,
+        self. assertTrue(np.array_equal(r_fps["fps_indices"][:50],
+                                        np.asarray(range(50))))
+        self. assertTrue(np.array_equal(r_fps["fps_indices"][50:]-50,
                                         ref["fps_indices"][50:]))

@@ -25,41 +25,47 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
-
 #include "bind_include.hh"
 
-using namespace rascal; // NOLINT
+using namespace rascal;  // NOLINT
 
 /**
  * Bind a feature manager
  */
-template<template<class> class FeatureManager_t, typename T>
-decltype(auto) bind_feature_manager(py::module & mod, py::module & ) {
+template <template <class> class FeatureManager_t, typename T>
+decltype(auto) bind_feature_manager(py::module & mod, py::module &) {
   using Feature = FeatureManager_t<T>;
 
-  std::string feature_name =
-        internal::GetBindingTypeName<Feature>();
+  std::string feature_name = internal::GetBindingTypeName<Feature>();
 
-  py::class_<Feature, FeatureManagerBase<T> >
-             feature(mod, feature_name.c_str());
+  py::class_<Feature, FeatureManagerBase<T>> feature(mod, feature_name.c_str());
   // use custom constructor to pass json formated string as initializer
   // an alternative would be to convert python dict to json internally
   // but needs some workon in the pybind machinery
-  feature.def(py::init([](int & n_feature, std::string& hyper_str) {
-        // convert to json
-        json hypers = json::parse(hyper_str);
-        return std::make_unique<Feature>(n_feature, hypers);
-            }));
+  feature.def(py::init([](int & n_feature, std::string & hyper_str) {
+    // convert to json
+    json hypers = json::parse(hyper_str);
+    return std::make_unique<Feature>(n_feature, hypers);
+  }));
   feature.def("reserve", &Feature::reserve);
   feature.def("append",
-        (void (Feature::*)(RepresentationManagerBase&)) &Feature::push_back);
+              (void (Feature::*)(RepresentationManagerBase &)) &
+                  Feature::push_back,
+              py::call_guard<py::gil_scoped_release>());
+  feature.def("insert", &Feature::insert,
+              py::call_guard<py::gil_scoped_release>());
+  feature.def("resize", &Feature::resize,
+              py::call_guard<py::gil_scoped_release>());
+  feature.def("assign", &Feature::assign,
+              py::call_guard<py::gil_scoped_release>());
+  feature.def("assign", &Feature::assign);
   feature.def_property_readonly("size", &Feature::size,
-                              py::return_value_policy::copy);
+                                py::return_value_policy::copy);
   feature.def_property_readonly("shape", &Feature::shape,
-                              py::return_value_policy::copy);
+                                py::return_value_policy::copy);
   feature.def("get_feature_matrix", &Feature::get_feature_matrix,
-        py::return_value_policy::reference_internal, py::keep_alive<1, 0>());
+              py::return_value_policy::reference_internal,
+              py::keep_alive<1, 0>());
 
   return feature;
 }
@@ -68,17 +74,15 @@ decltype(auto) bind_feature_manager(py::module & mod, py::module & ) {
 void add_feature_managers(py::module & mod, py::module & m_garbage) {
   using FeatureBase_0 = FeatureManagerBase<double>;
   std::string featurebase_0_name =
-        internal::GetBindingTypeName<FeatureBase_0>();
-  py::class_<FeatureManagerBase<double>>(m_garbage,
-                                          featurebase_0_name.c_str());
+      internal::GetBindingTypeName<FeatureBase_0>();
+  py::class_<FeatureManagerBase<double>>(m_garbage, featurebase_0_name.c_str());
   auto feature_double =
-         bind_feature_manager<FeatureManagerDense, double>(mod, m_garbage);
+      bind_feature_manager<FeatureManagerDense, double>(mod, m_garbage);
 
   using FeatureBase_1 = FeatureManagerBase<float>;
   std::string featurebase_1_name =
-        internal::GetBindingTypeName<FeatureBase_1>();
-  py::class_<FeatureManagerBase<float>>(m_garbage,
-                                        featurebase_1_name.c_str());
+      internal::GetBindingTypeName<FeatureBase_1>();
+  py::class_<FeatureManagerBase<float>>(m_garbage, featurebase_1_name.c_str());
   auto feature_float =
       bind_feature_manager<FeatureManagerDense, float>(mod, m_garbage);
 }

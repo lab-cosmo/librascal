@@ -27,8 +27,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef ADAPTOR_NEIGHBOUR_LIST_H
-#define ADAPTOR_NEIGHBOUR_LIST_H
+#ifndef SRC_STRUCTURE_MANAGERS_ADAPTOR_NEIGHBOUR_LIST_HH_
+#define SRC_STRUCTURE_MANAGERS_ADAPTOR_NEIGHBOUR_LIST_HH_
 
 #include "atomic_structure.hh"
 #include "basic_types.hh"
@@ -424,18 +424,20 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   class AdaptorNeighbourList
-      : public StructureManager<AdaptorNeighbourList<ManagerImplementation>> {
+      : public StructureManager<AdaptorNeighbourList<ManagerImplementation>>,
+        public std::enable_shared_from_this<
+            AdaptorNeighbourList<ManagerImplementation>> {
    public:
-    using Base = StructureManager<AdaptorNeighbourList<ManagerImplementation>>;
-    using Parent =
-        StructureManager<AdaptorNeighbourList<ManagerImplementation>>;
-    using Implementation_t = ManagerImplementation;
+    using Manager_t = AdaptorNeighbourList<ManagerImplementation>;
+    using Parent = StructureManager<Manager_t>;
+    using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorNeighbourList>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
     using Vector_t = typename Parent::Vector_t;
     using Positions_ref =
         Eigen::Map<Eigen::Matrix<double, traits::Dim, Eigen::Dynamic>>;
+    using Hypers_t = typename Parent::Hypers_t;
     // using AtomTypes_ref = AtomicStructure<traits::Dim>::AtomTypes_ref;
 
     static_assert(traits::MaxOrder == 2,
@@ -449,8 +451,21 @@ namespace rascal {
      * Constructs a full neighbourhood list from a given manager and cut-off
      * radius or extends an existing neighbourlist to the next order
      */
-    AdaptorNeighbourList(ManagerImplementation & manager, double cutoff,
+    AdaptorNeighbourList(ImplementationPtr_t manager, double cutoff,
                          bool consider_ghost_neighbours = false);
+
+    AdaptorNeighbourList(ImplementationPtr_t manager, std::tuple<double> tp)
+        : AdaptorNeighbourList(manager, std::get<0>(tp)) {}
+
+    AdaptorNeighbourList(ImplementationPtr_t manager,
+                         std::tuple<double, bool> tp)
+        : AdaptorNeighbourList(manager, std::get<0>(tp), std::get<1>(tp)) {}
+
+    AdaptorNeighbourList(ImplementationPtr_t manager,
+                         const Hypers_t & adaptor_hypers)
+        : AdaptorNeighbourList(
+              manager, adaptor_hypers.at("cutoff").template get<double>(),
+              optional_argument(adaptor_hypers)) {}
 
     //! Copy constructor
     AdaptorNeighbourList(const AdaptorNeighbourList & other) = delete;
@@ -468,12 +483,21 @@ namespace rascal {
     //! Move assignment operator
     AdaptorNeighbourList & operator=(AdaptorNeighbourList && other) = default;
 
+    bool optional_argument(const Hypers_t & adaptor_hypers) {
+      bool consider_ghost_neighbours{false};
+      if (adaptor_hypers.find("consider_ghost_neighbours") !=
+          adaptor_hypers.end()) {
+        consider_ghost_neighbours = adaptor_hypers["consider_ghost_neighbours"];
+      }
+      return consider_ghost_neighbours;
+    }
+
     /**
      * Updates just the adaptor assuming the underlying manager was
      * updated. this function invokes building either the neighbour list or to
      * make triplets, quadruplets, etc. depending on the MaxOrder
      */
-    void update();
+    void update_self();
 
     //! Updates the underlying manager as well as the adaptor
     template <class... Args>
@@ -499,8 +523,8 @@ namespace rascal {
     get_offset_impl(const std::array<size_t, Order> & counters) const;
 
     //! Returns the number of clusters of size cluster_size
-    inline size_t get_nb_clusters(size_t cluster_size) const {
-      switch (cluster_size) {
+    inline size_t get_nb_clusters(size_t order) const {
+      switch (order) {
       case 1: {
         return this->n_centers +
                this->n_ghosts;  // TODO(markus) here +n_ghosts?
@@ -536,7 +560,7 @@ namespace rascal {
     //! Returns position of an atom with index atom_index
     inline Vector_ref get_position(const size_t & atom_index) {
       if (atom_index < n_centers) {
-        return this->manager.get_position(atom_index);
+        return this->manager->get_position(atom_index);
       } else {
         return this->get_ghost_position(atom_index - this->n_centers);
       }
@@ -576,16 +600,15 @@ namespace rascal {
 
     //! Returns position of the given atom object (useful for users)
     inline Vector_ref get_position(const AtomRef_t & atom) {
-      return this->manager.get_position(atom.get_index());
+      return this->manager->get_position(atom.get_index());
     }
 
     /**
      * Returns the id of the index-th (neighbour) atom of the cluster that is
      * the full structure/atoms object, i.e. simply the id of the index-th atom
      */
-    inline int get_cluster_neighbour(const Parent & /*parent*/,
-                                     size_t index) const {
-      return this->manager.get_cluster_neighbour(this->manager, index);
+    inline int get_cluster_neighbour(const Parent &, size_t index) const {
+      return this->manager->get_cluster_neighbour(*this->manager, index);
     }
 
     //! Returns the id of the index-th neighbour atom of a given cluster
@@ -601,7 +624,7 @@ namespace rascal {
           internal::IncreaseHelper<Order == (traits::MaxOrder - 1)>;
 
       if (Order < (traits::MaxOrder - 1)) {
-        return IncreaseHelper_t::get_cluster_neighbour(this->manager, cluster,
+        return IncreaseHelper_t::get_cluster_neighbour(*this->manager, cluster,
                                                        index);
       } else {
         auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
@@ -628,6 +651,11 @@ namespace rascal {
 
       auto && access_index = cluster.get_cluster_index(Layer);
       return nb_neigh[access_index];
+    }
+
+    //! Get the manager used to build the instance
+    ImplementationPtr_t get_previous_manager() {
+      return this->manager->get_shared_ptr();
     }
 
    protected:
@@ -670,10 +698,12 @@ namespace rascal {
     //! Sets the correct offsets for accessing neighbours
     inline void set_offsets() {
       auto && n_tuples{nb_neigh.size()};
-      this->offsets.reserve(n_tuples);
-      this->offsets.resize(1);
-      for (size_t i{0}; i < n_tuples - 1; ++i) {
-        this->offsets.emplace_back(this->offsets[i] + this->nb_neigh[i]);
+      if (n_tuples > 0) {
+        this->offsets.reserve(n_tuples);
+        this->offsets.resize(1);
+        for (size_t i{0}; i < n_tuples - 1; ++i) {
+          this->offsets.emplace_back(this->offsets[i] + this->nb_neigh[i]);
+        }
       }
     }
 
@@ -682,8 +712,8 @@ namespace rascal {
     void make_full_neighbour_list();
 
     /* ---------------------------------------------------------------------- */
-    //! reference to underlying structure manager
-    ManagerImplementation & manager;
+    //! pointer to underlying structure manager
+    ImplementationPtr_t manager;
 
     //! Cutoff radius for neighbour list
     const double cutoff;
@@ -733,15 +763,26 @@ namespace rascal {
   //! Constructor of the pair list manager
   template <class ManagerImplementation>
   AdaptorNeighbourList<ManagerImplementation>::AdaptorNeighbourList(
-      ManagerImplementation & manager, double cutoff,
+      std::shared_ptr<ManagerImplementation> manager, double cutoff,
       bool consider_ghost_neighbours)
-      : manager{manager}, cutoff{cutoff}, atom_indices{}, atom_types{},
-        ghost_atom_indices{}, nb_neigh{},
-        neighbours{}, offsets{}, n_centers{manager.get_size()}, n_ghosts{0},
-        consider_ghost_neighbours{consider_ghost_neighbours} {
+      : manager{std::move(manager)}, cutoff{cutoff}, atom_indices{},
+        atom_types{}, ghost_atom_indices{}, nb_neigh{}, neighbours{}, offsets{},
+        n_centers{0}, n_ghosts{0}, consider_ghost_neighbours{
+                                       consider_ghost_neighbours} {
     static_assert(not(traits::MaxOrder < 1), "No atom list in manager");
   }
 
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Update function that recursively pass its argument to the base
+   * (Centers or Lammps). The base will then update the whole tree from the top.
+   */
+  template <class ManagerImplementation>
+  template <class... Args>
+  void
+  AdaptorNeighbourList<ManagerImplementation>::update(Args &&... arguments) {
+    this->manager->update(std::forward<Args>(arguments)...);
+  }
   /* ---------------------------------------------------------------------- */
   /**
    * build a neighbour list based on atomic positions, types and indices, in the
@@ -749,7 +790,10 @@ namespace rascal {
    * this function must be called to invoke the neighbour list algorithm
    */
   template <class ManagerImplementation>
-  void AdaptorNeighbourList<ManagerImplementation>::update() {
+  void AdaptorNeighbourList<ManagerImplementation>::update_self() {
+    // set the number of centers
+    this->n_centers = this->manager->get_size();
+    this->n_ghosts = 0;
     //! Reset cluster_indices for adaptor to fill with sequence
     internal::for_each(this->cluster_indices_container,
                        internal::ResizePropertyToZero());
@@ -798,7 +842,7 @@ namespace rascal {
     // short hands for variable
     constexpr auto dim{traits::Dim};
 
-    auto cell{this->manager.get_cell()};
+    auto cell{this->manager->get_cell()};
     double cutoff{this->cutoff};
 
     std::array<int, dim> nboxes_per_dim{};
@@ -884,7 +928,7 @@ namespace rascal {
     std::array<int, dim> periodic_max{};
     std::array<int, dim> periodic_min{};
     std::array<int, dim> repetitions{};
-    auto periodicity = this->manager.get_periodic_boundary_conditions();
+    auto periodicity = this->manager->get_periodic_boundary_conditions();
     size_t ntot{1};
 
     // calculate number of actual repetitions of cell, depending on periodicity
@@ -906,7 +950,7 @@ namespace rascal {
     // This is done before the ghost atom generation, to have them all
     // contiguously at the beginning of the list.
     int ntot_atoms{0};
-    for (auto atom : this->manager) {
+    for (auto atom : *this->manager) {
       auto atom_index = atom.get_atom_index();
       auto atom_type = atom.get_atom_type();
       this->atom_indices.push_back(atom_index);
@@ -1004,4 +1048,4 @@ namespace rascal {
   }
 }  // namespace rascal
 
-#endif /* ADAPTOR_NEIGHBOUR_LIST_H */
+#endif  // SRC_STRUCTURE_MANAGERS_ADAPTOR_NEIGHBOUR_LIST_HH_

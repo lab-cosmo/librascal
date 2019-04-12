@@ -1,8 +1,9 @@
 from ..lib import sparsification
 import numpy as np
 
+
 def fps(feature_matrix, n_select, starting_index=None,
-        method='simple', restart = None):
+        method='simple', restart=None):
     """
     Farthest Point Sampling [1] routine using librascal.
 
@@ -55,27 +56,26 @@ def fps(feature_matrix, n_select, starting_index=None,
     if starting_index is None:
         starting_index = 0
 
-
     return_dict = {}
     if method == 'simple':
         if restart is None:
-            sparse_indices,sparse_minmax_d2,lmin_d2 = \
-             sparsification.fps(feature_matrix,n_select,starting_index)
+            sparse_indices, sparse_minmax_d2, lmin_d2 = \
+                sparsification.fps(feature_matrix, n_select, starting_index)
         else:
-            res_tuple = ( restart["fps_indices"],
-                ( restart["fps_minmax_d2"] if "fps_minmax_d2" in restart
-                   else np.zeros(0, float) ),
-                ( restart["fps_hausdorff_d2"] if "fps_hausdorff_d2" in restart
-                   else np.zeros(0, float) ) )
-            sparse_indices,sparse_minmax_d2,lmin_d2 = \
-             sparsification.fps(feature_matrix,n_select,
-              starting_index, res_tuple)
+            res_tuple = (restart["fps_indices"],
+                         (restart["fps_minmax_d2"] if "fps_minmax_d2" in restart
+                          else np.zeros(0, float)),
+                         (restart["fps_hausdorff_d2"] if "fps_hausdorff_d2" in restart
+                          else np.zeros(0, float)))
+            sparse_indices, sparse_minmax_d2, lmin_d2 = \
+                sparsification.fps(feature_matrix, n_select,
+                                   starting_index, res_tuple)
 
     elif method == 'voronoi':
         sparse_indices, sparse_minmax_d2, lmin_d2, \
             voronoi_indices, voronoi_r2 = \
             sparsification.fps_voronoi(feature_matrix,
-                n_select,starting_index)
+                                       n_select, starting_index)
         return_dict["fps_voronoi_indices"] = voronoi_indices
         return_dict["fps_voronoi_r2"] = voronoi_r2
 
@@ -87,4 +87,3 @@ def fps(feature_matrix, n_select, starting_index=None,
     return_dict["fps_hausdorff_d2"] = lmin_d2
 
     return return_dict
-
