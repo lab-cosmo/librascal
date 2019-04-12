@@ -22,6 +22,8 @@ It comes with a GNU Lesser General Public License of version 3, which means that
    whitepaper
    installation
    tutorials
+   adaptors
+   species-manager
    descriptors
    models
    neighbor-list-manager
@@ -35,6 +37,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
-
-
