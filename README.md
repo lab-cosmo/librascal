@@ -18,7 +18,8 @@ make
 pip install numpy scipy ase cpplint sphinx sphinx_rtd_theme breathe
 ```
 
-* To make development documentation: first enable the documentation building with ccmake, then
+* To make development documentation: first enable the documentation building
+with ccmake, you also need the `docutils` python package, then
 ```Shell
 cd build
 ccmake ..
@@ -84,4 +85,3 @@ sudo docker build -t test -f ./docker/install_env.dockerfile  .
 sudo docker run -it -v /path/to/repo/:/home/user/  test
 ```
 And then follow the instruction in BOOST.md for compilation with boost from conda
-
