@@ -258,7 +258,8 @@ namespace rascal {
     size_t get_center_size() { return this->soap_vectors.get_nb_item(); }
 
     /**
-     * Return whether the radial sigmas and overlap matrix have been precomputed
+     * Return whether the radial sigmas and overlap matrix have been
+     * precomputed
      *
      * This only needs to be done once on initialization, but it is not done in
      * the constructor to avoid spending time and possibly throwing exceptions
@@ -499,6 +500,7 @@ namespace rascal {
       }  // for (neigh : center)
       this->soap_vectors.push_back(soap_vector);
     }  // for (center : structure_manager)
+    // attatch the Property with attach_property
   }    // compute()
 
 }  // namespace rascal

@@ -1,4 +1,4 @@
-from rascal.representation import SortedCoulombMatrix
+from rascal.representations import SortedCoulombMatrix
 from test_utils import load_json_frame, BoxList, Box
 import unittest
 import numpy as np

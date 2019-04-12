@@ -1,6 +1,9 @@
 PROJECT_NAME           = rascal
 ## this is for read the docs, which builds in-place
-INPUT                  = ../../../src
+INPUT                  = ../../../
+FILE_PATTERNS          = *.hh *.cc
+EXCLUDE_PATTERNS       = */cephes/*
+EXCLUDE_PATTERNS      += */CMakeLists.txt
 ## this overwrites the INPUT path for local builds
 @INCLUDE               = input_def
 RECURSIVE              = YES

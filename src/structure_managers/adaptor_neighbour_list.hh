@@ -9,7 +9,7 @@
  * @brief implements an adaptor for structure_managers, which
  * creates a full or half neighbourlist if there is none
  *
- * Copyright © 2018 Markus Stricker, Till Junge, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright  2018 Markus Stricker, Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -854,7 +854,7 @@ namespace rascal {
     // one cell to be able to provide a neighbour list also over ghost atoms;
     // depends on cell triclinicity and cutoff, coordinates of the mesh are
     // relative to the origin of the given cell. ghost_min is used for placing
-    // ghost atoms within the given ´skin´.
+    // ghost atoms within the given 'skin'.
     Vector_t mesh_min{Vector_t::Zero()};
     Vector_t mesh_max{Vector_t::Zero()};
     Vector_t ghost_min{Vector_t::Zero()};
