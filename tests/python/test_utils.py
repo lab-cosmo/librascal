@@ -3,6 +3,14 @@ import numpy as np
 from collections import Iterable
 
 
+def adapt_structure(cell, positions, atom_types, pbc):
+    cell = np.array(cell.T, order='F')
+    positions = np.array(positions.T, order='F')
+    atom_types = atom_types.reshape(-1, 1)
+    pbc = pbc.reshape(3, 1)
+    return dict(cell=cell, positions=positions, atom_types=atom_types, pbc=pbc)
+
+
 def dump_json_frame(fn, frames):
     if not isinstance(frames, Iterable):
         frames = [frames]
@@ -10,7 +18,7 @@ def dump_json_frame(fn, frames):
     for ii, frame in enumerate(frames):
         data[ii] = dict(positions=frame.get_positions().tolist(),
                         cell=frame.get_cell().tolist(),
-                        numbers=frame.get_atomic_numbers().tolist(),
+                        atom_types=frame.get_atomic_numbers().tolist(),
                         pbc=frame.get_pbc().tolist())
 
     data['ids'] = np.arange(len(frames)).tolist()
@@ -23,7 +31,10 @@ def load_json_frame(fn):
     with open(fn, 'r') as f:
         data = json.load(f)
     ids = data['ids']
-    return {key: np.array(val) for idx in ids for key, val in data[str(idx)].items()}
+    structure = {key: np.array(val)
+                 for idx in ids for key, val in data[str(idx)].items()}
+
+    return adapt_structure(**structure)
 
 
 class BoxList(object):
@@ -60,7 +71,7 @@ class BoxList(object):
             self.bin2icenters[bin_id].append(icenter)
             self.part2bin[icenter] = bin_id
             self.list = []
-        print(self.nbins)
+        # print(self.nbins)
         for bin_id in range(self.nbins):
             self.list.append(Box(
                 bin_id, self.nbins_c, self.neigh_search, self.bin2icenters[bin_id], pbc, self))

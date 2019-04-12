@@ -39,7 +39,10 @@ namespace rascal {
 
   template <class ManagerImplementation, size_t MaxOrder>
   struct FilterFixture {
-    using Filter_t = AdaptorFilter<ManagerImplementation, MaxOrder>;
+    class Filter_t : public AdaptorFilter<ManagerImplementation, MaxOrder> {
+      using AdaptorFilter<ManagerImplementation, MaxOrder>::AdaptorFilter;
+      void perform_filtering() final{};
+    };
 
     FilterFixture() : manager{fixture.manager} {}
 
@@ -93,13 +96,13 @@ namespace rascal {
       counter++;
       const auto & pos_a{atom.get_position()};
       const auto & pos_b{
-          this->fixture.manager.get_position(atom.get_atom_index())};
+          this->fixture.manager->get_position(atom.get_atom_index())};
       const auto error{(pos_a - pos_b).norm()};
       BOOST_CHECK_EQUAL(error, 0.);
 
       const auto & atom_type_a{atom.get_atom_type()};
       const auto & atom_type_b{
-          this->fixture.manager.get_atom_type(atom.back())};
+          this->fixture.manager->get_atom_type(atom.back())};
       BOOST_CHECK_EQUAL(atom_type_a, atom_type_b);
     }
   }
@@ -137,13 +140,13 @@ namespace rascal {
 
         const auto & pos_a{pair.get_position()};
         const auto & pos_b{
-            this->fixture.manager.get_position(pair.get_atom_index())};
+            this->fixture.manager->get_position(pair.get_atom_index())};
         const auto error{(pos_a - pos_b).norm()};
         BOOST_CHECK_EQUAL(error, 0.);
 
         const auto & atom_type_a{pair.get_atom_type()};
         const auto & atom_type_b{
-            this->fixture.manager.get_atom_type(pair.back())};
+            this->fixture.manager->get_atom_type(pair.back())};
         BOOST_CHECK_EQUAL(atom_type_a, atom_type_b);
         counter++;
       }

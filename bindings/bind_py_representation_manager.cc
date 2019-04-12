@@ -41,13 +41,14 @@ decltype(auto) add_representation_manager(py::module & mod, py::module &) {
   // use custom constructor to pass json formated string as initializer
   // an alternative would be to convert python dict to json internally
   // but needs some workon in the pybind machinery
-  representation.def(py::init([](Manager_t & manager, std::string & hyper_str) {
+  representation.def(py::init([](std::shared_ptr<Manager_t> manager,
+                                 std::string & hyper_str) {
     // convert to json
     json hypers = json::parse(hyper_str);
-    return std::make_unique<RepresentationManager>(manager, hypers);
+    return std::make_unique<RepresentationManager>(std::move(manager), hypers);
   }));
-  representation.def("compute", &RepresentationManager::compute);
-
+  representation.def("compute", &RepresentationManager::compute,
+                     py::call_guard<py::gil_scoped_release>());
   return representation;
 }
 
@@ -57,9 +58,10 @@ void add_representation_managers(py::module & mod, py::module & m_garbage) {
   using Manager_t =
       AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>;
   using Representation1_t = RepresentationManagerSortedCoulomb<Manager_t>;
+
   auto rep_sorted_coulomb =
       add_representation_manager<Representation1_t>(mod, m_garbage);
-  using Representation3_t = RepresentationManagerSphericalExpansion<Manager_t>;
+  using Representation2_t = RepresentationManagerSphericalExpansion<Manager_t>;
   auto rep_spherical_expansion =
-      add_representation_manager<Representation3_t>(mod, m_garbage);
+      add_representation_manager<Representation2_t>(mod, m_garbage);
 }

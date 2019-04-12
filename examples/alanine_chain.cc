@@ -26,6 +26,7 @@
  */
 
 #include <structure_managers/structure_manager_centers.hh>
+#include <structure_managers/make_structure_manager.hh>
 #include <structure_managers/adaptor_neighbour_list.hh>
 #include <structure_managers/property.hh>
 
@@ -51,23 +52,30 @@ int main() {
   std::vector<double> dihedral_angles{};
 
   // initialize the manager
-  Manager_t manager;
-  double cutoff{1.0};
+  auto manager{rascal::make_structure_manager<Manager_t>()};
+  double cutoff{2.0};
+  /*
+   * TODO(markus) bug with cutoff==1.0
+   * in adaptor_neighbour_list.hh:992, at some point idx is assigned a
+   * coordinate that does not exist leading to a seg fault when trying to
+   * access it.
+   */
 
   // read atomic structure from the JSON file
   // manager.read_structure_from_json("alanine-X.json");
-  manager.update("alanine-X.json");
-
-  PairManager_t pair_manager{manager, cutoff};
-  pair_manager.update();
+  // manager.update("alanine-X.json");
+  auto pair_manager{rascal::make_adapted_manager<rascal::AdaptorNeighbourList>(
+      manager, cutoff)};
+  std::string filename{"alanine-X.json"};
+  pair_manager->update(filename);
 
   // Loop over the defined quadruplets and calculate the respective
   // angles with atan2 and cosine definition.
   for (auto q : quadruplets) {
-    auto pos0 = pair_manager.get_position(q[0]);
-    auto pos1 = pair_manager.get_position(q[1]);
-    auto pos2 = pair_manager.get_position(q[2]);
-    auto pos3 = pair_manager.get_position(q[3]);
+    auto pos0 = pair_manager->get_position(q[0]);
+    auto pos1 = pair_manager->get_position(q[1]);
+    auto pos2 = pair_manager->get_position(q[2]);
+    auto pos3 = pair_manager->get_position(q[3]);
 
     auto b1 = pos1 - pos0;
     auto b2 = pos1 - pos2;

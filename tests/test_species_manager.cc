@@ -8,7 +8,7 @@
  *
  * @brief tests the implementation of the adaptor filter species
  *
- * Copyright © 2018 Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2018 Markus Stricker, Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -91,12 +91,11 @@ namespace rascal {
     }
 
     Fix::species_manager.update();
-
     for (auto && tup : species_counter) {
       auto species{tup.first};
-      auto nb_atoms{tup.second};
-      auto nb_filtered{Fix::species_manager[species].size()};
-      BOOST_CHECK_EQUAL(nb_atoms, nb_filtered);
+      auto nb_clusters{tup.second};
+      auto nb_filtered{Fix::species_manager[species].nb_clusters(2)};
+      BOOST_CHECK_EQUAL(nb_clusters, nb_filtered);
     }
   }
 

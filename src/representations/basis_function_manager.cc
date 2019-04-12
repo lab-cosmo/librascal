@@ -35,7 +35,7 @@ using BasisFunType = rascal::BasisFunManager::BasisFunType;
 
 namespace rascal {  // NOLINT
   /* ---------------------------------------------------------------------- */
-  enum class BasisFunManager::BasisFunType : int {
+  enum class BasisFunManager::BasisFunType : int {  // Symmetry Functions
     One = 0;  // yields only cutoff function
     Gaussian = 1;
     cosine = 2;
@@ -201,8 +201,9 @@ namespace rascal {  // NOLINT
 
   /* -------------------------------------------------------------------- */
   template <CutoffFunType cfun_type>
-  inline double BasisFunManager::comp_Dfc(const double * const param,
-                                          const double * const rij) {
+  inline double
+  BasisFunManager::comp_Dfc(const double * const param,  // Sigmoid functions
+                            const double * const rij) {
     switch (cfun_type) {
     case CutoffFunType::cosine: {
       const auto & Rc = param[0];

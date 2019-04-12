@@ -33,10 +33,9 @@ namespace py = pybind11;
 PYBIND11_MODULE(_rascal, mod) {
   mod.doc() = "Python bindings for the Rascal library";
 
-  py::module m_strc_mng = mod.def_submodule("StructureManager");
-  m_strc_mng.doc() = "Structure Manager Classes";
-  py::module m_adp = mod.def_submodule("Adaptor");
-  m_adp.doc() = "Adaptor Classes";
+  py::module m_nl = mod.def_submodule("NeighbourList");
+  m_nl.doc() = "Utilities to make neighbour lists";
+
   py::module m_rpr_mng = mod.def_submodule("RepresentationManager");
   m_rpr_mng.doc() = "Representation Manager Classes";
   py::module m_feat_mng = mod.def_submodule("FeatureManager");
@@ -50,7 +49,7 @@ PYBIND11_MODULE(_rascal, mod) {
 
   py::add_ostream_redirect(m_utl, "ostream_redirect");
 
-  add_structure_managers(m_strc_mng, m_adp, m_garbage);
+  add_structure_managers(m_nl, m_garbage);
   add_representation_managers(m_rpr_mng, m_garbage);
   add_feature_managers(m_feat_mng, m_garbage);
   utils_binding(m_utl);

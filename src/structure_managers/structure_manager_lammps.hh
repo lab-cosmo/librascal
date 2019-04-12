@@ -56,12 +56,14 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   //! Definition of the new StructureManagerLammps class.
   class StructureManagerLammps
-      : public StructureManager<StructureManagerLammps> {
+      : public StructureManager<StructureManagerLammps>,
+        public std::enable_shared_from_this<StructureManagerLammps> {
    public:
     using traits = StructureManager_traits<StructureManagerLammps>;
     using Parent = StructureManager<StructureManagerLammps>;
     using Vector_ref = typename Parent::Vector_ref;
     using AtomRef_t = typename Parent::AtomRef;
+    using ImplementationPtr_t = std::shared_ptr<StructureManagerLammps>;
 
     //! Default constructor
     StructureManagerLammps() = default;
@@ -83,38 +85,19 @@ namespace rascal {
     StructureManagerLammps &
     operator=(StructureManagerLammps && other) = default;
 
-    /**
-     * resetting is required every time the list changes. Here, this
-     * is implemented without explicit dependency to lammps. The
-     * signature could be simplified by including lammps as a
-     * dependency, but it is unclear that the convenience would
-     * outweigh the hassle of maintaining the dependency.
-     *
-     * @param inum Property `inum` in the lammps `NeighList` structure
-     *
-     * @param tot_num sum of the properties `nlocal` and `nghost` in the
-     *                lammps `Atom` structure
-     *
-     * @param ilist Property `ilist` in the lammps `NeighList` structure
-     *
-     * @param numneigh Property `numneigh` in the lammps `NeighList` structure
-     *
-     * @param firstneigh Property `firstneigh` in the lammps `NeighList`
-     * structure
-     *
-     * @param x Property `x` in the lammps `Atom` structure
-     *
-     * @param f Property `f` in the lammps `Atom` structure
-     *
-     * @param type Property `type` in the lammps `Atom` structure
-     *
-     * @param eatom per-atom energy
-     *
-     * @param vatom per-atom virial
-     */
-    void update(const int & inum, const int & tot_num, int * ilist,
-                int * numneigh, int ** firstneigh, double ** x, double ** f,
-                int * type, double * eatom, double ** vatom);
+    //! Updates the manager using the impl
+    template <class... Args>
+    void update(Args &&... arguments) {
+      // update the underlying structure
+      this->update_self(std::forward<Args>(arguments)...);
+
+      if (sizeof...(arguments) > 0) {
+        // the structure has changed to tell it to the whole tree
+        this->send_changed_structure_signal();
+      }
+      // send the update signal to the tree
+      this->update_children();
+    }
 
     //! return position vector of an atom given the atom index
     inline Vector_ref get_position(const size_t & atom_index) {
@@ -165,8 +148,7 @@ namespace rascal {
      * dummy and is used for consistency in other words, atom_index is the
      * global LAMMPS atom index.
      */
-    inline int get_cluster_neighbour(const Parent & /*cluster*/,
-                                     size_t index) const {
+    inline int get_cluster_neighbour(const Parent &, size_t index) const {
       return this->ilist[index];
     }
 
@@ -182,7 +164,42 @@ namespace rascal {
      * return the number of clusters of size cluster_size.  Can only handle
      * cluster_size 1 (atoms) and cluster_size 2 (pairs).
      */
-    size_t get_nb_clusters(int cluster_size) const;
+    size_t get_nb_clusters(int order) const;
+
+    //! //! overload of update that does not change the underlying structure
+    void update_self() {}
+    /**
+     * resetting is required every time the list changes. Here, this
+     * is implemented without explicit dependency to lammps. The
+     * signature could be simplified by including lammps as a
+     * dependency, but it is unclear that the convenience would
+     * outweigh the hassle of maintaining the dependency.
+     *
+     * @param inum Property `inum` in the lammps `NeighList` structure
+     *
+     * @param tot_num sum of the properties `nlocal` and `nghost` in the
+     *                lammps `Atom` structure
+     *
+     * @param ilist Property `ilist` in the lammps `NeighList` structure
+     *
+     * @param numneigh Property `numneigh` in the lammps `NeighList` structure
+     *
+     * @param firstneigh Property `firstneigh` in the lammps `NeighList`
+     * structure
+     *
+     * @param x Property `x` in the lammps `Atom` structure
+     *
+     * @param f Property `f` in the lammps `Atom` structure
+     *
+     * @param type Property `type` in the lammps `Atom` structure
+     *
+     * @param eatom per-atom energy
+     *
+     * @param vatom per-atom virial
+     */
+    void update_self(const int & inum, const int & tot_num, int * ilist,
+                     int * numneigh, int ** firstneigh, double ** x,
+                     double ** f, int * type, double * eatom, double ** vatom);
 
    protected:
     int inum{};           //!< total numer of atoms

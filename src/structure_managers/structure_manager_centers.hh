@@ -79,10 +79,12 @@ namespace rascal {
    * a hint of what it is about.
    */
   class StructureManagerCenters :
-      // public inheritance the base class
-      public StructureManager<StructureManagerCenters> {
-    // Publicly accessible variables and function of the class are given
-    // here. These provide the interface to access the neighbourhood.
+      // public inheritance of the base class
+      public StructureManager<StructureManagerCenters>,
+      public std::enable_shared_from_this<StructureManagerCenters> {
+    // Publicly accessible variables and functions of the class are given
+    // here. These provide the interface to access the structure and
+    // subsequently calculated neighbourhood.
    public:
     // for convenience, the names are shortened
     using traits = StructureManager_traits<StructureManagerCenters>;
@@ -90,6 +92,8 @@ namespace rascal {
     // here you see why -- definition of used function return types
     using Vector_ref = typename Parent::Vector_ref;
     using AtomRef_t = typename Parent::AtomRef;
+    using Children_t = typename Parent::Children_t;
+    using ImplementationPtr_t = std::shared_ptr<StructureManagerCenters>;
 
     /**
      * Eigen::Map is a convenient way to access data in the 'Eigen-way', if it
@@ -153,28 +157,20 @@ namespace rascal {
     StructureManagerCenters &
     operator=(StructureManagerCenters && other) = default;
 
-    /**
-     * invokes the initialisation/reinitialisation based on existing
-     * data. E.g. when the atom positions are provided by a simulation method,
-     * which evolves in time, this function updates the data.
-     */
-    void update(const Eigen::Ref<const Eigen::MatrixXd, 0,
-                                 Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>>
-                    positions,
-                const Eigen::Ref<const Eigen::VectorXi> atom_types,
-                const Eigen::Ref<const Eigen::MatrixXd> cell,
-                const Eigen::Ref<const PBC_t> pbc);
+    //! Updates the manager using the impl
+    template <class... Args>
+    void update(Args &&... arguments) {
+      // update the underlying structure
+      this->update_self(std::forward<Args>(arguments)...);
 
-    /**
-     * Overload of the update function invokes an update from a file, which
-     * holds a structure in the format of the ASE atoms object
-     */
-    void update(const std::string filename);
+      if (sizeof...(arguments) > 0) {
+        // the structure has changed to tell it to the whole tree
+        this->send_changed_structure_signal();
+      }
 
-    // TODO(felix): build/update ambiguity
-    //! makes atom index lists and offsets
-    void build();
-
+      // send the update signal to the tree
+      this->update_children();
+    }
     //! required for the construction of vectors, etc
     constexpr static int dim() { return traits::Dim; }
 
@@ -252,7 +248,7 @@ namespace rascal {
     }
 
     //! dummy function, since no neighbours are present her
-    inline int get_cluster_neighbour(const Parent & /*cluster*/,
+    inline int get_cluster_neighbour(const Parent & /*parent*/,
                                      size_t index) const {
       // dummy argument is the atom itself, because if does not make sense at
       // this order
@@ -263,7 +259,7 @@ namespace rascal {
     template <size_t Order, size_t Layer>
     inline int
     get_cluster_neighbour(const ClusterRefKey<Order, Layer> & /*cluster*/,
-                          size_t) const {
+                          size_t /*index*/) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms.");
       return 0;
@@ -278,18 +274,45 @@ namespace rascal {
     get_offset_impl(const std::array<size_t, Order> & counters) const;
 
     //! Function for returning the number of atoms
-    size_t get_nb_clusters(size_t cluster_size) const;
+    size_t get_nb_clusters(size_t order) const;
 
     /**
      * Function for reading data from a JSON file in the ASE format. See the
      * definition of <code>AtomicStructure</code> and adapt the fields, which
      * should be read to your case.
+     * TODO(markus) move this function to AtomicStructure
      */
-    void read_structure_from_json(const std::string filename);
+    decltype(auto) read_structure_from_json(const std::string filename);
 
     // TODO(markus): add function to read from XYZ files
 
+    /**
+     * invokes the initialisation/reinitialisation based on existing
+     * data. E.g. when the atom positions are provided by a simulation method,
+     * which evolves in time, this function updates the data.
+     */
+    void
+    update_self(const Eigen::Ref<const Eigen::MatrixXd, 0,
+                                 Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>>
+                    positions,
+                const Eigen::Ref<const Eigen::VectorXi> atom_types,
+                const Eigen::Ref<const Eigen::MatrixXd> cell,
+                const Eigen::Ref<const PBC_t> pbc);
+    /**
+     * Overload of the update function invokes an update from a file, which
+     * holds a structure in the format of the ASE atoms object
+     */
+    void update_self(const std::string filename);
+
+    //! overload of update that does not change the underlying structure
+    void update_self(AtomicStructure<traits::Dim> & structure);
+
+    //! overload of update that does not change the underlying structure
+    void update_self() {}
+
    protected:
+    //! makes atom index lists and offsets
+    void build();
     /**
      * Object which can interface to the json header to read and write atom
      * related data in the ASE format: positions, cell, periodicity, atom types

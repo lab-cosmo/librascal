@@ -122,9 +122,12 @@ namespace rascal {
   class RepresentationManagerSphericalExpansion
       : public RepresentationManagerBase {
    public:
-    using hypers_t = RepresentationManagerBase::hypers_t;
-    using Property_t = Property<double, 1, 1, Eigen::Dynamic, Eigen::Dynamic>;
+    using Parent = RepresentationManagerBase;
     using Manager_t = StructureManager;
+    using ManagerPtr_t = std::shared_ptr<Manager_t>;
+    using Hypers_t = typename Parent::Hypers_t;
+    using Property_t = Property<double, 1, 1, Eigen::Dynamic, Eigen::Dynamic>;
+    using ReferenceHypers_t = Parent::ReferenceHypers_t;
 
     /**
      * Set the hyperparameters of this descriptor from a json object.
@@ -135,7 +138,7 @@ namespace rascal {
      * @throw logic_error if an invalid option or combination of options is
      *                    specified in the structure
      */
-    void set_hyperparameters(const hypers_t & hypers) {
+    void set_hyperparameters(const Hypers_t & hypers) {
       this->max_radial = hypers.at("max_radial");
       this->max_angular = hypers.at("max_angular");
       if (hypers.find("n_species") != hypers.end()) {
@@ -173,9 +176,9 @@ namespace rascal {
      * @throw logic_error if an invalid option or combination of options is
      *                    specified in the container
      */
-    RepresentationManagerSphericalExpansion(Manager_t & sm,
-                                            const hypers_t & hyper)
-        : structure_manager{sm}, soap_vectors{sm} {
+    RepresentationManagerSphericalExpansion(ManagerPtr_t sm,
+                                            const Hypers_t & hyper)
+        : structure_manager{std::move(sm)}, soap_vectors{*sm} {
       this->set_hyperparameters(hyper);
     }
 
@@ -231,8 +234,18 @@ namespace rascal {
       }
     }
 
-    std::vector<precision_t> & get_representation_raw_data() {
+    std::vector<Precision_t> & get_representation_raw_data() {
       return this->soap_vectors.get_raw_data();
+    }
+
+    //! getter for the representation
+    Eigen::Map<const Eigen::MatrixXd> get_representation_full() {
+      auto nb_centers{this->structure_manager->size()};
+      auto nb_features{this->get_feature_size()};
+      auto & raw_data{this->soap_vectors.get_raw_data()};
+      Eigen::Map<const Eigen::MatrixXd> representation(raw_data.data(),
+                                                       nb_features, nb_centers);
+      return representation;
     }
 
     size_t get_feature_size() {
@@ -271,11 +284,11 @@ namespace rascal {
     Eigen::MatrixXd radial_ortho_matrix{};
     bool is_precomputed{false};
 
-    Manager_t & structure_manager;
+    ManagerPtr_t structure_manager;
     Property_t soap_vectors;
     internal::GaussianSigmaType gaussian_sigma_type{};
 
-    hypers_t hypers{};
+    Hypers_t hypers{};
   };
 
   /** Compute common prefactors for the radial Gaussian basis functions */
@@ -320,6 +333,8 @@ namespace rascal {
     // TODO(max-veit) see if we can replace the gammas with their natural logs,
     // since it'll overflow for relatively small n (n1 + n2 >~ 300)
     Eigen::MatrixXd overlap(this->max_radial, this->max_radial);
+    // Eigen::MatrixXd overlap =
+    //     Eigen::MatrixXd::Zero(this->max_radial, this->max_radial);
     for (size_t radial_n1{0}; radial_n1 < this->max_radial; radial_n1++) {
       for (size_t radial_n2{0}; radial_n2 < this->max_radial; radial_n2++) {
         overlap(radial_n1, radial_n2) =
@@ -403,7 +418,7 @@ namespace rascal {
     if (not this->is_precomputed) {
       this->precompute();
     }
-
+    this->soap_vectors.resize_to_zero();
     this->soap_vectors.set_nb_row(this->n_species * this->max_radial);
     this->soap_vectors.set_nb_col(pow(this->max_angular + 1, 2));
 
@@ -411,6 +426,8 @@ namespace rascal {
       Eigen::MatrixXd soap_vector = Eigen::MatrixXd::Zero(
           this->n_species * this->max_radial, pow(this->max_angular + 1, 2));
       Eigen::MatrixXd radial_integral(this->max_radial, this->max_angular + 1);
+      // Eigen::MatrixXd radial_integral =
+      //     Eigen::MatrixXd::Zero(this->max_radial, this->max_angular + 1);
 
       // Start the accumulator with the central atom
       // All terms where l =/= 0 cancel
@@ -429,8 +446,8 @@ namespace rascal {
           this->radial_ortho_matrix * radial_integral.col(0) / sqrt(4.0 * PI);
 
       for (auto neigh : center) {
-        auto dist{this->structure_manager.get_distance(neigh)};
-        auto direction{this->structure_manager.get_direction_vector(neigh)};
+        auto dist{this->structure_manager->get_distance(neigh)};
+        auto direction{this->structure_manager->get_direction_vector(neigh)};
         double exp_factor = std::exp(-0.5 * pow(dist, 2) / sigma2);
         sigma2 = pow(gaussian_spec.get_gaussian_sigma(neigh), 2);
 
@@ -486,4 +503,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif // SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SPHERICAL_EXPANSION_HH_
+#endif  // SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SPHERICAL_EXPANSION_HH_

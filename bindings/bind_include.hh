@@ -44,7 +44,12 @@
 #include "structure_managers/structure_manager_lammps.hh"
 #include "structure_managers/adaptor_strict.hh"
 #include "structure_managers/adaptor_neighbour_list.hh"
+#include "structure_managers/adaptor_increase_maxorder.hh"
+#include "structure_managers/adaptor_half_neighbour_list.hh"
+#include "structure_managers/adaptor_full_neighbour_list.hh"
+#include "structure_managers/make_structure_manager.hh"
 #include "structure_managers/structure_manager.hh"
+#include "structure_managers/structure_manager_base.hh"
 
 #include "basic_types.hh"
 #include "rascal_utility.hh"
@@ -55,6 +60,8 @@
 #include <pybind11/eigen.h>
 #include <pybind11/stl.h>
 #include <pybind11/iostream.h>
+// for the hasattr function to test the module namespace
+#include <pybind11/pytypes.h>
 
 #include <Eigen/Dense>
 #include <vector>
@@ -64,7 +71,7 @@
 // using namespace rascal;
 namespace py = pybind11;
 
-void add_structure_managers(py::module &, py::module &, py::module &);
+void add_structure_managers(py::module &, py::module &);
 void add_representation_managers(py::module &, py::module &);
 void add_feature_managers(py::module &, py::module &);
 

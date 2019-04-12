@@ -45,7 +45,7 @@ namespace rascal {
   class FeatureManagerBase {
    public:
     using RepresentationManager_t = RepresentationManagerBase;
-    using hypers_t = typename RepresentationManagerBase::hypers_t;
+    using Hypers_t = typename RepresentationManagerBase::Hypers_t;
     using precision_t = T;
     using Feature_Matrix_t = Eigen::Matrix<precision_t, Eigen::Dynamic,
                                            Eigen::Dynamic, Eigen::ColMajor>;
@@ -74,6 +74,9 @@ namespace rascal {
 
     //! move data from the representation manager property
     virtual void push_back(RepresentationManager_t &) = 0;
+
+    //! move data from the representation manager property
+    virtual void insert(size_t &, RepresentationManager_t &) = 0;
 
     //! return number of elements of the flattened array
     virtual inline int size() = 0;
