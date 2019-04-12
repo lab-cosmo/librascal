@@ -14,8 +14,9 @@ Pair distances
 SOAP
 ****
 
-BP symmetry functions
+Behler-Parinello symmetry functions
 *********************
+Based on [Behler2007]_
 
 Voronoi representation
 **********************
