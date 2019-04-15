@@ -58,8 +58,7 @@ namespace rascal {
     virtual ~KeyStandardisation() = default;
 
     //! Copy assignment operator
-    KeyStandardisation &
-    operator=(const KeyStandardisation & other) = default;
+    KeyStandardisation & operator=(const KeyStandardisation & other) = default;
 
     //! Move assignment operator
     KeyStandardisation & operator=(KeyStandardisation && other) = default;
@@ -70,7 +69,8 @@ namespace rascal {
 
     template <size_t Order>
     operator const std::array<T, Order> &() const {
-      static_assert(Order < MaxOrder, "Casting a not allowed tuple size");
+      static_assert(Order <= MaxOrder,
+                    "Casting a larger than allowed key size");
       return reinterpret_cast<std::array<T, Order> &>(*this);
     }
 
@@ -90,6 +90,8 @@ namespace rascal {
     //! practise is an array
     template <size_t Order>
     static std::array<T, MaxOrder> fill(const std::array<T, Order> & tup) {
+      static_assert(Order <= MaxOrder,
+                    "Impossible key type, Order has maximum value of MaxOrder");
       std::array<T, MaxOrder> key;
       for (size_t i{Order}; i < MaxOrder; ++i) {
         key[i] = std::numeric_limits<T>::min();

@@ -1,10 +1,10 @@
 .. _nl-for-user:
 
 How to build a neighbor list?
-=================================
+=============================
 
 Overview
-~~~~~~~~~
+~~~~~~~~
 
 
 Here we provide a tutorial on how to use the C++ interface for building neighbor lists.
