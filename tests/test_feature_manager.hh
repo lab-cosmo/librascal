@@ -45,17 +45,14 @@ namespace rascal {
    * of calculated feature data from multiple structures.
    */
   template <typename T, template <typename> class FeatureManager,
-            class StructureManager,
             template <typename> class RepresentationManager, class BaseFixture>
   struct FeatureFixture
-      : RepresentationFixture<StructureManager, RepresentationManager,
-                              BaseFixture> {
-    using Parent = RepresentationFixture<StructureManager,
-                                         RepresentationManager, BaseFixture>;
+      : RepresentationFixture<BaseFixture, RepresentationManager> {
+    using Parent = RepresentationFixture<BaseFixture, RepresentationManager>;
     using Manager_t = typename Parent::Manager_t;
     using Representation_t = typename Parent::Representation_t;
     using Feature_t = FeatureManager<T>;
-    using hypers_t = typename Representation_t::hypers_t;
+    using Hypers_t = typename Representation_t::Hypers_t;
     using precision_t = T;
 
     FeatureFixture() : Parent{} {
@@ -63,9 +60,9 @@ namespace rascal {
 
       auto & representations = this->representations;
 
-      for (auto & manager : this->managers_strict) {
+      for (auto & manager : this->managers) {
         for (auto & hyper : this->hypers) {
-          n_center += manager.size();
+          n_center += manager->size();
 
           representations.emplace_back(manager, hyper);
           representations.back().compute();

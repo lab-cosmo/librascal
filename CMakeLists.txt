@@ -211,19 +211,6 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 if (${BUILD_TESTS})
   find_package(Boost REQUIRED COMPONENTS unit_test_framework )
   enable_testing()
-  # copy python test
-
-  file( GLOB PY_TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/python_*.py")
-
-  foreach(pytest ${PY_TEST_SRCS})
-    get_filename_component(pytest_name ${pytest} NAME)
-    configure_file(
-      ${pytest}
-      "${CMAKE_BINARY_DIR}/${pytest_name}"
-      COPYONLY)
-  endforeach(pytest ${PY_TEST_SRCS})
-
-  ####################################################################
   # build c++ tests and add to test suite
   file( GLOB TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/test_*.cc")
 
@@ -237,24 +224,32 @@ if (${BUILD_TESTS})
   add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
   configure_file("tests/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
   configure_file("tests/simple_cubic_9.json" ${CMAKE_BINARY_DIR} COPYONLY)
-  configure_file("examples/crystal_structure.json" ${CMAKE_BINARY_DIR} COPYONLY)
   file(COPY "tests/reference_data" DESTINATION ${CMAKE_BINARY_DIR})
 
-  ####################################################################
-  # copy and add python test to suite
-  file( GLOB PY_TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/python_*.py")
-
-  foreach(pytest ${PY_TEST_SRCS})
-    get_filename_component(pytest_name ${pytest} NAME)
-    configure_file(
-      ${pytest}
-      "${CMAKE_BINARY_DIR}/${pytest_name}"
-      COPYONLY)
-  endforeach(pytest ${PY_TEST_SRCS})
-
   if(BUILD_BINDINGS)
+
+    add_custom_target(py_test ALL
+      DEPENDS
+        copy_test_py
+      )
+
+    add_dependencies(py_test main_test_suite)
+
+    add_custom_command(OUTPUT copy_test_py
+      COMMAND ${CMAKE_COMMAND} -E copy_directory
+      ${CMAKE_SOURCE_DIR}/tests/python ${CMAKE_BINARY_DIR}/
+      DEPENDS
+          always_rebuild
+    )
+
+    add_custom_command(
+      OUTPUT always_rebuild
+      COMMAND ${CMAKE_COMMAND} -E echo
+    )
+
     add_test(python_binding_test python_binding_tests.py)
   endif()
+
 
 endif(${BUILD_TESTS})
 
@@ -285,8 +280,12 @@ file( GLOB binaries "${CMAKE_SOURCE_DIR}/examples/*.cc")
 foreach(binaryfile ${binaries})
   get_filename_component(binaryname  ${binaryfile} NAME_WE)
   add_executable(${binaryname} ${binaryfile})
-  target_link_libraries(${binaryname} ${Boost_LIBRARIES} "${LIBRASCAL_NAME}")
+  target_link_libraries(${binaryname} "${LIBRASCAL_NAME}")
 endforeach(binaryfile ${binaries})
+configure_file("${CMAKE_SOURCE_DIR}/examples/crystal_structure.json" ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file("${CMAKE_SOURCE_DIR}/examples/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
+
+
 
 # or copy them
 file (GLOB pybins "${CMAKE_SOURCE_DIR}/bin/*.py")

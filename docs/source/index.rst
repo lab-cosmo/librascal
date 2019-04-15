@@ -21,12 +21,13 @@ It comes with a GNU Lesser General Public License of version 3, which means that
    intro
    whitepaper
    installation
-   tutorials
-   representations
-   models
-   neighbor-list-manager
+   tutorials/tutorials
+   representation/representations
+   models/models
+   neighbor_list/neighbor-list-manager
    dev_guide/developer
    auto_doc/auto
+   bibliography
 
 Indices and tables
 ==================
@@ -35,6 +36,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
-
-

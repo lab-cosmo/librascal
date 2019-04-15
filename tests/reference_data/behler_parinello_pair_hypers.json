@@ -1,0 +1,176 @@
+{
+    "general_description": {
+        "elements": ["Mg", "Si"],
+        "nodes_per_hidden_layer": [20, 20],
+        "activation_functions": [{
+                "type": "CosineShifted",
+                "_comment": "params is usually empty, except for CosineShifted",
+                "params": {
+                    "alpha": 0.9
+                }
+            },
+            {
+                "type": "CosineShifted",
+                "_comment": "params is usually empty, except for CosineShifted",
+                "params": {
+                    "alpha": 0.9
+                }
+            },
+            {
+                "type": "Unity",
+                "_comment": "params is usually empty, except for CosineShifted",
+                "params": {}
+            }
+        ]
+    },
+
+    "input_layer": {
+        "scaling": "None",
+        "cutoff_function": {
+            "type": "CosineShifted",
+            "_comment": "params is usually empty, except for CosineShifted",
+            "params": {
+                "alpha": 0.9
+            }
+        },
+        "symmetry_functions": [{
+                "type": "Gaussian",
+                "index": 0,
+                "unit": "eV",
+                "params": {
+                    "eta": {
+                        "value": 0.1,
+                        "unit": "(Å)^(-2)"
+                    }
+                    "r_s": {
+                        "value": 5.6,
+                        "unit": "Å"
+                    }
+                },
+                "species": ["Mg", "Si"],
+                "r_cut": {
+                    "value": 8.0,
+                    "unit": "Å"
+                }
+
+            },
+            {
+                "type": "Gaussian",
+                "index": 1,
+                "unit": "eV",
+                "params": {
+                    "eta": {
+                        "value": 0.2,
+                        "unit": "(Å)^(-2)"
+                    }
+                    "r_s": {
+                        "value": 5.6,
+                        "unit": "Å"
+                    }
+                },
+                "species": ["Mg", "Si"],
+                "r_cut": {
+                    "value": 8.0,
+                    "unit": "Å"
+                }
+            },
+            {
+                "type": "Gaussian",
+                "index": 2,
+                "unit": "eV",
+                "params": {
+                    "eta": {
+                        "value": 0.1,
+                        "unit": "(Å)^(-2)"
+                    }
+                    "r_s": {
+                        "value": 5.6,
+                        "unit": "Å"
+                    }
+                },
+                "species": ["Mg", "Si"],
+                "r_cut": {
+                    "value": 12.0,
+                    "unit": "Å"
+                }
+            },
+            {
+                "type": "Gaussian",
+                "index": 3,
+                "unit": "eV",
+                "params": {
+                    "eta": {
+                        "value": 0.2,
+                        "unit": "(Å)^(-2)"
+                    }
+                    "r_s": {
+                        "value": 5.6,
+                        "unit": "Å"
+                    }
+                },
+                "species": ["Mg", "Si"],
+                "r_cut": {
+                    "value": 12.0,
+                    "unit": "Å"
+                }
+            }
+        ]
+    },
+
+    "scaling": [{
+            "index": 0,
+            "min": 0.069386801,
+            "max": 0.134380577,
+            "mean": 0.096721163,
+            "_comment": "instead of 'mean', there might also be the standard deviation"
+        },
+        {
+            "index": 1,
+            "min": 0.022983882,
+            "max": 0.051118270,
+            "mean": 0.034338457,
+            "_comment": "instead of 'mean', there might also be the standard deviation"
+        }
+    ],
+    "weights_by_layer": [
+        [{
+                "input_index": 0,
+                "output_index": 0,
+                "value": 0.787354,
+                "bias_weight": 0.754848
+            },
+            {
+                "input_index": 0,
+                "output_index": 1,
+                "value": 0.2465465153984,
+                "bias_weight": 0.8752168754
+            }
+        ],
+        [{
+                "input_index": 0,
+                "output_index": 0,
+                "value": 0.354321,
+                "bias_weight": 0.848754
+            },
+            {
+                "input_index": 0,
+                "output_index": 1,
+                "value": 0.6546515398424,
+                "bias_weight": 1687540.8752
+            }
+        ],
+        [{
+                "input_index": 0,
+                "output_index": 0,
+                "value": 0.53554321,
+                "bias_weight": 0.87848754
+            },
+            {
+                "input_index": 1,
+                "output_index": 0,
+                "value": 0.8346515398424,
+                "bias_weight": 16840.8752
+            }
+        ]
+    ]
+}

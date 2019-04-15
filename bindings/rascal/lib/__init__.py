@@ -1,4 +1,4 @@
-from ._rascal import (StructureManager, FeatureManager, Adaptor,
+from ._rascal import (NeighbourList, FeatureManager,
                       RepresentationManager, utils, math)
 
 

@@ -1,8 +1,9 @@
 import json
 
-from ..utils import get_strict_neighbourlist
+from ..neighbourlist import get_neighbourlist
 from ..lib import RepresentationManager, FeatureManager
-from .base import RepresentationFactory
+from .base import RepresentationFactory, RepresentationRunner
+from ..utils import get_full_name
 
 
 class SphericalExpansion(object):
@@ -51,7 +52,8 @@ class SphericalExpansion(object):
 
     def __init__(self, interaction_cutoff, cutoff_smooth_width,
                  max_radial, max_angular, gaussian_sigma_type,
-                 gaussian_sigma_constant=0., n_species=1):
+                 gaussian_sigma_constant=0., n_species=1,
+                 method='thread', n_workers=1, disable_pbar=False):
         """Construct a SphericalExpansion representation
 
         Required arguments are all the hyperparameters named in the
@@ -65,7 +67,26 @@ class SphericalExpansion(object):
             max_radial=max_radial, max_angular=max_angular,
             gaussian_sigma_type=gaussian_sigma_type,
             gaussian_sigma_constant=gaussian_sigma_constant,
-            n_species=n_species)
+            n_species=n_species
+        )
+
+        self.nl_options = [
+            dict(name='centers', args=[]),
+            dict(name='neighbourlist', args=[interaction_cutoff]),
+            dict(name='strict', args=[interaction_cutoff])
+        ]
+
+        neighbourlist_full_name = get_full_name(self.nl_options)
+        self.name = self.name + '_' + neighbourlist_full_name
+        hypers_str = json.dumps(self.hypers)
+        self.rep_options = dict(name=self.name, args=[hypers_str])
+
+        n_features = self.get_num_coefficients()
+        self.feature_options = dict(name='dense_double', args=[
+                                    n_features, hypers_str])
+
+        self.misc = dict(method=method, n_workers=n_workers,
+                         disable_pbar=disable_pbar)
 
     def update_hyperparameters(self, **hypers):
         """Store the given dict of hyperparameters
@@ -79,7 +100,6 @@ class SphericalExpansion(object):
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}
         self.hypers.update(hypers_clean)
-        return
 
     def transform(self, frames):
         """Compute the representation.
@@ -95,18 +115,12 @@ class SphericalExpansion(object):
             Object containing the representation
 
         """
-        n_frames = len(frames)
-        managers = list(map(
-            get_strict_neighbourlist,
-            frames, [self.hypers['interaction_cutoff'], ] * n_frames))
-        hypers_str = json.dumps(self.hypers)
-        n_features = self.get_num_coefficients()
-        features = FeatureManager.BlockSparse_double(n_features, hypers_str)
-        cms = map(RepresentationFactory(self.name),
-                  managers, [hypers_str, ] * n_frames)
-        for cm in cms:
-            cm.compute()
-            features.append(cm)
+
+        driver = RepresentationRunner(
+            self.nl_options, self.rep_options, self.feature_options, **self.misc)
+
+        features = driver.run(frames)
+
         return features
 
     def get_num_coefficients(self):

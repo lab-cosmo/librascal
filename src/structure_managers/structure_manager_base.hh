@@ -28,18 +28,25 @@
 #ifndef SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_BASE_HH_
 #define SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_BASE_HH_
 
+#include "structure_managers/updateable_base.hh"
+
 #include <string>
 
 namespace rascal {
 
   //! polymorphic base class type for StructureManagers
-  class StructureManagerBase {
+  class StructureManagerBase : public Updateable {
    public:
     //! access to specific properties with a string
     inline decltype(auto) get_property(std::string name);
     //! only? virtual function needed.
-    virtual size_t nb_clusters(size_t cluster_size) const = 0;
+    virtual size_t nb_clusters(size_t order) const = 0;
     virtual ~StructureManagerBase() = default;
+    virtual void update_self() = 0;
+    // virtual void update_children() = 0;
+    // virtual void set_update_status(const bool) = 0;
+
+   protected:
   };
 }  // namespace rascal
 

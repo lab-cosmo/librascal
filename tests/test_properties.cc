@@ -66,11 +66,11 @@ namespace rascal {
 
     PropertyFixture()
         : PairFixture<ManagerImplementation>{},
-          pair_property{this->pair_manager},
-          atom_property{this->pair_manager, atom_property_metadata},
-          dynamic_property{this->pair_manager, DynSize(), 1,
+          pair_property{*this->pair_manager},
+          atom_property{*this->pair_manager, atom_property_metadata},
+          dynamic_property{*this->pair_manager, DynSize(), 1,
                            dynamic_property_metadata},
-          dynamic_property2{this->pair_manager, DynSize(), 1,
+          dynamic_property2{*this->pair_manager, DynSize(), 1,
                             dynamic_property2_metadata} {}
 
     PairScalarProperty_t pair_property;

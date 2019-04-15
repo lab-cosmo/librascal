@@ -160,27 +160,27 @@ namespace rascal {
   class RepresentationManagerSortedCoulomb : public RepresentationManagerBase {
    public:
     using Manager_t = StructureManager;
+    using ManagerPtr_t = std::shared_ptr<Manager_t>;
     using Parent = RepresentationManagerBase;
     // type of the hyperparameters
-    using hypers_t = typename Parent::hypers_t;
+    using Hypers_t = typename Parent::Hypers_t;
     // numeric type for the representation features
-    using precision_t = typename Parent::precision_t;
+    using Precision_t = typename Parent::Precision_t;
     // type of the data structure for the representation feaures
-    using Property_t = Property<precision_t, 1, 1, Eigen::Dynamic, 1>;
+    using Property_t = Property<Precision_t, 1, 1, Eigen::Dynamic, 1>;
     template<size_t Order>
     // short hand type to help the iteration over the structure manager
     using ClusterRef_t = typename Manager_t::template ClusterRef<Order>;
     // type of the datastructure used to register the list of valid
     // hyperparameters
-    using reference_hypers_t = Parent::reference_hypers_t;
-    using data_t = typename Parent::data_t;
+    using ReferenceHypers_t = Parent::ReferenceHypers_t;
     /* -------------------- rep-preamble-end -------------------- */
 
     /* -------------------- rep-construc-start -------------------- */
     //! Constructor
-    RepresentationManagerSortedCoulomb(Manager_t & sm, const hypers_t & hyper)
-        : structure_manager{sm}, coulomb_matrices{sm} {
-      // Check the validity of the input hyperparameters
+    RepresentationManagerSortedCoulomb(ManagerPtr_t sm, const Hypers_t & hyper)
+        : structure_manager{std::move(sm)}, central_decay{},
+          interaction_cutoff{}, interaction_decay{}, coulomb_matrices{*sm} {
       this->check_hyperparameters(this->reference_hypers, hyper);
       // Extract the options and hyperparameters
       this->set_hyperparameters(hyper);
@@ -213,10 +213,20 @@ namespace rascal {
     void compute();
 
     //! set hypers
-    void set_hyperparameters(const hypers_t &);
+    void set_hyperparameters(const Hypers_t &);
+
+    //! getter for the representation
+    Eigen::Map<const Eigen::MatrixXd> get_representation_full() {
+      auto nb_centers{this->structure_manager->size()};
+      auto nb_features{this->get_n_feature()};
+      auto & raw_data{this->coulomb_matrices.get_raw_data()};
+      Eigen::Map<const Eigen::MatrixXd> representation(raw_data.data(),
+                                                       nb_features, nb_centers);
+      return representation;
+    }
 
     //! get the raw data of the representation
-    std::vector<precision_t> & get_representation_raw_data() {
+    std::vector<Precision_t> & get_representation_raw_data() {
       return this->coulomb_matrices.get_raw_data();
     }
 
@@ -236,16 +246,6 @@ namespace rascal {
     //! Implementation of compute representation
     template<internal::CMSortAlgorithm AlgorithmType>
     void compute_helper();
-
-    //! getter for the representation
-    Eigen::Map<const Eigen::MatrixXd> get_representation_full() {
-      auto nb_centers{this->structure_manager.size()};
-      auto nb_features{this->get_n_feature()};
-      auto & raw_data{this->coulomb_matrices.get_raw_data()};
-      Eigen::Map<const Eigen::MatrixXd> representation(raw_data.data(),
-                                                       nb_features, nb_centers);
-      return representation;
-    }
 
     //! check if size of representation manager is enough for current structure
     //! manager
@@ -314,7 +314,7 @@ namespace rascal {
 
     /* -------------------- rep-variables-start -------------------- */
     // Reference to the structure manager
-    Manager_t & structure_manager;
+    ManagerPtr_t structure_manager;
     // list of hyperparameters specific to the coulomb matrix
     // spherical cutoff for the atomic environment
     double central_cutoff{};
@@ -330,7 +330,7 @@ namespace rascal {
     Property_t coulomb_matrices;
 
     //! reference the requiered hypers
-    reference_hypers_t reference_hypers{
+    ReferenceHypers_t reference_hypers{
         {"central_decay", {}},
         {"interaction_cutoff", {}},
         {"interaction_decay", {}},
@@ -343,9 +343,9 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <class Mngr>
   void RepresentationManagerSortedCoulomb<Mngr>::set_hyperparameters(
-      const RepresentationManagerSortedCoulomb<Mngr>::hypers_t & hyper) {
+      const RepresentationManagerSortedCoulomb<Mngr>::Hypers_t & hyper) {
     this->hypers = hyper;
-    this->central_cutoff = this->structure_manager.get_cutoff();
+    this->central_cutoff = this->structure_manager->get_cutoff();
     this->hypers["central_cutoff"] = this->central_cutoff;
 
     this->options.emplace("sorting_algorithm",
@@ -391,7 +391,7 @@ namespace rascal {
     if (option == "distance") {
       compute_helper<internal::CMSortAlgorithm::Distance>();
     } else if (option == "row_norm") {
-      compute_helper<internal::CMSortAlgorithm::Distance>();
+      compute_helper<internal::CMSortAlgorithm::RowNorm>();
     } else {
       auto error_message{std::string("Option '") + option +
                          std::string("' is not implemented.")};
@@ -414,7 +414,7 @@ namespace rascal {
     // Eigen::MatrixXd coulomb_mat(this->size,this->size);
 
     // loop over the centers
-    for (auto center : this->structure_manager) {
+    for (auto center : *this->structure_manager) {
       // re-use the temporary coulomb mat in linear storage
       // need to be zeroed because old data might not be overwritten
       lin_sorted_coulomb_mat =
@@ -460,13 +460,13 @@ namespace rascal {
     // the coulomb mat first row and col corresponds
     // to central atom to neighbours
     auto && Zk{center.get_atom_type()};
-    auto && central_cutoff{this->structure_manager.get_cutoff()};
+    auto && central_cutoff{this->structure_manager->get_cutoff()};
 
     type_factor_mat(0, 0) = 0.5 * std::pow(Zk, 2.4);
     for (auto neigh_i : center) {
       size_t idx_i{neigh_i.get_index() + 1};
       auto && Zi{neigh_i.get_atom_type()};
-      double & dik{this->structure_manager.get_distance(neigh_i)};
+      double & dik{this->structure_manager->get_distance(neigh_i)};
       double fac_ik{
           get_cutoff_factor(dik, central_cutoff, this->central_decay)};
 
@@ -481,7 +481,7 @@ namespace rascal {
     for (auto neigh_i : center) {
       size_t idx_i{neigh_i.get_index() + 1};
       auto && Zi{neigh_i.get_atom_type()};
-      double & dik{this->structure_manager.get_distance(neigh_i)};
+      double & dik{this->structure_manager->get_distance(neigh_i)};
       double fac_ik{
           get_cutoff_factor(dik, central_cutoff, this->central_decay)};
 

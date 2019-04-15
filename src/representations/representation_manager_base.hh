@@ -44,11 +44,11 @@ namespace rascal {
   class RepresentationManagerBase {
    public:
     //! type for the hyper parameter class
-    using hypers_t = json;
+    using Hypers_t = json;
     //! type for representation
-    using precision_t = double;
-    //! type used to register the valid key and values of hypers_t
-    using reference_hypers_t = std::map<std::string, std::vector<std::string>>;
+    using Precision_t = double;
+    //! type used to register the valid key and values of Hypers_t
+    using ReferenceHypers_t = std::map<std::string, std::vector<std::string>>;
 
     using dense_t = Eigen::Matrix<precision_t, Eigen::Dynamic, Eigen::Dynamic>;
     using input_data_t = internal::InternallySortedKeyMap<std::vector<int>, dense_t>;
@@ -74,17 +74,16 @@ namespace rascal {
     operator=(RepresentationManagerBase && other) = default;
 
     //! Pure Virtual Function to set hyperparameters of the representation
-    virtual void set_hyperparameters(const hypers_t &) = 0;
+    virtual void set_hyperparameters(const Hypers_t &) = 0;
 
-    //! Check if the input hyperparameters is valid
-    void check_hyperparameters(const reference_hypers_t &,
-                                    const hypers_t &);
+    //! Pure Virtual Function to set hyperparameters of the representation
+    void check_hyperparameters(const ReferenceHypers_t &, const Hypers_t &);
 
     //! Compute the representation using a StructureManager
     virtual void compute() = 0;
 
     //! get the raw data of the representation
-    virtual std::vector<precision_t> & get_representation_raw_data() = 0;
+    virtual std::vector<Precision_t> & get_representation_raw_data() = 0;
 
     virtual data_t & get_representation_sparse_raw_data() = 0;
 
@@ -102,7 +101,7 @@ namespace rascal {
     std::string get_hypers_string();
 
     //! stores all the hyper parameters of the representation
-    hypers_t hypers{};
+    Hypers_t hypers{};
     //! stores the hyperparameters that change
     //! the behaviour of the representation
     std::map<std::string, std::string> options{};
