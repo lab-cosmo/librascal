@@ -114,6 +114,11 @@ namespace rascal {
       using type = std::index_sequence<seq...>;
     };
 
+    /**
+     * appends a number of Order variadic template arguments of type size_t to 
+     * an index_sequence recursively, effectively it extracts number of Order
+     * arguments from the variadic argument and puts them in an index_sequence
+     */
     template <size_t Order, size_t head, size_t... tail, size_t... seq>
     struct HeadExtractor<Order, std::index_sequence<seq...>, head, tail...> {
       using Extractor_t = std::conditional_t<

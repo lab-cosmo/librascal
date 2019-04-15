@@ -86,8 +86,9 @@ namespace rascal {
     struct ClusterIndexPropertyComputer_Helper {};
 
     /**
-     * Overloads helper function and is used to cycle on the objects, returning
-     * the next object in line
+     * Overloads helper function and is used to cycle recursively on the index
+     * sequence of layerase s, appending properties to the TupComp
+     * with the index of the current layer + 1
      */
     template <typename Manager, size_t Order, size_t LayersHead,
               size_t... LayersTail, typename... TupComp>
@@ -97,9 +98,10 @@ namespace rascal {
       using traits = typename Manager::traits;
       constexpr static auto ActiveLayer{
           compute_cluster_layer<Order>(typename traits::LayerByOrder{})};
-
+          
       using Property_t =
           Property<size_t, Order, ActiveLayer, LayersHead + 1, 1>;
+      // recursion step
       using type = typename ClusterIndexPropertyComputer_Helper<
           Manager, Order + 1, std::index_sequence<LayersTail...>,
           std::tuple<TupComp..., Property_t>>::type;
@@ -173,12 +175,14 @@ namespace rascal {
         typename internal::ClusterIndexConstructor<ClusterIndex_t,
                                                    StructureManager>;
 
+    /* -------------------- property_t-typedef-start -------------------- */
     //! helper type for Property creation
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
     using Property_t =
         Property<T, Order,
                  compute_cluster_layer<Order>(typename traits::LayerByOrder{}),
                  NbRow, NbCol>;
+    /* -------------------- property_t-typedef-end -------------------- */
 
     //! helper type for Property creation
     template <typename T, size_t Order>
@@ -380,7 +384,7 @@ namespace rascal {
      * Tuple which contains MaxOrder number of cluster_index lists for reference
      * with increasing layer depth. It is filled upon construction of the
      * neighbourhood manager via a
-     * std::get<Order>(this->cluster_indices). Higher order are constructed in
+     * std::get<Order>(this->cluster_indices_container). Higher order are constructed in
      * adaptors accordingly via the lower level indices and a Order-dependend
      * index is appended to the array.
      */
@@ -738,7 +742,7 @@ namespace rascal {
     using difference_type = std::ptrdiff_t;
     using iterator_category = std::forward_iterator_tag;
     // using iterator_category = std::random_access_iterator_tag;
-
+    
     using reference = value_type;
 
     //! Default constructor
@@ -856,6 +860,7 @@ namespace rascal {
     }
     //! in ascending order, this is: manager, atom, pair, triplet (i.e. cluster
     //! of Order 0, 1, 2, 3, ...
+    //! it is a reference to the SM/CR constructing the iterator
     Container_t & container;
     //! the iterators index (for moving forwards)
     size_t index;

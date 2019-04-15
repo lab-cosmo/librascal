@@ -158,10 +158,13 @@ namespace rascal {
     using value_type = typename Value::type;
     using reference = typename Value::reference;
 
+
+    /* -------------------- typed-property-constructor-start -------------------- */
     //! constructor
     TypedProperty(StructureManagerBase & manager, Dim_t nb_row,
                   Dim_t nb_col = 1, std::string metadata = "no metadata")
         : Parent{manager, nb_row, nb_col, Order, PropertyLayer, metadata} {}
+    /* -------------------- typed-property-constructor-end -------------------- */
 
     //! Default constructor
     TypedProperty() = delete;
