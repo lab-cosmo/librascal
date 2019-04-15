@@ -25,8 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef CLUSTER_REF_BASE_H
-#define CLUSTER_REF_BASE_H
+#ifndef SRC_STRUCTURE_MANAGERS_CLUSTER_REF_BASE_HH_
+#define SRC_STRUCTURE_MANAGERS_CLUSTER_REF_BASE_HH_
 
 namespace rascal {
 
@@ -51,21 +51,19 @@ namespace rascal {
     ClusterRefBase & operator=(ClusterRefBase && other) = default;
 
     //! returns the order of the cluster
-    inline size_t get_order() const {return this->order;}
+    inline size_t get_order() const { return this->order; }
 
     //! returns the layer of the cluster
-    inline size_t get_cluster_layer() const {return this->layer;}
+    inline size_t get_cluster_layer() const { return this->layer; }
 
    protected:
-    const size_t order; //!< cluster order: atom, pair, ...
-    const size_t layer; //!< cluster layer
+    const size_t order;  //!< cluster order: atom, pair, ...
+    const size_t layer;  //!< cluster layer
 
     //! constructor
-    ClusterRefBase(size_t order, size_t layer):
-      order{order}, layer{layer}
-    {}
+    ClusterRefBase(size_t order, size_t layer) : order{order}, layer{layer} {}
   };
 
-} // rascal
+}  // namespace rascal
 
-#endif /* CLUSTER_REF_BASE_H */
+#endif  //  SRC_STRUCTURE_MANAGERS_CLUSTER_REF_BASE_HH_

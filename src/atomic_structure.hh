@@ -27,8 +27,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef ATOMIC_STRUCTURE_H
-#define ATOMIC_STRUCTURE_H
+#ifndef SRC_ATOMIC_STRUCTURE_HH_
+#define SRC_ATOMIC_STRUCTURE_HH_
 
 #include "basic_types.hh"
 #include "json_io.hh"
@@ -45,19 +45,19 @@ namespace rascal {
   struct AtomicStructure {
     /**
      * A common structure to access atom and cell related data, based on the
-     * idea of the atoms object in the Atomic Simulation Environment. The object
-     * contains atomic positions, the cell vectors, periodicity information as
-     * well as the atomic types (element).
+     * idea of the atoms object in the Atomic Simulation Environment. The
+     * object contains atomic positions, the cell vectors, periodicity
+     * information as well as the atomic types (element).
      *
-     *  \param cell is a contiguous vector which holds the cell unit vectors.
+     *  @param cell is a contiguous vector which holds the cell unit vectors.
      *
-     *  \param type a vector of integers which holds the atomic type (atomic
+     *  @param type a vector of integers which holds the atomic type (atomic
      *  number as per periodic table).
      *
-     *  \param pbc is a 0/1 vector which defines the periodicity of the given
+     *  @param pbc is a 0/1 vector which defines the periodicity of the given
      *  structure for each dimension
      *
-     *  \param position is a vector which holds the atomic positions.
+     *  @param position is a vector which holds the atomic positions.
      */
     using Cell_t = Eigen::Matrix<double, Dim, Dim>;
     using Cell_ref = Eigen::Map<Cell_t>;
@@ -107,6 +107,33 @@ namespace rascal {
       this->atom_types = atom_types;
       this->pbc = pbc;
       this->positions = positions;
+    }
+
+    void set_structure(const std::string & filename) {
+      json j;
+      std::ifstream reader(filename);
+      if (not reader.is_open()) {
+        throw std::runtime_error(std::string("Could not open the file: ") +
+                                 filename);
+      }
+      reader >> j;
+      reader.close();
+      // take the first structure of the list
+      this->set_structure(j.begin().value());
+    }
+
+    void set_structure(const json & s) {
+      if (s.count("filename") == 1) {
+        auto filename{s["filename"].get<std::string>()};
+        this->set_structure(filename);
+      } else if (s.count("cell") == 1 and s.count("atom_types") == 1 and
+                 s.count("pbc") == 1 and s.count("positions") == 1) {
+        json_io::AtomicJsonData json_atoms_object{};
+        json_atoms_object = s;
+        this->set_structure(json_atoms_object);
+      } else {
+        throw std::runtime_error("The json input was not understood.");
+      }
     }
 
     //! method for initializing structure from a json object; data is copied
@@ -170,4 +197,4 @@ namespace rascal {
   };
 }  // namespace rascal
 
-#endif /* ATOMIC_STRUCTURE_H */
+#endif  // SRC_ATOMIC_STRUCTURE_HH_

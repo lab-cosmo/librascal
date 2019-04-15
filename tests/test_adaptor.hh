@@ -12,24 +12,24 @@
  *
  * Copyright  2018 Markus Stricker, Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
- * rascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
+ * Rascal is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
- * rascal is distributed in the hope that it will be useful, but
+ * Rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with GNU Emacs; see the file COPYING. If not, write to the
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef TEST_ADAPTOR_H
-#define TEST_ADAPTOR_H
+#ifndef TESTS_TEST_ADAPTOR_HH_
+#define TESTS_TEST_ADAPTOR_HH_
 
 #include "tests.hh"
 #include "test_structure.hh"
@@ -50,18 +50,17 @@ namespace rascal {
                   "Lower layer manager has to be a collection of atoms, i.e."
                   " MaxOrder=1");
 
-    using PairManager_t = AdaptorNeighbourList<ManagerImplementation>;
+    using PairManager_t = AdaptorNeighbourList<Manager_t>;
 
     PairFixtureSimple()
-        : cutoff{1.}, pair_manager{fixture.manager, this->cutoff} {
-      this->pair_manager.update();
-    }
+        : cutoff{1.}, pair_manager{make_adapted_manager<AdaptorNeighbourList>(
+                          fixture.manager, this->cutoff)} {}
 
     ~PairFixtureSimple() = default;
 
-    ManagerFixtureFile<ManagerImplementation> fixture{};
+    ManagerFixtureFile<Manager_t> fixture{};
     double cutoff;
-    PairManager_t pair_manager;
+    std::shared_ptr<PairManager_t> pair_manager;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -77,16 +76,15 @@ namespace rascal {
                   " MaxOrder=1");
 
     PairFixtureCenters()
-        : cutoff{3.5}, pair_manager{this->fixture.manager, this->cutoff, true} {
-      this->pair_manager.update();
-    }
+        : cutoff{3.5}, pair_manager{make_adapted_manager<AdaptorNeighbourList>(
+                           this->fixture.manager, this->cutoff, true)} {}
 
     ~PairFixtureCenters() {}
 
     ManagerFixture<StructureManagerCenters> fixture{};
 
     double cutoff;
-    PairManager_t pair_manager;
+    std::shared_ptr<PairManager_t> pair_manager;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -95,14 +93,15 @@ namespace rascal {
     using AdaptorStrict_t = AdaptorStrict<ManagerImplementation>;
 
     PairFixtureStrict()
-        : adaptor_strict{this->fixture.pair_manager, this->fixture.cutoff} {}
+        : adaptor_strict{make_adapted_manager<AdaptorStrict>(
+              this->fixture.pair_manager, this->fixture.cutoff)} {}
 
     ~PairFixtureStrict() = default;
 
     // TODO(markus): different fixtures?, streamline fixtures to always work
     // with ´manager´ as an iterator?
     PairFixture<ManagerImplementation> fixture{};
-    AdaptorStrict_t adaptor_strict;
+    std::shared_ptr<AdaptorStrict_t> adaptor_strict;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -110,79 +109,134 @@ namespace rascal {
    * Streamline the test on several structures and cutoffs
    */
 
-  struct MultipleStructureManagerBaseFixture {
-    MultipleStructureManagerBaseFixture() = default;
-    ~MultipleStructureManagerBaseFixture() = default;
+  // struct MultipleStructureManagerNLFixture {
+  //   using Factory_t =
+  //       std::tuple<std::tuple<std::string>, std::tuple<double, bool>>;
+  //   using ManagerTypeHolder_t =
+  //       StructureManagerTypeHolder<StructureManagerCenters,
+  //                                  AdaptorNeighbourList>;
+  //   MultipleStructureManagerNLFixture() {
+  //     for (auto && filename : this->filenames) {
+  //       for (auto && cutoff : this->cutoffs) {
+  //         auto a0{std::make_tuple(filename)};
+  //         auto a1{std::make_tuple(cutoff, consider_ghost_neighbours)};
+  //         this->factory_args.emplace_back(a0, a1);
+  //       }
+  //     }
+  //   }
 
-    std::vector<std::string> filenames{
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-        "reference_data/simple_cubic_8.json",
-        "reference_data/small_molecule.json"};
-    std::vector<double> cutoffs{{1., 2., 3.}};
-  };
+  //   ~MultipleStructureManagerNLFixture() = default;
 
-  template <class StructureManager, class BaseFixture>
-  struct MultipleStructureManagerCenterFixture : BaseFixture {
-    using Parent = BaseFixture;
-    using Manager_t = StructureManager;
-    using Manager_T_t = AdaptorNeighbourList<Manager_t>;
+  //   const bool consider_ghost_neighbours{false};
+  //   const std::vector<std::string> filenames{
+  //       "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
+  //       "reference_data/simple_cubic_8.json",
+  //       "reference_data/small_molecule.json"};
+  //   const std::vector<double> cutoffs{{1., 2., 3.}};
 
-    MultipleStructureManagerCenterFixture() : Parent{} {
-      for (auto filename : this->filenames) {
-        this->managers_center.emplace_back();
-        this->managers_center.back().update(filename);
-      }
-    }
+  //   std::vector<Factory_t> factory_args{};
+  // };
 
-    ~MultipleStructureManagerCenterFixture() = default;
+  struct MultipleStructureManagerNLFixture {
+    using ManagerTypeHolder_t =
+        StructureManagerTypeHolder<StructureManagerCenters,
+                                   AdaptorNeighbourList>;
+    MultipleStructureManagerNLFixture() {
+      for (auto && filename : this->filenames) {
+        for (auto && cutoff : this->cutoffs) {
+          json parameters;
+          json structure{{"filename", filename}};
+          json adaptors;
+          json ad1{
+              {"name", "AdaptorNeighbourList"},
+              {"initialization_arguments",
+               {{"cutoff", cutoff},
+                {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+          adaptors.push_back(ad1);
 
-    std::list<Manager_t> managers_center{};
-  };
+          parameters["structure"] = structure;
+          parameters["adaptors"] = adaptors;
 
-  template <class StructureManager, class BaseFixture>
-  struct MultipleStructureManagerNLFixture
-      : MultipleStructureManagerCenterFixture<StructureManager, BaseFixture> {
-    using Parent =
-        MultipleStructureManagerCenterFixture<StructureManager, BaseFixture>;
-    using Manager_P_t = typename Parent::Manager_t;
-    using Manager_t = AdaptorNeighbourList<Manager_P_t>;
-    using Manager_T_t = AdaptorStrict<Manager_t>;
-
-    MultipleStructureManagerNLFixture() : Parent{} {
-      for (Manager_P_t & manager : this->managers_center) {
-        for (double cutoff : this->cutoffs) {
-          this->managers_pair.emplace_back(manager, cutoff);
-          this->managers_pair.back().update();
+          this->factory_args.emplace_back(parameters);
         }
       }
     }
 
     ~MultipleStructureManagerNLFixture() = default;
 
-    std::list<Manager_t> managers_pair{};
+    const bool consider_ghost_neighbours{false};
+    const std::vector<std::string> filenames{
+        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
+        "reference_data/simple_cubic_8.json",
+        "reference_data/small_molecule.json"};
+    const std::vector<double> cutoffs{{1., 2., 3.}};
+
+    json factory_args{};
   };
 
-  template <class StructureManager, class BaseFixture>
-  struct MultipleStructureManagerStrictFixture
-      : MultipleStructureManagerNLFixture<StructureManager, BaseFixture> {
-    using Parent =
-        MultipleStructureManagerNLFixture<StructureManager, BaseFixture>;
-    using Manager_P_t = typename Parent::Manager_t;
-    using Manager_t = AdaptorStrict<Manager_P_t>;
-    // using Manager_T_t = AdaptorStrict<Manager_t>;
+  struct MultipleStructureManagerNLStrictFixture {
+    using Factory_t =
+        std::tuple<std::tuple<std::string>, std::tuple<double, bool, bool>>;
+    using ManagerTypeHolder_t =
+        StructureManagerTypeHolder<StructureManagerCenters,
+                                   AdaptorNeighbourList, AdaptorStrict>;
 
-    MultipleStructureManagerStrictFixture() : Parent{} {
-      for (Manager_P_t & manager : this->managers_pair) {
-        this->managers_strict.emplace_back(manager, manager.get_cutoff());
-        this->managers_strict.back().update();
+    MultipleStructureManagerNLStrictFixture() {
+      for (auto && filename : this->filenames) {
+        for (auto && cutoff : this->cutoffs) {
+          json parameters;
+          json structure{{"filename", filename}};
+          json adaptors;
+          json ad1{
+              {"name", "AdaptorNeighbourList"},
+              {"initialization_arguments",
+               {{"cutoff", cutoff},
+                {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+          json ad2{{"name", "AdaptorStrict"},
+                   {"initialization_arguments", {{"cutoff", cutoff}}}};
+          adaptors.emplace_back(ad1);
+          adaptors.emplace_back(ad2);
+
+          parameters["structure"] = structure;
+          parameters["adaptors"] = adaptors;
+
+          this->factory_args.emplace_back(parameters);
+        }
       }
     }
 
-    ~MultipleStructureManagerStrictFixture() = default;
+    ~MultipleStructureManagerNLStrictFixture() = default;
+    const bool consider_ghost_neighbours{false};
+    const std::vector<std::string> filenames{
+        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
+        "reference_data/simple_cubic_8.json",
+        "reference_data/small_molecule.json"};
+    const std::vector<double> cutoffs{{1., 2., 3.}};
 
-    std::list<Manager_t> managers_strict{};
+    json factory_args{};
+  };
+
+  template <class BaseFixture>
+  struct MultipleStructureFixture : BaseFixture {
+    using Parent = BaseFixture;
+    using ManagerTypeList_t = typename Parent::ManagerTypeHolder_t::type_list;
+    using Manager_t = typename Parent::ManagerTypeHolder_t::type;
+    using ManagerPtr_t = std::shared_ptr<Manager_t>;
+
+    MultipleStructureFixture() : Parent{} {
+      for (auto & factory_arg : this->factory_args) {
+        auto manager{make_structure_manager_stack_with_hypers_and_typeholder<
+            ManagerTypeList_t>::apply(factory_arg["structure"],
+                                      factory_arg["adaptors"])};
+        this->managers.push_back(manager);
+      }
+    }
+
+    ~MultipleStructureFixture() = default;
+
+    std::list<ManagerPtr_t> managers{};
   };
 
 }  // namespace rascal
 
-#endif /* TEST_NEIGHBOURHOOD_H */
+#endif  // TESTS_TEST_ADAPTOR_HH_

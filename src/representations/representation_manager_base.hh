@@ -25,8 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef BASIS_REPRESENTATION_MANAGER_BASE_H
-#define BASIS_REPRESENTATION_MANAGER_BASE_H
+#ifndef SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_BASE_HH_
+#define SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_BASE_HH_
 
 #include "structure_managers/structure_manager_base.hh"
 #include "json_io.hh"
@@ -40,11 +40,11 @@ namespace rascal {
   class RepresentationManagerBase {
    public:
     //! type for the hyper parameter class
-    using hypers_t = json;
+    using Hypers_t = json;
     //! type for representation
-    using precision_t = double;
-    //! type used to register the valid key and values of hypers_t
-    using reference_hypers_t = std::map<std::string, std::vector<std::string>>;
+    using Precision_t = double;
+    //! type used to register the valid key and values of Hypers_t
+    using ReferenceHypers_t = std::map<std::string, std::vector<std::string>>;
 
     RepresentationManagerBase() = default;
 
@@ -66,17 +66,16 @@ namespace rascal {
     operator=(RepresentationManagerBase && other) = default;
 
     //! Pure Virtual Function to set hyperparameters of the representation
-    virtual void set_hyperparameters(const hypers_t &) = 0;
+    virtual void set_hyperparameters(const Hypers_t &) = 0;
 
-    //! Check if the input hyperparameters is valid
-    void check_hyperparameters(const reference_hypers_t &,
-                                    const hypers_t &);
+    //! Pure Virtual Function to set hyperparameters of the representation
+    void check_hyperparameters(const ReferenceHypers_t &, const Hypers_t &);
 
     //! Compute the representation using a StructureManager
     virtual void compute() = 0;
 
     //! get the raw data of the representation
-    virtual std::vector<precision_t> & get_representation_raw_data() = 0;
+    virtual std::vector<Precision_t> & get_representation_raw_data() = 0;
 
     //! get the size of a feature vector
     virtual size_t get_feature_size() = 0;
@@ -92,17 +91,12 @@ namespace rascal {
     std::string get_hypers_string();
 
     //! stores all the hyper parameters of the representation
-    hypers_t hypers{};
+    Hypers_t hypers{};
     //! stores the hyperparameters that change
     //! the behaviour of the representation
     std::map<std::string, std::string> options{};
   };
 
-
-
 }  // namespace rascal
 
-
-
-
-#endif /* REPRESENTATION_MANAGER_BASE_H */
+#endif  // SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_BASE_HH_

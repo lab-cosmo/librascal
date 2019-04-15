@@ -26,15 +26,19 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef BASIS_FUNCTION_MANAGER_H
-#define BASIS_FUNCTION_MANAGER_H
+/**
+ * OBSOLETE
+ */
+
+#ifndef SRC_REPRESENTATIONS_BASIS_FUNCTION_MANAGER_HH_
+#define SRC_REPRESENTATIONS_BASIS_FUNCTION_MANAGER_HH_
 
 namespace rascal {
 
   class BasisFunManager {
    public:
-    enum class BasisFunType: int;
-    enum class CutoffFunType: int;
+    enum class BasisFunType : int;
+    enum class CutoffFunType : int;
     using uint = unsigned int;
 
     //! Default constructor
@@ -44,38 +48,38 @@ namespace rascal {
     explicit BasisFunManager(FILE *);
 
     //! Copy constructor
-    BasisFunManager(const BasisFunManager &other) = delete;
+    BasisFunManager(const BasisFunManager & other) = delete;
 
     //! Move constructor
-    BasisFunManager(BasisFunManager &&other) = default;
+    BasisFunManager(BasisFunManager && other) = default;
 
     //! Destructor
-    virtual ~BasisFunManager()  = default;
+    virtual ~BasisFunManager() = default;
 
     //! Copy assignment operator
-    BasisFunManager& operator=(const BasisFunManager &other) = delete;
+    BasisFunManager & operator=(const BasisFunManager & other) = delete;
 
     //! Move assignment operator
-    BasisFunManager& operator=(BasisFunManager && other) = default;
+    BasisFunManager & operator=(BasisFunManager && other) = default;
 
     //! Initialize hyperparameters
     void read_hyperparameters(const FILE *);
     void set_random_hyperparameters(const int);
 
     //! Number of hyperparameters per basis function type
-    constexpr static uint get_nhyper(const BasisFunType& fun_type);
+    constexpr static uint get_nhyper(const BasisFunType & fun_type);
 
     //! Basis functions and derivative
-    template<BasisFunType fun_type>
+    template <BasisFunType fun_type>
     inline double comp_fun(const double * const param, const double * rij);
     //! return a matrix
-    template<BasisFunType func_type, T>
+    template <BasisFunType func_type, T>
     decltype(auto) comp_Dfun(const double * const param,
-           const double * const rij);
-// inline double comp_Dfun(const double * const param,
-//     const double * const rij);
+                             const double * const rij);
+    // inline double comp_Dfun(const double * const param,
+    //     const double * const rij);
   };
 
 }  // namespace rascal
 
-#endif /* BASIS_FUNCTION_MANAGER_H */
+#endif  // SRC_REPRESENTATIONS_BASIS_FUNCTION_MANAGER_HH_

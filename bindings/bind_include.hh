@@ -25,10 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
-
-#ifndef BIND_INCLUDE_H
-#define BIND_INCLUDE_H
+#ifndef BINDINGS_BIND_INCLUDE_HH_
+#define BINDINGS_BIND_INCLUDE_HH_
 
 #include "utils/sparsify_utilities.hh"
 
@@ -37,6 +35,7 @@
 
 #include "representations/representation_manager_base.hh"
 #include "representations/representation_manager_sorted_coulomb.hh"
+#include "representations/representation_manager_spherical_expansion.hh"
 
 #include "representations/feature_manager_base.hh"
 #include "representations/feature_manager_dense.hh"
@@ -45,7 +44,12 @@
 #include "structure_managers/structure_manager_lammps.hh"
 #include "structure_managers/adaptor_strict.hh"
 #include "structure_managers/adaptor_neighbour_list.hh"
+#include "structure_managers/adaptor_increase_maxorder.hh"
+#include "structure_managers/adaptor_half_neighbour_list.hh"
+#include "structure_managers/adaptor_full_neighbour_list.hh"
+#include "structure_managers/make_structure_manager.hh"
 #include "structure_managers/structure_manager.hh"
+#include "structure_managers/structure_manager_base.hh"
 
 #include "basic_types.hh"
 #include "rascal_utility.hh"
@@ -56,22 +60,23 @@
 #include <pybind11/eigen.h>
 #include <pybind11/stl.h>
 #include <pybind11/iostream.h>
+// for the hasattr function to test the module namespace
+#include <pybind11/pytypes.h>
 
 #include <Eigen/Dense>
 #include <vector>
-
 
 // PYBIND11_MAKE_OPAQUE(std::vector<double>);
 
 // using namespace rascal;
 namespace py = pybind11;
 
-void add_structure_managers(py::module&, py::module&, py::module&);
-void add_representation_managers(py::module&, py::module&);
-void add_feature_managers(py::module&, py::module&);
+void add_structure_managers(py::module &, py::module &);
+void add_representation_managers(py::module &, py::module &);
+void add_feature_managers(py::module &, py::module &);
 
-void utils_binding(py::module&);
-void math_binding(py::module&);
+void utils_binding(py::module &);
+void math_binding(py::module &);
 
 namespace rascal {
   namespace internal {
@@ -82,35 +87,33 @@ namespace rascal {
      */
     struct SubstitutionMap {
       using Map = std::map<std::string, std::string>;
-      Map mapping = {
-        {"StructureManager", ""},
-        {"Adaptor", ""},
-        {"RepresentationManager", ""},
-        {"FeatureManager", ""}
-      };
+      Map mapping = {{"StructureManager", ""},
+                     {"Adaptor", ""},
+                     {"RepresentationManager", ""},
+                     {"FeatureManager", ""}};
     };
 
     /**
-      * Transforms the template type to a string for the pyhton bindings.
-      * There are submodules in the python bindings with the class
-      * tittle so to avoid redundancy they are removed from the
-      * typename.
-      * @template T type that should be stringifyied
-      * @returns std::string name of the type
-      */
+     * Transforms the template type to a string for the pyhton bindings.
+     * There are submodules in the python bindings with the class
+     * tittle so to avoid redundancy they are removed from the
+     * typename.
+     * @template T type that should be stringifyied
+     * @returns std::string name of the type
+     */
     template <typename T>
     std::string GetBindingTypeName() {
       std::string typeName = GetTypeName<T>();
       SubstitutionMap ojb{};
       std::vector<std::string> names{typeName};
-      for (const auto& map : ojb.mapping) {
-        names.push_back(std::regex_replace(names.back(),
-                std::regex(map.first.c_str()), map.second.c_str()));
+      for (const auto & map : ojb.mapping) {
+        names.push_back(std::regex_replace(
+            names.back(), std::regex(map.first.c_str()), map.second.c_str()));
       }
 
       return names.back();
     }
-  }
-}
+  }  // namespace internal
+}  // namespace rascal
 
-#endif /* BIND_INCLUDE_H */
+#endif  // BINDINGS_BIND_INCLUDE_HH_

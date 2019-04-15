@@ -1,0 +1,1 @@
+from .structure_manager import get_neighbourlist, convert_to_structure
