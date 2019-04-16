@@ -182,13 +182,17 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
 
   /* Tests specific to the spherical expansion representation
-   * TODO(max-veit) merge with the general versions above, where possible
    */
   BOOST_AUTO_TEST_SUITE(representation_spherical_expansion_test);
 
   using multiple_fixtures = boost::mpl::list<RepresentationFixture<
       StructureManagerCenters, RepresentationManagerSphericalExpansion,
       MultipleStructureSphericalExpansion>>;
+
+  using fixtures_ref_test =
+      boost::mpl::list<RepresentationFixture<StructureManagerCenters,
+                                             RepresentationManagerSphericalExpansion,
+                                             SphericalExpansionTestData>>;
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_precompute_test, Fix,
                                    multiple_fixtures, Fix) {
@@ -211,60 +215,53 @@ namespace rascal {
     }
   }
 
-  // TODO(max-veit) see if this is made redundant by the general "check
-  //               representation against file" template above
-  /*
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_compute_test, Fix,
-                                   multiple_fixtures, Fix) {
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Test if the representation computed is equal to a reference from a file
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_reference_test, Fix,
+                                   fixtures_ref_test, Fix) {
     auto & managers = Fix::managers_strict;
-    auto & cutoffs = Fix::cutoffs;
     auto & representations = Fix::representations;
-    const auto & filenames = Fix::filenames;
-    const auto & hypers = Fix::hypers;
-    bool verbose{true};
+    auto & ref_data = Fix::ref_data;
 
-    auto filename_it{filenames.begin()};
-    auto cutoff_it{cutoffs.begin()};
+    // Choose the data depending on the current options
+    //using Std2DArray_t = std::vector<std::vector<double>>;
+    using Std2DArray_t = std::vector<std::vector<double>>;
 
+    const auto & data{ref_data.at("rep_info").template get<json>()};
+    // feature_matrices = data["feature_matrices"];
+
+    size_t manager_i{0};
     for (auto & manager : managers) {
-      if (verbose) {
-        if (filename_it != filenames.end()) {
-          std::cout << "Structure: " << *filename_it;
-          std::cout << " with cutoff " << *cutoff_it << std::endl;
-          ++cutoff_it;
-          if (cutoff_it == cutoffs.end()) {
-            cutoff_it = cutoffs.begin();
-            ++filename_it;
-          }
-        } else {
-          std::cout << "Structure: Filename unknown" << std::endl;
-        }
-      }
-      for (const auto & hyper : hypers) {
-        representations.emplace_back(manager, hyper);
-        // Should be done automatically in compute()
-        // TODO(max-veit) make that its own test case
-        // representations.back().precompute();
+      for (const auto & config : data.at(manager_i)) {
+        const auto & hypers = config.at("hypers").template get<json>();
+        const auto & ref_representation =
+            config.at("feature_matrix").template get<Std2DArray_t>();
+
+        representations.emplace_back(manager, hypers);
         representations.back().compute();
-        // Check dimensions of the storage array
-        size_t max_radial = hyper.at("max_radial");
-        size_t max_angular = hyper.at("max_angular");
-        BOOST_CHECK(representations.back().get_feature_size() ==
-                    max_radial * (max_angular + 1) * (max_angular + 1));
-        if (verbose) {
-          size_t center_idx{0};
-          for (auto center : manager) {
-            std::cout << "Soap vector for center: " << center_idx++;
-            std::cout << std::endl;
-            if (verbose) {
-              representations.back().print_soap_vector(center, std::cout);
-            }
+
+        const auto & test_representation =
+            representations.back().get_representation_full();
+
+        BOOST_CHECK_EQUAL(ref_representation.size(),
+                          test_representation.rows());
+        for (size_t row_i{0}; row_i < ref_representation.size(); row_i++) {
+          BOOST_CHECK_EQUAL(ref_representation[row_i].size(),
+                            test_representation.cols());
+
+          for (size_t col_i{0}; col_i < ref_representation[row_i].size();
+               ++col_i) {
+            auto diff{std::abs(ref_representation[row_i][col_i] -
+                               test_representation(row_i, col_i))};
+            BOOST_CHECK_LE(diff, 1e-12);
           }
         }
       }
+      manager_i += 1;
     }
   }
-  */
 
   BOOST_AUTO_TEST_SUITE_END();
 

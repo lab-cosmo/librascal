@@ -95,9 +95,6 @@ namespace rascal {
       std::vector<std::uint8_t> ref_data_ubjson;
       internal::read_binary_file(this->ref_filename, ref_data_ubjson);
       ref_data = json::from_ubjson(ref_data_ubjson);
-      //if uncommented: [json.exception.type_error.304] cannot use at() with array
-      //filenames = ref_data.at("filenames").get<std::vector<std::string>>();
-      //soap_types = ref_data.at("soap_types").get<std::vector<std::string>>();
       cutoffs = ref_data.at("cutoffs").get<std::vector<double>>();
       gaussian_sigmas = ref_data.at("gaussian_sigmas").get<std::vector<double>>();
       max_radials = ref_data.at("max_radials").get<std::vector<size_t>>();
@@ -105,7 +102,42 @@ namespace rascal {
     ~SOAPTestData() = default;
     std::string ref_filename{"reference_data/soap_reference.ubjson"};
     std::vector<std::string> filenames{};
-    //std::vector<std::string> soap_types{};
+    std::vector<double> cutoffs{};
+    std::vector<double> gaussian_sigmas{};
+    std::vector<size_t> max_radials{};
+    json ref_data{};
+  };
+
+  struct MultipleStructureSphericalExpansion {
+    MultipleStructureSphericalExpansion() = default;
+    ~MultipleStructureSphericalExpansion() = default;
+
+    std::vector<std::string> filenames{
+        "reference_data/simple_cubic_8.json",
+        "reference_data/small_molecule.json"
+    };
+    std::vector<double> cutoffs{{1, 2, 3}};
+
+    std::vector<json> hypers{{{"interaction_cutoff", 6.0},
+                            {"cutoff_smooth_width", 1.0},
+                            {"max_radial", 10},
+                            {"max_angular", 8},
+                            {"gaussian_sigma_type", "Constant"},
+                            {"gaussian_sigma_constant", 0.5}}};
+  };
+
+  struct SphericalExpansionTestData {
+    SphericalExpansionTestData() {
+      std::vector<std::uint8_t> ref_data_ubjson;
+      internal::read_binary_file(this->ref_filename, ref_data_ubjson);
+      ref_data = json::from_ubjson(ref_data_ubjson);
+      cutoffs = ref_data.at("cutoffs").get<std::vector<double>>();
+      gaussian_sigmas = ref_data.at("gaussian_sigmas").get<std::vector<double>>();
+      max_radials = ref_data.at("max_radials").get<std::vector<size_t>>();
+    }
+    ~SphericalExpansionTestData() = default;
+    std::string ref_filename{"reference_data/spherical_expansion_reference.ubjson"};
+    std::vector<std::string> filenames{};
     std::vector<double> cutoffs{};
     std::vector<double> gaussian_sigmas{};
     std::vector<size_t> max_radials{};
@@ -134,24 +166,6 @@ namespace rascal {
                             {"sorting_algorithm", "row_norm"}}};
   };
 
-  struct MultipleStructureSphericalExpansion {
-    MultipleStructureSphericalExpansion() = default;
-    ~MultipleStructureSphericalExpansion() = default;
-
-    std::vector<std::string> filenames{
-        "reference_data/simple_cubic_8.json",
-        "reference_data/small_molecule.json"
-        //"reference_data/methane.json"
-    };
-    std::vector<double> cutoffs{{1, 2, 3}};
-
-    std::vector<json> hypers{{{"interaction_cutoff", 6.0},
-                            {"cutoff_smooth_width", 1.0},
-                            {"max_radial", 10},
-                            {"max_angular", 8},
-                            {"gaussian_sigma_type", "Constant"},
-                            {"gaussian_sigma_constant", 0.5}}};
-  };
 
   struct SortedCoulombTestData {
     SortedCoulombTestData() {

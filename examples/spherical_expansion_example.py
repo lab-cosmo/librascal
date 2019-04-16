@@ -1,73 +1,107 @@
+#!/usr/bin/python3
 
 import sys
 sys.path.insert(0,'../build/')
 sys.path.insert(0,'../build/bindings/')
-import rascal
-import rascal.lib as lrl
 import json
 import ase
-from ase.visualize import view
+import argparse
+import rascal
+import rascal.lib as lrl
 import numpy as np
-import sys
+from ase.io import read
+
+##########################################################################################
+##########################################################################################
+
+def get_soap_vectors(hypers, frames):
+    with lrl._rascal.utils.ostream_redirect():
+        sph_expn = rascal.representation.SphericalExpansion(**hypers)
+        expansions = sph_expn.transform(frames)
+        soap_vectors = expansions.get_feature_matrix()
+    return soap_vectors
 
 ##########################################################################################
 
-test_hypers = {"interaction_cutoff": 4.0,
-               "cutoff_smooth_width": 0.0,
-               "max_radial": 8,
-               "max_angular": 6,
-               "gaussian_sigma_type": "Constant",
-               "gaussian_sigma_constant": 0.3}
+#dump spherical expansion
+def dump_reference_json():
+    import ubjson
+    import os
+    from copy import copy
+    path = '/home/willatt/codes/librascal/' #should be changed
+    sys.path.insert(0, os.path.join(path, 'build/'))
+    sys.path.insert(0, os.path.join(path, 'tests/'))
 
-nmax = test_hypers["max_radial"]
-lmax = test_hypers["max_angular"]
-nstr = 100
+    cutoffs = [2, 3]
+    gaussian_sigmas = [0.2, 0.3]
+    max_radials = [8, 12]
+
+    frames = read('../tests/reference_data/methane.xyz',':')
+    fns_to_write = ["reference_data/methane.json"]
+
+    data = dict(filenames=fns_to_write,
+                cutoffs=cutoffs,
+                gaussian_sigmas=gaussian_sigmas,
+                max_radials=max_radials)
+
+    #trying to follow the nested list structure of the coulomb matrix reference data
+    rep_info = []
+    for cutoff in cutoffs:
+        il1 = []
+        for gaussian_sigma in gaussian_sigmas:
+            il2 = []
+            for max_radial in max_radials:
+                hypers = {"interaction_cutoff": cutoff,
+                          "cutoff_smooth_width": 0.0,
+                          "max_radial": max_radial,
+                          "max_angular": 0,
+                          "gaussian_sigma_type": "Constant",
+                          "gaussian_sigma_constant": gaussian_sigma}
+                x = get_soap_vectors(hypers, frames)
+                d = dict(feature_matrices=[],hypers=[])
+                d['feature_matrices'].append(x.tolist())
+                d['hypers'].append(copy(hypers))
+                il2 += [d]
+            il1 += [il2]
+        rep_info += [il1]
+    data['rep_info'] = rep_info
+    with open(path+"tests/reference_data/spherical_expansion_reference.ubjson",'wb') as f:
+        ubjson.dump(data,f)
 
 ##########################################################################################
+##########################################################################################
 
-frames = ase.io.read('../tests/reference_data/dft-smiles_500.xyz',':'+str(nstr))
-species = set([atom for frame in frames for atom in frame.get_atomic_numbers()])
-nspecies = len(species)
-ncen = np.cumsum([len(frame) for frame in frames])[-1]
+def main(json_dump):
 
-with lrl._rascal.utils.ostream_redirect():
-    sph_expn = rascal.representation.SphericalExpansion(**test_hypers)
-    print("parameters", sph_expn.hypers)
+    test_hypers = {"interaction_cutoff": 4.0,
+                   "cutoff_smooth_width": 0.0,
+                   "max_radial": 8,
+                   "max_angular": 6,
+                   "gaussian_sigma_type": "Constant",
+                   "gaussian_sigma_constant": 0.3}
 
-with lrl._rascal.utils.ostream_redirect():
-    expansions = sph_expn.transform(frames)
+    nmax = test_hypers["max_radial"]
+    lmax = test_hypers["max_angular"]
+    nstr = '5' #number of structures
 
-x = expansions.get_feature_matrix().T
+    frames = read('../tests/reference_data/dft-smiles_500.xyz',':'+str(nstr))
+    species = set([atom for frame in frames for atom in frame.get_atomic_numbers()])
+    nspecies = len(species)
+    ncen = np.cumsum([len(frame) for frame in frames])[-1]
 
-#unravel the representation
-coeffs = np.zeros((ncen,nspecies,nmax,lmax+1,2*lmax+1),float)
-for icen in range(ncen):
-    ii=0
-    for ispecies in range(nspecies):
-        for l in range(lmax+1):
-            for im in range(2*l+1):
-                for n in range(nmax):
-                    coeffs[icen,ispecies,n,l,im] = x[icen,ii]
-                    ii+=1
+    x = get_soap_vectors(test_hypers, frames)
+    np.save('spherical_expansion_example.npy', x)
 
-#build the power spectrum
-size = nspecies**2*nmax*nmax*(lmax+1)
-power = np.zeros((ncen,size),float)
-for icen in range(ncen):
-    jj = 0
-    for ispecies in range(nspecies):
-        for jspecies in range(nspecies):
-            for n1 in range(nmax):
-                for n2 in range(nmax):
-                    for l in range(lmax+1):
-                        power[icen,jj] = np.dot(coeffs[icen,ispecies,n1,l],
-                                                coeffs[icen,jspecies,n2,l])/ \
-                                                np.sqrt(2*l+1)
-                        jj+=1
-    norm = np.linalg.norm(power[icen])
-    if norm >= 1.0e-40: power[icen] /= norm
+#--------------------------------dump json reference data--------------------------------#
 
-#build the kernel
-kernel = np.dot(power,power.T)
-print(kernel)
-np.save("kernel_spherical_expansion_example.npy", kernel)
+    if json_dump == True:
+        dump_reference_json()
+
+##########################################################################################
+##########################################################################################
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-json_dump', action='store_true', help='Switch for dumping json')
+    args = parser.parse_args()
+    main(args.json_dump)
