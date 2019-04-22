@@ -389,11 +389,15 @@ namespace rascal {
        * possible optimisation).
        */
 
+      // current number of layers at cluster order 1 (which are atoms)
       constexpr auto AtomLayer{
           compute_cluster_layer<atom.order()>(typename traits::LayerByOrder{})};
 
       Eigen::Matrix<size_t, AtomLayer + 1, 1> indices;
-
+      /**
+       * copies the atom indices from up to the current layer and for the new
+       * layer the current layer is copied
+       */
       indices.template head<AtomLayer>() = atom.get_cluster_indices();
       indices(AtomLayer) = indices(AtomLayer - 1);
       atom_cluster_indices.push_back(indices);

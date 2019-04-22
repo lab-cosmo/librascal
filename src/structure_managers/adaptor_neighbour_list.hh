@@ -702,6 +702,8 @@ namespace rascal {
         this->offsets.reserve(n_tuples);
         this->offsets.resize(1);
         for (size_t i{0}; i < n_tuples - 1; ++i) {
+          // TODO(alex): why is this->offsets[i] added, before the only usage
+          // of set_offsets the offests are cleared, so it should be all 0
           this->offsets.emplace_back(this->offsets[i] + this->nb_neigh[i]);
         }
       }
@@ -813,8 +815,19 @@ namespace rascal {
 
     // layering is started from the scratch, therefore all clusters and
     // centers+ghost atoms are in the right order.
+    /* ------ adaptor-neighbour-list-get-atom-pair-properties-start --------- */
+    /* the property which stores an atom index list in its values successively
+     * {atom_0_index, atom_1_index, ...}
+     */
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
+    /* the property which stores a pair index list in its values as 
+     * {(neigbour_0_of_atom_0, atom_0)_index, 
+     *     (neigbour_1_of_atom_0, atom_0)_index, ..., 
+     *     (neigbour_0_of_atom_1, atom_1)_index,
+     *     (neigbour_1_of_atom_1, atom_1), ...}
+     */
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
+    /* ------ adaptor-neighbour-list-get-atom-pair-properties-end --------- */
 
     atom_cluster_indices.fill_sequence();
     pair_cluster_indices.fill_sequence();
@@ -958,7 +971,11 @@ namespace rascal {
       ntot_atoms++;
     }
 
-    // generate ghost atom indices and positions
+    /*
+     * If consider_ghost_neighbours flag is true, it generates the indicces 
+     * and positions of center atoms. If consider_ghost_neighbours flag is true, 
+     * ghost atoms are included.
+     */ 
     for (auto atom : this->get_manager().with_ghosts()) {
       auto pos = atom.get_position();
       auto atom_type = atom.get_atom_type();

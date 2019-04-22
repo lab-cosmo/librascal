@@ -223,6 +223,8 @@ namespace rascal {
     // required for the construction of vectors, etc
     constexpr static int dim() { return traits::Dim; }
 
+
+    /* ---------------structure-manager-iterator-types-start----------------- */
     /**
      * iterator over the atoms, pairs, triplets, etc in the manager. Iterators
      * like these can be used as indices for random access in atom-, pair,
@@ -233,6 +235,7 @@ namespace rascal {
     using Iterator_t = Iterator<1>;
     friend Iterator_t;
     using iterator = Iterator_t;
+    /* ---------------structure-manager-iterator-types-end----------------- */
 
     /**
      * return type for iterators: a light-weight atom reference, giving access
@@ -259,16 +262,20 @@ namespace rascal {
       return Iterator_t(*this, index, offset);
     }
 
-    //! start of iterator
+    /* --------------- structure-manager-iterator-start --------------------- */
+    //! invoked when object is used as iterator pointing to first element
     inline Iterator_t begin() { return Iterator_t(*this, 0, 0); }
-    //! end of iterator
+    //! invoked when object is used as iterator pointing to next to last element
     inline Iterator_t end() {
       return Iterator_t(*this, this->implementation().get_size(),
                         std::numeric_limits<size_t>::max());
     }
+    /* -------------- structure-manager-iterator-end ------------------------ */
 
-    //! Usage of iterator including ghosts; in case no ghost atoms exist, it is
-    //! an iteration over all existing center atoms
+    /*! Usage of iterator including ghosts; in case no ghost atoms exist or
+     * the consider_ghost_neighbours flag is false it is an iteration over all
+     * existing center atoms.
+     */
     inline ProxyWithGhosts with_ghosts() {
       return ProxyWithGhosts{this->implementation()};
     }
@@ -459,7 +466,14 @@ namespace rascal {
       return cluster.get_cluster_index(layer);
     }
 
-    //! Used for building cluster indices
+    /* The array counters contains all indices of all nested iterations up to
+     * order Order-1, therefore it is only invoked from an iterator. The current 
+     * index of the iteration in Order i is stored in position i.
+     * 
+     * The implementation of get_offset should give the offset to start iterate 
+     * over the clusters of order Order with the corresponding Property in
+     * cluster_indices_container of the same order.
+     */
     template <size_t Order>
     inline size_t get_offset(const std::array<size_t, Order> & counters) const {
       return this->implementation().get_offset_impl(counters);
@@ -479,12 +493,17 @@ namespace rascal {
     }
 
     /**
-     * Tuple which contains MaxOrder number of cluster_index lists for reference
-     * with increasing layer depth. It is filled upon construction of the
-     * neighbourhood manager via a
-     * std::get<Order>(this->cluster_indices_container). Higher order are constructed in
-     * adaptors accordingly via the lower level indices and a Order-dependend
-     * index is appended to the array.
+     * A tuple which contains for each order a property containing the cluster
+     * indices corresponding to the order. The size of a cluster index is the
+     * number of layers in that order. It should be filled upon construction by
+     * the manager implementation. Each manager implementation has its own
+     * cluster_indices_container and saves here the all cluster indices up to
+     * its maximal order. The indicies are stored in this way so we can iterate 
+     * through them in a contiguously, while allowing different scopes of 
+     * indices.
+     * 
+     * It can be accesed via 
+     *   stder>(this->cluster_indices_container)(LayerNumber) 
      */
     ClusterIndex_t cluster_indices_container;
 
@@ -751,7 +770,11 @@ namespace rascal {
     inline const Manager_t & get_manager() const {
       return this->it.get_manager();
     }
-    //! start of the iteration over the cluster itself
+    /* ---------------clusterref-iterator-start----------------- */
+    /* start of the iteration over the cluster itself 
+     * by handing the indices of all nested loops over containers
+     * to the offset function of the manager implementation
+     */
     inline iterator begin() {
       std::array<size_t, Order> counters{this->it.get_counters()};
       auto offset = this->get_manager().get_offset(counters);
@@ -761,6 +784,7 @@ namespace rascal {
     inline iterator end() {
       return iterator(*this, this->size(), std::numeric_limits<size_t>::max());
     }
+    /* ---------------clusterref-iterator-end----------------- */
     //! returns its own size
     inline size_t size() { return this->get_manager().cluster_size(*this); }
     //! return iterator index - this is used in cluster_indices_container as
@@ -898,6 +922,7 @@ namespace rascal {
       return *this;
     }
 
+    /* ---------------iterator-operator-pointer-access-start----------------- */
     //! dereference: calculate cluster indices
     inline value_type operator*() {
       auto & cluster_indices_properties = std::get<Order - 1>(
@@ -908,7 +933,7 @@ namespace rascal {
           cluster_indices_properties[this->get_cluster_index()];
       return ClusterRef_t(*this, this->get_atom_indices(), cluster_indices);
     }
-
+    /* ---------------iterator-operator-pointer-access-end------------------- */
     //! dereference: calculate cluster indices
     inline const value_type operator*() const {
       const auto & cluster_indices_properties = std::get<Order - 1>(
@@ -956,10 +981,12 @@ namespace rascal {
           this->get_manager().cluster_neighbour(container, this->index));
     }
 
+    /* ---------------iterator-get-cluster-index-start----------------- */
     //! returns the current index of the cluster in iteration
     inline size_t get_cluster_index() const {
       return this->index + this->offset;
     }
+    /* ---------------iterator-get-cluster-index-end----------------- */
     //! returns a reference to the underlying manager at every Order
     inline Manager_t & get_manager() { return this->container.get_manager(); }
     //! returns a const reference to the underlying manager at every Order
@@ -967,8 +994,10 @@ namespace rascal {
       return this->container.get_manager();
     }
 
-    //! returns the counters - which is the position in a list at each
-    //! Order.
+    /* returns the counters - which is an array of indices at each Order.
+     * For example counters[0] has the index of the iterator at Order 1, 
+     * counters[1] has the index of the iterator at Order 2, and so on.
+     */
     inline std::array<size_t, Order> get_counters() {
       std::array<size_t, Order> counters;
       counters[Order - 1] = this->index;
@@ -982,9 +1011,12 @@ namespace rascal {
         return counters;
       }
     }
-    //! in ascending order, this is: manager, atom, pair, triplet (i.e. cluster
-    //! of Order 0, 1, 2, 3, ...
-    //! it is a reference to the SM/CR constructing the iterator
+
+    /* A container is in the case of order 1 a StructureManager and for any 
+     * order greater than 1 a ClusterRef. The iterator does not have to store
+     * the actual data returned during an iteration, it only needs to store a
+     * reference to the container holding the data (cluster indices).
+     */
     Container_t & container;
     //! the iterators index (for moving forwards)
     size_t index;

@@ -459,8 +459,22 @@ namespace rascal {
     this->set_offsets();
 
     // add correct cluster_indices for the highest order
+    /* ------ adaptor-increase-maxorder-get-maxorder-property-start --------- */
+    /* the property which stores a cluster index list of order MaxOrder in its
+     * values as 
+     * {(neigbour_0_of_cluster<MaxOrder-1>_0, cluster<MaxOrder-1>_0)_index,
+     *     (neigbour_1_of_cluster<MaxOrder-1>_0, cluster<MaxOrder-1>_0)_index,
+     *     ..., 
+     *     (neigbour_0_of_cluster<MaxOrder-1>_1, cluster<MaxOrder-1>_1)_index,
+     *     (neigbour_1_of_cluster<MaxOrder-1>_1, cluster<MaxOrder-1>_1)_index,
+     *     ...}
+     * the cluster_indices_container tuple is numbered starting at 0, therefore
+     * to get the property of order MaxOrder, we have to access position 
+     * MaxOrder-1
+     */
     auto & max_cluster_indices{
         std::get<traits::MaxOrder - 1>(this->cluster_indices_container)};
+    /* ------ adaptor-increase-maxorder-get-maxorder-property-end --------- */
     max_cluster_indices.fill_sequence();
   }
 

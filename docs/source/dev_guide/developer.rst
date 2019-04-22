@@ -13,8 +13,10 @@ We strongly advise our contributors to check these guidlines before submitting t
    how_to_misc
    how_to_add_representation
    how_to_test
-   how_to_add_adaptor
    property
+   cluster_indices_container
+   structure_manager
+   how_to_add_adaptor
    coding-convention
 
 
