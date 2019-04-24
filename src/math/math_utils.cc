@@ -222,14 +222,9 @@ namespace rascal {
                 assoc_legendre_polynom(angular_l, m_count) *
                 cos_sin_m_phi(m_count, 0);
             harmonics(angular_l, angular_l - m_count) =
-                -1.0 * assoc_legendre_polynom(angular_l, m_count) *
+                assoc_legendre_polynom(angular_l, m_count) *
                 cos_sin_m_phi(m_count, 1);
           }  // if (m_count == 0)
-          if ((m_count % 2) == 1) {
-            // weird phase factor to be consistent with soapfast
-            harmonics(angular_l, angular_l - m_count) *= -1;
-            harmonics(angular_l, angular_l + m_count) *= -1;
-          }
         }    // for (m_count in [0, l])
       }      // for (l in [0, lmax])
       //harmonics *= std::sqrt(2.0);

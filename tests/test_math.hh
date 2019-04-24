@@ -78,7 +78,7 @@ namespace rascal {
 
     ~SphericalHarmonicsRefFixture() = default;
 
-    std::string ref_filename = "reference_data/spherical_harmonics_test.soapfast.json";
+    std::string ref_filename = "reference_data/spherical_harmonics_test.json";
 
     using StdVector2Dim_t = std::vector<std::vector<double>>;
     using StdVector3Dim_t = std::vector<std::vector<std::vector<double>>>;
