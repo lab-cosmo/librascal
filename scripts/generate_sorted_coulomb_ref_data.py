@@ -29,6 +29,7 @@ fns_to_write = [
     "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
     "reference_data/small_molecule.json"
 ]
+
 data = dict(filenames=fns_to_write,cutoffs=cutoffs,rep_info=[])
 hypers = dict(central_decay=-1,interaction_cutoff=-1,
               interaction_decay=-1,size=10,sorting_algorithm='')

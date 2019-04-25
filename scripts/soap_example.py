@@ -1,4 +1,3 @@
-#/usr/bin/python3
 
 import sys
 sys.path.insert(0,'../build/')
@@ -54,7 +53,7 @@ def dump_reference_json():
     import ubjson
     import os
     from copy import copy
-    path = '/home/willatt/codes/librascal/' #should be changed
+    path = '../'
     sys.path.insert(0, os.path.join(path, 'build/'))
     sys.path.insert(0, os.path.join(path, 'tests/'))
 
@@ -63,41 +62,46 @@ def dump_reference_json():
     max_radials = [8, 12]
     soap_types = ["RadialSpectrum", "PowerSpectrum"]
 
-    frames = read('../tests/reference_data/methane.xyz',':')
-    fns_to_write = ["reference_data/methane.json"]
+    fns = [
+        os.path.join(path,"tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json"),
+        os.path.join(path,"tests/reference_data/methane.xyz")
+    ]
+
+    fns_to_write = [
+        "reference_data/methane.json",
+        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
+    ]
 
     data = dict(filenames=fns_to_write,
                 cutoffs=cutoffs,
                 gaussian_sigmas=gaussian_sigmas,
                 max_radials=max_radials,
-                soap_types=soap_types)
+                soap_types=soap_types,
+                rep_info=[])
 
-    #trying to follow the nested list structure of the coulomb matrix reference data
-    rep_info = []
-#    d = dict(feature_matrices=[],hypers=[])
-    for soap_type in soap_types:
-        il0 = []
+    for fn in fns:
+        frames = [json2ase(load_json(fn))]
         for cutoff in cutoffs:
-            il1 = []
-            for gaussian_sigma in gaussian_sigmas:
-                il2 = []
-                for max_radial in max_radials:
-                    hypers = {"interaction_cutoff": cutoff,
-                              "cutoff_smooth_width": 0.0,
-                              "max_radial": max_radial,
-                              "max_angular": 0,
-                              "gaussian_sigma_type": "Constant",
-                              "gaussian_sigma_constant": gaussian_sigma,
-                              "soap_type": soap_type }
-                    x = get_spectrum(hypers, frames)
-                    d = dict(feature_matrices=[],hypers=[])
-                    d['feature_matrices'].append(x.tolist())
-                    d['hypers'].append(copy(hypers))
-                    il2 += [d]
-                il1 += [il2]
-            il0 += [il1]
-        rep_info += [il0]
-    data['rep_info'] = rep_info
+            print(fn,cutoff)
+            data['rep_info'].append([])
+            for soap_type in soap_types:
+                for gaussian_sigma in gaussian_sigmas:
+                    for max_radial in max_radials:
+                        max_angular = 6
+                        if 'RadialSpectrum' == soap_type:
+                            max_angular = 0
+
+                        hypers = {"interaction_cutoff": cutoff,
+                                "cutoff_smooth_width": 0.0,
+                                "max_radial": max_radial,
+                                "max_angular": max_angular,
+                                "gaussian_sigma_type": "Constant",
+                                "gaussian_sigma_constant": gaussian_sigma,
+                                "soap_type": soap_type }
+                        x = get_spectrum(hypers, frames)
+                        data['rep_info'][-1].append(dict(feature_matrix=x.tolist(),
+                                             hypers=copy(hypers)))
+
     with open(path+"tests/reference_data/soap_reference.ubjson",'wb') as f:
         ubjson.dump(data,f)
 
