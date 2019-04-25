@@ -182,7 +182,7 @@ namespace rascal {
      */
     RepresentationManagerSphericalExpansion(ManagerPtr_t sm,
                                             const Hypers_t & hyper)
-        : structure_manager{std::move(sm)}, expansions_coefficients{*sm} {
+        : expansions_coefficients{*sm}, structure_manager{std::move(sm)} {
       this->set_hyperparameters(hyper);
     }
 

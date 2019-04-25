@@ -87,7 +87,6 @@ namespace rascal {
    * of calculated feature data from multiple structures.
    */
   template <typename T, template <typename> class FeatureManager,
-            class StructureManager,
             template <typename> class RepresentationManager, class BaseFixture>
   struct SparseFeatureFixture
       : RepresentationFixture<BaseFixture, RepresentationManager> {

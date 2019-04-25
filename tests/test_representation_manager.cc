@@ -186,8 +186,7 @@ namespace rascal {
                             RepresentationManagerSphericalExpansion>>;
 
   using fixtures_ref_test =
-      boost::mpl::list<RepresentationFixture<StructureManagerCenters,
-                                             RepresentationManagerSphericalExpansion,
+      boost::mpl::list<RepresentationFixture<RepresentationManagerSphericalExpansion,
                                              SphericalExpansionTestData>>;
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_precompute_test, Fix,

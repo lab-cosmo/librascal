@@ -40,9 +40,9 @@ namespace rascal {
       boost::mpl::list<FeatureFixture<double, FeatureManagerDense,
                                       RepresentationManagerSortedCoulomb,
                                       MultipleStructureSortedCoulomb>,
-                       FeatureFixture<float, FeatureManagerDense,
-                                      RepresentationManagerSortedCoulomb,
-                                      MultipleStructureSortedCoulomb>,
+                      //  FeatureFixture<float, FeatureManagerDense,
+                      //                 RepresentationManagerSortedCoulomb,
+                      //                 MultipleStructureSortedCoulomb>,
                        FeatureFixture<double, FeatureManagerDense,
                                       RepresentationManagerSphericalExpansion,
                                       MultipleStructureSphericalExpansion>,
@@ -133,10 +133,8 @@ namespace rascal {
 
   using multiple_fixtures_sparse = boost::mpl::list<
     SparseFeatureFixture<double, FeatureManagerBlockSparse,
-                    StructureManagerCenters,
                     RepresentationManagerSphericalExpansion, MultipleStructureSphericalExpansion>,
     SparseFeatureFixture<float, FeatureManagerBlockSparse,
-                    StructureManagerCenters,
                     RepresentationManagerSphericalExpansion, MultipleStructureSphericalExpansion>>;
 
   /* ---------------------------------------------------------------------- */
