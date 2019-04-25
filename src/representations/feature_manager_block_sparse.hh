@@ -61,15 +61,15 @@ namespace rascal {
     using hypers_t = typename Parent::hypers_t;
     using Feature_Matrix_t = typename Parent::Feature_Matrix_t;
     using Feature_Matrix_ref = typename Parent::Feature_Matrix_ref;
-    using precision_t = typename Parent::precision_t;
+    using Precision_t = typename Parent::Precision_t;
 
     using key_t = std::vector<int>;
-    using dense_t = Eigen::Matrix<precision_t, Eigen::Dynamic, Eigen::Dynamic>;
+    using dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, Eigen::Dynamic>;
     using dense_ref_t = Eigen::Map<dense_t>;
     using map_center_t = std::vector<std::pair<size_t, size_t>>;
     using map_sparse_t = std::vector<std::map<key_t, std::pair<size_t, std::pair<size_t, size_t>>>>;
     using keys_t = std::vector<std::list<key_t>>;
-    using data_t = std::vector<precision_t>;
+    using data_t = std::vector<Precision_t>;
 
     /**
      * Constructor where hypers contains all relevant informations

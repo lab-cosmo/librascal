@@ -50,7 +50,7 @@ namespace rascal {
     //! type used to register the valid key and values of Hypers_t
     using ReferenceHypers_t = std::map<std::string, std::vector<std::string>>;
 
-    using dense_t = Eigen::Matrix<precision_t, Eigen::Dynamic, Eigen::Dynamic>;
+    using dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, Eigen::Dynamic>;
     using input_data_t = internal::InternallySortedKeyMap<std::vector<int>, dense_t>;
     using data_t = std::vector<input_data_t>;
 

@@ -53,7 +53,7 @@ namespace rascal {
     using Representation_t = typename Parent::Representation_t;
     using Feature_t = FeatureManager<T>;
     using Hypers_t = typename Representation_t::Hypers_t;
-    using precision_t = T;
+    using Precision_t = T;
 
     FeatureFixture() : Parent{} {
       std::vector<size_t> n_features{};
@@ -98,7 +98,7 @@ namespace rascal {
     using key_t = typename Representation_t::key_t;
     using Feature_t = FeatureManager<T>;
     using hypers_t = typename Representation_t::hypers_t;
-    using precision_t = T;
+    using Precision_t = T;
 
     SparseFeatureFixture() : Parent{} {
       for (auto & hyper : this->hypers) {

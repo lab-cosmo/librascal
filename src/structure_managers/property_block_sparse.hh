@@ -187,11 +187,11 @@ namespace rascal {
   /**
    * Typed ``property`` class definition, inherits from the base property class
    */
-  template <typename precision_t, size_t Order, size_t PropertyLayer>
+  template <typename Precision_t, size_t Order, size_t PropertyLayer>
   class BlockSparseProperty : public PropertyBase {
    public:
     using Parent = PropertyBase;
-    using dense_t = Eigen::Matrix<precision_t, Eigen::Dynamic, Eigen::Dynamic>;
+    using dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, Eigen::Dynamic>;
     using dense_ref_t = Eigen::Map<dense_t>;
     using sizes_t = std::vector<size_t>;
     using key_t = std::vector<int>;
@@ -224,7 +224,7 @@ namespace rascal {
 
     /* ---------------------------------------------------------------------- */
     //! return runtime info about the stored (e.g., numerical) type
-    const std::type_info & get_type_info() const final { return typeid(precision_t); };
+    const std::type_info & get_type_info() const final { return typeid(Precision_t); };
 
 
     //! Adjust size so that each center are accessible
@@ -377,16 +377,16 @@ namespace rascal {
   // /**
   //  * Typed ``property`` class definition, inherits from the base property class
   //  */
-  // template <typename precision_t, typename key_t, size_t Order, size_t PropertyLayer>
+  // template <typename Precision_t, typename key_t, size_t Order, size_t PropertyLayer>
   // class BlockSparseProperty : public PropertyBase {
   //  public:
   //   using Parent = PropertyBase;
-  //   using dense_t = Eigen::Matrix<precision_t, Eigen::Dynamic, Eigen::Dynamic>;
+  //   using dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, Eigen::Dynamic>;
   //   using dense_ref_t = Eigen::Map<dense_t>;
   //   using map_center_t = std::vector<std::pair<size_t, size_t>>;
   //   using map_sparse_t = std::vector<std::unordered_map<key_t, std::pair<size_t, std::pair<size_t, size_t>>>>;
   //   using keys_t = std::vector<std::list<key_t>>;
-  //   using data_t = std::vector<precision_t>;
+  //   using data_t = std::vector<Precision_t>;
   //   using input_data_t = std::unordered_map<key_t, dense_t>;
 
   //   //! constructor
@@ -413,7 +413,7 @@ namespace rascal {
 
   //   /* ---------------------------------------------------------------------- */
   //   //! return runtime info about the stored (e.g., numerical) type
-  //   const std::type_info & get_type_info() const final { return typeid(precision_t); };
+  //   const std::type_info & get_type_info() const final { return typeid(Precision_t); };
 
 
   //   //! Adjust size of values (only increases, never frees)

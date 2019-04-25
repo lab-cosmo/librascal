@@ -84,7 +84,7 @@ namespace rascal {
       }
     }
 
-    std::vector<precision_t> & get_representation_raw_data() {
+    std::vector<Precision_t> & get_representation_raw_data() {
       return this->dummy;
     }
 
@@ -128,7 +128,7 @@ namespace rascal {
     RepresentationManagerSphericalExpansion<Manager_t> rep_expansion;
     internal::SOAPType soap_type{};
     std::string soap_type_str{};
-    std::vector<precision_t> dummy{};
+    std::vector<Precision_t> dummy{};
 
   };
 

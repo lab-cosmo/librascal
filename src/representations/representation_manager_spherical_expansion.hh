@@ -182,7 +182,7 @@ namespace rascal {
      */
     RepresentationManagerSphericalExpansion(ManagerPtr_t sm,
                                             const Hypers_t & hyper)
-        : structure_manager{std::move(sm)}, soap_vectors{*sm} {
+        : structure_manager{std::move(sm)}, expansions_coefficients{*sm} {
       this->set_hyperparameters(hyper);
     }
 
@@ -246,22 +246,12 @@ namespace rascal {
       }
     }
 
-    std::vector<precision_t> & get_representation_raw_data() {
+    std::vector<Precision_t> & get_representation_raw_data() {
       return this->dummy;
     }
 
     data_t& get_representation_sparse_raw_data() {
       return this->expansions_coefficients.get_raw_data();
-    }
-
-    //! getter for the representation
-    Eigen::Map<const Eigen::MatrixXd> get_representation_full() {
-      auto nb_centers{this->structure_manager->size()};
-      auto nb_features{this->get_feature_size()};
-      auto & raw_data{this->soap_vectors.get_raw_data()};
-      Eigen::Map<const Eigen::MatrixXd> representation(raw_data.data(),
-                                                       nb_features, nb_centers);
-      return representation;
     }
 
     size_t get_feature_size() {
@@ -308,7 +298,7 @@ namespace rascal {
     Eigen::MatrixXd radial_nl_factors{};
     Eigen::MatrixXd radial_ortho_matrix{};
     bool is_precomputed{false};
-    std::vector<precision_t> dummy{};
+    std::vector<Precision_t> dummy{};
 
     ManagerPtr_t structure_manager;
 

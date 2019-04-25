@@ -45,7 +45,7 @@ namespace rascal {
     using Hypers_t = typename RepresentationManager_t::Hypers_t;
     using Feature_Matrix_t = typename Parent::Feature_Matrix_t;
     using Feature_Matrix_ref = typename Parent::Feature_Matrix_ref;
-    using precision_t = typename Parent::precision_t;
+    using Precision_t = typename Parent::Precision_t;
     /**
      * Constructor where hypers contains all relevant informations
      * to setup a new RepresentationManager.
