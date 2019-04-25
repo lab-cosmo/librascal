@@ -175,8 +175,6 @@ namespace rascal {
   };
 
   struct MultipleStructureManagerNLStrictFixture {
-    using Factory_t =
-        std::tuple<std::tuple<std::string>, std::tuple<double, bool, bool>>;
     using ManagerTypeHolder_t =
         StructureManagerTypeHolder<StructureManagerCenters,
                                    AdaptorNeighbourList, AdaptorStrict>;

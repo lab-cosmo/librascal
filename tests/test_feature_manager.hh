@@ -90,14 +90,13 @@ namespace rascal {
             class StructureManager,
             template <typename> class RepresentationManager, class BaseFixture>
   struct SparseFeatureFixture
-      : MultipleStructureManagerStrictFixture<StructureManager,
-                              BaseFixture> {
-    using Parent = MultipleStructureManagerStrictFixture<StructureManager,  BaseFixture>;
+      : RepresentationFixture<BaseFixture, RepresentationManager> {
+    using Parent = RepresentationFixture<BaseFixture, RepresentationManager>;
     using Manager_t = typename Parent::Manager_t;
     using Representation_t = RepresentationManager<Manager_t>;
     using key_t = typename Representation_t::key_t;
     using Feature_t = FeatureManager<T>;
-    using hypers_t = typename Representation_t::hypers_t;
+    using Hypers_t = typename Representation_t::Hypers_t;
     using Precision_t = T;
 
     SparseFeatureFixture() : Parent{} {
@@ -112,6 +111,7 @@ namespace rascal {
     }
 
     ~SparseFeatureFixture() = default;
+
     std::vector<std::vector<Representation_t>> representations{};
     std::vector<Feature_t> features{};
     std::vector<size_t> inner_sizes{};

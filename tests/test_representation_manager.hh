@@ -45,7 +45,9 @@
 namespace rascal {
 
   struct MultipleStructureSOAP {
-    //MultipleStructureSOAP() {}
+    using ManagerTypeHolder_t =
+        StructureManagerTypeHolder<StructureManagerCenters,
+                                   AdaptorNeighbourList, AdaptorStrict>;
     MultipleStructureSOAP() = default;
     ~MultipleStructureSOAP() = default;
 
@@ -91,6 +93,9 @@ namespace rascal {
   };
 
   struct SOAPTestData {
+    using ManagerTypeHolder_t =
+        StructureManagerTypeHolder<StructureManagerCenters,
+                                   AdaptorNeighbourList, AdaptorStrict>;
     SOAPTestData() {
       std::vector<std::uint8_t> ref_data_ubjson;
       internal::read_binary_file(this->ref_filename, ref_data_ubjson);
@@ -109,6 +114,9 @@ namespace rascal {
   };
 
   struct MultipleStructureSphericalExpansion {
+    using ManagerTypeHolder_t =
+        StructureManagerTypeHolder<StructureManagerCenters,
+                                   AdaptorNeighbourList, AdaptorStrict>;
     MultipleStructureSphericalExpansion() = default;
     ~MultipleStructureSphericalExpansion() = default;
 
@@ -127,6 +135,9 @@ namespace rascal {
   };
 
   struct SphericalExpansionTestData {
+    using ManagerTypeHolder_t =
+        StructureManagerTypeHolder<StructureManagerCenters,
+                                   AdaptorNeighbourList, AdaptorStrict>;
     SphericalExpansionTestData() {
       std::vector<std::uint8_t> ref_data_ubjson;
       internal::read_binary_file(this->ref_filename, ref_data_ubjson);
@@ -145,9 +156,10 @@ namespace rascal {
   };
 
   struct MultipleStructureSortedCoulomb {
-    MultipleStructureSortedCoulomb() {}
-    ~MultipleStructureSortedCoulomb() = default;
-
+    using ManagerTypeHolder_t =
+        StructureManagerTypeHolder<StructureManagerCenters,
+                                   AdaptorNeighbourList, AdaptorStrict>;
+                                   
     MultipleStructureSortedCoulomb() = default;
     ~MultipleStructureSortedCoulomb() = default;
 

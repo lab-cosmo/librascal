@@ -58,7 +58,7 @@ namespace rascal {
    public:
     using Parent = FeatureManagerBase<T>;
     using RepresentationManager_t = typename Parent::RepresentationManager_t;
-    using hypers_t = typename Parent::hypers_t;
+    using Hypers_t = typename Parent::Hypers_t;
     using Feature_Matrix_t = typename Parent::Feature_Matrix_t;
     using Feature_Matrix_ref = typename Parent::Feature_Matrix_ref;
     using Precision_t = typename Parent::Precision_t;
@@ -75,7 +75,7 @@ namespace rascal {
      * Constructor where hypers contains all relevant informations
      * to setup a new RepresentationManager.
      */
-    FeatureManagerBlockSparse(size_t inner_size, hypers_t hypers)
+    FeatureManagerBlockSparse(size_t inner_size, Hypers_t hypers)
         :feature_matrix{}, inner_size{inner_size}, n_center{0}, hypers{hypers} {}
 
     //! Copy constructor
@@ -240,7 +240,7 @@ namespace rascal {
      * Contain all relevant information to initialize a compatible
      * RepresentationManager
      */
-    hypers_t hypers;
+    Hypers_t hypers;
 
     //! map center idx to position and size in values
     map_center_t map2centers{};

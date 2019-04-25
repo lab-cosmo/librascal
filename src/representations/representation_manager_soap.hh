@@ -57,17 +57,17 @@ namespace rascal {
       : public RepresentationManagerBase {
    public:
     using Manager_t = StructureManager;
-    using hypers_t = RepresentationManagerBase::hypers_t;
+    using Hypers_t = RepresentationManagerBase::Hypers_t;
     using key_t = std::vector<int>;
     using SparseProperty_t = BlockSparseProperty<double, 1, 0>;
     using data_t = typename SparseProperty_t::data_t;
 
-    RepresentationManagerSOAP(Manager_t & sm, const hypers_t & hyper)
+    RepresentationManagerSOAP(Manager_t & sm, const Hypers_t & hyper)
         : soap_vectors{sm}, structure_manager{sm}, rep_expansion{sm, hyper} {
       this->set_hyperparameters(hyper);
     }
 
-    void set_hyperparameters(const hypers_t & hypers) {
+    void set_hyperparameters(const Hypers_t & hypers) {
       this->max_radial = hypers.at("max_radial");
       this->max_angular = hypers.at("max_angular");
       this->soap_type_str =
