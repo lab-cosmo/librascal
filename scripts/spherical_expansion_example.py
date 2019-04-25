@@ -10,6 +10,16 @@ import rascal.lib as lrl
 import numpy as np
 from ase.io import read
 
+def load_json(fn):
+    with open(fn,'r') as f:
+        data = json.load(f)
+    return data[str(data['ids'][0])]
+def json2ase(f):
+    return ase.Atoms(**{v:f[k] for k,v in
+dict(positions='positions',atom_types='numbers',pbc='pbc',cell='cell').items()
+})
+
+
 ##########################################################################################
 ##########################################################################################
 
@@ -27,43 +37,47 @@ def dump_reference_json():
     import ubjson
     import os
     from copy import copy
-    path = '/home/willatt/codes/librascal/' #should be changed
+    path = '../' #should be changed
     sys.path.insert(0, os.path.join(path, 'build/'))
     sys.path.insert(0, os.path.join(path, 'tests/'))
 
     cutoffs = [2, 3]
-    gaussian_sigmas = [0.2, 0.3]
+    gaussian_sigmas = [0.2, 0.5]
     max_radials = [8, 12]
 
-    frames = read('../tests/reference_data/methane.xyz',':')
-    fns_to_write = ["reference_data/methane.json"]
+    fns = [
+        os.path.join(path,"tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json"),
+        os.path.join(path,"tests/reference_data/small_molecule.json")
+    ]
+    fns_to_write = [
+        "reference_data/small_molecule.json",
+        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
+]
 
     data = dict(filenames=fns_to_write,
                 cutoffs=cutoffs,
                 gaussian_sigmas=gaussian_sigmas,
-                max_radials=max_radials)
+                max_radials=max_radials,
+                rep_info=[])
 
-    #trying to follow the nested list structure of the coulomb matrix reference data
-    rep_info = []
+    for fn in fns:
+        frames = [json2ase(load_json(fn))]
     for cutoff in cutoffs:
-        il1 = []
+        data['rep_info'].append([])
         for gaussian_sigma in gaussian_sigmas:
-            il2 = []
             for max_radial in max_radials:
+                max_angular = 6
+
                 hypers = {"interaction_cutoff": cutoff,
                           "cutoff_smooth_width": 0.0,
                           "max_radial": max_radial,
-                          "max_angular": 0,
+                          "max_angular": max_angular,
                           "gaussian_sigma_type": "Constant",
                           "gaussian_sigma_constant": gaussian_sigma}
                 x = get_soap_vectors(hypers, frames)
-                d = dict(feature_matrices=[],hypers=[])
-                d['feature_matrices'].append(x.tolist())
-                d['hypers'].append(copy(hypers))
-                il2 += [d]
-            il1 += [il2]
-        rep_info += [il1]
-    data['rep_info'] = rep_info
+                data['rep_info'][-1].append(dict(feature_matrix=x.tolist(),
+                                             hypers=copy(hypers)))
+
     with open(path+"tests/reference_data/spherical_expansion_reference.ubjson",'wb') as f:
         ubjson.dump(data,f)
 

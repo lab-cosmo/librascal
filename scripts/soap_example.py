@@ -10,6 +10,17 @@ import rascal.lib as lrl
 import numpy as np
 from ase.io import read
 
+def load_json(fn):
+    with open(fn,'r') as f:
+        data = json.load(f)
+    return data[str(data['ids'][0])]
+
+def json2ase(f):
+    return ase.Atoms(**{v:f[k] for k,v in
+dict(positions='positions',atom_types='numbers',pbc='pbc',cell='cell').items()
+})
+
+
 ##########################################################################################
 ##########################################################################################
 
@@ -63,12 +74,12 @@ def dump_reference_json():
     soap_types = ["RadialSpectrum", "PowerSpectrum"]
 
     fns = [
+        os.path.join(path,"tests/reference_data/small_molecule.json"),
         os.path.join(path,"tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json"),
-        os.path.join(path,"tests/reference_data/methane.xyz")
     ]
 
     fns_to_write = [
-        "reference_data/methane.json",
+        "reference_data/small_molecule.json",
         "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
     ]
 
