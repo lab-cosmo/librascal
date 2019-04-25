@@ -261,7 +261,7 @@ namespace rascal {
     size_t get_center_size() { return this->expansions_coefficients.get_nb_item(); }
 
     Eigen::Map<const Eigen::MatrixXd> get_representation_full() {
-      auto nb_centers{this->structure_manager.size()};
+      auto nb_centers{this->structure_manager->size()};
       auto nb_features{this->get_feature_size()};
       auto & raw_data{this->get_representation_raw_data()};
       Eigen::Map<const Eigen::MatrixXd> representation(raw_data.data(),

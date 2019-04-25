@@ -186,8 +186,8 @@ namespace rascal {
                             RepresentationManagerSphericalExpansion>>;
 
   using fixtures_ref_test =
-      boost::mpl::list<RepresentationFixture<RepresentationManagerSphericalExpansion,
-                                             SphericalExpansionTestData>>;
+      boost::mpl::list<RepresentationFixture<SphericalExpansionTestData,
+                  RepresentationManagerSphericalExpansion>>;
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_precompute_test, Fix,
                                    multiple_fixtures, Fix) {
@@ -215,7 +215,7 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_reference_test, Fix,
                                    fixtures_ref_test, Fix) {
-    auto & managers = Fix::managers_strict;
+    auto & managers = Fix::managers;
     auto & representations = Fix::representations;
     auto & ref_data = Fix::ref_data;
 
@@ -269,14 +269,12 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
 
   using multiple_fixtures = boost::mpl::list<
-      RepresentationFixture<StructureManagerCenters,
-                            RepresentationManagerSOAP,
-                            MultipleStructureSOAP>>;
+      RepresentationFixture<MultipleStructureSOAP,
+                            RepresentationManagerSOAP>>;
 
   using fixtures_ref_test =
-      boost::mpl::list<RepresentationFixture<StructureManagerCenters,
-                                             RepresentationManagerSOAP,
-                                             SOAPTestData>>;
+      boost::mpl::list<RepresentationFixture<SOAPTestData,
+                                             RepresentationManagerSOAP>>;
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -284,7 +282,7 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_constructor_test, Fix,
                                    multiple_fixtures, Fix) {
-    auto & managers = Fix::managers_strict;
+    auto & managers = Fix::managers;
     auto & representations = Fix::representations;
     auto & hypers = Fix::hypers;
 
@@ -301,7 +299,7 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_compute_test, Fix,
                                    multiple_fixtures, Fix) {
-    auto & managers = Fix::managers_strict;
+    auto & managers = Fix::managers;
     auto & representations = Fix::representations;
     auto & hypers = Fix::hypers;
     for (auto & manager : managers) {
@@ -318,7 +316,7 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_reference_test, Fix,
                                    fixtures_ref_test, Fix) {
-    auto & managers = Fix::managers_strict;
+    auto & managers = Fix::managers;
     auto & representations = Fix::representations;
     auto & ref_data = Fix::ref_data;
 

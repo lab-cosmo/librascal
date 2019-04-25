@@ -101,7 +101,7 @@ namespace rascal {
     SparseFeatureFixture() : Parent{} {
       for (auto & hyper : this->hypers) {
         this->representations.emplace_back();
-        for (auto & manager : this->managers_strict) {
+        for (auto & manager : this->managers) {
           this->representations.back().emplace_back(manager, hyper);
           this->representations.back().back().compute();
         }

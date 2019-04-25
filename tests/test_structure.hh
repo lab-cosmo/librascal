@@ -34,6 +34,7 @@
 #define TESTS_TEST_STRUCTURE_HH_
 
 #include "structure_managers/structure_manager_base.hh"
+#include "structure_managers/structure_manager.hh"
 #include "structure_managers/structure_manager_lammps.hh"
 #include "structure_managers/structure_manager_centers.hh"
 #include "structure_managers/adaptor_strict.hh"

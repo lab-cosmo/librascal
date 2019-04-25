@@ -211,11 +211,12 @@ namespace rascal {
 
   /*
    * A fixture for testing partially sparse proterties.
+   * TODO(felix) use MultipleStructureManagerCentersFixture instead of NL
    */
-  template <class ManagerImplementation>
-  struct BlockSparsePropertyFixture : public MultipleStructureManagerCenterFixture<ManagerImplementation,
-                                MultipleStructureManagerBaseFixture> {
-    using Manager_t = ManagerImplementation;
+  struct BlockSparsePropertyFixture :
+    public MultipleStructureFixture<MultipleStructureManagerNLFixture> {
+    using Parent = MultipleStructureFixture<MultipleStructureManagerNLFixture>;
+    using ManagerTypeList_t = typename Parent::ManagerTypeHolder_t::type_list;
 
     using key_t = std::vector<int>;
     using BlockSparseProperty_t =
@@ -228,17 +229,14 @@ namespace rascal {
 
     std::string sparse_features_desc{"some atom centered sparse features"};
 
-    BlockSparsePropertyFixture()
-        : MultipleStructureManagerCenterFixture<ManagerImplementation,
-                                MultipleStructureManagerBaseFixture>{}
-    {
+    BlockSparsePropertyFixture() : Parent{} {
       std::random_device rd;
       std::mt19937 gen{rd()};
       auto size_dist{std::uniform_int_distribution<size_t>(1, 10)};
       auto key_dist{std::uniform_int_distribution<int>(1, 100)};
       // size_t i_manager{0};
-      for (auto& manager : this->managers_center) {
-        sparse_features.emplace_back(manager, sparse_features_desc);
+      for (auto& manager : managers) {
+        sparse_features.emplace_back(*manager, sparse_features_desc);
         this->keys_list.emplace_back();
         test_data_t test_data{};
         for (auto atom : manager) {
@@ -271,7 +269,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
-                          BlockSparsePropertyFixture<StructureManagerCenters>) {}
+                          BlockSparsePropertyFixture) {}
 
   /* ---------------------------------------------------------------------- */
   /*
@@ -279,11 +277,11 @@ namespace rascal {
    * filled and that the data can be accessed consistently.
    */
   BOOST_FIXTURE_TEST_CASE(fill_test_simple,
-                          BlockSparsePropertyFixture<StructureManagerCenters>) {
+                          BlockSparsePropertyFixture) {
     bool verbose{false};
     // fill the property structures
     auto i_manager{0};
-    for (auto& manager : managers_center) {
+    for (auto& manager : managers) {
       auto i_center{0};
       sparse_features[i_manager].set_shape(21, 8);
       for (auto center : manager) {
@@ -294,7 +292,7 @@ namespace rascal {
     }
 
     i_manager = 0;
-    for (auto& manager : managers_center) {
+    for (auto& manager : managers) {
       if (verbose) std::cout << "manager: " << i_manager << std::endl;
       auto i_center{0};
       for (auto center : manager) {
@@ -330,7 +328,7 @@ namespace rascal {
    * test, if metadata can be assigned to properties
    */
   BOOST_FIXTURE_TEST_CASE(meta_data_test,
-                          BlockSparsePropertyFixture<StructureManagerCenters>) {
+                          BlockSparsePropertyFixture) {
     for (auto& sparse_feature : sparse_features) {
       auto sparse_feature_metadata = sparse_feature.get_metadata();
       BOOST_CHECK_EQUAL(sparse_feature_metadata, sparse_features_desc);

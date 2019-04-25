@@ -180,6 +180,10 @@ namespace rascal {
       this->n_center += n_center;
     }
 
+    //! move data from the representation manager property
+    void insert(size_t &, RepresentationManager_t &) {
+    }
+
     //! return number of elements of the flattened array
     inline int size() { return this->feature_matrix.size(); }
 

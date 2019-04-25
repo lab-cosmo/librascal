@@ -57,13 +57,14 @@ namespace rascal {
       : public RepresentationManagerBase {
    public:
     using Manager_t = StructureManager;
+    using ManagerPtr_t = std::shared_ptr<Manager_t>;
     using Hypers_t = RepresentationManagerBase::Hypers_t;
     using key_t = std::vector<int>;
     using SparseProperty_t = BlockSparseProperty<double, 1, 0>;
     using data_t = typename SparseProperty_t::data_t;
 
-    RepresentationManagerSOAP(Manager_t & sm, const Hypers_t & hyper)
-        : soap_vectors{sm}, structure_manager{sm}, rep_expansion{sm, hyper} {
+    RepresentationManagerSOAP(ManagerPtr_t sm, const Hypers_t & hyper)
+        : soap_vectors{*sm}, structure_manager{std::move(sm)}, rep_expansion{sm, hyper} {
       this->set_hyperparameters(hyper);
     }
 
@@ -101,7 +102,7 @@ namespace rascal {
     }
 
     Eigen::Map<const Eigen::MatrixXd> get_representation_full() {
-      auto nb_centers{this->structure_manager.size()};
+      auto nb_centers{this->structure_manager->size()};
       auto nb_features{this->get_feature_size()};
       auto & raw_data{this->get_representation_raw_data()};
       Eigen::Map<const Eigen::MatrixXd> representation(raw_data.data(),
@@ -124,7 +125,7 @@ namespace rascal {
    private:
     size_t max_radial{};
     size_t max_angular{};
-    Manager_t & structure_manager;
+    ManagerPtr_t structure_manager;
     RepresentationManagerSphericalExpansion<Manager_t> rep_expansion;
     internal::SOAPType soap_type{};
     std::string soap_type_str{};
