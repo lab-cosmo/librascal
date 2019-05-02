@@ -51,7 +51,8 @@ namespace rascal {
     using ReferenceHypers_t = std::map<std::string, std::vector<std::string>>;
 
     using dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, Eigen::Dynamic>;
-    using input_data_t = internal::InternallySortedKeyMap<std::vector<int>, dense_t>;
+    using input_data_t =
+        internal::InternallySortedKeyMap<std::vector<int>, dense_t>;
     using data_t = std::vector<input_data_t>;
 
     RepresentationManagerBase() = default;

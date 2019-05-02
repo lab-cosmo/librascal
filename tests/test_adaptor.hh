@@ -133,7 +133,6 @@ namespace rascal {
     json factory_args{};
   };
 
-
   struct MultipleStructureManagerNLFixture {
     using ManagerTypeHolder_t =
         StructureManagerTypeHolder<StructureManagerCenters,

@@ -67,7 +67,8 @@ namespace rascal {
     using dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, Eigen::Dynamic>;
     using dense_ref_t = Eigen::Map<dense_t>;
     using map_center_t = std::vector<std::pair<size_t, size_t>>;
-    using map_sparse_t = std::vector<std::map<key_t, std::pair<size_t, std::pair<size_t, size_t>>>>;
+    using map_sparse_t = std::vector<
+        std::map<key_t, std::pair<size_t, std::pair<size_t, size_t>>>>;
     using keys_t = std::vector<std::list<key_t>>;
     using data_t = std::vector<Precision_t>;
 
@@ -76,7 +77,8 @@ namespace rascal {
      * to setup a new RepresentationManager.
      */
     FeatureManagerBlockSparse(size_t inner_size, Hypers_t hypers)
-        :feature_matrix{}, inner_size{inner_size}, n_center{0}, hypers{hypers} {}
+        : feature_matrix{}, inner_size{inner_size}, n_center{0}, hypers{
+                                                                     hypers} {}
 
     //! Copy constructor
     FeatureManagerBlockSparse(const FeatureManagerBlockSparse & other) = delete;
@@ -88,10 +90,12 @@ namespace rascal {
     ~FeatureManagerBlockSparse() = default;
 
     //! Copy assignment operator
-    FeatureManagerBlockSparse & operator=(const FeatureManagerBlockSparse & other) = delete;
+    FeatureManagerBlockSparse &
+    operator=(const FeatureManagerBlockSparse & other) = delete;
 
     //! Move assignment operator
-    FeatureManagerBlockSparse & operator=(FeatureManagerBlockSparse && other) = default;
+    FeatureManagerBlockSparse &
+    operator=(FeatureManagerBlockSparse && other) = default;
 
     /**
      * resize the underlying data structure
@@ -100,12 +104,13 @@ namespace rascal {
      * @param nb_unique_keys list (for each structures) of number of unique
      * keys.
      */
-    void resize(const std::vector<size_t>& n_centers, const std::vector<size_t>& nb_unique_keys) {
+    void resize(const std::vector<size_t> & n_centers,
+                const std::vector<size_t> & nb_unique_keys) {
       size_t n_elements{this->values.size()};
       auto n_inner_comp{this->get_inner_size()};
       size_t i_structure{0};
       // there are as many set of keys as structures
-      for (const auto& nb_keys : nb_unique_keys) {
+      for (const auto & nb_keys : nb_unique_keys) {
         n_elements += nb_keys * n_inner_comp * n_centers[i_structure];
         this->n_center += n_centers[i_structure];
         i_structure++;
@@ -119,25 +124,25 @@ namespace rascal {
      * @param nb_unique_keys list (for each centers) of number of unique
      * keys.
      */
-    void resize(const std::vector<size_t>& nb_unique_keys) {
+    void resize(const std::vector<size_t> & nb_unique_keys) {
       size_t n_elements{this->values.size()};
       auto n_inner_comp{this->get_inner_size()};
       // there are as many set of keys as centers
-      for (const auto& nb_keys : nb_unique_keys) {
+      for (const auto & nb_keys : nb_unique_keys) {
         n_elements += nb_keys * n_inner_comp;
         this->n_center++;
       }
       this->resize(n_elements);
     }
 
-    void resize(const size_t& n_elements) {
+    void resize(const size_t & n_elements) {
       this->feature_matrix.resize(n_elements, 0.);
       this->map2centers.resize(this->n_center);
       this->map2sparse.resize(this->n_center);
       this->keys_list.resize(this->n_center);
     }
 
-    void reserve(size_t& n_elements) {
+    void reserve(size_t & n_elements) {
       this->feature_matrix.reserve(n_elements);
       this->map2centers.reserve(this->n_center);
       this->map2sparse.reserve(this->n_center);
@@ -145,18 +150,18 @@ namespace rascal {
     }
     //! move data from the representation manager property
     void push_back(RepresentationManager_t & rm) {
-      const auto& raw_data{rm.get_representation_sparse_raw_data()};
+      const auto & raw_data{rm.get_representation_sparse_raw_data()};
       auto n_center{rm.get_center_size()};
-      
+
       auto && new_center_start_id{this->feature_matrix.size()};
 
       for (size_t i_center{0}; i_center < n_center; i_center++) {
         this->map2sparse.emplace_back();
         this->keys_list.emplace_back();
         size_t key_start{0};
-        for (const auto& element : raw_data[i_center]) {
-          const auto& key{element.first};
-          const auto& value{element.second};
+        for (const auto & element : raw_data[i_center]) {
+          const auto & key{element.first};
+          const auto & value{element.second};
 
           for (int i_col{0}; i_col < value.cols(); i_col++) {
             for (int i_row{0}; i_row < value.rows(); i_row++) {
@@ -165,23 +170,22 @@ namespace rascal {
           }
           this->unique_keys.emplace(key);
           this->keys_list.back().emplace_back(key);
-          this->map2sparse.back().emplace(
-            std::make_pair(key, std::make_pair(key_start, std::make_pair(value.rows(), value.cols())))
-          );
+          this->map2sparse.back().emplace(std::make_pair(
+              key, std::make_pair(key_start,
+                                  std::make_pair(value.rows(), value.cols()))));
 
           key_start += value.size();
         }
         size_t center_length{key_start};
         this->map2centers.emplace_back(
-                std::make_pair(new_center_start_id, center_length));
+            std::make_pair(new_center_start_id, center_length));
         new_center_start_id += center_length;
       }
       this->n_center += n_center;
     }
 
     //! move data from the representation manager property
-    void insert(size_t &, RepresentationManager_t &) {
-    }
+    void insert(size_t &, RepresentationManager_t &) {}
 
     //! return number of elements of the flattened array
     inline int size() { return this->feature_matrix.size(); }
@@ -190,7 +194,9 @@ namespace rascal {
     inline int sample_size() { return this->n_center; }
 
     //! return the number of feature in the feature matrix
-    inline int feature_size() { return this->unique_keys.size()*this->get_inner_size(); }
+    inline int feature_size() {
+      return this->unique_keys.size() * this->get_inner_size();
+    }
 
     inline auto get_inner_size() { return this->inner_size; }
     //! get the shape of the feature matrix (Nrow,Ncol)
@@ -200,28 +206,31 @@ namespace rascal {
 
     //! return the feature matrix as an Map over Eigen MatrixXd
     inline Feature_Matrix_t get_feature_matrix_dense() {
-      Feature_Matrix_t mat = Feature_Matrix_t::Zero(this->feature_size(), this->sample_size());
+      Feature_Matrix_t mat =
+          Feature_Matrix_t::Zero(this->feature_size(), this->sample_size());
       auto inner_size{this->get_inner_size()};
       // loop center
       for (int i_center{0}; i_center < this->sample_size(); i_center++) {
-        auto& center_start{this->map2centers[i_center].first};
+        auto & center_start{this->map2centers[i_center].first};
         size_t i_feature{0};
         // loop sparse key
-        for (auto& key : this->unique_keys) {
+        for (auto & key : this->unique_keys) {
           // if the key exist
           if (this->map2sparse[i_center].count(key) == 1) {
-            auto key_start{center_start + this->map2sparse[i_center][key].first};
-            auto& key_shape{this->map2sparse[i_center][key].second};
+            auto key_start{center_start +
+                           this->map2sparse[i_center][key].first};
+            auto & key_shape{this->map2sparse[i_center][key].second};
             auto key_size{key_shape.first * key_shape.second};
             for (size_t i_val{0}; i_val < key_size; i_val++) {
-              mat(i_feature, i_center) = this->feature_matrix[key_start + i_val];
+              mat(i_feature, i_center) =
+                  this->feature_matrix[key_start + i_val];
               i_feature++;
             }
           } else {
             i_feature += inner_size;
           }
-        } // keys
-      } // centers
+        }  // keys
+      }    // centers
       return mat;
     }
 

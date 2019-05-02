@@ -237,11 +237,12 @@ namespace rascal {
                            std::ostream & stream) {
       stream << "Soap vector size " << this->get_feature_size() << std::endl;
       auto keys{this->expansions_coefficients.get_keys(center)};
-      for (auto& key :keys) {
+      for (auto & key : keys) {
         stream << "type = " << key << std::endl;
         for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
           stream << "n = " << radial_n << std::endl;
-          stream << this->expansions_coefficients(center, key).row(radial_n) << std::endl;
+          stream << this->expansions_coefficients(center, key).row(radial_n)
+                 << std::endl;
         }
       }
     }
@@ -250,7 +251,7 @@ namespace rascal {
       return this->dummy;
     }
 
-    data_t& get_representation_sparse_raw_data() {
+    data_t & get_representation_sparse_raw_data() {
       return this->expansions_coefficients.get_raw_data();
     }
 
@@ -258,7 +259,9 @@ namespace rascal {
       return this->expansions_coefficients.get_nb_comp();
     }
 
-    size_t get_center_size() { return this->expansions_coefficients.get_nb_item(); }
+    size_t get_center_size() {
+      return this->expansions_coefficients.get_nb_item();
+    }
 
     auto get_representation_full() {
       return this->expansions_coefficients.get_dense_rep();
@@ -316,9 +319,9 @@ namespace rascal {
 
     // Precompute common prefactors
     for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
-      this->radial_norm_factors(radial_n) =
-          std::sqrt(2.0 / (std::tgamma(1.5 + radial_n) *
-                    pow(this->radial_sigmas[radial_n], 3.0 + 2.0 * radial_n)));
+      this->radial_norm_factors(radial_n) = std::sqrt(
+          2.0 / (std::tgamma(1.5 + radial_n) *
+                 pow(this->radial_sigmas[radial_n], 3.0 + 2.0 * radial_n)));
       for (size_t angular_l{0}; angular_l < this->max_angular + 1;
            ++angular_l) {
         this->radial_nl_factors(radial_n, angular_l) =
@@ -355,12 +358,12 @@ namespace rascal {
             (pow(this->radial_sigmas[radial_n1], radial_n1) *
              pow(this->radial_sigmas[radial_n2], radial_n2)) *
             tgamma(0.5 * (3.0 + radial_n1 + radial_n2)) /
-            (pow(this->radial_sigmas[radial_n1] * this->radial_sigmas[radial_n2],
-                1.5) *
-            sqrt(tgamma(1.5 + radial_n1) * tgamma(1.5 + radial_n2)));
+            (pow(this->radial_sigmas[radial_n1] *
+                     this->radial_sigmas[radial_n2],
+                 1.5) *
+             sqrt(tgamma(1.5 + radial_n1) * tgamma(1.5 + radial_n2)));
       }
     }
-
 
     // Compute the inverse square root of the overlap matrix
     Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigensolver(overlap);
@@ -438,7 +441,7 @@ namespace rascal {
     this->expansions_coefficients.resize();
 
     for (auto center : this->structure_manager) {
-      auto& coefficients_center = this->expansions_coefficients[center];
+      auto & coefficients_center = this->expansions_coefficients[center];
 
       // initialize the expansion coefficients to 0
       key_t center_type{center.get_atom_type()};
@@ -509,7 +512,7 @@ namespace rascal {
           }
           radial_integral.row(radial_n) *= radial_norm_factors(radial_n);
         }
-        radial_integral = this-> radial_ortho_matrix * radial_integral ;
+        radial_integral = this->radial_ortho_matrix * radial_integral;
 
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           size_t lm_collective_idx{0};
@@ -525,9 +528,9 @@ namespace rascal {
           }
         }
       }  // for (neigh : center)
-    }  // for (center : structure_manager)
+    }    // for (center : structure_manager)
     // attatch the Property with attach_property
-  }    // compute()
+  }  // compute()
 
 }  // namespace rascal
 

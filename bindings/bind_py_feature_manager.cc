@@ -29,12 +29,11 @@
 
 using namespace rascal;  // NOLINT
 
-template<typename T>
+template <typename T>
 void bind_feature_manager_base(py::module & m_garbage) {
   using Base_t = FeatureManagerBase<T>;
 
-  std::string featurebase_name =
-      internal::GetBindingTypeName<Base_t>();
+  std::string featurebase_name = internal::GetBindingTypeName<Base_t>();
   py::class_<Base_t>(m_garbage, featurebase_name.c_str());
 }
 
@@ -123,9 +122,8 @@ void add_feature_managers(py::module & mod, py::module & m_garbage) {
   auto feature_float =
       bind_feature_manager<FeatureManagerDense, float>(mod, m_garbage);
 
-  bind_sparse_feature_manager<FeatureManagerBlockSparse, double>(mod, m_garbage);
+  bind_sparse_feature_manager<FeatureManagerBlockSparse, double>(mod,
+                                                                 m_garbage);
 
   bind_sparse_feature_manager<FeatureManagerBlockSparse, float>(mod, m_garbage);
-
-
 }

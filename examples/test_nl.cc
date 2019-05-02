@@ -64,8 +64,8 @@ decltype(auto) wrap_factory() {
 
 struct TestData {
   using ManagerTypeHolder_t =
-      StructureManagerTypeHolder<StructureManagerCenters,
-                                  AdaptorNeighbourList, AdaptorStrict>;
+      StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList,
+                                 AdaptorStrict>;
 
   TestData() = default;
 
@@ -73,7 +73,8 @@ struct TestData {
     std::vector<std::uint8_t> ref_data_ubjson;
     internal::read_binary_file(ref_filename, ref_data_ubjson);
     this->ref_data = json::from_ubjson(ref_data_ubjson);
-    auto filenames = this->ref_data.at("filenames").get<std::vector<std::string>>();
+    auto filenames =
+        this->ref_data.at("filenames").get<std::vector<std::string>>();
     auto cutoffs = this->ref_data.at("cutoffs").get<std::vector<double>>();
 
     for (auto && filename : filenames) {
@@ -81,13 +82,12 @@ struct TestData {
         json parameters;
         json structure{{"filename", filename}};
         json adaptors;
-        json ad1{
-            {"name", "AdaptorNeighbourList"},
-            {"initialization_arguments",
-              {{"cutoff", cutoff},
-              {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+        json ad1{{"name", "AdaptorNeighbourList"},
+                 {"initialization_arguments",
+                  {{"cutoff", cutoff},
+                   {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
         json ad2{{"name", "AdaptorStrict"},
-                  {"initialization_arguments", {{"cutoff", cutoff}}}};
+                 {"initialization_arguments", {{"cutoff", cutoff}}}};
         adaptors.emplace_back(ad1);
         adaptors.emplace_back(ad2);
 
@@ -95,8 +95,6 @@ struct TestData {
         parameters["adaptors"] = adaptors;
 
         this->factory_args.emplace_back(parameters);
-
-
       }
     }
   }
@@ -106,14 +104,13 @@ struct TestData {
   const bool consider_ghost_neighbours{false};
   json ref_data{};
   json factory_args{};
-
 };
 
 int main() {
 
   using ManagerTypeHolder_t =
-  StructureManagerTypeHolder<StructureManagerCenters,
-          AdaptorNeighbourList, AdaptorStrict>;
+      StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList,
+                                 AdaptorStrict>;
   using ManagerTypeList_t = typename ManagerTypeHolder_t::type_list;
   using Manager_t = typename ManagerTypeHolder_t::type;
   using Std2DArray_t = std::vector<std::vector<double>>;
@@ -123,49 +120,50 @@ int main() {
   dd.get_ref(filename);
 
   size_t manager_i{0};
-  for (const auto& factory_arg : dd.factory_args) {
+  for (const auto & factory_arg : dd.factory_args) {
     auto manager{make_structure_manager_stack_with_hypers_and_typeholder<
-            ManagerTypeList_t>::apply(factory_arg["structure"],
-                                      factory_arg["adaptors"])};
-    std::cout << factory_arg["structure"]["filename"]<< std::endl;
+        ManagerTypeList_t>::apply(factory_arg["structure"],
+                                  factory_arg["adaptors"])};
+    std::cout << factory_arg["structure"]["filename"] << std::endl;
     for (auto atom : manager) {
-      std::cout << atom.get_atom_type()<<std::endl;
+      std::cout << atom.get_atom_type() << std::endl;
     }
     const auto & rep_infos{dd.ref_data.at("rep_info").template get<json>()};
 
     for (const auto & rep_info : rep_infos.at(manager_i)) {
       const auto & hypers = rep_info.at("hypers").template get<json>();
-      const auto & ref_representation = rep_info.at("feature_matrix").template get<Std2DArray_t>();
+      const auto & ref_representation =
+          rep_info.at("feature_matrix").template get<Std2DArray_t>();
 
       // for (auto& el : hypers.items()) {
       //   std::cout << el.key() << " : " << el.value() << "\n";
       // }
-      RepresentationManagerSortedCoulomb<Manager_t> representation{manager,hypers};
+      RepresentationManagerSortedCoulomb<Manager_t> representation{manager,
+                                                                   hypers};
       representation.compute();
 
-      const auto & test_representation = representation.get_representation_full();
+      const auto & test_representation =
+          representation.get_representation_full();
 
       for (size_t row_i{0}; row_i < ref_representation.size(); row_i++) {
 
         for (size_t col_i{0}; col_i < ref_representation[row_i].size();
-              ++col_i) {
+             ++col_i) {
           auto diff{std::abs(ref_representation[row_i][col_i] -
-                              test_representation(row_i, col_i))};
+                             test_representation(row_i, col_i))};
           if (diff > 1e-12) {
             std::cout << diff << "\n";
           }
         }
       }
-
-
     }
-
 
     manager_i += 1;
   }
 
   // using SMType =
-  //     StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList,
+  //     StructureManagerTypeHolder<StructureManagerCenters,
+  //     AdaptorNeighbourList,
   //                                AdaptorStrict>;
 
   // bool verbose{false};
@@ -187,14 +185,16 @@ int main() {
 
   // // Or use the hyper thing
   // json adaptors_hypers = R"([
-  //   {"name": "AdaptorNeighbourList", "initialization_arguments":{"cutoff": 2, "consider_ghost_neighbours": false}},
+  //   {"name": "AdaptorNeighbourList", "initialization_arguments":{"cutoff": 2,
+  //   "consider_ghost_neighbours": false}},
   //   {"name": "AdaptorStrict", "initialization_arguments":{"cutoff": 2}}
   // ])"_json;
 
   // json structure_inputs{{"filename", filename}};
 
   // json name_hypers = R"([
-  //   {"name": "StrictNL", "initialization_arguments":{"cutoff": 2, "consider_ghost_neighbours": false}},
+  //   {"name": "StrictNL", "initialization_arguments":{"cutoff": 2,
+  //   "consider_ghost_neighbours": false}},
   //   {"name": "AdaptorStrict", "initialization_arguments":{"cutoff": 2}}
   // ])"_json;
 

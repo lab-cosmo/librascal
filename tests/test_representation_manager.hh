@@ -38,7 +38,6 @@
 #include "representations/representation_manager_soap.hh"
 #include "representations/feature_manager_block_sparse.hh"
 
-
 #include "json_io.hh"
 #include "rascal_utility.hh"
 
@@ -56,7 +55,8 @@ namespace rascal {
       std::vector<std::uint8_t> ref_data_ubjson;
       internal::read_binary_file(ref_filename, ref_data_ubjson);
       this->ref_data = json::from_ubjson(ref_data_ubjson);
-      auto filenames = this->ref_data.at("filenames").get<std::vector<std::string>>();
+      auto filenames =
+          this->ref_data.at("filenames").get<std::vector<std::string>>();
       auto cutoffs = this->ref_data.at("cutoffs").get<std::vector<double>>();
 
       for (auto && filename : filenames) {
@@ -88,7 +88,6 @@ namespace rascal {
     const bool consider_ghost_neighbours{false};
     json ref_data{};
     json factory_args{};
-
   };
 
   struct MultipleStructureSOAP : MultipleStructureManagerNLStrictFixture {
@@ -102,54 +101,51 @@ namespace rascal {
     //     "reference_data/methane.json",
     //     "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
     //     "reference_data/simple_cubic_8.json"};
-    //std::vector<std::string> soap_types{"RadialSpectrum", "PowerSpectrum"};
+    // std::vector<std::string> soap_types{"RadialSpectrum", "PowerSpectrum"};
     // std::vector<double> cutoffs{{2.0, 3.0}};
     // std::vector<double> gaussian_sigmas{{0.2, 0.3}};
     // std::vector<size_t> max_radials{{8, 12}};
 
     std::vector<json> hypers{{{"interaction_cutoff", 3.0},
-                             {"cutoff_smooth_width", 0.5},
-                             {"max_radial", 6},
-                             {"max_angular", 0},
-                             {"gaussian_sigma_type", "Constant"},
-                             {"gaussian_sigma_constant", 0.2},
-                             {"soap_type", "RadialSpectrum"}},
+                              {"cutoff_smooth_width", 0.5},
+                              {"max_radial", 6},
+                              {"max_angular", 0},
+                              {"gaussian_sigma_type", "Constant"},
+                              {"gaussian_sigma_constant", 0.2},
+                              {"soap_type", "RadialSpectrum"}},
                              {{"interaction_cutoff", 3.0},
-                             {"cutoff_smooth_width", 0.5},
-                             {"max_radial", 6},
-                             {"max_angular", 0},
-                             {"gaussian_sigma_type", "Constant"},
-                             {"gaussian_sigma_constant", 0.4},
-                             {"soap_type", "RadialSpectrum"}},
+                              {"cutoff_smooth_width", 0.5},
+                              {"max_radial", 6},
+                              {"max_angular", 0},
+                              {"gaussian_sigma_type", "Constant"},
+                              {"gaussian_sigma_constant", 0.4},
+                              {"soap_type", "RadialSpectrum"}},
                              {{"interaction_cutoff", 2.0},
-                             {"cutoff_smooth_width", 0.0},
-                             {"max_radial", 6},
-                             {"max_angular", 6},
-                             {"gaussian_sigma_type", "Constant"},
-                             {"gaussian_sigma_constant", 0.2},
-                             {"soap_type", "PowerSpectrum"}},
+                              {"cutoff_smooth_width", 0.0},
+                              {"max_radial", 6},
+                              {"max_angular", 6},
+                              {"gaussian_sigma_type", "Constant"},
+                              {"gaussian_sigma_constant", 0.2},
+                              {"soap_type", "PowerSpectrum"}},
                              {{"interaction_cutoff", 2.0},
-                             {"cutoff_smooth_width", 0.0},
-                             {"max_radial", 6},
-                             {"max_angular", 6},
-                             {"gaussian_sigma_type", "Constant"},
-                             {"gaussian_sigma_constant", 0.4},
-                             {"soap_type", "PowerSpectrum"}}
-                             };
-
+                              {"cutoff_smooth_width", 0.0},
+                              {"max_radial", 6},
+                              {"max_angular", 6},
+                              {"gaussian_sigma_type", "Constant"},
+                              {"gaussian_sigma_constant", 0.4},
+                              {"soap_type", "PowerSpectrum"}}};
   };
 
   struct SOAPTestData : TestData {
     using Parent = TestData;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
-    SOAPTestData() : Parent{} {
-      this->get_ref(this->ref_filename);
-    }
+    SOAPTestData() : Parent{} { this->get_ref(this->ref_filename); }
     ~SOAPTestData() = default;
     std::string ref_filename{"reference_data/soap_reference.ubjson"};
   };
 
-  struct MultipleStructureSphericalExpansion : MultipleStructureManagerNLStrictFixture {
+  struct MultipleStructureSphericalExpansion
+      : MultipleStructureManagerNLStrictFixture {
     using Parent = MultipleStructureManagerNLStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
 
@@ -163,11 +159,11 @@ namespace rascal {
     // std::vector<double> cutoffs{{1, 2, 3}};
 
     std::vector<json> hypers{{{"interaction_cutoff", 6.0},
-                            {"cutoff_smooth_width", 1.0},
-                            {"max_radial", 10},
-                            {"max_angular", 8},
-                            {"gaussian_sigma_type", "Constant"},
-                            {"gaussian_sigma_constant", 0.5}}};
+                              {"cutoff_smooth_width", 1.0},
+                              {"max_radial", 10},
+                              {"max_angular", 8},
+                              {"gaussian_sigma_type", "Constant"},
+                              {"gaussian_sigma_constant", 0.5}}};
   };
 
   struct SphericalExpansionTestData : TestData {
@@ -178,10 +174,12 @@ namespace rascal {
       this->get_ref(this->ref_filename);
     }
     ~SphericalExpansionTestData() = default;
-    std::string ref_filename{"reference_data/spherical_expansion_reference.ubjson"};
+    std::string ref_filename{
+        "reference_data/spherical_expansion_reference.ubjson"};
   };
 
-  struct MultipleStructureSortedCoulomb : MultipleStructureManagerNLStrictFixture {
+  struct MultipleStructureSortedCoulomb
+      : MultipleStructureManagerNLStrictFixture {
     using Parent = MultipleStructureManagerNLStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
 
@@ -189,24 +187,22 @@ namespace rascal {
     ~MultipleStructureSortedCoulomb() = default;
 
     std::vector<json> hypers{{{"central_decay", 0.5},
-                            {"interaction_cutoff", 10.},
-                            {"interaction_decay", 0.5},
-                            {"size", 120},
-                            {"sorting_algorithm", "distance"}},
-                           {{"central_decay", 0.5},
-                            {"interaction_cutoff", 10.},
-                            {"interaction_decay", 0.5},
-                            {"size", 120},
-                            {"sorting_algorithm", "row_norm"}}};
+                              {"interaction_cutoff", 10.},
+                              {"interaction_decay", 0.5},
+                              {"size", 120},
+                              {"sorting_algorithm", "distance"}},
+                             {{"central_decay", 0.5},
+                              {"interaction_cutoff", 10.},
+                              {"interaction_decay", 0.5},
+                              {"size", 120},
+                              {"sorting_algorithm", "row_norm"}}};
   };
 
   struct SortedCoulombTestData : TestData {
     using Parent = TestData;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
 
-    SortedCoulombTestData() : Parent{} {
-      this->get_ref(this->ref_filename);
-    }
+    SortedCoulombTestData() : Parent{} { this->get_ref(this->ref_filename); }
     ~SortedCoulombTestData() = default;
 
     // name of the file containing the reference data. it has been generated

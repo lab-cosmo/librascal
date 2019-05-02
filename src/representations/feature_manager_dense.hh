@@ -160,7 +160,7 @@ namespace rascal {
     }
 
     inline Feature_Matrix_t get_feature_matrix_dense() {
-      return Feature_Matrix_t::Zero(2,2);
+      return Feature_Matrix_t::Zero(2, 2);
     }
 
    protected:

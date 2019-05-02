@@ -7,6 +7,7 @@ from ..neighbourlist.structure_manager import convert_to_structure
 from ..neighbourlist.base import NeighbourListFactory
 import numpy as np
 
+
 class SOAP(object):
 
     """
@@ -94,8 +95,8 @@ class SOAP(object):
                                     n_features, hypers_str])
 
         self.manager = NeighbourListFactory(self.nl_options)
-        self.representation = RepresentationFactory(self.manager, self.rep_options)
-
+        self.representation = RepresentationFactory(
+            self.manager, self.rep_options)
 
     def update_hyperparameters(self, **hypers):
         """Store the given dict of hyperparameters
@@ -151,7 +152,7 @@ class SOAP(object):
             return (self.hypers['n_species']*self.hypers['max_radial'])
         if self.hypers['soap_type'] == 'PowerSpectrum':
             return (self.hypers['n_species']**2*self.hypers['max_radial']**2
-                    *(self.hypers['max_angular'] + 1))
+                    * (self.hypers['max_angular'] + 1))
         else:
             raise RuntimeError('Only soap_type = RadialSpectrum || '
                                'PowerSpectrum implemented for now')

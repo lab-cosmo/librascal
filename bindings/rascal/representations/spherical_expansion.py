@@ -91,7 +91,8 @@ class SphericalExpansion(object):
                          disable_pbar=disable_pbar)
 
         self.manager = NeighbourListFactory(self.nl_options)
-        self.representation = RepresentationFactory(self.manager, self.rep_options)
+        self.representation = RepresentationFactory(
+            self.manager, self.rep_options)
 
     def update_hyperparameters(self, **hypers):
         """Store the given dict of hyperparameters

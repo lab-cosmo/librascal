@@ -25,10 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #include "tests.hh"
 #include "test_feature_manager.hh"
-
 
 namespace rascal {
 
@@ -64,7 +62,6 @@ namespace rascal {
       features.emplace_back(n_feature, hyper);
     }
   }
-
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -122,21 +119,22 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE_END();
 
-
   BOOST_AUTO_TEST_SUITE(feature_block_sparse_test);
 
   using multiple_fixtures_sparse = boost::mpl::list<
-    SparseFeatureFixture<double, FeatureManagerBlockSparse,
-                    RepresentationManagerSphericalExpansion, MultipleStructureSphericalExpansion>,
-    SparseFeatureFixture<float, FeatureManagerBlockSparse,
-                    RepresentationManagerSphericalExpansion, MultipleStructureSphericalExpansion>>;
+      SparseFeatureFixture<double, FeatureManagerBlockSparse,
+                           RepresentationManagerSphericalExpansion,
+                           MultipleStructureSphericalExpansion>,
+      SparseFeatureFixture<float, FeatureManagerBlockSparse,
+                           RepresentationManagerSphericalExpansion,
+                           MultipleStructureSphericalExpansion>>;
 
   /* ---------------------------------------------------------------------- */
   /**
    * Test if the Fixture with multiple structures builds
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_setup_test, Fix, multiple_fixtures_sparse,
-                                   Fix) {}
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_setup_test, Fix,
+                                   multiple_fixtures_sparse, Fix) {}
   /* ---------------------------------------------------------------------- */
   /**
    * Test the construction of the feature manager
@@ -166,7 +164,7 @@ namespace rascal {
     auto & inner_sizes = Fix::inner_sizes;
     auto & representations = Fix::representations;
 
-      // build the feature managers. only the 1st
+    // build the feature managers. only the 1st
     // one will be used
     for (size_t i_hyper{0}; i_hyper < hypers.size(); i_hyper++) {
       features.emplace_back(inner_sizes[i_hyper], hypers[i_hyper]);
@@ -179,8 +177,8 @@ namespace rascal {
       original_data.emplace_back();
       for (auto & representation : representations[i_hyper]) {
         auto & raw_data{representation.get_representation_sparse_raw_data()};
-        original_data.back().insert(
-            original_data.back().end(), raw_data.begin(), raw_data.end());
+        original_data.back().insert(original_data.back().end(),
+                                    raw_data.begin(), raw_data.end());
       }
     }
 
@@ -194,37 +192,42 @@ namespace rascal {
     // check if the features have been moved properly
     for (size_t i_hyper{0}; i_hyper < hypers.size(); i_hyper++) {
       auto feature_matrix = features[i_hyper].get_feature_matrix_dense();
-      auto& inner_size{inner_sizes[i_hyper]};
+      auto & inner_size{inner_sizes[i_hyper]};
       std::set<std::vector<int>> unique_keys{};
-      for (size_t i_center{0}; i_center < original_data[i_hyper].size(); ++i_center) {
-        for (auto& element : original_data[i_hyper][i_center]) {
+      for (size_t i_center{0}; i_center < original_data[i_hyper].size();
+           ++i_center) {
+        for (auto & element : original_data[i_hyper][i_center]) {
           unique_keys.emplace(element.first);
         }
       }
-      for (size_t i_center{0}; i_center < original_data[i_hyper].size(); ++i_center) {
-        auto& datas{original_data[i_hyper][i_center]};
+      for (size_t i_center{0}; i_center < original_data[i_hyper].size();
+           ++i_center) {
+        auto & datas{original_data[i_hyper][i_center]};
         int i_count{0};
         double diff{0};
-        if (verbose) std::cout << "Center: "<< i_center <<std::endl;
-        for (auto& key : unique_keys) {
+        if (verbose)
+          std::cout << "Center: " << i_center << std::endl;
+        for (auto & key : unique_keys) {
           // if the key exist
           if (datas.count(key) == 1) {
-            if (verbose) std::cout << "Key: "<< key[0] <<std::endl;
-            auto& data = datas[key];
+            if (verbose)
+              std::cout << "Key: " << key[0] << std::endl;
+            auto & data = datas[key];
             for (int i_col{0}; i_col < data.cols(); i_col++) {
               for (int i_row{0}; i_row < data.rows(); i_row++) {
-              diff =  data(i_row, i_col)- feature_matrix(i_count, i_center);
-              if (verbose) {
-                if (diff > 1e-12) {
-                  std::cout << diff << ", ";
-                  std::cout << data(i_row, i_col) << ", ";
-                  std::cout << feature_matrix(i_count, i_center) << "/ ";
+                diff = data(i_row, i_col) - feature_matrix(i_count, i_center);
+                if (verbose) {
+                  if (diff > 1e-12) {
+                    std::cout << diff << ", ";
+                    std::cout << data(i_row, i_col) << ", ";
+                    std::cout << feature_matrix(i_count, i_center) << "/ ";
+                  }
                 }
-              }
 
-              i_count++;
+                i_count++;
               }
-              if (verbose) std::cout << std::endl;
+              if (verbose)
+                std::cout << std::endl;
             }
           } else {
             i_count += inner_size;

@@ -35,7 +35,7 @@
 #include "json_io.hh"
 #include "atomic_structure.hh"
 
-#include  <type_traits>
+#include <type_traits>
 
 namespace rascal {
   /**
@@ -216,13 +216,14 @@ namespace rascal {
   template <typename Manager, template <class> class... AdaptorImplementation>
   struct StructureManagerTypeHolder {
     // handle the case without adaptors with conditional_t
-    using type_list = std::conditional_t<sizeof...(AdaptorImplementation) == 0,
-                        std::tuple<Manager>,
-                        std::tuple<Manager, AdaptorTypeHolder<AdaptorImplementation...>> >;
+    using type_list = std::conditional_t<
+        sizeof...(AdaptorImplementation) == 0, std::tuple<Manager>,
+        std::tuple<Manager, AdaptorTypeHolder<AdaptorImplementation...>>>;
 
-    using type = std::conditional_t<sizeof...(AdaptorImplementation) == 0, Manager,
-                          typename internal::AdaptorTypeStacker<Manager,
-                                              AdaptorImplementation...>::type>;
+    using type =
+        std::conditional_t<sizeof...(AdaptorImplementation) == 0, Manager,
+                           typename internal::AdaptorTypeStacker<
+                               Manager, AdaptorImplementation...>::type>;
   };
 
   namespace internal {

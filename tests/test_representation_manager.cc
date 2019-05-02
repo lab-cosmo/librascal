@@ -88,8 +88,7 @@ namespace rascal {
                             RepresentationManagerSortedCoulomb>,
       RepresentationFixture<MultipleStructureSphericalExpansion,
                             RepresentationManagerSphericalExpansion>,
-      RepresentationFixture<MultipleStructureSOAP,
-                            RepresentationManagerSOAP>>;
+      RepresentationFixture<MultipleStructureSOAP, RepresentationManagerSOAP>>;
 
   using fixtures_ref_test = boost::mpl::list<RepresentationFixture<
       SortedCoulombTestData, RepresentationManagerSortedCoulomb>>;
@@ -180,17 +179,16 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
 
   /* Tests specific to the spherical expansion representation
-  * Test the SOAP representation
+   * Test the SOAP representation
    */
   BOOST_AUTO_TEST_SUITE(representation_blocksparse_specific_tests);
 
   using fixtures_ref_test = boost::mpl::list<
       RepresentationFixture<SphericalExpansionTestData,
-                  RepresentationManagerSphericalExpansion>,
-      RepresentationFixture<SOAPTestData,RepresentationManagerSOAP>                >;
+                            RepresentationManagerSphericalExpansion>,
+      RepresentationFixture<SOAPTestData, RepresentationManagerSOAP>>;
 
-
-   /*
+  /*
    * Test if the representation computed is equal to a reference from a file
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_reference_test, Fix,
@@ -200,7 +198,7 @@ namespace rascal {
     auto & ref_data = Fix::ref_data;
 
     // Choose the data depending on the current options
-    //using Std2DArray_t = std::vector<std::vector<double>>;
+    // using Std2DArray_t = std::vector<std::vector<double>>;
     using Std2DArray_t = std::vector<std::vector<double>>;
 
     const auto & data{ref_data.at("rep_info").template get<json>()};
@@ -217,22 +215,23 @@ namespace rascal {
         representations.back().compute();
 
         // TODO(felix) quick fix of something that will disappear soon
-        FeatureManagerBlockSparse<double> features{representations.back().get_feature_size(), hypers};
+        FeatureManagerBlockSparse<double> features{
+            representations.back().get_feature_size(), hypers};
         features.push_back(representations.back());
         auto test_representation = features.get_feature_matrix_dense();
 
         auto n_feature{test_representation.rows()};
         auto n_center{test_representation.cols()};
-         BOOST_CHECK_EQUAL(ref_representation.size(),n_feature);
-         for (size_t row_i{0}; row_i < ref_representation.size(); row_i++) {
-           BOOST_CHECK_EQUAL(ref_representation[row_i].size(),n_center);
-           for (size_t col_i{0}; col_i < ref_representation[row_i].size();
-                ++col_i) {
-             auto diff{std::abs(ref_representation[row_i][col_i] -
-                                test_representation(row_i, col_i))};
-             BOOST_CHECK_LE(diff, 1e-12);
-           }
-         }
+        BOOST_CHECK_EQUAL(ref_representation.size(), n_feature);
+        for (size_t row_i{0}; row_i < ref_representation.size(); row_i++) {
+          BOOST_CHECK_EQUAL(ref_representation[row_i].size(), n_center);
+          for (size_t col_i{0}; col_i < ref_representation[row_i].size();
+               ++col_i) {
+            auto diff{std::abs(ref_representation[row_i][col_i] -
+                               test_representation(row_i, col_i))};
+            BOOST_CHECK_LE(diff, 1e-12);
+          }
+        }
       }
       manager_i += 1;
     }
@@ -240,14 +239,16 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE_END();
 
-  // /* ---------------------------------------------------------------------- */
+  // /* ----------------------------------------------------------------------
+  // */
   // /**
   //  * Test the SOAP representation
   //  */
 
   // BOOST_AUTO_TEST_SUITE(representation_soap_test);
 
-  // /* ---------------------------------------------------------------------- */
+  // /* ----------------------------------------------------------------------
+  // */
 
   // using multiple_fixtures = boost::mpl::list<
   //     RepresentationFixture<MultipleStructureSOAP,
@@ -257,7 +258,8 @@ namespace rascal {
   //     boost::mpl::list<RepresentationFixture<SOAPTestData,
   //                                            RepresentationManagerSOAP>>;
 
-  // /* ---------------------------------------------------------------------- */
+  // /* ----------------------------------------------------------------------
+  // */
   // /**
   //  * Test if the constructor runs
   //  */
@@ -274,7 +276,8 @@ namespace rascal {
   //   }
   // }
 
-  // /* ---------------------------------------------------------------------- */
+  // /* ----------------------------------------------------------------------
+  // */
   // /**
   //  * Test if the compute function runs
   //  */
@@ -291,7 +294,8 @@ namespace rascal {
   //   }
   // }
 
-  // /* ---------------------------------------------------------------------- */
+  // /* ----------------------------------------------------------------------
+  // */
   // /**
   //  * Test if the representation computed is equal to a reference from a file
   //  */

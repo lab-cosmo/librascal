@@ -813,7 +813,6 @@ namespace rascal {
      * TODO(markus)
      */
 
-
     return internal::species_aggregator<StructureManager>(this->atom_indices,
                                                           this->get_manager());
   }
