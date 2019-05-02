@@ -54,13 +54,6 @@ using Vector_t = Eigen::Matrix<double, dim, 1>;
 using Representation_t = RepresentationManagerSphericalExpansion<
     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
 
-template <typename StructureManagerTypeHolder>
-decltype(auto) wrap_factory() {
-  return [](const json & a, const json & b) {
-    return make_structure_manager_stack_with_hypers_and_typeholder<
-        typename StructureManagerTypeHolder::type_list>::apply(a, b);
-  };
-}
 
 struct TestData {
   using ManagerTypeHolder_t =
@@ -134,9 +127,6 @@ int main() {
       const auto & ref_representation =
           rep_info.at("feature_matrix").template get<Std2DArray_t>();
 
-      // for (auto& el : hypers.items()) {
-      //   std::cout << el.key() << " : " << el.value() << "\n";
-      // }
       RepresentationManagerSortedCoulomb<Manager_t> representation{manager,
                                                                    hypers};
       representation.compute();
@@ -155,153 +145,9 @@ int main() {
         }
       }
     }
-
     manager_i += 1;
   }
 
-  // using SMType =
-  //     StructureManagerTypeHolder<StructureManagerCenters,
-  //     AdaptorNeighbourList,
-  //                                AdaptorStrict>;
-
-  // bool verbose{false};
-  // // bool verbose_rep{false};
-  // double cutoff{2.};
-  // // bool consider_ghost_neighbours{false};
-  // // std::string filename{"crystal_structure.json"};
-  // std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
-
-  // // Initialize by hand
-  // auto manager{make_structure_manager<StructureManagerCenters>()};
-  // manager->update(filename);
-  // auto pair_manager{
-  //     make_adapted_manager<AdaptorNeighbourList>(manager, cutoff)};
-  // pair_manager->update();
-  // auto adaptor_strict{
-  //     make_adapted_manager<AdaptorStrict>(pair_manager, cutoff)};
-  // adaptor_strict->update(filename);
-
-  // // Or use the hyper thing
-  // json adaptors_hypers = R"([
-  //   {"name": "AdaptorNeighbourList", "initialization_arguments":{"cutoff": 2,
-  //   "consider_ghost_neighbours": false}},
-  //   {"name": "AdaptorStrict", "initialization_arguments":{"cutoff": 2}}
-  // ])"_json;
-
-  // json structure_inputs{{"filename", filename}};
-
-  // json name_hypers = R"([
-  //   {"name": "StrictNL", "initialization_arguments":{"cutoff": 2,
-  //   "consider_ghost_neighbours": false}},
-  //   {"name": "AdaptorStrict", "initialization_arguments":{"cutoff": 2}}
-  // ])"_json;
-
-  // auto my_man = wrap_factory<SMType>()(structure_inputs, adaptors_hypers);
-
-  // std::cout << my_man->get_name() << std::endl;
-  // auto lower_manager = extract_underlying_manager<-1>(my_man);
-  // std::cout << lower_manager->get_name() << std::endl;
-
-  // for (auto && center : my_man) {
-  //   if (verbose) {
-  //     std::cout << "################################# 2" << std::endl;
-  //     std::cout << center.get_atom_type() << std::endl;
-  //   }
-  //   for (auto neigh : center) {
-  //     if (verbose) {
-  //       std::cout << neigh.get_atom_type() << ", ";
-  //     }
-  //   }
-  //   if (verbose)
-  //     std::cout << std::endl;
-  // }
-
-  // // Or use a fancier helper to do it in 1 line here
-  // auto a1 = std::make_tuple(cutoff, false, cutoff);
-  // auto a0 = std::make_tuple(filename);
-
-  // using AdaptorTypeHolder_t = typename StructureManagerTypeHolder<
-  //     StructureManagerCenters, AdaptorNeighbourList,
-  //     AdaptorStrict>::type_list;
-  // auto aa = std::make_tuple(a0, a1);
-  // auto man{make_structure_manager_stack_with_tuple_and_typeholder<
-  //     AdaptorTypeHolder_t>::apply(aa)};
-  // std::cout << man->get_name() << std::endl;
-  // // and there
-  // auto mmmm = make_structure_manager_stack<StructureManagerCenters,
-  //                                          AdaptorNeighbourList,
-  //                                          AdaptorStrict>(
-  //     filename, cutoff, consider_ghost_neighbours, cutoff);
-
-  // MultipleStrictStructureManager<StructureManagerCenters> meta{};
-
-  // for (auto && manager : meta.managers) {
-  //   if (verbose) {
-  //     std::cout << "################################# 1" << std::endl;
-  //     std::cout << manager->size() << std::endl;
-  //   }
-  //   auto lower_manager = extract_underlying_manager<-2>(manager);
-  //   std::cout << lower_manager->get_name() << std::endl;
-
-  //   for (auto && center : manager) {
-  //     if (verbose) {
-  //       std::cout << center.get_atom_type() << std::endl;
-  //       std::cout << "################################# 2" << std::endl;
-  //     }
-  //     for (auto neigh : center) {
-  //       if (verbose) {
-  //         std::cout << neigh.get_atom_type() << std::endl;
-  //       }
-  //     }
-  //   }
-  // }
-
-  // json hypers{{"central_decay", 10},
-  //               {"interaction_cutoff", 10},
-  //               {"interaction_decay", 10},
-  //               {"size", 20},
-  //               {"sorting_algorithm", "distance"}};
-  json hypers{{"interaction_cutoff", 6.0},
-              {"cutoff_smooth_width", 1.0},
-              {"max_radial", 10},
-              {"max_angular", 8},
-              {"gaussian_sigma_type", "Constant"},
-              {"gaussian_sigma_constant", 0.5}};
-
-  using Feature_t = FeatureManagerDense<double>;
-  Feature_t features{810, hypers};
-  // size_t i_center{0};
-  // for (auto & manager : meta.managers) {
-  //   // double central_decay{10};
-  //   // double interaction_cutoff{10};
-  //   // double interaction_decay{10};
-  //   // size_t size{50};
-
-  //   Representation_t representation{manager, hypers};
-  //   representation.compute();
-  //   features.insert(i_center, representation);
-  //   i_center += manager->size();
-  //   auto rep = representation.get_representation_full();
-  //   if (verbose_rep) {
-  //     std::cout << rep.size() << ", " << rep.cols() << ", " << rep.rows()
-  //               << std::endl;
-  //     for (auto ii{0}; ii < rep.cols(); ++ii) {
-  //       for (auto jj{0}; jj < rep.rows(); ++jj) {
-  //         std::cout << rep(jj, ii) << ", ";
-  //       }
-  //       std::cout << std::endl;
-  //     }
-  //   }
-  // }
-
-  // auto mat = features.get_feature_matrix();
-
-  // for (size_t ii{0}; ii < mat.cols(); ii++) {
-  //   for (size_t jj{0}; jj < mat.rows(); jj++) {
-  //     std::cout << mat(jj, ii) << ", ";
-  //   }
-  //   std::cout << std::endl;
-  // }
 
   return (0);
 }
