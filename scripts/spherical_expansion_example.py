@@ -1,7 +1,6 @@
 
 import sys
 sys.path.insert(0,'../build/')
-sys.path.insert(0,'../build/bindings/')
 import json
 import ase
 import argparse
@@ -9,6 +8,8 @@ import rascal
 import rascal.lib as lrl
 import numpy as np
 from ase.io import read
+from rascal.representations import SphericalExpansion
+from rascal.utils import ostream_redirect
 
 def load_json(fn):
     with open(fn,'r') as f:
@@ -24,8 +25,8 @@ dict(positions='positions',atom_types='numbers',pbc='pbc',cell='cell').items()
 ##########################################################################################
 
 def get_soap_vectors(hypers, frames):
-    with lrl._rascal.utils.ostream_redirect():
-        sph_expn = rascal.representation.SphericalExpansion(**hypers)
+    with ostream_redirect():
+        sph_expn = SphericalExpansion(**hypers)
         expansions = sph_expn.transform(frames)
         soap_vectors = expansions.get_feature_matrix()
     return soap_vectors
@@ -37,22 +38,23 @@ def dump_reference_json():
     import ubjson
     import os
     from copy import copy
-    path = '../' #should be changed
+    path = '../'
     sys.path.insert(0, os.path.join(path, 'build/'))
     sys.path.insert(0, os.path.join(path, 'tests/'))
 
     cutoffs = [2, 3]
     gaussian_sigmas = [0.2, 0.5]
-    max_radials = [8, 12]
+    max_radials = [4, 10]
+    max_angulars = [3, 6]
 
     fns = [
         os.path.join(path,"tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json"),
         os.path.join(path,"tests/reference_data/small_molecule.json")
     ]
     fns_to_write = [
-        "reference_data/small_molecule.json",
         "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-]
+        "reference_data/small_molecule.json",
+    ]
 
     data = dict(filenames=fns_to_write,
                 cutoffs=cutoffs,
@@ -61,22 +63,21 @@ def dump_reference_json():
                 rep_info=[])
 
     for fn in fns:
-        frames = [json2ase(load_json(fn))]
-    for cutoff in cutoffs:
-        data['rep_info'].append([])
-        for gaussian_sigma in gaussian_sigmas:
-            for max_radial in max_radials:
-                max_angular = 6
-
-                hypers = {"interaction_cutoff": cutoff,
-                          "cutoff_smooth_width": 0.0,
-                          "max_radial": max_radial,
-                          "max_angular": max_angular,
-                          "gaussian_sigma_type": "Constant",
-                          "gaussian_sigma_constant": gaussian_sigma}
-                x = get_soap_vectors(hypers, frames)
-                data['rep_info'][-1].append(dict(feature_matrix=x.tolist(),
-                                             hypers=copy(hypers)))
+        for cutoff in cutoffs:
+            data['rep_info'].append([])
+            for gaussian_sigma in gaussian_sigmas:
+                for max_radial in max_radials:
+                    for max_angular in max_angulars:
+                        frames = [json2ase(load_json(fn))]
+                        hypers = {"interaction_cutoff": cutoff,
+                                  "cutoff_smooth_width": 0.0,
+                                  "max_radial": max_radial,
+                                  "max_angular": max_angular,
+                                  "gaussian_sigma_type": "Constant",
+                                  "gaussian_sigma_constant": gaussian_sigma}
+                        x = get_soap_vectors(hypers, frames)
+                        data['rep_info'][-1].append(dict(feature_matrix=x.tolist(),
+                                                 hypers=copy(hypers)))
 
     with open(path+"tests/reference_data/spherical_expansion_reference.ubjson",'wb') as f:
         ubjson.dump(data,f)

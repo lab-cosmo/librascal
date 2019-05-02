@@ -38,6 +38,7 @@
 #include <list>
 #include <map>
 #include <algorithm>
+#include <iterator>
 
 namespace rascal {
 
@@ -126,6 +127,16 @@ namespace rascal {
         return this->data.emplace( std::forward<Args>(args)... );
       }
 
+      /**
+       * returns a vector of the valid keys of the map
+       */
+      std::vector<key_type> get_keys() {
+        std::vector<key_type> keys{};
+        std::transform(this->begin(), this->end(), std::back_inserter(keys), RetrieveKey());
+        return keys;
+      }
+
+
       iterator begin() noexcept{
         return this->data.begin();
       }
@@ -161,6 +172,17 @@ namespace rascal {
           }
           return seed;
         }
+      };
+
+      /**
+       * Functor to get a key from a map
+       */
+      struct RetrieveKey {
+          template <typename T>
+          typename T::first_type operator()(T keyValuePair) const
+          {
+              return keyValuePair.first;
+          }
       };
 
 
@@ -272,6 +294,11 @@ namespace rascal {
       return this->values[index];
     }
 
+    inline size_t get_dense_feature_size(const size_t & index) {
+      auto keys = this->values[index].get_keys();
+      return this->get_nb_comp() * keys.size();
+    }
+
     //! Accessor for property by cluster index and return a dense
     //! representation of the property associated to this cluster
     template <size_t CallerLayer>
@@ -284,9 +311,10 @@ namespace rascal {
     }
 
     inline dense_t get_dense_row(const size_t & index) {
-      dense_t feauture_row = dense_t::Zero(this->get_nb_comp(), this->keys_list[index].size());
+      auto keys = this->values[index].get_keys();
+      dense_t feauture_row = dense_t::Zero(this->get_nb_comp(), keys.size());
       size_t i_col{0};
-      for (const auto& key : this->keys_list[index]) {
+      for (const auto& key : keys) {
         size_t i_row{0};
         for (int i_pos{0}; i_pos < this->values[index][key].size(); i_pos++) {
           feauture_row(i_row, i_col) = this->values[index][key](i_pos);
@@ -295,6 +323,31 @@ namespace rascal {
         i_col++;
       }
       return feauture_row;
+    }
+
+    inline dense_t get_dense_rep() {
+      auto n_center{this->get_nb_item()};
+      keys_t all_keys{};
+      for (size_t i_center{0}; i_center < n_center; i_center++) {
+        auto keys = this->values[i_center].get_keys();
+        for (auto& key: keys) {
+          all_keys.insert(key);
+        }
+      }
+      dense_t features = dense_t::Zero(this->get_nb_comp() * all_keys.size(), n_center);
+
+      for (size_t i_center{0}; i_center < n_center; i_center++) {
+        int i_feat{0};
+        for (const auto& key : all_keys) {
+          if ( this->values[i_center].count(key) == 1) {
+            for (int i_pos{0}; i_pos < this->values[i_center][key].size(); i_pos++) {
+              features(i_feat, i_center) = this->values[i_center][key](i_pos);
+              i_feat++;
+            }
+          }
+        }
+      }
+      return features;
     }
 
     //! Accessor for property by index for dynamically sized properties

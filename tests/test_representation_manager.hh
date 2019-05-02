@@ -36,6 +36,8 @@
 #include "representations/representation_manager_sorted_coulomb.hh"
 #include "representations/representation_manager_spherical_expansion.hh"
 #include "representations/representation_manager_soap.hh"
+#include "representations/feature_manager_block_sparse.hh"
+
 
 #include "json_io.hh"
 #include "rascal_utility.hh"
@@ -48,8 +50,9 @@ namespace rascal {
     using ManagerTypeHolder_t =
         StructureManagerTypeHolder<StructureManagerCenters,
                                    AdaptorNeighbourList, AdaptorStrict>;
+    TestData() = default;
 
-    TestData(const std::string & ref_filename) {
+    void get_ref(const std::string & ref_filename) {
       std::vector<std::uint8_t> ref_data_ubjson;
       internal::read_binary_file(ref_filename, ref_data_ubjson);
       this->ref_data = json::from_ubjson(ref_data_ubjson);
@@ -58,6 +61,7 @@ namespace rascal {
 
       for (auto && filename : filenames) {
         for (auto && cutoff : cutoffs) {
+          // std::cout << filename << " " << cutoff << std::endl;
           json parameters;
           json structure{{"filename", filename}};
           json adaptors;
@@ -138,7 +142,9 @@ namespace rascal {
   struct SOAPTestData : TestData {
     using Parent = TestData;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
-    SOAPTestData() : Parent{this->ref_filename} {}
+    SOAPTestData() : Parent{} {
+      this->get_ref(this->ref_filename);
+    }
     ~SOAPTestData() = default;
     std::string ref_filename{"reference_data/soap_reference.ubjson"};
   };
@@ -168,7 +174,9 @@ namespace rascal {
     using Parent = TestData;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
 
-    SphericalExpansionTestData() : Parent{this->ref_filename} {}
+    SphericalExpansionTestData() : Parent{} {
+      this->get_ref(this->ref_filename);
+    }
     ~SphericalExpansionTestData() = default;
     std::string ref_filename{"reference_data/spherical_expansion_reference.ubjson"};
   };
@@ -196,7 +204,9 @@ namespace rascal {
     using Parent = TestData;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
 
-    SortedCoulombTestData() : Parent{this->ref_filename} {}
+    SortedCoulombTestData() : Parent{} {
+      this->get_ref(this->ref_filename);
+    }
     ~SortedCoulombTestData() = default;
 
     // name of the file containing the reference data. it has been generated
@@ -205,8 +215,6 @@ namespace rascal {
 
     const bool consider_ghost_neighbours{false};
     std::string ref_filename{"reference_data/sorted_coulomb_reference.ubjson"};
-    json ref_data{};
-    json factory_args{};
   };
 
   template <class BaseFixture, template <class> class RepresentationManager>

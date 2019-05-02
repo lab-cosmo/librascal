@@ -40,15 +40,9 @@ namespace rascal {
       boost::mpl::list<FeatureFixture<double, FeatureManagerDense,
                                       RepresentationManagerSortedCoulomb,
                                       MultipleStructureSortedCoulomb>,
-                      //  FeatureFixture<float, FeatureManagerDense,
-                      //                 RepresentationManagerSortedCoulomb,
-                      //                 MultipleStructureSortedCoulomb>,
-                       FeatureFixture<double, FeatureManagerDense,
-                                      RepresentationManagerSphericalExpansion,
-                                      MultipleStructureSphericalExpansion>,
                        FeatureFixture<float, FeatureManagerDense,
-                                      RepresentationManagerSphericalExpansion,
-                                      MultipleStructureSphericalExpansion>>;
+                                      RepresentationManagerSortedCoulomb,
+                                      MultipleStructureSortedCoulomb>>;
 
   /* ---------------------------------------------------------------------- */
   /**

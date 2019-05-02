@@ -64,9 +64,28 @@ namespace rascal {
     using data_t = typename SparseProperty_t::data_t;
 
     RepresentationManagerSOAP(ManagerPtr_t sm, const Hypers_t & hyper)
-        : soap_vectors{*sm}, structure_manager{std::move(sm)}, rep_expansion{sm, hyper} {
+        : soap_vectors{*sm}, structure_manager{sm}, rep_expansion{std::move(sm), hyper} {
       this->set_hyperparameters(hyper);
     }
+
+    //! Copy constructor
+    RepresentationManagerSOAP(
+            const RepresentationManagerSOAP & other) = delete;
+
+    //! Move constructor
+    RepresentationManagerSOAP(
+            RepresentationManagerSOAP && other) = default;
+
+    //! Destructor
+    virtual ~RepresentationManagerSOAP() = default;
+
+    //! Copy assignment operator
+    RepresentationManagerSOAP &
+    operator=(const RepresentationManagerSOAP & other) = delete;
+
+    //! Move assignment operator
+    RepresentationManagerSOAP &
+    operator=(RepresentationManagerSOAP && other) = default;
 
     void set_hyperparameters(const Hypers_t & hypers) {
       this->max_radial = hypers.at("max_radial");
@@ -101,13 +120,8 @@ namespace rascal {
       return this->soap_vectors.get_nb_item();
     }
 
-    Eigen::Map<const Eigen::MatrixXd> get_representation_full() {
-      auto nb_centers{this->structure_manager->size()};
-      auto nb_features{this->get_feature_size()};
-      auto & raw_data{this->get_representation_raw_data()};
-      Eigen::Map<const Eigen::MatrixXd> representation(raw_data.data(),
-                                                       nb_features, nb_centers);
-      return representation;
+    auto get_representation_full() {
+      return this->soap_vectors.get_dense_rep();
     }
 
     //! compute representation
@@ -137,15 +151,15 @@ namespace rascal {
   void RepresentationManagerSOAP<Mngr>::compute() {
     using internal::SOAPType;
     switch (this->soap_type) {
-    case SOAPType::RadialSpectrum:
-      this->compute_radialspectrum();
-      break;
-    case SOAPType::PowerSpectrum:
-      this->compute_powerspectrum();
-      break;
-    default:
-      // Will never reach here (it's an enum...)
-      break;
+      case SOAPType::RadialSpectrum:
+        this->compute_radialspectrum();
+        break;
+      case SOAPType::PowerSpectrum:
+        this->compute_powerspectrum();
+        break;
+      default:
+        // Will never reach here (it's an enum...)
+        break;
     }
   }
 

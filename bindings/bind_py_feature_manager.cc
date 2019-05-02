@@ -57,19 +57,19 @@ decltype(auto) bind_feature_manager(py::module & mod, py::module &) {
     json hypers = json::parse(hyper_str);
     return std::make_unique<Feature_t>(n_feature, hypers);
   }));
-  feature.def("reserve", &Feature::reserve);
+  feature.def("reserve", &Feature_t::reserve);
   feature.def("append",
-              (void (Feature::*)(RepresentationManagerBase &)) &
-                  Feature::push_back,
+              (void (Feature_t::*)(RepresentationManagerBase &)) &
+                  Feature_t::push_back,
               py::call_guard<py::gil_scoped_release>());
-  feature.def("insert", &Feature::insert,
+  feature.def("insert", &Feature_t::insert,
               py::call_guard<py::gil_scoped_release>());
-  feature.def("resize", &Feature::resize,
+  feature.def("resize", &Feature_t::resize,
               py::call_guard<py::gil_scoped_release>());
-  feature.def("assign", &Feature::assign,
+  feature.def("assign", &Feature_t::assign,
               py::call_guard<py::gil_scoped_release>());
-  feature.def("assign", &Feature::assign);
-  feature.def_property_readonly("size", &Feature::size,
+  feature.def("assign", &Feature_t::assign);
+  feature.def_property_readonly("size", &Feature_t::size,
                                 py::return_value_policy::copy);
   feature.def_property_readonly("shape", &Feature_t::shape,
                                 py::return_value_policy::copy);
@@ -98,8 +98,9 @@ decltype(auto) bind_sparse_feature_manager(py::module & mod, py::module &) {
     return std::make_unique<Feature_t>(inner_size, hypers);
   }));
   feature.def("reserve", &Feature_t::reserve);
-  feature.def("append", (void (Feature_t::*)(RepresentationManagerBase &)) &
-                            Feature_t::push_back);
+  // feature.def("append", (void (Feature_t::*)(RepresentationManagerBase &)) &
+  //                           Feature_t::push_back);
+  feature.def("append", &Feature_t::push_back);
   feature.def_property_readonly("size", &Feature_t::size,
                                 py::return_value_policy::copy);
   feature.def_property_readonly("shape", &Feature_t::shape,

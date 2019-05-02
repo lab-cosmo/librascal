@@ -42,6 +42,7 @@
 #include <cmath>
 #include <list>
 #include <functional>
+#include <string>
 #include <initializer_list>
 
 // using namespace std;
@@ -61,60 +62,161 @@ decltype(auto) wrap_factory() {
   };
 }
 
-int main() {
-  using SMType =
-      StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList,
-                                 AdaptorStrict>;
+struct TestData {
+  using ManagerTypeHolder_t =
+      StructureManagerTypeHolder<StructureManagerCenters,
+                                  AdaptorNeighbourList, AdaptorStrict>;
 
-  bool verbose{false};
-  // bool verbose_rep{false};
-  double cutoff{2.};
-  // bool consider_ghost_neighbours{false};
-  // std::string filename{"crystal_structure.json"};
-  std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+  TestData() = default;
 
-  // Initialize by hand
-  auto manager{make_structure_manager<StructureManagerCenters>()};
-  manager->update(filename);
-  auto pair_manager{
-      make_adapted_manager<AdaptorNeighbourList>(manager, cutoff)};
-  pair_manager->update();
-  auto adaptor_strict{
-      make_adapted_manager<AdaptorStrict>(pair_manager, cutoff)};
-  adaptor_strict->update(filename);
+  void get_ref(const std::string & ref_filename) {
+    std::vector<std::uint8_t> ref_data_ubjson;
+    internal::read_binary_file(ref_filename, ref_data_ubjson);
+    this->ref_data = json::from_ubjson(ref_data_ubjson);
+    auto filenames = this->ref_data.at("filenames").get<std::vector<std::string>>();
+    auto cutoffs = this->ref_data.at("cutoffs").get<std::vector<double>>();
 
-  // Or use the hyper thing
-  json adaptors_hypers = R"([
-    {"name": "AdaptorNeighbourList", "initialization_arguments":{"cutoff": 2, "consider_ghost_neighbours": false}},
-    {"name": "AdaptorStrict", "initialization_arguments":{"cutoff": 2}}
-  ])"_json;
+    for (auto && filename : filenames) {
+      for (auto && cutoff : cutoffs) {
+        json parameters;
+        json structure{{"filename", filename}};
+        json adaptors;
+        json ad1{
+            {"name", "AdaptorNeighbourList"},
+            {"initialization_arguments",
+              {{"cutoff", cutoff},
+              {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+        json ad2{{"name", "AdaptorStrict"},
+                  {"initialization_arguments", {{"cutoff", cutoff}}}};
+        adaptors.emplace_back(ad1);
+        adaptors.emplace_back(ad2);
 
-  json structure_inputs{{"filename", filename}};
+        parameters["structure"] = structure;
+        parameters["adaptors"] = adaptors;
 
-  json name_hypers = R"([
-    {"name": "StrictNL", "initialization_arguments":{"cutoff": 2, "consider_ghost_neighbours": false}},
-    {"name": "AdaptorStrict", "initialization_arguments":{"cutoff": 2}}
-  ])"_json;
+        this->factory_args.emplace_back(parameters);
 
-  auto my_man = wrap_factory<SMType>()(structure_inputs, adaptors_hypers);
 
-  std::cout << my_man->get_name() << std::endl;
-  auto lower_manager = extract_underlying_manager<-1>(my_man);
-  std::cout << lower_manager->get_name() << std::endl;
-
-  for (auto && center : my_man) {
-    if (verbose) {
-      std::cout << "################################# 2" << std::endl;
-      std::cout << center.get_atom_type() << std::endl;
-    }
-    for (auto neigh : center) {
-      if (verbose) {
-        std::cout << neigh.get_atom_type() << ", ";
       }
     }
-    if (verbose)
-      std::cout << std::endl;
   }
+
+  ~TestData() = default;
+
+  const bool consider_ghost_neighbours{false};
+  json ref_data{};
+  json factory_args{};
+
+};
+
+int main() {
+
+  using ManagerTypeHolder_t =
+  StructureManagerTypeHolder<StructureManagerCenters,
+          AdaptorNeighbourList, AdaptorStrict>;
+  using ManagerTypeList_t = typename ManagerTypeHolder_t::type_list;
+  using Manager_t = typename ManagerTypeHolder_t::type;
+  using Std2DArray_t = std::vector<std::vector<double>>;
+
+  auto dd{TestData()};
+  std::string filename{"reference_data/sorted_coulomb_reference.ubjson"};
+  dd.get_ref(filename);
+
+  size_t manager_i{0};
+  for (const auto& factory_arg : dd.factory_args) {
+    auto manager{make_structure_manager_stack_with_hypers_and_typeholder<
+            ManagerTypeList_t>::apply(factory_arg["structure"],
+                                      factory_arg["adaptors"])};
+    std::cout << factory_arg["structure"]["filename"]<< std::endl;
+    for (auto atom : manager) {
+      std::cout << atom.get_atom_type()<<std::endl;
+    }
+    const auto & rep_infos{dd.ref_data.at("rep_info").template get<json>()};
+
+    for (const auto & rep_info : rep_infos.at(manager_i)) {
+      const auto & hypers = rep_info.at("hypers").template get<json>();
+      const auto & ref_representation = rep_info.at("feature_matrix").template get<Std2DArray_t>();
+
+      // for (auto& el : hypers.items()) {
+      //   std::cout << el.key() << " : " << el.value() << "\n";
+      // }
+      RepresentationManagerSortedCoulomb<Manager_t> representation{manager,hypers};
+      representation.compute();
+
+      const auto & test_representation = representation.get_representation_full();
+
+      for (size_t row_i{0}; row_i < ref_representation.size(); row_i++) {
+
+        for (size_t col_i{0}; col_i < ref_representation[row_i].size();
+              ++col_i) {
+          auto diff{std::abs(ref_representation[row_i][col_i] -
+                              test_representation(row_i, col_i))};
+          if (diff > 1e-12) {
+            std::cout << diff << "\n";
+          }
+        }
+      }
+
+
+    }
+
+
+    manager_i += 1;
+  }
+
+  // using SMType =
+  //     StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList,
+  //                                AdaptorStrict>;
+
+  // bool verbose{false};
+  // // bool verbose_rep{false};
+  // double cutoff{2.};
+  // // bool consider_ghost_neighbours{false};
+  // // std::string filename{"crystal_structure.json"};
+  // std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+
+  // // Initialize by hand
+  // auto manager{make_structure_manager<StructureManagerCenters>()};
+  // manager->update(filename);
+  // auto pair_manager{
+  //     make_adapted_manager<AdaptorNeighbourList>(manager, cutoff)};
+  // pair_manager->update();
+  // auto adaptor_strict{
+  //     make_adapted_manager<AdaptorStrict>(pair_manager, cutoff)};
+  // adaptor_strict->update(filename);
+
+  // // Or use the hyper thing
+  // json adaptors_hypers = R"([
+  //   {"name": "AdaptorNeighbourList", "initialization_arguments":{"cutoff": 2, "consider_ghost_neighbours": false}},
+  //   {"name": "AdaptorStrict", "initialization_arguments":{"cutoff": 2}}
+  // ])"_json;
+
+  // json structure_inputs{{"filename", filename}};
+
+  // json name_hypers = R"([
+  //   {"name": "StrictNL", "initialization_arguments":{"cutoff": 2, "consider_ghost_neighbours": false}},
+  //   {"name": "AdaptorStrict", "initialization_arguments":{"cutoff": 2}}
+  // ])"_json;
+
+  // auto my_man = wrap_factory<SMType>()(structure_inputs, adaptors_hypers);
+
+  // std::cout << my_man->get_name() << std::endl;
+  // auto lower_manager = extract_underlying_manager<-1>(my_man);
+  // std::cout << lower_manager->get_name() << std::endl;
+
+  // for (auto && center : my_man) {
+  //   if (verbose) {
+  //     std::cout << "################################# 2" << std::endl;
+  //     std::cout << center.get_atom_type() << std::endl;
+  //   }
+  //   for (auto neigh : center) {
+  //     if (verbose) {
+  //       std::cout << neigh.get_atom_type() << ", ";
+  //     }
+  //   }
+  //   if (verbose)
+  //     std::cout << std::endl;
+  // }
 
   // // Or use a fancier helper to do it in 1 line here
   // auto a1 = std::make_tuple(cutoff, false, cutoff);

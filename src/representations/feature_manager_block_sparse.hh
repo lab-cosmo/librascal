@@ -147,6 +147,7 @@ namespace rascal {
     void push_back(RepresentationManager_t & rm) {
       const auto& raw_data{rm.get_representation_sparse_raw_data()};
       auto n_center{rm.get_center_size()};
+      
       auto && new_center_start_id{this->feature_matrix.size()};
 
       for (size_t i_center{0}; i_center < n_center; i_center++) {
@@ -175,8 +176,6 @@ namespace rascal {
                 std::make_pair(new_center_start_id, center_length));
         new_center_start_id += center_length;
       }
-
-
       this->n_center += n_center;
     }
 

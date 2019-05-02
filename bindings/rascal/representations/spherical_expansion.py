@@ -1,9 +1,11 @@
 import json
 
 from ..neighbourlist import get_neighbourlist
-from ..lib import RepresentationManager, FeatureManager
-from .base import RepresentationFactory, RepresentationRunner
+from .base import RepresentationFactory, FeatureFactory
 from ..utils import get_full_name
+from ..neighbourlist.structure_manager import convert_to_structure
+from ..neighbourlist.base import NeighbourListFactory
+import numpy as np
 
 
 class SphericalExpansion(object):
@@ -82,11 +84,14 @@ class SphericalExpansion(object):
         self.rep_options = dict(name=self.name, args=[hypers_str])
 
         n_features = self.get_num_coefficients()
-        self.feature_options = dict(name='dense_double', args=[
+        self.feature_options = dict(name='blocksparse_double', args=[
                                     n_features, hypers_str])
 
         self.misc = dict(method=method, n_workers=n_workers,
                          disable_pbar=disable_pbar)
+
+        self.manager = NeighbourListFactory(self.nl_options)
+        self.representation = RepresentationFactory(self.manager, self.rep_options)
 
     def update_hyperparameters(self, **hypers):
         """Store the given dict of hyperparameters
@@ -111,15 +116,23 @@ class SphericalExpansion(object):
 
         Returns
         -------
-        FeatureManager.Dense_double
+        FeatureManager.blocksparse_double
             Object containing the representation
 
         """
+        structures = [convert_to_structure(frame) for frame in frames]
 
-        driver = RepresentationRunner(
-            self.nl_options, self.rep_options, self.feature_options, **self.misc)
+        n_atoms = [0]+[len(structure['atom_types'])
+                       for structure in structures]
+        structure_ids = np.cumsum(n_atoms)[:-1]
+        n_centers = np.sum(n_atoms)
 
-        features = driver.run(frames)
+        features = FeatureFactory(self.feature_options)
+
+        for structure in structures:
+            self.manager.update(**structure)
+            self.representation.compute()
+            features.append(self.representation)
 
         return features
 
