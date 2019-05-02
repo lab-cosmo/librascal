@@ -129,7 +129,6 @@ namespace rascal {
     SparseProperty_t soap_vectors;
 
    protected:
-   private:
     size_t max_radial{};
     size_t max_angular{};
     ManagerPtr_t structure_manager;
@@ -269,7 +268,6 @@ namespace rascal {
       }
     }
   }
-
 }  // namespace rascal
 
 #endif  // SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SOAP_HH_

@@ -107,7 +107,6 @@ struct TestData {
 };
 
 int main() {
-
   using ManagerTypeHolder_t =
       StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList,
                                  AdaptorStrict>;
@@ -146,7 +145,6 @@ int main() {
           representation.get_representation_full();
 
       for (size_t row_i{0}; row_i < ref_representation.size(); row_i++) {
-
         for (size_t col_i{0}; col_i < ref_representation[row_i].size();
              ++col_i) {
           auto diff{std::abs(ref_representation[row_i][col_i] -

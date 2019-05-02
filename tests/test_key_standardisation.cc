@@ -75,7 +75,6 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(iterator_test, Fix, KeyFixtures, Fix) {
-
     for (size_t i{0}; i < Fix::get_order(); ++i) {
       auto ref_val{Fix::indices_fixture.indices[i]};
       auto key_val{Fix::standard_key[i]};
