@@ -254,7 +254,7 @@ if (${BUILD_TESTS})
 endif(${BUILD_TESTS})
 
 # put it there to avoid warnings from boost tests
-add_compile_options(-Werror) # warnings are errors!
+# add_compile_options(-Werror) # warnings are errors!
 
 # compile the library
 add_subdirectory(
