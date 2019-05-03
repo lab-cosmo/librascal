@@ -483,7 +483,7 @@ namespace rascal {
         key_t neigh_type{neigh.get_atom_type()};
 
         // Note: the copy _should_ be optimized out (RVO)
-        Eigen::MatrixXd harmonics =
+        Eigen::VectorXd harmonics =
             math::compute_spherical_harmonics(direction, this->max_angular);
 
         // Precompute radial factors that also depend on the Gaussian sigma
@@ -499,7 +499,6 @@ namespace rascal {
           // TODO(max-veit) this is all specific to the Gaussian radial basis
           // (doing just the angular integration would instead spit out
           // spherical Bessel functions below)
-          // TODO(max-veit) how does this work with SpeciesFilter?
           for (size_t angular_l{0}; angular_l < this->max_angular + 1;
                angular_l++) {
             radial_integral(radial_n, angular_l) =
@@ -521,11 +520,12 @@ namespace rascal {
                angular_l++) {
             for (size_t m_array_idx{0}; m_array_idx < 2 * angular_l + 1;
                  m_array_idx++) {
-              coefficients_center[neigh_type](radial_n, lm_collective_idx) +=
+              coefficients_center[neigh_type](
+                      radial_n, lm_collective_idx + m_array_idx) +=
                   radial_integral(radial_n, angular_l) *
-                  harmonics(angular_l, m_array_idx);
-              ++lm_collective_idx;
+                  harmonics(lm_collective_idx + m_array_idx);
             }
+            lm_collective_idx += (2*angular_l + 1);
           }
         }
       }  // for (neigh : center)
