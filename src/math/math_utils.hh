@@ -54,7 +54,11 @@ namespace rascal {
                                                     double sin_phi,
                                                     size_t max_m);
 
-    Eigen::MatrixXd compute_spherical_harmonics(
+    Eigen::VectorXd compute_spherical_harmonics(
+        const Eigen::Ref<const Eigen::Vector3d> & direction,
+        size_t max_angular);
+
+    Eigen::MatrixXd compute_spherical_harmonics_derivatives(
         const Eigen::Ref<const Eigen::Vector3d> & direction,
         size_t max_angular);
   }  // namespace math
