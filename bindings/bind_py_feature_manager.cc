@@ -125,5 +125,6 @@ void add_feature_managers(py::module & mod, py::module & m_throwaway) {
   bind_sparse_feature_manager<FeatureManagerBlockSparse, double>(mod,
                                                                  m_throwaway);
 
-  bind_sparse_feature_manager<FeatureManagerBlockSparse, float>(mod, m_throwaway);
+  bind_sparse_feature_manager<FeatureManagerBlockSparse, float>(mod,
+                                                                m_throwaway);
 }

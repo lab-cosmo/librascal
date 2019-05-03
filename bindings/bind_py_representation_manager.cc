@@ -67,7 +67,8 @@ decltype(auto) add_representation_manager(py::module & mod, py::module &) {
  *
  */
 void add_representation_managers(py::module & mod, py::module & m_throwaway) {
-  py::class_<RepresentationManagerBase>(m_throwaway, "RepresentationManagerBase");
+  py::class_<RepresentationManagerBase>(m_throwaway,
+                                        "RepresentationManagerBase");
   /*-------------------- rep-bind-start --------------------*/
   // Defines a particular structure manager type
   using Manager_t =
@@ -84,5 +85,6 @@ void add_representation_managers(py::module & mod, py::module & m_throwaway) {
       add_representation_manager<Representation2_t>(mod, m_throwaway);
 
   using Representation3_t = RepresentationManagerSOAP<Manager_t>;
-  auto rep_soap = add_representation_manager<Representation3_t>(mod, m_throwaway);
+  auto rep_soap =
+      add_representation_manager<Representation3_t>(mod, m_throwaway);
 }

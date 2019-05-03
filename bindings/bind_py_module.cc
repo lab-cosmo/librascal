@@ -45,7 +45,8 @@ PYBIND11_MODULE(_rascal, mod) {
   py::module m_math = mod.def_submodule("math");
   m_math.doc() = "Collection of math functions";
   py::module m_throwaway = mod.def_submodule("rubbish");
-  m_throwaway.doc() = "Collection of bindings that are needed but not functional";
+  m_throwaway.doc() =
+      "Collection of bindings that are needed but not functional";
 
   py::add_ostream_redirect(m_utl, "ostream_redirect");
 
