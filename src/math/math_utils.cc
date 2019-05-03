@@ -230,5 +230,76 @@ namespace rascal {
       // harmonics *= std::sqrt(2.0);
       return harmonics;
     }  // compute_spherical_harmonics()
+
+
+    /**
+     * Compute a full set of spherical harmonics and their Cartesian gradients
+     *
+     * Spherical harmonics are defined as described in
+     * math::compute_spherical_harmonics().  Gradients are defined with respect
+     * to motion of the central atom, which is the opposite sign of the usual
+     * definition with respect to the _arguments_ of the Y_l^m.
+     *
+     * @param direction Unit vector giving the angles (arguments for the Y_l^m)
+     *
+     * @param max_angular Compute up to this angular momentum number (l_max)
+     *
+     * @return  (Eigen)matrix containing the results.
+     *          Sized 4 by (l_max+1 * 2l_max+1); the first index collects the
+     *          value of the harmonic and the x, y, and z gradient components.
+     *          The second index collects l and m quantum numbers (m varies
+     *          fastest).
+     */
+    Eigen::MatrixXd compute_spherical_harmonics_derivatives(
+        const Eigen::Ref<const Eigen::Vector3d> & direction,
+        size_t max_angular) {
+      using std::pow;
+      using std::sqrt;
+
+      if (direction.size() != 3) {
+        throw std::length_error("Direction must be a vector in R^3");
+      }
+      if (std::abs((direction[0]*direction[0] +
+                    direction[1]*direction[1] +
+                    direction[2]*direction[2]) - 1.0) > math::dbl_ftol) {
+         throw std::invalid_argument("Direction vector must be normalized");
+      }
+      // The cosine against the z-axis is just the z-component of the
+      // direction vector
+      double cos_theta = direction[2];
+      // The less efficient, but more intuitive implementation:
+      // double phi = std::atan2(direction[1], direction[0]);
+      double sqrt_xy = std::hypot(direction[0], direction[1]);
+      // For a vector along the z-axis, define phi=0
+      double cos_phi{1.0}, sin_phi{0.0};
+      if (sqrt_xy >= math::dbl_ftol) {
+        cos_phi = direction[0] / sqrt_xy;
+        sin_phi = direction[1] / sqrt_xy;
+      }
+      Eigen::MatrixXd harmonics_derivatives =
+          Eigen::MatrixXd::Zero(4, (max_angular + 1) * (2 * max_angular + 1));
+      Eigen::MatrixXd assoc_legendre_polynom =
+          compute_assoc_legendre_polynom(cos_theta, max_angular);
+      Eigen::MatrixXd cos_sin_m_phi =
+          compute_cos_sin_angle_multiples(cos_phi, sin_phi, max_angular);
+
+      for (size_t angular_l{0}; angular_l < max_angular + 1; angular_l++) {
+        for (size_t m_count{0}; m_count < angular_l + 1; m_count++) {
+          if (m_count == 0) {
+            harmonics(angular_l, angular_l) =
+                assoc_legendre_polynom(angular_l, m_count) * INV_SQRT_TWO;
+          } else {
+            harmonics(angular_l, angular_l + m_count) =
+                assoc_legendre_polynom(angular_l, m_count) *
+                cos_sin_m_phi(m_count, 0);
+            harmonics(angular_l, angular_l - m_count) =
+                assoc_legendre_polynom(angular_l, m_count) *
+                cos_sin_m_phi(m_count, 1);
+          }  // if (m_count == 0)
+        }    // for (m_count in [0, l])
+      }      // for (l in [0, lmax])
+    }
+
   }    // namespace math
 }  // namespace rascal
+
