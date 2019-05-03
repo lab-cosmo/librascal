@@ -227,7 +227,6 @@ namespace rascal {
           }  // if (m_count == 0)
         }    // for (m_count in [0, l])
       }      // for (l in [0, lmax])
-      // harmonics *= std::sqrt(2.0);
       return harmonics;
     }  // compute_spherical_harmonics()
   }    // namespace math
