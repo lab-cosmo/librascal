@@ -418,7 +418,8 @@ namespace rascal {
 
   /**
    * Compute the spherical expansion
-   *
+   * TODO(felix,max) use the parity of the spherical harmonics to use half
+   * neighbourlist, i.e. C^{ij}_{nlm} = (-1)^l C^{ji}_{nlm}.
    */
   template <class Mngr>
   template <internal::GaussianSigmaType SigmaType>

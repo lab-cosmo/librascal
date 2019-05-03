@@ -54,7 +54,6 @@ using Vector_t = Eigen::Matrix<double, dim, 1>;
 using Representation_t = RepresentationManagerSphericalExpansion<
     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
 
-
 struct TestData {
   using ManagerTypeHolder_t =
       StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList,
@@ -147,7 +146,6 @@ int main() {
     }
     manager_i += 1;
   }
-
 
   return (0);
 }
