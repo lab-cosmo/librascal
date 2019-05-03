@@ -24,24 +24,25 @@ dict(positions='positions',atom_types='numbers',pbc='pbc',cell='cell').items()
 ##########################################################################################
 ##########################################################################################
 
-def get_spectrum(hypers, frames):
+def get_feature_vector(hypers, frames):
     with ostream_redirect():
         soap = SOAP(**hypers)
         soap_vectors = soap.transform(frames)
-        spectrum = soap_vectors.get_feature_matrix()
-    return spectrum
+        print('Feature vector size: %.3fGB' % (soap.get_num_coefficients()*8.0/1.0e9))
+        feature_vector = soap_vectors.get_feature_matrix()
+    return feature_vector
 
 ##########################################################################################
 
-def unravel_power_spectrum(spectrum, nspecies, ncen):
+def unravel_power_spectrum(feature_vector, nspecies, ncen):
     #rascal exploits the an <-> bn' symmetry without including multiplicty
     #uravel the representation
-    spectrum = spectrum.reshape((ncen, int(nspecies*(nspecies+1)/2), -1))
-    y = np.zeros(tuple([ncen, nspecies, nspecies] + [i for i in spectrum.shape[2:]]))
+    feature_vector = feature_vector.reshape((ncen, int(nspecies*(nspecies+1)/2), -1))
+    y = np.zeros(tuple([ncen, nspecies, nspecies] + [i for i in feature_vector.shape[2:]]))
     counter = 0
     for j in range(nspecies):
         for k in range(j, nspecies):
-            y[:, j, k] = spectrum[:, counter]
+            y[:, j, k] = feature_vector[:, counter]
             y[:, k, j] = y[:, j, k]
             counter += 1
     y = y.reshape((ncen, -1))
@@ -49,9 +50,9 @@ def unravel_power_spectrum(spectrum, nspecies, ncen):
 
 ##########################################################################################
 
-def normalise(spectrum):
-    x = spectrum
-    ncen = spectrum.shape[0]
+def normalise(feature_vector):
+    x = feature_vector
+    ncen = feature_vector.shape[0]
     for i in range(ncen):
         norm = np.linalg.norm(x[i])
         if norm >= 1.0e-20: x[i] /= norm
@@ -109,7 +110,7 @@ def dump_reference_json():
                                     "gaussian_sigma_type": "Constant",
                                     "gaussian_sigma_constant": gaussian_sigma,
                                     "soap_type": soap_type }
-                            x = get_spectrum(hypers, frames)
+                            x = get_feature_vector(hypers, frames)
                             data['rep_info'][-1].append(dict(feature_matrix=x.tolist(),
                                                 hypers=copy(hypers)))
 
@@ -121,17 +122,19 @@ def dump_reference_json():
 
 def main(json_dump):
 
-    test_hypers = {"interaction_cutoff": 4.0,
+    nmax = 25
+    lmax = 6
+    test_hypers = {"interaction_cutoff": 3.0,
                    "cutoff_smooth_width": 0.0,
-                   "max_radial": 25,
-                   "max_angular": 6,
+                   "max_radial": nmax,
+                   "max_angular": lmax,
                    "gaussian_sigma_type": "Constant",
                    "gaussian_sigma_constant": 0.3,
                    "soap_type": "PowerSpectrum" }
 
     nmax = test_hypers["max_radial"]
     lmax = test_hypers["max_angular"]
-    nstr = '5' #number of structures
+    nstr = '2' #number of structures
 
     frames = read('../tests/reference_data/dft-smiles_500.xyz',':'+str(nstr))
     species = set([atom for frame in frames for atom in frame.get_atomic_numbers()])
@@ -142,7 +145,7 @@ def main(json_dump):
 #------------------------------------------nu=1------------------------------------------#
 
     test_hypers["soap_type"] = "RadialSpectrum"
-    x = get_spectrum(test_hypers, frames)
+    x = get_feature_vector(test_hypers, frames)
     x = x.T #Eigen column major
     x = normalise(x)
     kernel = np.dot(x, x.T)
@@ -151,12 +154,29 @@ def main(json_dump):
 #------------------------------------------nu=2------------------------------------------#
 
     test_hypers["soap_type"] = "PowerSpectrum"
-    x = get_spectrum(test_hypers, frames)
+    x = get_feature_vector(test_hypers, frames)
     x = x.T #Eigen column major
     x = unravel_power_spectrum(x, nspecies, ncen)
     x = normalise(x)
     kernel = np.dot(x, x.T)
     np.save('kernel_soap_example_nu2.npy', kernel)
+
+#------------------------------------------nu=3------------------------------------------#
+
+    frames = read('../tests/reference_data/water_rotations.xyz',':'+str(nstr))
+    species = set([atom for frame in frames for atom in frame.get_atomic_numbers()])
+    nspecies = len(species)
+    ncen = np.cumsum([len(frame) for frame in frames])[-1]
+    nmax = 15 
+    lmax = 1
+    test_hypers["soap_type"] = "BiSpectrum"
+    test_hypers["max_radial"] = nmax
+    test_hypers["max_angular"] = lmax
+    x = get_feature_vector(test_hypers, frames)
+    x = x.T #Eigen column major
+    x = normalise(x)
+    kernel = np.dot(x, x.T)
+    np.save('kernel_soap_example_nu3.npy', kernel)
 
 #--------------------------------dump json reference data--------------------------------#
 

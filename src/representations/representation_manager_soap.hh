@@ -46,10 +46,13 @@
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
 
+//#include <gsl/gsl_sf.h>
+#include <wigxjpf.h>
+
 namespace rascal {
 
   namespace internal {
-    enum class SOAPType { RadialSpectrum, PowerSpectrum };
+    enum class SOAPType { RadialSpectrum, PowerSpectrum, BiSpectrum };
   }  // namespace internal
 
   template <class StructureManager>
@@ -94,6 +97,8 @@ namespace rascal {
         this->soap_type = internal::SOAPType::PowerSpectrum;
       } else if (this->soap_type_str.compare("RadialSpectrum") == 0) {
         this->soap_type = internal::SOAPType::RadialSpectrum;
+      } else if (this->soap_type_str.compare("BiSpectrum") == 0) {
+        this->soap_type = internal::SOAPType::BiSpectrum;
       } else {
         throw std::logic_error("Requested SOAP type \'" + this->soap_type_str +
                                "\' has not been implemented.  Must be one of" +
@@ -125,6 +130,9 @@ namespace rascal {
 
     //! compute representation \nu == 2
     void compute_powerspectrum();
+    //
+    //! compute representation \nu == 3
+    void compute_bispectrum();
 
     SparseProperty_t soap_vectors;
 
@@ -148,52 +156,150 @@ namespace rascal {
     case SOAPType::PowerSpectrum:
       this->compute_powerspectrum();
       break;
+    case SOAPType::BiSpectrum:
+      this->compute_bispectrum();
+      break;
     default:
       // Will never reach here (it's an enum...)
       break;
     }
   }
 
-  /*//////////////////////////////////////////////////////////////////////////////
+  template <class Mngr>
+  void RepresentationManagerSOAP<Mngr>::compute_bispectrum() {
+    rep_expansion.compute();
+    auto& expansions_coefficients{rep_expansion.expansions_coefficients};
 
-    template <class Mngr>
-    void RepresentationManagerSOAP<Mngr>::compute_bispectrum() {
-      rep_expansion.compute();
-      auto& expansions_coefficients{rep_expansion.expansions_coefficients};
+    size_t n_row{pow(this->max_radial, 3)};
+    size_t n_col{pow((this->max_angular + 1), 3)};
+    double mult{1.0};
 
-      size_t n_row{pow(this->max_radial, 3)}
-      size_t n_col{*pow(this->max_angular, 3)*pow((2*this->max_angular + 1),
-    3)};
-
-      this->soap_vectors.clear();
-      this->soap_vectors.set_shape(n_row, n_col);
-      this->soap_vectors.resize();
-
-      for (auto center : this->structure_manager) {
-        auto& coefficients{expansions_coefficients[center]};
-        auto& soap_vector{this->soap_vectors[center]};
-        key_t triplet_type{0, 0, 0};
-        for (const auto& el1: coefficients) {
-          triplet_type[0] = el1.first[0];
-          auto& coef1{el1.second};
-          for (const auto& el2: coefficients) {
-            triplet_type[1] = el2.first[0];
-            auto& coef2{el2.second};
-            for (const auto& el2: coefficients) {
-              triplet_type[2] = el3.first[0];
-              auto& coef3{el3.second};
-
-              if (soap_vector.count(triplet_type) == 0) {
-                soap_vector[triplet_type] = dense_t::Zero(n_row, n_col);
-              }
+    //2*lmax and Wigner symbol type (3)
+    wig_table_init(2*(this->max_angular + 1), 3);
+    wig_temp_init(2*(this->max_angular + 1));
+  
+    this->soap_vectors.clear();
+    this->soap_vectors.set_shape(n_row, n_col);
+    this->soap_vectors.resize();
+  
+    for (auto center : this->structure_manager) {
+      auto& coefficients{expansions_coefficients[center]};
+      auto& soap_vector{this->soap_vectors[center]};
+      key_t triplet_type{0, 0, 0};
+      for (const auto& el1: coefficients) {
+        triplet_type[0] = el1.first[0];
+        auto& coef1{el1.second};
+        for (const auto& el2: coefficients) {
+          triplet_type[1] = el2.first[0];
+          //triplet_type[1] = 118 + el2.first[0];
+          auto& coef2{el2.second};
+          for (const auto& el3: coefficients) {
+            triplet_type[2] = el3.first[0];
+            //triplet_type[2] = 2*118 + el3.first[0];
+            auto& coef3{el3.second};
+  
+            //triplet multiplicity not necessary because of the 118 hack above
+            ///*
+            //triplet multiplicity
+            if (triplet_type[0] == triplet_type[1] && \
+                triplet_type[1] == triplet_type[2]) {
+              mult = 1.0;
             }
+            //two the same
+            else if (triplet_type[0] == triplet_type[1] || \
+                     triplet_type[0] == triplet_type[2] || \
+                     triplet_type[1] == triplet_type[2]) {
+              mult = std::sqrt(3.0);
+            }
+            //all different
+            else {
+              mult = std::sqrt(6.0);
+            }
+            //*/
+            
+            if (soap_vector.count(triplet_type) == 0) {
+              soap_vector[triplet_type] = dense_t::Zero(n_row, n_col);
+  
+              size_t nn{0};
+              for (size_t n1 = 0; n1 < this->max_radial; n1++) {
+                for (size_t n2 = 0; n2 < this->max_radial; n2++) {
+                  for (size_t n3 = 0; n3 < this->max_radial; n3++) {
+                    size_t l0{0};
+                    for (size_t l1 = 0; l1 < this->max_angular+1; l1++) {
+                      for (size_t l2 = 0; l2 < this->max_angular+1; l2++) {
+                        for (size_t l3 = 0; l3 < this->max_angular+1; l3++) {
+                          for (size_t m1 = 0; m1 < 2*l1 + 1; m1++) {
+                          int m1s = m1 - l1;
+                          int lm1 = std::pow(l1, 2) + m1;
+                          for (size_t m2 = 0; m2 < 2*l2 + 1; m2++) {
+                          int m2s = m2 - l2;
+                          int lm2 = std::pow(l2, 2) + m2;
+                          for (size_t m3 = 0; m3 < 2*l3 + 1; m3++) {
+                          int m3s = m3 - l3;
+                          int lm3 = std::pow(l3, 2) + m3;
+                          //double w3j = gsl_sf_coupling_3j(2*l1, 2*l2, 2*l3, 2*m1s, 2*m2s, 2*m3s);
+                          double w3j = wig3jj(2*l1, 2*l2, 2*l3, 2*m1s, 2*m2s, 2*m3s);
+                          std::complex<double> coef1c, coef2c, coef3c;
+
+
+  
+                          //usual formulae for converting from real SH to complex
+                          if (m1s > 0) { 
+                            coef1c = std::pow(-1.0, m1s)*std::complex<double>(coef1(n1, lm1), coef1(n1, lm1 - 2*m1s)); 
+                          }
+                          else if (m1s == 0) { 
+                            coef1c = std::complex<double>(coef1(n1, lm1), 0.0)*std::sqrt(2.0); 
+                          }
+                          else if (m1s < 0) { 
+                            coef1c = std::complex<double>(coef1(n1, lm1 - 2*m1s), -coef1(n1, lm1)); 
+                          }
+                          if (m2s > 0) { 
+                            coef2c = std::pow(-1.0, m2s)*std::complex<double>(coef2(n2, lm2), coef2(n2, lm2 - 2*m2s)); 
+                          }
+                          else if (m2s == 0) { 
+                            coef2c = std::complex<double>(coef2(n2, lm2), 0.0)*std::sqrt(2.0); 
+                          }
+                          else if (m2s < 0) { 
+                            coef2c = std::complex<double>(coef2(n2, lm2 - 2*m2s), -coef2(n2, lm2)); 
+                          }
+                          if (m3s > 0) { 
+                            coef3c = std::pow(-1.0, m3s)*std::complex<double>(coef3(n3, lm3), coef3(n3, lm3 - 2*m3s)); 
+                          }
+                          else if (m3s == 0) { 
+                            coef3c = std::complex<double>(coef3(n3, lm3), 0.0)*std::sqrt(2.0); 
+                          }
+                          else if (m3s < 0) { 
+                            coef3c = std::complex<double>(coef3(n3, lm3 - 2*m3s), -coef3(n3, lm3)); 
+                          }
+  
+                          soap_vector[triplet_type](nn, l0) += w3j*mult*(coef1c*coef2c*coef3c).real();
+                          coef1c /= std::sqrt(2.0);
+                          coef2c /= std::sqrt(2.0);
+                          coef3c /= std::sqrt(2.0);
+  
+                          }
+                          }
+                          }
+                          l0++;
+                        }
+                      }
+                    }
+                    nn++;
+                  }
+                }
+              }
+  
+            }
+  
           }
         }
       }
-
     }
 
-  *///////////////////////////////////////////////////////////////////////////////
+    wig_temp_free();
+    wig_table_free();
+
+  }
 
   template <class Mngr>
   void RepresentationManagerSOAP<Mngr>::compute_powerspectrum() {

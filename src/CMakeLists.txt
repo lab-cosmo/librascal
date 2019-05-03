@@ -40,9 +40,13 @@ set(rascal_SRC
   )
 target_sources("${LIBRASCAL_NAME}" PRIVATE ${rascal_SRC})
 
+#find_package(GSL REQUIRED)
+#target_link_libraries("${LIBRASCAL_NAME}" PUBLIC Eigen3::Eigen GSL::gsl GSL::gslcblas)
 target_link_libraries("${LIBRASCAL_NAME}" PUBLIC Eigen3::Eigen)
 target_link_libraries("${LIBRASCAL_NAME}" PRIVATE "${LIBCEPHES_NAME}")
-
+add_dependencies(${LIBRASCAL_NAME} wigxjpf)
+target_link_libraries("${LIBRASCAL_NAME}" PUBLIC "${wigxjpf_library}")
+#target_link_libraries("${LIBRASCAL_NAME}" PRIVATE "../src/wigxjpf-1.9/lib/libwigxjpf.a")
 add_subdirectory(structure_managers)
 add_subdirectory(representations)
 add_subdirectory(utils)
