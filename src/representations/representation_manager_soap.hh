@@ -171,8 +171,22 @@ namespace rascal {
     auto& expansions_coefficients{rep_expansion.expansions_coefficients};
 
     size_t n_row{pow(this->max_radial, 3)};
-    size_t n_col{pow((this->max_angular + 1), 3)};
+    //size_t n_col{pow((this->max_angular + 1), 3)};
+    /*
+    lmax = 0; 1
+    lmax = 1; 5
+    lmax = 2; 15
+    lmax = 3; 34
+    a + b*lmax + c*lmax**2 + d*lmax**3
+    x = {1, 2, 3/2, 1/2}
+    */
+    size_t n_col{(size_t)(1.0 + 2.0*(double)this->max_angular + \
+                 1.5*(double)pow(this->max_angular, 2) + \
+                 (double)pow(this->max_angular, 3)/2.0)};
     double mult{1.0};
+
+    //printf("%i\n", n_col);
+    //fflush(stdout);
 
     //2*lmax and Wigner symbol type (3)
     wig_table_init(2*(this->max_angular + 1), 3);
@@ -228,6 +242,7 @@ namespace rascal {
                     for (size_t l1 = 0; l1 < this->max_angular+1; l1++) {
                       for (size_t l2 = 0; l2 < this->max_angular+1; l2++) {
                         for (size_t l3 = 0; l3 < this->max_angular+1; l3++) {
+                          if (l1 < std::abs<int>(l2 - l3) || l1 > l2 + l3) { continue; }
                           for (size_t m1 = 0; m1 < 2*l1 + 1; m1++) {
                           int m1s = m1 - l1;
                           int lm1 = std::pow(l1, 2) + m1;
@@ -236,6 +251,7 @@ namespace rascal {
                           int lm2 = std::pow(l2, 2) + m2;
                           for (size_t m3 = 0; m3 < 2*l3 + 1; m3++) {
                           int m3s = m3 - l3;
+                          if (m1s + m2s + m3s != 0) { continue; }
                           int lm3 = std::pow(l3, 2) + m3;
                           //double w3j = gsl_sf_coupling_3j(2*l1, 2*l2, 2*l3, 2*m1s, 2*m2s, 2*m3s);
                           double w3j = wig3jj(2*l1, 2*l2, 2*l3, 2*m1s, 2*m2s, 2*m3s);

@@ -28,7 +28,7 @@ def get_feature_vector(hypers, frames):
     with ostream_redirect():
         soap = SOAP(**hypers)
         soap_vectors = soap.transform(frames)
-        print('Feature vector size: %.3fGB' % (soap.get_num_coefficients()*8.0/1.0e9))
+        print('Feature vector size: %.3fMB' % (soap.get_num_coefficients()*8.0/1.0e6))
         feature_vector = soap_vectors.get_feature_matrix()
     return feature_vector
 

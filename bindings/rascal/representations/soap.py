@@ -154,8 +154,11 @@ class SOAP(object):
             return (self.hypers['n_species']**2*self.hypers['max_radial']**2
                     * (self.hypers['max_angular'] + 1))
         if self.hypers['soap_type'] == 'BiSpectrum':
-            return (self.hypers['n_species']**3*self.hypers['max_radial']**3
-                    *(self.hypers['max_angular'] + 1)**3)
+            return (self.hypers['n_species']**3*self.hypers['max_radial']**3 
+                    *int(1 + 2*self.hypers['max_angular'] + \
+                      3*self.hypers['max_angular']**2/2 + \
+                      self.hypers['max_angular']**3/2))
+                    #*(self.hypers['max_angular'] + 1)**3)
         else:
             raise RuntimeError('Only soap_type = RadialSpectrum || '
                                'PowerSpectrum || BiSpectrum implemented for now')
