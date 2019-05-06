@@ -329,7 +329,6 @@ namespace rascal {
       for (size_t angular_l{0}; angular_l < this->max_angular + 1;
            ++angular_l) {
         this->radial_nl_factors(radial_n, angular_l) =
-            // std::exp2(-0.5 * (1.0 + angular_l - radial_n)) *
             std::tgamma(0.5 * (3.0 + angular_l + radial_n)) /
             std::tgamma(1.5 + angular_l);
       }
