@@ -156,6 +156,7 @@ namespace rascal {
           hypers.at("gaussian_sigma_type").get<std::string>();
       this->radial_ortho_matrix.resize(this->max_radial, this->max_radial);
       this->radial_sigmas.resize(this->max_radial, 1);
+      this->fac_b.resize(this->max_radial, 1);
       this->radial_norm_factors.resize(this->max_radial, 1);
       this->radial_nl_factors.resize(this->max_radial, this->max_angular + 1);
       this->expansions_coefficients.clear();
@@ -291,6 +292,8 @@ namespace rascal {
     std::string gaussian_sigma_str{};
     // TODO(max-veit) these are specific to the radial Gaussian basis
     Eigen::VectorXd radial_sigmas{};
+    // b = 1 / (2*\sigma_n^2)
+    Eigen::VectorXd fac_b{};
     Eigen::VectorXd radial_norm_factors{};
     Eigen::VectorXd radial_sigma_factors{};
     Eigen::MatrixXd radial_nl_factors{};
@@ -315,6 +318,7 @@ namespace rascal {
       this->radial_sigmas[radial_n] =
           std::max(std::sqrt(static_cast<double>(radial_n)), 1.0) *
           this->interaction_cutoff / static_cast<double>(this->max_radial);
+      this->fac_b[radial_n] = 0.5 * pow(this->radial_sigmas[radial_n], -2);
     }
 
     // Precompute common prefactors
@@ -325,7 +329,7 @@ namespace rascal {
       for (size_t angular_l{0}; angular_l < this->max_angular + 1;
            ++angular_l) {
         this->radial_nl_factors(radial_n, angular_l) =
-            std::exp2(-0.5 * (1.0 + angular_l - radial_n)) *
+            // std::exp2(-0.5 * (1.0 + angular_l - radial_n)) *
             std::tgamma(0.5 * (3.0 + angular_l + radial_n)) /
             std::tgamma(1.5 + angular_l);
       }
@@ -455,22 +459,26 @@ namespace rascal {
         }
       }
 
-      Eigen::MatrixXd radial_integral(this->max_radial, this->max_angular + 1);
-      // Eigen::MatrixXd radial_integral =
-      //     Eigen::MatrixXd::Zero(this->max_radial, this->max_angular + 1);
+      Eigen::MatrixXd radial_integral =
+          Eigen::MatrixXd::Zero(this->max_radial, this->max_angular + 1);
 
       // Start the accumulator with the central atom
       // All terms where l =/= 0 cancel
-      double sigma2{pow(gaussian_spec.get_gaussian_sigma(center), 2)};
+
+      // a = 1 / (2*\sigma^2)
+      double fac_a{0.5 * pow(gaussian_spec.get_gaussian_sigma(center), -2)};
       // TODO(max-veit) this is specific to the Gaussian radial basis
       // (along with the matching computation below)
       // And ditto on the gamma functions (potential overflow)
+
+      // Contribution from the central atom
+      // Y_l^m(θ, φ) =  √((2l+1)/(4*π))) \delta_{m0} and
+      //  \delta_{l0} (spherical symmetry) and
+      // 1F1(a,b,0) = 1
       for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
-        // TODO(max-veit) remember to update when we do multiple n_species!
         radial_integral(radial_n, 0) =
             radial_norm_factors(radial_n) * radial_nl_factors(radial_n, 0) *
-            pow(1.0 / sigma2 + pow(this->radial_sigmas[radial_n], -2),
-                -0.5 * (3.0 + radial_n));
+            0.25 * pow(fac_a + this->fac_b[radial_n], -0.5 * (3.0 + radial_n));
       }
       coefficients_center[center_type].col(0) +=
           this->radial_ortho_matrix * radial_integral.col(0) / sqrt(4.0 * PI);
@@ -478,38 +486,31 @@ namespace rascal {
       for (auto neigh : center) {
         auto dist{this->structure_manager->get_distance(neigh)};
         auto direction{this->structure_manager->get_direction_vector(neigh)};
-        double exp_factor = std::exp(-0.5 * pow(dist, 2) / sigma2);
-        sigma2 = pow(gaussian_spec.get_gaussian_sigma(neigh), 2);
+        fac_a = 0.5 * pow(gaussian_spec.get_gaussian_sigma(neigh), -2);
+        double exp_factor = std::exp(-fac_a * pow(dist, 2));
         key_t neigh_type{neigh.get_atom_type()};
 
         // Note: the copy _should_ be optimized out (RVO)
         Eigen::MatrixXd harmonics =
             math::compute_spherical_harmonics(direction, this->max_angular);
 
-        // Precompute radial factors that also depend on the Gaussian sigma
-        Eigen::VectorXd radial_sigma_factors(this->max_radial);
-        for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
-          radial_sigma_factors(radial_n) =
-              (pow(sigma2, 2) +
-               sigma2 * pow(this->radial_sigmas(radial_n), 2)) /
-              pow(this->radial_sigmas(radial_n), 2);
-        }
-
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           // TODO(max-veit) this is all specific to the Gaussian radial basis
           // (doing just the angular integration would instead spit out
           // spherical Bessel functions below)
-          // TODO(max-veit) how does this work with SpeciesFilter?
+
+          double radial_sigma_factors{pow(fac_a, 2) /
+                                      (fac_a + this->fac_b[radial_n])};
           for (size_t angular_l{0}; angular_l < this->max_angular + 1;
                angular_l++) {
             radial_integral(radial_n, angular_l) =
-                exp_factor * radial_nl_factors(radial_n, angular_l) *
-                pow(1.0 / sigma2 + 1.0 / pow(this->radial_sigmas(radial_n), 2),
+                exp_factor * radial_nl_factors(radial_n, angular_l) * 0.25 *
+                pow(fac_a + this->fac_b[radial_n],
                     -0.5 * (3.0 + angular_l + radial_n)) *
-                pow(dist / sigma2, angular_l) *
-                math::hyp1f1(
-                    0.5 * (3.0 + angular_l + radial_n), 1.5 + angular_l,
-                    0.5 * pow(dist, 2) / radial_sigma_factors(radial_n));
+                pow(dist * fac_a, angular_l) *
+                math::hyp1f1(0.5 * (3.0 + angular_l + radial_n),
+                             1.5 + angular_l,
+                             pow(dist, 2) * radial_sigma_factors);
           }
           radial_integral.row(radial_n) *= radial_norm_factors(radial_n);
         }
@@ -530,7 +531,6 @@ namespace rascal {
         }
       }  // for (neigh : center)
     }    // for (center : structure_manager)
-    // attatch the Property with attach_property
   }  // compute()
 
 }  // namespace rascal
