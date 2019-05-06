@@ -36,7 +36,7 @@ def get_feature_vector(hypers, frames):
 
 def unravel_power_spectrum(feature_vector, nspecies, ncen):
     #rascal exploits the an <-> bn' symmetry without including multiplicty
-    #uravel the representation
+    #unravel the representation
     feature_vector = feature_vector.reshape((ncen, int(nspecies*(nspecies+1)/2), -1))
     y = np.zeros(tuple([ncen, nspecies, nspecies] + [i for i in feature_vector.shape[2:]]))
     counter = 0
@@ -168,7 +168,7 @@ def main(json_dump):
     nspecies = len(species)
     ncen = np.cumsum([len(frame) for frame in frames])[-1]
     nmax = 15 
-    lmax = 1
+    lmax = 2
     test_hypers["soap_type"] = "BiSpectrum"
     test_hypers["max_radial"] = nmax
     test_hypers["max_angular"] = lmax
