@@ -1,3 +1,5 @@
+# Downloads and compiles the wigxjpf library staticaly and link it into rascal
+
 set(SOURCE_DIR "${_wigxjpf_external_dir}/${package}")
 
 include_directories(BEFORE SYSTEM
