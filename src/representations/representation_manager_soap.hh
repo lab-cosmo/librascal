@@ -46,7 +46,6 @@
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
 
-#include <wigxjpf.h>
 
 namespace rascal {
 
@@ -132,10 +131,10 @@ namespace rascal {
 
     //! compute representation \nu == 2
     void compute_powerspectrum();
-      
+
     //! compute representation \nu == 3
     void compute_bispectrum();
-    
+
     //! precompute the Wigner 3j symbols
     void precompute_w3js();
 
@@ -204,7 +203,7 @@ namespace rascal {
     wig_table_free();
     this->is_precomputed = true;
   }
- 
+
   template <class Mngr>
   void RepresentationManagerSOAP<Mngr>::compute_bispectrum() {
     rep_expansion.compute();
@@ -214,7 +213,7 @@ namespace rascal {
     size_t n_col{0};
     //size_t n_col{pow((this->max_angular + 1), 3)};
     if (this->inversion_symmetry == false) {
-      /* sum of the next lmax + 1 natural numbers */  
+      /* sum of the next lmax + 1 natural numbers */
       n_col = (size_t)(1.0 + 2.0*(double)this->max_angular + \
               1.5*(double)pow(this->max_angular, 2) + \
               (double)pow(this->max_angular, 3)/2.0);
@@ -232,7 +231,7 @@ namespace rascal {
     this->soap_vectors.clear();
     this->soap_vectors.set_shape(n_row, n_col);
     this->soap_vectors.resize();
-  
+
     for (auto center : this->structure_manager) {
       auto& coefficients{expansions_coefficients[center]};
       auto& soap_vector{this->soap_vectors[center]};
@@ -246,7 +245,7 @@ namespace rascal {
           for (const auto& el3: coefficients) {
             triplet_type[2] = el3.first[0];
             auto& coef3{el3.second};
-  
+
             //triplet multiplicity
             //all the same
             if (triplet_type[0] == triplet_type[1] && \
@@ -263,10 +262,10 @@ namespace rascal {
             else {
               mult = std::sqrt(6.0);
             }
-            
+
             if (soap_vector.count(triplet_type) == 0) {
               soap_vector[triplet_type] = dense_t::Zero(n_row, n_col);
-  
+
               size_t nn{0};
               for (size_t n1 = 0; n1 < this->max_radial; n1++) {
                 for (size_t n2 = 0; n2 < this->max_radial; n2++) {
@@ -276,8 +275,8 @@ namespace rascal {
                     for (size_t l1 = 0; l1 < this->max_angular+1; l1++) {
                       for (size_t l2 = 0; l2 < this->max_angular+1; l2++) {
                         for (size_t l3 = 0; l3 < this->max_angular+1; l3++) {
-                          if (l1 < (size_t)std::abs<int>(l2 - l3) || l1 > l2 + l3) { 
-                            continue; 
+                          if (l1 < (size_t)std::abs<int>(l2 - l3) || l1 > l2 + l3) {
+                            continue;
                           }
                           if ((l1 + l2 + l3) % 2 == 1) { continue; }
                           for (size_t m1 = 0; m1 < 2*l1 + 1; m1++) {
@@ -292,46 +291,46 @@ namespace rascal {
                           int lm3 = std::pow(l3, 2) + m3;
                           double w3j = w3js[count];
                           complex coef1c, coef2c, coef3c;
-                            
+
                           //usual formulae for converting from real to complex
-                          if (m1s > 0) { 
+                          if (m1s > 0) {
                             coef1c = std::pow(-1.0, m1s)* \
                                      complex(coef1(n1, lm1), \
-                                     coef1(n1, lm1 - 2*m1s)); 
+                                     coef1(n1, lm1 - 2*m1s));
                           }
-                          else if (m1s == 0) { 
+                          else if (m1s == 0) {
                             coef1c = complex(coef1(n1, lm1), 0.0)* \
-                                     std::sqrt(2.0); 
+                                     std::sqrt(2.0);
                           }
-                          else if (m1s < 0) { 
+                          else if (m1s < 0) {
                             coef1c = complex(coef1(n1, lm1 - 2*m1s), \
-                                     -coef1(n1, lm1)); 
+                                     -coef1(n1, lm1));
                           }
-                          if (m2s > 0) { 
+                          if (m2s > 0) {
                             coef2c = std::pow(-1.0, m2s)* \
                                      complex(coef2(n2, lm2), \
-                                     coef2(n2, lm2 - 2*m2s)); 
+                                     coef2(n2, lm2 - 2*m2s));
                           }
-                          else if (m2s == 0) { 
+                          else if (m2s == 0) {
                             coef2c = complex(coef2(n2, lm2), 0.0)* \
-                                     std::sqrt(2.0); 
+                                     std::sqrt(2.0);
                           }
-                          else if (m2s < 0) { 
+                          else if (m2s < 0) {
                             coef2c = complex(coef2(n2, lm2 - 2*m2s), \
-                                     -coef2(n2, lm2)); 
+                                     -coef2(n2, lm2));
                           }
-                          if (m3s > 0) { 
+                          if (m3s > 0) {
                             coef3c = std::pow(-1.0, m3s)* \
                                      complex(coef3(n3, lm3), \
-                                     coef3(n3, lm3 - 2*m3s)); 
+                                     coef3(n3, lm3 - 2*m3s));
                           }
-                          else if (m3s == 0) { 
+                          else if (m3s == 0) {
                             coef3c = complex(coef3(n3, lm3), 0.0)* \
-                                     std::sqrt(2.0); 
+                                     std::sqrt(2.0);
                           }
-                          else if (m3s < 0) { 
+                          else if (m3s < 0) {
                             coef3c = complex(coef3(n3, lm3 - 2*m3s), \
-                                     -coef3(n3, lm3)); 
+                                     -coef3(n3, lm3));
                           }
                           coef1c /= std::sqrt(2.0);
                           coef2c /= std::sqrt(2.0);
@@ -351,9 +350,9 @@ namespace rascal {
                   }
                 }
               }
-  
+
             }
-  
+
           }
         }
       }

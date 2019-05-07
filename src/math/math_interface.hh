@@ -28,6 +28,10 @@
 
 #ifndef SRC_MATH_MATH_INTERFACE_HH_
 #define SRC_MATH_MATH_INTERFACE_HH_
+
+
+#include "wigxjpf.h"
+
 /*
  * Cephes polutes the namespace with extern definitions so we don't link to it
  * directly. math_interface.cc includes math/cephes/mconf.h which in turns
