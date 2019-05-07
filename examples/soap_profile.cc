@@ -25,70 +25,68 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <string>
-#include <memory>
-
-#include "structure_managers/make_structure_manager.hh"
 #include "structure_managers/structure_manager_centers.hh"
-#include "structure_managers/adaptor_neighbour_list.hh"
 #include "structure_managers/adaptor_strict.hh"
+#include "structure_managers/adaptor_neighbour_list.hh"
+#include "structure_managers/make_structure_manager.hh"
+#include "rascal_utility.hh"
+#include "representations/representation_manager_sorted_coulomb.hh"
 #include "representations/representation_manager_spherical_expansion.hh"
 #include "representations/representation_manager_soap.hh"
+#include "representations/feature_manager_dense.hh"
+#include "basic_types.hh"
 
-#include "json_io.hh"
 
+#include <iostream>
+#include <basic_types.hh>
+#include <cmath>
+#include <list>
+#include <functional>
+#include <string>
+#include <initializer_list>
 
-//using namespace rascal;
+// using namespace std;
+using namespace rascal;  // NOLINT
+
 const int N_ITERATIONS = 10000; // it's over 9000
 
+using Representation_t = RepresentationManagerSOAP<
+    AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
 
-int main(int argc, char* argv[]) {
-  using rascal::StructureManagerTypeHolder;
-  using rascal::StructureManagerCenters;
-  using rascal::AdaptorNeighbourList;
-  using rascal::AdaptorStrict;
-  using rascal::RepresentationManagerSOAP;
-  using rascal::make_structure_manager_stack_with_hypers_and_typeholder;
-  //using json::json;
-  using ManagerTypeHolder_t =
-     StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList,
-                                AdaptorStrict>;
-  using ManagerTypeList_t = typename ManagerTypeHolder_t::type_list;
-  using Manager_t = typename ManagerTypeHolder_t::type;
-  using ManagerPtr_t = std::shared_ptr<Manager_t>;
+// int main(int argc, char* argv[]) {
+int main() {
+  // if (argc < 1) {
+  //   std::cerr << "Must provide atomic structure json filename as argument";
+  //   std::cerr << std::endl;
+  // }
 
-  //double cutoff{3.};
-  if (argc < 1) {
-    std::cerr << "Must provide atomic structure json filename as argument";
-    std::cerr << std::endl;
-  }
-  std::string filename{argv[0]};
-  //std::string filename{"../tests/reference_data/methane.json"};
-  //std::string filename{"../tests/reference_data/small_molecule.json"};
   //TODO(max) put these in a file so they can be varied systematically
   //maybe together with the filename and iteration count
-  json hypers{{"interaction_cutoff", 3.0},
-              {"cutoff_smooth_width", 0.5},
+  // std::string filename{argv[0]};
+  std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+  json hypers{{"interaction_cutoff", 2.0},
+              {"cutoff_smooth_width", 0.0},
               {"max_radial", 6},
               {"max_angular", 6},
               {"gaussian_sigma_type", "Constant"},
-              {"gaussian_sigma_constant", 0.3},
+              {"gaussian_sigma_constant", 0.2},
               {"soap_type", "PowerSpectrum"}};
-  double cutoff{hypers["interaction_cutoff"]};
   json structure{{"filename", filename}};
+
+  double cutoff{hypers["interaction_cutoff"]};
   json adaptors;
-  json ad1{{"name", "AdaptorNeighbourList"},
-           {"initialization_arguments",
-            {{"cutoff", cutoff},
-             {"consider_ghost_neighbours", false}}}};
-  json ad2{{"name", "AdaptorStrict"},
-           {"initialization_arguments", {{"cutoff", cutoff}}}};
+        json ad1{{"name", "AdaptorNeighbourList"},
+                {"initialization_arguments",
+                  {{"cutoff", cutoff},
+                  {"consider_ghost_neighbours", false}}}};
+        json ad2{{"name", "AdaptorStrict"},
+                {"initialization_arguments", {{"cutoff", cutoff}}}};
   adaptors.emplace_back(ad1);
   adaptors.emplace_back(ad2);
+  auto manager =
+    make_structure_manager_stack<StructureManagerCenters, AdaptorNeighbourList, AdaptorStrict>(structure, adaptors);
 
-  auto manager = make_structure_manager_stack_with_hypers_and_typeholder<
-    ManagerTypeList_t>::apply(structure, adaptors);
-  RepresentationManagerSOAP<ManagerPtr_t> representation{manager, hypers};
+  Representation_t representation{manager, hypers};
 
   // This is the part that should get profiled
   for (size_t looper{0}; looper < N_ITERATIONS; looper++) {
