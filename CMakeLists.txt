@@ -123,10 +123,16 @@ endif()
 
 set(wigxjpf_dir "${CMAKE_SOURCE_DIR}/src/wigxjpf-1.9")
 set(wigxjpf_download "if ! [ -d ${wigxjpf_dir} ]\$<SEMICOLON> then \
-wget http://fy.chalmers.se/subatom/wigxjpf/wigxjpf-1.9.tar.gz -P ${CMAKE_SOURCE_DIR}/src/\$<SEMICOLON>  \
-tar -xzvf ${CMAKE_SOURCE_DIR}/src/wigxjpf-1.9.tar.gz -C ${CMAKE_SOURCE_DIR}/src/\$<SEMICOLON> fi\$<SEMICOLON>")
+wget http://fy.chalmers.se/subatom/wigxjpf/wigxjpf-1.9.tar.gz -P \
+${CMAKE_SOURCE_DIR}/src/\$<SEMICOLON> \
+tar -xzvf ${CMAKE_SOURCE_DIR}/src/wigxjpf-1.9.tar.gz -C \
+${CMAKE_SOURCE_DIR}/src/\$<SEMICOLON>  \
+rm ${CMAKE_SOURCE_DIR}/src/wigxjpf-1.9.tar.gz\$<SEMICOLON> \
+fi\$<SEMICOLON>")
 set(wigxjpf_build "make -C ${wigxjpf_dir}")
-add_custom_target(wigxjpf ALL COMMAND eval ${wigxjpf_download} && eval ${wigxjpf_build} VERBATIM)
+add_custom_target(wigxjpf ALL COMMAND eval ${wigxjpf_download} 
+&& eval ${wigxjpf_build} COMMENT 
+"Building the Wigner xj symbol library wigxjpf-1.9" VERBATIM)
 #add_custom_target(wigxjpf ALL COMMAND eval ${wigxjpf_download} VERBATIM)
 #add_dependencies(${LIBRASCAL_NAME} wigxjpf)
 set(wigxjpf_library "${wigxjpf_dir}/lib/libwigxjpf.a")

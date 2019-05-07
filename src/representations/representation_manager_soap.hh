@@ -98,6 +98,9 @@ namespace rascal {
         this->soap_type = internal::SOAPType::RadialSpectrum;
       } else if (this->soap_type_str.compare("BiSpectrum") == 0) {
         this->soap_type = internal::SOAPType::BiSpectrum;
+        if (hypers.find("inversion_symmetry") != hypers.end()) {
+          this->inversion_symmetry = hypers.at("inversion_symmetry");
+        }
       } else {
         throw std::logic_error("Requested SOAP type \'" + this->soap_type_str +
                                "\' has not been implemented.  Must be one of" +
@@ -147,6 +150,7 @@ namespace rascal {
     std::string soap_type_str{};
     std::vector<Precision_t> dummy{};
     bool is_precomputed{false};
+    bool inversion_symmetry{true};
     std::vector<double> w3js{};
   };
 
@@ -178,7 +182,10 @@ namespace rascal {
     for (size_t l1 = 0; l1 < this->max_angular+1; l1++) {
       for (size_t l2 = 0; l2 < this->max_angular+1; l2++) {
         for (size_t l3 = 0; l3 < this->max_angular+1; l3++) {
-          if (l1 < std::abs<int>(l2 - l3) || l1 > l2 + l3) { continue; }
+          if (l1 < (size_t)std::abs<int>(l2 - l3) || l1 > l2 + l3) { continue; }
+          if (this->inversion_symmetry == true) {
+            if ((l1 + l2 + l3) % 2 == 1) { continue; }
+          }
           for (size_t m1 = 0; m1 < 2*l1 + 1; m1++) {
           int m1s = m1 - l1;
           for (size_t m2 = 0; m2 < 2*l2 + 1; m2++) {
@@ -203,19 +210,22 @@ namespace rascal {
     rep_expansion.compute();
     auto& expansions_coefficients{rep_expansion.expansions_coefficients};
     using complex = std::complex<double>;
-    size_t n_row{pow(this->max_radial, 3)};
+    size_t n_row{(size_t)pow(this->max_radial, 3)};
+    size_t n_col{0};
     //size_t n_col{pow((this->max_angular + 1), 3)};
-    /*
-    lmax = 0; 1
-    lmax = 1; 5
-    lmax = 2; 15
-    lmax = 3; 34
-    a + b*lmax + c*lmax**2 + d*lmax**3
-    x = {1, 2, 3/2, 1/2}
-    */
-    size_t n_col{(size_t)(1.0 + 2.0*(double)this->max_angular + \
-                 1.5*(double)pow(this->max_angular, 2) + \
-                 (double)pow(this->max_angular, 3)/2.0)};
+    if (this->inversion_symmetry == false) {
+      /* sum of the next lmax + 1 natural numbers */  
+      n_col = (size_t)(1.0 + 2.0*(double)this->max_angular + \
+              1.5*(double)pow(this->max_angular, 2) + \
+              (double)pow(this->max_angular, 3)/2.0);
+    }
+    else {
+      /* number of 3x3 symmetric matrices with non-negative integer entries,
+       * such that the sum of every row and column equal lmax */
+      n_col = (size_t)std::floor((double)((pow(this->max_angular + 1, 2) + 1)* \
+              (2*(this->max_angular + 1) + 3))/8.0);
+    }
+
     double mult{1.0};
 
     if (this->is_precomputed == false) { this->precompute_w3js(); }
@@ -238,6 +248,7 @@ namespace rascal {
             auto& coef3{el3.second};
   
             //triplet multiplicity
+            //all the same
             if (triplet_type[0] == triplet_type[1] && \
                 triplet_type[1] == triplet_type[2]) {
               mult = 1.0;
@@ -265,9 +276,10 @@ namespace rascal {
                     for (size_t l1 = 0; l1 < this->max_angular+1; l1++) {
                       for (size_t l2 = 0; l2 < this->max_angular+1; l2++) {
                         for (size_t l3 = 0; l3 < this->max_angular+1; l3++) {
-                          if (l1 < std::abs<int>(l2 - l3) || l1 > l2 + l3) { 
+                          if (l1 < (size_t)std::abs<int>(l2 - l3) || l1 > l2 + l3) { 
                             continue; 
                           }
+                          if ((l1 + l2 + l3) % 2 == 1) { continue; }
                           for (size_t m1 = 0; m1 < 2*l1 + 1; m1++) {
                           int m1s = m1 - l1;
                           int lm1 = std::pow(l1, 2) + m1;
@@ -281,7 +293,7 @@ namespace rascal {
                           double w3j = w3js[count];
                           complex coef1c, coef2c, coef3c;
                             
-                          //usual formulae for converting from real SH to complex
+                          //usual formulae for converting from real to complex
                           if (m1s > 0) { 
                             coef1c = std::pow(-1.0, m1s)* \
                                      complex(coef1(n1, lm1), \
@@ -321,16 +333,16 @@ namespace rascal {
                             coef3c = complex(coef3(n3, lm3 - 2*m3s), \
                                      -coef3(n3, lm3)); 
                           }
-                          soap_vector[triplet_type](nn, l0) += \
-                            w3j*mult*(coef1c*coef2c*coef3c).real();
                           coef1c /= std::sqrt(2.0);
                           coef2c /= std::sqrt(2.0);
                           coef3c /= std::sqrt(2.0);
+
+                          soap_vector[triplet_type](nn, l0) += \
+                            w3j*mult*(coef1c*coef2c*coef3c).real();
                           count++;
                           }
                           }
                           }
-
                           l0++;
                         }
                       }
