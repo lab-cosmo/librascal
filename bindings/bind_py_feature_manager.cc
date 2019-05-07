@@ -30,11 +30,11 @@
 using namespace rascal;  // NOLINT
 
 template <typename T>
-void bind_feature_manager_base(py::module & m_garbage) {
+void bind_feature_manager_base(py::module & m_throwaway) {
   using Base_t = FeatureManagerBase<T>;
 
   std::string featurebase_name = internal::GetBindingTypeName<Base_t>();
-  py::class_<Base_t>(m_garbage, featurebase_name.c_str());
+  py::class_<Base_t>(m_throwaway, featurebase_name.c_str());
 }
 
 /**
@@ -112,18 +112,19 @@ decltype(auto) bind_sparse_feature_manager(py::module & mod, py::module &) {
 }
 
 //! Feature aggregator python binding
-void add_feature_managers(py::module & mod, py::module & m_garbage) {
-  bind_feature_manager_base<double>(m_garbage);
-  bind_feature_manager_base<float>(m_garbage);
+void add_feature_managers(py::module & mod, py::module & m_throwaway) {
+  bind_feature_manager_base<double>(m_throwaway);
+  bind_feature_manager_base<float>(m_throwaway);
 
   auto feature_double =
-      bind_feature_manager<FeatureManagerDense, double>(mod, m_garbage);
+      bind_feature_manager<FeatureManagerDense, double>(mod, m_throwaway);
 
   auto feature_float =
-      bind_feature_manager<FeatureManagerDense, float>(mod, m_garbage);
+      bind_feature_manager<FeatureManagerDense, float>(mod, m_throwaway);
 
   bind_sparse_feature_manager<FeatureManagerBlockSparse, double>(mod,
-                                                                 m_garbage);
+                                                                 m_throwaway);
 
-  bind_sparse_feature_manager<FeatureManagerBlockSparse, float>(mod, m_garbage);
+  bind_sparse_feature_manager<FeatureManagerBlockSparse, float>(mod,
+                                                                m_throwaway);
 }

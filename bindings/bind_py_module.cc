@@ -44,14 +44,15 @@ PYBIND11_MODULE(_rascal, mod) {
   py::module m_utl = mod.def_submodule("utils");
   py::module m_math = mod.def_submodule("math");
   m_math.doc() = "Collection of math functions";
-  py::module m_garbage = mod.def_submodule("rubbish");
-  m_garbage.doc() = "Collection of bindings that are needed but not functional";
+  py::module m_throwaway = mod.def_submodule("rubbish");
+  m_throwaway.doc() =
+      "Collection of bindings that are needed but not functional";
 
   py::add_ostream_redirect(m_utl, "ostream_redirect");
 
-  add_structure_managers(m_nl, m_garbage);
-  add_representation_managers(m_rpr_mng, m_garbage);
-  add_feature_managers(m_feat_mng, m_garbage);
+  add_structure_managers(m_nl, m_throwaway);
+  add_representation_managers(m_rpr_mng, m_throwaway);
+  add_feature_managers(m_feat_mng, m_throwaway);
   utils_binding(m_utl);
   math_binding(m_math);
 }
