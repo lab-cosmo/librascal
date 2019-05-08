@@ -30,7 +30,7 @@
 
 namespace rascal {
 
-  BOOST_AUTO_TEST_SUITE(feature_Dense_test);
+  BOOST_AUTO_TEST_SUITE(feature_dense_test);
   /* ---------------------------------------------------------------------- */
   // TODO(felix) define more test that could be streamlined
   // gets a list of fixtures for all the different possible structure managers
