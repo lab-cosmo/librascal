@@ -49,7 +49,7 @@ namespace rascal {
      public:
       using MyMap_t = std::map<K, V>;
 
-      //! the data holder. only the overiden/essential functionalities are
+      //! the data holder. only the overriden/essential functionalities are
       //! directly exposed
       MyMap_t data{};
 

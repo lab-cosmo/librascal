@@ -809,10 +809,6 @@ namespace rascal {
   std::array<int, Order>
   StructureManager<ManagerImplementation>::ClusterRef<Order>::get_atom_types()
       const {
-    /*
-     * TODO(markus)
-     */
-
     return internal::species_aggregator<StructureManager>(this->atom_indices,
                                                           this->get_manager());
   }

@@ -221,17 +221,6 @@ namespace rascal {
     //! Precompute everything that doesn't depend on the structure
     void precompute();
 
-    // //! getter for the representation
-    // template <size_t Order, size_t Layer>
-    // Eigen::MatrixXd
-    // get_soap_vector(const ClusterRefKey<Order, Layer> & center) {
-    //   return this->expansions_coefficients[center];
-    // }
-
-    // Eigen::MatrixXd get_soap_vector(const size_t & i_center) {
-    //   return this->expansions_coefficients[i_center];
-    // }
-
     // TODO(max-veit) overload operator<< instead? But we need the center...
     template <size_t Order, size_t Layer>
     void print_soap_vector(const ClusterRefKey<Order, Layer> & center,
