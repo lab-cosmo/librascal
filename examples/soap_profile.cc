@@ -53,17 +53,15 @@ const int N_ITERATIONS = 10000; // it's over 9000
 using Representation_t = RepresentationManagerSOAP<
     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
 
-// int main(int argc, char* argv[]) {
-int main() {
-  // if (argc < 1) {
-  //   std::cerr << "Must provide atomic structure json filename as argument";
-  //   std::cerr << std::endl;
-  // }
+int main(int argc, char* argv[]) {
+  if (argc < 2) {
+    std::cerr << "Must provide atomic structure json filename as argument";
+    std::cerr << std::endl;
+  }
 
   //TODO(max) put these in a file so they can be varied systematically
   //maybe together with the filename and iteration count
-  // std::string filename{argv[0]};
-  std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+  std::string filename{argv[1]};
   json hypers{{"interaction_cutoff", 2.0},
               {"cutoff_smooth_width", 0.0},
               {"max_radial", 6},
