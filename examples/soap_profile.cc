@@ -84,7 +84,8 @@ int main() {
   adaptors.emplace_back(ad1);
   adaptors.emplace_back(ad2);
   auto manager =
-    make_structure_manager_stack<StructureManagerCenters, AdaptorNeighbourList, AdaptorStrict>(structure, adaptors);
+    make_structure_manager_stack<StructureManagerCenters, AdaptorNeighbourList,
+                                 AdaptorStrict>(structure, adaptors);
 
   Representation_t representation{manager, hypers};
 
