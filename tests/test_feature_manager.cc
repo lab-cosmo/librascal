@@ -30,7 +30,7 @@
 
 namespace rascal {
 
-  BOOST_AUTO_TEST_SUITE(feature_dense_test);
+  BOOST_AUTO_TEST_SUITE(feature_Dense_test);
   /* ---------------------------------------------------------------------- */
   // TODO(felix) define more test that could be streamlined
   // gets a list of fixtures for all the different possible structure managers
@@ -170,8 +170,8 @@ namespace rascal {
       features.emplace_back(inner_sizes[i_hyper], hypers[i_hyper]);
     }
 
-    using data_t = typename Fix::Representation_t::SparseProperty_t::data_t;
-    std::vector<data_t> original_data{};
+    using Data_t = typename Fix::Representation_t::SparseProperty_t::Data_t;
+    std::vector<Data_t> original_data{};
     // extract the feature matrices in a ref vector
     for (size_t i_hyper{0}; i_hyper < hypers.size(); i_hyper++) {
       original_data.emplace_back();
@@ -205,6 +205,7 @@ namespace rascal {
         auto & datas{original_data[i_hyper][i_center]};
         int i_count{0};
         double diff{0};
+        int N{0};
         if (verbose)
           std::cout << "Center: " << i_center << std::endl;
         for (auto & key : unique_keys) {
@@ -215,7 +216,8 @@ namespace rascal {
             auto & data = datas[key];
             for (int i_col{0}; i_col < data.cols(); i_col++) {
               for (int i_row{0}; i_row < data.rows(); i_row++) {
-                diff = data(i_row, i_col) - feature_matrix(i_count, i_center);
+                diff += data(i_row, i_col) - feature_matrix(i_count, i_center);
+                N += 1;
                 if (verbose) {
                   if (diff > 1e-12) {
                     std::cout << diff << ", ";
@@ -233,7 +235,7 @@ namespace rascal {
             i_count += inner_size;
           }
         }
-        BOOST_CHECK_LE(diff, 1e-11);
+        BOOST_CHECK_LE(diff / N, 1e-10);
       }
     }
   }

@@ -129,10 +129,10 @@ namespace rascal {
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
     using Hypers_t = typename Parent::Hypers_t;
     using ReferenceHypers_t = Parent::ReferenceHypers_t;
-    using key_t = std::vector<int>;
+    using Key_t = std::vector<int>;
     using SparseProperty_t = BlockSparseProperty<double, 1, 0>;
-    using dense_t = typename SparseProperty_t::dense_t;
-    using data_t = typename SparseProperty_t::data_t;
+    using Dense_t = typename SparseProperty_t::Dense_t;
+    using Data_t = typename SparseProperty_t::Data_t;
     /**
      * Set the hyperparameters of this descriptor from a json object.
      *
@@ -252,7 +252,7 @@ namespace rascal {
       return this->dummy;
     }
 
-    data_t & get_representation_sparse_raw_data() {
+    Data_t & get_representation_sparse_raw_data() {
       return this->expansions_coefficients.get_raw_data();
     }
 
@@ -448,13 +448,13 @@ namespace rascal {
       auto & coefficients_center = this->expansions_coefficients[center];
 
       // initialize the expansion coefficients to 0
-      key_t center_type{center.get_atom_type()};
-      coefficients_center[center_type] = dense_t::Zero(n_row, n_col);
+      Key_t center_type{center.get_atom_type()};
+      coefficients_center[center_type] = Dense_t::Zero(n_row, n_col);
       for (auto neigh : center) {
-        key_t neigh_type{neigh.get_atom_type()};
+        Key_t neigh_type{neigh.get_atom_type()};
         // avoid initializing again same chemical channel
         if (coefficients_center.count(neigh_type) == 0) {
-          coefficients_center[neigh_type] = dense_t::Zero(n_row, n_col);
+          coefficients_center[neigh_type] = Dense_t::Zero(n_row, n_col);
         }
       }
 
@@ -487,7 +487,7 @@ namespace rascal {
         auto direction{this->structure_manager->get_direction_vector(neigh)};
         fac_a = 0.5 * pow(gaussian_spec.get_gaussian_sigma(neigh), -2);
         double exp_factor = std::exp(-fac_a * pow(dist, 2));
-        key_t neigh_type{neigh.get_atom_type()};
+        Key_t neigh_type{neigh.get_atom_type()};
 
         // Note: the copy _should_ be optimized out (RVO)
         Eigen::MatrixXd harmonics =
@@ -530,7 +530,7 @@ namespace rascal {
         }
       }  // for (neigh : center)
     }    // for (center : structure_manager)
-  }  // compute()
+  }      // compute()
 
 }  // namespace rascal
 

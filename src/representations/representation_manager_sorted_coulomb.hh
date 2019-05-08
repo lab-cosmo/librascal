@@ -231,7 +231,7 @@ namespace rascal {
       return this->coulomb_matrices.get_raw_data();
     }
 
-    data_t & get_representation_sparse_raw_data() { return this->dummy; }
+    Data_t & get_representation_sparse_raw_data() { return this->dummy; }
 
     //! get the size of a feature vector
     size_t get_feature_size() { return this->coulomb_matrices.get_nb_comp(); }
@@ -322,7 +322,7 @@ namespace rascal {
     // at least equal to the largest number of neighours
     size_t size{};
 
-    data_t dummy{};
+    Data_t dummy{};
 
     Property_t coulomb_matrices;
 

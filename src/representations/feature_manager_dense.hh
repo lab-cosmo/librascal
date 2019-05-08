@@ -34,7 +34,7 @@
 
 namespace rascal {
   /**
-   * Handles the aggragation of features from compatible representation managers
+   * Handles the aggregation of features from compatible representation managers
    * using a dense underlying data storage.
    */
   template <typename T>

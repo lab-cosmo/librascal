@@ -41,7 +41,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /*
-   * A fixture for testing proterties. It is based on the PairFixture, which is
+   * A fixture for testing properties. It is based on the PairFixture, which is
    * basically a fixture which provides a pair neighbour list based on positions
    * which are initialized in the tests.
    */
@@ -210,7 +210,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
 
   /*
-   * A fixture for testing partially sparse proterties.
+   * A fixture for testing partially sparse properties.
    * TODO(felix) use MultipleStructureManagerCentersFixture instead of NL
    */
   struct BlockSparsePropertyFixture
@@ -218,11 +218,11 @@ namespace rascal {
     using Parent = MultipleStructureFixture<MultipleStructureManagerNLFixture>;
     using ManagerTypeList_t = typename Parent::ManagerTypeHolder_t::type_list;
 
-    using key_t = std::vector<int>;
+    using Key_t = std::vector<int>;
     using BlockSparseProperty_t = BlockSparseProperty<double, 1, 0>;
-    using dense_t = typename BlockSparseProperty_t::dense_t;
-    using input_data_t = typename BlockSparseProperty_t::input_data_t;
-    using test_data_t = std::vector<input_data_t>;
+    using Dense_t = typename BlockSparseProperty_t::Dense_t;
+    using InputData_t = typename BlockSparseProperty_t::InputData_t;
+    using test_data_t = std::vector<InputData_t>;
 
     constexpr static Dim_t DynSize() { return 3; }
 
@@ -241,15 +241,15 @@ namespace rascal {
         for (auto atom : manager) {
           // set up random unique keys
           auto set_max_size{size_dist(gen)};
-          std::set<key_t> keys{};
+          std::set<Key_t> keys{};
           for (size_t ii{0}; ii < set_max_size; ii++) {
             keys.emplace(key_dist(gen));
           }
 
           // set up the data to fill the property later
-          input_data_t datas{};
+          InputData_t datas{};
           for (auto & key : keys) {
-            auto data = dense_t::Random(21, 8);
+            auto data = Dense_t::Random(21, 8);
             datas.emplace(std::make_pair(key, data));
           }
           this->keys_list.back().push_back(keys);
@@ -259,7 +259,7 @@ namespace rascal {
       }
     }
 
-    std::vector<std::vector<std::set<key_t>>> keys_list{};
+    std::vector<std::vector<std::set<Key_t>>> keys_list{};
     std::vector<test_data_t> test_datas{};
     std::vector<BlockSparseProperty_t> sparse_features{};
   };

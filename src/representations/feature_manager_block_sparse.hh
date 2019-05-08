@@ -37,7 +37,7 @@
 
 namespace rascal {
   /**
-   * Handles the aggragation of features from compatible representation
+   * Handles the aggregation of features from compatible representation
    * managers.
    * The storage layout can be represented in 2 ways:
    * + [centers, sparse_keys, row_inner, col_inner]
@@ -63,14 +63,14 @@ namespace rascal {
     using Feature_Matrix_ref = typename Parent::Feature_Matrix_ref;
     using Precision_t = typename Parent::Precision_t;
 
-    using key_t = std::vector<int>;
-    using dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, Eigen::Dynamic>;
-    using dense_ref_t = Eigen::Map<dense_t>;
+    using Key_t = std::vector<int>;
+    using Dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, Eigen::Dynamic>;
+    using dense_ref_t = Eigen::Map<Dense_t>;
     using map_center_t = std::vector<std::pair<size_t, size_t>>;
     using map_sparse_t = std::vector<
-        std::map<key_t, std::pair<size_t, std::pair<size_t, size_t>>>>;
-    using keys_t = std::vector<std::list<key_t>>;
-    using data_t = std::vector<Precision_t>;
+        std::map<Key_t, std::pair<size_t, std::pair<size_t, size_t>>>>;
+    using Keys_t = std::vector<std::list<Key_t>>;
+    using Data_t = std::vector<Precision_t>;
 
     /**
      * Constructor where hypers contains all relevant informations
@@ -259,9 +259,9 @@ namespace rascal {
     //! map center idx + key to relative position and size in values
     map_sparse_t map2sparse{};
     //! list of the registered keys for each centers
-    keys_t keys_list{};
+    Keys_t keys_list{};
 
-    std::set<key_t> unique_keys{};
+    std::set<Key_t> unique_keys{};
   };
 
 }  // namespace rascal
