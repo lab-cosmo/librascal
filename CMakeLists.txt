@@ -79,6 +79,10 @@ set(ENABLE_DOC "OFF" CACHE BOOL
 set(BUILD_TESTS "OFF" CACHE BOOL
   "If on, builds the unit tests")
 
+set(ENABLE_PROFILING "OFF" CACHE BOOL
+  "If on, adds gprof profiling information to some of the examples "
+  "(GNU compilers only)")
+
 message(STATUS "Build type is: ${CMAKE_BUILD_TYPE}")
 
 ########## COMPILATION FLAGS ##########
@@ -284,6 +288,13 @@ foreach(binaryfile ${binaries})
 endforeach(binaryfile ${binaries})
 configure_file("${CMAKE_SOURCE_DIR}/examples/crystal_structure.json" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file("${CMAKE_SOURCE_DIR}/examples/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
+# Add profiling information for the appropriate examples
+if (ENABLE_PROFILING)
+  if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    target_compile_options("soap_profile" PRIVATE -pg)
+    target_link_options("soap_profile" PRIVATE -pg)
+  endif()
+endif()
 
 
 
