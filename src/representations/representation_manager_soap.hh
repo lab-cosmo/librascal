@@ -96,7 +96,7 @@ namespace rascal {
       } else if (this->soap_type_str.compare("RadialSpectrum") == 0) {
         this->soap_type = internal::SOAPType::RadialSpectrum;
         if (this->max_angular > 0) {
-          throw std::logic_error("max_angular should be 0 with RadialSpectrum")
+          throw std::logic_error("max_angular should be 0 with RadialSpectrum");
         }
       } else {
         throw std::logic_error("Requested SOAP type \'" + this->soap_type_str +
