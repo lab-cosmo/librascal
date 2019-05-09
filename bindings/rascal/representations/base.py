@@ -6,7 +6,7 @@ from ..neighbourlist.structure_manager import convert_to_structure
 import numpy as np
 import queue
 
-_representations_list = ["sortedcoulomb", "sphericalexpansion"]
+_representations_list = ["sortedcoulomb", "sphericalexpansion", "soap"]
 _representations = {}
 for k, v in RepresentationManager.__dict__.items():
     if "pybind11_builtins.pybind11_type" in str(type(v)):
@@ -15,7 +15,7 @@ for k, v in RepresentationManager.__dict__.items():
             if name in kl:
                 _representations[kl] = v
 
-_features_list = ["dense"]
+_features_list = ["dense", "blocksparse"]
 _features = {}
 for k, v in FeatureManager.__dict__.items():
     if "pybind11_builtins.pybind11_type" in str(type(v)):

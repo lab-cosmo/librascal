@@ -32,6 +32,7 @@
 #include "test_representation_manager.hh"
 #include "representations/feature_manager_base.hh"
 #include "representations/feature_manager_dense.hh"
+#include "representations/feature_manager_block_sparse.hh"
 
 #include <list>
 
@@ -52,7 +53,7 @@ namespace rascal {
     using Representation_t = typename Parent::Representation_t;
     using Feature_t = FeatureManager<T>;
     using Hypers_t = typename Representation_t::Hypers_t;
-    using precision_t = T;
+    using Precision_t = T;
 
     FeatureFixture() : Parent{} {
       std::vector<size_t> n_features{};
@@ -77,6 +78,43 @@ namespace rascal {
     size_t n_center{0};
     size_t n_feature{};
     std::list<Feature_t> features{};
+  };
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * A templated Fixture, inherits from the ReperesentationFixture. It provides
+   * access to different data structures. They are used to check the aggregation
+   * of calculated feature data from multiple structures.
+   */
+  template <typename T, template <typename> class FeatureManager,
+            template <typename> class RepresentationManager, class BaseFixture>
+  struct SparseFeatureFixture
+      : RepresentationFixture<BaseFixture, RepresentationManager> {
+    using Parent = RepresentationFixture<BaseFixture, RepresentationManager>;
+    using Manager_t = typename Parent::Manager_t;
+    using Representation_t = RepresentationManager<Manager_t>;
+    using Key_t = typename Representation_t::Key_t;
+    using Feature_t = FeatureManager<T>;
+    using Hypers_t = typename Representation_t::Hypers_t;
+    using Precision_t = T;
+
+    SparseFeatureFixture() : Parent{} {
+      for (auto & hyper : this->hypers) {
+        this->representations.emplace_back();
+        for (auto & manager : this->managers) {
+          this->representations.back().emplace_back(manager, hyper);
+          this->representations.back().back().compute();
+        }
+        this->inner_sizes.emplace_back(
+            this->representations.back().back().get_feature_size());
+      }
+    }
+
+    ~SparseFeatureFixture() = default;
+
+    std::vector<std::vector<Representation_t>> representations{};
+    std::vector<Feature_t> features{};
+    std::vector<size_t> inner_sizes{};
   };
 
   /* ---------------------------------------------------------------------- */

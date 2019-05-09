@@ -35,6 +35,8 @@
 #include "json_io.hh"
 #include "atomic_structure.hh"
 
+#include <type_traits>
+
 namespace rascal {
   /**
    * Factory function to make a structure manager
@@ -213,11 +215,15 @@ namespace rascal {
   //! Utility to hold a fully typed structure manager and a list of Adaptors
   template <typename Manager, template <class> class... AdaptorImplementation>
   struct StructureManagerTypeHolder {
-    using type_list =
-        std::tuple<Manager, AdaptorTypeHolder<AdaptorImplementation...>>;
+    // handle the case without adaptors with conditional_t
+    using type_list = std::conditional_t<
+        sizeof...(AdaptorImplementation) == 0, std::tuple<Manager>,
+        std::tuple<Manager, AdaptorTypeHolder<AdaptorImplementation...>>>;
+
     using type =
-        typename internal::AdaptorTypeStacker<Manager,
-                                              AdaptorImplementation...>::type;
+        std::conditional_t<sizeof...(AdaptorImplementation) == 0, Manager,
+                           typename internal::AdaptorTypeStacker<
+                               Manager, AdaptorImplementation...>::type>;
   };
 
   namespace internal {

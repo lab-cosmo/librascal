@@ -34,7 +34,7 @@
 
 namespace rascal {
   /**
-   * Handles the aggragation of features from compatible representation managers
+   * Handles the aggregation of features from compatible representation managers
    * using a dense underlying data storage.
    */
   template <typename T>
@@ -45,7 +45,7 @@ namespace rascal {
     using Hypers_t = typename RepresentationManager_t::Hypers_t;
     using Feature_Matrix_t = typename Parent::Feature_Matrix_t;
     using Feature_Matrix_ref = typename Parent::Feature_Matrix_ref;
-    using precision_t = typename Parent::precision_t;
+    using Precision_t = typename Parent::Precision_t;
     /**
      * Constructor where hypers contains all relevant informations
      * to setup a new RepresentationManager.
@@ -157,6 +157,10 @@ namespace rascal {
     inline Feature_Matrix_ref get_feature_matrix() {
       return Feature_Matrix_ref(this->feature_matrix.data(),
                                 this->feature_size(), this->sample_size());
+    }
+
+    inline Feature_Matrix_t get_feature_matrix_dense() {
+      return Feature_Matrix_t::Zero(2, 2);
     }
 
    protected:

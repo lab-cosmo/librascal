@@ -4,8 +4,6 @@ import numpy as np
 import scipy.special as sps
 import sys
 
-sys.path.insert(0, '../tests/')
-
 
 class TestMath(unittest.TestCase):
     def setUp(self):

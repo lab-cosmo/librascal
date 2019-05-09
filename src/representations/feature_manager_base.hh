@@ -46,8 +46,8 @@ namespace rascal {
    public:
     using RepresentationManager_t = RepresentationManagerBase;
     using Hypers_t = typename RepresentationManagerBase::Hypers_t;
-    using precision_t = T;
-    using Feature_Matrix_t = Eigen::Matrix<precision_t, Eigen::Dynamic,
+    using Precision_t = T;
+    using Feature_Matrix_t = Eigen::Matrix<Precision_t, Eigen::Dynamic,
                                            Eigen::Dynamic, Eigen::ColMajor>;
     using Feature_Matrix_ref = Eigen::Map<const Feature_Matrix_t>;
 
@@ -58,7 +58,7 @@ namespace rascal {
     FeatureManagerBase(const FeatureManagerBase & other) = delete;
 
     //! Move constructor
-    FeatureManagerBase(FeatureManagerBase && other) = delete;
+    FeatureManagerBase(FeatureManagerBase && other) = default;
 
     //! Destructor
     virtual ~FeatureManagerBase() = default;
@@ -67,7 +67,7 @@ namespace rascal {
     FeatureManagerBase & operator=(const FeatureManagerBase & other) = delete;
 
     //! Move assignment operator
-    FeatureManagerBase & operator=(FeatureManagerBase && other) = delete;
+    FeatureManagerBase & operator=(FeatureManagerBase && other) = default;
 
     //! pre-allocate memory
     virtual void reserve(size_t &) = 0;
@@ -92,6 +92,8 @@ namespace rascal {
 
     //! expose the feature matrix
     virtual inline Feature_Matrix_ref get_feature_matrix() = 0;
+
+    virtual inline Feature_Matrix_t get_feature_matrix_dense() = 0;
   };
 
 }  // namespace rascal

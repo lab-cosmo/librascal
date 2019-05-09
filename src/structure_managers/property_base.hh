@@ -36,6 +36,7 @@
 #include <string>
 #include <typeinfo>
 #include <vector>
+#include <array>
 
 namespace rascal {
 
@@ -87,6 +88,12 @@ namespace rascal {
 
     //! sets the number of columns stored per cluster
     inline void set_nb_col(const Dim_t & nb_col) {
+      this->nb_col = nb_col;
+      this->update_nb_comp();
+    }
+
+    inline void set_shape(const Dim_t & nb_row, const Dim_t & nb_col) {
+      this->nb_row = nb_row;
       this->nb_col = nb_col;
       this->update_nb_comp();
     }
