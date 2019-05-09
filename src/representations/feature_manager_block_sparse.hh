@@ -156,6 +156,7 @@ namespace rascal {
     void push_back(RepresentationManager_t & rm) {
       const auto & raw_data{rm.get_representation_sparse_raw_data()};
       auto n_center{rm.get_center_size()};
+      this->structure_stride.push_back(n_center+structure_stride.back());
 
       auto && new_center_start_id{this->feature_matrix.size()};
 
@@ -243,6 +244,10 @@ namespace rascal {
                                 this->feature_matrix.size(), 1);
     }
 
+    inline auto get_structure_stride() {
+      return this->structure_stride;
+    }
+
     // inline Dense_t dot(const FeatureManagerBlockSparse & other) {
 
     // }
@@ -277,6 +282,8 @@ namespace rascal {
      */
     Hypers_t hypers;
 
+    //! stride for the structures
+    std::vector<int> structure_stride{0};
     //! map center idx to position and size in values
     map_center_t map2centers{};
     //! map center idx + key to relative position and size in values
@@ -307,9 +314,12 @@ namespace rascal {
       return rtn;
   }
 
+  /**
+   * Matrix multiplication between two block sparse feature matrices
+   */
   template<typename Precision_t>
-  decltype(auto) dot( FeatureManagerBlockSparse<Precision_t>& X1,
-                      FeatureManagerBlockSparse<Precision_t>& X2) {
+  decltype(auto) dot(FeatureManagerBlockSparse<Precision_t>& X1,
+                     FeatureManagerBlockSparse<Precision_t>& X2) {
 
     auto n1_centers{X1.sample_size()};
     auto n2_centers{X2.sample_size()};
@@ -333,7 +343,150 @@ namespace rascal {
     return mat;
   }
 
+  /**
+   * Matrix multiplication between a block sparse feature matrix with itself
+   */
+  template<typename Precision_t>
+  decltype(auto) dot(FeatureManagerBlockSparse<Precision_t>& X1) {
+    auto n1_centers{X1.sample_size()};
+    Dense_t<Precision_t> mat = Dense_t<Precision_t>::Zero(n1_centers,n1_centers);
+    for (int icenter1{0}; icenter1 < n1_centers; icenter1++) {
+      auto && keys1{X1.get_keys(icenter1)};
+      mat(icenter1, icenter1) = 1.;
 
+      for (int icenter2{icenter1+1}; icenter2 < n1_centers; icenter2++) {
+        auto && keys2{X1.get_keys(icenter2)};
+        auto keys_intersection{intersection_of(keys1, keys2)};
+        for (const auto& key : keys_intersection) {
+          auto vec1{X1.get_features(icenter1, key)};
+          auto vec2{X1.get_features(icenter2, key)};
+          mat(icenter1, icenter2) += vec1.dot(vec2);
+        }
+        mat(icenter2, icenter1) = mat(icenter1, icenter2);
+      }
+    }
+    return mat;
+  }
+
+  /**
+   * global cosine kernel with a power of zeta
+   */
+  template<typename Precision_t>
+  decltype(auto) cosine_kernel_global(int zeta,
+                     FeatureManagerBlockSparse<Precision_t>& X1,
+                     FeatureManagerBlockSparse<Precision_t>& X2) {
+    auto stride1{X1.get_structure_stride()};
+    auto stride2{X2.get_structure_stride()};
+    auto n1_frames{stride1.size()-1};
+    auto n2_frames{stride2.size()-1};
+
+    Dense_t<Precision_t> mat(n1_frames, n2_frames);
+    // loop over the structures of the 1st set
+    for (size_t iframe1{0}; iframe1 < n1_frames; iframe1++) {
+      auto& iframe1_st{stride1[iframe1]};
+      auto& iframe1_nd{stride1[iframe1+1]};
+      // loop over the structures of the 2nd set
+      for (size_t iframe2{0}; iframe2 < n2_frames; iframe2++) {
+        auto& iframe2_st{stride2[iframe2]};
+        auto& iframe2_nd{stride2[iframe2+1]};
+        double kernel_val{0.};
+        // loop over the centers of the the ith structure
+        for (int icenter1{iframe1_st}; icenter1 < iframe1_nd; icenter1++) {
+          auto && keys1{X1.get_keys(icenter1)};
+          // loop over the centers of the the jth structure
+          for (int icenter2{iframe2_st}; icenter2 < iframe2_nd; icenter2++) {
+            auto && keys2{X2.get_keys(icenter2)};
+            auto keys_intersection{intersection_of(keys1, keys2)};
+            // compute the dot product (cosine) between 2 normalized sparse vector
+            double inner_val{0.};
+            for (const auto& key : keys_intersection) {
+              auto vec1{X1.get_features(icenter1, key)};
+              auto vec2{X2.get_features(icenter2, key)};
+              inner_val += vec1.dot(vec2);
+            }
+            // raise the environmental kernel value to a power
+            kernel_val += std::pow(inner_val, zeta);
+          }
+        }
+        double n_centers2{static_cast<double>((iframe1_nd - iframe1_st)*(iframe2_nd - iframe2_st))};
+        mat(iframe1, iframe2) = kernel_val / n_centers2 ;
+      }
+    }
+    return mat;
+  }
+
+  /**
+   * global cosine kernel with a power of zeta with itself
+   */
+  template<typename Precision_t>
+  decltype(auto) cosine_kernel_global(int zeta,
+                     FeatureManagerBlockSparse<Precision_t>& X1) {
+    auto stride1{X1.get_structure_stride()};
+    auto stride2{X1.get_structure_stride()};
+    auto n1_frames{stride1.size()-1};
+    auto n2_frames{stride2.size()-1};
+
+    Dense_t<Precision_t> mat(n1_frames, n2_frames);
+    // loop over the structures of the 1st set
+    for (size_t iframe1{0}; iframe1 < n1_frames; iframe1++) {
+      auto& iframe1_st{stride1[iframe1]};
+      auto& iframe1_nd{stride1[iframe1+1]};
+
+      double kernel_diag{0.};
+      // compute the similarity between structure i and itself
+      for (int icenter1{iframe1_st}; icenter1 < iframe1_nd; icenter1++) {
+        auto && keys_intersection{X1.get_keys(icenter1)};
+        // add the diagonal term which is 1 because normalized feature vector
+        kernel_diag += 1.;
+
+        // loop over the centers again
+        for (int icenter2{icenter1+1}; icenter2 < iframe1_nd; icenter2++) {
+          // compute the dot product (cosine) between 2 normalized sparse vector
+          double inner_val{0.};
+          for (const auto& key : keys_intersection) {
+            auto vec1{X1.get_features(icenter1, key)};
+            auto vec2{X1.get_features(icenter2, key)};
+            inner_val += vec1.dot(vec2);
+          }
+          // raise the environmental kernel value to a power and take into
+          // account the upper and lower contribution
+          kernel_diag += 2 * std::pow(inner_val, zeta);
+        }
+
+        double n_centers2{static_cast<double>((iframe1_nd - iframe1_st)*(iframe1_nd - iframe1_st))};
+        mat(iframe1, iframe1) = kernel_diag / n_centers2 ;
+      }
+
+      // loop over the structures of the 2nd set
+      for (size_t iframe2{iframe1+1}; iframe2 < n2_frames; iframe2++) {
+        auto& iframe2_st{stride2[iframe2]};
+        auto& iframe2_nd{stride2[iframe2+1]};
+        double kernel_val{0.};
+        // loop over the centers of the the ith structure
+        for (int icenter1{iframe1_st}; icenter1 < iframe1_nd; icenter1++) {
+          auto && keys1{X1.get_keys(icenter1)};
+          // loop over the centers of the the jth structure
+          for (int icenter2{iframe2_st}; icenter2 < iframe2_nd; icenter2++) {
+            auto && keys2{X1.get_keys(icenter2)};
+            auto keys_intersection{intersection_of(keys1, keys2)};
+            // compute the dot product (cosine) between 2 normalized sparse vector
+            double inner_val{0.};
+            for (const auto& key : keys_intersection) {
+              auto vec1{X1.get_features(icenter1, key)};
+              auto vec2{X1.get_features(icenter2, key)};
+              inner_val += vec1.dot(vec2);
+            }
+            // raise the environmental kernel value to a power
+            kernel_val += std::pow(inner_val, zeta);
+          }
+        }
+        double n_centers2{static_cast<double>((iframe1_nd - iframe1_st)*(iframe2_nd - iframe2_st))};
+        mat(iframe1, iframe2) = kernel_val / n_centers2;
+        mat(iframe2, iframe1) = mat(iframe1, iframe2);
+      }
+    }
+    return mat;
+  }
 
 }  // namespace rascal
 

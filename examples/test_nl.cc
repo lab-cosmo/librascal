@@ -76,7 +76,7 @@ int main() {
   Representation_t representation{manager, hypers};
   representation.compute();
 
-  int inner_size{representation.get_feature_size()};
+  size_t inner_size{representation.get_feature_size()};
   FeatureManagerBlockSparse<double> feature{inner_size, hypers};
 
   feature.push_back(representation);
@@ -93,10 +93,17 @@ int main() {
 
   auto kernel2 = dot(feature, feature);
 
+  auto kernel3 = dot(feature);
+
   auto max1{kernel1.mean()};
   auto max2{kernel2.mean()};
   auto diff{(kernel1-kernel2).array().abs().matrix().mean()};
 
   std::cout <<max1 << ", "<< max2 << ", "<< diff<< std::endl;
+
+  diff = (kernel2-kernel3).array().abs().matrix().mean();
+
+  std::cout << diff<< std::endl;
+
   return (0);
 }
