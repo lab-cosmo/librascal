@@ -44,14 +44,14 @@ struct HelperLayer {
 };
 
 template <typename SMI, size_t Order>
-using ClusterRefKey_t = ClusterRefKey<Order, HelperLayer<SMI, Order>::layer>;
+using ClusterRefkey_t = ClusterRefKey<Order, HelperLayer<SMI, Order>::layer>;
 
 template <typename SMI, size_t Order>
 using ClusterRef_t = typename StructureManager<SMI>::template ClusterRef<Order>;
 
 template <typename SMI, size_t Order>
 using PyClusterRef =
-    py::class_<ClusterRef_t<SMI, Order>, ClusterRefKey_t<SMI, Order>>;
+    py::class_<ClusterRef_t<SMI, Order>, ClusterRefkey_t<SMI, Order>>;
 
 template <typename StructureManagerImplementation>
 using PyManager = py::class_<StructureManagerImplementation,
@@ -89,7 +89,7 @@ struct add_cluster_refs<Order, LayerEnd, LayerEnd> {
 template <size_t Order, typename SMI>
 decltype(auto) add_cluster(py::module & m) {
   using ClusterRef = ClusterRef_t<SMI, Order>;
-  using ClusterRefKey = ClusterRefKey_t<SMI, Order>;
+  using ClusterRefKey = ClusterRefkey_t<SMI, Order>;
 
   std::string cluster_name = internal::GetBindingTypeName<SMI>();
 
@@ -226,7 +226,7 @@ decltype(auto) add_structure_manager_interface(py::module & m) {
 //! templated function for adding a StructureManager implementation
 template <typename StructureManagerImplementation>
 decltype(auto) add_structure_manager_implementation(py::module & m,
-                                                    py::module & m_garbage) {
+                                                    py::module & m_throwaway) {
   using Child = StructureManagerImplementation;
   constexpr static size_t MaxOrder = Child::traits::MaxOrder;
 
@@ -234,7 +234,7 @@ decltype(auto) add_structure_manager_implementation(py::module & m,
   manager.def(py::init<>());
 
   // MaxOrder+1 because it stops at Val-1
-  add_iterators<Child, 1, MaxOrder + 1>::static_for(m_garbage, manager);
+  add_iterators<Child, 1, MaxOrder + 1>::static_for(m_throwaway, manager);
   return manager;
 }
 
@@ -414,9 +414,9 @@ struct BindAdaptorStack {
   using type = BindAdaptorStack<Manager_t, AdaptorImplementationPack...>;
 
   BindAdaptorStack(py::module & m_nl, py::module & m_adaptor,
-                   py::module & m_garbage)
-      : next_stack{m_nl, m_adaptor, m_garbage} {
-    add_structure_manager_interface<Manager_t>(m_garbage);
+                   py::module & m_throwaway)
+      : next_stack{m_nl, m_adaptor, m_throwaway} {
+    add_structure_manager_interface<Manager_t>(m_throwaway);
 
     auto adaptor = add_manager<Manager_t>(m_adaptor);
     BindAdaptor<AdaptorImplementation,
@@ -425,7 +425,7 @@ struct BindAdaptorStack {
     bind_update_unpacked<Manager_t>(adaptor);
     // bind clusterRefs so that one can loop over adaptor
     // MaxOrder+1 because recursion stops at Val-1
-    add_iterators<Manager_t, 1, MaxOrder + 1>::static_for(m_garbage, adaptor);
+    add_iterators<Manager_t, 1, MaxOrder + 1>::static_for(m_throwaway, adaptor);
     // bind the factory function
     bind_make_adapted_manager<AdaptorImplementation, ManagerImplementation>(
         m_nl);
@@ -445,8 +445,8 @@ struct BindAdaptorStack<ManagerImplementation, AdaptorImplementation> {
   using ManagerPtr = std::shared_ptr<Manager_t>;
 
   BindAdaptorStack(py::module & m_nl, py::module & m_adaptor,
-                   py::module & m_garbage) {
-    add_structure_manager_interface<Manager_t>(m_garbage);
+                   py::module & m_throwaway) {
+    add_structure_manager_interface<Manager_t>(m_throwaway);
 
     auto adaptor = add_manager<Manager_t>(m_adaptor);
     BindAdaptor<AdaptorImplementation,
@@ -455,7 +455,7 @@ struct BindAdaptorStack<ManagerImplementation, AdaptorImplementation> {
     bind_update_unpacked<Manager_t>(adaptor);
     // bind clusterRefs so that one can loop over adaptor
     // MaxOrder+1 because recursion stops at Val-1
-    add_iterators<Manager_t, 1, MaxOrder + 1>::static_for(m_garbage, adaptor);
+    add_iterators<Manager_t, 1, MaxOrder + 1>::static_for(m_throwaway, adaptor);
     // bind the factory function
     bind_make_adapted_manager<AdaptorImplementation, ManagerImplementation>(
         m_nl);
@@ -464,37 +464,37 @@ struct BindAdaptorStack<ManagerImplementation, AdaptorImplementation> {
 
 //! Template overloading of the binding of the structure managers
 template <typename StructureManagerImplementation>
-void bind_structure_manager(py::module & mod, py::module & m_garbage);
+void bind_structure_manager(py::module & mod, py::module & m_throwaway);
 
 template <typename StructureManagerCenters>
-void bind_structure_manager(py::module & mod, py::module & m_garbage) {
+void bind_structure_manager(py::module & mod, py::module & m_throwaway) {
   using Manager_t = StructureManagerCenters;
 
   // bind parent class
-  add_structure_manager_interface<Manager_t>(m_garbage);
+  add_structure_manager_interface<Manager_t>(m_throwaway);
   // bind implementation class
   auto manager =
-      add_structure_manager_implementation<Manager_t>(mod, m_garbage);
+      add_structure_manager_implementation<Manager_t>(mod, m_throwaway);
   //
   bind_update_unpacked<Manager_t>(manager);
 }
 
 //! Bind the ClusterRef up to order 4 and from Layer 0 to 6
-void bind_cluster_refs(py::module & m_garbage) {
-  add_cluster_refs<1, 0, 6>::static_for(m_garbage);
-  add_cluster_refs<2, 0, 6>::static_for(m_garbage);
-  add_cluster_refs<3, 0, 6>::static_for(m_garbage);
-  add_cluster_refs<4, 0, 6>::static_for(m_garbage);
+void bind_cluster_refs(py::module & m_throwaway) {
+  add_cluster_refs<1, 0, 6>::static_for(m_throwaway);
+  add_cluster_refs<2, 0, 6>::static_for(m_throwaway);
+  add_cluster_refs<3, 0, 6>::static_for(m_throwaway);
+  add_cluster_refs<4, 0, 6>::static_for(m_throwaway);
 }
 
 //! Main function to add StructureManagers and their Adaptors
-void add_structure_managers(py::module & m_nl, py::module & m_garbage) {
+void add_structure_managers(py::module & m_nl, py::module & m_throwaway) {
   // Bind StructureManagerBase (needed for virtual inheritance)
   py::class_<StructureManagerBase, std::shared_ptr<StructureManagerBase>>(
-      m_garbage, "StructureManagerBase");
+      m_throwaway, "StructureManagerBase");
   // Bind ClusterRefBase (needed for virtual inheritance)
-  py::class_<ClusterRefBase>(m_garbage, "ClusterRefBase");
-  bind_cluster_refs(m_garbage);
+  py::class_<ClusterRefBase>(m_throwaway, "ClusterRefBase");
+  bind_cluster_refs(m_throwaway);
 
   py::module m_strc_mng = m_nl.def_submodule("StructureManager");
   m_strc_mng.doc() = "Structure Manager Classes";
@@ -502,11 +502,11 @@ void add_structure_managers(py::module & m_nl, py::module & m_garbage) {
   m_adp.doc() = "Adaptor Classes";
 
   using Manager_t = StructureManagerCenters;
-  bind_structure_manager<Manager_t>(m_strc_mng, m_garbage);
+  bind_structure_manager<Manager_t>(m_strc_mng, m_throwaway);
 
   // bind the factory function
   bind_make_structure_manager<Manager_t>(m_nl);
 
   BindAdaptorStack<Manager_t, AdaptorNeighbourList, AdaptorStrict>
-      adaptor_stack_1{m_nl, m_adp, m_garbage};
+      adaptor_stack_1{m_nl, m_adp, m_throwaway};
 }

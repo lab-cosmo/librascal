@@ -94,7 +94,6 @@ namespace rascal {
     virtual inline Feature_Matrix_ref get_feature_matrix() = 0;
 
     virtual inline Feature_Matrix_t get_feature_matrix_dense() = 0;
-
   };
 
 }  // namespace rascal

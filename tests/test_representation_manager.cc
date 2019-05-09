@@ -29,7 +29,7 @@
 #include "test_representation_manager.hh"
 
 namespace rascal {
-  BOOST_AUTO_TEST_SUITE(representation_sorted_coulomb_test);
+  BOOST_AUTO_TEST_SUITE(representation_test);
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -87,7 +87,8 @@ namespace rascal {
       RepresentationFixture<MultipleStructureSortedCoulomb,
                             RepresentationManagerSortedCoulomb>,
       RepresentationFixture<MultipleStructureSphericalExpansion,
-                            RepresentationManagerSphericalExpansion>>;
+                            RepresentationManagerSphericalExpansion>,
+      RepresentationFixture<MultipleStructureSOAP, RepresentationManagerSOAP>>;
 
   using fixtures_ref_test = boost::mpl::list<RepresentationFixture<
       SortedCoulombTestData, RepresentationManagerSortedCoulomb>>;
@@ -178,140 +179,16 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
 
   /* Tests specific to the spherical expansion representation
-   */
-  BOOST_AUTO_TEST_SUITE(representation_spherical_expansion_test);
-
-  using multiple_fixtures = boost::mpl::list<
-      RepresentationFixture<MultipleStructureSphericalExpansion,
-                            RepresentationManagerSphericalExpansion>>;
-
-  using fixtures_ref_test =
-      boost::mpl::list<RepresentationFixture<SphericalExpansionTestData,
-                  RepresentationManagerSphericalExpansion>>;
-
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_precompute_test, Fix,
-                                   multiple_fixtures, Fix) {
-    auto & managers = Fix::managers;
-    auto & representations = Fix::representations;
-    const auto & hypers = Fix::hypers;
-
-    for (auto & manager : managers) {
-      for (const auto & hyper : hypers) {
-        representations.emplace_back(manager, hyper);
-        BOOST_CHECK(representations.back().get_is_precomputed() == false);
-        representations.back().precompute();
-        BOOST_CHECK(representations.back().get_is_precomputed() == true);
-        // And now test automatic precomputation
-        representations.emplace_back(manager, hyper);
-        BOOST_CHECK(representations.back().get_is_precomputed() == false);
-        representations.back().compute();
-        BOOST_CHECK(representations.back().get_is_precomputed() == true);
-      }
-    }
-  }
-
-   /*
-   * Test if the representation computed is equal to a reference from a file
-   */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_reference_test, Fix,
-                                   fixtures_ref_test, Fix) {
-    auto & managers = Fix::managers;
-    auto & representations = Fix::representations;
-    auto & ref_data = Fix::ref_data;
-
-    // Choose the data depending on the current options
-    //using Std2DArray_t = std::vector<std::vector<double>>;
-    using Std2DArray_t = std::vector<std::vector<double>>;
-
-    const auto & data{ref_data.at("rep_info").template get<json>()};
-    // feature_matrices = data["feature_matrices"];
-
-    size_t manager_i{0};
-    for (auto & manager : managers) {
-      for (const auto & config : data.at(manager_i)) {
-        const auto & hypers = config.at("hypers").template get<json>();
-        const auto & ref_representation =
-            config.at("feature_matrix").template get<Std2DArray_t>();
-
-        representations.emplace_back(manager, hypers);
-        representations.back().compute();
-
-        const auto & test_representation =
-            representations.back().get_representation_full();
-
-        BOOST_CHECK_EQUAL(ref_representation.size(),
-                          test_representation.rows());
-        for (size_t row_i{0}; row_i < ref_representation.size(); row_i++) {
-          BOOST_CHECK_EQUAL(ref_representation[row_i].size(),
-                            test_representation.cols());
-
-          for (size_t col_i{0}; col_i < ref_representation[row_i].size();
-               ++col_i) {
-            auto diff{std::abs(ref_representation[row_i][col_i] -
-                               test_representation(row_i, col_i))};
-            BOOST_CHECK_LE(diff, 1e-12);
-          }
-        }
-      }
-      manager_i += 1;
-    }
-  }
-
-  BOOST_AUTO_TEST_SUITE_END();
-
-  /* ---------------------------------------------------------------------- */
-  /**
    * Test the SOAP representation
    */
+  BOOST_AUTO_TEST_SUITE(representation_blocksparse_specific_tests);
 
-  BOOST_AUTO_TEST_SUITE(representation_soap_test);
+  using fixtures_ref_test = boost::mpl::list<
+      RepresentationFixture<SphericalExpansionTestData,
+                            RepresentationManagerSphericalExpansion>,
+      RepresentationFixture<SOAPTestData, RepresentationManagerSOAP>>;
 
-  /* ---------------------------------------------------------------------- */
-
-  using multiple_fixtures = boost::mpl::list<
-      RepresentationFixture<MultipleStructureSOAP,
-                            RepresentationManagerSOAP>>;
-
-  using fixtures_ref_test =
-      boost::mpl::list<RepresentationFixture<SOAPTestData,
-                                             RepresentationManagerSOAP>>;
-
-  /* ---------------------------------------------------------------------- */
-  /**
-   * Test if the constructor runs
-   */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_constructor_test, Fix,
-                                   multiple_fixtures, Fix) {
-    auto & managers = Fix::managers;
-    auto & representations = Fix::representations;
-    auto & hypers = Fix::hypers;
-
-    for (auto & manager : managers) {
-      for (auto & hyper : hypers) {
-        representations.emplace_back(manager, hyper);
-      }
-    }
-  }
-
-  /* ---------------------------------------------------------------------- */
-  /**
-   * Test if the compute function runs
-   */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_compute_test, Fix,
-                                   multiple_fixtures, Fix) {
-    auto & managers = Fix::managers;
-    auto & representations = Fix::representations;
-    auto & hypers = Fix::hypers;
-    for (auto & manager : managers) {
-      for (auto & hyper : hypers) {
-        representations.emplace_back(manager, hyper);
-        representations.back().compute();
-      }
-    }
-  }
-
-  /* ---------------------------------------------------------------------- */
-  /**
+  /*
    * Test if the representation computed is equal to a reference from a file
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_reference_test, Fix,
@@ -321,7 +198,7 @@ namespace rascal {
     auto & ref_data = Fix::ref_data;
 
     // Choose the data depending on the current options
-    //using Std2DArray_t = std::vector<std::vector<double>>;
+    // using Std2DArray_t = std::vector<std::vector<double>>;
     using Std2DArray_t = std::vector<std::vector<double>>;
 
     const auto & data{ref_data.at("rep_info").template get<json>()};
@@ -337,15 +214,17 @@ namespace rascal {
         representations.emplace_back(manager, hypers);
         representations.back().compute();
 
-        const auto & test_representation =
-            representations.back().get_representation_full();
+        // TODO(felix) quick fix of something that will disappear soon
+        FeatureManagerBlockSparse<double> features{
+            representations.back().get_feature_size(), hypers};
+        features.push_back(representations.back());
+        auto test_representation = features.get_feature_matrix_dense();
 
-        BOOST_CHECK_EQUAL(ref_representation.size(),
-                          test_representation.rows());
+        auto n_feature{test_representation.rows()};
+        auto n_center{test_representation.cols()};
+        BOOST_CHECK_EQUAL(ref_representation.size(), n_feature);
         for (size_t row_i{0}; row_i < ref_representation.size(); row_i++) {
-          BOOST_CHECK_EQUAL(ref_representation[row_i].size(),
-                            test_representation.cols());
-
+          BOOST_CHECK_EQUAL(ref_representation[row_i].size(), n_center);
           for (size_t col_i{0}; col_i < ref_representation[row_i].size();
                ++col_i) {
             auto diff{std::abs(ref_representation[row_i][col_i] -
@@ -359,5 +238,4 @@ namespace rascal {
   }
 
   BOOST_AUTO_TEST_SUITE_END();
-
 }  // namespace rascal

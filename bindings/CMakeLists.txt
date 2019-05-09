@@ -59,24 +59,21 @@ install(TARGETS pyRascal DESTINATION "${PYTHON_SITE_PACKAGES}/rascal/lib")
 add_custom_target(librascal ALL
     DEPENDS
         copy_py
-        copy_py_bind
     )
 
 add_dependencies(librascal pyRascal)
 
+# Copy the python wrappers in the build folder
+# Copy the resulting bindings lib in the python wrapper lib folder
 add_custom_command(OUTPUT copy_py
   COMMAND ${CMAKE_COMMAND} -E copy_directory
   ${CMAKE_CURRENT_SOURCE_DIR}/rascal ${CMAKE_BINARY_DIR}/rascal
-  DEPENDS
-      always_rebuild
-  )
-# Copy the resulting bindings lib in the python wrapper lib folder
-add_custom_command(OUTPUT copy_py_bind
   COMMAND ${CMAKE_COMMAND} -E copy
   ${CMAKE_BINARY_DIR}/bindings/_rascal.* ${CMAKE_BINARY_DIR}/rascal/lib/
   DEPENDS
       always_rebuild
   )
+
 
 add_custom_command(
     OUTPUT always_rebuild

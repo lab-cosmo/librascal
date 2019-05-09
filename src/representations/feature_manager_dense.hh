@@ -34,7 +34,7 @@
 
 namespace rascal {
   /**
-   * Handles the aggragation of features from compatible representation managers
+   * Handles the aggregation of features from compatible representation managers
    * using a dense underlying data storage.
    */
   template <typename T>
@@ -160,7 +160,7 @@ namespace rascal {
     }
 
     inline Feature_Matrix_t get_feature_matrix_dense() {
-      return Feature_Matrix_t::Zero(2,2);
+      return Feature_Matrix_t::Zero(2, 2);
     }
 
    protected:

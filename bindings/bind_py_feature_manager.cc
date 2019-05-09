@@ -29,13 +29,12 @@
 
 using namespace rascal;  // NOLINT
 
-template<typename T>
-void bind_feature_manager_base(py::module & m_garbage) {
+template <typename T>
+void bind_feature_manager_base(py::module & m_throwaway) {
   using Base_t = FeatureManagerBase<T>;
 
-  std::string featurebase_name =
-      internal::GetBindingTypeName<Base_t>();
-  py::class_<Base_t>(m_garbage, featurebase_name.c_str());
+  std::string featurebase_name = internal::GetBindingTypeName<Base_t>();
+  py::class_<Base_t>(m_throwaway, featurebase_name.c_str());
 }
 
 /**
@@ -57,19 +56,19 @@ decltype(auto) bind_feature_manager(py::module & mod, py::module &) {
     json hypers = json::parse(hyper_str);
     return std::make_unique<Feature_t>(n_feature, hypers);
   }));
-  feature.def("reserve", &Feature::reserve);
+  feature.def("reserve", &Feature_t::reserve);
   feature.def("append",
-              (void (Feature::*)(RepresentationManagerBase &)) &
-                  Feature::push_back,
+              (void (Feature_t::*)(RepresentationManagerBase &)) &
+                  Feature_t::push_back,
               py::call_guard<py::gil_scoped_release>());
-  feature.def("insert", &Feature::insert,
+  feature.def("insert", &Feature_t::insert,
               py::call_guard<py::gil_scoped_release>());
-  feature.def("resize", &Feature::resize,
+  feature.def("resize", &Feature_t::resize,
               py::call_guard<py::gil_scoped_release>());
-  feature.def("assign", &Feature::assign,
+  feature.def("assign", &Feature_t::assign,
               py::call_guard<py::gil_scoped_release>());
-  feature.def("assign", &Feature::assign);
-  feature.def_property_readonly("size", &Feature::size,
+  feature.def("assign", &Feature_t::assign);
+  feature.def_property_readonly("size", &Feature_t::size,
                                 py::return_value_policy::copy);
   feature.def_property_readonly("shape", &Feature_t::shape,
                                 py::return_value_policy::copy);
@@ -98,8 +97,9 @@ decltype(auto) bind_sparse_feature_manager(py::module & mod, py::module &) {
     return std::make_unique<Feature_t>(inner_size, hypers);
   }));
   feature.def("reserve", &Feature_t::reserve);
-  feature.def("append", (void (Feature_t::*)(RepresentationManagerBase &)) &
-                            Feature_t::push_back);
+  // feature.def("append", (void (Feature_t::*)(RepresentationManagerBase &)) &
+  //                           Feature_t::push_back);
+  feature.def("append", &Feature_t::push_back);
   feature.def_property_readonly("size", &Feature_t::size,
                                 py::return_value_policy::copy);
   feature.def_property_readonly("shape", &Feature_t::shape,
@@ -112,19 +112,19 @@ decltype(auto) bind_sparse_feature_manager(py::module & mod, py::module &) {
 }
 
 //! Feature aggregator python binding
-void add_feature_managers(py::module & mod, py::module & m_garbage) {
-  bind_feature_manager_base<double>(m_garbage);
-  bind_feature_manager_base<float>(m_garbage);
+void add_feature_managers(py::module & mod, py::module & m_throwaway) {
+  bind_feature_manager_base<double>(m_throwaway);
+  bind_feature_manager_base<float>(m_throwaway);
 
   auto feature_double =
-      bind_feature_manager<FeatureManagerDense, double>(mod, m_garbage);
+      bind_feature_manager<FeatureManagerDense, double>(mod, m_throwaway);
 
   auto feature_float =
-      bind_feature_manager<FeatureManagerDense, float>(mod, m_garbage);
+      bind_feature_manager<FeatureManagerDense, float>(mod, m_throwaway);
 
-  bind_sparse_feature_manager<FeatureManagerBlockSparse, double>(mod, m_garbage);
+  bind_sparse_feature_manager<FeatureManagerBlockSparse, double>(mod,
+                                                                 m_throwaway);
 
-  bind_sparse_feature_manager<FeatureManagerBlockSparse, float>(mod, m_garbage);
-
-
+  bind_sparse_feature_manager<FeatureManagerBlockSparse, float>(mod,
+                                                                m_throwaway);
 }

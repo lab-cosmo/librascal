@@ -65,13 +65,14 @@ namespace rascal {
     // Enum class defining the several possible sorting options of the Coulomb
     // Matrix
     enum class CMSortAlgorithm {
-      Distance, // sort according to the distance from the central atom
-      RowNorm, // sort according to the norm of the coulomb matrix rows
+      Distance,  // sort according to the distance from the central atom
+      RowNorm,   // sort according to the norm of the coulomb matrix rows
     };
 
     // Empty general template class implementing the determination of the
     // sorting order for the coulomb matrix. It should never be instantiated.
-    template <CMSortAlgorithm Method> struct SortCoulomMatrix {};
+    template <CMSortAlgorithm Method>
+    struct SortCoulomMatrix {};
     /* -------------------- rep-options-def-end -------------------- */
 
     /* -------------------- rep-options-impl-start -------------------- */
@@ -168,7 +169,7 @@ namespace rascal {
     using Precision_t = typename Parent::Precision_t;
     // type of the data structure for the representation feaures
     using Property_t = Property<Precision_t, 1, 1, Eigen::Dynamic, 1>;
-    template<size_t Order>
+    template <size_t Order>
     // short hand type to help the iteration over the structure manager
     using ClusterRef_t = typename Manager_t::template ClusterRef<Order>;
     // type of the datastructure used to register the list of valid
@@ -204,8 +205,8 @@ namespace rascal {
     operator=(const RepresentationManagerSortedCoulomb & other) = delete;
 
     //! Move assignment operator
-    RepresentationManagerSortedCoulomb & operator=
-    (RepresentationManagerSortedCoulomb && other) = default;
+    RepresentationManagerSortedCoulomb &
+    operator=(RepresentationManagerSortedCoulomb && other) = default;
     /* -------------------- rep-construc-end -------------------- */
 
     /* -------------------- rep-interface-start -------------------- */
@@ -230,21 +231,17 @@ namespace rascal {
       return this->coulomb_matrices.get_raw_data();
     }
 
-    data_t & get_representation_sparse_raw_data() {
-      return this->dummy;
-    }
+    Data_t & get_representation_sparse_raw_data() { return this->dummy; }
 
     //! get the size of a feature vector
     size_t get_feature_size() { return this->coulomb_matrices.get_nb_comp(); }
 
     //! get the number of centers for the representation
-    size_t get_center_size() {
-      return this->coulomb_matrices.get_nb_item();
-    }
+    size_t get_center_size() { return this->coulomb_matrices.get_nb_item(); }
     /* -------------------- rep-interface-end -------------------- */
 
     //! Implementation of compute representation
-    template<internal::CMSortAlgorithm AlgorithmType>
+    template <internal::CMSortAlgorithm AlgorithmType>
     void compute_helper();
 
     //! check if size of representation manager is enough for current structure
@@ -325,7 +322,7 @@ namespace rascal {
     // at least equal to the largest number of neighours
     size_t size{};
 
-    data_t dummy{};
+    Data_t dummy{};
 
     Property_t coulomb_matrices;
 

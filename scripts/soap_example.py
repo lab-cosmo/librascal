@@ -1,7 +1,6 @@
 
 import sys
 sys.path.insert(0,'../build/')
-sys.path.insert(0,'../build/bindings/')
 import json
 import ase
 import argparse
@@ -9,7 +8,8 @@ import rascal
 import rascal.lib as lrl
 import numpy as np
 from ase.io import read
-
+from rascal.representations import SOAP
+from rascal.utils import ostream_redirect
 def load_json(fn):
     with open(fn,'r') as f:
         data = json.load(f)
@@ -25,8 +25,8 @@ dict(positions='positions',atom_types='numbers',pbc='pbc',cell='cell').items()
 ##########################################################################################
 
 def get_spectrum(hypers, frames):
-    with lrl._rascal.utils.ostream_redirect():
-        soap = rascal.representation.SOAP(**hypers)
+    with ostream_redirect():
+        soap = SOAP(**hypers)
         soap_vectors = soap.transform(frames)
         spectrum = soap_vectors.get_feature_matrix()
     return spectrum
@@ -69,18 +69,18 @@ def dump_reference_json():
     sys.path.insert(0, os.path.join(path, 'tests/'))
 
     cutoffs = [2, 3]
-    gaussian_sigmas = [0.2, 0.3]
-    max_radials = [8, 12]
+    gaussian_sigmas = [0.2, 0.5]
+    max_radials = [4, 10]
+    max_angulars = [3, 6]
     soap_types = ["RadialSpectrum", "PowerSpectrum"]
 
     fns = [
-        os.path.join(path,"tests/reference_data/small_molecule.json"),
         os.path.join(path,"tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json"),
+        os.path.join(path,"tests/reference_data/small_molecule.json")
     ]
-
     fns_to_write = [
-        "reference_data/small_molecule.json",
         "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
+        "reference_data/small_molecule.json",
     ]
 
     data = dict(filenames=fns_to_write,
@@ -98,20 +98,20 @@ def dump_reference_json():
             for soap_type in soap_types:
                 for gaussian_sigma in gaussian_sigmas:
                     for max_radial in max_radials:
-                        max_angular = 6
-                        if 'RadialSpectrum' == soap_type:
-                            max_angular = 0
+                        for max_angular in max_angulars:
+                            if 'RadialSpectrum' == soap_type:
+                                max_angular = 0
 
-                        hypers = {"interaction_cutoff": cutoff,
-                                "cutoff_smooth_width": 0.0,
-                                "max_radial": max_radial,
-                                "max_angular": max_angular,
-                                "gaussian_sigma_type": "Constant",
-                                "gaussian_sigma_constant": gaussian_sigma,
-                                "soap_type": soap_type }
-                        x = get_spectrum(hypers, frames)
-                        data['rep_info'][-1].append(dict(feature_matrix=x.tolist(),
-                                             hypers=copy(hypers)))
+                            hypers = {"interaction_cutoff": cutoff,
+                                    "cutoff_smooth_width": 0.0,
+                                    "max_radial": max_radial,
+                                    "max_angular": max_angular,
+                                    "gaussian_sigma_type": "Constant",
+                                    "gaussian_sigma_constant": gaussian_sigma,
+                                    "soap_type": soap_type }
+                            x = get_spectrum(hypers, frames)
+                            data['rep_info'][-1].append(dict(feature_matrix=x.tolist(),
+                                                hypers=copy(hypers)))
 
     with open(path+"tests/reference_data/soap_reference.ubjson",'wb') as f:
         ubjson.dump(data,f)

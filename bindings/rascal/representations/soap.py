@@ -1,8 +1,12 @@
 import json
 
-from ..utils import get_strict_neighbourlist
-from ..lib import RepresentationManager, FeatureManager
-from .base import RepresentationFactory
+from ..neighbourlist import get_neighbourlist
+from .base import RepresentationFactory, FeatureFactory
+from ..utils import get_full_name
+from ..neighbourlist.structure_manager import convert_to_structure
+from ..neighbourlist.base import NeighbourListFactory
+import numpy as np
+
 
 class SOAP(object):
 
@@ -54,7 +58,7 @@ class SOAP(object):
 
     def __init__(self, interaction_cutoff, cutoff_smooth_width,
                  max_radial, max_angular, gaussian_sigma_type,
-                 gaussian_sigma_constant=0., n_species=1, 
+                 gaussian_sigma_constant=0., n_species=1,
                  soap_type="PowerSpectrum"):
         """Construct a SphericalExpansion representation
 
@@ -74,6 +78,25 @@ class SOAP(object):
 
         if soap_type == "RadialSpectrum":
             self.update_hyperparameters(max_angular=0)
+
+        self.nl_options = [
+            dict(name='centers', args=[]),
+            dict(name='neighbourlist', args=[interaction_cutoff]),
+            dict(name='strict', args=[interaction_cutoff])
+        ]
+
+        neighbourlist_full_name = get_full_name(self.nl_options)
+        self.name = self.name + '_' + neighbourlist_full_name
+        hypers_str = json.dumps(self.hypers)
+        self.rep_options = dict(name=self.name, args=[hypers_str])
+
+        n_features = self.get_num_coefficients()
+        self.feature_options = dict(name='blocksparse_double', args=[
+                                    n_features, hypers_str])
+
+        self.manager = NeighbourListFactory(self.nl_options)
+        self.representation = RepresentationFactory(
+            self.manager, self.rep_options)
 
     def update_hyperparameters(self, **hypers):
         """Store the given dict of hyperparameters
@@ -99,22 +122,23 @@ class SOAP(object):
 
         Returns
         -------
-        FeatureManager.Dense_double
+        FeatureManager.blocksparse_double
             Object containing the representation
 
         """
-        n_frames = len(frames)
-        managers = list(map(
-            get_strict_neighbourlist,
-            frames, [self.hypers['interaction_cutoff'], ] * n_frames))
-        hypers_str = json.dumps(self.hypers)
-        n_features = self.get_num_coefficients()
-        features = FeatureManager.BlockSparse_double(n_features, hypers_str)
-        cms = map(RepresentationFactory(self.name),
-                  managers, [hypers_str, ] * n_frames)
-        for cm in cms:
-            cm.compute()
-            features.append(cm)
+        structures = [convert_to_structure(frame) for frame in frames]
+
+        n_atoms = [0]+[len(structure['atom_types'])
+                       for structure in structures]
+        structure_ids = np.cumsum(n_atoms)[:-1]
+        n_centers = np.sum(n_atoms)
+
+        features = FeatureFactory(self.feature_options)
+
+        for structure in structures:
+            self.manager.update(**structure)
+            self.representation.compute()
+            features.append(self.representation)
 
         return features
 
@@ -128,7 +152,7 @@ class SOAP(object):
             return (self.hypers['n_species']*self.hypers['max_radial'])
         if self.hypers['soap_type'] == 'PowerSpectrum':
             return (self.hypers['n_species']**2*self.hypers['max_radial']**2
-                    *(self.hypers['max_angular'] + 1))
+                    * (self.hypers['max_angular'] + 1))
         else:
             raise RuntimeError('Only soap_type = RadialSpectrum || '
                                'PowerSpectrum implemented for now')
