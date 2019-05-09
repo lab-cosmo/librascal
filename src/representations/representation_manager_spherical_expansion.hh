@@ -503,6 +503,8 @@ namespace rascal {
           radial_integral.row(radial_n) *= radial_norm_factors(radial_n);
         }
         radial_integral = this->radial_ortho_matrix * radial_integral;
+        radial_integral *= math::switching_function_cosine(
+            dist, this->interaction_cutoff, this->cutoff_smooth_width);
 
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           size_t lm_collective_idx{0};

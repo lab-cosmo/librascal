@@ -57,6 +57,7 @@ int main(int argc, char* argv[]) {
   if (argc < 2) {
     std::cerr << "Must provide atomic structure json filename as argument";
     std::cerr << std::endl;
+    return -1;
   }
 
   //TODO(max) put these in a file so they can be varied systematically
