@@ -279,11 +279,23 @@ namespace rascal {
       auto & coefficients{expansions_coefficients[center]};
       auto & soap_vector{this->soap_vectors[center]};
       Key_t element_type{0};
+      std::vector<Key_t> element_list{};
       for (const auto & el : coefficients) {
         element_type[0] = el.first[0];
         soap_vector[element_type] = Dense_t::Zero(n_row, n_col);
         auto & coef{el.second};
         soap_vector[element_type] += coef;
+        element_list.push_back(element_type);
+      }
+
+      // normalize the soap vector
+      double norm{0.};
+      for (const auto& element_type : element_list) {
+        norm += soap_vector[element_type].squaredNorm();
+      }
+      norm = std::sqrt(norm);
+      for (const auto& element_type : element_list) {
+        soap_vector[element_type] /= norm;
       }
     }
   }
