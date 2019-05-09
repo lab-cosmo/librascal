@@ -228,7 +228,23 @@ if (${BUILD_TESTS})
   add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
   configure_file("tests/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
   configure_file("tests/simple_cubic_9.json" ${CMAKE_BINARY_DIR} COPYONLY)
-  file(COPY "tests/reference_data" DESTINATION ${CMAKE_BINARY_DIR})
+
+  add_custom_command(
+    OUTPUT always_rebuild
+    COMMAND ${CMAKE_COMMAND} -E echo
+  )
+
+  add_custom_target(cpp_test ALL
+    DEPENDS
+    copy_test_reference_data
+  )
+
+  add_custom_command(OUTPUT copy_test_reference_data
+      COMMAND ${CMAKE_COMMAND} -E copy_directory
+      ${CMAKE_SOURCE_DIR}/tests/reference_data ${CMAKE_BINARY_DIR}/reference_data
+      DEPENDS
+          always_rebuild
+    )
 
   if(BUILD_BINDINGS)
 
@@ -244,11 +260,6 @@ if (${BUILD_TESTS})
       ${CMAKE_SOURCE_DIR}/tests/python ${CMAKE_BINARY_DIR}/
       DEPENDS
           always_rebuild
-    )
-
-    add_custom_command(
-      OUTPUT always_rebuild
-      COMMAND ${CMAKE_COMMAND} -E echo
     )
 
     add_test(python_binding_test python_binding_tests.py)
@@ -288,6 +299,7 @@ foreach(binaryfile ${binaries})
 endforeach(binaryfile ${binaries})
 configure_file("${CMAKE_SOURCE_DIR}/examples/crystal_structure.json" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file("${CMAKE_SOURCE_DIR}/examples/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
+
 # Add profiling information for the appropriate examples
 if (ENABLE_PROFILING)
   if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
