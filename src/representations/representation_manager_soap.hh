@@ -88,12 +88,16 @@ namespace rascal {
     void set_hyperparameters(const Hypers_t & hypers) {
       this->max_radial = hypers.at("max_radial");
       this->max_angular = hypers.at("max_angular");
+      this->normalize = hypers.at("normalize").get<bool>();
       this->soap_type_str = hypers.at("soap_type").get<std::string>();
 
       if (this->soap_type_str.compare("PowerSpectrum") == 0) {
         this->soap_type = internal::SOAPType::PowerSpectrum;
       } else if (this->soap_type_str.compare("RadialSpectrum") == 0) {
         this->soap_type = internal::SOAPType::RadialSpectrum;
+        if (this->max_angular > 0) {
+          throw std::logic_error("max_angular should be 0 with RadialSpectrum")
+        }
       } else {
         throw std::logic_error("Requested SOAP type \'" + this->soap_type_str +
                                "\' has not been implemented.  Must be one of" +
@@ -131,6 +135,7 @@ namespace rascal {
    protected:
     size_t max_radial{};
     size_t max_angular{};
+    bool normalize{};
     ManagerPtr_t structure_manager;
     RepresentationManagerSphericalExpansion<Manager_t> rep_expansion;
     internal::SOAPType soap_type{};
@@ -211,7 +216,7 @@ namespace rascal {
       auto & coefficients{expansions_coefficients[center]};
       auto & soap_vector{this->soap_vectors[center]};
       Key_t pair_type{0, 0};
-      std::vector<Key_t> pair_list{};
+      // std::vector<Key_t> pair_list{};
       for (const auto & el1 : coefficients) {
         pair_type[0] = el1.first[0];
         auto & coef1{el1.second};
@@ -221,7 +226,7 @@ namespace rascal {
           /* avoid computing p^{ab} and p^{ba} since p^{ab} = p^{ba}^T
            */
           if (soap_vector.count(pair_type) == 0) {
-            pair_list.push_back(pair_type);
+            // pair_list.push_back(pair_type);
             soap_vector[pair_type] = Dense_t::Zero(n_row, n_col);
             size_t nn{0};
             for (size_t n1 = 0; n1 < this->max_radial; n1++) {
@@ -242,23 +247,34 @@ namespace rascal {
           }
         }
       }
-      // normalize the soap vector
       // the SQRT_TWO factor comes from the fact that
-      // the upper diagonal species is not considered
-      double norm{0.};
-      for (const auto& pair_type : pair_list) {
-        double fac{math::SQRT_TWO};
-        if (pair_type[0] == pair_type[1]) {
-          fac = 1.;
+      // the upper diagonal of the species is not considered
+      for (const auto& el : soap_vector) {
+        auto&& pair_type{el.first};
+        if (pair_type[0] != pair_type[1]) {
+          soap_vector[pair_type] *= math::SQRT_TWO;
         }
-        soap_vector[pair_type] *= fac;
-        norm += soap_vector[pair_type].squaredNorm();
       }
-      norm = std::sqrt(norm);
 
-      for (const auto& pair_type : pair_list) {
-        soap_vector[pair_type] /= norm;
+      // normalize the soap vector
+      if (this->normalize) {
+        double norm{0.};
+        for (const auto& el : soap_vector) {
+          auto&& pair_type{el.first};
+          double fac{math::SQRT_TWO};
+          if (pair_type[0] == pair_type[1]) {
+            fac = 1.;
+          }
+          soap_vector[pair_type] *= fac;
+          norm += soap_vector[pair_type].squaredNorm();
+        }
+        norm = std::sqrt(norm);
+        for (const auto& el : soap_vector) {
+          auto&& pair_type{el.first};
+          soap_vector[pair_type] /= norm;
+        }
       }
+
 
     }
   }
@@ -289,13 +305,15 @@ namespace rascal {
       }
 
       // normalize the soap vector
-      double norm{0.};
-      for (const auto& element_type : element_list) {
-        norm += soap_vector[element_type].squaredNorm();
-      }
-      norm = std::sqrt(norm);
-      for (const auto& element_type : element_list) {
-        soap_vector[element_type] /= norm;
+      if (this->normalize) {
+        double norm{0.};
+        for (const auto& element_type : element_list) {
+          norm += soap_vector[element_type].squaredNorm();
+        }
+        norm = std::sqrt(norm);
+        for (const auto& element_type : element_list) {
+          soap_vector[element_type] /= norm;
+        }
       }
     }
   }
