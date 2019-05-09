@@ -136,8 +136,9 @@ namespace rascal {
                               {"max_angular", 6},
                               {"gaussian_sigma_type", "Constant"},
                               {"gaussian_sigma_constant", 0.4},
-                              {"soap_type", "PowerSpectrum"}},
-                              {"normalize",true}};
+                              {"soap_type", "PowerSpectrum"},
+                              {"normalize",true}}
+                             };
   };
 
   struct SOAPTestData : TestData {
