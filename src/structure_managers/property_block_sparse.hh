@@ -162,7 +162,6 @@ namespace rascal {
       const_iterator cend() const noexcept { return this->data.cend(); }
 
      private:
-
       /**
        * Functor to get a key from a map
        */

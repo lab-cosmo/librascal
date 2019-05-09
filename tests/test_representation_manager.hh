@@ -113,7 +113,7 @@ namespace rascal {
                               {"gaussian_sigma_type", "Constant"},
                               {"gaussian_sigma_constant", 0.2},
                               {"soap_type", "RadialSpectrum"},
-                              {"normalize",true}},
+                              {"normalize", true}},
                              {{"interaction_cutoff", 3.0},
                               {"cutoff_smooth_width", 0.5},
                               {"max_radial", 6},
@@ -121,7 +121,7 @@ namespace rascal {
                               {"gaussian_sigma_type", "Constant"},
                               {"gaussian_sigma_constant", 0.4},
                               {"soap_type", "RadialSpectrum"},
-                              {"normalize",true}},
+                              {"normalize", true}},
                              {{"interaction_cutoff", 2.0},
                               {"cutoff_smooth_width", 0.0},
                               {"max_radial", 6},
@@ -129,7 +129,7 @@ namespace rascal {
                               {"gaussian_sigma_type", "Constant"},
                               {"gaussian_sigma_constant", 0.2},
                               {"soap_type", "PowerSpectrum"},
-                              {"normalize",true}},
+                              {"normalize", true}},
                              {{"interaction_cutoff", 2.0},
                               {"cutoff_smooth_width", 0.0},
                               {"max_radial", 6},
@@ -137,8 +137,7 @@ namespace rascal {
                               {"gaussian_sigma_type", "Constant"},
                               {"gaussian_sigma_constant", 0.4},
                               {"soap_type", "PowerSpectrum"},
-                              {"normalize",true}}
-                             };
+                              {"normalize", true}}};
   };
 
   struct SOAPTestData : TestData {

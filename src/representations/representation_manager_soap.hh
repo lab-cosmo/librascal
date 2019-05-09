@@ -249,8 +249,8 @@ namespace rascal {
       }
       // the SQRT_TWO factor comes from the fact that
       // the upper diagonal of the species is not considered
-      for (const auto& el : soap_vector) {
-        auto&& pair_type{el.first};
+      for (const auto & el : soap_vector) {
+        auto && pair_type{el.first};
         if (pair_type[0] != pair_type[1]) {
           soap_vector[pair_type] *= math::SQRT_TWO;
         }
@@ -259,8 +259,8 @@ namespace rascal {
       // normalize the soap vector
       if (this->normalize) {
         double norm{0.};
-        for (const auto& el : soap_vector) {
-          auto&& pair_type{el.first};
+        for (const auto & el : soap_vector) {
+          auto && pair_type{el.first};
           double fac{math::SQRT_TWO};
           if (pair_type[0] == pair_type[1]) {
             fac = 1.;
@@ -269,13 +269,11 @@ namespace rascal {
           norm += soap_vector[pair_type].squaredNorm();
         }
         norm = std::sqrt(norm);
-        for (const auto& el : soap_vector) {
-          auto&& pair_type{el.first};
+        for (const auto & el : soap_vector) {
+          auto && pair_type{el.first};
           soap_vector[pair_type] /= norm;
         }
       }
-
-
     }
   }
 
@@ -307,11 +305,11 @@ namespace rascal {
       // normalize the soap vector
       if (this->normalize) {
         double norm{0.};
-        for (const auto& element_type : element_list) {
+        for (const auto & element_type : element_list) {
           norm += soap_vector[element_type].squaredNorm();
         }
         norm = std::sqrt(norm);
-        for (const auto& element_type : element_list) {
+        for (const auto & element_type : element_list) {
           soap_vector[element_type] /= norm;
         }
       }

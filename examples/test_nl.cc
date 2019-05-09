@@ -85,7 +85,7 @@ int main() {
   auto n_center{feature.sample_size()};
   auto norms = X.colwise().norm();
   std::cout << norms.size() << std::endl;
-  for (int icenter{0};icenter<n_center;icenter++) {
+  for (int icenter{0}; icenter < n_center; icenter++) {
     std::cout << norms[icenter] << std::endl;
   }
 
@@ -97,13 +97,13 @@ int main() {
 
   auto max1{kernel1.mean()};
   auto max2{kernel2.mean()};
-  auto diff{(kernel1-kernel2).array().abs().matrix().mean()};
+  auto diff{(kernel1 - kernel2).array().abs().matrix().mean()};
 
-  std::cout <<max1 << ", "<< max2 << ", "<< diff<< std::endl;
+  std::cout << max1 << ", " << max2 << ", " << diff << std::endl;
 
-  diff = (kernel2-kernel3).array().abs().matrix().mean();
+  diff = (kernel2 - kernel3).array().abs().matrix().mean();
 
-  std::cout << diff<< std::endl;
+  std::cout << diff << std::endl;
 
   return (0);
 }

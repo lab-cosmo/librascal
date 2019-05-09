@@ -36,7 +36,6 @@
 #include "representations/feature_manager_dense.hh"
 #include "basic_types.hh"
 
-
 #include <iostream>
 #include <basic_types.hh>
 #include <cmath>
@@ -48,19 +47,19 @@
 // using namespace std;
 using namespace rascal;  // NOLINT
 
-const int N_ITERATIONS = 10000; // it's over 9000
+const int N_ITERATIONS = 10000;  // it's over 9000
 
 using Representation_t = RepresentationManagerSOAP<
     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
 
-int main(int argc, char* argv[]) {
+int main(int argc, char * argv[]) {
   if (argc < 2) {
     std::cerr << "Must provide atomic structure json filename as argument";
     std::cerr << std::endl;
   }
 
-  //TODO(max) put these in a file so they can be varied systematically
-  //maybe together with the filename and iteration count
+  // TODO(max) put these in a file so they can be varied systematically
+  // maybe together with the filename and iteration count
   std::string filename{argv[1]};
   json hypers{{"interaction_cutoff", 2.0},
               {"cutoff_smooth_width", 0.0},
@@ -73,17 +72,17 @@ int main(int argc, char* argv[]) {
 
   double cutoff{hypers["interaction_cutoff"]};
   json adaptors;
-        json ad1{{"name", "AdaptorNeighbourList"},
-                {"initialization_arguments",
-                  {{"cutoff", cutoff},
-                  {"consider_ghost_neighbours", false}}}};
-        json ad2{{"name", "AdaptorStrict"},
-                {"initialization_arguments", {{"cutoff", cutoff}}}};
+  json ad1{{"name", "AdaptorNeighbourList"},
+           {"initialization_arguments",
+            {{"cutoff", cutoff}, {"consider_ghost_neighbours", false}}}};
+  json ad2{{"name", "AdaptorStrict"},
+           {"initialization_arguments", {{"cutoff", cutoff}}}};
   adaptors.emplace_back(ad1);
   adaptors.emplace_back(ad2);
   auto manager =
-    make_structure_manager_stack<StructureManagerCenters, AdaptorNeighbourList,
-                                 AdaptorStrict>(structure, adaptors);
+      make_structure_manager_stack<StructureManagerCenters,
+                                   AdaptorNeighbourList, AdaptorStrict>(
+          structure, adaptors);
 
   Representation_t representation{manager, hypers};
 
