@@ -36,8 +36,6 @@
 #include "representations/feature_manager_dense.hh"
 #include "representations/feature_manager_block_sparse.hh"
 
-#include "basic_types.hh"
-
 #include <iostream>
 #include <basic_types.hh>
 #include <cmath>
@@ -57,8 +55,8 @@ int main() {
   double cutoff{3.};
   json hypers{{"interaction_cutoff", 2.0},
               {"cutoff_smooth_width", 0.0},
-              {"max_radial", 2},
-              {"max_angular", 1},
+              {"max_radial", 6},
+              {"max_angular", 6},
               {"gaussian_sigma_type", "Constant"},
               {"gaussian_sigma_constant", 0.2},
               {"soap_type", "PowerSpectrum"}};
@@ -90,7 +88,7 @@ int main() {
   for (int icenter{0};icenter<n_center;icenter++) {
     std::cout << norms[icenter] << std::endl;
   }
-  
+
   auto kernel1 = X.transpose() * X;
 
   auto kernel2 = dot(feature, feature);
