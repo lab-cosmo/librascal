@@ -57,6 +57,12 @@ namespace rascal {
     Eigen::MatrixXd compute_spherical_harmonics(
         const Eigen::Ref<const Eigen::Vector3d> & direction,
         size_t max_angular);
+
+    double switching_function_cosine(double r, double cutoff,
+                                     double smooth_width);
+
+    double derivative_switching_funtion_cosine(
+        double r, double cutoff, double smooth_width);
   }  // namespace math
 }  // namespace rascal
 
