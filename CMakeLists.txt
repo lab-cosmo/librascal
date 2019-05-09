@@ -251,8 +251,7 @@ if (${BUILD_TESTS})
       COMMAND ${CMAKE_COMMAND} -E echo
     )
 
-    add_test(python_binding_test
-              COMMAND ${PYTHON_EXECUTABLE} python_binding_tests.py )
+    add_test(python_binding_test python_binding_tests.py)
   endif()
 
 
