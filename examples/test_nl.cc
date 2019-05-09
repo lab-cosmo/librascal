@@ -34,6 +34,8 @@
 #include "representations/representation_manager_spherical_expansion.hh"
 #include "representations/representation_manager_soap.hh"
 #include "representations/feature_manager_dense.hh"
+#include "representations/feature_manager_block_sparse.hh"
+
 #include "basic_types.hh"
 
 #include <iostream>
@@ -55,8 +57,8 @@ int main() {
   double cutoff{3.};
   json hypers{{"interaction_cutoff", 2.0},
               {"cutoff_smooth_width", 0.0},
-              {"max_radial", 6},
-              {"max_angular", 6},
+              {"max_radial", 2},
+              {"max_angular", 1},
               {"gaussian_sigma_type", "Constant"},
               {"gaussian_sigma_constant", 0.2},
               {"soap_type", "PowerSpectrum"}};
@@ -76,5 +78,27 @@ int main() {
   Representation_t representation{manager, hypers};
   representation.compute();
 
+  int inner_size{representation.get_feature_size()};
+  FeatureManagerBlockSparse<double> feature{inner_size, hypers};
+
+  feature.push_back(representation);
+  auto X{feature.get_feature_matrix_dense()};
+  std::cout << "sadfasd" << std::endl;
+  auto n_center{feature.sample_size()};
+  auto norms = X.colwise().norm();
+  std::cout << norms.size() << std::endl;
+  for (int icenter{0};icenter<n_center;icenter++) {
+    std::cout << norms[icenter] << std::endl;
+  }
+  
+  auto kernel1 = X.transpose() * X;
+
+  auto kernel2 = dot(feature, feature);
+
+  auto max1{kernel1.mean()};
+  auto max2{kernel2.mean()};
+  auto diff{(kernel1-kernel2).array().abs().matrix().mean()};
+
+  std::cout <<max1 << ", "<< max2 << ", "<< diff<< std::endl;
   return (0);
 }

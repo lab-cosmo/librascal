@@ -44,6 +44,24 @@ namespace rascal {
 
   namespace internal {
 
+    /**
+     * custom hash function for vector, list...
+     * https://stackoverflow.com/questions/20511347/a-good-hash-function-for-a-vector
+     * // NOLINT
+     */
+    template <class KeyType>
+    struct Hash {
+      using result_type = size_t;
+      using argument_type = KeyType;
+      result_type operator()(argument_type const & vec) const {
+        result_type seed{vec.size()};
+        for (const auto & i : vec) {
+          seed ^= i + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        }
+        return seed;
+      }
+    };
+
     template <class K, class V>
     class InternallySortedKeyMap {
      public:
@@ -114,7 +132,7 @@ namespace rascal {
       template <class Key>
       decltype(auto) count(const Key & key) {
         key_type skey{this->copy_sort(key)};
-        return this->data.count(key);
+        return this->data.count(skey);
       }
 
       //! Erases all elements from the container. After this call, size()
@@ -144,23 +162,6 @@ namespace rascal {
       const_iterator cend() const noexcept { return this->data.cend(); }
 
      private:
-      /**
-       * custom hash function for vector, list...
-       * https://stackoverflow.com/questions/20511347/a-good-hash-function-for-a-vector
-       * // NOLINT
-       */
-      template <class KeyType>
-      struct hash {
-        using result_type = size_t;
-        using argument_type = KeyType;
-        result_type operator()(argument_type const & vec) const {
-          result_type seed{vec.size()};
-          for (const auto & i : vec) {
-            seed ^= i + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-          }
-          return seed;
-        }
-      };
 
       /**
        * Functor to get a key from a map

@@ -31,9 +31,13 @@
 
 #include "representations/feature_manager_base.hh"
 #include "representations/representation_manager_base.hh"
+#include "structure_managers/property_block_sparse.hh"
+
 
 #include <unordered_map>
+#include <unordered_set>
 #include <set>
+#include <algorithm>
 
 namespace rascal {
   /**
@@ -239,6 +243,25 @@ namespace rascal {
                                 this->feature_matrix.size(), 1);
     }
 
+    // inline Dense_t dot(const FeatureManagerBlockSparse & other) {
+
+    // }
+
+    inline const std::list<Key_t> & get_keys(const int& i_center) {
+      return this->keys_list[i_center];
+    }
+
+    using Vector_ref = Eigen::Map<const Eigen::Matrix<Precision_t, Eigen::Dynamic, 1>>;
+
+    inline Vector_ref get_features(const int& i_center, const Key_t& key) {
+      auto && center_start{this->map2centers[i_center].first};
+      auto key_start{center_start +
+                      this->map2sparse[i_center][key].first};
+      auto && key_shape{this->map2sparse[i_center][key].second};
+      auto key_size{key_shape.first * key_shape.second};
+      return Vector_ref(&this->feature_matrix[key_start], key_size);
+    }
+
    protected:
     //! underlying data container for the feature matrix
     std::vector<T> feature_matrix;
@@ -263,6 +286,54 @@ namespace rascal {
 
     std::set<Key_t> unique_keys{};
   };
+
+  template<typename Precision_t>
+  using Dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, Eigen::Dynamic>;
+
+  template<typename T>
+  std::list<T> intersection_of(const std::list<T>& a, const std::list<T>& b){
+      std::list<T> rtn;
+      std::unordered_multiset<T, internal::Hash<T>> st;
+      std::for_each(a.begin(), a.end(), [&st](const T& k){ st.insert(k); });
+      std::for_each(b.begin(), b.end(),
+          [&st, &rtn](const T& k){
+              auto iter = st.find(k);
+              if(iter != st.end()){
+                  rtn.push_back(k);
+                  st.erase(iter);
+              }
+          }
+      );
+      return rtn;
+  }
+
+  template<typename Precision_t>
+  decltype(auto) dot( FeatureManagerBlockSparse<Precision_t>& X1,
+                      FeatureManagerBlockSparse<Precision_t>& X2) {
+
+    auto n1_centers{X1.sample_size()};
+    auto n2_centers{X2.sample_size()};
+    Dense_t<Precision_t> mat = Dense_t<Precision_t>::Zero(n1_centers,n2_centers);
+    for (int icenter1{0}; icenter1 < n1_centers; icenter1++) {
+      auto && keys1{X1.get_keys(icenter1)};
+      for (int icenter2{0}; icenter2 < n2_centers; icenter2++) {
+        auto && keys2{X2.get_keys(icenter2)};
+        auto keys_intersection{intersection_of(keys1, keys2)};
+        for (const auto& key : keys_intersection) {
+          auto vec1{X1.get_features(icenter1, key)};
+          auto vec2{X2.get_features(icenter2, key)};
+          // double fac{1.};
+          // if (key[0] != key[1]) {
+          //   fac = 2.;
+          // }
+          mat(icenter1, icenter2) += vec1.dot(vec2);
+        }
+      }
+    }
+    return mat;
+  }
+
+
 
 }  // namespace rascal
 

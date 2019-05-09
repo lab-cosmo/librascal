@@ -211,7 +211,7 @@ namespace rascal {
       auto & coefficients{expansions_coefficients[center]};
       auto & soap_vector{this->soap_vectors[center]};
       Key_t pair_type{0, 0};
-
+      std::vector<Key_t> pair_list{};
       for (const auto & el1 : coefficients) {
         pair_type[0] = el1.first[0];
         auto & coef1{el1.second};
@@ -221,6 +221,7 @@ namespace rascal {
           /* avoid computing p^{ab} and p^{ba} since p^{ab} = p^{ba}^T
            */
           if (soap_vector.count(pair_type) == 0) {
+            pair_list.push_back(pair_type);
             soap_vector[pair_type] = Dense_t::Zero(n_row, n_col);
             size_t nn{0};
             for (size_t n1 = 0; n1 < this->max_radial; n1++) {
@@ -230,8 +231,8 @@ namespace rascal {
                   // TODO(andrea) pre compute l_factor
                   double l_factor{1 / std::sqrt(2 * l + 1)};
                   for (size_t m = 0; m < 2 * l + 1; m++) {
-                    soap_vector[pair_type](nn, l) +=
-                        l_factor * coef1(n1, lm) * coef2(n2, lm);
+                    double val{l_factor * coef1(n1, lm) * coef2(n2, lm)};
+                    soap_vector[pair_type](nn, l) += val;
                     lm++;
                   }
                 }
@@ -241,6 +242,24 @@ namespace rascal {
           }
         }
       }
+      // normalize the soap vector
+      // the SQRT_TWO factor comes from the fact that
+      // the upper diagonal species is not considered
+      double norm{0.};
+      for (const auto& pair_type : pair_list) {
+        double fac{math::SQRT_TWO};
+        if (pair_type[0] == pair_type[1]) {
+          fac = 1.;
+        }
+        soap_vector[pair_type] *= fac;
+        norm += soap_vector[pair_type].squaredNorm();
+      }
+      norm = std::sqrt(norm);
+
+      for (const auto& pair_type : pair_list) {
+        soap_vector[pair_type] /= norm;
+      }
+
     }
   }
 
