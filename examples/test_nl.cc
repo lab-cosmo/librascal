@@ -34,7 +34,7 @@
 #include "representations/representation_manager_spherical_expansion.hh"
 #include "representations/representation_manager_soap.hh"
 #include "representations/feature_manager_dense.hh"
-#include "basic_types.hh"
+#include "representations/feature_manager_block_sparse.hh"
 
 #include <iostream>
 #include <basic_types.hh>
@@ -75,6 +75,35 @@ int main() {
           structure, adaptors);
   Representation_t representation{manager, hypers};
   representation.compute();
+
+  size_t inner_size{representation.get_feature_size()};
+  FeatureManagerBlockSparse<double> feature{inner_size, hypers};
+
+  feature.push_back(representation);
+  auto X{feature.get_feature_matrix_dense()};
+  std::cout << "sadfasd" << std::endl;
+  auto n_center{feature.sample_size()};
+  auto norms = X.colwise().norm();
+  std::cout << norms.size() << std::endl;
+  for (int icenter{0}; icenter < n_center; icenter++) {
+    std::cout << norms[icenter] << std::endl;
+  }
+
+  auto kernel1 = X.transpose() * X;
+
+  auto kernel2 = dot(feature, feature);
+
+  auto kernel3 = dot(feature);
+
+  auto max1{kernel1.mean()};
+  auto max2{kernel2.mean()};
+  auto diff{(kernel1 - kernel2).array().abs().matrix().mean()};
+
+  std::cout << max1 << ", " << max2 << ", " << diff << std::endl;
+
+  diff = (kernel2 - kernel3).array().abs().matrix().mean();
+
+  std::cout << diff << std::endl;
 
   return (0);
 }

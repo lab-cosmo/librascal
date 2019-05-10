@@ -59,7 +59,7 @@ class SOAP(object):
     def __init__(self, interaction_cutoff, cutoff_smooth_width,
                  max_radial, max_angular, gaussian_sigma_type,
                  gaussian_sigma_constant=0., n_species=1,
-                 soap_type="PowerSpectrum"):
+                 soap_type="PowerSpectrum", normalize=True):
         """Construct a SphericalExpansion representation
 
         Required arguments are all the hyperparameters named in the
@@ -74,10 +74,8 @@ class SOAP(object):
             gaussian_sigma_type=gaussian_sigma_type,
             gaussian_sigma_constant=gaussian_sigma_constant,
             n_species=n_species,
-            soap_type=soap_type)
-
-        if soap_type == "RadialSpectrum":
-            self.update_hyperparameters(max_angular=0)
+            soap_type=soap_type,
+            normalize=normalize)
 
         self.nl_options = [
             dict(name='centers', args=[]),
@@ -106,7 +104,8 @@ class SOAP(object):
         """
         allowed_keys = {'interaction_cutoff', 'cutoff_smooth_width',
                         'max_radial', 'max_angular', 'gaussian_sigma_type',
-                        'gaussian_sigma_constant', 'n_species', 'soap_type'}
+                        'gaussian_sigma_constant', 'n_species', 'soap_type',
+                        'normalize'}
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}
         self.hypers.update(hypers_clean)
