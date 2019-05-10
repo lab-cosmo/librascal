@@ -182,16 +182,54 @@ namespace rascal {
 
   BOOST_FIXTURE_TEST_CASE(math_spherical_harmonics_grad_test,
                           GradientTestFixture) {
-    const size_t max_angular = 3;
+    const size_t max_angular = 2;
     SphericalHarmonicsWithGradients<max_angular> harmonics_calculator{};
+    Eigen::MatrixXd harmonics;
+    Eigen::MatrixXd harmonics_gradients;
+    Eigen::RowVector3d direction_vector;
+    Eigen::VectorXd displacement_direction;
+    Eigen::Vector3d displacement;
+    Eigen::MatrixXd directional;
+    Eigen::MatrixXd fd_derivatives;
+    Eigen::MatrixXd fd_error;
     for (auto inputs_it{function_inputs.begin()};
          inputs_it != function_inputs.end(); inputs_it++) {
-      std::cout << "Direction vector: ";
-      std::cout << Eigen::RowVector3d(inputs_it->data()) << std::endl;
-      std::cout << "Harmonics:" << std::endl;
-      std::cout << harmonics_calculator.f(*inputs_it) << std::endl;
-      std::cout << "Harmonics gradients:" << std::endl;
-      std::cout << harmonics_calculator.grad_f(*inputs_it) << std::endl;
+      // do this with Eigen::Map in the general (non-3D) case
+      direction_vector = Eigen::RowVector3d(inputs_it->data());
+      harmonics = harmonics_calculator.f(direction_vector);
+      harmonics_gradients = harmonics_calculator.grad_f(direction_vector);
+      if (verbose) {
+        std::cout << "Direction vector: " << direction_vector << std::endl;
+        std::cout << "Harmonics:" << harmonics << std::endl;
+        std::cout << "Harmonics gradients:" << harmonics_gradients << std::endl;
+      }
+      for (size_t disp_idx{0}; disp_idx < displacement_directions.rows();
+           disp_idx++) {
+        displacement_direction = displacement_directions.row(disp_idx);
+        // Compute the directional derivative(s)
+        directional = displacement_direction.adjoint() * harmonics_gradients;
+        if (verbose) {
+          std::cout << "FD direction: " << displacement_direction << std::endl;
+          std::cout << "Analytical derivative: " << directional << std::endl;
+        }
+        for (double dx = 1E-2; dx > 1E-10; dx *= 0.1) {
+          std::cout << "dx = " << dx << "\t";
+          displacement = dx * displacement_direction;
+          // Compute the finite-difference derivative using a
+          // centred-difference approach
+          fd_derivatives = 0.5 / dx * (
+            harmonics_calculator.f(direction_vector + displacement.adjoint())
+          - harmonics_calculator.f(direction_vector - displacement.adjoint()));
+          //TODO(max) need a way to normalize when the derivative is zero
+          //fd_error = (fd_derivatives - directional).cwiseQuotient(directional);
+          fd_error = (fd_derivatives - directional);
+          std::cout << "error = " << fd_error << std::endl;
+          if (verbose) {
+            std::cout << "(FD derivative: " << fd_derivatives << ")";
+            std::cout << std::endl;
+          }
+        }
+      }
     }
   }
 
