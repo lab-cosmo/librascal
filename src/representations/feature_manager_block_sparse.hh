@@ -69,11 +69,14 @@ namespace rascal {
     using Key_t = std::vector<int>;
     using Dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, Eigen::Dynamic>;
     using dense_ref_t = Eigen::Map<Dense_t>;
-    using map_center_t = std::vector<std::pair<size_t, size_t>>;
+    using MapCenter_t = std::vector<std::pair<size_t, size_t>>;
     using map_sparse_t = std::vector<
         std::map<Key_t, std::pair<size_t, std::pair<size_t, size_t>>>>;
     using Keys_t = std::vector<std::list<Key_t>>;
     using Data_t = std::vector<Precision_t>;
+
+    using Vector_ref =
+        Eigen::Map<const Eigen::Matrix<Precision_t, Eigen::Dynamic, 1>>;
 
     /**
      * Constructor where hypers contains all relevant informations
@@ -245,16 +248,9 @@ namespace rascal {
 
     inline auto get_structure_stride() { return this->structure_stride; }
 
-    // inline Dense_t dot(const FeatureManagerBlockSparse & other) {
-
-    // }
-
     inline const std::list<Key_t> & get_keys(const int & i_center) {
       return this->keys_list[i_center];
     }
-
-    using Vector_ref =
-        Eigen::Map<const Eigen::Matrix<Precision_t, Eigen::Dynamic, 1>>;
 
     inline Vector_ref get_features(const int & i_center, const Key_t & key) {
       auto && center_start{this->map2centers[i_center].first};
@@ -282,7 +278,7 @@ namespace rascal {
     //! stride for the structures
     std::vector<int> structure_stride{0};
     //! map center idx to position and size in values
-    map_center_t map2centers{};
+    MapCenter_t map2centers{};
     //! map center idx + key to relative position and size in values
     map_sparse_t map2sparse{};
     //! list of the registered keys for each centers
@@ -327,10 +323,6 @@ namespace rascal {
         for (const auto & key : keys_intersection) {
           auto vec1{X1.get_features(icenter1, key)};
           auto vec2{X2.get_features(icenter2, key)};
-          // double fac{1.};
-          // if (key[0] != key[1]) {
-          //   fac = 2.;
-          // }
           mat(icenter1, icenter2) += vec1.dot(vec2);
         }
       }
@@ -369,7 +361,8 @@ namespace rascal {
    */
   template <typename Precision_t>
   decltype(auto)
-  cosine_kernel_global(int zeta, FeatureManagerBlockSparse<Precision_t> & X1,
+  cosine_kernel_global(const int & zeta,
+                       FeatureManagerBlockSparse<Precision_t> & X1,
                        FeatureManagerBlockSparse<Precision_t> & X2) {
     auto stride1{X1.get_structure_stride()};
     auto stride2{X2.get_structure_stride()};
@@ -418,7 +411,8 @@ namespace rascal {
    */
   template <typename Precision_t>
   decltype(auto)
-  cosine_kernel_global(int zeta, FeatureManagerBlockSparse<Precision_t> & X1) {
+  cosine_kernel_global(const int & zeta,
+                       FeatureManagerBlockSparse<Precision_t> & X1) {
     auto stride1{X1.get_structure_stride()};
     auto stride2{X1.get_structure_stride()};
     auto n1_frames{stride1.size() - 1};

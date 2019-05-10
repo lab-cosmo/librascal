@@ -226,15 +226,13 @@ namespace rascal {
           /* avoid computing p^{ab} and p^{ba} since p^{ab} = p^{ba}^T
            */
           if (soap_vector.count(pair_type) == 0) {
-            // pair_list.push_back(pair_type);
             soap_vector[pair_type] = Dense_t::Zero(n_row, n_col);
             size_t nn{0};
             for (size_t n1 = 0; n1 < this->max_radial; n1++) {
               for (size_t n2 = 0; n2 < this->max_radial; n2++) {
                 size_t lm{0};
                 for (size_t l = 0; l < this->max_angular + 1; l++) {
-                  // TODO(andrea) pre compute l_factor
-                  double l_factor{1 / std::sqrt(2 * l + 1)};
+                  double l_factor{pow(std::sqrt(2 * l + 1), -1)};
                   for (size_t m = 0; m < 2 * l + 1; m++) {
                     double val{l_factor * coef1(n1, lm) * coef2(n2, lm)};
                     soap_vector[pair_type](nn, l) += val;
