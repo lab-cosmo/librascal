@@ -108,7 +108,8 @@ def dump_reference_json():
                                     "max_angular": max_angular,
                                     "gaussian_sigma_type": "Constant",
                                     "gaussian_sigma_constant": gaussian_sigma,
-                                    "soap_type": soap_type }
+                                    "soap_type": soap_type,
+                                    "normalize": True}
                             x = get_spectrum(hypers, frames)
                             data['rep_info'][-1].append(dict(feature_matrix=x.tolist(),
                                                 hypers=copy(hypers)))
@@ -119,7 +120,7 @@ def dump_reference_json():
 ##########################################################################################
 ##########################################################################################
 
-def main(json_dump):
+def main(json_dump,save_kernel):
 
     test_hypers = {"interaction_cutoff": 4.0,
                    "cutoff_smooth_width": 0.0,
@@ -142,21 +143,25 @@ def main(json_dump):
 #------------------------------------------nu=1------------------------------------------#
 
     test_hypers["soap_type"] = "RadialSpectrum"
+    test_hypers['max_angular'] = 0
     x = get_spectrum(test_hypers, frames)
     x = x.T #Eigen column major
     x = normalise(x)
     kernel = np.dot(x, x.T)
-    np.save('kernel_soap_example_nu1.npy', kernel)
+    if save_kernel is True:
+        np.save('kernel_soap_example_nu1.npy', kernel)
 
 #------------------------------------------nu=2------------------------------------------#
 
     test_hypers["soap_type"] = "PowerSpectrum"
+    test_hypers['max_angular'] = 6
     x = get_spectrum(test_hypers, frames)
     x = x.T #Eigen column major
     x = unravel_power_spectrum(x, nspecies, ncen)
     x = normalise(x)
     kernel = np.dot(x, x.T)
-    np.save('kernel_soap_example_nu2.npy', kernel)
+    if save_kernel is True:
+        np.save('kernel_soap_example_nu2.npy', kernel)
 
 #--------------------------------dump json reference data--------------------------------#
 
@@ -169,5 +174,6 @@ def main(json_dump):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-json_dump', action='store_true', help='Switch for dumping json')
+    parser.add_argument('-save_kernel', action='store_true', help='Switch for dumping json')
     args = parser.parse_args()
-    main(args.json_dump)
+    main(args.json_dump, args.save_kernel)
