@@ -180,6 +180,21 @@ namespace rascal {
     }
   }
 
+  BOOST_FIXTURE_TEST_CASE(math_spherical_harmonics_grad_test,
+                          GradientTestFixture) {
+    const size_t max_angular = 3;
+    SphericalHarmonicsWithGradients<max_angular> harmonics_calculator{};
+    for (auto inputs_it{function_inputs.begin()};
+         inputs_it != function_inputs.end(); inputs_it++) {
+      std::cout << "Direction vector: ";
+      std::cout << Eigen::RowVector3d(inputs_it->data()) << std::endl;
+      std::cout << "Harmonics:" << std::endl;
+      std::cout << harmonics_calculator.f(*inputs_it) << std::endl;
+      std::cout << "Harmonics gradients:" << std::endl;
+      std::cout << harmonics_calculator.grad_f(*inputs_it) << std::endl;
+    }
+  }
+
   /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();
 
