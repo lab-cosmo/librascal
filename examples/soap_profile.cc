@@ -62,16 +62,20 @@ int main(int argc, char * argv[]) {
   // TODO(max) put these in a file so they can be varied systematically
   // maybe together with the filename and iteration count
   std::string filename{argv[1]};
-  json hypers{{"interaction_cutoff", 2.0},
-              {"cutoff_smooth_width", 0.0},
-              {"max_radial", 6},
-              {"max_angular", 6},
-              {"gaussian_sigma_type", "Constant"},
-              {"gaussian_sigma_constant", 0.2},
-              {"soap_type", "PowerSpectrum"}};
-  json structure{{"filename", filename}};
 
-  double cutoff{hypers["interaction_cutoff"]};
+  double cutoff{2.};
+  json hypers{
+      {"max_radial", 6}, {"max_angular", 6}, {"soap_type", "PowerSpectrum"}};
+
+  json fc_hypers{{"type", "Cosine"},
+                 {"cutoff", {{"value", cutoff}, {"unit", "A"}}},
+                 {"smooth_width", {{"value", 0.5}, {"unit", "A"}}}};
+  json sigma_hypers{{"type", "Constant"},
+                    {"gaussian_sigma", {{"value", 0.4}, {"unit", "A"}}}};
+  hypers["cutoff_function"] = fc_hypers;
+  hypers["gaussian_density"] = sigma_hypers;
+
+  json structure{{"filename", filename}};
   json adaptors;
   json ad1{{"name", "AdaptorNeighbourList"},
            {"initialization_arguments",

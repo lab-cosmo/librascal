@@ -103,16 +103,20 @@ def dump_reference_json():
                                 max_angular = 0
 
                             hypers = {"interaction_cutoff": cutoff,
-                                    "cutoff_smooth_width": 0.0,
+                                    "cutoff_smooth_width": 0.5,
                                     "max_radial": max_radial,
                                     "max_angular": max_angular,
                                     "gaussian_sigma_type": "Constant",
                                     "gaussian_sigma_constant": gaussian_sigma,
                                     "soap_type": soap_type,
+                                    "cutoff_function_type":"Cosine",
                                     "normalize": True}
-                            x = get_spectrum(hypers, frames)
+                            soap = SOAP(**hypers)
+                            soap_vectors = soap.transform(frames)
+                            x = soap_vectors.get_feature_matrix()
+                            # x = get_spectrum(hypers, frames)
                             data['rep_info'][-1].append(dict(feature_matrix=x.tolist(),
-                                                hypers=copy(hypers)))
+                                                hypers=copy(soap.hypers)))
 
     with open(path+"tests/reference_data/soap_reference.ubjson",'wb') as f:
         ubjson.dump(data,f)

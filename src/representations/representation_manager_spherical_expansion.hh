@@ -45,12 +45,32 @@
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
 
-
 namespace rascal {
+
+  struct AtomicSmearingSpecificationBase {
+    //! Constructor
+    AtomicSmearingSpecificationBase() = default;
+    //! Destructor
+    virtual ~AtomicSmearingSpecificationBase() = default;
+    //! Copy constructor
+    AtomicSmearingSpecificationBase(
+        const AtomicSmearingSpecificationBase & other) = delete;
+    //! Move constructor
+    AtomicSmearingSpecificationBase(AtomicSmearingSpecificationBase && other) =
+        default;
+    //! Copy assignment operator
+    AtomicSmearingSpecificationBase &
+    operator=(const AtomicSmearingSpecificationBase & other) = delete;
+    //! Move assignment operator
+    AtomicSmearingSpecificationBase &
+    operator=(AtomicSmearingSpecificationBase && other) = default;
+
+    using Hypers_t = RepresentationManagerBase::Hypers_t;
+  };
 
   namespace internal {
 
-    enum class GaussianSigmaType { Constant, PerSpecies, Radial, End_};
+    enum class GaussianSigmaType { Constant, PerSpecies, Radial, End_ };
 
     /**
      * Specification to hold the parameter for the atomic smearing function,
@@ -73,10 +93,12 @@ namespace rascal {
     struct AtomicSmearingSpecification {};
 
     template <>
-    struct AtomicSmearingSpecification<GaussianSigmaType::Constant> {
-      explicit AtomicSmearingSpecification(json hypers) {
+    struct AtomicSmearingSpecification<GaussianSigmaType::Constant>
+        : AtomicSmearingSpecificationBase {
+      using Hypers_t = typename AtomicSmearingSpecificationBase::Hypers_t;
+      explicit AtomicSmearingSpecification(const Hypers_t & hypers) {
         this->constant_gaussian_sigma =
-            hypers.at("gaussian_sigma_constant").get<double>();
+            hypers.at("gaussian_sigma").at("value").get<double>();
       }
       template <size_t Order, size_t Layer>
       double get_gaussian_sigma(ClusterRefKey<Order, Layer> & /* pair */) {
@@ -88,8 +110,10 @@ namespace rascal {
     /** Per-species template specialization of the above */
 
     template <>
-    struct AtomicSmearingSpecification<GaussianSigmaType::PerSpecies> {
-      explicit AtomicSmearingSpecification(json /* hypers */) {}
+    struct AtomicSmearingSpecification<GaussianSigmaType::PerSpecies>
+        : AtomicSmearingSpecificationBase {
+      using Hypers_t = typename AtomicSmearingSpecificationBase::Hypers_t;
+      explicit AtomicSmearingSpecification(const Hypers_t & /* hypers */) {}
       template <size_t Order, size_t Layer>
       double get_gaussian_sigma(ClusterRefKey<Order, Layer> & /* pair */) {
         throw std::logic_error("Requested a sigma type that has not yet "
@@ -100,8 +124,10 @@ namespace rascal {
 
     /** Radially-dependent template specialization of the above */
     template <>
-    struct AtomicSmearingSpecification<GaussianSigmaType::Radial> {
-      explicit AtomicSmearingSpecification(json) {}
+    struct AtomicSmearingSpecification<GaussianSigmaType::Radial>
+        : AtomicSmearingSpecificationBase {
+      using Hypers_t = typename AtomicSmearingSpecificationBase::Hypers_t;
+      explicit AtomicSmearingSpecification(const Hypers_t & /* hypers */) {}
       template <size_t Order, size_t Layer>
       double get_gaussian_sigma(ClusterRefKey<Order, Layer> & /* pair */) {
         throw std::logic_error("Requested a sigma type that has not yet "
@@ -111,6 +137,21 @@ namespace rascal {
     };
 
   }  // namespace internal
+
+  template <internal::GaussianSigmaType Type, class Hypers>
+  decltype(auto) make_gaussian_density(const Hypers & sigma_hypers) {
+    return std::static_pointer_cast<AtomicSmearingSpecificationBase>(
+        std::make_shared<internal::AtomicSmearingSpecification<Type>>(
+            sigma_hypers));
+  }
+
+  template <internal::GaussianSigmaType Type>
+  decltype(auto) downcast_gaussian_density(
+      const std::shared_ptr<AtomicSmearingSpecificationBase> &
+          gaussian_density) {
+    return std::static_pointer_cast<
+        internal::AtomicSmearingSpecification<Type>>(gaussian_density);
+  }
 
   /**
    * Handles the expansion of an environment in a spherical and radial basis.
@@ -146,8 +187,10 @@ namespace rascal {
      *                    specified in the structure
      */
     void set_hyperparameters(const Hypers_t & hypers) {
-      using internal::GaussianSigmaType;
       using internal::CutoffFunctionType;
+      using internal::GaussianSigmaType;
+
+      this->hypers = hypers;
 
       this->max_radial = hypers.at("max_radial");
       this->max_angular = hypers.at("max_angular");
@@ -156,41 +199,40 @@ namespace rascal {
       } else {
         this->n_species = 1;  // default: no species distinction
       }
-      this->interaction_cutoff = hypers.at("interaction_cutoff");
-      this->cutoff_smooth_width = hypers.at("cutoff_smooth_width");
-      this->gaussian_sigma_str =
-          hypers.at("gaussian_sigma_type").get<std::string>();
+
       this->radial_ortho_matrix.resize(this->max_radial, this->max_radial);
-      this->radial_sigmas.resize(this->max_radial, 1);
       this->fac_b.resize(this->max_radial, 1);
       this->radial_norm_factors.resize(this->max_radial, 1);
       this->radial_nl_factors.resize(this->max_radial, this->max_angular + 1);
       this->expansions_coefficients.clear();
+      this->radial_sigmas.resize(this->max_radial, 1);
       this->is_precomputed = false;
 
-      this->hypers = hypers;
-      if (this->gaussian_sigma_str.compare("Constant") == 0) {
-        this->gaussian_sigma_type = GaussianSigmaType::Constant;
+      auto density_hypers = hypers.at("gaussian_density").get<json>();
+      auto density_type = density_hypers.at("type").get<std::string>();
+      if (density_type.compare("Constant") == 0) {
+        this->gaussian_density_type = GaussianSigmaType::Constant;
+        this->gaussian_density =
+            make_gaussian_density<GaussianSigmaType::Constant>(density_hypers);
       } else {
         throw std::logic_error(
-            "Requested Gaussian sigma type \'" + this->gaussian_sigma_str +
+            "Requested Gaussian sigma type \'" + density_type +
             "\' has not been implemented.  Must be one of" + ": \'Constant\'.");
       }
 
       auto fc_hypers = hypers.at("cutoff_function").get<json>();
       auto fc_type = fc_hypers.at("type").get<std::string>();
-
+      this->interaction_cutoff = fc_hypers.at("cutoff").at("value");
+      this->cutoff_smooth_width = fc_hypers.at("smooth_width").at("value");
       if (fc_type.compare("Cosine") == 0) {
         this->cutoff_function_type = CutoffFunctionType::Cosine;
-        this->cutoff_function = make_cutoff_function<
-                                  CutoffFunctionType::Cosine>(fc_hypers);
-
+        this->cutoff_function =
+            make_cutoff_function<CutoffFunctionType::Cosine>(fc_hypers);
       } else {
-        throw std::logic_error(
-            "Requested cutoff function type \'" + fc_type +
-            "\' has not been implemented.  Must be one of" + ": \'Cosine\'.");
+        throw std::logic_error("Requested cutoff function type \'" + fc_type +
+                               "\' has not been implemented.  Must be one of" +
+                               ": \'Cosine\'.");
       }
-
     }
 
     /**
@@ -232,7 +274,10 @@ namespace rascal {
 
     template <internal::GaussianSigmaType SigmaType,
               internal::CutoffFunctionType FcType>
-    void compute_by_gaussian_sigma(const std::shared_ptr<internal::CutoffFunction<FcType>>& fc);
+    void compute_by_gaussian_density(
+        const std::shared_ptr<internal::CutoffFunction<FcType>> & fc,
+        const std::shared_ptr<
+            internal::AtomicSmearingSpecification<SigmaType>> & sigma);
 
     //! Precompute radial Gaussian widths (NOTE specific to basis!)
     void precompute_radial_sigmas();
@@ -300,7 +345,6 @@ namespace rascal {
     size_t max_radial{};
     size_t max_angular{};
     size_t n_species{};
-    std::string gaussian_sigma_str{};
     // TODO(max-veit) these are specific to the radial Gaussian basis
     Eigen::VectorXd radial_sigmas{};
     // b = 1 / (2*\sigma_n^2)
@@ -314,10 +358,11 @@ namespace rascal {
 
     ManagerPtr_t structure_manager;
 
-    internal::GaussianSigmaType gaussian_sigma_type{};
+    internal::GaussianSigmaType gaussian_density_type{};
     internal::CutoffFunctionType cutoff_function_type{};
 
     std::shared_ptr<CutoffFunctionBase> cutoff_function{};
+    std::shared_ptr<AtomicSmearingSpecificationBase> gaussian_density{};
 
     Hypers_t hypers{};
   };
@@ -416,36 +461,43 @@ namespace rascal {
 
   template <class Mngr>
   void RepresentationManagerSphericalExpansion<Mngr>::compute() {
-    using internal::GaussianSigmaType;
     using internal::CutoffFunctionType;
+    using internal::GaussianSigmaType;
 
     internal::CombineEnums<GaussianSigmaType, CutoffFunctionType> combineEnums;
-    switch (combineEnums(this->gaussian_sigma_type,
-                         this->cutoff_function_type)) {
-      case combineEnums(GaussianSigmaType::Constant,
-                        CutoffFunctionType::Cosine): {
-        auto fc{downcast_cutoff_function<CutoffFunctionType::Cosine>(this->cutoff_function)};
-        this->compute_by_gaussian_sigma<GaussianSigmaType::Constant>(fc);
-        break;
-      }
-      case combineEnums(GaussianSigmaType::PerSpecies,
-                        CutoffFunctionType::Cosine): {
-        auto fc{downcast_cutoff_function<CutoffFunctionType::Cosine>(this->cutoff_function)};
-        this->compute_by_gaussian_sigma<GaussianSigmaType::PerSpecies>(fc);
-        break;
-      }
-      case combineEnums(GaussianSigmaType::Radial,
-                        CutoffFunctionType::Cosine): {
-        auto fc{downcast_cutoff_function<CutoffFunctionType::Cosine>(this->cutoff_function)};
-        this->compute_by_gaussian_sigma<GaussianSigmaType::Radial>(fc);
-        break;
-      }
-
-      default:
-        throw std::logic_error("The combination of parameter is not handdled.");
-        break;
+    switch (
+        combineEnums(this->gaussian_density_type, this->cutoff_function_type)) {
+    case combineEnums(GaussianSigmaType::Constant,
+                      CutoffFunctionType::Cosine): {
+      auto fc{downcast_cutoff_function<CutoffFunctionType::Cosine>(
+          this->cutoff_function)};
+      auto sigma{downcast_gaussian_density<GaussianSigmaType::Constant>(
+          this->gaussian_density)};
+      this->compute_by_gaussian_density(fc, sigma);
+      break;
+    }
+    case combineEnums(GaussianSigmaType::PerSpecies,
+                      CutoffFunctionType::Cosine): {
+      auto fc{downcast_cutoff_function<CutoffFunctionType::Cosine>(
+          this->cutoff_function)};
+      auto sigma{downcast_gaussian_density<GaussianSigmaType::PerSpecies>(
+          this->gaussian_density)};
+      this->compute_by_gaussian_density(fc, sigma);
+      break;
+    }
+    case combineEnums(GaussianSigmaType::Radial, CutoffFunctionType::Cosine): {
+      auto fc{downcast_cutoff_function<CutoffFunctionType::Cosine>(
+          this->cutoff_function)};
+      auto sigma{downcast_gaussian_density<GaussianSigmaType::Radial>(
+          this->gaussian_density)};
+      this->compute_by_gaussian_density(fc, sigma);
+      break;
     }
 
+    default:
+      throw std::logic_error("The combination of parameter is not handdled.");
+      break;
+    }
   }
 
   /**
@@ -457,13 +509,12 @@ namespace rascal {
   template <internal::GaussianSigmaType SigmaType,
             internal::CutoffFunctionType FcType>
   void
-  RepresentationManagerSphericalExpansion<Mngr>::compute_by_gaussian_sigma(const std::shared_ptr<internal::CutoffFunction<FcType>>& cutoff_function) {
-
+  RepresentationManagerSphericalExpansion<Mngr>::compute_by_gaussian_density(
+      const std::shared_ptr<internal::CutoffFunction<FcType>> & cutoff_function,
+      const std::shared_ptr<internal::AtomicSmearingSpecification<SigmaType>> &
+          gaussian_density) {
     using math::PI;
     using std::pow;
-
-    internal::AtomicSmearingSpecification<SigmaType> gaussian_spec{
-        this->hypers};
 
     if (not this->is_precomputed) {
       this->precompute();
@@ -496,7 +547,7 @@ namespace rascal {
       // All terms where l =/= 0 cancel
 
       // a = 1 / (2*\sigma^2)
-      double fac_a{0.5 * pow(gaussian_spec.get_gaussian_sigma(center), -2)};
+      double fac_a{0.5 * pow(gaussian_density->get_gaussian_sigma(center), -2)};
       // TODO(max-veit) this is specific to the Gaussian radial basis
       // (along with the matching computation below)
       // And ditto on the gamma functions (potential overflow)
@@ -516,7 +567,7 @@ namespace rascal {
       for (auto neigh : center) {
         auto dist{this->structure_manager->get_distance(neigh)};
         auto direction{this->structure_manager->get_direction_vector(neigh)};
-        fac_a = 0.5 * pow(gaussian_spec.get_gaussian_sigma(neigh), -2);
+        fac_a = 0.5 * pow(gaussian_density->get_gaussian_sigma(neigh), -2);
         double exp_factor = std::exp(-fac_a * pow(dist, 2));
         Key_t neigh_type{neigh.get_atom_type()};
 
@@ -546,8 +597,7 @@ namespace rascal {
         }
         radial_integral = this->radial_ortho_matrix * radial_integral;
         radial_integral *= cutoff_function->f_c(dist);
-        // radial_integral *= math::switching_function_cosine(
-        //     dist, this->interaction_cutoff, this->cutoff_smooth_width);
+        // std::cout << cutoff_function->f_c(dist)<< std::endl;
 
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           size_t lm_collective_idx{0};

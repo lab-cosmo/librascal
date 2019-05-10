@@ -59,6 +59,7 @@ class SOAP(object):
     def __init__(self, interaction_cutoff, cutoff_smooth_width,
                  max_radial, max_angular, gaussian_sigma_type,
                  gaussian_sigma_constant=0., n_species=1,
+                 cutoff_function_type="Cosine",
                  soap_type="PowerSpectrum", normalize=True):
         """Construct a SphericalExpansion representation
 
@@ -68,14 +69,31 @@ class SOAP(object):
         self.name = 'soap'
         self.hypers = dict()
         self.update_hyperparameters(
-            interaction_cutoff=interaction_cutoff,
-            cutoff_smooth_width=cutoff_smooth_width,
             max_radial=max_radial, max_angular=max_angular,
-            gaussian_sigma_type=gaussian_sigma_type,
-            gaussian_sigma_constant=gaussian_sigma_constant,
             n_species=n_species,
             soap_type=soap_type,
-            normalize=normalize)
+            normalize=normalize
+        )
+        cutoff_function = dict(
+            type="Cosine",
+            cutoff=dict(
+                value=interaction_cutoff,
+                unit='A'
+            ),
+            smooth_width=dict(
+                value=cutoff_smooth_width,
+                unit='A'
+            ),
+        )
+        gaussian_density = dict(
+            type=gaussian_sigma_type,
+            gaussian_sigma=dict(
+                value=gaussian_sigma_constant,
+                unit='A'
+            ),
+        )
+        self.update_hyperparameters(cutoff_function=cutoff_function,
+                                    gaussian_density=gaussian_density,)
 
         self.nl_options = [
             dict(name='centers', args=[]),
@@ -105,7 +123,7 @@ class SOAP(object):
         allowed_keys = {'interaction_cutoff', 'cutoff_smooth_width',
                         'max_radial', 'max_angular', 'gaussian_sigma_type',
                         'gaussian_sigma_constant', 'n_species', 'soap_type',
-                        'normalize'}
+                        'normalize', 'cutoff_function', 'gaussian_density'}
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}
         self.hypers.update(hypers_clean)

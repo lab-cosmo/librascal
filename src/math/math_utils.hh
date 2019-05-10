@@ -58,11 +58,11 @@ namespace rascal {
         const Eigen::Ref<const Eigen::Vector3d> & direction,
         size_t max_angular);
 
-    // double switching_function_cosine(const double& r,const double& cutoff,const double& smooth_width);
+    // double switching_function_cosine(const double& r,const double&
+    // cutoff,const double& smooth_width);
 
     // double derivative_switching_funtion_cosine(
     //     const double& r, const double& cutoff, const double& smooth_width);
-
 
     /**
      * Compute a cosine-type switching function for smooth cutoffs
@@ -89,8 +89,9 @@ namespace rascal {
      * function.
      *
      */
-    inline double switching_function_cosine(const double& r,
-                                     const double& cutoff, const double& smooth_width) {
+    inline double switching_function_cosine(const double & r,
+                                            const double & cutoff,
+                                            const double & smooth_width) {
       if (r <= (cutoff - smooth_width)) {
         return 1.0;
       } else if (r > cutoff) {
@@ -117,8 +118,9 @@ namespace rascal {
      * dsw/dr (r) = -pi/(2*smooth_width) * sin(pi * (r - cutoff + smooth_width)
      *                                              / smooth_width)
      */
-    inline double derivative_switching_funtion_cosine(
-        const double& r, const double& cutoff, const double& smooth_width) {
+    inline double
+    derivative_switching_funtion_cosine(const double & r, const double & cutoff,
+                                        const double & smooth_width) {
       if (r <= (cutoff - smooth_width)) {
         return 0.0;
       } else if (r > cutoff) {

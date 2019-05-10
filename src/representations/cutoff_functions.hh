@@ -26,7 +26,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef SRC_REPRESENTATIONS_CUTOFF_FUNCTIONS_HH_
 #define SRC_REPRESENTATIONS_CUTOFF_FUNCTIONS_HH_
 
@@ -68,8 +67,7 @@ namespace rascal {
 
   namespace internal {
 
-    enum class CutoffFunctionType { Cosine, End_};
-
+    enum class CutoffFunctionType { Cosine, End_ };
 
     // Empty general template class implementing the cutoff functions
     // It should never be instantiated.
@@ -78,26 +76,26 @@ namespace rascal {
 
     template <>
     struct CutoffFunction<internal::CutoffFunctionType::Cosine>
-      : CutoffFunctionBase
-      {
+        : CutoffFunctionBase {
       using Hypers_t = CutoffFunctionBase::Hypers_t;
-      CutoffFunction(const Hypers_t & hypers) {
+      explicit CutoffFunction(const Hypers_t & hypers) {
         this->set_hyperparameters(hypers);
       }
 
       void set_hyperparameters(const Hypers_t & hypers) {
         this->cutoff = hypers.at("cutoff").at("value").get<double>();
-        this->smooth_width = hypers.at("smooth_width").at("value").get<double>();
+        this->smooth_width =
+            hypers.at("smooth_width").at("value").get<double>();
       }
 
-      inline double f_c(const double& distance) {
-        return math::switching_function_cosine(distance,
-                                        this->cutoff, this->smooth_width);
+      inline double f_c(const double & distance) {
+        return math::switching_function_cosine(distance, this->cutoff,
+                                               this->smooth_width);
       }
 
-      inline double df_c(const double& distance) {
-        return math::derivative_switching_funtion_cosine(distance,
-                                        this->cutoff, this->smooth_width);
+      inline double df_c(const double & distance) {
+        return math::derivative_switching_funtion_cosine(distance, this->cutoff,
+                                                         this->smooth_width);
       }
 
       //! keep the hypers
@@ -108,20 +106,22 @@ namespace rascal {
       double smooth_width{0.};
     };
 
-  } // namespace internal
+  }  // namespace internal
 
-  template<internal::CutoffFunctionType Type, class Hypers>
-  std::shared_ptr<CutoffFunctionBase> make_cutoff_function(const Hypers& fc_hypers) {
+  template <internal::CutoffFunctionType Type, class Hypers>
+  std::shared_ptr<CutoffFunctionBase>
+  make_cutoff_function(const Hypers & fc_hypers) {
     return std::static_pointer_cast<CutoffFunctionBase>(
-          std::make_shared<internal::CutoffFunction<Type>>(fc_hypers));
+        std::make_shared<internal::CutoffFunction<Type>>(fc_hypers));
   }
 
-  template<internal::CutoffFunctionType Type>
-  std::shared_ptr<internal::CutoffFunction<Type>>
-    downcast_cutoff_function(std::shared_ptr<CutoffFunctionBase>& cutoff_function) {
-    return std::static_pointer_cast<internal::CutoffFunction<Type>>(cutoff_function);
+  template <internal::CutoffFunctionType Type>
+  std::shared_ptr<internal::CutoffFunction<Type>> downcast_cutoff_function(
+      std::shared_ptr<CutoffFunctionBase> & cutoff_function) {
+    return std::static_pointer_cast<internal::CutoffFunction<Type>>(
+        cutoff_function);
   }
 
-} // namespace rascal
+}  // namespace rascal
 
 #endif  // SRC_REPRESENTATIONS_CUTOFF_FUNCTIONS_HH_

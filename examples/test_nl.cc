@@ -53,29 +53,19 @@ using Representation_t = RepresentationManagerSOAP<
 int main() {
   std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
   double cutoff{3.};
-  json hypers{{"interaction_cutoff", cutoff},
-              {"cutoff_smooth_width", 0.5},
-              {"max_radial", 6},
+  json hypers{{"max_radial", 6},
               {"max_angular", 6},
-              {"gaussian_sigma_type", "Constant"},
-              {"gaussian_sigma_constant", 0.4},
               {"soap_type", "PowerSpectrum"},
               {"normalize", true}};
 
-  json fc_hypers{{"type","Cosine"},
-                 {"cutoff", {
-                        {"value",cutoff},
-                        {"unit","A"}
-                  }},
-                 {"smooth_width", {
-                        {"value",0.5},
-                        {"unit","A"}
-                  }}
-                };
-
+  json fc_hypers{{"type", "Cosine"},
+                 {"cutoff", {{"value", cutoff}, {"unit", "A"}}},
+                 {"smooth_width", {{"value", 0.}, {"unit", "A"}}}};
+  json sigma_hypers{{"type", "Constant"},
+                    {"gaussian_sigma", {{"value", 0.4}, {"unit", "A"}}}};
 
   hypers["cutoff_function"] = fc_hypers;
-
+  hypers["gaussian_density"] = sigma_hypers;
 
   json structure{{"filename", filename}};
   json adaptors;

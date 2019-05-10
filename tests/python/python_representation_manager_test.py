@@ -1,4 +1,4 @@
-from rascal.representations import SortedCoulombMatrix,SphericalExpansion,SOAP
+from rascal.representations import SortedCoulombMatrix, SphericalExpansion, SOAP
 from test_utils import load_json_frame, BoxList, Box
 import unittest
 import numpy as np
@@ -40,11 +40,11 @@ class TestSphericalExpansionRepresentation(unittest.TestCase):
         self.frame = load_json_frame(fn)
 
         self.hypers = {"interaction_cutoff": 6.0,
-                        "cutoff_smooth_width": 1.0,
-                        "max_radial": 10,
-                        "max_angular": 8,
-                        "gaussian_sigma_type": "Constant",
-                        "gaussian_sigma_constant": 0.5}
+                       "cutoff_smooth_width": 1.0,
+                       "max_radial": 10,
+                       "max_angular": 8,
+                       "gaussian_sigma_type": "Constant",
+                       "gaussian_sigma_constant": 0.5}
 
     def test_representation_transform(self):
 
@@ -53,6 +53,7 @@ class TestSphericalExpansionRepresentation(unittest.TestCase):
         features = rep.transform([self.frame])
 
         test = features.get_feature_matrix().T
+
 
 class TestSOAPRepresentation(unittest.TestCase):
     def setUp(self):
@@ -65,13 +66,14 @@ class TestSOAPRepresentation(unittest.TestCase):
         self.frame = load_json_frame(fn)
 
         self.hypers = dict(soap_type="PowerSpectrum",
-                        interaction_cutoff=3.5,
-                        max_radial=6,
-                        max_angular=6,
-                        gaussian_sigma_constant=0.4,
-                        gaussian_sigma_type="Constant",
-                        cutoff_smooth_width=0.5,
-                        )
+                           interaction_cutoff=3.5,
+                           max_radial=6,
+                           max_angular=6,
+                           gaussian_sigma_constant=0.4,
+                           gaussian_sigma_type="Constant",
+                           cutoff_smooth_width=0.5,
+                           )
+
     def test_representation_transform(self):
 
         rep = SOAP(**self.hypers)

@@ -230,7 +230,5 @@ namespace rascal {
       return harmonics;
     }  // compute_spherical_harmonics()
 
-
-    
-  }    // namespace math
+  }  // namespace math
 }  // namespace rascal
