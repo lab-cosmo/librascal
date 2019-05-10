@@ -59,7 +59,8 @@ class SOAP(object):
     def __init__(self, interaction_cutoff, cutoff_smooth_width,
                  max_radial, max_angular, gaussian_sigma_type,
                  gaussian_sigma_constant=0., n_species=1,
-                 soap_type="PowerSpectrum", inversion_symmetry=True):
+                 soap_type="PowerSpectrum", inversion_symmetry=True,
+                 lam=0):
         """Construct a SphericalExpansion representation
 
         Required arguments are all the hyperparameters named in the
@@ -75,7 +76,8 @@ class SOAP(object):
             gaussian_sigma_constant=gaussian_sigma_constant,
             n_species=n_species,
             soap_type=soap_type,
-            inversion_symmetry=inversion_symmetry)
+            inversion_symmetry=inversion_symmetry,
+            lam=lam)
 
         if soap_type == "RadialSpectrum":
             self.update_hyperparameters(max_angular=0)
@@ -108,7 +110,7 @@ class SOAP(object):
         allowed_keys = {'interaction_cutoff', 'cutoff_smooth_width',
                         'max_radial', 'max_angular', 'gaussian_sigma_type',
                         'gaussian_sigma_constant', 'n_species', 'soap_type',
-                        'inversion_symmetry'}
+                        'inversion_symmetry', 'lam'}
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}
         self.hypers.update(hypers_clean)
@@ -153,7 +155,10 @@ class SOAP(object):
         if self.hypers['soap_type'] == 'RadialSpectrum':
             return (self.hypers['n_species']*self.hypers['max_radial'])
         if self.hypers['soap_type'] == 'PowerSpectrum':
-            return (self.hypers['n_species']**2*self.hypers['max_radial']**2* \
+            #return (self.hypers['n_species']**2*self.hypers['max_radial']**2* \
+            #       (self.hypers['max_angular'] + 1))
+            return (int((self.hypers['n_species']*(self.hypers['n_species'] + 1))/2)* \
+                   self.hypers['max_radial']**2* \
                    (self.hypers['max_angular'] + 1))
         if self.hypers['soap_type'] == 'BiSpectrum':
             if self.hypers['inversion_symmetry'] == False:
@@ -166,6 +171,14 @@ class SOAP(object):
                         int(np.floor(((self.hypers['max_angular'] + 1)**2 + 1)* \
                         (2*(self.hypers['max_angular'] + 1) + 3)/8.0)))
             #*(self.hypers['max_angular'] + 1)**3)
+        if self.hypers['soap_type'] == 'LambdaSpectrum':
+            return (self.hypers['n_species']**2*self.hypers['max_radial']**2* \
+                   int((2 + self.hypers['lam'] - 3*self.hypers['lam']**2 + \
+                   2*self.hypers['max_angular'] + \
+                   4*self.hypers['lam']*self.hypers['max_angular'])/2)* \
+                   (2*self.hypers['lam'] + 1))
+            #return (self.hypers['n_species']**2*self.hypers['max_radial']**2* \
+            #       (self.hypers['max_angular'] + 1)**2*(2*self.hypers['lam'] + 1))
         else:
             raise RuntimeError('Only soap_type = RadialSpectrum || '
                                'PowerSpectrum || BiSpectrum implemented for now')
