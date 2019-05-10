@@ -55,7 +55,7 @@ class SphericalExpansion(object):
     def __init__(self, interaction_cutoff, cutoff_smooth_width,
                  max_radial, max_angular, gaussian_sigma_type,
                  gaussian_sigma_constant=0., cutoff_function_type="Cosine",
-                 n_species=1,
+                 n_species=1,radial_basis="GTO",
                  method='thread', n_workers=1, disable_pbar=False):
         """Construct a SphericalExpansion representation
 
@@ -87,8 +87,12 @@ class SphericalExpansion(object):
                 unit='A'
             ),
         )
+        radial_contribution = dict(
+            type=radial_basis,
+        )
         self.update_hyperparameters(cutoff_function=cutoff_function,
-                                    gaussian_density=gaussian_density,)
+                                    gaussian_density=gaussian_density,
+                                    radial_contribution=radial_contribution)
 
         self.nl_options = [
             dict(name='centers', args=[]),
@@ -120,7 +124,8 @@ class SphericalExpansion(object):
         """
         allowed_keys = {'interaction_cutoff', 'cutoff_smooth_width',
                         'max_radial', 'max_angular', 'gaussian_sigma_type',
-                        'gaussian_sigma_constant', 'n_species', 'gaussian_density', 'cutoff_function'}
+                        'gaussian_sigma_constant', 'n_species', 'gaussian_density', 'cutoff_function',
+                        'radial_contribution'}
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}
         self.hypers.update(hypers_clean)

@@ -110,7 +110,8 @@ def dump_reference_json():
                                     "gaussian_sigma_constant": gaussian_sigma,
                                     "soap_type": soap_type,
                                     "cutoff_function_type":"Cosine",
-                                    "normalize": True}
+                                    "normalize": True,
+                                    "radial_basis":"GTO"}
                             soap = SOAP(**hypers)
                             soap_vectors = soap.transform(frames)
                             x = soap_vectors.get_feature_matrix()

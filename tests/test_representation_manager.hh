@@ -95,12 +95,15 @@ namespace rascal {
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
 
     MultipleStructureSOAP() : Parent{} {
-      for (auto & fc_hyp : this->fc_hypers) {
-        for (auto & sig_hyp : this->density_hypers) {
-          for (auto & rep_hyp : this->rep_hypers) {
-            rep_hyp["cutoff_function"] = fc_hyp;
-            rep_hyp["gaussian_density"] = sig_hyp;
-            this->hypers.push_back(rep_hyp);
+      for (auto & ri_hyp : this->radial_contribution_hypers) {
+        for (auto & fc_hyp : this->fc_hypers) {
+          for (auto & sig_hyp : this->density_hypers) {
+            for (auto & rep_hyp : this->rep_hypers) {
+              rep_hyp["cutoff_function"] = fc_hyp;
+              rep_hyp["gaussian_density"] = sig_hyp;
+              rep_hyp["radial_contribution"] = ri_hyp;
+              this->hypers.push_back(rep_hyp);
+            }
           }
         }
       }
@@ -122,7 +125,9 @@ namespace rascal {
          {"gaussian_sigma", {{"value", 0.2}, {"unit", "A"}}}},
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "A"}}}}};
-
+    std::vector<json> radial_contribution_hypers{
+      {{"type", "GTO"}}
+    };
     std::vector<json> rep_hypers{{{"max_radial", 6},
                                   {"max_angular", 0},
                                   {"soap_type", "RadialSpectrum"},
@@ -155,12 +160,15 @@ namespace rascal {
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
 
     MultipleStructureSphericalExpansion() : Parent{} {
-      for (auto & fc_hyp : this->fc_hypers) {
-        for (auto & sig_hyp : this->density_hypers) {
-          for (auto & rep_hyp : this->rep_hypers) {
-            rep_hyp["cutoff_function"] = fc_hyp;
-            rep_hyp["gaussian_density"] = sig_hyp;
-            this->hypers.push_back(rep_hyp);
+      for (auto & ri_hyp : this->radial_contribution_hypers) {
+        for (auto & fc_hyp : this->fc_hypers) {
+          for (auto & sig_hyp : this->density_hypers) {
+            for (auto & rep_hyp : this->rep_hypers) {
+              rep_hyp["cutoff_function"] = fc_hyp;
+              rep_hyp["gaussian_density"] = sig_hyp;
+              rep_hyp["radial_contribution"] = ri_hyp;
+              this->hypers.push_back(rep_hyp);
+            }
           }
         }
       }
@@ -176,6 +184,10 @@ namespace rascal {
         {{"type", "Cosine"},
          {"cutoff", {{"value", 2.0}, {"unit", "A"}}},
          {"smooth_width", {{"value", 1.0}, {"unit", "A"}}}}};
+
+    std::vector<json> radial_contribution_hypers{
+      {{"type", "GTO"}}
+    };
 
     std::vector<json> density_hypers{
         {{"type", "Constant"},

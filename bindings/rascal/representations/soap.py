@@ -59,7 +59,7 @@ class SOAP(object):
     def __init__(self, interaction_cutoff, cutoff_smooth_width,
                  max_radial, max_angular, gaussian_sigma_type,
                  gaussian_sigma_constant=0., n_species=1,
-                 cutoff_function_type="Cosine",
+                 cutoff_function_type="Cosine",radial_basis="GTO",
                  soap_type="PowerSpectrum", normalize=True):
         """Construct a SphericalExpansion representation
 
@@ -92,8 +92,12 @@ class SOAP(object):
                 unit='A'
             ),
         )
+        radial_contribution = dict(
+            type=radial_basis,
+        )
         self.update_hyperparameters(cutoff_function=cutoff_function,
-                                    gaussian_density=gaussian_density,)
+                                    gaussian_density=gaussian_density,
+                                    radial_contribution=radial_contribution,)
 
         self.nl_options = [
             dict(name='centers', args=[]),
@@ -123,7 +127,9 @@ class SOAP(object):
         allowed_keys = {'interaction_cutoff', 'cutoff_smooth_width',
                         'max_radial', 'max_angular', 'gaussian_sigma_type',
                         'gaussian_sigma_constant', 'n_species', 'soap_type',
-                        'normalize', 'cutoff_function', 'gaussian_density'}
+                        'normalize', 'cutoff_function', 'gaussian_density',
+                        'radial_contribution'}
+                        
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}
         self.hypers.update(hypers_clean)
