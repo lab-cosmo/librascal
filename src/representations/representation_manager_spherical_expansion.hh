@@ -31,23 +31,26 @@
 #define SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SPHERICAL_EXPANSION_HH_
 
 #include "representations/representation_manager_base.hh"
+#include "representations/cutoff_functions.hh"
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/property.hh"
 #include "rascal_utility.hh"
 #include "math/math_utils.hh"
+#include "structure_managers/property_block_sparse.hh"
+
 #include <algorithm>
 #include <cmath>
 #include <exception>
 #include <vector>
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
-#include "structure_managers/property_block_sparse.hh"
+
 
 namespace rascal {
 
   namespace internal {
 
-    enum class GaussianSigmaType { Constant, PerSpecies, Radial };
+    enum class GaussianSigmaType { Constant, PerSpecies, Radial, End_};
 
     /**
      * Specification to hold the parameter for the atomic smearing function,
@@ -143,6 +146,9 @@ namespace rascal {
      *                    specified in the structure
      */
     void set_hyperparameters(const Hypers_t & hypers) {
+      using internal::GaussianSigmaType;
+      using internal::CutoffFunctionType;
+
       this->max_radial = hypers.at("max_radial");
       this->max_angular = hypers.at("max_angular");
       if (hypers.find("n_species") != hypers.end()) {
@@ -164,12 +170,27 @@ namespace rascal {
 
       this->hypers = hypers;
       if (this->gaussian_sigma_str.compare("Constant") == 0) {
-        this->gaussian_sigma_type = internal::GaussianSigmaType::Constant;
+        this->gaussian_sigma_type = GaussianSigmaType::Constant;
       } else {
         throw std::logic_error(
             "Requested Gaussian sigma type \'" + this->gaussian_sigma_str +
             "\' has not been implemented.  Must be one of" + ": \'Constant\'.");
       }
+
+      auto fc_hypers = hypers.at("cutoff_function").get<json>();
+      auto fc_type = fc_hypers.at("type").get<std::string>();
+
+      if (fc_type.compare("Cosine") == 0) {
+        this->cutoff_function_type = CutoffFunctionType::Cosine;
+        this->cutoff_function = make_cutoff_function<
+                                  CutoffFunctionType::Cosine>(fc_hypers);
+
+      } else {
+        throw std::logic_error(
+            "Requested cutoff function type \'" + fc_type +
+            "\' has not been implemented.  Must be one of" + ": \'Cosine\'.");
+      }
+
     }
 
     /**
@@ -209,8 +230,9 @@ namespace rascal {
     //! compute representation
     void compute();
 
-    template <internal::GaussianSigmaType SigmaType>
-    void compute_by_gaussian_sigma();
+    template <internal::GaussianSigmaType SigmaType,
+              internal::CutoffFunctionType FcType>
+    void compute_by_gaussian_sigma(const std::shared_ptr<internal::CutoffFunction<FcType>>& fc);
 
     //! Precompute radial Gaussian widths (NOTE specific to basis!)
     void precompute_radial_sigmas();
@@ -293,6 +315,9 @@ namespace rascal {
     ManagerPtr_t structure_manager;
 
     internal::GaussianSigmaType gaussian_sigma_type{};
+    internal::CutoffFunctionType cutoff_function_type{};
+
+    std::shared_ptr<CutoffFunctionBase> cutoff_function{};
 
     Hypers_t hypers{};
   };
@@ -392,20 +417,35 @@ namespace rascal {
   template <class Mngr>
   void RepresentationManagerSphericalExpansion<Mngr>::compute() {
     using internal::GaussianSigmaType;
-    switch (this->gaussian_sigma_type) {
-    case GaussianSigmaType::Constant:
-      this->compute_by_gaussian_sigma<GaussianSigmaType::Constant>();
-      break;
-    case GaussianSigmaType::PerSpecies:
-      this->compute_by_gaussian_sigma<GaussianSigmaType::PerSpecies>();
-      break;
-    case GaussianSigmaType::Radial:
-      this->compute_by_gaussian_sigma<GaussianSigmaType::Radial>();
-      break;
-    default:
-      // Will never reach here (it's an enum...)
-      break;
+    using internal::CutoffFunctionType;
+
+    internal::CombineEnums<GaussianSigmaType, CutoffFunctionType> combineEnums;
+    switch (combineEnums(this->gaussian_sigma_type,
+                         this->cutoff_function_type)) {
+      case combineEnums(GaussianSigmaType::Constant,
+                        CutoffFunctionType::Cosine): {
+        auto fc{downcast_cutoff_function<CutoffFunctionType::Cosine>(this->cutoff_function)};
+        this->compute_by_gaussian_sigma<GaussianSigmaType::Constant>(fc);
+        break;
+      }
+      case combineEnums(GaussianSigmaType::PerSpecies,
+                        CutoffFunctionType::Cosine): {
+        auto fc{downcast_cutoff_function<CutoffFunctionType::Cosine>(this->cutoff_function)};
+        this->compute_by_gaussian_sigma<GaussianSigmaType::PerSpecies>(fc);
+        break;
+      }
+      case combineEnums(GaussianSigmaType::Radial,
+                        CutoffFunctionType::Cosine): {
+        auto fc{downcast_cutoff_function<CutoffFunctionType::Cosine>(this->cutoff_function)};
+        this->compute_by_gaussian_sigma<GaussianSigmaType::Radial>(fc);
+        break;
+      }
+
+      default:
+        throw std::logic_error("The combination of parameter is not handdled.");
+        break;
     }
+
   }
 
   /**
@@ -414,9 +454,11 @@ namespace rascal {
    * neighbourlist, i.e. C^{ij}_{nlm} = (-1)^l C^{ji}_{nlm}.
    */
   template <class Mngr>
-  template <internal::GaussianSigmaType SigmaType>
+  template <internal::GaussianSigmaType SigmaType,
+            internal::CutoffFunctionType FcType>
   void
-  RepresentationManagerSphericalExpansion<Mngr>::compute_by_gaussian_sigma() {
+  RepresentationManagerSphericalExpansion<Mngr>::compute_by_gaussian_sigma(const std::shared_ptr<internal::CutoffFunction<FcType>>& cutoff_function) {
+
     using math::PI;
     using std::pow;
 
@@ -503,8 +545,9 @@ namespace rascal {
           radial_integral.row(radial_n) *= radial_norm_factors(radial_n);
         }
         radial_integral = this->radial_ortho_matrix * radial_integral;
-        radial_integral *= math::switching_function_cosine(
-            dist, this->interaction_cutoff, this->cutoff_smooth_width);
+        radial_integral *= cutoff_function->f_c(dist);
+        // radial_integral *= math::switching_function_cosine(
+        //     dist, this->interaction_cutoff, this->cutoff_smooth_width);
 
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           size_t lm_collective_idx{0};

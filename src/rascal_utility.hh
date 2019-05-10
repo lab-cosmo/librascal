@@ -66,6 +66,38 @@ namespace rascal {
     struct AdaptorTypeStacker<ManagerImplementation, AdaptorImplementation> {
       using type = AdaptorImplementation<ManagerImplementation>;
     };
+    /* ---------------------------------------------------------------------- */
+    /**
+     * Utilities to combine Enum to flatten the nested switch cases
+     * The caveat is that the enum list need to be finished with the
+     * End_
+     * taken from:
+     * https://www.fluentcpp.com/2017/06/27/how-to-collapse-nested-switch-statements/ // NOLINT
+     */
+
+    //! get the underlying value of the enum
+    template<typename Enum>
+    constexpr size_t enumValue(Enum e) {
+        return static_cast<size_t>(e);
+    }
+
+    //! compute the lenght of the enum assuming the last element is End_
+    template<typename Enum>
+    constexpr size_t enumSize() {
+        return enumValue(Enum::End_);
+    }
+
+    //! combine 2 enum into a new integer making sure types are properly
+    //! provided
+    template<typename Enum1, typename Enum2>
+    struct CombineEnums {
+      constexpr size_t operator()(Enum1 e1, Enum2 e2) {
+          return enumValue(e1) * enumSize<Enum2>() + enumValue(e2);
+      }
+    };
+
+
+
 
     /* ---------------------------------------------------------------------- */
     /**

@@ -210,6 +210,11 @@ set(CMAKE_SKIP_BUILD_RPATH  FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
+# utility to force copy of files...
+add_custom_command(
+    OUTPUT always_rebuild
+    COMMAND ${CMAKE_COMMAND} -E echo
+  )
 
 # set up the tests
 if (${BUILD_TESTS})
@@ -229,22 +234,6 @@ if (${BUILD_TESTS})
   configure_file("tests/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
   configure_file("tests/simple_cubic_9.json" ${CMAKE_BINARY_DIR} COPYONLY)
 
-  add_custom_command(
-    OUTPUT always_rebuild
-    COMMAND ${CMAKE_COMMAND} -E echo
-  )
-
-  add_custom_target(cpp_test ALL
-    DEPENDS
-    copy_test_reference_data
-  )
-
-  add_custom_command(OUTPUT copy_test_reference_data
-      COMMAND ${CMAKE_COMMAND} -E copy_directory
-      ${CMAKE_SOURCE_DIR}/tests/reference_data ${CMAKE_BINARY_DIR}/reference_data
-      DEPENDS
-          always_rebuild
-    )
 
   if(BUILD_BINDINGS)
 
@@ -268,8 +257,21 @@ if (${BUILD_TESTS})
 
 endif(${BUILD_TESTS})
 
+# copy reference data that might be used in the example
+add_custom_target(copy_reference_data ALL
+    DEPENDS
+    copy_test_reference_data
+  )
+
+add_custom_command(OUTPUT copy_test_reference_data
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/tests/reference_data ${CMAKE_BINARY_DIR}/reference_data
+    DEPENDS
+        always_rebuild
+  )
+
 # put it there to avoid warnings from boost tests
-add_compile_options(-Werror) # warnings are errors!
+# add_compile_options(-Werror) # warnings are errors!
 
 # compile the library
 add_subdirectory(

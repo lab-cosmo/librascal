@@ -58,11 +58,75 @@ namespace rascal {
         const Eigen::Ref<const Eigen::Vector3d> & direction,
         size_t max_angular);
 
-    double switching_function_cosine(double r, double cutoff,
-                                     double smooth_width);
+    // double switching_function_cosine(const double& r,const double& cutoff,const double& smooth_width);
 
-    double derivative_switching_funtion_cosine(
-        double r, double cutoff, double smooth_width);
+    // double derivative_switching_funtion_cosine(
+    //     const double& r, const double& cutoff, const double& smooth_width);
+
+
+    /**
+     * Compute a cosine-type switching function for smooth cutoffs
+     *
+     * @param cutoff Outer (strict) cutoff, beyond which this function becomes
+     *               zero
+     *
+     * @param smooth_width Width over which the smoothing function extends;
+     *                     the function becomes one for r less than
+     *                     cutoff - smooth_width
+     *
+     * @param r Distance at which to evaluate the switching function
+     *
+     * The functional form is:
+     *
+     * sw(r) = 1/2 + 1/2 cos(pi * (r - cutoff + smooth_width) / smooth_width)
+     *
+     * if r is within the cutoff region (cutoff - smooth_width < r <= cutoff);
+     * if r is outside (> cutoff) the function is zero; if r is inside, the
+     * function is 1.
+     *
+     * Specifying smooth_width less than cutoff is not an error.
+     * If smooth_width is equal to zero the result will just be a step
+     * function.
+     *
+     */
+    inline double switching_function_cosine(const double& r,
+                                     const double& cutoff, const double& smooth_width) {
+      if (r <= (cutoff - smooth_width)) {
+        return 1.0;
+      } else if (r > cutoff) {
+        return 0.0;
+      }
+      double r_scaled{PI * (r - cutoff + smooth_width) / smooth_width};
+      return (0.5 * (1. + std::cos(r_scaled)));
+    }
+
+    /**
+     * Compute the derivative of the cosine-type switching function
+     *
+     * @param cutoff Outer (strict) cutoff, beyond which this function becomes
+     *               zero
+     *
+     * @param smooth_width Width over which the smoothing function extends;
+     *                     the function becomes one for r less than
+     *                     cutoff - smooth_width
+     *
+     * @param r Distance at which to evaluate the derivative
+     *
+     * The functional form is:
+     *
+     * dsw/dr (r) = -pi/(2*smooth_width) * sin(pi * (r - cutoff + smooth_width)
+     *                                              / smooth_width)
+     */
+    inline double derivative_switching_funtion_cosine(
+        const double& r, const double& cutoff, const double& smooth_width) {
+      if (r <= (cutoff - smooth_width)) {
+        return 0.0;
+      } else if (r > cutoff) {
+        return 0.0;
+      }
+      double r_scaled{PI * (r - cutoff + smooth_width) / smooth_width};
+      return (-0.5 * PI / smooth_width * std::sin(r_scaled));
+    }
   }  // namespace math
 }  // namespace rascal
 
