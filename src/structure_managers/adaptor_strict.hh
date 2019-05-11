@@ -376,6 +376,8 @@ namespace rascal {
 
     //! initialise the distance storage
     this->template create_property<double,2,1>("distance");
+    // TODO problem does not find distance
+    std::cout << "Property create" << std::endl;
     auto distance_property = this->template get_property<double,2,1>("distance");
     distance_property->resize_to_zero();
     this->dir_vec.resize_to_zero();

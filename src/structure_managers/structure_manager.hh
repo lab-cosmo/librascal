@@ -347,7 +347,7 @@ namespace rascal {
 
     //! Accessor for an attached property with a specifier as a string
     std::shared_ptr<PropertyBase> get_property(const std::string & name) {
-      if (this->has_property(name)) {
+      if (!this->has_property(name)) {
         std::stringstream error{};
         error << "No property of name '" << name << "' has been registered";
         throw std::runtime_error(error.str());
@@ -385,7 +385,11 @@ namespace rascal {
     
     template <size_t Order, size_t Layer>
     inline double & get_distance(const ClusterRefKey<Order, Layer> & pair) const {
-      return get_property_value<double, 2>(pair, "distance");
+      // TODO(alex) forwarding
+     // if has_property {
+        return get_property_value<double, 2>(pair, "distance");
+    //  }
+    //  this->manager->get_distance();
     }
 
     template <size_t Order, size_t Layer>
