@@ -83,8 +83,8 @@ namespace rascal {
      * to setup a new RepresentationManager.
      */
     FeatureManagerBlockSparse(size_t inner_size, Hypers_t hypers)
-        : feature_matrix{}, inner_size{inner_size}, n_center{0}, hypers{
-                                                                     hypers} {}
+        : feature_matrix{}, inner_size{inner_size}, n_center{0},
+          hypers{hypers} {}
 
     //! Copy constructor
     FeatureManagerBlockSparse(const FeatureManagerBlockSparse & other) = delete;

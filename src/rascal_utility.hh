@@ -104,7 +104,7 @@ namespace rascal {
 
     template <size_t N, size_t... Seq>
     constexpr std::index_sequence<N + Seq...>
-    add_to_sequence(std::index_sequence<Seq...>) {
+        add_to_sequence(std::index_sequence<Seq...>) {
       return {};
     }
 
@@ -207,8 +207,8 @@ namespace rascal {
     template <typename T>
     struct GetTypeNameHelper {
       static const std::string GetTypeName() {
-        // The output of of Pretty Function depends on the compiler
-        // the #define strings is a pain to split
+// The output of of Pretty Function depends on the compiler
+// the #define strings is a pain to split
 #if defined(GCC_COMPILER)
 #define FUNCTION_MACRO __PRETTY_FUNCTION__
 #define PREFIX                                                                 \

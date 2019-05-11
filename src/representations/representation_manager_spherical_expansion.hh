@@ -159,11 +159,9 @@ namespace rascal {
     //! Destructor
     virtual ~RadialContributionBase() = default;
     //! Copy constructor
-    RadialContributionBase(
-        const RadialContributionBase & other) = delete;
+    RadialContributionBase(const RadialContributionBase & other) = delete;
     //! Move constructor
-    RadialContributionBase(RadialContributionBase && other) =
-        default;
+    RadialContributionBase(RadialContributionBase && other) = default;
     //! Copy assignment operator
     RadialContributionBase &
     operator=(const RadialContributionBase & other) = delete;
@@ -181,31 +179,28 @@ namespace rascal {
     virtual void set_hyperparameters(const Hypers_t &) = 0;
 
     virtual void precompute() = 0;
-    virtual Vector_Ref compute_center_contribution(const double& fac_a) = 0;
-    virtual Matrix_Ref compute_neighbour_contribution(const double & distance, const double& fac_a) = 0;
-
+    virtual Vector_Ref compute_center_contribution(const double & fac_a) = 0;
+    virtual Matrix_Ref compute_neighbour_contribution(const double & distance,
+                                                      const double & fac_a) = 0;
   };
 
   struct RadialContributionGTO : RadialContributionBase {
     //! Constructor
-    RadialContributionGTO(const Hypers_t & hypers) {
+    explicit RadialContributionGTO(const Hypers_t & hypers) {
       this->set_hyperparameters(hypers);
       this->precompute();
     }
     //! Destructor
     virtual ~RadialContributionGTO() = default;
     //! Copy constructor
-    RadialContributionGTO(
-        const RadialContributionGTO & other) = delete;
+    RadialContributionGTO(const RadialContributionGTO & other) = delete;
     //! Move constructor
-    RadialContributionGTO(RadialContributionGTO && other) =
-        default;
+    RadialContributionGTO(RadialContributionGTO && other) = default;
     //! Copy assignment operator
     RadialContributionGTO &
     operator=(const RadialContributionGTO & other) = delete;
     //! Move assignment operator
-    RadialContributionGTO &
-    operator=(RadialContributionGTO && other) = default;
+    RadialContributionGTO & operator=(RadialContributionGTO && other) = default;
 
     using Parent = RadialContributionBase;
     using Hypers_t = typename Parent::Hypers_t;
@@ -226,10 +221,9 @@ namespace rascal {
       this->radial_norm_factors.resize(this->max_radial, 1);
       this->radial_nl_factors.resize(this->max_radial, this->max_angular + 1);
       this->radial_sigmas.resize(this->max_radial, 1);
-      this->radial_integral_neighbour.resize(
-              this->max_radial, this->max_angular + 1);
-      this->radial_integral_center.resize(
-              this->max_radial);
+      this->radial_integral_neighbour.resize(this->max_radial,
+                                             this->max_angular + 1);
+      this->radial_integral_center.resize(this->max_radial);
 
       auto fc_hypers = hypers.at("cutoff_function").get<json>();
       this->interaction_cutoff = fc_hypers.at("cutoff").at("value");
@@ -240,7 +234,7 @@ namespace rascal {
       this->precompute_radial_overlap();
     }
 
-     Vector_Ref compute_center_contribution(const double& fac_a) {
+    Vector_Ref compute_center_contribution(const double & fac_a) {
       using math::PI;
       using std::pow;
       using std::sqrt;
@@ -250,37 +244,41 @@ namespace rascal {
       // 1F1(a,b,0) = 1
       for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
         this->radial_integral_center(radial_n) =
-            this->radial_norm_factors(radial_n) * this->radial_nl_factors(radial_n, 0) *
-            0.25 * pow(fac_a + this->fac_b[radial_n], -0.5 * (3.0 + radial_n));
+            this->radial_norm_factors(radial_n) *
+            this->radial_nl_factors(radial_n, 0) * 0.25 *
+            pow(fac_a + this->fac_b[radial_n], -0.5 * (3.0 + radial_n));
       }
 
-      this->radial_integral_center =  this->radial_ortho_matrix * this->radial_integral_center;
+      this->radial_integral_center =
+          this->radial_ortho_matrix * this->radial_integral_center;
       return Vector_Ref(this->radial_integral_center);
     }
 
-    Matrix_Ref compute_neighbour_contribution(const double & distance, const double& fac_a) {
+    Matrix_Ref compute_neighbour_contribution(const double & distance,
+                                              const double & fac_a) {
       double exp_factor = std::exp(-fac_a * pow(distance, 2));
       for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
         double radial_sigma_factors{pow(fac_a, 2) /
                                     (fac_a + this->fac_b[radial_n])};
         for (size_t angular_l{0}; angular_l < this->max_angular + 1;
-              angular_l++) {
+             angular_l++) {
           this->radial_integral_neighbour(radial_n, angular_l) =
               exp_factor * this->radial_nl_factors(radial_n, angular_l) * 0.25 *
               pow(fac_a + this->fac_b[radial_n],
                   -0.5 * (3.0 + angular_l + radial_n)) *
               pow(distance * fac_a, angular_l) *
-              math::hyp1f1(0.5 * (3.0 + angular_l + radial_n),
-                            1.5 + angular_l,
-                            pow(distance, 2) * radial_sigma_factors);
+              math::hyp1f1(0.5 * (3.0 + angular_l + radial_n), 1.5 + angular_l,
+                           pow(distance, 2) * radial_sigma_factors);
         }
-        this->radial_integral_neighbour.row(radial_n) *= this->radial_norm_factors(radial_n);
+        this->radial_integral_neighbour.row(radial_n) *=
+            this->radial_norm_factors(radial_n);
       }
-      this->radial_integral_neighbour = this->radial_ortho_matrix * this->radial_integral_neighbour;
+      this->radial_integral_neighbour =
+          this->radial_ortho_matrix * this->radial_integral_neighbour;
       return Matrix_Ref(this->radial_integral_neighbour);
     }
 
-      /** Compute common prefactors for the radial Gaussian basis functions */
+    /** Compute common prefactors for the radial Gaussian basis functions */
     void precompute_radial_sigmas() {
       using std::pow;
 
@@ -295,9 +293,9 @@ namespace rascal {
       for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
         this->radial_norm_factors(radial_n) = std::sqrt(
             2.0 / (std::tgamma(1.5 + radial_n) *
-                  pow(this->radial_sigmas[radial_n], 3.0 + 2.0 * radial_n)));
+                   pow(this->radial_sigmas[radial_n], 3.0 + 2.0 * radial_n)));
         for (size_t angular_l{0}; angular_l < this->max_angular + 1;
-            ++angular_l) {
+             ++angular_l) {
           this->radial_nl_factors(radial_n, angular_l) =
               std::tgamma(0.5 * (3.0 + angular_l + radial_n)) /
               std::tgamma(1.5 + angular_l);
@@ -315,7 +313,8 @@ namespace rascal {
       using std::sqrt;
       using std::tgamma;
 
-      // TODO(max-veit) see if we can replace the gammas with their natural logs,
+      // TODO(max-veit) see if we can replace the gammas with their natural
+      // logs,
       // since it'll overflow for relatively small n (n1 + n2 >~ 300)
       Eigen::MatrixXd overlap(this->max_radial, this->max_radial);
       for (size_t radial_n1{0}; radial_n1 < this->max_radial; radial_n1++) {
@@ -325,12 +324,12 @@ namespace rascal {
                       0.5 / pow(this->radial_sigmas[radial_n2], 2),
                   -0.5 * (3.0 + radial_n1 + radial_n2)) /
               (pow(this->radial_sigmas[radial_n1], radial_n1) *
-              pow(this->radial_sigmas[radial_n2], radial_n2)) *
+               pow(this->radial_sigmas[radial_n2], radial_n2)) *
               tgamma(0.5 * (3.0 + radial_n1 + radial_n2)) /
               (pow(this->radial_sigmas[radial_n1] *
-                      this->radial_sigmas[radial_n2],
-                  1.5) *
-              sqrt(tgamma(1.5 + radial_n1) * tgamma(1.5 + radial_n2)));
+                       this->radial_sigmas[radial_n2],
+                   1.5) *
+               sqrt(tgamma(1.5 + radial_n1) * tgamma(1.5 + radial_n2)));
         }
       }
 
@@ -338,7 +337,7 @@ namespace rascal {
       Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigensolver(overlap);
       if (eigensolver.info() != Eigen::Success) {
         throw std::runtime_error("Warning: Could not diagonalize "
-                                "radial overlap matrix.");
+                                 "radial overlap matrix.");
       }
       Eigen::MatrixXd eigenvalues = eigensolver.eigenvalues();
       Eigen::ArrayXd eigs_invsqrt = eigenvalues.array().sqrt().inverse();
@@ -363,9 +362,7 @@ namespace rascal {
     Vector_t radial_sigma_factors{};
     Matrix_t radial_nl_factors{};
     Matrix_t radial_ortho_matrix{};
-
   };
-
 
   /**
    * Handles the expansion of an environment in a spherical and radial basis.
@@ -417,15 +414,16 @@ namespace rascal {
       }
 
       auto radial_contribution_hypers =
-                  hypers.at("radial_contribution").get<json>();
+          hypers.at("radial_contribution").get<json>();
       auto radial_contribution_type =
-                radial_contribution_hypers.at("type").get<std::string>();
+          radial_contribution_hypers.at("type").get<std::string>();
       if (radial_contribution_type.compare("GTO") == 0) {
-        this->radial_integral = std::static_pointer_cast<RadialContributionBase>  (std::make_shared<RadialContributionGTO>(hypers));
+        this->radial_integral =
+            std::static_pointer_cast<RadialContributionBase>(
+                std::make_shared<RadialContributionGTO>(hypers));
       } else {
         throw std::logic_error(
-            "Requested Radial contribution type \'" +
-            radial_contribution_type +
+            "Requested Radial contribution type \'" + radial_contribution_type +
             "\' has not been implemented.  Must be one of" + ": \'GTO\'.");
       }
 
@@ -524,7 +522,6 @@ namespace rascal {
 
    protected:
    private:
-
     double interaction_cutoff{};
     double cutoff_smooth_width{};
     size_t max_radial{};
@@ -544,8 +541,6 @@ namespace rascal {
 
     Hypers_t hypers{};
   };
-
-
 
   template <class Mngr>
   void RepresentationManagerSphericalExpansion<Mngr>::compute() {
@@ -604,7 +599,6 @@ namespace rascal {
     using math::PI;
     using std::pow;
 
-
     auto n_row{this->max_radial};
     auto n_col{pow(this->max_angular + 1, 2)};
     this->expansions_coefficients.clear();
@@ -641,11 +635,15 @@ namespace rascal {
       // for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
       //   radial_integral(radial_n, 0) =
       //       radial_norm_factors(radial_n) * radial_nl_factors(radial_n, 0) *
-      //       0.25 * pow(fac_a + this->fac_b[radial_n], -0.5 * (3.0 + radial_n));
+      //       0.25 * pow(fac_a + this->fac_b[radial_n], -0.5 * (3.0 +
+      //       radial_n));
       // }
       // coefficients_center[center_type].col(0) +=
-      //     this->radial_ortho_matrix * radial_integral.col(0) / sqrt(4.0 * PI);
-      coefficients_center[center_type].col(0) += this->radial_integral->compute_center_contribution(fac_a) / sqrt(4.0 * PI);
+      //     this->radial_ortho_matrix * radial_integral.col(0) / sqrt(4.0 *
+      //     PI);
+      coefficients_center[center_type].col(0) +=
+          this->radial_integral->compute_center_contribution(fac_a) /
+          sqrt(4.0 * PI);
 
       for (auto neigh : center) {
         auto dist{this->structure_manager->get_distance(neigh)};
@@ -680,7 +678,8 @@ namespace rascal {
         // }
         // radial_integral = this->radial_ortho_matrix * radial_integral;
 
-        auto neighbour_contribution = this->radial_integral->compute_neighbour_contribution(dist, fac_a);
+        auto neighbour_contribution =
+            this->radial_integral->compute_neighbour_contribution(dist, fac_a);
         harmonics *= cutoff_function->f_c(dist);
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           size_t lm_collective_idx{0};
