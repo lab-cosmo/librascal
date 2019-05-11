@@ -81,6 +81,9 @@ namespace rascal {
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
     using Hypers_t = typename Parent::Hypers_t;
+    using This = AdaptorStrict; 
+    using Distance_t = typename This::template Property_t<double, 2, 1>;
+    using DirectionVector_t = typename This::template Property_t<double, 2, 3>;
 
     static_assert(traits::MaxOrder > 1,
                   "ManagerImlementation needs to handle pairs");
@@ -128,16 +131,16 @@ namespace rascal {
     inline const double & get_cutoff() const { return this->cutoff; }
 
     //! returns the distance between atoms in a given pair
-    template <size_t Order, size_t Layer>
-    inline const double &
-    get_distance(const ClusterRefKey<Order, Layer> & pair) const {
-      return this->distance[pair];
-    }
+    //template <size_t Order, size_t Layer>
+    //inline const double &
+    //get_distance(const ClusterRefKey<Order, Layer> & pair) const {
+    //  return this->distance[pair];
+    //}
 
-    template <size_t Order, size_t Layer>
-    inline double & get_distance(const ClusterRefKey<Order, Layer> & pair) {
-      return this->distance[pair];
-    }
+    //template <size_t Order, size_t Layer>
+    //inline double & get_distance(const ClusterRefKey<Order, Layer> & pair) {
+    //  return this->distance[pair];
+    //}
 
     //! returns the direction vector between atoms in a given pair
     template <size_t Order, size_t Layer>
@@ -372,7 +375,9 @@ namespace rascal {
     }
 
     //! initialise the distance storage
-    this->distance.resize_to_zero();
+    this->template create_property<double,2,1>("distance");
+    auto distance_property = this->template get_property<double,2,1>("distance");
+    distance_property->resize_to_zero();
     this->dir_vec.resize_to_zero();
 
     // fill the list, at least pairs are mandatory for this to work
@@ -410,7 +415,7 @@ namespace rascal {
           double distance{std::sqrt(distance2)};
 
           this->dir_vec.push_back((vec_ij.array() / distance).matrix());
-          this->distance.push_back(distance);
+          distance_property->push_back(distance);
 
           Eigen::Matrix<size_t, PairLayer + 1, 1> indices_pair;
           indices_pair.template head<PairLayer>() = pair.get_cluster_indices();

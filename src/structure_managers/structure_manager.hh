@@ -192,6 +192,7 @@ namespace rascal {
     using TypedProperty_t = TypedProperty<T, Order,
                                           compute_cluster_layer<Order>(
                                               typename traits::LayerByOrder{})>;
+
     //! type for the hyper parameter class
     using Hypers_t = json;
 
@@ -310,6 +311,13 @@ namespace rascal {
       return this->implementation().get_atom_type(atom_index);
     }
 
+    template<typename T, size_t Order, Dim_t NbRow=1, Dim_t NbCol=1>
+    void create_property(const std::string & name) {
+      auto property{std::make_shared< 
+          Property_t<T, Order, NbRow, NbCol>>(*this)};
+      attach_property(name, property);
+    }
+
     /**
      * Attach a property to a StructureManager. A given calculated property is
      * only reasonable if connected with a structure. It is also connected with
@@ -346,6 +354,45 @@ namespace rascal {
       }
       return this->properties[name];
     }
+
+    // something I can use like get_property<Property_t>
+    //template <typename Property_t<typename T, size_t Order, Dim_t NbRow, Dim_t NbCol>
+    //std::shared_ptr<Property_t<T, Order, NbRow, NbCol>>
+    //    get_property(const std::string & name) {
+    //  return std::static_pointer_cast<Property_t<T, Order, NbRow, NbCol>>
+    //    (get_property(name));
+    //}
+
+    template <typename T, size_t Order, Dim_t NbRow=1, Dim_t NbCol=1>
+    std::shared_ptr<Property_t<T, Order, NbRow, NbCol>>
+        get_property(const std::string & name) {
+      return std::static_pointer_cast<Property_t<T, Order, NbRow, NbCol>>
+        (this->get_property(name));
+    }
+
+    //! Accessor for one dimensonial properties 
+    template <typename T, size_t PropertyOrder,
+      size_t Order, size_t Layer>
+    inline T & get_property_value(
+        const ClusterRefKey<Order, Layer> & cluster,
+        const std::string & name) {
+      return 
+        (*(this->template get_property<T, PropertyOrder>(name)))[cluster];
+    }
+
+    // TODO(alex) in which format should be multidimensional properties outputted <T>
+    // e.g Vector_ref
+    
+    template <size_t Order, size_t Layer>
+    inline double & get_distance(const ClusterRefKey<Order, Layer> & pair) const {
+      return get_property_value<double, 2>(pair, "distance");
+    }
+
+    template <size_t Order, size_t Layer>
+    inline double & get_distance(const ClusterRefKey<Order, Layer> & pair) {
+      return get_property_value<double, 2>(pair, "distance");
+    }
+
 
     /**
      * Attach update status to property. It is necessary, because the underlying
