@@ -64,9 +64,10 @@ int main(int argc, char * argv[]) {
   std::string filename{argv[1]};
 
   double cutoff{2.};
-  json hypers{
-      {"max_radial", 6}, {"max_angular", 6}, {"soap_type", "PowerSpectrum"},
-      {"normalize",true}};
+  json hypers{{"max_radial", 6},
+              {"max_angular", 6},
+              {"soap_type", "PowerSpectrum"},
+              {"normalize", true}};
 
   json fc_hypers{{"type", "Cosine"},
                  {"cutoff", {{"value", cutoff}, {"unit", "A"}}},
@@ -77,7 +78,6 @@ int main(int argc, char * argv[]) {
   hypers["cutoff_function"] = fc_hypers;
   hypers["gaussian_density"] = sigma_hypers;
   hypers["radial_contribution"] = {{"type", "GTO"}};
-
 
   json structure{{"filename", filename}};
   json adaptors;

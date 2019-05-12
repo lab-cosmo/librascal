@@ -189,9 +189,9 @@ namespace rascal {
 
     //! helper type for Property creation
     template <typename T, size_t Order>
-    using TypedProperty_t =
-        TypedProperty<T, Order, compute_cluster_layer<Order>(
-                                    typename traits::LayerByOrder{})>;
+    using TypedProperty_t = TypedProperty<T, Order,
+                                          compute_cluster_layer<Order>(
+                                              typename traits::LayerByOrder{})>;
     //! type for the hyper parameter class
     using Hypers_t = json;
 
@@ -678,8 +678,7 @@ namespace rascal {
                const size_t & cluster_index)
         :
 
-          Parent{atom_indices, IndexConstArray_t(&cluster_index)},
-          it{it} {}
+          Parent{atom_indices, IndexConstArray_t(&cluster_index)}, it{it} {}
 
     /**
      * This is a ClusterRef of Order=1, constructed from a higher Order.

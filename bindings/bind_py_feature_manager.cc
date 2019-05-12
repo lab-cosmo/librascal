@@ -57,8 +57,9 @@ decltype(auto) bind_feature_manager(py::module & mod, py::module &) {
     return std::make_unique<Feature_t>(n_feature, hypers);
   }));
   feature.def("reserve", &Feature_t::reserve);
-  feature.def("append", (void (Feature_t::*)(RepresentationManagerBase &)) &
-                            Feature_t::push_back,
+  feature.def("append",
+              (void (Feature_t::*)(RepresentationManagerBase &)) &
+                  Feature_t::push_back,
               py::call_guard<py::gil_scoped_release>());
   feature.def("insert", &Feature_t::insert,
               py::call_guard<py::gil_scoped_release>());

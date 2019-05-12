@@ -188,8 +188,8 @@ namespace rascal {
     ManagerFixtureTwoFcc()
         : ManagerFixtureTwo<StructureManagerCenters>{}, pbc{{true, true, true}},
           cell_1(3, 3), cell_2(3, 3), positions_1(3, 1), positions_2(3, 4),
-          atom_types_1(1), atom_types_2(4),
-          cutoff{0.7},  // starting with zero neighbours
+          atom_types_1(1),
+          atom_types_2(4), cutoff{0.7},  // starting with zero neighbours
           natoms_1{1}, natoms_2{4} {
       /*
        * fcc unit cells: first cell consists of only one atom, which is
@@ -261,8 +261,8 @@ namespace rascal {
 
     ManagerFixture()
         : firstneigh{new int *[nb]}, x{new double *[nb]}, f{new double *[nb]},
-          vatom{new double *[nb]},
-          manager{make_structure_manager<Manager_t>()} {
+          vatom{new double *[nb]}, manager{
+                                       make_structure_manager<Manager_t>()} {
       manager->update(inum, tot_num, ilist, numneigh,
                       static_cast<int **>(firstneigh), ptr_t(x), ptr_t(f), type,
                       eatom, static_cast<double **>(vatom));
@@ -477,8 +477,8 @@ namespace rascal {
    */
   struct ManagerFixtureSkew {
     ManagerFixtureSkew()
-        : pbc{{true, true, false}}, cell(3, 3), positions(3, 2), atom_types(2),
-          cutoff{0.49}, natoms{2} {
+        : pbc{{true, true, false}}, cell(3, 3), positions(3, 2),
+          atom_types(2), cutoff{0.49}, natoms{2} {
       // clang-format off
       cell << 1.0, 0.0, 0.0,
               0.0, 1.0, 0.0,

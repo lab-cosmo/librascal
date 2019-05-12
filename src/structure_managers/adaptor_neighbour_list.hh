@@ -767,8 +767,8 @@ namespace rascal {
       bool consider_ghost_neighbours)
       : manager{std::move(manager)}, cutoff{cutoff}, atom_indices{},
         atom_types{}, ghost_atom_indices{}, nb_neigh{}, neighbours{}, offsets{},
-        n_centers{0}, n_ghosts{0},
-        consider_ghost_neighbours{consider_ghost_neighbours} {
+        n_centers{0}, n_ghosts{0}, consider_ghost_neighbours{
+                                       consider_ghost_neighbours} {
     static_assert(not(traits::MaxOrder < 1), "No atom list in manager");
   }
 

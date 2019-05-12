@@ -48,63 +48,43 @@
 
 namespace rascal {
 
-  struct RadialContributionBase {
-    //! Constructor
-    RadialContributionBase() = default;
-    //! Destructor
-    virtual ~RadialContributionBase() = default;
-    //! Copy constructor
-    RadialContributionBase(const RadialContributionBase & other) = delete;
-    //! Move constructor
-    RadialContributionBase(RadialContributionBase && other) = default;
-    //! Copy assignment operator
-    RadialContributionBase &
-    operator=(const RadialContributionBase & other) = delete;
-    //! Move assignment operator
-    RadialContributionBase &
-    operator=(RadialContributionBase && other) = default;
-
-    using Hypers_t = RepresentationManagerBase::Hypers_t;
-    using Matrix_t = Eigen::MatrixXd;
-    using Vector_t = Eigen::VectorXd;
-    using Matrix_Ref = typename Eigen::Ref<const Matrix_t>;
-    using Vector_Ref = typename Eigen::Ref<const Vector_t>;
-
-    //! Pure Virtual Function to set hyperparameters of the cutoff function
-    virtual void set_hyperparameters(const Hypers_t &) = 0;
-
-    virtual void precompute() = 0;
-    // virtual Vector_Ref compute_center_contribution(const double & fac_a) = 0;
-    // virtual Matrix_Ref compute_neighbour_contribution(const double & distance,
-    //                                                   const double & fac_a) = 0;
-  };
-
-  struct AtomicSmearingSpecificationBase {
-    //! Constructor
-    AtomicSmearingSpecificationBase() = default;
-    //! Destructor
-    virtual ~AtomicSmearingSpecificationBase() = default;
-    //! Copy constructor
-    AtomicSmearingSpecificationBase(
-        const AtomicSmearingSpecificationBase & other) = delete;
-    //! Move constructor
-    AtomicSmearingSpecificationBase(AtomicSmearingSpecificationBase && other) =
-        default;
-    //! Copy assignment operator
-    AtomicSmearingSpecificationBase &
-    operator=(const AtomicSmearingSpecificationBase & other) = delete;
-    //! Move assignment operator
-    AtomicSmearingSpecificationBase &
-    operator=(AtomicSmearingSpecificationBase && other) = default;
-
-    using Hypers_t = RepresentationManagerBase::Hypers_t;
-  };
-
   namespace internal {
 
-
+    /**
+     * List of possible Radial basis that can be used by the spherical
+     * expansion.
+     */
     enum class RadialBasisType { GTO, End_ };
+
+    /**
+     * List of possible atomic smearing for the definition of the atomic
+     * density. If not specified, the gaussian type smearing is implided.
+     */
     enum class AtomicSmearingType { Constant, PerSpecies, Radial, End_ };
+
+    /**
+     * Base class for the specification of the atomic smearing.
+     */
+    struct AtomicSmearingSpecificationBase {
+      //! Constructor
+      AtomicSmearingSpecificationBase() = default;
+      //! Destructor
+      virtual ~AtomicSmearingSpecificationBase() = default;
+      //! Copy constructor
+      AtomicSmearingSpecificationBase(
+          const AtomicSmearingSpecificationBase & other) = delete;
+      //! Move constructor
+      AtomicSmearingSpecificationBase(
+          AtomicSmearingSpecificationBase && other) = default;
+      //! Copy assignment operator
+      AtomicSmearingSpecificationBase &
+      operator=(const AtomicSmearingSpecificationBase & other) = delete;
+      //! Move assignment operator
+      AtomicSmearingSpecificationBase &
+      operator=(AtomicSmearingSpecificationBase && other) = default;
+
+      using Hypers_t = RepresentationManagerBase::Hypers_t;
+    };
 
     /**
      * Specification to hold the parameter for the atomic smearing function,
@@ -170,26 +150,74 @@ namespace rascal {
       }
     };
 
+    //! Utility to make shared pointer and cast to base class
     template <AtomicSmearingType Type, class Hypers>
     decltype(auto) make_atomic_smearing(const Hypers & sigma_hypers) {
       return std::static_pointer_cast<AtomicSmearingSpecificationBase>(
-          std::make_shared<AtomicSmearingSpecification<Type>>(
-              sigma_hypers));
+          std::make_shared<AtomicSmearingSpecification<Type>>(sigma_hypers));
     }
 
+    //! Utility to cast base to child class
     template <AtomicSmearingType Type>
     decltype(auto) downcast_atomic_smearing(
         const std::shared_ptr<AtomicSmearingSpecificationBase> &
             atomic_smearing) {
-      return std::static_pointer_cast<
-          AtomicSmearingSpecification<Type>>(atomic_smearing);
+      return std::static_pointer_cast<AtomicSmearingSpecification<Type>>(
+          atomic_smearing);
     }
 
+    /**
+     * Base class to define the radial contribution to the spherical expansion
+     */
+    struct RadialContributionBase {
+      //! Constructor
+      RadialContributionBase() = default;
+      //! Destructor
+      virtual ~RadialContributionBase() = default;
+      //! Copy constructor
+      RadialContributionBase(const RadialContributionBase & other) = delete;
+      //! Move constructor
+      RadialContributionBase(RadialContributionBase && other) = default;
+      //! Copy assignment operator
+      RadialContributionBase &
+      operator=(const RadialContributionBase & other) = delete;
+      //! Move assignment operator
+      RadialContributionBase &
+      operator=(RadialContributionBase && other) = default;
 
-    template<RadialBasisType RBT>
+      using Hypers_t = RepresentationManagerBase::Hypers_t;
+      using Matrix_t = Eigen::MatrixXd;
+      using Vector_t = Eigen::VectorXd;
+      using Matrix_Ref = typename Eigen::Ref<const Matrix_t>;
+      using Vector_Ref = typename Eigen::Ref<const Vector_t>;
+
+      //! Pure Virtual Function to set hyperparameters of the cutoff function
+      virtual void set_hyperparameters(const Hypers_t &) = 0;
+
+      virtual void precompute() = 0;
+      // Can't make templated virtual member function... But these functions
+      // are expected
+      // virtual Vector_Ref compute_center_contribution() = 0;
+      // virtual Matrix_Ref compute_neighbour_contribution() = 0;
+    };
+
+    template <RadialBasisType RBT>
     struct RadialContribution {};
 
-    template<>
+    /**
+     * Implementation of the radial contribution for Gaussian Type Orbitals
+     * radial basis functions and gaussian smearing of the atom density.
+     *
+     *          R^{GTO}_{n}(r) = \mathcal{N}_n\ r^{n} \exp[-br^2]
+     *
+     * \mathcal{N}_n^2 = \frac{2}{\sigma_n^{2n + 3}\Gamma(n + 3/2)}
+     * \sigma_n = (r_\text{cut}-\delta r_\text{cut})
+     * \max(\sqrt{n},1)/n_\text{max} b=\frac{1}{2\sigma_n} \int_0^\infty
+     * R^{GTO}_{n}(r) R^{GTO}_{n\prime}(r) \dd{r}= 2 \left(\frac{1}{2
+     * \sigma_{n}^2}+\frac{1}{2 \sigma_{n\prime}^2} \right)^{-\frac{1}{2}
+     * (3+n+n\prime)} \Gamma(\frac{3+n+n\prime}{2})
+     */
+    template <>
     struct RadialContribution<RadialBasisType::GTO> : RadialContributionBase {
       //! Constructor
       explicit RadialContribution(const Hypers_t & hypers) {
@@ -203,8 +231,7 @@ namespace rascal {
       //! Move constructor
       RadialContribution(RadialContribution && other) = default;
       //! Copy assignment operator
-      RadialContribution &
-      operator=(const RadialContribution & other) = delete;
+      RadialContribution & operator=(const RadialContribution & other) = delete;
       //! Move assignment operator
       RadialContribution & operator=(RadialContribution && other) = default;
 
@@ -215,35 +242,45 @@ namespace rascal {
       using Matrix_Ref = typename Parent::Matrix_Ref;
       using Vector_Ref = typename Parent::Vector_Ref;
 
-      //! Pure Virtual Function to set hyperparameters of the cutoff function
+      /**
+       * Set hyperparameters.
+       * @params hypers is expected to be the same as the the input of
+       *         the spherical expansion
+       */
       void set_hyperparameters(const Hypers_t & hypers) {
         this->hypers = hypers;
 
         this->max_radial = hypers.at("max_radial");
         this->max_angular = hypers.at("max_angular");
 
+        // init size of the member data
         this->radial_ortho_matrix.resize(this->max_radial, this->max_radial);
         this->fac_b.resize(this->max_radial, 1);
         this->radial_norm_factors.resize(this->max_radial, 1);
         this->radial_nl_factors.resize(this->max_radial, this->max_angular + 1);
         this->radial_sigmas.resize(this->max_radial, 1);
         this->radial_integral_neighbour.resize(this->max_radial,
-                                              this->max_angular + 1);
+                                               this->max_angular + 1);
         this->radial_integral_center.resize(this->max_radial);
 
+        // find the cutoff radius of the representation
         auto fc_hypers = hypers.at("cutoff_function").get<json>();
-        this->interaction_cutoff = fc_hypers.at("cutoff").at("value");
+        this->interaction_cutoff =
+            fc_hypers.at("cutoff").at("value").get<double>();
 
+        // define the type of smearing to use
         auto smearing_hypers = hypers.at("gaussian_density").get<json>();
         auto smearing_type = smearing_hypers.at("type").get<std::string>();
         if (smearing_type.compare("Constant") == 0) {
           this->atomic_smearing_type = AtomicSmearingType::Constant;
           this->atomic_smearing =
-              make_atomic_smearing<AtomicSmearingType::Constant>(smearing_hypers);
+              make_atomic_smearing<AtomicSmearingType::Constant>(
+                  smearing_hypers);
         } else {
           throw std::logic_error(
               "Requested Gaussian sigma type \'" + smearing_type +
-              "\' has not been implemented.  Must be one of" + ": \'Constant\'.");
+              "\' has not been implemented.  Must be one of" +
+              ": \'Constant\'.");
         }
       }
 
@@ -252,8 +289,10 @@ namespace rascal {
         this->precompute_radial_overlap();
       }
 
+      //! define the contribution from the central atom to the expansion
       template <AtomicSmearingType AST, size_t Order, size_t Layer>
-      Vector_Ref compute_center_contribution(ClusterRefKey<Order, Layer> & center) {
+      Vector_Ref
+      compute_center_contribution(ClusterRefKey<Order, Layer> & center) {
         using math::PI;
         using std::pow;
         using std::sqrt;
@@ -279,9 +318,11 @@ namespace rascal {
         return Vector_Ref(this->radial_integral_center);
       }
 
+      //! define the contribution from a neighbour atom to the expansion
       template <AtomicSmearingType AST, size_t Order, size_t Layer>
-      Matrix_Ref compute_neighbour_contribution(const double & distance,
-                                    ClusterRefKey<Order, Layer> & pair) {
+      Matrix_Ref
+      compute_neighbour_contribution(const double & distance,
+                                     ClusterRefKey<Order, Layer> & pair) {
         auto smearing{downcast_atomic_smearing<AST>(this->atomic_smearing)};
         // a = 1 / (2*\sigma^2)
         double fac_a{0.5 * pow(smearing->get_gaussian_sigma(pair), -2)};
@@ -292,14 +333,16 @@ namespace rascal {
           double radial_sigma_factors{pow(fac_a, 2) /
                                       (fac_a + this->fac_b[radial_n])};
           for (size_t angular_l{0}; angular_l < this->max_angular + 1;
-              angular_l++) {
+               angular_l++) {
             this->radial_integral_neighbour(radial_n, angular_l) =
-                exp_factor * this->radial_nl_factors(radial_n, angular_l) * 0.25 *
+                exp_factor * this->radial_nl_factors(radial_n, angular_l) *
+                0.25 *
                 pow(fac_a + this->fac_b[radial_n],
                     -0.5 * (3.0 + angular_l + radial_n)) *
                 pow(distance * fac_a, angular_l) *
-                math::hyp1f1(0.5 * (3.0 + angular_l + radial_n), 1.5 + angular_l,
-                            pow(distance, 2) * radial_sigma_factors);
+                math::hyp1f1(0.5 * (3.0 + angular_l + radial_n),
+                             1.5 + angular_l,
+                             pow(distance, 2) * radial_sigma_factors);
           }
           this->radial_integral_neighbour.row(radial_n) *=
               this->radial_norm_factors(radial_n);
@@ -324,9 +367,9 @@ namespace rascal {
         for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
           this->radial_norm_factors(radial_n) = std::sqrt(
               2.0 / (std::tgamma(1.5 + radial_n) *
-                    pow(this->radial_sigmas[radial_n], 3.0 + 2.0 * radial_n)));
+                     pow(this->radial_sigmas[radial_n], 3.0 + 2.0 * radial_n)));
           for (size_t angular_l{0}; angular_l < this->max_angular + 1;
-              ++angular_l) {
+               ++angular_l) {
             this->radial_nl_factors(radial_n, angular_l) =
                 std::tgamma(0.5 * (3.0 + angular_l + radial_n)) /
                 std::tgamma(1.5 + angular_l);
@@ -355,12 +398,12 @@ namespace rascal {
                         0.5 / pow(this->radial_sigmas[radial_n2], 2),
                     -0.5 * (3.0 + radial_n1 + radial_n2)) /
                 (pow(this->radial_sigmas[radial_n1], radial_n1) *
-                pow(this->radial_sigmas[radial_n2], radial_n2)) *
+                 pow(this->radial_sigmas[radial_n2], radial_n2)) *
                 tgamma(0.5 * (3.0 + radial_n1 + radial_n2)) /
                 (pow(this->radial_sigmas[radial_n1] *
-                        this->radial_sigmas[radial_n2],
-                    1.5) *
-                sqrt(tgamma(1.5 + radial_n1) * tgamma(1.5 + radial_n2)));
+                         this->radial_sigmas[radial_n2],
+                     1.5) *
+                 sqrt(tgamma(1.5 + radial_n1) * tgamma(1.5 + radial_n2)));
           }
         }
 
@@ -368,7 +411,7 @@ namespace rascal {
         Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigensolver(overlap);
         if (eigensolver.info() != Eigen::Success) {
           throw std::runtime_error("Warning: Could not diagonalize "
-                                  "radial overlap matrix.");
+                                   "radial overlap matrix.");
         }
         Eigen::MatrixXd eigenvalues = eigensolver.eigenvalues();
         Eigen::ArrayXd eigs_invsqrt = eigenvalues.array().sqrt().inverse();
@@ -380,20 +423,22 @@ namespace rascal {
       std::shared_ptr<AtomicSmearingSpecificationBase> atomic_smearing{};
       AtomicSmearingType atomic_smearing_type{};
 
+      // data member used to store the contributions to the expansion
       Matrix_t radial_integral_neighbour{};
       Vector_t radial_integral_center{};
 
       Hypers_t hypers{};
+      // some
       double interaction_cutoff{};
       size_t max_radial{};
       size_t max_angular{};
-      size_t n_species{};
 
+      // \sigma_n = (r_\text{cut}-\delta r_\text{cut})
+      // \max(\sqrt{n},1)/n_\text{max}
       Vector_t radial_sigmas{};
       // b = 1 / (2*\sigma_n^2)
       Vector_t fac_b{};
       Vector_t radial_norm_factors{};
-      Vector_t radial_sigma_factors{};
       Matrix_t radial_nl_factors{};
       Matrix_t radial_ortho_matrix{};
     };
@@ -402,18 +447,18 @@ namespace rascal {
 
   template <internal::RadialBasisType Type, class Hypers>
   decltype(auto) make_radial_integral(const Hypers & basis_hypers) {
-    return std::static_pointer_cast<RadialContributionBase>(
-        std::make_shared<internal::RadialContribution<Type>>(
-            basis_hypers));
+    return std::static_pointer_cast<internal::RadialContributionBase>(
+        std::make_shared<internal::RadialContribution<Type>>(basis_hypers));
   }
 
   template <internal::RadialBasisType Type>
   decltype(auto) downcast_radial_integral(
-      const std::shared_ptr<RadialContributionBase> &
+      const std::shared_ptr<internal::RadialContributionBase> &
           radial_integral) {
-    return std::static_pointer_cast<
-        internal::RadialContribution<Type>>(radial_integral);
+    return std::static_pointer_cast<internal::RadialContribution<Type>>(
+        radial_integral);
   }
+
   /**
    * Handles the expansion of an environment in a spherical and radial basis.
    *
@@ -424,7 +469,6 @@ namespace rascal {
    * (again, as in SOAP) or one of the more recent bases currently under
    * development.
    */
-
   template <class StructureManager>
   class RepresentationManagerSphericalExpansion
       : public RepresentationManagerBase {
@@ -468,8 +512,8 @@ namespace rascal {
       auto radial_contribution_type =
           radial_contribution_hypers.at("type").get<std::string>();
       if (radial_contribution_type.compare("GTO") == 0) {
-        auto aa = std::make_shared<internal::RadialContribution<
-                                  RadialBasisType::GTO>>(hypers);
+        auto aa = std::make_shared<
+            internal::RadialContribution<RadialBasisType::GTO>>(hypers);
         this->atomic_smearing_type = aa->atomic_smearing_type;
         this->radial_integral = aa;
         this->radial_integral_type = RadialBasisType::GTO;
@@ -529,16 +573,18 @@ namespace rascal {
     RepresentationManagerSphericalExpansion &
     operator=(RepresentationManagerSphericalExpansion && other) = default;
 
-    //! compute representation
+    //! compute representation. choose the CutoffFunctionType from the hypers
     void compute();
 
+    //! choose the RadialBasisType and AtomicSmearingType from the hypers
     template <internal::CutoffFunctionType FcType>
     void compute_by_radial_contribution();
 
+    //! Compute the spherical exansion given several options
     template <internal::CutoffFunctionType FcType,
               internal::RadialBasisType RadialType,
-            internal::AtomicSmearingType SmearingType>
-    void compute_by_gaussian_density();
+              internal::AtomicSmearingType SmearingType>
+    void compute_impl();
 
     std::vector<Precision_t> & get_representation_raw_data() {
       return this->dummy;
@@ -576,16 +622,14 @@ namespace rascal {
 
     internal::AtomicSmearingType atomic_smearing_type{};
 
-    std::shared_ptr<RadialContributionBase> radial_integral{};
+    std::shared_ptr<internal::RadialContributionBase> radial_integral{};
     internal::RadialBasisType radial_integral_type{};
 
-
-    std::shared_ptr<CutoffFunctionBase> cutoff_function{};
+    std::shared_ptr<internal::CutoffFunctionBase> cutoff_function{};
     internal::CutoffFunctionType cutoff_function_type{};
 
     Hypers_t hypers{};
   };
-
 
   template <class Mngr>
   void RepresentationManagerSphericalExpansion<Mngr>::compute() {
@@ -596,7 +640,6 @@ namespace rascal {
       this->compute_by_radial_contribution<CutoffFunctionType::Cosine>();
       break;
     }
-
     default:
       throw std::logic_error("The combination of parameter is not handdled.");
       break;
@@ -605,18 +648,17 @@ namespace rascal {
 
   template <class Mngr>
   template <internal::CutoffFunctionType FcType>
-  void RepresentationManagerSphericalExpansion<Mngr>::compute_by_radial_contribution() {
-    using internal::RadialBasisType;
+  void RepresentationManagerSphericalExpansion<
+      Mngr>::compute_by_radial_contribution() {
     using internal::AtomicSmearingType;
+    using internal::RadialBasisType;
 
     internal::CombineEnums<RadialBasisType, AtomicSmearingType> combineEnums;
     switch (
-        combineEnums(this->radial_integral_type,
-                     this->atomic_smearing_type)) {
+        combineEnums(this->radial_integral_type, this->atomic_smearing_type)) {
     case combineEnums(RadialBasisType::GTO, AtomicSmearingType::Constant): {
-      this->compute_by_gaussian_density<FcType,
-                                      RadialBasisType::GTO,
-                                      AtomicSmearingType::Constant>();
+      this->compute_impl<FcType, RadialBasisType::GTO,
+                         AtomicSmearingType::Constant>();
       break;
     }
     default:
@@ -624,9 +666,6 @@ namespace rascal {
       break;
     }
   }
-
-
-
 
   /**
    * Compute the spherical expansion
@@ -637,15 +676,14 @@ namespace rascal {
   template <internal::CutoffFunctionType FcType,
             internal::RadialBasisType RadialType,
             internal::AtomicSmearingType SmearingType>
-  void
-  RepresentationManagerSphericalExpansion<Mngr>::compute_by_gaussian_density() {
+  void RepresentationManagerSphericalExpansion<Mngr>::compute_impl() {
     using math::PI;
     using std::pow;
 
-    auto cutoff_function{downcast_cutoff_function<FcType>(
-          this->cutoff_function)};
-    auto radial_integral{downcast_radial_integral<RadialType>(
-          this->radial_integral)};
+    auto cutoff_function{
+        downcast_cutoff_function<FcType>(this->cutoff_function)};
+    auto radial_integral{
+        downcast_radial_integral<RadialType>(this->radial_integral)};
 
     auto n_row{this->max_radial};
     auto n_col{pow(this->max_angular + 1, 2)};
@@ -668,7 +706,10 @@ namespace rascal {
       }
 
       // Start the accumulator with the central atom
-      coefficients_center[center_type].col(0) += radial_integral->template compute_center_contribution<SmearingType>(center) / sqrt(4.0 * PI);
+      coefficients_center[center_type].col(0) +=
+          radial_integral->template compute_center_contribution<SmearingType>(
+              center) /
+          sqrt(4.0 * PI);
 
       for (auto neigh : center) {
         auto dist{this->structure_manager->get_distance(neigh)};
@@ -679,7 +720,9 @@ namespace rascal {
         Eigen::MatrixXd harmonics =
             math::compute_spherical_harmonics(direction, this->max_angular);
         auto neighbour_contribution =
-            radial_integral->template compute_neighbour_contribution<SmearingType>(dist, neigh);
+            radial_integral
+                ->template compute_neighbour_contribution<SmearingType>(dist,
+                                                                        neigh);
 
         harmonics *= cutoff_function->f_c(dist);
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
