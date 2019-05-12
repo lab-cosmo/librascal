@@ -139,11 +139,6 @@ namespace rascal {
       //! returns zero.
       void clear() noexcept { this->data.clear(); }
 
-      template <typename... Args>
-      decltype(auto) emplace(Args &&... args) {
-        return this->data.emplace(std::forward<Args>(args)...);
-      }
-
       /**
        * returns a vector of the valid keys of the map
        */
@@ -151,6 +146,164 @@ namespace rascal {
         std::vector<key_type> keys{};
         std::transform(this->begin(), this->end(), std::back_inserter(keys),
                        RetrieveKey());
+        return keys;
+      }
+
+      void resize(const std::set<K>& keys, const int& n_row, const int& n_col) {
+
+        for (auto& key : keys) {
+          key_type skey{this->copy_sort(key)};
+          if (skey == key) {
+            if (this->count(key) == 0) {
+              this->data[skey] = V::Zero(n_row, n_col);
+            } else {
+              this->data[skey].resize(n_row, n_col);
+            }
+          }
+        }
+      }
+
+      iterator begin() noexcept { return this->data.begin(); }
+      const_iterator begin() const noexcept { return this->data.begin(); }
+      const_iterator cbegin() const noexcept { return this->data.cbegin(); }
+      iterator end() noexcept { return this->data.end(); }
+      const_iterator end() const noexcept { return this->data.end(); }
+      const_iterator cend() const noexcept { return this->data.cend(); }
+
+     private:
+      /**
+       * Functor to get a key from a map
+       */
+      struct RetrieveKey {
+        template <typename T>
+        typename T::first_type operator()(T keyValuePair) const {
+          return keyValuePair.first;
+        }
+      };
+
+      key_type copy_sort(const key_type & key) {
+        key_type skey{key};
+        if (key.size() > 1) {
+          std::sort(skey.begin(), skey.end());
+        }
+        return skey;
+      }
+
+      key_type copy_sort(key_type && key) {
+        key_type skey{key};
+        if (key.size() > 1) {
+          std::sort(skey.begin(), skey.end());
+        }
+        return skey;
+      }
+    };
+
+    template <class K, class V>
+    class InternallySortedKeyMapAlternative {
+     public:
+      using MyMap_t = std::map<K, V>;
+
+      //! the data holder.
+      std::vector<typename V::value_type> data{};
+      std::map<K, std::array<size_t, 2>> map{};
+
+      // some member types
+      using key_type = typename MyMap_t::key_type;
+      using mapped_type = V;
+      using value_type = std::pair<const K, mapped_type>;
+      using size_type = typename MyMap_t::size_type;
+      using reference = typename Eigen::Map<V>;
+      using const_reference = typename Eigen::Map<const V>;
+
+      using iterator = typename MyMap_t::iterator;
+      using const_iterator = typename MyMap_t::const_iterator;
+
+      //! Default constructor
+      InternallySortedKeyMapAlternative() = default;
+
+      //! Copy constructor
+      InternallySortedKeyMapAlternative(const InternallySortedKeyMapAlternative & other) = default;
+
+      //! Move constructor
+      InternallySortedKeyMapAlternative(InternallySortedKeyMapAlternative && other) = default;
+
+      //! Destructor
+      ~InternallySortedKeyMapAlternative() = default;
+
+      //! Copy assignment operator
+      InternallySortedKeyMapAlternative &
+      operator=(const InternallySortedKeyMapAlternative & other) = default;
+
+      //! Move assignment operator
+      InternallySortedKeyMapAlternative &
+      operator=(InternallySortedKeyMapAlternative && other) = default;
+
+      /**
+       * Returns a reference to the mapped value of the element with key
+       * equivalent to key. If no such element exists, an exception of type
+       * std::out_of_range is thrown.
+       * The elements of the key are sorted in ascending order.
+       *
+       */
+      reference at(const key_type & key) {
+        key_type skey{this->copy_sort(key)};
+        auto& pos{this->map.at(skey)};
+        return reference(&this->data[pos[0]], pos[1]);
+      }
+      const_reference at(const key_type & key) const {
+        key_type skey{this->copy_sort(key)};
+        auto& pos{this->map.at(skey)};
+        return const_reference(&this->data[pos[0]], pos[1]);
+      }
+      //! access or insert specified element
+      reference operator[](const key_type & key) {
+        key_type skey{this->copy_sort(key)};
+        auto& pos{this->map[skey]};
+        return reference(&this->data[pos[0]], pos[1]);
+      }
+      const_reference operator[](const key_type& key) const {
+        key_type skey{this->copy_sort(key)};
+        auto& pos{this->map[skey]};
+        return const_reference(&this->data[pos[0]], pos[1]);
+      }
+
+      void resize(const std::set<key_type>& keys, const int& n_row, const int& n_col) {
+        size_t new_size{0};
+        size_t nb_comp{n_row*n_col};
+        for (auto& key : keys) {
+          key_type skey{this->copy_sort(key)};
+          if (skey == key) {
+            std::array<size_t, 2> val{new_size, nb_comp};
+            this->map[skey] = val;
+            new_size += nb_comp;
+          }
+        }
+        this->data.resize(new_size, 0.);
+      }
+
+      //! Returns the number of elements with key that compares equivalent to
+      //! the specified argument, which is either 1 or 0 since this container
+      //! does not allow duplicates.
+      template <class Key>
+      decltype(auto) count(const Key & key) {
+        key_type skey{this->copy_sort(key)};
+        return this->map.count(skey);
+      }
+
+      //! Erases all elements from the container. After this call, size()
+      //! returns zero.
+      void clear() noexcept {
+        this->data.clear();
+        this->map.clear();
+      }
+
+
+      /**
+       * returns a vector of the valid keys of the map
+       */
+      std::vector<key_type> get_keys() {
+        std::vector<key_type> keys{};
+        std::transform(this->map->begin(), this->map->end(), std::back_inserter(keys),RetrieveKey());
         return keys;
       }
 
@@ -188,6 +341,7 @@ namespace rascal {
         return skey;
       }
     };
+
   }  // namespace internal
   /* ---------------------------------------------------------------------- */
   /**
@@ -203,7 +357,7 @@ namespace rascal {
     using Key_t = std::vector<int>;
     using Keys_t = std::set<Key_t>;
     using keys_list_t = std::vector<std::set<Key_t>>;
-    using InputData_t = internal::InternallySortedKeyMap<Key_t, Dense_t>;
+    using InputData_t = internal::InternallySortedKeyMapAlternative<Key_t, Dense_t>;
     using Data_t = std::vector<InputData_t>;
 
     //! constructor

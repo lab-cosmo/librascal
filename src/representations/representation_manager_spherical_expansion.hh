@@ -693,17 +693,15 @@ namespace rascal {
 
     for (auto center : this->structure_manager) {
       auto & coefficients_center = this->expansions_coefficients[center];
-
-      // initialize the expansion coefficients to 0
       Key_t center_type{center.get_atom_type()};
-      coefficients_center[center_type] = Dense_t::Zero(n_row, n_col);
+
+      std::set<Key_t> keys{};
       for (auto neigh : center) {
-        Key_t neigh_type{neigh.get_atom_type()};
-        // avoid initializing again same chemical channel
-        if (coefficients_center.count(neigh_type) == 0) {
-          coefficients_center[neigh_type] = Dense_t::Zero(n_row, n_col);
-        }
+        keys.insert({neigh.get_atom_type()});
       }
+      keys.insert({center_type});
+      // initialize the expansion coefficients to 0
+      coefficients_center.resize(keys, static_cast<size_t>(n_row), static_cast<size_t>(n_col));
 
       // Start the accumulator with the central atom
       coefficients_center[center_type].col(0) +=
