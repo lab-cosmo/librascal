@@ -125,9 +125,7 @@ namespace rascal {
          {"gaussian_sigma", {{"value", 0.2}, {"unit", "A"}}}},
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "A"}}}}};
-    std::vector<json> radial_contribution_hypers{
-      {{"type", "GTO"}}
-    };
+    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
     std::vector<json> rep_hypers{{{"max_radial", 6},
                                   {"max_angular", 0},
                                   {"soap_type", "RadialSpectrum"},
@@ -185,9 +183,7 @@ namespace rascal {
          {"cutoff", {{"value", 2.0}, {"unit", "A"}}},
          {"smooth_width", {{"value", 1.0}, {"unit", "A"}}}}};
 
-    std::vector<json> radial_contribution_hypers{
-      {{"type", "GTO"}}
-    };
+    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
 
     std::vector<json> density_hypers{
         {{"type", "Constant"},

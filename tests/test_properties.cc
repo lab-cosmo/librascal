@@ -138,11 +138,11 @@ namespace rascal {
     dynamic_property2.resize();
 
     BOOST_CHECK_THROW(
-        AtomVectorProperty_t ::check_compatibility(dynamic_property),
+        AtomVectorProperty_t::check_compatibility(dynamic_property),
         std::runtime_error);
 
     BOOST_CHECK_NO_THROW(
-        AtomVectorProperty_t ::check_compatibility(atom_property));
+        AtomVectorProperty_t::check_compatibility(atom_property));
 
     int pair_property_counter{};
     size_t counter{};
