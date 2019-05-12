@@ -39,35 +39,39 @@
 
 namespace rascal {
 
-  struct CutoffFunctionBase {
-    //! Constructor
-    CutoffFunctionBase() = default;
-    //! Destructor
-    virtual ~CutoffFunctionBase() = default;
-    //! Copy constructor
-    CutoffFunctionBase(const CutoffFunctionBase & other) = delete;
-    //! Move constructor
-    CutoffFunctionBase(CutoffFunctionBase && other) = default;
-    //! Copy assignment operator
-    CutoffFunctionBase & operator=(const CutoffFunctionBase & other) = delete;
-    //! Move assignment operator
-    CutoffFunctionBase & operator=(CutoffFunctionBase && other) = default;
-
-    using Hypers_t = RepresentationManagerBase::Hypers_t;
-
-    //! Pure Virtual Function to set hyperparameters of the cutoff function
-    virtual void set_hyperparameters(const Hypers_t &) = 0;
-
-    //! Pure Virtual Function to evaluate the cutoff function
-    // virtual double f_c(const double& distance) = 0;
-    //! Pure Virtual Function to evaluate the derivative of the cutoff function
-    //! with respect to the distance
-    // virtual double df_c(const double& distance) = 0;
-  };
-
   namespace internal {
 
+    /**
+     * List of implemented cutoff function
+     */
     enum class CutoffFunctionType { Cosine, End_ };
+
+    struct CutoffFunctionBase {
+      //! Constructor
+      CutoffFunctionBase() = default;
+      //! Destructor
+      virtual ~CutoffFunctionBase() = default;
+      //! Copy constructor
+      CutoffFunctionBase(const CutoffFunctionBase & other) = delete;
+      //! Move constructor
+      CutoffFunctionBase(CutoffFunctionBase && other) = default;
+      //! Copy assignment operator
+      CutoffFunctionBase & operator=(const CutoffFunctionBase & other) = delete;
+      //! Move assignment operator
+      CutoffFunctionBase & operator=(CutoffFunctionBase && other) = default;
+
+      using Hypers_t = RepresentationManagerBase::Hypers_t;
+
+      //! Pure Virtual Function to set hyperparameters of the cutoff function
+      virtual void set_hyperparameters(const Hypers_t &) = 0;
+
+      // TODO(felix) test is having these pure virtual changes performance
+      //! Pure Virtual Function to evaluate the cutoff function
+      // virtual double f_c(const double& distance) = 0;
+      //! Pure Virtual Function to evaluate the derivative of the cutoff
+      //! function with respect to the distance
+      // virtual double df_c(const double& distance) = 0;
+    };
 
     // Empty general template class implementing the cutoff functions
     // It should never be instantiated.
@@ -109,15 +113,14 @@ namespace rascal {
   }  // namespace internal
 
   template <internal::CutoffFunctionType Type, class Hypers>
-  std::shared_ptr<CutoffFunctionBase>
-  make_cutoff_function(const Hypers & fc_hypers) {
-    return std::static_pointer_cast<CutoffFunctionBase>(
+  decltype(auto) make_cutoff_function(const Hypers & fc_hypers) {
+    return std::static_pointer_cast<internal::CutoffFunctionBase>(
         std::make_shared<internal::CutoffFunction<Type>>(fc_hypers));
   }
 
   template <internal::CutoffFunctionType Type>
-  std::shared_ptr<internal::CutoffFunction<Type>> downcast_cutoff_function(
-      std::shared_ptr<CutoffFunctionBase> & cutoff_function) {
+  decltype(auto) downcast_cutoff_function(
+      std::shared_ptr<internal::CutoffFunctionBase> & cutoff_function) {
     return std::static_pointer_cast<internal::CutoffFunction<Type>>(
         cutoff_function);
   }
