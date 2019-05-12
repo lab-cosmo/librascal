@@ -131,30 +131,19 @@ namespace rascal {
     //! returns the (strict) cutoff for the adaptor
     inline const double & get_cutoff() const { return this->cutoff; }
 
-    //! returns the distance between atoms in a given pair
-    //template <size_t Order, size_t Layer>
-    //inline const double &
-    //get_distance(const ClusterRefKey<Order, Layer> & pair) const {
-    //  return this->distance[pair];
-    //}
-
-    //template <size_t Order, size_t Layer>
-    //inline double & get_distance(const ClusterRefKey<Order, Layer> & pair) {
-    //  return this->distance[pair];
-    //}
-
-    //! returns the direction vector between atoms in a given pair
-    //template <size_t Order, size_t Layer>
-    //inline const Vector_ref
-    //get_direction_vector(const ClusterRefKey<Order, Layer> & pair) const {
-    //  return this->dir_vec[pair];
-    //}
-
-    //template <size_t Order, size_t Layer>
-    //inline Vector_ref
-    //get_direction_vector(const ClusterRefKey<Order, Layer> & pair) {
-    //  return this->dir_vec[pair];
-    //}
+    
+    /* Each adaptor implements this function to enable forwarding to manager which owns the property, if such a property does not exist the root manager captures the call and throws an error
+     */
+    template <typename property_t,
+        size_t Order, size_t Layer>
+    inline typename property_t::reference get_property_value (
+        const ClusterRefKey<Order, Layer> & cluster,
+        const std::string & name) const {
+      if (!this->has_property(name)) {
+        return this->manager->template get_property_value<property_t>(cluster, name);
+      }
+      return (this->template get_property<property_t>(name))->operator[](cluster);
+    }
 
     inline size_t get_nb_clusters(int order) const {
       return this->atom_indices[order - 1].size();

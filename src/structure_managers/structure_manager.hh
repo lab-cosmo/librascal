@@ -405,15 +405,16 @@ namespace rascal {
         const ClusterRefKey<Order, Layer> & cluster,
         const std::string & name) {
       return 
-        (*(this->template get_property<T, PropertyOrder>(name)))[cluster];
+        (this->template get_property<T, PropertyOrder>(name))->operator[](cluster);
     }
+
     template <typename T, size_t PropertyOrder,
         size_t Order, size_t Layer>
     inline T & get_property_value(
         const ClusterRefKey<Order, Layer> & cluster,
         const std::string & name) const {
       return 
-        (*(this->template get_property<T, PropertyOrder>(name)))[cluster];
+        (this->template get_property<T, PropertyOrder>(name))->operator[](cluster);
     }
 
 
@@ -472,6 +473,7 @@ namespace rascal {
     template <size_t Order, size_t Layer>
     inline Vector_ref & get_direction_vector(
         const ClusterRefKey<Order, Layer> & pair) {
+      // TODO(alex) why &&?
       auto && val = this->template get_property_value<double, 2, 3>(pair, "dir_vec");
       return val;//this->template get_property_value<double, 2, 3>(pair, "dir_vec");
     }
