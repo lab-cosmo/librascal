@@ -187,7 +187,7 @@ namespace rascal {
 
 
     template<RadialBasisType RBT>
-    struct RadialContribution
+    struct RadialContribution {};
 
     template<>
     struct RadialContribution<RadialBasisType::GTO> : RadialContributionBase {
@@ -402,14 +402,14 @@ namespace rascal {
 
   template <internal::RadialBasisType Type, class Hypers>
   decltype(auto) make_radial_integral(const Hypers & basis_hypers) {
-    return std::static_pointer_cast<internal::RadialContributionBase>(
+    return std::static_pointer_cast<RadialContributionBase>(
         std::make_shared<internal::RadialContribution<Type>>(
             basis_hypers));
   }
 
   template <internal::RadialBasisType Type>
   decltype(auto) downcast_radial_integral(
-      const std::shared_ptr<internal::RadialContributionBase> &
+      const std::shared_ptr<RadialContributionBase> &
           radial_integral) {
     return std::static_pointer_cast<
         internal::RadialContribution<Type>>(radial_integral);
@@ -468,11 +468,12 @@ namespace rascal {
       auto radial_contribution_type =
           radial_contribution_hypers.at("type").get<std::string>();
       if (radial_contribution_type.compare("GTO") == 0) {
-
-        this->radial_integral = std::make_shared<internal::RadialContribution<
+        auto aa = std::make_shared<internal::RadialContribution<
                                   RadialBasisType::GTO>>(hypers);
+        this->atomic_smearing_type = aa->atomic_smearing_type;
+        this->radial_integral = aa;
         this->radial_integral_type = RadialBasisType::GTO;
-        this->atomic_smearing_type = this->radial_integral->atomic_smearing_type;
+
       } else {
         throw std::logic_error(
             "Requested Radial contribution type \'" + radial_contribution_type +
@@ -531,6 +532,9 @@ namespace rascal {
     //! compute representation
     void compute();
 
+    template <internal::CutoffFunctionType FcType>
+    void compute_by_radial_contribution();
+
     template <internal::CutoffFunctionType FcType,
               internal::RadialBasisType RadialType,
             internal::AtomicSmearingType SmearingType>
@@ -582,47 +586,47 @@ namespace rascal {
     Hypers_t hypers{};
   };
 
+
   template <class Mngr>
   void RepresentationManagerSphericalExpansion<Mngr>::compute() {
     using internal::CutoffFunctionType;
-    using internal::RadialBasisType;
-    using internal::AtomicSmearingType;
 
-    internal::CombineEnums<RadialBasisType, AtomicSmearingType, CutoffFunctionType> combineEnums;
-    switch (
-        combineEnums(this->radial_integral_type,
-                     this->atomic_smearing_type,
-                     this->cutoff_function_type)) {
-    case combineEnums(RadialBasisType::GTO,
-                      AtomicSmearingType::Constant,
-                      CutoffFunctionType::Cosine): {
-
-      this->compute_by_gaussian_density<AtomicSmearingType::Constant>();
+    switch (this->cutoff_function_type) {
+    case CutoffFunctionType::Cosine: {
+      this->compute_by_radial_contribution<CutoffFunctionType::Cosine>();
       break;
     }
-    // case combineEnums(AtomicSmearingType::PerSpecies,
-    //                   CutoffFunctionType::Cosine): {
-    //   auto fc{downcast_cutoff_function<CutoffFunctionType::Cosine>(
-    //       this->cutoff_function)};
-    //   auto sigma{downcast_gaussian_density<AtomicSmearingType::PerSpecies>(
-    //       this->gaussian_density)};
-    //   this->compute_by_gaussian_density(fc, sigma);
-    //   break;
-    // }
-    // case combineEnums(AtomicSmearingType::Radial, CutoffFunctionType::Cosine): {
-    //   auto fc{downcast_cutoff_function<CutoffFunctionType::Cosine>(
-    //       this->cutoff_function)};
-    //   auto sigma{downcast_gaussian_density<AtomicSmearingType::Radial>(
-    //       this->gaussian_density)};
-    //   this->compute_by_gaussian_density(fc, sigma);
-    //   break;
-    // }
 
     default:
       throw std::logic_error("The combination of parameter is not handdled.");
       break;
     }
   }
+
+  template <class Mngr>
+  template <internal::CutoffFunctionType FcType>
+  void RepresentationManagerSphericalExpansion<Mngr>::compute_by_radial_contribution() {
+    using internal::RadialBasisType;
+    using internal::AtomicSmearingType;
+
+    internal::CombineEnums<RadialBasisType, AtomicSmearingType> combineEnums;
+    switch (
+        combineEnums(this->radial_integral_type,
+                     this->atomic_smearing_type)) {
+    case combineEnums(RadialBasisType::GTO, AtomicSmearingType::Constant): {
+      this->compute_by_gaussian_density<FcType,
+                                      RadialBasisType::GTO,
+                                      AtomicSmearingType::Constant>();
+      break;
+    }
+    default:
+      throw std::logic_error("The combination of parameter is not handdled.");
+      break;
+    }
+  }
+
+
+
 
   /**
    * Compute the spherical expansion
@@ -664,9 +668,7 @@ namespace rascal {
       }
 
       // Start the accumulator with the central atom
-      coefficients_center[center_type].col(0) +=
-          radial_integral->compute_center_contribution<SmearingType>(center) /
-          sqrt(4.0 * PI);
+      coefficients_center[center_type].col(0) += radial_integral->template compute_center_contribution<SmearingType>(center) / sqrt(4.0 * PI);
 
       for (auto neigh : center) {
         auto dist{this->structure_manager->get_distance(neigh)};
@@ -677,7 +679,7 @@ namespace rascal {
         Eigen::MatrixXd harmonics =
             math::compute_spherical_harmonics(direction, this->max_angular);
         auto neighbour_contribution =
-            radial_integral->compute_neighbour_contribution<SmearingType>(dist, neigh);
+            radial_integral->template compute_neighbour_contribution<SmearingType>(dist, neigh);
 
         harmonics *= cutoff_function->f_c(dist);
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
