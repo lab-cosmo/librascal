@@ -85,6 +85,7 @@ namespace rascal {
     using Distance_t = typename This::template Property_t<double, 2, 1>;
     using DirectionVector_t = typename This::template Property_t<double, 2, 3>;
 
+
     static_assert(traits::MaxOrder > 1,
                   "ManagerImlementation needs to handle pairs");
 
@@ -143,17 +144,17 @@ namespace rascal {
     //}
 
     //! returns the direction vector between atoms in a given pair
-    template <size_t Order, size_t Layer>
-    inline const Vector_ref
-    get_direction_vector(const ClusterRefKey<Order, Layer> & pair) const {
-      return this->dir_vec[pair];
-    }
+    //template <size_t Order, size_t Layer>
+    //inline const Vector_ref
+    //get_direction_vector(const ClusterRefKey<Order, Layer> & pair) const {
+    //  return this->dir_vec[pair];
+    //}
 
-    template <size_t Order, size_t Layer>
-    inline Vector_ref
-    get_direction_vector(const ClusterRefKey<Order, Layer> & pair) {
-      return this->dir_vec[pair];
-    }
+    //template <size_t Order, size_t Layer>
+    //inline Vector_ref
+    //get_direction_vector(const ClusterRefKey<Order, Layer> & pair) {
+    //  return this->dir_vec[pair];
+    //}
 
     inline size_t get_nb_clusters(int order) const {
       return this->atom_indices[order - 1].size();
@@ -278,8 +279,6 @@ namespace rascal {
     }
 
     ImplementationPtr_t manager;
-    typename AdaptorStrict::template Property_t<double, 2> distance;
-    typename AdaptorStrict::template Property_t<double, 2, 3> dir_vec;
     const double cutoff;
 
     /**
@@ -336,7 +335,7 @@ namespace rascal {
   template <class ManagerImplementation>
   AdaptorStrict<ManagerImplementation>::AdaptorStrict(
       std::shared_ptr<ManagerImplementation> manager, double cutoff)
-      : manager{std::move(manager)}, distance{*this}, dir_vec{*this},
+      : manager{std::move(manager)}, 
         cutoff{cutoff}, atom_indices{}, nb_neigh{}, offsets{}
 
   {
@@ -375,12 +374,14 @@ namespace rascal {
     }
 
     //! initialise the distance storage
-    this->template create_property<double,2,1>("distance");
-    // TODO problem does not find distance
-    std::cout << "Property create" << std::endl;
-    auto distance_property = this->template get_property<double,2,1>("distance");
+    this->template create_property<Distance_t>("distance");
+    this->template create_property<DirectionVector_t>("dir_vec");
+    auto distance_property = this->template get_property<Distance_t>("distance");
+    auto dir_vec_property =
+        this->template get_property<DirectionVector_t >("dir_vec");
+
     distance_property->resize_to_zero();
-    this->dir_vec.resize_to_zero();
+    dir_vec_property->resize_to_zero();
 
     // fill the list, at least pairs are mandatory for this to work
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
@@ -416,7 +417,7 @@ namespace rascal {
           this->add_atom(pair);
           double distance{std::sqrt(distance2)};
 
-          this->dir_vec.push_back((vec_ij.array() / distance).matrix());
+          dir_vec_property->push_back((vec_ij.array() / distance).matrix());
           distance_property->push_back(distance);
 
           Eigen::Matrix<size_t, PairLayer + 1, 1> indices_pair;

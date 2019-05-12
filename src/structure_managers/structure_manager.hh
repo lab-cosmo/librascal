@@ -311,13 +311,6 @@ namespace rascal {
       return this->implementation().get_atom_type(atom_index);
     }
 
-    template<typename T, size_t Order, Dim_t NbRow=1, Dim_t NbCol=1>
-    void create_property(const std::string & name) {
-      auto property{std::make_shared< 
-          Property_t<T, Order, NbRow, NbCol>>(*this)};
-      attach_property(name, property);
-    }
-
     /**
      * Attach a property to a StructureManager. A given calculated property is
      * only reasonable if connected with a structure. It is also connected with
@@ -345,6 +338,20 @@ namespace rascal {
       return not(this->properties.find(name) == this->properties.end());
     }
 
+    template<typename property_t>
+    void create_property(const std::string & name) {
+      auto property{std::make_shared< 
+          property_t>(*this)};
+      attach_property(name, property);
+    }
+
+    template<typename T, size_t Order, Dim_t NbRow=1, Dim_t NbCol=1>
+    void create_property(const std::string & name) {
+      auto property{std::make_shared< 
+          Property_t<T, Order, NbRow, NbCol>>(*this)};
+      attach_property(name, property);
+    }
+
     //! Accessor for an attached property with a specifier as a string
     std::shared_ptr<PropertyBase> get_property(const std::string & name) {
       if (!this->has_property(name)) {
@@ -362,41 +369,112 @@ namespace rascal {
     //  return std::static_pointer_cast<Property_t<T, Order, NbRow, NbCol>>
     //    (get_property(name));
     //}
+    
+    template<typename property_t>
+    std::shared_ptr<property_t>
+        get_property(const std::string & name) {
+      return std::dynamic_pointer_cast<property_t>
+        (this->get_property(name));
+    }
+
+    template<typename property_t>
+    std::shared_ptr<property_t>
+        get_property(const std::string & name) const{
+      return std::const_pointer_cast<property_t>
+        (this->get_property(name));
+    }
 
     template <typename T, size_t Order, Dim_t NbRow=1, Dim_t NbCol=1>
     std::shared_ptr<Property_t<T, Order, NbRow, NbCol>>
         get_property(const std::string & name) {
-      return std::static_pointer_cast<Property_t<T, Order, NbRow, NbCol>>
+      return std::dynamic_pointer_cast<Property_t<T, Order, NbRow, NbCol>>
+        (this->get_property(name));
+    }
+
+    template <typename T, size_t Order, Dim_t NbRow=1, Dim_t NbCol=1>
+    std::shared_ptr<Property_t<T, Order, NbRow, NbCol>>
+        get_property(const std::string & name) const{
+      return std::const_pointer_cast<Property_t<T, Order, NbRow, NbCol>>
         (this->get_property(name));
     }
 
     //! Accessor for one dimensonial properties 
     template <typename T, size_t PropertyOrder,
-      size_t Order, size_t Layer>
+        size_t Order, size_t Layer>
     inline T & get_property_value(
         const ClusterRefKey<Order, Layer> & cluster,
         const std::string & name) {
       return 
         (*(this->template get_property<T, PropertyOrder>(name)))[cluster];
     }
+    template <typename T, size_t PropertyOrder,
+        size_t Order, size_t Layer>
+    inline T & get_property_value(
+        const ClusterRefKey<Order, Layer> & cluster,
+        const std::string & name) const {
+      return 
+        (*(this->template get_property<T, PropertyOrder>(name)))[cluster];
+    }
 
-    // TODO(alex) in which format should be multidimensional properties outputted <T>
-    // e.g Vector_ref
+
+    //! Accessor for multidimensonial properties 
+    template <typename property_t,
+        size_t Order, size_t Layer>
+    inline typename property_t::reference get_property_value (
+        const ClusterRefKey<Order, Layer> & cluster,
+        const std::string & name) {
+      return (this->template get_property<property_t>(name))->operator[](cluster);
+    }
+
+    template <typename property_t,
+        size_t Order, size_t Layer>
+    inline typename property_t::reference get_property_value (
+        const ClusterRefKey<Order, Layer> & cluster,
+        const std::string & name) const {
+      return (this->template get_property<property_t>(name))->operator[](cluster);
+    }
+
+    //! Accessor for multidimensonial properties 
+    template <typename T, size_t PropertyOrder, Dim_t NbRow, Dim_t NbCol=1,
+        size_t Order, size_t Layer>
+    inline Eigen::Map<Eigen::Matrix<T, NbRow, NbCol>> get_property_value (
+        const ClusterRefKey<Order, Layer> & cluster,
+        const std::string & name) {
+      return (this->template get_property<T, PropertyOrder, NbRow, NbCol>(name))->operator[](cluster);
+    }
+
+    template <typename T, size_t PropertyOrder, Dim_t NbRow, Dim_t NbCol=1,
+        size_t Order, size_t Layer>
+    inline Eigen::Map<Eigen::Matrix<T, NbRow, NbCol>> get_property_value (
+        const ClusterRefKey<Order, Layer> & cluster,
+        const std::string & name) const {
+      return (this->template get_property<T, PropertyOrder, NbRow, NbCol>(name))->operator[](cluster);
+    }
     
     template <size_t Order, size_t Layer>
     inline double & get_distance(const ClusterRefKey<Order, Layer> & pair) const {
-      // TODO(alex) forwarding
-     // if has_property {
-        return get_property_value<double, 2>(pair, "distance");
-    //  }
-    //  this->manager->get_distance();
+        return this->template get_property_value<double, 2>(pair, "distance");
     }
 
     template <size_t Order, size_t Layer>
     inline double & get_distance(const ClusterRefKey<Order, Layer> & pair) {
-      return get_property_value<double, 2>(pair, "distance");
+      return this->template get_property_value<double, 2>(pair, "distance");
     }
 
+    template <size_t Order, size_t Layer>
+    inline Vector_ref & get_direction_vector(
+        const ClusterRefKey<Order, Layer> & pair) const {
+      //using Ref_t = typename std::remove_reference_t<>::reference;
+      auto & val = this->template get_property_value<double, 2, 3>(pair, "dir_vec");
+      return val;//this->template get_property_value<double, 2, 3>(pair, "dir_vec");
+    }
+
+    template <size_t Order, size_t Layer>
+    inline Vector_ref & get_direction_vector(
+        const ClusterRefKey<Order, Layer> & pair) {
+      auto && val = this->template get_property_value<double, 2, 3>(pair, "dir_vec");
+      return val;//this->template get_property_value<double, 2, 3>(pair, "dir_vec");
+    }
 
     /**
      * Attach update status to property. It is necessary, because the underlying
