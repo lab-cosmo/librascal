@@ -66,6 +66,7 @@ int main() {
 
   hypers["cutoff_function"] = fc_hypers;
   hypers["gaussian_density"] = sigma_hypers;
+  hypers["radial_contribution"] = {{"type", "GTO"}};
 
   json structure{{"filename", filename}};
   json adaptors;
