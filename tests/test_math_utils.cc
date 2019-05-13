@@ -195,6 +195,13 @@ namespace rascal {
     Eigen::MatrixXd directional;
     Eigen::MatrixXd fd_derivatives;
     Eigen::MatrixXd fd_error_cwise;
+    // This error isn't going to be arbitrarily small, due to the interaction of
+    // finite-difference and finite precision effects.  Just set it to something
+    // reasonable and check it explicitly if you really want to be sure (paying
+    // attention to the change of the finite-difference gradients from one step
+    // to the next).  The automated test is really more intended to be a sanity
+    // check on the implementation anyway.
+    constexpr double fd_error_tol = 1E-8;
     for (auto inputs_it{function_inputs.begin()};
          inputs_it != function_inputs.end(); inputs_it++) {
       direction_vector = Eigen::Map<Eigen::RowVectorXd>
@@ -216,6 +223,7 @@ namespace rascal {
           std::cout << "Analytical derivative: " << directional << std::endl;
         }
         double min_error{HUGE_VAL};
+        Eigen::MatrixXd fd_last{Eigen::MatrixXd::Zero(1, directional.size())};
         for (double dx = 1E-2; dx > 1E-10; dx *= 0.1) {
           std::cout << "dx = " << dx << "\t";
           displacement = dx * displacement_direction;
@@ -246,12 +254,15 @@ namespace rascal {
           if (std::abs(fd_error) < min_error) {min_error = std::abs(fd_error);}
           if (verbose) {
             fd_error_cwise = (fd_derivatives - directional);
-            std::cout << "error          = " << fd_error_cwise << std::endl;
-            std::cout << "(FD derivative = " << fd_derivatives << ")";
+            std::cout << "error            = " << fd_error_cwise << std::endl;
+            std::cout << "(FD derivative   = " << fd_derivatives << ")";
             std::cout << std::endl;
+            std::cout << "(minus last step = " << fd_derivatives - fd_last;
+            std::cout << ")" << std::endl;
           }
+          fd_last = fd_derivatives;
         } // for (double dx...) (displacement magnitudes)
-        BOOST_CHECK_SMALL(min_error, math::dbl_ftol);
+        BOOST_CHECK_SMALL(min_error, fd_error_tol);
       } // for (int disp_idx...) (displacement directions)
     } // for (auto inputs_it...) (function inputs)
   }
