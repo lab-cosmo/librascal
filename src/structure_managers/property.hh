@@ -188,21 +188,43 @@ namespace rascal {
     //                "You are trying to access a property that "
     //                "does not exist at this depth in the "
     //                "adaptor stack.");
-    //  if Order
     //  return this->operator[](id.get_cluster_index(CallerLayer));
     //}
 
+    //template <size_t ClusterOrder, size_t CallerLayer>
+    //inline reference operator[](const ClusterRefKey<ClusterOrder, CallerLayer> & id) {
+    //  static_assert(CallerLayer >= PropertyLayer,
+    //                "You are trying to access a property that "
+    //                "does not exist at this depth in the "
+    //                "adaptor stack.");
+    //  if (ClusterOrder == Order) {
+    //    return this->operator[](id.get_cluster_index(CallerLayer));
+    //  } else if (Order==1) {
+    //    return this->operator[](id.get_atom_indices().back());
+    //  }
+    //}
+
     template <size_t ClusterOrder, size_t CallerLayer>
-    inline reference operator[](const ClusterRefKey<ClusterOrder, CallerLayer> & id) {
+    inline typename std::enable_if<ClusterOrder == Order, reference>::type
+       operator[](const ClusterRefKey<ClusterOrder, CallerLayer> & id) {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that "
                     "does not exist at this depth in the "
                     "adaptor stack.");
-      if (ClusterOrder == Order) {
-        return this->operator[](id.get_cluster_index(CallerLayer));
-      } else if (Order==1) {
-        return this->operator[](id.get_atom_indices().back());
-      }
+      return this->operator[](id.get_cluster_index(CallerLayer));
+    }
+
+    // Access on a Order 1 property with a higher Order cluster,
+    // gives the property of the atom with the last atom index 
+    // in the cluster
+    template <size_t ClusterOrder, size_t CallerLayer>
+    inline typename std::enable_if<not(ClusterOrder == Order) and Order==1, reference>::type
+       operator[](const ClusterRefKey<ClusterOrder, CallerLayer> & id) {
+      static_assert(CallerLayer >= PropertyLayer,
+                    "You are trying to access a property that "
+                    "does not exist at this depth in the "
+                    "adaptor stack.");
+      return this->operator[](id.get_atom_indices().back());
     }
 
 
