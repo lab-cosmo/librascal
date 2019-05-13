@@ -27,6 +27,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include <iostream>
+
 #include "math_utils.hh"
 
 namespace rascal {
@@ -196,22 +198,31 @@ namespace rascal {
         size_t max_angular) {
       using std::pow;
       using std::sqrt;
-
+      Eigen::Vector3d my_direction;
       if (direction.size() != 3) {
         throw std::length_error("Direction must be a vector in R^3");
       }
+      if (std::abs((direction[0]*direction[0] +
+                    direction[1]*direction[1] +
+                    direction[2]*direction[2]) - 1.0) > math::dbl_ftol) {
+        std::cerr << "Warning: math::compute_spherical_harmonics(): ";
+        std::cerr << "Direction vector unnormalized, normalizing it now";
+        std::cerr << std::endl;
+        my_direction = direction / direction.norm();
+      } else {
+        my_direction = direction;
+      }
       // The cosine against the z-axis is just the z-component of the
       // direction vector
-      double cos_theta = direction[2];
-      // The less efficient, but more intuitive implementation:
-      // double phi = std::atan2(direction[1], direction[0]);
-      double sqrt_xy = std::hypot(direction[0], direction[1]);
+      double cos_theta = my_direction[2];
+      double sqrt_xy = std::hypot(my_direction[0], my_direction[1]);
       // For a vector along the z-axis, define phi=0
       double cos_phi{1.0}, sin_phi{0.0};
       if (sqrt_xy >= math::dbl_ftol) {
-        cos_phi = direction[0] / sqrt_xy;
-        sin_phi = direction[1] / sqrt_xy;
+        cos_phi = my_direction[0] / sqrt_xy;
+        sin_phi = my_direction[1] / sqrt_xy;
       }
+
       Eigen::VectorXd harmonics =
           Eigen::VectorXd::Zero(pow(max_angular + 1, 2));
       Eigen::MatrixXd assoc_legendre_polynom =
@@ -274,28 +285,32 @@ namespace rascal {
         size_t max_angular) {
       using std::pow;
       using std::sqrt;
-
+      Eigen::Vector3d my_direction;
       if (direction.size() != 3) {
         throw std::length_error("Direction must be a vector in R^3");
       }
       if (std::abs((direction[0]*direction[0] +
                     direction[1]*direction[1] +
                     direction[2]*direction[2]) - 1.0) > math::dbl_ftol) {
-        // Your argument is invalid.
-        throw std::invalid_argument("Direction vector must be normalized");
+        std::cerr << "Warning: math::compute_spherical_harmonics_derivatives()";
+        std::cerr << ": Direction vector unnormalized, normalizing it now";
+        std::cerr << std::endl;
+        my_direction = direction / direction.norm();
+      } else {
+        my_direction = direction;
       }
       // The cosine against the z-axis is just the z-component of the
       // direction vector
-      double cos_theta = direction[2];
-      double sqrt_xy = std::hypot(direction[0], direction[1]);
+      double cos_theta = my_direction[2];
+      double sqrt_xy = std::hypot(my_direction[0], my_direction[1]);
       // A rose, by any other name, would have the same exact value
       //double sin_theta = sqrt(1.0 - cos_theta*cos_theta);
       double sin_theta{sqrt_xy};
       // For a vector along the z-axis, define phi=0
       double cos_phi{1.0}, sin_phi{0.0};
       if (sqrt_xy >= math::dbl_ftol) {
-        cos_phi = direction[0] / sqrt_xy;
-        sin_phi = direction[1] / sqrt_xy;
+        cos_phi = my_direction[0] / sqrt_xy;
+        sin_phi = my_direction[1] / sqrt_xy;
       }
 
       Eigen::MatrixXd harmonics_derivatives =
