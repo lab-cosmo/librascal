@@ -180,13 +180,16 @@ namespace rascal {
     }
   }
 
-  BOOST_FIXTURE_TEST_CASE(math_spherical_harmonics_grad_test,
-                          GradientTestFixture) {
-    const size_t max_angular = 2;
-    SphericalHarmonicsWithGradients<max_angular> harmonics_calculator{};
-    Eigen::MatrixXd harmonics;
-    Eigen::MatrixXd harmonics_gradients;
-    Eigen::RowVector3d direction_vector;
+  constexpr size_t test_max_angular = 3;
+  using function_list = boost::mpl::list<
+    SphericalHarmonicsWithGradients<test_max_angular>>;
+
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(math_gradients_test, Function_provider_t,
+                                   function_list, GradientTestFixture) {
+    Function_provider_t function_calculator{};
+    Eigen::MatrixXd values;
+    Eigen::MatrixXd jacobian;
+    Eigen::RowVectorXd direction_vector;
     Eigen::VectorXd displacement_direction;
     Eigen::Vector3d displacement;
     Eigen::MatrixXd directional;
@@ -194,20 +197,20 @@ namespace rascal {
     Eigen::MatrixXd fd_error_cwise;
     for (auto inputs_it{function_inputs.begin()};
          inputs_it != function_inputs.end(); inputs_it++) {
-      // do this with Eigen::Map in the general (non-3D) case
-      direction_vector = Eigen::RowVector3d(inputs_it->data());
-      harmonics = harmonics_calculator.f(direction_vector);
-      harmonics_gradients = harmonics_calculator.grad_f(direction_vector);
+      direction_vector = Eigen::Map<Eigen::RowVectorXd>
+                                          (inputs_it->data(), 1, n_arguments);
+      values = function_calculator.f(direction_vector);
+      jacobian = function_calculator.grad_f(direction_vector);
       if (verbose) {
         std::cout << "Direction vector: " << direction_vector << std::endl;
-        std::cout << "Harmonics:" << harmonics << std::endl;
-        std::cout << "Harmonics gradients:" << harmonics_gradients << std::endl;
+        std::cout << "Values:" << values << std::endl;
+        std::cout << "Jacobian:" << jacobian << std::endl;
       }
       for (int disp_idx{0}; disp_idx < displacement_directions.rows();
            disp_idx++) {
         displacement_direction = displacement_directions.row(disp_idx);
         // Compute the directional derivative(s)
-        directional = displacement_direction.adjoint() * harmonics_gradients;
+        directional = displacement_direction.adjoint() * jacobian;
         if (verbose) {
           std::cout << "FD direction: " << displacement_direction << std::endl;
           std::cout << "Analytical derivative: " << directional << std::endl;
@@ -218,8 +221,8 @@ namespace rascal {
           // Compute the finite-difference derivative using a
           // centred-difference approach
           fd_derivatives = 0.5 / dx * (
-            harmonics_calculator.f(direction_vector + displacement.adjoint())
-          - harmonics_calculator.f(direction_vector - displacement.adjoint()));
+            function_calculator.f(direction_vector + displacement.adjoint())
+          - function_calculator.f(direction_vector - displacement.adjoint()));
           double fd_error{0.};
           double fd_quotient{0.};
           size_t nonzero_count{0};

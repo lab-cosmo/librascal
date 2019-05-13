@@ -119,7 +119,7 @@ namespace rascal {
       std::ifstream input_file(this->input_filename);
       input_file >> input_data;
       function_inputs = input_data.at("function_inputs").get<StdVector2Dim_t>();
-      size_t n_arguments{function_inputs[0].size()};
+      n_arguments = function_inputs[0].size();
 
       // Get/make the displacement directions
       std::string direction_mode = input_data.at(
@@ -155,6 +155,7 @@ namespace rascal {
     Eigen::MatrixXd displacement_directions{};
     std::string input_filename{
       "reference_data/spherical_harmonics_gradient_test.json"};
+    size_t n_arguments{0};
     bool verbose{true};
   };
 
