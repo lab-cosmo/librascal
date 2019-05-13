@@ -189,7 +189,7 @@ namespace rascal {
     Function_provider_t function_calculator{};
     Eigen::MatrixXd values;
     Eigen::MatrixXd jacobian;
-    Eigen::RowVectorXd direction_vector;
+    Eigen::RowVectorXd argument_vector;
     Eigen::VectorXd displacement_direction;
     Eigen::Vector3d displacement;
     Eigen::MatrixXd directional;
@@ -204,12 +204,12 @@ namespace rascal {
     constexpr double fd_error_tol = 1E-8;
     for (auto inputs_it{function_inputs.begin()};
          inputs_it != function_inputs.end(); inputs_it++) {
-      direction_vector = Eigen::Map<Eigen::RowVectorXd>
+      argument_vector = Eigen::Map<Eigen::RowVectorXd>
                                           (inputs_it->data(), 1, n_arguments);
-      values = function_calculator.f(direction_vector);
-      jacobian = function_calculator.grad_f(direction_vector);
+      values = function_calculator.f(argument_vector);
+      jacobian = function_calculator.grad_f(argument_vector);
       std::cout << std::string(30, '-') << std::endl;
-      std::cout << "Direction vector: " << direction_vector << std::endl;
+      std::cout << "Direction vector: " << argument_vector << std::endl;
       if (verbose) {
         std::cout << "Values:" << values << std::endl;
         std::cout << "Jacobian:" << jacobian << std::endl;
@@ -232,8 +232,8 @@ namespace rascal {
           // Compute the finite-difference derivative using a
           // centred-difference approach
           fd_derivatives = 0.5 / dx * (
-            function_calculator.f(direction_vector + displacement.adjoint())
-          - function_calculator.f(direction_vector - displacement.adjoint()));
+            function_calculator.f(argument_vector + displacement.adjoint())
+          - function_calculator.f(argument_vector - displacement.adjoint()));
           double fd_error{0.};
           double fd_quotient{0.};
           size_t nonzero_count{0};
