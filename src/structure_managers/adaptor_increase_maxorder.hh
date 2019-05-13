@@ -147,7 +147,9 @@ namespace rascal {
     template <size_t Order>
     inline size_t
     get_offset_impl(const std::array<size_t, Order> & counters) const;
-
+    template <size_t TopLevelOrder>
+    inline void
+    write_cluster_atoms_index(const std::array<size_t, TopLevelOrder-1> & counters, const std::array<size_t, TopLevelOrder-1> & offsets, const std::array<size_t, TopLevelOrder> & cluster_atoms_index) const;
     //! Returns the number of clusters of size cluster_size
     inline size_t get_nb_clusters(size_t order) const {
       switch (order) {
@@ -511,6 +513,14 @@ namespace rascal {
       auto main_offset{this->offsets[tuple_index]};
       return main_offset;
     }
+  }
+
+  template <class ManagerImplementation>
+  template <size_t TopLevelOrder>
+  inline void AdaptorMaxOrder<ManagerImplementation>::
+      write_cluster_atoms_index(const std::array<size_t, TopLevelOrder-1> & counters, const std::array<size_t, TopLevelOrder-1> & offsets, const std::array<size_t, TopLevelOrder> & cluster_atoms_index) const {
+    cluster_atoms_index[TopLevelOrder-1] = this->neighbours[counters[TopLevelOrder-2]+offsets[TopLevelOrder-2]];
+    this->manager->write_cluster_atoms_index(counters, offsets, cluster_atoms_index);
   }
 }  // namespace rascal
 

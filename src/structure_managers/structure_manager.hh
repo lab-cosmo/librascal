@@ -911,6 +911,9 @@ namespace rascal {
     inline std::array<size_t, 1> get_counters() const {
       return this->it.get_counters();
     }
+    inline std::array<size_t, 1> get_offsets() const {
+      return this->it.get_offsets();
+    }
     //!`atom_cluster_indices` is an initially contiguous numbering of atoms
     Iterator_t & it;
 
@@ -1107,6 +1110,19 @@ namespace rascal {
           counters[i] = parental_counters[i];
         }
         return counters;
+      }
+    }
+    inline std::array<size_t, Order> get_offsets() {
+      std::array<size_t, Order> offsets;
+      offsets[Order - 1] = this->offset;
+      if (Order == 1) {
+        return offsets;
+      } else {
+        auto parental_offsets = this->container.get_offsets();
+        for (size_t i{0}; i < Order - 1; i++) {
+          offsets[i] = parental_offsets[i];
+        }
+        return offsets;
       }
     }
     //! in ascending order, this is: manager, atom, pair, triplet (i.e.

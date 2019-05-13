@@ -503,6 +503,7 @@ namespace rascal {
     template <class... Args>
     void update(Args &&... arguments);
 
+
     //! Returns cutoff radius of the neighbourhood manager
     inline double get_cutoff() const { return this->cutoff; }
 
@@ -521,6 +522,10 @@ namespace rascal {
     template <size_t Order>
     inline size_t
     get_offset_impl(const std::array<size_t, Order> & counters) const;
+
+    template <size_t TopLevelOrder>
+    inline void
+    write_cluster_atoms_index(const std::array<size_t, TopLevelOrder-1> & counters, const std::array<size_t, TopLevelOrder-1> & offsets, const std::array<size_t, TopLevelOrder> & cluster_atoms_index) const;
 
     //! Returns the number of clusters of size cluster_size
     inline size_t get_nb_clusters(size_t order) const {
@@ -1046,6 +1051,19 @@ namespace rascal {
                   " MaxOrder");
     return this->offsets[counters.front()];
   }
+
+  template <class ManagerImplementation>
+  template <size_t TopLevelOrder>
+  inline void AdaptorNeighbourList<ManagerImplementation>::
+    write_cluster_atoms_index(const std::array<size_t, TopLevelOrder-1> & counters, const std::array<size_t, TopLevelOrder-1> & offsets, const std::array<size_t, TopLevelOrder> & cluster_atoms_index) const {
+    // The static assert with <= is necessary, because the template parameter
+    // ``Order`` is one Order higher than the MaxOrder at the current
+    // level. The return type of this function is used to build the next Order
+    // iteration.
+    cluster_atoms_index[0] = counters.front(); //counters[0] = cluster_index<1> // this could be also done in implementation of root structure manager TODO(alex)
+    cluster_atoms_index[1] = this->neighbours[counters.front()+offsets.front()];
+  }
+
 }  // namespace rascal
 
 #endif  // SRC_STRUCTURE_MANAGERS_ADAPTOR_NEIGHBOUR_LIST_HH_

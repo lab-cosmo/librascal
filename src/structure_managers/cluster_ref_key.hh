@@ -201,6 +201,9 @@ namespace rascal {
         Eigen::Map<const Eigen::Matrix<size_t, Layer + 1, 1>>;
     using IndexArray = Eigen::Map<Eigen::Matrix<size_t, Layer + 1, 1>>;
     using AtomIndex_t = std::array<int, Order>;
+    // TODO(alex)
+    //using ClusterAtomIndices =
+    //    std::array<Eigen::Map<const Eigen::Matrix<size_t, Layer + 1, 1>>,Order>;
 
     //! Default constructor
     ClusterRefKey() = delete;
@@ -209,8 +212,9 @@ namespace rascal {
      * direct constructor. Initialized with an array of atoms indices,
      * and a cluster reference data
      */
-    ClusterRefKey(AtomIndex_t atom_indices, IndexConstArray cluster_indices)
-        : Parent{Order, Layer}, atom_indices{atom_indices},
+    ClusterRefKey(AtomIndex_t atom_indices, IndexConstArray cluster_indices) // TODO(alex), ClusterAtomIndices cluster_atoms_indices)
+        : Parent{Order, Layer}, atom_indices{atom_indices},           
+          // cluster_atoms_indices{cluster_atoms_indices}, // TODO(alex)
           cluster_indices{cluster_indices.data()} {}
 
     //! Copy constructor
@@ -266,6 +270,8 @@ namespace rascal {
      * means last entry (.back())
      */
     IndexConstArray cluster_indices;
+    // TODO(alex)
+    // ClusterAtomIndices cluster_atoms_indices;
   };
 
 }  // namespace rascal
