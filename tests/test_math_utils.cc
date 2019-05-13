@@ -180,93 +180,10 @@ namespace rascal {
     }
   }
 
-  constexpr size_t test_max_angular = 3;
-  using function_list = boost::mpl::list<
-    SphericalHarmonicsWithGradients<test_max_angular>>;
-
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(math_gradients_test, Function_provider_t,
-                                   function_list, GradientTestFixture) {
-    Function_provider_t function_calculator{};
-    Eigen::MatrixXd values;
-    Eigen::MatrixXd jacobian;
-    Eigen::RowVectorXd argument_vector;
-    Eigen::VectorXd displacement_direction;
-    Eigen::Vector3d displacement;
-    Eigen::MatrixXd directional;
-    Eigen::MatrixXd fd_derivatives;
-    Eigen::MatrixXd fd_error_cwise;
-    // This error isn't going to be arbitrarily small, due to the interaction of
-    // finite-difference and finite precision effects.  Just set it to something
-    // reasonable and check it explicitly if you really want to be sure (paying
-    // attention to the change of the finite-difference gradients from one step
-    // to the next).  The automated test is really more intended to be a sanity
-    // check on the implementation anyway.
-    constexpr double fd_error_tol = 1E-8;
-    for (auto inputs_it{function_inputs.begin()};
-         inputs_it != function_inputs.end(); inputs_it++) {
-      argument_vector = Eigen::Map<Eigen::RowVectorXd>
-                                          (inputs_it->data(), 1, n_arguments);
-      values = function_calculator.f(argument_vector);
-      jacobian = function_calculator.grad_f(argument_vector);
-      std::cout << std::string(30, '-') << std::endl;
-      std::cout << "Direction vector: " << argument_vector << std::endl;
-      if (verbose) {
-        std::cout << "Values:" << values << std::endl;
-        std::cout << "Jacobian:" << jacobian << std::endl;
-      }
-      for (int disp_idx{0}; disp_idx < displacement_directions.rows();
-           disp_idx++) {
-        displacement_direction = displacement_directions.row(disp_idx);
-        // Compute the directional derivative(s)
-        directional = displacement_direction.adjoint() * jacobian;
-        std::cout << "FD direction: " << displacement_direction.adjoint();
-        std::cout << std::endl;
-        if (verbose) {
-          std::cout << "Analytical derivative: " << directional << std::endl;
-        }
-        double min_error{HUGE_VAL};
-        Eigen::MatrixXd fd_last{Eigen::MatrixXd::Zero(1, directional.size())};
-        for (double dx = 1E-2; dx > 1E-10; dx *= 0.1) {
-          std::cout << "dx = " << dx << "\t";
-          displacement = dx * displacement_direction;
-          // Compute the finite-difference derivative using a
-          // centred-difference approach
-          fd_derivatives = 0.5 / dx * (
-            function_calculator.f(argument_vector + displacement.adjoint())
-          - function_calculator.f(argument_vector - displacement.adjoint()));
-          double fd_error{0.};
-          double fd_quotient{0.};
-          size_t nonzero_count{0};
-          for (int dim_idx{0}; dim_idx < fd_derivatives.size(); dim_idx++) {
-            if (std::abs(directional(dim_idx)) < 10*math::dbl_ftol) {
-              fd_error += fd_derivatives(dim_idx);
-            } else {
-              fd_quotient += (fd_derivatives(dim_idx) / directional(dim_idx));
-              fd_error += (fd_derivatives(dim_idx) - directional(dim_idx))
-                          / directional(dim_idx);
-              ++nonzero_count;
-            }
-          }
-          if (nonzero_count > 0) {
-            fd_quotient = fd_quotient / nonzero_count;
-          }
-          fd_error = fd_error / fd_derivatives.size();
-          std::cout << "Average rel FD error: " << fd_error << "\t";
-          std::cout << "Average FD quotient:  " << fd_quotient << std::endl;
-          if (std::abs(fd_error) < min_error) {min_error = std::abs(fd_error);}
-          if (verbose) {
-            fd_error_cwise = (fd_derivatives - directional);
-            std::cout << "error            = " << fd_error_cwise << std::endl;
-            std::cout << "(FD derivative   = " << fd_derivatives << ")";
-            std::cout << std::endl;
-            std::cout << "(minus last step = " << fd_derivatives - fd_last;
-            std::cout << ")" << std::endl;
-          }
-          fd_last = fd_derivatives;
-        } // for (double dx...) (displacement magnitudes)
-        BOOST_CHECK_SMALL(min_error, fd_error_tol);
-      } // for (int disp_idx...) (displacement directions)
-    } // for (auto inputs_it...) (function inputs)
+  BOOST_AUTO_TEST_CASE(spherical_harmonics_gradient_test) {
+    constexpr size_t test_max_angular = 3;
+    test_gradients<SphericalHarmonicsWithGradients<test_max_angular>>(
+      "reference_data/spherical_harmonics_gradient_test.json");
   }
 
   /* ---------------------------------------------------------------------- */
