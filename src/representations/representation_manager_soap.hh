@@ -106,10 +106,14 @@ namespace rascal {
         if (hypers.find("lam") != hypers.end()) {
           this->lambda = hypers.at("lam");
         }
+        if (hypers.find("inversion_symmetry") != hypers.end()) {
+          this->inversion_symmetry = hypers.at("inversion_symmetry");
+        }
       } else {
         throw std::logic_error("Requested SOAP type \'" + this->soap_type_str +
                                "\' has not been implemented.  Must be one of" +
-                               ": \'PowerSpectrum\'.");
+                               ": \'RadialSpectrum\', \'PowerSpectrum\', " +
+                               "\'BiSpectrum\' or \'LambdaSpectrum\'.");
       }
     }
 
@@ -158,8 +162,8 @@ namespace rascal {
     std::string soap_type_str{};
     std::vector<Precision_t> dummy{};
     bool is_precomputed{false};
-    bool inversion_symmetry{true};
-    int lambda{0};
+    bool inversion_symmetry{false};
+    size_t lambda{0};
     std::vector<double> w3js{};
   };
 
@@ -185,29 +189,64 @@ namespace rascal {
     }
   }
 
-  /** Compute Wigner 3j symbols */
+  /** Compute Wigner 3j symbols **/
   template <class Mngr>
   void RepresentationManagerSOAP<Mngr>::precompute_w3js() {
     //2*lmax and Wigner symbol type (3)
     wig_table_init(2*(this->max_angular + 1), 3);
     wig_temp_init(2*(this->max_angular + 1));
-    for (size_t l1 = 0; l1 < this->max_angular+1; l1++) {
-      for (size_t l2 = 0; l2 < this->max_angular+1; l2++) {
-        for (size_t l3 = 0; l3 < this->max_angular+1; l3++) {
+    if (this->lambda != 0) { //tensors
+      size_t l3 = this->lambda;
+      for (size_t l1 = 0; l1 < this->max_angular+1; l1++) {
+        for (size_t l2 = 0; l2 < this->max_angular+1; l2++) {
           if (l1 < (size_t)std::abs<int>(l2 - l3) || l1 > l2 + l3) { continue; }
           if (this->inversion_symmetry == true) {
             if ((l1 + l2 + l3) % 2 == 1) { continue; }
           }
+          for (size_t m3 = 0; m3 < 2*l3 + 1; m3++) {
+          int m3s = m3 - l3;
           for (size_t m1 = 0; m1 < 2*l1 + 1; m1++) {
           int m1s = m1 - l1;
           for (size_t m2 = 0; m2 < 2*l2 + 1; m2++) {
           int m2s = m2 - l2;
-          for (size_t m3 = 0; m3 < 2*l3 + 1; m3++) {
-          int m3s = m3 - l3;
-          if (m1s + m2s + m3s != 0) { continue; }
-          this->w3js.push_back(wig3jj(2*l1, 2*l2, 2*l3, 2*m1s, 2*m2s, 2*m3s));
+          if (m1s + m2s + m3s != 0 && m1s + m2s - m3s != 0) { continue; }
+          double w3j1 = wig3jj(2*l1, 2*l2, 2*l3, 2*m1s, 2*m2s, 2*m3s);
+          double w3j2 = wig3jj(2*l1, 2*l2, 2*l3, 2*m1s, 2*m2s, -2*m3s);
+          if (m3s > 0) { this->w3js.push_back((w3j2 + pow(-1, m3s)*w3j1)/sqrt(2.0)); }
+          else if (m3s == 0) { this->w3js.push_back(w3j1); }
+          else if (m3s < 0) { this->w3js.push_back(((w3j1 - pow(-1, m3s)*w3j2))/sqrt(2.0)); }
+          //change to the following for agreement with SOAPFAST
+          //(different definition of the real spherical harmonics)
+          /*
+          if (m3s > 0) { this->w3js.push_back((w3j1 + pow(-1, m3s)*w3j2)/sqrt(2.0)); }
+          else if (m3s == 0) { this->w3js.push_back(w3j1); }
+          else if (m3s < 0) { this->w3js.push_back(((w3j2 - pow(-1, m3s)*w3j1))/sqrt(2.0)); }
+          */
           }
           }
+          }
+        }
+      }
+    }
+    else { //bispectrum
+      for (size_t l1 = 0; l1 < this->max_angular+1; l1++) {
+        for (size_t l2 = 0; l2 < this->max_angular+1; l2++) {
+          for (size_t l3 = 0; l3 < this->max_angular+1; l3++) {
+            if (l1 < (size_t)std::abs<int>(l2 - l3) || l1 > l2 + l3) { continue; }
+            if (this->inversion_symmetry == true) {
+              if ((l1 + l2 + l3) % 2 == 1) { continue; }
+            }
+            for (size_t m1 = 0; m1 < 2*l1 + 1; m1++) {
+            int m1s = m1 - l1;
+            for (size_t m2 = 0; m2 < 2*l2 + 1; m2++) {
+            int m2s = m2 - l2;
+            for (size_t m3 = 0; m3 < 2*l3 + 1; m3++) {
+            int m3s = m3 - l3;
+            if (m1s + m2s + m3s != 0) { continue; }
+            this->w3js.push_back(wig3jj(2*l1, 2*l2, 2*l3, 2*m1s, 2*m2s, 2*m3s));
+            }
+            }
+            }
           }
         }
       }
@@ -223,17 +262,35 @@ namespace rascal {
     auto& expansions_coefficients{rep_expansion.expansions_coefficients};
     using complex = std::complex<double>;
     size_t n_row{(size_t)pow(this->max_radial, 2)};
-    //size_t n_col{pow((this->max_angular + 1), 2)*(2*this->lambda + 1)};
-    size_t n_col{(2 + this->lambda - 3*pow(this->lambda, 2) + \
-                 2*this->max_angular + 4*this->lambda*this->max_angular)/2 * \
-                 (2*this->lambda + 1)};
+    
+    //number of combinations of l1 and l2 satisfying the triangle constraint
+    size_t n_col{0};
+    if (this->inversion_symmetry == false) {
+      n_col = (size_t)((2 + this->lambda - 3*pow(this->lambda, 2) + \
+              2*this->max_angular + 4*this->lambda*this->max_angular)/2* \
+              (2*this->lambda + 1));
+    }
+    else {
+      n_col = (size_t)(std::ceil(pow(this->max_angular + 1, 2)/2.0) - \
+              pow(1.0 + std::floor((this->lambda - 1)/2.0), 2) - \
+              std::floor(pow(this->max_angular + 1 - this->lambda, 2)/2.0)* \
+              (this->lambda % 2) - \
+              (std::ceil(pow(this->max_angular + 1 - this->lambda, 2)/2.0) - \
+              (this->max_angular - this->lambda + 1))*(1.0 - this->lambda % 2))* \
+              (2*this->lambda + 1);
+      if (this->lambda % 2 == 1) {
+        n_col = (size_t)(0.5*(2.0 + this->lambda - 3.0*pow(this->lambda, 2) + \
+                2*this->max_angular + 4*this->lambda*this->max_angular)* \
+                (2*this->lambda + 1) - (int)n_col);
+      }
+    }
+
+    if (this->is_precomputed == false) { this->precompute_w3js(); }
+
     this->soap_vectors.clear();
     this->soap_vectors.set_shape(n_row, n_col);
     this->soap_vectors.resize();
 
-    wig_table_init(2*(this->max_angular + 1), 3);
-    wig_temp_init(2*(this->max_angular + 1));
-  
     for (auto center : this->structure_manager) {
       auto& coefficients{expansions_coefficients[center]};
       auto& soap_vector{this->soap_vectors[center]};
@@ -257,17 +314,20 @@ namespace rascal {
           }
 
           size_t l3{this->lambda};
-          
           if (soap_vector.count(pair_type) == 0) {
             soap_vector[pair_type] = dense_t::Zero(n_row, n_col);
             size_t nn{0};
             for (size_t n1 = 0; n1 < this->max_radial; n1++) {
               for (size_t n2 = 0; n2 < this->max_radial; n2++) {
                 size_t l0{0};
+                int count{0};
                 for (size_t l1 = 0; l1 < this->max_angular+1; l1++) {
                   for (size_t l2 = 0; l2 < this->max_angular+1; l2++) {
                     if (l1 < (size_t)std::abs<int>(l2 - l3) || l1 > l2 + l3) { 
                       continue; 
+                    }
+                    if (this->inversion_symmetry == true) {
+                      if ((l1 + l2 + l3) % 2 == 1) { continue; }
                     }
                     for (size_t m3 = 0; m3 < 2*l3 + 1; m3++) {
                       int m3s = m3 - l3;
@@ -276,10 +336,10 @@ namespace rascal {
                         int lm1 = std::pow(l1, 2) + m1;
                         for (size_t m2 = 0; m2 < 2*l2 + 1; m2++) {
                           int m2s = m2 - l2;
+                          if (m1s + m2s + m3s != 0 && m1s + m2s - m3s != 0) { continue; }
                           int lm2 = std::pow(l2, 2) + m2;
-                          double w3j1 = wig3jj(2*l1, 2*l2, 2*l3, 2*m1s, 2*m2s, 2*m3s);
-                          double w3j2 = wig3jj(2*l1, 2*l2, 2*l3, 2*m1s, 2*m2s, -2*m3s);
                           complex coef1c, coef2c;
+                          double w3j = this->w3js[count];
 
                           //usual formulae for converting from real to complex
                           if (m1s > 0) { 
@@ -311,18 +371,26 @@ namespace rascal {
                           coef1c /= std::sqrt(2.0);
                           coef2c /= std::sqrt(2.0);
 
-                          complex w3jcombo;
-                          complex c1 = complex(1.0, 0.0);
+                          //combine the coefficients with Wigner 3j symbols
                           complex ci = complex(0.0, 1.0);
-                          if (m3s > 0) { w3jcombo = c1*(w3j2 + pow(-1, m3s)*w3j1)/sqrt(2.0); }
-                          //if (m3s > 0) { w3jcombo = c1*(w3j1 + pow(-1, m3s)*w3j2)/sqrt(2.0); }
-                          else if (m3s == 0) { w3jcombo = c1*w3j1; }
-                          else if (m3s < 0) { w3jcombo = ci*(w3j1 - pow(-1, m3s)*w3j2)/sqrt(2.0); }
-                          //else if (m3s < 0) { w3jcombo = ci*(w3j2 - pow(-1, m3s)*w3j1)/sqrt(2.0); }
-                          if ((l1 + l2 + l3) % 2 == 0) { soap_vector[pair_type](nn, l0) += mult*(w3jcombo*coef1c*coef2c).real(); }
-                          //else { soap_vector[pair_type](nn, l0) += mult*(w3jcombo*coef1c*coef2c).imag(); }
-                          else { }
+                          if ((l1 + l2 + l3) % 2 == 0) { 
+                            if (m3s < 0) { 
+                              soap_vector[pair_type](nn, l0) += mult*w3j*(ci*coef1c*coef2c).real();
+                            }
+                            else {
+                              soap_vector[pair_type](nn, l0) += mult*w3j*(coef1c*coef2c).real();
+                            }
+                          }
+                          else if (this->inversion_symmetry == false) { 
+                            if (m3s < 0) { 
+                              soap_vector[pair_type](nn, l0) += mult*w3j*(ci*coef1c*coef2c).imag();
+                            }
+                            else {
+                              soap_vector[pair_type](nn, l0) += mult*w3j*(coef1c*coef2c).imag();
+                            }
+                          }
 
+                          count++;
                         }
                       }
                       l0++;
@@ -337,9 +405,6 @@ namespace rascal {
       }
     }
 
-    wig_temp_free();
-    wig_table_free();
-
   }
 
  
@@ -350,16 +415,12 @@ namespace rascal {
     using complex = std::complex<double>;
     size_t n_row{(size_t)pow(this->max_radial, 3)};
     size_t n_col{0};
-    //size_t n_col{pow((this->max_angular + 1), 3)};
     if (this->inversion_symmetry == false) {
-      /* sum of the next lmax + 1 natural numbers */  
       n_col = (size_t)(1.0 + 2.0*(double)this->max_angular + \
               1.5*(double)pow(this->max_angular, 2) + \
               (double)pow(this->max_angular, 3)/2.0);
     }
     else {
-      /* number of 3x3 symmetric matrices with non-negative integer entries,
-       * such that the sum of every row and column equal lmax */
       n_col = (size_t)std::floor((double)((pow(this->max_angular + 1, 2) + 1)* \
               (2*(this->max_angular + 1) + 3))/8.0);
     }
@@ -430,7 +491,7 @@ namespace rascal {
                           int m3s = m3 - l3;
                           if (m1s + m2s + m3s != 0) { continue; }
                           int lm3 = std::pow(l3, 2) + m3;
-                          double w3j = w3js[count];
+                          double w3j = this->w3js[count];
                           complex coef1c, coef2c, coef3c;
                             
                           //usual formulae for converting from real to complex
@@ -479,6 +540,7 @@ namespace rascal {
 
                           soap_vector[triplet_type](nn, l0) += \
                             w3j*mult*(coef1c*coef2c*coef3c).real();
+
                           count++;
                           }
                           }
@@ -524,8 +586,16 @@ namespace rascal {
         for (const auto & el2 : coefficients) {
           pair_type[1] = el2.first[0];
           auto & coef2{el2.second};
-          /* avoid computing p^{ab} and p^{ba} since p^{ab} = p^{ba}^T
-           */
+          //pair multiplicity
+          //both the same
+          double mult{1.0};
+          if (pair_type[0] == pair_type[1]) {
+            mult = 1.0;
+          }
+          //different
+          else {
+            mult = std::sqrt(2.0);
+          }
           if (soap_vector.count(pair_type) == 0) {
             soap_vector[pair_type] = dense_t::Zero(n_row, n_col);
             size_t nn{0};
@@ -537,7 +607,7 @@ namespace rascal {
                   double l_factor{1 / std::sqrt(2 * l + 1)};
                   for (size_t m = 0; m < 2 * l + 1; m++) {
                     soap_vector[pair_type](nn, l) +=
-                        l_factor * coef1(n1, lm) * coef2(n2, lm);
+                      mult*l_factor * coef1(n1, lm) * coef2(n2, lm);
                     lm++;
                   }
                 }

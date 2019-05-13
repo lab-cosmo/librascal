@@ -29,25 +29,8 @@ def get_feature_vector(hypers, frames):
         soap = SOAP(**hypers)
         soap_vectors = soap.transform(frames)
         print('Feature vector size: %.3fMB' % (soap.get_num_coefficients()*8.0/1.0e6))
-        #print('Feature vector size: %i' % (soap.get_num_coefficients()))
         feature_vector = soap_vectors.get_feature_matrix()
     return feature_vector
-
-##########################################################################################
-
-def unravel_power_spectrum(feature_vector, nspecies, ncen):
-    #rascal exploits the an <-> bn' symmetry without including multiplicty
-    #unravel the representation
-    feature_vector = feature_vector.reshape((ncen, int(nspecies*(nspecies+1)/2), -1))
-    y = np.zeros(tuple([ncen, nspecies, nspecies] + [i for i in feature_vector.shape[2:]]))
-    counter = 0
-    for j in range(nspecies):
-        for k in range(j, nspecies):
-            y[:, j, k] = feature_vector[:, counter]
-            y[:, k, j] = y[:, j, k]
-            counter += 1
-    y = y.reshape((ncen, -1))
-    return y
 
 ##########################################################################################
 
@@ -138,7 +121,6 @@ def main(json_dump):
     nstr = '2' #number of structures
 
     frames = read('../tests/reference_data/dft-smiles_500.xyz',':'+str(nstr))
-    #frames = read('../tests/reference_data/water_rotations.xyz',':'+str(nstr))
     species = set([atom for frame in frames for atom in frame.get_atomic_numbers()])
     nspecies = len(species)
     #test_hypers["n_species"] = nspecies #not functional
@@ -146,41 +128,39 @@ def main(json_dump):
 
 #------------------------------------------nu=1------------------------------------------#
 
-#    test_hypers["soap_type"] = "RadialSpectrum"
-#    x = get_feature_vector(test_hypers, frames)
-#    x = x.T #Eigen column major
-#    x = normalise(x)
-#    kernel = np.dot(x, x.T)
-#    np.save('kernel_soap_example_nu1.npy', kernel)
-#
-##------------------------------------------nu=2------------------------------------------#
-#
-#    test_hypers["soap_type"] = "PowerSpectrum"
-#    x = get_feature_vector(test_hypers, frames)
-#    x = x.T #Eigen column major
-#    print(x.shape)
-#    x = unravel_power_spectrum(x, nspecies, ncen)
-#    x = normalise(x)
-#    kernel = np.dot(x, x.T)
-#    np.save('kernel_soap_example_nu2.npy', kernel)
-#
-##------------------------------------------nu=3------------------------------------------#
-#
-#    frames = read('../tests/reference_data/water_rotations.xyz',':'+str(nstr))
-#    species = set([atom for frame in frames for atom in frame.get_atomic_numbers()])
-#    nspecies = len(species)
-#    ncen = np.cumsum([len(frame) for frame in frames])[-1]
-#    nmax = 12
-#    lmax = 2
-#    test_hypers["soap_type"] = "BiSpectrum"
-#    test_hypers["inversion_symmetry"] = False
-#    test_hypers["max_radial"] = nmax
-#    test_hypers["max_angular"] = lmax
-#    x = get_feature_vector(test_hypers, frames)
-#    x = x.T #Eigen column major
-#    x = normalise(x)
-#    kernel = np.dot(x, x.T)
-#    np.save('kernel_soap_example_nu3.npy', kernel)
+    test_hypers["soap_type"] = "RadialSpectrum"
+    x = get_feature_vector(test_hypers, frames)
+    x = x.T #Eigen column major
+    x = normalise(x)
+    kernel = np.dot(x, x.T)
+    np.save('kernel_soap_example_nu1.npy', kernel)
+
+#------------------------------------------nu=2------------------------------------------#
+
+    test_hypers["soap_type"] = "PowerSpectrum"
+    x = get_feature_vector(test_hypers, frames)
+    x = x.T #Eigen column major
+    x = normalise(x)
+    kernel = np.dot(x, x.T)
+    np.save('kernel_soap_example_nu2.npy', kernel)
+
+#------------------------------------------nu=3------------------------------------------#
+
+    frames = read('../tests/reference_data/water_rotations.xyz',':'+str(nstr))
+    species = set([atom for frame in frames for atom in frame.get_atomic_numbers()])
+    nspecies = len(species)
+    ncen = np.cumsum([len(frame) for frame in frames])[-1]
+    nmax = 9
+    lmax = 2
+    test_hypers["soap_type"] = "BiSpectrum"
+    test_hypers["inversion_symmetry"] = False
+    test_hypers["max_radial"] = nmax
+    test_hypers["max_angular"] = lmax
+    x = get_feature_vector(test_hypers, frames)
+    x = x.T #Eigen column major
+    x = normalise(x)
+    kernel = np.dot(x, x.T)
+    np.save('kernel_soap_example_nu3.npy', kernel)
 
 #-----------------------------------------tensor-----------------------------------------#
 
@@ -195,6 +175,7 @@ def main(json_dump):
     test_hypers["lam"] = lam
     test_hypers["max_radial"] = nmax
     test_hypers["max_angular"] = lmax
+    test_hypers["inversion_symmetry"] = True
     x = get_feature_vector(test_hypers, frames)
     x = x.T #Eigen column major
     x0 = x.shape[0]

@@ -155,8 +155,6 @@ class SOAP(object):
         if self.hypers['soap_type'] == 'RadialSpectrum':
             return (self.hypers['n_species']*self.hypers['max_radial'])
         if self.hypers['soap_type'] == 'PowerSpectrum':
-            #return (self.hypers['n_species']**2*self.hypers['max_radial']**2* \
-            #       (self.hypers['max_angular'] + 1))
             return (int((self.hypers['n_species']*(self.hypers['n_species'] + 1))/2)* \
                    self.hypers['max_radial']**2* \
                    (self.hypers['max_angular'] + 1))
@@ -170,15 +168,31 @@ class SOAP(object):
                 return (self.hypers['n_species']**3*self.hypers['max_radial']**3* \
                         int(np.floor(((self.hypers['max_angular'] + 1)**2 + 1)* \
                         (2*(self.hypers['max_angular'] + 1) + 3)/8.0)))
-            #*(self.hypers['max_angular'] + 1)**3)
         if self.hypers['soap_type'] == 'LambdaSpectrum':
-            return (self.hypers['n_species']**2*self.hypers['max_radial']**2* \
-                   int((2 + self.hypers['lam'] - 3*self.hypers['lam']**2 + \
-                   2*self.hypers['max_angular'] + \
-                   4*self.hypers['lam']*self.hypers['max_angular'])/2)* \
-                   (2*self.hypers['lam'] + 1))
-            #return (self.hypers['n_species']**2*self.hypers['max_radial']**2* \
-            #       (self.hypers['max_angular'] + 1)**2*(2*self.hypers['lam'] + 1))
+            if self.hypers['inversion_symmetry'] == True:
+                n_col = np.ceil((self.hypers['max_angular'] + 1)**2/2.0) - \
+                        (1.0 + np.floor((self.hypers['lam'] - 1)/2.0))**2 - \
+                        np.floor((self.hypers['max_angular'] + 1 - \
+                        self.hypers['lam'])**2/2.0)*(self.hypers['lam'] % 2) - \
+                        (np.ceil((self.hypers['max_angular'] + 1 - \
+                        self.hypers['lam'])**2/2.0) - \
+                        (self.hypers['max_angular'] - \
+                        self.hypers['lam'] + 1))* \
+                        (1.0 - self.hypers['lam'] % 2);
+                if (self.hypers['lam'] % 2 == 1):
+                    n_col = -n_col + 0.5*(2.0 + self.hypers['lam'] - \
+                            3*self.hypers['lam']**2 + \
+                            2*self.hypers['max_angular'] + \
+                            4*self.hypers['lam']*self.hypers['max_angular']);
+                n_col *= (2*self.hypers['lam'] + 1)
+                return int(n_col*self.hypers['n_species']**2*self.hypers['max_radial']**2)
+            else:
+                return (self.hypers['n_species']**2*self.hypers['max_radial']**2* \
+                       int((2 + self.hypers['lam'] - 3*self.hypers['lam']**2 + \
+                       2*self.hypers['max_angular'] + \
+                       4*self.hypers['lam']*self.hypers['max_angular'])/2)* \
+                       (2*self.hypers['lam'] + 1))
         else:
             raise RuntimeError('Only soap_type = RadialSpectrum || '
-                               'PowerSpectrum || BiSpectrum implemented for now')
+                               'PowerSpectrum || BiSpectrum || LambdaSpectrum '
+                               'implemented for now')
