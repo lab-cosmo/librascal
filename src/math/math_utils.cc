@@ -321,7 +321,7 @@ namespace rascal {
               * assoc_legendre_polynom(angular_l, 1);
             // d/dz
             harmonics_derivatives(3, lm_index + angular_l) =
-              -1.0 * sin_theta * raising_plm_factor * INV_SQRT_TWO
+              sin_theta * raising_plm_factor * INV_SQRT_TWO
               * assoc_legendre_polynom(angular_l, 1);
           } else {
             lowering_plm_factor = raising_plm_factor;
@@ -346,7 +346,7 @@ namespace rascal {
             double phi_derivative_factor{};
             if (sin_theta > 0.5) {
               // singularity at the poles
-              phi_derivative_factor = 0.5 * m_count / sin_theta
+              phi_derivative_factor = m_count / sin_theta
                 * assoc_legendre_polynom(angular_l, m_count);
             } else {
               // singularity at the equator
@@ -376,10 +376,10 @@ namespace rascal {
                 * legendre_polynom_difference);
             // d/dz
             harmonics_derivatives(3, lm_index + angular_l + m_count) =
-              0.5 * sin_theta * cos_sin_m_phi(m_count, 0)
+              -0.5 * sin_theta * cos_sin_m_phi(m_count, 0)
               * legendre_polynom_difference;
             harmonics_derivatives(3, lm_index + angular_l - m_count) =
-              0.5 * sin_theta * cos_sin_m_phi(m_count, 1)
+              -0.5 * sin_theta * cos_sin_m_phi(m_count, 1)
               * legendre_polynom_difference;
           }  // if (m_count == 0)
         }    // for (m_count in [0, l])
