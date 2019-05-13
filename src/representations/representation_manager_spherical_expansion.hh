@@ -653,10 +653,10 @@ namespace rascal {
     using internal::AtomicSmearingType;
     using internal::RadialBasisType;
 
-    internal::CombineEnums<RadialBasisType, AtomicSmearingType> combineEnums;
-    switch (
-        combineEnums(this->radial_integral_type, this->atomic_smearing_type)) {
-    case combineEnums(RadialBasisType::GTO, AtomicSmearingType::Constant): {
+    switch (internal::combineEnums(this->radial_integral_type,
+                                   this->atomic_smearing_type)) {
+    case internal::combineEnums(RadialBasisType::GTO,
+                                AtomicSmearingType::Constant): {
       this->compute_impl<FcType, RadialBasisType::GTO,
                          AtomicSmearingType::Constant>();
       break;
