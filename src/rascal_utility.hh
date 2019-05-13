@@ -90,12 +90,21 @@ namespace rascal {
 
     //! combine 2 enum into a new integer making sure types are properly
     //! provided
+    // template <typename Enum1, typename Enum2>
+    // struct CombineEnums {
+    //   constexpr size_t operator()(Enum1 e1, Enum2 e2) {
+    //     return enumValue(e1) * enumSize<Enum2>() + enumValue(e2);
+    //   }
+    // };
+    // the above code does not compile with gcc 5 and 6 (4 and 7 works though)
+    // and clang has no problem. it has to do with the implementation of the
+    // standard see for more details
+    // https://stackoverflow.com/questions/16493652/constexpr-not-working-if-the-function-is-declared-inside-class-scope
+    // // NOLINT
     template <typename Enum1, typename Enum2>
-    struct CombineEnums {
-      constexpr size_t operator()(Enum1 e1, Enum2 e2) {
-        return enumValue(e1) * enumSize<Enum2>() + enumValue(e2);
-      }
-    };
+    constexpr size_t combineEnums(Enum1 e1, Enum2 e2) {
+      return enumValue(e1) + enumSize<Enum1>() * enumValue(e2);
+    }
 
     /* ---------------------------------------------------------------------- */
     /**
