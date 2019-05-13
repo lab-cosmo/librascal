@@ -701,7 +701,7 @@ namespace rascal {
       }
       keys.insert({center_type});
       // initialize the expansion coefficients to 0
-      coefficients_center.resize(keys, static_cast<size_t>(n_row), static_cast<size_t>(n_col));
+      coefficients_center.resize(keys, n_row, n_col);
 
       // Start the accumulator with the central atom
       coefficients_center[center_type].col(0) +=

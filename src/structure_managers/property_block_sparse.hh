@@ -39,6 +39,8 @@
 #include <map>
 #include <algorithm>
 #include <iterator>
+#include <type_traits>
+
 
 namespace rascal {
 
@@ -202,10 +204,11 @@ namespace rascal {
     class InternallySortedKeyMapAlternative {
      public:
       using MyMap_t = std::map<K, V>;
-
+      using Map_t = std::map<K, std::array<int, 3>>;
+      using Data_t = std::vector<typename V::value_type>;
       //! the data holder.
-      std::vector<typename V::value_type> data{};
-      std::map<K, std::array<size_t, 2>> map{};
+      Data_t data{};
+      Map_t map{};
 
       // some member types
       using key_type = typename MyMap_t::key_type;
@@ -215,8 +218,84 @@ namespace rascal {
       using reference = typename Eigen::Map<V>;
       using const_reference = typename Eigen::Map<const V>;
 
-      using iterator = typename MyMap_t::iterator;
-      using const_iterator = typename MyMap_t::const_iterator;
+      // member typedefs provided through inheriting from std::iterator
+      template<typename Value>
+      class Iterator: public std::iterator<std::bidirectional_iterator_tag, std::pair<K, typename std::remove_const<Value>::type >> {
+       public:
+        using Self_t = Iterator<Value>;
+
+        // to handle properly const and normal cases
+        using It_t = typename std::conditional<
+                            std::is_const<Value>::value,
+                            typename Map_t::const_iterator,
+                            typename Map_t::iterator>::type;
+
+        using MyData_t = typename std::conditional<
+                            std::is_const<Value>::value,
+                            const Data_t,
+                            Data_t>::type;
+        // Map<const Matrix> is already write-only so remove the const
+        // which is used to determine the cv of the iterator
+        using Value_t = typename std::remove_const<Value>::type;
+
+        Iterator(MyData_t& data, It_t map_iterator)
+          :data{data}, map_iterator{map_iterator} {}
+
+        Self_t& operator++() {
+          map_iterator++;
+          // this->update_current_data();
+          return *this;
+        }
+        Self_t operator++(int) {
+          Self_t retval = *this;
+          ++(*this);
+          return retval;
+        }
+        std::pair<K, Value_t> operator*() const {
+          auto&& el{*this->map_iterator};
+          auto&& key{el.first};
+          auto&& pos{el.second};
+          return std::make_pair(key, Value_t(&data[pos[0]], pos[1], pos[2]));
+        }
+        Self_t& operator--() {
+          map_iterator--;
+          // this->update_current_data();
+          return *this;
+        }
+        Self_t operator--(int) {
+          Self_t retval = *this;
+          --(*this);
+          return retval;
+        }
+        bool operator==(const Self_t& rhs) const {
+          return map_iterator == rhs.map_iterator;
+        }
+        bool operator!=(const Self_t& rhs) const {
+          return map_iterator != rhs.map_iterator;
+        }
+
+       protected:
+        MyData_t & data;
+        It_t map_iterator;
+      };
+
+
+      using iterator = Iterator<reference>;
+      using const_iterator = Iterator<const const_reference>;
+
+      iterator begin()  noexcept {
+        return iterator(data, map.begin());
+      }
+      iterator end()  noexcept {
+        return iterator(data, map.end());
+      }
+
+      const_iterator begin() const noexcept {
+        return const_iterator(data, map.begin());
+      }
+      const_iterator end() const noexcept {
+        return const_iterator(data, map.end());
+      }
 
       //! Default constructor
       InternallySortedKeyMapAlternative() = default;
@@ -248,34 +327,34 @@ namespace rascal {
       reference at(const key_type & key) {
         key_type skey{this->copy_sort(key)};
         auto& pos{this->map.at(skey)};
-        return reference(&this->data[pos[0]], pos[1]);
+        return reference(&this->data[pos[0]], pos[1], pos[2]);
       }
       const_reference at(const key_type & key) const {
         key_type skey{this->copy_sort(key)};
         auto& pos{this->map.at(skey)};
-        return const_reference(&this->data[pos[0]], pos[1]);
+        return const_reference(&this->data[pos[0]], pos[1], pos[2]);
       }
       //! access or insert specified element
       reference operator[](const key_type & key) {
         key_type skey{this->copy_sort(key)};
         auto& pos{this->map[skey]};
-        return reference(&this->data[pos[0]], pos[1]);
+        return reference(&this->data[pos[0]], pos[1], pos[2]);
       }
       const_reference operator[](const key_type& key) const {
         key_type skey{this->copy_sort(key)};
         auto& pos{this->map[skey]};
-        return const_reference(&this->data[pos[0]], pos[1]);
+        return const_reference(&this->data[pos[0]], pos[1], pos[2]);
       }
 
       void resize(const std::set<key_type>& keys, const int& n_row, const int& n_col) {
-        size_t new_size{0};
-        size_t nb_comp{n_row*n_col};
+        using Array_t = typename Map_t::mapped_type;
+        int new_size{0};
         for (auto& key : keys) {
           key_type skey{this->copy_sort(key)};
-          if (skey == key) {
-            std::array<size_t, 2> val{new_size, nb_comp};
+          if (this->map.count(skey) == 0) {
+            Array_t val{new_size, n_row, n_col};
             this->map[skey] = val;
-            new_size += nb_comp;
+            new_size += static_cast<int>(n_row * n_col);
           }
         }
         this->data.resize(new_size, 0.);
@@ -303,16 +382,9 @@ namespace rascal {
        */
       std::vector<key_type> get_keys() {
         std::vector<key_type> keys{};
-        std::transform(this->map->begin(), this->map->end(), std::back_inserter(keys),RetrieveKey());
+        std::transform(this->map.begin(), this->map.end(), std::back_inserter(keys),RetrieveKey());
         return keys;
       }
-
-      iterator begin() noexcept { return this->data.begin(); }
-      const_iterator begin() const noexcept { return this->data.begin(); }
-      const_iterator cbegin() const noexcept { return this->data.cbegin(); }
-      iterator end() noexcept { return this->data.end(); }
-      const_iterator end() const noexcept { return this->data.end(); }
-      const_iterator cend() const noexcept { return this->data.cend(); }
 
      private:
       /**
