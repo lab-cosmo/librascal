@@ -177,7 +177,9 @@ namespace rascal {
       Eigen::Array<double, 4, (max_angular+1)*(max_angular+1)>
         harmonics_derivatives{math::compute_spherical_harmonics_derivatives(
                                                         inputs_v, max_angular)};
-      return harmonics_derivatives.bottomRows(3);
+      // The gradients are with respect to the central atom, but the
+      // displacements here affect the neighbouring atom, hence the sign
+      return -1.0 * harmonics_derivatives.bottomRows(3);
     }
   };
 }  // namespace rascal

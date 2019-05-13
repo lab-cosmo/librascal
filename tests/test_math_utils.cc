@@ -191,7 +191,7 @@ namespace rascal {
     Eigen::Vector3d displacement;
     Eigen::MatrixXd directional;
     Eigen::MatrixXd fd_derivatives;
-    Eigen::MatrixXd fd_error;
+    Eigen::MatrixXd fd_error_cwise;
     for (auto inputs_it{function_inputs.begin()};
          inputs_it != function_inputs.end(); inputs_it++) {
       // do this with Eigen::Map in the general (non-3D) case
@@ -203,7 +203,7 @@ namespace rascal {
         std::cout << "Harmonics:" << harmonics << std::endl;
         std::cout << "Harmonics gradients:" << harmonics_gradients << std::endl;
       }
-      for (size_t disp_idx{0}; disp_idx < displacement_directions.rows();
+      for (int disp_idx{0}; disp_idx < displacement_directions.rows();
            disp_idx++) {
         displacement_direction = displacement_directions.row(disp_idx);
         // Compute the directional derivative(s)
@@ -220,12 +220,30 @@ namespace rascal {
           fd_derivatives = 0.5 / dx * (
             harmonics_calculator.f(direction_vector + displacement.adjoint())
           - harmonics_calculator.f(direction_vector - displacement.adjoint()));
-          //TODO(max) need a way to normalize when the derivative is zero
-          //fd_error = (fd_derivatives - directional).cwiseQuotient(directional);
-          fd_error = (fd_derivatives - directional);
-          std::cout << "error = " << fd_error << std::endl;
+          double fd_error{0.};
+          double fd_quotient{0.};
+          size_t nonzero_count{0};
+          for (int dim_idx{0}; dim_idx < fd_derivatives.size(); dim_idx++) {
+            if (std::abs(directional(dim_idx)) < 10*math::dbl_ftol) {
+              fd_error += fd_derivatives(dim_idx);
+            } else {
+              fd_quotient += (fd_derivatives(dim_idx) / directional(dim_idx));
+              fd_error += (fd_derivatives(dim_idx) - directional(dim_idx))
+                          / directional(dim_idx);
+              ++nonzero_count;
+            }
+          }
+          if (nonzero_count > 0) {
+            fd_quotient = fd_quotient / nonzero_count;
+          }
+          fd_error = fd_error / fd_derivatives.size();
+          std::cout << "Average rel FD error: " << fd_error << "\t";
+          std::cout << "Average FD quotient:  " << fd_quotient << std::endl;
+          BOOST_CHECK_LE(fd_error, math::dbl_ftol);
+          fd_error_cwise = (fd_derivatives - directional);
           if (verbose) {
-            std::cout << "(FD derivative: " << fd_derivatives << ")";
+            std::cout << "error          = " << fd_error_cwise << std::endl;
+            std::cout << "(FD derivative = " << fd_derivatives << ")";
             std::cout << std::endl;
           }
         }
