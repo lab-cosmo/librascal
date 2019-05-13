@@ -145,6 +145,10 @@ namespace rascal {
         std::cerr << "\', assuming Cartesian" << std::endl;
         displacement_directions = MatrixXd::Identity(n_arguments, n_arguments);
       }
+
+      if (input_data.find("verbose") != input_data.end()) {
+        verbose = input_data["verbose"].get<bool>();
+      }
     }
 
     ~GradientTestFixture() = default;
@@ -156,7 +160,7 @@ namespace rascal {
     std::string input_filename{
       "reference_data/spherical_harmonics_gradient_test.json"};
     size_t n_arguments{0};
-    bool verbose{true};
+    bool verbose{false};
   };
 
   template<int max_angular>

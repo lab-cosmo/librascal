@@ -208,8 +208,9 @@ namespace rascal {
                                           (inputs_it->data(), 1, n_arguments);
       values = function_calculator.f(direction_vector);
       jacobian = function_calculator.grad_f(direction_vector);
+      std::cout << std::string(30, '-') << std::endl;
+      std::cout << "Direction vector: " << direction_vector << std::endl;
       if (verbose) {
-        std::cout << "Direction vector: " << direction_vector << std::endl;
         std::cout << "Values:" << values << std::endl;
         std::cout << "Jacobian:" << jacobian << std::endl;
       }
@@ -218,8 +219,9 @@ namespace rascal {
         displacement_direction = displacement_directions.row(disp_idx);
         // Compute the directional derivative(s)
         directional = displacement_direction.adjoint() * jacobian;
+        std::cout << "FD direction: " << displacement_direction.adjoint();
+        std::cout << std::endl;
         if (verbose) {
-          std::cout << "FD direction: " << displacement_direction << std::endl;
           std::cout << "Analytical derivative: " << directional << std::endl;
         }
         double min_error{HUGE_VAL};
