@@ -302,7 +302,7 @@ namespace rascal {
         size_t key_id{0};
         double error1{0};
         for (auto & key : sparse_features[i_manager].get_keys(center)) {
-          auto&& value{test_datas[i_manager][i_center][key]};
+          auto && value{test_datas[i_manager][i_center][key]};
           Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, 1>> test_data(
               value.data(), value.size());
           error1 += (data.col(key_id) - test_data).squaredNorm();

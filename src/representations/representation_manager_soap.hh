@@ -222,10 +222,10 @@ namespace rascal {
       auto & center_type{center.get_atom_type()};
       pair_list.insert({center_type, center_type});
       for (auto neigh1 : center) {
-        auto&& neigh1_type{neigh1.get_atom_type()};
+        auto && neigh1_type{neigh1.get_atom_type()};
         pair_list.insert({center_type, neigh1_type});
         for (auto neigh2 : center) {
-          auto&& neigh2_type{neigh2.get_atom_type()};
+          auto && neigh2_type{neigh2.get_atom_type()};
           pair_list.insert({neigh1_type, neigh2_type});
         }
       }
@@ -269,7 +269,7 @@ namespace rascal {
           soap_vector[pair_type] *= math::SQRT_TWO;
         }
       }
-      
+
       // normalize the soap vector
       if (this->normalize) {
         double norm{0.};
