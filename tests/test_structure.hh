@@ -304,7 +304,7 @@ namespace rascal {
 
     int inum{nb};
     int tot_num{nb};  // includes ghosts
-    int ilist[nb]{0, 1, 2};
+    int ilist[nb]{0, 1, 2}; // TODO(alex): make ilist non-contiguous, eg {1, -12, 28}
     int numneigh[nb]{2, 1, 1};
     int ** firstneigh;
     double ** x;

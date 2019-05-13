@@ -338,23 +338,21 @@ namespace rascal {
       return not(this->properties.find(name) == this->properties.end());
     }
 
-    template<typename property_t>
+    template<typename Property_t>
     void create_property(const std::string & name) {
       auto property{std::make_shared< 
-          property_t>(*this)};
+          Property_t>(*this)};
       attach_property(name, property);
     }
 
     template<typename T, size_t Order, Dim_t NbRow=1, Dim_t NbCol=1>
     void create_property(const std::string & name) {
-      auto property{std::make_shared< 
-          Property_t<T, Order, NbRow, NbCol>>(*this)};
-      attach_property(name, property);
+      return create_property<Property_t<T, Order, NbRow, NbCol>>(name);
     }
 
     //! Accessor for an attached property with a specifier as a string
     std::shared_ptr<PropertyBase> get_property(const std::string & name) {
-      if (!this->has_property(name)) {
+      if ( not this->has_property(name)) {
         std::stringstream error{};
         error << "No property of name '" << name << "' has been registered";
         throw std::runtime_error(error.str());
@@ -369,114 +367,115 @@ namespace rascal {
     //  return std::static_pointer_cast<Property_t<T, Order, NbRow, NbCol>>
     //    (get_property(name));
     //}
+
+    template <typename property_t>
+    bool validate_property_t(const std::string & name) {
+      // TODO: Alex
+      //check type and size
+    }
+
+    // TODO: Remove templated get_property(). Move property back to adaptor
+    // strict (as reference
+    // template<typename property_t>
+    // std::shared_ptr<property_t>
+    //     get_property(const std::string & name) const{
+    //   return std::const_pointer_cast<property_t>
+    //     (this->get_property(name));
+    // }
+
+    // template <typename T, size_t Order, Dim_t NbRow=1, Dim_t NbCol=1>
+    // std::shared_ptr<Property_t<T, Order, NbRow, NbCol>>
+    //     get_property(const std::string & name) {
+    //   return std::dynamic_pointer_cast<Property_t<T, Order, NbRow, NbCol>>
+    //     (this->get_property(name));
+    // }
+
+    // template <typename T, size_t Order, Dim_t NbRow=1, Dim_t NbCol=1>
+    // std::shared_ptr<Property_t<T, Order, NbRow, NbCol>>
+    //     get_property(const std::string & name) const{
+    //   return std::const_pointer_cast<Property_t<T, Order, NbRow, NbCol>>
+    //     (this->get_property(name));
+    // }
+
+    // //! Accessor for one dimensonial properties 
+    // template <typename T, size_t PropertyOrder,
+    //     size_t Order, size_t Layer>
+    // inline T & get_property_value(
+    //     const ClusterRefKey<Order, Layer> & cluster,
+    //     const std::string & name) {
+    //   return 
+    //     (this->template get_property<T, PropertyOrder>(name))->operator[](cluster);
+    // }
+
+    // template <typename T, size_t PropertyOrder,
+    //     size_t Order, size_t Layer>
+    // inline T & get_property_value(
+    //     const ClusterRefKey<Order, Layer> & cluster,
+    //     const std::string & name) const {
+    //   return 
+    //     (this->template get_property<T, PropertyOrder>(name))->operator[](cluster);
+    // }
+
+
+    // //! Accessor for multidimensonial properties 
+    // template <typename property_t,
+    //     size_t Order, size_t Layer>
+    // inline typename property_t::reference get_property_value (
+    //     const ClusterRefKey<Order, Layer> & cluster,
+    //     const std::string & name) {
+    //   return (this->template get_property<property_t>(name))->operator[](cluster);
+    // }
+
+    // template <typename property_t,
+    //     size_t Order, size_t Layer>
+    // inline typename property_t::reference get_property_value (
+    //     const ClusterRefKey<Order, Layer> & cluster,
+    //     const std::string & name) const {
+    //   return (this->template get_property<property_t>(name))->operator[](cluster);
+    // }
+
+    // //! Accessor for multidimensonial properties 
+    // template <typename T, size_t PropertyOrder, Dim_t NbRow, Dim_t NbCol=1,
+    //     size_t Order, size_t Layer>
+    // inline Eigen::Map<Eigen::Matrix<T, NbRow, NbCol>> get_property_value (
+    //     const ClusterRefKey<Order, Layer> & cluster,
+    //     const std::string & name) {
+    //   return (this->template get_property<T, PropertyOrder, NbRow, NbCol>(name))->operator[](cluster);
+    // }
+
+    // template <typename T, size_t PropertyOrder, Dim_t NbRow, Dim_t NbCol=1,
+    //     size_t Order, size_t Layer>
+    // inline Eigen::Map<Eigen::Matrix<T, NbRow, NbCol>> get_property_value (
+    //     const ClusterRefKey<Order, Layer> & cluster,
+    //     const std::string & name) const {
+    //   return (this->template get_property<T, PropertyOrder, NbRow, NbCol>(name))->operator[](cluster);
+    // }
     
-    template<typename property_t>
-    std::shared_ptr<property_t>
-        get_property(const std::string & name) {
-      return std::dynamic_pointer_cast<property_t>
-        (this->get_property(name));
-    }
+    // template <size_t Order, size_t Layer>
+    // inline double & get_distance(const ClusterRefKey<Order, Layer> & pair) const {
+    //     return this->template get_property_value<double, 2>(pair, "distance");
+    // }
 
-    template<typename property_t>
-    std::shared_ptr<property_t>
-        get_property(const std::string & name) const{
-      return std::const_pointer_cast<property_t>
-        (this->get_property(name));
-    }
+    // template <size_t Order, size_t Layer>
+    // inline double & get_distance(const ClusterRefKey<Order, Layer> & pair) {
+    //   return this->template get_property_value<double, 2>(pair, "distance");
+    // }
 
-    template <typename T, size_t Order, Dim_t NbRow=1, Dim_t NbCol=1>
-    std::shared_ptr<Property_t<T, Order, NbRow, NbCol>>
-        get_property(const std::string & name) {
-      return std::dynamic_pointer_cast<Property_t<T, Order, NbRow, NbCol>>
-        (this->get_property(name));
-    }
+    // template <size_t Order, size_t Layer>
+    // inline Vector_ref & get_direction_vector(
+    //     const ClusterRefKey<Order, Layer> & pair) const {
+    //   //using Ref_t = typename std::remove_reference_t<>::reference;
+    //   auto & val = this->template get_property_value<double, 2, 3>(pair, "dir_vec");
+    //   return val;//this->template get_property_value<double, 2, 3>(pair, "dir_vec");
+    // }
 
-    template <typename T, size_t Order, Dim_t NbRow=1, Dim_t NbCol=1>
-    std::shared_ptr<Property_t<T, Order, NbRow, NbCol>>
-        get_property(const std::string & name) const{
-      return std::const_pointer_cast<Property_t<T, Order, NbRow, NbCol>>
-        (this->get_property(name));
-    }
-
-    //! Accessor for one dimensonial properties 
-    template <typename T, size_t PropertyOrder,
-        size_t Order, size_t Layer>
-    inline T & get_property_value(
-        const ClusterRefKey<Order, Layer> & cluster,
-        const std::string & name) {
-      return 
-        (this->template get_property<T, PropertyOrder>(name))->operator[](cluster);
-    }
-
-    template <typename T, size_t PropertyOrder,
-        size_t Order, size_t Layer>
-    inline T & get_property_value(
-        const ClusterRefKey<Order, Layer> & cluster,
-        const std::string & name) const {
-      return 
-        (this->template get_property<T, PropertyOrder>(name))->operator[](cluster);
-    }
-
-
-    //! Accessor for multidimensonial properties 
-    template <typename property_t,
-        size_t Order, size_t Layer>
-    inline typename property_t::reference get_property_value (
-        const ClusterRefKey<Order, Layer> & cluster,
-        const std::string & name) {
-      return (this->template get_property<property_t>(name))->operator[](cluster);
-    }
-
-    template <typename property_t,
-        size_t Order, size_t Layer>
-    inline typename property_t::reference get_property_value (
-        const ClusterRefKey<Order, Layer> & cluster,
-        const std::string & name) const {
-      return (this->template get_property<property_t>(name))->operator[](cluster);
-    }
-
-    //! Accessor for multidimensonial properties 
-    template <typename T, size_t PropertyOrder, Dim_t NbRow, Dim_t NbCol=1,
-        size_t Order, size_t Layer>
-    inline Eigen::Map<Eigen::Matrix<T, NbRow, NbCol>> get_property_value (
-        const ClusterRefKey<Order, Layer> & cluster,
-        const std::string & name) {
-      return (this->template get_property<T, PropertyOrder, NbRow, NbCol>(name))->operator[](cluster);
-    }
-
-    template <typename T, size_t PropertyOrder, Dim_t NbRow, Dim_t NbCol=1,
-        size_t Order, size_t Layer>
-    inline Eigen::Map<Eigen::Matrix<T, NbRow, NbCol>> get_property_value (
-        const ClusterRefKey<Order, Layer> & cluster,
-        const std::string & name) const {
-      return (this->template get_property<T, PropertyOrder, NbRow, NbCol>(name))->operator[](cluster);
-    }
-    
-    template <size_t Order, size_t Layer>
-    inline double & get_distance(const ClusterRefKey<Order, Layer> & pair) const {
-        return this->template get_property_value<double, 2>(pair, "distance");
-    }
-
-    template <size_t Order, size_t Layer>
-    inline double & get_distance(const ClusterRefKey<Order, Layer> & pair) {
-      return this->template get_property_value<double, 2>(pair, "distance");
-    }
-
-    template <size_t Order, size_t Layer>
-    inline Vector_ref & get_direction_vector(
-        const ClusterRefKey<Order, Layer> & pair) const {
-      //using Ref_t = typename std::remove_reference_t<>::reference;
-      auto & val = this->template get_property_value<double, 2, 3>(pair, "dir_vec");
-      return val;//this->template get_property_value<double, 2, 3>(pair, "dir_vec");
-    }
-
-    template <size_t Order, size_t Layer>
-    inline Vector_ref & get_direction_vector(
-        const ClusterRefKey<Order, Layer> & pair) {
-      // TODO(alex) why &&?
-      auto && val = this->template get_property_value<double, 2, 3>(pair, "dir_vec");
-      return val;//this->template get_property_value<double, 2, 3>(pair, "dir_vec");
-    }
+    // template <size_t Order, size_t Layer>
+    // inline Vector_ref & get_direction_vector(
+    //     const ClusterRefKey<Order, Layer> & pair) {
+    //   // TODO(alex) why &&?
+    //   auto && val = this->template get_property_value<double, 2, 3>(pair, "dir_vec");
+    //   return val;//this->template get_property_value<double, 2, 3>(pair, "dir_vec");
+    // }
 
     /**
      * Attach update status to property. It is necessary, because the underlying
@@ -771,10 +770,12 @@ namespace rascal {
    * manager provides atoms; iterating over atoms gives its pairs, etc.
    */
   template <class ManagerImplementation>
-  template <size_t Order>
-  class StructureManager<ManagerImplementation>::ClusterRef
-      : public ClusterRefKey<
-            Order, ManagerImplementation::template cluster_layer<Order>()> {
+      template <size_t Order>
+      class StructureManager<ManagerImplementation>::ClusterRef
+      : public ClusterRefKey < Order,
+      ManagerImplementation::template cluster_layer<Order>(),
+      ClusterRefKey<Order - 1, ManagerImplementation::template cluster_layer<
+                                 Order - 1>(), // TODO(alex), messed this up> {
    public:
     using Manager_t = StructureManager<ManagerImplementation>;
     using traits = StructureManager_traits<ManagerImplementation>;

@@ -100,9 +100,14 @@ namespace rascal {
     }
 
     //! return position vector of an atom given the atom index
-    inline Vector_ref get_position(const size_t & atom_index) {
+    inline Vector_ref get_position(const int & atom_index) {
       auto * xval{this->x[atom_index]};
       return Vector_ref(xval);
+    }
+
+    //! return position vector of an atom given the atom index
+    inline Vector_ref get_position(const AtomRef_t & atom) {
+      return this->get_position(atom.get_index());
     }
 
     //! get const atom type reference given an atom_index
@@ -148,8 +153,8 @@ namespace rascal {
      * dummy and is used for consistency in other words, atom_index is the
      * global LAMMPS atom index.
      */
-    inline int get_cluster_neighbour(const Parent &, size_t index) const {
-      return this->ilist[index];
+    inline int get_cluster_neighbour(const Parent &, size_t cluster_index) const {
+      return this->ilist[cluster_index];
     }
 
     /**

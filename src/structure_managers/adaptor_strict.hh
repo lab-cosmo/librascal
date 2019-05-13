@@ -365,6 +365,10 @@ namespace rascal {
     //! initialise the distance storage
     this->template create_property<Distance_t>("distance");
     this->template create_property<DirectionVector_t>("dir_vec");
+    // TODO:
+    // auto && dynamic_discance{ this->get_property("distance")};
+    // auto & distance{reinterpret_cast<Property_t &>(*dynamic_discance)};
+
     auto distance_property = this->template get_property<Distance_t>("distance");
     auto dir_vec_property =
         this->template get_property<DirectionVector_t >("dir_vec");

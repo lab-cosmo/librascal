@@ -188,7 +188,7 @@ namespace rascal {
    * many layers of managers/adaptors are stacked at the point at which the
    * cluster reference is introduced.
    */
-  template <size_t Order, size_t Layer>
+  template <size_t Order, size_t Layer, size_t ParentLayer>
   class ClusterRefKey : public ClusterRefBase {
    public:
     /**
@@ -272,8 +272,15 @@ namespace rascal {
     IndexConstArray cluster_indices;
     // TODO(alex)
     // ClusterAtomIndices cluster_atoms_indices;
+
+    ClusterRefKey<Order-1, ParentLayer> & parent;
+    ClusterRefKey<1, FirstLayer> last;
   };
 
+  template <size_t Layer>
+  class ClusterRefKey<1, Layer, int /* last tye upimportant*/>
+      : public ClusterRefBase {
+  };
 }  // namespace rascal
 
 #endif  // SRC_STRUCTURE_MANAGERS_CLUSTER_REF_KEY_HH_
