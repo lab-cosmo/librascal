@@ -287,8 +287,10 @@ namespace rascal {
       // The cosine against the z-axis is just the z-component of the
       // direction vector
       double cos_theta = direction[2];
-      double sin_theta = sqrt(1.0 - cos_theta*cos_theta);
       double sqrt_xy = std::hypot(direction[0], direction[1]);
+      // A rose, by any other name, would have the same exact value
+      //double sin_theta = sqrt(1.0 - cos_theta*cos_theta);
+      double sin_theta{sqrt_xy};
       // For a vector along the z-axis, define phi=0
       double cos_phi{1.0}, sin_phi{0.0};
       if (sqrt_xy >= math::dbl_ftol) {
@@ -340,11 +342,8 @@ namespace rascal {
                 assoc_legendre_polynom(angular_l, m_count) *
                 cos_sin_m_phi(m_count, 1);
 
-            //TODO(max-veit) check that the two formulae are numerically equal
-            //away from the poles and equator; perhaps even determine an optimal
-            //cross-over point
             double phi_derivative_factor{};
-            if (sin_theta > 0.5) {
+            if (sin_theta > 0.1) {
               // singularity at the poles
               phi_derivative_factor = m_count / sin_theta
                 * assoc_legendre_polynom(angular_l, m_count);
