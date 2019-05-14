@@ -418,7 +418,7 @@ namespace rascal {
         // TODO(max-veit) see if we can replace the gammas with their natural
         // logs,
         // since it'll overflow for relatively small n (n1 + n2 >~ 300)
-        Eigen::MatrixXd overlap(this->max_radial, this->max_radial);
+        Matrix_t overlap(this->max_radial, this->max_radial);
         for (size_t radial_n1{0}; radial_n1 < this->max_radial; radial_n1++) {
           for (size_t radial_n2{0}; radial_n2 < this->max_radial; radial_n2++) {
             overlap(radial_n1, radial_n2) =
@@ -436,14 +436,14 @@ namespace rascal {
         }
 
         // Compute the inverse square root of the overlap matrix
-        Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigensolver(overlap);
+        Eigen::SelfAdjointEigenSolver<Matrix_t> eigensolver(overlap);
         if (eigensolver.info() != Eigen::Success) {
           throw std::runtime_error("Warning: Could not diagonalize "
                                    "radial overlap matrix.");
         }
-        Eigen::MatrixXd eigenvalues = eigensolver.eigenvalues();
+        Matrix_t eigenvalues = eigensolver.eigenvalues();
         Eigen::ArrayXd eigs_invsqrt = eigenvalues.array().sqrt().inverse();
-        Eigen::MatrixXd unitary = eigensolver.eigenvectors();
+        Matrix_t unitary = eigensolver.eigenvectors();
         this->radial_ortho_matrix =
             unitary * eigs_invsqrt.matrix().asDiagonal() * unitary.adjoint();
       }
@@ -743,7 +743,7 @@ namespace rascal {
         Key_t neigh_type{neigh.get_atom_type()};
 
         // Note: the copy _should_ be optimized out (RVO)
-        Eigen::MatrixXd harmonics =
+        auto harmonics =
             math::compute_spherical_harmonics(direction, this->max_angular);
         auto neighbour_contribution =
             radial_integral
