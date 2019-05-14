@@ -45,6 +45,7 @@
 #include <vector>
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
+#include <unordered_set>
 
 namespace rascal {
 
@@ -693,17 +694,15 @@ namespace rascal {
 
     for (auto center : this->structure_manager) {
       auto & coefficients_center = this->expansions_coefficients[center];
-
-      // initialize the expansion coefficients to 0
       Key_t center_type{center.get_atom_type()};
-      coefficients_center[center_type] = Dense_t::Zero(n_row, n_col);
+
+      std::unordered_set<Key_t, internal::Hash<Key_t>> keys{};
       for (auto neigh : center) {
-        Key_t neigh_type{neigh.get_atom_type()};
-        // avoid initializing again same chemical channel
-        if (coefficients_center.count(neigh_type) == 0) {
-          coefficients_center[neigh_type] = Dense_t::Zero(n_row, n_col);
-        }
+        keys.insert({neigh.get_atom_type()});
       }
+      keys.insert({center_type});
+      // initialize the expansion coefficients to 0
+      coefficients_center.resize(keys, n_row, n_col);
 
       // Start the accumulator with the central atom
       coefficients_center[center_type].col(0) +=
@@ -725,13 +724,14 @@ namespace rascal {
                                                                         neigh);
 
         harmonics *= cutoff_function->f_c(dist);
+        auto && coefficients_center_by_type{coefficients_center[neigh_type]};
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           size_t lm_collective_idx{0};
           for (size_t angular_l{0}; angular_l < this->max_angular + 1;
                angular_l++) {
             for (size_t m_array_idx{0}; m_array_idx < 2 * angular_l + 1;
                  m_array_idx++) {
-              coefficients_center[neigh_type](radial_n, lm_collective_idx) +=
+              coefficients_center_by_type(radial_n, lm_collective_idx) +=
                   neighbour_contribution(radial_n, angular_l) *
                   harmonics(angular_l, m_array_idx);
               ++lm_collective_idx;

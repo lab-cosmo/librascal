@@ -305,8 +305,9 @@ configure_file("${CMAKE_SOURCE_DIR}/examples/alanine-X.json" ${CMAKE_BINARY_DIR}
 # Add profiling information for the appropriate examples
 if (ENABLE_PROFILING)
   if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    target_compile_options("soap_profile" PRIVATE -pg)
-    set_target_properties("soap_profile" PROPERTIES LINK_FLAGS -pg)
+  target_compile_options("soap_profile" PRIVATE -ggdb)
+    # target_compile_options("soap_profile" PRIVATE -pg)
+    # set_target_properties("soap_profile" PROPERTIES LINK_FLAGS -pg)
   endif()
 endif()
 
