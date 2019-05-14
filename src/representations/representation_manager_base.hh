@@ -52,7 +52,7 @@ namespace rascal {
 
     using Dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, Eigen::Dynamic>;
     using InputData_t =
-        internal::InternallySortedKeyMapAlternative<std::vector<int>, Dense_t>;
+        internal::InternallySortedKeyMap<std::vector<int>, Dense_t>;
     using Data_t = std::vector<InputData_t>;
 
     RepresentationManagerBase() = default;
