@@ -720,7 +720,9 @@ namespace rascal {
       template <size_t Order>
       class StructureManager<ManagerImplementation>::ClusterRef
       : public ClusterRefKey < Order,
-      ManagerImplementation::template cluster_layer<Order>()> {
+      ManagerImplementation::template cluster_layer<Order>(),
+      ManagerImplementation::template cluster_layer<Order-1>(),
+      ManagerImplementation::template cluster_layer<1>()> {
    public:
     using Manager_t = StructureManager<ManagerImplementation>;
     using traits = StructureManager_traits<ManagerImplementation>;
@@ -741,8 +743,11 @@ namespace rascal {
 
     //! ClusterRef for multiple atoms with const IndexArray
     ClusterRef(Iterator_t & it, const std::array<int, Order> & atom_indices,
-               const IndexConstArray_t & cluster_indices)
-        : Parent{atom_indices, cluster_indices}, it{it} {}
+               const IndexConstArray_t & cluster_indices,
+               ClusterRefKey<Order-1, ParentLayer> & parent_cluster,
+               ClusterRefKey<1, FirstLayer> last_atom)
+        : Parent{atom_indices, cluster_indices, parent_cluster, last_atom},
+          it{it} {}
 
     //! ClusterRef for multiple atoms with non const IndexArray
     ClusterRef(Iterator_t & it, const std::array<int, Order> & atom_indices,
@@ -982,7 +987,8 @@ namespace rascal {
           cluster_indices_properties)>::reference;
       Ref_t cluster_indices =
           cluster_indices_properties[this->get_cluster_index()];
-      return ClusterRef_t(*this, this->get_atom_indices(), cluster_indices);
+      return ClusterRef_t(*this, this->get_atom_indices(), cluster_indices,
+          parent_cluster, last_atom);
     }
 
     //! dereference: calculate cluster indices

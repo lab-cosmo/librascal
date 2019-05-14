@@ -189,9 +189,7 @@ namespace rascal {
    * cluster reference is introduced.
    */
 
-  //TODO(alex)
-  // template <size_t Order, size_t Layer, size_t ParentLayer>
-  template <size_t Order, size_t Layer>
+  template <size_t Order, size_t Layer, size_t ParentLayer, size_t FirstLayer>
   class ClusterRefKey : public ClusterRefBase {
    public:
     /**
@@ -211,9 +209,12 @@ namespace rascal {
      * direct constructor. Initialized with an array of atoms indices,
      * and a cluster reference data
      */
-    ClusterRefKey(AtomIndex_t atom_indices, IndexConstArray cluster_indices) 
+    ClusterRefKey(AtomIndex_t atom_indices, IndexConstArray cluster_indices,
+        ClusterRefKey<Order-1, ParentLayer> & parent_cluster,
+        ClusterRefKey<1, FirstLayer> last_atom) 
         : Parent{Order, Layer}, atom_indices{atom_indices},           
-          cluster_indices{cluster_indices.data()} {}
+          cluster_indices{cluster_indices.data()},
+          parent_cluster{parent_cluster}, last_atom{last_atom} {}
 
     //! Copy constructor
     ClusterRefKey(const ClusterRefKey & other) = default;
@@ -269,16 +270,17 @@ namespace rascal {
      */
     IndexConstArray cluster_indices;
 
-    //TODO(alex)
-    //ClusterRefKey<Order-1, ParentLayer> & parent;
-    //ClusterRefKey<1, FirstLayer> last;
+    /** If the cluster represents a tuple of form (i,j,...,k,l) the corresponding parent cluster represents the tuple (i,j,...,k) e.g for a triplet (i,j,k) we save the reference to the pair (i,j). To access information of cluster<Order-1>, because the cluster indices of a cluster<Order> are independent from that of the corresponding cluster<Order-1>.
+     */
+    ClusterRefKey<Order-1, ParentLayer> & parent_cluster;
+    //! The atom with the last atom index in atom_indices
+    ClusterRefKey<1, FirstLayer> last_atom;
   };
 
-  //TODO(alex)
-  //template <size_t Layer>
-  //class ClusterRefKey<1, Layer, int /* last tye upimportant*/>
-  //    : public ClusterRefBase {
-  //};
+  template <size_t Layer>
+  class ClusterRefKey<1, Layer, int /* last type unimportant*/>
+      : public ClusterRefBase {
+  };
 }  // namespace rascal
 
 #endif  // SRC_STRUCTURE_MANAGERS_CLUSTER_REF_KEY_HH_
