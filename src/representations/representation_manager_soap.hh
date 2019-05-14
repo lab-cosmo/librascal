@@ -259,11 +259,6 @@ namespace rascal {
         double norm{0.};
         for (const auto & el : soap_vector) {
           auto && pair_type{el.first};
-          double fac{math::SQRT_TWO};
-          if (pair_type[0] == pair_type[1]) {
-            fac = 1.;
-          }
-          soap_vector[pair_type] *= fac;
           norm += soap_vector[pair_type].squaredNorm();
         }
         norm = std::sqrt(norm);
