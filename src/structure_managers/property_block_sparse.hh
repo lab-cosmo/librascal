@@ -237,7 +237,7 @@ namespace rascal {
       /**
        * returns a vector of the valid keys of the map
        */
-      std::vector<key_type> get_keys() {
+      std::vector<key_type> get_keys() const {
         std::vector<key_type> keys{};
         std::transform(this->map.begin(), this->map.end(),
                        std::back_inserter(keys), RetrieveKey());
@@ -472,7 +472,6 @@ namespace rascal {
 
       size_t n_keys{0};
       for (const auto & element : ref) {
-        const auto & key{element.first};
         n_keys++;
       }
       this->center_sizes.push_back(n_keys * this->get_nb_comp());
