@@ -632,14 +632,14 @@ namespace rascal {
   /**
    * Typed ``property`` class definition, inherits from the base property class
    */
-  template <typename Precision_t, size_t Order, size_t PropertyLayer>
+  template <typename Precision_t, size_t Order, size_t PropertyLayer, typename Key = std::vector<int>>
   class BlockSparseProperty : public PropertyBase {
    public:
     using Parent = PropertyBase;
     using Dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, Eigen::Dynamic>;
     using dense_ref_t = Eigen::Map<Dense_t>;
     using sizes_t = std::vector<size_t>;
-    using Key_t = std::vector<int>;
+    using Key_t = Key;
     using Keys_t = std::set<Key_t>;
     using keys_list_t = std::vector<std::set<Key_t>>;
     using InputData_t =
@@ -681,7 +681,6 @@ namespace rascal {
       auto new_size = this->base_manager.nb_clusters(order);
       this->values.resize(new_size);
       this->center_sizes.resize(new_size);
-      this->keys_list.resize(new_size);
     }
 
     template <size_t CallerLayer>
@@ -699,8 +698,6 @@ namespace rascal {
      */
     void clear() {
       this->values.clear();
-      this->all_keys.clear();
-      this->keys_list.clear();
       this->center_sizes.clear();
     }
 
@@ -828,12 +825,9 @@ namespace rascal {
 
       this->values.push_back(ref);
 
-      this->keys_list.emplace_back();
       size_t n_keys{0};
       for (const auto & element : ref) {
         const auto & key{element.first};
-        this->all_keys.emplace(key);
-        this->keys_list.back().emplace(key);
         n_keys++;
       }
       this->center_sizes.push_back(n_keys * this->get_nb_comp());
@@ -845,14 +839,12 @@ namespace rascal {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");
-      return this->keys_list[id.get_cluster_index(CallerLayer)];
+      return this->values[id.get_cluster_index(CallerLayer)].get_keys();
     }
 
    protected:
     Data_t values{};  //!< storage for properties
     sizes_t center_sizes{};
-    Keys_t all_keys{};
-    keys_list_t keys_list{};
   };
 
 }  // namespace rascal
