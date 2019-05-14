@@ -187,7 +187,7 @@ namespace rascal {
       operator=(RadialContributionBase && other) = default;
 
       using Hypers_t = RepresentationManagerBase::Hypers_t;
-      using Matrix_t = Eigen::MatrixXd;
+      using Matrix_t = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
       using Vector_t = Eigen::VectorXd;
       using Matrix_Ref = typename Eigen::Ref<const Matrix_t>;
       using Vector_Ref = typename Eigen::Ref<const Vector_t>;
@@ -310,7 +310,7 @@ namespace rascal {
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           this->radial_integral_center(radial_n) =
               this->radial_norm_factors(radial_n) *
-              this->radial_nl_factors(radial_n, 0) * 0.25 *
+              this->radial_nl_factors(radial_n, 0) *
               pow(fac_a + this->fac_b[radial_n], -0.5 * (3.0 + radial_n));
         }
 
@@ -324,30 +324,53 @@ namespace rascal {
       Matrix_Ref
       compute_neighbour_contribution(const double & distance,
                                      ClusterRefKey<Order, Layer> & pair) {
+        using math::PI;
+        using std::pow;
+        using std::sqrt;
+
         auto smearing{downcast_atomic_smearing<AST>(this->atomic_smearing)};
         // a = 1 / (2*\sigma^2)
         double fac_a{0.5 * pow(smearing->get_gaussian_sigma(pair), -2)};
+        double fac_a2{pow(fac_a, 2)};
+        double distance2{pow(distance, 2)};
+        double exp_factor = std::exp(-fac_a * distance2);
 
-        double exp_factor = std::exp(-fac_a * pow(distance, 2));
+        // computes (r_{ij}*a)^l incrementally
+        Vector_t distance_fac_a_l(this->max_angular + 1);
+        distance_fac_a_l(0) = 1.;
+        double distance_fac_a{distance * fac_a};
+        for (size_t angular_l{1}; angular_l < this->max_angular + 1;
+               angular_l++) {
+          distance_fac_a_l(angular_l) = distance_fac_a_l(angular_l-1) * distance_fac_a;
+        }
 
+        // computes (a+b_n)^{-0.5*(3+l+n)}
+        Matrix_t a_b_l_n(this->max_radial, this->max_angular + 1);
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
-          double radial_sigma_factors{pow(fac_a, 2) /
+          double a_b_l{1. / sqrt(fac_a + this->fac_b[radial_n])};
+          a_b_l_n(radial_n, 0) = sqrt(pow(fac_a + this->fac_b[radial_n], -(3.0 + radial_n)));
+          for (size_t angular_l{1}; angular_l < this->max_angular + 1;
+               angular_l++) {
+            a_b_l_n(radial_n, angular_l) = a_b_l_n(radial_n, angular_l-1) * a_b_l;
+          }
+        }
+
+        this->radial_integral_neighbour = (exp_factor * a_b_l_n.array() * this->radial_nl_factors.array()).matrix();
+        this->radial_integral_neighbour *= distance_fac_a_l.asDiagonal();
+        for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
+          double radial_sigma_factors{fac_a2 /
                                       (fac_a + this->fac_b[radial_n])};
           for (size_t angular_l{0}; angular_l < this->max_angular + 1;
                angular_l++) {
-            this->radial_integral_neighbour(radial_n, angular_l) =
-                exp_factor * this->radial_nl_factors(radial_n, angular_l) *
-                0.25 *
-                pow(fac_a + this->fac_b[radial_n],
-                    -0.5 * (3.0 + angular_l + radial_n)) *
-                pow(distance * fac_a, angular_l) *
+            this->radial_integral_neighbour(radial_n, angular_l) *=
                 math::hyp1f1(0.5 * (3.0 + angular_l + radial_n),
                              1.5 + angular_l,
-                             pow(distance, 2) * radial_sigma_factors);
+                             distance2 * radial_sigma_factors);
           }
           this->radial_integral_neighbour.row(radial_n) *=
               this->radial_norm_factors(radial_n);
         }
+
         this->radial_integral_neighbour =
             this->radial_ortho_matrix * this->radial_integral_neighbour;
         return Matrix_Ref(this->radial_integral_neighbour);
@@ -371,7 +394,7 @@ namespace rascal {
                      pow(this->radial_sigmas[radial_n], 3.0 + 2.0 * radial_n)));
           for (size_t angular_l{0}; angular_l < this->max_angular + 1;
                ++angular_l) {
-            this->radial_nl_factors(radial_n, angular_l) =
+            this->radial_nl_factors(radial_n, angular_l) = 0.25 *
                 std::tgamma(0.5 * (3.0 + angular_l + radial_n)) /
                 std::tgamma(1.5 + angular_l);
           }
