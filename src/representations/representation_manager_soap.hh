@@ -246,6 +246,9 @@ namespace rascal {
           if (pair_type[0] > pair_type[1]) {
             continue;
           }
+
+          auto&& soap_vector_by_pair{soap_vector[pair_type]};
+
           size_t nn{0};
           for (size_t n1 = 0; n1 < this->max_radial; n1++) {
             for (size_t n2 = 0; n2 < this->max_radial; n2++) {
@@ -254,7 +257,7 @@ namespace rascal {
                 double l_factor{pow(std::sqrt(2 * l + 1), -1)};
                 for (size_t m = 0; m < 2 * l + 1; m++) {
                   double val{l_factor * coef1(n1, lm) * coef2(n2, lm)};
-                  soap_vector[pair_type](nn, l) += val;
+                  soap_vector_by_pair(nn, l) += val;
                   lm++;
                 }
               }

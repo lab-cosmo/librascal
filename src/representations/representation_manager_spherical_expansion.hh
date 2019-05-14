@@ -725,13 +725,14 @@ namespace rascal {
                                                                         neigh);
 
         harmonics *= cutoff_function->f_c(dist);
+        auto&& coefficients_center_by_type{coefficients_center[neigh_type]};
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           size_t lm_collective_idx{0};
           for (size_t angular_l{0}; angular_l < this->max_angular + 1;
                angular_l++) {
             for (size_t m_array_idx{0}; m_array_idx < 2 * angular_l + 1;
                  m_array_idx++) {
-              coefficients_center[neigh_type](radial_n, lm_collective_idx) +=
+              coefficients_center_by_type(radial_n, lm_collective_idx) +=
                   neighbour_contribution(radial_n, angular_l) *
                   harmonics(angular_l, m_array_idx);
               ++lm_collective_idx;
