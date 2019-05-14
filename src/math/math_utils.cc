@@ -49,20 +49,18 @@ namespace rascal {
      *        Sized l_max by (2*lmax + 1); the row is indexed by l and the
      *        column by m >= 0.
      */
-    Eigen::MatrixXd compute_assoc_legendre_polynom(double cos_theta,
-                                                   size_t max_angular) {
+    Matrix_t compute_assoc_legendre_polynom(double cos_theta,
+                                            size_t max_angular) {
       using std::pow;
       using std::sqrt;
       /// Technically abs(sin(θ)), but θ only goes from [0, π)
       double sin_theta = sqrt(1.0 - pow(cos_theta, 2));
-      // Eigen::MatrixXd assoc_legendre_polynom(max_angular + 1, max_angular +
+      // Matrix_t assoc_legendre_polynom(max_angular + 1, max_angular +
       // 1);
-      Eigen::MatrixXd assoc_legendre_polynom =
-          Eigen::MatrixXd::Zero(max_angular + 1, max_angular + 1);
-      Eigen::MatrixXd coeff_a =
-          Eigen::MatrixXd::Zero(max_angular + 1, 2 * max_angular + 1);
-      Eigen::MatrixXd coeff_b =
-          Eigen::MatrixXd::Zero(max_angular + 1, 2 * max_angular + 1);
+      Matrix_t assoc_legendre_polynom =
+          Matrix_t::Zero(max_angular + 1, max_angular + 1);
+      Matrix_t coeff_a = Matrix_t::Zero(max_angular + 1, 2 * max_angular + 1);
+      Matrix_t coeff_b = Matrix_t::Zero(max_angular + 1, 2 * max_angular + 1);
       const double SQRT_INV_2PI = sqrt(0.5 / PI);
 
       // Coefficients for computing the associated Legendre polynomials
@@ -131,10 +129,9 @@ namespace rascal {
      *        Sized max_m by 2 with the cos(mφ) stored in the first column
      *        and sin(mφ) in the second column, m being the row index
      */
-    Eigen::MatrixXd compute_cos_sin_angle_multiples(double cos_phi,
-                                                    double sin_phi,
-                                                    size_t max_m) {
-      Eigen::MatrixXd cos_sin_m_phi = Eigen::MatrixXd::Zero(max_m + 1, 2);
+    MatrixX2_t compute_cos_sin_angle_multiples(double cos_phi, double sin_phi,
+                                               size_t max_m) {
+      MatrixX2_t cos_sin_m_phi = MatrixX2_t::Zero(max_m + 1, 2);
       for (size_t m_count{0}; m_count < max_m + 1; m_count++) {
         if (m_count == 0) {
           cos_sin_m_phi.row(m_count) << 1.0, 0.0;
@@ -184,7 +181,7 @@ namespace rascal {
      *          Sized l_max+1 by 2l_max+1, the row index
      *          corresponding to l numbers and the column index to m.
      */
-    Eigen::MatrixXd compute_spherical_harmonics(
+    Matrix_t compute_spherical_harmonics(
         const Eigen::Ref<const Eigen::Vector3d> & direction,
         size_t max_angular) {
       using std::pow;
@@ -205,11 +202,10 @@ namespace rascal {
         cos_phi = direction[0] / sqrt_xy;
         sin_phi = direction[1] / sqrt_xy;
       }
-      Eigen::MatrixXd harmonics =
-          Eigen::MatrixXd::Zero(max_angular + 1, 2 * max_angular + 1);
-      Eigen::MatrixXd assoc_legendre_polynom =
+      Matrix_t harmonics = Matrix_t::Zero(max_angular + 1, 2 * max_angular + 1);
+      Matrix_t assoc_legendre_polynom =
           compute_assoc_legendre_polynom(cos_theta, max_angular);
-      Eigen::MatrixXd cos_sin_m_phi =
+      MatrixX2_t cos_sin_m_phi =
           compute_cos_sin_angle_multiples(cos_phi, sin_phi, max_angular);
 
       for (size_t angular_l{0}; angular_l < max_angular + 1; angular_l++) {

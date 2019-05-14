@@ -47,14 +47,17 @@ namespace rascal {
     /// How small a number must be to be considered effectively zero
     const double dbl_ftol = 100.0 * std::numeric_limits<double>::epsilon();
 
-    Eigen::MatrixXd compute_assoc_legendre_polynom(double cos_theta,
-                                                   size_t max_angular);
+    using Matrix_t =
+        Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+    using MatrixX2_t = Eigen::Matrix<double, Eigen::Dynamic, 2>;
 
-    Eigen::MatrixXd compute_cos_sin_angle_multiples(double cos_phi,
-                                                    double sin_phi,
-                                                    size_t max_m);
+    Matrix_t compute_assoc_legendre_polynom(double cos_theta,
+                                            size_t max_angular);
 
-    Eigen::MatrixXd compute_spherical_harmonics(
+    MatrixX2_t compute_cos_sin_angle_multiples(double cos_phi, double sin_phi,
+                                               size_t max_m);
+
+    Matrix_t compute_spherical_harmonics(
         const Eigen::Ref<const Eigen::Vector3d> & direction,
         size_t max_angular);
 

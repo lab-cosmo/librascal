@@ -207,7 +207,7 @@ namespace rascal {
     rep_expansion.compute();
     auto & expansions_coefficients{rep_expansion.expansions_coefficients};
 
-    size_t n_row{(size_t)pow(this->max_radial, 2)};
+    size_t n_row{static_cast<size_t>(pow(this->max_radial, 2))};
     size_t n_col{this->max_angular + 1};
 
     this->soap_vectors.clear();
@@ -249,19 +249,19 @@ namespace rascal {
 
           auto && soap_vector_by_pair{soap_vector[pair_type]};
 
-          size_t nn{0};
-          for (size_t n1 = 0; n1 < this->max_radial; n1++) {
-            for (size_t n2 = 0; n2 < this->max_radial; n2++) {
-              size_t lm{0};
-              for (size_t l = 0; l < this->max_angular + 1; l++) {
-                double l_factor{pow(std::sqrt(2 * l + 1), -1)};
-                for (size_t m = 0; m < 2 * l + 1; m++) {
+          size_t lm{0};
+          for (size_t l = 0; l < this->max_angular + 1; l++) {
+            double l_factor{pow(std::sqrt(2 * l + 1), -1)};
+            for (size_t m = 0; m < 2 * l + 1; m++) {
+              size_t nn{0};
+              for (size_t n1 = 0; n1 < this->max_radial; n1++) {
+                for (size_t n2 = 0; n2 < this->max_radial; n2++) {
                   double val{l_factor * coef1(n1, lm) * coef2(n2, lm)};
                   soap_vector_by_pair(nn, l) += val;
-                  lm++;
+                  nn++;
                 }
               }
-              nn++;
+              lm++;
             }
           }
         }
