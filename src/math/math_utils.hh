@@ -47,6 +47,7 @@ namespace rascal {
     /// How small a number must be to be considered effectively zero
     const double dbl_ftol = 100.0 * std::numeric_limits<double>::epsilon();
 
+    // define some usefull matrix type
     using Matrix_t =
         Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
     using MatrixX2_t = Eigen::Matrix<double, Eigen::Dynamic, 2>;
@@ -61,11 +62,6 @@ namespace rascal {
         const Eigen::Ref<const Eigen::Vector3d> & direction,
         size_t max_angular);
 
-    // double switching_function_cosine(const double& r,const double&
-    // cutoff,const double& smooth_width);
-
-    // double derivative_switching_funtion_cosine(
-    //     const double& r, const double& cutoff, const double& smooth_width);
 
     /**
      * Compute a cosine-type switching function for smooth cutoffs
