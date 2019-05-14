@@ -45,6 +45,8 @@
 #include <vector>
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
+#include <unordered_set>
+
 
 namespace rascal {
 
@@ -695,7 +697,7 @@ namespace rascal {
       auto & coefficients_center = this->expansions_coefficients[center];
       Key_t center_type{center.get_atom_type()};
 
-      std::set<Key_t> keys{};
+      std::unordered_set<Key_t, internal::Hash<Key_t>> keys{};
       for (auto neigh : center) {
         keys.insert({neigh.get_atom_type()});
       }

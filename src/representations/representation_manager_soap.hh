@@ -45,6 +45,7 @@
 #include <vector>
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
+#include <unordered_set>
 
 namespace rascal {
 
@@ -218,7 +219,7 @@ namespace rascal {
       auto & soap_vector{this->soap_vectors[center]};
       Key_t pair_type{0, 0};
 
-      std::set<Key_t> pair_list{};
+      std::unordered_set<Key_t, internal::Hash<Key_t>> pair_list{};
       auto & center_type{center.get_atom_type()};
       pair_list.insert({center_type, center_type});
       for (auto neigh1 : center) {
@@ -226,7 +227,9 @@ namespace rascal {
         pair_list.insert({center_type, neigh1_type});
         for (auto neigh2 : center) {
           auto && neigh2_type{neigh2.get_atom_type()};
-          pair_list.insert({neigh1_type, neigh2_type});
+          if (neigh1_type <= neigh2_type) {
+            pair_list.insert({neigh1_type, neigh2_type});
+          }
         }
       }
       // initialize the power spectrum to 0 with the proper dimension
@@ -303,7 +306,7 @@ namespace rascal {
       auto & soap_vector{this->soap_vectors[center]};
       Key_t element_type{0};
 
-      std::set<Key_t> keys{};
+      std::unordered_set<Key_t, internal::Hash<Key_t>> keys{};
       for (auto neigh : center) {
         keys.insert({neigh.get_atom_type()});
       }
