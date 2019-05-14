@@ -131,20 +131,6 @@ namespace rascal {
     //! returns the (strict) cutoff for the adaptor
     inline const double & get_cutoff() const { return this->cutoff; }
 
-    
-    /* Each adaptor implements this function to enable forwarding to manager which owns the property, if such a property does not exist the root manager captures the call and throws an error
-     */
-    template <typename property_t,
-        size_t Order, size_t Layer>
-    inline typename property_t::reference get_property_value (
-        const ClusterRefKey<Order, Layer> & cluster,
-        const std::string & name) const {
-      if (!this->has_property(name)) {
-        return this->manager->template get_property_value<property_t>(cluster, name);
-      }
-      return (this->template get_property<property_t>(name))->operator[](cluster);
-    }
-
     inline size_t get_nb_clusters(int order) const {
       return this->atom_indices[order - 1].size();
     }
@@ -232,6 +218,21 @@ namespace rascal {
       return this->manager->get_shared_ptr();
     }
 
+    //TODO(till) I deleted the non const getters, because they are not needed
+    // if this was wrong, please explain
+    //! returns the distance between atoms in a given pair
+    template <size_t Order, size_t Layer>
+    inline double & get_distance(const ClusterRefKey<Order, Layer> & pair) const {
+      return this->distance->operator[](pair);
+    }
+
+    //! returns the direction vector between atoms in a given pair
+    template <size_t Order, size_t Layer>
+    inline const Vector_ref
+    get_direction_vector(const ClusterRefKey<Order, Layer> & pair) const {
+      return this->dir_vec->operator[](pair);
+    }
+
    protected:
     /**
      * main function during construction of a neighbourlist.
@@ -268,6 +269,8 @@ namespace rascal {
     }
 
     ImplementationPtr_t manager;
+    std::shared_ptr<Distance_t> distance;
+    std::shared_ptr<DirectionVector_t> dir_vec;
     const double cutoff;
 
     /**
@@ -324,7 +327,7 @@ namespace rascal {
   template <class ManagerImplementation>
   AdaptorStrict<ManagerImplementation>::AdaptorStrict(
       std::shared_ptr<ManagerImplementation> manager, double cutoff)
-      : manager{std::move(manager)}, 
+      : manager{std::move(manager)}, distance{std::make_shared<Distance_t>(*this)}, dir_vec{std::make_shared<DirectionVector_t>(*this)},
         cutoff{cutoff}, atom_indices{}, nb_neigh{}, offsets{}
 
   {
@@ -365,16 +368,12 @@ namespace rascal {
     //! initialise the distance storage
     this->template create_property<Distance_t>("distance");
     this->template create_property<DirectionVector_t>("dir_vec");
-    // TODO:
-    // auto && dynamic_discance{ this->get_property("distance")};
-    // auto & distance{reinterpret_cast<Property_t &>(*dynamic_discance)};
 
-    auto distance_property = this->template get_property<Distance_t>("distance");
-    auto dir_vec_property =
-        this->template get_property<DirectionVector_t >("dir_vec");
+    this->distance = this->template get_validated_property<Distance_t>("distance");
+    this->dir_vec = this->template get_validated_property<DirectionVector_t>("dir_vec");
 
-    distance_property->resize_to_zero();
-    dir_vec_property->resize_to_zero();
+    this->distance->resize_to_zero();
+    this->dir_vec->resize_to_zero();
 
     // fill the list, at least pairs are mandatory for this to work
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
@@ -410,8 +409,8 @@ namespace rascal {
           this->add_atom(pair);
           double distance{std::sqrt(distance2)};
 
-          dir_vec_property->push_back((vec_ij.array() / distance).matrix());
-          distance_property->push_back(distance);
+          this->dir_vec->push_back((vec_ij.array() / distance).matrix());
+          this->distance->push_back(distance);
 
           Eigen::Matrix<size_t, PairLayer + 1, 1> indices_pair;
           indices_pair.template head<PairLayer>() = pair.get_cluster_indices();
