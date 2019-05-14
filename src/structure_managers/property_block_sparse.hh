@@ -63,7 +63,6 @@ namespace rascal {
       }
     };
 
-
     template <class K, class V>
     class InternallySortedKeyMap {
      public:
@@ -160,12 +159,10 @@ namespace rascal {
       InternallySortedKeyMap() = default;
 
       //! Copy constructor
-      InternallySortedKeyMap(
-          const InternallySortedKeyMap & other) = default;
+      InternallySortedKeyMap(const InternallySortedKeyMap & other) = default;
 
       //! Move constructor
-      InternallySortedKeyMap(
-          InternallySortedKeyMap && other) = default;
+      InternallySortedKeyMap(InternallySortedKeyMap && other) = default;
 
       //! Destructor
       ~InternallySortedKeyMap() = default;
@@ -206,9 +203,8 @@ namespace rascal {
         auto & pos{this->map[skey]};
         return const_reference(&this->data[pos[0]], pos[1], pos[2]);
       }
-      template<typename Key_List>
-      void resize(const Key_List & keys, const int & n_row,
-                  const int & n_col) {
+      template <typename Key_List>
+      void resize(const Key_List & keys, const int & n_row, const int & n_col) {
         using Array_t = typename Map_t::mapped_type;
         int new_size{0};
         for (auto & key : keys) {
@@ -281,7 +277,8 @@ namespace rascal {
   /**
    * Typed ``property`` class definition, inherits from the base property class
    */
-  template <typename Precision_t, size_t Order, size_t PropertyLayer, typename Key = std::vector<int>>
+  template <typename Precision_t, size_t Order, size_t PropertyLayer,
+            typename Key = std::vector<int>>
   class BlockSparseProperty : public PropertyBase {
    public:
     using Parent = PropertyBase;
@@ -291,8 +288,7 @@ namespace rascal {
     using Key_t = Key;
     using Keys_t = std::set<Key_t>;
     using keys_list_t = std::vector<std::set<Key_t>>;
-    using InputData_t =
-        internal::InternallySortedKeyMap<Key_t, Dense_t>;
+    using InputData_t = internal::InternallySortedKeyMap<Key_t, Dense_t>;
     using Data_t = std::vector<InputData_t>;
 
     //! constructor

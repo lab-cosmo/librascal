@@ -247,7 +247,7 @@ namespace rascal {
             continue;
           }
 
-          auto&& soap_vector_by_pair{soap_vector[pair_type]};
+          auto && soap_vector_by_pair{soap_vector[pair_type]};
 
           size_t nn{0};
           for (size_t n1 = 0; n1 < this->max_radial; n1++) {
