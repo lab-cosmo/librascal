@@ -522,6 +522,8 @@ namespace rascal {
     template <size_t Order>
     inline size_t
     get_offset_impl(const std::array<size_t, Order> & counters) const;
+    get_cluster_neighbour_cluster_index(const size_t neighbour_index) const;
+    
 
     template <size_t TopLevelOrder>
     inline void
@@ -735,6 +737,7 @@ namespace rascal {
     std::vector<size_t> nb_neigh{};
 
     //! Stores all neighbours (atomic indices) in a list in sequence of atoms
+    // TODO(alex atomic indices are int, but here are cluster indices
     std::vector<size_t> neighbours{};
 
     //! Stores the offset for each atom to accessing `neighbours`, this variable
@@ -1052,6 +1055,20 @@ namespace rascal {
     return this->offsets[counters.front()];
   }
 
+  template <class ManagerImplementation>
+  inline size_t AdaptorNeighbourList<ManagerImplementation>::
+      get_cluster_neighbour_cluster_index(const size_t neighbour_index) const {
+    // The static assert with <= is necessary, because the template parameter
+    // ``Order`` is one Order higher than the MaxOrder at the current
+    // level. The return type of this function is used to build the next Order
+    // iteration.
+    static_assert(Order <= traits::MaxOrder,
+                  "this implementation handles only up to the respective"
+                  " MaxOrder");
+    return this->neighbours[neighbour_index];
+  }
+
+  // TODO(alex) delete not needed
   template <class ManagerImplementation>
   template <size_t TopLevelOrder>
   inline void AdaptorNeighbourList<ManagerImplementation>::

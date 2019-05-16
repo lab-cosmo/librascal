@@ -146,9 +146,9 @@ namespace rascal {
     }
 
     //! get atom_index of index-th neighbour of this cluster
-    template <size_t Order, size_t Layer>
+    template <size_t Order, size_t CallingLayer, size_t ParentLayer, size_t NeighbourLayer>
     inline int
-    get_cluster_neighbour(const ClusterRefKey<Order, Layer> & cluster,
+    get_cluster_neighbour(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster,
                           int index) const {
       static_assert(Order <= traits::MaxOrder - 1,
                     "this implementation only handles upto traits::MaxOrder");
@@ -203,9 +203,9 @@ namespace rascal {
     }
 
     //! return the number of neighbours of a given atom
-    template <size_t Order, size_t CallingLayer>
+    template <size_t Order, size_t CallingLayer, size_t ParentLayer, size_t NeighbourLayer>
     inline size_t
-    get_cluster_size(const ClusterRefKey<Order, CallingLayer> & cluster) const {
+    get_cluster_size(const ClusterRefKey<Order, CallingLayer, ParentLayer, NeighbourLayer> & cluster) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
       constexpr auto nb_neigh_layer{
@@ -221,15 +221,15 @@ namespace rascal {
     //TODO(till) I deleted the non const getters, because they are not needed
     // if this was wrong, please explain
     //! returns the distance between atoms in a given pair
-    template <size_t Order, size_t Layer>
-    inline double & get_distance(const ClusterRefKey<Order, Layer> & pair) const {
+    template <size_t Order, size_t Layer, size_t ParentLayer, size_t NeighbourLayer>
+    inline double & get_distance(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & pair) const {
       return this->distance->operator[](pair);
     }
 
     //! returns the direction vector between atoms in a given pair
-    template <size_t Order, size_t Layer>
+    template <size_t Order, size_t Layer, size_t ParentLayer, size_t NeighbourLayer>
     inline const Vector_ref
-    get_direction_vector(const ClusterRefKey<Order, Layer> & pair) const {
+    get_direction_vector(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & pair) const {
       return this->dir_vec->operator[](pair);
     }
 
