@@ -156,7 +156,6 @@ namespace rascal {
     //template<size_t Order, size_t ClusterLayer, size_t ParentLayer, size_t NeighbourLayer>
     template<class Parent, typename ClusterIndicesType, size_t Layer>
     struct ClusterIndicesConstCaster {
-    //using Parent = ClusterRefKey<Order, ClusterLayer, ParentLayer, NeighbourLayer>;
     using IndexConstArray_t = typename Parent::IndexConstArray;
     using IndexArray_t = typename Parent::IndexArray;
 
@@ -515,8 +514,8 @@ namespace rascal {
     }
 
     //! returns the cluster size in given order and layer
-    template <size_t Order, size_t Layer>
-    inline size_t cluster_size(ClusterRefKey<Order, Layer> & cluster) const {
+    template <size_t Order, size_t Layer, size_t ParentLayer, size_t NeighbourLayer>
+    inline size_t cluster_size(ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster) const {
       return this->implementation().get_cluster_size(cluster);
     }
 
@@ -556,9 +555,10 @@ namespace rascal {
     //! Starting array for builing container in iterator
     std::array<int, 0> get_atom_ids() const { return std::array<int, 0>{}; }
     //! Access to offsets for access of cluster-related properties
-    template <size_t Order, size_t CallerLayer>
+    template <size_t Order, size_t CallerLayer, size_t ParentLayer, size_t NeighbourLayer
+>
     inline size_t
-    get_offset(const ClusterRefKey<Order, CallerLayer> & cluster) const {
+    get_offset(const ClusterRefKey<Order, CallerLayer, ParentLayer, NeighbourLayer> & cluster) const {
       constexpr auto layer{StructureManager::template cluster_layer<Order>()};
       return cluster.get_cluster_index(layer);
     }
@@ -811,6 +811,7 @@ namespace rascal {
           
           } {}
 
+    // TODO(alex) delete
     //      ClusterRefKey<1, NeighbourLayer> (
     //          {atom_indices.back()}, 
     //          internal::ClusterIndicesConstCaster<

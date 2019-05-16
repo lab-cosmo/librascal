@@ -197,14 +197,15 @@ namespace rascal {
      * Returns the id of the index-th (neighbour) atom of the cluster that is
      * the full structure/atoms object, i.e. simply the id of the index-th atom
      */
-    inline int get_cluster_neighbour(const Parent &, size_t index) const {
-      return this->manager->get_cluster_neighbour(*this->manager, index);
+    inline int get_cluster_neighbour_atom_index_impl(const Parent &, size_t index) const {
+      return this->manager->get_cluster_neighbour_atom_index_impl(*this->manager, index);
     }
 
     //! Returns the id of the index-th neighbour atom of a given cluster
-    template <size_t Order, size_t Layer>
+    // TODO(alex) #ATOM_INDEX neighbours accesed but int returned seems wrong, look ate neighbour list adapto which as atom list
+    template <size_t Order, size_t Layer, size_t ParentLayer, size_t NeighbourLayer>
     inline int
-    get_cluster_neighbour(const ClusterRefKey<Order, Layer> & cluster,
+    get_cluster_neighbour_atom_index_impl(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster,
                           size_t index) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles up to traits::MaxOrder");
@@ -214,7 +215,7 @@ namespace rascal {
           internal::IncreaseHelper<Order == (traits::MaxOrder - 1)>;
 
       if (Order < (traits::MaxOrder - 1)) {
-        return IncreaseHelper_t::get_cluster_neighbour(*this->manager, cluster,
+        return IncreaseHelper_t::get_cluster_neighbour_atom_index(*this->manager, cluster,
                                                        index);
       } else {
         auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
@@ -223,9 +224,9 @@ namespace rascal {
     }
 
     //! Returns the number of neighbors of a given cluster
-    template <size_t Order, size_t Layer>
+    template <size_t Order, size_t Layer, size_t ParentLayer, size_t NeighbourLayer>
     inline size_t
-    get_cluster_size(const ClusterRefKey<Order, Layer> & cluster) const {
+    get_cluster_size(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
       /*

@@ -244,8 +244,8 @@ namespace rascal {
       this->keys_list.resize(new_size);
     }
 
-    template <size_t CallerLayer>
-    void initialize_to_zeros(const ClusterRefKey<Order, CallerLayer> & id,
+    template <size_t CallerLayer, size_t ParentLayer, size_t NeighbourLayer>
+    void initialize_to_zeros(const ClusterRefKey<Order, CallerLayer, ParentLayer, NeighbourLayer> & id,
                              Key_t & key) {
       auto && index{id.get_cluster_index(CallerLayer)};
       Dense_t mat = Dense_t::Zero(this->get_nb_row(), this->get_nb_col());
@@ -291,8 +291,8 @@ namespace rascal {
 
     //! Accessor for property by cluster index and return a dense
     //! representation of the property associated to this cluster
-    template <size_t CallerLayer>
-    inline Dense_t get_dense_row(const ClusterRefKey<Order, CallerLayer> & id) {
+    template <size_t CallerLayer, size_t ParentLayer, size_t NeighbourLayer>
+    inline Dense_t get_dense_row(const ClusterRefKey<Order, CallerLayer, ParentLayer, NeighbourLayer> & id) {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");
@@ -347,9 +347,9 @@ namespace rascal {
       return this->operator[](index);
     }
 
-    template <size_t CallerLayer>
+    template <size_t CallerLayer, size_t ParentLayer, size_t NeighbourLayer>
     inline decltype(auto)
-    operator()(const ClusterRefKey<Order, CallerLayer> & id,
+    operator()(const ClusterRefKey<Order, CallerLayer, ParentLayer, NeighbourLayer> & id,
                const Key_t & key) {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
@@ -401,9 +401,9 @@ namespace rascal {
       this->center_sizes.push_back(n_keys * this->get_nb_comp());
     }
 
-    template <size_t CallerLayer>
+    template <size_t CallerLayer, size_t ParentLayer, size_t NeighbourLayer>
     inline decltype(auto)
-    get_keys(const ClusterRefKey<Order, CallerLayer> & id) const {
+    get_keys(const ClusterRefKey<Order, CallerLayer, ParentLayer, NeighbourLayer> & id) const {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");

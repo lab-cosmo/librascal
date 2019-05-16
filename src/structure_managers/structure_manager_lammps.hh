@@ -127,9 +127,9 @@ namespace rascal {
     inline size_t get_size_with_ghosts() const { return this->tot_num; }
 
     //! return the number of neighbours of a given atom
-    template <size_t Order, size_t Layer>
+    template <size_t Order, size_t Layer, size_t ParentLayer, size_t NeighbourLayer>
     inline size_t
-    get_cluster_size(const ClusterRefKey<Order, Layer> & cluster) const {
+    get_cluster_size(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
       return this->numneigh[cluster.back()];

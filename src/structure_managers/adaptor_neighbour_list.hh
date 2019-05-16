@@ -652,9 +652,9 @@ namespace rascal {
     }
 
     //! Returns the number of neighbors of a given cluster
-    template <size_t Order, size_t Layer>
+    template <size_t Order, size_t Layer, size_t ParentLayer, size_t NeighbourLayer>
     inline size_t
-    get_cluster_size(const ClusterRefKey<Order, Layer> & cluster) const {
+    get_cluster_size(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
 
