@@ -28,6 +28,9 @@
 
 #ifndef SRC_MATH_MATH_INTERFACE_HH_
 #define SRC_MATH_MATH_INTERFACE_HH_
+
+#include <cmath>
+
 /*
  * Cephes polutes the namespace with extern definitions so we don't link to it
  * directly. math_interface.cc includes math/cephes/mconf.h which in turns
@@ -46,6 +49,13 @@ namespace rascal {
                   const double & x);
     double hyp1f1(const double & a, const double & b, const double & x);
 
+    // overload the pow function from cmath to optimize for integer power
+    double pow(const double& x, const int& n);
+    double pow(const double& x, const std::size_t& n);
+
+    inline double pow(const double& x, const double& n) {
+      return std::pow(x, n);
+    }
   }  // namespace math
 }  // namespace rascal
 

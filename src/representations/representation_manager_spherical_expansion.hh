@@ -296,7 +296,7 @@ namespace rascal {
       Vector_Ref
       compute_center_contribution(ClusterRefKey<Order, Layer> & center) {
         using math::PI;
-        using std::pow;
+        using math::pow;
         using std::sqrt;
 
         auto smearing{downcast_atomic_smearing<AST>(this->atomic_smearing)};
@@ -312,7 +312,7 @@ namespace rascal {
           this->radial_integral_center(radial_n) =
               this->radial_norm_factors(radial_n) *
               this->radial_nl_factors(radial_n, 0) *
-              pow(fac_a + this->fac_b[radial_n], -0.5 * (3.0 + radial_n));
+              sqrt(pow(fac_a + this->fac_b[radial_n], -(3+radial_n)));
         }
 
         this->radial_integral_center =
@@ -326,7 +326,7 @@ namespace rascal {
       compute_neighbour_contribution(const double & distance,
                                      ClusterRefKey<Order, Layer> & pair) {
         using math::PI;
-        using std::pow;
+        using math::pow;
         using std::sqrt;
 
         auto smearing{downcast_atomic_smearing<AST>(this->atomic_smearing)};
@@ -351,7 +351,7 @@ namespace rascal {
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           double a_b_l{1. / sqrt(fac_a + this->fac_b[radial_n])};
           a_b_l_n(radial_n, 0) =
-              sqrt(pow(fac_a + this->fac_b[radial_n], -(3.0 + radial_n)));
+              sqrt(pow(fac_a + this->fac_b[radial_n], -(3 + radial_n)));
           for (size_t angular_l{1}; angular_l < this->max_angular + 1;
                angular_l++) {
             a_b_l_n(radial_n, angular_l) =
@@ -382,7 +382,7 @@ namespace rascal {
 
       /** Compute common prefactors for the radial Gaussian basis functions */
       void precompute_radial_sigmas() {
-        using std::pow;
+        using math::pow;
 
         for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
           this->radial_sigmas[radial_n] =
@@ -411,7 +411,7 @@ namespace rascal {
        * @throw runtime_error if the overlap matrix cannot be diagonalized
        */
       void precompute_radial_overlap() {
-        using std::pow;
+        using math::pow;
         using std::sqrt;
         using std::tgamma;
 
@@ -706,7 +706,7 @@ namespace rascal {
             internal::AtomicSmearingType SmearingType>
   void RepresentationManagerSphericalExpansion<Mngr>::compute_impl() {
     using math::PI;
-    using std::pow;
+    using math::pow;
 
     auto cutoff_function{
         downcast_cutoff_function<FcType>(this->cutoff_function)};

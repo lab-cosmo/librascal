@@ -51,7 +51,7 @@ namespace rascal {
      */
     Matrix_t compute_assoc_legendre_polynom(double cos_theta,
                                             size_t max_angular) {
-      using std::pow;
+      using math::pow;
       using std::sqrt;
       /// Technically abs(sin(θ)), but θ only goes from [0, π)
       double sin_theta = sqrt(1.0 - pow(cos_theta, 2));
@@ -184,7 +184,7 @@ namespace rascal {
     Matrix_t compute_spherical_harmonics(
         const Eigen::Ref<const Eigen::Vector3d> & direction,
         size_t max_angular) {
-      using std::pow;
+      using math::pow;
       using std::sqrt;
 
       if (direction.size() != 3) {

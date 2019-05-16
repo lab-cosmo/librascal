@@ -88,6 +88,8 @@ extern "C" {
   double onef2(double a, double b, double c, double x, double *err);
   double threef0(double a, double b, double c, double x, double *err);
 
+  double powi(double x, int nn);
+
   double i0(double x);
   double i0e(double x);
   double i1(double x);
