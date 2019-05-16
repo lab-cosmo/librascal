@@ -204,9 +204,11 @@ namespace rascal {
     //  }
     // }
 
-    template <size_t ClusterOrder, size_t CallerLayer>
-    inline typename std::enable_if<ClusterOrder == Order, reference>::type
-       operator[](const ClusterRefKey<ClusterOrder, CallerLayer> & id) {
+    template <size_t ClusterOrder, size_t CallerLayer,
+             size_t ParentLayer, size_t NeighbourLayer,
+             typename std::enable_if_t<ClusterOrder == Order,int> = 0>
+    inline reference
+       operator[](const ClusterRefKey<ClusterOrder, CallerLayer, ParentLayer, NeighbourLayer> & id) {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that "
                     "does not exist at this depth in the "
@@ -217,15 +219,15 @@ namespace rascal {
     // Access on a Order 1 property with a higher Order cluster,
     // gives the property of the atom with the last atom index 
     // in the cluster
-    template <size_t ClusterOrder, size_t CallerLayer>
-    inline typename std::enable_if<not(ClusterOrder == Order) and Order==1, reference>::type
-       operator[](const ClusterRefKey<ClusterOrder, CallerLayer> & id) {
-      static_assert(CallerLayer >= PropertyLayer,
-                    "You are trying to access a property that "
-                    "does not exist at this depth in the "
-                    "adaptor stack.");
-      return this->operator[](id.get_atom_indices().back());
-    }
+    //template <size_t ClusterOrder, size_t CallerLayer>
+    //inline typename std::enable_if<not(ClusterOrder == Order) and Order==1, reference>::type
+    //   operator[](const ClusterRefKey<ClusterOrder, CallerLayer> & id) {
+    //  static_assert(CallerLayer >= PropertyLayer,
+    //                "You are trying to access a property that "
+    //                "does not exist at this depth in the "
+    //                "adaptor stack.");
+    //  return this->operator[](id.get_atom_indices().back());
+    //}
 
 
     /**

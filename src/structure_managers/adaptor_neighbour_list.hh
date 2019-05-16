@@ -522,8 +522,9 @@ namespace rascal {
     template <size_t Order>
     inline size_t
     get_offset_impl(const std::array<size_t, Order> & counters) const;
-    get_cluster_neighbour_cluster_index(const size_t neighbour_index) const;
-    
+
+    inline size_t
+    get_cluster_neighbour_cluster_index_impl(const size_t neighbour_index) const;
 
     template <size_t TopLevelOrder>
     inline void
@@ -614,14 +615,15 @@ namespace rascal {
      * Returns the id of the index-th (neighbour) atom of the cluster that is
      * the full structure/atoms object, i.e. simply the id of the index-th atom
      */
-    inline int get_cluster_neighbour(const Parent &, size_t index) const {
-      return this->manager->get_cluster_neighbour(*this->manager, index);
+    inline int get_cluster_neighbour_atom_index_impl(const Parent &, size_t index) const {
+      return this->manager->get_cluster_neighbour_atom_index_impl(*this->manager, index);
     }
 
     //! Returns the id of the index-th neighbour atom of a given cluster
-    template <size_t Order, size_t Layer>
+    template <size_t Order, size_t Layer,
+             size_t ParentLayer, size_t NeighbourLayer>
     inline int
-    get_cluster_neighbour(const ClusterRefKey<Order, Layer> & cluster,
+    get_cluster_neighbour_atom_index_impl(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster,
                           size_t index) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles up to traits::MaxOrder");
@@ -631,7 +633,7 @@ namespace rascal {
           internal::IncreaseHelper<Order == (traits::MaxOrder - 1)>;
 
       if (Order < (traits::MaxOrder - 1)) {
-        return IncreaseHelper_t::get_cluster_neighbour(*this->manager, cluster,
+        return IncreaseHelper_t::get_cluster_neighbour_atom_index(*this->manager, cluster,
                                                        index);
       } else {
         auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
@@ -1057,14 +1059,11 @@ namespace rascal {
 
   template <class ManagerImplementation>
   inline size_t AdaptorNeighbourList<ManagerImplementation>::
-      get_cluster_neighbour_cluster_index(const size_t neighbour_index) const {
+      get_cluster_neighbour_cluster_index_impl(const size_t neighbour_index) const {
     // The static assert with <= is necessary, because the template parameter
     // ``Order`` is one Order higher than the MaxOrder at the current
     // level. The return type of this function is used to build the next Order
     // iteration.
-    static_assert(Order <= traits::MaxOrder,
-                  "this implementation handles only up to the respective"
-                  " MaxOrder");
     return this->neighbours[neighbour_index];
   }
 

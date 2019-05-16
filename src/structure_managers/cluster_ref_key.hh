@@ -172,11 +172,10 @@ namespace rascal {
       return head_helper(arr, std::make_index_sequence<Layer>{});
     }
 
-    /* ere this case is catched and error during compile time is thrown
-     */
     template <size_t Order>
     constexpr size_t validate_template_parameters() {
-      static_assert(Order==1, "ClusterRefKey of Order > 1 requires ParentLayer and NeigbhourLayer. The usage ClusterRefKey<Order, Layer> is only valid for Order = 1");
+      // TODO(alex) check this looping error
+      //static_assert(Order==1, "ClusterRefKey of Order > 1 requires ParentLayer and NeigbhourLayer. The usage ClusterRefKey<Order, Layer> is only valid for Order = 1");
       return 0;
     }
   }  // namespace internal
@@ -217,24 +216,41 @@ namespace rascal {
     using IndexConstArray =
         Eigen::Map<const Eigen::Matrix<size_t, Layer + 1, 1>>;
     using IndexArray = Eigen::Map<Eigen::Matrix<size_t, Layer + 1, 1>>;
+    using NeighbourIndexConstArray =
+        Eigen::Map<const Eigen::Matrix<size_t, ParentLayer + 1, 1>>;
+    using NeighbourIndexArray = Eigen::Map<Eigen::Matrix<size_t, ParentLayer + 1, 1>>;
     using AtomIndex_t = std::array<int, Order>;
     /* For Order > 1 this object contains the neighbour object, because the neighbour object is nowhere else stored, but for Order = 1 it is a reference to itself, because an object cannot store itself.
      */
-    typedef typename std::conditional<Order==1, ClusterRefKey<1, Layer, Layer, Layer> &, ClusterRefKey<1, Layer, ParentLayer, NeighbourLayer>>::type Neighbour_t;
-    typedef typename std::conditional<Order==1, ClusterRefKey<1, Layer, Layer, Layer>, ClusterRefKey<Order-1, Layer, ParentLayer, NeighbourLayer>>::type Parent_t;
-
+    typedef typename std::conditional<Order==1, ClusterRefKey<1, Layer, ParentLayer, NeighbourLayer> &, ClusterRefKey<1, Layer, ParentLayer, NeighbourLayer>>::type Neighbour_t;
+    typedef ClusterRefKey<(Order==1) ? 1 : Order-1, Layer, ParentLayer, NeighbourLayer> Parent_t;
+    // Order-1 must be resolved and returns error
+    //typedef typename std::conditional<Order==1, ClusterRefKey<1, Layer>, ClusterRefKey<Order-1, Layer, ParentLayer, NeighbourLayer>>::type Parent_t;
     //! Default constructor
     ClusterRefKey() = delete;
 
     /* Constructor for Order > 1. To use enable_if an template parameter has to be given, therefore the Order is copied. The template arguments of the construction are not in accesible by the user, therefore it cannot be invalidly used.
      */
+    // seems ill defined because object is deleted on creation
     template<size_t Order_=Order, typename std::enable_if_t<not(Order_==1),int> = 0>
     ClusterRefKey(AtomIndex_t atom_indices, IndexConstArray cluster_indices,
-        ClusterRefKey<Order-1, ParentLayer> & cluster_parent,
-        ClusterRefKey<1, NeighbourLayer> cluster_neighbour) 
-        : Parent{Order, Layer}, atom_indices{atom_indices},           
+        Parent_t & cluster_parent,
+        Neighbour_t cluster_neighbour) 
+        : Parent{Order, Layer}, atom_indices{atom_indices}, 
           cluster_indices{cluster_indices.data()},
           cluster_parent{cluster_parent}, cluster_neighbour{cluster_neighbour} {}
+
+    template<size_t Order_=Order, typename std::enable_if_t<not(Order_==1),int> = 0>
+    ClusterRefKey(AtomIndex_t atom_indices, IndexConstArray cluster_indices,
+        Parent_t & cluster_parent, NeighbourIndexConstArray cluster_neighbour_cluster_indices) 
+        : Parent{Order, Layer}, atom_indices{atom_indices}, 
+          cluster_indices{cluster_indices.data()},
+          cluster_parent{cluster_parent}, 
+          cluster_neighbour{ 
+              ClusterRefKey<1, NeighbourLayer> (
+                  {atom_indices.back()}, 
+                  cluster_neighbour_cluster_indices)
+          }{}
 
     /* Constructor for Order 1 
      */
@@ -243,14 +259,6 @@ namespace rascal {
         : Parent{Order, Layer}, atom_indices{atom_indices},           
           cluster_indices{cluster_indices.data()},
           cluster_parent{*this}, cluster_neighbour{*this} {}
-    /* Constructor for Order 1 with Order > 1 parameters which are silently ignored. This constructor is useful in the StructureManager::Iterator to not differ between Order 1 ClusterRefKey and Order > 1,   
-     */
-    template<size_t Order_=Order, typename std::enable_if_t<(Order_==1),int> = 0>
-    ClusterRefKey(AtomIndex_t atom_indices, IndexConstArray cluster_indices,
-        ClusterRefKey<Order-1, ParentLayer> & cluster_parent,
-        ClusterRefKey<1, NeighbourLayer> cluster_neighbour) 
-        : ClusterRefKey(atom_indices, cluster_indices, cluster_parent,
-            cluster_neighbour) {}
 
     //! Copy constructor
     ClusterRefKey(const ClusterRefKey & other) = default;

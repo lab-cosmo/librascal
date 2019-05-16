@@ -147,6 +147,8 @@ namespace rascal {
     template <size_t Order>
     inline size_t
     get_offset_impl(const std::array<size_t, Order> & counters) const;
+    inline size_t
+    get_cluster_neighbour_cluster_index_impl(const size_t neighbour_index) const;
     template <size_t TopLevelOrder>
     inline void
     write_cluster_atoms_index(const std::array<size_t, TopLevelOrder-1> & counters, const std::array<size_t, TopLevelOrder-1> & offsets, const std::array<size_t, TopLevelOrder> & cluster_atoms_index) const;
@@ -513,6 +515,16 @@ namespace rascal {
       auto main_offset{this->offsets[tuple_index]};
       return main_offset;
     }
+  }
+
+  template <class ManagerImplementation>
+  inline size_t AdaptorMaxOrder<ManagerImplementation>::
+      get_cluster_neighbour_cluster_index_impl(const size_t neighbour_index) const {
+    // The static assert with <= is necessary, because the template parameter
+    // ``Order`` is one Order higher than the MaxOrder at the current
+    // level. The return type of this function is used to build the next Order
+    // iteration.
+    return this->neighbours[neighbour_index];
   }
 
   template <class ManagerImplementation>
