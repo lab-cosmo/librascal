@@ -185,7 +185,7 @@ namespace rascal {
           internal::IncreaseHelper<Order == (traits::MaxOrder - 1)>;
 
       if (Order < (traits::MaxOrder - 1)) {
-        return IncreaseHelper_t::get_cluster_neighbour(*this->manager, cluster,
+        return IncreaseHelper_t::get_cluster_neighbour_atom_index(*this->manager, cluster,
                                                        index);
       } else {
         auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
@@ -239,9 +239,13 @@ namespace rascal {
     }
 
     //! Returns the number of neighbours of a given cluster
-    template <size_t Order, size_t Layer>
+    template <size_t Order, size_t Layer, 
+             size_t ParentLayer =
+               internal::validate_crk_template_parameters<Order, Layer>(),
+            size_t NeighbourLayer = 
+               internal::validate_crk_template_parameters<Order, Layer>()>
     inline size_t
-    get_cluster_size(const ClusterRefKey<Order, Layer> & cluster) const {
+    get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
       /*

@@ -174,7 +174,6 @@ namespace rascal {
 
     template <size_t Order, size_t Layer>
     constexpr size_t validate_template_parameters() {
-      // TODO(alex) check this looping error
       static_assert(Order==1, "ClusterRefKey of Order > 1 requires ParentLayer and NeigbhourLayer. The usage ClusterRefKey<Order, Layer> is only valid for Order = 1");
       return Layer;
     }

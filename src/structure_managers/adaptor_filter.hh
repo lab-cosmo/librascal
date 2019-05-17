@@ -289,9 +289,13 @@ namespace rascal {
     }
 
     //! return the number of neighbours of a given atom
-    template <size_t Order, size_t CallingLayer, size_t ParentLayer, size_t NeighbourLayer>
+    template <size_t Order, size_t Layer, 
+             size_t ParentLayer =
+               internal::validate_crk_template_parameters<Order, Layer>(),
+            size_t NeighbourLayer = 
+               internal::validate_crk_template_parameters<Order, Layer>()>
     inline size_t
-    get_cluster_size(const ClusterRefKey<Order, CallingLayer, ParentLayer, NeighbourLayer> & cluster) const {
+    get_cluster_size_impl(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster) const {
       static_assert(Order <= traits::MaxOrder - 1,
                     "Order exceeds maxorder for this filter.");
       constexpr auto nb_neigh_layer{

@@ -224,9 +224,13 @@ namespace rascal {
     }
 
     //! Returns the number of neighbors of a given cluster
-    template <size_t Order, size_t Layer, size_t ParentLayer, size_t NeighbourLayer>
+    template <size_t Order, size_t Layer, 
+             size_t ParentLayer =
+               internal::validate_crk_template_parameters<Order, Layer>(),
+            size_t NeighbourLayer = 
+               internal::validate_crk_template_parameters<Order, Layer>()>
     inline size_t
-    get_cluster_size(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster) const {
+    get_cluster_size_impl(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
       /*
@@ -498,7 +502,7 @@ namespace rascal {
     if (Order < (traits::MaxOrder - 1)) {
       // If not accessible at this order, call lower Order offsets from lower
       // order manager or push through to lower levels, if adaptors are stacked.
-      return IncreaseHelper_t::get_offset_impl(*this->manager, counters);
+      return IncreaseHelper_t::get_offset(*this->manager, counters);
     } else {
       // Counters is an array to call parent offset multiplet. This can then be
       // used to access the actual offset for the Order which was built here.
