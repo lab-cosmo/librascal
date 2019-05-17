@@ -62,12 +62,13 @@ decltype(auto) add_representation_manager(py::module & mod, py::module &) {
  *
  * @params mod pybind11 representation of the python module the represenation
  *             managers will be included to
- * @params m_garbage pybind11 representation of the python module that are
+ * @params m_throwaway pybind11 representation of the python module that are
  *                  needed but not useful to use on the python side
  *
  */
-void add_representation_managers(py::module & mod, py::module & m_garbage) {
-  py::class_<RepresentationManagerBase>(m_garbage, "RepresentationManagerBase");
+void add_representation_managers(py::module & mod, py::module & m_throwaway) {
+  py::class_<RepresentationManagerBase>(m_throwaway,
+                                        "RepresentationManagerBase");
   /*-------------------- rep-bind-start --------------------*/
   // Defines a particular structure manager type
   using Manager_t =
@@ -77,12 +78,13 @@ void add_representation_managers(py::module & mod, py::module & m_garbage) {
   using Representation1_t = RepresentationManagerSortedCoulomb<Manager_t>;
   // Bind the interface of this representation manager
   auto rep_sorted_coulomb =
-      add_representation_manager<Representation1_t>(mod, m_garbage);
+      add_representation_manager<Representation1_t>(mod, m_throwaway);
   /*-------------------- rep-bind-end --------------------*/
   using Representation2_t = RepresentationManagerSphericalExpansion<Manager_t>;
   auto rep_spherical_expansion =
-      add_representation_manager<Representation2_t>(mod, m_garbage);
+      add_representation_manager<Representation2_t>(mod, m_throwaway);
 
   using Representation3_t = RepresentationManagerSOAP<Manager_t>;
-  auto rep_soap = add_representation_manager<Representation3_t>(mod, m_garbage);
+  auto rep_soap =
+      add_representation_manager<Representation3_t>(mod, m_throwaway);
 }

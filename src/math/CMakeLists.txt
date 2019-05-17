@@ -28,11 +28,8 @@
 #
 
 add_library("${LIBCEPHES_NAME}" "")
-
 add_subdirectory(cephes)
-
 install(TARGETS "${LIBCEPHES_NAME}" DESTINATION lib)
-
 
 set (math_SRC
   ${CMAKE_CURRENT_SOURCE_DIR}/math_utils.cc

@@ -30,6 +30,7 @@
 #define SRC_MATH_MATH_UTILS_HH_
 
 #include "math_interface.hh"
+
 #include <Eigen/Dense>
 #include <cmath>
 #include <limits>

@@ -116,29 +116,22 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR
     CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
   set(LIBRASCAL_NAME "rascal-dbg")
   set(LIBCEPHES_NAME "cephes-dbg")
+  set(WIGXJPF_NAME "wigxjpf-dbg")
 else()
   set(LIBRASCAL_NAME "rascal")
   set(LIBCEPHES_NAME "cephes")
+  set(WIGXJPF_NAME "wigxjpfo")
 endif()
 
-set(wigxjpf_dir "${CMAKE_SOURCE_DIR}/src/wigxjpf-1.9")
-set(wigxjpf_download "if ! [ -d ${wigxjpf_dir} ]\$<SEMICOLON> then \
-wget http://fy.chalmers.se/subatom/wigxjpf/wigxjpf-1.9.tar.gz -P \
-${CMAKE_SOURCE_DIR}/src/\$<SEMICOLON> \
-tar -xzvf ${CMAKE_SOURCE_DIR}/src/wigxjpf-1.9.tar.gz -C \
-${CMAKE_SOURCE_DIR}/src/\$<SEMICOLON>  \
-rm ${CMAKE_SOURCE_DIR}/src/wigxjpf-1.9.tar.gz\$<SEMICOLON> \
-fi\$<SEMICOLON>")
-set(wigxjpf_build "make -C ${wigxjpf_dir}")
-add_custom_target(wigxjpf ALL COMMAND eval ${wigxjpf_download} 
-&& eval ${wigxjpf_build} COMMENT 
-"Building the Wigner xj symbol library wigxjpf-1.9" VERBATIM)
-#add_custom_target(wigxjpf ALL COMMAND eval ${wigxjpf_download} VERBATIM)
-#add_dependencies(${LIBRASCAL_NAME} wigxjpf)
-set(wigxjpf_library "${wigxjpf_dir}/lib/libwigxjpf.a")
-include_directories("${wigxjpf_dir}/inc/")
+# include_directories(SYSTEM
+#   ${CMAKE_SOURCE_DIR}/build/external/wigxjpf/inc
+#   ${CMAKE_SOURCE_DIR}/build/external/wigxjpf/cfg
+#   )
+
+add_external_package(wigxjpf VERSION 1.9 CONFIG)
 
 add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
+
 
 # Try to find optional cpp linter
 include(cpplint)
@@ -271,7 +264,7 @@ if (${BUILD_TESTS})
 endif(${BUILD_TESTS})
 
 # put it there to avoid warnings from boost tests
-# add_compile_options(-Werror) # warnings are errors!
+add_compile_options(-Werror) # warnings are errors!
 
 # compile the library
 add_subdirectory(
