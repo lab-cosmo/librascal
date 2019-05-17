@@ -184,7 +184,7 @@ namespace rascal {
         return IncreaseHelper_t::get_cluster_neighbour_atom_index(*this->manager, cluster,
                                                        index);
       } else {
-        auto && offset = this->offsets[cluster.get_cluster_index_atom_index(Layer)];
+        auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
         return this->neighbours[offset + index];
       }
     }
@@ -192,11 +192,6 @@ namespace rascal {
     //! get atom_index of the index-th atom in manager
     inline int get_cluster_neighbour_atom_index_impl(const Parent &, size_t index) const {
       return this->manager->get_cluster_neighbour_atom_index_impl(*this->manager, index);
-    }
-
-    inline size_t
-        get_cluster_neighbour_cluster_index_impl(const size_t neighbour_index) const {
-      return this->neighbours[neighbour_index];
     }
 
     //! return atom type
@@ -241,11 +236,15 @@ namespace rascal {
 
     //! Returns the number of neighbours of a given cluster
     template <size_t Order, size_t Layer, 
-             size_t ParentLayer =
-               internal::validate_crk_template_parameters<Order, Layer>(),
-            size_t NeighbourLayer = 
-               internal::validate_crk_template_parameters<Order, Layer>()>
-    inline size_t
+             size_t ParentLayer, size_t NeighbourLayer>
+    inline typename std::enable_if_t<(Order<traits::MaxOrder), size_t>
+    get_cluster_size_impl(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster) const {      
+      return this->manager->get_cluster_size(cluster);
+    }
+
+    template <size_t Order, size_t Layer, 
+             size_t ParentLayer, size_t NeighbourLayer>
+    inline typename std::enable_if_t<not(Order<traits::MaxOrder), size_t>
     get_cluster_size_impl(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
@@ -257,14 +256,24 @@ namespace rascal {
        */
       static_assert(Order <= traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
-
-      if (Order < (traits::MaxOrder - 1)) {
-        return this->manager->get_cluster_size(cluster);
-      } else {
-        auto access_index = cluster.get_cluster_index(Layer);
-        return nb_neigh[access_index];
-      }
+      auto access_index = cluster.get_cluster_index(Layer);
+      return nb_neigh[access_index]; //TODO(alex) this->nb_neigh ?
     }
+
+    template<size_t Order>
+    inline typename std::enable_if_t<(Order<traits::MaxOrder), size_t>
+        get_cluster_neighbour_cluster_index_impl(const size_t cluster_index) const {
+      return this->manager->get_cluster_neighbour_cluster_index(cluster_index);
+    }
+    template<size_t Order>
+    inline typename std::enable_if_t<not(Order<traits::MaxOrder), size_t>
+        get_cluster_neighbour_cluster_index_impl(const size_t cluster_index) const {
+      static_assert(Order <= traits::MaxOrder,
+                    "this implementation handles only up to the "
+                    " MaxOrder");
+      return this->neighbours_cluster_index[cluster_index];
+    }
+
 
     //! Get the manager used to build the instance
     ImplementationPtr_t get_previous_manager() {
@@ -290,6 +299,29 @@ namespace rascal {
     std::vector<size_t> offsets;
 
    private:
+    //! Should be only used after the make_full_neighbour_list
+    void make_full_neighbour_cluster_index_list() {
+      for (auto neigh_atom_index : this->neighbours_atom_index) {
+        add_cluster_index_for_neigh_atom_index(neigh_atom_index);
+      }
+    }
+
+    void add_cluster_index_for_neigh_atom_index(int neigh_atom_index) {
+      bool atom_index_found = false;
+      size_t cluster_order_one_index{0}; //TODO(alex do we start with 0?
+      for (auto atom : this->manager) {
+        auto atom_index = atom.get_atom_indices().back();
+        if (neigh_atom_index == atom_index) {
+          this->neighbours_cluster_index.push_back(cluster_order_one_index);
+          atom_index_found = true;
+        }
+        cluster_order_one_index++;
+      }
+      if (not(atom_index_found)) {
+        throw std::runtime_error("Atom index was not found while building list of cluster neighbour cluster index list.");
+      }
+    }
+
   };
 
   /* ---------------------------------------------------------------------- */

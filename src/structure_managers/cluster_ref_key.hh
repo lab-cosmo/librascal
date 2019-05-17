@@ -142,12 +142,18 @@ namespace rascal {
     return internal::MinExtractor<ActiveDimensions>::value;
   }
 
-  //! Dynamic access to layer by cluster dimension (possibly not necessary)
-  template <size_t MaxOrder, size_t... Ints>
-  constexpr size_t get_layer(size_t index, std::index_sequence<Ints...>) {
+  template <size_t... Ints>
+  constexpr size_t get_layer(const size_t order,
+      const std::index_sequence<Ints...>) {
     constexpr size_t arr[]{Ints...};
-    return arr[index];
+    return arr[order-1];
   }
+  //! Dynamic access to layer by cluster dimension (possibly not necessary)
+  //template <size_t MaxOrder, size_t... Ints>
+  //constexpr size_t get_layer(size_t index, std::index_sequence<Ints...>) {
+  //  constexpr size_t arr[]{Ints...};
+  //  return arr[index];
+  //}
 
   /**
    * Static access to layer by cluster dimension (e.g., for defining template

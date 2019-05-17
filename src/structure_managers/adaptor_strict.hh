@@ -165,9 +165,18 @@ namespace rascal {
     // TODO(alex) this is wrong and have to be changed, hopefully this works as a
     // dummy function to test some other things, AdaptorStrict has to have a neighbours
     // list as it has a atom_indices list, and this has to be accessed here
-    inline size_t
-        get_cluster_neighbour_cluster_index_impl(const size_t neighbour_index) const {
-      return this->neighbours[neighbour_index];
+    template<size_t Order>
+    inline typename std::enable_if_t<(Order<traits::MaxOrder), size_t>
+        get_cluster_neighbour_cluster_index_impl(const size_t cluster_index) const {
+      return this->manager->get_cluster_neighbour_cluster_index(cluster_index);
+    }
+    template<size_t Order>
+    inline typename std::enable_if_t<not(Order<traits::MaxOrder), size_t>
+        get_cluster_neighbour_cluster_index_impl(const size_t cluster_index) const {
+      static_assert(Order <= traits::MaxOrder,
+                    "this implementation handles only up to the "
+                    " MaxOrder");
+      return this->neighbours_cluster_index[Order][cluster_index];
     }
 
     //! return atom type
@@ -286,7 +295,7 @@ namespace rascal {
     inline void
     add_atom(const typename ManagerImplementation::template ClusterRef<Order> &
                  cluster) {
-      return this->template add_atom<Order - 1>(cluster.back());
+      this->template add_atom<Order - 1>(cluster.back());
     }
 
     ImplementationPtr_t manager;
@@ -302,6 +311,7 @@ namespace rascal {
      *   - etc
      */
     std::array<std::vector<int>, traits::MaxOrder> atom_indices;
+    std::array<std::vector<size_t>, traits::MaxOrder> neighbours_cluster_index;
     /**
      * store the number of j-atoms for every i-atom (nb_neigh[1]), the number of
      * k-atoms for every j-atom (nb_neigh[2]), etc
@@ -311,6 +321,29 @@ namespace rascal {
      * store the offsets from where the nb_neigh can be counted
      */
     std::array<std::vector<size_t>, traits::MaxOrder> offsets;
+
+   private:
+    void add_cluster_index_for_neigh_atom_index(int neigh_atom_index) {
+     bool atom_index_found = false;
+     size_t cluster_order_one_index{0}; //TODO(alex do we start with 0?
+     for (auto atom_index : this->atom_indices[0]) {
+       if (neigh_atom_index == atom_index) {         
+         this->neighbours_cluster_index.push_back(cluster_order_one_index);
+         atom_index_found = true;
+       }
+       cluster_order_one_index++;
+     }
+     if (not(atom_index_found)) {
+       throw std::runtime_error("Atom index was not found while building list of cluster neighbour cluster index list.");
+     }
+    }
+
+    //! Should be only used after the full neighbour list has been made
+    void make_full_neighbour_cluster_index_list() {
+      for (auto neigh_atom_index : this->atom_indices[1]) {
+        add_cluster_index_for_neigh_atom_index(neigh_atom_index);
+      }
+    }
   };
 
   namespace internal {
@@ -349,7 +382,8 @@ namespace rascal {
   AdaptorStrict<ManagerImplementation>::AdaptorStrict(
       std::shared_ptr<ManagerImplementation> manager, double cutoff)
       : manager{std::move(manager)}, distance{std::make_shared<Distance_t>(*this)}, dir_vec{std::make_shared<DirectionVector_t>(*this)},
-        cutoff{cutoff}, atom_indices{}, nb_neigh{}, offsets{}
+        cutoff{cutoff}, atom_indices{}, neighbours_cluster_index{},
+        nb_neigh{}, offsets{}
 
   {
     if (not internal::check_cutoff(this->manager, cutoff)) {
@@ -377,6 +411,7 @@ namespace rascal {
     //! initialise the neighbourlist
     for (size_t i{0}; i < traits::MaxOrder; ++i) {
       this->atom_indices[i].clear();
+      this->neighbours_cluster_index[i].clear();
       this->nb_neigh[i].clear();
       this->offsets[i].clear();
     }
@@ -437,7 +472,6 @@ namespace rascal {
           indices_pair.template head<PairLayer>() = pair.get_cluster_indices();
           indices_pair(PairLayer) = pair_counter;
           pair_cluster_indices.push_back(indices_pair);
-
           pair_counter++;
         }
       }

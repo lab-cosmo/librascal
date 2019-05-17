@@ -282,8 +282,10 @@ namespace rascal {
     template <size_t Order>
     inline size_t
     get_offset_impl(const std::array<size_t, Order> & counters) const;
-    inline size_t
-    get_cluster_neighbour_cluster_index_impl(const size_t neighbour_index) const;
+
+    template <size_t Order>
+    inline size_t get_cluster_neighbour_cluster_index_impl(
+        const size_t cluster_index) const;
 
     //! Function for returning the number of atoms
     size_t get_nb_clusters(size_t order) const;
@@ -359,14 +361,15 @@ namespace rascal {
   template <size_t Order>
   inline size_t StructureManagerCenters::get_offset_impl(
       const std::array<size_t, Order> & /*counters*/) const {
-    static_assert(Order == 1, "this manager only handles atoms.");
+    static_assert(Order == 1, "This manager only handles atoms.");
     return 0;
   }
 
-  //! used for construction (not for iteration)
+  template <size_t Order>
   inline size_t StructureManagerCenters::get_cluster_neighbour_cluster_index_impl(
-      size_t ) const {
-    return 0;
+      const size_t cluster_index) const {
+    static_assert(Order == 1, "This manager only handles atoms.");
+    return cluster_index;
   }
 }  // namespace rascal
 

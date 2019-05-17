@@ -147,8 +147,9 @@ namespace rascal {
             size_t NeighbourLayer = 
                internal::validate_crk_template_parameters<Order, Layer>()>
     inline int
-    get_cluster_neighbour_atom_index_impl(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster,
-                          size_t index) const {
+    get_cluster_neighbour_atom_index_impl(
+        const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster,
+        size_t index) const {
       static_assert(Order == traits::MaxOrder - 1,
                     "this implementation only handles atoms and identify its "
                     "index-th neighbour.");
@@ -164,6 +165,7 @@ namespace rascal {
     inline int get_cluster_neighbour_atom_index_impl(const Parent &, size_t cluster_index) const {
       return this->ilist[cluster_index];
     }
+    
 
     /**
      * provided an atom, returns the cumulative numbers of pairs up to the first
@@ -172,6 +174,10 @@ namespace rascal {
     template <size_t Order>
     inline size_t
     get_offset_impl(const std::array<size_t, Order> & counters) const;
+    
+    template <size_t Order>
+    inline size_t get_cluster_neighbour_cluster_index_impl(
+        const size_t cluster_index) const;
 
     /**
      * return the number of clusters of size cluster_size.  Can only handle
@@ -244,6 +250,13 @@ namespace rascal {
                   " for a pair iterator, given the i atom of the pair");
     return this->offsets[counters.front()];
   }
+
+  template<>
+  inline size_t StructureManagerLammps::get_cluster_neighbour_cluster_index_impl<1>(
+      const size_t cluster_index) const {
+    return cluster_index;
+  }
+
 }  // namespace rascal
 
 #endif  // SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_LAMMPS_HH_

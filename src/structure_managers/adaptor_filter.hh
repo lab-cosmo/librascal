@@ -249,7 +249,7 @@ namespace rascal {
     }
 
     inline size_t
-        get_cluster_neighbour_cluster_index_impl(const size_t neighbour_index) const {
+        get_cluster_neighbour_cluster_index_impl(const size_t ) const {
       //TODO(alex) this would be wrong needs implementation
       //return this->manager->get_cluster_neighbour_cluster_index_impl(neighbour_index);
       return 0;

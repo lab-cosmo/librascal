@@ -145,7 +145,7 @@ namespace rascal {
         break;
       }
       case 2: {
-        return this->neighbours.size();
+        return this->neighbours_atom_index.size();
         break;
       }
       default: {
@@ -189,7 +189,8 @@ namespace rascal {
                                                        index);
       } else {
         auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
-        return this->neighbours[offset + index];
+        // TODO(alex) #ATOM_INDEX Does not make sense neighbours saves cluster indices and not atom indices
+        return this->neighbours_atom_index[offset + index];
       }
     }
 
@@ -198,9 +199,18 @@ namespace rascal {
       return this->manager->get_cluster_neighbour_atom_index_impl(*this->manager, index);
     }
 
-    inline size_t
-        get_cluster_neighbour_cluster_index_impl(const size_t neighbour_index) const {
-      return this->neighbours[neighbour_index];
+    template<size_t Order>
+    inline typename std::enable_if_t<(Order<traits::MaxOrder), size_t>
+        get_cluster_neighbour_cluster_index_impl(const size_t cluster_index) const {
+      return this->manager->get_cluster_neighbour_cluster_index(cluster_index);
+    }
+    template<size_t Order>
+    inline typename std::enable_if_t<not(Order<traits::MaxOrder), size_t>
+        get_cluster_neighbour_cluster_index_impl(const size_t cluster_index) const {
+      static_assert(Order <= traits::MaxOrder,
+                    "this implementation handles only up to the "
+                    " MaxOrder");
+      return this->neighbours_cluster_index[cluster_index];
     }
 
     //! return atom type
@@ -263,7 +273,7 @@ namespace rascal {
                     "this implementation handles only the respective MaxOrder");
 
       if (Order < (traits::MaxOrder - 1)) {
-        return this->manager->get_cluster_size(cluster);
+        return this->manager->get_cluster_size_impl(cluster);
       } else {
         auto access_index = cluster.get_cluster_index(Layer);
         return nb_neigh[access_index];
@@ -282,8 +292,10 @@ namespace rascal {
     //! Stores the number of neighbours for every atom after sorting
     std::vector<size_t> nb_neigh;
 
+    // TODO(alex) refactoring neighbours -> neighbours_atom_index
     //! Stores all neighbours, i.e. atom indices in a list
-    std::vector<size_t> neighbours;
+    std::vector<int> neighbours_atom_index;
+    std::vector<size_t> neighbours_cluster_index;
 
     /**
      * Stores the offsets for accessing `neighbours`; this is the entry point in
@@ -293,6 +305,28 @@ namespace rascal {
     std::vector<size_t> offsets;
 
    private:
+    //! Should be only used after the make_full_neighbour_list
+    void make_full_neighbour_cluster_index_list() {
+      for (auto neigh_atom_index : this->neighbours_atom_index) {
+        add_cluster_index_for_neigh_atom_index(neigh_atom_index);
+      }
+    }
+
+    void add_cluster_index_for_neigh_atom_index(int neigh_atom_index) {
+      bool atom_index_found = false;
+      size_t cluster_order_one_index{0}; //TODO(alex do we start with 0?
+      for (auto atom : this->manager) {
+        auto atom_index = atom.get_atom_indices().back();
+        if (neigh_atom_index == atom_index) {
+          this->neighbours_cluster_index.push_back(cluster_order_one_index);
+          atom_index_found = true;
+        }
+        cluster_order_one_index++;
+      }
+      if (not(atom_index_found)) {
+        throw std::runtime_error("Atom index was not found while building list of cluster neighbour cluster index list.");
+      }
+    }
   };
 
   /* ---------------------------------------------------------------------- */
@@ -300,7 +334,7 @@ namespace rascal {
   template <class ManagerImplementation>
   AdaptorHalfList<ManagerImplementation>::AdaptorHalfList(
       std::shared_ptr<ManagerImplementation> manager)
-      : manager{std::move(manager)}, nb_neigh{}, neighbours{}, offsets{} {
+      : manager{std::move(manager)}, nb_neigh{}, neighbours_atom_index{}, neighbours_cluster_index{}, offsets{} {
     // this->manager->add_child(this->get_weak_ptr());
   }
 
@@ -332,7 +366,8 @@ namespace rascal {
     // filling it
     this->nb_neigh.resize(0);
     this->offsets.resize(0);
-    this->neighbours.resize(0);
+    this->neighbours_atom_index.resize(0);
+    this->neighbours_cluster_index.resize(0);
 
     // fill the list, at least pairs are mandatory for this to work
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
@@ -368,7 +403,7 @@ namespace rascal {
         // higher index_j than index_i are used. It should in principle ensure a
         // minimal neighbour list.
         if (index_i < index_j) {
-          this->neighbours.push_back(index_j);
+          this->neighbours_atom_index.push_back(index_j);
           nneigh++;
 
           // get underlying cluster indices to add at this layer

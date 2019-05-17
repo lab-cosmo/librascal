@@ -147,16 +147,12 @@ namespace rascal {
     template <size_t Order>
     inline size_t
     get_offset_impl(const std::array<size_t, Order> & counters) const;
-    inline size_t
-    get_cluster_neighbour_cluster_index_impl(const size_t neighbour_index) const;
-    template <size_t TopLevelOrder>
-    inline void
-    write_cluster_atoms_index(const std::array<size_t, TopLevelOrder-1> & counters, const std::array<size_t, TopLevelOrder-1> & offsets, const std::array<size_t, TopLevelOrder> & cluster_atoms_index) const;
+
     //! Returns the number of clusters of size cluster_size
     inline size_t get_nb_clusters(size_t order) const {
       switch (order) {
       case traits::MaxOrder: {
-        return this->neighbours.size();
+        return this->neighbours_atom_index.size();
         break;
       }
       default:
@@ -219,7 +215,7 @@ namespace rascal {
                                                        index);
       } else {
         auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
-        return this->neighbours[offset + index];
+        return this->neighbours_atom_index[offset + index];
       }
     }
 
@@ -265,7 +261,7 @@ namespace rascal {
     //! Adds a given atom index as new cluster neighbour
     inline void add_neighbour_of_cluster(const int atom_index) {
       // adds `atom_index` to neighbours
-      this->neighbours.push_back(atom_index);
+      this->neighbours_atom_index.push_back(atom_index);
       // increases the number of neighbours
       this->nb_neigh.back()++;
     }
@@ -292,14 +288,39 @@ namespace rascal {
     //! Stores the number of neighbours for every traits::MaxOrder-1-clusters
     std::vector<size_t> nb_neigh{};
 
-    //! Stores all neighbours of traits::MaxOrder-1-clusters
-    std::vector<size_t> neighbours{};
+    //! Stores all neighbours atom index of traits::MaxOrder-1-clusters
+    std::vector<int> neighbours_atom_index{};
+    std::vector<size_t> neighbours_cluster_index{};
 
     /**
      * Stores the offsets of traits::MaxOrder-1-*clusters for accessing
      * `neighbours`, from where nb_neigh can be counted
      */
     std::vector<size_t> offsets{};
+   private:
+    //! Should be only used after the make_full_neighbour_list
+    void make_full_neighbour_cluster_index_list() {
+      for (auto neigh_atom_index : this->neighbours_atom_index) {
+        add_cluster_index_for_neigh_atom_index(neigh_atom_index);
+      }
+    }
+
+    void add_cluster_index_for_neigh_atom_index(int neigh_atom_index) {
+      bool atom_index_found = false;
+      size_t cluster_order_one_index{0}; //TODO(alex do we start with 0?
+      for (auto atom : this->manager) {
+        auto atom_index = atom.get_atom_indices().back();
+        if (neigh_atom_index == atom_index) {
+          this->neighbours_cluster_index.push_back(cluster_order_one_index);
+          atom_index_found = true;
+        }
+        cluster_order_one_index++;
+      }
+      if (not(atom_index_found)) {
+        throw std::runtime_error("Atom index was not found while building list of cluster neighbour cluster index list.");
+      }
+    }
+
   };
 
   /* ---------------------------------------------------------------------- */
@@ -307,7 +328,8 @@ namespace rascal {
   template <class ManagerImplementation>
   AdaptorMaxOrder<ManagerImplementation>::AdaptorMaxOrder(
       std::shared_ptr<ManagerImplementation> manager)
-      : manager{std::move(manager)}, nb_neigh{}, neighbours{}, offsets{} {
+      : manager{std::move(manager)}, nb_neigh{}, neighbours_atom_index{},
+        neighbours_cluster_index{}, offsets{} {
     if (traits::MaxOrder < 3) {
       throw std::runtime_error("Increase MaxOrder: No pair list in underlying"
                                " manager.");
@@ -449,7 +471,8 @@ namespace rascal {
 
     this->nb_neigh.clear();
     this->offsets.clear();
-    this->neighbours.clear();
+    this->neighbours_atom_index.clear();
+    this->neighbours_cluster_index.clear();
 
     for (auto atom : this->manager) {
       //  Order 1, but variable Order is at 0, atoms, index 0
@@ -463,7 +486,7 @@ namespace rascal {
 
       AddOrderLoop::loop(atom, *this);
     }
-
+    this->make_full_neighbour_cluster_index_list();
     // correct the offsets for the new cluster order
     this->set_offsets();
 
@@ -520,20 +543,6 @@ namespace rascal {
       auto main_offset{this->offsets[tuple_index]};
       return main_offset;
     }
-  }
-
-  template <class ManagerImplementation>
-  inline size_t AdaptorMaxOrder<ManagerImplementation>::
-      get_cluster_neighbour_cluster_index_impl(const size_t neighbour_index) const {
-    return this->neighbours[neighbour_index];
-  }
-
-  template <class ManagerImplementation>
-  template <size_t TopLevelOrder>
-  inline void AdaptorMaxOrder<ManagerImplementation>::
-      write_cluster_atoms_index(const std::array<size_t, TopLevelOrder-1> & counters, const std::array<size_t, TopLevelOrder-1> & offsets, const std::array<size_t, TopLevelOrder> & cluster_atoms_index) const {
-    cluster_atoms_index[TopLevelOrder-1] = this->neighbours[counters[TopLevelOrder-2]+offsets[TopLevelOrder-2]];
-    this->manager->write_cluster_atoms_index(counters, offsets, cluster_atoms_index);
   }
 }  // namespace rascal
 
