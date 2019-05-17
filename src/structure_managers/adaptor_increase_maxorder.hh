@@ -397,7 +397,7 @@ namespace rascal {
       for (auto atom_index : i_atoms) {
         current_i_atoms.push_back(atom_index);
         size_t access_index =
-            manager.get_cluster_neighbour(manager, atom_index);
+            manager.get_cluster_neighbour_atom_index_impl(manager, atom_index);
 
         // construct a shifted iterator to constuct a ClusterRef<1>
         auto iterator_at_position{manager_tmp.get_iterator_at(access_index)};
@@ -521,10 +521,6 @@ namespace rascal {
   template <class ManagerImplementation>
   inline size_t AdaptorMaxOrder<ManagerImplementation>::
       get_cluster_neighbour_cluster_index_impl(const size_t neighbour_index) const {
-    // The static assert with <= is necessary, because the template parameter
-    // ``Order`` is one Order higher than the MaxOrder at the current
-    // level. The return type of this function is used to build the next Order
-    // iteration.
     return this->neighbours[neighbour_index];
   }
 

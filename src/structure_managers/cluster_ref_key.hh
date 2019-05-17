@@ -172,11 +172,11 @@ namespace rascal {
       return head_helper(arr, std::make_index_sequence<Layer>{});
     }
 
-    template <size_t Order>
+    template <size_t Order, size_t Layer>
     constexpr size_t validate_template_parameters() {
       // TODO(alex) check this looping error
-      //static_assert(Order==1, "ClusterRefKey of Order > 1 requires ParentLayer and NeigbhourLayer. The usage ClusterRefKey<Order, Layer> is only valid for Order = 1");
-      return 0;
+      static_assert(Order==1, "ClusterRefKey of Order > 1 requires ParentLayer and NeigbhourLayer. The usage ClusterRefKey<Order, Layer> is only valid for Order = 1");
+      return Layer;
     }
   }  // namespace internal
 
@@ -197,14 +197,15 @@ namespace rascal {
    * cluster reference is introduced.
    */
 
+  // TODO(alex) change validate_crk_template_parameters in SM file
   // TODO(till) 
   /* Usage of ClusterRefKey<Order,Layer> with Order>1 is invalid usage. ClusterRefKey<1,Layer> is valid usage. ClusterRefKey<1,Layer,y,z> is valid usage, but y and z are ignored.
    */
   template <size_t Order, size_t Layer,
            size_t ParentLayer =
-               internal::validate_template_parameters<Order>(),
+               internal::validate_template_parameters<Order, Layer>(),
            size_t NeighbourLayer =
-               internal::validate_template_parameters<Order>()>
+               internal::validate_template_parameters<Order, Layer>()>
   class ClusterRefKey : public ClusterRefBase {
    public:
     /**
@@ -222,7 +223,10 @@ namespace rascal {
     using AtomIndex_t = std::array<int, Order>;
     /* For Order > 1 this object contains the neighbour object, because the neighbour object is nowhere else stored, but for Order = 1 it is a reference to itself, because an object cannot store itself.
      */
-    typedef typename std::conditional<Order==1, ClusterRefKey<1, Layer, ParentLayer, NeighbourLayer> &, ClusterRefKey<1, Layer, ParentLayer, NeighbourLayer>>::type Neighbour_t;
+    typedef typename std::conditional<Order==1,
+            ClusterRefKey<1, Layer, ParentLayer, NeighbourLayer> &,
+            ClusterRefKey<1, Layer, ParentLayer, NeighbourLayer>
+            >::type Neighbour_t;
     typedef ClusterRefKey<(Order==1) ? 1 : Order-1, Layer, ParentLayer, NeighbourLayer> Parent_t;
     // Order-1 must be resolved and returns error
     //typedef typename std::conditional<Order==1, ClusterRefKey<1, Layer>, ClusterRefKey<Order-1, Layer, ParentLayer, NeighbourLayer>>::type Parent_t;
@@ -232,25 +236,27 @@ namespace rascal {
     /* Constructor for Order > 1. To use enable_if an template parameter has to be given, therefore the Order is copied. The template arguments of the construction are not in accesible by the user, therefore it cannot be invalidly used.
      */
     // seems ill defined because object is deleted on creation
-    template<size_t Order_=Order, typename std::enable_if_t<not(Order_==1),int> = 0>
-    ClusterRefKey(AtomIndex_t atom_indices, IndexConstArray cluster_indices,
-        Parent_t & cluster_parent,
-        Neighbour_t cluster_neighbour) 
-        : Parent{Order, Layer}, atom_indices{atom_indices}, 
-          cluster_indices{cluster_indices.data()},
-          cluster_parent{cluster_parent}, cluster_neighbour{cluster_neighbour} {}
+    // template<size_t Order_=Order, typename std::enable_if_t<not(Order_==1),int> = 0>
+    // ClusterRefKey(AtomIndex_t atom_indices, IndexConstArray cluster_indices,
+    //     Parent_t & cluster_parent,
+    //     Neighbour_t cluster_neighbour) 
+    //     : Parent{Order, Layer}, atom_indices{atom_indices}, 
+    //       cluster_indices{cluster_indices.data()},
+    //       cluster_parent{cluster_parent}, cluster_neighbour{cluster_neighbour} {}
 
     template<size_t Order_=Order, typename std::enable_if_t<not(Order_==1),int> = 0>
     ClusterRefKey(AtomIndex_t atom_indices, IndexConstArray cluster_indices,
-        Parent_t & cluster_parent, NeighbourIndexConstArray cluster_neighbour_cluster_indices) 
+        Parent_t & cluster_parent,
+        NeighbourIndexConstArray cluster_neighbour_cluster_indices) 
         : Parent{Order, Layer}, atom_indices{atom_indices}, 
           cluster_indices{cluster_indices.data()},
-          cluster_parent{cluster_parent}, 
+          cluster_parent{cluster_parent},
           cluster_neighbour{ 
-              ClusterRefKey<1, NeighbourLayer> (
-                  {atom_indices.back()}, 
+              ClusterRefKey<1, NeighbourLayer>(
+                  std::array<int, 1>{atom_indices.back()},
                   cluster_neighbour_cluster_indices)
-          }{}
+          } 
+          {}
 
     /* Constructor for Order 1 
      */

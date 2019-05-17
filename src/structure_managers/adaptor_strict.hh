@@ -162,6 +162,14 @@ namespace rascal {
       return this->atom_indices[0][index];
     }
 
+    // TODO(alex) this is wrong and have to be changed, hopefully this works as a
+    // dummy function to test some other things, AdaptorStrict has to have a neighbours
+    // list as it has a atom_indices list, and this has to be accessed here
+    inline size_t
+      get_cluster_neighbour_cluster_index_impl(const size_t neighbour_index) const {
+    return this->manager->get_cluster_neighbour_cluster_index_impl(neighbour_index);
+      }
+
     //! return atom type
     inline int & get_atom_type(const AtomRef_t & atom) {
       /**
@@ -202,8 +210,9 @@ namespace rascal {
       return this->offsets[Order][counters.back()];
     }
 
+    // TODO(alex) #ATOM_INDEX
     template <size_t Order>
-    inline size_t
+    inline int
     get_cluster_neighbour_atom_index_impl(const size_t neighbour_index) const {
       static_assert(Order < traits::MaxOrder,
                     "Calling this function with the wrong order cluster");
