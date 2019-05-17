@@ -620,8 +620,11 @@ namespace rascal {
     }
 
     //! Returns the id of the index-th neighbour atom of a given cluster
-    template <size_t Order, size_t Layer,
-             size_t ParentLayer, size_t NeighbourLayer>
+    template <size_t Order, size_t Layer, 
+             size_t ParentLayer =
+               internal::validate_crk_template_parameters<Order, Layer>(),
+            size_t NeighbourLayer = 
+               internal::validate_crk_template_parameters<Order, Layer>()>
     inline int
     get_cluster_neighbour_atom_index_impl(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster,
                           size_t index) const {
@@ -1064,10 +1067,6 @@ namespace rascal {
   template <class ManagerImplementation>
   inline size_t AdaptorNeighbourList<ManagerImplementation>::
       get_cluster_neighbour_cluster_index_impl(const size_t neighbour_index) const {
-    // The static assert with <= is necessary, because the template parameter
-    // ``Order`` is one Order higher than the MaxOrder at the current
-    // level. The return type of this function is used to build the next Order
-    // iteration.
     return this->neighbours[neighbour_index];
   }
 

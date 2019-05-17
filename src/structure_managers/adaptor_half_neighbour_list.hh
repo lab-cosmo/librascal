@@ -175,7 +175,7 @@ namespace rascal {
     //! Returns the id of the index-th neighbour atom of a given cluster
     template <size_t Order, size_t Layer>
     inline int
-    get_cluster_neighbour(const ClusterRefKey<Order, Layer> & cluster,
+    get_cluster_neighbour_atom_index_impl(const ClusterRefKey<Order, Layer> & cluster,
                           size_t index) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles up to traits::MaxOrder");
@@ -194,8 +194,13 @@ namespace rascal {
     }
 
     //! get atom_index of the index-th atom in manager
-    inline int get_cluster_neighbour(const Parent &, size_t index) const {
-      return this->manager->get_cluster_neighbour(*this->manager, index);
+    inline int get_cluster_neighbour_atom_index_impl(const Parent &, size_t index) const {
+      return this->manager->get_cluster_neighbour_atom_index_impl(*this->manager, index);
+    }
+
+    inline size_t
+        get_cluster_neighbour_cluster_index_impl(const size_t neighbour_index) const {
+      return this->neighbours[neighbour_index];
     }
 
     //! return atom type

@@ -262,8 +262,11 @@ namespace rascal {
     }
 
     //! Dummy function, since neighbours are not present at this Order
-    template <size_t Order, size_t Layer,
-             size_t ParentLayer, size_t NeighbourLayer>
+    template <size_t Order, size_t Layer, 
+             size_t ParentLayer =
+               internal::validate_crk_template_parameters<Order, Layer>(),
+            size_t NeighbourLayer = 
+               internal::validate_crk_template_parameters<Order, Layer>()>
     inline int
     get_cluster_neighbour_atom_index_impl(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & /*cluster*/,
                           size_t /*index*/) const {

@@ -169,7 +169,7 @@ namespace rascal {
     }
 
     //! Returns the id of the index-th neighbour atom of a given cluster
-    template <size_t Order, size_t Layer, size_t ParentLayer, size_t NeighbourLayer>
+    template <size_t Order, size_t Layer,size_t ParentLayer, size_t NeighbourLayer>
     inline int
     get_cluster_neighbour_atom_index_impl(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster,
                           size_t index) const {
@@ -184,7 +184,7 @@ namespace rascal {
         return IncreaseHelper_t::get_cluster_neighbour_atom_index(*this->manager, cluster,
                                                        index);
       } else {
-        auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
+        auto && offset = this->offsets[cluster.get_cluster_index_atom_index(Layer)];
         return this->neighbours[offset + index];
       }
     }
@@ -195,9 +195,9 @@ namespace rascal {
     }
 
     inline size_t
-      get_cluster_neighbour_cluster_index_impl(const size_t neighbour_index) const {
-    return this->neighbours[neighbour_index];
-      }
+        get_cluster_neighbour_cluster_index_impl(const size_t neighbour_index) const {
+      return this->neighbours[neighbour_index];
+    }
 
     //! return atom type
     inline int & get_atom_type(const AtomRef_t & atom) {

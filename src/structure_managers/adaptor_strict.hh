@@ -166,9 +166,9 @@ namespace rascal {
     // dummy function to test some other things, AdaptorStrict has to have a neighbours
     // list as it has a atom_indices list, and this has to be accessed here
     inline size_t
-      get_cluster_neighbour_cluster_index_impl(const size_t neighbour_index) const {
-    return this->manager->get_cluster_neighbour_cluster_index_impl(neighbour_index);
-      }
+        get_cluster_neighbour_cluster_index_impl(const size_t neighbour_index) const {
+      return this->neighbours[neighbour_index];
+    }
 
     //! return atom type
     inline int & get_atom_type(const AtomRef_t & atom) {
@@ -374,13 +374,13 @@ namespace rascal {
     //! Reset cluster_indices for adaptor to fill with push back.
     internal::for_each(this->cluster_indices_container,
                        internal::ResizePropertyToZero());
-
     //! initialise the neighbourlist
     for (size_t i{0}; i < traits::MaxOrder; ++i) {
       this->atom_indices[i].clear();
       this->nb_neigh[i].clear();
       this->offsets[i].clear();
     }
+
     this->nb_neigh[0].push_back(0);
     for (auto & vector : this->offsets) {
       vector.push_back(0);

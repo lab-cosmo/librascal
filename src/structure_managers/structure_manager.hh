@@ -660,14 +660,14 @@ namespace rascal {
       template <class Manager_t, class Cluster_t>
       inline static size_t get_cluster_size(const Manager_t & manager,
                                             const Cluster_t & cluster) {
-        return manager.get_cluster_size_impl(cluster);
+        return manager.get_cluster_size(cluster);
       }
 
       // TODO(alex) renama to get_offset, consistent
       template <class Manager_t, class Container_t>
       inline static size_t get_offset(const Manager_t & manager,
                                            const Container_t & container) {
-        return manager.get_offset_impl(container);
+        return manager.get_offset(container);
       }
 
       // TODO(alex)#ATOM_INDEX this function from manager returns the atom index
@@ -676,7 +676,7 @@ namespace rascal {
       inline static int get_cluster_neighbour_atom_index(const Manager_t & manager,
                                                  const Container_t & container,
                                                  size_t index) {
-        return manager.get_cluster_neighbour_atom_index_impl(container, index);
+        return manager.get_cluster_neighbour_atom_index(container, index);
       }
     };
 
@@ -809,9 +809,8 @@ namespace rascal {
     using Atoms_t = std::array<AtomRef_t, Order>;
     using iterator = typename Manager_t::template Iterator<Order + 1>;
     friend iterator;
-    using Container_t =
-        std::conditional_t<Order == 1, Manager_t,
-                           typename Manager_t::template ClusterRef<(Order==1) ? 1 : (Order - 1)>>;
+    using ParentClusterRef =
+        typename Manager_t::template ClusterRef<(Order==1) ? 1 : (Order - 1)>;
 
     using IndexConstArray_t = typename ParentClass::IndexConstArray;
     using IndexArray_t = typename ParentClass::IndexArray;
@@ -828,13 +827,13 @@ namespace rascal {
       size_t Order_ = Order, typename std::enable_if_t<not(Order_==1),int> = 0>
     ClusterRef(Iterator_t & it, const std::array<int, Order> & atom_indices,
                ClusterIndicesType & cluster_indices,
-               Container_t & cluster_parent,
+               ParentClusterRef & cluster_parent,
                ClusterNeighbourIndicesType & cluster_neighbour_cluster_indices)
         : ParentClass{atom_indices, 
           internal::ClusterIndicesConstCaster<
             ParentClass, ClusterIndicesType, ClusterLayer>::cast(cluster_indices),
           static_cast<
-            ClusterRefKey<Order-1, ParentLayer, cluster_parent.ParentLayer, NeighbourLayer> &
+            ClusterRefKey<Order-1, ParentClusterRef::ClusterLayer, ParentClusterRef::ParentLayer, ParentClusterRef::NeighbourLayer> &
             >(cluster_parent),
               internal::ClusterIndicesConstCaster<
                 ParentClass, ClusterNeighbourIndicesType, NeighbourLayer>::cast(
@@ -1093,11 +1092,9 @@ namespace rascal {
       Ref_t cluster_indices =
           cluster_indices_properties[this->get_cluster_index()];
 
-      using Ref_OrderOne_t = typename std::remove_reference_t<decltype(
-          cluster_indices_properties)>::reference;
       auto & cluster_indices_properties_order_1 = std::get<1>(
           this->get_manager().get_cluster_indices_container());
-      Ref_OrderOne_t cluster_neighbour_cluster_indices =
+      Ref_t cluster_neighbour_cluster_indices =
           cluster_indices_properties_order_1[this->get_cluster_neighbour_cluster_index()];
 
       return ClusterRef_t(*this, this->get_atom_indices(), cluster_indices,

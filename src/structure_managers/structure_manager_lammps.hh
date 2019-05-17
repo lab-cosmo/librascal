@@ -141,9 +141,13 @@ namespace rascal {
 
     //! return the index-th neighbour of the last atom in a cluster with
     //! cluster_size = 1 (atoms) which can be used to construct pairs
-    template <size_t Order, size_t Layer>
+    template <size_t Order, size_t Layer, 
+             size_t ParentLayer =
+               internal::validate_crk_template_parameters<Order, Layer>(),
+            size_t NeighbourLayer = 
+               internal::validate_crk_template_parameters<Order, Layer>()>
     inline int
-    get_cluster_neighbour(const ClusterRefKey<Order, Layer> & cluster,
+    get_cluster_neighbour_atom_index_impl(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster,
                           size_t index) const {
       static_assert(Order == traits::MaxOrder - 1,
                     "this implementation only handles atoms and identify its "
@@ -157,7 +161,7 @@ namespace rascal {
      * dummy and is used for consistency in other words, atom_index is the
      * global LAMMPS atom index.
      */
-    inline int get_cluster_neighbour(const Parent &, size_t cluster_index) const {
+    inline int get_cluster_neighbour_atom_index_impl(const Parent &, size_t cluster_index) const {
       return this->ilist[cluster_index];
     }
 

@@ -234,7 +234,7 @@ namespace rascal {
     //! get atom_index of index-th neighbour of this cluster
     template <size_t Order, size_t Layer, size_t ParentLayer, size_t NeighbourLayer>
     inline int
-    get_cluster_neighbour(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster,
+    get_cluster_neighbour_atom_index_impl(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster,
                           int index) const {
       static_assert(Order <= traits::MaxOrder - 1,
                     "this implementation only handles upto traits::MaxOrder");
@@ -243,9 +243,16 @@ namespace rascal {
     }
 
     //! get atom_index of the index-th atom in manager
-    inline int get_cluster_neighbour(const Parent & /*parent*/,
+    inline int get_cluster_neighbour_atom_index_impl(const Parent & /*parent*/,
                                      size_t index) const {
       return this->atom_indices[0][index];
+    }
+
+    inline size_t
+        get_cluster_neighbour_cluster_index_impl(const size_t neighbour_index) const {
+      //TODO(alex) this would be wrong needs implementation
+      //return this->manager->get_cluster_neighbour_cluster_index_impl(neighbour_index);
+      return 0;
     }
 
     //! return atom type
