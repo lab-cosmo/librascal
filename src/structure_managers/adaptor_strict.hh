@@ -166,14 +166,26 @@ namespace rascal {
     // TODO(alex) this is wrong and have to be changed, hopefully this works as a
     // dummy function to test some other things, AdaptorStrict has to have a neighbours
     // list as it has a atom_indices list, and this has to be accessed here
-    template<size_t Order>
+    template <size_t Order, size_t Layer, 
+           typename ParentInfo_t = typename
+               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentInfo_t,
+           size_t NeighbourLayer =
+               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
     inline typename std::enable_if_t<(Order<traits::MaxOrder), size_t>
-        get_cluster_neighbour_cluster_index_impl(const size_t cluster_index) const {
-      return this->manager->get_cluster_neighbour_cluster_index(cluster_index);
+        get_cluster_neighbour_cluster_index_impl(
+            const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> & cluster,
+            const size_t cluster_index) const {
+      return this->manager->get_cluster_neighbour_cluster_index(cluster, cluster_index);
     }
-    template<size_t Order>
+    template <size_t Order, size_t Layer, 
+           typename ParentInfo_t = typename
+               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentInfo_t,
+           size_t NeighbourLayer =
+               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
     inline typename std::enable_if_t<not(Order<traits::MaxOrder), size_t>
-        get_cluster_neighbour_cluster_index_impl(const size_t cluster_index) const {
+        get_cluster_neighbour_cluster_index_impl(
+            const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> &,
+            const size_t cluster_index) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation handles only up to the "
                     " MaxOrder");

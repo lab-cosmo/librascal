@@ -283,8 +283,10 @@ namespace rascal {
     inline size_t
     get_offset_impl(const std::array<size_t, Order> & counters) const;
 
-    template <size_t Order>
+    template <size_t Order, size_t Layer, 
+           typename ParentInfo_t, size_t NeighbourLayer>
     inline size_t get_cluster_neighbour_cluster_index_impl(
+        const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> & cluster,
         const size_t cluster_index) const;
 
     //! Function for returning the number of atoms
@@ -365,10 +367,17 @@ namespace rascal {
     return 0;
   }
 
-  template <size_t Order>
+    template <size_t Order, size_t Layer, 
+           typename ParentInfo_t = typename
+               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentInfo_t,
+           size_t NeighbourLayer =
+               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
   inline size_t StructureManagerCenters::get_cluster_neighbour_cluster_index_impl(
+      const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> &,
       const size_t cluster_index) const {
-    static_assert(Order == 1, "This manager only handles atoms.");
+    static_assert(Order <= traits::MaxOrder,
+                  "this manager can only give the offset (= starting index)"
+                  " for a pair iterator, given the i atom of the pair");
     return cluster_index;
   }
 }  // namespace rascal

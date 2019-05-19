@@ -182,6 +182,8 @@ namespace rascal {
     /**
      * Property accessor by cluster ref
      */
+    //template <size_t CallerLayer, typename ParentInfo_t , size_t NeighbourLayer, size_t Order_= Order>
+    //inline std::enable_if_t<not(Order_==1), reference>
     template <size_t CallerLayer, typename ParentInfo_t , size_t NeighbourLayer>
     inline reference operator[](const ClusterRefKey<Order, CallerLayer, ParentInfo_t, NeighbourLayer> & id) {
      static_assert(CallerLayer >= PropertyLayer,
@@ -190,6 +192,17 @@ namespace rascal {
                    "adaptor stack.");
      return this->operator[](id.get_cluster_index(CallerLayer));
     }
+
+    //template <size_t CallerOrder, size_t CallerLayer, typename ParentInfo_t , size_t NeighbourLayer, size_t Order_= Order>
+    //inline std::enable_if_t<Order_==1, reference>
+    //operator[](const ClusterRefKey<CallerOrder, CallerLayer, ParentInfo_t, NeighbourLayer> & id) {
+    // static_assert(CallerLayer >= NeighbourLayer,
+    //               "You are trying to access a property that "
+    //               "does not exist at this depth in the "
+    //               "adaptor stack.");
+    // return this->operator[](id.get_neighbour_cluster_index(CallerLayer));
+    //}
+
     // TODO adapto operator[] function for CallerOrder>1 PropertyOrder==1
     // template <size_t ClusterOrder, size_t CallerLayer>
     // inline reference operator[](const ClusterRefKey<ClusterOrder, CallerLayer> & id) {

@@ -248,8 +248,13 @@ namespace rascal {
       return this->atom_indices[0][index];
     }
 
+    template <size_t Order, size_t Layer, 
+           typename ParentInfo_t = typename
+               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentInfo_t,
+           size_t NeighbourLayer =
+               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
     inline size_t
-        get_cluster_neighbour_cluster_index_impl(const size_t ) const {
+        get_cluster_neighbour_cluster_index_impl(const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> &, const size_t ) const {
       //TODO(alex) this would be wrong needs implementation
       //return this->manager->get_cluster_neighbour_cluster_index_impl(neighbour_index);
       return 0;

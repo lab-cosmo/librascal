@@ -507,12 +507,25 @@ namespace rascal {
     
     /* The neighbour's cluster_index is of the cluster with the cluster index cluster_index.
      */
-    template <size_t Order>
+    template <size_t Order, size_t Layer, 
+           typename ParentInfo_t = typename
+               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentInfo_t,
+           size_t NeighbourLayer =
+               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
     inline size_t get_cluster_neighbour_cluster_index(
+        const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> & cluster,
         const size_t cluster_index) const {
       return this->implementation().
-        get_cluster_neighbour_cluster_index_impl<Order>(cluster_index);
+        get_cluster_neighbour_cluster_index_impl(cluster, cluster_index);
     }
+
+    //template <size_t Order, size_t Layer>
+    //inline size_t get_cluster_neighbour_cluster_index(
+    //    ClusterRefKey<Order, Layer> & cluster,
+    //    const size_t cluster_index) const {
+    //  return this->implementation().
+    //    get_cluster_neighbour_cluster_index_impl(cluster, cluster_index);
+    //}
 
 
    protected:
@@ -686,6 +699,7 @@ namespace rascal {
       }
     };
 
+    // TODO(alex) make this more pretty
     template<class ParentClass,
       typename ClusterIndicesType, size_t Layer>
     struct ClusterIndicesConstCaster {
@@ -693,11 +707,19 @@ namespace rascal {
     using IndexArray_t = typename ParentClass::IndexArray;
 
       template<typename ClusterIndicesType_ = ClusterIndicesType, typename std::enable_if_t<std::is_same<ClusterIndicesType_, const IndexConstArray_t>::value,int> = 0>
+      static inline IndexConstArray_t & cast(const IndexConstArray_t & cluster_indices) {
+        return cluster_indices;
+      }
+      template<typename ClusterIndicesType_ = ClusterIndicesType, typename std::enable_if_t<std::is_same<ClusterIndicesType_, IndexConstArray_t>::value,int> = 0>
       static inline IndexConstArray_t & cast(IndexConstArray_t & cluster_indices) {
         return cluster_indices;
       }
+      template<typename ClusterIndicesType_ = ClusterIndicesType, typename std::enable_if_t<std::is_same<ClusterIndicesType_, const IndexArray_t> ::value,int> = 0>
+      static inline IndexConstArray_t cast(const IndexArray_t & cluster_indices) {
+        return IndexConstArray_t(cluster_indices.data());
+      }
       template<typename ClusterIndicesType_ = ClusterIndicesType, typename std::enable_if_t<std::is_same<ClusterIndicesType_, IndexArray_t> ::value,int> = 0>
-      static inline IndexConstArray_t cast(IndexArray_t & cluster_indices) {
+      static inline IndexConstArray_t cast(const IndexArray_t & cluster_indices) {
         return IndexConstArray_t(cluster_indices.data());
       }
       template<typename ClusterIndicesType_ = ClusterIndicesType, typename std::enable_if_t<std::is_same<ClusterIndicesType_, const size_t>::value,int> = 0>
@@ -706,8 +728,7 @@ namespace rascal {
       }
       template<typename ClusterIndicesType_ = ClusterIndicesType, typename std::enable_if_t<std::is_same<ClusterIndicesType_, size_t >::value,int> = 0>
       static inline IndexConstArray_t cast(const size_t & cluster_index) {
-        const size_t temp = cluster_index;
-        return IndexConstArray_t(&temp);
+        return IndexConstArray_t(&cluster_index);
       }
     };
   }  // namespace internal
@@ -813,7 +834,7 @@ namespace rascal {
     using ParentClusterRef =
         typename Manager_t::template ClusterRef<(Order==1) ? 1 : (Order - 1)>;
     using ThisClusterRefInfo_t =
-      ClusterRefKeyInfo<Order, ClusterLayer, ParentLayer, NeighbourLayer>;
+        ClusterRefKeyInfo<Order, ClusterLayer, ParentLayer, NeighbourLayer>;
     // TODO(alex) i think not needed
     //  std::conditional<(Order==1),
     //      ThisClusterRefInfo_t,
@@ -1118,7 +1139,9 @@ namespace rascal {
 
       auto & cluster_indices_properties_order_1 = std::get<1>(
           this->get_manager().get_cluster_indices_container());
-      Ref_t cluster_neighbour_cluster_indices =
+      using Ref_OrderOne_t = typename std::remove_reference_t<decltype(
+          cluster_indices_properties_order_1)>::const_reference;
+      Ref_OrderOne_t cluster_neighbour_cluster_indices =
           cluster_indices_properties_order_1[this->get_cluster_neighbour_cluster_index()];
 
       return ClusterRef_t(*this, this->get_atom_indices(), cluster_indices,
@@ -1137,7 +1160,6 @@ namespace rascal {
       return ClusterRef_t(*this, this->get_atom_indices(), cluster_indices);
     }
 
-    //TODO(alex) change Ref_OrderOne_t to Ref_t same type
     //! dereference: calculate cluster indices
     template<size_t Order_=Order, typename std::enable_if_t<not(Order_==1),int> =0>
     inline const value_type operator*() const {
@@ -1212,9 +1234,16 @@ namespace rascal {
     inline size_t get_cluster_index() const {
       return this->index + this->offset;
     }
-    inline size_t get_cluster_neighbour_cluster_index() const {
-      return get_manager().get_cluster_neighbour_cluster_index<Order>(
+    // TODO(alex) this is a bit hacky, but works cluster information is not neeed
+    template <size_t Order_=Order>
+    inline std::enable_if_t<not(Order_==1), size_t> get_cluster_neighbour_cluster_index() const {
+      return this->get_manager().get_cluster_neighbour_cluster_index(
+          container, 
           this->get_cluster_index());
+    }
+    template <size_t Order_=Order>
+    inline std::enable_if_t<Order_==1, size_t> get_cluster_neighbour_cluster_index() const {
+      return this->get_cluster_index();
     }
     //! returns a reference to the underlying manager at every Order
     inline Manager_t & get_manager() { return this->container.get_manager(); }

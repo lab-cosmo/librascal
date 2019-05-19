@@ -523,14 +523,23 @@ namespace rascal {
     inline size_t
     get_offset_impl(const std::array<size_t, Order> & counters) const;
 
-    template<size_t Order>
+    template <size_t Order, size_t Layer, 
+           typename ParentInfo_t = typename
+               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentInfo_t,
+           size_t NeighbourLayer =
+               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
     inline typename std::enable_if_t<(Order<traits::MaxOrder), size_t>
-        get_cluster_neighbour_cluster_index_impl(const size_t cluster_index) const {
-      return this->manager->get_cluster_neighbour_cluster_index<Order>(cluster_index);
+        get_cluster_neighbour_cluster_index_impl(
+            const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> & cluster,
+            const size_t cluster_index) const {
+      return this->manager->get_cluster_neighbour_cluster_index(cluster, cluster_index);
     }
-    template<size_t Order>
+    template <size_t Order, size_t Layer, 
+           typename ParentInfo_t, size_t NeighbourLayer>
     inline typename std::enable_if_t<not(Order<traits::MaxOrder), size_t>
-        get_cluster_neighbour_cluster_index_impl(const size_t cluster_index) const {
+        get_cluster_neighbour_cluster_index_impl(
+            const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> &,
+            const size_t cluster_index) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation handles only up to the "
                     " MaxOrder");
@@ -786,8 +795,8 @@ namespace rascal {
    private:
     //! Should be only used after the make_full_neighbour_list
     void make_full_neighbour_cluster_index_list() {
-      for (auto neigh_atom_index : this->neighbours_atom_index) {
-        add_cluster_index_for_neigh_atom_index(neigh_atom_index);
+      for (auto atom : this->get_manager().with_ghosts()) {        
+        add_cluster_index_for_neigh_atom_index(atom.back());
       }
     }
 
@@ -796,8 +805,8 @@ namespace rascal {
       size_t cluster_order_one_index{0}; //TODO(alex do we start with 0?
       auto atom_indices = (this->consider_ghost_neighbours) ?
           this->ghost_atom_indices : this->atom_indices;
-      for (auto atom_index : atom_indices) {
-        if (neigh_atom_index == atom_index) {
+      for (auto atom : this->get_manager().with_ghosts()) {        
+        if (neigh_atom_index == atom.back()) {
           this->neighbours_cluster_index.push_back(cluster_order_one_index);
           atom_index_found = true;
         }

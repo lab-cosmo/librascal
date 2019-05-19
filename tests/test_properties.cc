@@ -96,7 +96,8 @@ namespace rascal {
       atom_property[atom] = atom.get_position();
       for (auto pair : atom) {
         pair_property[pair] = ++pair_property_counter;
-        atom_property[pair];
+        // TODO(alex)
+        //atom_property[pair];
       }
     }
 

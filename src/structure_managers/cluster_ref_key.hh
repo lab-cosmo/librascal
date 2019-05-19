@@ -210,7 +210,7 @@ namespace rascal {
   template <size_t Order, size_t Layer>
   struct ClusterRefKeyDefaultTemplateParamater {
     static_assert(Order==1, "ClusterRefKey of Order > 1 requires ParentLayer and NeigbhourLayer. The usage ClusterRefKey<Order, Layer> is only valid for Order = 1"); 
-    using ParentInfo_t = ClusterRefKeyInfo<Order, Layer, Layer, Layer>;
+    using ParentInfo_t = ClusterRefKeyInfo<1, Layer, Layer, Layer>;
     // TODO(alex) diff in usage?
     //typedef ClusterRefKeyInfo<Order, Layer, Layer, Layer> ParentInfo_t;
     constexpr static size_t NeighbourLayer = Layer;
@@ -258,9 +258,8 @@ namespace rascal {
     //    (Order==1) ? 1 : Order-1, ParentLayer,
     //    ParentParentLayer, ParentNeighbourLayer> ParentParentInfo_t;
     using ParentParentInfo_t = ClusterRefKeyInfo<
-        (Order==1) ? 1 : Order-1, ParentLayer,
+        (Order<3) ? 1 : Order-2, ParentLayer,
         ParentParentLayer, ParentNeighbourLayer>;
-    typedef ParentParentInfo_t myt;
     using ParentClusterRefKey_t = ClusterRefKey<(Order==1) ? 1 : Order-1,
           ParentLayer, ParentParentInfo_t, ParentNeighbourLayer>;
     typedef typename std::conditional<Order==1,
@@ -335,6 +334,10 @@ namespace rascal {
       return this->cluster_indices(layer);
     }
 
+    inline size_t get_neighbour_cluster_index(const size_t layer) const {
+      return this->cluster_neighbour.get_cluster_index(layer);
+    }
+
     //! returns the complete cluster indices (stacking history)
     inline IndexConstArray get_cluster_indices() const {
       return this->cluster_indices;
@@ -345,6 +348,7 @@ namespace rascal {
 
     //! returns the layer of the current cluster
     constexpr static inline size_t cluster_layer() { return Layer; }
+
 
    protected:
     /**
