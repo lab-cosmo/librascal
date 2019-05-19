@@ -155,13 +155,6 @@ namespace rascal {
     //}
     //template<size_t Order, size_t ClusterLayer, size_t ParentLayer, size_t NeighbourLayer>
 
-    // TODO(alex) add Layer
-    template <size_t Order, size_t Layer>
-    constexpr size_t validate_crk_template_parameters() {
-      static_assert(Order==1, "ClusterRefKey of Order > 1 requires ParentLayer and NeigbhourLayer. The usage ClusterRefKey<Order, Layer> is only valid for Order = 1");
-      return Layer;
-    }
-
   }  // namespace internal
 
   /* ---------------------------------------------------------------------- */
@@ -470,6 +463,58 @@ namespace rascal {
       return std::weak_ptr<ManagerImplementation>(this->get_shared_ptr());
     }
 
+    template <class Cluster_t>
+    inline size_t get_cluster_size(Cluster_t & cluster) const {
+      return this->implementation().get_cluster_size_impl(cluster);
+    }
+
+    /**
+     * Get atom_index of index-th neighbour of this cluster, e.g. j-th
+     * neighbour of atom i or k-th neighbour of pair i-j, etc.
+     * Because this function is invoked with with ClusterRefKey<1, Layer> the ParentLayer and NeighbourLayer have to be optional for the case Order = 1.
+     */
+    template <class Cluster_t>
+    inline int get_cluster_neighbour_atom_index(
+        Cluster_t & cluster,
+        size_t index) const {
+      return this->implementation().get_cluster_neighbour_atom_index_impl(cluster, index);
+    }
+
+    //! get atom_index of the index-th atom in manager
+    inline int get_cluster_neighbour_atom_index(
+        const StructureManager & cluster,
+        size_t & index) const {
+      return this->implementation().get_cluster_neighbour_atom_index_impl(cluster, index);
+    }
+
+    //! Access to offsets for access of cluster-related properties
+    template <size_t Order, size_t Layer, 
+           typename ParentInfo_t = typename
+               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentInfo_t,
+           size_t NeighbourLayer =
+               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
+    inline size_t
+    get_offset(const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> & cluster) const {
+      constexpr auto layer{StructureManager::template cluster_layer_unique1615816<Order>()};
+      return cluster.get_cluster_index(layer);
+    }
+
+    //! Used for building cluster indices
+    template <size_t Order>
+    inline size_t get_offset(const std::array<size_t, Order> & counters) const {
+      return this->implementation().get_offset_impl(counters);
+    }
+    
+    /* The neighbour's cluster_index is of the cluster with the cluster index cluster_index.
+     */
+    template <size_t Order>
+    inline size_t get_cluster_neighbour_cluster_index(
+        const size_t cluster_index) const {
+      return this->implementation().
+        get_cluster_neighbour_cluster_index_impl<Order>(cluster_index);
+    }
+
+
    protected:
     /**
      * Update itself and send update signal to children nodes
@@ -495,9 +540,17 @@ namespace rascal {
     // TODO(alex)
     template <size_t Order>
     constexpr static size_t cluster_layer_unique1615816() {
-      static_assert(Order!=0, "Order is 0 this should not be");
+      static_assert(Order>0, "Order is <1 this should not be");
       return get_layer(Order, typename traits::LayerByOrder{});
     }
+    template <size_t Order_>
+    struct OrderClusterRefKeyInfo {
+      constexpr static size_t Order = Order_;
+      constexpr static size_t Layer = cluster_layer_unique1615816<Order>();
+      constexpr static size_t ParentLayer = cluster_layer_unique1615816<(Order==1) ? 1 : Order-1>();
+      constexpr static size_t NeighbourLayer = cluster_layer_unique1615816<1>();
+      using type = ClusterRefKeyInfo<Order, Layer, ParentLayer, NeighbourLayer>;
+    };
 
     //! recursion end, not for use
     const std::array<int, 0> get_atom_indices() const {
@@ -506,64 +559,6 @@ namespace rascal {
 
     /* Returns the cluster size in given order and layer. Because this function is invoked with with ClusterRefKey<1, Layer> the ParentLayer and NeighbourLayer have to be optional for the case Order = 1.
      */
-    template <size_t Order, size_t Layer, 
-             size_t ParentLayer =
-               internal::validate_crk_template_parameters<Order, Layer>(),
-            size_t NeighbourLayer = 
-               internal::validate_crk_template_parameters<Order, Layer>()>
-    inline size_t get_cluster_size(ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster) const {
-      return this->implementation().get_cluster_size_impl(cluster);
-    }
-
-    /**
-     * Get atom_index of index-th neighbour of this cluster, e.g. j-th
-     * neighbour of atom i or k-th neighbour of pair i-j, etc.
-     * Because this function is invoked with with ClusterRefKey<1, Layer> the ParentLayer and NeighbourLayer have to be optional for the case Order = 1.
-     */
-    template <size_t Order, size_t Layer, 
-             size_t ParentLayer =
-               internal::validate_crk_template_parameters<Order, Layer>(),
-            size_t NeighbourLayer = 
-               internal::validate_crk_template_parameters<Order, Layer>()>
-    inline int get_cluster_neighbour_atom_index(
-        ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster,
-        size_t index) const {
-      return this->implementation().get_cluster_neighbour_atom_index_impl(cluster, index);
-    }
-
-    //! get atom_index of the index-th atom in manager
-    inline int get_cluster_neighbour_atom_index(
-        const StructureManager & cluster,
-        size_t & index) const {
-      return this->implementation().get_cluster_neighbour_atom_index_impl(cluster, index);
-    }
-
-    //! Access to offsets for access of cluster-related properties
-    template <size_t Order, size_t CallerLayer, 
-             size_t ParentLayer =
-               internal::validate_crk_template_parameters<Order, CallerLayer>(),
-            size_t NeighbourLayer = 
-               internal::validate_crk_template_parameters<Order, CallerLayer>()>
-    inline size_t
-    get_offset(const ClusterRefKey<Order, CallerLayer, ParentLayer, NeighbourLayer> & cluster) const {
-      constexpr auto layer{StructureManager::template cluster_layer_unique1615816<Order>()};
-      return cluster.get_cluster_index(layer);
-    }
-
-    //! Used for building cluster indices
-    template <size_t Order>
-    inline size_t get_offset(const std::array<size_t, Order> & counters) const {
-      return this->implementation().get_offset_impl(counters);
-    }
-    
-    /* The neighbour's cluster_index is of the cluster with the cluster index cluster_index.
-     */
-    template <size_t Order>
-    inline size_t get_cluster_neighbour_cluster_index(
-        const size_t cluster_index) const {
-      return this->implementation().
-        get_cluster_neighbour_cluster_index_impl<Order>(cluster_index);
-    }
 
     //! returns a reference to itself
     inline StructureManager & get_manager() { return *this; }
@@ -799,9 +794,11 @@ namespace rascal {
       class StructureManager<ManagerImplementation>::ClusterRef
       : public ClusterRefKey < Order,
       ManagerImplementation::template cluster_layer_unique1615816<Order>(),
-      ManagerImplementation::template cluster_layer_unique1615816<(Order==1) ? 1 : Order-1>(),
-      ManagerImplementation::template cluster_layer_unique1615816<1>()> {
+      typename ManagerImplementation::template 
+          OrderClusterRefKeyInfo<(Order==1) ? 1 : Order-1>::type,
+      ManagerImplementation::template cluster_layer_unique1615816<1>()> {        
    public:
+    static_assert(Order > 0, "Order < 1 is not allowed.");
     using Manager_t = StructureManager<ManagerImplementation>;
     using traits = StructureManager_traits<ManagerImplementation>;
     constexpr static size_t ClusterLayer{
@@ -813,22 +810,36 @@ namespace rascal {
     // TODO(alex) check or delete
     //constexpr static auto ParentNeighbourLayer{
     //    ManagerImplementation::template cluster_layer<(Order==2) Order-2>()};
-    using ParentClass =
-        ClusterRefKey<Order, ClusterLayer, ParentLayer, NeighbourLayer>;
+    using ParentClusterRef =
+        typename Manager_t::template ClusterRef<(Order==1) ? 1 : (Order - 1)>;
+    using ThisClusterRefInfo_t =
+      ClusterRefKeyInfo<Order, ClusterLayer, ParentLayer, NeighbourLayer>;
+    // TODO(alex) i think not needed
+    //  std::conditional<(Order==1),
+    //      ThisClusterRefInfo_t,
+    using ParentClusterRefInfo_t =
+          ClusterRefKeyInfo<(Order==1) ? 1 : (Order - 1), ParentClusterRef::ClusterLayer, ParentClusterRef::ParentLayer, ParentClusterRef::NeighbourLayer>;
+
+    using ThisParentClass =
+        ClusterRefKey<Order, ClusterLayer, ParentClusterRefInfo_t, NeighbourLayer>;
+    using NeighbourParentClass = 
+        ClusterRefKey<1, NeighbourLayer>;
     using AtomRef_t = typename Manager_t::AtomRef;
     using Iterator_t = typename Manager_t::template Iterator<Order>;
     using Atoms_t = std::array<AtomRef_t, Order>;
     using iterator = typename Manager_t::template Iterator<Order + 1>;
     friend iterator;
-    using ParentClusterRef =
-        typename Manager_t::template ClusterRef<(Order==1) ? 1 : (Order - 1)>;
 
-    using IndexConstArray_t = typename ParentClass::IndexConstArray;
-    using IndexArray_t = typename ParentClass::IndexArray;
+    using IndexConstArray_t = typename ThisParentClass::IndexConstArray;
+    using IndexArray_t = typename ThisParentClass::IndexArray;
 
-    using NeighbourIndexConstArray_t = 
-        typename ParentClass::NeighbourIndexConstArray;
-    using NeighbourIndexArray_t = typename ParentClass::NeighbourIndexArray;
+    using NeighbourIndexConstArray_t =
+        typename NeighbourParentClass::IndexConstArray;
+    using NeighbourIndexArray_t = typename NeighbourParentClass::IndexArray;
+
+    //using NeighbourIndexConstArray_t = 
+    //    typename ParentClass::NeighbourIndexConstArray;
+    //using NeighbourIndexArray_t = typename ParentClass::NeighbourIndexArray;
 
     //! Default constructor
     ClusterRef() = delete;
@@ -840,14 +851,16 @@ namespace rascal {
                ClusterIndicesType & cluster_indices,
                ParentClusterRef & cluster_parent,
                ClusterNeighbourIndicesType & cluster_neighbour_cluster_indices)
-        : ParentClass{atom_indices, 
+        : ThisParentClass{atom_indices, 
           internal::ClusterIndicesConstCaster<
-            ParentClass, ClusterIndicesType, ClusterLayer>::cast(cluster_indices),
+            ThisParentClass, ClusterIndicesType, ClusterLayer>::cast(cluster_indices),
           static_cast<
-            ClusterRefKey<Order-1, ParentClusterRef::ClusterLayer, ParentClusterRef::ParentLayer, ParentClusterRef::NeighbourLayer> &
+            ClusterRefKey<Order-1, ParentClusterRef::ClusterLayer,
+          typename ParentClusterRef::ParentClusterRefInfo_t,
+          ParentClusterRef::NeighbourLayer> &
             >(cluster_parent),
               internal::ClusterIndicesConstCaster<
-                ParentClass, ClusterNeighbourIndicesType, NeighbourLayer>::cast(
+                NeighbourParentClass, ClusterNeighbourIndicesType, NeighbourLayer>::cast(
                   cluster_neighbour_cluster_indices)
           }, it{it} {}
 
@@ -862,9 +875,9 @@ namespace rascal {
       size_t Order_ = Order, typename std::enable_if_t<Order_==1,int> = 0>
     ClusterRef(Iterator_t & it, const std::array<int, Order> & atom_indices,
                ClusterIndicesType & cluster_indices)
-        : ParentClass{atom_indices, 
+        : ThisParentClass{atom_indices, 
           internal::ClusterIndicesConstCaster<
-            ParentClass, ClusterIndicesType, ClusterLayer>::cast(cluster_indices)
+            ThisParentClass, ClusterIndicesType, ClusterLayer>::cast(cluster_indices)
           }, it{it} {}
 
     /**

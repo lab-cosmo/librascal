@@ -173,9 +173,10 @@ namespace rascal {
     }
 
     //! Returns the id of the index-th neighbour atom of a given cluster
-    template <size_t Order, size_t Layer>
+    template <size_t Order, size_t Layer, 
+             typename ParentInfo_t, size_t NeighbourLayer>
     inline int
-    get_cluster_neighbour_atom_index_impl(const ClusterRefKey<Order, Layer> & cluster,
+    get_cluster_neighbour_atom_index_impl(const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> & cluster,
                           size_t index) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles up to traits::MaxOrder");
@@ -255,12 +256,12 @@ namespace rascal {
 
     //! Returns the number of neighbours of a given cluster
     template <size_t Order, size_t Layer, 
-             size_t ParentLayer =
-               internal::validate_crk_template_parameters<Order, Layer>(),
-            size_t NeighbourLayer = 
-               internal::validate_crk_template_parameters<Order, Layer>()>
+           typename ParentInfo_t = typename
+               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentInfo_t,
+           size_t NeighbourLayer =
+               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
     inline size_t
-    get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
+    get_cluster_size_impl(const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> & cluster) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
       /*

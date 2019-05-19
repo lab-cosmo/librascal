@@ -182,8 +182,8 @@ namespace rascal {
     /**
      * Property accessor by cluster ref
      */
-    template <size_t CallerLayer, size_t ParentLayer, size_t NeighbourLayer>
-    inline reference operator[](const ClusterRefKey<Order, CallerLayer, ParentLayer, NeighbourLayer> & id) {
+    template <size_t CallerLayer, typename ParentInfo_t , size_t NeighbourLayer>
+    inline reference operator[](const ClusterRefKey<Order, CallerLayer, ParentInfo_t, NeighbourLayer> & id) {
      static_assert(CallerLayer >= PropertyLayer,
                    "You are trying to access a property that "
                    "does not exist at this depth in the "
@@ -203,18 +203,19 @@ namespace rascal {
     //    return this->operator[](id.get_atom_indices().back());
     //  }
     // }
-
-    template <size_t ClusterOrder, size_t CallerLayer,
-             size_t ParentLayer, size_t NeighbourLayer,
-             typename std::enable_if_t<ClusterOrder == Order,int> = 0>
-    inline reference
-       operator[](const ClusterRefKey<ClusterOrder, CallerLayer, ParentLayer, NeighbourLayer> & id) {
-      static_assert(CallerLayer >= PropertyLayer,
-                    "You are trying to access a property that "
-                    "does not exist at this depth in the "
-                    "adaptor stack.");
-      return this->operator[](id.get_cluster_index(CallerLayer));
-    }
+    //
+    // TODO(alex) make this nice
+    //template <size_t ClusterOrder, size_t CallerLayer,
+    //         typename ParentInfo_t, size_t NeighbourLayer,
+    //         typename std::enable_if_t<ClusterOrder == Order,int> = 0>
+    //inline reference
+    //   operator[](const ClusterRefKey<ClusterOrder, CallerLayer, ParentInfo_t, NeighbourLayer> & id) {
+    //  static_assert(CallerLayer >= PropertyLayer,
+    //                "You are trying to access a property that "
+    //                "does not exist at this depth in the "
+    //                "adaptor stack.");
+    //  return this->operator[](id.get_cluster_index(CallerLayer));
+    //}
 
     // Access on a Order 1 property with a higher Order cluster,
     // gives the property of the atom with the last atom index 

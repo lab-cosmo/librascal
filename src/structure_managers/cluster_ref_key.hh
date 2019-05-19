@@ -142,6 +142,7 @@ namespace rascal {
     return internal::MinExtractor<ActiveDimensions>::value;
   }
 
+  // TODO(alex) check if I changed this correctly
   template <size_t... Ints>
   constexpr size_t get_layer(const size_t order,
       const std::index_sequence<Ints...>) {
@@ -177,12 +178,6 @@ namespace rascal {
     std::array<T, Layer> head(const std::array<T, HiLayer> & arr) {
       return head_helper(arr, std::make_index_sequence<Layer>{});
     }
-
-    template <size_t Order, size_t Layer>
-    constexpr size_t validate_template_parameters() {
-      static_assert(Order==1, "ClusterRefKey of Order > 1 requires ParentLayer and NeigbhourLayer. The usage ClusterRefKey<Order, Layer> is only valid for Order = 1");
-      return Layer;
-    }
   }  // namespace internal
 
   /* ---------------------------------------------------------------------- */
@@ -202,15 +197,34 @@ namespace rascal {
    * cluster reference is introduced.
    */
 
+  
+  template <size_t Order_, size_t Layer_, size_t ParentLayer_, size_t NeighbourLayer_>
+  struct ClusterRefKeyInfo {
+    constexpr static size_t Order = Order_; 
+    constexpr static size_t Layer = Layer_; 
+    constexpr static size_t ParentLayer = ParentLayer_; 
+    constexpr static size_t NeighbourLayer = NeighbourLayer_; 
+  };
+
+  // ValidateDefaultTemplateParamater
+  template <size_t Order, size_t Layer>
+  struct ClusterRefKeyDefaultTemplateParamater {
+    static_assert(Order==1, "ClusterRefKey of Order > 1 requires ParentLayer and NeigbhourLayer. The usage ClusterRefKey<Order, Layer> is only valid for Order = 1"); 
+    using ParentInfo_t = ClusterRefKeyInfo<Order, Layer, Layer, Layer>;
+    // TODO(alex) diff in usage?
+    //typedef ClusterRefKeyInfo<Order, Layer, Layer, Layer> ParentInfo_t;
+    constexpr static size_t NeighbourLayer = Layer;
+  };
+
   // TODO(alex) change validate_crk_template_parameters in SM file
   // TODO(till) 
   /* Usage of ClusterRefKey<Order,Layer> with Order>1 is invalid usage. ClusterRefKey<1,Layer> is valid usage. ClusterRefKey<1,Layer,y,z> is valid usage, but y and z are ignored.
    */
   template <size_t Order, size_t Layer,
-           size_t ParentLayer =
-               internal::validate_template_parameters<Order, Layer>(),
+           typename ParentInfo_t = typename
+               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentInfo_t,
            size_t NeighbourLayer =
-               internal::validate_template_parameters<Order, Layer>()>
+               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
   class ClusterRefKey : public ClusterRefBase {
    public:
     /**
@@ -218,21 +232,41 @@ namespace rascal {
      * non-const version can and needs to be cast into a const version in
      * argument.
      */
+    constexpr static size_t ParentLayer = ParentInfo_t::Layer;
+    constexpr static size_t ParentNeighbourLayer = ParentInfo_t::NeighbourLayer;
+    constexpr static size_t ParentParentLayer = ParentInfo_t::ParentLayer;
+
     using Parent = ClusterRefBase;
     using IndexConstArray =
         Eigen::Map<const Eigen::Matrix<size_t, Layer + 1, 1>>;
     using IndexArray = Eigen::Map<Eigen::Matrix<size_t, Layer + 1, 1>>;
+    // TODO(alex check if the two neighbour are still needed
     using NeighbourIndexConstArray =
-        Eigen::Map<const Eigen::Matrix<size_t, ParentLayer + 1, 1>>;
-    using NeighbourIndexArray = Eigen::Map<Eigen::Matrix<size_t, ParentLayer + 1, 1>>;
+        Eigen::Map<const Eigen::Matrix<size_t, NeighbourLayer + 1, 1>>;
+    using NeighbourIndexArray = Eigen::Map<Eigen::Matrix<
+        size_t, NeighbourLayer + 1, 1>>;
     using AtomIndex_t = std::array<int, Order>;
     /* For Order > 1 this object contains the neighbour object, because the neighbour object is nowhere else stored, but for Order = 1 it is a reference to itself, because an object cannot store itself.
      */
+    using ThisClusterRefKey_t = ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer>;
+    using NeighbourClusterRefKey_t = ClusterRefKey<1, NeighbourLayer>;
     typedef typename std::conditional<Order==1,
-            ClusterRefKey<1, Layer, ParentLayer, NeighbourLayer> &,
-            ClusterRefKey<1, Layer, ParentLayer, NeighbourLayer>
-            >::type Neighbour_t;
-    typedef ClusterRefKey<(Order==1) ? 1 : Order-1, Layer, ParentLayer, NeighbourLayer> Parent_t;
+             ThisClusterRefKey_t &,
+             NeighbourClusterRefKey_t
+                 >::type Neighbour_t;
+    //typedef ClusterRefKeyInfo<
+    //    (Order==1) ? 1 : Order-1, ParentLayer,
+    //    ParentParentLayer, ParentNeighbourLayer> ParentParentInfo_t;
+    using ParentParentInfo_t = ClusterRefKeyInfo<
+        (Order==1) ? 1 : Order-1, ParentLayer,
+        ParentParentLayer, ParentNeighbourLayer>;
+    typedef ParentParentInfo_t myt;
+    using ParentClusterRefKey_t = ClusterRefKey<(Order==1) ? 1 : Order-1,
+          ParentLayer, ParentParentInfo_t, ParentNeighbourLayer>;
+    typedef typename std::conditional<Order==1,
+             ThisClusterRefKey_t,
+             ParentClusterRefKey_t
+                 >::type Parent_t;
     // Order-1 must be resolved and returns error
     //typedef typename std::conditional<Order==1, ClusterRefKey<1, Layer>, ClusterRefKey<Order-1, Layer, ParentLayer, NeighbourLayer>>::type Parent_t;
     //! Default constructor
