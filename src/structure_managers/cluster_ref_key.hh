@@ -314,7 +314,9 @@ namespace rascal {
     }
     template<size_t Order_=Order>
     std::enable_if_t<(Order_==1), size_t> get_neighbour_cluster_index(const size_t layer) const {
-      return this->cluster_neighbour->get_cluster_index(layer);
+      return this->get_cluster_index(layer);
+      // TODO(alex) neighbour does not seem do be pointer type which it should be
+      //return this->cluster_neighbour->get_cluster_index(layer);
     }
 
    protected:

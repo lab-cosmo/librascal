@@ -96,7 +96,6 @@ namespace rascal {
       atom_property[atom] = atom.get_position();
       for (auto pair : atom) {
         pair_property[pair] = ++pair_property_counter;
-        atom_property[pair];
       }
     }
 
@@ -109,6 +108,28 @@ namespace rascal {
       }
     }
   }
+
+  /* ---------------------------------------------------------------------- */
+  /*
+   * checks if the properties associated with atoms and pairs can be filled
+   */
+  //BOOST_FIXTURE_TEST_CASE(fill_test_simple_alex,
+  //                        PropertyFixture<StructureManagerCenters>) {
+  //  pair_property.resize();
+  //  atom_property.resize();
+  //  for (auto atom : pair_manager) {
+  //    atom_property[atom] = atom.get_position();
+  //  }
+
+  //  for (auto atom : pair_manager) {
+  //    for (auto pair : atom) {
+  //      BOOST_CHECK_EQUAL(pair.get_neighbour_cluster_index(0), pair.back());
+  //      //auto error = (atom_property[pair] - atom_property[pair.back()]).norm();
+  //      //BOOST_CHECK_LE(error, tol * 100);
+  //    }
+  //  }
+  //}
+
 
   /* ---------------------------------------------------------------------- */
   /**

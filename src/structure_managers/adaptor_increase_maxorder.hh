@@ -225,7 +225,7 @@ namespace rascal {
                ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentLayer,
            size_t NeighbourLayer =
                ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
-    inline typename std::enable_if_t<(Order<traits::MaxOrder), size_t>
+    inline typename std::enable_if_t<(Order<traits::MaxOrder-1), size_t>
         get_cluster_neighbour_cluster_index_impl(
             const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster,
             const size_t cluster_index) const {
@@ -233,7 +233,7 @@ namespace rascal {
     }
     template <size_t Order, size_t Layer, 
            size_t ParentLayer, size_t NeighbourLayer>
-    inline typename std::enable_if_t<not(Order<traits::MaxOrder), size_t>
+    inline typename std::enable_if_t<not(Order<traits::MaxOrder-1), size_t>
         get_cluster_neighbour_cluster_index_impl(
             const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> &,
             const size_t cluster_index) const {
