@@ -795,18 +795,16 @@ namespace rascal {
    private:
     //! Should be only used after the make_full_neighbour_list
     void make_full_neighbour_cluster_index_list() {
-      for (auto atom : this->get_manager().with_ghosts()) {        
-        add_cluster_index_for_neigh_atom_index(atom.back());
+      for (int neigh_atom_index : this->neighbours_atom_index) {
+        add_cluster_index_for_neigh_atom_index(neigh_atom_index);
       }
     }
 
     void add_cluster_index_for_neigh_atom_index(int neigh_atom_index) {
       bool atom_index_found = false;
-      size_t cluster_order_one_index{0}; //TODO(alex do we start with 0?
-      auto atom_indices = (this->consider_ghost_neighbours) ?
-          this->ghost_atom_indices : this->atom_indices;
-      for (auto atom : this->get_manager().with_ghosts()) {        
-        if (neigh_atom_index == atom.back()) {
+      size_t cluster_order_one_index{0};
+      for (auto atom_index : this->atom_indices) { 
+        if (neigh_atom_index == atom_index) {
           this->neighbours_cluster_index.push_back(cluster_order_one_index);
           atom_index_found = true;
         }

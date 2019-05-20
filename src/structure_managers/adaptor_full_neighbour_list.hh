@@ -234,20 +234,22 @@ namespace rascal {
       return this->offsets[counters.front()];
     }
 
+    //TODO(alex) check if this can be done everywhere
+    //
     //! Returns the number of neighbours of a given cluster
     template <size_t Order, size_t Layer, 
            typename ParentInfo_t = typename
                ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentInfo_t,
            size_t NeighbourLayer =
                ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
-    inline typename std::enable_if_t<(Order<traits::MaxOrder), size_t>
+    inline typename std::enable_if_t<(Order<traits::MaxOrder-1), size_t>
     get_cluster_size_impl(const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> & cluster) const {      
       return this->manager->get_cluster_size(cluster);
     }
 
     template <size_t Order, size_t Layer, 
              typename ParentInfo_t, size_t NeighbourLayer>
-    inline typename std::enable_if_t<not(Order<traits::MaxOrder), size_t>
+    inline typename std::enable_if_t<not(Order<traits::MaxOrder-1), size_t>
     get_cluster_size_impl(const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> & cluster) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
@@ -313,16 +315,15 @@ namespace rascal {
    private:
     //! Should be only used after the make_full_neighbour_list
     void make_full_neighbour_cluster_index_list() {
-      for (auto neigh_atom_index : this->neighbours_atom_index) {
+      for (int neigh_atom_index : this->neighbours_atom_index) {
         add_cluster_index_for_neigh_atom_index(neigh_atom_index);
       }
     }
 
     void add_cluster_index_for_neigh_atom_index(int neigh_atom_index) {
       bool atom_index_found = false;
-      size_t cluster_order_one_index{0}; //TODO(alex do we start with 0?
-      for (auto atom : this->manager) {
-        auto atom_index = atom.get_atom_indices().back();
+      size_t cluster_order_one_index{0};
+      for (auto atom_index : this->atom_indices) { 
         if (neigh_atom_index == atom_index) {
           this->neighbours_cluster_index.push_back(cluster_order_one_index);
           atom_index_found = true;
@@ -333,7 +334,6 @@ namespace rascal {
         throw std::runtime_error("Atom index was not found while building list of cluster neighbour cluster index list.");
       }
     }
-
   };
 
   /* ---------------------------------------------------------------------- */

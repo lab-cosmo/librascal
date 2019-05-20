@@ -342,6 +342,13 @@ namespace rascal {
     std::array<std::vector<size_t>, traits::MaxOrder> offsets;
 
    private:
+    //! Should be only used after the full neighbour list has been made
+    void make_full_neighbour_cluster_index_list() {
+      for (auto neigh_atom_index : this->atom_indices[1]) {
+        add_cluster_index_for_neigh_atom_index(neigh_atom_index);
+      }
+    }
+
     void add_cluster_index_for_neigh_atom_index(int neigh_atom_index) {
      bool atom_index_found = false;
      size_t cluster_order_one_index{0}; //TODO(alex do we start with 0?
@@ -357,12 +364,6 @@ namespace rascal {
      }
     }
 
-    //! Should be only used after the full neighbour list has been made
-    void make_full_neighbour_cluster_index_list() {
-      for (auto neigh_atom_index : this->atom_indices[1]) {
-        add_cluster_index_for_neigh_atom_index(neigh_atom_index);
-      }
-    }
   };
 
   namespace internal {
