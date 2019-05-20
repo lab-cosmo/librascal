@@ -190,7 +190,7 @@ namespace rascal {
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
     using Property_t =
         Property<T, Order,
-                 get_layer(Order, typename traits::LayerByOrder{}),
+                 compute_cluster_layer<Order>(typename traits::LayerByOrder{}),
                  NbRow, NbCol>;
 
     //TODO(alex) change to get layers as above

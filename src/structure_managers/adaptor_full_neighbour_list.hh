@@ -159,9 +159,9 @@ namespace rascal {
     inline size_t get_size() const { return this->get_nb_clusters(1); }
 
     //! returns the number of atoms
-    inline size_t get_size_with_ghosts() const {
-      return this->manager->get_size_with_ghosts();
-    }
+    //inline size_t get_size_with_ghosts() const {
+    //  return this->manager->get_size_with_ghosts();
+    //}
 
     //! returns position of the given atom index
     inline Vector_ref get_position(const int & index) {
@@ -406,7 +406,6 @@ namespace rascal {
     }
 
     /* ---------------------------------------------------------------------- */
-    make_full_neighbour_cluster_index_list();
     // reference to cluster indices
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
@@ -470,6 +469,7 @@ namespace rascal {
       this->offsets.push_back(offset);
       offset += nneigh;
     }
+    //make_full_neighbour_cluster_index_list();
   }
 }  // namespace rascal
 
