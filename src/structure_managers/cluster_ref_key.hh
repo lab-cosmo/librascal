@@ -200,6 +200,8 @@ namespace rascal {
   
   template <size_t Order_, size_t Layer_, size_t ParentLayer_, size_t NeighbourLayer_>
   struct ClusterRefKeyInfo {
+    static_assert(not(Order_==1) || Layer_==ParentLayer_ , "Layer does not argee with ParentLayer for Order 1 ClusterRefKeyInfo");
+    static_assert(not(Order_==1) || Layer_==NeighbourLayer_, "Layer does not argee with NeighbourLayer for Order 1 ClusterRefKeyInfo");
     constexpr static size_t Order = Order_; 
     constexpr static size_t Layer = Layer_; 
     constexpr static size_t ParentLayer = ParentLayer_; 
@@ -235,6 +237,12 @@ namespace rascal {
     constexpr static size_t ParentLayer = ParentInfo_t::Layer;
     constexpr static size_t ParentNeighbourLayer = ParentInfo_t::NeighbourLayer;
     constexpr static size_t ParentParentLayer = ParentInfo_t::ParentLayer;
+
+    static_assert(not(Order==1) || Layer==ParentLayer , "Layer does not argee with ParentLayer for Order 1 ClusterRefKeyInfo");
+    static_assert(not(Order==1) || Layer==NeighbourLayer, "Layer does not argee with NeighbourLayer for Order 1 ClusterRefKeyInfo");
+
+    static_assert(not(Order<3) || ParentLayer==ParentParentLayer , "ParentLayer does not argee with ParentLayer for Order 1 ClusterRefKeyInfo");
+    static_assert(not(Order<3) || ParentLayer==ParentNeighbourLayer , "ParentLayer does not argee with NeighbourLayer for Order 1 ClusterRefKeyInfo");
 
     using Parent = ClusterRefBase;
     using IndexConstArray =

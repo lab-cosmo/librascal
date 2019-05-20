@@ -328,8 +328,8 @@ namespace rascal {
     void add_cluster_index_for_neigh_atom_index(int neigh_atom_index) {
       bool atom_index_found = false;
       size_t cluster_order_one_index{0};
-      for (auto atom_index : this->atom_indices) { 
-        if (neigh_atom_index == atom_index) {
+      for (auto atom : this->manager) {
+        if (neigh_atom_index == atom.back()) {
           this->neighbours_cluster_index.push_back(cluster_order_one_index);
           atom_index_found = true;
         }

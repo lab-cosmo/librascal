@@ -335,9 +335,6 @@ namespace rascal {
       bool atom_index_found = false;
       size_t cluster_order_one_index{0}; 
       for (auto atom : this->manager->with_ghosts()) {
-        if (neigh_atom_index == 55){
-          std::cout << "Atem index found" << atom.back() << std::endl;
-        }
         if (neigh_atom_index == atom.back()) {
           this->neighbours_cluster_index.push_back(cluster_order_one_index);
           atom_index_found = true;
