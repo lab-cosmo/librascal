@@ -158,6 +158,7 @@ namespace rascal {
     //! returns the number of atoms
     inline size_t get_size() const { return this->get_nb_clusters(1); }
 
+    // TODO(alex) ghosts in full are buggy
     //! returns the number of atoms
     //inline size_t get_size_with_ghosts() const {
     //  return this->manager->get_size_with_ghosts();
@@ -469,6 +470,7 @@ namespace rascal {
       this->offsets.push_back(offset);
       offset += nneigh;
     }
+    // TODO(alex) ghosts in full are buggy
     //make_full_neighbour_cluster_index_list();
   }
 }  // namespace rascal
