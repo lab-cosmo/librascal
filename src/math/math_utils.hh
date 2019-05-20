@@ -30,6 +30,8 @@
 #define SRC_MATH_MATH_UTILS_HH_
 
 #include "math_interface.hh"
+// #include "hyp1f1_recurrence.hh"
+
 #include <Eigen/Dense>
 #include <cmath>
 #include <limits>
@@ -51,6 +53,7 @@ namespace rascal {
     using Matrix_t =
         Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
     using MatrixX2_t = Eigen::Matrix<double, Eigen::Dynamic, 2>;
+
 
     Matrix_t compute_assoc_legendre_polynom(double cos_theta,
                                             size_t max_angular);
