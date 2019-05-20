@@ -524,21 +524,21 @@ namespace rascal {
     get_offset_impl(const std::array<size_t, Order> & counters) const;
 
     template <size_t Order, size_t Layer, 
-           typename ParentInfo_t = typename
-               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentInfo_t,
+           size_t ParentLayer =
+               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentLayer,
            size_t NeighbourLayer =
                ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
     inline typename std::enable_if_t<(Order<traits::MaxOrder), size_t>
         get_cluster_neighbour_cluster_index_impl(
-            const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> & cluster,
+            const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster,
             const size_t cluster_index) const {
       return this->manager->get_cluster_neighbour_cluster_index(cluster, cluster_index);
     }
     template <size_t Order, size_t Layer, 
-           typename ParentInfo_t, size_t NeighbourLayer>
+           size_t ParentLayer, size_t NeighbourLayer>
     inline typename std::enable_if_t<not(Order<traits::MaxOrder), size_t>
         get_cluster_neighbour_cluster_index_impl(
-            const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> &,
+            const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> &,
             const size_t cluster_index) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation handles only up to the "
@@ -638,10 +638,10 @@ namespace rascal {
     // TODO(alex) #ATOM_INDEX what is neighbours?
     //! Returns the id of the index-th neighbour atom of a given cluster
     template <size_t Order, size_t Layer,
-             typename ParentInfo_t, size_t NeighbourLayer> 
+             size_t ParentLayer, size_t NeighbourLayer> 
     inline int
     get_cluster_neighbour_atom_index_impl(
-        const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> & cluster,
+        const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster,
                           size_t index) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles up to traits::MaxOrder");
@@ -671,12 +671,12 @@ namespace rascal {
 
     //! Returns the number of neighbors of a given cluster
     template <size_t Order, size_t Layer, 
-           typename ParentInfo_t = typename
-               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentInfo_t,
+           size_t ParentLayer = 
+               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentLayer,
            size_t NeighbourLayer =
                ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
     inline size_t
-    get_cluster_size_impl(const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> & cluster) const {
+    get_cluster_size_impl(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
 

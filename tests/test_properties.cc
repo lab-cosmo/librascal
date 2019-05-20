@@ -97,7 +97,7 @@ namespace rascal {
       for (auto pair : atom) {
         pair_property[pair] = ++pair_property_counter;
         // TODO(alex)
-        //atom_property[pair];
+        atom_property[pair];
       }
     }
 

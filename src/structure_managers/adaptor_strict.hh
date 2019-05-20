@@ -147,9 +147,9 @@ namespace rascal {
 
     //! get atom_index of index-th neighbour of this cluster
     template <size_t Order, size_t Layer,
-             typename ParentInfo_t, size_t NeighbourLayer>
+             size_t ParentLayer, size_t NeighbourLayer>
     inline int
-    get_cluster_neighbour_atom_index_impl(const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> & cluster,
+    get_cluster_neighbour_atom_index_impl(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster,
                           int index) const {
       static_assert(Order <= traits::MaxOrder - 1,
                     "this implementation only handles upto traits::MaxOrder");
@@ -167,24 +167,24 @@ namespace rascal {
     // dummy function to test some other things, AdaptorStrict has to have a neighbours
     // list as it has a atom_indices list, and this has to be accessed here
     template <size_t Order, size_t Layer, 
-           typename ParentInfo_t = typename
-               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentInfo_t,
+           size_t ParentLayer = 
+               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentLayer,
            size_t NeighbourLayer =
                ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
     inline typename std::enable_if_t<(Order<traits::MaxOrder), size_t>
         get_cluster_neighbour_cluster_index_impl(
-            const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> & cluster,
+            const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster,
             const size_t cluster_index) const {
       return this->manager->get_cluster_neighbour_cluster_index(cluster, cluster_index);
     }
     template <size_t Order, size_t Layer, 
-           typename ParentInfo_t = typename
-               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentInfo_t,
+           size_t ParentLayer = 
+               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentLayer,
            size_t NeighbourLayer =
                ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
     inline typename std::enable_if_t<not(Order<traits::MaxOrder), size_t>
         get_cluster_neighbour_cluster_index_impl(
-            const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> &,
+            const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> &,
             const size_t cluster_index) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation handles only up to the "
@@ -243,12 +243,12 @@ namespace rascal {
 
     //! return the number of neighbours of a given atom
     template <size_t Order, size_t Layer, 
-           typename ParentInfo_t = typename
-               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentInfo_t,
+           size_t ParentLayer = 
+               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentLayer,
            size_t NeighbourLayer =
                ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
     inline size_t
-    get_cluster_size_impl(const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> & cluster) const {
+    get_cluster_size_impl(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
       constexpr auto nb_neigh_layer{
@@ -265,16 +265,16 @@ namespace rascal {
     // if this was wrong, please explain
     //! returns the distance between atoms in a given pair
     template <size_t Order, size_t Layer,
-             typename ParentInfo_t, size_t NeighbourLayer>
-    inline double & get_distance(const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> & pair) const {
+             size_t ParentLayer, size_t NeighbourLayer>
+    inline double & get_distance(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & pair) const {
       return this->distance->operator[](pair);
     }
 
     //! returns the direction vector between atoms in a given pair
     template <size_t Order, size_t Layer,
-             typename ParentInfo_t, size_t NeighbourLayer>
+             size_t ParentLayer, size_t NeighbourLayer>
     inline const Vector_ref
-    get_direction_vector(const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> & pair) const {
+    get_direction_vector(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & pair) const {
       return this->dir_vec->operator[](pair);
     }
 
@@ -307,12 +307,12 @@ namespace rascal {
     }
 
     template <size_t Order, size_t Layer,
-           typename ParentInfo_t = typename
-               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentInfo_t,
+           size_t ParentLayer = 
+               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentLayer,
            size_t NeighbourLayer =
                ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
     inline void
-    add_atom(const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> &
+    add_atom(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> &
                  cluster) {
       this->template add_atom<Order - 1>(cluster.back());
     }

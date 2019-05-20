@@ -178,10 +178,10 @@ namespace rascal {
     virtual void perform_filtering() = 0;
 
     //! returns the distance between atoms in a given pair
-    template <size_t Order, size_t Layer, typename ParentInfo_t, size_t NeighbourLayer,
+    template <size_t Order, size_t Layer, size_t ParentLayer, size_t NeighbourLayer,
               bool DummyHasDistances = traits::HasDistances>
     inline const std::enable_if_t<DummyHasDistances, double> &
-    get_distance(const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> & pair) const {
+    get_distance(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & pair) const {
       static_assert(DummyHasDistances == traits::HasDistances,
                     "SFINAE, do not specify");
       return this->manager->get_distance(pair);
@@ -210,10 +210,10 @@ namespace rascal {
     /**
      * return pair distance
      */
-    template <size_t Order, size_t Layer, typename ParentInfo_t, size_t NeighbourLayer,
+    template <size_t Order, size_t Layer, size_t ParentLayer, size_t NeighbourLayer,
               bool HasDistances = traits::HasDistances>
     inline std::enable_if_t<HasDistances, double &>
-    get_distance(const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> & pair) const {
+    get_distance(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & pair) const {
       static_assert(HasDistances == traits::HasDistances,
                     "SFINAE don't touch parameter!");
       return this->manager.get_distance(pair);
@@ -222,19 +222,19 @@ namespace rascal {
     /**
      * return direction vector
      */
-    template <size_t Order, size_t Layer, typename ParentInfo_t, size_t NeighbourLayer,
+    template <size_t Order, size_t Layer, size_t ParentLayer, size_t NeighbourLayer,
               bool HasDistances = traits::HasDistances>
     inline std::enable_if_t<HasDistances, Vector_ref>
-    get_direction_vector(const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> & pair) const {
+    get_direction_vector(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & pair) const {
       static_assert(HasDistances == traits::HasDistances,
                     "SFINAE don't touch parameter!");
       return this->manager.get_direction_vector(pair);
     }
 
     //! get atom_index of index-th neighbour of this cluster
-    template <size_t Order, size_t Layer, typename ParentInfo_t, size_t NeighbourLayer>
+    template <size_t Order, size_t Layer, size_t ParentLayer, size_t NeighbourLayer>
     inline int
-    get_cluster_neighbour_atom_index_impl(const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> & cluster,
+    get_cluster_neighbour_atom_index_impl(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster,
                           int index) const {
       static_assert(Order <= traits::MaxOrder - 1,
                     "this implementation only handles upto traits::MaxOrder");
@@ -249,12 +249,12 @@ namespace rascal {
     }
 
     template <size_t Order, size_t Layer, 
-           typename ParentInfo_t = typename
-               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentInfo_t,
+           size_t ParentLayer = 
+               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentLayer,
            size_t NeighbourLayer =
                ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
     inline size_t
-        get_cluster_neighbour_cluster_index_impl(const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> &, const size_t ) const {
+        get_cluster_neighbour_cluster_index_impl(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> &, const size_t ) const {
       //TODO(alex) this would be wrong needs implementation
       //return this->manager->get_cluster_neighbour_cluster_index_impl(neighbour_index);
       return 0;
@@ -302,12 +302,12 @@ namespace rascal {
 
     //! return the number of neighbours of a given atom
     template <size_t Order, size_t Layer, 
-           typename ParentInfo_t = typename
-               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentInfo_t,
+           size_t ParentLayer = 
+               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentLayer,
            size_t NeighbourLayer =
                ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
     inline size_t
-    get_cluster_size_impl(const ClusterRefKey<Order, Layer, ParentInfo_t, NeighbourLayer> & cluster) const {
+    get_cluster_size_impl(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster) const {
       static_assert(Order <= traits::MaxOrder - 1,
                     "Order exceeds maxorder for this filter.");
       constexpr auto nb_neigh_layer{
