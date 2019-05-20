@@ -247,7 +247,7 @@ namespace rascal {
                ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentLayer,
            size_t NeighbourLayer =
                ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
-    inline typename std::enable_if_t<(Order<traits::MaxOrder-1), size_t>
+    inline typename std::enable_if_t<(Order<(traits::MaxOrder-1)), size_t>
     get_cluster_size_impl(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster) const {      
       return this->manager->get_cluster_size(cluster);
     }
@@ -329,7 +329,7 @@ namespace rascal {
     void add_cluster_index_for_neigh_atom_index(int neigh_atom_index) {
       bool atom_index_found = false;
       size_t cluster_order_one_index{0};
-      for (auto atom : this->manager) {
+      for (auto atom : this->manager->with_ghosts()) {
         if (neigh_atom_index == atom.back()) {
           this->neighbours_cluster_index.push_back(cluster_order_one_index);
           atom_index_found = true;
