@@ -190,14 +190,14 @@ namespace rascal {
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
     using Property_t =
         Property<T, Order,
-                 compute_cluster_layer<Order>(typename traits::LayerByOrder{}),
+                 get_layer(Order,typename traits::LayerByOrder{}),
                  NbRow, NbCol>;
 
     //TODO(alex) change to get layers as above
     //! helper type for Property creation
     template <typename T, size_t Order>
     using TypedProperty_t = TypedProperty<T, Order,
-                                          compute_cluster_layer<Order>(
+                                          get_layer(Order,
                                               typename traits::LayerByOrder{})>;
 
     //! type for the hyper parameter class

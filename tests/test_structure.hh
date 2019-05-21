@@ -365,6 +365,7 @@ namespace rascal {
 
     ~PairFixture() {}
 
+    const double cutoff = 3;
     ManagerFixture<Manager_t> fixture{};
     std::shared_ptr<PairManager_t> pair_manager;
   };

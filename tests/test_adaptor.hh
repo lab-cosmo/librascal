@@ -90,7 +90,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
   struct PairFixtureStrict {
-    using AdaptorStrict_t = AdaptorStrict<ManagerImplementation>;
+    using AdaptorStrict_t = AdaptorStrict<AdaptorNeighbourList<ManagerImplementation>>;
 
     PairFixtureStrict()
         : adaptor_strict{make_adapted_manager<AdaptorStrict>(

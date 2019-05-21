@@ -46,7 +46,7 @@ namespace rascal {
    * which are initialized in the tests.
    */
   template <class ManagerImplementation>
-  struct PropertyFixture : public PairFixture<ManagerImplementation> {
+  struct PropertyFixture: public PairFixture<ManagerImplementation> {
     using Manager_t = AdaptorNeighbourList<ManagerImplementation>;
 
     using PairScalarProperty_t =
@@ -71,6 +71,40 @@ namespace rascal {
           dynamic_property{*this->pair_manager, DynSize(), 1,
                            dynamic_property_metadata},
           dynamic_property2{*this->pair_manager, DynSize(), 1,
+                            dynamic_property2_metadata} {}
+
+    PairScalarProperty_t pair_property;
+    AtomVectorProperty_t atom_property;
+    AtomDynamicProperty_t dynamic_property;
+    AtomDynamicProperty2_t dynamic_property2;
+  };
+  
+  template <class ManagerImplementation>
+  struct PropertyFixtureStrict: public PairFixtureStrict<ManagerImplementation> {
+    using Manager_t = AdaptorStrict<AdaptorNeighbourList<ManagerImplementation>>;
+
+    using PairScalarProperty_t =
+        typename Manager_t::template Property_t<double, 2>;
+    using AtomVectorProperty_t =
+        typename Manager_t::template Property_t<double, 1, 3, 1>;
+    using AtomDynamicProperty_t =
+        typename Manager_t::template TypedProperty_t<size_t, 1>;
+    using AtomDynamicProperty2_t =
+        typename Manager_t::template TypedProperty_t<double, 1>;
+
+    constexpr static Dim_t DynSize() { return 3; }
+
+    std::string atom_property_metadata{"positions"};
+    std::string dynamic_property_metadata{"arbitrary counters"};
+    std::string dynamic_property2_metadata{"distances"};
+
+    PropertyFixtureStrict()
+        : PairFixtureStrict<ManagerImplementation>{},
+          pair_property{*this->adaptor_strict},
+          atom_property{*this->adaptor_strict, atom_property_metadata},
+          dynamic_property{*this->adaptor_strict, DynSize(), 1,
+                           dynamic_property_metadata},
+          dynamic_property2{*this->adaptor_strict, DynSize(), 1,
                             dynamic_property2_metadata} {}
 
     PairScalarProperty_t pair_property;
@@ -109,6 +143,12 @@ namespace rascal {
     }
   }
 
+  //TODO(alex) make this later to templates with half and full
+  //using fixtures = boost::mpl::list<PropertyFixture<StructureManagerCenters>,
+  //                                  PropertyFixtureStrict<StructureManagerCenters>>;
+  //BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_index_equal_order_one_cluster_for_smc_test,
+  //                        Fix, fixtures, Fix) {
+
   /* ---------------------------------------------------------------------- */
   /*
    * This test assumes that atom index is equal to the cluster index of Order=1
@@ -126,6 +166,17 @@ namespace rascal {
       }
     }
   }
+  //BOOST_FIXTURE_TEST_CASE(atom_index_equal_order_one_cluster_for_smc_strict_test,
+  //                        PropertyFixtureStrict<StructureManagerCenters>) {
+  //  pair_property.resize();
+  //  atom_property.resize();
+
+  //  for (auto atom : adaptor_strict) {
+  //    for (auto pair : atom) {
+  //      BOOST_CHECK_EQUAL(pair.get_neighbour_cluster_index(0), pair.back());
+  //    }
+  //  }
+  //}
 
   /* ---------------------------------------------------------------------- */
   /*
@@ -152,6 +203,28 @@ namespace rascal {
     }
   }
 
+  BOOST_FIXTURE_TEST_CASE(fill_test_simple_order_one_property_strict,
+                          PropertyFixture<StructureManagerCenters>) {
+    auto adaptor_strict{
+        make_adapted_manager<AdaptorStrict>(pair_manager, 2)};
+    adaptor_strict->update();
+    pair_property.resize();
+    atom_property.resize();
+    for (auto atom : adaptor_strict) {
+      atom_property[atom] = atom.get_position();
+    }
+
+    for (auto atom : adaptor_strict) {
+      for (auto atom2 : adaptor_strict) {
+        for (auto pair : atom) {
+          if (atom.back() == pair.back()) {
+            auto error = (atom_property[atom] - atom_property[pair]).norm();
+            BOOST_CHECK_LE(error, tol * 100);
+          }
+        }
+      }
+    }
+  }
 
   /* ---------------------------------------------------------------------- */
   /**

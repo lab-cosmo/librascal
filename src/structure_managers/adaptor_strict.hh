@@ -172,7 +172,7 @@ namespace rascal {
            size_t NeighbourLayer =
                ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer> 
     // TODO(alex changing here to MaxOrder-1 results in bug unlike in the others
-    inline typename std::enable_if_t<(Order<traits::MaxOrder), size_t>
+    inline typename std::enable_if_t<(Order<(traits::MaxOrder)), size_t>
         get_cluster_neighbour_cluster_index_impl(
             const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster,
             const size_t cluster_index) const {
@@ -183,7 +183,7 @@ namespace rascal {
                ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentLayer,
            size_t NeighbourLayer =
                ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
-    inline typename std::enable_if_t<not(Order<traits::MaxOrder), size_t>
+    inline typename std::enable_if_t<not(Order<(traits::MaxOrder)), size_t>
         get_cluster_neighbour_cluster_index_impl(
             const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> &,
             const size_t cluster_index) const {
@@ -351,18 +351,18 @@ namespace rascal {
     }
 
     void add_cluster_index_for_neigh_atom_index(int neigh_atom_index) {
-     bool atom_index_found = false;
-     size_t cluster_order_one_index{0}; //TODO(alex do we start with 0?
-     for (auto atom_index : this->atom_indices[0]) {
-       if (neigh_atom_index == atom_index) {         
-         this->neighbours_cluster_index.push_back(cluster_order_one_index);
-         atom_index_found = true;
-       }
-       cluster_order_one_index++;
-     }
-     if (not(atom_index_found)) {
-       throw std::runtime_error("Atom index was not found while building list of cluster neighbour cluster index list.");
-     }
+      bool atom_index_found = false;
+      size_t cluster_order_one_index{0}; 
+      for (auto atom_index : this->atom_indices[0]) {
+        if (neigh_atom_index == atom_index) {         
+          this->neighbours_cluster_index.push_back(cluster_order_one_index);
+          atom_index_found = true;
+        }
+        cluster_order_one_index++;
+      }
+      if (not(atom_index_found)) {
+        throw std::runtime_error("Atom index was not found while building list of cluster neighbour cluster index list.");
+      }
     }
 
   };
