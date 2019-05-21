@@ -299,6 +299,9 @@ namespace rascal {
     ImplementationPtr_t get_previous_manager() {
       return this->manager->get_shared_ptr();
     }
+    std::vector<int> get_nl_atom_indices(){
+       return this->manager->get_nl_atom_indices();
+    }
 
    protected:
     /* ---------------------------------------------------------------------- */
@@ -471,7 +474,7 @@ namespace rascal {
       offset += nneigh;
     }
     // TODO(alex) ghosts in full are buggy
-    //make_full_neighbour_cluster_index_list();
+    make_full_neighbour_cluster_index_list();
   }
 }  // namespace rascal
 

@@ -172,7 +172,7 @@ namespace rascal {
            size_t NeighbourLayer =
                ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer> 
     // TODO(alex changing here to MaxOrder-1 results in bug unlike in the others
-    inline typename std::enable_if_t<(Order<(traits::MaxOrder)), size_t>
+    inline typename std::enable_if_t<(Order<(traits::MaxOrder-1)), size_t>
         get_cluster_neighbour_cluster_index_impl(
             const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster,
             const size_t cluster_index) const {
@@ -183,14 +183,14 @@ namespace rascal {
                ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentLayer,
            size_t NeighbourLayer =
                ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
-    inline typename std::enable_if_t<not(Order<(traits::MaxOrder)), size_t>
+    inline typename std::enable_if_t<not(Order<(traits::MaxOrder-1)), size_t>
         get_cluster_neighbour_cluster_index_impl(
             const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> &,
             const size_t cluster_index) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation handles only up to the "
                     " MaxOrder");
-      return this->neighbours_cluster_index[Order][cluster_index];
+      return this->neighbours_cluster_index[cluster_index];
     }
 
     //! return atom type
@@ -331,7 +331,7 @@ namespace rascal {
      *   - etc
      */
     std::array<std::vector<int>, traits::MaxOrder> atom_indices;
-    std::array<std::vector<size_t>, traits::MaxOrder> neighbours_cluster_index;
+    std::vector<size_t> neighbours_cluster_index;
     /**
      * store the number of j-atoms for every i-atom (nb_neigh[1]), the number of
      * k-atoms for every j-atom (nb_neigh[2]), etc
@@ -345,16 +345,18 @@ namespace rascal {
    private:
     //! Should be only used after the full neighbour list has been made
     void make_full_neighbour_cluster_index_list() {
-      for (auto neigh_atom_index : this->atom_indices[1]) {
-        add_cluster_index_for_neigh_atom_index(neigh_atom_index);
+      for (auto atom : this->manager->with_ghosts()) {
+        for (auto pair : atom) {
+          add_cluster_index_for_neigh_atom_index(pair.back());
+        }
       }
     }
 
     void add_cluster_index_for_neigh_atom_index(int neigh_atom_index) {
       bool atom_index_found = false;
-      size_t cluster_order_one_index{0}; 
-      for (auto atom_index : this->atom_indices[0]) {
-        if (neigh_atom_index == atom_index) {         
+      size_t cluster_order_one_index{0};
+      for (int atom_index : this->manager->get_nl_atom_indices()) {
+        if (neigh_atom_index == atom_index) {
           this->neighbours_cluster_index.push_back(cluster_order_one_index);
           atom_index_found = true;
         }
@@ -432,7 +434,6 @@ namespace rascal {
     //! initialise the neighbourlist
     for (size_t i{0}; i < traits::MaxOrder; ++i) {
       this->atom_indices[i].clear();
-      this->neighbours_cluster_index[i].clear();
       this->nb_neigh[i].clear();
       this->offsets[i].clear();
     }
@@ -459,6 +460,7 @@ namespace rascal {
     size_t pair_counter{0};
     // depending on the underlying neighbourlist, the proxy `.with_ghosts()` is
     // either actually with ghosts, or only returns the number of centers.
+    // TODO(alex) BUG consider_ghost_atoms false, then neighbour can be ghost atom, but we want to update original atom
     for (auto atom : this->manager.get()->with_ghosts()) {
       this->add_atom(atom);
       /**
@@ -497,6 +499,7 @@ namespace rascal {
         }
       }
     }
+    make_full_neighbour_cluster_index_list();
   }
 }  // namespace rascal
 

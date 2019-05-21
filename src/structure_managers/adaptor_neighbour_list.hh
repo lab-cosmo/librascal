@@ -689,7 +689,12 @@ namespace rascal {
       return this->manager->get_shared_ptr();
     }
 
-   protected:
+    std::vector<int> get_nl_atom_indices(){
+      return this->atom_indices;
+    }
+
+
+  protected:
     /* ---------------------------------------------------------------------- */
     /**
      * This function, including the storage of ghost atom positions is

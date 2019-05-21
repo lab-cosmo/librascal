@@ -298,6 +298,10 @@ namespace rascal {
       return this->manager->get_shared_ptr();
     }
 
+    std::vector<int> get_nl_atom_indices(){
+      return this->manager->get_nl_atom_indices();
+    }
+
    protected:
     //! Reference to the underlying manager
     ImplementationPtr_t manager;
@@ -328,6 +332,7 @@ namespace rascal {
     void add_cluster_index_for_neigh_atom_index(int neigh_atom_index) {
       bool atom_index_found = false;
       size_t cluster_order_one_index{0};
+      // TODO(alex) this should result in problem if consider_ghosts_fa
       for (auto atom : this->manager->with_ghosts()) {
         if (neigh_atom_index == atom.back()) {
           this->neighbours_cluster_index.push_back(cluster_order_one_index);
