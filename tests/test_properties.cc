@@ -111,24 +111,46 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /*
-   * checks if the properties associated with atoms and pairs can be filled
+   * This test assumes that atom index is equal to the cluster index of Order=1
+   * Layer=0 using the StructureManagerCenters.
+   * 
    */
-  //BOOST_FIXTURE_TEST_CASE(fill_test_simple_alex,
-  //                        PropertyFixture<StructureManagerCenters>) {
-  //  pair_property.resize();
-  //  atom_property.resize();
-  //  for (auto atom : pair_manager) {
-  //    atom_property[atom] = atom.get_position();
-  //  }
+  BOOST_FIXTURE_TEST_CASE(atom_index_equal_order_one_cluster_for_smc_test,
+                          PropertyFixture<StructureManagerCenters>) {
+    pair_property.resize();
+    atom_property.resize();
 
-  //  for (auto atom : pair_manager) {
-  //    for (auto pair : atom) {
-  //      BOOST_CHECK_EQUAL(pair.get_neighbour_cluster_index(0), pair.back());
-  //      //auto error = (atom_property[pair] - atom_property[pair.back()]).norm();
-  //      //BOOST_CHECK_LE(error, tol * 100);
-  //    }
-  //  }
-  //}
+    for (auto atom : pair_manager) {
+      for (auto pair : atom) {
+        BOOST_CHECK_EQUAL(pair.get_neighbour_cluster_index(0), pair.back());
+      }
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /*
+   * The access of an order one property with the atom itself
+   * and the pair with the atom as neighbour should be the same.
+   */ 
+  BOOST_FIXTURE_TEST_CASE(fill_test_simple_order_one_property,
+                          PropertyFixture<StructureManagerCenters>) {
+    pair_property.resize();
+    atom_property.resize();
+    for (auto atom : pair_manager) {
+      atom_property[atom] = atom.get_position();
+    }
+
+    for (auto atom : pair_manager) {
+      for (auto atom2 : pair_manager) {
+        for (auto pair : atom) {
+          if (atom.back() == pair.back()) {
+            auto error = (atom_property[atom] - atom_property[pair]).norm();
+            BOOST_CHECK_LE(error, tol * 100);
+          }
+        }
+      }
+    }
+  }
 
 
   /* ---------------------------------------------------------------------- */

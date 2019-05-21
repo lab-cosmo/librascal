@@ -255,8 +255,12 @@ namespace rascal {
                ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
     inline size_t
         get_cluster_neighbour_cluster_index_impl(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> &, const size_t ) const {
-      //TODO(alex) this would be wrong needs implementation
-      //return this->manager->get_cluster_neighbour_cluster_index_impl(neighbour_index);
+      //TODO(alex) Feature missing including:
+      // - make_full_neighbour_cluster_index_list() function
+      // - add_cluster_index_for_neigh_atom_index(int neigh_atom_index) function
+      //std::stringstream err_str{};
+      //err_str << "Feature has not been implemented for AdaptorFilter yet.";
+      //throw std::runtime_error(err_str.str());
       return 0;
     }
 
