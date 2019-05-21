@@ -45,25 +45,23 @@ namespace rascal {
       //! Computes 1F1
       inline double calc(const double& z) {
         using math::pow;
-        double res{1.}, a1{1.}, a2{1.};
+
         auto&& a{this->a};
         auto&& b{this->b};
 
         // perform the sum
-        for (size_t i{1}; i < this->mmax; ++i) {
+        double res{1.}, a1{1.};
+        for (size_t i{0}; i < this->mmax; ++i) {
           a1 *= coeff(i) * z;
+          if (a1 < this->tolerance*res) {
+            break;
+          }
+
           res += a1;
 
           if (res > 1e100){
             break; // overflow
           }
-
-          // check if two successive terms are within the tolerance
-          // note that a,b,z>0 so no absolute value is needed
-          if (a1 < this->tolerance*res or a2 < this->tolerance*res) {
-            break;
-          }
-          a2 = a1;
         }
 
         return res;
@@ -450,21 +448,21 @@ int main(int argc, char * argv[])
             double a{0.5 * (3+n+l)};
             double b{l+1.5};
             std::cout<< "h1f1_michele" << std::endl;
-            timeit<h1f1_asympt>(a,b, 0.01, 200);
-            timeit<h1f1_asympt>(a,b, 0.1, 200);
-            timeit<h1f1_asympt>(a,b, 1, 200);
-            timeit<h1f1_asympt>(a,b, 10, 200);
-            timeit<h1f1_asympt>(a,b, 100, 200);
-            timeit<h1f1_asympt>(a,b, 200, 200);
+            // timeit<h1f1_hybrid>(a,b, 0.01, 200);
+            timeit<h1f1_hybrid>(a,b, 0.1, 200);
+            // timeit<h1f1_hybrid>(a,b, 1, 200);
+            // timeit<h1f1_hybrid>(a,b, 10, 200);
+            // timeit<h1f1_hybrid>(a,b, 100, 200);
+            // timeit<h1f1_hybrid>(a,b, 200, 200);
             std::cout<<"\n";
 
             std::cout<< "h1f1" << std::endl;
-            timeit<Hyp1f1Series>(a,b, 0.01, 200);
+            // timeit<Hyp1f1Series>(a,b, 0.01, 200);
             timeit<Hyp1f1Series>(a,b, 0.1, 200);
-            timeit<Hyp1f1Series>(a,b, 1, 200);
-            timeit<Hyp1f1Series>(a,b, 10, 200);
-            timeit<Hyp1f1Series>(a,b, 100, 200);
-            timeit<Hyp1f1Series>(a,b, 200, 200);
+            // timeit<Hyp1f1Series>(a,b, 1, 200);
+            // timeit<Hyp1f1Series>(a,b, 10, 200);
+            // timeit<Hyp1f1Series>(a,b, 100, 200);
+            // timeit<Hyp1f1Series>(a,b, 200, 200);
             std::cout<<"\n";
         }
     }
