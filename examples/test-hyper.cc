@@ -51,8 +51,8 @@ int main()
 {
     std::cout.setf(std::ios_base::scientific);
     std::cout.precision(14);
-    std::vector<int> ls{{8}};
-    std::vector<int> ns{{0,2,4,5,7,10,13,15,18,24}};
+    std::vector<int> ls{{4,16}};
+    std::vector<int> ns{{0,2,4,5,7,10,13,16}};
     for (auto& l : ls) {
         for (auto& n : ns) {
             double a{0.5 * (3+n+l)};
@@ -63,7 +63,7 @@ int main()
             timeit<h1f1_cephes>(a,b, 1, 200);
             timeit<h1f1_cephes>(a,b, 10, 200);
             timeit<h1f1_cephes>(a,b, 100, 200);
-            timeit<h1f1_cephes>(a,b, 200, 200);
+            timeit<h1f1_cephes>(a,b, 300, 200);
             std::cout<<"\n";
 
             std::cout<< "h1f1" << std::endl;
@@ -72,7 +72,7 @@ int main()
             timeit<Hyp1f1>(a,b, 1, 200);
             timeit<Hyp1f1>(a,b, 10, 200);
             timeit<Hyp1f1>(a,b, 100, 200);
-            timeit<Hyp1f1>(a,b, 200, 200);
+            timeit<Hyp1f1>(a,b, 300, 200);
             std::cout<<"\n";
         }
     }

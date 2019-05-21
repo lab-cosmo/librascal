@@ -32,6 +32,8 @@
 #include "json_io.hh"
 #include "math/math_interface.hh"
 #include "math/math_utils.hh"
+#include "math/hyp1f1.hh"
+#include "rascal_utility.hh"
 
 #include <fstream>
 #include <Eigen/Dense>
@@ -87,6 +89,22 @@ namespace rascal {
     StdVector3Dim_t alps{};
     bool verbose{false};
   };
+
+  struct Hyp1F1RefFixture {
+    Hyp1F1RefFixture() {
+      std::vector<std::uint8_t> ref_data_ubjson;
+      internal::read_binary_file(this->ref_filename, ref_data_ubjson);
+      this->ref_data = json::from_ubjson(ref_data_ubjson);
+    }
+
+    ~Hyp1F1RefFixture() = default;
+
+    std::string ref_filename = "reference_data/hyp1f1_reference.ubjson";
+
+    json ref_data{};
+    bool verbose{false};
+  };
+
 }  // namespace rascal
 
 #endif  // TESTS_TEST_MATH_HH_
