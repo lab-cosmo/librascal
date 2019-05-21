@@ -357,15 +357,15 @@ namespace rascal {
 
     using PairManager_t = AdaptorNeighbourList<Manager_t>;
 
+    const double cutoff{3.};
     PairFixture()
         : pair_manager{make_adapted_manager<AdaptorNeighbourList>(
-              this->fixture.manager, 3.)} {
+              this->fixture.manager, cutoff)} {
       this->pair_manager->update();
     }
 
     ~PairFixture() {}
 
-    const double cutoff = 3;
     ManagerFixture<Manager_t> fixture{};
     std::shared_ptr<PairManager_t> pair_manager;
   };
