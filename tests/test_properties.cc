@@ -166,17 +166,17 @@ namespace rascal {
       }
     }
   }
-  //BOOST_FIXTURE_TEST_CASE(atom_index_equal_order_one_cluster_for_smc_strict_test,
-  //                        PropertyFixtureStrict<StructureManagerCenters>) {
-  //  pair_property.resize();
-  //  atom_property.resize();
+  BOOST_FIXTURE_TEST_CASE(atom_index_equal_order_one_cluster_for_smc_strict_test,
+                          PropertyFixtureStrict<StructureManagerCenters>) {
+    pair_property.resize();
+    atom_property.resize();
 
-  //  for (auto atom : adaptor_strict) {
-  //    for (auto pair : atom) {
-  //      BOOST_CHECK_EQUAL(pair.get_neighbour_cluster_index(0), pair.back());
-  //    }
-  //  }
-  //}
+    for (auto atom : adaptor_strict) {
+      for (auto pair : atom) {
+        BOOST_CHECK_EQUAL(pair.get_neighbour_cluster_index(0), pair.back());
+      }
+    }
+  }
 
   /* ---------------------------------------------------------------------- */
   /*

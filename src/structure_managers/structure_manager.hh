@@ -503,7 +503,7 @@ namespace rascal {
                ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
     inline size_t
     get_offset(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster) const {
-      constexpr auto layer{StructureManager::template cluster_layer_unique1615816<Order>()};
+      constexpr auto layer{StructureManager::template cluster_layer_from_order<Order>()};
       return cluster.get_cluster_index(layer);
     }
 
@@ -560,16 +560,16 @@ namespace rascal {
     }
     // TODO(alex)
     template <size_t Order>
-    constexpr static size_t cluster_layer_unique1615816() {
+    constexpr static size_t cluster_layer_from_order() {
       static_assert(Order>0, "Order is <1 this should not be");
       return get_layer(Order, typename traits::LayerByOrder{});
     }
     template <size_t Order_>
     struct OrderClusterRefKeyInfo {
       constexpr static size_t Order = Order_;
-      constexpr static size_t Layer = cluster_layer_unique1615816<Order>();
-      constexpr static size_t ParentLayer = cluster_layer_unique1615816<(Order==1) ? 1 : Order-1>();
-      constexpr static size_t NeighbourLayer = cluster_layer_unique1615816<1>();
+      constexpr static size_t Layer = cluster_layer_from_order<Order>();
+      constexpr static size_t ParentLayer = cluster_layer_from_order<(Order==1) ? 1 : Order-1>();
+      constexpr static size_t NeighbourLayer = cluster_layer_from_order<1>();
       using type = ClusterRefKeyInfo<Order, Layer, ParentLayer, NeighbourLayer>;
     };
 
@@ -822,19 +822,19 @@ namespace rascal {
       template <size_t Order>
       class StructureManager<ManagerImplementation>::ClusterRef
       : public ClusterRefKey < Order,
-      ManagerImplementation::template cluster_layer_unique1615816<Order>(),
-      ManagerImplementation::template cluster_layer_unique1615816<(Order==1) ? 1 : Order-1>(),
-      ManagerImplementation::template cluster_layer_unique1615816<1>()> { 
+      ManagerImplementation::template cluster_layer_from_order<Order>(),
+      ManagerImplementation::template cluster_layer_from_order<(Order==1) ? 1 : Order-1>(),
+      ManagerImplementation::template cluster_layer_from_order<1>()> { 
    public:
     static_assert(Order > 0, "Order < 1 is not allowed.");
     using Manager_t = StructureManager<ManagerImplementation>;
     using traits = StructureManager_traits<ManagerImplementation>;
     constexpr static size_t ClusterLayer{
-        ManagerImplementation::template cluster_layer_unique1615816<Order>()};
+        ManagerImplementation::template cluster_layer_from_order<Order>()};
     constexpr static size_t ParentLayer{
-        ManagerImplementation::template cluster_layer_unique1615816<(Order==1) ? 1 : Order-1>()};
+        ManagerImplementation::template cluster_layer_from_order<(Order==1) ? 1 : Order-1>()};
     constexpr static size_t NeighbourLayer{
-        ManagerImplementation::template cluster_layer_unique1615816<1>()};
+        ManagerImplementation::template cluster_layer_from_order<1>()};
     // TODO(alex) check or delete
     //constexpr static auto ParentNeighbourLayer{
     //    ManagerImplementation::template cluster_layer<(Order==2) Order-2>()};
@@ -1077,7 +1077,7 @@ namespace rascal {
     using ClusterRef_t = typename Manager_t::template ClusterRef<Order>;
     // TODO(alex) maybe put this into manager
     constexpr static auto NeighbourLayer{
-        ManagerImplementation::template cluster_layer_unique1615816<1>()};
+        ManagerImplementation::template cluster_layer_from_order<1>()};
 
     friend ClusterRef_t;
     // determine the container type
