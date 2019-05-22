@@ -104,8 +104,42 @@ namespace rascal {
     std::string dynamic_property_metadata{"arbitrary counters"};
     std::string dynamic_property2_metadata{"distances"};
 
-    PropertyFixtureStrict()
-        : PairFixtureStrict<ManagerImplementation>{},
+    PropertyFixtureStrict(bool consider_ghost_neighbours = false)
+        : PairFixtureStrict<ManagerImplementation>{consider_ghost_neighbours},
+          pair_property{*this->adaptor_strict},
+          atom_property{*this->adaptor_strict, atom_property_metadata},
+          dynamic_property{*this->adaptor_strict, DynSize(), 1,
+                           dynamic_property_metadata},
+          dynamic_property2{*this->adaptor_strict, DynSize(), 1,
+                            dynamic_property2_metadata} {}
+
+    PairScalarProperty_t pair_property;
+    AtomVectorProperty_t atom_property;
+    AtomDynamicProperty_t dynamic_property;
+    AtomDynamicProperty2_t dynamic_property2;
+  };
+
+  template <class ManagerImplementation>
+  struct PropertyFixtureStrictWithGhosts : public PairFixtureStrictWithGhosts<ManagerImplementation> {
+    using Manager_t = AdaptorStrict<AdaptorNeighbourList<ManagerImplementation>>;
+
+    using PairScalarProperty_t =
+        typename Manager_t::template Property_t<double, 2>;
+    using AtomVectorProperty_t =
+        typename Manager_t::template Property_t<double, 1, 3, 1>;
+    using AtomDynamicProperty_t =
+        typename Manager_t::template TypedProperty_t<size_t, 1>;
+    using AtomDynamicProperty2_t =
+        typename Manager_t::template TypedProperty_t<double, 1>;
+
+    constexpr static Dim_t DynSize() { return 3; }
+
+    std::string atom_property_metadata{"positions"};
+    std::string dynamic_property_metadata{"arbitrary counters"};
+    std::string dynamic_property2_metadata{"distances"};
+
+    PropertyFixtureStrictWithGhosts()
+        : PairFixtureStrictWithGhosts<ManagerImplementation>{},
           pair_property{*this->adaptor_strict},
           atom_property{*this->adaptor_strict, atom_property_metadata},
           dynamic_property{*this->adaptor_strict, DynSize(), 1,
@@ -163,9 +197,6 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(atom_index_equal_order_one_cluster_for_smc_test,
                           PropertyFixtureWithGhosts<StructureManagerCenters>) {
-    pair_property.resize();
-    atom_property.resize();
-
     BOOST_CHECK_EQUAL(pair_manager->get_consider_ghost_neighbours(), true);
     for (auto atom : pair_manager) {
       for (auto pair : atom) {
@@ -173,18 +204,59 @@ namespace rascal {
       }
     }
   }
-  // TODO(alex) this test should work
-  //BOOST_FIXTURE_TEST_CASE(atom_index_equal_order_one_cluster_for_smc_strict_test,
-  //                        PropertyFixtureStrict<StructureManagerCenters>) {
-  //  pair_property.resize();
-  //  atom_property.resize();
 
-  //  for (auto atom : adaptor_strict) {
-  //    for (auto pair : atom) {
-  //      BOOST_CHECK_EQUAL(pair.get_neighbour_cluster_index(0), pair.back());
-  //    }
-  //  }
-  //}
+  BOOST_FIXTURE_TEST_CASE(atom_index_equal_order_one_cluster_for_smc_test2,
+                          PropertyFixtureWithGhosts<StructureManagerCenters>) {
+    atom_property.resize();
+    // initalize the positions
+    for (auto atom : pair_manager) {
+        atom_property[atom] = atom.get_position();
+    }
+    std::vector<int> atom_indices = pair_manager->get_nl_atom_indices();
+    std::vector<size_t> counter{};
+    counter.reserve(atom_indices.size());
+    for (size_t i{0}; i<atom_indices.size(); i++) {
+      counter.push_back(1);
+    }
+    // add the position to the atom and count how often this happens
+    for (auto atom : pair_manager) {
+      for (auto pair : atom) {
+        counter.at(pair.get_atom_index())++;
+        atom_property[pair] += pair_manager->get_position(pair.get_atom_index());
+      }
+    }
+    for (auto atom : pair_manager) {
+      auto error = (atom_property[atom] - counter.at(atom.get_atom_index())*atom.get_position()).norm();
+      BOOST_CHECK_LE(error, tol * 100);
+    }
+  }
+
+  // TODO(alex) this test should work
+  BOOST_FIXTURE_TEST_CASE(atom_index_equal_order_one_cluster_for_smc_strict_test3,
+                          PropertyFixtureStrictWithGhosts<StructureManagerCenters>) {
+    atom_property.resize();
+    // initalize the positions
+    for (auto atom : adaptor_strict) {
+        atom_property[atom] = atom.get_position();
+    }
+    std::vector<int> atom_indices = adaptor_strict->get_manager_atom_indices();
+    std::vector<size_t> counter{};
+    counter.reserve(atom_indices.size());
+    for (size_t i{0}; i<atom_indices.size(); i++) {
+      counter.push_back(1);
+    }
+    // add the position to the atom and count how often this happens
+    for (auto atom : adaptor_strict) {
+      for (auto pair : atom) {
+        counter.at(pair.get_atom_index())++;
+        atom_property[pair] += adaptor_strict->get_position(pair.get_atom_index());
+      }
+    }
+    for (auto atom : adaptor_strict) {
+      auto error = (atom_property[atom] - counter.at(atom.get_atom_index())*atom.get_position()).norm();
+      BOOST_CHECK_LE(error, tol * 100);
+    }
+  }
 
   /* ---------------------------------------------------------------------- */
   /*

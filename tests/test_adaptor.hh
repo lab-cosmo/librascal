@@ -105,6 +105,24 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
+
+  template <class ManagerImplementation>
+  struct PairFixtureStrictWithGhosts {
+    using AdaptorStrict_t = AdaptorStrict<AdaptorNeighbourList<ManagerImplementation>>;
+
+    PairFixtureStrictWithGhosts ()
+        : adaptor_strict{make_adapted_manager<AdaptorStrict>(
+              this->fixture.pair_manager, this->fixture.cutoff)} {}
+
+    ~PairFixtureStrictWithGhosts () = default;
+
+    // TODO(markus): different fixtures?, streamline fixtures to always work
+    // with ´manager´ as an iterator?
+    PairFixture<ManagerImplementation> fixture{true};
+    std::shared_ptr<AdaptorStrict_t> adaptor_strict;
+  };
+
+  /* ---------------------------------------------------------------------- */
   /**
    * Streamline the test on several structures and cutoffs
    */

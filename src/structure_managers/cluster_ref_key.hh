@@ -281,7 +281,7 @@ namespace rascal {
           cluster_neighbour{
               Neighbour_t(
                   std::array<int, 1>{atom_indices.back()},
-                  cluster_neighbour_cluster_indices)
+                  NeighbourIndexConstArray(cluster_neighbour_cluster_indices)) //TODO(alex) in ClusterRef we do casting for different cases maybe here to
           }
           {}
 
@@ -321,12 +321,12 @@ namespace rascal {
       //return this->cluster_neighbour->get_cluster_index(layer);
     }
     template<size_t Order_=Order>
-    std::enable_if_t<not(Order_==1), size_t> get_neighbour_cluster_indices() const {
+    std::enable_if_t<not(Order_==1), NeighbourIndexConstArray> get_neighbour_cluster_indices() const {
       return this->cluster_neighbour.get_cluster_indices();
     }
 
     template<size_t Order_=Order>
-    std::enable_if_t<Order_==1, size_t> get_neighbour_cluster_indices() const {
+    std::enable_if_t<Order_==1, IndexConstArray> get_neighbour_cluster_indices() const {
       return this->cluster_indices;
     }
 

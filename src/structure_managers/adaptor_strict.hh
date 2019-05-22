@@ -284,6 +284,23 @@ namespace rascal {
       return this->dir_vec->operator[](pair);
     }
 
+    inline bool get_consider_ghost_neighbours() const {
+      return this->manager->get_consider_ghost_neighbours();
+    }
+    const std::vector<int> get_atom_indices_with_corresponding_cluster() {
+      return this->manager->get_atom_indices_with_corresponding_cluster();
+    }
+    const std::vector<int> get_nl_atom_indices() {
+      return this->manager->get_nl_atom_indices();
+    }
+
+    const std::vector<int> get_manager_atom_indices() {
+      return this->atom_indices[0];
+    }
+
+    const std::vector<int> get_neighbours_atom_index() {
+      return this->atom_indices[1];
+    }
    protected:
     /**
      * main function during construction of a neighbourlist.
@@ -348,25 +365,37 @@ namespace rascal {
     std::array<std::vector<size_t>, traits::MaxOrder> offsets;
 
    private:
-    // TODO(alex) not needed anymore
-    //! Should be only used after the full neighbour list has been made
     void make_full_neighbour_cluster_index_list() {
-      for (auto atom : this->manager->with_ghosts()) {
-        for (auto pair : atom) {
-          add_cluster_index_for_neigh_atom_index(pair.back());
-        }
+      for (int neigh_atom_index : this->atom_indices[1]) {
+        add_cluster_index_for_neigh_atom_index(neigh_atom_index);
       }
     }
 
     void add_cluster_index_for_neigh_atom_index(int neigh_atom_index) {
-      bool atom_index_found = false;
       size_t cluster_order_one_index{0};
-      for (int atom_index : this->manager->get_nl_atom_indices()) {
-        if (neigh_atom_index == atom_index) {
-          this->neighbours_cluster_index.push_back(cluster_order_one_index);
-          atom_index_found = true;
+      bool atom_index_found = false;
+      int atom_index_with_corresponding_cluster;
+      // TODO(alex) how to make this a reference? or is it already
+      auto && nl_atom_indices = this->get_nl_atom_indices();
+      auto && atom_indices_with_corresponding_cluster =
+        this->get_atom_indices_with_corresponding_cluster();
+      for (size_t i{0}; i< nl_atom_indices.size(); i++) { 
+        if (neigh_atom_index == nl_atom_indices[i] && not(atom_index_found)) { 
+          atom_index_with_corresponding_cluster =
+              atom_indices_with_corresponding_cluster.at(i);
+          for (auto atom : this->get_manager().with_ghosts()) {
+            if (atom.get_atom_index() == atom_index_with_corresponding_cluster) {
+              this->neighbours_cluster_index.push_back(cluster_order_one_index); 
+              atom_index_found = true;             
+            }
+            cluster_order_one_index++;
+          }
+          if(not(atom_index_found)) {
+            throw std::runtime_error("No atom index corresponding to a cluster was found while building list of cluster neighbour cluster index list.");  
+          }
+        } else if (neigh_atom_index == nl_atom_indices[i] && atom_index_found) {
+          throw std::runtime_error("The atom index was found two times, but should be unique, while building list of cluster neighbour cluster index list.");
         }
-        cluster_order_one_index++;
       }
       if (not(atom_index_found)) {
         throw std::runtime_error("Atom index was not found while building list of cluster neighbour cluster index list.");
@@ -500,7 +529,8 @@ namespace rascal {
         double distance2{(vec_ij).squaredNorm()};
         if (distance2 <= rc2) {
           this->add_atom(pair);
-          this->neighbours_cluster_index.push_back(pair.get_cluster_index(PairLayer-1));
+          // TODO(alex) delete
+          //this->neighbours_cluster_index.push_back(pair.get_cluster_index(PairLayer-1));
           double distance{std::sqrt(distance2)};
 
           this->dir_vec->push_back((vec_ij.array() / distance).matrix());
@@ -514,8 +544,7 @@ namespace rascal {
         }
       }
     }
-    // TODO(alex) delete 
-    //make_full_neighbour_cluster_index_list();
+    make_full_neighbour_cluster_index_list();
   }
 }  // namespace rascal
 

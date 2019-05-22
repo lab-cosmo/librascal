@@ -689,10 +689,12 @@ namespace rascal {
       return this->manager->get_shared_ptr();
     }
 
-    std::vector<int> get_nl_atom_indices(){
+    const std::vector<int> get_nl_atom_indices(){
       return this->atom_indices;
     }
-
+    const std::vector<int> get_atom_indices_with_corresponding_cluster() {
+      return this->atom_indices_with_corresponding_cluster;
+    }
 
   protected:
     /* ---------------------------------------------------------------------- */
@@ -772,6 +774,14 @@ namespace rascal {
 
     //! Stores neighbour's cluster index in a list in sequence of atoms
     std::vector<size_t> neighbours_cluster_index{};
+    /* List of atom indices which have a correpsonding cluster index of order 1.
+     * if consider_ghost_neighbours is false ghost atoms will have a unique atom
+     * index but no cluster index order 1. To map the ghost atom to the cluster
+     * index of the corresponding real atom in the origin cell we build a list 
+     * with the corresponding origin atom indices of the ghost atoms instead of
+     * its new ghost atom indices as it is done in the atom_indices list.
+     */
+    std::vector<int> atom_indices_with_corresponding_cluster{};
 
     //! Stores the offset for each atom to accessing `neighbours`, this variable
     //! provides the entry point in the neighbour list, `nb_neigh` the number
@@ -1026,14 +1036,6 @@ namespace rascal {
       ntot *= nrep_in_dim;
     }
 
-    /* List of atom indices which have a correpsonding cluster index of order 1.
-     * if consider_ghost_neighbours is false ghost atoms will have a unique atom
-     * index but no cluster index order 1. To map the ghost atom to the cluster
-     * index of the corresponding real atom in the origin cell we build a list 
-     * with the corresponding origin atom indices of the ghost atoms instead of
-     * its new ghost atom indices as it is done in the atom_indices list.
-     */
-    std::vector<int> atom_indices_with_corresponding_cluster{};
     // before generating ghost atoms, all existing atoms are added to the list
     // of current atoms to start the full list of current i-atoms and ghosts
     // This is done before the ghost atom generation, to have them all
@@ -1045,7 +1047,7 @@ namespace rascal {
       this->atom_indices.push_back(atom_index);
       this->atom_types.push_back(atom_type);
       ntot_atoms++;
-      atom_indices_with_corresponding_cluster.push_back(atom_index);
+      this->atom_indices_with_corresponding_cluster.push_back(atom_index);
     }
     
     // generate ghost atom indices and positions
@@ -1077,10 +1079,10 @@ namespace rascal {
             this->add_ghost_atom(new_atom_index, pos_ghost, atom_type);
             ntot_atoms++;
             if (consider_ghost_neighbours){
-              atom_indices_with_corresponding_cluster.push_back(
+              this->atom_indices_with_corresponding_cluster.push_back(
                   new_atom_index);
             } else {
-              atom_indices_with_corresponding_cluster.push_back(
+              this->atom_indices_with_corresponding_cluster.push_back(
                   atom.get_atom_index());
             }
           }
@@ -1122,7 +1124,7 @@ namespace rascal {
       }
       this->nb_neigh.push_back(nneigh);
     }
-    make_full_neighbour_cluster_index_list(atom_indices_with_corresponding_cluster);
+    make_full_neighbour_cluster_index_list(this->atom_indices_with_corresponding_cluster);
   }
  
 

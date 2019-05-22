@@ -298,8 +298,12 @@ namespace rascal {
       return this->manager->get_shared_ptr();
     }
 
-    std::vector<int> get_nl_atom_indices(){
+    std::vector<int> get_nl_atom_indices() {
       return this->manager->get_nl_atom_indices();
+    }
+
+    std::vector<int> get_atom_indices_with_corresponding_cluster() {
+      return this->manager->atom_indices_with_corresponding_cluster;
     }
 
    protected:
