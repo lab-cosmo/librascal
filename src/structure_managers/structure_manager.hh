@@ -1146,6 +1146,13 @@ namespace rascal {
       Ref_OrderOne_t cluster_neighbour_cluster_indices =
           cluster_indices_properties_order_1[this->get_cluster_neighbour_cluster_index()];
 
+      // TODO(alex) delete
+      //if (ManagerImplementation::template cluster_layer_from_order<2>() == 1) {
+      //std::cout << " test" << std::endl;
+      //  std::cout << (cluster_neighbour_cluster_indices) << std::endl;
+      //std::cout << " test" << std::endl;
+      //}
+
       return ClusterRef_t(*this, this->get_atom_indices(), cluster_indices,
           this->container, cluster_neighbour_cluster_indices);
     }
@@ -1158,6 +1165,12 @@ namespace rascal {
           cluster_indices_properties)>::reference;
       Ref_t cluster_indices =
           cluster_indices_properties[this->get_cluster_index()];
+      // TODO(alex) delete
+      //if (ManagerImplementation::template cluster_layer_from_order<1>() == 1) {
+      //std::cout << " test" << std::endl;
+      //  std::cout << (cluster_indices) << std::endl;
+      //std::cout << " test" << std::endl;
+      //}
 
       return ClusterRef_t(*this, this->get_atom_indices(), cluster_indices);
     }

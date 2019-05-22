@@ -193,8 +193,9 @@ namespace rascal {
      return this->operator[](id.get_cluster_index(CallerLayer));
     }
 
-    template <size_t CallerOrder, size_t CallerLayer, size_t ParentLayer , size_t NeighbourLayer, size_t Order_= Order>
-    inline std::enable_if_t<Order_==1, reference>
+    // TODO(alex)
+    template <size_t CallerOrder, size_t CallerLayer, size_t ParentLayer, size_t NeighbourLayer, size_t Order_= Order>
+    inline std::enable_if_t<(Order_==1) and (CallerOrder>1), reference>
     operator[](const ClusterRefKey<CallerOrder, CallerLayer, ParentLayer, NeighbourLayer> & id) {
      static_assert(CallerLayer >= NeighbourLayer,
                    "You are trying to access a property that "

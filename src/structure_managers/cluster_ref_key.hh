@@ -313,11 +313,21 @@ namespace rascal {
     std::enable_if_t<not(Order_==1), size_t> get_neighbour_cluster_index(const size_t layer) const {
       return this->cluster_neighbour.get_cluster_index(layer);
     }
+
     template<size_t Order_=Order>
     std::enable_if_t<(Order_==1), size_t> get_neighbour_cluster_index(const size_t layer) const {
       return this->get_cluster_index(layer);
       // TODO(alex) neighbour does not seem do be pointer type which it should be
       //return this->cluster_neighbour->get_cluster_index(layer);
+    }
+    template<size_t Order_=Order>
+    std::enable_if_t<not(Order_==1), size_t> get_neighbour_cluster_indices() const {
+      return this->cluster_neighbour.get_cluster_indices();
+    }
+
+    template<size_t Order_=Order>
+    std::enable_if_t<Order_==1, size_t> get_neighbour_cluster_indices() const {
+      return this->cluster_indices;
     }
 
    protected:

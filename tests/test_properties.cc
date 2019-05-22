@@ -166,9 +166,10 @@ namespace rascal {
     pair_property.resize();
     atom_property.resize();
 
+    BOOST_CHECK_EQUAL(pair_manager->get_consider_ghost_neighbours(), true);
     for (auto atom : pair_manager) {
       for (auto pair : atom) {
-        BOOST_CHECK_EQUAL(pair.get_neighbour_cluster_index(0), pair.back());
+        BOOST_CHECK_EQUAL(pair.get_neighbour_cluster_index(0), pair.get_atom_index());
       }
     }
   }

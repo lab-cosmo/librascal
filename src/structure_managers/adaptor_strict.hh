@@ -87,6 +87,9 @@ namespace rascal {
 
     static_assert(traits::MaxOrder > 1,
                   "ManagerImlementation needs to handle pairs");
+    constexpr static auto PairLayer{
+      Manager_t::template cluster_layer_from_order<2>()};
+
 
     //! Default constructor
     AdaptorStrict() = delete;
@@ -171,7 +174,7 @@ namespace rascal {
            size_t NeighbourLayer =
                ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer> 
     // TODO(alex changing here to MaxOrder-1 results in bug unlike in the others
-    inline typename std::enable_if_t<(Order<(traits::MaxOrder-1)), size_t>
+    inline typename std::enable_if_t<(Order<(traits::MaxOrder-1) and (PairLayer>Layer)), size_t>
         get_cluster_neighbour_cluster_index_impl(
             const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster,
             const size_t cluster_index) const {
@@ -182,13 +185,16 @@ namespace rascal {
                ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentLayer,
            size_t NeighbourLayer =
                ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
-    inline typename std::enable_if_t<not(Order<(traits::MaxOrder-1)), size_t>
+    inline typename std::enable_if_t<not(Order<(traits::MaxOrder-1) and (PairLayer>Layer)), size_t>
         get_cluster_neighbour_cluster_index_impl(
             const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> &,
             const size_t cluster_index) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation handles only up to the "
                     " MaxOrder");
+      static_assert(Layer <= PairLayer,
+                    "this implementation handles only up to the "
+                    " Layer");
       return this->neighbours_cluster_index[cluster_index];
     }
 

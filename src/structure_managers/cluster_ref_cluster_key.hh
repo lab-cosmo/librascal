@@ -111,6 +111,7 @@ namespace rascal {
     /* the internal cluster neighbour is the neighbour which was added as
      * neighbour in the creation of this cluster
      */
+    // TODO(alex) rename get neighbour_atom_index
     const int & get_internal_cluster_neighbour_index() const {
       return this->back();
     }
