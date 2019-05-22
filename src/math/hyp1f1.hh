@@ -177,8 +177,9 @@ namespace rascal {
         using math::pow;
         auto&& a{this->a};
         auto&& b{this->b};
-
-        return this->prefac*std::exp(z)*pow(z,a-b)*this->hyp2f0(z);
+        double result{this->prefac*std::exp(z)*pow(z,a-b)*this->hyp2f0(z)};
+        if (std::isnan(result)) {result = DOVERFLOW;}
+        return result;
       }
 
       //! computes hyp2f0 with arg1 = b-a and arg2 = 1-a arg3 = 1 / z
@@ -220,60 +221,58 @@ namespace rascal {
       size_t mmax;
 
       size_t nterms_a{0}, nterms_s{0};
+      double h1f1_a{0}, h1f1_s{0};
       double z_above{0.}, z_below{0.};
 
-      void update_switching_point(const bool& update_bracket = false) {
-        if (update_bracket) {
-          this->z_above = this->hyp1f1_series.calc(this->z_asympt);
-          this->z_below = this->hyp1f1_asymptotic.calc(this->z_asympt);
-        } else {
-          this->hyp1f1_series.calc(this->z_asympt);
-          this->hyp1f1_asymptotic.calc(this->z_asympt);
-        }
+      void update_switching_point() {
+        this->h1f1_s = this->hyp1f1_series.calc(this->z_asympt);
+        this->h1f1_a = this->hyp1f1_asymptotic.calc(this->z_asympt);
+
         this->nterms_s = this->hyp1f1_series.n_terms;
         this->nterms_a = this->hyp1f1_asymptotic.n_terms;
       }
 
       void find_switching_point() {
-        this->update_switching_point(true);
+        this->update_switching_point();
         // brackets the switching point
-        if (this->nterms_s < this->nterms_a) {
-          this->z_below = this->z_asympt;
-          while (this->nterms_s < this->nterms_a) {
+        this->z_below = this->z_above = this->z_asympt;
+        // std::cout << "# "<< std::fabs(1-this->h1f1_s/this->h1f1_a) << std::endl;
+        if(std::fabs(1-this->h1f1_s/this->h1f1_a) > this->tolerance) {
+          while(std::fabs(1-this->h1f1_s/this->h1f1_a) > this->tolerance) {
             this->z_asympt *= 2.0;
             this->update_switching_point();
+            // std::cout << "### "<< std::fabs(1-this->h1f1_s/this->h1f1_a) << std::endl;
           }
           this->z_above = this->z_asympt;
         }
         else {
-          this->z_above = this->z_asympt;
-          while (this->nterms_s > this->nterms_a) {
+          while (std::fabs(1-this->h1f1_s/this->h1f1_a) < this->tolerance) {
             this->z_asympt *= 0.5;
             this->update_switching_point();
           }
           this->z_below = this->z_asympt;
         }
-
+        // std::cout << this->z_below << ", "<< this->z_above << std::endl;
         /* and now bisects until we are reasonably close to an accurate
         determination */
         this->z_asympt = (this->z_above + this->z_below) * 0.5;
         this->update_switching_point();
         while (this->z_above - this->z_below > this->tolerance) {
-          if (this->nterms_s > this->nterms_a) {
-              this->z_above = this->z_asympt;
-          } else {
+          if (std::abs(1-this->h1f1_s/this->h1f1_a) > this->tolerance) {
               this->z_below = this->z_asympt;
+          } else {
+              this->z_above = this->z_asympt;
           }
           this->z_asympt = (this->z_above + this->z_below) * 0.5;
           this->update_switching_point();
         }
-        this->z_asympt = (this->z_above + this->z_below) * 0.5;
-        // std::cout << this->z_asympt<< ", "<< tolerance << std::endl;
+        this->z_asympt = this->z_asympt * 1.1;
+        // std::cout << this->z_asympt << std::endl;
       }
 
      public:
-      double z_asympt{3.};
-      Hyp1f1(const double& a, const double& b, const size_t& mmax = 500, const double& tolerance = 1e-14)
+      double z_asympt{1.};
+      Hyp1f1(const double& a, const double& b, const size_t& mmax = 500, const double& tolerance = 1e-13)
         : hyp1f1_series{a,b,mmax,tolerance},hyp1f1_asymptotic{a,b,mmax,tolerance}, a{a}, b{b},tolerance{tolerance}, mmax{mmax} {
 
         /*now we try to determine what is the switching point between

@@ -41,13 +41,13 @@ namespace rascal {
                           Hyp1F1RefFixture) {
     for (auto& data : this->ref_data) {
       double a{data["a"]},b{data["b"]},z{data["z"]},hyp1f1_ref{data["val"]};
-      math::Hyp1f1 func{a,b,200,1e-14};
+      math::Hyp1f1 func{a,b,200,1e-13};
       double rel_error{std::abs((hyp1f1_ref-func.calc(z))/hyp1f1_ref)};
-      if (rel_error > 100*math::dbl_ftol) {
+      if (rel_error > 100*math::dbl_ftol and this->verbose) {
         std::cout << " a=" << a<< " b=" << b<< " z=" << z<< " ref=" << hyp1f1_ref<< " impl="<< func.calc(z)<< " z_switch=";
         std::cout << func.z_asympt << std::endl;
       }
-      // BOOST_CHECK_LE(rel_error, 100*math::dbl_ftol);
+      BOOST_CHECK_LE(rel_error, 100*math::dbl_ftol);
     }
 
 

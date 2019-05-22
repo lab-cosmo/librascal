@@ -13,9 +13,9 @@ def dump_reference_json():
     sys.path.insert(0, os.path.join(path, 'tests/'))
     mp.dps = 200;
     data = []
-    for l in [4,16]:
-        for n in [0,2,4,5,7,10,13,16]:
-            for z in [1e-2,1e-1,1,10,20,30,50,100,300]:
+    for l in range(20):
+        for n in range(20):
+            for z in [1e-2,1e-1,1,10,20,30,40,50,100,200]:
                 a = 0.5*(n+l+3)
                 b = l+1.5
                 val = float(hyp1f1(a,b,z))
