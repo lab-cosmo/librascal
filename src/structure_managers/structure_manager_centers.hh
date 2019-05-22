@@ -221,7 +221,8 @@ namespace rascal {
     }
 
     //! Returns the position of an atom, given an atom index
-    inline Vector_ref get_position(const size_t & atom_index) {
+    // #ATOM_INDEX
+    inline Vector_ref get_position(const int & atom_index) {
       auto p = this->get_positions();
       auto * xval{p.col(atom_index).data()};
       return Vector_ref(xval);
