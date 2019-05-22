@@ -358,9 +358,9 @@ namespace rascal {
     using PairManager_t = AdaptorNeighbourList<Manager_t>;
 
     const double cutoff{3.};
-    PairFixture()
+    PairFixture(bool consider_ghost_neighbours = false)
         : pair_manager{make_adapted_manager<AdaptorNeighbourList>(
-              this->fixture.manager, cutoff)} {
+              this->fixture.manager, cutoff, consider_ghost_neighbours)} {
       this->pair_manager->update();
     }
 

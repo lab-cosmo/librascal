@@ -218,7 +218,6 @@ namespace rascal {
     constexpr static size_t NeighbourLayer = Layer;
   };
 
-  // TODO(alex) change validate_crk_template_parameters in SM file
   // TODO(till) 
   /* Usage of ClusterRefKey<Order,Layer> with Order>1 is invalid usage. ClusterRefKey<1,Layer> is valid usage. ClusterRefKey<1,Layer,y,z> is valid usage, but y and z are ignored.
    */

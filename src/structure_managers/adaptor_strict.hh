@@ -85,7 +85,6 @@ namespace rascal {
     using Distance_t = typename This::template Property_t<double, 2, 1>;
     using DirectionVector_t = typename This::template Property_t<double, 2, 3>;
 
-
     static_assert(traits::MaxOrder > 1,
                   "ManagerImlementation needs to handle pairs");
 
@@ -343,6 +342,7 @@ namespace rascal {
     std::array<std::vector<size_t>, traits::MaxOrder> offsets;
 
    private:
+    // TODO(alex) not needed anymore
     //! Should be only used after the full neighbour list has been made
     void make_full_neighbour_cluster_index_list() {
       for (auto atom : this->manager->with_ghosts()) {
@@ -458,6 +458,10 @@ namespace rascal {
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
     size_t pair_counter{0};
+    //constexpr auto PairLayer{
+    //  Manager_t::template cluster_layer_from_order<2>()};
+    //constexpr auto AtomLayer{
+    //  Manager_t::template cluster_layer_from_order<1>()};
     // depending on the underlying neighbourlist, the proxy `.with_ghosts()` is
     // either actually with ghosts, or only returns the number of centers.
     // TODO(alex) BUG consider_ghost_atoms false, then neighbour can be ghost atom, but we want to update original atom
@@ -470,6 +474,11 @@ namespace rascal {
 
       constexpr auto AtomLayer{
           compute_cluster_layer<atom.order()>(typename traits::LayerByOrder{})};
+      // TODO(alex) replace above with this
+      // make todo for markus to check
+      //constexpr auto PairLayer{
+      //  Manager_t::template cluster_layer_from_order<1>()};
+
 
       Eigen::Matrix<size_t, AtomLayer + 1, 1> indices;
 
@@ -483,9 +492,9 @@ namespace rascal {
 
         auto vec_ij{pair.get_position() - atom.get_position()};
         double distance2{(vec_ij).squaredNorm()};
-
         if (distance2 <= rc2) {
           this->add_atom(pair);
+          this->neighbours_cluster_index.push_back(pair.get_cluster_index(PairLayer-1));
           double distance{std::sqrt(distance2)};
 
           this->dir_vec->push_back((vec_ij.array() / distance).matrix());
@@ -499,7 +508,8 @@ namespace rascal {
         }
       }
     }
-    make_full_neighbour_cluster_index_list();
+    // TODO(alex) delete 
+    //make_full_neighbour_cluster_index_list();
   }
 }  // namespace rascal
 

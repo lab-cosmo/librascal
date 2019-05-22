@@ -64,8 +64,8 @@ namespace rascal {
     std::string dynamic_property_metadata{"arbitrary counters"};
     std::string dynamic_property2_metadata{"distances"};
 
-    PropertyFixture()
-        : PairFixture<ManagerImplementation>{},
+    PropertyFixture(bool consider_ghost_neighbours = false)
+        : PairFixture<ManagerImplementation>{consider_ghost_neighbours},
           pair_property{*this->pair_manager},
           atom_property{*this->pair_manager, atom_property_metadata},
           dynamic_property{*this->pair_manager, DynSize(), 1,
@@ -77,6 +77,12 @@ namespace rascal {
     AtomVectorProperty_t atom_property;
     AtomDynamicProperty_t dynamic_property;
     AtomDynamicProperty2_t dynamic_property2;
+  };
+
+  template <class ManagerImplementation>
+  struct PropertyFixtureWithGhosts : public PropertyFixture<ManagerImplementation> {
+    PropertyFixtureWithGhosts()
+        : PropertyFixture<ManagerImplementation>{true} {}
   };
   
   template <class ManagerImplementation>
@@ -156,7 +162,7 @@ namespace rascal {
    * 
    */
   BOOST_FIXTURE_TEST_CASE(atom_index_equal_order_one_cluster_for_smc_test,
-                          PropertyFixture<StructureManagerCenters>) {
+                          PropertyFixtureWithGhosts<StructureManagerCenters>) {
     pair_property.resize();
     atom_property.resize();
 

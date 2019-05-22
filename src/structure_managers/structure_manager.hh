@@ -535,6 +535,12 @@ namespace rascal {
     //    get_cluster_neighbour_cluster_index_impl(cluster, cluster_index);
     //}
 
+    // TODO(alex)
+    template <size_t Order>
+    constexpr static size_t cluster_layer_from_order() {
+      static_assert(Order>0, "Order is <1 this should not be");
+      return get_layer(Order, typename traits::LayerByOrder{});
+    }
 
    protected:
     /**
@@ -557,12 +563,6 @@ namespace rascal {
     template <size_t Order>
     constexpr static size_t cluster_layer() {
       return compute_cluster_layer<Order>(typename traits::LayerByOrder{});
-    }
-    // TODO(alex)
-    template <size_t Order>
-    constexpr static size_t cluster_layer_from_order() {
-      static_assert(Order>0, "Order is <1 this should not be");
-      return get_layer(Order, typename traits::LayerByOrder{});
     }
     template <size_t Order_>
     struct OrderClusterRefKeyInfo {
@@ -965,6 +965,7 @@ namespace rascal {
      */
     std::array<int, Order> get_atom_types() const;
 
+    // TODO(alex) functionality now in ClusterRefClusterKey delete here
     //! return the index of the atom/pair/etc. it is always the last one,
     //! since the other ones are accessed an Order above.
     inline int get_atom_index() const { return this->back(); }

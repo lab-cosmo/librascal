@@ -114,6 +114,11 @@ namespace rascal {
     const int & get_internal_cluster_neighbour_index() const {
       return this->back();
     }
+    
+    template<size_t Order_=Order>
+    std::enable_if_t<Order_==1,const int &> get_atom_index() const {
+      return this->back();
+    }
 
     //! returns the cluster's index, given a specific layer
     inline size_t get_cluster_index(const size_t layer) const {
