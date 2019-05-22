@@ -94,7 +94,9 @@ namespace rascal {
 
     PairFixtureStrict()
         : adaptor_strict{make_adapted_manager<AdaptorStrict>(
-              this->fixture.pair_manager, this->fixture.cutoff)} {}
+              this->fixture.pair_manager, this->fixture.cutoff)} {
+          this->adaptor_strict->update();
+        }
 
     ~PairFixtureStrict() = default;
 
@@ -112,7 +114,9 @@ namespace rascal {
 
     PairFixtureStrictWithGhosts ()
         : adaptor_strict{make_adapted_manager<AdaptorStrict>(
-              this->fixture.pair_manager, this->fixture.cutoff)} {}
+              this->fixture.pair_manager, this->fixture.cutoff)} {
+          this->adaptor_strict->update();
+        }
 
     ~PairFixtureStrictWithGhosts () = default;
 

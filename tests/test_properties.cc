@@ -183,6 +183,9 @@ namespace rascal {
     }
   }
 
+  // TODO(alex) tests: AHF<NL<SMC; AS<AHF<ANL
+  // TODO(alex) tests:NL<SMC no ghost
+
   //TODO(alex) make this later to templates with half and full
   //using fixtures = boost::mpl::list<PropertyFixture<StructureManagerCenters>,
   //                                  PropertyFixtureStrict<StructureManagerCenters>>;
@@ -212,7 +215,7 @@ namespace rascal {
     for (auto atom : pair_manager) {
         atom_property[atom] = atom.get_position();
     }
-    std::vector<int> atom_indices = pair_manager->get_nl_atom_indices();
+    std::vector<int> atom_indices = pair_manager->get_nl_atom_indices(); // TODO(alex) change to get_manager_atom_indices()
     std::vector<size_t> counter{};
     counter.reserve(atom_indices.size());
     for (size_t i{0}; i<atom_indices.size(); i++) {
@@ -231,7 +234,37 @@ namespace rascal {
     }
   }
 
-  // TODO(alex) this test should work
+
+  BOOST_FIXTURE_TEST_CASE(atom_index_equal_order_one_cluster_for_smc_test_false,
+                          PropertyFixture<StructureManagerCenters>) {
+    atom_property.resize();
+    // initalize the positions
+    std::vector<int> atom_indices{}; // TODO(alex) change to get_manager_atom_indices()
+    atom_indices.reserve(pair_manager->get_size());
+    for (auto atom : pair_manager) {
+        atom_property[atom] = atom.get_position();
+        atom_indices.push_back(atom.get_atom_index());
+    }
+
+    auto && atom_indices_with_corresponding_cluster = pair_manager->get_atom_indices_with_corresponding_cluster();
+    std::vector<size_t> counter{};
+    counter.reserve(atom_indices.size());
+    for (size_t i{0}; i<atom_indices.size(); i++) {
+      counter.push_back(1);
+    }
+    // add the position to the atom and count how often this happens
+    for (auto atom : pair_manager) {
+      for (auto pair : atom) {
+        counter.at(atom_indices_with_corresponding_cluster.at(pair.get_atom_index()))++;
+        atom_property[pair] += pair_manager->get_position(pair.get_atom_index());
+      }
+    }
+    for (auto atom : pair_manager) {
+      auto error = (atom_property[atom] - counter.at(atom.get_atom_index())*atom.get_position()).norm();
+      BOOST_CHECK_LE(error, tol * 100);
+    }
+  }
+
   BOOST_FIXTURE_TEST_CASE(atom_index_equal_order_one_cluster_for_smc_strict_test3,
                           PropertyFixtureStrictWithGhosts<StructureManagerCenters>) {
     atom_property.resize();
@@ -257,6 +290,34 @@ namespace rascal {
       BOOST_CHECK_LE(error, tol * 100);
     }
   }
+  
+  // AHF<ANL<SMC TODO
+  BOOST_FIXTURE_TEST_CASE(atom_index_equal_order_one_cluster_for_smc_strict_test4,
+                          PropertyFixtureStrictWithGhosts<StructureManagerCenters>) {
+    atom_property.resize();
+    // initalize the positions
+    for (auto atom : adaptor_strict) {
+        atom_property[atom] = atom.get_position();
+    }
+    std::vector<int> atom_indices = adaptor_strict->get_manager_atom_indices();
+    std::vector<size_t> counter{};
+    counter.reserve(atom_indices.size());
+    for (size_t i{0}; i<atom_indices.size(); i++) {
+      counter.push_back(1);
+    }
+    // add the position to the atom and count how often this happens
+    for (auto atom : adaptor_strict) {
+      for (auto pair : atom) {
+        counter.at(pair.get_atom_index())++;
+        atom_property[pair] += adaptor_strict->get_position(pair.get_atom_index());
+      }
+    }
+    for (auto atom : adaptor_strict) {
+      auto error = (atom_property[atom] - counter.at(atom.get_atom_index())*atom.get_position()).norm();
+      BOOST_CHECK_LE(error, tol * 100);
+    }
+  }
+
 
   /* ---------------------------------------------------------------------- */
   /*

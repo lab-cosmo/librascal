@@ -268,7 +268,7 @@ namespace rascal {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
       auto access_index = cluster.get_cluster_index(Layer);
-      return nb_neigh[access_index]; //TODO(alex) this->nb_neigh ?
+      return nb_neigh[access_index];
     }
 
     template <size_t Order, size_t Layer, 
