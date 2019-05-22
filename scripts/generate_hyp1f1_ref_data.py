@@ -13,14 +13,16 @@ def dump_reference_json():
     sys.path.insert(0, os.path.join(path, 'tests/'))
     mp.dps = 200;
     data = []
-    for l in range(20):
+    for l in range(0,20):
         for n in range(20):
-            for z in [1e-2,1e-1,1,10,20,30,40,50,100,200]:
+            for z in [1e-2,1e-1,1,10,20,30,40,100,200]:
                 a = 0.5*(n+l+3)
                 b = l+1.5
-                val = float(hyp1f1(a,b,z))
-                data.append(dict(a=a,b=b,z=z,val=val))
 
+                val = float(hyp1f1(a,b,z))
+                der = float(a/b*hyp1f1(a+1,b+1,z))
+                data.append(dict(a=a,b=b,z=z,val=val,der=der))
+    print(len(data))
     with open(path+"tests/reference_data/hyp1f1_reference.ubjson",'wb') as f:
         ubjson.dump(data,f)
 
