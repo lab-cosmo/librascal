@@ -211,7 +211,9 @@ namespace rascal {
   // ValidateDefaultTemplateParamater
   template <size_t Order, size_t Layer>
   struct ClusterRefKeyDefaultTemplateParamater {
-    static_assert(Order==1, "ClusterRefKey of Order > 1 requires ParentLayer and NeigbhourLayer. The usage ClusterRefKey<Order, Layer> is only valid for Order = 1"); 
+    static_assert(Order==1, "ClusterRefKey of Order > 1 requires ParentLayer" 
+        "and NeigbhourLayer. The usage ClusterRefKey<Order, Layer> is only valid"
+        "for Order = 1"); 
     constexpr static size_t ParentLayer = Layer;
     constexpr static size_t NeighbourLayer = Layer;
   };

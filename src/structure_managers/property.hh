@@ -203,6 +203,7 @@ namespace rascal {
      return this->operator[](id.get_neighbour_cluster_index(CallerLayer));
     }
 
+
     // TODO adapto operator[] function for CallerOrder>1 PropertyOrder==1
     // template <size_t ClusterOrder, size_t CallerLayer>
     // inline reference operator[](const ClusterRefKey<ClusterOrder, CallerLayer> & id) {

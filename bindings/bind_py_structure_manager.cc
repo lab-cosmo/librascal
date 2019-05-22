@@ -44,7 +44,7 @@ struct HelperLayer {
 };
 
 template <typename SMI, size_t Order>
-using ClusterRefkey_t = ClusterRefKey<Order, HelperLayer<SMI, Order>::layer>;
+using ClusterRefkey_t = ClusterRefClusterKey<Order, HelperLayer<SMI, Order>::layer>;
 
 template <typename SMI, size_t Order>
 using ClusterRef_t = typename StructureManager<SMI>::template ClusterRef<Order>;
@@ -62,9 +62,9 @@ using PyManager = py::class_<StructureManagerImplementation,
 template <size_t Order, size_t Layer>
 void add_cluster_ref(py::module & m) {
   std::string cluster_parent_name =
-      internal::GetBindingTypeName<ClusterRefKey<Order, Layer>>();
+      internal::GetBindingTypeName<ClusterRefClusterKey<Order, Layer>>();
 
-  py::class_<ClusterRefKey<Order, Layer>, ClusterRefBase>(
+  py::class_<ClusterRefClusterKey<Order, Layer>, ClusterRefBase>(
       m, cluster_parent_name.c_str());
 }
 
