@@ -811,12 +811,14 @@ namespace rascal {
     //! Should be only used after the make_full_neighbour_list
     void make_full_neighbour_cluster_index_list(
         const std::vector<int> & atom_indices_with_corresponding_cluster) {
-      for (int neigh_atom_index : this->neighbours_atom_index) {
+      for (int neigh_atom_index : this->neighbours_atom_index) { // (i,neighbour_atom_index)
         add_cluster_index_for_neigh_atom_index(neigh_atom_index,
             atom_indices_with_corresponding_cluster);
       }
     }
-
+    // TODO(alex) change this to a reverse map
+    // atom_index->cluster_index<Order=1, Layer=0>
+    // complexity: neighbours_atom_index.size()*atom_indices.size() = n^2 *
     void add_cluster_index_for_neigh_atom_index(int neigh_atom_index,
         const std::vector<int> & atom_indices_with_corresponding_cluster) {
       size_t cluster_order_one_index{0};

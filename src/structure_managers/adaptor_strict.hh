@@ -341,6 +341,12 @@ namespace rascal {
     }
 
     ImplementationPtr_t manager;
+    // TODO(alex) should be changed to StructureManagerBase saves the a
+    // You can only save references in the initialisation list see shared_ptr
+    // example when doing this
+    // https://stackoverflow.com/questions/2785612/c-what-does-the-colon-after-a-constructor-mean
+    // constructor
+    //Distance_t & distance;
     std::shared_ptr<Distance_t> distance;
     std::shared_ptr<DirectionVector_t> dir_vec;
     const double cutoff;

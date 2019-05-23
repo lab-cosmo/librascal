@@ -253,6 +253,45 @@ namespace rascal {
     std::list<ManagerPtr_t> managers{};
   };
 
+  // #BUG8486@(markus), #BUG8486@(felix) see test_properties.cc for usage and
+  // explanation.
+
+  struct StructureManagerCentersStackFixture {
+    using Manager_t = StructureManagerCenters;
+    using ManagerPtr_t = std::shared_ptr<Manager_t>;
+    using ManagerTypeHolder_t =
+        StructureManagerTypeHolder<StructureManagerCenters>;
+    StructureManagerCentersStackFixture () :
+      manager{make_structure_manager<StructureManagerCenters>()} {manager->update();}
+    ManagerPtr_t manager;
+  };
+
+  template <class StackFixture, bool consider_ghost_neighbours_>
+  struct AdaptorNeighbourListStackFixture : StackFixture {
+    using Parent = StackFixture;
+    using Manager_t = AdaptorNeighbourList<typename Parent::Manager_t>;
+    using ManagerPtr_t = std::shared_ptr<Manager_t>;
+
+    const double consider_ghost_neighbours{consider_ghost_neighbours_};
+    const double cutoff{1.};
+    AdaptorNeighbourListStackFixture() :
+      manager{make_adapted_manager<AdaptorNeighbourList>(StackFixture::manager, cutoff, false)} {manager->update();}
+    ManagerPtr_t manager;
+  };
+
+  template <class StackFixture>
+  struct AdaptorStrictStackFixture : StackFixture {
+    using Parent = StackFixture;
+    using Manager_t = AdaptorStrict<typename Parent::Manager_t>;
+    using ManagerPtr_t = std::shared_ptr<Manager_t>;
+
+    const double cutoff{1.};
+    AdaptorStrictStackFixture() :
+      manager{make_adapted_manager<AdaptorStrict>(StackFixture::manager, cutoff)} {manager->update();}
+
+    ManagerPtr_t manager;
+  };
+
 }  // namespace rascal
 
 #endif  // TESTS_TEST_ADAPTOR_HH_

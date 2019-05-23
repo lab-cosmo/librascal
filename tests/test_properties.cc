@@ -44,11 +44,52 @@ namespace rascal {
    * A fixture for testing properties. It is based on the PairFixture, which is
    * basically a fixture which provides a pair neighbour list based on positions
    * which are initialized in the tests.
-   */
+   */ 
+
+  // #BUG8486@(markus), #BUG8486@(felix) I made new Fixtures, Multiple*Fixture
+  // does not match this use case because I need the manager already initialized
+  // in the initialization list of the constructor, an the old PairFixtures
+  // where not versitile enough to allow different stackings. I shadow the
+  // manager member variable in each stack such that it is usable in the new
+  // stack and replaces it for higher stacks. For the property tests what test
+  // data is load into the manager is not important, since we make our own
+  // properties.
+  
+  template <class StackFixture>
+  struct PropertyFixtureNew: StackFixture {
+    using Parent = StackFixture;
+    using Manager_t = typename Parent::Manager_t;
+    using ManagerPtr_t = std::shared_ptr<Manager_t>;
+
+    using AtomScalarProperty_t =
+        typename Manager_t::template Property_t<double, 1>;
+    using PairScalarProperty_t =
+        typename Manager_t::template Property_t<double, 2>;
+    using AtomVectorProperty_t =
+        typename Manager_t::template Property_t<double, 1, 3, 1>;
+    using AtomDynamicProperty_t =
+        typename Manager_t::template TypedProperty_t<size_t, 1>;
+    using AtomDynamicProperty2_t =
+        typename Manager_t::template TypedProperty_t<double, 1>;
+
+    constexpr static Dim_t DynSize() { return 3; }
+
+    std::string atom_property_metadata{"positions"};
+    std::string dynamic_property_metadata{"arbitrary counters"};
+    std::string dynamic_property2_metadata{"distances"};
+
+    PropertyFixtureNew()
+          : StackFixture{}, scalar_atom_property{*this->manager} {}
+     AtomScalarProperty_t scalar_atom_property;
+  };
+
+  // the old one is still in usage
   template <class ManagerImplementation>
   struct PropertyFixture: public PairFixture<ManagerImplementation> {
     using Manager_t = AdaptorNeighbourList<ManagerImplementation>;
 
+    using AtomScalarProperty_t =
+        typename Manager_t::template Property_t<double, 1>;
     using PairScalarProperty_t =
         typename Manager_t::template Property_t<double, 2>;
     using AtomVectorProperty_t =
@@ -66,6 +107,7 @@ namespace rascal {
 
     PropertyFixture(bool consider_ghost_neighbours = false)
         : PairFixture<ManagerImplementation>{consider_ghost_neighbours},
+          scalar_atom_property{*this->pair_manager},
           pair_property{*this->pair_manager},
           atom_property{*this->pair_manager, atom_property_metadata},
           dynamic_property{*this->pair_manager, DynSize(), 1,
@@ -73,11 +115,14 @@ namespace rascal {
           dynamic_property2{*this->pair_manager, DynSize(), 1,
                             dynamic_property2_metadata} {}
 
+    AtomScalarProperty_t scalar_atom_property;
     PairScalarProperty_t pair_property;
     AtomVectorProperty_t atom_property;
     AtomDynamicProperty_t dynamic_property;
     AtomDynamicProperty2_t dynamic_property2;
   };
+
+
 
   template <class ManagerImplementation>
   struct PropertyFixtureWithGhosts : public PropertyFixture<ManagerImplementation> {
@@ -89,6 +134,8 @@ namespace rascal {
   struct PropertyFixtureStrict: public PairFixtureStrict<ManagerImplementation> {
     using Manager_t = AdaptorStrict<AdaptorNeighbourList<ManagerImplementation>>;
 
+    using AtomScalarProperty_t =
+        typename Manager_t::template Property_t<double, 1>;
     using PairScalarProperty_t =
         typename Manager_t::template Property_t<double, 2>;
     using AtomVectorProperty_t =
@@ -106,6 +153,7 @@ namespace rascal {
 
     PropertyFixtureStrict(bool consider_ghost_neighbours = false)
         : PairFixtureStrict<ManagerImplementation>{consider_ghost_neighbours},
+          scalar_atom_property{*this->adaptor_strict},
           pair_property{*this->adaptor_strict},
           atom_property{*this->adaptor_strict, atom_property_metadata},
           dynamic_property{*this->adaptor_strict, DynSize(), 1,
@@ -113,6 +161,7 @@ namespace rascal {
           dynamic_property2{*this->adaptor_strict, DynSize(), 1,
                             dynamic_property2_metadata} {}
 
+    AtomScalarProperty_t scalar_atom_property;
     PairScalarProperty_t pair_property;
     AtomVectorProperty_t atom_property;
     AtomDynamicProperty_t dynamic_property;
@@ -183,6 +232,8 @@ namespace rascal {
     }
   }
 
+  //TODO(alex) BEGIN
+  /* ---------------------------------------------------------------------- */
   // TODO(alex) tests: AHF<NL<SMC; AS<AHF<ANL
   // TODO(alex) tests:NL<SMC no ghost
 
@@ -232,65 +283,54 @@ namespace rascal {
       auto error = (atom_property[atom] - counter.at(atom.get_atom_index())*atom.get_position()).norm();
       BOOST_CHECK_LE(error, tol * 100);
     }
-  }
+  } 
+  
+  // TODO(alex)  
+  //using multiple_fixtures = boost::mpl::list<
+  //    PropertyFixtureNew<AdaptorNeighboursListStackNoGhosts> 
+  //    PropertyFixtureNew<AdaptorStrictFixture<AdaptorNLStackNoGhost>>
+  //    >;
 
-
+  //BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_strict_test, Fix, multiple_fixtures,
+  //                                 Fix) {
+  //    for (auto atom : Fix::manager) {
+  //      for (auto pair : atom) {
+  //        BOOST_CHECK_EQUAL(pair.get_neighbour_cluster_index(0), pair.get_atom_index());
+  //      }
+  //  }
+  //}
+ 
+  using AdaptorNeighbourListNoGhostStackFixture = AdaptorNeighbourListStackFixture<
+      StructureManagerCentersStackFixture,false>;
   BOOST_FIXTURE_TEST_CASE(atom_index_equal_order_one_cluster_for_smc_test_false,
-                          PropertyFixture<StructureManagerCenters>) {
-    atom_property.resize();
+                          PropertyFixtureNew<AdaptorNeighbourListNoGhostStackFixture>) {
+    scalar_atom_property.resize();
     // initalize the positions
     std::vector<int> atom_indices{}; // TODO(alex) change to get_manager_atom_indices()
-    atom_indices.reserve(pair_manager->get_size());
-    for (auto atom : pair_manager) {
-        atom_property[atom] = atom.get_position();
+    atom_indices.reserve(manager->get_size());
+    for (auto atom : manager) {
+        scalar_atom_property[atom] = 0;
         atom_indices.push_back(atom.get_atom_index());
     }
-
-    auto && atom_indices_with_corresponding_cluster = pair_manager->get_atom_indices_with_corresponding_cluster();
+    auto && atom_indices_with_corresponding_cluster =
+        manager->get_atom_indices_with_corresponding_cluster();
     std::vector<size_t> counter{};
     counter.reserve(atom_indices.size());
     for (size_t i{0}; i<atom_indices.size(); i++) {
-      counter.push_back(1);
+      counter.push_back(0);
     }
     // add the position to the atom and count how often this happens
-    for (auto atom : pair_manager) {
+    for (auto atom : manager) {
       for (auto pair : atom) {
         counter.at(atom_indices_with_corresponding_cluster.at(pair.get_atom_index()))++;
-        atom_property[pair] += pair_manager->get_position(pair.get_atom_index());
+        scalar_atom_property[pair]++;
       }
     }
-    for (auto atom : pair_manager) {
-      auto error = (atom_property[atom] - counter.at(atom.get_atom_index())*atom.get_position()).norm();
-      BOOST_CHECK_LE(error, tol * 100);
+    for (auto atom : manager) {
+      BOOST_CHECK_EQUAL(scalar_atom_property[atom], counter.at(atom.get_atom_index()));
     }
   }
 
-  BOOST_FIXTURE_TEST_CASE(atom_index_equal_order_one_cluster_for_smc_strict_test3,
-                          PropertyFixtureStrictWithGhosts<StructureManagerCenters>) {
-    atom_property.resize();
-    // initalize the positions
-    for (auto atom : adaptor_strict) {
-        atom_property[atom] = atom.get_position();
-    }
-    std::vector<int> atom_indices = adaptor_strict->get_manager_atom_indices();
-    std::vector<size_t> counter{};
-    counter.reserve(atom_indices.size());
-    for (size_t i{0}; i<atom_indices.size(); i++) {
-      counter.push_back(1);
-    }
-    // add the position to the atom and count how often this happens
-    for (auto atom : adaptor_strict) {
-      for (auto pair : atom) {
-        counter.at(pair.get_atom_index())++;
-        atom_property[pair] += adaptor_strict->get_position(pair.get_atom_index());
-      }
-    }
-    for (auto atom : adaptor_strict) {
-      auto error = (atom_property[atom] - counter.at(atom.get_atom_index())*atom.get_position()).norm();
-      BOOST_CHECK_LE(error, tol * 100);
-    }
-  }
-  
   // AHF<ANL<SMC TODO
   BOOST_FIXTURE_TEST_CASE(atom_index_equal_order_one_cluster_for_smc_strict_test4,
                           PropertyFixtureStrictWithGhosts<StructureManagerCenters>) {
@@ -318,6 +358,8 @@ namespace rascal {
     }
   }
 
+  //TODO(alex) END
+  /* ---------------------------------------------------------------------- */
 
   /* ---------------------------------------------------------------------- */
   /*

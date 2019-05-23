@@ -416,8 +416,10 @@ namespace rascal {
     // and in a bug later. Theoretically validate_proprety_t should already catch
     // these cases, but only theoretically, I am not sure if dynamic_cast does
     // additional checks.
+    
+    // TODO change type to UserProperty_t & 
     template<typename UserProperty_t>
-    std::shared_ptr<UserProperty_t>
+    std::shared_ptr<UserProperty_t> 
         get_validated_property(const std::string & name) const {
       auto property = this->get_property(name);
       this->template validate_property_t<UserProperty_t>(property);
