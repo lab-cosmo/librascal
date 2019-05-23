@@ -398,7 +398,7 @@ namespace rascal {
                      pow(this->radial_sigmas[radial_n], 3.0 + 2.0 * radial_n)));
           for (size_t angular_l{0}; angular_l < this->max_angular + 1;
                ++angular_l) {
-            this->radial_nl_factors(radial_n, angular_l) =
+            this->radial_nl_factors(radial_n, angular_l) = 
                 0.25 * std::tgamma(0.5 * (3.0 + angular_l + radial_n)) /
                 std::tgamma(1.5 + angular_l);
           }

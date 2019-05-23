@@ -102,7 +102,7 @@ namespace rascal {
     std::string ref_filename = "reference_data/hyp1f1_reference.ubjson";
 
     json ref_data{};
-    bool verbose{true};
+    bool verbose{false};
   };
 
 }  // namespace rascal

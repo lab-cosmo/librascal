@@ -50,10 +50,48 @@ using rascal::math::Hyp1f1Series;
 using rascal::math::Hyp1f1Asymptotic;
 
 
+
+// template<class T>
+// double dfridr(T &func, const double x, const double h, double &err) {
+//   const int ntab=10;
+//   const double con=1.4, con2=(con*con);
+//   const double big=numeric_limits<double>::max();
+//   const double safe=2.0;
+//   int i,j;
+//   double errt,fac,hh,ans;
+//   MatDoub a(ntab,ntab);
+//   if (h == 0.0) throw("h must be nonzero in dfridr.");
+//   hh=h;
+//   a[0][0]=(func(x+hh)-func(x-hh))/(2.0*hh);
+//   err=big;
+//   for (i=1;i<ntab;i++) {
+//     hh /= con;
+//     a[0][i]=(func(x+hh)-func(x-hh))/(2.0*hh);
+//     fac=con2;
+//     for (j=1;j<=i;j++) {
+//       a[j][i]=(a[j-1][i]*fac-a[j-1][i-1])/(fac-1.0);
+//       fac=con2*fac;
+//       errt=std::max(std::abs(a[j][i]-a[j-1][i]),std::abs(a[j][i]-a[j-1][i-1]));
+//       if (errt <= err) {
+//         err=errt;
+//         ans=a[j][i];
+//       }
+//     }
+//     if (std::abs(a[i][i]-a[i-1][i-1]) >= safe*err) break;
+//     }
+//   return ans;
+// }
+
+
+
 int main()
 {
     std::cout.setf(std::ios_base::scientific);
     std::cout.precision(14);
+    // double err{};
+    // auto res{dfridr([]std::exp , 20, 1e-6, err)};
+    // double rel_err{std::abs(1-res/std::exp(20))};
+    // std::cout<< rel_err << std::endl;
     // std::vector<int> ls{{4,16}};
     // std::vector<int> ns{{0,2,4,5,7,10,13,16}};
     // std::vector<int> ls{{16}};
@@ -85,21 +123,32 @@ int main()
     //     }
     // }
     // std::cout<< "h1f1_hybrid" << std::endl;
-    double a{13};
+    double a{13.0};
     double b{17.5};
     Hyp1f1Series hyp{a,b,300};
     Hyp1f1Series hyp_d{a+1,b+1,300};
     Hyp1f1Asymptotic hypa{a,b,300};
     Hyp1f1Asymptotic hypa_d{a+1,b+1,300};
     Hyp1f1 hyph{a,b,300};
-    double z{20};
-    std::cout << hyp.calc(z, false) << std::endl;
-    std::cout << hypa.calc(z, false) << std::endl;
-    std::cout << hyph.calc(z, false) << std::endl;
-    std::cout << hyp.calc(z, true) << std::endl;
-    std::cout << a/b*hyp_d.calc(z, false) << std::endl;
-    std::cout << hypa.calc(z, true) << std::endl;
-    std::cout << a/b*hypa_d.calc(z, false) << std::endl;
-    std::cout << hyph.calc(z, true) << std::endl;
+    h1f1_cephes ccc{a,b,300};
+    h1f1_cephes dccc{a+1,b+1,300};
+    double z{40.0};
+    double h{1e-6};
+    // std::cout << hyp.calc(z, false) << std::endl;
+    // std::cout << hypa.calc(z, false) << std::endl;
+    // std::cout << hyph.calc(z, false) << std::endl;
+    // std::cout << hyp.calc(z, true) << std::endl;
+    // std::cout << a/b*hyp_d.calc(z, false) << std::endl;
+    // std::cout << hypa.calc(z, true) << std::endl;
+    // std::cout << a/b*hypa_d.calc(z, false) << std::endl;
+    // std::cout << hyph.calc(z, true) << std::endl;
+//    std::cout << (ccc.calc(z+h) - ccc.calc(z-h)) / (2*h)<< std::endl;
+//    std::cout << (hypa.calc(z+h) - hypa.calc(z-h)) / (2*h)<< std::endl;
+//    std::cout << (hyph.calc(z+h) - hyph.calc(z-h)) / (2*h)<< std::endl;
+//    std::cout << z+h << ", " << z-h << std::endl;
+//    std::cout << hyph.calc(z+h) << ", " << hyph.calc(z-h) << std::endl;
+//    // std::cout << (hyph.hyp1f1_asymptotic.calc(z+h) - hyph.hyp1f1_asymptotic.calc(z-h)) / (2*h)<< std::endl;
+   std::cout << hyph.calc(z, true) << std::endl;
+    std::cout << hyph.calc_numerical_derivative(z, h) << std::endl;
 
 }

@@ -13,7 +13,7 @@ def dump_reference_json():
     sys.path.insert(0, os.path.join(path, 'tests/'))
     mp.dps = 200;
     data = []
-    for l in range(0,20):
+    for l in range(20):
         for n in range(20):
             for z in [1e-2,1e-1,1,10,20,30,40,100,200]:
                 a = 0.5*(n+l+3)

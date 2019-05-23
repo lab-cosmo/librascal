@@ -39,18 +39,18 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(math_hyp1f1_test,
                           Hyp1F1RefFixture) {
+
     for (auto& data : this->ref_data) {
       double a{data["a"]},b{data["b"]},z{data["z"]},hyp1f1_ref{data["val"]},hyp1f1_der_ref{data["der"]};
       math::Hyp1f1 func{a,b,200,1e-13};
       double val{func.calc(z)};
       double der{func.calc(z, true)};
-      // TODO(felix) find a proper scheme for numerical derivatives
-      // double h{1e-9};
-      // // centered finite difference
-      // // double hyp1f1_num_der{(func.calc(z+h)-func.calc(z-h)) / (2*h)};
-      // double hyp1f1_num_der{
-      //   (-func.calc(z+2*h)+8*func.calc(z+h)-8*func.calc(z-h)+func.calc(z-2*h)) / (12*h)};
+      
+      double h{1e-5};
+      double hyp1f1_num_der{func.calc_numerical_derivative(z, h)};
 
+      // check if hyp1f1 is consistent with the
+      // mpmath reference
       double rel_error{std::abs((hyp1f1_ref-val)/hyp1f1_ref)};
       if (rel_error > 10*math::dbl_ftol and this->verbose) {
         std::cout << " a=" << a<< " b=" << b<< " z=" << z<< " ref=" << hyp1f1_ref<< " impl="<< val<< " z_switch=";
@@ -58,19 +58,24 @@ namespace rascal {
       }
       BOOST_CHECK_LE(rel_error, 10*math::dbl_ftol);
 
+      // check if the analytical derivatives are consistent with the
+      // mpmath reference
       double rel_der_error{std::abs((hyp1f1_der_ref-der)/hyp1f1_der_ref)};
       if (rel_der_error > 10*math::dbl_ftol and this->verbose) {
-        std::cout << "Derivative a=" << a<< " b=" << b<< " z=" << z<< " ref=" << hyp1f1_der_ref<< " impl="<< der<< " z_switch=";
+        std::cout << "Derivative a=" << a<< " b=" << b<< " z=" << z<< " ref=" << hyp1f1_der_ref<< " impl="<< der<< " rel_err="<< rel_der_error<<" z_switch=";
         std::cout << func.z_asympt << std::endl;
       }
       BOOST_CHECK_LE(rel_der_error, 10*math::dbl_ftol);
 
-      // double der_consistency_rel_error{std::abs((hyp1f1_num_der-der)/hyp1f1_num_der)};
-      // if (der_consistency_rel_error > 1000*math::dbl_ftol and this->verbose) {
-      //   std::cout << "Derivative consistency a=" << a<< " b=" << b<< " z=" << z<< " num_der=" << hyp1f1_num_der<< " impl="<< der << " rel_diff="<<der_consistency_rel_error<< " z_switch=";
-      //   std::cout << func.z_asympt << std::endl;
-      // }
-      // // BOOST_CHECK_LE(der_consistency_rel_error, 10*math::dbl_ftol);
+      // check if the numerical derivatives are consistent with the
+      // analytical ones
+      double der_consistency_rel_error{std::abs((hyp1f1_num_der-der)/hyp1f1_num_der)};
+      if (der_consistency_rel_error > 1e5*math::dbl_ftol and this->verbose) {
+        std::cout << "Derivative consistency a=" << a<< " b=" << b<< " z=" << z<< " num_der=" << hyp1f1_num_der<< " impl="<< der << " rel_diff="<<der_consistency_rel_error<< " z_switch=";
+        std::cout << func.z_asympt << std::endl;
+      }
+
+      BOOST_CHECK_LE(der_consistency_rel_error, 1e5*math::dbl_ftol);
     }
   }
 
