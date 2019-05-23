@@ -260,7 +260,7 @@ namespace rascal {
         this->radial_ortho_matrix.resize(this->max_radial, this->max_radial);
         this->fac_b.resize(this->max_radial, 1);
         this->radial_norm_factors.resize(this->max_radial, 1);
-        this->radial_nl_factors.resize(this->max_radial, this->max_angular + 1);
+        this->radial_n_factors.resize(this->max_radial);
         this->radial_sigmas.resize(this->max_radial, 1);
         this->radial_integral_neighbour.resize(this->max_radial,
                                                this->max_angular + 1);
@@ -313,7 +313,7 @@ namespace rascal {
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           this->radial_integral_center(radial_n) =
               this->radial_norm_factors(radial_n) *
-              this->radial_nl_factors(radial_n, 0) *
+              this->radial_n_factors(radial_n) *
               sqrt(pow(fac_a + this->fac_b[radial_n], -(3+radial_n)));
         }
 
@@ -334,9 +334,6 @@ namespace rascal {
         auto smearing{downcast_atomic_smearing<AST>(this->atomic_smearing)};
         // a = 1 / (2*\sigma^2)
         double fac_a{0.5 * pow(smearing->get_gaussian_sigma(pair), -2)};
-        double fac_a2{pow(fac_a, 2)};
-        double distance2{pow(distance, 2)};
-        double exp_factor = std::exp(-fac_a * distance2);
 
         // computes (r_{ij}*a)^l incrementally
         Vector_t distance_fac_a_l(this->max_angular + 1);
@@ -362,60 +359,13 @@ namespace rascal {
         }
 
         this->hyp1f1_calculator.calc(distance, fac_a, this->fac_b);
-
-        // this->radial_integral_neighbour =
-        //     (a_b_l_n.array() * this->radial_nl_factors.array())
-        //         .matrix();
-        this->radial_integral_neighbour = a_b_l_n;
-        this->radial_integral_neighbour *= 0.25;
-
-        this->radial_integral_neighbour *= distance_fac_a_l.asDiagonal();
-        // this->radial_integral_neighbour *= this->hyp1f1_calculator.get_values().array();
-        auto vals{this->hyp1f1_calculator.get_values()};
-        double diff{0};
-        for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
-          double radial_sigma_factors{fac_a2 / (fac_a + this->fac_b[radial_n])};
-          for (size_t angular_l{0}; angular_l < this->max_angular + 1;
-               angular_l++) {
-            // this->radial_integral_neighbour(radial_n, angular_l) *= vals(radial_n, angular_l);
-//             this->radial_integral_neighbour(radial_n, angular_l) *=
-//                 math::hyp1f1(0.5 * (3.0 + angular_l + radial_n),
-//                              1.5 + angular_l, distance2 * radial_sigma_factors);
-            double a{0.5 * (radial_n+angular_l+3)};
-            double b{angular_l + 1.5};
-            double fff{std::tgamma(a) / std::tgamma(b)};
-            double ref{exp_factor*fff*math::hyp1f1(a,b, distance2 * radial_sigma_factors)};
-            double test{vals(radial_n, angular_l)};
-            diff = std::abs((test-ref)/ref);
-            if (diff > 1e-10) {
-              std::cout << diff << std::endl;
-            }
-            if (std::isnan(test)) {
-              std::cout << a<<", "<<b << ", " << distance2 * radial_sigma_factors << std::endl;
-            }
-            this->radial_integral_neighbour(radial_n, angular_l) *= test;
-            // this->radial_integral_neighbour(radial_n, angular_l) *=
-            //     exp_factor * math::hyp1f1(a,b, distance2 * radial_sigma_factors);
-            // this->radial_integral_neighbour(radial_n, angular_l) *= this->radial_nl_factors(radial_n, angular_l);
-            // this->radial_integral_neighbour(radial_n, angular_l) *=0.25 * std::tgamma(0.5 * (3.0 + angular_l + radial_n)) /
-            //     std::tgamma(1.5 + angular_l);
-            // this->radial_integral_neighbour(radial_n, angular_l) *=
-            //       0.25 * std::tgamma(0.5 * (3.0 + angular_l + radial_n))
-            //       / std::tgamma(1.5 + angular_l);
-// //            double ref{math::hyp1f1(0.5 * (3.0 + angular_l + radial_n),1.5 + angular_l, distance2 * radial_sigma_factors)};
-// //            double test{this->hyp1f1_calculator.calc(radial_n, angular_l, distance2 * radial_sigma_factors)};
-// //            diff = std::abs(test-ref);
-//             std::cout << diff << std::endl;
-//             double test1{this->hyp1f1_calculator.calc(radial_n, angular_l, distance, fac_a, fac_b(radial_n))};
-
-
-          }
-          this->radial_integral_neighbour.row(radial_n) *=
-              this->radial_norm_factors(radial_n);
-        }
-
+        
         this->radial_integral_neighbour =
-            this->radial_ortho_matrix * this->radial_integral_neighbour;
+            (a_b_l_n.array() * this->hyp1f1_calculator.get_values().array()).matrix();
+        this->radial_integral_neighbour *= distance_fac_a_l.asDiagonal();
+        this->radial_integral_neighbour.transpose() *=
+              this->radial_norm_factors.asDiagonal();
+        this->radial_integral_neighbour.transpose() *= this->radial_ortho_matrix;
         return Matrix_Ref(this->radial_integral_neighbour);
       }
 
@@ -432,15 +382,10 @@ namespace rascal {
 
         // Precompute common prefactors
         for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
-          this->radial_norm_factors(radial_n) = std::sqrt(
+          this->radial_norm_factors(radial_n) = 0.25 * std::sqrt(
               2.0 / (std::tgamma(1.5 + radial_n) *
                      pow(this->radial_sigmas[radial_n], 3.0 + 2.0 * radial_n)));
-          for (size_t angular_l{0}; angular_l < this->max_angular + 1;
-               ++angular_l) {
-            this->radial_nl_factors(radial_n, angular_l) =
-                0.25 * std::tgamma(0.5 * (3.0 + angular_l + radial_n)) /
-                std::tgamma(1.5 + angular_l);
-          }
+          this->radial_n_factors(radial_n) = std::tgamma(0.5 * (3.0 + radial_n)) / std::tgamma(1.5);
         }
       }
 
@@ -506,7 +451,7 @@ namespace rascal {
       // b = 1 / (2*\sigma_n^2)
       Vector_t fac_b{};
       Vector_t radial_norm_factors{};
-      Matrix_t radial_nl_factors{};
+      Vector_t radial_n_factors{};
       Matrix_t radial_ortho_matrix{};
     };
 
