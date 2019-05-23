@@ -73,7 +73,7 @@ namespace rascal {
 
       Hyp1f1Series(const double& a, const double& b, const size_t& mmax, const double& tolerance = 1e-14)
           : a{a}, b{b}, mmax{mmax},
-            prefac{std::tgamma(b)/std::tgamma(a)}, tolerance{tolerance} {
+            prefac{std::tgamma(a)/std::tgamma(b)}, tolerance{tolerance} {
 
           // when a == b, 1F1 is an exponential
           if (std::abs(1 - this->b/this->a) < dbl_ftol) {
@@ -96,16 +96,29 @@ namespace rascal {
       //! Computes G(a,b,z)
       inline double calc(const double& r_ij, const double& alpha, const double& beta, const bool& derivative = false, const int& n_terms = -1) {
         using math::pow;
-        double z{pow(alpha*r_ij, 2) / (alpha + beta)};
-        return this->prefac*this->calc(z, derivative, n_terms)*std::exp(-alpha*r_ij*r_ij);
+        double result{0.};
+        if (not this->is_exp) {
+          double z{pow(alpha*r_ij, 2) / (alpha + beta)};
+          result = this->prefac * this->calc(z, derivative, n_terms) *
+                 std::exp(-alpha * r_ij * r_ij);
+        } else {
+          // simplification of the argument with exp(-alpha*r_ij^2)
+          double z2{-alpha*beta*pow(r_ij, 2) / (alpha + beta)};
+          result = this->prefac * std::exp(z2);
+        }
+        if (std::isnan(result)) {result = DOVERFLOW;}
+        return result;
       }
 
       inline double calc(const double& z, const bool& derivative = false, const int& n_terms = -1) {
+        double result{0.};
         if (not this->is_exp) {
-          return this->hyp1f1(z, derivative, n_terms);
+          result = this->hyp1f1(z, derivative, n_terms);
         } else {
-          return std::exp(z);
+          result = std::exp(z);
         }
+        if (std::isnan(result)) {result = DOVERFLOW;}
+        return result;
       }
       //! Computes 1F1
       inline double hyp1f1(const double& z, const bool& derivative, const int& n_terms) {
@@ -173,7 +186,6 @@ namespace rascal {
       size_t mmax;
       Eigen::VectorXd coeff{};
       Eigen::VectorXd coeff_derivative{};
-      Eigen::VectorXd coefficient{};
 
       inline double z_power_a_b(const double& z) {
         using math::pow;
@@ -219,14 +231,20 @@ namespace rascal {
       //! Computes G(a,b,z)
       inline double calc(const double& r_ij, const double& alpha, const double& beta, const bool& derivative = false, const int& n_terms = -1) {
         using math::pow;
-        // argument of 1F1
-        double z{pow(alpha*r_ij, 2) / (alpha + beta)};
+
         // simplification of the argument with exp(-alpha*r_ij^2)
         double z2{-alpha*beta*pow(r_ij, 2) / (alpha + beta)};
-
-        auto fac{this->z_power_a_b(z)};
-
-        return this->hyp2f0(z, derivative, n_terms)*std::exp(z2)*fac;
+        double result{0.};
+        if (not this->is_exp) {
+          // argument of 1F1
+          double z{pow(alpha*r_ij, 2) / (alpha + beta)};
+          auto fac{this->z_power_a_b(z)};
+          result = this->hyp2f0(z, derivative, n_terms) * std::exp(z2) * fac;
+        } else {
+          result = std::exp(z2) / this->prefac;
+        }
+        if (std::isnan(result)) {result = DOVERFLOW;}
+        return result;
       }
 
       //! Computes 1F1
@@ -415,27 +433,32 @@ namespace rascal {
 
     class Hyp1f1SphericalExpansion {
      protected:
-      using Matrix_Ref = typename Eigen::Ref<const MatrixX_t>;
+      using Matrix_Ref = typename Eigen::Ref<const Matrix_t>;
       using Vector_Ref = typename Eigen::Ref<const Eigen::VectorXd>;
 
-      int max_angular{0}, max_radial{0};
+      size_t max_angular{0}, max_radial{0};
       std::vector<Hyp1f1> hyp1f1{};
 
-      MatrixX_t values{};
-      MatrixX_t derivatives{};
+      Matrix_t values{};
+      Matrix_t derivatives{};
+      double tolerance;
+      size_t precomputation_size;
 
       inline int get_pos(const int& n_radial, const int& l_angular) {
-        return l_angular + this->max_angular * n_radial;
+        return l_angular + (this->max_angular+1) * n_radial;
       }
 
      public:
-      Hyp1f1SphericalExpansion(const int& max_angular, const Vector_Ref radial_sigmas, const double& tolerance = 1e-13, const size_t& precomputation_size = 200 )
-        :max_angular{max_angular}  {
-        this->max_radial = radial_sigmas.size();
+      Hyp1f1SphericalExpansion(const double& tolerance = 1e-13, const size_t& precomputation_size = 200 )
+      :tolerance{tolerance},precomputation_size{precomputation_size}  {}
+
+      void precompute(const size_t& max_radial, const size_t& max_angular) {
+        this->max_angular = max_angular;
+        this->max_radial = max_radial;
         this->values.resize(max_radial, max_angular + 1);
         this->derivatives.resize(max_radial, max_angular + 1);
-        for(int n_radial{0}; n_radial < max_radial; n_radial++) {
-          for(int l_angular{0}; l_angular < max_angular+1; l_angular++) {
+        for(size_t n_radial{0}; n_radial < max_radial; n_radial++) {
+          for(size_t l_angular{0}; l_angular < max_angular+1; l_angular++) {
             double a{0.5 * (n_radial+l_angular+3)};
             double b{l_angular + 1.5};
             hyp1f1.emplace_back(a,b,precomputation_size,tolerance);
@@ -443,18 +466,40 @@ namespace rascal {
         }
       }
 
-      inline void calc(const double& r_ij, const double& alpha, const double& beta, const bool& derivative = false) {
-        // for(int n{0}; n < max_radial; n++) {
-          for(int l{0}; l < max_angular+1; l++) {
-            // int ipos{this->get_pos(n,l)};
-            this->values(l, 0) = this->hyp1f1[l].calc(r_ij, alpha, beta);
-          }
-        // }
-
+      inline double calc(size_t n_radial, size_t l_angular, double z) {
+        int ipos{this->get_pos(n_radial, l_angular)};
+        return this->hyp1f1[ipos].calc(z);
       }
 
-      inline Vector_Ref get_values() {
-        return Vector_Ref(this->values);
+      inline double calc(size_t n_radial, size_t l_angular, double r_ij, double alpha, double beta) {
+        int ipos{this->get_pos(n_radial, l_angular)};
+        return this->hyp1f1[ipos].calc(r_ij, alpha, beta);
+      }
+
+      inline void calc(const double& r_ij, const double& alpha, const Vector_Ref& fac_b, const bool& derivative = false) {
+        for(size_t n_radial{0}; n_radial < this->max_radial; n_radial++) {
+          for(size_t l_angular{0}; l_angular < this->max_angular+1; l_angular++) {
+            int ipos{this->get_pos(n_radial, l_angular)};
+            this->values(n_radial, l_angular) = this->hyp1f1[ipos].calc(r_ij, alpha, fac_b(n_radial));
+          }
+        }
+
+        if (derivative) {
+          for(size_t n_radial{0}; n_radial < this->max_radial; n_radial++) {
+            for(size_t l_angular{0}; l_angular < this->max_angular+1; l_angular++) {
+              int ipos{this->get_pos(n_radial, l_angular)};
+              this->derivatives(n_radial, l_angular) = this->hyp1f1[ipos].calc(r_ij, alpha, fac_b(n_radial), true);
+            }
+          }
+        }
+      }
+
+      inline Matrix_Ref get_values() {
+        return Matrix_Ref(this->values);
+      }
+
+      inline Matrix_Ref get_derivatives() {
+        return Matrix_Ref(this->derivatives);
       }
 
 

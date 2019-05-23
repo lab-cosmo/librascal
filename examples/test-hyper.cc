@@ -123,8 +123,8 @@ int main()
     //     }
     // }
     // std::cout<< "h1f1_hybrid" << std::endl;
-    double a{13.0};
-    double b{17.5};
+    double a{3.5};
+    double b{4.5};
     Hyp1f1Series hyp{a,b,300};
     Hyp1f1Series hyp_d{a+1,b+1,300};
     Hyp1f1Asymptotic hypa{a,b,300};
@@ -132,7 +132,7 @@ int main()
     Hyp1f1 hyph{a,b,300};
     h1f1_cephes ccc{a,b,300};
     h1f1_cephes dccc{a+1,b+1,300};
-    double z{40.0};
+    double z{85.4781};
     double h{1e-6};
     // std::cout << hyp.calc(z, false) << std::endl;
     // std::cout << hypa.calc(z, false) << std::endl;
@@ -148,6 +148,7 @@ int main()
 //    std::cout << z+h << ", " << z-h << std::endl;
 //    std::cout << hyph.calc(z+h) << ", " << hyph.calc(z-h) << std::endl;
 //    // std::cout << (hyph.hyp1f1_asymptotic.calc(z+h) - hyph.hyp1f1_asymptotic.calc(z-h)) / (2*h)<< std::endl;
+std::cout << hyph.calc(z) << std::endl;
    std::cout << hyph.calc(z, true) << std::endl;
     std::cout << hyph.calc_numerical_derivative(z, h) << std::endl;
 

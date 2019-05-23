@@ -36,6 +36,7 @@
 #include "structure_managers/property.hh"
 #include "rascal_utility.hh"
 #include "math/math_utils.hh"
+#include "math/hyp1f1.hh"
 #include "structure_managers/property_block_sparse.hh"
 
 #include <algorithm>
@@ -289,6 +290,7 @@ namespace rascal {
       void precompute() {
         this->precompute_radial_sigmas();
         this->precompute_radial_overlap();
+        this->hyp1f1_calculator.precompute(this->max_radial, this->max_angular);
       }
 
       //! define the contribution from the central atom to the expansion
@@ -359,17 +361,54 @@ namespace rascal {
           }
         }
 
-        this->radial_integral_neighbour =
-            (exp_factor * a_b_l_n.array() * this->radial_nl_factors.array())
-                .matrix();
+        this->hyp1f1_calculator.calc(distance, fac_a, this->fac_b);
+
+        // this->radial_integral_neighbour =
+        //     (a_b_l_n.array() * this->radial_nl_factors.array())
+        //         .matrix();
+        this->radial_integral_neighbour = a_b_l_n;
+        this->radial_integral_neighbour *= 0.25;
+
         this->radial_integral_neighbour *= distance_fac_a_l.asDiagonal();
+        // this->radial_integral_neighbour *= this->hyp1f1_calculator.get_values().array();
+        auto vals{this->hyp1f1_calculator.get_values()};
+        double diff{0};
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           double radial_sigma_factors{fac_a2 / (fac_a + this->fac_b[radial_n])};
           for (size_t angular_l{0}; angular_l < this->max_angular + 1;
                angular_l++) {
-            this->radial_integral_neighbour(radial_n, angular_l) *=
-                math::hyp1f1(0.5 * (3.0 + angular_l + radial_n),
-                             1.5 + angular_l, distance2 * radial_sigma_factors);
+            // this->radial_integral_neighbour(radial_n, angular_l) *= vals(radial_n, angular_l);
+//             this->radial_integral_neighbour(radial_n, angular_l) *=
+//                 math::hyp1f1(0.5 * (3.0 + angular_l + radial_n),
+//                              1.5 + angular_l, distance2 * radial_sigma_factors);
+            double a{0.5 * (radial_n+angular_l+3)};
+            double b{angular_l + 1.5};
+            double fff{std::tgamma(a) / std::tgamma(b)};
+            double ref{exp_factor*fff*math::hyp1f1(a,b, distance2 * radial_sigma_factors)};
+            double test{vals(radial_n, angular_l)};
+            diff = std::abs((test-ref)/ref);
+            if (diff > 1e-10) {
+              std::cout << diff << std::endl;
+            }
+            if (std::isnan(test)) {
+              std::cout << a<<", "<<b << ", " << distance2 * radial_sigma_factors << std::endl;
+            }
+            this->radial_integral_neighbour(radial_n, angular_l) *= test;
+            // this->radial_integral_neighbour(radial_n, angular_l) *=
+            //     exp_factor * math::hyp1f1(a,b, distance2 * radial_sigma_factors);
+            // this->radial_integral_neighbour(radial_n, angular_l) *= this->radial_nl_factors(radial_n, angular_l);
+            // this->radial_integral_neighbour(radial_n, angular_l) *=0.25 * std::tgamma(0.5 * (3.0 + angular_l + radial_n)) /
+            //     std::tgamma(1.5 + angular_l);
+            // this->radial_integral_neighbour(radial_n, angular_l) *=
+            //       0.25 * std::tgamma(0.5 * (3.0 + angular_l + radial_n))
+            //       / std::tgamma(1.5 + angular_l);
+// //            double ref{math::hyp1f1(0.5 * (3.0 + angular_l + radial_n),1.5 + angular_l, distance2 * radial_sigma_factors)};
+// //            double test{this->hyp1f1_calculator.calc(radial_n, angular_l, distance2 * radial_sigma_factors)};
+// //            diff = std::abs(test-ref);
+//             std::cout << diff << std::endl;
+//             double test1{this->hyp1f1_calculator.calc(radial_n, angular_l, distance, fac_a, fac_b(radial_n))};
+
+
           }
           this->radial_integral_neighbour.row(radial_n) *=
               this->radial_norm_factors(radial_n);
@@ -398,7 +437,7 @@ namespace rascal {
                      pow(this->radial_sigmas[radial_n], 3.0 + 2.0 * radial_n)));
           for (size_t angular_l{0}; angular_l < this->max_angular + 1;
                ++angular_l) {
-            this->radial_nl_factors(radial_n, angular_l) = 
+            this->radial_nl_factors(radial_n, angular_l) =
                 0.25 * std::tgamma(0.5 * (3.0 + angular_l + radial_n)) /
                 std::tgamma(1.5 + angular_l);
           }
@@ -450,7 +489,7 @@ namespace rascal {
 
       std::shared_ptr<AtomicSmearingSpecificationBase> atomic_smearing{};
       AtomicSmearingType atomic_smearing_type{};
-
+      math::Hyp1f1SphericalExpansion hyp1f1_calculator{1e-13, 200};
       // data member used to store the contributions to the expansion
       Matrix_t radial_integral_neighbour{};
       Vector_t radial_integral_center{};

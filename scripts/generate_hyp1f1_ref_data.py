@@ -15,7 +15,7 @@ def dump_reference_json():
     data = []
     for l in range(20):
         for n in range(20):
-            for z in [1e-2,1e-1,1,10,20,30,40,100,200]:
+            for z in [1e-2,1e-1,1,10,20,30,40,85,100,200]:
                 a = 0.5*(n+l+3)
                 b = l+1.5
 
