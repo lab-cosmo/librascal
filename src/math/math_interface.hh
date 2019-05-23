@@ -50,10 +50,10 @@ namespace rascal {
     double hyp1f1(const double & a, const double & b, const double & x);
 
     // overload the pow function from cmath to optimize for integer power
-    double pow(const double& x, const int& n);
-    double pow(const double& x, const std::size_t& n);
+    double pow(const double & x, const int & n);
+    double pow(const double & x, const std::size_t & n);
 
-    inline double pow(const double& x, const double& n) {
+    inline double pow(const double & x, const double & n) {
       return std::pow(x, n);
     }
   }  // namespace math

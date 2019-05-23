@@ -57,7 +57,6 @@ namespace rascal {
         Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
     using MatrixX2_t = Eigen::Matrix<double, Eigen::Dynamic, 2>;
 
-
     Matrix_t compute_assoc_legendre_polynom(double cos_theta,
                                             size_t max_angular);
 
@@ -67,7 +66,6 @@ namespace rascal {
     Matrix_t compute_spherical_harmonics(
         const Eigen::Ref<const Eigen::Vector3d> & direction,
         size_t max_angular);
-
 
     /**
      * Compute a cosine-type switching function for smooth cutoffs

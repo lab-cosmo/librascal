@@ -41,11 +41,9 @@ namespace rascal {
       return cephes::hyperg(a, b, x);
     }
 
-    double pow(const double& x, const int& n) {
-      return cephes::powi(x, n);
-    }
+    double pow(const double & x, const int & n) { return cephes::powi(x, n); }
 
-    double pow(const double& x, const std::size_t& n) {
+    double pow(const double & x, const std::size_t & n) {
       return cephes::powi(x, static_cast<int>(n));
     }
 

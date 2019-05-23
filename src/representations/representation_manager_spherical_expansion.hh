@@ -314,7 +314,7 @@ namespace rascal {
           this->radial_integral_center(radial_n) =
               this->radial_norm_factors(radial_n) *
               this->radial_n_factors(radial_n) *
-              sqrt(pow(fac_a + this->fac_b[radial_n], -(3+radial_n)));
+              sqrt(pow(fac_a + this->fac_b[radial_n], -(3 + radial_n)));
         }
 
         this->radial_integral_center =
@@ -359,13 +359,15 @@ namespace rascal {
         }
 
         this->hyp1f1_calculator.calc(distance, fac_a, this->fac_b);
-        
+
         this->radial_integral_neighbour =
-            (a_b_l_n.array() * this->hyp1f1_calculator.get_values().array()).matrix();
+            (a_b_l_n.array() * this->hyp1f1_calculator.get_values().array())
+                .matrix();
         this->radial_integral_neighbour *= distance_fac_a_l.asDiagonal();
         this->radial_integral_neighbour.transpose() *=
-              this->radial_norm_factors.asDiagonal();
-        this->radial_integral_neighbour.transpose() *= this->radial_ortho_matrix;
+            this->radial_norm_factors.asDiagonal();
+        this->radial_integral_neighbour.transpose() *=
+            this->radial_ortho_matrix;
         return Matrix_Ref(this->radial_integral_neighbour);
       }
 
@@ -382,10 +384,12 @@ namespace rascal {
 
         // Precompute common prefactors
         for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
-          this->radial_norm_factors(radial_n) = 0.25 * std::sqrt(
-              2.0 / (std::tgamma(1.5 + radial_n) *
-                     pow(this->radial_sigmas[radial_n], 3.0 + 2.0 * radial_n)));
-          this->radial_n_factors(radial_n) = std::tgamma(0.5 * (3.0 + radial_n)) / std::tgamma(1.5);
+          this->radial_norm_factors(radial_n) =
+              0.25 * std::sqrt(2.0 / (std::tgamma(1.5 + radial_n) *
+                                      pow(this->radial_sigmas[radial_n],
+                                          3.0 + 2.0 * radial_n)));
+          this->radial_n_factors(radial_n) =
+              std::tgamma(0.5 * (3.0 + radial_n)) / std::tgamma(1.5);
         }
       }
 

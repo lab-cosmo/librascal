@@ -233,7 +233,6 @@ namespace rascal {
           }
           break;
         }
-
       }
       manager_i += 1;
     }
