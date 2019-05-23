@@ -294,7 +294,7 @@ namespace rascal {
                           AtomPropertyFixture<StructureManagerCentersStackFixture>) {
     size_t cluster_index{0};
     for (auto atom : manager) {
-      BOOST_CHECK_EQUAL(atom.get_cluster_index(atom.get_atom_index()), cluster_index);
+      BOOST_CHECK_EQUAL(manager->get_cluster_index(atom.get_atom_index()), cluster_index);
       cluster_index++;
     }
   }
