@@ -529,6 +529,11 @@ namespace rascal {
         get_cluster_neighbour_cluster_index_impl(cluster, cluster_index);
     }
 
+    size_t get_cluster_index(const int atom_index) const{
+      return this->implementation().get_cluster_index_impl(atom_index);
+    }
+
+
     //template <size_t Order, size_t Layer>
     //inline size_t get_cluster_neighbour_cluster_index(
     //    ClusterRefKey<Order, Layer> & cluster,
@@ -537,7 +542,7 @@ namespace rascal {
     //    get_cluster_neighbour_cluster_index_impl(cluster, cluster_index);
     //}
 
-    // TODO(alex)
+    // TODO(alex) rename to get_manager_layer
     template <size_t Order>
     constexpr static size_t cluster_layer_from_order() {
       static_assert(Order>0, "Order is <1 this should not be");

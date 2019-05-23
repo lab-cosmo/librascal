@@ -253,6 +253,9 @@ namespace rascal {
                     "this implementation only handles atoms.");
       return 1;
     }
+    size_t get_cluster_index_impl(const int atom_index) const {
+      return static_cast<size_t>(atom_index);
+    }
 
     //! dummy function, since no neighbours are present her
     inline int get_cluster_neighbour_atom_index_impl(const Parent & /*parent*/,
@@ -376,9 +379,7 @@ namespace rascal {
   inline size_t StructureManagerCenters::get_cluster_neighbour_cluster_index_impl(
       const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> &,
       const size_t cluster_index) const {
-    static_assert(Order <= traits::MaxOrder,
-                  "this manager can only give the offset (= starting index)"
-                  " for a pair iterator, given the i atom of the pair");
+    static_assert(Order == 1, "This manager only handles atoms.");
     return cluster_index;
   }
 }  // namespace rascal

@@ -166,6 +166,13 @@ namespace rascal {
       return this->ilist[cluster_index];
     }
     
+    // #BUG8486@(all) I do not know how the structure of ilist is implemented,
+    // can it it have huge gaps like [1, 50000]? Then using a vector with ensures quick
+    // memory access would be super inefficient.
+    inline int get_cluster_index_impl(int atom_index) const {
+      throw std::runtime_error("This functionality might be not implemented correctly");
+      return this->cluster_index_from_atom_indices[atom_index];
+    }
 
     /**
      * provided an atom, returns the cumulative numbers of pairs up to the first
@@ -235,6 +242,9 @@ namespace rascal {
     double ** vatom{};    //!< virial stress of atoms
     int nb_pairs{};       //! number of clusters with cluster_size=2 (pairs)
     std::vector<int> offsets{};  //! offset per atom to access neighbour list
+    
+    // the inverse mapping from the ilist
+    std::vector<size_t> cluster_index_from_atom_indices{};
   };
 
   /**

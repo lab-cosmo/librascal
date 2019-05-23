@@ -59,6 +59,12 @@ namespace rascal {
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
+    // #BUG8486@(all) is this solution efficient or does ilist have huge gaps?
+    this->cluster_index_from_atom_indices.reserve(inum);
+    for (int i{0}; i<this->inum -1; ++i) {
+      // ilist does not have negative atom indices therefore the cast is safe
+      cluster_index_from_atom_indices.at(static_cast<size_t>(ilist[i])) = i;
+    }
     atom_cluster_indices.fill_sequence();
     pair_cluster_indices.fill_sequence();
   }

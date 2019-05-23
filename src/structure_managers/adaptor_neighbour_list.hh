@@ -664,6 +664,14 @@ namespace rascal {
       return this->atom_types[atom_index];
     }
 
+    /* If consider_ghost_neighbours=true and the atom index corresponds to an
+     * ghost atom, then it returns it cluster index of the atom in the original
+     * cell.
+     */ 
+    size_t get_cluster_index_impl(const int atom_index) {
+      return this->cluster_index_from_atom_indices[atom_index];
+    }
+
     //! Returns the type of a given atom, given an AtomRef
     inline const int & get_atom_type(const int & atom_index) const {
       return this->atom_types[atom_index];
@@ -771,17 +779,19 @@ namespace rascal {
     // TODO(alex) refactoring neighbours -> neighbours_atom_index and change type to int
     //! Stores neighbour's atom index in a list in sequence of atoms
     std::vector<int> neighbours_atom_index{};
-
-    //! Stores neighbour's cluster index in a list in sequence of atoms
+    
+    //TODO(alex) delete this two
     std::vector<size_t> neighbours_cluster_index{};
-    /* List of atom indices which have a correpsonding cluster index of order 1.
-     * if consider_ghost_neighbours is false ghost atoms will have a unique atom
-     * index but no cluster index order 1. To map the ghost atom to the cluster
-     * index of the corresponding real atom in the origin cell we build a list 
-     * with the corresponding origin atom indices of the ghost atoms instead of
-     * its new ghost atom indices as it is done in the atom_indices list.
-     */
     std::vector<int> atom_indices_with_corresponding_cluster{};
+
+    /* Returns the atoms cluster index when accessing it with the atom's atomic 
+     * index in a list in sequence of atoms.
+     * List of atom indices which have a correpsonding cluster index of order 1.
+     * if consider_ghost_neighbours is false ghost atoms will have a unique atom
+     * index but no cluster index of order 1. For this case the cluster index
+     * the atom in the cell at origin is used. 
+     * */
+    std::vector<size_t> cluster_index_from_atom_indices{};
 
     //! Stores the offset for each atom to accessing `neighbours`, this variable
     //! provides the entry point in the neighbour list, `nb_neigh` the number
@@ -1049,9 +1059,9 @@ namespace rascal {
       this->atom_indices.push_back(atom_index);
       this->atom_types.push_back(atom_type);
       ntot_atoms++;
+      //TODO(alex) delete
       this->atom_indices_with_corresponding_cluster.push_back(atom_index);
     }
-    
     // generate ghost atom indices and positions
     for (auto atom : this->get_manager().with_ghosts()) {
       auto pos = atom.get_position();
@@ -1080,13 +1090,21 @@ namespace rascal {
             // get_size_with_ghosts();
             this->add_ghost_atom(new_atom_index, pos_ghost, atom_type);
             ntot_atoms++;
+
+            // adds origin atom cluster_index if true
+            // adds ghost atom cluster index if false
+            size_t cluster_index = consider_ghost_neighbours ?
+                  new_atom_index :
+                  this->manager->get_cluster_index(atom.get_atom_index());
+            this->cluster_index_from_atom_indices.push_back(cluster_index);
+            // TODO(alex) delete this part
             if (consider_ghost_neighbours){
               this->atom_indices_with_corresponding_cluster.push_back(
                   new_atom_index);
             } else {
               this->atom_indices_with_corresponding_cluster.push_back(
                   atom.get_atom_index());
-            }
+}
           }
         }
       }
