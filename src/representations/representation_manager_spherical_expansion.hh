@@ -257,6 +257,7 @@ namespace rascal {
         this->max_angular = hypers.at("max_angular");
 
         // init size of the member data
+        // both precomputed quantities and actual expansion coefficients
         this->radial_ortho_matrix.resize(this->max_radial, this->max_radial);
         this->fac_b.resize(this->max_radial, 1);
         this->radial_norm_factors.resize(this->max_radial, 1);
@@ -527,11 +528,15 @@ namespace rascal {
           hypers.at("radial_contribution").get<json>();
       auto radial_contribution_type =
           radial_contribution_hypers.at("type").get<std::string>();
+
+      // create the class that will compute the radial terms of the
+      // expansion. the atomic smearing is an integral part of the
+      // radial contribution
       if (radial_contribution_type.compare("GTO") == 0) {
-        auto aa = std::make_shared<
+        auto rc_shared = std::make_shared<
             internal::RadialContribution<RadialBasisType::GTO>>(hypers);
-        this->atomic_smearing_type = aa->atomic_smearing_type;
-        this->radial_integral = aa;
+        this->atomic_smearing_type = rc_shared->atomic_smearing_type;
+        this->radial_integral = rc_shared;
         this->radial_integral_type = RadialBasisType::GTO;
 
       } else {
@@ -647,8 +652,10 @@ namespace rascal {
     Hypers_t hypers{};
   };
 
+  // compute classes template construction
   template <class Mngr>
   void RepresentationManagerSphericalExpansion<Mngr>::compute() {
+    // specialize based on the cutoff function
     using internal::CutoffFunctionType;
 
     switch (this->cutoff_function_type) {
@@ -666,6 +673,7 @@ namespace rascal {
   template <internal::CutoffFunctionType FcType>
   void RepresentationManagerSphericalExpansion<
       Mngr>::compute_by_radial_contribution() {
+    // specialize based on the type of radial contribution
     using internal::AtomicSmearingType;
     using internal::RadialBasisType;
 
@@ -696,6 +704,7 @@ namespace rascal {
     using math::PI;
     using math::pow;
 
+    // downcast cutoff and radial contributions so they are functional
     auto cutoff_function{
         downcast_cutoff_function<FcType>(this->cutoff_function)};
     auto radial_integral{
@@ -711,6 +720,8 @@ namespace rascal {
       auto & coefficients_center = this->expansions_coefficients[center];
       Key_t center_type{center.get_atom_type()};
 
+      //TODO(felix) think about an option to have "global" species,
+      //"structure" species(or not), or automatic at the level of environment
       std::unordered_set<Key_t, internal::Hash<Key_t>> keys{};
       for (auto neigh : center) {
         keys.insert({neigh.get_atom_type()});
@@ -747,8 +758,12 @@ namespace rascal {
             for (size_t m_array_idx{0}; m_array_idx < 2 * angular_l + 1;
                  m_array_idx++) {
               coefficients_center_by_type(radial_n, lm_collective_idx) +=
+                  //TODO(felix) check if you gain anything by accessing this
+                  // outside the m loop
                   neighbour_contribution(radial_n, angular_l) *
                   harmonics(angular_l, m_array_idx);
+                  //TODO(felix) refactor compute_spherical_harmonics to
+                  //return a vector of (lmax+1)^2 elements
               ++lm_collective_idx;
             }
           }
