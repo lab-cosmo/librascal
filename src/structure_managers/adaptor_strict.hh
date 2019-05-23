@@ -198,6 +198,14 @@ namespace rascal {
       return this->neighbours_cluster_index[cluster_index];
     }
 
+    /* Since the cluster indices of order 1 are only copied in this filter we
+     * can safely use the before-computed list from the previous manager,
+     * since they are still valid for access.
+     */
+    size_t get_cluster_index_impl(const int atom_index) {
+      return this->manager->cluster_index_from_atom_indices[atom_index];
+    }
+
     //! return atom type
     inline int & get_atom_type(const AtomRef_t & atom) {
       /**

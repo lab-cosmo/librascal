@@ -56,6 +56,28 @@ namespace rascal {
   // properties.
   
   template <class StackFixture>
+  struct AtomPropertyFixture: StackFixture {
+    using Parent = StackFixture;
+    using Manager_t = typename Parent::Manager_t;
+    using ManagerPtr_t = std::shared_ptr<Manager_t>;
+
+    using AtomScalarProperty_t =
+        typename Manager_t::template Property_t<double, 1>;
+    using AtomVectorProperty_t =
+        typename Manager_t::template Property_t<double, 1, 3, 1>;
+
+    constexpr static Dim_t DynSize() { return 3; }
+
+    std::string atom_property_metadata{"positions"};
+    std::string dynamic_property_metadata{"arbitrary counters"};
+    std::string dynamic_property2_metadata{"distances"};
+
+    AtomPropertyFixture()
+          : StackFixture{}, scalar_atom_property{*this->manager} {}
+     AtomScalarProperty_t scalar_atom_property;
+  };
+
+  template <class StackFixture>
   struct PropertyFixtureNew: StackFixture {
     using Parent = StackFixture;
     using Manager_t = typename Parent::Manager_t;
@@ -249,6 +271,34 @@ namespace rascal {
    * Layer=0 using the StructureManagerCenters.
    * 
    */
+
+  // TODO(alex)  
+  //using multiple_fixtures = boost::mpl::list<
+  //    PropertyFixtureNew<AdaptorNeighboursListStackNoGhosts> 
+  //    PropertyFixtureNew<AdaptorStrictFixture<AdaptorNLStackNoGhost>>
+  //    >;
+
+  //BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_strict_test, Fix, multiple_fixtures,
+  //                                 Fix) {
+  //    for (auto atom : Fix::manager) {
+  //      for (auto pair : atom) {
+  //        BOOST_CHECK_EQUAL(pair.get_neighbour_cluster_index(0), pair.get_atom_index());
+  //      }
+  //  }
+  //}
+ 
+  //using AdaptorNeighbourListNoGhostStackFixture = AdaptorNeighbourListStackFixture<
+  //    StructureManagerCentersStackFixture,true>;
+  // For SMC, ANL, AS
+  BOOST_FIXTURE_TEST_CASE(atom_index_equal_order_one_cluster_index,
+                          AtomPropertyFixture<StructureManagerCentersStackFixture>) {
+    size_t cluster_index{0};
+    for (auto atom : manager) {
+      BOOST_CHECK_EQUAL(atom.get_cluster_index(atom.get_atom_index()), cluster_index);
+      cluster_index++;
+    }
+  }
+
   BOOST_FIXTURE_TEST_CASE(atom_index_equal_order_one_cluster_for_smc_test,
                           PropertyFixtureWithGhosts<StructureManagerCenters>) {
     BOOST_CHECK_EQUAL(pair_manager->get_consider_ghost_neighbours(), true);
