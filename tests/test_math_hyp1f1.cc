@@ -45,27 +45,27 @@ namespace rascal {
       math::Hyp1f1 func{a,b,200,1e-13};
       double val{func.calc(z)};
       double der{func.calc(z, true)};
-      
+
       double h{1e-5};
       double hyp1f1_num_der{func.calc_numerical_derivative(z, h)};
 
       // check if hyp1f1 is consistent with the
       // mpmath reference
       double rel_error{std::abs((hyp1f1_ref-val)/hyp1f1_ref)};
-      if (rel_error > 10*math::dbl_ftol and this->verbose) {
+      if (rel_error > 15*math::dbl_ftol and this->verbose) {
         std::cout << " a=" << a<< " b=" << b<< " z=" << z<< " ref=" << hyp1f1_ref<< " impl="<< val<< " z_switch=";
         std::cout << func.z_asympt << std::endl;
       }
-      BOOST_CHECK_LE(rel_error, 10*math::dbl_ftol);
+      BOOST_CHECK_LE(rel_error, 15*math::dbl_ftol);
 
       // check if the analytical derivatives are consistent with the
       // mpmath reference
       double rel_der_error{std::abs((hyp1f1_der_ref-der)/hyp1f1_der_ref)};
-      if (rel_der_error > 10*math::dbl_ftol and this->verbose) {
+      if (rel_der_error > 15*math::dbl_ftol and this->verbose) {
         std::cout << "Derivative a=" << a<< " b=" << b<< " z=" << z<< " ref=" << hyp1f1_der_ref<< " impl="<< der<< " rel_err="<< rel_der_error<<" z_switch=";
         std::cout << func.z_asympt << std::endl;
       }
-      BOOST_CHECK_LE(rel_der_error, 10*math::dbl_ftol);
+      BOOST_CHECK_LE(rel_der_error, 15*math::dbl_ftol);
 
       // check if the numerical derivatives are consistent with the
       // analytical ones

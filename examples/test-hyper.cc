@@ -129,10 +129,10 @@ int main()
     Hyp1f1Series hyp_d{a+1,b+1,300};
     Hyp1f1Asymptotic hypa{a,b,300};
     Hyp1f1Asymptotic hypa_d{a+1,b+1,300};
-    Hyp1f1 hyph{a,b,300};
+    Hyp1f1 hyph{a,b,200, 1e-12};
     h1f1_cephes ccc{a,b,300};
     h1f1_cephes dccc{a+1,b+1,300};
-    double z{85.4781};
+    double z{80};
     double h{1e-6};
     // std::cout << hyp.calc(z, false) << std::endl;
     // std::cout << hypa.calc(z, false) << std::endl;

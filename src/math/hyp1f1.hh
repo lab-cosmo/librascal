@@ -106,7 +106,6 @@ namespace rascal {
           double z2{-alpha*beta*pow(r_ij, 2) / (alpha + beta)};
           result = this->prefac * std::exp(z2);
         }
-        if (std::isnan(result)) {result = DOVERFLOW;}
         return result;
       }
 
@@ -117,7 +116,6 @@ namespace rascal {
         } else {
           result = std::exp(z);
         }
-        if (std::isnan(result)) {result = DOVERFLOW;}
         return result;
       }
       //! Computes 1F1
@@ -243,7 +241,6 @@ namespace rascal {
         } else {
           result = std::exp(z2) / this->prefac;
         }
-        if (std::isnan(result)) {result = DOVERFLOW;}
         return result;
       }
 
@@ -340,17 +337,17 @@ namespace rascal {
         // std::cout << "# "<< std::fabs(1-this->h1f1_s/this->h1f1_a) << std::endl;
         if(std::fabs(1-this->h1f1_s/this->h1f1_a) > this->tolerance) {
           i_it = 0;
-          while(std::fabs(1-this->h1f1_s/this->h1f1_a) > this->tolerance and i_it < max_it) {
-            this->z_asympt *= 2.0;
+          while(std::fabs(1-this->h1f1_s/this->h1f1_a) > 100*this->tolerance and i_it < max_it) {
+            this->z_asympt *= 1.5;
             this->update_switching_point();
             i_it++;
-            // std::cout << "### "<< std::fabs(1-this->h1f1_s/this->h1f1_a) << std::endl;
+            // std::cout << "### "<< std::fabs(1-this->h1f1_s/this->h1f1_a) << ", "<< this->z_asympt << std::endl;
           }
           this->z_above = this->z_asympt;
         }
         else {
           i_it = 0;
-          while (std::fabs(1-this->h1f1_s/this->h1f1_a) < this->tolerance and i_it < max_it) {
+          while (std::fabs(1-this->h1f1_s/this->h1f1_a) < 100*this->tolerance and i_it < max_it) {
             this->z_asympt *= 0.5;
             this->update_switching_point();
             i_it++;
@@ -360,6 +357,7 @@ namespace rascal {
         /* and now bisects until we are reasonably close to an accurate
         determination */
         this->z_asympt = (this->z_above + this->z_below) * 0.5;
+        // std::cout <<"##4#" << this->z_above <<", " <<this->z_below<<", "<< this->z_asympt << std::endl;
         this->update_switching_point();
         i_it = 0;
         while (this->z_above - this->z_below > this->tolerance and i_it < max_it) {
@@ -373,7 +371,7 @@ namespace rascal {
           i_it++;
         }
         this->z_asympt = this->z_asympt * 1.1;
-        // std::cout << this->z_asympt << std::endl;
+        // std::cout   <<"##33#" << this->z_asympt << std::endl;
       }
 
      public:
