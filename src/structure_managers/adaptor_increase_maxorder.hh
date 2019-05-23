@@ -220,6 +220,10 @@ namespace rascal {
       }
     }
 
+    size_t get_cluster_index_impl(const int atom_index) const {
+      return this->manager->get_cluster_index_impl(atom_index);
+    }
+
     template <size_t Order, size_t Layer, 
            size_t ParentLayer = 
                ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentLayer,

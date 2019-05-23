@@ -200,6 +200,10 @@ namespace rascal {
       return this->manager->get_cluster_neighbour_atom_index_impl(*this->manager, index);
     }
 
+    size_t get_cluster_index_impl(const int atom_index) const {
+      return this->manager->get_cluster_index_impl(atom_index);
+    }
+
     //! return atom type
     inline int & get_atom_type(const AtomRef_t & atom) {
       return this->manager->get_atom_type(atom.get_index());

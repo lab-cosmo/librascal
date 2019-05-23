@@ -668,7 +668,7 @@ namespace rascal {
      * ghost atom, then it returns it cluster index of the atom in the original
      * cell.
      */ 
-    size_t get_cluster_index_impl(const int atom_index) {
+    size_t get_cluster_index_impl(const int atom_index) const {
       return this->cluster_index_from_atom_indices[atom_index];
     }
 
@@ -702,6 +702,10 @@ namespace rascal {
     }
     const std::vector<int> get_atom_indices_with_corresponding_cluster() {
       return this->atom_indices_with_corresponding_cluster;
+    }
+
+    const std::vector<size_t> & get_cluster_index_from_atom_indices() {
+      return this->cluster_index_from_atom_indices;
     }
 
   protected:
@@ -1054,11 +1058,13 @@ namespace rascal {
     // contiguously at the beginning of the list.
     int ntot_atoms{0};
     for (auto atom : *this->manager) {
-      auto atom_index = atom.get_atom_index();
-      auto atom_type = atom.get_atom_type();
+      int atom_index = atom.get_atom_index();
+      size_t cluster_index = this->manager->get_cluster_index(atom_index);
+      auto atom_type = atom.get_atom_type();      
       this->atom_indices.push_back(atom_index);
       this->atom_types.push_back(atom_type);
       ntot_atoms++;
+      this->cluster_index_from_atom_indices.push_back(cluster_index);
       //TODO(alex) delete
       this->atom_indices_with_corresponding_cluster.push_back(atom_index);
     }

@@ -281,6 +281,18 @@ namespace rascal {
   };
 
   template <class StackFixture>
+  struct AdaptorHalfListStackFixture : StackFixture {
+    using Parent = StackFixture;
+    using Manager_t = AdaptorHalfList<typename Parent::Manager_t>;
+    using ManagerPtr_t = std::shared_ptr<Manager_t>;
+
+    AdaptorHalfListStackFixture() :
+      manager{make_adapted_manager<AdaptorHalfList>(StackFixture::manager)} {manager->update();}
+
+    ManagerPtr_t manager;
+  };
+
+  template <class StackFixture>
   struct AdaptorStrictStackFixture : StackFixture {
     using Parent = StackFixture;
     using Manager_t = AdaptorStrict<typename Parent::Manager_t>;
@@ -289,6 +301,18 @@ namespace rascal {
     const double cutoff{1.};
     AdaptorStrictStackFixture() :
       manager{make_adapted_manager<AdaptorStrict>(StackFixture::manager, cutoff)} {manager->update();}
+
+    ManagerPtr_t manager;
+  };
+
+  template <class StackFixture>
+  struct AdaptorMaxOrderStackFixture : StackFixture {
+    using Parent = StackFixture;
+    using Manager_t = AdaptorMaxOrder<typename Parent::Manager_t>;
+    using ManagerPtr_t = std::shared_ptr<Manager_t>;
+
+    AdaptorMaxOrderStackFixture() :
+      manager{make_adapted_manager<AdaptorMaxOrder>(StackFixture::manager)} {manager->update();}
 
     ManagerPtr_t manager;
   };

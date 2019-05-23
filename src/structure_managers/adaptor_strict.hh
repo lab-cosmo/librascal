@@ -202,8 +202,8 @@ namespace rascal {
      * can safely use the before-computed list from the previous manager,
      * since they are still valid for access.
      */
-    size_t get_cluster_index_impl(const int atom_index) {
-      return this->manager->cluster_index_from_atom_indices[atom_index];
+    size_t get_cluster_index_impl(const int atom_index) const {
+      return this->manager->get_cluster_index_impl(atom_index);
     }
 
     //! return atom type
@@ -379,42 +379,43 @@ namespace rascal {
     std::array<std::vector<size_t>, traits::MaxOrder> offsets;
 
    private:
-    void make_full_neighbour_cluster_index_list() {
-      for (int neigh_atom_index : this->atom_indices[1]) {
-        add_cluster_index_for_neigh_atom_index(neigh_atom_index);
-      }
-    }
+    //TODO(alex) delete
+    //void make_full_neighbour_cluster_index_list() {
+    //  for (int neigh_atom_index : this->atom_indices[1]) {
+    //    //add_cluster_index_for_neigh_atom_index(neigh_atom_index);
+    //  }
+    //}
 
-    void add_cluster_index_for_neigh_atom_index(int neigh_atom_index) {
-      size_t cluster_order_one_index{0};
-      bool atom_index_found = false;
-      int atom_index_with_corresponding_cluster;
-      // TODO(alex) how to make this a reference? or is it already
-      auto && nl_atom_indices = this->get_nl_atom_indices();
-      auto && atom_indices_with_corresponding_cluster =
-        this->get_atom_indices_with_corresponding_cluster();
-      for (size_t i{0}; i< nl_atom_indices.size(); i++) { 
-        if (neigh_atom_index == nl_atom_indices[i] && not(atom_index_found)) { 
-          atom_index_with_corresponding_cluster =
-              atom_indices_with_corresponding_cluster.at(i);
-          for (auto atom : this->get_manager().with_ghosts()) {
-            if (atom.get_atom_index() == atom_index_with_corresponding_cluster) {
-              this->neighbours_cluster_index.push_back(cluster_order_one_index); 
-              atom_index_found = true;             
-            }
-            cluster_order_one_index++;
-          }
-          if(not(atom_index_found)) {
-            throw std::runtime_error("No atom index corresponding to a cluster was found while building list of cluster neighbour cluster index list.");  
-          }
-        } else if (neigh_atom_index == nl_atom_indices[i] && atom_index_found) {
-          throw std::runtime_error("The atom index was found two times, but should be unique, while building list of cluster neighbour cluster index list.");
-        }
-      }
-      if (not(atom_index_found)) {
-        throw std::runtime_error("Atom index was not found while building list of cluster neighbour cluster index list.");
-      }
-    }
+    //void add_cluster_index_for_neigh_atom_index(int neigh_atom_index) {
+      //size_t cluster_order_one_index{0};
+      //bool atom_index_found = false;
+      //int atom_index_with_corresponding_cluster;
+      //// TODO(alex) how to make this a reference? or is it already
+      //auto && nl_atom_indices = this->get_nl_atom_indices();
+      //auto && atom_indices_with_corresponding_cluster =
+      //  this->get_atom_indices_with_corresponding_cluster();
+      //for (size_t i{0}; i< nl_atom_indices.size(); i++) { 
+      //  if (neigh_atom_index == nl_atom_indices[i] && not(atom_index_found)) { 
+      //    atom_index_with_corresponding_cluster =
+      //        atom_indices_with_corresponding_cluster.at(i);
+      //    for (auto atom : this->get_manager().with_ghosts()) {
+      //      if (atom.get_atom_index() == atom_index_with_corresponding_cluster) {
+      //        this->neighbours_cluster_index.push_back(cluster_order_one_index); 
+      //        atom_index_found = true;             
+      //      }
+      //      cluster_order_one_index++;
+      //    }
+      //    if(not(atom_index_found)) {
+      //      throw std::runtime_error("No atom index corresponding to a cluster was found while building list of cluster neighbour cluster index list.");  
+      //    }
+      //  } else if (neigh_atom_index == nl_atom_indices[i] && atom_index_found) {
+      //    throw std::runtime_error("The atom index was found two times, but should be unique, while building list of cluster neighbour cluster index list.");
+      //  }
+      //}
+      //if (not(atom_index_found)) {
+      //  throw std::runtime_error("Atom index was not found while building list of cluster neighbour cluster index list.");
+      //}
+    //}
 
   };
 
@@ -558,7 +559,8 @@ namespace rascal {
         }
       }
     }
-    make_full_neighbour_cluster_index_list();
+    //TODO(alex) delete
+    //make_full_neighbour_cluster_index_list();
   }
 }  // namespace rascal
 

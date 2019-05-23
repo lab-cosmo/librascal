@@ -40,6 +40,7 @@
 #include "structure_managers/adaptor_strict.hh"
 #include "structure_managers/adaptor_increase_maxorder.hh"
 #include "structure_managers/adaptor_neighbour_list.hh"
+#include "structure_managers/adaptor_half_neighbour_list.hh"
 #include "structure_managers/make_structure_manager.hh"
 #include "rascal_utility.hh"
 

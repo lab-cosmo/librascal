@@ -272,32 +272,62 @@ namespace rascal {
    * 
    */
 
-  // TODO(alex)  
-  //using multiple_fixtures = boost::mpl::list<
-  //    PropertyFixtureNew<AdaptorNeighboursListStackNoGhosts> 
-  //    PropertyFixtureNew<AdaptorStrictFixture<AdaptorNLStackNoGhost>>
-  //    >;
+   //TODO(alex)  
+   using AdaptorNeighbourListWithGhostStackFixture = AdaptorNeighbourListStackFixture<StructureManagerCentersStackFixture, true>;
+  using atom_property_fixtures = boost::mpl::list<
+      AtomPropertyFixture<StructureManagerCentersStackFixture>,
+      AtomPropertyFixture<AdaptorNeighbourListWithGhostStackFixture>,
+      AtomPropertyFixture<AdaptorStrictStackFixture<AdaptorNeighbourListWithGhostStackFixture>>,
+      AtomPropertyFixture<AdaptorHalfListStackFixture<AdaptorNeighbourListWithGhostStackFixture>>,
+      AtomPropertyFixture<AdaptorStrictStackFixture<AdaptorHalfListStackFixture<AdaptorNeighbourListWithGhostStackFixture>>>,
+      AtomPropertyFixture<AdaptorMaxOrderStackFixture<AdaptorStrictStackFixture<AdaptorHalfListStackFixture<AdaptorNeighbourListWithGhostStackFixture>>>>
+      >;
 
-  //BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_strict_test, Fix, multiple_fixtures,
-  //                                 Fix) {
-  //    for (auto atom : Fix::manager) {
-  //      for (auto pair : atom) {
-  //        BOOST_CHECK_EQUAL(pair.get_neighbour_cluster_index(0), pair.get_atom_index());
-  //      }
-  //  }
-  //}
+  // If consider_ghost_neighbours is trie the atoms index should always
+  // correspond to the cluster index of order 1 using SMC as root implementation
+  // and no filtering of order 1
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_property_fixtures_tests, Fix, atom_property_fixtures, Fix) {
+    bool verbose{false};
+    if (verbose) {
+      std::cout << ">> Test for manager ";
+      std::cout << Fix::manager->get_name();
+      std::cout << " starts now." << std::endl;
+    }
+    size_t cluster_index{0};
+    for (auto atom : Fix::manager) {
+      BOOST_CHECK_EQUAL(Fix::manager->get_cluster_index(atom.get_atom_index()), cluster_index);
+      cluster_index++;
+    }
+    if (verbose) {
+      std::cout << ">> Test for manager ";
+      std::cout << Fix::manager->get_name();
+      std::cout << " finished." << std::endl;
+    }
+  }
+  //TODO(alex) replace PropertyFixture with PropertyFixtureNew
  
   //using AdaptorNeighbourListNoGhostStackFixture = AdaptorNeighbourListStackFixture<
   //    StructureManagerCentersStackFixture,true>;
   // For SMC, ANL, AS
-  BOOST_FIXTURE_TEST_CASE(atom_index_equal_order_one_cluster_index,
-                          AtomPropertyFixture<StructureManagerCentersStackFixture>) {
-    size_t cluster_index{0};
-    for (auto atom : manager) {
-      BOOST_CHECK_EQUAL(manager->get_cluster_index(atom.get_atom_index()), cluster_index);
-      cluster_index++;
-    }
-  }
+  //BOOST_FIXTURE_TEST_CASE(atom_index_equal_order_one_cluster_index,
+  //                        AtomPropertyFixture<StructureManagerCentersStackFixture>) {
+  //  size_t cluster_index{0};
+  //  for (auto atom : manager) {
+  //    BOOST_CHECK_EQUAL(manager->get_cluster_index(atom.get_atom_index()), cluster_index);
+  //    cluster_index++;
+  //  }
+  //}
+
+  //using AdaptorNeighbourListWithGhostStackFixture = AdaptorNeighbourListStackFixture<StructureManagerCentersStackFixture, true>;
+  //BOOST_FIXTURE_TEST_CASE(atom_index_equal_order_one_cluster_index_2,
+  //                        PropertyFixtureNew<AdaptorNeighbourListWithGhostStackFixture>) {
+  //  size_t cluster_index{0};
+  //  for (auto atom : manager) {
+  //    BOOST_CHECK_EQUAL(manager->get_cluster_index(atom.get_atom_index()), cluster_index);
+  //    cluster_index++;
+  //    }
+  //}
+
 
   BOOST_FIXTURE_TEST_CASE(atom_index_equal_order_one_cluster_for_smc_test,
                           PropertyFixtureWithGhosts<StructureManagerCenters>) {
@@ -380,33 +410,33 @@ namespace rascal {
       BOOST_CHECK_EQUAL(scalar_atom_property[atom], counter.at(atom.get_atom_index()));
     }
   }
-
+  // TODO(alex)make this test for new functionality and then delete
   // AHF<ANL<SMC TODO
-  BOOST_FIXTURE_TEST_CASE(atom_index_equal_order_one_cluster_for_smc_strict_test4,
-                          PropertyFixtureStrictWithGhosts<StructureManagerCenters>) {
-    atom_property.resize();
-    // initalize the positions
-    for (auto atom : adaptor_strict) {
-        atom_property[atom] = atom.get_position();
-    }
-    std::vector<int> atom_indices = adaptor_strict->get_manager_atom_indices();
-    std::vector<size_t> counter{};
-    counter.reserve(atom_indices.size());
-    for (size_t i{0}; i<atom_indices.size(); i++) {
-      counter.push_back(1);
-    }
-    // add the position to the atom and count how often this happens
-    for (auto atom : adaptor_strict) {
-      for (auto pair : atom) {
-        counter.at(pair.get_atom_index())++;
-        atom_property[pair] += adaptor_strict->get_position(pair.get_atom_index());
-      }
-    }
-    for (auto atom : adaptor_strict) {
-      auto error = (atom_property[atom] - counter.at(atom.get_atom_index())*atom.get_position()).norm();
-      BOOST_CHECK_LE(error, tol * 100);
-    }
-  }
+  //BOOST_FIXTURE_TEST_CASE(atom_index_equal_order_one_cluster_for_smc_strict_test4,
+  //                        PropertyFixtureStrictWithGhosts<StructureManagerCenters>) {
+  //  atom_property.resize();
+  //  // initalize the positions
+  //  for (auto atom : adaptor_strict) {
+  //      atom_property[atom] = atom.get_position();
+  //  }
+  //  std::vector<int> atom_indices = adaptor_strict->get_manager_atom_indices();
+  //  std::vector<size_t> counter{};
+  //  counter.reserve(atom_indices.size());
+  //  for (size_t i{0}; i<atom_indices.size(); i++) {
+  //    counter.push_back(1);
+  //  }
+  //  // add the position to the atom and count how often this happens
+  //  for (auto atom : adaptor_strict) {
+  //    for (auto pair : atom) {
+  //      counter.at(pair.get_atom_index())++;
+  //      atom_property[pair] += adaptor_strict->get_position(pair.get_atom_index());
+  //    }
+  //  }
+  //  for (auto atom : adaptor_strict) {
+  //    auto error = (atom_property[atom] - counter.at(atom.get_atom_index())*atom.get_position()).norm();
+  //    BOOST_CHECK_LE(error, tol * 100);
+  //  }
+  //}
 
   //TODO(alex) END
   /* ---------------------------------------------------------------------- */

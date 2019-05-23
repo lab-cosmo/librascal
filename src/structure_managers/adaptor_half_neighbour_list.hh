@@ -226,6 +226,10 @@ namespace rascal {
       return this->neighbours_cluster_index[cluster_index];
     }
 
+    size_t get_cluster_index_impl(const int atom_index) const {
+      return this->manager->get_cluster_index_impl(atom_index);
+    }
+
     //! return atom type
     inline int & get_atom_type(const AtomRef_t & atom) {
       return this->manager->get_atom_type(atom.get_index());
@@ -326,28 +330,29 @@ namespace rascal {
     std::vector<size_t> offsets;
 
    private:
+    //TODO(alex) delete
     //! Should be only used after the make_full_neighbour_list
-    void make_full_neighbour_cluster_index_list() {
-      for (int neigh_atom_index : this->neighbours_atom_index) {
-        add_cluster_index_for_neigh_atom_index(neigh_atom_index);
-      }
-    }
+    //void make_full_neighbour_cluster_index_list() {
+    //  for (int neigh_atom_index : this->neighbours_atom_index) {
+    //    add_cluster_index_for_neigh_atom_index(neigh_atom_index);
+    //  }
+    //}
 
-    void add_cluster_index_for_neigh_atom_index(int neigh_atom_index) {
-      bool atom_index_found = false;
-      size_t cluster_order_one_index{0};
-      // TODO(alex) this should result in problem if consider_ghost_atoms = false, use solution as in AdaptorStrict
-      for (auto atom : this->manager->with_ghosts()) {
-        if (neigh_atom_index == atom.back()) {
-          this->neighbours_cluster_index.push_back(cluster_order_one_index);
-          atom_index_found = true;
-        }
-        cluster_order_one_index++;
-      }
-      if (not(atom_index_found)) {
-        throw std::runtime_error("Atom index was not found while building list of cluster neighbour cluster index list.");
-      }
-    }
+    //void add_cluster_index_for_neigh_atom_index(int neigh_atom_index) {
+    //  bool atom_index_found = false;
+    //  size_t cluster_order_one_index{0};
+    //  // TODO(alex) this should result in problem if consider_ghost_atoms = false, use solution as in AdaptorStrict
+    //  for (auto atom : this->manager->with_ghosts()) {
+    //    if (neigh_atom_index == atom.back()) {
+    //      this->neighbours_cluster_index.push_back(cluster_order_one_index);
+    //      atom_index_found = true;
+    //    }
+    //    cluster_order_one_index++;
+    //  }
+    //  if (not(atom_index_found)) {
+    //    throw std::runtime_error("Atom index was not found while building list of cluster neighbour cluster index list.");
+    //  }
+    //}
   };
 
   /* ---------------------------------------------------------------------- */
@@ -441,7 +446,8 @@ namespace rascal {
 
       offset += nneigh;
     }
-    make_full_neighbour_cluster_index_list();
+    //TODO(alex) delte
+    //make_full_neighbour_cluster_index_list();
   }
 }  // namespace rascal
 
