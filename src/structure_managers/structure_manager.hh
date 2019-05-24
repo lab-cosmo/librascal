@@ -101,7 +101,7 @@ namespace rascal {
           compute_cluster_layer<Order>(typename traits::LayerByOrder{})};
 
       using Property_t =
-          Property<size_t, Order, ActiveLayer, LayersHead + 1, 1>;
+          Property<size_t, Order, ActiveLayer, Manager, LayersHead + 1, 1>;
       using type = typename ClusterIndexPropertyComputer_Helper<
           Manager, Order + 1, std::index_sequence<LayersTail...>,
           std::tuple<TupComp..., Property_t>>::type;
@@ -121,7 +121,7 @@ namespace rascal {
           compute_cluster_layer<Order>(typename traits::LayerByOrder{})};
 
       using Property_t =
-          Property<size_t, Order, ActiveLayer, LayersHead + 1, 1>;
+          Property<size_t, Order, ActiveLayer, Manager, LayersHead + 1, 1>;
       using type = std::tuple<TupComp..., Property_t>;
     };
 
@@ -184,14 +184,14 @@ namespace rascal {
         StructureManager, typename traits::LayerByOrder>::type;
     using ClusterConstructor_t =
         typename internal::ClusterIndexConstructor<ClusterIndex_t,
-                                                   StructureManagerBase>;
+                                                   StructureManager_t>;
 
     //! helper type for Property creation
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
     using Property_t =
         Property<T, Order,
                  get_layer(Order,typename traits::LayerByOrder{}),
-                 NbRow, NbCol>;
+                 StructureManager_t, NbRow, NbCol>;
 
     //TODO(alex) change to get layers as above
     //! helper type for Property creation
