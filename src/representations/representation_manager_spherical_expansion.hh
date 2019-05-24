@@ -375,20 +375,16 @@ namespace rascal {
       /** Compute common prefactors for the radial Gaussian basis functions */
       void precompute_radial_sigmas() {
         using math::pow;
-
+        // Precompute common prefactors
         for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
           this->radial_sigmas[radial_n] =
               std::max(std::sqrt(static_cast<double>(radial_n)), 1.0) *
               this->interaction_cutoff / static_cast<double>(this->max_radial);
           this->fac_b[radial_n] = 0.5 * pow(this->radial_sigmas[radial_n], -2);
-        }
-
-        // Precompute common prefactors
-        for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
           this->radial_norm_factors(radial_n) =
               0.25 * std::sqrt(2.0 / (std::tgamma(1.5 + radial_n) *
                                       pow(this->radial_sigmas[radial_n],
-                                          3.0 + 2.0 * radial_n)));
+                                          3 + 2 * radial_n)));
           this->radial_n_factors(radial_n) =
               std::tgamma(0.5 * (3.0 + radial_n)) / std::tgamma(1.5);
         }
