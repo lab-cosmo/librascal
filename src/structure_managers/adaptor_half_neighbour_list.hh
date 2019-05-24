@@ -209,6 +209,7 @@ namespace rascal {
         get_cluster_neighbour_cluster_index_impl(
             const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster,
             const size_t cluster_index) const {
+      throw std::runtime_error("Dont use get_cluster_neighbour_cluster_index_impl");
       return this->manager->get_cluster_neighbour_cluster_index(cluster, cluster_index);
     }
     template <size_t Order, size_t Layer, 
@@ -223,6 +224,7 @@ namespace rascal {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation handles only up to the "
                     " MaxOrder");
+      throw std::runtime_error("Dont use get_cluster_neighbour_cluster_index_impl");
       return this->neighbours_cluster_index[cluster_index];
     }
 
@@ -393,7 +395,6 @@ namespace rascal {
     this->nb_neigh.resize(0);
     this->offsets.resize(0);
     this->neighbours_atom_index.resize(0);
-    this->neighbours_cluster_index.resize(0);
 
     // fill the list, at least pairs are mandatory for this to work
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};

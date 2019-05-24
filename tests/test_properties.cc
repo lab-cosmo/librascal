@@ -78,7 +78,7 @@ namespace rascal {
   };
 
   template <class StackFixture>
-  struct PropertyFixtureNew: StackFixture {
+  struct PairPropertyFixture: StackFixture {
     using Parent = StackFixture;
     using Manager_t = typename Parent::Manager_t;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
@@ -100,9 +100,20 @@ namespace rascal {
     std::string dynamic_property_metadata{"arbitrary counters"};
     std::string dynamic_property2_metadata{"distances"};
 
-    PropertyFixtureNew()
-          : StackFixture{}, scalar_atom_property{*this->manager} {}
-     AtomScalarProperty_t scalar_atom_property;
+    PairPropertyFixture()
+          : StackFixture{}, scalar_atom_property{*this->manager}, 
+          pair_property{*this->manager},
+          atom_property{*this->manager, atom_property_metadata},
+          dynamic_property{*this->manager, DynSize(), 1,
+                           dynamic_property_metadata},
+          dynamic_property2{*this->manager, DynSize(), 1,
+                            dynamic_property2_metadata} {}
+
+    AtomScalarProperty_t scalar_atom_property;
+    PairScalarProperty_t pair_property;
+    AtomVectorProperty_t atom_property;
+    AtomDynamicProperty_t dynamic_property;
+    AtomDynamicProperty2_t dynamic_property2;
   };
 
   // the old one is still in usage
@@ -258,35 +269,99 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   // TODO(alex) tests: AHF<NL<SMC; AS<AHF<ANL
   // TODO(alex) tests:NL<SMC no ghost
-
-  //TODO(alex) make this later to templates with half and full
-  //using fixtures = boost::mpl::list<PropertyFixture<StructureManagerCenters>,
-  //                                  PropertyFixtureStrict<StructureManagerCenters>>;
-  //BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_index_equal_order_one_cluster_for_smc_test,
-  //                        Fix, fixtures, Fix) {
-
   /* ---------------------------------------------------------------------- */
   /*
    * This test assumes that atom index is equal to the cluster index of Order=1
    * Layer=0 using the StructureManagerCenters.
    * 
    */
+    template<bool consider_ghost_neighbours>
+    struct ANL_SMC_StackFixture_Helper {
+      using type = AdaptorNeighbourListStackFixture<
+        StructureManagerCentersStackFixture, consider_ghost_neighbours>;
+    };
+    template<bool consider_ghost_neighbours>
+    struct CommonStacksBoostList {
+      using ANL_SMC_StackFixture = AdaptorNeighbourListStackFixture<
+        StructureManagerCentersStackFixture, consider_ghost_neighbours>;
+      using type = boost::mpl::list<
+          AtomPropertyFixture<StructureManagerCentersStackFixture>,
+          AtomPropertyFixture<ANL_SMC_StackFixture>,
+          AtomPropertyFixture<ANL_SMC_StackFixture>,
+          AtomPropertyFixture<AdaptorHalfListStackFixture<
+              ANL_SMC_StackFixture>>,
+          AtomPropertyFixture<AdaptorStrictStackFixture<
+              AdaptorHalfListStackFixture<ANL_SMC_StackFixture>>>,
+          AtomPropertyFixture<AdaptorMaxOrderStackFixture<
+              AdaptorStrictStackFixture<AdaptorHalfListStackFixture<
+              ANL_SMC_StackFixture>>>>
+          >;
+    };
 
-   //TODO(alex)  
-   using AdaptorNeighbourListWithGhostStackFixture = AdaptorNeighbourListStackFixture<StructureManagerCentersStackFixture, true>;
-  using atom_property_fixtures = boost::mpl::list<
-      AtomPropertyFixture<StructureManagerCentersStackFixture>,
-      AtomPropertyFixture<AdaptorNeighbourListWithGhostStackFixture>,
-      AtomPropertyFixture<AdaptorStrictStackFixture<AdaptorNeighbourListWithGhostStackFixture>>,
-      AtomPropertyFixture<AdaptorHalfListStackFixture<AdaptorNeighbourListWithGhostStackFixture>>,
-      AtomPropertyFixture<AdaptorStrictStackFixture<AdaptorHalfListStackFixture<AdaptorNeighbourListWithGhostStackFixture>>>,
-      AtomPropertyFixture<AdaptorMaxOrderStackFixture<AdaptorStrictStackFixture<AdaptorHalfListStackFixture<AdaptorNeighbourListWithGhostStackFixture>>>>
-      >;
+    struct CommonOrderTwoStacksBoostList {
+      using ANLWithGhosts_SMC_StackFixture = AdaptorNeighbourListStackFixture<
+        StructureManagerCentersStackFixture, true>;
+      using ANLWithoutGhosts_SMC_StackFixture = AdaptorNeighbourListStackFixture<
+        StructureManagerCentersStackFixture, false>;
+      using type_with_ghosts = boost::mpl::list<
+          AtomPropertyFixture<ANLWithGhosts_SMC_StackFixture>,
+          AtomPropertyFixture<ANLWithGhosts_SMC_StackFixture>,
+          AtomPropertyFixture<AdaptorHalfListStackFixture<
+              ANLWithGhosts_SMC_StackFixture>>,
+          AtomPropertyFixture<AdaptorStrictStackFixture<
+              AdaptorHalfListStackFixture<ANLWithGhosts_SMC_StackFixture>>>,
+          AtomPropertyFixture<AdaptorMaxOrderStackFixture<
+              AdaptorStrictStackFixture<AdaptorHalfListStackFixture<
+              ANLWithGhosts_SMC_StackFixture>>>>
+          >;
+      using type_without_ghosts = boost::mpl::list<
+          AtomPropertyFixture<ANLWithoutGhosts_SMC_StackFixture>,
+          AtomPropertyFixture<ANLWithoutGhosts_SMC_StackFixture>,
+          AtomPropertyFixture<AdaptorHalfListStackFixture<
+              ANLWithoutGhosts_SMC_StackFixture>>,
+          AtomPropertyFixture<AdaptorStrictStackFixture<
+              AdaptorHalfListStackFixture<ANLWithoutGhosts_SMC_StackFixture>>>,
+          AtomPropertyFixture<AdaptorMaxOrderStackFixture<
+              AdaptorStrictStackFixture<AdaptorHalfListStackFixture<
+              ANLWithoutGhosts_SMC_StackFixture>>>>
+          >;
+      // TODO(alex) is there a way to concatenate two lists? boost::mpl::joint_view
+      // seems to not work
+      // using type = <type_with_ghosts, type_without_ghosts>;
+      using type= boost::mpl::list<
+          AtomPropertyFixture<ANLWithGhosts_SMC_StackFixture>,
+          AtomPropertyFixture<ANLWithGhosts_SMC_StackFixture>,
+          AtomPropertyFixture<AdaptorHalfListStackFixture<
+              ANLWithGhosts_SMC_StackFixture>>,
+          AtomPropertyFixture<AdaptorStrictStackFixture<
+              AdaptorHalfListStackFixture<ANLWithGhosts_SMC_StackFixture>>>,
+          AtomPropertyFixture<AdaptorMaxOrderStackFixture<
+              AdaptorStrictStackFixture<AdaptorHalfListStackFixture<
+              ANLWithGhosts_SMC_StackFixture>>>>,
+          AtomPropertyFixture<ANLWithoutGhosts_SMC_StackFixture>,
+          AtomPropertyFixture<ANLWithoutGhosts_SMC_StackFixture>,
+          AtomPropertyFixture<AdaptorHalfListStackFixture<
+              ANLWithoutGhosts_SMC_StackFixture>>,
+          AtomPropertyFixture<AdaptorStrictStackFixture<
+              AdaptorHalfListStackFixture<ANLWithoutGhosts_SMC_StackFixture>>>,
+          AtomPropertyFixture<AdaptorMaxOrderStackFixture<
+              AdaptorStrictStackFixture<AdaptorHalfListStackFixture<
+              ANLWithoutGhosts_SMC_StackFixture>>>>
+          >;
+    };
+
+    //TODO(alex)  
+    
+    using atom_property_fixtures_with_ghosts = CommonStacksBoostList<true>::type;
+    using atom_property_fixtures_without_ghosts = CommonStacksBoostList<true>::type;
+
+    //using atom_property_fixtures_order_one = boost::mpl::list<
+    //  AtomPropertyFixture<StructureManagerCentersStackFixture>>;
 
   // If consider_ghost_neighbours is trie the atoms index should always
   // correspond to the cluster index of order 1 using SMC as root implementation
   // and no filtering of order 1
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_property_fixtures_tests, Fix, atom_property_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_property_fixtures_tests, Fix, atom_property_fixtures_with_ghosts, Fix) {
     bool verbose{false};
     if (verbose) {
       std::cout << ">> Test for manager ";
@@ -305,109 +380,42 @@ namespace rascal {
     }
   }
   //TODO(alex) replace PropertyFixture with PropertyFixtureNew
- 
-  //using AdaptorNeighbourListNoGhostStackFixture = AdaptorNeighbourListStackFixture<
-  //    StructureManagerCentersStackFixture,true>;
-  // For SMC, ANL, AS
-  //BOOST_FIXTURE_TEST_CASE(atom_index_equal_order_one_cluster_index,
-  //                        AtomPropertyFixture<StructureManagerCentersStackFixture>) {
-  //  size_t cluster_index{0};
-  //  for (auto atom : manager) {
-  //    BOOST_CHECK_EQUAL(manager->get_cluster_index(atom.get_atom_index()), cluster_index);
-  //    cluster_index++;
-  //  }
-  //}
-
-  //using AdaptorNeighbourListWithGhostStackFixture = AdaptorNeighbourListStackFixture<StructureManagerCentersStackFixture, true>;
-  //BOOST_FIXTURE_TEST_CASE(atom_index_equal_order_one_cluster_index_2,
-  //                        PropertyFixtureNew<AdaptorNeighbourListWithGhostStackFixture>) {
-  //  size_t cluster_index{0};
-  //  for (auto atom : manager) {
-  //    BOOST_CHECK_EQUAL(manager->get_cluster_index(atom.get_atom_index()), cluster_index);
-  //    cluster_index++;
-  //    }
-  //}
-
-
-  BOOST_FIXTURE_TEST_CASE(atom_index_equal_order_one_cluster_for_smc_test,
-                          PropertyFixtureWithGhosts<StructureManagerCenters>) {
-    BOOST_CHECK_EQUAL(pair_manager->get_consider_ghost_neighbours(), true);
-    for (auto atom : pair_manager) {
-      for (auto pair : atom) {
-        BOOST_CHECK_EQUAL(pair.get_neighbour_cluster_index(0), pair.get_atom_index());
-      }
-    }
-  }
-
-  BOOST_FIXTURE_TEST_CASE(atom_index_equal_order_one_cluster_for_smc_test2,
-                          PropertyFixtureWithGhosts<StructureManagerCenters>) {
-    atom_property.resize();
-    // initalize the positions
-    for (auto atom : pair_manager) {
-        atom_property[atom] = atom.get_position();
-    }
-    std::vector<int> atom_indices = pair_manager->get_nl_atom_indices(); // TODO(alex) change to get_manager_atom_indices()
-    std::vector<size_t> counter{};
-    counter.reserve(atom_indices.size());
-    for (size_t i{0}; i<atom_indices.size(); i++) {
-      counter.push_back(1);
-    }
-    // add the position to the atom and count how often this happens
-    for (auto atom : pair_manager) {
-      for (auto pair : atom) {
-        counter.at(pair.get_atom_index())++;
-        atom_property[pair] += pair_manager->get_position(pair.get_atom_index());
-      }
-    }
-    for (auto atom : pair_manager) {
-      auto error = (atom_property[atom] - counter.at(atom.get_atom_index())*atom.get_position()).norm();
-      BOOST_CHECK_LE(error, tol * 100);
-    }
-  } 
   
-  // TODO(alex)  
-  //using multiple_fixtures = boost::mpl::list<
-  //    PropertyFixtureNew<AdaptorNeighboursListStackNoGhosts> 
-  //    PropertyFixtureNew<AdaptorStrictFixture<AdaptorNLStackNoGhost>>
-  //    >;
-
-  //BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_strict_test, Fix, multiple_fixtures,
-  //                                 Fix) {
-  //    for (auto atom : Fix::manager) {
-  //      for (auto pair : atom) {
-  //        BOOST_CHECK_EQUAL(pair.get_neighbour_cluster_index(0), pair.get_atom_index());
-  //      }
-  //  }
-  //}
- 
-  using AdaptorNeighbourListNoGhostStackFixture = AdaptorNeighbourListStackFixture<
-      StructureManagerCentersStackFixture,false>;
-  BOOST_FIXTURE_TEST_CASE(atom_index_equal_order_one_cluster_for_smc_test_false,
-                          PropertyFixtureNew<AdaptorNeighbourListNoGhostStackFixture>) {
-    scalar_atom_property.resize();
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_propery_access_with_pair_tests, Fix, CommonOrderTwoStacksBoostList::type, Fix) {
+    bool verbose{true};
+    if (verbose) {
+      std::cout << ">> Test for manager ";
+      std::cout << Fix::manager->get_name();
+      std::cout << " starts now." << std::endl;
+    }
+    Fix::scalar_atom_property.resize();
     // initalize the positions
     std::vector<int> atom_indices{}; // TODO(alex) change to get_manager_atom_indices()
-    atom_indices.reserve(manager->get_size());
-    for (auto atom : manager) {
-        scalar_atom_property[atom] = 0;
+    atom_indices.reserve(Fix::manager->get_size());
+    for (auto atom : Fix::manager) {
+        Fix::scalar_atom_property[atom] = 0;
         atom_indices.push_back(atom.get_atom_index());
     }
-    auto && atom_indices_with_corresponding_cluster =
-        manager->get_atom_indices_with_corresponding_cluster();
     std::vector<size_t> counter{};
     counter.reserve(atom_indices.size());
     for (size_t i{0}; i<atom_indices.size(); i++) {
       counter.push_back(0);
     }
     // add the position to the atom and count how often this happens
-    for (auto atom : manager) {
+    for (auto atom : Fix::manager) {
       for (auto pair : atom) {
-        counter.at(atom_indices_with_corresponding_cluster.at(pair.get_atom_index()))++;
-        scalar_atom_property[pair]++;
+        Fix::scalar_atom_property[pair]++;
+        counter.at(Fix::manager->get_cluster_index(pair.get_internal_neighbour_atom_index()))++;
       }
     }
-    for (auto atom : manager) {
-      BOOST_CHECK_EQUAL(scalar_atom_property[atom], counter.at(atom.get_atom_index()));
+    for (auto atom : Fix::manager) {
+      BOOST_CHECK_EQUAL(Fix::scalar_atom_property[atom],
+          counter.at(Fix::manager->get_cluster_index(atom.get_atom_index())));
+    }
+    if (verbose) {
+      std::cout << ">> Test for manager ";
+      std::cout << Fix::manager->get_name();
+      std::cout << " finished." << std::endl;
     }
   }
   // TODO(alex)make this test for new functionality and then delete
