@@ -198,10 +198,6 @@ namespace rascal {
     template <size_t CallerOrder, size_t CallerLayer, size_t ParentLayer, size_t NeighbourLayer, size_t Order_= Order>
     inline std::enable_if_t<(Order_==1) and (CallerOrder>1), reference>
     operator[](const ClusterRefKey<CallerOrder, CallerLayer, ParentLayer, NeighbourLayer> & id) {
-     static_assert(CallerLayer >= NeighbourLayer,
-                   "You are trying to access a property that "
-                   "does not exist at this depth in the "
-                   "adaptor stack.");
      //return this->operator[](id.get_internal_neighbour_cluster_index(CallerLayer));
      // #BUG8486@(all) we can just use the managers function to get the
      // corresponding cluster index, no need to save this in the cluster
