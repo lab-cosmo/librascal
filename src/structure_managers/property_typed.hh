@@ -164,7 +164,7 @@ namespace rascal {
     //! constructor
     TypedProperty(Manager_t & manager, Dim_t nb_row,
                   Dim_t nb_col = 1, std::string metadata = "no metadata")
-        : Parent{static_cast<StructureManagerBase &>(manager), nb_row, nb_col, Order, PropertyLayer, metadata} {}
+        : Parent{static_cast<StructureManagerBase &>(manager), nb_row, nb_col, Order, PropertyLayer, metadata}, manager{manager} {}
 
     //! Default constructor
     TypedProperty() = delete;

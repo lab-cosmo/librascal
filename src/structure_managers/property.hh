@@ -82,7 +82,7 @@ namespace rascal {
     //! Constructor with Manager
     Property(Manager_t & manager,
              std::string metadata = "no metadata")
-        : Parent{static_cast<StructureManagerBase &>(manager), NbRow, NbCol, metadata}, manager{manager} {}
+        : Parent{manager, NbRow, NbCol, metadata} {}
     // Property(std::shared_ptr<StructureManagerBase> manager,
     //          std::string metadata = "no metadata")
     //     : Parent{manager, NbRow, NbCol, metadata} {}
