@@ -49,7 +49,6 @@ namespace rascal {
    * which can be access with clusters directly, without the need for dealing
    * with indices.
    */
-  template<class ManagerImplementation>
   template <typename T, size_t Order, size_t PropertyLayer, Dim_t NbRow = 1,
             Dim_t NbCol = 1>
   class Property : public TypedProperty<T, Order, PropertyLayer> {
@@ -80,9 +79,9 @@ namespace rascal {
     Property() = delete;
 
     //! Constructor with Manager
-    Property(StructureManager<ManagerImplementation> & manager,
+    Property(StructureManagerBase & manager,
              std::string metadata = "no metadata")
-        : Parent{manager, NbRow, NbCol, metadata}, manager{manager} {}
+        : Parent{manager, NbRow, NbCol, metadata} {}
     // Property(std::shared_ptr<StructureManagerBase> manager,
     //          std::string metadata = "no metadata")
     //     : Parent{manager, NbRow, NbCol, metadata} {}
@@ -262,7 +261,6 @@ namespace rascal {
     }
 
    protected:
-    StructureManager<ManagerImplementation> manager &;
     inline void push_back(reference ref, StaticSize) {
       Value::push_in_vector(this->values, ref);
     }
