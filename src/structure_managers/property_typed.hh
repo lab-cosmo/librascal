@@ -149,10 +149,11 @@ namespace rascal {
   /**
    * Typed ``property`` class definition, inherits from the base property class
    */
-  template <typename T, size_t Order, size_t PropertyLayer>
+  template <typename T, size_t Order, size_t PropertyLayer, class Manager>
   class TypedProperty : public PropertyBase {
     using Parent = PropertyBase;
     using Value = internal::Value<T, Eigen::Dynamic, Eigen::Dynamic>;
+    using Manager_t = Manager;
 
    public:
     using value_type = typename Value::type;
@@ -161,9 +162,9 @@ namespace rascal {
     using order_1_t = typename std::integral_constant<int,1>;
 
     //! constructor
-    TypedProperty(StructureManagerBase & manager, Dim_t nb_row,
+    TypedProperty(Manager_t & manager, Dim_t nb_row,
                   Dim_t nb_col = 1, std::string metadata = "no metadata")
-        : Parent{manager, nb_row, nb_col, Order, PropertyLayer, metadata} {}
+        : Parent{static_cast<StructureManagerBase &>(manager), nb_row, nb_col, Order, PropertyLayer, metadata} {}
 
     //! Default constructor
     TypedProperty() = delete;
@@ -247,6 +248,7 @@ namespace rascal {
     }
 
    protected:
+    Manager_t & manager;
     std::vector<T> values{};  //!< storage for properties
   };
 }  // namespace rascal

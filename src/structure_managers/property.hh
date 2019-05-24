@@ -49,15 +49,16 @@ namespace rascal {
    * which can be access with clusters directly, without the need for dealing
    * with indices.
    */
-  template <typename T, size_t Order, size_t PropertyLayer, class ManagerImplementation, Dim_t NbRow = 1,
+  template <typename T, size_t Order, size_t PropertyLayer, class Manager, Dim_t NbRow = 1,
             Dim_t NbCol = 1>
-  class Property : public TypedProperty<T, Order, PropertyLayer> {
+  class Property : public TypedProperty<T, Order, PropertyLayer, Manager> {
     static_assert((std::is_arithmetic<T>::value ||
                    std::is_same<T, std::complex<double>>::value),
                   "can currently only handle arithmetic types");
 
    public:
-    using Parent = TypedProperty<T, Order, PropertyLayer>;
+    using Parent = TypedProperty<T, Order, PropertyLayer, Manager>;
+    using Manager_t = Manager;
 
     using Value = internal::Value<T, NbRow, NbCol>;
     static_assert(std::is_same<Value, internal::Value<T, NbRow, NbCol>>::value,
@@ -79,7 +80,7 @@ namespace rascal {
     Property() = delete;
 
     //! Constructor with Manager
-    Property(ManagerImplementation & manager,
+    Property(Manager_t & manager,
              std::string metadata = "no metadata")
         : Parent{static_cast<StructureManagerBase &>(manager), NbRow, NbCol, metadata}, manager{manager} {}
     // Property(std::shared_ptr<StructureManagerBase> manager,
@@ -261,7 +262,6 @@ namespace rascal {
     }
 
    protected:
-    ManagerImplementation & manager;
     inline void push_back(reference ref, StaticSize) {
       Value::push_in_vector(this->values, ref);
     }
