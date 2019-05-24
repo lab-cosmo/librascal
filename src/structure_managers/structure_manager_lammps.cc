@@ -51,7 +51,8 @@ namespace rascal {
     this->vatom = vatom;
     this->offsets.reserve(inum);
     this->offsets.resize(1);
-    for (int i{0}; i < this->inum - 1; ++i) {
+    // #BUG8486@(all) I think it is inum
+    for (int i{0}; i < this->inum; ++i) {
       this->offsets.emplace_back(this->offsets[i] + this->numneigh[i]);
     }
     this->nb_pairs = std::accumulate(numneigh, numneigh + this->inum, 0);
@@ -59,11 +60,24 @@ namespace rascal {
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
-    // #BUG8486@(all) is this solution efficient or does ilist have huge gaps?
-    this->cluster_index_from_atom_indices.reserve(inum);
-    for (int i{0}; i<this->inum -1; ++i) {
+    // #BUG8486@(all) is this solution efficient, does ilist have huge gaps?
+    // e.g. ilist = [1,5000], then build a list with 5000 elemets
+    
+    //! Finding maximum atomic index
+    int max_atomic_index = 0; 
+    for (int i{0}; i<this->inum; ++i) {
+      if (ilist[i] > max_atomic_index) {max_atomic_index = ilist[i];}
+    }
+
+    //! Filling dummy cluster indices 
+    this->cluster_index_from_atom_indices.reserve(max_atomic_index+1);
+    for (int i{0}; i< max_atomic_index+1; ++i) {
+      this->cluster_index_from_atom_indices.push_back(0);
+    }
+    //! Replacing dummy values with correct cluster indices
+    for (int i{0}; i<this->inum; ++i) {
       // ilist does not have negative atom indices therefore the cast is safe
-      cluster_index_from_atom_indices.at(static_cast<size_t>(ilist[i])) = i;
+      this->cluster_index_from_atom_indices.at(static_cast<size_t>(ilist[i])) = i;
     }
     atom_cluster_indices.fill_sequence();
     pair_cluster_indices.fill_sequence();
