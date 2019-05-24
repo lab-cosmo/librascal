@@ -84,6 +84,30 @@ namespace rascal {
     }
   }
 
+  BOOST_FIXTURE_TEST_CASE(math_hyp1f1_spherical_expansion_test, Hyp1f1SphericalExpansionFixture) {
+    for (size_t ii{0}; ii < this->hyp1f1.size(); ++ii) {
+      hyp1f1[ii].calc(this->r_ij, this->fac_a, this->facs_b[ii], true);
+      hyp1f1_recursion[ii].calc(this->r_ij, this->fac_a, this->facs_b[ii], true);
+      auto hyp1f1_val{hyp1f1[ii].get_values()};
+      auto hyp1f1_recursion_val{hyp1f1_recursion[ii].get_values()};
+      auto diff_val{hyp1f1_val-hyp1f1_recursion_val};
+      auto hyp1f1_der{hyp1f1[ii].get_derivatives()};
+      auto hyp1f1_recursion_der{hyp1f1_recursion[ii].get_derivatives()};
+      auto diff_der{hyp1f1_der-hyp1f1_recursion_der};
+      std::cout << "diff_val= "<< diff_val.mean() << " diff_der=" << diff_der.mean() <<std::endl;
+      for (int ii{0}; ii < diff_val.rows(); ++ii) {
+        for (int jj{0}; jj < diff_val.cols(); ++jj) {
+          std::cout << diff_val(ii, jj)  << ", ";
+        }
+        std::cout   <<std::endl;
+      }
+
+
+
+
+    }
+  }
+
   /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();
 

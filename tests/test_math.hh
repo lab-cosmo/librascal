@@ -105,6 +105,39 @@ namespace rascal {
     bool verbose{false};
   };
 
+  struct Hyp1f1SphericalExpansionFixture {
+    Hyp1f1SphericalExpansionFixture() {
+
+      for (auto& l_max : l_maxs) {
+        for (auto& n_max : n_maxs) {
+          facs_b.emplace_back(n_max);
+          for (int n{0}; n < n_max; ++n) {
+            double sigma_n{(rc-smooth_width) * std::max(std::sqrt(n), 1.) / n_max};
+            facs_b.back()(n) = 0.5 * math::pow(sigma_n, 2);
+
+          }
+          hyp1f1.emplace_back(false);
+          hyp1f1.back().precompute(n_max, l_max);
+          hyp1f1_recursion.emplace_back(true);
+          hyp1f1_recursion.back().precompute(n_max, l_max);
+        }
+      }
+    }
+
+    ~Hyp1f1SphericalExpansionFixture() = default;
+
+    std::vector<int> l_maxs{{16}};
+    std::vector<int> n_maxs{{16}};
+    std::vector<math::Hyp1f1SphericalExpansion> hyp1f1{};
+    std::vector<math::Hyp1f1SphericalExpansion> hyp1f1_recursion{};
+    std::vector<Eigen::VectorXd> facs_b{};
+    double r_ij{3.};
+    double fac_a{0.4};
+    double rc{5.};
+    double smooth_width{0.5};
+    bool verbose{false};
+  };
+
 }  // namespace rascal
 
 #endif  // TESTS_TEST_MATH_HH_

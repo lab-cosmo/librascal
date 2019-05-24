@@ -435,7 +435,7 @@ namespace rascal {
 
       std::shared_ptr<AtomicSmearingSpecificationBase> atomic_smearing{};
       AtomicSmearingType atomic_smearing_type{};
-      math::Hyp1f1SphericalExpansion hyp1f1_calculator{1e-13, 200};
+      math::Hyp1f1SphericalExpansion hyp1f1_calculator{false, 1e-13, 200};
       // data member used to store the contributions to the expansion
       Matrix_t radial_integral_neighbour{};
       Vector_t radial_integral_center{};
