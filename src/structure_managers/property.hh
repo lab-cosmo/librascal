@@ -201,10 +201,10 @@ namespace rascal {
                    "You are trying to access a property that "
                    "does not exist at this depth in the "
                    "adaptor stack.");
-     return this->operator[](id.get_internal_neighbour_cluster_index(CallerLayer));
+     //return this->operator[](id.get_internal_neighbour_cluster_index(CallerLayer));
      // #BUG8486@(all) we can just use the managers function to get the
      // corresponding cluster index, no need to save this in the cluster
-     // return this->operator[](this->manager->get_cluster_index(id.get_internal_neighbour_atom_index()));
+     return this->operator[](this->manager.get_cluster_index(id.get_internal_neighbour_atom_index()));
     }
 
 
