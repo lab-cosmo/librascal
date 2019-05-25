@@ -175,9 +175,9 @@ namespace rascal {
     }
 
     //! Returns the id of the index-th neighbour atom of a given cluster
-    template <size_t Order, size_t Layer, size_t ParentLayer, size_t NeighbourLayer>
+    template <size_t Order, size_t Layer>
     inline int
-    get_cluster_neighbour_atom_index_impl(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster,
+    get_cluster_neighbour_atom_index_impl(const ClusterRefKey<Order, Layer> & cluster,
                           size_t index) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles up to traits::MaxOrder");
@@ -247,20 +247,15 @@ namespace rascal {
     //TODO(alex) check if this can be done everywhere
     //
     //! Returns the number of neighbours of a given cluster
-    template <size_t Order, size_t Layer, 
-           size_t ParentLayer = 
-               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentLayer,
-           size_t NeighbourLayer =
-               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
+    template <size_t Order, size_t Layer>
     inline typename std::enable_if_t<(Order<(traits::MaxOrder-1)), size_t>
-    get_cluster_size_impl(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster) const {      
+    get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {      
       return this->manager->get_cluster_size(cluster);
     }
 
-    template <size_t Order, size_t Layer, 
-             size_t ParentLayer, size_t NeighbourLayer>
+    template <size_t Order, size_t Layer>
     inline typename std::enable_if_t<not(Order<traits::MaxOrder-1), size_t>
-    get_cluster_size_impl(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster) const {
+    get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
       /*
@@ -274,30 +269,6 @@ namespace rascal {
       auto access_index = cluster.get_cluster_index(Layer);
       return nb_neigh[access_index];
     }
-
-    template <size_t Order, size_t Layer, 
-           size_t ParentLayer =
-               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentLayer,
-           size_t NeighbourLayer =
-               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
-    inline typename std::enable_if_t<(Order<traits::MaxOrder-1), size_t>
-        get_cluster_neighbour_cluster_index_impl(
-            const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster,
-            const size_t cluster_index) const {
-      return this->manager->get_cluster_neighbour_cluster_index(cluster, cluster_index);
-    }
-    template <size_t Order, size_t Layer, 
-           size_t ParentLayer, size_t NeighbourLayer>
-    inline typename std::enable_if_t<not(Order<traits::MaxOrder-1), size_t>
-        get_cluster_neighbour_cluster_index_impl(
-            const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> &,
-            const size_t cluster_index) const {
-      static_assert(Order <= traits::MaxOrder,
-                    "this implementation handles only up to the "
-                    " MaxOrder");
-      return this->neighbours_cluster_index[cluster_index];
-    }
-
 
     //! Get the manager used to build the instance
     ImplementationPtr_t get_previous_manager() {

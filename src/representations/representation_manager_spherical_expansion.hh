@@ -75,8 +75,8 @@ namespace rascal {
         this->constant_gaussian_sigma =
             hypers.at("gaussian_sigma_constant").get<double>();
       }
-      template <size_t Order, size_t Layer, size_t ParentLayer, size_t NeighbourLayer>
-      double get_gaussian_sigma(ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & /* pair */) {
+      template <size_t Order, size_t Layer>
+      double get_gaussian_sigma(ClusterRefKey<Order, Layer> & /* pair */) {
         return this->constant_gaussian_sigma;
       }
       double constant_gaussian_sigma{0.};
@@ -87,8 +87,8 @@ namespace rascal {
     template <>
     struct AtomicSmearingSpecification<GaussianSigmaType::PerSpecies> {
       explicit AtomicSmearingSpecification(json /* hypers */) {}
-      template <size_t Order, size_t Layer, size_t ParentLayer, size_t NeighbourLayer>
-      double get_gaussian_sigma(ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & /* pair */) {
+      template <size_t Order, size_t Layer>
+      double get_gaussian_sigma(ClusterRefKey<Order, Layer> & /* pair */) {
         throw std::logic_error("Requested a sigma type that has not yet "
                                "been implemented");
         return -1;
@@ -99,8 +99,8 @@ namespace rascal {
     template <>
     struct AtomicSmearingSpecification<GaussianSigmaType::Radial> {
       explicit AtomicSmearingSpecification(json) {}
-      template <size_t Order, size_t Layer, size_t ParentLayer, size_t NeighbourLayer>
-      double get_gaussian_sigma(ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & /* pair */) {
+      template <size_t Order, size_t Layer>
+      double get_gaussian_sigma(ClusterRefKey<Order, Layer> & /* pair */) {
         throw std::logic_error("Requested a sigma type that has not yet "
                                "been implemented");
         return -1;
@@ -222,8 +222,8 @@ namespace rascal {
     void precompute();
 
     // TODO(max-veit) overload operator<< instead? But we need the center...
-    template <size_t Order, size_t Layer, size_t ParentLayer, size_t NeighbourLayer>
-    void print_soap_vector(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & center,
+    template <size_t Order, size_t Layer>
+    void print_soap_vector(const ClusterRefKey<Order, Layer> & center,
                            std::ostream & stream) {
       stream << "Soap vector size " << this->get_feature_size() << std::endl;
       auto keys{this->expansions_coefficients.get_keys(center)};

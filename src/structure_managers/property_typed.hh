@@ -215,8 +215,8 @@ namespace rascal {
 
     /* ---------------------------------------------------------------------- */
     //! Property accessor by cluster ref
-    template <size_t CallerLayer, size_t ParentLayer , size_t NeighbourLayer>
-    inline reference operator[](const ClusterRefKey<Order, CallerLayer, ParentLayer, NeighbourLayer> & id) {
+    template <size_t CallerLayer>
+    inline reference operator[](const ClusterRefKey<Order, CallerLayer> & id) {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");

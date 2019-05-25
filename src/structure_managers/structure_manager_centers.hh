@@ -242,13 +242,9 @@ namespace rascal {
     inline size_t get_size_with_ghosts() const { return this->natoms; }
 
     //! returns the number of neighbours of a given i atom
-    template <size_t Order, size_t Layer, 
-           size_t ParentLayer = 
-               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentLayer,
-           size_t NeighbourLayer =
-               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
+    template <size_t Order, size_t Layer>
     inline size_t
-    get_cluster_size_impl(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & /*cluster*/) const {
+    get_cluster_size_impl(const ClusterRefKey<Order, Layer> & /*cluster*/) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms.");
       return 1;
@@ -266,13 +262,9 @@ namespace rascal {
     }
 
     //! Dummy function, since neighbours are not present at this Order
-    template <size_t Order, size_t Layer, 
-           size_t ParentLayer = 
-               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentLayer,
-           size_t NeighbourLayer =
-               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
+    template <size_t Order, size_t Layer>
     inline int
-    get_cluster_neighbour_atom_index_impl(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & /*cluster*/,
+    get_cluster_neighbour_atom_index_impl(const ClusterRefKey<Order, Layer> & /*cluster*/,
                           size_t /*index*/) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms.");
@@ -286,12 +278,6 @@ namespace rascal {
     template <size_t Order>
     inline size_t
     get_offset_impl(const std::array<size_t, Order> & counters) const;
-
-    template <size_t Order, size_t Layer, 
-           size_t ParentLayer, size_t NeighbourLayer>
-    inline size_t get_cluster_neighbour_cluster_index_impl(
-        const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster,
-        const size_t cluster_index) const;
 
     //! Function for returning the number of atoms
     size_t get_nb_clusters(size_t order) const;
@@ -369,18 +355,6 @@ namespace rascal {
       const std::array<size_t, Order> & /*counters*/) const {
     static_assert(Order == 1, "This manager only handles atoms.");
     return 0;
-  }
-
-    template <size_t Order, size_t Layer, 
-           size_t ParentLayer = 
-               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentLayer,
-           size_t NeighbourLayer =
-               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
-  inline size_t StructureManagerCenters::get_cluster_neighbour_cluster_index_impl(
-      const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> &,
-      const size_t cluster_index) const {
-    static_assert(Order == 1, "This manager only handles atoms.");
-    return cluster_index;
   }
 }  // namespace rascal
 

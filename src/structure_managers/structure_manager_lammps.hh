@@ -127,13 +127,9 @@ namespace rascal {
     inline size_t get_size_with_ghosts() const { return this->tot_num; }
 
     //! return the number of neighbours of a given atom
-    template <size_t Order, size_t Layer, 
-           size_t ParentLayer = 
-               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentLayer,
-           size_t NeighbourLayer =
-               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
+    template <size_t Order, size_t Layer>
     inline size_t
-    get_cluster_size_impl(const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster) const {
+    get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
       return this->numneigh[cluster.back()];
@@ -141,14 +137,10 @@ namespace rascal {
 
     //! return the index-th neighbour of the last atom in a cluster with
     //! cluster_size = 1 (atoms) which can be used to construct pairs
-    template <size_t Order, size_t Layer, 
-           size_t ParentLayer = 
-               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentLayer,
-           size_t NeighbourLayer =
-               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
+    template <size_t Order, size_t Layer>
     inline int
     get_cluster_neighbour_atom_index_impl(
-        const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster,
+        const ClusterRefKey<Order, Layer> & cluster,
         size_t index) const {
       static_assert(Order == traits::MaxOrder - 1,
                     "this implementation only handles atoms and identify its "
@@ -182,12 +174,6 @@ namespace rascal {
     inline size_t
     get_offset_impl(const std::array<size_t, Order> & counters) const;
     
-    template <size_t Order, size_t Layer, 
-           size_t ParentLayer, size_t NeighbourLayer>
-    inline size_t get_cluster_neighbour_cluster_index_impl(
-        const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> & cluster,
-        const size_t cluster_index) const;
-
     /**
      * return the number of clusters of size cluster_size.  Can only handle
      * cluster_size 1 (atoms) and cluster_size 2 (pairs).
@@ -262,21 +248,6 @@ namespace rascal {
                   " for a pair iterator, given the i atom of the pair");
     return this->offsets[counters.front()];
   }
-
-    template <size_t Order, size_t Layer, 
-           size_t ParentLayer = 
-               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentLayer,
-           size_t NeighbourLayer =
-               ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
-  inline size_t StructureManagerLammps::get_cluster_neighbour_cluster_index_impl(
-      const ClusterRefKey<Order, Layer, ParentLayer, NeighbourLayer> &,
-      const size_t cluster_index) const {
-    static_assert(Order <= traits::MaxOrder,
-                  "this manager can only give the offset (= starting index)"
-                  " for a pair iterator, given the i atom of the pair");
-    return cluster_index;
-  }
-
 }  // namespace rascal
 
 #endif  // SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_LAMMPS_HH_

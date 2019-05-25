@@ -30,7 +30,7 @@
 #ifndef SRC_STRUCTURE_MANAGERS_CLUSTER_REF_KEY_HH_
 #define SRC_STRUCTURE_MANAGERS_CLUSTER_REF_KEY_HH_
 
-#include "structure_managers/cluster_ref_cluster_key.hh"
+#include "structure_managers/cluster_ref_base.hh"
 
 #include <Eigen/Dense>
 
@@ -150,6 +150,7 @@ namespace rascal {
     return arr[order-1];
   }
   //! Dynamic access to layer by cluster dimension (possibly not necessary)
+  // TODO(alex) check why I did this and comment 
   //template <size_t MaxOrder, size_t... Ints>
   //constexpr size_t get_layer(size_t index, std::index_sequence<Ints...>) {
   //  constexpr size_t arr[]{Ints...};
@@ -196,100 +197,33 @@ namespace rascal {
    * many layers of managers/adaptors are stacked at the point at which the
    * cluster reference is introduced.
    */
-
-  
-  template <size_t Order_, size_t Layer_, size_t ParentLayer_, size_t NeighbourLayer_>
-  struct ClusterRefKeyInfo {
-    static_assert(not(Order_==1) || Layer_==ParentLayer_ , "Layer does not argee with ParentLayer for Order 1 ClusterRefKeyInfo");
-    static_assert(not(Order_==1) || Layer_==NeighbourLayer_, "Layer does not argee with NeighbourLayer for Order 1 ClusterRefKeyInfo");
-    constexpr static size_t Order = Order_; 
-    constexpr static size_t Layer = Layer_; 
-    constexpr static size_t ParentLayer = ParentLayer_; 
-    constexpr static size_t NeighbourLayer = NeighbourLayer_; 
-  };
-
-  // ValidateDefaultTemplateParamater
   template <size_t Order, size_t Layer>
-  struct ClusterRefKeyDefaultTemplateParamater {
-    static_assert(Order==1, "ClusterRefKey of Order > 1 requires ParentLayer" 
-        "and NeigbhourLayer. The usage ClusterRefKey<Order, Layer> is only valid"
-        "for Order = 1"); 
-    constexpr static size_t ParentLayer = Layer;
-    constexpr static size_t NeighbourLayer = Layer;
-  };
-
-  // TODO(till) 
-  /* Usage of ClusterRefKey<Order,Layer> with Order>1 is invalid usage. ClusterRefKey<1,Layer> is valid usage. ClusterRefKey<1,Layer,y,z> is valid usage, but y and z are ignored.
-   */
-  template <size_t Order, size_t Layer,
-      size_t ParentLayer=
-          ClusterRefKeyDefaultTemplateParamater<Order, Layer>::ParentLayer,
-      size_t NeighbourLayer=
-          ClusterRefKeyDefaultTemplateParamater<Order, Layer>::NeighbourLayer>
-  class ClusterRefKey : public ClusterRefClusterKey<Order, Layer> {
+  class ClusterRefKey : public ClusterRefBase {
    public:
     /**
      * Index array types need both a constant and a non-constant version. The
      * non-const version can and needs to be cast into a const version in
      * argument.
      */
+    using Parent = ClusterRefBase;
+    using IndexConstArray =
+        Eigen::Map<const Eigen::Matrix<size_t, Layer + 1, 1>>;
+    using IndexArray = Eigen::Map<Eigen::Matrix<size_t, Layer + 1, 1>>;
+    // TODO(alex) it is used as size_t to store atom indices in AMO, change
+    // this to be consistent and change this here to size_t because indices can
+    // not be negative
+    using AtomIndex_t = std::array<int, Order>;
 
-    static_assert(not(Order==1) || Layer==ParentLayer , "Layer does not argee with ParentLayer for Order 1 ClusterRefKeyInfo");
-    static_assert(not(Order==1) || Layer==NeighbourLayer, "Layer does not argee with NeighbourLayer for Order 1 ClusterRefKeyInfo");
-
-    using ParentClass = ClusterRefClusterKey<Order, Layer>;
-    using IndexConstArray = typename ParentClass::IndexConstArray;
-    using IndexArray = typename ParentClass::IndexArray;
-    using AtomIndex_t = typename ParentClass::AtomIndex_t;
-    using NeighbourIndexConstArray =
-        Eigen::Map<const Eigen::Matrix<size_t, NeighbourLayer + 1, 1>>;
-
-
-    /* For Order > 1 this object contains the neighbour object, because the neighbour object is nowhere else stored, but for Order = 1 it is a reference to itself, because an object cannot store itself.
-     */
-    typedef ParentClass & Neighbour_t;
-    typedef ParentClass Parent_t;
-    /* #ParentFeature #NeighbourFeature
-     *using NeighbourClusterRefKey_t = ClusterRefClusterKey<1, NeighbourLayer>;
-     *typedef typename std::conditional<Order==1,
-     *         ParentClass &, NeighbourClusterRefKey_t
-     *             >::type Neighbour_t;
-     *using ParentClusterRefKey_t =
-     *    ClusterRefClusterKey<(Order==1) ? 1 : Order-1, ParentLayer>;
-     *typedef typename std::conditional<Order==1,
-     *         ParentClass, ParentClusterRefKey_t
-     *             >::type Parent_t;
-     */
     //! Default constructor
     ClusterRefKey() = delete;
 
-    /* #ParentFeature #NeighbourFeature
-     * Definition for ClusterRefKey using neighbours and parents for order > 1,
-     * if we will extend this feature the constructor might be required.
-     *template<size_t Order_=Order, typename std::enable_if_t<not(Order_==1),int> = 0>
-     *ClusterRefKey(AtomIndex_t atom_indices, IndexConstArray cluster_indices,
-     *    Parent_t & cluster_parent,
-     *    NeighbourIndexConstArray cluster_neighbour_cluster_indices) 
-     *    : ParentClass{atom_indices, cluster_indices},
-     *      cluster_parent{cluster_parent},
-     *      cluster_neighbour{
-     *          Neighbour_t(
-     *              std::array<int, 1>{atom_indices.back()},
-     *              // TODO(alex) in ClusterRef we do different casting for the indices
-     *              // here it seems to work without any difference between
-     *              // cases, this seems fishy
-     *              NeighbourIndexConstArray(cluster_neighbour_cluster_indices)) 
-     *      }
-     *      {}
+    /**
+     * direct constructor. Initialized with an array of atoms indices,
+     * and a cluster reference data
      */
-
-    // If we extend parent and neighbour feature, this constructor is used for Order 1.
-    // Currently it is used for every case.
-    //template<size_t Order_=Order, typename std::enable_if_t<(Order_==1),int> = 0>
     ClusterRefKey(AtomIndex_t atom_indices, IndexConstArray cluster_indices)
-        : ParentClass{atom_indices, cluster_indices},
-          cluster_parent{*this},
-            cluster_neighbour{*this} {}
+        : Parent{Order, Layer}, atom_indices{atom_indices},
+          cluster_indices{cluster_indices.data()} {}
 
     //! Copy constructor
     ClusterRefKey(const ClusterRefKey & other) = default;
@@ -306,44 +240,59 @@ namespace rascal {
     //! Move assignment operator
     ClusterRefKey & operator=(ClusterRefKey && other) = default;
 
+    //! returns the atom indices of the current cluster
+    const inline AtomIndex_t & get_atom_indices() const {
+      return this->atom_indices;
+    }
+
+    //! returns the first atom index in this cluster
+    const int & front() const { return this->atom_indices.front(); }
+    //! returns the last atom index in this cluster
+    const int & back() const { return this->atom_indices.back(); }
+    /* the internal cluster neighbour is the neighbour which was added as
+     * neighbour in the creation of this cluster
+     */
+    // TODO(alex) rename get neighbour_atom_index
+    const int & get_internal_neighbour_atom_index() const {
+      return this->back();
+    }
+    
+    const int & get_atom_index() const {
+      return this->back();
+    }
+    
+    //TODO(alex) should this be const size_t & ? I dont see the 
+    // reason for reference, does it safe space?
     //! returns the cluster's index, given a specific layer
-    size_t get_internal_neighbour_cluster_index(const size_t layer) {
-      return this->cluster_neighbour.get_cluster_index(layer);
-    }
-    NeighbourIndexConstArray get_internal_neighbour_cluster_indices() const {
-      return this->cluster_neighbour.get_cluster_indices();
+    inline size_t get_cluster_index(const size_t layer) const {
+      return this->cluster_indices(layer);
     }
 
-    //TODO(alex) rename by using the above
-    template<size_t Order_=Order>
-    std::enable_if_t<not(Order_==1), size_t> get_neighbour_cluster_index(const size_t layer) const {
-      return this->cluster_neighbour.get_cluster_index(layer);
-    }
-
-    template<size_t Order_=Order>
-    std::enable_if_t<(Order_==1), size_t> get_neighbour_cluster_index(const size_t layer) const {
-      return this->get_cluster_index(layer);
-      // TODO(alex) neighbour does not seem do be pointer type which it should be
-      //return this->cluster_neighbour->get_cluster_index(layer);
-    }
-    template<size_t Order_=Order>
-    std::enable_if_t<not(Order_==1), NeighbourIndexConstArray> get_neighbour_cluster_indices() const {
-      return this->cluster_neighbour.get_cluster_indices();
-    }
-
-    template<size_t Order_=Order>
-    std::enable_if_t<Order_==1, IndexConstArray> get_neighbour_cluster_indices() const {
+    //! returns the complete cluster indices (stacking history)
+    inline IndexConstArray get_cluster_indices() const {
       return this->cluster_indices;
     }
 
+    //! returns the order of the current cluster
+    constexpr static inline size_t order() { return Order; }
+
+    //! returns the layer of the current cluster
+    constexpr static inline size_t cluster_layer() { return Layer; }
+
    protected:
-    /** If the cluster represents a tuple of form (i,j,...,k,l) the corresponding parent cluster represents the tuple (i,j,...,k) e.g for a triplet (i,j,k) we save the reference to the pair (i,j). To access information of cluster<Order-1>, because the cluster indices of a cluster<Order> are independent from that of the corresponding cluster<Order-1>.
+    /**
+     *  Array with unique atom indices. These can be user defined to refer to
+     *  the exact same atom, e.g. in a Monte-Carlo simulation, where atoms are
+     *  swapped.
      */
-    Parent_t & cluster_parent;
-    /* The internal neighbour of the cluster. The atom with the last atom index in atom_indices. For Order = 1 this will be a reference to itself, and for Order > 1 it stores the neighbour object.
+    AtomIndex_t atom_indices;
+    /**
+     * Cluster indices by layer order, highest layer, means last adaptor, and
+     * means last entry (.back())
      */
-    Neighbour_t cluster_neighbour;
+    IndexConstArray cluster_indices;
   };
+
 }  // namespace rascal
 
 #endif  // SRC_STRUCTURE_MANAGERS_CLUSTER_REF_KEY_HH_
