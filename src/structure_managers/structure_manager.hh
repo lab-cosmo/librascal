@@ -370,8 +370,8 @@ namespace rascal {
       return this->properties.at(name);
     }
 
-    // TODO(till) is this okay? one function to return bool, one to return an error?
-    // this returns the bool
+    /*  Checks if the property type of user matches the actual stored property.
+     */
     template <typename UserProperty_t>
     bool check_property_t(const std::string & name) const {
       auto property = get_property(name);
@@ -382,8 +382,9 @@ namespace rascal {
       }
       return true;
     }
-    // TODO(till) is this okay? one function to return bool, one to return an error?
-    // this returns the error
+
+    /*  Throws an error if property type given from user does not match actual property type.
+     */
     template <typename UserProperty_t>
     void validate_property_t(std::shared_ptr<PropertyBase> property) const {
       try {
@@ -396,34 +397,22 @@ namespace rascal {
       }
     }
 
-    // TODO(till) part of above, check if above function is okay
     template <typename UserProperty_t>
     void validate_property_t(const std::string & name) const {
       auto property = this->get_property(name);
       this->template validate_property_t<UserProperty_t>(property);
     }
 
-    // TODO(till) I think it is good to have a function which does the
-    // type conversion for the user, only if the type is validated,
-    // so if it is wrongly used the user gets an runtime error not 
-    // segmentation fault
-    // dynamic_cast does dynamic checking and will result in nullptr
-    // if type conversion does not work, 
-    // pro: if wrong type segfault should be easily routed to this point
-    // cons: runtime cost (but this function is anyway may be not used in the hot loop because of the hashmap lookup).
-    // Problem with reinterpret und static cast is that the ptr is usable 
-    // afterwards (not nullptr) and this could result to undefined behaviour
-    // and in a bug later. Theoretically validate_proprety_t should already catch
-    // these cases, but only theoretically, I am not sure if dynamic_cast does
-    // additional checks.
-    
     // TODO change type to UserProperty_t & 
+    /*  Returns the typed property. Throws an error if property type given from
+     *  user does not match actual property type.
+     */
     template<typename UserProperty_t>
     std::shared_ptr<UserProperty_t> 
         get_validated_property(const std::string & name) const {
       auto property = this->get_property(name);
       this->template validate_property_t<UserProperty_t>(property);
-      return std::dynamic_pointer_cast<UserProperty_t>(property);
+      return std::static_pointer_cast<UserProperty_t>(property);
     }
 
     // TODO(till) same as the function above, just for different template parameters 

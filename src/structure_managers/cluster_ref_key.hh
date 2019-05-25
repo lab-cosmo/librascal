@@ -252,17 +252,14 @@ namespace rascal {
     /* the internal cluster neighbour is the neighbour which was added as
      * neighbour in the creation of this cluster
      */
-    // TODO(alex) rename get neighbour_atom_index
     const int & get_internal_neighbour_atom_index() const {
       return this->back();
     }
     
     const int & get_atom_index() const {
       return this->back();
-    }
-    
-    //TODO(alex) should this be const size_t & ? I dont see the 
-    // reason for reference, does it safe space?
+    } 
+
     //! returns the cluster's index, given a specific layer
     inline size_t get_cluster_index(const size_t layer) const {
       return this->cluster_indices(layer);

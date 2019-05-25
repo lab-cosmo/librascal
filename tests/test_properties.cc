@@ -243,10 +243,8 @@ namespace rascal {
     using ANLWithGhosts_SMC_StackFixture = AdaptorNeighbourListStackFixture<
       StructureManagerCentersStackFixture, true>;
     using type = std::tuple<
-        // #BUG8486@(markus) when I stack an AdaptoMaxOrder not on an
-        // AdaptorStrict, I get segmentation faults in the update function of
-        // the AdaptorMaxOrder
-        // (with consider_ghost_neighbours=true). Is this wanted?
+        // TODO(alex) these two test in the update_self function, debug in
+        // office
         //TriplePropertyFixture<AdaptorMaxOrderStackFixture<ANLWithGhosts_SMC_StackFixture>>,
         //TriplePropertyFixture<AdaptorMaxOrderStackFixture<AdaptorHalfListStackFixture<
         //    ANLWithGhosts_SMC_StackFixture>>>,
@@ -383,10 +381,19 @@ namespace rascal {
     }
   }
   /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(order_three_constructor_tests, Fix, triple_property_fixtures, Fix) {
+    bool verbose{true};
+    if (verbose) {
+      std::cout << ">> Test for manager ";
+      std::cout << Fix::manager->get_name();
+      std::cout << " starts now." << std::endl;
+      std::cout << " finished." << std::endl;
+    }
+  }
   /* Access of atom property with triple. 
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_property_access_with_triple_tests, Fix, triple_property_fixtures, Fix) {
-    bool verbose{true};
+    bool verbose{false};
     if (verbose) {
       std::cout << ">> Test for manager ";
       std::cout << Fix::manager->get_name();
