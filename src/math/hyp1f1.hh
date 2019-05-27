@@ -115,19 +115,19 @@ namespace rascal {
         }
       }
       //! Computes G(a,b,z)
-      inline double calc(const double & r_ij, const double & alpha,
-                         const double & beta, const bool & derivative = false,
+      inline double calc(const double & z, const double & z2, const bool & derivative = false,
                          const int & n_terms = -1) {
+        // z2 ->argument of exp(-alpha*r_ij^2)
         using math::pow;
         double result{0.};
         if (not this->is_exp) {
-          double z{pow(alpha * r_ij, 2) / (alpha + beta)};
+          // double z{pow(alpha * r_ij, 2) / (alpha + beta)};
           result = this->prefac * this->calc(z, derivative, n_terms) *
-                   std::exp(-alpha * r_ij * r_ij);
+                   std::exp(z2);
         } else {
           // simplification of the argument with exp(-alpha*r_ij^2)
-          double z2{-alpha * beta * pow(r_ij, 2) / (alpha + beta)};
-          result = this->prefac * std::exp(z2);
+          // double z2{-alpha * beta * pow(r_ij, 2) / (alpha + beta)};
+          result = this->prefac * std::exp(z+z2);
         }
         return result;
       }
@@ -256,21 +256,17 @@ namespace rascal {
       }
 
       //! Computes G(a,b,z)
-      inline double calc(const double & r_ij, const double & alpha,
-                         const double & beta, const bool & derivative = false,
+      inline double calc(const double & z, const double & z2,
+                         const bool & derivative = false,
                          const int & n_terms = -1) {
         using math::pow;
-
-        // simplification of the argument with exp(-alpha*r_ij^2)
-        double z2{-alpha * beta * pow(r_ij, 2) / (alpha + beta)};
+        // z2 -> argument of exp(-alpha*r_ij^2)
         double result{0.};
         if (not this->is_exp) {
-          // argument of 1F1
-          double z{pow(alpha * r_ij, 2) / (alpha + beta)};
           auto fac{this->z_power_a_b(z)};
-          result = this->hyp2f0(z, derivative, n_terms) * std::exp(z2) * fac;
+          result = this->hyp2f0(z, derivative, n_terms) * std::exp(z+z2) * fac;
         } else {
-          result = std::exp(z2) / this->prefac;
+          result = std::exp(z+z2) / this->prefac;
         }
         return result;
       }
@@ -463,13 +459,12 @@ namespace rascal {
       }
 
       //! Compute G(a,b,z)
-      inline double calc(const double & r_ij, const double & alpha,
-                         const double & beta, const bool & derivative = false) {
-        double z{math::pow(alpha * r_ij, 2) / (alpha + beta)};
+      inline double calc(const double & z, const double & z2, const bool & derivative = false) {
+
         if (z > this->z_asympt) {
-          return this->hyp1f1_asymptotic.calc(r_ij, alpha, beta, derivative);
+          return this->hyp1f1_asymptotic.calc(z, z2, derivative);
         } else {
-          return this->hyp1f1_series.calc(r_ij, alpha, beta, derivative);
+          return this->hyp1f1_series.calc(z, z2, derivative);
         }
       }
     };
@@ -542,12 +537,17 @@ namespace rascal {
 
       inline double calc(const size_t & n_radial, const size_t & l_angular, const double & r_ij, const double & alpha, const double & beta) {
         int ipos{this->get_pos(n_radial, l_angular)};
-        return this->hyp1f1[ipos].calc(r_ij, alpha, beta);
+        double z{math::pow(alpha * r_ij, 2) / (alpha + beta)};
+        double z2{- alpha * math::pow(r_ij, 2)};
+        return this->hyp1f1[ipos].calc(z, z2);
       }
+
       inline void calc(const double & r_ij, const double & alpha,
                        const Vector_Ref & fac_b,
                        const bool & derivative = false) {
-        if(not this->recursion) {
+
+        if(not this->recursion or this->max_angular < 3) {
+          // recursion needs 4 evaluations of 1F1 so not worth it if l_max < 3
           this->calc_direct(r_ij, alpha, fac_b, derivative);
         } else {
           this->calc_recursion(r_ij, alpha, fac_b);
@@ -555,6 +555,9 @@ namespace rascal {
       }
 
       inline void calc_recursion(const double & r_ij, const double & alpha, const Vector_Ref & fac_b) {
+
+        double z2{- alpha * math::pow(r_ij, 2)};
+
         double M1p2p{0.},M2p3p{0.},MP1p2p{0.},MP2p3p{0.},M1p1p{0.},Moo{0.},MP1p1p{0.},MPoo{0.};
         for (size_t n_radial{0}; n_radial < this->max_radial; ++n_radial) {
           // get the starting points for the recursion
@@ -562,15 +565,15 @@ namespace rascal {
 
           int l_angular{static_cast<int>(this->max_angular)};
           int ipos{this->get_pos(n_radial, l_angular)};
-          M1p2p = this->hyp1f1[ipos].calc(r_ij, alpha, fac_b(n_radial));
+          M1p2p = this->hyp1f1[ipos].calc(z, z2);
           this->values(n_radial, l_angular) = M1p2p;
-          M2p3p = this->hyp1f1[ipos].calc(r_ij, alpha, fac_b(n_radial), true);
+          M2p3p = this->hyp1f1[ipos].calc(z, z2, true);
           this->derivatives(n_radial, l_angular) = M2p3p;
 
           ipos = this->get_pos(n_radial, l_angular - 1);
-          MP1p2p = this->hyp1f1[ipos].calc(r_ij, alpha, fac_b(n_radial));
+          MP1p2p = this->hyp1f1[ipos].calc(z, z2);
           this->values(n_radial, l_angular - 1) = MP1p2p;
-          MP2p3p = this->hyp1f1[ipos].calc(r_ij, alpha, fac_b(n_radial), true);
+          MP2p3p = this->hyp1f1[ipos].calc(z, z2, true);
           this->derivatives(n_radial, l_angular - 1) = MP2p3p;
           l_angular -= 2;
           for (; l_angular > 0; l_angular -= 2) {
@@ -592,7 +595,7 @@ namespace rascal {
             MP2p3p = MP1p1p;
             MP1p2p = MPoo;
           }
-
+          // makes sure l == 0 is taken care of
           if (this->max_angular % 2 == 0) {
             auto a{this->get_a(n_radial, 0)};
             auto b{this->get_b(0)};
@@ -600,7 +603,6 @@ namespace rascal {
             Moo = recurence_G_to_val_downward(a, b, z, M1p2p, M1p1p);
             this->values(n_radial, 0) = Moo;
             this->derivatives(n_radial, 0) = M1p1p;
-
           }
 
         }
@@ -608,28 +610,31 @@ namespace rascal {
 
       inline void calc_direct(const double & r_ij, const double & alpha,
                        const Vector_Ref & fac_b, const bool & derivative) {
+        double z2{- alpha * math::pow(r_ij, 2)};
+
         for (size_t n_radial{0}; n_radial < this->max_radial; n_radial++) {
+          double z{this->get_z(r_ij, alpha, fac_b(n_radial))};
           for (size_t l_angular{0}; l_angular < this->max_angular + 1;
                l_angular++) {
             int ipos{this->get_pos(n_radial, l_angular)};
             this->values(n_radial, l_angular) =
-                this->hyp1f1[ipos].calc(r_ij, alpha, fac_b(n_radial));
+                this->hyp1f1[ipos].calc(z, z2);
           }
         }
 
         if (derivative) {
           for (size_t n_radial{0}; n_radial < this->max_radial; n_radial++) {
+            double z{this->get_z(r_ij, alpha, fac_b(n_radial))};
             for (size_t l_angular{0}; l_angular < this->max_angular + 1;
                  l_angular++) {
               int ipos{this->get_pos(n_radial, l_angular)};
               this->derivatives(n_radial, l_angular) =
-                  this->hyp1f1[ipos].calc(r_ij, alpha, fac_b(n_radial), true);
+                  this->hyp1f1[ipos].calc(z, z2, true);
             }
           }
         }
       }
-// recurence_to_val_downward
-// recurence_to_der_downward
+
       inline Matrix_Ref get_values() { return Matrix_Ref(this->values); }
 
       inline Matrix_Ref get_derivatives() {
