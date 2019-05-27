@@ -255,12 +255,6 @@ namespace rascal {
     inline bool get_consider_ghost_neighbours() const {
       return this->manager->get_consider_ghost_neighbours();
     }
-    const std::vector<int> get_atom_indices_with_corresponding_cluster() {
-      return this->manager->get_atom_indices_with_corresponding_cluster();
-    }
-    const std::vector<int> get_nl_atom_indices() {
-      return this->manager->get_nl_atom_indices();
-    }
 
     const std::vector<int> get_manager_atom_indices() {
       return this->atom_indices[0];

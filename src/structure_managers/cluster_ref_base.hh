@@ -24,8 +24,6 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
-//TODO(alex) is this important
-#include <stddef.h>
 
 #ifndef SRC_STRUCTURE_MANAGERS_CLUSTER_REF_BASE_HH_
 #define SRC_STRUCTURE_MANAGERS_CLUSTER_REF_BASE_HH_

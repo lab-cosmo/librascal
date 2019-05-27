@@ -206,7 +206,6 @@ namespace rascal {
     }
 
     //! Returns the id of the index-th neighbour atom of a given cluster
-    // TODO(alex) #ATOM_INDEX neighbours accesed but int returned seems wrong, look ate neighbour list adapto which as atom list
     template <size_t Order, size_t Layer>
     inline int
     get_cluster_neighbour_atom_index_impl(const ClusterRefKey<Order, Layer> & cluster,
@@ -298,8 +297,6 @@ namespace rascal {
 
     //! Stores all neighbours atom index of traits::MaxOrder-1-clusters
     std::vector<int> neighbours_atom_index{};
-    // TODO(alex) delete
-    std::vector<size_t> neighbours_cluster_index{};
 
     /**
      * Stores the offsets of traits::MaxOrder-1-*clusters for accessing
@@ -307,28 +304,6 @@ namespace rascal {
      */
     std::vector<size_t> offsets{};
    private:
-    // TODO(alex) delete
-    //! Should be only used after the make_full_neighbour_list
-    //void make_full_neighbour_cluster_index_list() {
-    //  for (int neigh_atom_index : this->neighbours_atom_index) {
-    //    add_cluster_index_for_neigh_atom_index(neigh_atom_index);
-    //  }
-    //}
-
-    //void add_cluster_index_for_neigh_atom_index(int neigh_atom_index) {
-    //  bool atom_index_found = false;
-    //  size_t cluster_order_one_index{0}; 
-    //  for (auto atom : this->manager->with_ghosts()) {
-    //    if (neigh_atom_index == atom.back()) {
-    //      this->neighbours_cluster_index.push_back(cluster_order_one_index);
-    //      atom_index_found = true;
-    //    }
-    //    cluster_order_one_index++;
-    //  }
-    //  if (not(atom_index_found)) {
-    //    throw std::runtime_error("Atom index was not found while building list of cluster neighbour cluster index list.");
-    //  }
-    //}
 
   };
 
@@ -338,7 +313,7 @@ namespace rascal {
   AdaptorMaxOrder<ManagerImplementation>::AdaptorMaxOrder(
       std::shared_ptr<ManagerImplementation> manager)
       : manager{std::move(manager)}, nb_neigh{}, neighbours_atom_index{},
-        neighbours_cluster_index{}, offsets{} {
+         offsets{} {
     if (traits::MaxOrder < 3) {
       throw std::runtime_error("Increase MaxOrder: No pair list in underlying"
                                " manager.");
@@ -481,7 +456,6 @@ namespace rascal {
     this->nb_neigh.clear();
     this->offsets.clear();
     this->neighbours_atom_index.clear();
-    this->neighbours_cluster_index.clear();
 
     // BUG8486@(markus) I now append the ghost atoms to the cluster index
     // container
@@ -497,8 +471,6 @@ namespace rascal {
 
       AddOrderLoop::loop(atom, *this);
     }
-    // TODO(alex) delete
-    //this->make_full_neighbour_cluster_index_list();
     // correct the offsets for the new cluster order
     this->set_offsets();
 

@@ -142,20 +142,14 @@ namespace rascal {
     return internal::MinExtractor<ActiveDimensions>::value;
   }
 
-  // TODO(alex) check if I changed this correctly
+  // #BUG8486@(all) removed the MaxOrder template parameter, and the meaning 
+  // of the access index was not clear, changed name to order
   template <size_t... Ints>
   constexpr size_t get_layer(const size_t order,
       const std::index_sequence<Ints...>) {
     constexpr size_t arr[]{Ints...};
     return arr[order-1];
   }
-  //! Dynamic access to layer by cluster dimension (possibly not necessary)
-  // TODO(alex) check why I did this and comment 
-  //template <size_t MaxOrder, size_t... Ints>
-  //constexpr size_t get_layer(size_t index, std::index_sequence<Ints...>) {
-  //  constexpr size_t arr[]{Ints...};
-  //  return arr[index];
-  //}
 
   /**
    * Static access to layer by cluster dimension (e.g., for defining template
@@ -209,9 +203,6 @@ namespace rascal {
     using IndexConstArray =
         Eigen::Map<const Eigen::Matrix<size_t, Layer + 1, 1>>;
     using IndexArray = Eigen::Map<Eigen::Matrix<size_t, Layer + 1, 1>>;
-    // TODO(alex) it is used as size_t to store atom indices in AMO, change
-    // this to be consistent and change this here to size_t because indices can
-    // not be negative
     using AtomIndex_t = std::array<int, Order>;
 
     //! Default constructor

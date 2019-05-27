@@ -158,13 +158,11 @@ namespace rascal {
    public:
     using value_type = typename Value::type;
     using reference = typename Value::reference;
-    // TODO(alex) remove this and dependence
-    using order_1_t = typename std::integral_constant<int,1>;
 
     //! constructor
     TypedProperty(Manager_t & manager, Dim_t nb_row,
                   Dim_t nb_col = 1, std::string metadata = "no metadata")
-        : Parent{static_cast<StructureManagerBase &>(manager), nb_row, nb_col, Order, PropertyLayer, metadata}, manager{manager} {}
+        : Parent{static_cast<StructureManagerBase &>(manager), nb_row, nb_col, Order, PropertyLayer, metadata} {}
 
     //! Default constructor
     TypedProperty() = delete;
@@ -223,6 +221,12 @@ namespace rascal {
       return this->operator[](id.get_cluster_index(CallerLayer));
     }
 
+    template <size_t CallerOrder, size_t CallerLayer, size_t Order_= Order>
+    inline std::enable_if_t<(Order_==1) and (CallerOrder>1), reference>
+    operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
+     return this->operator[](static_cast<Manager_t &>(this->base_manager).get_cluster_index(id.get_internal_neighbour_atom_index()));
+    }
+
     //! Accessor for property by index for dynamically sized properties
     reference operator[](const size_t & index) {
       return Value::get_ref(this->values[index * this->get_nb_comp()],
@@ -248,7 +252,6 @@ namespace rascal {
     }
 
    protected:
-    Manager_t & manager;
     std::vector<T> values{};  //!< storage for properties
   };
 }  // namespace rascal

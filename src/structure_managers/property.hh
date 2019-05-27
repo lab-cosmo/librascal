@@ -194,14 +194,12 @@ namespace rascal {
      return this->operator[](id.get_cluster_index(CallerLayer));
     }
 
-    // TODO(alex)
     template <size_t CallerOrder, size_t CallerLayer, size_t Order_= Order>
     inline std::enable_if_t<(Order_==1) and (CallerOrder>1), reference>
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
-     //return this->operator[](id.get_internal_neighbour_cluster_index(CallerLayer));
      // #BUG8486@(all) we can just use the managers function to get the
      // corresponding cluster index, no need to save this in the cluster
-     return this->operator[](this->manager.get_cluster_index(id.get_internal_neighbour_atom_index()));
+     return this->operator[](static_cast<Manager_t &>(this->base_manager).get_cluster_index(id.get_internal_neighbour_atom_index()));
     }
 
     /**

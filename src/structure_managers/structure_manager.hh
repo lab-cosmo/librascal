@@ -193,7 +193,6 @@ namespace rascal {
                  get_layer(Order,typename traits::LayerByOrder{}),
                  StructureManager_t, NbRow, NbCol>;
 
-    //TODO(alex) change to get layers as above
     //! helper type for Property creation
     template <typename T, size_t Order>
     using TypedProperty_t = TypedProperty<T, Order,
@@ -504,23 +503,12 @@ namespace rascal {
       return this->implementation().get_offset_impl(counters);
     }
    
-    // TODO(alex) do comment
-    /* The neighbour's cluster_index is of the cluster with the cluster index cluster_index.
+    /* Returns the neighbour's cluster_index of order 1 from an atomic index.
      */
     size_t get_cluster_index(const int atom_index) const{
       return this->implementation().get_cluster_index_impl(atom_index);
     }
 
-    //TODO(alex) delete
-    //template <size_t Order, size_t Layer>
-    //inline size_t get_cluster_neighbour_cluster_index(
-    //    ClusterRefKey<Order, Layer> & cluster,
-    //    const size_t cluster_index) const {
-    //  return this->implementation().
-    //    get_cluster_neighbour_cluster_index_impl(cluster, cluster_index);
-    //}
-
-    // TODO(alex) rename to get_manager_layer
     template <size_t Order>
     constexpr static size_t cluster_layer_from_order() {
       static_assert(Order>0, "Order is <1 this should not be");
@@ -623,7 +611,7 @@ namespace rascal {
                                  std::make_integer_sequence<int, Size>{});
     }
 
-    // TODO(till) changed name Counters to Container, because we handle an object
+    // #BUG8486@(till) changed name Counters to Container, because we handle an object
     // which can be as manager or clusterref, and this is is name container
     // in the iterator, counters is used for the the list of all iterator indices
     /* ----------------------------------------------------------------------
@@ -647,7 +635,6 @@ namespace rascal {
         throw std::runtime_error("This branch should never exist"
                                  " (offset implementation).");
       }
-      //TODO(alex) #ATOM_INDEX 
       template <class Manager_t, class Container_t>
       inline static int
       get_cluster_neighbour_atom_index(const Manager_t & /*manager*/,
@@ -667,15 +654,12 @@ namespace rascal {
         return manager.get_cluster_size_impl(cluster);
       }
 
-      // TODO(alex) renama to get_offset, consistent
       template <class Manager_t, class Container_t>
       inline static size_t get_offset(const Manager_t & manager,
                                            const Container_t & container) {
         return manager.get_offset_impl(container);
       }
 
-      // TODO(alex)#ATOM_INDEX this function from manager returns the atom index
-      // therefore return type should be int
       template <class Manager_t, class Container_t>
       inline static int get_cluster_neighbour_atom_index(const Manager_t & manager,
                                                  const Container_t & container,
@@ -684,32 +668,19 @@ namespace rascal {
       }
     };
 
-    // TODO(alex) make this more pretty
     template<class ParentClass,
       typename ClusterIndicesType, size_t Layer>
     struct ClusterIndicesConstCaster {
     using IndexConstArray_t = typename ParentClass::IndexConstArray;
     using IndexArray_t = typename ParentClass::IndexArray;
 
-      template<typename ClusterIndicesType_ = ClusterIndicesType, typename std::enable_if_t<std::is_same<ClusterIndicesType_, const IndexConstArray_t>::value,int> = 0>
-      static inline IndexConstArray_t & cast(const IndexConstArray_t & cluster_indices) {
-        return cluster_indices;
-      }
       template<typename ClusterIndicesType_ = ClusterIndicesType, typename std::enable_if_t<std::is_same<ClusterIndicesType_, IndexConstArray_t>::value,int> = 0>
       static inline IndexConstArray_t & cast(IndexConstArray_t & cluster_indices) {
         return cluster_indices;
       }
-      template<typename ClusterIndicesType_ = ClusterIndicesType, typename std::enable_if_t<std::is_same<ClusterIndicesType_, const IndexArray_t> ::value,int> = 0>
-      static inline IndexConstArray_t cast(const IndexArray_t & cluster_indices) {
-        return IndexConstArray_t(cluster_indices.data());
-      }
       template<typename ClusterIndicesType_ = ClusterIndicesType, typename std::enable_if_t<std::is_same<ClusterIndicesType_, IndexArray_t> ::value,int> = 0>
       static inline IndexConstArray_t cast(const IndexArray_t & cluster_indices) {
         return IndexConstArray_t(cluster_indices.data());
-      }
-      template<typename ClusterIndicesType_ = ClusterIndicesType, typename std::enable_if_t<std::is_same<ClusterIndicesType_, const size_t>::value,int> = 0>
-      static inline IndexConstArray_t cast(const size_t & cluster_index) {
-        return IndexConstArray_t(&cluster_index);
       }
       template<typename ClusterIndicesType_ = ClusterIndicesType, typename std::enable_if_t<std::is_same<ClusterIndicesType_, size_t >::value,int> = 0>
       static inline IndexConstArray_t cast(const size_t & cluster_index) {
@@ -834,7 +805,6 @@ namespace rascal {
      * This function here is self referencing right now. A ClusterRefKey
      * with Order=1 is noeeded to construct it ?!
      */
-    // TODO(alex) diff it(manager) it{manager}?
     ClusterRef(ClusterRefKey<1, 0> & cluster,
                Manager_t & manager)
         : ClusterRefKey<1, 0>(
@@ -842,8 +812,6 @@ namespace rascal {
             cluster.get_cluster_indices()),
           it(manager) {}
 
-
-    // TODO(alex) all of these three constructor could have four cases
 
     //! Copy constructor
     ClusterRef(const ClusterRef & other) = delete;
@@ -891,7 +859,6 @@ namespace rascal {
      */
     std::array<int, Order> get_atom_types() const;
 
-    // TODO(alex) functionality now in ClusterRefClusterKey delete here
     //! return the index of the atom/pair/etc. it is always the last one,
     //! since the other ones are accessed an Order above.
     inline int get_atom_index() const { return this->back(); }
@@ -1052,33 +1019,6 @@ namespace rascal {
       return *this;
     }
 
-    ////! dereference: calculate cluster indices
-    //inline value_type operator*() {
-    //  auto & cluster_indices_properties = std::get<Order - 1>(
-    //      this->get_manager().get_cluster_indices_container());
-    //  using Ref_t = typename std::remove_reference_t<decltype(
-    //      cluster_indices_properties)>::reference;
-    //  Ref_t cluster_indices =
-    //      cluster_indices_properties[this->get_cluster_index()];
-
-    //  // TODO(alex) delete
-    //  //auto & cluster_indices_properties_order_1 = std::get<1>(
-    //  //    this->get_manager().get_cluster_indices_container());
-    //  //using Ref_OrderOne_t = typename std::remove_reference_t<decltype(
-    //  //    cluster_indices_properties_order_1)>::const_reference;
-    //  //Ref_OrderOne_t cluster_neighbour_cluster_indices =
-    //  //    cluster_indices_properties_order_1[this->get_cluster_neighbour_cluster_index()];
-
-    //  // TODO(alex) delete
-    //  //if (ManagerImplementation::template cluster_layer_from_order<2>() == 1) {
-    //  //std::cout << " test" << std::endl;
-    //  //  std::cout << (cluster_neighbour_cluster_indices) << std::endl;
-    //  //std::cout << " test" << std::endl;
-    //  //}
-
-    //  return ClusterRef_t(*this, this->get_atom_indices(), cluster_indices);
-    //}
-
     inline value_type operator*() {
       auto & cluster_indices_properties = std::get<Order - 1>(
           this->get_manager().get_cluster_indices_container());
@@ -1086,37 +1026,8 @@ namespace rascal {
           cluster_indices_properties)>::reference;
       Ref_t cluster_indices =
           cluster_indices_properties[this->get_cluster_index()];
-      // TODO(alex) delete
-      //if (ManagerImplementation::template cluster_layer_from_order<1>() == 1) {
-      //std::cout << " test" << std::endl;
-      //  std::cout << (cluster_indices) << std::endl;
-      //std::cout << " test" << std::endl;
-      //}
-
       return ClusterRef_t(*this, this->get_atom_indices(), cluster_indices);
     }
-
-    ////! dereference: calculate cluster indices
-    //template<size_t Order_=Order, typename std::enable_if_t<not(Order_==1),int> =0>
-    //inline const value_type operator*() const {
-    //  const auto & cluster_indices_properties = std::get<Order - 1>(
-    //      this->get_manager().get_cluster_indices_container());
-    //  using Ref_t = typename std::remove_reference_t<decltype(
-    //      cluster_indices_properties)>::const_reference;
-    //  Ref_t cluster_indices =
-    //      cluster_indices_properties[this->get_cluster_index()];
-
-    //  const auto & cluster_indices_properties_order_1 = std::get<1>(
-    //      this->get_manager().get_cluster_indices_container());
-    //  using Ref_OrderOne_t = typename std::remove_reference_t<decltype(
-    //      cluster_indices_properties)>::const_reference;
-    //  Ref_OrderOne_t cluster_neighbour_cluster_indices =
-    //      cluster_indices_properties_order_1[this->get_cluster_neighbour_cluster_index()];
-
-    //  const auto indices{this->get_atom_indices()};
-    //  return ClusterRef_t(const_cast<Iterator &>(*this), indices,
-    //                      cluster_indices, this->container, cluster_neighbour_cluster_indices);
-    //}
 
     inline const value_type operator*() const {
       const auto & cluster_indices_properties = std::get<Order - 1>(
@@ -1169,17 +1080,7 @@ namespace rascal {
     inline size_t get_cluster_index() const {
       return this->index + this->offset;
     }
-    // TODO(alex) this is a bit hacky, but works cluster information is not neeed
-    template <size_t Order_=Order>
-    inline std::enable_if_t<not(Order_==1), size_t> get_cluster_neighbour_cluster_index() const {
-      return this->get_manager().get_cluster_neighbour_cluster_index(
-          container, 
-          this->get_cluster_index());
-    }
-    template <size_t Order_=Order>
-    inline std::enable_if_t<Order_==1, size_t> get_cluster_neighbour_cluster_index() const {
-      return this->get_cluster_index();
-    }
+
     //! returns a reference to the underlying manager at every Order
     inline Manager_t & get_manager() { return this->container.get_manager(); }
     //! returns a const reference to the underlying manager at every Order

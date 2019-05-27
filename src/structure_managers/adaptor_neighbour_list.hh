@@ -612,7 +612,6 @@ namespace rascal {
       return this->manager->get_cluster_neighbour_atom_index_impl(*this->manager, index);
     }
 
-    // TODO(alex) #ATOM_INDEX what is neighbours?
     //! Returns the id of the index-th neighbour atom of a given cluster
     template <size_t Order, size_t Layer>
     inline int
@@ -734,21 +733,15 @@ namespace rascal {
 
     std::vector<int> atom_types{};
 
-    // TODO(alex) #ATOM_INDEX 
     //! Stores additional atom indices of current Order (only ghost atoms)
     std::vector<int> ghost_atom_indices{};
 
     //! Stores the number of neighbours for every atom
     std::vector<size_t> nb_neigh{};
 
-    // TODO(alex) refactoring neighbours -> neighbours_atom_index and change type to int
     //! Stores neighbour's atom index in a list in sequence of atoms
     std::vector<int> neighbours_atom_index{};
     
-    //TODO(alex) delete this two
-    std::vector<size_t> neighbours_cluster_index{};
-    std::vector<int> atom_indices_with_corresponding_cluster{};
-
     /* Returns the atoms cluster index when accessing it with the atom's atomic 
      * index in a list in sequence of atoms.
      * List of atom indices which have a correpsonding cluster index of order 1.
@@ -783,44 +776,6 @@ namespace rascal {
     const bool consider_ghost_neighbours;
 
    private:
-    //! Should be only used after the make_full_neighbour_list
-    void make_full_neighbour_cluster_index_list(
-        const std::vector<int> & atom_indices_with_corresponding_cluster) {
-      for (int neigh_atom_index : this->neighbours_atom_index) { // (i,neighbour_atom_index)
-        add_cluster_index_for_neigh_atom_index(neigh_atom_index,
-            atom_indices_with_corresponding_cluster);
-      }
-    }
-    // TODO(alex) change this to a reverse map
-    // atom_index->cluster_index<Order=1, Layer=0>
-    // complexity: neighbours_atom_index.size()*atom_indices.size() = n^2 *
-    void add_cluster_index_for_neigh_atom_index(int neigh_atom_index,
-        const std::vector<int> & atom_indices_with_corresponding_cluster) {
-      size_t cluster_order_one_index{0};
-      bool atom_index_found = false;
-      int atom_index_with_corresponding_cluster;
-      for (size_t i{0}; i< this->atom_indices.size(); i++) { 
-        if (neigh_atom_index == this->atom_indices[i] && not(atom_index_found)) {          
-          atom_index_with_corresponding_cluster =
-            atom_indices_with_corresponding_cluster.at(i);
-          for (auto atom : this->get_manager().with_ghosts()) {
-            if (atom.get_atom_index() == atom_index_with_corresponding_cluster) {
-              this->neighbours_cluster_index.push_back(cluster_order_one_index); 
-              atom_index_found = true;             
-            }
-            cluster_order_one_index++;
-          }
-          if(not(atom_index_found)) {
-            throw std::runtime_error("A atom index corresponding to a cluster was found while building list of cluster neighbour cluster index list.");  
-          }
-        } else if (neigh_atom_index == this->atom_indices[i] && atom_index_found) {
-          throw std::runtime_error("The atom index was found two times, but should be unique, while building list of cluster neighbour cluster index list.");
-        }
-      }
-      if (not(atom_index_found)) {
-        throw std::runtime_error("Atom index was not found while building list of cluster neighbour cluster index list.");
-      }
-    }
   };
 
   /* ---------------------------------------------------------------------- */
@@ -831,7 +786,7 @@ namespace rascal {
       bool consider_ghost_neighbours)
       : manager{std::move(manager)}, cutoff{cutoff}, atom_indices{},
         atom_types{}, ghost_atom_indices{}, nb_neigh{},
-        neighbours_atom_index{}, neighbours_cluster_index{}, offsets{},
+        neighbours_atom_index{}, offsets{},
         n_centers{0}, n_ghosts{0}, consider_ghost_neighbours{
                                        consider_ghost_neighbours} {
     static_assert(not(traits::MaxOrder < 1), "No atom list in manager");
@@ -869,14 +824,11 @@ namespace rascal {
     this->ghost_atom_indices.clear();
     this->nb_neigh.clear();
     this->neighbours_atom_index.clear();
-    this->neighbours_cluster_index.clear();
     this->offsets.clear();
     this->ghost_positions.clear();
     this->ghost_types.clear();
     // actual call for building the neighbour list
     this->make_full_neighbour_list();
-    // TODO(alex) is integrated in make_full_neighbour_list so can be deleted, after being tested
-    // this->make_full_neighbour_cluster_index_list();
     this->set_offsets();
 
     // layering is started from the scratch, therefore all clusters and
@@ -1026,8 +978,6 @@ namespace rascal {
       this->atom_types.push_back(atom_type);
       ntot_atoms++;
       this->cluster_index_from_atom_indices.push_back(cluster_index);
-      //TODO(alex) delete
-      this->atom_indices_with_corresponding_cluster.push_back(atom_index);
     }
     // generate ghost atom indices and positions
     for (auto atom : this->get_manager().with_ghosts()) {
@@ -1064,14 +1014,6 @@ namespace rascal {
                   new_atom_index :
                   this->manager->get_cluster_index(atom.get_atom_index());
             this->cluster_index_from_atom_indices.push_back(cluster_index);
-            // TODO(alex) delete this part
-            if (consider_ghost_neighbours){
-              this->atom_indices_with_corresponding_cluster.push_back(
-                  new_atom_index);
-            } else {
-              this->atom_indices_with_corresponding_cluster.push_back(
-                  atom.get_atom_index());
-}
           }
         }
       }
@@ -1091,13 +1033,15 @@ namespace rascal {
 
     // go through all atoms and/or ghosts to build neighbour list, depending on
     // the runtime decision flag
-    auto nb_atoms{this->consider_ghost_neighbours
-                      ? this->n_centers + this->n_ghosts
-                      : this->get_size()};
+    //auto nb_atoms{this->consider_ghost_neighbours
+    //                  ? this->n_centers + this->n_ghosts
+    //                  : this->get_size()};
 
-    // TODO(alex) BUG this only works for StructureManagerCenter, need atom indices from manager use for loop on manager #ATOM_INDEX
-    // for (auto atom : this->get_manager()) {auto atom_index = atom.get_atom_indices().back();}
-    for (size_t atom_index{0}; atom_index < nb_atoms; ++atom_index) {
+    // #BUG8486@(markus) I changed it so it could work with other 
+    // ManagerImplementations that does not make the atomic indices
+    // as StructurManagerCenters 
+    for (auto atom : this->get_manager().with_ghosts()) {
+      int atom_index = atom.get_atom_index();
       int nneigh{0};
       Vector_t pos = this->get_position(atom_index);
       Vector_t dpos = pos - mesh_min;
@@ -1111,7 +1055,6 @@ namespace rascal {
       }
       this->nb_neigh.push_back(nneigh);
     }
-    make_full_neighbour_cluster_index_list(this->atom_indices_with_corresponding_cluster);
   }
  
 

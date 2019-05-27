@@ -274,12 +274,6 @@ namespace rascal {
     ImplementationPtr_t get_previous_manager() {
       return this->manager->get_shared_ptr();
     }
-    std::vector<int> get_nl_atom_indices(){
-       return this->manager->get_nl_atom_indices();
-    }
-    std::vector<int> get_atom_indices_with_corresponding_cluster() {
-      return this->manager->atom_indices_with_corresponding_cluster;
-    }
 
    protected:
     /* ---------------------------------------------------------------------- */
@@ -291,7 +285,6 @@ namespace rascal {
 
     //! Stores all neighbours, i.e. atom indices in a list
     std::vector<int> neighbours_atom_index;
-    std::vector<size_t> neighbours_cluster_index;
 
     /**
      * Stores the offsets for accessing `neighbours`; this is the entry point in
@@ -301,28 +294,6 @@ namespace rascal {
     std::vector<size_t> offsets;
 
    private:
-    //! Should be only used after the make_full_neighbour_list
-    void make_full_neighbour_cluster_index_list() {
-      for (int neigh_atom_index : this->neighbours_atom_index) {
-        add_cluster_index_for_neigh_atom_index(neigh_atom_index);
-      }
-    }
-
-    void add_cluster_index_for_neigh_atom_index(int neigh_atom_index) {
-      bool atom_index_found = false;
-      size_t cluster_order_one_index{0};
-      // TODO(alex) this should result in problem if consider_ghost_atoms = false, use solution as in AdaptorStrict
-      for (auto atom : this->manager->with_ghosts()) {
-        if (neigh_atom_index == atom.back()) {
-          this->neighbours_cluster_index.push_back(cluster_order_one_index);
-          atom_index_found = true;
-        }
-        cluster_order_one_index++;
-      }
-      if (not(atom_index_found)) {
-        throw std::runtime_error("Atom index was not found while building list of cluster neighbour cluster index list.");
-      }
-    }
   };
 
   /* ---------------------------------------------------------------------- */
@@ -330,7 +301,7 @@ namespace rascal {
   template <class ManagerImplementation>
   AdaptorFullList<ManagerImplementation>::AdaptorFullList(
       std::shared_ptr<ManagerImplementation> manager)
-      : manager{std::move(manager)}, nb_neigh{}, neighbours_atom_index{}, neighbours_cluster_index{}, offsets{} {}
+      : manager{std::move(manager)}, nb_neigh{}, neighbours_atom_index{}, offsets{} {}
 
   /* ---------------------------------------------------------------------- */
   //! update function, which updates based on underlying manager
@@ -452,8 +423,6 @@ namespace rascal {
       this->offsets.push_back(offset);
       offset += nneigh;
     }
-    // TODO(alex) ghosts in full are buggy
-    make_full_neighbour_cluster_index_list();
   }
 }  // namespace rascal
 
