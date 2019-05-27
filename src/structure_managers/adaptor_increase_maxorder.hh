@@ -483,7 +483,9 @@ namespace rascal {
     this->neighbours_atom_index.clear();
     this->neighbours_cluster_index.clear();
 
-    for (auto atom : this->manager) {
+    // BUG8486@(markus) I now append the ghost atoms to the cluster index
+    // container
+    for (auto atom : this->manager->with_ghosts()) {
       //  Order 1, but variable Order is at 0, atoms, index 0
       using AddOrderLoop =
           AddOrderLoop<atom.order(), atom.order() == (traits::MaxOrder - 1)>;

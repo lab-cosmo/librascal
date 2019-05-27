@@ -206,8 +206,16 @@ namespace rascal {
         AtomPropertyFixture<AdaptorStrictStackFixture<
             AdaptorHalfListStackFixture<ANL_SMC_TemplatedStackFixture>>>,
         AtomPropertyFixture<AdaptorMaxOrderStackFixture<
+            ANLWithGhosts_SMC_StackFixture>>,
+        AtomPropertyFixture<AdaptorMaxOrderStackFixture<
+            AdaptorHalfListStackFixture<
+            ANLWithGhosts_SMC_StackFixture>>>,
+        AtomPropertyFixture<AdaptorMaxOrderStackFixture<
+            AdaptorStrictStackFixture<
+            ANLWithGhosts_SMC_StackFixture>>>,
+        AtomPropertyFixture<AdaptorMaxOrderStackFixture<
             AdaptorStrictStackFixture<AdaptorHalfListStackFixture<
-            ANL_SMC_TemplatedStackFixture>>>>
+            ANLWithGhosts_SMC_StackFixture>>>>
         >;
     };
   
@@ -231,9 +239,9 @@ namespace rascal {
         PairPropertyFixture<AdaptorHalfListStackFixture<
             ANLWithGhosts_SMC_StackFixture>>,
         PairPropertyFixture<AdaptorStrictStackFixture<
-            AdaptorHalfListStackFixture<ANLWithGhosts_SMC_StackFixture>>>
-        //PairPropertyFixture<AdaptorMaxOrderStackFixture<
-        //    ANLWithGhosts_SMC_StackFixture>>
+            AdaptorHalfListStackFixture<ANLWithGhosts_SMC_StackFixture>>>,
+        PairPropertyFixture<AdaptorMaxOrderStackFixture<
+            ANLWithGhosts_SMC_StackFixture>>
         // error in atom_property_access_with_pair_tests
         //PairPropertyFixture<AdaptorMaxOrderStackFixture<
         //    AdaptorStrictStackFixture<AdaptorHalfListStackFixture<
@@ -313,15 +321,26 @@ namespace rascal {
     if (verbose) {
       std::cout << ">> Test for manager ";
       std::cout << Fix::manager->get_name();
+      std::cout << ", manager size " << Fix::manager->get_size();
+      std::cout << ", manager size with ghosts " << Fix::manager->get_size_with_ghosts();
       std::cout << " starts now." << std::endl;
     }
 
     Fix::atom_property.resize();
-    for (auto atom : Fix::manager) {
+    if (verbose) {
+      std::cout << ">> atom_property size ";
+      std::cout << Fix::atom_property.size();
+      std::cout << std::endl;
+    }
+    for (auto atom : Fix::manager->with_ghosts()) {
+      if (verbose) {
+        std::cout << ">> Atom index " << atom.get_atom_index(); 
+        std::cout << std::endl;
+      }
       Fix::atom_property[atom] = atom.get_position();
     }
 
-    for (auto atom : Fix::manager) {
+    for (auto atom : Fix::manager->with_ghosts()) {
       auto error = (Fix::atom_property[atom] - atom.get_position()).norm();
       BOOST_CHECK_LE(error, tol * 100);
     }
@@ -342,13 +361,12 @@ namespace rascal {
       std::cout << ">> Test for manager ";
       std::cout << Fix::manager->get_name();
       std::cout << " starts now." << std::endl;
-      std::cout << " finished." << std::endl;
     }
 
     Fix::pair_property.resize();
     Fix::atom_property.resize();
     int pair_property_counter{};
-    for (auto atom : Fix::manager) {
+    for (auto atom : Fix::manager->with_ghosts()) {
       Fix::atom_property[atom] = atom.get_position();
       for (auto pair : atom) {
         Fix::pair_property[pair] = ++pair_property_counter;
@@ -356,7 +374,7 @@ namespace rascal {
     }
 
     pair_property_counter = 0;
-    for (auto atom : Fix::manager) {
+    for (auto atom : Fix::manager->with_ghosts()) {
       auto error = (Fix::atom_property[atom] - atom.get_position()).norm();
       BOOST_CHECK_LE(error, tol * 100);
       for (auto pair : atom) {
@@ -376,15 +394,28 @@ namespace rascal {
     if (verbose) {
       std::cout << ">> Test for manager ";
       std::cout << Fix::manager->get_name();
+      std::cout << " and consider_ghost_neighbours=";
+      std::cout << Fix::manager->get_consider_ghost_neighbours();
+      std::cout << ", manager size " << Fix::manager->get_size();
+      std::cout << ", manager size with ghosts " << Fix::manager->get_size_with_ghosts();
       std::cout << " starts now." << std::endl;
     }
 
     Fix::pair_property.resize();
     Fix::atom_property.resize();
     Fix::triple_property.resize();
+    if (verbose) {
+      std::cout << ">> atom_property size ";
+      std::cout << Fix::atom_property.size();
+      std::cout << ", pair_property size ";
+      std::cout << Fix::pair_property.size();
+      std::cout << ", triple_property size ";
+      std::cout << Fix::triple_property.size();
+      std::cout << std::endl;
+    }
     int pair_property_counter{};
     int triple_property_counter{};
-    for (auto atom : Fix::manager) {
+    for (auto atom : Fix::manager->with_ghosts()) {
       Fix::atom_property[atom] = atom.get_position();
       for (auto pair : atom) {
         Fix::pair_property[pair] = ++pair_property_counter;
@@ -396,7 +427,7 @@ namespace rascal {
 
     pair_property_counter = 0;
     triple_property_counter = 0;
-    for (auto atom : Fix::manager) {
+    for (auto atom : Fix::manager->with_ghosts()) {
       auto error = (Fix::atom_property[atom] - atom.get_position()).norm();
       BOOST_CHECK_LE(error, tol * 100);
       for (auto pair : atom) {
@@ -456,6 +487,8 @@ namespace rascal {
       std::cout << Fix::manager->get_name();
       std::cout << " and consider_ghost_neighbours=";
       std::cout << Fix::manager->get_consider_ghost_neighbours();
+      std::cout << ", manager size " << Fix::manager->get_size();
+      std::cout << ", manager size with ghosts " << Fix::manager->get_size_with_ghosts();
       std::cout << " starts now." << std::endl;
     }
     Fix::scalar_atom_property.resize();
@@ -463,11 +496,6 @@ namespace rascal {
     std::vector<int> atom_indices{}; 
     atom_indices.reserve(Fix::manager->get_size());
     Fix::scalar_atom_property.resize();
-    if (verbose) {
-      std::cout << ">> Size " << Fix::manager->get_size() << std::endl;
-      std::cout << ">> Size with ghosts " << Fix::manager->get_size_with_ghosts() << std::endl;
-      std::cout << ">> AtomPropertySize " << Fix::scalar_atom_property.size() << std::endl;
-    }
     for (auto atom : Fix::manager->with_ghosts()) {
       if (verbose) {
         std::cout << ">> AtomIndex " << atom.get_atom_index();
