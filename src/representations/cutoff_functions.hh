@@ -44,7 +44,7 @@ namespace rascal {
     /**
      * List of implemented cutoff function
      */
-    enum class CutoffFunctionType { Cosine, End_ };
+    enum class CutoffFunctionType { Cosine, RadialScaling, End_ };
 
     struct CutoffFunctionBase {
       //! Constructor
@@ -100,6 +100,73 @@ namespace rascal {
       inline double df_c(const double & distance) {
         return math::derivative_switching_funtion_cosine(distance, this->cutoff,
                                                          this->smooth_width);
+      }
+
+      //! keep the hypers
+      Hypers_t hypers{};
+      //! cutoff radii
+      double cutoff{0.};
+      //! interval into which the smoothing happens [cutoff-smooth_width,cutoff]
+      double smooth_width{0.};
+    };
+
+    /**
+     * Computes the RadialScaling switching function as expressed in equation
+     * 21 of Willatt, M. J., Musil, F., & Ceriotti, M. (2018).
+     * https://doi.org/10.1039/c8cp05921g
+     *
+     *        ╭ 1 / (r/r_0)^m, if c == 0
+     *        |
+     * u(r) = ┤ 1, if m == 0
+     *        |
+     *        ╰ c / (c + (r/r_0)^m), else
+     *
+     * with the cosine switching function.
+     */
+    template <>
+    struct CutoffFunction<internal::CutoffFunctionType::RadialScaling>
+        : CutoffFunctionBase {
+      using Hypers_t = CutoffFunctionBase::Hypers_t;
+      explicit CutoffFunction(const Hypers_t & hypers) {
+        this->set_hyperparameters(hypers);
+      }
+
+      void set_hyperparameters(const Hypers_t & hypers) {
+        this->cutoff = hypers.at("cutoff").at("value").get<double>();
+        this->smooth_width =
+            hypers.at("smooth_width").at("value").get<double>();
+        this->rate = hypers.at("rate").at("value").get<double>();
+        if (this->rate < 0) {
+          throw std::runtime_error("RadialScaling's rate should be positive")
+        }
+        this->exponent = hypers.at("exponent").at("value").get<int>();
+        this->scale = hypers.at("scale").at("value").get<double>();
+      }
+
+      inline double f_c(const double & distance) {
+        double factor{0.};
+        if (this->rate < math::dbl_ftol) {
+          factor = math::pow(distance / this->scale, - this->exponent);
+        } else if (this->exponent == 0) {
+          factor = 1.;
+        } else {
+          factor = this->rate / (this->rate + math::pow(distance / this->scale, this->exponent));
+        }
+        return factor*math::switching_function_cosine(distance, this->cutoff,
+                                               this->smooth_width);
+      }
+
+      inline double df_c(const double & distance) {
+        double factor{0.};
+        if (this->rate < math::dbl_ftol) {
+          factor = -this->exponent / distance * math::pow(distance / this->scale, - this->exponent);
+        } else if (this->exponent == 0) {
+          factor = 0.;
+        } else {
+          double ff{math::pow(distance / this->scale, this->exponent)};
+          factor = this->rate * this->exponent * ff / distance * math::pow(this->rate + ff, -2);
+        }
+        return factor*math::derivative_switching_funtion_cosine(distance, this->cutoff,this->smooth_width);
       }
 
       //! keep the hypers
