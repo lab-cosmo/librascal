@@ -514,12 +514,14 @@ namespace rascal {
     }
     // initalize the positions
     std::vector<int> atom_indices{}; 
-    atom_indices.reserve(Fix::manager->get_size());
+    atom_indices.reserve(Fix::manager->get_size_with_ghosts());
     Fix::scalar_atom_property.resize();
     //Fix::atom_dynamic_property.resize();
     for (auto atom : Fix::manager->with_ghosts()) {
       if (verbose) {
-        std::cout << ">> AtomIndex " << atom.get_atom_index();
+        std::cout << ">> Property for atom with tag ";
+        std::cout << atom.get_atom_index();
+        std::cout << " is initialized.";
         std::cout << std::endl;
       }
       Fix::scalar_atom_property[atom] = 0;
@@ -529,11 +531,11 @@ namespace rascal {
     if (verbose) {
       std::cout << ">> Atomic indices list created ";
       std::cout << " with size "  << atom_indices.size() << std::endl;
-      std::cout << ">> ScalarAtomProperty filled with 0" << std::endl;
     }
     std::vector<size_t> counter{};
-    counter.reserve(atom_indices.size());
-    for (size_t i{0}; i<atom_indices.size(); i++) {
+    size_t nb_central_atoms = Fix::manager->get_size();
+    counter.reserve(nb_central_atoms);
+    for (size_t i{0}; i<nb_central_atoms; i++) {
       counter.push_back(0);
     }
     if (verbose) {
@@ -542,10 +544,17 @@ namespace rascal {
     // add the position to the atom and count how often this happens
     for (auto atom : Fix::manager->with_ghosts()) {
       for (auto pair : atom) {
+        if (verbose) {
+          std::cout << ">> Atom with tag ";
+          std::cout << pair.get_internal_neighbour_atom_index();
+          std::cout << " corresponds to central atom in cell with atom index ";
+          std::cout << Fix::manager->get_cluster_index(atom.get_atom_index());
+          std::cout << std::endl;
+        }
         Fix::scalar_atom_property[pair]++;
         // TODO(alex) does not work, dynamic properties do not give scalar
         // values, I want to move the writing of a
-        // test for dynamic properties to the point, when we actual will use
+        // test for dynamic properties to a point, when we actual use
         // them
         //Fix::atom_dynamic_property[pair]++;
         counter.at(Fix::manager->get_cluster_index(pair.get_internal_neighbour_atom_index()))++;

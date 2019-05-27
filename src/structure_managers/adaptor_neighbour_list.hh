@@ -1010,8 +1010,7 @@ namespace rascal {
 
             // adds origin atom cluster_index if true
             // adds ghost atom cluster index if false
-            size_t cluster_index = consider_ghost_neighbours ?
-                  new_atom_index :
+            size_t cluster_index = 
                   this->manager->get_cluster_index(atom.get_atom_index());
             this->cluster_index_from_atom_indices.push_back(cluster_index);
           }
