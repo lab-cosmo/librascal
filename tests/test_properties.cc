@@ -529,7 +529,7 @@ namespace rascal {
       atom_indices.push_back(atom.get_atom_index());
     }
     if (verbose) {
-      std::cout << ">> Atomic indices list created ";
+      std::cout << ">> Atom tag list created ";
       std::cout << " with size "  << atom_indices.size() << std::endl;
     }
     std::vector<size_t> counter{};
@@ -590,15 +590,32 @@ namespace rascal {
     if (verbose) {
       std::cout << ">> Test for manager ";
       std::cout << Fix::manager->get_name();
+      std::cout << " and consider_ghost_neighbours=";
+      std::cout << Fix::manager->get_consider_ghost_neighbours();
+      std::cout << ", manager size " << Fix::manager->get_size();
+      std::cout << ", manager size with ghosts " << Fix::manager->get_size_with_ghosts();
       std::cout << " starts now." << std::endl;
     }
     Fix::scalar_atom_property.resize();
     // initalize the positions
     std::vector<int> atom_indices{}; 
-    atom_indices.reserve(Fix::manager->get_size());
-    for (auto atom : Fix::manager) {
-        Fix::scalar_atom_property[atom] = 0;
-        atom_indices.push_back(atom.get_atom_index());
+    atom_indices.reserve(Fix::manager->get_size_with_ghosts());
+    if (verbose) {
+      std::cout << ">> atom_property resized to size ";
+      std::cout << Fix::atom_property.size();
+      std::cout << std::endl;
+    }
+    for (auto atom : Fix::manager->with_ghosts()) {
+      if (verbose) {
+        std::cout << ">> Atom tag " << atom.get_atom_index(); 
+        std::cout << std::endl;
+      }
+      Fix::scalar_atom_property[atom] = 0;
+      atom_indices.push_back(atom.get_atom_index());
+    }
+    if (verbose) {
+      std::cout << ">> Atom tag list created ";
+      std::cout << " with size "  << atom_indices.size() << std::endl;
     }
     std::vector<size_t> counter{};
     counter.reserve(atom_indices.size());
@@ -606,9 +623,14 @@ namespace rascal {
       counter.push_back(0);
     }
     // add the position to the atom and count how often this happens
-    for (auto atom : Fix::manager) {
+    for (auto atom : Fix::manager->with_ghosts()) {
       for (auto pair : atom) {
         for (auto triple : pair) {
+          if (verbose) {
+            std::cout << ">> Atom index " << triple.get_internal_neighbour_atom_index(); 
+            std::cout << " with cluster index " << Fix::manager->get_cluster_index(triple.get_internal_neighbour_atom_index()); 
+            std::cout << std::endl;
+          }
           Fix::scalar_atom_property[triple]++;
           counter.at(Fix::manager->get_cluster_index(triple.get_internal_neighbour_atom_index()))++;
         }
