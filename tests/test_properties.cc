@@ -65,6 +65,10 @@ namespace rascal {
         typename Manager_t::template Property_t<double, 1>;
     using AtomVectorProperty_t =
         typename Manager_t::template Property_t<double, 1, 3, 1>;
+    using AtomDynamicProperty_t =
+        typename Manager_t::template TypedProperty_t<size_t, 1>;
+    using AtomDynamicProperty2_t =
+        typename Manager_t::template TypedProperty_t<double, 1>;
 
     constexpr static Dim_t DynSize() { return 3; }
 
@@ -74,10 +78,19 @@ namespace rascal {
 
     AtomPropertyFixture()
           : StackFixture{}, scalar_atom_property{*this->manager},
-          atom_property{*this->manager} {}
+          atom_property{*this->manager},
+          atom_dynamic_property{*this->manager, 1, 1,
+                           dynamic_property_metadata},
+          dynamic_property{*this->manager, DynSize(), 1,
+                           dynamic_property_metadata},
+          dynamic_property2{*this->manager, DynSize(), 1,
+                            dynamic_property2_metadata} {}
 
     AtomScalarProperty_t scalar_atom_property;
     AtomVectorProperty_t atom_property;
+    AtomDynamicProperty_t atom_dynamic_property;
+    AtomDynamicProperty_t dynamic_property;
+    AtomDynamicProperty2_t dynamic_property2;
   };
 
   template <class StackFixture>
@@ -107,6 +120,8 @@ namespace rascal {
           : StackFixture{}, scalar_atom_property{*this->manager}, 
           atom_property{*this->manager, atom_property_metadata},
           pair_property{*this->manager},
+          atom_dynamic_property{*this->manager, 1, 1,
+                           dynamic_property_metadata},
           dynamic_property{*this->manager, DynSize(), 1,
                            dynamic_property_metadata},
           dynamic_property2{*this->manager, DynSize(), 1,
@@ -115,6 +130,7 @@ namespace rascal {
     AtomScalarProperty_t scalar_atom_property;
     AtomVectorProperty_t atom_property;
     PairScalarProperty_t pair_property;
+    AtomDynamicProperty_t atom_dynamic_property;
     AtomDynamicProperty_t dynamic_property;
     AtomDynamicProperty2_t dynamic_property2;
   };
@@ -241,11 +257,12 @@ namespace rascal {
         PairPropertyFixture<AdaptorStrictStackFixture<
             AdaptorHalfListStackFixture<ANLWithGhosts_SMC_StackFixture>>>,
         PairPropertyFixture<AdaptorMaxOrderStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>
+            ANLWithGhosts_SMC_StackFixture>>,
+        // TODO(alex)
         // error in atom_property_access_with_pair_tests
-        //PairPropertyFixture<AdaptorMaxOrderStackFixture<
-        //    AdaptorStrictStackFixture<AdaptorHalfListStackFixture<
-        //    ANLWithGhosts_SMC_StackFixture>>>>
+        PairPropertyFixture<AdaptorMaxOrderStackFixture<
+            AdaptorStrictStackFixture<AdaptorHalfListStackFixture<
+            ANLWithGhosts_SMC_StackFixture>>>>
         >;
     };
     using type_with_ghosts = CommonOrderTwoStacksBoostListTemplated<true>::type;
@@ -327,6 +344,7 @@ namespace rascal {
     }
 
     Fix::atom_property.resize();
+    Fix::dynamic_property2.resize();
     if (verbose) {
       std::cout << ">> atom_property size ";
       std::cout << Fix::atom_property.size();
@@ -338,11 +356,14 @@ namespace rascal {
         std::cout << std::endl;
       }
       Fix::atom_property[atom] = atom.get_position();
+      Fix::dynamic_property2[atom] = atom.get_position();
     }
 
     for (auto atom : Fix::manager->with_ghosts()) {
       auto error = (Fix::atom_property[atom] - atom.get_position()).norm();
       BOOST_CHECK_LE(error, tol * 100);
+      auto error_dynamic = (Fix::dynamic_property2[atom] - atom.get_position()).norm();
+      BOOST_CHECK_LE(error_dynamic, tol * 100);
     }
 
     if (verbose) {
@@ -491,17 +512,18 @@ namespace rascal {
       std::cout << ", manager size with ghosts " << Fix::manager->get_size_with_ghosts();
       std::cout << " starts now." << std::endl;
     }
-    Fix::scalar_atom_property.resize();
     // initalize the positions
     std::vector<int> atom_indices{}; 
     atom_indices.reserve(Fix::manager->get_size());
     Fix::scalar_atom_property.resize();
+    //Fix::atom_dynamic_property.resize();
     for (auto atom : Fix::manager->with_ghosts()) {
       if (verbose) {
         std::cout << ">> AtomIndex " << atom.get_atom_index();
         std::cout << std::endl;
       }
       Fix::scalar_atom_property[atom] = 0;
+      //Fix::atom_dynamic_property[atom] = 0;
       atom_indices.push_back(atom.get_atom_index());
     }
     if (verbose) {
@@ -521,12 +543,20 @@ namespace rascal {
     for (auto atom : Fix::manager->with_ghosts()) {
       for (auto pair : atom) {
         Fix::scalar_atom_property[pair]++;
+        // TODO(alex) does not work, dynamic properties do not give scalar
+        // values, I want to move the writing of a
+        // test for dynamic properties to the point, when we actual will use
+        // them
+        //Fix::atom_dynamic_property[pair]++;
         counter.at(Fix::manager->get_cluster_index(pair.get_internal_neighbour_atom_index()))++;
       }
     }
     for (auto atom : Fix::manager) {
+      size_t counter_at_cluster_index = counter.at(Fix::manager->get_cluster_index(atom.get_atom_index()));
       BOOST_CHECK_EQUAL(Fix::scalar_atom_property[atom],
-          counter.at(Fix::manager->get_cluster_index(atom.get_atom_index())));
+          counter_at_cluster_index);
+      //BOOST_CHECK_EQUAL(Fix::atom_dynamic_property[atom],
+      //    counter_at_cluster_index);
     }
     if (verbose) {
       std::cout << ">> Test for manager ";

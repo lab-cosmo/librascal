@@ -276,6 +276,15 @@ namespace rascal {
       return this->operator[](id.get_cluster_index(CallerLayer));
     }
 
+    //using Manager_t = Manager;
+    //TODO(alex)
+    //template <size_t CallerOrder, size_t CallerLayer, size_t Order_= Order>
+    //inline std::enable_if_t<(Order_==1) and (CallerOrder>1), decltype(auto)>
+    //operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
+    // return this->operator[](static_cast<Manager_t &>(this->base_manager).get_cluster_index(id.get_internal_neighbour_atom_index()));
+    //}
+
+
     //! Accessor for property by cluster index and return a sparse
     //! representation of the property associated to this cluster
     inline InputData_t & operator[](const size_t & index) {
