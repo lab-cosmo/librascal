@@ -834,7 +834,7 @@ namespace rascal {
     using ManagerTypeList_t = typename Parent::ManagerTypeHolder_t::type_list;
 
     using Key_t = std::vector<int>;
-    using BlockSparseProperty_t = BlockSparseProperty<double, 1, 0>;
+    using BlockSparseProperty_t = BlockSparseProperty<double, 1, 0, Manager_t>;
     using Dense_t = typename BlockSparseProperty_t::Dense_t;
     using InputData_t = typename BlockSparseProperty_t::InputData_t;
     using test_data_t = std::vector<InputData_t>;

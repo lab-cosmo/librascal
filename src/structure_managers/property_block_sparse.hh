@@ -193,10 +193,11 @@ namespace rascal {
   /**
    * Typed ``property`` class definition, inherits from the base property class
    */
-  template <typename Precision_t, size_t Order, size_t PropertyLayer>
+  template <typename Precision_t, size_t Order, size_t PropertyLayer, class Manager>
   class BlockSparseProperty : public PropertyBase {
    public:
     using Parent = PropertyBase;
+    using Manager_t = Manager;
     using Dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, Eigen::Dynamic>;
     using dense_ref_t = Eigen::Map<Dense_t>;
     using sizes_t = std::vector<size_t>;
@@ -207,9 +208,9 @@ namespace rascal {
     using Data_t = std::vector<InputData_t>;
 
     //! constructor
-    BlockSparseProperty(StructureManagerBase & manager,
+    BlockSparseProperty(Manager_t & manager,
                         std::string metadata = "no metadata")
-        : Parent{manager, 0, 0, Order, PropertyLayer, metadata} {}
+        : Parent{static_cast<StructureManagerBase &>(manager), 0, 0, Order, PropertyLayer, metadata} {}
 
     //! Default constructor
     BlockSparseProperty() = delete;
@@ -278,11 +279,12 @@ namespace rascal {
 
     //using Manager_t = Manager;
     //TODO(alex)
-    //template <size_t CallerOrder, size_t CallerLayer, size_t Order_= Order>
-    //inline std::enable_if_t<(Order_==1) and (CallerOrder>1), decltype(auto)>
-    //operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
-    // return this->operator[](static_cast<Manager_t &>(this->base_manager).get_cluster_index(id.get_internal_neighbour_atom_index()));
-    //}
+    template <size_t CallerOrder, size_t CallerLayer, size_t Order_= Order,
+             std::enable_if_t<(Order_==1) and (CallerOrder>1), int> = 0>
+    inline decltype(auto)
+    operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
+     return this->operator[](static_cast<Manager_t &>(this->base_manager).get_cluster_index(id.get_internal_neighbour_atom_index()));
+    }
 
 
     //! Accessor for property by cluster index and return a sparse
