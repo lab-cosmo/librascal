@@ -231,7 +231,7 @@ namespace rascal {
         PairPropertyFixture<AdaptorHalfListStackFixture<
             ANLWithGhosts_SMC_StackFixture>>,
         PairPropertyFixture<AdaptorStrictStackFixture<
-            AdaptorHalfListStackFixture<ANLWithGhosts_SMC_StackFixture>>>,
+            AdaptorHalfListStackFixture<ANLWithGhosts_SMC_StackFixture>>>
         //PairPropertyFixture<AdaptorMaxOrderStackFixture<
         //    ANLWithGhosts_SMC_StackFixture>>
         // error in atom_property_access_with_pair_tests
