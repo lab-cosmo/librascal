@@ -203,6 +203,7 @@ namespace rascal {
 
   template <class Mngr>
   void RepresentationManagerSOAP<Mngr>::compute_powerspectrum() {
+    using math::pow;
     // Compute the spherical expansions of the current structure
     rep_expansion.compute();
     auto & expansions_coefficients{rep_expansion.expansions_coefficients};

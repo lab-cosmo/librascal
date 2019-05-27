@@ -363,8 +363,7 @@ namespace rascal {
 
         this->radial_integral_neighbour =
             (a_b_l_n.array() * this->hyp1f1_calculator.get_values().array())
-                .matrix();
-        this->radial_integral_neighbour *= distance_fac_a_l.asDiagonal();
+                .matrix() * distance_fac_a_l.asDiagonal();
         this->radial_integral_neighbour.transpose() *=
             this->radial_norm_factors.asDiagonal();
         this->radial_integral_neighbour.transpose() *=

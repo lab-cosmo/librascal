@@ -35,6 +35,7 @@
 #include "representations/representation_manager_soap.hh"
 #include "representations/feature_manager_dense.hh"
 #include "basic_types.hh"
+#include "atomic_structure.hh"
 
 #include <iostream>
 #include <basic_types.hh>
@@ -43,6 +44,7 @@
 #include <functional>
 #include <string>
 #include <initializer_list>
+#include <chrono>
 
 // using namespace std;
 using namespace rascal;  // NOLINT
@@ -93,10 +95,37 @@ int main(int argc, char * argv[]) {
                                    AdaptorNeighbourList, AdaptorStrict>(
           structure, adaptors);
 
+  AtomicStructure<3> ast{};
+  ast.set_structure(filename);
+
+  std::cout << "structure filename: " << filename << std::endl;
+
+  std::chrono::duration<double> elapsed{};
+
+  auto start = std::chrono::high_resolution_clock::now();
+  // This is the part that should get profiled
+  for (size_t looper{0}; looper < N_ITERATIONS; looper++) {
+    manager->update(ast);
+  }
+  auto finish = std::chrono::high_resolution_clock::now();
+
+
+  elapsed = finish - start;
+  std::cout << "Neighbour List"
+            << " elapsed: " << elapsed.count() / N_ITERATIONS
+            << " seconds" << std::endl;
+
   Representation_t representation{manager, hypers};
 
+  start = std::chrono::high_resolution_clock::now();
   // This is the part that should get profiled
   for (size_t looper{0}; looper < N_ITERATIONS; looper++) {
     representation.compute();
   }
+  finish = std::chrono::high_resolution_clock::now();
+
+  elapsed = finish - start;
+  std::cout << "Compute represenation"
+            << " elapsed: " << elapsed.count() / N_ITERATIONS
+            << " seconds" << std::endl;
 }

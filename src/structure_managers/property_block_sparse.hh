@@ -67,7 +67,8 @@ namespace rascal {
     class InternallySortedKeyMap {
      public:
       using MyMap_t = std::map<K, V>;
-      using Map_t = std::unordered_map<K, std::array<int, 3>, Hash<K>>;
+      // using Map_t = std::unordered_map<K, std::array<int, 3>, Hash<K>>;
+      using Map_t = std::map<K, std::array<int, 3>>;
       using Data_t = std::vector<typename V::value_type>;
       //! the data holder.
       Data_t data{};
