@@ -87,9 +87,10 @@ namespace rascal {
 
     static_assert(traits::MaxOrder > 1,
                   "ManagerImlementation needs to handle pairs");
+    constexpr static auto AtomLayer{
+      Manager_t::template cluster_layer_from_order<1>()};
     constexpr static auto PairLayer{
       Manager_t::template cluster_layer_from_order<2>()};
-
 
     //! Default constructor
     AdaptorStrict() = delete;
@@ -212,7 +213,6 @@ namespace rascal {
       return this->offsets[Order][counters.back()];
     }
 
-    // TODO(alex) #ATOM_INDEX
     template <size_t Order>
     inline int
     get_cluster_neighbour_atom_index_impl(const size_t neighbour_index) const {
@@ -304,12 +304,6 @@ namespace rascal {
     }
 
     ImplementationPtr_t manager;
-    // TODO(alex) should be changed to StructureManagerBase saves the a
-    // You can only save references in the initialisation list see shared_ptr
-    // example when doing this
-    // https://stackoverflow.com/questions/2785612/c-what-does-the-colon-after-a-constructor-mean
-    // constructor
-    //Distance_t & distance;
     std::shared_ptr<Distance_t> distance;
     std::shared_ptr<DirectionVector_t> dir_vec;
     const double cutoff;
@@ -334,44 +328,6 @@ namespace rascal {
     std::array<std::vector<size_t>, traits::MaxOrder> offsets;
 
    private:
-    //TODO(alex) delete
-    //void make_full_neighbour_cluster_index_list() {
-    //  for (int neigh_atom_index : this->atom_indices[1]) {
-    //    //add_cluster_index_for_neigh_atom_index(neigh_atom_index);
-    //  }
-    //}
-
-    //void add_cluster_index_for_neigh_atom_index(int neigh_atom_index) {
-      //size_t cluster_order_one_index{0};
-      //bool atom_index_found = false;
-      //int atom_index_with_corresponding_cluster;
-      //// TODO(alex) how to make this a reference? or is it already
-      //auto && nl_atom_indices = this->get_nl_atom_indices();
-      //auto && atom_indices_with_corresponding_cluster =
-      //  this->get_atom_indices_with_corresponding_cluster();
-      //for (size_t i{0}; i< nl_atom_indices.size(); i++) { 
-      //  if (neigh_atom_index == nl_atom_indices[i] && not(atom_index_found)) { 
-      //    atom_index_with_corresponding_cluster =
-      //        atom_indices_with_corresponding_cluster.at(i);
-      //    for (auto atom : this->get_manager().with_ghosts()) {
-      //      if (atom.get_atom_index() == atom_index_with_corresponding_cluster) {
-      //        this->neighbours_cluster_index.push_back(cluster_order_one_index); 
-      //        atom_index_found = true;             
-      //      }
-      //      cluster_order_one_index++;
-      //    }
-      //    if(not(atom_index_found)) {
-      //      throw std::runtime_error("No atom index corresponding to a cluster was found while building list of cluster neighbour cluster index list.");  
-      //    }
-      //  } else if (neigh_atom_index == nl_atom_indices[i] && atom_index_found) {
-      //    throw std::runtime_error("The atom index was found two times, but should be unique, while building list of cluster neighbour cluster index list.");
-      //  }
-      //}
-      //if (not(atom_index_found)) {
-      //  throw std::runtime_error("Atom index was not found while building list of cluster neighbour cluster index list.");
-      //}
-    //}
-
   };
 
   namespace internal {
@@ -463,27 +419,14 @@ namespace rascal {
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
     size_t pair_counter{0};
-    //constexpr auto PairLayer{
-    //  Manager_t::template cluster_layer_from_order<2>()};
-    //constexpr auto AtomLayer{
-    //  Manager_t::template cluster_layer_from_order<1>()};
     // depending on the underlying neighbourlist, the proxy `.with_ghosts()` is
     // either actually with ghosts, or only returns the number of centers.
-    // TODO(alex) BUG consider_ghost_atoms false, then neighbour can be ghost atom, but we want to update original atom
     for (auto atom : this->manager.get()->with_ghosts()) {
       this->add_atom(atom);
       /**
        * Add new layer for atoms (see LayerByOrder for
        * possible optimisation).
        */
-
-      constexpr auto AtomLayer{
-          compute_cluster_layer<atom.order()>(typename traits::LayerByOrder{})};
-      // TODO(alex) replace above with this
-      // make todo for markus to check
-      //constexpr auto PairLayer{
-      //  Manager_t::template cluster_layer_from_order<1>()};
-
 
       Eigen::Matrix<size_t, AtomLayer + 1, 1> indices;
 
@@ -492,15 +435,10 @@ namespace rascal {
       atom_cluster_indices.push_back(indices);
       double rc2{this->cutoff * this->cutoff};
       for (auto pair : atom) {
-        constexpr auto PairLayer{compute_cluster_layer<pair.order()>(
-            typename traits::LayerByOrder{})};
-
         auto vec_ij{pair.get_position() - atom.get_position()};
         double distance2{(vec_ij).squaredNorm()};
         if (distance2 <= rc2) {
           this->add_atom(pair);
-          // TODO(alex) delete
-          //this->neighbours_cluster_index.push_back(pair.get_cluster_index(PairLayer-1));
           double distance{std::sqrt(distance2)};
 
           this->dir_vec->push_back((vec_ij.array() / distance).matrix());
@@ -514,8 +452,6 @@ namespace rascal {
         }
       }
     }
-    //TODO(alex) delete
-    //make_full_neighbour_cluster_index_list();
   }
 }  // namespace rascal
 

@@ -178,10 +178,12 @@ namespace rascal {
         AtomPropertyFixture<AdaptorHalfListStackFixture<
             ANL_SMC_StackFixture>>,
         AtomPropertyFixture<AdaptorStrictStackFixture<
-            AdaptorHalfListStackFixture<ANL_SMC_StackFixture>>>,
-        AtomPropertyFixture<AdaptorMaxOrderStackFixture<
-            AdaptorStrictStackFixture<AdaptorHalfListStackFixture<
-            ANL_SMC_StackFixture>>>>
+            ANL_SMC_StackFixture>>
+        //AtomPropertyFixture<AdaptorStrictStackFixture<
+        //    AdaptorHalfListStackFixture<ANL_SMC_StackFixture>>>,
+        //AtomPropertyFixture<AdaptorMaxOrderStackFixture<
+        //    AdaptorStrictStackFixture<AdaptorHalfListStackFixture<
+        //    ANL_SMC_StackFixture>>>>
         >;
   };
 
@@ -203,22 +205,23 @@ namespace rascal {
   struct pack_into_list< std::tuple < a ... > >
     { using list = boost::mpl::list<a ...>;};
 
+  using ANLWithGhosts_SMC_StackFixture = AdaptorNeighbourListStackFixture<
+    StructureManagerCentersStackFixture, true>;
+  using ANLWithoutGhosts_SMC_StackFixture = AdaptorNeighbourListStackFixture<
+    StructureManagerCentersStackFixture, false>;
   struct CommonOrderTwoStacksBoostList {
-    using ANLWithGhosts_SMC_StackFixture = AdaptorNeighbourListStackFixture<
-      StructureManagerCentersStackFixture, true>;
-    using ANLWithoutGhosts_SMC_StackFixture = AdaptorNeighbourListStackFixture<
-      StructureManagerCentersStackFixture, false>;
     using type_with_ghosts = std::tuple<
         PairPropertyFixture<ANLWithGhosts_SMC_StackFixture>,
+        PairPropertyFixture<AdaptorStrictStackFixture<
+            ANLWithGhosts_SMC_StackFixture>>,
         PairPropertyFixture<AdaptorHalfListStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>,
-        PairPropertyFixture<AdaptorStrictStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>,
-        PairPropertyFixture<AdaptorStrictStackFixture<
-            AdaptorHalfListStackFixture<ANLWithGhosts_SMC_StackFixture>>>,
-        PairPropertyFixture<AdaptorMaxOrderStackFixture<
-            AdaptorStrictStackFixture<AdaptorHalfListStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>>>
+            ANLWithGhosts_SMC_StackFixture>>
+        // TODO(alex)
+        //PairPropertyFixture<AdaptorStrictStackFixture<
+        //    AdaptorHalfListStackFixture<ANLWithGhosts_SMC_StackFixture>>>,
+        //PairPropertyFixture<AdaptorMaxOrderStackFixture<
+        //    AdaptorStrictStackFixture<AdaptorHalfListStackFixture<
+        //    ANLWithGhosts_SMC_StackFixture>>>>
         >;
     using list_with_ghosts = pack_into_list<type_with_ghosts>::list;
 
@@ -240,8 +243,6 @@ namespace rascal {
   };
 
   struct CommonOrderThreeStacksBoostList {
-    using ANLWithGhosts_SMC_StackFixture = AdaptorNeighbourListStackFixture<
-      StructureManagerCentersStackFixture, true>;
     using type = std::tuple<
         // TODO(alex) these two test in the update_self function, debug in
         // office
@@ -265,6 +266,17 @@ namespace rascal {
   using pair_property_fixtures = CommonOrderTwoStacksBoostList::list;
   using triple_property_fixtures = CommonOrderThreeStacksBoostList::list;
 
+        //TriplePropertyFixture<>,
+        //TriplePropertyFixture<AdaptorMaxOrderStackFixture<AdaptorHalfListStackFixture<
+  //BOOST_FIXTURE_TEST_CASE(constructor_test_tmp, ANLWithGhosts_SMC_StackFixture) {
+  //  bool verbose{true};
+  //  if (verbose) {
+  //    std::cout << ">> Test for manager ";
+  //    std::cout << manager->get_name();
+  //    std::cout << " starts now." << std::endl;
+  //    std::cout << " finished." << std::endl;
+  //  }
+  //}
   /* ---------------------------------------------------------------------- */
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_tests, Fix, pair_property_fixtures, Fix) {
@@ -330,6 +342,13 @@ namespace rascal {
     }
     size_t cluster_index{0};
     for (auto atom : Fix::manager) {
+      if (verbose) {
+        std::cout << ">> Atom index " << atom.get_atom_index();
+        std::cout << ", ClusterIndex should be " << cluster_index;
+        std::cout << " and is ";
+        std::cout << Fix::manager->get_cluster_index(atom.get_atom_index());
+        std::cout << "." << std::endl;
+      }
       BOOST_CHECK_EQUAL(Fix::manager->get_cluster_index(atom.get_atom_index()), cluster_index);
       cluster_index++;
     }
@@ -344,7 +363,7 @@ namespace rascal {
   /* Access of atom property with pair. 
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_property_access_with_pair_tests, Fix, pair_property_fixtures, Fix) {
-    bool verbose{false};
+    bool verbose{true};
     if (verbose) {
       std::cout << ">> Test for manager ";
       std::cout << Fix::manager->get_name();
@@ -353,18 +372,32 @@ namespace rascal {
     Fix::scalar_atom_property.resize();
     // initalize the positions
     std::vector<int> atom_indices{}; 
+    std::cout << ">> Test1 " << std::endl;
     atom_indices.reserve(Fix::manager->get_size());
-    for (auto atom : Fix::manager) {
+    std::cout << ">> Test2 " << std::endl;
+    Fix::scalar_atom_property.resize();
+    std::cout << ">> Size " << Fix::manager->get_size() << std::endl;
+    std::cout << ">> Size with ghosts " << Fix::manager->get_size_with_ghosts() << std::endl;
+    for (auto atom : Fix::manager->with_ghosts()) {
+        std::cout << ">> AtomIndex " << atom.get_atom_index() << std::endl;
         Fix::scalar_atom_property[atom] = 0;
         atom_indices.push_back(atom.get_atom_index());
+    }
+    if (verbose) {
+      std::cout << ">> Atomic indices list created ";
+      std::cout << " with size "  << atom_indices.size() << std::endl;
+      std::cout << ">> ScalarAtomProperty filled with 0" << std::endl;
     }
     std::vector<size_t> counter{};
     counter.reserve(atom_indices.size());
     for (size_t i{0}; i<atom_indices.size(); i++) {
       counter.push_back(0);
     }
+    if (verbose) {
+      std::cout << ">> Counters filled with 0" << std::endl;
+    }
     // add the position to the atom and count how often this happens
-    for (auto atom : Fix::manager) {
+    for (auto atom : Fix::manager->with_ghosts()) {
       for (auto pair : atom) {
         Fix::scalar_atom_property[pair]++;
         counter.at(Fix::manager->get_cluster_index(pair.get_internal_neighbour_atom_index()))++;
@@ -382,7 +415,7 @@ namespace rascal {
   }
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(order_three_constructor_tests, Fix, triple_property_fixtures, Fix) {
-    bool verbose{true};
+    bool verbose{false};
     if (verbose) {
       std::cout << ">> Test for manager ";
       std::cout << Fix::manager->get_name();

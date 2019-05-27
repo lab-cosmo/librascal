@@ -403,7 +403,20 @@ namespace rascal {
       this->template validate_property_t<UserProperty_t>(property);
     }
 
-    // TODO change type to UserProperty_t & 
+    // #BUG8486@(till) I made the function but I don't use it, because if you
+    // keep a reference of an object as member variable, you have to initialize it in the
+    // initialization list of the constructor. The property is not created until
+    // the adaptor's update function is invoked. So I would need to give the adaptor 
+    // a dummy property object for initialization. I dont think this is a nice
+    // solution.
+    template<typename UserProperty_t>
+    UserProperty_t &
+        get_validated_property_ref(const std::string & name) const {
+      auto property = this->get_property(name);
+      this->template validate_property_t<UserProperty_t>(property);
+      UserProperty_t * property_ptr = reinterpret_cast<UserProperty_t*>(property.get());
+      return *property_ptr;
+    }
     /*  Returns the typed property. Throws an error if property type given from
      *  user does not match actual property type.
      */
@@ -415,7 +428,6 @@ namespace rascal {
       return std::static_pointer_cast<UserProperty_t>(property);
     }
 
-    // TODO(till) same as the function above, just for different template parameters 
     template<typename T, size_t Order, Dim_t NbRow=1, Dim_t NbCol=1>
     std::shared_ptr<Property_t<T, Order, NbRow, NbCol>>  
         get_property(const std::string & name) const {

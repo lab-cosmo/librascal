@@ -267,6 +267,7 @@ namespace rascal {
     ManagerPtr_t manager;
   };
 
+  // TODO(alex) do all order 2 with ghosts tests with iteration ->with_ghosts
   template <class StackFixture, bool consider_ghost_neighbours_>
   struct AdaptorNeighbourListStackFixture : StackFixture {
     using Parent = StackFixture;
@@ -276,7 +277,7 @@ namespace rascal {
     const double consider_ghost_neighbours{consider_ghost_neighbours_};
     const double cutoff{1.};
     AdaptorNeighbourListStackFixture() :
-      manager{make_adapted_manager<AdaptorNeighbourList>(StackFixture::manager, cutoff, false)} {manager->update();}
+      manager{make_adapted_manager<AdaptorNeighbourList>(StackFixture::manager, cutoff, consider_ghost_neighbours)} {manager->update();}
     ManagerPtr_t manager;
   };
 

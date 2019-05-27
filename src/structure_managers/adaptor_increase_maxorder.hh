@@ -161,6 +161,10 @@ namespace rascal {
       }
     }
 
+    inline size_t get_size_with_ghosts() const {
+      return this->manager->get_size_with_ghosts();
+    }
+
     //! Returns number of clusters of the original manager
     inline size_t get_size() const { return this->manager->get_size(); }
 
@@ -290,6 +294,7 @@ namespace rascal {
 
     //! Stores all neighbours atom index of traits::MaxOrder-1-clusters
     std::vector<int> neighbours_atom_index{};
+    // TODO(alex) delete
     std::vector<size_t> neighbours_cluster_index{};
 
     /**
