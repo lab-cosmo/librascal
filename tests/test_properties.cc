@@ -509,8 +509,8 @@ namespace rascal {
       std::cout << " starts now." << std::endl;
     }
     // initalize the positions
-    std::vector<int> atom_indices{}; 
-    atom_indices.reserve(Fix::manager->get_size_with_ghosts());
+    std::vector<int> atom_tag_list{}; 
+    atom_tag_list.reserve(Fix::manager->get_size_with_ghosts());
     Fix::scalar_atom_property.resize();
     //Fix::atom_dynamic_property.resize();
     for (auto atom : Fix::manager->with_ghosts()) {
@@ -522,11 +522,11 @@ namespace rascal {
       }
       Fix::scalar_atom_property[atom] = 0;
       //Fix::atom_dynamic_property[atom] = 0;
-      atom_indices.push_back(atom.get_atom_index());
+      atom_tag_list.push_back(atom.get_atom_index());
     }
     if (verbose) {
       std::cout << ">> Atom tag list created ";
-      std::cout << " with size "  << atom_indices.size() << std::endl;
+      std::cout << " with size "  << atom_tag_list.size() << std::endl;
     }
     std::vector<size_t> counter{};
     size_t nb_central_atoms = Fix::manager->get_size();
@@ -593,8 +593,8 @@ namespace rascal {
     }
     Fix::scalar_atom_property.resize();
     // initalize the positions
-    std::vector<int> atom_indices{}; 
-    atom_indices.reserve(Fix::manager->get_size_with_ghosts());
+    std::vector<int> atom_tag_list{}; 
+    atom_tag_list.reserve(Fix::manager->get_size_with_ghosts());
     if (verbose) {
       std::cout << ">> atom_property resized to size ";
       std::cout << Fix::atom_property.size();
@@ -606,15 +606,15 @@ namespace rascal {
         std::cout << std::endl;
       }
       Fix::scalar_atom_property[atom] = 0;
-      atom_indices.push_back(atom.get_atom_index());
+      atom_tag_list.push_back(atom.get_atom_index());
     }
     if (verbose) {
       std::cout << ">> Atom tag list created ";
-      std::cout << " with size "  << atom_indices.size() << std::endl;
+      std::cout << " with size "  << atom_tag_list.size() << std::endl;
     }
     std::vector<size_t> counter{};
-    counter.reserve(atom_indices.size());
-    for (size_t i{0}; i<atom_indices.size(); i++) {
+    counter.reserve(atom_tag_list.size());
+    for (size_t i{0}; i<atom_tag_list.size(); i++) {
       counter.push_back(0);
     }
     // add the position to the atom and count how often this happens

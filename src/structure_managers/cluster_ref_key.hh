@@ -212,8 +212,8 @@ namespace rascal {
      * direct constructor. Initialized with an array of atoms indices,
      * and a cluster reference data
      */
-    ClusterRefKey(AtomIndex_t atom_indices, IndexConstArray cluster_indices)
-        : Parent{Order, Layer}, atom_indices{atom_indices},
+    ClusterRefKey(AtomIndex_t atom_tag_list, IndexConstArray cluster_indices)
+        : Parent{Order, Layer}, atom_tag_list{atom_tag_list},
           cluster_indices{cluster_indices.data()} {}
 
     //! Copy constructor
@@ -232,14 +232,14 @@ namespace rascal {
     ClusterRefKey & operator=(ClusterRefKey && other) = default;
 
     //! returns the atom indices of the current cluster
-    const inline AtomIndex_t & get_atom_indices() const {
-      return this->atom_indices;
+    const inline AtomIndex_t & get_atom_tag_list() const {
+      return this->atom_tag_list;
     }
 
     //! returns the first atom index in this cluster
-    const int & front() const { return this->atom_indices.front(); }
+    const int & front() const { return this->atom_tag_list.front(); }
     //! returns the last atom index in this cluster
-    const int & back() const { return this->atom_indices.back(); }
+    const int & back() const { return this->atom_tag_list.back(); }
     /* the internal cluster neighbour is the neighbour which was added as
      * neighbour in the creation of this cluster
      */
@@ -273,7 +273,7 @@ namespace rascal {
      *  the exact same atom, e.g. in a Monte-Carlo simulation, where atoms are
      *  swapped.
      */
-    AtomIndex_t atom_indices;
+    AtomIndex_t atom_tag_list;
     /**
      * Cluster indices by layer order, highest layer, means last adaptor, and
      * means last entry (.back())

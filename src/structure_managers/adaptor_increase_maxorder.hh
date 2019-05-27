@@ -386,7 +386,7 @@ namespace rascal {
                      AdaptorMaxOrder<ManagerImplementation> & manager) {
       // get all i_atoms to find neighbours to extend the cluster to the next
       // order
-      auto i_atoms = cluster.get_atom_indices();
+      auto i_atoms = cluster.get_atom_tag_list();
 
       // vector of existing i_atoms in `cluster` to avoid doubling of atoms in
       // final list

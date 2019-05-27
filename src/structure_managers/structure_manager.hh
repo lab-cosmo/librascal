@@ -539,7 +539,7 @@ namespace rascal {
     }
 
     //! recursion end, not for use
-    const std::array<int, 0> get_atom_indices() const {
+    const std::array<int, 0> get_atom_tag_list() const {
       return std::array<int, 0>{};
     }
 
@@ -793,9 +793,9 @@ namespace rascal {
     ClusterRef() = delete;
 
     template<typename ClusterIndicesType>
-    ClusterRef(Iterator_t & it, const std::array<int, Order> & atom_indices,
+    ClusterRef(Iterator_t & it, const std::array<int, Order> & atom_tag_list,
                ClusterIndicesType & cluster_indices)
-        : ThisParentClass{atom_indices, 
+        : ThisParentClass{atom_tag_list, 
           internal::ClusterIndicesConstCaster<
             ThisParentClass, ClusterIndicesType, ClusterLayer>::cast(cluster_indices)
           }, it{it} {}
@@ -808,7 +808,7 @@ namespace rascal {
     ClusterRef(ClusterRefKey<1, 0> & cluster,
                Manager_t & manager)
         : ClusterRefKey<1, 0>(
-            cluster.get_atom_indices(),
+            cluster.get_atom_tag_list(),
             cluster.get_cluster_indices()),
           it(manager) {}
 
@@ -890,8 +890,8 @@ namespace rascal {
       return this->get_manager().get_offset(*this);
     }
     //! returns the atom indices, which constitute the cluster
-    const std::array<int, Order> & get_atom_indices() const {
-      return this->atom_indices;
+    const std::array<int, Order> & get_atom_tag_list() const {
+      return this->atom_tag_list;
     }
 
     inline Iterator_t & get_iterator() { return this->it; }
@@ -934,7 +934,7 @@ namespace rascal {
   std::array<int, Order>
   StructureManager<ManagerImplementation>::ClusterRef<Order>::get_atom_types()
       const {
-    return internal::species_aggregator<StructureManager>(this->atom_indices,
+    return internal::species_aggregator<StructureManager>(this->atom_tag_list,
                                                           this->get_manager());
   }
 
@@ -1026,7 +1026,7 @@ namespace rascal {
           cluster_indices_properties)>::reference;
       Ref_t cluster_indices =
           cluster_indices_properties[this->get_cluster_index()];
-      return ClusterRef_t(*this, this->get_atom_indices(), cluster_indices);
+      return ClusterRef_t(*this, this->get_atom_tag_list(), cluster_indices);
     }
 
     inline const value_type operator*() const {
@@ -1037,7 +1037,7 @@ namespace rascal {
       Ref_t cluster_indices =
           cluster_indices_properties[this->get_cluster_index()];
 
-      const auto indices{this->get_atom_indices()};
+      const auto indices{this->get_atom_tag_list()};
       return ClusterRef_t(const_cast<Iterator &>(*this), indices,
                           cluster_indices);
     }
@@ -1063,16 +1063,16 @@ namespace rascal {
         : container{cont}, index{start}, offset{offset} {}
 
     //! add atomic indices in current iteration
-    std::array<int, Order> get_atom_indices() {
+    std::array<int, Order> get_atom_tag_list() {
       return internal::append_array(
-          container.get_atom_indices(),
+          container.get_atom_tag_list(),
           this->get_manager().get_cluster_neighbour_atom_index(container, this->index));
     }
 
     //! add atomic indices in current iteration
-    std::array<int, Order> get_atom_indices() const {
+    std::array<int, Order> get_atom_tag_list() const {
       return internal::append_array(
-          container.get_atom_indices(),
+          container.get_atom_tag_list(),
           this->get_manager().get_cluster_neighbour_atom_index(container, this->index));
     }
 

@@ -80,19 +80,19 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(filter_1_test, Fix, FixturesMax1, Fix) {
     std::random_device rd{};
     std::uniform_int_distribution<int> dist(0, 1);
-    std::vector<int> atom_indices{};
+    std::vector<int> atom_tag_list{};
 
     for (auto atom : Fix::fixture.manager) {
       const bool include(dist(rd));
       if (include) {
         Fix::manager.add_cluster(atom);
-        atom_indices.push_back(atom.get_atom_index());
+        atom_tag_list.push_back(atom.get_atom_index());
       }
     }
 
     size_t counter{0};
     for (auto atom : Fix::manager) {
-      BOOST_CHECK_EQUAL(atom.get_atom_index(), atom_indices[counter]);
+      BOOST_CHECK_EQUAL(atom.get_atom_index(), atom_tag_list[counter]);
       counter++;
       const auto & pos_a{atom.get_position()};
       const auto & pos_b{
@@ -119,14 +119,14 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(filter_2_test, Fix, FixturesMax2, Fix) {
     std::random_device rd{};
     std::uniform_int_distribution<int> dist(0, 1);
-    std::vector<std::array<int, 2>> atom_indices{};
+    std::vector<std::array<int, 2>> atom_tag_list{};
 
     for (auto atom : Fix::fixture.manager) {
       for (auto pair : atom) {
         const bool include(dist(rd));
         if (include) {
           Fix::manager.add_cluster(pair);
-          atom_indices.push_back(pair.get_atom_indices());
+          atom_tag_list.push_back(pair.get_atom_tag_list());
         }
       }
     }
@@ -134,8 +134,8 @@ namespace rascal {
     size_t counter{0};
     for (auto atom : Fix::manager) {
       for (auto pair : atom) {
-        auto && a{pair.get_atom_indices()};
-        auto && b{atom_indices[counter]};
+        auto && a{pair.get_atom_tag_list()};
+        auto && b{atom_tag_list[counter]};
         BOOST_CHECK_EQUAL_COLLECTIONS(a.begin(), a.end(), b.begin(), b.end());
 
         const auto & pos_a{pair.get_position()};

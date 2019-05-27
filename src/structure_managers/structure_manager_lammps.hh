@@ -163,7 +163,7 @@ namespace rascal {
     // memory access would be super inefficient.
     inline int get_cluster_index_impl(int atom_index) const {
       throw std::runtime_error("This functionality might be not implemented correctly");
-      return this->cluster_index_from_atom_indices[atom_index];
+      return this->cluster_index_from_atom_tag_list[atom_index];
     }
 
     /**
@@ -230,7 +230,7 @@ namespace rascal {
     std::vector<int> offsets{};  //! offset per atom to access neighbour list
     
     // the inverse mapping from the ilist
-    std::vector<size_t> cluster_index_from_atom_indices{};
+    std::vector<size_t> cluster_index_from_atom_tag_list{};
   };
 
   /**

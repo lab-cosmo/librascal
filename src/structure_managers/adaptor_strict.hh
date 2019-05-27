@@ -135,7 +135,7 @@ namespace rascal {
     inline const double & get_cutoff() const { return this->cutoff; }
 
     inline size_t get_nb_clusters(int order) const {
-      return this->atom_indices[order - 1].size();
+      return this->atom_tag_list[order - 1].size();
     }
 
     inline size_t get_size() const { return this->manager->get_size(); }
@@ -156,13 +156,13 @@ namespace rascal {
       static_assert(Order <= traits::MaxOrder - 1,
                     "this implementation only handles upto traits::MaxOrder");
       auto && offset = this->offsets[Order][cluster.get_cluster_index(Layer)];
-      return this->atom_indices[Order][offset + index];
+      return this->atom_tag_list[Order][offset + index];
     }
 
     //! get atom_index of the index-th atom in manager
     inline int get_cluster_neighbour_atom_index_impl(const Parent & /*parent*/,
                                      size_t index) const {
-      return this->atom_indices[0][index];
+      return this->atom_tag_list[0][index];
     }
 
     /* Since the cluster indices of order 1 are only copied in this filter we
@@ -179,7 +179,7 @@ namespace rascal {
        * careful, atom refers to our local index, for the manager, we need its
        * index:
        */
-      auto && original_atom{this->atom_indices[0][atom.get_index()]};
+      auto && original_atom{this->atom_tag_list[0][atom.get_index()]};
       return this->manager->get_atom_type(original_atom);
     }
 
@@ -187,7 +187,7 @@ namespace rascal {
     inline const int & get_atom_type(const AtomRef_t & atom) const {
       // careful, atom refers to our local index, for the manager, we need its
       // index:
-      auto && original_atom{this->atom_indices[0][atom.get_index()]};
+      auto && original_atom{this->atom_tag_list[0][atom.get_index()]};
       return this->manager->get_atom_type(original_atom);
     }
 
@@ -256,12 +256,12 @@ namespace rascal {
       return this->manager->get_consider_ghost_neighbours();
     }
 
-    const std::vector<int> get_manager_atom_indices() {
-      return this->atom_indices[0];
+    const std::vector<int> get_manager_atom_tag_list() {
+      return this->atom_tag_list[0];
     }
 
     const std::vector<int> get_neighbours_atom_index() {
-      return this->atom_indices[1];
+      return this->atom_tag_list[1];
     }
    protected:
     /**
@@ -277,7 +277,7 @@ namespace rascal {
                     "MaxOrder of the underlying manager");
 
       // add new atom at this Order
-      this->atom_indices[Order].push_back(atom_index);
+      this->atom_tag_list[Order].push_back(atom_index);
       // count that this atom is a new neighbour
       this->nb_neigh[Order].back()++;
       this->offsets[Order].back()++;
@@ -304,12 +304,12 @@ namespace rascal {
 
     /**
      * store atom indices per order,i.e.
-     *   - atom_indices[0] lists all i-atoms
-     *   - atom_indices[1] lists all j-atoms
-     *   - atom_indices[2] lists all k-atoms
+     *   - atom_tag_list[0] lists all i-atoms
+     *   - atom_tag_list[1] lists all j-atoms
+     *   - atom_tag_list[2] lists all k-atoms
      *   - etc
      */
-    std::array<std::vector<int>, traits::MaxOrder> atom_indices;
+    std::array<std::vector<int>, traits::MaxOrder> atom_tag_list;
     std::vector<size_t> neighbours_cluster_index;
     /**
      * store the number of j-atoms for every i-atom (nb_neigh[1]), the number of
@@ -360,7 +360,7 @@ namespace rascal {
   AdaptorStrict<ManagerImplementation>::AdaptorStrict(
       std::shared_ptr<ManagerImplementation> manager, double cutoff)
       : manager{std::move(manager)}, distance{std::make_shared<Distance_t>(*this)}, dir_vec{std::make_shared<DirectionVector_t>(*this)},
-        cutoff{cutoff}, atom_indices{}, neighbours_cluster_index{},
+        cutoff{cutoff}, atom_tag_list{}, neighbours_cluster_index{},
         nb_neigh{}, offsets{}
 
   {
@@ -388,7 +388,7 @@ namespace rascal {
                        internal::ResizePropertyToZero());
     //! initialise the neighbourlist
     for (size_t i{0}; i < traits::MaxOrder; ++i) {
-      this->atom_indices[i].clear();
+      this->atom_tag_list[i].clear();
       this->nb_neigh[i].clear();
       this->offsets[i].clear();
     }
