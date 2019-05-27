@@ -146,7 +146,7 @@ namespace rascal {
         break;
       }
       case 2: {
-        return this->neighbours_atom_index.size();
+        return this->neighbours_atom_tag.size();
         break;
       }
       default: {
@@ -158,13 +158,12 @@ namespace rascal {
     //! returns the number of atoms
     inline size_t get_size() const { return this->get_nb_clusters(1); }
 
-    // TODO(alex) ghosts in full are buggy
     //! returns the number of atoms
-    //inline size_t get_size_with_ghosts() const {
-    //  return this->manager->get_size_with_ghosts();
-    //}
+    inline size_t get_size_with_ghosts() const {
+      return this->manager->get_size_with_ghosts();
+    }
 
-    //! returns position of the given atom index
+    //! returns position of the given atom tag
     inline Vector_ref get_position(const int & index) {
       return this->manager->get_position(index);
     }
@@ -177,7 +176,7 @@ namespace rascal {
     //! Returns the id of the index-th neighbour atom of a given cluster
     template <size_t Order, size_t Layer>
     inline int
-    get_cluster_neighbour_atom_index_impl(const ClusterRefKey<Order, Layer> & cluster,
+    get_cluster_neighbour_atom_tag_impl(const ClusterRefKey<Order, Layer> & cluster,
                           size_t index) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles up to traits::MaxOrder");
@@ -187,21 +186,21 @@ namespace rascal {
           internal::IncreaseHelper<Order == (traits::MaxOrder - 1)>;
 
       if (Order < (traits::MaxOrder - 1)) {
-        return IncreaseHelper_t::get_cluster_neighbour_atom_index(*this->manager, cluster,
+        return IncreaseHelper_t::get_cluster_neighbour_atom_tag(*this->manager, cluster,
                                                        index);
       } else {
         auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
-        return this->neighbours_atom_index[offset + index];
+        return this->neighbours_atom_tag[offset + index];
       }
     }
 
-    //! get atom_index of the index-th atom in manager
-    inline int get_cluster_neighbour_atom_index_impl(const Parent &, size_t index) const {
-      return this->manager->get_cluster_neighbour_atom_index_impl(*this->manager, index);
+    //! get atom_tag of the index-th atom in manager
+    inline int get_cluster_neighbour_atom_tag_impl(const Parent &, size_t index) const {
+      return this->manager->get_cluster_neighbour_atom_tag_impl(*this->manager, index);
     }
 
-    size_t get_cluster_index_impl(const int atom_index) const {
-      return this->manager->get_cluster_index_impl(atom_index);
+    size_t get_cluster_index_impl(const int atom_tag) const {
+      return this->manager->get_cluster_index_impl(atom_tag);
     }
 
     //! return atom type
@@ -214,12 +213,12 @@ namespace rascal {
       return this->manager->get_atom_type(atom.get_index());
     }
 
-    //! Returns atom type given an atom index
+    //! Returns atom type given an atom tag
     inline int & get_atom_type(const int & atom_id) {
       return this->manager->get_atom_type(atom_id);
     }
 
-    //! Returns a constant atom type given an atom index
+    //! Returns a constant atom type given an atom tag
     inline const int & get_atom_type(const int & atom_id) const {
       return this->manager->get_atom_type(atom_id);
     }
@@ -283,8 +282,8 @@ namespace rascal {
     //! Stores the number of neighbours for every atom after sorting
     std::vector<size_t> nb_neigh;
 
-    //! Stores all neighbours, i.e. atom indices in a list
-    std::vector<int> neighbours_atom_index;
+    //! Stores all neighbours, i.e. atom tags in a list
+    std::vector<int> neighbours_atom_tag;
 
     /**
      * Stores the offsets for accessing `neighbours`; this is the entry point in
@@ -301,7 +300,7 @@ namespace rascal {
   template <class ManagerImplementation>
   AdaptorFullList<ManagerImplementation>::AdaptorFullList(
       std::shared_ptr<ManagerImplementation> manager)
-      : manager{std::move(manager)}, nb_neigh{}, neighbours_atom_index{}, offsets{} {}
+      : manager{std::move(manager)}, nb_neigh{}, neighbours_atom_tag{}, offsets{} {}
 
   /* ---------------------------------------------------------------------- */
   //! update function, which updates based on underlying manager
@@ -335,7 +334,7 @@ namespace rascal {
     // filling it
     this->nb_neigh.resize(0);
     this->offsets.resize(0);
-    this->neighbours_atom_index.resize(0);
+    this->neighbours_atom_tag.resize(0);
 
     // prepare data structure to collect neighbours
     auto natoms = this->manager->get_size();
@@ -348,10 +347,10 @@ namespace rascal {
     /* ---------------------------------------------------------------------- */
     // loop through all atoms and pairs and collect all neighbours in vector
     for (auto atom : *this->manager) {
-      auto index_1{atom.get_atom_index()};
+      auto index_1{atom.get_atom_tag()};
 
       for (auto pair : atom) {
-        auto index_2{pair.get_atom_index()};
+        auto index_2{pair.get_atom_tag()};
 
         // add indices to their reciprocal list
         // -> already exists: this->new_neighbours[index_1].push_back(index_2);
@@ -369,7 +368,7 @@ namespace rascal {
     int pair_counter{0};
 
     for (auto atom : *this->manager) {
-      auto index_i = atom.get_atom_index();
+      auto index_i = atom.get_atom_tag();
 
       // Add new depth layer for atoms
       constexpr auto AtomLayer{
@@ -383,8 +382,8 @@ namespace rascal {
       int nneigh{0};
       for (auto pair : atom) {
         // add existing pairs
-        auto index_j = pair.get_atom_index();
-        this->neighbours_atom_index.push_back(index_j);
+        auto index_j = pair.get_atom_tag();
+        this->neighbours_atom_tag.push_back(index_j);
         nneigh++;
 
         // The layer of pairs is reinitialized with this adaptor. Therefore the
@@ -405,7 +404,7 @@ namespace rascal {
           compute_cluster_layer<PairOrder>(typename traits::LayerByOrder{})};
 
       for (auto index_j : new_neighbours[index_i]) {
-        this->neighbours_atom_index.push_back(index_j);
+        this->neighbours_atom_tag.push_back(index_j);
         nneigh++;
 
         Eigen::Matrix<size_t, ActiveLayer + 1, 1> indices_pair;

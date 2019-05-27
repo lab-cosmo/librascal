@@ -107,7 +107,7 @@ decltype(auto) add_cluster(py::module & m) {
 
   py::class_<ClusterRef, ClusterRefKey> py_cluster(m, cluster_name.c_str());
   py_cluster
-      .def_property_readonly("atom_index", &ClusterRef::get_atom_index,
+      .def_property_readonly("atom_tag", &ClusterRef::get_atom_tag,
                              py::return_value_policy::reference)
       .def_property_readonly(
           "atom_type",

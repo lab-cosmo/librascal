@@ -231,23 +231,23 @@ namespace rascal {
     //! Move assignment operator
     ClusterRefKey & operator=(ClusterRefKey && other) = default;
 
-    //! returns the atom indices of the current cluster
+    //! returns the atom tags of the current cluster
     const inline AtomIndex_t & get_atom_tag_list() const {
       return this->atom_tag_list;
     }
 
-    //! returns the first atom index in this cluster
+    //! returns the first atom tag in this cluster
     const int & front() const { return this->atom_tag_list.front(); }
-    //! returns the last atom index in this cluster
+    //! returns the last atom tag in this cluster
     const int & back() const { return this->atom_tag_list.back(); }
     /* the internal cluster neighbour is the neighbour which was added as
      * neighbour in the creation of this cluster
      */
-    const int & get_internal_neighbour_atom_index() const {
+    const int & get_internal_neighbour_atom_tag() const {
       return this->back();
     }
     
-    const int & get_atom_index() const {
+    const int & get_atom_tag() const {
       return this->back();
     } 
 
@@ -269,7 +269,7 @@ namespace rascal {
 
    protected:
     /**
-     *  Array with unique atom indices. These can be user defined to refer to
+     *  Array with unique atom tags. These can be user defined to refer to
      *  the exact same atom, e.g. in a Monte-Carlo simulation, where atoms are
      *  swapped.
      */

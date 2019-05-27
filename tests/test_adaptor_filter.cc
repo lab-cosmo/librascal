@@ -86,17 +86,17 @@ namespace rascal {
       const bool include(dist(rd));
       if (include) {
         Fix::manager.add_cluster(atom);
-        atom_tag_list.push_back(atom.get_atom_index());
+        atom_tag_list.push_back(atom.get_atom_tag());
       }
     }
 
     size_t counter{0};
     for (auto atom : Fix::manager) {
-      BOOST_CHECK_EQUAL(atom.get_atom_index(), atom_tag_list[counter]);
+      BOOST_CHECK_EQUAL(atom.get_atom_tag(), atom_tag_list[counter]);
       counter++;
       const auto & pos_a{atom.get_position()};
       const auto & pos_b{
-          this->fixture.manager->get_position(atom.get_atom_index())};
+          this->fixture.manager->get_position(atom.get_atom_tag())};
       const auto error{(pos_a - pos_b).norm()};
       BOOST_CHECK_EQUAL(error, 0.);
 
@@ -140,7 +140,7 @@ namespace rascal {
 
         const auto & pos_a{pair.get_position()};
         const auto & pos_b{
-            this->fixture.manager->get_position(pair.get_atom_index())};
+            this->fixture.manager->get_position(pair.get_atom_tag())};
         const auto error{(pos_a - pos_b).norm()};
         BOOST_CHECK_EQUAL(error, 0.);
 

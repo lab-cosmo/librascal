@@ -348,7 +348,7 @@ namespace rascal {
     }
     for (auto atom : Fix::manager->with_ghosts()) {
       if (verbose) {
-        std::cout << ">> Atom index " << atom.get_atom_index(); 
+        std::cout << ">> Atom index " << atom.get_atom_tag(); 
         std::cout << std::endl;
       }
       Fix::atom_property[atom] = atom.get_position();
@@ -478,13 +478,13 @@ namespace rascal {
     size_t cluster_index{0};
     for (auto atom : Fix::manager) {
       if (verbose) {
-        std::cout << ">> Atom index " << atom.get_atom_index();
+        std::cout << ">> Atom index " << atom.get_atom_tag();
         std::cout << ", ClusterIndex should be " << cluster_index;
         std::cout << " and is ";
-        std::cout << Fix::manager->get_cluster_index(atom.get_atom_index());
+        std::cout << Fix::manager->get_cluster_index(atom.get_atom_tag());
         std::cout << "." << std::endl;
       }
-      BOOST_CHECK_EQUAL(Fix::manager->get_cluster_index(atom.get_atom_index()), cluster_index);
+      BOOST_CHECK_EQUAL(Fix::manager->get_cluster_index(atom.get_atom_tag()), cluster_index);
       cluster_index++;
     }
     if (verbose) {
@@ -516,13 +516,13 @@ namespace rascal {
     for (auto atom : Fix::manager->with_ghosts()) {
       if (verbose) {
         std::cout << ">> Property for atom with tag ";
-        std::cout << atom.get_atom_index();
+        std::cout << atom.get_atom_tag();
         std::cout << " is initialized.";
         std::cout << std::endl;
       }
       Fix::scalar_atom_property[atom] = 0;
       //Fix::atom_dynamic_property[atom] = 0;
-      atom_tag_list.push_back(atom.get_atom_index());
+      atom_tag_list.push_back(atom.get_atom_tag());
     }
     if (verbose) {
       std::cout << ">> Atom tag list created ";
@@ -542,9 +542,9 @@ namespace rascal {
       for (auto pair : atom) {
         if (verbose) {
           std::cout << ">> Atom with tag ";
-          std::cout << pair.get_internal_neighbour_atom_index();
-          std::cout << " corresponds to central atom in cell with atom index ";
-          std::cout << Fix::manager->get_cluster_index(atom.get_atom_index());
+          std::cout << pair.get_internal_neighbour_atom_tag();
+          std::cout << " corresponds to central atom in cell with atom tag ";
+          std::cout << Fix::manager->get_cluster_index(atom.get_atom_tag());
           std::cout << std::endl;
         }
         Fix::scalar_atom_property[pair]++;
@@ -552,11 +552,11 @@ namespace rascal {
         // values, I want to move the writing of a
         // test for dynamic properties to a point, when we actual use them
         //Fix::atom_dynamic_property[pair]++;
-        counter.at(Fix::manager->get_cluster_index(pair.get_internal_neighbour_atom_index()))++;
+        counter.at(Fix::manager->get_cluster_index(pair.get_internal_neighbour_atom_tag()))++;
       }
     }
     for (auto atom : Fix::manager) {
-      size_t counter_at_cluster_index = counter.at(Fix::manager->get_cluster_index(atom.get_atom_index()));
+      size_t counter_at_cluster_index = counter.at(Fix::manager->get_cluster_index(atom.get_atom_tag()));
       BOOST_CHECK_EQUAL(Fix::scalar_atom_property[atom],
           counter_at_cluster_index);
       //BOOST_CHECK_EQUAL(Fix::atom_dynamic_property[atom],
@@ -602,11 +602,11 @@ namespace rascal {
     }
     for (auto atom : Fix::manager->with_ghosts()) {
       if (verbose) {
-        std::cout << ">> Atom tag " << atom.get_atom_index(); 
+        std::cout << ">> Atom tag " << atom.get_atom_tag(); 
         std::cout << std::endl;
       }
       Fix::scalar_atom_property[atom] = 0;
-      atom_tag_list.push_back(atom.get_atom_index());
+      atom_tag_list.push_back(atom.get_atom_tag());
     }
     if (verbose) {
       std::cout << ">> Atom tag list created ";
@@ -622,28 +622,28 @@ namespace rascal {
       for (auto pair : atom) {
         for (auto triple : pair) {
           if (verbose) {
-            std::cout << ">> Atom index " << triple.get_internal_neighbour_atom_index(); 
-            std::cout << " with cluster index " << Fix::manager->get_cluster_index(triple.get_internal_neighbour_atom_index()); 
+            std::cout << ">> Atom index " << triple.get_internal_neighbour_atom_tag(); 
+            std::cout << " with cluster index " << Fix::manager->get_cluster_index(triple.get_internal_neighbour_atom_tag()); 
             std::cout << std::endl;
           }
           Fix::scalar_atom_property[triple]++;
-          counter.at(Fix::manager->get_cluster_index(triple.get_internal_neighbour_atom_index()))++;
+          counter.at(Fix::manager->get_cluster_index(triple.get_internal_neighbour_atom_tag()))++;
         }
       }
     }
     for (auto atom : Fix::manager) {
       if (verbose) {
-        std::cout << ">> atom.get_atom_index() is "
-                  << atom.get_atom_index() << std::endl;
-        std::cout << ">> manager->get_cluster_index(atom.get_atom_index()) is "
-                  << Fix::manager->get_cluster_index(atom.get_atom_index()) << std::endl;
+        std::cout << ">> atom.get_atom_tag() is "
+                  << atom.get_atom_tag() << std::endl;
+        std::cout << ">> manager->get_cluster_index(atom.get_atom_tag()) is "
+                  << Fix::manager->get_cluster_index(atom.get_atom_tag()) << std::endl;
         std::cout << ">> scalar_atom_property[atom] is "
                   << Fix::scalar_atom_property[atom] << std::endl;
-        std::cout << ">> counter.at(manager->get_cluster_index(atom.get_atom_index())) is "
-                  << counter.at(Fix::manager->get_cluster_index(atom.get_atom_index())) << std::endl;
+        std::cout << ">> counter.at(manager->get_cluster_index(atom.get_atom_tag())) is "
+                  << counter.at(Fix::manager->get_cluster_index(atom.get_atom_tag())) << std::endl;
       }
       BOOST_CHECK_EQUAL(Fix::scalar_atom_property[atom],
-          counter.at(Fix::manager->get_cluster_index(atom.get_atom_index())));
+          counter.at(Fix::manager->get_cluster_index(atom.get_atom_tag())));
     }
     if (verbose) {
       std::cout << ">> Test for manager ";

@@ -185,13 +185,13 @@ namespace rascal {
     }
 
     //! Returns the type of a given atom, given an AtomRef
-    inline int & get_atom_type(const int & atom_index) {
-      return this->atoms_object.atom_types(atom_index);
+    inline int & get_atom_type(const int & atom_tag) {
+      return this->atoms_object.atom_types(atom_tag);
     }
 
     //! Returns the type of a given atom, given an AtomRef
-    inline const int & get_atom_type(const int & atom_index) const {
-      return this->atoms_object.atom_types(atom_index);
+    inline const int & get_atom_type(const int & atom_tag) const {
+      return this->atoms_object.atom_types(atom_tag);
     }
 
     //! Returns an a map with all atom types.
@@ -220,11 +220,11 @@ namespace rascal {
       return Vector_ref(xval);
     }
 
-    //! Returns the position of an atom, given an atom index
+    //! Returns the position of an atom, given an atom tag
     // #ATOM_INDEX
-    inline Vector_ref get_position(const int & atom_index) {
+    inline Vector_ref get_position(const int & atom_tag) {
       auto p = this->get_positions();
-      auto * xval{p.col(atom_index).data()};
+      auto * xval{p.col(atom_tag).data()};
       return Vector_ref(xval);
     }
 
@@ -249,12 +249,12 @@ namespace rascal {
                     "this implementation only handles atoms.");
       return 1;
     }
-    size_t get_cluster_index_impl(const int atom_index) const {
-      return static_cast<size_t>(atom_index);
+    size_t get_cluster_index_impl(const int atom_tag) const {
+      return static_cast<size_t>(atom_tag);
     }
 
     //! dummy function, since no neighbours are present her
-    inline int get_cluster_neighbour_atom_index_impl(const Parent & /*parent*/,
+    inline int get_cluster_neighbour_atom_tag_impl(const Parent & /*parent*/,
                                      size_t index) const {
       // dummy argument is the atom itself, because if does not make sense at
       // this order
@@ -264,7 +264,7 @@ namespace rascal {
     //! Dummy function, since neighbours are not present at this Order
     template <size_t Order, size_t Layer>
     inline int
-    get_cluster_neighbour_atom_index_impl(const ClusterRefKey<Order, Layer> & /*cluster*/,
+    get_cluster_neighbour_atom_tag_impl(const ClusterRefKey<Order, Layer> & /*cluster*/,
                           size_t /*index*/) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms.");
@@ -317,7 +317,7 @@ namespace rascal {
     void update_self() {}
 
    protected:
-    //! makes atom index lists and offsets
+    //! makes atom tag lists and offsets
     void build();
     /**
      * Object which can interface to the json header to read and write atom

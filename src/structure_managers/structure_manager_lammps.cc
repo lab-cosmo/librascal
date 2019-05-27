@@ -79,7 +79,7 @@ namespace rascal {
     }
     //! Replacing dummy values with correct cluster index
     for (int i{0}; i<this->inum; ++i) {
-      // ilist does not have negative atom indices therefore the cast is safe
+      // ilist does not have negative atom tags therefore the cast is safe
       this->cluster_index_from_atom_tag_list.at(static_cast<size_t>(ilist[i])) = i;
     }
     atom_cluster_indices.fill_sequence();

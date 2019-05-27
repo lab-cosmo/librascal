@@ -79,7 +79,7 @@ class TestStructureManagerCenters(unittest.TestCase):
         manager = get_neighbourlist(self.frame, self.nl_options)
         ii = 0
         for center in manager:
-            self.assertTrue(ii == center.atom_index)
+            self.assertTrue(ii == center.atom_tag)
             self.assertTrue(
                 self.structure['atom_types'][ii] == center.atom_type)
             self.assertTrue(np.allclose(
@@ -111,7 +111,7 @@ class TestNL(unittest.TestCase):
         manager = get_neighbourlist(self.frame, self.nl_options)
         ii = 0
         for center in manager:
-            self.assertTrue(ii == center.atom_index)
+            self.assertTrue(ii == center.atom_tag)
             self.assertTrue(
                 self.structure['atom_types'][ii] == center.atom_type)
             self.assertTrue(np.allclose(
@@ -161,7 +161,7 @@ class TestNLStrict(unittest.TestCase):
         manager = get_neighbourlist(self.frame, self.nl_options)
         ii = 0
         for center in manager:
-            self.assertTrue(ii == center.atom_index)
+            self.assertTrue(ii == center.atom_tag)
             self.assertTrue(
                 self.structure['atom_types'][ii] == center.atom_type)
             self.assertTrue(np.allclose(

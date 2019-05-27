@@ -281,7 +281,7 @@ namespace rascal {
              std::enable_if_t<(Order_==1) and (CallerOrder>1), int> = 0>
     inline decltype(auto)
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
-     return this->operator[](static_cast<Manager_t &>(this->base_manager).get_cluster_index(id.get_internal_neighbour_atom_index()));
+     return this->operator[](static_cast<Manager_t &>(this->base_manager).get_cluster_index(id.get_internal_neighbour_atom_tag()));
     }
 
 

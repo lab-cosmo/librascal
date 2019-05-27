@@ -148,10 +148,10 @@ namespace rascal {
       return this->manager->get_position(index);
     }
 
-    //! get atom_index of index-th neighbour of this cluster
+    //! get atom_tag of index-th neighbour of this cluster
     template <size_t Order, size_t Layer>
     inline int
-    get_cluster_neighbour_atom_index_impl(const ClusterRefKey<Order, Layer> & cluster,
+    get_cluster_neighbour_atom_tag_impl(const ClusterRefKey<Order, Layer> & cluster,
                           int index) const {
       static_assert(Order <= traits::MaxOrder - 1,
                     "this implementation only handles upto traits::MaxOrder");
@@ -159,8 +159,8 @@ namespace rascal {
       return this->atom_tag_list[Order][offset + index];
     }
 
-    //! get atom_index of the index-th atom in manager
-    inline int get_cluster_neighbour_atom_index_impl(const Parent & /*parent*/,
+    //! get atom_tag of the index-th atom in manager
+    inline int get_cluster_neighbour_atom_tag_impl(const Parent & /*parent*/,
                                      size_t index) const {
       return this->atom_tag_list[0][index];
     }
@@ -169,8 +169,8 @@ namespace rascal {
      * can safely use the before-computed list from the previous manager,
      * since they are still valid for access.
      */
-    size_t get_cluster_index_impl(const int atom_index) const {
-      return this->manager->get_cluster_index_impl(atom_index);
+    size_t get_cluster_index_impl(const int atom_tag) const {
+      return this->manager->get_cluster_index_impl(atom_tag);
     }
 
     //! return atom type
@@ -191,12 +191,12 @@ namespace rascal {
       return this->manager->get_atom_type(original_atom);
     }
 
-    //! Returns atom type given an atom index
+    //! Returns atom type given an atom tag
     inline int & get_atom_type(const int & atom_id) {
       return this->manager->get_atom_type(atom_id);
     }
 
-    //! Returns a constant atom type given an atom index
+    //! Returns a constant atom type given an atom tag
     inline const int & get_atom_type(const int & atom_id) const {
       auto && type{this->manager->get_atom_type(atom_id)};
       return type;
@@ -215,10 +215,10 @@ namespace rascal {
 
     template <size_t Order>
     inline int
-    get_cluster_neighbour_atom_index_impl(const size_t neighbour_index) const {
+    get_cluster_neighbour_atom_tag_impl(const size_t neighbour_index) const {
       static_assert(Order < traits::MaxOrder,
                     "Calling this function with the wrong order cluster");
-      return this->manager->get_cluster_neighbour_atom_index_impl(neighbour_index);
+      return this->manager->get_cluster_neighbour_atom_tag_impl(neighbour_index);
     }
 
     //! return the number of neighbours of a given atom
@@ -260,7 +260,7 @@ namespace rascal {
       return this->atom_tag_list[0];
     }
 
-    const std::vector<int> get_neighbours_atom_index() {
+    const std::vector<int> get_neighbours_atom_tag() {
       return this->atom_tag_list[1];
     }
    protected:
@@ -271,13 +271,13 @@ namespace rascal {
      * or ...
      */
     template <size_t Order>
-    inline void add_atom(int atom_index) {
+    inline void add_atom(int atom_tag) {
       static_assert(Order <= traits::MaxOrder,
                     "you can only add neighbours to the n-th degree defined by "
                     "MaxOrder of the underlying manager");
 
       // add new atom at this Order
-      this->atom_tag_list[Order].push_back(atom_index);
+      this->atom_tag_list[Order].push_back(atom_tag);
       // count that this atom is a new neighbour
       this->nb_neigh[Order].back()++;
       this->offsets[Order].back()++;
@@ -303,7 +303,7 @@ namespace rascal {
     const double cutoff;
 
     /**
-     * store atom indices per order,i.e.
+     * store atom tags per order,i.e.
      *   - atom_tag_list[0] lists all i-atoms
      *   - atom_tag_list[1] lists all j-atoms
      *   - atom_tag_list[2] lists all k-atoms

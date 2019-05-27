@@ -74,7 +74,7 @@ namespace rascal {
     BOOST_CHECK_EQUAL(natoms, natoms2);
 
     for (auto atom : manager) {
-      auto index = atom.get_atom_index();
+      auto index = atom.get_atom_tag();
       auto atom_type = atom.get_atom_type();
       BOOST_CHECK_EQUAL(atom_type, type[index]);
       // auto index_size = manager->get_cluster_size(index);

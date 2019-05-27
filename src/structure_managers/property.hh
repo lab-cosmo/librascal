@@ -199,7 +199,7 @@ namespace rascal {
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
      // #BUG8486@(all) we can just use the managers function to get the
      // corresponding cluster index, no need to save this in the cluster
-     return this->operator[](static_cast<Manager_t &>(this->base_manager).get_cluster_index(id.get_internal_neighbour_atom_index()));
+     return this->operator[](static_cast<Manager_t &>(this->base_manager).get_cluster_index(id.get_internal_neighbour_atom_tag()));
     }
 
     /**

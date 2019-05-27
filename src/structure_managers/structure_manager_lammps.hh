@@ -99,25 +99,25 @@ namespace rascal {
       this->update_children();
     }
 
-    //! return position vector of an atom given the atom index
-    inline Vector_ref get_position(const int & atom_index) {
-      auto * xval{this->x[atom_index]};
+    //! return position vector of an atom given the atom tag
+    inline Vector_ref get_position(const int & atom_tag) {
+      auto * xval{this->x[atom_tag]};
       return Vector_ref(xval);
     }
 
-    //! return position vector of an atom given the atom index
+    //! return position vector of an atom given the atom tag
     inline Vector_ref get_position(const AtomRef_t & atom) {
       return this->get_position(atom.get_index());
     }
 
-    //! get const atom type reference given an atom_index
-    inline const int & get_atom_type(const int & atom_index) const {
-      return this->type[atom_index];
+    //! get const atom type reference given an atom_tag
+    inline const int & get_atom_type(const int & atom_tag) const {
+      return this->type[atom_tag];
     }
 
-    //! Returns atom type given an atom index
-    inline int & get_atom_type(const int & atom_index) {
-      return this->type[atom_index];
+    //! Returns atom type given an atom tag
+    inline int & get_atom_type(const int & atom_tag) {
+      return this->type[atom_tag];
     }
 
     //! return number of I atoms in the list
@@ -139,7 +139,7 @@ namespace rascal {
     //! cluster_size = 1 (atoms) which can be used to construct pairs
     template <size_t Order, size_t Layer>
     inline int
-    get_cluster_neighbour_atom_index_impl(
+    get_cluster_neighbour_atom_tag_impl(
         const ClusterRefKey<Order, Layer> & cluster,
         size_t index) const {
       static_assert(Order == traits::MaxOrder - 1,
@@ -150,20 +150,20 @@ namespace rascal {
     }
 
     /**
-     * return the atom_index of the index-th atom in manager parent here is
-     * dummy and is used for consistency in other words, atom_index is the
-     * global LAMMPS atom index.
+     * return the atom_tag of the index-th atom in manager parent here is
+     * dummy and is used for consistency in other words, atom_tag is the
+     * global LAMMPS atom tag.
      */
-    inline int get_cluster_neighbour_atom_index_impl(const Parent &, size_t cluster_index) const {
+    inline int get_cluster_neighbour_atom_tag_impl(const Parent &, size_t cluster_index) const {
       return this->ilist[cluster_index];
     }
     
     // #BUG8486@(all) I do not know how the structure of ilist is implemented,
     // can it it have huge gaps like [1, 50000]? Then using a vector with ensures quick
     // memory access would be super inefficient.
-    inline int get_cluster_index_impl(int atom_index) const {
+    inline int get_cluster_index_impl(int atom_tag) const {
       throw std::runtime_error("This functionality might be not implemented correctly");
-      return this->cluster_index_from_atom_tag_list[atom_index];
+      return this->cluster_index_from_atom_tag_list[atom_tag];
     }
 
     /**

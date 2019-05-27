@@ -300,19 +300,19 @@ namespace rascal {
     //! get dimension dependent neighbour indices (surrounding cell and the cell
     //! itself
     template <size_t Dim, class Container_t>
-    std::vector<int> get_neighbours_atom_index(const int current_atom_index,
+    std::vector<int> get_neighbours_atom_tag(const int current_atom_tag,
                                        const std::array<int, Dim> & ccoord,
                                        const Container_t & boxes) {
-      std::vector<int> neighbours_atom_index{};
+      std::vector<int> neighbours_atom_tag{};
       for (auto && s : Stencil<Dim>{ccoord}) {
         for (const auto & neigh : boxes[s]) {
           // avoid adding the current i atom to the neighbour list
-          if (neigh != current_atom_index) {
-            neighbours_atom_index.push_back(neigh);
+          if (neigh != current_atom_tag) {
+            neighbours_atom_tag.push_back(neigh);
           }
         }
       }
-      return neighbours_atom_index;
+      return neighbours_atom_tag;
     }
 
     /* ---------------------------------------------------------------------- */
@@ -407,7 +407,7 @@ namespace rascal {
       }
 
      protected:
-      //! a vector of atom indices for every box
+      //! a vector of atom tags for every box
       std::vector<std::vector<int>> data{};
       //! number of boxes in each dimension
       std::array<int, Dim> nboxes{};
@@ -513,7 +513,7 @@ namespace rascal {
     }
 
     /**
-     * Returns the linear indices of the clusters (whose atom indices are stored
+     * Returns the linear indices of the clusters (whose atom tags are stored
      * in counters). For example when counters is just the list of atoms, it
      * returns the index of each atom. If counters is a list of pairs of indices
      * (i.e. specifying pairs), for each pair of indices i,j it returns the
@@ -533,7 +533,7 @@ namespace rascal {
         break;
       }
       case 2: {
-        return this->neighbours_atom_index.size();
+        return this->neighbours_atom_tag.size();
         break;
       }
       default:
@@ -559,19 +559,19 @@ namespace rascal {
       return nb_atoms;
     }
 
-    //! Returns position of an atom with index atom_index
-    inline Vector_ref get_position(const size_t & atom_index) {
-      if (atom_index < n_centers) {
-        return this->manager->get_position(atom_index);
+    //! Returns position of an atom with index atom_tag
+    inline Vector_ref get_position(const size_t & atom_tag) {
+      if (atom_tag < n_centers) {
+        return this->manager->get_position(atom_tag);
       } else {
-        return this->get_ghost_position(atom_index - this->n_centers);
+        return this->get_ghost_position(atom_tag - this->n_centers);
       }
     }
 
     //! ghost positions are only available for MaxOrder == 2
-    inline Vector_ref get_ghost_position(const size_t & atom_index) {
+    inline Vector_ref get_ghost_position(const size_t & atom_tag) {
       auto p = this->get_ghost_positions();
-      auto * xval{p.col(atom_index).data()};
+      auto * xval{p.col(atom_tag).data()};
       return Vector_ref(xval);
     }
 
@@ -581,15 +581,15 @@ namespace rascal {
     }
 
     //! ghost types are only available for MaxOrder=2
-    inline const int & get_ghost_type(const size_t & atom_index) const {
+    inline const int & get_ghost_type(const size_t & atom_tag) const {
       auto && p{this->get_ghost_types()};
-      return p[atom_index];
+      return p[atom_tag];
     }
 
     //! ghost types are only available for MaxOrder=2
-    inline int & get_ghost_type(const size_t & atom_index) {
+    inline int & get_ghost_type(const size_t & atom_tag) {
       auto && p{this->get_ghost_types()};
-      return p[atom_index];
+      return p[atom_tag];
     }
 
     //! provides access to the atomic types of ghost atoms
@@ -609,14 +609,14 @@ namespace rascal {
      * Returns the id of the index-th (neighbour) atom of the cluster that is
      * the full structure/atoms object, i.e. simply the id of the index-th atom
      */
-    inline int get_cluster_neighbour_atom_index_impl(const Parent &, size_t index) const {
-      return this->manager->get_cluster_neighbour_atom_index_impl(*this->manager, index);
+    inline int get_cluster_neighbour_atom_tag_impl(const Parent &, size_t index) const {
+      return this->manager->get_cluster_neighbour_atom_tag_impl(*this->manager, index);
     }
 
     //! Returns the id of the index-th neighbour atom of a given cluster
     template <size_t Order, size_t Layer>
     inline int
-    get_cluster_neighbour_atom_index_impl(
+    get_cluster_neighbour_atom_tag_impl(
         const ClusterRefKey<Order, Layer> & cluster,
                           size_t index) const {
       static_assert(Order < traits::MaxOrder,
@@ -627,30 +627,30 @@ namespace rascal {
           internal::IncreaseHelper<Order == (traits::MaxOrder - 1)>;
 
       if (Order < (traits::MaxOrder - 1)) {
-        return IncreaseHelper_t::get_cluster_neighbour_atom_index(this->manager, cluster,
+        return IncreaseHelper_t::get_cluster_neighbour_atom_tag(this->manager, cluster,
                                                        index);
       } else {
         auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
-        return this->neighbours_atom_index[offset + index];
+        return this->neighbours_atom_tag[offset + index];
       }
     }
 
-    //! Returns atom type given an atom index, also works for ghost atoms
-    inline int & get_atom_type(const int & atom_index) {
-      return this->atom_types[atom_index];
+    //! Returns atom type given an atom tag, also works for ghost atoms
+    inline int & get_atom_type(const int & atom_tag) {
+      return this->atom_types[atom_tag];
     }
 
-    /* If consider_ghost_neighbours=true and the atom index corresponds to an
+    /* If consider_ghost_neighbours=true and the atom tag corresponds to an
      * ghost atom, then it returns it cluster index of the atom in the original
      * cell.
      */ 
-    size_t get_cluster_index_impl(const int atom_index) const {
-      return this->cluster_index_from_atom_tag_list[atom_index];
+    size_t get_cluster_index_impl(const int atom_tag) const {
+      return this->cluster_index_from_atom_tag_list[atom_tag];
     }
 
     //! Returns the type of a given atom, given an AtomRef
-    inline const int & get_atom_type(const int & atom_index) const {
-      return this->atom_types[atom_index];
+    inline const int & get_atom_type(const int & atom_tag) const {
+      return this->atom_types[atom_tag];
     }
 
     //! Returns the number of neighbors of a given cluster
@@ -676,7 +676,7 @@ namespace rascal {
      * necessary, because the underlying manager is not known at this
      * layer. Therefore we can not add positions to the existing array, but have
      * to add positions to a ghost array. This also means, that the get_position
-     * function will need to branch, depending on the atom_index > n_centers and
+     * function will need to branch, depending on the atom_tag > n_centers and
      * offset with n_ghosts to access ghost positions.
      */
 
@@ -686,14 +686,14 @@ namespace rascal {
      * pair list.
      */
 
-    inline void add_ghost_atom(const int & atom_index,
+    inline void add_ghost_atom(const int & atom_tag,
                                const Vector_t & position,
                                const int & atom_type) {
       // first add it to the list of atoms
-      this->atom_tag_list.push_back(atom_index);
+      this->atom_tag_list.push_back(atom_tag);
       this->atom_types.push_back(atom_type);
       // add it to the ghost atom container
-      this->ghost_atom_tag_list.push_back(atom_index);
+      this->ghost_atom_tag_list.push_back(atom_tag);
       this->ghost_types.push_back(atom_type);
       for (auto dim{0}; dim < traits::Dim; ++dim) {
         this->ghost_positions.push_back(position(dim));
@@ -729,23 +729,23 @@ namespace rascal {
     //! Cutoff radius for neighbour list
     const double cutoff;
 
-    //! stores i-atom and ghost atom indices
+    //! stores i-atom and ghost atom tags
     std::vector<int> atom_tag_list{};
 
     std::vector<int> atom_types{};
 
-    //! Stores additional atom indices of current Order (only ghost atoms)
+    //! Stores additional atom tags of current Order (only ghost atoms)
     std::vector<int> ghost_atom_tag_list{};
 
     //! Stores the number of neighbours for every atom
     std::vector<size_t> nb_neigh{};
 
-    //! Stores neighbour's atom index in a list in sequence of atoms
-    std::vector<int> neighbours_atom_index{};
+    //! Stores neighbour's atom tag in a list in sequence of atoms
+    std::vector<int> neighbours_atom_tag{};
     
     /* Returns the atoms cluster index when accessing it with the atom's atomic 
      * index in a list in sequence of atoms.
-     * List of atom indices which have a correpsonding cluster index of order 1.
+     * List of atom tags which have a correpsonding cluster index of order 1.
      * if consider_ghost_neighbours is false ghost atoms will have a unique atom
      * index but no cluster index of order 1. For this case the cluster index
      * the atom in the cell at origin is used. 
@@ -787,7 +787,7 @@ namespace rascal {
       bool consider_ghost_neighbours)
       : manager{std::move(manager)}, cutoff{cutoff}, atom_tag_list{},
         atom_types{}, ghost_atom_tag_list{}, nb_neigh{},
-        neighbours_atom_index{}, offsets{},
+        neighbours_atom_tag{}, offsets{},
         n_centers{0}, n_ghosts{0}, consider_ghost_neighbours{
                                        consider_ghost_neighbours} {
     static_assert(not(traits::MaxOrder < 1), "No atom list in manager");
@@ -824,7 +824,7 @@ namespace rascal {
     this->atom_types.clear();
     this->ghost_atom_tag_list.clear();
     this->nb_neigh.clear();
-    this->neighbours_atom_index.clear();
+    this->neighbours_atom_tag.clear();
     this->offsets.clear();
     this->ghost_positions.clear();
     this->ghost_types.clear();
@@ -868,7 +868,7 @@ namespace rascal {
 
     std::array<int, dim> nboxes_per_dim{};
 
-    // vector for storing the atom indices of each box
+    // vector for storing the atom tags of each box
     std::vector<std::vector<int>> atoms_in_box{};
 
     // minimum/maximum coordinate of mesh for neighbour list, it is larger by
@@ -972,15 +972,15 @@ namespace rascal {
     // contiguously at the beginning of the list.
     int ntot_atoms{0};
     for (auto atom : *this->manager) {
-      int atom_index = atom.get_atom_index();
-      size_t cluster_index = this->manager->get_cluster_index(atom_index);
+      int atom_tag = atom.get_atom_tag();
+      size_t cluster_index = this->manager->get_cluster_index(atom_tag);
       auto atom_type = atom.get_atom_type();      
-      this->atom_tag_list.push_back(atom_index);
+      this->atom_tag_list.push_back(atom_tag);
       this->atom_types.push_back(atom_type);
       ntot_atoms++;
       this->cluster_index_from_atom_tag_list.push_back(cluster_index);
     }
-    // generate ghost atom indices and positions
+    // generate ghost atom tags and positions
     for (auto atom : this->get_manager().with_ghosts()) {
       auto pos = atom.get_position();
       auto atom_type = atom.get_atom_type();
@@ -1003,16 +1003,16 @@ namespace rascal {
               internal::position_in_bounds(ghost_min, ghost_max, pos_ghost);
 
           if (flag_inside) {
-            // next atom index is size, since start is at index = 0
-            auto new_atom_index = this->n_centers + this->n_ghosts;
+            // next atom tag is size, since start is at index = 0
+            auto new_atom_tag = this->n_centers + this->n_ghosts;
             // get_size_with_ghosts();
-            this->add_ghost_atom(new_atom_index, pos_ghost, atom_type);
+            this->add_ghost_atom(new_atom_tag, pos_ghost, atom_type);
             ntot_atoms++;
 
             // adds origin atom cluster_index if true
             // adds ghost atom cluster index if false
             size_t cluster_index = 
-                  this->manager->get_cluster_index(atom.get_atom_index());
+                  this->manager->get_cluster_index(atom.get_atom_tag());
             this->cluster_index_from_atom_tag_list.push_back(cluster_index);
           }
         }
@@ -1041,16 +1041,16 @@ namespace rascal {
     // ManagerImplementations that does not make the atomic indices
     // as StructurManagerCenters 
     for (auto atom : this->get_manager().with_ghosts()) {
-      int atom_index = atom.get_atom_index();
+      int atom_tag = atom.get_atom_tag();
       int nneigh{0};
-      Vector_t pos = this->get_position(atom_index);
+      Vector_t pos = this->get_position(atom_tag);
       Vector_t dpos = pos - mesh_min;
       auto box_index = internal::get_box_index(dpos, cutoff);
       auto && current_j_atoms =
-          internal::get_neighbours_atom_index(atom_index, box_index, atom_id_cell);
+          internal::get_neighbours_atom_tag(atom_tag, box_index, atom_id_cell);
 
-      for (auto j_atom_index : current_j_atoms) {
-        this->neighbours_atom_index.push_back(j_atom_index);
+      for (auto j_atom_tag : current_j_atoms) {
+        this->neighbours_atom_tag.push_back(j_atom_tag);
         nneigh++;
       }
       this->nb_neigh.push_back(nneigh);
@@ -1060,7 +1060,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Returns the linear indices of the clusters (whose atom indices
+   * Returns the linear indices of the clusters (whose atom tags
    * are stored in counters). For example when counters is just the list
    * of atoms, it returns the index of each atom. If counters is a list of pairs
    * of indices (i.e. specifying pairs), for each pair of indices i,j it returns
