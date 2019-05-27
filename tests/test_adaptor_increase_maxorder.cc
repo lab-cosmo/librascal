@@ -41,159 +41,159 @@ namespace rascal {
    * ``pair_manager`` is a StructureManager with MaxOrder=2 and a half neighbour
    * list. It is increased to MaxOrder=3
    */
-  BOOST_FIXTURE_TEST_CASE(constructor_test,
-                          PairFixtureFile<StructureManagerCenters>) {
-    auto adaptor{make_adapted_manager<AdaptorMaxOrder>(this->pair_manager)};
-    adaptor->update();
-  }
+  //BOOST_FIXTURE_TEST_CASE(constructor_test,
+  //                        PairFixtureFile<StructureManagerCenters>) {
+  //  auto adaptor{make_adapted_manager<AdaptorMaxOrder>(this->pair_manager)};
+  //  adaptor->update();
+  //}
 
-  /* ---------------------------------------------------------------------- */
-  /*
-   * test if iteration of MaxOrder=3 adaptor is iterable and yields the same
-   * pairs as the underlying pair_manager.
-   *
-   * ``pair_manager`` is a StructureManager with MaxOrder=2 and a half neighbour
-   * list
-   *
-   * ``adaptor`` is a MaxOrder=3 manager, based on the neighbourlist of
-   * pair_manager
-   */
-  BOOST_FIXTURE_TEST_CASE(iterator_test,
-                          PairFixtureFile<StructureManagerCenters>) {
-    constexpr bool verbose{false};
-    constexpr bool check_below{false};
+  ///* ---------------------------------------------------------------------- */
+  ///*
+  // * test if iteration of MaxOrder=3 adaptor is iterable and yields the same
+  // * pairs as the underlying pair_manager.
+  // *
+  // * ``pair_manager`` is a StructureManager with MaxOrder=2 and a half neighbour
+  // * list
+  // *
+  // * ``adaptor`` is a MaxOrder=3 manager, based on the neighbourlist of
+  // * pair_manager
+  // */
+  //BOOST_FIXTURE_TEST_CASE(iterator_test,
+  //                        PairFixtureFile<StructureManagerCenters>) {
+  //  constexpr bool verbose{false};
+  //  constexpr bool check_below{false};
 
-    // Check underlying manager
-    if (check_below) {
-      std::cout << ">> underlying manager " << std::endl;
-    }
-    size_t npairs1{0};
-    for (auto atom : pair_manager->with_ghosts()) {
-      if (verbose) {
-        std::cout << "atom " << atom.back() << std::endl;
-      }
-      for (auto pair : atom) {
-        npairs1++;
-        if (verbose) {
-          std::cout << " pair " << pair.back() << " glob "
-                    << pair.get_global_index() << std::endl;
-        }
-      }
-    }
-    if (check_below) {
-      std::cout << "number of pairs " << npairs1 << std::endl;
-      std::cout << "<< underlying manager" << std::endl;
-    }
+  //  // Check underlying manager
+  //  if (check_below) {
+  //    std::cout << ">> underlying manager " << std::endl;
+  //  }
+  //  size_t npairs1{0};
+  //  for (auto atom : pair_manager->with_ghosts()) {
+  //    if (verbose) {
+  //      std::cout << "atom " << atom.back() << std::endl;
+  //    }
+  //    for (auto pair : atom) {
+  //      npairs1++;
+  //      if (verbose) {
+  //        std::cout << " pair " << pair.back() << " glob "
+  //                  << pair.get_global_index() << std::endl;
+  //      }
+  //    }
+  //  }
+  //  if (check_below) {
+  //    std::cout << "number of pairs " << npairs1 << std::endl;
+  //    std::cout << "<< underlying manager" << std::endl;
+  //  }
 
-    auto npairs_tmp = pair_manager->get_nb_clusters(2);
-    BOOST_CHECK_EQUAL(npairs_tmp, npairs1);
+  //  auto npairs_tmp = pair_manager->get_nb_clusters(2);
+  //  BOOST_CHECK_EQUAL(npairs_tmp, npairs1);
 
-    auto adaptor{make_adapted_manager<AdaptorMaxOrder>(this->pair_manager)};
-    adaptor->update();
+  //  auto adaptor{make_adapted_manager<AdaptorMaxOrder>(this->pair_manager)};
+  //  adaptor->update();
 
-    //! make sure the number of pairs gets carried over to the next layer
-    auto npairs_adaptor = adaptor->get_nb_clusters(2);
-    BOOST_CHECK_EQUAL(npairs_adaptor, npairs_tmp);
+  //  //! make sure the number of pairs gets carried over to the next layer
+  //  auto npairs_adaptor = adaptor->get_nb_clusters(2);
+  //  BOOST_CHECK_EQUAL(npairs_adaptor, npairs_tmp);
 
-    if (verbose) {
-      std::cout << "Adaptor increase MaxOrder" << std::endl;
-    }
+  //  if (verbose) {
+  //    std::cout << "Adaptor increase MaxOrder" << std::endl;
+  //  }
 
-    auto natoms{0};
-    auto npairs{0};
-    auto n_triplets{0};
+  //  auto natoms{0};
+  //  auto npairs{0};
+  //  auto n_triplets{0};
 
-    for (auto atom : adaptor) {
-      natoms++;
-      if (verbose) {
-        std::cout << atom.back() << std::endl;
-      }
+  //  for (auto atom : adaptor) {
+  //    natoms++;
+  //    if (verbose) {
+  //      std::cout << atom.back() << std::endl;
+  //    }
 
-      if (verbose) {
-        std::cout << "position: " << atom.get_position() << std::endl;
-      }
+  //    if (verbose) {
+  //      std::cout << "position: " << atom.get_position() << std::endl;
+  //    }
 
-      for (auto pair : atom) {
-        npairs++;
-        if (verbose) {
-          std::cout << "   complete pair " << atom.back() << " " << pair.back()
-                    << " glob " << pair.get_global_index() << std::endl;
-        }
-        for (auto triplet : pair) {
-          n_triplets++;
-          if (verbose) {
-            std::cout << "             triplet " << triplet.back() << " global "
-                      << triplet.get_global_index() << std::endl;
-            std::cout << "                         complete " << atom.back()
-                      << " " << pair.back() << " " << triplet.back()
-                      << std::endl;
-          }
-        }
-      }
-    }
-    if (verbose) {
-      std::cout << "Number of triplets: " << n_triplets << std::endl;
-    }
-  }
+  //    for (auto pair : atom) {
+  //      npairs++;
+  //      if (verbose) {
+  //        std::cout << "   complete pair " << atom.back() << " " << pair.back()
+  //                  << " glob " << pair.get_global_index() << std::endl;
+  //      }
+  //      for (auto triplet : pair) {
+  //        n_triplets++;
+  //        if (verbose) {
+  //          std::cout << "             triplet " << triplet.back() << " global "
+  //                    << triplet.get_global_index() << std::endl;
+  //          std::cout << "                         complete " << atom.back()
+  //                    << " " << pair.back() << " " << triplet.back()
+  //                    << std::endl;
+  //        }
+  //      }
+  //    }
+  //  }
+  //  if (verbose) {
+  //    std::cout << "Number of triplets: " << n_triplets << std::endl;
+  //  }
+  //}
 
-  /* ---------------------------------------------------------------------- */
-  /*
-   * Test with 3 atoms, included stacking: full pair list -> half pair list ->
-   * triplet list; SM is used as a shorthand for StructureManager. Checked
-   * positions are specific to StructureManagerLammps and therefore hardcoded.
-   *
-   * ``manager`` is a StructureManager with MaxOrder=2 and full neighbour list
-   */
-  BOOST_FIXTURE_TEST_CASE(pair_to_triplet_extension,
-                          ManagerFixture<StructureManagerLammps>) {
-    constexpr bool verbose{false};
+  ///* ---------------------------------------------------------------------- */
+  ///*
+  // * Test with 3 atoms, included stacking: full pair list -> half pair list ->
+  // * triplet list; SM is used as a shorthand for StructureManager. Checked
+  // * positions are specific to StructureManagerLammps and therefore hardcoded.
+  // *
+  // * ``manager`` is a StructureManager with MaxOrder=2 and full neighbour list
+  // */
+  //BOOST_FIXTURE_TEST_CASE(pair_to_triplet_extension,
+  //                        ManagerFixture<StructureManagerLammps>) {
+  //  constexpr bool verbose{false};
 
-    if (verbose) {
-      std::cout << ">> pair to triplet extension" << std::endl;
-    }
+  //  if (verbose) {
+  //    std::cout << ">> pair to triplet extension" << std::endl;
+  //  }
 
-    auto SM2{make_adapted_manager<AdaptorHalfList>(manager)};
-    auto SM3{make_adapted_manager<AdaptorMaxOrder>(SM2)};
-    SM3->update();
+  //  auto SM2{make_adapted_manager<AdaptorHalfList>(manager)};
+  //  auto SM3{make_adapted_manager<AdaptorMaxOrder>(SM2)};
+  //  SM3->update();
 
-    // make sure number of pairs are carried over,
-    // since they are are not changed
-    BOOST_CHECK_EQUAL(SM2->get_nb_clusters(2), SM3->get_nb_clusters(2));
+  //  // make sure number of pairs are carried over,
+  //  // since they are are not changed
+  //  BOOST_CHECK_EQUAL(SM2->get_nb_clusters(2), SM3->get_nb_clusters(2));
 
-    // only one possible triplet in this case?
-    BOOST_CHECK_EQUAL(SM3->get_nb_clusters(3), 1);
+  //  // only one possible triplet in this case?
+  //  BOOST_CHECK_EQUAL(SM3->get_nb_clusters(3), 1);
 
-    for (auto atom : SM3) {
-      auto atom_index = atom.get_atom_index();
-      auto atom_type = atom.get_atom_type();
-      BOOST_CHECK_EQUAL(atom_type, type[atom_index]);
+  //  for (auto atom : SM3) {
+  //    auto atom_index = atom.get_atom_index();
+  //    auto atom_type = atom.get_atom_type();
+  //    BOOST_CHECK_EQUAL(atom_type, type[atom_index]);
 
-      auto atom_position = atom.get_position();
-      for (auto pair : atom) {
-        auto pair_index = pair.get_atom_index();
-        auto pair_type = pair.get_atom_type();
-        BOOST_CHECK_EQUAL(pair_type, type[pair_index]);
+  //    auto atom_position = atom.get_position();
+  //    for (auto pair : atom) {
+  //      auto pair_index = pair.get_atom_index();
+  //      auto pair_type = pair.get_atom_type();
+  //      BOOST_CHECK_EQUAL(pair_type, type[pair_index]);
 
-        auto pair_position = pair.get_position();
-        auto diff_pos_pair = (pair_position - atom_position).norm();
-        BOOST_CHECK_CLOSE(diff_pos_pair, 1., tol);
+  //      auto pair_position = pair.get_position();
+  //      auto diff_pos_pair = (pair_position - atom_position).norm();
+  //      BOOST_CHECK_CLOSE(diff_pos_pair, 1., tol);
 
-        for (auto triplet : pair) {
-          if (verbose) {
-            std::cout << "triplet " << atom.back() << " " << pair.back() << " "
-                      << triplet.back() << std::endl;
-          }
-          auto triplet_index = triplet.get_atom_index();
-          auto triplet_type = triplet.get_atom_type();
-          BOOST_CHECK_EQUAL(triplet_type, type[triplet_index]);
+  //      for (auto triplet : pair) {
+  //        if (verbose) {
+  //          std::cout << "triplet " << atom.back() << " " << pair.back() << " "
+  //                    << triplet.back() << std::endl;
+  //        }
+  //        auto triplet_index = triplet.get_atom_index();
+  //        auto triplet_type = triplet.get_atom_type();
+  //        BOOST_CHECK_EQUAL(triplet_type, type[triplet_index]);
 
-          auto triplet_position = triplet.get_position();
-          auto diff_pos_triplet = (triplet_position - atom_position).norm();
-          BOOST_CHECK_CLOSE(diff_pos_triplet, 1., tol);
-        }
-      }
-    }
-  }
+  //        auto triplet_position = triplet.get_position();
+  //        auto diff_pos_triplet = (triplet_position - atom_position).norm();
+  //        BOOST_CHECK_CLOSE(diff_pos_triplet, 1., tol);
+  //      }
+  //    }
+  //  }
+  //}
 
   BOOST_AUTO_TEST_SUITE_END();
 

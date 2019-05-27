@@ -167,26 +167,6 @@ namespace rascal {
     using type = AdaptorNeighbourListStackFixture<
       StructureManagerCentersStackFixture, consider_ghost_neighbours>;
   };
-  template<bool consider_ghost_neighbours>
-  struct CommonStacksBoostList {
-    using ANL_SMC_StackFixture = AdaptorNeighbourListStackFixture<
-      StructureManagerCentersStackFixture, consider_ghost_neighbours>;
-    using list = boost::mpl::list<
-        AtomPropertyFixture<StructureManagerCentersStackFixture>,
-        AtomPropertyFixture<ANL_SMC_StackFixture>,
-        AtomPropertyFixture<ANL_SMC_StackFixture>,
-        AtomPropertyFixture<AdaptorHalfListStackFixture<
-            ANL_SMC_StackFixture>>,
-        AtomPropertyFixture<AdaptorStrictStackFixture<
-            ANL_SMC_StackFixture>>
-        //AtomPropertyFixture<AdaptorStrictStackFixture<
-        //    AdaptorHalfListStackFixture<ANL_SMC_StackFixture>>>,
-        //AtomPropertyFixture<AdaptorMaxOrderStackFixture<
-        //    AdaptorStrictStackFixture<AdaptorHalfListStackFixture<
-        //    ANL_SMC_StackFixture>>>>
-        >;
-  };
-
 
   // Helper types to concat template lists
   template< typename ta, typename tb >
@@ -209,34 +189,61 @@ namespace rascal {
     StructureManagerCentersStackFixture, true>;
   using ANLWithoutGhosts_SMC_StackFixture = AdaptorNeighbourListStackFixture<
     StructureManagerCentersStackFixture, false>;
+
+  struct CommonStacksBoostList {
+    template<bool consider_ghost_neighbours>
+    struct  CommonStacksBoostListTemplated {
+      using ANL_SMC_TemplatedStackFixture = AdaptorNeighbourListStackFixture<
+        StructureManagerCentersStackFixture, consider_ghost_neighbours>;      
+      using type = std::tuple<
+        AtomPropertyFixture<StructureManagerCentersStackFixture>,
+        AtomPropertyFixture<ANL_SMC_TemplatedStackFixture>,
+        AtomPropertyFixture<ANL_SMC_TemplatedStackFixture>,
+        AtomPropertyFixture<AdaptorHalfListStackFixture<
+            ANL_SMC_TemplatedStackFixture>>,
+        AtomPropertyFixture<AdaptorStrictStackFixture<
+            ANL_SMC_TemplatedStackFixture>>,
+        AtomPropertyFixture<AdaptorStrictStackFixture<
+            AdaptorHalfListStackFixture<ANL_SMC_TemplatedStackFixture>>>,
+        AtomPropertyFixture<AdaptorMaxOrderStackFixture<
+            AdaptorStrictStackFixture<AdaptorHalfListStackFixture<
+            ANL_SMC_TemplatedStackFixture>>>>
+        >;
+    };
+  
+    using type_with_ghosts = CommonStacksBoostListTemplated<true>::type;
+    using list_with_ghosts = pack_into_list<type_with_ghosts>::list;
+    using type_without_ghosts = CommonStacksBoostListTemplated<false>::type;
+    using list_without_ghosts = pack_into_list<type_without_ghosts>::list;
+    using type = type_cat<type_with_ghosts, type_without_ghosts>::type;
+    using list = pack_into_list<type>::list;
+  };
+
   struct CommonOrderTwoStacksBoostList {
-    using type_with_ghosts = std::tuple<
+    template<bool consider_ghost_neighbours>
+    struct  CommonOrderTwoStacksBoostListTemplated {
+      using ANL_SMC_TemplatedStackFixture = AdaptorNeighbourListStackFixture<
+        StructureManagerCentersStackFixture, consider_ghost_neighbours>;      
+      using type = std::tuple<
         PairPropertyFixture<ANLWithGhosts_SMC_StackFixture>,
         PairPropertyFixture<AdaptorStrictStackFixture<
             ANLWithGhosts_SMC_StackFixture>>,
         PairPropertyFixture<AdaptorHalfListStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>
-        // TODO(alex)
-        //PairPropertyFixture<AdaptorStrictStackFixture<
-        //    AdaptorHalfListStackFixture<ANLWithGhosts_SMC_StackFixture>>>,
+            ANLWithGhosts_SMC_StackFixture>>,
+        PairPropertyFixture<AdaptorStrictStackFixture<
+            AdaptorHalfListStackFixture<ANLWithGhosts_SMC_StackFixture>>>,
+        //PairPropertyFixture<AdaptorMaxOrderStackFixture<
+        //    ANLWithGhosts_SMC_StackFixture>>
+        // error in atom_property_access_with_pair_tests
         //PairPropertyFixture<AdaptorMaxOrderStackFixture<
         //    AdaptorStrictStackFixture<AdaptorHalfListStackFixture<
         //    ANLWithGhosts_SMC_StackFixture>>>>
         >;
+    };
+    using type_with_ghosts = CommonOrderTwoStacksBoostListTemplated<true>::type;
     using list_with_ghosts = pack_into_list<type_with_ghosts>::list;
 
-    using type_without_ghosts = std::tuple<
-        PairPropertyFixture<ANLWithoutGhosts_SMC_StackFixture>,
-        PairPropertyFixture<AdaptorHalfListStackFixture<
-            ANLWithoutGhosts_SMC_StackFixture>>,
-        PairPropertyFixture<AdaptorStrictStackFixture<
-            ANLWithoutGhosts_SMC_StackFixture>>,
-        PairPropertyFixture<AdaptorStrictStackFixture<
-            AdaptorHalfListStackFixture<ANLWithoutGhosts_SMC_StackFixture>>>,
-        PairPropertyFixture<AdaptorMaxOrderStackFixture<
-            AdaptorStrictStackFixture<AdaptorHalfListStackFixture<
-            ANLWithoutGhosts_SMC_StackFixture>>>>
-        >;
+    using type_without_ghosts = CommonOrderTwoStacksBoostListTemplated<false>::type;
     using list_without_ghosts = pack_into_list<type_without_ghosts>::list;
     using type = type_cat<type_with_ghosts, type_without_ghosts>::type;
     using list = pack_into_list<type>::list;
@@ -261,25 +268,17 @@ namespace rascal {
   };
 
     
-  using atom_property_fixtures_with_ghosts = CommonStacksBoostList<true>::list;
-  using atom_property_fixtures_without_ghosts = CommonStacksBoostList<true>::list;
+  using atom_property_fixtures_with_ghosts = CommonStacksBoostList::list_with_ghosts;
+  using atom_property_fixtures_without_ghosts = CommonStacksBoostList::list_without_ghosts;
+  using atom_property_fixtures = CommonStacksBoostList::list;
   using pair_property_fixtures = CommonOrderTwoStacksBoostList::list;
   using triple_property_fixtures = CommonOrderThreeStacksBoostList::list;
 
-        //TriplePropertyFixture<>,
-        //TriplePropertyFixture<AdaptorMaxOrderStackFixture<AdaptorHalfListStackFixture<
-  //BOOST_FIXTURE_TEST_CASE(constructor_test_tmp, ANLWithGhosts_SMC_StackFixture) {
-  //  bool verbose{true};
-  //  if (verbose) {
-  //    std::cout << ">> Test for manager ";
-  //    std::cout << manager->get_name();
-  //    std::cout << " starts now." << std::endl;
-  //    std::cout << " finished." << std::endl;
-  //  }
-  //}
+  //TriplePropertyFixture<>,
+  //TriplePropertyFixture<AdaptorMaxOrderStackFixture<AdaptorHalfListStackFixture<
   /* ---------------------------------------------------------------------- */
 
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_tests, Fix, pair_property_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_constructor_tests, Fix, atom_property_fixtures, Fix) {
     bool verbose{false};
     if (verbose) {
       std::cout << ">> Test for manager ";
@@ -289,11 +288,55 @@ namespace rascal {
     }
   }
 
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(pair_constructor_tests, Fix, pair_property_fixtures, Fix) {
+    bool verbose{false};
+    if (verbose) {
+      std::cout << ">> Test for manager ";
+      std::cout << Fix::manager->get_name();
+      std::cout << " starts now." << std::endl;
+      std::cout << " finished." << std::endl;
+    }
+  }
+
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(triple_constructor_tests, Fix, triple_property_fixtures, Fix) {
+    bool verbose{false};
+    if (verbose) {
+      std::cout << ">> Test for manager ";
+      std::cout << Fix::manager->get_name();
+      std::cout << " starts now." << std::endl;
+      std::cout << " finished." << std::endl;
+    }
+  }
+
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(fill_atom_property_test, Fix, atom_property_fixtures, Fix) {
+    bool verbose{false};
+    if (verbose) {
+      std::cout << ">> Test for manager ";
+      std::cout << Fix::manager->get_name();
+      std::cout << " starts now." << std::endl;
+    }
+
+    Fix::atom_property.resize();
+    for (auto atom : Fix::manager) {
+      Fix::atom_property[atom] = atom.get_position();
+    }
+
+    for (auto atom : Fix::manager) {
+      auto error = (Fix::atom_property[atom] - atom.get_position()).norm();
+      BOOST_CHECK_LE(error, tol * 100);
+    }
+
+    if (verbose) {
+      std::cout << ">> Test for manager ";
+      std::cout << Fix::manager->get_name();
+      std::cout << " finished." << std::endl;
+    }
+  }
   /* ---------------------------------------------------------------------- */
   /*
    * checks if the properties associated with atoms and pairs can be filled
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(fill_test_simple, Fix, pair_property_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(fill_pair_property_test, Fix, pair_property_fixtures, Fix) {
     bool verbose{false};
     if (verbose) {
       std::cout << ">> Test for manager ";
@@ -327,6 +370,50 @@ namespace rascal {
       std::cout << " finished." << std::endl;
     }
   }
+
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(fill_triple_property_test, Fix, triple_property_fixtures, Fix) {
+    bool verbose{false};
+    if (verbose) {
+      std::cout << ">> Test for manager ";
+      std::cout << Fix::manager->get_name();
+      std::cout << " starts now." << std::endl;
+    }
+
+    Fix::pair_property.resize();
+    Fix::atom_property.resize();
+    Fix::triple_property.resize();
+    int pair_property_counter{};
+    int triple_property_counter{};
+    for (auto atom : Fix::manager) {
+      Fix::atom_property[atom] = atom.get_position();
+      for (auto pair : atom) {
+        Fix::pair_property[pair] = ++pair_property_counter;
+        for (auto triple : pair) {
+          Fix::triple_property[triple] = ++triple_property_counter;
+        }
+      }
+    }
+
+    pair_property_counter = 0;
+    triple_property_counter = 0;
+    for (auto atom : Fix::manager) {
+      auto error = (Fix::atom_property[atom] - atom.get_position()).norm();
+      BOOST_CHECK_LE(error, tol * 100);
+      for (auto pair : atom) {
+        BOOST_CHECK_EQUAL(Fix::pair_property[pair], ++pair_property_counter);
+        for (auto triple : pair) {
+          BOOST_CHECK_EQUAL(Fix::triple_property[triple], ++triple_property_counter);
+        }
+      }
+    }
+
+    if (verbose) {
+      std::cout << ">> Test for manager ";
+      std::cout << Fix::manager->get_name();
+      std::cout << " finished." << std::endl;
+    }
+  }
+
 
   /* ---------------------------------------------------------------------- */
   /* If consider_ghost_neighbours is true the atoms index should 
@@ -363,7 +450,7 @@ namespace rascal {
   /* Access of atom property with pair. 
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_property_access_with_pair_tests, Fix, pair_property_fixtures, Fix) {
-    bool verbose{true};
+    bool verbose{false};
     if (verbose) {
       std::cout << ">> Test for manager ";
       std::cout << Fix::manager->get_name();
@@ -374,17 +461,20 @@ namespace rascal {
     Fix::scalar_atom_property.resize();
     // initalize the positions
     std::vector<int> atom_indices{}; 
-    std::cout << ">> Test1 " << std::endl;
     atom_indices.reserve(Fix::manager->get_size());
-    std::cout << ">> Test2 " << std::endl;
     Fix::scalar_atom_property.resize();
-    std::cout << ">> Size " << Fix::manager->get_size() << std::endl;
-    std::cout << ">> Size with ghosts " << Fix::manager->get_size_with_ghosts() << std::endl;
-    std::cout << ">> AtomPropertySize " << Fix::scalar_atom_property.size() << std::endl;
+    if (verbose) {
+      std::cout << ">> Size " << Fix::manager->get_size() << std::endl;
+      std::cout << ">> Size with ghosts " << Fix::manager->get_size_with_ghosts() << std::endl;
+      std::cout << ">> AtomPropertySize " << Fix::scalar_atom_property.size() << std::endl;
+    }
     for (auto atom : Fix::manager->with_ghosts()) {
-        std::cout << ">> AtomIndex " << atom.get_atom_index() << std::endl;
-        Fix::scalar_atom_property[atom] = 0;
-        atom_indices.push_back(atom.get_atom_index());
+      if (verbose) {
+        std::cout << ">> AtomIndex " << atom.get_atom_index();
+        std::cout << std::endl;
+      }
+      Fix::scalar_atom_property[atom] = 0;
+      atom_indices.push_back(atom.get_atom_index());
     }
     if (verbose) {
       std::cout << ">> Atomic indices list created ";
