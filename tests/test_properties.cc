@@ -367,6 +367,8 @@ namespace rascal {
     if (verbose) {
       std::cout << ">> Test for manager ";
       std::cout << Fix::manager->get_name();
+      std::cout << " and consider_ghost_neighbours=";
+      std::cout << Fix::manager->get_consider_ghost_neighbours();
       std::cout << " starts now." << std::endl;
     }
     Fix::scalar_atom_property.resize();
@@ -378,6 +380,7 @@ namespace rascal {
     Fix::scalar_atom_property.resize();
     std::cout << ">> Size " << Fix::manager->get_size() << std::endl;
     std::cout << ">> Size with ghosts " << Fix::manager->get_size_with_ghosts() << std::endl;
+    std::cout << ">> AtomPropertySize " << Fix::scalar_atom_property.size() << std::endl;
     for (auto atom : Fix::manager->with_ghosts()) {
         std::cout << ">> AtomIndex " << atom.get_atom_index() << std::endl;
         Fix::scalar_atom_property[atom] = 0;

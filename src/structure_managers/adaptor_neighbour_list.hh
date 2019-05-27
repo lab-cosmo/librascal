@@ -527,8 +527,8 @@ namespace rascal {
     inline size_t get_nb_clusters(size_t order) const {
       switch (order) {
       case 1: {
-        return this->n_centers +
-               this->n_ghosts;  // TODO(markus) here +n_ghosts?
+        //#BUG8486@(markus) ghosts only if underlying ghosts is true
+        return this->get_size_with_ghosts();
         break;
       }
       case 2: {

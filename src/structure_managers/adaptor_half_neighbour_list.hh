@@ -223,6 +223,11 @@ namespace rascal {
       return this->manager->get_atom_type(atom_id);
     }
 
+    //! check whether neighbours of ghosts were considered
+    inline bool get_consider_ghost_neighbours() const {
+      return this->manager->get_consider_ghost_neighbours();
+    }
+
     /**
      * Returns the linear index of cluster (i.e., the count at which this
      * cluster appears in an iteration
