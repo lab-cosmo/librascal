@@ -57,19 +57,19 @@ namespace rascal {
       return z * (a + 1) * M2p3p / (b + 2) / (b + 1) + M1p2p;
     }
 
-    // inline double recurence_G_to_val_downward(const double & a, const double & b,
-    //                                         const double & z,
-    //                                         const double & M1p2p,
-    //                                         const double & M1p1p) {
-    //   return z * (a - b) * M1p2p / a + M1p1p * b / a;
-    // }
+    inline double recurence_G_to_val_downward(const double & a, const double & b,
+                                            const double & z,
+                                            const double & M1p2p,
+                                            const double & M1p1p) {
+      return z*(a - b) * M1p2p / a + M1p1p * b / a;
+    }
 
-    // inline double recurence_g_to_der_downward(const double & a, const double & b,
-    //                                         const double & z,
-    //                                         const double & M2p3p,
-    //                                         const double & M1p2p) {
-    //   return z * (a + 1) * M2p3p / (b + 2) / (b + 1) + M1p2p;
-    // }
+    inline double recurence_G_to_der_downward(const double & , const double & b,
+                                            const double & z,
+                                            const double & M2p3p,
+                                            const double & M1p2p) {
+      return z* M2p3p + M1p2p * (b + 1);
+    }
 
     // inline MatrixX2_t hyp1f1_recurrence(const int& max_angular, const int& n,
     // const double& z, const double& f) {
@@ -196,7 +196,7 @@ namespace rascal {
 
     /**
      * Computes the 1F1 with the asymptotic limit
-     *  1F1(a,b,z) \sim \frac{\exp{z} z^{a-b} \Gamma{b}}{\Gamma{a}}
+     *  1F1(a,b,z) \sim \exp{z} z^{a-b} \frac{\Gamma{b}}{\Gamma{a}}
      *                    \sum_{j=0}^{\infty} \frac{(b-a)_j(1-a)_j}{j!} z^{-j}
      *
      *  G(a,b,z) = \frac{\Gamma(a)}{\Gamma(b)} * \exp{-\alpha r_{ij}^2}
@@ -506,7 +506,7 @@ namespace rascal {
 
      public:
       Hyp1f1SphericalExpansion(const bool& recursion = false,
-                               const double & tolerance = 1e-13,
+                               const double & tolerance = 1e-14,
                                const size_t & precomputation_size = 200)
           : tolerance{tolerance}, precomputation_size{precomputation_size}, recursion{recursion} {}
 
@@ -560,25 +560,24 @@ namespace rascal {
           // get the starting points for the recursion
           double z{this->get_z(r_ij, alpha, fac_b(n_radial))};
 
-          size_t l_angular{this->max_angular};
+          int l_angular{static_cast<int>(this->max_angular)};
           int ipos{this->get_pos(n_radial, l_angular)};
           M1p2p = this->hyp1f1[ipos].calc(r_ij, alpha, fac_b(n_radial));
           this->values(n_radial, l_angular) = M1p2p;
           M2p3p = this->hyp1f1[ipos].calc(r_ij, alpha, fac_b(n_radial), true);
           this->derivatives(n_radial, l_angular) = M2p3p;
-          l_angular -= 1;
 
-          ipos = this->get_pos(n_radial, l_angular);
+          ipos = this->get_pos(n_radial, l_angular - 1);
           MP1p2p = this->hyp1f1[ipos].calc(r_ij, alpha, fac_b(n_radial));
-          this->values(n_radial, l_angular) = M1p2p;
+          this->values(n_radial, l_angular - 1) = MP1p2p;
           MP2p3p = this->hyp1f1[ipos].calc(r_ij, alpha, fac_b(n_radial), true);
-          this->derivatives(n_radial, l_angular) = M2p3p;
-          l_angular -= 1;
-          for (; l_angular >= 2; l_angular -= 2) {
+          this->derivatives(n_radial, l_angular - 1) = MP2p3p;
+          l_angular -= 2;
+          for (; l_angular > 0; l_angular -= 2) {
             auto a{this->get_a(n_radial, l_angular)};
             auto b{this->get_b(l_angular)};
-            M1p1p = recurence_to_der_downward(a, b, z, M2p3p, M1p2p);
-            Moo = recurence_to_val_downward(a, b, z, M1p2p, M1p1p);
+            M1p1p = recurence_G_to_der_downward(a, b, z, M2p3p, M1p2p);
+            Moo = recurence_G_to_val_downward(a, b, z, M1p2p, M1p1p);
             this->values(n_radial, l_angular) = Moo;
             this->derivatives(n_radial, l_angular) = M1p1p;
             M2p3p = M1p1p;
@@ -586,13 +585,24 @@ namespace rascal {
 
             a = this->get_a(n_radial, l_angular - 1);
             b = this->get_b(l_angular - 1);
-            MP1p1p = recurence_to_der_downward(a, b, z, MP2p3p, MP1p2p);
-            MPoo = recurence_to_val_downward(a, b, z, MP1p2p, MP1p1p);
+            MP1p1p = recurence_G_to_der_downward(a, b, z, MP2p3p, MP1p2p);
+            MPoo = recurence_G_to_val_downward(a, b, z, MP1p2p, MP1p1p);
             this->values(n_radial, l_angular - 1) = MPoo;
             this->derivatives(n_radial, l_angular - 1) = MP1p1p;
             MP2p3p = MP1p1p;
             MP1p2p = MPoo;
           }
+
+          if (this->max_angular % 2 == 0) {
+            auto a{this->get_a(n_radial, 0)};
+            auto b{this->get_b(0)};
+            M1p1p = recurence_G_to_der_downward(a, b, z, M2p3p, M1p2p);
+            Moo = recurence_G_to_val_downward(a, b, z, M1p2p, M1p1p);
+            this->values(n_radial, 0) = Moo;
+            this->derivatives(n_radial, 0) = M1p1p;
+
+          }
+
         }
       }
 
