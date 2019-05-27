@@ -277,8 +277,6 @@ namespace rascal {
       return this->operator[](id.get_cluster_index(CallerLayer));
     }
 
-    //using Manager_t = Manager;
-    //TODO(alex)
     template <size_t CallerOrder, size_t CallerLayer, size_t Order_= Order,
              std::enable_if_t<(Order_==1) and (CallerOrder>1), int> = 0>
     inline decltype(auto)

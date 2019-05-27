@@ -258,8 +258,6 @@ namespace rascal {
             AdaptorHalfListStackFixture<ANLWithGhosts_SMC_StackFixture>>>,
         PairPropertyFixture<AdaptorMaxOrderStackFixture<
             ANLWithGhosts_SMC_StackFixture>>,
-        // TODO(alex)
-        // error in atom_property_access_with_pair_tests
         PairPropertyFixture<AdaptorMaxOrderStackFixture<
             AdaptorStrictStackFixture<AdaptorHalfListStackFixture<
             ANLWithGhosts_SMC_StackFixture>>>>
@@ -276,11 +274,9 @@ namespace rascal {
 
   struct CommonOrderThreeStacksBoostList {
     using type = std::tuple<
-        // TODO(alex) these two test in the update_self function, debug in
-        // office
-        //TriplePropertyFixture<AdaptorMaxOrderStackFixture<ANLWithGhosts_SMC_StackFixture>>,
-        //TriplePropertyFixture<AdaptorMaxOrderStackFixture<AdaptorHalfListStackFixture<
-        //    ANLWithGhosts_SMC_StackFixture>>>,
+        TriplePropertyFixture<AdaptorMaxOrderStackFixture<ANLWithGhosts_SMC_StackFixture>>,
+        TriplePropertyFixture<AdaptorMaxOrderStackFixture<AdaptorHalfListStackFixture<
+            ANLWithGhosts_SMC_StackFixture>>>,
         TriplePropertyFixture<AdaptorMaxOrderStackFixture<AdaptorStrictStackFixture<
             ANLWithGhosts_SMC_StackFixture>>>,
         TriplePropertyFixture<AdaptorMaxOrderStackFixture<AdaptorStrictStackFixture<
@@ -554,8 +550,7 @@ namespace rascal {
         Fix::scalar_atom_property[pair]++;
         // TODO(alex) does not work, dynamic properties do not give scalar
         // values, I want to move the writing of a
-        // test for dynamic properties to a point, when we actual use
-        // them
+        // test for dynamic properties to a point, when we actual use them
         //Fix::atom_dynamic_property[pair]++;
         counter.at(Fix::manager->get_cluster_index(pair.get_internal_neighbour_atom_index()))++;
       }

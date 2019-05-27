@@ -198,9 +198,9 @@ namespace rascal {
     void resize() {
       auto order = this->get_order();
       auto n_components = this->get_nb_comp();
-      // #BUG8486@(all) In the future make size of property 
-      // dependend on a parameter which decides if
-      // ghost atoms have properties. What do you think?
+      // #BUG8486@(all) nb_clusters for order 1 gives you size with ghost atoms.
+      // ghost atoms don't have properties, so we should use the size without
+      // the number of ghost atoms.
       auto new_size = this->base_manager.nb_clusters(order) * n_components;
       this->values.resize(new_size);
     }
