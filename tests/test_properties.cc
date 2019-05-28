@@ -250,9 +250,9 @@ namespace rascal {
         StructureManagerCentersStackFixture, consider_ghost_neighbours>;      
       using type = std::tuple<
         PairPropertyFixture<ANLWithGhosts_SMC_StackFixture>,
-        PairPropertyFixture<AdaptorStrictStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>,
         PairPropertyFixture<AdaptorHalfListStackFixture<
+            ANLWithGhosts_SMC_StackFixture>>,
+        PairPropertyFixture<AdaptorStrictStackFixture<
             ANLWithGhosts_SMC_StackFixture>>,
         PairPropertyFixture<AdaptorStrictStackFixture<
             AdaptorHalfListStackFixture<ANLWithGhosts_SMC_StackFixture>>>,
@@ -339,23 +339,25 @@ namespace rascal {
       std::cout << " starts now." << std::endl;
     }
 
-    Fix::atom_property.resize();
-    Fix::dynamic_property2.resize();
+    Fix::atom_property.resize(
+        Fix::manager->get_consider_ghost_neighbours());
+    Fix::dynamic_property2.resize(
+        Fix::manager->get_consider_ghost_neighbours());
     if (verbose) {
       std::cout << ">> atom_property size ";
       std::cout << Fix::atom_property.size();
       std::cout << std::endl;
     }
-    for (auto atom : Fix::manager->with_ghosts()) {
+    for (auto atom : Fix::manager) {
       if (verbose) {
-        std::cout << ">> Atom index " << atom.get_atom_tag(); 
+        std::cout << ">> Atom with tag " << atom.get_atom_tag(); 
         std::cout << std::endl;
       }
       Fix::atom_property[atom] = atom.get_position();
       Fix::dynamic_property2[atom] = atom.get_position();
     }
 
-    for (auto atom : Fix::manager->with_ghosts()) {
+    for (auto atom : Fix::manager) {
       auto error = (Fix::atom_property[atom] - atom.get_position()).norm();
       BOOST_CHECK_LE(error, tol * 100);
       auto error_dynamic = (Fix::dynamic_property2[atom] - atom.get_position()).norm();
@@ -377,11 +379,19 @@ namespace rascal {
     if (verbose) {
       std::cout << ">> Test for manager ";
       std::cout << Fix::manager->get_name();
+      std::cout << ", manager size " << Fix::manager->get_size();
+      std::cout << ", manager size with ghosts " << Fix::manager->get_size_with_ghosts();
       std::cout << " starts now." << std::endl;
     }
 
+    Fix::atom_property.resize(
+        Fix::manager->get_consider_ghost_neighbours());
     Fix::pair_property.resize();
-    Fix::atom_property.resize();
+    if (verbose) {
+      std::cout << ">> atom_property size ";
+      std::cout << Fix::atom_property.size();
+      std::cout << std::endl;
+    }
     int pair_property_counter{};
     for (auto atom : Fix::manager->with_ghosts()) {
       Fix::atom_property[atom] = atom.get_position();
@@ -418,8 +428,8 @@ namespace rascal {
       std::cout << " starts now." << std::endl;
     }
 
+    Fix::atom_property.resize(Fix::manager->get_consider_ghost_neighbours());
     Fix::pair_property.resize();
-    Fix::atom_property.resize();
     Fix::triple_property.resize();
     if (verbose) {
       std::cout << ">> atom_property size ";
@@ -509,9 +519,13 @@ namespace rascal {
       std::cout << " starts now." << std::endl;
     }
     // initalize the positions
-    std::vector<int> atom_tag_list{}; 
-    atom_tag_list.reserve(Fix::manager->get_size_with_ghosts());
-    Fix::scalar_atom_property.resize();
+    Fix::scalar_atom_property.resize(Fix::manager->get_consider_ghost_neighbours());
+    // TODO(alex) check why this does not work
+    //Fix::scalar_atom_property.resize(false);
+    if (verbose) {
+      std::cout << ">> Property for consider_ghost_atoms=false resized to size ";
+      std::cout << Fix::scalar_atom_property.size();
+    }
     //Fix::atom_dynamic_property.resize();
     for (auto atom : Fix::manager->with_ghosts()) {
       if (verbose) {
@@ -522,20 +536,16 @@ namespace rascal {
       }
       Fix::scalar_atom_property[atom] = 0;
       //Fix::atom_dynamic_property[atom] = 0;
-      atom_tag_list.push_back(atom.get_atom_tag());
-    }
-    if (verbose) {
-      std::cout << ">> Atom tag list created ";
-      std::cout << " with size "  << atom_tag_list.size() << std::endl;
     }
     std::vector<size_t> counter{};
     size_t nb_central_atoms = Fix::manager->get_size();
     counter.reserve(nb_central_atoms);
-    for (size_t i{0}; i<nb_central_atoms; i++) {
+    for (size_t i{0}; i<counter.capacity(); i++) {
       counter.push_back(0);
     }
     if (verbose) {
-      std::cout << ">> Counters filled with 0" << std::endl;
+      std::cout << ">> Counters initialized with size " << std::endl;
+      std::cout <<  counter.size() << std::endl;
     }
     // add the position to the atom and count how often this happens
     for (auto atom : Fix::manager->with_ghosts()) {
@@ -543,7 +553,7 @@ namespace rascal {
         if (verbose) {
           std::cout << ">> Atom with tag ";
           std::cout << pair.get_internal_neighbour_atom_tag();
-          std::cout << " corresponds to central atom in cell with atom tag ";
+          std::cout << " corresponds to central atom in cell with atom index ";
           std::cout << Fix::manager->get_cluster_index(atom.get_atom_tag());
           std::cout << std::endl;
         }
@@ -591,10 +601,10 @@ namespace rascal {
       std::cout << ", manager size with ghosts " << Fix::manager->get_size_with_ghosts();
       std::cout << " starts now." << std::endl;
     }
-    Fix::scalar_atom_property.resize();
+    Fix::scalar_atom_property.resize(Fix::manager->get_consider_ghost_neighbours());
+    // TODO(alex) check why this does not work
+    //Fix::scalar_atom_property.resize(false);
     // initalize the positions
-    std::vector<int> atom_tag_list{}; 
-    atom_tag_list.reserve(Fix::manager->get_size_with_ghosts());
     if (verbose) {
       std::cout << ">> atom_property resized to size ";
       std::cout << Fix::atom_property.size();
@@ -606,24 +616,21 @@ namespace rascal {
         std::cout << std::endl;
       }
       Fix::scalar_atom_property[atom] = 0;
-      atom_tag_list.push_back(atom.get_atom_tag());
-    }
-    if (verbose) {
-      std::cout << ">> Atom tag list created ";
-      std::cout << " with size "  << atom_tag_list.size() << std::endl;
     }
     std::vector<size_t> counter{};
-    counter.reserve(atom_tag_list.size());
-    for (size_t i{0}; i<atom_tag_list.size(); i++) {
+    size_t nb_central_atoms = Fix::manager->get_size();
+    counter.reserve(nb_central_atoms);
+    for (size_t i{0}; i<counter.capacity(); i++) {
       counter.push_back(0);
     }
+    
     // add the position to the atom and count how often this happens
     for (auto atom : Fix::manager->with_ghosts()) {
       for (auto pair : atom) {
         for (auto triple : pair) {
           if (verbose) {
-            std::cout << ">> Atom index " << triple.get_internal_neighbour_atom_tag(); 
-            std::cout << " with cluster index " << Fix::manager->get_cluster_index(triple.get_internal_neighbour_atom_tag()); 
+            std::cout << ">> Atom with tag " << triple.get_internal_neighbour_atom_tag(); 
+            std::cout << " and cluster index " << Fix::manager->get_cluster_index(triple.get_internal_neighbour_atom_tag()); 
             std::cout << std::endl;
           }
           Fix::scalar_atom_property[triple]++;

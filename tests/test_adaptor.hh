@@ -299,7 +299,7 @@ namespace rascal {
     using Manager_t = AdaptorStrict<typename Parent::Manager_t>;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
 
-    const double cutoff{1.};
+    const double cutoff{2.};
     AdaptorStrictStackFixture() :
       manager{make_adapted_manager<AdaptorStrict>(StackFixture::manager, cutoff)} {manager->update();}
 

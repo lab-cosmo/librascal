@@ -154,6 +154,7 @@ namespace rascal {
     using Parent = PropertyBase;
     using Value = internal::Value<T, Eigen::Dynamic, Eigen::Dynamic>;
     using Manager_t = Manager;
+    using traits = typename Manager::traits;
 
    public:
     using value_type = typename Value::type;
@@ -186,26 +187,61 @@ namespace rascal {
     //! return runtime info about the stored (e.g., numerical) type
     const std::type_info & get_type_info() const final { return typeid(T); };
 
-    //! Fill sequence, used for *_cluster_indices initialization
-    inline void fill_sequence() {
-      this->resize();
-      for (size_t i{0}; i < this->values.size(); ++i) {
+    Manager_t & get_manager() {
+      return static_cast<Manager_t &>(this->base_manager); 
+    }
+
+    template <size_t Order_=Order, std::enable_if_t<(Order_==1),int> = 0>
+    size_t get_validated_property_length(bool consider_ghost_atoms) {
+      if (consider_ghost_atoms) {
+        if (traits::MaxOrder<2) {
+          throw std::runtime_error("consider_ghost_atoms is true,"
+              " but can only be use for underlying manager with"
+              " MaxOrder at least 2.");
+        }
+        if (not(this->get_manager().get_consider_ghost_neighbours())){
+          throw std::runtime_error("consider_ghost_atoms is true,"
+              " but underlying manager does not have ghost atoms in"
+              " cluster_indices_container. Turn consider_ghost_neighbours"
+              " on, to consider ghost atoms with independent property values"
+              " from their corresponding central atoms.");
+        }
+        return this->get_manager().size_with_ghosts();
+      }
+      // TODO(alex) remove when debugging finished
+      //std::cout << "Property with Order " << Order;
+      //std::cout << " and manager " << this->get_manager().get_name();
+      //std::cout << " has property size " << this->get_manager().size() << std::endl;
+      return this->get_manager().size();
+    }
+    template <size_t Order_=Order, std::enable_if_t<not(Order_==1),int> = 0>
+    size_t get_validated_property_length(bool = false) {
+      return this->base_manager.nb_clusters(Order); 
+    }
+
+    /* Fill sequence, used for *_cluster_indices initialization
+     * if consdier_ghost_atoms is true, ghost atoms also can have 
+     * their own propery value independent from its correpsonding central atom.
+     * This function is used for all Order 1 ManagerImplementations
+     */
+    inline void fill_sequence(bool consider_ghost_atoms=false) {
+      // adjust size of values (only increases, never frees)
+      this->resize(consider_ghost_atoms);
+      // #BUG8486@(markus) size() gives 0 when resized, capacity gives the 
+      // resized value
+      for (size_t i{0}; i< this->values.capacity(); ++i) {
         values[i] = i;
       }
     }
 
     //! Adjust size of values (only increases, never frees)
-    void resize() {
-      auto order = this->get_order();
+    inline void resize(bool consider_ghost_atoms=false) {
       auto n_components = this->get_nb_comp();
-      // #BUG8486@(all) nb_clusters for order 1 gives you size with ghost atoms.
-      // ghost atoms don't have properties, so we should use the size without
-      // the number of ghost atoms.
-      auto new_size = this->base_manager.nb_clusters(order) * n_components;
+      size_t new_size = this->get_validated_property_length(consider_ghost_atoms) * n_components;
       this->values.resize(new_size);
     }
 
-    //! Adjust size of values (only increases, never frees)
+    //! Returns the size of one component
     size_t size() const { return this->values.size() / this->get_nb_comp(); }
 
     /**
