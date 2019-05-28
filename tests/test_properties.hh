@@ -68,129 +68,64 @@ namespace rascal {
         typename Manager_t::template Property_t<double, 1>;
     using AtomVectorProperty_t =
         typename Manager_t::template Property_t<double, 1, 3, 1>;
-    using AtomDynamicProperty_t =
+    using AtomDynamicUnitProperty_t =
         typename Manager_t::template TypedProperty_t<size_t, 1>;
-    using AtomDynamicProperty2_t =
+    using AtomDynamicProperty_t  =
         typename Manager_t::template TypedProperty_t<double, 1>;
-    using SparseProperty_t = 
+    using SparseAtomScalarProperty_t = 
       typename Manager_t::template BlockSparseProperty_t<double, 1>;
 
     constexpr static Dim_t DynSize() { return 3; }
 
-    std::string atom_property_metadata{"positions"};
-    std::string dynamic_property_metadata{"arbitrary counters"};
-    std::string dynamic_property2_metadata{"distances"};
+    std::string atom_vector_property_metadata{"positions"};
+    std::string atom_dynamic_vector_unit_property_metadata{"arbitrary counters"};
+    std::string atom_dynamic_vector_property_metadata{"distances"};
 
     AtomPropertyFixture()
-          : StackFixture{}, scalar_atom_property{*this->manager},
-          atom_property{*this->manager},
-          dynamic_scalar_atom_property{*this->manager, 1, 1,
-                           dynamic_property_metadata},
-          dynamic_property{*this->manager, DynSize(), 1,
-                           dynamic_property_metadata},
-          dynamic_property2{*this->manager, DynSize(), 1,
-                            dynamic_property2_metadata},
-          sparse_property{*this->manager} {}
+          : StackFixture{}, atom_scalar_property{*this->manager},
+          atom_vector_property{*this->manager, atom_vector_property_metadata},
+          atom_dynamic_scalar_property{*this->manager, 1, 1,
+                           atom_dynamic_vector_unit_property_metadata},
+          atom_dynamic_vector_unit_property{*this->manager, DynSize(), 1,
+                           atom_dynamic_vector_unit_property_metadata},
+          atom_dynamic_vector_property{*this->manager, DynSize(), 1,
+                            atom_dynamic_vector_property_metadata},
+          sparse_atom_scalar_property{*this->manager} {}
 
-    AtomScalarProperty_t scalar_atom_property;
-    AtomVectorProperty_t atom_property;
-    AtomDynamicProperty_t dynamic_scalar_atom_property;
-    AtomDynamicProperty_t dynamic_property;
-    AtomDynamicProperty2_t dynamic_property2;
-    SparseProperty_t sparse_property;
+    AtomScalarProperty_t atom_scalar_property;
+    AtomVectorProperty_t atom_vector_property;
+    AtomDynamicProperty_t atom_dynamic_scalar_property;
+    AtomDynamicUnitProperty_t atom_dynamic_vector_unit_property;
+    AtomDynamicProperty_t atom_dynamic_vector_property;
+    SparseAtomScalarProperty_t sparse_atom_scalar_property;
   };
 
   template <class StackFixture>
-  struct PairPropertyFixture: StackFixture {
-    using Parent = StackFixture;
+  struct PairPropertyFixture: AtomPropertyFixture<StackFixture> {
+    using Parent = AtomPropertyFixture<StackFixture>;
     using Manager_t = typename Parent::Manager_t;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
 
-    using AtomScalarProperty_t =
-        typename Manager_t::template Property_t<double, 1>;
     using PairScalarProperty_t =
         typename Manager_t::template Property_t<double, 2>;
-    using AtomVectorProperty_t =
-        typename Manager_t::template Property_t<double, 1, 3, 1>;
-    using AtomDynamicProperty_t =
-        typename Manager_t::template TypedProperty_t<size_t, 1>;
-    using AtomDynamicProperty2_t =
-        typename Manager_t::template TypedProperty_t<double, 1>;
-    using SparseProperty_t = 
-      typename Manager_t::template BlockSparseProperty_t<double, 1>;
 
-    constexpr static Dim_t DynSize() { return 3; }
-
-    std::string atom_property_metadata{"positions"};
-    std::string dynamic_property_metadata{"arbitrary counters"};
-    std::string dynamic_property2_metadata{"distances"};
-
-    PairPropertyFixture()
-          : StackFixture{}, scalar_atom_property{*this->manager}, 
-          atom_property{*this->manager, atom_property_metadata},
-          pair_property{*this->manager},
-          dynamic_scalar_atom_property{*this->manager, 1, 1,
-                           dynamic_property_metadata},
-          dynamic_property{*this->manager, DynSize(), 1,
-                           dynamic_property_metadata},
-          dynamic_property2{*this->manager, DynSize(), 1,
-                            dynamic_property2_metadata},
-          sparse_property{*this->manager} {}
-
-    AtomScalarProperty_t scalar_atom_property;
-    AtomVectorProperty_t atom_property;
+    PairPropertyFixture() : Parent{}, 
+          pair_property{*this->manager} {}
     PairScalarProperty_t pair_property;
-    AtomDynamicProperty_t dynamic_scalar_atom_property;
-    AtomDynamicProperty_t dynamic_property;
-    AtomDynamicProperty2_t dynamic_property2;
-    SparseProperty_t sparse_property;
   };
 
   template <class StackFixture>
-  struct TriplePropertyFixture: StackFixture {
-    using Parent = StackFixture;
+  struct TriplePropertyFixture: PairPropertyFixture<StackFixture> {
+    using Parent = PairPropertyFixture<StackFixture>;
     using Manager_t = typename Parent::Manager_t;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
 
-    using AtomScalarProperty_t =
-        typename Manager_t::template Property_t<double, 1>;
-    using PairScalarProperty_t =
-        typename Manager_t::template Property_t<double, 2>;
     using TripleScalarProperty_t =
         typename Manager_t::template Property_t<double, 3>;
-    using AtomVectorProperty_t =
-        typename Manager_t::template Property_t<double, 1, 3, 1>;
-    using AtomDynamicProperty_t =
-        typename Manager_t::template TypedProperty_t<size_t, 1>;
-    using AtomDynamicProperty2_t =
-        typename Manager_t::template TypedProperty_t<double, 1>;
-    using SparseProperty_t = 
-      typename Manager_t::template BlockSparseProperty_t<double, 1>;
-
-    constexpr static Dim_t DynSize() { return 3; }
-
-    std::string atom_property_metadata{"positions"};
-    std::string dynamic_property_metadata{"arbitrary counters"};
-    std::string dynamic_property2_metadata{"distances"};
-
     TriplePropertyFixture()
-          : StackFixture{}, scalar_atom_property{*this->manager}, 
-          atom_property{*this->manager, atom_property_metadata},
-          pair_property{*this->manager},
-          triple_property{*this->manager},
-          dynamic_property{*this->manager, DynSize(), 1,
-                           dynamic_property_metadata},
-          dynamic_property2{*this->manager, DynSize(), 1,
-                            dynamic_property2_metadata},
-          sparse_property{*this->manager} {}
+          : Parent{}, triple_property{*this->manager} {} 
 
-    AtomScalarProperty_t scalar_atom_property;
-    AtomVectorProperty_t atom_property;
-    PairScalarProperty_t pair_property;
     TripleScalarProperty_t triple_property;
-    AtomDynamicProperty_t dynamic_property;
-    AtomDynamicProperty2_t dynamic_property2;
-    SparseProperty_t sparse_property;
   };
   
   template<bool consider_ghost_neighbours>

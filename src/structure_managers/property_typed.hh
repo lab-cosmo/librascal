@@ -224,8 +224,10 @@ namespace rascal {
     inline void fill_sequence(bool consider_ghost_atoms=false) {
       // adjust size of values (only increases, never frees)
       this->resize(consider_ghost_atoms);
-      // #BUG8486@(markus) size() gives 0 when resized, capacity gives the 
-      // resized value
+      // #BUG8486@(markus) size() gives capacity gives always the 
+      // resized value, size() does only tell you the number of elements pushed
+      // in, but somehow in this case it still does work and is equal to
+      // capacity, but if you try in some simple vector<int> it does not always work
       for (size_t i{0}; i< this->values.capacity(); ++i) {
         values[i] = i;
       }
