@@ -189,10 +189,10 @@ namespace rascal {
 
   // Helper types to concat template lists
   template< typename ta, typename tb >
-  struct type_cat;
+  struct tuple_cat;
 
   template< typename ... a, typename ... b >
-  struct type_cat< std::tuple< a ... >, std::tuple< b ... > >
+  struct tuple_cat< std::tuple< a ... >, std::tuple< b ... > >
     { typedef std::tuple< a ..., b ... > type; };
 
   // Helper types to uppack the tuple template arguments and pack them into a
@@ -202,16 +202,16 @@ namespace rascal {
 
   template<typename ... a>
   struct pack_into_list< std::tuple < a ... > >
-    { using list = boost::mpl::list<a ...>;};
+    { using type = boost::mpl::list<a ...>;};
 
   using ANLWithGhosts_SMC_StackFixture = AdaptorNeighbourListStackFixture<
     StructureManagerCentersStackFixture, true>;
   using ANLWithoutGhosts_SMC_StackFixture = AdaptorNeighbourListStackFixture<
     StructureManagerCentersStackFixture, false>;
 
-  struct CommonStacksBoostList {
+  struct OrderOnePropertyBoostList  {
     template<bool consider_ghost_neighbours>
-    struct  CommonStacksBoostListTemplated {
+    struct OrderTwoFixtureStacksTuple {
       using ANL_SMC_TemplatedStackFixture = AdaptorNeighbourListStackFixture<
         StructureManagerCentersStackFixture, consider_ghost_neighbours>;      
       using type = std::tuple<
@@ -221,7 +221,10 @@ namespace rascal {
         AtomPropertyFixture<AdaptorStrictStackFixture<
             ANL_SMC_TemplatedStackFixture>>,
         AtomPropertyFixture<AdaptorStrictStackFixture<
-            AdaptorHalfListStackFixture<ANL_SMC_TemplatedStackFixture>>>,
+            AdaptorHalfListStackFixture<ANL_SMC_TemplatedStackFixture>>>
+        >;
+    };
+    using tuple_order_3 = std::tuple<
         AtomPropertyFixture<AdaptorMaxOrderStackFixture<
             ANLWithGhosts_SMC_StackFixture>>,
         AtomPropertyFixture<AdaptorMaxOrderStackFixture<
@@ -232,61 +235,62 @@ namespace rascal {
             ANLWithGhosts_SMC_StackFixture>>>,
         AtomPropertyFixture<AdaptorMaxOrderStackFixture<
             AdaptorStrictStackFixture<AdaptorHalfListStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>>>
-        >;
-    };
-  
-    using type_with_ghosts = CommonStacksBoostListTemplated<true>::type;
-    using list_with_ghosts = pack_into_list<type_with_ghosts>::list;
-    using type_without_ghosts = CommonStacksBoostListTemplated<false>::type;
-    using list_without_ghosts = pack_into_list<type_without_ghosts>::list;
-    using type = type_cat<type_with_ghosts, type_without_ghosts>::type;
-    using list = pack_into_list<type>::list;
+            ANLWithGhosts_SMC_StackFixture>>>> >;
+
+    using tuple_order_2_with_ghosts = OrderTwoFixtureStacksTuple<true>::type;
+    using tuple_with_ghosts = tuple_cat<tuple_order_2_with_ghosts, tuple_order_3>::type;
+    using type_with_ghosts = pack_into_list<tuple_with_ghosts>::type;
+    using tuple_without_ghosts = OrderTwoFixtureStacksTuple<false>::type;
+    using type_without_ghosts = pack_into_list<tuple_without_ghosts>::type;
+    using tuple = tuple_cat<tuple_with_ghosts, tuple_without_ghosts>::type;
+    using type = pack_into_list<tuple>::type;
   };
 
-  struct CommonOrderTwoStacksBoostList {
+  struct OrderTwoPropertyBoostList {
     template<bool consider_ghost_neighbours>
-    struct  CommonOrderTwoStacksBoostListTemplated {
+    struct OrderTwoFixtureStacksTuple {
       using ANL_SMC_TemplatedStackFixture = AdaptorNeighbourListStackFixture<
         StructureManagerCentersStackFixture, consider_ghost_neighbours>;      
       using type = std::tuple<
-        PairPropertyFixture<ANLWithGhosts_SMC_StackFixture>,
+        PairPropertyFixture<ANL_SMC_TemplatedStackFixture>,
         PairPropertyFixture<AdaptorHalfListStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>,
+            ANL_SMC_TemplatedStackFixture>>,
         PairPropertyFixture<AdaptorStrictStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>,
+            ANL_SMC_TemplatedStackFixture>>,
         PairPropertyFixture<AdaptorStrictStackFixture<
-            AdaptorHalfListStackFixture<ANLWithGhosts_SMC_StackFixture>>>,
+            AdaptorHalfListStackFixture<ANL_SMC_TemplatedStackFixture>>>
+        >;
+    };
+
+    using tuple_order_3 = std::tuple<
         PairPropertyFixture<AdaptorMaxOrderStackFixture<
             ANLWithGhosts_SMC_StackFixture>>,
         PairPropertyFixture<AdaptorMaxOrderStackFixture<
             AdaptorStrictStackFixture<AdaptorHalfListStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>>>
-        >;
-    };
-    using type_with_ghosts = CommonOrderTwoStacksBoostListTemplated<true>::type;
-    using list_with_ghosts = pack_into_list<type_with_ghosts>::list;
+            ANLWithGhosts_SMC_StackFixture>>>> >;
 
-    using type_without_ghosts = CommonOrderTwoStacksBoostListTemplated<false>::type;
-    using list_without_ghosts = pack_into_list<type_without_ghosts>::list;
-    using type = type_cat<type_with_ghosts, type_without_ghosts>::type;
-    using list = pack_into_list<type>::list;
+    using tuple_order_2_with_ghosts = OrderTwoFixtureStacksTuple<true>::type;
+    using tuple_with_ghosts = tuple_cat<tuple_order_2_with_ghosts, tuple_order_3>::type;
+    using type_with_ghosts = pack_into_list<tuple_with_ghosts>::type;
+
+    using tuple_without_ghosts = OrderTwoFixtureStacksTuple<false>::type;
+    using type_without_ghosts = pack_into_list<tuple_without_ghosts>::type;
+    using tuple = tuple_cat<tuple_with_ghosts, tuple_without_ghosts>::type;
+    using type = pack_into_list<tuple>::type;
   };
 
-  struct CommonOrderThreeStacksBoostList {
-    using type = std::tuple<
+  struct OrderThreePropertyBoostList {
+    using tuple = std::tuple<
         TriplePropertyFixture<AdaptorMaxOrderStackFixture<ANLWithGhosts_SMC_StackFixture>>,
         TriplePropertyFixture<AdaptorMaxOrderStackFixture<AdaptorHalfListStackFixture<
             ANLWithGhosts_SMC_StackFixture>>>,
         TriplePropertyFixture<AdaptorMaxOrderStackFixture<AdaptorStrictStackFixture<
             ANLWithGhosts_SMC_StackFixture>>>,
-        TriplePropertyFixture<AdaptorMaxOrderStackFixture<AdaptorStrictStackFixture<
-            AdaptorHalfListStackFixture<ANLWithGhosts_SMC_StackFixture>>>>,
         TriplePropertyFixture<AdaptorMaxOrderStackFixture<
             AdaptorStrictStackFixture<AdaptorHalfListStackFixture<
             ANLWithGhosts_SMC_StackFixture>>>>
         >;
-    using list = pack_into_list<type>::list;
+    using type = pack_into_list<tuple>::type;
   };
 }  // namespace rascal
 

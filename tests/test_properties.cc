@@ -33,11 +33,11 @@ namespace rascal {
   // TODO(felix) test dynamic sized Property
   BOOST_AUTO_TEST_SUITE(Property_tests);
     
-  using atom_property_fixtures_with_ghosts = CommonStacksBoostList::list_with_ghosts;
-  using atom_property_fixtures_without_ghosts = CommonStacksBoostList::list_without_ghosts;
-  using atom_property_fixtures = CommonStacksBoostList::list;
-  using pair_property_fixtures = CommonOrderTwoStacksBoostList::list;
-  using triple_property_fixtures = CommonOrderThreeStacksBoostList::list;
+  using atom_property_fixtures_with_ghosts = OrderOnePropertyBoostList::type_with_ghosts;
+  using atom_property_fixtures_without_ghosts = OrderOnePropertyBoostList::type_without_ghosts;
+  using atom_property_fixtures = OrderOnePropertyBoostList::type;
+  using pair_property_fixtures = OrderTwoPropertyBoostList::type;
+  using triple_property_fixtures = OrderThreePropertyBoostList::type;
 
   /* ---------------------------------------------------------------------- */
 
@@ -302,7 +302,7 @@ namespace rascal {
   /* Access of atom property with pair. 
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_property_access_with_pair_tests, Fix, pair_property_fixtures, Fix) {
-    bool verbose{true};
+    bool verbose{false};
     if (verbose) {
       std::cout << ">> Test for manager ";
       std::cout << Fix::manager->get_name();
