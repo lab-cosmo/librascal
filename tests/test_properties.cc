@@ -313,15 +313,14 @@ namespace rascal {
       std::cout << " starts now." << std::endl;
     }
     // initalize the positions
-    Fix::scalar_atom_property.resize(Fix::manager->get_consider_ghost_neighbours());
-    // TODO(alex) check why this does not work
-    //Fix::scalar_atom_property.resize(false);
+    Fix::scalar_atom_property.resize(false);
     if (verbose) {
       std::cout << ">> Property for consider_ghost_atoms=false resized to size ";
       std::cout << Fix::scalar_atom_property.size();
+      std::cout << std::endl;
     }
     //Fix::atom_dynamic_property.resize();
-    for (auto atom : Fix::manager->with_ghosts()) {
+    for (auto atom : Fix::manager) {
       if (verbose) {
         std::cout << ">> Property for atom with tag ";
         std::cout << atom.get_atom_tag();
@@ -338,7 +337,7 @@ namespace rascal {
       counter.push_back(0);
     }
     if (verbose) {
-      std::cout << ">> Counters initialized with size " << std::endl;
+      std::cout << ">> Counters initialized with size ";
       std::cout <<  counter.size() << std::endl;
     }
     // add the position to the atom and count how often this happens
@@ -395,16 +394,14 @@ namespace rascal {
       std::cout << ", manager size with ghosts " << Fix::manager->get_size_with_ghosts();
       std::cout << " starts now." << std::endl;
     }
-    Fix::scalar_atom_property.resize(Fix::manager->get_consider_ghost_neighbours());
-    // TODO(alex) check why this does not work
-    //Fix::scalar_atom_property.resize(false);
+    Fix::scalar_atom_property.resize(false);
     // initalize the positions
     if (verbose) {
       std::cout << ">> atom_property resized to size ";
       std::cout << Fix::atom_property.size();
       std::cout << std::endl;
     }
-    for (auto atom : Fix::manager->with_ghosts()) {
+    for (auto atom : Fix::manager) {
       if (verbose) {
         std::cout << ">> Atom tag " << atom.get_atom_tag(); 
         std::cout << std::endl;

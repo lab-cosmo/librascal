@@ -275,7 +275,7 @@ namespace rascal {
 
     using tuple_without_ghosts = OrderTwoFixtureStacksTuple<false>::type;
     using type_without_ghosts = pack_into_list<tuple_without_ghosts>::type;
-    using tuple = tuple_cat<tuple_with_ghosts, tuple_without_ghosts>::type;
+    using tuple = tuple_cat<tuple_without_ghosts, tuple_with_ghosts>::type;
     using type = pack_into_list<tuple>::type;
   };
 
