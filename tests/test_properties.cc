@@ -27,267 +27,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "tests.hh"
-#include "test_structure.hh"
-#include "test_adaptor.hh"
-#include "structure_managers/property_block_sparse.hh"
-
-#include <random>
-#include <set>
+#include "test_properties.hh"
 
 namespace rascal {
   // TODO(felix) test dynamic sized Property
   BOOST_AUTO_TEST_SUITE(Property_tests);
-
-  /* ---------------------------------------------------------------------- */
-  /*
-   * A fixture for testing properties. It is based on the PairFixture, which is
-   * basically a fixture which provides a pair neighbour list based on positions
-   * which are initialized in the tests.
-   */ 
-
-  // #BUG8486@(markus), #BUG8486@(felix) I made new Fixtures, Multiple*Fixture
-  // does not match this use case because I need the manager already initialized
-  // in the initialization list of the constructor, an the old PairFixtures
-  // where not versitile enough to allow different stackings. I shadow the
-  // manager member variable in each stack such that it is usable in the new
-  // stack and replaces it for higher stacks. For the property tests what test
-  // data is load into the manager is not important, since we make our own
-  // properties.
-  
-  template <class StackFixture>
-  struct AtomPropertyFixture: StackFixture {
-    using Parent = StackFixture;
-    using Manager_t = typename Parent::Manager_t;
-    using ManagerPtr_t = std::shared_ptr<Manager_t>;
-
-    using AtomScalarProperty_t =
-        typename Manager_t::template Property_t<double, 1>;
-    using AtomVectorProperty_t =
-        typename Manager_t::template Property_t<double, 1, 3, 1>;
-    using AtomDynamicProperty_t =
-        typename Manager_t::template TypedProperty_t<size_t, 1>;
-    using AtomDynamicProperty2_t =
-        typename Manager_t::template TypedProperty_t<double, 1>;
-
-    constexpr static Dim_t DynSize() { return 3; }
-
-    std::string atom_property_metadata{"positions"};
-    std::string dynamic_property_metadata{"arbitrary counters"};
-    std::string dynamic_property2_metadata{"distances"};
-
-    AtomPropertyFixture()
-          : StackFixture{}, scalar_atom_property{*this->manager},
-          atom_property{*this->manager},
-          atom_dynamic_property{*this->manager, 1, 1,
-                           dynamic_property_metadata},
-          dynamic_property{*this->manager, DynSize(), 1,
-                           dynamic_property_metadata},
-          dynamic_property2{*this->manager, DynSize(), 1,
-                            dynamic_property2_metadata} {}
-
-    AtomScalarProperty_t scalar_atom_property;
-    AtomVectorProperty_t atom_property;
-    AtomDynamicProperty_t atom_dynamic_property;
-    AtomDynamicProperty_t dynamic_property;
-    AtomDynamicProperty2_t dynamic_property2;
-  };
-
-  template <class StackFixture>
-  struct PairPropertyFixture: StackFixture {
-    using Parent = StackFixture;
-    using Manager_t = typename Parent::Manager_t;
-    using ManagerPtr_t = std::shared_ptr<Manager_t>;
-
-    using AtomScalarProperty_t =
-        typename Manager_t::template Property_t<double, 1>;
-    using PairScalarProperty_t =
-        typename Manager_t::template Property_t<double, 2>;
-    using AtomVectorProperty_t =
-        typename Manager_t::template Property_t<double, 1, 3, 1>;
-    using AtomDynamicProperty_t =
-        typename Manager_t::template TypedProperty_t<size_t, 1>;
-    using AtomDynamicProperty2_t =
-        typename Manager_t::template TypedProperty_t<double, 1>;
-
-    constexpr static Dim_t DynSize() { return 3; }
-
-    std::string atom_property_metadata{"positions"};
-    std::string dynamic_property_metadata{"arbitrary counters"};
-    std::string dynamic_property2_metadata{"distances"};
-
-    PairPropertyFixture()
-          : StackFixture{}, scalar_atom_property{*this->manager}, 
-          atom_property{*this->manager, atom_property_metadata},
-          pair_property{*this->manager},
-          atom_dynamic_property{*this->manager, 1, 1,
-                           dynamic_property_metadata},
-          dynamic_property{*this->manager, DynSize(), 1,
-                           dynamic_property_metadata},
-          dynamic_property2{*this->manager, DynSize(), 1,
-                            dynamic_property2_metadata} {}
-
-    AtomScalarProperty_t scalar_atom_property;
-    AtomVectorProperty_t atom_property;
-    PairScalarProperty_t pair_property;
-    AtomDynamicProperty_t atom_dynamic_property;
-    AtomDynamicProperty_t dynamic_property;
-    AtomDynamicProperty2_t dynamic_property2;
-  };
-
-  template <class StackFixture>
-  struct TriplePropertyFixture: StackFixture {
-    using Parent = StackFixture;
-    using Manager_t = typename Parent::Manager_t;
-    using ManagerPtr_t = std::shared_ptr<Manager_t>;
-
-    using AtomScalarProperty_t =
-        typename Manager_t::template Property_t<double, 1>;
-    using PairScalarProperty_t =
-        typename Manager_t::template Property_t<double, 2>;
-    using TripleScalarProperty_t =
-        typename Manager_t::template Property_t<double, 3>;
-    using AtomVectorProperty_t =
-        typename Manager_t::template Property_t<double, 1, 3, 1>;
-    using AtomDynamicProperty_t =
-        typename Manager_t::template TypedProperty_t<size_t, 1>;
-    using AtomDynamicProperty2_t =
-        typename Manager_t::template TypedProperty_t<double, 1>;
-
-    constexpr static Dim_t DynSize() { return 3; }
-
-    std::string atom_property_metadata{"positions"};
-    std::string dynamic_property_metadata{"arbitrary counters"};
-    std::string dynamic_property2_metadata{"distances"};
-
-    TriplePropertyFixture()
-          : StackFixture{}, scalar_atom_property{*this->manager}, 
-          atom_property{*this->manager, atom_property_metadata},
-          pair_property{*this->manager},
-          triple_property{*this->manager},
-          dynamic_property{*this->manager, DynSize(), 1,
-                           dynamic_property_metadata},
-          dynamic_property2{*this->manager, DynSize(), 1,
-                            dynamic_property2_metadata} {}
-
-    AtomScalarProperty_t scalar_atom_property;
-    AtomVectorProperty_t atom_property;
-    PairScalarProperty_t pair_property;
-    TripleScalarProperty_t triple_property;
-    AtomDynamicProperty_t dynamic_property;
-    AtomDynamicProperty2_t dynamic_property2;
-  };
-  
-  template<bool consider_ghost_neighbours>
-  struct ANL_SMC_StackFixture_Helper {
-    using type = AdaptorNeighbourListStackFixture<
-      StructureManagerCentersStackFixture, consider_ghost_neighbours>;
-  };
-
-  // Helper types to concat template lists
-  template< typename ta, typename tb >
-  struct type_cat;
-
-  template< typename ... a, typename ... b >
-  struct type_cat< std::tuple< a ... >, std::tuple< b ... > >
-    { typedef std::tuple< a ..., b ... > type; };
-
-  // Helper types to uppack the tuple template arguments and pack them into a
-  //  boost::mpl::list
-  template< typename ta>
-  struct pack_into_list;
-
-  template<typename ... a>
-  struct pack_into_list< std::tuple < a ... > >
-    { using list = boost::mpl::list<a ...>;};
-
-  using ANLWithGhosts_SMC_StackFixture = AdaptorNeighbourListStackFixture<
-    StructureManagerCentersStackFixture, true>;
-  using ANLWithoutGhosts_SMC_StackFixture = AdaptorNeighbourListStackFixture<
-    StructureManagerCentersStackFixture, false>;
-
-  struct CommonStacksBoostList {
-    template<bool consider_ghost_neighbours>
-    struct  CommonStacksBoostListTemplated {
-      using ANL_SMC_TemplatedStackFixture = AdaptorNeighbourListStackFixture<
-        StructureManagerCentersStackFixture, consider_ghost_neighbours>;      
-      using type = std::tuple<
-        AtomPropertyFixture<StructureManagerCentersStackFixture>,
-        AtomPropertyFixture<ANL_SMC_TemplatedStackFixture>,
-        AtomPropertyFixture<ANL_SMC_TemplatedStackFixture>,
-        AtomPropertyFixture<AdaptorHalfListStackFixture<
-            ANL_SMC_TemplatedStackFixture>>,
-        AtomPropertyFixture<AdaptorStrictStackFixture<
-            ANL_SMC_TemplatedStackFixture>>,
-        AtomPropertyFixture<AdaptorStrictStackFixture<
-            AdaptorHalfListStackFixture<ANL_SMC_TemplatedStackFixture>>>,
-        AtomPropertyFixture<AdaptorMaxOrderStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>,
-        AtomPropertyFixture<AdaptorMaxOrderStackFixture<
-            AdaptorHalfListStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>>,
-        AtomPropertyFixture<AdaptorMaxOrderStackFixture<
-            AdaptorStrictStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>>,
-        AtomPropertyFixture<AdaptorMaxOrderStackFixture<
-            AdaptorStrictStackFixture<AdaptorHalfListStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>>>
-        >;
-    };
-  
-    using type_with_ghosts = CommonStacksBoostListTemplated<true>::type;
-    using list_with_ghosts = pack_into_list<type_with_ghosts>::list;
-    using type_without_ghosts = CommonStacksBoostListTemplated<false>::type;
-    using list_without_ghosts = pack_into_list<type_without_ghosts>::list;
-    using type = type_cat<type_with_ghosts, type_without_ghosts>::type;
-    using list = pack_into_list<type>::list;
-  };
-
-  struct CommonOrderTwoStacksBoostList {
-    template<bool consider_ghost_neighbours>
-    struct  CommonOrderTwoStacksBoostListTemplated {
-      using ANL_SMC_TemplatedStackFixture = AdaptorNeighbourListStackFixture<
-        StructureManagerCentersStackFixture, consider_ghost_neighbours>;      
-      using type = std::tuple<
-        PairPropertyFixture<ANLWithGhosts_SMC_StackFixture>,
-        PairPropertyFixture<AdaptorHalfListStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>,
-        PairPropertyFixture<AdaptorStrictStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>,
-        PairPropertyFixture<AdaptorStrictStackFixture<
-            AdaptorHalfListStackFixture<ANLWithGhosts_SMC_StackFixture>>>,
-        PairPropertyFixture<AdaptorMaxOrderStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>,
-        PairPropertyFixture<AdaptorMaxOrderStackFixture<
-            AdaptorStrictStackFixture<AdaptorHalfListStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>>>
-        >;
-    };
-    using type_with_ghosts = CommonOrderTwoStacksBoostListTemplated<true>::type;
-    using list_with_ghosts = pack_into_list<type_with_ghosts>::list;
-
-    using type_without_ghosts = CommonOrderTwoStacksBoostListTemplated<false>::type;
-    using list_without_ghosts = pack_into_list<type_without_ghosts>::list;
-    using type = type_cat<type_with_ghosts, type_without_ghosts>::type;
-    using list = pack_into_list<type>::list;
-  };
-
-  struct CommonOrderThreeStacksBoostList {
-    using type = std::tuple<
-        TriplePropertyFixture<AdaptorMaxOrderStackFixture<ANLWithGhosts_SMC_StackFixture>>,
-        TriplePropertyFixture<AdaptorMaxOrderStackFixture<AdaptorHalfListStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>>,
-        TriplePropertyFixture<AdaptorMaxOrderStackFixture<AdaptorStrictStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>>,
-        TriplePropertyFixture<AdaptorMaxOrderStackFixture<AdaptorStrictStackFixture<
-            AdaptorHalfListStackFixture<ANLWithGhosts_SMC_StackFixture>>>>,
-        TriplePropertyFixture<AdaptorMaxOrderStackFixture<
-            AdaptorStrictStackFixture<AdaptorHalfListStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>>>
-        >;
-    using list = pack_into_list<type>::list;
-  };
-
     
   using atom_property_fixtures_with_ghosts = CommonStacksBoostList::list_with_ghosts;
   using atom_property_fixtures_without_ghosts = CommonStacksBoostList::list_without_ghosts;
@@ -295,9 +39,17 @@ namespace rascal {
   using pair_property_fixtures = CommonOrderTwoStacksBoostList::list;
   using triple_property_fixtures = CommonOrderThreeStacksBoostList::list;
 
-  //TriplePropertyFixture<>,
-  //TriplePropertyFixture<AdaptorMaxOrderStackFixture<AdaptorHalfListStackFixture<
   /* ---------------------------------------------------------------------- */
+
+  BOOST_FIXTURE_TEST_CASE(atom_order_one_constructor_tests, AtomPropertyFixture<StructureManagerCentersStackFixture>) {
+    bool verbose{false};
+    if (verbose) {
+      std::cout << ">> Test for manager ";
+      std::cout << manager->get_name();
+      std::cout << " starts now." << std::endl;
+      std::cout << " finished." << std::endl;
+    }
+  }
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_constructor_tests, Fix, atom_property_fixtures, Fix) {
     bool verbose{false};
@@ -325,6 +77,48 @@ namespace rascal {
       std::cout << ">> Test for manager ";
       std::cout << Fix::manager->get_name();
       std::cout << " starts now." << std::endl;
+      std::cout << " finished." << std::endl;
+    }
+  }
+
+  BOOST_FIXTURE_TEST_CASE(fill_atom_property_order_one_test, AtomPropertyFixture<StructureManagerCentersStackFixture>) {
+    bool verbose{false};
+    if (verbose) {
+      std::cout << ">> Test for manager ";
+      std::cout << manager->get_name();
+      std::cout << ", manager size " << manager->get_size();
+      std::cout << ", manager size with ghosts " << manager->get_size_with_ghosts();
+      std::cout << " starts now." << std::endl;
+    }
+
+    atom_property.resize(
+        manager->get_consider_ghost_neighbours());
+    dynamic_property2.resize(
+        manager->get_consider_ghost_neighbours());
+    if (verbose) {
+      std::cout << ">> atom_property size ";
+      std::cout << atom_property.size();
+      std::cout << std::endl;
+    }
+    for (auto atom : manager) {
+      if (verbose) {
+        std::cout << ">> Atom with tag " << atom.get_atom_tag(); 
+        std::cout << std::endl;
+      }
+      atom_property[atom] = atom.get_position();
+      dynamic_property2[atom] = atom.get_position();
+    }
+
+    for (auto atom : manager) {
+      auto error = (atom_property[atom] - atom.get_position()).norm();
+      BOOST_CHECK_LE(error, tol * 100);
+      auto error_dynamic = (dynamic_property2[atom] - atom.get_position()).norm();
+      BOOST_CHECK_LE(error_dynamic, tol * 100);
+    }
+
+    if (verbose) {
+      std::cout << ">> Test for manager ";
+      std::cout << manager->get_name();
       std::cout << " finished." << std::endl;
     }
   }
@@ -508,7 +302,7 @@ namespace rascal {
   /* Access of atom property with pair. 
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_property_access_with_pair_tests, Fix, pair_property_fixtures, Fix) {
-    bool verbose{false};
+    bool verbose{true};
     if (verbose) {
       std::cout << ">> Test for manager ";
       std::cout << Fix::manager->get_name();

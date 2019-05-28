@@ -243,8 +243,6 @@ namespace rascal {
       return this->offsets[counters.front()];
     }
 
-    //TODO(alex) check if this can be done everywhere
-    //
     //! Returns the number of neighbours of a given cluster
     template <size_t Order, size_t Layer>
     inline typename std::enable_if_t<(Order<(traits::MaxOrder-1)), size_t>

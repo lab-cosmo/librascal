@@ -457,7 +457,7 @@ namespace rascal {
     this->offsets.clear();
     this->neighbours_atom_tag.clear();
 
-    // BUG8486@(markus) I now append the ghost atoms to the cluster index
+    // #BUG8486@(markus) I now append the ghost atoms to the cluster index
     // container
     for (auto atom : this->manager->with_ghosts()) {
       //  Order 1, but variable Order is at 0, atoms, index 0
