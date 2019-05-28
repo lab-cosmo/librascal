@@ -249,7 +249,7 @@ namespace rascal {
                     "this implementation only handles atoms.");
       return 1;
     }
-    size_t get_cluster_index_impl(const int atom_tag) const {
+    size_t get_atom_index(const int atom_tag) const {
       return static_cast<size_t>(atom_tag);
     }
 

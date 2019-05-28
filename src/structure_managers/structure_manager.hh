@@ -513,8 +513,8 @@ namespace rascal {
    
     /* Returns the neighbour's cluster_index of order 1 from an atomic index.
      */
-    size_t get_cluster_index(const int atom_tag) const{
-      return this->implementation().get_cluster_index_impl(atom_tag);
+    size_t get_atom_index(const int atom_tag) const{
+      return this->implementation().get_atom_index(atom_tag);
     }
 
     template <size_t Order>

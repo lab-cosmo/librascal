@@ -61,7 +61,7 @@ namespace rascal {
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
     // #BUG8486@(all) is this solution efficient, does ilist have huge gaps?
-    // e.g. ilist = [1,5000], then the cluster_index_from_atom_tag_list list will
+    // e.g. ilist = [1,5000], then the atom_index_from_atom_tag_list list will
     // have 5000 elements.
     // Also the dummy 0 values which will cause undefined behaviour but not
     // necessary an error worries me
@@ -73,14 +73,14 @@ namespace rascal {
     }
 
     //! Filling dummy cluster index 
-    this->cluster_index_from_atom_tag_list.reserve(max_atomic_index+1);
+    this->atom_index_from_atom_tag_list.reserve(max_atomic_index+1);
     for (int i{0}; i< max_atomic_index+1; ++i) {
-      this->cluster_index_from_atom_tag_list.push_back(0);
+      this->atom_index_from_atom_tag_list.push_back(0);
     }
     //! Replacing dummy values with correct cluster index
     for (int i{0}; i<this->inum; ++i) {
       // ilist does not have negative atom tags therefore the cast is safe
-      this->cluster_index_from_atom_tag_list.at(static_cast<size_t>(ilist[i])) = i;
+      this->atom_index_from_atom_tag_list.at(static_cast<size_t>(ilist[i])) = i;
     }
     atom_cluster_indices.fill_sequence();
     pair_cluster_indices.fill_sequence();

@@ -642,8 +642,8 @@ namespace rascal {
      * ghost atom, then it returns it cluster index of the atom in the original
      * cell.
      */ 
-    size_t get_cluster_index_impl(const int atom_tag) const {
-      return this->cluster_index_from_atom_tag_list[atom_tag];
+    size_t get_atom_index(const int atom_tag) const {
+      return this->atom_index_from_atom_tag_list[atom_tag];
     }
 
     //! Returns the type of a given atom, given an AtomRef
@@ -748,7 +748,7 @@ namespace rascal {
      * index but no cluster index of order 1. For this case the cluster index
      * the atom in the cell at origin is used. 
      * */
-    std::vector<size_t> cluster_index_from_atom_tag_list{};
+    std::vector<size_t> atom_index_from_atom_tag_list{};
 
     //! Stores the offset for each atom to accessing `neighbours`, this variable
     //! provides the entry point in the neighbour list, `nb_neigh` the number
@@ -971,12 +971,12 @@ namespace rascal {
     int ntot_atoms{0};
     for (auto atom : *this->manager) {
       int atom_tag = atom.get_atom_tag();
-      size_t cluster_index = this->manager->get_cluster_index(atom_tag);
+      size_t cluster_index = this->manager->get_atom_index(atom_tag);
       auto atom_type = atom.get_atom_type();      
       this->atom_tag_list.push_back(atom_tag);
       this->atom_types.push_back(atom_type);
       ntot_atoms++;
-      this->cluster_index_from_atom_tag_list.push_back(cluster_index);
+      this->atom_index_from_atom_tag_list.push_back(cluster_index);
     }
     // generate ghost atom tags and positions
     for (auto atom : this->get_manager().with_ghosts()) {
@@ -1010,8 +1010,8 @@ namespace rascal {
             // adds origin atom cluster_index if true
             // adds ghost atom cluster index if false
             size_t cluster_index = 
-                  this->manager->get_cluster_index(atom.get_atom_tag());
-            this->cluster_index_from_atom_tag_list.push_back(cluster_index);
+                  this->manager->get_atom_index(atom.get_atom_tag());
+            this->atom_index_from_atom_tag_list.push_back(cluster_index);
           }
         }
       }

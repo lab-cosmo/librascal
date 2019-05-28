@@ -169,8 +169,8 @@ namespace rascal {
      * can safely use the before-computed list from the previous manager,
      * since they are still valid for access.
      */
-    size_t get_cluster_index_impl(const int atom_tag) const {
-      return this->manager->get_cluster_index_impl(atom_tag);
+    size_t get_atom_index(const int atom_tag) const {
+      return this->manager->get_atom_index(atom_tag);
     }
 
     //! return atom type

@@ -226,8 +226,8 @@ namespace rascal {
       }
     }
 
-    size_t get_cluster_index_impl(const int atom_tag) const {
-      return this->manager->get_cluster_index_impl(atom_tag);
+    size_t get_atom_index(const int atom_tag) const {
+      return this->manager->get_atom_index(atom_tag);
     }
 
     //! Returns the number of neighbors of a given cluster

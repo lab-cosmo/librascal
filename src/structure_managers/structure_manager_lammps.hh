@@ -164,9 +164,9 @@ namespace rascal {
     // #BUG8486@(all) I do not know how the structure of ilist is implemented,
     // can it it have huge gaps like [1, 50000]? Then using a vector with ensures quick
     // memory access would be super inefficient.
-    inline int get_cluster_index_impl(int atom_tag) const {
+    inline int get_atom_index(int atom_tag) const {
       throw std::runtime_error("This functionality might be not implemented correctly");
-      return this->cluster_index_from_atom_tag_list[atom_tag];
+      return this->atom_index_from_atom_tag_list[atom_tag];
     }
 
     /**
@@ -233,7 +233,7 @@ namespace rascal {
     std::vector<int> offsets{};  //! offset per atom to access neighbour list
     
     // the inverse mapping from the ilist
-    std::vector<size_t> cluster_index_from_atom_tag_list{};
+    std::vector<size_t> atom_index_from_atom_tag_list{};
   };
 
   /**
