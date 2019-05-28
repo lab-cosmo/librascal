@@ -133,29 +133,49 @@ namespace rascal {
       std::cout << " starts now." << std::endl;
     }
 
+    Fix::scalar_atom_property.resize(
+        Fix::manager->get_consider_ghost_neighbours());
     Fix::atom_property.resize(
         Fix::manager->get_consider_ghost_neighbours());
     Fix::dynamic_property2.resize(
+        Fix::manager->get_consider_ghost_neighbours());
+    Fix::dynamic_scalar_atom_property.resize(
+        Fix::manager->get_consider_ghost_neighbours());
+    Fix::sparse_property.resize(
         Fix::manager->get_consider_ghost_neighbours());
     if (verbose) {
       std::cout << ">> atom_property size ";
       std::cout << Fix::atom_property.size();
       std::cout << std::endl;
     }
-    for (auto atom : Fix::manager) {
+    size_t counter{0};
+    for (auto atom : Fix::manager->with_ghosts()) {
       if (verbose) {
         std::cout << ">> Atom with tag " << atom.get_atom_tag(); 
         std::cout << std::endl;
       }
+      Fix::scalar_atom_property[atom] = counter;
       Fix::atom_property[atom] = atom.get_position();
       Fix::dynamic_property2[atom] = atom.get_position();
+      // #BUG8486@(all)
+      // typed properties and block spares properties do not take scalar values
+      // but some eigen object, can someone write how to assign a scalar value
+      // to these properties like for scalar_atom_porperty
+      //Fix::dynamic_scalar_atom_property[atom] = 0; // DOES NOT WORK
+      //Fix::sparse_scalar_property[atom] = 0; // DOES NOT WORK
+      counter++;
     }
 
-    for (auto atom : Fix::manager) {
+    counter = 0;
+    for (auto atom : Fix::manager->with_ghosts()) {
       auto error = (Fix::atom_property[atom] - atom.get_position()).norm();
       BOOST_CHECK_LE(error, tol * 100);
       auto error_dynamic = (Fix::dynamic_property2[atom] - atom.get_position()).norm();
       BOOST_CHECK_LE(error_dynamic, tol * 100);
+      //BOOST_CHECK_EQUAL(Fix::scalar_atom_property[atom], counter);
+      //BOOST_CHECK_EQUAL(Fix::scalar_atom_property[atom], 0);
+      //BOOST_CHECK_EQUAL(Fix::scalar_atom_property[atom], 0);
+      counter++;
     }
 
     if (verbose) {
@@ -319,7 +339,7 @@ namespace rascal {
       std::cout << Fix::scalar_atom_property.size();
       std::cout << std::endl;
     }
-    //Fix::atom_dynamic_property.resize();
+    //Fix::dynamic_scalar_atom_property.resize();
     for (auto atom : Fix::manager) {
       if (verbose) {
         std::cout << ">> Property for atom with tag ";
@@ -328,7 +348,8 @@ namespace rascal {
         std::cout << std::endl;
       }
       Fix::scalar_atom_property[atom] = 0;
-      //Fix::atom_dynamic_property[atom] = 0;
+      //Fix::dynamic_scalar_atom_property[atom] = 0;
+      //Fix::sparse_property[atom] = 0;
     }
     std::vector<size_t> counters{};
     size_t nb_central_atoms = Fix::manager->get_size();
@@ -351,10 +372,8 @@ namespace rascal {
           std::cout << std::endl;
         }
         Fix::scalar_atom_property[pair]++;
-        // TODO(alex) does not work, dynamic properties do not give scalar
-        // values, I want to move the writing of a
-        // test for dynamic properties to a point, when we actual use them
-        //Fix::atom_dynamic_property[pair]++;
+        //Fix::dynamic_scalar_atom_property[pair]++;
+        //Fix::sparse_property[pair]++;
         counters.at(Fix::manager->get_atom_index(pair.get_internal_neighbour_atom_tag()))++;
       }
     }
@@ -362,7 +381,9 @@ namespace rascal {
       size_t counters_at_cluster_index = counters.at(Fix::manager->get_atom_index(atom.get_atom_tag()));
       BOOST_CHECK_EQUAL(Fix::scalar_atom_property[atom],
           counters_at_cluster_index);
-      //BOOST_CHECK_EQUAL(Fix::atom_dynamic_property[atom],
+      //BOOST_CHECK_EQUAL(Fix::dynamic_scalar_atom_property[atom],
+      //    counters_at_cluster_index);
+      //BOOST_CHECK_EQUAL(Fix::sparse_property[atom],
       //    counters_at_cluster_index);
     }
     if (verbose) {

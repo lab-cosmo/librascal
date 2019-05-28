@@ -198,6 +198,10 @@ namespace rascal {
     using TypedProperty_t = TypedProperty<T, Order,
                                           get_layer(Order,
                                               typename traits::LayerByOrder{}), StructureManager_t>;
+    template <typename T, size_t Order>
+    using BlockSparseProperty_t = 
+        BlockSparseProperty<T, Order, 
+        get_layer(Order, typename traits::LayerByOrder{}), StructureManager_t>;
 
     //! type for the hyper parameter class
     using Hypers_t = json;

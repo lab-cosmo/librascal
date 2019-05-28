@@ -72,6 +72,8 @@ namespace rascal {
         typename Manager_t::template TypedProperty_t<size_t, 1>;
     using AtomDynamicProperty2_t =
         typename Manager_t::template TypedProperty_t<double, 1>;
+    using SparseProperty_t = 
+      typename Manager_t::template BlockSparseProperty_t<double, 1>;
 
     constexpr static Dim_t DynSize() { return 3; }
 
@@ -82,18 +84,20 @@ namespace rascal {
     AtomPropertyFixture()
           : StackFixture{}, scalar_atom_property{*this->manager},
           atom_property{*this->manager},
-          atom_dynamic_property{*this->manager, 1, 1,
+          dynamic_scalar_atom_property{*this->manager, 1, 1,
                            dynamic_property_metadata},
           dynamic_property{*this->manager, DynSize(), 1,
                            dynamic_property_metadata},
           dynamic_property2{*this->manager, DynSize(), 1,
-                            dynamic_property2_metadata} {}
+                            dynamic_property2_metadata},
+          sparse_property{*this->manager} {}
 
     AtomScalarProperty_t scalar_atom_property;
     AtomVectorProperty_t atom_property;
-    AtomDynamicProperty_t atom_dynamic_property;
+    AtomDynamicProperty_t dynamic_scalar_atom_property;
     AtomDynamicProperty_t dynamic_property;
     AtomDynamicProperty2_t dynamic_property2;
+    SparseProperty_t sparse_property;
   };
 
   template <class StackFixture>
@@ -112,6 +116,8 @@ namespace rascal {
         typename Manager_t::template TypedProperty_t<size_t, 1>;
     using AtomDynamicProperty2_t =
         typename Manager_t::template TypedProperty_t<double, 1>;
+    using SparseProperty_t = 
+      typename Manager_t::template BlockSparseProperty_t<double, 1>;
 
     constexpr static Dim_t DynSize() { return 3; }
 
@@ -123,19 +129,21 @@ namespace rascal {
           : StackFixture{}, scalar_atom_property{*this->manager}, 
           atom_property{*this->manager, atom_property_metadata},
           pair_property{*this->manager},
-          atom_dynamic_property{*this->manager, 1, 1,
+          dynamic_scalar_atom_property{*this->manager, 1, 1,
                            dynamic_property_metadata},
           dynamic_property{*this->manager, DynSize(), 1,
                            dynamic_property_metadata},
           dynamic_property2{*this->manager, DynSize(), 1,
-                            dynamic_property2_metadata} {}
+                            dynamic_property2_metadata},
+          sparse_property{*this->manager} {}
 
     AtomScalarProperty_t scalar_atom_property;
     AtomVectorProperty_t atom_property;
     PairScalarProperty_t pair_property;
-    AtomDynamicProperty_t atom_dynamic_property;
+    AtomDynamicProperty_t dynamic_scalar_atom_property;
     AtomDynamicProperty_t dynamic_property;
     AtomDynamicProperty2_t dynamic_property2;
+    SparseProperty_t sparse_property;
   };
 
   template <class StackFixture>
@@ -156,6 +164,8 @@ namespace rascal {
         typename Manager_t::template TypedProperty_t<size_t, 1>;
     using AtomDynamicProperty2_t =
         typename Manager_t::template TypedProperty_t<double, 1>;
+    using SparseProperty_t = 
+      typename Manager_t::template BlockSparseProperty_t<double, 1>;
 
     constexpr static Dim_t DynSize() { return 3; }
 
@@ -171,7 +181,8 @@ namespace rascal {
           dynamic_property{*this->manager, DynSize(), 1,
                            dynamic_property_metadata},
           dynamic_property2{*this->manager, DynSize(), 1,
-                            dynamic_property2_metadata} {}
+                            dynamic_property2_metadata},
+          sparse_property{*this->manager} {}
 
     AtomScalarProperty_t scalar_atom_property;
     AtomVectorProperty_t atom_property;
@@ -179,6 +190,7 @@ namespace rascal {
     TripleScalarProperty_t triple_property;
     AtomDynamicProperty_t dynamic_property;
     AtomDynamicProperty2_t dynamic_property2;
+    SparseProperty_t sparse_property;
   };
   
   template<bool consider_ghost_neighbours>

@@ -151,12 +151,13 @@ namespace rascal {
    */
   template <typename T, size_t Order, size_t PropertyLayer, class Manager>
   class TypedProperty : public PropertyBase {
+
+   public:
     using Parent = PropertyBase;
     using Value = internal::Value<T, Eigen::Dynamic, Eigen::Dynamic>;
     using Manager_t = Manager;
     using traits = typename Manager::traits;
 
-   public:
     using value_type = typename Value::type;
     using reference = typename Value::reference;
 
@@ -208,10 +209,6 @@ namespace rascal {
         }
         return this->get_manager().size_with_ghosts();
       }
-      // TODO(alex) remove when debugging finished
-      //std::cout << "Property with Order " << Order;
-      //std::cout << " and manager " << this->get_manager().get_name();
-      //std::cout << " has property size " << this->get_manager().size() << std::endl;
       return this->get_manager().size();
     }
     template <size_t Order_=Order, std::enable_if_t<not(Order_==1),int> = 0>
