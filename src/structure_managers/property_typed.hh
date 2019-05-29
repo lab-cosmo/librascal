@@ -151,7 +151,6 @@ namespace rascal {
    */
   template <typename T, size_t Order, size_t PropertyLayer, class Manager>
   class TypedProperty : public PropertyBase {
-
    public:
     using Parent = PropertyBase;
     using Value = internal::Value<T, Eigen::Dynamic, Eigen::Dynamic>;
@@ -162,9 +161,14 @@ namespace rascal {
     using reference = typename Value::reference;
 
     //! constructor
-    TypedProperty(Manager_t & manager, Dim_t nb_row,
-                  Dim_t nb_col = 1, std::string metadata = "no metadata")
-        : Parent{static_cast<StructureManagerBase &>(manager), nb_row, nb_col, Order, PropertyLayer, metadata} {}
+    TypedProperty(Manager_t & manager, Dim_t nb_row, Dim_t nb_col = 1,
+                  std::string metadata = "no metadata")
+        : Parent{static_cast<StructureManagerBase &>(manager),
+                 nb_row,
+                 nb_col,
+                 Order,
+                 PropertyLayer,
+                 metadata} {}
 
     //! Default constructor
     TypedProperty() = delete;
@@ -189,19 +193,21 @@ namespace rascal {
     const std::type_info & get_type_info() const final { return typeid(T); };
 
     Manager_t & get_manager() {
-      return static_cast<Manager_t &>(this->base_manager); 
+      return static_cast<Manager_t &>(this->base_manager);
     }
 
-    template <size_t Order_=Order, std::enable_if_t<(Order_==1),int> = 0>
+    template <size_t Order_ = Order, std::enable_if_t<(Order_ == 1), int> = 0>
     size_t get_validated_property_length(bool consider_ghost_atoms) {
       if (consider_ghost_atoms) {
-        if (traits::MaxOrder<2) {
-          throw std::runtime_error("consider_ghost_atoms is true,"
+        if (traits::MaxOrder < 2) {
+          throw std::runtime_error(
+              "consider_ghost_atoms is true,"
               " but can only be use for underlying manager with"
               " MaxOrder at least 2.");
         }
-        if (not(this->get_manager().get_consider_ghost_neighbours())){
-          throw std::runtime_error("consider_ghost_atoms is true,"
+        if (not(this->get_manager().get_consider_ghost_neighbours())) {
+          throw std::runtime_error(
+              "consider_ghost_atoms is true,"
               " but underlying manager does not have ghost atoms in"
               " cluster_indices_container. Turn consider_ghost_neighbours"
               " on, to consider ghost atoms with independent property values"
@@ -211,32 +217,36 @@ namespace rascal {
       }
       return this->get_manager().size();
     }
-    template <size_t Order_=Order, std::enable_if_t<not(Order_==1),int> = 0>
+    template <size_t Order_ = Order,
+              std::enable_if_t<not(Order_ == 1), int> = 0>
     size_t get_validated_property_length(bool = false) {
-      return this->base_manager.nb_clusters(Order); 
+      return this->base_manager.nb_clusters(Order);
     }
 
     /* Fill sequence, used for *_cluster_indices initialization
-     * if consdier_ghost_atoms is true, ghost atoms also can have 
+     * if consdier_ghost_atoms is true, ghost atoms also can have
      * their own propery value independent from its correpsonding central atom.
      * This function is used for all Order 1 ManagerImplementations
      */
-    inline void fill_sequence(bool consider_ghost_atoms=false) {
+    inline void fill_sequence(bool consider_ghost_atoms = false) {
       // adjust size of values (only increases, never frees)
       this->resize(consider_ghost_atoms);
-      // #BUG8486@(markus) size() gives capacity gives always the 
+      // #BUG8486@(markus) size() gives capacity gives always the
       // resized value, size() does only tell you the number of elements pushed
       // in, but somehow in this case it still does work and is equal to
-      // capacity, but if you try in some simple vector<int> it does not always work
-      for (size_t i{0}; i< this->values.capacity(); ++i) {
+      // capacity, but if you try in some simple vector<int> it does not always
+      // work
+      for (size_t i{0}; i < this->values.capacity(); ++i) {
         values[i] = i;
       }
     }
 
     //! Adjust size of values (only increases, never frees)
-    inline void resize(bool consider_ghost_atoms=false) {
+    inline void resize(bool consider_ghost_atoms = false) {
       auto n_components = this->get_nb_comp();
-      size_t new_size = this->get_validated_property_length(consider_ghost_atoms) * n_components;
+      size_t new_size =
+          this->get_validated_property_length(consider_ghost_atoms) *
+          n_components;
       this->values.resize(new_size);
     }
 
@@ -259,10 +269,12 @@ namespace rascal {
       return this->operator[](id.get_cluster_index(CallerLayer));
     }
 
-    template <size_t CallerOrder, size_t CallerLayer, size_t Order_= Order>
-    inline std::enable_if_t<(Order_==1) and (CallerOrder>1), reference>
-    operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
-     return this->operator[](static_cast<Manager_t &>(this->base_manager).get_cluster_index(id.get_internal_neighbour_atom_tag()));
+    template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order>
+    inline std::enable_if_t<(Order_ == 1) and (CallerOrder > 1), reference>
+        operator[] (const ClusterRefKey<CallerOrder, CallerLayer> & id) {
+      return this->operator[](
+          static_cast<Manager_t &>(this->base_manager)
+              .get_cluster_index(id.get_internal_neighbour_atom_tag()));
     }
 
     //! Accessor for property by index for dynamically sized properties

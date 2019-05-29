@@ -61,8 +61,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   // loops over the centers in the manager making sure positions are consistent
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_atom_taging, Fix, fixtures,
-                                   Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_atom_taging, Fix, fixtures, Fix) {
     auto & manager = Fix::manager;
     for (auto atom : manager) {
       // checks get_atom_tag exists

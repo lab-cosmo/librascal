@@ -90,13 +90,14 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
   struct PairFixtureStrict {
-    using AdaptorStrict_t = AdaptorStrict<AdaptorNeighbourList<ManagerImplementation>>;
+    using AdaptorStrict_t =
+        AdaptorStrict<AdaptorNeighbourList<ManagerImplementation>>;
 
     PairFixtureStrict()
         : adaptor_strict{make_adapted_manager<AdaptorStrict>(
               this->fixture.pair_manager, this->fixture.cutoff)} {
-          this->adaptor_strict->update();
-        }
+      this->adaptor_strict->update();
+    }
 
     ~PairFixtureStrict() = default;
 
@@ -110,15 +111,16 @@ namespace rascal {
 
   template <class ManagerImplementation>
   struct PairFixtureStrictWithGhosts {
-    using AdaptorStrict_t = AdaptorStrict<AdaptorNeighbourList<ManagerImplementation>>;
+    using AdaptorStrict_t =
+        AdaptorStrict<AdaptorNeighbourList<ManagerImplementation>>;
 
-    PairFixtureStrictWithGhosts ()
+    PairFixtureStrictWithGhosts()
         : adaptor_strict{make_adapted_manager<AdaptorStrict>(
               this->fixture.pair_manager, this->fixture.cutoff)} {
-          this->adaptor_strict->update();
-        }
+      this->adaptor_strict->update();
+    }
 
-    ~PairFixtureStrictWithGhosts () = default;
+    ~PairFixtureStrictWithGhosts() = default;
 
     // TODO(markus): different fixtures?, streamline fixtures to always work
     // with ´manager´ as an iterator?
@@ -261,9 +263,12 @@ namespace rascal {
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
     using ManagerTypeHolder_t =
         StructureManagerTypeHolder<StructureManagerCenters>;
-    const std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
-    StructureManagerCentersStackFixture () :
-      manager{make_structure_manager<StructureManagerCenters>()} {manager->update(filename);}
+    const std::string filename{
+        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+    StructureManagerCentersStackFixture()
+        : manager{make_structure_manager<StructureManagerCenters>()} {
+      manager->update(filename);
+    }
     ManagerPtr_t manager;
   };
 
@@ -276,8 +281,11 @@ namespace rascal {
 
     const double consider_ghost_neighbours{consider_ghost_neighbours_};
     const double cutoff{1.};
-    AdaptorNeighbourListStackFixture() :
-      manager{make_adapted_manager<AdaptorNeighbourList>(StackFixture::manager, cutoff, consider_ghost_neighbours)} {manager->update();}
+    AdaptorNeighbourListStackFixture()
+        : manager{make_adapted_manager<AdaptorNeighbourList>(
+              StackFixture::manager, cutoff, consider_ghost_neighbours)} {
+      manager->update();
+    }
     ManagerPtr_t manager;
   };
 
@@ -287,8 +295,11 @@ namespace rascal {
     using Manager_t = AdaptorHalfList<typename Parent::Manager_t>;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
 
-    AdaptorHalfListStackFixture() :
-      manager{make_adapted_manager<AdaptorHalfList>(StackFixture::manager)} {manager->update();}
+    AdaptorHalfListStackFixture()
+        : manager{
+              make_adapted_manager<AdaptorHalfList>(StackFixture::manager)} {
+      manager->update();
+    }
 
     ManagerPtr_t manager;
   };
@@ -300,8 +311,11 @@ namespace rascal {
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
 
     const double cutoff{2.};
-    AdaptorStrictStackFixture() :
-      manager{make_adapted_manager<AdaptorStrict>(StackFixture::manager, cutoff)} {manager->update();}
+    AdaptorStrictStackFixture()
+        : manager{make_adapted_manager<AdaptorStrict>(StackFixture::manager,
+                                                      cutoff)} {
+      manager->update();
+    }
 
     ManagerPtr_t manager;
   };
@@ -312,8 +326,11 @@ namespace rascal {
     using Manager_t = AdaptorMaxOrder<typename Parent::Manager_t>;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
 
-    AdaptorMaxOrderStackFixture() :
-      manager{make_adapted_manager<AdaptorMaxOrder>(StackFixture::manager)} {manager->update();}
+    AdaptorMaxOrderStackFixture()
+        : manager{
+              make_adapted_manager<AdaptorMaxOrder>(StackFixture::manager)} {
+      manager->update();
+    }
 
     ManagerPtr_t manager;
   };

@@ -32,16 +32,20 @@
 namespace rascal {
   // TODO(felix) test dynamic sized Property
   BOOST_AUTO_TEST_SUITE(Property_tests);
-    
-  using atom_vector_property_fixtures_with_ghosts = OrderOnePropertyBoostList::type_with_ghosts;
-  using atom_vector_property_fixtures_without_ghosts = OrderOnePropertyBoostList::type_without_ghosts;
+
+  using atom_vector_property_fixtures_with_ghosts =
+      OrderOnePropertyBoostList::type_with_ghosts;
+  using atom_vector_property_fixtures_without_ghosts =
+      OrderOnePropertyBoostList::type_without_ghosts;
   using atom_vector_property_fixtures = OrderOnePropertyBoostList::type;
   using pair_property_fixtures = OrderTwoPropertyBoostList::type;
   using triple_property_fixtures = OrderThreePropertyBoostList::type;
 
   /* ---------------------------------------------------------------------- */
 
-  BOOST_FIXTURE_TEST_CASE(atom_order_one_constructor_tests, AtomPropertyFixture<StructureManagerCentersStackFixture>) {
+  BOOST_FIXTURE_TEST_CASE(
+      atom_order_one_constructor_tests,
+      AtomPropertyFixture<StructureManagerCentersStackFixture>) {
     bool verbose{false};
     if (verbose) {
       std::cout << ">> Test for manager ";
@@ -51,7 +55,8 @@ namespace rascal {
     }
   }
 
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_constructor_tests, Fix, atom_vector_property_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_constructor_tests, Fix,
+                                   atom_vector_property_fixtures, Fix) {
     bool verbose{false};
     if (verbose) {
       std::cout << ">> Test for manager ";
@@ -61,7 +66,8 @@ namespace rascal {
     }
   }
 
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(pair_constructor_tests, Fix, pair_property_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(pair_constructor_tests, Fix,
+                                   pair_property_fixtures, Fix) {
     bool verbose{false};
     if (verbose) {
       std::cout << ">> Test for manager ";
@@ -71,7 +77,8 @@ namespace rascal {
     }
   }
 
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(triple_constructor_tests, Fix, triple_property_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(triple_constructor_tests, Fix,
+                                   triple_property_fixtures, Fix) {
     bool verbose{false};
     if (verbose) {
       std::cout << ">> Test for manager ";
@@ -81,18 +88,20 @@ namespace rascal {
     }
   }
 
-  BOOST_FIXTURE_TEST_CASE(fill_atom_vector_property_order_one_test, AtomPropertyFixture<StructureManagerCentersStackFixture>) {
+  BOOST_FIXTURE_TEST_CASE(
+      fill_atom_vector_property_order_one_test,
+      AtomPropertyFixture<StructureManagerCentersStackFixture>) {
     bool verbose{false};
     if (verbose) {
       std::cout << ">> Test for manager ";
       std::cout << manager->get_name();
       std::cout << ", manager size " << manager->get_size();
-      std::cout << ", manager size with ghosts " << manager->get_size_with_ghosts();
+      std::cout << ", manager size with ghosts "
+                << manager->get_size_with_ghosts();
       std::cout << " starts now." << std::endl;
     }
 
-    atom_vector_property.resize(
-        manager->get_consider_ghost_neighbours());
+    atom_vector_property.resize(manager->get_consider_ghost_neighbours());
     atom_dynamic_vector_property.resize(
         manager->get_consider_ghost_neighbours());
     if (verbose) {
@@ -102,7 +111,7 @@ namespace rascal {
     }
     for (auto atom : manager) {
       if (verbose) {
-        std::cout << ">> Atom with tag " << atom.get_atom_tag(); 
+        std::cout << ">> Atom with tag " << atom.get_atom_tag();
         std::cout << std::endl;
       }
       atom_vector_property[atom] = atom.get_position();
@@ -112,7 +121,8 @@ namespace rascal {
     for (auto atom : manager) {
       auto error = (atom_vector_property[atom] - atom.get_position()).norm();
       BOOST_CHECK_LE(error, tol * 100);
-      auto error_dynamic = (atom_dynamic_vector_property[atom] - atom.get_position()).norm();
+      auto error_dynamic =
+          (atom_dynamic_vector_property[atom] - atom.get_position()).norm();
       BOOST_CHECK_LE(error_dynamic, tol * 100);
     }
 
@@ -122,7 +132,8 @@ namespace rascal {
       std::cout << " finished." << std::endl;
     }
   }
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(fill_sequence_test, Fix, atom_vector_property_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(fill_sequence_test, Fix,
+                                   atom_vector_property_fixtures, Fix) {
     Fix::atom_scalar_property.fill_sequence(
         Fix::manager->get_consider_ghost_neighbours());
     size_t counter{0};
@@ -132,13 +143,15 @@ namespace rascal {
     }
   }
 
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(fill_atom_vector_property_test, Fix, atom_vector_property_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(fill_atom_vector_property_test, Fix,
+                                   atom_vector_property_fixtures, Fix) {
     bool verbose{false};
     if (verbose) {
       std::cout << ">> Test for manager ";
       std::cout << Fix::manager->get_name();
       std::cout << ", manager size " << Fix::manager->get_size();
-      std::cout << ", manager size with ghosts " << Fix::manager->get_size_with_ghosts();
+      std::cout << ", manager size with ghosts "
+                << Fix::manager->get_size_with_ghosts();
       std::cout << " starts now." << std::endl;
     }
 
@@ -160,32 +173,35 @@ namespace rascal {
     size_t counter{0};
     for (auto atom : Fix::manager->with_ghosts()) {
       if (verbose) {
-        std::cout << ">> Atom with tag " << atom.get_atom_tag(); 
+        std::cout << ">> Atom with tag " << atom.get_atom_tag();
         std::cout << std::endl;
       }
       Fix::atom_vector_property[atom] = atom.get_position();
       Fix::atom_dynamic_vector_property[atom] = atom.get_position();
       Fix::atom_scalar_property[atom] = counter;
-      Fix::atom_dynamic_scalar_property[atom] << counter; 
+      Fix::atom_dynamic_scalar_property[atom] << counter;
       // #BUG8486@(felix)
       // block spares properties do not take scalar values
       // but some eigen object, can you write how to assign an scalar value
       // to this property like for the two above
-      //Fix::sparse_atom_scalar_property[atom] << counter; // DOES NOT WORK
+      // Fix::sparse_atom_scalar_property[atom] << counter; // DOES NOT WORK
       counter++;
     }
 
     counter = 0;
     Eigen::MatrixXd eigen_counter(1, 1);
     for (auto atom : Fix::manager->with_ghosts()) {
-      auto error = (Fix::atom_vector_property[atom] - atom.get_position()).norm();
+      auto error =
+          (Fix::atom_vector_property[atom] - atom.get_position()).norm();
       BOOST_CHECK_LE(error, tol * 100);
-      auto error_dynamic = (Fix::atom_dynamic_vector_property[atom] - atom.get_position()).norm();
+      auto error_dynamic =
+          (Fix::atom_dynamic_vector_property[atom] - atom.get_position())
+              .norm();
       BOOST_CHECK_LE(error_dynamic, tol * 100);
       BOOST_CHECK_EQUAL(Fix::atom_scalar_property[atom], counter);
       eigen_counter << counter;
       BOOST_CHECK_EQUAL(Fix::atom_dynamic_scalar_property[atom], eigen_counter);
-      //BOOST_CHECK_EQUAL(Fix::atom_scalar_property[atom], eigen_counter);
+      // BOOST_CHECK_EQUAL(Fix::atom_scalar_property[atom], eigen_counter);
       counter++;
     }
 
@@ -199,13 +215,15 @@ namespace rascal {
   /*
    * checks if the properties associated with atoms and pairs can be filled
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(fill_pair_property_test, Fix, pair_property_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(fill_pair_property_test, Fix,
+                                   pair_property_fixtures, Fix) {
     bool verbose{false};
     if (verbose) {
       std::cout << ">> Test for manager ";
       std::cout << Fix::manager->get_name();
       std::cout << ", manager size " << Fix::manager->get_size();
-      std::cout << ", manager size with ghosts " << Fix::manager->get_size_with_ghosts();
+      std::cout << ", manager size with ghosts "
+                << Fix::manager->get_size_with_ghosts();
       std::cout << " starts now." << std::endl;
     }
 
@@ -227,7 +245,8 @@ namespace rascal {
 
     pair_property_counter = 0;
     for (auto atom : Fix::manager->with_ghosts()) {
-      auto error = (Fix::atom_vector_property[atom] - atom.get_position()).norm();
+      auto error =
+          (Fix::atom_vector_property[atom] - atom.get_position()).norm();
       BOOST_CHECK_LE(error, tol * 100);
       for (auto pair : atom) {
         BOOST_CHECK_EQUAL(Fix::pair_property[pair], ++pair_property_counter);
@@ -241,7 +260,8 @@ namespace rascal {
     }
   }
 
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(fill_triple_property_test, Fix, triple_property_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(fill_triple_property_test, Fix,
+                                   triple_property_fixtures, Fix) {
     bool verbose{false};
     if (verbose) {
       std::cout << ">> Test for manager ";
@@ -249,11 +269,13 @@ namespace rascal {
       std::cout << " and consider_ghost_neighbours=";
       std::cout << Fix::manager->get_consider_ghost_neighbours();
       std::cout << ", manager size " << Fix::manager->get_size();
-      std::cout << ", manager size with ghosts " << Fix::manager->get_size_with_ghosts();
+      std::cout << ", manager size with ghosts "
+                << Fix::manager->get_size_with_ghosts();
       std::cout << " starts now." << std::endl;
     }
 
-    Fix::atom_vector_property.resize(Fix::manager->get_consider_ghost_neighbours());
+    Fix::atom_vector_property.resize(
+        Fix::manager->get_consider_ghost_neighbours());
     Fix::pair_property.resize();
     Fix::triple_property.resize();
     if (verbose) {
@@ -280,12 +302,14 @@ namespace rascal {
     pair_property_counter = 0;
     triple_property_counter = 0;
     for (auto atom : Fix::manager->with_ghosts()) {
-      auto error = (Fix::atom_vector_property[atom] - atom.get_position()).norm();
+      auto error =
+          (Fix::atom_vector_property[atom] - atom.get_position()).norm();
       BOOST_CHECK_LE(error, tol * 100);
       for (auto pair : atom) {
         BOOST_CHECK_EQUAL(Fix::pair_property[pair], ++pair_property_counter);
         for (auto triple : pair) {
-          BOOST_CHECK_EQUAL(Fix::triple_property[triple], ++triple_property_counter);
+          BOOST_CHECK_EQUAL(Fix::triple_property[triple],
+                            ++triple_property_counter);
         }
       }
     }
@@ -297,13 +321,14 @@ namespace rascal {
     }
   }
 
-
   /* ---------------------------------------------------------------------- */
-  /* If consider_ghost_neighbours is true the atoms index should 
+  /* If consider_ghost_neighbours is true the atoms index should
    * correspond to the cluster index of order 1 when StructureManagerCenters is
    * used as  root implementation and no filtering on order 1 has been done.
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_vector_property_fixtures_tests, Fix, atom_vector_property_fixtures_with_ghosts, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_vector_property_fixtures_tests, Fix,
+                                   atom_vector_property_fixtures_with_ghosts,
+                                   Fix) {
     bool verbose{false};
     if (verbose) {
       std::cout << ">> Test for manager ";
@@ -319,7 +344,8 @@ namespace rascal {
         std::cout << Fix::manager->get_atom_index(atom.get_atom_tag());
         std::cout << "." << std::endl;
       }
-      BOOST_CHECK_EQUAL(Fix::manager->get_atom_index(atom.get_atom_tag()), cluster_index);
+      BOOST_CHECK_EQUAL(Fix::manager->get_atom_index(atom.get_atom_tag()),
+                        cluster_index);
       cluster_index++;
     }
     if (verbose) {
@@ -328,11 +354,12 @@ namespace rascal {
       std::cout << " finished." << std::endl;
     }
   }
-  
+
   /* ---------------------------------------------------------------------- */
-  /* Access of atom property with pair. 
+  /* Access of atom property with pair.
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_vector_property_access_with_pair_tests, Fix, pair_property_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_vector_property_access_with_pair_tests,
+                                   Fix, pair_property_fixtures, Fix) {
     bool verbose{false};
     if (verbose) {
       std::cout << ">> Test for manager ";
@@ -340,17 +367,19 @@ namespace rascal {
       std::cout << " and consider_ghost_neighbours=";
       std::cout << Fix::manager->get_consider_ghost_neighbours();
       std::cout << ", manager size " << Fix::manager->get_size();
-      std::cout << ", manager size with ghosts " << Fix::manager->get_size_with_ghosts();
+      std::cout << ", manager size with ghosts "
+                << Fix::manager->get_size_with_ghosts();
       std::cout << " starts now." << std::endl;
     }
     // initalize the positions
     Fix::atom_scalar_property.resize(false);
     if (verbose) {
-      std::cout << ">> Property for consider_ghost_atoms=false resized to size ";
+      std::cout
+          << ">> Property for consider_ghost_atoms=false resized to size ";
       std::cout << Fix::atom_scalar_property.size();
       std::cout << std::endl;
     }
-    //Fix::atom_dynamic_scalar_property.resize();
+    // Fix::atom_dynamic_scalar_property.resize();
     for (auto atom : Fix::manager) {
       if (verbose) {
         std::cout << ">> Property for atom with tag ";
@@ -359,18 +388,18 @@ namespace rascal {
         std::cout << std::endl;
       }
       Fix::atom_scalar_property[atom] = 0;
-      //Fix::atom_dynamic_scalar_property[atom] = 0;
-      //Fix::sparse_atom_scalar_property[atom] = 0;
+      // Fix::atom_dynamic_scalar_property[atom] = 0;
+      // Fix::sparse_atom_scalar_property[atom] = 0;
     }
     std::vector<size_t> counters{};
     size_t nb_central_atoms = Fix::manager->get_size();
     counters.reserve(nb_central_atoms);
-    for (size_t i{0}; i<counters.capacity(); i++) {
+    for (size_t i{0}; i < counters.capacity(); i++) {
       counters.push_back(0);
     }
     if (verbose) {
       std::cout << ">> Counters initialized with size ";
-      std::cout <<  counters.size() << std::endl;
+      std::cout << counters.size() << std::endl;
     }
     // add the position to the atom and count how often this happens
     for (auto atom : Fix::manager->with_ghosts()) {
@@ -383,18 +412,20 @@ namespace rascal {
           std::cout << std::endl;
         }
         Fix::atom_scalar_property[pair]++;
-        //Fix::atom_dynamic_scalar_property[pair]++;
-        //Fix::sparse_atom_scalar_property[pair]++;
-        counters.at(Fix::manager->get_atom_index(pair.get_internal_neighbour_atom_tag()))++;
+        // Fix::atom_dynamic_scalar_property[pair]++;
+        // Fix::sparse_atom_scalar_property[pair]++;
+        counters.at(Fix::manager->get_atom_index(
+            pair.get_internal_neighbour_atom_tag()))++;
       }
     }
     for (auto atom : Fix::manager) {
-      size_t counters_at_cluster_index = counters.at(Fix::manager->get_atom_index(atom.get_atom_tag()));
+      size_t counters_at_cluster_index =
+          counters.at(Fix::manager->get_atom_index(atom.get_atom_tag()));
       BOOST_CHECK_EQUAL(Fix::atom_scalar_property[atom],
-          counters_at_cluster_index);
-      //BOOST_CHECK_EQUAL(Fix::atom_dynamic_scalar_property[atom],
+                        counters_at_cluster_index);
+      // BOOST_CHECK_EQUAL(Fix::atom_dynamic_scalar_property[atom],
       //    counters_at_cluster_index);
-      //BOOST_CHECK_EQUAL(Fix::sparse_atom_scalar_property[atom],
+      // BOOST_CHECK_EQUAL(Fix::sparse_atom_scalar_property[atom],
       //    counters_at_cluster_index);
     }
     if (verbose) {
@@ -404,7 +435,8 @@ namespace rascal {
     }
   }
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(order_three_constructor_tests, Fix, triple_property_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(order_three_constructor_tests, Fix,
+                                   triple_property_fixtures, Fix) {
     bool verbose{false};
     if (verbose) {
       std::cout << ">> Test for manager ";
@@ -413,9 +445,11 @@ namespace rascal {
       std::cout << " finished." << std::endl;
     }
   }
-  /* Access of atom property with triple. 
+  /* Access of atom property with triple.
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_vector_property_access_with_triple_tests, Fix, triple_property_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(
+      atom_vector_property_access_with_triple_tests, Fix,
+      triple_property_fixtures, Fix) {
     bool verbose{false};
     if (verbose) {
       std::cout << ">> Test for manager ";
@@ -423,7 +457,8 @@ namespace rascal {
       std::cout << " and consider_ghost_neighbours=";
       std::cout << Fix::manager->get_consider_ghost_neighbours();
       std::cout << ", manager size " << Fix::manager->get_size();
-      std::cout << ", manager size with ghosts " << Fix::manager->get_size_with_ghosts();
+      std::cout << ", manager size with ghosts "
+                << Fix::manager->get_size_with_ghosts();
       std::cout << " starts now." << std::endl;
     }
     Fix::atom_scalar_property.resize(false);
@@ -435,7 +470,7 @@ namespace rascal {
     }
     for (auto atom : Fix::manager) {
       if (verbose) {
-        std::cout << ">> Atom tag " << atom.get_atom_tag(); 
+        std::cout << ">> Atom tag " << atom.get_atom_tag();
         std::cout << std::endl;
       }
       Fix::atom_scalar_property[atom] = 0;
@@ -443,36 +478,45 @@ namespace rascal {
     std::vector<size_t> counters{};
     size_t nb_central_atoms = Fix::manager->get_size();
     counters.reserve(nb_central_atoms);
-    for (size_t i{0}; i<counters.capacity(); i++) {
+    for (size_t i{0}; i < counters.capacity(); i++) {
       counters.push_back(0);
     }
-    
+
     // add the position to the atom and count how often this happens
     for (auto atom : Fix::manager->with_ghosts()) {
       for (auto pair : atom) {
         for (auto triple : pair) {
           if (verbose) {
-            std::cout << ">> Atom with tag " << triple.get_internal_neighbour_atom_tag(); 
-            std::cout << " and cluster index " << Fix::manager->get_atom_index(triple.get_internal_neighbour_atom_tag()); 
+            std::cout << ">> Atom with tag "
+                      << triple.get_internal_neighbour_atom_tag();
+            std::cout << " and cluster index "
+                      << Fix::manager->get_atom_index(
+                             triple.get_internal_neighbour_atom_tag());
             std::cout << std::endl;
           }
           Fix::atom_scalar_property[triple]++;
-          counters.at(Fix::manager->get_atom_index(triple.get_internal_neighbour_atom_tag()))++;
+          counters.at(Fix::manager->get_atom_index(
+              triple.get_internal_neighbour_atom_tag()))++;
         }
       }
     }
     for (auto atom : Fix::manager) {
       if (verbose) {
-        std::cout << ">> atom.get_atom_tag() is "
-                  << atom.get_atom_tag() << std::endl;
+        std::cout << ">> atom.get_atom_tag() is " << atom.get_atom_tag()
+                  << std::endl;
         std::cout << ">> manager->get_atom_index(atom.get_atom_tag()) is "
-                  << Fix::manager->get_atom_index(atom.get_atom_tag()) << std::endl;
+                  << Fix::manager->get_atom_index(atom.get_atom_tag())
+                  << std::endl;
         std::cout << ">> atom_scalar_property[atom] is "
                   << Fix::atom_scalar_property[atom] << std::endl;
-        std::cout << ">> counters.at(manager->get_atom_index(atom.get_atom_tag())) is "
-                  << counters.at(Fix::manager->get_atom_index(atom.get_atom_tag())) << std::endl;
+        std::cout
+            << ">> counters.at(manager->get_atom_index(atom.get_atom_tag())) "
+               "is "
+            << counters.at(Fix::manager->get_atom_index(atom.get_atom_tag()))
+            << std::endl;
       }
-      BOOST_CHECK_EQUAL(Fix::atom_scalar_property[atom],
+      BOOST_CHECK_EQUAL(
+          Fix::atom_scalar_property[atom],
           counters.at(Fix::manager->get_atom_index(atom.get_atom_tag())));
     }
     if (verbose) {
@@ -484,9 +528,9 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   /* The access of an order one property with the atom itself
    * and the pair with the atom as neighbour should be the same.
-   */ 
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(fill_test_simple_order_one_property,
-                          Fix, pair_property_fixtures, Fix) {
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(fill_test_simple_order_one_property, Fix,
+                                   pair_property_fixtures, Fix) {
     bool verbose{false};
     if (verbose) {
       std::cout << ">> Test for manager ";
@@ -503,7 +547,9 @@ namespace rascal {
       for (auto atom2 : Fix::manager) {
         for (auto pair : atom) {
           if (atom.back() == pair.back()) {
-            auto error = (Fix::atom_vector_property[atom] - Fix::atom_vector_property[pair]).norm();
+            auto error = (Fix::atom_vector_property[atom] -
+                          Fix::atom_vector_property[pair])
+                             .norm();
             BOOST_CHECK_LE(error, tol * 100);
           }
         }
@@ -520,8 +566,8 @@ namespace rascal {
   /**
    * test, if metadata can be assigned to properties
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(meta_data_test,
-      Fix, atom_vector_property_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(meta_data_test, Fix,
+                                   atom_vector_property_fixtures, Fix) {
     bool verbose{false};
     if (verbose) {
       std::cout << ">> Test for manager ";
@@ -529,12 +575,15 @@ namespace rascal {
       std::cout << " starts now." << std::endl;
     }
     auto atom_metadata = Fix::atom_vector_property.get_metadata();
-    auto dynamic_metadata = Fix::atom_dynamic_vector_unit_property.get_metadata();
+    auto dynamic_metadata =
+        Fix::atom_dynamic_vector_unit_property.get_metadata();
     auto dynamic_metadata2 = Fix::atom_dynamic_vector_property.get_metadata();
 
     BOOST_CHECK_EQUAL(atom_metadata, Fix::atom_vector_property_metadata);
-    BOOST_CHECK_EQUAL(dynamic_metadata, Fix::atom_dynamic_vector_unit_property_metadata);
-    BOOST_CHECK_EQUAL(dynamic_metadata2, Fix::atom_dynamic_vector_property_metadata);
+    BOOST_CHECK_EQUAL(dynamic_metadata,
+                      Fix::atom_dynamic_vector_unit_property_metadata);
+    BOOST_CHECK_EQUAL(dynamic_metadata2,
+                      Fix::atom_dynamic_vector_property_metadata);
     if (verbose) {
       std::cout << ">> Test for manager ";
       std::cout << Fix::manager->get_name();
@@ -548,8 +597,8 @@ namespace rascal {
    * and comparing if retrieval of those is consistent with the data that was
    * put in
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(fill_test_complex,
-      Fix, pair_property_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(fill_test_complex, Fix,
+                                   pair_property_fixtures, Fix) {
     bool verbose{false};
     if (verbose) {
       std::cout << ">> Test for manager ";
@@ -561,12 +610,12 @@ namespace rascal {
     Fix::atom_dynamic_vector_unit_property.resize();
     Fix::atom_dynamic_vector_property.resize();
 
-    BOOST_CHECK_THROW(
-        Fix::AtomVectorProperty_t ::check_compatibility(Fix::atom_dynamic_vector_unit_property),
-        std::runtime_error);
+    BOOST_CHECK_THROW(Fix::AtomVectorProperty_t ::check_compatibility(
+                          Fix::atom_dynamic_vector_unit_property),
+                      std::runtime_error);
 
-    BOOST_CHECK_NO_THROW(
-        Fix::AtomVectorProperty_t ::check_compatibility(Fix::atom_vector_property));
+    BOOST_CHECK_NO_THROW(Fix::AtomVectorProperty_t ::check_compatibility(
+        Fix::atom_vector_property));
 
     int pair_property_counter{};
     size_t counter{};
@@ -574,29 +623,35 @@ namespace rascal {
       Fix::atom_vector_property[atom] = atom.get_position();
       Fix::atom_dynamic_vector_property[atom] = atom.get_position();
 
-      Fix::atom_dynamic_vector_unit_property[atom] << counter++, counter, counter;
+      Fix::atom_dynamic_vector_unit_property[atom] << counter++, counter,
+          counter;
       for (auto pair : atom) {
         Fix::pair_property[pair] = ++pair_property_counter;
       }
     }
 
-    auto & FakeSizedProperty{
-      Fix::AtomVectorProperty_t::check_compatibility(Fix::atom_dynamic_vector_property)};
+    auto & FakeSizedProperty{Fix::AtomVectorProperty_t::check_compatibility(
+        Fix::atom_dynamic_vector_property)};
 
     pair_property_counter = 0;
     counter = 0;
     for (auto atom : Fix::manager) {
-      auto error = (Fix::atom_vector_property[atom] - atom.get_position()).norm();
+      auto error =
+          (Fix::atom_vector_property[atom] - atom.get_position()).norm();
       BOOST_CHECK_LE(error, tol * 100);
-      Eigen::Matrix<size_t, Fix::DynSize(), Eigen::Dynamic> tmp(Fix::DynSize(), 1);
+      Eigen::Matrix<size_t, Fix::DynSize(), Eigen::Dynamic> tmp(Fix::DynSize(),
+                                                                1);
       tmp << counter++, counter, counter;
 
       auto ierror{(tmp - Fix::atom_dynamic_vector_unit_property[atom]).norm()};
       BOOST_CHECK_EQUAL(ierror, 0);
 
-      error = (Fix::atom_vector_property[atom] - Fix::atom_dynamic_vector_property[atom]).norm();
+      error = (Fix::atom_vector_property[atom] -
+               Fix::atom_dynamic_vector_property[atom])
+                  .norm();
       BOOST_CHECK_LE(error, tol * 100);
-      error = (Fix::atom_vector_property[atom] - FakeSizedProperty[atom]).norm();
+      error =
+          (Fix::atom_vector_property[atom] - FakeSizedProperty[atom]).norm();
       BOOST_CHECK_LE(error, tol * 100);
       for (auto pair : atom) {
         BOOST_CHECK_EQUAL(Fix::pair_property[pair], ++pair_property_counter);
@@ -614,8 +669,8 @@ namespace rascal {
    * test for retrieval of information from property: is it the same that was
    * put in?
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(compute_distances,
-      Fix, pair_property_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(compute_distances, Fix,
+                                   pair_property_fixtures, Fix) {
     bool verbose{false};
     if (verbose) {
       std::cout << ">> Test for manager ";

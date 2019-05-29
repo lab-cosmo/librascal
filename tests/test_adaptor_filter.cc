@@ -122,8 +122,10 @@ namespace rascal {
       std::cout << ">> Test for manager ";
       std::cout << Fix::fixture.manager->get_name();
       std::cout << ", manager size " << Fix::fixture.manager->get_size();
-      std::cout << ", manager size with ghosts " << Fix::fixture.manager->get_size_with_ghosts();
-      std::cout << ", manager size nb_clusters[Order=2] " << Fix::fixture.manager->get_nb_clusters(2);
+      std::cout << ", manager size with ghosts "
+                << Fix::fixture.manager->get_size_with_ghosts();
+      std::cout << ", manager size nb_clusters[Order=2] "
+                << Fix::fixture.manager->get_nb_clusters(2);
       std::cout << " starts now." << std::endl;
     }
     std::random_device rd{};
@@ -131,13 +133,13 @@ namespace rascal {
     std::vector<std::array<int, 2>> atom_tag_list{};
 
     for (auto atom : Fix::fixture.manager) {
-        if (verbose) {
-          std::cout << ">> Atom with cluster index ";
-          std::cout << atom.get_cluster_indices()[0];
-          std::cout << " and with atom tag ";
-          std::cout << atom.get_atom_tag();
-          std::cout << std::endl;
-        }
+      if (verbose) {
+        std::cout << ">> Atom with cluster index ";
+        std::cout << atom.get_cluster_indices()[0];
+        std::cout << " and with atom tag ";
+        std::cout << atom.get_atom_tag();
+        std::cout << std::endl;
+      }
       for (auto pair : atom) {
         if (verbose) {
           std::cout << ">> Pair with cluster index ";

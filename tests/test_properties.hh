@@ -25,11 +25,10 @@
  * along with this software; see the file LICENSE. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
-  */
+ */
 
 #ifndef TESTS_TEST_PROPERTIES_HH_
 #define TESTS_TEST_PROPERTIES_HH_
-
 
 #include "tests.hh"
 #include "test_structure.hh"
@@ -39,7 +38,6 @@
 #include <random>
 #include <set>
 
-
 namespace rascal {
 
   /* ---------------------------------------------------------------------- */
@@ -47,7 +45,7 @@ namespace rascal {
    * A fixture for testing properties. It is based on the PairFixture, which is
    * basically a fixture which provides a pair neighbour list based on positions
    * which are initialized in the tests.
-   */ 
+   */
 
   // #BUG8486@(markus), #BUG8486@(felix) I made new Fixtures, Multiple*Fixture
   // does not match this use case because I need the manager already initialized
@@ -57,9 +55,9 @@ namespace rascal {
   // stack and replaces it for higher stacks. For the property tests what test
   // data is load into the manager is not important, since we make our own
   // properties.
-  
+
   template <class StackFixture>
-  struct AtomPropertyFixture: StackFixture {
+  struct AtomPropertyFixture : StackFixture {
     using Parent = StackFixture;
     using Manager_t = typename Parent::Manager_t;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
@@ -70,26 +68,28 @@ namespace rascal {
         typename Manager_t::template Property_t<double, 1, 3, 1>;
     using AtomDynamicUnitProperty_t =
         typename Manager_t::template TypedProperty_t<size_t, 1>;
-    using AtomDynamicProperty_t  =
+    using AtomDynamicProperty_t =
         typename Manager_t::template TypedProperty_t<double, 1>;
-    using SparseAtomScalarProperty_t = 
-      typename Manager_t::template BlockSparseProperty_t<double, 1>;
+    using SparseAtomScalarProperty_t =
+        typename Manager_t::template BlockSparseProperty_t<double, 1>;
 
     constexpr static Dim_t DynSize() { return 3; }
 
     std::string atom_vector_property_metadata{"positions"};
-    std::string atom_dynamic_vector_unit_property_metadata{"arbitrary counters"};
+    std::string atom_dynamic_vector_unit_property_metadata{
+        "arbitrary counters"};
     std::string atom_dynamic_vector_property_metadata{"distances"};
 
     AtomPropertyFixture()
-          : StackFixture{}, atom_scalar_property{*this->manager},
+        : StackFixture{}, atom_scalar_property{*this->manager},
           atom_vector_property{*this->manager, atom_vector_property_metadata},
-          atom_dynamic_scalar_property{*this->manager, 1, 1,
-                           atom_dynamic_vector_unit_property_metadata},
-          atom_dynamic_vector_unit_property{*this->manager, DynSize(), 1,
-                           atom_dynamic_vector_unit_property_metadata},
+          atom_dynamic_scalar_property{
+              *this->manager, 1, 1, atom_dynamic_vector_unit_property_metadata},
+          atom_dynamic_vector_unit_property{
+              *this->manager, DynSize(), 1,
+              atom_dynamic_vector_unit_property_metadata},
           atom_dynamic_vector_property{*this->manager, DynSize(), 1,
-                            atom_dynamic_vector_property_metadata},
+                                       atom_dynamic_vector_property_metadata},
           sparse_atom_scalar_property{*this->manager} {}
 
     AtomScalarProperty_t atom_scalar_property;
@@ -101,7 +101,7 @@ namespace rascal {
   };
 
   template <class StackFixture>
-  struct PairPropertyFixture: AtomPropertyFixture<StackFixture> {
+  struct PairPropertyFixture : AtomPropertyFixture<StackFixture> {
     using Parent = AtomPropertyFixture<StackFixture>;
     using Manager_t = typename Parent::Manager_t;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
@@ -109,83 +109,85 @@ namespace rascal {
     using PairScalarProperty_t =
         typename Manager_t::template Property_t<double, 2>;
 
-    PairPropertyFixture() : Parent{}, 
-          pair_property{*this->manager} {}
+    PairPropertyFixture() : Parent{}, pair_property{*this->manager} {}
     PairScalarProperty_t pair_property;
   };
 
   template <class StackFixture>
-  struct TriplePropertyFixture: PairPropertyFixture<StackFixture> {
+  struct TriplePropertyFixture : PairPropertyFixture<StackFixture> {
     using Parent = PairPropertyFixture<StackFixture>;
     using Manager_t = typename Parent::Manager_t;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
 
     using TripleScalarProperty_t =
         typename Manager_t::template Property_t<double, 3>;
-    TriplePropertyFixture()
-          : Parent{}, triple_property{*this->manager} {} 
+    TriplePropertyFixture() : Parent{}, triple_property{*this->manager} {}
 
     TripleScalarProperty_t triple_property;
   };
-  
-  template<bool consider_ghost_neighbours>
+
+  template <bool consider_ghost_neighbours>
   struct ANL_SMC_StackFixture_Helper {
-    using type = AdaptorNeighbourListStackFixture<
-      StructureManagerCentersStackFixture, consider_ghost_neighbours>;
+    using type =
+        AdaptorNeighbourListStackFixture<StructureManagerCentersStackFixture,
+                                         consider_ghost_neighbours>;
   };
 
   // Helper types to concat template lists
-  template< typename ta, typename tb >
+  template <typename ta, typename tb>
   struct tuple_cat;
 
-  template< typename ... a, typename ... b >
-  struct tuple_cat< std::tuple< a ... >, std::tuple< b ... > >
-    { typedef std::tuple< a ..., b ... > type; };
+  template <typename... a, typename... b>
+  struct tuple_cat<std::tuple<a...>, std::tuple<b...>> {
+    typedef std::tuple<a..., b...> type;
+  };
 
   // Helper types to uppack the tuple template arguments and pack them into a
   //  boost::mpl::list
-  template< typename ta>
+  template <typename ta>
   struct pack_into_list;
 
-  template<typename ... a>
-  struct pack_into_list< std::tuple < a ... > >
-    { using type = boost::mpl::list<a ...>;};
+  template <typename... a>
+  struct pack_into_list<std::tuple<a...>> {
+    using type = boost::mpl::list<a...>;
+  };
 
-  using ANLWithGhosts_SMC_StackFixture = AdaptorNeighbourListStackFixture<
-    StructureManagerCentersStackFixture, true>;
-  using ANLWithoutGhosts_SMC_StackFixture = AdaptorNeighbourListStackFixture<
-    StructureManagerCentersStackFixture, false>;
+  using ANLWithGhosts_SMC_StackFixture =
+      AdaptorNeighbourListStackFixture<StructureManagerCentersStackFixture,
+                                       true>;
+  using ANLWithoutGhosts_SMC_StackFixture =
+      AdaptorNeighbourListStackFixture<StructureManagerCentersStackFixture,
+                                       false>;
 
-  struct OrderOnePropertyBoostList  {
-    template<bool consider_ghost_neighbours>
+  struct OrderOnePropertyBoostList {
+    template <bool consider_ghost_neighbours>
     struct OrderTwoFixtureStacksTuple {
-      using ANL_SMC_TemplatedStackFixture = AdaptorNeighbourListStackFixture<
-        StructureManagerCentersStackFixture, consider_ghost_neighbours>;      
+      using ANL_SMC_TemplatedStackFixture =
+          AdaptorNeighbourListStackFixture<StructureManagerCentersStackFixture,
+                                           consider_ghost_neighbours>;
       using type = std::tuple<
-        AtomPropertyFixture<ANL_SMC_TemplatedStackFixture>,
-        AtomPropertyFixture<AdaptorHalfListStackFixture<
-            ANL_SMC_TemplatedStackFixture>>,
-        AtomPropertyFixture<AdaptorStrictStackFixture<
-            ANL_SMC_TemplatedStackFixture>>,
-        AtomPropertyFixture<AdaptorStrictStackFixture<
-            AdaptorHalfListStackFixture<ANL_SMC_TemplatedStackFixture>>>
-        >;
+          AtomPropertyFixture<ANL_SMC_TemplatedStackFixture>,
+          AtomPropertyFixture<
+              AdaptorHalfListStackFixture<ANL_SMC_TemplatedStackFixture>>,
+          AtomPropertyFixture<
+              AdaptorStrictStackFixture<ANL_SMC_TemplatedStackFixture>>,
+          AtomPropertyFixture<AdaptorStrictStackFixture<
+              AdaptorHalfListStackFixture<ANL_SMC_TemplatedStackFixture>>>>;
     };
     using tuple_order_3 = std::tuple<
+        AtomPropertyFixture<
+            AdaptorMaxOrderStackFixture<ANLWithGhosts_SMC_StackFixture>>,
         AtomPropertyFixture<AdaptorMaxOrderStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>,
+            AdaptorHalfListStackFixture<ANLWithGhosts_SMC_StackFixture>>>,
         AtomPropertyFixture<AdaptorMaxOrderStackFixture<
-            AdaptorHalfListStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>>,
-        AtomPropertyFixture<AdaptorMaxOrderStackFixture<
-            AdaptorStrictStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>>,
-        AtomPropertyFixture<AdaptorMaxOrderStackFixture<
-            AdaptorStrictStackFixture<AdaptorHalfListStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>>> >;
+            AdaptorStrictStackFixture<ANLWithGhosts_SMC_StackFixture>>>,
+        AtomPropertyFixture<
+            AdaptorMaxOrderStackFixture<AdaptorStrictStackFixture<
+                AdaptorHalfListStackFixture<ANLWithGhosts_SMC_StackFixture>>>>>;
 
     using tuple_order_2_with_ghosts = OrderTwoFixtureStacksTuple<true>::type;
-    using tuple_with_ghosts = tuple_cat<tuple_order_2_with_ghosts, tuple_order_3>::type;
+    using tuple_with_ghosts =
+        tuple_cat<tuple_order_2_with_ghosts, tuple_order_3>::type;
     using type_with_ghosts = pack_into_list<tuple_with_ghosts>::type;
     using tuple_without_ghosts = OrderTwoFixtureStacksTuple<false>::type;
     using type_without_ghosts = pack_into_list<tuple_without_ghosts>::type;
@@ -194,30 +196,31 @@ namespace rascal {
   };
 
   struct OrderTwoPropertyBoostList {
-    template<bool consider_ghost_neighbours>
+    template <bool consider_ghost_neighbours>
     struct OrderTwoFixtureStacksTuple {
-      using ANL_SMC_TemplatedStackFixture = AdaptorNeighbourListStackFixture<
-        StructureManagerCentersStackFixture, consider_ghost_neighbours>;      
+      using ANL_SMC_TemplatedStackFixture =
+          AdaptorNeighbourListStackFixture<StructureManagerCentersStackFixture,
+                                           consider_ghost_neighbours>;
       using type = std::tuple<
-        PairPropertyFixture<ANL_SMC_TemplatedStackFixture>,
-        PairPropertyFixture<AdaptorHalfListStackFixture<
-            ANL_SMC_TemplatedStackFixture>>,
-        PairPropertyFixture<AdaptorStrictStackFixture<
-            ANL_SMC_TemplatedStackFixture>>,
-        PairPropertyFixture<AdaptorStrictStackFixture<
-            AdaptorHalfListStackFixture<ANL_SMC_TemplatedStackFixture>>>
-        >;
+          PairPropertyFixture<ANL_SMC_TemplatedStackFixture>,
+          PairPropertyFixture<
+              AdaptorHalfListStackFixture<ANL_SMC_TemplatedStackFixture>>,
+          PairPropertyFixture<
+              AdaptorStrictStackFixture<ANL_SMC_TemplatedStackFixture>>,
+          PairPropertyFixture<AdaptorStrictStackFixture<
+              AdaptorHalfListStackFixture<ANL_SMC_TemplatedStackFixture>>>>;
     };
 
     using tuple_order_3 = std::tuple<
-        PairPropertyFixture<AdaptorMaxOrderStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>,
-        PairPropertyFixture<AdaptorMaxOrderStackFixture<
-            AdaptorStrictStackFixture<AdaptorHalfListStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>>> >;
+        PairPropertyFixture<
+            AdaptorMaxOrderStackFixture<ANLWithGhosts_SMC_StackFixture>>,
+        PairPropertyFixture<
+            AdaptorMaxOrderStackFixture<AdaptorStrictStackFixture<
+                AdaptorHalfListStackFixture<ANLWithGhosts_SMC_StackFixture>>>>>;
 
     using tuple_order_2_with_ghosts = OrderTwoFixtureStacksTuple<true>::type;
-    using tuple_with_ghosts = tuple_cat<tuple_order_2_with_ghosts, tuple_order_3>::type;
+    using tuple_with_ghosts =
+        tuple_cat<tuple_order_2_with_ghosts, tuple_order_3>::type;
     using type_with_ghosts = pack_into_list<tuple_with_ghosts>::type;
 
     using tuple_without_ghosts = OrderTwoFixtureStacksTuple<false>::type;
@@ -228,15 +231,15 @@ namespace rascal {
 
   struct OrderThreePropertyBoostList {
     using tuple = std::tuple<
-        TriplePropertyFixture<AdaptorMaxOrderStackFixture<ANLWithGhosts_SMC_StackFixture>>,
-        TriplePropertyFixture<AdaptorMaxOrderStackFixture<AdaptorHalfListStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>>,
-        TriplePropertyFixture<AdaptorMaxOrderStackFixture<AdaptorStrictStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>>,
+        TriplePropertyFixture<
+            AdaptorMaxOrderStackFixture<ANLWithGhosts_SMC_StackFixture>>,
         TriplePropertyFixture<AdaptorMaxOrderStackFixture<
-            AdaptorStrictStackFixture<AdaptorHalfListStackFixture<
-            ANLWithGhosts_SMC_StackFixture>>>>
-        >;
+            AdaptorHalfListStackFixture<ANLWithGhosts_SMC_StackFixture>>>,
+        TriplePropertyFixture<AdaptorMaxOrderStackFixture<
+            AdaptorStrictStackFixture<ANLWithGhosts_SMC_StackFixture>>>,
+        TriplePropertyFixture<
+            AdaptorMaxOrderStackFixture<AdaptorStrictStackFixture<
+                AdaptorHalfListStackFixture<ANLWithGhosts_SMC_StackFixture>>>>>;
     using type = pack_into_list<tuple>::type;
   };
 }  // namespace rascal

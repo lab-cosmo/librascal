@@ -46,7 +46,8 @@ namespace rascal {
   /**
    * Test if the Fixture with multiple structures builds
    */
-  //BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_setup_test, Fix, multiple_fixtures,
+  // BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_setup_test, Fix,
+  // multiple_fixtures,
   //                                 Fix) {}
 
   /* ---------------------------------------------------------------------- */

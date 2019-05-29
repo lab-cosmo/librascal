@@ -49,8 +49,8 @@ namespace rascal {
    * which can be access with clusters directly, without the need for dealing
    * with indices.
    */
-  template <typename T, size_t Order, size_t PropertyLayer, class Manager, Dim_t NbRow = 1,
-            Dim_t NbCol = 1>
+  template <typename T, size_t Order, size_t PropertyLayer, class Manager,
+            Dim_t NbRow = 1, Dim_t NbCol = 1>
   class Property : public TypedProperty<T, Order, PropertyLayer, Manager> {
     static_assert((std::is_arithmetic<T>::value ||
                    std::is_same<T, std::complex<double>>::value),
@@ -80,8 +80,7 @@ namespace rascal {
     Property() = delete;
 
     //! Constructor with Manager
-    Property(Manager_t & manager,
-             std::string metadata = "no metadata")
+    explicit Property(Manager_t & manager, std::string metadata = "no metadata")
         : Parent{manager, NbRow, NbCol, metadata} {}
     // Property(std::shared_ptr<StructureManagerBase> manager,
     //          std::string metadata = "no metadata")
@@ -183,23 +182,24 @@ namespace rascal {
     /**
      * Property accessor by cluster ref
      */
-    //template <size_t CallerLayer, size_t ParentLayer , size_t NeighbourLayer, size_t Order_= Order>
-    //inline std::enable_if_t<not(Order_==1), reference>
+    // template <size_t CallerLayer, size_t ParentLayer , size_t NeighbourLayer,
+    // size_t Order_= Order> inline std::enable_if_t<not(Order_==1), reference>
     template <size_t CallerLayer>
     inline reference operator[](const ClusterRefKey<Order, CallerLayer> & id) {
-     static_assert(CallerLayer >= PropertyLayer,
-                   "You are trying to access a property that "
-                   "does not exist at this depth in the "
-                   "adaptor stack.");
-     return this->operator[](id.get_cluster_index(CallerLayer));
+      static_assert(CallerLayer >= PropertyLayer,
+                    "You are trying to access a property that "
+                    "does not exist at this depth in the "
+                    "adaptor stack.");
+      return this->operator[](id.get_cluster_index(CallerLayer));
     }
 
-    template <size_t CallerOrder, size_t CallerLayer, size_t Order_= Order>
-    inline std::enable_if_t<(Order_==1) and (CallerOrder>1), reference>
-    operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
-     // #BUG8486@(all) we can just use the managers function to get the
-     // corresponding cluster index, no need to save this in the cluster
-     return this->operator[](this->get_manager().get_atom_index(id.get_internal_neighbour_atom_tag()));
+    template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order>
+    inline std::enable_if_t<(Order_ == 1) and (CallerOrder > 1), reference> 
+        operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
+      // #BUG8486@(all) we can just use the managers function to get the
+      // corresponding cluster index, no need to save this in the cluster
+      return this->operator[](this->get_manager().get_atom_index(
+          id.get_internal_neighbour_atom_tag()));
     }
 
     /**

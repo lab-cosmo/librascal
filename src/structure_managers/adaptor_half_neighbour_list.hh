@@ -175,9 +175,8 @@ namespace rascal {
 
     //! Returns the id of the index-th neighbour atom of a given cluster
     template <size_t Order, size_t Layer>
-    inline int
-    get_cluster_neighbour_atom_tag_impl(const ClusterRefKey<Order, Layer> & cluster,
-                          size_t index) const {
+    inline int get_cluster_neighbour_atom_tag_impl(
+        const ClusterRefKey<Order, Layer> & cluster, size_t index) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles up to traits::MaxOrder");
 
@@ -186,8 +185,8 @@ namespace rascal {
           internal::IncreaseHelper<Order == (traits::MaxOrder - 1)>;
 
       if (Order < (traits::MaxOrder - 1)) {
-        return IncreaseHelper_t::get_cluster_neighbour_atom_tag(*this->manager, cluster,
-                                                       index);
+        return IncreaseHelper_t::get_cluster_neighbour_atom_tag(*this->manager,
+                                                                cluster, index);
       } else {
         auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
         return this->neighbours_atom_tag[offset + index];
@@ -195,8 +194,10 @@ namespace rascal {
     }
 
     //! get atom_tag of the index-th atom in manager
-    inline int get_cluster_neighbour_atom_tag_impl(const Parent &, size_t index) const {
-      return this->manager->get_cluster_neighbour_atom_tag_impl(*this->manager, index);
+    inline int get_cluster_neighbour_atom_tag_impl(const Parent &,
+                                                   size_t index) const {
+      return this->manager->get_cluster_neighbour_atom_tag_impl(*this->manager,
+                                                                index);
     }
 
     size_t get_atom_index(const int atom_tag) const {
@@ -301,7 +302,8 @@ namespace rascal {
   template <class ManagerImplementation>
   AdaptorHalfList<ManagerImplementation>::AdaptorHalfList(
       std::shared_ptr<ManagerImplementation> manager)
-      : manager{std::move(manager)}, nb_neigh{}, neighbours_atom_tag{}, offsets{} {
+      : manager{std::move(manager)}, nb_neigh{},
+        neighbours_atom_tag{}, offsets{} {
     // this->manager->add_child(this->get_weak_ptr());
   }
 

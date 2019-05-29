@@ -142,13 +142,13 @@ namespace rascal {
     return internal::MinExtractor<ActiveDimensions>::value;
   }
 
-  // #BUG8486@(all) removed the MaxOrder template parameter, and the meaning 
+  // #BUG8486@(all) removed the MaxOrder template parameter, and the meaning
   // of the access index was not clear, changed name to order
   template <size_t... Ints>
   constexpr size_t get_layer(const size_t order,
-      const std::index_sequence<Ints...>) {
+                             const std::index_sequence<Ints...>) {
     constexpr size_t arr[]{Ints...};
-    return arr[order-1];
+    return arr[order - 1];
   }
 
   /**
@@ -243,13 +243,9 @@ namespace rascal {
     /* the internal cluster neighbour is the neighbour which was added as
      * neighbour in the creation of this cluster
      */
-    const int & get_internal_neighbour_atom_tag() const {
-      return this->back();
-    }
-    
-    const int & get_atom_tag() const {
-      return this->back();
-    } 
+    const int & get_internal_neighbour_atom_tag() const { return this->back(); }
+
+    const int & get_atom_tag() const { return this->back(); }
 
     //! returns the cluster's index, given a specific layer
     inline size_t get_cluster_index(const size_t layer) const {

@@ -127,7 +127,7 @@ namespace rascal {
     inline size_t get_size_with_ghosts() const { return this->tot_num; }
 
     //! Lammps does not have ghost atoms
-    inline bool get_consider_ghost_neighbours() const {return false;}
+    inline bool get_consider_ghost_neighbours() const { return false; }
 
     //! return the number of neighbours of a given atom
     template <size_t Order, size_t Layer>
@@ -141,10 +141,8 @@ namespace rascal {
     //! return the index-th neighbour of the last atom in a cluster with
     //! cluster_size = 1 (atoms) which can be used to construct pairs
     template <size_t Order, size_t Layer>
-    inline int
-    get_cluster_neighbour_atom_tag_impl(
-        const ClusterRefKey<Order, Layer> & cluster,
-        size_t index) const {
+    inline int get_cluster_neighbour_atom_tag_impl(
+        const ClusterRefKey<Order, Layer> & cluster, size_t index) const {
       static_assert(Order == traits::MaxOrder - 1,
                     "this implementation only handles atoms and identify its "
                     "index-th neighbour.");
@@ -157,15 +155,16 @@ namespace rascal {
      * dummy and is used for consistency in other words, atom_tag is the
      * global LAMMPS atom tag.
      */
-    inline int get_cluster_neighbour_atom_tag_impl(const Parent &, size_t cluster_index) const {
+    inline int get_cluster_neighbour_atom_tag_impl(const Parent &,
+                                                   size_t cluster_index) const {
       return this->ilist[cluster_index];
     }
-    
+
     // #BUG8486@(all) I do not know how the structure of ilist is implemented,
-    // can it it have huge gaps like [1, 50000]? Then using a vector with ensures quick
-    // memory access would be super inefficient. However firstneigh also uses
-    // this kind of access structure and is given by lammps, so it should be
-    // fine.
+    // can it it have huge gaps like [1, 50000]? Then using a vector with
+    // ensures quick memory access would be super inefficient. However
+    // firstneigh also uses this kind of access structure and is given by
+    // lammps, so it should be fine.
     inline int get_atom_index(int atom_tag) const {
       return this->atom_index_from_atom_tag_list[atom_tag];
     }
@@ -177,7 +176,7 @@ namespace rascal {
     template <size_t Order>
     inline size_t
     get_offset_impl(const std::array<size_t, Order> & counters) const;
-    
+
     /**
      * return the number of clusters of size cluster_size.  Can only handle
      * cluster_size 1 (atoms) and cluster_size 2 (pairs).
@@ -232,25 +231,29 @@ namespace rascal {
     double ** vatom{};    //!< virial stress of atoms
     int nb_pairs{};       //! number of clusters with cluster_size=2 (pairs)
     std::vector<int> offsets{};  //! offset per atom to access neighbour list
-    
+
     // the inverse mapping from the ilist
     std::vector<size_t> atom_index_from_atom_tag_list{};
-    
+
    private:
     void make_atom_index_from_atom_tag_list() {
-      int max_atomic_index = 0; 
-      for (int i{0}; i<this->inum; ++i) {
-        if (this->ilist[i] > max_atomic_index) {max_atomic_index = this->ilist[i];}
+      int max_atomic_index = 0;
+      for (int i{0}; i < this->inum; ++i) {
+        if (this->ilist[i] > max_atomic_index) {
+          max_atomic_index = this->ilist[i];
+        }
       }
-      //! Filling dummy cluster index 
-      this->atom_index_from_atom_tag_list.reserve(max_atomic_index+1);
-      for (int i{0}; i< max_atomic_index+1; ++i) {
+      //! Filling dummy cluster index
+      this->atom_index_from_atom_tag_list.reserve(max_atomic_index + 1);
+      for (int i{0}; i < max_atomic_index + 1; ++i) {
         this->atom_index_from_atom_tag_list.push_back(0);
       }
       //! Replacing dummy values with correct cluster index
-      for (int i{0}; i<this->inum; ++i) {
-        // this->ilist does not have negative atom tags therefore the cast is safe
-        this->atom_index_from_atom_tag_list.at(static_cast<size_t>(this->ilist[i])) = i;
+      for (int i{0}; i < this->inum; ++i) {
+        // this->ilist does not have negative atom tags therefore the cast is
+        // safe
+        this->atom_index_from_atom_tag_list.at(
+            static_cast<size_t>(this->ilist[i])) = i;
       }
     }
   };

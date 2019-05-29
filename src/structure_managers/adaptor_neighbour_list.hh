@@ -300,9 +300,10 @@ namespace rascal {
     //! get dimension dependent neighbour indices (surrounding cell and the cell
     //! itself
     template <size_t Dim, class Container_t>
-    std::vector<int> get_neighbours_atom_tag(const int current_atom_tag,
-                                       const std::array<int, Dim> & ccoord,
-                                       const Container_t & boxes) {
+    std::vector<int>
+    get_neighbours_atom_tag(const int current_atom_tag,
+                            const std::array<int, Dim> & ccoord,
+                            const Container_t & boxes) {
       std::vector<int> neighbours_atom_tag{};
       for (auto && s : Stencil<Dim>{ccoord}) {
         for (const auto & neigh : boxes[s]) {
@@ -503,7 +504,6 @@ namespace rascal {
     template <class... Args>
     void update(Args &&... arguments);
 
-
     //! Returns cutoff radius of the neighbourhood manager
     inline double get_cutoff() const { return this->cutoff; }
 
@@ -607,16 +607,16 @@ namespace rascal {
      * Returns the id of the index-th (neighbour) atom of the cluster that is
      * the full structure/atoms object, i.e. simply the id of the index-th atom
      */
-    inline int get_cluster_neighbour_atom_tag_impl(const Parent &, size_t index) const {
-      return this->manager->get_cluster_neighbour_atom_tag_impl(*this->manager, index);
+    inline int get_cluster_neighbour_atom_tag_impl(const Parent &,
+                                                   size_t index) const {
+      return this->manager->get_cluster_neighbour_atom_tag_impl(*this->manager,
+                                                                index);
     }
 
     //! Returns the id of the index-th neighbour atom of a given cluster
     template <size_t Order, size_t Layer>
-    inline int
-    get_cluster_neighbour_atom_tag_impl(
-        const ClusterRefKey<Order, Layer> & cluster,
-                          size_t index) const {
+    inline int get_cluster_neighbour_atom_tag_impl(
+        const ClusterRefKey<Order, Layer> & cluster, size_t index) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles up to traits::MaxOrder");
 
@@ -625,8 +625,8 @@ namespace rascal {
           internal::IncreaseHelper<Order == (traits::MaxOrder - 1)>;
 
       if (Order < (traits::MaxOrder - 1)) {
-        return IncreaseHelper_t::get_cluster_neighbour_atom_tag(this->manager, cluster,
-                                                       index);
+        return IncreaseHelper_t::get_cluster_neighbour_atom_tag(this->manager,
+                                                                cluster, index);
       } else {
         auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
         return this->neighbours_atom_tag[offset + index];
@@ -641,7 +641,7 @@ namespace rascal {
     /* If consider_ghost_neighbours=true and the atom tag corresponds to an
      * ghost atom, then it returns it cluster index of the atom in the original
      * cell.
-     */ 
+     */
     size_t get_atom_index(const int atom_tag) const {
       return this->atom_index_from_atom_tag_list[atom_tag];
     }
@@ -667,7 +667,7 @@ namespace rascal {
       return this->manager->get_shared_ptr();
     }
 
-  protected:
+   protected:
     /* ---------------------------------------------------------------------- */
     /**
      * This function, including the storage of ghost atom positions is
@@ -684,8 +684,7 @@ namespace rascal {
      * pair list.
      */
 
-    inline void add_ghost_atom(const int & atom_tag,
-                               const Vector_t & position,
+    inline void add_ghost_atom(const int & atom_tag, const Vector_t & position,
                                const int & atom_type) {
       // first add it to the list of atoms
       this->atom_tag_list.push_back(atom_tag);
@@ -740,13 +739,13 @@ namespace rascal {
 
     //! Stores neighbour's atom tag in a list in sequence of atoms
     std::vector<int> neighbours_atom_tag{};
-    
-    /* Returns the atoms cluster index when accessing it with the atom's atomic 
+
+    /* Returns the atoms cluster index when accessing it with the atom's atomic
      * index in a list in sequence of atoms.
      * List of atom tags which have a correpsonding cluster index of order 1.
      * if consider_ghost_neighbours is false ghost atoms will have a unique atom
      * index but no cluster index of order 1. For this case the cluster index
-     * the atom in the cell at origin is used. 
+     * the atom in the cell at origin is used.
      * */
     std::vector<size_t> atom_index_from_atom_tag_list{};
 
@@ -784,10 +783,9 @@ namespace rascal {
       std::shared_ptr<ManagerImplementation> manager, double cutoff,
       bool consider_ghost_neighbours)
       : manager{std::move(manager)}, cutoff{cutoff}, atom_tag_list{},
-        atom_types{}, ghost_atom_tag_list{}, nb_neigh{},
-        neighbours_atom_tag{}, offsets{},
-        n_centers{0}, n_ghosts{0}, consider_ghost_neighbours{
-                                       consider_ghost_neighbours} {
+        atom_types{}, ghost_atom_tag_list{}, nb_neigh{}, neighbours_atom_tag{},
+        offsets{}, n_centers{0}, n_ghosts{0}, consider_ghost_neighbours{
+                                                  consider_ghost_neighbours} {
     static_assert(not(traits::MaxOrder < 1), "No atom list in manager");
   }
 
@@ -972,7 +970,7 @@ namespace rascal {
     for (auto atom : *this->manager) {
       int atom_tag = atom.get_atom_tag();
       size_t cluster_index = this->manager->get_atom_index(atom_tag);
-      auto atom_type = atom.get_atom_type();      
+      auto atom_type = atom.get_atom_type();
       this->atom_tag_list.push_back(atom_tag);
       this->atom_types.push_back(atom_type);
       ntot_atoms++;
@@ -1009,8 +1007,8 @@ namespace rascal {
 
             // adds origin atom cluster_index if true
             // adds ghost atom cluster index if false
-            size_t cluster_index = 
-                  this->manager->get_atom_index(atom.get_atom_tag());
+            size_t cluster_index =
+                this->manager->get_atom_index(atom.get_atom_tag());
             this->atom_index_from_atom_tag_list.push_back(cluster_index);
           }
         }
@@ -1031,13 +1029,13 @@ namespace rascal {
 
     // go through all atoms and/or ghosts to build neighbour list, depending on
     // the runtime decision flag
-    //auto nb_atoms{this->consider_ghost_neighbours
+    // auto nb_atoms{this->consider_ghost_neighbours
     //                  ? this->n_centers + this->n_ghosts
     //                  : this->get_size()};
 
-    // #BUG8486@(markus) I changed it so it could work with other 
+    // #BUG8486@(markus) I changed it so it could work with other
     // ManagerImplementations that does not make the atomic indices
-    // as StructurManagerCenters 
+    // as StructurManagerCenters
     for (auto atom : this->get_manager().with_ghosts()) {
       int atom_tag = atom.get_atom_tag();
       int nneigh{0};
@@ -1054,7 +1052,6 @@ namespace rascal {
       this->nb_neigh.push_back(nneigh);
     }
   }
- 
 
   /* ---------------------------------------------------------------------- */
   /**

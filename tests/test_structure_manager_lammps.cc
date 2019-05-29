@@ -48,10 +48,11 @@ namespace rascal {
 
     for (auto atom : manager) {
       BOOST_CHECK_EQUAL(atom.get_global_index(), atom_counter);
-      BOOST_CHECK_EQUAL(atom.get_atom_type(), manager->get_atom_type(atom.get_atom_tag()));
+      BOOST_CHECK_EQUAL(atom.get_atom_type(),
+                        manager->get_atom_type(atom.get_atom_tag()));
       ++atom_counter;
 
-      for (auto pair: atom) {
+      for (auto pair : atom) {
         auto pair_offset{pair.get_global_index()};
         if (verbose) {
           std::cout << "pair (" << atom.get_atom_tag() << ", "

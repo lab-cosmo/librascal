@@ -81,16 +81,16 @@ namespace rascal {
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
     using Hypers_t = typename Parent::Hypers_t;
-    using This = AdaptorStrict; 
+    using This = AdaptorStrict;
     using Distance_t = typename This::template Property_t<double, 2, 1>;
     using DirectionVector_t = typename This::template Property_t<double, 2, 3>;
 
     static_assert(traits::MaxOrder > 1,
                   "ManagerImlementation needs to handle pairs");
     constexpr static auto AtomLayer{
-      Manager_t::template cluster_layer_from_order<1>()};
+        Manager_t::template cluster_layer_from_order<1>()};
     constexpr static auto PairLayer{
-      Manager_t::template cluster_layer_from_order<2>()};
+        Manager_t::template cluster_layer_from_order<2>()};
 
     //! Default constructor
     AdaptorStrict() = delete;
@@ -150,9 +150,8 @@ namespace rascal {
 
     //! get atom_tag of index-th neighbour of this cluster
     template <size_t Order, size_t Layer>
-    inline int
-    get_cluster_neighbour_atom_tag_impl(const ClusterRefKey<Order, Layer> & cluster,
-                          int index) const {
+    inline int get_cluster_neighbour_atom_tag_impl(
+        const ClusterRefKey<Order, Layer> & cluster, int index) const {
       static_assert(Order <= traits::MaxOrder - 1,
                     "this implementation only handles upto traits::MaxOrder");
       auto && offset = this->offsets[Order][cluster.get_cluster_index(Layer)];
@@ -161,7 +160,7 @@ namespace rascal {
 
     //! get atom_tag of the index-th atom in manager
     inline int get_cluster_neighbour_atom_tag_impl(const Parent & /*parent*/,
-                                     size_t index) const {
+                                                   size_t index) const {
       return this->atom_tag_list[0][index];
     }
 
@@ -218,7 +217,8 @@ namespace rascal {
     get_cluster_neighbour_atom_tag_impl(const size_t neighbour_index) const {
       static_assert(Order < traits::MaxOrder,
                     "Calling this function with the wrong order cluster");
-      return this->manager->get_cluster_neighbour_atom_tag_impl(neighbour_index);
+      return this->manager->get_cluster_neighbour_atom_tag_impl(
+          neighbour_index);
     }
 
     //! return the number of neighbours of a given atom
@@ -237,11 +237,13 @@ namespace rascal {
       return this->manager->get_shared_ptr();
     }
 
-    //BUG8486@(till) I deleted the non const getters, because they are not needed
+    // BUG8486@(till) I deleted the non const getters, because they are not
+    // needed
     // if this was wrong, please explain
     //! returns the distance between atoms in a given pair
     template <size_t Order, size_t Layer>
-    inline double & get_distance(const ClusterRefKey<Order, Layer> & pair) const {
+    inline double &
+    get_distance(const ClusterRefKey<Order, Layer> & pair) const {
       return this->distance->operator[](pair);
     }
 
@@ -263,6 +265,7 @@ namespace rascal {
     const std::vector<int> get_neighbours_atom_tag() {
       return this->atom_tag_list[1];
     }
+
    protected:
     /**
      * main function during construction of a neighbourlist.
@@ -292,8 +295,7 @@ namespace rascal {
     }
 
     template <size_t Order, size_t Layer>
-    inline void
-    add_atom(const ClusterRefKey<Order, Layer> & cluster) {
+    inline void add_atom(const ClusterRefKey<Order, Layer> & cluster) {
       this->template add_atom<Order - 1>(cluster.back());
     }
 
@@ -359,9 +361,10 @@ namespace rascal {
   template <class ManagerImplementation>
   AdaptorStrict<ManagerImplementation>::AdaptorStrict(
       std::shared_ptr<ManagerImplementation> manager, double cutoff)
-      : manager{std::move(manager)}, distance{std::make_shared<Distance_t>(*this)}, dir_vec{std::make_shared<DirectionVector_t>(*this)},
-        cutoff{cutoff}, atom_tag_list{}, neighbours_cluster_index{},
-        nb_neigh{}, offsets{}
+      : manager{std::move(manager)}, distance{std::make_shared<Distance_t>(
+                                         *this)},
+        dir_vec{std::make_shared<DirectionVector_t>(*this)}, cutoff{cutoff},
+        atom_tag_list{}, neighbours_cluster_index{}, nb_neigh{}, offsets{}
 
   {
     if (not internal::check_cutoff(this->manager, cutoff)) {
@@ -402,8 +405,10 @@ namespace rascal {
     this->template create_property<Distance_t>("distance");
     this->template create_property<DirectionVector_t>("dir_vec");
 
-    this->distance = this->template get_validated_property<Distance_t>("distance");
-    this->dir_vec = this->template get_validated_property<DirectionVector_t>("dir_vec");
+    this->distance =
+        this->template get_validated_property<Distance_t>("distance");
+    this->dir_vec =
+        this->template get_validated_property<DirectionVector_t>("dir_vec");
 
     this->distance->resize_to_zero();
     this->dir_vec->resize_to_zero();
