@@ -251,14 +251,14 @@ namespace rascal {
           auto && soap_vector_by_pair{soap_vector[pair_type]};
 
           size_t lm{0};
-          for (size_t l = 0; l < this->max_angular + 1; l++) {
+          for (size_t l = 0; l < this->max_angular + 1; ++l) {
             double l_factor{pow(std::sqrt(2 * l + 1), -1)};
             for (size_t m = 0; m < 2 * l + 1; m++) {
               size_t nn{0};
-              for (size_t n1 = 0; n1 < this->max_radial; n1++) {
-                for (size_t n2 = 0; n2 < this->max_radial; n2++) {
-                  double val{l_factor * coef1(n1, lm) * coef2(n2, lm)};
-                  soap_vector_by_pair(nn, l) += val;
+              for (size_t n1 = 0; n1 < this->max_radial; ++n1) {
+                double l_factor_c1{l_factor * coef1(n1, lm)};
+                for (size_t n2 = 0; n2 < this->max_radial; ++n2) {
+                  soap_vector_by_pair(nn, l) += l_factor_c1*coef2(n2, lm);
                   nn++;
                 }
               }
