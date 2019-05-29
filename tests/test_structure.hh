@@ -307,7 +307,11 @@ namespace rascal {
 
     int inum{nb};
     int tot_num{nb};  // includes ghosts
-    int ilist[nb]{0, 3, 5}; // TODO(alex): make ilist non-contiguous, eg {1, -12, 28}
+    // #BUG8486@(all) how does lammps saves the types for non contiguous atom tag
+    // lists? how would the type list look like in this case? because you cannot
+    // access it simply with the atom tags, e.g. you need to map 0->0,3->1 and
+    // 5->2. I am currently doing this, but how lammps actual do it?
+    int ilist[nb]{0, 3, 5}; // TODO(alex): make ilist non-contiguous, eg {1, 12, 28}
     int numneigh[nb]{2, 1, 1};
     int ** firstneigh;
     double ** x;
