@@ -56,6 +56,7 @@ namespace rascal {
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
         AdaptorTraits::NeighbourListType::half};
+    // TODO(alex) didn't we say that half neighbour resets the layers of order=2
     using LayerByOrder = typename LayerIncreaser<
         MaxOrder, typename ManagerImplementation::traits::LayerByOrder>::type;
   };

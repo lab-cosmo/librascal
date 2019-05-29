@@ -261,19 +261,19 @@ namespace rascal {
     using ptr_t = double **;
 
     ManagerFixture()
-        : firstneigh{new int *[nb]}, x{new double *[nb]}, f{new double *[nb]},
+        : firstneigh{new int *[6]}, x{new double *[nb]}, f{new double *[nb]},
           vatom{new double *[nb]}, manager{
                                        make_structure_manager<Manager_t>()} {
       manager->update(inum, tot_num, ilist, numneigh,
                       static_cast<int **>(firstneigh), ptr_t(x), ptr_t(f), type,
                       eatom, static_cast<double **>(vatom));
       firstneigh[0] = new int[2];
-      firstneigh[0][0] = 1;
-      firstneigh[0][1] = 2;
-      firstneigh[1] = new int;
-      firstneigh[1][0] = 0;
-      firstneigh[2] = new int;
-      firstneigh[2][0] = 0;
+      firstneigh[0][0] = 3;
+      firstneigh[0][1] = 5;
+      firstneigh[3] = new int;
+      firstneigh[3][0] = 0;
+      firstneigh[5] = new int;
+      firstneigh[5][0] = 0;
 
       for (int i{0}; i < nb; ++i) {
         x[i] = new double[dim];
@@ -288,9 +288,11 @@ namespace rascal {
     ManagerFixture(ManagerFixture &) = delete;
     ManagerFixture & operator=(const ManagerFixture &) = delete;
     ~ManagerFixture() {
-      delete[] firstneigh[0];
-      delete firstneigh[1];
-      delete firstneigh[2];
+      
+      delete[] firstneigh[0]; 
+      delete firstneigh[3];
+      delete firstneigh[5];
+
       delete[] firstneigh;
       delete[] vatom;
       for (int i{0}; i < nb; ++i) {
@@ -305,13 +307,13 @@ namespace rascal {
 
     int inum{nb};
     int tot_num{nb};  // includes ghosts
-    int ilist[nb]{0, 1, 2}; // TODO(alex): make ilist non-contiguous, eg {1, -12, 28}
+    int ilist[nb]{0, 3, 5}; // TODO(alex): make ilist non-contiguous, eg {1, -12, 28}
     int numneigh[nb]{2, 1, 1};
     int ** firstneigh;
     double ** x;
     double ** f;
     int type[nb]{1, 2, -9};
-    double eatom[3]{2, 1, 1};
+    double eatom[nb]{2, 1, 1};
     double ** vatom;
     std::shared_ptr<Manager_t> manager;
   };

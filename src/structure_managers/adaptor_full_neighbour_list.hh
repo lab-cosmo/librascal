@@ -345,14 +345,14 @@ namespace rascal {
     /* ---------------------------------------------------------------------- */
     // loop through all atoms and pairs and collect all neighbours in vector
     for (auto atom : *this->manager) {
-      auto index_1{atom.get_atom_tag()};
+      auto atom_tag{atom.get_atom_tag()};
 
       for (auto pair : atom) {
-        auto index_2{pair.get_atom_tag()};
+        auto neighbour_atom_index{this->get_atom_index(pair.get_internal_neighbour_atom_tag())};
 
         // add indices to their reciprocal list
         // -> already exists: this->new_neighbours[index_1].push_back(index_2);
-        new_neighbours[index_2].push_back(index_1);
+        new_neighbours[neighbour_atom_index].push_back(atom_tag);
       }
     }
 
@@ -366,7 +366,7 @@ namespace rascal {
     int pair_counter{0};
 
     for (auto atom : *this->manager) {
-      auto index_i = atom.get_atom_tag();
+      auto atom_index = this->get_atom_index(atom.get_atom_tag());
 
       // Add new depth layer for atoms
       constexpr auto AtomLayer{
@@ -380,8 +380,8 @@ namespace rascal {
       int nneigh{0};
       for (auto pair : atom) {
         // add existing pairs
-        auto index_j = pair.get_atom_tag();
-        this->neighbours_atom_tag.push_back(index_j);
+        auto neighbour_atom_tag = pair.get_internal_neighbour_atom_tag();
+        this->neighbours_atom_tag.push_back(neighbour_atom_tag);
         nneigh++;
 
         // The layer of pairs is reinitialized with this adaptor. Therefore the
@@ -401,8 +401,8 @@ namespace rascal {
       constexpr static auto ActiveLayer{
           compute_cluster_layer<PairOrder>(typename traits::LayerByOrder{})};
 
-      for (auto index_j : new_neighbours[index_i]) {
-        this->neighbours_atom_tag.push_back(index_j);
+      for (auto neighbour_atom_tag : new_neighbours[atom_index]) {
+        this->neighbours_atom_tag.push_back(neighbour_atom_tag);
         nneigh++;
 
         Eigen::Matrix<size_t, ActiveLayer + 1, 1> indices_pair;

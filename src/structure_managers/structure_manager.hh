@@ -895,9 +895,10 @@ namespace rascal {
     inline size_t size() { return this->get_manager().get_cluster_size(*this); }
     //! return iterator index - this is used in cluster_indices_container as
     //! well as accessing properties
-    inline size_t get_index() const { return this->it.index; }
+    inline size_t get_index() const { return this->it.index; } 
     //! returns the clusters index (e.g. the 4-th pair of all pairs in this
     //! iteration)
+    // TODO(alex) should be equal cluster_indices.back()
     inline size_t get_global_index() const {
       return this->get_manager().get_offset(*this);
     }

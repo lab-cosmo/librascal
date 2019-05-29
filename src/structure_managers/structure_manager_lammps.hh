@@ -101,23 +101,23 @@ namespace rascal {
 
     //! return position vector of an atom given the atom tag
     inline Vector_ref get_position(const int & atom_tag) {
-      auto * xval{this->x[atom_tag]};
+      auto * xval{this->x[this->get_atom_index(atom_tag)]};
       return Vector_ref(xval);
     }
 
     //! return position vector of an atom given the atom tag
     inline Vector_ref get_position(const AtomRef_t & atom) {
-      return this->get_position(atom.get_index());
+      return this->get_position(this->get_atom_index(atom.get_index()));
     }
 
     //! get const atom type reference given an atom_tag
     inline const int & get_atom_type(const int & atom_tag) const {
-      return this->type[atom_tag];
+      return this->type[this->get_atom_index(atom_tag)];
     }
 
     //! Returns atom type given an atom tag
     inline int & get_atom_type(const int & atom_tag) {
-      return this->type[atom_tag];
+      return this->type[this->get_atom_index(atom_tag)];
     }
 
     //! return number of I atoms in the list
@@ -135,7 +135,7 @@ namespace rascal {
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
-      return this->numneigh[cluster.back()];
+      return this->numneigh[this->get_atom_index(cluster.get_atom_tag())];
     }
 
     //! return the index-th neighbour of the last atom in a cluster with
@@ -163,9 +163,10 @@ namespace rascal {
     
     // #BUG8486@(all) I do not know how the structure of ilist is implemented,
     // can it it have huge gaps like [1, 50000]? Then using a vector with ensures quick
-    // memory access would be super inefficient.
+    // memory access would be super inefficient. However firstneigh also uses
+    // this kind of access structure and is given by lammps, so it should be
+    // fine.
     inline int get_atom_index(int atom_tag) const {
-      throw std::runtime_error("This functionality might be not implemented correctly");
       return this->atom_index_from_atom_tag_list[atom_tag];
     }
 
@@ -234,6 +235,24 @@ namespace rascal {
     
     // the inverse mapping from the ilist
     std::vector<size_t> atom_index_from_atom_tag_list{};
+    
+   private:
+    void make_atom_index_from_atom_tag_list() {
+      int max_atomic_index = 0; 
+      for (int i{0}; i<this->inum; ++i) {
+        if (this->ilist[i] > max_atomic_index) {max_atomic_index = this->ilist[i];}
+      }
+      //! Filling dummy cluster index 
+      this->atom_index_from_atom_tag_list.reserve(max_atomic_index+1);
+      for (int i{0}; i< max_atomic_index+1; ++i) {
+        this->atom_index_from_atom_tag_list.push_back(0);
+      }
+      //! Replacing dummy values with correct cluster index
+      for (int i{0}; i<this->inum; ++i) {
+        // this->ilist does not have negative atom tags therefore the cast is safe
+        this->atom_index_from_atom_tag_list.at(static_cast<size_t>(this->ilist[i])) = i;
+      }
+    }
   };
 
   /**
