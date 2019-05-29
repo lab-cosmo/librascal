@@ -180,10 +180,8 @@ namespace rascal {
       Fix::atom_dynamic_vector_property[atom] = atom.get_position();
       Fix::atom_scalar_property[atom] = counter;
       Fix::atom_dynamic_scalar_property[atom] << counter;
-      // #BUG8486@(felix)
-      // block spares properties do not take scalar values
-      // but some eigen object, can you write how to assign an scalar value
-      // to this property like for the two above
+      // #TODO(felix) test scalar prop when merged with latest version of
+      // the sparse property
       // Fix::sparse_atom_scalar_property[atom] << counter; // DOES NOT WORK
       counter++;
     }

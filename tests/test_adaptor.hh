@@ -255,6 +255,7 @@ namespace rascal {
     std::list<ManagerPtr_t> managers{};
   };
 
+  // TODO(alex) move the StackFixture to the test_properties.hh
   // #BUG8486@(markus), #BUG8486@(felix) see test_properties.cc for usage and
   // explanation.
 
