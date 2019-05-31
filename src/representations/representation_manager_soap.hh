@@ -349,13 +349,25 @@ namespace rascal {
           // this copy here is just to have proper memory alignment. fix?
           auto& coef2{el2.second};
 
+          auto && soap_vector_by_pair{soap_vector[pair_type]};
           // avoid computing p^{ab} and p^{ba} since p^{ab} = p^{ba}^T
           if (pair_type[0] > pair_type[1]) {
             continue;
           }
-
-          auto && soap_vector_by_pair{soap_vector[pair_type]};
-
+          // TODO(felix) understand why this is slower than below
+          // size_t n1n2{0};
+          // auto& n_max{this->max_radial};
+          // auto l_max{this->max_angular + 1};
+          // for (size_t n1{0}; n1 < n_max; ++n1) {
+          //   for (size_t l{0}; l < l_max; ++l) {
+          //     auto& pos{lm_max[l][0]};
+          //     auto& size{lm_max[l][1]};
+          //     // do the reduction over m and iteration over n2
+          //     // (with vectorization)
+          //     soap_vector_by_pair.block(n1n2, l, n_max, 1).noalias() = (coef2.block(0, pos, n_max, size) * coef1.row(n1).segment(pos, size).asDiagonal()).rowwise().sum();
+          //   }
+          //   n1n2 += n_max;
+          // }
           size_t n1n2{0};
           for (size_t n1{0}; n1 < this->max_radial; ++n1) {
             for (size_t n2{0}; n2 < this->max_radial; ++n2) {
@@ -368,8 +380,8 @@ namespace rascal {
               ++n1n2;
             }
           }
-        }
-      }
+        } // for coefficients
+      } // for coefficients
 
       // the SQRT_TWO factor comes from the fact that
       // the upper diagonal of the species is not considered
