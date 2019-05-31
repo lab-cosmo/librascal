@@ -55,6 +55,8 @@ namespace rascal {
     // define some usefull matrix type
     using Matrix_t =
         Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+    using Vector_t = Eigen::VectorXd;
+
     using MatrixX2_t = Eigen::Matrix<double, Eigen::Dynamic, 2>;
 
     Matrix_t compute_assoc_legendre_polynom(double cos_theta,
@@ -63,7 +65,7 @@ namespace rascal {
     MatrixX2_t compute_cos_sin_angle_multiples(double cos_phi, double sin_phi,
                                                size_t max_m);
 
-    Matrix_t compute_spherical_harmonics(
+    Vector_t compute_spherical_harmonics(
         const Eigen::Ref<const Eigen::Vector3d> & direction,
         size_t max_angular);
 
@@ -133,7 +135,7 @@ namespace rascal {
       return (-0.5 * PI / smooth_width * std::sin(r_scaled));
     }
 
-    
+
   }  // namespace math
 }  // namespace rascal
 

@@ -177,11 +177,11 @@ namespace rascal {
      *
      * @param max_angular Compute up to this angular momentum number (l_max)
      *
-     * @return  (Eigen)matrix containing the results.
-     *          Sized l_max+1 by 2l_max+1, the row index
-     *          corresponding to l numbers and the column index to m.
+     * @return  (Eigen)vector containing the results.
+     *          Sized (l_max+1)**2, contains the l,m components in compressed
+     *          format, i.e. (00)(1-1)(10)(11)(2-2)....
      */
-    Matrix_t compute_spherical_harmonics(
+    Vector_t compute_spherical_harmonics(
         const Eigen::Ref<const Eigen::Vector3d> & direction,
         size_t max_angular) {
       using math::pow;
@@ -202,26 +202,30 @@ namespace rascal {
         cos_phi = direction[0] / sqrt_xy;
         sin_phi = direction[1] / sqrt_xy;
       }
-      Matrix_t harmonics = Matrix_t::Zero(max_angular + 1, 2 * max_angular + 1);
+      Vector_t harmonics = Vector_t::Zero((max_angular + 1)*(max_angular + 1));
       Matrix_t assoc_legendre_polynom =
           compute_assoc_legendre_polynom(cos_theta, max_angular);
       MatrixX2_t cos_sin_m_phi =
           compute_cos_sin_angle_multiples(cos_phi, sin_phi, max_angular);
 
+      size_t lm_base{0}; // starting point for storage
       for (size_t angular_l{0}; angular_l < max_angular + 1; angular_l++) {
         for (size_t m_count{0}; m_count < angular_l + 1; m_count++) {
           if (m_count == 0) {
-            harmonics(angular_l, angular_l) =
+            harmonics(lm_base+angular_l) =
                 assoc_legendre_polynom(angular_l, m_count) * INV_SQRT_TWO;
           } else {
-            harmonics(angular_l, angular_l + m_count) =
+            // uses symmetry of spherical harmonics,
+            // careful with the storage order
+            harmonics(lm_base+angular_l+m_count) =
                 assoc_legendre_polynom(angular_l, m_count) *
                 cos_sin_m_phi(m_count, 0);
-            harmonics(angular_l, angular_l - m_count) =
+            harmonics(lm_base+angular_l-m_count) =
                 assoc_legendre_polynom(angular_l, m_count) *
                 cos_sin_m_phi(m_count, 1);
           }  // if (m_count == 0)
         }    // for (m_count in [0, l])
+        lm_base += 2*angular_l + 1;
       }      // for (l in [0, lmax])
       return harmonics;
     }  // compute_spherical_harmonics()

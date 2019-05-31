@@ -257,15 +257,15 @@ namespace rascal {
         // without having to do unnecessary copies (below)
         Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
             coef1{el1.second};
+
         for (size_t n1 = 0; n1 < this->max_radial; ++n1) {
           coef1.row(n1).array() *= l_factors.array();
         }
 
         for (const auto & el2 : coefficients) {
           pair_type[1] = el2.first[0];
-          // this copy here is just to have proper memory alignment. fix?
           Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
-              coef2{el2.second};
+           coef2{el2.second};
 
           // avoid computing p^{ab} and p^{ba} since p^{ab} = p^{ba}^T
           if (pair_type[0] > pair_type[1]) {

@@ -731,6 +731,14 @@ namespace rascal {
               center) /
           sqrt(4.0 * PI);
 
+      // pre-computes limits of combined lm arrays
+      std::vector<size_t> lm_max(max_angular + 1);
+      size_t lm{0};
+      for (size_t l = 0; l < max_angular + 1; ++l) {
+        lm += 2*l+1;
+        lm_max[l] = lm;
+      }
+
       for (auto neigh : center) {
         auto dist{this->structure_manager->get_distance(neigh)};
         auto direction{this->structure_manager->get_direction_vector(neigh)};
@@ -745,21 +753,16 @@ namespace rascal {
                                                                         neigh);
 
         harmonics *= cutoff_function->f_c(dist);
+        size_t lm_collective_idx;
         auto && coefficients_center_by_type{coefficients_center[neigh_type]};
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
-          size_t lm_collective_idx{0};
+          lm_collective_idx = 0;
           for (size_t angular_l{0}; angular_l < this->max_angular + 1;
                angular_l++) {
-            for (size_t m_array_idx{0}; m_array_idx < 2 * angular_l + 1;
-                 m_array_idx++) {
+            double neigh_nl{neighbour_contribution(radial_n, angular_l)};
+            for (; lm_collective_idx < lm_max[angular_l]; ++lm_collective_idx) {
               coefficients_center_by_type(radial_n, lm_collective_idx) +=
-                  //TODO(felix) check if you gain anything by accessing this
-                  // outside the m loop
-                  neighbour_contribution(radial_n, angular_l) *
-                  harmonics(angular_l, m_array_idx);
-                  //TODO(felix) refactor compute_spherical_harmonics to
-                  //return a vector of (lmax+1)^2 elements
-              ++lm_collective_idx;
+                  neigh_nl * harmonics(lm_collective_idx);
             }
           }
         }
