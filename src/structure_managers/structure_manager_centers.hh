@@ -278,16 +278,7 @@ namespace rascal {
     //! Function for returning the number of atoms
     size_t get_nb_clusters(size_t order) const;
 
-    /**
-     * Function for reading data from a JSON file in the ASE format. See the
-     * definition of <code>AtomicStructure</code> and adapt the fields, which
-     * should be read to your case.
-     * TODO(markus) move this function to AtomicStructure
-     */
-    decltype(auto) read_structure_from_json(const std::string filename);
-
-    // TODO(markus): add function to read from XYZ files
-
+    
     /**
      * invokes the initialisation/reinitialisation based on existing
      * data. E.g. when the atom positions are provided by a simulation method,

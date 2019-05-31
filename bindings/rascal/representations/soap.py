@@ -129,13 +129,13 @@ class SOAP(object):
                         'gaussian_sigma_constant', 'n_species', 'soap_type',
                         'normalize', 'cutoff_function', 'gaussian_density',
                         'radial_contribution'}
-                        
+
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}
         self.hypers.update(hypers_clean)
         return
 
-    def transform(self, frames):
+    def transform(self, frames, features=None):
         """Compute the representation.
 
         Parameters
@@ -149,19 +149,35 @@ class SOAP(object):
             Object containing the representation
 
         """
+        from tqdm import tqdm_notebook
+
+        if features is None:
+            features = FeatureFactory(self.feature_options)
+
         structures = [convert_to_structure(frame) for frame in frames]
 
         n_atoms = [0]+[len(structure['atom_types'])
                        for structure in structures]
         structure_ids = np.cumsum(n_atoms)[:-1]
         n_centers = np.sum(n_atoms)
+        ii = 0
+        for structure in tqdm_notebook(structures, leave=False):
+            try:
+                self.manager.update(**structure)
+            except:
+                print("Structure NL {} failed".format(ii))
 
-        features = FeatureFactory(self.feature_options)
+            try:
+                self.representation.compute()
+            except:
+                print("Structure Rep computation {} failed".format(ii))
 
-        for structure in structures:
-            self.manager.update(**structure)
-            self.representation.compute()
-            features.append(self.representation)
+            try:
+                features.append(self.representation)
+            except:
+                print("Structure data gather {} failed".format(ii))
+
+            ii+=1
 
         return features
 
