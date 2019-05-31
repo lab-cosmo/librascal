@@ -236,33 +236,56 @@ namespace rascal {
       // initialize the power spectrum to 0 with the proper dimension
       soap_vector.resize(pair_list, n_row, n_col);
 
+      size_t tot_lm = (this->max_angular + 1) * (this->max_angular + 1);
+      std::vector<size_t> lm_max(this->max_angular + 1);
+      Eigen::VectorXd l_factors(tot_lm);
+      size_t lm{0};
+      for (size_t l = 0; l < this->max_angular + 1; ++l) {
+        double l_factor{pow(std::sqrt(2 * l + 1), -1)};
+        for (size_t m = 0; m < 2 * l + 1; m++) {
+          l_factors(lm) = l_factor;
+          ++lm;
+        }
+        lm_max[l] = lm;
+      }
+
       for (const auto & el1 : coefficients) {
         pair_type[0] = el1.first[0];
-        auto & coef1{el1.second};
+        // make a copy so we can scale by l_factors, avoiding several products
+        // below. create with row major to speed up access below
+        // TODO(felix) make a consistent choice of storage to avoid cache misses
+        // without having to do unnecessary copies (below)
+        Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
+            coef1{el1.second};
+        for (size_t n1 = 0; n1 < this->max_radial; ++n1) {
+          coef1.row(n1).array() *= l_factors.array();
+        }
+
         for (const auto & el2 : coefficients) {
           pair_type[1] = el2.first[0];
-          auto & coef2{el2.second};
-          /* avoid computing p^{ab} and p^{ba} since p^{ab} = p^{ba}^T
-           */
+          // this copy here is just to have proper memory alignment. fix?
+          Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
+              coef2{el2.second};
+
+          // avoid computing p^{ab} and p^{ba} since p^{ab} = p^{ba}^T
           if (pair_type[0] > pair_type[1]) {
             continue;
           }
 
           auto && soap_vector_by_pair{soap_vector[pair_type]};
 
-          size_t lm{0};
-          for (size_t l = 0; l < this->max_angular + 1; l++) {
-            double l_factor{pow(std::sqrt(2 * l + 1), -1)};
-            for (size_t m = 0; m < 2 * l + 1; m++) {
-              size_t nn{0};
-              for (size_t n1 = 0; n1 < this->max_radial; n1++) {
-                for (size_t n2 = 0; n2 < this->max_radial; n2++) {
-                  double val{l_factor * coef1(n1, lm) * coef2(n2, lm)};
-                  soap_vector_by_pair(nn, l) += val;
-                  nn++;
+          size_t n1n2{0};
+          for (size_t n1 = 0; n1 < this->max_radial; ++n1) {
+            auto coef1n1{coef1.row(n1)};
+            for (size_t n2 = 0; n2 < this->max_radial; ++n2) {
+              auto coef2n2{coef2.row(n2)};
+              size_t lm{0};
+              for (size_t l = 0; l < this->max_angular + 1; ++l) {
+                for (; lm < lm_max[l]; ++lm) {
+                  soap_vector_by_pair(n1n2, l) += coef1n1(lm) * coef2n2(lm);
                 }
               }
-              lm++;
+              ++n1n2;
             }
           }
         }
