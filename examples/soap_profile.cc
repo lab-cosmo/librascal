@@ -128,9 +128,9 @@ int main(int argc, char * argv[]) {
             << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
             << std::endl;
 
-  // auto soap = representation.get_representation_full();
-  // std::cout << "Sample SOAP elements \n"
-  //           << soap(0, 0) << " " << soap(0, 1) << " " << soap(0, 2) << "\n"
-  //           << soap(1, 0) << " " << soap(1, 1) << " " << soap(1, 2) << "\n"
-  //           << soap(2, 0) << " " << soap(2, 1) << " " << soap(2, 2) << "\n";
+  auto soap = representation.get_representation_full();
+  std::cout << "Sample SOAP elements \n"
+            << soap(0, 0) << " " << soap(0, 1) << " " << soap(0, 2) << "\n"
+            << soap(1, 0) << " " << soap(1, 1) << " " << soap(1, 2) << "\n"
+            << soap(2, 0) << " " << soap(2, 1) << " " << soap(2, 2) << "\n";
 }
