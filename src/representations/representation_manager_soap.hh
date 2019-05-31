@@ -50,8 +50,92 @@
 namespace rascal {
 
   namespace internal {
-    enum class SOAPType { RadialSpectrum, PowerSpectrum };
+    enum class SOAPType { RadialSpectrum, PowerSpectrum, End_};
+
+    /**
+     * Base class for the specification of the atomic smearing.
+     */
+    struct SOAPPrecomputationBase {
+      //! Constructor
+      SOAPPrecomputationBase() = default;
+      //! Destructor
+      virtual ~SOAPPrecomputationBase() = default;
+      //! Copy constructor
+      SOAPPrecomputationBase(
+          const SOAPPrecomputationBase & other) = delete;
+      //! Move constructor
+      SOAPPrecomputationBase(
+          SOAPPrecomputationBase && other) = default;
+      //! Copy assignment operator
+      SOAPPrecomputationBase &
+      operator=(const SOAPPrecomputationBase & other) = delete;
+      //! Move assignment operator
+      SOAPPrecomputationBase &
+      operator=(SOAPPrecomputationBase && other) = default;
+
+      using Hypers_t = RepresentationManagerBase::Hypers_t;
+    };
+
+
+    template <SOAPType SpectrumType>
+    struct SOAPPrecomputation {};
+
+    template <>
+    struct SOAPPrecomputation<SOAPType::RadialSpectrum>
+        : SOAPPrecomputationBase {
+      using Hypers_t = typename SOAPPrecomputationBase::Hypers_t;
+      explicit SOAPPrecomputation(const Hypers_t & ) {}
+    };
+
+    template <>
+    struct SOAPPrecomputation<SOAPType::PowerSpectrum>
+        : SOAPPrecomputationBase {
+      using Hypers_t = typename SOAPPrecomputationBase::Hypers_t;
+      explicit SOAPPrecomputation(const Hypers_t & hypers) {
+        this->max_angular = hypers.at("max_angular");
+        this->l_factors.resize(math::pow(this->max_angular + 1, 2));
+
+        size_t pos{0};
+        size_t lm{0};
+        for (size_t l{0}; l < this->max_angular + 1; ++l) {
+          size_t size{0};
+          double l_factor{math::pow(std::sqrt(2 * l + 1), -1)};
+          for (size_t m{0}; m < 2 * l + 1; m++) {
+            this->l_factors(lm) = l_factor;
+            ++size;
+            ++lm;
+          }
+          std::array<size_t, 2> aa{pos, size};
+          this->lm_max.emplace_back(aa);
+          pos += size;
+        }
+
+      }
+
+      size_t max_angular{0};
+      //! helper to simplify the writing of the reduction in the powerspectrum
+      //! computation
+      std::vector<std::array<size_t, 2>> lm_max{};
+      //! factor of 1 / sqrt(2*l+1) in front of the powerspectrum
+      Eigen::VectorXd l_factors{};
+    };
   }  // namespace internal
+
+  template <internal::SOAPType Type, class Hypers>
+  decltype(auto) make_soap_precompute(const Hypers & hypers) {
+    return std::static_pointer_cast<internal::SOAPPrecomputationBase>(
+        std::make_shared<internal::SOAPPrecomputation<Type>>(hypers));
+  }
+
+  template <internal::SOAPType Type>
+  decltype(auto) downcast_soap_precompute(
+      const std::shared_ptr<internal::SOAPPrecomputationBase> &
+          soap_precompute) {
+    return std::static_pointer_cast<internal::SOAPPrecomputation<Type>>(
+        soap_precompute);
+  }
+
+
 
   template <class StructureManager>
   class RepresentationManagerSOAP : public RepresentationManagerBase {
@@ -87,15 +171,22 @@ namespace rascal {
     operator=(RepresentationManagerSOAP && other) = default;
 
     void set_hyperparameters(const Hypers_t & hypers) {
+      using internal::enumValue;
+      using internal::SOAPType;
+
       this->max_radial = hypers.at("max_radial");
       this->max_angular = hypers.at("max_angular");
       this->normalize = hypers.at("normalize").get<bool>();
       this->soap_type_str = hypers.at("soap_type").get<std::string>();
 
       if (this->soap_type_str.compare("PowerSpectrum") == 0) {
-        this->soap_type = internal::SOAPType::PowerSpectrum;
+        this->soap_type = SOAPType::PowerSpectrum;
+        this->precompute_soap[enumValue(SOAPType::PowerSpectrum)] =
+                make_soap_precompute<SOAPType::PowerSpectrum>(hypers);
       } else if (this->soap_type_str.compare("RadialSpectrum") == 0) {
-        this->soap_type = internal::SOAPType::RadialSpectrum;
+        this->soap_type = SOAPType::RadialSpectrum;
+        this->precompute_soap[enumValue(SOAPType::RadialSpectrum)] =
+                make_soap_precompute<SOAPType::RadialSpectrum>(hypers);
         if (this->max_angular > 0) {
           throw std::logic_error("max_angular should be 0 with RadialSpectrum");
         }
@@ -140,6 +231,9 @@ namespace rascal {
     ManagerPtr_t structure_manager;
     RepresentationManagerSphericalExpansion<Manager_t> rep_expansion;
     internal::SOAPType soap_type{};
+    //! collection of precomputation for the different body order
+    std::array<std::shared_ptr<internal::SOAPPrecomputationBase>,
+              internal::enumSize<internal::SOAPType>()> precompute_soap{};
     std::string soap_type_str{};
     std::vector<Precision_t> dummy{};
   };
@@ -204,6 +298,14 @@ namespace rascal {
   template <class Mngr>
   void RepresentationManagerSOAP<Mngr>::compute_powerspectrum() {
     using math::pow;
+    using internal::enumValue;
+    using internal::SOAPType;
+
+    // get the relevant precomputation object and unpack the useful infos
+    auto precomputation{downcast_soap_precompute<SOAPType::PowerSpectrum>(this->precompute_soap[enumValue(SOAPType::PowerSpectrum)])};
+    auto& l_factors{precomputation->l_factors};
+    auto& lm_max{precomputation->lm_max};
+
     // Compute the spherical expansions of the current structure
     rep_expansion.compute();
     auto & expansions_coefficients{rep_expansion.expansions_coefficients};
@@ -236,36 +338,16 @@ namespace rascal {
       // initialize the power spectrum to 0 with the proper dimension
       soap_vector.resize(pair_list, n_row, n_col);
 
-      size_t tot_lm = (this->max_angular + 1) * (this->max_angular + 1);
-      std::vector<size_t> lm_max(this->max_angular + 1);
-      Eigen::VectorXd l_factors(tot_lm);
-      size_t lm{0};
-      for (size_t l = 0; l < this->max_angular + 1; ++l) {
-        double l_factor{pow(std::sqrt(2 * l + 1), -1)};
-        for (size_t m = 0; m < 2 * l + 1; m++) {
-          l_factors(lm) = l_factor;
-          ++lm;
-        }
-        lm_max[l] = lm;
-      }
-
       for (const auto & el1 : coefficients) {
         pair_type[0] = el1.first[0];
-        // make a copy so we can scale by l_factors, avoiding several products
-        // below. create with row major to speed up access below
-        // TODO(felix) make a consistent choice of storage to avoid cache misses
-        // without having to do unnecessary copies (below)
-        Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
-            coef1{el1.second};
-        for (size_t n1 = 0; n1 < this->max_radial; ++n1) {
-          coef1.row(n1).array() *= l_factors.array();
-        }
+
+        // multiply with the precomputed factors
+        auto coef1{el1.second * l_factors.asDiagonal()};
 
         for (const auto & el2 : coefficients) {
           pair_type[1] = el2.first[0];
           // this copy here is just to have proper memory alignment. fix?
-          Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
-              coef2{el2.second};
+          auto& coef2{el2.second};
 
           // avoid computing p^{ab} and p^{ba} since p^{ab} = p^{ba}^T
           if (pair_type[0] > pair_type[1]) {
@@ -275,15 +357,13 @@ namespace rascal {
           auto && soap_vector_by_pair{soap_vector[pair_type]};
 
           size_t n1n2{0};
-          for (size_t n1 = 0; n1 < this->max_radial; ++n1) {
-            auto coef1n1{coef1.row(n1)};
-            for (size_t n2 = 0; n2 < this->max_radial; ++n2) {
-              auto coef2n2{coef2.row(n2)};
-              size_t lm{0};
-              for (size_t l = 0; l < this->max_angular + 1; ++l) {
-                for (; lm < lm_max[l]; ++lm) {
-                  soap_vector_by_pair(n1n2, l) += coef1n1(lm) * coef2n2(lm);
-                }
+          for (size_t n1{0}; n1 < this->max_radial; ++n1) {
+            for (size_t n2{0}; n2 < this->max_radial; ++n2) {
+              for (size_t l{0}; l < this->max_angular + 1; ++l) {
+                auto& pos{lm_max[l][0]};
+                auto& size{lm_max[l][1]};
+                // do the reduction over m (with vectorization)
+                soap_vector_by_pair(n1n2, l) = (coef1.block(n1, pos, 1, size).array() * coef2.block(n2, pos, 1, size).array()).sum();
               }
               ++n1n2;
             }
@@ -313,12 +393,15 @@ namespace rascal {
           soap_vector[pair_type] /= norm;
         }
       }
+
     }
   }
 
   template <class Mngr>
   void RepresentationManagerSOAP<Mngr>::compute_radialspectrum() {
     rep_expansion.compute();
+    using math::pow;
+
     auto & expansions_coefficients{rep_expansion.expansions_coefficients};
 
     size_t n_row{this->max_radial};
