@@ -245,7 +245,14 @@ namespace rascal {
         return keys;
       }
 
-      
+      /**
+       * Normalize the whole vector
+       */
+      inline void normalize() {
+        using ref = typename Eigen::Map<Eigen::VectorXd>;
+        auto data_ref{ref(&data[0], data.size())};
+        data_ref /= data_ref.norm();
+      }
 
      private:
       /**

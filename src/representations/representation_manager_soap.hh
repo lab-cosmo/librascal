@@ -382,16 +382,7 @@ namespace rascal {
 
       // normalize the soap vector
       if (this->normalize) {
-        double norm{0.};
-        for (const auto & el : soap_vector) {
-          auto && pair_type{el.first};
-          norm += soap_vector[pair_type].squaredNorm();
-        }
-        norm = std::sqrt(norm);
-        for (const auto & el : soap_vector) {
-          auto && pair_type{el.first};
-          soap_vector[pair_type] /= norm;
-        }
+        soap_vector.normalize();
       }
 
     }
