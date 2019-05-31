@@ -292,8 +292,8 @@ namespace rascal {
   class BlockSparseProperty : public PropertyBase {
    public:
     using Parent = PropertyBase;
-    using Dense_t = Eigen::Matrix<Precision_t,
-                    Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+    using Dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, Eigen::Dynamic,
+                                  Eigen::RowMajor>;
     using dense_ref_t = Eigen::Map<Dense_t>;
     using sizes_t = std::vector<size_t>;
     using Key_t = Key;

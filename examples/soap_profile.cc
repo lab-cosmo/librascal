@@ -109,11 +109,10 @@ int main(int argc, char * argv[]) {
   }
   auto finish = std::chrono::high_resolution_clock::now();
 
-
   elapsed = finish - start;
   std::cout << "Neighbour List"
-            << " elapsed: " << elapsed.count() / N_ITERATIONS
-            << " seconds" << std::endl;
+            << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
+            << std::endl;
 
   Representation_t representation{manager, hypers};
 
@@ -126,12 +125,12 @@ int main(int argc, char * argv[]) {
 
   elapsed = finish - start;
   std::cout << "Compute represenation"
-            << " elapsed: " << elapsed.count() / N_ITERATIONS
-            << " seconds" << std::endl;
+            << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
+            << std::endl;
 
   auto soap = representation.get_representation_full();
   std::cout << "Sample SOAP elements \n"
-            << soap(0,0) << " " << soap(0,1) << " " << soap(0,2) << "\n"
-            << soap(1,0) << " " << soap(1,1) << " " << soap(1,2) << "\n"
-            << soap(2,0) << " " << soap(2,1) << " " << soap(2,2) << "\n";
+            << soap(0, 0) << " " << soap(0, 1) << " " << soap(0, 2) << "\n"
+            << soap(1, 0) << " " << soap(1, 1) << " " << soap(1, 2) << "\n"
+            << soap(2, 0) << " " << soap(2, 1) << " " << soap(2, 2) << "\n";
 }

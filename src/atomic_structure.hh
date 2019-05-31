@@ -124,16 +124,16 @@ namespace rascal {
 
     void set_structure(const json & s) {
       /*
-      * ASE json format is nested - here, first entry is actual data
-      * structure. If in any case you should have multiple
-      * <code>atoms_objects</code> in your file, which you want to read, the
-      * following line has to be adapted. Nesting on the first level is
-      * structure1, structure 2, etc. These could be a time series of a
-      * simulation, but also just different structures you want to read in from
-      * different simulation runs.  Each structure should contain the necessary
-      * fields for the <code>AtomicStructure</code> object defined in the header
-      * belonging to this file. Here, just the first one is read.
-      */
+       * ASE json format is nested - here, first entry is actual data
+       * structure. If in any case you should have multiple
+       * <code>atoms_objects</code> in your file, which you want to read, the
+       * following line has to be adapted. Nesting on the first level is
+       * structure1, structure 2, etc. These could be a time series of a
+       * simulation, but also just different structures you want to read in from
+       * different simulation runs.  Each structure should contain the necessary
+       * fields for the <code>AtomicStructure</code> object defined in the
+       * header belonging to this file. Here, just the first one is read.
+       */
       if (s.count("filename") == 1) {
         auto filename{s["filename"].get<std::string>()};
         this->set_structure(filename);
