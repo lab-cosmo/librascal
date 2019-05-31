@@ -62,8 +62,9 @@ namespace rascal {
     using Parent = FeatureManagerBase<T>;
     using RepresentationManager_t = typename Parent::RepresentationManager_t;
     using Hypers_t = typename Parent::Hypers_t;
-    using Feature_Matrix_t = typename Parent::Feature_Matrix_t;
-    using Feature_Matrix_ref = typename Parent::Feature_Matrix_ref;
+    using Feature_Matrix_t = Eigen::Matrix<T, Eigen::Dynamic,
+                                           Eigen::Dynamic, Eigen::RowMajor>;
+    using Feature_Matrix_ref = Eigen::Map<const Feature_Matrix_t>;
     using Precision_t = typename Parent::Precision_t;
 
     using Key_t = std::vector<int>;
