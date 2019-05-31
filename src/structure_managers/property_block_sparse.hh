@@ -69,7 +69,7 @@ namespace rascal {
       using MyMap_t = std::map<K, V>;
       // using Map_t = std::unordered_map<K, std::array<int, 3>, Hash<K>>;
       using Map_t = std::map<K, std::array<int, 3>>;
-      using Data_t = std::vector<typename V::value_type>;
+      using Data_t = Eigen::Array<typename V::value_type, Eigen::Dynamic, 1>;
       //! the data holder.
       Data_t data{};
       Map_t map{};
@@ -216,7 +216,8 @@ namespace rascal {
             new_size += static_cast<int>(n_row * n_col);
           }
         }
-        this->data.resize(new_size, 0.);
+        this->data.resize(new_size);
+        this->data = 0;
       }
 
       //! Returns the number of elements with key that compares equivalent to
