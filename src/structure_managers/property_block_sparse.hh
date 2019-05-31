@@ -69,7 +69,7 @@ namespace rascal {
       using MyMap_t = std::map<K, V>;
       // using Map_t = std::unordered_map<K, std::array<int, 3>, Hash<K>>;
       using Map_t = std::map<K, std::array<int, 3>>;
-      using Data_t = std::vector<typename V::value_type>;
+      using Data_t = Eigen::Array<typename V::value_type, Eigen::Dynamic, 1>;
       //! the data holder.
       Data_t data{};
       Map_t map{};
@@ -211,12 +211,12 @@ namespace rascal {
         for (auto & key : keys) {
           key_type skey{this->copy_sort(key)};
           if (this->map.count(skey) == 0) {
-            Array_t val{new_size, n_row, n_col};
-            this->map[skey] = val;
+            this->map[skey] = Array_t{new_size, n_row, n_col};
             new_size += static_cast<int>(n_row * n_col);
           }
         }
-        this->data.resize(new_size, 0.);
+        this->data.resize(new_size);
+        this->data = 0;
       }
 
       //! Returns the number of elements with key that compares equivalent to
@@ -292,8 +292,8 @@ namespace rascal {
   class BlockSparseProperty : public PropertyBase {
    public:
     using Parent = PropertyBase;
-    using Dense_t = Eigen::Matrix<Precision_t,
-                    Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+    using Dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, Eigen::Dynamic,
+                                  Eigen::RowMajor>;
     using dense_ref_t = Eigen::Map<Dense_t>;
     using sizes_t = std::vector<size_t>;
     using Key_t = Key;

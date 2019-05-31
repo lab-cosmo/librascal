@@ -363,7 +363,10 @@ namespace rascal {
                 auto& pos{lm_max[l][0]};
                 auto& size{lm_max[l][1]};
                 // do the reduction over m (with vectorization)
-                soap_vector_by_pair(n1n2, l) = (coef1.block(n1, pos, 1, size).array() * coef2.block(n2, pos, 1, size).array()).sum();
+                soap_vector_by_pair(n1n2, l) = (
+                        coef1.block(n1, pos, 1, size).array() *
+                        coef2.block(n2, pos, 1, size).array()
+                        ).sum();
               }
               ++n1n2;
             }
