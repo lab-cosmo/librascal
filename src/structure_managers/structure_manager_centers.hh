@@ -254,7 +254,7 @@ namespace rascal {
     }
 
     //! dummy function, since no neighbours are present her
-    inline int get_cluster_neighbour_atom_tag_impl(const Parent & /*parent*/,
+    inline int get_neighbour_atom_tag(const Parent & /*parent*/,
                                                    size_t index) const {
       // dummy argument is the atom itself, because if does not make sense at
       // this order
@@ -263,7 +263,7 @@ namespace rascal {
 
     //! Dummy function, since neighbours are not present at this Order
     template <size_t Order, size_t Layer>
-    inline int get_cluster_neighbour_atom_tag_impl(
+    inline int get_neighbour_atom_tag(
         const ClusterRefKey<Order, Layer> & /*cluster*/,
         size_t /*index*/) const {
       static_assert(Order <= traits::MaxOrder,

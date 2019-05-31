@@ -310,9 +310,11 @@ namespace rascal {
     // tag lists? how would the type list look like in this case? because you
     // cannot access it simply with the atom tags, e.g. you need to map
     // 0->0,3->1 and 5->2. I am currently doing this, but how lammps actual do
-    // it?
+    // it? Also we cannot except negative atom tags at the moment and I would
+    // not do it, because lammps does not have negative ones, we do not have the
+    // case of using negative ones, why the extra effort?
     int ilist[nb]{0, 3,
-                  5};  // TODO(alex): make ilist non-contiguous, eg {1, 12, 28}
+                  5};  // TODO(alex): make ilist non-contiguous, eg {1, 28, 12}
     int numneigh[nb]{2, 1, 1};
     int ** firstneigh;
     double ** x;

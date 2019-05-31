@@ -500,16 +500,16 @@ namespace rascal {
      */
     template <size_t Order, size_t Layer>
     inline int
-    get_cluster_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & cluster,
+    get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & cluster,
                                    size_t index) const {
-      return this->implementation().get_cluster_neighbour_atom_tag_impl(cluster,
+      return this->implementation().get_neighbour_atom_tag(cluster,
                                                                         index);
     }
 
     //! get atom_tag of the index-th atom in manager
-    inline int get_cluster_neighbour_atom_tag(const StructureManager & cluster,
+    inline int get_neighbour_atom_tag(const StructureManager & cluster,
                                               size_t & index) const {
-      return this->implementation().get_cluster_neighbour_atom_tag_impl(cluster,
+      return this->implementation().get_neighbour_atom_tag(cluster,
                                                                         index);
     }
 
@@ -665,7 +665,7 @@ namespace rascal {
       }
       template <class Manager_t, class Container_t>
       inline static int
-      get_cluster_neighbour_atom_tag(const Manager_t & /*manager*/,
+      get_neighbour_atom_tag(const Manager_t & /*manager*/,
                                      const Container_t & /*container*/,
                                      size_t /*index*/) {
         throw std::runtime_error("This branch should never exist"
@@ -691,10 +691,10 @@ namespace rascal {
 
       template <class Manager_t, class Container_t>
       inline static int
-      get_cluster_neighbour_atom_tag(const Manager_t & manager,
+      get_neighbour_atom_tag(const Manager_t & manager,
                                      const Container_t & container,
                                      size_t index) {
-        return manager.get_cluster_neighbour_atom_tag_impl(container, index);
+        return manager.get_neighbour_atom_tag(container, index);
       }
     };
 
@@ -924,6 +924,7 @@ namespace rascal {
     //! returns the clusters index (e.g. the 4-th pair of all pairs in this
     //! iteration)
     // TODO(alex) should be equal cluster_indices.back()
+    // improve documentation
     inline size_t get_global_index() const {
       return this->get_manager().get_offset(*this);
     }
@@ -1104,7 +1105,7 @@ namespace rascal {
     std::array<int, Order> get_atom_tag_list() {
       return internal::append_array(
           container.get_atom_tag_list(),
-          this->get_manager().get_cluster_neighbour_atom_tag(container,
+          this->get_manager().get_neighbour_atom_tag(container,
                                                              this->index));
     }
 
@@ -1112,7 +1113,7 @@ namespace rascal {
     std::array<int, Order> get_atom_tag_list() const {
       return internal::append_array(
           container.get_atom_tag_list(),
-          this->get_manager().get_cluster_neighbour_atom_tag(container,
+          this->get_manager().get_neighbour_atom_tag(container,
                                                              this->index));
     }
 

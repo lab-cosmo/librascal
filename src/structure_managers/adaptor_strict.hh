@@ -150,7 +150,7 @@ namespace rascal {
 
     //! get atom_tag of index-th neighbour of this cluster
     template <size_t Order, size_t Layer>
-    inline int get_cluster_neighbour_atom_tag_impl(
+    inline int get_neighbour_atom_tag(
         const ClusterRefKey<Order, Layer> & cluster, int index) const {
       static_assert(Order <= traits::MaxOrder - 1,
                     "this implementation only handles upto traits::MaxOrder");
@@ -159,7 +159,7 @@ namespace rascal {
     }
 
     //! get atom_tag of the index-th atom in manager
-    inline int get_cluster_neighbour_atom_tag_impl(const Parent & /*parent*/,
+    inline int get_neighbour_atom_tag(const Parent & /*parent*/,
                                                    size_t index) const {
       return this->atom_tag_list[0][index];
     }
@@ -214,10 +214,10 @@ namespace rascal {
 
     template <size_t Order>
     inline int
-    get_cluster_neighbour_atom_tag_impl(const size_t neighbour_index) const {
+    get_neighbour_atom_tag(const size_t neighbour_index) const {
       static_assert(Order < traits::MaxOrder,
                     "Calling this function with the wrong order cluster");
-      return this->manager->get_cluster_neighbour_atom_tag_impl(
+      return this->manager->get_neighbour_atom_tag(
           neighbour_index);
     }
 

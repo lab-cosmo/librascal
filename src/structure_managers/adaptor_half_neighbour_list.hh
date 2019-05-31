@@ -56,7 +56,6 @@ namespace rascal {
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
         AdaptorTraits::NeighbourListType::half};
-    // TODO(alex) didn't we say that half neighbour resets the layers of order=2
     using LayerByOrder = typename LayerIncreaser<
         MaxOrder, typename ManagerImplementation::traits::LayerByOrder>::type;
   };
@@ -175,7 +174,7 @@ namespace rascal {
 
     //! Returns the id of the index-th neighbour atom of a given cluster
     template <size_t Order, size_t Layer>
-    inline int get_cluster_neighbour_atom_tag_impl(
+    inline int get_neighbour_atom_tag(
         const ClusterRefKey<Order, Layer> & cluster, size_t index) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles up to traits::MaxOrder");
@@ -185,7 +184,7 @@ namespace rascal {
           internal::IncreaseHelper<Order == (traits::MaxOrder - 1)>;
 
       if (Order < (traits::MaxOrder - 1)) {
-        return IncreaseHelper_t::get_cluster_neighbour_atom_tag(*this->manager,
+        return IncreaseHelper_t::get_neighbour_atom_tag(*this->manager,
                                                                 cluster, index);
       } else {
         auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
@@ -194,9 +193,9 @@ namespace rascal {
     }
 
     //! get atom_tag of the index-th atom in manager
-    inline int get_cluster_neighbour_atom_tag_impl(const Parent &,
+    inline int get_neighbour_atom_tag(const Parent &,
                                                    size_t index) const {
-      return this->manager->get_cluster_neighbour_atom_tag_impl(*this->manager,
+      return this->manager->get_neighbour_atom_tag(*this->manager,
                                                                 index);
     }
 

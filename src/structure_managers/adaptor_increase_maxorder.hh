@@ -199,15 +199,15 @@ namespace rascal {
      * Returns the id of the index-th (neighbour) atom of the cluster that is
      * the full structure/atoms object, i.e. simply the id of the index-th atom
      */
-    inline int get_cluster_neighbour_atom_tag_impl(const Parent &,
+    inline int get_neighbour_atom_tag(const Parent &,
                                                    size_t index) const {
-      return this->manager->get_cluster_neighbour_atom_tag_impl(*this->manager,
+      return this->manager->get_neighbour_atom_tag(*this->manager,
                                                                 index);
     }
 
     //! Returns the id of the index-th neighbour atom of a given cluster
     template <size_t Order, size_t Layer>
-    inline int get_cluster_neighbour_atom_tag_impl(
+    inline int get_neighbour_atom_tag(
         const ClusterRefKey<Order, Layer> & cluster, size_t index) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles up to traits::MaxOrder");
@@ -217,7 +217,7 @@ namespace rascal {
           internal::IncreaseHelper<Order == (traits::MaxOrder - 1)>;
 
       if (Order < (traits::MaxOrder - 1)) {
-        return IncreaseHelper_t::get_cluster_neighbour_atom_tag(*this->manager,
+        return IncreaseHelper_t::get_neighbour_atom_tag(*this->manager,
                                                                 cluster, index);
       } else {
         auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
@@ -406,7 +406,7 @@ namespace rascal {
       for (auto atom_tag : i_atoms) {
         current_i_atoms.push_back(atom_tag);
         size_t access_index =
-            manager.get_cluster_neighbour_atom_tag_impl(manager, atom_tag);
+            manager.get_neighbour_atom_tag(manager, atom_tag);
 
         // construct a shifted iterator to constuct a ClusterRef<1>
         auto iterator_at_position{manager_tmp.get_iterator_at(access_index)};

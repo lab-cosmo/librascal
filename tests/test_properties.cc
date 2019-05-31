@@ -30,7 +30,7 @@
 #include "test_properties.hh"
 
 namespace rascal {
-  // TODO(felix) test dynamic sized Property
+  // TODO(felix) TODO(alex) test dynamic sized Property completely
   BOOST_AUTO_TEST_SUITE(Property_tests);
 
   using atom_vector_property_fixtures_with_ghosts =

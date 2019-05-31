@@ -40,12 +40,91 @@
 
 namespace rascal {
 
-  /* ---------------------------------------------------------------------- */
-  /*
-   * A fixture for testing properties. It is based on the PairFixture, which is
-   * basically a fixture which provides a pair neighbour list based on positions
-   * which are initialized in the tests.
+  /* These Fixtures allow flexible stacking of different adaptors for templated
+   * tests. The manager is initialized in the initialization list of the
+   * constructor. This is required for the usage with the PropertyFixtures,
+   * since references have to be initialized in the intialization list of the
+   * constructor and every kind of Property object has a reference to its 
+   * corresponding ManagerImplementation. For an usage example, see in this
+   * file the PropertyFixtures (e.g. AtomPropertyFixture).
    */
+  struct StructureManagerCentersStackFixture {
+    using Manager_t = StructureManagerCenters;
+    using ManagerPtr_t = std::shared_ptr<Manager_t>;
+    using ManagerTypeHolder_t =
+        StructureManagerTypeHolder<StructureManagerCenters>;
+    const std::string filename{
+        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+    StructureManagerCentersStackFixture()
+        : manager{make_structure_manager<StructureManagerCenters>()} {
+      manager->update(filename);
+    }
+    ManagerPtr_t manager;
+  };
+
+  template <class StackFixture, bool consider_ghost_neighbours_>
+  struct AdaptorNeighbourListStackFixture : StackFixture {
+    using Parent = StackFixture;
+    using Manager_t = AdaptorNeighbourList<typename Parent::Manager_t>;
+    using ManagerPtr_t = std::shared_ptr<Manager_t>;
+
+    const double consider_ghost_neighbours{consider_ghost_neighbours_};
+    const double cutoff{1.};
+    AdaptorNeighbourListStackFixture()
+        : manager{make_adapted_manager<AdaptorNeighbourList>(
+              StackFixture::manager, cutoff, consider_ghost_neighbours)} {
+      manager->update();
+    }
+    ManagerPtr_t manager;
+  };
+
+  template <class StackFixture>
+  struct AdaptorHalfListStackFixture : StackFixture {
+    using Parent = StackFixture;
+    using Manager_t = AdaptorHalfList<typename Parent::Manager_t>;
+    using ManagerPtr_t = std::shared_ptr<Manager_t>;
+
+    AdaptorHalfListStackFixture()
+        : manager{
+              make_adapted_manager<AdaptorHalfList>(StackFixture::manager)} {
+      manager->update();
+    }
+
+    ManagerPtr_t manager;
+  };
+
+  template <class StackFixture>
+  struct AdaptorStrictStackFixture : StackFixture {
+    using Parent = StackFixture;
+    using Manager_t = AdaptorStrict<typename Parent::Manager_t>;
+    using ManagerPtr_t = std::shared_ptr<Manager_t>;
+
+    const double cutoff{2.};
+    AdaptorStrictStackFixture()
+        : manager{make_adapted_manager<AdaptorStrict>(StackFixture::manager,
+                                                      cutoff)} {
+      manager->update();
+    }
+
+    ManagerPtr_t manager;
+  };
+
+  template <class StackFixture>
+  struct AdaptorMaxOrderStackFixture : StackFixture {
+    using Parent = StackFixture;
+    using Manager_t = AdaptorMaxOrder<typename Parent::Manager_t>;
+    using ManagerPtr_t = std::shared_ptr<Manager_t>;
+
+    AdaptorMaxOrderStackFixture()
+        : manager{
+              make_adapted_manager<AdaptorMaxOrder>(StackFixture::manager)} {
+      manager->update();
+    }
+
+    ManagerPtr_t manager;
+  };
+
+
 
   // #BUG8486@(markus), #BUG8486@(felix) I made new Fixtures, Multiple*Fixture
   // does not match this use case because I need the manager already initialized
@@ -55,6 +134,11 @@ namespace rascal {
   // stack and replaces it for higher stacks. For the property tests what test
   // data is load into the manager is not important, since we make our own
   // properties.
+  /* ---------------------------------------------------------------------- */
+  /*
+   * A fixture for testing properties. The StackFixture, which it inherits from,
+   * provides the ManagerImplementation for the property. 
+   */
 
   template <class StackFixture>
   struct AtomPropertyFixture : StackFixture {
@@ -133,7 +217,9 @@ namespace rascal {
                                          consider_ghost_neighbours>;
   };
 
-  // Helper types to concat template lists
+  /* Helper struct to concat tuple type. The same functionality using directly
+   * a boost list does not work. Therefore we do the workaround with tuples.
+   */
   template <typename ta, typename tb>
   struct tuple_cat;
 
@@ -142,8 +228,9 @@ namespace rascal {
     typedef std::tuple<a..., b...> type;
   };
 
-  // Helper types to uppack the tuple template arguments and pack them into a
-  //  boost::mpl::list
+  /* Helper struct to unpack the tuple arguments and pack them into a
+   * boost::mpl::list. 
+   */
   template <typename ta>
   struct pack_into_list;
 
@@ -152,6 +239,9 @@ namespace rascal {
     using type = boost::mpl::list<a...>;
   };
 
+  /* Helper usings because the direct usage of type with template arguments
+   * returns compiler errors.
+   */
   using ANLWithGhosts_SMC_StackFixture =
       AdaptorNeighbourListStackFixture<StructureManagerCentersStackFixture,
                                        true>;
@@ -159,6 +249,11 @@ namespace rascal {
       AdaptorNeighbourListStackFixture<StructureManagerCentersStackFixture,
                                        false>;
 
+  /* The general procedure here is, that the tuple_some_description contains all
+   * the types in a tuple, and type_some_description contains the boost list so
+   * it can be used for the templated tests of boost. See test_properties.cc for
+   * usage of these structs (e.g. atom_vector_property_fixtures_with_ghosts).
+   */
   struct OrderOnePropertyBoostList {
     template <bool consider_ghost_neighbours>
     struct OrderTwoFixtureStacksTuple {
