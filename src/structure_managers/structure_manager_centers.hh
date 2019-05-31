@@ -278,7 +278,6 @@ namespace rascal {
     //! Function for returning the number of atoms
     size_t get_nb_clusters(size_t order) const;
 
-    
     /**
      * invokes the initialisation/reinitialisation based on existing
      * data. E.g. when the atom positions are provided by a simulation method,

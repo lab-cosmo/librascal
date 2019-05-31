@@ -316,12 +316,11 @@ namespace rascal {
           if (radial_n % 2 == 0) {
             a_b_l_n = sqrt(pow(fac_a + this->fac_b[radial_n], -(3 + radial_n)));
           } else {
-            a_b_l_n = pow(fac_a + this->fac_b[radial_n], -(3 + radial_n)/2);
+            a_b_l_n = pow(fac_a + this->fac_b[radial_n], -(3 + radial_n) / 2);
           }
           this->radial_integral_center(radial_n) =
               this->radial_norm_factors(radial_n) *
-              this->radial_n_factors(radial_n) *
-              a_b_l_n;
+              this->radial_n_factors(radial_n) * a_b_l_n;
         }
 
         this->radial_integral_center =
@@ -357,7 +356,7 @@ namespace rascal {
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           double a_b_l{1. / sqrt(fac_a + this->fac_b[radial_n])};
 
-          a_b_l_n(radial_n, 0) = pow(a_b_l,3+radial_n);
+          a_b_l_n(radial_n, 0) = pow(a_b_l, 3 + radial_n);
 
           for (size_t angular_l{1}; angular_l < this->max_angular + 1;
                angular_l++) {
@@ -370,7 +369,8 @@ namespace rascal {
 
         this->radial_integral_neighbour =
             (a_b_l_n.array() * this->hyp1f1_calculator.get_values().array())
-                .matrix() * distance_fac_a_l.asDiagonal();
+                .matrix() *
+            distance_fac_a_l.asDiagonal();
         this->radial_integral_neighbour.transpose() *=
             this->radial_norm_factors.asDiagonal();
         this->radial_integral_neighbour.transpose() *=
@@ -716,7 +716,7 @@ namespace rascal {
     std::vector<size_t> lm_max(max_angular + 1);
     size_t lm{0};
     for (size_t l = 0; l < max_angular + 1; ++l) {
-      lm += 2*l+1;
+      lm += 2 * l + 1;
       lm_max[l] = lm;
     }
     size_t lm_tot{lm_max[max_angular]};
@@ -731,7 +731,7 @@ namespace rascal {
       auto & coefficients_center = this->expansions_coefficients[center];
       Key_t center_type{center.get_atom_type()};
 
-      //TODO(felix) think about an option to have "global" species,
+      // TODO(felix) think about an option to have "global" species,
       //"structure" species(or not), or automatic at the level of environment
       std::unordered_set<Key_t, internal::Hash<Key_t>> keys{};
       for (auto neigh : center) {
