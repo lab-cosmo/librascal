@@ -312,10 +312,16 @@ namespace rascal {
         //  \delta_{l0} (spherical symmetry) and
         // 1F1(a,b,0) = 1
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
+          double a_b_l_n{0};
+          if (radial_n % 2 == 0) {
+            a_b_l_n = sqrt(pow(fac_a + this->fac_b[radial_n], -(3 + radial_n)));
+          } else {
+            a_b_l_n = pow(fac_a + this->fac_b[radial_n], -(3 + radial_n)/2);
+          }
           this->radial_integral_center(radial_n) =
               this->radial_norm_factors(radial_n) *
               this->radial_n_factors(radial_n) *
-              sqrt(pow(fac_a + this->fac_b[radial_n], -(3 + radial_n)));
+              a_b_l_n;
         }
 
         this->radial_integral_center =
@@ -350,8 +356,9 @@ namespace rascal {
         Matrix_t a_b_l_n(this->max_radial, this->max_angular + 1);
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           double a_b_l{1. / sqrt(fac_a + this->fac_b[radial_n])};
-          a_b_l_n(radial_n, 0) =
-              sqrt(pow(fac_a + this->fac_b[radial_n], -(3 + radial_n)));
+
+          a_b_l_n(radial_n, 0) = pow(a_b_l,3+radial_n);
+
           for (size_t angular_l{1}; angular_l < this->max_angular + 1;
                angular_l++) {
             a_b_l_n(radial_n, angular_l) =
@@ -705,8 +712,17 @@ namespace rascal {
     auto radial_integral{
         downcast_radial_integral<RadialType>(this->radial_integral)};
 
+    // pre-computes limits of combined lm arrays
+    std::vector<size_t> lm_max(max_angular + 1);
+    size_t lm{0};
+    for (size_t l = 0; l < max_angular + 1; ++l) {
+      lm += 2*l+1;
+      lm_max[l] = lm;
+    }
+    size_t lm_tot{lm_max[max_angular]};
+
     auto n_row{this->max_radial};
-    auto n_col{pow(this->max_angular + 1, 2)};
+    auto n_col{lm_tot};
     this->expansions_coefficients.clear();
     this->expansions_coefficients.set_shape(n_row, n_col);
     this->expansions_coefficients.resize();
@@ -730,14 +746,6 @@ namespace rascal {
           radial_integral->template compute_center_contribution<SmearingType>(
               center) /
           sqrt(4.0 * PI);
-
-      // pre-computes limits of combined lm arrays
-      std::vector<size_t> lm_max(max_angular + 1);
-      size_t lm{0};
-      for (size_t l = 0; l < max_angular + 1; ++l) {
-        lm += 2*l+1;
-        lm_max[l] = lm;
-      }
 
       for (auto neigh : center) {
         auto dist{this->structure_manager->get_distance(neigh)};

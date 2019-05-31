@@ -57,12 +57,16 @@ namespace rascal {
       double sin_theta = sqrt(1.0 - pow(cos_theta, 2));
       // Matrix_t assoc_legendre_polynom(max_angular + 1, max_angular +
       // 1);
+      // TODO(alex) make these into compact lm storage
       Matrix_t assoc_legendre_polynom =
           Matrix_t::Zero(max_angular + 1, max_angular + 1);
       Matrix_t coeff_a = Matrix_t::Zero(max_angular + 1, 2 * max_angular + 1);
       Matrix_t coeff_b = Matrix_t::Zero(max_angular + 1, 2 * max_angular + 1);
       const double SQRT_INV_2PI = sqrt(0.5 / PI);
 
+      // TODO(alex) make a class for the ALP, so that all of these coefficients
+      // are computed just once - this section weights for 30% of the cost of
+      // ALP
       // Coefficients for computing the associated Legendre polynomials
       for (size_t angular_l{0}; angular_l < max_angular + 1; angular_l++) {
         double lsq = angular_l * angular_l;
