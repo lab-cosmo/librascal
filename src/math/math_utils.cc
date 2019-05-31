@@ -191,9 +191,7 @@ namespace rascal {
       using math::pow;
       using std::sqrt;
 
-      if (direction.size() != 3) {
-        throw std::length_error("Direction must be a vector in R^3");
-      }
+      
       // The cosine against the z-axis is just the z-component of the
       // direction vector
       double cos_theta = direction[2];
