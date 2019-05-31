@@ -146,27 +146,31 @@ namespace rascal {
       inline double f_c(const double & distance) {
         double factor{0.};
         if (this->rate < math::dbl_ftol) {
-          factor = math::pow(distance / this->scale, - this->exponent);
+          factor = math::pow(distance / this->scale, -this->exponent);
         } else if (this->exponent == 0) {
           factor = 1.;
         } else {
-          factor = this->rate / (this->rate + math::pow(distance / this->scale, this->exponent));
+          factor = this->rate / (this->rate + math::pow(distance / this->scale,
+                                                        this->exponent));
         }
-        return factor*math::switching_function_cosine(distance, this->cutoff,
-                                               this->smooth_width);
+        return factor * math::switching_function_cosine(distance, this->cutoff,
+                                                        this->smooth_width);
       }
 
       inline double df_c(const double & distance) {
         double factor{0.};
         if (this->rate < math::dbl_ftol) {
-          factor = -this->exponent / distance * math::pow(distance / this->scale, - this->exponent);
+          factor = -this->exponent / distance *
+                   math::pow(distance / this->scale, -this->exponent);
         } else if (this->exponent == 0) {
           factor = 0.;
         } else {
           double ff{math::pow(distance / this->scale, this->exponent)};
-          factor = this->rate * this->exponent * ff / distance * math::pow(this->rate + ff, -2);
+          factor = this->rate * this->exponent * ff / distance *
+                   math::pow(this->rate + ff, -2);
         }
-        return factor*math::derivative_switching_funtion_cosine(distance, this->cutoff,this->smooth_width);
+        return factor * math::derivative_switching_funtion_cosine(
+                            distance, this->cutoff, this->smooth_width);
       }
 
       //! keep the hypers

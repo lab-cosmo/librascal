@@ -34,7 +34,6 @@
 
 namespace rascal {
 
-
   /* ---------------------------------------------------------------------- */
   /*
    * After reading the <code>atoms_object</code> from the file, the cell vectors

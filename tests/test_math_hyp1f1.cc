@@ -84,31 +84,35 @@ namespace rascal {
     }
   }
 
-  BOOST_FIXTURE_TEST_CASE(math_hyp1f1_spherical_expansion_test, Hyp1f1SphericalExpansionFixture) {
+  BOOST_FIXTURE_TEST_CASE(math_hyp1f1_spherical_expansion_test,
+                          Hyp1f1SphericalExpansionFixture) {
     for (size_t i_rc{0}; i_rc < this->rcs.size(); ++i_rc) {
-      auto& rc{this->rcs[i_rc]};
-      auto& fac_b{this->facs_b[i_rc]};
-      for (auto& r_ij : this->r_ijs) {
-        if (r_ij >= rc ) {
+      auto & rc{this->rcs[i_rc]};
+      auto & fac_b{this->facs_b[i_rc]};
+      for (auto & r_ij : this->r_ijs) {
+        if (r_ij >= rc) {
           continue;
         }
-        for (auto& fac_a : this->fac_as) {
+        for (auto & fac_a : this->fac_as) {
           for (size_t ii{0}; ii < this->hyp1f1.size(); ++ii) {
             hyp1f1[ii].calc(r_ij, fac_a, fac_b[ii], true);
             hyp1f1_recursion[ii].calc(r_ij, fac_a, fac_b[ii], true);
             auto hyp1f1_val{hyp1f1[ii].get_values()};
             auto hyp1f1_recursion_val{hyp1f1_recursion[ii].get_values()};
-            auto diff_val{(hyp1f1_val-hyp1f1_recursion_val).array().abs()/ hyp1f1_val.array()};
+            auto diff_val{(hyp1f1_val - hyp1f1_recursion_val).array().abs() /
+                          hyp1f1_val.array()};
             auto hyp1f1_der{hyp1f1[ii].get_derivatives()};
             auto hyp1f1_recursion_der{hyp1f1_recursion[ii].get_derivatives()};
-            auto diff_der{(hyp1f1_der-hyp1f1_recursion_der).array().abs() / hyp1f1_der.array()};
+            auto diff_der{(hyp1f1_der - hyp1f1_recursion_der).array().abs() /
+                          hyp1f1_der.array()};
             BOOST_CHECK_LE(diff_val.mean(), 3 * math::dbl_ftol);
             BOOST_CHECK_LE(diff_der.mean(), 3 * math::dbl_ftol);
             if (verbose) {
-              std::cout << "diff_val= "<< diff_val.mean() << " diff_der=" << diff_der.mean() <<std::endl;
+              std::cout << "diff_val= " << diff_val.mean()
+                        << " diff_der=" << diff_der.mean() << std::endl;
               for (int ii{0}; ii < diff_val.rows(); ++ii) {
                 for (int jj{0}; jj < diff_val.cols(); ++jj) {
-                  std::cout << diff_val(ii, jj)   << ", ";
+                  std::cout << diff_val(ii, jj) << ", ";
                 }
               }
             }
@@ -116,8 +120,6 @@ namespace rascal {
         }
       }
     }
-
-
   }
 
   /* ---------------------------------------------------------------------- */

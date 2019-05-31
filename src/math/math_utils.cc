@@ -191,7 +191,6 @@ namespace rascal {
       using math::pow;
       using std::sqrt;
 
-      
       // The cosine against the z-axis is just the z-component of the
       // direction vector
       double cos_theta = direction[2];
@@ -204,31 +203,32 @@ namespace rascal {
         cos_phi = direction[0] / sqrt_xy;
         sin_phi = direction[1] / sqrt_xy;
       }
-      Vector_t harmonics = Vector_t::Zero((max_angular + 1)*(max_angular + 1));
+      Vector_t harmonics =
+          Vector_t::Zero((max_angular + 1) * (max_angular + 1));
       Matrix_t assoc_legendre_polynom =
           compute_assoc_legendre_polynom(cos_theta, max_angular);
       MatrixX2_t cos_sin_m_phi =
           compute_cos_sin_angle_multiples(cos_phi, sin_phi, max_angular);
 
-      size_t lm_base{0}; // starting point for storage
+      size_t lm_base{0};  // starting point for storage
       for (size_t angular_l{0}; angular_l < max_angular + 1; angular_l++) {
         for (size_t m_count{0}; m_count < angular_l + 1; m_count++) {
           if (m_count == 0) {
-            harmonics(lm_base+angular_l) =
+            harmonics(lm_base + angular_l) =
                 assoc_legendre_polynom(angular_l, m_count) * INV_SQRT_TWO;
           } else {
             // uses symmetry of spherical harmonics,
             // careful with the storage order
-            harmonics(lm_base+angular_l+m_count) =
+            harmonics(lm_base + angular_l + m_count) =
                 assoc_legendre_polynom(angular_l, m_count) *
                 cos_sin_m_phi(m_count, 0);
-            harmonics(lm_base+angular_l-m_count) =
+            harmonics(lm_base + angular_l - m_count) =
                 assoc_legendre_polynom(angular_l, m_count) *
                 cos_sin_m_phi(m_count, 1);
           }  // if (m_count == 0)
         }    // for (m_count in [0, l])
-        lm_base += 2*angular_l + 1;
-      }      // for (l in [0, lmax])
+        lm_base += 2 * angular_l + 1;
+      }  // for (l in [0, lmax])
       return harmonics;
     }  // compute_spherical_harmonics()
 
