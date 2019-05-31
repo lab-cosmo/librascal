@@ -67,27 +67,27 @@ namespace rascal {
     for (size_t vec_idx{0}; vec_idx < unit_vectors.size(); vec_idx++) {
       Eigen::Vector3d direction(unit_vectors[vec_idx].data());
       size_t max_angular = harmonics[vec_idx].size() - 1;
-      Eigen::MatrixXd computed_harmonics =
+      Eigen::VectorXd computed_harmonics =
           math::compute_spherical_harmonics(direction, max_angular);
       if (verbose) {
         std::cout << "Testing unit vector: " << direction << std::endl;
         std::cout << "Max angular momentum: l_max=" << max_angular << std::endl;
-        std::cout << "Computed harmonics size: " << computed_harmonics.rows();
-        std::cout << " by " << computed_harmonics.cols() << std::endl;
+        std::cout << "Computed harmonics size: " << computed_harmonics.size();
+        std::cout << std::endl;
       }
+      size_t lm{0};
       for (size_t angular_l{0}; angular_l < max_angular + 1; angular_l++) {
         if (verbose) {
           std::cout << std::setprecision(10) << "Coefficients for l=";
           std::cout << angular_l << ": ";
-          std::cout << computed_harmonics.block(angular_l, 0, 1,
-                                                2 * angular_l + 1);
+          std::cout << computed_harmonics.array().segment(lm, angular_l + 1);
           std::cout << std::endl;
         }
         for (size_t m_idx{0}; m_idx < 2 * angular_l + 1; m_idx++) {
           // Check both the harmonics and their order in memory
-          auto error{std::abs(computed_harmonics(angular_l, m_idx) -
+          auto error{std::abs(computed_harmonics(lm) -
                               harmonics[vec_idx][angular_l][m_idx])};
-
+          ++lm;
           BOOST_CHECK_LE(error, math::dbl_ftol);
         }
       }
