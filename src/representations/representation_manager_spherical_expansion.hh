@@ -314,10 +314,13 @@ namespace rascal {
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           double a_b_l_n{0};
           if (radial_n % 2 == 0) {
-            a_b_l_n = sqrt(pow(fac_a + this->fac_b[radial_n], -(3 + radial_n)));
+            a_b_l_n = sqrt(pow(fac_a + this->fac_b[radial_n],
+                               -1 * static_cast<int>(3 + radial_n)));
           } else {
-            a_b_l_n = pow(fac_a + this->fac_b[radial_n], -(3 + radial_n) / 2);
+            a_b_l_n = pow(fac_a + this->fac_b[radial_n],
+                          -1 * static_cast<int>(3 + radial_n) / 2);
           }
+
           this->radial_integral_center(radial_n) =
               this->radial_norm_factors(radial_n) *
               this->radial_n_factors(radial_n) * a_b_l_n;

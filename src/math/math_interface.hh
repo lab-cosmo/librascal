@@ -30,6 +30,7 @@
 #define SRC_MATH_MATH_INTERFACE_HH_
 
 #include <cmath>
+#include <iostream>
 
 /*
  * Cephes polutes the namespace with extern definitions so we don't link to it
@@ -50,8 +51,15 @@ namespace rascal {
     double hyp1f1(const double & a, const double & b, const double & x);
 
     // overload the pow function from cmath to optimize for integer power
-    double pow(const double & x, const int & n);
-    double pow(const double & x, const std::size_t & n);
+    double pow_u(double x, size_t n);
+    double pow_i(double x, int n);
+
+    //    double pow_cephes(const double & x, const int & n);
+    inline double pow(const double & x, const int & n) { return pow_i(x, n); }
+
+    inline double pow(const double & x, const std::size_t & n) {
+      return pow_u(x, n);
+    }
 
     inline double pow(const double & x, const double & n) {
       return std::pow(x, n);

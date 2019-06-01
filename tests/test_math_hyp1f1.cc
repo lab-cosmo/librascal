@@ -40,7 +40,7 @@ namespace rascal {
     for (auto & data : this->ref_data) {
       double a{data["a"]}, b{data["b"]}, z{data["z"]}, hyp1f1_ref{data["val"]},
           hyp1f1_der_ref{data["der"]};
-      math::Hyp1f1 func{a, b, 200, 1e-13};
+      math::Hyp1f1 func{a, b, 200, 1e-15};
       double val{func.calc(z)};
       double der{func.calc(z, true)};
 
