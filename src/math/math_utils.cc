@@ -57,7 +57,8 @@ namespace rascal {
       double sin_theta = sqrt(1.0 - pow(cos_theta, 2));
       // Matrix_t assoc_legendre_polynom(max_angular + 1, max_angular +
       // 1);
-      // TODO(alex) make these into compact lm storage
+      // TODO(alex) make these into compact lm storage, and pre-allocate so
+      // it does not allocate a matrix every time it calls spherical harmonics
       Matrix_t assoc_legendre_polynom =
           Matrix_t::Zero(max_angular + 1, max_angular + 1);
       Matrix_t coeff_a = Matrix_t::Zero(max_angular + 1, 2 * max_angular + 1);
@@ -89,23 +90,24 @@ namespace rascal {
         } else if (angular_l == 1) {
           assoc_legendre_polynom(angular_l, 0) =
               cos_theta * SQRT_THREE * SQRT_INV_2PI;
-          l_accum = l_accum * -1.0 * sqrt(3.0 / 2.0) * sin_theta;
+          l_accum = l_accum * -sqrt(3.0 / 2.0) * sin_theta;
           assoc_legendre_polynom(angular_l, 1) = l_accum;
           continue;
         }
         // for l > 1 : Use the recurrence relation
         // TODO(max-veit) don't bother calculating m =/= 0 if sin(theta) == 0
         //                (z-axis)
-        for (size_t m_count{0}; m_count < angular_l - 1; m_count++) {
+        for (size_t m_count{0}; m_count < angular_l - 1; ++m_count) {
           assoc_legendre_polynom(angular_l, m_count) =
               coeff_a(angular_l, m_count) *
               (cos_theta * assoc_legendre_polynom(angular_l - 1, m_count) +
                coeff_b(angular_l, m_count) *
                    assoc_legendre_polynom(angular_l - 2, m_count));
         }
+        // TODO(alex) also these two square roots below should be pre-computed!
         assoc_legendre_polynom(angular_l, angular_l - 1) =
-            cos_theta * sqrt(2.0 * (angular_l - 1) + 3) * l_accum;
-        l_accum = l_accum * sin_theta * -1.0 * sqrt(1.0 + 0.5 / angular_l);
+            cos_theta * sqrt(2 * angular_l + 1) * l_accum;
+        l_accum = l_accum * sin_theta * -sqrt(1.0 + 0.5 / angular_l);
         assoc_legendre_polynom(angular_l, angular_l) = l_accum;
       }
       return assoc_legendre_polynom;
