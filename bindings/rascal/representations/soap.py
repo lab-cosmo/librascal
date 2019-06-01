@@ -149,7 +149,6 @@ class SOAP(object):
             Object containing the representation
 
         """
-        from tqdm import tqdm_notebook
 
         if features is None:
             features = FeatureFactory(self.feature_options)
@@ -161,7 +160,7 @@ class SOAP(object):
         structure_ids = np.cumsum(n_atoms)[:-1]
         n_centers = np.sum(n_atoms)
         ii = 0
-        for structure in tqdm_notebook(structures, leave=False):
+        for structure in structures:
             try:
                 self.manager.update(**structure)
             except:

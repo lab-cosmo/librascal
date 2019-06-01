@@ -175,23 +175,32 @@ namespace rascal {
                         const size_t & mmax, const int & n_terms) {
         // perform the sum
         double res{1.0}, a1{1.0}, zpow{1.0};
-        for (size_t i{0}; i < mmax; ++i) {
-          zpow *= z;
-          a1 = coefficient(i) * zpow;
-          if (a1 < this->tolerance * res and n_terms == -1) {
-            this->n_terms = i;
-            break;
+        if (n_terms == -1) {
+          // adaptive sum
+          for (size_t i{0}; i < mmax; ++i) {
+            zpow *= z;
+            a1 = coefficient(i) * zpow;
+            if (a1 < this->tolerance * res) {
+              this->n_terms = i;
+              break;
+            }
+            res += a1;
           }
-          res += a1;
-
-          if (res > DOVERFLOW) {
+        } else {
+          // TODO (mc) this could be done with telescopic sums - and might be faster than checking for bailout condition
+          for (size_t i{0}; i < static_cast<size_t>(n_terms); ++i) {
+            zpow *= z;
+            a1 = coefficient(i) * zpow;
+            res += a1;
+          }
+        }
+        if (res > DOVERFLOW) {
             std::stringstream error{};
             error << "Hyp1f1Series series expansion: a="
                   << std::to_string(this->a) << " b=" << std::to_string(this->b)
                   << " z=" << std::to_string(z) << std::endl;
             throw std::overflow_error(error.str());
           }
-        }
         return res;
       }
     };
@@ -496,11 +505,6 @@ namespace rascal {
 
       inline double get_b(const int & l_angular) { return l_angular + 1.5; }
 
-      inline double get_z(const double & r_ij, const double & alpha,
-                          const double & beta) {
-        return math::pow(alpha * r_ij, 2) / (alpha + beta);
-      }
-
      public:
       Hyp1f1SphericalExpansion(const bool & recursion = false,
                                const double & tolerance = 1e-14,
@@ -565,9 +569,12 @@ namespace rascal {
         double z2{-alpha * math::pow(r_ij, 2)};
         double M1p2p{0.}, M2p3p{0.}, MP1p2p{0.}, MP2p3p{0.}, M1p1p{0.}, Moo{0.},
             MP1p1p{0.}, MPoo{0.};
+
+        double alpha2{alpha*alpha};
+        double rij2{r_ij*r_ij};
         for (size_t n_radial{0}; n_radial < this->max_radial; ++n_radial) {
           // get the starting points for the recursion
-          double z{this->get_z(r_ij, alpha, fac_b(n_radial))};
+          double z{rij2*alpha2/(alpha+fac_b(n_radial))};
 
           int l_angular{static_cast<int>(this->max_angular)};
           int ipos{this->get_pos(n_radial, l_angular)};
@@ -618,15 +625,27 @@ namespace rascal {
                               const bool & derivative) {
         double z2{-alpha * math::pow(r_ij, 2)};
 
+        double alpha2{alpha*alpha};
+        double rij2{r_ij*r_ij};
+
         for (size_t n_radial{0}; n_radial < this->max_radial; n_radial++) {
-          double z{this->get_z(r_ij, alpha, fac_b(n_radial))};
+          double z{rij2*alpha2/(alpha+fac_b(n_radial))};
           for (size_t l_angular{0}; l_angular < this->max_angular + 1;
                l_angular++) {
             int ipos{this->get_pos(n_radial, l_angular)};
             this->values(n_radial, l_angular) = this->hyp1f1[ipos].calc(z, z2);
           }
-        }
 
+          if (derivative) {
+            for (size_t l_angular{0}; l_angular < this->max_angular + 1;
+                 l_angular++) {
+              int ipos{this->get_pos(n_radial, l_angular)};
+              this->derivatives(n_radial, l_angular) =
+                  this->hyp1f1[ipos].calc(z, z2, true);
+            }
+          }
+        }
+/*
         if (derivative) {
           for (size_t n_radial{0}; n_radial < this->max_radial; n_radial++) {
             double z{this->get_z(r_ij, alpha, fac_b(n_radial))};
@@ -638,6 +657,7 @@ namespace rascal {
             }
           }
         }
+*/
       }
 
       inline Matrix_Ref get_values() { return Matrix_Ref(this->values); }

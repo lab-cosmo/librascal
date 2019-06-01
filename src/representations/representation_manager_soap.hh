@@ -357,7 +357,7 @@ namespace rascal {
             for (size_t n2{0}; n2 < this->max_radial; ++n2) {
               pos = 0;
               for (size_t l{0}; l < this->max_angular + 1; ++l) {
-                size = 2*l + 1;
+                size = 2 * l + 1;
                 // do the reduction over m (with vectorization)
                 soap_vector_by_pair(n1n2, l) =
                     (coef1.block(n1, pos, 1, size).array() *

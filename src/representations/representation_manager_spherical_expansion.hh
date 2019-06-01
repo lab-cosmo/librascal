@@ -724,7 +724,7 @@ namespace rascal {
     */
 
     auto n_row{this->max_radial};
-    auto n_col{(max_angular+1)*(max_angular+1)};
+    auto n_col{(max_angular + 1) * (max_angular + 1)};
     this->expansions_coefficients.clear();
     this->expansions_coefficients.set_shape(n_row, n_col);
     this->expansions_coefficients.resize();
@@ -767,11 +767,11 @@ namespace rascal {
         auto && coefficients_center_by_type{coefficients_center[neigh_type]};
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           lm_pos = 0;
-          for (size_t l{0}; l < this->max_angular + 1; ++l ) {
-            lm_size = 2*l+1;
+          for (size_t l{0}; l < this->max_angular + 1; ++l) {
+            lm_size = 2 * l + 1;
             coefficients_center_by_type.block(radial_n, lm_pos, 1, lm_size) +=
-              ( neighbour_contribution(radial_n, l) *
-                harmonics.segment(lm_pos, lm_size) );
+                (neighbour_contribution(radial_n, l) *
+                 harmonics.segment(lm_pos, lm_size));
             lm_pos += lm_size;
           }
         }
