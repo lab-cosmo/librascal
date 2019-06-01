@@ -119,8 +119,9 @@ namespace rascal {
           auto && el{*this->map_iterator};
           auto && key{el.first};
           auto && pos{el.second};
-          return std::make_pair(key, Value_t(&data[std::get<0>(pos)],
-                          std::get<1>(pos), std::get<2>(pos)));
+          return std::make_pair(key,
+                                Value_t(&data[std::get<0>(pos)],
+                                        std::get<1>(pos), std::get<2>(pos)));
         }
         Self_t & operator--() {
           map_iterator--;
@@ -187,31 +188,31 @@ namespace rascal {
       reference at(const key_type & key) {
         key_type skey{this->copy_sort(key)};
         auto & pos{this->map.at(skey)};
-        return reference(&this->data[std::get<0>(pos)],
-                          std::get<1>(pos), std::get<2>(pos));
+        return reference(&this->data[std::get<0>(pos)], std::get<1>(pos),
+                         std::get<2>(pos));
       }
       const_reference at(const key_type & key) const {
         key_type skey{this->copy_sort(key)};
         auto & pos{this->map.at(skey)};
-        return const_reference(&this->data[std::get<0>(pos)],
-                          std::get<1>(pos), std::get<2>(pos));
+        return const_reference(&this->data[std::get<0>(pos)], std::get<1>(pos),
+                               std::get<2>(pos));
       }
       //! access or insert specified element
       reference operator[](const key_type & key) {
         key_type skey{this->copy_sort(key)};
         auto & pos{this->map[skey]};
-        return reference(&this->data[std::get<0>(pos)],
-                          std::get<1>(pos), std::get<2>(pos));
+        return reference(&this->data[std::get<0>(pos)], std::get<1>(pos),
+                         std::get<2>(pos));
       }
       const_reference operator[](const key_type & key) const {
         key_type skey{this->copy_sort(key)};
         auto & pos{this->map[skey]};
-        return const_reference(&this->data[std::get<0>(pos)],
-                          std::get<1>(pos), std::get<2>(pos));
+        return const_reference(&this->data[std::get<0>(pos)], std::get<1>(pos),
+                               std::get<2>(pos));
       }
       template <typename Key_List>
       void resize(const Key_List & keys, const int & n_row, const int & n_col) {
-        //using Array_t = typename Map_t::mapped_type;
+        // using Array_t = typename Map_t::mapped_type;
         int new_size{0};
         for (auto & key : keys) {
           key_type skey{this->copy_sort(key)};
