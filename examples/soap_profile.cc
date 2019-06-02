@@ -49,7 +49,7 @@
 // using namespace std;
 using namespace rascal;  // NOLINT
 
-const int N_ITERATIONS = 100;
+const int N_ITERATIONS = 10;
 
 using Representation_t = RepresentationManagerSOAP<
     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
@@ -124,7 +124,7 @@ int main(int argc, char * argv[]) {
   finish = std::chrono::high_resolution_clock::now();
 
   elapsed = finish - start;
-  std::cout << "Compute representation"
+  std::cout << "Compute represenation"
             << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
             << std::endl;
 
