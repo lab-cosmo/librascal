@@ -327,14 +327,14 @@ namespace rascal {
 
         for (const auto & el2 : coefficients) {
           pair_type[1] = el2.first[0];
-          // this copy here is just to have proper memory alignment. fix?
-          auto & coef2{el2.second};
-
-          auto && soap_vector_by_pair{soap_vector[pair_type]};
           // avoid computing p^{ab} and p^{ba} since p^{ab} = p^{ba}^T
           if (pair_type[0] > pair_type[1]) {
             continue;
           }
+
+          auto & coef2{el2.second};
+
+          auto && soap_vector_by_pair{soap_vector[pair_type]};
           // TODO(felix) understand why this is slower than below
           // size_t n1n2{0};
           // auto& n_max{this->max_radial};
@@ -355,8 +355,9 @@ namespace rascal {
           size_t pos, size;
           for (size_t n1{0}; n1 < this->max_radial; ++n1) {
             for (size_t n2{0}; n2 < this->max_radial; ++n2) {
-              pos = 0;
-              for (size_t l{0}; l < this->max_angular + 1; ++l) {
+              soap_vector_by_pair(n1n2, 0) = coef1(n1, 0) * coef2(n2, 0);
+              pos = 1;
+              for (size_t l{1}; l < this->max_angular + 1; ++l) {
                 size = 2 * l + 1;
                 // do the reduction over m (with vectorization)
                 soap_vector_by_pair(n1n2, l) =
