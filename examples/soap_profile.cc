@@ -49,7 +49,7 @@
 // using namespace std;
 using namespace rascal;  // NOLINT
 
-const int N_ITERATIONS = 100;
+const int N_ITERATIONS = 1000;
 
 using Representation_t = RepresentationManagerSOAP<
     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
