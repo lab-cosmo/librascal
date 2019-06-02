@@ -70,21 +70,26 @@ namespace rascal {
     struct SortedKey {
       using Key_t = KeyType;
       Key_t data;
+      using Value_t = typename Key_t::value_type;
 
-      template<class... Args>
-      SortedKey(const Sorted<true>&, Args&&... args)
-        :data{std::forward<Args>(args)...} {}
 
-      template<class... Args>
-      SortedKey(const Sorted<false>&, Args&&... args)
-        :SortedKey{std::forward<Args>(args)...} {}
+      // template<class... Args>
+      // SortedKey(Args&&... args) :data{std::forward<Args>(args)...} {
+      //   if (data.size() > 1) {
+      //     std::sort(data.begin(), data.end());
+      //   }
+      // }
 
-      template<class... Args>
-      SortedKey(Args&&... args) :data{std::forward<Args>(args)...} {
+      SortedKey(const Key_t& key) :data{std::move(key)} {
         if (data.size() > 1) {
           std::sort(data.begin(), data.end());
         }
       }
+
+      SortedKey(const Sorted<false>&, const Key_t& key) :SortedKey{key} {}
+
+      SortedKey(const Sorted<true>&, const Key_t& key) :data{std::move(key)} {}
+
 
       Key_t copy_sort(const Key_t & key) {
         Key_t skey{key};
@@ -94,10 +99,14 @@ namespace rascal {
         return skey;
       }
 
+      //! access or insert specified element. use with caution !
+      inline Value_t& operator[](const size_t& id) {
+        return this->data[id];
+      }
+
       inline const Key_t& get_key() const {
         return data;
       }
-
     };
 
     template <class K, class V>
@@ -337,6 +346,17 @@ namespace rascal {
         using ref = typename Eigen::Map<Eigen::VectorXd>;
         auto data_ref{ref(&data[0], data.size())};
         data_ref /= data_ref.norm();
+      }
+
+      inline void multiply_offdiagonal_elements_by(const double& fac) {
+        for (const auto & el : this->map) {
+          auto && pair_type{el.first};
+          auto && pos{el.second};
+          if (pair_type[0] != pair_type[1]) {
+            auto block{reference(&this->data[std::get<0>(pos)], std::get<1>(pos),std::get<2>(pos))};
+            block *= fac;
+          }
+        }
       }
 
      private:

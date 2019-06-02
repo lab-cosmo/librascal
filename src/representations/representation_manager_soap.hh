@@ -8,7 +8,7 @@
  *
  * @date   12 March 2019
  *
- * @brief  Compute the spherical harmonics expansion of the local atom density
+ * @brief  compute spherical invariants
  *
  * Copyright © 2019 Max Veit, Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -209,6 +209,11 @@ namespace rascal {
 
     SparseProperty_t soap_vectors;
 
+    //! initialize the soap vectors with only the keys needed for each center
+    void initialize_percenter_powerspectrum_soap_vectors();
+
+    void initialize_percenter_radialspectrum_soap_vectors();
+
    protected:
     size_t max_radial{};
     size_t max_angular{};
@@ -291,68 +296,36 @@ namespace rascal {
     rep_expansion.compute();
     auto & expansions_coefficients{rep_expansion.expansions_coefficients};
 
-    size_t n_row{static_cast<size_t>(pow(this->max_radial, 2))};
-    size_t n_col{this->max_angular + 1};
+    this->initialize_percenter_powerspectrum_soap_vectors();
 
-    this->soap_vectors.clear();
-    this->soap_vectors.set_shape(n_row, n_col);
-    this->soap_vectors.resize();
+    Key_t pair_type{0, 0};
+    internal::SortedKey<Key_t> spair_type{pair_type};
 
     for (auto center : this->structure_manager) {
       auto & coefficients{expansions_coefficients[center]};
       auto & soap_vector{this->soap_vectors[center]};
-      Key_t pair_type{0, 0};
-
-      std::unordered_set<Key_t, internal::Hash<Key_t>> pair_list{};
-      auto & center_type{center.get_atom_type()};
-      pair_list.insert({center_type, center_type});
-      for (auto neigh1 : center) {
-        auto && neigh1_type{neigh1.get_atom_type()};
-        pair_list.insert({center_type, neigh1_type});
-        for (auto neigh2 : center) {
-          auto && neigh2_type{neigh2.get_atom_type()};
-          if (neigh1_type <= neigh2_type) {
-            pair_list.insert({neigh1_type, neigh2_type});
-          }
-        }
-      }
-      // initialize the power spectrum to 0 with the proper dimension
-      soap_vector.resize(pair_list, n_row, n_col);
 
       for (const auto & el1 : coefficients) {
-        pair_type[0] = el1.first[0];
+        spair_type[0] = el1.first[0];
 
         // multiply with the precomputed factors
         auto coef1{el1.second * l_factors.asDiagonal()};
 
         for (const auto & el2 : coefficients) {
-          pair_type[1] = el2.first[0];
+          spair_type[1] = el2.first[0];
           // this copy here is just to have proper memory alignment. fix?
           auto & coef2{el2.second};
 
-          auto && soap_vector_by_pair{soap_vector[pair_type]};
+
           // avoid computing p^{ab} and p^{ba} since p^{ab} = p^{ba}^T
-          if (pair_type[0] > pair_type[1]) {
+          if (spair_type[0] > spair_type[1]) {
             continue;
           }
-          // TODO(felix) understand why this is slower than below
-          // size_t n1n2{0};
-          // auto& n_max{this->max_radial};
-          // auto l_max{this->max_angular + 1};
-          // for (size_t n1{0}; n1 < n_max; ++n1) {
-          //   for (size_t l{0}; l < l_max; ++l) {
-          //     auto& pos{lm_blocks[l][0]};
-          //     auto& size{lm_blocks[l][1]};
-          //     // do the reduction over m and iteration over n2
-          //     // (with vectorization)
-          //     soap_vector_by_pair.block(n1n2, l, n_max, 1).noalias() =
-          //     (coef2.block(0, pos, n_max, size) * coef1.row(n1).segment(pos,
-          //     size).asDiagonal()).rowwise().sum();
-          //   }
-          //   n1n2 += n_max;
-          // }
+
+          auto && soap_vector_by_pair{soap_vector[spair_type]};
+
           size_t n1n2{0};
-          size_t pos, size;
+          size_t pos{0}, size{0};
           for (size_t n1{0}; n1 < this->max_radial; ++n1) {
             for (size_t n2{0}; n2 < this->max_radial; ++n2) {
               pos = 0;
@@ -373,12 +346,7 @@ namespace rascal {
 
       // the SQRT_TWO factor comes from the fact that
       // the upper diagonal of the species is not considered
-      for (const auto & el : soap_vector) {
-        auto && pair_type{el.first};
-        if (pair_type[0] != pair_type[1]) {
-          soap_vector[pair_type] *= math::SQRT_TWO;
-        }
-      }
+      soap_vector.multiply_offdiagonal_elements_by(math::SQRT_TWO);
 
       // normalize the soap vector
       if (this->normalize) {
@@ -394,6 +362,82 @@ namespace rascal {
 
     auto & expansions_coefficients{rep_expansion.expansions_coefficients};
 
+    this->initialize_percenter_radialspectrum_soap_vectors();
+    Key_t element_type{0};
+
+    for (auto center : this->structure_manager) {
+      auto & coefficients{expansions_coefficients[center]};
+      auto & soap_vector{this->soap_vectors[center]};
+
+      for (const auto & el : coefficients) {
+        element_type[0] = el.first[0];
+        auto & coef{el.second};
+        soap_vector[element_type] += coef;
+      }
+
+      // normalize the soap vector
+      if (this->normalize) {
+        soap_vector.normalize();
+      }
+    }
+  }
+
+
+  template <class Mngr>
+  void RepresentationManagerSOAP<Mngr>::initialize_percenter_powerspectrum_soap_vectors() {
+    size_t n_row{static_cast<size_t>(pow(this->max_radial, 2))};
+    size_t n_col{this->max_angular + 1};
+
+    // clear the data container and resize it
+    this->soap_vectors.clear();
+    this->soap_vectors.set_shape(n_row, n_col);
+    this->soap_vectors.resize();
+
+    auto & expansions_coefficients{rep_expansion.expansions_coefficients};
+
+    // identify the species in each environment and initialize soap_vectors
+    for (auto center : this->structure_manager) {
+      auto & coefficients{expansions_coefficients[center]};
+      auto & soap_vector{this->soap_vectors[center]};
+      internal::Sorted<true> is_sorted{};
+
+      std::vector<internal::SortedKey<Key_t>> pair_list{};
+      auto & center_type{center.get_atom_type()};
+      Key_t pair_type{center_type, center_type};
+      // avoid checking the order in pair_type by ensuring it has already been
+      // done
+      internal::SortedKey<Key_t> spair_type{is_sorted, pair_type};
+
+      pair_list.emplace_back(is_sorted, pair_type);
+      for (const auto& el1 : coefficients) {
+        auto && neigh1_type{el1.first[0]};
+        if (center_type <= neigh1_type) {
+          pair_type[0] = center_type;
+          pair_type[1] = neigh1_type;
+        } else {
+          pair_type[1] = center_type;
+          pair_type[0] = neigh1_type;
+        }
+
+        pair_list.emplace_back(is_sorted, pair_type);
+
+        for (const auto& el2 : coefficients) {
+          auto && neigh2_type{el2.first[0]};
+          if (neigh1_type <= neigh2_type) {
+            pair_type[0] = neigh1_type;
+            pair_type[1] = neigh2_type;
+            pair_list.emplace_back(is_sorted, pair_type);
+          }
+        }
+      }
+      // initialize the power spectrum with the proper dimension
+      soap_vector.resize(pair_list, n_row, n_col);
+    }
+  }
+
+
+  template <class Mngr>
+  void RepresentationManagerSOAP<Mngr>::initialize_percenter_radialspectrum_soap_vectors() {
     size_t n_row{this->max_radial};
     size_t n_col{1};
 
@@ -401,40 +445,23 @@ namespace rascal {
     this->soap_vectors.set_shape(n_row, n_col);
     this->soap_vectors.resize();
 
+    auto & expansions_coefficients{rep_expansion.expansions_coefficients};
+
     for (auto center : this->structure_manager) {
       auto & coefficients{expansions_coefficients[center]};
       auto & soap_vector{this->soap_vectors[center]};
       Key_t element_type{0};
 
       std::unordered_set<Key_t, internal::Hash<Key_t>> keys{};
-      for (auto neigh : center) {
-        keys.insert({neigh.get_atom_type()});
+      for (const auto& el1 : coefficients) {
+        keys.insert({el1.first[0]});
       }
       keys.insert({center.get_atom_type()});
       // initialize the radial spectrum to 0 and the proper size
       soap_vector.resize(keys, n_row, n_col, 0);
-
-      std::vector<Key_t> element_list{};
-      for (const auto & el : coefficients) {
-        element_type[0] = el.first[0];
-        auto & coef{el.second};
-        soap_vector[element_type] += coef;
-        element_list.push_back(element_type);
-      }
-
-      // normalize the soap vector
-      if (this->normalize) {
-        double norm{0.};
-        for (const auto & element_type : element_list) {
-          norm += soap_vector[element_type].squaredNorm();
-        }
-        norm = std::sqrt(norm);
-        for (const auto & element_type : element_list) {
-          soap_vector[element_type] /= norm;
-        }
-      }
     }
   }
+
 }  // namespace rascal
 
 #endif  // SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SOAP_HH_
