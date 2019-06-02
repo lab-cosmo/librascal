@@ -355,6 +355,8 @@ namespace rascal {
         }
 
         // computes (a+b_n)^{-0.5*(3+l+n)}
+        // all of these could be precomputed, but we want to be general
+        // as sigma could be atom-dependent
         Matrix_t a_b_l_n(this->max_radial, this->max_angular + 1);
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           double a_b_l{1. / sqrt(fac_a + this->fac_b[radial_n])};

@@ -50,6 +50,95 @@
 namespace rascal {
 
   namespace internal {
+
+    template<size_t l_unroll>
+    class LMReduceHotLoop {
+      template<size_t l_others> friend class LMReduceHotLoop;
+     private:
+      template<typename D1, typename D2, typename D3>
+      static inline void lm_explicit_sum(const Eigen::MatrixBase<D1>& coef1,
+        const Eigen::MatrixBase<D2>& coef2,
+        Eigen::MatrixBase<D3>& soap, const size_t& n1n2);
+
+     public:
+
+      template<typename D1, typename D2, typename D3>
+      static inline void LMReduce(const Eigen::MatrixBase<D1>&  coef1,
+        const Eigen::MatrixBase<D2>& coef2,
+        Eigen::MatrixBase<D3>& soap, const size_t& nmax, const size_t& lmax);
+    };
+
+    template<>
+    template<typename D1, typename D2, typename D3>
+    inline void LMReduceHotLoop<1>::lm_explicit_sum(
+        const Eigen::MatrixBase<D1>& coef1n1,
+        const Eigen::MatrixBase<D2>& coef2n2,
+        Eigen::MatrixBase<D3>& soap, const size_t& n1n2) {
+      soap(n1n2, 0) = coef1n1(0) * coef2n2(0);
+    }
+
+    template<>
+    template<typename D1, typename D2, typename D3>
+    inline void LMReduceHotLoop<2>::lm_explicit_sum(
+        const Eigen::MatrixBase<D1>& coef1n1,
+        const Eigen::MatrixBase<D2>& coef2n2,
+        Eigen::MatrixBase<D3>& soap, const size_t& n1n2) {
+      LMReduceHotLoop<1>::lm_explicit_sum(coef1n1, coef2n2, soap, n1n2);
+      soap(n1n2, 1) = coef1n1(1) * coef2n2(1) + coef1n1(2) * coef2n2(2) +
+                      coef1n1(3) * coef2n2(3);
+    }
+
+    template<>
+    template<typename D1, typename D2, typename D3>
+    inline void LMReduceHotLoop<3>::lm_explicit_sum(
+        const Eigen::MatrixBase<D1>& coef1n1,
+        const Eigen::MatrixBase<D2>& coef2n2,
+        Eigen::MatrixBase<D3>& soap, const size_t& n1n2) {
+      LMReduceHotLoop<2>::lm_explicit_sum(coef1n1, coef2n2, soap, n1n2);
+      soap(n1n2, 2) = coef1n1(4) * coef2n2(4) + coef1n1(5) * coef2n2(5) +
+                      coef1n1(6) * coef2n2(6) + coef1n1(7) * coef2n2(7) +
+                      coef1n1(8) * coef2n2(8);
+    }
+
+    template<>
+    template<typename D1, typename D2, typename D3>
+    inline void LMReduceHotLoop<4>::lm_explicit_sum(
+        const Eigen::MatrixBase<D1>& coef1n1,
+        const Eigen::MatrixBase<D2>& coef2n2,
+        Eigen::MatrixBase<D3>& soap, const size_t& n1n2) {
+      LMReduceHotLoop<3>::lm_explicit_sum(coef1n1, coef2n2, soap, n1n2);
+      soap(n1n2, 3) = coef1n1(9)  * coef2n2(9)  + coef1n1(10) * coef2n2(10) +
+                      coef1n1(11) * coef2n2(11) + coef1n1(12) * coef2n2(12) +
+                      coef1n1(13) * coef2n2(13) + coef1n1(14) * coef2n2(14) +
+                      coef1n1(15) * coef2n2(15);
+    }
+    template<size_t l_unroll>
+    template<typename D1, typename D2, typename D3>
+    inline void LMReduceHotLoop<l_unroll>::LMReduce(
+      const Eigen::MatrixBase<D1>& coef1,
+      const Eigen::MatrixBase<D2>& coef2,
+      Eigen::MatrixBase<D3>& soap, const size_t& nmax, const size_t& lmax ) {
+          size_t n1n2{0};
+          size_t pos, size, l;
+          for (size_t n1{0}; n1 < nmax; ++n1) {
+            auto && coef1n1 = coef1.row(n1);
+            for (size_t n2{0}; n2 < nmax; ++n2) {
+              auto && coef2n2 = coef2.row(n2);
+              lm_explicit_sum(coef1n1, coef2n2, soap, n1n2);
+              pos = l_unroll*l_unroll;
+              for (l = l_unroll; l < lmax + 1; ++l) {
+                size = 2 * l + 1;
+                // do the reduction over m (with vectorization)
+                soap(n1n2, l) =
+                     (coef1n1.segment(pos,size).array() *
+                     coef2n2.segment(pos,size).array()).sum();
+                pos += size;
+              }
+              ++n1n2;
+            }
+          }
+    } // LMReduce<l_unroll>
+
     enum class SOAPType { RadialSpectrum, PowerSpectrum, End_ };
 
     /**
@@ -316,9 +405,9 @@ namespace rascal {
           }
         }
       }
+
       // initialize the power spectrum to 0 with the proper dimension
       soap_vector.resize(pair_list, n_row, n_col);
-
       for (const auto & el1 : coefficients) {
         pair_type[0] = el1.first[0];
 
@@ -351,23 +440,52 @@ namespace rascal {
           //   }
           //   n1n2 += n_max;
           // }
+
+
+          if (this->max_angular>=2) {
+            internal::LMReduceHotLoop<2>::LMReduce(coef1, coef2,
+                 soap_vector_by_pair, this->max_radial, this->max_angular);
+          } else if (this->max_angular>=2) {
+            internal::LMReduceHotLoop<2>::LMReduce(coef1, coef2,
+                 soap_vector_by_pair, this->max_radial, this->max_angular);
+          } else {
+            internal::LMReduceHotLoop<1>::LMReduce(coef1, coef2,
+                 soap_vector_by_pair, this->max_radial, this->max_angular);
+          }
+
+          //lm_hot_loop->LMReduce(coef1, coef2, soap_vector_by_pair);
+          //internal::HotLoop<1>(coef1, coef2, soap_vector_by_pair);
+          //LMReduceHotLoop(coef1, coef2, soap_vector_by_pair);
+          //std::cout<<"coef "<<typeid(coef1).name()<<std::endl;
+          //std::cout<<"coef2 "<<typeid(coef2).name()<<std::endl;
+          //std::cout<<"soap "<<typeid(soap_vector_by_pair).name()<<std::endl;
+          //std::cout<<"REF "<<typeid(SparseProperty_t::dense_ref_t).name()<<std::endl;
+          /*
           size_t n1n2{0};
           size_t pos, size;
           for (size_t n1{0}; n1 < this->max_radial; ++n1) {
+            auto && coef1n1 = coef1.row(n1);
             for (size_t n2{0}; n2 < this->max_radial; ++n2) {
-              pos = 0;
-              for (size_t l{0}; l < this->max_angular + 1; ++l) {
+              auto && coef2n2 = coef2.row(n2);
+              soap_vector_by_pair(n1n2, 0) = coef1n1(0) * coef2n2(0);
+              soap_vector_by_pair(n1n2, 1) = coef1n1(1) * coef2n2(1) +
+                   coef1n1(2) * coef2n2(2) + coef1n1(3) * coef2n2(3);
+              soap_vector_by_pair(n1n2, 2) = coef1n1(4) * coef2n2(4) +
+                   coef1n1(5) * coef2n2(5) + coef1n1(6) * coef2n2(6) +
+                   coef1n1(7) * coef2n2(7) + coef1n1(8) * coef2n2(8);
+              pos = 9;
+              for (size_t l{3}; l < this->max_angular + 1; ++l) {
                 size = 2 * l + 1;
                 // do the reduction over m (with vectorization)
                 soap_vector_by_pair(n1n2, l) =
-                    (coef1.block(n1, pos, 1, size).array() *
-                     coef2.block(n2, pos, 1, size).array())
-                        .sum();
+                     (coef1n1.segment(pos,size).array() *
+                     coef2n2.segment(pos,size).array()).sum();
                 pos += size;
               }
               ++n1n2;
             }
           }
+          */
         }  // for coefficients
       }    // for coefficients
 
