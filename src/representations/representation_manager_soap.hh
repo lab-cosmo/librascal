@@ -381,9 +381,9 @@ namespace rascal {
     }
   }
 
-
   template <class Mngr>
-  void RepresentationManagerSOAP<Mngr>::initialize_percenter_powerspectrum_soap_vectors() {
+  void RepresentationManagerSOAP<
+      Mngr>::initialize_percenter_powerspectrum_soap_vectors() {
     size_t n_row{static_cast<size_t>(pow(this->max_radial, 2))};
     size_t n_col{this->max_angular + 1};
 
@@ -408,7 +408,7 @@ namespace rascal {
       internal::SortedKey<Key_t> spair_type{is_sorted, pair_type};
 
       pair_list.emplace_back(is_sorted, pair_type);
-      for (const auto& el1 : coefficients) {
+      for (const auto & el1 : coefficients) {
         auto && neigh1_type{el1.first[0]};
         if (center_type <= neigh1_type) {
           pair_type[0] = center_type;
@@ -420,7 +420,7 @@ namespace rascal {
 
         pair_list.emplace_back(is_sorted, pair_type);
 
-        for (const auto& el2 : coefficients) {
+        for (const auto & el2 : coefficients) {
           auto && neigh2_type{el2.first[0]};
           if (neigh1_type <= neigh2_type) {
             pair_type[0] = neigh1_type;
@@ -434,9 +434,9 @@ namespace rascal {
     }
   }
 
-
   template <class Mngr>
-  void RepresentationManagerSOAP<Mngr>::initialize_percenter_radialspectrum_soap_vectors() {
+  void RepresentationManagerSOAP<
+      Mngr>::initialize_percenter_radialspectrum_soap_vectors() {
     size_t n_row{this->max_radial};
     size_t n_col{1};
 
@@ -452,7 +452,7 @@ namespace rascal {
       Key_t element_type{0};
 
       std::unordered_set<Key_t, internal::Hash<Key_t>> keys{};
-      for (const auto& el1 : coefficients) {
+      for (const auto & el1 : coefficients) {
         keys.insert({el1.first[0]});
       }
       keys.insert({center.get_atom_type()});
