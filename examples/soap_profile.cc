@@ -49,7 +49,7 @@
 // using namespace std;
 using namespace rascal;  // NOLINT
 
-const int N_ITERATIONS = 1000;
+const int N_ITERATIONS = 100;
 
 using Representation_t = RepresentationManagerSOAP<
     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
@@ -129,8 +129,8 @@ int main(int argc, char * argv[]) {
             << std::endl;
 
   auto soap = representation.get_representation_full();
-  // std::cout << "Sample SOAP elements \n"
-  //           << soap(0, 0) << " " << soap(0, 1) << " " << soap(0, 2) << "\n"
-  //           << soap(1, 0) << " " << soap(1, 1) << " " << soap(1, 2) << "\n"
-  //           << soap(2, 0) << " " << soap(2, 1) << " " << soap(2, 2) << "\n";
+  std::cout << "Sample SOAP elements \n"
+            << soap(0, 0) << " " << soap(0, 1) << " " << soap(0, 2) << "\n"
+            << soap(1, 0) << " " << soap(1, 1) << " " << soap(1, 2) << "\n"
+            << soap(2, 0) << " " << soap(2, 1) << " " << soap(2, 2) << "\n";
 }
