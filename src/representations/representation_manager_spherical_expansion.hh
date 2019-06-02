@@ -715,17 +715,6 @@ namespace rascal {
     auto radial_integral{
         downcast_radial_integral<RadialType>(this->radial_integral)};
 
-    // pre-computes limits of combined lm arrays
-    /*
-    std::vector<size_t> lm_max(max_angular + 1);
-    size_t lm{0};
-    for (size_t l = 0; l < max_angular + 1; ++l) {
-      lm += 2 * l + 1;
-      lm_max[l] = lm;
-    }
-    size_t lm_tot{lm_max[max_angular]};
-    */
-
     auto n_row{this->max_radial};
     auto n_col{(max_angular + 1) * (max_angular + 1)};
     this->expansions_coefficients.clear();
@@ -744,7 +733,7 @@ namespace rascal {
       }
       keys.insert({center_type});
       // initialize the expansion coefficients to 0
-      coefficients_center.resize(keys, n_row, n_col, 0);
+      coefficients_center.resize(keys, n_row, n_col, 0.);
 
       // Start the accumulator with the central atom
       coefficients_center[center_type].col(0) +=
@@ -766,7 +755,7 @@ namespace rascal {
                                                                         neigh);
 
         harmonics *= cutoff_function->f_c(dist);
-        size_t lm_pos, lm_size;
+        size_t lm_pos{0}, lm_size{0};
         auto && coefficients_center_by_type{coefficients_center[neigh_type]};
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           lm_pos = 0;
