@@ -1,15 +1,13 @@
 /**
- * file   property_base.hh
+ * file   property_block_sparse.hh
  *
- * @author Till Junge <till.junge@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
  *
- * @date   03 Aug 2018
+ * @date   03 April 2019
  *
- * @brief implementation of non-templated base class for Properties, Properties
- *        are atom-, pair-, triplet-, etc-related values
+ * @brief implementation of a property container that has sparse keys
  *
- * Copyright © 2018 Till Junge, Felix Musil, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2019 Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
