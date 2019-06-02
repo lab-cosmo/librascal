@@ -63,6 +63,43 @@ namespace rascal {
       }
     };
 
+    template<bool IsSorted>
+    struct Sorted {};
+
+    template <class KeyType>
+    struct SortedKey {
+      using Key_t = KeyType;
+      Key_t data;
+
+      template<class... Args>
+      SortedKey(const Sorted<true>&, Args&&... args)
+        :data{std::forward<Args>(args)...} {}
+
+      template<class... Args>
+      SortedKey(const Sorted<false>&, Args&&... args)
+        :SortedKey{std::forward<Args>(args)...} {}
+
+      template<class... Args>
+      SortedKey(Args&&... args) :data{std::forward<Args>(args)...} {
+        if (data.size() > 1) {
+          std::sort(data.begin(), data.end());
+        }
+      }
+
+      Key_t copy_sort(const Key_t & key) {
+        Key_t skey{key};
+        if (key.size() > 1) {
+          std::sort(skey.begin(), skey.end());
+        }
+        return skey;
+      }
+
+      inline const Key_t& get_key() const {
+        return data;
+      }
+
+    };
+
     template <class K, class V>
     class InternallySortedKeyMap {
      public:
@@ -82,6 +119,8 @@ namespace rascal {
       using size_type = typename MyMap_t::size_type;
       using reference = typename Eigen::Map<V>;
       using const_reference = typename Eigen::Map<const V>;
+
+      using SortedKey_t = SortedKey<key_type>;
 
       // member typedefs provided through inheriting from std::iterator
       template <typename Value>
@@ -187,31 +226,53 @@ namespace rascal {
        *
        */
       reference at(const key_type & key) {
-        key_type skey{this->copy_sort(key)};
-        auto & pos{this->map.at(skey)};
+        SortedKey_t skey{key};
+        return this->at(skey);
+      }
+      const_reference at(const key_type & key) const {
+        SortedKey_t skey{key};
+        return this->at(skey);
+      }
+      //! access or insert specified element
+      reference operator[](const key_type & key) {
+        SortedKey_t skey{key};
+        return this->operator[](skey);
+      }
+      const_reference operator[](const key_type & key) const {
+        SortedKey_t skey{key};
+        return this->operator[](skey);
+      }
+
+      /**
+       * Same as above but does not try to sort since we know it already is.
+       */
+      reference at(const SortedKey_t & skey) {
+        auto & pos{this->map.at(skey.get_key())};
         return reference(&this->data[std::get<0>(pos)], std::get<1>(pos),
                          std::get<2>(pos));
       }
-      const_reference at(const key_type & key) const {
-        key_type skey{this->copy_sort(key)};
-        auto & pos{this->map.at(skey)};
+
+      const_reference at(const SortedKey_t & skey) const {
+        auto & pos{this->map.at(skey.get_key())};
         return const_reference(&this->data[std::get<0>(pos)], std::get<1>(pos),
                                std::get<2>(pos));
       }
       //! access or insert specified element
-      reference operator[](const key_type & key) {
-        key_type skey{this->copy_sort(key)};
-        auto & pos{this->map[skey]};
+      reference operator[](const SortedKey_t & skey) {
+        auto & pos{this->map[skey.get_key()]};
         return reference(&this->data[std::get<0>(pos)], std::get<1>(pos),
                          std::get<2>(pos));
       }
-      const_reference operator[](const key_type & key) const {
-        key_type skey{this->copy_sort(key)};
-        auto & pos{this->map[skey]};
+      const_reference operator[](const SortedKey_t & skey) const {
+        auto & pos{this->map[skey.get_key()]};
         return const_reference(&this->data[std::get<0>(pos)], std::get<1>(pos),
                                std::get<2>(pos));
       }
 
+      /**
+       * resize the underlying data to the proper size and can initialize
+       * the elements
+       */
       template <typename Key_List>
       void resize(const Key_List & keys, const int & n_row, const int & n_col, const Precision_t& val) {
         this->resize(keys, n_row, n_col);
@@ -220,11 +281,20 @@ namespace rascal {
 
       template <typename Key_List>
       void resize(const Key_List & keys, const int & n_row, const int & n_col) {
+        std::vector<SortedKey_t> skeys{};
+        for (auto && key : keys) {
+          SortedKey_t skey{key};
+          skeys.push_back(skey);
+        }
+        this->resize(skeys, n_row, n_col);
+      }
+
+      void resize(const std::vector<SortedKey_t> & skeys, const int & n_row, const int & n_col) {
         int new_size{0};
-        for (auto & key : keys) {
-          key_type skey{this->copy_sort(key)};
-          if (this->map.count(skey) == 0) {
-            this->map[skey] = std::make_tuple(new_size, n_row, n_col);
+        for (auto && skey : skeys) {
+          if (this->count(skey) == 0) {
+            auto&& key{skey.get_key()};
+            this->map[key] = std::make_tuple(new_size, n_row, n_col);
             new_size += static_cast<int>(n_row * n_col);
           }
         }
@@ -234,10 +304,13 @@ namespace rascal {
       //! Returns the number of elements with key that compares equivalent to
       //! the specified argument, which is either 1 or 0 since this container
       //! does not allow duplicates.
-      template <class Key>
-      decltype(auto) count(const Key & key) {
-        key_type skey{this->copy_sort(key)};
-        return this->map.count(skey);
+      decltype(auto) count(const key_type & key) {
+        SortedKey_t skey{key};
+        return this->count(skey);
+      }
+
+      decltype(auto) count(const SortedKey_t & skey) {
+        return this->map.count(skey.get_key());
       }
 
       //! Erases all elements from the container. After this call, size()
@@ -277,21 +350,6 @@ namespace rascal {
         }
       };
 
-      key_type copy_sort(const key_type & key) {
-        key_type skey{key};
-        if (key.size() > 1) {
-          std::sort(skey.begin(), skey.end());
-        }
-        return skey;
-      }
-
-      key_type copy_sort(key_type && key) {
-        key_type skey{key};
-        if (key.size() > 1) {
-          std::sort(skey.begin(), skey.end());
-        }
-        return skey;
-      }
     };
 
   }  // namespace internal
