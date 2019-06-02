@@ -51,158 +51,93 @@ namespace rascal {
 
   namespace internal {
 
-    /* templated inner loop that does expansion for the LM reduction */
-    template <size_t l_unroll>
+    template<size_t l_unroll>
     class LMReduceHotLoop {
-      template <size_t l_others>
-      friend class LMReduceHotLoop;
-      using Key_t = std::vector<int>;
-      using Dense_t = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic,
-                                    Eigen::RowMajor>;
-      using InputData_t = internal::InternallySortedKeyMap<Key_t, Dense_t>;
-      using SparseProperty_t = BlockSparseProperty<double, 1, 0>;
-
+      template<size_t l_others> friend class LMReduceHotLoop;
      private:
-      template <typename D1, typename D2, typename D3>
-      static inline void lm_explicit_sum(const D1 & coef1, const D2 & coef2,
-                                         D3 & soap, const size_t & n1n2);
+      template<typename D1, typename D2, typename D3>
+      static inline void lm_explicit_sum(const Eigen::MatrixBase<D1>& coef1,
+        const Eigen::MatrixBase<D2>& coef2,
+        Eigen::MatrixBase<D3>& soap, const size_t& n1n2);
 
      public:
-      // This makes the full loop to reduce the coefficients into
-      // the power spectrum
-      static void LMReduce(const InputData_t & coefficients,
-                           InputData_t & soap_vector,
-                           const Eigen::VectorXd & l_factors,
-                           const size_t & nmax, const size_t & lmax);
+
+      template<typename D1, typename D2, typename D3>
+      static inline void LMReduce(const Eigen::MatrixBase<D1>&  coef1,
+        const Eigen::MatrixBase<D2>& coef2,
+        Eigen::MatrixBase<D3>& soap, const size_t& nmax, const size_t& lmax);
     };
 
-    /* this should allow to spell out (and let the compiler optimize)
-     * the irregular loop over the LM blocks. Now, seems the compiler is
-     * not smart enough to unroll this loop even if the limits are known
-     * at compile time, so we have to do that manually for a few small sizes */
-    template <size_t l_unroll>
-    template <typename D1, typename D2, typename D3>
-    inline void
-    LMReduceHotLoop<l_unroll>::lm_explicit_sum(const D1 & coef1n1,
-                                               const D2 & coef2n2, D3 & soap,
-                                               const size_t & n1n2) {
-      LMReduceHotLoop<l_unroll - 1>::lm_explicit_sum(coef1n1, coef2n2, soap,
-                                                     n1n2);
-
-      size_t lm_start{(l_unroll) * (l_unroll)};
-      size_t lm_end{(l_unroll + 1) * (l_unroll + 1)};
-      soap(n1n2, l_unroll) = coef1n1(lm_start) * coef2n2(lm_start);
-      for (size_t lm = lm_start + 1; lm < lm_end; ++lm)
-        soap(n1n2, l_unroll) += coef1n1(lm) * coef2n2(lm);
-    }
-
-    template <>
-    template <typename D1, typename D2, typename D3>
-    inline void
-    LMReduceHotLoop<0>::lm_explicit_sum(const D1 & coef1n1, const D2 & coef2n2,
-                                        D3 & soap, const size_t & n1n2) {
+    template<>
+    template<typename D1, typename D2, typename D3>
+    inline void LMReduceHotLoop<1>::lm_explicit_sum(
+        const Eigen::MatrixBase<D1>& coef1n1,
+        const Eigen::MatrixBase<D2>& coef2n2,
+        Eigen::MatrixBase<D3>& soap, const size_t& n1n2) {
       soap(n1n2, 0) = coef1n1(0) * coef2n2(0);
     }
 
-    template <>
-    template <typename D1, typename D2, typename D3>
-    inline void
-    LMReduceHotLoop<1>::lm_explicit_sum(const D1 & coef1n1, const D2 & coef2n2,
-                                        D3 & soap, const size_t & n1n2) {
-      LMReduceHotLoop<0>::lm_explicit_sum(coef1n1, coef2n2, soap, n1n2);
+    template<>
+    template<typename D1, typename D2, typename D3>
+    inline void LMReduceHotLoop<2>::lm_explicit_sum(
+        const Eigen::MatrixBase<D1>& coef1n1,
+        const Eigen::MatrixBase<D2>& coef2n2,
+        Eigen::MatrixBase<D3>& soap, const size_t& n1n2) {
+      LMReduceHotLoop<1>::lm_explicit_sum(coef1n1, coef2n2, soap, n1n2);
       soap(n1n2, 1) = coef1n1(1) * coef2n2(1) + coef1n1(2) * coef2n2(2) +
                       coef1n1(3) * coef2n2(3);
     }
 
-    template <>
-    template <typename D1, typename D2, typename D3>
-    inline void
-    LMReduceHotLoop<2>::lm_explicit_sum(const D1 & coef1n1, const D2 & coef2n2,
-                                        D3 & soap, const size_t & n1n2) {
-      LMReduceHotLoop<1>::lm_explicit_sum(coef1n1, coef2n2, soap, n1n2);
+    template<>
+    template<typename D1, typename D2, typename D3>
+    inline void LMReduceHotLoop<3>::lm_explicit_sum(
+        const Eigen::MatrixBase<D1>& coef1n1,
+        const Eigen::MatrixBase<D2>& coef2n2,
+        Eigen::MatrixBase<D3>& soap, const size_t& n1n2) {
+      LMReduceHotLoop<2>::lm_explicit_sum(coef1n1, coef2n2, soap, n1n2);
       soap(n1n2, 2) = coef1n1(4) * coef2n2(4) + coef1n1(5) * coef2n2(5) +
                       coef1n1(6) * coef2n2(6) + coef1n1(7) * coef2n2(7) +
                       coef1n1(8) * coef2n2(8);
     }
 
-    template <>
-    template <typename D1, typename D2, typename D3>
-    inline void
-    LMReduceHotLoop<3>::lm_explicit_sum(const D1 & coef1n1, const D2 & coef2n2,
-                                        D3 & soap, const size_t & n1n2) {
-      LMReduceHotLoop<2>::lm_explicit_sum(coef1n1, coef2n2, soap, n1n2);
-      soap(n1n2, 3) = coef1n1(9) * coef2n2(9) + coef1n1(10) * coef2n2(10) +
+    template<>
+    template<typename D1, typename D2, typename D3>
+    inline void LMReduceHotLoop<4>::lm_explicit_sum(
+        const Eigen::MatrixBase<D1>& coef1n1,
+        const Eigen::MatrixBase<D2>& coef2n2,
+        Eigen::MatrixBase<D3>& soap, const size_t& n1n2) {
+      LMReduceHotLoop<3>::lm_explicit_sum(coef1n1, coef2n2, soap, n1n2);
+      soap(n1n2, 3) = coef1n1(9)  * coef2n2(9)  + coef1n1(10) * coef2n2(10) +
                       coef1n1(11) * coef2n2(11) + coef1n1(12) * coef2n2(12) +
                       coef1n1(13) * coef2n2(13) + coef1n1(14) * coef2n2(14) +
                       coef1n1(15) * coef2n2(15);
     }
-
-    template <>
-    template <typename D1, typename D2, typename D3>
-    inline void
-    LMReduceHotLoop<4>::lm_explicit_sum(const D1 & coef1n1, const D2 & coef2n2,
-                                        D3 & soap, const size_t & n1n2) {
-      LMReduceHotLoop<3>::lm_explicit_sum(coef1n1, coef2n2, soap, n1n2);
-      soap(n1n2, 4) = coef1n1(16) * coef2n2(16) + coef1n1(17) * coef2n2(17) +
-                      coef1n1(18) * coef2n2(18) + coef1n1(19) * coef2n2(19) +
-                      coef1n1(20) * coef2n2(20) + coef1n1(21) * coef2n2(21) +
-                      coef1n1(22) * coef2n2(22) + coef1n1(23) * coef2n2(23) +
-                      coef1n1(24) * coef2n2(24);
-    }
-
-    template <size_t l_unroll>
-    void LMReduceHotLoop<l_unroll>::LMReduce(const InputData_t & coefficients,
-                                             InputData_t & soap_vector,
-                                             const Eigen::VectorXd & l_factors,
-                                             const size_t & nmax,
-                                             const size_t & lmax) {
-
-      Key_t pair_type{0, 0};
-      for (const auto & el1 : coefficients) {
-        pair_type[0] = el1.first[0];
-
-        // multiply with the precomputed factors
-        auto coef1{el1.second * l_factors.asDiagonal()};
-
-        for (const auto & el2 : coefficients) {
-          pair_type[1] = el2.first[0];
-          // avoid computing p^{ab} and p^{ba} since p^{ab} = p^{ba}^T
-          if (pair_type[0] > pair_type[1]) {
-            continue;
-          }
-
-          auto & coef2{el2.second};
-          auto && soap_block{soap_vector[pair_type]};
-
+    template<size_t l_unroll>
+    template<typename D1, typename D2, typename D3>
+    inline void LMReduceHotLoop<l_unroll>::LMReduce(
+      const Eigen::MatrixBase<D1>& coef1,
+      const Eigen::MatrixBase<D2>& coef2,
+      Eigen::MatrixBase<D3>& soap, const size_t& nmax, const size_t& lmax ) {
           size_t n1n2{0};
           size_t pos, size, l;
           for (size_t n1{0}; n1 < nmax; ++n1) {
             auto && coef1n1 = coef1.row(n1);
             for (size_t n2{0}; n2 < nmax; ++n2) {
               auto && coef2n2 = coef2.row(n2);
-
-              lm_explicit_sum<decltype(coef1n1), decltype(coef2n2),
-                              decltype(soap_block)>(coef1n1, coef2n2,
-                                                    soap_block, n1n2);
-
-              // if there are more coefficients than l_unroll,
-              // we go over them with a conventional sum, that should
-              // fast enough
-              pos = (l_unroll + 1) * (l_unroll + 1);
-              for (l = l_unroll + 1; l < lmax + 1; ++l) {
+              lm_explicit_sum(coef1n1, coef2n2, soap, n1n2);
+              pos = l_unroll*l_unroll;
+              for (l = l_unroll; l < lmax + 1; ++l) {
                 size = 2 * l + 1;
                 // do the reduction over m (with vectorization)
-                soap_block(n1n2, l) = (coef1n1.segment(pos, size).array() *
-                                       coef2n2.segment(pos, size).array())
-                                          .sum();
+                soap(n1n2, l) =
+                     (coef1n1.segment(pos,size).array() *
+                     coef2n2.segment(pos,size).array()).sum();
                 pos += size;
               }
               ++n1n2;
             }
           }
-        }  // for el2
-      }    // for el1
-    }      // LMReduce<l_unroll>
+    } // LMReduce<l_unroll>
 
     enum class SOAPType { RadialSpectrum, PowerSpectrum, End_ };
 
@@ -455,7 +390,7 @@ namespace rascal {
     for (auto center : this->structure_manager) {
       auto & coefficients{expansions_coefficients[center]};
       auto & soap_vector{this->soap_vectors[center]};
-      // Key_t pair_type{0, 0};
+      Key_t pair_type{0, 0};
 
       std::unordered_set<Key_t, internal::Hash<Key_t>> pair_list{};
       auto & center_type{center.get_atom_type()};
@@ -473,33 +408,6 @@ namespace rascal {
 
       // initialize the power spectrum to 0 with the proper dimension
       soap_vector.resize(pair_list, n_row, n_col);
-      internal::LMReduceHotLoop<4>::LMReduce(coefficients, soap_vector,
-                                             l_factors, this->max_radial,
-                                             this->max_angular);
-
-      if (this->max_angular >= 4) {
-        std::cout << "running th L>4 version\n";
-        internal::LMReduceHotLoop<4>::LMReduce(coefficients, soap_vector,
-                                               l_factors, this->max_radial,
-                                               this->max_angular);
-      } else {
-        std::cout << "running th L=0 version\n";
-        internal::LMReduceHotLoop<0>::LMReduce(coefficients, soap_vector,
-                                               l_factors, this->max_radial,
-                                               this->max_angular);
-      } /*else if (this->max_angular>=3) {
-        internal::LMReduceHotLoop<2>::LMReduce(coefficients, soap_vector,
-            l_factors, this->max_radial, this->max_angular);
-      } else if (this->max_angular>=1) {
-        internal::LMReduceHotLoop<1>::LMReduce(coefficients, soap_vector,
-            l_factors, this->max_radial, this->max_angular);
-      } else {
-        internal::LMReduceHotLoop<0>::LMReduce(coefficients, soap_vector,
-            l_factors, this->max_radial, this->max_angular);
-      }*/
-
-      /*
-      soap_vector.resize(pair_list, n_row, n_col);
       for (const auto & el1 : coefficients) {
         pair_type[0] = el1.first[0];
 
@@ -508,6 +416,7 @@ namespace rascal {
 
         for (const auto & el2 : coefficients) {
           pair_type[1] = el2.first[0];
+          // this copy here is just to have proper memory alignment. fix?
           auto & coef2{el2.second};
 
           auto && soap_vector_by_pair{soap_vector[pair_type]};
@@ -550,9 +459,8 @@ namespace rascal {
           //std::cout<<"coef "<<typeid(coef1).name()<<std::endl;
           //std::cout<<"coef2 "<<typeid(coef2).name()<<std::endl;
           //std::cout<<"soap "<<typeid(soap_vector_by_pair).name()<<std::endl;
-          //std::cout<<"REF
-      "<<typeid(SparseProperty_t::dense_ref_t).name()<<std::endl;
-
+          //std::cout<<"REF "<<typeid(SparseProperty_t::dense_ref_t).name()<<std::endl;
+          /*
           size_t n1n2{0};
           size_t pos, size;
           for (size_t n1{0}; n1 < this->max_radial; ++n1) {
@@ -577,10 +485,10 @@ namespace rascal {
               ++n1n2;
             }
           }
-
+          */
         }  // for coefficients
       }    // for coefficients
-      */
+
       // the SQRT_TWO factor comes from the fact that
       // the upper diagonal of the species is not considered
       for (const auto & el : soap_vector) {
