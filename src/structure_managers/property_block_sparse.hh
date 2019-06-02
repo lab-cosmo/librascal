@@ -63,33 +63,28 @@ namespace rascal {
       }
     };
 
-    template<bool IsSorted>
+    template <bool IsSorted>
     struct Sorted {};
 
+    /**
+     * Special key container that ensures its content is sorted.
+     */
     template <class KeyType>
     struct SortedKey {
       using Key_t = KeyType;
       Key_t data;
       using Value_t = typename Key_t::value_type;
 
-
-      // template<class... Args>
-      // SortedKey(Args&&... args) :data{std::forward<Args>(args)...} {
-      //   if (data.size() > 1) {
-      //     std::sort(data.begin(), data.end());
-      //   }
-      // }
-
-      SortedKey(const Key_t& key) :data{std::move(key)} {
+      explicit SortedKey(const Key_t & key) : data{std::move(key)} {
         if (data.size() > 1) {
           std::sort(data.begin(), data.end());
         }
       }
 
-      SortedKey(const Sorted<false>&, const Key_t& key) :SortedKey{key} {}
+      SortedKey(const Sorted<false> &, const Key_t & key) : SortedKey{key} {}
 
-      SortedKey(const Sorted<true>&, const Key_t& key) :data{std::move(key)} {}
-
+      SortedKey(const Sorted<true> &, const Key_t & key)
+          : data{std::move(key)} {}
 
       Key_t copy_sort(const Key_t & key) {
         Key_t skey{key};
@@ -100,13 +95,9 @@ namespace rascal {
       }
 
       //! access or insert specified element. use with caution !
-      inline Value_t& operator[](const size_t& id) {
-        return this->data[id];
-      }
+      inline Value_t & operator[](const size_t & id) { return this->data[id]; }
 
-      inline const Key_t& get_key() const {
-        return data;
-      }
+      inline const Key_t & get_key() const { return data; }
     };
 
     template <class K, class V>
@@ -283,7 +274,8 @@ namespace rascal {
        * the elements
        */
       template <typename Key_List>
-      void resize(const Key_List & keys, const int & n_row, const int & n_col, const Precision_t& val) {
+      void resize(const Key_List & keys, const int & n_row, const int & n_col,
+                  const Precision_t & val) {
         this->resize(keys, n_row, n_col);
         this->data = val;
       }
@@ -298,11 +290,12 @@ namespace rascal {
         this->resize(skeys, n_row, n_col);
       }
 
-      void resize(const std::vector<SortedKey_t> & skeys, const int & n_row, const int & n_col) {
+      void resize(const std::vector<SortedKey_t> & skeys, const int & n_row,
+                  const int & n_col) {
         int new_size{0};
         for (auto && skey : skeys) {
           if (this->count(skey) == 0) {
-            auto&& key{skey.get_key()};
+            auto && key{skey.get_key()};
             this->map[key] = std::make_tuple(new_size, n_row, n_col);
             new_size += static_cast<int>(n_row * n_col);
           }
@@ -348,12 +341,13 @@ namespace rascal {
         data_ref /= data_ref.norm();
       }
 
-      inline void multiply_offdiagonal_elements_by(const double& fac) {
+      inline void multiply_offdiagonal_elements_by(const double & fac) {
         for (const auto & el : this->map) {
           auto && pair_type{el.first};
           auto && pos{el.second};
           if (pair_type[0] != pair_type[1]) {
-            auto block{reference(&this->data[std::get<0>(pos)], std::get<1>(pos),std::get<2>(pos))};
+            auto block{reference(&this->data[std::get<0>(pos)],
+                                 std::get<1>(pos), std::get<2>(pos))};
             block *= fac;
           }
         }
@@ -369,7 +363,6 @@ namespace rascal {
           return keyValuePair.first;
         }
       };
-
     };
 
   }  // namespace internal

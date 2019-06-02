@@ -359,7 +359,6 @@ namespace rascal {
 
         return res;
       }
-      
     };
 
     class Hyp1f1 {
