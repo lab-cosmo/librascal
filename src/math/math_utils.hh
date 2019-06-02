@@ -55,7 +55,7 @@ namespace rascal {
     // define some usefull matrix type
     using Matrix_t =
         Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
-    using Vector_t = Eigen::VectorXd;
+    using Vector_t = Eigen::Matrix<double, 1, Eigen::Dynamic, Eigen::RowMajor>;
 
     using MatrixX2_t = Eigen::Matrix<double, Eigen::Dynamic, 2>;
 

@@ -92,26 +92,17 @@ namespace rascal {
         this->max_angular = hypers.at("max_angular");
         this->l_factors.resize(math::pow(this->max_angular + 1, 2));
 
-        size_t pos{0};
         size_t lm{0};
         for (size_t l{0}; l < this->max_angular + 1; ++l) {
-          size_t size{0};
           double l_factor{math::pow(std::sqrt(2 * l + 1), -1)};
-          for (size_t m{0}; m < 2 * l + 1; m++) {
+          for (size_t m{0}; m < 2 * l + 1; ++m) {
             this->l_factors(lm) = l_factor;
-            ++size;
             ++lm;
           }
-          std::array<size_t, 2> aa{pos, size};
-          this->lm_max.emplace_back(aa);
-          pos += size;
         }
       }
 
       size_t max_angular{0};
-      //! helper to simplify the writing of the reduction in the powerspectrum
-      //! computation
-      std::vector<std::array<size_t, 2>> lm_max{};
       //! factor of 1 / sqrt(2*l+1) in front of the powerspectrum
       Eigen::VectorXd l_factors{};
     };
@@ -295,7 +286,6 @@ namespace rascal {
     auto precomputation{downcast_soap_precompute<SOAPType::PowerSpectrum>(
         this->precompute_soap[enumValue(SOAPType::PowerSpectrum)])};
     auto & l_factors{precomputation->l_factors};
-    auto & lm_max{precomputation->lm_max};
 
     // Compute the spherical expansions of the current structure
     rep_expansion.compute();
@@ -351,8 +341,8 @@ namespace rascal {
           // auto l_max{this->max_angular + 1};
           // for (size_t n1{0}; n1 < n_max; ++n1) {
           //   for (size_t l{0}; l < l_max; ++l) {
-          //     auto& pos{lm_max[l][0]};
-          //     auto& size{lm_max[l][1]};
+          //     auto& pos{lm_blocks[l][0]};
+          //     auto& size{lm_blocks[l][1]};
           //     // do the reduction over m and iteration over n2
           //     // (with vectorization)
           //     soap_vector_by_pair.block(n1n2, l, n_max, 1).noalias() =
@@ -362,16 +352,18 @@ namespace rascal {
           //   n1n2 += n_max;
           // }
           size_t n1n2{0};
+          size_t pos, size;
           for (size_t n1{0}; n1 < this->max_radial; ++n1) {
             for (size_t n2{0}; n2 < this->max_radial; ++n2) {
+              pos = 0;
               for (size_t l{0}; l < this->max_angular + 1; ++l) {
-                auto & pos{lm_max[l][0]};
-                auto & size{lm_max[l][1]};
+                size = 2 * l + 1;
                 // do the reduction over m (with vectorization)
                 soap_vector_by_pair(n1n2, l) =
                     (coef1.block(n1, pos, 1, size).array() *
                      coef2.block(n2, pos, 1, size).array())
                         .sum();
+                pos += size;
               }
               ++n1n2;
             }

@@ -314,10 +314,13 @@ namespace rascal {
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           double a_b_l_n{0};
           if (radial_n % 2 == 0) {
-            a_b_l_n = sqrt(pow(fac_a + this->fac_b[radial_n], -(3 + radial_n)));
+            a_b_l_n = sqrt(pow(fac_a + this->fac_b[radial_n],
+                               -1 * static_cast<int>(3 + radial_n)));
           } else {
-            a_b_l_n = pow(fac_a + this->fac_b[radial_n], -(3 + radial_n) / 2);
+            a_b_l_n = pow(fac_a + this->fac_b[radial_n],
+                          -1 * static_cast<int>(3 + radial_n) / 2);
           }
+
           this->radial_integral_center(radial_n) =
               this->radial_norm_factors(radial_n) *
               this->radial_n_factors(radial_n) * a_b_l_n;
@@ -713,6 +716,7 @@ namespace rascal {
         downcast_radial_integral<RadialType>(this->radial_integral)};
 
     // pre-computes limits of combined lm arrays
+    /*
     std::vector<size_t> lm_max(max_angular + 1);
     size_t lm{0};
     for (size_t l = 0; l < max_angular + 1; ++l) {
@@ -720,9 +724,10 @@ namespace rascal {
       lm_max[l] = lm;
     }
     size_t lm_tot{lm_max[max_angular]};
+    */
 
     auto n_row{this->max_radial};
-    auto n_col{lm_tot};
+    auto n_col{(max_angular + 1) * (max_angular + 1)};
     this->expansions_coefficients.clear();
     this->expansions_coefficients.set_shape(n_row, n_col);
     this->expansions_coefficients.resize();
@@ -761,17 +766,16 @@ namespace rascal {
                                                                         neigh);
 
         harmonics *= cutoff_function->f_c(dist);
-        size_t lm_collective_idx;
+        size_t lm_pos, lm_size;
         auto && coefficients_center_by_type{coefficients_center[neigh_type]};
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
-          lm_collective_idx = 0;
-          for (size_t angular_l{0}; angular_l < this->max_angular + 1;
-               angular_l++) {
-            double neigh_nl{neighbour_contribution(radial_n, angular_l)};
-            for (; lm_collective_idx < lm_max[angular_l]; ++lm_collective_idx) {
-              coefficients_center_by_type(radial_n, lm_collective_idx) +=
-                  neigh_nl * harmonics(lm_collective_idx);
-            }
+          lm_pos = 0;
+          for (size_t l{0}; l < this->max_angular + 1; ++l) {
+            lm_size = 2 * l + 1;
+            coefficients_center_by_type.block(radial_n, lm_pos, 1, lm_size) +=
+                (neighbour_contribution(radial_n, l) *
+                 harmonics.segment(lm_pos, lm_size));
+            lm_pos += lm_size;
           }
         }
       }  // for (neigh : center)
