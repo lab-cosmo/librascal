@@ -412,7 +412,7 @@ namespace rascal {
       }
       keys.insert({center.get_atom_type()});
       // initialize the radial spectrum to 0 and the proper size
-      soap_vector.resize(keys, n_row, n_col);
+      soap_vector.resize(keys, n_row, n_col, 0);
 
       std::vector<Key_t> element_list{};
       for (const auto & el : coefficients) {

@@ -69,7 +69,8 @@ namespace rascal {
       using MyMap_t = std::map<K, V>;
       // using Map_t = std::unordered_map<K, std::array<int, 3>, Hash<K>>;
       using Map_t = std::map<K, std::tuple<int, int, int>>;
-      using Data_t = Eigen::Array<typename V::value_type, Eigen::Dynamic, 1>;
+      using Precision_t = typename V::value_type;
+      using Data_t = Eigen::Array<Precision_t, Eigen::Dynamic, 1>;
       //! the data holder.
       Data_t data{};
       Map_t map{};
@@ -210,9 +211,15 @@ namespace rascal {
         return const_reference(&this->data[std::get<0>(pos)], std::get<1>(pos),
                                std::get<2>(pos));
       }
+
+      template <typename Key_List>
+      void resize(const Key_List & keys, const int & n_row, const int & n_col, const Precision_t& val) {
+        this->resize(keys, n_row, n_col);
+        this->data = val;
+      }
+
       template <typename Key_List>
       void resize(const Key_List & keys, const int & n_row, const int & n_col) {
-        // using Array_t = typename Map_t::mapped_type;
         int new_size{0};
         for (auto & key : keys) {
           key_type skey{this->copy_sort(key)};
@@ -222,7 +229,6 @@ namespace rascal {
           }
         }
         this->data.resize(new_size);
-        this->data = 0;
       }
 
       //! Returns the number of elements with key that compares equivalent to

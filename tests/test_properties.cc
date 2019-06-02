@@ -248,7 +248,8 @@ namespace rascal {
 
           // set up the data to fill the property later
           InputData_t datas{};
-          datas.resize(keys, 21, 8);
+          // resize and set to 0
+          datas.resize(keys, 21, 8, 0);
           for (auto & key : keys) {
             auto data = Dense_t::Random(21, 8);
             datas[key] += data;

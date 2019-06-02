@@ -347,16 +347,19 @@ namespace rascal {
             break;
           }
           res += s_i;
-          if (res > DOVERFLOW) {
-            std::stringstream error{};
-            error << "Hyp1f1Asymptotic expansion: a=" << std::to_string(this->a)
-                  << " b=" << std::to_string(this->b)
-                  << " z=" << std::to_string(z) << std::endl;
-            throw std::overflow_error(error.str());
-          }
         }
+
+        if (res > DOVERFLOW) {
+          std::stringstream error{};
+          error << "Hyp1f1Asymptotic expansion: a=" << std::to_string(this->a)
+                << " b=" << std::to_string(this->b)
+                << " z=" << std::to_string(z) << std::endl;
+          throw std::overflow_error(error.str());
+        }
+
         return res;
       }
+      
     };
 
     class Hyp1f1 {
