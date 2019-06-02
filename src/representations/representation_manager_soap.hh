@@ -473,9 +473,12 @@ namespace rascal {
 
       // initialize the power spectrum to 0 with the proper dimension
       soap_vector.resize(pair_list, n_row, n_col);
+      internal::LMReduceHotLoop<4>::LMReduce(coefficients, soap_vector,
+                                             l_factors, this->max_radial,
+                                             this->max_angular);
 
       if (this->max_angular >= 4) {
-        //std::cout << "running th L>4 version\n";
+        std::cout << "running th L>4 version\n";
         internal::LMReduceHotLoop<4>::LMReduce(coefficients, soap_vector,
                                                l_factors, this->max_radial,
                                                this->max_angular);
