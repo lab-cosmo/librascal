@@ -41,6 +41,8 @@ namespace rascal {
      * values of a and b to minimal values.
      * The recurrence path is chosen so that derivatives of 1F1 are also
      * a result.
+     *
+     * G refers to the modified 1F1 defined below
      */
     inline double recurence_to_val_downward(const double & a, const double & b,
                                             const double & z,
@@ -71,7 +73,13 @@ namespace rascal {
       return z * M2p3p + M1p2p * (b + 1);
     }
 
-
+    /**
+     * Computes the 1F1 with the direct sum
+     *  1F1(a,b,z) = \sum_{j=0}^{\infty} \frac{(a)_j}{(b)_jj!} z^{j}
+     *
+     *  G(a,b,z) = \frac{\Gamma(a)}{\Gamma(b)} * \exp{-\alpha r_{ij}^2}
+     *                    * 1F1(a,b,z)
+     */
     class Hyp1f1Series {
      protected:
       double a, b;
