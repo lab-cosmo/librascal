@@ -40,6 +40,7 @@
 #include "structure_managers/adaptor_strict.hh"
 #include "structure_managers/adaptor_increase_maxorder.hh"
 #include "structure_managers/adaptor_neighbour_list.hh"
+#include "structure_managers/adaptor_half_neighbour_list.hh"
 #include "structure_managers/make_structure_manager.hh"
 #include "rascal_utility.hh"
 
@@ -260,19 +261,19 @@ namespace rascal {
     using ptr_t = double **;
 
     ManagerFixture()
-        : firstneigh{new int *[nb]}, x{new double *[nb]}, f{new double *[nb]},
+        : firstneigh{new int *[6]}, x{new double *[nb]}, f{new double *[nb]},
           vatom{new double *[nb]}, manager{
                                        make_structure_manager<Manager_t>()} {
       manager->update(inum, tot_num, ilist, numneigh,
                       static_cast<int **>(firstneigh), ptr_t(x), ptr_t(f), type,
                       eatom, static_cast<double **>(vatom));
       firstneigh[0] = new int[2];
-      firstneigh[0][0] = 1;
-      firstneigh[0][1] = 2;
-      firstneigh[1] = new int;
-      firstneigh[1][0] = 0;
-      firstneigh[2] = new int;
-      firstneigh[2][0] = 0;
+      firstneigh[0][0] = 3;
+      firstneigh[0][1] = 5;
+      firstneigh[3] = new int;
+      firstneigh[3][0] = 0;
+      firstneigh[5] = new int;
+      firstneigh[5][0] = 0;
 
       for (int i{0}; i < nb; ++i) {
         x[i] = new double[dim];
@@ -288,8 +289,9 @@ namespace rascal {
     ManagerFixture & operator=(const ManagerFixture &) = delete;
     ~ManagerFixture() {
       delete[] firstneigh[0];
-      delete firstneigh[1];
-      delete firstneigh[2];
+      delete firstneigh[3];
+      delete firstneigh[5];
+
       delete[] firstneigh;
       delete[] vatom;
       for (int i{0}; i < nb; ++i) {
@@ -304,13 +306,21 @@ namespace rascal {
 
     int inum{nb};
     int tot_num{nb};  // includes ghosts
-    int ilist[nb]{0, 1, 2};
+    // #BUG8486@(all) how does lammps saves the types for non contiguous atom
+    // tag lists? how would the type list look like in this case? because you
+    // cannot access it simply with the atom tags, e.g. you need to map
+    // 0->0,3->1 and 5->2. I am currently doing this, but how lammps actual do
+    // it? Also we cannot except negative atom tags at the moment and I would
+    // not do it, because lammps does not have negative ones, we do not have the
+    // case of using negative ones, why the extra effort?
+    int ilist[nb]{0, 3,
+                  5};  // TODO(alex): make ilist non-contiguous, eg {1, 28, 12}
     int numneigh[nb]{2, 1, 1};
     int ** firstneigh;
     double ** x;
     double ** f;
     int type[nb]{1, 2, -9};
-    double eatom[3]{2, 1, 1};
+    double eatom[nb]{2, 1, 1};
     double ** vatom;
     std::shared_ptr<Manager_t> manager;
   };
@@ -357,9 +367,10 @@ namespace rascal {
 
     using PairManager_t = AdaptorNeighbourList<Manager_t>;
 
+    const double cutoff{3.};
     PairFixture()
         : pair_manager{make_adapted_manager<AdaptorNeighbourList>(
-              this->fixture.manager, 3.)} {
+              this->fixture.manager, cutoff, false)} {
       this->pair_manager->update();
     }
 
