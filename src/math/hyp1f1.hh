@@ -36,6 +36,9 @@
 namespace rascal {
   namespace math {
 
+    // This is kept as a header only for a small but not marginal performance
+    // gain
+
     /**
      * Utilities to apply the recurrence relations of 1F1 from maximal
      * values of a and b to minimal values.
