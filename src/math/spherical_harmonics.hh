@@ -26,14 +26,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
-
 #ifndef SRC_MATH_SPHERICAL_HARMONICS_HH_
 #define SRC_MATH_SPHERICAL_HARMONICS_HH_
 
 #include "math_utils.hh"
-
-
 
 namespace rascal {
   namespace math {
@@ -120,8 +116,8 @@ namespace rascal {
     Vector_t compute_spherical_harmonics(
         const Eigen::Ref<const Eigen::Vector3d> & direction,
         size_t max_angular);
-        
-  } // namespace math
-} // namespace rascal
+
+  }  // namespace math
+}  // namespace rascal
 
 #endif  // SRC_MATH_SPHERICAL_HARMONICS_HH_

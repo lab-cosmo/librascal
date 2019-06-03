@@ -41,34 +41,6 @@
 
 namespace rascal {
 
-  struct ManagerFixtureMath {
-    ManagerFixtureMath()
-        : numbers(4, 3), results_hyp2f1(3), results_airy(3, 4) {
-      // clang-format off
-      numbers <<   1, 0.1,   2,
-                   1,   3,   9,
-                   2,   7,   6,
-                 0.5, 0.2, 0.3;
-
-      results_hyp2f1 << 1.3862943611198901,
-                        1.0090833356005495,
-                        3.0875740550280937;
-      results_airy <<
-        0.13529241631288147, -0.15914744129679328,  1.2074235949528715,
-         0.9324359333927756,    0.329203129943538, -0.2571304219075862,
-          0.659861690194189,  0.45151263114964657,  0.03492413042327436,
-       -0.05309038443365388,   3.2980949999782143,  4.10068204993289;
-      // clang-format on
-    }
-
-    ~ManagerFixtureMath() {}
-
-    Eigen::Matrix<double, 4, Eigen::Dynamic> numbers;
-    Eigen::Matrix<double, 1, Eigen::Dynamic> results_hyp2f1;
-    Eigen::Matrix<double, 3, Eigen::Dynamic> results_airy;
-    bool vebose{false};
-  };
-
   struct SphericalHarmonicsRefFixture {
     SphericalHarmonicsRefFixture() {
       json ref_data;

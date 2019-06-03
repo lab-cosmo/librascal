@@ -29,7 +29,6 @@
 #ifndef SRC_MATH_MATH_UTILS_HH_
 #define SRC_MATH_MATH_UTILS_HH_
 
-
 #include <Eigen/Dense>
 #include <cmath>
 #include <limits>
@@ -56,7 +55,6 @@ namespace rascal {
     using Vector_t = Eigen::Matrix<double, 1, Eigen::Dynamic, Eigen::RowMajor>;
 
     using MatrixX2_t = Eigen::Matrix<double, Eigen::Dynamic, 2>;
-
 
     /**
      * Define integer powers and wrap the different cases under the same name

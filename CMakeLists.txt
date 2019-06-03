@@ -119,10 +119,8 @@ endif()
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR
     CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
   set(LIBRASCAL_NAME "rascal-dbg")
-  set(LIBCEPHES_NAME "cephes-dbg")
 else()
   set(LIBRASCAL_NAME "rascal")
-  set(LIBCEPHES_NAME "cephes")
 endif()
 
 add_external_package(Eigen3 VERSION 3.3.4 CONFIG)

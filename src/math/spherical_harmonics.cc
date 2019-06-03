@@ -26,9 +26,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #include "spherical_harmonics.hh"
-
 
 namespace rascal {
   namespace math {
@@ -233,6 +231,5 @@ namespace rascal {
       }  // for (l in [0, lmax])
       return harmonics;
     }  // compute_spherical_harmonics()
-  } // namespace math
-} // namespace rascal
-
+  }    // namespace math
+}  // namespace rascal
