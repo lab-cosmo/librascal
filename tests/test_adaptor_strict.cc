@@ -151,8 +151,8 @@ namespace rascal {
         if (verbose) {
           // get_index returns iteration index
           std::cout << "cell atom out " << center.get_index();
-          // get_atom_index returns index from
-          std::cout << " " << center.get_atom_index() << " ";
+          // get_atom_tag returns index from
+          std::cout << " " << center.get_atom_tag() << " ";
 
           for (int ii{0}; ii < 3; ++ii) {
             std::cout << center.get_position()[ii] << " ";
@@ -164,7 +164,7 @@ namespace rascal {
           double distance{
               (center.get_position() - neigh.get_position()).norm()};
           if (distance <= cutoff_tmp) {
-            indices.push_back(neigh.get_atom_index());
+            indices.push_back(neigh.get_atom_tag());
             distances.push_back(distance);
             auto dir_vec{
                 (neigh.get_position() - center.get_position()).array() /
@@ -173,7 +173,7 @@ namespace rascal {
             dir_vecs.push_back(aa);
             if (verbose) {
               std::cout << "cell neigh out " << neigh.get_index();
-              std::cout << " " << neigh.get_atom_index() << " ";
+              std::cout << " " << neigh.get_atom_tag() << " ";
 
               for (int ii{0}; ii < 3; ++ii) {
                 std::cout << neigh.get_position()[ii] << " ";
@@ -199,8 +199,8 @@ namespace rascal {
         if (verbose) {
           // get_index returns iteration index
           std::cout << "strict atom out " << center.get_index();
-          // get_atom_index returns index from
-          std::cout << " " << center.get_atom_index() << " ";
+          // get_atom_tag returns index from
+          std::cout << " " << center.get_atom_tag() << " ";
 
           for (int ii{0}; ii < 3; ++ii) {
             std::cout << center.get_position()[ii] << " ";
@@ -211,7 +211,7 @@ namespace rascal {
         for (auto neigh : center) {
           double distance{adaptor_strict->get_distance(neigh)};
 
-          indices_.push_back(neigh.get_atom_index());
+          indices_.push_back(neigh.get_atom_tag());
           distances_.push_back(distance);
           auto dir_vec{adaptor_strict->get_direction_vector(neigh)};
           std::array<double, 3> bb{{dir_vec(0), dir_vec(1), dir_vec(2)}};
@@ -219,7 +219,7 @@ namespace rascal {
 
           if (verbose) {
             std::cout << "strict neigh out " << neigh.get_index();
-            std::cout << " " << neigh.get_atom_index() << "\t ";
+            std::cout << " " << neigh.get_atom_tag() << "\t ";
 
             for (int ii{0}; ii < 3; ++ii) {
               std::cout << neigh.get_position()[ii] << ", ";
@@ -297,8 +297,8 @@ namespace rascal {
         if (verbose) {
           // get_index returns iteration index
           std::cout << "cell atom out " << center.get_index();
-          // get_atom_index returns index from
-          std::cout << " " << center.get_atom_index() << " ";
+          // get_atom_tag returns index from
+          std::cout << " " << center.get_atom_tag() << " ";
 
           for (int ii{0}; ii < 3; ++ii) {
             std::cout << center.get_position()[ii] << " ";
@@ -310,7 +310,7 @@ namespace rascal {
           double distance{
               (center.get_position() - neigh.get_position()).norm()};
           if (distance <= cutoff) {
-            indices.push_back(neigh.get_atom_index());
+            indices.push_back(neigh.get_atom_tag());
             distances.push_back(distance);
             auto dir_vec{
                 (neigh.get_position() - center.get_position()).array() /
@@ -319,7 +319,7 @@ namespace rascal {
             dir_vecs.push_back(aa);
             if (verbose) {
               std::cout << "cell neigh out " << neigh.get_index();
-              std::cout << " " << neigh.get_atom_index() << " ";
+              std::cout << " " << neigh.get_atom_tag() << " ";
 
               for (int ii{0}; ii < 3; ++ii) {
                 std::cout << neigh.get_position()[ii] << " ";
@@ -346,8 +346,8 @@ namespace rascal {
         if (verbose) {
           // get_index returns iteration index
           std::cout << "strict atom out " << center.get_index();
-          // get_atom_index returns index from
-          std::cout << " " << center.get_atom_index() << " ";
+          // get_atom_tag returns index from
+          std::cout << " " << center.get_atom_tag() << " ";
 
           for (int ii{0}; ii < 3; ++ii) {
             std::cout << center.get_position()[ii] << " ";
@@ -359,7 +359,7 @@ namespace rascal {
           double distance{
               (center.get_position() - neigh.get_position()).norm()};
 
-          indices_.push_back(neigh.get_atom_index());
+          indices_.push_back(neigh.get_atom_tag());
           distances_.push_back(distance);
           auto dir_vec{adaptor_strict->get_direction_vector(neigh)};
           std::array<double, 3> bb{{dir_vec(0), dir_vec(1), dir_vec(2)}};
@@ -367,7 +367,7 @@ namespace rascal {
 
           if (verbose) {
             std::cout << "strict neigh out " << neigh.get_index();
-            std::cout << " " << neigh.get_atom_index() << "\t ";
+            std::cout << " " << neigh.get_atom_tag() << "\t ";
 
             for (int ii{0}; ii < 3; ++ii) {
               std::cout << neigh.get_position()[ii] << ", ";

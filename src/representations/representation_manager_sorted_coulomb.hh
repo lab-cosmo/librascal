@@ -168,7 +168,8 @@ namespace rascal {
     // numeric type for the representation features
     using Precision_t = typename Parent::Precision_t;
     // type of the data structure for the representation feaures
-    using Property_t = Property<Precision_t, 1, 1, Eigen::Dynamic, 1>;
+    using Property_t =
+        Property<Precision_t, 1, 1, Manager_t, Eigen::Dynamic, 1>;
     template <size_t Order>
     // short hand type to help the iteration over the structure manager
     using ClusterRef_t = typename Manager_t::template ClusterRef<Order>;
