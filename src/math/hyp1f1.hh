@@ -35,7 +35,6 @@
 
 namespace rascal {
   namespace math {
-    // using MatrixX2_t = Eigen::Matrix<double, Eigen::Dynamic, 2>;
 
     /**
      * Utilities to apply the recurrence relations of 1F1 from maximal
@@ -72,12 +71,6 @@ namespace rascal {
       return z * M2p3p + M1p2p * (b + 1);
     }
 
-    // inline MatrixX2_t hyp1f1_recurrence(const int& max_angular, const int& n,
-    // const double& z, const double& f) {
-    //   // first
-    //   MatrixX2_t results(max_angular, 2);
-
-    // }
 
     class Hyp1f1Series {
      protected:
@@ -119,11 +112,11 @@ namespace rascal {
       inline double calc(const double & z, const double & z2,
                          const double & ez2, const bool & derivative = false,
                          const int & n_terms = -1) {
+        // z -> pow(alpha * r_ij, 2) / (alpha + beta)
         // z2 ->argument of exp(-alpha*r_ij^2)
         using math::pow;
         double result{0.};
         if (not this->is_exp) {
-          // double z{pow(alpha * r_ij, 2) / (alpha + beta)};
           result = this->prefac * this->calc(z, derivative, n_terms) * ez2;
         } else {
           // simplification of the argument with exp(-alpha*r_ij^2)
@@ -361,6 +354,15 @@ namespace rascal {
       }
     };
 
+    /**
+     * Computes the 1F1(a,b,z) for a given a and b and variable argument.
+     *
+     * The class to bundles the 2 definitions of the 1F1 (see above) and
+     * implements a switch rational (with bisection) to go between the 2
+     * at construction.
+     * It works because we probe test at construction the domain of
+     * applicability of the two definitions.
+     */
     class Hyp1f1 {
      private:
       Hyp1f1Series hyp1f1_series;
@@ -368,6 +370,8 @@ namespace rascal {
       double a, b;
       double tolerance;
       size_t mmax;
+
+      double z_asympt{1.};
 
       size_t nterms_a{0}, nterms_s{0};
       double h1f1_a{0}, h1f1_s{0};
@@ -381,14 +385,16 @@ namespace rascal {
         this->nterms_a = this->hyp1f1_asymptotic.n_terms;
       }
 
+      /**
+       * Find the largest z for which the 2 definitions agree within tolerance
+       * using bisection.
+       */
       void find_switching_point() {
         int max_it{100};
         int i_it{0};
         this->update_switching_point();
         // brackets the switching point
         this->z_below = this->z_above = this->z_asympt;
-        // std::cout << "# "<< std::fabs(1-this->h1f1_s/this->h1f1_a) <<
-        // std::endl;
         if (std::fabs(1 - this->h1f1_s / this->h1f1_a) > this->tolerance) {
           i_it = 0;
           while (std::fabs(1 - this->h1f1_s / this->h1f1_a) >
@@ -397,8 +403,6 @@ namespace rascal {
             this->z_asympt *= 1.5;
             this->update_switching_point();
             i_it++;
-            // std::cout << "### "<< std::fabs(1-this->h1f1_s/this->h1f1_a) <<
-            // ", "<< this->z_asympt << std::endl;
           }
           this->z_above = this->z_asympt;
         } else {
@@ -412,11 +416,9 @@ namespace rascal {
           }
           this->z_below = this->z_asympt;
         }
-        /* and now bisects until we are reasonably close to an accurate
-        determination */
+        // and now bisects until we are reasonably close to an accurate
+        // determination
         this->z_asympt = (this->z_above + this->z_below) * 0.5;
-        // std::cout <<"##4#" << this->z_above <<", " <<this->z_below<<", "<<
-        // this->z_asympt << std::endl;
         this->update_switching_point();
         i_it = 0;
         while (this->z_above - this->z_below > this->tolerance and
@@ -430,27 +432,30 @@ namespace rascal {
           this->update_switching_point();
           i_it++;
         }
+        // to be safe take a slightly larger switching point
         this->z_asympt = this->z_asympt * 1.1;
-        // std::cout   <<"##33#" << this->z_asympt << std::endl;
       }
 
      public:
-      double z_asympt{1.};
       Hyp1f1(const double & a, const double & b, const size_t & mmax = 500,
              const double & tolerance = 1e-13)
           : hyp1f1_series{a, b, mmax, tolerance}, hyp1f1_asymptotic{a, b, mmax,
                                                                     tolerance},
             a{a}, b{b}, tolerance{tolerance}, mmax{mmax} {
-        /*now we try to determine what is the switching point between
-        power series and asymptotic expansion. basically we choose
-        the method that requires fewer terms for a chosen target accuracy.
-        the asymptotic expansion tends to blow up at the switching point.*/
+        // now we try to determine what is the switching point between
+        // power series and asymptotic expansion. basically we choose
+        // the method that requires fewer terms for a chosen target accuracy.
+        // the asymptotic expansion tends to blow up at the switching point.
         if (std::abs(1 - this->b / this->a) > dbl_ftol) {
           this->find_switching_point();
           // fix the number of terms needed for the numerical derivative
           // with nterms_s and nterms_a
           this->update_switching_point();
         }
+      }
+
+      double get_z_switch() {
+        return this->z_asympt;
       }
 
       //! Compute 1F1(a,b,z)
@@ -488,6 +493,20 @@ namespace rascal {
       }
     };
 
+    /**
+     * Computes 1F1 and its derivative with respect to z for a range of a and b
+     * for l < l_max + 1 and n < n_max where:
+     * a = 0.5 * (n + l + 3)
+     * b = l + 1.5
+     *
+     * For efficiency the function computed is:
+     *   G(a,b,z) = \frac{\Gamma(a)}{\Gamma(b)} * \exp{-\alpha r_{ij}^2}
+     *                     1F1(a,b,z)
+     *
+     * It can use the recurence relationships of the 1F1 to speed things up.
+     *
+     * This class is tailored to work with the GTO basis in SphericalExpansion.
+     */
     class Hyp1f1SphericalExpansion {
      protected:
       using Matrix_Ref = typename Eigen::Ref<const Matrix_t>;
@@ -519,6 +538,7 @@ namespace rascal {
           : tolerance{tolerance},
             precomputation_size{precomputation_size}, recursion{recursion} {}
 
+      //! initialize the 1F1 computers
       void precompute(const size_t & max_radial, const size_t & max_angular) {
         this->max_angular = max_angular;
         this->max_radial = max_radial;
@@ -545,12 +565,14 @@ namespace rascal {
         }
       }
 
+      //! helper function to compute z for one set of n, l, z
       inline double calc(const size_t & n_radial, const size_t & l_angular,
                          const double & z) {
         int ipos{this->get_pos(n_radial, l_angular)};
         return this->hyp1f1[ipos].calc(z);
       }
 
+      //! helper function to compute z for one set of n, l, custom z
       inline double calc(const size_t & n_radial, const size_t & l_angular,
                          const double & r_ij, const double & alpha,
                          const double & beta) {
@@ -561,6 +583,7 @@ namespace rascal {
         return this->hyp1f1[ipos].calc(z, z2, ez2);
       }
 
+      //! the work horse that computes 1F1 for all possible n, l values
       inline void calc(const double & r_ij, const double & alpha,
                        const Vector_Ref & fac_b,
                        const bool & derivative = false) {
@@ -572,6 +595,8 @@ namespace rascal {
         }
       }
 
+      //! computes G using recursion relations
+      //! (derivative are always computed)
       inline void calc_recursion(const double & r_ij, const double & alpha,
                                  const Vector_Ref & fac_b) {
         double M1p2p{0.}, M2p3p{0.}, MP1p2p{0.}, MP2p3p{0.}, M1p1p{0.}, Moo{0.},
@@ -629,10 +654,12 @@ namespace rascal {
         }
       }
 
+      //! computes G by direct evaluation
       inline void calc_direct(const double & r_ij, const double & alpha,
                               const Vector_Ref & fac_b,
                               const bool & derivative) {
-        // computes some intermediates that accelerate calculations further down
+        // computes some intermediates that accelerate calculations further
+        // down
         double alpha_rij_2{alpha * r_ij};
         double z2{-r_ij * alpha_rij_2};
         double ez2{std::exp(z2)};
@@ -658,8 +685,10 @@ namespace rascal {
         }
       }
 
+      //! get a reference to the computed G values
       inline Matrix_Ref get_values() { return Matrix_Ref(this->values); }
 
+      //! get a reference to the computed G derivatives
       inline Matrix_Ref get_derivatives() {
         return Matrix_Ref(this->derivatives);
       }
