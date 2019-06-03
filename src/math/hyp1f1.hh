@@ -378,7 +378,6 @@ namespace rascal {
       Hyp1f1Asymptotic hyp1f1_asymptotic;
       double a, b;
       double tolerance;
-      size_t mmax;
 
       double z_asympt{1.};
 
@@ -450,7 +449,7 @@ namespace rascal {
              const double & tolerance = 1e-13)
           : hyp1f1_series{a, b, mmax, tolerance}, hyp1f1_asymptotic{a, b, mmax,
                                                                     tolerance},
-            a{a}, b{b}, tolerance{tolerance}, mmax{mmax} {
+            a{a}, b{b}, tolerance{tolerance} {
         // now we try to determine what is the switching point between
         // power series and asymptotic expansion. basically we choose
         // the method that requires fewer terms for a chosen target accuracy.
