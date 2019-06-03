@@ -36,6 +36,7 @@
 #include "structure_managers/property.hh"
 #include "rascal_utility.hh"
 #include "math/math_utils.hh"
+#include "math/spherical_harmonics.hh"
 #include "math/hyp1f1.hh"
 #include "structure_managers/property_block_sparse.hh"
 

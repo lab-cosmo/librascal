@@ -29,8 +29,6 @@
 #ifndef SRC_MATH_MATH_UTILS_HH_
 #define SRC_MATH_MATH_UTILS_HH_
 
-#include "math_interface.hh"
-// #include "hyp1f1_recurrence.hh"
 
 #include <Eigen/Dense>
 #include <cmath>
@@ -59,15 +57,31 @@ namespace rascal {
 
     using MatrixX2_t = Eigen::Matrix<double, Eigen::Dynamic, 2>;
 
-    Matrix_t compute_assoc_legendre_polynom(double cos_theta,
-                                            size_t max_angular);
 
-    MatrixX2_t compute_cos_sin_angle_multiples(double cos_phi, double sin_phi,
-                                               size_t max_m);
+    /**
+     * Define integer powers and wrap the different cases under the same name
+     */
+    namespace details {
+      //! unsingned integer power
+      double pow_u(double x, size_t n);
+      //! integer power
+      double pow_i(const double & x, const int & n);
+    }  // namespace details
 
-    Vector_t compute_spherical_harmonics(
-        const Eigen::Ref<const Eigen::Vector3d> & direction,
-        size_t max_angular);
+    //! integer power
+    inline double pow(const double & x, const int & n) {
+      return details::pow_i(x, n);
+    }
+
+    //! unsingned integer power
+    inline double pow(const double & x, const std::size_t & n) {
+      return details::pow_u(x, n);
+    }
+
+    //! general power
+    inline double pow(const double & x, const double & n) {
+      return std::pow(x, n);
+    }
 
     /**
      * Compute a cosine-type switching function for smooth cutoffs

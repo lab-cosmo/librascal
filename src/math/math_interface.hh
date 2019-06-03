@@ -50,27 +50,7 @@ namespace rascal {
                   const double & x);
     double hyp1f1(const double & a, const double & b, const double & x);
 
-    namespace details {
-      //! unsingned integer power
-      double pow_u(double x, size_t n);
-      //! integer power
-      double pow_i(const double & x, const int & n);
-    }  // namespace details
-
-    //! integer power
-    inline double pow(const double & x, const int & n) {
-      return details::pow_i(x, n);
-    }
-
-    //! unsingned integer power
-    inline double pow(const double & x, const std::size_t & n) {
-      return details::pow_u(x, n);
-    }
-
-    //! general power
-    inline double pow(const double & x, const double & n) {
-      return std::pow(x, n);
-    }
+    
   }  // namespace math
 }  // namespace rascal
 

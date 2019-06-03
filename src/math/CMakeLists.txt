@@ -37,6 +37,7 @@ install(TARGETS "${LIBCEPHES_NAME}" DESTINATION lib)
 set (math_SRC
   ${CMAKE_CURRENT_SOURCE_DIR}/math_utils.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/math_interface.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/spherical_harmonics.cc
   )
 
 target_sources("${LIBRASCAL_NAME}" PRIVATE ${math_SRC})

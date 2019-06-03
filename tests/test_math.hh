@@ -32,6 +32,7 @@
 #include "json_io.hh"
 #include "math/math_interface.hh"
 #include "math/math_utils.hh"
+#include "math/spherical_harmonics.hh"
 #include "math/hyp1f1.hh"
 #include "rascal_utility.hh"
 
