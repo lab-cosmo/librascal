@@ -173,8 +173,7 @@ namespace rascal {
         return res;
       }
 
-      inline double sum(const double & z,
-                        const Eigen::Ref<const Eigen::VectorXd> coefficient,
+      inline double sum(const double & z, const Eigen::VectorXd & coefficient,
                         const size_t & mmax, const int & n_terms) {
         // perform the sum
         double res{1.0}, a1{1.0}, zpow{z}, z4{z * z};
@@ -336,8 +335,7 @@ namespace rascal {
         return res;
       }
 
-      inline double sum(const double & z,
-                        const Eigen::Ref<const Eigen::VectorXd> coefficient,
+      inline double sum(const double & z, const Eigen::VectorXd & coefficient,
                         const size_t & mmax, const int & n_terms) {
         double iz{1.0 / z};
         double res{1.}, izpow{1.}, s_i{1.};

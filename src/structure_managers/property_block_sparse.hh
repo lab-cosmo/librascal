@@ -1,6 +1,7 @@
 /**
- * file   property_block_sparse.hh
+ * file   property_base.hh
  *
+ * @author Till Junge <till.junge@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
  *
  * @date   03 April 2019
