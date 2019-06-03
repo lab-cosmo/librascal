@@ -34,7 +34,9 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Check the implementation of hyp1f1 against mpmath v1.1.0
+   * Check the implementation of hyp1f1 against mpmath v1.1.0 for most of the
+   * possible values of n, l and z that we will reasonably have to handdle.
+   * see generate_soap_ref_data.py for details
    */
   BOOST_FIXTURE_TEST_CASE(math_hyp1f1_test, Hyp1F1RefFixture) {
     for (auto & data : this->ref_data) {
@@ -84,6 +86,10 @@ namespace rascal {
     }
   }
 
+  /**
+   * Check the acurracy of the the recurrence relations of 1F1 compared to
+   * direct evaluation.
+   */
   BOOST_FIXTURE_TEST_CASE(math_hyp1f1_spherical_expansion_test,
                           Hyp1f1SphericalExpansionFixture) {
     for (size_t i_rc{0}; i_rc < this->rcs.size(); ++i_rc) {

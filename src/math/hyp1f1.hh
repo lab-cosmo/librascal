@@ -465,9 +465,7 @@ namespace rascal {
         }
       }
 
-      double get_z_switch() {
-        return this->z_asympt;
-      }
+      double get_z_switch() { return this->z_asympt; }
 
       //! Compute 1F1(a,b,z)
       inline double calc(const double & z, const bool & derivative = false) {
