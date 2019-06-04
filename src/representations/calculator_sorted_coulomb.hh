@@ -347,7 +347,7 @@ namespace rascal {
       const CalculatorSortedCoulomb<Mngr>::Hypers_t & hyper) {
     this->hypers = hyper;
     // TODO(felix) potential problem here in the tests and bindings
-    this->central_cutoff = this->hypers["central_cutoff"];
+    this->central_cutoff = 0.;//this->hypers["central_cutoff"];
     // this->hypers["central_cutoff"] = this->central_cutoff;
 
     this->options.emplace("sorting_algorithm",
@@ -415,7 +415,10 @@ namespace rascal {
       manager->create_property<
             Property_t<StructureManager>>(this->calculator_name);
     }
-    auto&& coulomb_matrices{manager->template get_validated_property_ref(this->calculator_name)};
+    // TODO(felix) remove hack
+    this->central_cutoff = manager->get_cutoff();
+
+    auto&& coulomb_matrices{manager->template get_validated_property_ref<StructureManager>(this->calculator_name)};
 
     // initialise the sorted coulomb_matrices in linear storage
     coulomb_matrices.clear();

@@ -11,6 +11,8 @@ How to add a new representation
 Write a RepresentationManager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+TODO(felix) update this part of the doc
+
 A representation manager is an object that builds a representation of the atomic structure contained in *a* structure manager. This class:
 
 - inherits publicly from :cpp:class:`CalculatorBase <rascal::CalculatorBase>` to follow its interface and use some of the common utilies shared by such class.
