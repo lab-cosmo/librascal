@@ -409,8 +409,8 @@ namespace rascal {
     this->dir_vec =
         this->template get_validated_property<DirectionVector_t>("dir_vec");
 
-    this->distance->resize_to_zero();
-    this->dir_vec->resize_to_zero();
+    this->distance->clear();
+    this->dir_vec->clear();
 
     // fill the list, at least pairs are mandatory for this to work
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};

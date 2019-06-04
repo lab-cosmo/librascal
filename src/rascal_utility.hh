@@ -198,7 +198,7 @@ namespace rascal {
     struct ResizePropertyToZero {
       template <typename T>
       void operator()(T & t) {
-        t.resize_to_zero();
+        t.clear();
       }
     };
 

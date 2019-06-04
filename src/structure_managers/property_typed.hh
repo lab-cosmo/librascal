@@ -252,9 +252,6 @@ namespace rascal {
      * shortens the vector so that the manager can push_back into it (capacity
      * not reduced)
      */
-    void resize_to_zero() { this->values.resize(0); }
-    
-    //! does the same thing as resize_to_zero
     void clear() { this->values.clear(); }
 
     /* ---------------------------------------------------------------------- */

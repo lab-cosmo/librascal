@@ -418,13 +418,13 @@ namespace rascal {
     auto&& coulomb_matrices{manager->template get_validated_property_ref(this->calculator_name)};
 
     // initialise the sorted coulomb_matrices in linear storage
-    coulomb_matrices.resize_to_zero();
+    coulomb_matrices.clear();
     coulomb_matrices.set_nb_row(this->get_n_feature());
 
     // initialize the sorted linear coulomb matrix
     Eigen::MatrixXd lin_sorted_coulomb_mat(this->size * (this->size + 1) / 2,
                                            1);
-    
+
     // loop over the centers
     for (auto center : manager) {
       // re-use the temporary coulomb mat in linear storage
