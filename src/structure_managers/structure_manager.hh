@@ -360,17 +360,17 @@ namespace rascal {
      * Helper function to check if a property with the specifier `name` has
      * already been attached.
      */
-    bool has_property(const std::string & name) {
+    inline bool has_property(const std::string & name) {
       return not(this->properties.find(name) == this->properties.end());
     }
-    bool has_property(const std::string & name) const {
+    inline bool has_property(const std::string & name) const {
       return not(this->properties.find(name) == this->properties.end());
     }
 
     template <typename Property_t>
     void create_property(const std::string & name) {
       auto property{std::make_shared<Property_t>(*this)};
-      attach_property(name, property);
+      this->attach_property(name, property);
     }
 
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
@@ -432,8 +432,8 @@ namespace rascal {
     get_validated_property_ref(const std::string & name) const {
       auto property = this->get_property(name);
       this->template validate_property_t<UserProperty_t>(property);
-      UserProperty_t * property_ptr =
-          reinterpret_cast<UserProperty_t *>(property.get());
+      auto property_ptr =
+          static_cast<UserProperty_t *>(property.get());
       return *property_ptr;
     }
     /*  Returns the typed property. Throws an error if property type given from
@@ -456,6 +456,7 @@ namespace rascal {
     }
 
     /**
+     * TODO(felix) rework the freshness of the properties
      * Attach update status to property. It is necessary, because the underlying
      * structure might change and then the calculated property might be out of
      * sync with the structure.

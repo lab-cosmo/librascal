@@ -157,7 +157,6 @@ namespace rascal {
   /**
    * Implementation of the Environmental Coulomb Matrix
    */
-  template <class StructureManager>
   class CalculatorSortedCoulomb : public CalculatorBase {
    public:
     using Manager_t = StructureManager;
@@ -168,10 +167,11 @@ namespace rascal {
     // numeric type for the representation features
     using Precision_t = typename Parent::Precision_t;
     // type of the data structure for the representation feaures
+    template<class StructureManager>
     using Property_t =
-        Property<Precision_t, 1, 1, Manager_t, Eigen::Dynamic, 1>;
-    template <size_t Order>
+        Property<Precision_t, 1, 1, StructureManager, Eigen::Dynamic, 1>;
     // short hand type to help the iteration over the structure manager
+    template <size_t Order>
     using ClusterRef_t = typename Manager_t::template ClusterRef<Order>;
     // type of the datastructure used to register the list of valid
     // hyperparameters
@@ -210,6 +210,7 @@ namespace rascal {
 
     /* -------------------- rep-interface-start -------------------- */
     //! compute representation
+    template<class StructureManager>
     void compute();
 
     //! set hypers
@@ -239,8 +240,12 @@ namespace rascal {
     size_t get_center_size() { return this->coulomb_matrices.get_nb_item(); }
     /* -------------------- rep-interface-end -------------------- */
 
+    //! loop over a collection of manangers
+    template <class StructureManager, internal::CMSortAlgorithm AlgorithmType>
+    void compute_loop();
+
     //! Implementation of compute representation
-    template <internal::CMSortAlgorithm AlgorithmType>
+    template <class StructureManager, internal::CMSortAlgorithm AlgorithmType>
     void compute_helper();
 
     //! check if size of representation manager is enough for current structure
@@ -258,6 +263,7 @@ namespace rascal {
     }
 
     //! returns the distance matrix for a central atom
+    template <class StructureManager>
     void get_distance_matrix(ClusterRef_t<1> & center,
                              Eigen::Ref<Eigen::MatrixXd> distance_mat,
                              Eigen::Ref<Eigen::MatrixXd> type_factor_mat);
@@ -323,7 +329,7 @@ namespace rascal {
 
     Data_t dummy{};
 
-    Property_t coulomb_matrices;
+    constexpr char calculator_name[] = "sorted_coulomb";
 
     //! reference the requiered hypers
     ReferenceHypers_t reference_hypers{
@@ -337,12 +343,12 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
-  template <class Mngr>
-  void CalculatorSortedCoulomb<Mngr>::set_hyperparameters(
+  void CalculatorSortedCoulomb::set_hyperparameters(
       const CalculatorSortedCoulomb<Mngr>::Hypers_t & hyper) {
     this->hypers = hyper;
-    this->central_cutoff = this->structure_manager->get_cutoff();
-    this->hypers["central_cutoff"] = this->central_cutoff;
+    // TODO(felix) potential problem here in the tests and bindings
+    this->central_cutoff = this->hypers["central_cutoff"];
+    // this->hypers["central_cutoff"] = this->central_cutoff;
 
     this->options.emplace("sorting_algorithm",
                           hyper["sorting_algorithm"].get<std::string>());
@@ -380,37 +386,47 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /* -------------------- rep-options-compute-start-------------------- */
-  template <class Mngr>
-  void CalculatorSortedCoulomb<Mngr>::compute() {
+  template <class StructureManager>
+  void CalculatorSortedCoulomb::compute(std::vector<std::shared_ptr<StructureManager>>& managers) {
     auto option{this->options["sorting_algorithm"]};
 
     if (option == "distance") {
-      compute_helper<internal::CMSortAlgorithm::Distance>();
+      compute_loop<internal::CMSortAlgorithm::Distance>(managers);
     } else if (option == "row_norm") {
-      compute_helper<internal::CMSortAlgorithm::RowNorm>();
+      compute_loop<internal::CMSortAlgorithm::RowNorm>(managers);
     } else {
       auto error_message{std::string("Option '") + option +
-                         std::string("' is not implemented.")};
+                        std::string("' is not implemented.")};
       throw std::invalid_argument(error_message.c_str());
     }
   }
   /* -------------------- rep-options-compute-end -------------------- */
+  template <class StructureManager, internal::CMSortAlgorithm AlgorithmType>
+  void CalculatorSortedCoulomb::compute_loop(std::vector<std::shared_ptr<StructureManager>>& managers) {
+    for (auto& manager : managers) {
+      this->compute_helper<AlgorithmType>(manager);
+    }
+  }
   /* ---------------------------------------------------------------------- */
   /* -------------------- rep-options-compute-impl-start -------------------- */
-  template <class Mngr>
-  template <internal::CMSortAlgorithm AlgorithmType>
-  void CalculatorSortedCoulomb<Mngr>::compute_helper() {
+  template <class StructureManager, internal::CMSortAlgorithm AlgorithmType>
+  void CalculatorSortedCoulomb::compute_helper(std::shared_ptr<StructureManager>& manager) {
+    if (not manager->has_property()) {
+      manager->create_property<
+            Property_t<StructureManager>>(this->calculator_name);
+    }
+    auto&& coulomb_matrices{manager->template get_validated_property_ref(this->calculator_name)};
+
     // initialise the sorted coulomb_matrices in linear storage
-    this->coulomb_matrices.resize_to_zero();
-    this->coulomb_matrices.set_nb_row(this->get_n_feature());
+    coulomb_matrices.resize_to_zero();
+    coulomb_matrices.set_nb_row(this->get_n_feature());
 
     // initialize the sorted linear coulomb matrix
     Eigen::MatrixXd lin_sorted_coulomb_mat(this->size * (this->size + 1) / 2,
                                            1);
-    // Eigen::MatrixXd coulomb_mat(this->size,this->size);
-
+    
     // loop over the centers
-    for (auto center : *this->structure_manager) {
+    for (auto center : manager) {
       // re-use the temporary coulomb mat in linear storage
       // need to be zeroed because old data might not be overwritten
       lin_sorted_coulomb_mat =
@@ -430,7 +446,7 @@ namespace rascal {
       Eigen::MatrixXd coulomb_mat =
           Eigen::MatrixXd::Ones(n_neighbour, n_neighbour);
 
-      this->get_distance_matrix(center, distance_mat, type_factor_mat);
+      this->get_distance_matrix(manager, center, distance_mat, type_factor_mat);
 
       // Compute Coulomb Mat element wise.
       coulomb_mat = type_factor_mat.array() / distance_mat.array();
@@ -442,27 +458,28 @@ namespace rascal {
       this->sort_and_linearize_coulomb_matrix(
           coulomb_mat, lin_sorted_coulomb_mat, sort_order);
 
-      this->coulomb_matrices.push_back(lin_sorted_coulomb_mat);
+      coulomb_matrices.push_back(lin_sorted_coulomb_mat);
     }
   }
   /* -------------------- rep-options-compute-impl-end -------------------- */
 
   /* ---------------------------------------------------------------------- */
-  template <class Mngr>
-  void CalculatorSortedCoulomb<Mngr>::get_distance_matrix(
-      CalculatorSortedCoulomb<Mngr>::ClusterRef_t<1> & center,
+  template<class StructureManager>
+  void CalculatorSortedCoulomb::get_distance_matrix(
+      std::shared_ptr<StructureManager>& manager,
+      CalculatorSortedCoulomb::ClusterRef_t<1> & center,
       Eigen::Ref<Eigen::MatrixXd> distance_mat,
       Eigen::Ref<Eigen::MatrixXd> type_factor_mat) {
     // the coulomb mat first row and col corresponds
     // to central atom to neighbours
     auto && Zk{center.get_atom_type()};
-    auto && central_cutoff{this->structure_manager->get_cutoff()};
+    auto && central_cutoff{this->central_cutoff};
 
     type_factor_mat(0, 0) = 0.5 * std::pow(Zk, 2.4);
     for (auto neigh_i : center) {
       size_t idx_i{neigh_i.get_index() + 1};
       auto && Zi{neigh_i.get_atom_type()};
-      double & dik{this->structure_manager->get_distance(neigh_i)};
+      double & dik{manager->get_distance(neigh_i)};
       double fac_ik{
           get_cutoff_factor(dik, central_cutoff, this->central_decay)};
 
@@ -477,7 +494,7 @@ namespace rascal {
     for (auto neigh_i : center) {
       size_t idx_i{neigh_i.get_index() + 1};
       auto && Zi{neigh_i.get_atom_type()};
-      double & dik{this->structure_manager->get_distance(neigh_i)};
+      double & dik{manager->get_distance(neigh_i)};
       double fac_ik{
           get_cutoff_factor(dik, central_cutoff, this->central_decay)};
 
