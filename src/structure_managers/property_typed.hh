@@ -265,7 +265,8 @@ namespace rascal {
     }
 
     template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order>
-    inline std::enable_if_t<(Order_ == 1) and (CallerOrder > 1), reference> // NOLINT
+    inline std::enable_if_t<(Order_ == 1) and (CallerOrder > 1),  // NOLINT
+                            reference>                            // NOLINT
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
       return this->operator[](
           static_cast<Manager_t &>(this->base_manager)

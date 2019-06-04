@@ -129,7 +129,8 @@ namespace rascal {
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
     using Hypers_t = RepresentationManagerBase::Hypers_t;
     using Key_t = std::vector<int>;
-    using SparseProperty_t = BlockSparseProperty<double, 1, 0, Manager_t, Key_t>;
+    using SparseProperty_t =
+        BlockSparseProperty<double, 1, 0, Manager_t, Key_t>;
     using Data_t = typename SparseProperty_t::Data_t;
 
     RepresentationManagerSOAP(ManagerPtr_t sm, const Hypers_t & hyper)

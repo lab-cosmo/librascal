@@ -503,16 +503,14 @@ namespace rascal {
     template <size_t Order, size_t Layer>
     inline int
     get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & cluster,
-                                   size_t index) const {
-      return this->implementation().get_neighbour_atom_tag(cluster,
-                                                                        index);
+                           size_t index) const {
+      return this->implementation().get_neighbour_atom_tag(cluster, index);
     }
 
     //! get atom_tag of the index-th atom in manager
     inline int get_neighbour_atom_tag(const StructureManager & cluster,
-                                              size_t & index) const {
-      return this->implementation().get_neighbour_atom_tag(cluster,
-                                                                        index);
+                                      size_t & index) const {
+      return this->implementation().get_neighbour_atom_tag(cluster, index);
     }
 
     //! Access to offsets for access of cluster-related properties
@@ -668,8 +666,8 @@ namespace rascal {
       template <class Manager_t, class Container_t>
       inline static int
       get_neighbour_atom_tag(const Manager_t & /*manager*/,
-                                     const Container_t & /*container*/,
-                                     size_t /*index*/) {
+                             const Container_t & /*container*/,
+                             size_t /*index*/) {
         throw std::runtime_error("This branch should never exist"
                                  " (cluster neigbour).");
       }
@@ -692,10 +690,9 @@ namespace rascal {
       }
 
       template <class Manager_t, class Container_t>
-      inline static int
-      get_neighbour_atom_tag(const Manager_t & manager,
-                                     const Container_t & container,
-                                     size_t index) {
+      inline static int get_neighbour_atom_tag(const Manager_t & manager,
+                                               const Container_t & container,
+                                               size_t index) {
         return manager.get_neighbour_atom_tag(container, index);
       }
     };
@@ -1107,16 +1104,14 @@ namespace rascal {
     std::array<int, Order> get_atom_tag_list() {
       return internal::append_array(
           container.get_atom_tag_list(),
-          this->get_manager().get_neighbour_atom_tag(container,
-                                                             this->index));
+          this->get_manager().get_neighbour_atom_tag(container, this->index));
     }
 
     //! add atomic indices in current iteration
     std::array<int, Order> get_atom_tag_list() const {
       return internal::append_array(
           container.get_atom_tag_list(),
-          this->get_manager().get_neighbour_atom_tag(container,
-                                                             this->index));
+          this->get_manager().get_neighbour_atom_tag(container, this->index));
     }
 
     //! returns the current index of the cluster in iteration

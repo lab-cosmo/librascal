@@ -502,7 +502,8 @@ namespace rascal {
     using Hypers_t = typename Parent::Hypers_t;
     using ReferenceHypers_t = Parent::ReferenceHypers_t;
     using Key_t = std::vector<int>;
-    using SparseProperty_t = BlockSparseProperty<double, 1, 0, Manager_t, Key_t>;
+    using SparseProperty_t =
+        BlockSparseProperty<double, 1, 0, Manager_t, Key_t>;
     using Dense_t = typename SparseProperty_t::Dense_t;
     using Data_t = typename SparseProperty_t::Data_t;
     /**

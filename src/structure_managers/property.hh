@@ -194,7 +194,8 @@ namespace rascal {
     }
 
     template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order>
-    inline std::enable_if_t<(Order_ == 1) and (CallerOrder > 1), reference> // NOLINT
+    inline std::enable_if_t<(Order_ == 1) and (CallerOrder > 1),  // NOLINT
+                            reference>                            // NOLINT
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
       // #BUG8486@(all) we can just use the managers function to get the
       // corresponding cluster index, no need to save this in the cluster
