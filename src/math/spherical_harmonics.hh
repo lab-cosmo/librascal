@@ -119,9 +119,8 @@ namespace rascal {
         size_t max_angular);
 
 
-    // New class which contains the above function to save temporary results for
-    // improved performance speed
-    // 
+    // New class which contains the above functions to precompute as much as
+    // possible.
     class SphericalHarmonics {
      protected:
       using Matrix_Ref = typename Eigen::Ref<const Matrix_t>;
@@ -168,12 +167,10 @@ namespace rascal {
                 -1.0 * sqrt((lm1sq - msq) / (4 * lm1sq - 1.0));
           }
         }
-        const double SQRT_INV_2PI = sqrt(0.5 / PI);
-        double l_accum{SQRT_INV_2PI};
         this->angular_coeffs1.reserve(this->max_angular);
         this->angular_coeffs2.reserve(this->max_angular);
         for (size_t angular_l{0}; angular_l < this->max_angular + 1; angular_l++) {
-          angular_coeffs1.push_back(sqrt(2 * angular_l + 1) * l_accum);
+          angular_coeffs1.push_back(sqrt(2 * angular_l + 1));
           angular_coeffs2.push_back(-sqrt(1.0 + 0.5 / angular_l));
         }
       }
@@ -211,8 +208,10 @@ namespace rascal {
                      this->assoc_legendre_polynom(angular_l - 2, m_count));
           }
           this->assoc_legendre_polynom(angular_l, angular_l - 1) =
-              cos_theta * sqrt(2 * angular_l + 1) * l_accum;
-          l_accum = l_accum * sin_theta * -sqrt(1.0 + 0.5 / angular_l);
+              //cos_theta * sqrt(2 * angular_l + 1) * l_accum;
+              cos_theta * this->angular_coeffs1.at(angular_l) * l_accum;
+          //l_accum = l_accum * sin_theta * -sqrt(1.0 + 0.5 / angular_l);
+          l_accum = l_accum * sin_theta * this->angular_coeffs2.at(angular_l);
           this->assoc_legendre_polynom(angular_l, angular_l) = l_accum;
         }
       }
