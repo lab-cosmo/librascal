@@ -657,6 +657,8 @@ namespace rascal {
     internal::CutoffFunctionType cutoff_function_type{};
 
     Hypers_t hypers{};
+
+    math::SphericalHarmonics spherical_harmonics{};
   };
 
   // compute classes template construction
@@ -706,7 +708,7 @@ namespace rascal {
   template <class Mngr>
   template <internal::CutoffFunctionType FcType,
             internal::RadialBasisType RadialType,
-            internal::AtomicSmearingType SmearingType>
+            internal::AtomicSmearingType SmearingType>      
   void RepresentationManagerSphericalExpansion<Mngr>::compute_impl() {
     using math::PI;
     using math::pow;
@@ -722,6 +724,8 @@ namespace rascal {
     this->expansions_coefficients.clear();
     this->expansions_coefficients.set_shape(n_row, n_col);
     this->expansions_coefficients.resize();
+    
+    this->spherical_harmonics.precompute(this->max_angular);
 
     for (auto center : this->structure_manager) {
       auto & coefficients_center = this->expansions_coefficients[center];
@@ -749,14 +753,46 @@ namespace rascal {
         Key_t neigh_type{neigh.get_atom_type()};
 
         // Note: the copy _should_ be optimized out (RVO)
-        auto harmonics =
-            math::compute_spherical_harmonics(direction, this->max_angular);
+        this->spherical_harmonics.compute(direction);
+        // spherical_harmonics_class@TODO(felix) This is the only way I could
+        // make this work, please be invited to change this into one line
+        // below are all tries.
+        // If ./main_test_suite -t feature_block_sparse_test runs then
+        //auto harmonic{
+        //    this->spherical_harmonics.get_harmonics()};
+        //auto harmonics{harmonic * (cutoff_function->f_c(dist))};
+        math::Vector_t harmonics{this->spherical_harmonics.get_harmonics() * (cutoff_function->f_c(dist))};
+
+        ///////////////////////////////////////////////////////////////////////////
+        // The cases below do not resolve the multiplication properly and result
+        // in a CwiseBinaryOp 
+        ///////////////////////////////////////////////////////////////////////////
+
+        // auto harmonics{this->spherical_harmonics.get_harmonics() * (cutoff_function->f_c(dist))};
+
+        // still same error as below
+        //auto harmonics{this->spherical_harmonics.get_harmonics() * cutoff_function->f_c(dist)};
+
+        // ends up in Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double> 
+        //auto harmonics =
+        //    this->spherical_harmonics.get_harmonics() * cutoff_function->f_c(dist);
+
+        ///////////////////////////////////////////////////////////////////////////
+        // earlier solution 
+        ///////////////////////////////////////////////////////////////////////////
+
+        //auto harmonics =
+        //    math::compute_spherical_harmonics(direction, this->max_angular);
+
+        //harmonics *= cutoff_function->f_c(dist);
+
         auto neighbour_contribution =
             radial_integral
                 ->template compute_neighbour_contribution<SmearingType>(dist,
                                                                         neigh);
 
-        harmonics *= cutoff_function->f_c(dist);
+
+
         size_t lm_pos{0}, lm_size{0};
         auto && coefficients_center_by_type{coefficients_center[neigh_type]};
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
@@ -767,7 +803,7 @@ namespace rascal {
                 (neighbour_contribution(radial_n, l) *
                  harmonics.segment(lm_pos, lm_size));
             lm_pos += lm_size;
-          }
+         }
         }
       }  // for (neigh : center)
     }    // for (center : structure_manager)
