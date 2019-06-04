@@ -118,27 +118,26 @@ namespace rascal {
         const Eigen::Ref<const Eigen::Vector3d> & direction,
         size_t max_angular);
 
-
     // New class which contains the above functions to precompute as much as
     // possible.
     class SphericalHarmonics {
      protected:
       using Matrix_Ref = typename Eigen::Ref<const Matrix_t>;
       using Vector_Ref = typename Eigen::Ref<const Vector_t>;
-      //using Vector_Ref = typename Eigen::Ref<const Eigen::VectorXd>;
+      // using Vector_Ref = typename Eigen::Ref<const Eigen::VectorXd>;
 
       size_t max_angular{0};
       // TODO(felix) this is super quick and dirty, but I do not know how to do
-      // this in a clean way for coefficients which does not have a name. 
+      // this in a clean way for coefficients which does not have a name.
       std::vector<double> angular_coeffs1{};
       std::vector<double> angular_coeffs2{};
       Vector_t harmonics{};
       Matrix_t assoc_legendre_polynom{};
       Matrix_t coeff_a{};
       Matrix_t coeff_b{};
-      
+
      public:
-      SphericalHarmonics (){}
+      SphericalHarmonics() {}
 
       // Precomputes as many parameters as possible
       void precompute(size_t max_angular) {
@@ -146,30 +145,32 @@ namespace rascal {
         using std::sqrt;
         this->max_angular = max_angular;
         /// Technically abs(sin(θ)), but θ only goes from [0, π)
-        //double sin_theta = sqrt(1.0 - pow(cos_theta, 2));
+        // double sin_theta = sqrt(1.0 - pow(cos_theta, 2));
         // Matrix_t assoc_legendre_polynom(max_angular + 1, max_angular +
         // 1);
         this->assoc_legendre_polynom =
             Matrix_t::Zero(this->max_angular + 1, this->max_angular + 1);
-        this->coeff_a = Matrix_t::Zero(this->max_angular + 1,
-            2 * this->max_angular + 1);
-        this->coeff_b = Matrix_t::Zero(this->max_angular + 1,
-            2 * this->max_angular + 1);
+        this->coeff_a =
+            Matrix_t::Zero(this->max_angular + 1, 2 * this->max_angular + 1);
+        this->coeff_b =
+            Matrix_t::Zero(this->max_angular + 1, 2 * this->max_angular + 1);
 
         for (size_t angular_l{0}; angular_l < this->max_angular + 1;
-            angular_l++) {
+             angular_l++) {
           double lsq = angular_l * angular_l;
           double lm1sq = (angular_l - 1) * (angular_l - 1);
           for (size_t m_count{0}; m_count < angular_l + 1; m_count++) {
             double msq = m_count * m_count;
-            this->coeff_a(angular_l, m_count) = sqrt((4 * lsq - 1.0) / (lsq - msq));
+            this->coeff_a(angular_l, m_count) =
+                sqrt((4 * lsq - 1.0) / (lsq - msq));
             this->coeff_b(angular_l, m_count) =
                 -1.0 * sqrt((lm1sq - msq) / (4 * lm1sq - 1.0));
           }
         }
         this->angular_coeffs1.reserve(this->max_angular);
         this->angular_coeffs2.reserve(this->max_angular);
-        for (size_t angular_l{0}; angular_l < this->max_angular + 1; angular_l++) {
+        for (size_t angular_l{0}; angular_l < this->max_angular + 1;
+             angular_l++) {
           angular_coeffs1.push_back(sqrt(2 * angular_l + 1));
           angular_coeffs2.push_back(-sqrt(1.0 + 0.5 / angular_l));
         }
@@ -183,10 +184,11 @@ namespace rascal {
         double sin_theta = sqrt(1.0 - pow(cos_theta, 2));
         const double SQRT_INV_2PI = sqrt(0.5 / PI);
         // Compute the associated Legendre polynomials: l < 2 are special cases
-        // These include the normalization factors usually needed in the spherical
-        // harmonics
+        // These include the normalization factors usually needed in the
+        // spherical harmonics
         double l_accum{SQRT_INV_2PI};
-        for (size_t angular_l{0}; angular_l < this->max_angular + 1; angular_l++) {
+        for (size_t angular_l{0}; angular_l < this->max_angular + 1;
+             angular_l++) {
           if (angular_l == 0) {
             this->assoc_legendre_polynom(angular_l, 0) = SQRT_INV_2PI;
             continue;
@@ -203,14 +205,15 @@ namespace rascal {
           for (size_t m_count{0}; m_count < angular_l - 1; ++m_count) {
             this->assoc_legendre_polynom(angular_l, m_count) =
                 this->coeff_a(angular_l, m_count) *
-                (cos_theta * this->assoc_legendre_polynom(angular_l - 1, m_count) +
+                (cos_theta *
+                     this->assoc_legendre_polynom(angular_l - 1, m_count) +
                  this->coeff_b(angular_l, m_count) *
                      this->assoc_legendre_polynom(angular_l - 2, m_count));
           }
           this->assoc_legendre_polynom(angular_l, angular_l - 1) =
-              //cos_theta * sqrt(2 * angular_l + 1) * l_accum;
+              // cos_theta * sqrt(2 * angular_l + 1) * l_accum;
               cos_theta * this->angular_coeffs1.at(angular_l) * l_accum;
-          //l_accum = l_accum * sin_theta * -sqrt(1.0 + 0.5 / angular_l);
+          // l_accum = l_accum * sin_theta * -sqrt(1.0 + 0.5 / angular_l);
           l_accum = l_accum * sin_theta * this->angular_coeffs2.at(angular_l);
           this->assoc_legendre_polynom(angular_l, angular_l) = l_accum;
         }
@@ -221,21 +224,22 @@ namespace rascal {
        *
        * Follows the algorithm described in https://arxiv.org/abs/1410.1748
        *
-       * In brief, this computes the real spherical harmonics where the imaginary
-       * components of the usual complex functions are instead stored in the
-       * negative-m indices:
+       * In brief, this computes the real spherical harmonics where the
+       * imaginary components of the usual complex functions are instead stored
+       * in the negative-m indices:
        *
        *               ╭ √((2l+1)/(2*π) * (l+m)!/(l-m)!) P_l^-m(cos(θ)) sin(-mφ)
-       *               |                                                  for m<0
-       * Y_l^m(θ, φ) = ┤ √((2l+1)/(4*π)) P_l(cos(θ)) for m==0
+       *               |                                                  for
+       * m<0 Y_l^m(θ, φ) = ┤ √((2l+1)/(4*π)) P_l(cos(θ)) for m==0
        *               |
        *               ╰ √((2l+1)/(2*π) * (l-m)!/(l+m)!) P_l^m(cos(θ)) cos(mφ)
-       *                                                                  for m>0
+       *                                                                  for
+       * m>0
        *
        * In case you're wondering why it's 1/2π on the m=/=0 components (instead
-       * of 1/4π), there's an extra factor of 1/2 that comes from integrating cos²
-       * or sin² over the full circle of φ, so these are indeed normalized in the
-       * same sense as the complex spherical harmonics:
+       * of 1/4π), there's an extra factor of 1/2 that comes from integrating
+       * cos² or sin² over the full circle of φ, so these are indeed normalized
+       * in the same sense as the complex spherical harmonics:
        *
        * ∫∫_(Sphere) dΩ Y_l^m(θ, φ) Y_l'^m'(θ, φ) = δ_(ll')δ_(mm')
        *
@@ -243,7 +247,8 @@ namespace rascal {
        * associated Legendre polynomials defined above; however, all other
        * normalization factors are.)
        *
-       * @param direction Unit vector giving the angles (arguments for the Y_l^m)
+       * @param direction Unit vector giving the angles (arguments for the
+       * Y_l^m)
        *
        * @param max_angular Compute up to this angular momentum number (l_max)
        *
@@ -270,18 +275,20 @@ namespace rascal {
         this->harmonics =
             Vector_t::Zero((this->max_angular + 1) * (this->max_angular + 1));
         this->compute_assoc_legendre_polynom(cos_theta);
-        //this->compute_assoc_legendre_polynom(cos_theta, this->max_angular);
+        // this->compute_assoc_legendre_polynom(cos_theta, this->max_angular);
         // Matrix_t assoc_legendre_polynom =
         //     compute_assoc_legendre_polynom(cos_theta, this->max_angular);
-        MatrixX2_t cos_sin_m_phi =
-            compute_cos_sin_angle_multiples(cos_phi, sin_phi, this->max_angular);
+        MatrixX2_t cos_sin_m_phi = compute_cos_sin_angle_multiples(
+            cos_phi, sin_phi, this->max_angular);
 
         size_t lm_base{0};  // starting point for storage
-        for (size_t angular_l{0}; angular_l < this->max_angular + 1; angular_l++) {
+        for (size_t angular_l{0}; angular_l < this->max_angular + 1;
+             angular_l++) {
           for (size_t m_count{0}; m_count < angular_l + 1; m_count++) {
             if (m_count == 0) {
               this->harmonics(lm_base + angular_l) =
-                  this->assoc_legendre_polynom(angular_l, m_count) * INV_SQRT_TWO;
+                  this->assoc_legendre_polynom(angular_l, m_count) *
+                  INV_SQRT_TWO;
             } else {
               // uses symmetry of spherical harmonics,
               // careful with the storage order
@@ -295,7 +302,7 @@ namespace rascal {
           }    // for (m_count in [0, l])
           lm_base += 2 * angular_l + 1;
         }  // for (l in [0, lmax])
-      }  // compute_spherical_harmonics()
+      }    // compute_spherical_harmonics()
 
       /**
        * Compute cos(mφ) and sin(mφ) from the recurrence relations
@@ -340,10 +347,7 @@ namespace rascal {
         return Matrix_Ref(this->assoc_legendre_polynom);
       }
 
-      inline Vector_Ref get_harmonics() {
-        return Vector_Ref(this->harmonics);
-      }
-
+      inline Vector_Ref get_harmonics() { return Vector_Ref(this->harmonics); }
     };
 
   }  // namespace math

@@ -708,7 +708,7 @@ namespace rascal {
   template <class Mngr>
   template <internal::CutoffFunctionType FcType,
             internal::RadialBasisType RadialType,
-            internal::AtomicSmearingType SmearingType>      
+            internal::AtomicSmearingType SmearingType>
   void RepresentationManagerSphericalExpansion<Mngr>::compute_impl() {
     using math::PI;
     using math::pow;
@@ -724,7 +724,7 @@ namespace rascal {
     this->expansions_coefficients.clear();
     this->expansions_coefficients.set_shape(n_row, n_col);
     this->expansions_coefficients.resize();
-    
+
     this->spherical_harmonics.precompute(this->max_angular);
 
     for (auto center : this->structure_manager) {
@@ -754,7 +754,8 @@ namespace rascal {
 
         // Note: the copy _should_ be optimized out (RVO)
         this->spherical_harmonics.compute(direction);
-        math::Vector_t harmonics{this->spherical_harmonics.get_harmonics() * (cutoff_function->f_c(dist))};
+        math::Vector_t harmonics{this->spherical_harmonics.get_harmonics() *
+                                 (cutoff_function->f_c(dist))};
 
         auto neighbour_contribution =
             radial_integral
@@ -770,7 +771,7 @@ namespace rascal {
                 (neighbour_contribution(radial_n, l) *
                  harmonics.segment(lm_pos, lm_size));
             lm_pos += lm_size;
-         }
+          }
         }
       }  // for (neigh : center)
     }    // for (center : structure_manager)
