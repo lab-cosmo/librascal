@@ -755,9 +755,11 @@ namespace rascal {
         // Note: the copy _should_ be optimized out (RVO)
         this->spherical_harmonics.compute(direction);
         math::Vector_t harmonics{this->spherical_harmonics.get_harmonics() * (cutoff_function->f_c(dist))};
+
         auto neighbour_contribution =
             radial_integral
                 ->template compute_neighbour_contribution<SmearingType>(dist,
+                                                                        neigh);
         size_t lm_pos{0}, lm_size{0};
         auto && coefficients_center_by_type{coefficients_center[neigh_type]};
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
