@@ -493,8 +493,7 @@ namespace rascal {
    * development.
    */
   template <class StructureManager>
-  class CalculatorSphericalExpansion
-      : public CalculatorBase {
+  class CalculatorSphericalExpansion : public CalculatorBase {
    public:
     using Parent = CalculatorBase;
     using Manager_t = StructureManager;
@@ -576,19 +575,18 @@ namespace rascal {
      * @throw logic_error if an invalid option or combination of options is
      *                    specified in the container
      */
-    CalculatorSphericalExpansion(ManagerPtr_t sm,
-                                            const Hypers_t & hyper)
+    CalculatorSphericalExpansion(ManagerPtr_t sm, const Hypers_t & hyper)
         : expansions_coefficients{*sm}, structure_manager{std::move(sm)} {
       this->set_hyperparameters(hyper);
     }
 
     //! Copy constructor
-    CalculatorSphericalExpansion(
-        const CalculatorSphericalExpansion & other) = delete;
+    CalculatorSphericalExpansion(const CalculatorSphericalExpansion & other) =
+        delete;
 
     //! Move constructor
-    CalculatorSphericalExpansion(
-        CalculatorSphericalExpansion && other) = default;
+    CalculatorSphericalExpansion(CalculatorSphericalExpansion && other) =
+        default;
 
     //! Destructor
     virtual ~CalculatorSphericalExpansion() = default;
@@ -678,8 +676,7 @@ namespace rascal {
 
   template <class Mngr>
   template <internal::CutoffFunctionType FcType>
-  void CalculatorSphericalExpansion<
-      Mngr>::compute_by_radial_contribution() {
+  void CalculatorSphericalExpansion<Mngr>::compute_by_radial_contribution() {
     // specialize based on the type of radial contribution
     using internal::AtomicSmearingType;
     using internal::RadialBasisType;

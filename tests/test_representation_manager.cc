@@ -88,10 +88,11 @@ namespace rascal {
                             CalculatorSortedCoulomb>,
       RepresentationFixture<MultipleStructureSphericalExpansion,
                             CalculatorSphericalExpansion>,
-      RepresentationFixture<MultipleStructureSOAP, CalculatorSphericalInvariants>>;
+      RepresentationFixture<MultipleStructureSOAP,
+                            CalculatorSphericalInvariants>>;
 
-  using fixtures_ref_test = boost::mpl::list<RepresentationFixture<
-      SortedCoulombTestData, CalculatorSortedCoulomb>>;
+  using fixtures_ref_test = boost::mpl::list<
+      RepresentationFixture<SortedCoulombTestData, CalculatorSortedCoulomb>>;
 
   /* ---------------------------------------------------------------------- */
   /**

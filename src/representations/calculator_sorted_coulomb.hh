@@ -191,12 +191,10 @@ namespace rascal {
     }
 
     //! Copy constructor
-    CalculatorSortedCoulomb(
-        const CalculatorSortedCoulomb & other) = delete;
+    CalculatorSortedCoulomb(const CalculatorSortedCoulomb & other) = delete;
 
     //! Move constructor
-    CalculatorSortedCoulomb(
-        CalculatorSortedCoulomb && other) = default;
+    CalculatorSortedCoulomb(CalculatorSortedCoulomb && other) = default;
 
     //! Destructor
     virtual ~CalculatorSortedCoulomb() = default;

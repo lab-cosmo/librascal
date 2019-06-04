@@ -69,12 +69,10 @@ namespace rascal {
     virtual ~CalculatorBase() = default;
 
     //! Copy assignment operator
-    CalculatorBase &
-    operator=(const CalculatorBase & other) = delete;
+    CalculatorBase & operator=(const CalculatorBase & other) = delete;
 
     //! Move assignment operator
-    CalculatorBase &
-    operator=(CalculatorBase && other) = default;
+    CalculatorBase & operator=(CalculatorBase && other) = default;
 
     //! Pure Virtual Function to set hyperparameters of the representation
     virtual void set_hyperparameters(const Hypers_t &) = 0;

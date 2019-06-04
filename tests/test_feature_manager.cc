@@ -34,13 +34,11 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   // TODO(felix) define more test that could be streamlined
   // gets a list of fixtures for all the different possible structure managers
-  using multiple_fixtures =
-      boost::mpl::list<FeatureFixture<double, FeatureManagerDense,
-                                      CalculatorSortedCoulomb,
-                                      MultipleStructureSortedCoulomb>,
-                       FeatureFixture<float, FeatureManagerDense,
-                                      CalculatorSortedCoulomb,
-                                      MultipleStructureSortedCoulomb>>;
+  using multiple_fixtures = boost::mpl::list<
+      FeatureFixture<double, FeatureManagerDense, CalculatorSortedCoulomb,
+                     MultipleStructureSortedCoulomb>,
+      FeatureFixture<float, FeatureManagerDense, CalculatorSortedCoulomb,
+                     MultipleStructureSortedCoulomb>>;
 
   /* ---------------------------------------------------------------------- */
   /**

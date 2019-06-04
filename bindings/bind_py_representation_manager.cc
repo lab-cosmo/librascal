@@ -67,8 +67,7 @@ decltype(auto) add_representation_manager(py::module & mod, py::module &) {
  *
  */
 void add_representation_managers(py::module & mod, py::module & m_throwaway) {
-  py::class_<CalculatorBase>(m_throwaway,
-                                        "CalculatorBase");
+  py::class_<CalculatorBase>(m_throwaway, "CalculatorBase");
   /*-------------------- rep-bind-start --------------------*/
   // Defines a particular structure manager type
   using Manager_t =

@@ -140,10 +140,12 @@ namespace rascal {
     }
 
     //! Copy constructor
-    CalculatorSphericalInvariants(const CalculatorSphericalInvariants & other) = delete;
+    CalculatorSphericalInvariants(const CalculatorSphericalInvariants & other) =
+        delete;
 
     //! Move constructor
-    CalculatorSphericalInvariants(CalculatorSphericalInvariants && other) = default;
+    CalculatorSphericalInvariants(CalculatorSphericalInvariants && other) =
+        default;
 
     //! Destructor
     virtual ~CalculatorSphericalInvariants() = default;
