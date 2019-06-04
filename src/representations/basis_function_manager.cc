@@ -86,7 +86,7 @@ namespace rascal {  // NOLINT
       const auto & Rij = rij[0];
       return cos(kappa * Rij);
     }
-      // remark: possible direct use of cosine
+    // remark: possible direct use of cosine
     case BasisFunType::angular1: {
       const auto & zeta = param[0];
       const auto & lambda = param[1];
@@ -98,7 +98,7 @@ namespace rascal {  // NOLINT
       return pow(2., 1 - zeta) * pow(1. + lambda * cos(thetaijk), zeta) *
              exp(-eta * (Rij * Rij + Rik * Rik + Rjk * Rjk));
     }
-      // remark: possible direct use of cosine?
+    // remark: possible direct use of cosine?
     case BasisFunType::angular2: {
       const auto & zeta = param[0];
       const auto & lambda = param[1];

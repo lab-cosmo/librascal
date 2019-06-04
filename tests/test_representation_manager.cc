@@ -231,6 +231,7 @@ namespace rascal {
                                test_representation(row_i, col_i))};
             BOOST_CHECK_LE(diff, 1e-12);
           }
+          break;
         }
       }
       manager_i += 1;

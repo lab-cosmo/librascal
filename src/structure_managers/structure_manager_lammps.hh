@@ -141,8 +141,9 @@ namespace rascal {
     //! return the index-th neighbour of the last atom in a cluster with
     //! cluster_size = 1 (atoms) which can be used to construct pairs
     template <size_t Order, size_t Layer>
-    inline int get_neighbour_atom_tag(
-        const ClusterRefKey<Order, Layer> & cluster, size_t index) const {
+    inline int
+    get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & cluster,
+                           size_t index) const {
       static_assert(Order == traits::MaxOrder - 1,
                     "this implementation only handles atoms and identify its "
                     "index-th neighbour.");
@@ -156,7 +157,7 @@ namespace rascal {
      * global LAMMPS atom tag.
      */
     inline int get_neighbour_atom_tag(const Parent &,
-                                                   size_t cluster_index) const {
+                                      size_t cluster_index) const {
       return this->ilist[cluster_index];
     }
 

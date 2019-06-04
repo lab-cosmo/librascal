@@ -44,7 +44,7 @@ namespace rascal {
    * tests. The manager is initialized in the initialization list of the
    * constructor. This is required for the usage with the PropertyFixtures,
    * since references have to be initialized in the intialization list of the
-   * constructor and every kind of Property object has a reference to its 
+   * constructor and every kind of Property object has a reference to its
    * corresponding ManagerImplementation. For an usage example, see in this
    * file the PropertyFixtures (e.g. AtomPropertyFixture).
    */
@@ -124,8 +124,6 @@ namespace rascal {
     ManagerPtr_t manager;
   };
 
-
-
   // #BUG8486@(markus), #BUG8486@(felix) I made new Fixtures, Multiple*Fixture
   // does not match this use case because I need the manager already initialized
   // in the initialization list of the constructor, an the old PairFixtures
@@ -137,7 +135,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   /*
    * A fixture for testing properties. The StackFixture, which it inherits from,
-   * provides the ManagerImplementation for the property. 
+   * provides the ManagerImplementation for the property.
    */
 
   template <class StackFixture>
@@ -229,7 +227,7 @@ namespace rascal {
   };
 
   /* Helper struct to unpack the tuple arguments and pack them into a
-   * boost::mpl::list. 
+   * boost::mpl::list.
    */
   template <typename ta>
   struct pack_into_list;

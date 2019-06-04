@@ -59,6 +59,7 @@ class SOAP(object):
     def __init__(self, interaction_cutoff, cutoff_smooth_width,
                  max_radial, max_angular, gaussian_sigma_type,
                  gaussian_sigma_constant=0., n_species=1,
+                 cutoff_function_type="Cosine",radial_basis="GTO",
                  soap_type="PowerSpectrum", normalize=True):
         """Construct a SphericalExpansion representation
 
@@ -68,14 +69,35 @@ class SOAP(object):
         self.name = 'soap'
         self.hypers = dict()
         self.update_hyperparameters(
-            interaction_cutoff=interaction_cutoff,
-            cutoff_smooth_width=cutoff_smooth_width,
             max_radial=max_radial, max_angular=max_angular,
-            gaussian_sigma_type=gaussian_sigma_type,
-            gaussian_sigma_constant=gaussian_sigma_constant,
             n_species=n_species,
             soap_type=soap_type,
-            normalize=normalize)
+            normalize=normalize
+        )
+        cutoff_function = dict(
+            type="Cosine",
+            cutoff=dict(
+                value=interaction_cutoff,
+                unit='A'
+            ),
+            smooth_width=dict(
+                value=cutoff_smooth_width,
+                unit='A'
+            ),
+        )
+        gaussian_density = dict(
+            type=gaussian_sigma_type,
+            gaussian_sigma=dict(
+                value=gaussian_sigma_constant,
+                unit='A'
+            ),
+        )
+        radial_contribution = dict(
+            type=radial_basis,
+        )
+        self.update_hyperparameters(cutoff_function=cutoff_function,
+                                    gaussian_density=gaussian_density,
+                                    radial_contribution=radial_contribution,)
 
         self.nl_options = [
             dict(name='centers', args=[]),
@@ -105,13 +127,15 @@ class SOAP(object):
         allowed_keys = {'interaction_cutoff', 'cutoff_smooth_width',
                         'max_radial', 'max_angular', 'gaussian_sigma_type',
                         'gaussian_sigma_constant', 'n_species', 'soap_type',
-                        'normalize'}
+                        'normalize', 'cutoff_function', 'gaussian_density',
+                        'radial_contribution'}
+
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}
         self.hypers.update(hypers_clean)
         return
 
-    def transform(self, frames):
+    def transform(self, frames, features=None):
         """Compute the representation.
 
         Parameters
@@ -125,19 +149,34 @@ class SOAP(object):
             Object containing the representation
 
         """
+
+        if features is None:
+            features = FeatureFactory(self.feature_options)
+
         structures = [convert_to_structure(frame) for frame in frames]
 
         n_atoms = [0]+[len(structure['atom_types'])
                        for structure in structures]
         structure_ids = np.cumsum(n_atoms)[:-1]
         n_centers = np.sum(n_atoms)
-
-        features = FeatureFactory(self.feature_options)
-
+        ii = 0
         for structure in structures:
-            self.manager.update(**structure)
-            self.representation.compute()
-            features.append(self.representation)
+            try:
+                self.manager.update(**structure)
+            except:
+                print("Structure NL {} failed".format(ii))
+
+            try:
+                self.representation.compute()
+            except:
+                print("Structure Rep computation {} failed".format(ii))
+
+            try:
+                features.append(self.representation)
+            except:
+                print("Structure data gather {} failed".format(ii))
+
+            ii+=1
 
         return features
 

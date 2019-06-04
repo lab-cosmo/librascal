@@ -255,7 +255,7 @@ namespace rascal {
 
     //! dummy function, since no neighbours are present her
     inline int get_neighbour_atom_tag(const Parent & /*parent*/,
-                                                   size_t index) const {
+                                      size_t index) const {
       // dummy argument is the atom itself, because if does not make sense at
       // this order
       return index;
@@ -263,9 +263,9 @@ namespace rascal {
 
     //! Dummy function, since neighbours are not present at this Order
     template <size_t Order, size_t Layer>
-    inline int get_neighbour_atom_tag(
-        const ClusterRefKey<Order, Layer> & /*cluster*/,
-        size_t /*index*/) const {
+    inline int
+    get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & /*cluster*/,
+                           size_t /*index*/) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms.");
       return 0;
@@ -281,16 +281,6 @@ namespace rascal {
 
     //! Function for returning the number of atoms
     size_t get_nb_clusters(size_t order) const;
-
-    /**
-     * Function for reading data from a JSON file in the ASE format. See the
-     * definition of <code>AtomicStructure</code> and adapt the fields, which
-     * should be read to your case.
-     * TODO(markus) move this function to AtomicStructure
-     */
-    decltype(auto) read_structure_from_json(const std::string filename);
-
-    // TODO(markus): add function to read from XYZ files
 
     /**
      * invokes the initialisation/reinitialisation based on existing

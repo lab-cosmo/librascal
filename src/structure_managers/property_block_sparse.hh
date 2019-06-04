@@ -4,12 +4,11 @@
  * @author Till Junge <till.junge@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
  *
- * @date   03 Aug 2018
+ * @date   03 April 2019
  *
- * @brief implementation of non-templated base class for Properties, Properties
- *        are atom-, pair-, triplet-, etc-related values
+ * @brief implementation of a property container that has sparse keys
  *
- * Copyright © 2018 Till Junge, Felix Musil, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2019 Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -39,6 +38,7 @@
 #include <map>
 #include <algorithm>
 #include <iterator>
+#include <type_traits>
 
 namespace rascal {
 
@@ -62,24 +62,140 @@ namespace rascal {
       }
     };
 
+    template <bool IsSorted>
+    struct Sorted {};
+
+    /**
+     * Special key container that ensures its content is sorted.
+     */
+    template <class KeyType>
+    struct SortedKey {
+      using Key_t = KeyType;
+      Key_t data;
+      using Value_t = typename Key_t::value_type;
+
+      explicit SortedKey(const Key_t & key) : data{std::move(key)} {
+        if (data.size() > 1) {
+          std::sort(data.begin(), data.end());
+        }
+      }
+
+      SortedKey(const Sorted<false> &, const Key_t & key) : SortedKey{key} {}
+
+      SortedKey(const Sorted<true> &, const Key_t & key)
+          : data{std::move(key)} {}
+
+      Key_t copy_sort(const Key_t & key) {
+        Key_t skey{key};
+        if (key.size() > 1) {
+          std::sort(skey.begin(), skey.end());
+        }
+        return skey;
+      }
+
+      //! access or insert specified element. use with caution !
+      inline Value_t & operator[](const size_t & id) { return this->data[id]; }
+
+      inline const Key_t & get_key() const { return data; }
+    };
+
     template <class K, class V>
     class InternallySortedKeyMap {
      public:
       using MyMap_t = std::map<K, V>;
-
-      //! the data holder. only the overriden/essential functionalities are
-      //! directly exposed
-      MyMap_t data{};
+      // using Map_t = std::unordered_map<K, std::array<int, 3>, Hash<K>>;
+      using Map_t = std::map<K, std::tuple<int, int, int>>;
+      using Precision_t = typename V::value_type;
+      using Data_t = Eigen::Array<Precision_t, Eigen::Dynamic, 1>;
+      //! the data holder.
+      Data_t data{};
+      Map_t map{};
 
       // some member types
       using key_type = typename MyMap_t::key_type;
-      using mapped_type = typename MyMap_t::mapped_type;
-      using value_type = typename MyMap_t::value_type;
+      using mapped_type = V;
+      using value_type = std::pair<const K, mapped_type>;
       using size_type = typename MyMap_t::size_type;
-      using reference = typename MyMap_t::reference;
-      using const_reference = typename MyMap_t::const_reference;
-      using iterator = typename MyMap_t::iterator;
-      using const_iterator = typename MyMap_t::const_iterator;
+      using reference = typename Eigen::Map<V>;
+      using const_reference = typename Eigen::Map<const V>;
+
+      using SortedKey_t = SortedKey<key_type>;
+
+      // member typedefs provided through inheriting from std::iterator
+      template <typename Value>
+      class Iterator
+          : public std::iterator<
+                std::bidirectional_iterator_tag,
+                std::pair<K, typename std::remove_const<Value>::type>> {
+       public:
+        using Self_t = Iterator<Value>;
+
+        // to handle properly const and normal cases
+        using It_t = typename std::conditional<std::is_const<Value>::value,
+                                               typename Map_t::const_iterator,
+                                               typename Map_t::iterator>::type;
+
+        using MyData_t = typename std::conditional<std::is_const<Value>::value,
+                                                   const Data_t, Data_t>::type;
+        // Map<const Matrix> is already write-only so remove the const
+        // which is used to determine the cv of the iterator
+        using Value_t = typename std::remove_const<Value>::type;
+
+        Iterator(MyData_t & data, It_t map_iterator)
+            : data{data}, map_iterator{map_iterator} {}
+
+        Self_t & operator++() {
+          map_iterator++;
+          // this->update_current_data();
+          return *this;
+        }
+        Self_t operator++(int) {
+          Self_t retval = *this;
+          ++(*this);
+          return retval;
+        }
+        std::pair<K, Value_t> operator*() const {
+          auto && el{*this->map_iterator};
+          auto && key{el.first};
+          auto && pos{el.second};
+          return std::make_pair(key,
+                                Value_t(&data[std::get<0>(pos)],
+                                        std::get<1>(pos), std::get<2>(pos)));
+        }
+        Self_t & operator--() {
+          map_iterator--;
+          // this->update_current_data();
+          return *this;
+        }
+        Self_t operator--(int) {
+          Self_t retval = *this;
+          --(*this);
+          return retval;
+        }
+        bool operator==(const Self_t & rhs) const {
+          return map_iterator == rhs.map_iterator;
+        }
+        bool operator!=(const Self_t & rhs) const {
+          return map_iterator != rhs.map_iterator;
+        }
+
+       protected:
+        MyData_t & data;
+        It_t map_iterator;
+      };
+
+      using iterator = Iterator<reference>;
+      using const_iterator = Iterator<const const_reference>;
+
+      iterator begin() noexcept { return iterator(data, map.begin()); }
+      iterator end() noexcept { return iterator(data, map.end()); }
+
+      const_iterator begin() const noexcept {
+        return const_iterator(data, map.begin());
+      }
+      const_iterator end() const noexcept {
+        return const_iterator(data, map.end());
+      }
 
       //! Default constructor
       InternallySortedKeyMap() = default;
@@ -108,58 +224,133 @@ namespace rascal {
        * The elements of the key are sorted in ascending order.
        *
        */
-      mapped_type & at(const key_type & key) {
-        key_type skey{this->copy_sort(key)};
-        return this->data.at(skey);
+      reference at(const key_type & key) {
+        SortedKey_t skey{key};
+        return this->at(skey);
       }
-      const mapped_type & at(const key_type & key) const {
-        key_type skey{this->copy_sort(key)};
-        return this->data.at(skey);
+      const_reference at(const key_type & key) const {
+        SortedKey_t skey{key};
+        return this->at(skey);
       }
       //! access or insert specified element
-      mapped_type & operator[](const key_type & key) {
-        key_type skey{this->copy_sort(key)};
-        return this->data[skey];
+      reference operator[](const key_type & key) {
+        SortedKey_t skey{key};
+        return this->operator[](skey);
       }
-      mapped_type & operator[](key_type && key) {
-        key_type skey{this->copy_sort(key)};
-        return this->data[skey];
+      const_reference operator[](const key_type & key) const {
+        SortedKey_t skey{key};
+        return this->operator[](skey);
+      }
+
+      /**
+       * Same as above but does not try to sort since we know it already is.
+       */
+      reference at(const SortedKey_t & skey) {
+        auto & pos{this->map.at(skey.get_key())};
+        return reference(&this->data[std::get<0>(pos)], std::get<1>(pos),
+                         std::get<2>(pos));
+      }
+
+      const_reference at(const SortedKey_t & skey) const {
+        auto & pos{this->map.at(skey.get_key())};
+        return const_reference(&this->data[std::get<0>(pos)], std::get<1>(pos),
+                               std::get<2>(pos));
+      }
+      //! access or insert specified element
+      reference operator[](const SortedKey_t & skey) {
+        auto & pos{this->map[skey.get_key()]};
+        return reference(&this->data[std::get<0>(pos)], std::get<1>(pos),
+                         std::get<2>(pos));
+      }
+      const_reference operator[](const SortedKey_t & skey) const {
+        auto & pos{this->map[skey.get_key()]};
+        return const_reference(&this->data[std::get<0>(pos)], std::get<1>(pos),
+                               std::get<2>(pos));
+      }
+
+      /**
+       * resize the underlying data to the proper size and can initialize
+       * the elements
+       */
+      template <typename Key_List>
+      void resize(const Key_List & keys, const int & n_row, const int & n_col,
+                  const Precision_t & val) {
+        this->resize(keys, n_row, n_col);
+        this->data = val;
+      }
+
+      template <typename Key_List>
+      void resize(const Key_List & keys, const int & n_row, const int & n_col) {
+        std::vector<SortedKey_t> skeys{};
+        for (auto && key : keys) {
+          SortedKey_t skey{key};
+          skeys.push_back(skey);
+        }
+        this->resize(skeys, n_row, n_col);
+      }
+
+      void resize(const std::vector<SortedKey_t> & skeys, const int & n_row,
+                  const int & n_col) {
+        int new_size{0};
+        for (auto && skey : skeys) {
+          if (this->count(skey) == 0) {
+            auto && key{skey.get_key()};
+            this->map[key] = std::make_tuple(new_size, n_row, n_col);
+            new_size += static_cast<int>(n_row * n_col);
+          }
+        }
+        this->data.resize(new_size);
       }
 
       //! Returns the number of elements with key that compares equivalent to
       //! the specified argument, which is either 1 or 0 since this container
       //! does not allow duplicates.
-      template <class Key>
-      decltype(auto) count(const Key & key) {
-        key_type skey{this->copy_sort(key)};
-        return this->data.count(skey);
+      decltype(auto) count(const key_type & key) {
+        SortedKey_t skey{key};
+        return this->count(skey);
+      }
+
+      decltype(auto) count(const SortedKey_t & skey) {
+        return this->map.count(skey.get_key());
       }
 
       //! Erases all elements from the container. After this call, size()
       //! returns zero.
-      void clear() noexcept { this->data.clear(); }
-
-      template <typename... Args>
-      decltype(auto) emplace(Args &&... args) {
-        return this->data.emplace(std::forward<Args>(args)...);
+      void clear() noexcept {
+        this->data.clear();
+        this->map.clear();
       }
 
       /**
        * returns a vector of the valid keys of the map
        */
-      std::vector<key_type> get_keys() {
+      std::vector<key_type> get_keys() const {
         std::vector<key_type> keys{};
-        std::transform(this->begin(), this->end(), std::back_inserter(keys),
-                       RetrieveKey());
+        std::transform(this->map.begin(), this->map.end(),
+                       std::back_inserter(keys), RetrieveKey());
         return keys;
       }
 
-      iterator begin() noexcept { return this->data.begin(); }
-      const_iterator begin() const noexcept { return this->data.begin(); }
-      const_iterator cbegin() const noexcept { return this->data.cbegin(); }
-      iterator end() noexcept { return this->data.end(); }
-      const_iterator end() const noexcept { return this->data.end(); }
-      const_iterator cend() const noexcept { return this->data.cend(); }
+      /**
+       * Normalize the whole vector
+       */
+      inline void normalize() {
+        using ref = typename Eigen::Map<Eigen::VectorXd>;
+        auto data_ref{ref(&data[0], data.size())};
+        data_ref /= data_ref.norm();
+      }
+
+      inline void multiply_offdiagonal_elements_by(const double & fac) {
+        for (const auto & el : this->map) {
+          auto && pair_type{el.first};
+          auto && pos{el.second};
+          if (pair_type[0] != pair_type[1]) {
+            auto block{reference(&this->data[std::get<0>(pos)],
+                                 std::get<1>(pos), std::get<2>(pos))};
+            block *= fac;
+          }
+        }
+      }
 
      private:
       /**
@@ -171,40 +362,26 @@ namespace rascal {
           return keyValuePair.first;
         }
       };
-
-      key_type copy_sort(const key_type & key) {
-        key_type skey{key};
-        if (key.size() > 1) {
-          std::sort(skey.begin(), skey.end());
-        }
-        return skey;
-      }
-
-      key_type copy_sort(key_type && key) {
-        key_type skey{key};
-        if (key.size() > 1) {
-          std::sort(skey.begin(), skey.end());
-        }
-        return skey;
-      }
     };
+
   }  // namespace internal
   /* ---------------------------------------------------------------------- */
   /**
    * Typed ``property`` class definition, inherits from the base property class
    */
   template <typename Precision_t, size_t Order, size_t PropertyLayer,
-            class Manager>
+            class Manager, typename Key>
   class BlockSparseProperty : public PropertyBase {
    public:
     using Parent = PropertyBase;
     using Manager_t = Manager;
     using traits = typename Manager::traits;
 
-    using Dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, Eigen::Dynamic>;
+    using Dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, Eigen::Dynamic,
+                                  Eigen::RowMajor>;
     using dense_ref_t = Eigen::Map<Dense_t>;
     using sizes_t = std::vector<size_t>;
-    using Key_t = std::vector<int>;
+    using Key_t = Key;
     using Keys_t = std::set<Key_t>;
     using keys_list_t = std::vector<std::set<Key_t>>;
     using InputData_t = internal::InternallySortedKeyMap<Key_t, Dense_t>;
@@ -278,7 +455,6 @@ namespace rascal {
       // auto new_size = this->base_manager.nb_clusters(order);
       this->values.resize(new_size);
       this->center_sizes.resize(new_size);
-      this->keys_list.resize(new_size);
     }
 
     template <size_t CallerLayer>
@@ -296,8 +472,6 @@ namespace rascal {
      */
     void clear() {
       this->values.clear();
-      this->all_keys.clear();
-      this->keys_list.clear();
       this->center_sizes.clear();
     }
 
@@ -318,7 +492,8 @@ namespace rascal {
     }
 
     template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order,
-              std::enable_if_t<(Order_ == 1) and (CallerOrder > 1), int> = 0> // NOLINT
+        std::enable_if_t<(Order_ == 1) and (CallerOrder > 1), int> = // NOLINT
+                  0>  // NOLINT
     inline decltype(auto)
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
       return this->operator[](this->get_manager().get_atom_index(
@@ -437,12 +612,8 @@ namespace rascal {
 
       this->values.push_back(ref);
 
-      this->keys_list.emplace_back();
       size_t n_keys{0};
       for (const auto & element : ref) {
-        const auto & key{element.first};
-        this->all_keys.emplace(key);
-        this->keys_list.back().emplace(key);
         n_keys++;
       }
       this->center_sizes.push_back(n_keys * this->get_nb_comp());
@@ -454,14 +625,12 @@ namespace rascal {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");
-      return this->keys_list[id.get_cluster_index(CallerLayer)];
+      return this->values[id.get_cluster_index(CallerLayer)].get_keys();
     }
 
    protected:
     Data_t values{};  //!< storage for properties
     sizes_t center_sizes{};
-    Keys_t all_keys{};
-    keys_list_t keys_list{};
   };
 
 }  // namespace rascal

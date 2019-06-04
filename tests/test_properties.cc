@@ -712,7 +712,8 @@ namespace rascal {
     using ManagerTypeList_t = typename Parent::ManagerTypeHolder_t::type_list;
 
     using Key_t = std::vector<int>;
-    using BlockSparseProperty_t = BlockSparseProperty<double, 1, 0, Manager_t>;
+    using BlockSparseProperty_t =
+        BlockSparseProperty<double, 1, 0, Manager_t, Key_t>;
     using Dense_t = typename BlockSparseProperty_t::Dense_t;
     using InputData_t = typename BlockSparseProperty_t::InputData_t;
     using test_data_t = std::vector<InputData_t>;
@@ -741,9 +742,11 @@ namespace rascal {
 
           // set up the data to fill the property later
           InputData_t datas{};
+          // resize and set to 0
+          datas.resize(keys, 21, 8, 0);
           for (auto & key : keys) {
             auto data = Dense_t::Random(21, 8);
-            datas.emplace(std::make_pair(key, data));
+            datas[key] += data;
           }
           this->keys_list.back().push_back(keys);
           test_data.push_back(datas);
@@ -794,7 +797,7 @@ namespace rascal {
         size_t key_id{0};
         double error1{0};
         for (auto & key : sparse_features[i_manager].get_keys(center)) {
-          auto & value{test_datas[i_manager][i_center][key]};
+          auto && value{test_datas[i_manager][i_center][key]};
           Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, 1>> test_data(
               value.data(), value.size());
           error1 += (data.col(key_id) - test_data).squaredNorm();
