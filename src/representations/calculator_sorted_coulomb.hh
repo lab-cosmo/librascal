@@ -1,5 +1,5 @@
 /**
- * file   representation_manager_sorted_coulomb.hh
+ * file   calculator_sorted_coulomb.hh
  *
  * @author Musil Felix <musil.felix@epfl.ch>
  *
@@ -25,10 +25,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SORTED_COULOMB_HH_
-#define SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SORTED_COULOMB_HH_
+#ifndef SRC_REPRESENTATIONS_CALCULATOR_SORTED_COULOMB_HH_
+#define SRC_REPRESENTATIONS_CALCULATOR_SORTED_COULOMB_HH_
 
-#include "representations/representation_manager_base.hh"
+#include "representations/calculator_base.hh"
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/property.hh"
 #include "rascal_utility.hh"
@@ -158,11 +158,11 @@ namespace rascal {
    * Implementation of the Environmental Coulomb Matrix
    */
   template <class StructureManager>
-  class RepresentationManagerSortedCoulomb : public RepresentationManagerBase {
+  class CalculatorSortedCoulomb : public CalculatorBase {
    public:
     using Manager_t = StructureManager;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
-    using Parent = RepresentationManagerBase;
+    using Parent = CalculatorBase;
     // type of the hyperparameters
     using Hypers_t = typename Parent::Hypers_t;
     // numeric type for the representation features
@@ -180,7 +180,7 @@ namespace rascal {
 
     /* -------------------- rep-construc-start -------------------- */
     //! Constructor
-    RepresentationManagerSortedCoulomb(ManagerPtr_t sm, const Hypers_t & hyper)
+    CalculatorSortedCoulomb(ManagerPtr_t sm, const Hypers_t & hyper)
         : structure_manager{std::move(sm)}, central_decay{},
           interaction_cutoff{}, interaction_decay{}, coulomb_matrices{*sm} {
       this->check_hyperparameters(this->reference_hypers, hyper);
@@ -191,23 +191,23 @@ namespace rascal {
     }
 
     //! Copy constructor
-    RepresentationManagerSortedCoulomb(
-        const RepresentationManagerSortedCoulomb & other) = delete;
+    CalculatorSortedCoulomb(
+        const CalculatorSortedCoulomb & other) = delete;
 
     //! Move constructor
-    RepresentationManagerSortedCoulomb(
-        RepresentationManagerSortedCoulomb && other) = default;
+    CalculatorSortedCoulomb(
+        CalculatorSortedCoulomb && other) = default;
 
     //! Destructor
-    virtual ~RepresentationManagerSortedCoulomb() = default;
+    virtual ~CalculatorSortedCoulomb() = default;
 
     //! Copy assignment operator
-    RepresentationManagerSortedCoulomb &
-    operator=(const RepresentationManagerSortedCoulomb & other) = delete;
+    CalculatorSortedCoulomb &
+    operator=(const CalculatorSortedCoulomb & other) = delete;
 
     //! Move assignment operator
-    RepresentationManagerSortedCoulomb &
-    operator=(RepresentationManagerSortedCoulomb && other) = default;
+    CalculatorSortedCoulomb &
+    operator=(CalculatorSortedCoulomb && other) = default;
     /* -------------------- rep-construc-end -------------------- */
 
     /* -------------------- rep-interface-start -------------------- */
@@ -340,8 +340,8 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template <class Mngr>
-  void RepresentationManagerSortedCoulomb<Mngr>::set_hyperparameters(
-      const RepresentationManagerSortedCoulomb<Mngr>::Hypers_t & hyper) {
+  void CalculatorSortedCoulomb<Mngr>::set_hyperparameters(
+      const CalculatorSortedCoulomb<Mngr>::Hypers_t & hyper) {
     this->hypers = hyper;
     this->central_cutoff = this->structure_manager->get_cutoff();
     this->hypers["central_cutoff"] = this->central_cutoff;
@@ -383,7 +383,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   /* -------------------- rep-options-compute-start-------------------- */
   template <class Mngr>
-  void RepresentationManagerSortedCoulomb<Mngr>::compute() {
+  void CalculatorSortedCoulomb<Mngr>::compute() {
     auto option{this->options["sorting_algorithm"]};
 
     if (option == "distance") {
@@ -401,7 +401,7 @@ namespace rascal {
   /* -------------------- rep-options-compute-impl-start -------------------- */
   template <class Mngr>
   template <internal::CMSortAlgorithm AlgorithmType>
-  void RepresentationManagerSortedCoulomb<Mngr>::compute_helper() {
+  void CalculatorSortedCoulomb<Mngr>::compute_helper() {
     // initialise the sorted coulomb_matrices in linear storage
     this->coulomb_matrices.resize_to_zero();
     this->coulomb_matrices.set_nb_row(this->get_n_feature());
@@ -451,8 +451,8 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template <class Mngr>
-  void RepresentationManagerSortedCoulomb<Mngr>::get_distance_matrix(
-      RepresentationManagerSortedCoulomb<Mngr>::ClusterRef_t<1> & center,
+  void CalculatorSortedCoulomb<Mngr>::get_distance_matrix(
+      CalculatorSortedCoulomb<Mngr>::ClusterRef_t<1> & center,
       Eigen::Ref<Eigen::MatrixXd> distance_mat,
       Eigen::Ref<Eigen::MatrixXd> type_factor_mat) {
     // the coulomb mat first row and col corresponds
@@ -506,4 +506,4 @@ namespace rascal {
   }
 }  // namespace rascal
 
-#endif  // SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SORTED_COULOMB_HH_
+#endif  // SRC_REPRESENTATIONS_CALCULATOR_SORTED_COULOMB_HH_

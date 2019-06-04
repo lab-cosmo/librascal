@@ -30,7 +30,7 @@
 #define SRC_REPRESENTATIONS_FEATURE_MANAGER_DENSE_HH_
 
 #include "representations/feature_manager_base.hh"
-#include "representations/representation_manager_base.hh"
+#include "representations/calculator_base.hh"
 
 namespace rascal {
   /**

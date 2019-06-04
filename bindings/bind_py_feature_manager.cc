@@ -58,7 +58,7 @@ decltype(auto) bind_feature_manager(py::module & mod, py::module &) {
   }));
   feature.def("reserve", &Feature_t::reserve);
   feature.def("append",
-              (void (Feature_t::*)(RepresentationManagerBase &)) &
+              (void (Feature_t::*)(CalculatorBase &)) &
                   Feature_t::push_back,
               py::call_guard<py::gil_scoped_release>());
   feature.def("insert", &Feature_t::insert,
@@ -97,7 +97,7 @@ decltype(auto) bind_sparse_feature_manager(py::module & mod, py::module &) {
     return std::make_unique<Feature_t>(inner_size, hypers);
   }));
   feature.def("reserve", &Feature_t::reserve);
-  // feature.def("append", (void (Feature_t::*)(RepresentationManagerBase &)) &
+  // feature.def("append", (void (Feature_t::*)(CalculatorBase &)) &
   //                           Feature_t::push_back);
   feature.def("append", &Feature_t::push_back);
   feature.def_property_readonly("size", &Feature_t::size,

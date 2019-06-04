@@ -1,5 +1,5 @@
 /**
- * file   representation_manager_spherical_expansion.hh
+ * file   calculator_spherical_expansion.hh
  *
  * @author Max Veit <max.veit@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
@@ -27,10 +27,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SPHERICAL_EXPANSION_HH_
-#define SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SPHERICAL_EXPANSION_HH_
+#ifndef SRC_REPRESENTATIONS_CALCULATOR_SPHERICAL_EXPANSION_HH_
+#define SRC_REPRESENTATIONS_CALCULATOR_SPHERICAL_EXPANSION_HH_
 
-#include "representations/representation_manager_base.hh"
+#include "representations/calculator_base.hh"
 #include "representations/cutoff_functions.hh"
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/property.hh"
@@ -86,7 +86,7 @@ namespace rascal {
       AtomicSmearingSpecificationBase &
       operator=(AtomicSmearingSpecificationBase && other) = default;
 
-      using Hypers_t = RepresentationManagerBase::Hypers_t;
+      using Hypers_t = CalculatorBase::Hypers_t;
     };
 
     /**
@@ -188,7 +188,7 @@ namespace rascal {
       RadialContributionBase &
       operator=(RadialContributionBase && other) = default;
 
-      using Hypers_t = RepresentationManagerBase::Hypers_t;
+      using Hypers_t = CalculatorBase::Hypers_t;
       using Matrix_t = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic,
                                      Eigen::RowMajor>;
       using Vector_t = Eigen::VectorXd;
@@ -493,10 +493,10 @@ namespace rascal {
    * development.
    */
   template <class StructureManager>
-  class RepresentationManagerSphericalExpansion
-      : public RepresentationManagerBase {
+  class CalculatorSphericalExpansion
+      : public CalculatorBase {
    public:
-    using Parent = RepresentationManagerBase;
+    using Parent = CalculatorBase;
     using Manager_t = StructureManager;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
     using Hypers_t = typename Parent::Hypers_t;
@@ -576,30 +576,30 @@ namespace rascal {
      * @throw logic_error if an invalid option or combination of options is
      *                    specified in the container
      */
-    RepresentationManagerSphericalExpansion(ManagerPtr_t sm,
+    CalculatorSphericalExpansion(ManagerPtr_t sm,
                                             const Hypers_t & hyper)
         : expansions_coefficients{*sm}, structure_manager{std::move(sm)} {
       this->set_hyperparameters(hyper);
     }
 
     //! Copy constructor
-    RepresentationManagerSphericalExpansion(
-        const RepresentationManagerSphericalExpansion & other) = delete;
+    CalculatorSphericalExpansion(
+        const CalculatorSphericalExpansion & other) = delete;
 
     //! Move constructor
-    RepresentationManagerSphericalExpansion(
-        RepresentationManagerSphericalExpansion && other) = default;
+    CalculatorSphericalExpansion(
+        CalculatorSphericalExpansion && other) = default;
 
     //! Destructor
-    virtual ~RepresentationManagerSphericalExpansion() = default;
+    virtual ~CalculatorSphericalExpansion() = default;
 
     //! Copy assignment operator
-    RepresentationManagerSphericalExpansion &
-    operator=(const RepresentationManagerSphericalExpansion & other) = delete;
+    CalculatorSphericalExpansion &
+    operator=(const CalculatorSphericalExpansion & other) = delete;
 
     //! Move assignment operator
-    RepresentationManagerSphericalExpansion &
-    operator=(RepresentationManagerSphericalExpansion && other) = default;
+    CalculatorSphericalExpansion &
+    operator=(CalculatorSphericalExpansion && other) = default;
 
     //! compute representation. choose the CutoffFunctionType from the hypers
     void compute();
@@ -661,7 +661,7 @@ namespace rascal {
 
   // compute classes template construction
   template <class Mngr>
-  void RepresentationManagerSphericalExpansion<Mngr>::compute() {
+  void CalculatorSphericalExpansion<Mngr>::compute() {
     // specialize based on the cutoff function
     using internal::CutoffFunctionType;
 
@@ -678,7 +678,7 @@ namespace rascal {
 
   template <class Mngr>
   template <internal::CutoffFunctionType FcType>
-  void RepresentationManagerSphericalExpansion<
+  void CalculatorSphericalExpansion<
       Mngr>::compute_by_radial_contribution() {
     // specialize based on the type of radial contribution
     using internal::AtomicSmearingType;
@@ -707,7 +707,7 @@ namespace rascal {
   template <internal::CutoffFunctionType FcType,
             internal::RadialBasisType RadialType,
             internal::AtomicSmearingType SmearingType>
-  void RepresentationManagerSphericalExpansion<Mngr>::compute_impl() {
+  void CalculatorSphericalExpansion<Mngr>::compute_impl() {
     using math::PI;
     using math::pow;
 
@@ -775,4 +775,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif  // SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SPHERICAL_EXPANSION_HH_
+#endif  // SRC_REPRESENTATIONS_CALCULATOR_SPHERICAL_EXPANSION_HH_

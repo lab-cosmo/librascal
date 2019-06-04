@@ -1,5 +1,5 @@
 /**
- * file   representation_manager_sorted_coulomb.cc
+ * file   calculator_sorted_coulomb.cc
  *
  * @author Musil Felix <musil.felix@epfl.ch>
  *
@@ -25,6 +25,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "representations/representation_manager_sorted_coulomb.hh"
+#include "representations/calculator_sorted_coulomb.hh"
 
 namespace rascal {}

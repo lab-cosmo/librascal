@@ -1,5 +1,5 @@
 /**
- * file   test_representation_manager_base.hh
+ * file   test_calculator_base.hh
  *
  * @author Musil Felix <musil.felix@epfl.ch>
  * @author Max Veit <max.veit@epfl.ch>
@@ -32,10 +32,10 @@
 #include "tests.hh"
 #include "test_structure.hh"
 #include "test_adaptor.hh"
-#include "representations/representation_manager_base.hh"
-#include "representations/representation_manager_sorted_coulomb.hh"
-#include "representations/representation_manager_spherical_expansion.hh"
-#include "representations/representation_manager_soap.hh"
+#include "representations/calculator_base.hh"
+#include "representations/calculator_sorted_coulomb.hh"
+#include "representations/calculator_spherical_expansion.hh"
+#include "representations/calculator_spherical_invariants.hh"
 #include "representations/feature_manager_block_sparse.hh"
 
 #include "json_io.hh"

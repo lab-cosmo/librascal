@@ -29,7 +29,7 @@
 #define SRC_REPRESENTATIONS_FEATURE_MANAGER_BASE_HH_
 
 #include "structure_managers/structure_manager_base.hh"
-#include "representations/representation_manager_base.hh"
+#include "representations/calculator_base.hh"
 #include "json_io.hh"
 
 #include <vector>
@@ -44,8 +44,8 @@ namespace rascal {
   template <typename T>
   class FeatureManagerBase {
    public:
-    using RepresentationManager_t = RepresentationManagerBase;
-    using Hypers_t = typename RepresentationManagerBase::Hypers_t;
+    using RepresentationManager_t = CalculatorBase;
+    using Hypers_t = typename CalculatorBase::Hypers_t;
     using Precision_t = T;
     using Feature_Matrix_t = Eigen::Matrix<Precision_t, Eigen::Dynamic,
                                            Eigen::Dynamic, Eigen::ColMajor>;

@@ -36,10 +36,10 @@ namespace rascal {
   // gets a list of fixtures for all the different possible structure managers
   using multiple_fixtures =
       boost::mpl::list<FeatureFixture<double, FeatureManagerDense,
-                                      RepresentationManagerSortedCoulomb,
+                                      CalculatorSortedCoulomb,
                                       MultipleStructureSortedCoulomb>,
                        FeatureFixture<float, FeatureManagerDense,
-                                      RepresentationManagerSortedCoulomb,
+                                      CalculatorSortedCoulomb,
                                       MultipleStructureSortedCoulomb>>;
 
   /* ---------------------------------------------------------------------- */
@@ -124,10 +124,10 @@ namespace rascal {
 
   using multiple_fixtures_sparse = boost::mpl::list<
       SparseFeatureFixture<double, FeatureManagerBlockSparse,
-                           RepresentationManagerSphericalExpansion,
+                           CalculatorSphericalExpansion,
                            MultipleStructureSphericalExpansion>,
       SparseFeatureFixture<float, FeatureManagerBlockSparse,
-                           RepresentationManagerSphericalExpansion,
+                           CalculatorSphericalExpansion,
                            MultipleStructureSphericalExpansion>>;
 
   /* ---------------------------------------------------------------------- */

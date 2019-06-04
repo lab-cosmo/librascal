@@ -1,5 +1,5 @@
 /**
- * file   representation_manager_soap.hh
+ * file   calculator_spherical_invariants.hh
  *
  * @author Max Veit <max.veit@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
@@ -28,11 +28,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SOAP_HH_
-#define SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SOAP_HH_
+#ifndef SRC_REPRESENTATIONS_CALCULATOR_SPHERICAL_INVARIANTS_HH_
+#define SRC_REPRESENTATIONS_CALCULATOR_SPHERICAL_INVARIANTS_HH_
 
-#include "representations/representation_manager_base.hh"
-#include "representations/representation_manager_spherical_expansion.hh"
+#include "representations/calculator_base.hh"
+#include "representations/calculator_spherical_expansion.hh"
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/property.hh"
 #include "structure_managers/property_block_sparse.hh"
@@ -71,7 +71,7 @@ namespace rascal {
       SOAPPrecomputationBase &
       operator=(SOAPPrecomputationBase && other) = default;
 
-      using Hypers_t = RepresentationManagerBase::Hypers_t;
+      using Hypers_t = CalculatorBase::Hypers_t;
     };
 
     template <SOAPType SpectrumType>
@@ -123,38 +123,38 @@ namespace rascal {
   }
 
   template <class StructureManager>
-  class RepresentationManagerSOAP : public RepresentationManagerBase {
+  class CalculatorSphericalInvariants : public CalculatorBase {
    public:
     using Manager_t = StructureManager;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
-    using Hypers_t = RepresentationManagerBase::Hypers_t;
+    using Hypers_t = CalculatorBase::Hypers_t;
     using Key_t = std::vector<int>;
     using SparseProperty_t =
         BlockSparseProperty<double, 1, 0, Manager_t, Key_t>;
     using Data_t = typename SparseProperty_t::Data_t;
 
-    RepresentationManagerSOAP(ManagerPtr_t sm, const Hypers_t & hyper)
+    CalculatorSphericalInvariants(ManagerPtr_t sm, const Hypers_t & hyper)
         : soap_vectors{*sm}, structure_manager{sm}, rep_expansion{std::move(sm),
                                                                   hyper} {
       this->set_hyperparameters(hyper);
     }
 
     //! Copy constructor
-    RepresentationManagerSOAP(const RepresentationManagerSOAP & other) = delete;
+    CalculatorSphericalInvariants(const CalculatorSphericalInvariants & other) = delete;
 
     //! Move constructor
-    RepresentationManagerSOAP(RepresentationManagerSOAP && other) = default;
+    CalculatorSphericalInvariants(CalculatorSphericalInvariants && other) = default;
 
     //! Destructor
-    virtual ~RepresentationManagerSOAP() = default;
+    virtual ~CalculatorSphericalInvariants() = default;
 
     //! Copy assignment operator
-    RepresentationManagerSOAP &
-    operator=(const RepresentationManagerSOAP & other) = delete;
+    CalculatorSphericalInvariants &
+    operator=(const CalculatorSphericalInvariants & other) = delete;
 
     //! Move assignment operator
-    RepresentationManagerSOAP &
-    operator=(RepresentationManagerSOAP && other) = default;
+    CalculatorSphericalInvariants &
+    operator=(CalculatorSphericalInvariants && other) = default;
 
     void set_hyperparameters(const Hypers_t & hypers) {
       using internal::enumValue;
@@ -220,7 +220,7 @@ namespace rascal {
     size_t max_angular{};
     bool normalize{};
     ManagerPtr_t structure_manager;
-    RepresentationManagerSphericalExpansion<Manager_t> rep_expansion;
+    CalculatorSphericalExpansion<Manager_t> rep_expansion;
     internal::SOAPType soap_type{};
     //! collection of precomputation for the different body order
     std::array<std::shared_ptr<internal::SOAPPrecomputationBase>,
@@ -231,7 +231,7 @@ namespace rascal {
   };
 
   template <class Mngr>
-  void RepresentationManagerSOAP<Mngr>::compute() {
+  void CalculatorSphericalInvariants<Mngr>::compute() {
     using internal::SOAPType;
     switch (this->soap_type) {
     case SOAPType::RadialSpectrum:
@@ -247,7 +247,7 @@ namespace rascal {
   }
 
   // template <class Mngr>
-  // void RepresentationManagerSOAP<Mngr>::compute_bispectrum() {
+  // void CalculatorSphericalInvariants<Mngr>::compute_bispectrum() {
   //   rep_expansion.compute();
   //   auto& expansions_coefficients{rep_expansion.expansions_coefficients};
 
@@ -283,7 +283,7 @@ namespace rascal {
   // }
 
   template <class Mngr>
-  void RepresentationManagerSOAP<Mngr>::compute_powerspectrum() {
+  void CalculatorSphericalInvariants<Mngr>::compute_powerspectrum() {
     using internal::enumValue;
     using internal::SOAPType;
     using math::pow;
@@ -356,7 +356,7 @@ namespace rascal {
   }
 
   template <class Mngr>
-  void RepresentationManagerSOAP<Mngr>::compute_radialspectrum() {
+  void CalculatorSphericalInvariants<Mngr>::compute_radialspectrum() {
     rep_expansion.compute();
     using math::pow;
 
@@ -383,7 +383,7 @@ namespace rascal {
   }
 
   template <class Mngr>
-  void RepresentationManagerSOAP<
+  void CalculatorSphericalInvariants<
       Mngr>::initialize_percenter_powerspectrum_soap_vectors() {
     size_t n_row{static_cast<size_t>(pow(this->max_radial, 2))};
     size_t n_col{this->max_angular + 1};
@@ -436,7 +436,7 @@ namespace rascal {
   }
 
   template <class Mngr>
-  void RepresentationManagerSOAP<
+  void CalculatorSphericalInvariants<
       Mngr>::initialize_percenter_radialspectrum_soap_vectors() {
     size_t n_row{this->max_radial};
     size_t n_col{1};
@@ -464,4 +464,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif  // SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SOAP_HH_
+#endif  // SRC_REPRESENTATIONS_CALCULATOR_SPHERICAL_INVARIANTS_HH_

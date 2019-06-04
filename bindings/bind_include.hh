@@ -33,10 +33,10 @@
 #include "math/math_interface.hh"
 #include "math/math_utils.hh"
 
-#include "representations/representation_manager_base.hh"
-#include "representations/representation_manager_sorted_coulomb.hh"
-#include "representations/representation_manager_spherical_expansion.hh"
-#include "representations/representation_manager_soap.hh"
+#include "representations/calculator_base.hh"
+#include "representations/calculator_sorted_coulomb.hh"
+#include "representations/calculator_spherical_expansion.hh"
+#include "representations/calculator_spherical_invariants.hh"
 
 #include "representations/feature_manager_base.hh"
 #include "representations/feature_manager_dense.hh"

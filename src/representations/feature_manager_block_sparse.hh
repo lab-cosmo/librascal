@@ -30,7 +30,7 @@
 #define SRC_REPRESENTATIONS_FEATURE_MANAGER_BLOCK_SPARSE_HH_
 
 #include "representations/feature_manager_base.hh"
-#include "representations/representation_manager_base.hh"
+#include "representations/calculator_base.hh"
 #include "structure_managers/property_block_sparse.hh"
 
 #include <unordered_map>

@@ -1,5 +1,5 @@
 /**
- * file   representation_manager_base.hh
+ * file   calculator_base.hh
  *
  * @author Musil Felix <musil.felix@epfl.ch>
  *
@@ -25,8 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_BASE_HH_
-#define SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_BASE_HH_
+#ifndef SRC_REPRESENTATIONS_CALCULATOR_BASE_HH_
+#define SRC_REPRESENTATIONS_CALCULATOR_BASE_HH_
 
 #include "structure_managers/structure_manager_base.hh"
 #include "structure_managers/property_block_sparse.hh"
@@ -41,7 +41,7 @@
 
 namespace rascal {
 
-  class RepresentationManagerBase {
+  class CalculatorBase {
    public:
     //! type for the hyper parameter class
     using Hypers_t = json;
@@ -57,24 +57,24 @@ namespace rascal {
         internal::InternallySortedKeyMap<std::vector<int>, Dense_t>;
     using Data_t = std::vector<InputData_t>;
 
-    RepresentationManagerBase() = default;
+    CalculatorBase() = default;
 
     //! Copy constructor
-    RepresentationManagerBase(const RepresentationManagerBase & other) = delete;
+    CalculatorBase(const CalculatorBase & other) = delete;
 
     //! Move constructor
-    RepresentationManagerBase(RepresentationManagerBase && other) = default;
+    CalculatorBase(CalculatorBase && other) = default;
 
     //! Destructor
-    virtual ~RepresentationManagerBase() = default;
+    virtual ~CalculatorBase() = default;
 
     //! Copy assignment operator
-    RepresentationManagerBase &
-    operator=(const RepresentationManagerBase & other) = delete;
+    CalculatorBase &
+    operator=(const CalculatorBase & other) = delete;
 
     //! Move assignment operator
-    RepresentationManagerBase &
-    operator=(RepresentationManagerBase && other) = default;
+    CalculatorBase &
+    operator=(CalculatorBase && other) = default;
 
     //! Pure Virtual Function to set hyperparameters of the representation
     virtual void set_hyperparameters(const Hypers_t &) = 0;
@@ -112,4 +112,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif  // SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_BASE_HH_
+#endif  // SRC_REPRESENTATIONS_CALCULATOR_BASE_HH_
