@@ -97,15 +97,6 @@ namespace rascal {
     MultipleStructureSOAP() : Parent{} {};
     ~MultipleStructureSOAP() = default;
 
-    // std::vector<std::string> filenames{
-    //     "reference_data/methane.json",
-    //     "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-    //     "reference_data/simple_cubic_8.json"};
-    // std::vector<std::string> soap_types{"RadialSpectrum", "PowerSpectrum"};
-    // std::vector<double> cutoffs{{2.0, 3.0}};
-    // std::vector<double> gaussian_sigmas{{0.2, 0.3}};
-    // std::vector<size_t> max_radials{{8, 12}};
-
     std::vector<json> hypers{{{"interaction_cutoff", 3.0},
                               {"cutoff_smooth_width", 0.5},
                               {"max_radial", 6},
@@ -133,7 +124,41 @@ namespace rascal {
                               {"max_angular", 6},
                               {"gaussian_sigma_type", "Constant"},
                               {"gaussian_sigma_constant", 0.4},
-                              {"soap_type", "PowerSpectrum"}}};
+                              {"soap_type", "PowerSpectrum"}},
+                             {{"interaction_cutoff", 3.0},
+                              {"cutoff_smooth_width", 0.0},
+                              {"max_radial", 6},
+                              {"max_angular", 6},
+                              {"gaussian_sigma_type", "Constant"},
+                              {"gaussian_sigma_constant", 0.2},
+                              {"soap_type", "LambdaSpectrum"},
+                              {"lam", 2},
+                              {"inversion_symmetry", true}},
+                             {{"interaction_cutoff", 3.0},
+                              {"cutoff_smooth_width", 0.0},
+                              {"max_radial", 6},
+                              {"max_angular", 6},
+                              {"gaussian_sigma_type", "Constant"},
+                              {"gaussian_sigma_constant", 0.2},
+                              {"soap_type", "LambdaSpectrum"},
+                              {"lam", 2},
+                              {"inversion_symmetry", false}},
+                             {{"interaction_cutoff", 3.0},
+                              {"cutoff_smooth_width", 0.0},
+                              {"max_radial", 4},
+                              {"max_angular", 1},
+                              {"gaussian_sigma_type", "Constant"},
+                              {"gaussian_sigma_constant", 0.2},
+                              {"soap_type", "BiSpectrum"},
+                              {"inversion_symmetry", true}},
+                             {{"interaction_cutoff", 3.0},
+                              {"cutoff_smooth_width", 0.0},
+                              {"max_radial", 4},
+                              {"max_angular", 1},
+                              {"gaussian_sigma_type", "Constant"},
+                              {"gaussian_sigma_constant", 0.2},
+                              {"soap_type", "BiSpectrum"},
+                              {"inversion_symmetry", false}}};
   };
 
   struct SOAPTestData : TestData {

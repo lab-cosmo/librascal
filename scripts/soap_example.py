@@ -57,7 +57,7 @@ def dump_reference_json():
     gaussian_sigmas = [0.2, 0.5]
     max_radials = [4, 10]
     max_angulars = [3, 6]
-    soap_types = ["RadialSpectrum", "PowerSpectrum"]
+    soap_types = ["RadialSpectrum", "PowerSpectrum", "LambdaSpectrum", "BiSpectrum"]
 
     fns = [
         os.path.join(path,"tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json"),
@@ -84,9 +84,6 @@ def dump_reference_json():
                 for gaussian_sigma in gaussian_sigmas:
                     for max_radial in max_radials:
                         for max_angular in max_angulars:
-                            if 'RadialSpectrum' == soap_type:
-                                max_angular = 0
-
                             hypers = {"interaction_cutoff": cutoff,
                                     "cutoff_smooth_width": 0.0,
                                     "max_radial": max_radial,
@@ -94,6 +91,15 @@ def dump_reference_json():
                                     "gaussian_sigma_type": "Constant",
                                     "gaussian_sigma_constant": gaussian_sigma,
                                     "soap_type": soap_type }
+                            if "RadialSpectrum" == soap_type:
+                                hypers["max_angular"] = 0
+                            if "LambdaSpectrum" == soap_type:
+                                hypers["lam"] = 1
+                                hypers["inversion_symmetry"] = False
+                            if "BiSpectrum" == soap_type:
+                                hypers["max_radial"] = 2
+                                hypers["max_angular"] = 1
+                                hypers["inversion_symmetry"] = True
                             x = get_feature_vector(hypers, frames)
                             data['rep_info'][-1].append(dict(feature_matrix=x.tolist(),
                                                 hypers=copy(hypers)))

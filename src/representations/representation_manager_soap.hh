@@ -211,9 +211,11 @@ namespace rascal {
           if (m1s + m2s + m3s != 0 && m1s + m2s - m3s != 0) { continue; }
           double w3j1 = wig3jj(2*l1, 2*l2, 2*l3, 2*m1s, 2*m2s, 2*m3s);
           double w3j2 = wig3jj(2*l1, 2*l2, 2*l3, 2*m1s, 2*m2s, -2*m3s);
+          ///*
           if (m3s > 0) { this->w3js.push_back((w3j2 + pow(-1, m3s)*w3j1)/sqrt(2.0)); }
           else if (m3s == 0) { this->w3js.push_back(w3j1); }
           else if (m3s < 0) { this->w3js.push_back(((w3j1 - pow(-1, m3s)*w3j2))/sqrt(2.0)); }
+          //*/
           //change to the following for agreement with SOAPFAST
           //(different definition of the real spherical harmonics)
           /*
