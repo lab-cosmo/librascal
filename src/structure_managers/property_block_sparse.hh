@@ -370,7 +370,7 @@ namespace rascal {
    * Typed ``property`` class definition, inherits from the base property class
    */
   template <typename Precision_t, size_t Order, size_t PropertyLayer,
-            class Manager>
+            class Manager, typename Key>
   class BlockSparseProperty : public PropertyBase {
    public:
     using Parent = PropertyBase;
