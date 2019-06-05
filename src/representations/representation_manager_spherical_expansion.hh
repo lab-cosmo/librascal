@@ -403,12 +403,12 @@ namespace rascal {
         double dist2{distance * distance};
 
         //TODO(max) avoid computing this and the other factors twice
-        Matrix_t neighour_contribution =
+        Matrix_t neighbour_contribution =
             this->compute_neighbour_contribution(distance, pair);
         Matrix_t proportional_term(this->max_radial, this->max_angular + 1);
         for (size_t angular_l{0}; angular_l <= this->max_angular; ++angular_l) {
-          proportional_term(angular_l) = (0.5 / fac_a - angular_l / dist2)
-                                       * neighbour_contribution(angular_l);
+          proportional_term.col(angular_l) = (0.5 / fac_a - angular_l / dist2)
+                                       * neighbour_contribution.col(angular_l);
         }
 
         //TODO obviously incomplete, just so this compiles
