@@ -117,6 +117,38 @@ namespace rascal {
         const Eigen::Ref<const Eigen::Vector3d> & direction,
         size_t max_angular);
 
+    /**
+     * Compute a full set of spherical harmonics and their Cartesian gradients
+     *
+     * Spherical harmonics are defined as described in
+     * math::compute_spherical_harmonics().  Gradients are defined with respect
+     * to motion of the central atom, which is the opposite sign of the usual
+     * definition with respect to the _arguments_ of the Y_l^m.  The actual
+     * Cartesian gradients include an extra factor of 1/r that is not included
+     * here; the rest is independent of radius.
+     *
+     * @param direction Unit vector giving the angles (arguments for the Y_l^m)
+     *
+     * @param max_angular Compute up to this angular momentum number (l_max)
+     *
+     * @return  (Eigen)array containing the results.
+     *          Sized 4 by (l_max+1)^2; the first index collects the
+     *          value of the harmonic and the x, y, and z gradient components.
+     *          The second index collects l and m quantum numbers, stored in
+     *          compact format (m varies fastest, from -l to l, and l from 0 to
+     *          l_max).
+     *
+     * @warning This function will access the associated Legendre polynomials
+     *          for m=l+1 and assume they are equal to zero.  The implementation
+     *          of the polynomials in this file respects this convention.
+     *
+     * @todo Add an option to switch off the computation of gradients, so this
+     *       function becomes equivalent to math::compute_spherical_harmonics()
+     */
+    Matrix_t compute_spherical_harmonics_derivatives(
+        const Eigen::Ref<const Eigen::Vector3d> & direction,
+        size_t max_angular);
+
   }  // namespace math
 }  // namespace rascal
 

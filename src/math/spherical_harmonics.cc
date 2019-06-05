@@ -27,6 +27,7 @@
  */
 
 #include "spherical_harmonics.hh"
+#include <iostream>
 
 namespace rascal {
   namespace math {
@@ -186,15 +187,12 @@ namespace rascal {
      *          stored in compact format (m varies fastest, from -l to l,
      *          and l from 0 to l_max).
      */
-    Eigen::VectorXd compute_spherical_harmonics(
+    Vector_t compute_spherical_harmonics(
         const Eigen::Ref<const Eigen::Vector3d> & direction,
         size_t max_angular) {
       using std::pow;
       using std::sqrt;
       Eigen::Vector3d my_direction;
-      if (direction.size() != 3) {
-        throw std::length_error("Direction must be a vector in R^3");
-      }
       if (std::abs((direction[0]*direction[0] +
                     direction[1]*direction[1] +
                     direction[2]*direction[2]) - 1.0) > math::dbl_ftol) {
@@ -273,15 +271,12 @@ namespace rascal {
      * @todo Add an option to switch off the computation of gradients, so this
      *       function becomes equivalent to math::compute_spherical_harmonics()
      */
-    Eigen::MatrixXd compute_spherical_harmonics_derivatives(
+    Matrix_t compute_spherical_harmonics_derivatives(
         const Eigen::Ref<const Eigen::Vector3d> & direction,
         size_t max_angular) {
       using std::pow;
       using std::sqrt;
       Eigen::Vector3d my_direction;
-      if (direction.size() != 3) {
-        throw std::length_error("Direction must be a vector in R^3");
-      }
       if (std::abs((direction[0]*direction[0] +
                     direction[1]*direction[1] +
                     direction[2]*direction[2]) - 1.0) > math::dbl_ftol) {

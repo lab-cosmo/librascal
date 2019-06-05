@@ -30,6 +30,7 @@
 #include <cmath>
 
 #include "math/math_utils.hh"
+#include "math/spherical_harmonics.hh"
 
 using rascal::math::compute_assoc_legendre_polynom;
 using rascal::math::PI;
