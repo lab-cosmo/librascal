@@ -28,7 +28,26 @@ def get_ascending_angular_lists(max_angular_l):
 
 
 def dump_lpmn_reference_json():
-    # TODO(alex) lpmn
+    # TODO(alex) lpmn think about how the matrix should be saved because they are a (m+1,n+1) array
+    path = '../'
+    sys.path.insert(0, os.path.join(path, 'build/'))
+    sys.path.insert(0, os.path.join(path, 'tests/'))
+    data = []
+
+    directions = load_unit_vectors_from_json()
+    max_angular_l = 31
+    for direction in directions:
+        lpmn_results = []
+        z = direction[2] # = cos_theta
+        # one could use numpy broadcasting, but this is more readable
+        for angular_l in range(max_angular_l+1):
+            for angular_m in range(-angular_l, angular_l+1):
+                result = np.real(lpmn(angular_m, angular_l, z))
+                lpmn_results.append(result)
+        data.append(dict(max_angular_l=max_angular_l, direction=direction, associated_legendre=lpmn_results))
+    print(len(data))
+    with open(path+"tests/reference_data/associated_legendre_reference.ubjson",'wb') as f:
+        ubjson.dump(data,f)
     return
 
 def dump_reference_json():
@@ -37,7 +56,7 @@ def dump_reference_json():
     sys.path.insert(0, os.path.join(path, 'tests/'))
     data = []
 
-    directions = np.array(load_unit_vectors_from_json())
+    directions = load_unit_vectors_from_json()
     # double cos_theta = direction[2];
     #theta = np.arccos(directions[:,2])
     # double phi = std::atan2(direction[1], direction[0]);
@@ -56,6 +75,7 @@ def dump_reference_json():
     print(len(data))
     with open(path+"tests/reference_data/spherical_harmonics_reference.ubjson",'wb') as f:
         ubjson.dump(data,f)
+
 
 ##########################################################################################
 ##########################################################################################
