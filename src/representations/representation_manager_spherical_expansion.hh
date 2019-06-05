@@ -203,6 +203,7 @@ namespace rascal {
       // are expected
       // virtual Vector_Ref compute_center_contribution() = 0;
       // virtual Matrix_Ref compute_neighbour_contribution() = 0;
+      // virtual Matrix_Ref compute_neighbour_derivative() = 0;
     };
 
     template <RadialBasisType RBT>
@@ -381,6 +382,39 @@ namespace rascal {
             this->radial_ortho_matrix;
         return Matrix_Ref(this->radial_integral_neighbour);
       }
+
+
+      /**
+       * Compute the radial derivative of the neighbour's contribution
+       *
+       * The derivative is taken with respect to the pair distance, r_ij
+       */
+      template <AtomicSmearingType AST, size_t Order, size_t Layer>
+      Matrix_Ref
+      compute_neighbour_derivative(const double & distance,
+                                     ClusterRefKey<Order, Layer> & pair) {
+        using math::PI;
+        using math::pow;
+        using std::sqrt;
+
+        auto smearing{downcast_atomic_smearing<AST>(this->atomic_smearing)};
+        // a = 1 / (2*\sigma^2)
+        double fac_a{0.5 * pow(smearing->get_gaussian_sigma(pair), -2)};
+        double dist2{distance * distance};
+
+        //TODO(max) avoid computing this and the other factors twice
+        Matrix_t neighour_contribution =
+            this->compute_neighbour_contribution(distance, pair);
+        Matrix_t proportional_term(this->max_radial, this->max_angular + 1);
+        for (size_t angular_l{0}; angular_l <= this->max_angular; ++angular_l) {
+          proportional_term(angular_l) = (0.5 / fac_a - angular_l / dist2)
+                                       * neighbour_contribution(angular_l);
+        }
+
+        //TODO obviously incomplete, just so this compiles
+        return proportional_term;
+      }
+
 
       /** Compute common prefactors for the radial Gaussian basis functions */
       void precompute_radial_sigmas() {
