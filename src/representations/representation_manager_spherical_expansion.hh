@@ -53,6 +53,105 @@ namespace rascal {
 
   namespace internal {
 
+    /* templated inner loop that expands the LM tensor product of nlm.
+     * l_unroll is the level at which we want to unroll the loop. should
+     * be smaller than l_max to avoid segfaults
+     *  */
+    template <size_t l_unroll>
+    class LMProductHotLoop {
+      template <size_t l_others>
+      friend class LMProductHotLoop;
+
+     private:
+      template <typename D1, typename D2, typename D3>
+      static inline void lm_explicit_prod(const Eigen::MatrixBase<D1>& coeffn,
+                                         const Eigen::MatrixBase<D2>& harm,
+                                         Eigen::MatrixBase<D3>& coeffnlm,
+                                         const size_t & n);
+
+     public:
+      // This makes the full loop to accumulate the nlm coefficients
+      template <typename D1, typename D2, typename D3>
+      static inline void LMProduct(const Eigen::MatrixBase<D1>& coeffn,
+            const Eigen::MatrixBase<D2>& harm, Eigen::MatrixBase<D3>& coeffnlm,
+            const size_t & nmax, const size_t & lmax);
+    };
+
+    /* this should allow to spell out (and let the compiler optimize)
+     * the irregular loop over the LM blocks. Now, seems the compiler is
+     * smart enough to unroll this loop with -O3 so all is well */
+    template <size_t l_unroll>
+    template <typename D1, typename D2, typename D3>
+    inline void
+    LMProductHotLoop<l_unroll>::lm_explicit_prod(
+                                        const Eigen::MatrixBase<D1>& coeffn,
+                                        const Eigen::MatrixBase<D2>& harm,
+                                        Eigen::MatrixBase<D3>& coeffnlm,
+                                        const size_t & n) {
+      LMProductHotLoop<l_unroll-1>::lm_explicit_prod(coeffn, harm, coeffnlm, n);
+
+      size_t lm_start{(l_unroll) * (l_unroll)};
+      size_t lm_end{(l_unroll + 1) * (l_unroll + 1)};
+      for (size_t lm = lm_start; lm < lm_end; ++lm) {
+        coeffnlm(n, lm) += coeffn(n, l_unroll) * harm(lm);
+      }
+    }
+
+    // terminates the recursion
+    template <>
+    template <typename D1, typename D2, typename D3>
+    inline void
+    LMProductHotLoop<0>::lm_explicit_prod(
+                                        const Eigen::MatrixBase<D1>& coeffn,
+                                        const Eigen::MatrixBase<D2>& harm,
+                                        Eigen::MatrixBase<D3>& coeffnlm,
+                                        const size_t & n) {
+      coeffnlm(n, 0) += coeffn(n, 0) * harm(0);
+    }
+
+    // this will be the actual call. one should guesstimate a reasonable lmax
+    // as otherwise there's a chain of recursive ifs. this will automatically
+    // fold down to lower l_unroll if called with too low lmax
+    template <size_t l_unroll>
+    template <typename D1, typename D2, typename D3>
+    inline void
+    LMProductHotLoop<l_unroll>::LMProduct(const Eigen::MatrixBase<D1>& coeffn,
+            const Eigen::MatrixBase<D2>& harm, Eigen::MatrixBase<D3>& coeffnlm,
+            const size_t & nmax, const size_t & lmax) {
+      size_t lm_pos, lm_size;
+
+      if (lmax>=l_unroll) {
+        for (size_t radial_n{0}; radial_n < nmax; radial_n++) {
+          LMProductHotLoop<l_unroll>::lm_explicit_prod(coeffn, harm,
+                                                      coeffnlm, radial_n);
+
+          lm_pos = (l_unroll+1)*(l_unroll+1);
+          for (size_t l{l_unroll+1}; l <  lmax+1; ++l) {
+            lm_size = 2 * l + 1;
+            coeffnlm.block(radial_n, lm_pos, 1, lm_size) +=
+                (coeffn(radial_n, l) *
+                 harm.segment(lm_pos, lm_size));
+            lm_pos += lm_size;
+          }
+        }
+      } else {
+        LMProductHotLoop<l_unroll-1>::LMProduct(coeffn, harm,
+            coeffnlm, nmax, lmax);
+      }
+    }
+
+    // terminates the recursion
+    template <>
+    template <typename D1, typename D2, typename D3>
+    inline void
+    LMProductHotLoop<0>::LMProduct(const Eigen::MatrixBase<D1>& coeffn,
+            const Eigen::MatrixBase<D2>& harm, Eigen::MatrixBase<D3>& coeffnlm,
+            const size_t & nmax, const size_t & lmax) {
+      for (size_t radial_n{0}; radial_n < nmax; radial_n++) {
+        LMProductHotLoop<0>::lm_explicit_prod(coeffn, harm, coeffnlm, radial_n);
+      }
+    }
+
     /**
      * List of possible Radial basis that can be used by the spherical
      * expansion.
@@ -757,44 +856,45 @@ namespace rascal {
                                                                         neigh);
 
         harmonics *= cutoff_function->f_c(dist);
-        size_t lm_pos{0}, lm_size{0};
         auto && coefficients_center_by_type{coefficients_center[neigh_type]};
 
-        if (this->max_angular>1) {
-        for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
-          coefficients_center_by_type(radial_n, 0) +=
-              neighbour_contribution(radial_n, 0) * harmonics(0);
-          coefficients_center_by_type(radial_n, 1) +=
-              neighbour_contribution(radial_n, 1) * harmonics(1);
-          coefficients_center_by_type(radial_n, 2) +=
-              neighbour_contribution(radial_n, 1) * harmonics(2);
-          coefficients_center_by_type(radial_n, 3) +=
-              neighbour_contribution(radial_n, 1) * harmonics(3);
-
-          lm_pos = 4;
-          for (size_t l{2}; l < this->max_angular + 1; ++l) {
-            lm_size = 2 * l + 1;
-            coefficients_center_by_type.block(radial_n, lm_pos, 1, lm_size) +=
-                (neighbour_contribution(radial_n, l) *
-                 harmonics.segment(lm_pos, lm_size));
-            lm_pos += lm_size;
-          }
-        }
-      } else {
-                for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
-          coefficients_center_by_type(radial_n, 0) +=
-              neighbour_contribution(radial_n, 0) * harmonics(0);
-
-          lm_pos = 1;
-          for (size_t l{1}; l < this->max_angular + 1; ++l) {
-            lm_size = 2 * l + 1;
-            coefficients_center_by_type.block(radial_n, lm_pos, 1, lm_size) +=
-                (neighbour_contribution(radial_n, l) *
-                 harmonics.segment(lm_pos, lm_size));
-            lm_pos += lm_size;
-          }
-        }
-      }
+        //if (this->max_angular>7) {
+          internal::LMProductHotLoop<8>::LMProduct(neighbour_contribution,
+                        harmonics, coefficients_center_by_type,
+                        this->max_radial, this->max_angular);
+        /*} else if (this->max_angular>6) {
+          internal::LMProductHotLoop<7>::LMProduct(neighbour_contribution,
+                        harmonics, coefficients_center_by_type,
+                        this->max_radial, this->max_angular);
+        } else if (this->max_angular>5) {
+          internal::LMProductHotLoop<6>::LMProduct(neighbour_contribution,
+                        harmonics, coefficients_center_by_type,
+                        this->max_radial, this->max_angular);
+        } else if (this->max_angular>4) {
+          internal::LMProductHotLoop<5>::LMProduct(neighbour_contribution,
+                        harmonics, coefficients_center_by_type,
+                        this->max_radial, this->max_angular);
+        } else if (this->max_angular>3) {
+          internal::LMProductHotLoop<4>::LMProduct(neighbour_contribution,
+                        harmonics, coefficients_center_by_type,
+                        this->max_radial, this->max_angular);
+        } else if (this->max_angular>2) {
+          internal::LMProductHotLoop<3>::LMProduct(neighbour_contribution,
+                        harmonics, coefficients_center_by_type,
+                        this->max_radial, this->max_angular);
+        } else if (this->max_angular>1) {
+          internal::LMProductHotLoop<2>::LMProduct(neighbour_contribution,
+                        harmonics, coefficients_center_by_type,
+                        this->max_radial, this->max_angular);
+        } else if (this->max_angular>0) {
+          internal::LMProductHotLoop<1>::LMProduct(neighbour_contribution,
+                        harmonics, coefficients_center_by_type,
+                        this->max_radial, this->max_angular);
+        } else {
+          internal::LMProductHotLoop<0>::LMProduct(neighbour_contribution,
+                        harmonics, coefficients_center_by_type,
+                        this->max_radial, this->max_angular);
+        }*/
       }  // for (neigh : center)
     }    // for (center : structure_manager)
 
