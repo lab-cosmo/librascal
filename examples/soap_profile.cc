@@ -66,7 +66,7 @@ int main(int argc, char * argv[]) {
   std::string filename{argv[1]};
 
   double cutoff{5.};
-  json hypers{{"max_radial", 6},
+  json hypers{{"max_radial", 8},
               {"max_angular", 6},
               {"soap_type", "PowerSpectrum"},
               {"normalize", true}};
