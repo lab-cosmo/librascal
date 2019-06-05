@@ -759,9 +759,20 @@ namespace rascal {
         harmonics *= cutoff_function->f_c(dist);
         size_t lm_pos{0}, lm_size{0};
         auto && coefficients_center_by_type{coefficients_center[neigh_type]};
+
+        if (this->max_angular>1) {
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
-          lm_pos = 0;
-          for (size_t l{0}; l < this->max_angular + 1; ++l) {
+          coefficients_center_by_type(radial_n, 0) +=
+              neighbour_contribution(radial_n, 0) * harmonics(0);
+          coefficients_center_by_type(radial_n, 1) +=
+              neighbour_contribution(radial_n, 1) * harmonics(1);
+          coefficients_center_by_type(radial_n, 2) +=
+              neighbour_contribution(radial_n, 1) * harmonics(2);
+          coefficients_center_by_type(radial_n, 3) +=
+              neighbour_contribution(radial_n, 1) * harmonics(3);
+
+          lm_pos = 4;
+          for (size_t l{2}; l < this->max_angular + 1; ++l) {
             lm_size = 2 * l + 1;
             coefficients_center_by_type.block(radial_n, lm_pos, 1, lm_size) +=
                 (neighbour_contribution(radial_n, l) *
@@ -769,6 +780,21 @@ namespace rascal {
             lm_pos += lm_size;
           }
         }
+      } else {
+                for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
+          coefficients_center_by_type(radial_n, 0) +=
+              neighbour_contribution(radial_n, 0) * harmonics(0);
+
+          lm_pos = 1;
+          for (size_t l{1}; l < this->max_angular + 1; ++l) {
+            lm_size = 2 * l + 1;
+            coefficients_center_by_type.block(radial_n, lm_pos, 1, lm_size) +=
+                (neighbour_contribution(radial_n, l) *
+                 harmonics.segment(lm_pos, lm_size));
+            lm_pos += lm_size;
+          }
+        }
+      }
       }  // for (neigh : center)
     }    // for (center : structure_manager)
 
