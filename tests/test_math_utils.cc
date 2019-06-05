@@ -28,6 +28,9 @@
 #include "tests.hh"
 #include "test_math.hh"
 
+// TODO(alex) create a the sphericals harmonics test class as it was done for test_math_hyp1f1.cc  
+// read vectors as in test_math.hh:50~
+
 namespace rascal {
   // Double ftol defined in test_math.hh (currently 100*eps, so about the same
   // as below)

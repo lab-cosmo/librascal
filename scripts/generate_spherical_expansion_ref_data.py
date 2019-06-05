@@ -64,6 +64,7 @@ def dump_reference_json():
                 max_radials=max_radials,
                 rep_info=[])
 
+    # An example of the gruesomeness of using 4 spaces for one tab
     for fn in fns:
         for cutoff in cutoffs:
             data['rep_info'].append([])
