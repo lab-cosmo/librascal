@@ -48,8 +48,8 @@ namespace rascal {
      *        Sized l_max by (2*lmax + 1); the row is indexed by l and the
      *        column by m >= 0.
      */
-    Matrix_t compute_assoc_legendre_polynom(double cos_theta,
-                                            size_t max_angular) {
+    Array_t compute_assoc_legendre_polynom(double cos_theta,
+                                           size_t max_angular) {
       using math::pow;
       using std::sqrt;
       /// Technically abs(sin(θ)), but θ only goes from [0, π)
@@ -58,10 +58,10 @@ namespace rascal {
       // 1);
       // TODO(alex) make these into compact lm storage, and pre-allocate so
       // it does not allocate a matrix every time it calls spherical harmonics
-      Matrix_t assoc_legendre_polynom =
-          Matrix_t::Zero(max_angular + 1, max_angular + 1);
-      Matrix_t coeff_a = Matrix_t::Zero(max_angular + 1, 2 * max_angular + 1);
-      Matrix_t coeff_b = Matrix_t::Zero(max_angular + 1, 2 * max_angular + 1);
+      Array_t assoc_legendre_polynom =
+          Array_t::Zero(max_angular + 1, max_angular + 1);
+      Array_t coeff_a = Array_t::Zero(max_angular + 1, 2 * max_angular + 1);
+      Array_t coeff_b = Array_t::Zero(max_angular + 1, 2 * max_angular + 1);
       const double SQRT_INV_2PI = sqrt(0.5 / PI);
 
       // TODO(alex) make a class for the ALP, so that all of these coefficients
@@ -134,9 +134,9 @@ namespace rascal {
      *        Sized max_m by 2 with the cos(mφ) stored in the first column
      *        and sin(mφ) in the second column, m being the row index
      */
-    MatrixX2_t compute_cos_sin_angle_multiples(double cos_phi, double sin_phi,
+    ArrayX2_t compute_cos_sin_angle_multiples(double cos_phi, double sin_phi,
                                                size_t max_m) {
-      MatrixX2_t cos_sin_m_phi = MatrixX2_t::Zero(max_m + 1, 2);
+      ArrayX2_t cos_sin_m_phi = ArrayX2_t::Zero(max_m + 1, 2);
       for (size_t m_count{0}; m_count < max_m + 1; m_count++) {
         if (m_count == 0) {
           cos_sin_m_phi.row(m_count) << 1.0, 0.0;
@@ -187,7 +187,7 @@ namespace rascal {
      *          stored in compact format (m varies fastest, from -l to l,
      *          and l from 0 to l_max).
      */
-    Vector_t compute_spherical_harmonics(
+    ArrayVec_t compute_spherical_harmonics(
         const Eigen::Ref<const Eigen::Vector3d> & direction,
         size_t max_angular) {
       using std::pow;
@@ -214,11 +214,11 @@ namespace rascal {
         sin_phi = my_direction[1] / sqrt_xy;
       }
 
-      Eigen::VectorXd harmonics =
+      ArrayVec_t harmonics =
           Eigen::VectorXd::Zero(pow(max_angular + 1, 2));
-      Eigen::MatrixXd assoc_legendre_polynom =
+      Array_t assoc_legendre_polynom =
           compute_assoc_legendre_polynom(cos_theta, max_angular);
-      Eigen::MatrixXd cos_sin_m_phi =
+      ArrayX2_t cos_sin_m_phi =
           compute_cos_sin_angle_multiples(cos_phi, sin_phi, max_angular);
 
       size_t l_block_index{0};
@@ -271,7 +271,7 @@ namespace rascal {
      * @todo Add an option to switch off the computation of gradients, so this
      *       function becomes equivalent to math::compute_spherical_harmonics()
      */
-    Matrix_t compute_spherical_harmonics_derivatives(
+    Array_t compute_spherical_harmonics_derivatives(
         const Eigen::Ref<const Eigen::Vector3d> & direction,
         size_t max_angular) {
       using std::pow;
@@ -301,11 +301,11 @@ namespace rascal {
         sin_phi = my_direction[1] / sqrt_xy;
       }
 
-      Eigen::MatrixXd harmonics_derivatives =
-          Eigen::MatrixXd::Zero(4, pow(max_angular + 1, 2));
-      Eigen::MatrixXd assoc_legendre_polynom =
+      Array_t harmonics_derivatives =
+          Array_t::Zero(4, pow(max_angular + 1, 2));
+      Array_t assoc_legendre_polynom =
           compute_assoc_legendre_polynom(cos_theta, max_angular);
-      Eigen::MatrixXd cos_sin_m_phi =
+      ArrayX2_t cos_sin_m_phi =
           compute_cos_sin_angle_multiples(cos_phi, sin_phi, max_angular);
 
       size_t l_block_index{0};

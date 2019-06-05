@@ -766,7 +766,7 @@ namespace rascal {
             coefficients_center_by_type.block(radial_n, l_block_idx,
                                               1, l_block_idx) +=
                 (neighbour_contribution(radial_n, angular_l) *
-                 harmonics.segment(l_block_idx, l_block_size));
+                 harmonics.segment(l_block_idx, l_block_size).matrix());
             l_block_idx += l_block_size;
           }
         }

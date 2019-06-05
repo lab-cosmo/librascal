@@ -46,12 +46,12 @@ namespace rascal {
      * @param max_angular Compute up to this angular momentum number (l_max)
      *
      * @return assoc_legendre_polynom
-     *        An (Eigen)matrix containing the evaluated polynomials.
+     *        An (Eigen)array containing the evaluated polynomials.
      *        Sized l_max by (2*lmax + 1); the row is indexed by l and the
      *        column by m >= 0.
      */
-    Matrix_t compute_assoc_legendre_polynom(double cos_theta,
-                                            size_t max_angular);
+    Array_t compute_assoc_legendre_polynom(double cos_theta,
+                                           size_t max_angular);
 
     /**
      * Compute cos(mφ) and sin(mφ) from the recurrence relations
@@ -71,12 +71,12 @@ namespace rascal {
      * @param max_m Compute up to a maximum value of max_m (inclusive)
      *
      * @return cos_sin_m_phi
-     *        (Eigen)matrix containing the results.
+     *        (Eigen)array containing the results.
      *        Sized max_m by 2 with the cos(mφ) stored in the first column
      *        and sin(mφ) in the second column, m being the row index
      */
-    MatrixX2_t compute_cos_sin_angle_multiples(double cos_phi, double sin_phi,
-                                               size_t max_m);
+    ArrayX2_t compute_cos_sin_angle_multiples(double cos_phi, double sin_phi,
+                                              size_t max_m);
 
     /**
      * Compute a full set of spherical harmonics given a direction vector
@@ -109,11 +109,12 @@ namespace rascal {
      *
      * @param max_angular Compute up to this angular momentum number (l_max)
      *
-     * @return  (Eigen)vector containing the results.
-     *          Sized (l_max+1)**2, contains the l,m components in compressed
-     *          format, i.e. (00)(1-1)(10)(11)(2-2)....
+     * @return  (Eigen)array containing the results.
+     *          Sized (l_max+1)^2, the index collects l and m quantum numbers
+     *          stored in compact format (m varies fastest, from -l to l,
+     *          and l from 0 to l_max).
      */
-    Vector_t compute_spherical_harmonics(
+    ArrayVec_t compute_spherical_harmonics(
         const Eigen::Ref<const Eigen::Vector3d> & direction,
         size_t max_angular);
 
@@ -145,7 +146,7 @@ namespace rascal {
      * @todo Add an option to switch off the computation of gradients, so this
      *       function becomes equivalent to math::compute_spherical_harmonics()
      */
-    Matrix_t compute_spherical_harmonics_derivatives(
+    Array_t compute_spherical_harmonics_derivatives(
         const Eigen::Ref<const Eigen::Vector3d> & direction,
         size_t max_angular);
 
