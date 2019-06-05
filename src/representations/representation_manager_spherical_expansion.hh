@@ -791,17 +791,16 @@ namespace rascal {
                                                                         neigh);
 
         harmonics *= cutoff_function->f_c(dist);
+        size_t lm_pos{0}, lm_size{0};
         auto && coefficients_center_by_type{coefficients_center[neigh_type]};
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
-          size_t l_block_idx{0};
-          for (size_t angular_l{0}; angular_l < this->max_angular + 1;
-               ++angular_l) {
-            size_t l_block_size{2 * angular_l + 1};
-            coefficients_center_by_type.block(radial_n, l_block_idx,
-                                              1, l_block_idx) +=
-                (neighbour_contribution(radial_n, angular_l) *
-                 harmonics.segment(l_block_idx, l_block_size).matrix());
-            l_block_idx += l_block_size;
+          lm_pos = 0;
+          for (size_t l{0}; l < this->max_angular + 1; ++l) {
+            lm_size = 2 * l + 1;
+            coefficients_center_by_type.block(radial_n, lm_pos, 1, lm_size) +=
+                (neighbour_contribution(radial_n, l) *
+                 harmonics.segment(lm_pos, lm_size).matrix());
+            lm_pos += lm_size;
           }
         }
       }  // for (neigh : center)
