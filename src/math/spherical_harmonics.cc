@@ -59,7 +59,7 @@ namespace rascal {
       // TODO(alex) make these into compact lm storage, and pre-allocate so
       // it does not allocate a matrix every time it calls spherical harmonics
       Array_t assoc_legendre_polynom =
-          Array_t::Zero(max_angular + 1, max_angular + 1);
+          Array_t::Zero(max_angular + 1, max_angular + 2);
       Array_t coeff_a = Array_t::Zero(max_angular + 1, 2 * max_angular + 1);
       Array_t coeff_b = Array_t::Zero(max_angular + 1, 2 * max_angular + 1);
       const double SQRT_INV_2PI = sqrt(0.5 / PI);
