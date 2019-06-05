@@ -3,7 +3,8 @@
  *
  * @author Max Veit <max.veit@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
- * @author Andrea Grifasi <andrea.grifasi@epfl.ch>
+ * @author Andrea Grisafi <andrea.grisafi@epfl.ch>
+ * @author Michele Ceriotti <michele.ceriotti@epfl.ch>
  *
  * @date   19 October 2018
  *
@@ -427,9 +428,9 @@ namespace rascal {
               this->radial_norm_factors(radial_n) *
               this->radial_n_factors(radial_n) * a_b_l_n;
         }
-
-        this->radial_integral_center =
-            this->radial_ortho_matrix * this->radial_integral_center;
+  // MC I think this can be moved out - tried and all seems to work!
+  //      this->radial_integral_center =
+  //          this->radial_ortho_matrix * this->radial_integral_center;
         return Vector_Ref(this->radial_integral_center);
       }
 
@@ -472,14 +473,21 @@ namespace rascal {
 
         this->hyp1f1_calculator.calc(distance, fac_a, this->fac_b);
 
+        // TODO(felix) check if actually this fancy asDiagonal() stuff is
+        // really making these faster than doing good ole' matrix products.
+        // it's taking a load of time to do these...
         this->radial_integral_neighbour =
             (a_b_l_n.array() * this->hyp1f1_calculator.get_values().array())
                 .matrix() *
             distance_fac_a_l.asDiagonal();
         this->radial_integral_neighbour.transpose() *=
             this->radial_norm_factors.asDiagonal();
-        this->radial_integral_neighbour.transpose() *=
-            this->radial_ortho_matrix;
+
+     // ALSO - perhaps more interestingly - there's no point in
+     // orthogonalizing each neighbor contribution. This should be done
+     // at the end before returning the whole thing!
+     //   this->radial_integral_neighbour.transpose() *=
+     //       this->radial_ortho_matrix;
         return Matrix_Ref(this->radial_integral_neighbour);
       }
 
@@ -864,7 +872,16 @@ namespace rascal {
                         harmonics, coefficients_center_by_type,
                         this->max_radial, this->max_angular);
       }  // for (neigh : center)
+      // TODO(felix) IMO THIS IS THE POINT TO DO THE ORTHOGONALIZATION!
+
+      // Orthogonalize the cradial coefficients
+      for (auto && coeff_by_type : coefficients_center) {
+        coeff_by_type.second.transpose() *=
+          radial_integral->radial_ortho_matrix;
+      }
     }    // for (center : structure_manager)
+
+
 
   }      // compute()
 

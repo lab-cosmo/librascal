@@ -5,6 +5,7 @@
  * @author Felix Musil <felix.musil@epfl.ch>
  * @author Michael Willatt <michael.willatt@epfl.ch>
  * @author Andrea Grisafi <andrea.grisafi@epfl.ch>
+ * @author Michele Ceriotti <michele.ceriotti@epfl.ch>
  *
  * @date   12 March 2019
  *
