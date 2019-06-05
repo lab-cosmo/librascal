@@ -5,6 +5,7 @@ import ase
 import rascal
 import numpy as np
 from ase.io import read
+import time
 from rascal.representations import SOAP
 
 N_ITERATIONS = 500
@@ -34,5 +35,8 @@ hypers = dict(soap_type="PowerSpectrum",
 
 soap = SOAP(**hypers)
 
-
+st = time.time()
 soap.transform(frames)
+nd = time.time()
+elapsed = nd - st
+print("Elapsed: {:.3f} sec".format(elapsed))
