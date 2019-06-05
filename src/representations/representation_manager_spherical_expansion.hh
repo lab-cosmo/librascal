@@ -125,6 +125,7 @@ namespace rascal {
           LMProductHotLoop<l_unroll>::lm_explicit_prod(coeffn, harm,
                                                       coeffnlm, radial_n);
 
+          // falls back on an explicit sum for lmax > l_unroll
           lm_pos = (l_unroll+1)*(l_unroll+1);
           for (size_t l{l_unroll+1}; l <  lmax+1; ++l) {
             lm_size = 2 * l + 1;
@@ -147,6 +148,7 @@ namespace rascal {
     LMProductHotLoop<0>::LMProduct(const Eigen::MatrixBase<D1>& coeffn,
             const Eigen::MatrixBase<D2>& harm, Eigen::MatrixBase<D3>& coeffnlm,
             const size_t & nmax, const size_t & lmax) {
+      // TODO(felix) do a proper assert - this should ONLY be called if lmax=0!
       for (size_t radial_n{0}; radial_n < nmax; radial_n++) {
         LMProductHotLoop<0>::lm_explicit_prod(coeffn, harm, coeffnlm, radial_n);
       }
@@ -858,43 +860,9 @@ namespace rascal {
         harmonics *= cutoff_function->f_c(dist);
         auto && coefficients_center_by_type{coefficients_center[neigh_type]};
 
-        //if (this->max_angular>7) {
-          internal::LMProductHotLoop<8>::LMProduct(neighbour_contribution,
+        internal::LMProductHotLoop<8>::LMProduct(neighbour_contribution,
                         harmonics, coefficients_center_by_type,
                         this->max_radial, this->max_angular);
-        /*} else if (this->max_angular>6) {
-          internal::LMProductHotLoop<7>::LMProduct(neighbour_contribution,
-                        harmonics, coefficients_center_by_type,
-                        this->max_radial, this->max_angular);
-        } else if (this->max_angular>5) {
-          internal::LMProductHotLoop<6>::LMProduct(neighbour_contribution,
-                        harmonics, coefficients_center_by_type,
-                        this->max_radial, this->max_angular);
-        } else if (this->max_angular>4) {
-          internal::LMProductHotLoop<5>::LMProduct(neighbour_contribution,
-                        harmonics, coefficients_center_by_type,
-                        this->max_radial, this->max_angular);
-        } else if (this->max_angular>3) {
-          internal::LMProductHotLoop<4>::LMProduct(neighbour_contribution,
-                        harmonics, coefficients_center_by_type,
-                        this->max_radial, this->max_angular);
-        } else if (this->max_angular>2) {
-          internal::LMProductHotLoop<3>::LMProduct(neighbour_contribution,
-                        harmonics, coefficients_center_by_type,
-                        this->max_radial, this->max_angular);
-        } else if (this->max_angular>1) {
-          internal::LMProductHotLoop<2>::LMProduct(neighbour_contribution,
-                        harmonics, coefficients_center_by_type,
-                        this->max_radial, this->max_angular);
-        } else if (this->max_angular>0) {
-          internal::LMProductHotLoop<1>::LMProduct(neighbour_contribution,
-                        harmonics, coefficients_center_by_type,
-                        this->max_radial, this->max_angular);
-        } else {
-          internal::LMProductHotLoop<0>::LMProduct(neighbour_contribution,
-                        harmonics, coefficients_center_by_type,
-                        this->max_radial, this->max_angular);
-        }*/
       }  // for (neigh : center)
     }    // for (center : structure_manager)
 

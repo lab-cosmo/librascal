@@ -50,6 +50,125 @@
 namespace rascal {
 
   namespace internal {
+
+    /* templated inner loop that expands the LM reduction from nlm n'lm to nn'l.
+     * l_unroll is the level at which we want to unroll the loop. should
+     * be smaller than l_max to avoid segfaults
+     *  */
+    template <size_t l_unroll>
+    class LMReduceHotLoop {
+      template <size_t l_others>
+      friend class LMReduceHotLoop;
+
+     private:
+      template <typename D1, typename D2, typename D3>
+      static inline void lm_explicit_sum(const Eigen::MatrixBase<D1>& coef1n1,
+                                         const Eigen::MatrixBase<D2>& coef2n2,
+                                         Eigen::MatrixBase<D3>& coef1n12n2,
+                                         const size_t & n1n2);
+
+     public:
+      // This makes the full loop to accumulate the nlm coefficients
+      template <typename D1, typename D2, typename D3>
+      static inline void LMReduce(const Eigen::MatrixBase<D1>& coef1,
+            const Eigen::MatrixBase<D2>& coef2,
+            Eigen::MatrixBase<D3>& coef1n12n2,
+            const size_t & nmax, const size_t & lmax);
+    };
+
+    /* this should allow to spell out (and let the compiler optimize)
+     * the irregular loop over the LM blocks. Now, seems the compiler is
+     * smart enough to unroll this loop with -O3 so all is well */
+    template <size_t l_unroll>
+    template <typename D1, typename D2, typename D3>
+    inline void
+    LMReduceHotLoop<l_unroll>::lm_explicit_sum(
+                                         const Eigen::MatrixBase<D1>& coef1n1,
+                                         const Eigen::MatrixBase<D2>& coef2n2,
+                                         Eigen::MatrixBase<D3>& coef1n12n2,
+                                         const size_t & n1n2) {
+      LMReduceHotLoop<l_unroll-1>::lm_explicit_sum(coef1n1, coef2n2,
+                                                   coef1n12n2, n1n2);
+
+      size_t lm_start{(l_unroll) * (l_unroll)};
+      size_t lm_end{(l_unroll + 1) * (l_unroll + 1)};
+      coef1n12n2(n1n2, l_unroll) = coef1n1(lm_start) * coef2n2(lm_start);
+      for (size_t lm = lm_start + 1; lm < lm_end; ++lm) {
+        coef1n12n2(n1n2, l_unroll) += coef1n1(lm) * coef2n2(lm);
+      }
+    }
+
+    // terminates the recursion
+    template <>
+    template <typename D1, typename D2, typename D3>
+    inline void
+    LMReduceHotLoop<0>::lm_explicit_sum(const Eigen::MatrixBase<D1>& coef1n1,
+                                         const Eigen::MatrixBase<D2>& coef2n2,
+                                         Eigen::MatrixBase<D3>& coef1n12n2,
+                                         const size_t & n1n2) {
+      coef1n12n2(n1n2, 0) = coef1n1(0) * coef2n2(0);
+    }
+
+    // this will be the actual call. one should guesstimate a reasonable lmax
+    // as otherwise there's a chain of recursive ifs. this will automatically
+    // fold down to lower l_unroll if called with too low lmax
+    template <size_t l_unroll>
+    template <typename D1, typename D2, typename D3>
+    inline void
+    LMReduceHotLoop<l_unroll>::LMReduce(const Eigen::MatrixBase<D1>& coef1,
+            const Eigen::MatrixBase<D2>& coef2,
+            Eigen::MatrixBase<D3>& coef1n12n2,
+            const size_t & nmax, const size_t & lmax) {
+
+      if (lmax>=l_unroll) {
+        size_t n1n2{0}, pos{0}, size{0};
+        for (size_t n1{0}; n1 < nmax; ++n1) {
+          auto && coef1n1 = coef1.row(n1);
+          for (size_t n2{0}; n2 < nmax; ++n2) {
+            auto && coef2n2 = coef2.row(n2);
+            lm_explicit_sum(coef1n1, coef2n2, coef1n12n2, n1n2);
+            // if there are more coefficients than l_unroll,
+            // we go over them with a conventional sum, that should
+            // fast enough
+            pos = (l_unroll + 1) * (l_unroll + 1);
+            for (size_t l = l_unroll + 1; l < lmax + 1; ++l) {
+              size = 2 * l + 1;
+              // do the reduction over m (with vectorization)
+              coef1n12n2(n1n2, l) = (coef1n1.segment(pos, size).array() *
+                                     coef2n2.segment(pos, size).array()).sum();
+              pos += size;
+            }
+            ++n1n2;
+          } // for n1
+        } // for n2
+      } else {
+        LMReduceHotLoop<l_unroll-1>::LMReduce(coef1, coef2,
+            coef1n12n2, nmax, lmax);
+      }
+    }
+
+    // terminates the recursion
+    template <>
+    template <typename D1, typename D2, typename D3>
+    inline void
+    LMReduceHotLoop<0>::LMReduce(const Eigen::MatrixBase<D1>& coef1,
+            const Eigen::MatrixBase<D2>& coef2,
+            Eigen::MatrixBase<D3>& coef1n12n2,
+            const size_t & nmax, const size_t & lmax) {
+      // TODO(felix) do a proper assert - this should ONLY be called if lmax=0!
+      size_t n1n2{0};
+      for (size_t n1{0}; n1 < nmax; n1++) {
+        auto && coef1n1 = coef1.row(n1);
+        for (size_t n2{0}; n2 < nmax; n2++) {
+          auto && coef2n2 = coef2.row(n2);
+          LMReduceHotLoop<0>::lm_explicit_sum(coef1n1, coef2n2,
+                    coef1n12n2, n1n2);
+          ++n1n2;
+        }
+      }
+    }
+
+
     enum class SOAPType { RadialSpectrum, PowerSpectrum, End_ };
 
     /**
@@ -312,7 +431,14 @@ namespace rascal {
         spair_type[0] = el1.first[0];
 
         // multiply with the precomputed factors
-        auto coef1{el1.second * l_factors.asDiagonal()};
+        //auto coef1{el1.second * l_factors.asDiagonal()};
+        // TODO(felix) For unfathomable reasons doing an explicit copy and
+        // product is massively faster than the fancy version above. why?
+        Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
+            coef1{el1.second};
+        for (size_t n1{0}; n1 < this->max_radial; ++n1) {
+          coef1.row(n1).array() *= l_factors.array();
+        }
 
         for (const auto & el2 : coefficients) {
           // avoid computing p^{ab} and p^{ba} since p^{ab} = p^{ba}^T
@@ -323,26 +449,14 @@ namespace rascal {
           auto & coef2{el2.second};
           auto && soap_vector_by_pair{soap_vector[spair_type]};
 
-          size_t n1n2{0};
-          size_t pos{0}, size{0};
-          for (size_t n1{0}; n1 < this->max_radial; ++n1) {
-            for (size_t n2{0}; n2 < this->max_radial; ++n2) {
-              soap_vector_by_pair(n1n2, 0) = coef1(n1, 0) * coef2(n2, 0);
-              pos = 1;
-              for (size_t l{1}; l < this->max_angular + 1; ++l) {
-                size = 2 * l + 1;
-                // do the reduction over m (with vectorization)
-                soap_vector_by_pair(n1n2, l) =
-                    (coef1.block(n1, pos, 1, size).array() *
-                     coef2.block(n2, pos, 1, size).array())
-                        .sum();
-                pos += size;
-              }
-              ++n1n2;
-            }
-          }
-        }  // for coefficients
-      }    // for coefficients
+          // this will unroll the LM reduction of n1lm,n2lm->n1n2l
+          // at compile time.
+          internal::LMReduceHotLoop<8>::LMReduce(coef1,
+                        coef2, soap_vector_by_pair,
+                        this->max_radial, this->max_angular);
+
+        }  // for el1 : coefficients
+      }    // for el2 : coefficients
 
       // the SQRT_TWO factor comes from the fact that
       // the upper diagonal of the species is not considered
