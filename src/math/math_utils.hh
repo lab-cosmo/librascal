@@ -53,12 +53,6 @@ namespace rascal {
     using Matrix_t =
         Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
     using Vector_t = Eigen::Matrix<double, 1, Eigen::Dynamic, Eigen::RowMajor>;
-    using Array_t = Eigen::Array<double, Eigen::Dynamic, Eigen::Dynamic,
-                                 Eigen::RowMajor>;
-    // row-major vs. column-major doesn't matter for vectors
-    using ArrayVec_t = Eigen::ArrayXd;
-    using ArrayX2_t = Eigen::Array<double, Eigen::Dynamic, 2, Eigen::RowMajor>;
-
 
     using MatrixX2_t = Eigen::Matrix<double, Eigen::Dynamic, 2>;
 

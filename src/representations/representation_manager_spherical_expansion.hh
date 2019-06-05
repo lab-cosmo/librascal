@@ -799,7 +799,7 @@ namespace rascal {
             lm_size = 2 * l + 1;
             coefficients_center_by_type.block(radial_n, lm_pos, 1, lm_size) +=
                 (neighbour_contribution(radial_n, l) *
-                 harmonics.segment(lm_pos, lm_size).matrix());
+                 harmonics.segment(lm_pos, lm_size));
             lm_pos += lm_size;
           }
         }

@@ -145,14 +145,14 @@ namespace rascal {
 
     ~SphericalHarmonicsWithGradients() = default;
 
-    Eigen::Matrix<double, 1, (max_angular+1)*(max_angular+1)>
+    Eigen::Array<double, 1, (max_angular+1)*(max_angular+1)>
     f(const Eigen::Vector3d & inputs_v) {
       // Renormalize the inputs to project out the r gradients
       Eigen::Vector3d my_inputs = inputs_v / inputs_v.norm();
       return math::compute_spherical_harmonics(my_inputs, max_angular);
     }
 
-    Eigen::Matrix<double, 3, (max_angular+1)*(max_angular+1)>
+    Eigen::Array<double, 3, (max_angular+1)*(max_angular+1)>
     grad_f(const Eigen::Vector3d & inputs_v) {
       Eigen::Array<double, 4, (max_angular+1)*(max_angular+1)>
         harmonics_derivatives{math::compute_spherical_harmonics_derivatives(

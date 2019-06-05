@@ -125,7 +125,7 @@ namespace rascal {
     for (size_t vec_idx{0}; vec_idx < unit_vectors.size(); vec_idx++) {
       Eigen::Vector3d direction(unit_vectors[vec_idx].data());
       size_t max_angular = harmonics[vec_idx].size() - 1;
-      math::Array_t computed_alps =
+      Eigen::MatrixXd computed_alps =
           math::compute_assoc_legendre_polynom(direction[2], max_angular);
       if (verbose) {
         std::cout << "Testing unit vector: " << direction.transpose();
