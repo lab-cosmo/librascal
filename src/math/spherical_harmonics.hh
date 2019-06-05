@@ -154,6 +154,8 @@ namespace rascal {
             Matrix_t::Zero(this->max_angular + 1, 2 * this->max_angular + 1);
         this->coeff_b =
             Matrix_t::Zero(this->max_angular + 1, 2 * this->max_angular + 1);
+        this->harmonics =
+            Vector_t::Zero((this->max_angular + 1) * (this->max_angular + 1));
 
         for (size_t angular_l{0}; angular_l < this->max_angular + 1;
              angular_l++) {
@@ -189,6 +191,7 @@ namespace rascal {
         double l_accum{SQRT_INV_2PI};
         for (size_t angular_l{0}; angular_l < this->max_angular + 1;
              angular_l++) {
+          // TODO(felix) take out the if from the loop
           if (angular_l == 0) {
             this->assoc_legendre_polynom(angular_l, 0) = SQRT_INV_2PI;
             continue;
@@ -202,6 +205,9 @@ namespace rascal {
           // for l > 1 : Use the recurrence relation
           // TODO(max-veit) don't bother calculating m =/= 0 if sin(theta) == 0
           //                (z-axis)
+
+          // TODO(felix) vectorize this loop (look at broadcasting in eigen)
+          // and spherical_expension:772
           for (size_t m_count{0}; m_count < angular_l - 1; ++m_count) {
             this->assoc_legendre_polynom(angular_l, m_count) =
                 this->coeff_a(angular_l, m_count) *
@@ -210,6 +216,7 @@ namespace rascal {
                  this->coeff_b(angular_l, m_count) *
                      this->assoc_legendre_polynom(angular_l - 2, m_count));
           }
+          // TODO(felix) vectorize this and put it outside the loop
           this->assoc_legendre_polynom(angular_l, angular_l - 1) =
               // cos_theta * sqrt(2 * angular_l + 1) * l_accum;
               cos_theta * this->angular_coeffs1.at(angular_l) * l_accum;
@@ -256,6 +263,7 @@ namespace rascal {
        *          Sized (l_max+1)**2, contains the l,m components in compressed
        *          format, i.e. (00)(1-1)(10)(11)(2-2)....
        */
+      // TODO(felix) rename to calc
       void compute(const Eigen::Ref<const Eigen::Vector3d> & direction) {
         using math::pow;
         using std::sqrt;
@@ -272,8 +280,7 @@ namespace rascal {
           cos_phi = direction[0] / sqrt_xy;
           sin_phi = direction[1] / sqrt_xy;
         }
-        this->harmonics =
-            Vector_t::Zero((this->max_angular + 1) * (this->max_angular + 1));
+
         this->compute_assoc_legendre_polynom(cos_theta);
         // this->compute_assoc_legendre_polynom(cos_theta, this->max_angular);
         // Matrix_t assoc_legendre_polynom =
@@ -284,7 +291,9 @@ namespace rascal {
         size_t lm_base{0};  // starting point for storage
         for (size_t angular_l{0}; angular_l < this->max_angular + 1;
              angular_l++) {
+          // TODO(alex) vectorize this loop
           for (size_t m_count{0}; m_count < angular_l + 1; m_count++) {
+            // TODO(alex) take out the if from the loop
             if (m_count == 0) {
               this->harmonics(lm_base + angular_l) =
                   this->assoc_legendre_polynom(angular_l, m_count) *
