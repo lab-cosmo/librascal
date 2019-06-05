@@ -94,46 +94,54 @@ namespace rascal {
     using Parent = MultipleStructureManagerNLStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
 
-    MultipleStructureSOAP() : Parent{} {};
+    MultipleStructureSOAP() : Parent{} {
+      for (auto & ri_hyp : this->radial_contribution_hypers) {
+        for (auto & fc_hyp : this->fc_hypers) {
+          for (auto & sig_hyp : this->density_hypers) {
+            for (auto & rep_hyp : this->rep_hypers) {
+              rep_hyp["cutoff_function"] = fc_hyp;
+              rep_hyp["gaussian_density"] = sig_hyp;
+              rep_hyp["radial_contribution"] = ri_hyp;
+              this->hypers.push_back(rep_hyp);
+            }
+          }
+        }
+      }
+    };
     ~MultipleStructureSOAP() = default;
 
-    // std::vector<std::string> filenames{
-    //     "reference_data/methane.json",
-    //     "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-    //     "reference_data/simple_cubic_8.json"};
-    // std::vector<std::string> soap_types{"RadialSpectrum", "PowerSpectrum"};
-    // std::vector<double> cutoffs{{2.0, 3.0}};
-    // std::vector<double> gaussian_sigmas{{0.2, 0.3}};
-    // std::vector<size_t> max_radials{{8, 12}};
+    std::vector<json> hypers{};
 
-    std::vector<json> hypers{{{"interaction_cutoff", 3.0},
-                              {"cutoff_smooth_width", 0.5},
-                              {"max_radial", 6},
-                              {"max_angular", 0},
-                              {"gaussian_sigma_type", "Constant"},
-                              {"gaussian_sigma_constant", 0.2},
-                              {"soap_type", "RadialSpectrum"}},
-                             {{"interaction_cutoff", 3.0},
-                              {"cutoff_smooth_width", 0.5},
-                              {"max_radial", 6},
-                              {"max_angular", 0},
-                              {"gaussian_sigma_type", "Constant"},
-                              {"gaussian_sigma_constant", 0.4},
-                              {"soap_type", "RadialSpectrum"}},
-                             {{"interaction_cutoff", 2.0},
-                              {"cutoff_smooth_width", 0.0},
-                              {"max_radial", 6},
-                              {"max_angular", 6},
-                              {"gaussian_sigma_type", "Constant"},
-                              {"gaussian_sigma_constant", 0.2},
-                              {"soap_type", "PowerSpectrum"}},
-                             {{"interaction_cutoff", 2.0},
-                              {"cutoff_smooth_width", 0.0},
-                              {"max_radial", 6},
-                              {"max_angular", 6},
-                              {"gaussian_sigma_type", "Constant"},
-                              {"gaussian_sigma_constant", 0.4},
-                              {"soap_type", "PowerSpectrum"}}};
+    std::vector<json> fc_hypers{
+        {{"type", "Cosine"},
+         {"cutoff", {{"value", 3.0}, {"unit", "A"}}},
+         {"smooth_width", {{"value", 0.5}, {"unit", "A"}}}},
+        {{"type", "Cosine"},
+         {"cutoff", {{"value", 2.0}, {"unit", "A"}}},
+         {"smooth_width", {{"value", 1.0}, {"unit", "A"}}}}};
+
+    std::vector<json> density_hypers{
+        {{"type", "Constant"},
+         {"gaussian_sigma", {{"value", 0.2}, {"unit", "A"}}}},
+        {{"type", "Constant"},
+         {"gaussian_sigma", {{"value", 0.4}, {"unit", "A"}}}}};
+    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
+    std::vector<json> rep_hypers{{{"max_radial", 6},
+                                  {"max_angular", 0},
+                                  {"soap_type", "RadialSpectrum"},
+                                  {"normalize", true}},
+                                 {{"max_radial", 6},
+                                  {"max_angular", 0},
+                                  {"soap_type", "RadialSpectrum"},
+                                  {"normalize", true}},
+                                 {{"max_radial", 6},
+                                  {"max_angular", 6},
+                                  {"soap_type", "PowerSpectrum"},
+                                  {"normalize", true}},
+                                 {{"max_radial", 6},
+                                  {"max_angular", 6},
+                                  {"soap_type", "PowerSpectrum"},
+                                  {"normalize", true}}};
   };
 
   struct SOAPTestData : TestData {
@@ -149,21 +157,39 @@ namespace rascal {
     using Parent = MultipleStructureManagerNLStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
 
-    MultipleStructureSphericalExpansion() : Parent{} {};
+    MultipleStructureSphericalExpansion() : Parent{} {
+      for (auto & ri_hyp : this->radial_contribution_hypers) {
+        for (auto & fc_hyp : this->fc_hypers) {
+          for (auto & sig_hyp : this->density_hypers) {
+            for (auto & rep_hyp : this->rep_hypers) {
+              rep_hyp["cutoff_function"] = fc_hyp;
+              rep_hyp["gaussian_density"] = sig_hyp;
+              rep_hyp["radial_contribution"] = ri_hyp;
+              this->hypers.push_back(rep_hyp);
+            }
+          }
+        }
+      }
+    };
     ~MultipleStructureSphericalExpansion() = default;
 
-    // std::vector<std::string> filenames{
-    //     "reference_data/simple_cubic_8.json",
-    //     "reference_data/small_molecule.json"
-    // };
-    // std::vector<double> cutoffs{{1, 2, 3}};
+    std::vector<json> hypers{};
 
-    std::vector<json> hypers{{{"interaction_cutoff", 6.0},
-                              {"cutoff_smooth_width", 1.0},
-                              {"max_radial", 10},
-                              {"max_angular", 8},
-                              {"gaussian_sigma_type", "Constant"},
-                              {"gaussian_sigma_constant", 0.5}}};
+    std::vector<json> fc_hypers{
+        {{"type", "Cosine"},
+         {"cutoff", {{"value", 3.0}, {"unit", "A"}}},
+         {"smooth_width", {{"value", 0.5}, {"unit", "A"}}}},
+        {{"type", "Cosine"},
+         {"cutoff", {{"value", 2.0}, {"unit", "A"}}},
+         {"smooth_width", {{"value", 1.0}, {"unit", "A"}}}}};
+
+    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
+
+    std::vector<json> density_hypers{
+        {{"type", "Constant"},
+         {"gaussian_sigma", {{"value", 0.5}, {"unit", "A"}}}}};
+
+    std::vector<json> rep_hypers{{{"max_radial", 10}, {"max_angular", 8}}};
   };
 
   struct SphericalExpansionTestData : TestData {

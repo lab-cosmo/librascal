@@ -44,14 +44,14 @@ struct HelperLayer {
 };
 
 template <typename SMI, size_t Order>
-using ClusterRefKey_t = ClusterRefKey<Order, HelperLayer<SMI, Order>::layer>;
+using ClusterRefkey_t = ClusterRefKey<Order, HelperLayer<SMI, Order>::layer>;
 
 template <typename SMI, size_t Order>
 using ClusterRef_t = typename StructureManager<SMI>::template ClusterRef<Order>;
 
 template <typename SMI, size_t Order>
 using PyClusterRef =
-    py::class_<ClusterRef_t<SMI, Order>, ClusterRefKey_t<SMI, Order>>;
+    py::class_<ClusterRef_t<SMI, Order>, ClusterRefkey_t<SMI, Order>>;
 
 template <typename StructureManagerImplementation>
 using PyManager = py::class_<StructureManagerImplementation,
@@ -89,7 +89,7 @@ struct add_cluster_refs<Order, LayerEnd, LayerEnd> {
 template <size_t Order, typename SMI>
 decltype(auto) add_cluster(py::module & m) {
   using ClusterRef = ClusterRef_t<SMI, Order>;
-  using ClusterRefKey = ClusterRefKey_t<SMI, Order>;
+  using ClusterRefKey = ClusterRefkey_t<SMI, Order>;
 
   std::string cluster_name = internal::GetBindingTypeName<SMI>();
 
@@ -107,7 +107,7 @@ decltype(auto) add_cluster(py::module & m) {
 
   py::class_<ClusterRef, ClusterRefKey> py_cluster(m, cluster_name.c_str());
   py_cluster
-      .def_property_readonly("atom_index", &ClusterRef::get_atom_index,
+      .def_property_readonly("atom_tag", &ClusterRef::get_atom_tag,
                              py::return_value_policy::reference)
       .def_property_readonly(
           "atom_type",

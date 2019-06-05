@@ -80,23 +80,23 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(filter_1_test, Fix, FixturesMax1, Fix) {
     std::random_device rd{};
     std::uniform_int_distribution<int> dist(0, 1);
-    std::vector<int> atom_indices{};
+    std::vector<int> atom_tag_list{};
 
     for (auto atom : Fix::fixture.manager) {
       const bool include(dist(rd));
       if (include) {
         Fix::manager.add_cluster(atom);
-        atom_indices.push_back(atom.get_atom_index());
+        atom_tag_list.push_back(atom.get_atom_tag());
       }
     }
 
     size_t counter{0};
     for (auto atom : Fix::manager) {
-      BOOST_CHECK_EQUAL(atom.get_atom_index(), atom_indices[counter]);
+      BOOST_CHECK_EQUAL(atom.get_atom_tag(), atom_tag_list[counter]);
       counter++;
       const auto & pos_a{atom.get_position()};
       const auto & pos_b{
-          this->fixture.manager->get_position(atom.get_atom_index())};
+          this->fixture.manager->get_position(atom.get_atom_tag())};
       const auto error{(pos_a - pos_b).norm()};
       BOOST_CHECK_EQUAL(error, 0.);
 
@@ -117,30 +117,77 @@ namespace rascal {
    * been missed the authors.
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(filter_2_test, Fix, FixturesMax2, Fix) {
+    bool verbose{false};
+    if (verbose) {
+      std::cout << ">> Test for manager ";
+      std::cout << Fix::fixture.manager->get_name();
+      std::cout << ", manager size " << Fix::fixture.manager->get_size();
+      std::cout << ", manager size with ghosts "
+                << Fix::fixture.manager->get_size_with_ghosts();
+      std::cout << ", manager size nb_clusters[Order=2] "
+                << Fix::fixture.manager->get_nb_clusters(2);
+      std::cout << " starts now." << std::endl;
+    }
     std::random_device rd{};
     std::uniform_int_distribution<int> dist(0, 1);
-    std::vector<std::array<int, 2>> atom_indices{};
+    std::vector<std::array<int, 2>> atom_tag_list{};
 
     for (auto atom : Fix::fixture.manager) {
+      if (verbose) {
+        std::cout << ">> Atom with cluster index ";
+        std::cout << atom.get_cluster_indices()[0];
+        std::cout << " and with atom tag ";
+        std::cout << atom.get_atom_tag();
+        std::cout << std::endl;
+      }
       for (auto pair : atom) {
+        if (verbose) {
+          std::cout << ">> Pair with cluster index ";
+          std::cout << pair.get_cluster_indices()[0];
+          std::cout << " and with atom tags ";
+          std::cout << pair.get_atom_tag_list()[0];
+          std::cout << " ";
+          std::cout << pair.get_atom_tag_list()[1];
+          std::cout << std::endl;
+        }
         const bool include(dist(rd));
         if (include) {
           Fix::manager.add_cluster(pair);
-          atom_indices.push_back(pair.get_atom_indices());
+          atom_tag_list.push_back(pair.get_atom_tag_list());
         }
       }
     }
 
+    if (verbose) {
+      std::cout << ">> Pairs added" << std::endl;
+    }
+
     size_t counter{0};
     for (auto atom : Fix::manager) {
+      if (verbose) {
+        std::cout << ">> Atom with cluster index ";
+        std::cout << atom.get_cluster_indices()[0];
+        std::cout << " and with atom tag ";
+        std::cout << atom.get_atom_tag();
+        std::cout << std::endl;
+      }
       for (auto pair : atom) {
-        auto && a{pair.get_atom_indices()};
-        auto && b{atom_indices[counter]};
+        if (verbose) {
+          std::cout << ">> Pair with cluster index ";
+          std::cout << pair.get_cluster_indices()[0];
+          std::cout << " and with atom tags ";
+          std::cout << pair.get_atom_tag_list()[0];
+          std::cout << " ";
+          std::cout << pair.get_atom_tag_list()[1];
+          std::cout << std::endl;
+        }
+        auto && a{pair.get_atom_tag_list()};
+        auto && b{atom_tag_list[counter]};
         BOOST_CHECK_EQUAL_COLLECTIONS(a.begin(), a.end(), b.begin(), b.end());
 
         const auto & pos_a{pair.get_position()};
         const auto & pos_b{
-            this->fixture.manager->get_position(pair.get_atom_index())};
+            this->fixture.manager->get_position(pair.get_atom_tag())};
         const auto error{(pos_a - pos_b).norm()};
         BOOST_CHECK_EQUAL(error, 0.);
 

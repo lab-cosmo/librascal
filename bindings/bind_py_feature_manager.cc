@@ -107,7 +107,17 @@ decltype(auto) bind_sparse_feature_manager(py::module & mod, py::module &) {
   feature.def("get_feature_matrix", &Feature_t::get_feature_matrix_dense,
               py::return_value_policy::reference_internal,
               py::keep_alive<1, 0>());
-
+  feature.def("dot", [](Feature_t & self, Feature_t & other) {
+    return dot(self, other);
+  });
+  feature.def("dot", [](Feature_t & self) { return dot(self); });
+  feature.def("cosine_kernel_global",
+              [](Feature_t & self, Feature_t & other, const int & zeta) {
+                return cosine_kernel_global(zeta, self, other);
+              });
+  feature.def("cosine_kernel_global", [](Feature_t & self, const int & zeta) {
+    return cosine_kernel_global(zeta, self);
+  });
   return feature;
 }
 

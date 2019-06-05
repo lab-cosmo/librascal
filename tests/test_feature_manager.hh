@@ -93,7 +93,7 @@ namespace rascal {
     using Parent = RepresentationFixture<BaseFixture, RepresentationManager>;
     using Manager_t = typename Parent::Manager_t;
     using Representation_t = RepresentationManager<Manager_t>;
-    using key_t = typename Representation_t::key_t;
+    using Key_t = typename Representation_t::Key_t;
     using Feature_t = FeatureManager<T>;
     using Hypers_t = typename Representation_t::Hypers_t;
     using Precision_t = T;
