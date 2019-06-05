@@ -411,7 +411,7 @@ namespace rascal {
                                        * neighbour_contribution.col(angular_l);
         }
 
-        //TODO obviously incomplete, just so this compiles
+        //TODO(max) obviously incomplete, just so this compiles
         return proportional_term;
       }
 
