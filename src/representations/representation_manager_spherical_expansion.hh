@@ -771,6 +771,7 @@ namespace rascal {
         }
       }  // for (neigh : center)
     }    // for (center : structure_manager)
+
   }      // compute()
 
 }  // namespace rascal

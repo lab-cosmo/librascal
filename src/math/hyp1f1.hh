@@ -337,20 +337,57 @@ namespace rascal {
 
       inline double sum(const double & z, const Eigen::VectorXd & coefficient,
                         const size_t & mmax, const int & n_terms) {
-        double iz{1.0 / z};
-        double res{1.}, izpow{1.}, s_i{1.};
-        // perform the sum
-        for (size_t i{0}; i < mmax; ++i) {
-          izpow *= iz;
-          s_i = coefficient(i) * izpow;
-          if (res > 0 and std::fabs(s_i) < this->tolerance * res and
-              n_terms == -1) {
-            this->n_terms = i;
-            break;
-          }
-          res += s_i;
-        }
 
+        /*
+        // perform the sum
+        double res{1.0}, a1{1.0}, zpow{z}, z4{z * z};
+        z4 *= z4;
+        if (n_terms == -1) {
+          // adaptive sum. computes several terms at a time to save on
+          // and on bailout tests (typical n. of terms needed is ~20)
+          for (size_t i{0}; i < mmax - 3; i += 4) {
+            a1 = zpow * (coefficient(i) + z * (coefficient(i + 1) +
+                                               z * (coefficient(i + 2) +
+                                                    z * coefficient(i + 3))));
+            if (a1 < this->tolerance * res) {
+              this->n_terms = i;
+              res += a1;
+              break;
+            }
+            zpow *= z4;
+            res += a1;
+          }
+        } else {
+          // TODO(mc) this could be done with telescopic sums - and might be
+          // faster than checking for bailout condition
+          for (size_t i{0}; i < static_cast<size_t>(n_terms); ++i) {
+            a1 = coefficient(i) * zpow;
+            zpow *= z;
+            res += a1;
+          }
+        }*/
+
+        double iz{1.0 / z};
+        double res{1.0}, izpow{iz}, s_i{1.}, iz2{iz*iz};
+        // perform the sum
+        if (n_terms == -1) {
+          for (size_t i{0}; i < mmax-1; i+=2) {
+            s_i = izpow *(coefficient(i) + coefficient(i+1)*iz);
+            if (res > 0 and std::fabs(s_i) < this->tolerance * res) {
+              this->n_terms = i;
+              res += s_i;
+              break;
+            }
+            izpow *= iz2;
+            res += s_i;
+          }
+        } else {
+          for (size_t i{0}; i < mmax; ++i) {
+            s_i = coefficient(i) * izpow;
+            res += s_i;
+            izpow *= iz;
+          }
+        }
         if (res > DOVERFLOW) {
           std::stringstream error{};
           error << "Hyp1f1Asymptotic expansion: a=" << std::to_string(this->a)

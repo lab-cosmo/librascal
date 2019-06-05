@@ -49,7 +49,7 @@
 // using namespace std;
 using namespace rascal;  // NOLINT
 
-const int N_ITERATIONS = 100;
+const int N_ITERATIONS = 10;
 
 using Representation_t = RepresentationManagerSOAP<
     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
@@ -65,7 +65,7 @@ int main(int argc, char * argv[]) {
   // maybe together with the filename and iteration count
   std::string filename{argv[1]};
 
-  double cutoff{2.};
+  double cutoff{5.};
   json hypers{{"max_radial", 6},
               {"max_angular", 6},
               {"soap_type", "PowerSpectrum"},

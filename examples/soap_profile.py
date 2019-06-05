@@ -7,7 +7,7 @@ import numpy as np
 from ase.io import read
 from rascal.representations import SOAP
 
-N_ITERATIONS = 500
+N_ITERATIONS = 10
 
 def load_json(fn):
     with open(fn,'r') as f:
