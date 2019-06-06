@@ -221,6 +221,7 @@ namespace rascal {
      * Assumes that if the structure is given as json or filename related then
      * it is different. Do the comparison only if it is given as an
      * AtomicStructure or positions, pbc...
+     * Used for the verlet list
      */
     inline bool is_identical(const double &) const { return true; }
 
