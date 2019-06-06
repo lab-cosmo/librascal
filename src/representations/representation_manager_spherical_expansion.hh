@@ -351,7 +351,7 @@ namespace rascal {
         double fac_a{0.5 * pow(smearing->get_gaussian_sigma(pair), -2)};
 
         // computes (r_{ij}*a)^l incrementally
-        //Vector_t distance_fac_a_l(this->max_angular + 1);
+        // Vector_t distance_fac_a_l(this->max_angular + 1);
         this->distance_fac_a_l(0) = 1.;
         double distance_fac_a{distance * fac_a};
         for (size_t angular_l{1}; angular_l < this->max_angular + 1;
@@ -361,7 +361,7 @@ namespace rascal {
         }
 
         // computes (a+b_n)^{-0.5*(3+l+n)}
-        //Matrix_t a_b_l_n(this->max_radial, this->max_angular + 1);
+        // Matrix_t a_b_l_n(this->max_radial, this->max_angular + 1);
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           double a_b_l{1. / sqrt(fac_a + this->fac_b[radial_n])};
 
@@ -386,7 +386,6 @@ namespace rascal {
             this->radial_ortho_matrix;
         return Matrix_Ref(this->radial_integral_neighbour);
       }
-
 
       /**
        * Compute the radial derivative of the neighbour contribution
@@ -447,7 +446,6 @@ namespace rascal {
         this->radial_neighbour_derivative = proportional_term + hypergeom_term;
         return Matrix_Ref(this->radial_neighbour_derivative);
       }
-
 
       /** Compute common prefactors for the radial Gaussian basis functions */
       void precompute_radial_sigmas() {
@@ -837,8 +835,8 @@ namespace rascal {
           for (size_t angular_l{0}; angular_l < this->max_angular + 1;
                ++angular_l) {
             size_t l_block_size{2 * angular_l + 1};
-            coefficients_center_by_type.block(
-                                    radial_n, l_block_idx, 1, l_block_size) +=
+            coefficients_center_by_type.block(radial_n, l_block_idx, 1,
+                                              l_block_size) +=
                 (neighbour_contribution(radial_n, angular_l) *
                  harmonics.segment(l_block_idx, l_block_size));
             l_block_idx += l_block_size;

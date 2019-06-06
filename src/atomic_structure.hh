@@ -89,10 +89,10 @@ namespace rascal {
 
     //! method for initializing structure data from raw Eigen types, beware:
     //! copy!
-    void set_structure(const PositionsInput_t & positions,
-                       const AtomTypesInput_t & atom_types,
-                       const Eigen::Ref<const Eigen::MatrixXd> cell,
-                       const PBCInput_t & pbc) {
+    inline void set_structure(const PositionsInput_t & positions,
+                              const AtomTypesInput_t & atom_types,
+                              const Eigen::Ref<const Eigen::MatrixXd> cell,
+                              const PBCInput_t & pbc) {
       // check data consistency
       auto npos{positions.cols()};
       auto ntypes{atom_types.rows()};
@@ -110,7 +110,7 @@ namespace rascal {
     }
 
     // TODO(markus): add function to read from XYZ files
-    void set_structure(const std::string & filename) {
+    inline void set_structure(const std::string & filename) {
       json j;
       std::ifstream reader(filename);
       if (not reader.is_open()) {
@@ -122,7 +122,7 @@ namespace rascal {
       this->set_structure(j.begin().value());
     }
 
-    void set_structure(const json & s) {
+    inline void set_structure(const json & s) {
       /*
        * ASE json format is nested - here, first entry is actual data
        * structure. If in any case you should have multiple
@@ -148,7 +148,7 @@ namespace rascal {
     }
 
     //! method for initializing structure from a json object; data is copied
-    void set_structure(const json_io::AtomicJsonData & s) {
+    inline void set_structure(const json_io::AtomicJsonData & s) {
       // internal std::vector for reading from json, necessary for push_back, no
       // direct mapping possible
       std::vector<double> cell_data{};
@@ -204,6 +204,74 @@ namespace rascal {
       this->pbc = PBC_ref(pbc_data.data());
       this->positions =
           Positions_ref(pos_data.data(), Dim, pos_data.size() / Dim);
+    }
+
+    inline void set_structure(const AtomicStructure<Dim> & other) {
+      this->positions = other.positions;
+      this->atom_types = other.atom_types;
+      this->cell = other.cell;
+      this->pbc = other.pbc;
+    }
+
+    inline void set_structure() {}
+
+    /**
+     * Compare if another structure is identical to itself.
+     *
+     * Assumes that if the structure is given as json or filename related then
+     * it is different. Do the comparison only if it is given as an
+     * AtomicStructure or positions, pbc...
+     * Used for the verlet list
+     */
+    inline bool is_identical(const double &) const { return true; }
+
+    inline bool is_identical(const json_io::AtomicJsonData &, const double &) {
+      return false;
+    }
+
+    inline bool is_identical(const json &, const double &) const {
+      return false;
+    }
+
+    inline bool is_identical(const std::string &, const double &) const {
+      return false;
+    }
+
+    inline bool is_identical(const AtomicStructure<Dim> & other,
+                             const double & skin2) const {
+      bool is_similar{true};
+      if (this->positions.cols() == other.positions.cols()) {
+        if ((this->pbc.array() != other.pbc.array()).any() or
+            (this->cell.array() != other.cell.array()).any() or
+            (this->positions - other.positions)
+                    .rowwise()
+                    .squaredNorm()
+                    .maxCoeff() > skin2) {
+          is_similar = false;
+        }
+      } else {
+        is_similar = false;
+      }
+      return is_similar;
+    }
+
+    inline bool is_identical(const PositionsInput_t & positions,
+                             const AtomTypesInput_t & /*atom_types*/,
+                             const Eigen::Ref<const Eigen::MatrixXd> cell,
+                             const PBCInput_t & pbc,
+                             const double & skin2) const {
+      bool is_similar{true};
+      if (this->positions.cols() == positions.cols()) {
+        if ((this->pbc.array() != pbc.array()).any() or
+            (this->cell.array() != cell.array()).any() or
+            (this->positions - positions).rowwise().squaredNorm().maxCoeff() >
+                skin2) {
+          is_similar = false;
+        }
+      } else {
+        is_similar = false;
+      }
+      return is_similar;
     }
   };
 }  // namespace rascal

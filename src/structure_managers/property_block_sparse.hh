@@ -491,9 +491,10 @@ namespace rascal {
       return this->operator[](id.get_cluster_index(CallerLayer));
     }
 
-    template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order,
-        std::enable_if_t<(Order_ == 1) and (CallerOrder > 1), int> = // NOLINT
-                  0>  // NOLINT
+    template <
+        size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order,
+        std::enable_if_t<(Order_ == 1) and (CallerOrder > 1), int> =  // NOLINT
+        0>                                                            // NOLINT
     inline decltype(auto)
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
       return this->operator[](this->get_manager().get_atom_index(
