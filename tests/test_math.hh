@@ -43,26 +43,25 @@ namespace rascal {
 
   struct SphericalHarmonicsRefFixture {
     SphericalHarmonicsRefFixture() {
-      json ref_data;
-      std::ifstream ref_file(this->ref_filename);
-      ref_file >> ref_data;
-      unit_vectors = ref_data.at("unit_vectors").get<StdVector2Dim_t>();
-      harmonics = ref_data.at("harmonics").get<StdVector3Dim_t>();
-      alps = ref_data.at("alps").get<StdVector3Dim_t>();
+      std::vector<std::uint8_t> ref_data_ubjson;
+      internal::read_binary_file(this->ref_filename, ref_data_ubjson);
+      this->ref_data = json::from_ubjson(ref_data_ubjson);
     }
 
     ~SphericalHarmonicsRefFixture() = default;
 
-    std::string ref_filename = "reference_data/spherical_harmonics_test.json";
+    std::string ref_filename = "reference_data/spherical_harmonics_reference.ubjson";
 
+    // the type which gives me double
     using StdVector2Dim_t = std::vector<std::vector<double>>;
     using StdVector3Dim_t = std::vector<std::vector<std::vector<double>>>;
     StdVector2Dim_t unit_vectors{};
     StdVector3Dim_t harmonics{};
     StdVector3Dim_t alps{};
-    bool verbose{false};
+    json ref_data{};
+    bool verbose{true};
   };
-
+  
   struct Hyp1F1RefFixture {
     Hyp1F1RefFixture() {
       std::vector<std::uint8_t> ref_data_ubjson;
