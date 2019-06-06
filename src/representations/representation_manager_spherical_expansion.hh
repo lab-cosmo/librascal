@@ -425,10 +425,12 @@ namespace rascal {
           }
 
           this->radial_integral_center(radial_n) =
-              this->radial_norm_factors(radial_n) *
               this->radial_n_factors(radial_n) * a_b_l_n;
         }
+
   // MC I think this can be moved out - tried and all seems to work!
+  //      this->radial_integral_center.transpose() *=
+  //        this->radial_norm_factors.asDiagonal();
   //      this->radial_integral_center =
   //          this->radial_ortho_matrix * this->radial_integral_center;
         return Vector_Ref(this->radial_integral_center);
@@ -458,6 +460,10 @@ namespace rascal {
         }
 
         // computes (a+b_n)^{-0.5*(3+l+n)}
+        // TODO(alex) this actually has some cost, and is a bit wasteful as it
+        // computes lmax*nmax products where it could compute nmax+lmax
+        // TODO(alex) we allocate and then drop this matrix - we could compute
+        // directly into radial_integral_neighbour
         Matrix_t a_b_l_n(this->max_radial, this->max_angular + 1);
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           double a_b_l{1. / sqrt(fac_a + this->fac_b[radial_n])};
@@ -480,8 +486,8 @@ namespace rascal {
             (a_b_l_n.array() * this->hyp1f1_calculator.get_values().array())
                 .matrix() *
             distance_fac_a_l.asDiagonal();
-        this->radial_integral_neighbour.transpose() *=
-            this->radial_norm_factors.asDiagonal();
+     //   this->radial_integral_neighbour.transpose() *=
+     //       this->radial_norm_factors.asDiagonal();
 
      // ALSO - perhaps more interestingly - there's no point in
      // orthogonalizing each neighbor contribution. This should be done
@@ -874,8 +880,16 @@ namespace rascal {
       }  // for (neigh : center)
       // TODO(felix) IMO THIS IS THE POINT TO DO THE ORTHOGONALIZATION!
 
-      // Orthogonalize the cradial coefficients
+      // Normalize and orthogonalize the radial coefficients
       for (auto && coeff_by_type : coefficients_center) {
+        // TODO(felix) pls check - again for me this is faster than the fancy
+        // asDiagonal()
+        for (size_t n{0}; n<this->max_radial; ++n) {
+          coeff_by_type.second.row(n) *=
+              radial_integral->radial_norm_factors(n);
+        }
+        //coeff_by_type.second.transpose() *=
+        //  radial_integral->radial_norm_factors.asDiagonal();
         coeff_by_type.second.transpose() *=
           radial_integral->radial_ortho_matrix;
       }
