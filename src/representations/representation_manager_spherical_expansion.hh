@@ -872,12 +872,9 @@ namespace rascal {
       }  // for (neigh : center)
 
       // Normalize and orthogonalize the radial coefficients
-      for (auto && coeff_by_type : coefficients_center) {
-        coeff_by_type.second.transpose() *= radial_integral->radial_norm_factors.asDiagonal();
+      coefficients_center.lhs_dot(radial_integral->radial_norm_factors.asDiagonal());
+      coefficients_center.lhs_dot(radial_integral->radial_ortho_matrix);
 
-        coeff_by_type.second.transpose() *=
-            radial_integral->radial_ortho_matrix;
-      }
     }  // for (center : structure_manager)
   }    // compute()
 

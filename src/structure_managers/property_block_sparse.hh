@@ -351,6 +351,19 @@ namespace rascal {
           }
         }
       }
+      /**
+       * dot product from the left side
+       * A = left_side_mat*A where A are all the key blocks
+       */
+      template <typename Derived>
+      inline void lhs_dot(const Eigen::EigenBase<Derived>& left_side_mat) {
+        for (const auto & el : this->map) {
+          auto && pos{el.second};
+          auto block{reference(&this->data[std::get<0>(pos)],
+                                std::get<1>(pos), std::get<2>(pos))};
+          block.transpose() *= left_side_mat;
+        }
+      }
 
      private:
       /**
