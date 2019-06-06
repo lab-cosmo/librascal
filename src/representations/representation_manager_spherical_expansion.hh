@@ -423,13 +423,14 @@ namespace rascal {
 
         // Derivatives of the A and B factors (simple proportional)
         Matrix_t proportional_term(this->max_radial, this->max_angular + 1);
+        // start proportional_factors as the list of l from 0 to l_max
         Vector_t proportional_factors =
-            Vector_t::LinSpaced(0., this->max_angular + 1, 1.0);
+            Vector_t::LinSpaced(this->max_angular + 1, 0, this->max_angular);
+        // proportional_factor = (l/r^2 - 1/2a)*radial_integral
         proportional_factors = (proportional_factors.array() * inv_dist2)
                                 - inv_2a;
-        // proportional_factor = (l/r^2 - 1/2a)*radial_integral
-        proportional_term = this->radial_integral_neighbour.array().colwise()
-                          * proportional_factors;
+        proportional_term = this->radial_integral_neighbour.array().rowwise()
+                          * proportional_factors.array().transpose();
 
         // Hypergeometric derivative
         Matrix_t hypergeom_term(this->max_radial, this->max_angular + 1);
@@ -437,11 +438,11 @@ namespace rascal {
         hypergeom_term =
             (this->a_b_l_n.array() *
              this->hyp1f1_calculator.get_values().array() // d/dz 1F1(z;...)
-             ).colwise() * this->distance_fac_a_l.array()
-                         * this->radial_norm_factors.array();
+             ).rowwise() * this->distance_fac_a_l.array().transpose();
         // avoids the use of the transpose...
         // assuming the radial ortho matrix is symmetric, right?
-        hypergeom_term = this->radial_ortho_matrix * hypergeom_term;
+        hypergeom_term = this->radial_ortho_matrix *
+                            radial_norm_factors.asDiagonal() * hypergeom_term;
 
         this->radial_neighbour_derivative = proportional_term + hypergeom_term;
         return Matrix_Ref(this->radial_neighbour_derivative);
@@ -479,6 +480,8 @@ namespace rascal {
         // TODO(max-veit) see if we can replace the gammas with their natural
         // logs,
         // since it'll overflow for relatively small n (n1 + n2 >~ 300)
+        // UPDATE nevermind, the overlap matrix becomes singular well before
+        // this point.
         Matrix_t overlap(this->max_radial, this->max_radial);
         for (size_t radial_n1{0}; radial_n1 < this->max_radial; radial_n1++) {
           for (size_t radial_n2{0}; radial_n2 < this->max_radial; radial_n2++) {

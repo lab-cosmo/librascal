@@ -164,13 +164,12 @@ namespace rascal {
   template<typename FunctionProvider_t>
   void test_gradients(FunctionProvider_t function_calculator,
                       std::string data_filename) {
-    //FunctionProvider_t function_calculator{};
     GradientTestFixture params{data_filename};
     Eigen::MatrixXd values;
     Eigen::MatrixXd jacobian;
     Eigen::RowVectorXd argument_vector;
     Eigen::VectorXd displacement_direction;
-    Eigen::Vector3d displacement;
+    Eigen::VectorXd displacement;
     Eigen::MatrixXd directional;
     Eigen::MatrixXd fd_derivatives;
     Eigen::MatrixXd fd_error_cwise;
@@ -210,9 +209,11 @@ namespace rascal {
           displacement = dx * displacement_direction;
           // Compute the finite-difference derivative using a
           // centred-difference approach
-          fd_derivatives = 0.5 / dx * (
-            function_calculator.f(argument_vector + displacement.adjoint())
-          - function_calculator.f(argument_vector - displacement.adjoint()));
+          Eigen::MatrixXd fun_plus{
+              function_calculator.f(argument_vector + displacement.adjoint())};
+          Eigen::MatrixXd fun_minus{
+              function_calculator.f(argument_vector - displacement.adjoint())};
+          fd_derivatives = 0.5 / dx * (fun_plus - fun_minus);
           double fd_error{0.};
           double fd_quotient{0.};
           size_t nonzero_count{0};

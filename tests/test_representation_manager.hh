@@ -204,6 +204,44 @@ namespace rascal {
         "reference_data/spherical_expansion_reference.ubjson"};
   };
 
+  template<class RadialIntegral, class ClusterRef>
+  struct SphericalExpansionRadialDerivative {
+
+    SphericalExpansionRadialDerivative(
+            std::shared_ptr<RadialIntegral> ri, ClusterRef & pair_in) :
+        radial_integral{ri}, pair{pair_in}, max_radial{ri->max_radial},
+        max_angular{ri->max_angular} {}
+
+    ~SphericalExpansionRadialDerivative() = default;
+
+    Eigen::Ref<Eigen::Array<double, 1, Eigen::Dynamic>>
+    f(const Eigen::Matrix<double, 1, 1> & input_v) {
+      Eigen::ArrayXXd result(this->max_radial, this->max_angular + 1);
+      result = this->radial_integral->template
+          compute_neighbour_contribution<
+            internal::AtomicSmearingType::Constant>(input_v(0), this->pair);
+      Eigen::Map<Eigen::Array<double, 1, Eigen::Dynamic>> result_flat(
+                                            result.data(), 1, result.size());
+      return result_flat;
+    }
+
+    Eigen::Ref<Eigen::Array<double, 1, Eigen::Dynamic>>
+    grad_f(const Eigen::Matrix<double, 1, 1> & input_v) {
+      Eigen::ArrayXXd result(this->max_radial, this->max_angular + 1);
+      result = this->radial_integral->template
+          compute_neighbour_derivative<
+            internal::AtomicSmearingType::Constant>(input_v(0), this->pair);
+      Eigen::Map<Eigen::Array<double, 1, Eigen::Dynamic>> result_flat(
+                                            result.data(), 1, result.size());
+      return result_flat;
+    }
+
+    std::shared_ptr<RadialIntegral> radial_integral;
+    ClusterRef & pair;
+    size_t max_radial{6};
+    size_t max_angular{4};
+  };
+
   struct MultipleStructureSortedCoulomb
       : MultipleStructureManagerNLStrictFixture {
     using Parent = MultipleStructureManagerNLStrictFixture;

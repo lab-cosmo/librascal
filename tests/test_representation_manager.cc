@@ -27,6 +27,7 @@
 
 #include "tests.hh"
 #include "test_representation_manager.hh"
+#include "test_math.hh" // for the gradient test
 
 namespace rascal {
   BOOST_AUTO_TEST_SUITE(representation_test);
@@ -172,6 +173,45 @@ namespace rascal {
       }
       manager_i += 1;
     }
+  }
+
+  using fixtures_with_gradients = boost::mpl::list<RepresentationFixture<
+      MultipleStructureSphericalExpansion,
+      RepresentationManagerSphericalExpansion>>;
+
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(spherical_expansion_radial_derivative, Fix,
+                                   fixtures_with_gradients, Fix) {
+    auto & managers = Fix::managers;
+    auto & hypers = Fix::hypers;
+    // aaaaaargh what a hack
+    using ClusterRef_t = typename Fix::Manager_t::template ClusterRef<2>;
+    using RadialIntegral_t = internal::RadialContribution<
+          internal::RadialBasisType::GTO>;
+    std::string data_filename{"reference_data/radial_derivative_test.json"};
+    // doesn't work, dunno why, see nested for loops below for replacement hack
+    //auto & pair = (manager->begin())->begin();
+    for (auto & hyper : hypers) {
+      std::shared_ptr<RadialIntegral_t> radial_integral =
+                                std::make_shared<RadialIntegral_t>(hyper);
+      for (auto manager : managers) {
+        for (auto center : manager) {
+          for (auto pair : center) {
+            // in C++17 the compiler would be able to deduce the template
+            // arguments for itself >:/
+            SphericalExpansionRadialDerivative<RadialIntegral_t, ClusterRef_t>
+                calculator(radial_integral, pair);
+            test_gradients(calculator, data_filename);
+            //std::cout << calculator.f(Eigen::Array<double, 1, 1>(1.5)) << std::endl;
+            // I really just need _a_ pair, not any one in particular.
+            break;
+          } // for (auto pair : center)
+          break;
+        } // for (auto center : managers)
+        // Please tell me there's an easier way to just run this on _one_
+        // structure.
+      } // for (auto manager : managers)
+      // Do run it on all the hypers, though
+    } // for (auto hyper : hypers)
   }
 
   BOOST_AUTO_TEST_SUITE_END();
