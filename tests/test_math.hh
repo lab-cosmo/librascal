@@ -186,8 +186,8 @@ namespace rascal {
                                     (inputs_it->data(), 1, params.n_arguments);
       values = function_calculator.f(argument_vector);
       jacobian = function_calculator.grad_f(argument_vector);
-      std::cout << std::string(30, '-') << std::endl;
-      std::cout << "Direction vector: " << argument_vector << std::endl;
+      // std::cout << std::string(30, '-') << std::endl;
+      // std::cout << "Direction vector: " << argument_vector << std::endl;
       if (params.verbose) {
         std::cout << "Values:" << values << std::endl;
         std::cout << "Jacobian:" << jacobian << std::endl;
@@ -197,15 +197,15 @@ namespace rascal {
         displacement_direction = params.displacement_directions.row(disp_idx);
         // Compute the directional derivative(s)
         directional = displacement_direction.adjoint() * jacobian;
-        std::cout << "FD direction: " << displacement_direction.adjoint();
-        std::cout << std::endl;
+        // std::cout << "FD direction: " << displacement_direction.adjoint();
+        // std::cout << std::endl;
         if (params.verbose) {
           std::cout << "Analytical derivative: " << directional << std::endl;
         }
         double min_error{HUGE_VAL};
         Eigen::MatrixXd fd_last{Eigen::MatrixXd::Zero(1, directional.size())};
         for (double dx = 1E-2; dx > 1E-10; dx *= 0.1) {
-          std::cout << "dx = " << dx << "\t";
+          // std::cout << "dx = " << dx << "\t";
           displacement = dx * displacement_direction;
           // Compute the finite-difference derivative using a
           // centred-difference approach
@@ -229,8 +229,8 @@ namespace rascal {
             fd_quotient = fd_quotient / nonzero_count;
           }
           fd_error = fd_error / fd_derivatives.size();
-          std::cout << "Average rel FD error: " << fd_error << "\t";
-          std::cout << "Average FD quotient:  " << fd_quotient << std::endl;
+          // std::cout << "Average rel FD error: " << fd_error << "\t";
+          // std::cout << "Average FD quotient:  " << fd_quotient << std::endl;
           if (std::abs(fd_error) < min_error) {min_error = std::abs(fd_error);}
           if (params.verbose) {
             fd_error_cwise = (fd_derivatives - directional);

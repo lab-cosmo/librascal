@@ -360,9 +360,10 @@ struct BindAdaptor<AdaptorNeighbourList, Implementation_t> {
   using ImplementationPtr_t = std::shared_ptr<Implementation_t>;
   using PyManager_t = PyManager<Manager_t>;
   static void bind_adaptor_init(PyManager_t & adaptor) {
-    adaptor.def(py::init<std::shared_ptr<Implementation_t>, double, bool>(),
+    adaptor.def(py::init<std::shared_ptr<Implementation_t>, double, bool, double>(),
                 py::arg("manager"), py::arg("cutoff"),
                 py::arg("consider_ghost_neighbours") = false,
+                py::arg("skin") = 0.,
                 py::keep_alive<1, 2>());
   }
 
@@ -371,12 +372,13 @@ struct BindAdaptor<AdaptorNeighbourList, Implementation_t> {
     m_adaptor.def(
         name.c_str(),
         [](ImplementationPtr_t manager, const double & cutoff,
-           const bool & consider_ghost_neighbours) {
+           const bool & consider_ghost_neighbours, const double& skin) {
           return make_adapted_manager<AdaptorNeighbourList, Implementation_t>(
-              manager, cutoff, consider_ghost_neighbours);
+              manager, cutoff, consider_ghost_neighbours, skin);
         },
         py::arg("manager"), py::arg("cutoff"),
         py::arg("consider_ghost_neighbours") = false,
+        py::arg("skin") = 0.,
         py::return_value_policy::copy);
   }
 };
