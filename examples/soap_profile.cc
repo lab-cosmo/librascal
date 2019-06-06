@@ -49,21 +49,20 @@
 // using namespace std;
 using namespace rascal;  // NOLINT
 
-const int N_ITERATIONS = 1000;
-
 using Representation_t = RepresentationManagerSOAP<
     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
 
 int main(int argc, char * argv[]) {
-  if (argc < 2) {
-    std::cerr << "Must provide atomic structure json filename as argument";
-    std::cerr << std::endl;
+  if (argc < 3) {
+    std::cerr << "Must provide atomic structure json filename " 
+              << "and number of iterations as arguments."<<std::endl;
     return -1;
   }
 
   // TODO(max) put these in a file so they can be varied systematically
   // maybe together with the filename and iteration count
   std::string filename{argv[1]};
+  size_t n_iter{static_cast<size_t>(std::stoi(argv[2]))};
 
   double cutoff{5.};
   json hypers{{"max_radial", 8},
@@ -104,28 +103,28 @@ int main(int argc, char * argv[]) {
 
   auto start = std::chrono::high_resolution_clock::now();
   // This is the part that should get profiled
-  for (size_t looper{0}; looper < N_ITERATIONS; looper++) {
+  for (size_t looper{0}; looper < n_iter; looper++) {
     manager->update(ast);
   }
   auto finish = std::chrono::high_resolution_clock::now();
 
   elapsed = finish - start;
   std::cout << "Neighbour List"
-            << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
+            << " elapsed: " << elapsed.count() / n_iter << " seconds"
             << std::endl;
 
   Representation_t representation{manager, hypers};
 
   start = std::chrono::high_resolution_clock::now();
   // This is the part that should get profiled
-  for (size_t looper{0}; looper < N_ITERATIONS; looper++) {
+  for (size_t looper{0}; looper < n_iter; looper++) {
     representation.compute();
   }
   finish = std::chrono::high_resolution_clock::now();
 
   elapsed = finish - start;
   std::cout << "Compute represenation"
-            << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
+            << " elapsed: " << elapsed.count() / n_iter << " seconds"
             << std::endl;
 
   auto soap = representation.get_representation_full();
