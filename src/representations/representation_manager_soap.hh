@@ -154,6 +154,9 @@ namespace rascal {
                                  Eigen::MatrixBase<D3> & coef1n12n2,
                                  const size_t & nmax, const size_t & lmax) {
       // TODO(felix) do a proper assert - this should ONLY be called if lmax=0!
+      if (lmax > 0) {
+        throw std::runtime_error("LMReduce<0> should not be called directly");
+      }
       size_t n1n2{0};
       for (size_t n1{0}; n1 < nmax; n1++) {
         auto && coef1n1 = coef1.row(n1);
