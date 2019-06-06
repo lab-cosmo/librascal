@@ -203,6 +203,7 @@ namespace rascal {
       // are expected
       // virtual Vector_Ref compute_center_contribution() = 0;
       // virtual Matrix_Ref compute_neighbour_contribution() = 0;
+      // virtual Matrix_Ref compute_neighbour_derivative() = 0;
     };
 
     template <RadialBasisType RBT>
@@ -381,6 +382,39 @@ namespace rascal {
             this->radial_ortho_matrix;
         return Matrix_Ref(this->radial_integral_neighbour);
       }
+
+
+      /**
+       * Compute the radial derivative of the neighbour's contribution
+       *
+       * The derivative is taken with respect to the pair distance, r_ij
+       */
+      template <AtomicSmearingType AST, size_t Order, size_t Layer>
+      Matrix_Ref
+      compute_neighbour_derivative(const double & distance,
+                                     ClusterRefKey<Order, Layer> & pair) {
+        using math::PI;
+        using math::pow;
+        using std::sqrt;
+
+        auto smearing{downcast_atomic_smearing<AST>(this->atomic_smearing)};
+        // a = 1 / (2*\sigma^2)
+        double fac_a{0.5 * pow(smearing->get_gaussian_sigma(pair), -2)};
+        double dist2{distance * distance};
+
+        //TODO(max) avoid computing this and the other factors twice
+        Matrix_t neighbour_contribution =
+            this->compute_neighbour_contribution(distance, pair);
+        Matrix_t proportional_term(this->max_radial, this->max_angular + 1);
+        for (size_t angular_l{0}; angular_l <= this->max_angular; ++angular_l) {
+          proportional_term.col(angular_l) = (0.5 / fac_a - angular_l / dist2)
+                                       * neighbour_contribution.col(angular_l);
+        }
+
+        //TODO(max) obviously incomplete, just so this compiles
+        return proportional_term;
+      }
+
 
       /** Compute common prefactors for the radial Gaussian basis functions */
       void precompute_radial_sigmas() {
@@ -752,7 +786,7 @@ namespace rascal {
         auto direction{this->structure_manager->get_direction_vector(neigh)};
         Key_t neigh_type{neigh.get_atom_type()};
 
-        // Note: the copy _should_ be optimized out (RVO)
+
         this->spherical_harmonics.compute(direction);
         math::Vector_t harmonics{this->spherical_harmonics.get_harmonics() *
                                  (cutoff_function->f_c(dist))};
@@ -761,16 +795,18 @@ namespace rascal {
             radial_integral
                 ->template compute_neighbour_contribution<SmearingType>(dist,
                                                                         neigh);
-        size_t lm_pos{0}, lm_size{0};
+
         auto && coefficients_center_by_type{coefficients_center[neigh_type]};
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
-          lm_pos = 0;
-          for (size_t l{0}; l < this->max_angular + 1; ++l) {
-            lm_size = 2 * l + 1;
-            coefficients_center_by_type.block(radial_n, lm_pos, 1, lm_size) +=
-                (neighbour_contribution(radial_n, l) *
-                 harmonics.segment(lm_pos, lm_size));
-            lm_pos += lm_size;
+          size_t l_block_idx{0};
+          for (size_t angular_l{0}; angular_l < this->max_angular + 1;
+               ++angular_l) {
+            size_t l_block_size{2 * angular_l + 1};
+            coefficients_center_by_type.block(
+                                    radial_n, l_block_idx, 1, l_block_size) +=
+                (neighbour_contribution(radial_n, angular_l) *
+                 harmonics.segment(l_block_idx, l_block_size));
+            l_block_idx += l_block_size;
           }
         }
       }  // for (neigh : center)

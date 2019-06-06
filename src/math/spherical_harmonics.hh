@@ -118,11 +118,44 @@ namespace rascal {
         const Eigen::Ref<const Eigen::Vector3d> & direction,
         size_t max_angular);
 
+    /**
+     * Compute a full set of spherical harmonics and their Cartesian gradients
+     *
+     * Spherical harmonics are defined as described in
+     * math::compute_spherical_harmonics().  Gradients are defined with respect
+     * to motion of the central atom, which is the opposite sign of the usual
+     * definition with respect to the _arguments_ of the Y_l^m.  The actual
+     * Cartesian gradients include an extra factor of 1/r that is not included
+     * here; the rest is independent of radius.
+     *
+     * @param direction Unit vector giving the angles (arguments for the Y_l^m)
+     *
+     * @param max_angular Compute up to this angular momentum number (l_max)
+     *
+     * @return  (Eigen)array containing the results.
+     *          Sized 4 by (l_max+1)^2; the first index collects the
+     *          value of the harmonic and the x, y, and z gradient components.
+     *          The second index collects l and m quantum numbers, stored in
+     *          compact format (m varies fastest, from -l to l, and l from 0 to
+     *          l_max).
+     *
+     * @warning This function will access the associated Legendre polynomials
+     *          for m=l+1 and assume they are equal to zero.  The implementation
+     *          of the polynomials in this file respects this convention.
+     *
+     * @todo Add an option to switch off the computation of gradients, so this
+     *       function becomes equivalent to math::compute_spherical_harmonics()
+     */
+    Matrix_t compute_spherical_harmonics_derivatives(
+        const Eigen::Ref<const Eigen::Vector3d> & direction,
+        size_t max_angular);
+
     // New class which contains the above functions to precompute as much as
     // possible.
     class SphericalHarmonics {
      protected:
       using Matrix_Ref = typename Eigen::Ref<const Matrix_t>;
+      using MatrixX2_Ref = typename Eigen::Ref<const MatrixX2_t>;
       using Vector_Ref = typename Eigen::Ref<const Vector_t>;
       // using Vector_Ref = typename Eigen::Ref<const Eigen::VectorXd>;
 
@@ -133,6 +166,7 @@ namespace rascal {
       std::vector<double> angular_coeffs2{};
       Vector_t harmonics{};
       Matrix_t assoc_legendre_polynom{};
+      MatrixX2_t cos_sin_m_phi{};
       Matrix_t coeff_a{};
       Matrix_t coeff_b{};
 
@@ -156,6 +190,7 @@ namespace rascal {
             Matrix_t::Zero(this->max_angular + 1, 2 * this->max_angular + 1);
         this->harmonics =
             Vector_t::Zero((this->max_angular + 1) * (this->max_angular + 1));
+        this->cos_sin_m_phi = MatrixX2_t::Zero(this->max_angular + 1, 2);
 
         for (size_t angular_l{0}; angular_l < this->max_angular + 1;
              angular_l++) {
@@ -282,11 +317,7 @@ namespace rascal {
         }
 
         this->compute_assoc_legendre_polynom(cos_theta);
-        // this->compute_assoc_legendre_polynom(cos_theta, this->max_angular);
-        // Matrix_t assoc_legendre_polynom =
-        //     compute_assoc_legendre_polynom(cos_theta, this->max_angular);
-        MatrixX2_t cos_sin_m_phi = compute_cos_sin_angle_multiples(
-            cos_phi, sin_phi, this->max_angular);
+        this->compute_cos_sin_angle_multiples(cos_phi, sin_phi);
 
         size_t lm_base{0};  // starting point for storage
         for (size_t angular_l{0}; angular_l < this->max_angular + 1;
@@ -335,21 +366,22 @@ namespace rascal {
        *        Sized max_m by 2 with the cos(mφ) stored in the first column
        *        and sin(mφ) in the second column, m being the row index
        */
-      MatrixX2_t compute_cos_sin_angle_multiples(double cos_phi, double sin_phi,
-                                                 size_t max_m) {
-        MatrixX2_t cos_sin_m_phi = MatrixX2_t::Zero(max_m + 1, 2);
-        for (size_t m_count{0}; m_count < max_m + 1; m_count++) {
+      void compute_cos_sin_angle_multiples(const double& cos_phi, const double& sin_phi) {
+        for (size_t m_count{0}; m_count < this->max_angular + 1; m_count++) {
           if (m_count == 0) {
-            cos_sin_m_phi.row(m_count) << 1.0, 0.0;
+            this->cos_sin_m_phi.row(m_count) << 1.0, 0.0;
           } else if (m_count == 1) {
-            cos_sin_m_phi.row(m_count) << cos_phi, sin_phi;
+            this->cos_sin_m_phi.row(m_count) << cos_phi, sin_phi;
           } else {
-            cos_sin_m_phi.row(m_count) =
-                2.0 * cos_phi * cos_sin_m_phi.row(m_count - 1) -
-                cos_sin_m_phi.row(m_count - 2);
+            this->cos_sin_m_phi.row(m_count) =
+                2.0 * cos_phi * this->cos_sin_m_phi.row(m_count - 1) -
+                this->cos_sin_m_phi.row(m_count - 2);
           }
         }
-        return cos_sin_m_phi;
+      }
+
+      inline MatrixX2_Ref get_cos_sin_m_phi() {
+        return MatrixX2_Ref(this->cos_sin_m_phi);
       }
 
       inline Matrix_Ref get_assoc_legendre_polynom() {
