@@ -283,25 +283,27 @@ namespace rascal {
     size_t get_nb_clusters(size_t order) const;
 
     void update_self() {}
-    
+
     template <class... Args>
     void update_self(Args &&... arguments) {
       this->atoms_object.set_structure(std::forward<Args>(arguments)...);
       this->build();
     }
 
-    inline const AtomicStructure<traits::Dim>& get_atomic_structure() const {
+    inline const AtomicStructure<traits::Dim> & get_atomic_structure() const {
       return this->atoms_object;
     }
 
     // /**
     //  * invokes the initialisation/reinitialisation based on existing
-    //  * data. E.g. when the atom positions are provided by a simulation method,
+    //  * data. E.g. when the atom positions are provided by a simulation
+    //  method,
     //  * which evolves in time, this function updates the data.
     //  */
     // void
     // update_self(const Eigen::Ref<const Eigen::MatrixXd, 0,
-    //                              Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>>
+    //                              Eigen::Stride<Eigen::Dynamic,
+    //                              Eigen::Dynamic>>
     //                 positions,
     //             const Eigen::Ref<const Eigen::VectorXi> atom_types,
     //             const Eigen::Ref<const Eigen::MatrixXd> cell,

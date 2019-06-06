@@ -90,9 +90,9 @@ namespace rascal {
     //! method for initializing structure data from raw Eigen types, beware:
     //! copy!
     inline void set_structure(const PositionsInput_t & positions,
-                       const AtomTypesInput_t & atom_types,
-                       const Eigen::Ref<const Eigen::MatrixXd> cell,
-                       const PBCInput_t & pbc) {
+                              const AtomTypesInput_t & atom_types,
+                              const Eigen::Ref<const Eigen::MatrixXd> cell,
+                              const PBCInput_t & pbc) {
       // check data consistency
       auto npos{positions.cols()};
       auto ntypes{atom_types.rows()};
@@ -206,7 +206,7 @@ namespace rascal {
           Positions_ref(pos_data.data(), Dim, pos_data.size() / Dim);
     }
 
-    inline void set_structure(const AtomicStructure<Dim>& other) {
+    inline void set_structure(const AtomicStructure<Dim> & other) {
       this->positions = other.positions;
       this->atom_types = other.atom_types;
       this->cell = other.cell;
@@ -215,7 +215,6 @@ namespace rascal {
 
     inline void set_structure() {}
 
-
     /**
      * Compare if another structure is identical to itself.
      *
@@ -223,28 +222,31 @@ namespace rascal {
      * it is different. Do the comparison only if it is given as an
      * AtomicStructure or positions, pbc...
      */
-    inline bool is_identical(const double& ) const {
-      return true;
-    }
+    inline bool is_identical(const double &) const { return true; }
 
-    inline bool is_identical(const json_io::AtomicJsonData & , const double& ) {
+    inline bool is_identical(const json_io::AtomicJsonData &, const double &) {
       return false;
     }
 
-    inline bool is_identical(const json & , const double& ) const {
+    inline bool is_identical(const json &, const double &) const {
       return false;
     }
 
-    inline bool is_identical(const std::string & , const double& ) const {
+    inline bool is_identical(const std::string &, const double &) const {
       return false;
     }
 
-    inline bool is_identical(const AtomicStructure<Dim>& other, const double& skin2) const {
+    inline bool is_identical(const AtomicStructure<Dim> & other,
+                             const double & skin2) const {
       bool is_similar{true};
-      if (this->positions.cols() ==  other.positions.cols()) {
-          if ( (this->pbc.array() != other.pbc.array()).any() or (this->cell.array() != other.cell.array()).any()
-            or (this->positions - other.positions).rowwise().squaredNorm().maxCoeff() > skin2) {
-              is_similar = false;
+      if (this->positions.cols() == other.positions.cols()) {
+        if ((this->pbc.array() != other.pbc.array()).any() or
+            (this->cell.array() != other.cell.array()).any() or
+            (this->positions - other.positions)
+                    .rowwise()
+                    .squaredNorm()
+                    .maxCoeff() > skin2) {
+          is_similar = false;
         }
       } else {
         is_similar = false;
@@ -253,22 +255,23 @@ namespace rascal {
     }
 
     inline bool is_identical(const PositionsInput_t & positions,
-                       const AtomTypesInput_t & /*atom_types*/,
-                       const Eigen::Ref<const Eigen::MatrixXd> cell,
-                       const PBCInput_t & pbc, const double& skin2) const {
+                             const AtomTypesInput_t & /*atom_types*/,
+                             const Eigen::Ref<const Eigen::MatrixXd> cell,
+                             const PBCInput_t & pbc,
+                             const double & skin2) const {
       bool is_similar{true};
-      if (this->positions.cols() ==  positions.cols()) {
-          if ( (this->pbc.array() != pbc.array()).any() or (this->cell.array() != cell.array()).any()
-            or (this->positions - positions).rowwise().squaredNorm().maxCoeff() > skin2) {
-              is_similar = false;
+      if (this->positions.cols() == positions.cols()) {
+        if ((this->pbc.array() != pbc.array()).any() or
+            (this->cell.array() != cell.array()).any() or
+            (this->positions - positions).rowwise().squaredNorm().maxCoeff() >
+                skin2) {
+          is_similar = false;
         }
       } else {
         is_similar = false;
       }
       return is_similar;
     }
-
-
   };
 }  // namespace rascal
 

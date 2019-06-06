@@ -171,9 +171,9 @@ namespace rascal {
             json ad1{
                 {"name", "AdaptorNeighbourList"},
                 {"initialization_arguments",
-                {{"cutoff", cutoff},
-                 {"skin", skin},
-                 {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+                 {{"cutoff", cutoff},
+                  {"skin", skin},
+                  {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
             adaptors.push_back(ad1);
 
             parameters["structure"] = structure;
@@ -207,12 +207,11 @@ namespace rascal {
         json parameters;
         json structure{{"filename", filename}};
         json adaptors;
-        json ad1{
-            {"name", "AdaptorNeighbourList"},
-            {"initialization_arguments",
-            {{"cutoff", cutoff},
-              {"skin", skin},
-              {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+        json ad1{{"name", "AdaptorNeighbourList"},
+                 {"initialization_arguments",
+                  {{"cutoff", cutoff},
+                   {"skin", skin},
+                   {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
         adaptors.push_back(ad1);
 
         parameters["structure"] = structure;
@@ -226,8 +225,7 @@ namespace rascal {
 
     const bool consider_ghost_neighbours{false};
     const std::string filename{
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json"
-        };
+        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
     const double cutoff{3.};
     const std::vector<double> skins{{0., 0.1, 0.3}};
 
@@ -249,11 +247,11 @@ namespace rascal {
             json ad1{
                 {"name", "AdaptorNeighbourList"},
                 {"initialization_arguments",
-                {{"cutoff", cutoff},
+                 {{"cutoff", cutoff},
                   {"skin", skin},
                   {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
             json ad2{{"name", "AdaptorStrict"},
-                    {"initialization_arguments", {{"cutoff", cutoff}}}};
+                     {"initialization_arguments", {{"cutoff", cutoff}}}};
             adaptors.emplace_back(ad1);
             adaptors.emplace_back(ad2);
 
@@ -277,8 +275,6 @@ namespace rascal {
 
     json factory_args{};
   };
-
-
 
   template <class BaseFixture>
   struct MultipleStructureFixture : BaseFixture {

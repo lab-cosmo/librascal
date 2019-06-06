@@ -263,7 +263,8 @@ namespace rascal {
 
   using multiple_fixtures = boost::mpl::list<
       MultipleStructureFixture<MultipleStructureManagerNLFixture>>;
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_strict_test, Fix, multiple_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_strict_test, Fix, multiple_fixtures,
+                                   Fix) {
     bool verbose{false};
     auto & managers = Fix::managers;
 

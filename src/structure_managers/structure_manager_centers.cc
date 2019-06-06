@@ -34,17 +34,22 @@
 
 namespace rascal {
 
-  // /* ---------------------------------------------------------------------- */
+  // /* ----------------------------------------------------------------------
+  // */
 
   // /*
-  //  * After reading the <code>atoms_object</code> from the file, the cell vectors
+  //  * After reading the <code>atoms_object</code> from the file, the cell
+  //  vectors
   //  * as well as the atomic positions are put into contiguous a
   //  * <code>std::vector</code> data structure to ensure fast access via the
-  //  * <code>Eigen::Map</code>.  <code>std::vector</code> provide iterator access,
+  //  * <code>Eigen::Map</code>.  <code>std::vector</code> provide iterator
+  //  access,
   //  * which is used here with the <code>auto</code> keyword. Using this, it is
   //  * unnecessary to know the exact size of the positions/cell array. No
-  //  * distinction between 2 or 3 dimensions. We just put all numbers in a vector
-  //  * and access them with the map. Using the vector type automatically ensures
+  //  * distinction between 2 or 3 dimensions. We just put all numbers in a
+  //  vector
+  //  * and access them with the map. Using the vector type automatically
+  //  ensures
   //  * contiguity
   //  */
   // void StructureManagerCenters::update_self(
@@ -55,13 +60,13 @@ namespace rascal {
   //     const Eigen::Ref<const Eigen::MatrixXd> cell,
   //     const Eigen::Ref<const PBC_t> pbc) {
 
-
   //   this->atoms_object.set_structure(positions, atom_types, cell, pbc);
 
   //   StructureManagerCenters::build();
   // }
 
-  // /* ---------------------------------------------------------------------- */
+  // /* ----------------------------------------------------------------------
+  // */
   // // overloading the update function to be able to update from a file
   // void StructureManagerCenters::update_self(const std::string filename) {
   //   this->atoms_object.set_structure(filename);
@@ -69,7 +74,8 @@ namespace rascal {
   //   StructureManagerCenters::build();
   // }
 
-  // /* ---------------------------------------------------------------------- */
+  // /* ----------------------------------------------------------------------
+  // */
   // // overloading the update function
   // void StructureManagerCenters::update_self(
   //     AtomicStructure<traits::Dim> & structure) {

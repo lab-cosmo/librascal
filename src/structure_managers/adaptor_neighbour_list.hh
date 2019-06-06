@@ -453,8 +453,8 @@ namespace rascal {
      * radius or extends an existing neighbourlist to the next order
      */
     AdaptorNeighbourList(ImplementationPtr_t manager, double cutoff,
-                         const bool& consider_ghost_neighbours = false,
-                         const double& skin = 0.);
+                         const bool & consider_ghost_neighbours = false,
+                         const double & skin = 0.);
 
     AdaptorNeighbourList(ImplementationPtr_t manager,
                          const Hypers_t & adaptor_hypers)
@@ -490,8 +490,7 @@ namespace rascal {
 
     inline double optional_argument_skin(const Hypers_t & adaptor_hypers) {
       double skin{0.};
-      if (adaptor_hypers.find("skin") !=
-          adaptor_hypers.end()) {
+      if (adaptor_hypers.find("skin") != adaptor_hypers.end()) {
         skin = adaptor_hypers["skin"];
       }
       return skin;
@@ -670,13 +669,9 @@ namespace rascal {
       return this->manager->get_shared_ptr();
     }
 
-    const size_t& get_n_update() const {
-      return this->n_update;
-    }
+    const size_t & get_n_update() const { return this->n_update; }
 
-    const size_t& get_skin2() const {
-      return this->skin2;
-    }
+    const size_t & get_skin2() const { return this->skin2; }
 
    protected:
     /* ---------------------------------------------------------------------- */
@@ -811,12 +806,11 @@ namespace rascal {
   template <class ManagerImplementation>
   AdaptorNeighbourList<ManagerImplementation>::AdaptorNeighbourList(
       std::shared_ptr<ManagerImplementation> manager, double cutoff,
-      const bool& consider_ghost_neighbours, const double& skin)
-      : manager{std::move(manager)}, cutoff{cutoff}, skin2{skin*skin},
-        atom_tag_list{},
-        atom_types{}, ghost_atom_tag_list{}, nb_neigh{}, neighbours_atom_tag{},
-        offsets{}, n_centers{0}, n_ghosts{0}, consider_ghost_neighbours{
-                                                  consider_ghost_neighbours} {
+      const bool & consider_ghost_neighbours, const double & skin)
+      : manager{std::move(manager)}, cutoff{cutoff}, skin2{skin * skin},
+        atom_tag_list{}, atom_types{}, ghost_atom_tag_list{}, nb_neigh{},
+        neighbours_atom_tag{}, offsets{}, n_centers{0}, n_ghosts{0},
+        consider_ghost_neighbours{consider_ghost_neighbours} {
     static_assert(not(traits::MaxOrder < 1), "No atom list in manager");
   }
 
@@ -832,9 +826,10 @@ namespace rascal {
     if (sizeof...(arguments) > 0) {
       // TODO(felix) should not have to assume that the underlying manager is
       // manager centers.
-      auto&& atomic_structure{this->manager->get_atomic_structure()};
+      auto && atomic_structure{this->manager->get_atomic_structure()};
       // if the structure has not changed by more than skin**2
-      if (not atomic_structure.is_identical(std::forward<Args>(arguments)..., this->skin2)) {
+      if (not atomic_structure.is_identical(std::forward<Args>(arguments)...,
+                                            this->skin2)) {
         this->need_update = true;
       } else {
         this->need_update = false;
@@ -850,13 +845,13 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   void AdaptorNeighbourList<ManagerImplementation>::update_self() {
-    if (this->need_update){
+    if (this->need_update) {
       // set the number of centers
       this->n_centers = this->manager->get_size();
       this->n_ghosts = 0;
       //! Reset cluster_indices for adaptor to fill with sequence
       internal::for_each(this->cluster_indices_container,
-                        internal::ResizePropertyToZero());
+                         internal::ResizePropertyToZero());
 
       // initialize necessary data structure
       this->atom_tag_list.clear();

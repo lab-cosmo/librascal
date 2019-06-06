@@ -30,7 +30,6 @@
 
 namespace rascal {
 
-
   BOOST_AUTO_TEST_SUITE(AtomicStructureTests);
 
   struct AtomicStructureFixture {
@@ -38,7 +37,8 @@ namespace rascal {
 
     ~AtomicStructureFixture() = default;
 
-    std::string ref_filename1 = "reference_data/CaCrP2O7_mvc-11955_symmetrized.json";
+    std::string ref_filename1 =
+        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json";
     std::string ref_filename2 = "reference_data/small_molecule.json";
 
     bool verbose{false};
@@ -48,8 +48,7 @@ namespace rascal {
    * Test the loading of a structure from a json file and the test for
    * identity between structures.
    */
-  BOOST_FIXTURE_TEST_CASE(atomic_structure_test,
-                          AtomicStructureFixture) {
+  BOOST_FIXTURE_TEST_CASE(atomic_structure_test, AtomicStructureFixture) {
     AtomicStructure<3> structure1{};
     AtomicStructure<3> structure2{};
     AtomicStructure<3> structure3{};
@@ -64,7 +63,7 @@ namespace rascal {
     BOOST_CHECK(structure2.is_identical(structure2, skin2));
     BOOST_CHECK(not structure1.is_identical(structure2, skin2));
 
-    skin2 = 0.1*0.1;
+    skin2 = 0.1 * 0.1;
     structure3.set_structure(structure1);
     structure3.pbc(0) = false;
     BOOST_CHECK(not structure1.is_identical(structure3, skin2));
@@ -84,9 +83,7 @@ namespace rascal {
     structure3.set_structure(structure1);
     structure3.positions(0, 0) += 0.1;
     BOOST_CHECK(not structure1.is_identical(structure3, skin2));
-
   }
-
 
   /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();

@@ -81,7 +81,7 @@ namespace rascal {
           std::cout << std::setprecision(10) << "Coefficients for l=";
           std::cout << angular_l << ": ";
           std::cout << computed_harmonics.segment(lm_collective_idx,
-                                                  2*angular_l + 1);
+                                                  2 * angular_l + 1);
           std::cout << std::endl;
         }
         for (size_t m_idx{0}; m_idx < 2 * angular_l + 1; m_idx++) {
@@ -90,7 +90,7 @@ namespace rascal {
                               harmonics[vec_idx][angular_l][m_idx])};
           BOOST_CHECK_LE(error, math::dbl_ftol);
         }
-        lm_collective_idx += (2*angular_l + 1);
+        lm_collective_idx += (2 * angular_l + 1);
       }
     }
   }
@@ -183,7 +183,7 @@ namespace rascal {
   BOOST_AUTO_TEST_CASE(spherical_harmonics_gradient_test) {
     constexpr size_t test_max_angular = 3;
     test_gradients<SphericalHarmonicsWithGradients<test_max_angular>>(
-      "reference_data/spherical_harmonics_gradient_test.json");
+        "reference_data/spherical_harmonics_gradient_test.json");
   }
 
   /* ---------------------------------------------------------------------- */
