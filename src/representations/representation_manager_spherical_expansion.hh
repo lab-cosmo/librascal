@@ -393,6 +393,7 @@ namespace rascal {
       void precompute() {
         this->precompute_radial_sigmas();
         this->precompute_radial_overlap();
+        // this->radial_ortho_matrix *= this->radial_norm_factors.asDiagonal();
         this->hyp1f1_calculator.precompute(this->max_radial, this->max_angular);
       }
 
@@ -459,40 +460,30 @@ namespace rascal {
         }
 
         // computes (a+b_n)^{-0.5*(3+l+n)}
-        // TODO(alex) this actually has some cost, and is a bit wasteful as it
-        // computes lmax*nmax products where it could compute nmax+lmax
-        // TODO(alex) we allocate and then drop this matrix - we could compute
-        // directly into radial_integral_neighbour
-        Matrix_t a_b_l_n(this->max_radial, this->max_angular + 1);
+        // seems like vetorization does not improve things here
+        // Eigen::ArrayXd a_b_l{Eigen::rsqrt(fac_a + this->fac_b.array())};
+        // for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
+        //   this->radial_integral_neighbour(radial_n, 0) = pow(a_b_l(radial_n), 3+radial_n);
+        // }
+
+        // for (size_t angular_l{1}; angular_l < this->max_angular + 1; ++angular_l) {
+        //   this->radial_integral_neighbour.col(angular_l) = (this->radial_integral_neighbour.col(angular_l-1).array() * a_b_l).matrix();
+        // }
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           double a_b_l{1. / sqrt(fac_a + this->fac_b[radial_n])};
-
-          a_b_l_n(radial_n, 0) = pow(a_b_l, 3 + radial_n);
+          this->radial_integral_neighbour(radial_n, 0) = pow(a_b_l, 3 + radial_n);
 
           for (size_t angular_l{1}; angular_l < this->max_angular + 1;
                angular_l++) {
-            a_b_l_n(radial_n, angular_l) =
-                a_b_l_n(radial_n, angular_l - 1) * a_b_l;
+            this->radial_integral_neighbour(radial_n, angular_l) =
+                this->radial_integral_neighbour(radial_n, angular_l - 1) * a_b_l;
           }
         }
 
         this->hyp1f1_calculator.calc(distance, fac_a, this->fac_b);
 
-        // TODO(felix) check if actually this fancy asDiagonal() stuff is
-        // really making these faster than doing good ole' matrix products.
-        // it's taking a load of time to do these...
-        this->radial_integral_neighbour =
-            (a_b_l_n.array() * this->hyp1f1_calculator.get_values().array())
-                .matrix() *
-            distance_fac_a_l.asDiagonal();
-        //   this->radial_integral_neighbour.transpose() *=
-        //       this->radial_norm_factors.asDiagonal();
+        this->radial_integral_neighbour.array() *= (this->hyp1f1_calculator.get_values() * distance_fac_a_l.asDiagonal()).array();
 
-        // ALSO - perhaps more interestingly - there's no point in
-        // orthogonalizing each neighbor contribution. This should be done
-        // at the end before returning the whole thing!
-        //   this->radial_integral_neighbour.transpose() *=
-        //       this->radial_ortho_matrix;
         return Matrix_Ref(this->radial_integral_neighbour);
       }
 
@@ -842,7 +833,7 @@ namespace rascal {
       Key_t center_type{center.get_atom_type()};
 
       // TODO(felix) think about an option to have "global" species,
-      //"structure" species(or not), or automatic at the level of environment
+      // "structure" species(or not), or automatic at the level of environment
       std::unordered_set<Key_t, internal::Hash<Key_t>> keys{};
       for (auto neigh : center) {
         keys.insert({neigh.get_atom_type()});
@@ -862,7 +853,6 @@ namespace rascal {
         auto direction{this->structure_manager->get_direction_vector(neigh)};
         Key_t neigh_type{neigh.get_atom_type()};
 
-        // Note: the copy _should_ be optimized out (RVO)
         auto harmonics =
             math::compute_spherical_harmonics(direction, this->max_angular);
         auto neighbour_contribution =
@@ -877,18 +867,11 @@ namespace rascal {
             neighbour_contribution, harmonics, coefficients_center_by_type,
             this->max_radial, this->max_angular);
       }  // for (neigh : center)
-      // TODO(felix) IMO THIS IS THE POINT TO DO THE ORTHOGONALIZATION!
 
       // Normalize and orthogonalize the radial coefficients
       for (auto && coeff_by_type : coefficients_center) {
-        // TODO(felix) pls check - again for me this is faster than the fancy
-        // asDiagonal()
-        for (size_t n{0}; n < this->max_radial; ++n) {
-          coeff_by_type.second.row(n) *=
-              radial_integral->radial_norm_factors(n);
-        }
-        // coeff_by_type.second.transpose() *=
-        //  radial_integral->radial_norm_factors.asDiagonal();
+        coeff_by_type.second.transpose() *= radial_integral->radial_norm_factors.asDiagonal();
+
         coeff_by_type.second.transpose() *=
             radial_integral->radial_ortho_matrix;
       }
