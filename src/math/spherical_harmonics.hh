@@ -123,6 +123,7 @@ namespace rascal {
     class SphericalHarmonics {
      protected:
       using Matrix_Ref = typename Eigen::Ref<const Matrix_t>;
+      using MatrixX2_Ref = typename Eigen::Ref<const MatrixX2_t>;
       using Vector_Ref = typename Eigen::Ref<const Vector_t>;
       // using Vector_Ref = typename Eigen::Ref<const Eigen::VectorXd>;
 
@@ -133,6 +134,7 @@ namespace rascal {
       std::vector<double> angular_coeffs2{};
       Vector_t harmonics{};
       Matrix_t assoc_legendre_polynom{};
+      MatrixX2_t cos_sin_m_phi{};
       Matrix_t coeff_a{};
       Matrix_t coeff_b{};
 
@@ -156,6 +158,7 @@ namespace rascal {
             Matrix_t::Zero(this->max_angular + 1, 2 * this->max_angular + 1);
         this->harmonics =
             Vector_t::Zero((this->max_angular + 1) * (this->max_angular + 1));
+        this->cos_sin_m_phi = MatrixX2_t::Zero(this->max_angular + 1, 2);
 
         for (size_t angular_l{0}; angular_l < this->max_angular + 1;
              angular_l++) {
@@ -335,21 +338,23 @@ namespace rascal {
        *        Sized max_m by 2 with the cos(mφ) stored in the first column
        *        and sin(mφ) in the second column, m being the row index
        */
-      MatrixX2_t compute_cos_sin_angle_multiples(double cos_phi, double sin_phi,
+      void compute_cos_sin_angle_multiples(double cos_phi, double sin_phi,
                                                  size_t max_m) {
-        MatrixX2_t cos_sin_m_phi = MatrixX2_t::Zero(max_m + 1, 2);
         for (size_t m_count{0}; m_count < max_m + 1; m_count++) {
           if (m_count == 0) {
-            cos_sin_m_phi.row(m_count) << 1.0, 0.0;
+            this->cos_sin_m_phi.row(m_count) << 1.0, 0.0;
           } else if (m_count == 1) {
-            cos_sin_m_phi.row(m_count) << cos_phi, sin_phi;
+            this->cos_sin_m_phi.row(m_count) << cos_phi, sin_phi;
           } else {
-            cos_sin_m_phi.row(m_count) =
-                2.0 * cos_phi * cos_sin_m_phi.row(m_count - 1) -
-                cos_sin_m_phi.row(m_count - 2);
+            this->cos_sin_m_phi.row(m_count) =
+                2.0 * cos_phi * this->cos_sin_m_phi.row(m_count - 1) -
+                this->cos_sin_m_phi.row(m_count - 2);
           }
         }
-        return cos_sin_m_phi;
+      }
+
+      inline MatrixX2_Ref get_cos_sin_m_phi() {
+        return MatrixX2_Ref(this->cos_sin_m_phi);
       }
 
       inline Matrix_Ref get_assoc_legendre_polynom() {
