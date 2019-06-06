@@ -318,15 +318,15 @@ namespace rascal {
                 assoc_legendre_polynom(angular_l, m_count) * INV_SQRT_TWO;
             // d/dx
             harmonics_derivatives(1, l_block_index + angular_l) =
-              -1.0 * cos_theta * cos_phi * raising_plm_factor * INV_SQRT_TWO
+              cos_theta * cos_phi * raising_plm_factor * INV_SQRT_TWO
               * assoc_legendre_polynom(angular_l, 1);
             // d/dy
             harmonics_derivatives(2, l_block_index + angular_l) =
-              -1.0 * cos_theta * sin_phi * raising_plm_factor * INV_SQRT_TWO
+              cos_theta * sin_phi * raising_plm_factor * INV_SQRT_TWO
               * assoc_legendre_polynom(angular_l, 1);
             // d/dz
             harmonics_derivatives(3, l_block_index + angular_l) =
-              sin_theta * raising_plm_factor * INV_SQRT_TWO
+              -1.0 * sin_theta * raising_plm_factor * INV_SQRT_TWO
               * assoc_legendre_polynom(angular_l, 1);
           } else {
             lowering_plm_factor = raising_plm_factor;
@@ -360,28 +360,28 @@ namespace rascal {
             }
             // d/dx
             harmonics_derivatives(1, l_block_index + angular_l + m_count) =
-              -1.0 * sin_phi * phi_derivative_factor * cos_sin_m_phi(m_count, 1)
-              + (0.5 * cos_theta * cos_phi * cos_sin_m_phi(m_count, 0)
+              sin_phi * phi_derivative_factor * cos_sin_m_phi(m_count, 1)
+              + (-0.5 * cos_theta * cos_phi * cos_sin_m_phi(m_count, 0)
                 * legendre_polynom_difference);
             harmonics_derivatives(1, l_block_index + angular_l - m_count) =
-              sin_phi * phi_derivative_factor * cos_sin_m_phi(m_count, 0)
-              + 0.5 * cos_theta * cos_phi * cos_sin_m_phi(m_count, 1)
-                * legendre_polynom_difference;
+              -1.0 * sin_phi * phi_derivative_factor * cos_sin_m_phi(m_count, 0)
+              + (-0.5 * cos_theta * cos_phi * cos_sin_m_phi(m_count, 1)
+                * legendre_polynom_difference);
             // d/dy
             harmonics_derivatives(2, l_block_index + angular_l + m_count) =
-              cos_phi * phi_derivative_factor * cos_sin_m_phi(m_count, 1)
-              + (0.5 * cos_theta * sin_phi * cos_sin_m_phi(m_count, 0)
+              -1.0 * cos_phi * phi_derivative_factor * cos_sin_m_phi(m_count, 1)
+              + (-0.5 * cos_theta * sin_phi * cos_sin_m_phi(m_count, 0)
                 * legendre_polynom_difference);
             harmonics_derivatives(2, l_block_index + angular_l - m_count) =
-              -1.0 * cos_phi * phi_derivative_factor * cos_sin_m_phi(m_count, 0)
-              + (0.5 * cos_theta * sin_phi * cos_sin_m_phi(m_count, 1)
+              cos_phi * phi_derivative_factor * cos_sin_m_phi(m_count, 0)
+              + (-0.5 * cos_theta * sin_phi * cos_sin_m_phi(m_count, 1)
                 * legendre_polynom_difference);
             // d/dz
             harmonics_derivatives(3, l_block_index + angular_l + m_count) =
-              -0.5 * sin_theta * cos_sin_m_phi(m_count, 0)
+              0.5 * sin_theta * cos_sin_m_phi(m_count, 0)
               * legendre_polynom_difference;
             harmonics_derivatives(3, l_block_index + angular_l - m_count) =
-              -0.5 * sin_theta * cos_sin_m_phi(m_count, 1)
+              0.5 * sin_theta * cos_sin_m_phi(m_count, 1)
               * legendre_polynom_difference;
           }  // if (m_count == 0)
         }    // for (m_count in [0, l])
