@@ -285,7 +285,7 @@ namespace rascal {
         }
 
         this->compute_assoc_legendre_polynom(cos_theta);
-        this->compute_cos_sin_angle_multiples(cos_phi, sin_phi, this->max_angular);
+        this->compute_cos_sin_angle_multiples(cos_phi, sin_phi);
 
         size_t lm_base{0};  // starting point for storage
         for (size_t angular_l{0}; angular_l < this->max_angular + 1;
@@ -334,9 +334,8 @@ namespace rascal {
        *        Sized max_m by 2 with the cos(mφ) stored in the first column
        *        and sin(mφ) in the second column, m being the row index
        */
-      void compute_cos_sin_angle_multiples(double cos_phi, double sin_phi,
-                                                 size_t max_m) {
-        for (size_t m_count{0}; m_count < max_m + 1; m_count++) {
+      void compute_cos_sin_angle_multiples(const double& cos_phi, const double& sin_phi) {
+        for (size_t m_count{0}; m_count < this->max_angular + 1; m_count++) {
           if (m_count == 0) {
             this->cos_sin_m_phi.row(m_count) << 1.0, 0.0;
           } else if (m_count == 1) {
