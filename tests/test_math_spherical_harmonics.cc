@@ -52,7 +52,8 @@ namespace rascal {
       //  //  //std::cout << "error" << tmp << std::endl;
       //  //}
       //}
-      double rel_error{(func.get_harmonics() -  curr_harmonics_ref).norm()};
+      double rel_error{(func.get_harmonics() -  harmonics_tmp).norm()};
+      //double rel_error{(func.get_harmonics() -  curr_harmonics_ref).norm()};
       BOOST_CHECK_LE(rel_error, 15 * math::dbl_ftol);
       //double rel_error{(curr_harmonics_ref -  harmonics).norm()};
       //BOOST_CHECK_LE(rel_error, 15 * math::dbl_ftol);
