@@ -149,6 +149,9 @@ namespace rascal {
                                    Eigen::MatrixBase<D3> & coeffnlm,
                                    const size_t & nmax, const size_t & lmax) {
       // TODO(felix) do a proper assert - this should ONLY be called if lmax=0!
+      if (lmax > 0) {
+        throw std::runtime_error("LMProduct<0> should not be called directly");
+      }
       for (size_t radial_n{0}; radial_n < nmax; radial_n++) {
         LMProductHotLoop<0>::lm_explicit_prod(coeffn, harm, coeffnlm, radial_n);
       }
@@ -876,7 +879,7 @@ namespace rascal {
             radial_integral->radial_ortho_matrix;
       }
     }  // for (center : structure_manager)
-  }  // compute()
+  }    // compute()
 
 }  // namespace rascal
 
