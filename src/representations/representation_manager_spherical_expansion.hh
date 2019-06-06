@@ -262,12 +262,16 @@ namespace rascal {
         // both precomputed quantities and actual expansion coefficients
         this->radial_ortho_matrix.resize(this->max_radial, this->max_radial);
         this->fac_b.resize(this->max_radial, 1);
+        this->a_b_l_n.resize(this->max_radial, this->max_angular + 1);
+        this->distance_fac_a_l.resize(this->max_angular + 1);
         this->radial_norm_factors.resize(this->max_radial, 1);
         this->radial_n_factors.resize(this->max_radial);
         this->radial_sigmas.resize(this->max_radial, 1);
         this->radial_integral_neighbour.resize(this->max_radial,
                                                this->max_angular + 1);
         this->radial_integral_center.resize(this->max_radial);
+        this->radial_neighbour_derivative.resize(this->max_radial,
+                                                 this->max_angular + 1);
 
         // find the cutoff radius of the representation
         auto fc_hypers = hypers.at("cutoff_function").get<json>();
@@ -347,26 +351,26 @@ namespace rascal {
         double fac_a{0.5 * pow(smearing->get_gaussian_sigma(pair), -2)};
 
         // computes (r_{ij}*a)^l incrementally
-        Vector_t distance_fac_a_l(this->max_angular + 1);
-        distance_fac_a_l(0) = 1.;
+        //Vector_t distance_fac_a_l(this->max_angular + 1);
+        this->distance_fac_a_l(0) = 1.;
         double distance_fac_a{distance * fac_a};
         for (size_t angular_l{1}; angular_l < this->max_angular + 1;
              angular_l++) {
-          distance_fac_a_l(angular_l) =
-              distance_fac_a_l(angular_l - 1) * distance_fac_a;
+          this->distance_fac_a_l(angular_l) =
+              this->distance_fac_a_l(angular_l - 1) * distance_fac_a;
         }
 
         // computes (a+b_n)^{-0.5*(3+l+n)}
-        Matrix_t a_b_l_n(this->max_radial, this->max_angular + 1);
+        //Matrix_t a_b_l_n(this->max_radial, this->max_angular + 1);
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           double a_b_l{1. / sqrt(fac_a + this->fac_b[radial_n])};
 
-          a_b_l_n(radial_n, 0) = pow(a_b_l, 3 + radial_n);
+          this->a_b_l_n(radial_n, 0) = pow(a_b_l, 3 + radial_n);
 
           for (size_t angular_l{1}; angular_l < this->max_angular + 1;
                angular_l++) {
-            a_b_l_n(radial_n, angular_l) =
-                a_b_l_n(radial_n, angular_l - 1) * a_b_l;
+            this->a_b_l_n(radial_n, angular_l) =
+                this->a_b_l_n(radial_n, angular_l - 1) * a_b_l;
           }
         }
 
@@ -385,14 +389,28 @@ namespace rascal {
 
 
       /**
-       * Compute the radial derivative of the neighbour's contribution
+       * Compute the radial derivative of the neighbour contribution
        *
-       * The derivative is taken with respect to the pair distance, r_ij
+       * Note that you _must_ call compute_neighbour_contribution() first to
+       * populate the relevant arrays!
+       *
+       * The derivative is taken with respect to the pair distance, r_{ij}, and
+       * pre-divided by r_{ij} (since
+       * \[
+       *    \grad_{\vec{r}_i} f(r_{ij}) =
+       *                    \frac{d f}{d r_{ij}} \frac{- \vec{r}_{ij}}{r_{ij}}
+       * \])
+       * so multiply by _negative_ $\vec{r}_ij$ to get the radial component of
+       * the gradient wrt motion of the central atom ($\frac{d}{d\vec{r}_i}$)
+       *
+       * And finally, there is no compute_center_derivative() because that's
+       * just zero -- the centre contribution doesn't vary w.r.t. motion of
+       * the central atom
        */
       template <AtomicSmearingType AST, size_t Order, size_t Layer>
       Matrix_Ref
       compute_neighbour_derivative(const double & distance,
-                                     ClusterRefKey<Order, Layer> & pair) {
+                                   ClusterRefKey<Order, Layer> & pair) {
         using math::PI;
         using math::pow;
         using std::sqrt;
@@ -400,19 +418,33 @@ namespace rascal {
         auto smearing{downcast_atomic_smearing<AST>(this->atomic_smearing)};
         // a = 1 / (2*\sigma^2)
         double fac_a{0.5 * pow(smearing->get_gaussian_sigma(pair), -2)};
-        double dist2{distance * distance};
+        double inv_2a{pow(smearing->get_gaussian_sigma(pair), 2)};
+        double inv_dist2{pow(distance, -2)};
 
-        //TODO(max) avoid computing this and the other factors twice
-        Matrix_t neighbour_contribution =
-            this->compute_neighbour_contribution(distance, pair);
+        // Derivatives of the A and B factors (simple proportional)
         Matrix_t proportional_term(this->max_radial, this->max_angular + 1);
-        for (size_t angular_l{0}; angular_l <= this->max_angular; ++angular_l) {
-          proportional_term.col(angular_l) = (0.5 / fac_a - angular_l / dist2)
-                                       * neighbour_contribution.col(angular_l);
-        }
+        Vector_t proportional_factors =
+            Vector_t::LinSpaced(0., this->max_angular + 1, 1.0);
+        proportional_factors = (proportional_factors.array() * inv_dist2)
+                                - inv_2a;
+        // proportional_factor = (l/r^2 - 1/2a)*radial_integral
+        proportional_term = this->radial_integral_neighbour.array().colwise()
+                          * proportional_factors;
 
-        //TODO(max) obviously incomplete, just so this compiles
-        return proportional_term;
+        // Hypergeometric derivative
+        Matrix_t hypergeom_term(this->max_radial, this->max_angular + 1);
+        this->hyp1f1_calculator.calc(distance, fac_a, this->fac_b, true);
+        hypergeom_term =
+            (this->a_b_l_n.array() *
+             this->hyp1f1_calculator.get_values().array() // d/dz 1F1(z;...)
+             ).colwise() * this->distance_fac_a_l.array()
+                         * this->radial_norm_factors.array();
+        // avoids the use of the transpose...
+        // assuming the radial ortho matrix is symmetric, right?
+        hypergeom_term = this->radial_ortho_matrix * hypergeom_term;
+
+        this->radial_neighbour_derivative = proportional_term + hypergeom_term;
+        return Matrix_Ref(this->radial_neighbour_derivative);
       }
 
 
@@ -483,9 +515,12 @@ namespace rascal {
       // data member used to store the contributions to the expansion
       Matrix_t radial_integral_neighbour{};
       Vector_t radial_integral_center{};
+      // And derivatives
+      Matrix_t radial_neighbour_derivative{};
+      // and of course, d/dr of the center contribution is zero
 
       Hypers_t hypers{};
-      // some
+      // some dudes
       double interaction_cutoff{};
       size_t max_radial{};
       size_t max_angular{};
@@ -495,6 +530,8 @@ namespace rascal {
       Vector_t radial_sigmas{};
       // b = 1 / (2*\sigma_n^2)
       Vector_t fac_b{};
+      Matrix_t a_b_l_n{};
+      Vector_t distance_fac_a_l{};
       Vector_t radial_norm_factors{};
       Vector_t radial_n_factors{};
       Matrix_t radial_ortho_matrix{};
