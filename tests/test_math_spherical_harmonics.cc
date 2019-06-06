@@ -6,7 +6,7 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(MathSphericalHarmonicsTests);
   
-  BOOST_FIXTURE_TEST_CASE(math_spherical_harmonics_test, SphericalHarmonicsRefFixture) {
+  BOOST_FIXTURE_TEST_CASE(math_spherical_harmonics_test, SphericalHarmonicsClassRefFixture) {
     math::SphericalHarmonics func{};
     for (auto & data : this->ref_data) {
       if (verbose) {
