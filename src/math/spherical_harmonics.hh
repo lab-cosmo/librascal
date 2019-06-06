@@ -285,11 +285,7 @@ namespace rascal {
         }
 
         this->compute_assoc_legendre_polynom(cos_theta);
-        // this->compute_assoc_legendre_polynom(cos_theta, this->max_angular);
-        // Matrix_t assoc_legendre_polynom =
-        //     compute_assoc_legendre_polynom(cos_theta, this->max_angular);
-        MatrixX2_t cos_sin_m_phi = compute_cos_sin_angle_multiples(
-            cos_phi, sin_phi, this->max_angular);
+        this->compute_cos_sin_angle_multiples(cos_phi, sin_phi, this->max_angular);
 
         size_t lm_base{0};  // starting point for storage
         for (size_t angular_l{0}; angular_l < this->max_angular + 1;
