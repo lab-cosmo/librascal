@@ -63,18 +63,18 @@ namespace rascal {
 
      private:
       template <typename D1, typename D2, typename D3>
-      static inline void lm_explicit_sum(const Eigen::MatrixBase<D1>& coef1n1,
-                                         const Eigen::MatrixBase<D2>& coef2n2,
-                                         Eigen::MatrixBase<D3>& coef1n12n2,
+      static inline void lm_explicit_sum(const Eigen::MatrixBase<D1> & coef1n1,
+                                         const Eigen::MatrixBase<D2> & coef2n2,
+                                         Eigen::MatrixBase<D3> & coef1n12n2,
                                          const size_t & n1n2);
 
      public:
       // This makes the full loop to accumulate the nlm coefficients
       template <typename D1, typename D2, typename D3>
-      static inline void LMReduce(const Eigen::MatrixBase<D1>& coef1,
-            const Eigen::MatrixBase<D2>& coef2,
-            Eigen::MatrixBase<D3>& coef1n12n2,
-            const size_t & nmax, const size_t & lmax);
+      static inline void LMReduce(const Eigen::MatrixBase<D1> & coef1,
+                                  const Eigen::MatrixBase<D2> & coef2,
+                                  Eigen::MatrixBase<D3> & coef1n12n2,
+                                  const size_t & nmax, const size_t & lmax);
     };
 
     /* this should allow to spell out (and let the compiler optimize)
@@ -82,14 +82,12 @@ namespace rascal {
      * smart enough to unroll this loop with -O3 so all is well */
     template <size_t l_unroll>
     template <typename D1, typename D2, typename D3>
-    inline void
-    LMReduceHotLoop<l_unroll>::lm_explicit_sum(
-                                         const Eigen::MatrixBase<D1>& coef1n1,
-                                         const Eigen::MatrixBase<D2>& coef2n2,
-                                         Eigen::MatrixBase<D3>& coef1n12n2,
-                                         const size_t & n1n2) {
-      LMReduceHotLoop<l_unroll-1>::lm_explicit_sum(coef1n1, coef2n2,
-                                                   coef1n12n2, n1n2);
+    inline void LMReduceHotLoop<l_unroll>::lm_explicit_sum(
+        const Eigen::MatrixBase<D1> & coef1n1,
+        const Eigen::MatrixBase<D2> & coef2n2,
+        Eigen::MatrixBase<D3> & coef1n12n2, const size_t & n1n2) {
+      LMReduceHotLoop<l_unroll - 1>::lm_explicit_sum(coef1n1, coef2n2,
+                                                     coef1n12n2, n1n2);
 
       size_t lm_start{(l_unroll) * (l_unroll)};
       size_t lm_end{(l_unroll + 1) * (l_unroll + 1)};
@@ -103,10 +101,10 @@ namespace rascal {
     template <>
     template <typename D1, typename D2, typename D3>
     inline void
-    LMReduceHotLoop<0>::lm_explicit_sum(const Eigen::MatrixBase<D1>& coef1n1,
-                                         const Eigen::MatrixBase<D2>& coef2n2,
-                                         Eigen::MatrixBase<D3>& coef1n12n2,
-                                         const size_t & n1n2) {
+    LMReduceHotLoop<0>::lm_explicit_sum(const Eigen::MatrixBase<D1> & coef1n1,
+                                        const Eigen::MatrixBase<D2> & coef2n2,
+                                        Eigen::MatrixBase<D3> & coef1n12n2,
+                                        const size_t & n1n2) {
       coef1n12n2(n1n2, 0) = coef1n1(0) * coef2n2(0);
     }
 
@@ -115,13 +113,11 @@ namespace rascal {
     // fold down to lower l_unroll if called with too low lmax
     template <size_t l_unroll>
     template <typename D1, typename D2, typename D3>
-    inline void
-    LMReduceHotLoop<l_unroll>::LMReduce(const Eigen::MatrixBase<D1>& coef1,
-            const Eigen::MatrixBase<D2>& coef2,
-            Eigen::MatrixBase<D3>& coef1n12n2,
-            const size_t & nmax, const size_t & lmax) {
-
-      if (lmax>=l_unroll) {
+    inline void LMReduceHotLoop<l_unroll>::LMReduce(
+        const Eigen::MatrixBase<D1> & coef1,
+        const Eigen::MatrixBase<D2> & coef2, Eigen::MatrixBase<D3> & coef1n12n2,
+        const size_t & nmax, const size_t & lmax) {
+      if (lmax >= l_unroll) {
         size_t n1n2{0}, pos{0}, size{0};
         for (size_t n1{0}; n1 < nmax; ++n1) {
           auto && coef1n1 = coef1.row(n1);
@@ -136,15 +132,16 @@ namespace rascal {
               size = 2 * l + 1;
               // do the reduction over m (with vectorization)
               coef1n12n2(n1n2, l) = (coef1n1.segment(pos, size).array() *
-                                     coef2n2.segment(pos, size).array()).sum();
+                                     coef2n2.segment(pos, size).array())
+                                        .sum();
               pos += size;
             }
             ++n1n2;
-          } // for n1
-        } // for n2
+          }  // for n1
+        }    // for n2
       } else {
-        LMReduceHotLoop<l_unroll-1>::LMReduce(coef1, coef2,
-            coef1n12n2, nmax, lmax);
+        LMReduceHotLoop<l_unroll - 1>::LMReduce(coef1, coef2, coef1n12n2, nmax,
+                                                lmax);
       }
     }
 
@@ -152,23 +149,22 @@ namespace rascal {
     template <>
     template <typename D1, typename D2, typename D3>
     inline void
-    LMReduceHotLoop<0>::LMReduce(const Eigen::MatrixBase<D1>& coef1,
-            const Eigen::MatrixBase<D2>& coef2,
-            Eigen::MatrixBase<D3>& coef1n12n2,
-            const size_t & nmax, const size_t & lmax) {
+    LMReduceHotLoop<0>::LMReduce(const Eigen::MatrixBase<D1> & coef1,
+                                 const Eigen::MatrixBase<D2> & coef2,
+                                 Eigen::MatrixBase<D3> & coef1n12n2,
+                                 const size_t & nmax, const size_t & lmax) {
       // TODO(felix) do a proper assert - this should ONLY be called if lmax=0!
       size_t n1n2{0};
       for (size_t n1{0}; n1 < nmax; n1++) {
         auto && coef1n1 = coef1.row(n1);
         for (size_t n2{0}; n2 < nmax; n2++) {
           auto && coef2n2 = coef2.row(n2);
-          LMReduceHotLoop<0>::lm_explicit_sum(coef1n1, coef2n2,
-                    coef1n12n2, n1n2);
+          LMReduceHotLoop<0>::lm_explicit_sum(coef1n1, coef2n2, coef1n12n2,
+                                              n1n2);
           ++n1n2;
         }
       }
     }
-
 
     enum class SOAPType { RadialSpectrum, PowerSpectrum, End_ };
 
@@ -432,7 +428,7 @@ namespace rascal {
         spair_type[0] = el1.first[0];
 
         // multiply with the precomputed factors
-        //auto coef1{el1.second * l_factors.asDiagonal()};
+        // auto coef1{el1.second * l_factors.asDiagonal()};
         // TODO(felix) For unfathomable reasons doing an explicit copy and
         // product is massively faster than the fancy version above. why?
         Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
@@ -452,10 +448,9 @@ namespace rascal {
 
           // this will unroll the LM reduction of n1lm,n2lm->n1n2l
           // at compile time.
-          internal::LMReduceHotLoop<8>::LMReduce(coef1,
-                        coef2, soap_vector_by_pair,
-                        this->max_radial, this->max_angular);
-
+          internal::LMReduceHotLoop<8>::LMReduce(
+              coef1, coef2, soap_vector_by_pair, this->max_radial,
+              this->max_angular);
         }  // for el1 : coefficients
       }    // for el2 : coefficients
 

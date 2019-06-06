@@ -338,42 +338,12 @@ namespace rascal {
 
       inline double sum(const double & z, const Eigen::VectorXd & coefficient,
                         const size_t & mmax, const int & n_terms) {
-
-        /*
-        // perform the sum
-        double res{1.0}, a1{1.0}, zpow{z}, z4{z * z};
-        z4 *= z4;
-        if (n_terms == -1) {
-          // adaptive sum. computes several terms at a time to save on
-          // and on bailout tests (typical n. of terms needed is ~20)
-          for (size_t i{0}; i < mmax - 3; i += 4) {
-            a1 = zpow * (coefficient(i) + z * (coefficient(i + 1) +
-                                               z * (coefficient(i + 2) +
-                                                    z * coefficient(i + 3))));
-            if (a1 < this->tolerance * res) {
-              this->n_terms = i;
-              res += a1;
-              break;
-            }
-            zpow *= z4;
-            res += a1;
-          }
-        } else {
-          // TODO(mc) this could be done with telescopic sums - and might be
-          // faster than checking for bailout condition
-          for (size_t i{0}; i < static_cast<size_t>(n_terms); ++i) {
-            a1 = coefficient(i) * zpow;
-            zpow *= z;
-            res += a1;
-          }
-        }*/
-
         double iz{1.0 / z};
-        double res{1.0}, izpow{iz}, s_i{1.}, iz2{iz*iz};
+        double res{1.0}, izpow{iz}, s_i{1.}, iz2{iz * iz};
         // perform the sum
         if (n_terms == -1) {
-          for (size_t i{0}; i < mmax-1; i+=2) {
-            s_i = izpow *(coefficient(i) + coefficient(i+1)*iz);
+          for (size_t i{0}; i < mmax - 1; i += 2) {
+            s_i = izpow * (coefficient(i) + coefficient(i + 1) * iz);
             if (res > 0 and std::fabs(s_i) < this->tolerance * res) {
               this->n_terms = i;
               res += s_i;
@@ -647,7 +617,7 @@ namespace rascal {
             MP1p1p{0.}, MPoo{0.};
 
         double alpha_rij_2{alpha * r_ij};
-        double zij{-r_ij * alpha_rij_2}; // this is really alpha rij^2
+        double zij{-r_ij * alpha_rij_2};  // this is really alpha rij^2
         double ezij{std::exp(zij)};  // exponential, will be used many times
         alpha_rij_2 *= alpha_rij_2;
         for (size_t n_radial{0}; n_radial < this->max_radial; ++n_radial) {

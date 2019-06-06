@@ -65,17 +65,18 @@ namespace rascal {
 
      private:
       template <typename D1, typename D2, typename D3>
-      static inline void lm_explicit_prod(const Eigen::MatrixBase<D1>& coeffn,
-                                         const Eigen::MatrixBase<D2>& harm,
-                                         Eigen::MatrixBase<D3>& coeffnlm,
-                                         const size_t & n);
+      static inline void lm_explicit_prod(const Eigen::MatrixBase<D1> & coeffn,
+                                          const Eigen::MatrixBase<D2> & harm,
+                                          Eigen::MatrixBase<D3> & coeffnlm,
+                                          const size_t & n);
 
      public:
       // This makes the full loop to accumulate the nlm coefficients
       template <typename D1, typename D2, typename D3>
-      static inline void LMProduct(const Eigen::MatrixBase<D1>& coeffn,
-            const Eigen::MatrixBase<D2>& harm, Eigen::MatrixBase<D3>& coeffnlm,
-            const size_t & nmax, const size_t & lmax);
+      static inline void LMProduct(const Eigen::MatrixBase<D1> & coeffn,
+                                   const Eigen::MatrixBase<D2> & harm,
+                                   Eigen::MatrixBase<D3> & coeffnlm,
+                                   const size_t & nmax, const size_t & lmax);
     };
 
     /* this should allow to spell out (and let the compiler optimize)
@@ -83,13 +84,12 @@ namespace rascal {
      * smart enough to unroll this loop with -O3 so all is well */
     template <size_t l_unroll>
     template <typename D1, typename D2, typename D3>
-    inline void
-    LMProductHotLoop<l_unroll>::lm_explicit_prod(
-                                        const Eigen::MatrixBase<D1>& coeffn,
-                                        const Eigen::MatrixBase<D2>& harm,
-                                        Eigen::MatrixBase<D3>& coeffnlm,
-                                        const size_t & n) {
-      LMProductHotLoop<l_unroll-1>::lm_explicit_prod(coeffn, harm, coeffnlm, n);
+    inline void LMProductHotLoop<l_unroll>::lm_explicit_prod(
+        const Eigen::MatrixBase<D1> & coeffn,
+        const Eigen::MatrixBase<D2> & harm, Eigen::MatrixBase<D3> & coeffnlm,
+        const size_t & n) {
+      LMProductHotLoop<l_unroll - 1>::lm_explicit_prod(coeffn, harm, coeffnlm,
+                                                       n);
 
       size_t lm_start{(l_unroll) * (l_unroll)};
       size_t lm_end{(l_unroll + 1) * (l_unroll + 1)};
@@ -102,11 +102,10 @@ namespace rascal {
     template <>
     template <typename D1, typename D2, typename D3>
     inline void
-    LMProductHotLoop<0>::lm_explicit_prod(
-                                        const Eigen::MatrixBase<D1>& coeffn,
-                                        const Eigen::MatrixBase<D2>& harm,
-                                        Eigen::MatrixBase<D3>& coeffnlm,
-                                        const size_t & n) {
+    LMProductHotLoop<0>::lm_explicit_prod(const Eigen::MatrixBase<D1> & coeffn,
+                                          const Eigen::MatrixBase<D2> & harm,
+                                          Eigen::MatrixBase<D3> & coeffnlm,
+                                          const size_t & n) {
       coeffnlm(n, 0) += coeffn(n, 0) * harm(0);
     }
 
@@ -115,30 +114,29 @@ namespace rascal {
     // fold down to lower l_unroll if called with too low lmax
     template <size_t l_unroll>
     template <typename D1, typename D2, typename D3>
-    inline void
-    LMProductHotLoop<l_unroll>::LMProduct(const Eigen::MatrixBase<D1>& coeffn,
-            const Eigen::MatrixBase<D2>& harm, Eigen::MatrixBase<D3>& coeffnlm,
-            const size_t & nmax, const size_t & lmax) {
+    inline void LMProductHotLoop<l_unroll>::LMProduct(
+        const Eigen::MatrixBase<D1> & coeffn,
+        const Eigen::MatrixBase<D2> & harm, Eigen::MatrixBase<D3> & coeffnlm,
+        const size_t & nmax, const size_t & lmax) {
       size_t lm_pos, lm_size;
 
-      if (lmax>=l_unroll) {
+      if (lmax >= l_unroll) {
         for (size_t radial_n{0}; radial_n < nmax; radial_n++) {
-          LMProductHotLoop<l_unroll>::lm_explicit_prod(coeffn, harm,
-                                                      coeffnlm, radial_n);
+          LMProductHotLoop<l_unroll>::lm_explicit_prod(coeffn, harm, coeffnlm,
+                                                       radial_n);
 
           // falls back on an explicit sum for lmax > l_unroll
-          lm_pos = (l_unroll+1)*(l_unroll+1);
-          for (size_t l{l_unroll+1}; l <  lmax+1; ++l) {
+          lm_pos = (l_unroll + 1) * (l_unroll + 1);
+          for (size_t l{l_unroll + 1}; l < lmax + 1; ++l) {
             lm_size = 2 * l + 1;
             coeffnlm.block(radial_n, lm_pos, 1, lm_size) +=
-                (coeffn(radial_n, l) *
-                 harm.segment(lm_pos, lm_size));
+                (coeffn(radial_n, l) * harm.segment(lm_pos, lm_size));
             lm_pos += lm_size;
           }
         }
       } else {
-        LMProductHotLoop<l_unroll-1>::LMProduct(coeffn, harm,
-            coeffnlm, nmax, lmax);
+        LMProductHotLoop<l_unroll - 1>::LMProduct(coeffn, harm, coeffnlm, nmax,
+                                                  lmax);
       }
     }
 
@@ -146,9 +144,10 @@ namespace rascal {
     template <>
     template <typename D1, typename D2, typename D3>
     inline void
-    LMProductHotLoop<0>::LMProduct(const Eigen::MatrixBase<D1>& coeffn,
-            const Eigen::MatrixBase<D2>& harm, Eigen::MatrixBase<D3>& coeffnlm,
-            const size_t & nmax, const size_t & lmax) {
+    LMProductHotLoop<0>::LMProduct(const Eigen::MatrixBase<D1> & coeffn,
+                                   const Eigen::MatrixBase<D2> & harm,
+                                   Eigen::MatrixBase<D3> & coeffnlm,
+                                   const size_t & nmax, const size_t & lmax) {
       // TODO(felix) do a proper assert - this should ONLY be called if lmax=0!
       for (size_t radial_n{0}; radial_n < nmax; radial_n++) {
         LMProductHotLoop<0>::lm_explicit_prod(coeffn, harm, coeffnlm, radial_n);
@@ -428,11 +427,11 @@ namespace rascal {
               this->radial_n_factors(radial_n) * a_b_l_n;
         }
 
-  // MC I think this can be moved out - tried and all seems to work!
-  //      this->radial_integral_center.transpose() *=
-  //        this->radial_norm_factors.asDiagonal();
-  //      this->radial_integral_center =
-  //          this->radial_ortho_matrix * this->radial_integral_center;
+        // MC I think this can be moved out - tried and all seems to work!
+        //      this->radial_integral_center.transpose() *=
+        //        this->radial_norm_factors.asDiagonal();
+        //      this->radial_integral_center =
+        //          this->radial_ortho_matrix * this->radial_integral_center;
         return Vector_Ref(this->radial_integral_center);
       }
 
@@ -486,14 +485,14 @@ namespace rascal {
             (a_b_l_n.array() * this->hyp1f1_calculator.get_values().array())
                 .matrix() *
             distance_fac_a_l.asDiagonal();
-     //   this->radial_integral_neighbour.transpose() *=
-     //       this->radial_norm_factors.asDiagonal();
+        //   this->radial_integral_neighbour.transpose() *=
+        //       this->radial_norm_factors.asDiagonal();
 
-     // ALSO - perhaps more interestingly - there's no point in
-     // orthogonalizing each neighbor contribution. This should be done
-     // at the end before returning the whole thing!
-     //   this->radial_integral_neighbour.transpose() *=
-     //       this->radial_ortho_matrix;
+        // ALSO - perhaps more interestingly - there's no point in
+        // orthogonalizing each neighbor contribution. This should be done
+        // at the end before returning the whole thing!
+        //   this->radial_integral_neighbour.transpose() *=
+        //       this->radial_ortho_matrix;
         return Matrix_Ref(this->radial_integral_neighbour);
       }
 
@@ -874,9 +873,9 @@ namespace rascal {
         harmonics *= cutoff_function->f_c(dist);
         auto && coefficients_center_by_type{coefficients_center[neigh_type]};
 
-        internal::LMProductHotLoop<8>::LMProduct(neighbour_contribution,
-                        harmonics, coefficients_center_by_type,
-                        this->max_radial, this->max_angular);
+        internal::LMProductHotLoop<8>::LMProduct(
+            neighbour_contribution, harmonics, coefficients_center_by_type,
+            this->max_radial, this->max_angular);
       }  // for (neigh : center)
       // TODO(felix) IMO THIS IS THE POINT TO DO THE ORTHOGONALIZATION!
 
@@ -884,20 +883,17 @@ namespace rascal {
       for (auto && coeff_by_type : coefficients_center) {
         // TODO(felix) pls check - again for me this is faster than the fancy
         // asDiagonal()
-        for (size_t n{0}; n<this->max_radial; ++n) {
+        for (size_t n{0}; n < this->max_radial; ++n) {
           coeff_by_type.second.row(n) *=
               radial_integral->radial_norm_factors(n);
         }
-        //coeff_by_type.second.transpose() *=
+        // coeff_by_type.second.transpose() *=
         //  radial_integral->radial_norm_factors.asDiagonal();
         coeff_by_type.second.transpose() *=
-          radial_integral->radial_ortho_matrix;
+            radial_integral->radial_ortho_matrix;
       }
-    }    // for (center : structure_manager)
-
-
-
-  }      // compute()
+    }  // for (center : structure_manager)
+  }  // compute()
 
 }  // namespace rascal
 
