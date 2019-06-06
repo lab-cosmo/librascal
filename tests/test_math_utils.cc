@@ -182,8 +182,9 @@ namespace rascal {
 
   BOOST_AUTO_TEST_CASE(spherical_harmonics_gradient_test) {
     constexpr size_t test_max_angular = 3;
-    test_gradients<SphericalHarmonicsWithGradients<test_max_angular>>(
-      "reference_data/spherical_harmonics_gradient_test.json");
+    SphericalHarmonicsWithGradients<test_max_angular> harmonics_calculator{};
+    test_gradients(harmonics_calculator,
+                   "reference_data/spherical_harmonics_gradient_test.json");
   }
 
   /* ---------------------------------------------------------------------- */

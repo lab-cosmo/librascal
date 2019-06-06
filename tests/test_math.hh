@@ -161,9 +161,10 @@ namespace rascal {
     }
   };
 
-  template<typename FunctionProvider_t> void test_gradients(
-                                              std::string data_filename) {
-    FunctionProvider_t function_calculator{};
+  template<typename FunctionProvider_t>
+  void test_gradients(FunctionProvider_t function_calculator,
+                      std::string data_filename) {
+    //FunctionProvider_t function_calculator{};
     GradientTestFixture params{data_filename};
     Eigen::MatrixXd values;
     Eigen::MatrixXd jacobian;
