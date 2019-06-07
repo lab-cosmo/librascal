@@ -5,7 +5,7 @@ import argparse
 import numpy as np
 import ubjson
 import json
-from scipy.special import sph_harm, lpmn
+from scipy.special import sph_harm, lpmv
 from mpmath import mp, spherharm
 
 # shape (nb_unit_vectors,3)
@@ -39,14 +39,14 @@ def dump_lpmn_reference_json():
     directions = load_unit_vectors_from_json()
     max_angular_l = 31
     for direction in directions:
-        lpmn_results = []
+        alps = []
         z = direction[2] # = cos_theta
         # one could use numpy broadcasting, but this is more readable
         for angular_l in range(max_angular_l+1):
             for angular_m in range(-angular_l, angular_l+1):
                 result = np.real(lpmn(angular_m, angular_l, z))
-                lpmn_results.append(result)
-        data.append(dict(max_angular_l=max_angular_l, direction=direction, associated_legendre=lpmn_results))
+                alps.append(result)
+        data.append(dict(max_angular_l=max_angular_l, direction=direction, alps=alps))
     print(len(data))
     with open(path+"tests/reference_data/associated_legendre_reference.ubjson",'wb') as f:
         ubjson.dump(data,f)
@@ -76,11 +76,15 @@ def dump_reference_json():
     unit_vectors = load_unit_vectors_from_json()
     # to produces more readable tests change to 1 or 2
     max_angular_l = 31
+
+
     for unit_vector in unit_vectors:
         harmonics = []
+        alps = []
         # copy of c++ code:
         # double cos_theta = unit_vector[2];
-        theta = np.arccos(unit_vector[2])
+        cos_theta = unit_vector[2]
+        theta = np.arccos(cos_theta)
         # copy of c++ code:
         # double phi = std::atan2(unit_vector[1], unit_vector[0]);
         phi = np.arctan2(unit_vector[1], unit_vector[0])

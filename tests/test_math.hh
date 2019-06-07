@@ -49,6 +49,7 @@ namespace rascal {
       ref_file >> ref_data;
       unit_vectors = ref_data.at("unit_vectors").get<StdVector2Dim_t>();
       harmonics = ref_data.at("harmonics").get<StdVector3Dim_t>();
+      // a vector which contains Switzerland's mountain landscape
       alps = ref_data.at("alps").get<StdVector3Dim_t>();
     }
 
