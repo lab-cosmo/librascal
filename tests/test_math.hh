@@ -178,6 +178,24 @@ namespace rascal {
     }
   };
 
+  /**
+   * Numerically verify that a given function and its gradient are consistent
+   *
+   * @param function_calculator An object that provides both the function and
+   *                            its gradient
+   *
+   * @param data_filename name of a json file that will be read by
+   *                      GradientTestFixture
+   *
+   * The function_calculator object may be of any type, as long as it provides
+   * two functions, f() and grad_f(), to calculate the function and its gradient
+   * (derivative for functions with one input, Jacobian for functions with
+   * multiple outputs -- the output dimension is expected to correspond to
+   * columns).  Both functions must accept an Eigen::Vector, corresponding to
+   * the function input, of dimension determined in the data file (read by
+   * GradientTestFixture).  This function additionally guarantees that f() will
+   * be called before grad_f() with the same input.
+   */
   template<typename FunctionProvider_t>
   void test_gradients(FunctionProvider_t function_calculator,
                       std::string data_filename) {
@@ -199,7 +217,7 @@ namespace rascal {
     // attention to the change of the finite-difference gradients from one step
     // to the next).  The automated test is really more intended to be a sanity
     // check on the implementation anyway.
-    constexpr double fd_error_tol = 1E-8;
+    constexpr double fd_error_tol = 1E-6;
     for (auto inputs_it{params.function_inputs.begin()};
          inputs_it != params.function_inputs.end(); inputs_it++) {
       argument_vector = Eigen::Map<Eigen::RowVectorXd>(inputs_it->data(), 1,
@@ -334,6 +352,52 @@ namespace rascal {
     double smooth_width{0.5};
     bool verbose{false};
   };
+
+  struct Hyp1f1GradientProvider {
+
+    Hyp1f1GradientProvider(size_t max_radial, size_t max_angular,
+                           double fac_a, Eigen::Ref<Eigen::VectorXd> fac_b) :
+    max_radial{max_radial}, max_angular{max_angular}, fac_a{fac_a} {
+      this->fac_b.resize(max_angular, 1);
+      this->fac_b = fac_b;
+      this->hyp1f1_calculator.precompute(max_radial, max_angular);
+      std::cout << "constructor ok" << std::endl;
+    }
+
+    ~Hyp1f1GradientProvider() = default;
+
+    Eigen::Ref<Eigen::Array<double, 1, Eigen::Dynamic>>
+    f(const Eigen::Matrix<double, 1, 1> & input_v) {
+      this->hyp1f1_calculator.calc(input_v(0), this->fac_a, this->fac_b);
+      Eigen::MatrixXd result(this->max_radial, this->max_angular + 1);
+      result = this->hyp1f1_calculator.get_values();
+      Eigen::Map<Eigen::Array<double, 1, Eigen::Dynamic>> result_flat(
+          result.data(), 1, result.size());
+      return result_flat;
+    }
+
+    Eigen::Ref<Eigen::Array<double, 1, Eigen::Dynamic>>
+    grad_f(const Eigen::Matrix<double, 1, 1> & input_v) {
+      this->hyp1f1_calculator.calc(input_v(0), this->fac_a, this->fac_b, true);
+      Eigen::MatrixXd result(this->max_radial, this->max_angular + 1);
+      result = this->hyp1f1_calculator.get_derivatives();
+      result.transpose() *=
+        ((2.*this->fac_a*this->fac_a * input_v(0)) /
+         (this->fac_a + this->fac_b.array())).matrix().asDiagonal();
+      result -= this->hyp1f1_calculator.get_values() * 2*fac_a*input_v(0);
+      Eigen::Map<Eigen::Array<double, 1, Eigen::Dynamic>> result_flat(
+          result.data(), 1, result.size());
+      return result_flat;
+    }
+
+    math::Hyp1f1SphericalExpansion hyp1f1_calculator{true, 1e-13, 200};
+    size_t max_radial;
+    size_t max_angular;
+    double fac_a{};
+    Eigen::VectorXd fac_b{};
+
+  };
+
 }  // namespace rascal
 
 #endif  // TESTS_TEST_MATH_HH_

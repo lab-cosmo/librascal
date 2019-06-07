@@ -377,9 +377,9 @@ namespace rascal {
         this->hyp1f1_calculator.calc(distance, fac_a, this->fac_b);
 
         this->radial_integral_neighbour =
-            (a_b_l_n.array() * this->hyp1f1_calculator.get_values().array())
+            (this->a_b_l_n.array() * this->hyp1f1_calculator.get_values().array())
                 .matrix() *
-            distance_fac_a_l.asDiagonal();
+            this->distance_fac_a_l.asDiagonal();
         this->radial_integral_neighbour.transpose() *=
             this->radial_norm_factors.asDiagonal();
         this->radial_integral_neighbour.transpose() *=
@@ -417,7 +417,7 @@ namespace rascal {
         auto smearing{downcast_atomic_smearing<AST>(this->atomic_smearing)};
         // a = 1 / (2*\sigma^2)
         double fac_a{0.5 * pow(smearing->get_gaussian_sigma(pair), -2)};
-        double inv_2a{pow(smearing->get_gaussian_sigma(pair), 2)};
+        //double inv_2a{pow(smearing->get_gaussian_sigma(pair), 2)};
         double inv_dist2{pow(distance, -2)};
 
         // Derivatives of the A and B factors (simple proportional)
@@ -425,25 +425,40 @@ namespace rascal {
         // start proportional_factors as the list of l from 0 to l_max
         Vector_t proportional_factors =
             Vector_t::LinSpaced(this->max_angular + 1, 0, this->max_angular);
-        // proportional_factor = (l/r^2 - 1/2a)*radial_integral
+        // proportional_factor = (l/r^2 - 2a)*radial_integral
         proportional_factors = (proportional_factors.array() * inv_dist2)
-                                - inv_2a;
+                                - 2*fac_a;
         proportional_term = this->radial_integral_neighbour.array().rowwise()
                           * proportional_factors.array().transpose();
 
-        // Hypergeometric derivative
-        Matrix_t hypergeom_term(this->max_radial, this->max_angular + 1);
+        // Hypergeometric derivative: d/dz 1F1(z;...)
+        //Matrix_t hypergeom_term(this->max_radial, this->max_angular + 1);
         this->hyp1f1_calculator.calc(distance, fac_a, this->fac_b, true);
-        hypergeom_term =
-            (this->a_b_l_n.array() *
-             this->hyp1f1_calculator.get_values().array() // d/dz 1F1(z;...)
-             ).rowwise() * this->distance_fac_a_l.array().transpose();
-        // avoids the use of the transpose...
-        // assuming the radial ortho matrix is symmetric, right?
-        hypergeom_term = this->radial_ortho_matrix *
-                            radial_norm_factors.asDiagonal() * hypergeom_term;
 
-        this->radial_neighbour_derivative = proportional_term + hypergeom_term;
+        this->radial_neighbour_derivative =
+            (this->a_b_l_n.array() * this->hyp1f1_calculator.get_derivatives().array())
+                .matrix() *
+            this->distance_fac_a_l.asDiagonal();
+        this->radial_neighbour_derivative.transpose() *=
+            ((2.*fac_a*fac_a) / (fac_a + this->fac_b.array())).matrix().asDiagonal();
+        this->radial_neighbour_derivative.transpose() *=
+            this->radial_norm_factors.asDiagonal();
+        this->radial_neighbour_derivative.transpose() *=
+            this->radial_ortho_matrix;
+        //hypergeom_term =
+            //(this->a_b_l_n.array() *
+             //this->hyp1f1_calculator.get_derivatives().array()
+             //).rowwise() * this->distance_fac_a_l.array().transpose();
+        //// avoids the use of the transpose...
+        //// assuming the radial ortho matrix is symmetric, right?
+        //hypergeom_term = this->radial_ortho_matrix *
+                            //radial_norm_factors.asDiagonal() * hypergeom_term;
+        //// chain rule: Multiply by dz/dr_{ij} * r_{ij}^{-1} = \frac{2a^2}{a+b}
+        //hypergeom_term.array().colwise() *=
+            //(2.*fac_a*fac_a) / (fac_a + this->fac_b.array());
+
+        //this->radial_neighbour_derivative = proportional_term + hypergeom_term;
+        this->radial_neighbour_derivative += proportional_term;
         return Matrix_Ref(this->radial_neighbour_derivative);
       }
 

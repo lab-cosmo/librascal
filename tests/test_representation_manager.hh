@@ -273,7 +273,7 @@ namespace rascal {
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
     std::vector<json> rep_hypers{{{"max_radial", 4},
-                                  {"max_angular", 3}},
+                                  {"max_angular", 2}},
                                  {{"max_radial", 6},
                                   {"max_angular", 4}}};
   };
@@ -316,7 +316,8 @@ namespace rascal {
       Eigen::ArrayXXd result(this->max_radial, this->max_angular + 1);
       result = this->radial_integral->template
           compute_neighbour_derivative<
-            internal::AtomicSmearingType::Constant>(input_v(0), this->pair);
+            internal::AtomicSmearingType::Constant>(input_v(0), this->pair)
+          * input_v(0); //Remove the chain-rule factor of 1/r to get df/dr
       Eigen::Map<Eigen::Array<double, 1, Eigen::Dynamic>> result_flat(
                                             result.data(), 1, result.size());
       return result_flat;

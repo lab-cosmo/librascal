@@ -190,7 +190,7 @@ namespace rascal {
     std::string data_filename{"reference_data/radial_derivative_test.json"};
     auto manager = managers.front(); // there should be just one
     // doesn't work, dunno why, see nested for loops below for replacement hack
-    //auto & pair = (manager->begin())->begin();
+    //auto & pair = (manager.begin())->begin();
     for (auto & hyper : hypers) {
       std::shared_ptr<RadialIntegral_t> radial_integral =
                                 std::make_shared<RadialIntegral_t>(hyper);
@@ -207,7 +207,7 @@ namespace rascal {
         } // for (auto pair : center)
         break;
       } // for (auto center : managers)
-      break; // don't need to try all the hypers yet
+      // But do try all the hypers
     } // for (auto hyper : hypers)
   }
 
