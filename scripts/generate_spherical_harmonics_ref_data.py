@@ -52,67 +52,62 @@ def dump_lpmn_reference_json():
         ubjson.dump(data,f)
     return
 
+# scipy alreay includes the Condon-Shortley phase, therefore to calculate the
+# real form we use
+#         ╭ √2 Im[Y_l^|m|] for m<0
+#         |
+# Y_l^m = ┤     Y_l^0      for m==0
+#         |
+#         ╰ √2 Re[Y_l^m]   for m<0
+# where Y_l^m is the output of the spherical harmonics function of scipy
 def dump_reference_json():
+    verbose=False
     path = '../'
     sys.path.insert(0, os.path.join(path, 'build/'))
     sys.path.insert(0, os.path.join(path, 'tests/'))
     data = []
 
+    # Calculation of spherical harmonics
+    ## with mpmath:
+    ## spherharm(angular_l,angular_m, theta, phi)
+    ## with scipy:
+    ## sph_harm(angular_m, angular_l, phi, theta)
+
     unit_vectors = load_unit_vectors_from_json()
-    # double cos_theta = unit_vector[2];
-    #theta = np.arccos(unit_vectors[:,2])
-    # double phi = std::atan2(unit_vector[1], unit_vector[0]);
-    #phi = np.arctan2(unit_vectors[:,1], unit_vectors[:,0])
-    # if you want readable tests, change to 3 or lower
-    max_angular_l = 3# to produces more readable tests change to 1 or 2
-
-
-    #lmax = 2
-    #harmonics = np.zeros((lmax+1, 2*lmax + 1, len(unit_vectors)))
-    #tmp = np.array(unit_vectors)
-    #thetas = np.arccos(tmp[:,2])
-    #phis = np.arctan2(tmp[:,1], tmp[:,0])
-    #for l in range(lmax+1):
-    #    harmonics[l, l, :] = sph_harm(0, l, phis, thetas)
-    #    for m in range(1, l+1):
-    #        complex_harmonics = sph_harm(m, l, phis, thetas)
-    #        harmonics[l, l+m, :] = np.real(complex_harmonics)*np.sqrt(2)
-    #        harmonics[l, l-m, :] = -1*np.imag(complex_harmonics)*np.sqrt(2)
-    #for i in range(len(unit_vectors)):
-    #    data.append(dict(max_angular_l=int(max_angular_l), unit_vector=unit_vectors[i], harmonics=harmonics[:,:,i].tolist()))
-    #    print(unit_vectors[i])
-    #    print(harmonics[:,:,i].tolist())
-
-    verbose=True
+    # to produces more readable tests change to 1 or 2
+    max_angular_l = 31
     for unit_vector in unit_vectors:
-
-        sph_harm_results = []
+        harmonics = []
+        # copy of c++ code:
+        # double cos_theta = unit_vector[2];
         theta = np.arccos(unit_vector[2])
+        # copy of c++ code:
+        # double phi = std::atan2(unit_vector[1], unit_vector[0]);
         phi = np.arctan2(unit_vector[1], unit_vector[0])
         if verbose:
             print(unit_vector)
         for angular_l in range(max_angular_l+1):
-            # with mpmath
-            # spherharm(angular_l,angular_m,theta,phi)
-            # with scipy
-            # sph_harm(angular_m, angular_l, phi, theta)
-            for angular_m in range(angular_l,0,-1):
-                result = np.sqrt(2)*np.imag(sph_harm(angular_m, angular_l, phi, theta)) 
-                sph_harm_results.append(float(result))
-                if verbose:
-                    print(angular_l, -angular_m, result)
-            # could be done more efficient by using the results from the last
-            # calculation but this seems more readable
-            result = np.real(sph_harm(0, angular_l, phi, theta))
-            sph_harm_results.append(float(result))
-            if verbose:
-                print(angular_l, 0, result)
-            for angular_m in range(1, angular_l+1):
-                result = np.sqrt(2)*np.real(sph_harm(angular_m, angular_l, phi, theta)) 
-                sph_harm_results.append(float(result))
+            # this part could be done more efficient by using the results from 
+            # the last calculation but this seems more readable
+
+            # calculation for negative angular_m
+            for angular_m in range(-angular_l,0):
+                result = np.sqrt(2)*np.imag(sph_harm(np.abs(angular_m), angular_l, phi, theta)) 
+                harmonics.append(float(result))
                 if verbose:
                     print(angular_l, angular_m, result)
-        data.append(dict(max_angular_l=int(max_angular_l), unit_vector=unit_vector, harmonics=sph_harm_results))
+            # calculation for m=0 
+            result = np.real(sph_harm(0, angular_l, phi, theta))
+            harmonics.append(float(result))
+            if verbose:
+                print(angular_l, 0, result)
+            # calculation for positive angular_m
+            for angular_m in range(1, angular_l+1):
+                result = np.sqrt(2)*np.real(sph_harm(angular_m, angular_l, phi, theta)) 
+                harmonics.append(float(result))
+                if verbose:
+                    print(angular_l, angular_m, result)
+        data.append(dict(max_angular_l=int(max_angular_l), unit_vector=unit_vector, harmonics=harmonics))
     print(len(data))
     with open(path+"tests/reference_data/spherical_harmonics_reference.ubjson",'wb') as f:
         ubjson.dump(data,f)

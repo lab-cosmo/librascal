@@ -61,7 +61,7 @@ namespace rascal {
     StdVector2Dim_t unit_vectors{};
     StdVector3Dim_t harmonics{};
     StdVector3Dim_t alps{};
-    bool verbose{true};
+    bool verbose{false};
   };
 
   struct SphericalHarmonicsClassRefFixture {
@@ -76,7 +76,11 @@ namespace rascal {
     std::string ref_filename = "reference_data/spherical_harmonics_reference.ubjson";
 
     json ref_data{};
-    bool verbose{true};
+    // for general test information
+    bool info{false};
+    // for detailed tests information of computed values
+    bool verbose{false};
+    
   };
 
   /**
@@ -276,7 +280,7 @@ namespace rascal {
     std::string ref_filename = "reference_data/hyp1f1_reference.ubjson";
 
     json ref_data{};
-    bool verbose{false};
+    bool verbose{true};
   };
 
   struct Hyp1f1SphericalExpansionFixture {

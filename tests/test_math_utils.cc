@@ -69,7 +69,7 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(math_spherical_harmonics_test,
                           SphericalHarmonicsRefFixture) {
     if (verbose) {
-      std::cout << ">> Test math_spherical_harmonics_test started." << std::endl;
+      std::cout << ">> Test math_spherical_harmonics_test started..." << std::endl;
     }
     for (size_t vec_idx{0}; vec_idx < unit_vectors.size(); vec_idx++) {
       Eigen::Vector3d direction(unit_vectors[vec_idx].data());
@@ -77,7 +77,9 @@ namespace rascal {
       Eigen::VectorXd computed_harmonics =
           math::compute_spherical_harmonics(direction, max_angular);
       if (verbose) {
-        std::cout << ">> Testing unit vector: " << direction << std::endl;
+        std::cout << ">> Testing unit vector: ";
+        std::cout << Eigen::Map<Eigen::RowVector3d>(direction.data());
+        std::cout << std::endl;
         std::cout << ">> Max angular momentum: l_max=" << max_angular << std::endl;
         std::cout << ">> Number of computed harmonics: ";
         std::cout << computed_harmonics.size() << std::endl;
@@ -85,10 +87,13 @@ namespace rascal {
       size_t lm_collective_idx{0};
       for (size_t angular_l{0}; angular_l < max_angular + 1; angular_l++) {
         if (verbose) {
-          std::cout << std::setprecision(10) << "Coefficients for l=";
+          auto harmonics_segment = 
+              computed_harmonics.segment(lm_collective_idx, 2*angular_l + 1);
+
+          std::cout << std::setprecision(10) << ">> Coefficients for l=";
           std::cout << angular_l << ": ";
-          std::cout << computed_harmonics.segment(lm_collective_idx,
-                                                  2*angular_l + 1);
+          std::cout << Eigen::Map<Eigen::RowVectorXd>(
+              harmonics_segment.data(), harmonics_segment.size());
           std::cout << std::endl;
         }
           std::cout << ">> Refererence computation Coefficients: ";
