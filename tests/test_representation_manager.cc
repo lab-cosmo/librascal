@@ -176,7 +176,7 @@ namespace rascal {
   }
 
   using fixtures_with_gradients = boost::mpl::list<RepresentationFixture<
-      MultipleStructureSphericalExpansion,
+      MultipleHypersSphericalExpansion,
       RepresentationManagerSphericalExpansion>>;
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(spherical_expansion_radial_derivative, Fix,
@@ -188,29 +188,26 @@ namespace rascal {
     using RadialIntegral_t = internal::RadialContribution<
           internal::RadialBasisType::GTO>;
     std::string data_filename{"reference_data/radial_derivative_test.json"};
+    auto manager = managers.front(); // there should be just one
     // doesn't work, dunno why, see nested for loops below for replacement hack
     //auto & pair = (manager->begin())->begin();
     for (auto & hyper : hypers) {
       std::shared_ptr<RadialIntegral_t> radial_integral =
                                 std::make_shared<RadialIntegral_t>(hyper);
-      for (auto manager : managers) {
-        for (auto center : manager) {
-          for (auto pair : center) {
-            // in C++17 the compiler would be able to deduce the template
-            // arguments for itself >:/
-            SphericalExpansionRadialDerivative<RadialIntegral_t, ClusterRef_t>
-                calculator(radial_integral, pair);
-            test_gradients(calculator, data_filename);
-            //std::cout << calculator.f(Eigen::Array<double, 1, 1>(1.5)) << std::endl;
-            // I really just need _a_ pair, not any one in particular.
-            break;
-          } // for (auto pair : center)
+      for (auto center : manager) {
+        for (auto pair : center) {
+          // in C++17 the compiler would be able to deduce the template
+          // arguments for itself >:/
+          SphericalExpansionRadialDerivative<RadialIntegral_t, ClusterRef_t>
+              calculator(radial_integral, pair);
+          test_gradients(calculator, data_filename);
+          //std::cout << calculator.f(Eigen::Array<double, 1, 1>(1.5)) << std::endl;
+          // I really just need _a_ pair, not any one in particular.
           break;
-        } // for (auto center : managers)
-        // Please tell me there's an easier way to just run this on _one_
-        // structure.
-      } // for (auto manager : managers)
-      // Do run it on all the hypers, though
+        } // for (auto pair : center)
+        break;
+      } // for (auto center : managers)
+      break; // don't need to try all the hypers yet
     } // for (auto hyper : hypers)
   }
 

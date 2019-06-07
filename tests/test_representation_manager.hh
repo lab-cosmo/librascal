@@ -192,6 +192,92 @@ namespace rascal {
     std::vector<json> rep_hypers{{{"max_radial", 10}, {"max_angular", 8}}};
   };
 
+  /** Simplified version of MultipleStructureManagerNLStrictFixture
+   *  that uses only one structure, cutoff, and adaptor set
+   *
+   *  Useful if we just need a StructureManager to test relatively isolated
+   *  functionality on a single structure, but using the rest of the testing
+   *  machinery
+   */
+  struct SimpleStructureManagerNLStrictFixture {
+    using ManagerTypeHolder_t =
+        StructureManagerTypeHolder<StructureManagerCenters,
+                                   AdaptorNeighbourList, AdaptorStrict>;
+
+    SimpleStructureManagerNLStrictFixture() {
+      json parameters;
+      json structure{{"filename", filename}};
+      json adaptors;
+      json ad1{
+          {"name", "AdaptorNeighbourList"},
+          {"initialization_arguments",
+           {{"cutoff", cutoff},
+            {"skin", cutoff_skin},
+            {"consider_ghost_neighbours", false}}}};
+      json ad2{{"name", "AdaptorStrict"},
+               {"initialization_arguments", {{"cutoff", cutoff}}}};
+      adaptors.emplace_back(ad1);
+      adaptors.emplace_back(ad2);
+
+      parameters["structure"] = structure;
+      parameters["adaptors"] = adaptors;
+
+      this->factory_args.emplace_back(parameters);
+    }
+
+    ~SimpleStructureManagerNLStrictFixture() = default;
+
+    const std::string filename{
+        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+    const double cutoff{3.};
+    const double cutoff_skin{0.5};
+
+    json factory_args{};
+  };
+
+  struct MultipleHypersSphericalExpansion
+      : SimpleStructureManagerNLStrictFixture {
+    using Parent = SimpleStructureManagerNLStrictFixture;
+    using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
+
+    MultipleHypersSphericalExpansion() : Parent{} {
+      for (auto & ri_hyp : this->radial_contribution_hypers) {
+        for (auto & fc_hyp : this->fc_hypers) {
+          for (auto & sig_hyp : this->density_hypers) {
+            for (auto & rep_hyp : this->rep_hypers) {
+              rep_hyp["cutoff_function"] = fc_hyp;
+              rep_hyp["gaussian_density"] = sig_hyp;
+              rep_hyp["radial_contribution"] = ri_hyp;
+              this->hypers.push_back(rep_hyp);
+            }
+          }
+        }
+      }
+    };
+
+    ~MultipleHypersSphericalExpansion() = default;
+
+    std::vector<json> hypers{};
+    std::vector<json> fc_hypers{
+        {{"type", "Cosine"},
+         {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
+         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}},
+        {{"type", "Cosine"},
+         {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
+         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
+
+    std::vector<json> density_hypers{
+        {{"type", "Constant"},
+         {"gaussian_sigma", {{"value", 0.2}, {"unit", "AA"}}}},
+        {{"type", "Constant"},
+         {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
+    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
+    std::vector<json> rep_hypers{{{"max_radial", 4},
+                                  {"max_angular", 3}},
+                                 {{"max_radial", 6},
+                                  {"max_angular", 4}}};
+  };
+
   struct SphericalExpansionTestData : TestData {
     using Parent = TestData;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
