@@ -1,5 +1,5 @@
 {
     "function_inputs": [ [2.0] ],
     "direction_mode": "Cartesian",
-    "verbose": false
+    "verbosity": "INFO"
 }

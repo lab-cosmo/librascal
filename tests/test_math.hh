@@ -121,12 +121,29 @@ namespace rascal {
         displacement_directions = MatrixXd::Identity(n_arguments, n_arguments);
       }
 
-      if (input_data.find("verbose") != input_data.end()) {
-        verbose = input_data["verbose"].get<bool>();
+      if (input_data.find("verbosity") != input_data.end()) {
+        std::string verbosity_str = input_data["verbosity"].get<std::string>();
+        if (verbosity_str.compare("INFO") == 0) {
+          verbosity = VerbosityValue::INFO;
+        } else if (verbosity_str.compare("DEBUG") == 0) {
+          verbosity = VerbosityValue::DEBUG;
+        } else if (verbosity_str.compare("NORMAL") == 0) {
+          verbosity = VerbosityValue::NORMAL;
+        } else {
+          std::cerr << "Unknown verbosity value \'" << verbosity_str;
+          std::cerr << "\', assuming NORMAL" << std::endl;
+          verbosity = VerbosityValue::NORMAL;
+        }
       }
     }
 
     ~GradientTestFixture() = default;
+
+    enum struct VerbosityValue {
+      NORMAL = 0, // Print nothing
+      INFO = 10,  // Print one line of info for each gradient step
+      DEBUG = 20  // Print as much as possible
+    };
 
     using StdVector2Dim_t = std::vector<std::vector<double>>;
     StdVector2Dim_t function_inputs{};
@@ -135,7 +152,7 @@ namespace rascal {
     // std::string input_filename{
     //"reference_data/spherical_harmonics_gradient_test.json"};
     size_t n_arguments{0};
-    bool verbose{false};
+    VerbosityValue verbosity{VerbosityValue::NORMAL};
   };
 
   template <int max_angular>
@@ -173,6 +190,9 @@ namespace rascal {
     Eigen::MatrixXd directional;
     Eigen::MatrixXd fd_derivatives;
     Eigen::MatrixXd fd_error_cwise;
+
+    using VerbosityValue = typename GradientTestFixture::VerbosityValue;
+
     // This error isn't going to be arbitrarily small, due to the interaction of
     // finite-difference and finite precision effects.  Just set it to something
     // reasonable and check it explicitly if you really want to be sure (paying
@@ -186,10 +206,12 @@ namespace rascal {
                                                        params.n_arguments);
       values = function_calculator.f(argument_vector);
       jacobian = function_calculator.grad_f(argument_vector);
-      std::cout << std::string(30, '-') << std::endl;
-      std::cout << "Direction vector: " << argument_vector << std::endl;
-      if (params.verbose) {
-        std::cout << "Values:" << values << std::endl;
+      if (params.verbosity >= VerbosityValue::INFO) {
+        std::cout << std::string(30, '-') << std::endl;
+        std::cout << "Input vector: " << argument_vector << std::endl;
+      }
+      if (params.verbosity >= VerbosityValue::DEBUG) {
+        std::cout << "Function values:" << values << std::endl;
         std::cout << "Jacobian:" << jacobian << std::endl;
       }
       for (int disp_idx{0}; disp_idx < params.displacement_directions.rows();
@@ -197,15 +219,19 @@ namespace rascal {
         displacement_direction = params.displacement_directions.row(disp_idx);
         // Compute the directional derivative(s)
         directional = displacement_direction.adjoint() * jacobian;
-        std::cout << "FD direction: " << displacement_direction.adjoint();
-        std::cout << std::endl;
-        if (params.verbose) {
+        if (params.verbosity >= VerbosityValue::INFO) {
+          std::cout << "FD direction: " << displacement_direction.adjoint();
+          std::cout << std::endl;
+        }
+        if (params.verbosity >= VerbosityValue::DEBUG) {
           std::cout << "Analytical derivative: " << directional << std::endl;
         }
         double min_error{HUGE_VAL};
         Eigen::MatrixXd fd_last{Eigen::MatrixXd::Zero(1, directional.size())};
         for (double dx = 1E-2; dx > 1E-10; dx *= 0.1) {
-          std::cout << "dx = " << dx << "\t";
+          if (params.verbosity >= VerbosityValue::INFO) {
+            std::cout << "dx = " << dx << "\t";
+          }
           displacement = dx * displacement_direction;
           // Compute the finite-difference derivative using a
           // centred-difference approach
@@ -231,12 +257,14 @@ namespace rascal {
             fd_quotient = fd_quotient / nonzero_count;
           }
           fd_error = fd_error / fd_derivatives.size();
-          std::cout << "Average rel FD error: " << fd_error << "\t";
-          std::cout << "Average FD quotient:  " << fd_quotient << std::endl;
+          if (params.verbosity >= VerbosityValue::INFO) {
+            std::cout << "Average rel FD error: " << fd_error << "\t";
+            std::cout << "Average FD quotient:  " << fd_quotient << std::endl;
+          }
           if (std::abs(fd_error) < min_error) {
             min_error = std::abs(fd_error);
           }
-          if (params.verbose) {
+          if (params.verbosity >= VerbosityValue::DEBUG) {
             fd_error_cwise = (fd_derivatives - directional);
             std::cout << "error            = " << fd_error_cwise << std::endl;
             std::cout << "(FD derivative   = " << fd_derivatives << ")";
