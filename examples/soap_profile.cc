@@ -127,7 +127,7 @@ int main(int argc, char * argv[]) {
   std::cout << "Compute represenation"
             << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
             << std::endl;
-
+  // TODELETE
   auto soap = representation.get_representation_full();
   std::cout << "Sample SOAP elements \n"
             << soap(0, 0) << " " << soap(0, 1) << " " << soap(0, 2) << "\n"

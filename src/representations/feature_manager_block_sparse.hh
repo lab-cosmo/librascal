@@ -158,6 +158,7 @@ namespace rascal {
     //! move data from the representation manager property
     void push_back(RepresentationManager_t & rm) {
       const auto & raw_data{rm.get_representation_sparse_raw_data()};
+      // TODELETE
       auto n_center{rm.get_center_size()};
       this->structure_stride.push_back(n_center + structure_stride.back());
 

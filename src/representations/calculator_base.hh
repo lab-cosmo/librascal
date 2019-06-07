@@ -50,12 +50,16 @@ namespace rascal {
     //! type used to register the valid key and values of Hypers_t
     using ReferenceHypers_t = std::map<std::string, std::vector<std::string>>;
 
+    using Key_t = std::vector<int>;
+
     // TODO(felix) make sure it is not need anymore
     using Dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, Eigen::Dynamic,
                                   Eigen::RowMajor>;
     using InputData_t =
-        internal::InternallySortedKeyMap<std::vector<int>, Dense_t>;
+        internal::InternallySortedKeyMap<Key_t, Dense_t>;
     using Data_t = std::vector<InputData_t>;
+
+
 
     CalculatorBase() = default;
 
@@ -80,19 +84,29 @@ namespace rascal {
     //! Pure Virtual Function to set hyperparameters of the representation
     void check_hyperparameters(const ReferenceHypers_t &, const Hypers_t &);
 
+    //! return the name of the calculator
+    virtual std::string get_name() = 0;
+
     //! Compute the representation using a StructureManager
-    virtual void compute() = 0;
+    // virtual void compute() = 0;
 
-    //! get the raw data of the representation
-    virtual std::vector<Precision_t> & get_representation_raw_data() = 0;
+    /**
+     * use the property interface to get a property from the manager to
+     * fill it with a new representation.
+     * it return a reference to the typed property of property_name
+     */
+    template<class StructureManager, template <class> class Property>
+    inline decltype(auto) get_property(
+          std::shared_ptr<StructureManager>& manager,
+          const std::string& property_name) {
+      // check if the property already exist and create it if it does not
+      if (not manager->has_property()) {
+        manager->create_property<
+            Property<StructureManager>>(property_name);
+      }
+      return manager->template get_validated_property_ref<Property<StructureManager>>(property_name);
+    }
 
-    virtual Data_t & get_representation_sparse_raw_data() = 0;
-
-    //! get the size of a feature vector
-    virtual size_t get_feature_size() = 0;
-
-    //! get the number of centers for the representation
-    virtual size_t get_center_size() = 0;
 
     //! returns a string representation of the current options values
     //! in alphabetical order

@@ -84,6 +84,7 @@ int main() {
   Representation_t representation{manager, hypers};
   representation.compute();
 
+  // TODELETE
   size_t inner_size{representation.get_feature_size()};
   FeatureManagerBlockSparse<double> feature{inner_size, hypers};
 

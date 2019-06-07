@@ -492,19 +492,29 @@ namespace rascal {
    * (again, as in SOAP) or one of the more recent bases currently under
    * development.
    */
-  template <class StructureManager>
   class CalculatorSphericalExpansion : public CalculatorBase {
    public:
     using Parent = CalculatorBase;
-    using Manager_t = StructureManager;
-    using ManagerPtr_t = std::shared_ptr<Manager_t>;
     using Hypers_t = typename Parent::Hypers_t;
     using ReferenceHypers_t = Parent::ReferenceHypers_t;
-    using Key_t = std::vector<int>;
-    using SparseProperty_t =
-        BlockSparseProperty<double, 1, 0, Manager_t, Key_t>;
-    using Dense_t = typename SparseProperty_t::Dense_t;
-    using Data_t = typename SparseProperty_t::Data_t;
+    using Key_t = typename Parent::Key_t;
+
+    using internal::CutoffFunctionType;
+    using internal::RadialBasisType;
+    using internal::AtomicSmearingType;
+
+    template<class StructureManager>
+    using Property_t =
+        BlockSparseProperty<double, 1, 0, StructureManager, Key_t>;
+
+    template<class StructureManager>
+    using Dense_t = typename Property_t<StructureManager>::Dense_t;
+    template<class StructureManager>
+    using Data_t = typename Property_t<StructureManager>::Data_t;
+
+    template <class StructureManager, size_t Order>
+    using ClusterRef_t = typename StructureManager::template ClusterRef<Order>;
+
     /**
      * Set the hyperparameters of this descriptor from a json object.
      *
@@ -515,12 +525,7 @@ namespace rascal {
      *                    specified in the structure
      */
     void set_hyperparameters(const Hypers_t & hypers) {
-      using internal::CutoffFunctionType;
-      using internal::RadialBasisType;
-
       this->hypers = hypers;
-
-      this->expansions_coefficients.clear();
 
       this->max_radial = hypers.at("max_radial");
       this->max_angular = hypers.at("max_angular");
@@ -598,73 +603,87 @@ namespace rascal {
     CalculatorSphericalExpansion &
     operator=(CalculatorSphericalExpansion && other) = default;
 
-    //! compute representation. choose the CutoffFunctionType from the hypers
-    void compute();
+    /**
+     * Compute representation for a given structure manager.
+     *
+     * @tparam StructureManager a (single or collection in an iterator)
+     * of structure manager(s) held in shared_ptr
+     */
+    template <class StructureManager>
+    void compute(StructureManager& managers);
 
     //! choose the RadialBasisType and AtomicSmearingType from the hypers
-    template <internal::CutoffFunctionType FcType>
-    void compute_by_radial_contribution();
+    template <class StructureManager, CutoffFunctionType FcType>
+    void compute_by_radial_contribution(StructureManager& managers);
+
+    /**
+     * loop over a collection of manangers if it is an iterator,
+     * i.e. std::iterator_traits<T>::value_type is defined.
+     * Or just call compute_impl
+     */
+    template <class StructureManager,
+              CutoffFunctionType FcType,
+              RadialBasisType RadialType,
+              AtomicSmearingType SmearingType,
+              std::enable_if_t<internal::is_iterator<StructureManager>::value, int> = 0>
+    inline void compute_loop(StructureManager& managers) {
+      for (auto& manager : managers) {
+        this->compute_impl<FcType, RadialType, SmearingType>(manager);
+      }
+    }
+
+    //! single manager case
+    template <class StructureManager,
+              CutoffFunctionType FcType,
+              RadialBasisType RadialType,
+              AtomicSmearingType SmearingType,
+              std::enable_if_t<(not internal::is_iterator<StructureManager>::value), int> = 0>
+    inline void compute_loop(StructureManager& managers) {
+      this->compute_impl<FcType, RadialType, SmearingType>(manager);
+    }
 
     //! Compute the spherical exansion given several options
-    template <internal::CutoffFunctionType FcType,
-              internal::RadialBasisType RadialType,
-              internal::AtomicSmearingType SmearingType>
-    void compute_impl();
+    template <class StructureManager,
+              CutoffFunctionType FcType,
+              RadialBasisType RadialType,
+              AtomicSmearingType SmearingType>
+    inline void compute_impl(std::shared_ptr<StructureManager>& manager);
 
-    std::vector<Precision_t> & get_representation_raw_data() {
-      return this->dummy;
+    // TODO(felix) discuss modifications of the baseline name to integrate
+    // some hypers inside
+    inline std::string get_name() {
+      return calculator_name;
     }
-
-    Data_t & get_representation_sparse_raw_data() {
-      return this->expansions_coefficients.get_raw_data();
-    }
-
-    size_t get_feature_size() {
-      return this->expansions_coefficients.get_nb_comp();
-    }
-
-    size_t get_center_size() {
-      return this->expansions_coefficients.get_nb_item();
-    }
-
-    auto get_representation_full() {
-      return this->expansions_coefficients.get_dense_rep();
-    }
-
-    SparseProperty_t expansions_coefficients;
 
    protected:
-   private:
     double interaction_cutoff{};
     double cutoff_smooth_width{};
     size_t max_radial{};
     size_t max_angular{};
     size_t n_species{};
 
-    std::vector<Precision_t> dummy{};
-
-    ManagerPtr_t structure_manager;
-
-    internal::AtomicSmearingType atomic_smearing_type{};
+    AtomicSmearingType atomic_smearing_type{};
 
     std::shared_ptr<internal::RadialContributionBase> radial_integral{};
-    internal::RadialBasisType radial_integral_type{};
+    RadialBasisType radial_integral_type{};
 
     std::shared_ptr<internal::CutoffFunctionBase> cutoff_function{};
-    internal::CutoffFunctionType cutoff_function_type{};
+    CutoffFunctionType cutoff_function_type{};
 
     Hypers_t hypers{};
+
+    constexpr char calculator_name[] = "spherical_expansion";
   };
 
   // compute classes template construction
-  template <class Mngr>
-  void CalculatorSphericalExpansion<Mngr>::compute() {
+  template <class StructureManager>
+  void CalculatorSphericalExpansion::compute(StructureManager& managers) {
     // specialize based on the cutoff function
     using internal::CutoffFunctionType;
 
     switch (this->cutoff_function_type) {
     case CutoffFunctionType::Cosine: {
-      this->compute_by_radial_contribution<CutoffFunctionType::Cosine>();
+      this->compute_by_radial_contribution<CutoffFunctionType::Cosine>(managers);
       break;
     }
     default:
@@ -673,9 +692,8 @@ namespace rascal {
     }
   }
 
-  template <class Mngr>
-  template <internal::CutoffFunctionType FcType>
-  void CalculatorSphericalExpansion<Mngr>::compute_by_radial_contribution() {
+  template <class StructureManager, internal::CutoffFunctionType FcType>
+  void CalculatorSphericalExpansion::compute_by_radial_contribution(StructureManager& managers) {
     // specialize based on the type of radial contribution
     using internal::AtomicSmearingType;
     using internal::RadialBasisType;
@@ -684,8 +702,8 @@ namespace rascal {
                                    this->atomic_smearing_type)) {
     case internal::combineEnums(RadialBasisType::GTO,
                                 AtomicSmearingType::Constant): {
-      this->compute_impl<FcType, RadialBasisType::GTO,
-                         AtomicSmearingType::Constant>();
+      this->compute_loop<FcType, RadialBasisType::GTO,
+                         AtomicSmearingType::Constant>(managers);
       break;
     }
     default:
@@ -694,18 +712,21 @@ namespace rascal {
     }
   }
 
+
   /**
    * Compute the spherical expansion
    * TODO(felix,max) use the parity of the spherical harmonics to use half
    * neighbourlist, i.e. C^{ij}_{nlm} = (-1)^l C^{ji}_{nlm}.
    */
-  template <class Mngr>
-  template <internal::CutoffFunctionType FcType,
+  template <class StructureManager,
+            internal::CutoffFunctionType FcType,
             internal::RadialBasisType RadialType,
             internal::AtomicSmearingType SmearingType>
-  void CalculatorSphericalExpansion<Mngr>::compute_impl() {
+  void CalculatorSphericalExpansion::compute_impl(std::shared_ptr<StructureManager>& manager) {
     using math::PI;
     using math::pow;
+
+    auto&& expansions_coefficients{this->get_property<Property_t>(manager, this->get_name())};
 
     // downcast cutoff and radial contributions so they are functional
     auto cutoff_function{
@@ -715,16 +736,16 @@ namespace rascal {
 
     auto n_row{this->max_radial};
     auto n_col{(max_angular + 1) * (max_angular + 1)};
-    this->expansions_coefficients.clear();
-    this->expansions_coefficients.set_shape(n_row, n_col);
-    this->expansions_coefficients.resize();
+    expansions_coefficients.clear();
+    expansions_coefficients.set_shape(n_row, n_col);
+    expansions_coefficients.resize();
 
-    for (auto center : this->structure_manager) {
-      auto & coefficients_center = this->expansions_coefficients[center];
+    for (auto center : manager) {
+      auto & coefficients_center = expansions_coefficients[center];
       Key_t center_type{center.get_atom_type()};
 
       // TODO(felix) think about an option to have "global" species,
-      //"structure" species(or not), or automatic at the level of environment
+      // "structure" species(or not), or automatic at the level of environment
       std::unordered_set<Key_t, internal::Hash<Key_t>> keys{};
       for (auto neigh : center) {
         keys.insert({neigh.get_atom_type()});
@@ -740,8 +761,8 @@ namespace rascal {
           sqrt(4.0 * PI);
 
       for (auto neigh : center) {
-        auto dist{this->structure_manager->get_distance(neigh)};
-        auto direction{this->structure_manager->get_direction_vector(neigh)};
+        auto dist{manager->get_distance(neigh)};
+        auto direction{manager->get_direction_vector(neigh)};
         Key_t neigh_type{neigh.get_atom_type()};
 
         // Note: the copy _should_ be optimized out (RVO)

@@ -159,8 +159,6 @@ namespace rascal {
    */
   class CalculatorSortedCoulomb : public CalculatorBase {
    public:
-    using Manager_t = StructureManager;
-    using ManagerPtr_t = std::shared_ptr<Manager_t>;
     using Parent = CalculatorBase;
     // type of the hyperparameters
     using Hypers_t = typename Parent::Hypers_t;
@@ -171,8 +169,8 @@ namespace rascal {
     using Property_t =
         Property<Precision_t, 1, 1, StructureManager, Eigen::Dynamic, 1>;
     // short hand type to help the iteration over the structure manager
-    template <size_t Order>
-    using ClusterRef_t = typename Manager_t::template ClusterRef<Order>;
+    template <class StructureManager, size_t Order>
+    using ClusterRef_t = typename StructureManager::template ClusterRef<Order>;
     // type of the datastructure used to register the list of valid
     // hyperparameters
     using ReferenceHypers_t = Parent::ReferenceHypers_t;
@@ -207,7 +205,7 @@ namespace rascal {
     /* -------------------- rep-interface-start -------------------- */
     //! compute representation
     template<class StructureManager>
-    void compute();
+    void compute(std::vector<std::shared_ptr<StructureManager>>& managers);
 
     //! set hypers
     void set_hyperparameters(const Hypers_t &);
@@ -225,13 +223,23 @@ namespace rascal {
 
     /* -------------------- rep-interface-end -------------------- */
 
-    //! loop over a collection of manangers
-    template <class StructureManager, internal::CMSortAlgorithm AlgorithmType>
-    void compute_loop();
+    //! loop over a collection of manangers (note that maps would raise a
+    //! compilation error)
+    template <class StructureManager, internal::CMSortAlgorithm AlgorithmType,std::enable_if_t<internal::is_iterator<StructureManager>::value, int> = 0>
+    inline void compute_loop(StructureManager& managers) {
+      for (auto& manager : managers) {
+        this->compute_impl<AlgorithmType>(manager);
+      }
+    }
+    //! if it is not a list of managers
+    template <class StructureManager, internal::CMSortAlgorithm AlgorithmType,std::enable_if_t<(not internal::is_iterator<StructureManager>::value), int> = 0>
+    inline void compute_loop(StructureManager& manager) {
+      this->compute_impl<AlgorithmType>(manager);
+    }
 
     //! Implementation of compute representation
     template <class StructureManager, internal::CMSortAlgorithm AlgorithmType>
-    void compute_helper();
+    void compute_impl(std::shared_ptr<StructureManager>& manager);
 
     // TODO(felix) move to property
     //! check if size of representation manager is enough for current structure
@@ -248,9 +256,13 @@ namespace rascal {
     //   }
     // }
 
+    inline std::string get_name() {
+      return calculator_name;
+    }
+
     //! returns the distance matrix for a central atom
     template <class StructureManager>
-    void get_distance_matrix(ClusterRef_t<1> & center,
+    void get_distance_matrix(ClusterRef_t<StructureManager, 1> & center,
                              Eigen::Ref<Eigen::MatrixXd> distance_mat,
                              Eigen::Ref<Eigen::MatrixXd> type_factor_mat);
 
@@ -310,8 +322,6 @@ namespace rascal {
     double interaction_decay{};
     // at least equal to the largest number of neighours
     size_t size{};
-
-    Data_t dummy{};
 
     constexpr char calculator_name[] = "sorted_coulomb";
 
@@ -385,24 +395,16 @@ namespace rascal {
     }
   }
   /* -------------------- rep-options-compute-end -------------------- */
-  template <class StructureManager, internal::CMSortAlgorithm AlgorithmType>
-  void CalculatorSortedCoulomb::compute_loop(std::vector<std::shared_ptr<StructureManager>>& managers) {
-    for (auto& manager : managers) {
-      this->compute_helper<AlgorithmType>(manager);
-    }
-  }
-  /* ---------------------------------------------------------------------- */
+
   /* -------------------- rep-options-compute-impl-start -------------------- */
   template <class StructureManager, internal::CMSortAlgorithm AlgorithmType>
-  void CalculatorSortedCoulomb::compute_helper(std::shared_ptr<StructureManager>& manager) {
-    if (not manager->has_property()) {
-      manager->create_property<
-            Property_t<StructureManager>>(this->calculator_name);
-    }
+  void CalculatorSortedCoulomb::compute_impl(std::shared_ptr<StructureManager>& manager) {
     // TODO(felix) remove hack
     this->central_cutoff = manager->get_cutoff();
 
-    auto&& coulomb_matrices{manager->template get_validated_property_ref<StructureManager>(this->calculator_name)};
+    // get a reference to the data container that will hold the representation
+    // in the structure manager
+    auto&& coulomb_matrices{this->get_property<Property_t>(manager, this->get_name())};
 
     // initialise the sorted coulomb_matrices in linear storage
     coulomb_matrices.clear();
@@ -454,7 +456,7 @@ namespace rascal {
   template<class StructureManager>
   void CalculatorSortedCoulomb::get_distance_matrix(
       std::shared_ptr<StructureManager>& manager,
-      CalculatorSortedCoulomb::ClusterRef_t<1> & center,
+      CalculatorSortedCoulomb::ClusterRef_t<StructureManager, 1> & center,
       Eigen::Ref<Eigen::MatrixXd> distance_mat,
       Eigen::Ref<Eigen::MatrixXd> type_factor_mat) {
     // the coulomb mat first row and col corresponds

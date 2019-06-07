@@ -154,6 +154,7 @@ namespace rascal {
         representations.emplace_back(manager, hypers);
         representations.back().compute();
         auto aa{hypers.dump(2)};
+        // TODELETE
         const auto & test_representation =
             representations.back().get_representation_full();
 
@@ -216,6 +217,7 @@ namespace rascal {
         representations.back().compute();
 
         // TODO(felix) quick fix of something that will disappear soon
+        // TODELETE
         FeatureManagerBlockSparse<double> features{
             representations.back().get_feature_size(), hypers};
         features.push_back(representations.back());

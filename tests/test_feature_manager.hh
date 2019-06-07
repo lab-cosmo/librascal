@@ -66,6 +66,7 @@ namespace rascal {
 
           representations.emplace_back(manager, hyper);
           representations.back().compute();
+          // TODELETE
           n_features.push_back(representations.back().get_feature_size());
         }
       }
@@ -105,6 +106,7 @@ namespace rascal {
           this->representations.back().emplace_back(manager, hyper);
           this->representations.back().back().compute();
         }
+        // TODELETE
         this->inner_sizes.emplace_back(
             this->representations.back().back().get_feature_size());
       }

@@ -49,9 +49,11 @@ decltype(auto) add_representation_manager(py::module & mod, py::module &) {
   }));
   representation.def("compute", &RepresentationManager::compute,
                      py::call_guard<py::gil_scoped_release>());
+  // TODELETE
   representation.def("get_features",
                      &RepresentationManager::get_representation_full,
                      py::call_guard<py::gil_scoped_release>());
+  // TODELETE
   representation.def("get_center_size", &RepresentationManager::get_center_size,
                      py::call_guard<py::gil_scoped_release>());
   return representation;

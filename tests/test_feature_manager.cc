@@ -91,7 +91,9 @@ namespace rascal {
     for (auto & representation : representations) {
       auto && raw_data{representation.get_representation_raw_data()};
       original_data.emplace_back(raw_data.begin(), raw_data.end());
+      // TODELETE
       n_centers.push_back(representation.get_center_size());
+      // TODELETE
       n_features.push_back(representation.get_feature_size());
     }
 
@@ -169,6 +171,7 @@ namespace rascal {
       features.emplace_back(inner_sizes[i_hyper], hypers[i_hyper]);
     }
 
+    // TOCHANGE
     using Data_t = typename Fix::Representation_t::SparseProperty_t::Data_t;
     std::vector<Data_t> original_data{};
     // extract the feature matrices in a ref vector
