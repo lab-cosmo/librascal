@@ -593,6 +593,8 @@ namespace rascal {
         BlockSparseProperty<double, 1, 0, Manager_t, Key_t>;
     using Dense_t = typename SparseProperty_t::Dense_t;
     using Data_t = typename SparseProperty_t::Data_t;
+    using SparsePropertyGradient_t =
+        BlockSparseProperty<double, 2, 0, Manager_t, Key_t>;
     /**
      * Set the hyperparameters of this descriptor from a json object.
      *
@@ -722,6 +724,9 @@ namespace rascal {
     }
 
     SparseProperty_t expansions_coefficients;
+    SparsePropertyGradient_t expansions_coefficients_d_dx;
+    SparsePropertyGradient_t expansions_coefficients_d_dy;
+    SparsePropertyGradient_t expansions_coefficients_d_dz;
 
    protected:
    private:
@@ -809,9 +814,26 @@ namespace rascal {
     this->expansions_coefficients.clear();
     this->expansions_coefficients.set_shape(n_row, n_col);
     this->expansions_coefficients.resize();
+    // bozhe moi
+    this->expansions_coefficients_d_dx.clear();
+    this->expansions_coefficients_d_dy.clear();
+    this->expansions_coefficients_d_dz.clear();
+    this->expansions_coefficients_d_dx.set_shape(n_row, n_col);
+    this->expansions_coefficients_d_dy.set_shape(n_row, n_col);
+    this->expansions_coefficients_d_dz.set_shape(n_row, n_col);
+    this->expansions_coefficients_d_dx.resize();
+    this->expansions_coefficients_d_dy.resize();
+    this->expansions_coefficients_d_dz.resize();
+
 
     for (auto center : this->structure_manager) {
       auto & coefficients_center = this->expansions_coefficients[center];
+      auto & coefficients_center_d_dx =
+          this->expansions_coefficients_d_dx[center];
+      auto & coefficients_center_d_dy =
+          this->expansions_coefficients_d_dy[center];
+      auto & coefficients_center_d_dz =
+          this->expansions_coefficients_d_dz[center];
       Key_t center_type{center.get_atom_type()};
 
       // TODO(felix) think about an option to have "global" species,
@@ -823,6 +845,9 @@ namespace rascal {
       keys.insert({center_type});
       // initialize the expansion coefficients to 0
       coefficients_center.resize(keys, n_row, n_col, 0.);
+      coefficients_center_d_dx.resize(keys, n_row, n_col, 0.);
+      coefficients_center_d_dy.resize(keys, n_row, n_col, 0.);
+      coefficients_center_d_dz.resize(keys, n_row, n_col, 0.);
 
       // Start the accumulator with the central atom
       coefficients_center[center_type].col(0) +=
@@ -842,8 +867,17 @@ namespace rascal {
             radial_integral
                 ->template compute_neighbour_contribution<SmearingType>(dist,
                                                                         neigh);
+        auto neighbour_derivative =
+            radial_integral
+                ->template compute_neighbour_derivative<SmearingType>(
+                                                                dist, neigh);
 
-        harmonics *= cutoff_function->f_c(dist);
+        //neighbour_derivative_x = 
+            //((neighbour_derivative * cutoff_function->f_c(dist))
+            //+ (neighbour_contribution * cutoff_function->df_c(dist))
+            //* dist * direction[0] * harmonics)
+            //+ neighbour_contribution * harmonics_derivatives[0];
+        neighbour_contribution *= cutoff_function->f_c(dist);
         auto && coefficients_center_by_type{coefficients_center[neigh_type]};
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           size_t l_block_idx{0};
