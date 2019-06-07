@@ -225,14 +225,14 @@ namespace rascal {
 
     //! loop over a collection of manangers (note that maps would raise a
     //! compilation error)
-    template <class StructureManager, internal::CMSortAlgorithm AlgorithmType,std::enable_if_t<internal::is_iterator<StructureManager>::value, int> = 0>
+    template <class StructureManager, internal::CMSortAlgorithm AlgorithmType,std::enable_if_t<internal::is_iterable<StructureManager>::value, int> = 0>
     inline void compute_loop(StructureManager& managers) {
       for (auto& manager : managers) {
         this->compute_impl<AlgorithmType>(manager);
       }
     }
     //! if it is not a list of managers
-    template <class StructureManager, internal::CMSortAlgorithm AlgorithmType,std::enable_if_t<(not internal::is_iterator<StructureManager>::value), int> = 0>
+    template <class StructureManager, internal::CMSortAlgorithm AlgorithmType,std::enable_if_t<not (internal::is_iterable<StructureManager>::value), int> = 0>
     inline void compute_loop(StructureManager& manager) {
       this->compute_impl<AlgorithmType>(manager);
     }

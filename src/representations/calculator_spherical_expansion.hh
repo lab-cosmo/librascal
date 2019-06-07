@@ -615,16 +615,17 @@ namespace rascal {
     template <class StructureManager, internal::CutoffFunctionType FcType>
     void compute_by_radial_contribution(StructureManager& managers);
 
+
+
     /**
-     * loop over a collection of manangers if it is an iterator,
-     * i.e. std::iterator_traits<T>::value_type is defined.
+     * loop over a collection of manangers if it is an iterator.
      * Or just call compute_impl
      */
     template <class StructureManager,
               internal::CutoffFunctionType FcType,
               internal::RadialBasisType RadialType,
               internal::AtomicSmearingType SmearingType,
-              std::enable_if_t<internal::is_iterator<StructureManager>::value, int> = 0>
+              std::enable_if_t<internal::is_proper_iterator<StructureManager>::value, int> = 0>
     inline void compute_loop(StructureManager& managers) {
       for (auto& manager : managers) {
         this->compute_impl<FcType, RadialType, SmearingType>(manager);
@@ -636,7 +637,7 @@ namespace rascal {
               internal::CutoffFunctionType FcType,
               internal::RadialBasisType RadialType,
               internal::AtomicSmearingType SmearingType,
-              std::enable_if_t<(not internal::is_iterator<StructureManager>::value), int> = 0>
+              std::enable_if_t<(not internal::is_proper_iterator<StructureManager>::value), int> = 0>
     inline void compute_loop(StructureManager& manager) {
       this->compute_impl<FcType, RadialType, SmearingType>(manager);
     }

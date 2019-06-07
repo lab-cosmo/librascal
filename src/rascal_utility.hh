@@ -51,16 +51,39 @@ namespace rascal {
     /**
      * Utility to check if a template parameter is iterable
      */
-    template<typename T, typename = void>
-    struct is_iterator {
-      static constexpr bool value = false;
+    template<typename... Ts> struct make_void { typedef void type;};
+    template<typename... Ts> using void_t = typename make_void<Ts...>::type;
+
+    template< class, class = void_t<> >
+    struct is_iterable : std::false_type { };
+
+    template< class T >
+    struct is_iterable<T, void_t<decltype(std::declval<T>().begin()),
+                                      decltype(std::declval<T>().end()),
+                                      typename T::iterator,
+                                      typename T::const_iterator>> : std::true_type { };
+    template< class, class = void_t<> >
+    struct is_map : std::false_type { };
+
+    template< class T >
+    struct is_map<T, void_t<decltype(std::declval<T>().begin()),
+                                      decltype(std::declval<T>().end()),
+                                      typename T::iterator,
+                                      typename T::const_iterator,
+                                      typename T::key_type>> : std::true_type { };
+    template<class T>
+    using is_map_t = typename is_map<T>::value;
+
+    template<class T>
+    using is_iterable_t = typename is_iterable<T>::value;
+
+    template<class T>
+    struct is_proper_iterator {
+      static constexpr bool value = !is_map<T>::value && is_iterable<T>::value;
     };
 
-    template<typename T>
-    struct is_iterator<T, typename std::enable_if<!std::is_same<typename std::iterator_traits<T>::value_type, void>::value>::type> {
-      static constexpr bool value = true;
-    };
-
+    template<class T>
+    using is_proper_iterator_t = typename is_proper_iterator<T>::value;
     /* ---------------------------------------------------------------------- */
     /**
      * Utility to deduce the type of a Manager with a list of Adaptors
