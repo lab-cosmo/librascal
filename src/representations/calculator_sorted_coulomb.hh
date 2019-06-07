@@ -180,14 +180,10 @@ namespace rascal {
 
     /* -------------------- rep-construc-start -------------------- */
     //! Constructor
-    CalculatorSortedCoulomb(ManagerPtr_t sm, const Hypers_t & hyper)
-        : structure_manager{std::move(sm)}, central_decay{},
-          interaction_cutoff{}, interaction_decay{}, coulomb_matrices{*sm} {
+    CalculatorSortedCoulomb(const Hypers_t & hyper) {
       this->check_hyperparameters(this->reference_hypers, hyper);
       // Extract the options and hyperparameters
       this->set_hyperparameters(hyper);
-      // additional checks specific to the coulomb matrix representation
-      this->check_size_compatibility();
     }
 
     //! Copy constructor
@@ -216,28 +212,17 @@ namespace rascal {
     //! set hypers
     void set_hyperparameters(const Hypers_t &);
 
-    //! getter for the representation
-    Eigen::Map<const Eigen::MatrixXd> get_representation_full() {
-      auto nb_centers{this->structure_manager->size()};
-      auto nb_features{this->get_n_feature()};
-      auto & raw_data{this->coulomb_matrices.get_raw_data()};
-      Eigen::Map<const Eigen::MatrixXd> representation(raw_data.data(),
-                                                       nb_features, nb_centers);
-      return representation;
-    }
+    // TODO(felix) move to the property
+    // //! getter for the representation
+    // Eigen::Map<const Eigen::MatrixXd> get_representation_full() {
+    //   auto nb_centers{this->structure_manager->size()};
+    //   auto nb_features{this->get_n_feature()};
+    //   auto & raw_data{this->coulomb_matrices.get_raw_data()};
+    //   Eigen::Map<const Eigen::MatrixXd> representation(raw_data.data(),
+    //                                                    nb_features, nb_centers);
+    //   return representation;
+    // }
 
-    //! get the raw data of the representation
-    std::vector<Precision_t> & get_representation_raw_data() {
-      return this->coulomb_matrices.get_raw_data();
-    }
-
-    Data_t & get_representation_sparse_raw_data() { return this->dummy; }
-
-    //! get the size of a feature vector
-    size_t get_feature_size() { return this->coulomb_matrices.get_nb_comp(); }
-
-    //! get the number of centers for the representation
-    size_t get_center_size() { return this->coulomb_matrices.get_nb_item(); }
     /* -------------------- rep-interface-end -------------------- */
 
     //! loop over a collection of manangers
@@ -248,19 +233,20 @@ namespace rascal {
     template <class StructureManager, internal::CMSortAlgorithm AlgorithmType>
     void compute_helper();
 
+    // TODO(felix) move to property
     //! check if size of representation manager is enough for current structure
     //! manager
-    void check_size_compatibility() {
-      for (auto center : this->structure_manager) {
-        auto n_neighbours{center.size()};
-        if (n_neighbours > this->size) {
-          std::cout << "size is too small for this "
-                       "structure and has been reset to: "
-                    << n_neighbours << std::endl;
-          this->size = n_neighbours;
-        }
-      }
-    }
+    // void check_size_compatibility() {
+    //   for (auto center : this->structure_manager) {
+    //     auto n_neighbours{center.size()};
+    //     if (n_neighbours > this->size) {
+    //       std::cout << "size is too small for this "
+    //                    "structure and has been reset to: "
+    //                 << n_neighbours << std::endl;
+    //       this->size = n_neighbours;
+    //     }
+    //   }
+    // }
 
     //! returns the distance matrix for a central atom
     template <class StructureManager>
@@ -315,8 +301,6 @@ namespace rascal {
     inline size_t get_n_feature() { return this->size * (this->size + 1) / 2; }
 
     /* -------------------- rep-variables-start -------------------- */
-    // Reference to the structure manager
-    ManagerPtr_t structure_manager;
     // list of hyperparameters specific to the coulomb matrix
     // spherical cutoff for the atomic environment
     double central_cutoff{};

@@ -133,9 +133,7 @@ namespace rascal {
         BlockSparseProperty<double, 1, 0, Manager_t, Key_t>;
     using Data_t = typename SparseProperty_t::Data_t;
 
-    CalculatorSphericalInvariants(ManagerPtr_t sm, const Hypers_t & hyper)
-        : soap_vectors{*sm}, structure_manager{sm}, rep_expansion{std::move(sm),
-                                                                  hyper} {
+    CalculatorSphericalInvariants(const Hypers_t & hyper) {
       this->set_hyperparameters(hyper);
     }
 

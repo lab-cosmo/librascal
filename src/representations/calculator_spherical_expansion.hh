@@ -575,8 +575,7 @@ namespace rascal {
      * @throw logic_error if an invalid option or combination of options is
      *                    specified in the container
      */
-    CalculatorSphericalExpansion(ManagerPtr_t sm, const Hypers_t & hyper)
-        : expansions_coefficients{*sm}, structure_manager{std::move(sm)} {
+    CalculatorSphericalExpansion(const Hypers_t & hyper) {
       this->set_hyperparameters(hyper);
     }
 
