@@ -262,7 +262,8 @@ namespace rascal {
 
     //! returns the distance matrix for a central atom
     template <class StructureManager>
-    void get_distance_matrix(ClusterRef_t<StructureManager, 1> & center,
+    void get_distance_matrix(std::shared_ptr<StructureManager>& manager,
+                             ClusterRef_t<StructureManager, 1> & center,
                              Eigen::Ref<Eigen::MatrixXd> distance_mat,
                              Eigen::Ref<Eigen::MatrixXd> type_factor_mat);
 
@@ -323,7 +324,7 @@ namespace rascal {
     // at least equal to the largest number of neighours
     size_t size{};
 
-    constexpr char calculator_name[] = "sorted_coulomb";
+    static constexpr char calculator_name[] = "sorted_coulomb";
 
     //! reference the requiered hypers
     ReferenceHypers_t reference_hypers{
@@ -338,7 +339,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   void CalculatorSortedCoulomb::set_hyperparameters(
-      const CalculatorSortedCoulomb<Mngr>::Hypers_t & hyper) {
+      const CalculatorSortedCoulomb::Hypers_t & hyper) {
     this->hypers = hyper;
     // TODO(felix) potential problem here in the tests and bindings
     this->central_cutoff = 0.;//this->hypers["central_cutoff"];

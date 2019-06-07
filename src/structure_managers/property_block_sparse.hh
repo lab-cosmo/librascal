@@ -508,7 +508,7 @@ namespace rascal {
     }
 
     inline size_t get_dense_feature_size(const size_t & index) {
-      auto keys = this->values[index].get_keys();
+      auto keys{this->values[index].get_keys()};
       return this->get_nb_comp() * keys.size();
     }
 
@@ -540,28 +540,33 @@ namespace rascal {
 
     inline Dense_t get_dense_rep() {
       auto n_center{this->get_nb_item()};
+      auto inner_size{this->get_nb_comp()};
       Keys_t all_keys{};
       for (size_t i_center{0}; i_center < n_center; i_center++) {
-        auto keys = this->values[i_center].get_keys();
+        auto keys{this->values[i_center].get_keys()};
         for (auto & key : keys) {
           all_keys.insert(key);
         }
       }
       Dense_t features =
-          Dense_t::Zero(this->get_nb_comp() * all_keys.size(), n_center);
+          Dense_t::Zero(inner_size * all_keys.size(), n_center);
 
       for (size_t i_center{0}; i_center < n_center; i_center++) {
         int i_feat{0};
+        auto & val_center{this->values[i_center]};
         for (const auto & key : all_keys) {
-          if (this->values[i_center].count(key) == 1) {
-            for (int i_pos{0}; i_pos < this->values[i_center][key].size();
+          if (val_center.count(key) == 1) {
+            auto & val_center_key{this->values[i_center][key]};
+            for (int i_pos{0}; i_pos < val_center_key.size();
                  i_pos++) {
-              features(i_feat, i_center) = this->values[i_center][key](i_pos);
+              features(i_feat, i_center) = val_center_key(i_pos);
               i_feat++;
             }
+          } else {
+            i_feat += inner_size;
           }
-        }
-      }
+        } // keys
+      } // centers
       return features;
     }
 

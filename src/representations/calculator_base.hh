@@ -101,7 +101,7 @@ namespace rascal {
           const std::string& property_name) {
       // check if the property already exist and create it if it does not
       if (not manager->has_property()) {
-        manager->create_property<
+        manager->template create_property<
             Property<StructureManager>>(property_name);
       }
       return manager->template get_validated_property_ref<Property<StructureManager>>(property_name);

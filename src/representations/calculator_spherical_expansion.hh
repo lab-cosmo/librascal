@@ -499,10 +499,6 @@ namespace rascal {
     using ReferenceHypers_t = Parent::ReferenceHypers_t;
     using Key_t = typename Parent::Key_t;
 
-    using internal::CutoffFunctionType;
-    using internal::RadialBasisType;
-    using internal::AtomicSmearingType;
-
     template<class StructureManager>
     using Property_t =
         BlockSparseProperty<double, 1, 0, StructureManager, Key_t>;
@@ -525,6 +521,9 @@ namespace rascal {
      *                    specified in the structure
      */
     void set_hyperparameters(const Hypers_t & hypers) {
+      using internal::CutoffFunctionType;
+      using internal::AtomicSmearingType;
+      using internal::RadialBasisType;
       this->hypers = hypers;
 
       this->max_radial = hypers.at("max_radial");
@@ -613,7 +612,7 @@ namespace rascal {
     void compute(StructureManager& managers);
 
     //! choose the RadialBasisType and AtomicSmearingType from the hypers
-    template <class StructureManager, CutoffFunctionType FcType>
+    template <class StructureManager, internal::CutoffFunctionType FcType>
     void compute_by_radial_contribution(StructureManager& managers);
 
     /**
@@ -622,9 +621,9 @@ namespace rascal {
      * Or just call compute_impl
      */
     template <class StructureManager,
-              CutoffFunctionType FcType,
-              RadialBasisType RadialType,
-              AtomicSmearingType SmearingType,
+              internal::CutoffFunctionType FcType,
+              internal::RadialBasisType RadialType,
+              internal::AtomicSmearingType SmearingType,
               std::enable_if_t<internal::is_iterator<StructureManager>::value, int> = 0>
     inline void compute_loop(StructureManager& managers) {
       for (auto& manager : managers) {
@@ -634,19 +633,19 @@ namespace rascal {
 
     //! single manager case
     template <class StructureManager,
-              CutoffFunctionType FcType,
-              RadialBasisType RadialType,
-              AtomicSmearingType SmearingType,
+              internal::CutoffFunctionType FcType,
+              internal::RadialBasisType RadialType,
+              internal::AtomicSmearingType SmearingType,
               std::enable_if_t<(not internal::is_iterator<StructureManager>::value), int> = 0>
-    inline void compute_loop(StructureManager& managers) {
+    inline void compute_loop(StructureManager& manager) {
       this->compute_impl<FcType, RadialType, SmearingType>(manager);
     }
 
     //! Compute the spherical exansion given several options
     template <class StructureManager,
-              CutoffFunctionType FcType,
-              RadialBasisType RadialType,
-              AtomicSmearingType SmearingType>
+              internal::CutoffFunctionType FcType,
+              internal::RadialBasisType RadialType,
+              internal::AtomicSmearingType SmearingType>
     inline void compute_impl(std::shared_ptr<StructureManager>& manager);
 
     // TODO(felix) discuss modifications of the baseline name to integrate
@@ -662,17 +661,17 @@ namespace rascal {
     size_t max_angular{};
     size_t n_species{};
 
-    AtomicSmearingType atomic_smearing_type{};
+    internal::AtomicSmearingType atomic_smearing_type{};
 
     std::shared_ptr<internal::RadialContributionBase> radial_integral{};
-    RadialBasisType radial_integral_type{};
+    internal::RadialBasisType radial_integral_type{};
 
     std::shared_ptr<internal::CutoffFunctionBase> cutoff_function{};
-    CutoffFunctionType cutoff_function_type{};
+    internal::CutoffFunctionType cutoff_function_type{};
 
     Hypers_t hypers{};
 
-    constexpr char calculator_name[] = "spherical_expansion";
+    static constexpr char calculator_name[] = "spherical_expansion";
   };
 
   // compute classes template construction

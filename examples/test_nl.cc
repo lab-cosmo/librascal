@@ -47,8 +47,7 @@
 // using namespace std;
 using namespace rascal;  // NOLINT
 
-using Representation_t = CalculatorSphericalInvariants<
-    AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
+using Representation_t = CalculatorSphericalInvariants;
 
 int main() {
   std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
@@ -81,38 +80,38 @@ int main() {
       make_structure_manager_stack<StructureManagerCenters,
                                    AdaptorNeighbourList, AdaptorStrict>(
           structure, adaptors);
-  Representation_t representation{manager, hypers};
-  representation.compute();
+  Representation_t representation{hypers};
+  representation.compute(manager);
 
   // TODELETE
-  size_t inner_size{representation.get_feature_size()};
-  FeatureManagerBlockSparse<double> feature{inner_size, hypers};
+  // size_t inner_size{representation.get_feature_size()};
+  // FeatureManagerBlockSparse<double> feature{inner_size, hypers};
 
-  feature.push_back(representation);
-  auto X{feature.get_feature_matrix_dense()};
-  std::cout << "sadfasd" << std::endl;
-  auto n_center{feature.sample_size()};
-  auto norms = X.colwise().norm();
-  std::cout << norms.size() << std::endl;
-  for (int icenter{0}; icenter < n_center; icenter++) {
-    std::cout << norms[icenter] << std::endl;
-  }
+  // feature.push_back(representation);
+  // auto X{feature.get_feature_matrix_dense()};
+  // std::cout << "sadfasd" << std::endl;
+  // auto n_center{feature.sample_size()};
+  // auto norms = X.colwise().norm();
+  // std::cout << norms.size() << std::endl;
+  // for (int icenter{0}; icenter < n_center; icenter++) {
+  //   std::cout << norms[icenter] << std::endl;
+  // }
 
-  auto kernel1 = X.transpose() * X;
+  // auto kernel1 = X.transpose() * X;
 
-  auto kernel2 = dot(feature, feature);
+  // auto kernel2 = dot(feature, feature);
 
-  auto kernel3 = dot(feature);
+  // auto kernel3 = dot(feature);
 
-  auto max1{kernel1.mean()};
-  auto max2{kernel2.mean()};
-  auto diff{(kernel1 - kernel2).array().abs().matrix().mean()};
+  // auto max1{kernel1.mean()};
+  // auto max2{kernel2.mean()};
+  // auto diff{(kernel1 - kernel2).array().abs().matrix().mean()};
 
-  std::cout << max1 << ", " << max2 << ", " << diff << std::endl;
+  // std::cout << max1 << ", " << max2 << ", " << diff << std::endl;
 
-  diff = (kernel2 - kernel3).array().abs().matrix().mean();
+  // diff = (kernel2 - kernel3).array().abs().matrix().mean();
 
-  std::cout << diff << std::endl;
+  // std::cout << diff << std::endl;
 
   return (0);
 }

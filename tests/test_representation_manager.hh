@@ -239,11 +239,11 @@ namespace rascal {
     std::string ref_filename{"reference_data/sorted_coulomb_reference.ubjson"};
   };
 
-  template <class BaseFixture, template <class> class RepresentationManager>
+  template <class BaseFixture, class RepresentationManager>
   struct RepresentationFixture : MultipleStructureFixture<BaseFixture> {
     using Parent = MultipleStructureFixture<BaseFixture>;
     using Manager_t = typename Parent::Manager_t;
-    using Representation_t = RepresentationManager<Manager_t>;
+    using Representation_t = RepresentationManager;
 
     RepresentationFixture() : Parent{} {}
     ~RepresentationFixture() = default;

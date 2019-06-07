@@ -198,6 +198,8 @@ namespace rascal {
     auto & managers = Fix::managers;
     auto & representations = Fix::representations;
     auto & ref_data = Fix::ref_data;
+    using Manager_t = typename Fix::Manager_t;
+    using Property_t = typename Representation_t::template Property_t<Manager_t>;
 
     // Choose the data depending on the current options
     // using Std2DArray_t = std::vector<std::vector<double>>;
@@ -213,15 +215,17 @@ namespace rascal {
         const auto & ref_representation =
             config.at("feature_matrix").template get<Std2DArray_t>();
 
-        representations.emplace_back(manager, hypers);
-        representations.back().compute();
-
-        // TODO(felix) quick fix of something that will disappear soon
-        // TODELETE
-        FeatureManagerBlockSparse<double> features{
-            representations.back().get_feature_size(), hypers};
-        features.push_back(representations.back());
-        auto test_representation = features.get_feature_matrix_dense();
+        representations.emplace_back(hypers);
+        representations.back().compute(manager);
+        auto property_name{representations.back().get_name()};
+        auto&& property{manager->template get_validated_property_ref<Property_t>(property_name)};
+        auto test_representation{property.get_dense_rep()};
+        // // TODO(felix) quick fix of something that will disappear soon
+        // // TODELETE
+        // FeatureManagerBlockSparse<double> features{
+        //     representations.back().get_feature_size(), hypers};
+        // features.push_back(representations.back());
+        // auto test_representation = features.get_feature_matrix_dense();
 
         auto n_feature{test_representation.rows()};
         auto n_center{test_representation.cols()};
