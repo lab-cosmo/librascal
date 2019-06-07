@@ -271,12 +271,12 @@ namespace rascal {
        * in the negative-m indices:
        *
        *               ╭ √((2l+1)/(2*π) * (l+m)!/(l-m)!) P_l^-m(cos(θ)) sin(-mφ)
-       *               |                                                  for
-       * m<0 Y_l^m(θ, φ) = ┤ √((2l+1)/(4*π)) P_l(cos(θ)) for m==0
+       *               |                                              for m<0
        *               |
-       *               ╰ √((2l+1)/(2*π) * (l-m)!/(l+m)!) P_l^m(cos(θ)) cos(mφ)
-       *                                                                  for
-       * m>0
+       * Y_l^m(θ, φ) = ┤ √((2l+1)/(4*π)) P_l(cos(θ)) for m==0
+       *               |
+       *               | √((2l+1)/(2*π) * (l-m)!/(l+m)!) P_l^m(cos(θ)) cos(mφ)
+       *               ╰                                              for m>0
        *
        * In case you're wondering why it's 1/2π on the m=/=0 components (instead
        * of 1/4π), there's an extra factor of 1/2 that comes from integrating

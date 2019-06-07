@@ -65,17 +65,21 @@ namespace rascal {
    *
    * The code above works with SciPy v1.1.0.
    */
+  // TODO(alex) make the verbose a bit more pretty
   BOOST_FIXTURE_TEST_CASE(math_spherical_harmonics_test,
                           SphericalHarmonicsRefFixture) {
+    if (verbose) {
+      std::cout << ">> Test math_spherical_harmonics_test started." << std::endl;
+    }
     for (size_t vec_idx{0}; vec_idx < unit_vectors.size(); vec_idx++) {
       Eigen::Vector3d direction(unit_vectors[vec_idx].data());
       size_t max_angular = harmonics[vec_idx].size() - 1;
       Eigen::VectorXd computed_harmonics =
           math::compute_spherical_harmonics(direction, max_angular);
       if (verbose) {
-        std::cout << "Testing unit vector: " << direction << std::endl;
-        std::cout << "Max angular momentum: l_max=" << max_angular << std::endl;
-        std::cout << "Number of computed harmonics: ";
+        std::cout << ">> Testing unit vector: " << direction << std::endl;
+        std::cout << ">> Max angular momentum: l_max=" << max_angular << std::endl;
+        std::cout << ">> Number of computed harmonics: ";
         std::cout << computed_harmonics.size() << std::endl;
       }
       size_t lm_collective_idx{0};
@@ -87,14 +91,25 @@ namespace rascal {
                                                   2*angular_l + 1);
           std::cout << std::endl;
         }
+          std::cout << ">> Refererence computation Coefficients: ";
         for (size_t m_idx{0}; m_idx < 2 * angular_l + 1; m_idx++) {
+          std::cout << harmonics[vec_idx][angular_l][m_idx];
+          std::cout << ", ";
           // Check both the harmonics and their order in memory
           auto error{std::abs(computed_harmonics(lm_collective_idx + m_idx) -
                               harmonics[vec_idx][angular_l][m_idx])};
           BOOST_CHECK_LE(error, math::dbl_ftol);
         }
+          std::cout << std::endl;
         lm_collective_idx += (2*angular_l + 1);
       }
+      if (verbose) {
+        std::cout << std::endl;
+      }
+    }
+    if (verbose) {
+      std::cout << "Test math_spherical_harmonics_test finished." << std::endl;
+      std::cout << std::endl;
     }
   }
 

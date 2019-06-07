@@ -61,7 +61,7 @@ namespace rascal {
     StdVector2Dim_t unit_vectors{};
     StdVector3Dim_t harmonics{};
     StdVector3Dim_t alps{};
-    bool verbose{false};
+    bool verbose{true};
   };
 
   struct SphericalHarmonicsClassRefFixture {
