@@ -612,7 +612,7 @@ namespace rascal {
     void compute(StructureManager& managers);
 
     //! choose the RadialBasisType and AtomicSmearingType from the hypers
-    template <class StructureManager, internal::CutoffFunctionType FcType>
+    template <internal::CutoffFunctionType FcType, class StructureManager>
     void compute_by_radial_contribution(StructureManager& managers);
 
 
@@ -621,10 +621,10 @@ namespace rascal {
      * loop over a collection of manangers if it is an iterator.
      * Or just call compute_impl
      */
-    template <class StructureManager,
-              internal::CutoffFunctionType FcType,
+    template <internal::CutoffFunctionType FcType,
               internal::RadialBasisType RadialType,
               internal::AtomicSmearingType SmearingType,
+              class StructureManager,
               std::enable_if_t<internal::is_proper_iterator<StructureManager>::value, int> = 0>
     inline void compute_loop(StructureManager& managers) {
       for (auto& manager : managers) {
@@ -633,20 +633,20 @@ namespace rascal {
     }
 
     //! single manager case
-    template <class StructureManager,
-              internal::CutoffFunctionType FcType,
+    template <internal::CutoffFunctionType FcType,
               internal::RadialBasisType RadialType,
               internal::AtomicSmearingType SmearingType,
+              class StructureManager,
               std::enable_if_t<(not internal::is_proper_iterator<StructureManager>::value), int> = 0>
     inline void compute_loop(StructureManager& manager) {
       this->compute_impl<FcType, RadialType, SmearingType>(manager);
     }
 
     //! Compute the spherical exansion given several options
-    template <class StructureManager,
-              internal::CutoffFunctionType FcType,
+    template <internal::CutoffFunctionType FcType,
               internal::RadialBasisType RadialType,
-              internal::AtomicSmearingType SmearingType>
+              internal::AtomicSmearingType SmearingType,
+              class StructureManager>
     inline void compute_impl(std::shared_ptr<StructureManager>& manager);
 
     // TODO(felix) discuss modifications of the baseline name to integrate
@@ -692,7 +692,7 @@ namespace rascal {
     }
   }
 
-  template <class StructureManager, internal::CutoffFunctionType FcType>
+  template <internal::CutoffFunctionType FcType, class StructureManager>
   void CalculatorSphericalExpansion::compute_by_radial_contribution(StructureManager& managers) {
     // specialize based on the type of radial contribution
     using internal::AtomicSmearingType;
@@ -718,10 +718,10 @@ namespace rascal {
    * TODO(felix,max) use the parity of the spherical harmonics to use half
    * neighbourlist, i.e. C^{ij}_{nlm} = (-1)^l C^{ji}_{nlm}.
    */
-  template <class StructureManager,
-            internal::CutoffFunctionType FcType,
+  template <internal::CutoffFunctionType FcType,
             internal::RadialBasisType RadialType,
-            internal::AtomicSmearingType SmearingType>
+            internal::AtomicSmearingType SmearingType,
+            class StructureManager>
   void CalculatorSphericalExpansion::compute_impl(std::shared_ptr<StructureManager>& manager) {
     using math::PI;
     using math::pow;
