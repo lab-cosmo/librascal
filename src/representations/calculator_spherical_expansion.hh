@@ -625,7 +625,7 @@ namespace rascal {
               internal::RadialBasisType RadialType,
               internal::AtomicSmearingType SmearingType,
               class StructureManager,
-              std::enable_if_t<internal::is_proper_iterator<StructureManager>::value, int> = 0>
+              std::enable_if_t<internal::is_iterable<StructureManager>::value, int> = 0>
     inline void compute_loop(StructureManager& managers) {
       for (auto& manager : managers) {
         this->compute_impl<FcType, RadialType, SmearingType>(manager);
@@ -637,7 +637,7 @@ namespace rascal {
               internal::RadialBasisType RadialType,
               internal::AtomicSmearingType SmearingType,
               class StructureManager,
-              std::enable_if_t<(not internal::is_proper_iterator<StructureManager>::value), int> = 0>
+              std::enable_if_t<(not internal::is_iterable<StructureManager>::value), int> = 0>
     inline void compute_loop(StructureManager& manager) {
       this->compute_impl<FcType, RadialType, SmearingType>(manager);
     }
@@ -647,12 +647,12 @@ namespace rascal {
               internal::RadialBasisType RadialType,
               internal::AtomicSmearingType SmearingType,
               class StructureManager>
-    inline void compute_impl(std::shared_ptr<StructureManager>& manager);
+    inline void compute_impl(std::shared_ptr<StructureManager> manager);
 
     // TODO(felix) discuss modifications of the baseline name to integrate
     // some hypers inside
     inline std::string get_name() {
-      return calculator_name;
+      return "spherical_expansion";
     }
 
    protected:
@@ -672,7 +672,7 @@ namespace rascal {
 
     Hypers_t hypers{};
 
-    static constexpr char calculator_name[] = "spherical_expansion";
+    // static constexpr char calculator_name[] = "spherical_expansion";
   };
 
   // compute classes template construction
@@ -722,7 +722,7 @@ namespace rascal {
             internal::RadialBasisType RadialType,
             internal::AtomicSmearingType SmearingType,
             class StructureManager>
-  void CalculatorSphericalExpansion::compute_impl(std::shared_ptr<StructureManager>& manager) {
+  void CalculatorSphericalExpansion::compute_impl(std::shared_ptr<StructureManager> manager) {
     using math::PI;
     using math::pow;
 

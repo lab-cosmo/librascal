@@ -257,7 +257,7 @@ namespace rascal {
     // }
 
     inline std::string get_name() {
-      return calculator_name;
+      return "sorted_coulomb";
     }
 
     //! returns the distance matrix for a central atom
@@ -324,7 +324,7 @@ namespace rascal {
     // at least equal to the largest number of neighours
     size_t size{};
 
-    static constexpr char calculator_name[] = "sorted_coulomb";
+    // static constexpr char calculator_name[] = "sorted_coulomb";
 
     //! reference the requiered hypers
     ReferenceHypers_t reference_hypers{

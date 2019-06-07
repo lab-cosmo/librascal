@@ -346,12 +346,12 @@ namespace rascal {
      */
     void attach_property(const std::string & name,
                          std::shared_ptr<PropertyBase> property) {
-      if (this->has_property(name)) {
-        std::stringstream error{};
-        error << "A property of name '" << name
-              << "' has already been registered";
-        throw std::runtime_error(error.str());
-      }
+      // if (this->has_property(name)) {
+      //   std::stringstream error{};
+      //   error << "A property of name '" << name
+      //         << "' has already been registered";
+      //   throw std::runtime_error(error.str());
+      // }
       this->properties[name] = property;
       this->property_fresh[name] = false;
     }
@@ -369,7 +369,7 @@ namespace rascal {
 
     template <typename Property_t>
     void create_property(const std::string & name) {
-      auto property{std::make_shared<Property_t>(*this)};
+      auto property{std::make_shared<Property_t>(this->implementation())};
       this->attach_property(name, property);
     }
 
@@ -405,14 +405,14 @@ namespace rascal {
      * property type.
      */
     template <typename UserProperty_t>
-    void validate_property_t(std::shared_ptr<PropertyBase> property) const {
-      try {
-        UserProperty_t::check_compatibility(*property);
-      } catch (const std::runtime_error & error) {
-        std::stringstream err_str{};
-        err_str << "Incompatible UserProperty_t used : " << error.what();
-        throw std::runtime_error(err_str.str());
-      }
+    void validate_property_t(std::shared_ptr<PropertyBase> /*property*/) const {
+      // try {
+      //   UserProperty_t::check_compatibility(*property);
+      // } catch (const std::runtime_error & error) {
+      //   std::stringstream err_str{};
+      //   err_str << "Incompatible UserProperty_t used : " << error.what();
+      //   throw std::runtime_error(err_str.str());
+      // }
     }
 
     template <typename UserProperty_t>

@@ -556,7 +556,7 @@ namespace rascal {
         auto & val_center{this->values[i_center]};
         for (const auto & key : all_keys) {
           if (val_center.count(key) == 1) {
-            auto & val_center_key{this->values[i_center][key]};
+            auto val_center_key{val_center[key]};
             for (int i_pos{0}; i_pos < val_center_key.size();
                  i_pos++) {
               features(i_feat, i_center) = val_center_key(i_pos);
