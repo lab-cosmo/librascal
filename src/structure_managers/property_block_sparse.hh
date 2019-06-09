@@ -387,6 +387,10 @@ namespace rascal {
     using InputData_t = internal::InternallySortedKeyMap<Key_t, Dense_t>;
     using Data_t = std::vector<InputData_t>;
 
+   protected:
+    Data_t values{};  //!< storage for properties
+
+   public:
     //! constructor
     BlockSparseProperty(Manager_t & manager,
                         std::string metadata = "no metadata")
@@ -454,7 +458,6 @@ namespace rascal {
           this->get_validated_property_length(consider_ghost_atoms);
       // auto new_size = this->base_manager.nb_clusters(order);
       this->values.resize(new_size);
-      this->center_sizes.resize(new_size);
     }
 
     template <size_t CallerLayer>
@@ -472,7 +475,6 @@ namespace rascal {
      */
     void clear() {
       this->values.clear();
-      this->center_sizes.clear();
     }
 
     Manager_t & get_manager() {
@@ -616,7 +618,6 @@ namespace rascal {
       for (const auto & element : ref) {
         n_keys++;
       }
-      this->center_sizes.push_back(n_keys * this->get_nb_comp());
     }
 
     template <size_t CallerLayer>
@@ -628,9 +629,6 @@ namespace rascal {
       return this->values[id.get_cluster_index(CallerLayer)].get_keys();
     }
 
-   protected:
-    Data_t values{};  //!< storage for properties
-    sizes_t center_sizes{};
   };
 
 }  // namespace rascal
