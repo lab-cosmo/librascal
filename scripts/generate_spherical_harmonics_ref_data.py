@@ -7,6 +7,8 @@ import ubjson
 import json
 from scipy.special import sph_harm, lpmn
 from mpmath import mp, spherharm
+import mpmath
+from functools import reduce
 
 # shape (nb_unit_vectors,3)
 def load_unit_vectors_from_json():
@@ -38,11 +40,12 @@ def get_ascending_angular_lists(max_angular_l):
 def dump_reference_json():
     # to produces more readable tests use l_max 2 or 3
     verbose=False
-    l_max = 8
+    l_max = 30
     path = '../'
     sys.path.insert(0, os.path.join(path, 'build/'))
     sys.path.insert(0, os.path.join(path, 'tests/'))
     data = []
+    mp.dps=200
 
     # Calculation of spherical harmonics
     ## with mpmath:
@@ -56,9 +59,9 @@ def dump_reference_json():
     alp_normfacts = np.zeros((l_max+1, l_max+1))
     for l in range(l_max+1):
         for m in range(l+1):
-            alp_normfacts[l, m] = np.sqrt(
-                (2*l + 1)/(2*np.pi) /
-                np.prod(np.arange(l-m+1, l+m+1)))
+            alp_normfacts[l, m] = mpmath.sqrt(
+                (2*l + 1)/(2*mpmath.pi) /
+                reduce(lambda x,y: mpmath.fmul(x,y), mpmath.arange(l-m+1, l+m+1), 1) )
     if verbose:
         print("alp_normfacts")
         print(alp_normfacts)
@@ -111,8 +114,9 @@ def dump_reference_json():
         if verbose:
             print("alps")
             print(alps)
+        alps = list(map(float, alps.reshape(-1).tolist()))
         data.append(dict(max_angular_l=int(l_max), unit_vector=unit_vector,
-                            harmonics=harmonics, alps=alps.reshape(-1).tolist()))
+                            harmonics=harmonics, alps=alps))
     print(len(data))
     with open(path+"tests/reference_data/spherical_harmonics_reference.ubjson",'wb') as f:
         ubjson.dump(data,f)

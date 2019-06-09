@@ -145,6 +145,7 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(math_associated_legendre_polynomial_test,
                           SphericalHarmonicsRefFixture) {
+    verbose=false;
     for (size_t vec_idx{0}; vec_idx < unit_vectors.size(); vec_idx++) {
       Eigen::Vector3d direction(unit_vectors[vec_idx].data());
       size_t max_angular = harmonics[vec_idx].size() - 1;

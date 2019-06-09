@@ -67,7 +67,7 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(math_associated_legendre_polynomial_test,
                           SphericalHarmonicsClassRefFixture) {
     verbose=false;
-    info=true;
+    info=false;
     math::SphericalHarmonics func{};
     if (info) {
       std::cout << ">> Test math_spherical_harmonics_test " << std::endl;
@@ -95,7 +95,7 @@ namespace rascal {
         std::cout << ">> unit_vector: " << 
             Eigen::Map<Eigen::RowVector3d>(unit_vector.data()) << std::endl;
         std::cout << ">> alps_ref: " << std::endl;
-        std::cout << ">> " << alps_ref << std::endl;
+        std::cout <<  alps_ref << std::endl;
       }
       if (verbose) {
         std::cout << ">> Parameters successful loaded." << std::endl;
@@ -106,10 +106,10 @@ namespace rascal {
       func.compute(unit_vector);
       if (verbose) {        
         std::cout << ">> computed associated legendre polynomial: " << std::endl;
-        std::cout << ">> " << func.get_assoc_legendre_polynom() << std::endl;
+        std::cout << func.get_assoc_legendre_polynom() << std::endl;
       }
       double rel_error{(func.get_assoc_legendre_polynom() -  alps_ref).norm()};
-      BOOST_CHECK_LE(rel_error, math::dbl_ftol);
+      BOOST_CHECK_LE(rel_error, 2* math::dbl_ftol);
       if (verbose) {
         std::cout << ">> Boost check perfomed." << std::endl;
         std::cout << std::endl;
