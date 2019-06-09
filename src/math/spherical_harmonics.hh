@@ -213,7 +213,6 @@ namespace rascal {
         }
       }
 
-      // TODO(alex) first make it this work, and then remove stepwise as much
       // computation from here
       void compute_assoc_legendre_polynom(double cos_theta) {
         using math::pow;
@@ -315,30 +314,59 @@ namespace rascal {
           cos_phi = direction[0] / sqrt_xy;
           sin_phi = direction[1] / sqrt_xy;
         }
-
+        // change cos_sin_m_phi to this->cos_sin_m_phi
         this->compute_assoc_legendre_polynom(cos_theta);
         this->compute_cos_sin_angle_multiples(cos_phi, sin_phi);
 
         size_t lm_base{0};  // starting point for storage
+        //std::cout << this->assoc_legendre_polynom << std::endl;
+        //std::cout << cos_sin_m_phi << std::endl;
         for (size_t angular_l{0}; angular_l < this->max_angular + 1;
              angular_l++) {
+          //std::cout << "angular_l: "<< angular_l << std::endl;
+          // uses symmetry of spherical harmonics,
+          // careful with the storage order
+          this->harmonics.segment(lm_base + angular_l, angular_l+1) =
+              this->assoc_legendre_polynom.row(angular_l).head(angular_l+1).array() *
+              cos_sin_m_phi.col(0).head(angular_l+1).transpose().array();
+
+          this->harmonics.segment(lm_base, angular_l+1) =
+              (this->assoc_legendre_polynom.row(angular_l).head(angular_l+1).array() *
+              cos_sin_m_phi.col(1).head(angular_l+1).transpose().array()).reverse();
+          //std::cout << "my" << std::endl;
+          //std::cout << this->assoc_legendre_polynom.row(angular_l).size() << " " <<
+          //    cos_sin_m_phi.col(1).size() << std::endl;
+          //std::cout << "my" << std::endl;
+          //std::cout << 
+          //    (this->assoc_legendre_polynom.row(angular_l).head(angular_l+1).array() *
+          //    cos_sin_m_phi.col(1).head(angular_l+1).transpose().array()).reverse()
+          // << std::endl;
+          //std::cout << "my" << std::endl;
+          //std::cout << this->harmonics.segment(lm_base, angular_l+1) << std::endl;
+          //for (size_t m_count{0}; m_count < angular_l + 1; m_count++) {
+          //  // TODO(alex) take out the if from the loop
+          //  this->harmonics(lm_base + angular_l - m_count) =
+          //      this->assoc_legendre_polynom(angular_l, m_count) *
+          //      cos_sin_m_phi(m_count, 1);
+          //}    // for (m_count in [0, l])
+          //std::cout << "exist" << std::endl;
+          //std::cout << this->harmonics.segment(lm_base, angular_l+1) << std::endl;
+          //std::cout << std::endl;
+
+          this->harmonics(lm_base + angular_l) =
+              this->assoc_legendre_polynom(angular_l, 0) *
+              INV_SQRT_TWO;
           // TODO(alex) vectorize this loop
-          for (size_t m_count{0}; m_count < angular_l + 1; m_count++) {
+          for (size_t m_count{1}; m_count < angular_l + 1; m_count++) {
             // TODO(alex) take out the if from the loop
-            if (m_count == 0) {
-              this->harmonics(lm_base + angular_l) =
-                  this->assoc_legendre_polynom(angular_l, m_count) *
-                  INV_SQRT_TWO;
-            } else {
               // uses symmetry of spherical harmonics,
               // careful with the storage order
-              this->harmonics(lm_base + angular_l + m_count) =
-                  this->assoc_legendre_polynom(angular_l, m_count) *
-                  cos_sin_m_phi(m_count, 0);
-              this->harmonics(lm_base + angular_l - m_count) =
-                  this->assoc_legendre_polynom(angular_l, m_count) *
-                  cos_sin_m_phi(m_count, 1);
-            }  // if (m_count == 0)
+              //this->harmonics(lm_base + angular_l + m_count) =
+              //    this->assoc_legendre_polynom(angular_l, m_count) *
+              //    cos_sin_m_phi(m_count, 0);
+              //this->harmonics(lm_base + angular_l - m_count) =
+              //    this->assoc_legendre_polynom(angular_l, m_count) *
+              //    cos_sin_m_phi(m_count, 1);
           }    // for (m_count in [0, l])
           lm_base += 2 * angular_l + 1;
         }  // for (l in [0, lmax])
