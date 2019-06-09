@@ -379,17 +379,17 @@ namespace rascal {
 
     using Dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, Eigen::Dynamic,
                                   Eigen::RowMajor>;
-    using dense_ref_t = Eigen::Map<Dense_t>;
+    using DenseRef_t = Eigen::Map<Dense_t>;
     using sizes_t = std::vector<size_t>;
     using Key_t = Key;
     using Keys_t = std::set<Key_t>;
     using keys_list_t = std::vector<std::set<Key_t>>;
     using InputData_t = internal::InternallySortedKeyMap<Key_t, Dense_t>;
     using Data_t = std::vector<InputData_t>;
+    using DataOrders_t = std::array<std::vector<InputData_t>, Order>;
 
    protected:
-    Data_t values{};  //!< storage for properties
-    sizes_t center_sizes{};
+    DataOrders_t values{};  //!< storage for properties
 
    public:
     //! constructor
@@ -426,6 +426,10 @@ namespace rascal {
       return typeid(Precision_t);
     };
 
+    /**
+     * the case consider_ghost_atoms == true is limited to cluster_index
+     * objects.
+     */
     template <size_t Order_ = Order, std::enable_if_t<(Order_ == 1), int> = 0>
     size_t get_validated_property_length(bool consider_ghost_atoms) {
       if (consider_ghost_atoms) {
@@ -449,85 +453,126 @@ namespace rascal {
     }
     template <size_t Order_ = Order,
               std::enable_if_t<not(Order_ == 1), int> = 0>
-    size_t get_validated_property_length(bool = false) {
-      return this->base_manager.nb_clusters(Order);
+    size_t get_validated_property_length(bool /*consider_ghost_atoms*/ = false) {
+      return this->base_manager.nb_clusters(Order_);
     }
 
     //! Adjust size of values (only increases, never frees)
+    template <size_t Order_ = Order, std::enable_if_t<(Order_ > 1), int> = 0>
     inline void resize(bool consider_ghost_atoms = false) {
-      size_t new_size =
-          this->get_validated_property_length(consider_ghost_atoms);
-      // auto new_size = this->base_manager.nb_clusters(order);
-      this->values.resize(new_size);
-      this->center_sizes.resize(new_size);
+      this->resize<Order_ - 1>(consider_ghost_atoms);
+      size_t new_size{this->get_validated_property_length<Order_>(consider_ghost_atoms)};
+      this->values[Order_ - 1].resize(new_size);
     }
 
-    size_t size() const { return this->values.size(); }
-
-    /**
-     * clear all the content of the property
-     */
-    void clear() {
-      this->values.clear();
-      this->center_sizes.clear();
+    template <size_t Order_ = Order, std::enable_if_t<(Order_ == 1), int> = 0>
+    inline void resize(bool consider_ghost_atoms = false) {
+      size_t new_size{this->get_validated_property_length<Order_>(consider_ghost_atoms)};
+      this->values[Order_ - 1].resize(new_size);
     }
 
-    Manager_t & get_manager() {
+    inline size_t size() const {
+      size_t size{0};
+      for (size_t i_order{0}; i_order < Order; ++i_order) {
+        size += this->values[i_order].size();
+      }
+      return size;
+    }
+
+    //! clear all the content of the property
+    inline void clear() {
+      for (size_t i_order{0}; i_order < Order; ++i_order) {
+        this->values[i_order].clear();
+      }
+    }
+
+    inline Manager_t & get_manager() {
       return static_cast<Manager_t &>(this->base_manager);
     }
 
     /* -------------------------------------------------------------------- */
     //! Property accessor by cluster ref
-    template <size_t CallerLayer>
+    template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order,
+              std::enable_if_t<(CallerOrder <= Order_), int> = 0>
     inline decltype(auto)
-    operator[](const ClusterRefKey<Order, CallerLayer> & id) {
+    operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
+      static_assert(CallerOrder <= Order, "should be CallerOrder <= Order");
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");
 
-      return this->operator[](id.get_cluster_index(CallerLayer));
+      return this->operator()(id.get_cluster_index(CallerLayer), CallerOrder-1);
     }
 
-    template <
-        size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order,
-        std::enable_if_t<(Order_ == 1) and (CallerOrder > 1), int> =  // NOLINT
-        0>                                                            // NOLINT
+    /**
+     * Access a property of order 1 with a clusterRef of order 2
+     */
+    template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order,
+        std::enable_if_t<(Order_ == 1) and (CallerOrder > 1), int> = // NOLINT
+                  0>  // NOLINT
     inline decltype(auto)
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
-      return this->operator[](this->get_manager().get_atom_index(
-          id.get_internal_neighbour_atom_tag()));
+      return this->operator()(this->get_manager().get_atom_index(
+          id.get_internal_neighbour_atom_tag()), 0);
     }
 
-    //! Accessor for property by cluster index and return a sparse
-    //! representation of the property associated to this cluster
-    inline InputData_t & operator[](const size_t & index) {
-      return this->values[index];
+
+    inline InputData_t & operator()(const size_t & index,
+                                    const size_t & i_order) {
+      return this->values[i_order][index];
     }
 
-    inline size_t get_dense_feature_size(const size_t & index) {
-      auto keys = this->values[index].get_keys();
-      return this->get_nb_comp() * keys.size();
+     //! Accessor for property by index for dynamically sized properties
+    inline decltype(auto) operator()(const size_t & index) {
+      return this->operator[](index);
     }
+
+    template <size_t CallerOrder, size_t CallerLayer>
+    inline decltype(auto)
+    operator()(const ClusterRefKey<CallerOrder, CallerLayer> & id,
+               const Key_t & key) {
+      static_assert(CallerOrder <= Order, "should be CallerOrder <= Order");
+      static_assert(CallerLayer >= PropertyLayer,
+                    "You are trying to access a property that does not exist at"
+                    "this depth in the adaptor stack.");
+
+      return this->operator()(id.get_cluster_index(CallerLayer), CallerOrder-1, key);
+    }
+
+    //! Accessor for property by index for dynamically sized properties
+    inline DenseRef_t operator()(const size_t & index,
+                                  const size_t & i_order,
+                                  const Key_t & key) {
+      return DenseRef_t(&this->values[i_order][index].at(key)(0, 0),
+                         this->values[i_order][index].at(key).rows(),
+                         this->values[i_order][index].at(key).cols());
+    }
+
+    // inline size_t get_dense_feature_size(const size_t & index) {
+    //   auto keys{this->values[0][index].get_keys()};
+    //   return this->get_nb_comp() * keys.size();
+    // }
 
     //! Accessor for property by cluster index and return a dense
     //! representation of the property associated to this cluster
-    template <size_t CallerLayer>
-    inline Dense_t get_dense_row(const ClusterRefKey<Order, CallerLayer> & id) {
+    template <size_t CallerOrder, size_t CallerLayer>
+    inline Dense_t get_dense_row(const ClusterRefKey<CallerOrder, CallerLayer> & id) {
+      static_assert(CallerOrder <= Order, "should be CallerOrder <= Order");
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");
 
-      return this->get_dense_row(id.get_cluster_index(CallerLayer));
+      return this->get_dense_row(id.get_cluster_index(CallerLayer), CallerOrder - 1);
     }
 
-    inline Dense_t get_dense_row(const size_t & index) {
-      auto keys = this->values[index].get_keys();
+    inline Dense_t get_dense_row(const size_t & index, const size_t & i_order) {
+      auto keys = this->values[i_order][index].get_keys();
       Dense_t feauture_row = Dense_t::Zero(this->get_nb_comp(), keys.size());
       size_t i_col{0};
       for (const auto & key : keys) {
         size_t i_row{0};
-        for (int i_pos{0}; i_pos < this->values[index][key].size(); i_pos++) {
-          feauture_row(i_row, i_col) = this->values[index][key](i_pos);
+        for (int i_pos{0}; i_pos < this->values[i_order][index][key].size(); i_pos++) {
+          feauture_row(i_row, i_col) = this->values[i_order][index][key](i_pos);
           i_row++;
         }
         i_col++;
@@ -536,25 +581,34 @@ namespace rascal {
     }
 
     inline Dense_t get_dense_rep() {
-      auto n_center{this->get_nb_item()};
+      size_t n_elements{this->size()};
+      int inner_size{this->get_nb_comp()};
       Keys_t all_keys{};
-      for (size_t i_center{0}; i_center < n_center; i_center++) {
-        auto keys = this->values[i_center].get_keys();
-        for (auto & key : keys) {
-          all_keys.insert(key);
+      for (size_t i_order{0}; i_order < Order; ++i_order) {
+        size_t n_center{this->values[i_order].size()};
+        for (size_t i_center{0}; i_center < n_center; i_center++) {
+          auto keys = this->values[i_order][i_center].get_keys();
+          for (auto & key : keys) {
+            all_keys.insert(key);
+          }
         }
       }
       Dense_t features =
-          Dense_t::Zero(this->get_nb_comp() * all_keys.size(), n_center);
+          Dense_t::Zero(inner_size * all_keys.size(), n_elements);
 
-      for (size_t i_center{0}; i_center < n_center; i_center++) {
-        int i_feat{0};
-        for (const auto & key : all_keys) {
-          if (this->values[i_center].count(key) == 1) {
-            for (int i_pos{0}; i_pos < this->values[i_center][key].size();
-                 i_pos++) {
-              features(i_feat, i_center) = this->values[i_center][key](i_pos);
-              i_feat++;
+      for (size_t i_order{0}; i_order < Order; ++i_order) {
+        size_t n_center{this->values[i_order].size()};
+        for (size_t i_center{0}; i_center < n_center; i_center++) {
+          int i_feat{0};
+          for (const auto & key : all_keys) {
+            if (this->values[i_order][i_center].count(key) == 1) {
+              for (int i_pos{0}; i_pos < this->values[i_order][i_center][key].size();
+                  i_pos++) {
+                features(i_feat, i_center) = this->values[i_order][i_center][key](i_pos);
+                i_feat++;
+              }
+            } else {
+              i_feat += inner_size;
             }
           }
         }
@@ -562,68 +616,23 @@ namespace rascal {
       return features;
     }
 
-    //! Accessor for property by index for dynamically sized properties
-    inline decltype(auto) operator()(const size_t & index) {
-      return this->operator[](index);
-    }
-
-    template <size_t CallerLayer>
-    inline decltype(auto)
-    operator()(const ClusterRefKey<Order, CallerLayer> & id,
-               const Key_t & key) {
-      static_assert(CallerLayer >= PropertyLayer,
-                    "You are trying to access a property that does not exist at"
-                    "this depth in the adaptor stack.");
-
-      return this->operator()(id.get_cluster_index(CallerLayer), key);
-    }
-
-    //! Accessor for property by index for dynamically sized properties
-    inline dense_ref_t operator()(const size_t & index, const Key_t & key) {
-      return dense_ref_t(&this->values[index].at(key)(0, 0),
-                         this->values[index].at(key).rows(),
-                         this->values[index].at(key).cols());
-    }
-
     //! getter to the underlying data storage
-    inline Data_t & get_raw_data() { return this->values; }
+    // A hack here is fine because the function will disapear soon
+    inline std::vector<InputData_t> & get_raw_data() { return this->values[0]; }
     //! get number of different distinct element in the property
     //! (typically the number of center)
-    inline size_t get_nb_item() const { return this->values.size(); }
-
-    /**
-     * Accessor for last pushed entry for dynamically sized properties
-     */
-    inline decltype(auto) back() { return this->values.back(); }
-
-    //! push back data associated to a new center atom
-    inline void push_back(const InputData_t & ref) {
-      for (const auto & element : ref) {
-        const auto & value{element.second};
-        if (value.size() != this->get_nb_comp()) {
-          auto error{std::string("Size should match: ") +
-                     std::to_string(value.size()) + std::string(" != ") +
-                     std::to_string(this->get_nb_comp())};
-          throw std::length_error(error);
-        }
-      }
-
-      this->values.push_back(ref);
-
-      size_t n_keys{0};
-      for (const auto & element : ref) {
-        n_keys++;
-      }
-      this->center_sizes.push_back(n_keys * this->get_nb_comp());
+    inline size_t get_nb_item() const {
+      return this->size();
     }
 
-    template <size_t CallerLayer>
+    template <size_t CallerOrder, size_t CallerLayer>
     inline decltype(auto)
-    get_keys(const ClusterRefKey<Order, CallerLayer> & id) const {
+    get_keys(const ClusterRefKey<CallerOrder, CallerLayer> & id) const {
+      static_assert(CallerOrder <= Order, "should be CallerOrder <= Order");
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");
-      return this->values[id.get_cluster_index(CallerLayer)].get_keys();
+      return this->values[CallerOrder - 1][id.get_cluster_index(CallerLayer)].get_keys();
     }
 
   };
