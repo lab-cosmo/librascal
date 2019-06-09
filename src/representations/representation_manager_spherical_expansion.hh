@@ -439,8 +439,8 @@ namespace rascal {
             (this->a_b_l_n.array() * this->hyp1f1_calculator.get_derivatives().array())
                 .matrix() *
             this->distance_fac_a_l.asDiagonal();
-        this->radial_neighbour_derivative.transpose() *=
-            ((2.*fac_a*fac_a) / (fac_a + this->fac_b.array())).matrix().asDiagonal();
+        // this->radial_neighbour_derivative.transpose() *=
+        //     ((2.*fac_a*fac_a) / (fac_a + this->fac_b.array())).matrix().asDiagonal();
         this->radial_neighbour_derivative.transpose() *=
             this->radial_norm_factors.asDiagonal();
         this->radial_neighbour_derivative.transpose() *=
@@ -458,7 +458,7 @@ namespace rascal {
             //(2.*fac_a*fac_a) / (fac_a + this->fac_b.array());
 
         //this->radial_neighbour_derivative = proportional_term + hypergeom_term;
-        this->radial_neighbour_derivative += proportional_term;
+        // this->radial_neighbour_derivative += proportional_term;
         return Matrix_Ref(this->radial_neighbour_derivative);
       }
 
@@ -872,7 +872,7 @@ namespace rascal {
                 ->template compute_neighbour_derivative<SmearingType>(
                                                                 dist, neigh);
 
-        //neighbour_derivative_x = 
+        //neighbour_derivative_x =
             //((neighbour_derivative * cutoff_function->f_c(dist))
             //+ (neighbour_contribution * cutoff_function->df_c(dist))
             //* dist * direction[0] * harmonics)

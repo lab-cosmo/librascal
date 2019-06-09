@@ -381,10 +381,10 @@ namespace rascal {
       this->hyp1f1_calculator.calc(input_v(0), this->fac_a, this->fac_b, true);
       Eigen::MatrixXd result(this->max_radial, this->max_angular + 1);
       result = this->hyp1f1_calculator.get_derivatives();
-      result.transpose() *=
-        ((2.*this->fac_a*this->fac_a * input_v(0)) /
-         (this->fac_a + this->fac_b.array())).matrix().asDiagonal();
-      result -= this->hyp1f1_calculator.get_values() * 2*fac_a*input_v(0);
+      // result.transpose() *=
+      //   ((2.*this->fac_a*this->fac_a * input_v(0)) /
+      //    (this->fac_a + this->fac_b.array())).matrix().asDiagonal();
+      // result -= this->hyp1f1_calculator.get_values() * 2*fac_a*input_v(0);
       Eigen::Map<Eigen::Array<double, 1, Eigen::Dynamic>> result_flat(
           result.data(), 1, result.size());
       return result_flat;
