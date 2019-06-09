@@ -743,9 +743,9 @@ namespace rascal {
           // set up the data to fill the property later
           InputData_t datas{};
           // resize and set to 0
-          datas.resize(keys, 21, 8, 0);
+          datas.resize(keys, n_row, n_col, 0);
           for (auto & key : keys) {
-            auto data = Dense_t::Random(21, 8);
+            auto data = Dense_t::Random(n_row, n_col);
             datas[key] += data;
           }
           this->keys_list.back().push_back(keys);
@@ -754,6 +754,9 @@ namespace rascal {
         this->test_datas.push_back(test_data);
       }
     }
+
+    int n_row{21};
+    int n_col{8};
 
     std::vector<std::vector<std::set<Key_t>>> keys_list{};
     std::vector<test_data_t> test_datas{};
@@ -775,10 +778,16 @@ namespace rascal {
     // fill the property structures
     auto i_manager{0};
     for (auto & manager : managers) {
+      auto& keys{this->keys_list[i_manager]};
       auto i_center{0};
-      sparse_features[i_manager].set_shape(21, 8);
+      sparse_features[i_manager].set_shape(this->n_row, this->n_col);
+      sparse_features[i_manager].resize();
       for (auto center : manager) {
-        sparse_features[i_manager].push_back(test_datas[i_manager][i_center]);
+        auto&& sparse_features_center{sparse_features[i_manager][center]};
+        sparse_features_center.resize(keys[i_center], n_row, n_col, 0);
+        for (auto& key : keys[i_center]) {
+          sparse_features_center[key] = test_datas[i_manager][i_center][key];
+        }
         i_center++;
       }
       i_manager++;
