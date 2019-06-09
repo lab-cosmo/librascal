@@ -139,9 +139,6 @@ namespace rascal {
         if (not this->is_exp) {
           result = this->prefac * this->calc(z, derivative, n_terms) * ez2;
         } else {
-          // TODO(felix) consider using this
-          // https://codingforspeed.com/using-faster-exponential-approximation/
-          // simplification of the argument with exp(-alpha*r_ij^2)
           result = this->prefac * std::exp(z + z2);
         }
         return result;
