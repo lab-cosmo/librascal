@@ -361,7 +361,7 @@ namespace rascal {
       this->fac_b.resize(max_angular, 1);
       this->fac_b = fac_b;
       this->hyp1f1_calculator.precompute(max_radial, max_angular);
-      std::cout << "constructor ok" << std::endl;
+      // std::cout << "constructor ok" << std::endl;
     }
 
     ~Hyp1f1GradientProvider() = default;

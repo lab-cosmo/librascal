@@ -316,8 +316,7 @@ namespace rascal {
       Eigen::ArrayXXd result(this->max_radial, this->max_angular + 1);
       result = this->radial_integral->template
           compute_neighbour_derivative<
-            internal::AtomicSmearingType::Constant>(input_v(0), this->pair)
-          * input_v(0); //Remove the chain-rule factor of 1/r to get df/dr
+            internal::AtomicSmearingType::Constant>(input_v(0), this->pair);
       Eigen::Map<Eigen::Array<double, 1, Eigen::Dynamic>> result_flat(
                                             result.data(), 1, result.size());
       return result_flat;

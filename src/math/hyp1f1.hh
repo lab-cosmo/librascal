@@ -545,7 +545,8 @@ namespace rascal {
     class Hyp1f1SphericalExpansion {
      protected:
       using Matrix_Ref = typename Eigen::Ref<const Matrix_t>;
-      using Vector_Ref = typename Eigen::Ref<const Eigen::VectorXd>;
+      using Vector_t = Eigen::VectorXd;
+      using Vector_Ref = typename Eigen::Ref<const Vector_t>;
 
       size_t max_angular{0}, max_radial{0};
       std::vector<Hyp1f1> hyp1f1{};
@@ -584,6 +585,7 @@ namespace rascal {
         this->derivatives.resize(max_radial, max_angular + 1);
         this->z.resize(max_radial);
         this->dz_dr.resize(max_radial);
+
         if (not this->recursion) {
           for (size_t n_radial{0}; n_radial < max_radial; n_radial++) {
             for (size_t l_angular{0}; l_angular < max_angular + 1;
@@ -644,18 +646,16 @@ namespace rascal {
         double M1p2p{0.}, M2p3p{0.}, MP1p2p{0.}, MP2p3p{0.}, M1p1p{0.}, Moo{0.},
             MP1p1p{0.}, MPoo{0.};
 
-        double alpha_rij_2{alpha * r_ij};
-        double z2{-r_ij * alpha_rij_2};
+        double alpha_rij{alpha * r_ij};
+        double z2{-r_ij * alpha_rij};
         double ez2{std::exp(z2)};
-        alpha_rij_2 *= alpha_rij_2;
-        this->z = (alpha_rij_2 * alpha) * (alpha + fac_b.array()).inverse();
+        this->z = (alpha_rij * alpha) * (alpha + fac_b.array()).inverse();
         this->dz_dr = this->z;
         this->z *= r_ij;
         this->dz_dr *= 2;
 
         for (size_t n_radial{0}; n_radial < this->max_radial; ++n_radial) {
           // get the starting points for the recursion
-          // double z{alpha_rij_2 / (alpha + fac_b(n_radial))};
           auto& z{this->z(n_radial)};
           int l_angular{static_cast<int>(this->max_angular)};
           int ipos{this->get_pos(n_radial, l_angular)};
@@ -702,9 +702,7 @@ namespace rascal {
           this->derivatives.row(n_radial) *= this->dz_dr(n_radial);
         }
         // here is where dG/dz*dz/dr is computed
-        // this->derivatives.transpose() *= this->dz_dr.matrix().asDiagonal();
-        this->derivatives -= (2*alpha*r_ij)*this->values;
-
+        this->derivatives -= (2*alpha_rij)*this->values;
       }
 
       //! computes G by direct evaluation
@@ -713,28 +711,35 @@ namespace rascal {
                               const bool & derivative) {
         // computes some intermediates that accelerate calculations further
         // down
-        double alpha_rij_2{alpha * r_ij};
-        double z2{-r_ij * alpha_rij_2};
+        double alpha_rij{alpha * r_ij};
+        double z2{-r_ij * alpha_rij};
         double ez2{std::exp(z2)};
-        alpha_rij_2 *= alpha_rij_2;
+        this->z = (alpha_rij * alpha) * (alpha + fac_b.array()).inverse();
+        this->dz_dr = this->z;
+        this->z *= r_ij;
+        this->dz_dr *= 2;
 
         for (size_t n_radial{0}; n_radial < this->max_radial; n_radial++) {
-          double z{alpha_rij_2 / (alpha + fac_b(n_radial))};
+          auto& z{this->z(n_radial)};
           for (size_t l_angular{0}; l_angular < this->max_angular + 1;
                l_angular++) {
             int ipos{this->get_pos(n_radial, l_angular)};
             this->values(n_radial, l_angular) =
                 this->hyp1f1[ipos].calc(z, z2, ez2);
           }
-
-          if (derivative) {
+        }
+        if (derivative) {
+          for (size_t n_radial{0}; n_radial < this->max_radial; n_radial++) {
+            auto& z{this->z(n_radial)};
             for (size_t l_angular{0}; l_angular < this->max_angular + 1;
                  l_angular++) {
               int ipos{this->get_pos(n_radial, l_angular)};
               this->derivatives(n_radial, l_angular) =
                   this->hyp1f1[ipos].calc(z, z2, ez2, true);
             }
+            this->derivatives.row(n_radial) *= this->dz_dr(n_radial);
           }
+          this->derivatives -= (2*alpha*r_ij)*this->values;
         }
       }
 
