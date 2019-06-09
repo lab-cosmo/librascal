@@ -787,7 +787,7 @@ namespace rascal {
         Key_t neigh_type{neigh.get_atom_type()};
 
 
-        this->spherical_harmonics.compute(direction);
+        this->spherical_harmonics.calc(direction);
         math::Vector_t harmonics{this->spherical_harmonics.get_harmonics() *
                                  (cutoff_function->f_c(dist))};
 

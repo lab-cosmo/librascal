@@ -31,6 +31,7 @@
 
 #include "math_utils.hh"
 #include <vector>
+#include <iostream>
 
 namespace rascal {
   namespace math {
@@ -162,8 +163,8 @@ namespace rascal {
       size_t max_angular{0};
       // TODO(felix) this is super quick and dirty, but I do not know how to do
       // this in a clean way for coefficients which does not have a name.
-      std::vector<double> angular_coeffs1{};
-      std::vector<double> angular_coeffs2{};
+      Vector_t angular_coeffs1{};
+      Vector_t angular_coeffs2{};
       Vector_t harmonics{};
       Matrix_t assoc_legendre_polynom{};
       MatrixX2_t cos_sin_m_phi{};
@@ -204,12 +205,13 @@ namespace rascal {
                 -1.0 * sqrt((lm1sq - msq) / (4 * lm1sq - 1.0));
           }
         }
-        this->angular_coeffs1.reserve(this->max_angular);
-        this->angular_coeffs2.reserve(this->max_angular);
+        //this->angular_coeffs1.reserve(this->max_angular);
+        this->angular_coeffs1 = Vector_t::Zero(this->max_angular + 1);
+        this->angular_coeffs2 = Vector_t::Zero(this->max_angular + 1);
         for (size_t angular_l{0}; angular_l < this->max_angular + 1;
              angular_l++) {
-          angular_coeffs1.push_back(sqrt(2 * angular_l + 1));
-          angular_coeffs2.push_back(-sqrt(1.0 + 0.5 / angular_l));
+          angular_coeffs1(angular_l) = sqrt(2 * angular_l + 1);
+          angular_coeffs2(angular_l) = -sqrt(1.0 + 0.5 / angular_l);
         }
       }
 
@@ -223,39 +225,33 @@ namespace rascal {
         // These include the normalization factors usually needed in the
         // spherical harmonics
         double l_accum{SQRT_INV_2PI};
-        for (size_t angular_l{0}; angular_l < this->max_angular + 1;
-             angular_l++) {
-          // TODO(felix) take out the if from the loop
-          if (angular_l == 0) {
-            this->assoc_legendre_polynom(angular_l, 0) = SQRT_INV_2PI;
-            continue;
-          } else if (angular_l == 1) {
-            this->assoc_legendre_polynom(angular_l, 0) =
-                cos_theta * SQRT_THREE * SQRT_INV_2PI;
-            l_accum = l_accum * -sqrt(3.0 / 2.0) * sin_theta;
-            this->assoc_legendre_polynom(angular_l, 1) = l_accum;
-            continue;
-          }
+        this->assoc_legendre_polynom(0, 0) = SQRT_INV_2PI;
+        if (this->max_angular > 0) {
+          this->assoc_legendre_polynom(1, 0) =
+              cos_theta * SQRT_THREE * SQRT_INV_2PI;
+          l_accum = l_accum * -sqrt(3.0 / 2.0) * sin_theta;
+          this->assoc_legendre_polynom(1, 1) = l_accum;
+        }
+        for (size_t angular_l{2}; angular_l < this->max_angular + 1;
+               angular_l++) {
           // for l > 1 : Use the recurrence relation
           // TODO(max-veit) don't bother calculating m =/= 0 if sin(theta) == 0
           //                (z-axis)
 
-          // TODO(felix) vectorize this loop (look at broadcasting in eigen)
-          // and spherical_expension:772
-          for (size_t m_count{0}; m_count < angular_l - 1; ++m_count) {
-            this->assoc_legendre_polynom(angular_l, m_count) =
-                this->coeff_a(angular_l, m_count) *
-                (cos_theta *
-                     this->assoc_legendre_polynom(angular_l - 1, m_count) +
-                 this->coeff_b(angular_l, m_count) *
-                     this->assoc_legendre_polynom(angular_l - 2, m_count));
-          }
+          this->assoc_legendre_polynom.row(angular_l).head(angular_l-1) =
+              (this->coeff_a.row(angular_l).head(angular_l-1).array() *
+              (cos_theta *
+                   this->assoc_legendre_polynom.row(angular_l - 1).head(angular_l-1).array() +
+               this->coeff_b.row(angular_l).head(angular_l-1).array() *
+                   this->assoc_legendre_polynom.row(angular_l - 2).head(angular_l-1).array())).eval();
           // TODO(felix) vectorize this and put it outside the loop
+          // I do not see that this is easy vectorizable, because l_accum
+          // is each step with itself multiplied, polynomial characteristic
           this->assoc_legendre_polynom(angular_l, angular_l - 1) =
               // cos_theta * sqrt(2 * angular_l + 1) * l_accum;
-              cos_theta * this->angular_coeffs1.at(angular_l) * l_accum;
+              cos_theta * this->angular_coeffs1(angular_l) * l_accum;
           // l_accum = l_accum * sin_theta * -sqrt(1.0 + 0.5 / angular_l);
-          l_accum = l_accum * sin_theta * this->angular_coeffs2.at(angular_l);
+          l_accum = l_accum * sin_theta * this->angular_coeffs2(angular_l);
           this->assoc_legendre_polynom(angular_l, angular_l) = l_accum;
         }
       }
@@ -298,7 +294,7 @@ namespace rascal {
        *          format, i.e. (00)(1-1)(10)(11)(2-2)....
        */
       // TODO(felix) rename to calc
-      void compute(const Eigen::Ref<const Eigen::Vector3d> & direction) {
+      void calc(const Eigen::Ref<const Eigen::Vector3d> & direction) {
         using math::pow;
         using std::sqrt;
 
@@ -319,8 +315,6 @@ namespace rascal {
         this->compute_cos_sin_angle_multiples(cos_phi, sin_phi);
 
         size_t lm_base{0};  // starting point for storage
-        //std::cout << this->assoc_legendre_polynom << std::endl;
-        //std::cout << cos_sin_m_phi << std::endl;
         for (size_t angular_l{0}; angular_l < this->max_angular + 1;
              angular_l++) {
           //std::cout << "angular_l: "<< angular_l << std::endl;
@@ -329,48 +323,16 @@ namespace rascal {
           this->harmonics.segment(lm_base + angular_l, angular_l+1) =
               this->assoc_legendre_polynom.row(angular_l).head(angular_l+1).array() *
               cos_sin_m_phi.col(0).head(angular_l+1).transpose().array();
-
           this->harmonics.segment(lm_base, angular_l+1) =
               (this->assoc_legendre_polynom.row(angular_l).head(angular_l+1).array() *
               cos_sin_m_phi.col(1).head(angular_l+1).transpose().array()).reverse();
-          //std::cout << "my" << std::endl;
-          //std::cout << this->assoc_legendre_polynom.row(angular_l).size() << " " <<
-          //    cos_sin_m_phi.col(1).size() << std::endl;
-          //std::cout << "my" << std::endl;
-          //std::cout << 
-          //    (this->assoc_legendre_polynom.row(angular_l).head(angular_l+1).array() *
-          //    cos_sin_m_phi.col(1).head(angular_l+1).transpose().array()).reverse()
-          // << std::endl;
-          //std::cout << "my" << std::endl;
-          //std::cout << this->harmonics.segment(lm_base, angular_l+1) << std::endl;
-          //for (size_t m_count{0}; m_count < angular_l + 1; m_count++) {
-          //  // TODO(alex) take out the if from the loop
-          //  this->harmonics(lm_base + angular_l - m_count) =
-          //      this->assoc_legendre_polynom(angular_l, m_count) *
-          //      cos_sin_m_phi(m_count, 1);
-          //}    // for (m_count in [0, l])
-          //std::cout << "exist" << std::endl;
-          //std::cout << this->harmonics.segment(lm_base, angular_l+1) << std::endl;
-          //std::cout << std::endl;
 
           this->harmonics(lm_base + angular_l) =
               this->assoc_legendre_polynom(angular_l, 0) *
               INV_SQRT_TWO;
-          // TODO(alex) vectorize this loop
-          for (size_t m_count{1}; m_count < angular_l + 1; m_count++) {
-            // TODO(alex) take out the if from the loop
-              // uses symmetry of spherical harmonics,
-              // careful with the storage order
-              //this->harmonics(lm_base + angular_l + m_count) =
-              //    this->assoc_legendre_polynom(angular_l, m_count) *
-              //    cos_sin_m_phi(m_count, 0);
-              //this->harmonics(lm_base + angular_l - m_count) =
-              //    this->assoc_legendre_polynom(angular_l, m_count) *
-              //    cos_sin_m_phi(m_count, 1);
-          }    // for (m_count in [0, l])
           lm_base += 2 * angular_l + 1;
         }  // for (l in [0, lmax])
-      }    // compute_spherical_harmonics()
+      }
 
       /**
        * Compute cos(mφ) and sin(mφ) from the recurrence relations

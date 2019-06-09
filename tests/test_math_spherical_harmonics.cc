@@ -42,7 +42,7 @@ namespace rascal {
 
       // computing with ref parameters with our spherical harmonic function
       func.precompute(max_angular_l);
-      func.compute(unit_vector);
+      func.calc(unit_vector);
       if (verbose) {        
         std::cout << ">> computed harmonics: " << std::endl;
         std::cout << ">> " << func.get_harmonics() << std::endl;
@@ -64,8 +64,8 @@ namespace rascal {
 
   BOOST_FIXTURE_TEST_CASE(math_associated_legendre_polynomial_test,
                           SphericalHarmonicsClassRefFixture) {
-    verbose=false;
-    info=false;
+    verbose=true;
+    info=true;
     math::SphericalHarmonics func{};
     if (info) {
       std::cout << ">> Test math_spherical_harmonics_test " << std::endl;
@@ -101,7 +101,7 @@ namespace rascal {
 
       // computing with ref parameters with our spherical harmonic function
       func.precompute(max_angular_l);
-      func.compute(unit_vector);
+      func.calc(unit_vector);
       if (verbose) {        
         std::cout << ">> computed associated legendre polynomial: " << std::endl;
         std::cout << func.get_assoc_legendre_polynom() << std::endl;

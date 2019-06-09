@@ -56,17 +56,12 @@ namespace rascal {
       double sin_theta = sqrt(1.0 - pow(cos_theta, 2));
       // Matrix_t assoc_legendre_polynom(max_angular + 1, max_angular +
       // 1);
-      // TODO(alex) make these into compact lm storage, and pre-allocate so
-      // it does not allocate a matrix every time it calls spherical harmonics
       Matrix_t assoc_legendre_polynom =
           Matrix_t::Zero(max_angular + 1, max_angular + 2);
       Matrix_t coeff_a = Matrix_t::Zero(max_angular + 1, 2 * max_angular + 1);
       Matrix_t coeff_b = Matrix_t::Zero(max_angular + 1, 2 * max_angular + 1);
       const double SQRT_INV_2PI = sqrt(0.5 / PI);
 
-      // TODO(alex) make a class for the ALP, so that all of these coefficients
-      // are computed just once - this section weights for 30% of the cost of
-      // ALP
       // Coefficients for computing the associated Legendre polynomials
       for (size_t angular_l{0}; angular_l < max_angular + 1; angular_l++) {
         double lsq = angular_l * angular_l;
@@ -103,7 +98,6 @@ namespace rascal {
                coeff_b(angular_l, m_count) *
                    assoc_legendre_polynom(angular_l - 2, m_count));
         }
-        // TODO(alex) also these two square roots below should be pre-computed!
         assoc_legendre_polynom(angular_l, angular_l - 1) =
             cos_theta * sqrt(2 * angular_l + 1) * l_accum;
         l_accum = l_accum * sin_theta * -sqrt(1.0 + 0.5 / angular_l);
