@@ -19,13 +19,11 @@ namespace rascal {
         std::cout << ">> Start loading parameters..." << std::endl;
       }
       size_t max_angular_l = data["max_angular_l"] ;
-      // the reader is invited to do these two lines in one line, if the reader
-      // is able to, maybe its not possible
+      // json apparently cannot directly convert to Eigen structures
       std::vector<double> unit_vector_tmp = data["unit_vector"];
       Eigen::Vector3d unit_vector(unit_vector_tmp.data());
       
-      // the reader is invited to do these two lines in one line, if the reader
-      // is able to, maybe its not possible
+      // json apparently cannot directly convert to Eigen structures
       std::vector<double> harmonics_tmp = data["harmonics"];
       math::Vector_t harmonics_ref =
         Eigen::Map<math::Vector_t>(
@@ -80,11 +78,11 @@ namespace rascal {
         std::cout << ">> Start loading parameters..." << std::endl;
       }
       size_t max_angular_l = data["max_angular_l"] ;
-      // the reader is invited to do these two lines in one line, if the reader
-      // is able to
+      // json apparently cannot directly convert to Eigen structures
       std::vector<double> unit_vector_tmp = data["unit_vector"];
       Eigen::Vector3d unit_vector(unit_vector_tmp.data());      
       
+      // the matrix is first loaded as vector and then reshaped
       std::vector<double> alps_ref_tmp = data["alps"];
       math::Matrix_t alps_ref =
         Eigen::Map<math::Matrix_t>(

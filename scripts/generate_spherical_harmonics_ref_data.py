@@ -55,13 +55,17 @@ def dump_reference_json():
 
     unit_vectors = load_unit_vectors_from_json()
 
-    # arXiv 1410.1748 e.q. (4)
+    # In arXiv 1410.1748 e.q. (4) the factors in front of the associated
+    # polynomial
     alp_normfacts = np.zeros((l_max+1, l_max+1))
     for l in range(l_max+1):
         for m in range(l+1):
+
             alp_normfacts[l, m] = mpmath.sqrt(
                 (2*l + 1)/(2*mpmath.pi) /
-                reduce(lambda x,y: mpmath.fmul(x,y), mpmath.arange(l-m+1, l+m+1), 1) )
+                reduce(lambda x,y: mpmath.fmul(x,y),
+                       mpmath.arange(l-m+1, l+m+1), 1)
+                )
     if verbose:
         print("alp_normfacts")
         print(alp_normfacts)
@@ -80,8 +84,6 @@ def dump_reference_json():
         if verbose:
             print(unit_vector)
         for l in range(l_max+1):
-            # this part could be done more efficient by using the results from 
-            # the last calculation but this seems more readable
 
             # calculation for negative m
             for m in range(-l,0):
