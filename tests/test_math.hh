@@ -74,14 +74,14 @@ namespace rascal {
 
     ~SphericalHarmonicsClassRefFixture() = default;
 
-    std::string ref_filename = "reference_data/spherical_harmonics_reference.ubjson";
+    std::string ref_filename =
+        "reference_data/spherical_harmonics_reference.ubjson";
 
     json ref_data{};
     // for general test information
     bool info{false};
     // for detailed tests information of computed values
     bool verbose{false};
-    
   };
 
   /**
@@ -117,8 +117,8 @@ namespace rascal {
       n_arguments = function_inputs[0].size();
 
       // Get/make the displacement directions
-      std::string direction_mode = input_data.at(
-          "direction_mode").get<std::string>();
+      std::string direction_mode =
+          input_data.at("direction_mode").get<std::string>();
       if (direction_mode.compare("Cartesian") == 0) {
         displacement_directions = MatrixXd::Identity(n_arguments, n_arguments);
       } else if (direction_mode.compare("Random") == 0) {
@@ -126,13 +126,13 @@ namespace rascal {
         displacement_directions = MatrixXd::Random(n_directions, n_arguments);
         displacement_directions.rowwise().normalize();
       } else if (direction_mode.compare("Provided") == 0) {
-        StdVector2Dim_t directions_in = input_data.at(
-            "displacement_directions").get<StdVector2Dim_t>();
+        StdVector2Dim_t directions_in =
+            input_data.at("displacement_directions").get<StdVector2Dim_t>();
         displacement_directions.resize(directions_in.size(), n_arguments);
         int row_idx{0};
         for (auto it{directions_in.begin()}; it != directions_in.end(); it++) {
           displacement_directions.row(row_idx++) =
-            Eigen::Map<VectorXd> (it->data(), 1, n_arguments);
+              Eigen::Map<VectorXd>(it->data(), 1, n_arguments);
         }
         displacement_directions.rowwise().normalize();
       } else {
@@ -152,39 +152,39 @@ namespace rascal {
     StdVector2Dim_t function_inputs{};
     std::vector<double> displacement_lengths{};
     Eigen::MatrixXd displacement_directions{};
-    //std::string input_filename{
-      //"reference_data/spherical_harmonics_gradient_test.json"};
+    // std::string input_filename{
+    //"reference_data/spherical_harmonics_gradient_test.json"};
     size_t n_arguments{0};
     bool verbose{false};
   };
 
-  template<int max_angular>
+  template <int max_angular>
   class SphericalHarmonicsWithGradients {
    public:
     SphericalHarmonicsWithGradients() = default;
 
     ~SphericalHarmonicsWithGradients() = default;
 
-    Eigen::Array<double, 1, (max_angular+1)*(max_angular+1)>
+    Eigen::Array<double, 1, (max_angular + 1) * (max_angular + 1)>
     f(const Eigen::Vector3d & inputs_v) {
       // Renormalize the inputs to project out the r gradients
       Eigen::Vector3d my_inputs = inputs_v / inputs_v.norm();
       return math::compute_spherical_harmonics(my_inputs, max_angular);
     }
 
-    Eigen::Array<double, 3, (max_angular+1)*(max_angular+1)>
+    Eigen::Array<double, 3, (max_angular + 1) * (max_angular + 1)>
     grad_f(const Eigen::Vector3d & inputs_v) {
-      Eigen::Array<double, 4, (max_angular+1)*(max_angular+1)>
-        harmonics_derivatives{math::compute_spherical_harmonics_derivatives(
-                                                        inputs_v, max_angular)};
+      Eigen::Array<double, 4, (max_angular + 1) * (max_angular + 1)>
+          harmonics_derivatives{math::compute_spherical_harmonics_derivatives(
+              inputs_v, max_angular)};
       // The gradients are with respect to the central atom, but the
       // displacements here affect the neighbouring atom, hence the sign
       return -1.0 * harmonics_derivatives.bottomRows(3);
     }
   };
 
-  template<typename FunctionProvider_t> void test_gradients(
-                                              std::string data_filename) {
+  template <typename FunctionProvider_t>
+  void test_gradients(std::string data_filename) {
     FunctionProvider_t function_calculator{};
     GradientTestFixture params{data_filename};
     Eigen::MatrixXd values;
@@ -204,8 +204,8 @@ namespace rascal {
     constexpr double fd_error_tol = 1E-8;
     for (auto inputs_it{params.function_inputs.begin()};
          inputs_it != params.function_inputs.end(); inputs_it++) {
-      argument_vector = Eigen::Map<Eigen::RowVectorXd>
-                                    (inputs_it->data(), 1, params.n_arguments);
+      argument_vector = Eigen::Map<Eigen::RowVectorXd>(inputs_it->data(), 1,
+                                                       params.n_arguments);
       values = function_calculator.f(argument_vector);
       jacobian = function_calculator.grad_f(argument_vector);
       std::cout << std::string(30, '-') << std::endl;
@@ -231,19 +231,20 @@ namespace rascal {
           displacement = dx * displacement_direction;
           // Compute the finite-difference derivative using a
           // centred-difference approach
-          fd_derivatives = 0.5 / dx * (
-            function_calculator.f(argument_vector + displacement.adjoint())
-          - function_calculator.f(argument_vector - displacement.adjoint()));
+          fd_derivatives =
+              0.5 / dx *
+              (function_calculator.f(argument_vector + displacement.adjoint()) -
+               function_calculator.f(argument_vector - displacement.adjoint()));
           double fd_error{0.};
           double fd_quotient{0.};
           size_t nonzero_count{0};
           for (int dim_idx{0}; dim_idx < fd_derivatives.size(); dim_idx++) {
-            if (std::abs(directional(dim_idx)) < 10*math::dbl_ftol) {
+            if (std::abs(directional(dim_idx)) < 10 * math::dbl_ftol) {
               fd_error += fd_derivatives(dim_idx);
             } else {
               fd_quotient += (fd_derivatives(dim_idx) / directional(dim_idx));
-              fd_error += (fd_derivatives(dim_idx) - directional(dim_idx))
-                          / directional(dim_idx);
+              fd_error += (fd_derivatives(dim_idx) - directional(dim_idx)) /
+                          directional(dim_idx);
               ++nonzero_count;
             }
           }
@@ -253,7 +254,9 @@ namespace rascal {
           fd_error = fd_error / fd_derivatives.size();
           std::cout << "Average rel FD error: " << fd_error << "\t";
           std::cout << "Average FD quotient:  " << fd_quotient << std::endl;
-          if (std::abs(fd_error) < min_error) {min_error = std::abs(fd_error);}
+          if (std::abs(fd_error) < min_error) {
+            min_error = std::abs(fd_error);
+          }
           if (params.verbose) {
             fd_error_cwise = (fd_derivatives - directional);
             std::cout << "error            = " << fd_error_cwise << std::endl;
@@ -263,10 +266,10 @@ namespace rascal {
             std::cout << ")" << std::endl;
           }
           fd_last = fd_derivatives;
-        } // for (double dx...) (displacement magnitudes)
+        }  // for (double dx...) (displacement magnitudes)
         BOOST_CHECK_SMALL(min_error, fd_error_tol);
-      } // for (int disp_idx...) (displacement directions)
-    } // for (auto inputs_it...) (function inputs)
+      }  // for (int disp_idx...) (displacement directions)
+    }    // for (auto inputs_it...) (function inputs)
   }
 
   struct Hyp1F1RefFixture {

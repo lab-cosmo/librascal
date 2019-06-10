@@ -205,7 +205,7 @@ namespace rascal {
                 -1.0 * sqrt((lm1sq - msq) / (4 * lm1sq - 1.0));
           }
         }
-        //this->angular_coeffs1.reserve(this->max_angular);
+        // this->angular_coeffs1.reserve(this->max_angular);
         this->angular_coeffs1 = Vector_t::Zero(this->max_angular + 1);
         this->angular_coeffs2 = Vector_t::Zero(this->max_angular + 1);
         for (size_t angular_l{0}; angular_l < this->max_angular + 1;
@@ -233,25 +233,31 @@ namespace rascal {
           this->assoc_legendre_polynom(1, 1) = l_accum;
         }
         for (size_t angular_l{2}; angular_l < this->max_angular + 1;
-               angular_l++) {
+             angular_l++) {
           // for l > 1 : Use the recurrence relation
           // TODO(max-veit) don't bother calculating m =/= 0 if sin(theta) == 0
           //                (z-axis)
 
-          this->assoc_legendre_polynom.row(angular_l).head(angular_l-1) =
-              (this->coeff_a.row(angular_l).head(angular_l-1).array() *
-              (cos_theta *
-                   this->assoc_legendre_polynom.row(angular_l - 1).head(angular_l-1).array() +
-               this->coeff_b.row(angular_l).head(angular_l-1).array() *
-                   this->assoc_legendre_polynom.row(angular_l - 2).head(angular_l-1).array())).eval();
+          this->assoc_legendre_polynom.row(angular_l).head(angular_l - 1) =
+              (this->coeff_a.row(angular_l).head(angular_l - 1).array() *
+               (cos_theta * this->assoc_legendre_polynom.row(angular_l - 1)
+                                .head(angular_l - 1)
+                                .array() +
+                this->coeff_b.row(angular_l).head(angular_l - 1).array() *
+                    this->assoc_legendre_polynom.row(angular_l - 2)
+                        .head(angular_l - 1)
+                        .array()))
+                  .eval();
           // TODO(felix) vectorize this and put it outside the loop
           // I do not see that this is easy vectorizable, because l_accum
-          // is each step with itself multiplied, polynomial characteristic
+          // is each step with itself multiplied, polynomial characteristic.
+          // You could compute the coefficents of this polynomial series
+          // such that you only have to compute the power of cos_theta
+          // but why should this be more efficient?
           this->assoc_legendre_polynom(angular_l, angular_l - 1) =
               // cos_theta * sqrt(2 * angular_l + 1) * l_accum;
-              cos_theta * this->angular_coeffs1(angular_l) * l_accum;
-          // l_accum = l_accum * sin_theta * -sqrt(1.0 + 0.5 / angular_l);
-          l_accum = l_accum * sin_theta * this->angular_coeffs2(angular_l);
+              l_accum * cos_theta * this->angular_coeffs1(angular_l);
+          l_accum = l_accum * sin_theta * -sqrt(1.0 + 0.5 / angular_l);
           this->assoc_legendre_polynom(angular_l, angular_l) = l_accum;
         }
       }
@@ -317,19 +323,23 @@ namespace rascal {
         size_t lm_base{0};  // starting point for storage
         for (size_t angular_l{0}; angular_l < this->max_angular + 1;
              angular_l++) {
-          //std::cout << "angular_l: "<< angular_l << std::endl;
+          // std::cout << "angular_l: "<< angular_l << std::endl;
           // uses symmetry of spherical harmonics,
           // careful with the storage order
-          this->harmonics.segment(lm_base + angular_l, angular_l+1) =
-              this->assoc_legendre_polynom.row(angular_l).head(angular_l+1).array() *
-              cos_sin_m_phi.col(0).head(angular_l+1).transpose().array();
-          this->harmonics.segment(lm_base, angular_l+1) =
-              (this->assoc_legendre_polynom.row(angular_l).head(angular_l+1).array() *
-              cos_sin_m_phi.col(1).head(angular_l+1).transpose().array()).reverse();
+          this->harmonics.segment(lm_base + angular_l, angular_l + 1) =
+              this->assoc_legendre_polynom.row(angular_l)
+                  .head(angular_l + 1)
+                  .array() *
+              cos_sin_m_phi.col(0).head(angular_l + 1).transpose().array();
+          this->harmonics.segment(lm_base, angular_l + 1) =
+              (this->assoc_legendre_polynom.row(angular_l)
+                   .head(angular_l + 1)
+                   .array() *
+               cos_sin_m_phi.col(1).head(angular_l + 1).transpose().array())
+                  .reverse();
 
           this->harmonics(lm_base + angular_l) =
-              this->assoc_legendre_polynom(angular_l, 0) *
-              INV_SQRT_TWO;
+              this->assoc_legendre_polynom(angular_l, 0) * INV_SQRT_TWO;
           lm_base += 2 * angular_l + 1;
         }  // for (l in [0, lmax])
       }
@@ -356,7 +366,8 @@ namespace rascal {
        *        Sized max_m by 2 with the cos(mφ) stored in the first column
        *        and sin(mφ) in the second column, m being the row index
        */
-      void compute_cos_sin_angle_multiples(const double& cos_phi, const double& sin_phi) {
+      void compute_cos_sin_angle_multiples(const double & cos_phi,
+                                           const double & sin_phi) {
         for (size_t m_count{0}; m_count < this->max_angular + 1; m_count++) {
           if (m_count == 0) {
             this->cos_sin_m_phi.row(m_count) << 1.0, 0.0;

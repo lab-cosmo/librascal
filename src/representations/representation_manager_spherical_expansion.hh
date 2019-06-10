@@ -383,7 +383,6 @@ namespace rascal {
         return Matrix_Ref(this->radial_integral_neighbour);
       }
 
-
       /**
        * Compute the radial derivative of the neighbour's contribution
        *
@@ -392,7 +391,7 @@ namespace rascal {
       template <AtomicSmearingType AST, size_t Order, size_t Layer>
       Matrix_Ref
       compute_neighbour_derivative(const double & distance,
-                                     ClusterRefKey<Order, Layer> & pair) {
+                                   ClusterRefKey<Order, Layer> & pair) {
         using math::PI;
         using math::pow;
         using std::sqrt;
@@ -402,19 +401,19 @@ namespace rascal {
         double fac_a{0.5 * pow(smearing->get_gaussian_sigma(pair), -2)};
         double dist2{distance * distance};
 
-        //TODO(max) avoid computing this and the other factors twice
+        // TODO(max) avoid computing this and the other factors twice
         Matrix_t neighbour_contribution =
             this->compute_neighbour_contribution(distance, pair);
         Matrix_t proportional_term(this->max_radial, this->max_angular + 1);
         for (size_t angular_l{0}; angular_l <= this->max_angular; ++angular_l) {
-          proportional_term.col(angular_l) = (0.5 / fac_a - angular_l / dist2)
-                                       * neighbour_contribution.col(angular_l);
+          proportional_term.col(angular_l) =
+              (0.5 / fac_a - angular_l / dist2) *
+              neighbour_contribution.col(angular_l);
         }
 
-        //TODO(max) obviously incomplete, just so this compiles
+        // TODO(max) obviously incomplete, just so this compiles
         return proportional_term;
       }
-
 
       /** Compute common prefactors for the radial Gaussian basis functions */
       void precompute_radial_sigmas() {
@@ -786,7 +785,6 @@ namespace rascal {
         auto direction{this->structure_manager->get_direction_vector(neigh)};
         Key_t neigh_type{neigh.get_atom_type()};
 
-
         this->spherical_harmonics.calc(direction);
         math::Vector_t harmonics{this->spherical_harmonics.get_harmonics() *
                                  (cutoff_function->f_c(dist))};
@@ -802,8 +800,8 @@ namespace rascal {
           for (size_t angular_l{0}; angular_l < this->max_angular + 1;
                ++angular_l) {
             size_t l_block_size{2 * angular_l + 1};
-            coefficients_center_by_type.block(
-                                    radial_n, l_block_idx, 1, l_block_size) +=
+            coefficients_center_by_type.block(radial_n, l_block_idx, 1,
+                                              l_block_size) +=
                 (neighbour_contribution(radial_n, angular_l) *
                  harmonics.segment(l_block_idx, l_block_size));
             l_block_idx += l_block_size;
