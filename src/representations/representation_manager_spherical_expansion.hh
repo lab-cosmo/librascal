@@ -796,7 +796,7 @@ namespace rascal {
         downcast_radial_integral<RadialType>(this->radial_integral)};
 
     auto n_row{this->max_radial};
-    auto n_col{(max_angular + 1) * (max_angular + 1)};
+    auto n_col{(this->max_angular + 1) * (this->max_angular + 1)};
     this->expansions_coefficients.clear();
     this->expansions_coefficients.set_shape(n_row, n_col);
     this->expansions_coefficients.resize();
@@ -858,9 +858,12 @@ namespace rascal {
           neigh_gradient_component->resize(keys, n_row, n_col, 0.);
         }
 
-        // Note: the copy _should_ be optimized out (RVO)
-        auto harmonics =
-            math::compute_spherical_harmonics(direction, this->max_angular);
+        auto && harmonics_and_derivatives =
+            math::compute_spherical_harmonics_derivatives(
+                direction, this->max_angular);
+        auto harmonics = harmonics_and_derivatives.row(0);
+        auto harmonics_derivatives = harmonics_and_derivatives.bottomRows(3);
+
         auto neighbour_contribution =
             radial_integral
                 ->template compute_neighbour_contribution<SmearingType>(dist,
@@ -870,12 +873,21 @@ namespace rascal {
                 ->template compute_neighbour_derivative<SmearingType>(
                                                                 dist, neigh);
 
-        //neighbour_derivative_x =
-            //((neighbour_derivative * cutoff_function->f_c(dist))
-            //+ (neighbour_contribution * cutoff_function->df_c(dist))
-            //* dist * direction[0] * harmonics)
-            //+ neighbour_contribution * harmonics_derivatives[0];
-        harmonics *= cutoff_function->f_c(dist);
+        for (size_t cartesian_idx{0}; cartesian_idx < n_spatial_dimensions;
+             ++cartesian_idx) {
+          Eigen::MatrixXd pair_gradient_contribution = ((
+                (neighbour_derivative * cutoff_function->f_c(dist))
+                 + (neighbour_contribution * cutoff_function->df_c(dist)))
+                .array().rowwise()
+                * harmonics.array()) * dist * direction(cartesian_idx)
+              + (neighbour_contribution.array().rowwise()
+                 * harmonics_derivatives.row(cartesian_idx).array());
+          coefficients_center_gradient[cartesian_idx]->
+                operator[](center_type) -= pair_gradient_contribution;
+          coefficients_neigh_gradient[cartesian_idx]->
+                operator[](neigh_type) += pair_gradient_contribution;
+        }
+
         auto && coefficients_center_by_type{coefficients_center[neigh_type]};
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           size_t l_block_idx{0};
