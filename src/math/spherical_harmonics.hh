@@ -245,12 +245,6 @@ namespace rascal {
                         .head(angular_l - 1)
                         .array()))
                   .eval();
-          // TODO(felix) vectorize this and put it outside the loop
-          // I do not see that this is easy vectorizable, because l_accum
-          // is each step with itself multiplied, polynomial characteristic.
-          // You could compute the coefficents of this polynomial series
-          // such that you only have to compute the power of cos_theta
-          // but why should this be more efficient?
           this->assoc_legendre_polynom(angular_l, angular_l - 1) =
               // cos_theta * sqrt(2 * angular_l + 1) * l_accum;
               l_accum * cos_theta * this->angular_coeffs1(angular_l);
@@ -296,7 +290,6 @@ namespace rascal {
        *          Sized (l_max+1)**2, contains the l,m components in compressed
        *          format, i.e. (00)(1-1)(10)(11)(2-2)....
        */
-      // TODO(felix) rename to calc
       void calc(const Eigen::Ref<const Eigen::Vector3d> & direction) {
         using math::pow;
         using std::sqrt;

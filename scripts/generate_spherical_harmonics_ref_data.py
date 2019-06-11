@@ -40,7 +40,7 @@ def get_ascending_angular_lists(max_angular_l):
 def dump_reference_json():
     # to produces more readable tests use l_max 2 or 3
     verbose=False
-    l_max = 25
+    l_max = 30
     path = '../'
     sys.path.insert(0, os.path.join(path, 'build/'))
     sys.path.insert(0, os.path.join(path, 'tests/'))
