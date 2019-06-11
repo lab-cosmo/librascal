@@ -81,7 +81,7 @@ namespace rascal {
     //! Pure Virtual Function to set hyperparameters of the representation
     virtual void set_hyperparameters(const Hypers_t &) = 0;
 
-    //! Pure Virtual Function to set hyperparameters of the representation
+    //!
     void check_hyperparameters(const ReferenceHypers_t &, const Hypers_t &);
 
     //! return the name of the calculator
