@@ -794,7 +794,7 @@ namespace rascal {
     this->expansions_coefficients.clear();
     this->expansions_coefficients.set_shape(n_row, n_col);
     this->expansions_coefficients.resize();
-    // bozhe moi
+    // боже мой
     this->expansions_coefficients_d_dx.clear();
     this->expansions_coefficients_d_dy.clear();
     this->expansions_coefficients_d_dz.clear();
