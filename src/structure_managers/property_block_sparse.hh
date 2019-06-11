@@ -549,10 +549,11 @@ namespace rascal {
         for (const auto & key : all_keys) {
           if (val_center.count(key) == 1) {
             auto val_center_key{val_center[key]};
-            for (int i_pos{0}; i_pos < val_center_key.size();
-                 i_pos++) {
-              features(i_feat, i_center) = val_center_key(i_pos);
-              i_feat++;
+            for (int i_col{0}; i_col < val_center_key.cols(); i_col++) {
+              for (int i_row{0}; i_row < val_center_key.rows(); i_row++) {
+                features(i_feat, i_center) = val_center_key(i_row, i_col);
+                i_feat++;
+              }
             }
           } else {
             i_feat += inner_size;

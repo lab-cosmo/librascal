@@ -91,11 +91,17 @@ namespace rascal {
       RepresentationFixture<MultipleStructureSOAP,
                             CalculatorSphericalInvariants>>;
 
-  using fixtures_ref_test = boost::mpl::list<
-      RepresentationFixture<SortedCoulombTestData, CalculatorSortedCoulomb>,
-      RepresentationFixture<SphericalExpansionTestData,
-                            CalculatorSphericalExpansion>>;//,
+  // using fixtures_ref_test = boost::mpl::list<
+  //     RepresentationFixture<SortedCoulombTestData, CalculatorSortedCoulomb>,
+  //     RepresentationFixture<SphericalExpansionTestData,
+  //                           CalculatorSphericalExpansion>>;//,
       // RepresentationFixture<SOAPTestData, CalculatorSphericalInvariants>>;
+  using fixtures_ref_test = boost::mpl::list<
+    RepresentationFixture<SortedCoulombTestData, CalculatorSortedCoulomb>>;
+  // using fixtures_ref_test = boost::mpl::list<
+  //     RepresentationFixture<SphericalExpansionTestData,
+  //                           CalculatorSphericalExpansion>,
+  //     RepresentationFixture<SOAPTestData, CalculatorSphericalInvariants>>;
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -149,6 +155,10 @@ namespace rascal {
 
     size_t manager_i{0};
     for (auto & manager : managers) {
+      if (manager_i == 0) {
+        ++manager_i;
+        continue;
+      }
       for (const auto & rep_info : rep_infos.at(manager_i)) {
         const auto & hypers = rep_info.at("hypers").template get<json>();
         const auto & ref_representation =
@@ -170,11 +180,14 @@ namespace rascal {
 
           for (size_t col_i{0}; col_i < ref_representation[row_i].size();
                ++col_i) {
+
             auto diff{std::abs(ref_representation[row_i][col_i] -
                                test_representation(row_i, col_i))};
-            // BOOST_CHECK_LE(diff, 1e-12);
-            if (verbose and diff > 6e-12 ) {
-              std::cout << "manager_i=" << manager_i << " pos=" << row_i << ", " << col_i << " \t "<<  ref_representation[row_i][col_i] << "\t != " << test_representation(col_i, row_i) << std::endl;
+            // BOOST_CHECK_LE(diff, 6e-12);
+            if (verbose and diff > 6e-12 and col_i == 0) {
+              std::cout << "manager_i=" << manager_i << " pos=" << row_i << ", " << col_i << " \t "<<  ref_representation[row_i][col_i] << "\t != " << test_representation(row_i, col_i) << std::endl;
+            } else if (verbose and diff < 6e-12 and col_i == 0) {
+              std::cout << "manager_i=" << manager_i << " pos=" << row_i << ", " << col_i << " \t "<<  ref_representation[row_i][col_i] << "\t == " << test_representation(row_i, col_i) << std::endl;
             }
           }
         }

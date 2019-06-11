@@ -215,6 +215,21 @@ namespace rascal {
     //! set hypers
     void set_hyperparameters(const Hypers_t &);
 
+    //! check if size of representation manager is enough for current structure
+    //! manager
+    template<class StructureManager>
+    void check_size_compatibility(StructureManager& manager) {
+      for (auto center : manager) {
+        auto n_neighbours{center.size()};
+        if (n_neighbours > this->size) {
+          std::cout << "size is too small for this "
+                       "structure and has been reset to: "
+                    << n_neighbours << std::endl;
+          this->size = n_neighbours;
+        }
+      }
+    }
+
     /* -------------------- rep-interface-end -------------------- */
 
     //! loop over a collection of manangers (note that maps would raise a
@@ -386,9 +401,12 @@ namespace rascal {
     // in the structure manager
     auto&& coulomb_matrices{this->get_property<Property_t>(manager, this->get_name())};
 
+    this->check_size_compatibility(manager);
+
     // initialise the sorted coulomb_matrices in linear storage
     coulomb_matrices.clear();
     coulomb_matrices.set_nb_row(this->get_n_feature());
+    // coulomb_matrices.set_shape(this->get_n_feature(), 1);
 
     // initialize the sorted linear coulomb matrix
     Eigen::MatrixXd lin_sorted_coulomb_mat(this->size * (this->size + 1) / 2,
@@ -418,7 +436,7 @@ namespace rascal {
       this->get_distance_matrix(manager, center, distance_mat, type_factor_mat);
 
       // Compute Coulomb Mat element wise.
-      coulomb_mat = type_factor_mat.array() / distance_mat.array();
+      coulomb_mat.array() = type_factor_mat.array() / distance_mat.array();
 
       using Sorter = internal::SortCoulomMatrix<AlgorithmType>;
       auto sort_order{

@@ -304,9 +304,24 @@ namespace rascal {
       auto inner_size{this->get_nb_comp()};
 
       Dense_t features(inner_size, n_center);
-      Eigen::Map<Dense_t> tmp(this->values.data(), n_center, inner_size);
+      // Eigen::Map<Dense_t> tmp(this->values.data(), n_center, inner_size);
+      for (size_t i_center{0}; i_center < n_center; i_center++) {
+        auto tmp{this->operator[](i_center)};
+        size_t i_feat{0};
+        for (int i_row{0}; i_row < tmp.rows(); i_row++) {
+          for (int i_col{0}; i_col < tmp.cols(); i_col++) {
+            features(i_feat, i_center) = tmp(i_row, i_col);
+            ++i_feat;
+          }
+        }
+      }
+      // for (size_t i_center{0}; i_center < n_center; i_center++) {
+      //   auto tmp{this->operator[](i_center)};
+      //   features.col(i_center) = tmp;
+      // }
+
       // make a copy
-      features = tmp.transpose();
+      // features = tmp.transpose();
       return features;
     }
 
