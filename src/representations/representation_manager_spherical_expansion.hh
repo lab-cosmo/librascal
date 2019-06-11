@@ -41,6 +41,7 @@
 #include "structure_managers/property_block_sparse.hh"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <memory>
 #include <exception>
@@ -52,6 +53,9 @@
 namespace rascal {
 
   namespace internal {
+
+    //! Just for clarity, make it explicit that we're working in 3-D
+    static const size_t n_spatial_dimensions = 3;
 
     /**
      * List of possible Radial basis that can be used by the spherical
@@ -647,7 +651,9 @@ namespace rascal {
      */
     RepresentationManagerSphericalExpansion(ManagerPtr_t sm,
                                             const Hypers_t & hyper)
-        : expansions_coefficients{*sm},expansions_coefficients_d_dx{*sm},expansions_coefficients_d_dy{*sm},expansions_coefficients_d_dz{*sm}, structure_manager{std::move(sm)} {
+        : expansions_coefficients{*sm},
+          expansions_coefficients_gradient{*sm, *sm, *sm},
+          structure_manager{std::move(sm)} {
       this->set_hyperparameters(hyper);
     }
 
@@ -704,9 +710,8 @@ namespace rascal {
     }
 
     SparseProperty_t expansions_coefficients;
-    SparsePropertyGradient_t expansions_coefficients_d_dx;
-    SparsePropertyGradient_t expansions_coefficients_d_dy;
-    SparsePropertyGradient_t expansions_coefficients_d_dz;
+    std::array<SparsePropertyGradient_t,
+               internal::n_spatial_dimensions> expansions_coefficients_gradient;
 
    protected:
    private:
@@ -782,6 +787,7 @@ namespace rascal {
   void RepresentationManagerSphericalExpansion<Mngr>::compute_impl() {
     using math::PI;
     using math::pow;
+    using internal::n_spatial_dimensions;
 
     // downcast cutoff and radial contributions so they are functional
     auto cutoff_function{
@@ -794,26 +800,24 @@ namespace rascal {
     this->expansions_coefficients.clear();
     this->expansions_coefficients.set_shape(n_row, n_col);
     this->expansions_coefficients.resize();
-    // боже мой
-    this->expansions_coefficients_d_dx.clear();
-    this->expansions_coefficients_d_dy.clear();
-    this->expansions_coefficients_d_dz.clear();
-    this->expansions_coefficients_d_dx.set_shape(n_row, n_col);
-    this->expansions_coefficients_d_dy.set_shape(n_row, n_col);
-    this->expansions_coefficients_d_dz.set_shape(n_row, n_col);
-    this->expansions_coefficients_d_dx.resize();
-    this->expansions_coefficients_d_dy.resize();
-    this->expansions_coefficients_d_dz.resize();
-
+    // TODO(max) does this loop get unrolled?
+    for (auto & gradient_component : this->expansions_coefficients_gradient) {
+      gradient_component.clear();
+      gradient_component.set_shape(n_row, n_col);
+      gradient_component.resize();
+    }
 
     for (auto center : this->structure_manager) {
       auto & coefficients_center = this->expansions_coefficients[center];
-      auto & coefficients_center_d_dx =
-          this->expansions_coefficients_d_dx[center];
-      auto & coefficients_center_d_dy =
-          this->expansions_coefficients_d_dy[center];
-      auto & coefficients_center_d_dz =
-          this->expansions_coefficients_d_dz[center];
+      // uugggggggghh we can't use auto to declare the array
+      std::array<decltype(&(expansions_coefficients_gradient[0][center])),
+                 n_spatial_dimensions> coefficients_center_gradient;
+      // TODO(max) would this be easier with std:: algorithms?
+      for (size_t cartesian_idx{0}; cartesian_idx < n_spatial_dimensions;
+           ++cartesian_idx) {
+        coefficients_center_gradient[cartesian_idx] =
+          &(this->expansions_coefficients_gradient[cartesian_idx][center]);
+      }
       Key_t center_type{center.get_atom_type()};
 
       // TODO(felix) think about an option to have "global" species,
@@ -825,9 +829,9 @@ namespace rascal {
       keys.insert({center_type});
       // initialize the expansion coefficients to 0
       coefficients_center.resize(keys, n_row, n_col, 0.);
-      coefficients_center_d_dx.resize(keys, n_row, n_col, 0.);
-      coefficients_center_d_dy.resize(keys, n_row, n_col, 0.);
-      coefficients_center_d_dz.resize(keys, n_row, n_col, 0.);
+      for (auto & center_gradient_component : coefficients_center_gradient) {
+        center_gradient_component->resize(keys, n_row, n_col, 0.);
+      }
 
       // Start the accumulator with the central atom
       coefficients_center[center_type].col(0) +=
@@ -839,6 +843,20 @@ namespace rascal {
         auto dist{this->structure_manager->get_distance(neigh)};
         auto direction{this->structure_manager->get_direction_vector(neigh)};
         Key_t neigh_type{neigh.get_atom_type()};
+
+        std::array<decltype(&(expansions_coefficients_gradient[0][neigh])),
+                   n_spatial_dimensions> coefficients_neigh_gradient;
+        for (size_t cartesian_idx{0}; cartesian_idx < n_spatial_dimensions;
+             ++cartesian_idx) {
+          coefficients_neigh_gradient[cartesian_idx] =
+            &(this->expansions_coefficients_gradient[cartesian_idx][neigh]);
+        }
+        for (auto & neigh_gradient_component : coefficients_neigh_gradient) {
+          // TODO(felix,max) Do we need to check if it's already been
+          // initialized?  Does a given pair 'neigh' get visited more than once
+          // in each compute call?
+          neigh_gradient_component->resize(keys, n_row, n_col, 0.);
+        }
 
         // Note: the copy _should_ be optimized out (RVO)
         auto harmonics =
