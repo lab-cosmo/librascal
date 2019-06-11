@@ -47,41 +47,51 @@
 // using namespace std;
 using namespace rascal;  // NOLINT
 
-using Representation_t = CalculatorSphericalInvariants;
+// using Representation_t = CalculatorSphericalInvariants;
 
+using Manager_t = AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>;
+using Representation_t = CalculatorSortedCoulomb;
+using Property_t = typename Representation_t::template Property_t<Manager_t>;
 int main() {
   std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
   double cutoff{3.};
-  json hypers{{"max_radial", 6},
-              {"max_angular", 6},
-              {"soap_type", "PowerSpectrum"},
-              {"normalize", true}};
+  json hypers{{"sorting_algorithm", "row_norm"},
+              {"central_cutoff", cutoff},
+              {"size", 10},
+              {"interaction_cutoff", 1e6},
+              {"central_decay", -1},
+              {"interaction_decay", -1}};
 
-  json fc_hypers{{"type", "Cosine"},
-                 {"cutoff", {{"value", cutoff}, {"unit", "A"}}},
-                 {"smooth_width", {{"value", 0.}, {"unit", "A"}}}};
-  json sigma_hypers{{"type", "Constant"},
-                    {"gaussian_sigma", {{"value", 0.4}, {"unit", "A"}}}};
+  // json fc_hypers{{"type", "Cosine"},
+  //                {"cutoff", {{"value", cutoff}, {"unit", "A"}}},
+  //                {"smooth_width", {{"value", 0.}, {"unit", "A"}}}};
+  // json sigma_hypers{{"type", "Constant"},
+  //                   {"gaussian_sigma", {{"value", 0.4}, {"unit", "A"}}}};
 
-  hypers["cutoff_function"] = fc_hypers;
-  hypers["gaussian_density"] = sigma_hypers;
-  hypers["radial_contribution"] = {{"type", "GTO"}};
+  // hypers["cutoff_function"] = fc_hypers;
+  // hypers["gaussian_density"] = sigma_hypers;
+  // hypers["radial_contribution"] = {{"type", "GTO"}};
 
   json structure{{"filename", filename}};
   json adaptors;
   json ad1{{"name", "AdaptorNeighbourList"},
            {"initialization_arguments",
-            {{"cutoff", cutoff}, {"consider_ghost_neighbours", false}}}};
+                    {{"cutoff", cutoff}, {"consider_ghost_neighbours", false}}}};
   json ad2{{"name", "AdaptorStrict"},
            {"initialization_arguments", {{"cutoff", cutoff}}}};
   adaptors.emplace_back(ad1);
   adaptors.emplace_back(ad2);
   auto manager =
-      make_structure_manager_stack<StructureManagerCenters,
-                                   AdaptorNeighbourList, AdaptorStrict>(
-          structure, adaptors);
-  Representation_t representation{hypers};
+          make_structure_manager_stack<StructureManagerCenters,
+                  AdaptorNeighbourList, AdaptorStrict>(
+                  structure, adaptors);
+  Representation_t representation{ hypers};
   representation.compute(manager);
+
+
+  // auto aa{hypers.dump(2)};
+  // TODELETE
+//  auto test_representation{representation.get_representation_full()};
 
   // TODELETE
   // size_t inner_size{representation.get_feature_size()};
@@ -115,3 +125,4 @@ int main() {
 
   return (0);
 }
+
