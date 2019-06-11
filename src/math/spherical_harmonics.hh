@@ -31,7 +31,6 @@
 
 #include "math_utils.hh"
 #include <vector>
-#include <iostream>
 
 namespace rascal {
   namespace math {
@@ -161,8 +160,6 @@ namespace rascal {
       // using Vector_Ref = typename Eigen::Ref<const Eigen::VectorXd>;
 
       size_t max_angular{0};
-      // TODO(felix) this is super quick and dirty, but I do not know how to do
-      // this in a clean way for coefficients which does not have a name.
       Vector_t angular_coeffs1{};
       Vector_t angular_coeffs2{};
       Vector_t harmonics{};
@@ -257,7 +254,7 @@ namespace rascal {
           this->assoc_legendre_polynom(angular_l, angular_l - 1) =
               // cos_theta * sqrt(2 * angular_l + 1) * l_accum;
               l_accum * cos_theta * this->angular_coeffs1(angular_l);
-          l_accum = l_accum * sin_theta * -sqrt(1.0 + 0.5 / angular_l);
+          l_accum = l_accum * sin_theta * this->angular_coeffs2(angular_l);
           this->assoc_legendre_polynom(angular_l, angular_l) = l_accum;
         }
       }

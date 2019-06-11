@@ -49,7 +49,7 @@ namespace rascal {
         std::cout << ">> " << func.get_harmonics() << std::endl;
       }
       double rel_error{(func.get_harmonics() - harmonics_ref).norm()};
-      BOOST_CHECK_LE(rel_error, math::dbl_ftol);
+      BOOST_CHECK_LE(rel_error, 2*math::dbl_ftol);
       if (verbose) {
         std::cout << ">> Boost check perfomed." << std::endl;
         std::cout << std::endl;
@@ -63,8 +63,8 @@ namespace rascal {
 
   BOOST_FIXTURE_TEST_CASE(math_associated_legendre_polynomial_test,
                           SphericalHarmonicsClassRefFixture) {
-    verbose = true;
-    info = true;
+    verbose = false;
+    info = false;
     math::SphericalHarmonics func{};
     if (info) {
       std::cout << ">> Test math_spherical_harmonics_test " << std::endl;
@@ -107,7 +107,7 @@ namespace rascal {
         std::cout << func.get_assoc_legendre_polynom() << std::endl;
       }
       double rel_error{(func.get_assoc_legendre_polynom() - alps_ref).norm()};
-      BOOST_CHECK_LE(rel_error, 2 * math::dbl_ftol);
+      BOOST_CHECK_LE(rel_error, 10 * math::dbl_ftol);
       if (verbose) {
         std::cout << ">> Boost check perfomed." << std::endl;
         std::cout << std::endl;
