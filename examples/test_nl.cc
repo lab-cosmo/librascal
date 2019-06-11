@@ -47,25 +47,28 @@
 // using namespace std;
 using namespace rascal;  // NOLINT
 
-using Representation_t = CalculatorSphericalInvariants;
-
+// using Representation_t = CalculatorSphericalInvariants;
+using Representation_t = CalculatorSortedCoulomb;
+using Manager_t = AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>;
+using Property_t = typename Representation_t::template Property_t<Manager_t>;
 int main() {
   std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
   double cutoff{3.};
-  json hypers{{"max_radial", 6},
-              {"max_angular", 6},
-              {"soap_type", "PowerSpectrum"},
-              {"normalize", true}};
+  json hypers{{"sorting_algorithm", "row_norm"},
+              {"size", 10},
+              {"interaction_cutoff", 1e6},
+              {"central_decay", -1},
+              {"interaction_decay", -1}};
 
-  json fc_hypers{{"type", "Cosine"},
-                 {"cutoff", {{"value", cutoff}, {"unit", "A"}}},
-                 {"smooth_width", {{"value", 0.}, {"unit", "A"}}}};
-  json sigma_hypers{{"type", "Constant"},
-                    {"gaussian_sigma", {{"value", 0.4}, {"unit", "A"}}}};
+  // json fc_hypers{{"type", "Cosine"},
+  //                {"cutoff", {{"value", cutoff}, {"unit", "A"}}},
+  //                {"smooth_width", {{"value", 0.}, {"unit", "A"}}}};
+  // json sigma_hypers{{"type", "Constant"},
+  //                   {"gaussian_sigma", {{"value", 0.4}, {"unit", "A"}}}};
 
-  hypers["cutoff_function"] = fc_hypers;
-  hypers["gaussian_density"] = sigma_hypers;
-  hypers["radial_contribution"] = {{"type", "GTO"}};
+  // hypers["cutoff_function"] = fc_hypers;
+  // hypers["gaussian_density"] = sigma_hypers;
+  // hypers["radial_contribution"] = {{"type", "GTO"}};
 
   json structure{{"filename", filename}};
   json adaptors;
@@ -82,6 +85,12 @@ int main() {
           structure, adaptors);
   Representation_t representation{hypers};
   representation.compute(manager);
+
+  auto property_name{representation.get_name()};
+  auto&& property{manager->template get_validated_property_ref<Property_t>(property_name)};
+  // auto aa{hypers.dump(2)};
+  // TODELETE
+  auto test_representation{property.get_dense_rep()};
 
   // TODELETE
   // size_t inner_size{representation.get_feature_size()};

@@ -184,9 +184,9 @@ namespace rascal {
             auto diff{std::abs(ref_representation[row_i][col_i] -
                                test_representation(row_i, col_i))};
             // BOOST_CHECK_LE(diff, 6e-12);
-            if (verbose and diff > 6e-12 and col_i == 0) {
+            if (verbose and diff > 6e-12 and col_i < 5) {
               std::cout << "manager_i=" << manager_i << " pos=" << row_i << ", " << col_i << " \t "<<  ref_representation[row_i][col_i] << "\t != " << test_representation(row_i, col_i) << std::endl;
-            } else if (verbose and diff < 6e-12 and col_i == 0) {
+            } else if (verbose and diff < 6e-12 and col_i < 5) {
               std::cout << "manager_i=" << manager_i << " pos=" << row_i << ", " << col_i << " \t "<<  ref_representation[row_i][col_i] << "\t == " << test_representation(row_i, col_i) << std::endl;
             }
           }

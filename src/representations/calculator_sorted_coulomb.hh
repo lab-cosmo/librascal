@@ -406,6 +406,7 @@ namespace rascal {
     // initialise the sorted coulomb_matrices in linear storage
     coulomb_matrices.clear();
     coulomb_matrices.set_nb_row(this->get_n_feature());
+    coulomb_matrices.resize();
     // coulomb_matrices.set_shape(this->get_n_feature(), 1);
 
     // initialize the sorted linear coulomb matrix
@@ -445,7 +446,7 @@ namespace rascal {
       this->sort_and_linearize_coulomb_matrix(
           coulomb_mat, lin_sorted_coulomb_mat, sort_order);
 
-      coulomb_matrices.push_back(lin_sorted_coulomb_mat);
+      coulomb_matrices[center] = lin_sorted_coulomb_mat;
     }
   }
   /* -------------------- rep-options-compute-impl-end -------------------- */

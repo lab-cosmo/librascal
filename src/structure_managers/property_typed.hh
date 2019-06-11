@@ -299,30 +299,36 @@ namespace rascal {
                             this->get_nb_row(), this->get_nb_col());
     }
 
-    inline Dense_t get_dense_rep() {
-      auto n_center{this->get_nb_item()};
-      auto inner_size{this->get_nb_comp()};
+    inline auto get_dense_rep() {
+      auto nb_centers{this->get_nb_item()};
+      auto nb_features{this->get_nb_comp()};
+      Eigen::Map<const Eigen::MatrixXd> representation(this->values.data(),
+                                                       nb_features, nb_centers);
+      return representation;
+      // auto n_center{this->get_nb_item()};
+      // auto inner_size{this->get_nb_comp()};
 
-      Dense_t features(inner_size, n_center);
-      // Eigen::Map<Dense_t> tmp(this->values.data(), n_center, inner_size);
-      for (size_t i_center{0}; i_center < n_center; i_center++) {
-        auto tmp{this->operator[](i_center)};
-        size_t i_feat{0};
-        for (int i_row{0}; i_row < tmp.rows(); i_row++) {
-          for (int i_col{0}; i_col < tmp.cols(); i_col++) {
-            features(i_feat, i_center) = tmp(i_row, i_col);
-            ++i_feat;
-          }
-        }
-      }
+      // Dense_t features(inner_size, n_center);
+      // // Eigen::Map<Dense_t> tmp(this->values.data(), n_center, inner_size);
       // for (size_t i_center{0}; i_center < n_center; i_center++) {
       //   auto tmp{this->operator[](i_center)};
-      //   features.col(i_center) = tmp;
+      //   size_t i_feat{0};
+      //   for (int i_row{0}; i_row < tmp.rows(); i_row++) {
+      //     for (int i_col{0}; i_col < tmp.cols(); i_col++) {
+      //       features(i_feat, i_center) = tmp(i_row, i_col);
+      //       ++i_feat;
+      //     }
+      //   }
       // }
 
-      // make a copy
-      // features = tmp.transpose();
-      return features;
+      // // for (size_t i_center{0}; i_center < n_center; i_center++) {
+      // //   auto tmp{this->operator[](i_center)};
+      // //   features.col(i_center) = tmp;
+      // // }
+
+      // // make a copy
+      // // features = tmp.transpose();
+      // return features;
     }
 
    protected:
