@@ -215,6 +215,8 @@ namespace rascal {
     //! set hypers
     void set_hyperparameters(const Hypers_t &);
 
+    void update_central_cutoff(const double&);
+
     //! check if size of representation manager is enough for current structure
     //! manager
     template<class StructureManager>
@@ -322,6 +324,7 @@ namespace rascal {
 
     //! reference the requiered hypers
     ReferenceHypers_t reference_hypers{
+        {"central_cutoff", {}},
         {"central_decay", {}},
         {"interaction_cutoff", {}},
         {"interaction_decay", {}},
@@ -336,40 +339,44 @@ namespace rascal {
       const CalculatorSortedCoulomb::Hypers_t & hyper) {
     this->hypers = hyper;
     // TODO(felix) potential problem here in the tests and bindings
-    this->central_cutoff = 0.;//this->hypers["central_cutoff"];
-    // this->hypers["central_cutoff"] = this->central_cutoff;
+    this->update_central_cutoff(this->hypers["central_cutoff"]);
 
     this->options.emplace("sorting_algorithm",
                           hyper["sorting_algorithm"].get<std::string>());
 
     this->size = hyper["size"];
 
-    if ((hyper["interaction_cutoff"] < 0) or
-        hyper["interaction_cutoff"] > 2 * this->central_cutoff) {
+  }
+
+  inline void CalculatorSortedCoulomb::update_central_cutoff(const double& cutoff) {
+    this->central_cutoff = cutoff;
+
+    if ((this->hypers["interaction_cutoff"] < 0) or
+            this->hypers["interaction_cutoff"] > 2 * this->central_cutoff) {
       this->interaction_cutoff = 2 * this->central_cutoff;
       this->hypers["interaction_cutoff"] = this->interaction_cutoff;
     } else {
-      this->interaction_cutoff = hyper["interaction_cutoff"];
+      this->interaction_cutoff = this->hypers["interaction_cutoff"];
     }
 
-    if (hyper["central_decay"] < 0) {
+    if (this->hypers["central_decay"] < 0) {
       this->central_decay = 0.;
       this->hypers["central_decay"] = this->central_decay;
-    } else if (hyper["central_decay"] > this->central_cutoff) {
+    } else if (this->hypers["central_decay"] > this->central_cutoff) {
       this->central_decay = this->central_cutoff;
       this->hypers["central_decay"] = this->central_cutoff;
     } else {
-      this->central_decay = hyper["central_decay"];
+      this->central_decay = this->hypers["central_decay"];
     }
 
-    if (hyper["interaction_decay"] < 0) {
+    if (this->hypers["interaction_decay"] < 0) {
       this->interaction_decay = 0.;
       this->hypers["interaction_decay"] = this->interaction_decay;
-    } else if (hyper["interaction_decay"] > this->interaction_cutoff) {
+    } else if (this->hypers["interaction_decay"] > this->interaction_cutoff) {
       this->interaction_decay = this->interaction_cutoff;
       this->hypers["interaction_decay"] = this->interaction_cutoff;
     } else {
-      this->interaction_decay = hyper["interaction_decay"];
+      this->interaction_decay = this->hypers["interaction_decay"];
     }
   }
 
@@ -394,8 +401,7 @@ namespace rascal {
   /* -------------------- rep-options-compute-impl-start -------------------- */
   template <internal::CMSortAlgorithm AlgorithmType, class StructureManager>
   inline void CalculatorSortedCoulomb::compute_impl(std::shared_ptr<StructureManager>& manager) {
-    // TODO(felix) remove hack
-    this->central_cutoff = manager->get_cutoff();
+    this->update_central_cutoff(manager->get_cutoff());
 
     // get a reference to the data container that will hold the representation
     // in the structure manager

@@ -31,7 +31,7 @@ fns_to_write = [
 ]
 
 data = dict(filenames=fns_to_write,cutoffs=cutoffs,rep_info=[])
-hypers = dict(central_decay=-1,interaction_cutoff=-1,
+hypers = dict(central_cutoff=0.,central_decay=-1,interaction_cutoff=-1,
               interaction_decay=-1,size=10,sorting_algorithm='')
 
 for fn in fns:
@@ -44,6 +44,7 @@ for fn in fns:
             features = rep.transform(frame)
             test = features.get_feature_matrix()
             hypers['size'] = rep.size
+            hypers['central_cutoff'] = cutoff
             print(rep.size)
             hypers['sorting_algorithm'] = sort
             data['rep_info'][-1].append(dict(feature_matrix=test.tolist(),

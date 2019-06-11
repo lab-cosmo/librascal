@@ -91,17 +91,11 @@ namespace rascal {
       RepresentationFixture<MultipleStructureSOAP,
                             CalculatorSphericalInvariants>>;
 
-  // using fixtures_ref_test = boost::mpl::list<
-  //     RepresentationFixture<SortedCoulombTestData, CalculatorSortedCoulomb>,
-  //     RepresentationFixture<SphericalExpansionTestData,
-  //                           CalculatorSphericalExpansion>>;//,
-      // RepresentationFixture<SOAPTestData, CalculatorSphericalInvariants>>;
   using fixtures_ref_test = boost::mpl::list<
-    RepresentationFixture<SortedCoulombTestData, CalculatorSortedCoulomb>>;
-  // using fixtures_ref_test = boost::mpl::list<
-  //     RepresentationFixture<SphericalExpansionTestData,
-  //                           CalculatorSphericalExpansion>,
-  //     RepresentationFixture<SOAPTestData, CalculatorSphericalInvariants>>;
+      RepresentationFixture<SortedCoulombTestData, CalculatorSortedCoulomb>,
+      RepresentationFixture<SphericalExpansionTestData,
+                            CalculatorSphericalExpansion>,
+      RepresentationFixture<SOAPTestData, CalculatorSphericalInvariants>>;
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -155,10 +149,6 @@ namespace rascal {
 
     size_t manager_i{0};
     for (auto & manager : managers) {
-      if (manager_i == 0) {
-        ++manager_i;
-        continue;
-      }
       for (const auto & rep_info : rep_infos.at(manager_i)) {
         const auto & hypers = rep_info.at("hypers").template get<json>();
         const auto & ref_representation =
@@ -168,8 +158,7 @@ namespace rascal {
         representations.back().compute(manager);
         auto property_name{representations.back().get_name()};
         auto&& property{manager->template get_validated_property_ref<Property_t>(property_name)};
-        // auto aa{hypers.dump(2)};
-        // TODELETE
+
         auto test_representation{property.get_dense_rep()};
 
         BOOST_CHECK_EQUAL(ref_representation.size(),
@@ -183,87 +172,17 @@ namespace rascal {
 
             auto diff{std::abs(ref_representation[row_i][col_i] -
                                test_representation(row_i, col_i))};
-            // BOOST_CHECK_LE(diff, 6e-12);
-            if (verbose and diff > 6e-12 and col_i < 5) {
+            BOOST_CHECK_LE(diff, 6e-12);
+            if (verbose and diff > 6e-12) {
               std::cout << "manager_i=" << manager_i << " pos=" << row_i << ", " << col_i << " \t "<<  ref_representation[row_i][col_i] << "\t != " << test_representation(row_i, col_i) << std::endl;
-            } else if (verbose and diff < 6e-12 and col_i < 5) {
-              std::cout << "manager_i=" << manager_i << " pos=" << row_i << ", " << col_i << " \t "<<  ref_representation[row_i][col_i] << "\t == " << test_representation(row_i, col_i) << std::endl;
             }
           }
         }
-        break;
-      }
-      break;
-      manager_i += 1;
-    }
-  }
-
-  BOOST_AUTO_TEST_SUITE_END();
-
-  /* ---------------------------------------------------------------------- */
-
-  /* Tests specific to the spherical expansion representation
-   * Test the SOAP representation
-   */
-  BOOST_AUTO_TEST_SUITE(representation_blocksparse_specific_tests);
-
-  using fixtures_ref_test = boost::mpl::list<
-      RepresentationFixture<SphericalExpansionTestData,
-                            CalculatorSphericalExpansion>,
-      RepresentationFixture<SOAPTestData, CalculatorSphericalInvariants>>;
-
-  /*
-   * Test if the representation computed is equal to a reference from a file
-   */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_reference_test, Fix,
-                                   fixtures_ref_test, Fix) {
-    auto & managers = Fix::managers;
-    auto & representations = Fix::representations;
-    auto & ref_data = Fix::ref_data;
-    using Property_t = typename Fix::Property_t;
-
-    // Choose the data depending on the current options
-    // using Std2DArray_t = std::vector<std::vector<double>>;
-    using Std2DArray_t = std::vector<std::vector<double>>;
-
-    const auto & data{ref_data.at("rep_info").template get<json>()};
-    // feature_matrices = data["feature_matrices"];
-
-    size_t manager_i{0};
-    for (auto & manager : managers) {
-      for (const auto & config : data.at(manager_i)) {
-        const auto & hypers = config.at("hypers").template get<json>();
-        const auto & ref_representation =
-            config.at("feature_matrix").template get<Std2DArray_t>();
-
-        representations.emplace_back(hypers);
-        representations.back().compute(manager);
-        auto property_name{representations.back().get_name()};
-        auto&& property{manager->template get_validated_property_ref<Property_t>(property_name)};
-        auto test_representation{property.get_dense_rep()};
-        // // TODO(felix) quick fix of something that will disappear soon
-        // // TODELETE
-        // FeatureManagerBlockSparse<double> features{
-        //     representations.back().get_feature_size(), hypers};
-        // features.push_back(representations.back());
-        // auto test_representation = features.get_feature_matrix_dense();
-
-        auto n_feature{test_representation.rows()};
-        auto n_center{test_representation.cols()};
-        BOOST_CHECK_EQUAL(ref_representation.size(), n_feature);
-        for (size_t row_i{0}; row_i < ref_representation.size(); row_i++) {
-          BOOST_CHECK_EQUAL(ref_representation[row_i].size(), n_center);
-          for (size_t col_i{0}; col_i < ref_representation[row_i].size();
-               ++col_i) {
-            auto diff{std::abs(ref_representation[row_i][col_i] -
-                               test_representation(row_i, col_i))};
-            BOOST_CHECK_LE(diff, 6e-12);
-          }
-        }
       }
       manager_i += 1;
     }
   }
 
   BOOST_AUTO_TEST_SUITE_END();
+
 }  // namespace rascal
