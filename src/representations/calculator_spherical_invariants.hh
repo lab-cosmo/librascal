@@ -197,8 +197,8 @@ namespace rascal {
     /**
      * Compute representation for a given structure manager.
      *
-     * @tparam StructureManager a (single or collection in an iterator)
-     * of structure manager(s) held in shared_ptr
+     * @tparam StructureManager a (single or collection)
+     * of structure manager(s) (in an iterator) held in shared_ptr
      *
      * TODO(felix) add mechanism to check if the StructureManager is
      * compatible with the representation
@@ -206,58 +206,13 @@ namespace rascal {
     template <class StructureManager>
     void compute(StructureManager& managers);
 
-
-    /**
-     *
-     */
-    // template <class StructureManager, internal::SOAPType BodyOrder>
-    // struct ComputeHelper {};
-
-    // template <class StructureManager>
-    // struct ComputeHelper<StructureManager, internal::SOAPType::RadialSpectrum> {
-    //   static void run(CalculatorSphericalInvariants& calculator,
-    //                   StructureManager& manager) {
-    //     calculator.compute_radialspectrum(manager);
-    //   }
-    // };
-
-    // template <class StructureManager>
-    // struct ComputeHelper<StructureManager, internal::SOAPType::PowerSpectrum> {
-    //   static void run(CalculatorSphericalInvariants& calculator,
-    //                   StructureManager& manager) {
-    //     calculator.compute_powerspectrum(manager);
-    //   }
-    // };
-
-
-    // /**
-    //  * loop over a collection of manangers if it is an iterator.
-    //  * Or just call compute_impl
-    //  */
-    // template <internal::SOAPType BodyOrder,
-    //           class StructureManager,
-    //           std::enable_if_t<internal::is_iterable<StructureManager>::value, int> = 0>
-    // void compute_loop(StructureManager& managers) {
-    //   for (auto& manager : managers) {
-    //     ComputeHelper<StructureManager, BodyOrder>::run(*this, manager);
-    //   }
-    // }
-
-    // //! single manager case
-    // template <internal::SOAPType BodyOrder,
-    //           class StructureManager,
-    //           std::enable_if_t<not( internal::is_iterable<StructureManager>::value), int> = 0>
-    // void compute_loop(StructureManager& manager) {
-    //   ComputeHelper<StructureManager, BodyOrder>::run(*this, manager);
-    // }
-
     /**
      * loop over a collection of manangers if it is an iterator.
      * Or just call compute_impl
      */
     template <internal::SOAPType BodyOrder,
               class StructureManager,
-              std::enable_if_t<internal::is_iterable<StructureManager>::value, int> = 0>
+              std::enable_if_t<internal::is_proper_iterator<StructureManager>::value, int> = 0>
     void compute_loop(StructureManager& managers) {
       for (auto& manager : managers) {
         this->compute_impl<BodyOrder>(manager);
@@ -267,12 +222,10 @@ namespace rascal {
     //! single manager case
     template <internal::SOAPType BodyOrder,
               class StructureManager,
-              std::enable_if_t<not( internal::is_iterable<StructureManager>::value), int> = 0>
+              std::enable_if_t<not( internal::is_proper_iterator<StructureManager>::value), int> = 0>
     void compute_loop(StructureManager& manager) {
       this->compute_impl<BodyOrder>(manager);
     }
-
-
 
 
     //! compute representation \nu == 1

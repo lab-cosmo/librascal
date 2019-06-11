@@ -605,8 +605,8 @@ namespace rascal {
     /**
      * Compute representation for a given structure manager.
      *
-     * @tparam StructureManager a (single or collection in an iterator)
-     * of structure manager(s) held in shared_ptr
+     * @tparam StructureManager a (single or collection)
+     * of structure manager(s) (in an iterator) held in shared_ptr
      */
     template <class StructureManager>
     void compute(StructureManager& managers);
@@ -625,19 +625,20 @@ namespace rascal {
               internal::RadialBasisType RadialType,
               internal::AtomicSmearingType SmearingType,
               class StructureManager,
-              std::enable_if_t<internal::is_iterable<StructureManager>::value, int> = 0>
+              std::enable_if_t<internal::is_proper_iterator<StructureManager>::value, int> = 0>
     inline void compute_loop(StructureManager& managers) {
       for (auto& manager : managers) {
         this->compute_impl<FcType, RadialType, SmearingType>(manager);
       }
     }
 
+
     //! single manager case
     template <internal::CutoffFunctionType FcType,
               internal::RadialBasisType RadialType,
               internal::AtomicSmearingType SmearingType,
               class StructureManager,
-              std::enable_if_t<(not internal::is_iterable<StructureManager>::value), int> = 0>
+              std::enable_if_t<not(internal::is_proper_iterator<StructureManager>::value), int> = 0>
     inline void compute_loop(StructureManager& manager) {
       this->compute_impl<FcType, RadialType, SmearingType>(manager);
     }

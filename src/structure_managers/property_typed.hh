@@ -156,6 +156,8 @@ namespace rascal {
     using Value = internal::Value<T, Eigen::Dynamic, Eigen::Dynamic>;
     using Manager_t = Manager;
     using traits = typename Manager::traits;
+    using Dense_t = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic,
+                                  Eigen::RowMajor>;
 
     using value_type = typename Value::type;
     using reference = typename Value::reference;
@@ -295,6 +297,17 @@ namespace rascal {
       auto && index{this->values.size() - this->get_nb_comp()};
       return Value::get_ref(this->values[index * this->get_nb_comp()],
                             this->get_nb_row(), this->get_nb_col());
+    }
+
+    inline Dense_t get_dense_rep() {
+      auto n_center{this->get_nb_item()};
+      auto inner_size{this->get_nb_comp()};
+
+      Dense_t features(inner_size, n_center);
+      Eigen::Map<Dense_t> tmp(this->values.data(), n_center, inner_size);
+      // make a copy
+      features = tmp.transpose();
+      return features;
     }
 
    protected:

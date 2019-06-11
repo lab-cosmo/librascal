@@ -92,7 +92,10 @@ namespace rascal {
                             CalculatorSphericalInvariants>>;
 
   using fixtures_ref_test = boost::mpl::list<
-      RepresentationFixture<SortedCoulombTestData, CalculatorSortedCoulomb>>;
+      RepresentationFixture<SortedCoulombTestData, CalculatorSortedCoulomb>,
+      RepresentationFixture<SphericalExpansionTestData,
+                            CalculatorSphericalExpansion>,
+      RepresentationFixture<SOAPTestData, CalculatorSphericalInvariants>>;
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -100,15 +103,13 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_constructor_test, Fix,
                                    multiple_fixtures, Fix) {
-    auto & managers = Fix::managers;
     auto & representations = Fix::representations;
     auto & hypers = Fix::hypers;
 
-    for (auto & manager : managers) {
-      for (auto & hyper : hypers) {
-        representations.emplace_back(manager, hyper);
-      }
+    for (auto & hyper : hypers) {
+      representations.emplace_back(hyper);
     }
+
   }
 
   /* ---------------------------------------------------------------------- */
@@ -122,8 +123,8 @@ namespace rascal {
     auto & hypers = Fix::hypers;
     for (auto & manager : managers) {
       for (auto & hyper : hypers) {
-        representations.emplace_back(manager, hyper);
-        representations.back().compute();
+        representations.emplace_back(hyper);
+        representations.back().compute(manager);
       }
     }
   }
@@ -137,6 +138,8 @@ namespace rascal {
     auto & managers = Fix::managers;
     auto & representations = Fix::representations;
     auto & ref_data = Fix::ref_data;
+    auto& verbose = Fix::verbose;
+    using Property_t = typename Fix::Property_t;
 
     // Choose the data depending on the current options
     using Std2DArray_t = std::vector<std::vector<double>>;
@@ -151,12 +154,13 @@ namespace rascal {
         const auto & ref_representation =
             rep_info.at("feature_matrix").template get<Std2DArray_t>();
 
-        representations.emplace_back(manager, hypers);
-        representations.back().compute();
-        auto aa{hypers.dump(2)};
+        representations.emplace_back(hypers);
+        representations.back().compute(manager);
+        auto property_name{representations.back().get_name()};
+        auto&& property{manager->template get_validated_property_ref<Property_t>(property_name)};
+        // auto aa{hypers.dump(2)};
         // TODELETE
-        const auto & test_representation =
-            representations.back().get_representation_full();
+        auto test_representation{property.get_dense_rep()};
 
         BOOST_CHECK_EQUAL(ref_representation.size(),
                           test_representation.rows());
@@ -168,7 +172,10 @@ namespace rascal {
                ++col_i) {
             auto diff{std::abs(ref_representation[row_i][col_i] -
                                test_representation(row_i, col_i))};
-            BOOST_CHECK_LE(diff, 1e-12);
+            // BOOST_CHECK_LE(diff, 1e-12);
+            if (verbose and diff > 1e-12 ) {
+              std::cout << ref_representation[row_i][col_i] << " != " << test_representation(col_i, row_i) << std::endl;
+            }
           }
         }
       }
@@ -198,8 +205,7 @@ namespace rascal {
     auto & managers = Fix::managers;
     auto & representations = Fix::representations;
     auto & ref_data = Fix::ref_data;
-    using Manager_t = typename Fix::Manager_t;
-    using Property_t = typename Representation_t::template Property_t<Manager_t>;
+    using Property_t = typename Fix::Property_t;
 
     // Choose the data depending on the current options
     // using Std2DArray_t = std::vector<std::vector<double>>;
@@ -238,7 +244,6 @@ namespace rascal {
                                test_representation(row_i, col_i))};
             BOOST_CHECK_LE(diff, 1e-12);
           }
-          break;
         }
       }
       manager_i += 1;

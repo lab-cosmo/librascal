@@ -457,14 +457,6 @@ namespace rascal {
       this->center_sizes.resize(new_size);
     }
 
-    template <size_t CallerLayer>
-    void initialize_to_zeros(const ClusterRefKey<Order, CallerLayer> & id,
-                             Key_t & key) {
-      auto && index{id.get_cluster_index(CallerLayer)};
-      Dense_t mat = Dense_t::Zero(this->get_nb_row(), this->get_nb_col());
-      this->values[index][key] = mat;
-    }
-
     size_t size() const { return this->values.size(); }
 
     /**

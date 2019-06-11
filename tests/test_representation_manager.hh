@@ -150,6 +150,7 @@ namespace rascal {
     SOAPTestData() : Parent{} { this->get_ref(this->ref_filename); }
     ~SOAPTestData() = default;
     std::string ref_filename{"reference_data/soap_reference.ubjson"};
+    bool verbose{true};
   };
 
   struct MultipleStructureSphericalExpansion
@@ -202,6 +203,7 @@ namespace rascal {
     ~SphericalExpansionTestData() = default;
     std::string ref_filename{
         "reference_data/spherical_expansion_reference.ubjson"};
+    bool verbose{true};
   };
 
   struct MultipleStructureSortedCoulomb
@@ -237,6 +239,7 @@ namespace rascal {
 
     const bool consider_ghost_neighbours{false};
     std::string ref_filename{"reference_data/sorted_coulomb_reference.ubjson"};
+    bool verbose{true};
   };
 
   template <class BaseFixture, class RepresentationManager>
@@ -244,6 +247,7 @@ namespace rascal {
     using Parent = MultipleStructureFixture<BaseFixture>;
     using Manager_t = typename Parent::Manager_t;
     using Representation_t = RepresentationManager;
+    using Property_t = typename Representation_t::template Property_t<Manager_t>;
 
     RepresentationFixture() : Parent{} {}
     ~RepresentationFixture() = default;

@@ -70,20 +70,17 @@ namespace rascal {
                                       decltype(std::declval<T>().end()),
                                       typename T::iterator,
                                       typename T::const_iterator,
-                                      typename T::key_type>> : std::true_type { };
-    template<class T>
-    using is_map_t = typename is_map<T>::value;
+                                      typename T::key_type>> : std::true_type   { };
 
-    template<class T>
-    using is_iterable_t = typename is_iterable<T>::value;
-
+    /**
+     * Here the proper iteraror means that it is a std Container and not
+     * a std AssociativeContainer
+     */
     template<class T>
     struct is_proper_iterator {
       static constexpr bool value = !is_map<T>::value && is_iterable<T>::value;
     };
 
-    template<class T>
-    using is_proper_iterator_t = typename is_proper_iterator<T>::value;
     /* ---------------------------------------------------------------------- */
     /**
      * Utility to deduce the type of a Manager with a list of Adaptors

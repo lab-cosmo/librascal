@@ -203,58 +203,37 @@ namespace rascal {
     /* -------------------- rep-construc-end -------------------- */
 
     /* -------------------- rep-interface-start -------------------- */
-    //! compute representation
+    /**
+     * Compute representation for a given structure manager.
+     *
+     * @tparam StructureManager a (single or collection)
+     * of structure manager(s) (in an iterator) held in shared_ptr
+     */
     template<class StructureManager>
-    void compute(std::vector<std::shared_ptr<StructureManager>>& managers);
+    void compute(StructureManager& managers);
 
     //! set hypers
     void set_hyperparameters(const Hypers_t &);
-
-    // TODO(felix) move to the property
-    // //! getter for the representation
-    // Eigen::Map<const Eigen::MatrixXd> get_representation_full() {
-    //   auto nb_centers{this->structure_manager->size()};
-    //   auto nb_features{this->get_n_feature()};
-    //   auto & raw_data{this->coulomb_matrices.get_raw_data()};
-    //   Eigen::Map<const Eigen::MatrixXd> representation(raw_data.data(),
-    //                                                    nb_features, nb_centers);
-    //   return representation;
-    // }
 
     /* -------------------- rep-interface-end -------------------- */
 
     //! loop over a collection of manangers (note that maps would raise a
     //! compilation error)
-    template <class StructureManager, internal::CMSortAlgorithm AlgorithmType,std::enable_if_t<internal::is_iterable<StructureManager>::value, int> = 0>
+    template <internal::CMSortAlgorithm AlgorithmType, class StructureManager, std::enable_if_t<internal::is_proper_iterator<StructureManager>::value, int> = 0>
     inline void compute_loop(StructureManager& managers) {
       for (auto& manager : managers) {
         this->compute_impl<AlgorithmType>(manager);
       }
     }
     //! if it is not a list of managers
-    template <class StructureManager, internal::CMSortAlgorithm AlgorithmType,std::enable_if_t<not (internal::is_iterable<StructureManager>::value), int> = 0>
+    template <internal::CMSortAlgorithm AlgorithmType, class StructureManager, std::enable_if_t<not (internal::is_proper_iterator<StructureManager>::value), int> = 0>
     inline void compute_loop(StructureManager& manager) {
       this->compute_impl<AlgorithmType>(manager);
     }
 
     //! Implementation of compute representation
-    template <class StructureManager, internal::CMSortAlgorithm AlgorithmType>
-    void compute_impl(std::shared_ptr<StructureManager>& manager);
-
-    // TODO(felix) move to property
-    //! check if size of representation manager is enough for current structure
-    //! manager
-    // void check_size_compatibility() {
-    //   for (auto center : this->structure_manager) {
-    //     auto n_neighbours{center.size()};
-    //     if (n_neighbours > this->size) {
-    //       std::cout << "size is too small for this "
-    //                    "structure and has been reset to: "
-    //                 << n_neighbours << std::endl;
-    //       this->size = n_neighbours;
-    //     }
-    //   }
-    // }
+    template <internal::CMSortAlgorithm AlgorithmType, class StructureManager>
+    inline void compute_impl(std::shared_ptr<StructureManager>& manager);
 
     inline std::string get_name() {
       return "sorted_coulomb";
@@ -382,7 +361,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   /* -------------------- rep-options-compute-start-------------------- */
   template <class StructureManager>
-  void CalculatorSortedCoulomb::compute(std::vector<std::shared_ptr<StructureManager>>& managers) {
+  void CalculatorSortedCoulomb::compute(StructureManager& managers) {
     auto option{this->options["sorting_algorithm"]};
 
     if (option == "distance") {
@@ -398,8 +377,8 @@ namespace rascal {
   /* -------------------- rep-options-compute-end -------------------- */
 
   /* -------------------- rep-options-compute-impl-start -------------------- */
-  template <class StructureManager, internal::CMSortAlgorithm AlgorithmType>
-  void CalculatorSortedCoulomb::compute_impl(std::shared_ptr<StructureManager>& manager) {
+  template <internal::CMSortAlgorithm AlgorithmType, class StructureManager>
+  inline void CalculatorSortedCoulomb::compute_impl(std::shared_ptr<StructureManager>& manager) {
     // TODO(felix) remove hack
     this->central_cutoff = manager->get_cutoff();
 
