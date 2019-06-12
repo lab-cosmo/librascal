@@ -179,6 +179,7 @@ namespace rascal {
     /* -------------------- rep-construc-start -------------------- */
     //! Constructor
     CalculatorSortedCoulomb(const Hypers_t & hyper) {
+      this->set_default_prefix("sorted_coulomb_");
       this->check_hyperparameters(this->reference_hypers, hyper);
       // Extract the options and hyperparameters
       this->set_hyperparameters(hyper);
@@ -252,10 +253,6 @@ namespace rascal {
     template <internal::CMSortAlgorithm AlgorithmType, class StructureManager>
     inline void compute_impl(std::shared_ptr<StructureManager>& manager);
 
-    inline std::string get_name() {
-      return "sorted_coulomb";
-    }
-
     //! returns the distance matrix for a central atom
     template <class StructureManager>
     void get_distance_matrix(std::shared_ptr<StructureManager>& manager,
@@ -320,8 +317,6 @@ namespace rascal {
     // at least equal to the largest number of neighours
     size_t size{};
 
-    // static constexpr char calculator_name[] = "sorted_coulomb";
-
     //! reference the requiered hypers
     ReferenceHypers_t reference_hypers{
         {"central_cutoff", {}},
@@ -346,6 +341,7 @@ namespace rascal {
 
     this->size = hyper["size"];
 
+    this->set_name(hyper);
   }
 
   inline void CalculatorSortedCoulomb::update_central_cutoff(const double& cutoff) {

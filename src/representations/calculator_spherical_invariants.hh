@@ -142,6 +142,7 @@ namespace rascal {
 
     CalculatorSphericalInvariants(const Hypers_t & hyper)
       : rep_expansion{hyper} {
+      this->set_default_prefix("spherical_invariants_");
       this->set_hyperparameters(hyper);
     }
 
@@ -190,6 +191,8 @@ namespace rascal {
                                "\' has not been implemented.  Must be one of" +
                                ": \'PowerSpectrum or RadialSpectrum\'.");
       }
+
+      this->set_name(hypers);
     }
 
 
@@ -243,9 +246,6 @@ namespace rascal {
     template <class StructureManager, class Invariants, class ExpansionCoeff>
     void initialize_percenter_radialspectrum_soap_vectors(Invariants& soap_vector, ExpansionCoeff& expansions_coefficients, std::shared_ptr<StructureManager> manager);
 
-    inline std::string get_name() {
-      return "spherical_invariant";
-    }
 
    protected:
     size_t max_radial{};

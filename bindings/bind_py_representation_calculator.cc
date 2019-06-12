@@ -47,10 +47,6 @@ namespace rascal {
       return std::make_unique<Calculator>(hypers);
     }));
 
-    representation.def("get_name",
-                      &Calculator::get_name,
-                      py::call_guard<py::gil_scoped_release>());
-
     return representation;
   }
 
@@ -71,7 +67,9 @@ namespace rascal {
    *
    */
   void add_representation_calculators(py::module & mod, py::module & m_throwaway) {
-    py::class_<CalculatorBase>(m_throwaway, "CalculatorBase");
+    auto base = py::class_<CalculatorBase>(m_throwaway, "CalculatorBase");
+    base.def_readwrite("name", &CalculatorBase::name);
+    base.def_readonly("default_prefix", &CalculatorBase::default_prefix);
     /*-------------------- rep-bind-start --------------------*/
     // Defines a particular structure manager type
     using Manager_t =

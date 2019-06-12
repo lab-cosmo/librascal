@@ -77,7 +77,30 @@ namespace rascal {
     void check_hyperparameters(const ReferenceHypers_t &, const Hypers_t &);
 
     //! return the name of the calculator
-    virtual std::string get_name() = 0;
+    inline const std::string& get_name() {
+      return this->name;
+    }
+
+    //! set the name of the calculator
+    inline void set_name(const std::string& name) {
+      this->name = name;
+    }
+    //! set the prefix for the default naming of the representation
+    inline void set_default_prefix(const std::string& default_prefix) {
+      this->default_prefix = default_prefix;
+    }
+    /**
+     * identifier is a user defined name for the representation used to
+     * register the computed representation
+     * if not provided use the hypers to generate a unique identifier
+     */
+    inline void set_name(const Hypers_t & hyper) {
+      if (hyper.count("identifier") == 1) {
+        this->set_name(hyper["identifier"].get<std::string>());
+      } else {
+        this->set_name(this->default_prefix + hyper.dump());
+      }
+    }
 
     /**
      * Computes the representation associated to the input structure
@@ -110,6 +133,11 @@ namespace rascal {
 
     //! returns a string representation of the current hypers dict
     std::string get_hypers_string();
+
+    //! name of the calculator
+    std::string name{};
+    //! default prefix of the calculator
+    std::string default_prefix{};
 
     //! stores all the hyper parameters of the representation
     Hypers_t hypers{};

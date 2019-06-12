@@ -1,5 +1,5 @@
 /**
- * file   test_representation_manager.cc
+ * file   test_calculator.cc
  *
  * @author Musil Felix <musil.felix@epfl.ch>
  *
@@ -26,7 +26,7 @@
  */
 
 #include "tests.hh"
-#include "test_representation_manager.hh"
+#include "test_calculator.hh"
 
 namespace rascal {
   BOOST_AUTO_TEST_SUITE(representation_test);
@@ -99,17 +99,28 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Test if the constructor runs
+   * Test if the constructor runs and that the name is properly set
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_constructor_test, Fix,
                                    multiple_fixtures, Fix) {
     auto & representations = Fix::representations;
     auto & hypers = Fix::hypers;
+    bool verbose{false};
 
     for (auto & hyper : hypers) {
       representations.emplace_back(hyper);
+      auto& name{representations.back().get_name()};
+      if (verbose) {
+        std::cout << name << std::endl;
+      }
     }
-
+    // test the user defined name works
+    for (auto & hyper : hypers) {
+      hyper["identifier"] = "my_representation";
+      representations.emplace_back(hyper);
+      auto& name{representations.back().get_name()};
+      BOOST_CHECK_EQUAL("my_representation", name);
+    }
   }
 
   /* ---------------------------------------------------------------------- */

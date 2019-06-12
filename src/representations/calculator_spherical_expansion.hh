@@ -567,6 +567,8 @@ namespace rascal {
                                "\' has not been implemented.  Must be one of" +
                                ": \'Cosine\'.");
       }
+
+      this->set_name(hypers);
     }
 
     /**
@@ -579,6 +581,7 @@ namespace rascal {
      *                    specified in the container
      */
     CalculatorSphericalExpansion(const Hypers_t & hyper) {
+      this->set_default_prefix("spherical_expansion_");
       this->set_hyperparameters(hyper);
     }
 
@@ -649,11 +652,6 @@ namespace rascal {
               class StructureManager>
     inline void compute_impl(std::shared_ptr<StructureManager> manager);
 
-    // TODO(felix) discuss modifications of the baseline name to integrate
-    // some hypers inside
-    inline std::string get_name() {
-      return "spherical_expansion";
-    }
 
    protected:
     double interaction_cutoff{};

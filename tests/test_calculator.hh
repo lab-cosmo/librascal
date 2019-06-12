@@ -1,5 +1,5 @@
 /**
- * file   test_calculator_base.hh
+ * file   test_calculator.hh
  *
  * @author Musil Felix <musil.felix@epfl.ch>
  * @author Max Veit <max.veit@epfl.ch>
@@ -26,8 +26,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef TESTS_TEST_REPRESENTATION_MANAGER_HH_
-#define TESTS_TEST_REPRESENTATION_MANAGER_HH_
+#ifndef TESTS_TEST_CALCULATOR_HH_
+#define TESTS_TEST_CALCULATOR_HH_
 
 #include "tests.hh"
 #include "test_structure.hh"
