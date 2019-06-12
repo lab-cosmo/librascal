@@ -11,7 +11,7 @@ In this section, we summarize the representations implemented in Rascal.
 Pair distances
 **************
 
-SOAP
+SphericalInvariant
 ****
 
 Behler-Parinello symmetry functions

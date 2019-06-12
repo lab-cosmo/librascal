@@ -90,11 +90,11 @@ namespace rascal {
     json factory_args{};
   };
 
-  struct MultipleStructureSOAP : MultipleStructureManagerNLStrictFixture {
+  struct MultipleStructureSphericalInvariant : MultipleStructureManagerNLStrictFixture {
     using Parent = MultipleStructureManagerNLStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
 
-    MultipleStructureSOAP() : Parent{} {
+    MultipleStructureSphericalInvariant() : Parent{} {
       for (auto & ri_hyp : this->radial_contribution_hypers) {
         for (auto & fc_hyp : this->fc_hypers) {
           for (auto & sig_hyp : this->density_hypers) {
@@ -108,7 +108,7 @@ namespace rascal {
         }
       }
     };
-    ~MultipleStructureSOAP() = default;
+    ~MultipleStructureSphericalInvariant() = default;
 
     std::vector<json> hypers{};
 
@@ -144,11 +144,11 @@ namespace rascal {
                                   {"normalize", true}}};
   };
 
-  struct SOAPTestData : TestData {
+  struct SphericalInvariantTestData : TestData {
     using Parent = TestData;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
-    SOAPTestData() : Parent{} { this->get_ref(this->ref_filename); }
-    ~SOAPTestData() = default;
+    SphericalInvariantTestData() : Parent{} { this->get_ref(this->ref_filename); }
+    ~SphericalInvariantTestData() = default;
     std::string ref_filename{"reference_data/soap_reference.ubjson"};
     bool verbose{true};
   };

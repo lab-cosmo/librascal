@@ -1,8 +1,7 @@
 import json
 
 from ..neighbourlist import get_neighbourlist
-from .base import RepresentationFactory, FeatureFactory
-from ..utils import get_full_name
+from .base import CalculatorFactory
 from ..neighbourlist.structure_manager import convert_to_structure
 from ..neighbourlist.base import NeighbourListFactory
 import numpy as np
@@ -100,8 +99,6 @@ class SphericalExpansion(object):
             dict(name='strict', args=[interaction_cutoff])
         ]
 
-        neighbourlist_full_name = get_full_name(self.nl_options)
-        self.name = self.name + '_' + neighbourlist_full_name
         hypers_str = json.dumps(self.hypers)
         self.rep_options = dict(name=self.name, args=[hypers_str])
 
@@ -112,9 +109,7 @@ class SphericalExpansion(object):
         self.misc = dict(method=method, n_workers=n_workers,
                          disable_pbar=disable_pbar)
 
-        self.manager = NeighbourListFactory(self.nl_options)
-        self.representation = RepresentationFactory(
-            self.manager, self.rep_options)
+        self.representation = CalculatorFactory(self.rep_options)
 
     def update_hyperparameters(self, **hypers):
         """Store the given dict of hyperparameters
@@ -146,19 +141,21 @@ class SphericalExpansion(object):
         """
         structures = [convert_to_structure(frame) for frame in frames]
 
+        managers = [NeighbourListFactory(self.nl_options)]*len(frames)
+
+        for structure,manager in zip(structures,managers):
+            manager.update(**structure)
+
         n_atoms = [0]+[len(structure['atom_types'])
                        for structure in structures]
+
         structure_ids = np.cumsum(n_atoms)[:-1]
         n_centers = np.sum(n_atoms)
 
-        features = FeatureFactory(self.feature_options)
+        for manager in managers:
+            self.representation.compute(manager)
 
-        for structure in structures:
-            self.manager.update(**structure)
-            self.representation.compute()
-            features.append(self.representation)
-
-        return features
+        return managers
 
     def get_num_coefficients(self):
         """Return the number of coefficients in the spherical expansion

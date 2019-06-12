@@ -1,17 +1,16 @@
 import json
 
 from ..neighbourlist import get_neighbourlist
-from .base import RepresentationFactory, FeatureFactory
-from ..utils import get_full_name
+from .base import CalculatorFactory
 from ..neighbourlist.structure_manager import convert_to_structure
 from ..neighbourlist.base import NeighbourListFactory
 import numpy as np
 
 
-class SOAP(object):
+class SphericalInvariant(object):
 
     """
-    Computes a SOAP representation, e.g. power spectrum etc.
+    Computes a SphericalInvariant representation, e.g. power spectrum etc.
 
     Hyperparameters
     ----------
@@ -66,7 +65,7 @@ class SOAP(object):
         Required arguments are all the hyperparameters named in the
         class documentation
         """
-        self.name = 'soap'
+        self.name = 'sphericalinvariants'
         self.hypers = dict()
         self.update_hyperparameters(
             max_radial=max_radial, max_angular=max_angular,
@@ -105,8 +104,6 @@ class SOAP(object):
             dict(name='strict', args=[interaction_cutoff])
         ]
 
-        neighbourlist_full_name = get_full_name(self.nl_options)
-        self.name = self.name + '_' + neighbourlist_full_name
         hypers_str = json.dumps(self.hypers)
         self.rep_options = dict(name=self.name, args=[hypers_str])
 
@@ -114,9 +111,7 @@ class SOAP(object):
         self.feature_options = dict(name='blocksparse_double', args=[
                                     n_features, hypers_str])
 
-        self.manager = NeighbourListFactory(self.nl_options)
-        self.representation = RepresentationFactory(
-            self.manager, self.rep_options)
+        self.representation = CalculatorFactory(self.rep_options)
 
     def update_hyperparameters(self, **hypers):
         """Store the given dict of hyperparameters
@@ -135,7 +130,7 @@ class SOAP(object):
         self.hypers.update(hypers_clean)
         return
 
-    def transform(self, frames, features=None):
+    def transform(self, frames):
         """Compute the representation.
 
         Parameters
@@ -150,35 +145,26 @@ class SOAP(object):
 
         """
 
-        if features is None:
-            features = FeatureFactory(self.feature_options)
-
         structures = [convert_to_structure(frame) for frame in frames]
-
+        managers = [NeighbourListFactory(self.nl_options)] * len(frames)
+        ii = 0
+        for structure, manager in zip(structures, managers):
+            try:
+                manager.update(**structure)
+            except:
+                print("Structure Rep computation {} failed".format(ii))
         n_atoms = [0]+[len(structure['atom_types'])
                        for structure in structures]
         structure_ids = np.cumsum(n_atoms)[:-1]
         n_centers = np.sum(n_atoms)
         ii = 0
-        for structure in structures:
+        for manager in managers:
             try:
-                self.manager.update(**structure)
-            except:
-                print("Structure NL {} failed".format(ii))
-
-            try:
-                self.representation.compute()
+                self.representation.compute(manager)
             except:
                 print("Structure Rep computation {} failed".format(ii))
 
-            try:
-                features.append(self.representation)
-            except:
-                print("Structure data gather {} failed".format(ii))
 
-            ii+=1
-
-        return features
 
     def get_num_coefficients(self):
         """Return the number of coefficients in the representation

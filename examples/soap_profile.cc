@@ -5,7 +5,7 @@
  *
  * @date   7 May 2019
  *
- * @brief  Example for profiling the spherical expansion and SOAP
+ * @brief  Example for profiling the spherical expansion and SphericalInvariant
  *
  * Copyright © 2018 Max Veit, Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -136,7 +136,7 @@ int main(int argc, char * argv[]) {
   auto soap{property.get_dense_rep()};
   // TODELETE
   // auto soap = representation.get_dense_rep();
-  std::cout << "Sample SOAP elements \n"
+  std::cout << "Sample SphericalInvariant elements \n"
             << soap(0, 0) << " " << soap(0, 1) << " " << soap(0, 2) << "\n"
             << soap(1, 0) << " " << soap(1, 1) << " " << soap(1, 2) << "\n"
             << soap(2, 0) << " " << soap(2, 1) << " " << soap(2, 2) << "\n";

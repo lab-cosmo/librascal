@@ -1,3 +1,3 @@
 from .coulomb_matrix import SortedCoulombMatrix
 from .spherical_expansion import SphericalExpansion
-from .soap import SOAP
+from .spherical_invariant import SphericalInvariant
