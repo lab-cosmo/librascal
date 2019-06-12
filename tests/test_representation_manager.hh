@@ -328,6 +328,33 @@ namespace rascal {
     size_t max_angular{4};
   };
 
+  template<class RepManager>
+  struct RepresentationManagerGradientProvider {
+
+    RepresentationManagerGradientProvider(RepManager & representation) :
+      representation{representation} {}
+
+    ~RepresentationManagerGradientProvider() = default;
+
+    Eigen::Array<double, 1, Eigen::Dynamic>
+    f(const Eigen::Ref<const Eigen::VectorXd> & atom_positions) {
+      // Update atom positions
+      // Return flattened c_j for each centre j
+    }
+
+    Eigen::Array<double, Eigen::Dynamic, Eigen::Dynamic>
+    grad_f(const Eigen::Ref<const Eigen::VectorXd> & atom_positions) {
+      // Update atom positions
+      // Return gradient of (flattened c_j for each centre j) (cols)
+      // with respect to flattened positions r_i (rows)
+    }
+
+    using Dense_t = typename RepManager::Dense_t;
+
+    RepManager & representation;
+
+  };
+
   struct MultipleStructureSortedCoulomb
       : MultipleStructureManagerNLStrictFixture {
     using Parent = MultipleStructureManagerNLStrictFixture;

@@ -201,7 +201,6 @@ namespace rascal {
           SphericalExpansionRadialDerivative<RadialIntegral_t, ClusterRef_t>
               calculator(radial_integral, pair);
           test_gradients(calculator, data_filename);
-          //std::cout << calculator.f(Eigen::Array<double, 1, 1>(1.5)) << std::endl;
           // I really just need _a_ pair, not any one in particular.
           break;
         } // for (auto pair : center)
