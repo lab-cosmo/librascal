@@ -38,9 +38,9 @@
 #include "representations/calculator_spherical_expansion.hh"
 #include "representations/calculator_spherical_invariants.hh"
 
-#include "representations/feature_manager_base.hh"
-#include "representations/feature_manager_dense.hh"
-#include "representations/feature_manager_block_sparse.hh"
+// #include "representations/feature_manager_base.hh"
+// #include "representations/feature_manager_dense.hh"
+// #include "representations/feature_manager_block_sparse.hh"
 
 #include "structure_managers/structure_manager_centers.hh"
 #include "structure_managers/structure_manager_lammps.hh"
@@ -74,7 +74,7 @@
 namespace py = pybind11;
 
 void add_structure_managers(py::module &, py::module &);
-void add_representation_managers(py::module &, py::module &);
+void add_representation_calculators(py::module &, py::module &);
 void add_feature_managers(py::module &, py::module &);
 
 void utils_binding(py::module &);

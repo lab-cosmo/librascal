@@ -1,11 +1,11 @@
 /**
- * @file   bind_py_representation_manager.cc
+ * @file   bind_py_representation_calculator.cc
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
  * @date   30 Oct 2018
  *
- * @brief  File for binding the Representation Managers
+ * @brief  File for binding the Representation calculator
  *
  * Copyright  2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -29,34 +29,35 @@
 
 using namespace rascal;  // NOLINT
 
-template <typename RepresentationManager>
-decltype(auto) add_representation_manager(py::module & mod, py::module &) {
-  using Manager_t = typename RepresentationManager::Manager_t;
+template <typename Calculator>
+decltype(auto) add_representation_calculator(py::module & mod, py::module &) {
 
   std::string representation_name =
-      internal::GetBindingTypeName<RepresentationManager>();
+      internal::GetBindingTypeName<Calculator>();
 
-  py::class_<RepresentationManager, CalculatorBase> representation(
+  py::class_<Calculator, CalculatorBase> representation(
       mod, representation_name.c_str());
   // use custom constructor to pass json formated string as initializer
   // an alternative would be to convert python dict to json internally
-  // but needs some workon in the pybind machinery
-  representation.def(py::init([](std::shared_ptr<Manager_t> manager,
-                                 std::string & hyper_str) {
+  // but needs some work on in the pybind machinery
+  representation.def(py::init([](std::string & hyper_str) {
     // convert to json
     json hypers = json::parse(hyper_str);
-    return std::make_unique<RepresentationManager>(std::move(manager), hypers);
+    return std::make_unique<Calculator>(hypers);
   }));
-  representation.def("compute", &RepresentationManager::compute,
+
+  representation.def("get_name",
+                     &Calculator::get_name,
                      py::call_guard<py::gil_scoped_release>());
-  // TODELETE
-  representation.def("get_features",
-                     &RepresentationManager::get_representation_full,
-                     py::call_guard<py::gil_scoped_release>());
-  // TODELETE
-  representation.def("get_center_size", &RepresentationManager::get_center_size,
-                     py::call_guard<py::gil_scoped_release>());
+
   return representation;
+}
+
+template <class Calculator, class StructureManager, class CalculatorBind>
+void bind_compute_function(CalculatorBind& representation) {
+  representation.def("compute",
+                     &Calculator::template compute<std::shared_ptr<StructureManager>>,
+                     py::call_guard<py::gil_scoped_release>());
 }
 
 /**
@@ -68,7 +69,7 @@ decltype(auto) add_representation_manager(py::module & mod, py::module &) {
  *                  needed but not useful to use on the python side
  *
  */
-void add_representation_managers(py::module & mod, py::module & m_throwaway) {
+void add_representation_calculators(py::module & mod, py::module & m_throwaway) {
   py::class_<CalculatorBase>(m_throwaway, "CalculatorBase");
   /*-------------------- rep-bind-start --------------------*/
   // Defines a particular structure manager type
@@ -76,16 +77,19 @@ void add_representation_managers(py::module & mod, py::module & m_throwaway) {
       AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>;
   // Defines the representation manager type for the particular structure
   // manager
-  using Representation1_t = CalculatorSortedCoulomb<Manager_t>;
+  using Calc1_t = CalculatorSortedCoulomb;
   // Bind the interface of this representation manager
   auto rep_sorted_coulomb =
-      add_representation_manager<Representation1_t>(mod, m_throwaway);
+      add_representation_calculator<Calc1_t>(mod, m_throwaway);
+  bind_compute_function<Calc1_t, Manager_t>(rep_sorted_coulomb);
   /*-------------------- rep-bind-end --------------------*/
-  using Representation2_t = CalculatorSphericalExpansion<Manager_t>;
+  using Calc2_t = CalculatorSphericalExpansion;
   auto rep_spherical_expansion =
-      add_representation_manager<Representation2_t>(mod, m_throwaway);
+      add_representation_calculator<Calc2_t>(mod, m_throwaway);
+  bind_compute_function<Calc2_t, Manager_t>(rep_spherical_expansion);
 
-  using Representation3_t = CalculatorSphericalInvariants<Manager_t>;
+  using Calc3_t = CalculatorSphericalInvariants;
   auto rep_soap =
-      add_representation_manager<Representation3_t>(mod, m_throwaway);
+      add_representation_calculator<Calc3_t>(mod, m_throwaway);
+  bind_compute_function<Calc3_t, Manager_t>(rep_soap);
 }

@@ -51,7 +51,7 @@ PYBIND11_MODULE(_rascal, mod) {
   py::add_ostream_redirect(m_utl, "ostream_redirect");
 
   add_structure_managers(m_nl, m_throwaway);
-  add_representation_managers(m_rpr_mng, m_throwaway);
+  add_representation_calculators(m_rpr_mng, m_throwaway);
   add_feature_managers(m_feat_mng, m_throwaway);
   utils_binding(m_utl);
   math_binding(m_math);

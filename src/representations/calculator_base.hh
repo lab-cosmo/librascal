@@ -52,14 +52,6 @@ namespace rascal {
 
     using Key_t = std::vector<int>;
 
-    // TODO(felix) make sure it is not need anymore
-    using Dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, Eigen::Dynamic,
-                                  Eigen::RowMajor>;
-    using InputData_t =
-        internal::InternallySortedKeyMap<Key_t, Dense_t>;
-    using Data_t = std::vector<InputData_t>;
-
-
 
     CalculatorBase() = default;
 
@@ -87,8 +79,13 @@ namespace rascal {
     //! return the name of the calculator
     virtual std::string get_name() = 0;
 
-    //! Compute the representation using a StructureManager
-    // virtual void compute() = 0;
+    /**
+     * Computes the representation associated to the input structure
+     * manager. It is templated so it can't be virtual but it is still
+     * expected.
+     */
+    // template<class StructureManager>
+    // virtual void compute(StructureManager& ) = 0;
 
     /**
      * use the property interface to get a property from the manager to
@@ -106,19 +103,6 @@ namespace rascal {
       }
       return manager->template get_validated_property_ref<Property<StructureManager>>(property_name);
     }
-
-    // template<class StructureManager, template <class> class Property>
-    // inline decltype(auto) get_property(
-    //       StructureManager& manager,
-    //       const std::string& property_name) {
-    //   // check if the property already exist and create it if it does not
-    //   if (not manager.has_property()) {
-    //     manager.template create_property<
-    //         Property<StructureManager>>(property_name);
-    //   }
-    //   return manager.template get_validated_property_ref<Property<StructureManager>>(property_name);
-    // }
-
 
     //! returns a string representation of the current options values
     //! in alphabetical order
