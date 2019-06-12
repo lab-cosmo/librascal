@@ -579,6 +579,10 @@ namespace rascal {
     using Data_t = typename SparseProperty_t::Data_t;
     using SparsePropertyGradient_t =
         BlockSparseProperty<double, 2, 0, Manager_t, Key_t>;
+    using Matrix_t = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic,
+                                   Eigen::RowMajor>;
+    using Vector_t = Eigen::VectorXd;
+
     /**
      * Set the hyperparameters of this descriptor from a json object.
      *
@@ -652,7 +656,7 @@ namespace rascal {
     RepresentationManagerSphericalExpansion(ManagerPtr_t sm,
                                             const Hypers_t & hyper)
         : expansions_coefficients{*sm},
-          expansions_coefficients_gradient{*sm, *sm, *sm},
+          expansions_coefficients_gradient{*sm},
           structure_manager{std::move(sm)} {
       this->set_hyperparameters(hyper);
     }
@@ -710,8 +714,10 @@ namespace rascal {
     }
 
     SparseProperty_t expansions_coefficients;
-    std::array<SparsePropertyGradient_t,
-               internal::n_spatial_dimensions> expansions_coefficients_gradient;
+    // Goodbye, and good riddance
+    //std::array<SparsePropertyGradient_t,
+               //internal::n_spatial_dimensions> expansions_coefficients_gradient;
+    SparsePropertyGradient_t expansions_coefficients_gradient;
 
    protected:
    private:
@@ -800,24 +806,15 @@ namespace rascal {
     this->expansions_coefficients.clear();
     this->expansions_coefficients.set_shape(n_row, n_col);
     this->expansions_coefficients.resize();
-    // TODO(max) does this loop get unrolled?
-    for (auto & gradient_component : this->expansions_coefficients_gradient) {
-      gradient_component.clear();
-      gradient_component.set_shape(n_row, n_col);
-      gradient_component.resize();
-    }
+    this->expansions_coefficients_gradient.clear();
+    // Row-major ordering, so the Cartesian (spatial) index varies slowest
+    this->expansions_coefficients_gradient.set_shape(
+        n_spatial_dimensions * n_row, n_col);
 
     for (auto center : this->structure_manager) {
       auto & coefficients_center = this->expansions_coefficients[center];
-      // uugggggggghh we can't use auto to declare the array
-      std::array<decltype(&(expansions_coefficients_gradient[0][center])),
-                 n_spatial_dimensions> coefficients_center_gradient;
-      // TODO(max) would this be easier with std:: algorithms?
-      for (size_t cartesian_idx{0}; cartesian_idx < n_spatial_dimensions;
-           ++cartesian_idx) {
-        coefficients_center_gradient[cartesian_idx] =
-          &(this->expansions_coefficients_gradient[cartesian_idx][center]);
-      }
+      auto & coefficients_center_gradient =
+                          this->expansions_coefficients_gradient[center];
       Key_t center_type{center.get_atom_type()};
 
       // TODO(felix) think about an option to have "global" species,
@@ -829,9 +826,10 @@ namespace rascal {
       keys.insert({center_type});
       // initialize the expansion coefficients to 0
       coefficients_center.resize(keys, n_row, n_col, 0.);
-      for (auto & center_gradient_component : coefficients_center_gradient) {
-        center_gradient_component->resize(keys, n_row, n_col, 0.);
-      }
+      coefficients_center_gradient.resize(keys,
+                                    n_spatial_dimensions * n_row, n_col, 0.);
+      auto && gradient_center_by_type{
+                                  coefficients_center_gradient[center_type]};
 
       // Start the accumulator with the central atom
       coefficients_center[center_type].col(0) +=
@@ -844,51 +842,46 @@ namespace rascal {
         auto direction{this->structure_manager->get_direction_vector(neigh)};
         Key_t neigh_type{neigh.get_atom_type()};
 
-        std::array<decltype(&(expansions_coefficients_gradient[0][neigh])),
-                   n_spatial_dimensions> coefficients_neigh_gradient;
-        for (size_t cartesian_idx{0}; cartesian_idx < n_spatial_dimensions;
-             ++cartesian_idx) {
-          coefficients_neigh_gradient[cartesian_idx] =
-            &(this->expansions_coefficients_gradient[cartesian_idx][neigh]);
-        }
-        for (auto & neigh_gradient_component : coefficients_neigh_gradient) {
-          // TODO(felix,max) Do we need to check if it's already been
-          // initialized?  Does a given pair 'neigh' get visited more than once
-          // in each compute call?
-          neigh_gradient_component->resize(keys, n_row, n_col, 0.);
-        }
+        auto & coefficients_neigh_gradient =
+                              this->expansions_coefficients_gradient[neigh];
+        // TODO(felix,max) Do we need to check if it's already been
+        // initialized?  Does a given pair 'neigh' get visited more than once
+        // in each compute call?
+        coefficients_neigh_gradient.resize(keys, n_spatial_dimensions * n_row,
+                                                 n_col, 0.);
 
-        auto && harmonics_and_derivatives =
+        auto harmonics_and_derivatives =
             math::compute_spherical_harmonics_derivatives(
                 direction, this->max_angular);
-        auto harmonics = harmonics_and_derivatives.row(0);
-        auto harmonics_derivatives = harmonics_and_derivatives.bottomRows(3);
+        Vector_t harmonics = harmonics_and_derivatives.row(0);
+        Matrix_t harmonics_derivatives = harmonics_and_derivatives.template bottomRows<3>();
 
-        auto neighbour_contribution =
+        Matrix_t neighbour_contribution =
             radial_integral
                 ->template compute_neighbour_contribution<SmearingType>(dist,
                                                                         neigh);
-        auto neighbour_derivative =
+        Matrix_t neighbour_derivative =
             radial_integral
                 ->template compute_neighbour_derivative<SmearingType>(
                                                                 dist, neigh);
 
-        for (size_t cartesian_idx{0}; cartesian_idx < n_spatial_dimensions;
-             ++cartesian_idx) {
-          Eigen::MatrixXd pair_gradient_contribution = ((
-                (neighbour_derivative * cutoff_function->f_c(dist))
-                 + (neighbour_contribution * cutoff_function->df_c(dist)))
-                .array().rowwise()
-                * harmonics.array()) * dist * direction(cartesian_idx)
-              + (neighbour_contribution.array().rowwise()
-                 * harmonics_derivatives.row(cartesian_idx).array());
-          coefficients_center_gradient[cartesian_idx]->
-                operator[](center_type) -= pair_gradient_contribution;
-          coefficients_neigh_gradient[cartesian_idx]->
-                operator[](neigh_type) += pair_gradient_contribution;
-        }
+        //for (size_t cartesian_idx{0}; cartesian_idx < n_spatial_dimensions;
+             //++cartesian_idx) {
+          //Matrix_t pair_gradient_contribution = ((
+                //(neighbour_derivative * cutoff_function->f_c(dist))
+                 //+ (neighbour_contribution * cutoff_function->df_c(dist)))
+                //.array().rowwise()
+                //* harmonics.transpose().array()) * dist * direction(cartesian_idx)
+              //+ (neighbour_contribution.array().rowwise()
+                 //* harmonics_derivatives.row(cartesian_idx).array());
+          //coefficients_center_gradient[cartesian_idx]->
+                //operator[](center_type) -= pair_gradient_contribution;
+          //coefficients_neigh_gradient[cartesian_idx]->
+                //operator[](neigh_type) += pair_gradient_contribution;
+        //}
 
         auto && coefficients_center_by_type{coefficients_center[neigh_type]};
+        auto && gradient_neigh_by_type{coefficients_neigh_gradient[neigh_type]};
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           size_t l_block_idx{0};
           for (size_t angular_l{0}; angular_l < this->max_angular + 1;
@@ -896,8 +889,18 @@ namespace rascal {
             size_t l_block_size{2 * angular_l + 1};
             coefficients_center_by_type.block(radial_n, l_block_idx, 1,
                                               l_block_size) +=
-                (neighbour_contribution(radial_n, angular_l) *
-                 harmonics.segment(l_block_idx, l_block_size));
+                (neighbour_contribution(radial_n, angular_l)
+                 * cutoff_function->f_c(dist)
+                 * harmonics.segment(l_block_idx, l_block_size));
+            for (size_t cartesian_idx{0}; cartesian_idx < n_spatial_dimensions;
+                 ++cartesian_idx) {
+              Matrix_t pair_gradient_contribution =
+                ((neighbour_derivative * cutoff_function->f_c(dist))
+                 + (neighbour_contribution * cutoff_function->df_c(dist)))
+                                                                .col(angular_l)
+                * harmonics.segment(l_block_idx, l_block_size).transpose()
+                * dist * direction(cartesian_idx);
+            }
             l_block_idx += l_block_size;
           }
         }
