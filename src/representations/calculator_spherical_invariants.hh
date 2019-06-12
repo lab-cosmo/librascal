@@ -34,7 +34,6 @@
 #include "representations/calculator_base.hh"
 #include "representations/calculator_spherical_expansion.hh"
 #include "structure_managers/structure_manager.hh"
-#include "structure_managers/property.hh"
 #include "structure_managers/property_block_sparse.hh"
 #include "rascal_utility.hh"
 #include "math/math_utils.hh"

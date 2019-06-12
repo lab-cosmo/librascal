@@ -1,5 +1,5 @@
 /**
- * @file   bind_py_math.cc
+ * @file   bind_py_math.hh
  *
  * @author Felix Musil <musil.felix@gmail.com>
  *
@@ -25,10 +25,16 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "bind_py_math.hh"
+#ifndef BINDINGS_BIND_PY_MATH_HH_
+#define BINDINGS_BIND_PY_MATH_HH_
 
-namespace py = pybind11;
+#include "math/math_interface.hh"
+#include "math/math_utils.hh"
+
+#include "bind_include.hh"
 
 namespace rascal {
-  void math_binding(py::module &) {}
+  void math_binding(py::module &);
 }
+
+#endif  // BINDINGS_BIND_PY_MATH_HH_

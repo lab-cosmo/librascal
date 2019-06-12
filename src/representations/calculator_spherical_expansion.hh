@@ -33,7 +33,6 @@
 #include "representations/calculator_base.hh"
 #include "representations/cutoff_functions.hh"
 #include "structure_managers/structure_manager.hh"
-#include "structure_managers/property.hh"
 #include "rascal_utility.hh"
 #include "math/math_utils.hh"
 #include "math/spherical_harmonics.hh"

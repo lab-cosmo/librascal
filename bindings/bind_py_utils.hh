@@ -1,13 +1,13 @@
 /**
- * @file   bind_py_math.cc
+ * @file   bind_py_utils.hh
  *
- * @author Felix Musil <musil.felix@gmail.com>
+ * @author Michele Ceriotti <michele.ceriotti@gmail.com>
  *
  * @date   22 August 2018
  *
  * @brief  File for binding utils subroutines
  *
- * Copyright  2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright  2018  Michele Ceriotti, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -25,10 +25,16 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "bind_py_math.hh"
+#ifndef BINDINGS_BIND_PY_UTILS_HH_
+#define BINDINGS_BIND_PY_UTILS_HH_
 
-namespace py = pybind11;
+#include "utils/sparsify_utilities.hh"
+
+#include "bind_include.hh"
 
 namespace rascal {
-  void math_binding(py::module &) {}
+    void utils_binding(py::module &);
 }
+
+
+#endif  // BINDINGS_BIND_PY_UTILS_HH_

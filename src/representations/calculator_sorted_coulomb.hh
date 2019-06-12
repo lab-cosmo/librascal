@@ -213,9 +213,9 @@ namespace rascal {
     void compute(StructureManager& managers);
 
     //! set hypers
-    void set_hyperparameters(const Hypers_t &);
+    inline void set_hyperparameters(const Hypers_t &);
 
-    void update_central_cutoff(const double&);
+    inline void update_central_cutoff(const double&);
 
     //! check if size of representation manager is enough for current structure
     //! manager
@@ -335,7 +335,7 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
-  void CalculatorSortedCoulomb::set_hyperparameters(
+  inline void CalculatorSortedCoulomb::set_hyperparameters(
       const CalculatorSortedCoulomb::Hypers_t & hyper) {
     this->hypers = hyper;
     // TODO(felix) potential problem here in the tests and bindings
