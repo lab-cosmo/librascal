@@ -347,12 +347,12 @@ namespace rascal {
      */
     void attach_property(const std::string & name,
                          std::shared_ptr<PropertyBase> property) {
-      // if (this->has_property(name)) {
-      //   std::stringstream error{};
-      //   error << "A property of name '" << name
-      //         << "' has already been registered";
-      //   throw std::runtime_error(error.str());
-      // }
+      if (this->has_property(name)) {
+        std::stringstream error{};
+        error << "A property of name '" << name
+              << "' has already been registered";
+        throw std::runtime_error(error.str());
+      }
       this->properties[name] = property;
       this->property_fresh[name] = false;
     }
@@ -389,7 +389,9 @@ namespace rascal {
       return this->properties.at(name);
     }
 
-    /*  Checks if the property type of user matches the actual stored property.
+    /**
+     *  Checks if the property type of user matches the actual stored
+     *  property.
      */
     template <typename UserProperty_t>
     bool check_property_t(const std::string & name) const {
@@ -449,6 +451,37 @@ namespace rascal {
       auto property = this->get_property(name);
       this->template validate_property_t<UserProperty_t>(property);
       return std::static_pointer_cast<UserProperty_t>(property);
+    }
+
+    void register_property(std::shared_ptr<PropertyBase> property, const std::string & name) {
+      this->properties[name] = property;
+    }
+    /**
+     * Get a property of a given name. Create it if it does not exist.
+     *
+     * @tparam UserProperty_t full type of the property to return
+     *
+     * @param name name of the property to get
+     *
+     * @throw runtime_error if UserProperty_t is not compatible with property
+     * of the given name
+     */
+    template <typename UserProperty_t>
+    std::shared_ptr<UserProperty_t> get_property_ptr(const std::string & name) {
+      if (not this->has_property(name)) {
+        auto property{std::make_shared<UserProperty_t>(this->implementation())};
+        this->register_property(property, name);
+        return property;
+      } else {
+        auto property{this->get_property(name)};
+        UserProperty_t::check_compatibility(*property);
+        return std::static_pointer_cast<UserProperty_t>(property);
+      }
+    }
+
+    template <typename UserProperty_t>
+    UserProperty_t & get_property_ref(const std::string & name) {
+      return *this->template get_property_ptr<UserProperty_t>(name);
     }
 
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
