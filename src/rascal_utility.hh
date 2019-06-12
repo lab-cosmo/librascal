@@ -35,7 +35,6 @@
 #define GCC_COMPILER
 #endif
 
-#include "representations/calculator_base.hh"
 
 #include <utility>
 #include <string>

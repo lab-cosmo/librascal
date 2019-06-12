@@ -31,6 +31,7 @@
 #ifndef SRC_STRUCTURE_MANAGERS_PROPERTY_TYPED_HH_
 #define SRC_STRUCTURE_MANAGERS_PROPERTY_TYPED_HH_
 
+#include "rascal_utility.hh"
 #include "structure_managers/property_base.hh"
 #include "structure_managers/cluster_ref_key.hh"
 
@@ -155,6 +156,7 @@ namespace rascal {
     using Parent = PropertyBase;
     using Value = internal::Value<T, Eigen::Dynamic, Eigen::Dynamic>;
     using Manager_t = Manager;
+    using Self_t = TypedProperty<T, Order, PropertyLayer, Manager>;
     using traits = typename Manager::traits;
     using Dense_t = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic,
                                   Eigen::RowMajor>;
@@ -170,7 +172,7 @@ namespace rascal {
                  nb_col,
                  Order,
                  PropertyLayer,
-                 metadata} {}
+                 metadata}, type_id{internal::GetTypeNameHelper<Self_t>::GetTypeName()} {}
 
     //! Default constructor
     TypedProperty() = delete;
@@ -192,7 +194,10 @@ namespace rascal {
 
     /* ---------------------------------------------------------------------- */
     //! return runtime info about the stored (e.g., numerical) type
-    const std::type_info & get_type_info() const final { return typeid(T); };
+    //! return info about the type
+    const std::string& get_type_info() const {
+      return this->type_id;
+    };
 
     Manager_t & get_manager() {
       return static_cast<Manager_t &>(this->base_manager);
@@ -305,33 +310,10 @@ namespace rascal {
       Eigen::Map<const Eigen::MatrixXd> representation(this->values.data(),
                                                        nb_features, nb_centers);
       return representation;
-      // auto n_center{this->get_nb_item()};
-      // auto inner_size{this->get_nb_comp()};
-
-      // Dense_t features(inner_size, n_center);
-      // // Eigen::Map<Dense_t> tmp(this->values.data(), n_center, inner_size);
-      // for (size_t i_center{0}; i_center < n_center; i_center++) {
-      //   auto tmp{this->operator[](i_center)};
-      //   size_t i_feat{0};
-      //   for (int i_row{0}; i_row < tmp.rows(); i_row++) {
-      //     for (int i_col{0}; i_col < tmp.cols(); i_col++) {
-      //       features(i_feat, i_center) = tmp(i_row, i_col);
-      //       ++i_feat;
-      //     }
-      //   }
-      // }
-
-      // // for (size_t i_center{0}; i_center < n_center; i_center++) {
-      // //   auto tmp{this->operator[](i_center)};
-      // //   features.col(i_center) = tmp;
-      // // }
-
-      // // make a copy
-      // // features = tmp.transpose();
-      // return features;
     }
 
    protected:
+    std::string type_id{};
     std::vector<T> values{};  //!< storage for properties
   };
 }  // namespace rascal

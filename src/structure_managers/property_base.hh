@@ -34,7 +34,6 @@
 #include "structure_managers/structure_manager_base.hh"
 
 #include <string>
-#include <typeinfo>
 #include <vector>
 #include <array>
 
@@ -63,8 +62,8 @@ namespace rascal {
     //! Move assignment operator
     PropertyBase & operator=(PropertyBase && other) = default;
 
-    //! return runtime info about the stored (e.g., numerical) type
-    virtual const std::type_info & get_type_info() const = 0;
+    //! return compile time type information
+    virtual const std::string & get_type_info() const = 0;
 
     //! returns the number of degrees of freedom stored per cluster
     inline Dim_t get_nb_comp() const { return this->nb_comp; }

@@ -90,9 +90,12 @@ int main() {
 
   auto property_name{representation.get_name()};
   auto&& property{manager->template get_validated_property_ref<Property_t>(property_name)};
-  // auto aa{hypers.dump(2)};
-  // TODELETE
+
+
   auto test_representation{property.get_dense_rep()};
+
+  
+
 
   // TODELETE
   // size_t inner_size{representation.get_feature_size()};

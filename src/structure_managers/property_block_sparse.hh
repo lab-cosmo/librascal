@@ -29,8 +29,11 @@
 #ifndef SRC_STRUCTURE_MANAGERS_PROPERTY_BLOCK_SPARSE_HH_
 #define SRC_STRUCTURE_MANAGERS_PROPERTY_BLOCK_SPARSE_HH_
 
+
+#include "rascal_utility.hh"
 #include "structure_managers/property_base.hh"
 #include "structure_managers/cluster_ref_key.hh"
+
 
 #include <unordered_map>
 #include <set>
@@ -41,7 +44,6 @@
 #include <type_traits>
 
 namespace rascal {
-
   namespace internal {
 
     /**
@@ -375,6 +377,7 @@ namespace rascal {
    public:
     using Parent = PropertyBase;
     using Manager_t = Manager;
+    using Self_t = BlockSparseProperty<Precision_t,Order,PropertyLayer,Manager,Key>;
     using traits = typename Manager::traits;
 
     using Dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, Eigen::Dynamic,
@@ -395,7 +398,7 @@ namespace rascal {
                  0,
                  Order,
                  PropertyLayer,
-                 metadata} {}
+                 metadata}, type_id{internal::GetTypeNameHelper<Self_t>::GetTypeName()} {}
 
     //! Default constructor
     BlockSparseProperty() = delete;
@@ -415,11 +418,24 @@ namespace rascal {
     //! Move assignment operator
     BlockSparseProperty & operator=(BlockSparseProperty && other) = default;
 
+    static inline void check_compatibility(PropertyBase & other) {
+      // check ``type`` compatibility
+      auto type_id{internal::GetTypeNameHelper<Self_t>::GetTypeName()};
+      if (not(other.get_type_info() == type_id)) {
+        std::stringstream err_str{};
+        err_str << "Incompatible types: '" << other.get_type_info()
+                << "' != '" << type_id << "'.";
+        throw std::runtime_error(err_str.str());
+      }
+    }
+
     /* ---------------------------------------------------------------------- */
-    //! return runtime info about the stored (e.g., numerical) type
-    const std::type_info & get_type_info() const final {
-      return typeid(Precision_t);
+
+    //! return info about the type
+    const std::string& get_type_info() const final {
+      return this->type_id;
     };
+
 
     template <size_t Order_ = Order, std::enable_if_t<(Order_ == 1), int> = 0>
     size_t get_validated_property_length(bool consider_ghost_atoms) {
@@ -628,6 +644,7 @@ namespace rascal {
     }
 
    protected:
+    std::string type_id{};
     Data_t values{};  //!< storage for properties
     sizes_t center_sizes{};
   };

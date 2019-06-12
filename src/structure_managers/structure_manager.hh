@@ -25,7 +25,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-//! header guards
 #ifndef SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_HH_
 #define SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_HH_
 
@@ -35,8 +34,10 @@
  */
 #include "structure_managers/structure_manager_base.hh"
 #include "structure_managers/property.hh"
+#include "structure_managers/property_block_sparse.hh"
 #include "structure_managers/cluster_ref_key.hh"
 #include "rascal_utility.hh"
+#include "json_io.hh"
 
 //! Some data types and operations are based on the Eigen library
 #include <Eigen/Dense>
@@ -401,18 +402,21 @@ namespace rascal {
       return true;
     }
 
-    /*  Throws an error if property type given from user does not match actual
+    /**
+     * Throws an error if property type given from user does not match actual
      * property type.
+     * TO(all) Is the try and catch need here ? it will throw in the respective
+     * check_compatibility and we get the full stack with the debugger.
      */
     template <typename UserProperty_t>
-    void validate_property_t(std::shared_ptr<PropertyBase> /*property*/) const {
-      // try {
-      //   UserProperty_t::check_compatibility(*property);
-      // } catch (const std::runtime_error & error) {
-      //   std::stringstream err_str{};
-      //   err_str << "Incompatible UserProperty_t used : " << error.what();
-      //   throw std::runtime_error(err_str.str());
-      // }
+    void validate_property_t(std::shared_ptr<PropertyBase> property) const {
+      try {
+        UserProperty_t::check_compatibility(*property);
+      } catch (const std::runtime_error & error) {
+        std::stringstream err_str{};
+        err_str << "Incompatible UserProperty_t used : " << error.what();
+        throw std::runtime_error(err_str.str());
+      }
     }
 
     template <typename UserProperty_t>
