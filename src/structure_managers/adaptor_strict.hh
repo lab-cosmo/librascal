@@ -378,6 +378,7 @@ namespace rascal {
   void AdaptorStrict<ManagerImplementation>::update(Args &&... arguments) {
     if (sizeof...(arguments) > 0) {
       this->set_update_status(false);
+      this->set_updated_property_status(false);
     }
     this->manager->update(std::forward<Args>(arguments)...);
   }

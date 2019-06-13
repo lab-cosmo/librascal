@@ -492,8 +492,18 @@ namespace rascal {
               name);
     }
 
+    inline void set_updated_property_status(const bool& is_updated) {
+      for (auto& element : this->properties) {
+        auto& property{element.second};
+        property->set_updated_status(is_updated);
+      }
+    }
+
+    inline void set_updated_property_status(const std::string & name, const bool& is_updated) {
+      this->properties->set_updated_status(is_updated);
+    }
+
     /**
-     * TODO(felix) rework the freshness of the properties
      * Attach update status to property. It is necessary, because the underlying
      * structure might change and then the calculated property might be out of
      * sync with the structure.
