@@ -241,6 +241,10 @@ namespace rascal {
       for (size_t i{0}; i < this->values.size(); ++i) {
         values[i] = i;
       }
+      // fill_sequence happens in update_self so if it is called it means that
+      // the property was not up to date (no need to check here if it should
+      // be updated)
+      this->set_updated_status(true);
     }
 
     //! Adjust size of values (only increases, never frees)

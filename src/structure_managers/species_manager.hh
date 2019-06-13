@@ -135,7 +135,6 @@ namespace rascal {
       // like a regular adaptor so you need to set the status here
       if (sizeof...(arguments) > 0) {
         this->set_update_status(false);
-        this->set_updated_property_status(false);
       }
       this->structure_manager->update(std::forward<Args>(arguments)...);
       /**
@@ -148,6 +147,20 @@ namespace rascal {
        * can't do it themselves.
        */
       this->update_self();
+    }
+
+    /**
+     * When the underlying structure changes, all computations are potentially
+     * invalid. This function triggers the setting of the statue variable to
+     * `false` along the tree to the managers and the properties it holds.
+     */
+    void send_changed_structure_signal() final {
+      this->set_update_status(false);
+      for (auto && child : this->children) {
+        if (not child.expired()) {
+          child.lock()->send_changed_structure_signal();
+        }
+      }
     }
 
     /**
