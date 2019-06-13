@@ -396,7 +396,6 @@ namespace rascal {
       void precompute() {
         this->precompute_radial_sigmas();
         this->precompute_radial_overlap();
-        // this->radial_ortho_matrix *= this->radial_norm_factors.asDiagonal();
         this->hyp1f1_calculator.precompute(this->max_radial, this->max_angular);
       }
 
@@ -489,6 +488,38 @@ namespace rascal {
         this->radial_integral_neighbour.array() *= (this->hyp1f1_calculator.get_values() * distance_fac_a_l.asDiagonal()).array();
 
         return Matrix_Ref(this->radial_integral_neighbour);
+      }
+
+      /**
+       * Compute the radial derivative of the neighbour's contribution
+       *
+       * The derivative is taken with respect to the pair distance, r_ij
+       */
+      template <AtomicSmearingType AST, size_t Order, size_t Layer>
+      Matrix_Ref
+      compute_neighbour_derivative(const double & distance,
+                                   ClusterRefKey<Order, Layer> & pair) {
+        using math::PI;
+        using math::pow;
+        using std::sqrt;
+
+        auto smearing{downcast_atomic_smearing<AST>(this->atomic_smearing)};
+        // a = 1 / (2*\sigma^2)
+        double fac_a{0.5 * pow(smearing->get_gaussian_sigma(pair), -2)};
+        double dist2{distance * distance};
+
+        // TODO(max) avoid computing this and the other factors twice
+        Matrix_t neighbour_contribution =
+            this->compute_neighbour_contribution(distance, pair);
+        Matrix_t proportional_term(this->max_radial, this->max_angular + 1);
+        for (size_t angular_l{0}; angular_l <= this->max_angular; ++angular_l) {
+          proportional_term.col(angular_l) =
+              (0.5 / fac_a - angular_l / dist2) *
+              neighbour_contribution.col(angular_l);
+        }
+
+        // TODO(max) obviously incomplete, just so this compiles
+        return proportional_term;
       }
 
       /** Compute common prefactors for the radial Gaussian basis functions */
@@ -766,6 +797,8 @@ namespace rascal {
     internal::CutoffFunctionType cutoff_function_type{};
 
     Hypers_t hypers{};
+
+    math::SphericalHarmonics spherical_harmonics{};
   };
 
   // compute classes template construction
@@ -832,6 +865,8 @@ namespace rascal {
     this->expansions_coefficients.set_shape(n_row, n_col);
     this->expansions_coefficients.resize();
 
+    this->spherical_harmonics.precompute(this->max_angular);
+
     for (auto center : this->structure_manager) {
       auto & coefficients_center = this->expansions_coefficients[center];
       Key_t center_type{center.get_atom_type()};
@@ -857,14 +892,15 @@ namespace rascal {
         auto direction{this->structure_manager->get_direction_vector(neigh)};
         Key_t neigh_type{neigh.get_atom_type()};
 
-        auto harmonics =
-            math::compute_spherical_harmonics(direction, this->max_angular);
+        this->spherical_harmonics.calc(direction);
+        math::Vector_t harmonics{this->spherical_harmonics.get_harmonics() *
+                                 (cutoff_function->f_c(dist))};
+
         auto neighbour_contribution =
             radial_integral
                 ->template compute_neighbour_contribution<SmearingType>(dist,
                                                                         neigh);
 
-        harmonics *= cutoff_function->f_c(dist);
         auto && coefficients_center_by_type{coefficients_center[neigh_type]};
 
         internal::LMProductHotLoop<8>::LMProduct(
