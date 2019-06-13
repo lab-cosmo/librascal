@@ -468,14 +468,14 @@ namespace rascal {
      */
     template <typename UserProperty_t>
     std::shared_ptr<UserProperty_t> get_property_ptr(const std::string & name) {
-      if (not this->has_property(name)) {
-        auto property{std::make_shared<UserProperty_t>(this->implementation())};
-        this->register_property(property, name);
-        return property;
-      } else {
+      if (this->has_property(name)) {
         auto property{this->get_property(name)};
         UserProperty_t::check_compatibility(*property);
         return std::static_pointer_cast<UserProperty_t>(property);
+      } else {
+        auto property{std::make_shared<UserProperty_t>(this->implementation())};
+        this->register_property(property, name);
+        return property;
       }
     }
 
