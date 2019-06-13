@@ -131,8 +131,11 @@ namespace rascal {
     //! Updates the underlying manager as well as the adaptor
     template <class... Args>
     void update(Args &&... arguments) {
+      // SpeciesManager does not belong to the chain of updatables
+      // like a regular adaptor so you need to set the status here
       if (sizeof...(arguments) > 0) {
         this->set_update_status(false);
+        this->set_updated_property_status(false);
       }
       this->structure_manager->update(std::forward<Args>(arguments)...);
       /**

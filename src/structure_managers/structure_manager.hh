@@ -588,6 +588,21 @@ namespace rascal {
       return get_layer(Order, typename traits::LayerByOrder{});
     }
 
+    /**
+     * When the underlying structure changes, all computations are potentially
+     * invalid. This function triggers the setting of the statue variable to
+     * `false` along the tree to the managers and the properties it holds.
+     */
+    void send_changed_structure_signal() final {
+      this->set_updated_property_status(false);
+      this->set_update_status(false);
+      for (auto && child : this->children) {
+        if (not child.expired()) {
+          child.lock()->send_changed_structure_signal();
+        }
+      }
+    }
+
    protected:
     /**
      * Update itself and send update signal to children nodes
