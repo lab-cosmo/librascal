@@ -109,10 +109,10 @@ namespace rascal {
     /**
      * Controls the is_updated flag
      */
-    inline const bool& is_updated() const { return this->is_updated; }
+    inline const bool& is_updated() const { return this->updated; }
 
     inline void set_updated_status(const bool& is_updated) {
-      this->is_updated = is_updated;
+      this->updated = is_updated;
     }
 
 
@@ -129,7 +129,7 @@ namespace rascal {
     const std::string metadata;
     //! tells if the property is in synch with the underlying structure of
     //! the structure manager
-    bool is_updated{true};
+    bool updated{true};
     //! constructor
     PropertyBase(StructureManagerBase & manager, Dim_t nb_row, Dim_t nb_col,
                  size_t order, size_t layer,

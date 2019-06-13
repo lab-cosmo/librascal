@@ -500,7 +500,7 @@ namespace rascal {
     }
 
     inline void set_updated_property_status(const std::string & name, const bool& is_updated) {
-      this->properties->set_updated_status(is_updated);
+      this->properties[name]->set_updated_status(is_updated);
     }
 
     /**
