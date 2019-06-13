@@ -361,9 +361,6 @@ namespace rascal {
      * Helper function to check if a property with the specifier `name` has
      * already been attached.
      */
-    inline bool has_property(const std::string & name) {
-      return not(this->properties.find(name) == this->properties.end());
-    }
     inline bool has_property(const std::string & name) const {
       return not(this->properties.find(name) == this->properties.end());
     }

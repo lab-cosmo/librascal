@@ -419,7 +419,6 @@ namespace rascal {
        * Add new layer for atoms (see LayerByOrder for
        * possible optimisation).
        */
-
       Eigen::Matrix<size_t, AtomLayer + 1, 1> indices;
 
       indices.template head<AtomLayer>() = atom.get_cluster_indices();
@@ -444,6 +443,9 @@ namespace rascal {
         }
       }
     }
+
+    this->distance->set_updated_status(true);
+    this->dir_vec->set_updated_status(true);
   }
 }  // namespace rascal
 
