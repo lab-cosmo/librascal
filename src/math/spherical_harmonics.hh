@@ -182,6 +182,7 @@ namespace rascal {
         // 1);
         this->assoc_legendre_polynom =
             Matrix_t::Zero(this->max_angular + 1, this->max_angular + 1);
+        // TODO(alex) reduce to this->max_angular + 1)
         this->coeff_a =
             Matrix_t::Zero(this->max_angular + 1, 2 * this->max_angular + 1);
         this->coeff_b =
@@ -194,6 +195,7 @@ namespace rascal {
              angular_l++) {
           double lsq = angular_l * angular_l;
           double lm1sq = (angular_l - 1) * (angular_l - 1);
+          // TODO(alex) vectorize
           for (size_t m_count{0}; m_count < angular_l + 1; m_count++) {
             double msq = m_count * m_count;
             this->coeff_a(angular_l, m_count) =
