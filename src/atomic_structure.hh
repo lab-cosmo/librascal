@@ -137,7 +137,8 @@ namespace rascal {
       if (s.count("filename") == 1) {
         auto filename{s["filename"].get<std::string>()};
         this->set_structure(filename);
-      } else if (s.count("cell") == 1 and s.count("atom_types") == 1 and
+      } else if (s.count("cell") == 1 and
+                (s.count("atom_types") == 1 or s.count("numbers") == 1) and
                  s.count("pbc") == 1 and s.count("positions") == 1) {
         json_io::AtomicJsonData json_atoms_object{};
         json_atoms_object = s;

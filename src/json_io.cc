@@ -55,8 +55,14 @@ namespace rascal {
 
     /* ---------------------------------------------------------------------- */
     void from_json(const json & j, AtomicJsonData & s) {
+      if (j.count("atom_types") == 1) {
+        s.type = j.at("atom_types").get<std::vector<int>>();
+      } else if (j.count("numbers") == 1) {
+        s.type = j.at("numbers").get<std::vector<int>>();
+      } else {
+        throw std::runtime_error(R"(AtomicJsonData needs atom_types or numbers keyword)");
+      }
       s.cell = j.at("cell").get<std::vector<std::vector<double>>>();
-      s.type = j.at("atom_types").get<std::vector<int>>();
       s.pbc = j.at("pbc").get<std::vector<int>>();
       s.position = j.at("positions").get<std::vector<std::vector<double>>>();
     }
