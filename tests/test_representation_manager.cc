@@ -187,7 +187,7 @@ namespace rascal {
     using ClusterRef_t = typename Fix::Manager_t::template ClusterRef<2>;
     using RadialIntegral_t = internal::RadialContribution<
           internal::RadialBasisType::GTO>;
-    std::string data_filename{"reference_data/radial_derivative_test.json"};
+    GradientTestFixture test_data{"reference_data/radial_derivative_test.json"};
     auto manager = managers.front(); // there should be just one
     // doesn't work, dunno why, see nested for loops below for replacement hack
     //auto & pair = (manager.begin())->begin();
@@ -200,7 +200,7 @@ namespace rascal {
           // arguments for itself >:/
           SphericalExpansionRadialDerivative<RadialIntegral_t, ClusterRef_t>
               calculator(radial_integral, pair);
-          test_gradients(calculator, data_filename);
+          test_gradients(calculator, test_data);
           // I really just need _a_ pair, not any one in particular.
           break;
         } // for (auto pair : center)

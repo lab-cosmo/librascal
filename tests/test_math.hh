@@ -84,7 +84,9 @@ namespace rascal {
    *                                inputs, in case "direction_mode" is
    *                                "Provided".
    */
-  struct GradientTestFixture {
+  class GradientTestFixture {
+
+   public:
     explicit GradientTestFixture(std::string input_filename) {
       using Eigen::ArrayXd;
       using Eigen::MatrixXd;
@@ -93,51 +95,47 @@ namespace rascal {
 
       std::ifstream input_file(input_filename);
       input_file >> input_data;
-      function_inputs = input_data.at("function_inputs").get<StdVector2Dim_t>();
-      n_arguments = function_inputs[0].size();
+      this->function_inputs = input_data.at("function_inputs")
+                                        .get<StdVector2Dim_t>();
+      this->n_arguments = function_inputs[0].size();
 
-      // Get/make the displacement directions
-      std::string direction_mode =
-          input_data.at("direction_mode").get<std::string>();
-      if (direction_mode.compare("Cartesian") == 0) {
-        displacement_directions = MatrixXd::Identity(n_arguments, n_arguments);
-      } else if (direction_mode.compare("Random") == 0) {
-        size_t n_directions{input_data.at("n_directions").get<size_t>()};
-        displacement_directions = MatrixXd::Random(n_directions, n_arguments);
-        displacement_directions.rowwise().normalize();
-      } else if (direction_mode.compare("Provided") == 0) {
-        StdVector2Dim_t directions_in =
-            input_data.at("displacement_directions").get<StdVector2Dim_t>();
-        displacement_directions.resize(directions_in.size(), n_arguments);
-        int row_idx{0};
-        for (auto it{directions_in.begin()}; it != directions_in.end(); it++) {
-          displacement_directions.row(row_idx++) =
-              Eigen::Map<VectorXd>(it->data(), 1, n_arguments);
-        }
-        displacement_directions.rowwise().normalize();
-      } else {
-        std::cerr << "Unknown direction mode \'" << direction_mode;
-        std::cerr << "\', assuming Cartesian" << std::endl;
-        displacement_directions = MatrixXd::Identity(n_arguments, n_arguments);
-      }
-
-      if (input_data.find("verbosity") != input_data.end()) {
-        std::string verbosity_str = input_data["verbosity"].get<std::string>();
-        if (verbosity_str.compare("INFO") == 0) {
-          verbosity = VerbosityValue::INFO;
-        } else if (verbosity_str.compare("DEBUG") == 0) {
-          verbosity = VerbosityValue::DEBUG;
-        } else if (verbosity_str.compare("NORMAL") == 0) {
-          verbosity = VerbosityValue::NORMAL;
-        } else {
-          std::cerr << "Unknown verbosity value \'" << verbosity_str;
-          std::cerr << "\', assuming NORMAL" << std::endl;
-          verbosity = VerbosityValue::NORMAL;
-        }
-      }
+      this->displacement_directions =
+              this->get_displacement_directions(input_data, this->n_arguments);
+      this->verbosity = get_verbosity(input_data);
     }
 
     ~GradientTestFixture() = default;
+
+    static Eigen::MatrixXd get_displacement_directions(json & input_data,
+                                                       size_t n_arguments) {
+      using Eigen::MatrixXd;
+      using Eigen::VectorXd;
+      MatrixXd directions;
+      std::string direction_mode =
+          input_data.at("direction_mode").get<std::string>();
+      if (direction_mode.compare("Cartesian") == 0) {
+        directions = MatrixXd::Identity(n_arguments, n_arguments);
+      } else if (direction_mode.compare("Random") == 0) {
+        size_t n_directions{input_data.at("n_directions").get<size_t>()};
+        directions = MatrixXd::Random(n_directions, n_arguments);
+        directions.rowwise().normalize();
+      } else if (direction_mode.compare("Provided") == 0) {
+        StdVector2Dim_t directions_in =
+            input_data.at("displacement_directions").get<StdVector2Dim_t>();
+        directions.resize(directions_in.size(), n_arguments);
+        int row_idx{0};
+        for (auto & direction : directions_in) {
+          directions.row(row_idx++) =
+              Eigen::Map<VectorXd>(direction.data(), 1, n_arguments);
+        }
+        directions.rowwise().normalize();
+      } else {
+        std::cerr << "Unknown direction mode \'" << direction_mode;
+        std::cerr << "\', assuming Cartesian" << std::endl;
+        directions = MatrixXd::Identity(n_arguments, n_arguments);
+      }
+      return directions;
+    }
 
     enum struct VerbosityValue {
       NORMAL = 0, // Print nothing
@@ -145,14 +143,34 @@ namespace rascal {
       DEBUG = 20  // Print as much as possible
     };
 
+    static VerbosityValue get_verbosity(json & input_data) {
+      VerbosityValue verbosity_in{VerbosityValue::NORMAL};
+      if (input_data.find("verbosity") != input_data.end()) {
+        std::string verbosity_str = input_data["verbosity"].get<std::string>();
+        if (verbosity_str.compare("INFO") == 0) {
+          verbosity_in = VerbosityValue::INFO;
+        } else if (verbosity_str.compare("DEBUG") == 0) {
+          verbosity_in = VerbosityValue::DEBUG;
+        } else if (verbosity_str.compare("NORMAL") == 0) {
+          verbosity_in = VerbosityValue::NORMAL;
+        } else {
+          std::cerr << "Unknown verbosity value \'" << verbosity_str;
+          std::cerr << "\', assuming NORMAL" << std::endl;
+          verbosity_in = VerbosityValue::NORMAL;
+        }
+      }
+      return verbosity_in;
+    }
+
     using StdVector2Dim_t = std::vector<std::vector<double>>;
+
     StdVector2Dim_t function_inputs{};
-    std::vector<double> displacement_lengths{};
     Eigen::MatrixXd displacement_directions{};
-    // std::string input_filename{
-    //"reference_data/spherical_harmonics_gradient_test.json"};
     size_t n_arguments{0};
     VerbosityValue verbosity{VerbosityValue::NORMAL};
+
+   protected:
+    GradientTestFixture() {}
   };
 
   template <int max_angular>
@@ -184,8 +202,9 @@ namespace rascal {
    * @param function_calculator An object that provides both the function and
    *                            its gradient
    *
-   * @param data_filename name of a json file that will be read by
-   *                      GradientTestFixture
+   * @param params Test fixture object, e.g a GradientTestFixture or something
+   *               providing the same information (i.e. function_inputs,
+   *               displacement_directions, n_arguments, and verbosity)
    *
    * The function_calculator object may be of any type, as long as it provides
    * two functions, f() and grad_f(), to calculate the function and its gradient
@@ -196,10 +215,9 @@ namespace rascal {
    * GradientTestFixture).  This function additionally guarantees that f() will
    * be called before grad_f() with the same input.
    */
-  template<typename FunctionProvider_t>
+  template<typename FunctionProvider_t, typename TestFixture_t>
   void test_gradients(FunctionProvider_t function_calculator,
-                      std::string data_filename) {
-    GradientTestFixture params{data_filename};
+                      TestFixture_t params) {
     Eigen::MatrixXd values;
     Eigen::MatrixXd jacobian;
     Eigen::RowVectorXd argument_vector;
@@ -218,9 +236,8 @@ namespace rascal {
     // to the next).  The automated test is really more intended to be a sanity
     // check on the implementation anyway.
     constexpr double fd_error_tol = 1E-6;
-    for (auto inputs_it{params.function_inputs.begin()};
-         inputs_it != params.function_inputs.end(); inputs_it++) {
-      argument_vector = Eigen::Map<Eigen::RowVectorXd>(inputs_it->data(), 1,
+    for (auto inputs : params.function_inputs) {
+      argument_vector = Eigen::Map<Eigen::RowVectorXd>(inputs.data(), 1,
                                                        params.n_arguments);
       values = function_calculator.f(argument_vector);
       jacobian = function_calculator.grad_f(argument_vector);
@@ -294,7 +311,7 @@ namespace rascal {
         }  // for (double dx...) (displacement magnitudes)
         BOOST_CHECK_SMALL(min_error, fd_error_tol);
       }  // for (int disp_idx...) (displacement directions)
-    }    // for (auto inputs_it...) (function inputs)
+    }    // for (auto inputs...) (function inputs)
   }
 
   struct Hyp1F1RefFixture {
