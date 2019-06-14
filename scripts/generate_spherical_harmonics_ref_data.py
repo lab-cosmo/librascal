@@ -119,7 +119,8 @@ def dump_reference_json():
         alps = list(map(float, alps.reshape(-1).tolist()))
         data.append(dict(max_angular_l=int(l_max), unit_vector=unit_vector,
                             harmonics=harmonics, alps=alps))
-    print(len(data))
+    if verbose:
+        print(len(data))
     with open(path+"tests/reference_data/spherical_harmonics_reference.ubjson",'wb') as f:
         ubjson.dump(data,f)
 
