@@ -182,6 +182,7 @@ namespace rascal {
         // 1);
         this->assoc_legendre_polynom =
             Matrix_t::Zero(this->max_angular + 1, this->max_angular + 1);
+        // TODO(alex) reduce to this->max_angular + 1)
         this->coeff_a =
             Matrix_t::Zero(this->max_angular + 1, 2 * this->max_angular + 1);
         this->coeff_b =
@@ -194,6 +195,7 @@ namespace rascal {
              angular_l++) {
           double lsq = angular_l * angular_l;
           double lm1sq = (angular_l - 1) * (angular_l - 1);
+          // TODO(alex) vectorize
           for (size_t m_count{0}; m_count < angular_l + 1; m_count++) {
             double msq = m_count * m_count;
             this->coeff_a(angular_l, m_count) =
@@ -235,6 +237,7 @@ namespace rascal {
           // for l > 1 : Use the recurrence relation
           // TODO(max-veit) don't bother calculating m =/= 0 if sin(theta) == 0
           //                (z-axis)
+          // avoid making temp by breaking down the operation in 3 parts
           this->assoc_legendre_polynom.row(angular_l)
               .head(angular_l - 1).array() =
               cos_theta * this->assoc_legendre_polynom.row(angular_l - 1)
@@ -246,7 +249,8 @@ namespace rascal {
                         .head(angular_l - 1).array();
           this->assoc_legendre_polynom.row(angular_l)
                .head(angular_l - 1).array() *=
-                 this->coeff_a.row(angular_l).head(angular_l - 1).array();
+                this->coeff_a.row(angular_l).head(angular_l - 1).array();
+
           this->assoc_legendre_polynom(angular_l, angular_l - 1) =
               // cos_theta * sqrt(2 * angular_l + 1) * l_accum;
               l_accum * cos_theta * this->angular_coeffs1(angular_l);
@@ -299,15 +303,18 @@ namespace rascal {
         // The cosine against the z-axis is just the z-component of the
         // direction vector
         double cos_theta = direction[2];
+
         // The less efficient, but more intuitive implementation:
         // double phi = std::atan2(direction[1], direction[0]);
         double sqrt_xy = std::hypot(direction[0], direction[1]);
+
         // For a vector along the z-axis, define phi=0
         double cos_phi{1.0}, sin_phi{0.0};
         if (sqrt_xy >= math::dbl_ftol) {
           cos_phi = direction[0] / sqrt_xy;
           sin_phi = direction[1] / sqrt_xy;
         }
+
         // change cos_sin_m_phi to this->cos_sin_m_phi
         this->compute_assoc_legendre_polynom(cos_theta);
         this->compute_cos_sin_angle_multiples(cos_phi, sin_phi);
@@ -315,8 +322,9 @@ namespace rascal {
         size_t lm_base{0};  // starting point for storage
         for (size_t angular_l{0}; angular_l < this->max_angular + 1;
              angular_l++) {
-          // std::cout << "angular_l: "<< angular_l << std::endl;
-          // uses symmetry of spherical harmonics,
+
+          // computes spherical harmonics based on the Legendre polynomials
+          // and the sin/cos of phi. uses symmetry of spherical harmonics,
           // careful with the storage order
 
           auto legendre_l = this->assoc_legendre_polynom.row(angular_l);
