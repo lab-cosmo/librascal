@@ -30,8 +30,9 @@
 #define TESTS_TEST_REPRESENTATION_MANAGER_HH_
 
 #include "tests.hh"
-#include "test_structure.hh"
 #include "test_adaptor.hh"
+#include "test_math.hh"
+#include "test_structure.hh"
 #include "representations/representation_manager_base.hh"
 #include "representations/representation_manager_sorted_coulomb.hh"
 #include "representations/representation_manager_spherical_expansion.hh"
@@ -42,6 +43,7 @@
 #include "rascal_utility.hh"
 
 #include <tuple>
+#include <memory>
 
 namespace rascal {
 
@@ -328,30 +330,77 @@ namespace rascal {
     size_t max_angular{4};
   };
 
-  template<class RepManager>
+  template<typename RepManager, typename ClusterRef_t>
   struct RepresentationManagerGradientProvider {
 
-    RepresentationManagerGradientProvider(RepManager & representation) :
-      representation{representation} {}
+    RepresentationManagerGradientProvider(
+        RepManager & representation,
+        std::shared_ptr<typename RepManager::Manager_t> structure_manager) :
+      representation{representation}, center_it{structure_manager->begin()} {}
 
     ~RepresentationManagerGradientProvider() = default;
 
-    Eigen::Array<double, 1, Eigen::Dynamic>
-    f(const Eigen::Ref<const Eigen::VectorXd> & atom_positions) {
-      // Update atom positions
-      // Return flattened c_j for each centre j
+    inline void advance_center() { ++(this->center_it); }
+
+    Eigen::Map<Eigen::Array<double, 1, Eigen::Dynamic>>
+    f(const Eigen::Ref<const Eigen::Vector3d> & center_position) {
+      auto center = *center_it;
+      center.get_position() = center_position;
+      representation.compute();
+      size_t n_coeffs{static_cast<size_t>(
+          representation.expansions_coefficients.get_nb_comp())};
+      auto & coeffs_center = representation.expansions_coefficients[center];
+      auto keys_center = representation.expansions_coefficients
+                                         .get_keys(center);
+      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
+        coeffs_pairs(center.size() + 1, // number of atoms, including center
+                     n_coeffs * keys_center.size());
+
+      size_t col_offset{0};
+      for (auto & key : keys_center) {
+        Eigen::Map<Eigen::RowVectorXd> coeffs_flat(coeffs_center[key].data(),
+                                                n_coeffs);
+        coeffs_pairs.block(0, col_offset, 1, n_coeffs) = coeffs_flat;
+        col_offset += n_coeffs;
+      }
+      size_t neigh_row{1};
+      for (auto neigh : center) {
+        auto & coeffs_neigh = representation.expansions_coefficients[neigh];
+        size_t col_offset{0};
+        for (auto & key : keys_center) {
+          Eigen::Map<Eigen::RowVectorXd> coeffs_flat(coeffs_neigh[key].data(),
+                                                  n_coeffs);
+          coeffs_pairs.block(neigh_row, col_offset, 1, n_coeffs) = coeffs_flat;
+          col_offset += n_coeffs;
+        }
+        ++neigh_row;
+      }
+      this->output_size = coeffs_pairs.size();
+      Eigen::Map<Eigen::Array<double, 1, Eigen::Dynamic>> result(
+          coeffs_pairs.data(), coeffs_pairs.size());
+      return result;
     }
 
-    Eigen::Array<double, Eigen::Dynamic, Eigen::Dynamic>
-    grad_f(const Eigen::Ref<const Eigen::VectorXd> & atom_positions) {
-      // Update atom positions
+    Eigen::Array<double, 3, Eigen::Dynamic>
+    grad_f(const Eigen::Ref<const Eigen::Vector3d> & /*center_position*/) {
+      using Return_t = Eigen::Array<double, 3, Eigen::Dynamic>;
+      // Assume f() was already called and updated the position
+      //center_it->position() = center_position;
+      //representation.compute();
+      Eigen::MatrixXd coeffs_gradients =
+        representation.expansions_coefficients_gradient.get_dense_row(
+            *center_it);
       // Return gradient of (flattened c_j for each centre j) (cols)
       // with respect to flattened positions r_i (rows)
+      Return_t result = Return_t::Zero(3, this->output_size);
+      return result;
     }
 
     using Dense_t = typename RepManager::Dense_t;
 
     RepManager & representation;
+    typename RepManager::Manager_t::iterator center_it;
+    size_t output_size{};
 
   };
 
