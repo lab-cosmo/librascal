@@ -218,6 +218,7 @@ namespace rascal {
         using std::sqrt;
         double sin_theta = sqrt(1.0 - pow(cos_theta, 2));
         const double SQRT_INV_2PI = sqrt(0.5 / PI);
+        const double SQRT_THREE_HALF = sqrt(3.0/2.0);
         // Compute the associated Legendre polynomials: l < 2 are special cases
         // These include the normalization factors usually needed in the
         // spherical harmonics
@@ -226,7 +227,7 @@ namespace rascal {
         if (this->max_angular > 0) {
           this->assoc_legendre_polynom(1, 0) =
               cos_theta * SQRT_THREE * SQRT_INV_2PI;
-          l_accum = l_accum * -sqrt(3.0 / 2.0) * sin_theta;
+          l_accum = l_accum * -SQRT_THREE_HALF * sin_theta;
           this->assoc_legendre_polynom(1, 1) = l_accum;
         }
         for (size_t angular_l{2}; angular_l < this->max_angular + 1;
@@ -234,17 +235,18 @@ namespace rascal {
           // for l > 1 : Use the recurrence relation
           // TODO(max-veit) don't bother calculating m =/= 0 if sin(theta) == 0
           //                (z-axis)
-
-          this->assoc_legendre_polynom.row(angular_l).head(angular_l - 1) =
-              (this->coeff_a.row(angular_l).head(angular_l - 1).array() *
-               (cos_theta * this->assoc_legendre_polynom.row(angular_l - 1)
-                                .head(angular_l - 1)
-                                .array() +
+          this->assoc_legendre_polynom.row(angular_l)
+              .head(angular_l - 1).array() =
+              cos_theta * this->assoc_legendre_polynom.row(angular_l - 1)
+                                .head(angular_l - 1).array();
+          this->assoc_legendre_polynom.row(angular_l).
+                head(angular_l - 1).array() +=
                 this->coeff_b.row(angular_l).head(angular_l - 1).array() *
                     this->assoc_legendre_polynom.row(angular_l - 2)
-                        .head(angular_l - 1)
-                        .array()))
-                  .eval();
+                        .head(angular_l - 1).array();
+          this->assoc_legendre_polynom.row(angular_l)
+               .head(angular_l - 1).array() *=
+                 this->coeff_a.row(angular_l).head(angular_l - 1).array();
           this->assoc_legendre_polynom(angular_l, angular_l - 1) =
               // cos_theta * sqrt(2 * angular_l + 1) * l_accum;
               l_accum * cos_theta * this->angular_coeffs1(angular_l);
