@@ -83,7 +83,7 @@ set(ENABLE_PROFILING "OFF" CACHE BOOL
   "If on, adds gprof profiling information to some of the examples. \
   (GNU compilers only)")
 
-  SET(TYPE_ARCHITECTURE "march" CACHE STRING "Choose the type of architecture to compile to in release mode. Default is to let the compiler decide")
+SET(TYPE_ARCHITECTURE "native" CACHE STRING "Choose the type of architecture to compile to in release mode. Default is to let the compiler decide")
 
 
 message(STATUS "Build type is: ${CMAKE_BUILD_TYPE}")
