@@ -45,9 +45,9 @@ namespace rascal {
   class ManagerCollection {
    public:
     using TypeHolder_t = StructureManagerTypeHolder<Manager, AdaptorImplementationPack...>;
-    using Manager_t = TypeHolder_t::type;
+    using Manager_t = typename TypeHolder_t::type;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
-    using ManagerList_t = TypeHolder_t::type_list;
+    using ManagerList_t = typename TypeHolder_t::type_list;
     using Hypers_t = typename Manager_t::Hypers_t;
     using traits = typename Manager_t::traits;
 
@@ -72,6 +72,9 @@ namespace rascal {
     //! Move assignment operator
     ManagerCollection & operator=(ManagerCollection && other) = default;
 
+    inline void set_adaptor_inputs(const Hypers_t& adaptor_inputs) {
+      this->adaptor_inputs = adaptor_inputs;
+    }
     // AtomicStructure<traits::Dim>
     inline void add_structure(const Hypers_t& structure, const Hypers_t& adaptor_inputs) {
       auto manager = make_structure_manager_stack<Manager, AdaptorImplementationPack...>(structure, adaptor_inputs);
@@ -108,7 +111,7 @@ namespace rascal {
         (or list) of json dictionary defining the structure)");
       }
 
-      for (const auto& structure : structures) {
+      for (auto& structure : structures) {
         this->add_structure(structure);
       }
     }
@@ -118,7 +121,25 @@ namespace rascal {
      */
     void add_structures(const std::string& filename) {
       auto structures{json_io::load(filename)};
-      this->add_structures(structures);
+      // for some reason the ase json format is wrapped by an extra [ ]
+      // which makes it an array of size 1 instead of an object
+      // directly indexing the structures
+      if (structures.size() == 1 and structures.is_array()) {
+        structures = structures[0].get<Hypers_t>();
+      }
+      if (structures.count("ids") == 1) {
+        // structures is in the ase format
+        auto ids{structures["ids"].get<std::vector<int>>()};
+        for (auto& idx : ids) {
+          this->add_structure(structures[std::to_string(idx)].get<Hypers_t>());
+        }
+      } else {
+        throw std::runtime_error("The json structure format is not recognized");
+      }
+    }
+
+    inline size_t size() const {
+      return this->managers.size();
     }
 
 
@@ -126,7 +147,7 @@ namespace rascal {
    protected:
     std::vector<ManagerPtr_t> managers{};
     Hypers_t adaptor_inputs{};
-  }
+  };
 
 }
 

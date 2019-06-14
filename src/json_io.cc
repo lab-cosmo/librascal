@@ -27,13 +27,26 @@
 
 #include "json_io.hh"
 
-#include <sstream>
 
 namespace rascal {
 
   namespace json_io {
 
     json load(const std::string& filename) {
+      json data;
+      auto extention{internal::get_filename_extension(filename)};
+      if (extention == "json") {
+        data = load_txt(filename);
+      } else if (extention == "ubjson") {
+        data = load_bin(filename);
+      } else {
+        throw std::runtime_error(std::string("Don't know the extension of ")
+                                 + filename);
+      }
+      return data;
+    }
+
+    json load_txt(const std::string& filename) {
       json j;
       std::ifstream reader(filename);
       if (not reader.is_open()) {
@@ -43,6 +56,12 @@ namespace rascal {
       reader >> j;
       reader.close();
       return j;
+    }
+
+    json load_bin(const std::string& filename) {
+      std::vector<std::uint8_t> ref_data_ubjson;
+      internal::read_binary_file(filename, ref_data_ubjson);
+      return json::from_ubjson(ref_data_ubjson);
     }
 
     /* ---------------------------------------------------------------------- */

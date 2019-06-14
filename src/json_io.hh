@@ -34,8 +34,10 @@
  * documentation.
  */
 #include "json.hpp"
+#include "rascal_utility.hh"
 
 #include <fstream>
+
 
 // For convenience
 using json = nlohmann::json;
@@ -48,7 +50,14 @@ using json = nlohmann::json;
 namespace rascal {
   namespace json_io {
 
+    //! load a json file
     json load(const std::string& filename);
+
+    //! load a json file in text format
+    json load_txt(const std::string& filename);
+
+    //! load a json file in ubjson binary format
+    json load_bin(const std::string& filename);
 
     /**
      * Object to deserialize the content of a JSON file containing Atomic

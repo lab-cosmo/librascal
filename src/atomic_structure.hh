@@ -134,6 +134,11 @@ namespace rascal {
        * fields for the <code>AtomicStructure</code> object defined in the
        * header belonging to this file. Here, just the first one is read.
        */
+
+      if (not s.is_object()) {
+        throw std::runtime_error("The json input should be a dictionary.");
+      }
+
       if (s.count("filename") == 1) {
         auto filename{s["filename"].get<std::string>()};
         this->set_structure(filename);
@@ -143,11 +148,12 @@ namespace rascal {
         json_io::AtomicJsonData json_atoms_object{};
         json_atoms_object = s;
         this->set_structure(json_atoms_object);
-      } else if (s.count("atomic_structure") == 1) {
-        // it is an AtomicStructure so just copy
-        this = s["atomic_structure"];
       } else {
-        throw std::runtime_error("The json input was not understood.");
+        std::string error{"The json input was not understood. The input keys are: "};
+        for (auto& el : s.items()) {
+          error += el.key() + std::string(", ");
+        }
+        throw std::runtime_error(error);
       }
     }
 

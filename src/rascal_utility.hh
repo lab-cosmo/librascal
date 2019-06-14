@@ -330,6 +330,15 @@ namespace rascal {
                  std::istream_iterator<BINARY>());
     }
 
+    inline std::string get_filename_extension(const std::string& filename) {
+      auto const pos = filename.find_last_of(".");
+      std::string extension{""};
+      if(pos != std::string::npos) {
+        extension = filename.substr(pos+1);
+      }
+      return extension;
+    }
+
   }  // namespace internal
 }  // namespace rascal
 
