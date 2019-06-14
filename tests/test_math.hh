@@ -2,6 +2,7 @@
  * file   test_math.hh
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
+ * @author  Max Veit <max.veit@epfl.ch>
  *
  * @date   14 October 2018
  *
