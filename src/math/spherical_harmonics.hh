@@ -234,17 +234,20 @@ namespace rascal {
           // for l > 1 : Use the recurrence relation
           // TODO(max-veit) don't bother calculating m =/= 0 if sin(theta) == 0
           //                (z-axis)
-
-          this->assoc_legendre_polynom.row(angular_l).head(angular_l - 1) =
-              (this->coeff_a.row(angular_l).head(angular_l - 1).array() *
-               (cos_theta * this->assoc_legendre_polynom.row(angular_l - 1)
-                                .head(angular_l - 1)
-                                .array() +
+          // avoid making temp by breaking down the operation in 3 parts
+          this->assoc_legendre_polynom.row(angular_l)
+              .head(angular_l - 1).array() =
+              cos_theta * this->assoc_legendre_polynom.row(angular_l - 1)
+                                .head(angular_l - 1).array();
+          this->assoc_legendre_polynom.row(angular_l).
+                head(angular_l - 1).array() +=
                 this->coeff_b.row(angular_l).head(angular_l - 1).array() *
                     this->assoc_legendre_polynom.row(angular_l - 2)
-                        .head(angular_l - 1)
-                        .array()))
-                  .eval();
+                        .head(angular_l - 1).array();
+          this->assoc_legendre_polynom.row(angular_l)
+               .head(angular_l - 1).array() *=
+                this->coeff_a.row(angular_l).head(angular_l - 1).array();
+
           this->assoc_legendre_polynom(angular_l, angular_l - 1) =
               // cos_theta * sqrt(2 * angular_l + 1) * l_accum;
               l_accum * cos_theta * this->angular_coeffs1(angular_l);
