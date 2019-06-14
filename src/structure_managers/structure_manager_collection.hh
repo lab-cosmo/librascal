@@ -50,7 +50,13 @@ namespace rascal {
     using ManagerList_t = typename TypeHolder_t::type_list;
     using Hypers_t = typename Manager_t::Hypers_t;
     using traits = typename Manager_t::traits;
+    using Data_t = std::vector<ManagerPtr_t>;
 
+   protected:
+    Data_t managers{};
+    Hypers_t adaptor_inputs{};
+
+   public:
     ManagerCollection() = default;
 
     explicit ManagerCollection(const Hypers_t& adaptor_inputs)
@@ -72,10 +78,36 @@ namespace rascal {
     //! Move assignment operator
     ManagerCollection & operator=(ManagerCollection && other) = default;
 
+    /**
+     * Give the ManagerCollection the iterator functionality using Data_t
+     * functionality
+     */
+    using iterator = typename Data_t::iterator;
+    using const_iterator = typename Data_t::const_iterator;
+
+    inline iterator begin() noexcept {
+      return this->managers.begin();
+    }
+    inline const_iterator begin() const noexcept {
+      return return this->managers.begin();
+    }
+
+    inline iterator end() noexcept {
+      return this->managers.end();
+    }
+    inline const_iterator end() const noexcept {
+      return return this->managers.end();
+    }
+
+    //! set the global inputs for the adaptors
     inline void set_adaptor_inputs(const Hypers_t& adaptor_inputs) {
       this->adaptor_inputs = adaptor_inputs;
     }
-    // AtomicStructure<traits::Dim>
+
+
+    /**
+     * functions to add a(several) structures to the collection
+     */
     inline void add_structure(const Hypers_t& structure, const Hypers_t& adaptor_inputs) {
       auto manager = make_structure_manager_stack<Manager, AdaptorImplementationPack...>(structure, adaptor_inputs);
       this->add_structure(manager);
@@ -138,15 +170,11 @@ namespace rascal {
       }
     }
 
+    //! number of structure manager in the collection
     inline size_t size() const {
       return this->managers.size();
     }
 
-
-
-   protected:
-    std::vector<ManagerPtr_t> managers{};
-    Hypers_t adaptor_inputs{};
   };
 
 }

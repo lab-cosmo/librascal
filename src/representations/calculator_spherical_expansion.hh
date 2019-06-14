@@ -436,7 +436,7 @@ namespace rascal {
                                    "radial overlap matrix.");
         }
         Matrix_t eigenvalues = eigensolver.eigenvalues();
-        Eigen::ArrayXd eigs_invsqrt = eigenvalues.array().sqrt().inverse();
+        Eigen::ArrayXd eigs_invsqrt = eigenvalues.array().rsqrt();
         Matrix_t unitary = eigensolver.eigenvectors();
         this->radial_ortho_matrix =
             unitary * eigs_invsqrt.matrix().asDiagonal() * unitary.adjoint();

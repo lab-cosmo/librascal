@@ -1,7 +1,6 @@
 /**
- * file   property_base.hh
+ * file   property_block_sparse.hh
  *
- * @author Till Junge <till.junge@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
  *
  * @date   03 April 2019
@@ -109,9 +108,13 @@ namespace rascal {
       using Map_t = std::map<K, std::tuple<int, int, int>>;
       using Precision_t = typename V::value_type;
       using Data_t = Eigen::Array<Precision_t, Eigen::Dynamic, 1>;
+      using Vector_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, 1>;
+      using VectorRef_t = typename Eigen::Map<Vector_t>;
+      using Self_t = InternallySortedKeyMap<K, V>;
       //! the data holder.
       Data_t data{};
       Map_t map{};
+      bool normalized{false};
 
       // some member types
       using key_type = typename MyMap_t::key_type;
@@ -340,6 +343,7 @@ namespace rascal {
         using ref = typename Eigen::Map<Eigen::VectorXd>;
         auto data_ref{ref(&data[0], data.size())};
         data_ref /= data_ref.norm();
+        this->normalized = true;
       }
 
       inline void multiply_offdiagonal_elements_by(const double & fac) {
@@ -352,6 +356,26 @@ namespace rascal {
             block *= fac;
           }
         }
+      }
+
+      /**
+       * dot product with another internally sorted map
+       */
+      inline Precision_t dot(const Self_t& B) {
+        Precision_t val{0.};
+        for (const auto & elA : this->map) {
+          auto && keyA{elA.first};
+          auto && posA{elA.second};
+          auto vecA{VectorRef_t(&this->data[std::get<0>(posA)],
+                                std::get<1>(posA) * std::get<2>(posA))};
+          if (B.map.count(keyA) == 1) {
+            auto && posB{B.map[keyA]};
+            auto vecB{VectorRef_t(&B.data[std::get<0>(posB)],
+                                std::get<1>(posB) * std::get<2>(posB))};
+            val += vecA * vecB.transpose();
+          }
+        }
+        return val;
       }
 
      private:
@@ -641,6 +665,30 @@ namespace rascal {
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");
       return this->values[id.get_cluster_index(CallerLayer)].get_keys();
+    }
+
+    Manager_t & get_manager() {
+      return static_cast<Manager_t &>(this->base_manager);
+    }
+
+    /**
+     * dot product between property block sparse A and B
+     * assumes order == 1 for the moment should use SFINAE to take care of
+     * the case order == 2
+     */
+    inline Dense_t dot(const Self_t& B) const {
+      Dense_t mat(this->size(), B.size());
+      auto& managerA{this->get_manager()};
+      auto& managerB{B.get_manager()};
+      int i_row{0};
+      for (auto centerA : managerA) {
+        auto& rowA{this->operator[](centerA)};
+        int i_col{0};
+        for (auto centerB : managerB) {
+          auto& rowB{B[centerB]};
+          mat(i_row, i_col) = rowA.dot(rowB);
+        }
+      }
     }
 
    protected:
