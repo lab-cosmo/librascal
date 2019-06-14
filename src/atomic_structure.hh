@@ -142,6 +142,9 @@ namespace rascal {
         json_io::AtomicJsonData json_atoms_object{};
         json_atoms_object = s;
         this->set_structure(json_atoms_object);
+      } else if (s.count("atomic_structure") == 1) {
+        // it is an AtomicStructure so just copy
+        this = s["atomic_structure"];
       } else {
         throw std::runtime_error("The json input was not understood.");
       }
