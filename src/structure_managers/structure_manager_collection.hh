@@ -33,6 +33,7 @@
 #include "structure_managers/property.hh"
 #include "structure_managers/updateable_base.hh"
 #include "rascal_utility.hh"
+#include "json_io.hh"
 #include "atomic_structure.hh"
 
 
@@ -72,12 +73,18 @@ namespace rascal {
     ManagerCollection & operator=(ManagerCollection && other) = default;
 
     // AtomicStructure<traits::Dim>
-    void add_structure(const Hypers_t& structure, const Hypers_t& adaptor_inputs) {
-      make_structure_manager_stack<Manager, AdaptorImplementationPack...>(structure, adaptor_inputs)
+    inline void add_structure(const Hypers_t& structure, const Hypers_t& adaptor_inputs) {
+      auto manager = make_structure_manager_stack<Manager, AdaptorImplementationPack...>(structure, adaptor_inputs);
+      this->add_structure(manager);
     }
 
-    void add_structure(const Hypers_t& structure) {
-      make_structure_manager_stack<Manager, AdaptorImplementationPack...>(structure, this->adaptor_inputs)
+    inline void add_structure(const Hypers_t& structure) {
+      auto manager = make_structure_manager_stack<Manager, AdaptorImplementationPack...>(structure, this->adaptor_inputs);
+      this->add_structure(manager);
+    }
+
+    inline void add_structure(std::shared_ptr<Manager_t>& manager) {
+      this->managers.emplace_back(manager);
     }
 
     void add_structures(const Hypers_t& structures, const Hypers_t& adaptors_inputs) {
@@ -91,17 +98,33 @@ namespace rascal {
       }
 
       for (int i_structure{0}; i_structure < structures.size(); ++i_structure) {
-        this->add_structure(structures[i_structure], adaptors_inputs[i_structure])
+        this->add_structure(structures[i_structure], adaptors_inputs[i_structure]);
+      }
+    }
+
+    void add_structures(const Hypers_t& structures) {
+      if (not structures.is_array()) {
+        throw std::runtime_error(R"(Provide the structures as an array
+        (or list) of json dictionary defining the structure)");
       }
 
+      for (const auto& structure : structures) {
+        this->add_structure(structure);
+      }
+    }
 
+    /**
+     * load structures from a json file
+     */
+    void add_structures(const std::string& filename) {
+      auto structures{json_io::load(filename)};
+      this->add_structures(structures);
     }
 
 
 
    protected:
     std::vector<ManagerPtr_t> managers{};
-
     Hypers_t adaptor_inputs{};
   }
 

@@ -33,6 +33,18 @@ namespace rascal {
 
   namespace json_io {
 
+    json load(const std::string& filename) {
+      json j;
+      std::ifstream reader(filename);
+      if (not reader.is_open()) {
+        throw std::runtime_error(std::string("Could not open the file: ") +
+                                 filename);
+      }
+      reader >> j;
+      reader.close();
+      return j;
+    }
+
     /* ---------------------------------------------------------------------- */
     void to_json(json & j, AtomicJsonData & s) {
       j = json{{"cell", s.cell},

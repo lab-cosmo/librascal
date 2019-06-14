@@ -47,6 +47,9 @@ using json = nlohmann::json;
  */
 namespace rascal {
   namespace json_io {
+
+    json load(const std::string& filename);
+
     /**
      * Object to deserialize the content of a JSON file containing Atomic
      * Simulation Environment (ASE) type atomic structures, the nlohmann::json
