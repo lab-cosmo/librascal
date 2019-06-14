@@ -318,20 +318,18 @@ namespace rascal {
           // std::cout << "angular_l: "<< angular_l << std::endl;
           // uses symmetry of spherical harmonics,
           // careful with the storage order
-          this->harmonics.segment(lm_base + angular_l, angular_l + 1) =
-              this->assoc_legendre_polynom.row(angular_l)
-                  .head(angular_l + 1)
-                  .array() *
-              cos_sin_m_phi.col(0).head(angular_l + 1).transpose().array();
-          this->harmonics.segment(lm_base, angular_l + 1) =
-              (this->assoc_legendre_polynom.row(angular_l)
-                   .head(angular_l + 1)
-                   .array() *
-               cos_sin_m_phi.col(1).head(angular_l + 1).transpose().array())
-                  .reverse();
 
-          this->harmonics(lm_base + angular_l) =
-              this->assoc_legendre_polynom(angular_l, 0) * INV_SQRT_TWO;
+          auto legendre_l = this->assoc_legendre_polynom.row(angular_l);
+
+          this->harmonics.segment(lm_base, angular_l) =
+              (legendre_l.segment(1,angular_l).array() *
+               cos_sin_m_phi.col(1).segment(1,angular_l).transpose().array())
+                  .reverse();
+          this->harmonics(lm_base + angular_l) = legendre_l(0) * INV_SQRT_TWO;
+          this->harmonics.segment(lm_base + angular_l +1, angular_l) =
+              legendre_l.segment(1, angular_l + 1).array() *
+              cos_sin_m_phi.col(0).segment(1, angular_l).transpose().array();
+
           lm_base += 2 * angular_l + 1;
         }  // for (l in [0, lmax])
       }
@@ -360,16 +358,15 @@ namespace rascal {
        */
       void compute_cos_sin_angle_multiples(const double & cos_phi,
                                            const double & sin_phi) {
-        for (size_t m_count{0}; m_count < this->max_angular + 1; m_count++) {
-          if (m_count == 0) {
-            this->cos_sin_m_phi.row(m_count) << 1.0, 0.0;
-          } else if (m_count == 1) {
-            this->cos_sin_m_phi.row(m_count) << cos_phi, sin_phi;
-          } else {
-            this->cos_sin_m_phi.row(m_count) =
-                2.0 * cos_phi * this->cos_sin_m_phi.row(m_count - 1) -
+        this->cos_sin_m_phi.row(0) << 1.0, 0.0;
+        if (this->max_angular>0) {
+          this->cos_sin_m_phi.row(1) << cos_phi, sin_phi;
+        }
+        auto two_cos_phi = cos_phi + cos_phi;
+        for (size_t m_count{2}; m_count < this->max_angular + 1; m_count++) {
+          this->cos_sin_m_phi.row(m_count) =
+                two_cos_phi * this->cos_sin_m_phi.row(m_count - 1) -
                 this->cos_sin_m_phi.row(m_count - 2);
-          }
         }
       }
 
