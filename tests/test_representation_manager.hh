@@ -404,6 +404,51 @@ namespace rascal {
 
   };
 
+  template<typename StructureManager_t>
+  class RepresentationManagerGradientFixture :
+    public GradientTestFixture {
+
+   public:
+    RepresentationManagerGradientFixture(
+        std::string filename, std::shared_ptr<StructureManager_t> structure) :
+    structure{structure}, center_it{structure->begin()} {
+      json input_data;
+      std::ifstream input_file{filename};
+      input_file >> input_data;
+
+      this->function_inputs = this->get_function_inputs();
+      this->displacement_directions =
+        this->get_displacement_directions(input_data, this->n_arguments);
+      this->verbosity = get_verbosity(input_data);
+    }
+
+    ~RepresentationManagerGradientFixture() = default;
+
+    inline void advance_center() {
+      ++(this->center_it);
+      this->function_inputs = get_function_inputs();
+    };
+
+    StdVector2Dim_t get_function_inputs() {
+      StdVector2Dim_t inputs_new{};
+      auto center_pos = (*center_it).get_position();
+      inputs_new.emplace_back(center_pos.data(),
+                              center_pos.data() + center_pos.size());
+      return inputs_new;
+    }
+
+    using StdVector2Dim_t = std::vector<std::vector<double>>;
+
+    //StdVector2Dim_t function_inputs{};
+    //Eigen::MatrixXd displacement_directions{};
+    const static size_t n_arguments = 3;
+    //VerbosityValue verbosity{VerbosityValue::NORMAL};
+
+    std::shared_ptr<StructureManager_t> structure;
+    typename StructureManager_t::iterator center_it;
+
+  };
+
   struct MultipleStructureSortedCoulomb
       : MultipleStructureManagerNLStrictFixture {
     using Parent = MultipleStructureManagerNLStrictFixture;
