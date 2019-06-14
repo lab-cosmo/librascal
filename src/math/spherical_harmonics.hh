@@ -306,21 +306,22 @@ namespace rascal {
 
         // The less efficient, but more intuitive implementation:
         // double phi = std::atan2(direction[1], direction[0]);
-        double sqrt_xy = std::hypot(direction[0], direction[1]);
-
-        // For a vector along the z-axis, define phi=0
+        double sq_xy = direction[0]*direction[0] + direction[1]*direction[1];
         double cos_phi{1.0}, sin_phi{0.0};
-        if (sqrt_xy >= math::dbl_ftol) {
-          cos_phi = direction[0] / sqrt_xy;
-          sin_phi = direction[1] / sqrt_xy;
+        if (sq_xy >= math::dbl_ftol) {
+          // directly compute the inverse square root, which is faster
+          double i_sqrt_xy = 1.0/sqrt(sq_xy);
+          cos_phi = direction[0] * i_sqrt_xy;
+          sin_phi = direction[1] * i_sqrt_xy;
         }
 
         // change cos_sin_m_phi to this->cos_sin_m_phi
         this->compute_assoc_legendre_polynom(cos_theta);
         this->compute_cos_sin_angle_multiples(cos_phi, sin_phi);
 
-        size_t lm_base{0};  // starting point for storage
-        for (size_t angular_l{0}; angular_l < this->max_angular + 1;
+        this->harmonics(0) = this->assoc_legendre_polynom(0,0) * INV_SQRT_TWO;
+        size_t lm_base{1};  // starting point for storage
+        for (size_t angular_l{1}; angular_l < this->max_angular + 1;
              angular_l++) {
 
           // computes spherical harmonics based on the Legendre polynomials
