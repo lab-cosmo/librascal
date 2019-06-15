@@ -219,9 +219,9 @@ namespace rascal {
       void compute_assoc_legendre_polynom(double cos_theta) {
         using math::pow;
         using std::sqrt;
-        double sin_theta = sqrt(1.0 - cos_theta*cos_theta);
+        double sin_theta = sqrt(1.0 - cos_theta * cos_theta);
         const double SQRT_INV_2PI = sqrt(0.5 / PI);
-        const double SQRT_THREE_HALF = sqrt(3.0/2.0);
+        const double SQRT_THREE_HALF = sqrt(3.0 / 2.0);
         // Compute the associated Legendre polynomials: l < 2 are special cases
         // These include the normalization factors usually needed in the
         // spherical harmonics
@@ -241,17 +241,22 @@ namespace rascal {
 
           // avoid making temp by breaking down the operation in 3 parts
           this->assoc_legendre_polynom.row(angular_l)
-              .head(angular_l - 1).array() =
+              .head(angular_l - 1)
+              .array() =
               cos_theta * this->assoc_legendre_polynom.row(angular_l - 1)
-                                .head(angular_l - 1).array();;
-          this->assoc_legendre_polynom.row(angular_l).
-                head(angular_l - 1).array() +=
-                this->coeff_b.row(angular_l).head(angular_l - 1).array() *
-                    this->assoc_legendre_polynom.row(angular_l - 2)
-                        .head(angular_l - 1).array();
+                              .head(angular_l - 1)
+                              .array();
           this->assoc_legendre_polynom.row(angular_l)
-               .head(angular_l - 1).array() *=
-                this->coeff_a.row(angular_l).head(angular_l - 1).array();
+              .head(angular_l - 1)
+              .array() +=
+              this->coeff_b.row(angular_l).head(angular_l - 1).array() *
+              this->assoc_legendre_polynom.row(angular_l - 2)
+                  .head(angular_l - 1)
+                  .array();
+          this->assoc_legendre_polynom.row(angular_l)
+              .head(angular_l - 1)
+              .array() *=
+              this->coeff_a.row(angular_l).head(angular_l - 1).array();
 
           this->assoc_legendre_polynom(angular_l, angular_l - 1) =
               l_accum * cos_theta * this->angular_coeffs1(angular_l);
@@ -307,11 +312,12 @@ namespace rascal {
 
         // The less efficient, but more intuitive implementation:
         // double phi = std::atan2(direction[1], direction[0]);
-        double sq_xy = direction[0]*direction[0] + direction[1]*direction[1];
+        double sq_xy =
+            direction[0] * direction[0] + direction[1] * direction[1];
         double cos_phi{1.0}, sin_phi{0.0};
         if (sq_xy >= math::dbl_ftol) {
           // directly compute the inverse square root, which is faster
-          double i_sqrt_xy = 1.0/sqrt(sq_xy);
+          double i_sqrt_xy = 1.0 / sqrt(sq_xy);
           cos_phi = direction[0] * i_sqrt_xy;
           sin_phi = direction[1] * i_sqrt_xy;
         }
@@ -320,23 +326,22 @@ namespace rascal {
         this->compute_assoc_legendre_polynom(cos_theta);
         this->compute_cos_sin_angle_multiples(cos_phi, sin_phi);
 
-        this->harmonics(0) = this->assoc_legendre_polynom(0,0) * INV_SQRT_TWO;
+        this->harmonics(0) = this->assoc_legendre_polynom(0, 0) * INV_SQRT_TWO;
         size_t lm_base{1};  // starting point for storage
         for (size_t angular_l{1}; angular_l < this->max_angular + 1;
              angular_l++) {
-
           // computes spherical harmonics based on the Legendre polynomials
           // and the sin/cos of phi. uses symmetry of spherical harmonics,
           // careful with the storage order
 
-          auto &&legendre_l = this->assoc_legendre_polynom.row(angular_l);
+          auto && legendre_l = this->assoc_legendre_polynom.row(angular_l);
 
           this->harmonics.segment(lm_base, angular_l) =
-              (legendre_l.segment(1,angular_l).array() *
-               cos_sin_m_phi.col(1).segment(1,angular_l).transpose().array())
+              (legendre_l.segment(1, angular_l).array() *
+               cos_sin_m_phi.col(1).segment(1, angular_l).transpose().array())
                   .reverse();
           this->harmonics(lm_base + angular_l) = legendre_l(0) * INV_SQRT_TWO;
-          this->harmonics.segment(lm_base + angular_l +1, angular_l) =
+          this->harmonics.segment(lm_base + angular_l + 1, angular_l) =
               legendre_l.segment(1, angular_l).array() *
               cos_sin_m_phi.col(0).segment(1, angular_l).transpose().array();
 
@@ -369,14 +374,14 @@ namespace rascal {
       void compute_cos_sin_angle_multiples(const double & cos_phi,
                                            const double & sin_phi) {
         this->cos_sin_m_phi.row(0) << 1.0, 0.0;
-        if (this->max_angular>0) {
+        if (this->max_angular > 0) {
           this->cos_sin_m_phi.row(1) << cos_phi, sin_phi;
         }
         auto two_cos_phi = cos_phi + cos_phi;
         for (size_t m_count{2}; m_count < this->max_angular + 1; m_count++) {
           this->cos_sin_m_phi.row(m_count) =
-                two_cos_phi * this->cos_sin_m_phi.row(m_count - 1) -
-                this->cos_sin_m_phi.row(m_count - 2);
+              two_cos_phi * this->cos_sin_m_phi.row(m_count - 1) -
+              this->cos_sin_m_phi.row(m_count - 2);
         }
       }
 

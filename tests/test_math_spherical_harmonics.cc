@@ -49,7 +49,7 @@ namespace rascal {
         std::cout << ">> " << func.get_harmonics() << std::endl;
       }
       double rel_error{(func.get_harmonics() - harmonics_ref).norm()};
-      BOOST_CHECK_LE(rel_error, 2*math::dbl_ftol);
+      BOOST_CHECK_LE(rel_error, 2 * math::dbl_ftol);
       if (verbose) {
         std::cout << ">> Boost check perfomed." << std::endl;
         std::cout << std::endl;

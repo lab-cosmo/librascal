@@ -54,8 +54,8 @@ using Representation_t = RepresentationManagerSOAP<
 
 int main(int argc, char * argv[]) {
   if (argc < 3) {
-    std::cerr << "Must provide atomic structure json filename " 
-              << "and number of iterations as arguments."<<std::endl;
+    std::cerr << "Must provide atomic structure json filename "
+              << "and number of iterations as arguments." << std::endl;
     return -1;
   }
 

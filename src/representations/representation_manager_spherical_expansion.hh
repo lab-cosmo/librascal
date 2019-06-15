@@ -465,27 +465,36 @@ namespace rascal {
         Eigen::ArrayXd a_b_l{Eigen::rsqrt(fac_a + this->fac_b.array())};
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           this->radial_integral_neighbour(radial_n, 0) =
-                                pow(a_b_l(radial_n), 3+radial_n);
+              pow(a_b_l(radial_n), 3 + radial_n);
         }
         // seems like vetorization does not improve things here because it is
         // not alligned ?
-        for (size_t angular_l{1}; angular_l < this->max_angular + 1; ++angular_l) {
-          this->radial_integral_neighbour.col(angular_l) = (this->radial_integral_neighbour.col(angular_l-1).array() * a_b_l).matrix();
+        for (size_t angular_l{1}; angular_l < this->max_angular + 1;
+             ++angular_l) {
+          this->radial_integral_neighbour.col(angular_l) =
+              (this->radial_integral_neighbour.col(angular_l - 1).array() *
+               a_b_l)
+                  .matrix();
         }
         // for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
         //   double a_b_l{1. / sqrt(fac_a + this->fac_b[radial_n])};
-        //   this->radial_integral_neighbour(radial_n, 0) = pow(a_b_l, 3 + radial_n);
+        //   this->radial_integral_neighbour(radial_n, 0) = pow(a_b_l, 3 +
+        //   radial_n);
 
         //   for (size_t angular_l{1}; angular_l < this->max_angular + 1;
         //        angular_l++) {
         //     this->radial_integral_neighbour(radial_n, angular_l) =
-        //         this->radial_integral_neighbour(radial_n, angular_l - 1) * a_b_l;
+        //         this->radial_integral_neighbour(radial_n, angular_l - 1) *
+        //         a_b_l;
         //   }
         // }
 
         this->hyp1f1_calculator.calc(distance, fac_a, this->fac_b);
 
-        this->radial_integral_neighbour.array() *= (this->hyp1f1_calculator.get_values() * distance_fac_a_l.asDiagonal()).array();
+        this->radial_integral_neighbour.array() *=
+            (this->hyp1f1_calculator.get_values() *
+             distance_fac_a_l.asDiagonal())
+                .array();
 
         return Matrix_Ref(this->radial_integral_neighbour);
       }
@@ -909,9 +918,9 @@ namespace rascal {
       }  // for (neigh : center)
 
       // Normalize and orthogonalize the radial coefficients
-      coefficients_center.lhs_dot(radial_integral->radial_norm_factors.asDiagonal());
+      coefficients_center.lhs_dot(
+          radial_integral->radial_norm_factors.asDiagonal());
       coefficients_center.lhs_dot(radial_integral->radial_ortho_matrix);
-
     }  // for (center : structure_manager)
   }    // compute()
 
