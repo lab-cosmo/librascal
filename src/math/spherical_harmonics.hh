@@ -164,10 +164,9 @@ namespace rascal {
       Vector_t angular_coeffs1{};
       Vector_t angular_coeffs2{};
       Vector_t harmonics{};
-      Matrix_t assoc_legendre_polynom{};
-      MatrixX2_t cos_sin_m_phi{};
-      Matrix_t coeff_a{};
-      Matrix_t coeff_b{};
+      Vector_t cos_sin_m_phi{};
+      Vector_t coeff_a{};
+      Vector_t coeff_b{};
 
      public:
       SphericalHarmonics() {}
@@ -177,33 +176,31 @@ namespace rascal {
         using math::pow;
         using std::sqrt;
         this->max_angular = max_angular;
-        /// Technically abs(sin(θ)), but θ only goes from [0, π)
-        // double sin_theta = sqrt(1.0 - pow(cos_theta, 2));
-        // Matrix_t assoc_legendre_polynom(max_angular + 1, max_angular +
-        // 1);
-        this->assoc_legendre_polynom =
-            Matrix_t::Zero(this->max_angular + 1, this->max_angular + 1);
-        // TODO(alex) reduce to this->max_angular + 1)
-        this->coeff_a =
-            Matrix_t::Zero(this->max_angular + 1, 2 * this->max_angular + 1);
-        this->coeff_b =
-            Matrix_t::Zero(this->max_angular + 1, 2 * this->max_angular + 1);
+
+        // TODO(alex) reduce to (this->max_angular + 1)**2
+        this->coeff_a = Vector_t::Zero((this->max_angular + 1) *
+                                       (this->max_angular + 2) / 2);
+        this->coeff_b = Vector_t::Zero((this->max_angular + 1) *
+                                       (this->max_angular + 2) / 2);
         this->harmonics =
             Vector_t::Zero((this->max_angular + 1) * (this->max_angular + 1));
-        this->cos_sin_m_phi = MatrixX2_t::Zero(this->max_angular + 1, 2);
+        this->cos_sin_m_phi = Vector_t::Zero(2 * this->max_angular + 1);
 
-        for (size_t angular_l{0}; angular_l < this->max_angular + 1;
+        size_t lm_base{1};
+        for (size_t angular_l{1}; angular_l < this->max_angular + 1;
              angular_l++) {
           double lsq = angular_l * angular_l;
           double lm1sq = (angular_l - 1) * (angular_l - 1);
           // TODO(alex) vectorize
-          for (size_t m_count{0}; m_count < angular_l + 1; m_count++) {
+          // coefficients are undefined for l=0 and m=l
+          for (size_t m_count{0}; m_count < angular_l; m_count++) {
             double msq = m_count * m_count;
-            this->coeff_a(angular_l, m_count) =
+            this->coeff_a(lm_base + m_count) =
                 sqrt((4 * lsq - 1.0) / (lsq - msq));
-            this->coeff_b(angular_l, m_count) =
+            this->coeff_b(lm_base + m_count) =
                 -1.0 * sqrt((lm1sq - msq) / (4 * lm1sq - 1.0));
           }
+          lm_base += angular_l + 1;
         }
         // this->angular_coeffs1.reserve(this->max_angular);
         this->angular_coeffs1 = Vector_t::Zero(this->max_angular + 1);
@@ -217,22 +214,29 @@ namespace rascal {
 
       // computation from here
       void compute_assoc_legendre_polynom(double cos_theta) {
+        // compute the associated Legendre polynomials storing the results
+        // in the same array that will be used to return the SPH. this saves
+        // time later on
+
         using math::pow;
         using std::sqrt;
-        double sin_theta = sqrt(1.0 - cos_theta * cos_theta);
+        double sin_theta = std::sqrt(1.0 - cos_theta * cos_theta);
         const double SQRT_INV_2PI = sqrt(0.5 / PI);
         const double SQRT_THREE_HALF = sqrt(3.0 / 2.0);
+
         // Compute the associated Legendre polynomials: l < 2 are special cases
         // These include the normalization factors usually needed in the
         // spherical harmonics
         double l_accum{SQRT_INV_2PI};
-        this->assoc_legendre_polynom(0, 0) = SQRT_INV_2PI;
-        if (this->max_angular > 0) {
-          this->assoc_legendre_polynom(1, 0) =
-              cos_theta * SQRT_THREE * SQRT_INV_2PI;
-          l_accum = l_accum * -SQRT_THREE_HALF * sin_theta;
-          this->assoc_legendre_polynom(1, 1) = l_accum;
+        this->harmonics(0) = SQRT_INV_2PI;
+        if (max_angular > 0) {
+          this->harmonics(2) = cos_theta * SQRT_THREE * SQRT_INV_2PI;
+          l_accum = -SQRT_THREE_HALF * l_accum * sin_theta;
+          this->harmonics(1) = this->harmonics(3) = l_accum;
         }
+
+        // keep three pointers to quickly write the recursion
+        size_t lm_minus_2{0}, lm_minus_1{1}, lm_base{4}, coeff_base{3};
         for (size_t angular_l{2}; angular_l < this->max_angular + 1;
              angular_l++) {
           // for l > 1 : Use the recurrence relation
@@ -240,28 +244,37 @@ namespace rascal {
           //                (z-axis)
 
           // avoid making temp by breaking down the operation in 3 parts
-          this->assoc_legendre_polynom.row(angular_l)
-              .head(angular_l - 1)
-              .array() =
-              cos_theta * this->assoc_legendre_polynom.row(angular_l - 1)
-                              .head(angular_l - 1)
-                              .array();
-          this->assoc_legendre_polynom.row(angular_l)
-              .head(angular_l - 1)
-              .array() +=
-              this->coeff_b.row(angular_l).head(angular_l - 1).array() *
-              this->assoc_legendre_polynom.row(angular_l - 2)
-                  .head(angular_l - 1)
-                  .array();
-          this->assoc_legendre_polynom.row(angular_l)
-              .head(angular_l - 1)
-              .array() *=
-              this->coeff_a.row(angular_l).head(angular_l - 1).array();
+          // P_lm = P_(l-1)m*cos(theta)
+          this->harmonics.segment(lm_base + angular_l, angular_l - 1).array() =
+              this->harmonics.segment(lm_minus_1 + angular_l - 1, angular_l - 1)
+                      .array() *
+                  cos_theta +  // P_lm += P_(l-2)m*coeff_b
+              this->harmonics.segment(lm_minus_2 + angular_l - 2, angular_l - 1)
+                      .array() *
+                  this->coeff_b.segment(coeff_base, angular_l - 1).array();
 
-          this->assoc_legendre_polynom(angular_l, angular_l - 1) =
+          // P_lm *= coeff_a
+          this->harmonics.segment(lm_base + angular_l, angular_l - 1).array() *=
+              this->coeff_a.segment(coeff_base, angular_l - 1).array();
+
+          // sets the high-l Legendre polynomials that cannot be obtained
+          // from the same recursive expression
+          this->harmonics(lm_base + 2 * angular_l - 1) =
               l_accum * cos_theta * this->angular_coeffs1(angular_l);
           l_accum = l_accum * sin_theta * this->angular_coeffs2(angular_l);
-          this->assoc_legendre_polynom(angular_l, angular_l) = l_accum;
+          this->harmonics(lm_base + 2 * angular_l) = l_accum;
+
+          // copy the Legendre polynomials in the negative-m part of the
+          // SPH array, so as to accelerate the combination with cos_sin_m_phi
+          // later on
+          this->harmonics.segment(lm_base, angular_l) =
+              this->harmonics.segment(lm_base + angular_l + 1, angular_l)
+                  .reverse();
+
+          lm_minus_2 = lm_minus_1;
+          lm_minus_1 = lm_base;
+          lm_base += 2 * angular_l + 1;
+          coeff_base += angular_l + 1;
         }
       }
 
@@ -322,30 +335,22 @@ namespace rascal {
           sin_phi = direction[1] * i_sqrt_xy;
         }
 
-        // change cos_sin_m_phi to this->cos_sin_m_phi
         this->compute_assoc_legendre_polynom(cos_theta);
         this->compute_cos_sin_angle_multiples(cos_phi, sin_phi);
 
-        this->harmonics(0) = this->assoc_legendre_polynom(0, 0) * INV_SQRT_TWO;
-        size_t lm_base{1};  // starting point for storage
-        for (size_t angular_l{1}; angular_l < this->max_angular + 1;
-             angular_l++) {
+        this->harmonics(0) *= INV_SQRT_TWO;
+
+        size_t lm_base{1}, lm_size{3};  // starting point for storage
+        for (size_t angular_l{1}; angular_l < max_angular + 1; ++angular_l) {
           // computes spherical harmonics based on the Legendre polynomials
           // and the sin/cos of phi. uses symmetry of spherical harmonics,
           // careful with the storage order
 
-          auto && legendre_l = this->assoc_legendre_polynom.row(angular_l);
+          this->harmonics.segment(lm_base, lm_size).array() *=
+              cos_sin_m_phi.segment(max_angular - angular_l, lm_size).array();
 
-          this->harmonics.segment(lm_base, angular_l) =
-              (legendre_l.segment(1, angular_l).array() *
-               cos_sin_m_phi.col(1).segment(1, angular_l).transpose().array())
-                  .reverse();
-          this->harmonics(lm_base + angular_l) = legendre_l(0) * INV_SQRT_TWO;
-          this->harmonics.segment(lm_base + angular_l + 1, angular_l) =
-              legendre_l.segment(1, angular_l).array() *
-              cos_sin_m_phi.col(0).segment(1, angular_l).transpose().array();
-
-          lm_base += 2 * angular_l + 1;
+          lm_base += lm_size;
+          lm_size += 2;
         }  // for (l in [0, lmax])
       }
 
@@ -364,33 +369,55 @@ namespace rascal {
        *
        * @param sin_phi Value of sin(φ) to start the relation
        *
-       * @param max_m Compute up to a maximum value of max_m (inclusive)
-       *
        * @return cos_sin_m_phi
-       *        (Eigen)matrix containing the results.
-       *        Sized max_m by 2 with the cos(mφ) stored in the first column
-       *        and sin(mφ) in the second column, m being the row index
+       *        (Eigen)vector containing the results.
+       *        Sized 2*lmax+1 contains 1/sqrt(2) in the position lmax,
+       *        and then cos(mφ) in positions lmax+m
+       *        and sin(mφ) in the positions lmax-m.
+       *        The ordering is best suited to build the SPH later on.
        */
+
       void compute_cos_sin_angle_multiples(const double & cos_phi,
                                            const double & sin_phi) {
-        this->cos_sin_m_phi.row(0) << 1.0, 0.0;
-        if (this->max_angular > 0) {
-          this->cos_sin_m_phi.row(1) << cos_phi, sin_phi;
-        }
-        auto two_cos_phi = cos_phi + cos_phi;
-        for (size_t m_count{2}; m_count < this->max_angular + 1; m_count++) {
-          this->cos_sin_m_phi.row(m_count) =
-              two_cos_phi * this->cos_sin_m_phi.row(m_count - 1) -
-              this->cos_sin_m_phi.row(m_count - 2);
+        cos_sin_m_phi(max_angular) = INV_SQRT_TWO;
+        if (max_angular > 0) {
+          cos_sin_m_phi(max_angular + 1) = cos_phi;
+          cos_sin_m_phi(max_angular - 1) = sin_phi;
+          if (max_angular > 1) {
+            auto two_cos_phi = cos_phi + cos_phi;
+            cos_sin_m_phi(max_angular + 2) = two_cos_phi * cos_phi - 1.0;
+            cos_sin_m_phi(max_angular - 2) = two_cos_phi * sin_phi;
+
+            // sections of cos_sin_m associated to cosines and sines
+            auto && cos_m_phi =
+                cos_sin_m_phi.segment(max_angular, max_angular + 1);
+            auto && sin_m_phi =
+                cos_sin_m_phi.segment(0, max_angular + 1).reverse();
+
+            for (size_t m{3}; m < max_angular + 1; ++m) {
+              cos_m_phi(m) = two_cos_phi * cos_m_phi(m - 1) - cos_m_phi(m - 2);
+              sin_m_phi(m) = two_cos_phi * sin_m_phi(m - 1) - sin_m_phi(m - 2);
+            }
+          }
         }
       }
 
-      inline MatrixX2_Ref get_cos_sin_m_phi() {
-        return MatrixX2_Ref(this->cos_sin_m_phi);
+      inline Vector_Ref get_cos_sin_m_phi() {
+        return Vector_Ref(this->cos_sin_m_phi);
       }
 
-      inline Matrix_Ref get_assoc_legendre_polynom() {
-        return Matrix_Ref(this->assoc_legendre_polynom);
+      inline Matrix_t get_assoc_legendre_polynom() {
+        // compatibility - returns associated legendre polynomials
+        // from the spherical harmonics
+        Matrix_t alps{
+            Matrix_t::Zero(this->max_angular + 1, this->max_angular + 1)};
+        size_t lm_base{0};  // starting point for storage
+        for (size_t angular_l{0}; angular_l < max_angular + 1; angular_l++) {
+          alps.row(angular_l).head(angular_l + 1) =
+              this->harmonics.segment(lm_base + angular_l, angular_l + 1);
+          lm_base += 2 * angular_l + 1;
+        }
+        return alps;
       }
 
       inline Vector_Ref get_harmonics() { return Vector_Ref(this->harmonics); }

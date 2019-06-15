@@ -123,7 +123,7 @@ int main(int argc, char * argv[]) {
   finish = std::chrono::high_resolution_clock::now();
 
   elapsed = finish - start;
-  std::cout << "Compute represenation"
+  std::cout << "Compute representation"
             << " elapsed: " << elapsed.count() / n_iter << " seconds"
             << std::endl;
 

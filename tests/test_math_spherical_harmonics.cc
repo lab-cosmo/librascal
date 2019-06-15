@@ -100,7 +100,8 @@ namespace rascal {
 
       // computing with ref parameters with our spherical harmonic function
       func.precompute(max_angular_l);
-      func.calc(unit_vector);
+
+      func.compute_assoc_legendre_polynom(unit_vector[2]);
       if (verbose) {
         std::cout << ">> computed associated legendre polynomial: "
                   << std::endl;
