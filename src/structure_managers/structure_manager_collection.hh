@@ -32,6 +32,7 @@
 #include "structure_managers/make_structure_manager.hh"
 #include "structure_managers/property.hh"
 #include "structure_managers/updateable_base.hh"
+#include "math/math_utils.hh"
 #include "rascal_utility.hh"
 #include "json_io.hh"
 #include "atomic_structure.hh"
@@ -44,6 +45,7 @@ namespace rascal {
             template <class> class... AdaptorImplementationPack>
   class ManagerCollection {
    public:
+    using Self_t = ManagerCollection<Manager, AdaptorImplementationPack...>;
     using TypeHolder_t = StructureManagerTypeHolder<Manager, AdaptorImplementationPack...>;
     using Manager_t = typename TypeHolder_t::type;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
@@ -51,6 +53,7 @@ namespace rascal {
     using Hypers_t = typename Manager_t::Hypers_t;
     using traits = typename Manager_t::traits;
     using Data_t = std::vector<ManagerPtr_t>;
+    using math::Matrix_t;
 
    protected:
     Data_t managers{};
@@ -78,6 +81,7 @@ namespace rascal {
 
     //! Move assignment operator
     ManagerCollection & operator=(ManagerCollection && other) = default;
+
 
     /**
      * Give the ManagerCollection the iterator functionality using Data_t
