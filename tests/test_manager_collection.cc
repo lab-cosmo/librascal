@@ -30,6 +30,7 @@
 #include "test_manager_collection.hh"
 
 namespace rascal {
+  
   BOOST_AUTO_TEST_SUITE(manager_collection_test);
 
   using fixtures_test = boost::mpl::list<ManagerNLCollectionFixture>;

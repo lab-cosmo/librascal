@@ -29,6 +29,8 @@
 #include "structure_managers/adaptor_strict.hh"
 #include "structure_managers/adaptor_neighbour_list.hh"
 #include "structure_managers/make_structure_manager.hh"
+#include "structure_managers/structure_manager_collection.hh"
+
 #include "rascal_utility.hh"
 #include "representations/calculator_sorted_coulomb.hh"
 #include "representations/calculator_spherical_expansion.hh"
@@ -50,51 +52,59 @@ using namespace rascal;  // NOLINT
 // using Representation_t = CalculatorSphericalInvariants;
 
 using Manager_t = AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>;
-using Representation_t = CalculatorSortedCoulomb;
+using Representation_t = CalculatorSphericalInvariants;
 using Property_t = typename Representation_t::template Property_t<Manager_t>;
+using ManagerCollection_t = ManagerCollection<StructureManagerCenters,
+                                   AdaptorNeighbourList, AdaptorStrict>;
+
 int main() {
-  std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+  std::string filename{"reference_data/dft-smiles_500.ubjson"};
+
   double cutoff{3.};
-  json hypers{{"sorting_algorithm", "row_norm"},
-              {"central_cutoff", cutoff},
-              {"size", 10},
-              {"interaction_cutoff", 1e6},
-              {"central_decay", -1},
-              {"interaction_decay", -1}};
+  json hypers{{"max_radial", 6},
+              {"max_angular", 6},
+              {"soap_type", "PowerSpectrum"},
+              {"normalize", true}};
 
-  // json fc_hypers{{"type", "Cosine"},
-  //                {"cutoff", {{"value", cutoff}, {"unit", "A"}}},
-  //                {"smooth_width", {{"value", 0.}, {"unit", "A"}}}};
-  // json sigma_hypers{{"type", "Constant"},
-  //                   {"gaussian_sigma", {{"value", 0.4}, {"unit", "A"}}}};
+  json fc_hypers{{"type", "Cosine"},
+                 {"cutoff", {{"value", cutoff}, {"unit", "A"}}},
+                 {"smooth_width", {{"value", 0.5}, {"unit", "A"}}}};
+  json sigma_hypers{{"type", "Constant"},
+                    {"gaussian_sigma", {{"value", 0.4}, {"unit", "A"}}}};
 
-  // hypers["cutoff_function"] = fc_hypers;
-  // hypers["gaussian_density"] = sigma_hypers;
-  // hypers["radial_contribution"] = {{"type", "GTO"}};
+  hypers["cutoff_function"] = fc_hypers;
+  hypers["gaussian_density"] = sigma_hypers;
+  hypers["radial_contribution"] = {{"type", "GTO"}};
 
   json structure{{"filename", filename}};
   json adaptors;
   json ad1{{"name", "AdaptorNeighbourList"},
            {"initialization_arguments",
-                    {{"cutoff", cutoff}, {"consider_ghost_neighbours", false}}}};
+            {{"cutoff", cutoff}, {"consider_ghost_neighbours", false},
+            {"skin", 0.}}}};
   json ad2{{"name", "AdaptorStrict"},
            {"initialization_arguments", {{"cutoff", cutoff}}}};
   adaptors.emplace_back(ad1);
   adaptors.emplace_back(ad2);
-  auto manager =
-          make_structure_manager_stack<StructureManagerCenters,
-                  AdaptorNeighbourList, AdaptorStrict>(
-                  structure, adaptors);
-  Representation_t representation{ hypers};
-  representation.compute(manager);
 
-  auto property_name{representation.get_name()};
-  auto&& property{manager->template get_validated_property_ref<Property_t>(property_name)};
+  // auto manager =
+  //         make_structure_manager_stack<StructureManagerCenters,
+  //                 AdaptorNeighbourList, AdaptorStrict>(
+  //                 structure, adaptors);
+  ManagerCollection_t collection{adaptors};
+  // collection.set_adaptor_inputs(adaptors);
+
+  collection.add_structures(filename, 0, 20);
+  std::cout << collection.size() << std::endl;
+
+  Representation_t representation{hypers};
+  representation.compute(collection);
+
+  // auto property_name{representation.get_name()};
+  // auto&& property{manager->template get_validated_property_ref<Property_t>(property_name)};
 
 
-  auto test_representation{property.get_dense_rep()};
-
-  
+  // auto test_representation{property.get_dense_rep()};
 
 
   // TODELETE

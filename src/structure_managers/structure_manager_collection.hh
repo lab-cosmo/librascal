@@ -59,8 +59,9 @@ namespace rascal {
    public:
     ManagerCollection() = default;
 
-    explicit ManagerCollection(const Hypers_t& adaptor_inputs)
-      : adaptor_inputs{adaptor_inputs} {};
+    explicit ManagerCollection(const Hypers_t& adaptor_inputs) {
+      this->adaptor_inputs = adaptor_inputs;
+    };
 
 
     //! Copy constructor
@@ -89,14 +90,14 @@ namespace rascal {
       return this->managers.begin();
     }
     inline const_iterator begin() const noexcept {
-      return return this->managers.begin();
+      return this->managers.begin();
     }
 
     inline iterator end() noexcept {
       return this->managers.end();
     }
     inline const_iterator end() const noexcept {
-      return return this->managers.end();
+      return this->managers.end();
     }
 
     //! set the global inputs for the adaptors
@@ -150,18 +151,37 @@ namespace rascal {
 
     /**
      * load structures from a json file
+     *
+     * @param filename path to the file containing the structures in
+     * ase json format
+     * @param start index of the first structure to include
+     * @param length number of structure to include, -1 correspondons to all
+     * after start
+     *
+     * Note that start refers to 0 based indexing so 0 corresponds to the
+     * first and 3 would corresponds to the 4th structure irrespective of the
+     * actual indices in the file.
      */
-    void add_structures(const std::string& filename) {
-      auto structures{json_io::load(filename)};
-      // for some reason the ase json format is wrapped by an extra [ ]
-      // which makes it an array of size 1 instead of an object
-      // directly indexing the structures
-      if (structures.size() == 1 and structures.is_array()) {
-        structures = structures[0].get<Hypers_t>();
+    void add_structures(const std::string& filename, const int& start = 0,
+                        int length = -1) {
+      // important not to do brace initialization because it adds an extra
+      // nesting layer
+      json structures = json_io::load(filename);
+
+      if (not structures.is_object()) {
+        throw std::runtime_error(R"(The ase format's first level is a dictionary with indicies as keys to the structures)");
       }
+
       if (structures.count("ids") == 1) {
         // structures is in the ase format
         auto ids{structures["ids"].get<std::vector<int>>()};
+        std::sort(ids.begin(), ids.end());
+        ids.erase(ids.begin(), ids.begin() + start);
+        if (length == -1) {
+          length = ids.size();
+        }
+        ids.erase(ids.begin() + length, ids.end());
+
         for (auto& idx : ids) {
           this->add_structure(structures[std::to_string(idx)].get<Hypers_t>());
         }

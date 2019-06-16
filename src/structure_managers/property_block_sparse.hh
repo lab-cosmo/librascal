@@ -667,10 +667,6 @@ namespace rascal {
       return this->values[id.get_cluster_index(CallerLayer)].get_keys();
     }
 
-    Manager_t & get_manager() {
-      return static_cast<Manager_t &>(this->base_manager);
-    }
-
     /**
      * dot product between property block sparse A and B
      * assumes order == 1 for the moment should use SFINAE to take care of
