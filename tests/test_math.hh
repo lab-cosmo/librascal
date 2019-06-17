@@ -34,12 +34,27 @@
 #include "math/math_utils.hh"
 #include "math/spherical_harmonics.hh"
 #include "math/hyp1f1.hh"
+#include "math/interpolator.hh"
 #include "rascal_utility.hh"
 
 #include <fstream>
 #include <Eigen/Dense>
+#include <functional>
 
 namespace rascal {
+
+  struct InterpolatorFixture {
+    InterpolatorFixture() :
+      identity_func{[](double x) {return x;}},
+      exp_func{[](double x) {return std::exp(x);}},
+      precision{1e-5} {} // should result in a grid size of 2**7
+
+    std::function<double(double)> identity_func;
+    std::function<double(double)> exp_func;
+    double precision;
+    // TODO(alex) do later
+    //std::array<std::function<double(double)>,2> functions;
+  };
 
   struct SphericalHarmonicsRefFixture {
     SphericalHarmonicsRefFixture() {
