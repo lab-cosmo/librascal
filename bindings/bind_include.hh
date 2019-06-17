@@ -89,7 +89,7 @@ namespace rascal {
       Map mapping = {{"StructureManager", ""},
                      {"Adaptor", ""},
                      {"Calculator", ""},
-                     {"FeatureManager", ""}};
+                     {"Calculator", ""}};
     };
 
     /**

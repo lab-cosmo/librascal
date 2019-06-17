@@ -3,7 +3,7 @@ import json
 
 from ..neighbourlist.base import NeighbourListFactory
 from ..neighbourlist import get_neighbourlist, convert_to_structure
-from ..lib import RepresentationManager, FeatureManager
+from ..lib import RepresentationManager
 from .base import CalculatorFactory
 from ..utils import FactoryPool
 from itertools import starmap
@@ -87,7 +87,7 @@ class SortedCoulombMatrix(object):
 
         Returns
         -------
-        FeatureManager.Dense_double
+        
             Object containing the representation
         """
         structures = [convert_to_structure(frame) for frame in frames]

@@ -131,7 +131,7 @@ int main() {
   // auto mat = kernel.compute(representation, collectionA, collectionB);
   // std::cout << mat << std::endl;
 
-  json kernel_hypers_local{{"zeta", 1},
+  json kernel_hypers_local{{"zeta", 2},
                       {"target_type", "atom"}};
   Kernel<internal::KernelType::Cosine> kernel_local{kernel_hypers_local};
 

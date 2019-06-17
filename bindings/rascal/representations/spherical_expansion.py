@@ -135,7 +135,7 @@ class SphericalExpansion(object):
 
         Returns
         -------
-        FeatureManager.blocksparse_double
+        
             Object containing the representation
 
         """

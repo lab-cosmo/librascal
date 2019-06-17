@@ -38,8 +38,12 @@ PYBIND11_MODULE(_rascal, mod) {
 
   py::module m_rpr_mng = mod.def_submodule("RepresentationManager");
   m_rpr_mng.doc() = "Representation Manager Classes";
-  py::module m_feat_mng = mod.def_submodule("FeatureManager");
-  m_feat_mng.doc() = "Feature Manager Classes";
+  py::module m_models = mod.def_submodule("Models");
+  m_models.doc() = "Collection of models";
+
+  py::module m_kernels = m_models.def_submodule("Kernels");
+  m_kernels.doc() = "Collection of Kernels";
+
 
   py::module m_utl = mod.def_submodule("utils");
   py::module m_math = mod.def_submodule("math");
@@ -55,4 +59,5 @@ PYBIND11_MODULE(_rascal, mod) {
   // rascal::add_feature_managers(m_feat_mng, m_throwaway);
   rascal::utils_binding(m_utl);
   rascal::math_binding(m_math);
+  rascal::add_kernels(m_kernels, m_throwaway);
 }
