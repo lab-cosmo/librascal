@@ -81,6 +81,10 @@ namespace rascal {
       return this->name;
     }
 
+    inline const std::string& get_prefix() const {
+      return this->default_prefix;
+    }
+
     //! set the name of the calculator
     inline void set_name(const std::string& name) {
       this->name = name;

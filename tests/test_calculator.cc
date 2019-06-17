@@ -84,18 +84,14 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
 
   using multiple_fixtures = boost::mpl::list<
-      RepresentationFixture<MultipleStructureSortedCoulomb,
-                            CalculatorSortedCoulomb>,
-      RepresentationFixture<MultipleStructureSphericalExpansion,
-                            CalculatorSphericalExpansion>,
-      RepresentationFixture<MultipleStructureSphericalInvariant,
-                            CalculatorSphericalInvariants>>;
+      CalculatorFixture<MultipleStructureSortedCoulomb>,
+      CalculatorFixture<MultipleStructureSphericalExpansion>,
+      CalculatorFixture<MultipleStructureSphericalInvariant>>;
 
   using fixtures_ref_test = boost::mpl::list<
-      RepresentationFixture<SortedCoulombTestData, CalculatorSortedCoulomb>,
-      RepresentationFixture<SphericalExpansionTestData,
-                            CalculatorSphericalExpansion>,
-      RepresentationFixture<SphericalInvariantTestData, CalculatorSphericalInvariants>>;
+      CalculatorFixture<SortedCoulombTestData>,
+      CalculatorFixture<SphericalExpansionTestData>,
+      CalculatorFixture<SphericalInvariantTestData>>;
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -119,7 +115,8 @@ namespace rascal {
       hyper["identifier"] = "my_representation";
       representations.emplace_back(hyper);
       auto& name{representations.back().get_name()};
-      BOOST_CHECK_EQUAL("my_representation", name);
+      auto& prefix{representations.back().get_prefix()};
+      BOOST_CHECK_EQUAL(prefix+std::string("my_representation"), name);
     }
   }
 

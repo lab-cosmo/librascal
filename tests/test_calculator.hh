@@ -93,6 +93,7 @@ namespace rascal {
   struct MultipleStructureSphericalInvariant : MultipleStructureManagerNLStrictFixture {
     using Parent = MultipleStructureManagerNLStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
+    using Representation_t = CalculatorSphericalInvariants;
 
     MultipleStructureSphericalInvariant() : Parent{} {
       for (auto & ri_hyp : this->radial_contribution_hypers) {
@@ -147,6 +148,8 @@ namespace rascal {
   struct SphericalInvariantTestData : TestData {
     using Parent = TestData;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
+    using Representation_t = CalculatorSphericalInvariants;
+
     SphericalInvariantTestData() : Parent{} { this->get_ref(this->ref_filename); }
     ~SphericalInvariantTestData() = default;
     std::string ref_filename{"reference_data/soap_reference.ubjson"};
@@ -157,6 +160,7 @@ namespace rascal {
       : MultipleStructureManagerNLStrictFixture {
     using Parent = MultipleStructureManagerNLStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
+    using Representation_t = CalculatorSphericalExpansion;
 
     MultipleStructureSphericalExpansion() : Parent{} {
       for (auto & ri_hyp : this->radial_contribution_hypers) {
@@ -196,6 +200,7 @@ namespace rascal {
   struct SphericalExpansionTestData : TestData {
     using Parent = TestData;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
+    using Representation_t = CalculatorSphericalExpansion;
 
     SphericalExpansionTestData() : Parent{} {
       this->get_ref(this->ref_filename);
@@ -210,7 +215,7 @@ namespace rascal {
       : MultipleStructureManagerNLStrictFixture {
     using Parent = MultipleStructureManagerNLStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
-
+    using Representation_t = CalculatorSortedCoulomb;
     MultipleStructureSortedCoulomb() : Parent{} {};
     ~MultipleStructureSortedCoulomb() = default;
 
@@ -231,7 +236,7 @@ namespace rascal {
   struct SortedCoulombTestData : TestData {
     using Parent = TestData;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
-
+    using Representation_t = CalculatorSortedCoulomb;
     SortedCoulombTestData() : Parent{} { this->get_ref(this->ref_filename); }
     ~SortedCoulombTestData() = default;
 
@@ -244,17 +249,17 @@ namespace rascal {
     bool verbose{true};
   };
 
-  template <class BaseFixture, class RepresentationManager>
-  struct RepresentationFixture : MultipleStructureFixture<BaseFixture> {
+  template <class BaseFixture>
+  struct CalculatorFixture : MultipleStructureFixture<BaseFixture> {
     using Parent = MultipleStructureFixture<BaseFixture>;
     using Manager_t = typename Parent::Manager_t;
-    using Representation_t = RepresentationManager;
+    using Representation_t = typename BaseFixture::Representation_t;
     using Property_t = typename Representation_t::template Property_t<Manager_t>;
 
-    RepresentationFixture() : Parent{} {}
-    ~RepresentationFixture() = default;
+    CalculatorFixture() : Parent{} {}
+    ~CalculatorFixture() = default;
 
-    std::list<Representation_t> representations{};
+    std::vector<Representation_t> representations{};
   };
 
   /* ---------------------------------------------------------------------- */

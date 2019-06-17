@@ -60,16 +60,18 @@ using ManagerCollection_t = ManagerCollection<StructureManagerCenters,
                                    AdaptorNeighbourList, AdaptorStrict>;
 
 int main() {
-  std::string filename{"reference_data/dft-smiles_500.ubjson"};
+  // std::string filename{"reference_data/dft-smiles_500.ubjson"};
+  std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+  // std::string filename{"reference_data/methane.json"};
   std::string rep_id{"pp"};
 
-  double cutoff{4.};
+  double cutoff{3.};
   // json hypers{{"max_radial", 6},
   //             {"max_angular", 6},
   //             {"soap_type", "PowerSpectrum"},
   //             {"normalize", true},
   //             {"identifier",rep_id}};
-  json hypers{{"max_radial", 6},
+  json hypers{{"max_radial", 14},
               {"max_angular", 6},
               {"soap_type", "PowerSpectrum"},
               {"normalize", true}};
@@ -106,31 +108,38 @@ int main() {
   //                 AdaptorNeighbourList, AdaptorStrict>(
   //                 structure, adaptors);
   ManagerCollection_t collectionA{adaptors};
-  collectionA.add_structures(filename, 0, 2);
+  collectionA.add_structures(filename, 0, 1);
   std::cout << collectionA.size() << std::endl;
   ManagerCollection_t collectionB{adaptors};
-  collectionB.add_structures(filename, 5, 2);
+  collectionB.add_structures(filename, 0, 1);
   std::cout << collectionB.size() << std::endl;
 
   Representation_t representation{hypers};
   representation.compute(collectionA);
   representation.compute(collectionB);
 
-  json kernel_hypers{{"zeta", 2},
+  json kernel_hypers{{"zeta", 1},
                       {"target_type", "structure"}};
   Kernel<internal::KernelType::Cosine> kernel{kernel_hypers};
-
+  // for (auto& manager : collectionA) {
+  //   for (auto center : manager) {
+  //     std::cout << center.get_position().transpose() << std::endl;
+  //   }
+  //   std::cout  << std::endl;
+  // }
   // auto mat = kernel.compute<Property_t>(representation.get_name(), collectionA, collectionB);
-  auto mat = kernel.compute(representation, collectionA, collectionB);
-  std::cout << mat << std::endl;
+  // auto mat = kernel.compute(representation, collectionA, collectionB);
+  // std::cout << mat << std::endl;
 
-  json kernel_hypers_local{{"zeta", 2},
+  json kernel_hypers_local{{"zeta", 1},
                       {"target_type", "atom"}};
   Kernel<internal::KernelType::Cosine> kernel_local{kernel_hypers_local};
 
   // auto mat = kernel.compute<Property_t>(representation.get_name(), collectionA, collectionB);
-  auto mat_local = kernel_local.compute(representation, collectionA, collectionB);
+  auto mat_local = kernel_local.compute(representation, collectionA, collectionA);
   std::cout << mat_local << std::endl;
+
+
   // auto property_name{representation.get_name()};
   // auto&& property{manager->template get_validated_property_ref<Property_t>(property_name)};
 

@@ -1,11 +1,11 @@
 /**
- * file test_manager_collection.hh
+ * file test_kernels.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
- * @date   14 June 2019
+ * @date   18 June 2019
  *
- * @brief
+ * @brief test the implementation of similarity kernel classes
  *
  * @section LICENSE
  *
@@ -27,46 +27,53 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef TESTS_TEST_MANAGER_COLLECTION_HH_
-#define TESTS_TEST_MANAGER_COLLECTION_HH_
+#ifndef TESTS_TEST_KERNELS_HH_
+#define TESTS_TEST_KERNELS_HH_
 
 #include "tests.hh"
 #include "test_adaptor.hh"
-#include "structure_managers/structure_manager_collection.hh"
+#include "test_manager_collection.hh"
+#include "test_calculator.hh"
+#include "models/kernels.hh"
 
 namespace rascal {
 
-
-  struct KernelFixture {
-    using ManagerCollection_t = ManagerCollection<StructureManagerCenters,
-                                   AdaptorNeighbourList, AdaptorStrict>;
+  template<internal::KernelType Type, class CalculatorFixture, class CollectionFixture>
+  struct KernelFixture : CollectionFixture, CalculatorFixture {
+    using ManagerCollection_t = typename CollectionFixture::ManagerCollection_t;
     using Manager_t = typename ManagerCollection_t::Manager_t;
+    using Calculator_t = typename CalculatorFixture::Representation_t;
+    using Property_t = typename Calculator_t::template Property_t<Manager_t>;
 
-    ManagerNLCollectionFixture() {
-      json ad1{
-          {"name", "AdaptorNeighbourList"},
-          {"initialization_arguments",
-            {{"cutoff", cutoff},
-            {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
-      json ad2{{"name", "AdaptorStrict"},
-                {"initialization_arguments", {{"cutoff", cutoff}}}};
-      adaptors.emplace_back(ad1);
-      adaptors.emplace_back(ad2);
+    KernelFixture() :CollectionFixture{}, CalculatorFixture{} {
+      this->collection.set_adaptor_inputs(this->adaptors);
+      this->collection.add_structures(this->filename, 0, 20);
+      for (auto& hyper : this->hypers) {
+        this->calculators.push_back(hyper);
+        this->calculators.back().compute(this->collection);
+      }
 
-      collection.set_adaptor_inputs(adaptors);
+      for (auto& hyper : this->kernel_hypers) {
+        this->kernels.push_back(hyper);
+      }
+
     }
 
-    ~ManagerNLCollectionFixture() = default;
-    const bool consider_ghost_neighbours{false};
-    std::string filename{
-        "reference_data/dft-smiles_500.ubjson"};
-    const double cutoff{3.};
+    std::vector<json> kernel_hypers{{{"zeta", 2},
+                                      {"target_type", "structure"},
+                                      {"zeta", 2},
+                                      {"target_type", "atom"}}};
 
-    json adaptors{};
-    ManagerCollection_t collection{};
+    std::vector<Kernel<Type>> kernels{};
+
+    ~KernelFixture() = default;
+
+    std::vector<Calculator_t> calculators{};
+
+    bool verbose{false};
 
   };
 
 }  // namespace rascal
 
-#endif  // TESTS_TEST_MANAGER_COLLECTION_HH_
+#endif  // TESTS_TEST_KERNELS_HH_

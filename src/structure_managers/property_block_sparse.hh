@@ -363,22 +363,38 @@ namespace rascal {
        */
       inline Precision_t dot(Self_t& B) {
         Precision_t val{0.};
-        for (auto & elA : this->map) {
-          auto && keyA{elA.first};
-          auto && posA{elA.second};
+        auto keysB{B.get_keys()};
+        auto unique_keys{this->intersection(keysB)};
+
+        for (auto & key : unique_keys) {
+          auto && posA{this->map[key]};
           auto vecA{VectorRef_t(&this->data[std::get<0>(posA)],
                                 std::get<1>(posA) * std::get<2>(posA))};
-          if (B.map.count(keyA) == 1) {
-            auto && posB{B.map[keyA]};
-            auto vecB{VectorRef_t(&B.data[std::get<0>(posB)],
-                                std::get<1>(posB) * std::get<2>(posB))};
-            val += vecA.dot(vecB);
-          }
+          auto && posB{B.map[key]};
+          auto vecB{VectorRef_t(&B.data[std::get<0>(posB)],
+                              std::get<1>(posB) * std::get<2>(posB))};
+          val += vecA.dot(vecB);
+
         }
         return val;
       }
 
      private:
+
+      std::vector<key_type> intersection(std::vector<key_type> &keys){
+        if (keys.empty()){
+          return std::vector<key_type>();
+        }
+        std::set<key_type> set{keys.cbegin(), keys.cend()};
+        std::vector<key_type> intersections;
+        for (auto el: this->map){
+            if (set.erase(el.first) > 0){ // if n exists in set, then 1 is returned and n is erased; otherwise, 0.
+                intersections.push_back(el.first);
+            }
+        }
+        return intersections;
+      }
+
       /**
        * Functor to get a key from a map
        */

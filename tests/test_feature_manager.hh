@@ -47,8 +47,8 @@
 //   template <typename T, template <typename> class FeatureManager,
 //             template <typename> class RepresentationManager, class BaseFixture>
 //   struct FeatureFixture
-//       : RepresentationFixture<BaseFixture, RepresentationManager> {
-//     using Parent = RepresentationFixture<BaseFixture, RepresentationManager>;
+//       : CalculatorFixture<BaseFixture, RepresentationManager> {
+//     using Parent = CalculatorFixture<BaseFixture, RepresentationManager>;
 //     using Manager_t = typename Parent::Manager_t;
 //     using Representation_t = typename Parent::Representation_t;
 //     using Feature_t = FeatureManager<T>;
@@ -90,8 +90,8 @@
 //   template <typename T, template <typename> class FeatureManager,
 //             template <typename> class RepresentationManager, class BaseFixture>
 //   struct SparseFeatureFixture
-//       : RepresentationFixture<BaseFixture, RepresentationManager> {
-//     using Parent = RepresentationFixture<BaseFixture, RepresentationManager>;
+//       : CalculatorFixture<BaseFixture, RepresentationManager> {
+//     using Parent = CalculatorFixture<BaseFixture, RepresentationManager>;
 //     using Manager_t = typename Parent::Manager_t;
 //     using Representation_t = RepresentationManager<Manager_t>;
 //     using Key_t = typename Representation_t::Key_t;
