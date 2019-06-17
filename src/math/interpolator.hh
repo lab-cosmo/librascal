@@ -44,7 +44,8 @@ namespace rascal {
      public:
       InterpolationMethod<InterpolationMethod_t::CubicSpline>(){}
 
-      void initialize(Vector_Ref grid, Vector_Ref evaluated_grid){
+      void initialize(const Vector_Ref & grid,
+          const Vector_Ref & evaluated_grid){
         this->compute_second_derivatives_on_grid(grid, evaluated_grid);
       }
 
@@ -54,20 +55,21 @@ namespace rascal {
       // we would use it
       // TODO(alex) reference numerical recipes
       void compute_second_derivatives_on_grid(
-          Vector_Ref grid, Vector_Ref evaluated_grid) {
+          const Vector_Ref & grid, const Vector_Ref & evaluated_grid) {
         this->second_derivatives = this->sety2(grid, evaluated_grid);
       }
 
-      double interpolate(Vector_Ref grid, Vector_Ref evaluated_grid,
+      double interpolate(const Vector_Ref & grid,
+          const Vector_Ref & evaluated_grid,
           double x, size_t nearest_grid_index_to_x) {
-        return this->rawinterp(grid, evaluated_grid, nearest_grid_index_to_x, x);
+        return this->rawinterp(grid, evaluated_grid,
+            nearest_grid_index_to_x, x);
       }
-
      private:
       // This is done to be close to the numerical recipes implementation in
       // naming while making it more readable.
       // TODO(alex) reference numerical recipes
-      Vector_t sety2(Vector_Ref xv, Vector_Ref yv) {
+      Vector_t sety2(const Vector_Ref & xv, const Vector_Ref & yv) {
         int n{static_cast<int>(xv.size())};
         Vector_t y2 = Vector_t::Zero(n);
         Vector_t u = Vector_t::Zero(n);
@@ -96,9 +98,10 @@ namespace rascal {
         return y2;
       }
 
-      double rawinterp(Vector_Ref xx, Vector_Ref yy, size_t j1, double x){
+      double rawinterp(const Vector_Ref & xx, const Vector_Ref & yy,
+          size_t j1, double x){
         size_t klo{j1}, khi{j1+1};
-        Vector_Ref y2 = Vector_Ref(this->second_derivatives);
+        const Vector_Ref y2 = Vector_Ref(this->second_derivatives);
         double h{xx(khi)-xx(klo)};
         if (h == 0.0) { throw ("Bad xa input to routine splint");}
         double a{(xx(khi)-x)/h};
@@ -122,14 +125,14 @@ namespace rascal {
           nb_support_points{2}, last_accessed_index{0} {} 
 
       // If the requests to locate seem correlated, then the heuristic is used
-      size_t search(double x, Vector_Ref grid) {
+      size_t search(double x, const Vector_Ref & grid) {
         return this->correlated ? this->hunt(x, grid) : this->locate(x, grid);
       } 
 
       // TODO(alex) move this to a Base class if we want to implement more
       // search methods
       // TODO(alex) ref numerical recipes
-      size_t locate(double x, Vector_Ref xx) {
+      size_t locate(double x, const Vector_Ref & xx) {
         int n{static_cast<int>(xx.size())};
         int mm{static_cast<int>(nb_support_points)};
         int jsav{static_cast<int>(this->last_accessed_index)};
@@ -156,7 +159,8 @@ namespace rascal {
         return std::max(0,std::min(n-mm,jl-((mm-2)>>1)));
       }
 
-      size_t hunt(double x, Vector_Ref xx){
+      // TODO(alex) change xx to const Ref & because it is not modified 
+      size_t hunt(double x, const Vector_Ref & xx){
         int n{static_cast<int>(xx.size())};
         int mm{static_cast<int>(nb_support_points)};
         int dj = std::min(1, 
@@ -246,13 +250,13 @@ namespace rascal {
       double compute_grid_error() {
         this->grid = 
             this->grid_rational.compute_grid(this->x1,this->x2, this->fineness);
-        this->evaluated_grid = this->eval(Vector_Ref(this->grid));
+        this->evaluated_grid = this->eval(this->grid);
 
         this->intp_method.initialize(this->grid, this->evaluated_grid);
 
         Vector_t test_grid{this->grid_rational.compute_test_grid(this->x1,this->x2,this->fineness)};
-        Vector_t test_grid_interpolated{this->interpolate(Vector_Ref(test_grid))};
-        Vector_t test_grid_evaluated{this->eval(Vector_Ref(test_grid))}; 
+        Vector_t test_grid_interpolated{this->interpolate(test_grid)};
+        Vector_t test_grid_evaluated{this->eval(test_grid)}; 
         return (test_grid_interpolated - test_grid_evaluated).norm();
       }
 
@@ -260,7 +264,7 @@ namespace rascal {
 
       // We use evaluate when the function is used and interpolate when the
       // interpolation method is used
-      Vector_t eval(Vector_Ref grid) {
+      Vector_t eval(const Vector_Ref & grid) {
         Vector_t evaluated_grid = Vector_t::Zero(grid.size());
         for (int i{0}; i<evaluated_grid.size(); i++) {
           evaluated_grid(i) = this->function(grid(i));
@@ -283,11 +287,11 @@ namespace rascal {
         if (x>this->x2) { throw ("x is outside of range, above x2"); }
         size_t nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
         return intp_method.interpolate(
-            Vector_Ref(this->grid), Vector_Ref(this->evaluated_grid),
+            this->grid, this->evaluated_grid,
             x, nearest_grid_index_to_x);
       }
 
-      Vector_t interpolate(Vector_Ref points) {
+      Vector_t interpolate(const Vector_Ref & points) {
         Vector_t interpolated_points = Vector_t::Zero(points.size());
         for (int i{0}; i<points.size(); i++) {
           interpolated_points(i) = this->interpolate(points(i));

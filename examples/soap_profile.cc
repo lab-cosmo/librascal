@@ -133,4 +133,11 @@ int main(int argc, char * argv[]) {
             << soap(0, 0) << " " << soap(0, 1) << " " << soap(0, 2) << "\n"
             << soap(1, 0) << " " << soap(1, 1) << " " << soap(1, 2) << "\n"
             << soap(2, 0) << " " << soap(2, 1) << " " << soap(2, 2) << "\n";
+
+  math::Hyp1f1SphericalExpansion hyp1f1;
+  hyp1f1.precompute(5, 5);
+  math::Vector_t bs(3);
+  bs << 0.1, 0.3, 0.6;
+  hyp1f1.calc(0.5, 0.5, bs);
+
 }

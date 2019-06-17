@@ -65,6 +65,30 @@ namespace rascal {
       error = std::abs(intp_val - intp_ref);
       BOOST_CHECK_LE(error, this->precision);
     }
+    
+    size_t max_angular = 20;
+    size_t max_radial = 20;
+    double a,b;
+
+    // TODO(alex) this test alone takes 5 seconds
+    bool verbose{false};
+    for (size_t l{0}; l<max_angular; l++) {
+      for (size_t n{0}; n<max_radial; n++) {
+        if (verbose) {
+          std::cout << "Testing for n="<<n<<" and l="<<l<<std::endl;
+        }
+        a = 0.5*(n+l+3);
+        b = l+1.5;
+        func = std::bind(hyp1f1_function_generator, a, b, std::placeholders::_1);
+        intp.initalize(func, 0,1, this->precision); 
+        for (int i{0}; i<points.size()-1; i++) {
+          intp_val = intp.interpolate(points(i));
+          intp_ref = func(points(i));
+          error = std::abs(intp_val - intp_ref);
+          BOOST_CHECK_LE(error, this->precision);
+        }
+      }
+    }
   }
 
   BOOST_AUTO_TEST_SUITE_END();
