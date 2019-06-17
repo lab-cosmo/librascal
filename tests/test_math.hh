@@ -43,14 +43,22 @@
 
 namespace rascal {
 
+  static double hyp1f1_function_generator(double a, double b, double z) {
+    math::Hyp1f1 hyp1f1{a, b, 200, 1e-15};
+    return hyp1f1.calc(z);
+  }
+
   struct InterpolatorFixture {
     InterpolatorFixture() :
       identity_func{[](double x) {return x;}},
       exp_func{[](double x) {return std::exp(x);}},
-      precision{1e-5} {} // should result in a grid size of 2**7
+      hyp1f1_func{std::bind(hyp1f1_function_generator, 0,0, std::placeholders::_1)},
+      precision{1e-5}  // should result in a grid size of 2**7
+    {}
 
     std::function<double(double)> identity_func;
     std::function<double(double)> exp_func;
+    std::function<double(double)> hyp1f1_func;
     double precision;
     // TODO(alex) do later
     //std::array<std::function<double(double)>,2> functions;
