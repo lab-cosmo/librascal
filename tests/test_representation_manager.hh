@@ -33,6 +33,7 @@
 #include "test_adaptor.hh"
 #include "test_math.hh"
 #include "test_structure.hh"
+#include "atomic_structure.hh"
 #include "representations/representation_manager_base.hh"
 #include "representations/representation_manager_sorted_coulomb.hh"
 #include "representations/representation_manager_spherical_expansion.hh"
@@ -336,7 +337,8 @@ namespace rascal {
     RepresentationManagerGradientProvider(
         RepManager & representation,
         std::shared_ptr<typename RepManager::Manager_t> structure_manager) :
-      representation{representation}, center_it{structure_manager->begin()} {}
+      representation{representation}, structure_manager{structure_manager},
+      center_it{structure_manager->begin()} {}
 
     ~RepresentationManagerGradientProvider() = default;
 
@@ -345,7 +347,18 @@ namespace rascal {
     Eigen::Map<Eigen::Array<double, 1, Eigen::Dynamic>>
     f(const Eigen::Ref<const Eigen::Vector3d> & center_position) {
       auto center = *center_it;
-      center.get_position() = center_position;
+      //doesn't work
+      //center.get_position() = center_position;
+
+      //TODO(max) oh no, please tell me there's a better way to get the
+      //          underlying atomic structure of some multiply-adapted
+      //          StructureManager
+      auto atomic_structure = structure_manager->
+        get_previous_manager()->get_previous_manager()->get_atomic_structure();
+      Structure_t my_structure{atomic_structure};
+
+      my_structure.positions.col(center.get_index()) = center_position;
+      structure_manager->update(my_structure);
       representation.compute();
       auto & coeffs_center = representation.expansions_coefficients[center];
       auto keys_center = representation.expansions_coefficients
@@ -428,9 +441,13 @@ namespace rascal {
     }
 
     using Dense_t = typename RepManager::Dense_t;
+    using Structure_t = AtomicStructure<3>;
+    //using Positions_ref = typename AtomicStructure<3>::Positions_ref;
 
     RepManager & representation;
+    std::shared_ptr<typename RepManager::Manager_t> structure_manager;
     typename RepManager::Manager_t::iterator center_it;
+    //Structure_t & atomic_structure;
 
   };
 
