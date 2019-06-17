@@ -433,11 +433,7 @@ namespace rascal {
     template <typename UserProperty_t>
     UserProperty_t &
     get_validated_property_ref(const std::string & name) const {
-      auto property = this->get_property(name);
-      this->template validate_property_t<UserProperty_t>(property);
-      auto property_ptr =
-          static_cast<UserProperty_t *>(property.get());
-      return *property_ptr;
+      return *this->get_validated_property<UserProperty_t>(name);
     }
     /*  Returns the typed property. Throws an error if property type given from
      *  user does not match actual property type.

@@ -38,6 +38,8 @@
 #include "representations/feature_manager_dense.hh"
 #include "representations/feature_manager_block_sparse.hh"
 
+#include "models/kernels.hh"
+
 #include <iostream>
 #include <basic_types.hh>
 #include <cmath>
@@ -59,8 +61,14 @@ using ManagerCollection_t = ManagerCollection<StructureManagerCenters,
 
 int main() {
   std::string filename{"reference_data/dft-smiles_500.ubjson"};
+  std::string rep_id{"pp"};
 
-  double cutoff{3.};
+  double cutoff{4.};
+  // json hypers{{"max_radial", 6},
+  //             {"max_angular", 6},
+  //             {"soap_type", "PowerSpectrum"},
+  //             {"normalize", true},
+  //             {"identifier",rep_id}};
   json hypers{{"max_radial", 6},
               {"max_angular", 6},
               {"soap_type", "PowerSpectrum"},
@@ -86,20 +94,43 @@ int main() {
            {"initialization_arguments", {{"cutoff", cutoff}}}};
   adaptors.emplace_back(ad1);
   adaptors.emplace_back(ad2);
+  // ManagerCollection_t collection{adaptors};
+  // collection.add_structures(filename, 0, 10);
+  // std::cout << collection.size() << std::endl;
+
+  // Representation_t representation{hypers};
+  // representation.compute(collection);
 
   // auto manager =
   //         make_structure_manager_stack<StructureManagerCenters,
   //                 AdaptorNeighbourList, AdaptorStrict>(
   //                 structure, adaptors);
-  ManagerCollection_t collection{adaptors};
-  // collection.set_adaptor_inputs(adaptors);
-
-  collection.add_structures(filename, 0, 20);
-  std::cout << collection.size() << std::endl;
+  ManagerCollection_t collectionA{adaptors};
+  collectionA.add_structures(filename, 0, 2);
+  std::cout << collectionA.size() << std::endl;
+  ManagerCollection_t collectionB{adaptors};
+  collectionB.add_structures(filename, 5, 2);
+  std::cout << collectionB.size() << std::endl;
 
   Representation_t representation{hypers};
-  representation.compute(collection);
+  representation.compute(collectionA);
+  representation.compute(collectionB);
 
+  json kernel_hypers{{"zeta", 2},
+                      {"target_type", "structure"}};
+  Kernel<internal::KernelType::Cosine> kernel{kernel_hypers};
+
+  // auto mat = kernel.compute<Property_t>(representation.get_name(), collectionA, collectionB);
+  auto mat = kernel.compute(representation, collectionA, collectionB);
+  std::cout << mat << std::endl;
+
+  json kernel_hypers_local{{"zeta", 2},
+                      {"target_type", "atom"}};
+  Kernel<internal::KernelType::Cosine> kernel_local{kernel_hypers_local};
+
+  // auto mat = kernel.compute<Property_t>(representation.get_name(), collectionA, collectionB);
+  auto mat_local = kernel_local.compute(representation, collectionA, collectionB);
+  std::cout << mat_local << std::endl;
   // auto property_name{representation.get_name()};
   // auto&& property{manager->template get_validated_property_ref<Property_t>(property_name)};
 

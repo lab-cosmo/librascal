@@ -77,7 +77,7 @@ namespace rascal {
     void check_hyperparameters(const ReferenceHypers_t &, const Hypers_t &);
 
     //! return the name of the calculator
-    inline const std::string& get_name() {
+    inline const std::string& get_name() const {
       return this->name;
     }
 
@@ -96,7 +96,7 @@ namespace rascal {
      */
     inline void set_name(const Hypers_t & hyper) {
       if (hyper.count("identifier") == 1) {
-        this->set_name(hyper["identifier"].get<std::string>());
+        this->set_name(this->default_prefix + hyper["identifier"].get<std::string>());
       } else {
         this->set_name(this->default_prefix + hyper.dump());
       }
@@ -135,9 +135,9 @@ namespace rascal {
     std::string get_hypers_string();
 
     //! name of the calculator
-    std::string name{};
+    std::string name{""};
     //! default prefix of the calculator
-    std::string default_prefix{};
+    std::string default_prefix{""};
 
     //! stores all the hyper parameters of the representation
     Hypers_t hypers{};

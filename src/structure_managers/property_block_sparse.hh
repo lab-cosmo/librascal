@@ -361,9 +361,9 @@ namespace rascal {
       /**
        * dot product with another internally sorted map
        */
-      inline Precision_t dot(const Self_t& B) {
+      inline Precision_t dot(Self_t& B) {
         Precision_t val{0.};
-        for (const auto & elA : this->map) {
+        for (auto & elA : this->map) {
           auto && keyA{elA.first};
           auto && posA{elA.second};
           auto vecA{VectorRef_t(&this->data[std::get<0>(posA)],
@@ -372,7 +372,7 @@ namespace rascal {
             auto && posB{B.map[keyA]};
             auto vecB{VectorRef_t(&B.data[std::get<0>(posB)],
                                 std::get<1>(posB) * std::get<2>(posB))};
-            val += vecA * vecB.transpose();
+            val += vecA.dot(vecB);
           }
         }
         return val;
@@ -510,6 +510,11 @@ namespace rascal {
     Manager_t & get_manager() {
       return static_cast<Manager_t &>(this->base_manager);
     }
+
+    // Manager_t & get_manager() const {
+    //   return static_cast<Manager_t &>(this->base_manager);
+    // }
+
 
     /* ---------------------------------------------------------------------- */
     //! Property accessor by cluster ref
@@ -672,19 +677,22 @@ namespace rascal {
      * assumes order == 1 for the moment should use SFINAE to take care of
      * the case order == 2
      */
-    inline Dense_t dot(const Self_t& B) const {
+    inline Dense_t dot(Self_t& B) {
       Dense_t mat(this->size(), B.size());
-      auto& managerA{this->get_manager()};
-      auto& managerB{B.get_manager()};
+      auto&& managerA{this->get_manager()};
+      auto&& managerB{B.get_manager()};
       int i_row{0};
       for (auto centerA : managerA) {
-        auto& rowA{this->operator[](centerA)};
+        auto&& rowA{this->operator[](centerA)};
         int i_col{0};
         for (auto centerB : managerB) {
-          auto& rowB{B[centerB]};
+          auto&& rowB{B[centerB]};
           mat(i_row, i_col) = rowA.dot(rowB);
+          ++i_col;
         }
+        ++i_row;
       }
+      return mat;
     }
 
    protected:

@@ -34,9 +34,12 @@
 
 namespace rascal {
 
-  enum class KernelType {Cosine};
+  namespace internal {
+    enum class KernelType {Cosine};
 
-  enum class TargetType {Structure, Atom};
+    enum class TargetType {Structure, Atom};
+  }
+
 
   struct KernelBase {
     using Hypers_t = json;
@@ -51,16 +54,13 @@ namespace rascal {
 
       if (hypers.count("target_type") == 1) {
         if (hypers["target_type"] == "structure") {
-
+          this->target_type = internal::TargetType::Structure;
         } else if (hypers["target_type"] == "atom") {
-
+          this->target_type = internal::TargetType::Atom;
         }
       } else {
         throw std::runtime_error(R"(target_type is either structure or atom)");
       }
-
-
-
     }
 
     /**
@@ -79,14 +79,14 @@ namespace rascal {
     /**
      * Defines if the similarity if defined structure or atom wise
      */
-    TargetType target_type{};
+    internal::TargetType target_type{};
   };
 
-  template<KernelType Type>
-  struct Kernel : {};
+  template<internal::KernelType Type>
+  struct Kernel {};
 
   template<>
-  struct Kernel<KernelType::Cosine> : KernelBase {
+  struct Kernel<internal::KernelType::Cosine> : KernelBase {
     using Parent = KernelBase;
     using Hypers_t = typename Parent::Hypers_t;
 
@@ -101,15 +101,82 @@ namespace rascal {
       }
     }
 
-    template<class StructureManager>
-    math::Matrix_t compute(const std::string& representation_name, const ManagerCollection<StructureManager>& managersA, const ManagerCollection<StructureManager>& managersB) {
-      math::Matrix_t kernel(managersA.size(), managersB.size());
+    template<class Calculator, class StructureManagers>
+    math::Matrix_t compute(const Calculator& calculator,
+                        const StructureManagers& managersA,
+                        const StructureManagers& managersB) {
+      using ManagerPtr_t = typename StructureManagers::value_type;
+      using Manager_t = typename ManagerPtr_t::element_type;
+      using Property_t = typename Calculator::template Property_t<Manager_t>;
+      auto&& representation_name{calculator.get_name()};
 
-      for (const auto& managerA : managersA) {
-        for (const auto& managerB : managersB) {
-
-        }
+      switch (this->target_type) {
+      case internal::TargetType::Structure: {
+        return this->compute<Property_t, internal::TargetType::Structure>(managersA, managersB, representation_name);
+        break;
       }
+      case internal::TargetType::Atom: {
+        return this->compute<Property_t, internal::TargetType::Atom>(managersA, managersB, representation_name);
+        break;
+      }
+      default:
+        throw std::logic_error("The combination of parameter is not handdled.");
+        break;
+      }
+    }
+
+    /**
+     *
+     */
+    template<class Property_t, internal::TargetType Type, std::enable_if_t<Type == internal::TargetType::Structure, int> = 0, class StructureManagers>
+    math::Matrix_t compute( StructureManagers& managersA,
+                            StructureManagers& managersB,
+                           const std::string& representation_name) {
+
+      math::Matrix_t kernel(managersA.size(), managersB.size());
+      auto integer_power{math::MakePositiveIntegerPower<double>(this->zeta)};
+      size_t ii_A{0};
+      for ( auto& managerA : managersA) {
+        size_t ii_B{0};
+        auto&& propA{managerA->template get_validated_property_ref<Property_t>(representation_name)};
+        for ( auto& managerB : managersB) {
+          auto&& propB{managerB->template get_validated_property_ref<Property_t>(representation_name)};
+
+          kernel(ii_A, ii_B) = propA.dot(propB).unaryExpr(integer_power).mean();
+          ++ii_B;
+        }
+        ++ii_A;
+      }
+      return kernel;
+    }
+
+    template<class Property_t, internal::TargetType Type, std::enable_if_t<Type == internal::TargetType::Atom, int> = 0, class StructureManagers>
+    math::Matrix_t compute(const StructureManagers& managersA,
+                           const StructureManagers& managersB,
+                           const std::string& representation_name) {
+      size_t n_centersA{0};
+      for (const auto& managerA : managersA) {
+        n_centersA += managerA->size();
+      }
+      size_t n_centersB{0};
+      for (const auto& managerB : managersB) {
+        n_centersB += managerB->size();
+      }
+      math::Matrix_t kernel(n_centersA, n_centersB);
+      auto integer_power{math::MakePositiveIntegerPower<double>(this->zeta)};
+      size_t ii_A{0};
+      for ( auto& managerA : managersA) {
+        size_t ii_B{0};
+        auto&& propA{managerA->template get_validated_property_ref<Property_t>(representation_name)};
+        for ( auto& managerB : managersB) {
+          auto&& propB{managerB->template get_validated_property_ref<Property_t>(representation_name)};
+
+          kernel.block(ii_A, ii_B, managerA->size(), managerB->size()) = propA.dot(propB).unaryExpr(integer_power);
+          ii_B += managerB->size();
+        }
+        ii_A += managerA->size();
+      }
+      return kernel;
     }
 
   };
@@ -120,4 +187,4 @@ namespace rascal {
 
 
 
-#endif  // SRC_MATH_KERNELS_HH_
+#endif  // SRC_MODELS_KERNELS_HH_
