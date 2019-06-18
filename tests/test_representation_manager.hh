@@ -288,6 +288,7 @@ namespace rascal {
     using ManagerTypeHolder_t =
         StructureManagerTypeHolder<StructureManagerCenters,
                                    AdaptorNeighbourList, AdaptorStrict>;
+    using Structure_t = AtomicStructure<3>;
 
     SimplePeriodicNLStrictFixture() {
       for (auto && filename : filenames) {
@@ -322,7 +323,7 @@ namespace rascal {
     const double cutoff_skin{0.5};
 
     json factory_args{};
-    //std::vector<std::tuple<>> managers_structures{};
+    std::vector<Structure_t> structures{};
   };
 
   struct SingleHypersSphericalExpansion
@@ -414,6 +415,8 @@ namespace rascal {
   template<typename RepManager, typename ClusterRef_t>
   struct RepresentationManagerGradientProvider {
 
+    using Structure_t = AtomicStructure<3>;
+
     RepresentationManagerGradientProvider(
         RepManager & representation,
         std::shared_ptr<typename RepManager::Manager_t> structure_manager,
@@ -429,22 +432,16 @@ namespace rascal {
     Eigen::Array<double, 1, Eigen::Dynamic>
     f(const Eigen::Ref<const Eigen::Vector3d> & center_position) {
       auto center = *center_it;
-      //doesn't work
-      //center.get_position() = center_position;
-
-      //TODO(max) oh no, please tell me there's a better way to get the
-      //          underlying atomic structure of some multiply-adapted
-      //          StructureManager
       for (auto neigh : center) {
         std::cout << "Neigh distance " << neigh.get_index() << " is: ";
         std::cout << structure_manager->get_distance(neigh) << std::endl;
       }
-      auto atomic_structure = structure_manager->
-        get_previous_manager()->get_previous_manager()->get_atomic_structure();
-      Structure_t my_structure{atomic_structure};
+      Structure_t modified_structure{this->atomic_structure};
 
-      my_structure.positions.col(center.get_index()) = center_position;
-      structure_manager->update(my_structure);
+      std::cout << "Silly column index: " << center.get_index() << std::endl;
+      std::cout << "Number of columns: " << modified_structure.positions.cols();
+      modified_structure.positions.col(center.get_index()) = center_position;
+      this->structure_manager->update(modified_structure);
       for (auto neigh : center) {
         std::cout << "New neigh distance " << neigh.get_index() << " is: ";
         std::cout << structure_manager->get_distance(neigh) << std::endl;
@@ -482,6 +479,8 @@ namespace rascal {
       }
       Eigen::Map<Eigen::Array<double, 1, Eigen::Dynamic>> result(
           coeffs_pairs.data(), coeffs_pairs.size());
+      // Reset the atomic structure for the next iteration
+      this->structure_manager->update(this->atomic_structure);
       return result;
     }
 
@@ -530,14 +529,11 @@ namespace rascal {
       return grad_coeffs_pairs;
     }
 
-    using Dense_t = typename RepManager::Dense_t;
-    using Structure_t = AtomicStructure<3>;
-    //using Positions_ref = typename AtomicStructure<3>::Positions_ref;
 
     RepManager & representation;
     std::shared_ptr<typename RepManager::Manager_t> structure_manager;
-    typename RepManager::Manager_t::iterator center_it;
     Structure_t & atomic_structure;
+    typename RepManager::Manager_t::iterator center_it;
 
   };
 

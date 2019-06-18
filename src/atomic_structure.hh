@@ -82,10 +82,20 @@ namespace rascal {
     using PBCInput_t = Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1>>;
 
     // Eigen types for saving atomic structure data
-    Positions_t positions;
-    AtomTypes_t atom_types;
-    Cell_t cell;
-    PBC_t pbc;
+    Positions_t positions{};
+    AtomTypes_t atom_types{};
+    Cell_t cell{};
+    PBC_t pbc{};
+
+    AtomicStructure() = default; // what a surprise
+
+    AtomicStructure(const AtomicStructure & other)  {
+      // Why the compiler couldn't have generated this is a mystery to me.
+      this->positions = other.positions;
+      this->atom_types = other.atom_types;
+      this->cell = other.cell;
+      this->pbc = other.pbc;
+    }
 
     //! method for initializing structure data from raw Eigen types, beware:
     //! copy!

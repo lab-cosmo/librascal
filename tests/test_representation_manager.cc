@@ -219,12 +219,19 @@ namespace rascal {
     auto & managers = Fix::managers;
     auto & hyper = Fix::hypers.front();
     auto & representations = Fix::representations;
+    auto & structures = Fix::structures;
     using ClusterRef_t = typename Fix::Manager_t::template ClusterRef<1>;
+    auto filename_it = Fix::filenames.begin();
     for (auto & manager : managers) {
       representations.emplace_back(manager, hyper);
+      structures.emplace_back();
+      structures.back().set_structure(*filename_it);
+      ++filename_it;
+      std::cout << "Positions of AtomicStructure ";
+      std::cout << structures.back().positions << std::endl;
       RepresentationManagerGradientProvider<
             typename Fix::Representation_t, ClusterRef_t>
-          calculator(representations.back(), manager);
+          calculator(representations.back(), manager, structures.back());
       RepresentationManagerGradientFixture<typename Fix::Manager_t> grad_fix{
           "reference_data/spherical_expansion_gradient_test.json", manager};
       for (auto center : manager) {
