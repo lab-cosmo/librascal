@@ -1,8 +1,8 @@
 import numpy as np
 import json
 
-from ..neighbourlist.base import NeighbourListFactory
-from ..neighbourlist import get_neighbourlist, convert_to_structure
+from ..neighbourlist.base import (NeighbourListFactory, StructureCollectionFactory)
+from ..neighbourlist import get_neighbourlist, convert_to_structure_list
 from ..lib import RepresentationManager
 from .base import CalculatorFactory
 from ..utils import FactoryPool
@@ -55,9 +55,9 @@ class SortedCoulombMatrix(object):
         )
 
         self.nl_options = [
-            dict(name='centers', args=[]),
-            dict(name='neighbourlist', args=[cutoff]),
-            dict(name='strict', args=[cutoff])
+            dict(name='centers', args=dict()),
+            dict(name='neighbourlist', args=dict(cutoff=cutoff)),
+            dict(name='strict', args=dict(cutoff=cutoff))
         ]
         self.misc = dict(method=method, n_workers=n_workers,
                          disable_pbar=disable_pbar)
@@ -87,13 +87,22 @@ class SortedCoulombMatrix(object):
 
         Returns
         -------
-        
+
             Object containing the representation
         """
-        structures = [convert_to_structure(frame) for frame in frames]
+        structures = convert_to_structure_list(frames)
+        managers = StructureCollectionFactory(self.nl_options)
 
-        inputs = [(structure, self.nl_options) for structure in structures]
-        managers = starmap(get_neighbourlist, inputs)
+        try:
+            managers.add_structure(structures)
+        except:
+            print("Neighbourlist of structures failed. try one at a time.")
+            ii = 0
+            for structure, manager in zip(structures, managers):
+                try:
+                    manager.update(structure)
+                except:
+                    print("Neighbourlist of structure {} failed".format(ii))
 
         self.size = self.get_size(managers)
         self.update_hyperparameters(size=self.size)
@@ -101,7 +110,7 @@ class SortedCoulombMatrix(object):
         self.rep_options = dict(name=self.name, args=[hypers_str])
         self.representation = CalculatorFactory(self.rep_options)
 
-        map(self.representation.compute, managers)
+        self.representation.compute(managers)
 
         return managers
 

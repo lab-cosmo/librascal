@@ -1,5 +1,5 @@
-from .base import NeighbourListFactory, is_valid_structure, adapt_structure
-
+from .base import NeighbourList, NeighbourListFactory, is_valid_structure, adapt_structure
+from collections.abc import Iterable
 
 def get_neighbourlist(structure, options):
     manager = NeighbourListFactory(options)
@@ -7,16 +7,21 @@ def get_neighbourlist(structure, options):
     return manager
 
 
-def convert_to_structure(frame):
-    if is_valid_structure(frame):
-        structure = frame
-    else:
-        if is_ase_Atoms(frame):
-            structure = unpack_ase(frame)
+def convert_to_structure_list(frames):
+    if not isinstance(frames, Iterable):
+        frames = [frames]
+    structure_list = NeighbourList.AtomicStructureList()
+    for frame in frames:
+        if is_valid_structure(frame):
+            structure = frame
         else:
-            raise RuntimeError(
-                'Cannot convert structure of type {}'.format(type(frame)))
-    return structure
+            if is_ase_Atoms(frame):
+                structure = unpack_ase(frame)
+            else:
+                raise RuntimeError(
+                    'Cannot convert structure of type {}'.format(type(frame)))
+        structure_list.append(**structure)
+    return structure_list
 
 
 def is_ase_Atoms(frame):

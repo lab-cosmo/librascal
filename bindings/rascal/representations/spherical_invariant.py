@@ -2,8 +2,8 @@ import json
 
 from ..neighbourlist import get_neighbourlist
 from .base import CalculatorFactory
-from ..neighbourlist.structure_manager import convert_to_structure
-from ..neighbourlist.base import NeighbourListFactory
+from ..neighbourlist.structure_manager import convert_to_structure_list
+from ..neighbourlist.base import (NeighbourListFactory, StructureCollectionFactory)
 import numpy as np
 
 
@@ -99,9 +99,9 @@ class SphericalInvariant(object):
                                     radial_contribution=radial_contribution,)
 
         self.nl_options = [
-            dict(name='centers', args=[]),
-            dict(name='neighbourlist', args=[interaction_cutoff]),
-            dict(name='strict', args=[interaction_cutoff])
+            dict(name='centers', args=dict()),
+            dict(name='neighbourlist', args=dict(cutoff=interaction_cutoff)),
+            dict(name='strict', args=dict(cutoff=interaction_cutoff))
         ]
 
         hypers_str = json.dumps(self.hypers)
@@ -140,30 +140,31 @@ class SphericalInvariant(object):
 
         Returns
         -------
-        
+
             Object containing the representation
 
         """
 
-        structures = [convert_to_structure(frame) for frame in frames]
-        managers = [NeighbourListFactory(self.nl_options)] * len(frames)
-        ii = 0
-        for structure, manager in zip(structures, managers):
-            try:
-                manager.update(**structure)
-            except:
-                print("Structure Rep computation {} failed".format(ii))
+        structures = convert_to_structure_list(frames)
+        managers = StructureCollectionFactory(self.nl_options)
+        try:
+            managers.add_structure(structures)
+        except:
+            ii = 0
+            for structure, manager in zip(structures, managers):
+                try:
+                    manager.update(structure)
+                except:
+                    print("Structure Rep computation {} failed".format(ii))
+
         n_atoms = [0]+[len(structure['atom_types'])
                        for structure in structures]
         structure_ids = np.cumsum(n_atoms)[:-1]
         n_centers = np.sum(n_atoms)
-        ii = 0
-        for manager in managers:
-            try:
-                self.representation.compute(manager)
-            except:
-                print("Structure Rep computation {} failed".format(ii))
 
+        self.representation.compute(managers)
+
+        return managers
 
 
     def get_num_coefficients(self):

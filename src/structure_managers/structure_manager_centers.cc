@@ -69,7 +69,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   // overloading the update function
   void StructureManagerCenters::update_self(
-      AtomicStructure<traits::Dim> & structure) {
+      const AtomicStructure<traits::Dim> & structure) {
     this->atoms_object = structure;
     StructureManagerCenters::build();
   }

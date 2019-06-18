@@ -1,4 +1,5 @@
-from ..lib.Kernels import CosineKernel
+# from ..lib.Kernels import CosineKernel
+from ..lib._rascal.Models.Kernels import CosineKernel
 
 class Kernel(object):
     def __init__(self, representation, name='cosine', target_type='structure', **kwargs):

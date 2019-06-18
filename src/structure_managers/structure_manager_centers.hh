@@ -170,7 +170,7 @@ namespace rascal {
       // update the underlying structure
       this->update_self(std::forward<Args>(arguments)...);
       this->set_update_status(true);
-      
+
       // send the update signal to the tree
       this->update_children();
     }
@@ -302,7 +302,7 @@ namespace rascal {
     void update_self(const std::string filename);
 
     //! overload of update that does not change the underlying structure
-    void update_self(AtomicStructure<traits::Dim> & structure);
+    void update_self(const AtomicStructure<traits::Dim> & structure);
 
     //! overload of update that does not change the underlying structure
     void update_self() {}

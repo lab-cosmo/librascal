@@ -396,11 +396,12 @@ namespace rascal {
                                                                 m_adaptor);
   }
 
-  template <template <class> class Adaptor, typename Manager_t>
+  template <typename Manager, template <class> class ...Adaptor>
   void bind_structure_manager_collection(py::module & m_str_mng) {
-    using ManagerCollection_t = ManagerCollection<Adaptor<Manager_t>>;
+    using ManagerCollection_t = ManagerCollection<Manager, Adaptor...>;
+    using Manager_t = typename ManagerCollection_t::Manager_t;
     std::string factory_name = "ManagerCollection_";
-    factory_name += internal::GetBindingTypeName<Adaptor<Manager_t>>();
+    factory_name += internal::GetBindingTypeName<Manager_t>();
     py::class_<ManagerCollection_t> manager_collection(
         m_str_mng, factory_name.c_str());
 
@@ -417,12 +418,17 @@ namespace rascal {
         [](ManagerCollection_t & v) { return py::make_iterator(v.begin(), v.end()); },
         py::keep_alive<0, 1>());
 
-    // add_structures
-    // manager_collection.def([](std::string & adaptor_inputs_str) {
-    //   // convert to json
-    //   json hypers = json::parse(adaptor_inputs_str);
+    // add_structures to the collection
+    manager_collection.def("add_structures", (void (ManagerCollection_t::*)(const std::vector<AtomicStructure<3>>& )) &ManagerCollection_t::add_structures);
+    manager_collection.def("add_structures", (void (ManagerCollection_t::*)(const std::string&, const int&, int)) &ManagerCollection_t::add_structures, R"(Read a file and extract the structures from start to start + length.)", py::arg("filename"), py::arg("start") = 0, py::arg("length") = -1);
 
-    // });
+    manager_collection.def(
+        "__len__",
+        [](ManagerCollection_t & v) { return v.size(); });
+
+    manager_collection.def(
+        "get_parameters",
+        [](ManagerCollection_t & v) { return std::string(v.get_adaptors_parameters().dump(2)); });
   }
 
   /**
@@ -515,33 +521,41 @@ namespace rascal {
     add_cluster_refs<4, 0, 6>::static_for(m_throwaway);
   }
 
+  /**
+   * bind AtomicStructure class and bind a vector of them so that a vector of
+   * AtomicStructure can be passed from python to c++ without copy to the
+   * ManagerCollection.
+   */
   void  bind_atomic_structure(py::module & mod) {
     using AtomicStructure_t = AtomicStructure<3>;
     py::class_<AtomicStructure_t>(mod, "AtomicStructure")
-      .def(py::init<AtomicStructure_t>())
+      .def(py::init<>())
       .def("get_positions", [](AtomicStructure_t & atomic_structure) {
           return atomic_structure.positions;
+        }, py::return_value_policy::reference_internal)
+      .def("get_atom_types", [](AtomicStructure_t & atomic_structure) {
+          return atomic_structure.atom_types;
+        }, py::return_value_policy::reference_internal)
+      .def("get_cell", [](AtomicStructure_t & atomic_structure) {
+          return atomic_structure.cell;
+        }, py::return_value_policy::reference_internal)
+      .def("get_pbc", [](AtomicStructure_t & atomic_structure) {
+          return atomic_structure.pbc;
         }, py::return_value_policy::reference_internal);
-      // .def_property_readonly("atom_types", &AtomicStructure_t::atom_types,
-      //                         py::return_value_policy::reference_internal)
-      // .def_property_readonly("cell", &AtomicStructure_t::cell,
-      //                         py::return_value_policy::reference_internal)
-      // .def_property_readonly("pbc", &AtomicStructure_t::pbc,
-      //                         py::return_value_policy::reference_internal);
-
 
     using AtomicStructureList_t = std::vector<AtomicStructure<3>>;
     py::class_<AtomicStructureList_t>(mod, "AtomicStructureList")
-      .def(py::init<AtomicStructureList_t>())
-      .def("reserve", &AtomicStructureList_t::reserve)
-      .def("push_back", [](AtomicStructureList_t & atomic_structure_list,
+      .def(py::init<>())
+      .def("append", [](AtomicStructureList_t & v,
                   const py::EigenDRef<const Eigen::MatrixXd> & positions,
                   const py::EigenDRef<const Eigen::VectorXi> & atom_types,
                   const py::EigenDRef<const Eigen::MatrixXd> & cell,
                   const py::EigenDRef<const Eigen::MatrixXi> & pbc) {
-                  atomic_structure_list.emplace_back();
-                  atomic_structure_list.back().set_structure(positions, atom_types, cell, pbc);
-                })
+                  v.emplace_back();
+                  v.back().set_structure(positions, atom_types, cell, pbc);
+                },
+                py::arg("positions"), py::arg("atom_types"), py::arg("cell"),
+                py::arg("pbc"), py::call_guard<py::gil_scoped_release>())
       .def("__len__", [](const AtomicStructureList_t &v) { return v.size(); })
       .def("__iter__", [](AtomicStructureList_t &v) {
         return py::make_iterator(v.begin(), v.end());
@@ -571,6 +585,8 @@ namespace rascal {
     BindAdaptorStack<Manager_t, AdaptorNeighbourList, AdaptorStrict>
         adaptor_stack_1{m_nl, m_adp, m_throwaway};
 
+    // bind the manager collection
+    bind_structure_manager_collection<Manager_t, AdaptorNeighbourList, AdaptorStrict>(m_nl);
     bind_atomic_structure(m_nl);
   }
 }

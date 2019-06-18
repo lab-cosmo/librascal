@@ -2,8 +2,8 @@ import json
 
 from ..neighbourlist import get_neighbourlist
 from .base import CalculatorFactory
-from ..neighbourlist.structure_manager import convert_to_structure
-from ..neighbourlist.base import NeighbourListFactory
+from ..neighbourlist.structure_manager import convert_to_structure_list
+from ..neighbourlist.base import (NeighbourListFactory, StructureCollectionFactory)
 import numpy as np
 
 
@@ -94,9 +94,9 @@ class SphericalExpansion(object):
                                     radial_contribution=radial_contribution)
 
         self.nl_options = [
-            dict(name='centers', args=[]),
-            dict(name='neighbourlist', args=[interaction_cutoff]),
-            dict(name='strict', args=[interaction_cutoff])
+            dict(name='centers', args=dict()),
+            dict(name='neighbourlist', args=dict(cutoff=interaction_cutoff)),
+            dict(name='strict', args=dict(cutoff=interaction_cutoff))
         ]
 
         hypers_str = json.dumps(self.hypers)
@@ -109,12 +109,12 @@ class SphericalExpansion(object):
         self.misc = dict(method=method, n_workers=n_workers,
                          disable_pbar=disable_pbar)
 
-        self.representation = CalculatorFactory(self.rep_options)
+        self._representation = CalculatorFactory(self.rep_options)
 
     def update_hyperparameters(self, **hypers):
         """Store the given dict of hyperparameters
 
-        Also updates the internal json-like representation
+        Also updates the internal json-like _representation
 
         """
         allowed_keys = {'interaction_cutoff', 'cutoff_smooth_width',
@@ -135,16 +135,23 @@ class SphericalExpansion(object):
 
         Returns
         -------
-        
+
             Object containing the representation
 
         """
-        structures = [convert_to_structure(frame) for frame in frames]
+        structures = convert_to_structure_list(frames)
+        managers = StructureCollectionFactory(self.nl_options)
 
-        managers = [NeighbourListFactory(self.nl_options)]*len(frames)
-
-        for structure,manager in zip(structures,managers):
-            manager.update(**structure)
+        try:
+            managers.add_structure(structures)
+        except:
+            print("Neighbourlist of structures failed. try one at a time.")
+            ii = 0
+            for structure, manager in zip(structures, managers):
+                try:
+                    manager.update(structure)
+                except:
+                    print("Neighbourlist of structure {} failed".format(ii))
 
         n_atoms = [0]+[len(structure['atom_types'])
                        for structure in structures]
@@ -152,8 +159,7 @@ class SphericalExpansion(object):
         structure_ids = np.cumsum(n_atoms)[:-1]
         n_centers = np.sum(n_atoms)
 
-        for manager in managers:
-            self.representation.compute(manager)
+        self.representation.compute(managers)
 
         return managers
 

@@ -1,7 +1,7 @@
 from ..lib import RepresentationManager
 from ..utils.pool_worker import FactoryPool
 from ..neighbourlist.base import NeighbourListFactory
-from ..neighbourlist.structure_manager import convert_to_structure
+from ..neighbourlist.structure_manager import convert_to_structure_list
 
 import numpy as np
 import queue

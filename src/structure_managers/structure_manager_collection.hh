@@ -109,6 +109,9 @@ namespace rascal {
       this->adaptor_inputs = adaptor_inputs;
     }
 
+    inline const Hypers_t& get_adaptors_parameters() const {
+      return this->adaptor_inputs;
+    }
 
     /**
      * functions to add a(several) structures to the collection
@@ -125,6 +128,18 @@ namespace rascal {
 
     inline void add_structure(std::shared_ptr<Manager_t>& manager) {
       this->managers.emplace_back(manager);
+    }
+    /**
+     * Function used from python. add empty structures to build the objects and
+     * update them afterwards (small workaround because AtomicStructure<3>
+     * can't be put in a json object).
+     */
+    void add_structures(const std::vector<AtomicStructure<3>>& atomic_structures) {
+      Hypers_t structure = Hypers_t::object();
+      for (const auto& atomic_structure : atomic_structures) {
+        this->add_structure(structure);
+        this->managers.back()->update(atomic_structure);
+      }
     }
 
     void add_structures(const Hypers_t& structures, const Hypers_t& adaptors_inputs) {
