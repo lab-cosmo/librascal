@@ -34,8 +34,8 @@ namespace rascal {
             class StructureManager>
   void InputNodeContribution<SymFun, CutFun, StructureManager>::apply(
       StructureManager & manager) const {
-    utils::for_each_at_order<SymmetryFunction::NbParams>::loop(
-        eval_cluster, manager);
+    utils::for_each_at_order<SymmetryFunction::NbParams>::loop(eval_cluster,
+                                                               manager);
   }
 
   /* ---------------------------------------------------------------------- */
@@ -43,11 +43,10 @@ namespace rascal {
             class StructureManager>
   void InputNodeContribution<SymFun, CutFun, StructureManager>::init(
       const UnitStyle & units) {
-
     std::map<double, size_t> nb_param_per_cutoff{};
     for (const auto & param : this->raw_params) {
-      auto && r_cut{
-          param.at("r_cut").get<double>()} nb_param_per_cutoff[r_cut]++;
+      auto && r_cut{param.at("r_cut").get<double>()};
+      nb_param_per_cutoff[r_cut]++;
     }
 
     for (const auto & key_val : nb_param_per_cutoff) {

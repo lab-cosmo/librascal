@@ -31,7 +31,7 @@
 
 namespace rascal {
 
-  enum ActivationFunType {Identity, Logistic, CentredLogistic};
+  enum ActivationFunType { Identity, Logistic, CentredLogistic };
 
   /* ---------------------------------------------------------------------- */
   template <ActivationFunType FunType>
@@ -43,7 +43,9 @@ namespace rascal {
     static constexpr size_t NbParams{0};
     using ParamShape = Eigen::MatrixBase<double, NbParams, 0>;
 
-    static Arr_t eval_function(const Eigen::ArrayBase<Derived> & x) { return x; }
+    static Arr_t eval_function(const Eigen::ArrayBase<Derived> & x) {
+      return x;
+    }
     static Arr_t eval_derivative(const Eigen::ArrayBase<Derived> & x) {
       return 1.;
     }
@@ -60,7 +62,7 @@ namespace rascal {
     }
     static Arr_t eval_derivative(const Eigen::ArrayBase<Derived> & x) {
       auto && f_val{eval_function(x)};
-      return f_val*(1.-f_val);
+      return f_val * (1. - f_val);
     }
   }
 
@@ -74,7 +76,7 @@ namespace rascal {
 
     template <class Derived>
     static Arr_t eval_function(const Eigen::ArrayBase<Derived> & x) {
-      return Parent::eval_function(x)-.5;
+      return Parent::eval_function(x) - .5;
     }
   }
 

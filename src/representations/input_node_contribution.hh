@@ -26,20 +26,17 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef _SRC_REPRESENTATIONS_INPUT_NODE_CONTRIBUTION_HH_
 #define _SRC_REPRESENTATIONS_INPUT_NODE_CONTRIBUTION_HH_
 
 #include "representations/cutoff_functions.hh"
 #include "representations/symmetry_functions.hh"
 
-
 namespace rascal {
 
   template <class StructureManager>
   class InputNodeContributionBase {
    public:
-
     template <size_t Order>
     using ClusterRef_t = typename StructureManager::template ClusterRef<Order>;
 
@@ -50,20 +47,21 @@ namespace rascal {
 
     //! Constructor with symmetry function type
     InputNodeContributionBase(const SymmetryFunType sym_fun_type,
-                             const size_t order)
+                              const size_t order)
         : sym_fun_type{sym_fun_type}, order{order} {}
 
     //! Copy constructor
-    InputNodeContributionBase(const InputNodeContributionBase &other);
+    InputNodeContributionBase(const InputNodeContributionBase & other);
 
     //! Move constructor
-    InputNodeContributionBase(InputNodeContributionBase &&other) noexcept;
+    InputNodeContributionBase(InputNodeContributionBase && other) noexcept;
 
     //! Destructor
     virtual ~InputNodeContributionBase() noexcept;
 
     //! Copy assignment operator
-    InputNodeContributionBase& operator=(const InputNodeContributionBase &other);
+    InputNodeContributionBase &
+    operator=(const InputNodeContributionBase & other);
 
     //! Move assignment operator
     InputNodeContributionBase &
@@ -92,7 +90,7 @@ namespace rascal {
         throw std::runtime_error(error.str());
       }
       this->raw_params.push_back(params);
-    };
+    }
 
    protected:
     std::vector<json> raw_params{};
@@ -106,12 +104,11 @@ namespace rascal {
   class InputNodeContribution final
       : public InputNodeContributionBase<StructureManager> {
    public:
-
     using Parent = InputNodeContributionBase;
     using SymmetryFunction = SymmetryFun<SymFun>;
     using CutoffFunction = CutoffFun<CutFun>;
 
-    //stores parameter packs ordered by cutoff radius
+    // stores parameter packs ordered by cutoff radius
     using ParamStorage =
         std::map<double,
                  Eigen::Matrix<double, SymFun::NbParams, Eigen::Dynamic>>;
@@ -142,8 +139,8 @@ namespace rascal {
 
     void apply(StructureManager & manager) const;
 
-    StdSpecies get_species_combo() const; //to implement
-    size_t get_index() const; //to implement
+    StdSpecies get_species_combo() const;  // to implement
+    size_t get_index() const;              // to implement
 
    protected:
     inline void eval_cluster(StructureManager & manager, ClusterRef_t cluster
@@ -157,7 +154,7 @@ namespace rascal {
     ParamStorage params{};
   };
 
-}  // rascal
+}  // namespace rascal
 #include "input_node_contribution_impl.hh"
 
 #endif  // _SRC_REPRESENTATIONS_INPUT_NODE_CONTRIBUTION_HH_

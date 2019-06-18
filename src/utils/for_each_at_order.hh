@@ -26,7 +26,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef _SRC_UTILS_FOR_EACH_AT_ORDER_HH_
 #define _SRC_UTILS_FOR_EACH_AT_ORDER_HH_
 
@@ -60,11 +59,10 @@ namespace rascal {
        */
       template <size_t Order, class Cluster, class Function, class... Args>
       struct ForEachAtOrderHelper<Order, Order, Cluster, Function, Args...> {
-
         static void loop(Cluster & cluster, Function && function,
                          Args &&... args) {
           function(cluster, forward<Args>(args)...);
-        };
+        }
       }
 
     }  // namespace detail

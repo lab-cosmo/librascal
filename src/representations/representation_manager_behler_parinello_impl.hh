@@ -71,7 +71,7 @@ namespace rascal {
     using utils::for_each_at_order;
 
     //! precompute precomputable values
-    for (const auto && species_key_val: this->symmetry_functions) {
+    for (const auto && species_key_val : this->symmetry_functions) {
       auto && sym_fun{species_key_val.second};
       sym_fun.prepare(this->structure);
     }

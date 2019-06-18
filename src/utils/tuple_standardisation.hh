@@ -26,7 +26,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef _SRC_UTILS_TUPLE_STANDARDISATION_HH_
 #define _SRC_UTILS_TUPLE_STANDARDISATION_HH_
 
@@ -36,39 +35,40 @@
 namespace rascal {
 
   template <typename T, size_t MaxOrder>
-  class TupleStandardisation
-  {
-
+  class TupleStandardisation {
     static_assert(std::is_arithmetic<T>::value,
                   "must be an integer or float type");
+
    public:
     //! Default constructor
     TupleStandardisation() = delete;
 
     template <size_t Order>
-    TupleStandardisation(const std::array<T, Order> & tup) : order{Order} {
+    explicit TupleStandardisation(const std::array<T, Order> & tup)
+        : order{Order} {
       for (size_t i{0}; i < Order; ++i) {
         this->key[i] = std::numeric_limits<T>::min();
       }
-      for (size_t i{0}; i < MaxOrder-Order; ++i) {
-        this->key[i+Order] = tup[i];
+      for (size_t i{0}; i < MaxOrder - Order; ++i) {
+        this->key[i + Order] = tup[i];
       }
     }
 
     //! Copy constructor
-    TupleStandardisation(const TupleStandardisation &other) = default;
+    TupleStandardisation(const TupleStandardisation & other) = default;
 
     //! Move constructor
-    TupleStandardisation(TupleStandardisation &&other) = default;
+    TupleStandardisation(TupleStandardisation && other) = default;
 
     //! Destructor
     virtual ~TupleStandardisation() = default;
 
     //! Copy assignment operator
-    TupleStandardisation& operator=(const TupleStandardisation &other) = default;
+    TupleStandardisation &
+    operator=(const TupleStandardisation & other) = default;
 
     //! Move assignment operator
-    TupleStandardisation& operator=(TupleStandardisation &&other)  = default;
+    TupleStandardisation & operator=(TupleStandardisation && other) = default;
 
     bool operator<(const TupleStandardisation & other) const {
       return this->key < other.key;
@@ -78,18 +78,18 @@ namespace rascal {
     operator std::array<T, Order>() const {
       std::array<T, Order> ret_val{};
       for (size_t i{0}; i < Order; ++i) {
-        ret_val[i] = this->key[i+MaxOrder-Order];
+        ret_val[i] = this->key[i + MaxOrder - Order];
       }
       return ret_val;
     }
 
-    const size_t & get_order() const {return this->order;}
+    const size_t & get_order() const { return this->order; }
 
    protected:
     const std::array<T, MaxOrder> key{};
     const size_t order;
   };
 
-}  // rascal
+}  // namespace rascal
 
 #endif /* _SRC_UTILS_TUPLE_STANDARDISATION_HH_ */

@@ -128,7 +128,7 @@ namespace rascal {
     /* ---------------------------------------------------------------------- */
     const std::string UnitStyle::format(const std::string & symbol,
                                         int numerator, int denominator) const {
-      if ((numerator == 1) and (denominator == 1)) {
+      if ((numerator == 1) and (denominator == 1)) { //NOLINT
         return symbol;
       } else if (denominator == 1) {
         std::stringstream out_stream{};
