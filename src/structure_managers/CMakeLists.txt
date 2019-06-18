@@ -9,7 +9,7 @@
 #
 # @section LICENSE
 #
-# Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
+# Copyright  2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
 #
 # rascal is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public License as
@@ -32,4 +32,4 @@ set (manager_SRC
   ${CMAKE_CURRENT_SOURCE_DIR}/structure_manager_centers.cc
   )
 
-target_sources(rascal PRIVATE ${manager_SRC})
+target_sources("${LIBRASCAL_NAME}" PRIVATE ${manager_SRC})

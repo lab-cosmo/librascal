@@ -7,7 +7,7 @@
  *
  * @brief JSON interface from nlohmanns header class
  *
- * Copyright © 2018 Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright  2018 Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -25,8 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef JSON_IO_H
-#define JSON_IO_H
+#ifndef SRC_JSON_IO_HH_
+#define SRC_JSON_IO_HH_
 
 /*
  * interface to external header-library/header-class, which makes it easy to use
@@ -34,6 +34,8 @@
  * documentation.
  */
 #include "json.hpp"
+
+#include <fstream>
 
 // For convenience
 using json = nlohmann::json;
@@ -52,16 +54,16 @@ namespace rascal {
      */
     struct AtomicJsonData {
       /**
-       *  \param cell is a vector a vector of vectors which holds the cell unit
+       *  @param cell is a vector a vector of vectors which holds the cell unit
        *  vectors.
        *
-       *  \param type a vector of integers which holds the atomic type (atomic
+       *  @param type a vector of integers which holds the atomic type (atomic
        *  number from periodic table).
        *
-       *  \param pbc is a 0/1 vector which says, where periodic boundary
+       *  @param pbc is a 0/1 vector which says, where periodic boundary
        *  conditions are applied.
        *
-       *  \param position is a vector of vectors which holds the atomic
+       *  @param position is a vector of vectors which holds the atomic
        *  positions.
        */
       std::vector<std::vector<double>> cell{};
@@ -89,8 +91,8 @@ namespace rascal {
      * expected unit, returns value if successful and throws an error if not
      */
     double check_units(const std::string & expected_unit,
-                              const json & parameter);
+                       const json & parameter);
   }  // namespace json_io
 }  // namespace rascal
 
-#endif /* JSON_IO_H */
+#endif  // SRC_JSON_IO_HH_

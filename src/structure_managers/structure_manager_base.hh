@@ -7,7 +7,7 @@
  *
  * @brief  Polymorphic base class for structure managers
  *
- * Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright  2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -25,22 +25,29 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef STRUCTURE_MANAGER_BASE_H
-#define STRUCTURE_MANAGER_BASE_H
+#ifndef SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_BASE_HH_
+#define SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_BASE_HH_
+
+#include "structure_managers/updateable_base.hh"
 
 #include <string>
 
 namespace rascal {
 
   //! polymorphic base class type for StructureManagers
-  class StructureManagerBase {
+  class StructureManagerBase : public Updateable {
    public:
     //! access to specific properties with a string
     inline decltype(auto) get_property(std::string name);
     //! only? virtual function needed.
-    virtual size_t nb_clusters(size_t cluster_size) const = 0;
+    virtual size_t nb_clusters(size_t order) const = 0;
     virtual ~StructureManagerBase() = default;
-  };
-}  // rascal
+    virtual void update_self() = 0;
+    // virtual void update_children() = 0;
+    // virtual void set_update_status(const bool) = 0;
 
-#endif /* STRUCTURE_MANAGER_BASE_H */
+   protected:
+  };
+}  // namespace rascal
+
+#endif  // SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_BASE_HH_

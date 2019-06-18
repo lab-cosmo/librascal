@@ -7,7 +7,7 @@
  *
  * @brief base class for storage of features from multiple managers
  *
- * Copyright © 2018 Musil Felix, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright  2018 Musil Felix, COSMO (EPFL), LAMMM (EPFL)
  *
  * rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -25,9 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
-#ifndef FEATURE_MANAGER_BASE_H
-#define FEATURE_MANAGER_BASE_H
+#ifndef SRC_REPRESENTATIONS_FEATURE_MANAGER_BASE_HH_
+#define SRC_REPRESENTATIONS_FEATURE_MANAGER_BASE_HH_
 
 #include "structure_managers/structure_manager_base.hh"
 #include "representations/representation_manager_base.hh"
@@ -37,45 +36,47 @@
 #include <stdexcept>
 #include <iterator>
 
-
 namespace rascal {
   /**
    * Base class of the Feature Managers. Defines the basic interface and some
    * common short hand types.
    */
-  template<typename T>
+  template <typename T>
   class FeatureManagerBase {
    public:
     using RepresentationManager_t = RepresentationManagerBase;
     using Hypers_t = typename RepresentationManagerBase::Hypers_t;
-    using precision_t = T;
-    using Feature_Matrix_t = Eigen::Matrix<precision_t, Eigen::Dynamic,
-                                    Eigen::Dynamic, Eigen::ColMajor>;
+    using Precision_t = T;
+    using Feature_Matrix_t = Eigen::Matrix<Precision_t, Eigen::Dynamic,
+                                           Eigen::Dynamic, Eigen::ColMajor>;
     using Feature_Matrix_ref = Eigen::Map<const Feature_Matrix_t>;
 
     //! Default constructor
     FeatureManagerBase() = default;
 
     //! Copy constructor
-    FeatureManagerBase(const FeatureManagerBase &other) = delete;
+    FeatureManagerBase(const FeatureManagerBase & other) = delete;
 
     //! Move constructor
-    FeatureManagerBase(FeatureManagerBase &&other) = delete;
+    FeatureManagerBase(FeatureManagerBase && other) = default;
 
     //! Destructor
     virtual ~FeatureManagerBase() = default;
 
     //! Copy assignment operator
-    FeatureManagerBase& operator=(const FeatureManagerBase & other) = delete;
+    FeatureManagerBase & operator=(const FeatureManagerBase & other) = delete;
 
     //! Move assignment operator
-    FeatureManagerBase& operator=(FeatureManagerBase && other) = delete;
+    FeatureManagerBase & operator=(FeatureManagerBase && other) = default;
 
     //! pre-allocate memory
-    virtual void reserve(size_t&) = 0;
+    virtual void reserve(size_t &) = 0;
 
     //! move data from the representation manager property
-    virtual void push_back(RepresentationManager_t&) = 0;
+    virtual void push_back(RepresentationManager_t &) = 0;
+
+    //! move data from the representation manager property
+    virtual void insert(size_t &, RepresentationManager_t &) = 0;
 
     //! return number of elements of the flattened array
     virtual inline int size() = 0;
@@ -91,9 +92,10 @@ namespace rascal {
 
     //! expose the feature matrix
     virtual inline Feature_Matrix_ref get_feature_matrix() = 0;
+
+    virtual inline Feature_Matrix_t get_feature_matrix_dense() = 0;
   };
 
+}  // namespace rascal
 
-} // rascal
-
-#endif /* FEATURE_MANAGER_BASE_H */
+#endif  // SRC_REPRESENTATIONS_FEATURE_MANAGER_BASE_HH_

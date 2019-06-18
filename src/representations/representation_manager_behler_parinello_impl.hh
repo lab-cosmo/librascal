@@ -25,6 +25,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#ifndef SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_BEHLER_PARINELLO_IMPL_HH_
+#define SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_BEHLER_PARINELLO_IMPL_HH_
+
 #include "utils/for_each_at_order.hh"
 namespace rascal {
 
@@ -129,3 +132,5 @@ namespace rascal {
   }
 
 }  // namespace rascal
+
+#endif  // SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_BEHLER_PARINELLO_IMPL_HH_

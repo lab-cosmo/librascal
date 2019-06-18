@@ -7,7 +7,7 @@
  *
  * @brief Test interface between librascal and cephes
  *
- * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright  2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -33,12 +33,12 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(MathCEPHESTests);
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(math_hyp2f1_test, ManagerFixture_math) {
+  BOOST_FIXTURE_TEST_CASE(math_hyp2f1_test, ManagerFixtureMath) {
     for (int ii{0}; ii < 3; ++ii) {
       double val{math::hyp2f1(numbers(0, ii), numbers(1, ii), numbers(2, ii),
                               numbers(3, ii))};
       if (vebose) {
-        std::cout << std::setprecision(14) << val <<", ";
+        std::cout << std::setprecision(14) << val << ", ";
       }
       auto error{std::abs(val - results_hyp2f1[ii])};
       BOOST_CHECK_LE(error, math_tol);
@@ -48,4 +48,4 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();
 
-}  // rascal
+}  // namespace rascal

@@ -3,10 +3,10 @@
 Introduction
 ============
 
-About this project
-------------------
+Why LibRascal ?
+---------------
 
-Rascal is a versatile and scalable fingerprint and machine-learning code. It focuses on the efficient construction of representations of atomic structures, that can then be fed to any supervised or unsupervised learning algorithm. Simple regression code will be included for testing purposes, but the long-term goal is to develop a separate collection of tools to this end. 
+Rascal is a versatile and scalable fingerprint and machine-learning code. It focuses on the efficient construction of representations of atomic structures, that can then be fed to any supervised or unsupervised learning algorithm. Simple regression code will be included for testing purposes, but the long-term goal is to develop a separate collection of tools to this end.
 
 Rascal as of now is thought as standalone code. However, we aim to provide enough flexibility to interface it with other codes such as LAMMPS and PLUMED-2.0. It can be used as a C++ library as well as a python module. To be able to call it from python, we have used the pybind11 library.
 
@@ -23,7 +23,7 @@ To compile the code it is necessary to have CMake 3.0 and a C++ compiler support
 
 - Eigen
 - Pybind11
-- Boost (only the unit test framework  library)
+- Boost (only the unit test framework library)
 - Doxygen
 - Sphinx
 - Breathe
@@ -51,7 +51,7 @@ To Compile the documentation from the build folder:
 Since Eigen depends on Mercurial, it may fail to download if you don't have the necessary dependencies. In that case, it may be sufficient to fix the dependencies or proceed by yourself.
 .. contents::
    :local:
-   
+
 
 .. _code_structure:
 

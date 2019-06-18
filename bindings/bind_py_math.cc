@@ -7,7 +7,7 @@
  *
  * @brief  File for binding utils subroutines
  *
- * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright  2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -25,14 +25,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #include "bind_include.hh"
 
 namespace math = rascal::math;
 namespace py = pybind11;
 
-
-void math_binding(py::module& m) {
-    m.def(
-      "hyp2f1", &math::hyp2f1, "y = hyp2f1( a, b, c, x )");
+void math_binding(py::module & m) {
+  m.def("hyp2f1", &math::hyp2f1, "y = hyp2f1( a, b, c, x )");
 }

@@ -8,7 +8,7 @@
  * @brief defines an interface to other math library like cephes to separate the
  *        namespaces
  *
- * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright  2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -29,12 +29,17 @@
 #include "math_interface.hh"
 #include "math/cephes/mconf.h"
 
-
 namespace rascal {
   namespace math {
 
-    double hyp2f1(double & a, double & b, double & c, double & x ) {
+    double hyp2f1(const double & a, const double & b, const double & c,
+                  const double & x) {
       return cephes::hyp2f1(a, b, c, x);
     }
-  } // math
-} // rascal
+
+    double hyp1f1(const double & a, const double & b, const double & x) {
+      return cephes::hyperg(a, b, x);
+    }
+
+  }  // namespace math
+}  // namespace rascal

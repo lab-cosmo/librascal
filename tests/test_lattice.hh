@@ -7,7 +7,7 @@
  *
  * @brief Test implementation of lattice.cc
  *
- * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright  2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -25,8 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef TEST_LATTICE_H
-#define TEST_LATTICE_H
+#ifndef TESTS_TEST_LATTICE_HH_
+#define TESTS_TEST_LATTICE_HH_
 
 #include "lattice.hh"
 #include "atomic_structure.hh"
@@ -42,9 +42,11 @@ namespace rascal {
   struct ManagerFixtureLattice {
     ManagerFixtureLattice() {
       Cell_t cell;
+      // clang-format off
       cell << 6.19, 2.41, 0.21,
               0.00, 6.15, 1.02,
               0.00, 0.00, 7.31;
+      // clang-format on
       lattice.set_cell(cell);
     }
 
@@ -52,6 +54,6 @@ namespace rascal {
 
     Lattice<Dim> lattice{};
   };
-}  // rascal
+}  // namespace rascal
 
-#endif /* TEST_LATTICE_H */
+#endif  // TESTS_TEST_LATTICE_HH_

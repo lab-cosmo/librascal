@@ -9,7 +9,7 @@
 #
 # @section LICENSE
 #
-# Copyright © 2018 Felix Musil, COSMO (EPFL), LAMMM (EPFL)
+# Copyright  2018 Felix Musil, COSMO (EPFL), LAMMM (EPFL)
 #
 # rascal is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public License as
@@ -27,22 +27,16 @@
 # Boston, MA 02111-1307, USA.
 #
 
-add_library(cephes "")
+add_library("${LIBCEPHES_NAME}" "")
 
 add_subdirectory(cephes)
 
-install(TARGETS cephes DESTINATION lib)
+install(TARGETS "${LIBCEPHES_NAME}" DESTINATION lib)
 
-
-add_library(rascal-math "")
-
-install(TARGETS rascal-math DESTINATION lib)
 
 set (math_SRC
-  math_utils.cc
-  math_interface.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/math_utils.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/math_interface.cc
   )
 
-target_sources(rascal-math PRIVATE ${math_SRC})
-
-target_link_libraries(rascal-math PRIVATE cephes)
+target_sources("${LIBRASCAL_NAME}" PRIVATE ${math_SRC})

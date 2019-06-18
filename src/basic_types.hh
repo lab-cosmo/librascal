@@ -7,7 +7,7 @@
  *
  * @brief  Implementation of base-type objects for Rascal
  *
- * Copyright © 2017 Felix Musil
+ * Copyright  2017 Felix Musil
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -25,8 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef BASIC_TYPES_H
-#define BASIC_TYPES_H
+#ifndef SRC_BASIC_TYPES_HH_
+#define SRC_BASIC_TYPES_HH_
 
 namespace rascal {
   /**
@@ -35,6 +35,6 @@ namespace rascal {
    */
   using Dim_t = int;
 
-} // rascal
+}  // namespace rascal
 
-#endif /* BASIC_TYPES_H */
+#endif  // SRC_BASIC_TYPES_HH_

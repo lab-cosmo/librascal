@@ -9,7 +9,7 @@
 #
 # @section LICENSE
 #
-# Copyright © 2018 Michele Ceriotti, COSMO (EPFL), LAMMM (EPFL)
+# Copyright  2018 Michele Ceriotti, COSMO (EPFL), LAMMM (EPFL)
 #
 # rascal is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public License as
@@ -31,4 +31,5 @@
 set (utils_SRC
   ${CMAKE_CURRENT_SOURCE_DIR}/sparsify_fps.cc
   )
-target_sources(rascal PRIVATE ${utils_SRC})
+
+target_sources("${LIBRASCAL_NAME}" PRIVATE ${utils_SRC})

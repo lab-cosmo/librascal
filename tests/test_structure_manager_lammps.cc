@@ -9,7 +9,7 @@
  *
  * @section LICENSE
  *
- * Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright  2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -37,8 +37,7 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(ManagerTests);
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
-                          ManagerFixture<StructureManagerLammps>) {
-  }
+                          ManagerFixture<StructureManagerLammps>) {}
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(iterator_test,
@@ -55,8 +54,8 @@ namespace rascal {
       for (auto pair_cluster : atom_cluster) {
         auto pair_offset{pair_cluster.get_global_index()};
         if (verbose) {
-          std::cout << "pair (" << atom_cluster.back()
-                    << ", " << pair_cluster.back()
+          std::cout << "pair (" << atom_cluster.back() << ", "
+                    << pair_cluster.back()
                     << "), pair_counter = " << pair_counter
                     << ", pair_offset = " << pair_offset << std::endl;
         }
@@ -70,16 +69,16 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(interface_test,
                           ManagerFixture<StructureManagerLammps>) {
-    auto natoms = manager.size();
-    auto natoms2 = manager.get_size();
+    auto natoms = manager->size();
+    auto natoms2 = manager->get_size();
     BOOST_CHECK_EQUAL(natoms, natoms2);
 
     for (auto atom : manager) {
       auto index = atom.get_atom_index();
       auto atom_type = atom.get_atom_type();
       BOOST_CHECK_EQUAL(atom_type, type[index]);
-      // auto index_size = manager.get_cluster_size(index);
-      // auto cluster_size = manager.get_cluster_size(atom);
+      // auto index_size = manager->get_cluster_size(index);
+      // auto cluster_size = manager->get_cluster_size(atom);
       // BOOST_CHECK_EQUAL(index_size, cluster_size);
     }
   }
@@ -87,4 +86,4 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();
 
-}  // rascal
+}  // namespace rascal

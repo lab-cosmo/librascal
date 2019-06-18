@@ -35,27 +35,25 @@ namespace rascal {
 
     /* ---------------------------------------------------------------------- */
     void to_json(json & j, AtomicJsonData & s) {
-      j = json{
-        {"cell", s.cell},
-        {"numbers", s.type},
-        {"pbc", s.pbc},
-        {"positions", s.position}
-      };
+      j = json{{"cell", s.cell},
+               {"atom_types", s.type},
+               {"pbc", s.pbc},
+               {"positions", s.position}};
     }
 
     /* ---------------------------------------------------------------------- */
     void from_json(const json & j, AtomicJsonData & s) {
       s.cell = j.at("cell").get<std::vector<std::vector<double>>>();
-      s.type = j.at("numbers").get<std::vector<int>>();
+      s.type = j.at("atom_types").get<std::vector<int>>();
       s.pbc = j.at("pbc").get<std::vector<int>>();
       s.position = j.at("positions").get<std::vector<std::vector<double>>>();
     }
 
     /* ---------------------------------------------------------------------- */
     double check_units(const std::string & expected_unit,
-                              const json & parameter) {
+                       const json & parameter) {
       if (not(expected_unit == parameter.at("unit").get<std::string>())) {
-        std::stringstream error {};
+        std::stringstream error{};
         error << "unit '" << parameter.at("unit").get<std::string>()
               << "' differs from the expected unit '" << expected_unit << "'.";
         throw std::runtime_error(error.str());
@@ -63,8 +61,6 @@ namespace rascal {
       return parameter.at("value").get<double>();
     }
 
+  }  // namespace json_io
 
-
-  }  // json_io
-
-}  // rascal
+}  // namespace rascal

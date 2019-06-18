@@ -26,8 +26,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef _SRC_REPRESENTATIONS_INPUT_NODE_CONTRIBUTION_HH_
-#define _SRC_REPRESENTATIONS_INPUT_NODE_CONTRIBUTION_HH_
+#ifndef SRC_REPRESENTATIONS_INPUT_NODE_CONTRIBUTION_HH_
+#define SRC_REPRESENTATIONS_INPUT_NODE_CONTRIBUTION_HH_
 
 #include "representations/cutoff_functions.hh"
 #include "representations/symmetry_functions.hh"
@@ -157,4 +157,4 @@ namespace rascal {
 }  // namespace rascal
 #include "input_node_contribution_impl.hh"
 
-#endif  // _SRC_REPRESENTATIONS_INPUT_NODE_CONTRIBUTION_HH_
+#endif  // SRC_REPRESENTATIONS_INPUT_NODE_CONTRIBUTION_HH_

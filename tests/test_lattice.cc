@@ -7,7 +7,7 @@
  *
  * @brief test implementation of lattice
  *
- * Copyright © 2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright  2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -29,7 +29,7 @@
 #include "test_lattice.hh"
 
 namespace rascal {
-  constexpr static double lattice_tol{1e-10*100};
+  constexpr static double lattice_tol{1e-10 * 100};
 
   BOOST_AUTO_TEST_SUITE(LatticeTests);
   /* ---------------------------------------------------------------------- */
@@ -38,11 +38,11 @@ namespace rascal {
     Vec3_t cell_angles = lattice.get_cell_angles();
     Vec3_t cell_lengths_true;
     Vec3_t cell_angles_true;
-    cell_lengths_true
-      << 6.190000000000000, 6.6053463194597155, 7.383806606351496;
-    cell_angles_true
-      // angle in radian
-      <<  1.4313508192414794, 1.5423518764040736, 1.1973182286702833;
+    cell_lengths_true << 6.190000000000000, 6.6053463194597155,
+        7.383806606351496;
+    // angle in radian
+    cell_angles_true << 1.4313508192414794, 1.5423518764040736,
+        1.1973182286702833;
 
     for (int ii{0}; ii < 3; ++ii) {
       auto error{std::abs(cell_lengths[ii] - cell_lengths_true[ii])};
@@ -57,8 +57,8 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(cell_lenght_test, ManagerFixtureLattice) {
     Vec3_t cell_lengths = lattice.get_cell_lengths();
     Vec3_t cell_lengths_true;
-    cell_lengths_true
-      << 6.190000000000000, 6.6053463194597155, 7.383806606351496;
+    cell_lengths_true << 6.190000000000000, 6.6053463194597155,
+        7.383806606351496;
 
     for (int ii{0}; ii < 3; ++ii) {
       BOOST_CHECK_EQUAL(cell_lengths[ii], cell_lengths_true[ii]);
@@ -70,10 +70,10 @@ namespace rascal {
     Vec3_t cell_angles = lattice.get_cell_angles();
     Vec3_t cell_angles_true;
     // angle in radian
-    cell_angles_true
-      <<  1.4313508192414794, 1.5423518764040736, 1.1973182286702833;
+    cell_angles_true << 1.4313508192414794, 1.5423518764040736,
+        1.1973182286702833;
     for (int ii{0}; ii < 3; ++ii) {
-      auto error{std::abs(cell_angles[ii]-cell_angles_true[ii])};
+      auto error{std::abs(cell_angles[ii] - cell_angles_true[ii])};
       BOOST_CHECK_LE(error, lattice_tol);
     }
   }
@@ -82,17 +82,20 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(transformation_matrix_test, ManagerFixtureLattice) {
     Cell_t cartesian2scaled = lattice.get_cartesian2scaled_matrix();
     Cell_t cartesian2scaled_true;
-    cartesian2scaled_true
-      <<  0.161550888529887, 0.00, 0.000,
-      -0.063306933553988, 0.162601626016260, 0.000,
-      0.004192528814472, -0.022688598979013, 0.136798905608755;
+    // clang-format off
+    cartesian2scaled_true <<
+       0.161550888529887,  0.00,                          0.000,
+      -0.063306933553988,  0.162601626016260,             0.000,
+       0.004192528814472, -0.022688598979013, 0.136798905608755;
+    // clang-format on
     Cell_t scaled2cartesian = lattice.get_scaled2cartesian_matrix();
     Cell_t scaled2cartesian_true;
-    scaled2cartesian_true
-      <<  6.190000000000000, 0.00 , 0.00,
-      2.409999999999999, 6.150000000000001, 0.00,
+    // clang-format off
+    scaled2cartesian_true <<
+      6.190000000000000,             0.00 ,              0.00,
+      2.409999999999999, 6.150000000000001,              0.00,
       0.210000000000000, 1.019999999999999, 7.310000000000000;
-
+    // clang-format on
     for (int jj{0}; jj < 3; ++jj) {
       for (int ii{0}; ii < 3; ++ii) {
         BOOST_CHECK_CLOSE(cartesian2scaled_true(ii, jj),
@@ -106,6 +109,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(get_cartesian2scaled_test, ManagerFixtureLattice) {
     Eigen::MatrixXd positions_test(3, 22);
+    // clang-format off
     positions_test <<
       3.689540159937393, 5.123016813620886, 1.994119731169116,
       6.818437242389163, 2.630056617829216, 6.182500355729062,
@@ -129,10 +133,11 @@ namespace rascal {
       3.818289598989240, 1.436734374347541, 5.869165197222533,
       1.054504320562138, 6.251395251007936, 3.998423858825871,
       3.307475712744203, 5.323662899811682, 1.982236671758393;
-
+    // clang-format on
     Vec3_t positions_sc;
 
     Eigen::MatrixXd positions_sc_true(3, 22);
+    // clang-format off
     positions_sc_true <<
       0.296723741750796, 0.703639876645053, 0.267449366982580,
       0.732914251413269, 0.164593885207063, 0.835769733188786,
@@ -156,7 +161,7 @@ namespace rascal {
       0.522337838439020, 0.196543690061223, 0.802895375817036,
       0.144255037012604, 0.855184028865655, 0.546980008047315,
       0.452459057830944, 0.728271258524170, 0.271167807354089;
-
+    // clang-format on
     for (int jj{0}; jj < 22; ++jj) {
       lattice.get_cartesian2scaled(positions_test.col(jj), positions_sc);
       for (int ii{0}; ii < 3; ++ii) {
@@ -169,6 +174,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(get_scaled2cartesian_test, ManagerFixtureLattice) {
     Eigen::MatrixXd positions_sc_true(3, 22);
+    // clang-format off
     positions_sc_true <<
       3.689540159937393, 5.123016813620886, 1.994119731169116,
       6.818437242389163, 2.630056617829216, 6.182500355729062,
@@ -192,10 +198,11 @@ namespace rascal {
       3.818289598989240, 1.436734374347541, 5.869165197222533,
       1.054504320562138, 6.251395251007936, 3.998423858825871,
       3.307475712744203, 5.323662899811682, 1.982236671758393;
-
+    // clang-format o
     Vec3_t position;
 
     Eigen::MatrixXd positions_sc_test(3, 22);
+    // clang-format off
     positions_sc_test <<
       0.296723741750796, 0.703639876645053, 0.267449366982580,
       0.732914251413269, 0.164593885207063, 0.835769733188786,
@@ -219,10 +226,10 @@ namespace rascal {
       0.522337838439020, 0.196543690061223, 0.802895375817036,
       0.144255037012604, 0.855184028865655, 0.546980008047315,
       0.452459057830944, 0.728271258524170, 0.271167807354089;
-
+    // clang-format on
     for (int jj{0}; jj < 22; ++jj) {
       lattice.get_scaled2cartesian(positions_sc_test.col(jj), position);
-      for (int ii{0}; ii < 3 ; ++ii) {
+      for (int ii{0}; ii < 3; ++ii) {
         BOOST_CHECK_CLOSE(positions_sc_true(ii, jj), position[ii], lattice_tol);
       }
     }
@@ -247,17 +254,18 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(set_reciprocal_vectors_test, ManagerFixtureLattice) {
-    Cell_t reciprocical_vectors_true; // 3,22
+    Cell_t reciprocical_vectors_true;  // 3,22
+    // clang-format off
     reciprocical_vectors_true <<
-      0.16155088852988697123, -0.0000000000000000, 0.0000000000000000,
-      -0.06330693355398815669, 0.16260162601626021450, -0.0000000000000000,
-      0.00419252881447217986, -0.02268859897901305545, 0.13679890560875518357;
-
+       0.16155088852988697123, -0.0000000000000000,      0.0000000000000000,
+      -0.06330693355398815669,  0.16260162601626021450, -0.0000000000000000,
+       0.00419252881447217986, -0.02268859897901305545,  0.13679890560875518357;
+    // clang-format on
     Cell_t reciprocical_vectors = lattice.get_reciprocal_vectors();
 
     Vec3_t reciprocal_lenghts_true;
-    reciprocal_lenghts_true <<
-      0.17356276881481585983, 0.16417692074942269453, 0.13679890560875518357;
+    reciprocal_lenghts_true << 0.17356276881481585983, 0.16417692074942269453,
+        0.13679890560875518357;
     Vec3_t reciprocal_lenghts = lattice.get_reciprocal_lengths();
 
     for (int jj{0}; jj < 3; ++jj) {
@@ -265,11 +273,11 @@ namespace rascal {
         BOOST_CHECK_CLOSE(reciprocical_vectors_true(ii, jj),
                           reciprocical_vectors(ii, jj), lattice_tol);
       }
-      BOOST_CHECK_CLOSE(reciprocal_lenghts_true[jj],
-                        reciprocal_lenghts[jj], lattice_tol);
+      BOOST_CHECK_CLOSE(reciprocal_lenghts_true[jj], reciprocal_lenghts[jj],
+                        lattice_tol);
     }
   }
   /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();
 
-}  // rascal
+}  // namespace rascal

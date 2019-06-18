@@ -8,7 +8,7 @@
  * @brief tests the implementation of the adaptor increase maxlevel
  * (atom list to pairs, pairs to triplets, etc.)
  *
- * Copyright © 2018 Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright  2018 Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -43,8 +43,8 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
                           PairFixtureFile<StructureManagerCenters>) {
-    AdaptorMaxOrder<PairManager_t> adaptor{this->pair_manager};
-    adaptor.update();
+    auto adaptor{make_adapted_manager<AdaptorMaxOrder>(this->pair_manager)};
+    adaptor->update();
   }
 
   /* ---------------------------------------------------------------------- */
@@ -64,21 +64,19 @@ namespace rascal {
     constexpr bool check_below{false};
 
     // Check underlying manager
-    if (check_below) std::cout << ">> underlying manager " << std::endl;
+    if (check_below) {
+      std::cout << ">> underlying manager " << std::endl;
+    }
     size_t npairs1{0};
-    for (auto atom : pair_manager) {
+    for (auto atom : pair_manager->with_ghosts()) {
       if (verbose) {
-        std::cout << "chain atom "
-                  << atom.back()
-                  << std::endl;
+        std::cout << "atom " << atom.back() << std::endl;
       }
       for (auto pair : atom) {
         npairs1++;
         if (verbose) {
-          std::cout << " chain pair "
-                    << pair.back()
-                    << " glob " << pair.get_global_index()
-                    << std::endl;
+          std::cout << " pair " << pair.back() << " glob "
+                    << pair.get_global_index() << std::endl;
         }
       }
     }
@@ -87,14 +85,14 @@ namespace rascal {
       std::cout << "<< underlying manager" << std::endl;
     }
 
-    auto npairs_tmp = pair_manager.get_nb_clusters(2);
+    auto npairs_tmp = pair_manager->get_nb_clusters(2);
     BOOST_CHECK_EQUAL(npairs_tmp, npairs1);
 
-    AdaptorMaxOrder<PairManager_t> adaptor{this->pair_manager};
-    adaptor.update();
+    auto adaptor{make_adapted_manager<AdaptorMaxOrder>(this->pair_manager)};
+    adaptor->update();
 
     //! make sure the number of pairs gets carried over to the next layer
-    auto npairs_adaptor = adaptor.get_nb_clusters(2);
+    auto npairs_adaptor = adaptor->get_nb_clusters(2);
     BOOST_CHECK_EQUAL(npairs_adaptor, npairs_tmp);
 
     if (verbose) {
@@ -108,37 +106,34 @@ namespace rascal {
     for (auto atom : adaptor) {
       natoms++;
       if (verbose) {
-        std::cout << atom.back()
-                  << std::endl;
+        std::cout << atom.back() << std::endl;
       }
 
-      if (verbose) std::cout << "position: " << atom.get_position
-                     () << std::endl;
+      if (verbose) {
+        std::cout << "position: " << atom.get_position() << std::endl;
+      }
 
       for (auto pair : atom) {
         npairs++;
         if (verbose) {
-          std::cout << "   complete pair "
-                    << atom.back() << " " << pair.back()
+          std::cout << "   complete pair " << atom.back() << " " << pair.back()
                     << " glob " << pair.get_global_index() << std::endl;
         }
         for (auto triplet : pair) {
           n_triplets++;
           if (verbose) {
-            std::cout << "             triplet "
-                      << triplet.back()
-                      << " global " << triplet.get_global_index()
+            std::cout << "             triplet " << triplet.back() << " global "
+                      << triplet.get_global_index() << std::endl;
+            std::cout << "                         complete " << atom.back()
+                      << " " << pair.back() << " " << triplet.back()
                       << std::endl;
-            std::cout << "                         complete "
-                      << atom.back() << " "
-                      << pair.back() << " "
-                      << triplet.back() << std::endl;
           }
         }
       }
     }
-    if (verbose) std::cout << "Number of triplets: " << n_triplets << std::endl;
-    // TODO(markus): check for consistency in number of tuples
+    if (verbose) {
+      std::cout << "Number of triplets: " << n_triplets << std::endl;
+    }
   }
 
   /* ---------------------------------------------------------------------- */
@@ -153,19 +148,20 @@ namespace rascal {
                           ManagerFixture<StructureManagerLammps>) {
     constexpr bool verbose{false};
 
-    if (verbose) std::cout << ">> pair to triplet extension" << std::endl;
+    if (verbose) {
+      std::cout << ">> pair to triplet extension" << std::endl;
+    }
 
-    AdaptorHalfList<StructureManagerLammps> SM2{manager};
-    SM2.update();
-    AdaptorMaxOrder<AdaptorHalfList<StructureManagerLammps>> SM3{SM2};
-    SM3.update();
+    auto SM2{make_adapted_manager<AdaptorHalfList>(manager)};
+    auto SM3{make_adapted_manager<AdaptorMaxOrder>(SM2)};
+    SM3->update();
 
     // make sure number of pairs are carried over,
     // since they are are not changed
-    BOOST_CHECK_EQUAL(SM2.get_nb_clusters(2), SM3.get_nb_clusters(2));
+    BOOST_CHECK_EQUAL(SM2->get_nb_clusters(2), SM3->get_nb_clusters(2));
 
     // only one possible triplet in this case?
-    BOOST_CHECK_EQUAL(SM3.get_nb_clusters(3), 1);
+    BOOST_CHECK_EQUAL(SM3->get_nb_clusters(3), 1);
 
     for (auto atom : SM3) {
       auto atom_index = atom.get_atom_index();
@@ -184,8 +180,8 @@ namespace rascal {
 
         for (auto triplet : pair) {
           if (verbose) {
-            std::cout << "triplet " << atom.back() << " "
-                    << pair.back() << " " << triplet.back() << std::endl;
+            std::cout << "triplet " << atom.back() << " " << pair.back() << " "
+                      << triplet.back() << std::endl;
           }
           auto triplet_index = triplet.get_atom_index();
           auto triplet_type = triplet.get_atom_type();
@@ -201,4 +197,4 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE_END();
 
-}  // rascal
+}  // namespace rascal

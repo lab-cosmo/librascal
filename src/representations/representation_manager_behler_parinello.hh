@@ -25,6 +25,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#ifndef SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_BEHLER_PARINELLO_HH_
+#define SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_BEHLER_PARINELLO_HH_
+
 #include "representation_manager_base.hh"
 #include "cutoff_functions.hh"
 #include "structure_managers/species_manager.hh"
@@ -35,9 +38,6 @@
 #include <string>
 #include <vector>
 #include <limits>
-
-#ifndef REPRESENTATION_MANAGER_BEHLER_PARINELLO_H
-#define REPRESENTATION_MANAGER_BEHLER_PARINELLO_H
 
 namespace rascal {
 
@@ -155,4 +155,4 @@ namespace rascal {
 
 #include "representation_manager_behler_parinello_impl.hh"
 
-#endif /* REPRESENTATION_MANAGER_BEHLER_PARINELLO_H */
+#endif // SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_BEHLER_PARINELLO_HH_

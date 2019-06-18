@@ -9,7 +9,7 @@
  * @brief common data type for atomic structure data including positions, types,
  *        cell and periodic boundary conditions
  *
- * Copyright © 2018  Felix Musil, Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright  2018  Felix Musil, Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -27,8 +27,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef ATOMIC_STRUCTURE_H
-#define ATOMIC_STRUCTURE_H
+#ifndef SRC_ATOMIC_STRUCTURE_HH_
+#define SRC_ATOMIC_STRUCTURE_HH_
 
 #include "basic_types.hh"
 #include "json_io.hh"
@@ -37,29 +37,27 @@
 
 #include <cmath>
 #include <stdexcept>
-#include <cmath>
 
-
-
+// TODO(markus): CHECK for skewedness
 namespace rascal {
 
   template <int Dim>
   struct AtomicStructure {
     /**
      * A common structure to access atom and cell related data, based on the
-     * idea of the atoms object in the Atomic Simulation Environment. The object
-     * contains atomic positions, the cell vectors, periodicity information as
-     * well as the atomic types (element).
+     * idea of the atoms object in the Atomic Simulation Environment. The
+     * object contains atomic positions, the cell vectors, periodicity
+     * information as well as the atomic types (element).
      *
-     *  \param cell is a contiguous vector which holds the cell unit vectors.
+     *  @param cell is a contiguous vector which holds the cell unit vectors.
      *
-     *  \param type a vector of integers which holds the atomic type (atomic
+     *  @param type a vector of integers which holds the atomic type (atomic
      *  number as per periodic table).
      *
-     *  \param pbc is a 0/1 vector which defines the periodicity of the given
+     *  @param pbc is a 0/1 vector which defines the periodicity of the given
      *  structure for each dimension
      *
-     *  \param position is a vector which holds the atomic positions.
+     *  @param position is a vector which holds the atomic positions.
      */
     using Cell_t = Eigen::Matrix<double, Dim, Dim>;
     using Cell_ref = Eigen::Map<Cell_t>;
@@ -71,19 +69,17 @@ namespace rascal {
     using PBC_t = Eigen::Matrix<int, Dim, 1>;
     using PBC_ref = Eigen::Map<PBC_t>;
 
-    using Positions_t = Eigen::Matrix<double, Dim,
-                                      Eigen::Dynamic>;
+    using Positions_t = Eigen::Matrix<double, Dim, Eigen::Dynamic>;
     using Positions_ref = Eigen::Map<Positions_t>;
 
     using PositionsInput_t =
-      Eigen::Ref<const Eigen::MatrixXd, 0,
-                 Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>>;
+        Eigen::Ref<const Eigen::MatrixXd, 0,
+                   Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>>;
 
     using AtomTypesInput_t =
-      Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1>>;
+        Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1>>;
 
-    using PBCInput_t =
-      Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1>>;
+    using PBCInput_t = Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1>>;
 
     // Eigen types for saving atomic structure data
     Positions_t positions;
@@ -94,13 +90,50 @@ namespace rascal {
     //! method for initializing structure data from raw Eigen types, beware:
     //! copy!
     void set_structure(const PositionsInput_t & positions,
-                       const AtomTypesInput_t &  atom_types,
+                       const AtomTypesInput_t & atom_types,
                        const Eigen::Ref<const Eigen::MatrixXd> cell,
                        const PBCInput_t & pbc) {
+      // check data consistency
+      auto npos{positions.cols()};
+      auto ntypes{atom_types.rows()};
+      if (npos != ntypes) {
+        std::stringstream err_str{};
+        err_str << "Number of atom positions and atom types is not the same: '"
+                << npos << "' != '" << ntypes << "'.";
+        throw std::runtime_error(err_str.str());
+      }
+
       this->cell = cell;
       this->atom_types = atom_types;
       this->pbc = pbc;
       this->positions = positions;
+    }
+
+    void set_structure(const std::string & filename) {
+      json j;
+      std::ifstream reader(filename);
+      if (not reader.is_open()) {
+        throw std::runtime_error(std::string("Could not open the file: ") +
+                                 filename);
+      }
+      reader >> j;
+      reader.close();
+      // take the first structure of the list
+      this->set_structure(j.begin().value());
+    }
+
+    void set_structure(const json & s) {
+      if (s.count("filename") == 1) {
+        auto filename{s["filename"].get<std::string>()};
+        this->set_structure(filename);
+      } else if (s.count("cell") == 1 and s.count("atom_types") == 1 and
+                 s.count("pbc") == 1 and s.count("positions") == 1) {
+        json_io::AtomicJsonData json_atoms_object{};
+        json_atoms_object = s;
+        this->set_structure(json_atoms_object);
+      } else {
+        throw std::runtime_error("The json input was not understood.");
+      }
     }
 
     //! method for initializing structure from a json object; data is copied
@@ -144,14 +177,24 @@ namespace rascal {
           pos_data.push_back(coord);
         }
       }
+
+      // check data consistency
+      auto npos{positions.size() / Dim};
+      auto ntypes{atom_types.size()};
+      if (npos != ntypes) {
+        std::stringstream err_str{};
+        err_str << "Number of atom positions and atom types is not the same: '"
+                << npos << "' != '" << ntypes << "'.";
+        throw std::runtime_error(err_str.str());
+      }
       // associate them to internal data structure
       this->cell = Cell_ref(cell_data.data());
       this->atom_types = AtomTypes_ref(type_data.data(), type_data.size());
       this->pbc = PBC_ref(pbc_data.data());
-      this->positions = Positions_ref(pos_data.data(), Dim,
-                                      pos_data.size() / Dim);
+      this->positions =
+          Positions_ref(pos_data.data(), Dim, pos_data.size() / Dim);
     }
   };
-} // rascal
+}  // namespace rascal
 
-#endif /* ATOMIC_STRUCTURE_H */
+#endif  // SRC_ATOMIC_STRUCTURE_HH_
