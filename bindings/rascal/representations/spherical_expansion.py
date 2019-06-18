@@ -143,7 +143,7 @@ class SphericalExpansion(object):
         managers = StructureCollectionFactory(self.nl_options)
 
         try:
-            managers.add_structure(structures)
+            managers.add_structures(structures)
         except:
             print("Neighbourlist of structures failed. try one at a time.")
             ii = 0
@@ -153,13 +153,13 @@ class SphericalExpansion(object):
                 except:
                     print("Neighbourlist of structure {} failed".format(ii))
 
-        n_atoms = [0]+[len(structure['atom_types'])
+        n_atoms = [0]+[len(structure.get_atom_types())
                        for structure in structures]
 
         structure_ids = np.cumsum(n_atoms)[:-1]
         n_centers = np.sum(n_atoms)
 
-        self.representation.compute(managers)
+        self._representation.compute(managers)
 
         return managers
 

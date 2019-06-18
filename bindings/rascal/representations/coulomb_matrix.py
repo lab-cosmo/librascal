@@ -94,7 +94,7 @@ class SortedCoulombMatrix(object):
         managers = StructureCollectionFactory(self.nl_options)
 
         try:
-            managers.add_structure(structures)
+            managers.add_structures(structures)
         except:
             print("Neighbourlist of structures failed. try one at a time.")
             ii = 0
@@ -108,9 +108,9 @@ class SortedCoulombMatrix(object):
         self.update_hyperparameters(size=self.size)
         hypers_str = json.dumps(self.hypers)
         self.rep_options = dict(name=self.name, args=[hypers_str])
-        self.representation = CalculatorFactory(self.rep_options)
+        self._representation = CalculatorFactory(self.rep_options)
 
-        self.representation.compute(managers)
+        self._representation.compute(managers)
 
         return managers
 
