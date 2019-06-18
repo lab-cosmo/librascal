@@ -148,6 +148,20 @@ namespace rascal {
     }
 
     /**
+     * When the underlying structure changes, all computations are potentially
+     * invalid. This function triggers the setting of the statue variable to
+     * `false` along the tree to the managers and the properties it holds.
+     */
+    void send_changed_structure_signal() final {
+      this->set_update_status(false);
+      for (auto && child : this->children) {
+        if (not child.expired()) {
+          child.lock()->send_changed_structure_signal();
+        }
+      }
+    }
+
+    /**
      * This function is never called because SpeciesManager belongs to the
      * update upward tree but only the this->filters belong to the downward
      * tree that would typically trigger the update_self.
