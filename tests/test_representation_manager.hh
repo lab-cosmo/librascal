@@ -437,9 +437,6 @@ namespace rascal {
         std::cout << structure_manager->get_distance(neigh) << std::endl;
       }
       Structure_t modified_structure{this->atomic_structure};
-
-      std::cout << "Silly column index: " << center.get_index() << std::endl;
-      std::cout << "Number of columns: " << modified_structure.positions.cols();
       modified_structure.positions.col(center.get_index()) = center_position;
       this->structure_manager->update(modified_structure);
       for (auto neigh : center) {
@@ -532,7 +529,7 @@ namespace rascal {
 
     RepManager & representation;
     std::shared_ptr<typename RepManager::Manager_t> structure_manager;
-    Structure_t & atomic_structure;
+    Structure_t atomic_structure;
     typename RepManager::Manager_t::iterator center_it;
 
   };
