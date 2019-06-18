@@ -392,6 +392,8 @@ namespace rascal {
       this->offsets[i].clear();
     }
 
+    std::cout << "Silly cout wheeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" << std::endl;
+
     this->nb_neigh[0].push_back(0);
     for (auto & vector : this->offsets) {
       vector.push_back(0);

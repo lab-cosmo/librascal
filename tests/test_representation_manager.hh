@@ -281,6 +281,86 @@ namespace rascal {
                                   {"max_angular", 4}}};
   };
 
+  /** Contains two simple periodic structures for testing complicated things
+   *  like gradients
+   */
+  struct SimplePeriodicNLStrictFixture {
+    using ManagerTypeHolder_t =
+        StructureManagerTypeHolder<StructureManagerCenters,
+                                   AdaptorNeighbourList, AdaptorStrict>;
+
+    SimplePeriodicNLStrictFixture() {
+      for (auto && filename : filenames) {
+        json parameters;
+        json structure{{"filename", filename}};
+        json adaptors;
+        json ad1{
+            {"name", "AdaptorNeighbourList"},
+            {"initialization_arguments",
+             {{"cutoff", cutoff},
+              {"skin", cutoff_skin},
+              {"consider_ghost_neighbours", false}}}};
+        json ad2{{"name", "AdaptorStrict"},
+                 {"initialization_arguments", {{"cutoff", cutoff}}}};
+        adaptors.emplace_back(ad1);
+        adaptors.emplace_back(ad2);
+
+        parameters["structure"] = structure;
+        parameters["adaptors"] = adaptors;
+
+        this->factory_args.emplace_back(parameters);
+      }
+    }
+
+    ~SimplePeriodicNLStrictFixture() = default;
+
+    const std::vector<std::string> filenames{
+        "reference_data/diamond_2atom.json",
+        "reference_data/SiC_moissanite.json"
+    };
+    const double cutoff{2.};
+    const double cutoff_skin{0.5};
+
+    json factory_args{};
+    //std::vector<std::tuple<>> managers_structures{};
+  };
+
+  struct SingleHypersSphericalExpansion
+      : SimplePeriodicNLStrictFixture {
+    using Parent = SimplePeriodicNLStrictFixture;
+    using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
+
+    SingleHypersSphericalExpansion() : Parent{} {
+      for (auto & ri_hyp : this->radial_contribution_hypers) {
+        for (auto & fc_hyp : this->fc_hypers) {
+          for (auto & sig_hyp : this->density_hypers) {
+            for (auto & rep_hyp : this->rep_hypers) {
+              rep_hyp["cutoff_function"] = fc_hyp;
+              rep_hyp["gaussian_density"] = sig_hyp;
+              rep_hyp["radial_contribution"] = ri_hyp;
+              this->hypers.push_back(rep_hyp);
+            }
+          }
+        }
+      }
+    };
+
+    ~SingleHypersSphericalExpansion() = default;
+
+    std::vector<json> hypers{};
+    std::vector<json> fc_hypers{
+        {{"type", "Cosine"},
+         {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
+         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}} };
+
+    std::vector<json> density_hypers{
+        {{"type", "Constant"},
+         {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}} };
+    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
+    std::vector<json> rep_hypers{{{"max_radial", 4},
+                                  {"max_angular", 2}} };
+  };
+
   struct SphericalExpansionTestData : TestData {
     using Parent = TestData;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
@@ -336,15 +416,17 @@ namespace rascal {
 
     RepresentationManagerGradientProvider(
         RepManager & representation,
-        std::shared_ptr<typename RepManager::Manager_t> structure_manager) :
+        std::shared_ptr<typename RepManager::Manager_t> structure_manager,
+        Structure_t atomic_structure) :
       representation{representation}, structure_manager{structure_manager},
+      atomic_structure{atomic_structure},
       center_it{structure_manager->begin()} {}
 
     ~RepresentationManagerGradientProvider() = default;
 
     inline void advance_center() { ++(this->center_it); }
 
-    Eigen::Map<Eigen::Array<double, 1, Eigen::Dynamic>>
+    Eigen::Array<double, 1, Eigen::Dynamic>
     f(const Eigen::Ref<const Eigen::Vector3d> & center_position) {
       auto center = *center_it;
       //doesn't work
@@ -353,12 +435,20 @@ namespace rascal {
       //TODO(max) oh no, please tell me there's a better way to get the
       //          underlying atomic structure of some multiply-adapted
       //          StructureManager
+      for (auto neigh : center) {
+        std::cout << "Neigh distance " << neigh.get_index() << " is: ";
+        std::cout << structure_manager->get_distance(neigh) << std::endl;
+      }
       auto atomic_structure = structure_manager->
         get_previous_manager()->get_previous_manager()->get_atomic_structure();
       Structure_t my_structure{atomic_structure};
 
       my_structure.positions.col(center.get_index()) = center_position;
       structure_manager->update(my_structure);
+      for (auto neigh : center) {
+        std::cout << "New neigh distance " << neigh.get_index() << " is: ";
+        std::cout << structure_manager->get_distance(neigh) << std::endl;
+      }
       representation.compute();
       auto & coeffs_center = representation.expansions_coefficients[center];
       auto keys_center = representation.expansions_coefficients
@@ -447,7 +537,7 @@ namespace rascal {
     RepManager & representation;
     std::shared_ptr<typename RepManager::Manager_t> structure_manager;
     typename RepManager::Manager_t::iterator center_it;
-    //Structure_t & atomic_structure;
+    Structure_t & atomic_structure;
 
   };
 

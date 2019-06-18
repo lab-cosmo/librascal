@@ -210,14 +210,17 @@ namespace rascal {
     } // for (auto hyper : hypers)
   }
 
+  using simple_periodic_fixtures = boost::mpl::list<RepresentationFixture<
+      SingleHypersSphericalExpansion,
+      RepresentationManagerSphericalExpansion>>;
+
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(spherical_expansion_gradients, Fix,
-                                   fixtures_with_gradients, Fix) {
+                                   simple_periodic_fixtures, Fix) {
     auto & managers = Fix::managers;
-    auto & hypers = Fix::hypers;
+    auto & hyper = Fix::hypers.front();
     auto & representations = Fix::representations;
     using ClusterRef_t = typename Fix::Manager_t::template ClusterRef<1>;
-    auto manager = managers.front();
-    for (auto & hyper : hypers) {
+    for (auto & manager : managers) {
       representations.emplace_back(manager, hyper);
       RepresentationManagerGradientProvider<
             typename Fix::Representation_t, ClusterRef_t>
@@ -225,8 +228,8 @@ namespace rascal {
       RepresentationManagerGradientFixture<typename Fix::Manager_t> grad_fix{
           "reference_data/spherical_expansion_gradient_test.json", manager};
       for (auto center : manager) {
-        Eigen::Map<Eigen::Vector3d> inputs(grad_fix.function_inputs[0].data(),
-                                           grad_fix.n_arguments);
+        //Eigen::Map<Eigen::Vector3d> inputs(grad_fix.function_inputs[0].data(),
+                                           //grad_fix.n_arguments);
         //std::cout << calculator.f(inputs) << std::endl;
         test_gradients(calculator, grad_fix);
         calculator.advance_center();
