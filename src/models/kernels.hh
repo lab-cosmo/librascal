@@ -97,7 +97,7 @@ namespace rascal {
       if (hypers.count("zeta") == 1) {
         zeta = hypers["zeta"].get<size_t>();
       } else {
-        throw std::runtime_error(R"(zeta should be specified for the global cosine kernel)");
+        throw std::runtime_error(R"(zeta should be specified for the cosine kernel)");
       }
     }
 

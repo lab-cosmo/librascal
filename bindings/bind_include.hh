@@ -53,7 +53,9 @@
 // #include "structure_managers/structure_manager_base.hh"
 
 // #include "basic_types.hh"
+#include "atomic_structure.hh"
 #include "rascal_utility.hh"
+
 // #include "json_io.hh"
 
 #include <pybind11/pybind11.h>
@@ -71,13 +73,15 @@
 
 // PYBIND11_MAKE_OPAQUE(std::vector<double>);
 
-namespace py = pybind11;
+PYBIND11_MAKE_OPAQUE(std::vector<rascal::AtomicStructure<3>>);
 
-void add_feature_managers(py::module &, py::module &);
+namespace py = pybind11;
 
 
 
 namespace rascal {
+
+
   namespace internal {
 
     /**

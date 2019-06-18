@@ -37,6 +37,7 @@
 
 #include <cmath>
 #include <stdexcept>
+#include <iostream>
 
 // TODO(markus): CHECK for skewedness
 namespace rascal {
@@ -82,11 +83,12 @@ namespace rascal {
     using PBCInput_t = Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1>>;
 
     // Eigen types for saving atomic structure data
-    Positions_t positions;
-    AtomTypes_t atom_types;
-    Cell_t cell;
-    PBC_t pbc;
+    Positions_t positions{};
+    AtomTypes_t atom_types{};
+    Cell_t cell{};
+    PBC_t pbc{};
 
+    AtomicStructure() = default;
     //! method for initializing structure data from raw Eigen types, beware:
     //! copy!
     void set_structure(const PositionsInput_t & positions,
