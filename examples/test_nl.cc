@@ -135,7 +135,7 @@ int main() {
   representation.compute(collectionB);
 
   json kernel_hypers{{"zeta", 2},
-                      {"target_type", "structure"},
+                      {"target_type", "Structure"},
                       {"name", "Cosine"}};
   Kernel kernel{kernel_hypers};
   // for (auto& manager : collectionA) {
@@ -148,7 +148,7 @@ int main() {
   std::cout << mat << std::endl;
 
   // json kernel_hypers_local{{"zeta", 2},
-  //                     {"target_type", "atom"}};
+  //                     {"target_type", "Atom"}};
   // Kernel<internal::KernelType::Cosine> kernel_local{kernel_hypers_local};
 
   // auto mat_local = kernel_local.compute(representation, collectionA, collectionA);

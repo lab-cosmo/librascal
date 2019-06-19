@@ -109,10 +109,10 @@ namespace rascal {
     }
 
     std::vector<json> kernel_hypers{{ {"zeta", 2},
-                                      {"target_type", "structure"},
+                                      {"target_type", "Structure"},
                                       {"name", "Cosine"}},
                                     { {"zeta", 2},
-                                      {"target_type", "atom"},
+                                      {"target_type", "Atom"},
                                       {"name", "Cosine"}}
                                     };
 

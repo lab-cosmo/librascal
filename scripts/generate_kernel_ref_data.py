@@ -35,7 +35,7 @@ def dump_reference_json():
     length = 5
 
     kernel_names = ['Cosine']
-    target_types = ['structure', 'atom']
+    target_types = ['Structure', 'Atom']
     dependant_args = dict(cosine=[dict(zeta=1),dict(zeta=2),dict(zeta=4)])
 
     data = dict(filename=fn_to_write,

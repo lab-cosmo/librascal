@@ -151,9 +151,9 @@ namespace rascal {
       }
 
       if (hypers.count("target_type") == 1) {
-        if (hypers["target_type"] == "structure") {
+        if (hypers["target_type"] == "Structure") {
           this->target_type = TargetType::Structure;
-        } else if (hypers["target_type"] == "atom") {
+        } else if (hypers["target_type"] == "Atom") {
           this->target_type = TargetType::Atom;
         }
       } else {
