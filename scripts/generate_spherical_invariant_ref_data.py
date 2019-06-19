@@ -119,7 +119,7 @@ def dump_reference_json():
                             data['rep_info'][-1].append(dict(feature_matrix=x.tolist(),
                                                 hypers=copy(soap.hypers)))
 
-    with open(path+"tests/reference_data/soap_reference.ubjson",'wb') as f:
+    with open(path+"tests/reference_data/spherical_invariant_reference.ubjson",'wb') as f:
         ubjson.dump(data,f)
 
 ##########################################################################################

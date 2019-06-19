@@ -106,7 +106,6 @@ namespace rascal {
       for (auto& hyper : this->kernel_hypers) {
         this->kernels.push_back(hyper);
       }
-
     }
 
     std::vector<json> kernel_hypers{{{"zeta", 2},

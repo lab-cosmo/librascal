@@ -152,7 +152,7 @@ namespace rascal {
 
     SphericalInvariantTestData() : Parent{} { this->get_ref(this->ref_filename); }
     ~SphericalInvariantTestData() = default;
-    std::string ref_filename{"reference_data/soap_reference.ubjson"};
+    std::string ref_filename{"reference_data/spherical_invariant_reference.ubjson"};
     bool verbose{true};
   };
 
