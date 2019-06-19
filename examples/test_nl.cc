@@ -135,8 +135,9 @@ int main() {
   representation.compute(collectionB);
 
   json kernel_hypers{{"zeta", 2},
-                      {"target_type", "structure"}};
-  Kernel<internal::KernelType::Cosine> kernel{kernel_hypers};
+                      {"target_type", "structure"},
+                      {"name", "Cosine"}};
+  Kernel kernel{kernel_hypers};
   // for (auto& manager : collectionA) {
   //   for (auto center : manager) {
   //     std::cout << center.get_position().transpose() << std::endl;

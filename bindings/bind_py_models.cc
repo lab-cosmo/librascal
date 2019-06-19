@@ -30,21 +30,16 @@
 
 namespace rascal {
 
-  template <internal::KernelType Type>
-  decltype(auto) add_kernel(const std::string& name, py::module & mod, py::module &) {
-
-    // std::string name =
-    //     internal::GetBindingTypeName<Kernel<Type>>();
-
-    py::class_<Kernel<Type>, KernelBase> kernel(
-        mod, name.c_str());
+  decltype(auto) add_kernel(py::module & mod, py::module &) {
+    py::class_<Kernel> kernel(
+        mod, "Kernel");
     // use custom constructor to pass json formated string as initializer
     // an alternative would be to convert python dict to json internally
     // but needs some work on in the pybind machinery
     kernel.def(py::init([](std::string & hyper_str) {
       // convert to json
       json hypers = json::parse(hyper_str);
-      return std::make_unique<Kernel<Type>>(hypers);
+      return std::make_unique<Kernel>(hypers);
     }));
 
     return kernel;
@@ -53,7 +48,7 @@ namespace rascal {
   template <internal::KernelType Type, class Calculator, class StructureManagers, class CalculatorBind>
   void bind_kernel_compute_function(CalculatorBind& kernel) {
     kernel.def("compute",
-                &Kernel<Type>::template compute<Calculator, StructureManagers>,
+                &Kernel::template compute<Calculator, StructureManagers>,
                 py::call_guard<py::gil_scoped_release>());
   }
 
@@ -69,8 +64,6 @@ namespace rascal {
    *
    */
   void add_kernels(py::module & mod, py::module & m_throwaway) {
-    auto base = py::class_<KernelBase>(m_throwaway, "KernelBase");
-    // base.def_readonly("parameters", &KernelBase::parameters);
 
     // Defines a particular structure manager type
     using ManagerCollection_t = ManagerCollection<StructureManagerCenters,
@@ -80,10 +73,7 @@ namespace rascal {
     // manager
     using Calc1_t = CalculatorSphericalInvariants;
     // Bind the interface of this representation manager
-    auto cosine_kernel =
-        add_kernel<internal::KernelType::Cosine>("CosineKernel",mod, m_throwaway);
-    bind_kernel_compute_function<internal::KernelType::Cosine, Calc1_t, ManagerCollection_t>(cosine_kernel);
-
+    auto kernel = add_kernel(mod, m_throwaway);
+    bind_kernel_compute_function<internal::KernelType::Cosine, Calc1_t, ManagerCollection_t>(kernel);
   }
-
 }

@@ -108,12 +108,15 @@ namespace rascal {
       }
     }
 
-    std::vector<json> kernel_hypers{{{"zeta", 2},
-                                      {"target_type", "structure"}},
-                                    {{"zeta", 2},
-                                      {"target_type", "atom"}}};
+    std::vector<json> kernel_hypers{{ {"zeta", 2},
+                                      {"target_type", "structure"},
+                                      {"name", "Cosine"}},
+                                    { {"zeta", 2},
+                                      {"target_type", "atom"},
+                                      {"name", "Cosine"}}
+                                    };
 
-    std::vector<Kernel<Type>> kernels{};
+    std::vector<Kernel> kernels{};
 
     ~KernelFixture() = default;
 
