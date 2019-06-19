@@ -226,18 +226,14 @@ namespace rascal {
       representations.emplace_back(manager, hyper);
       structures.emplace_back();
       structures.back().set_structure(*filename_it);
+      structures.back().pbc = AtomicStructure<3>::PBC_t::Zero();
       ++filename_it;
-      std::cout << "Positions of AtomicStructure ";
-      std::cout << structures.back().positions << std::endl;
       RepresentationManagerGradientProvider<
             typename Fix::Representation_t, ClusterRef_t>
           calculator(representations.back(), manager, structures.back());
       RepresentationManagerGradientFixture<typename Fix::Manager_t> grad_fix{
           "reference_data/spherical_expansion_gradient_test.json", manager};
       for (auto center : manager) {
-        //Eigen::Map<Eigen::Vector3d> inputs(grad_fix.function_inputs[0].data(),
-                                           //grad_fix.n_arguments);
-        //std::cout << calculator.f(inputs) << std::endl;
         test_gradients(calculator, grad_fix);
         calculator.advance_center();
         grad_fix.advance_center();

@@ -397,14 +397,18 @@ namespace rascal {
        * Note that you _must_ call compute_neighbour_contribution() first to
        * populate the relevant arrays!
        *
-       * The derivative is taken with respect to the pair distance, r_{ij}, and
-       * pre-divided by r_{ij} (since
+       * The derivative is taken with respect to the pair distance, r_{ij}.  In
+       * order to get the radial component of the gradient, remember to multiply
+       * by the direction vector \hat{\vec{r}_{ij}} (and not the vector itself),
+       * since
        * \[
        *    \grad_{\vec{r}_i} f(r_{ij}) =
        *                    \frac{d f}{d r_{ij}} \frac{- \vec{r}_{ij}}{r_{ij}}
+       *                  = \frac{d f}{d r_{ij}} -\hat{\vec{r}_{ij}}
        * \])
-       * so multiply by _negative_ $\vec{r}_ij$ to get the radial component of
-       * the gradient wrt motion of the central atom ($\frac{d}{d\vec{r}_i}$)
+       * so multiply by _negative_ $\hat{\vec{r}}_ij$ to get the radial
+       * component of the gradient wrt motion of the central atom
+       * ($\frac{d}{d\vec{r}_i}$).
        *
        * And finally, there is no compute_center_derivative() because that's
        * just zero -- the centre contribution doesn't vary w.r.t. motion of
@@ -432,7 +436,8 @@ namespace rascal {
         this->hyp1f1_calculator.calc(distance, fac_a, this->fac_b, true);
 
         this->radial_neighbour_derivative =
-            (this->a_b_l_n.array() * this->hyp1f1_calculator.get_derivatives().array())
+            (this->a_b_l_n.array() *
+             this->hyp1f1_calculator.get_derivatives().array())
                 .matrix() *
             this->distance_fac_a_l.asDiagonal();
 
@@ -895,12 +900,13 @@ namespace rascal {
                + (neighbour_contribution * cutoff_function->df_c(dist)))
                                                               .col(angular_l)
               * harmonics.segment(l_block_idx, l_block_size).transpose()
-              * dist * direction(cartesian_idx);
+              * direction(cartesian_idx);
             pair_gradient_contribution +=
               neighbour_contribution.col(angular_l)
               * harmonics_derivatives.block(cartesian_idx, l_block_idx,
                                             1, l_block_size)
               * cutoff_function->f_c(dist);
+            pair_gradient_contribution /= 2.; // correct for double counting
             // Each Cartesian gradient component occupies a contiguous block
             // (row-major storage) for efficiency
             gradient_center_by_type.block(

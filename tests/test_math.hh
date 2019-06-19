@@ -103,6 +103,9 @@ namespace rascal {
       this->displacement_directions =
               this->get_displacement_directions(input_data, this->n_arguments);
       this->verbosity = get_verbosity(input_data);
+      if (input_data.find("fd_error_tol") != input_data.end()) {
+          this->fd_error_tol = input_data["fd_error_tol"].get<double>();
+      }
     }
 
     ~GradientTestFixture() = default;
@@ -168,6 +171,7 @@ namespace rascal {
     StdVector2Dim_t function_inputs{};
     Eigen::MatrixXd displacement_directions{};
     size_t n_arguments{0};
+    double fd_error_tol{1E-6};
     VerbosityValue verbosity{VerbosityValue::NORMAL};
 
    protected:
@@ -185,6 +189,10 @@ namespace rascal {
     f(const Eigen::Vector3d & inputs_v) {
       // Renormalize the inputs to project out the r gradients
       Eigen::Vector3d my_inputs = inputs_v / inputs_v.norm();
+      //Eigen::Array<double, 4, (max_angular + 1) * (max_angular + 1)>
+          //harmonics_derivatives{math::compute_spherical_harmonics_derivatives(
+              //my_inputs, max_angular)};
+      //return harmonics_derivatives.row(0);
       return math::compute_spherical_harmonics(my_inputs, max_angular);
     }
 
@@ -236,7 +244,6 @@ namespace rascal {
     // attention to the change of the finite-difference gradients from one step
     // to the next).  The automated test is really more intended to be a sanity
     // check on the implementation anyway.
-    constexpr double fd_error_tol = 1E-6;
     for (auto inputs : params.function_inputs) {
       argument_vector = Eigen::Map<Eigen::RowVectorXd>(inputs.data(), 1,
                                                        params.n_arguments);
@@ -263,10 +270,7 @@ namespace rascal {
           std::cout << "Analytical derivative: " << directional << std::endl;
         }
         double min_error{HUGE_VAL};
-        Eigen::MatrixXd fd_last{Eigen::MatrixXd::Zero(1, directional.size())};
-        //for (double dx = 1E-2; dx > 1E-10; dx *= 0.1) {
-        // Modified displacements so we can see the effects
-        for (double dx = 1E-1; dx > 1E-3; dx *= 0.1) {
+        for (double dx = 1E-2; dx > 1E-10; dx *= 0.1) {
           if (params.verbosity >= VerbosityValue::INFO) {
             std::cout << "dx = " << dx << "\t";
           }
@@ -303,16 +307,15 @@ namespace rascal {
             min_error = std::abs(fd_error);
           }
           if (params.verbosity >= VerbosityValue::DEBUG) {
+            std::cout << "fd_derivatives size: " << fd_derivatives.size() << std::endl;
+            std::cout << "directional size: " << directional.size() << std::endl;
             fd_error_cwise = (fd_derivatives - directional);
             std::cout << "error            = " << fd_error_cwise << std::endl;
             std::cout << "(FD derivative   = " << fd_derivatives << ")";
             std::cout << std::endl;
-            std::cout << "(minus last step = " << fd_derivatives - fd_last;
-            std::cout << ")" << std::endl;
           }
-          fd_last = fd_derivatives;
         }  // for (double dx...) (displacement magnitudes)
-        BOOST_CHECK_SMALL(min_error, fd_error_tol);
+        BOOST_CHECK_SMALL(min_error, params.fd_error_tol);
       }  // for (int disp_idx...) (displacement directions)
     }    // for (auto inputs...) (function inputs)
   }

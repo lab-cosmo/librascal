@@ -316,8 +316,10 @@ namespace rascal {
     ~SimplePeriodicNLStrictFixture() = default;
 
     const std::vector<std::string> filenames{
-        "reference_data/diamond_2atom.json",
-        "reference_data/SiC_moissanite.json"
+        //"reference_data/diamond_2atom.json",
+        //"reference_data/diamond_2atom_distorted.json",
+        "reference_data/diamond_cubic_distorted.json",
+        //"reference_data/SiC_moissanite.json"
     };
     const double cutoff{2.};
     const double cutoff_skin{0.5};
@@ -352,14 +354,14 @@ namespace rascal {
     std::vector<json> fc_hypers{
         {{"type", "Cosine"},
          {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}} };
+         {"smooth_width", {{"value", 0.0}, {"unit", "AA"}}}} };
 
     std::vector<json> density_hypers{
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}} };
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
-    std::vector<json> rep_hypers{{{"max_radial", 4},
-                                  {"max_angular", 2}} };
+    std::vector<json> rep_hypers{{{"max_radial", 1},
+                                  {"max_angular", 1}} };
   };
 
   struct SphericalExpansionTestData : TestData {
@@ -468,9 +470,6 @@ namespace rascal {
       }
       Eigen::Map<Eigen::Array<double, 1, Eigen::Dynamic>> result(
           coeffs_pairs.data(), coeffs_pairs.size());
-      // let's make sure the f() values are really changing
-      std::cout << "f() bomb incomiiiiiiiiiiiiiiiiiiiing" << std::endl;
-      std::cout << result.segment(0, 15) << std::endl;
       // Reset the atomic structure for the next iteration
       this->structure_manager->update(this->atomic_structure);
       return result;
@@ -545,6 +544,9 @@ namespace rascal {
       this->displacement_directions =
         this->get_displacement_directions(input_data, this->n_arguments);
       this->verbosity = get_verbosity(input_data);
+      if (input_data.find("fd_error_tol") != input_data.end()) {
+          this->fd_error_tol = input_data["fd_error_tol"].get<double>();
+      }
     }
 
     ~RepresentationManagerGradientFixture() = default;
