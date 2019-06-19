@@ -103,7 +103,7 @@ namespace rascal {
               rep_hyp["cutoff_function"] = fc_hyp;
               rep_hyp["gaussian_density"] = sig_hyp;
               rep_hyp["radial_contribution"] = ri_hyp;
-              this->hypers.push_back(rep_hyp);
+              this->representation_hypers.push_back(rep_hyp);
             }
           }
         }
@@ -111,7 +111,7 @@ namespace rascal {
     };
     ~MultipleStructureSphericalInvariant() = default;
 
-    std::vector<json> hypers{};
+    std::vector<json> representation_hypers{};
 
     std::vector<json> fc_hypers{
         {{"type", "Cosine"},
@@ -131,15 +131,15 @@ namespace rascal {
                                   {"max_angular", 0},
                                   {"soap_type", "RadialSpectrum"},
                                   {"normalize", true}},
-                                 {{"max_radial", 6},
+                                 {{"max_radial", 10},
                                   {"max_angular", 0},
                                   {"soap_type", "RadialSpectrum"},
                                   {"normalize", true}},
-                                 {{"max_radial", 6},
-                                  {"max_angular", 6},
+                                 {{"max_radial", 3},
+                                  {"max_angular", 3},
                                   {"soap_type", "PowerSpectrum"},
                                   {"normalize", true}},
-                                 {{"max_radial", 6},
+                                 {{"max_radial", 8},
                                   {"max_angular", 6},
                                   {"soap_type", "PowerSpectrum"},
                                   {"normalize", true}}};
@@ -170,7 +170,7 @@ namespace rascal {
               rep_hyp["cutoff_function"] = fc_hyp;
               rep_hyp["gaussian_density"] = sig_hyp;
               rep_hyp["radial_contribution"] = ri_hyp;
-              this->hypers.push_back(rep_hyp);
+              this->representation_hypers.push_back(rep_hyp);
             }
           }
         }
@@ -178,7 +178,7 @@ namespace rascal {
     };
     ~MultipleStructureSphericalExpansion() = default;
 
-    std::vector<json> hypers{};
+    std::vector<json> representation_hypers{};
 
     std::vector<json> fc_hypers{
         {{"type", "Cosine"},
@@ -219,7 +219,7 @@ namespace rascal {
     MultipleStructureSortedCoulomb() : Parent{} {};
     ~MultipleStructureSortedCoulomb() = default;
 
-    std::vector<json> hypers{{{"central_cutoff", 3.},
+    std::vector<json> representation_hypers{{{"central_cutoff", 3.},
                               {"central_decay", 0.5},
                               {"interaction_cutoff", 10.},
                               {"interaction_decay", 0.5},
@@ -261,6 +261,7 @@ namespace rascal {
 
     std::vector<Representation_t> representations{};
   };
+
 
   /* ---------------------------------------------------------------------- */
 

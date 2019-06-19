@@ -129,6 +129,7 @@ namespace rascal {
     inline void add_structure(std::shared_ptr<Manager_t>& manager) {
       this->managers.emplace_back(manager);
     }
+
     /**
      * Function used from python. add empty structures to build the objects and
      * update them afterwards (small workaround because AtomicStructure<3>
@@ -176,6 +177,8 @@ namespace rascal {
      * @param start index of the first structure to include
      * @param length number of structure to include, -1 correspondons to all
      * after start
+     *
+     * Compatible file format are text and ubjson (binary).
      *
      * Note that start refers to 0 based indexing so 0 corresponds to the
      * first and 3 would corresponds to the 4th structure irrespective of the

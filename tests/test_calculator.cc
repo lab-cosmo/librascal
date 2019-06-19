@@ -100,10 +100,10 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_constructor_test, Fix,
                                    multiple_fixtures, Fix) {
     auto & representations = Fix::representations;
-    auto & hypers = Fix::hypers;
+    auto & representation_hypers = Fix::representation_hypers;
     bool verbose{false};
 
-    for (auto & hyper : hypers) {
+    for (auto & hyper : representation_hypers) {
       representations.emplace_back(hyper);
       auto& name{representations.back().get_name()};
       if (verbose) {
@@ -111,7 +111,7 @@ namespace rascal {
       }
     }
     // test the user defined name works
-    for (auto & hyper : hypers) {
+    for (auto & hyper : representation_hypers) {
       hyper["identifier"] = "my_representation";
       representations.emplace_back(hyper);
       auto& name{representations.back().get_name()};
@@ -128,9 +128,9 @@ namespace rascal {
                                    multiple_fixtures, Fix) {
     auto & managers = Fix::managers;
     auto & representations = Fix::representations;
-    auto & hypers = Fix::hypers;
+    auto & representation_hypers = Fix::representation_hypers;
     for (auto & manager : managers) {
-      for (auto & hyper : hypers) {
+      for (auto & hyper : representation_hypers) {
         representations.emplace_back(hyper);
         representations.back().compute(manager);
       }
@@ -158,11 +158,11 @@ namespace rascal {
     size_t manager_i{0};
     for (auto & manager : managers) {
       for (const auto & rep_info : rep_infos.at(manager_i)) {
-        const auto & hypers = rep_info.at("hypers").template get<json>();
+        const auto & representation_hypers = rep_info.at("hypers").template get<json>();
         const auto & ref_representation =
             rep_info.at("feature_matrix").template get<Std2DArray_t>();
 
-        representations.emplace_back(hypers);
+        representations.emplace_back(representation_hypers);
         representations.back().compute(manager);
         auto property_name{representations.back().get_name()};
         auto&& property{manager->template get_validated_property_ref<Property_t>(property_name)};
