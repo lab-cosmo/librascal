@@ -264,7 +264,9 @@ namespace rascal {
         }
         double min_error{HUGE_VAL};
         Eigen::MatrixXd fd_last{Eigen::MatrixXd::Zero(1, directional.size())};
-        for (double dx = 1E-2; dx > 1E-10; dx *= 0.1) {
+        //for (double dx = 1E-2; dx > 1E-10; dx *= 0.1) {
+        // Modified displacements so we can see the effects
+        for (double dx = 1E-1; dx > 1E-3; dx *= 0.1) {
           if (params.verbosity >= VerbosityValue::INFO) {
             std::cout << "dx = " << dx << "\t";
           }

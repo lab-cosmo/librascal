@@ -560,7 +560,6 @@ namespace rascal {
      * Should only be used in the StructureManagerRoot
      */
     void update_children() final {
-      std::cout << this->get_name() << "  " << this->get_update_status() << std::endl;
       if (not this->get_update_status()) {
         this->implementation().update_self();
         this->set_update_status(true);

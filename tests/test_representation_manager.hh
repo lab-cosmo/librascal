@@ -432,17 +432,9 @@ namespace rascal {
     Eigen::Array<double, 1, Eigen::Dynamic>
     f(const Eigen::Ref<const Eigen::Vector3d> & center_position) {
       auto center = *center_it;
-      for (auto neigh : center) {
-        std::cout << "Neigh distance " << neigh.get_index() << " is: ";
-        std::cout << structure_manager->get_distance(neigh) << std::endl;
-      }
       Structure_t modified_structure{this->atomic_structure};
       modified_structure.positions.col(center.get_index()) = center_position;
       this->structure_manager->update(modified_structure);
-      for (auto neigh : center) {
-        std::cout << "New neigh distance " << neigh.get_index() << " is: ";
-        std::cout << structure_manager->get_distance(neigh) << std::endl;
-      }
       representation.compute();
       auto & coeffs_center = representation.expansions_coefficients[center];
       auto keys_center = representation.expansions_coefficients
@@ -476,6 +468,9 @@ namespace rascal {
       }
       Eigen::Map<Eigen::Array<double, 1, Eigen::Dynamic>> result(
           coeffs_pairs.data(), coeffs_pairs.size());
+      // let's make sure the f() values are really changing
+      std::cout << "f() bomb incomiiiiiiiiiiiiiiiiiiiing" << std::endl;
+      std::cout << result.segment(0, 15) << std::endl;
       // Reset the atomic structure for the next iteration
       this->structure_manager->update(this->atomic_structure);
       return result;
