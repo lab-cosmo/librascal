@@ -316,10 +316,10 @@ namespace rascal {
     ~SimplePeriodicNLStrictFixture() = default;
 
     const std::vector<std::string> filenames{
-        //"reference_data/diamond_2atom.json",
-        //"reference_data/diamond_2atom_distorted.json",
+        "reference_data/diamond_2atom.json",
+        "reference_data/diamond_2atom_distorted.json",
         "reference_data/diamond_cubic_distorted.json",
-        //"reference_data/SiC_moissanite.json"
+        "reference_data/SiC_moissanite.json"
     };
     const double cutoff{2.};
     const double cutoff_skin{0.5};
@@ -354,14 +354,14 @@ namespace rascal {
     std::vector<json> fc_hypers{
         {{"type", "Cosine"},
          {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 0.0}, {"unit", "AA"}}}} };
+         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}} };
 
     std::vector<json> density_hypers{
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}} };
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
-    std::vector<json> rep_hypers{{{"max_radial", 1},
-                                  {"max_angular", 1}} };
+    std::vector<json> rep_hypers{{{"max_radial", 2},
+                                  {"max_angular", 2}} };
   };
 
   struct SphericalExpansionTestData : TestData {
@@ -553,7 +553,9 @@ namespace rascal {
 
     inline void advance_center() {
       ++(this->center_it);
-      this->function_inputs = get_function_inputs();
+      if (this->center_it != structure->end()) {
+        this->function_inputs = get_function_inputs();
+      }
     };
 
     StdVector2Dim_t get_function_inputs() {

@@ -130,7 +130,7 @@ namespace rascal {
         int row_idx{0};
         for (auto & direction : directions_in) {
           directions.row(row_idx++) =
-              Eigen::Map<VectorXd>(direction.data(), 1, n_arguments);
+              Eigen::Map<VectorXd>(direction.data(), n_arguments);
         }
         directions.rowwise().normalize();
       } else {
@@ -307,8 +307,6 @@ namespace rascal {
             min_error = std::abs(fd_error);
           }
           if (params.verbosity >= VerbosityValue::DEBUG) {
-            std::cout << "fd_derivatives size: " << fd_derivatives.size() << std::endl;
-            std::cout << "directional size: " << directional.size() << std::endl;
             fd_error_cwise = (fd_derivatives - directional);
             std::cout << "error            = " << fd_error_cwise << std::endl;
             std::cout << "(FD derivative   = " << fd_derivatives << ")";

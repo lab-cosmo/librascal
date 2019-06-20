@@ -895,26 +895,36 @@ namespace rascal {
           // Cartesian loop can be eliminated with Eigen::Map
           for (size_t cartesian_idx{0}; cartesian_idx < n_spatial_dimensions;
                ++cartesian_idx) {
+            // Radial component: d/dr_{ij} (c_{ij} f_c{r_{ij}}) \hat{r_{ij}}
             Matrix_t pair_gradient_contribution =
               ((neighbour_derivative * cutoff_function->f_c(dist))
                + (neighbour_contribution * cutoff_function->df_c(dist)))
                                                               .col(angular_l)
               * harmonics.segment(l_block_idx, l_block_size).transpose()
               * direction(cartesian_idx);
+            // Angular component: Remember, the harmonics derivatives need to
+            // be divided by r to get the Cartesian gradient
             pair_gradient_contribution +=
               neighbour_contribution.col(angular_l)
               * harmonics_derivatives.block(cartesian_idx, l_block_idx,
                                             1, l_block_size)
-              * cutoff_function->f_c(dist);
-            pair_gradient_contribution /= 2.; // correct for double counting
+              * cutoff_function->f_c(dist) / dist;
             // Each Cartesian gradient component occupies a contiguous block
-            // (row-major storage) for efficiency
+            // (row-major storage)
             gradient_center_by_type.block(
                 cartesian_idx * max_radial, l_block_idx,
                 max_radial, l_block_size) -= pair_gradient_contribution;
-            gradient_neigh_by_type.block(
-                cartesian_idx * max_radial, l_block_idx,
-                max_radial, l_block_size) += pair_gradient_contribution;
+            if ((angular_l % 2) == 0) {
+              // The even-l components keep the same sign...
+              gradient_neigh_by_type.block(
+                  cartesian_idx * max_radial, l_block_idx,
+                  max_radial, l_block_size) -= pair_gradient_contribution;
+            } else {
+              // while the odd-l components change sign when r_{ij} is flipped
+              gradient_neigh_by_type.block(
+                  cartesian_idx * max_radial, l_block_idx,
+                  max_radial, l_block_size) += pair_gradient_contribution;
+            }
           }
           l_block_idx += l_block_size;
         }
