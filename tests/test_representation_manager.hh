@@ -495,6 +495,12 @@ namespace rascal {
       auto & grad_coeffs_center =
         representation.expansions_coefficients_gradient[center];
       size_t col_offset{0};
+      //TODO(max) -- this is iterating in the inverse of the order we intended:
+      // Instead of looking at a center's coefficients and finding the gradient
+      // with respect to motion of its neighbours (and itself), we're finding
+      // the gradient of all of the _neighbours'_ (and center's) coefficients
+      // with respect to motion of the center.  It's not at all obvious,
+      // especially with multiple species, that these are the same thing.
       for (auto & key : keys_center) {
         // Here the 'flattening' retains the 3 Cartesian dimensions as rows,
         // since they vary the slowest within each key

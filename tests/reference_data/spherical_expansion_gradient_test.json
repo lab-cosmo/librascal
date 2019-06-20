@@ -1,5 +1,5 @@
 {
-    "direction_mode": "Provided",
+    "direction_mode": "Cartesian",
     "comment": "Symmetry directions for diamond to separate radial and angular components.",
     "displacement_directions": [
       [1.0, 1.0, 1.0],
