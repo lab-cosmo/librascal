@@ -539,24 +539,23 @@ namespace rascal {
     typename RepManager::Manager_t::iterator center_it;
 
     PairRef_t swap_pair_key(const PairRef_t & pair_key) {
-      auto new_center{structure_manager->begin()};
-      while ((new_center != structure_manager->end()) &&
-             ((*new_center).get_atom_tag() != pair_key.get_atom_tag())) {
-        ++new_center;
+      // Get the atom index to the corresponding atom tag 
+      size_t access_index = structure_manager->get_atom_index(pair_key.back());
+      auto new_center_it{structure_manager->get_iterator_at(access_index)};
+      // Return cluster ref at which the iterator is currently pointing      
+      auto && new_center{*new_center_it};
+      // Iterate until (j,i) is found
+      for (auto new_pair : new_center) {
+        if (new_pair.back() == pair_key.front()) {
+          return new_pair;
+        }
       }
-      if (new_center == structure_manager->end()) {
-        throw std::range_error("Didn't find neigh in the list of centers");
-      }
-      auto new_neighbour{(*new_center).begin()};
-      while ((new_neighbour != (*new_center).end()) &&
-             ((*new_neighbour).get_atom_tag() != pair_key.front())) {
-        ++new_neighbour;
-      }
-      if (new_neighbour == (*new_center).end()) {
-        throw std::range_error("Didn't find center in the list of neighbours");
-      }
-      return *new_neighbour;
+      std::stringstream err_str{};
+      err_str << "Didn't find symmetric pair for pair (i=" << pair_key.front()
+          << ", j=" << pair_key.back() << ").";
+      throw std::range_error(err_str.str());
     }
+
 
   };
 
