@@ -420,7 +420,7 @@ namespace rascal {
    public:
     using Structure_t = AtomicStructure<3>;
     using Key_t = typename RepManager::Key_t;
-    using PairRef_t = typename RepManager::template ClusterRef<2>;
+    using PairRef_t = typename RepManager::Manager_t::template ClusterRef<2>;
 
     RepresentationManagerGradientProvider(
         RepManager & representation,
@@ -517,10 +517,11 @@ namespace rascal {
         // TODO(max) this should actually index ji (inverse of neigh)
         // rather than ij (neigh)
         // It's pulling grad_j c^{ij} when we wanted grad_i c^{ji}
+        auto neigh_swap{swap_pair_key(neigh)};
         auto & grad_coeffs_neigh =
-          representation.expansions_coefficients_gradient[neigh];
+          representation.expansions_coefficients_gradient[neigh_swap];
         Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
-            grad_coeffs_neigh[neigh_key].data(), 3, n_coeffs_per_key);
+            grad_coeffs_neigh[center_key].data(), 3, n_coeffs_per_key);
         grad_coeffs_pairs.block(0, col_offset, 3, n_coeffs_per_key) =
                                                             grad_coeffs_flat;
         // The offset keeps advancing from neighbour to neighbour, because the
@@ -536,6 +537,26 @@ namespace rascal {
     std::shared_ptr<typename RepManager::Manager_t> structure_manager;
     Structure_t atomic_structure;
     typename RepManager::Manager_t::iterator center_it;
+
+    PairRef_t swap_pair_key(const PairRef_t & pair_key) {
+      auto new_center{structure_manager->begin()};
+      while ((new_center != structure_manager->end()) &&
+             ((*new_center).get_atom_tag() != pair_key.get_atom_tag())) {
+        ++new_center;
+      }
+      if (new_center == structure_manager->end()) {
+        throw std::range_error("Didn't find neigh in the list of centers");
+      }
+      auto new_neighbour{(*new_center).begin()};
+      while ((new_neighbour != (*new_center).end()) &&
+             ((*new_neighbour).get_atom_tag() != pair_key.front())) {
+        ++new_neighbour;
+      }
+      if (new_neighbour == (*new_center).end()) {
+        throw std::range_error("Didn't find center in the list of neighbours");
+      }
+      return *new_neighbour;
+    }
 
   };
 

@@ -871,9 +871,8 @@ namespace rascal {
                                                                 dist, neigh);
 
         auto && coefficients_center_by_type{coefficients_center[neigh_type]};
-        //TODO(max,felix) shouldn't these keys be the other way around?
-        // Intuitively, the key should refer to the type of the atom that's
-        // moving (the one appearing in the subscript of the gradient)
+        // The gradients only contribute to the type of the neighbour
+        // (the atom that's moving)
         // grad_i c^{ij}
         auto && gradient_center_by_type{coefficients_center_gradient[
                                                                    neigh_type]};
@@ -919,17 +918,9 @@ namespace rascal {
             gradient_center_by_type.block(
                 cartesian_idx * max_radial, l_block_idx,
                 max_radial, l_block_size) -= pair_gradient_contribution;
-            if ((angular_l % 2) == 0) {
-              // The even-l components keep the same sign...
-              gradient_neigh_by_type.block(
-                  cartesian_idx * max_radial, l_block_idx,
-                  max_radial, l_block_size) -= pair_gradient_contribution;
-            } else {
-              // while the odd-l components change sign when r_{ij} is flipped
-              gradient_neigh_by_type.block(
-                  cartesian_idx * max_radial, l_block_idx,
+            gradient_neigh_by_type.block(
+                cartesian_idx * max_radial, l_block_idx,
                   max_radial, l_block_size) += pair_gradient_contribution;
-            }
           }
           l_block_idx += l_block_size;
         }
