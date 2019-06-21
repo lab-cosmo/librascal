@@ -878,8 +878,7 @@ namespace rascal {
         auto && gradient_center_by_type{coefficients_center_gradient[
                                                                    neigh_type]};
         // grad_j c^{ij}
-        auto && gradient_neigh_by_type{coefficients_neigh_gradient[
-                                                                  center_type]};
+        auto && gradient_neigh_by_type{coefficients_neigh_gradient[neigh_type]};
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
           size_t l_block_idx{0};
           for (size_t angular_l{0}; angular_l < this->max_angular + 1;

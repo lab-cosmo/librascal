@@ -319,9 +319,10 @@ namespace rascal {
         "reference_data/diamond_2atom.json",
         "reference_data/diamond_2atom_distorted.json",
         "reference_data/diamond_cubic_distorted.json",
-        "reference_data/SiC_moissanite.json"
+        "reference_data/SiC_moissanite.json",
+        "reference_data/SiCGe_wurtzite_like.json"
     };
-    const double cutoff{2.};
+    const double cutoff{3.5};
     const double cutoff_skin{0.5};
 
     json factory_args{};
@@ -353,7 +354,7 @@ namespace rascal {
     std::vector<json> hypers{};
     std::vector<json> fc_hypers{
         {{"type", "Cosine"},
-         {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
+         {"cutoff", {{"value", 3.5}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}} };
 
     std::vector<json> density_hypers{
@@ -414,10 +415,12 @@ namespace rascal {
     size_t max_angular{4};
   };
 
-  template<typename RepManager, typename ClusterRef_t>
-  struct RepresentationManagerGradientProvider {
-
+  template<typename RepManager>
+  class RepresentationManagerGradientProvider {
+   public:
     using Structure_t = AtomicStructure<3>;
+    using Key_t = typename RepManager::Key_t;
+    using PairRef_t = typename RepManager::template ClusterRef<2>;
 
     RepresentationManagerGradientProvider(
         RepManager & representation,
@@ -441,38 +444,36 @@ namespace rascal {
       auto & coeffs_center = representation.expansions_coefficients[center];
       auto keys_center = representation.expansions_coefficients
                                          .get_keys(center);
+      Key_t center_key{center.get_atom_type()};
       size_t n_coeffs_per_key{static_cast<size_t>(
           representation.expansions_coefficients.get_nb_comp())};
-      size_t n_coeffs_per_atom{n_coeffs_per_key * keys_center.size()};
-      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
-        coeffs_pairs(center.size() + 1, // number of atoms, including center
-                     n_coeffs_per_atom);
+      size_t n_coeffs_center{n_coeffs_per_key * keys_center.size()};
+      // Packed array containing: The center coefficients (all species) and
+      // the neighbour coefficients (only same species as center)
+      Eigen::ArrayXd coeffs_pairs(n_coeffs_center
+                                  + center.size() * n_coeffs_per_key);
 
-      size_t col_offset{0};
+      size_t result_idx{0};
       for (auto & key : keys_center) {
         Eigen::Map<Eigen::RowVectorXd> coeffs_flat(coeffs_center[key].data(),
                                                    n_coeffs_per_key);
-        coeffs_pairs.block(0, col_offset, 1, n_coeffs_per_key) = coeffs_flat;
-        col_offset += n_coeffs_per_key;
+        coeffs_pairs.segment(result_idx, n_coeffs_per_key) = coeffs_flat;
+        result_idx += n_coeffs_per_key;
       }
-      size_t neigh_row{1};
       for (auto neigh : center) {
         auto & coeffs_neigh = representation.expansions_coefficients[neigh];
-        size_t col_offset{0};
-        for (auto & key : keys_center) {
-          Eigen::Map<Eigen::RowVectorXd> coeffs_flat(coeffs_neigh[key].data(),
-                                                     n_coeffs_per_key);
-          coeffs_pairs.block(neigh_row, col_offset, 1, n_coeffs_per_key) =
-                                                                  coeffs_flat;
-          col_offset += n_coeffs_per_key;
-        }
-        ++neigh_row;
+        // The neighbour gradient (i =/= j) only contributes to the channel
+        // associated with the _center_ type (the type of the atom that's
+        // moving)
+        Eigen::Map<Eigen::ArrayXd> coeffs_flat(coeffs_neigh[center_key].data(),
+                                               n_coeffs_per_key);
+        coeffs_pairs.segment(result_idx, n_coeffs_per_key) = coeffs_flat;
+        result_idx += n_coeffs_per_key;
       }
-      Eigen::Map<Eigen::Array<double, 1, Eigen::Dynamic>> result(
-          coeffs_pairs.data(), coeffs_pairs.size());
+
       // Reset the atomic structure for the next iteration
       this->structure_manager->update(this->atomic_structure);
-      return result;
+      return coeffs_pairs.transpose();
     }
 
     Eigen::Array<double, 3, Eigen::Dynamic>
@@ -485,22 +486,16 @@ namespace rascal {
       auto center = *center_it;
       auto keys_center = representation.expansions_coefficients
                                          .get_keys(center);
+      Key_t center_key{center.get_atom_type()};
       size_t n_coeffs_per_key{static_cast<size_t>(
           representation.expansions_coefficients.get_nb_comp())};
-      size_t n_coeffs_per_atom{n_coeffs_per_key * keys_center.size()};
+      size_t n_coeffs_center{n_coeffs_per_key * keys_center.size()};
       Eigen::Matrix<double, 3, Eigen::Dynamic, Eigen::RowMajor>
         grad_coeffs_pairs(
-            3,
-            (center.size() + 1) * n_coeffs_per_atom);
+            3, n_coeffs_center + (center.size() * n_coeffs_per_key));
       auto & grad_coeffs_center =
         representation.expansions_coefficients_gradient[center];
       size_t col_offset{0};
-      //TODO(max) -- this is iterating in the inverse of the order we intended:
-      // Instead of looking at a center's coefficients and finding the gradient
-      // with respect to motion of its neighbours (and itself), we're finding
-      // the gradient of all of the _neighbours'_ (and center's) coefficients
-      // with respect to motion of the center.  It's not at all obvious,
-      // especially with multiple species, that these are the same thing.
       for (auto & key : keys_center) {
         // Here the 'flattening' retains the 3 Cartesian dimensions as rows,
         // since they vary the slowest within each key
@@ -510,22 +505,32 @@ namespace rascal {
                                                               grad_coeffs_flat;
         col_offset += n_coeffs_per_key;
       }
+      // TODO(max) -- this is iterating in the inverse of the order we intended:
+      // Instead of looking at a center's coefficients and finding the gradient
+      // with respect to motion of its neighbours (and itself), we're finding
+      // the gradient of all of the _neighbours'_ (and center's) coefficients
+      // with respect to motion of the center.  In the case of the spherical
+      // expansion, the difference is a factor of (-1)^l -- and accessed using
+      // the neighbour's key rather than the center key as originally stored
       for (auto neigh : center) {
+        typename RepManager::Key_t neigh_key{neigh.get_atom_type()};
+        // TODO(max) this should actually index ji (inverse of neigh)
+        // rather than ij (neigh)
+        // It's pulling grad_j c^{ij} when we wanted grad_i c^{ji}
         auto & grad_coeffs_neigh =
           representation.expansions_coefficients_gradient[neigh];
-        for (auto & key : keys_center) {
-          Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
-              grad_coeffs_neigh[key].data(), 3, n_coeffs_per_key);
-          grad_coeffs_pairs.block(0, col_offset, 3, n_coeffs_per_key) =
-                                                              grad_coeffs_flat;
-          // The offset keeps advancing from neighbour to neighbour, because the
-          // neighbour index has also been flattened out
-          col_offset += n_coeffs_per_key;
-        }
+        Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
+            grad_coeffs_neigh[neigh_key].data(), 3, n_coeffs_per_key);
+        grad_coeffs_pairs.block(0, col_offset, 3, n_coeffs_per_key) =
+                                                            grad_coeffs_flat;
+        // The offset keeps advancing from neighbour to neighbour, because the
+        // neighbour index has also been flattened out
+        col_offset += n_coeffs_per_key;
       }
       return grad_coeffs_pairs;
     }
 
+   private:
 
     RepManager & representation;
     std::shared_ptr<typename RepManager::Manager_t> structure_manager;
