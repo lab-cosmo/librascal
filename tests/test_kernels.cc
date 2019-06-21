@@ -33,9 +33,48 @@
 namespace rascal {
   BOOST_AUTO_TEST_SUITE(kernels_test);
 
+  using multiple_ref_fixtures = boost::mpl::list<
+      KernelFixture<DataSphericalInvariantsKernelFixture>>;
+
+  /**
+   * Test the compute functionality
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(kernel_ref_data_test, Fix,
+                                   multiple_ref_fixtures, Fix) {
+    auto& kernels = Fix::kernels;
+    auto& representations = Fix::representations;
+    auto& collections = Fix::collections;
+    auto& ref_data = Fix::ParentA::ref_data;
+
+    using Std2DArray_t = std::vector<std::vector<double>>;
+
+    BOOST_CHECK_EQUAL(collections.size(), ref_data.size());
+    for (size_t i_collection{0}; i_collection < ref_data.size(); ++i_collection) {
+      auto& collection = collections[i_collection];
+      BOOST_CHECK_EQUAL(kernels.size(), ref_data[i_collection].size());
+      for (size_t i_rep{0}; i_rep < ref_data[i_collection].size(); ++i_rep) {
+        auto& rep = representations[i_rep];
+        auto& kernel = kernels[i_rep];
+        rep.compute(collection);
+        auto mat = kernel.compute(rep, collection, collection);
+        auto ref_mat = ref_data[i_collection][i_rep]["kernel_matrix"].template get<Std2DArray_t>();
+        double error{0.};
+        for (int i_row{0}; i_row < mat.rows(); ++i_row) {
+          for (int i_col{0}; i_col < mat.cols(); ++i_col) {
+            auto error_ = std::abs(mat(i_row, i_col)-ref_mat[i_row][i_col]);
+            if (error < error_) {
+              error = error_;
+            }
+          }
+        }
+        BOOST_CHECK_LE(error, 6e-13);
+      }
+    }
+
+  }
+
   using multiple_fixtures = boost::mpl::list<
-      KernelFixture<internal::KernelType::Cosine,
-                    StrictNLKernelFixture>>;
+      KernelFixture<StrictNLKernelFixture>>;
 
   /**
    * Test the compute functionality
@@ -72,6 +111,8 @@ namespace rascal {
       }
     }
   }
+
+
 
   BOOST_AUTO_TEST_SUITE_END();
 

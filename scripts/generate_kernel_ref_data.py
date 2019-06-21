@@ -30,13 +30,13 @@ def dump_reference_json():
     soap_types = ["RadialSpectrum", "PowerSpectrum"]
 
     fn = os.path.join(path,"tests/reference_data/dft-smiles_500.xyz")
-    fn_to_write = os.path.join(path,"reference_data/dft-smiles_500.ubjson")
+    fn_to_write = "reference_data/dft-smiles_500.ubjson"
     start = 0
     length = 5
-
+    representations = ['spherical_invariants']
     kernel_names = ['Cosine']
     target_types = ['Structure', 'Atom']
-    dependant_args = dict(cosine=[dict(zeta=1),dict(zeta=2),dict(zeta=4)])
+    dependant_args = dict(Cosine=[dict(zeta=1),dict(zeta=2),dict(zeta=4)])
 
     data = dict(filename=fn_to_write,
                 start=start,
@@ -48,43 +48,48 @@ def dump_reference_json():
                 kernel_names=kernel_names,
                 target_types=target_types,
                 dependant_args=dependant_args,
-                rep_info=[])
+                rep_info=dict(spherical_invariants=[]))
 
     frames = read(fn, '{}:{}'.format(start,start+length))
-    for cutoff in cutoffs:
-        print(fn,cutoff)
-        data['rep_info'].append([])
-        for kernel_name in kernel_names:
-            for target_type in target_types:
-                for kwargs in dependant_args[kernel_name]:
-                    for soap_type in soap_types:
-                        for gaussian_sigma in gaussian_sigmas:
-                            for max_radial in max_radials:
-                                for max_angular in max_angulars:
-                                    if 'RadialSpectrum' == soap_type:
-                                        max_angular = 0
+    for representation_name in representations:
+        for cutoff in cutoffs:
+            print(fn,cutoff)
+            data['rep_info'][representation_name].append([])
+            for kernel_name in kernel_names:
+                for target_type in target_types:
+                    for kwargs in dependant_args[kernel_name]:
+                        for soap_type in soap_types:
+                            for gaussian_sigma in gaussian_sigmas:
+                                for max_radial in max_radials:
+                                    for max_angular in max_angulars:
+                                        if 'RadialSpectrum' == soap_type:
+                                            max_angular = 0
 
-                                    hypers = {"interaction_cutoff": cutoff,
-                                            "cutoff_smooth_width": 0.5,
-                                            "max_radial": max_radial,
-                                            "max_angular": max_angular,
-                                            "gaussian_sigma_type": "Constant",
-                                            "gaussian_sigma_constant": gaussian_sigma,
-                                            "soap_type": soap_type,
-                                            "cutoff_function_type":"Cosine",
-                                            "normalize": True,
-                                            "radial_basis":"GTO"}
-                                    soap = SphericalInvariant(**hypers)
-                                    soap_vectors = soap.transform(frames)
-                                    hypers_kernel = dict(name=kernel_name,
-                                    target_type=target_type)
-                                    hypers_kernel.update(**kwargs)
-                                    kernel = Kernel(soap, **hypers_kernel)
-                                    kk = kernel(soap_vectors)
-                                    # x = get_spectrum(hypers, frames)
-                                    data['rep_info'][-1].append(dict(kernel_matrix=kk.tolist(),
-                                     hypers_rep=copy(soap.hypers)),
-                                     hypers_kernel=copy())
+                                        hypers = {"interaction_cutoff": cutoff,
+                                                "cutoff_smooth_width": 0.5,
+                                                "max_radial": max_radial,
+                                                "max_angular": max_angular,
+                                                "gaussian_sigma_type": "Constant",
+                                                "gaussian_sigma_constant": gaussian_sigma,
+                                                "soap_type": soap_type,
+                                                "cutoff_function_type":"Cosine",
+                                                "normalize": True,
+                                                "radial_basis":"GTO"}
+                                        soap = SphericalInvariant(**hypers)
+                                        soap_vectors = soap.transform(frames)
+                                        hypers_kernel = dict(name=kernel_name,
+                                        target_type=target_type)
+                                        hypers_kernel.update(**kwargs)
+                                        kernel = Kernel(soap, **hypers_kernel)
+                                        kk = kernel(soap_vectors)
+                                        # x = get_spectrum(hypers, frames)
+                                        for aa in soap.nl_options:
+                                            aa['initialization_arguments'] = aa['args']
+
+                                        data['rep_info'][representation_name][-1].append(dict(kernel_matrix=kk.tolist(),
+                                        hypers_rep=copy(soap.hypers),
+                                        hypers_manager=copy(soap.nl_options),
+                                        hypers_kernel=copy(hypers_kernel)))
 
     with open(path+"tests/reference_data/kernel_reference.ubjson",'wb') as f:
         ubjson.dump(data,f)

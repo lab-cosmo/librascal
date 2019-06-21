@@ -1,18 +1,17 @@
 # from ..lib.Kernels import CosineKernel
-from ..lib._rascal.Models.Kernels import CosineKernel
+from ..lib._rascal.Models.Kernels import Kernel as Kernelcpp
 import json
 
 class Kernel(object):
     def __init__(self, representation, name='Cosine', target_type='structure', **kwargs):
 
-        hypers = dict(target_type=target_type)
+        hypers = dict(name=name,target_type=target_type)
         hypers.update(**kwargs)
         hypers_str = json.dumps(hypers)
         self.representation = representation._representation
-        if name.lower() == 'cosine':
-            self._kernel = CosineKernel(hypers_str)
-        else:
-            raise NotImplementedError("The kernel: {}, has not been implemented".format(name))
+
+        self._kernel = Kernelcpp(hypers_str)
+
 
     def __call__(self, X, Y=None):
         if Y is None:

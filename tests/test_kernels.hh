@@ -78,13 +78,77 @@ namespace rascal {
                                   {"max_angular", 6},
                                   {"soap_type", "PowerSpectrum"},
                                   {"normalize", true}}};
+
+
+    std::vector<json> kernel_hypers{{ {"zeta", 2},
+                                      {"target_type", "Structure"},
+                                      {"name", "Cosine"}},
+                                    { {"zeta", 2},
+                                      {"target_type", "Atom"},
+                                      {"name", "Cosine"}}
+                                    };
+  };
+
+  struct DataSphericalInvariantsKernelFixture {
+    using ManagerTypeHolder_t = StructureManagerTypeHolder<StructureManagerCenters,
+                                   AdaptorNeighbourList, AdaptorStrict>;
+    using Representation_t = CalculatorSphericalInvariants;
+
+    DataSphericalInvariantsKernelFixture()   {
+      std::vector<std::uint8_t> ref_data_ubjson;
+      internal::read_binary_file(ref_filename, ref_data_ubjson);
+      auto datas = json::from_ubjson(ref_data_ubjson);
+      this->ref_data = datas["rep_info"]["spherical_invariants"];
+      this->filename = datas["filename"];
+      this->start = datas["start"];
+      this->lenght = datas["length"];
+
+      for (auto& cutoff : datas["cutoffs"]) {
+        json parameters;
+        json structure{};
+        json adaptors;
+        json ad1{
+            {"name", "AdaptorNeighbourList"},
+            {"initialization_arguments",
+              {{"cutoff", cutoff},
+              {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+        json ad2{{"name", "AdaptorStrict"},
+                  {"initialization_arguments", {{"cutoff", cutoff}}}};
+        adaptors.emplace_back(ad1);
+        adaptors.emplace_back(ad2);
+
+        parameters["structure"] = structure;
+        parameters["adaptors"] = adaptors;
+        this->factory_args.push_back(parameters);
+      }
+
+      for (auto& data : this->ref_data[0].get<json>()) {
+        this->representation_hypers.push_back(data["hypers_rep"]);
+        this->kernel_hypers.push_back(data["hypers_kernel"]);
+      }
+    }
+
+    ~DataSphericalInvariantsKernelFixture() = default;
+
+    json ref_data{};
+
+    std::vector<json> factory_args{};
+    std::vector<json> representation_hypers{};
+    std::vector<json> kernel_hypers{};
+
+    const bool consider_ghost_neighbours{false};
+    std::string ref_filename{"reference_data/kernel_reference.ubjson"};
+    std::string filename{""};
+    int start{0};
+    int lenght{0};
+
   };
 
   /**
    * BaseFixture is expected to be similar to
    * StrictNLKernelFixture
    */
-  template<internal::KernelType Type, class BaseFixture>
+  template<class BaseFixture>
   struct KernelFixture : CollectionFixture<BaseFixture>, CalculatorFixture<BaseFixture> {
     using ParentA = CollectionFixture<BaseFixture>;
     using ParentB = CalculatorFixture<BaseFixture>;
@@ -103,18 +167,10 @@ namespace rascal {
         }
       }
 
-      for (auto& hyper : this->kernel_hypers) {
+      for (auto& hyper : this->ParentA::kernel_hypers) {
         this->kernels.push_back(hyper);
       }
     }
-
-    std::vector<json> kernel_hypers{{ {"zeta", 2},
-                                      {"target_type", "Structure"},
-                                      {"name", "Cosine"}},
-                                    { {"zeta", 2},
-                                      {"target_type", "Atom"},
-                                      {"name", "Cosine"}}
-                                    };
 
     std::vector<Kernel> kernels{};
 

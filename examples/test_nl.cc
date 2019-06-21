@@ -81,13 +81,13 @@ int main() {
   // std::string filename{"reference_data/methane.json"};
   std::string rep_id{"pp"};
 
-  double cutoff{3.};
+  double cutoff{5.};
   // json hypers{{"max_radial", 6},
   //             {"max_angular", 6},
   //             {"soap_type", "PowerSpectrum"},
   //             {"normalize", true},
   //             {"identifier",rep_id}};
-  json hypers{{"max_radial", 6},
+  json hypers{{"max_radial", 8},
               {"max_angular", 6},
               {"soap_type", "PowerSpectrum"},
               {"normalize", true}};
