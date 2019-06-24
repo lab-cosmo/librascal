@@ -86,7 +86,6 @@ namespace rascal {
    *                                "Provided".
    */
   class GradientTestFixture {
-
    public:
     explicit GradientTestFixture(std::string input_filename) {
       using Eigen::ArrayXd;
@@ -376,7 +375,6 @@ namespace rascal {
   };
 
   struct Hyp1f1GradientProvider {
-
     Hyp1f1GradientProvider(size_t max_radial, size_t max_angular, double fac_a,
                            Eigen::Ref<Eigen::VectorXd> fac_b)
         : max_radial{max_radial}, max_angular{max_angular}, fac_a{fac_a} {

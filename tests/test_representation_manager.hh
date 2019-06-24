@@ -378,7 +378,6 @@ namespace rascal {
    */
   template <class RadialIntegral, class ClusterRef>
   struct SphericalExpansionRadialDerivative {
-
     SphericalExpansionRadialDerivative(std::shared_ptr<RadialIntegral> ri,
                                        ClusterRef & pair_in)
         : radial_integral{ri}, pair{pair_in}, max_radial{ri->max_radial},
@@ -577,7 +576,6 @@ namespace rascal {
    */
   template <typename RepManager_t>
   class RepresentationManagerGradientFixture : public GradientTestFixture {
-
    public:
     using StdVector2Dim_t = std::vector<std::vector<double>>;
     using Calculator_t = RepresentationManagerGradientCalculator<RepManager_t>;
