@@ -179,6 +179,9 @@ namespace rascal {
       MultipleHypersSphericalExpansion,
       RepresentationManagerSphericalExpansion>>;
 
+  /**
+   * Test the derivative of the GTO radial integral in the SphericalExpansion
+   */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(spherical_expansion_radial_derivative, Fix,
                                    fixtures_with_gradients, Fix) {
     auto & managers = Fix::managers;
@@ -214,6 +217,10 @@ namespace rascal {
       SingleHypersSphericalExpansion,
       RepresentationManagerSphericalExpansion>>;
 
+  /**
+   * Test the gradient of the SphericalExpansion representation on a few simple
+   * crystal structures (single- and multi-species, primitive and supercells)
+   */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(spherical_expansion_gradients, Fix,
                                    simple_periodic_fixtures, Fix) {
     auto & managers = Fix::managers;
@@ -225,19 +232,21 @@ namespace rascal {
       representations.emplace_back(manager, hyper);
       structures.emplace_back();
       structures.back().set_structure(*filename_it);
+      // The finite-difference tests don't work with periodic boundary
+      // conditions -- moving one atom moves all its periodic images, too
       structures.back().pbc.setZero();
-      RepresentationManagerGradientProvider<typename Fix::Representation_t>
+      RepresentationManagerGradientCalculator<typename Fix::Representation_t>
           calculator(representations.back(), manager, structures.back());
-      RepresentationManagerGradientFixture<typename Fix::Manager_t> grad_fix{
-          "reference_data/spherical_expansion_gradient_test.json", manager};
+      RepresentationManagerGradientFixture<typename Fix::Representation_t>
+          grad_fix("reference_data/spherical_expansion_gradient_test.json",
+                   manager, calculator);
       if (grad_fix.verbosity >= GradientTestFixture::VerbosityValue::INFO) {
         std::cout << "Testing structure: " << *filename_it << std::endl;
       }
-      for (auto center : manager) {
-        test_gradients(calculator, grad_fix);
-        calculator.advance_center();
+      do {
+        test_gradients(grad_fix.get_calculator(), grad_fix);
         grad_fix.advance_center();
-      }
+      } while (grad_fix.has_next());
       ++filename_it;
     }
   }
