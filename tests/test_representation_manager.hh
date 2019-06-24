@@ -385,7 +385,7 @@ namespace rascal {
 
     ~SphericalExpansionRadialDerivative() = default;
 
-    Eigen::Ref<Eigen::Array<double, 1, Eigen::Dynamic>>
+    Eigen::Array<double, 1, Eigen::Dynamic>
     f(const Eigen::Matrix<double, 1, 1> & input_v) {
       Eigen::ArrayXXd result(this->max_radial, this->max_angular + 1);
       result = this->radial_integral->template compute_neighbour_contribution<
@@ -395,7 +395,7 @@ namespace rascal {
       return result_flat;
     }
 
-    Eigen::Ref<Eigen::Array<double, 1, Eigen::Dynamic>>
+    Eigen::Array<double, 1, Eigen::Dynamic>
     grad_f(const Eigen::Matrix<double, 1, 1> & input_v) {
       Eigen::ArrayXXd result(this->max_radial, this->max_angular + 1);
       result = this->radial_integral->template compute_neighbour_derivative<
