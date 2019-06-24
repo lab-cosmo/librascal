@@ -89,7 +89,7 @@ int main() {
 
   AtomicStructure<3> atomic_structure2{atomic_structure};
 
-  atomic_structure2.positions(0,0) += 0.5;
+  atomic_structure2.positions(0, 0) += 0.5;
 
   manager->update(atomic_structure2);
 

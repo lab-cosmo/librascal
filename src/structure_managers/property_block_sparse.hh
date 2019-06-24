@@ -453,7 +453,8 @@ namespace rascal {
     }
     template <size_t Order_ = Order,
               std::enable_if_t<not(Order_ == 1), int> = 0>
-    size_t get_validated_property_length(bool /*consider_ghost_atoms*/ = false) {
+    size_t
+    get_validated_property_length(bool /*consider_ghost_atoms*/ = false) {
       return this->base_manager.nb_clusters(Order_);
     }
 
@@ -461,13 +462,15 @@ namespace rascal {
     template <size_t Order_ = Order, std::enable_if_t<(Order_ > 1), int> = 0>
     inline void resize(bool consider_ghost_atoms = false) {
       this->resize<Order_ - 1>(consider_ghost_atoms);
-      size_t new_size{this->get_validated_property_length<Order_>(consider_ghost_atoms)};
+      size_t new_size{
+          this->get_validated_property_length<Order_>(consider_ghost_atoms)};
       this->values[Order_ - 1].resize(new_size);
     }
 
     template <size_t Order_ = Order, std::enable_if_t<(Order_ == 1), int> = 0>
     inline void resize(bool consider_ghost_atoms = false) {
-      size_t new_size{this->get_validated_property_length<Order_>(consider_ghost_atoms)};
+      size_t new_size{
+          this->get_validated_property_length<Order_>(consider_ghost_atoms)};
       this->values[Order_ - 1].resize(new_size);
     }
 
@@ -501,28 +504,30 @@ namespace rascal {
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");
 
-      return this->operator()(id.get_cluster_index(CallerLayer), CallerOrder-1);
+      return this->operator()(id.get_cluster_index(CallerLayer),
+                              CallerOrder - 1);
     }
 
     /**
      * Access a property of order 1 with a clusterRef of order 2
      */
-    template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order,
-        std::enable_if_t<(Order_ == 1) and (CallerOrder > 1), int> = // NOLINT
-                  0>  // NOLINT
+    template <
+        size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order,
+        std::enable_if_t<(Order_ == 1) and (CallerOrder > 1), int> =  // NOLINT
+        0>                                                            // NOLINT
     inline decltype(auto)
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
       return this->operator()(this->get_manager().get_atom_index(
-          id.get_internal_neighbour_atom_tag()), 0);
+                                  id.get_internal_neighbour_atom_tag()),
+                              0);
     }
-
 
     inline InputData_t & operator()(const size_t & index,
                                     const size_t & i_order) {
       return this->values[i_order][index];
     }
 
-     //! Accessor for property by index for dynamically sized properties
+    //! Accessor for property by index for dynamically sized properties
     inline decltype(auto) operator()(const size_t & index) {
       return this->operator[](index);
     }
@@ -536,16 +541,16 @@ namespace rascal {
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");
 
-      return this->operator()(id.get_cluster_index(CallerLayer), CallerOrder-1, key);
+      return this->operator()(id.get_cluster_index(CallerLayer),
+                              CallerOrder - 1, key);
     }
 
     //! Accessor for property by index for dynamically sized properties
-    inline DenseRef_t operator()(const size_t & index,
-                                  const size_t & i_order,
-                                  const Key_t & key) {
+    inline DenseRef_t operator()(const size_t & index, const size_t & i_order,
+                                 const Key_t & key) {
       return DenseRef_t(&this->values[i_order][index].at(key)(0, 0),
-                         this->values[i_order][index].at(key).rows(),
-                         this->values[i_order][index].at(key).cols());
+                        this->values[i_order][index].at(key).rows(),
+                        this->values[i_order][index].at(key).cols());
     }
 
     // inline size_t get_dense_feature_size(const size_t & index) {
@@ -556,13 +561,15 @@ namespace rascal {
     //! Accessor for property by cluster index and return a dense
     //! representation of the property associated to this cluster
     template <size_t CallerOrder, size_t CallerLayer>
-    inline Dense_t get_dense_row(const ClusterRefKey<CallerOrder, CallerLayer> & id) {
+    inline Dense_t
+    get_dense_row(const ClusterRefKey<CallerOrder, CallerLayer> & id) {
       static_assert(CallerOrder <= Order, "should be CallerOrder <= Order");
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");
 
-      return this->get_dense_row(id.get_cluster_index(CallerLayer), CallerOrder - 1);
+      return this->get_dense_row(id.get_cluster_index(CallerLayer),
+                                 CallerOrder - 1);
     }
 
     inline Dense_t get_dense_row(const size_t & index, const size_t & i_order) {
@@ -571,7 +578,8 @@ namespace rascal {
       size_t i_col{0};
       for (const auto & key : keys) {
         size_t i_row{0};
-        for (int i_pos{0}; i_pos < this->values[i_order][index][key].size(); i_pos++) {
+        for (int i_pos{0}; i_pos < this->values[i_order][index][key].size();
+             i_pos++) {
           feauture_row(i_row, i_col) = this->values[i_order][index][key](i_pos);
           i_row++;
         }
@@ -602,9 +610,11 @@ namespace rascal {
           int i_feat{0};
           for (const auto & key : all_keys) {
             if (this->values[i_order][i_center].count(key) == 1) {
-              for (int i_pos{0}; i_pos < this->values[i_order][i_center][key].size();
-                  i_pos++) {
-                features(i_feat, i_center) = this->values[i_order][i_center][key](i_pos);
+              for (int i_pos{0};
+                   i_pos < this->values[i_order][i_center][key].size();
+                   i_pos++) {
+                features(i_feat, i_center) =
+                    this->values[i_order][i_center][key](i_pos);
                 i_feat++;
               }
             } else {
@@ -621,9 +631,7 @@ namespace rascal {
     inline std::vector<InputData_t> & get_raw_data() { return this->values[0]; }
     //! get number of different distinct element in the property
     //! (typically the number of center)
-    inline size_t get_nb_item() const {
-      return this->size();
-    }
+    inline size_t get_nb_item() const { return this->size(); }
 
     template <size_t CallerOrder, size_t CallerLayer>
     inline decltype(auto)
@@ -632,9 +640,9 @@ namespace rascal {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");
-      return this->values[CallerOrder - 1][id.get_cluster_index(CallerLayer)].get_keys();
+      return this->values[CallerOrder - 1][id.get_cluster_index(CallerLayer)]
+          .get_keys();
     }
-
   };
 
 }  // namespace rascal

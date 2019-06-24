@@ -27,7 +27,7 @@
 
 #include "tests.hh"
 #include "test_representation_manager.hh"
-#include "test_math.hh" // for the gradient test
+#include "test_math.hh"  // for the gradient test
 
 namespace rascal {
   BOOST_AUTO_TEST_SUITE(representation_test);
@@ -175,9 +175,9 @@ namespace rascal {
     }
   }
 
-  using fixtures_with_gradients = boost::mpl::list<RepresentationFixture<
-      MultipleHypersSphericalExpansion,
-      RepresentationManagerSphericalExpansion>>;
+  using fixtures_with_gradients = boost::mpl::list<
+      RepresentationFixture<MultipleHypersSphericalExpansion,
+                            RepresentationManagerSphericalExpansion>>;
 
   /**
    * Test the derivative of the GTO radial integral in the SphericalExpansion
@@ -188,15 +188,15 @@ namespace rascal {
     auto & hypers = Fix::hypers;
     // aaaaaargh what a hack
     using ClusterRef_t = typename Fix::Manager_t::template ClusterRef<2>;
-    using RadialIntegral_t = internal::RadialContribution<
-          internal::RadialBasisType::GTO>;
+    using RadialIntegral_t =
+        internal::RadialContribution<internal::RadialBasisType::GTO>;
     GradientTestFixture test_data{"reference_data/radial_derivative_test.json"};
-    auto manager = managers.front(); // there should be just one
+    auto manager = managers.front();  // there should be just one
     // doesn't work, dunno why, see nested for loops below for replacement hack
-    //auto & pair = (manager.begin())->begin();
+    // auto & pair = (manager.begin())->begin();
     for (auto & hyper : hypers) {
       std::shared_ptr<RadialIntegral_t> radial_integral =
-                                std::make_shared<RadialIntegral_t>(hyper);
+          std::make_shared<RadialIntegral_t>(hyper);
       for (auto center : manager) {
         for (auto pair : center) {
           // in C++17 the compiler would be able to deduce the template
@@ -206,16 +206,15 @@ namespace rascal {
           test_gradients(calculator, test_data);
           // I really just need _a_ pair, not any one in particular.
           break;
-        } // for (auto pair : center)
+        }  // for (auto pair : center)
         break;
-      } // for (auto center : managers)
+      }  // for (auto center : managers)
       // But do try all the hypers
-    } // for (auto hyper : hypers)
+    }  // for (auto hyper : hypers)
   }
 
   using simple_periodic_fixtures = boost::mpl::list<RepresentationFixture<
-      SingleHypersSphericalExpansion,
-      RepresentationManagerSphericalExpansion>>;
+      SingleHypersSphericalExpansion, RepresentationManagerSphericalExpansion>>;
 
   /**
    * Test the gradient of the SphericalExpansion representation on a few simple

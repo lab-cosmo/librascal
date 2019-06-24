@@ -135,8 +135,8 @@ namespace rascal {
     Eigen::VectorXd fac_b(max_radial);
     fac_b << 0.888889, 0.888889, 0.444444, 0.296296;
     const double fac_a{0.5 * std::pow(0.2, -2)};
-    Hyp1f1GradientProvider hyp1f1_calculator{
-      max_radial, max_angular, fac_a, fac_b};
+    Hyp1f1GradientProvider hyp1f1_calculator{max_radial, max_angular, fac_a,
+                                             fac_b};
     GradientTestFixture fix{"reference_data/radial_derivative_test.json"};
     test_gradients(hyp1f1_calculator, fix);
   }

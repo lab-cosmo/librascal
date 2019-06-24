@@ -381,7 +381,8 @@ namespace rascal {
         this->hyp1f1_calculator.calc(distance, fac_a, this->fac_b);
 
         this->radial_integral_neighbour =
-            (this->a_b_l_n.array() * this->hyp1f1_calculator.get_values().array())
+            (this->a_b_l_n.array() *
+             this->hyp1f1_calculator.get_values().array())
                 .matrix() *
             this->distance_fac_a_l.asDiagonal();
         this->radial_integral_neighbour.transpose() *=
@@ -425,7 +426,6 @@ namespace rascal {
         auto smearing{downcast_atomic_smearing<AST>(this->atomic_smearing)};
         // a = 1 / (2*\sigma^2)
         double fac_a{0.5 * pow(smearing->get_gaussian_sigma(pair), -2)};
-        //double inv_2a{pow(smearing->get_gaussian_sigma(pair), 2)};
 
         // start proportional_factors as the list of l from 0 to l_max
         Vector_t proportional_factors =
@@ -446,8 +446,8 @@ namespace rascal {
         this->radial_neighbour_derivative.transpose() *=
             this->radial_ortho_matrix;
 
-        this->radial_neighbour_derivative += this->radial_integral_neighbour
-                          * proportional_factors.asDiagonal();
+        this->radial_neighbour_derivative +=
+            this->radial_integral_neighbour * proportional_factors.asDiagonal();
         return Matrix_Ref(this->radial_neighbour_derivative);
       }
 
@@ -584,8 +584,8 @@ namespace rascal {
     using Data_t = typename SparseProperty_t::Data_t;
     using SparsePropertyGradient_t =
         BlockSparseProperty<double, 2, 0, Manager_t, Key_t>;
-    using Matrix_t = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic,
-                                   Eigen::RowMajor>;
+    using Matrix_t =
+        Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
     using Vector_t = Eigen::VectorXd;
 
     /**
@@ -660,8 +660,7 @@ namespace rascal {
      */
     RepresentationManagerSphericalExpansion(ManagerPtr_t sm,
                                             const Hypers_t & hyper)
-        : expansions_coefficients{*sm},
-          expansions_coefficients_gradient{*sm},
+        : expansions_coefficients{*sm}, expansions_coefficients_gradient{*sm},
           structure_manager{std::move(sm)} {
       this->set_hyperparameters(hyper);
     }
@@ -719,9 +718,6 @@ namespace rascal {
     }
 
     SparseProperty_t expansions_coefficients;
-    // Goodbye, and good riddance
-    //std::array<SparsePropertyGradient_t,
-               //internal::n_spatial_dimensions> expansions_coefficients_gradient;
     SparsePropertyGradient_t expansions_coefficients_gradient;
 
    protected:
@@ -796,9 +792,9 @@ namespace rascal {
             internal::RadialBasisType RadialType,
             internal::AtomicSmearingType SmearingType>
   void RepresentationManagerSphericalExpansion<Mngr>::compute_impl() {
+    using internal::n_spatial_dimensions;
     using math::PI;
     using math::pow;
-    using internal::n_spatial_dimensions;
 
     // downcast cutoff and radial contributions so they are functional
     auto cutoff_function{
@@ -820,7 +816,7 @@ namespace rascal {
     for (auto center : this->structure_manager) {
       auto & coefficients_center = this->expansions_coefficients[center];
       auto & coefficients_center_gradient =
-                          this->expansions_coefficients_gradient[center];
+          this->expansions_coefficients_gradient[center];
       Key_t center_type{center.get_atom_type()};
 
       // TODO(felix) think about an option to have "global" species,
@@ -832,8 +828,8 @@ namespace rascal {
       keys.insert({center_type});
       // initialize the expansion coefficients to 0
       coefficients_center.resize(keys, n_row, n_col, 0.);
-      coefficients_center_gradient.resize(keys,
-                                    n_spatial_dimensions * n_row, n_col, 0.);
+      coefficients_center_gradient.resize(keys, n_spatial_dimensions * n_row,
+                                          n_col, 0.);
 
       // Start the accumulator with the central atom
       coefficients_center[center_type].col(0) +=
@@ -847,19 +843,19 @@ namespace rascal {
         Key_t neigh_type{neigh.get_atom_type()};
 
         auto & coefficients_neigh_gradient =
-                              this->expansions_coefficients_gradient[neigh];
+            this->expansions_coefficients_gradient[neigh];
         // TODO(felix,max) Do we need to check if it's already been
         // initialized?  Does a given pair 'neigh' get visited more than once
         // in each compute call?
         coefficients_neigh_gradient.resize(keys, n_spatial_dimensions * n_row,
-                                                 n_col, 0.);
+                                           n_col, 0.);
 
         auto harmonics_and_derivatives =
-            math::compute_spherical_harmonics_derivatives(
-                direction, this->max_angular);
+            math::compute_spherical_harmonics_derivatives(direction,
+                                                          this->max_angular);
         Vector_t harmonics = harmonics_and_derivatives.row(0);
-        Matrix_t harmonics_derivatives = harmonics_and_derivatives.template
-                                                                bottomRows<3>();
+        Matrix_t harmonics_derivatives =
+            harmonics_and_derivatives.template bottomRows<3>();
 
         Matrix_t neighbour_contribution =
             radial_integral
@@ -867,15 +863,15 @@ namespace rascal {
                                                                         neigh);
         Matrix_t neighbour_derivative =
             radial_integral
-                ->template compute_neighbour_derivative<SmearingType>(
-                                                                dist, neigh);
+                ->template compute_neighbour_derivative<SmearingType>(dist,
+                                                                      neigh);
 
         auto && coefficients_center_by_type{coefficients_center[neigh_type]};
         // The gradients only contribute to the type of the neighbour
         // (the atom that's moving)
         // grad_i c^{ij}
-        auto && gradient_center_by_type{coefficients_center_gradient[
-                                                                   neigh_type]};
+        auto && gradient_center_by_type{
+            coefficients_center_gradient[neigh_type]};
         // grad_j c^{ij}
         auto && gradient_neigh_by_type{coefficients_neigh_gradient[neigh_type]};
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
@@ -885,9 +881,9 @@ namespace rascal {
             size_t l_block_size{2 * angular_l + 1};
             coefficients_center_by_type.block(radial_n, l_block_idx, 1,
                                               l_block_size) +=
-                (neighbour_contribution(radial_n, angular_l)
-                 * harmonics.segment(l_block_idx, l_block_size).transpose()
-                 * cutoff_function->f_c(dist));
+                (neighbour_contribution(radial_n, angular_l) *
+                 harmonics.segment(l_block_idx, l_block_size).transpose() *
+                 cutoff_function->f_c(dist));
             l_block_idx += l_block_size;
           }
         }
@@ -900,6 +896,7 @@ namespace rascal {
           for (size_t cartesian_idx{0}; cartesian_idx < n_spatial_dimensions;
                ++cartesian_idx) {
             // Radial component: d/dr_{ij} (c_{ij} f_c{r_{ij}}) \hat{r_{ij}}
+            // clang-format off
             Matrix_t pair_gradient_contribution =
               ((neighbour_derivative * cutoff_function->f_c(dist))
                + (neighbour_contribution * cutoff_function->df_c(dist)))
@@ -921,6 +918,7 @@ namespace rascal {
             gradient_neigh_by_type.block(
                 cartesian_idx * max_radial, l_block_idx,
                   max_radial, l_block_size) += pair_gradient_contribution;
+            // clang-format on
           }
           l_block_idx += l_block_size;
         }

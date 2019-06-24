@@ -96,15 +96,15 @@ namespace rascal {
 
       std::ifstream input_file(input_filename);
       input_file >> input_data;
-      this->function_inputs = input_data.at("function_inputs")
-                                        .get<StdVector2Dim_t>();
+      this->function_inputs =
+          input_data.at("function_inputs").get<StdVector2Dim_t>();
       this->n_arguments = function_inputs[0].size();
 
       this->displacement_directions =
-              this->get_displacement_directions(input_data, this->n_arguments);
+          this->get_displacement_directions(input_data, this->n_arguments);
       this->verbosity = get_verbosity(input_data);
       if (input_data.find("fd_error_tol") != input_data.end()) {
-          this->fd_error_tol = input_data["fd_error_tol"].get<double>();
+        this->fd_error_tol = input_data["fd_error_tol"].get<double>();
       }
     }
 
@@ -142,9 +142,9 @@ namespace rascal {
     }
 
     enum struct VerbosityValue {
-      NORMAL = 0, // Print nothing
-      INFO = 10,  // Print one line of info for each gradient step
-      DEBUG = 20  // Print as much as possible
+      NORMAL = 0,  // Print nothing
+      INFO = 10,   // Print one line of info for each gradient step
+      DEBUG = 20   // Print as much as possible
     };
 
     static VerbosityValue get_verbosity(json & input_data) {
@@ -189,10 +189,11 @@ namespace rascal {
     f(const Eigen::Vector3d & inputs_v) {
       // Renormalize the inputs to project out the r gradients
       Eigen::Vector3d my_inputs = inputs_v / inputs_v.norm();
-      //Eigen::Array<double, 4, (max_angular + 1) * (max_angular + 1)>
-          //harmonics_derivatives{math::compute_spherical_harmonics_derivatives(
-              //my_inputs, max_angular)};
-      //return harmonics_derivatives.row(0);
+      // Gives the same result -- retain for testing
+      // Eigen::Array<double, 4, (max_angular + 1) * (max_angular + 1)>
+      //     harmonics_derivatives{math::compute_spherical_harmonics_derivatives(
+      //         my_inputs, max_angular)};
+      // return harmonics_derivatives.row(0);
       return math::compute_spherical_harmonics(my_inputs, max_angular);
     }
 
@@ -224,7 +225,7 @@ namespace rascal {
    * GradientTestFixture).  This function additionally guarantees that f() will
    * be called before grad_f() with the same input.
    */
-  template<typename FunctionProvider_t, typename TestFixture_t>
+  template <typename FunctionProvider_t, typename TestFixture_t>
   void test_gradients(FunctionProvider_t function_calculator,
                       TestFixture_t params) {
     Eigen::MatrixXd values;
@@ -245,8 +246,8 @@ namespace rascal {
     // to the next).  The automated test is really more intended to be a sanity
     // check on the implementation anyway.
     for (auto inputs : params.function_inputs) {
-      argument_vector = Eigen::Map<Eigen::RowVectorXd>(inputs.data(), 1,
-                                                       params.n_arguments);
+      argument_vector =
+          Eigen::Map<Eigen::RowVectorXd>(inputs.data(), 1, params.n_arguments);
       values = function_calculator.f(argument_vector);
       jacobian = function_calculator.grad_f(argument_vector);
       if (params.verbosity >= VerbosityValue::INFO) {
@@ -376,9 +377,9 @@ namespace rascal {
 
   struct Hyp1f1GradientProvider {
 
-    Hyp1f1GradientProvider(size_t max_radial, size_t max_angular,
-                           double fac_a, Eigen::Ref<Eigen::VectorXd> fac_b) :
-    max_radial{max_radial}, max_angular{max_angular}, fac_a{fac_a} {
+    Hyp1f1GradientProvider(size_t max_radial, size_t max_angular, double fac_a,
+                           Eigen::Ref<Eigen::VectorXd> fac_b)
+        : max_radial{max_radial}, max_angular{max_angular}, fac_a{fac_a} {
       this->fac_b.resize(max_angular, 1);
       this->fac_b = fac_b;
       this->hyp1f1_calculator.precompute(max_radial, max_angular);
@@ -416,7 +417,6 @@ namespace rascal {
     size_t max_angular;
     double fac_a{};
     Eigen::VectorXd fac_b{};
-
   };
 
 }  // namespace rascal

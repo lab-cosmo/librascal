@@ -94,7 +94,6 @@ namespace rascal {
       Eigen::VectorXd coeff{};
       Eigen::VectorXd coeff_derivative{};
 
-
      public:
       size_t n_terms{0};
 
@@ -556,7 +555,6 @@ namespace rascal {
       Eigen::ArrayXd z{};
       Eigen::ArrayXd dz_dr{};
 
-
       inline int get_pos(const int & n_radial, const int & l_angular) {
         return l_angular + (this->max_angular + 1) * n_radial;
       }
@@ -653,7 +651,7 @@ namespace rascal {
 
         for (size_t n_radial{0}; n_radial < this->max_radial; ++n_radial) {
           // get the starting points for the recursion
-          auto& z{this->z(n_radial)};
+          auto & z{this->z(n_radial)};
           int l_angular{static_cast<int>(this->max_angular)};
           int ipos{this->get_pos(n_radial, l_angular)};
           M1p2p = this->hyp1f1[ipos].calc(z, z2, ez2);
@@ -699,7 +697,7 @@ namespace rascal {
           this->derivatives.row(n_radial) *= this->dz_dr(n_radial);
         }
         // here is where dG/dz*dz/dr is computed
-        this->derivatives -= (2*alpha_rij)*this->values;
+        this->derivatives -= (2 * alpha_rij) * this->values;
       }
 
       //! computes G by direct evaluation
@@ -717,7 +715,7 @@ namespace rascal {
         this->dz_dr *= 2;
 
         for (size_t n_radial{0}; n_radial < this->max_radial; n_radial++) {
-          auto& z{this->z(n_radial)};
+          auto & z{this->z(n_radial)};
           for (size_t l_angular{0}; l_angular < this->max_angular + 1;
                l_angular++) {
             int ipos{this->get_pos(n_radial, l_angular)};
@@ -727,7 +725,7 @@ namespace rascal {
         }
         if (derivative) {
           for (size_t n_radial{0}; n_radial < this->max_radial; n_radial++) {
-            auto& z{this->z(n_radial)};
+            auto & z{this->z(n_radial)};
             for (size_t l_angular{0}; l_angular < this->max_angular + 1;
                  l_angular++) {
               int ipos{this->get_pos(n_radial, l_angular)};
@@ -736,7 +734,7 @@ namespace rascal {
             }
             this->derivatives.row(n_radial) *= this->dz_dr(n_radial);
           }
-          this->derivatives -= (2*alpha*r_ij)*this->values;
+          this->derivatives -= (2 * alpha * r_ij) * this->values;
         }
       }
 

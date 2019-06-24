@@ -211,12 +211,11 @@ namespace rascal {
       json parameters;
       json structure{{"filename", filename}};
       json adaptors;
-      json ad1{
-          {"name", "AdaptorNeighbourList"},
-          {"initialization_arguments",
-           {{"cutoff", cutoff},
-            {"skin", cutoff_skin},
-            {"consider_ghost_neighbours", false}}}};
+      json ad1{{"name", "AdaptorNeighbourList"},
+               {"initialization_arguments",
+                {{"cutoff", cutoff},
+                 {"skin", cutoff_skin},
+                 {"consider_ghost_neighbours", false}}}};
       json ad2{{"name", "AdaptorStrict"},
                {"initialization_arguments", {{"cutoff", cutoff}}}};
       adaptors.emplace_back(ad1);
@@ -275,10 +274,8 @@ namespace rascal {
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
-    std::vector<json> rep_hypers{{{"max_radial", 4},
-                                  {"max_angular", 2}},
-                                 {{"max_radial", 6},
-                                  {"max_angular", 4}}};
+    std::vector<json> rep_hypers{{{"max_radial", 4}, {"max_angular", 2}},
+                                 {{"max_radial", 6}, {"max_angular", 4}}};
   };
 
   /** Contains some simple periodic structures for testing complicated things
@@ -295,12 +292,11 @@ namespace rascal {
         json parameters;
         json structure{{"filename", filename}};
         json adaptors;
-        json ad1{
-            {"name", "AdaptorNeighbourList"},
-            {"initialization_arguments",
-             {{"cutoff", cutoff},
-              {"skin", cutoff_skin},
-              {"consider_ghost_neighbours", false}}}};
+        json ad1{{"name", "AdaptorNeighbourList"},
+                 {"initialization_arguments",
+                  {{"cutoff", cutoff},
+                   {"skin", cutoff_skin},
+                   {"consider_ghost_neighbours", false}}}};
         json ad2{{"name", "AdaptorStrict"},
                  {"initialization_arguments", {{"cutoff", cutoff}}}};
         adaptors.emplace_back(ad1);
@@ -321,8 +317,7 @@ namespace rascal {
         "reference_data/diamond_cubic_distorted.json",
         "reference_data/SiC_moissanite.json",
         "reference_data/SiCGe_wurtzite_like.json",
-        "reference_data/SiC_moissanite_supercell.json"
-    };
+        "reference_data/SiC_moissanite_supercell.json"};
     const double cutoff{2.5};
     const double cutoff_skin{0.5};
 
@@ -330,8 +325,7 @@ namespace rascal {
     std::vector<Structure_t> structures{};
   };
 
-  struct SingleHypersSphericalExpansion
-      : SimplePeriodicNLStrictFixture {
+  struct SingleHypersSphericalExpansion : SimplePeriodicNLStrictFixture {
     using Parent = SimplePeriodicNLStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
 
@@ -356,14 +350,14 @@ namespace rascal {
     std::vector<json> fc_hypers{
         {{"type", "Cosine"},
          {"cutoff", {{"value", 2.5}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}} };
+         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
 
     std::vector<json> density_hypers{
         {{"type", "Constant"},
-         {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}} };
+         {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
     std::vector<json> rep_hypers{{{"max_radial", 2},
-                                  {"max_angular", 2}} };
+                                  {"max_angular", 2}}};
   };
 
   struct SphericalExpansionTestData : TestData {
@@ -382,35 +376,33 @@ namespace rascal {
    * Calculator specialized to testing the derivative of the RadialIntegral
    * in the definition of the SphericalExpansion representation.
    */
-  template<class RadialIntegral, class ClusterRef>
+  template <class RadialIntegral, class ClusterRef>
   struct SphericalExpansionRadialDerivative {
 
-    SphericalExpansionRadialDerivative(
-            std::shared_ptr<RadialIntegral> ri, ClusterRef & pair_in) :
-        radial_integral{ri}, pair{pair_in}, max_radial{ri->max_radial},
-        max_angular{ri->max_angular} {}
+    SphericalExpansionRadialDerivative(std::shared_ptr<RadialIntegral> ri,
+                                       ClusterRef & pair_in)
+        : radial_integral{ri}, pair{pair_in}, max_radial{ri->max_radial},
+          max_angular{ri->max_angular} {}
 
     ~SphericalExpansionRadialDerivative() = default;
 
     Eigen::Ref<Eigen::Array<double, 1, Eigen::Dynamic>>
     f(const Eigen::Matrix<double, 1, 1> & input_v) {
       Eigen::ArrayXXd result(this->max_radial, this->max_angular + 1);
-      result = this->radial_integral->template
-          compute_neighbour_contribution<
-            internal::AtomicSmearingType::Constant>(input_v(0), this->pair);
+      result = this->radial_integral->template compute_neighbour_contribution<
+          internal::AtomicSmearingType::Constant>(input_v(0), this->pair);
       Eigen::Map<Eigen::Array<double, 1, Eigen::Dynamic>> result_flat(
-                                            result.data(), 1, result.size());
+          result.data(), 1, result.size());
       return result_flat;
     }
 
     Eigen::Ref<Eigen::Array<double, 1, Eigen::Dynamic>>
     grad_f(const Eigen::Matrix<double, 1, 1> & input_v) {
       Eigen::ArrayXXd result(this->max_radial, this->max_angular + 1);
-      result = this->radial_integral->template
-          compute_neighbour_derivative<
-            internal::AtomicSmearingType::Constant>(input_v(0), this->pair);
+      result = this->radial_integral->template compute_neighbour_derivative<
+          internal::AtomicSmearingType::Constant>(input_v(0), this->pair);
       Eigen::Map<Eigen::Array<double, 1, Eigen::Dynamic>> result_flat(
-                                            result.data(), 1, result.size());
+          result.data(), 1, result.size());
       return result_flat;
     }
 
@@ -433,23 +425,23 @@ namespace rascal {
    * respect to the center position can then be tested, as usual, with
    * test_gradients() (defined in test_math.hh).
    */
-  template<typename RepManager>
+  template <typename RepManager>
   class RepresentationManagerGradientCalculator {
    public:
     using Structure_t = AtomicStructure<3>;
     using Key_t = typename RepManager::Key_t;
     using PairRef_t = typename RepManager::Manager_t::template ClusterRef<2>;
 
-    template<typename T>
+    template <typename T>
     friend class RepresentationManagerGradientFixture;
 
     RepresentationManagerGradientCalculator(
         RepManager & representation,
         std::shared_ptr<typename RepManager::Manager_t> structure_manager,
-        Structure_t atomic_structure) :
-      representation{representation}, structure_manager{structure_manager},
-      atomic_structure{atomic_structure},
-      center_it{structure_manager->begin()} {}
+        Structure_t atomic_structure)
+        : representation{representation}, structure_manager{structure_manager},
+          atomic_structure{atomic_structure},
+          center_it{structure_manager->begin()} {}
 
     ~RepresentationManagerGradientCalculator() = default;
 
@@ -461,16 +453,16 @@ namespace rascal {
       this->structure_manager->update(modified_structure);
       representation.compute();
       auto & coeffs_center = representation.expansions_coefficients[center];
-      auto keys_center = representation.expansions_coefficients
-                                         .get_keys(center);
+      auto keys_center =
+          representation.expansions_coefficients.get_keys(center);
       Key_t center_key{center.get_atom_type()};
       size_t n_coeffs_per_key{static_cast<size_t>(
           representation.expansions_coefficients.get_nb_comp())};
       size_t n_coeffs_center{n_coeffs_per_key * keys_center.size()};
       // Packed array containing: The center coefficients (all species) and
       // the neighbour coefficients (only same species as center)
-      Eigen::ArrayXd coeffs_pairs(n_coeffs_center
-                                  + center.size() * n_coeffs_per_key);
+      Eigen::ArrayXd coeffs_pairs(n_coeffs_center +
+                                  center.size() * n_coeffs_per_key);
 
       size_t result_idx{0};
       for (auto & key : keys_center) {
@@ -497,23 +489,23 @@ namespace rascal {
 
     Eigen::Array<double, 3, Eigen::Dynamic>
     grad_f(const Eigen::Ref<const Eigen::Vector3d> & /*center_position*/) {
-      using Matrix3Xd_RowMaj_t = Eigen::Matrix<
-        double, 3, Eigen::Dynamic, Eigen::RowMajor>;
+      using Matrix3Xd_RowMaj_t =
+          Eigen::Matrix<double, 3, Eigen::Dynamic, Eigen::RowMajor>;
       // Assume f() was already called and updated the position
-      //center_it->position() = center_position;
-      //representation.compute();
+      // center_it->position() = center_position;
+      // representation.compute();
       auto center = *center_it;
-      auto keys_center = representation.expansions_coefficients
-                                         .get_keys(center);
+      auto keys_center =
+          representation.expansions_coefficients.get_keys(center);
       Key_t center_key{center.get_atom_type()};
       size_t n_coeffs_per_key{static_cast<size_t>(
           representation.expansions_coefficients.get_nb_comp())};
       size_t n_coeffs_center{n_coeffs_per_key * keys_center.size()};
       Eigen::Matrix<double, 3, Eigen::Dynamic, Eigen::RowMajor>
-        grad_coeffs_pairs(
-            3, n_coeffs_center + (center.size() * n_coeffs_per_key));
+        grad_coeffs_pairs(3,
+                          n_coeffs_center + (center.size() * n_coeffs_per_key));
       auto & grad_coeffs_center =
-        representation.expansions_coefficients_gradient[center];
+          representation.expansions_coefficients_gradient[center];
       size_t col_offset{0};
       for (auto & key : keys_center) {
         // Here the 'flattening' retains the 3 Cartesian dimensions as rows,
@@ -521,7 +513,7 @@ namespace rascal {
         Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
             grad_coeffs_center[key].data(), 3, n_coeffs_per_key);
         grad_coeffs_pairs.block(0, col_offset, 3, n_coeffs_per_key) =
-                                                              grad_coeffs_flat;
+            grad_coeffs_flat;
         col_offset += n_coeffs_per_key;
       }
       for (auto neigh : center) {
@@ -532,11 +524,11 @@ namespace rascal {
         // especially SOAP (sorry, SphericalInvariants<λ=0>)?
         auto neigh_swap{swap_pair_key(neigh)};
         auto & grad_coeffs_neigh =
-          representation.expansions_coefficients_gradient[neigh_swap];
+            representation.expansions_coefficients_gradient[neigh_swap];
         Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
             grad_coeffs_neigh[center_key].data(), 3, n_coeffs_per_key);
         grad_coeffs_pairs.block(0, col_offset, 3, n_coeffs_per_key) =
-                                                            grad_coeffs_flat;
+            grad_coeffs_flat;
         // The offset keeps advancing from neighbour to neighbour, because the
         // neighbour index has also been flattened out
         col_offset += n_coeffs_per_key;
@@ -572,7 +564,7 @@ namespace rascal {
       }
       std::stringstream err_str{};
       err_str << "Didn't find symmetric pair for pair (i=" << pair_key.front()
-          << ", j=" << pair_key.back() << ").";
+              << ", j=" << pair_key.back() << ").";
       throw std::range_error(err_str.str());
     }
   };
@@ -583,9 +575,8 @@ namespace rascal {
    * Holds data (i.e. function values, gradient directions) and iterates through
    * the list of centers
    */
-  template<typename RepManager_t>
-  class RepresentationManagerGradientFixture :
-    public GradientTestFixture {
+  template <typename RepManager_t>
+  class RepresentationManagerGradientFixture : public GradientTestFixture {
 
    public:
     using StdVector2Dim_t = std::vector<std::vector<double>>;
@@ -596,26 +587,25 @@ namespace rascal {
 
     RepresentationManagerGradientFixture(
         std::string filename, std::shared_ptr<StructureManager_t> structure,
-        Calculator_t & calc) :
-    structure{structure}, center_it{structure->begin()}, calculator{calc} {
+        Calculator_t & calc)
+        : structure{structure}, center_it{structure->begin()},
+          calculator{calc} {
       json input_data;
       std::ifstream input_file{filename};
       input_file >> input_data;
 
       this->function_inputs = this->get_function_inputs();
       this->displacement_directions =
-        this->get_displacement_directions(input_data, this->n_arguments);
+          this->get_displacement_directions(input_data, this->n_arguments);
       this->verbosity = get_verbosity(input_data);
       if (input_data.find("fd_error_tol") != input_data.end()) {
-          this->fd_error_tol = input_data["fd_error_tol"].get<double>();
+        this->fd_error_tol = input_data["fd_error_tol"].get<double>();
       }
     }
 
     ~RepresentationManagerGradientFixture() = default;
 
-    const Calculator_t & get_calculator() {
-      return calculator;
-    }
+    const Calculator_t & get_calculator() { return calculator; }
 
     /**
      * Go to the next center in the structure
@@ -630,10 +620,7 @@ namespace rascal {
       }
     }
 
-    inline bool has_next() {
-      return (this->center_it != structure->end());
-    }
-
+    inline bool has_next() { return (this->center_it != structure->end()); }
 
    private:
     StdVector2Dim_t get_function_inputs() {
@@ -644,9 +631,9 @@ namespace rascal {
       return inputs_new;
     }
 
-    //StdVector2Dim_t function_inputs{};
-    //Eigen::MatrixXd displacement_directions{};
-    //VerbosityValue verbosity{VerbosityValue::NORMAL};
+    // StdVector2Dim_t function_inputs{};
+    // Eigen::MatrixXd displacement_directions{};
+    // VerbosityValue verbosity{VerbosityValue::NORMAL};
 
     std::shared_ptr<StructureManager_t> structure;
     typename StructureManager_t::iterator center_it;
