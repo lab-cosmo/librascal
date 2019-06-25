@@ -228,6 +228,7 @@ namespace rascal {
     auto & structures = Fix::structures;
     auto filename_it = Fix::filenames.begin();
     for (auto & manager : managers) {
+      hyper["compute_gradients"] = true;
       representations.emplace_back(manager, hyper);
       structures.emplace_back();
       structures.back().set_structure(*filename_it);
