@@ -614,7 +614,9 @@ namespace rascal {
       }
       if (hypers.find("compute_gradients") != hypers.end()) {
         this->compute_gradients = hypers.at("compute_gradients").get<bool>();
-      } // Default false (don't compute gradients)
+      } else { // Default false (don't compute gradients)
+        this->compute_gradients = false;
+      }
 
       auto radial_contribution_hypers =
           hypers.at("radial_contribution").get<json>();
