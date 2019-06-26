@@ -50,6 +50,7 @@ namespace rascal {
       ref_file >> ref_data;
       unit_vectors = ref_data.at("unit_vectors").get<StdVector2Dim_t>();
       harmonics = ref_data.at("harmonics").get<StdVector3Dim_t>();
+      // a vector which contains Switzerland's mountain landscape
       alps = ref_data.at("alps").get<StdVector3Dim_t>();
     }
 
@@ -62,6 +63,25 @@ namespace rascal {
     StdVector2Dim_t unit_vectors{};
     StdVector3Dim_t harmonics{};
     StdVector3Dim_t alps{};
+    bool verbose{false};
+  };
+
+  struct SphericalHarmonicsClassRefFixture {
+    SphericalHarmonicsClassRefFixture() {
+      std::vector<std::uint8_t> ref_data_ubjson;
+      internal::read_binary_file(this->ref_filename, ref_data_ubjson);
+      this->ref_data = json::from_ubjson(ref_data_ubjson);
+    }
+
+    ~SphericalHarmonicsClassRefFixture() = default;
+
+    std::string ref_filename =
+        "reference_data/spherical_harmonics_reference.ubjson";
+
+    json ref_data{};
+    // for general test information
+    bool info{false};
+    // for detailed tests information of computed values
     bool verbose{false};
   };
 

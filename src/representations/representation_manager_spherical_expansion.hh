@@ -432,7 +432,7 @@ namespace rascal {
             Vector_t::LinSpaced(this->max_angular + 1, 0, this->max_angular);
         // proportional_factor = l/r * radial_integral
         proportional_factors /= distance;
-
+        // TODO(felix) avoid recomputing the 1f1 here
         this->hyp1f1_calculator.calc(distance, fac_a, this->fac_b, true);
 
         this->radial_neighbour_derivative =
@@ -747,6 +747,8 @@ namespace rascal {
     internal::CutoffFunctionType cutoff_function_type{};
 
     Hypers_t hypers{};
+
+    math::SphericalHarmonics spherical_harmonics{};
   };
 
   // compute classes template construction
@@ -820,6 +822,8 @@ namespace rascal {
           n_spatial_dimensions * n_row, n_col);
       this->expansions_coefficients_gradient.resize();
     }
+
+    this->spherical_harmonics.precompute(this->max_angular);
 
     for (auto center : this->structure_manager) {
       auto & coefficients_center = this->expansions_coefficients[center];

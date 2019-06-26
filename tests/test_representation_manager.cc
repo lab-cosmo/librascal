@@ -306,9 +306,8 @@ namespace rascal {
                ++col_i) {
             auto diff{std::abs(ref_representation[row_i][col_i] -
                                test_representation(row_i, col_i))};
-            BOOST_CHECK_LE(diff, 1e-12);
+            BOOST_CHECK_LE(diff, 3e2 * math::dbl_ftol);
           }
-          break;
         }
       }
       manager_i += 1;
