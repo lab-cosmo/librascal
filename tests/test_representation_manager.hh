@@ -35,7 +35,8 @@
 #include "representations/representation_manager_base.hh"
 #include "representations/representation_manager_sorted_coulomb.hh"
 #include "representations/representation_manager_spherical_expansion.hh"
-#include "representations/representation_manager_soap.hh"
+#include "representations/representation_manager_soap_invariant.hh"
+#include "representations/representation_manager_soap_covariant.hh"
 #include "representations/feature_manager_block_sparse.hh"
 
 #include "json_io.hh"
@@ -90,12 +91,12 @@ namespace rascal {
     json factory_args{};
   };
 
-  struct MultipleStructureSOAP : MultipleStructureManagerNLStrictFixture {
+  struct MultipleStructureSOAPInvariant : MultipleStructureManagerNLStrictFixture {
     using Parent = MultipleStructureManagerNLStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
 
-    MultipleStructureSOAP() : Parent{} {};
-    ~MultipleStructureSOAP() = default;
+    MultipleStructureSOAPInvariant() : Parent{} {};
+    ~MultipleStructureSOAPInvariant() = default;
 
     std::vector<json> hypers{{{"interaction_cutoff", 3.0},
                               {"cutoff_smooth_width", 0.5},
@@ -127,24 +128,6 @@ namespace rascal {
                               {"soap_type", "PowerSpectrum"}},
                              {{"interaction_cutoff", 3.0},
                               {"cutoff_smooth_width", 0.0},
-                              {"max_radial", 6},
-                              {"max_angular", 6},
-                              {"gaussian_sigma_type", "Constant"},
-                              {"gaussian_sigma_constant", 0.2},
-                              {"soap_type", "LambdaSpectrum"},
-                              {"lam", 2},
-                              {"inversion_symmetry", true}},
-                             {{"interaction_cutoff", 3.0},
-                              {"cutoff_smooth_width", 0.0},
-                              {"max_radial", 6},
-                              {"max_angular", 6},
-                              {"gaussian_sigma_type", "Constant"},
-                              {"gaussian_sigma_constant", 0.2},
-                              {"soap_type", "LambdaSpectrum"},
-                              {"lam", 2},
-                              {"inversion_symmetry", false}},
-                             {{"interaction_cutoff", 3.0},
-                              {"cutoff_smooth_width", 0.0},
                               {"max_radial", 4},
                               {"max_angular", 1},
                               {"gaussian_sigma_type", "Constant"},
@@ -161,12 +144,47 @@ namespace rascal {
                               {"inversion_symmetry", false}}};
   };
 
-  struct SOAPTestData : TestData {
+  struct MultipleStructureSOAPCovariant : MultipleStructureManagerNLStrictFixture {
+    using Parent = MultipleStructureManagerNLStrictFixture;
+    using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
+
+    MultipleStructureSOAPCovariant() : Parent{} {};
+    ~MultipleStructureSOAPCovariant() = default;
+
+    std::vector<json> hypers{{{"interaction_cutoff", 3.0},
+                              {"cutoff_smooth_width", 0.0},
+                              {"max_radial", 6},
+                              {"max_angular", 6},
+                              {"gaussian_sigma_type", "Constant"},
+                              {"gaussian_sigma_constant", 0.2},
+                              {"soap_type", "LambdaSpectrum"},
+                              {"lam", 2},
+                              {"inversion_symmetry", true}},
+                             {{"interaction_cutoff", 3.0},
+                              {"cutoff_smooth_width", 0.0},
+                              {"max_radial", 6},
+                              {"max_angular", 6},
+                              {"gaussian_sigma_type", "Constant"},
+                              {"gaussian_sigma_constant", 0.2},
+                              {"soap_type", "LambdaSpectrum"},
+                              {"lam", 2},
+                              {"inversion_symmetry", false}}};
+  };
+
+  struct SOAPInvariantTestData : TestData {
     using Parent = TestData;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
-    SOAPTestData() : Parent{} { this->get_ref(this->ref_filename); }
-    ~SOAPTestData() = default;
-    std::string ref_filename{"reference_data/soap_reference.ubjson"};
+    SOAPInvariantTestData() : Parent{} { this->get_ref(this->ref_filename); }
+    ~SOAPInvariantTestData() = default;
+    std::string ref_filename{"reference_data/soap_invariant_reference.ubjson"};
+  };
+
+  struct SOAPCovariantTestData : TestData {
+    using Parent = TestData;
+    using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
+    SOAPCovariantTestData() : Parent{} { this->get_ref(this->ref_filename); }
+    ~SOAPCovariantTestData() = default;
+    std::string ref_filename{"reference_data/soap_covariant_reference.ubjson"};
   };
 
   struct MultipleStructureSphericalExpansion
@@ -176,12 +194,6 @@ namespace rascal {
 
     MultipleStructureSphericalExpansion() : Parent{} {};
     ~MultipleStructureSphericalExpansion() = default;
-
-    // std::vector<std::string> filenames{
-    //     "reference_data/simple_cubic_8.json",
-    //     "reference_data/small_molecule.json"
-    // };
-    // std::vector<double> cutoffs{{1, 2, 3}};
 
     std::vector<json> hypers{{{"interaction_cutoff", 6.0},
                               {"cutoff_smooth_width", 1.0},
