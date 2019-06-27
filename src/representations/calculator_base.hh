@@ -114,23 +114,6 @@ namespace rascal {
     // template<class StructureManager>
     // virtual void compute(StructureManager& ) = 0;
 
-    /**
-     * use the property interface to get a property from the manager to
-     * fill it with a new representation.
-     * it return a reference to the typed property of property_name
-     */
-    template<template <class> class Property, class StructureManager>
-    inline decltype(auto) get_property(
-          std::shared_ptr<StructureManager>& manager,
-          const std::string& property_name) {
-      // check if the property already exist and create it if it does not
-      if (not manager->has_property(property_name)) {
-        manager->template create_property<
-            Property<StructureManager>>(property_name);
-      }
-      return manager->template get_validated_property_ref<Property<StructureManager>>(property_name);
-    }
-
     //! returns a string representation of the current options values
     //! in alphabetical order
     std::string get_options_string();
