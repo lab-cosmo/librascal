@@ -721,10 +721,17 @@ namespace rascal {
             internal::AtomicSmearingType SmearingType,
             class StructureManager>
   void CalculatorSphericalExpansion::compute_impl(std::shared_ptr<StructureManager> manager) {
+    using Prop_t = Property_t<StructureManager>;
     using math::PI;
     using math::pow;
 
-    auto&& expansions_coefficients{this->get_property<Property_t>(manager, this->get_name())};
+    auto&& expansions_coefficients{manager->template get_property_ref<Prop_t>(this->get_name())};
+
+    // if the representation has already been computed for the current
+    // structure then do nothing
+    if (expansions_coefficients.is_updated()) {
+      return;
+    }
 
     // downcast cutoff and radial contributions so they are functional
     auto cutoff_function{

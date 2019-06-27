@@ -129,7 +129,7 @@ namespace rascal {
     const std::string metadata;
     //! tells if the property is in synch with the underlying structure of
     //! the structure manager
-    bool updated{true};
+    bool updated{false};
     //! constructor
     PropertyBase(StructureManagerBase & manager, Dim_t nb_row, Dim_t nb_col,
                  size_t order, size_t layer,

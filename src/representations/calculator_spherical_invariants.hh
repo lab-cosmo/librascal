@@ -282,6 +282,8 @@ namespace rascal {
 
   template <internal::SphericalInvariantType BodyOrder, std::enable_if_t<BodyOrder == internal::SphericalInvariantType::PowerSpectrum, int> = 0, class StructureManager>
   void CalculatorSphericalInvariants::compute_impl(std::shared_ptr<StructureManager> manager) {
+    using ProtExp_t = typename CalculatorSphericalExpansion::Property_t<StructureManager>;
+    using Prop_t = Property_t<StructureManager>;
     using internal::enumValue;
     using internal::SphericalInvariantType;
     using math::pow;
@@ -296,9 +298,16 @@ namespace rascal {
     // Compute the spherical expansions of the current structure
     rep_expansion.compute(manager);
 
-    auto&& expansions_coefficients{this->get_property<CalculatorSphericalExpansion::Property_t>(manager, rep_expansion.get_name())};
+    auto&& expansions_coefficients{manager->template get_property_ref<ProtExp_t>(rep_expansion.get_name())};
 
-    auto&& soap_vectors{this->get_property<Property_t>(manager, this->get_name())};
+    auto&& soap_vectors{manager->template get_property_ref<Prop_t>(this->get_name())};
+
+    // if the representation has already been computed for the current
+    // structure then do nothing
+    if (soap_vectors.is_updated()) {
+      return;
+    }
+
     this->initialize_percenter_powerspectrum_soap_vectors(soap_vectors, expansions_coefficients, manager);
 
     Key_t pair_type{0, 0};
@@ -359,13 +368,21 @@ namespace rascal {
 
   template <internal::SphericalInvariantType BodyOrder, std::enable_if_t<BodyOrder == internal::SphericalInvariantType::RadialSpectrum, int> = 0, class StructureManager>
   void CalculatorSphericalInvariants::compute_impl(std::shared_ptr<StructureManager> manager) {
+    using ProtExp_t = typename CalculatorSphericalExpansion::Property_t<StructureManager>;
+    using Prop_t = Property_t<StructureManager>;
     using math::pow;
 
     rep_expansion.compute(manager);
 
-    auto&& expansions_coefficients{this->get_property<CalculatorSphericalExpansion::Property_t>(manager, rep_expansion.get_name())};
+    auto&& expansions_coefficients{manager->template get_property_ref<ProtExp_t>(rep_expansion.get_name())};
 
-    auto&& soap_vectors{this->get_property<Property_t>(manager, this->get_name())};
+    auto&& soap_vectors{manager->template get_property_ref<Prop_t>(this->get_name())};
+    // if the representation has already been computed for the current
+    // structure then do nothing
+    if (soap_vectors.is_updated()) {
+      return;
+    }
+    
     this->initialize_percenter_radialspectrum_soap_vectors(soap_vectors, expansions_coefficients, manager);
     Key_t element_type{0};
 

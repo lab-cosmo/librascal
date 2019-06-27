@@ -397,11 +397,18 @@ namespace rascal {
   /* -------------------- rep-options-compute-impl-start -------------------- */
   template <internal::CMSortAlgorithm AlgorithmType, class StructureManager>
   inline void CalculatorSortedCoulomb::compute_impl(std::shared_ptr<StructureManager>& manager) {
+    using Prop_t = Property_t<StructureManager>;
     this->update_central_cutoff(manager->get_cutoff());
 
     // get a reference to the data container that will hold the representation
     // in the structure manager
-    auto&& coulomb_matrices{this->get_property<Property_t>(manager, this->get_name())};
+    auto&& coulomb_matrices{manager->template get_property_ref<Prop_t>(this->get_name())};
+
+    // if the representation has already been computed for the current
+    // structure then do nothing
+    if (coulomb_matrices.is_updated()) {
+      return;
+    }
 
     this->check_size_compatibility(manager);
 
