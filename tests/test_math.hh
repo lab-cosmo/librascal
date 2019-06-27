@@ -241,7 +241,7 @@ namespace rascal {
      * Template to select the Eigen type for the argument vector: Fixed or
      * dynamic size?  Fixed-size template below, dynamic-size default here.
      */
-    template<typename Calculator_t, typename = std::void_t<>>
+    template<typename Calculator_t, typename = void>
     struct Argument_t {
       typedef Eigen::VectorXd type_vec;
       typedef Eigen::MatrixXd type_mat;
