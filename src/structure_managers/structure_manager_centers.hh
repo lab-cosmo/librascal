@@ -140,7 +140,7 @@ namespace rascal {
 
     //! Default constructor, values are set during .update() function
     StructureManagerCenters()
-        : atoms_object{}, atoms_index{}, lattice{}, offsets{}, natoms{} {}
+        : atoms_object{}, atoms_index{}, lattice{}, offsets{},n_center_atoms{}, natoms{} {}
 
     //! Copy constructor
     StructureManagerCenters(const StructureManagerCenters & other) = delete;
@@ -235,11 +235,11 @@ namespace rascal {
     }
 
     //! returns number of I atoms in the list
-    inline size_t get_size() const { return this->natoms; }
+    inline size_t get_size() const { return this->n_center_atoms; }
 
     //! returns number of I atoms in the list, since at this level, center atoms
     //! and ghost atoms are not distinguishable.
-    inline size_t get_size_with_ghosts() const { return this->natoms; }
+    inline size_t get_size_with_ghosts() const { return this->n_center_atoms; }
 
     //! returns the number of neighbours of a given i atom
     template <size_t Order, size_t Layer>
@@ -271,6 +271,14 @@ namespace rascal {
       return 0;
     }
 
+    inline int get_atom_tag(const int& raw_index) const {
+      return raw_index;
+    }
+
+    inline size_t get_atom_tag(const size_t& raw_index) const {
+      return raw_index;
+    }
+
     /**
      * Return the linear index of cluster (i.e., the count at which
      * this cluster appears in an iteration
@@ -297,6 +305,7 @@ namespace rascal {
     inline const AtomicStructure<traits::Dim> & get_atomic_structure() const {
       return this->atoms_object;
     }
+
 
    protected:
     //! makes atom tag lists and offsets
@@ -326,7 +335,10 @@ namespace rascal {
      */
     std::vector<size_t> offsets{};
 
-    //! Total number of atoms in structure
+    //! Total number of center atoms in the structure
+    size_t n_center_atoms{};
+
+    //! Total number of center atoms in the structure
     size_t natoms{};
 
     //! number of time the structure has been updated

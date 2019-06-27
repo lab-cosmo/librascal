@@ -555,7 +555,7 @@ namespace rascal {
       // considering the neighbours of ghosts, it is possible to iterate over
       // all atoms including ghosts using the proxy `.with_ghosts`, which takes
       // its `.end()` from here`
-      auto nb_atoms{this->consider_ghost_neighbours ? this->n_centers + n_ghosts
+      auto nb_atoms{this->consider_ghost_neighbours ? this->n_centers + this->n_ghosts
                                                     : this->get_size()};
       return nb_atoms;
     }
@@ -1006,20 +1006,28 @@ namespace rascal {
     // of current atoms to start the full list of current i-atoms and ghosts
     // This is done before the ghost atom generation, to have them all
     // contiguously at the beginning of the list.
-    int ntot_atoms{0};
-    for (auto atom : *this->manager) {
+    int n_center_atoms{0};
+    // felix this iteration should only cover the center atoms
+    for (auto atom : this->manager) {
       int atom_tag = atom.get_atom_tag();
       size_t cluster_index = this->manager->get_atom_index(atom_tag);
       auto atom_type = atom.get_atom_type();
       this->atom_tag_list.push_back(atom_tag);
       this->atom_types.push_back(atom_type);
-      ntot_atoms++;
       this->atom_index_from_atom_tag_list.push_back(cluster_index);
+      n_center_atoms++;
     }
     // generate ghost atom tags and positions
-    for (auto atom : this->get_manager().with_ghosts()) {
-      auto pos = atom.get_position();
-      auto atom_type = atom.get_atom_type();
+    // for (auto atom : this->get_manager().with_ghosts()) {
+    auto&& atomic_structure{this->manager->get_atomic_structure()};
+    size_t ntot_atoms{atomic_structure.get_number_of_atoms()};
+    for (size_t i{0}; i < ntot_atoms; ++i) {
+      // auto pos = atom.get_position(i);
+      // auto atom_type = atom.get_atom_type(i);
+      // auto atom_tag = atom.get_atom_tag(i);
+      auto pos = this->manager->get_position(i);
+      auto atom_type = this->manager->get_atom_type(i);
+      auto atom_tag = this->manager->get_atom_tag(i);
 
       for (auto && p_image :
            internal::PeriodicImages<dim>{periodic_min, repetitions, ntot}) {
@@ -1043,12 +1051,10 @@ namespace rascal {
             auto new_atom_tag = this->n_centers + this->n_ghosts;
             // get_size_with_ghosts();
             this->add_ghost_atom(new_atom_tag, pos_ghost, atom_type);
-            ntot_atoms++;
-
+            n_center_atoms++;
             // adds origin atom cluster_index if true
             // adds ghost atom cluster index if false
-            size_t cluster_index =
-                this->manager->get_atom_index(atom.get_atom_tag());
+            size_t cluster_index = this->manager->get_atom_index(atom_tag);
             this->atom_index_from_atom_tag_list.push_back(cluster_index);
           }
         }
@@ -1058,10 +1064,17 @@ namespace rascal {
     // neighbour boxes
     internal::IndexContainer<dim> atom_id_cell{nboxes_per_dim};
 
-    // sorting i-atoms into boxes
-    auto nb_atoms_tot{this->n_centers + this->n_ghosts};
-    for (size_t i{0}; i < nb_atoms_tot; ++i) {
-      Vector_t pos = this->get_position(i);
+    // sorting the atoms inside the cell into boxes
+    for (size_t i{0}; i < ntot_atoms; ++i) {
+      auto pos = this->manager->get_position(i);
+      Vector_t dpos = pos - mesh_min;
+      auto idx = internal::get_box_index(dpos, cutoff);
+      atom_id_cell[idx].push_back(i);
+    }
+    // sorting the ghost atoms into boxes
+    size_t n_center_ghost{static_cast<size_t>(n_center_atoms)};
+    for (size_t i{this->n_centers}; i < n_center_ghost; ++i) {
+      auto pos = this->get_position(i);
       Vector_t dpos = pos - mesh_min;
       auto idx = internal::get_box_index(dpos, cutoff);
       atom_id_cell[idx].push_back(i);
@@ -1079,7 +1092,8 @@ namespace rascal {
     for (auto atom : this->get_manager().with_ghosts()) {
       int atom_tag = atom.get_atom_tag();
       int nneigh{0};
-      Vector_t pos = this->get_position(atom_tag);
+      // Vector_t pos = this->get_position(atom_tag);
+      Vector_t pos = atom.get_position();
       Vector_t dpos = pos - mesh_min;
       auto box_index = internal::get_box_index(dpos, cutoff);
       auto && current_j_atoms =

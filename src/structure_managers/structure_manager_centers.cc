@@ -38,7 +38,7 @@ namespace rascal {
   // function for setting the internal data structures
   void StructureManagerCenters::build() {
     this->natoms = this->atoms_object.positions.size() / traits::Dim;
-
+    this->n_center_atoms = this->natoms;
     // initialize necessary data structure
     this->atoms_index[0].clear();
     this->offsets.clear();
@@ -62,7 +62,7 @@ namespace rascal {
   // returns the number of cluster at Order=1, which is the number of atoms
   size_t StructureManagerCenters::get_nb_clusters(size_t order) const {
     if (order == 1) {
-      return this->natoms;
+      return this->n_center_atoms;
     } else {
       throw std::string("ERREUR : Order != 1");
     }

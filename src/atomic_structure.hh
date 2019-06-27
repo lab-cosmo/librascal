@@ -87,6 +87,10 @@ namespace rascal {
     Cell_t cell{};
     PBC_t pbc{};
 
+    inline size_t get_number_of_atoms() const {
+      return positions.cols();
+    }
+
     //! method for initializing structure data from raw Eigen types, beware:
     //! copy!
     inline void set_structure(const PositionsInput_t & positions,
