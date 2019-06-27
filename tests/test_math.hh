@@ -190,6 +190,15 @@ namespace rascal {
     StdVector2Dim_t function_inputs{};
     Eigen::MatrixXd displacement_directions{};
     size_t n_arguments{0};
+
+    /**
+     * The error of the finite-difference against the analytical derivatives
+     * isn't going to be arbitrarily small, due to the interaction of
+     * finite-difference and finite precision effects.  The default here
+     * reflects this, while allowing different tests to change it -- keeping in
+     * mind that the automated test is really more intended to be a sanity
+     * check on the implementation than a rigorous convergence test.
+     */
     double fd_error_tol{1E-6};
     VerbosityValue verbosity{VerbosityValue::NORMAL};
 
@@ -269,6 +278,13 @@ namespace rascal {
    * the function input, of dimension determined in the data file (read by
    * GradientTestFixture).  This function additionally guarantees that f() will
    * be called before grad_f() with the same input.
+   *
+   * If the functions f() and grad_f() are designed to accept fixed-size vectors
+   * (i.e. if the size of the argument is known at compile time), be sure to
+   * define, in the FunctionProvider class, a
+   * `constexpr static size_t n_arguments` member with the size of the argument
+   * vector.  This will ensure that the gradient tester uses the corresponding
+   * fixed-size Eigen vectors/matrices as inputs.
    */
   template <typename FunctionProvider_t, typename TestFixture_t>
   void test_gradients(FunctionProvider_t function_calculator,
@@ -277,28 +293,14 @@ namespace rascal {
         typename internal::Argument_t<FunctionProvider_t>::type_vec;
     using ArgumentMat_t =
         typename internal::Argument_t<FunctionProvider_t>::type_mat;
-    Eigen::MatrixXd values;
-    ArgumentMat_t jacobian;
-    ArgumentVec_t argument_vector;
-    ArgumentVec_t displacement_direction;
-    ArgumentVec_t displacement;
-    Eigen::MatrixXd directional;
-    Eigen::MatrixXd fd_derivatives;
-    Eigen::MatrixXd fd_error_cwise;
 
     using VerbosityValue = typename GradientTestFixture::VerbosityValue;
 
-    // This error isn't going to be arbitrarily small, due to the interaction of
-    // finite-difference and finite precision effects.  Just set it to something
-    // reasonable and check it explicitly if you really want to be sure (paying
-    // attention to the change of the finite-difference gradients from one step
-    // to the next).  The automated test is really more intended to be a sanity
-    // check on the implementation anyway.
     for (auto inputs : params.function_inputs) {
-      argument_vector =
+      ArgumentVec_t argument_vector =
           Eigen::Map<ArgumentVec_t>(inputs.data(), params.n_arguments, 1);
-      values = function_calculator.f(argument_vector);
-      jacobian = function_calculator.grad_f(argument_vector);
+      Eigen::MatrixXd values = function_calculator.f(argument_vector);
+      ArgumentMat_t jacobian = function_calculator.grad_f(argument_vector);
       if (params.verbosity >= VerbosityValue::INFO) {
         std::cout << std::string(30, '-') << std::endl;
         std::cout << "Input vector: " << argument_vector.transpose();
@@ -310,29 +312,34 @@ namespace rascal {
       }
       for (int disp_idx{0}; disp_idx < params.displacement_directions.rows();
            disp_idx++) {
-        displacement_direction = params.displacement_directions.row(disp_idx);
+        ArgumentVec_t displacement_direction =
+            params.displacement_directions.row(disp_idx);
         // Compute the directional derivative(s)
-        directional = displacement_direction.transpose() * jacobian;
+        Eigen::VectorXd directional =
+            displacement_direction.transpose() * jacobian;
         if (params.verbosity >= VerbosityValue::INFO) {
           std::cout << "FD direction: " << displacement_direction.transpose();
           std::cout << std::endl;
         }
         if (params.verbosity >= VerbosityValue::DEBUG) {
-          std::cout << "Analytical derivative: " << directional << std::endl;
+          std::cout << "Analytical derivative: " << directional.transpose();
+          std::cout << std::endl;
         }
+        // TODO(max) this inner loop is a good candidate to move to its own
+        // function... if we can pass along those argument typedefs as well
         double min_error{HUGE_VAL};
         for (double dx = 1E-2; dx > 1E-10; dx *= 0.1) {
           if (params.verbosity >= VerbosityValue::INFO) {
             std::cout << "dx = " << dx << "\t";
           }
-          displacement = dx * displacement_direction;
+          ArgumentVec_t displacement = dx * displacement_direction;
           // Compute the finite-difference derivative using a
           // centred-difference approach
-          Eigen::MatrixXd fun_plus{
+          Eigen::VectorXd fun_plus{
               function_calculator.f(argument_vector + displacement)};
-          Eigen::MatrixXd fun_minus{
+          Eigen::VectorXd fun_minus{
               function_calculator.f(argument_vector - displacement)};
-          fd_derivatives = 0.5 / dx * (fun_plus - fun_minus);
+          Eigen::VectorXd fd_derivatives = 0.5 / dx * (fun_plus - fun_minus);
           double fd_error{0.};
           double fd_quotient{0.};
           size_t nonzero_count{0};
@@ -358,10 +365,11 @@ namespace rascal {
             min_error = std::abs(fd_error);
           }
           if (params.verbosity >= VerbosityValue::DEBUG) {
-            fd_error_cwise = (fd_derivatives - directional);
-            std::cout << "error            = " << fd_error_cwise << std::endl;
-            std::cout << "(FD derivative   = " << fd_derivatives << ")";
+            Eigen::VectorXd fd_error_cwise = (fd_derivatives - directional);
+            std::cout << "error            = " << fd_error_cwise.transpose();
             std::cout << std::endl;
+            std::cout << "(FD derivative   = " << fd_derivatives.transpose();
+            std::cout << ")" << std::endl;
           }
         }  // for (double dx...) (displacement magnitudes)
         BOOST_CHECK_SMALL(min_error, params.fd_error_tol);
