@@ -119,6 +119,9 @@ namespace rascal {
     using Positions_t = AtomicStructure<traits::Dim>::Positions_t;
     using Positions_ref = AtomicStructure<traits::Dim>::Positions_ref;
 
+    using ArrayB_t = AtomicStructure<traits::Dim>::ArrayB_t;
+    using ArrayB_ref = AtomicStructure<traits::Dim>::ArrayB_ref;
+
     /**
      * Here, the types for internal data structures are defined, based on
      * standard types.  In general, we try to use as many standard types, where
@@ -210,6 +213,10 @@ namespace rascal {
     //! Returns a map of size traits::Dim with 0/1 for periodicity
     inline PBC_ref get_periodic_boundary_conditions() {
       return Eigen::Map<PBC_t>(this->atoms_object.pbc.data());
+    }
+
+    inline ArrayB_ref get_is_center_atom() {
+      return ArrayB_ref(this->atoms_object.is_a_center_atom);
     }
 
     //! Returns the position of an atom, given an AtomRef
@@ -334,6 +341,9 @@ namespace rascal {
      * construction.
      */
     std::vector<size_t> offsets{};
+
+
+    ArrayB_t is_a_center_atom{};
 
     //! Total number of center atoms in the structure
     size_t n_center_atoms{};

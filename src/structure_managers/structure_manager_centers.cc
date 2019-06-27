@@ -38,7 +38,7 @@ namespace rascal {
   // function for setting the internal data structures
   void StructureManagerCenters::build() {
     this->natoms = this->atoms_object.positions.size() / traits::Dim;
-    this->n_center_atoms = this->natoms;
+    this->n_center_atoms = this->get_is_center_atom().count();
     // initialize necessary data structure
     this->atoms_index[0].clear();
     this->offsets.clear();
@@ -46,7 +46,7 @@ namespace rascal {
                        internal::ResizePropertyToZero());
 
     // set the references to the particles positions
-    for (size_t id{0}; id < this->natoms; ++id) {
+    for (size_t id{0}; id < this->n_center_atoms; ++id) {
       this->atoms_index[0].push_back(id);
       this->offsets.push_back(id);
     }

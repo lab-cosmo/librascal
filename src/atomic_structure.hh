@@ -81,11 +81,16 @@ namespace rascal {
 
     using PBCInput_t = Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1>>;
 
+    using ArrayB_t = Eigen::Array<bool, 1, Eigen::Dynamic>;
+    using ArrayB_ref = Eigen::Ref<const Eigen::Array<bool, 1, Eigen::Dynamic>>;
+
     // Eigen types for saving atomic structure data
     Positions_t positions{};
     AtomTypes_t atom_types{};
     Cell_t cell{};
     PBC_t pbc{};
+    //! Contains the information wheter an atom should be centered on or not
+    ArrayB_t is_a_center_atom{};
 
     inline size_t get_number_of_atoms() const {
       return positions.cols();
@@ -111,6 +116,7 @@ namespace rascal {
       this->atom_types = atom_types;
       this->pbc = pbc;
       this->positions = positions;
+      this->is_a_center_atom = ArrayB_t::Ones(atom_types.size());
     }
 
     // TODO(markus): add function to read from XYZ files
@@ -208,6 +214,7 @@ namespace rascal {
       this->pbc = PBC_ref(pbc_data.data());
       this->positions =
           Positions_ref(pos_data.data(), Dim, pos_data.size() / Dim);
+      this->is_a_center_atom = ArrayB_t::Ones(atom_types.size());
     }
 
     inline void set_structure(const AtomicStructure<Dim> & other) {
@@ -215,6 +222,7 @@ namespace rascal {
       this->atom_types = other.atom_types;
       this->cell = other.cell;
       this->pbc = other.pbc;
+      this->is_a_center_atom = other.is_a_center_atom;
     }
 
     inline void set_structure() {}
@@ -247,6 +255,7 @@ namespace rascal {
       if (this->positions.cols() == other.positions.cols()) {
         if ((this->pbc.array() != other.pbc.array()).any() or
             (this->cell.array() != other.cell.array()).any() or
+            (this->is_a_center_atom != other.is_a_center_atom).any() or
             (this->positions - other.positions)
                     .rowwise()
                     .squaredNorm()
@@ -268,6 +277,7 @@ namespace rascal {
       if (this->positions.cols() == positions.cols()) {
         if ((this->pbc.array() != pbc.array()).any() or
             (this->cell.array() != cell.array()).any() or
+            /*(this->is_a_center_atom != other.is_a_center_atom).any() or*/
             (this->positions - positions).rowwise().squaredNorm().maxCoeff() >
                 skin2) {
           is_similar = false;
