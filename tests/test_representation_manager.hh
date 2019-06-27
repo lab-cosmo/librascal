@@ -430,6 +430,7 @@ namespace rascal {
     using Structure_t = AtomicStructure<3>;
     using Key_t = typename RepManager::Key_t;
     using PairRef_t = typename RepManager::Manager_t::template ClusterRef<2>;
+    static const size_t n_arguments = 3;
 
     template <typename T>
     friend class RepresentationManagerGradientFixture;

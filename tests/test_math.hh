@@ -200,6 +200,8 @@ namespace rascal {
   template <int max_angular>
   class SphericalHarmonicsWithGradients {
    public:
+    static const size_t n_arguments = 3;
+
     SphericalHarmonicsWithGradients() = default;
 
     ~SphericalHarmonicsWithGradients() = default;
@@ -225,6 +227,30 @@ namespace rascal {
     }
   };
 
+  namespace internal {
+    /**
+     * Template to select the Eigen type for the argument vector: Fixed or
+     * dynamic size?  Fixed-size template below, dynamic-size default here.
+     */
+    template<typename Calculator_t, typename = std::void_t<>>
+    struct Argument_t {
+      typedef Eigen::VectorXd type_vec;
+      typedef Eigen::MatrixXd type_mat;
+    };
+
+    // Works by SFINAE -- if Calculator has no static integral member
+    // `n_arguments`, this specialization fails and the default (above) is
+    // selected
+    template<typename Calculator_t>
+    struct Argument_t<
+        Calculator_t, std::enable_if_t<std::is_integral<
+            decltype(Calculator_t::n_arguments)>::value>> {
+      typedef Eigen::Matrix<double, Calculator_t::n_arguments, 1> type_vec;
+      typedef Eigen::Matrix<double, Calculator_t::n_arguments,
+                                    Eigen::Dynamic> type_mat;
+    };
+  }
+
   /**
    * Numerically verify that a given function and its gradient are consistent
    *
@@ -247,11 +273,15 @@ namespace rascal {
   template <typename FunctionProvider_t, typename TestFixture_t>
   void test_gradients(FunctionProvider_t function_calculator,
                       TestFixture_t params) {
+    using ArgumentVec_t =
+        typename internal::Argument_t<FunctionProvider_t>::type_vec;
+    using ArgumentMat_t =
+        typename internal::Argument_t<FunctionProvider_t>::type_mat;
     Eigen::MatrixXd values;
-    Eigen::MatrixXd jacobian;
-    Eigen::RowVectorXd argument_vector;
-    Eigen::VectorXd displacement_direction;
-    Eigen::VectorXd displacement;
+    ArgumentMat_t jacobian;
+    ArgumentVec_t argument_vector;
+    ArgumentVec_t displacement_direction;
+    ArgumentVec_t displacement;
     Eigen::MatrixXd directional;
     Eigen::MatrixXd fd_derivatives;
     Eigen::MatrixXd fd_error_cwise;
@@ -266,12 +296,13 @@ namespace rascal {
     // check on the implementation anyway.
     for (auto inputs : params.function_inputs) {
       argument_vector =
-          Eigen::Map<Eigen::RowVectorXd>(inputs.data(), 1, params.n_arguments);
+          Eigen::Map<ArgumentVec_t>(inputs.data(), params.n_arguments, 1);
       values = function_calculator.f(argument_vector);
       jacobian = function_calculator.grad_f(argument_vector);
       if (params.verbosity >= VerbosityValue::INFO) {
         std::cout << std::string(30, '-') << std::endl;
-        std::cout << "Input vector: " << argument_vector << std::endl;
+        std::cout << "Input vector: " << argument_vector.transpose();
+        std::cout << std::endl;
       }
       if (params.verbosity >= VerbosityValue::DEBUG) {
         std::cout << "Function values:" << values << std::endl;
@@ -281,9 +312,9 @@ namespace rascal {
            disp_idx++) {
         displacement_direction = params.displacement_directions.row(disp_idx);
         // Compute the directional derivative(s)
-        directional = displacement_direction.adjoint() * jacobian;
+        directional = displacement_direction.transpose() * jacobian;
         if (params.verbosity >= VerbosityValue::INFO) {
-          std::cout << "FD direction: " << displacement_direction.adjoint();
+          std::cout << "FD direction: " << displacement_direction.transpose();
           std::cout << std::endl;
         }
         if (params.verbosity >= VerbosityValue::DEBUG) {
@@ -298,9 +329,9 @@ namespace rascal {
           // Compute the finite-difference derivative using a
           // centred-difference approach
           Eigen::MatrixXd fun_plus{
-              function_calculator.f(argument_vector + displacement.adjoint())};
+              function_calculator.f(argument_vector + displacement)};
           Eigen::MatrixXd fun_minus{
-              function_calculator.f(argument_vector - displacement.adjoint())};
+              function_calculator.f(argument_vector - displacement)};
           fd_derivatives = 0.5 / dx * (fun_plus - fun_minus);
           double fd_error{0.};
           double fd_quotient{0.};
