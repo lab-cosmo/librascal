@@ -35,10 +35,87 @@
  */
 #include "json.hpp"
 
+#include <Eigen/Dense>
 #include <fstream>
 
 // For convenience
 using json = nlohmann::json;
+
+/**
+ * Utilities to convert json to Eigen types and the oposite
+ */
+namespace Eigen {
+  /* ---------------------------------------------------------------------- */
+  template<typename _Scalar, int _Rows, int _Cols, int _Options>
+  void to_json(json & j, const Matrix<_Scalar, _Rows, _Cols, _Options>& s) {
+    for (int irow{0}; irow < s.rows(); ++irow) {
+      j.push_back(json::array());
+      for (int icol{0}; icol < s.cols(); ++icol) {
+        j[irow][icol] = s(irow, icol);
+      }
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  template<typename _Scalar, int _Rows, int _Cols, int _Options>
+  void from_json(const json & j, Matrix<_Scalar, _Rows, _Cols, _Options>& s) {
+    if (j.is_array() != true) {
+      std::string error{"the input json is not an array "};
+      std::string error2{j.dump(2)};
+      throw std::runtime_error(error + error2);
+    }
+    int n_rows{j.size()};
+    int n_cols{j[0].size()};
+    for (int irow{0}; irow < n_rows; ++irow) {
+      if (n_cols != j[irow].size()) {
+        std::string error{"the input json does not have cols of same sizes"};
+        throw std::runtime_error(error);
+      }
+    }
+    s.resize(n_rows, n_cols);
+    for (int irow{0}; irow < n_rows; ++irow) {
+      for (int icol{0}; icol < n_cols; ++icol) {
+        s(irow, icol) = j[irow][icol];
+      }
+    }
+  }
+
+   /* ---------------------------------------------------------------------- */
+  template<typename _Scalar, int _Rows, int _Cols, int _Options>
+  void to_json(json & j, const Array<_Scalar, _Rows, _Cols, _Options>& s) {
+    for (int irow{0}; irow < s.rows(); ++irow) {
+      j.push_back(json::array());
+      for (int icol{0}; icol < s.cols(); ++icol) {
+        j[irow][icol] = s(irow, icol);
+      }
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  template<typename _Scalar, int _Rows, int _Cols, int _Options>
+  void from_json(const json & j, Array<_Scalar, _Rows, _Cols, _Options>& s) {
+    if (j.is_array() != true) {
+      std::string error{"the input json is not an array "};
+      std::string error2{j.dump(2)};
+      throw std::runtime_error(error + error2);
+    }
+    int n_rows{j.size()};
+    int n_cols{j[0].size()};
+    for (int irow{0}; irow < n_rows; ++irow) {
+      if (n_cols != j[irow].size()) {
+        std::string error{"the input json does not have cols of same sizes"};
+        throw std::runtime_error(error);
+      }
+    }
+    s.resize(n_rows, n_cols);
+    for (int irow{0}; irow < n_rows; ++irow) {
+      for (int icol{0}; icol < n_cols; ++icol) {
+        s(irow, icol) = j[irow][icol];
+      }
+    }
+  }
+
+}
 
 /*
  * All functions and classes are in the namespace <code>rascal</code>, which

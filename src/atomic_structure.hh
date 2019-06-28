@@ -288,6 +288,33 @@ namespace rascal {
       return is_similar;
     }
   };
+
+
+  /* ---------------------------------------------------------------------- */
+  template<int Dim>
+  void to_json(json & j, const AtomicStructure<Dim> & s) {
+    j = json{{"cell", s.cell},
+              {"atom_types", s.atom_types},
+              {"pbc", s.pbc},
+              {"positions", s.positions}};
+  }
+
+  /* ---------------------------------------------------------------------- */
+  template<int Dim>
+  void from_json(const json & j, AtomicStructure<Dim> & s) {
+    using Cell_t = typename AtomicStructure<Dim>::Cell_t;
+    using AtomTypes_t = typename AtomicStructure<Dim>::AtomTypes_t;
+    using PBC_t = typename AtomicStructure<Dim>::PBC_t;
+    using Positions_t = typename AtomicStructure<Dim>::Positions_t;
+    using ArrayB_t = typename AtomicStructure<Dim>::ArrayB_t;
+
+    auto cell = j.at("cell").get<Cell_t>();
+    auto atom_types = j.at("atom_types").get<AtomTypes_t>();
+    auto pbc = j.at("pbc").get<PBC_t>();
+    auto positions = j.at("positions").get<Positions_t>();
+    s.set_structure(positions, atom_types, cell, pbc);
+  }
+
 }  // namespace rascal
 
 #endif  // SRC_ATOMIC_STRUCTURE_HH_

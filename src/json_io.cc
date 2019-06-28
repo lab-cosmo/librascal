@@ -27,12 +27,11 @@
 
 #include "json_io.hh"
 
+
 #include <sstream>
 
 namespace rascal {
-
   namespace json_io {
-
     /* ---------------------------------------------------------------------- */
     void to_json(json & j, AtomicJsonData & s) {
       j = json{{"cell", s.cell},
