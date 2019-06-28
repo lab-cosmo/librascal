@@ -119,6 +119,27 @@ namespace rascal {
       this->is_a_center_atom = ArrayB_t::Ones(atom_types.size());
     }
 
+    inline void set_structure(Positions_t & positions,
+                              AtomTypes_t & atom_types,
+                              Cell_t & cell,
+                              PBC_t & pbc) {
+      // check data consistency
+      auto npos{positions.cols()};
+      auto ntypes{atom_types.rows()};
+      if (npos != ntypes) {
+        std::stringstream err_str{};
+        err_str << "Number of atom positions and atom types is not the same: '"
+                << npos << "' != '" << ntypes << "'.";
+        throw std::runtime_error(err_str.str());
+      }
+
+      this->cell = std::move(cell);
+      this->atom_types = std::move(atom_types);
+      this->pbc = std::move(pbc);
+      this->positions = std::move(positions);
+      this->is_a_center_atom = ArrayB_t::Ones(atom_types.size());
+    }
+
     // TODO(markus): add function to read from XYZ files
     inline void set_structure(const std::string & filename) {
       json j;
@@ -149,8 +170,7 @@ namespace rascal {
         this->set_structure(filename);
       } else if (s.count("cell") == 1 and s.count("atom_types") == 1 and
                  s.count("pbc") == 1 and s.count("positions") == 1) {
-        json_io::AtomicJsonData json_atoms_object{};
-        json_atoms_object = s;
+        auto json_atoms_object = s.get<AtomicStructure<Dim>>();
         this->set_structure(json_atoms_object);
       } else {
         throw std::runtime_error("The json input was not understood.");
@@ -306,12 +326,13 @@ namespace rascal {
     using AtomTypes_t = typename AtomicStructure<Dim>::AtomTypes_t;
     using PBC_t = typename AtomicStructure<Dim>::PBC_t;
     using Positions_t = typename AtomicStructure<Dim>::Positions_t;
-    using ArrayB_t = typename AtomicStructure<Dim>::ArrayB_t;
+    // using ArrayB_t = typename AtomicStructure<Dim>::ArrayB_t;
 
     auto cell = j.at("cell").get<Cell_t>();
     auto atom_types = j.at("atom_types").get<AtomTypes_t>();
     auto pbc = j.at("pbc").get<PBC_t>();
     auto positions = j.at("positions").get<Positions_t>();
+
     s.set_structure(positions, atom_types, cell, pbc);
   }
 

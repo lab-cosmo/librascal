@@ -45,9 +45,106 @@ using json = nlohmann::json;
  * Utilities to convert json to Eigen types and the oposite
  */
 namespace Eigen {
+  namespace internal {
+
+    template<int _Rows, int _Cols>
+    struct ResizeEigen {
+      template<typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
+      static void apply_mat(const size_t& /*n_rows*/, const size_t& /*n_cols*/, Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& /*s*/) { }
+      template<typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
+      static void apply_arr(const size_t& /*n_rows*/, const size_t& /*n_cols*/, Array<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& /*s*/) { }
+    };
+
+    template<>
+    struct ResizeEigen<Dynamic, Dynamic> {
+      template<typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
+      static void apply_mat(const size_t& n_rows, const size_t& n_cols, Matrix<_Scalar,Dynamic, Dynamic, _Options, _MaxRows, _MaxCols>& s) {
+        s.resize(n_rows, n_cols);
+      }
+
+      template<typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
+      static void apply_arr(const size_t& n_rows, const size_t& n_cols, Array<_Scalar, Dynamic, Dynamic, _Options, _MaxRows, _MaxCols>& s) {
+        s.resize(n_rows, n_cols);
+      }
+    };
+
+    template<int _Cols>
+    struct ResizeEigen<Dynamic, _Cols> {
+      template<typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
+      static void apply_mat(const size_t& n_rows, const size_t& /*n_cols*/, Matrix<_Scalar, Dynamic, _Cols, _Options, _MaxRows, _MaxCols>& s) { s.resize(n_rows, _Cols); }
+
+      template<typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
+      static void apply_arr(const size_t& n_rows, const size_t& /*n_cols*/, Array<_Scalar, Dynamic, _Cols, _Options, _MaxRows, _MaxCols>& s) {s.resize(n_rows, _Cols); }
+    };
+
+    template<int _Rows>
+    struct ResizeEigen<_Rows, Dynamic> {
+      template<typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
+      static void apply_mat(const size_t& /*n_rows*/, const size_t& n_cols, Matrix<_Scalar, _Rows, Dynamic, _Options, _MaxRows, _MaxCols>& s) { s.resize(_Rows, n_cols);}
+
+      template<typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
+      static void apply_arr(const size_t& /*n_rows*/, const size_t& n_cols, Array<_Scalar, _Rows, Dynamic, _Options, _MaxRows, _MaxCols>& s) { s.resize(_Rows, n_cols);}
+    };
+
+
+    template<int _Rows, int _Cols>
+    struct FillEigen {
+      template<typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
+      static void apply_mat(const json & j, Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& s) {
+        for (int irow{0}; irow < s.rows(); ++irow) {
+          for (int icol{0}; icol < s.cols(); ++icol) {
+            s(irow, icol) = j[irow][icol].get<_Scalar>();
+          }
+        }
+      }
+      template<typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
+      static void apply_arr(const json & j, Array<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& s) {
+        for (int irow{0}; irow < s.rows(); ++irow) {
+          for (int icol{0}; icol < s.cols(); ++icol) {
+            s(irow, icol) = j[irow][icol].get<_Scalar>();
+          }
+        }
+      }
+    };
+
+    template<int _Cols>
+    struct FillEigen<1, _Cols> {
+      template<typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
+      static void apply_mat(const json & j, Matrix<_Scalar, 1, _Cols, _Options, _MaxRows, _MaxCols>& s) {
+        for (int icol{0}; icol < s.cols(); ++icol) {
+          s(icol) = j[icol].get<_Scalar>();
+        }
+      }
+      template<typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
+      static void apply_arr(const json & j, Array<_Scalar, 1, _Cols, _Options, _MaxRows, _MaxCols>& s) {
+        for (int icol{0}; icol < s.cols(); ++icol) {
+          s(icol) = j[icol].get<_Scalar>();
+        }
+      }
+    };
+
+    template<int _Rows>
+    struct FillEigen<_Rows, 1> {
+      template<typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
+      static void apply_mat(const json & j, Matrix<_Scalar, _Rows, 1, _Options, _MaxRows, _MaxCols>& s) {
+        for (int icol{0}; icol < s.rows(); ++icol) {
+          s(icol) = j[icol].get<_Scalar>();
+        }
+      }
+      template<typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
+      static void apply_arr(const json & j, Array<_Scalar, _Rows, 1, _Options, _MaxRows, _MaxCols>& s) {
+        for (int icol{0}; icol < s.rows(); ++icol) {
+          s(icol) = j[icol].get<_Scalar>();
+        }
+      }
+    };
+
+
+
+  }
   /* ---------------------------------------------------------------------- */
-  template<typename _Scalar, int _Rows, int _Cols, int _Options>
-  void to_json(json & j, const Matrix<_Scalar, _Rows, _Cols, _Options>& s) {
+  template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+  void to_json(json & j, const Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& s) {
     for (int irow{0}; irow < s.rows(); ++irow) {
       j.push_back(json::array());
       for (int icol{0}; icol < s.cols(); ++icol) {
@@ -57,27 +154,26 @@ namespace Eigen {
   }
 
   /* ---------------------------------------------------------------------- */
-  template<typename _Scalar, int _Rows, int _Cols, int _Options>
-  void from_json(const json & j, Matrix<_Scalar, _Rows, _Cols, _Options>& s) {
+  template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+  void from_json(const json & j, Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& s) {
     if (j.is_array() != true) {
       std::string error{"the input json is not an array "};
       std::string error2{j.dump(2)};
       throw std::runtime_error(error + error2);
     }
-    int n_rows{j.size()};
-    int n_cols{j[0].size()};
-    for (int irow{0}; irow < n_rows; ++irow) {
+    size_t n_rows{j.size()};
+    size_t n_cols{j[0].size()};
+    for (size_t irow{0}; irow < n_rows; ++irow) {
       if (n_cols != j[irow].size()) {
         std::string error{"the input json does not have cols of same sizes"};
         throw std::runtime_error(error);
       }
     }
-    s.resize(n_rows, n_cols);
-    for (int irow{0}; irow < n_rows; ++irow) {
-      for (int icol{0}; icol < n_cols; ++icol) {
-        s(irow, icol) = j[irow][icol];
-      }
-    }
+
+    internal::ResizeEigen<_Rows, _Cols>::apply_mat(n_rows, n_cols, s);
+
+    internal::FillEigen<_Rows, _Cols>::apply_mat(j, s);
+
   }
 
    /* ---------------------------------------------------------------------- */
@@ -99,22 +195,38 @@ namespace Eigen {
       std::string error2{j.dump(2)};
       throw std::runtime_error(error + error2);
     }
-    int n_rows{j.size()};
-    int n_cols{j[0].size()};
-    for (int irow{0}; irow < n_rows; ++irow) {
+    size_t n_rows{j.size()};
+    size_t n_cols{j[0].size()};
+    for (size_t irow{0}; irow < n_rows; ++irow) {
       if (n_cols != j[irow].size()) {
         std::string error{"the input json does not have cols of same sizes"};
         throw std::runtime_error(error);
       }
     }
-    s.resize(n_rows, n_cols);
-    for (int irow{0}; irow < n_rows; ++irow) {
-      for (int icol{0}; icol < n_cols; ++icol) {
-        s(irow, icol) = j[irow][icol];
+
+    if ((_Cols == Eigen::Dynamic) and (_Rows == Eigen::Dynamic)) {
+      s.resize(n_rows, n_cols);
+    } else if ((_Cols != Eigen::Dynamic) and (_Rows == Eigen::Dynamic)) {
+      s.resize(n_rows, _Cols);
+    } else if ((_Cols == Eigen::Dynamic) and (_Rows != Eigen::Dynamic)) {
+      s.resize(_Rows, n_cols);
+    }
+    if (_Rows == 1) {
+      for (size_t icol{0}; icol < n_rows; ++icol) {
+        s(0, icol) = j[icol];
+      }
+    } else if (_Cols == 1) {
+      for (size_t irow{0}; irow < n_rows; ++irow) {
+        s(irow, 0) = j[irow];
+      }
+    } else {
+      for (size_t irow{0}; irow < n_rows; ++irow) {
+        for (size_t icol{0}; icol < n_cols; ++icol) {
+          s(irow, icol) = j[irow][icol];
+        }
       }
     }
   }
-
 }
 
 /*
