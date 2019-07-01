@@ -86,7 +86,7 @@ namespace rascal {
       BOOST_CHECK_EQUAL(index, atom_counter);
 
       auto type{atom.get_atom_type()};
-      BOOST_CHECK_EQUAL(type, this->fixture.atom_types[index]);
+      BOOST_CHECK_EQUAL(type, this->atom_types[index]);
       ++atom_counter;
 
       for (auto pair : atom) {
@@ -116,6 +116,8 @@ namespace rascal {
                           ManagerFixture<StructureManagerCenters>) {
     bool verbose{false};
     int mult = 3;
+
+    auto manager{this->managers[0]};
     // double rc_max{mult * 0.5 + cutoff};
     // auto pair_manager{make_adapted_manager<AdaptorNeighbourList>(manager,
     // rc_max)}; pair_manager->update();

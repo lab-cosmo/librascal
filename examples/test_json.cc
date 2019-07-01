@@ -71,6 +71,9 @@ int main() {
 
   std::cout << sss.cell << std::endl;
   std::cout << sss.positions << std::endl;
+
+  auto manager = make_structure_manager<StructureManagerCenters>();
+  manager->update(sss);
   // auto mat2 = j1.get<std::vector<double>>();
   // for (auto& el : mat2) {
   //   std::cout << el;

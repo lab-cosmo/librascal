@@ -189,12 +189,14 @@ namespace rascal {
 
     //! Returns the type of a given atom, given an AtomRef
     inline int & get_atom_type(const int & atom_tag) {
-      return this->atoms_object.atom_types(atom_tag);
+      auto&& atom_index{this->get_atom_index(atom_tag)};
+      return this->atoms_object.atom_types(atom_index);
     }
 
     //! Returns the type of a given atom, given an AtomRef
     inline const int & get_atom_type(const int & atom_tag) const {
-      return this->atoms_object.atom_types(atom_tag);
+      auto&& atom_index{this->get_atom_index(atom_tag)};
+      return this->atoms_object.atom_types(atom_index);
     }
 
     //! Returns an a map with all atom types.
@@ -221,17 +223,19 @@ namespace rascal {
 
     //! Returns the position of an atom, given an AtomRef
     inline Vector_ref get_position(const AtomRef_t & atom) {
-      auto index{atom.get_index()};
+      auto atom_tag{atom.get_index()};
+      auto&& atom_index{this->get_atom_index(atom_tag)};
       auto p = this->get_positions();
-      auto * xval{p.col(index).data()};
+      auto * xval{p.col(atom_index).data()};
       return Vector_ref(xval);
     }
 
     //! Returns the position of an atom, given an atom tag
     // #ATOM_INDEX
     inline Vector_ref get_position(const int & atom_tag) {
+      auto&& atom_index{this->get_atom_index(atom_tag)};
       auto p = this->get_positions();
-      auto * xval{p.col(atom_tag).data()};
+      auto * xval{p.col(atom_index).data()};
       return Vector_ref(xval);
     }
 
@@ -256,8 +260,14 @@ namespace rascal {
                     "this implementation only handles atoms.");
       return 1;
     }
-    size_t get_atom_index(const int atom_tag) const {
-      return static_cast<size_t>(atom_tag);
+
+    template <size_t Order, size_t Layer>
+    inline size_t get_atom_index(const ClusterRefKey<Order, Layer> & cluster) const {
+      return this->get_atom_index(cluster.get_atom_tag());
+    }
+
+    inline size_t get_atom_index(const int& atom_tag) const {
+      return static_cast<size_t>(std::get<0>(this->atoms_index)[atom_tag]);
     }
 
     //! dummy function, since no neighbours are present her
@@ -341,9 +351,6 @@ namespace rascal {
      * construction.
      */
     std::vector<size_t> offsets{};
-
-
-    ArrayB_t is_a_center_atom{};
 
     //! Total number of center atoms in the structure
     size_t n_center_atoms{};

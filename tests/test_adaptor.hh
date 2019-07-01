@@ -82,6 +82,7 @@ namespace rascal {
     ~PairFixtureCenters() {}
 
     ManagerFixture<StructureManagerCenters> fixture{};
+    Eigen::VectorXi atom_types{this->fixture.structures[0].atom_types};
 
     double cutoff;
     std::shared_ptr<PairManager_t> pair_manager;
