@@ -101,9 +101,7 @@ namespace rascal {
       this->harmonics_derivatives_calculator.precompute(max_angular);
     }
 
-    // Eigen::Array<double, 1, (max_angular + 1) * (max_angular + 1)>
-    Vector_Ref
-    f(const Eigen::Vector3d & inputs_v) {
+    Vector_Ref f(const Eigen::Vector3d & inputs_v) {
       Eigen::Vector3d my_inputs = inputs_v / inputs_v.norm();
       this->harmonics_calculator.calc(my_inputs);
       return this->harmonics_calculator.get_harmonics();

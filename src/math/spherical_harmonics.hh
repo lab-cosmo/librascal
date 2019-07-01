@@ -418,8 +418,6 @@ namespace rascal {
           double lowering_plm_factor{raising_plm_factor};
           for (size_t m_count{0}; m_count < angular_l + 1; m_count++) {
             if (m_count == 0) {
-              this->harmonics(l_block_index + angular_l) =
-                  this->assoc_legendre_polynom(angular_l, m_count) * INV_SQRT_TWO;
               // d/dx
               this->harmonics_derivatives(0, l_block_index + angular_l) =
                   cos_theta * cos_phi * raising_plm_factor * INV_SQRT_TWO *
@@ -441,14 +439,6 @@ namespace rascal {
                       this->assoc_legendre_polynom(angular_l, m_count - 1) -
                   raising_plm_factor *
                       this->assoc_legendre_polynom(angular_l, m_count + 1)};
-            // harmonics values
-            this->harmonics(l_block_index + angular_l + m_count) =
-                this->assoc_legendre_polynom(angular_l, m_count) *
-                cos_sin_m_phi(m_count, 0);
-            this->harmonics(l_block_index + angular_l - m_count) =
-                this->assoc_legendre_polynom(angular_l, m_count) *
-                cos_sin_m_phi(m_count, 1);
-
               double phi_derivative_factor{};
               if (sin_theta > 0.1) {
                 // singularity at the poles
