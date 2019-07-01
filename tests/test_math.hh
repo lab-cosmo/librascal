@@ -74,16 +74,51 @@ namespace rascal {
     }
 
     ~SphericalHarmonicsClassRefFixture() = default;
-
+    
     std::string ref_filename =
         "reference_data/spherical_harmonics_reference.ubjson";
-
     json ref_data{};
+    // TODO(alex) replace this with one variable VerbosityValues verbosity
     // for general test information
     bool info{false};
     // for detailed tests information of computed values
     bool verbose{false};
   };
+
+  // Used for the gradient tests to reduce recomputation
+  template <size_t max_angular>
+  struct SphericalHarmonicsClassFunctionHolder {
+    SphericalHarmonicsClassFunctionHolder() :
+        harmonics_calculator{math::SphericalHarmonics(false)},
+        harmonics_derivatives_calculator{math::SphericalHarmonics(true)}
+        {}
+
+    using Matrix_Ref = typename Eigen::Ref<const math::Matrix_t>;
+    using Vector_Ref = typename Eigen::Ref<const math::Vector_t>;
+
+    void precompute() {
+      this->harmonics_calculator.precompute(max_angular);
+      this->harmonics_derivatives_calculator.precompute(max_angular);
+    }
+
+    // Eigen::Array<double, 1, (max_angular + 1) * (max_angular + 1)>
+    Vector_Ref
+    f(const Eigen::Vector3d & inputs_v) {
+      Eigen::Vector3d my_inputs = inputs_v / inputs_v.norm();
+      this->harmonics_calculator.calc(my_inputs);
+      return this->harmonics_calculator.get_harmonics();
+    }
+    Matrix_Ref grad_f(const Eigen::Vector3d & inputs_v) {
+      this->harmonics_derivatives_calculator.calc(inputs_v);
+      return this->harmonics_derivatives_calculator.get_harmonics_derivatives();
+    }
+
+    math::SphericalHarmonics harmonics_calculator;
+    math::SphericalHarmonics harmonics_derivatives_calculator;
+  };
+
+
+
 
   /**
    * Fixture for testing a the gradient of a scalar function of N real arguments
