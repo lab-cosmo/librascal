@@ -204,28 +204,9 @@ namespace Eigen {
       }
     }
 
-    if ((_Cols == Eigen::Dynamic) and (_Rows == Eigen::Dynamic)) {
-      s.resize(n_rows, n_cols);
-    } else if ((_Cols != Eigen::Dynamic) and (_Rows == Eigen::Dynamic)) {
-      s.resize(n_rows, _Cols);
-    } else if ((_Cols == Eigen::Dynamic) and (_Rows != Eigen::Dynamic)) {
-      s.resize(_Rows, n_cols);
-    }
-    if (_Rows == 1) {
-      for (size_t icol{0}; icol < n_rows; ++icol) {
-        s(0, icol) = j[icol];
-      }
-    } else if (_Cols == 1) {
-      for (size_t irow{0}; irow < n_rows; ++irow) {
-        s(irow, 0) = j[irow];
-      }
-    } else {
-      for (size_t irow{0}; irow < n_rows; ++irow) {
-        for (size_t icol{0}; icol < n_cols; ++icol) {
-          s(irow, icol) = j[irow][icol];
-        }
-      }
-    }
+    internal::ResizeEigen<_Rows, _Cols>::apply_arr(n_rows, n_cols, s);
+
+    internal::FillEigen<_Rows, _Cols>::apply_arr(j, s);
   }
 }
 

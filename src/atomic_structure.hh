@@ -96,19 +96,29 @@ namespace rascal {
       return positions.cols();
     }
 
+    inline void set_structure(const PositionsInput_t & positions,
+                              const AtomTypesInput_t & atom_types,
+                              const Eigen::Ref<const Eigen::MatrixXd> cell,
+                              const PBCInput_t & pbc) {
+      auto is_a_center_atom = ArrayB_t::Ones(atom_types.size());
+      this->set_structure(positions, atom_types, cell, pbc, is_a_center_atom);
+    }
+
     //! method for initializing structure data from raw Eigen types, beware:
     //! copy!
     inline void set_structure(const PositionsInput_t & positions,
                               const AtomTypesInput_t & atom_types,
                               const Eigen::Ref<const Eigen::MatrixXd> cell,
-                              const PBCInput_t & pbc) {
+                              const PBCInput_t & pbc,
+                              const ArrayB_t& is_a_center_atom) {
       // check data consistency
       auto npos{positions.cols()};
       auto ntypes{atom_types.rows()};
-      if (npos != ntypes) {
+      auto n_center_flags{is_a_center_atom.size()};
+      if (npos != ntypes or ntypes != n_center_flags) {
         std::stringstream err_str{};
         err_str << "Number of atom positions and atom types is not the same: '"
-                << npos << "' != '" << ntypes << "'.";
+                << npos << "' != '" << ntypes << "' != '" << n_center_flags << "'.";
         throw std::runtime_error(err_str.str());
       }
 
@@ -116,28 +126,7 @@ namespace rascal {
       this->atom_types = atom_types;
       this->pbc = pbc;
       this->positions = positions;
-      this->is_a_center_atom = ArrayB_t::Ones(atom_types.size());
-    }
-
-    inline void set_structure(Positions_t & positions,
-                              AtomTypes_t & atom_types,
-                              Cell_t & cell,
-                              PBC_t & pbc) {
-      // check data consistency
-      auto npos{positions.cols()};
-      auto ntypes{atom_types.rows()};
-      if (npos != ntypes) {
-        std::stringstream err_str{};
-        err_str << "Number of atom positions and atom types is not the same: '"
-                << npos << "' != '" << ntypes << "'.";
-        throw std::runtime_error(err_str.str());
-      }
-
-      this->cell = std::move(cell);
-      this->atom_types = std::move(atom_types);
-      this->pbc = std::move(pbc);
-      this->positions = std::move(positions);
-      this->is_a_center_atom = ArrayB_t::Ones(atom_types.size());
+      this->is_a_center_atom = is_a_center_atom;
     }
 
     // TODO(markus): add function to read from XYZ files
@@ -175,66 +164,6 @@ namespace rascal {
       } else {
         throw std::runtime_error("The json input was not understood.");
       }
-    }
-
-    //! method for initializing structure from a json object; data is copied
-    inline void set_structure(const json_io::AtomicJsonData & s) {
-      // internal std::vector for reading from json, necessary for push_back, no
-      // direct mapping possible
-      std::vector<double> cell_data{};
-      std::vector<int> type_data{};
-      std::vector<int> pbc_data{};
-      std::vector<double> pos_data{};
-
-      // check for empty data set
-      try {
-        auto pos_size = s.position.size();
-        if (pos_size == 0) {
-          throw std::runtime_error("No atomic structure defined. "
-                                   "Read structure first!");
-        }
-      } catch (const std::exception & e) {
-        std::cerr << e.what() << std::endl;
-        std::exit(EXIT_FAILURE);
-      }
-
-      // get data out of the json object to access with Eigen::Map
-      for (auto vec : s.cell) {
-        for (auto coord : vec) {
-          cell_data.push_back(coord);
-        }
-      }
-      // elements
-      for (auto val : s.type) {
-        type_data.push_back(val);
-      }
-      // periodicity
-      for (auto val : s.pbc) {
-        pbc_data.push_back(val);
-      }
-      // positions
-      for (auto pos : s.position) {
-        for (auto coord : pos) {
-          pos_data.push_back(coord);
-        }
-      }
-
-      // check data consistency
-      auto npos{positions.size() / Dim};
-      auto ntypes{atom_types.size()};
-      if (npos != ntypes) {
-        std::stringstream err_str{};
-        err_str << "Number of atom positions and atom types is not the same: '"
-                << npos << "' != '" << ntypes << "'.";
-        throw std::runtime_error(err_str.str());
-      }
-      // associate them to internal data structure
-      this->cell = Cell_ref(cell_data.data());
-      this->atom_types = AtomTypes_ref(type_data.data(), type_data.size());
-      this->pbc = PBC_ref(pbc_data.data());
-      this->positions =
-          Positions_ref(pos_data.data(), Dim, pos_data.size() / Dim);
-      this->is_a_center_atom = ArrayB_t::Ones(atom_types.size());
     }
 
     inline void set_structure(const AtomicStructure<Dim> & other) {
@@ -322,18 +251,33 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template<int Dim>
   void from_json(const json & j, AtomicStructure<Dim> & s) {
-    using Cell_t = typename AtomicStructure<Dim>::Cell_t;
-    using AtomTypes_t = typename AtomicStructure<Dim>::AtomTypes_t;
-    using PBC_t = typename AtomicStructure<Dim>::PBC_t;
-    using Positions_t = typename AtomicStructure<Dim>::Positions_t;
-    // using ArrayB_t = typename AtomicStructure<Dim>::ArrayB_t;
+    // using Cell_t = typename AtomicStructure<Dim>::Cell_t;
+    // using AtomTypes_t = typename AtomicStructure<Dim>::AtomTypes_t;
+    // using PBC_t = typename AtomicStructure<Dim>::PBC_t;
+    // using Positions_t = typename AtomicStructure<Dim>::Positions_t;
+    using Cell_t = Eigen::MatrixXd;
+    using AtomTypes_t = Eigen::VectorXi;
+    using PBC_t = Eigen::VectorXi;
+    using Positions_t = Eigen::MatrixXd;
+    using ArrayB_t = typename AtomicStructure<Dim>::ArrayB_t;
 
     auto cell = j.at("cell").get<Cell_t>();
     auto atom_types = j.at("atom_types").get<AtomTypes_t>();
     auto pbc = j.at("pbc").get<PBC_t>();
     auto positions = j.at("positions").get<Positions_t>();
 
-    s.set_structure(positions, atom_types, cell, pbc);
+    cell.transposeInPlace();
+
+    if (atom_types.size() == positions.rows()) {
+      positions.transposeInPlace();
+    }
+    if (j.count("is_a_center_atom") == 1) {
+      auto is_a_center_atom = j.at("is_a_center_atom").get<ArrayB_t>();
+      s.set_structure(positions, atom_types, cell, pbc, is_a_center_atom);
+    } else {
+      s.set_structure(positions, atom_types, cell, pbc);
+    }
+
   }
 
 }  // namespace rascal

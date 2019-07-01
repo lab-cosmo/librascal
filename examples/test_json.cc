@@ -64,7 +64,18 @@ int main() {
   std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
   sss.set_structure(filename);
 
-  std::cout << sss.atom_types <<std::endl;
+  std::cout << sss.atom_types.rows() << ", "<<sss.atom_types.cols() << std::endl;
+  std::cout << sss.cell.rows() << ", "<<sss.cell.cols() << std::endl;
+  std::cout << sss.positions.rows() << ", "<<sss.positions.cols() << std::endl;
+  std::cout << sss.pbc.rows() << ", "<<sss.pbc.cols() << std::endl;
+
+  std::cout << sss.cell << std::endl;
+  std::cout << sss.positions << std::endl;
+  // auto mat2 = j1.get<std::vector<double>>();
+  // for (auto& el : mat2) {
+  //   std::cout << el;
+  // }
+  // std::cout <<std::endl;
 
   return (0);
 }
