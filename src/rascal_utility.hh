@@ -106,6 +106,30 @@ namespace rascal {
       return enumValue(e1) + enumSize<Enum1>() * enumValue(e2);
     }
 
+    /* ------------------------------------------------------------------- */
+    /**
+     * Implementation of the sumation of the elements of an index sequence
+     * plus its size
+     */
+    template<size_t Int, size_t... Ints>
+    struct SumSequenceHelper {
+      static constexpr size_t value = Int+1+SumSequenceHelper<Ints...>::value;
+    };
+
+    template<size_t Int>
+    struct SumSequenceHelper<Int> {
+      static constexpr size_t value = Int+1;
+    };
+
+    template<typename Seq_>
+    struct SumSequence { };
+
+    template<size_t... Ints>
+    struct SumSequence<std::integer_sequence<size_t, Ints...>> {
+      static constexpr size_t size = sizeof...(Ints);
+      static constexpr size_t value = SumSequenceHelper<Ints...>::value;
+    };
+
     /* ---------------------------------------------------------------------- */
     /**
      * Implementation of the generation of an index sequence from Min to Max

@@ -302,42 +302,45 @@ namespace rascal {
   }
 
   namespace internal {
-    template <typename StructureManagerPtr, int TargetLevel>
+    template <typename StructureManager, int TargetLevel>
     struct UnderlyingManagerExtractor {
-      using ManagerPtr_t =
-          typename StructureManagerPtr::element_type::ImplementationPtr_t;
-      using type = UnderlyingManagerExtractor<ManagerPtr_t, TargetLevel + 1>;
+      using Manager_t = typename StructureManager::ManagerImplementation_t;
+      using type = UnderlyingManagerExtractor<Manager_t, TargetLevel - 1>;
 
-      explicit UnderlyingManagerExtractor(StructureManagerPtr & sm)
+      explicit UnderlyingManagerExtractor(std::shared_ptr<StructureManager> & sm)
           : manager{sm->get_previous_manager()}, next_stack{manager} {}
 
-      ManagerPtr_t manager;
+      std::shared_ptr<Manager_t> manager;
       type next_stack;
 
       decltype(auto) get_manager() { return this->next_stack.get_manager(); }
     };
 
-    template <typename StructureManagerPtr>
-    struct UnderlyingManagerExtractor<StructureManagerPtr, 0> {
-      using ManagerPtr_t = StructureManagerPtr;
-
-      explicit UnderlyingManagerExtractor(StructureManagerPtr & sm)
+    template <typename StructureManager>
+    struct UnderlyingManagerExtractor<StructureManager, 0> {
+      explicit UnderlyingManagerExtractor(std::shared_ptr<StructureManager> & sm)
           : manager{sm} {}
 
-      ManagerPtr_t manager;
+      std::shared_ptr<StructureManager> manager;
 
       decltype(auto) get_manager() { return this->manager->get_shared_ptr(); }
     };
+
   }  // namespace internal
 
-  template <int TargetLevel, typename StructureManagerPtr>
-  decltype(auto) extract_underlying_manager(StructureManagerPtr manager) {
-    static_assert(TargetLevel < 0, "target_level should be negative");
+  template <int TargetLevel, typename StructureManager>
+  decltype(auto) extract_underlying_manager(std::shared_ptr<StructureManager> manager) {
+    // static_assert(TargetLevel < 0, "target_level should be negative");
+    // using LayerByOrder = typename StructureManager::traits::LayerByOrder;
+    static constexpr int n_step_below = StructureManager::traits::StackLevel - TargetLevel;
+    std::cout << n_step_below <<std::endl;
+    // static_assert(n_step_below >= 0, "TargetLevel is larger than the number of manager in the stack");
     auto test{
-        internal::UnderlyingManagerExtractor<StructureManagerPtr, TargetLevel>(
+        internal::UnderlyingManagerExtractor<StructureManager, n_step_below>(
             manager)};
 
     return test.get_manager();
+    // return manager;
   }
 
 }  // namespace rascal

@@ -52,7 +52,33 @@ using Representation_t = RepresentationManagerSOAP<
     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
 
 
+using LayerByOrder = std::index_sequence<0, 0, 1>;
+
+
+
+
+
+// template<std::size_t... I>
+// constexpr auto sum_seq(std::index_sequence<I...>, const int& sum = 0) {
+//   return std::make_tuple(a[I]...);
+// }
+
+// template<size_t I, size_t... Is,size_t Sum = 0 >
+// constexpr auto sum(const int& sum) {
+//   return sum + 1 + I;
+// }
+
 int main() {
+  double cutoff{3.};
+  json adaptors;
+  json ad1{{"name", "AdaptorNeighbourList"},
+           {"initialization_arguments",
+            {{"cutoff", cutoff}, {"consider_ghost_neighbours", false}}}};
+  json ad2{{"name", "AdaptorStrict"},
+           {"initialization_arguments", {{"cutoff", cutoff}}}};
+  adaptors.emplace_back(ad1);
+  adaptors.emplace_back(ad2);
+
   json j1{{1,23,4,6,7},{1,23,4,6,9},{4,23,4,6,9}};
   std::cout << j1.dump() <<std::endl;
 
@@ -79,6 +105,15 @@ int main() {
   //   std::cout << el;
   // }
   // std::cout <<std::endl;
+  std::cout << internal::SumSequence<LayerByOrder>::value << std::endl;
+
+  auto man = stack_adaptors<StructureManagerCenters, AdaptorNeighbourList, AdaptorStrict>(manager, adaptors);
+
+  std::cout << man->get_name() << std::endl;
+  std::cout << extract_underlying_manager<2>(man)->get_name() << std::endl;
+  std::cout << extract_underlying_manager<1>(man)->get_name() << std::endl;
+  auto man1 = extract_underlying_manager<0>(man);
+  std::cout << man1->get_name() << std::endl;
 
   return (0);
 }

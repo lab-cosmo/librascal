@@ -130,6 +130,24 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
+   * Test if not the no center option works properly
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_compute_test, Fix,
+                                   multiple_fixtures, Fix) {
+    auto & managers = Fix::managers;
+    auto & representations = Fix::representations;
+    auto & hypers = Fix::hypers;
+    for (auto & manager : managers) {
+      auto atomic_structure = manager->get_atomic_structure();
+      for (auto & hyper : hypers) {
+        representations.emplace_back(manager, hyper);
+        representations.back().compute();
+      }
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /**
    * Test if the representation computed is equal to a reference from a file
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_reference_test, Fix,

@@ -684,6 +684,8 @@ namespace rascal {
     ~RepresentationFixture() = default;
 
     std::list<Representation_t> representations{};
+
+    
   };
 
   /* ---------------------------------------------------------------------- */

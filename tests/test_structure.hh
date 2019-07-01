@@ -399,12 +399,13 @@ namespace rascal {
           structures.emplace_back();
           structures.back().set_structure(filename);
 
+          // don't center on all atoms
           is_a_center_atom = ArrayB_t::Ones(structures.back().get_number_of_atoms());
           to_change_id = ((Eigen::ArrayXd::Random(n_is_not_center) + Eigen::ArrayXd::Ones(n_is_not_center))*((is_a_center_atom.size()-1)*0.5)).cast<int>();
           for (int i_id{0}; i_id < n_is_not_center; ++i_id) {
             is_a_center_atom(to_change_id(i_id)) = false;
           }
-          
+
           structures.back().is_a_center_atom = is_a_center_atom;
           managers.push_back(make_structure_manager<Manager_t>());
           managers.back()->update(structures.back());
