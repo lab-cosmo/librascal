@@ -48,20 +48,20 @@ namespace rascal {
       BOOST_CHECK_EQUAL(manager->get_size(), is_a_center_atom.count());
       BOOST_CHECK_EQUAL(manager->get_nb_clusters(1), is_a_center_atom.count());
 
-      int atom_counter{};
+      int atom_counter{0};
 
       auto& positions = structure.positions;
       for (auto atom_cluster : manager) {
-        // BOOST_CHECK_EQUAL(atom_counter, atom_cluster.get_index());
-        ++atom_counter;
-        for (int ii{3}; ii < 3; ++ii) {
-          BOOST_CHECK_EQUAL(positions(ii, atom_cluster.get_index()),
-                            atom_cluster.get_position()[ii]);
-        }
+        BOOST_CHECK_EQUAL(atom_counter, atom_cluster.get_index());
+        auto index = manager->get_atom_index(atom_cluster);
+        auto error = (positions.col(index) - atom_cluster.get_position()).norm();
+        BOOST_CHECK_LE(error, 1e-14);
+
         if (verbose) {
           std::cout << "atom (" << atom_cluster.back()
                     << "), atom counter = " << atom_counter << std::endl;
         }
+        ++atom_counter;
       }
       ++i_manager;
     }
@@ -128,7 +128,7 @@ namespace rascal {
       auto& atom_types = structure.atom_types;
 
       for (auto atom : manager) {
-        auto index = atom.get_atom_tag();
+        auto index = manager->get_atom_index(atom);
         auto type = atom.get_atom_type();
         BOOST_CHECK_EQUAL(type, atom_types[index]);
 
