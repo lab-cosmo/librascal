@@ -132,16 +132,24 @@ namespace rascal {
   /**
    * Test if not the no center option works properly
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_compute_test, Fix,
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_no_center_test, Fix,
                                    multiple_fixtures, Fix) {
+    using ArrayB_t = typename AtomicStructure<3>::ArrayB_t;
     auto & managers = Fix::managers;
     auto & representations = Fix::representations;
     auto & hypers = Fix::hypers;
     for (auto & manager : managers) {
-      auto atomic_structure = manager->get_atomic_structure();
+      auto man = extract_underlying_manager<0>(manager);
+      auto atomic_structure = man->get_atomic_structure();
+      auto n_atoms = atomic_structure.get_number_of_atoms();
+      atomic_structure.is_a_center_atom = ArrayB_t::Zero(n_atoms);
+      auto i_atom1 = static_cast<int>(n_atoms/2);
+      atomic_structure.is_a_center_atom[i_atom1] = true;
+      manager->update(atomic_structure);
       for (auto & hyper : hypers) {
         representations.emplace_back(manager, hyper);
         representations.back().compute();
+        BOOST_CHECK_EQUAL(representations.back().get_center_size(), 1);
       }
     }
   }

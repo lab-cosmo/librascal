@@ -105,7 +105,6 @@ int main() {
   //   std::cout << el;
   // }
   // std::cout <<std::endl;
-  std::cout << internal::SumSequence<LayerByOrder>::value << std::endl;
 
   auto man = stack_adaptors<StructureManagerCenters, AdaptorNeighbourList, AdaptorStrict>(manager, adaptors);
 

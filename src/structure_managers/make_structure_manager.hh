@@ -333,7 +333,6 @@ namespace rascal {
     // static_assert(TargetLevel < 0, "target_level should be negative");
     // using LayerByOrder = typename StructureManager::traits::LayerByOrder;
     static constexpr int n_step_below = StructureManager::traits::StackLevel - TargetLevel;
-    std::cout << n_step_below <<std::endl;
     // static_assert(n_step_below >= 0, "TargetLevel is larger than the number of manager in the stack");
     auto test{
         internal::UnderlyingManagerExtractor<StructureManager, n_step_below>(
