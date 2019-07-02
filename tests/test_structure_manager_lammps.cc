@@ -46,21 +46,22 @@ namespace rascal {
     int pair_counter{};
     constexpr bool verbose{false};
 
-    for (auto atom_cluster : manager) {
-      BOOST_CHECK_EQUAL(atom_counter, atom_cluster.get_global_index());
-      BOOST_CHECK_EQUAL(atom_cluster.get_atom_type(), type[atom_counter]);
+    for (auto atom : manager) {
+      BOOST_CHECK_EQUAL(atom.get_global_index(), atom_counter);
+      BOOST_CHECK_EQUAL(atom.get_atom_type(),
+                        manager->get_atom_type(atom.get_atom_tag()));
       ++atom_counter;
 
-      for (auto pair_cluster : atom_cluster) {
-        auto pair_offset{pair_cluster.get_global_index()};
+      for (auto pair : atom) {
+        auto pair_offset{pair.get_global_index()};
         if (verbose) {
-          std::cout << "pair (" << atom_cluster.back() << ", "
-                    << pair_cluster.back()
+          std::cout << "pair (" << atom.get_atom_tag() << ", "
+                    << pair.get_atom_tag()
                     << "), pair_counter = " << pair_counter
                     << ", pair_offset = " << pair_offset << std::endl;
         }
 
-        BOOST_CHECK_EQUAL(pair_counter, pair_offset);
+        BOOST_CHECK_EQUAL(pair_offset, pair_counter);
         ++pair_counter;
       }
     }
@@ -74,9 +75,9 @@ namespace rascal {
     BOOST_CHECK_EQUAL(natoms, natoms2);
 
     for (auto atom : manager) {
-      auto index = atom.get_atom_index();
+      auto atom_tag = atom.get_atom_tag();
       auto atom_type = atom.get_atom_type();
-      BOOST_CHECK_EQUAL(atom_type, type[index]);
+      BOOST_CHECK_EQUAL(atom_type, manager->get_atom_type(atom_tag));
       // auto index_size = manager->get_cluster_size(index);
       // auto cluster_size = manager->get_cluster_size(atom);
       // BOOST_CHECK_EQUAL(index_size, cluster_size);

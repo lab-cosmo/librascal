@@ -42,7 +42,6 @@ target_sources("${LIBRASCAL_NAME}" PRIVATE ${rascal_SRC})
 
 
 target_link_libraries("${LIBRASCAL_NAME}" PUBLIC Eigen3::Eigen)
-target_link_libraries("${LIBRASCAL_NAME}" PRIVATE "${LIBCEPHES_NAME}")
 target_link_libraries("${LIBRASCAL_NAME}" PUBLIC "${WIGXJPF_NAME}")
 
 add_subdirectory(structure_managers)

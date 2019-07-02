@@ -1,6 +1,6 @@
 import json
 import numpy as np
-from collections import Iterable
+
 
 
 def adapt_structure(cell, positions, atom_types, pbc):
@@ -12,6 +12,7 @@ def adapt_structure(cell, positions, atom_types, pbc):
 
 
 def dump_json_frame(fn, frames):
+    from collections import Iterable
     if not isinstance(frames, Iterable):
         frames = [frames]
     data = dict()

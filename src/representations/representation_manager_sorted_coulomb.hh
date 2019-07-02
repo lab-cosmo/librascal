@@ -168,7 +168,8 @@ namespace rascal {
     // numeric type for the representation features
     using Precision_t = typename Parent::Precision_t;
     // type of the data structure for the representation feaures
-    using Property_t = Property<Precision_t, 1, 1, Eigen::Dynamic, 1>;
+    using Property_t =
+        Property<Precision_t, 1, 1, Manager_t, Eigen::Dynamic, 1>;
     template <size_t Order>
     // short hand type to help the iteration over the structure manager
     using ClusterRef_t = typename Manager_t::template ClusterRef<Order>;
@@ -231,7 +232,7 @@ namespace rascal {
       return this->coulomb_matrices.get_raw_data();
     }
 
-    data_t & get_representation_sparse_raw_data() { return this->dummy; }
+    Data_t & get_representation_sparse_raw_data() { return this->dummy; }
 
     //! get the size of a feature vector
     size_t get_feature_size() { return this->coulomb_matrices.get_nb_comp(); }
@@ -322,7 +323,7 @@ namespace rascal {
     // at least equal to the largest number of neighours
     size_t size{};
 
-    data_t dummy{};
+    Data_t dummy{};
 
     Property_t coulomb_matrices;
 

@@ -79,6 +79,10 @@ set(ENABLE_DOC "OFF" CACHE BOOL
 set(BUILD_TESTS "OFF" CACHE BOOL
   "If on, builds the unit tests")
 
+set(ENABLE_PROFILING "OFF" CACHE BOOL
+  "If on, adds gprof profiling information to some of the examples. \
+  (GNU compilers only)")
+
 message(STATUS "Build type is: ${CMAKE_BUILD_TYPE}")
 
 ########## COMPILATION FLAGS ##########
@@ -115,11 +119,9 @@ endif()
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR
     CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
   set(LIBRASCAL_NAME "rascal-dbg")
-  set(LIBCEPHES_NAME "cephes-dbg")
   set(WIGXJPF_NAME "wigxjpf-dbg")
 else()
   set(LIBRASCAL_NAME "rascal")
-  set(LIBCEPHES_NAME "cephes")
   set(WIGXJPF_NAME "wigxjpfo")
 endif()
 
@@ -216,6 +218,11 @@ set(CMAKE_SKIP_BUILD_RPATH  FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
+# utility to force copy of files...
+add_custom_command(
+    OUTPUT always_rebuild
+    COMMAND ${CMAKE_COMMAND} -E echo
+  )
 
 # set up the tests
 if (${BUILD_TESTS})
@@ -234,7 +241,7 @@ if (${BUILD_TESTS})
   add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
   configure_file("tests/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
   configure_file("tests/simple_cubic_9.json" ${CMAKE_BINARY_DIR} COPYONLY)
-  file(COPY "tests/reference_data" DESTINATION ${CMAKE_BINARY_DIR})
+
 
   if(BUILD_BINDINGS)
 
@@ -252,16 +259,24 @@ if (${BUILD_TESTS})
           always_rebuild
     )
 
-    add_custom_command(
-      OUTPUT always_rebuild
-      COMMAND ${CMAKE_COMMAND} -E echo
-    )
-
     add_test(python_binding_test python_binding_tests.py)
   endif()
 
 
 endif(${BUILD_TESTS})
+
+# copy reference data that might be used in the example
+add_custom_target(copy_reference_data ALL
+    DEPENDS
+    copy_test_reference_data
+  )
+
+add_custom_command(OUTPUT copy_test_reference_data
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/tests/reference_data ${CMAKE_BINARY_DIR}/reference_data
+    DEPENDS
+        always_rebuild
+  )
 
 # put it there to avoid warnings from boost tests
 add_compile_options(-Werror) # warnings are errors!
@@ -294,6 +309,15 @@ foreach(binaryfile ${binaries})
 endforeach(binaryfile ${binaries})
 configure_file("${CMAKE_SOURCE_DIR}/examples/crystal_structure.json" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file("${CMAKE_SOURCE_DIR}/examples/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
+
+# Add profiling information for the appropriate examples
+if (ENABLE_PROFILING)
+  if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  target_compile_options("soap_profile" PRIVATE -ggdb)
+    # target_compile_options("soap_profile" PRIVATE -pg)
+    # set_target_properties("soap_profile" PROPERTIES LINK_FLAGS -pg)
+  endif()
+endif()
 
 
 

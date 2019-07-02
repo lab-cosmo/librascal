@@ -61,12 +61,11 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   // loops over the centers in the manager making sure positions are consistent
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_atom_indexing, Fix, fixtures,
-                                   Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_atom_taging, Fix, fixtures, Fix) {
     auto & manager = Fix::manager;
     for (auto atom : manager) {
-      // checks get_atom_index exists
-      auto index = atom.get_atom_index();
+      // checks get_atom_tag exists
+      auto index = atom.get_atom_tag();
 
       // checks get_atom_type exists
       auto type = atom.get_atom_type();
@@ -87,7 +86,7 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  // loops over the centers in the manager making global atom indices are
+  // loops over the centers in the manager making global atom tags are
   // contiguous
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(templated_atom_global_indexing, Fix,
                                    fixtures, Fix) {
@@ -96,7 +95,7 @@ namespace rascal {
     auto index_reference{0};
 
     for (auto atom : manager) {
-      // checks get_atom_index exists
+      // checks get_atom_tag exists
       auto index = atom.get_global_index();
       BOOST_CHECK_EQUAL(index_reference, index);
       index_reference++;
@@ -117,7 +116,7 @@ namespace rascal {
         pair_reference++;
 
         // check index access
-        auto index = pair.get_atom_index();
+        auto index = pair.get_atom_tag();
 
         // check atom type access
         auto type = pair.get_atom_type();

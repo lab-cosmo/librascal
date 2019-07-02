@@ -90,10 +90,10 @@ namespace rascal {
     //! get the shape of the feature matrix (Nrow,Ncol)
     virtual inline std::tuple<int, int> shape() = 0;
 
-    //! expose the feature matrix
-    virtual inline Feature_Matrix_ref get_feature_matrix() = 0;
+    // //! expose the feature matrix
+    // virtual inline Feature_Matrix_ref get_feature_matrix() = 0;
 
-    virtual inline Feature_Matrix_t get_feature_matrix_dense() = 0;
+    // virtual inline Feature_Matrix_t get_feature_matrix_dense() = 0;
   };
 
 }  // namespace rascal

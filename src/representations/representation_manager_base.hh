@@ -50,10 +50,12 @@ namespace rascal {
     //! type used to register the valid key and values of Hypers_t
     using ReferenceHypers_t = std::map<std::string, std::vector<std::string>>;
 
-    using dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, Eigen::Dynamic>;
-    using input_data_t =
-        internal::InternallySortedKeyMap<std::vector<int>, dense_t>;
-    using data_t = std::vector<input_data_t>;
+    // TODO(felix) make sure it is not need anymore
+    using Dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, Eigen::Dynamic,
+                                  Eigen::RowMajor>;
+    using InputData_t =
+        internal::InternallySortedKeyMap<std::vector<int>, Dense_t>;
+    using Data_t = std::vector<InputData_t>;
 
     RepresentationManagerBase() = default;
 
@@ -86,7 +88,7 @@ namespace rascal {
     //! get the raw data of the representation
     virtual std::vector<Precision_t> & get_representation_raw_data() = 0;
 
-    virtual data_t & get_representation_sparse_raw_data() = 0;
+    virtual Data_t & get_representation_sparse_raw_data() = 0;
 
     //! get the size of a feature vector
     virtual size_t get_feature_size() = 0;

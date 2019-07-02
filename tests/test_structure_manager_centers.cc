@@ -109,7 +109,7 @@ namespace rascal {
     BOOST_CHECK_EQUAL(natoms, natoms3);
 
     for (auto atom : manager) {
-      auto index = atom.get_atom_index();
+      auto index = atom.get_atom_tag();
       auto type = atom.get_atom_type();
       BOOST_CHECK_EQUAL(type, atom_types[index]);
 

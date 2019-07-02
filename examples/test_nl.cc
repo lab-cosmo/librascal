@@ -32,10 +32,9 @@
 #include "rascal_utility.hh"
 #include "representations/representation_manager_sorted_coulomb.hh"
 #include "representations/representation_manager_spherical_expansion.hh"
+#include "representations/representation_manager_soap.hh"
 #include "representations/feature_manager_dense.hh"
-#include "basic_types.hh"
-
-#include <Eigen/StdVector>
+#include "representations/feature_manager_block_sparse.hh"
 
 #include <iostream>
 #include <basic_types.hh>
@@ -48,104 +47,71 @@
 // using namespace std;
 using namespace rascal;  // NOLINT
 
-constexpr static int dim{3};
-using Vector_t = Eigen::Matrix<double, dim, 1>;
-
-using Representation_t = RepresentationManagerSphericalExpansion<
+using Representation_t = RepresentationManagerSOAP<
     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
 
-struct TestData {
-  using ManagerTypeHolder_t =
-      StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList,
-                                 AdaptorStrict>;
-
-  TestData() = default;
-
-  void get_ref(const std::string & ref_filename) {
-    std::vector<std::uint8_t> ref_data_ubjson;
-    internal::read_binary_file(ref_filename, ref_data_ubjson);
-    this->ref_data = json::from_ubjson(ref_data_ubjson);
-    auto filenames =
-        this->ref_data.at("filenames").get<std::vector<std::string>>();
-    auto cutoffs = this->ref_data.at("cutoffs").get<std::vector<double>>();
-
-    for (auto && filename : filenames) {
-      for (auto && cutoff : cutoffs) {
-        json parameters;
-        json structure{{"filename", filename}};
-        json adaptors;
-        json ad1{{"name", "AdaptorNeighbourList"},
-                 {"initialization_arguments",
-                  {{"cutoff", cutoff},
-                   {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
-        json ad2{{"name", "AdaptorStrict"},
-                 {"initialization_arguments", {{"cutoff", cutoff}}}};
-        adaptors.emplace_back(ad1);
-        adaptors.emplace_back(ad2);
-
-        parameters["structure"] = structure;
-        parameters["adaptors"] = adaptors;
-
-        this->factory_args.emplace_back(parameters);
-      }
-    }
-  }
-
-  ~TestData() = default;
-
-  const bool consider_ghost_neighbours{false};
-  json ref_data{};
-  json factory_args{};
-};
-
 int main() {
-  using ManagerTypeHolder_t =
-      StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList,
-                                 AdaptorStrict>;
-  using ManagerTypeList_t = typename ManagerTypeHolder_t::type_list;
-  using Manager_t = typename ManagerTypeHolder_t::type;
-  using Std2DArray_t = std::vector<std::vector<double>>;
+  std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+  double cutoff{3.};
+  json hypers{{"max_radial", 6},
+              {"max_angular", 6},
+              {"soap_type", "PowerSpectrum"},
+              {"normalize", true}};
 
-  auto dd{TestData()};
-  std::string filename{"reference_data/sorted_coulomb_reference.ubjson"};
-  dd.get_ref(filename);
+  json fc_hypers{{"type", "Cosine"},
+                 {"cutoff", {{"value", cutoff}, {"unit", "A"}}},
+                 {"smooth_width", {{"value", 0.}, {"unit", "A"}}}};
+  json sigma_hypers{{"type", "Constant"},
+                    {"gaussian_sigma", {{"value", 0.4}, {"unit", "A"}}}};
 
-  size_t manager_i{0};
-  for (const auto & factory_arg : dd.factory_args) {
-    auto manager{make_structure_manager_stack_with_hypers_and_typeholder<
-        ManagerTypeList_t>::apply(factory_arg["structure"],
-                                  factory_arg["adaptors"])};
-    std::cout << factory_arg["structure"]["filename"] << std::endl;
-    for (auto atom : manager) {
-      std::cout << atom.get_atom_type() << std::endl;
-    }
-    const auto & rep_infos{dd.ref_data.at("rep_info").template get<json>()};
+  hypers["cutoff_function"] = fc_hypers;
+  hypers["gaussian_density"] = sigma_hypers;
+  hypers["radial_contribution"] = {{"type", "GTO"}};
 
-    for (const auto & rep_info : rep_infos.at(manager_i)) {
-      const auto & hypers = rep_info.at("hypers").template get<json>();
-      const auto & ref_representation =
-          rep_info.at("feature_matrix").template get<Std2DArray_t>();
+  json structure{{"filename", filename}};
+  json adaptors;
+  json ad1{{"name", "AdaptorNeighbourList"},
+           {"initialization_arguments",
+            {{"cutoff", cutoff}, {"consider_ghost_neighbours", false}}}};
+  json ad2{{"name", "AdaptorStrict"},
+           {"initialization_arguments", {{"cutoff", cutoff}}}};
+  adaptors.emplace_back(ad1);
+  adaptors.emplace_back(ad2);
+  auto manager =
+      make_structure_manager_stack<StructureManagerCenters,
+                                   AdaptorNeighbourList, AdaptorStrict>(
+          structure, adaptors);
+  Representation_t representation{manager, hypers};
+  representation.compute();
 
-      RepresentationManagerSortedCoulomb<Manager_t> representation{manager,
-                                                                   hypers};
-      representation.compute();
+  size_t inner_size{representation.get_feature_size()};
+  FeatureManagerBlockSparse<double> feature{inner_size, hypers};
 
-      const auto & test_representation =
-          representation.get_representation_full();
-
-      for (size_t row_i{0}; row_i < ref_representation.size(); row_i++) {
-        for (size_t col_i{0}; col_i < ref_representation[row_i].size();
-             ++col_i) {
-          auto diff{std::abs(ref_representation[row_i][col_i] -
-                             test_representation(row_i, col_i))};
-          if (diff > 1e-12) {
-            std::cout << diff << "\n";
-          }
-        }
-      }
-    }
-    manager_i += 1;
+  feature.push_back(representation);
+  auto X{feature.get_feature_matrix_dense()};
+  std::cout << "sadfasd" << std::endl;
+  auto n_center{feature.sample_size()};
+  auto norms = X.colwise().norm();
+  std::cout << norms.size() << std::endl;
+  for (int icenter{0}; icenter < n_center; icenter++) {
+    std::cout << norms[icenter] << std::endl;
   }
+
+  auto kernel1 = X.transpose() * X;
+
+  auto kernel2 = dot(feature, feature);
+
+  auto kernel3 = dot(feature);
+
+  auto max1{kernel1.mean()};
+  auto max2{kernel2.mean()};
+  auto diff{(kernel1 - kernel2).array().abs().matrix().mean()};
+
+  std::cout << max1 << ", " << max2 << ", " << diff << std::endl;
+
+  diff = (kernel2 - kernel3).array().abs().matrix().mean();
+
+  std::cout << diff << std::endl;
 
   return (0);
 }
