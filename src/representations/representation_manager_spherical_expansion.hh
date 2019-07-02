@@ -636,10 +636,7 @@ namespace rascal {
 
     SparseProperty_t expansions_coefficients;
 
-    SparseProperty_t expansions_coefficients;
-
    protected:
-   private:
     double interaction_cutoff{};
     double cutoff_smooth_width{};
     size_t max_radial{};

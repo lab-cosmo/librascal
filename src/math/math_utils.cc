@@ -32,6 +32,5 @@
 namespace rascal {
   namespace math {
 
-
   }  // namespace math
 }  // namespace rascal

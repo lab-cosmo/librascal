@@ -89,7 +89,7 @@ namespace rascal {
       using Hypers_t = typename SOAPPrecomputationBase::Hypers_t;
       explicit SOAPPrecomputation(const Hypers_t & hypers) {
         this->max_angular = hypers.at("max_angular");
-        this->l_factors.resize(math::pow(this->max_angular + 1, 2));
+        this->l_factors.resize(math::pow(this->max_angular + 1, 2_z));
 
         size_t lm{0};
         for (size_t l{0}; l < this->max_angular + 1; ++l) {
@@ -123,11 +123,11 @@ namespace rascal {
                 if ((l1 + l2 + l3) % 2 == 1) { continue; }
               }
               for (size_t m1{0}; m1 < 2*l1 + 1; m1++) {
-              int m1s{m1 - l1};
+              int m1s{static_cast<int>(m1 - l1)};
               for (size_t m2{0}; m2 < 2*l2 + 1; m2++) {
-              int m2s{m2 - l2};
+              int m2s{static_cast<int>(m2 - l2)};
               for (size_t m3{0}; m3 < 2*l3 + 1; m3++) {
-              int m3s{m3 - l3};
+              int m3s{static_cast<int>(m3 - l3)};
               if (m1s + m2s + m3s != 0) { continue; }
               ++n_elements;
               }
@@ -149,11 +149,11 @@ namespace rascal {
                 if ((l1 + l2 + l3) % 2 == 1) { continue; }
               }
               for (size_t m1{0}; m1 < 2*l1 + 1; m1++) {
-              int m1s{m1 - l1};
+              int m1s{static_cast<int>(m1 - l1)};
               for (size_t m2{0}; m2 < 2*l2 + 1; m2++) {
-              int m2s{m2 - l2};
+              int m2s{static_cast<int>(m2 - l2)};
               for (size_t m3{0}; m3 < 2*l3 + 1; m3++) {
-              int m3s{m3 - l3};
+              int m3s{static_cast<int>(m3 - l3)};
               if (m1s + m2s + m3s != 0) { continue; }
               this->w3js(n_elements) = wig3jj(2*l1, 2*l2, 2*l3, 2*m1s, 2*m2s, 2*m3s);
               ++n_elements;
@@ -244,9 +244,8 @@ namespace rascal {
         }
       } else if (this->soap_type_str.compare("BiSpectrum") == 0) {
         this->soap_type = internal::SOAPType::BiSpectrum;
-        if (hypers.find("inversion_symmetry") != hypers.end()) {
-          this->inversion_symmetry = hypers.at("inversion_symmetry");
-        }
+        this->inversion_symmetry = hypers.at("inversion_symmetry");
+
       } else {
         throw std::logic_error("Requested SOAP type \'" + this->soap_type_str +
                                "\' has not been implemented.  Must be one of" +
@@ -290,7 +289,7 @@ namespace rascal {
 
     void initialize_percenter_radialspectrum_soap_vectors();
 
-    void initialize_percenter_bispectrum_soap_vectors(const bool& inversion_symmetry);
+    void initialize_percenter_bispectrum_soap_vectors();
 
    protected:
     size_t max_radial{};
@@ -305,6 +304,7 @@ namespace rascal {
         precompute_soap{};
     std::string soap_type_str{};
     std::vector<Precision_t> dummy{};
+    bool inversion_symmetry{false};
   };
 
   template <class Mngr>
@@ -429,15 +429,16 @@ namespace rascal {
 
   template <class Mngr>
   void RepresentationManagerSOAPInvariant<Mngr>::compute_bispectrum() {
+    using internal::SOAPType;
+    using internal::enumValue;
 
     auto precomputation{downcast_soap_precompute<SOAPType::BiSpectrum>(
         this->precompute_soap[enumValue(SOAPType::BiSpectrum)])};
     auto & w3js{precomputation->w3js};
-    auto & inversion_symmetry{precomputation->inversion_symmetry};
 
     rep_expansion.compute();
 
-    this->initialize_percenter_bispectrum_soap_vectors(inversion_symmetry);
+    this->initialize_percenter_bispectrum_soap_vectors();
 
     auto& expansions_coefficients{rep_expansion.expansions_coefficients};
 
@@ -489,7 +490,7 @@ namespace rascal {
                     for (size_t l1{0}; l1 < this->max_angular+1; l1++) {
                       for (size_t l2{0}; l2 < this->max_angular+1; l2++) {
                         for (size_t l3{0}; l3 < this->max_angular+1; l3++) {
-                          if (inversion_symmetry == true) {
+                          if (this->inversion_symmetry == true) {
                             if ((l1 + l2 + l3) % 2 == 1) { continue; }
                           }
 
@@ -499,19 +500,19 @@ namespace rascal {
 
                           for (size_t m1{0}; m1 < 2*l1 + 1; m1++) {
                           int m1s{static_cast<int>(m1 - l1)};
-                          int lm1{math::pow(l1, 2) + m1};
+                          size_t lm1{math::pow(l1, 2_z) + m1};
                           for (size_t m2{0}; m2 < 2*l2 + 1; m2++) {
                           int m2s{static_cast<int>(m2 - l2)};
-                          int lm2{math::pow(l2, 2) + m2};
+                          size_t lm2{math::pow(l2, 2_z) + m2};
                           for (size_t m3{0}; m3 < 2*l3 + 1; m3++) {
                           int m3s{static_cast<int>(m3 - l3)};
                           if (m1s + m2s + m3s != 0) { continue; }
-                          int lm3{math::pow(l3, 2) + m3};
-                          double && w3j = w3js[count];
+                          size_t lm3{math::pow(l3, 2_z) + m3};
+                          double w3j = w3js[count];
                           complex coef1c, coef2c, coef3c;
                           // usual formulae for converting from real to complex
                           if (m1s > 0) {
-                            coef1c = math::pow(-1.0, m1s)* \
+                            coef1c = math::pow(-1, m1s)* \
                                      complex(coef1(n1, lm1), \
                                      coef1(n1, lm1 - 2*m1s));
                           } else if (m1s == 0) {
@@ -583,17 +584,16 @@ namespace rascal {
 
   template <class Mngr>
   void RepresentationManagerSOAPInvariant<
-      Mngr>::initialize_percenter_bispectrum_soap_vectors(const bool& inversion_symmetry) {
-    size_t n_row{math::pow(this->max_radial, 3)};
+      Mngr>::initialize_percenter_bispectrum_soap_vectors() {
+    size_t n_row{math::pow(this->max_radial, 3_z)};
     size_t n_col{0};
-    double max_ang{static_cast<double>(this->max_angular)}
-    if (inversion_symmetry == false) {
+    double max_ang{static_cast<double>(this->max_angular)};
+    if (this->inversion_symmetry == false) {
       n_col = static_cast<size_t>(1.0 + 2.0*max_ang + \
-              1.5*math::pow(max_ang, 2) + \
-              math::pow(max_ang, 3)*0.5);
-    }
-    else {
-      n_col = static_cast<size_t>(std::floor(((math::pow(max_ang + 1.0, 2) + 1)* (2*(max_ang + 1.0) + 3))/8.0));
+              1.5*math::pow(max_ang, 2_z) + \
+              math::pow(max_ang, 3_z)*0.5);
+    } else {
+      n_col = static_cast<size_t>(std::floor(((math::pow(max_ang + 1.0, 2_z) + 1)* (2*(max_ang + 1.0) + 3))/8.0));
     }
 
     // clear the data container and resize it
@@ -631,7 +631,7 @@ namespace rascal {
   template <class Mngr>
   void RepresentationManagerSOAPInvariant<
       Mngr>::initialize_percenter_powerspectrum_soap_vectors() {
-    size_t n_row{math::pow(this->max_radial, 2)};
+    size_t n_row{math::pow(this->max_radial, 2_z)};
     size_t n_col{this->max_angular + 1};
 
     // clear the data container and resize it

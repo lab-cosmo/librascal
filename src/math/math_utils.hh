@@ -36,6 +36,13 @@
 #include <limits>
 
 namespace rascal {
+  /**
+   * User defined literal operator to initialize size_t literals
+   */
+  constexpr std::size_t operator "" _z ( unsigned long long int n ) {
+    return n;
+  }
+
   namespace math {
 
     // Reminder: C++ floating-point literals are automatically of type double
@@ -57,6 +64,9 @@ namespace rascal {
     using Vector_t = Eigen::Matrix<double, 1, Eigen::Dynamic, Eigen::RowMajor>;
 
     using MatrixX2_t = Eigen::Matrix<double, Eigen::Dynamic, 2>;
+
+
+
 
     /**
      * Define integer powers and wrap the different cases under the same name
@@ -108,6 +118,11 @@ namespace rascal {
       return details::pow_i(x, n);
     }
 
+    //! integer power
+    inline double pow(const size_t & x, const int & n) {
+      return details::pow_i(x, n);
+    }
+
     //! unsingned integer power
     inline double pow(const double & x, const std::size_t & n) {
       return details::pow_u(x, n);
@@ -115,6 +130,11 @@ namespace rascal {
 
     //! unsingned integer power
     inline int pow(const int & x, const std::size_t & n) {
+      return details::pow_u(x, n);
+    }
+
+    //! unsingned integer power
+    inline size_t pow(const size_t & x, const std::size_t & n) {
       return details::pow_u(x, n);
     }
 
