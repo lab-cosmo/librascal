@@ -1,5 +1,5 @@
-/**
- * file   representation_manager_soap.hh
+ /**
+ * file   representation_manager_soap_invariant.hh
  *
  * @author Max Veit <max.veit@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
@@ -28,8 +28,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SOAP_HH_
-#define SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SOAP_HH_
+#ifndef SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SOAP_INVARIANT_HH_
+#define SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SOAP_INVARIANT_HH_
 
 #include "representations/representation_manager_base.hh"
 #include "representations/representation_manager_spherical_expansion.hh"
@@ -45,12 +45,11 @@
 #include <vector>
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
-#include <unordered_set>
 
 namespace rascal {
 
   namespace internal {
-    enum class SOAPType { RadialSpectrum, PowerSpectrum, End_ };
+    enum class SOAPType { RadialSpectrum, PowerSpectrum, BiSpectrum, End_ };
 
     /**
      * Base class for the specification of the atomic smearing.
@@ -106,6 +105,73 @@ namespace rascal {
       //! factor of 1 / sqrt(2*l+1) in front of the powerspectrum
       Eigen::VectorXd l_factors{};
     };
+
+    template <>
+    struct SOAPPrecomputation<SOAPType::BiSpectrum>
+        : SOAPPrecomputationBase {
+      using Hypers_t = typename SOAPPrecomputationBase::Hypers_t;
+      explicit SOAPPrecomputation(const Hypers_t & hypers) {
+        this->max_angular = hypers.at("max_angular").get<size_t>();
+        this->inversion_symmetry = hypers.at("inversion_symmetry").get<bool>();
+        // get the number of non zero elements in the w3j
+        int n_elements{0};
+        for (size_t l1{0}; l1 < this->max_angular+1; ++l1) {
+          for (size_t l2{0}; l2 < this->max_angular+1; ++l2) {
+            for (size_t l3{0}; l3 < this->max_angular+1; ++l3) {
+              if (l1 < static_cast<size_t>(std::abs<int>(l2 - l3)) || l1 > l2 + l3) { continue; }
+              if (this->inversion_symmetry == true) {
+                if ((l1 + l2 + l3) % 2 == 1) { continue; }
+              }
+              for (size_t m1{0}; m1 < 2*l1 + 1; m1++) {
+              int m1s{m1 - l1};
+              for (size_t m2{0}; m2 < 2*l2 + 1; m2++) {
+              int m2s{m2 - l2};
+              for (size_t m3{0}; m3 < 2*l3 + 1; m3++) {
+              int m3s{m3 - l3};
+              if (m1s + m2s + m3s != 0) { continue; }
+              ++n_elements;
+              }
+              }
+              }
+            }
+          }
+        }
+
+        this->w3js.resize(n_elements);
+        n_elements = 0;
+        wig_table_init(2*(this->max_angular + 1), 3);
+        wig_temp_init(2*(this->max_angular + 1));
+        for (size_t l1{0}; l1 < this->max_angular+1; ++l1) {
+          for (size_t l2{0}; l2 < this->max_angular+1; ++l2) {
+            for (size_t l3{0}; l3 < this->max_angular+1; ++l3) {
+              if (l1 < static_cast<size_t>(std::abs<int>(l2 - l3)) || l1 > l2 + l3) { continue; }
+              if (this->inversion_symmetry == true) {
+                if ((l1 + l2 + l3) % 2 == 1) { continue; }
+              }
+              for (size_t m1{0}; m1 < 2*l1 + 1; m1++) {
+              int m1s{m1 - l1};
+              for (size_t m2{0}; m2 < 2*l2 + 1; m2++) {
+              int m2s{m2 - l2};
+              for (size_t m3{0}; m3 < 2*l3 + 1; m3++) {
+              int m3s{m3 - l3};
+              if (m1s + m2s + m3s != 0) { continue; }
+              this->w3js(n_elements) = wig3jj(2*l1, 2*l2, 2*l3, 2*m1s, 2*m2s, 2*m3s);
+              ++n_elements;
+              }
+              }
+              }
+            }
+          }
+        }
+        wig_temp_free();
+        wig_table_free();
+      }
+
+      size_t max_angular{0};
+      bool inversion_symmetry{};
+      Eigen::ArrayXd w3js{};
+    };
+
   }  // namespace internal
 
   template <internal::SOAPType Type, class Hypers>
@@ -123,7 +189,7 @@ namespace rascal {
   }
 
   template <class StructureManager>
-  class RepresentationManagerSOAP : public RepresentationManagerBase {
+  class RepresentationManagerSOAPInvariant : public RepresentationManagerBase {
    public:
     using Manager_t = StructureManager;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
@@ -133,28 +199,28 @@ namespace rascal {
         BlockSparseProperty<double, 1, 0, Manager_t, Key_t>;
     using Data_t = typename SparseProperty_t::Data_t;
 
-    RepresentationManagerSOAP(ManagerPtr_t sm, const Hypers_t & hyper)
+    RepresentationManagerSOAPInvariant(ManagerPtr_t sm, const Hypers_t & hyper)
         : soap_vectors{*sm}, structure_manager{sm}, rep_expansion{std::move(sm),
                                                                   hyper} {
       this->set_hyperparameters(hyper);
     }
 
     //! Copy constructor
-    RepresentationManagerSOAP(const RepresentationManagerSOAP & other) = delete;
+    RepresentationManagerSOAPInvariant(const RepresentationManagerSOAPInvariant & other) = delete;
 
     //! Move constructor
-    RepresentationManagerSOAP(RepresentationManagerSOAP && other) = default;
+    RepresentationManagerSOAPInvariant(RepresentationManagerSOAPInvariant && other) = default;
 
     //! Destructor
-    virtual ~RepresentationManagerSOAP() = default;
+    virtual ~RepresentationManagerSOAPInvariant() = default;
 
     //! Copy assignment operator
-    RepresentationManagerSOAP &
-    operator=(const RepresentationManagerSOAP & other) = delete;
+    RepresentationManagerSOAPInvariant &
+    operator=(const RepresentationManagerSOAPInvariant & other) = delete;
 
     //! Move assignment operator
-    RepresentationManagerSOAP &
-    operator=(RepresentationManagerSOAP && other) = default;
+    RepresentationManagerSOAPInvariant &
+    operator=(RepresentationManagerSOAPInvariant && other) = default;
 
     void set_hyperparameters(const Hypers_t & hypers) {
       using internal::enumValue;
@@ -176,10 +242,16 @@ namespace rascal {
         if (this->max_angular > 0) {
           throw std::logic_error("max_angular should be 0 with RadialSpectrum");
         }
+      } else if (this->soap_type_str.compare("BiSpectrum") == 0) {
+        this->soap_type = internal::SOAPType::BiSpectrum;
+        if (hypers.find("inversion_symmetry") != hypers.end()) {
+          this->inversion_symmetry = hypers.at("inversion_symmetry");
+        }
       } else {
         throw std::logic_error("Requested SOAP type \'" + this->soap_type_str +
                                "\' has not been implemented.  Must be one of" +
-                               ": \'PowerSpectrum or RadialSpectrum\'.");
+                               ": \'RadialSpectrum\', \'PowerSpectrum\', " +
+                               "\'BiSpectrum\'.");
       }
     }
 
@@ -208,12 +280,17 @@ namespace rascal {
     //! compute representation \nu == 2
     void compute_powerspectrum();
 
+    //! compute representation \nu == 3
+    void compute_bispectrum();
+
     SparseProperty_t soap_vectors;
 
     //! initialize the soap vectors with only the keys needed for each center
     void initialize_percenter_powerspectrum_soap_vectors();
 
     void initialize_percenter_radialspectrum_soap_vectors();
+
+    void initialize_percenter_bispectrum_soap_vectors(const bool& inversion_symmetry);
 
    protected:
     size_t max_radial{};
@@ -231,7 +308,7 @@ namespace rascal {
   };
 
   template <class Mngr>
-  void RepresentationManagerSOAP<Mngr>::compute() {
+  void RepresentationManagerSOAPInvariant<Mngr>::compute() {
     using internal::SOAPType;
     switch (this->soap_type) {
     case SOAPType::RadialSpectrum:
@@ -240,50 +317,17 @@ namespace rascal {
     case SOAPType::PowerSpectrum:
       this->compute_powerspectrum();
       break;
+    case SOAPType::BiSpectrum:
+      this->compute_bispectrum();
+      break;
     default:
       // Will never reach here (it's an enum...)
       break;
     }
   }
 
-  // template <class Mngr>
-  // void RepresentationManagerSOAP<Mngr>::compute_bispectrum() {
-  //   rep_expansion.compute();
-  //   auto& expansions_coefficients{rep_expansion.expansions_coefficients};
-
-  //   size_t n_row{pow(this->max_radial, 3)};
-  //   size_t n_col{*pow(this->max_angular, 3)*pow((2*this->max_angular + 1),
-  // 3)};
-
-  //   this->soap_vectors.clear();
-  //   this->soap_vectors.set_shape(n_row, n_col);
-  //   this->soap_vectors.resize();
-
-  //   for (auto center : this->structure_manager) {
-  //     auto& coefficients{expansions_coefficients[center]};
-  //     auto& soap_vector{this->soap_vectors[center]};
-  //     Key_t triplet_type{0, 0, 0};
-  //     for (const auto& el1 : coefficients) {
-  //       triplet_type[0] = el1.first[0];
-  //       auto& coef1{el1.second};
-  //       for (const auto& el2 : coefficients) {
-  //         triplet_type[1] = el2.first[0];
-  //         auto& coef2{el2.second};
-  //         for (const auto& el2 : coefficients) {
-  //           triplet_type[2] = el3.first[0];
-  //           auto& coef3{el3.second};
-
-  //           if (soap_vector.count(triplet_type) == 0) {
-  //             soap_vector[triplet_type] = Dense_t::Zero(n_row, n_col);
-  //           }
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
-
   template <class Mngr>
-  void RepresentationManagerSOAP<Mngr>::compute_powerspectrum() {
+  void RepresentationManagerSOAPInvariant<Mngr>::compute_powerspectrum() {
     using internal::enumValue;
     using internal::SOAPType;
     using math::pow;
@@ -356,7 +400,7 @@ namespace rascal {
   }
 
   template <class Mngr>
-  void RepresentationManagerSOAP<Mngr>::compute_radialspectrum() {
+  void RepresentationManagerSOAPInvariant<Mngr>::compute_radialspectrum() {
     rep_expansion.compute();
     using math::pow;
 
@@ -382,10 +426,212 @@ namespace rascal {
     }
   }
 
+
   template <class Mngr>
-  void RepresentationManagerSOAP<
+  void RepresentationManagerSOAPInvariant<Mngr>::compute_bispectrum() {
+
+    auto precomputation{downcast_soap_precompute<SOAPType::BiSpectrum>(
+        this->precompute_soap[enumValue(SOAPType::BiSpectrum)])};
+    auto & w3js{precomputation->w3js};
+    auto & inversion_symmetry{precomputation->inversion_symmetry};
+
+    rep_expansion.compute();
+
+    this->initialize_percenter_bispectrum_soap_vectors(inversion_symmetry);
+
+    auto& expansions_coefficients{rep_expansion.expansions_coefficients};
+
+    using complex = std::complex<double>;
+
+    // factor that takes into acount the missing equivalent off diagonal
+    // element with respect to the key (or species) index
+    double mult{1.0};
+
+    for (auto center : this->structure_manager) {
+      auto& coefficients{expansions_coefficients[center]};
+      auto& soap_vector{this->soap_vectors[center]};
+      Key_t triplet_type{0, 0, 0};
+      for (const auto& el1: coefficients) {
+        triplet_type[0] = el1.first[0];
+        auto& coef1{el1.second};
+        for (const auto& el2: coefficients) {
+          triplet_type[1] = el2.first[0];
+          auto& coef2{el2.second};
+          for (const auto& el3: coefficients) {
+            triplet_type[2] = el3.first[0];
+            auto& coef3{el3.second};
+            // triplet multiplicity
+            // all the same
+            if (triplet_type[0] == triplet_type[1] && \
+                triplet_type[1] == triplet_type[2]) {
+              mult = 1.0;
+            }
+            // two the same
+            else if (triplet_type[0] == triplet_type[1] || \
+                     triplet_type[0] == triplet_type[2] || \
+                     triplet_type[1] == triplet_type[2]) {
+              mult = std::sqrt(3.0);
+            }
+            // all different
+            else {
+              mult = std::sqrt(6.0);
+            }
+
+            if (soap_vector.count(triplet_type) == 0) {
+              auto && soap_vector_by_type{soap_vector[triplet_type]};
+
+              size_t nn{0};
+              for (size_t n1{0}; n1 < this->max_radial; n1++) {
+                for (size_t n2{0}; n2 < this->max_radial; n2++) {
+                  for (size_t n3{0}; n3 < this->max_radial; n3++) {
+                    size_t l0{0};
+                    int count{0};
+                    for (size_t l1{0}; l1 < this->max_angular+1; l1++) {
+                      for (size_t l2{0}; l2 < this->max_angular+1; l2++) {
+                        for (size_t l3{0}; l3 < this->max_angular+1; l3++) {
+                          if (inversion_symmetry == true) {
+                            if ((l1 + l2 + l3) % 2 == 1) { continue; }
+                          }
+
+                          if (l1 < static_cast<size_t>(std::abs<int>(l2 - l3)) || l1 > l2 + l3) {
+                            continue;
+                          }
+
+                          for (size_t m1{0}; m1 < 2*l1 + 1; m1++) {
+                          int m1s{static_cast<int>(m1 - l1)};
+                          int lm1{math::pow(l1, 2) + m1};
+                          for (size_t m2{0}; m2 < 2*l2 + 1; m2++) {
+                          int m2s{static_cast<int>(m2 - l2)};
+                          int lm2{math::pow(l2, 2) + m2};
+                          for (size_t m3{0}; m3 < 2*l3 + 1; m3++) {
+                          int m3s{static_cast<int>(m3 - l3)};
+                          if (m1s + m2s + m3s != 0) { continue; }
+                          int lm3{math::pow(l3, 2) + m3};
+                          double && w3j = w3js[count];
+                          complex coef1c, coef2c, coef3c;
+                          // usual formulae for converting from real to complex
+                          if (m1s > 0) {
+                            coef1c = math::pow(-1.0, m1s)* \
+                                     complex(coef1(n1, lm1), \
+                                     coef1(n1, lm1 - 2*m1s));
+                          } else if (m1s == 0) {
+                            coef1c = complex(coef1(n1, lm1), 0.0)* \
+                                     std::sqrt(2.0);
+                          } else if (m1s < 0) {
+                            coef1c = complex(coef1(n1, lm1 - 2*m1s), \
+                                     -coef1(n1, lm1));
+                          }
+                          if (m2s > 0) {
+                            coef2c = math::pow(-1.0, m2s)* \
+                                     complex(coef2(n2, lm2), \
+                                     coef2(n2, lm2 - 2*m2s));
+                          } else if (m2s == 0) {
+                            coef2c = complex(coef2(n2, lm2), 0.0)* \
+                                     std::sqrt(2.0);
+                          } else if (m2s < 0) {
+                            coef2c = complex(coef2(n2, lm2 - 2*m2s), \
+                                     -coef2(n2, lm2));
+                          }
+                          if (m3s > 0) {
+                            coef3c = math::pow(-1.0, m3s)* \
+                                     complex(coef3(n3, lm3), \
+                                     coef3(n3, lm3 - 2*m3s));
+                          } else if (m3s == 0) {
+                            coef3c = complex(coef3(n3, lm3), 0.0)* \
+                                     std::sqrt(2.0);
+                          } else if (m3s < 0) {
+                            coef3c = complex(coef3(n3, lm3 - 2*m3s), \
+                                     -coef3(n3, lm3));
+                          }
+                          coef1c /= std::sqrt(2.0);
+                          coef2c /= std::sqrt(2.0);
+                          coef3c /= std::sqrt(2.0);
+                          // The descriptor components are purely real or
+                          // imaginary
+                          // depending on the divisibility of l1 + l2 +l3 by 2.
+                          if ((l1 + l2 + l3) % 2 == 0) {
+                            soap_vector_by_type(nn, l0) += \
+                              w3j*mult*(coef1c*coef2c*coef3c).real();
+                          } else {
+                            soap_vector_by_type(nn, l0) += \
+                              w3j*mult*(coef1c*coef2c*coef3c).imag();
+                          }
+                          count++;
+                          } // m3
+                          } // m2
+                          } // m1
+                          l0++;
+                        } // l3
+                      } // l2
+                    } // l1
+                    nn++;
+                  } // n3
+                } // n2
+              } // n1
+            } // if count triplet
+          } // coef3
+        } // coef2
+      } // coef1
+
+      // normalize the soap vector
+      if (this->normalize) {
+        soap_vector.normalize();
+      }
+
+    } // center
+  }  // end function
+
+  template <class Mngr>
+  void RepresentationManagerSOAPInvariant<
+      Mngr>::initialize_percenter_bispectrum_soap_vectors(const bool& inversion_symmetry) {
+    size_t n_row{math::pow(this->max_radial, 3)};
+    size_t n_col{0};
+    double max_ang{static_cast<double>(this->max_angular)}
+    if (inversion_symmetry == false) {
+      n_col = static_cast<size_t>(1.0 + 2.0*max_ang + \
+              1.5*math::pow(max_ang, 2) + \
+              math::pow(max_ang, 3)*0.5);
+    }
+    else {
+      n_col = static_cast<size_t>(std::floor(((math::pow(max_ang + 1.0, 2) + 1)* (2*(max_ang + 1.0) + 3))/8.0));
+    }
+
+    // clear the data container and resize it
+    this->soap_vectors.clear();
+    this->soap_vectors.set_shape(n_row, n_col);
+    this->soap_vectors.resize();
+
+    auto & expansions_coefficients{rep_expansion.expansions_coefficients};
+
+    // identify the species in each environment and initialize soap_vectors
+    for (auto center : this->structure_manager) {
+      auto & coefficients{expansions_coefficients[center]};
+      auto & soap_vector{this->soap_vectors[center]};
+      internal::Sorted<false> is_not_sorted{};
+
+      std::vector<internal::SortedKey<Key_t>> triplet_list{};
+      auto & center_type{center.get_atom_type()};
+      Key_t triplet_type{center_type, center_type, center_type};
+      // TODO(felix) optimize this loop
+      for (const auto& el1: coefficients) {
+        triplet_type[0] = el1.first[0];
+        for (const auto& el2: coefficients) {
+          triplet_type[1] = el2.first[0];
+          for (const auto& el3: coefficients) {
+            triplet_type[2] = el3.first[0];
+            triplet_list.emplace_back(is_not_sorted, triplet_type);
+          }
+        }
+      }
+      // initialize the power spectrum with the proper dimension
+      soap_vector.resize(triplet_list, n_row, n_col);
+    }
+  }
+
+  template <class Mngr>
+  void RepresentationManagerSOAPInvariant<
       Mngr>::initialize_percenter_powerspectrum_soap_vectors() {
-    size_t n_row{static_cast<size_t>(pow(this->max_radial, 2))};
+    size_t n_row{math::pow(this->max_radial, 2)};
     size_t n_col{this->max_angular + 1};
 
     // clear the data container and resize it
@@ -406,8 +652,6 @@ namespace rascal {
       Key_t pair_type{center_type, center_type};
       // avoid checking the order in pair_type by ensuring it has already been
       // done
-      internal::SortedKey<Key_t> spair_type{is_sorted, pair_type};
-
       pair_list.emplace_back(is_sorted, pair_type);
       for (const auto & el1 : coefficients) {
         auto && neigh1_type{el1.first[0]};
@@ -436,7 +680,7 @@ namespace rascal {
   }
 
   template <class Mngr>
-  void RepresentationManagerSOAP<
+  void RepresentationManagerSOAPInvariant<
       Mngr>::initialize_percenter_radialspectrum_soap_vectors() {
     size_t n_row{this->max_radial};
     size_t n_col{1};

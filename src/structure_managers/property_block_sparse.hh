@@ -340,6 +340,9 @@ namespace rascal {
         data_ref /= data_ref.norm();
       }
 
+      /**
+       * relevant only when the keys have 2 indices
+       */
       inline void multiply_offdiagonal_elements_by(const double & fac) {
         for (const auto & el : this->map) {
           auto && pair_type{el.first};
