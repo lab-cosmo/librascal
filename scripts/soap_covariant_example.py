@@ -91,10 +91,16 @@ def dump_reference_json():
                                       "max_angular": max_angular,
                                       "gaussian_sigma_type": "Constant",
                                       "gaussian_sigma_constant": gaussian_sigma,
+                                      "cutoff_function_type":"Cosine",
+                                      "radial_basis":"GTO",
+                                      "normalize": True,
                                       "soap_type": soap_type,
                                       "inversion_symmetry" : False,
                                       "lam" : 1}
-                            x = get_feature_vector(hypers, frames)
+                            soap = SOAPCovariant(**hypers)
+                            soap_vectors = soap.transform(frames)
+                            x = soap_vectors.get_feature_matrix()
+                            # x = get_feature_vector(hypers, frames)
                             data['rep_info'][-1].append(dict(feature_matrix=x.tolist(),
                                                 hypers=copy(hypers)))
 

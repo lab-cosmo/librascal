@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 
 import sys
 sys.path.insert(0,'../build/')
@@ -85,20 +84,28 @@ def dump_reference_json():
                 for gaussian_sigma in gaussian_sigmas:
                     for max_radial in max_radials:
                         for max_angular in max_angulars:
+                            if 'RadialSpectrum' == soap_type:
+                                max_angular = 0
+                            if "BiSpectrum" == soap_type:
+                                max_radial = 2
+                                max_angular = 1
+                                inversion_symmetry = True
+
                             hypers = {"interaction_cutoff": cutoff,
                                     "cutoff_smooth_width": 0.0,
                                     "max_radial": max_radial,
                                     "max_angular": max_angular,
                                     "gaussian_sigma_type": "Constant",
+                                    "normalize": True,
+                                    "cutoff_function_type":"Cosine",
+                                    "radial_basis":"GTO",
                                     "gaussian_sigma_constant": gaussian_sigma,
-                                    "soap_type": soap_type }
-                            if "RadialSpectrum" == soap_type:
-                                hypers["max_angular"] = 0
-                            if "BiSpectrum" == soap_type:
-                                hypers["max_radial"] = 2
-                                hypers["max_angular"] = 1
-                                hypers["inversion_symmetry"] = True
-                            x = get_feature_vector(hypers, frames)
+                                    "soap_type": soap_type,
+                                    "inversion_symmetry": inversion_symmetry, }
+                            soap = SOAPInvariant(**hypers)
+                            soap_vectors = soap.transform(frames)
+                            x = soap_vectors.get_feature_matrix()
+                            # x = get_feature_vector(hypers, frames)
                             data['rep_info'][-1].append(dict(feature_matrix=x.tolist(),
                                                 hypers=copy(hypers)))
 
@@ -108,7 +115,7 @@ def dump_reference_json():
 ##########################################################################################
 ##########################################################################################
 
-def main(json_dump):
+def main(json_dump, save_kernel):
 
     nmax = 9
     lmax = 5
@@ -137,7 +144,8 @@ def main(json_dump):
     x = x.T #Eigen column major
     x = normalise(x)
     kernel = np.dot(x, x.T)
-    np.save('kernel_soap_example_nu1.npy', kernel)
+    if save_kernel is True:
+        np.save('kernel_soap_example_nu1.npy', kernel)
 
 #------------------------------------------nu=2------------------------------------------#
 
@@ -146,7 +154,8 @@ def main(json_dump):
     x = x.T #Eigen column major
     x = normalise(x)
     kernel = np.dot(x, x.T)
-    np.save('kernel_soap_example_nu2.npy', kernel)
+    if save_kernel is True:
+        np.save('kernel_soap_example_nu2.npy', kernel)
 
 #------------------------------------------nu=3------------------------------------------#
 
@@ -164,7 +173,8 @@ def main(json_dump):
     x = x.T #Eigen column major
     x = normalise(x)
     kernel = np.dot(x, x.T)
-    np.save('kernel_soap_example_nu3.npy', kernel)
+    if save_kernel is True:
+        np.save('kernel_soap_example_nu3.npy', kernel)
 
 #--------------------------------dump json reference data--------------------------------#
 
@@ -177,5 +187,6 @@ def main(json_dump):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-json_dump', action='store_true', help='Switch for dumping json')
+    parser.add_argument('-save_kernel', action='store_true', help='Switch for dumping json')
     args = parser.parse_args()
-    main(args.json_dump)
+    main(args.json_dump, args.save_kernel)
