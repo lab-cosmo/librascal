@@ -76,11 +76,11 @@ namespace rascal {
               if ((l1 + l2 + l3) % 2 == 1) { continue; }
             }
             for (size_t m1{0}; m1 < 2*l1 + 1; m1++) {
-            int m1s{m1 - l1};
+            int m1s{static_cast<int>(m1 - l1)};
             for (size_t m2{0}; m2 < 2*l2 + 1; m2++) {
-            int m2s{m2 - l2};
+            int m2s{static_cast<int>(m2 - l2)};
             for (size_t m3{0}; m3 < 2*l3 + 1; m3++) {
-            int m3s{m3 - l3};
+            int m3s{static_cast<int>(m3 - l3)};
             if (m1s + m2s + m3s != 0 && m1s + m2s - m3s != 0) { continue; }
             ++n_elements;
             }
@@ -100,18 +100,18 @@ namespace rascal {
               if ((l1 + l2 + l3) % 2 == 1) { continue; }
             }
             for (size_t m1{0}; m1 < 2*l1 + 1; m1++) {
-            int m1s{m1 - l1};
+            int m1s{static_cast<int>(m1 - l1)};
             for (size_t m2{0}; m2 < 2*l2 + 1; m2++) {
-            int m2s{m2 - l2};
+            int m2s{static_cast<int>(m2 - l2)};
             for (size_t m3{0}; m3 < 2*l3 + 1; m3++) {
-            int m3s{m3 - l3};
+            int m3s{static_cast<int>(m3 - l3)};
             if (m1s + m2s + m3s != 0 && m1s + m2s - m3s != 0) { continue; }
             double w3j1{wig3jj(2*l1, 2*l2, 2*l3, 2*m1s, 2*m2s, 2*m3s)};
             double w3j2{wig3jj(2*l1, 2*l2, 2*l3, 2*m1s, 2*m2s, -2*m3s)};
             if (m3s > 0) {
               this->w3js(n_elements) = (w3j2 + math::pow(-1, m3s)*w3j1)/std::sqrt(2.0);
             } else if (m3s < 0) {
-              this->w3js(n_elements) = ((w3j1 - math::pow(-1, m3s)*w3j2))/std::sqrt(2.0));
+              this->w3js(n_elements) = ((w3j1 - math::pow(-1, m3s)*w3j2))/std::sqrt(2.0);
             } else if (m3s == 0) {
               this->w3js(n_elements) = w3j1;
             }
@@ -196,6 +196,7 @@ namespace rascal {
       this->soap_type_str = hypers.at("soap_type").get<std::string>();
       this->lambda = hypers.at("lam").get<size_t>();
       this->inversion_symmetry = hypers.at("inversion_symmetry").get<bool>();
+      this->normalize = hypers.at("normalize").get<bool>();
 
       if (this->soap_type_str.compare("LambdaSpectrum") == 0) {
         this->soap_type = SOAPCovariantType::LambdaSpectrum;
@@ -213,7 +214,7 @@ namespace rascal {
       return this->dummy;
     }
 
-    data_t & get_representation_sparse_raw_data() {
+    Data_t & get_representation_sparse_raw_data() {
       return this->soap_vectors.get_raw_data();
     }
 
@@ -248,6 +249,7 @@ namespace rascal {
     std::vector<Precision_t> dummy{};
     bool inversion_symmetry{false};
     size_t lambda{0};
+    bool normalize{true};
   };
 
   template <class Mngr>
@@ -268,23 +270,23 @@ namespace rascal {
       Mngr>::initialize_percenter_lambda_soap_vectors() {
     using math::pow;
 
-    size_t n_row{pow(this->max_radial, 2)};
+    size_t n_row{pow(this->max_radial, 2_z)};
     // number of combinations of l1 and l2 satisfying the triangle constraint
     size_t n_col{0};
     if (this->inversion_symmetry == false) {
-      n_col = static_cast<size_t>((2 + this->lambda - 3*pow(this->lambda, 2) + 2*this->max_angular + 4*this->lambda*this->max_angular)/2*(2*this->lambda + 1));
+      n_col = static_cast<size_t>((2 + this->lambda - 3*pow(this->lambda, 2_z) + 2*this->max_angular + 4*this->lambda*this->max_angular)/2*(2*this->lambda + 1));
     }
     else {
       n_col = static_cast<size_t>(
-              std::ceil(pow(this->max_angular + 1, 2)/2.0) -
+              std::ceil(pow(this->max_angular + 1, 2_z)/2.0) -
               pow(1.0 + std::floor((this->lambda - 1)/2.0), 2) -
-              std::floor(pow(this->max_angular + 1 - this->lambda, 2)/2.0)*
+              std::floor(pow(this->max_angular + 1 - this->lambda, 2_z)/2.0)*
               (this->lambda % 2) -
-              (std::ceil(pow(this->max_angular + 1 - this->lambda, 2)/2.0) -
+              (std::ceil(pow(this->max_angular + 1 - this->lambda, 2_z)/2.0) -
               (this->max_angular - this->lambda + 1))*(1.0 - this->lambda % 2))* (2*this->lambda + 1);
       if (this->lambda % 2 == 1) {
         n_col = static_cast<size_t>(
-                0.5*(2.0 + this->lambda - 3.0*pow(this->lambda, 2) +
+                0.5*(2 + this->lambda - 3*pow(this->lambda, 2_z) +
                 2*this->max_angular + 4*this->lambda*this->max_angular)*
                 (2*this->lambda + 1) - static_cast<int>(n_col));
       }
@@ -307,13 +309,12 @@ namespace rascal {
       auto & center_type{center.get_atom_type()};
       Key_t pair_type{center_type, center_type};
       // TODO(felix) optimize this loop
-      Key_t pair_type{0, 0};
       for (const auto& el1: coefficients) {
         pair_type[0] = el1.first[0];
         for (const auto& el2: coefficients) {
           pair_type[1] = el2.first[0];
           pair_list.emplace_back(is_not_sorted, pair_type);
-          }
+
         }
       }
       // initialize the power spectrum with the proper dimension
@@ -336,10 +337,13 @@ namespace rascal {
         this->precompute_soap[enumValue(SOAPCovariantType::LambdaSpectrum)])};
     auto & w3js{precomputation->w3js};
 
+    Key_t p_type{0, 0};
+    internal::SortedKey<Key_t> pair_type{p_type};
+
     for (auto center : this->structure_manager) {
       auto& coefficients{expansions_coefficients[center]};
       auto& soap_vector{this->soap_vectors[center]};
-      Key_t pair_type{0, 0};
+
       for (const auto& el1: coefficients) {
         pair_type[0] = el1.first[0];
         auto& coef1{el1.second};
@@ -348,7 +352,7 @@ namespace rascal {
           auto& coef2{el2.second};
 
           size_t& l3{this->lambda};
-          if (soap_vector.count(pair_type) == 0) {
+          if (soap_vector.count(pair_type) == 1) {
             auto&& soap_vector_by_type{soap_vector[pair_type]};
 
             size_t nn{0};
@@ -363,14 +367,14 @@ namespace rascal {
                       if ((l1 + l2 + l3) % 2 == 1) { continue; }
                     }
                     for (size_t m3{0}; m3 < 2*l3 + 1; m3++) {
-                      int m3s{m3 - l3};
+                      int m3s{static_cast<int>(m3 - l3)};
                       for (size_t m1{0}; m1 < 2*l1 + 1; m1++) {
-                        int m1s{m1 - l1};
-                        int lm1{pow(l1, 2) + m1};
+                        int m1s{static_cast<int>(m1 - l1)};
+                        size_t lm1{pow(l1, 2_z) + m1};
                         for (size_t m2{0}; m2 < 2*l2 + 1; m2++) {
-                          int m2s{m2 - l2};
+                          int m2s{static_cast<int>(m2 - l2)};
                           if (m1s + m2s + m3s != 0 && m1s + m2s - m3s != 0) { continue; }
-                          int lm2{pow(l2, 2) + m2};
+                          size_t lm2{pow(l2, 2_z) + m2};
                           complex coef1c, coef2c;
                           double& w3j = w3js[count];
                           // usual formulae for converting from real to complex

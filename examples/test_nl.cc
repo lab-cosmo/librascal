@@ -53,9 +53,11 @@ using Representation_t = RepresentationManagerSOAPInvariant<
 int main() {
   std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
   double cutoff{3.};
-  json hypers{{"max_radial", 6},
-              {"max_angular", 6},
-              {"soap_type", "PowerSpectrum"},
+  json hypers{{"max_radial", 2},
+              {"max_angular", 2},
+            //   {"soap_type", "PowerSpectrum"},
+              {"soap_type", "BiSpectrum"},
+              {"inversion_symmetry", false},
               {"normalize", true}};
 
   json fc_hypers{{"type", "Cosine"},
@@ -97,6 +99,23 @@ int main() {
     std::cout << norms[icenter] << std::endl;
   }
 
+  std::cout << "Sample SOAP elements \n"
+            << X(0, 0) << " " << X(0, 1) << " " << X(0, 2) << "\n"
+            << X(1, 0) << " " << X(1, 1) << " " << X(1, 2) << "\n"
+            << X(2, 0) << " " << X(2, 1) << " " << X(2, 2) << "\n";
+
+  // auto& soap_vectors = representation.soap_vectors;
+
+  // for (auto center : manager) {
+  //   auto& soap_vector = soap_vectors[center];
+  //   for (auto el : soap_vector) {
+  //     auto& key = el.first;
+  //     auto& soap_vector_by_species = el.second;
+  //     std::cout << soap_vector_by_species << std::endl;
+  //     break;
+  //   }
+  // }
+  
   auto kernel1 = X.transpose() * X;
 
   auto kernel2 = dot(feature, feature);

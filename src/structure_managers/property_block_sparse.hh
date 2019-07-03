@@ -74,7 +74,7 @@ namespace rascal {
       Key_t data;
       using Value_t = typename Key_t::value_type;
 
-      explicit SortedKey(const Key_t & key) : data{std::move(key)} {
+      explicit SortedKey(const Key_t & key) : data{key} {
         if (data.size() > 1) {
           std::sort(data.begin(), data.end());
         }
@@ -83,7 +83,7 @@ namespace rascal {
       SortedKey(const Sorted<false> &, const Key_t & key) : SortedKey{key} {}
 
       SortedKey(const Sorted<true> &, const Key_t & key)
-          : data{std::move(key)} {}
+          : data{key} {}
 
       Key_t copy_sort(const Key_t & key) {
         Key_t skey{key};

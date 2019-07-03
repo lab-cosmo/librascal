@@ -129,7 +129,7 @@ namespace rascal {
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "A"}}}}};
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
 
-    std::vector<json> hypers{{{"max_radial", 6},
+    std::vector<json> rep_hypers{{{"max_radial", 6},
                               {"max_angular", 0},
                               {"soap_type", "RadialSpectrum"},
                               {"normalize", true}},

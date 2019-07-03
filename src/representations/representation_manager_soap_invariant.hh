@@ -244,6 +244,8 @@ namespace rascal {
         }
       } else if (this->soap_type_str.compare("BiSpectrum") == 0) {
         this->soap_type = internal::SOAPType::BiSpectrum;
+        this->precompute_soap[enumValue(SOAPType::BiSpectrum)] =
+                make_soap_precompute<SOAPType::BiSpectrum>(hypers);
         this->inversion_symmetry = hypers.at("inversion_symmetry");
 
       } else {
@@ -447,11 +449,12 @@ namespace rascal {
     // factor that takes into acount the missing equivalent off diagonal
     // element with respect to the key (or species) index
     double mult{1.0};
-
+    Key_t trip_type{0, 0, 0};
+    internal::SortedKey<Key_t> triplet_type{trip_type};
     for (auto center : this->structure_manager) {
       auto& coefficients{expansions_coefficients[center]};
       auto& soap_vector{this->soap_vectors[center]};
-      Key_t triplet_type{0, 0, 0};
+
       for (const auto& el1: coefficients) {
         triplet_type[0] = el1.first[0];
         auto& coef1{el1.second};
@@ -478,7 +481,7 @@ namespace rascal {
               mult = std::sqrt(6.0);
             }
 
-            if (soap_vector.count(triplet_type) == 0) {
+            if (soap_vector.count(triplet_type) == 1) {
               auto && soap_vector_by_type{soap_vector[triplet_type]};
 
               size_t nn{0};
