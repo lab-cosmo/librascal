@@ -63,7 +63,8 @@ class SOAPInvariant(object):
     def __init__(self, interaction_cutoff, cutoff_smooth_width,
                  max_radial, max_angular, gaussian_sigma_type,
                  gaussian_sigma_constant=0., n_species=1,
-                 soap_type="PowerSpectrum", inversion_symmetry=True):
+                 soap_type="PowerSpectrum", inversion_symmetry=True,
+                 radial_basis="GTO"):
         """Construct a SphericalExpansion representation
 
         Required arguments are all the hyperparameters named in the
@@ -72,14 +73,36 @@ class SOAPInvariant(object):
         self.name = 'soapinvariant'
         self.hypers = dict()
         self.update_hyperparameters(
-            interaction_cutoff=interaction_cutoff,
-            cutoff_smooth_width=cutoff_smooth_width,
             max_radial=max_radial, max_angular=max_angular,
-            gaussian_sigma_type=gaussian_sigma_type,
-            gaussian_sigma_constant=gaussian_sigma_constant,
             n_species=n_species,
             soap_type=soap_type,
             inversion_symmetry=inversion_symmetry)
+
+        cutoff_function = dict(
+            type="Cosine",
+            cutoff=dict(
+                value=interaction_cutoff,
+                unit='A'
+            ),
+            smooth_width=dict(
+                value=cutoff_smooth_width,
+                unit='A'
+            ),
+        )
+        gaussian_density = dict(
+            type=gaussian_sigma_type,
+            gaussian_sigma=dict(
+                value=gaussian_sigma_constant,
+                unit='A'
+            ),
+        )
+        radial_contribution = dict(
+            type=radial_basis,
+        )
+
+        self.update_hyperparameters(cutoff_function=cutoff_function,
+                                    gaussian_density=gaussian_density,
+                                radial_contribution=radial_contribution)
 
         if soap_type == "RadialSpectrum":
             self.update_hyperparameters(max_angular=0)
