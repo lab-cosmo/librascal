@@ -71,7 +71,7 @@ int main(int argc, char * argv[]) {
               //{"normalize", true}};
 
   json fc_hypers{{"type", "Cosine"},
-                 {"cutoff", {{"value", cutoff}, {"unit", "A"}}},
+                 {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
                  {"smooth_width", {{"value", 0.5}, {"unit", "A"}}}};
   json sigma_hypers{{"type", "Constant"},
                     {"gaussian_sigma", {{"value", 0.4}, {"unit", "A"}}}};
