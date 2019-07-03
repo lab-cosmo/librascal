@@ -164,18 +164,22 @@ namespace rascal {
       Vector_t angular_coeffs1{};
       Vector_t angular_coeffs2{};
       Vector_t harmonics{};
-      Matrix_t harmonics_derivatives{};
       Matrix_t assoc_legendre_polynom{};
       MatrixX2_t cos_sin_m_phi{};
       Matrix_t coeff_a{};
       Matrix_t coeff_b{};
-      bool calculate_gradients{false};
+      // derivative related member variables
+      bool calculate_derivatives{false};
+      Matrix_t harmonics_derivatives{};
+      Matrix_t plm_factors{};
+      Vector_t legendre_polynom_differences{};
+      Vector_t phi_derivative_factors{};      
 
      public:
       SphericalHarmonics() {}
 
-      SphericalHarmonics(bool calculate_gradients) :
-         calculate_gradients{calculate_gradients} {}
+      SphericalHarmonics(bool calculate_derivatives) :
+         calculate_derivatives{calculate_derivatives} {}
 
       // Precomputes as many parameters as possible
       void precompute(size_t max_angular) {
@@ -185,10 +189,6 @@ namespace rascal {
         // 1);
         this->harmonics =
             Vector_t::Zero((this->max_angular + 1) * (this->max_angular + 1));
-        if (calculate_gradients) {
-          this->harmonics_derivatives =
-              Matrix_t::Zero(3, pow(max_angular + 1, 2));
-        }
         this->assoc_legendre_polynom =
 -           Matrix_t::Zero(this->max_angular + 1, this->max_angular + 2);
         // TODO(alex) reduce to this->max_angular + 1) or merge with micheles branch which alread has done this
@@ -219,6 +219,27 @@ namespace rascal {
           angular_coeffs1(angular_l) = sqrt(2 * angular_l + 1);
           angular_coeffs2(angular_l) = -sqrt(1.0 + 0.5 / angular_l);
         }
+
+        if (calculate_derivatives) {
+          this->harmonics_derivatives =
+              Matrix_t::Zero(3, pow(this->max_angular + 1, 2));
+          this->plm_factors =
+              Matrix_t::Zero(this->max_angular + 1, this->max_angular + 1);
+          // TODO(alex) can be done with broadcasting
+          for (size_t angular_l{0}; angular_l < this->max_angular + 1;
+               angular_l++) {
+            Vector_t m_counts = Eigen::VectorXd::LinSpaced(angular_l+1,0,angular_l);
+            this->plm_factors.row(angular_l) =
+              ((angular_l - m_counts.array()) *
+               (angular_l + m_counts.array() + 1)).sqrt();
+          }
+          this->legendre_polynom_differences =
+              Vector_t::Zero(this->max_angular);
+          this->phi_derivative_factors =
+              Vector_t::Zero(this->max_angular);
+        }
+
+
       }
 
       // computation from here
@@ -266,41 +287,16 @@ namespace rascal {
       }
 
       /**
-       * Compute a full set of spherical harmonics given a direction vector
+       * Compute a full set of spherical harmonics given a direction vector.
+       * If calculate_derivatives flag is on, the derivatives are additionally
+       * computed.
        *
-       * Follows the algorithm described in https://arxiv.org/abs/1410.1748
-       *
-       * In brief, this computes the real spherical harmonics where the
-       * imaginary components of the usual complex functions are instead stored
-       * in the negative-m indices:
-       *
-       *               ╭ √((2l+1)/(2*π) * (l+m)!/(l-m)!) P_l^-m(cos(θ)) sin(-mφ)
-       *               |                                              for m<0
-       *               |
-       * Y_l^m(θ, φ) = ┤ √((2l+1)/(4*π)) P_l(cos(θ)) for m==0
-       *               |
-       *               | √((2l+1)/(2*π) * (l-m)!/(l+m)!) P_l^m(cos(θ)) cos(mφ)
-       *               ╰                                              for m>0
-       *
-       * In case you're wondering why it's 1/2π on the m=/=0 components (instead
-       * of 1/4π), there's an extra factor of 1/2 that comes from integrating
-       * cos² or sin² over the full circle of φ, so these are indeed normalized
-       * in the same sense as the complex spherical harmonics:
-       *
-       * ∫∫_(Sphere) dΩ Y_l^m(θ, φ) Y_l'^m'(θ, φ) = δ_(ll')δ_(mm')
-       *
-       * (this extra factor of 1/√2 is not included in the normalization of the
-       * associated Legendre polynomials defined above; however, all other
-       * normalization factors are.)
-       *
-       * @param direction Unit vector giving the angles (arguments for the
+       * @param Direction unit vector giving the angles (arguments for the
        * Y_l^m)
        *
-       * @param max_angular Compute up to this angular momentum number (l_max)
-       *
-       * @return  (Eigen)vector containing the results.
-       *          Sized (l_max+1)**2, contains the l,m components in compressed
-       *          format, i.e. (00)(1-1)(10)(11)(2-2)....
+       * @return Void, results have to be retrieved with get functions
+       * 
+       * @warning Throws warning, if vector is not normalized. 
        */
       void calc(const Eigen::Ref<const Eigen::Vector3d> & direction) {
         using math::pow;
@@ -335,7 +331,7 @@ namespace rascal {
         this->compute_cos_sin_angle_multiples(cos_phi, sin_phi);
       
         this->compute_spherical_harmonics();
-        if (calculate_gradients) {
+        if (calculate_derivatives) {
           // A rose, by any other name, would have the same exact value
           // double sin_theta = sqrt(1.0 - cos_theta*cos_theta);
           double sin_theta{sqrt_xy};
@@ -381,11 +377,46 @@ namespace rascal {
         }
       }
 
+    /**
+     * Compute a full set of spherical harmonics given a direction vector
+     *
+     * Follows the algorithm described in https://arxiv.org/abs/1410.1748
+     *
+     * In brief, this computes the real spherical harmonics where the imaginary
+     * components of the usual complex functions are instead stored in the
+     * negative-m indices:
+     *
+     *               ╭ √((2l+1)/(2*π) * (l+m)!/(l-m)!) P_l^-m(cos(θ)) sin(-mφ)
+     *               |                                                  for m<0
+     * Y_l^m(θ, φ) = ┤ √((2l+1)/(4*π)) P_l(cos(θ)) for m==0
+     *               |
+     *               ╰ √((2l+1)/(2*π) * (l-m)!/(l+m)!) P_l^m(cos(θ)) cos(mφ)
+     *                                                                  for m>0
+     *
+     * In case you're wondering why it's 1/2π on the m=/=0 components (instead
+     * of 1/4π), there's an extra factor of 1/2 that comes from integrating cos²
+     * or sin² over the full circle of φ, so these are indeed normalized in the
+     * same sense as the complex spherical harmonics:
+     *
+     * ∫∫_(Sphere) dΩ Y_l^m(θ, φ) Y_l'^m'(θ, φ) = δ_(ll')δ_(mm')
+     *
+     * (this extra factor of 1/√2 is not included in the normalization of the
+     * associated Legendre polynomials defined above; however, all other
+     * normalization factors are.)
+     *
+     * @param direction Unit vector giving the angles (arguments for the Y_l^m)
+     *
+     * @param max_angular Compute up to this angular momentum number (l_max)
+     *
+     * @return  (Eigen)matrix containing the results.
+     *          Sized (l_max+1)^2, the index collects l and m quantum numbers
+     *          stored in compact format (m varies fastest, from -l to l,
+     *          and l from 0 to l_max).
+     */
       void compute_spherical_harmonics() {
         size_t lm_base{0};  // starting point for storage
         for (size_t angular_l{0}; angular_l < this->max_angular + 1;
              angular_l++) {
-          // std::cout << "angular_l: "<< angular_l << std::endl;
           // uses symmetry of spherical harmonics,
           // careful with the storage order
           this->harmonics.segment(lm_base + angular_l, angular_l + 1) =
@@ -436,111 +467,103 @@ namespace rascal {
         // d/dx, d/dy, d/dz
         this->harmonics_derivatives.col(0).setZero();
 
+        // angular_l > 0
         size_t l_block_index{1};
-        // separate initialization and add usage with segment
         for (size_t angular_l{1}; angular_l < this->max_angular + 1; angular_l++) {
-          // TODO precompute
-          // TODO(alex) preparation for eigen arithmetics 
-          Vector_t m_counts = Eigen::VectorXd::LinSpaced(angular_l+1,0,angular_l);
-
-          // plm_factors
-          Vector_t raising_plm_factors = Vector_t::Zero(angular_l + 1);
-          raising_plm_factors =
-            ((angular_l - m_counts.array()) *
-             (angular_l + m_counts.array() + 1)).sqrt();
-          Vector_t lowering_plm_factors = Vector_t::Zero(angular_l + 1);
-          // raising = (x_0...x_angular); lowering = (x_0x_0x_1...x_{angular-1})
-          lowering_plm_factors(0) = raising_plm_factors(0);
-          lowering_plm_factors.segment(1, angular_l) =
-              raising_plm_factors.segment(0, angular_l);
-
           // legendre_polynom_difference
-          Vector_t legendre_polynom_differences = Vector_t::Zero(angular_l);
-          legendre_polynom_differences =
-              lowering_plm_factors.tail(angular_l).array() *
+          legendre_polynom_differences.head(angular_l) =
+              this->plm_factors.row(angular_l).segment(0,angular_l).array() *
                   this->assoc_legendre_polynom.row(angular_l).segment(0, angular_l).array() -
-              raising_plm_factors.tail(angular_l).array() *
+              this->plm_factors.row(angular_l).segment(1,angular_l).array() *
                   this->assoc_legendre_polynom.row(angular_l).segment(2, angular_l).array();
+          // TODO(alex) this if then else could be optimized, but I guess the
+          // compiler does it.
           // phi_derivative_factor 
-          Vector_t phi_derivative_factors = Vector_t::Zero(angular_l);
           if (sin_theta > 0.1) {
+            // TODO(alex) could be precomputed
+            Vector_t m_counts = Eigen::VectorXd::LinSpaced(angular_l,1,angular_l);
             // singularity at the poles
-            phi_derivative_factors =
-                m_counts.tail(angular_l).array() / sin_theta *
+            phi_derivative_factors.head(angular_l) =
+                m_counts.head(angular_l).array() / sin_theta *
                 this->assoc_legendre_polynom.row(angular_l).segment(1,angular_l).array();
           } else {
             // singularity at the equator
-            phi_derivative_factors =
+            phi_derivative_factors.head(angular_l) =
                 -0.5 / cos_theta *
-                (lowering_plm_factors.tail(angular_l).array() *
+                (this->plm_factors.row(angular_l).segment(0,angular_l).array() *
                      this->assoc_legendre_polynom.row(angular_l).segment(0,angular_l).array() +
-                 raising_plm_factors.tail(angular_l).array() *
+                 this->plm_factors.row(angular_l).segment(1,angular_l).array() *
                      this->assoc_legendre_polynom.row(angular_l).segment(2, angular_l).array());
           }
 
-          // m_count = 0
+          // (l_block - angular_l,... , l_block, ..., l_block + angular_l)
+          //                            ‾‾‾‾‾‾‾ 
+          
           // d/dx
           this->harmonics_derivatives(0, l_block_index + angular_l) = 
-              cos_theta * cos_phi * raising_plm_factors(0) * INV_SQRT_TWO *
+              cos_theta * cos_phi * this->plm_factors(angular_l,0) * INV_SQRT_TWO *
               this->assoc_legendre_polynom(angular_l, 1);
           // d/dy
           this->harmonics_derivatives(1, l_block_index + angular_l) =
-              cos_theta * sin_phi * raising_plm_factors(0) * INV_SQRT_TWO *
+              cos_theta * sin_phi * this->plm_factors(angular_l,0) * INV_SQRT_TWO *
               this->assoc_legendre_polynom(angular_l, 1);
           // d/dz
           this->harmonics_derivatives(2, l_block_index + angular_l) =
-              -1.0 * sin_theta * raising_plm_factors(0) * INV_SQRT_TWO *
+              -1.0 * sin_theta * this->plm_factors(angular_l,0) * INV_SQRT_TWO *
               this->assoc_legendre_polynom(angular_l, 1);
 
-          ////////////////////
-          //// m_count > 0  //
-          ////////////////////
           
           // d/dx
-          // ->
+          // (l_block - angular_l,... , l_block, ..., l_block + angular_l)
+          //                                    ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾ 
           this->harmonics_derivatives.row(0).segment(l_block_index + angular_l+1, angular_l) =
-              sin_phi * phi_derivative_factors.array() * 
+              sin_phi * phi_derivative_factors.head(angular_l).array() * 
               this->cos_sin_m_phi.col(1).segment(1,angular_l).transpose().array();
            
           this->harmonics_derivatives.row(0).segment(l_block_index + angular_l+1, angular_l).array() +=   
              -0.5 * cos_theta * cos_phi * 
               this->cos_sin_m_phi.col(0).segment(1,angular_l).transpose().array() *
-              legendre_polynom_differences.array();
-          // <-
+              legendre_polynom_differences.head(angular_l).array();
+          // (l_block - angular_l,... , l_block, ..., l_block + angular_l)
+          //  ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾ 
           this->harmonics_derivatives.row(0).segment(l_block_index, angular_l).reverse() =
-             -1.0 * sin_phi * phi_derivative_factors.array() *
+             -1.0 * sin_phi * phi_derivative_factors.head(angular_l).array() *
                   this->cos_sin_m_phi.col(0).segment(1,angular_l).transpose().array();
           this->harmonics_derivatives.row(0).segment(l_block_index, angular_l).reverse().array() +=
              -0.5 * cos_theta * cos_phi * this->cos_sin_m_phi.col(1).segment(1,angular_l).transpose().array() *
-              legendre_polynom_differences.array();
+              legendre_polynom_differences.head(angular_l).array();
 
           // d/dy
-          // ->
+          // (l_block - angular_l,... , l_block, ..., l_block + angular_l)
+          //                                    ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾ 
           this->harmonics_derivatives.row(1).segment(l_block_index + angular_l+1, angular_l) =
-              -1.0 * cos_phi * phi_derivative_factors.array() * 
+              -1.0 * cos_phi * phi_derivative_factors.head(angular_l).array() * 
               this->cos_sin_m_phi.col(1).segment(1,angular_l).transpose().array();
           this->harmonics_derivatives.row(1).segment(l_block_index + angular_l+1, angular_l).array() +=   
               -0.5 * cos_theta * sin_phi * 
               this->cos_sin_m_phi.col(0).segment(1,angular_l).transpose().array() *
-              legendre_polynom_differences.array();
-          // <-            
+              legendre_polynom_differences.head(angular_l).array();
+          // (l_block - angular_l,... , l_block, ..., l_block + angular_l)
+          //  ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾ 
           this->harmonics_derivatives.row(1).segment(l_block_index, angular_l).reverse() =
-                cos_phi * phi_derivative_factors.array() *
+                cos_phi * phi_derivative_factors.head(angular_l).array() *
                     this->cos_sin_m_phi.col(0).segment(1,angular_l).transpose().array();
            this->harmonics_derivatives.row(1).segment(l_block_index, angular_l).reverse().array() +=
                 -0.5 * cos_theta * sin_phi * this->cos_sin_m_phi.col(1).segment(1,angular_l).transpose().array() *
-                 legendre_polynom_differences.array();
+                 legendre_polynom_differences.head(angular_l).array();
           // d/dz
-          // ->
+          // (l_block - angular_l,... , l_block, ..., l_block + angular_l)
+          //                                    ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾ 
           this->harmonics_derivatives.row(2).segment(l_block_index + angular_l+1, angular_l) =   
              0.5 * sin_theta *
              this->cos_sin_m_phi.col(0).segment(1,angular_l).transpose().array() *
-             legendre_polynom_differences.array();
-          // <-            
+             legendre_polynom_differences.head(angular_l).array();
+          // (l_block - angular_l,... , l_block, ..., l_block + angular_l)
+          //  ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾ 
           this->harmonics_derivatives.row(2).segment(l_block_index, angular_l).reverse() =
              0.5 * sin_theta *
              this->cos_sin_m_phi.col(1).segment(1,angular_l).transpose().array() *
-             legendre_polynom_differences.array();
+             legendre_polynom_differences.head(angular_l).array();
 
           l_block_index += (2 * angular_l + 1);
         }  // for (l in [0, lmax])
