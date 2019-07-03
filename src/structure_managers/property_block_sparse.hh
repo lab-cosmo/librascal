@@ -580,7 +580,7 @@ namespace rascal {
         size_t i_row{0};
         for (int i_pos{0}; i_pos < this->values[i_order][index][key].size();
              i_pos++) {
-          feauture_row(i_row, i_col) = this->values[i_order][index][key](i_pos);
+          feature_row(i_row, i_col) = this->values[i_order][index][key](i_pos);
           i_row++;
         }
         i_col++;
