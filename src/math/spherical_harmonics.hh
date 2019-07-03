@@ -220,7 +220,7 @@ namespace rascal {
           angular_coeffs2(angular_l) = -sqrt(1.0 + 0.5 / angular_l);
         }
 
-        if (calculate_derivatives) {
+        if (this->calculate_derivatives) {
           this->harmonics_derivatives =
               Matrix_t::Zero(3, pow(this->max_angular + 1, 2));
           this->plm_factors =
@@ -286,6 +286,15 @@ namespace rascal {
         }
       }
 
+
+      /**
+       * Allows usage of calc member function with a default parameter for
+       * the calculate_derivatives variable.
+       */
+      void calc(const Eigen::Ref<const Eigen::Vector3d> & direction) {
+        this->calc(direction, this->calculate_derivatives);
+      }
+
       /**
        * Compute a full set of spherical harmonics given a direction vector.
        * If calculate_derivatives flag is on, the derivatives are additionally
@@ -294,11 +303,14 @@ namespace rascal {
        * @param Direction unit vector giving the angles (arguments for the
        * Y_l^m)
        *
+       * @param Flag which decides if function is computes derivatives
+       *
        * @return Void, results have to be retrieved with get functions
        * 
        * @warning Throws warning, if vector is not normalized. 
        */
-      void calc(const Eigen::Ref<const Eigen::Vector3d> & direction) {
+      void calc(const Eigen::Ref<const Eigen::Vector3d> & direction,
+          bool calculate_derivatives) {
         using math::pow;
         using std::sqrt;
         Eigen::Vector3d my_direction;
@@ -332,11 +344,19 @@ namespace rascal {
       
         this->compute_spherical_harmonics();
         if (calculate_derivatives) {
-          // A rose, by any other name, would have the same exact value
-          // double sin_theta = sqrt(1.0 - cos_theta*cos_theta);
-          double sin_theta{sqrt_xy};
-          this->compute_spherical_harmonics_derivatives(
-              sin_theta, cos_theta, sin_phi, cos_phi);
+          if (this->calculate_derivatives) {
+            // A rose, by any other name, would have the same exact value
+            // double sin_theta = sqrt(1.0 - cos_theta*cos_theta);
+            double sin_theta{sqrt_xy};
+            this->compute_spherical_harmonics_derivatives(
+                sin_theta, cos_theta, sin_phi, cos_phi);
+          } else {
+            std::stringstream err_str{};
+            err_str << "Resources for computation of dervatives have not been "
+                "initialized. Please set calculate_derivatives flag on "
+                "construction of the SphericalHarmonics object.";
+            throw std::runtime_error(err_str.str());
+          }
         }
       }
 

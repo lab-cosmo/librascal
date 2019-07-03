@@ -89,8 +89,7 @@ namespace rascal {
   template <size_t max_angular>
   struct SphericalHarmonicsClassFunctionHolder {
     SphericalHarmonicsClassFunctionHolder() :
-        harmonics_calculator{math::SphericalHarmonics(false)},
-        harmonics_derivatives_calculator{math::SphericalHarmonics(true)}
+        harmonics_calculator{math::SphericalHarmonics(true)}
         {}
 
     using Matrix_Ref = typename Eigen::Ref<const math::Matrix_t>;
@@ -98,21 +97,19 @@ namespace rascal {
 
     void precompute() {
       this->harmonics_calculator.precompute(max_angular);
-      this->harmonics_derivatives_calculator.precompute(max_angular);
     }
 
     Vector_Ref f(const Eigen::Vector3d & inputs_v) {
       Eigen::Vector3d my_inputs = inputs_v / inputs_v.norm();
-      this->harmonics_calculator.calc(my_inputs);
+      this->harmonics_calculator.calc(my_inputs, false);
       return this->harmonics_calculator.get_harmonics();
     }
     Matrix_Ref grad_f(const Eigen::Vector3d & inputs_v) {
-      this->harmonics_derivatives_calculator.calc(inputs_v);
-      return this->harmonics_derivatives_calculator.get_harmonics_derivatives();
+      this->harmonics_calculator.calc(inputs_v, true);
+      return this->harmonics_calculator.get_harmonics_derivatives();
     }
 
     math::SphericalHarmonics harmonics_calculator;
-    math::SphericalHarmonics harmonics_derivatives_calculator;
   };
 
 
