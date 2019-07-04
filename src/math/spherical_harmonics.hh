@@ -600,6 +600,11 @@ namespace rascal {
         return Matrix_Ref(this->assoc_legendre_polynom).topLeftCorner(this->max_angular+1, this->max_angular+1);
       }
 
+      // Returns the (max_angular+1, max_angular+2) matrix related to the associated legendre polynomial with only zeros entries in the last column.
+      // Used for testing purposes.
+      inline Matrix_Ref get_assoc_legendre_polynom_raw() {
+        return Matrix_Ref(this->assoc_legendre_polynom);
+      }
       inline Vector_Ref get_harmonics() { return Vector_Ref(this->harmonics); }
 
       inline Matrix_Ref get_harmonics_derivatives() {

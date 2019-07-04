@@ -61,6 +61,7 @@ namespace rascal {
         std::cout << std::endl;
       }
     }
+
     if (info) {
       std::cout << ">> Test math_spherical_harmonics_test finished."
                 << std::endl;
@@ -110,15 +111,13 @@ namespace rascal {
       if (verbose) {
         std::cout << ">> computed associated legendre polynomial: "
                   << std::endl;
-        //std::cout << harmonics_calculator.get_assoc_legendre_polynom().topLeftCorner(max_angular_l+1, max_angular_l+1) << std::endl;
         std::cout << harmonics_calculator.get_assoc_legendre_polynom() << std::endl;
       }
       double rel_error{(harmonics_calculator.get_assoc_legendre_polynom() - alps_ref).norm()};
       BOOST_CHECK_LE(rel_error, 10 * math::dbl_ftol);
-      if (verbose) {
-        std::cout << ">> Boost check perfomed." << std::endl;
-        std::cout << std::endl;
-      }
+      // Checks if the additional last column of the associated legendre polynomial matrix contains only zero entries
+      BOOST_CHECK_EQUAL(harmonics_calculator.get_assoc_legendre_polynom_raw().col(max_angular_l+1).norm(), 0);
+      
     }
     if (info) {
       std::cout << ">> Test math_spherical_harmonics_test finished."
