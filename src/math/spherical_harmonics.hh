@@ -225,11 +225,12 @@ namespace rascal {
               Matrix_t::Zero(3, pow(this->max_angular + 1, 2));
           this->plm_factors =
               Matrix_t::Zero(this->max_angular + 1, this->max_angular + 1);
-          // TODO(alex) can be done with broadcasting
+          // TODO(alex) can be done with broadcasting and setting half of matrix to zero, but we are actually only calculating the rectangular part, what is faster?
           for (size_t angular_l{0}; angular_l < this->max_angular + 1;
                angular_l++) {
-            Vector_t m_counts = Eigen::VectorXd::LinSpaced(angular_l+1,0,angular_l);
-            this->plm_factors.row(angular_l) =
+            Vector_t m_counts = Eigen::VectorXd::LinSpaced(
+                angular_l+1,0,angular_l);
+            this->plm_factors.row(angular_l).head(angular_l+1) =
               ((angular_l - m_counts.array()) *
                (angular_l + m_counts.array() + 1)).sqrt();
           }
@@ -594,8 +595,9 @@ namespace rascal {
         return MatrixX2_Ref(this->cos_sin_m_phi);
       }
 
+      // Since for calculation purposes assoc_legendre_polynom has one column more than it would have in standard libaries, we return only the segment of size (max_angular+1, max_angular+1) as other standard libaries.
       inline Matrix_Ref get_assoc_legendre_polynom() {
-        return Matrix_Ref(this->assoc_legendre_polynom);
+        return Matrix_Ref(this->assoc_legendre_polynom).topLeftCorner(this->max_angular+1, this->max_angular+1);
       }
 
       inline Vector_Ref get_harmonics() { return Vector_Ref(this->harmonics); }

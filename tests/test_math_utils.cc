@@ -68,10 +68,6 @@ namespace rascal {
   // TODO(alex) make the verbose a bit more pretty
   BOOST_FIXTURE_TEST_CASE(math_spherical_harmonics_test,
                           SphericalHarmonicsRefFixture) {
-    if (verbose) {
-      std::cout << ">> Test math_spherical_harmonics_test started..."
-                << std::endl;
-    }
     for (size_t vec_idx{0}; vec_idx < unit_vectors.size(); vec_idx++) {
       Eigen::Vector3d direction(unit_vectors[vec_idx].data());
       size_t max_angular = harmonics[vec_idx].size() - 1;
@@ -114,10 +110,6 @@ namespace rascal {
       if (verbose) {
         std::cout << std::endl;
       }
-    }
-    if (verbose) {
-      std::cout << "Test math_spherical_harmonics_test finished." << std::endl;
-      std::cout << std::endl;
     }
   }
 

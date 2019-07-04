@@ -73,7 +73,7 @@ namespace rascal {
     info = false;
     math::SphericalHarmonics harmonics_calculator{};
     if (info) {
-      std::cout << ">> Test math_spherical_harmonics_test " << std::endl;
+      std::cout << ">> Test math_associated_legendre_polynomial_test " << std::endl;
       std::cout << ">> with number_of_unit_vectors=" << this->ref_data.size();
       std::cout << " and max_angular_l=";
       std::cout << this->ref_data[0]["max_angular_l"] << std::endl;
@@ -110,6 +110,7 @@ namespace rascal {
       if (verbose) {
         std::cout << ">> computed associated legendre polynomial: "
                   << std::endl;
+        //std::cout << harmonics_calculator.get_assoc_legendre_polynom().topLeftCorner(max_angular_l+1, max_angular_l+1) << std::endl;
         std::cout << harmonics_calculator.get_assoc_legendre_polynom() << std::endl;
       }
       double rel_error{(harmonics_calculator.get_assoc_legendre_polynom() - alps_ref).norm()};
