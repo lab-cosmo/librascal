@@ -72,9 +72,9 @@ int main(int argc, char * argv[]) {
 
   json fc_hypers{{"type", "Cosine"},
                  {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
-                 {"smooth_width", {{"value", 0.5}, {"unit", "A"}}}};
+                 {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}};
   json sigma_hypers{{"type", "Constant"},
-                    {"gaussian_sigma", {{"value", 0.4}, {"unit", "A"}}}};
+                    {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}};
 
   hypers["cutoff_function"] = fc_hypers;
   hypers["gaussian_density"] = sigma_hypers;
