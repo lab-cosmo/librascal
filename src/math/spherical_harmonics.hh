@@ -170,6 +170,7 @@ namespace rascal {
       Matrix_t coeff_b{};
       // derivative related member variables
       bool calculate_derivatives{false};
+      bool derivatives_precomputed{false};
       Matrix_t harmonics_derivatives{};
       Matrix_t plm_factors{};
       Vector_t legendre_polynom_differences{};
@@ -181,17 +182,29 @@ namespace rascal {
       SphericalHarmonics(bool calculate_derivatives) :
          calculate_derivatives{calculate_derivatives} {}
 
-      // Precomputes as many parameters as possible
-      void precompute(size_t max_angular) {
+      /**
+       * Precomputes as many parameters as possible
+       *
+       * @param max_angular Maximum angular momentum number 'l'
+       *
+       * @pararm calculate_derivatives Whether to precompute for the derivatives
+       *     as well.  If the internal default (set at construction) is false,
+       *     but the value provided here is true, the internal default will be
+       *     set to true.  If the value provided here is false (default
+       *     argument) then the internal default is not changed; derivatives
+       *     will be precomputed only if the internal default is true.
+       */
+      void precompute(size_t max_angular, bool calculate_derivatives = false) {
         using math::pow;
         using std::sqrt;
         this->max_angular = max_angular;
-        // 1);
         this->harmonics =
             Vector_t::Zero((this->max_angular + 1) * (this->max_angular + 1));
+        // Note the ALPs need an extra zero column to allow natural use of the
+        // raising and lowering operators (specifically P_l^(l+1), which should
+        // give zero).
         this->assoc_legendre_polynom =
--           Matrix_t::Zero(this->max_angular + 1, this->max_angular + 2);
-        // TODO(alex) reduce to this->max_angular + 1) or merge with micheles branch which alread has done this
+            Matrix_t::Zero(this->max_angular + 1, this->max_angular + 2);
         this->coeff_a =
             Matrix_t::Zero(this->max_angular + 1, 2 * this->max_angular + 1);
         this->coeff_b =
@@ -220,7 +233,11 @@ namespace rascal {
           angular_coeffs2(angular_l) = -sqrt(1.0 + 0.5 / angular_l);
         }
 
-        if (this->calculate_derivatives) {
+        // We want to precompute derivative information in almost any case
+        if (calculate_derivatives or this->calculate_derivatives) {
+          if (not this->calculate_derivatives) {
+            this->calculate_derivatives = true;
+          }
           this->harmonics_derivatives =
               Matrix_t::Zero(3, pow(this->max_angular + 1, 2));
           this->plm_factors =
@@ -238,6 +255,7 @@ namespace rascal {
               Vector_t::Zero(this->max_angular);
           this->phi_derivative_factors =
               Vector_t::Zero(this->max_angular);
+          this->derivatives_precomputed = true;
         }
 
 
@@ -307,36 +325,36 @@ namespace rascal {
        * @param Flag which decides if function is computes derivatives
        *
        * @return Void, results have to be retrieved with get functions
-       * 
+       *
        * @warning Throws warning, if vector is not normalized. 
        */
       void calc(const Eigen::Ref<const Eigen::Vector3d> & direction,
-          bool calculate_derivatives) {
+                bool calculate_derivatives) {
         using math::pow;
         using std::sqrt;
-        Eigen::Vector3d my_direction;
+        Eigen::Vector3d direction_normed;
         if (std::abs((direction[0] * direction[0] + direction[1] * direction[1] +
                       direction[2] * direction[2]) -
                      1.0) > math::dbl_ftol) {
           std::cerr << "Warning: SphericalHarmonics::calc()";
           std::cerr << ": Direction vector unnormalized, normalizing it now";
           std::cerr << std::endl;
-          my_direction = direction / direction.norm();
+          direction_normed = direction / direction.norm();
         } else {
-          my_direction = direction;
+          direction_normed = direction;
         }
 
         // The cosine against the z-axis is just the z-component of the
         // direction vector
-        double cos_theta = direction[2];
+        double cos_theta = direction_normed[2];
         // The less efficient, but more intuitive implementation:
         // double phi = std::atan2(direction[1], direction[0]);
-        double sqrt_xy = std::hypot(direction[0], direction[1]);
+        double sqrt_xy = std::hypot(direction_normed[0], direction_normed[1]);
         // For a vector along the z-axis, define phi=0
         double cos_phi{1.0}, sin_phi{0.0};
         if (sqrt_xy >= math::dbl_ftol) {
-          cos_phi = direction[0] / sqrt_xy;
-          sin_phi = direction[1] / sqrt_xy;
+          cos_phi = direction_normed[0] / sqrt_xy;
+          sin_phi = direction_normed[1] / sqrt_xy;
         }
 
         // change cos_sin_m_phi to this->cos_sin_m_phi
@@ -345,17 +363,20 @@ namespace rascal {
       
         this->compute_spherical_harmonics();
         if (calculate_derivatives) {
-          if (this->calculate_derivatives) {
+          if (this->derivatives_precomputed) {
             // A rose, by any other name, would have the same exact value
             // double sin_theta = sqrt(1.0 - cos_theta*cos_theta);
             double sin_theta{sqrt_xy};
             this->compute_spherical_harmonics_derivatives(
                 sin_theta, cos_theta, sin_phi, cos_phi);
           } else {
+            // TODO(max) do we just precompute here instead of throwing a rude
+            // error?
             std::stringstream err_str{};
             err_str << "Resources for computation of dervatives have not been "
                 "initialized. Please set calculate_derivatives flag on "
-                "construction of the SphericalHarmonics object.";
+                "construction of the SphericalHarmonics object or during "
+                "precomputation.";
             throw std::runtime_error(err_str.str());
           }
         }
@@ -429,10 +450,6 @@ namespace rascal {
      *
      * @param max_angular Compute up to this angular momentum number (l_max)
      *
-     * @return  (Eigen)matrix containing the results.
-     *          Sized (l_max+1)^2, the index collects l and m quantum numbers
-     *          stored in compact format (m varies fastest, from -l to l,
-     *          and l from 0 to l_max).
      */
       void compute_spherical_harmonics() {
         size_t lm_base{0};  // starting point for storage
@@ -591,23 +608,32 @@ namespace rascal {
       }
 
 
-      inline MatrixX2_Ref get_cos_sin_m_phi() {
+      inline const MatrixX2_Ref get_cos_sin_m_phi() {
         return MatrixX2_Ref(this->cos_sin_m_phi);
       }
 
       // Since for calculation purposes assoc_legendre_polynom has one column more than it would have in standard libaries, we return only the segment of size (max_angular+1, max_angular+1) as other standard libaries.
-      inline Matrix_Ref get_assoc_legendre_polynom() {
+      inline const Matrix_Ref get_assoc_legendre_polynom() {
         return Matrix_Ref(this->assoc_legendre_polynom).topLeftCorner(this->max_angular+1, this->max_angular+1);
       }
 
       // Returns the (max_angular+1, max_angular+2) matrix related to the associated legendre polynomial with only zeros entries in the last column.
       // Used for testing purposes.
-      inline Matrix_Ref get_assoc_legendre_polynom_raw() {
+      inline const Matrix_Ref get_assoc_legendre_polynom_raw() {
         return Matrix_Ref(this->assoc_legendre_polynom);
       }
-      inline Vector_Ref get_harmonics() { return Vector_Ref(this->harmonics); }
 
-      inline Matrix_Ref get_harmonics_derivatives() {
+      /**
+       * Access the computed spherical harmonics.
+       *
+       * @return  (Eigen)matrix containing the results.
+       *          Sized (l_max+1)^2, the index collects l and m quantum numbers
+       *          stored in compact format (m varies fastest, from -l to l,
+       *          and l from 0 to l_max).
+       */
+      inline const Vector_Ref get_harmonics() { return Vector_Ref(this->harmonics); }
+
+      inline const Matrix_Ref get_harmonics_derivatives() {
         return Matrix_Ref(this->harmonics_derivatives);
       }
     };
