@@ -318,7 +318,7 @@ namespace rascal {
         }
       }
       // initialize the power spectrum with the proper dimension
-      soap_vector.resize(pair_list, n_row, n_col);
+      soap_vector.resize(pair_list, n_row, n_col, 0);
     }
   }
 
@@ -376,14 +376,14 @@ namespace rascal {
                           if (m1s + m2s + m3s != 0 && m1s + m2s - m3s != 0) { continue; }
                           size_t lm2{pow(l2, 2_z) + m2};
                           complex coef1c, coef2c;
-                          double& w3j = w3js[count];
+                          double w3j = w3js[count];
                           // usual formulae for converting from real to complex
                           if (m1s > 0) {
                             coef1c = pow(-1.0, m1s)*
-                                     complex(coef1(n1, lm1),
-                                     coef1(n1, lm1 - 2*m1s));
+                                     complex{coef1(n1, lm1),
+                                     coef1(n1, lm1 - 2*m1s)};
                           } else if (m1s == 0) {
-                            coef1c = complex(coef1(n1, lm1), 0.0)*
+                            coef1c = complex{coef1(n1, lm1), 0.0}*
                                      std::sqrt(2.0);
                           } else if (m1s < 0) {
                             coef1c = complex(coef1(n1, lm1 - 2*m1s),
@@ -391,19 +391,19 @@ namespace rascal {
                           }
                           if (m2s > 0) {
                             coef2c = pow(-1.0, m2s)*
-                                     complex(coef2(n2, lm2),
-                                     coef2(n2, lm2 - 2*m2s));
+                                     complex{coef2(n2, lm2),
+                                     coef2(n2, lm2 - 2*m2s)};
                           } else if (m2s == 0) {
-                            coef2c = complex(coef2(n2, lm2), 0.0)*
+                            coef2c = complex{coef2(n2, lm2), 0.0}*
                                      std::sqrt(2.0);
                           } else if (m2s < 0) {
-                            coef2c = complex(coef2(n2, lm2 - 2*m2s),
-                                     -coef2(n2, lm2));
+                            coef2c = complex{coef2(n2, lm2 - 2*m2s),
+                                     -coef2(n2, lm2)};
                           }
                           coef1c /= std::sqrt(2.0);
                           coef2c /= std::sqrt(2.0);
                           //combine the coefficients with Wigner 3j symbols
-                          complex ci = complex(0.0, 1.0);
+                          complex ci{0.0, 1.0};
                           if ((l1 + l2 + l3) % 2 == 0) {
                             if (m3s < 0) {
                               soap_vector_by_type(nn, l0) += w3j*(ci*coef1c*coef2c).real();

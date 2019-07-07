@@ -515,37 +515,37 @@ namespace rascal {
                           complex coef1c, coef2c, coef3c;
                           // usual formulae for converting from real to complex
                           if (m1s > 0) {
-                            coef1c = math::pow(-1, m1s)* \
-                                     complex(coef1(n1, lm1), \
-                                     coef1(n1, lm1 - 2*m1s));
+                            coef1c = math::pow(-1, m1s)*
+                                     complex{coef1(n1, lm1),
+                                     coef1(n1, lm1 - 2*m1s)};
                           } else if (m1s == 0) {
-                            coef1c = complex(coef1(n1, lm1), 0.0)* \
+                            coef1c = complex{coef1(n1, lm1), 0.0}*
                                      std::sqrt(2.0);
                           } else if (m1s < 0) {
-                            coef1c = complex(coef1(n1, lm1 - 2*m1s), \
-                                     -coef1(n1, lm1));
+                            coef1c = complex{coef1(n1, lm1 - 2*m1s),
+                                     -coef1(n1, lm1)};
                           }
                           if (m2s > 0) {
-                            coef2c = math::pow(-1.0, m2s)* \
-                                     complex(coef2(n2, lm2), \
-                                     coef2(n2, lm2 - 2*m2s));
+                            coef2c = math::pow(-1.0, m2s)*
+                                     complex{coef2(n2, lm2),
+                                     coef2(n2, lm2 - 2*m2s)};
                           } else if (m2s == 0) {
-                            coef2c = complex(coef2(n2, lm2), 0.0)* \
+                            coef2c = complex(coef2(n2, lm2), 0.0)*
                                      std::sqrt(2.0);
                           } else if (m2s < 0) {
-                            coef2c = complex(coef2(n2, lm2 - 2*m2s), \
-                                     -coef2(n2, lm2));
+                            coef2c = complex{coef2(n2, lm2 - 2*m2s),
+                                     -coef2(n2, lm2)};
                           }
                           if (m3s > 0) {
-                            coef3c = math::pow(-1.0, m3s)* \
-                                     complex(coef3(n3, lm3), \
-                                     coef3(n3, lm3 - 2*m3s));
+                            coef3c = math::pow(-1.0, m3s)*
+                                     complex{coef3(n3, lm3),
+                                     coef3(n3, lm3 - 2*m3s)};
                           } else if (m3s == 0) {
-                            coef3c = complex(coef3(n3, lm3), 0.0)* \
+                            coef3c = complex{coef3(n3, lm3), 0.0}*
                                      std::sqrt(2.0);
                           } else if (m3s < 0) {
-                            coef3c = complex(coef3(n3, lm3 - 2*m3s), \
-                                     -coef3(n3, lm3));
+                            coef3c = complex{coef3(n3, lm3 - 2*m3s),
+                                     -coef3(n3, lm3)};
                           }
                           coef1c /= std::sqrt(2.0);
                           coef2c /= std::sqrt(2.0);
