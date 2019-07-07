@@ -29,16 +29,13 @@
 #ifndef SRC_MATH_MATH_INTERFACE_HH_
 #define SRC_MATH_MATH_INTERFACE_HH_
 
-
 #include "wigxjpf.h"
 
 #include <cmath>
 #include <iostream>
 
 namespace rascal {
-  namespace math {
-
-  }  // namespace math
+  namespace math {}  // namespace math
 }  // namespace rascal
 
 #endif  // SRC_MATH_MATH_INTERFACE_HH_

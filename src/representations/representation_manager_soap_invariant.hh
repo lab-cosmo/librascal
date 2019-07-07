@@ -1,4 +1,4 @@
- /**
+/**
  * file   representation_manager_soap_invariant.hh
  *
  * @author Max Veit <max.veit@epfl.ch>
@@ -108,31 +108,37 @@ namespace rascal {
     };
 
     template <>
-    struct SOAPPrecomputation<SOAPType::BiSpectrum>
-        : SOAPPrecomputationBase {
+    struct SOAPPrecomputation<SOAPType::BiSpectrum> : SOAPPrecomputationBase {
       using Hypers_t = typename SOAPPrecomputationBase::Hypers_t;
       explicit SOAPPrecomputation(const Hypers_t & hypers) {
         this->max_angular = hypers.at("max_angular").get<size_t>();
         this->inversion_symmetry = hypers.at("inversion_symmetry").get<bool>();
         // get the number of non zero elements in the w3j
         int n_elements{0};
-        for (size_t l1{0}; l1 < this->max_angular+1; ++l1) {
-          for (size_t l2{0}; l2 < this->max_angular+1; ++l2) {
-            for (size_t l3{0}; l3 < this->max_angular+1; ++l3) {
-              if (l1 < static_cast<size_t>(std::abs<int>(l2 - l3)) || l1 > l2 + l3) { continue; }
+        for (size_t l1{0}; l1 < this->max_angular + 1; ++l1) {
+          for (size_t l2{0}; l2 < this->max_angular + 1; ++l2) {
+            for (size_t l3{0}; l3 < this->max_angular + 1; ++l3) {
+              if (l1 < static_cast<size_t>(std::abs<int>(l2 - l3)) ||
+                  l1 > l2 + l3) {
+                continue;
+              }
               if (this->inversion_symmetry == true) {
-                if ((l1 + l2 + l3) % 2 == 1) { continue; }
+                if ((l1 + l2 + l3) % 2 == 1) {
+                  continue;
+                }
               }
-              for (size_t m1{0}; m1 < 2*l1 + 1; m1++) {
-              int m1s{static_cast<int>(m1 - l1)};
-              for (size_t m2{0}; m2 < 2*l2 + 1; m2++) {
-              int m2s{static_cast<int>(m2 - l2)};
-              for (size_t m3{0}; m3 < 2*l3 + 1; m3++) {
-              int m3s{static_cast<int>(m3 - l3)};
-              if (m1s + m2s + m3s != 0) { continue; }
-              ++n_elements;
-              }
-              }
+              for (size_t m1{0}; m1 < 2 * l1 + 1; m1++) {
+                int m1s{static_cast<int>(m1 - l1)};
+                for (size_t m2{0}; m2 < 2 * l2 + 1; m2++) {
+                  int m2s{static_cast<int>(m2 - l2)};
+                  for (size_t m3{0}; m3 < 2 * l3 + 1; m3++) {
+                    int m3s{static_cast<int>(m3 - l3)};
+                    if (m1s + m2s + m3s != 0) {
+                      continue;
+                    }
+                    ++n_elements;
+                  }
+                }
               }
             }
           }
@@ -140,26 +146,34 @@ namespace rascal {
 
         this->w3js.resize(n_elements);
         n_elements = 0;
-        wig_table_init(2*(this->max_angular + 1), 3);
-        wig_temp_init(2*(this->max_angular + 1));
-        for (size_t l1{0}; l1 < this->max_angular+1; ++l1) {
-          for (size_t l2{0}; l2 < this->max_angular+1; ++l2) {
-            for (size_t l3{0}; l3 < this->max_angular+1; ++l3) {
-              if (l1 < static_cast<size_t>(std::abs<int>(l2 - l3)) || l1 > l2 + l3) { continue; }
+        wig_table_init(2 * (this->max_angular + 1), 3);
+        wig_temp_init(2 * (this->max_angular + 1));
+        for (size_t l1{0}; l1 < this->max_angular + 1; ++l1) {
+          for (size_t l2{0}; l2 < this->max_angular + 1; ++l2) {
+            for (size_t l3{0}; l3 < this->max_angular + 1; ++l3) {
+              if (l1 < static_cast<size_t>(std::abs<int>(l2 - l3)) ||
+                  l1 > l2 + l3) {
+                continue;
+              }
               if (this->inversion_symmetry == true) {
-                if ((l1 + l2 + l3) % 2 == 1) { continue; }
+                if ((l1 + l2 + l3) % 2 == 1) {
+                  continue;
+                }
               }
-              for (size_t m1{0}; m1 < 2*l1 + 1; m1++) {
-              int m1s{static_cast<int>(m1 - l1)};
-              for (size_t m2{0}; m2 < 2*l2 + 1; m2++) {
-              int m2s{static_cast<int>(m2 - l2)};
-              for (size_t m3{0}; m3 < 2*l3 + 1; m3++) {
-              int m3s{static_cast<int>(m3 - l3)};
-              if (m1s + m2s + m3s != 0) { continue; }
-              this->w3js(n_elements) = wig3jj(2*l1, 2*l2, 2*l3, 2*m1s, 2*m2s, 2*m3s);
-              ++n_elements;
-              }
-              }
+              for (size_t m1{0}; m1 < 2 * l1 + 1; m1++) {
+                int m1s{static_cast<int>(m1 - l1)};
+                for (size_t m2{0}; m2 < 2 * l2 + 1; m2++) {
+                  int m2s{static_cast<int>(m2 - l2)};
+                  for (size_t m3{0}; m3 < 2 * l3 + 1; m3++) {
+                    int m3s{static_cast<int>(m3 - l3)};
+                    if (m1s + m2s + m3s != 0) {
+                      continue;
+                    }
+                    this->w3js(n_elements) = wig3jj(2 * l1, 2 * l2, 2 * l3,
+                                                    2 * m1s, 2 * m2s, 2 * m3s);
+                    ++n_elements;
+                  }
+                }
               }
             }
           }
@@ -207,10 +221,12 @@ namespace rascal {
     }
 
     //! Copy constructor
-    RepresentationManagerSOAPInvariant(const RepresentationManagerSOAPInvariant & other) = delete;
+    RepresentationManagerSOAPInvariant(
+        const RepresentationManagerSOAPInvariant & other) = delete;
 
     //! Move constructor
-    RepresentationManagerSOAPInvariant(RepresentationManagerSOAPInvariant && other) = default;
+    RepresentationManagerSOAPInvariant(
+        RepresentationManagerSOAPInvariant && other) = default;
 
     //! Destructor
     virtual ~RepresentationManagerSOAPInvariant() = default;
@@ -246,7 +262,7 @@ namespace rascal {
       } else if (this->soap_type_str.compare("BiSpectrum") == 0) {
         this->soap_type = internal::SOAPType::BiSpectrum;
         this->precompute_soap[enumValue(SOAPType::BiSpectrum)] =
-                make_soap_precompute<SOAPType::BiSpectrum>(hypers);
+            make_soap_precompute<SOAPType::BiSpectrum>(hypers);
         this->inversion_symmetry = hypers.at("inversion_symmetry");
 
       } else {
@@ -429,11 +445,10 @@ namespace rascal {
     }
   }
 
-
   template <class Mngr>
   void RepresentationManagerSOAPInvariant<Mngr>::compute_bispectrum() {
-    using internal::SOAPType;
     using internal::enumValue;
+    using internal::SOAPType;
 
     auto precomputation{downcast_soap_precompute<SOAPType::BiSpectrum>(
         this->precompute_soap[enumValue(SOAPType::BiSpectrum)])};
@@ -443,7 +458,7 @@ namespace rascal {
 
     this->initialize_percenter_bispectrum_soap_vectors();
 
-    auto& expansions_coefficients{rep_expansion.expansions_coefficients};
+    auto & expansions_coefficients{rep_expansion.expansions_coefficients};
 
     using complex = std::complex<double>;
 
@@ -453,32 +468,29 @@ namespace rascal {
     Key_t trip_type{0, 0, 0};
     internal::SortedKey<Key_t> triplet_type{trip_type};
     for (auto center : this->structure_manager) {
-      auto& coefficients{expansions_coefficients[center]};
-      auto& soap_vector{this->soap_vectors[center]};
+      auto & coefficients{expansions_coefficients[center]};
+      auto & soap_vector{this->soap_vectors[center]};
 
-      for (const auto& el1: coefficients) {
+      for (const auto & el1 : coefficients) {
         triplet_type[0] = el1.first[0];
-        auto& coef1{el1.second};
-        for (const auto& el2: coefficients) {
+        auto & coef1{el1.second};
+        for (const auto & el2 : coefficients) {
           triplet_type[1] = el2.first[0];
-          auto& coef2{el2.second};
-          for (const auto& el3: coefficients) {
+          auto & coef2{el2.second};
+          for (const auto & el3 : coefficients) {
             triplet_type[2] = el3.first[0];
-            auto& coef3{el3.second};
+            auto & coef3{el3.second};
             // triplet multiplicity
             // all the same
-            if (triplet_type[0] == triplet_type[1] && \
+            if (triplet_type[0] == triplet_type[1] &&
                 triplet_type[1] == triplet_type[2]) {
               mult = 1.0;
-            }
-            // two the same
-            else if (triplet_type[0] == triplet_type[1] || \
-                     triplet_type[0] == triplet_type[2] || \
+            } else if (triplet_type[0] == triplet_type[1] ||
+                     triplet_type[0] == triplet_type[2] ||
                      triplet_type[1] == triplet_type[2]) {
+              // two the same
               mult = std::sqrt(3.0);
-            }
-            // all different
-            else {
+            } else { // all different
               mult = std::sqrt(6.0);
             }
 
@@ -491,100 +503,109 @@ namespace rascal {
                   for (size_t n3{0}; n3 < this->max_radial; n3++) {
                     size_t l0{0};
                     int count{0};
-                    for (size_t l1{0}; l1 < this->max_angular+1; l1++) {
-                      for (size_t l2{0}; l2 < this->max_angular+1; l2++) {
-                        for (size_t l3{0}; l3 < this->max_angular+1; l3++) {
+                    for (size_t l1{0}; l1 < this->max_angular + 1; l1++) {
+                      for (size_t l2{0}; l2 < this->max_angular + 1; l2++) {
+                        for (size_t l3{0}; l3 < this->max_angular + 1; l3++) {
                           if (this->inversion_symmetry == true) {
-                            if ((l1 + l2 + l3) % 2 == 1) { continue; }
+                            if ((l1 + l2 + l3) % 2 == 1) {
+                              continue;
+                            }
                           }
 
-                          if (l1 < static_cast<size_t>(std::abs<int>(l2 - l3)) || l1 > l2 + l3) {
+                          if (l1 <
+                                  static_cast<size_t>(std::abs<int>(l2 - l3)) ||
+                              l1 > l2 + l3) {
                             continue;
                           }
 
-                          for (size_t m1{0}; m1 < 2*l1 + 1; m1++) {
-                          int m1s{static_cast<int>(m1 - l1)};
-                          size_t lm1{math::pow(l1, 2_z) + m1};
-                          for (size_t m2{0}; m2 < 2*l2 + 1; m2++) {
-                          int m2s{static_cast<int>(m2 - l2)};
-                          size_t lm2{math::pow(l2, 2_z) + m2};
-                          for (size_t m3{0}; m3 < 2*l3 + 1; m3++) {
-                          int m3s{static_cast<int>(m3 - l3)};
-                          if (m1s + m2s + m3s != 0) { continue; }
-                          size_t lm3{math::pow(l3, 2_z) + m3};
-                          double w3j = w3js[count];
-                          complex coef1c, coef2c, coef3c;
-                          // usual formulae for converting from real to complex
-                          if (m1s > 0) {
-                            coef1c = math::pow(-1, m1s)*
-                                     complex{coef1(n1, lm1),
-                                     coef1(n1, lm1 - 2*m1s)};
-                          } else if (m1s == 0) {
-                            coef1c = complex{coef1(n1, lm1), 0.0}*
-                                     std::sqrt(2.0);
-                          } else if (m1s < 0) {
-                            coef1c = complex{coef1(n1, lm1 - 2*m1s),
-                                     -coef1(n1, lm1)};
-                          }
-                          if (m2s > 0) {
-                            coef2c = math::pow(-1.0, m2s)*
-                                     complex{coef2(n2, lm2),
-                                     coef2(n2, lm2 - 2*m2s)};
-                          } else if (m2s == 0) {
-                            coef2c = complex(coef2(n2, lm2), 0.0)*
-                                     std::sqrt(2.0);
-                          } else if (m2s < 0) {
-                            coef2c = complex{coef2(n2, lm2 - 2*m2s),
-                                     -coef2(n2, lm2)};
-                          }
-                          if (m3s > 0) {
-                            coef3c = math::pow(-1.0, m3s)*
-                                     complex{coef3(n3, lm3),
-                                     coef3(n3, lm3 - 2*m3s)};
-                          } else if (m3s == 0) {
-                            coef3c = complex{coef3(n3, lm3), 0.0}*
-                                     std::sqrt(2.0);
-                          } else if (m3s < 0) {
-                            coef3c = complex{coef3(n3, lm3 - 2*m3s),
-                                     -coef3(n3, lm3)};
-                          }
-                          coef1c /= std::sqrt(2.0);
-                          coef2c /= std::sqrt(2.0);
-                          coef3c /= std::sqrt(2.0);
-                          // The descriptor components are purely real or
-                          // imaginary
-                          // depending on the divisibility of l1 + l2 +l3 by 2.
-                          if ((l1 + l2 + l3) % 2 == 0) {
-                            soap_vector_by_type(nn, l0) += \
-                              w3j*mult*(coef1c*coef2c*coef3c).real();
-                          } else {
-                            soap_vector_by_type(nn, l0) += \
-                              w3j*mult*(coef1c*coef2c*coef3c).imag();
-                          }
-                          count++;
-                          } // m3
-                          } // m2
-                          } // m1
+                          for (size_t m1{0}; m1 < 2 * l1 + 1; m1++) {
+                            int m1s{static_cast<int>(m1 - l1)};
+                            size_t lm1{math::pow(l1, 2_z) + m1};
+                            for (size_t m2{0}; m2 < 2 * l2 + 1; m2++) {
+                              int m2s{static_cast<int>(m2 - l2)};
+                              size_t lm2{math::pow(l2, 2_z) + m2};
+                              for (size_t m3{0}; m3 < 2 * l3 + 1; m3++) {
+                                int m3s{static_cast<int>(m3 - l3)};
+                                if (m1s + m2s + m3s != 0) {
+                                  continue;
+                                }
+                                size_t lm3{math::pow(l3, 2_z) + m3};
+                                double w3j = w3js[count];
+                                complex coef1c, coef2c, coef3c;
+                                // usual formulae for converting from real to
+                                // complex
+                                if (m1s > 0) {
+                                  coef1c = math::pow(-1, m1s) *
+                                           complex{coef1(n1, lm1),
+                                                   coef1(n1, lm1 - 2 * m1s)};
+                                } else if (m1s == 0) {
+                                  coef1c = complex {coef1(n1, lm1), 0.0} *
+                                           std::sqrt(2.0);
+                                } else if (m1s < 0) {
+                                  coef1c = complex{ coef1(n1, lm1 - 2 * m1s),
+                                                   -coef1(n1, lm1)};
+                                }
+                                if (m2s > 0) {
+                                  coef2c = math::pow(-1.0, m2s) *
+                                           complex{coef2(n2, lm2),
+                                                   coef2(n2, lm2 - 2 * m2s)};
+                                } else if (m2s == 0) {
+                                  coef2c = complex {coef2(n2, lm2), 0.0} *
+                                           std::sqrt(2.0);
+                                } else if (m2s < 0) {
+                                  coef2c = complex{coef2(n2, lm2 - 2 * m2s),
+                                                   -coef2(n2, lm2)};
+                                }
+                                if (m3s > 0) {
+                                  coef3c = math::pow(-1.0, m3s) *
+                                           complex{coef3(n3, lm3),
+                                                   coef3(n3, lm3 - 2 * m3s)};
+                                } else if (m3s == 0) {
+                                  coef3c = complex {coef3(n3, lm3), 0.0} *
+                                           std::sqrt(2.0);
+                                } else if (m3s < 0) {
+                                  coef3c = complex{coef3(n3, lm3 - 2 * m3s),
+                                                   -coef3(n3, lm3)};
+                                }
+                                coef1c /= std::sqrt(2.0);
+                                coef2c /= std::sqrt(2.0);
+                                coef3c /= std::sqrt(2.0);
+                                // The descriptor components are purely real or
+                                // imaginary
+                                // depending on the divisibility of l1 + l2 +l3
+                                // by 2.
+                                if ((l1 + l2 + l3) % 2 == 0) {
+                                  soap_vector_by_type(nn, l0) +=
+                                      w3j * mult *
+                                      (coef1c * coef2c * coef3c).real();
+                                } else {
+                                  soap_vector_by_type(nn, l0) +=
+                                      w3j * mult *
+                                      (coef1c * coef2c * coef3c).imag();
+                                }
+                                count++;
+                              }  // m3
+                            }    // m2
+                          }      // m1
                           l0++;
-                        } // l3
-                      } // l2
-                    } // l1
+                        }  // l3
+                      }    // l2
+                    }      // l1
                     nn++;
-                  } // n3
-                } // n2
-              } // n1
-            } // if count triplet
-          } // coef3
-        } // coef2
-      } // coef1
+                  }  // n3
+                }    // n2
+              }      // n1
+            }        // if count triplet
+          }          // coef3
+        }            // coef2
+      }              // coef1
 
       // normalize the soap vector
       if (this->normalize) {
         soap_vector.normalize();
       }
-
-    } // center
-  }  // end function
+    }  // center
+  }    // end function
 
   template <class Mngr>
   void RepresentationManagerSOAPInvariant<
@@ -593,11 +614,13 @@ namespace rascal {
     size_t n_col{0};
     double max_ang{static_cast<double>(this->max_angular)};
     if (this->inversion_symmetry == false) {
-      n_col = static_cast<size_t>(1.0 + 2.0*max_ang + \
-              1.5*math::pow(max_ang, 2_z) + \
-              math::pow(max_ang, 3_z)*0.5);
+      n_col = static_cast<size_t>(1.0 + 2.0 * max_ang +
+                                  1.5 * math::pow(max_ang, 2_z) +
+                                  math::pow(max_ang, 3_z) * 0.5);
     } else {
-      n_col = static_cast<size_t>(std::floor(((math::pow(max_ang + 1.0, 2_z) + 1)* (2*(max_ang + 1.0) + 3))/8.0));
+      n_col = static_cast<size_t>(std::floor(
+          ((math::pow(max_ang + 1.0, 2_z) + 1) * (2 * (max_ang + 1.0) + 3)) /
+          8.0));
     }
 
     // clear the data container and resize it
@@ -617,11 +640,11 @@ namespace rascal {
       auto & center_type{center.get_atom_type()};
       Key_t triplet_type{center_type, center_type, center_type};
       // TODO(felix) optimize this loop
-      for (const auto& el1: coefficients) {
+      for (const auto & el1 : coefficients) {
         triplet_type[0] = el1.first[0];
-        for (const auto& el2: coefficients) {
+        for (const auto & el2 : coefficients) {
           triplet_type[1] = el2.first[0];
-          for (const auto& el3: coefficients) {
+          for (const auto & el3 : coefficients) {
             triplet_type[2] = el3.first[0];
             triplet_list.emplace_back(is_not_sorted, triplet_type);
           }
@@ -712,4 +735,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif  // SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SOAP_HH_
+#endif  // SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SOAP_INVARIANT_HH_

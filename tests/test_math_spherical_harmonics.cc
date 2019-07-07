@@ -47,14 +47,16 @@ namespace rascal {
         std::cout << ">> Parameters successful loaded." << std::endl;
       }
 
-      // computing with ref parameters with our spherical harmonic harmonics_calculatortion
+      // computing with ref parameters with our spherical harmonic
+      // harmonics_calculatortion
       harmonics_calculator.calc(unit_vector);
       if (verbose) {
         std::cout << ">> computed harmonics: " << std::endl;
         std::cout << ">> " << harmonics_calculator.get_harmonics() << std::endl;
       }
-      double rel_error{(harmonics_calculator.get_harmonics() - harmonics_ref).norm()};
-      BOOST_CHECK_LE(rel_error, 2*math::dbl_ftol);
+      double rel_error{
+          (harmonics_calculator.get_harmonics() - harmonics_ref).norm()};
+      BOOST_CHECK_LE(rel_error, 2 * math::dbl_ftol);
       // TODO(alex) check with main_test_suite -l success and remove
       if (verbose) {
         std::cout << ">> Boost check perfomed." << std::endl;
@@ -74,7 +76,8 @@ namespace rascal {
     info = false;
     math::SphericalHarmonics harmonics_calculator{};
     if (info) {
-      std::cout << ">> Test math_associated_legendre_polynomial_test " << std::endl;
+      std::cout << ">> Test math_associated_legendre_polynomial_test "
+                << std::endl;
       std::cout << ">> with number_of_unit_vectors=" << this->ref_data.size();
       std::cout << " and max_angular_l=";
       std::cout << this->ref_data[0]["max_angular_l"] << std::endl;
@@ -105,19 +108,26 @@ namespace rascal {
         std::cout << ">> Parameters successful loaded." << std::endl;
       }
 
-      // computing with ref parameters with our spherical harmonic harmonics_calculatortion
+      // computing with ref parameters with our spherical harmonic
+      // harmonics_calculatortion
       harmonics_calculator.precompute(max_angular_l);
       harmonics_calculator.calc(unit_vector);
       if (verbose) {
         std::cout << ">> computed associated legendre polynomial: "
                   << std::endl;
-        std::cout << harmonics_calculator.get_assoc_legendre_polynom() << std::endl;
+        std::cout << harmonics_calculator.get_assoc_legendre_polynom()
+                  << std::endl;
       }
-      double rel_error{(harmonics_calculator.get_assoc_legendre_polynom() - alps_ref).norm()};
+      double rel_error{
+          (harmonics_calculator.get_assoc_legendre_polynom() - alps_ref)
+              .norm()};
       BOOST_CHECK_LE(rel_error, 10 * math::dbl_ftol);
-      // Checks if the additional last column of the associated legendre polynomial matrix contains only zero entries
-      BOOST_CHECK_EQUAL(harmonics_calculator.get_assoc_legendre_polynom_raw().col(max_angular_l+1).norm(), 0);
-      
+      // Checks if the additional last column of the associated legendre
+      // polynomial matrix contains only zero entries
+      BOOST_CHECK_EQUAL(harmonics_calculator.get_assoc_legendre_polynom_raw()
+                            .col(max_angular_l + 1)
+                            .norm(),
+                        0);
     }
     if (info) {
       std::cout << ">> Test math_spherical_harmonics_test finished."
@@ -127,13 +137,13 @@ namespace rascal {
 
   BOOST_AUTO_TEST_CASE(spherical_harmonics_gradient_test) {
     constexpr size_t test_max_angular = 30;
-    SphericalHarmonicsClassFunctionHolder<test_max_angular> harmonics_calculator{};
+    SphericalHarmonicsClassFunctionHolder<test_max_angular>
+        harmonics_calculator{};
     harmonics_calculator.precompute();
     GradientTestFixture fix{
         "reference_data/spherical_harmonics_gradient_test.json"};
     test_gradients(harmonics_calculator, fix);
   }
-
 
   BOOST_AUTO_TEST_SUITE_END();
 

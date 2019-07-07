@@ -64,7 +64,7 @@ class SOAPCovariant(object):
     def __init__(self, interaction_cutoff, cutoff_smooth_width,
                  max_radial, max_angular, gaussian_sigma_type,
                  gaussian_sigma_constant=0., n_species=1,
-                 cutoff_function_type="Cosine",normalize=True,
+                 cutoff_function_type="Cosine", normalize=True,
                  radial_basis="GTO",
                  soap_type="LambdaSpectrum", inversion_symmetry=True,
                  lam=0):
@@ -107,7 +107,7 @@ class SOAPCovariant(object):
 
         self.update_hyperparameters(cutoff_function=cutoff_function,
                                     gaussian_density=gaussian_density,
-                                radial_contribution=radial_contribution)
+                                    radial_contribution=radial_contribution)
 
         self.nl_options = [
             dict(name='centers', args=[]),
@@ -137,7 +137,7 @@ class SOAPCovariant(object):
         allowed_keys = {'interaction_cutoff', 'cutoff_smooth_width',
                         'max_radial', 'max_angular', 'gaussian_sigma_type',
                         'gaussian_sigma_constant', 'n_species', 'soap_type',
-                        'inversion_symmetry', 'lam','cutoff_function', 'normalize','gaussian_density', 'radial_contribution'}
+                        'inversion_symmetry', 'lam', 'cutoff_function', 'normalize', 'gaussian_density', 'radial_contribution'}
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}
         self.hypers.update(hypers_clean)
@@ -184,7 +184,7 @@ class SOAPCovariant(object):
             except:
                 print("Structure data gather {} failed".format(ii))
 
-            ii+=1
+            ii += 1
 
         return features
 
@@ -197,27 +197,27 @@ class SOAPCovariant(object):
         if self.hypers['soap_type'] == 'LambdaSpectrum':
             if self.hypers['inversion_symmetry'] == True:
                 n_col = np.ceil((self.hypers['max_angular'] + 1)**2/2.0) - \
-                        (1.0 + np.floor((self.hypers['lam'] - 1)/2.0))**2 - \
-                        np.floor((self.hypers['max_angular'] + 1 - \
-                        self.hypers['lam'])**2/2.0)*(self.hypers['lam'] % 2) - \
-                        (np.ceil((self.hypers['max_angular'] + 1 - \
-                        self.hypers['lam'])**2/2.0) - \
-                        (self.hypers['max_angular'] - \
-                        self.hypers['lam'] + 1))* \
-                        (1.0 - self.hypers['lam'] % 2);
+                    (1.0 + np.floor((self.hypers['lam'] - 1)/2.0))**2 - \
+                    np.floor((self.hypers['max_angular'] + 1 -
+                              self.hypers['lam'])**2/2.0)*(self.hypers['lam'] % 2) - \
+                    (np.ceil((self.hypers['max_angular'] + 1 -
+                              self.hypers['lam'])**2/2.0) -
+                     (self.hypers['max_angular'] -
+                      self.hypers['lam'] + 1)) * \
+                    (1.0 - self.hypers['lam'] % 2)
                 if (self.hypers['lam'] % 2 == 1):
-                    n_col = -n_col + 0.5*(2.0 + self.hypers['lam'] - \
-                            3*self.hypers['lam']**2 + \
-                            2*self.hypers['max_angular'] + \
-                            4*self.hypers['lam']*self.hypers['max_angular']);
+                    n_col = -n_col + 0.5*(2.0 + self.hypers['lam'] -
+                                          3*self.hypers['lam']**2 +
+                                          2*self.hypers['max_angular'] +
+                                          4*self.hypers['lam']*self.hypers['max_angular'])
                 n_col *= (2*self.hypers['lam'] + 1)
                 return int(n_col*self.hypers['n_species']**2*self.hypers['max_radial']**2)
             else:
-                return (self.hypers['n_species']**2*self.hypers['max_radial']**2* \
-                       int((2 + self.hypers['lam'] - 3*self.hypers['lam']**2 + \
-                       2*self.hypers['max_angular'] + \
-                       4*self.hypers['lam']*self.hypers['max_angular'])/2)* \
-                       (2*self.hypers['lam'] + 1))
+                return (self.hypers['n_species']**2*self.hypers['max_radial']**2 *
+                        int((2 + self.hypers['lam'] - 3*self.hypers['lam']**2 +
+                             2*self.hypers['max_angular'] +
+                             4*self.hypers['lam']*self.hypers['max_angular'])/2) *
+                        (2*self.hypers['lam'] + 1))
         else:
             raise RuntimeError('Only soap_type = LambdaSpectrum '
                                'implemented for now')

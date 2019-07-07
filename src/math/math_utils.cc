@@ -30,7 +30,5 @@
 #include "math_utils.hh"
 
 namespace rascal {
-  namespace math {
-
-  }  // namespace math
+  namespace math {}  // namespace math
 }  // namespace rascal

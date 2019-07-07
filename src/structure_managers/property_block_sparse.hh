@@ -82,8 +82,7 @@ namespace rascal {
 
       SortedKey(const Sorted<false> &, const Key_t & key) : SortedKey{key} {}
 
-      SortedKey(const Sorted<true> &, const Key_t & key)
-          : data{key} {}
+      SortedKey(const Sorted<true> &, const Key_t & key) : data{key} {}
 
       Key_t copy_sort(const Key_t & key) {
         Key_t skey{key};

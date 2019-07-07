@@ -1,4 +1,4 @@
- /**
+/**
  * file   representation_manager_soap_covariant.hh
  *
  * @author Max Veit <max.veit@epfl.ch>
@@ -47,21 +47,21 @@
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
 
-
 namespace rascal {
 
   namespace internal {
-    enum class SOAPCovariantType { LambdaSpectrum, End_};
+    enum class SOAPCovariantType { LambdaSpectrum, End_ };
 
     template <SOAPCovariantType SpectrumType>
     struct SOAPCovariantPrecomputation {};
 
     template <>
-    struct SOAPCovariantPrecomputation<SOAPCovariantType::LambdaSpectrum> :SOAPPrecomputationBase {
+    struct SOAPCovariantPrecomputation<SOAPCovariantType::LambdaSpectrum>
+        : SOAPPrecomputationBase {
       using Parent = SOAPPrecomputationBase;
       using Hypers_t = typename SOAPPrecomputationBase::Hypers_t;
 
-      SOAPCovariantPrecomputation(const Hypers_t & hypers) {
+      explicit SOAPCovariantPrecomputation(const Hypers_t & hypers) {
         this->max_angular = hypers.at("max_angular").get<size_t>();
         this->inversion_symmetry = hypers.at("inversion_symmetry").get<bool>();
         this->lambda = hypers.at("lam").get<size_t>();
@@ -69,63 +69,83 @@ namespace rascal {
         // get the number of non zero elements in the w3j
         int n_elements{0};
         size_t l3{this->lambda};
-        for (size_t l1{0}; l1 < this->max_angular+1; ++l1) {
-          for (size_t l2{0}; l2 < this->max_angular+1; ++l2) {
-            if (l1 < static_cast<size_t>(std::abs<int>(l2 - l3)) || l1 > l2 + l3) { continue; }
+        for (size_t l1{0}; l1 < this->max_angular + 1; ++l1) {
+          for (size_t l2{0}; l2 < this->max_angular + 1; ++l2) {
+            if (l1 < static_cast<size_t>(std::abs<int>(l2 - l3)) ||
+                l1 > l2 + l3) {
+              continue;
+            }
             if (this->inversion_symmetry == true) {
-              if ((l1 + l2 + l3) % 2 == 1) { continue; }
+              if ((l1 + l2 + l3) % 2 == 1) {
+                continue;
+              }
             }
-            for (size_t m1{0}; m1 < 2*l1 + 1; m1++) {
-            int m1s{static_cast<int>(m1 - l1)};
-            for (size_t m2{0}; m2 < 2*l2 + 1; m2++) {
-            int m2s{static_cast<int>(m2 - l2)};
-            for (size_t m3{0}; m3 < 2*l3 + 1; m3++) {
-            int m3s{static_cast<int>(m3 - l3)};
-            if (m1s + m2s + m3s != 0 && m1s + m2s - m3s != 0) { continue; }
-            ++n_elements;
-            }
-            }
+            for (size_t m1{0}; m1 < 2 * l1 + 1; m1++) {
+              int m1s{static_cast<int>(m1 - l1)};
+              for (size_t m2{0}; m2 < 2 * l2 + 1; m2++) {
+                int m2s{static_cast<int>(m2 - l2)};
+                for (size_t m3{0}; m3 < 2 * l3 + 1; m3++) {
+                  int m3s{static_cast<int>(m3 - l3)};
+                  if (m1s + m2s + m3s != 0 && m1s + m2s - m3s != 0) {
+                    continue;
+                  }
+                  ++n_elements;
+                }
+              }
             }
           }
         }
 
         this->w3js.resize(n_elements);
         n_elements = 0;
-        wig_table_init(2*(this->max_angular + 1), 3);
-        wig_temp_init(2*(this->max_angular + 1));
-        for (size_t l1{0}; l1 < this->max_angular+1; ++l1) {
-          for (size_t l2{0}; l2 < this->max_angular+1; ++l2) {
-            if (l1 < static_cast<size_t>(std::abs<int>(l2 - l3)) || l1 > l2 + l3) { continue; }
+        wig_table_init(2 * (this->max_angular + 1), 3);
+        wig_temp_init(2 * (this->max_angular + 1));
+        for (size_t l1{0}; l1 < this->max_angular + 1; ++l1) {
+          for (size_t l2{0}; l2 < this->max_angular + 1; ++l2) {
+            if (l1 < static_cast<size_t>(std::abs<int>(l2 - l3)) ||
+                l1 > l2 + l3) {
+              continue;
+            }
             if (this->inversion_symmetry == true) {
-              if ((l1 + l2 + l3) % 2 == 1) { continue; }
+              if ((l1 + l2 + l3) % 2 == 1) {
+                continue;
+              }
             }
-            for (size_t m1{0}; m1 < 2*l1 + 1; m1++) {
-            int m1s{static_cast<int>(m1 - l1)};
-            for (size_t m2{0}; m2 < 2*l2 + 1; m2++) {
-            int m2s{static_cast<int>(m2 - l2)};
-            for (size_t m3{0}; m3 < 2*l3 + 1; m3++) {
-            int m3s{static_cast<int>(m3 - l3)};
-            if (m1s + m2s + m3s != 0 && m1s + m2s - m3s != 0) { continue; }
-            double w3j1{wig3jj(2*l1, 2*l2, 2*l3, 2*m1s, 2*m2s, 2*m3s)};
-            double w3j2{wig3jj(2*l1, 2*l2, 2*l3, 2*m1s, 2*m2s, -2*m3s)};
-            if (m3s > 0) {
-              this->w3js(n_elements) = (w3j2 + math::pow(-1, m3s)*w3j1)/std::sqrt(2.0);
-            } else if (m3s < 0) {
-              this->w3js(n_elements) = ((w3j1 - math::pow(-1, m3s)*w3j2))/std::sqrt(2.0);
-            } else if (m3s == 0) {
-              this->w3js(n_elements) = w3j1;
-            }
-            //*/
-            //change to the following for agreement with SOAPFAST
-            //(different definition of the real spherical harmonics)
-            /*
-            if (m3s > 0) { this->w3js.push_back((w3j1 + pow(-1, m3s)*w3j2)/sqrt(2.0)); }
-            else if (m3s == 0) { this->w3js.push_back(w3j1); }
-            else if (m3s < 0) { this->w3js.push_back(((w3j2 - pow(-1, m3s)*w3j1))/sqrt(2.0)); }
-            */
-            ++n_elements;
-            }
-            }
+            for (size_t m1{0}; m1 < 2 * l1 + 1; m1++) {
+              int m1s{static_cast<int>(m1 - l1)};
+              for (size_t m2{0}; m2 < 2 * l2 + 1; m2++) {
+                int m2s{static_cast<int>(m2 - l2)};
+                for (size_t m3{0}; m3 < 2 * l3 + 1; m3++) {
+                  int m3s{static_cast<int>(m3 - l3)};
+                  if (m1s + m2s + m3s != 0 && m1s + m2s - m3s != 0) {
+                    continue;
+                  }
+                  double w3j1{wig3jj(2 * l1, 2 * l2, 2 * l3, 2 * m1s, 2 * m2s,
+                                     2 * m3s)};
+                  double w3j2{wig3jj(2 * l1, 2 * l2, 2 * l3, 2 * m1s, 2 * m2s,
+                                     -2 * m3s)};
+                  if (m3s > 0) {
+                    this->w3js(n_elements) =
+                        (w3j2 + math::pow(-1, m3s) * w3j1) / std::sqrt(2.0);
+                  } else if (m3s < 0) {
+                    this->w3js(n_elements) =
+                        ((w3j1 - math::pow(-1, m3s) * w3j2)) / std::sqrt(2.0);
+                  } else if (m3s == 0) {
+                    this->w3js(n_elements) = w3j1;
+                  }
+                  //*/
+                  // change to the following for agreement with SOAPFAST
+                  //(different definition of the real spherical harmonics)
+                  /*
+                  if (m3s > 0) { this->w3js.push_back((w3j1 + pow(-1,
+                  m3s)*w3j2)/sqrt(2.0)); } else if (m3s == 0) {
+                  this->w3js.push_back(w3j1); } else if (m3s < 0) {
+                  this->w3js.push_back(((w3j2 - pow(-1, m3s)*w3j1))/sqrt(2.0));
+                  }
+                  */
+                  ++n_elements;
+                }
+              }
             }
           }
         }
@@ -151,8 +171,8 @@ namespace rascal {
   decltype(auto) downcast_soap_covariant_precompute(
       const std::shared_ptr<internal::SOAPPrecomputationBase> &
           soap_precompute) {
-    return std::static_pointer_cast<internal::SOAPCovariantPrecomputation<Type>>(
-        soap_precompute);
+    return std::static_pointer_cast<
+        internal::SOAPCovariantPrecomputation<Type>>(soap_precompute);
   }
 
   template <class StructureManager>
@@ -173,10 +193,12 @@ namespace rascal {
     }
 
     //! Copy constructor
-    RepresentationManagerSOAPCovariant(const RepresentationManagerSOAPCovariant & other) = delete;
+    RepresentationManagerSOAPCovariant(
+        const RepresentationManagerSOAPCovariant & other) = delete;
 
     //! Move constructor
-    RepresentationManagerSOAPCovariant(RepresentationManagerSOAPCovariant && other) = default;
+    RepresentationManagerSOAPCovariant(
+        RepresentationManagerSOAPCovariant && other) = default;
 
     //! Destructor
     virtual ~RepresentationManagerSOAPCovariant() = default;
@@ -201,7 +223,8 @@ namespace rascal {
       if (this->soap_type_str.compare("LambdaSpectrum") == 0) {
         this->soap_type = SOAPCovariantType::LambdaSpectrum;
         this->precompute_soap[enumValue(SOAPCovariantType::LambdaSpectrum)] =
-            make_soap_covariant_precompute<SOAPCovariantType::LambdaSpectrum>(hypers);
+            make_soap_covariant_precompute<SOAPCovariantType::LambdaSpectrum>(
+                hypers);
 
       } else {
         throw std::logic_error("Requested SOAP type \'" + this->soap_type_str +
@@ -274,21 +297,28 @@ namespace rascal {
     // number of combinations of l1 and l2 satisfying the triangle constraint
     size_t n_col{0};
     if (this->inversion_symmetry == false) {
-      n_col = static_cast<size_t>((2 + this->lambda - 3*pow(this->lambda, 2_z) + 2*this->max_angular + 4*this->lambda*this->max_angular)/2*(2*this->lambda + 1));
-    }
-    else {
       n_col = static_cast<size_t>(
-              std::ceil(pow(this->max_angular + 1, 2_z)/2.0) -
-              pow(1.0 + std::floor((this->lambda - 1)/2.0), 2) -
-              std::floor(pow(this->max_angular + 1 - this->lambda, 2_z)/2.0)*
-              (this->lambda % 2) -
-              (std::ceil(pow(this->max_angular + 1 - this->lambda, 2_z)/2.0) -
-              (this->max_angular - this->lambda + 1))*(1.0 - this->lambda % 2))* (2*this->lambda + 1);
+          (2 + this->lambda - 3 * pow(this->lambda, 2_z) +
+           2 * this->max_angular + 4 * this->lambda * this->max_angular) /
+          2 * (2 * this->lambda + 1));
+    } else {
+      n_col =
+          static_cast<size_t>(
+              std::ceil(pow(this->max_angular + 1, 2_z) / 2.0) -
+              pow(1.0 + std::floor((this->lambda - 1) / 2.0), 2) -
+              std::floor(pow(this->max_angular + 1 - this->lambda, 2_z) / 2.0) *
+                  (this->lambda % 2) -
+              (std::ceil(pow(this->max_angular + 1 - this->lambda, 2_z) / 2.0) -
+               (this->max_angular - this->lambda + 1)) *
+                  (1.0 - this->lambda % 2)) *
+          (2 * this->lambda + 1);
       if (this->lambda % 2 == 1) {
         n_col = static_cast<size_t>(
-                0.5*(2 + this->lambda - 3*pow(this->lambda, 2_z) +
-                2*this->max_angular + 4*this->lambda*this->max_angular)*
-                (2*this->lambda + 1) - static_cast<int>(n_col));
+            0.5 *
+                (2 + this->lambda - 3 * pow(this->lambda, 2_z) +
+                 2 * this->max_angular + 4 * this->lambda * this->max_angular) *
+                (2 * this->lambda + 1) -
+            static_cast<int>(n_col));
       }
     }
 
@@ -309,12 +339,11 @@ namespace rascal {
       auto & center_type{center.get_atom_type()};
       Key_t pair_type{center_type, center_type};
       // TODO(felix) optimize this loop
-      for (const auto& el1: coefficients) {
+      for (const auto & el1 : coefficients) {
         pair_type[0] = el1.first[0];
-        for (const auto& el2: coefficients) {
+        for (const auto & el2 : coefficients) {
           pair_type[1] = el2.first[0];
           pair_list.emplace_back(is_not_sorted, pair_type);
-
         }
       }
       // initialize the power spectrum with the proper dimension
@@ -324,112 +353,125 @@ namespace rascal {
 
   template <class Mngr>
   void RepresentationManagerSOAPCovariant<Mngr>::compute_lambdaspectrum() {
-    using math::pow;
     using internal::SOAPCovariantType;
+    using math::pow;
     using complex = std::complex<double>;
 
     rep_expansion.compute();
-    auto& expansions_coefficients{rep_expansion.expansions_coefficients};
+    auto & expansions_coefficients{rep_expansion.expansions_coefficients};
 
     this->initialize_percenter_lambda_soap_vectors();
 
-    auto precomputation{downcast_soap_covariant_precompute<SOAPCovariantType::LambdaSpectrum>(
-        this->precompute_soap[enumValue(SOAPCovariantType::LambdaSpectrum)])};
+    auto precomputation{
+        downcast_soap_covariant_precompute<SOAPCovariantType::LambdaSpectrum>(
+            this->precompute_soap[enumValue(
+                SOAPCovariantType::LambdaSpectrum)])};
     auto & w3js{precomputation->w3js};
 
     Key_t p_type{0, 0};
     internal::SortedKey<Key_t> pair_type{p_type};
 
     for (auto center : this->structure_manager) {
-      auto& coefficients{expansions_coefficients[center]};
-      auto& soap_vector{this->soap_vectors[center]};
+      auto & coefficients{expansions_coefficients[center]};
+      auto & soap_vector{this->soap_vectors[center]};
 
-      for (const auto& el1: coefficients) {
+      for (const auto & el1 : coefficients) {
         pair_type[0] = el1.first[0];
-        auto& coef1{el1.second};
-        for (const auto& el2: coefficients) {
+        auto & coef1{el1.second};
+        for (const auto & el2 : coefficients) {
           pair_type[1] = el2.first[0];
-          auto& coef2{el2.second};
+          auto & coef2{el2.second};
 
-          size_t& l3{this->lambda};
+          size_t & l3{this->lambda};
           if (soap_vector.count(pair_type) == 1) {
-            auto&& soap_vector_by_type{soap_vector[pair_type]};
+            auto && soap_vector_by_type{soap_vector[pair_type]};
 
             size_t nn{0};
             for (size_t n1{0}; n1 < this->max_radial; n1++) {
               for (size_t n2{0}; n2 < this->max_radial; n2++) {
                 size_t l0{0};
                 int count{0};
-                for (size_t l1{0}; l1 < this->max_angular+1; l1++) {
-                  for (size_t l2{0}; l2 < this->max_angular+1; l2++) {
-                    if (l1 < static_cast<size_t>(std::abs<int>(l2 - l3)) || l1 > l2 + l3) { continue; }
-                    if (this->inversion_symmetry == true) {
-                      if ((l1 + l2 + l3) % 2 == 1) { continue; }
+                for (size_t l1{0}; l1 < this->max_angular + 1; l1++) {
+                  for (size_t l2{0}; l2 < this->max_angular + 1; l2++) {
+                    if (l1 < static_cast<size_t>(std::abs<int>(l2 - l3)) ||
+                        l1 > l2 + l3) {
+                      continue;
                     }
-                    for (size_t m3{0}; m3 < 2*l3 + 1; m3++) {
+                    if (this->inversion_symmetry == true) {
+                      if ((l1 + l2 + l3) % 2 == 1) {
+                        continue;
+                      }
+                    }
+                    for (size_t m3{0}; m3 < 2 * l3 + 1; m3++) {
                       int m3s{static_cast<int>(m3 - l3)};
-                      for (size_t m1{0}; m1 < 2*l1 + 1; m1++) {
+                      for (size_t m1{0}; m1 < 2 * l1 + 1; m1++) {
                         int m1s{static_cast<int>(m1 - l1)};
                         size_t lm1{pow(l1, 2_z) + m1};
-                        for (size_t m2{0}; m2 < 2*l2 + 1; m2++) {
+                        for (size_t m2{0}; m2 < 2 * l2 + 1; m2++) {
                           int m2s{static_cast<int>(m2 - l2)};
-                          if (m1s + m2s + m3s != 0 && m1s + m2s - m3s != 0) { continue; }
+                          if (m1s + m2s + m3s != 0 && m1s + m2s - m3s != 0) {
+                            continue;
+                          }
                           size_t lm2{pow(l2, 2_z) + m2};
                           complex coef1c, coef2c;
                           double w3j = w3js[count];
                           // usual formulae for converting from real to complex
                           if (m1s > 0) {
-                            coef1c = pow(-1.0, m1s)*
+                            coef1c = pow(-1.0, m1s) *
                                      complex{coef1(n1, lm1),
-                                     coef1(n1, lm1 - 2*m1s)};
+                                             coef1(n1, lm1 - 2 * m1s)};
                           } else if (m1s == 0) {
-                            coef1c = complex{coef1(n1, lm1), 0.0}*
-                                     std::sqrt(2.0);
+                            coef1c =
+                                complex {coef1(n1, lm1), 0.0} * std::sqrt(2.0);
                           } else if (m1s < 0) {
-                            coef1c = complex(coef1(n1, lm1 - 2*m1s),
-                                     -coef1(n1, lm1));
+                            coef1c = complex(coef1(n1, lm1 - 2 * m1s),
+                                             -coef1(n1, lm1));
                           }
                           if (m2s > 0) {
-                            coef2c = pow(-1.0, m2s)*
+                            coef2c = pow(-1.0, m2s) *
                                      complex{coef2(n2, lm2),
-                                     coef2(n2, lm2 - 2*m2s)};
+                                             coef2(n2, lm2 - 2 * m2s)};
                           } else if (m2s == 0) {
-                            coef2c = complex{coef2(n2, lm2), 0.0}*
-                                     std::sqrt(2.0);
+                            coef2c =
+                                complex {coef2(n2, lm2), 0.0} * std::sqrt(2.0);
                           } else if (m2s < 0) {
-                            coef2c = complex{coef2(n2, lm2 - 2*m2s),
-                                     -coef2(n2, lm2)};
+                            coef2c = complex{coef2(n2, lm2 - 2 * m2s),
+                                             -coef2(n2, lm2)};
                           }
                           coef1c /= std::sqrt(2.0);
                           coef2c /= std::sqrt(2.0);
-                          //combine the coefficients with Wigner 3j symbols
+                          // combine the coefficients with Wigner 3j symbols
                           complex ci{0.0, 1.0};
                           if ((l1 + l2 + l3) % 2 == 0) {
                             if (m3s < 0) {
-                              soap_vector_by_type(nn, l0) += w3j*(ci*coef1c*coef2c).real();
+                              soap_vector_by_type(nn, l0) +=
+                                  w3j * (ci * coef1c * coef2c).real();
                             } else {
-                              soap_vector_by_type(nn, l0) += w3j*(coef1c*coef2c).real();
+                              soap_vector_by_type(nn, l0) +=
+                                  w3j * (coef1c * coef2c).real();
                             }
                           } else if (this->inversion_symmetry == false) {
                             if (m3s < 0) {
-                              soap_vector_by_type(nn, l0) += w3j*(ci*coef1c*coef2c).imag();
+                              soap_vector_by_type(nn, l0) +=
+                                  w3j * (ci * coef1c * coef2c).imag();
                             } else {
-                              soap_vector_by_type(nn, l0) += w3j*(coef1c*coef2c).imag();
+                              soap_vector_by_type(nn, l0) +=
+                                  w3j * (coef1c * coef2c).imag();
                             }
                           }
                           count++;
-                        } // m2
-                      } // m1
+                        }  // m2
+                      }    // m1
                       l0++;
                     }  // m3
-                  } // l2
-                } // l1
+                  }    // l2
+                }      // l1
                 nn++;
-              } // n2
-            } // n1
-          } // if pair_type count
-        } // coef1
-      } // coef1
+              }  // n2
+            }    // n1
+          }      // if pair_type count
+        }        // coef1
+      }          // coef1
 
       // the SQRT_TWO factor comes from the fact that
       // the upper diagonal of the species is not considered
@@ -439,9 +481,8 @@ namespace rascal {
       if (this->normalize) {
         soap_vector.normalize();
       }
-
-    } // center
-  } // compute_lambdaspectrum
+    }  // center
+  }    // compute_lambdaspectrum
 
 }  // namespace rascal
 

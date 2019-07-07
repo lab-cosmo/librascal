@@ -34,14 +34,13 @@
 #include <Eigen/Dense>
 #include <cmath>
 #include <limits>
+#include <cstdint>
 
 namespace rascal {
   /**
    * User defined literal operator to initialize size_t literals
    */
-  constexpr std::size_t operator "" _z ( unsigned long long int n ) {
-    return n;
-  }
+  constexpr std::size_t operator"" _z(std::uint64_t n) { return n; }
 
   namespace math {
 
@@ -65,15 +64,12 @@ namespace rascal {
 
     using MatrixX2_t = Eigen::Matrix<double, Eigen::Dynamic, 2>;
 
-
-
-
     /**
      * Define integer powers and wrap the different cases under the same name
      */
     namespace details {
       //! unsingned integer power
-      template<typename Scalar_>
+      template <typename Scalar_>
       inline Scalar_ pow_u(Scalar_ x, size_t n) {
         Scalar_ value{1};
 
@@ -92,7 +88,7 @@ namespace rascal {
       }
 
       //! integer power
-      template<typename Scalar_>
+      template <typename Scalar_>
       inline double pow_i(const Scalar_ & x, const int & n) {
         size_t un{0};
         double value{static_cast<double>(x)};
