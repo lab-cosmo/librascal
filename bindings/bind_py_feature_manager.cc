@@ -79,7 +79,6 @@ decltype(auto) bind_feature_manager(py::module & mod, py::module &) {
   return feature;
 }
 
-
 /**
  * Bind a feature manager
  */

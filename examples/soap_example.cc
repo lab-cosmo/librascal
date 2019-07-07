@@ -3,7 +3,7 @@
  *
  * @author Max Veit <max.veit@epfl.ch>
  *
- * @date   7 May 2019
+ * @date   26 June 2019
  *
  * @brief  Example for profiling the spherical expansion and SOAP
  *
@@ -32,7 +32,7 @@
 #include "rascal_utility.hh"
 #include "representations/representation_manager_sorted_coulomb.hh"
 #include "representations/representation_manager_spherical_expansion.hh"
-#include "representations/representation_manager_soap_invariant.hh"
+#include "representations/representation_manager_soap.hh"
 #include "representations/feature_manager_dense.hh"
 #include "basic_types.hh"
 #include "atomic_structure.hh"
@@ -49,9 +49,9 @@
 // using namespace std;
 using namespace rascal;  // NOLINT
 
-const int N_ITERATIONS = 1000;
-
-using Representation_t = RepresentationManagerSOAPInvariant<
+//using Representation_t = RepresentationManagerSOAP<
+    //AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
+using Representation_t = RepresentationManagerSphericalExpansion<
     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
 
 int main(int argc, char * argv[]) {
@@ -61,15 +61,14 @@ int main(int argc, char * argv[]) {
     return -1;
   }
 
-  // TODO(max) put these in a file so they can be varied systematically
-  // maybe together with the filename and iteration count
   std::string filename{argv[1]};
 
-  double cutoff{5.};
-  json hypers{{"max_radial", 8},
-              {"max_angular", 6},
-              {"soap_type", "PowerSpectrum"},
-              {"normalize", true}};
+  double cutoff{4.};
+  json hypers{{"max_radial", 3},
+              {"max_angular", 2},
+              {"compute_gradients", true}};
+              //{"soap_type", "PowerSpectrum"},
+              //{"normalize", true}};
 
   json fc_hypers{{"type", "Cosine"},
                  {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
@@ -95,42 +94,56 @@ int main(int argc, char * argv[]) {
                                    AdaptorNeighbourList, AdaptorStrict>(
           structure, adaptors);
 
-  AtomicStructure<3> ast{};
-  ast.set_structure(filename);
-
-  std::cout << "structure filename: " << filename << std::endl;
-
-  std::chrono::duration<double> elapsed{};
-
-  auto start = std::chrono::high_resolution_clock::now();
-  // This is the part that should get profiled
-  for (size_t looper{0}; looper < N_ITERATIONS; looper++) {
-    manager->update(ast);
-  }
-  auto finish = std::chrono::high_resolution_clock::now();
-
-  elapsed = finish - start;
-  std::cout << "Neighbour List"
-            << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
-            << std::endl;
-
   Representation_t representation{manager, hypers};
+  representation.compute();
 
-  start = std::chrono::high_resolution_clock::now();
-  // This is the part that should get profiled
-  for (size_t looper{0}; looper < N_ITERATIONS; looper++) {
-    representation.compute();
+  constexpr size_t n_centers_print{4};
+  constexpr size_t n_neigh_print{1};
+
+  //auto soap = representation.get_representation_full();
+  //std::cout << "Sample SOAP elements \n"
+            //<< soap(0, 0) << " " << soap(0, 1) << " " << soap(0, 2) << "\n"
+            //<< soap(1, 0) << " " << soap(1, 1) << " " << soap(1, 2) << "\n"
+            //<< soap(2, 0) << " " << soap(2, 1) << " " << soap(2, 2) << "\n";
+  // Print the first few elements and gradients, so we know we're getting
+  // something
+  std::cout << "Expansion of first " << n_centers_print << " centers:";
+  std::cout << std::endl;
+  std::cout << "Note that the coefficients are printed with species along the "
+               "columns and n-l-m along the rows." << std::endl;
+  std::cout << "Gradients are printed with: First Cartesian component, "
+               "then species, along the rows; n-l-m along the columns.";
+  std::cout << std::endl;
+  size_t center_count{0};
+  for (auto center : manager) {
+    if (center_count >= n_centers_print) { break; }
+    size_t n_species_center{
+        representation.expansions_coefficients.get_keys(center).size()};
+    std::cout << "============================" << std::endl;
+    std::cout << "Center " << center.get_index();
+    std::cout << " of type " << center.get_atom_type() << std::endl;
+    std::cout << representation.expansions_coefficients.get_dense_row(center);
+    std::cout << std::endl;
+    std::cout << "Gradient of this expansion wrt center pos: " << std::endl;
+    std::cout << Eigen::Map<Eigen::MatrixXd>(
+        representation.expansions_coefficients_gradient.get_dense_row(center)
+          .data(),
+        3 * n_species_center,
+        representation.expansions_coefficients_gradient.get_nb_comp());
+    std::cout << std::endl;
+    size_t neigh_count{0};
+    for (auto neigh : center) {
+      if (neigh_count >= n_neigh_print) { break; }
+      std::cout << "Gradient of the above wrt atom " << neigh.back();
+      std::cout << " of type " << neigh.get_atom_type() << std::endl;
+      std::cout << Eigen::Map<Eigen::MatrixXd>(
+          representation.expansions_coefficients_gradient.get_dense_row(neigh)
+            .data(),
+          3 * n_species_center,
+          representation.expansions_coefficients_gradient.get_nb_comp());
+      std::cout << std::endl;
+      ++neigh_count;
+    }
+    ++center_count;
   }
-  finish = std::chrono::high_resolution_clock::now();
-
-  elapsed = finish - start;
-  std::cout << "Compute represenation"
-            << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
-            << std::endl;
-
-  auto soap = representation.get_representation_full();
-  std::cout << "Sample SOAP elements \n"
-            << soap(0, 0) << " " << soap(0, 1) << " " << soap(0, 2) << "\n"
-            << soap(1, 0) << " " << soap(1, 1) << " " << soap(1, 2) << "\n"
-            << soap(2, 0) << " " << soap(2, 1) << " " << soap(2, 2) << "\n";
 }

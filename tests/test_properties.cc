@@ -706,13 +706,15 @@ namespace rascal {
    * A fixture for testing partially sparse proterties.
    * TODO(felix) use MultipleStructureManagerCentersFixture instead of NL
    */
+  template<size_t Order>
   struct BlockSparsePropertyFixture
       : public MultipleStructureFixture<MultipleStructureManagerNLFixture> {
     using Parent = MultipleStructureFixture<MultipleStructureManagerNLFixture>;
     using ManagerTypeList_t = typename Parent::ManagerTypeHolder_t::type_list;
     using Manager_t = typename Parent::ManagerTypeHolder_t::type;
     using Key_t = std::vector<int>;
-    using BlockSparseProperty_t = BlockSparseProperty<double, 1, 0, Manager_t, Key_t>;
+    using BlockSparseProperty_t =
+        BlockSparseProperty<double, Order, 0, Manager_t, Key_t>;
     using Dense_t = typename BlockSparseProperty_t::Dense_t;
     using InputData_t = typename BlockSparseProperty_t::InputData_t;
     using TestData_t = std::vector<InputData_t>;
@@ -742,9 +744,9 @@ namespace rascal {
           // set up the data to fill the property later
           InputData_t datas{};
           // resize and set to 0
-          datas.resize(keys, 21, 8, 0);
+          datas.resize(keys, n_row, n_col, 0);
           for (auto & key : keys) {
-            auto data = Dense_t::Random(21, 8);
+            auto data = Dense_t::Random(n_row, n_col);
             datas[key] += data;
           }
           this->keys_list.back().push_back(keys);
@@ -754,30 +756,55 @@ namespace rascal {
       }
     }
 
+    int n_row{21};
+    int n_col{8};
+
     std::vector<std::vector<std::set<Key_t>>> keys_list{};
     std::vector<TestData_t> test_datas{};
     std::vector<BlockSparseProperty_t> sparse_features{};
   };
 
+
   BOOST_AUTO_TEST_SUITE(Property_partially_sparse_tests);
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(constructor_test, BlockSparsePropertyFixture) {}
+  BOOST_FIXTURE_TEST_CASE(constructor_test, BlockSparsePropertyFixture<1>) {}
 
   /* ---------------------------------------------------------------------- */
   /*
    * checks if the partially sparse properties associated with centers can be
    * filled and that the data can be accessed consistently.
    */
-  BOOST_FIXTURE_TEST_CASE(fill_test_simple, BlockSparsePropertyFixture) {
+
+  using Fixtures = boost::mpl::list<
+      BlockSparsePropertyFixture<1>,
+      // the order == 2 case test the access of the property of order 2 can
+      // be properly accessed by a clusterRef of order 1
+      BlockSparsePropertyFixture<2>
+      >;
+
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(fill_test_simple, Fix, Fixtures, Fix) {
+    auto &managers = Fix::managers;
+    auto &keys_list = Fix::keys_list;
+    auto& sparse_features = Fix::sparse_features;
+    auto& n_row = Fix::n_row;
+    auto& n_col = Fix::n_col;
+    auto& test_datas = Fix::test_datas;
+
     bool verbose{false};
     // fill the property structures
     auto i_manager{0};
     for (auto & manager : managers) {
+      auto& keys{keys_list[i_manager]};
       auto i_center{0};
-      sparse_features[i_manager].set_shape(21, 8);
+      sparse_features[i_manager].set_shape(this->n_row, this->n_col);
+      sparse_features[i_manager].resize();
       for (auto center : manager) {
-        sparse_features[i_manager].push_back(test_datas[i_manager][i_center]);
+        auto&& sparse_features_center{sparse_features[i_manager][center]};
+        sparse_features_center.resize(keys[i_center], n_row, n_col, 0);
+        for (auto& key : keys[i_center]) {
+          sparse_features_center[key] = test_datas[i_manager][i_center][key];
+        }
         i_center++;
       }
       i_manager++;
@@ -823,12 +850,13 @@ namespace rascal {
   /**
    * test, if metadata can be assigned to properties
    */
-  BOOST_FIXTURE_TEST_CASE(meta_data_test, BlockSparsePropertyFixture) {
-    for (auto & sparse_feature : this->sparse_features) {
+  BOOST_FIXTURE_TEST_CASE(meta_data_test, BlockSparsePropertyFixture<1>) {
+    for (auto & sparse_feature : sparse_features) {
       auto sparse_feature_metadata = sparse_feature.get_metadata();
       BOOST_CHECK_EQUAL(sparse_feature_metadata, sparse_features_desc);
     }
   }
+
 
   BOOST_AUTO_TEST_SUITE_END();
 

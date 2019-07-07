@@ -45,6 +45,7 @@
 #include <vector>
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
+#include <unordered_set>
 
 namespace rascal {
 

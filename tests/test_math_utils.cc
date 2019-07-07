@@ -28,6 +28,9 @@
 #include "tests.hh"
 #include "test_math.hh"
 
+// TODO(alex) create a the sphericals harmonics test class as it was done for
+// test_math_hyp1f1.cc read vectors as in test_math.hh:50~
+
 namespace rascal {
   // Double ftol defined in test_math.hh (currently 100*eps, so about the same
   // as below)
@@ -62,6 +65,7 @@ namespace rascal {
    *
    * The code above works with SciPy v1.1.0.
    */
+  // TODO(alex) make the verbose a bit more pretty
   BOOST_FIXTURE_TEST_CASE(math_spherical_harmonics_test,
                           SphericalHarmonicsRefFixture) {
     for (size_t vec_idx{0}; vec_idx < unit_vectors.size(); vec_idx++) {
@@ -70,28 +74,42 @@ namespace rascal {
       Eigen::VectorXd computed_harmonics =
           math::compute_spherical_harmonics(direction, max_angular);
       if (verbose) {
-        std::cout << "Testing unit vector: " << direction << std::endl;
-        std::cout << "Max angular momentum: l_max=" << max_angular << std::endl;
-        std::cout << "Computed harmonics size: " << computed_harmonics.size();
+        std::cout << ">> Testing unit vector: ";
+        std::cout << Eigen::Map<Eigen::RowVector3d>(direction.data());
         std::cout << std::endl;
+        std::cout << ">> Max angular momentum: l_max=" << max_angular
+                  << std::endl;
+        std::cout << ">> Number of computed harmonics: ";
+        std::cout << computed_harmonics.size() << std::endl;
       }
-      size_t lm{0};
+      size_t lm_collective_idx{0};
       for (size_t angular_l{0}; angular_l < max_angular + 1; angular_l++) {
         if (verbose) {
-          std::cout << std::setprecision(10) << "Coefficients for l=";
+          auto harmonics_segment =
+              computed_harmonics.segment(lm_collective_idx, 2 * angular_l + 1);
+
+          std::cout << std::setprecision(10) << ">> Coefficients for l=";
           std::cout << angular_l << ": ";
-          std::cout << computed_harmonics.array().segment(lm, angular_l + 1);
+          std::cout << harmonics_segment;
           std::cout << std::endl;
+          std::cout << ">> Refererence computation Coefficients: ";
         }
+
         for (size_t m_idx{0}; m_idx < 2 * angular_l + 1; m_idx++) {
+          if (verbose) {
+            std::cout << harmonics[vec_idx][angular_l][m_idx];
+            std::cout << ", ";
+          }
           // Check both the harmonics and their order in memory
-          auto error{std::abs(computed_harmonics(lm) -
+          auto error{std::abs(computed_harmonics(lm_collective_idx + m_idx) -
                               harmonics[vec_idx][angular_l][m_idx])};
-          ++lm;
           BOOST_CHECK_LE(error, math::dbl_ftol);
         }
+        lm_collective_idx += (2 * angular_l + 1);
       }
-      // TODO(max-veit) do we make sure that the rest of the array is zero?
+      if (verbose) {
+        std::cout << std::endl;
+      }
     }
   }
 
@@ -122,6 +140,7 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(math_associated_legendre_polynomial_test,
                           SphericalHarmonicsRefFixture) {
+    verbose = false;
     for (size_t vec_idx{0}; vec_idx < unit_vectors.size(); vec_idx++) {
       Eigen::Vector3d direction(unit_vectors[vec_idx].data());
       size_t max_angular = harmonics[vec_idx].size() - 1;
@@ -138,7 +157,7 @@ namespace rascal {
         if (verbose) {
           std::cout << std::setprecision(10) << "Computed ALPs for l=";
           std::cout << angular_l << ": ";
-          std::cout << computed_alps.block(angular_l, 0, 1, angular_l + 1);
+          std::cout << computed_alps.block(angular_l, 0, 1, angular_l + 2);
           std::cout << std::endl;
         }
         for (size_t m_idx{0}; m_idx < angular_l + 1; m_idx++) {
@@ -146,6 +165,9 @@ namespace rascal {
           auto error{std::abs(computed_alps(angular_l, m_idx) -
                               alps[vec_idx][angular_l][m_idx])};
           BOOST_CHECK_LE(error, math::dbl_ftol);
+        }
+        for (size_t m_idx{angular_l + 1}; m_idx < max_angular + 2; m_idx++) {
+          BOOST_CHECK_EQUAL(computed_alps(angular_l, m_idx), 0.);
         }
       }
     }
@@ -175,6 +197,14 @@ namespace rascal {
         BOOST_CHECK_LE(sin_error, math::dbl_ftol);
       }
     }
+  }
+
+  BOOST_AUTO_TEST_CASE(spherical_harmonics_gradient_test) {
+    constexpr size_t test_max_angular = 30;
+    SphericalHarmonicsWithGradients<test_max_angular> harmonics_calculator{};
+    GradientTestFixture fix{
+        "reference_data/spherical_harmonics_gradient_test.json"};
+    test_gradients(harmonics_calculator, fix);
   }
 
   /* ---------------------------------------------------------------------- */

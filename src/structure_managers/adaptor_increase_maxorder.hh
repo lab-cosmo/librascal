@@ -323,11 +323,6 @@ namespace rascal {
   template <class ManagerImplementation>
   template <class... Args>
   void AdaptorMaxOrder<ManagerImplementation>::update(Args &&... arguments) {
-    // if sizeof...(arguments) == 0 then the underlying structure
-    // is not changed
-    if (sizeof...(arguments) > 0) {
-      this->set_update_status(false);
-    }
     this->manager->update(std::forward<Args>(arguments)...);
   }
 
