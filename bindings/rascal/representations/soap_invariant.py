@@ -64,7 +64,7 @@ class SOAPInvariant(object):
                  max_radial, max_angular, gaussian_sigma_type,
                  gaussian_sigma_constant=0., n_species=1,
                  soap_type="PowerSpectrum", inversion_symmetry=True,
-                 radial_basis="GTO"):
+                 radial_basis="GTO",normalize=True):
         """Construct a SphericalExpansion representation
 
         Required arguments are all the hyperparameters named in the
@@ -75,7 +75,7 @@ class SOAPInvariant(object):
         self.update_hyperparameters(
             max_radial=max_radial, max_angular=max_angular,
             n_species=n_species,
-            soap_type=soap_type,
+            soap_type=soap_type,normalize=normalize,
             inversion_symmetry=inversion_symmetry)
 
         cutoff_function = dict(
@@ -135,13 +135,13 @@ class SOAPInvariant(object):
         allowed_keys = {'interaction_cutoff', 'cutoff_smooth_width',
                         'max_radial', 'max_angular', 'gaussian_sigma_type',
                         'gaussian_sigma_constant', 'n_species', 'soap_type',
-                        'inversion_symmetry'}
+                        'inversion_symmetry','cutoff_function', 'normalize','gaussian_density', 'radial_contribution'}
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}
         self.hypers.update(hypers_clean)
         return
 
-    def transform(self, frames):
+    def transform(self, frames, features=None):
         """Compute the representation.
 
         Parameters
@@ -155,6 +155,9 @@ class SOAPInvariant(object):
             Object containing the representation
 
         """
+        if features is None:
+            features = FeatureFactory(self.feature_options)
+
         structures = [convert_to_structure(frame) for frame in frames]
 
         n_atoms = [0]+[len(structure['atom_types'])
@@ -162,12 +165,24 @@ class SOAPInvariant(object):
         structure_ids = np.cumsum(n_atoms)[:-1]
         n_centers = np.sum(n_atoms)
 
-        features = FeatureFactory(self.feature_options)
-
+        ii = 0
         for structure in structures:
-            self.manager.update(**structure)
-            self.representation.compute()
-            features.append(self.representation)
+            try:
+                self.manager.update(**structure)
+            except:
+                print("Structure NL {} failed".format(ii))
+
+            try:
+                self.representation.compute()
+            except:
+                print("Structure Rep computation {} failed".format(ii))
+
+            try:
+                features.append(self.representation)
+            except:
+                print("Structure data gather {} failed".format(ii))
+
+            ii+=1
 
         return features
 
@@ -180,19 +195,12 @@ class SOAPInvariant(object):
         if self.hypers['soap_type'] == 'RadialSpectrum':
             return (self.hypers['n_species']*self.hypers['max_radial'])
         if self.hypers['soap_type'] == 'PowerSpectrum':
-            return (int((self.hypers['n_species']*(self.hypers['n_species'] + 1))/2)* \
-                   self.hypers['max_radial']**2* \
-                   (self.hypers['max_angular'] + 1))
+            return (int((self.hypers['n_species']*(self.hypers['n_species'] + 1))/2)* self.hypers['max_radial']**2 * (self.hypers['max_angular'] + 1))
         if self.hypers['soap_type'] == 'BiSpectrum':
             if self.hypers['inversion_symmetry'] == False:
-                return (self.hypers['n_species']**3*self.hypers['max_radial']**3* \
-                        int(1 + 2*self.hypers['max_angular'] + \
-                        3*self.hypers['max_angular']**2/2 + \
-                        self.hypers['max_angular']**3/2))
+                return (self.hypers['n_species']**3 * self.hypers['max_radial']**3* int(1 + 2*self.hypers['max_angular'] + 3*self.hypers['max_angular']**2/2 + self.hypers['max_angular']**3/2))
             else:
-                return (self.hypers['n_species']**3*self.hypers['max_radial']**3* \
-                        int(np.floor(((self.hypers['max_angular'] + 1)**2 + 1)* \
-                        (2*(self.hypers['max_angular'] + 1) + 3)/8.0)))
+                return (self.hypers['n_species']**3*self.hypers['max_radial']**3* int(np.floor(((self.hypers['max_angular'] + 1)**2 + 1)* (2*(self.hypers['max_angular'] + 1) + 3)/8.0)))
         else:
             raise RuntimeError('Only soap_type = RadialSpectrum || '
                                'PowerSpectrum || BiSpectrum '

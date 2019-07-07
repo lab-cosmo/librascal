@@ -54,17 +54,17 @@ int main() {
   std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
   double cutoff{3.};
   json hypers{{"max_radial", 2},
-              {"max_angular", 2},
+              {"max_angular", 1},
             //   {"soap_type", "PowerSpectrum"},
               {"soap_type", "BiSpectrum"},
-              {"inversion_symmetry", false},
-              {"normalize", true}};
+              {"inversion_symmetry", true},
+              {"normalize", false}};
 
   json fc_hypers{{"type", "Cosine"},
                  {"cutoff", {{"value", cutoff}, {"unit", "A"}}},
                  {"smooth_width", {{"value", 0.}, {"unit", "A"}}}};
   json sigma_hypers{{"type", "Constant"},
-                    {"gaussian_sigma", {{"value", 0.4}, {"unit", "A"}}}};
+                    {"gaussian_sigma", {{"value", 0.5}, {"unit", "A"}}}};
 
   hypers["cutoff_function"] = fc_hypers;
   hypers["gaussian_density"] = sigma_hypers;
@@ -100,10 +100,10 @@ int main() {
   }
 
   std::cout << "Sample SOAP elements \n"
-            << X(0, 0) << " " << X(0, 1) << " " << X(0, 2) << "\n"
-            << X(1, 0) << " " << X(1, 1) << " " << X(1, 2) << "\n"
-            << X(2, 0) << " " << X(2, 1) << " " << X(2, 2) << "\n";
-
+            << X.maxCoeff() << " " << X.minCoeff() << "\n";
+  std::cout << X.rows() << ", " << X.cols() << std::endl;
+  std::cout << (X.array() > 1e200).any() << std::endl;
+  std::cout << X.col(0) << std::endl;
   // auto& soap_vectors = representation.soap_vectors;
 
   // for (auto center : manager) {
@@ -115,7 +115,7 @@ int main() {
   //     break;
   //   }
   // }
-  
+
   auto kernel1 = X.transpose() * X;
 
   auto kernel2 = dot(feature, feature);

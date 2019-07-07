@@ -170,7 +170,7 @@ namespace rascal {
         for (const auto & element : raw_data[i_center]) {
           const auto & key{element.first};
           const auto & value{element.second};
-
+          //TODO(felix) bewhare this changes the order
           for (int i_col{0}; i_col < value.cols(); i_col++) {
             for (int i_row{0}; i_row < value.rows(); i_row++) {
               this->feature_matrix.push_back(value(i_row, i_col));

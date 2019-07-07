@@ -346,12 +346,12 @@ namespace rascal {
      */
     void attach_property(const std::string & name,
                          std::shared_ptr<PropertyBase> property) {
-      if (this->has_property(name)) {
-        std::stringstream error{};
-        error << "A property of name '" << name
-              << "' has already been registered";
-        throw std::runtime_error(error.str());
-      }
+      // if (this->has_property(name)) {
+      //   std::stringstream error{};
+      //   error << "A property of name '" << name
+      //         << "' has already been registered";
+      //   throw std::runtime_error(error.str());
+      // }
       this->properties[name] = property;
       this->property_fresh[name] = false;
     }

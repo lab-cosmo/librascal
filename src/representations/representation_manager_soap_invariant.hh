@@ -627,7 +627,7 @@ namespace rascal {
         }
       }
       // initialize the power spectrum with the proper dimension
-      soap_vector.resize(triplet_list, n_row, n_col);
+      soap_vector.resize(triplet_list, n_row, n_col, 0);
     }
   }
 
