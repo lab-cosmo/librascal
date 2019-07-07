@@ -63,6 +63,7 @@ class SOAPInvariant(object):
     def __init__(self, interaction_cutoff, cutoff_smooth_width,
                  max_radial, max_angular, gaussian_sigma_type,
                  gaussian_sigma_constant=0., n_species=1,
+                 cutoff_function_type="Cosine",
                  soap_type="PowerSpectrum", inversion_symmetry=True,
                  radial_basis="GTO",normalize=True):
         """Construct a SphericalExpansion representation
@@ -79,21 +80,21 @@ class SOAPInvariant(object):
             inversion_symmetry=inversion_symmetry)
 
         cutoff_function = dict(
-            type="Cosine",
+            type=cutoff_function_type,
             cutoff=dict(
                 value=interaction_cutoff,
-                unit='A'
+                unit='AA'
             ),
             smooth_width=dict(
                 value=cutoff_smooth_width,
-                unit='A'
+                unit='AA'
             ),
         )
         gaussian_density = dict(
             type=gaussian_sigma_type,
             gaussian_sigma=dict(
                 value=gaussian_sigma_constant,
-                unit='A'
+                unit='AA'
             ),
         )
         radial_contribution = dict(
