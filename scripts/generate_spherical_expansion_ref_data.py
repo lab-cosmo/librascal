@@ -64,6 +64,7 @@ def dump_reference_json():
                 max_radials=max_radials,
                 rep_info=[])
 
+    # An example of the gruesomeness of using 4 spaces for one tab
     for fn in fns:
         for cutoff in cutoffs:
             data['rep_info'].append([])
@@ -94,7 +95,7 @@ def dump_reference_json():
 ##########################################################################################
 ##########################################################################################
 
-def main(json_dump):
+def main(json_dump, save_kernel):
 
     test_hypers = {"interaction_cutoff": 4.0,
                    "cutoff_smooth_width": 0.0,
@@ -113,7 +114,8 @@ def main(json_dump):
     ncen = np.cumsum([len(frame) for frame in frames])[-1]
 
     x = get_soap_vectors(test_hypers, frames)
-    np.save('spherical_expansion_example.npy', x)
+    if save_kernel is True:
+        np.save('spherical_expansion_example.npy', x)
 
 #--------------------------------dump json reference data--------------------------------#
 
@@ -126,5 +128,6 @@ def main(json_dump):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-json_dump', action='store_true', help='Switch for dumping json')
+    parser.add_argument('-save_kernel', action='store_true', help='Switch for dumping json')
     args = parser.parse_args()
-    main(args.json_dump)
+    main(args.json_dump, args.save_kernel)
