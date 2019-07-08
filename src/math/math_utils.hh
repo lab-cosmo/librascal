@@ -39,8 +39,14 @@
 namespace rascal {
   /**
    * User defined literal operator to initialize size_t literals
+   *
+   * linter wants std::uint64_t to avoid the C style type but litterals are
+   * of type unsigned long long while std::uint64_t on 64bits machines stands
+   * for unsigned long. Both have equivalent underlying storage but not the
+   * same type...
    */
-  constexpr std::size_t operator"" _z(std::uint64_t n) { return n; }
+  constexpr std::size_t operator"" _z(unsigned long long int n) { return n; } // NOLINT
+
 
   namespace math {
 
