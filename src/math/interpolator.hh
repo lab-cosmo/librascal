@@ -9,7 +9,12 @@ namespace rascal {
     using Vector_Ref = typename Eigen::Ref<const Vector_t>;
 
     enum class GridType_t {Uniform};
-    enum class RefinementMethod_t {HeapBased, Uniform};
+    enum class RefinementMethod_t {HeapBased, Uniform, Adaptive};
+
+    // TODO(alex) make plots of hyp1f1 normalized
+    // TODO(alex) look at the graphs again, and make a grid type which is similar
+    // to the shape
+    // is similar to the graph
 
     // TODO(alex) currently the grid rational could be static
     template <GridType_t Type, RefinementMethod_t Method>
@@ -18,20 +23,114 @@ namespace rascal {
       constexpr static RefinementMethod_t RefinementMethod { Method };
     };
 
-    // I think they all can be static
+    //TODO(alex) adaptive: tree structure blocks{start,end,error,blocks}
+    // refine where k largest error exist
+    // get grid from (tree -> grid)
+    template <>
+    struct GridRational<GridType_t::Uniform, RefinementMethod_t::Adaptive> {
+      //GridRational<GridType_t::Uniform, RefinementMethod_t::Adaptive>() {
+
+      //}
+      // TODO for this grid rational it makes sense to save the test grid,
+      // because it is one step ahead and we can add more points 
+      // TODO make hyperparameter k highest error
+      // TODO make grid rational init compute, increase_finness() and then remove x1,x2,fineness
+      Vector_t compute_grid(double x1, double x2, int fineness, std::function<double(double)>) {
+        if (fineness == 0) {
+          this->grid_meshes = {x1, x2};
+          this->grid_size = 2;
+          return this->grid_from_meshes();
+        }
+        this->refine();
+        return this->grid_from_meshes();
+      }
+
+      void refine() {
+        auto next_it{this->max_it};
+        next_it++;
+        double cur{*this->max_it};
+        double mid_point{cur+(*next_it-cur)/2};
+        this->grid_meshes.emplace_after(this->max_it, mid_point);
+        this->grid_size++;
+        //if (this->grid_size % 1000 == 0) {
+        //  std::cout << this->grid_size << std::endl;
+        //}
+
+      }
+
+      Vector_t grid_from_meshes() {
+        Vector_t grid = Vector_t::Zero(this->grid_size);
+        int i{0};
+        for (auto it=this->grid_meshes.begin(); it!=this->grid_meshes.end(); ++it) {
+          grid(i) = (*it);
+          i++;
+        }
+        return grid;
+      }
+      
+      Vector_t compute_test_grid(double, double, int, std::function<double(double)>) {
+        Vector_t test_grid = Vector_t::Zero(this->grid_size-1);
+        int i{0};
+        auto next_it{this->grid_meshes.begin()};
+        next_it++;
+        // if auto does not work use: std::forward_list<double>::iterator  
+        for (auto it=this->grid_meshes.begin(); next_it!=this->grid_meshes.end(); ++it) {
+          double cur{*it};
+          double mid_point{cur+(*next_it-cur)/2};
+          test_grid(i) = mid_point;
+
+          next_it++;
+          i++;
+        }
+        return test_grid;
+      }
+
+      void update_errors(Vector_Ref error_grid) {
+        if (error_grid.size() != this->grid_size -1) {
+          std::runtime_error("Gridsize does not match with error grid");
+        }
+        double max{0};
+        auto it{this->grid_meshes.begin()};
+        for (int i{0}; i < error_grid.size(); i++) {
+          if (std::abs(error_grid(i)) > max) {
+            max = std::abs(error_grid(i));          
+            this->max_it = it;
+          }
+          it++;
+        }
+      }
+
+      // two sortings
+      // for refinement key = error
+      // for constructing grid x1
+      std::forward_list<double> grid_meshes;
+      // TODO priority queue does not work well because splitting meshes does.
+      // One could make Mesh only owning the x1 and error but the. For the
+      // current test grid we need some clever binary tree structure where
+      // leafs have errors and their parents add up, Node{x1,error}
+      //std::priority_queue<Mesh> grid_meshes_error;
+      std::forward_list<double> grid_meshes_error;
+      int grid_size;
+      std::forward_list<double>::iterator max_it;
+    };
+
+    // TODO(alex) I think they all can be static
     template <>
     struct GridRational<GridType_t::Uniform, RefinementMethod_t::HeapBased> {
-      Vector_t compute_grid(double x1, double x2, int fineness) {
+      Vector_t compute_grid(double x1, double x2, int fineness, std::function<double(double)>) {
         double nb_grid_points = 2 << fineness;
         return Vector_t::LinSpaced(nb_grid_points, x1, x2);
       }
-      Vector_t compute_test_grid(double x1, double x2, int fineness) {
+      Vector_t compute_test_grid(double x1, double x2, int fineness, std::function<double(double)>) {
         double nb_grid_points = 2 << fineness;
         // half of a step size in the grid to get the inner grid points
         // step size = (x2-x1)/(nb_grid_points-1)
         double offset{(x2-x1)/(2*(nb_grid_points-1))};
         return Vector_t::LinSpaced(nb_grid_points-1, x1+offset, x2-offset);
       }
+
+      void update_errors(Vector_Ref) {} 
+      int grid_size{0};
     };
 
     enum class InterpolationMethod_t {CubicSpline};
@@ -87,10 +186,6 @@ namespace rascal {
         u(n-1) = 0.0;
         p=0.0;
         y2(n-1)=(u(n-1)-p*u(n-2))/(p*y2(n-2)+1.0);
-        // beautiful bug when k=0 is included in for loop, 
-        // k=-1 will result in a positive number, thus the for loop continues
-        // and a segmentation fault in Eigen happens
-        // TODO now it is long so we can merge this again
         for (int k{n-2};k>0;k--) {
           y2(k)=y2(k)*y2(k+1)+u(k);
         }
@@ -218,7 +313,7 @@ namespace rascal {
     template<class InterpolationMethod, class GridRational, class SearchMethod>
     class Interpolator {
      public: 
-      Interpolator() : intp_method{InterpolationMethod()}, grid_rational{GridRational()}, search_method{SearchMethod()} {}
+      Interpolator() : mean_error{0}, max_error{0}, intp_method{InterpolationMethod()}, grid_rational{GridRational()}, search_method{SearchMethod()} {}
 
       void initalize(std::function<double(double)> function, double x1, double x2, double precision) {
         if (x2<x1) {
@@ -249,15 +344,22 @@ namespace rascal {
       // compiler optimize this?
       double compute_grid_error() {
         this->grid = 
-            this->grid_rational.compute_grid(this->x1,this->x2, this->fineness);
+            this->grid_rational.compute_grid(this->x1,this->x2, this->fineness, this->function);
         this->evaluated_grid = this->eval(this->grid);
 
         this->intp_method.initialize(this->grid, this->evaluated_grid);
 
-        Vector_t test_grid{this->grid_rational.compute_test_grid(this->x1,this->x2,this->fineness)};
+        Vector_t test_grid{this->grid_rational.compute_test_grid(this->x1,this->x2,this->fineness, this->function)};
         Vector_t test_grid_interpolated{this->interpolate(test_grid)};
         Vector_t test_grid_evaluated{this->eval(test_grid)}; 
-        return (test_grid_interpolated - test_grid_evaluated).norm();
+        Vector_t error_grid{(test_grid_interpolated - test_grid_evaluated).array().abs()};
+        grid_rational.update_errors(Vector_Ref(error_grid));
+        this->max_error = error_grid.maxCoeff();
+        this->mean_error = error_grid.mean();
+        //if (grid_rational.grid_size % 1000 == 0) {
+        //  std::cout << "error" << this->mean_error << std::endl;
+        //}
+        return this->mean_error;
       }
 
       double eval(double x) {return this->function(x);}
@@ -283,8 +385,8 @@ namespace rascal {
 
       double interpolate(double x) {
         // TODO(alex) throw runtime error, what is diff?
-        if (x<this->x1) { throw ("x is outside of range, below x1"); }
-        if (x>this->x2) { throw ("x is outside of range, above x2"); }
+        if (x<this->x1) { throw std::runtime_error ("x is outside of range, below x1"); }
+        if (x>this->x2) { throw std::runtime_error ("x is outside of range, above x2"); }
         size_t nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
         return intp_method.interpolate(
             this->grid, this->evaluated_grid,
@@ -303,6 +405,8 @@ namespace rascal {
       double x1{0};
       double x2{1};
       double precision{1e-5};
+      double mean_error;
+      double max_error;
       int fineness{0};
       Vector_t grid{};
       Vector_t evaluated_grid{};
