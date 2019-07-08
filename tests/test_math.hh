@@ -85,12 +85,19 @@ namespace rascal {
     bool verbose{false};
   };
 
-  // Used for the gradient tests to reduce recomputation
+  /**
+   * Wrapper of the SphericalHarmonics class to interface with the gradient
+   * tester
+   *
+   * See the documentation for test_gradients() below; the calculator object
+   * passed to it must provide the functions f() and grad_f() as below.
+   */
   template <size_t max_angular>
-  struct SphericalHarmonicsClassFunctionHolder {
-    SphericalHarmonicsClassFunctionHolder()
+  struct SphericalHarmonicsGradientsCalculator {
+    SphericalHarmonicsGradientsCalculator()
         : harmonics_calculator{math::SphericalHarmonics(true)} {}
 
+    static const size_t n_arguments = 3;
     using Matrix_Ref = typename Eigen::Ref<const math::Matrix_t>;
     using Vector_Ref = typename Eigen::Ref<const math::Vector_t>;
 
@@ -110,7 +117,7 @@ namespace rascal {
   };
 
   /**
-   * Fixture for testing a the gradient of a scalar function of N real arguments
+   * Fixture for testing a the gradient of a real function of N real arguments
    *
    * (Verifies that the gradient is the same as the converged value of the
    * finite-difference approximation along the given directions)
@@ -228,36 +235,6 @@ namespace rascal {
 
    protected:
     GradientTestFixture() {}
-  };
-
-  template <int max_angular>
-  class SphericalHarmonicsWithGradients {
-   public:
-    static const size_t n_arguments = 3;
-
-    SphericalHarmonicsWithGradients() = default;
-
-    ~SphericalHarmonicsWithGradients() = default;
-
-    Eigen::Array<double, 1, (max_angular + 1) * (max_angular + 1)>
-    f(const Eigen::Vector3d & inputs_v) {
-      // Renormalize the inputs to project out the r gradients
-      Eigen::Vector3d my_inputs = inputs_v / inputs_v.norm();
-      // Gives the same result -- retain for testing
-      // Eigen::Array<double, 4, (max_angular + 1) * (max_angular + 1)>
-      //     harmonics_derivatives{math::compute_spherical_harmonics_derivatives(
-      //         my_inputs, max_angular)};
-      // return harmonics_derivatives.row(0);
-      return math::compute_spherical_harmonics(my_inputs, max_angular);
-    }
-
-    Eigen::Array<double, 3, (max_angular + 1) * (max_angular + 1)>
-    grad_f(const Eigen::Vector3d & inputs_v) {
-      Eigen::Array<double, 4, (max_angular + 1) * (max_angular + 1)>
-          harmonics_derivatives{math::compute_spherical_harmonics_derivatives(
-              inputs_v, max_angular)};
-      return harmonics_derivatives.bottomRows(3);
-    }
   };
 
   namespace internal {
@@ -463,7 +440,6 @@ namespace rascal {
       this->fac_b.resize(max_angular, 1);
       this->fac_b = fac_b;
       this->hyp1f1_calculator.precompute(max_radial, max_angular);
-      // std::cout << "constructor ok" << std::endl;
     }
 
     ~Hyp1f1GradientProvider() = default;
@@ -483,10 +459,6 @@ namespace rascal {
       this->hyp1f1_calculator.calc(input_v(0), this->fac_a, this->fac_b, true);
       Eigen::MatrixXd result(this->max_radial, this->max_angular + 1);
       result = this->hyp1f1_calculator.get_derivatives();
-      // result.transpose() *=
-      //   ((2.*this->fac_a*this->fac_a * input_v(0)) /
-      //    (this->fac_a + this->fac_b.array())).matrix().asDiagonal();
-      // result -= this->hyp1f1_calculator.get_values() * 2*fac_a*input_v(0);
       Eigen::Map<Eigen::Array<double, 1, Eigen::Dynamic>> result_flat(
           result.data(), 1, result.size());
       return result_flat;
