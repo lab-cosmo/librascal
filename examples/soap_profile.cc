@@ -139,5 +139,4 @@ int main(int argc, char * argv[]) {
   math::Vector_t bs(3);
   bs << 0.1, 0.3, 0.6;
   hyp1f1.calc(0.5, 0.5, bs);
-
 }
