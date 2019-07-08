@@ -179,7 +179,7 @@ namespace rascal {
      public:
       SphericalHarmonics() {}
 
-      SphericalHarmonics(bool calculate_derivatives)
+      explicit SphericalHarmonics(bool calculate_derivatives)
           : calculate_derivatives{calculate_derivatives} {}
 
       /**
