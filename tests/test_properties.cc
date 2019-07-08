@@ -706,7 +706,7 @@ namespace rascal {
    * A fixture for testing partially sparse properties.
    * TODO(felix) use MultipleStructureManagerCentersFixture instead of NL
    */
-  template<size_t Order>
+  template <size_t Order>
   struct BlockSparsePropertyFixture
       : public MultipleStructureFixture<MultipleStructureManagerNLFixture> {
     using Parent = MultipleStructureFixture<MultipleStructureManagerNLFixture>;
@@ -764,7 +764,6 @@ namespace rascal {
     std::vector<BlockSparseProperty_t> sparse_features{};
   };
 
-
   BOOST_AUTO_TEST_SUITE(Property_partially_sparse_tests);
 
   /* ---------------------------------------------------------------------- */
@@ -776,33 +775,32 @@ namespace rascal {
    * filled and that the data can be accessed consistently.
    */
 
-  using Fixtures = boost::mpl::list<
-      BlockSparsePropertyFixture<1>,
-      // the order == 2 case test the access of the property of order 2 can
-      // be properly accessed by a clusterRef of order 1
-      BlockSparsePropertyFixture<2>
-      >;
+  using Fixtures = boost::mpl::list<BlockSparsePropertyFixture<1>,
+                                    // the order == 2 case test the access of
+                                    // the property of order 2 can be properly
+                                    // accessed by a clusterRef of order 1
+                                    BlockSparsePropertyFixture<2>>;
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(fill_test_simple, Fix, Fixtures, Fix) {
-    auto &managers = Fix::managers;
-    auto &keys_list = Fix::keys_list;
-    auto& sparse_features = Fix::sparse_features;
-    auto& n_row = Fix::n_row;
-    auto& n_col = Fix::n_col;
-    auto& test_datas = Fix::test_datas;
+    auto & managers = Fix::managers;
+    auto & keys_list = Fix::keys_list;
+    auto & sparse_features = Fix::sparse_features;
+    auto & n_row = Fix::n_row;
+    auto & n_col = Fix::n_col;
+    auto & test_datas = Fix::test_datas;
 
     bool verbose{false};
     // fill the property structures
     auto i_manager{0};
     for (auto & manager : managers) {
-      auto& keys{keys_list[i_manager]};
+      auto & keys{keys_list[i_manager]};
       auto i_center{0};
       sparse_features[i_manager].set_shape(this->n_row, this->n_col);
       sparse_features[i_manager].resize();
       for (auto center : manager) {
-        auto&& sparse_features_center{sparse_features[i_manager][center]};
+        auto && sparse_features_center{sparse_features[i_manager][center]};
         sparse_features_center.resize(keys[i_center], n_row, n_col, 0);
-        for (auto& key : keys[i_center]) {
+        for (auto & key : keys[i_center]) {
           sparse_features_center[key] = test_datas[i_manager][i_center][key];
         }
         i_center++;
@@ -856,7 +854,6 @@ namespace rascal {
       BOOST_CHECK_EQUAL(sparse_feature_metadata, sparse_features_desc);
     }
   }
-
 
   BOOST_AUTO_TEST_SUITE_END();
 

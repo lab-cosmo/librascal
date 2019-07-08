@@ -74,7 +74,7 @@ namespace rascal {
     }
 
     ~SphericalHarmonicsClassRefFixture() = default;
-    
+
     std::string ref_filename =
         "reference_data/spherical_harmonics_reference.ubjson";
     json ref_data{};
@@ -88,16 +88,13 @@ namespace rascal {
   // Used for the gradient tests to reduce recomputation
   template <size_t max_angular>
   struct SphericalHarmonicsClassFunctionHolder {
-    SphericalHarmonicsClassFunctionHolder() :
-        harmonics_calculator{math::SphericalHarmonics(true)}
-        {}
+    SphericalHarmonicsClassFunctionHolder()
+        : harmonics_calculator{math::SphericalHarmonics(true)} {}
 
     using Matrix_Ref = typename Eigen::Ref<const math::Matrix_t>;
     using Vector_Ref = typename Eigen::Ref<const math::Vector_t>;
 
-    void precompute() {
-      this->harmonics_calculator.precompute(max_angular);
-    }
+    void precompute() { this->harmonics_calculator.precompute(max_angular); }
 
     Vector_Ref f(const Eigen::Vector3d & inputs_v) {
       Eigen::Vector3d my_inputs = inputs_v / inputs_v.norm();
@@ -111,9 +108,6 @@ namespace rascal {
 
     math::SphericalHarmonics harmonics_calculator;
   };
-
-
-
 
   /**
    * Fixture for testing a the gradient of a scalar function of N real arguments
@@ -271,7 +265,7 @@ namespace rascal {
      * Template to select the Eigen type for the argument vector: Fixed or
      * dynamic size?  Fixed-size template below, dynamic-size default here.
      */
-    template<typename Calculator_t, typename = void>
+    template <typename Calculator_t, typename = void>
     struct Argument_t {
       typedef Eigen::VectorXd type_vec;
       typedef Eigen::MatrixXd type_mat;
@@ -280,15 +274,14 @@ namespace rascal {
     // Works by SFINAE -- if Calculator has no static integral member
     // `n_arguments`, this specialization fails and the default (above) is
     // selected
-    template<typename Calculator_t>
-    struct Argument_t<
-        Calculator_t, std::enable_if_t<std::is_integral<
-            decltype(Calculator_t::n_arguments)>::value>> {
+    template <typename Calculator_t>
+    struct Argument_t<Calculator_t, std::enable_if_t<std::is_integral<decltype(
+                                        Calculator_t::n_arguments)>::value>> {
       typedef Eigen::Matrix<double, Calculator_t::n_arguments, 1> type_vec;
-      typedef Eigen::Matrix<double, Calculator_t::n_arguments,
-                                    Eigen::Dynamic> type_mat;
+      typedef Eigen::Matrix<double, Calculator_t::n_arguments, Eigen::Dynamic>
+          type_mat;
     };
-  }
+  }  // namespace internal
 
   /**
    * Numerically verify that a given function and its gradient are consistent

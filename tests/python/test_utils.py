@@ -2,7 +2,6 @@ import json
 import numpy as np
 
 
-
 def adapt_structure(cell, positions, atom_types, pbc):
     cell = np.array(cell.T, order='F')
     positions = np.array(positions.T, order='F')

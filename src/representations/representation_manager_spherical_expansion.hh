@@ -614,7 +614,7 @@ namespace rascal {
       }
       if (hypers.find("compute_gradients") != hypers.end()) {
         this->compute_gradients = hypers.at("compute_gradients").get<bool>();
-      } else { // Default false (don't compute gradients)
+      } else {  // Default false (don't compute gradients)
         this->compute_gradients = false;
       }
       this->spherical_harmonics.precompute(this->max_angular,
@@ -933,11 +933,11 @@ namespace rascal {
               // clang-format on
             }
             l_block_idx += l_block_size;
-          } // for (angular_l)
-        } // if (this->compute_gradients)
-      }  // for (neigh : center)
-    }    // for (center : structure_manager)
-  }      // compute()
+          }  // for (angular_l)
+        }    // if (this->compute_gradients)
+      }      // for (neigh : center)
+    }        // for (center : structure_manager)
+  }          // compute()
 
 }  // namespace rascal
 

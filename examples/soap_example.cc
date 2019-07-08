@@ -100,23 +100,26 @@ int main(int argc, char * argv[]) {
   constexpr size_t n_centers_print{4};
   constexpr size_t n_neigh_print{1};
 
-  //auto soap = representation.get_representation_full();
-  //std::cout << "Sample SOAP elements \n"
-            //<< soap(0, 0) << " " << soap(0, 1) << " " << soap(0, 2) << "\n"
-            //<< soap(1, 0) << " " << soap(1, 1) << " " << soap(1, 2) << "\n"
-            //<< soap(2, 0) << " " << soap(2, 1) << " " << soap(2, 2) << "\n";
+  // auto soap = representation.get_representation_full();
+  // std::cout << "Sample SOAP elements \n"
+  //<< soap(0, 0) << " " << soap(0, 1) << " " << soap(0, 2) << "\n"
+  //<< soap(1, 0) << " " << soap(1, 1) << " " << soap(1, 2) << "\n"
+  //<< soap(2, 0) << " " << soap(2, 1) << " " << soap(2, 2) << "\n";
   // Print the first few elements and gradients, so we know we're getting
   // something
   std::cout << "Expansion of first " << n_centers_print << " centers:";
   std::cout << std::endl;
   std::cout << "Note that the coefficients are printed with species along the "
-               "columns and n-l-m along the rows." << std::endl;
+               "columns and n-l-m along the rows."
+            << std::endl;
   std::cout << "Gradients are printed with: First Cartesian component, "
                "then species, along the rows; n-l-m along the columns.";
   std::cout << std::endl;
   size_t center_count{0};
   for (auto center : manager) {
-    if (center_count >= n_centers_print) { break; }
+    if (center_count >= n_centers_print) {
+      break;
+    }
     size_t n_species_center{
         representation.expansions_coefficients.get_keys(center).size()};
     std::cout << "============================" << std::endl;
@@ -127,18 +130,20 @@ int main(int argc, char * argv[]) {
     std::cout << "Gradient of this expansion wrt center pos: " << std::endl;
     std::cout << Eigen::Map<Eigen::MatrixXd>(
         representation.expansions_coefficients_gradient.get_dense_row(center)
-          .data(),
+            .data(),
         3 * n_species_center,
         representation.expansions_coefficients_gradient.get_nb_comp());
     std::cout << std::endl;
     size_t neigh_count{0};
     for (auto neigh : center) {
-      if (neigh_count >= n_neigh_print) { break; }
+      if (neigh_count >= n_neigh_print) {
+        break;
+      }
       std::cout << "Gradient of the above wrt atom " << neigh.back();
       std::cout << " of type " << neigh.get_atom_type() << std::endl;
       std::cout << Eigen::Map<Eigen::MatrixXd>(
           representation.expansions_coefficients_gradient.get_dense_row(neigh)
-            .data(),
+              .data(),
           3 * n_species_center,
           representation.expansions_coefficients_gradient.get_nb_comp());
       std::cout << std::endl;
