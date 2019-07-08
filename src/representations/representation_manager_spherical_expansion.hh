@@ -226,6 +226,8 @@ namespace rascal {
       //! Constructor
       explicit RadialContribution(const Hypers_t & hypers) {
         this->set_hyperparameters(hypers);
+        // TODO(alex) adapt usage of precompute in initializer in
+        // SphericalHarmonics or the other way around
         this->precompute();
       }
       //! Destructor
@@ -333,6 +335,58 @@ namespace rascal {
       }
 
       //! define the contribution from a neighbour atom to the expansion
+      template <AtomicSmearingType AST>
+      Matrix_Ref
+      compute_contribution(const double & distance, const double & sigma) {
+        using math::PI;
+        using math::pow;
+        using std::sqrt;
+
+        auto smearing{downcast_atomic_smearing<AST>(this->atomic_smearing)};
+        // a = 1 / (2*\sigma^2)
+        double fac_a{0.5 * pow(sigma, -2)};
+
+        // computes (r_{ij}*a)^l incrementally
+        Vector_t distance_fac_a_l(this->max_angular + 1);
+        distance_fac_a_l(0) = 1.;
+        double distance_fac_a{distance * fac_a};
+        for (size_t angular_l{1}; angular_l < this->max_angular + 1;
+             angular_l++) {
+          distance_fac_a_l(angular_l) =
+              distance_fac_a_l(angular_l - 1) * distance_fac_a;
+        }
+
+        // computes (a+b_n)^{-0.5*(3+l+n)}
+        Matrix_t a_b_l_n(this->max_radial, this->max_angular + 1);
+        for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
+          double a_b_l{1. / sqrt(fac_a + this->fac_b[radial_n])};
+
+          a_b_l_n(radial_n, 0) = pow(a_b_l, 3 + radial_n);
+
+          for (size_t angular_l{1}; angular_l < this->max_angular + 1;
+               angular_l++) {
+            a_b_l_n(radial_n, angular_l) =
+                a_b_l_n(radial_n, angular_l - 1) * a_b_l;
+          }
+        }
+
+        this->hyp1f1_calculator.calc(distance, fac_a, this->fac_b);
+
+        // TODO(alex) make temp out of this which is returned instead of
+        // variable
+        this->radial_integral_neighbour =
+            (a_b_l_n.array() * this->hyp1f1_calculator.get_values().array())
+                .matrix() *
+            distance_fac_a_l.asDiagonal();
+        this->radial_integral_neighbour.transpose() *=
+            this->radial_norm_factors.asDiagonal();
+        this->radial_integral_neighbour.transpose() *=
+            this->radial_ortho_matrix;
+        return Matrix_Ref(this->radial_integral_neighbour);
+      }
+
+
+      //! define the contribution from a neighbour atom to the expansion
       template <AtomicSmearingType AST, size_t Order, size_t Layer>
       Matrix_Ref
       compute_neighbour_contribution(const double & distance,
@@ -386,6 +440,10 @@ namespace rascal {
       void precompute_radial_sigmas() {
         using math::pow;
         // Precompute common prefactors
+        // TODO(alex) TODO(felix) why do we not use the standard that we
+        // calculate radial from 0 up to max_radial (so in this for loop the
+        // condition should be max_radial+1) as we usually do it for
+        // max_angular?
         for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
           this->radial_sigmas[radial_n] =
               std::max(std::sqrt(static_cast<double>(radial_n)), 1.0) *
@@ -429,7 +487,6 @@ namespace rascal {
                  sqrt(tgamma(1.5 + radial_n1) * tgamma(1.5 + radial_n2)));
           }
         }
-
         // Compute the inverse square root of the overlap matrix
         Eigen::SelfAdjointEigenSolver<Matrix_t> eigensolver(overlap);
         if (eigensolver.info() != Eigen::Success) {
