@@ -48,11 +48,12 @@ namespace rascal {
   // }
 
   using Fixtures_no_center = boost::mpl::list<
-      MultipleStructureFixture<MultipleStructureManagerNLFixtureNoCenter>
+      // MultipleStructureFixture<MultipleStructureManagerNLFixtureNoCenter>
+      MultipleStructureFixture<MultipleStructureManagerNLStrictFixtureNoCenter>
       >;
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_no_center_test, Fix, Fixtures_no_center, Fix) {
-    bool verbose{true};
+    bool verbose{false};
     auto & managers = Fix::managers;
     int n_it{static_cast<int>(managers.size())};
     for (int i_it{0}; i_it < n_it; i_it += 2) {

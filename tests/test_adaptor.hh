@@ -335,14 +335,14 @@ namespace rascal {
     ~MultipleStructureManagerNLFixtureNoCenter() = default;
 
     const std::vector<bool> consider_ghost_neighbours_list{{false, true}};
-    // const std::vector<std::string> filenames{
-    //     "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-    //     "reference_data/molecular_crystal.json",
-    //     "reference_data/simple_cubic_8.json",
-    //     "reference_data/small_molecule.json"};
     const std::vector<std::string> filenames{
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
-    const std::vector<double> cutoffs{{2.}};
+        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
+        "reference_data/molecular_crystal.json",
+        "reference_data/simple_cubic_8.json",
+        "reference_data/small_molecule.json"};
+    // const std::vector<std::string> filenames{
+    //     "reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+    const std::vector<double> cutoffs{{2., 3.}};
     const std::vector<double> skins{{0., 0.3}};
 
     json factory_args{};
@@ -364,6 +364,7 @@ namespace rascal {
         for (auto && cutoff : this->cutoffs) {
           for (auto && skin : this->skins) {
             for (auto && consider_ghost_neighbours : this->consider_ghost_neighbours_list) {
+              atomic_structure.set_structure(filename);
               json parameters;
               json structure = atomic_structure;
               json adaptors;
@@ -403,9 +404,9 @@ namespace rascal {
 
     const std::vector<bool> consider_ghost_neighbours_list{{false, true}};
     const std::vector<std::string> filenames{
-        // "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-        // "reference_data/molecular_crystal.json",
-        // "reference_data/simple_cubic_8.json",
+        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
+        "reference_data/molecular_crystal.json",
+        "reference_data/simple_cubic_8.json",
         "reference_data/small_molecule.json"};
     const std::vector<double> cutoffs{{2., 3.}};
     const std::vector<double> skins{{0., 0.3}};

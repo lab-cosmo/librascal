@@ -189,10 +189,6 @@ namespace rascal {
       return Cell_ref(this->atoms_object.cell.data());
     }
 
-    inline auto get_cell_() {
-      return this->atoms_object.cell;
-    }
-
     //! Returns the type of a given atom, given an AtomRef
     inline int & get_atom_type(const int & atom_tag) {
       auto&& atom_index{this->get_atom_index(atom_tag)};

@@ -53,9 +53,9 @@ using Representation_t = RepresentationManagerSOAP<
 using ArrayB_t = AtomicStructure<3>::ArrayB_t;
 
 int main() {
-  std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
-  // std::string filename{"reference_data/small_molecule.json"};
-  double cutoff{2.};
+  // std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+  std::string filename{"reference_data/small_molecule.json"};
+  double cutoff{3.};
   json hypers{{"max_radial", 6},
               {"max_angular", 6},
               {"soap_type", "PowerSpectrum"},
@@ -75,11 +75,11 @@ int main() {
   json adaptors;
   json ad1{{"name", "AdaptorNeighbourList"},
            {"initialization_arguments",
-            {{"cutoff", cutoff}, {"consider_ghost_neighbours", false}}}};
-  // json ad2{{"name", "AdaptorStrict"},
-  //          {"initialization_arguments", {{"cutoff", cutoff}}}};
+            {{"cutoff", cutoff}, {"consider_ghost_neighbours", true}}}};
+  json ad2{{"name", "AdaptorStrict"},
+           {"initialization_arguments", {{"cutoff", cutoff}}}};
   adaptors.emplace_back(ad1);
-  // adaptors.emplace_back(ad2);
+  adaptors.emplace_back(ad2);
 
   AtomicStructure<3> atomic_structure{};
   atomic_structure.set_structure(filename);
@@ -87,7 +87,7 @@ int main() {
 
   auto manager =
       make_structure_manager_stack<StructureManagerCenters,
-                                   AdaptorNeighbourList>(
+                                AdaptorNeighbourList, AdaptorStrict>(
           structure, adaptors);
 
   // manager->update(atomic_structure);
@@ -101,14 +101,14 @@ int main() {
   //   auto i_idx = uni(rng);
   //   atomic_structure.is_a_center_atom(i_idx) = false;
   // }
-  atomic_structure.is_a_center_atom = false;
-  atomic_structure.is_a_center_atom(0) = true;
+  // atomic_structure.is_a_center_atom = false;
+  // // atomic_structure.is_a_center_atom(0) = true;
   // atomic_structure.is_a_center_atom(4) = true;
-  // atomic_structure.is_a_center_atom(2) = false;
-  // atomic_structure.is_a_center_atom(4) = false;
+  atomic_structure.is_a_center_atom(2) = false;
+  atomic_structure.is_a_center_atom(3) = false;
 
-  // atomic_structure.is_a_center_atom(8) = false;
-  // atomic_structure.is_a_center_atom(9) = false;
+  atomic_structure.is_a_center_atom(6) = false;
+  atomic_structure.is_a_center_atom(7) = false;
   // atomic_structure.is_a_center_atom(10) = false;
   // atomic_structure.is_a_center_atom(12) = false;
   // atomic_structure.is_a_center_atom(13) = false;
@@ -144,7 +144,6 @@ int main() {
   //   std::cout << "idx: "<< idx << " -- "<< manager->get_position(idx).transpose() << std::endl;
   // }
   // std::cout << std::endl;
-  auto ghost_pos = manager->get_ghost_positions();
 
   // for (int idx{0}; idx < ghost_pos.cols(); ++idx) {
   //   std::cout << "idx: "<< idx << " -- "<< ghost_pos.col(idx).transpose() << std::endl;
