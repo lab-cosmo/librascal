@@ -2,6 +2,7 @@
 #define SRC_MATH_INTERPOLATOR_HH_
 
 #include <functional>
+#include <forward_list>
 #include "math_utils.hh"
 
 namespace rascal {
@@ -415,6 +416,8 @@ namespace rascal {
       GridRational grid_rational;
       SearchMethod search_method;
     };
+
+  // TODO(alex) make a CRTP calculator and check if this can be merged with the GradientCalutaro stuff
 
   }  // namespace math
 }  // namespace rascal
