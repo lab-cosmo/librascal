@@ -574,7 +574,8 @@ namespace rascal {
         this->max_error = error_grid.maxCoeff();
         this->mean_error = error_grid.mean();
         //if (grid_rational.grid_size % 1000 == 0) {
-        //  std::cout << "error" << this->mean_error << std::endl;
+          std::cout << "mean error" << this->mean_error << std::endl;
+          std::cout << "max error" << this->max_error << std::endl;
         //}
         return this->mean_error;
       }
