@@ -62,7 +62,7 @@ namespace rascal {
     using Cell_t = Eigen::Matrix<double, Dim, Dim>;
     using Cell_ref = Eigen::Map<Cell_t>;
 
-    using AtomTypes_t = Eigen::Matrix<int, 1, Eigen::Dynamic>;
+    using AtomTypes_t = Eigen::Matrix<int, Eigen::Dynamic, 1>;
     using AtomTypes_ref = Eigen::Map<AtomTypes_t>;
     using ConstAtomTypes_ref = Eigen::Map<const AtomTypes_t>;
 
@@ -81,8 +81,8 @@ namespace rascal {
 
     using PBCInput_t = Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1>>;
 
-    using ArrayB_t = Eigen::Array<bool, 1, Eigen::Dynamic>;
-    using ArrayB_ref = Eigen::Ref<const Eigen::Array<bool, 1, Eigen::Dynamic>>;
+    using ArrayB_t = Eigen::Array<bool, Eigen::Dynamic, 1>;
+    using ArrayB_ref = Eigen::Ref<const ArrayB_t>;
 
     // Eigen types for saving atomic structure data
     Positions_t positions{};
@@ -242,10 +242,12 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template<int Dim>
   void to_json(json & j, const AtomicStructure<Dim> & s) {
+
     j = json{{"cell", s.cell},
               {"atom_types", s.atom_types},
               {"pbc", s.pbc},
-              {"positions", s.positions}};
+              {"positions", s.positions},
+              {"is_a_center_atom", s.is_a_center_atom}};
   }
 
   /* ---------------------------------------------------------------------- */

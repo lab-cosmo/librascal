@@ -143,12 +143,26 @@ namespace Eigen {
 
   }
   /* ---------------------------------------------------------------------- */
+  /**
+   * By convention 1D array are stored as a single vector and not a matrix
+   * with one dimension set to 1.
+   */
   template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
   void to_json(json & j, const Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& s) {
-    for (int irow{0}; irow < s.rows(); ++irow) {
-      j.push_back(json::array());
+    if (_Rows != 1 and _Cols != 1) {
+      for (int irow{0}; irow < s.rows(); ++irow) {
+        j.push_back(json::array());
+        for (int icol{0}; icol < s.cols(); ++icol) {
+          j[irow][icol] = s(irow, icol);
+        }
+      }
+    } else if (_Rows == 1) {
       for (int icol{0}; icol < s.cols(); ++icol) {
-        j[irow][icol] = s(irow, icol);
+        j[icol] = s(icol);
+      }
+    } else if (_Cols == 1) {
+      for (int irow{0}; irow < s.rows(); ++irow) {
+        j[irow] = s(irow);
       }
     }
   }
@@ -179,10 +193,20 @@ namespace Eigen {
    /* ---------------------------------------------------------------------- */
   template<typename _Scalar, int _Rows, int _Cols, int _Options>
   void to_json(json & j, const Array<_Scalar, _Rows, _Cols, _Options>& s) {
-    for (int irow{0}; irow < s.rows(); ++irow) {
-      j.push_back(json::array());
+    if (_Rows != 1 and _Cols != 1) {
+      for (int irow{0}; irow < s.rows(); ++irow) {
+        j.push_back(json::array());
+        for (int icol{0}; icol < s.cols(); ++icol) {
+          j[irow][icol] = s(irow, icol);
+        }
+      }
+    } else if (_Rows == 1) {
       for (int icol{0}; icol < s.cols(); ++icol) {
-        j[irow][icol] = s(irow, icol);
+        j[icol] = s(icol);
+      }
+    } else if (_Cols == 1) {
+      for (int irow{0}; irow < s.rows(); ++irow) {
+        j[irow] = s(irow);
       }
     }
   }
