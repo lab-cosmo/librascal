@@ -29,14 +29,14 @@ namespace rascal {
     // get grid from (tree -> grid)
     template <>
     struct GridRational<GridType_t::Uniform, RefinementMethod_t::Adaptive> {
-      //GridRational<GridType_t::Uniform, RefinementMethod_t::Adaptive>() {
+      GridRational<GridType_t::Uniform, RefinementMethod_t::Adaptive>() : grid_meshes{},grid_meshes_error{}, grid_size{0}, max_it{} {}
 
       //}
       // TODO for this grid rational it makes sense to save the test grid,
       // because it is one step ahead and we can add more points 
       // TODO make hyperparameter k highest error
       // TODO make grid rational init compute, increase_finness() and then remove x1,x2,fineness
-      Vector_t compute_grid(double x1, double x2, int fineness, std::function<double(double)>) {
+      Vector_t compute_grid(double x1, double x2, int fineness) {
         if (fineness == 0) {
           this->grid_meshes = {x1, x2};
           this->grid_size = 2;
@@ -69,7 +69,7 @@ namespace rascal {
         return grid;
       }
       
-      Vector_t compute_test_grid(double, double, int, std::function<double(double)>) {
+      Vector_t compute_test_grid(double, double, int) {
         Vector_t test_grid = Vector_t::Zero(this->grid_size-1);
         int i{0};
         auto next_it{this->grid_meshes.begin()};
@@ -118,11 +118,11 @@ namespace rascal {
     // TODO(alex) I think they all can be static
     template <>
     struct GridRational<GridType_t::Uniform, RefinementMethod_t::HeapBased> {
-      Vector_t compute_grid(double x1, double x2, int fineness, std::function<double(double)>) {
+      Vector_t compute_grid(double x1, double x2, int fineness) {
         double nb_grid_points = 2 << fineness;
         return Vector_t::LinSpaced(nb_grid_points, x1, x2);
       }
-      Vector_t compute_test_grid(double x1, double x2, int fineness, std::function<double(double)>) {
+      Vector_t compute_test_grid(double x1, double x2, int fineness) {
         double nb_grid_points = 2 << fineness;
         // half of a step size in the grid to get the inner grid points
         // step size = (x2-x1)/(nb_grid_points-1)
@@ -310,7 +310,6 @@ namespace rascal {
       size_t last_accessed_index;
     };
 
-    //template<InterpolationMethod_t InterpolationMethod, class GridRational, SearchMethod_t SearchMethod>
     template<class InterpolationMethod, class GridRational, class SearchMethod>
     class Interpolator {
      public: 
@@ -345,12 +344,12 @@ namespace rascal {
       // compiler optimize this?
       double compute_grid_error() {
         this->grid = 
-            this->grid_rational.compute_grid(this->x1,this->x2, this->fineness, this->function);
+            this->grid_rational.compute_grid(this->x1,this->x2, this->fineness);
         this->evaluated_grid = this->eval(this->grid);
 
         this->intp_method.initialize(this->grid, this->evaluated_grid);
 
-        Vector_t test_grid{this->grid_rational.compute_test_grid(this->x1,this->x2,this->fineness, this->function)};
+        Vector_t test_grid{this->grid_rational.compute_test_grid(this->x1,this->x2,this->fineness)};
         Vector_t test_grid_interpolated{this->interpolate(test_grid)};
         Vector_t test_grid_evaluated{this->eval(test_grid)}; 
         Vector_t error_grid{(test_grid_interpolated - test_grid_evaluated).array().abs()};
@@ -370,7 +369,7 @@ namespace rascal {
       Vector_t eval(const Vector_Ref & grid) {
         Vector_t evaluated_grid = Vector_t::Zero(grid.size());
         for (int i{0}; i<evaluated_grid.size(); i++) {
-          evaluated_grid(i) = this->function(grid(i));
+          evaluated_grid(i) = this->eval(grid(i));
         }
         return evaluated_grid;
       }
@@ -416,6 +415,7 @@ namespace rascal {
       GridRational grid_rational;
       SearchMethod search_method;
     };
+
 
   // TODO(alex) make a CRTP calculator and check if this can be merged with the GradientCalutaro stuff
 
