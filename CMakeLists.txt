@@ -125,6 +125,12 @@ endif()
 
 add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
 
+
+# Try to find google benchmark
+# TODO(alex) does not work Eigen library in the google benchmark cannot be found
+#include(benchmark)
+find_package(Threads REQUIRED)
+
 # Try to find optional cpp linter
 include(cpplint)
 
@@ -299,6 +305,17 @@ foreach(binaryfile ${binaries})
 endforeach(binaryfile ${binaries})
 configure_file("${CMAKE_SOURCE_DIR}/examples/crystal_structure.json" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file("${CMAKE_SOURCE_DIR}/examples/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
+
+# compile benchmarks TODO(alex) TODO(help) it would be maybe better if we would have
+# one benchmark suite with which you can choose what to run like the tests.
+file( GLOB binaries "${CMAKE_SOURCE_DIR}/benchmarks/*.cc")
+foreach(binaryfile ${binaries})
+  get_filename_component(binaryname  ${binaryfile} NAME_WE)
+  add_executable(${binaryname} ${binaryfile})
+  target_link_libraries(${binaryname} "${LIBRASCAL_NAME}")
+  target_link_libraries(${binaryname} Threads::Threads)
+  target_link_libraries(${binaryname} benchmark)
+endforeach(binaryfile ${binaries})
 
 # Add profiling information for the appropriate examples
 if (ENABLE_PROFILING)

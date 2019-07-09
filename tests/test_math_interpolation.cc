@@ -70,10 +70,13 @@ namespace rascal {
     size_t max_radial = 20;
     double a,b;
 
-    // TODO(alex) this test alone takes 5 seconds
     bool verbose{false};
-    for (size_t l{0}; l<max_angular; l++) {
-      for (size_t n{0}; n<max_radial; n++) {
+    size_t l{max_angular};
+    size_t n{max_radial};
+    // TODO(alex) this test would take 5 seconds, therefore
+    // I only test subset
+    //for (size_t l{0}; l<max_angular; l++) {
+    //  for (size_t n{0}; n<max_radial; n++) {
         if (verbose) {
           std::cout << "Testing for n="<<n<<" and l="<<l<<std::endl;
         }
@@ -87,8 +90,8 @@ namespace rascal {
           error = std::abs(intp_val - intp_ref);
           BOOST_CHECK_LE(error, this->precision);
         }
-      }
-    }
+    //  }
+    //}
   }
 
   BOOST_AUTO_TEST_SUITE_END();
