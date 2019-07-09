@@ -40,7 +40,7 @@ namespace rascal {
   // checking iteration
   BOOST_FIXTURE_TEST_CASE(iterator_test,
                           ManagerFixture<StructureManagerCenters>) {
-    constexpr bool verbose{true};
+    constexpr bool verbose{false};
     int i_manager{0};
     for (auto& manager : this->managers) {
       auto& structure = this->structures[i_manager];

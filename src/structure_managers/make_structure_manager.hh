@@ -339,7 +339,6 @@ namespace rascal {
             manager)};
 
     return test.get_manager();
-    // return manager;
   }
 
 }  // namespace rascal

@@ -242,7 +242,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template<int Dim>
   void to_json(json & j, const AtomicStructure<Dim> & s) {
-
+    // auto cell = s.cell;
+    // cell.transposeInPlace();
     j = json{{"cell", s.cell},
               {"atom_types", s.atom_types},
               {"pbc", s.pbc},
