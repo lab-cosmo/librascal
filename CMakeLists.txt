@@ -127,9 +127,8 @@ add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
 
 
 # Try to find google benchmark
-# TODO(alex) does not work Eigen library in the google benchmark cannot be found
-#include(benchmark)
 find_package(Threads REQUIRED)
+add_external_package(googlebenchmark)
 
 # Try to find optional cpp linter
 include(cpplint)
