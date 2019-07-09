@@ -38,6 +38,7 @@
 #include "math/math_utils.hh"
 #include "math/spherical_harmonics.hh"
 #include "math/hyp1f1.hh"
+#include "math/interpolator.hh"
 #include "structure_managers/property_block_sparse.hh"
 
 #include <algorithm>
@@ -522,6 +523,128 @@ namespace rascal {
       Vector_t radial_n_factors{};
       Matrix_t radial_ortho_matrix{};
     };
+
+    template<class InterpolationMethod, class GridRational, class SearchMethod>
+    class RadialContrInterpolator {      
+     public:
+      using Vector_t = math::Vector_t;
+      using Vector_Ref = math::Vector_Ref;
+      RadialContrInterpolator () : n{0}, l{0}, mean_error{0}, max_error{0}, intp_method{InterpolationMethod()}, grid_rational{GridRational()}, search_method{SearchMethod()} {}
+
+      void initalize(int n, int l, double x1, double x2, double precision) {
+        if (x2<x1) {
+          throw std::runtime_error("x2 must be greater x1");
+        }
+        this->x1 = x1;
+        this->x2 = x2;
+        this->precision = precision;
+        this->n = n;
+        this->l = l;
+
+        this->initialize_interpolator();
+      }
+
+      void initialize_interpolator() {
+        // Fineness starts with zero and is incremently increased
+        // this definition is arbitrary but make computation more readable
+        this->fineness = 0;
+        double error{this->compute_grid_error()};
+        // TODO(alex) add some procedure to not get locked if precision is too
+        // high
+        while (error > this->precision) {
+          this->fineness++;
+          error = this->compute_grid_error();
+        }
+      }
+
+      // TODO(alex) if I use temporary variables instead of this, does the
+      // compiler optimize this?
+      double compute_grid_error() {
+        this->grid = 
+            this->grid_rational.compute_grid(this->x1,this->x2, this->fineness);
+        this->evaluated_grid = this->eval(this->grid);
+
+        this->intp_method.initialize(this->grid, this->evaluated_grid);
+
+        Vector_t test_grid{this->grid_rational.compute_test_grid(this->x1,this->x2,this->fineness)};
+        Vector_t test_grid_interpolated{this->interpolate(test_grid)};
+        Vector_t test_grid_evaluated{this->eval(test_grid)}; 
+        Vector_t error_grid{(test_grid_interpolated - test_grid_evaluated).array().abs()};
+        grid_rational.update_errors(Vector_Ref(error_grid));
+        this->max_error = error_grid.maxCoeff();
+        this->mean_error = error_grid.mean();
+        //if (grid_rational.grid_size % 1000 == 0) {
+        //  std::cout << "error" << this->mean_error << std::endl;
+        //}
+        return this->mean_error;
+      }
+
+      double eval(double x) {return this->radial_contr.compute_contribution<AtomicSmearingType::Constant>(x,0.5)(this->n,this->l);}
+
+      // We use evaluate when the function is used and interpolate when the
+      // interpolation method is used
+      Vector_t eval(const Vector_Ref & grid) {
+        Vector_t evaluated_grid = Vector_t::Zero(grid.size());
+        for (int i{0}; i<evaluated_grid.size(); i++) {
+          evaluated_grid(i) = this->eval(grid(i));
+        }
+        return evaluated_grid;
+      }
+
+      // TODO(alex) test this assumption:
+      // this should save one copy operation instead of the above used for 
+      // this->evaluated_grid 
+      //void eval() {
+      //  for (size_t i{0}; i<this->evaluated_grid.size(); i++) {
+      //    this->evaluated_grid(i) = this->function(grid(i));
+      //  }
+      //}
+
+      double interpolate(double x) {
+        // TODO(alex) throw runtime error, what is diff?
+        if (x<this->x1) { throw std::runtime_error ("x is outside of range, below x1"); }
+        if (x>this->x2) { throw std::runtime_error ("x is outside of range, above x2"); }
+        size_t nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
+        return intp_method.interpolate(
+            this->grid, this->evaluated_grid,
+            x, nearest_grid_index_to_x);
+      }
+
+      Vector_t interpolate(const Vector_Ref & points) {
+        Vector_t interpolated_points = Vector_t::Zero(points.size());
+        for (int i{0}; i<points.size(); i++) {
+          interpolated_points(i) = this->interpolate(points(i));
+        }
+        return interpolated_points;
+      }
+     
+      const json fc_hypers{
+           {"type", "Constant"},
+           {"gaussian_sigma", {{"value", 0.5}, {"unit", "A"}}}
+          };
+      const json hypers{{"gaussian_density", fc_hypers},
+                {"max_radial", 20},
+                {"max_angular", 19},
+                {"cutoff_function", {{"cutoff",{{"value", 2.0}, {"unit", "A"}}}}}
+      };
+
+      RadialContribution<RadialBasisType::GTO> radial_contr{RadialContribution<RadialBasisType::GTO>(hypers)};
+      int n;
+      int l;
+      double x1{0};
+      double x2{1};
+      double precision{1e-5};
+      double mean_error;
+      double max_error;
+      int fineness{0};
+      Vector_t grid{};
+      Vector_t evaluated_grid{};
+
+      InterpolationMethod intp_method;
+      GridRational grid_rational;
+      SearchMethod search_method;
+    };
+
 
   }  // namespace internal
 
