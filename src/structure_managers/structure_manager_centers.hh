@@ -226,14 +226,10 @@ namespace rascal {
     //! Returns the position of an atom, given an AtomRef
     inline Vector_ref get_position(const AtomRef_t & atom) {
       auto atom_tag{atom.get_index()};
-      auto&& atom_index{this->get_atom_index(atom_tag)};
-      auto p = this->get_positions();
-      auto * xval{p.col(atom_index).data()};
-      return Vector_ref(xval);
+      return this->get_position(atom_tag);
     }
 
     //! Returns the position of an atom, given an atom tag
-    // #ATOM_INDEX
     inline Vector_ref get_position(const int & atom_tag) {
       auto&& atom_index{this->get_atom_index(atom_tag)};
       auto p = this->get_positions();
@@ -324,6 +320,11 @@ namespace rascal {
     inline const AtomicStructure<traits::Dim> & get_atomic_structure() const {
       return this->atoms_object;
     }
+
+    int get_n_atoms() const {
+      return this->natoms;
+    }
+
 
 
    protected:

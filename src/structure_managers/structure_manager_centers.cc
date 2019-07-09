@@ -54,6 +54,13 @@ namespace rascal {
         this->offsets.push_back(id);
       }
     }
+    
+    for (size_t id{0}; id < this->natoms; ++id) {
+      if (not is_center_atom(id)) {
+        this->atoms_index[0].push_back(id);
+        this->offsets.push_back(id);
+      }
+    }
 
     Cell_t lat = this->atoms_object.cell;
     this->lattice.set_cell(lat);
