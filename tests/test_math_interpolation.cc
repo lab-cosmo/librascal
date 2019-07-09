@@ -82,7 +82,9 @@ namespace rascal {
         }
         a = 0.5*(n+l+3);
         b = l+1.5;
-        func = std::bind(hyp1f1_function_generator, a, b, std::placeholders::_1);
+        math::Hyp1f1 hyp1f1{a, b, 200, 1e-15};
+        func  = [hyp1f1](double x) mutable {return hyp1f1.calc(x);};
+        //func = std::bind(hyp1f1_function_generator, a, b, std::placeholders::_1);
         intp.initalize(func, 0,1, this->precision); 
         for (int i{0}; i<points.size()-1; i++) {
           intp_val = intp.interpolate(points(i));
