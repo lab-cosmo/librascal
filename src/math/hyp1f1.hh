@@ -95,7 +95,8 @@ namespace rascal {
       Eigen::VectorXd coeff_derivative{};
 
      public:
-      size_t n_terms{0};
+      // Parameter used to fix the sum when evaluating the numerical derivatives.
+      size_t n_terms{100};
 
       Hyp1f1Series(const double & a, const double & b, const size_t & mmax,
                    const double & tolerance = 1e-14)
@@ -162,7 +163,7 @@ namespace rascal {
         } else {
           throw std::runtime_error("n_terms should be >= -1");
         }
-        this->n_terms = this->mmax;
+        //this->n_terms = this->mmax;
         double res{0.};
         if (not derivative) {
           res = this->sum(z, this->coeff, mmax, n_terms);
@@ -186,7 +187,7 @@ namespace rascal {
                                                z * (coefficient(i + 2) +
                                                     z * coefficient(i + 3))));
             if (a1 < this->tolerance * res) {
-              this->n_terms = i;
+              //this->n_terms = i;
               res += a1;
               break;
             }
@@ -196,7 +197,7 @@ namespace rascal {
         } else {
           // TODO(mc) this could be done with telescopic sums - and might be
           // faster than checking for bailout condition
-          for (size_t i{0}; i < static_cast<size_t>(n_terms); ++i) {
+          for (int i{0}; i < n_terms; ++i) {
             a1 = coefficient(i) * zpow;
             zpow *= z;
             res += a1;
@@ -243,7 +244,8 @@ namespace rascal {
       }
 
      public:
-      size_t n_terms{0};
+      // Parameter used to fix the sum when evaluating the numerical derivatives.
+      size_t n_terms{20};
 
       Hyp1f1Asymptotic(const double & a, const double & b, const size_t & mmax,
                        const double & tolerance = 1e-14)
@@ -312,7 +314,7 @@ namespace rascal {
       inline double hyp2f0(const double & z, const bool & derivative,
                            const int & n_terms) {
         using math::pow;
-        this->n_terms = this->mmax;
+        //this->n_terms = this->mmax;
 
         size_t mmax{0};
         if (n_terms == -1) {
@@ -345,7 +347,7 @@ namespace rascal {
           s_i = coefficient(i) * izpow;
           if (res > 0 and std::fabs(s_i) < this->tolerance * res and
               n_terms == -1) {
-            this->n_terms = i;
+            //this->n_terms = i;
             break;
           }
           res += s_i;
@@ -389,8 +391,8 @@ namespace rascal {
         this->h1f1_s = this->hyp1f1_series.calc(this->z_asympt);
         this->h1f1_a = this->hyp1f1_asymptotic.calc(this->z_asympt);
 
-        this->nterms_s = this->hyp1f1_series.n_terms;
-        this->nterms_a = this->hyp1f1_asymptotic.n_terms;
+        //this->nterms_s = this->hyp1f1_series.n_terms;
+        //this->nterms_a = this->hyp1f1_asymptotic.n_terms;
       }
 
       /**

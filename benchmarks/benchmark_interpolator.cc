@@ -35,11 +35,6 @@ namespace rascal {
           radial_contr.compute_contribution<AtomicSmearingType::Constant>(points(i), 0.5)(0,17);
         }
       }
-      for (int i{0}; i<points.size();i++) {
-        pointsr(i) = radial_contr.compute_contribution<AtomicSmearingType::Constant>(points(i), 0.5)(0,17);
-      }
-      std::cout << pointsr << std::endl;
-      
     }
     BENCHMARK(BM_RadialContr);
 
@@ -66,29 +61,58 @@ namespace rascal {
     BENCHMARK_CAPTURE(BM_Intp, basic_test, 0,5,1e-3,1000);
 
     void BM_RadialContrIntp(benchmark::State& state, double x1, double x2, double precision, int nb_points) {
-    auto intp{RadialContrInterpolator <
+    auto intp{Interpolator <
       InterpolationMethod<InterpolationMethod_t::CubicSpline>,
       GridRational<GridType_t::Uniform, RefinementMethod_t::Adaptive>,
       SearchMethod<SearchMethod_t::Hunt>
         >()};
-      //double x1 = extra_args[0];
-      //double x2 = extra_args[1];
-      //double precision = extra_args[2];
-      //int nb_points = extra_args[3];
+
+      const json fc_hypers{
+           {"type", "Constant"},
+           {"gaussian_sigma", {{"value", 0.5}, {"unit", "A"}}}
+          };
+      const json hypers{{"gaussian_density", fc_hypers},
+                {"max_radial", 20},
+                {"max_angular", 19},
+                {"cutoff_function", {{"cutoff",{{"value", 2.0}, {"unit", "A"}}}}}
+      };
+      auto radial_contr{RadialContribution<RadialBasisType::GTO>(hypers)};
+      std::function<double(double)> func = [&radial_contr](double x) mutable {return radial_contr.compute_contribution<AtomicSmearingType::Constant>(x,0.5)(0,17);};
       math::Vector_t points = math::Vector_t::LinSpaced(nb_points,x1,x2);
-      intp.initalize(0,17, x1,x2, precision); 
+      intp.initalize(func, x1,x2, std::pow(10,-precision)); 
       for (auto _ : state) {
         for (int i{0}; i<points.size();i++) {
           intp.interpolate(points(i));
         }
       }
-      state.counters.insert({{"x1",x1},{"x2",x2},{"GridSize",intp.grid_rational.grid_size}});
+      state.counters.insert({{"x1",x1},{"x2",x2},{"-log(precision)",precision},{"nb_points",nb_points},{"GridSize",intp.grid_rational.grid_size}});
     }
-    BENCHMARK_CAPTURE(BM_RadialContrIntp, basic_test, 0,5,1e-10,1000);
+    //BENCHMARK_CAPTURE(BM_RadialContrIntp, basic_test, 0,5,5,1000);
       //->Args({0.,5.,1e-5,1000}); // does not work because Argas only accepts integers
       //->Ranges({{0,0},{5,5},{1e-2, 1e-12},{100,3000}});
     //{1e-2,1e-4,1e-6,1e-8,1e-10,1e-12}
     // 100 times slower than with precompution that is why we skip
+    
+
+
+    void BM_RadialContrIntpS(benchmark::State& state, double x1, double x2, double precision, int nb_points) {
+    auto intp{Interpolator <
+      InterpolationMethod<InterpolationMethod_t::CubicSpline>,
+      GridRational<GridType_t::Uniform, RefinementMethod_t::Adaptive>,
+      SearchMethod<SearchMethod_t::Hunt>
+        >()};
+      std::function<double(double)> func = [](double x) {return std::exp(-std::pow((x-1)/.5,2)/2);};
+      math::Vector_t points = math::Vector_t::LinSpaced(nb_points,x1,x2);
+      intp.initalize(func, x1,x2, precision); 
+      for (auto _ : state) {
+        for (int i{0}; i<points.size();i++) {
+          intp.interpolate(points(i));
+        }
+      }
+      state.counters.insert({{"x1",x1},{"x2",x2},{"precision",precision},{"nb_points",nb_points},{"GridSize",intp.grid_rational.grid_size}});
+    }
+    
+    BENCHMARK_CAPTURE(BM_RadialContrIntpS, basic_test, 0,5,1e-5,1000);
     //static double radial_contr_function_generator(int n, int l, double r) {
 
     //  int max_radial{20};
