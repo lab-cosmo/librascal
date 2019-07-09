@@ -48,7 +48,7 @@ namespace rascal {
   // }
 
   using Fixtures_no_center = boost::mpl::list<
-      // MultipleStructureFixture<MultipleStructureManagerNLFixtureNoCenter>
+      MultipleStructureFixture<MultipleStructureManagerNLFixtureNoCenter>
       MultipleStructureFixture<MultipleStructureManagerNLStrictFixtureNoCenter>
       >;
 
