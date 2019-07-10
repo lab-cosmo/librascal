@@ -1044,6 +1044,7 @@ namespace rascal {
 
       for (auto && p_image :
            internal::PeriodicImages<dim>{periodic_min, repetitions, ntot}) {
+        // exclude the original unit cell
         if ( not(p_image.array() == 0).all() ) {
           Vector_t pos_ghost{pos + cell * p_image.template cast<double>()};
           auto flag_inside =

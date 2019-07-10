@@ -261,13 +261,14 @@ namespace rascal {
     }
 
     template <size_t Order, size_t Layer>
-    inline size_t
+    inline decltype(auto)
     get_atom_index(const ClusterRefKey<Order, Layer> & cluster) const {
       return this->get_atom_index(cluster.get_atom_tag());
     }
 
-    inline size_t get_atom_index(const int & atom_tag) const {
-      return static_cast<size_t>(std::get<0>(this->atoms_index)[atom_tag]);
+    inline const size_t & get_atom_index(const int & atom_tag) const {
+      // return static_cast<size_t>(std::get<0>(this->atoms_index)[atom_tag]);
+      return std::get<0>(this->atoms_index)[atom_tag];
     }
 
     //! dummy function, since no neighbours are present her
@@ -338,7 +339,7 @@ namespace rascal {
      *   - atoms_index[0] lists all i-atoms
      * the structure here is only used for conformance, could just be a vector.
      */
-    std::array<std::vector<int>, traits::MaxOrder> atoms_index;
+    std::array<std::vector<size_t>, traits::MaxOrder> atoms_index;
 
     //! Lattice type for storing the cell and querying cell-related data
     Lattice<traits::Dim> lattice;
