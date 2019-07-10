@@ -50,7 +50,12 @@
 namespace rascal {
 
   namespace internal {
-    enum class SphericalInvariantsType { RadialSpectrum, PowerSpectrum, BiSpectrum, End_ };
+    enum class SphericalInvariantsType {
+      RadialSpectrum,
+      PowerSpectrum,
+      BiSpectrum,
+      End_
+    };
 
     /**
      * Base class for the specification of the atomic smearing.
@@ -61,9 +66,11 @@ namespace rascal {
       //! Destructor
       virtual ~SphericalInvariantsPrecomputationBase() = default;
       //! Copy constructor
-      SphericalInvariantsPrecomputationBase(const SphericalInvariantsPrecomputationBase & other) = delete;
+      SphericalInvariantsPrecomputationBase(
+          const SphericalInvariantsPrecomputationBase & other) = delete;
       //! Move constructor
-      SphericalInvariantsPrecomputationBase(SphericalInvariantsPrecomputationBase && other) = default;
+      SphericalInvariantsPrecomputationBase(
+          SphericalInvariantsPrecomputationBase && other) = default;
       //! Copy assignment operator
       SphericalInvariantsPrecomputationBase &
       operator=(const SphericalInvariantsPrecomputationBase & other) = delete;
@@ -78,14 +85,16 @@ namespace rascal {
     struct SphericalInvariantsPrecomputation {};
 
     template <>
-    struct SphericalInvariantsPrecomputation<SphericalInvariantsType::RadialSpectrum>
+    struct SphericalInvariantsPrecomputation<
+        SphericalInvariantsType::RadialSpectrum>
         : SphericalInvariantsPrecomputationBase {
       using Hypers_t = typename SphericalInvariantsPrecomputationBase::Hypers_t;
       explicit SphericalInvariantsPrecomputation(const Hypers_t &) {}
     };
 
     template <>
-    struct SphericalInvariantsPrecomputation<SphericalInvariantsType::PowerSpectrum>
+    struct SphericalInvariantsPrecomputation<
+        SphericalInvariantsType::PowerSpectrum>
         : SphericalInvariantsPrecomputationBase {
       using Hypers_t = typename SphericalInvariantsPrecomputationBase::Hypers_t;
       explicit SphericalInvariantsPrecomputation(const Hypers_t & hypers) {
@@ -108,7 +117,9 @@ namespace rascal {
     };
 
     template <>
-    struct SphericalInvariantsPrecomputation<SphericalInvariantsType::BiSpectrum> : SphericalInvariantsPrecomputationBase {
+    struct SphericalInvariantsPrecomputation<
+        SphericalInvariantsType::BiSpectrum>
+        : SphericalInvariantsPrecomputationBase {
       using Hypers_t = typename SphericalInvariantsPrecomputationBase::Hypers_t;
       explicit SphericalInvariantsPrecomputation(const Hypers_t & hypers) {
         this->max_angular = hypers.at("max_angular").get<size_t>();
@@ -191,20 +202,24 @@ namespace rascal {
 
   template <internal::SphericalInvariantsType Type, class Hypers>
   decltype(auto) make_spherical_invariants_precompute(const Hypers & hypers) {
-    return std::static_pointer_cast<internal::SphericalInvariantsPrecomputationBase>(
-        std::make_shared<internal::SphericalInvariantsPrecomputation<Type>>(hypers));
+    return std::static_pointer_cast<
+        internal::SphericalInvariantsPrecomputationBase>(
+        std::make_shared<internal::SphericalInvariantsPrecomputation<Type>>(
+            hypers));
   }
 
   template <internal::SphericalInvariantsType Type>
   decltype(auto) downcast_spherical_invariants_precompute(
       const std::shared_ptr<internal::SphericalInvariantsPrecomputationBase> &
           spherical_invariants_precompute) {
-    return std::static_pointer_cast<internal::SphericalInvariantsPrecomputation<Type>>(
+    return std::static_pointer_cast<
+        internal::SphericalInvariantsPrecomputation<Type>>(
         spherical_invariants_precompute);
   }
 
   template <class StructureManager>
-  class RepresentationManagerSphericalInvariants : public RepresentationManagerBase {
+  class RepresentationManagerSphericalInvariants
+      : public RepresentationManagerBase {
    public:
     using Manager_t = StructureManager;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
@@ -214,7 +229,8 @@ namespace rascal {
         BlockSparseProperty<double, 1, 0, Manager_t, Key_t>;
     using Data_t = typename SparseProperty_t::Data_t;
 
-    RepresentationManagerSphericalInvariants(ManagerPtr_t sm, const Hypers_t & hyper)
+    RepresentationManagerSphericalInvariants(ManagerPtr_t sm,
+                                             const Hypers_t & hyper)
         : soap_vectors{*sm}, structure_manager{sm}, rep_expansion{std::move(sm),
                                                                   hyper} {
       this->set_hyperparameters(hyper);
@@ -246,27 +262,40 @@ namespace rascal {
       this->max_radial = hypers.at("max_radial");
       this->max_angular = hypers.at("max_angular");
       this->normalize = hypers.at("normalize").get<bool>();
-      this->spherical_invariants_type_str = hypers.at("soap_type").get<std::string>();
+      this->spherical_invariants_type_str =
+          hypers.at("soap_type").get<std::string>();
 
       if (this->spherical_invariants_type_str.compare("PowerSpectrum") == 0) {
-        this->spherical_invariants_type = SphericalInvariantsType::PowerSpectrum;
-        this->precompute_spherical_invariants[enumValue(SphericalInvariantsType::PowerSpectrum)] =
-            make_spherical_invariants_precompute<SphericalInvariantsType::PowerSpectrum>(hypers);
-      } else if (this->spherical_invariants_type_str.compare("RadialSpectrum") == 0) {
-        this->spherical_invariants_type = SphericalInvariantsType::RadialSpectrum;
-        this->precompute_spherical_invariants[enumValue(SphericalInvariantsType::RadialSpectrum)] =
-            make_spherical_invariants_precompute<SphericalInvariantsType::RadialSpectrum>(hypers);
+        this->spherical_invariants_type =
+            SphericalInvariantsType::PowerSpectrum;
+        this->precompute_spherical_invariants[enumValue(
+            SphericalInvariantsType::PowerSpectrum)] =
+            make_spherical_invariants_precompute<
+                SphericalInvariantsType::PowerSpectrum>(hypers);
+      } else if (this->spherical_invariants_type_str.compare(
+                     "RadialSpectrum") == 0) {
+        this->spherical_invariants_type =
+            SphericalInvariantsType::RadialSpectrum;
+        this->precompute_spherical_invariants[enumValue(
+            SphericalInvariantsType::RadialSpectrum)] =
+            make_spherical_invariants_precompute<
+                SphericalInvariantsType::RadialSpectrum>(hypers);
         if (this->max_angular > 0) {
           throw std::logic_error("max_angular should be 0 with RadialSpectrum");
         }
-      } else if (this->spherical_invariants_type_str.compare("BiSpectrum") == 0) {
-        this->spherical_invariants_type = internal::SphericalInvariantsType::BiSpectrum;
-        this->precompute_spherical_invariants[enumValue(SphericalInvariantsType::BiSpectrum)] =
-            make_spherical_invariants_precompute<SphericalInvariantsType::BiSpectrum>(hypers);
+      } else if (this->spherical_invariants_type_str.compare("BiSpectrum") ==
+                 0) {
+        this->spherical_invariants_type =
+            internal::SphericalInvariantsType::BiSpectrum;
+        this->precompute_spherical_invariants[enumValue(
+            SphericalInvariantsType::BiSpectrum)] =
+            make_spherical_invariants_precompute<
+                SphericalInvariantsType::BiSpectrum>(hypers);
         this->inversion_symmetry = hypers.at("inversion_symmetry");
 
       } else {
-        throw std::logic_error("Requested SphericalInvariants type \'" + this->spherical_invariants_type_str +
+        throw std::logic_error("Requested SphericalInvariants type \'" +
+                               this->spherical_invariants_type_str +
                                "\' has not been implemented.  Must be one of" +
                                ": \'RadialSpectrum\', \'PowerSpectrum\', " +
                                "\'BiSpectrum\'.");
@@ -352,8 +381,10 @@ namespace rascal {
     using math::pow;
 
     // get the relevant precomputation object and unpack the useful infos
-    auto precomputation{downcast_spherical_invariants_precompute<SphericalInvariantsType::PowerSpectrum>(
-        this->precompute_spherical_invariants[enumValue(SphericalInvariantsType::PowerSpectrum)])};
+    auto precomputation{downcast_spherical_invariants_precompute<
+        SphericalInvariantsType::PowerSpectrum>(
+        this->precompute_spherical_invariants[enumValue(
+            SphericalInvariantsType::PowerSpectrum)])};
     auto & l_factors{precomputation->l_factors};
 
     // Compute the spherical expansions of the current structure
@@ -419,7 +450,8 @@ namespace rascal {
   }
 
   template <class Mngr>
-  void RepresentationManagerSphericalInvariants<Mngr>::compute_radialspectrum() {
+  void
+  RepresentationManagerSphericalInvariants<Mngr>::compute_radialspectrum() {
     rep_expansion.compute();
     using math::pow;
 
@@ -450,8 +482,10 @@ namespace rascal {
     using internal::enumValue;
     using internal::SphericalInvariantsType;
 
-    auto precomputation{downcast_spherical_invariants_precompute<SphericalInvariantsType::BiSpectrum>(
-        this->precompute_spherical_invariants[enumValue(SphericalInvariantsType::BiSpectrum)])};
+    auto precomputation{downcast_spherical_invariants_precompute<
+        SphericalInvariantsType::BiSpectrum>(
+        this->precompute_spherical_invariants[enumValue(
+            SphericalInvariantsType::BiSpectrum)])};
     auto & w3js{precomputation->w3js};
 
     rep_expansion.compute();
@@ -486,11 +520,11 @@ namespace rascal {
                 triplet_type[1] == triplet_type[2]) {
               mult = 1.0;
             } else if (triplet_type[0] == triplet_type[1] ||
-                     triplet_type[0] == triplet_type[2] ||
-                     triplet_type[1] == triplet_type[2]) {
+                       triplet_type[0] == triplet_type[2] ||
+                       triplet_type[1] == triplet_type[2]) {
               // two the same
               mult = std::sqrt(3.0);
-            } else { // all different
+            } else {  // all different
               mult = std::sqrt(6.0);
             }
 
@@ -539,10 +573,10 @@ namespace rascal {
                                            complex{coef1(n1, lm1),
                                                    coef1(n1, lm1 - 2 * m1s)};
                                 } else if (m1s == 0) {
-                                  coef1c = complex {coef1(n1, lm1), 0.0} *
+                                  coef1c = complex(coef1(n1, lm1), 0.0) *
                                            std::sqrt(2.0);
                                 } else if (m1s < 0) {
-                                  coef1c = complex{ coef1(n1, lm1 - 2 * m1s),
+                                  coef1c = complex{coef1(n1, lm1 - 2 * m1s),
                                                    -coef1(n1, lm1)};
                                 }
                                 if (m2s > 0) {
@@ -550,7 +584,7 @@ namespace rascal {
                                            complex{coef2(n2, lm2),
                                                    coef2(n2, lm2 - 2 * m2s)};
                                 } else if (m2s == 0) {
-                                  coef2c = complex {coef2(n2, lm2), 0.0} *
+                                  coef2c = complex(coef2(n2, lm2), 0.0) *
                                            std::sqrt(2.0);
                                 } else if (m2s < 0) {
                                   coef2c = complex{coef2(n2, lm2 - 2 * m2s),
@@ -561,7 +595,7 @@ namespace rascal {
                                            complex{coef3(n3, lm3),
                                                    coef3(n3, lm3 - 2 * m3s)};
                                 } else if (m3s == 0) {
-                                  coef3c = complex {coef3(n3, lm3), 0.0} *
+                                  coef3c = complex(coef3(n3, lm3), 0.0) *
                                            std::sqrt(2.0);
                                 } else if (m3s < 0) {
                                   coef3c = complex{coef3(n3, lm3 - 2 * m3s),

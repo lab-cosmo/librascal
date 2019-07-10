@@ -56,7 +56,8 @@ namespace rascal {
     struct SphericalCovariantsPrecomputation {};
 
     template <>
-    struct SphericalCovariantsPrecomputation<SphericalCovariantsType::LambdaSpectrum>
+    struct SphericalCovariantsPrecomputation<
+        SphericalCovariantsType::LambdaSpectrum>
         : SphericalInvariantsPrecomputationBase {
       using Parent = SphericalInvariantsPrecomputationBase;
       using Hypers_t = typename SphericalInvariantsPrecomputationBase::Hypers_t;
@@ -163,8 +164,10 @@ namespace rascal {
 
   template <internal::SphericalCovariantsType Type, class Hypers>
   decltype(auto) make_spherical_covariants_precompute(const Hypers & hypers) {
-    return std::static_pointer_cast<internal::SphericalInvariantsPrecomputationBase>(
-        std::make_shared<internal::SphericalCovariantsPrecomputation<Type>>(hypers));
+    return std::static_pointer_cast<
+        internal::SphericalInvariantsPrecomputationBase>(
+        std::make_shared<internal::SphericalCovariantsPrecomputation<Type>>(
+            hypers));
   }
 
   template <internal::SphericalCovariantsType Type>
@@ -172,11 +175,13 @@ namespace rascal {
       const std::shared_ptr<internal::SphericalInvariantsPrecomputationBase> &
           spherical_covariants_precompute) {
     return std::static_pointer_cast<
-        internal::SphericalCovariantsPrecomputation<Type>>(spherical_covariants_precompute);
+        internal::SphericalCovariantsPrecomputation<Type>>(
+        spherical_covariants_precompute);
   }
 
   template <class StructureManager>
-  class RepresentationManagerSphericalCovariants : public RepresentationManagerBase {
+  class RepresentationManagerSphericalCovariants
+      : public RepresentationManagerBase {
    public:
     using Manager_t = StructureManager;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
@@ -186,7 +191,8 @@ namespace rascal {
         BlockSparseProperty<double, 1, 0, Manager_t, Key_t>;
     using Data_t = typename SparseProperty_t::Data_t;
 
-    RepresentationManagerSphericalCovariants(ManagerPtr_t sm, const Hypers_t & hyper)
+    RepresentationManagerSphericalCovariants(ManagerPtr_t sm,
+                                             const Hypers_t & hyper)
         : soap_vectors{*sm}, structure_manager{sm}, rep_expansion{std::move(sm),
                                                                   hyper} {
       this->set_hyperparameters(hyper);
@@ -215,19 +221,23 @@ namespace rascal {
       using internal::SphericalCovariantsType;
       this->max_radial = hypers.at("max_radial").get<size_t>();
       this->max_angular = hypers.at("max_angular").get<size_t>();
-      this->spherical_covariants_type_str = hypers.at("soap_type").get<std::string>();
+      this->spherical_covariants_type_str =
+          hypers.at("soap_type").get<std::string>();
       this->lambda = hypers.at("lam").get<size_t>();
       this->inversion_symmetry = hypers.at("inversion_symmetry").get<bool>();
       this->normalize = hypers.at("normalize").get<bool>();
 
       if (this->spherical_covariants_type_str.compare("LambdaSpectrum") == 0) {
-        this->spherical_covariants_type = SphericalCovariantsType::LambdaSpectrum;
-        this->precompute_spherical_covariants[enumValue(SphericalCovariantsType::LambdaSpectrum)] =
-            make_spherical_covariants_precompute<SphericalCovariantsType::LambdaSpectrum>(
-                hypers);
+        this->spherical_covariants_type =
+            SphericalCovariantsType::LambdaSpectrum;
+        this->precompute_spherical_covariants[enumValue(
+            SphericalCovariantsType::LambdaSpectrum)] =
+            make_spherical_covariants_precompute<
+                SphericalCovariantsType::LambdaSpectrum>(hypers);
 
       } else {
-        throw std::logic_error("Requested Spherical Covariants type \'" + this->spherical_covariants_type_str +
+        throw std::logic_error("Requested Spherical Covariants type \'" +
+                               this->spherical_covariants_type_str +
                                "\' has not been implemented.  Must be one of" +
                                ": \'LambdaSpectrum\'.");
       }
@@ -352,7 +362,8 @@ namespace rascal {
   }
 
   template <class Mngr>
-  void RepresentationManagerSphericalCovariants<Mngr>::compute_lambdaspectrum() {
+  void
+  RepresentationManagerSphericalCovariants<Mngr>::compute_lambdaspectrum() {
     using internal::SphericalCovariantsType;
     using math::pow;
     using complex = std::complex<double>;
@@ -362,10 +373,10 @@ namespace rascal {
 
     this->initialize_percenter_lambda_soap_vectors();
 
-    auto precomputation{
-        downcast_spherical_covariants_precompute<SphericalCovariantsType::LambdaSpectrum>(
-            this->precompute_spherical_covariants[enumValue(
-                SphericalCovariantsType::LambdaSpectrum)])};
+    auto precomputation{downcast_spherical_covariants_precompute<
+        SphericalCovariantsType::LambdaSpectrum>(
+        this->precompute_spherical_covariants[enumValue(
+            SphericalCovariantsType::LambdaSpectrum)])};
     auto & w3js{precomputation->w3js};
 
     Key_t p_type{0, 0};
@@ -418,22 +429,22 @@ namespace rascal {
                           // usual formulae for converting from real to complex
                           if (m1s > 0) {
                             coef1c = pow(-1.0, m1s) *
-                                     complex{coef1(n1, lm1),
-                                             coef1(n1, lm1 - 2 * m1s)};
+                                     complex(coef1(n1, lm1),
+                                             coef1(n1, lm1 - 2 * m1s));
                           } else if (m1s == 0) {
                             coef1c =
-                                complex {coef1(n1, lm1), 0.0} * std::sqrt(2.0);
+                                complex(coef1(n1, lm1), 0.0) * std::sqrt(2.0);
                           } else if (m1s < 0) {
                             coef1c = complex(coef1(n1, lm1 - 2 * m1s),
                                              -coef1(n1, lm1));
                           }
                           if (m2s > 0) {
                             coef2c = pow(-1.0, m2s) *
-                                     complex{coef2(n2, lm2),
-                                             coef2(n2, lm2 - 2 * m2s)};
+                                     complex(coef2(n2, lm2),
+                                             coef2(n2, lm2 - 2 * m2s));
                           } else if (m2s == 0) {
                             coef2c =
-                                complex {coef2(n2, lm2), 0.0} * std::sqrt(2.0);
+                                complex(coef2(n2, lm2), 0.0) * std::sqrt(2.0);
                           } else if (m2s < 0) {
                             coef2c = complex{coef2(n2, lm2 - 2 * m2s),
                                              -coef2(n2, lm2)};

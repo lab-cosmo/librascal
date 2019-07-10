@@ -216,17 +216,23 @@ namespace rascal {
   struct SphericalInvariantsTestData : TestData {
     using Parent = TestData;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
-    SphericalInvariantsTestData() : Parent{} { this->get_ref(this->ref_filename); }
+    SphericalInvariantsTestData() : Parent{} {
+      this->get_ref(this->ref_filename);
+    }
     ~SphericalInvariantsTestData() = default;
-    std::string ref_filename{"reference_data/spherical_invariants_reference.ubjson"};
+    std::string ref_filename{
+        "reference_data/spherical_invariants_reference.ubjson"};
   };
 
   struct SphericalCovariantsTestData : TestData {
     using Parent = TestData;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
-    SphericalCovariantsTestData() : Parent{} { this->get_ref(this->ref_filename); }
+    SphericalCovariantsTestData() : Parent{} {
+      this->get_ref(this->ref_filename);
+    }
     ~SphericalCovariantsTestData() = default;
-    std::string ref_filename{"reference_data/spherical_covariants_reference.ubjson"};
+    std::string ref_filename{
+        "reference_data/spherical_covariants_reference.ubjson"};
   };
 
   struct MultipleStructureSphericalExpansion
