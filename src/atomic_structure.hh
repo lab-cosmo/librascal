@@ -253,10 +253,6 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <int Dim>
   void from_json(const json & j, AtomicStructure<Dim> & s) {
-    // using Cell_t = typename AtomicStructure<Dim>::Cell_t;
-    // using AtomTypes_t = typename AtomicStructure<Dim>::AtomTypes_t;
-    // using PBC_t = typename AtomicStructure<Dim>::PBC_t;
-    // using Positions_t = typename AtomicStructure<Dim>::Positions_t;
     using Cell_t = Eigen::MatrixXd;
     using AtomTypes_t = Eigen::VectorXi;
     using PBC_t = Eigen::VectorXi;

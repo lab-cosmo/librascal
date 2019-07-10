@@ -3,13 +3,15 @@
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  * @author Till Junge <till.junge@epfl.ch>
+ * @author Felix Musil <felix.musil@epfl.ch>
  *
  * @date   04 Oct 2018
  *
  * @brief implements an adaptor for structure_managers, which
  * creates a full or half neighbourlist if there is none
  *
- * Copyright  2018 Markus Stricker, Till Junge, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright  2018 Markus Stricker, Till Junge, Felix Musil COSMO (EPFL),
+ *  LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -1018,7 +1020,6 @@ namespace rascal {
     // of current atoms to start the full list of current i-atoms and ghosts
     // This is done before the ghost atom generation, to have them all
     // contiguously at the beginning of the list.
-    size_t n_center_atoms{0};
     for (auto center : this->manager) {
       auto atom_tag{center.get_atom_tag()};
       size_t cluster_index = this->manager->get_atom_index(atom_tag);
@@ -1026,15 +1027,13 @@ namespace rascal {
       this->atom_tag_list.push_back(atom_tag);
       this->atom_types.push_back(atom_type);
       this->atom_index_from_atom_tag_list.push_back(cluster_index);
-      n_center_atoms++;
     }
 
     // fill up the tags for the missing center atoms. should never be accessed
-    for (size_t i{n_center_atoms}; i < this->n_atoms; ++i) {
+    for (size_t i{this->n_centers}; i < this->n_atoms; ++i) {
       this->atom_types.push_back(std::numeric_limits<int>::max());
       this->atom_index_from_atom_tag_list.push_back(
           std::numeric_limits<size_t>::max());
-      n_center_atoms++;
     }
 
     // generate ghost atom tags and positions
@@ -1054,7 +1053,6 @@ namespace rascal {
             // next atom tag is size, since start is at index = 0
             auto new_atom_tag{this->n_atoms + this->n_ghosts};
             this->add_ghost_atom(new_atom_tag, pos_ghost, atom_type);
-            n_center_atoms++;
             // adds origin atom cluster_index if true
             // adds ghost atom cluster index if false
             size_t cluster_index = this->manager->get_atom_index(atom_tag);
