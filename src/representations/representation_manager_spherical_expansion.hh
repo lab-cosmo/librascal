@@ -929,7 +929,7 @@ namespace rascal {
                   max_radial, l_block_size) -= pair_gradient_contribution;
               gradient_neigh_by_type.block(
                   cartesian_idx * max_radial, l_block_idx,
-                    max_radial, l_block_size) += pair_gradient_contribution;
+                  max_radial, l_block_size) += pair_gradient_contribution;
               // clang-format on
             }
             l_block_idx += l_block_size;

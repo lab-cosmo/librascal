@@ -53,7 +53,8 @@ namespace rascal {
     enum class SOAPType { RadialSpectrum, PowerSpectrum, End_ };
 
     /**
-     * Base class for the specification of the atomic smearing.
+     * Base class for the specification of the SOAP precomputations
+     * (it's different for radial vs. full spectrum)
      */
     struct SOAPPrecomputationBase {
       //! Constructor
@@ -131,6 +132,8 @@ namespace rascal {
     using Key_t = std::vector<int>;
     using SparseProperty_t =
         BlockSparseProperty<double, 1, 0, Manager_t, Key_t>;
+    using SparsePropertyGradient_t =
+        BlockSparseProperty<double, 2, 0, Manager_t, Key_t>;
     using Data_t = typename SparseProperty_t::Data_t;
 
     RepresentationManagerSOAP(ManagerPtr_t sm, const Hypers_t & hyper)
@@ -164,6 +167,11 @@ namespace rascal {
       this->max_angular = hypers.at("max_angular");
       this->normalize = hypers.at("normalize").get<bool>();
       this->soap_type_str = hypers.at("soap_type").get<std::string>();
+      if (hypers.find("compute_gradients") != hypers.end()) {
+        this->compute_gradients = hypers.at("compute_gradients").get<bool>();
+      } else {  // Default false (don't compute gradients)
+        this->compute_gradients = false;
+      }
 
       if (this->soap_type_str.compare("PowerSpectrum") == 0) {
         this->soap_type = SOAPType::PowerSpectrum;
@@ -209,6 +217,7 @@ namespace rascal {
     void compute_powerspectrum();
 
     SparseProperty_t soap_vectors;
+    SparsePropertyGradient_t soap_vector_gradients;
 
     //! initialize the soap vectors with only the keys needed for each center
     void initialize_percenter_powerspectrum_soap_vectors();
@@ -219,6 +228,7 @@ namespace rascal {
     size_t max_radial{};
     size_t max_angular{};
     bool normalize{};
+    bool compute_gradients{};
     ManagerPtr_t structure_manager;
     RepresentationManagerSphericalExpansion<Manager_t> rep_expansion;
     internal::SOAPType soap_type{};
@@ -315,6 +325,11 @@ namespace rascal {
         auto coef1{el1.second * l_factors.asDiagonal()};
 
         for (const auto & el2 : coefficients) {
+          //TODO(max) sum gradients of expansion coeffients for the same pair
+          //types -- the neighbour (the atom wrt the gradient is being taken)
+          //must have the same pair type as one of the coefficients here to make
+          //a contribution.
+
           // avoid computing p^{ab} and p^{ba} since p^{ab} = p^{ba}^T
           if (spair_type[0] > el2.first[0]) {
             continue;
@@ -385,6 +400,7 @@ namespace rascal {
   template <class Mngr>
   void RepresentationManagerSOAP<
       Mngr>::initialize_percenter_powerspectrum_soap_vectors() {
+    using internal::n_spatial_dimensions;
     size_t n_row{static_cast<size_t>(pow(this->max_radial, 2))};
     size_t n_col{this->max_angular + 1};
 
@@ -393,7 +409,17 @@ namespace rascal {
     this->soap_vectors.set_shape(n_row, n_col);
     this->soap_vectors.resize();
 
+    if (this->compute_gradients) {
+      this->soap_vector_gradients.clear();
+      this->soap_vector_gradients.set_shape(n_spatial_dimensions * n_row,
+                                            n_col);
+      this->soap_vector_gradients.resize();
+    }
+
     auto & expansions_coefficients{rep_expansion.expansions_coefficients};
+
+    //TODO(max) can we use the same pair_list for the gradients as for the
+    //expansion coefficients?
 
     // identify the species in each environment and initialize soap_vectors
     for (auto center : this->structure_manager) {
