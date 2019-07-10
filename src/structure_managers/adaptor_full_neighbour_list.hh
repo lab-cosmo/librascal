@@ -54,7 +54,8 @@ namespace rascal {
         ManagerImplementation::traits::HasDirectionVectors};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
-    constexpr static int StackLevel{ManagerImplementation::traits::StackLevel+1};
+    constexpr static int StackLevel{ManagerImplementation::traits::StackLevel +
+                                    1};
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
         AdaptorTraits::NeighbourListType::full};
     // New pairs are added at this layer, which did not exist before. Therefore

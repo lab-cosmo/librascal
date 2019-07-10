@@ -53,7 +53,8 @@ namespace rascal {
     constexpr static bool HasDirectionVectors{true};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
-    constexpr static int StackLevel{ManagerImplementation::traits::StackLevel+1};
+    constexpr static int StackLevel{ManagerImplementation::traits::StackLevel +
+                                    1};
     using LayerByOrder = typename LayerIncreaser<
         MaxOrder, typename ManagerImplementation::traits::LayerByOrder>::type;
   };

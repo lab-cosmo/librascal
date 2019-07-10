@@ -232,7 +232,7 @@ namespace rascal {
      * Template to select the Eigen type for the argument vector: Fixed or
      * dynamic size?  Fixed-size template below, dynamic-size default here.
      */
-    template<typename Calculator_t, typename = std::void_t<>>
+    template <typename Calculator_t, typename = std::void_t<>>
     struct Argument_t {
       typedef Eigen::VectorXd type_vec;
       typedef Eigen::MatrixXd type_mat;
@@ -241,15 +241,14 @@ namespace rascal {
     // Works by SFINAE -- if Calculator has no static integral member
     // `n_arguments`, this specialization fails and the default (above) is
     // selected
-    template<typename Calculator_t>
-    struct Argument_t<
-        Calculator_t, std::enable_if_t<std::is_integral<
-            decltype(Calculator_t::n_arguments)>::value>> {
+    template <typename Calculator_t>
+    struct Argument_t<Calculator_t, std::enable_if_t<std::is_integral<decltype(
+                                        Calculator_t::n_arguments)>::value>> {
       typedef Eigen::Matrix<double, Calculator_t::n_arguments, 1> type_vec;
-      typedef Eigen::Matrix<double, Calculator_t::n_arguments,
-                                    Eigen::Dynamic> type_mat;
+      typedef Eigen::Matrix<double, Calculator_t::n_arguments, Eigen::Dynamic>
+          type_mat;
     };
-  }
+  }  // namespace internal
 
   /**
    * Numerically verify that a given function and its gradient are consistent

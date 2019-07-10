@@ -92,9 +92,7 @@ namespace rascal {
     //! Contains the information wheter an atom should be centered on or not
     ArrayB_t is_a_center_atom{};
 
-    inline size_t get_number_of_atoms() const {
-      return positions.cols();
-    }
+    inline size_t get_number_of_atoms() const { return positions.cols(); }
 
     inline void set_structure(const PositionsInput_t & positions,
                               const AtomTypesInput_t & atom_types,
@@ -110,7 +108,7 @@ namespace rascal {
                               const AtomTypesInput_t & atom_types,
                               const Eigen::Ref<const Eigen::MatrixXd> cell,
                               const PBCInput_t & pbc,
-                              const ArrayB_t& is_a_center_atom) {
+                              const ArrayB_t & is_a_center_atom) {
       // check data consistency
       auto npos{positions.cols()};
       auto ntypes{atom_types.rows()};
@@ -118,7 +116,8 @@ namespace rascal {
       if (npos != ntypes or ntypes != n_center_flags) {
         std::stringstream err_str{};
         err_str << "Number of atom positions and atom types is not the same: '"
-                << npos << "' != '" << ntypes << "' != '" << n_center_flags << "'.";
+                << npos << "' != '" << ntypes << "' != '" << n_center_flags
+                << "'.";
         throw std::runtime_error(err_str.str());
       }
 
@@ -238,22 +237,21 @@ namespace rascal {
     }
   };
 
-
   /* ---------------------------------------------------------------------- */
-  template<int Dim>
+  template <int Dim>
   void to_json(json & j, const AtomicStructure<Dim> & s) {
     auto cell = s.cell;
     cell.transposeInPlace();
 
     j = json{{"cell", cell},
-              {"atom_types", s.atom_types},
-              {"pbc", s.pbc},
-              {"positions", s.positions},
-              {"is_a_center_atom", s.is_a_center_atom}};
+             {"atom_types", s.atom_types},
+             {"pbc", s.pbc},
+             {"positions", s.positions},
+             {"is_a_center_atom", s.is_a_center_atom}};
   }
 
   /* ---------------------------------------------------------------------- */
-  template<int Dim>
+  template <int Dim>
   void from_json(const json & j, AtomicStructure<Dim> & s) {
     // using Cell_t = typename AtomicStructure<Dim>::Cell_t;
     // using AtomTypes_t = typename AtomicStructure<Dim>::AtomTypes_t;
@@ -281,7 +279,6 @@ namespace rascal {
     } else {
       s.set_structure(positions, atom_types, cell, pbc);
     }
-
   }
 
 }  // namespace rascal

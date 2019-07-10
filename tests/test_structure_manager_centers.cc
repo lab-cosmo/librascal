@@ -42,19 +42,20 @@ namespace rascal {
                           ManagerFixture<StructureManagerCenters>) {
     constexpr bool verbose{false};
     int i_manager{0};
-    for (auto& manager : this->managers) {
-      auto& structure = this->structures[i_manager];
-      auto& is_a_center_atom = structure.is_a_center_atom;
+    for (auto & manager : this->managers) {
+      auto & structure = this->structures[i_manager];
+      auto & is_a_center_atom = structure.is_a_center_atom;
       BOOST_CHECK_EQUAL(manager->get_size(), is_a_center_atom.count());
       BOOST_CHECK_EQUAL(manager->get_nb_clusters(1), is_a_center_atom.count());
 
       int atom_counter{0};
 
-      auto& positions = structure.positions;
+      auto & positions = structure.positions;
       for (auto atom_cluster : manager) {
         BOOST_CHECK_EQUAL(atom_counter, atom_cluster.get_index());
         auto index = manager->get_atom_index(atom_cluster);
-        auto error = (positions.col(index) - atom_cluster.get_position()).norm();
+        auto error =
+            (positions.col(index) - atom_cluster.get_position()).norm();
         BOOST_CHECK_LE(error, 1e-14);
 
         if (verbose) {
@@ -76,7 +77,7 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(simple_cubic_9_neighbour_list,
                           ManagerFixtureFile<StructureManagerCenters>) {
     constexpr bool verbose{false};
-    for (auto& manager : this->managers) {
+    for (auto & manager : this->managers) {
       if (verbose)
         std::cout << "StructureManagerCenters interface" << std::endl;
 
@@ -107,7 +108,8 @@ namespace rascal {
 
       auto is_center_atom{manager->get_is_center_atom()};
       if (verbose) {
-        std::cout << "which atom is a centeral atom:\n" << is_center_atom << std::endl;
+        std::cout << "which atom is a centeral atom:\n"
+                  << is_center_atom << std::endl;
       }
     }
   }
@@ -117,15 +119,15 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(manager_update_test,
                           ManagerFixture<StructureManagerCenters>) {
     int i_manager{0};
-    for (auto& manager : this->managers) {
+    for (auto & manager : this->managers) {
       auto natoms = manager->size();
       auto natoms2 = manager->get_size();
       auto natoms3 = manager->get_nb_clusters(1);
       BOOST_CHECK_EQUAL(natoms, natoms2);
       BOOST_CHECK_EQUAL(natoms, natoms3);
-      auto& structure = this->structures[i_manager];
-      auto& positions = structure.positions;
-      auto& atom_types = structure.atom_types;
+      auto & structure = this->structures[i_manager];
+      auto & positions = structure.positions;
+      auto & atom_types = structure.atom_types;
 
       for (auto atom : manager) {
         auto index = manager->get_atom_index(atom);

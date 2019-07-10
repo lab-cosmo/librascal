@@ -356,8 +356,7 @@ namespace rascal {
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
-    std::vector<json> rep_hypers{{{"max_radial", 2},
-                                  {"max_angular", 2}}};
+    std::vector<json> rep_hypers{{{"max_radial", 2}, {"max_angular", 2}}};
   };
 
   struct SphericalExpansionTestData : TestData {
@@ -440,8 +439,8 @@ namespace rascal {
         std::shared_ptr<typename RepManager::Manager_t> structure_manager,
         Structure_t atomic_structure)
         : representation{representation}, structure_manager{structure_manager},
-          atomic_structure{atomic_structure},
-          center_it{structure_manager->begin()} {}
+          atomic_structure{atomic_structure}, center_it{
+                                                  structure_manager->begin()} {}
 
     ~RepresentationManagerGradientCalculator() = default;
 
@@ -502,8 +501,8 @@ namespace rascal {
           representation.expansions_coefficients.get_nb_comp())};
       size_t n_coeffs_center{n_coeffs_per_key * keys_center.size()};
       Eigen::Matrix<double, 3, Eigen::Dynamic, Eigen::RowMajor>
-        grad_coeffs_pairs(3,
-                          n_coeffs_center + (center.size() * n_coeffs_per_key));
+          grad_coeffs_pairs(3, n_coeffs_center +
+                                   (center.size() * n_coeffs_per_key));
       auto & grad_coeffs_center =
           representation.expansions_coefficients_gradient[center];
       size_t col_offset{0};
@@ -587,8 +586,8 @@ namespace rascal {
     RepresentationManagerGradientFixture(
         std::string filename, std::shared_ptr<StructureManager_t> structure,
         Calculator_t & calc)
-        : structure{structure}, center_it{structure->begin()},
-          calculator{calc} {
+        : structure{structure}, center_it{structure->begin()}, calculator{
+                                                                   calc} {
       json input_data;
       std::ifstream input_file{filename};
       input_file >> input_data;
@@ -684,8 +683,6 @@ namespace rascal {
     ~RepresentationFixture() = default;
 
     std::list<Representation_t> representations{};
-
-    
   };
 
   /* ---------------------------------------------------------------------- */

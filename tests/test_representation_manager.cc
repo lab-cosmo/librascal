@@ -143,7 +143,7 @@ namespace rascal {
       auto atomic_structure = man->get_atomic_structure();
       auto n_atoms = atomic_structure.get_number_of_atoms();
       atomic_structure.is_a_center_atom = ArrayB_t::Zero(n_atoms);
-      auto i_atom1 = static_cast<int>(n_atoms/2);
+      auto i_atom1 = static_cast<int>(n_atoms / 2);
       atomic_structure.is_a_center_atom[i_atom1] = true;
       manager->update(atomic_structure);
       for (auto & hyper : hypers) {

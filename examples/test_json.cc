@@ -51,12 +51,7 @@ using namespace rascal;  // NOLINT
 using Representation_t = RepresentationManagerSOAP<
     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
 
-
 using LayerByOrder = std::index_sequence<0, 0, 1>;
-
-
-
-
 
 // template<std::size_t... I>
 // constexpr auto sum_seq(std::index_sequence<I...>, const int& sum = 0) {
@@ -79,21 +74,23 @@ int main() {
   adaptors.emplace_back(ad1);
   adaptors.emplace_back(ad2);
 
-  json j1{{1,23,4,6,7},{1,23,4,6,9},{4,23,4,6,9}};
-  std::cout << j1.dump() <<std::endl;
+  json j1{{1, 23, 4, 6, 7}, {1, 23, 4, 6, 9}, {4, 23, 4, 6, 9}};
+  std::cout << j1.dump() << std::endl;
 
   auto mat1 = j1.get<Eigen::MatrixXd>();
 
-  std::cout << mat1 <<std::endl;
+  std::cout << mat1 << std::endl;
 
   AtomicStructure<3> sss{};
   std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
   sss.set_structure(filename);
 
-  std::cout << sss.atom_types.rows() << ", "<<sss.atom_types.cols() << std::endl;
-  std::cout << sss.cell.rows() << ", "<<sss.cell.cols() << std::endl;
-  std::cout << sss.positions.rows() << ", "<<sss.positions.cols() << std::endl;
-  std::cout << sss.pbc.rows() << ", "<<sss.pbc.cols() << std::endl;
+  std::cout << sss.atom_types.rows() << ", " << sss.atom_types.cols()
+            << std::endl;
+  std::cout << sss.cell.rows() << ", " << sss.cell.cols() << std::endl;
+  std::cout << sss.positions.rows() << ", " << sss.positions.cols()
+            << std::endl;
+  std::cout << sss.pbc.rows() << ", " << sss.pbc.cols() << std::endl;
 
   std::cout << sss.cell << std::endl;
   std::cout << sss.positions << std::endl;
@@ -106,7 +103,8 @@ int main() {
   // }
   // std::cout <<std::endl;
 
-  auto man = stack_adaptors<StructureManagerCenters, AdaptorNeighbourList, AdaptorStrict>(manager, adaptors);
+  auto man = stack_adaptors<StructureManagerCenters, AdaptorNeighbourList,
+                            AdaptorStrict>(manager, adaptors);
 
   std::cout << man->get_name() << std::endl;
   std::cout << extract_underlying_manager<2>(man)->get_name() << std::endl;

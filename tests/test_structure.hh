@@ -391,17 +391,21 @@ namespace rascal {
     using ArrayB_t = AtomicStructure<3>::ArrayB_t;
 
     ManagerFixture()
-        :manager{make_structure_manager<Manager_t>()}, cutoff{2.} {
+        : manager{make_structure_manager<Manager_t>()}, cutoff{2.} {
       Eigen::ArrayXi to_change_id(50);
       ArrayB_t is_a_center_atom(50);
-      for (auto& filename : this->filenames) {
-        for (auto& n_is_not_center : this->n_is_not_centers) {
+      for (auto & filename : this->filenames) {
+        for (auto & n_is_not_center : this->n_is_not_centers) {
           structures.emplace_back();
           structures.back().set_structure(filename);
 
           // don't center on all atoms
-          is_a_center_atom = ArrayB_t::Ones(structures.back().get_number_of_atoms());
-          to_change_id = ((Eigen::ArrayXd::Random(n_is_not_center) + Eigen::ArrayXd::Ones(n_is_not_center))*((is_a_center_atom.size()-1)*0.5)).cast<int>();
+          is_a_center_atom =
+              ArrayB_t::Ones(structures.back().get_number_of_atoms());
+          to_change_id = ((Eigen::ArrayXd::Random(n_is_not_center) +
+                           Eigen::ArrayXd::Ones(n_is_not_center)) *
+                          ((is_a_center_atom.size() - 1) * 0.5))
+                             .cast<int>();
           for (int i_id{0}; i_id < n_is_not_center; ++i_id) {
             is_a_center_atom(to_change_id(i_id)) = false;
           }
@@ -419,8 +423,9 @@ namespace rascal {
     std::shared_ptr<Manager_t> manager;
     std::vector<AtomicStructure<3>> structures{};
     std::vector<std::shared_ptr<Manager_t>> managers{};
-    std::vector<std::string> filenames{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
-    std::vector<int> n_is_not_centers{0,3,5};
+    std::vector<std::string> filenames{
+        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+    std::vector<int> n_is_not_centers{0, 3, 5};
     double cutoff;
   };
 

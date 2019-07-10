@@ -307,7 +307,8 @@ namespace rascal {
       using Manager_t = typename StructureManager::ManagerImplementation_t;
       using type = UnderlyingManagerExtractor<Manager_t, TargetLevel - 1>;
 
-      explicit UnderlyingManagerExtractor(std::shared_ptr<StructureManager> & sm)
+      explicit UnderlyingManagerExtractor(
+          std::shared_ptr<StructureManager> & sm)
           : manager{sm->get_previous_manager()}, next_stack{manager} {}
 
       std::shared_ptr<Manager_t> manager;
@@ -318,7 +319,8 @@ namespace rascal {
 
     template <typename StructureManager>
     struct UnderlyingManagerExtractor<StructureManager, 0> {
-      explicit UnderlyingManagerExtractor(std::shared_ptr<StructureManager> & sm)
+      explicit UnderlyingManagerExtractor(
+          std::shared_ptr<StructureManager> & sm)
           : manager{sm} {}
 
       std::shared_ptr<StructureManager> manager;
@@ -329,11 +331,14 @@ namespace rascal {
   }  // namespace internal
 
   template <int TargetLevel, typename StructureManager>
-  decltype(auto) extract_underlying_manager(std::shared_ptr<StructureManager> manager) {
+  decltype(auto)
+  extract_underlying_manager(std::shared_ptr<StructureManager> manager) {
     // static_assert(TargetLevel < 0, "target_level should be negative");
     // using LayerByOrder = typename StructureManager::traits::LayerByOrder;
-    static constexpr int n_step_below = StructureManager::traits::StackLevel - TargetLevel;
-    // static_assert(n_step_below >= 0, "TargetLevel is larger than the number of manager in the stack");
+    static constexpr int n_step_below =
+        StructureManager::traits::StackLevel - TargetLevel;
+    // static_assert(n_step_below >= 0, "TargetLevel is larger than the number
+    // of manager in the stack");
     auto test{
         internal::UnderlyingManagerExtractor<StructureManager, n_step_below>(
             manager)};

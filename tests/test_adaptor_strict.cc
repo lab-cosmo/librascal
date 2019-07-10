@@ -414,59 +414,68 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   using Fixtures_no_center = boost::mpl::list<
       MultipleStructureFixture<MultipleStructureManagerNLFixtureNoCenter>,
-      MultipleStructureFixture<MultipleStructureManagerNLStrictFixtureNoCenter>
-      >;
+      MultipleStructureFixture<
+          MultipleStructureManagerNLStrictFixtureNoCenter>>;
 
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_no_center_test, Fix, Fixtures_no_center, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_no_center_test, Fix,
+                                   Fixtures_no_center, Fix) {
     bool verbose{false};
     auto & managers = Fix::managers;
     int n_it{static_cast<int>(managers.size())};
     for (int i_it{0}; i_it < n_it; i_it += 2) {
-      auto& manager = managers[i_it];
-      auto& manager_no_center = managers[i_it+1];
-      auto is_center_atom = extract_underlying_manager<0>(manager_no_center)->get_is_center_atom();
+      auto & manager = managers[i_it];
+      auto & manager_no_center = managers[i_it + 1];
+      auto is_center_atom = extract_underlying_manager<0>(manager_no_center)
+                                ->get_is_center_atom();
       if (verbose) {
-        std::cout << "is_center_atom: "<< is_center_atom.transpose() << std::endl;
+        std::cout << "is_center_atom: " << is_center_atom.transpose()
+                  << std::endl;
       }
       std::vector<std::vector<double>> distances_ref{};
       std::vector<std::vector<double>> distances{};
 
       size_t i_center{0};
-      if (verbose) { std::cout << "Center index: "; }
+      if (verbose) {
+        std::cout << "Center index: ";
+      }
       for (auto center : manager) {
         if (is_center_atom(i_center)) {
-
           distances_ref.emplace_back();
           if (verbose) {
-            std::cout << extract_underlying_manager<0>(manager)->get_atom_index(center) << ", ";
+            std::cout << extract_underlying_manager<0>(manager)->get_atom_index(
+                             center)
+                      << ", ";
           }
           for (auto neigh : center) {
             auto dist{(neigh.get_position() - center.get_position()).norm()};
             distances_ref.back().push_back(dist);
-            // distances_ref.push_back(manager->get_distance(neigh));
           }
         }
         i_center++;
       }
       if (verbose) {
-        std::cout <<  std::endl;
+        std::cout << std::endl;
         std::cout << "Center index nocenter: ";
       }
       for (auto center : manager_no_center) {
         distances.emplace_back();
         if (verbose) {
-          std::cout << extract_underlying_manager<0>(manager_no_center)->get_atom_index(center) << ", ";
+          std::cout << extract_underlying_manager<0>(manager_no_center)
+                           ->get_atom_index(center)
+                    << ", ";
         }
         for (auto neigh : center) {
           auto dist{(neigh.get_position() - center.get_position()).norm()};
           distances.back().push_back(dist);
-          // distances.push_back(manager_no_center->get_distance(neigh));
         }
       }
-      if (verbose) { std::cout <<  std::endl; }
+      if (verbose) {
+        std::cout << std::endl;
+      }
       i_center = 0;
-      for (;i_center < manager_no_center->size(); ++i_center) {
-        std::sort(distances_ref[i_center].begin(), distances_ref[i_center].end());
+      for (; i_center < manager_no_center->size(); ++i_center) {
+        std::sort(distances_ref[i_center].begin(),
+                  distances_ref[i_center].end());
         std::sort(distances[i_center].begin(), distances[i_center].end());
 
         BOOST_CHECK_EQUAL_COLLECTIONS(
@@ -474,14 +483,17 @@ namespace rascal {
             distances[i_center].begin(), distances[i_center].end());
 
         if (verbose) {
-          std::cout << "Center: "<< i_center << std::endl;
-          std::cout << "sizes: "<< distances_ref[i_center].size() << ", " << distances[i_center].size() << std::endl;
+          std::cout << "Center: " << i_center << std::endl;
+          std::cout << "sizes: " << distances_ref[i_center].size() << ", "
+                    << distances[i_center].size() << std::endl;
           for (size_t i_d{0}; i_d < distances[i_center].size(); i_d++) {
-            std::cout << std::abs(distances_ref[i_center][i_d] - distances[i_center][i_d]) << "\t" <<  distances_ref[i_center][i_d] << "\t" << distances[i_center][i_d] << std::endl;
+            std::cout << std::abs(distances_ref[i_center][i_d] -
+                                  distances[i_center][i_d])
+                      << "\t" << distances_ref[i_center][i_d] << "\t"
+                      << distances[i_center][i_d] << std::endl;
           }
         }
       }
-
     }
   }
 

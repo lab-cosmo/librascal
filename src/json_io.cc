@@ -27,7 +27,6 @@
 
 #include "json_io.hh"
 
-
 #include <sstream>
 
 namespace rascal {

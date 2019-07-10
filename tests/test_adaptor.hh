@@ -201,8 +201,6 @@ namespace rascal {
     json factory_args{};
   };
 
-
-
   struct MultipleStructureManagerNLRattleFixture {
     using ManagerTypeHolder_t =
         StructureManagerTypeHolder<StructureManagerCenters,
@@ -293,11 +291,11 @@ namespace rascal {
         AtomicStructure<3> atomic_structure{};
         atomic_structure.set_structure(filename);
         auto n_atoms{atomic_structure.get_number_of_atoms()};
-        std::uniform_int_distribution<int> uni(1, n_atoms-2);
+        std::uniform_int_distribution<int> uni(1, n_atoms - 2);
         for (auto && cutoff : this->cutoffs) {
           for (auto && skin : this->skins) {
-            for (auto && consider_ghost_neighbours : this->consider_ghost_neighbours_list) {
-
+            for (auto && consider_ghost_neighbours :
+                 this->consider_ghost_neighbours_list) {
               atomic_structure.set_structure(filename);
 
               json parameters;
@@ -306,7 +304,7 @@ namespace rascal {
               json ad1{
                   {"name", "AdaptorNeighbourList"},
                   {"initialization_arguments",
-                  {{"cutoff", cutoff},
+                   {{"cutoff", cutoff},
                     {"skin", skin},
                     {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
               adaptors.push_back(ad1);
@@ -360,10 +358,11 @@ namespace rascal {
         AtomicStructure<3> atomic_structure{};
         atomic_structure.set_structure(filename);
         auto n_atoms{atomic_structure.get_number_of_atoms()};
-        std::uniform_int_distribution<int> uni(1, n_atoms-2);
+        std::uniform_int_distribution<int> uni(1, n_atoms - 2);
         for (auto && cutoff : this->cutoffs) {
           for (auto && skin : this->skins) {
-            for (auto && consider_ghost_neighbours : this->consider_ghost_neighbours_list) {
+            for (auto && consider_ghost_neighbours :
+                 this->consider_ghost_neighbours_list) {
               atomic_structure.set_structure(filename);
               json parameters;
               json structure = atomic_structure;
@@ -371,11 +370,11 @@ namespace rascal {
               json ad1{
                   {"name", "AdaptorNeighbourList"},
                   {"initialization_arguments",
-                  {{"cutoff", cutoff},
+                   {{"cutoff", cutoff},
                     {"skin", skin},
                     {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
               json ad2{{"name", "AdaptorStrict"},
-                     {"initialization_arguments", {{"cutoff", cutoff}}}};
+                       {"initialization_arguments", {{"cutoff", cutoff}}}};
               adaptors.push_back(ad1);
               adaptors.push_back(ad2);
 

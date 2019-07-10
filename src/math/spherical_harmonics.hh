@@ -238,17 +238,22 @@ namespace rascal {
           //                (z-axis)
           // avoid making temp by breaking down the operation in 3 parts
           this->assoc_legendre_polynom.row(angular_l)
-              .head(angular_l - 1).array() =
+              .head(angular_l - 1)
+              .array() =
               cos_theta * this->assoc_legendre_polynom.row(angular_l - 1)
-                                .head(angular_l - 1).array();
-          this->assoc_legendre_polynom.row(angular_l).
-                head(angular_l - 1).array() +=
-                this->coeff_b.row(angular_l).head(angular_l - 1).array() *
-                    this->assoc_legendre_polynom.row(angular_l - 2)
-                        .head(angular_l - 1).array();
+                              .head(angular_l - 1)
+                              .array();
           this->assoc_legendre_polynom.row(angular_l)
-               .head(angular_l - 1).array() *=
-                this->coeff_a.row(angular_l).head(angular_l - 1).array();
+              .head(angular_l - 1)
+              .array() +=
+              this->coeff_b.row(angular_l).head(angular_l - 1).array() *
+              this->assoc_legendre_polynom.row(angular_l - 2)
+                  .head(angular_l - 1)
+                  .array();
+          this->assoc_legendre_polynom.row(angular_l)
+              .head(angular_l - 1)
+              .array() *=
+              this->coeff_a.row(angular_l).head(angular_l - 1).array();
 
           this->assoc_legendre_polynom(angular_l, angular_l - 1) =
               // cos_theta * sqrt(2 * angular_l + 1) * l_accum;
