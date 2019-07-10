@@ -3,7 +3,7 @@ import os, sys
 import numpy as np
 sys.path.insert(0,"../build/")
 
-from rascal.representations import SOAPInvariant
+from rascal.representations import SphericalInvariants
 
 
 def load_json(fn):
@@ -33,7 +33,7 @@ hypers = {'interaction_cutoff': 3,
 
 frames = [json2ase(load_json(fn))]
 
-soap = SOAPInvariant(**hypers)
+soap = SphericalInvariants(**hypers)
 representation = soap.transform(frames)
 X = representation.get_feature_matrix()
 print(np.where(np.isnan(X) == True))

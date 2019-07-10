@@ -32,7 +32,7 @@
 #include "rascal_utility.hh"
 #include "representations/representation_manager_sorted_coulomb.hh"
 #include "representations/representation_manager_spherical_expansion.hh"
-#include "representations/representation_manager_soap_invariant.hh"
+#include "representations/representation_manager_spherical_invariants.hh"
 #include "representations/feature_manager_dense.hh"
 #include "basic_types.hh"
 #include "atomic_structure.hh"
@@ -51,7 +51,7 @@ using namespace rascal;  // NOLINT
 
 const int N_ITERATIONS = 1000;
 
-using Representation_t = RepresentationManagerSOAPInvariant<
+using Representation_t = RepresentationManagerSphericalInvariants<
     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
 
 int main(int argc, char * argv[]) {

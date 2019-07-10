@@ -8,10 +8,10 @@ from ..neighbourlist.base import NeighbourListFactory
 import numpy as np
 
 
-class SOAP(object):
+class SphericalInvariants(object):
 
     """
-    Computes a SOAP representation, e.g. power spectrum etc.
+    Computes a SphericalInvariants representation, e.g. power spectrum etc.
 
     Hyperparameters
     ----------
@@ -44,6 +44,10 @@ class SOAP(object):
         Specifies the type of representation to be computed
         (power spectrum etc.).
 
+    inversion_symmetry : Boolean
+        Specifies whether inversion invariance should be enforced.
+        (Only relevant for BiSpectrum.)
+
     Methods
     -------
     transform(frames)
@@ -59,45 +63,50 @@ class SOAP(object):
     def __init__(self, interaction_cutoff, cutoff_smooth_width,
                  max_radial, max_angular, gaussian_sigma_type,
                  gaussian_sigma_constant=0., n_species=1,
-                 cutoff_function_type="Cosine", radial_basis="GTO",
-                 soap_type="PowerSpectrum", normalize=True):
+                 cutoff_function_type="Cosine",
+                 soap_type="PowerSpectrum", inversion_symmetry=True,
+                 radial_basis="GTO", normalize=True):
         """Construct a SphericalExpansion representation
 
         Required arguments are all the hyperparameters named in the
         class documentation
         """
-        self.name = 'soap'
+        self.name = 'sphericalinvariants'
         self.hypers = dict()
         self.update_hyperparameters(
             max_radial=max_radial, max_angular=max_angular,
             n_species=n_species,
-            soap_type=soap_type,
-            normalize=normalize
-        )
+            soap_type=soap_type, normalize=normalize,
+            inversion_symmetry=inversion_symmetry)
+
         cutoff_function = dict(
-            type="Cosine",
+            type=cutoff_function_type,
             cutoff=dict(
                 value=interaction_cutoff,
-                unit='A'
+                unit='AA'
             ),
             smooth_width=dict(
                 value=cutoff_smooth_width,
-                unit='A'
+                unit='AA'
             ),
         )
         gaussian_density = dict(
             type=gaussian_sigma_type,
             gaussian_sigma=dict(
                 value=gaussian_sigma_constant,
-                unit='A'
+                unit='AA'
             ),
         )
         radial_contribution = dict(
             type=radial_basis,
         )
+
         self.update_hyperparameters(cutoff_function=cutoff_function,
                                     gaussian_density=gaussian_density,
-                                    radial_contribution=radial_contribution,)
+                                    radial_contribution=radial_contribution)
+
+        if soap_type == "RadialSpectrum":
+            self.update_hyperparameters(max_angular=0)
 
         self.nl_options = [
             dict(name='centers', args=[]),
@@ -127,9 +136,7 @@ class SOAP(object):
         allowed_keys = {'interaction_cutoff', 'cutoff_smooth_width',
                         'max_radial', 'max_angular', 'gaussian_sigma_type',
                         'gaussian_sigma_constant', 'n_species', 'soap_type',
-                        'normalize', 'cutoff_function', 'gaussian_density',
-                        'radial_contribution'}
-
+                        'inversion_symmetry', 'cutoff_function', 'normalize', 'gaussian_density', 'radial_contribution'}
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}
         self.hypers.update(hypers_clean)
@@ -149,7 +156,6 @@ class SOAP(object):
             Object containing the representation
 
         """
-
         if features is None:
             features = FeatureFactory(self.feature_options)
 
@@ -159,6 +165,7 @@ class SOAP(object):
                        for structure in structures]
         structure_ids = np.cumsum(n_atoms)[:-1]
         n_centers = np.sum(n_atoms)
+
         ii = 0
         for structure in structures:
             try:
@@ -189,8 +196,13 @@ class SOAP(object):
         if self.hypers['soap_type'] == 'RadialSpectrum':
             return (self.hypers['n_species']*self.hypers['max_radial'])
         if self.hypers['soap_type'] == 'PowerSpectrum':
-            return (self.hypers['n_species']**2*self.hypers['max_radial']**2
-                    * (self.hypers['max_angular'] + 1))
+            return (int((self.hypers['n_species']*(self.hypers['n_species'] + 1))/2) * self.hypers['max_radial']**2 * (self.hypers['max_angular'] + 1))
+        if self.hypers['soap_type'] == 'BiSpectrum':
+            if self.hypers['inversion_symmetry'] == False:
+                return (self.hypers['n_species']**3 * self.hypers['max_radial']**3 * int(1 + 2*self.hypers['max_angular'] + 3*self.hypers['max_angular']**2/2 + self.hypers['max_angular']**3/2))
+            else:
+                return (self.hypers['n_species']**3*self.hypers['max_radial']**3 * int(np.floor(((self.hypers['max_angular'] + 1)**2 + 1) * (2*(self.hypers['max_angular'] + 1) + 3)/8.0)))
         else:
             raise RuntimeError('Only soap_type = RadialSpectrum || '
-                               'PowerSpectrum implemented for now')
+                               'PowerSpectrum || BiSpectrum '
+                               'implemented for now')

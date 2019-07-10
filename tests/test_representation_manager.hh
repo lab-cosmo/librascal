@@ -37,8 +37,8 @@
 #include "representations/representation_manager_base.hh"
 #include "representations/representation_manager_sorted_coulomb.hh"
 #include "representations/representation_manager_spherical_expansion.hh"
-#include "representations/representation_manager_soap_invariant.hh"
-#include "representations/representation_manager_soap_covariant.hh"
+#include "representations/representation_manager_spherical_invariants.hh"
+#include "representations/representation_manager_spherical_covariants.hh"
 #include "representations/feature_manager_block_sparse.hh"
 
 #include "json_io.hh"
@@ -94,12 +94,12 @@ namespace rascal {
     json factory_args{};
   };
 
-  struct MultipleStructureSOAPInvariant
+  struct MultipleStructureSphericalInvariants
       : MultipleStructureManagerNLStrictFixture {
     using Parent = MultipleStructureManagerNLStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
 
-    MultipleStructureSOAPInvariant() : Parent{} {
+    MultipleStructureSphericalInvariants() : Parent{} {
       for (auto & ri_hyp : this->radial_contribution_hypers) {
         for (auto & fc_hyp : this->fc_hypers) {
           for (auto & sig_hyp : this->density_hypers) {
@@ -114,7 +114,7 @@ namespace rascal {
       }
     };
 
-    ~MultipleStructureSOAPInvariant() = default;
+    ~MultipleStructureSphericalInvariants() = default;
 
     std::vector<json> hypers{};
 
@@ -161,12 +161,12 @@ namespace rascal {
                                   {"normalize", true}}};
   };
 
-  struct MultipleStructureSOAPCovariant
+  struct MultipleStructureSphericalCovariants
       : MultipleStructureManagerNLStrictFixture {
     using Parent = MultipleStructureManagerNLStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
 
-    MultipleStructureSOAPCovariant() : Parent{} {
+    MultipleStructureSphericalCovariants() : Parent{} {
       for (auto & ri_hyp : this->radial_contribution_hypers) {
         for (auto & fc_hyp : this->fc_hypers) {
           for (auto & sig_hyp : this->density_hypers) {
@@ -181,7 +181,7 @@ namespace rascal {
       }
     };
 
-    ~MultipleStructureSOAPCovariant() = default;
+    ~MultipleStructureSphericalCovariants() = default;
 
     std::vector<json> hypers{};
 
@@ -213,20 +213,20 @@ namespace rascal {
                                   {"normalize", true}}};
   };
 
-  struct SOAPInvariantTestData : TestData {
+  struct SphericalInvariantsTestData : TestData {
     using Parent = TestData;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
-    SOAPInvariantTestData() : Parent{} { this->get_ref(this->ref_filename); }
-    ~SOAPInvariantTestData() = default;
-    std::string ref_filename{"reference_data/soap_invariant_reference.ubjson"};
+    SphericalInvariantsTestData() : Parent{} { this->get_ref(this->ref_filename); }
+    ~SphericalInvariantsTestData() = default;
+    std::string ref_filename{"reference_data/spherical_invariants_reference.ubjson"};
   };
 
-  struct SOAPCovariantTestData : TestData {
+  struct SphericalCovariantsTestData : TestData {
     using Parent = TestData;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
-    SOAPCovariantTestData() : Parent{} { this->get_ref(this->ref_filename); }
-    ~SOAPCovariantTestData() = default;
-    std::string ref_filename{"reference_data/soap_covariant_reference.ubjson"};
+    SphericalCovariantsTestData() : Parent{} { this->get_ref(this->ref_filename); }
+    ~SphericalCovariantsTestData() = default;
+    std::string ref_filename{"reference_data/spherical_covariants_reference.ubjson"};
   };
 
   struct MultipleStructureSphericalExpansion

@@ -8,10 +8,10 @@ from ..neighbourlist.base import NeighbourListFactory
 import numpy as np
 
 
-class SOAPCovariant(object):
+class SphericalCovariants(object):
 
     """
-    Computes a SOAPCovariant representation, e.g. lambda spectrum.
+    Computes a SphericalCovariants representation, e.g. lambda spectrum.
 
     Hyperparameters
     ----------
@@ -73,7 +73,7 @@ class SOAPCovariant(object):
         Required arguments are all the hyperparameters named in the
         class documentation
         """
-        self.name = 'soapcovariant'
+        self.name = 'sphericalcovariants'
         self.hypers = dict()
         self.update_hyperparameters(
             max_radial=max_radial, max_angular=max_angular,

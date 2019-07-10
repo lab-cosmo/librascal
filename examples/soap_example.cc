@@ -32,7 +32,7 @@
 #include "rascal_utility.hh"
 #include "representations/representation_manager_sorted_coulomb.hh"
 #include "representations/representation_manager_spherical_expansion.hh"
-#include "representations/representation_manager_soap_invariant.hh"
+#include "representations/representation_manager_spherical_invariants.hh"
 #include "representations/feature_manager_dense.hh"
 #include "basic_types.hh"
 #include "atomic_structure.hh"
@@ -49,8 +49,6 @@
 // using namespace std;
 using namespace rascal;  // NOLINT
 
-// using Representation_t = RepresentationManagerSOAP<
-// AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
 using Representation_t = RepresentationManagerSphericalExpansion<
     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
 

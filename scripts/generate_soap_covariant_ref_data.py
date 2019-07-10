@@ -8,7 +8,7 @@ import rascal
 import rascal.lib as lrl
 import numpy as np
 from ase.io import read
-from rascal.representations import SOAPCovariant
+from rascal.representations import SphericalCovariants
 from rascal.utils import ostream_redirect
 def load_json(fn):
     with open(fn,'r') as f:
@@ -26,7 +26,7 @@ dict(positions='positions',atom_types='numbers',pbc='pbc',cell='cell').items()
 
 def get_feature_vector(hypers, frames):
     with ostream_redirect():
-        soap = SOAPCovariant(**hypers)
+        soap = SphericalCovariants(**hypers)
         soap_vectors = soap.transform(frames)
         print('Feature vector size: %.3fMB' % (soap.get_num_coefficients()*8.0/1.0e6))
         feature_vector = soap_vectors.get_feature_matrix()
@@ -96,14 +96,14 @@ def dump_reference_json():
                             "soap_type": soap_type,
                             "inversion_symmetry" : inversion_symmetry,
                             "lam" : Lambda}
-                soap = SOAPCovariant(**hypers)
+                soap = SphericalCovariants(**hypers)
                 soap_vectors = soap.transform(frames)
                 x = soap_vectors.get_feature_matrix()
                 # x = get_feature_vector(hypers, frames)
                 data['rep_info'][-1].append(dict(feature_matrix=x.tolist(),
                                     hypers=copy(soap.hypers)))
 
-    with open(path+"tests/reference_data/soap_covariant_reference.ubjson",'wb') as f:
+    with open(path+"tests/reference_data/spherical_covariants_reference.ubjson",'wb') as f:
         ubjson.dump(data,f)
 
 ##########################################################################################
