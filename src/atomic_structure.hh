@@ -60,17 +60,17 @@ namespace rascal {
      *  @param position is a vector which holds the atomic positions.
      */
     using Cell_t = Eigen::Matrix<double, Dim, Dim>;
-    using Cell_ref = Eigen::Map<Cell_t>;
+    using Cell_ref = Eigen::Ref<Cell_t>;
 
     using AtomTypes_t = Eigen::Matrix<int, Eigen::Dynamic, 1>;
-    using AtomTypes_ref = Eigen::Map<AtomTypes_t>;
-    using ConstAtomTypes_ref = Eigen::Map<const AtomTypes_t>;
+    using AtomTypes_ref = Eigen::Ref<AtomTypes_t>;
+    using ConstAtomTypes_ref = Eigen::Ref<const AtomTypes_t>;
 
     using PBC_t = Eigen::Matrix<int, Dim, 1>;
-    using PBC_ref = Eigen::Map<PBC_t>;
+    using PBC_ref = Eigen::Ref<PBC_t>;
 
     using Positions_t = Eigen::Matrix<double, Dim, Eigen::Dynamic>;
-    using Positions_ref = Eigen::Map<Positions_t>;
+    using Positions_ref = Eigen::Ref<Positions_t>;
 
     using PositionsInput_t =
         Eigen::Ref<const Eigen::MatrixXd, 0,

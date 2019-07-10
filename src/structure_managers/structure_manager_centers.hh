@@ -187,7 +187,7 @@ namespace rascal {
      * structure.
      */
     inline Cell_ref get_cell() {
-      return Cell_ref(this->atoms_object.cell.data());
+      return Cell_ref(this->atoms_object.cell);
     }
 
     //! Returns the type of a given atom, given an AtomRef
@@ -204,20 +204,19 @@ namespace rascal {
 
     //! Returns an a map with all atom types.
     inline AtomTypes_ref get_atom_types() {
-      AtomTypes_ref val(this->atoms_object.atom_types.data(), 1, this->natoms);
+      AtomTypes_ref val(this->atoms_object.atom_types);
       return val;
     }
 
     //! Returns an a map with all atom types.
     inline ConstAtomTypes_ref get_atom_types() const {
-      ConstAtomTypes_ref val(this->atoms_object.atom_types.data(), 1,
-                             this->natoms);
+      ConstAtomTypes_ref val(this->atoms_object.atom_types);
       return val;
     }
 
     //! Returns a map of size traits::Dim with 0/1 for periodicity
     inline PBC_ref get_periodic_boundary_conditions() {
-      return Eigen::Map<PBC_t>(this->atoms_object.pbc.data());
+      return PBC_ref(this->atoms_object.pbc);
     }
 
     inline ArrayB_ref get_is_center_atom() {
@@ -240,8 +239,7 @@ namespace rascal {
 
     //! returns a map to all atomic positions.
     inline Positions_ref get_positions() {
-      return Positions_ref(this->atoms_object.positions.data(), traits::Dim,
-                           this->atoms_object.positions.size() / traits::Dim);
+      return Positions_ref(this->atoms_object.positions);
     }
 
     //! returns number of I atoms in the list
