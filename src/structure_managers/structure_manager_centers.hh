@@ -267,7 +267,6 @@ namespace rascal {
     }
 
     inline const size_t & get_atom_index(const int & atom_tag) const {
-      // return static_cast<size_t>(std::get<0>(this->atoms_index)[atom_tag]);
       return std::get<0>(this->atoms_index)[atom_tag];
     }
 
