@@ -57,9 +57,9 @@ namespace rascal {
 
     template <>
     struct SphericalCovariantsPrecomputation<SphericalCovariantsType::LambdaSpectrum>
-        : SOAPPrecomputationBase {
-      using Parent = SOAPPrecomputationBase;
-      using Hypers_t = typename SOAPPrecomputationBase::Hypers_t;
+        : SphericalInvariantsPrecomputationBase {
+      using Parent = SphericalInvariantsPrecomputationBase;
+      using Hypers_t = typename SphericalInvariantsPrecomputationBase::Hypers_t;
 
       explicit SphericalCovariantsPrecomputation(const Hypers_t & hypers) {
         this->max_angular = hypers.at("max_angular").get<size_t>();
@@ -163,16 +163,16 @@ namespace rascal {
 
   template <internal::SphericalCovariantsType Type, class Hypers>
   decltype(auto) make_spherical_covariants_precompute(const Hypers & hypers) {
-    return std::static_pointer_cast<internal::SOAPPrecomputationBase>(
+    return std::static_pointer_cast<internal::SphericalInvariantsPrecomputationBase>(
         std::make_shared<internal::SphericalCovariantsPrecomputation<Type>>(hypers));
   }
 
   template <internal::SphericalCovariantsType Type>
   decltype(auto) downcast_spherical_covariants_precompute(
-      const std::shared_ptr<internal::SOAPPrecomputationBase> &
-          soap_precompute) {
+      const std::shared_ptr<internal::SphericalInvariantsPrecomputationBase> &
+          spherical_covariants_precompute) {
     return std::static_pointer_cast<
-        internal::SphericalCovariantsPrecomputation<Type>>(soap_precompute);
+        internal::SphericalCovariantsPrecomputation<Type>>(spherical_covariants_precompute);
   }
 
   template <class StructureManager>
@@ -215,19 +215,19 @@ namespace rascal {
       using internal::SphericalCovariantsType;
       this->max_radial = hypers.at("max_radial").get<size_t>();
       this->max_angular = hypers.at("max_angular").get<size_t>();
-      this->soap_type_str = hypers.at("soap_type").get<std::string>();
+      this->spherical_covariants_type_str = hypers.at("soap_type").get<std::string>();
       this->lambda = hypers.at("lam").get<size_t>();
       this->inversion_symmetry = hypers.at("inversion_symmetry").get<bool>();
       this->normalize = hypers.at("normalize").get<bool>();
 
-      if (this->soap_type_str.compare("LambdaSpectrum") == 0) {
-        this->soap_type = SphericalCovariantsType::LambdaSpectrum;
-        this->precompute_soap[enumValue(SphericalCovariantsType::LambdaSpectrum)] =
+      if (this->spherical_covariants_type_str.compare("LambdaSpectrum") == 0) {
+        this->spherical_covariants_type = SphericalCovariantsType::LambdaSpectrum;
+        this->precompute_spherical_covariants[enumValue(SphericalCovariantsType::LambdaSpectrum)] =
             make_spherical_covariants_precompute<SphericalCovariantsType::LambdaSpectrum>(
                 hypers);
 
       } else {
-        throw std::logic_error("Requested SOAP type \'" + this->soap_type_str +
+        throw std::logic_error("Requested Spherical Covariants type \'" + this->spherical_covariants_type_str +
                                "\' has not been implemented.  Must be one of" +
                                ": \'LambdaSpectrum\'.");
       }
@@ -264,11 +264,11 @@ namespace rascal {
     size_t max_angular{};
     ManagerPtr_t structure_manager;
     RepresentationManagerSphericalExpansion<Manager_t> rep_expansion;
-    internal::SphericalCovariantsType soap_type{};
-    std::array<std::shared_ptr<internal::SOAPPrecomputationBase>,
+    internal::SphericalCovariantsType spherical_covariants_type{};
+    std::array<std::shared_ptr<internal::SphericalInvariantsPrecomputationBase>,
                internal::enumSize<internal::SphericalCovariantsType>()>
-        precompute_soap{};
-    std::string soap_type_str{};
+        precompute_spherical_covariants{};
+    std::string spherical_covariants_type_str{};
     std::vector<Precision_t> dummy{};
     bool inversion_symmetry{false};
     size_t lambda{0};
@@ -278,7 +278,7 @@ namespace rascal {
   template <class Mngr>
   void RepresentationManagerSphericalCovariants<Mngr>::compute() {
     using internal::SphericalCovariantsType;
-    switch (this->soap_type) {
+    switch (this->spherical_covariants_type) {
     case SphericalCovariantsType::LambdaSpectrum:
       this->compute_lambdaspectrum();
       break;
@@ -364,7 +364,7 @@ namespace rascal {
 
     auto precomputation{
         downcast_spherical_covariants_precompute<SphericalCovariantsType::LambdaSpectrum>(
-            this->precompute_soap[enumValue(
+            this->precompute_spherical_covariants[enumValue(
                 SphericalCovariantsType::LambdaSpectrum)])};
     auto & w3js{precomputation->w3js};
 

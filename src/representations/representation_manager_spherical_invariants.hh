@@ -50,45 +50,45 @@
 namespace rascal {
 
   namespace internal {
-    enum class SOAPType { RadialSpectrum, PowerSpectrum, BiSpectrum, End_ };
+    enum class SphericalInvariantsType { RadialSpectrum, PowerSpectrum, BiSpectrum, End_ };
 
     /**
      * Base class for the specification of the atomic smearing.
      */
-    struct SOAPPrecomputationBase {
+    struct SphericalInvariantsPrecomputationBase {
       //! Constructor
-      SOAPPrecomputationBase() = default;
+      SphericalInvariantsPrecomputationBase() = default;
       //! Destructor
-      virtual ~SOAPPrecomputationBase() = default;
+      virtual ~SphericalInvariantsPrecomputationBase() = default;
       //! Copy constructor
-      SOAPPrecomputationBase(const SOAPPrecomputationBase & other) = delete;
+      SphericalInvariantsPrecomputationBase(const SphericalInvariantsPrecomputationBase & other) = delete;
       //! Move constructor
-      SOAPPrecomputationBase(SOAPPrecomputationBase && other) = default;
+      SphericalInvariantsPrecomputationBase(SphericalInvariantsPrecomputationBase && other) = default;
       //! Copy assignment operator
-      SOAPPrecomputationBase &
-      operator=(const SOAPPrecomputationBase & other) = delete;
+      SphericalInvariantsPrecomputationBase &
+      operator=(const SphericalInvariantsPrecomputationBase & other) = delete;
       //! Move assignment operator
-      SOAPPrecomputationBase &
-      operator=(SOAPPrecomputationBase && other) = default;
+      SphericalInvariantsPrecomputationBase &
+      operator=(SphericalInvariantsPrecomputationBase && other) = default;
 
       using Hypers_t = RepresentationManagerBase::Hypers_t;
     };
 
-    template <SOAPType SpectrumType>
-    struct SOAPPrecomputation {};
+    template <SphericalInvariantsType SpectrumType>
+    struct SphericalInvariantsPrecomputation {};
 
     template <>
-    struct SOAPPrecomputation<SOAPType::RadialSpectrum>
-        : SOAPPrecomputationBase {
-      using Hypers_t = typename SOAPPrecomputationBase::Hypers_t;
-      explicit SOAPPrecomputation(const Hypers_t &) {}
+    struct SphericalInvariantsPrecomputation<SphericalInvariantsType::RadialSpectrum>
+        : SphericalInvariantsPrecomputationBase {
+      using Hypers_t = typename SphericalInvariantsPrecomputationBase::Hypers_t;
+      explicit SphericalInvariantsPrecomputation(const Hypers_t &) {}
     };
 
     template <>
-    struct SOAPPrecomputation<SOAPType::PowerSpectrum>
-        : SOAPPrecomputationBase {
-      using Hypers_t = typename SOAPPrecomputationBase::Hypers_t;
-      explicit SOAPPrecomputation(const Hypers_t & hypers) {
+    struct SphericalInvariantsPrecomputation<SphericalInvariantsType::PowerSpectrum>
+        : SphericalInvariantsPrecomputationBase {
+      using Hypers_t = typename SphericalInvariantsPrecomputationBase::Hypers_t;
+      explicit SphericalInvariantsPrecomputation(const Hypers_t & hypers) {
         this->max_angular = hypers.at("max_angular");
         this->l_factors.resize(math::pow(this->max_angular + 1, 2_z));
 
@@ -108,9 +108,9 @@ namespace rascal {
     };
 
     template <>
-    struct SOAPPrecomputation<SOAPType::BiSpectrum> : SOAPPrecomputationBase {
-      using Hypers_t = typename SOAPPrecomputationBase::Hypers_t;
-      explicit SOAPPrecomputation(const Hypers_t & hypers) {
+    struct SphericalInvariantsPrecomputation<SphericalInvariantsType::BiSpectrum> : SphericalInvariantsPrecomputationBase {
+      using Hypers_t = typename SphericalInvariantsPrecomputationBase::Hypers_t;
+      explicit SphericalInvariantsPrecomputation(const Hypers_t & hypers) {
         this->max_angular = hypers.at("max_angular").get<size_t>();
         this->inversion_symmetry = hypers.at("inversion_symmetry").get<bool>();
         // get the number of non zero elements in the w3j
@@ -189,18 +189,18 @@ namespace rascal {
 
   }  // namespace internal
 
-  template <internal::SOAPType Type, class Hypers>
-  decltype(auto) make_soap_precompute(const Hypers & hypers) {
-    return std::static_pointer_cast<internal::SOAPPrecomputationBase>(
-        std::make_shared<internal::SOAPPrecomputation<Type>>(hypers));
+  template <internal::SphericalInvariantsType Type, class Hypers>
+  decltype(auto) make_spherical_invariants_precompute(const Hypers & hypers) {
+    return std::static_pointer_cast<internal::SphericalInvariantsPrecomputationBase>(
+        std::make_shared<internal::SphericalInvariantsPrecomputation<Type>>(hypers));
   }
 
-  template <internal::SOAPType Type>
-  decltype(auto) downcast_soap_precompute(
-      const std::shared_ptr<internal::SOAPPrecomputationBase> &
-          soap_precompute) {
-    return std::static_pointer_cast<internal::SOAPPrecomputation<Type>>(
-        soap_precompute);
+  template <internal::SphericalInvariantsType Type>
+  decltype(auto) downcast_spherical_invariants_precompute(
+      const std::shared_ptr<internal::SphericalInvariantsPrecomputationBase> &
+          spherical_invariants_precompute) {
+    return std::static_pointer_cast<internal::SphericalInvariantsPrecomputation<Type>>(
+        spherical_invariants_precompute);
   }
 
   template <class StructureManager>
@@ -241,32 +241,32 @@ namespace rascal {
 
     void set_hyperparameters(const Hypers_t & hypers) {
       using internal::enumValue;
-      using internal::SOAPType;
+      using internal::SphericalInvariantsType;
 
       this->max_radial = hypers.at("max_radial");
       this->max_angular = hypers.at("max_angular");
       this->normalize = hypers.at("normalize").get<bool>();
-      this->soap_type_str = hypers.at("soap_type").get<std::string>();
+      this->spherical_invariants_type_str = hypers.at("soap_type").get<std::string>();
 
-      if (this->soap_type_str.compare("PowerSpectrum") == 0) {
-        this->soap_type = SOAPType::PowerSpectrum;
-        this->precompute_soap[enumValue(SOAPType::PowerSpectrum)] =
-            make_soap_precompute<SOAPType::PowerSpectrum>(hypers);
-      } else if (this->soap_type_str.compare("RadialSpectrum") == 0) {
-        this->soap_type = SOAPType::RadialSpectrum;
-        this->precompute_soap[enumValue(SOAPType::RadialSpectrum)] =
-            make_soap_precompute<SOAPType::RadialSpectrum>(hypers);
+      if (this->spherical_invariants_type_str.compare("PowerSpectrum") == 0) {
+        this->spherical_invariants_type = SphericalInvariantsType::PowerSpectrum;
+        this->precompute_spherical_invariants[enumValue(SphericalInvariantsType::PowerSpectrum)] =
+            make_spherical_invariants_precompute<SphericalInvariantsType::PowerSpectrum>(hypers);
+      } else if (this->spherical_invariants_type_str.compare("RadialSpectrum") == 0) {
+        this->spherical_invariants_type = SphericalInvariantsType::RadialSpectrum;
+        this->precompute_spherical_invariants[enumValue(SphericalInvariantsType::RadialSpectrum)] =
+            make_spherical_invariants_precompute<SphericalInvariantsType::RadialSpectrum>(hypers);
         if (this->max_angular > 0) {
           throw std::logic_error("max_angular should be 0 with RadialSpectrum");
         }
-      } else if (this->soap_type_str.compare("BiSpectrum") == 0) {
-        this->soap_type = internal::SOAPType::BiSpectrum;
-        this->precompute_soap[enumValue(SOAPType::BiSpectrum)] =
-            make_soap_precompute<SOAPType::BiSpectrum>(hypers);
+      } else if (this->spherical_invariants_type_str.compare("BiSpectrum") == 0) {
+        this->spherical_invariants_type = internal::SphericalInvariantsType::BiSpectrum;
+        this->precompute_spherical_invariants[enumValue(SphericalInvariantsType::BiSpectrum)] =
+            make_spherical_invariants_precompute<SphericalInvariantsType::BiSpectrum>(hypers);
         this->inversion_symmetry = hypers.at("inversion_symmetry");
 
       } else {
-        throw std::logic_error("Requested SOAP type \'" + this->soap_type_str +
+        throw std::logic_error("Requested SphericalInvariants type \'" + this->spherical_invariants_type_str +
                                "\' has not been implemented.  Must be one of" +
                                ": \'RadialSpectrum\', \'PowerSpectrum\', " +
                                "\'BiSpectrum\'.");
@@ -316,27 +316,27 @@ namespace rascal {
     bool normalize{};
     ManagerPtr_t structure_manager;
     RepresentationManagerSphericalExpansion<Manager_t> rep_expansion;
-    internal::SOAPType soap_type{};
+    internal::SphericalInvariantsType spherical_invariants_type{};
     //! collection of precomputation for the different body order
-    std::array<std::shared_ptr<internal::SOAPPrecomputationBase>,
-               internal::enumSize<internal::SOAPType>()>
-        precompute_soap{};
-    std::string soap_type_str{};
+    std::array<std::shared_ptr<internal::SphericalInvariantsPrecomputationBase>,
+               internal::enumSize<internal::SphericalInvariantsType>()>
+        precompute_spherical_invariants{};
+    std::string spherical_invariants_type_str{};
     std::vector<Precision_t> dummy{};
     bool inversion_symmetry{false};
   };
 
   template <class Mngr>
   void RepresentationManagerSphericalInvariants<Mngr>::compute() {
-    using internal::SOAPType;
-    switch (this->soap_type) {
-    case SOAPType::RadialSpectrum:
+    using internal::SphericalInvariantsType;
+    switch (this->spherical_invariants_type) {
+    case SphericalInvariantsType::RadialSpectrum:
       this->compute_radialspectrum();
       break;
-    case SOAPType::PowerSpectrum:
+    case SphericalInvariantsType::PowerSpectrum:
       this->compute_powerspectrum();
       break;
-    case SOAPType::BiSpectrum:
+    case SphericalInvariantsType::BiSpectrum:
       this->compute_bispectrum();
       break;
     default:
@@ -348,12 +348,12 @@ namespace rascal {
   template <class Mngr>
   void RepresentationManagerSphericalInvariants<Mngr>::compute_powerspectrum() {
     using internal::enumValue;
-    using internal::SOAPType;
+    using internal::SphericalInvariantsType;
     using math::pow;
 
     // get the relevant precomputation object and unpack the useful infos
-    auto precomputation{downcast_soap_precompute<SOAPType::PowerSpectrum>(
-        this->precompute_soap[enumValue(SOAPType::PowerSpectrum)])};
+    auto precomputation{downcast_spherical_invariants_precompute<SphericalInvariantsType::PowerSpectrum>(
+        this->precompute_spherical_invariants[enumValue(SphericalInvariantsType::PowerSpectrum)])};
     auto & l_factors{precomputation->l_factors};
 
     // Compute the spherical expansions of the current structure
@@ -448,10 +448,10 @@ namespace rascal {
   template <class Mngr>
   void RepresentationManagerSphericalInvariants<Mngr>::compute_bispectrum() {
     using internal::enumValue;
-    using internal::SOAPType;
+    using internal::SphericalInvariantsType;
 
-    auto precomputation{downcast_soap_precompute<SOAPType::BiSpectrum>(
-        this->precompute_soap[enumValue(SOAPType::BiSpectrum)])};
+    auto precomputation{downcast_spherical_invariants_precompute<SphericalInvariantsType::BiSpectrum>(
+        this->precompute_spherical_invariants[enumValue(SphericalInvariantsType::BiSpectrum)])};
     auto & w3js{precomputation->w3js};
 
     rep_expansion.compute();
