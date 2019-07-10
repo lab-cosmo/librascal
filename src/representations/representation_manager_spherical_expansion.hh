@@ -617,6 +617,8 @@ namespace rascal {
       } else {  // Default false (don't compute gradients)
         this->compute_gradients = false;
       }
+      this->spherical_harmonics.precompute(this->max_angular,
+                                           this->compute_gradients);
 
       auto radial_contribution_hypers =
           hypers.at("radial_contribution").get<json>();
@@ -823,8 +825,6 @@ namespace rascal {
       this->expansions_coefficients_gradient.resize();
     }
 
-    this->spherical_harmonics.precompute(this->max_angular);
-
     for (auto center : this->structure_manager) {
       auto & coefficients_center = this->expansions_coefficients[center];
       auto & coefficients_center_gradient =
@@ -858,20 +858,13 @@ namespace rascal {
 
         auto & coefficients_neigh_gradient =
             this->expansions_coefficients_gradient[neigh];
-        Vector_t harmonics{};
-        Matrix_t harmonics_derivatives{};
+        this->spherical_harmonics.calc(direction, this->compute_gradients);
+        Vector_t harmonics = spherical_harmonics.get_harmonics();
+        Matrix_t harmonics_gradients{};
         if (this->compute_gradients) {
           coefficients_neigh_gradient.resize(keys, n_spatial_dimensions * n_row,
                                              n_col, 0.);
-          auto harmonics_and_derivatives =
-              math::compute_spherical_harmonics_derivatives(direction,
-                                                            this->max_angular);
-          harmonics = harmonics_and_derivatives.row(0);
-          harmonics_derivatives =
-              harmonics_and_derivatives.template bottomRows<3>();
-        } else {
-          harmonics =
-              math::compute_spherical_harmonics(direction, this->max_angular);
+          harmonics_gradients = spherical_harmonics.get_harmonics_derivatives();
         }
 
         Matrix_t neighbour_contribution =
@@ -926,8 +919,8 @@ namespace rascal {
               // be divided by r to get the Cartesian gradient
               pair_gradient_contribution +=
                 neighbour_contribution.col(angular_l)
-                * harmonics_derivatives.block(cartesian_idx, l_block_idx,
-                                              1, l_block_size)
+                * harmonics_gradients.block(cartesian_idx, l_block_idx,
+                                            1, l_block_size)
                 * cutoff_function->f_c(dist) / dist;
               // Each Cartesian gradient component occupies a contiguous block
               // (row-major storage)

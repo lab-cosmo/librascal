@@ -77,8 +77,8 @@ namespace rascal {
 
     std::string ref_filename =
         "reference_data/spherical_harmonics_reference.ubjson";
-
     json ref_data{};
+    // TODO(alex) replace this with one variable VerbosityValues verbosity
     // for general test information
     bool info{false};
     // for detailed tests information of computed values
@@ -86,7 +86,38 @@ namespace rascal {
   };
 
   /**
-   * Fixture for testing a the gradient of a scalar function of N real arguments
+   * Wrapper of the SphericalHarmonics class to interface with the gradient
+   * tester
+   *
+   * See the documentation for test_gradients() below; the calculator object
+   * passed to it must provide the functions f() and grad_f() as below.
+   */
+  template <size_t max_angular>
+  struct SphericalHarmonicsGradientsCalculator {
+    SphericalHarmonicsGradientsCalculator()
+        : harmonics_calculator{math::SphericalHarmonics(true)} {}
+
+    static const size_t n_arguments = 3;
+    using Matrix_Ref = typename Eigen::Ref<const math::Matrix_t>;
+    using Vector_Ref = typename Eigen::Ref<const math::Vector_t>;
+
+    void precompute() { this->harmonics_calculator.precompute(max_angular); }
+
+    Vector_Ref f(const Eigen::Vector3d & inputs_v) {
+      Eigen::Vector3d my_inputs = inputs_v / inputs_v.norm();
+      this->harmonics_calculator.calc(my_inputs, false);
+      return this->harmonics_calculator.get_harmonics();
+    }
+    Matrix_Ref grad_f(const Eigen::Vector3d & inputs_v) {
+      this->harmonics_calculator.calc(inputs_v, true);
+      return this->harmonics_calculator.get_harmonics_derivatives();
+    }
+
+    math::SphericalHarmonics harmonics_calculator;
+  };
+
+  /**
+   * Fixture for testing a the gradient of a real function of N real arguments
    *
    * (Verifies that the gradient is the same as the converged value of the
    * finite-difference approximation along the given directions)
@@ -190,6 +221,15 @@ namespace rascal {
     StdVector2Dim_t function_inputs{};
     Eigen::MatrixXd displacement_directions{};
     size_t n_arguments{0};
+
+    /**
+     * The error of the finite-difference against the analytical derivatives
+     * isn't going to be arbitrarily small, due to the interaction of
+     * finite-difference and finite precision effects.  The default here
+     * reflects this, while allowing different tests to change it -- keeping in
+     * mind that the automated test is really more intended to be a sanity
+     * check on the implementation than a rigorous convergence test.
+     */
     double fd_error_tol{1E-6};
     VerbosityValue verbosity{VerbosityValue::NORMAL};
 
@@ -197,42 +237,12 @@ namespace rascal {
     GradientTestFixture() {}
   };
 
-  template <int max_angular>
-  class SphericalHarmonicsWithGradients {
-   public:
-    static const size_t n_arguments = 3;
-
-    SphericalHarmonicsWithGradients() = default;
-
-    ~SphericalHarmonicsWithGradients() = default;
-
-    Eigen::Array<double, 1, (max_angular + 1) * (max_angular + 1)>
-    f(const Eigen::Vector3d & inputs_v) {
-      // Renormalize the inputs to project out the r gradients
-      Eigen::Vector3d my_inputs = inputs_v / inputs_v.norm();
-      // Gives the same result -- retain for testing
-      // Eigen::Array<double, 4, (max_angular + 1) * (max_angular + 1)>
-      //     harmonics_derivatives{math::compute_spherical_harmonics_derivatives(
-      //         my_inputs, max_angular)};
-      // return harmonics_derivatives.row(0);
-      return math::compute_spherical_harmonics(my_inputs, max_angular);
-    }
-
-    Eigen::Array<double, 3, (max_angular + 1) * (max_angular + 1)>
-    grad_f(const Eigen::Vector3d & inputs_v) {
-      Eigen::Array<double, 4, (max_angular + 1) * (max_angular + 1)>
-          harmonics_derivatives{math::compute_spherical_harmonics_derivatives(
-              inputs_v, max_angular)};
-      return harmonics_derivatives.bottomRows(3);
-    }
-  };
-
   namespace internal {
     /**
      * Template to select the Eigen type for the argument vector: Fixed or
      * dynamic size?  Fixed-size template below, dynamic-size default here.
      */
-    template <typename Calculator_t, typename = std::void_t<>>
+    template <typename Calculator_t, typename = void>
     struct Argument_t {
       typedef Eigen::VectorXd type_vec;
       typedef Eigen::MatrixXd type_mat;
@@ -268,6 +278,13 @@ namespace rascal {
    * the function input, of dimension determined in the data file (read by
    * GradientTestFixture).  This function additionally guarantees that f() will
    * be called before grad_f() with the same input.
+   *
+   * If the functions f() and grad_f() are designed to accept fixed-size vectors
+   * (i.e. if the size of the argument is known at compile time), be sure to
+   * define, in the FunctionProvider class, a
+   * `constexpr static size_t n_arguments` member with the size of the argument
+   * vector.  This will ensure that the gradient tester uses the corresponding
+   * fixed-size Eigen vectors/matrices as inputs.
    */
   template <typename FunctionProvider_t, typename TestFixture_t>
   void test_gradients(FunctionProvider_t function_calculator,
@@ -276,28 +293,14 @@ namespace rascal {
         typename internal::Argument_t<FunctionProvider_t>::type_vec;
     using ArgumentMat_t =
         typename internal::Argument_t<FunctionProvider_t>::type_mat;
-    Eigen::MatrixXd values;
-    ArgumentMat_t jacobian;
-    ArgumentVec_t argument_vector;
-    ArgumentVec_t displacement_direction;
-    ArgumentVec_t displacement;
-    Eigen::MatrixXd directional;
-    Eigen::MatrixXd fd_derivatives;
-    Eigen::MatrixXd fd_error_cwise;
 
     using VerbosityValue = typename GradientTestFixture::VerbosityValue;
 
-    // This error isn't going to be arbitrarily small, due to the interaction of
-    // finite-difference and finite precision effects.  Just set it to something
-    // reasonable and check it explicitly if you really want to be sure (paying
-    // attention to the change of the finite-difference gradients from one step
-    // to the next).  The automated test is really more intended to be a sanity
-    // check on the implementation anyway.
     for (auto inputs : params.function_inputs) {
-      argument_vector =
+      ArgumentVec_t argument_vector =
           Eigen::Map<ArgumentVec_t>(inputs.data(), params.n_arguments, 1);
-      values = function_calculator.f(argument_vector);
-      jacobian = function_calculator.grad_f(argument_vector);
+      Eigen::MatrixXd values = function_calculator.f(argument_vector);
+      ArgumentMat_t jacobian = function_calculator.grad_f(argument_vector);
       if (params.verbosity >= VerbosityValue::INFO) {
         std::cout << std::string(30, '-') << std::endl;
         std::cout << "Input vector: " << argument_vector.transpose();
@@ -309,29 +312,34 @@ namespace rascal {
       }
       for (int disp_idx{0}; disp_idx < params.displacement_directions.rows();
            disp_idx++) {
-        displacement_direction = params.displacement_directions.row(disp_idx);
+        ArgumentVec_t displacement_direction =
+            params.displacement_directions.row(disp_idx);
         // Compute the directional derivative(s)
-        directional = displacement_direction.transpose() * jacobian;
+        Eigen::VectorXd directional =
+            displacement_direction.transpose() * jacobian;
         if (params.verbosity >= VerbosityValue::INFO) {
           std::cout << "FD direction: " << displacement_direction.transpose();
           std::cout << std::endl;
         }
         if (params.verbosity >= VerbosityValue::DEBUG) {
-          std::cout << "Analytical derivative: " << directional << std::endl;
+          std::cout << "Analytical derivative: " << directional.transpose();
+          std::cout << std::endl;
         }
+        // TODO(max) this inner loop is a good candidate to move to its own
+        // function... if we can pass along those argument typedefs as well
         double min_error{HUGE_VAL};
         for (double dx = 1E-2; dx > 1E-10; dx *= 0.1) {
           if (params.verbosity >= VerbosityValue::INFO) {
             std::cout << "dx = " << dx << "\t";
           }
-          displacement = dx * displacement_direction;
+          ArgumentVec_t displacement = dx * displacement_direction;
           // Compute the finite-difference derivative using a
           // centred-difference approach
-          Eigen::MatrixXd fun_plus{
+          Eigen::VectorXd fun_plus{
               function_calculator.f(argument_vector + displacement)};
-          Eigen::MatrixXd fun_minus{
+          Eigen::VectorXd fun_minus{
               function_calculator.f(argument_vector - displacement)};
-          fd_derivatives = 0.5 / dx * (fun_plus - fun_minus);
+          Eigen::VectorXd fd_derivatives = 0.5 / dx * (fun_plus - fun_minus);
           double fd_error{0.};
           double fd_quotient{0.};
           size_t nonzero_count{0};
@@ -357,10 +365,11 @@ namespace rascal {
             min_error = std::abs(fd_error);
           }
           if (params.verbosity >= VerbosityValue::DEBUG) {
-            fd_error_cwise = (fd_derivatives - directional);
-            std::cout << "error            = " << fd_error_cwise << std::endl;
-            std::cout << "(FD derivative   = " << fd_derivatives << ")";
+            Eigen::VectorXd fd_error_cwise = (fd_derivatives - directional);
+            std::cout << "error            = " << fd_error_cwise.transpose();
             std::cout << std::endl;
+            std::cout << "(FD derivative   = " << fd_derivatives.transpose();
+            std::cout << ")" << std::endl;
           }
         }  // for (double dx...) (displacement magnitudes)
         BOOST_CHECK_SMALL(min_error, params.fd_error_tol);
@@ -431,7 +440,6 @@ namespace rascal {
       this->fac_b.resize(max_angular, 1);
       this->fac_b = fac_b;
       this->hyp1f1_calculator.precompute(max_radial, max_angular);
-      // std::cout << "constructor ok" << std::endl;
     }
 
     ~Hyp1f1GradientProvider() = default;
@@ -451,10 +459,6 @@ namespace rascal {
       this->hyp1f1_calculator.calc(input_v(0), this->fac_a, this->fac_b, true);
       Eigen::MatrixXd result(this->max_radial, this->max_angular + 1);
       result = this->hyp1f1_calculator.get_derivatives();
-      // result.transpose() *=
-      //   ((2.*this->fac_a*this->fac_a * input_v(0)) /
-      //    (this->fac_a + this->fac_b.array())).matrix().asDiagonal();
-      // result -= this->hyp1f1_calculator.get_values() * 2*fac_a*input_v(0);
       Eigen::Map<Eigen::Array<double, 1, Eigen::Dynamic>> result_flat(
           result.data(), 1, result.size());
       return result_flat;
