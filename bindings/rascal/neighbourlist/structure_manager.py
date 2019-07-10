@@ -1,3 +1,4 @@
+import numpy as np
 from .base import NeighbourListFactory, is_valid_structure, adapt_structure
 
 
@@ -51,4 +52,9 @@ def unpack_ase(frame):
     numbers = frame.get_atomic_numbers()
     pbc = frame.get_pbc().astype(int)
 
-    return adapt_structure(cell=cell, positions=positions, atom_types=numbers, pbc=pbc)
+    if "is_a_center_atom" in frame.arrays.keys():
+        is_a_center_atom = frame.get_array("is_a_center_atom")
+    else:
+        is_a_center_atom = np.ones_like(numbers, dtype=bool)
+
+    return adapt_structure(cell=cell, positions=positions, atom_types=numbers, pbc=pbc, is_a_center_atom=is_a_center_atom)

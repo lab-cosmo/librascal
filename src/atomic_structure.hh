@@ -217,15 +217,25 @@ namespace rascal {
     }
 
     inline bool is_identical(const PositionsInput_t & positions,
+                             const AtomTypesInput_t & atom_types,
+                             const Eigen::Ref<const Eigen::MatrixXd> cell,
+                             const PBCInput_t & pbc,
+                             const double & skin2) const {
+      auto is_a_center_atom = ArrayB_t::Ones(atom_types.size());
+      return this->is_identical(positions, atom_types, cell, pbc, is_a_center_atom, skin2);
+    }
+
+    inline bool is_identical(const PositionsInput_t & positions,
                              const AtomTypesInput_t & /*atom_types*/,
                              const Eigen::Ref<const Eigen::MatrixXd> cell,
                              const PBCInput_t & pbc,
+                             const ArrayB_ref & is_a_center_atom,
                              const double & skin2) const {
       bool is_similar{true};
       if (this->positions.cols() == positions.cols()) {
         if ((this->pbc.array() != pbc.array()).any() or
             (this->cell.array() != cell.array()).any() or
-            /*(this->is_a_center_atom != other.is_a_center_atom).any() or*/
+            (this->is_a_center_atom != is_a_center_atom).any() or
             (this->positions - positions).rowwise().squaredNorm().maxCoeff() >
                 skin2) {
           is_similar = false;
