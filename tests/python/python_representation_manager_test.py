@@ -1,4 +1,4 @@
-from rascal.representations import SortedCoulombMatrix, SphericalExpansion, SOAP
+from rascal.representations import SortedCoulombMatrix, SphericalExpansion, SphericalInvariants
 from test_utils import load_json_frame, BoxList, Box
 import unittest
 import numpy as np
@@ -55,7 +55,7 @@ class TestSphericalExpansionRepresentation(unittest.TestCase):
         test = features.get_feature_matrix().T
 
 
-class TestSOAPRepresentation(unittest.TestCase):
+class TestSphericalInvariantsRepresentation(unittest.TestCase):
     def setUp(self):
         """
         builds the test case. Test the order=1 structure manager implementation
@@ -76,7 +76,7 @@ class TestSOAPRepresentation(unittest.TestCase):
 
     def test_representation_transform(self):
 
-        rep = SOAP(**self.hypers)
+        rep = SphericalInvariants(**self.hypers)
 
         features = rep.transform([self.frame])
 
