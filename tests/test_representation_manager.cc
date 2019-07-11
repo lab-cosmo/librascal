@@ -39,10 +39,12 @@ namespace rascal {
       // susceptible to
       // differences in neighbour ordering so test will fail for a wrong
       // reason...
-      // RepresentationFixture<MultipleStructureSortedCoulomb_,
+      // RepresentationFixture<MultipleStructureSortedCoulombNoCenter,
       //                       RepresentationManagerSortedCoulomb>,
-      RepresentationFixture<MultipleStructureSphericalExpansion_,
-                            RepresentationManagerSphericalExpansion>>;
+      RepresentationFixture<MultipleStructureSphericalExpansionNoCenter,
+                            RepresentationManagerSphericalExpansion>,
+      RepresentationFixture<MultipleStructureSOAPNoCenter,
+                            RepresentationManagerSOAP>>;
 
   /**
    * Test that selecting subsets of centers will give the same representation

@@ -147,6 +147,60 @@ namespace rascal {
                                   {"normalize", true}}};
   };
 
+  struct MultipleStructureSOAPNoCenter : MultipleStructureManagerNLStrictFixtureNoCenter {
+    using Parent = MultipleStructureManagerNLStrictFixtureNoCenter;
+    using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
+
+    MultipleStructureSOAPNoCenter() : Parent{} {
+      for (auto & ri_hyp : this->radial_contribution_hypers) {
+        for (auto & fc_hyp : this->fc_hypers) {
+          for (auto & sig_hyp : this->density_hypers) {
+            for (auto & rep_hyp : this->rep_hypers) {
+              rep_hyp["cutoff_function"] = fc_hyp;
+              rep_hyp["gaussian_density"] = sig_hyp;
+              rep_hyp["radial_contribution"] = ri_hyp;
+              this->hypers.push_back(rep_hyp);
+            }
+          }
+        }
+      }
+    };
+    ~MultipleStructureSOAPNoCenter() = default;
+
+    std::vector<json> hypers{};
+
+    std::vector<json> fc_hypers{
+        {{"type", "Cosine"},
+         {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
+         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}},
+        {{"type", "Cosine"},
+         {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
+         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
+
+    std::vector<json> density_hypers{
+        {{"type", "Constant"},
+         {"gaussian_sigma", {{"value", 0.2}, {"unit", "AA"}}}},
+        {{"type", "Constant"},
+         {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
+    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
+    std::vector<json> rep_hypers{{{"max_radial", 6},
+                                  {"max_angular", 0},
+                                  {"soap_type", "RadialSpectrum"},
+                                  {"normalize", true}},
+                                 {{"max_radial", 6},
+                                  {"max_angular", 0},
+                                  {"soap_type", "RadialSpectrum"},
+                                  {"normalize", true}},
+                                 {{"max_radial", 6},
+                                  {"max_angular", 6},
+                                  {"soap_type", "PowerSpectrum"},
+                                  {"normalize", true}},
+                                 {{"max_radial", 6},
+                                  {"max_angular", 6},
+                                  {"soap_type", "PowerSpectrum"},
+                                  {"normalize", true}}};
+  };
+
   struct SOAPTestData : TestData {
     using Parent = TestData;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
@@ -195,12 +249,12 @@ namespace rascal {
     std::vector<json> rep_hypers{{{"max_radial", 10}, {"max_angular", 8}}};
   };
 
-  struct MultipleStructureSphericalExpansion_
+  struct MultipleStructureSphericalExpansionNoCenter
       : MultipleStructureManagerNLStrictFixtureNoCenter {
     using Parent = MultipleStructureManagerNLStrictFixtureNoCenter;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
 
-    MultipleStructureSphericalExpansion_() : Parent{} {
+    MultipleStructureSphericalExpansionNoCenter() : Parent{} {
       for (auto & ri_hyp : this->radial_contribution_hypers) {
         for (auto & fc_hyp : this->fc_hypers) {
           for (auto & sig_hyp : this->density_hypers) {
@@ -214,7 +268,7 @@ namespace rascal {
         }
       }
     };
-    ~MultipleStructureSphericalExpansion_() = default;
+    ~MultipleStructureSphericalExpansionNoCenter() = default;
 
     std::vector<json> hypers{};
 
@@ -698,13 +752,13 @@ namespace rascal {
                               {"sorting_algorithm", "row_norm"}}};
   };
 
-  struct MultipleStructureSortedCoulomb_
+  struct MultipleStructureSortedCoulombNoCenter
       : MultipleStructureManagerNLStrictFixtureNoCenter {
     using Parent = MultipleStructureManagerNLStrictFixtureNoCenter;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
 
-    MultipleStructureSortedCoulomb_() : Parent{} {};
-    ~MultipleStructureSortedCoulomb_() = default;
+    MultipleStructureSortedCoulombNoCenter() : Parent{} {};
+    ~MultipleStructureSortedCoulombNoCenter() = default;
 
     std::vector<json> hypers{{{"central_decay", 0.5},
                               {"interaction_cutoff", 10.},
