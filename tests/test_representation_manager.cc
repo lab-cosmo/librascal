@@ -32,6 +32,64 @@
 namespace rascal {
   BOOST_AUTO_TEST_SUITE(representation_test);
 
+
+  /* ---------------------------------------------------------------------- */
+
+  // using multiple_nocenter_fixtures = boost::mpl::list<
+  //     RepresentationFixture<MultipleStructureSphericalExpansion_,
+  //                           RepresentationManagerSphericalExpansion>>;
+  using multiple_nocenter_fixtures = boost::mpl::list<
+      RepresentationFixture<MultipleStructureSortedCoulomb_,
+                            RepresentationManagerSortedCoulomb>>;
+  /**
+   * Test if the compute function runs
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_nocenter_test, Fix,
+                                   multiple_nocenter_fixtures, Fix) {
+    bool verbose{true};
+    auto & managers = Fix::managers;
+    // auto & representations = Fix::representations;
+    auto & hypers = Fix::hypers;
+    using Representation_t = typename Fix::Representation_t;
+
+    int n_manager{static_cast<int>(managers.size())};
+    for (int i_manager{0}; i_manager < n_manager; i_manager += 2) {
+      for (auto & hyper : hypers) {
+        auto & manager = managers[i_manager];
+        auto & manager_no_center = managers[i_manager+1];
+        auto is_center_atom = extract_underlying_manager<0>(manager_no_center)
+                                ->get_is_center_atom();
+
+        if (verbose) {
+          std::cout << "is_center_atom: " << is_center_atom.transpose()
+                    << std::endl;
+        }
+
+        Representation_t representation{manager, hyper};
+        representation.compute();
+        Representation_t representation_no_center{manager_no_center, hyper};
+        representation_no_center.compute();
+
+        auto rep_full = representation.get_representation_full();
+        auto rep_no_center = representation_no_center.get_representation_full();
+        BOOST_CHECK_EQUAL(rep_full.rows(), rep_no_center.rows());
+
+        size_t i_no_center{0};
+        for (size_t i_center{0}; i_center < manager_no_center->size(); ++i_center) {
+          if (is_center_atom(i_center)) {
+            auto row_full = rep_full.col(i_center);
+            auto row_no_center = rep_no_center.col(i_no_center);
+            auto diff = (row_full - row_no_center).norm();
+            std::cout << "Center idx: " << i_center << " Diff: " << diff << std::endl;
+            i_no_center++;
+          }
+        }
+
+        break;
+      }
+    }
+  }
+
   /* ---------------------------------------------------------------------- */
   /**
    * Test the row norm sorting
@@ -130,7 +188,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Test if not the no center option works properly
+   * Test if the no center option takes out the centers
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_no_center_test, Fix,
                                    multiple_fixtures, Fix) {

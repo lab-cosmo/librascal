@@ -646,7 +646,8 @@ namespace rascal {
 
     //! Returns atom type given an atom tag, also works for ghost atoms
     inline int & get_atom_type(const int & atom_tag) {
-      return this->atom_types[this->get_atom_index(atom_tag)];
+      // return this->atom_types[this->get_atom_index(atom_tag)];
+      return this->atom_types[atom_tag];
     }
 
     /* If consider_ghost_neighbours=true and the atom tag corresponds to an
@@ -659,7 +660,8 @@ namespace rascal {
 
     //! Returns the type of a given atom, given an AtomRef
     inline const int & get_atom_type(const int & atom_tag) const {
-      return this->atom_types[this->get_atom_index(atom_tag)];
+      // return this->atom_types[this->get_atom_index(atom_tag)];
+      return this->atom_types[atom_tag];
     }
 
     //! Returns the number of neighbors of a given cluster
@@ -698,7 +700,6 @@ namespace rascal {
      * is needed, because ghost atoms are also included in the buildup of the
      * pair list.
      */
-
     inline void add_ghost_atom(const int & atom_tag, const Vector_t & position,
                                const int & atom_type) {
       // first add it to the list of atoms
@@ -1020,20 +1021,29 @@ namespace rascal {
     // of current atoms to start the full list of current i-atoms and ghosts
     // This is done before the ghost atom generation, to have them all
     // contiguously at the beginning of the list.
-    for (auto center : this->manager) {
-      auto atom_tag{center.get_atom_tag()};
-      size_t cluster_index = this->manager->get_atom_index(atom_tag);
-      auto atom_type = center.get_atom_type();
-      this->atom_tag_list.push_back(atom_tag);
+    // for (auto center : this->manager) {
+    //   auto atom_tag{center.get_atom_tag()};
+    //   size_t cluster_index = this->manager->get_atom_index(atom_tag);
+    //   auto atom_type = center.get_atom_type();
+    //   this->atom_tag_list.push_back(atom_tag);
+    //   this->atom_types.push_back(atom_type);
+    //   this->atom_index_from_atom_tag_list.push_back(cluster_index);
+    // }
+
+    // // fill up the tags for the missing center atoms. should never be accessed
+    // for (size_t i{this->n_centers}; i < this->n_atoms; ++i) {
+    //   this->atom_types.push_back(std::numeric_limits<int>::max());
+    //   this->atom_index_from_atom_tag_list.push_back(
+    //       std::numeric_limits<size_t>::max());
+    // }
+    for (size_t atom_tag{0}; atom_tag < this->n_atoms; ++atom_tag) {
+      auto atom_type = this->manager->get_atom_type(atom_tag);
+      auto cluster_index = this->manager->get_atom_index(atom_tag);
+      if (atom_tag < this->n_centers) {
+        this->atom_tag_list.push_back(atom_tag);
+      }
       this->atom_types.push_back(atom_type);
       this->atom_index_from_atom_tag_list.push_back(cluster_index);
-    }
-
-    // fill up the tags for the missing center atoms. should never be accessed
-    for (size_t i{this->n_centers}; i < this->n_atoms; ++i) {
-      this->atom_types.push_back(std::numeric_limits<int>::max());
-      this->atom_index_from_atom_tag_list.push_back(
-          std::numeric_limits<size_t>::max());
     }
 
     // generate ghost atom tags and positions

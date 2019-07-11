@@ -48,27 +48,36 @@
 // using namespace std;
 using namespace rascal;  // NOLINT
 
-using Representation_t = RepresentationManagerSOAP<
+// using Representation_t = RepresentationManagerSOAP<
+//     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
+using Representation_t = RepresentationManagerSortedCoulomb<
     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
+
 using ArrayB_t = AtomicStructure<3>::ArrayB_t;
 
 int main() {
   std::string filename{"reference_data/small_molecule.json"};
   double cutoff{3.};
-  json hypers{{"max_radial", 6},
-              {"max_angular", 6},
-              {"soap_type", "PowerSpectrum"},
-              {"normalize", true}};
+  // json hypers{{"max_radial", 6},
+  //             {"max_angular", 6},
+  //             {"soap_type", "PowerSpectrum"},
+  //             {"normalize", true}};
 
-  json fc_hypers{{"type", "Cosine"},
-                 {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
-                 {"smooth_width", {{"value", 0.}, {"unit", "AA"}}}};
-  json sigma_hypers{{"type", "Constant"},
-                    {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}};
+  // json fc_hypers{{"type", "Cosine"},
+  //                {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
+  //                {"smooth_width", {{"value", 0.}, {"unit", "AA"}}}};
+  // json sigma_hypers{{"type", "Constant"},
+  //                   {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}};
 
-  hypers["cutoff_function"] = fc_hypers;
-  hypers["gaussian_density"] = sigma_hypers;
-  hypers["radial_contribution"] = {{"type", "GTO"}};
+  // hypers["cutoff_function"] = fc_hypers;
+  // hypers["gaussian_density"] = sigma_hypers;
+  // hypers["radial_contribution"] = {{"type", "GTO"}};
+
+  json hypers{{"central_decay", 0.5},
+              {"interaction_cutoff", 10.},
+              {"interaction_decay", 0.5},
+              {"size", 120},
+              {"sorting_algorithm", "distance"}};
 
   json structure{};
   json adaptors;
@@ -89,7 +98,11 @@ int main() {
                                    AdaptorNeighbourList, AdaptorStrict>(
           structure, adaptors);
 
-  // manager->update(atomic_structure);
+  Representation_t representation{manager, hypers};
+  representation.compute();
+
+  auto rep_full = representation.get_representation_full();
+
   std::mt19937_64 rng{1242484542};
 
   auto n_atoms = atomic_structure.get_number_of_atoms();
@@ -130,10 +143,10 @@ int main() {
                 << center.get_position().transpose() << std::endl;
       for (auto neigh : center) {
         auto neigh_tag = neigh.get_atom_tag();
-        std::cout << "neigh_atom: " << neigh_tag << " -- "
-                  << manager->get_neighbour_atom_tag(center, neigh.get_index())
-                  << " -- " << neigh.get_position().transpose() << " -- "
-                  << manager->get_position(neigh_tag).transpose() << std::endl;
+        // std::cout << "neigh_atom: " << neigh_tag << " -- "
+        //           << manager->get_neighbour_atom_tag(center, neigh.get_index())
+        //           << " -- " << neigh.get_position().transpose() << " -- "
+        //           << manager->get_position(neigh_tag).transpose() << std::endl;
         auto dist{(neigh.get_position() - center.get_position()).norm()};
         distances_ref.back().push_back(dist);
         // distances_ref.push_back(manager->get_distance(neigh));
@@ -165,10 +178,10 @@ int main() {
     for (auto neigh : center) {
       auto neigh_tag = neigh.get_atom_tag();
       neigh.get_position().transpose();
-      std::cout << "neigh_atom: " << neigh_tag << " -- "
-                << manager->get_neighbour_atom_tag(center, neigh.get_index())
-                << " -- " << neigh.get_position().transpose() << " -- "
-                << manager->get_position(neigh_tag).transpose() << std::endl;
+      // std::cout << "neigh_atom: " << neigh_tag << " -- "
+      //           << manager->get_neighbour_atom_tag(center, neigh.get_index())
+      //           << " -- " << neigh.get_position().transpose() << " -- "
+      //           << manager->get_position(neigh_tag).transpose() << std::endl;
       auto dist{(neigh.get_position() - center.get_position()).norm()};
       distances.back().push_back(dist);
       // distances.push_back(manager_no_center->get_distance(neigh));
@@ -188,6 +201,28 @@ int main() {
                             distances[i_center][i_d])
                 << "\t" << distances_ref[i_center][i_d] << "\t"
                 << distances[i_center][i_d] << std::endl;
+    }
+  }
+
+  std::cout << std::endl;
+  std::cout << " ###################REP################## " << std::endl;
+
+  Representation_t representation_no_center{manager, hypers};
+  representation_no_center.compute();
+
+
+  auto rep_no_center = representation_no_center.get_representation_full();
+
+  size_t i_no_center{0};
+  std::cout << manager->size();
+  for (i_center = 0; i_center < n_atoms; ++i_center) {
+    std::cout << "Center idx: " << i_center << std::endl;
+    if (is_center_atom(i_center)) {
+      auto row_full = rep_full.col(i_center);
+      auto row_no_center = rep_no_center.col(i_no_center);
+      auto diff = (row_full - row_no_center).norm();
+      std::cout << "Center idx: " << i_center << " Diff: " << diff << std::endl;
+      i_no_center++;
     }
   }
 
