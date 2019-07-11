@@ -1030,8 +1030,8 @@ namespace rascal {
     //   this->atom_index_from_atom_tag_list.push_back(cluster_index);
     // }
 
-    // // fill up the tags for the missing center atoms. should never be accessed
-    // for (size_t i{this->n_centers}; i < this->n_atoms; ++i) {
+    // // fill up the tags for the missing center atoms. should never be
+    // accessed for (size_t i{this->n_centers}; i < this->n_atoms; ++i) {
     //   this->atom_types.push_back(std::numeric_limits<int>::max());
     //   this->atom_index_from_atom_tag_list.push_back(
     //       std::numeric_limits<size_t>::max());

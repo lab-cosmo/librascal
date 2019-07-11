@@ -32,7 +32,6 @@
 namespace rascal {
   BOOST_AUTO_TEST_SUITE(representation_test);
 
-
   /* ---------------------------------------------------------------------- */
 
   using multiple_nocenter_fixtures = boost::mpl::list<
@@ -60,9 +59,9 @@ namespace rascal {
     for (int i_manager{0}; i_manager < n_manager; i_manager += 2) {
       for (auto & hyper : hypers) {
         auto & manager = managers[i_manager];
-        auto & manager_no_center = managers[i_manager+1];
+        auto & manager_no_center = managers[i_manager + 1];
         auto is_center_atom = extract_underlying_manager<0>(manager_no_center)
-                                ->get_is_center_atom();
+                                  ->get_is_center_atom();
 
         if (verbose) {
           std::cout << "is_center_atom: " << is_center_atom.transpose()
@@ -79,19 +78,20 @@ namespace rascal {
         BOOST_CHECK_EQUAL(rep_full.rows(), rep_no_center.rows());
 
         size_t i_no_center{0};
-        for (size_t i_center{0}; i_center < manager_no_center->size(); ++i_center) {
+        for (size_t i_center{0}; i_center < manager_no_center->size();
+             ++i_center) {
           if (is_center_atom(i_center)) {
             auto row_full = rep_full.col(i_center);
             auto row_no_center = rep_no_center.col(i_no_center);
             auto diff = (row_full - row_no_center).norm();
             BOOST_CHECK_LE(diff, math::dbl_ftol);
             if (verbose) {
-              std::cout << "Center idx: " << i_center << " Diff: " << diff << std::endl;
+              std::cout << "Center idx: " << i_center << " Diff: " << diff
+                        << std::endl;
             }
             i_no_center++;
           }
         }
-
       }
     }
   }

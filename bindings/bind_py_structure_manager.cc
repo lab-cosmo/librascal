@@ -247,11 +247,13 @@ void bind_update_unpacked(PyManager<StructureManagerImplementation> & manager) {
                  const py::EigenDRef<const Eigen::VectorXi> & atom_types,
                  const py::EigenDRef<const Eigen::MatrixXd> & cell,
                  const py::EigenDRef<const Eigen::MatrixXi> & pbc,
-                 const py::EigenDRef<const ArrayB_t> &  is_a_center_atom) {
-                manager.update(positions, atom_types, cell, pbc, is_a_center_atom);
+                 const py::EigenDRef<const ArrayB_t> & is_a_center_atom) {
+                manager.update(positions, atom_types, cell, pbc,
+                               is_a_center_atom);
               },
               py::arg("positions"), py::arg("atom_types"), py::arg("cell"),
-              py::arg("pbc"), py::arg("is_a_center_atom"), py::call_guard<py::gil_scoped_release>());
+              py::arg("pbc"), py::arg("is_a_center_atom"),
+              py::call_guard<py::gil_scoped_release>());
 }
 
 template <typename StructureManagerImplementation>

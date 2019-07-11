@@ -56,21 +56,23 @@ using Representation_t = RepresentationManagerSOAP<
 using ArrayB_t = AtomicStructure<3>::ArrayB_t;
 
 struct ordering {
-  template<typename T >
-    bool operator ()(std::pair<size_t, T> const& a, std::pair<size_t, T> const& b) {
-        return *(a.second) < *(b.second);
-    }
+  template <typename T>
+  bool operator()(std::pair<size_t, T> const & a,
+                  std::pair<size_t, T> const & b) {
+    return *(a.second) < *(b.second);
+  }
 };
 
-template<typename T>
-auto sort_with_ordering(T& Index) {
+template <typename T>
+auto sort_with_ordering(T & Index) {
   using myiter = typename T::const_iterator;
-  using ret_t = std::vector<std::pair<size_t, myiter> >;
+  using ret_t = std::vector<std::pair<size_t, myiter>>;
   ret_t order(Index.size());
 
   size_t n = 0;
-  for (myiter it = Index.begin(); it != Index.end(); ++it, ++n)
-      {order[n] = std::make_pair(n, it);}
+  for (myiter it = Index.begin(); it != Index.end(); ++it, ++n) {
+    order[n] = std::make_pair(n, it);
+  }
 
   std::sort(order.begin(), order.end(), ordering());
 
@@ -78,15 +80,14 @@ auto sort_with_ordering(T& Index) {
 }
 
 template <typename T, typename V>
-std::vector<T> sort_from_ref(
-    const std::vector<T> & in,
-    const V& order) {
-    std::vector<T> ret(in.size());
+std::vector<T> sort_from_ref(const std::vector<T> & in, const V & order) {
+  std::vector<T> ret(in.size());
 
-    for (size_t i = 0; i < in.size(); ++i)
-        {ret[i] = in[order[i].first];}
+  for (size_t i = 0; i < in.size(); ++i) {
+    ret[i] = in[order[i].first];
+  }
 
-    return ret;
+  return ret;
 }
 
 int main() {
@@ -181,10 +182,10 @@ int main() {
       for (auto neigh : center) {
         auto neigh_tag = neigh.get_atom_tag();
         auto neigh_type = neigh.get_atom_type();
-         std::cout << "neigh_atom: " << neigh_type << " -- "
-                   << manager->get_neighbour_atom_tag(center, neigh.get_index())
-                   << " -- " << neigh.get_position().transpose() << " -- "
-                   << manager->get_position(neigh_tag).transpose() << std::endl;
+        std::cout << "neigh_atom: " << neigh_type << " -- "
+                  << manager->get_neighbour_atom_tag(center, neigh.get_index())
+                  << " -- " << neigh.get_position().transpose() << " -- "
+                  << manager->get_position(neigh_tag).transpose() << std::endl;
         auto dist{(neigh.get_position() - center.get_position()).norm()};
         distances_ref.back().push_back(dist);
         types_ref.back().push_back(neigh_type);
@@ -219,10 +220,10 @@ int main() {
       auto neigh_tag = neigh.get_atom_tag();
       auto neigh_type = neigh.get_atom_type();
       neigh.get_position().transpose();
-       std::cout << "neigh_atom: " << neigh_type << " -- "
-                 << manager->get_neighbour_atom_tag(center, neigh.get_index())
-                 << " -- " << neigh.get_position().transpose() << " -- "
-                 << manager->get_position(neigh_tag).transpose() << std::endl;
+      std::cout << "neigh_atom: " << neigh_type << " -- "
+                << manager->get_neighbour_atom_tag(center, neigh.get_index())
+                << " -- " << neigh.get_position().transpose() << " -- "
+                << manager->get_position(neigh_tag).transpose() << std::endl;
       auto dist{(neigh.get_position() - center.get_position()).norm()};
       distances.back().push_back(dist);
       types.back().push_back(neigh_type);
@@ -233,7 +234,6 @@ int main() {
   std::cout << "is_center_atom: " << is_center_atom.transpose() << std::endl;
   i_center = 0;
   for (; i_center < manager->size(); ++i_center) {
-
     auto ref_order = sort_with_ordering(distances_ref[i_center]);
     auto order = sort_with_ordering(distances[i_center]);
 
@@ -248,9 +248,8 @@ int main() {
               << distances[i_center].size() << std::endl;
     for (size_t i_d{0}; i_d < distances[i_center].size(); i_d++) {
       std::cout << type_ref[i_d] << "\t" << type[i_d] << "\t"
-                << std::abs(distance_ref[i_d] - distance[i_d])
-                << "\t" << distance_ref[i_d] << "\t"
-                << distance[i_d] << std::endl;
+                << std::abs(distance_ref[i_d] - distance[i_d]) << "\t"
+                << distance_ref[i_d] << "\t" << distance[i_d] << std::endl;
     }
   }
 
@@ -259,7 +258,6 @@ int main() {
 
   Representation_t representation_no_center{manager, hypers};
   representation_no_center.compute();
-
 
   auto rep_no_center = representation_no_center.get_representation_full();
 

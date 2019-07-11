@@ -222,7 +222,8 @@ namespace rascal {
                              const PBCInput_t & pbc,
                              const double & skin2) const {
       auto is_a_center_atom = ArrayB_t::Ones(atom_types.size());
-      return this->is_identical(positions, atom_types, cell, pbc, is_a_center_atom, skin2);
+      return this->is_identical(positions, atom_types, cell, pbc,
+                                is_a_center_atom, skin2);
     }
 
     inline bool is_identical(const PositionsInput_t & positions,

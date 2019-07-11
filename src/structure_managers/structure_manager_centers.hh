@@ -186,9 +186,7 @@ namespace rascal {
      * Returns a traits::Dim by traits::Dim matrix with the cell vectors of the
      * structure.
      */
-    inline Cell_ref get_cell() {
-      return Cell_ref(this->atoms_object.cell);
-    }
+    inline Cell_ref get_cell() { return Cell_ref(this->atoms_object.cell); }
 
     //! Returns the type of a given atom, given an AtomRef
     inline int & get_atom_type(const int & atom_tag) {
