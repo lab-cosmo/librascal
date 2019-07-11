@@ -35,18 +35,22 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
 
-  // using multiple_nocenter_fixtures = boost::mpl::list<
-  //     RepresentationFixture<MultipleStructureSphericalExpansion_,
-  //                           RepresentationManagerSphericalExpansion>>;
   using multiple_nocenter_fixtures = boost::mpl::list<
-      RepresentationFixture<MultipleStructureSortedCoulomb_,
-                            RepresentationManagerSortedCoulomb>>;
+      // TODO(felix) For some reason the Sorted coulomb version is
+      // susceptible to
+      // differences in neighbour ordering so test will fail for a wrong
+      // reason...
+      // RepresentationFixture<MultipleStructureSortedCoulomb_,
+      //                       RepresentationManagerSortedCoulomb>,
+      RepresentationFixture<MultipleStructureSphericalExpansion_,
+                            RepresentationManagerSphericalExpansion>>;
+
   /**
-   * Test if the compute function runs
+   * Test that selecting subsets of centers will give the same representation
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_nocenter_test, Fix,
                                    multiple_nocenter_fixtures, Fix) {
-    bool verbose{true};
+    bool verbose{false};
     auto & managers = Fix::managers;
     // auto & representations = Fix::representations;
     auto & hypers = Fix::hypers;
@@ -80,12 +84,14 @@ namespace rascal {
             auto row_full = rep_full.col(i_center);
             auto row_no_center = rep_no_center.col(i_no_center);
             auto diff = (row_full - row_no_center).norm();
-            std::cout << "Center idx: " << i_center << " Diff: " << diff << std::endl;
+            BOOST_CHECK_LE(diff, math::dbl_ftol);
+            if (verbose) {
+              std::cout << "Center idx: " << i_center << " Diff: " << diff << std::endl;
+            }
             i_no_center++;
           }
         }
 
-        break;
       }
     }
   }

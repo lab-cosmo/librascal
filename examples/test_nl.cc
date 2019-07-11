@@ -48,36 +48,70 @@
 // using namespace std;
 using namespace rascal;  // NOLINT
 
-// using Representation_t = RepresentationManagerSOAP<
-//     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
-using Representation_t = RepresentationManagerSortedCoulomb<
+using Representation_t = RepresentationManagerSOAP<
     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
+// using Representation_t = RepresentationManagerSortedCoulomb<
+//     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
 
 using ArrayB_t = AtomicStructure<3>::ArrayB_t;
+
+struct ordering {
+  template<typename T >
+    bool operator ()(std::pair<size_t, T> const& a, std::pair<size_t, T> const& b) {
+        return *(a.second) < *(b.second);
+    }
+};
+
+template<typename T>
+auto sort_with_ordering(T& Index) {
+  using myiter = typename T::const_iterator;
+  using ret_t = std::vector<std::pair<size_t, myiter> >;
+  ret_t order(Index.size());
+
+  size_t n = 0;
+  for (myiter it = Index.begin(); it != Index.end(); ++it, ++n)
+      {order[n] = std::make_pair(n, it);}
+
+  std::sort(order.begin(), order.end(), ordering());
+
+  return order;
+}
+
+template <typename T, typename V>
+std::vector<T> sort_from_ref(
+    const std::vector<T> & in,
+    const V& order) {
+    std::vector<T> ret(in.size());
+
+    for (size_t i = 0; i < in.size(); ++i)
+        {ret[i] = in[order[i].first];}
+
+    return ret;
+}
 
 int main() {
   std::string filename{"reference_data/small_molecule.json"};
   double cutoff{3.};
-  // json hypers{{"max_radial", 6},
-  //             {"max_angular", 6},
-  //             {"soap_type", "PowerSpectrum"},
-  //             {"normalize", true}};
+  json hypers{{"max_radial", 6},
+              {"max_angular", 6},
+              {"soap_type", "PowerSpectrum"},
+              {"normalize", true}};
 
-  // json fc_hypers{{"type", "Cosine"},
-  //                {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
-  //                {"smooth_width", {{"value", 0.}, {"unit", "AA"}}}};
-  // json sigma_hypers{{"type", "Constant"},
-  //                   {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}};
+  json fc_hypers{{"type", "Cosine"},
+                 {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
+                 {"smooth_width", {{"value", 0.}, {"unit", "AA"}}}};
+  json sigma_hypers{{"type", "Constant"},
+                    {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}};
 
-  // hypers["cutoff_function"] = fc_hypers;
-  // hypers["gaussian_density"] = sigma_hypers;
-  // hypers["radial_contribution"] = {{"type", "GTO"}};
+  hypers["cutoff_function"] = fc_hypers;
+  hypers["gaussian_density"] = sigma_hypers;
+  hypers["radial_contribution"] = {{"type", "GTO"}};
 
-  json hypers{{"central_decay", 0.5},
-              {"interaction_cutoff", 10.},
-              {"interaction_decay", 0.5},
-              {"size", 120},
-              {"sorting_algorithm", "distance"}};
+  // json hypers{{"central_decay", 0.5},
+  //             {"interaction_cutoff", 10.},
+  //             {"interaction_decay", 0.5},
+  //             {"size", 14},
+  //             {"sorting_algorithm", "distance"}};
 
   json structure{};
   json adaptors;
@@ -132,23 +166,28 @@ int main() {
 
   std::vector<std::vector<double>> distances_ref{};
   std::vector<std::vector<double>> distances{};
+  std::vector<std::vector<double>> types_ref{};
+  std::vector<std::vector<double>> types{};
 
   size_t i_center{0};
   auto mm0 = extract_underlying_manager<0>(manager);
   for (auto center : manager) {
     if (is_center_atom(i_center)) {
       distances_ref.emplace_back();
+      types_ref.emplace_back();
       std::cout << "center_atom: " << center.get_atom_tag() << " -- "
                 << mm0->get_atom_index(center) << " -- "
                 << center.get_position().transpose() << std::endl;
       for (auto neigh : center) {
         auto neigh_tag = neigh.get_atom_tag();
-        // std::cout << "neigh_atom: " << neigh_tag << " -- "
-        //           << manager->get_neighbour_atom_tag(center, neigh.get_index())
-        //           << " -- " << neigh.get_position().transpose() << " -- "
-        //           << manager->get_position(neigh_tag).transpose() << std::endl;
+        auto neigh_type = neigh.get_atom_type();
+         std::cout << "neigh_atom: " << neigh_type << " -- "
+                   << manager->get_neighbour_atom_tag(center, neigh.get_index())
+                   << " -- " << neigh.get_position().transpose() << " -- "
+                   << manager->get_position(neigh_tag).transpose() << std::endl;
         auto dist{(neigh.get_position() - center.get_position()).norm()};
         distances_ref.back().push_back(dist);
+        types_ref.back().push_back(neigh_type);
         // distances_ref.push_back(manager->get_distance(neigh));
       }
     }
@@ -172,18 +211,21 @@ int main() {
   auto mm1 = extract_underlying_manager<0>(manager);
   for (auto center : manager) {
     distances.emplace_back();
+    types.emplace_back();
     std::cout << "center_atom: " << center.get_atom_tag() << " -- "
               << mm1->get_atom_index(center) << " -- "
               << center.get_position().transpose() << std::endl;
     for (auto neigh : center) {
       auto neigh_tag = neigh.get_atom_tag();
+      auto neigh_type = neigh.get_atom_type();
       neigh.get_position().transpose();
-      // std::cout << "neigh_atom: " << neigh_tag << " -- "
-      //           << manager->get_neighbour_atom_tag(center, neigh.get_index())
-      //           << " -- " << neigh.get_position().transpose() << " -- "
-      //           << manager->get_position(neigh_tag).transpose() << std::endl;
+       std::cout << "neigh_atom: " << neigh_type << " -- "
+                 << manager->get_neighbour_atom_tag(center, neigh.get_index())
+                 << " -- " << neigh.get_position().transpose() << " -- "
+                 << manager->get_position(neigh_tag).transpose() << std::endl;
       auto dist{(neigh.get_position() - center.get_position()).norm()};
       distances.back().push_back(dist);
+      types.back().push_back(neigh_type);
       // distances.push_back(manager_no_center->get_distance(neigh));
     }
   }
@@ -191,16 +233,24 @@ int main() {
   std::cout << "is_center_atom: " << is_center_atom.transpose() << std::endl;
   i_center = 0;
   for (; i_center < manager->size(); ++i_center) {
-    std::sort(distances_ref[i_center].begin(), distances_ref[i_center].end());
-    std::sort(distances[i_center].begin(), distances[i_center].end());
+
+    auto ref_order = sort_with_ordering(distances_ref[i_center]);
+    auto order = sort_with_ordering(distances[i_center]);
+
+    auto distance_ref = sort_from_ref(distances_ref[i_center], ref_order);
+    auto distance = sort_from_ref(distances[i_center], order);
+
+    auto type_ref = sort_from_ref(types_ref[i_center], ref_order);
+    auto type = sort_from_ref(types[i_center], order);
+
     std::cout << "Center: " << i_center << std::endl;
     std::cout << "sizes: " << distances_ref[i_center].size() << ", "
               << distances[i_center].size() << std::endl;
     for (size_t i_d{0}; i_d < distances[i_center].size(); i_d++) {
-      std::cout << std::abs(distances_ref[i_center][i_d] -
-                            distances[i_center][i_d])
-                << "\t" << distances_ref[i_center][i_d] << "\t"
-                << distances[i_center][i_d] << std::endl;
+      std::cout << type_ref[i_d] << "\t" << type[i_d] << "\t"
+                << std::abs(distance_ref[i_d] - distance[i_d])
+                << "\t" << distance_ref[i_d] << "\t"
+                << distance[i_d] << std::endl;
     }
   }
 
@@ -218,8 +268,8 @@ int main() {
   for (i_center = 0; i_center < n_atoms; ++i_center) {
     std::cout << "Center idx: " << i_center << std::endl;
     if (is_center_atom(i_center)) {
-      auto row_full = rep_full.col(i_center);
-      auto row_no_center = rep_no_center.col(i_no_center);
+      auto row_full = rep_full.col(i_center).eval();
+      auto row_no_center = rep_no_center.col(i_no_center).eval();
       auto diff = (row_full - row_no_center).norm();
       std::cout << "Center idx: " << i_center << " Diff: " << diff << std::endl;
       i_no_center++;

@@ -409,10 +409,9 @@ namespace rascal {
     // initialize the sorted linear coulomb matrix
     Eigen::MatrixXd lin_sorted_coulomb_mat(this->size * (this->size + 1) / 2,
                                            1);
-    // Eigen::MatrixXd coulomb_mat(this->size,this->size);
 
     // loop over the centers
-    for (auto center : *this->structure_manager) {
+    for (auto center : this->structure_manager) {
       // re-use the temporary coulomb mat in linear storage
       // need to be zeroed because old data might not be overwritten
       lin_sorted_coulomb_mat =
