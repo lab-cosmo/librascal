@@ -137,8 +137,8 @@ namespace rascal {
     using Data_t = typename SparseProperty_t::Data_t;
 
     RepresentationManagerSOAP(ManagerPtr_t sm, const Hypers_t & hyper)
-        : soap_vectors{*sm}, structure_manager{sm}, rep_expansion{std::move(sm),
-                                                                  hyper} {
+        : soap_vectors{*sm}, soap_vector_gradients{*sm}, structure_manager{sm},
+          rep_expansion{std::move(sm), hyper} {
       this->set_hyperparameters(hyper);
     }
 
