@@ -469,7 +469,7 @@ namespace rascal {
       }
     }
 
-    /* ---------------------------------------------------------------------- */
+    /* --------------------------------------------------------------------- */
 
     //! return info about the type
     const std::string& get_type_info() const final {
@@ -508,7 +508,6 @@ namespace rascal {
     inline void resize(bool consider_ghost_atoms = false) {
       size_t new_size =
           this->get_validated_property_length(consider_ghost_atoms);
-      // auto new_size = this->base_manager.nb_clusters(order);
       this->values.resize(new_size);
       this->center_sizes.resize(new_size);
     }
@@ -527,12 +526,7 @@ namespace rascal {
       return static_cast<Manager_t &>(this->base_manager);
     }
 
-    // Manager_t & get_manager() const {
-    //   return static_cast<Manager_t &>(this->base_manager);
-    // }
-
-
-    /* ---------------------------------------------------------------------- */
+    /* -------------------------------------------------------------------- */
     //! Property accessor by cluster ref
     template <size_t CallerLayer>
     inline decltype(auto)
