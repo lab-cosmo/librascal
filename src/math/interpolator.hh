@@ -355,11 +355,15 @@ namespace rascal {
         Vector_t test_grid_interpolated{this->interpolate(test_grid)};
         Vector_t test_grid_evaluated{this->eval(test_grid)}; 
         // computes the relative error
-        Vector_t error_grid{2*(test_grid_interpolated - test_grid_evaluated).array()/
-          (std::numeric_limits< double >::min()+test_grid_interpolated.array().abs() + test_grid_evaluated.array().abs())};
+        Vector_t error_grid{2*((test_grid_interpolated - test_grid_evaluated).array()/
+          (std::numeric_limits< double >::min()+test_grid_interpolated.array().abs() + test_grid_evaluated.array().abs())).abs()};
         grid_rational.update_errors(Vector_Ref(error_grid));
         this->max_error = error_grid.maxCoeff();
         this->mean_error = error_grid.mean();
+        //if (this->grid.size() % 1000==0) {
+        //  std::cout << "grid_size=" << this->grid.size() << std::endl;
+        //  std::cout << "mean_error=" << this->mean_error << std::endl;
+        //}
         //if (grid_rational.grid_size % 50 == 0) {
         //  std::cout << "fineness=" << this->fineness << std::endl;
         //  std::cout << "mean error=" << this->mean_error << std::endl;
