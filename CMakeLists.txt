@@ -1,7 +1,8 @@
 # =============================================================================
 # file   CMakeLists.txt
 #
-# @author Till Junge <till.junge@epfl.ch
+# @author Alexander Goscinski <alexander.goscinski@epfl.ch>
+# @author Till Junge <till.junge@epfl.ch>
 # @author Felix Musil <felix.musil@epfl.ch>
 # @author Markus Stricker <markus.stricker@epfl.ch>
 #
@@ -87,7 +88,6 @@ message(STATUS "Build type is: ${CMAKE_BUILD_TYPE}")
 
 ########## COMPILATION FLAGS ##########
 add_compile_options(-Wall -Wextra)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weffc++")
 # to avoid conflicts with built-in functions
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-builtin")
 
@@ -125,10 +125,9 @@ endif()
 
 add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
 
-
 # Try to find google benchmark
 find_package(Threads REQUIRED)
-add_external_package(googlebenchmark)
+add_external_package(benchmark VERSION 1.5.0 CONFIG)
 
 # Try to find optional cpp linter
 include(cpplint)
@@ -233,6 +232,7 @@ if (${BUILD_TESTS})
 
   target_include_directories(main_test_suite SYSTEM PRIVATE ${Boost_INCLUDE_DIR})
   target_link_libraries(main_test_suite ${Boost_LIBRARIES} "${LIBRASCAL_NAME}")
+  target_compile_options(main_test_suite PUBLIC "-Weffc++")
   add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
   configure_file("tests/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
   configure_file("tests/simple_cubic_9.json" ${CMAKE_BINARY_DIR} COPYONLY)
@@ -274,7 +274,6 @@ add_custom_command(OUTPUT copy_test_reference_data
   )
 
 # put it there to avoid warnings from boost tests
-add_compile_options(-Werror) # warnings are errors!
 
 # compile the library
 add_subdirectory(
@@ -301,12 +300,14 @@ foreach(binaryfile ${binaries})
   get_filename_component(binaryname  ${binaryfile} NAME_WE)
   add_executable(${binaryname} ${binaryfile})
   target_link_libraries(${binaryname} "${LIBRASCAL_NAME}")
+  #TODO(all) Removed global compiler flag and only include it when building our files; also not sure if PUBLIC is correct;
+  target_compile_options(${binaryname} PUBLIC "-Weffc++")
+add_compile_options(-Werror) # warnings are errors!
 endforeach(binaryfile ${binaries})
 configure_file("${CMAKE_SOURCE_DIR}/examples/crystal_structure.json" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file("${CMAKE_SOURCE_DIR}/examples/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
 
-# compile benchmarks TODO(alex) TODO(help) it would be maybe better if we would have
-# one benchmark suite with which you can choose what to run like the tests.
+# Compile benchmark files
 file( GLOB binaries "${CMAKE_SOURCE_DIR}/benchmarks/*.cc")
 foreach(binaryfile ${binaries})
   get_filename_component(binaryname  ${binaryfile} NAME_WE)
