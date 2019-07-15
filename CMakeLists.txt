@@ -125,7 +125,7 @@ endif()
 
 add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
 
-# Try to find google benchmark
+# Integrate google benchmark
 find_package(Threads REQUIRED)
 add_external_package(benchmark VERSION 1.5.0 CONFIG)
 
