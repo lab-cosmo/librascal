@@ -5,9 +5,9 @@ using namespace rascal::math;
 
 namespace rascal {
   namespace internal {
-    //////////
+    ////////////
     // Issues //
-    // //////
+    ////////////
     // Currently there is not way to print out the results in scientific notation which make it harder to interpret the results. There is a pull request takling this issue https://github.com/google/benchmark/pull/821 but it is not yet merged
     
     // TODO(alex) To have a credible time benchmarks for the initialization function.
@@ -44,7 +44,6 @@ namespace rascal {
           {"nb_points",fix.nb_points}
         });
     }
-    BENCHMARK_TEMPLATE(BM_RadialContr, InterpolatorFixture<Hyp1f1SmallDataset>)->Apply(AllCombinationsArguments<Hyp1f1SmallDataset>);
 
   template <class Fix>
   void BM_InterpolatorRadialContr(benchmark::State &state) {
@@ -90,9 +89,96 @@ namespace rascal {
         {"nb_points",fix.nb_points}
       });
   }
-  //BENCHMARK_TEMPLATE(BM_InterpolatorRadialContr, InterpolatorFixture<InterpolatorSmallDataset>)->Apply(AllCombinationsArguments<InterpolatorSmallDataset>);
 
-  BENCHMARK_TEMPLATE(BM_InterpolatorRadialContr, InterpolatorFixture<InterpolatorSmallDataset>)->Apply(AllCombinationsArguments<InterpolatorSmallDataset>);
+
+
+  template <class Fix>
+  void BM_Hyp1f1(benchmark::State &state) {
+    auto fix = Fix(state);
+    double n = 10;
+    double l = 10;
+    double a = 0.5*(n+l+3);
+    double b = l+1.5;
+    auto hyp1f1 = math::Hyp1f1(a, b, 200, 1e-15);
+    for (auto _ : state) {
+      for (int i{0}; i<fix.points.size();i++) {
+        hyp1f1.calc(fix.points(i));
+      }
+    }
+    state.counters.insert({
+        {"nb_points",fix.nb_points}
+      });
+  }
+
+  template <class Fix>
+  void BM_InterpolatorHyp1f1(benchmark::State &state) {
+    auto fix = Fix(state);
+    auto intp{Interpolator <
+      InterpolationMethod<InterpolationMethod_t::CubicSpline>,
+      GridRational<GridType_t::Uniform, RefinementMethod_t::Adaptive>,
+      SearchMethod<SearchMethod_t::Hunt>
+        >()};
+    double n = 10;
+    double l = 10;
+    double a = 0.5*(n+l+3);
+    double b = l+1.5;
+    auto hyp1f1 = math::Hyp1f1(a, b, 200, 1e-15);
+    auto func = [&hyp1f1](double x) {return hyp1f1.calc(x);};
+    intp.initalize(func, fix.x1, fix.x2, fix.mean_error_bound); 
+    for (auto _ : state) {
+      for (int i{0}; i<fix.points.size();i++) {
+        intp.interpolate(fix.points(i));
+      }
+    }
+    state.counters.insert({
+        {"x1",fix.x1},
+        {"x2",fix.x2},
+        {"log(mean_error_bound)", fix.log_mean_error_bound},
+        {"log(mean_error)",std::log10(intp.mean_error)},
+        {"log(max_error)",std::log10(intp.max_error)},
+        {"nb_points",fix.nb_points},
+        {"grid_size",intp.grid_rational.grid_size}
+      });
+  }
+
+
+  template <class Fix>
+  void BM_IntpSimpFun(benchmark::State &state) {
+    auto fix = Fix(state);
+    auto intp{Interpolator <
+      InterpolationMethod<InterpolationMethod_t::CubicSpline>,
+      GridRational<GridType_t::Uniform, RefinementMethod_t::Adaptive>,
+      SearchMethod<SearchMethod_t::Hunt>
+        >()};
+    intp.initalize(fix.func, fix.x1, fix.x2, fix.mean_error_bound); 
+    for (auto _ : state) {
+      for (int i{0}; i<fix.points.size();i++) {
+        intp.interpolate(fix.points(i));
+      }
+    }
+    state.counters.insert({
+        {"x1",fix.x1},
+        {"x2",fix.x2},
+        {"log(mean_error_bound)", fix.log_mean_error_bound},
+        {"log(mean_error)",std::log10(intp.mean_error)},
+        {"log(max_error)",std::log10(intp.max_error)},
+        //{"nb_points",fix.nb_points},
+        {"grid_size",intp.grid_rational.grid_size}
+      });
+  }
+
+
+  BENCHMARK_TEMPLATE(BM_IntpSimpFun, IntpFix<I_B>)->Apply(AllCombinationsArguments<I_B>);
+
+  //BENCHMARK_TEMPLATE(BM_RadialContr, IntpFix<FunctionSmallDataset>)->Apply(AllCombinationsArguments<FunctionSmallDataset>);
+  //BENCHMARK_TEMPLATE(BM_Hyp1f1, IntpFix<FunctionSmallDataset>)->Apply(AllCombinationsArguments<FunctionSmallDataset>);
+
+  //BENCHMARK_TEMPLATE(BM_InterpolatorHyp1f1, IntpFix<InterpolatorSmallDataset>)->Apply(AllCombinationsArguments<InterpolatorSmallDataset>);
+
+  //BENCHMARK_TEMPLATE(BM_InterpolatorRadialContr, IntpFix<SmallDataset>)->Apply(AllCombinationsArguments<FunctionSmallDataset>);
+
+
+
 
 
   ///////////////////////////////////////////////
@@ -145,113 +231,9 @@ namespace rascal {
   //BENCHMARK_DEFINE_F(ManagerFixture<ManagerDataFixture>, ManagerBench)->Apply(AllCombinationsArguments<ManagerDataFixture>)
 
 
- //class BaseFixture : public ::benchmark::Fixture {
- //  SetUp() {
- //    std::vector<size_t> sizes;
- //  }
- //  json data;
- //}
  //https://github.com/google/benchmark/issues/387
-
-  template <class Fix>
-  void BM_Hyp1f1(benchmark::State &state) {
-    auto fix = Fix(state);
-    double n = 10;
-    double l = 10;
-    double a = 0.5*(n+l+3);
-    double b = l+1.5;
-    auto hyp1f1 = math::Hyp1f1(a, b, 200, 1e-15);
-    for (auto _ : state) {
-      for (int i{0}; i<fix.points.size();i++) {
-        hyp1f1.calc(fix.points(i));
-      }
-    }
-    state.counters.insert({
-        {"nb_points",fix.nb_points}
-      });
-  }
-  BENCHMARK_TEMPLATE(BM_Hyp1f1, InterpolatorFixture<Hyp1f1SmallDataset>)->Apply(AllCombinationsArguments<Hyp1f1SmallDataset>);
-
-  //BENCHMARK_DEFINE_F(IntWithDat, BenchTests2)(benchmark::State &state) {
-  //    //this->log_mean_error_bound = data["log_mean_error_bounds"].at(state.range(0)).get<std::pair<double,double>>();
-  //  //double x1 = x1x2s().at(state.range(0));
-  //  auto intp{Interpolator <
-  //    InterpolationMethod<InterpolationMethod_t::CubicSpline>,
-  //    GridRational<GridType_t::Uniform, RefinementMethod_t::Adaptive>,
-  //    SearchMethod<SearchMethod_t::Hunt>
-  //      >()};
-  //  state.counters.insert({
-  //      {"x1",this->x1},
-  //      {"x2",this->x2},
-  //      {"log(mean_error_bound)", this->log_mean_error_bound},
-  //      {"log(mean_error)",std::log10(intp.mean_error)},
-  //      {"log(max_error)",std::log10(intp.max_error)},
-  //      {"nb_points",this->nb_points},
-  //      {"grid_size",intp.grid_rational.grid_size}
-  //    });
-  //}
-
-  template <class Fix>
-  void BM_InterpolatorHyp1f1(benchmark::State &state) {
-    auto fix = Fix(state);
-    auto intp{Interpolator <
-      InterpolationMethod<InterpolationMethod_t::CubicSpline>,
-      GridRational<GridType_t::Uniform, RefinementMethod_t::Adaptive>,
-      SearchMethod<SearchMethod_t::Hunt>
-        >()};
-    double n = 10;
-    double l = 10;
-    double a = 0.5*(n+l+3);
-    double b = l+1.5;
-    auto hyp1f1 = math::Hyp1f1(a, b, 200, 1e-15);
-    auto func = [&hyp1f1](double x) {return hyp1f1.calc(x);};
-    intp.initalize(func, fix.x1, fix.x2, fix.mean_error_bound); 
-    for (auto _ : state) {
-      for (int i{0}; i<fix.points.size();i++) {
-        intp.interpolate(fix.points(i));
-      }
-    }
-    state.counters.insert({
-        {"x1",fix.x1},
-        {"x2",fix.x2},
-        {"log(mean_error_bound)", fix.log_mean_error_bound},
-        {"log(mean_error)",std::log10(intp.mean_error)},
-        {"log(max_error)",std::log10(intp.max_error)},
-        {"nb_points",fix.nb_points},
-        {"grid_size",intp.grid_rational.grid_size}
-      });
-  }
-  BENCHMARK_TEMPLATE(BM_InterpolatorHyp1f1, InterpolatorFixture<InterpolatorSmallDataset>)->Apply(AllCombinationsArguments<InterpolatorSmallDataset>);
-
-
-  template <class Fix>
-  void BM_InterpolatorStandard(benchmark::State &state) {
-    auto fix = Fix(state);
-    auto intp{Interpolator <
-      InterpolationMethod<InterpolationMethod_t::CubicSpline>,
-      GridRational<GridType_t::Uniform, RefinementMethod_t::Adaptive>,
-      SearchMethod<SearchMethod_t::Hunt>
-        >()};
-    intp.initalize(fix.func, fix.x1, fix.x2, fix.mean_error_bound); 
-    for (auto _ : state) {
-      for (int i{0}; i<fix.points.size();i++) {
-        intp.interpolate(fix.points(i));
-      }
-    }
-    state.counters.insert({
-        {"x1",fix.x1},
-        {"x2",fix.x2},
-        {"log(mean_error_bound)", fix.log_mean_error_bound},
-        {"log(mean_error)",std::log10(intp.mean_error)},
-        {"log(max_error)",std::log10(intp.max_error)},
-        {"nb_points",fix.nb_points},
-        {"grid_size",intp.grid_rational.grid_size}
-      });
-  }
-  BENCHMARK_TEMPLATE(BM_InterpolatorStandard, InterpolatorFixture<InterpolatorSmallDataset>)->Apply(AllCombinationsArguments<InterpolatorSmallDataset>);
-
-
-  }
-}
+ 
+  } // namespace internal
+} // namespace rascal
 
 BENCHMARK_MAIN();

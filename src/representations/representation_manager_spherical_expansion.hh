@@ -432,8 +432,8 @@ namespace rascal {
             distance_fac_a_l.asDiagonal();
         this->radial_integral_neighbour.transpose() *=
             this->radial_norm_factors.asDiagonal();
-        this->radial_integral_neighbour.transpose() *=
-            this->radial_ortho_matrix;
+        //this->radial_integral_neighbour.transpose() *=
+         //   this->radial_ortho_matrix;
         return Matrix_Ref(this->radial_integral_neighbour);
       }
 
@@ -828,6 +828,13 @@ namespace rascal {
           }
         }
       }  // for (neigh : center)
+
+      for (auto && el : coefficients_center) {
+        auto && coefficients_center_by_type{el.second};
+        coefficients_center_by_type.transpose() *=
+            radial_integral->radial_ortho_matrix;
+      }
+
     }    // for (center : structure_manager)
   }      // compute()
 

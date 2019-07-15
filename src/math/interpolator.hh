@@ -198,9 +198,9 @@ namespace rascal {
       }
 
       inline double rawinterp(const Vector_Ref & xx, const Vector_Ref & yy,
-          size_t j1, double x){
+          size_t j1, double x) {
         size_t klo{j1}, khi{j1+1};
-        const Vector_Ref y2 = Vector_Ref(this->second_derivatives);
+        const Vector_Ref && y2 = std::move(Vector_Ref(this->second_derivatives));
         double h{xx(khi)-xx(klo)};
         if (h == 0.0) { throw ("Bad xa input to routine splint");}
         double a{(xx(khi)-x)/h};
