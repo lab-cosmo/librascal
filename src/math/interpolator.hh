@@ -151,6 +151,14 @@ namespace rascal {
         this->compute_second_derivatives_on_grid(grid, evaluated_grid);
       }
 
+
+      inline double interpolate(const Vector_Ref & grid,
+          const Vector_Ref & evaluated_grid,
+          double x, size_t nearest_grid_index_to_x) {
+        return this->rawinterp(grid, evaluated_grid,
+            nearest_grid_index_to_x, x);
+      }
+     private:
       // TODO(felix) the numerical recipes gives the option to set the first
       // derivative's starting and end point,
       // for now I did not include this option, I do not see now where
@@ -158,20 +166,13 @@ namespace rascal {
       // TODO(alex) reference numerical recipes
       void compute_second_derivatives_on_grid(
           const Vector_Ref & grid, const Vector_Ref & evaluated_grid) {
-        this->second_derivatives = this->sety2(grid, evaluated_grid);
+        this->second_derivatives = std::move(this->sety2(grid, evaluated_grid));
       }
 
-      double interpolate(const Vector_Ref & grid,
-          const Vector_Ref & evaluated_grid,
-          double x, size_t nearest_grid_index_to_x) {
-        return this->rawinterp(grid, evaluated_grid,
-            nearest_grid_index_to_x, x);
-      }
-     private:
       // This is done to be close to the numerical recipes implementation in
       // naming while making it more readable.
       // TODO(alex) reference numerical recipes
-      Vector_t sety2(const Vector_Ref & xv, const Vector_Ref & yv) {
+      inline Vector_t sety2(const Vector_Ref & xv, const Vector_Ref & yv) {
         int n{static_cast<int>(xv.size())};
         Vector_t y2 = Vector_t::Zero(n);
         Vector_t u = Vector_t::Zero(n);
@@ -196,7 +197,7 @@ namespace rascal {
         return y2;
       }
 
-      double rawinterp(const Vector_Ref & xx, const Vector_Ref & yy,
+      inline double rawinterp(const Vector_Ref & xx, const Vector_Ref & yy,
           size_t j1, double x){
         size_t klo{j1}, khi{j1+1};
         const Vector_Ref y2 = Vector_Ref(this->second_derivatives);
@@ -360,7 +361,7 @@ namespace rascal {
         grid_rational.update_errors(Vector_Ref(error_grid));
         this->max_error = error_grid.maxCoeff();
         this->mean_error = error_grid.mean();
-        //if (this->grid.size() % 1000==0) {
+        //if (this->grid.size() % 100==0) {
         //  std::cout << "grid_size=" << this->grid.size() << std::endl;
         //  std::cout << "mean_error=" << this->mean_error << std::endl;
         //}
