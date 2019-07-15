@@ -1,5 +1,6 @@
 #include <benchmark/benchmark.h>
 #include <functional>
+#include <map>
 #include <iostream>
 
 #include "math/interpolator.hh"
@@ -58,6 +59,35 @@ namespace rascal {
     }
     return args_;
   }
+
+  // Because Ranges jumps in exponential
+  template <class Dataset>
+  void AllCombinationsArguments(benchmark::internal::Benchmark* b) {
+    json data = Dataset::data();
+    std::vector<std::vector<int64_t>> nbs_args;
+    nbs_args.resize(data.size());
+    // We have to cound backwards to keep the order in the benchmark as in the json string, because the function creating the combinations, creates them backwards
+    size_t i{0};
+    for (json::iterator it = data.begin(); it != data.end(); ++it) {
+      std::cout << it.key() << "=" << it.value().size() << std::endl;
+      std::vector<int64_t> args(it.value().size()) ; // vector with 100 ints.
+      std::iota (std::begin(args), std::end(args), 0); // Fill with 0, 1, ..., 99.
+      nbs_args.at(i) = args;
+      i++;
+    }
+    auto args_comb = combinations(nbs_args);
+    for (auto it = args_comb.begin(); it != args_comb.end(); ++it) {
+      std::vector<int64_t> ve = *it;
+      for (auto it2 = ve.begin(); it2 != ve.end(); ++it2) {
+        std::cout << *it2 << " ";
+      }
+      std::cout << std::endl;
+      b->Args(*it);
+    }
+    std::cout << std::endl;
+  }
+
+
 
 
     static void BM_RadialContr(benchmark::State& state) {
@@ -214,45 +244,113 @@ namespace rascal {
   
   // GoogleBenchmark has the functionality to add all combinations between multiple Ranges of arguments. If I want to check my function all combinations Ra 
   
-  
+  class BaseInterpolatorDataset  {
+   public:
+    enum class SupportedFunc {
+      Gauss,
+      Hyp1f1
+    };
+  };
+
   /* To make the data available in an Argument function we create a static class with all the data. To avoid separate declaration and definitions for static member variables we use functions. This explained more in detail in https://stackoverflow.com/a/17057121/10329403 .
    */
-  class InterpolatorDataFixture : public ::benchmark::Fixture {
+
+  class Hyp1f1Dataset : public BaseInterpolatorDataset {
+    public:
+     using SupportedFunc = typename BaseInterpolatorDataset::SupportedFunc;
+     static const json data() {
+       return {
+         {"ranges", {std::make_pair(0,3)}},
+         {"log_mean_error_bounds", {-3}},
+         {"func_names", {SupportedFunc::Gauss}},
+         {"nbs_points", {1000,5000,10000}}
+         };
+     }
+  };
+  class InterpolatorSmallDataset : public BaseInterpolatorDataset {
+    public:
+     using SupportedFunc = typename BaseInterpolatorDataset::SupportedFunc;
+     static const json data() {
+       return {
+         {"ranges", {std::make_pair(0,3)}},
+         {"log_mean_error_bounds", {-3,-5,-8}},
+         {"func_names", {SupportedFunc::Gauss}},
+         {"nbs_points", {1000,5000,10000}}
+         };
+     }
+  };
+  class InterpolatorBigDataset : public BaseInterpolatorDataset {
+    public:
+     using SupportedFunc = typename BaseInterpolatorDataset::SupportedFunc;
+     static const json data() {
+       return {
+         {"ranges", {std::make_pair(0,3),std::make_pair(0,5),std::make_pair(0,8)}},
+         {"log_mean_error_bounds", {-3,-5,-8,-10,-12}},
+         {"func_names", {SupportedFunc::Gauss}},
+         //{"func", {"gauss","double_gauss","inverted_double_gauss","hyp1f1", "orthonormalized_hyp1f1"}}
+         {"nbs_points", {1000,5000,10000}}
+         };
+     }
+  };
+  
+  template<class Dataset>
+  class BaseFixture {
+   protected:
+    BaseFixture() {
+      json data = Dataset::data();
+      this->build_state_range_index_to_key(data);
+    }
+    // We have do this with an iterator of the json file because it does not
+    // perserve the insert order.
+    void build_state_range_index_to_key(json & data) {
+      //state_range_index_to_key.resize(data.size()); // TODO(alex) change to capacity
+      int64_t i{0};
+      for (json::iterator it = data.begin(); it != data.end(); ++it) {
+        this->state_range_index_to_key.insert(std::pair<std::string, int64_t>(it.key(),i));
+        i++;
+      }
+    }
+    
+    template <typename T>
+    T lookup(json & data, std::string name, const ::benchmark::State& state) {
+      return data[name].at(state.range(this->state_range_index_to_key[name])).get<T>();
+    }
+
+    std::map<std::string,int64_t> state_range_index_to_key;
+  };
+
+  template<class Dataset>
+  class InterpolatorFixture : public BaseFixture<Dataset> {
    public:
-    void SetUp(const ::benchmark::State& state) {
-      json data = this->data();
-      auto range = data["ranges"].at(state.range(0)).get<std::pair<double,double>>();
+    using Parent = BaseFixture<Dataset>;
+    using SupportedFunc = typename Dataset::SupportedFunc;
+    
+    InterpolatorFixture(const ::benchmark::State& state) : Parent() {
+      // TODO(alex) make these two lines to a general SetUp
+      json data = Dataset::data();
+      //Parent::SetUp(data);
+      //this->build_state_range_index_to_key(data);
+
+      auto range = this->template lookup<std::pair<double,double>>(data, "ranges", state); 
       this->x1 = std::get<0>(range);
       this->x2 = std::get<1>(range);
-      this->log_mean_error_bound = data["log_mean_error_bounds"].at(state.range(1)).get<int>();
+      this->log_mean_error_bound = this->template lookup<int>(data, "log_mean_error_bounds", state);
       this->mean_error_bound = std::pow(10,this->log_mean_error_bound);
-      auto func_name = data["func_names"].at(state.range(2)).get<SupportedFunc>();
+      auto func_name = this->template lookup<SupportedFunc>(data, "func_names", state);
       this->set_function(func_name);
-      this->nb_points = data["nbs_points"].at(state.range(3)).get<size_t>();
+      this->nb_points = this->template lookup<size_t>(data, "nbs_points", state);
       this->points = math::Vector_t::LinSpaced(this->nb_points,this->x1,this->x2);
     }
-    // static json has to be captured in function because it is a non-literal
-    // json does not allow constexpr since it is not a literal
-    static const json data() {
-      return {
-        {"ranges", {std::make_pair(0,3)}},
-        {"log_mean_error_bounds", {-3,-5,-8}},
-        {"func_names", {SupportedFunc::Gauss}},
-        {"nbs_points", {1000,5000,10000}}
-        };
-      //return {
-      //  {"ranges", {std::make_pair(0,3),std::make_pair(0,5),std::make_pair(0,8)}},
-      //  {"log_mean_error_bounds", {-3,-5,-8,-10,-12}},
-      //  {"func", {"gauss","double_gauss","inverted_double_gauss","hyp1f1", "orthonormalized_hyp1f1"}}
-      //  {"nbs_points", {1000,3000,5000}}
-      //  };
-    }
 
-     enum class SupportedFunc {
-       Gauss,
-       Hyp1f1
-     };
+    double x1{0};
+    double x2{0};
+    int log_mean_error_bound{0};
+    double mean_error_bound{0};
+    std::function<double(double)> func{};
+    size_t nb_points{0};
+    math::Vector_t points{};
 
+   private:
     void set_function(SupportedFunc name) {
       switch(name) {
         case SupportedFunc::Gauss:
@@ -273,15 +371,6 @@ namespace rascal {
           break;
       }
     }
-
-
-    double x1{0};
-    double x2{0};
-    int log_mean_error_bound{0};
-    double mean_error_bound{0};
-    std::function<double(double)> func{};
-    size_t nb_points{0};
-    math::Vector_t points{};
   };
 
   BENCHMARK_DEFINE_F(MyFixture, BenchTests)(benchmark::State &state) {
@@ -289,28 +378,51 @@ namespace rascal {
     for (auto _ : state) {
     }
   }
-  BENCHMARK_DEFINE_F(InterpolatorDataFixture, BenchTests2)(benchmark::State &state) {
-      //this->log_mean_error_bound = data["log_mean_error_bounds"].at(state.range(0)).get<std::pair<double,double>>();
-    //double x1 = x1x2s().at(state.range(0));
-    auto intp{Interpolator <
-      InterpolationMethod<InterpolationMethod_t::CubicSpline>,
-      GridRational<GridType_t::Uniform, RefinementMethod_t::Adaptive>,
-      SearchMethod<SearchMethod_t::Hunt>
-        >()};
+
+  //BENCHMARK_DEFINE_F(InterpolatorDataFixture, Hyp1f1)(benchmark::State &state) {
+  template <class Fix>
+  void BM_Hyp1f1(benchmark::State &state) {
+    auto fix = Fix(state);
+    double n = 10;
+    double l = 10;
+    double a = 0.5*(n+l+3);
+    double b = l+1.5;
+    auto hyp1f1 = math::Hyp1f1(a, b, 200, 1e-15);
+    for (auto _ : state) {
+      for (int i{0}; i<fix.points.size();i++) {
+        hyp1f1.calc(fix.points(i));
+      }
+    }
     state.counters.insert({
-        {"x1",this->x1},
-        {"x2",this->x2},
-        {"log(mean_error_bound)", this->log_mean_error_bound},
-        {"log(mean_error)",std::log10(intp.mean_error)},
-        {"log(max_error)",std::log10(intp.max_error)},
-        {"nb_points",this->nb_points},
-        {"grid_size",intp.grid_rational.grid_size}
+        {"nb_points",fix.nb_points}
       });
   }
+  BENCHMARK_TEMPLATE(BM_Hyp1f1, InterpolatorFixture<Hyp1f1Dataset>)->Apply(AllCombinationsArguments<Hyp1f1Dataset>);
 
-  BENCHMARK_DEFINE_F(InterpolatorDataFixture, BenchTests3)(benchmark::State &state) {
+  //BENCHMARK_DEFINE_F(IntWithDat, BenchTests2)(benchmark::State &state) {
+  //    //this->log_mean_error_bound = data["log_mean_error_bounds"].at(state.range(0)).get<std::pair<double,double>>();
+  //  //double x1 = x1x2s().at(state.range(0));
+  //  auto intp{Interpolator <
+  //    InterpolationMethod<InterpolationMethod_t::CubicSpline>,
+  //    GridRational<GridType_t::Uniform, RefinementMethod_t::Adaptive>,
+  //    SearchMethod<SearchMethod_t::Hunt>
+  //      >()};
+  //  state.counters.insert({
+  //      {"x1",this->x1},
+  //      {"x2",this->x2},
+  //      {"log(mean_error_bound)", this->log_mean_error_bound},
+  //      {"log(mean_error)",std::log10(intp.mean_error)},
+  //      {"log(max_error)",std::log10(intp.max_error)},
+  //      {"nb_points",this->nb_points},
+  //      {"grid_size",intp.grid_rational.grid_size}
+  //    });
+  //}
+
+  template <class Fix>
+  void BM_Interpolator(benchmark::State &state) {
       //this->log_mean_error_bound = data["log_mean_error_bounds"].at(state.range(0)).get<std::pair<double,double>>();
     //double x1 = x1x2s().at(state.range(0));
+    auto fix = Fix(state);
     auto intp{Interpolator <
       InterpolationMethod<InterpolationMethod_t::CubicSpline>,
       GridRational<GridType_t::Uniform, RefinementMethod_t::Adaptive>,
@@ -322,156 +434,114 @@ namespace rascal {
     double b = l+1.5;
     auto hyp1f1 = math::Hyp1f1(a, b, 200, 1e-15);
     auto func = [&hyp1f1](double x) {return hyp1f1.calc(x);};
-    intp.initalize(func, this->x1, this->x2, this->mean_error_bound); 
+    intp.initalize(func, fix.x1, fix.x2, fix.mean_error_bound); 
     for (auto _ : state) {
-      for (int i{0}; i<this->points.size();i++) {
-        intp.interpolate(this->points(i));
+      for (int i{0}; i<fix.points.size();i++) {
+        intp.interpolate(fix.points(i));
       }
     }
     state.counters.insert({
-        {"x1",this->x1},
-        {"x2",this->x2},
-        {"log(mean_error_bound)", this->log_mean_error_bound},
+        {"x1",fix.x1},
+        {"x2",fix.x2},
+        {"log(mean_error_bound)", fix.log_mean_error_bound},
         {"log(mean_error)",std::log10(intp.mean_error)},
         {"log(max_error)",std::log10(intp.max_error)},
-        {"nb_points",this->nb_points},
+        {"nb_points",fix.nb_points},
         {"grid_size",intp.grid_rational.grid_size}
       });
   }
+  BENCHMARK_TEMPLATE(BM_Interpolator, InterpolatorFixture<InterpolatorSmallDataset>)->Apply(AllCombinationsArguments<InterpolatorSmallDataset>);
 
-  BENCHMARK_DEFINE_F(InterpolatorDataFixture, Hyp1f1)(benchmark::State &state) {
-    double n = 10;
-    double l = 10;
-    double a = 0.5*(n+l+3);
-    double b = l+1.5;
-    auto hyp1f1 = math::Hyp1f1(a, b, 200, 1e-15);
-    for (auto _ : state) {
-      for (int i{0}; i<this->points.size();i++) {
-        hyp1f1.calc(this->points(i));
-      }
-    }
-    state.counters.insert({
-        {"nb_points",this->nb_points}
-      });
-  }
- 
+  ////BENCHMARK_REGISTER_F(InterpolatorDataFixture, BenchTests2)->Apply(AllCombinationsArguments<InterpolatorDataFixture>);
 
-  // Because Ranges jumps in exponential
-  template <class DataFixture>
-  void AllCombinationsArguments(benchmark::internal::Benchmark* b) {
-    json data = DataFixture::data();
-    std::vector<std::vector<int64_t>> nbs_args;
-    nbs_args.resize(data.size());
-    // We have to cound backwards to keep the order in the benchmark as in the json string, because the function creating the combinations, creates them backwards
-    size_t i{0};
-    for (json::iterator it = data.begin(); it != data.end(); ++it) {
-      std::cout << it.key() << "=" << it.value().size() << std::endl;
-      std::vector<int64_t> args(it.value().size()) ; // vector with 100 ints.
-      std::iota (std::begin(args), std::end(args), 0); // Fill with 0, 1, ..., 99.
-      nbs_args.at(i) = args;
-      i++;
-    }
-    auto args_comb = combinations(nbs_args);
-    for (auto it = args_comb.begin(); it != args_comb.end(); ++it) {
-      std::vector<int64_t> ve = *it;
-      for (auto it2 = ve.begin(); it2 != ve.end(); ++it2) {
-        std::cout << *it2 << " ";
-      }
-      std::cout << std::endl;
-      b->Args(*it);
-    }
-    std::cout << std::endl;
-  }
-  //BENCHMARK_REGISTER_F(InterpolatorDataFixture, BenchTests2)->Apply(AllCombinationsArguments<InterpolatorDataFixture>);
-
-  BENCHMARK_REGISTER_F(InterpolatorDataFixture, BenchTests3)->Apply(AllCombinationsArguments<InterpolatorDataFixture>);
-
-  BENCHMARK_REGISTER_F(InterpolatorDataFixture, Hyp1f1)->Apply(AllCombinationsArguments<InterpolatorDataFixture>);
+  //using IntWithDat = InterpolatorDataFixture<DataFixture>;
+  //BENCHMARK_REGISTER_F(IntWithDat, BenchTests3)->Apply(AllCombinationsArguments<IntWithDat>);
 
 
-  // for one argument DenseRange can be used
-  //BENCHMARK_REGISTER_F(MyFixture, Intp)->Appyl(IteratorArguments<MyFixture>)
-  //  Ranges({{0,0},{0,0},{0,10},{0,0}});
-  //BENCHMARK_REGISTER_F(MyFixture, FooTest2);
 
-    //parameters x1 x2 precision, nb_test_points
-    //additional UserCounter
-    //grid_size,
-    
-    // mean_error_bound
-    // max_error
-    void BM_Intp(benchmark::State& state, double x1, double x2, int log_mean_error_bound, int nb_points) {
-      auto intp{Interpolator <
-        InterpolationMethod<InterpolationMethod_t::CubicSpline>,
-        GridRational<GridType_t::Uniform, RefinementMethod_t::Adaptive>,
-        SearchMethod<SearchMethod_t::Hunt>
-          >()};
-      math::Vector_t points = math::Vector_t::LinSpaced(nb_points,x1,x2);
-      auto exp_func{[](double x) {return std::exp(x);}};
-      double mean_error_bound{std::pow(10,log_mean_error_bound)};
-      intp.initalize(exp_func, x1,x2, mean_error_bound); 
-      for (auto _ : state) {
-        for (int i{0}; i<points.size();i++) {
-          intp.interpolate(points(i));
-        }
-      }
-      state.counters.insert({{"x1",x1},{"x2",x2},{"GridSize",intp.grid_rational.grid_size}});
-    }
-    BENCHMARK_CAPTURE(BM_Intp, basic_test, 0,5,1e-3,1000);
+  //// for one argument DenseRange can be used
+  ////BENCHMARK_REGISTER_F(MyFixture, Intp)->Appyl(IteratorArguments<MyFixture>)
+  ////  Ranges({{0,0},{0,0},{0,10},{0,0}});
+  ////BENCHMARK_REGISTER_F(MyFixture, FooTest2);
 
-    void BM_RadialContrIntp(benchmark::State& state, double x1, double x2, double precision, int nb_points) {
-    auto intp{Interpolator <
-      InterpolationMethod<InterpolationMethod_t::CubicSpline>,
-      GridRational<GridType_t::Uniform, RefinementMethod_t::Adaptive>,
-      SearchMethod<SearchMethod_t::Hunt>
-        >()};
+  //  //parameters x1 x2 precision, nb_test_points
+  //  //additional UserCounter
+  //  //grid_size,
+  //  
+  //  // mean_error_bound
+  //  // max_error
+  //  void BM_Intp(benchmark::State& state, double x1, double x2, int log_mean_error_bound, int nb_points) {
+  //    auto intp{Interpolator <
+  //      InterpolationMethod<InterpolationMethod_t::CubicSpline>,
+  //      GridRational<GridType_t::Uniform, RefinementMethod_t::Adaptive>,
+  //      SearchMethod<SearchMethod_t::Hunt>
+  //        >()};
+  //    math::Vector_t points = math::Vector_t::LinSpaced(nb_points,x1,x2);
+  //    auto exp_func{[](double x) {return std::exp(x);}};
+  //    double mean_error_bound{std::pow(10,log_mean_error_bound)};
+  //    intp.initalize(exp_func, x1,x2, mean_error_bound); 
+  //    for (auto _ : state) {
+  //      for (int i{0}; i<points.size();i++) {
+  //        intp.interpolate(points(i));
+  //      }
+  //    }
+  //    state.counters.insert({{"x1",x1},{"x2",x2},{"GridSize",intp.grid_rational.grid_size}});
+  //  }
+  //  BENCHMARK_CAPTURE(BM_Intp, basic_test, 0,5,1e-3,1000);
 
-      const json fc_hypers{
-           {"type", "Constant"},
-           {"gaussian_sigma", {{"value", 0.5}, {"unit", "A"}}}
-          };
-      const json hypers{{"gaussian_density", fc_hypers},
-                {"max_radial", 20},
-                {"max_angular", 19},
-                {"cutoff_function", {{"cutoff",{{"value", 2.0}, {"unit", "A"}}}}}
-      };
-      auto radial_contr{RadialContribution<RadialBasisType::GTO>(hypers)};
-      std::function<double(double)> func = [&radial_contr](double x) {return radial_contr.compute_contribution<AtomicSmearingType::Constant>(x,0.5)(0,17);};
-      math::Vector_t points = math::Vector_t::LinSpaced(nb_points,x1,x2);
-      intp.initalize(func, x1,x2, std::pow(10,-precision)); 
-      for (auto _ : state) {
-        for (int i{0}; i<points.size();i++) {
-          intp.interpolate(points(i));
-        }
-      }
-      state.counters.insert({{"x1",x1},{"x2",x2},{"-log(precision)",precision},{"nb_points",nb_points},{"GridSize",intp.grid_rational.grid_size}});
-    }
-    //BENCHMARK_CAPTURE(BM_RadialContrIntp, basic_test, 0,5,5,1000);
-      //->Args({0.,5.,1e-5,1000}); // does not work because Argas only accepts integers
-      //->Ranges({{0,0},{5,5},{1e-2, 1e-12},{100,3000}});
-    //{1e-2,1e-4,1e-6,1e-8,1e-10,1e-12}
-    // 100 times slower than with precompution that is why we skip
-    
+  //  void BM_RadialContrIntp(benchmark::State& state, double x1, double x2, double precision, int nb_points) {
+  //  auto intp{Interpolator <
+  //    InterpolationMethod<InterpolationMethod_t::CubicSpline>,
+  //    GridRational<GridType_t::Uniform, RefinementMethod_t::Adaptive>,
+  //    SearchMethod<SearchMethod_t::Hunt>
+  //      >()};
+
+  //    const json fc_hypers{
+  //         {"type", "Constant"},
+  //         {"gaussian_sigma", {{"value", 0.5}, {"unit", "A"}}}
+  //        };
+  //    const json hypers{{"gaussian_density", fc_hypers},
+  //              {"max_radial", 20},
+  //              {"max_angular", 19},
+  //              {"cutoff_function", {{"cutoff",{{"value", 2.0}, {"unit", "A"}}}}}
+  //    };
+  //    auto radial_contr{RadialContribution<RadialBasisType::GTO>(hypers)};
+  //    std::function<double(double)> func = [&radial_contr](double x) {return radial_contr.compute_contribution<AtomicSmearingType::Constant>(x,0.5)(0,17);};
+  //    math::Vector_t points = math::Vector_t::LinSpaced(nb_points,x1,x2);
+  //    intp.initalize(func, x1,x2, std::pow(10,-precision)); 
+  //    for (auto _ : state) {
+  //      for (int i{0}; i<points.size();i++) {
+  //        intp.interpolate(points(i));
+  //      }
+  //    }
+  //    state.counters.insert({{"x1",x1},{"x2",x2},{"-log(precision)",precision},{"nb_points",nb_points},{"GridSize",intp.grid_rational.grid_size}});
+  //  }
+  //  //BENCHMARK_CAPTURE(BM_RadialContrIntp, basic_test, 0,5,5,1000);
+  //    //->Args({0.,5.,1e-5,1000}); // does not work because Argas only accepts integers
+  //    //->Ranges({{0,0},{5,5},{1e-2, 1e-12},{100,3000}});
+  //  //{1e-2,1e-4,1e-6,1e-8,1e-10,1e-12}
+  //  // 100 times slower than with precompution that is why we skip
+  //  
 
 
-    void BM_RadialContrIntpS(benchmark::State& state, double x1, double x2, double precision, int nb_points) {
-    auto intp{Interpolator <
-      InterpolationMethod<InterpolationMethod_t::CubicSpline>,
-      GridRational<GridType_t::Uniform, RefinementMethod_t::Adaptive>,
-      SearchMethod<SearchMethod_t::Hunt>
-        >()};
-      std::function<double(double)> func = [](double x) {return std::exp(-std::pow((x-1)/.5,2)/2);};
-      math::Vector_t points = math::Vector_t::LinSpaced(nb_points,x1,x2);
-      intp.initalize(func, x1,x2, precision); 
-      for (auto _ : state) {
-        for (int i{0}; i<points.size();i++) {
-          intp.interpolate(points(i));
-        }
-      }
-      state.counters.insert({{"x1",x1},{"x2",x2},{"precision",precision},{"nb_points",nb_points},{"GridSize",intp.grid_rational.grid_size}});
-    }
-    
-    BENCHMARK_CAPTURE(BM_RadialContrIntpS, basic_test, 0,5,1e-5,1000);
+  //  void BM_RadialContrIntpS(benchmark::State& state, double x1, double x2, double precision, int nb_points) {
+  //  auto intp{Interpolator <
+  //    InterpolationMethod<InterpolationMethod_t::CubicSpline>,
+  //    GridRational<GridType_t::Uniform, RefinementMethod_t::Adaptive>,
+  //    SearchMethod<SearchMethod_t::Hunt>
+  //      >()};
+  //    std::function<double(double)> func = [](double x) {return std::exp(-std::pow((x-1)/.5,2)/2);};
+  //    math::Vector_t points = math::Vector_t::LinSpaced(nb_points,x1,x2);
+  //    intp.initalize(func, x1,x2, precision); 
+  //    for (auto _ : state) {
+  //      for (int i{0}; i<points.size();i++) {
+  //        intp.interpolate(points(i));
+  //      }
+  //    }
+  //    state.counters.insert({{"x1",x1},{"x2",x2},{"precision",precision},{"nb_points",nb_points},{"GridSize",intp.grid_rational.grid_size}});
+  //  }
+  //  
+  //  BENCHMARK_CAPTURE(BM_RadialContrIntpS, basic_test, 0,5,1e-5,1000);
     //static double radial_contr_function_generator(int n, int l, double r) {
 
     //  int max_radial{20};
