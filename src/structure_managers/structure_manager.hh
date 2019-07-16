@@ -906,7 +906,7 @@ namespace rascal {
           it(manager) {}
 
     //! Copy constructor
-    ClusterRef(const ClusterRef & other) = delete;
+    ClusterRef(const ClusterRef & other) = default;
 
     //! Move constructor
     ClusterRef(ClusterRef && other) = default;
@@ -923,6 +923,17 @@ namespace rascal {
     //! return atoms of the current cluster
     const std::array<AtomRef_t, Order> & get_atoms() const {
       return this->atoms;
+    }
+
+    inline auto get_atom_j() {
+      auto&& manager = it.get_manager();
+      auto&& atom_j_tag = this->get_internal_neighbour_atom_tag();
+      auto&& atom_j_index = manager.get_atom_index(atom_j_tag);
+      auto atom_j_it = manager.get_iterator_at(atom_j_index, 0);
+      constexpr static size_t ClusterLayer_{
+        ManagerImplementation::template cluster_layer_from_order<1>()};
+      auto atom_j = static_cast<ClusterRefKey<1, ClusterLayer_>>(*atom_j_it);
+      return atom_j;
     }
 
     /**

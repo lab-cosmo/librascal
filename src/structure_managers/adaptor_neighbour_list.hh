@@ -640,7 +640,7 @@ namespace rascal {
      * ghost atom, then it returns it cluster index of the atom in the original
      * cell.
      */
-    size_t get_atom_index(const int atom_tag) const {
+    inline size_t get_atom_index(const int & atom_tag) const {
       return this->atom_index_from_atom_tag_list[atom_tag];
     }
 
