@@ -106,8 +106,8 @@ int main(int argc, char * argv[]) {
   // something
   std::cout << "Expansion of first " << n_centers_print << " centers:";
   std::cout << std::endl;
-  std::cout << "Note that the coefficients are printed with species along the "
-               "columns and n-l-m along the rows."
+  std::cout << "Note that the coefficients are printed with species pairs along"
+               " the columns and n-n'-l along the rows."
             << std::endl;
   std::cout << "Gradients are printed with: First Cartesian component, "
                "then species pairs, along the rows; n-n'-l along the columns.";

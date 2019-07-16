@@ -91,23 +91,16 @@ namespace rascal {
       using Hypers_t = typename SOAPPrecomputationBase::Hypers_t;
       explicit SOAPPrecomputation(const Hypers_t & hypers) {
         this->max_angular = hypers.at("max_angular");
-        this->l_factors_lm.resize(math::pow(this->max_angular + 1, 2));
         this->l_factors.resize(this->max_angular + 1);
 
-        size_t lm{0};
         for (size_t l{0}; l < this->max_angular + 1; ++l) {
           double l_factor{math::pow(std::sqrt(2 * l + 1), -1)};
           this->l_factors(l) = l_factor;
-          for (size_t m{0}; m < 2 * l + 1; ++m) {
-            this->l_factors_lm(lm) = l_factor;
-            ++lm;
-          }
         }
       }
 
       size_t max_angular{0};
       //! factor of 1 / sqrt(2*l+1) in front of the powerspectrum
-      Eigen::VectorXd l_factors_lm{};
       Eigen::VectorXd l_factors{};
     };
   }  // namespace internal
@@ -304,7 +297,6 @@ namespace rascal {
     // get the relevant precomputation object and unpack the useful infos
     auto precomputation{downcast_soap_precompute<SOAPType::PowerSpectrum>(
         this->precompute_soap[enumValue(SOAPType::PowerSpectrum)])};
-    auto & l_factors_lm{precomputation->l_factors_lm};
     auto & l_factors{precomputation->l_factors};
 
     // Compute the spherical expansions of the current structure
@@ -327,9 +319,7 @@ namespace rascal {
 
       for (const auto & el1 : coefficients) {
         spair_type[0] = el1.first[0];
-
-        // multiply with the precomputed factors
-        auto coef1{el1.second * l_factors_lm.asDiagonal()};
+        auto & coef1{el1.second};
 
         for (const auto & el2 : coefficients) {
           // avoid computing p^{ab} and p^{ba} since p^{ab} = p^{ba}^T
@@ -358,6 +348,8 @@ namespace rascal {
               ++n1n2;
             }
           }
+          // multiply with the precomputed factors
+          soap_vector_by_pair *= l_factors.asDiagonal();
         }  // for el1 : coefficients
       }    // for el2 : coefficients
 
