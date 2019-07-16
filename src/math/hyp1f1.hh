@@ -589,7 +589,6 @@ namespace rascal {
             hyp1f1.emplace_back(a, b, precomputation_size, tolerance);
           }
         }
-        
       }
 
       //! helper function to compute z for one set of n, l, z
