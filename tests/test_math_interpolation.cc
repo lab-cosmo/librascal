@@ -33,13 +33,84 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(MathInterpolatorTests);
 
-  // tests if functions are well approximated up to precisicion
-  BOOST_FIXTURE_TEST_CASE(math_interpolator_test, InterpolatorFixture) {
-    auto intp{Interpolator<
+  using StandardInterpolator = Interpolator<
       InterpolationMethod<InterpolationMethod_t::CubicSpline>,
       GridRational<GridType_t::Uniform, RefinementMethod_t::HeapBased>,
       SearchMethod<SearchMethod_t::Hunt>
-        >()};
+        >;
+  using UniformInterpolator = Interpolator<
+      InterpolationMethod<InterpolationMethod_t::CubicSpline>,
+      GridRational<GridType_t::Uniform, RefinementMethod_t::HeapBased>,
+      SearchMethod<SearchMethod_t::AStarUniform>
+        >;
+  using interpolator_fixtures = boost::mpl::list<InterpolatorFixture<StandardInterpolator>,
+                   InterpolatorFixture<UniformInterpolator>>;                     
+
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(math_interpolator_tests, Fix,
+                                   interpolator_fixtures, Fix) {
+    auto intp{Fix::intp};
+    auto identity_func{Fix::identity_func};
+    auto exp_func{Fix::exp_func};
+    auto precision{Fix::precision};
+
+    Vector_t points(11); 
+    points << 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.;
+    double error, intp_val, intp_ref;
+    std::function<double(double)> func;
+
+    // TODO(alex) make function array
+    // Test for identity function
+    func = identity_func;
+    intp.initalize(func, 0,1, precision); 
+    for (int i{0}; i<points.size()-1; i++) {
+      intp_val = intp.interpolate(points(i));
+      intp_ref = func(points(i));
+      error = std::abs(intp_val - intp_ref);
+      BOOST_CHECK_LE(error, precision);
+    }
+
+    // Test for exp function
+    func = exp_func;
+    intp.initalize(func, 0,1, precision); 
+    for (int i{0}; i<points.size()-1; i++) {
+      intp_val = intp.interpolate(points(i));
+      intp_ref = func(points(i));
+      error = std::abs(intp_val - intp_ref);
+      BOOST_CHECK_LE(error, precision);
+    }
+    
+    size_t max_angular = 20;
+    size_t max_radial = 20;
+    double a,b;
+
+    bool verbose{false};
+    size_t l{max_angular};
+    size_t n{max_radial};
+    // TODO(alex) this test would take 5 seconds, therefore
+    // I only test subset
+    //for (size_t l{0}; l<max_angular; l++) {
+    //  for (size_t n{0}; n<max_radial; n++) {
+        if (verbose) {
+          std::cout << "Testing for n="<<n<<" and l="<<l<<std::endl;
+        }
+        a = 0.5*(n+l+3);
+        b = l+1.5;
+        math::Hyp1f1 hyp1f1{a, b, 200, 1e-15};
+        func  = [&hyp1f1](double x) {return hyp1f1.calc(x);};
+        //func = std::bind(hyp1f1_function_generator, a, b, std::placeholders::_1);
+        intp.initalize(func, 0,1, precision); 
+        for (int i{0}; i<points.size()-1; i++) {
+          intp_val = intp.interpolate(points(i));
+          intp_ref = func(points(i));
+          error = std::abs(intp_val - intp_ref);
+          BOOST_CHECK_LE(error, precision);
+        }
+    //  }
+    //}
+  }
+    
+  // tests if functions are well approximated up to precisicion
+  BOOST_FIXTURE_TEST_CASE(math_interpolator_test, InterpolatorFixture<StandardInterpolator>) {
     Vector_t points(11);
     points << 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.;
     double error, intp_val, intp_ref;

@@ -337,7 +337,7 @@ namespace rascal {
 
       //! define the contribution from a neighbour atom to the expansion
       template <AtomicSmearingType AST>
-      Matrix_Ref
+      Matrix_t
       compute_contribution(const double & distance, const double & sigma) {
         using math::PI;
         using math::pow;
@@ -381,8 +381,8 @@ namespace rascal {
             distance_fac_a_l.asDiagonal();
         radial_integral_neighbour.transpose() *=
             this->radial_norm_factors.asDiagonal();
-        radial_integral_neighbour.transpose() *=
-            this->radial_ortho_matrix;
+        //radial_integral_neighbour.transpose() *=
+        //    this->radial_ortho_matrix;
         return radial_integral_neighbour;
       }
 
@@ -432,8 +432,9 @@ namespace rascal {
             distance_fac_a_l.asDiagonal();
         this->radial_integral_neighbour.transpose() *=
             this->radial_norm_factors.asDiagonal();
-        //this->radial_integral_neighbour.transpose() *=
-         //   this->radial_ortho_matrix;
+        // TODO(felix) comment this out 
+        this->radial_integral_neighbour.transpose() *=
+           this->radial_ortho_matrix;
         return Matrix_Ref(this->radial_integral_neighbour);
       }
 
@@ -829,11 +830,12 @@ namespace rascal {
         }
       }  // for (neigh : center)
 
-      for (auto && el : coefficients_center) {
-        auto && coefficients_center_by_type{el.second};
-        coefficients_center_by_type.transpose() *=
-            radial_integral->radial_ortho_matrix;
-      }
+      // TODO(felix)
+      //for (auto && el : coefficients_center) {
+      //  auto && coefficients_center_by_type{el.second};
+      //  coefficients_center_by_type.transpose() *=
+      //      radial_integral->radial_ortho_matrix;
+      //}
 
     }    // for (center : structure_manager)
   }      // compute()

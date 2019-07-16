@@ -19,9 +19,9 @@ namespace rascal {
 
 
     template <class Fix>
-    void BM_RadialContr(benchmark::State& state) {
+    void BM_RadCon(benchmark::State& state) {
       auto fix = Fix(state);
-      int max_radial{2};
+      int max_radial{1};
       int max_angular{max_radial-1};
       json fc_hypers{
            {"type", "Constant"},
@@ -46,9 +46,9 @@ namespace rascal {
     }
 
   template <class Fix>
-  void BM_InterpolatorRadialContr(benchmark::State &state) {
+  void BM_IntpRadCon(benchmark::State &state) {
     auto fix = Fix(state);
-    int max_radial{2};
+    int max_radial{1};
     int max_angular{max_radial-1};
     json fc_hypers{
          {"type", "Constant"},
@@ -60,11 +60,10 @@ namespace rascal {
               {"cutoff_function", {{"cutoff",{{"value", 2.0}, {"unit", "A"}}}}}
     };
     auto radial_contr{RadialContribution<RadialBasisType::GTO>(hypers)};
-
     using AdaptiveInterpolator = Interpolator <
       InterpolationMethod<InterpolationMethod_t::CubicSpline>,
-      GridRational<GridType_t::Uniform, RefinementMethod_t::Adaptive>,
-      SearchMethod<SearchMethod_t::Hunt>
+      GridRational<GridType_t::Uniform, RefinementMethod_t::HeapBased>,
+      SearchMethod<SearchMethod_t::AStarUniform>
         >;
     const int nb_intps{max_radial*(max_angular+1)};
     //std::vector<std::function<double(double)>> funcs(nb_intps); 
@@ -78,7 +77,7 @@ namespace rascal {
     for (auto _ : state) {
       for (int j{0}; j<nb_intps; j++) {
         for (int i{0}; i<fix.points.size();i++) {
-          intps[j].interpolate(fix.points(i));
+          intps.at(j).interpolate(fix.points(i));
         }
       }
     }
@@ -86,7 +85,9 @@ namespace rascal {
         {"x1",fix.x1},
         {"x2",fix.x2},
         {"log(mean_error_bound)", fix.log_mean_error_bound},
-        {"nb_points",fix.nb_points}
+        {"nb_points",fix.nb_points},
+        {"grid_size",intps.at(0).grid.size()},
+        {"random",fix.random}
       });
   }
 
@@ -111,12 +112,12 @@ namespace rascal {
   }
 
   template <class Fix>
-  void BM_InterpolatorHyp1f1(benchmark::State &state) {
+  void BM_IntpHyp1f1(benchmark::State &state) {
     auto fix = Fix(state);
     auto intp{Interpolator <
       InterpolationMethod<InterpolationMethod_t::CubicSpline>,
-      GridRational<GridType_t::Uniform, RefinementMethod_t::Adaptive>,
-      SearchMethod<SearchMethod_t::Hunt>
+      GridRational<GridType_t::Uniform, RefinementMethod_t::HeapBased>,
+      SearchMethod<SearchMethod_t::AStarUniform>
         >()};
     double n = 10;
     double l = 10;
@@ -135,9 +136,9 @@ namespace rascal {
         {"x2",fix.x2},
         {"log(mean_error_bound)", fix.log_mean_error_bound},
         {"log(mean_error)",std::log10(intp.mean_error)},
-        {"log(max_error)",std::log10(intp.max_error)},
-        {"nb_points",fix.nb_points},
-        {"grid_size",intp.grid_rational.grid_size}
+        //{"log(max_error)",std::log10(intp.max_error)},
+        //{"nb_points",fix.nb_points},
+        {"grid_size",intp.grid.size()}
       });
   }
 
@@ -163,20 +164,19 @@ namespace rascal {
         {"log(mean_error)",std::log10(intp.mean_error)},
         {"log(max_error)",std::log10(intp.max_error)},
         //{"nb_points",fix.nb_points},
-        {"grid_size",intp.grid_rational.grid_size}
+        {"grid_size",intp.grid.size()}
       });
   }
 
 
-  BENCHMARK_TEMPLATE(BM_IntpSimpFun, IntpFix<I_B>)->Apply(AllCombinationsArguments<I_B>);
+  //BENCHMARK_TEMPLATE(BM_IntpSimpFun, IntpFix<I_B>)->Apply(AllCombinationsArguments<I_B>);
+  
+  //BENCHMARK_TEMPLATE(BM_RadCon, IntpFix<CF_S>)->Apply(AllCombinationsArguments<CF_S>);
+  //BENCHMARK_TEMPLATE(BM_IntpRadCon, IntpFix<CFI_B>)->Apply(AllCombinationsArguments<CFI_B>);
 
-  //BENCHMARK_TEMPLATE(BM_RadialContr, IntpFix<FunctionSmallDataset>)->Apply(AllCombinationsArguments<FunctionSmallDataset>);
-  //BENCHMARK_TEMPLATE(BM_Hyp1f1, IntpFix<FunctionSmallDataset>)->Apply(AllCombinationsArguments<FunctionSmallDataset>);
+  BENCHMARK_TEMPLATE(BM_Hyp1f1, IntpFix<CF_S>)->Apply(AllCombinationsArguments<CF_S>);
 
-  //BENCHMARK_TEMPLATE(BM_InterpolatorHyp1f1, IntpFix<InterpolatorSmallDataset>)->Apply(AllCombinationsArguments<InterpolatorSmallDataset>);
-
-  //BENCHMARK_TEMPLATE(BM_InterpolatorRadialContr, IntpFix<SmallDataset>)->Apply(AllCombinationsArguments<FunctionSmallDataset>);
-
+  BENCHMARK_TEMPLATE(BM_IntpHyp1f1, IntpFix<CFI_B>)->Apply(AllCombinationsArguments<CFI_B>);
 
 
 

@@ -1,6 +1,12 @@
 #ifndef SRC_MATH_INTERPOLATOR_HH_
 #define SRC_MATH_INTERPOLATOR_HH_
 
+#ifdef DEBUG
+  #define DEBUG_IF(x) if(x)
+#else
+  #define DEBUG_IF(x) if(false)
+#endif
+
 #include <functional>
 #include <forward_list>
 #include <iostream>
@@ -117,7 +123,25 @@ namespace rascal {
       std::forward_list<double>::iterator max_it;
     };
 
-    // TODO(alex) I think they all can be static
+    template <>
+    struct GridRational<GridType_t::Uniform, RefinementMethod_t::Uniform> {
+      Vector_t compute_grid(double x1, double x2, int fineness) {
+        double nb_grid_points = fineness+2;
+        return Vector_t::LinSpaced(nb_grid_points, x1, x2);
+      }
+      Vector_t compute_test_grid(double x1, double x2, int fineness) {
+        double nb_grid_points = fineness+2;
+        // half of a step size in the grid to get the inner grid points
+        // step size = (x2-x1)/(nb_grid_points-1)
+        double offset{(x2-x1)/(2*(nb_grid_points-1))};
+        return Vector_t::LinSpaced(nb_grid_points-1, x1+offset, x2-offset);
+      }
+
+      void update_errors(Vector_Ref) {} 
+      // TODO(alex) use grid_size
+      int grid_size{0};
+    };
+
     template <>
     struct GridRational<GridType_t::Uniform, RefinementMethod_t::HeapBased> {
       Vector_t compute_grid(double x1, double x2, int fineness) {
@@ -202,7 +226,7 @@ namespace rascal {
         size_t klo{j1}, khi{j1+1};
         const Vector_Ref && y2 = std::move(Vector_Ref(this->second_derivatives));
         double h{xx(khi)-xx(klo)};
-        if (h == 0.0) { throw ("Bad xa input to routine splint");}
+        DEBUG_IF (h == 0.0) { throw std::runtime_error ("Bad xa input to routine splint");}
         double a{(xx(khi)-x)/h};
         double b{(x-xx(klo))/h};
         return a*yy(klo)+b*yy(khi)+((a*a*a-a)*y2(klo)
@@ -212,21 +236,50 @@ namespace rascal {
       Vector_t second_derivatives{};
     };
 
-    enum class SearchMethod_t {Hunt};
+    enum class SearchMethod_t {Hunt, Locate, AStarUniform};
 
     template <SearchMethod_t Type>
     struct SearchMethod{};
 
+    // CURRENTLY ASSUMES THAT GRID IS UNIFORM
     template <>
-    struct SearchMethod<SearchMethod_t::Hunt> {
+    struct SearchMethod<SearchMethod_t::AStarUniform> {
 
-      SearchMethod<SearchMethod_t::Hunt>() : correlated{false},
-          nb_support_points{2}, last_accessed_index{0} {} 
+      SearchMethod<SearchMethod_t::AStarUniform>(): 
+          nb_support_points{2} {} 
+
+      void initialize(const int & ){
+      }
 
       // If the requests to locate seem correlated, then the heuristic is used
       size_t search(double x, const Vector_Ref & grid) {
-        return this->correlated ? this->hunt(x, grid) : this->locate(x, grid);
-      } 
+        // TODO(alex) make this work for general grids
+        // nb_grid_points/unit
+        double nb_grid_points_per_unit = grid.size()/(grid(grid.size()-1)-grid(0));
+        // for heap_based this is less costly
+        // (x-grid(0)) * nb_grid_points_per_unit >> 1
+        int raw_index = static_cast<int>(std::floor((x-grid(0)) * nb_grid_points_per_unit)-1);
+        return std::max(0,std::min(static_cast<int>(grid.size()-nb_support_points), raw_index));
+      }
+      // the number of support methods the interpolation method uses
+      size_t nb_support_points;
+    };
+
+
+    template <>
+    struct SearchMethod<SearchMethod_t::Locate> {
+
+      // TODO(alex) initilize nb_support_points with parameters from the interpolation mtehod
+      SearchMethod<SearchMethod_t::Locate>() : 
+          nb_support_points{2} {} 
+
+      void initialize(const int & ){
+      }
+
+      // If the requests to locate seem correlated, then the heuristic is used
+      size_t search(double x, const Vector_Ref & grid) {
+        return this->locate(x, grid);
+      }
 
       // TODO(alex) move this to a Base class if we want to implement more
       // search methods
@@ -234,13 +287,10 @@ namespace rascal {
       size_t locate(double x, const Vector_Ref & xx) {
         int n{static_cast<int>(xx.size())};
         int mm{static_cast<int>(nb_support_points)};
-        int jsav{static_cast<int>(this->last_accessed_index)};
 
-        // TODO(alex) is this faster than pow(n, 0.25) ?
-        int dj = std::min(1, 
-            static_cast<int>(std::round(std::sqrt(std::sqrt(n)))));
         int ju,jm,jl;
-        if (n < 2 || mm < 2 || mm > n) throw("locate size error");
+        //TODO(alex) activate in debug mode
+        //if (n < 2 || mm < 2 || mm > n) throw("locate size error");
         bool ascnd=(xx[n-1] >= xx[0]);
         jl=0;
         ju=n-1;
@@ -251,7 +301,56 @@ namespace rascal {
           else
             ju=jm;
         }
-        this->correlated = abs(jl-jsav) > dj ? 0 : 1;
+        return std::max(0,std::min(n-mm,jl-((mm-2)>>1)));
+      }
+
+      // the number of support methods the interpolation method uses
+      size_t nb_support_points;
+    };
+
+
+
+    template <>
+    struct SearchMethod<SearchMethod_t::Hunt> {
+
+      // TODO(alex) initilize nb_support_points with parameters from the interpolation mtehod
+      SearchMethod<SearchMethod_t::Hunt>() : correlated{false},
+          nb_support_points{2}, last_accessed_index{0}, dj{0} {} 
+
+      void initialize(const int & grid_size){
+        this->dj = std::min(1, 
+            static_cast<int>(std::round(std::sqrt(std::sqrt(grid_size)))));
+      }
+
+      // If the requests to locate seem correlated, then the heuristic is used
+      size_t search(double x, const Vector_Ref & grid) {
+        //return this->locate(x, grid);
+        return this->correlated ? this->hunt(x, grid) : this->locate(x, grid);
+      }
+
+      // TODO(alex) move this to a Base class if we want to implement more
+      // search methods
+      // TODO(alex) ref numerical recipes
+      size_t locate(double x, const Vector_Ref & xx) {
+        int n{static_cast<int>(xx.size())};
+        int mm{static_cast<int>(nb_support_points)};
+        int jsav{static_cast<int>(this->last_accessed_index)};
+
+        // TODO(alex) is this faster than pow(n, 0.25) ?
+        int ju,jm,jl;
+        //TODO(alex) activate in debug mode
+        //if (n < 2 || mm < 2 || mm > n) throw("locate size error");
+        bool ascnd=(xx[n-1] >= xx[0]);
+        jl=0;
+        ju=n-1;
+        while (ju-jl > 1) {
+          jm = (ju+jl) >> 1;
+          if ((x >= xx[jm]) == ascnd)
+            jl=jm;
+          else
+            ju=jm;
+        }
+        this->correlated = abs(jl-jsav) > this->dj ? 0 : 1;
         jsav = jl;
 
         this->last_accessed_index = jsav;
@@ -262,12 +361,11 @@ namespace rascal {
       size_t hunt(double x, const Vector_Ref & xx){
         int n{static_cast<int>(xx.size())};
         int mm{static_cast<int>(nb_support_points)};
-        int dj = std::min(1, 
-            static_cast<int>(std::round(std::sqrt(std::sqrt(n)))));
         int jsav{static_cast<int>(this->last_accessed_index)};
 
         int jl=jsav, jm, ju, inc=1;
-        if (n < 2 || mm < 2 || mm > n) throw("hunt size error");
+        // TODO(alex) runtime error?
+        DEBUG_IF (n < 2 || mm < 2 || mm > n) throw std::runtime_error ("hunt size error");
         bool ascnd=(xx[n-1] >= xx[0]);
         if (jl < 0 || jl > n-1) {
           jl=0;
@@ -303,14 +401,18 @@ namespace rascal {
           else
             ju=jm;
         }
-        this->correlated = abs(jl-jsav) > dj ? 0 : 1;
+        this->correlated = abs(jl-jsav) > this->dj ? 0 : 1;
         jsav = jl;
+        this->last_accessed_index = jsav;
         return std::max(0,std::min(n-mm,jl-((mm-2)>>1)));
       }
 
       bool correlated;
+      // the number of support methods the interpolation method uses
       size_t nb_support_points;
       size_t last_accessed_index;
+      // parameter used to determine if search requests are correlated
+      int dj;
     };
 
     template<class InterpolationMethod, class GridRational, class SearchMethod>
@@ -328,7 +430,20 @@ namespace rascal {
         this->precision = precision;
 
         this->initialize_interpolator();
+        this->search_method.initialize(this->grid.size());
       }
+
+      // Initialization function given an alread precomputed grid. For optimization purposes
+      void initalize(std::function<double(double)> function, double x1, double x2, Vector_t grid) {
+        this->function = function;
+        this->x1 = x1;
+        this->x2 = x2;
+        this->grid = grid;
+        this->evaluated_grid = this->eval(this->grid);
+        this->intp_method.initialize(this->grid, this->evaluated_grid);
+        this->search_method.initialize(this->grid.size());
+      }
+
 
       void initialize_interpolator() {
         // Fineness starts with zero and is incremently increased
@@ -356,15 +471,16 @@ namespace rascal {
         Vector_t test_grid_interpolated{this->interpolate(test_grid)};
         Vector_t test_grid_evaluated{this->eval(test_grid)}; 
         // computes the relative error
+        // 2(
         Vector_t error_grid{2*((test_grid_interpolated - test_grid_evaluated).array()/
           (std::numeric_limits< double >::min()+test_grid_interpolated.array().abs() + test_grid_evaluated.array().abs())).abs()};
         grid_rational.update_errors(Vector_Ref(error_grid));
         this->max_error = error_grid.maxCoeff();
         this->mean_error = error_grid.mean();
-        //if (this->grid.size() % 100==0) {
-        //  std::cout << "grid_size=" << this->grid.size() << std::endl;
-        //  std::cout << "mean_error=" << this->mean_error << std::endl;
-        //}
+        if (this->grid.size() % 500==0) {
+          std::cout << "grid_size=" << this->grid.size() << std::endl;
+          std::cout << "mean_error=" << this->mean_error << std::endl;
+        }
         //if (grid_rational.grid_size % 50 == 0) {
         //  std::cout << "fineness=" << this->fineness << std::endl;
         //  std::cout << "mean error=" << this->mean_error << std::endl;
@@ -396,8 +512,8 @@ namespace rascal {
 
       double interpolate(double x) {
         // TODO(alex) throw runtime error, what is diff?
-        if (x<this->x1) { throw std::runtime_error ("x is outside of range, below x1"); }
-        if (x>this->x2) { throw std::runtime_error ("x is outside of range, above x2"); }
+        DEBUG_IF (x<this->x1) { throw std::runtime_error ("x is outside of range, below x1"); }
+        DEBUG_IF (x>this->x2) { throw std::runtime_error ("x is outside of range, above x2"); }
         size_t nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
         return intp_method.interpolate(
             this->grid, this->evaluated_grid,
