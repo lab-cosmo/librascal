@@ -332,6 +332,24 @@ namespace rascal {
       }
 
       /**
+       * l^2 norm of the entire vector
+       */
+      inline double norm() {
+        using ref = typename Eigen::Map<Eigen::VectorXd>;
+        auto data_ref{ref(&data[0], data.size())};
+        return data_ref.norm();
+      }
+
+      /**
+       * squared l^2 norm of the entire vector (sum of squared elements)
+       */
+      inline double squaredNorm() {
+        using ref = typename Eigen::Map<Eigen::VectorXd>;
+        auto data_ref{ref(&data[0], data.size())};
+        return data_ref.squaredNorm();
+      }
+
+      /**
        * Normalize the whole vector
        */
       inline void normalize() {
