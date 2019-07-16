@@ -534,7 +534,6 @@ namespace rascal {
               if (spair_type[0] != spair_type[1]) {
                 soap_neigh_gradient_by_species_pair *= math::SQRT_TWO;
               }
-
             } // for neigh : center
           }   // for grad_species_2 : grad_coefficients
         }     // for grad_species_1 : grad_coefficients
