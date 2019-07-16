@@ -144,6 +144,10 @@ namespace rascal {
                                  {{"max_radial", 6},
                                   {"max_angular", 6},
                                   {"soap_type", "PowerSpectrum"},
+                                  {"normalize", true}},
+                                 {{"max_radial", 1},
+                                  {"max_angular", 6},
+                                  {"soap_type", "PowerSpectrum"},
                                   {"normalize", true}}};
   };
 
