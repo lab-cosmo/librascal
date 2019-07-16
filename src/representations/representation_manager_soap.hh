@@ -91,13 +91,15 @@ namespace rascal {
       using Hypers_t = typename SOAPPrecomputationBase::Hypers_t;
       explicit SOAPPrecomputation(const Hypers_t & hypers) {
         this->max_angular = hypers.at("max_angular");
-        this->l_factors.resize(math::pow(this->max_angular + 1, 2));
+        this->l_factors_lm.resize(math::pow(this->max_angular + 1, 2));
+        this->l_factors.resize(this->max_angular + 1);
 
         size_t lm{0};
         for (size_t l{0}; l < this->max_angular + 1; ++l) {
           double l_factor{math::pow(std::sqrt(2 * l + 1), -1)};
+          this->l_factors(l) = l_factor;
           for (size_t m{0}; m < 2 * l + 1; ++m) {
-            this->l_factors(lm) = l_factor;
+            this->l_factors_lm(lm) = l_factor;
             ++lm;
           }
         }
@@ -105,6 +107,7 @@ namespace rascal {
 
       size_t max_angular{0};
       //! factor of 1 / sqrt(2*l+1) in front of the powerspectrum
+      Eigen::VectorXd l_factors_lm{};
       Eigen::VectorXd l_factors{};
     };
   }  // namespace internal
@@ -301,6 +304,7 @@ namespace rascal {
     // get the relevant precomputation object and unpack the useful infos
     auto precomputation{downcast_soap_precompute<SOAPType::PowerSpectrum>(
         this->precompute_soap[enumValue(SOAPType::PowerSpectrum)])};
+    auto & l_factors_lm{precomputation->l_factors_lm};
     auto & l_factors{precomputation->l_factors};
 
     // Compute the spherical expansions of the current structure
@@ -325,7 +329,7 @@ namespace rascal {
         spair_type[0] = el1.first[0];
 
         // multiply with the precomputed factors
-        auto coef1{el1.second * l_factors.asDiagonal()};
+        auto coef1{el1.second * l_factors_lm.asDiagonal()};
 
         for (const auto & el2 : coefficients) {
           // avoid computing p^{ab} and p^{ba} since p^{ab} = p^{ba}^T
@@ -354,8 +358,8 @@ namespace rascal {
               ++n1n2;
             }
           }
-        }  // for coefficients
-      }    // for coefficients
+        }  // for el1 : coefficients
+      }    // for el2 : coefficients
 
       // the SQRT_TWO factor comes from the fact that
       // the upper diagonal of the species is not considered
@@ -372,10 +376,6 @@ namespace rascal {
         auto & grad_center_coefficients{
           expansions_coefficients_gradient[center]};
         auto & soap_center_gradient{this->soap_vector_gradients[center]};
-        // (n1, n2) * (l, m)
-        size_t grad_component_size{
-          static_cast<size_t>(math::pow((this->max_radial + 1), 2)) *
-          static_cast<size_t>(math::pow((this->max_angular + 1), 2))};
         for (const auto & grad_species_1 : grad_center_coefficients) {
           spair_type[0] = grad_species_1.first[0];
           const auto & expansion_coefficients_1{
@@ -399,34 +399,37 @@ namespace rascal {
             // TODO(max) looks like this nested loop could be nicely
             // encapsulated in a separate function
             for (size_t cartesian_idx{0}; cartesian_idx < 3; ++cartesian_idx) {
-              size_t cartesian_offset{cartesian_idx * grad_component_size};
+              size_t cartesian_offset_n{cartesian_idx * this->max_radial};
+              size_t cartesian_offset_n1n2{
+                cartesian_idx * static_cast<size_t>(
+                    math::pow(this->max_radial, 2))};
+              n1n2 = 0;
               for (size_t n1{0}; n1 < this->max_radial; ++n1) {
                 for (size_t n2{0}; n2 < this->max_radial; ++n2) {
                   //NOTE(max) this is included in the l=0 case, no?
                   //soap_center_gradient_by_species_pair(n1n2, 0) =
                   //coef1(n1, 0) * coef2(n2, 0);
                   //pos = 1;
+                  l_block_idx = 0;
                   for (size_t l{0}; l < this->max_angular + 1; ++l) {
                     size_t l_block_size{2 * l + 1};
                     // do the reduction over m (with vectorization)
                     // Leibniz rule for the expansion coefficients
                     // clang-format off
                     soap_center_gradient_by_species_pair(
-                            n1n2 + cartesian_offset, l) =
+                            n1n2 + cartesian_offset_n1n2, l) =
                       ((expansion_coefficients_1.block(
-                                n1 + cartesian_offset, l_block_idx,
-                                1,                     l_block_size).array() *
+                                n1, l_block_idx,
+                                1,  l_block_size).array() *
                         grad_center_coefficients_2.block(
-                                n2 + cartesian_offset, l_block_idx,
-                                1,                     l_block_size).array())
-                                                                      .sum()) +
+                                n2 + cartesian_offset_n, l_block_idx,
+                                1, l_block_size).array()).sum()) +
                       ((grad_center_coefficients_1.block(
-                                n1 + cartesian_offset, l_block_idx,
-                                1,                     l_block_size).array() *
+                                n1 + cartesian_offset_n, l_block_idx,
+                                1, l_block_size).array() *
                         expansion_coefficients_2.block(
-                                n2 + cartesian_offset, l_block_idx,
-                                1,                     l_block_size).array())
-                                                                      .sum());
+                                n2, l_block_idx,
+                                1,  l_block_size).array()).sum());
                     // clang-format on
                     l_block_idx += l_block_size;
                   }
@@ -463,27 +466,29 @@ namespace rascal {
 
               // TODO(max) is there a symmetry here we can exploit?
               if (neigh_type == spair_type[0]) {
-                n1n2 = 0;
-                l_block_idx = 0;
                 const auto & grad_neigh_coefficients_1{
                   grad_neigh_coefficients[grad_species_1.first]};
                 for (size_t cartesian_idx{0}; cartesian_idx < 3;
                     ++cartesian_idx) {
-                  size_t cartesian_offset{cartesian_idx * grad_component_size};
+                  size_t cartesian_offset_n{cartesian_idx * this->max_radial};
+                  size_t cartesian_offset_n1n2{
+                    cartesian_idx * static_cast<size_t>(
+                        math::pow(this->max_radial, 2))};
+                  n1n2 = 0;
                   for (size_t n1{0}; n1 < this->max_radial; ++n1) {
                     for (size_t n2{0}; n2 < this->max_radial; ++n2) {
+                      l_block_idx = 0;
                       for (size_t l{0}; l < this->max_angular + 1; ++l) {
                         size_t l_block_size{2 * l + 1};
                         // clang-format off
                         soap_neigh_gradient_by_species_pair(
-                                n1n2 + cartesian_offset, l) +=
+                                n1n2 + cartesian_offset_n1n2, l) +=
                           (grad_neigh_coefficients_1.block(
-                                n1 + cartesian_offset, l_block_idx,
-                                1,                     l_block_size).array() *
+                                n1 + cartesian_offset_n, l_block_idx,
+                                1,                       l_block_size).array() *
                            expansion_coefficients_2.block(
-                                n2 + cartesian_offset, l_block_idx,
-                                1,                     l_block_size).array())
-                                                                      .sum();
+                                n2, l_block_idx,
+                                1,  l_block_size).array()).sum();
                         // clang-format on
                         l_block_idx += l_block_size;
                       }
@@ -499,27 +504,29 @@ namespace rascal {
               // TODO(max) consider changing to full iteration and just one of
               // these if-nested-horrible-for-loop blocks
               if (neigh_type == spair_type[1]) {
-                n1n2 = 0;
-                l_block_idx = 0;
                 const auto & grad_neigh_coefficients_2{
                   grad_neigh_coefficients[grad_species_2.first]};
                 for (size_t cartesian_idx{0}; cartesian_idx < 3;
                     ++cartesian_idx) {
-                  size_t cartesian_offset{cartesian_idx * grad_component_size};
+                  size_t cartesian_offset_n{cartesian_idx * this->max_radial};
+                  size_t cartesian_offset_n1n2{
+                    cartesian_idx * static_cast<size_t>(
+                        math::pow(this->max_radial, 2))};
+                  n1n2 = 0;
                   for (size_t n1{0}; n1 < this->max_radial; ++n1) {
                     for (size_t n2{0}; n2 < this->max_radial; ++n2) {
+                      l_block_idx = 0;
                       for (size_t l{0}; l < this->max_angular + 1; ++l) {
                         size_t l_block_size{2 * l + 1};
                         // clang-format off
                         soap_neigh_gradient_by_species_pair(
-                                n1n2 + cartesian_offset, l) +=
+                                n1n2 + cartesian_offset_n1n2, l) +=
                           (expansion_coefficients_1.block(
-                                n1 + cartesian_offset, l_block_idx,
-                                1,                     l_block_size).array() *
+                                n1, l_block_idx,
+                                1,  l_block_size).array() *
                            grad_neigh_coefficients_2.block(
-                                n2 + cartesian_offset, l_block_idx,
-                                1,                     l_block_size).array())
-                                                                      .sum();
+                                n2 + cartesian_offset_n, l_block_idx,
+                                1, l_block_size).array()).sum();
                         // clang-format on
                         l_block_idx += l_block_size;
                       }
@@ -564,6 +571,10 @@ namespace rascal {
           // in this situation?
           Eigen::Vector3d soap_vector_dot_center_gradient{};
           soap_vector_dot_center_gradient.setZero();
+          // (n1, n2) * l
+          size_t grad_component_size{
+            static_cast<size_t>(math::pow(this->max_radial, 2))
+                             * (this->max_angular + 1)};
           for (auto soap_grad_spair : soap_center_gradient) {
             auto & soap_gradient_by_species_pair{soap_grad_spair.second};
             const auto & soap_vector_by_species_pair{
@@ -574,8 +585,8 @@ namespace rascal {
                   3, grad_component_size);
             const Eigen::Map<const Eigen::VectorXd> soap_vector_N(
                 soap_vector_by_species_pair.data(), grad_component_size);
-            soap_vector_dot_center_gradient += (soap_gradient_3N.transpose() *
-                                                soap_vector_N);
+            soap_vector_dot_center_gradient +=
+              (soap_gradient_3N * soap_vector_N);
           }
           // Now update each species-pair-block using the dot-product just
           // computed
@@ -611,8 +622,8 @@ namespace rascal {
                     3, grad_component_size);
               const Eigen::Map<const Eigen::VectorXd> soap_vector_N(
                   soap_vector_by_species_pair.data(), grad_component_size);
-              soap_vector_dot_neigh_gradient += (soap_gradient_3N.transpose() *
-                                                 soap_vector_N);
+              soap_vector_dot_neigh_gradient +=
+                (soap_gradient_3N * soap_vector_N);
             }
             // Then, update each species-pair-block
             for (auto soap_grad_spair : soap_neigh_gradient) {
