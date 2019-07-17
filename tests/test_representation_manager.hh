@@ -329,11 +329,11 @@ namespace rascal {
     std::vector<Structure_t> structures{};
   };
 
-  struct SingleHypersSphericalExpansion : SimplePeriodicNLStrictFixture {
+  struct SingleHypersSphericalRepresentation : SimplePeriodicNLStrictFixture {
     using Parent = SimplePeriodicNLStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
 
-    SingleHypersSphericalExpansion() : Parent{} {
+    SingleHypersSphericalRepresentation() : Parent{} {
       for (auto & ri_hyp : this->radial_contribution_hypers) {
         for (auto & fc_hyp : this->fc_hypers) {
           for (auto & sig_hyp : this->density_hypers) {
@@ -348,7 +348,7 @@ namespace rascal {
       }
     };
 
-    ~SingleHypersSphericalExpansion() = default;
+    ~SingleHypersSphericalRepresentation() = default;
 
     std::vector<json> hypers{};
     std::vector<json> fc_hypers{
@@ -361,7 +361,9 @@ namespace rascal {
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
     std::vector<json> rep_hypers{{{"max_radial", 2},
-                                  {"max_angular", 2}}};
+                                  {"max_angular", 2},
+                                  {"normalize", true},
+                                  {"soap_type", "PowerSpectrum"}}};
   };
 
   struct SphericalExpansionTestData : TestData {
@@ -456,39 +458,48 @@ namespace rascal {
       modified_structure.positions.col(center.get_index()) = center_position;
       this->structure_manager->update(modified_structure);
       representation.compute();
-      auto & coeffs_center = representation.expansions_coefficients[center];
-      auto keys_center =
-          representation.expansions_coefficients.get_keys(center);
+      auto & data_sparse{representation.get_representation_sparse()};
+      auto & data_center{data_sparse[center]};
+      auto keys_center = data_sparse.get_keys(center);
       Key_t center_key{center.get_atom_type()};
-      size_t n_coeffs_per_key{static_cast<size_t>(
-          representation.expansions_coefficients.get_nb_comp())};
-      size_t n_coeffs_center{n_coeffs_per_key * keys_center.size()};
+      size_t n_entries_per_key{static_cast<size_t>(data_sparse.get_nb_comp())};
+      size_t n_entries_center{n_entries_per_key * keys_center.size()};
       // Packed array containing: The center coefficients (all species) and
       // the neighbour coefficients (only same species as center)
-      Eigen::ArrayXd coeffs_pairs(n_coeffs_center +
-                                  center.size() * n_coeffs_per_key);
+      // TODO(max) this is broken for SOAP (and anything else that indexes by
+      // species pairs, rather than just single species keys)
+      // In short, we need to include all neighbour representation vectors where
+      // the gradient wrt center is nonzero -- in the case of SphExpn, this is
+      // just the one corresponding to the species of the central atom, but for
+      // SOAP it's all vectors for species pairs that _contain_ the species of
+      // the central atom.
+      // I'm considering just looping over _all_ species (keys) in the
+      // neighbours, regardless of whether the gradient is nonzero or not.  At
+      // least that would be consistent and work for both SOAP and SphExpn.
+      Eigen::ArrayXd data_pairs(n_entries_center +
+                                center.size() * n_entries_per_key);
 
       size_t result_idx{0};
       for (auto & key : keys_center) {
-        Eigen::Map<Eigen::RowVectorXd> coeffs_flat(coeffs_center[key].data(),
-                                                   n_coeffs_per_key);
-        coeffs_pairs.segment(result_idx, n_coeffs_per_key) = coeffs_flat;
-        result_idx += n_coeffs_per_key;
+        Eigen::Map<Eigen::RowVectorXd> data_flat(data_center[key].data(),
+                                                 n_entries_per_key);
+        data_pairs.segment(result_idx, n_entries_per_key) = data_flat;
+        result_idx += n_entries_per_key;
       }
       for (auto neigh : center) {
-        auto & coeffs_neigh = representation.expansions_coefficients[neigh];
+        auto & data_neigh = data_sparse[neigh];
         // The neighbour gradient (i =/= j) only contributes to the channel
         // associated with the _center_ type (the type of the atom that's
         // moving)
-        Eigen::Map<Eigen::ArrayXd> coeffs_flat(coeffs_neigh[center_key].data(),
-                                               n_coeffs_per_key);
-        coeffs_pairs.segment(result_idx, n_coeffs_per_key) = coeffs_flat;
-        result_idx += n_coeffs_per_key;
+        Eigen::Map<Eigen::ArrayXd> data_flat(data_neigh[center_key].data(),
+                                             n_entries_per_key);
+        data_pairs.segment(result_idx, n_entries_per_key) = data_flat;
+        result_idx += n_entries_per_key;
       }
 
       // Reset the atomic structure for the next iteration
       this->structure_manager->update(this->atomic_structure);
-      return coeffs_pairs.transpose();
+      return data_pairs.transpose();
     }
 
     Eigen::Array<double, 3, Eigen::Dynamic>
@@ -524,8 +535,6 @@ namespace rascal {
         typename RepManager::Key_t neigh_key{neigh.get_atom_type()};
         // We need grad_i c^{ji} -- using just 'neigh' would give us
         // grad_j c^{ij}, hence the swap
-        // TODO(max,felix) how does this apply to other representations,
-        // especially SOAP (sorry, SphericalInvariants<λ=0>)?
         auto neigh_swap{swap_pair_key(neigh)};
         auto & grad_coeffs_neigh =
             representation.expansions_coefficients_gradient[neigh_swap];

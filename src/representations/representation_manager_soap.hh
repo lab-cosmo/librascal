@@ -195,6 +195,14 @@ namespace rascal {
       return this->soap_vectors.get_raw_data();
     }
 
+    const SparseProperty_t & get_representation_sparse() {
+      return this->soap_vectors;
+    }
+
+    const SparsePropertyGradient_t & get_gradient_sparse() {
+      return this->soap_vector_gradients;
+    }
+
     size_t get_feature_size() { return this->soap_vectors.get_nb_comp(); }
 
     size_t get_center_size() { return this->soap_vectors.get_nb_item(); }
