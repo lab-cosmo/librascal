@@ -48,6 +48,7 @@ namespace rascal {
   template <class Fix>
   void BM_IntpRadCon(benchmark::State &state) {
     auto fix = Fix(state);
+    std::cout <<  fix.log_mean_error_bound << std::endl;
     int max_radial{1};
     int max_angular{max_radial-1};
     json fc_hypers{
@@ -81,6 +82,7 @@ namespace rascal {
         }
       }
     }
+    fix.TearDown();
     state.counters.insert({
         {"x1",fix.x1},
         {"x2",fix.x2},
@@ -103,7 +105,7 @@ namespace rascal {
     auto hyp1f1 = math::Hyp1f1(a, b, 200, 1e-15);
     for (auto _ : state) {
       for (int i{0}; i<fix.points.size();i++) {
-        hyp1f1.calc(fix.points(i));
+          hyp1f1.calc(fix.points(i));
       }
     }
     state.counters.insert({
@@ -128,7 +130,9 @@ namespace rascal {
     intp.initalize(func, fix.x1, fix.x2, fix.mean_error_bound); 
     for (auto _ : state) {
       for (int i{0}; i<fix.points.size();i++) {
-        intp.interpolate(fix.points(i));
+        benchmark::DoNotOptimize (
+          intp.interpolate(fix.points(i))
+        );
       }
     }
     state.counters.insert({
@@ -143,40 +147,39 @@ namespace rascal {
   }
 
 
-  template <class Fix>
-  void BM_IntpSimpFun(benchmark::State &state) {
-    auto fix = Fix(state);
-    auto intp{Interpolator <
-      InterpolationMethod<InterpolationMethod_t::CubicSpline>,
-      GridRational<GridType_t::Uniform, RefinementMethod_t::Adaptive>,
-      SearchMethod<SearchMethod_t::Hunt>
-        >()};
-    intp.initalize(fix.func, fix.x1, fix.x2, fix.mean_error_bound); 
+
+  template <class IntpFix>
+  void BM_IntpSimpFun(benchmark::State &state, IntpFix & fix) {
+    fix.SetUp(state);
+    //std::cout << "Start iteration " << fix.nb_points << std::endl;
     for (auto _ : state) {
-      for (int i{0}; i<fix.points.size();i++) {
-        intp.interpolate(fix.points(i));
+      for (size_t i{0}; i<fix.nb_points;i++) {
+        benchmark::DoNotOptimize (
+          fix.intp.interpolate(fix.points(i % fix.points.size()))
+        );
       }
     }
+    //std::cout << "End iteration" << std::endl;
     state.counters.insert({
         {"x1",fix.x1},
         {"x2",fix.x2},
         {"log(mean_error_bound)", fix.log_mean_error_bound},
-        {"log(mean_error)",std::log10(intp.mean_error)},
-        {"log(max_error)",std::log10(intp.max_error)},
-        //{"nb_points",fix.nb_points},
-        {"grid_size",intp.grid.size()}
+        {"log(mean_error)",std::log10(fix.intp.mean_error)},
+        {"log(max_error)",std::log10(fix.intp.max_error)},
+        {"nb_points",fix.nb_points},
+        {"grid_size",fix.intp.grid.size()}
       });
-  }
-
-
+  }  
+  auto intpfix_i_s{IntpFix<I_S>()};
+  //BENCHMARK_CAPTURE(BM_IntpSimpFun, test_name, intpfix_i_s)->Apply(AllCombinationsArguments<I_S>)->Complexity();
   //BENCHMARK_TEMPLATE(BM_IntpSimpFun, IntpFix<I_B>)->Apply(AllCombinationsArguments<I_B>);
   
-  //BENCHMARK_TEMPLATE(BM_RadCon, IntpFix<CF_S>)->Apply(AllCombinationsArguments<CF_S>);
-  //BENCHMARK_TEMPLATE(BM_IntpRadCon, IntpFix<CFI_B>)->Apply(AllCombinationsArguments<CFI_B>);
+  //BENCHMARK_TEMPLATE(BM_RadCon, IntpFix<CF_B>)->Apply(AllCombinationsArguments<CF_B>);
+  BENCHMARK_TEMPLATE(BM_IntpRadCon, IntpFix<CFI_B>)->Apply(AllCombinationsArguments<CFI_B>);
 
-  BENCHMARK_TEMPLATE(BM_Hyp1f1, IntpFix<CF_S>)->Apply(AllCombinationsArguments<CF_S>);
+  //BENCHMARK_TEMPLATE(BM_Hyp1f1, IntpFix<CF_S>)->Apply(AllCombinationsArguments<CF_S>);
 
-  BENCHMARK_TEMPLATE(BM_IntpHyp1f1, IntpFix<CFI_B>)->Apply(AllCombinationsArguments<CFI_B>);
+  //BENCHMARK_TEMPLATE(BM_IntpHyp1f1, IntpFix<CFI_B>)->Apply(AllCombinationsArguments<CFI_B>);
 
 
 

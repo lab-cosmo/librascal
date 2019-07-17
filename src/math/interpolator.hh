@@ -357,15 +357,14 @@ namespace rascal {
         return std::max(0,std::min(n-mm,jl-((mm-2)>>1)));
       }
 
-      // TODO(alex) change xx to const Ref & because it is not modified 
       size_t hunt(double x, const Vector_Ref & xx){
         int n{static_cast<int>(xx.size())};
         int mm{static_cast<int>(nb_support_points)};
         int jsav{static_cast<int>(this->last_accessed_index)};
 
         int jl=jsav, jm, ju, inc=1;
-        // TODO(alex) runtime error?
         DEBUG_IF (n < 2 || mm < 2 || mm > n) throw std::runtime_error ("hunt size error");
+
         bool ascnd=(xx[n-1] >= xx[0]);
         if (jl < 0 || jl > n-1) {
           jl=0;
@@ -418,7 +417,7 @@ namespace rascal {
     template<class InterpolationMethod, class GridRational, class SearchMethod>
     class Interpolator {
      public: 
-      Interpolator() : mean_error{0}, max_error{0}, intp_method{InterpolationMethod()}, grid_rational{GridRational()}, search_method{SearchMethod()} {}
+      Interpolator() : intp_method{InterpolationMethod()}, grid_rational{GridRational()}, search_method{SearchMethod()} {}
 
       void initalize(std::function<double(double)> function, double x1, double x2, double precision) {
         if (x2<x1) {
@@ -452,7 +451,7 @@ namespace rascal {
         double error{this->compute_grid_error()};
         // TODO(alex) add some procedure to not get locked if precision is too
         // high
-        while (error > this->precision) {
+        while (error > this->precision || this->grid.size() < this->max_grid_points) {
           this->fineness++;
           error = this->compute_grid_error();
         }
@@ -477,10 +476,10 @@ namespace rascal {
         grid_rational.update_errors(Vector_Ref(error_grid));
         this->max_error = error_grid.maxCoeff();
         this->mean_error = error_grid.mean();
-        if (this->grid.size() % 500==0) {
-          std::cout << "grid_size=" << this->grid.size() << std::endl;
-          std::cout << "mean_error=" << this->mean_error << std::endl;
-        }
+        //if (this->grid.size() % 1==0) {
+        //  std::cout << "grid_size=" << this->grid.size() << std::endl;
+        //  std::cout << "mean_error=" << this->mean_error << std::endl;
+        //}
         //if (grid_rational.grid_size % 50 == 0) {
         //  std::cout << "fineness=" << this->fineness << std::endl;
         //  std::cout << "mean error=" << this->mean_error << std::endl;
@@ -535,6 +534,7 @@ namespace rascal {
       double mean_error;
       double max_error;
       int fineness{0};
+      int max_grid_points{1000000};
       Vector_t grid{};
       Vector_t evaluated_grid{};
 
