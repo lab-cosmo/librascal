@@ -45,13 +45,14 @@ namespace rascal {
    * center-center pairs
    */
   template <class ManagerImplementation>
-  struct StructureManager_traits<AdaptorMaxOrder<ManagerImplementation>> {
+  struct StructureManager_traits<AdaptorCenterPairs<ManagerImplementation>> {
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDistances{false};
     constexpr static bool HasDirectionVectors{
         ManagerImplementation::traits::HasDirectionVectors};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
     // New MaxOrder upon construction stays the same
+    // todo(markus) reset PairOrder to zero since new pairs are added
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
 
     using LayerByOrder = typename LayerExtender<
@@ -64,12 +65,13 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   class AdaptorCenterPairs
-    : public StructureManager<AdaptorCenterPairs<ManagerImplementation>>,
-      public std::enable_shared_from_this<AdaptorCenterPairs<ManagerImplementation>> {
+      : public StructureManager<AdaptorCenterPairs<ManagerImplementation>>,
+        public std::enable_shared_from_this<
+            AdaptorCenterPairs<ManagerImplementation>> {
 
    public:
     using Manager_t = AdaptorCenterPairs<ManagerImplementation>;
-    using Parent StructureManager<Manager_t>;
+    using Parent = StructureManager<Manager_t>;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorCenterPairs>;
     using Vector_ref = typename Parent::Vector_ref;
@@ -95,7 +97,7 @@ namespace rascal {
     AdaptorCenterPairs(const AdaptorCenterPairs & other) = delete;
 
     //! Move constructor
-    AdaptorCenterPairs(const AdaptorCenterPairs && other) = default;
+    AdaptorCenterPairs(AdaptorCenterPairs && other) = default;
 
     //! Destructor
     virtual ~AdaptorCenterPairs() = default;
@@ -113,24 +115,24 @@ namespace rascal {
     template <class... Args>
     void update(Args &&... arguments);
 
-
    protected:
     ImplementationPtr_t structure_manager;
-   private:
-  }
 
-  template <class ManagerImplementation, size_t MaxOrder>
+   private:
+  };
+
+  template <class ManagerImplementation>
   class AdaptorCenterPairs<ManagerImplementation>::Filter
-    : public AdaptorFilter<ManagerImplementation, MaxOrder> {
+      : public AdaptorFilter<ManagerImplementation, traits::MaxOrder> {
    public:
-    using Parent = AdaptorFilter<ManagerImplementation, MaxOrder>;
+    using Parent = AdaptorFilter<ManagerImplementation, traits::MaxOrder>;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
 
     //! Default constructor
     Filter() = delete;
 
     Filter(ImplementationPtr_t manager)
-      : Parent{manager}, structure_manager{manager} {}
+        : Parent{manager}, structure_manager{manager} {}
 
     //! Copy constructor
     Filter(const Filter & other) = delete;
@@ -148,19 +150,29 @@ namespace rascal {
     Filter & operator=(Filter && other) = delete;
 
     //! This is where the magic happens and the center-pairs are added
-    void perform_filtering() final{
-      for (atom : this->structure_manager)
-        // add ii-pair
+    void perform_filtering() final {
+      for (auto && atom : this->structure_manager) {
 
-        for (pair : atom) {
+        // construct and add ii-pair
+        auto ii_pair{*(atom.begin())};
+
+        ii_pair.back() = ii_pair.front();
+        ii_pair.get_atom_type() = atom.get_atom_type();
+        ii_pair.get_position() = atom.get_position();
+
+        this->add_cluster(ii_pair);
+
+        // add all other pairs in neighbour list
+        for (auto && pair : atom) {
           this->add_cluster(pair);
         }
+      }
     };
 
    protected:
     ImplementationPtr_t structure_manager;
-  }
+  };
 
 }  // namespace rascal
 
-#endif // SRC_STRUCTURE_MANAGERS_ADAPTOR_CENTER_PAIRS_HH_
+#endif  // SRC_STRUCTURE_MANAGERS_ADAPTOR_CENTER_PAIRS_HH_

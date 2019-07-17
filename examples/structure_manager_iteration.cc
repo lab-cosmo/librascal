@@ -30,6 +30,7 @@
 #include <structure_managers/adaptor_increase_maxorder.hh>
 #include <structure_managers/adaptor_neighbour_list.hh>
 #include <structure_managers/adaptor_strict.hh>
+#include <structure_managers/adaptor_center_pairs.hh>
 #include <structure_managers/make_structure_manager.hh>
 #include <structure_managers/property.hh>
 #include <structure_managers/structure_manager_centers.hh>
@@ -83,6 +84,10 @@ int main() {
   // `strict_manager` is constructed with a `pair_manager`.
   auto strict_manager{rascal::make_adapted_manager<rascal::AdaptorStrict>(
       pair_manager, cutoff)};
+
+  auto center_contrib_manager{
+      rascal::make_adapted_manager<rascal::AdaptorCenterPairs>(strict_manager)};
+
   // calling the `.update()` method triggers the build of a strict neighbourlist
   // (all pairs are within the specified cutoff)
   //  strict_manager.update();

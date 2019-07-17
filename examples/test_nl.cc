@@ -51,33 +51,34 @@
 // using namespace std;
 using namespace rascal;  // NOLINT
 
-template<typename Manager,
-        template <class> class... AdaptorImplementationPack>
+template <typename Manager, template <class> class... AdaptorImplementationPack>
 struct Test {
-  using ManagerTypeHolder_t = StructureManagerTypeHolder<StructureManagerCenters,
-                                   AdaptorNeighbourList, AdaptorStrict>;
+  using ManagerTypeHolder_t =
+      StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList,
+                                 AdaptorStrict>;
   using ManagerTypeList_t = typename ManagerTypeHolder_t::type_list;
   void operator()() {
-    std::cout << internal::GetTypeName<ManagerTypeList_t>()<<std::endl;
+    std::cout << internal::GetTypeName<ManagerTypeList_t>() << std::endl;
   }
 };
 
 // using Representation_t = CalculatorSphericalInvariants;
-using ManagerTypeHolder_t = StructureManagerTypeHolder<StructureManagerCenters,
-                                   AdaptorNeighbourList, AdaptorStrict>;
+using ManagerTypeHolder_t =
+    StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList,
+                               AdaptorStrict>;
 using ManagerTypeList_t = typename ManagerTypeHolder_t::type_list;
 using Manager_t = typename ManagerTypeHolder_t::type;
-using ManagerCollection_t = typename TypeHolderInjector<ManagerCollection,ManagerTypeList_t>::type;
-// using Manager_t = AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>;
+using ManagerCollection_t =
+    typename TypeHolderInjector<ManagerCollection, ManagerTypeList_t>::type;
+// using Manager_t =
+// AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>;
 using Representation_t = CalculatorSphericalInvariants;
 using Property_t = typename Representation_t::template Property_t<Manager_t>;
 // using ManagerCollection_t = ManagerCollection<>;
 using Test1 = typename TypeHolderInjector<Test, ManagerTypeList_t>::type;
 
 template <typename T, size_t Order, int NbRow = 1, int NbCol = 1>
-using Prop_t =
-      Property<T, Order, 1,
-                 Manager_t, NbRow, NbCol>;
+using Prop_t = Property<T, Order, 1, Manager_t, NbRow, NbCol>;
 
 int main() {
   Test1()();
@@ -111,8 +112,9 @@ int main() {
   json adaptors;
   json ad1{{"name", "AdaptorNeighbourList"},
            {"initialization_arguments",
-            {{"cutoff", cutoff}, {"consider_ghost_neighbours", false},
-            {"skin", 0.}}}};
+            {{"cutoff", cutoff},
+             {"consider_ghost_neighbours", false},
+             {"skin", 0.}}}};
   json ad2{{"name", "AdaptorStrict"},
            {"initialization_arguments", {{"cutoff", cutoff}}}};
   adaptors.emplace_back(ad1);
@@ -125,12 +127,13 @@ int main() {
   // representation.compute(collection);
 
   auto manager =
-          make_structure_manager_stack<StructureManagerCenters,
-                  AdaptorNeighbourList, AdaptorStrict>(
-                  structure, adaptors);
+      make_structure_manager_stack<StructureManagerCenters,
+                                   AdaptorNeighbourList, AdaptorStrict>(
+          structure, adaptors);
 
-  // using Prop_t = typename StructureManager<AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>::template Property_t<int, 1, 1>;
-
+  // using Prop_t = typename
+  // StructureManager<AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>::template
+  // Property_t<int, 1, 1>;
 
   auto prop = Prop_t<int, 1>(*manager);
   int ii{0};
@@ -141,24 +144,35 @@ int main() {
   }
 
   for (auto center : manager) {
-    auto&& center_tag = center.get_atom_tag();
-    std::cout << "Center prop: "<< center_tag << " -- " << prop[center]<< " -- " << manager->get_position(center_tag).transpose()<<  std::endl;
+    auto && center_tag = center.get_atom_tag();
+    std::cout << "Center prop: " << center_tag << " -- " << prop[center]
+              << " -- " << manager->get_position(center_tag).transpose()
+              << std::endl;
     for (auto neigh : center) {
+      std::cout << "typeid(neigh) " << typeid(neigh).name() << std::endl;
       auto atom_j = neigh.get_atom_j();
-      auto&& atom_j_tag = atom_j.get_atom_tag();
-      std::cout << "atom_j prop: "<< atom_j_tag << " -- " << prop[atom_j]<< " -- " << manager->get_position(atom_j_tag).transpose()<<  std::endl;
+      auto && atom_j_tag = atom_j.get_atom_tag();
+      std::cout << "atom_j prop: " << atom_j_tag << " -- " << prop[atom_j]
+                << " -- " << manager->get_position(atom_j_tag).transpose()
+                << std::endl;
     }
   }
 
   // for (auto center : manager) {
   //   auto&& center_tag = center.get_atom_tag();
-  //   std::cout << "Center tag: "<< center_tag << " -- " << manager->get_atom_index(center_tag) << " -- " << center.get_atom_type() << " -- " << center.get_position().transpose() <<  std::endl;
-  //   for (auto neigh : center) {
+  //   std::cout << "Center tag: "<< center_tag << " -- " <<
+  //   manager->get_atom_index(center_tag) << " -- " << center.get_atom_type()
+  //   << " -- " << center.get_position().transpose() <<  std::endl; for (auto
+  //   neigh : center) {
   //     auto&& neigh_tag = neigh.get_atom_tag();
-  //     std::cout << "Neigh tag: "<< neigh_tag << " -- " << manager->get_atom_index(neigh_tag) << " -- " << neigh.get_atom_type() << " -- " << neigh.get_position().transpose() <<  std::endl;
-  //     auto atom_j = neigh.get_atom_j();
-  //     auto&& atom_j_tag = atom_j.get_atom_tag();
-  //     std::cout << "atom_j tag: "<< atom_j_tag << " -- " << manager->get_atom_index(atom_j_tag) << " -- " << manager->get_atom_type(atom_j_tag) << " -- " << manager->get_position(atom_j_tag).transpose() <<  std::endl;
+  //     std::cout << "Neigh tag: "<< neigh_tag << " -- " <<
+  //     manager->get_atom_index(neigh_tag) << " -- " << neigh.get_atom_type()
+  //     << " -- " << neigh.get_position().transpose() <<  std::endl; auto
+  //     atom_j = neigh.get_atom_j(); auto&& atom_j_tag = atom_j.get_atom_tag();
+  //     std::cout << "atom_j tag: "<< atom_j_tag << " -- " <<
+  //     manager->get_atom_index(atom_j_tag) << " -- " <<
+  //     manager->get_atom_type(atom_j_tag) << " -- " <<
+  //     manager->get_position(atom_j_tag).transpose() <<  std::endl;
   //   }
   // }
 
@@ -190,16 +204,15 @@ int main() {
   // //                     {"target_type", "Atom"}};
   // // Kernel<internal::KernelType::Cosine> kernel_local{kernel_hypers_local};
 
-  // // auto mat_local = kernel_local.compute(representation, collectionA, collectionA);
+  // // auto mat_local = kernel_local.compute(representation, collectionA,
+  // collectionA);
   // // std::cout << mat_local << std::endl;
 
-
   // // auto property_name{representation.get_name()};
-  // // auto&& property{manager->template get_validated_property_ref<Property_t>(property_name)};
-
+  // // auto&& property{manager->template
+  // get_validated_property_ref<Property_t>(property_name)};
 
   // // auto test_representation{property.get_dense_rep()};
-
 
   // TODELETE
   // size_t inner_size{representation.get_feature_size()};
@@ -233,4 +246,3 @@ int main() {
 
   return (0);
 }
-
