@@ -74,14 +74,19 @@ using Property_t = typename Representation_t::template Property_t<Manager_t>;
 // using ManagerCollection_t = ManagerCollection<>;
 using Test1 = typename TypeHolderInjector<Test, ManagerTypeList_t>::type;
 
+template <typename T, size_t Order, int NbRow = 1, int NbCol = 1>
+using Prop_t =
+      Property<T, Order, 1,
+                 Manager_t, NbRow, NbCol>;
+
 int main() {
   Test1()();
-  std::string filename{"reference_data/dft-smiles_500.ubjson"};
+  // std::string filename{"reference_data/dft-smiles_500.ubjson"};
   // std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
-  // std::string filename{"reference_data/methane.json"};
+  std::string filename{"reference_data/methane.json"};
   std::string rep_id{"pp"};
 
-  double cutoff{5.};
+  double cutoff{3.};
   // json hypers{{"max_radial", 6},
   //             {"max_angular", 6},
   //             {"soap_type", "PowerSpectrum"},
@@ -119,47 +124,81 @@ int main() {
   // Representation_t representation{hypers};
   // representation.compute(collection);
 
-  // auto manager =
-  //         make_structure_manager_stack<StructureManagerCenters,
-  //                 AdaptorNeighbourList, AdaptorStrict>(
-  //                 structure, adaptors);
-  ManagerCollection_t collectionA{adaptors};
-  collectionA.add_structures(filename, 0, 10);
-  std::cout << collectionA.size() << std::endl;
-  ManagerCollection_t collectionB{adaptors};
-  collectionB.add_structures(filename, 0, 10);
-  std::cout << collectionB.size() << std::endl;
+  auto manager =
+          make_structure_manager_stack<StructureManagerCenters,
+                  AdaptorNeighbourList, AdaptorStrict>(
+                  structure, adaptors);
 
-  Representation_t representation{hypers};
-  representation.compute(collectionA);
-  representation.compute(collectionB);
+  // using Prop_t = typename StructureManager<AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>::template Property_t<int, 1, 1>;
 
-  json kernel_hypers{{"zeta", 2},
-                      {"target_type", "Structure"},
-                      {"name", "Cosine"}};
-  Kernel kernel{kernel_hypers};
-  // for (auto& manager : collectionA) {
-  //   for (auto center : manager) {
-  //     std::cout << center.get_position().transpose() << std::endl;
+
+  auto prop = Prop_t<int, 1>(*manager);
+  int ii{0};
+  prop.resize();
+  for (auto center : manager) {
+    prop[center] = ii;
+    ++ii;
+  }
+
+  for (auto center : manager) {
+    auto&& center_tag = center.get_atom_tag();
+    std::cout << "Center prop: "<< center_tag << " -- " << prop[center]<< " -- " << manager->get_position(center_tag).transpose()<<  std::endl;
+    for (auto neigh : center) {
+      auto atom_j = neigh.get_atom_j();
+      auto&& atom_j_tag = atom_j.get_atom_tag();
+      std::cout << "atom_j prop: "<< atom_j_tag << " -- " << prop[atom_j]<< " -- " << manager->get_position(atom_j_tag).transpose()<<  std::endl;
+    }
+  }
+
+  // for (auto center : manager) {
+  //   auto&& center_tag = center.get_atom_tag();
+  //   std::cout << "Center tag: "<< center_tag << " -- " << manager->get_atom_index(center_tag) << " -- " << center.get_atom_type() << " -- " << center.get_position().transpose() <<  std::endl;
+  //   for (auto neigh : center) {
+  //     auto&& neigh_tag = neigh.get_atom_tag();
+  //     std::cout << "Neigh tag: "<< neigh_tag << " -- " << manager->get_atom_index(neigh_tag) << " -- " << neigh.get_atom_type() << " -- " << neigh.get_position().transpose() <<  std::endl;
+  //     auto atom_j = neigh.get_atom_j();
+  //     auto&& atom_j_tag = atom_j.get_atom_tag();
+  //     std::cout << "atom_j tag: "<< atom_j_tag << " -- " << manager->get_atom_index(atom_j_tag) << " -- " << manager->get_atom_type(atom_j_tag) << " -- " << manager->get_position(atom_j_tag).transpose() <<  std::endl;
   //   }
-  //   std::cout  << std::endl;
   // }
-  auto mat = kernel.compute(representation, collectionA, collectionB);
-  std::cout << mat << std::endl;
 
-  // json kernel_hypers_local{{"zeta", 2},
-  //                     {"target_type", "Atom"}};
-  // Kernel<internal::KernelType::Cosine> kernel_local{kernel_hypers_local};
+  // ManagerCollection_t collectionA{adaptors};
+  // collectionA.add_structures(filename, 0, 10);
+  // std::cout << collectionA.size() << std::endl;
+  // ManagerCollection_t collectionB{adaptors};
+  // collectionB.add_structures(filename, 0, 10);
+  // std::cout << collectionB.size() << std::endl;
 
-  // auto mat_local = kernel_local.compute(representation, collectionA, collectionA);
-  // std::cout << mat_local << std::endl;
+  // Representation_t representation{hypers};
+  // representation.compute(collectionA);
+  // representation.compute(collectionB);
+
+  // json kernel_hypers{{"zeta", 2},
+  //                     {"target_type", "Structure"},
+  //                     {"name", "Cosine"}};
+  // Kernel kernel{kernel_hypers};
+  // // for (auto& manager : collectionA) {
+  // //   for (auto center : manager) {
+  // //     std::cout << center.get_position().transpose() << std::endl;
+  // //   }
+  // //   std::cout  << std::endl;
+  // // }
+  // auto mat = kernel.compute(representation, collectionA, collectionB);
+  // std::cout << mat << std::endl;
+
+  // // json kernel_hypers_local{{"zeta", 2},
+  // //                     {"target_type", "Atom"}};
+  // // Kernel<internal::KernelType::Cosine> kernel_local{kernel_hypers_local};
+
+  // // auto mat_local = kernel_local.compute(representation, collectionA, collectionA);
+  // // std::cout << mat_local << std::endl;
 
 
-  // auto property_name{representation.get_name()};
-  // auto&& property{manager->template get_validated_property_ref<Property_t>(property_name)};
+  // // auto property_name{representation.get_name()};
+  // // auto&& property{manager->template get_validated_property_ref<Property_t>(property_name)};
 
 
-  // auto test_representation{property.get_dense_rep()};
+  // // auto test_representation{property.get_dense_rep()};
 
 
   // TODELETE

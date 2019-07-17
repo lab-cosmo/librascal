@@ -165,7 +165,8 @@ namespace rascal {
       return this->atom_tag_list[0][index];
     }
 
-    /* Since the cluster indices of order 1 are only copied in this filter we
+    /**
+     * Since the cluster indices of order 1 are only copied in this filter we
      * can safely use the before-computed list from the previous manager,
      * since they are still valid for access.
      */

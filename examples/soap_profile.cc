@@ -131,8 +131,8 @@ int main(int argc, char * argv[]) {
   std::cout << "Compute represenation"
             << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
             << std::endl;
-  auto property_name{representation.get_name()};
-  auto&& property{manager->template get_validated_property_ref<Property_t>(property_name)};
+  // auto property_name{representation.get_name()};
+  // auto&& property{manager->template get_validated_property_ref<Property_t>(property_name)};
   // auto soap{property.get_dense_rep()};
   // TODELETE
   // auto soap = representation.get_dense_rep();
