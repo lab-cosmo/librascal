@@ -107,6 +107,8 @@ namespace rascal {
       using Map_t = std::map<K, std::tuple<int, int, int>>;
       using Precision_t = typename V::value_type;
       using Data_t = Eigen::Array<Precision_t, Eigen::Dynamic, 1>;
+      using DataRef_t = Eigen::Ref<Data_t>;
+      using DataConstRef_t = const Eigen::Ref<const Data_t>;
       //! the data holder.
       Data_t data{};
       Map_t map{};
@@ -334,28 +336,22 @@ namespace rascal {
       /**
        * l^2 norm of the entire vector
        */
-      inline double norm() {
-        using ref = typename Eigen::Map<Eigen::VectorXd>;
-        auto data_ref{ref(&data[0], data.size())};
-        return data_ref.norm();
+      inline Precision_t norm() const {
+        return this->data.matrix().norm();
       }
 
       /**
        * squared l^2 norm of the entire vector (sum of squared elements)
        */
-      inline double squaredNorm() {
-        using ref = typename Eigen::Map<Eigen::VectorXd>;
-        auto data_ref{ref(&data[0], data.size())};
-        return data_ref.squaredNorm();
+      inline Precision_t squaredNorm() const {
+        return this->data.matrix().squaredNorm();
       }
 
       /**
        * Normalize the whole vector
        */
       inline void normalize() {
-        using ref = typename Eigen::Map<Eigen::VectorXd>;
-        auto data_ref{ref(&data[0], data.size())};
-        data_ref /= data_ref.norm();
+        this->data /= this->data.matrix().norm();
       }
 
       inline void multiply_offdiagonal_elements_by(const double & fac) {
@@ -367,6 +363,20 @@ namespace rascal {
                                  std::get<1>(pos), std::get<2>(pos))};
             block *= fac;
           }
+        }
+      }
+
+      /**
+       * dot product from the left side
+       * A = left_side_mat*A where A are all the key blocks
+       */
+      template <typename Derived>
+      inline void lhs_dot(const Eigen::EigenBase<Derived> & left_side_mat) {
+        for (const auto & el : this->map) {
+          auto && pos{el.second};
+          auto block{reference(&this->data[std::get<0>(pos)], std::get<1>(pos),
+                               std::get<2>(pos))};
+          block.transpose() *= left_side_mat;
         }
       }
 

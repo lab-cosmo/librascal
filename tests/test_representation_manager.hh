@@ -278,8 +278,12 @@ namespace rascal {
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
-    std::vector<json> rep_hypers{{{"max_radial", 4}, {"max_angular", 2}},
-                                 {{"max_radial", 6}, {"max_angular", 4}}};
+    std::vector<json> rep_hypers{{{"max_radial", 4},
+                                  {"max_angular", 2},
+                                  {"compute_gradients", true}},
+                                 {{"max_radial", 6},
+                                  {"max_angular", 4},
+                                  {"compute_gradients", true}}};
   };
 
   /** Contains some simple periodic structures for testing complicated things
@@ -361,7 +365,8 @@ namespace rascal {
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
     std::vector<json> rep_hypers{{{"max_radial", 2},
-                                  {"max_angular", 2}}};
+                                  {"max_angular", 2},
+                                  {"compute_gradients", true}}};
   };
 
   struct SphericalExpansionTestData : TestData {
@@ -394,6 +399,10 @@ namespace rascal {
       Eigen::ArrayXXd result(this->max_radial, this->max_angular + 1);
       result = this->radial_integral->template compute_neighbour_contribution<
           internal::AtomicSmearingType::Constant>(input_v(0), this->pair);
+      // result.matrix().transpose() *=
+      //     this->radial_integral->radial_norm_factors.asDiagonal();
+      // result.matrix().transpose() *=
+      //     this->radial_integral->radial_ortho_matrix;
       Eigen::Map<Eigen::Array<double, 1, Eigen::Dynamic>> result_flat(
           result.data(), 1, result.size());
       return result_flat;
