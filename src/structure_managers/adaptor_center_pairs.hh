@@ -29,9 +29,7 @@
 #ifndef SRC_STRUCTURE_MANAGERS_ADAPTOR_CENTER_PAIRS_HH_
 #define SRC_STRUCTURE_MANAGERS_ADAPTOR_CENTER_PAIRS_HH_
 
-#include "structure_managers/structure_manager.hh"
 #include "structure_managers/adaptor_filter.hh"
-#include "structure_managers/updateable_base.hh"
 
 namespace rascal {
   /**
@@ -65,89 +63,9 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   class AdaptorCenterPairs
-      : public StructureManager<AdaptorCenterPairs<ManagerImplementation>>,
-        public std::enable_shared_from_this<
-            AdaptorCenterPairs<ManagerImplementation>> {
-
+      : public AdaptorFilter<ManagerImplementation, MaxOrder> {
    public:
-    using Manager_t = AdaptorCenterPairs<ManagerImplementation>;
-    using Parent = StructureManager<Manager_t>;
-    using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorCenterPairs>;
-    using Vector_ref = typename Parent::Vector_ref;
-    using Hypers_t = typename Parent::Hypers_t;
-
-    static_assert(traits::MaxOrder > 1,
-                  "ManagerImplementation needs to handle pairs");
-    constexpr static auto AtomLayer{
-        Manager_t::template cluster_layer_from_order<1>()};
-    constexpr static auto PairLayer{
-        Manager_t::template cluster_layer_from_order<2>()};
-
-    class Filter;
-
-    //! Default constructor
-    AdaptorCenterPairs() = delete;
-
-    //! Construct a neighbourhood which includes pairs of centers
-    AdaptorCenterPairs(ImplementationPtr_t manager)
-        : structure_manager{manager} {};
-
-    //! Copy constructor
-    AdaptorCenterPairs(const AdaptorCenterPairs & other) = delete;
-
-    //! Move constructor
-    AdaptorCenterPairs(AdaptorCenterPairs && other) = default;
-
-    //! Destructor
-    virtual ~AdaptorCenterPairs() = default;
-
-    //! Copy assignment operator
-    AdaptorCenterPairs & operator=(const AdaptorCenterPairs & other) = delete;
-
-    //! Move assignment operator
-    AdaptorCenterPairs & operator=(AdaptorCenterPairs && other) = default;
-
-    //! Update the adaptor assuming the underlying manager was update
-    inline void update_self();
-
-    //! Update the underlying manager as well as the adaptor
-    template <class... Args>
-    void update(Args &&... arguments);
-
-   protected:
-    ImplementationPtr_t structure_manager;
-
-   private:
-  };
-
-  template <class ManagerImplementation>
-  class AdaptorCenterPairs<ManagerImplementation>::Filter
-      : public AdaptorFilter<ManagerImplementation, traits::MaxOrder> {
-   public:
-    using Parent = AdaptorFilter<ManagerImplementation, traits::MaxOrder>;
-    using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
-
-    //! Default constructor
-    Filter() = delete;
-
-    Filter(ImplementationPtr_t manager)
-        : Parent{manager}, structure_manager{manager} {}
-
-    //! Copy constructor
-    Filter(const Filter & other) = delete;
-
-    //! Move constructor
-    Filter(Filter && other) = delete;
-
-    //! Destructor
-    virtual ~Filter() = default;
-
-    //! Copy assignment operator
-    Filter & operator=(const Filter & other) = delete;
-
-    //! Move assignment operator
-    Filter & operator=(Filter && other) = delete;
 
     //! This is where the magic happens and the center-pairs are added
     void perform_filtering() final {
@@ -167,12 +85,117 @@ namespace rascal {
           this->add_cluster(pair);
         }
       }
-    };
-
-   protected:
-    ImplementationPtr_t structure_manager;
-  };
-
+    }
+  }
 }  // namespace rascal
 
 #endif  // SRC_STRUCTURE_MANAGERS_ADAPTOR_CENTER_PAIRS_HH_
+
+//   StructureManager<AdaptorCenterPairs<ManagerImplementation>>,
+//         public std::enable_shared_from_this<
+//             AdaptorCenterPairs<ManagerImplementation>> {
+
+//    public:
+//     using Manager_t = AdaptorCenterPairs<ManagerImplementation>;
+//     using Parent = StructureManager<Manager_t>;
+//     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
+//     using traits = StructureManager_traits<AdaptorCenterPairs>;
+//     using Vector_ref = typename Parent::Vector_ref;
+//     using Hypers_t = typename Parent::Hypers_t;
+
+//     static_assert(traits::MaxOrder > 1,
+//                   "ManagerImplementation needs to handle pairs");
+//     constexpr static auto AtomLayer{
+//         Manager_t::template cluster_layer_from_order<1>()};
+//     constexpr static auto PairLayer{
+//         Manager_t::template cluster_layer_from_order<2>()};
+
+//     class Filter;
+
+//     //! Default constructor
+//     AdaptorCenterPairs() = delete;
+
+//     //! Construct a neighbourhood which includes pairs of centers
+//     AdaptorCenterPairs(ImplementationPtr_t manager)
+//         : structure_manager{manager} {};
+
+//     //! Copy constructor
+//     AdaptorCenterPairs(const AdaptorCenterPairs & other) = delete;
+
+//     //! Move constructor
+//     AdaptorCenterPairs(AdaptorCenterPairs && other) = default;
+
+//     //! Destructor
+//     virtual ~AdaptorCenterPairs() = default;
+
+//     //! Copy assignment operator
+//     AdaptorCenterPairs & operator=(const AdaptorCenterPairs & other) =
+//     delete;
+
+//     //! Move assignment operator
+//     AdaptorCenterPairs & operator=(AdaptorCenterPairs && other) = default;
+
+//     //! Update the adaptor assuming the underlying manager was update
+//     inline void update_self();
+
+//     //! Update the underlying manager as well as the adaptor
+//     template <class... Args>
+//     void update(Args &&... arguments);
+
+//    protected:
+//     ImplementationPtr_t structure_manager;
+
+//    private:
+//   };
+
+//   template <class ManagerImplementation>
+//   class AdaptorCenterPairs<ManagerImplementation>::Filter
+//       : public AdaptorFilter<ManagerImplementation, traits::MaxOrder> {
+//    public:
+//     using Parent = AdaptorFilter<ManagerImplementation, traits::MaxOrder>;
+//     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
+
+//     //! Default constructor
+//     Filter() = delete;
+
+//     Filter(ImplementationPtr_t manager)
+//         : Parent{manager}, structure_manager{manager} {}
+
+//     //! Copy constructor
+//     Filter(const Filter & other) = delete;
+
+//     //! Move constructor
+//     Filter(Filter && other) = delete;
+
+//     //! Destructor
+//     virtual ~Filter() = default;
+
+//     //! Copy assignment operator
+//     Filter & operator=(const Filter & other) = delete;
+
+//     //! Move assignment operator
+//     Filter & operator=(Filter && other) = delete;
+
+//     //! This is where the magic happens and the center-pairs are added
+//     void perform_filtering() final {
+//       for (auto && atom : this->structure_manager) {
+
+//         // construct and add ii-pair
+//         auto ii_pair{*(atom.begin())};
+
+//         ii_pair.back() = ii_pair.front();
+//         ii_pair.get_atom_type() = atom.get_atom_type();
+//         ii_pair.get_position() = atom.get_position();
+
+//         this->add_cluster(ii_pair);
+
+//         // add all other pairs in neighbour list
+//         for (auto && pair : atom) {
+//           this->add_cluster(pair);
+//         }
+//       }
+//     };
+
+//    protected:
+//     ImplementationPtr_t structure_manager;
+//   };
