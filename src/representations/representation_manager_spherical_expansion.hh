@@ -384,8 +384,8 @@ namespace rascal {
               (this->a_b_l_n.col(angular_l - 1).array() * a_b_l).matrix();
         }
 
-        this->hyp1f1_calculator.calc(distance, fac_a, this->fac_b);
-        // this->hyp1f1_calculator.calc(distance, fac_a, this->fac_b, this->compute_gradients);
+        // this->hyp1f1_calculator.calc(distance, fac_a, this->fac_b);
+        this->hyp1f1_calculator.calc(distance, fac_a, this->fac_b, this->compute_gradients);
 
         this->radial_integral_neighbour =
             (this->a_b_l_n.array() *
@@ -427,14 +427,14 @@ namespace rascal {
       template <AtomicSmearingType AST, size_t Order, size_t Layer>
       Matrix_Ref
       compute_neighbour_derivative(const double & distance,
-                                   ClusterRefKey<Order, Layer> & pair) {
+                                   ClusterRefKey<Order, Layer> & /*pair*/) {
         using math::PI;
         using math::pow;
         using std::sqrt;
 
-        auto smearing{downcast_atomic_smearing<AST>(this->atomic_smearing)};
+        // auto smearing{downcast_atomic_smearing<AST>(this->atomic_smearing)};
         // a = 1 / (2*\sigma^2)
-        double fac_a{0.5 * pow(smearing->get_gaussian_sigma(pair), -2)};
+        // double fac_a{0.5 * pow(smearing->get_gaussian_sigma(pair), -2)};
 
         // start proportional_factors as the list of l from 0 to l_max
         Vector_t proportional_factors =
@@ -442,7 +442,7 @@ namespace rascal {
         // proportional_factor = l/r * radial_integral
         proportional_factors /= distance;
         // TODO(felix) avoid recomputing the 1f1 here
-        this->hyp1f1_calculator.calc(distance, fac_a, this->fac_b, true);
+        // this->hyp1f1_calculator.calc(distance, fac_a, this->fac_b, true);
 
         this->radial_neighbour_derivative =
             (this->a_b_l_n.array() *
