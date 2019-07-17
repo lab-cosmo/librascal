@@ -45,7 +45,7 @@ namespace rascal {
       Eigen::Vector3d unit_vector(unit_vector_tmp.data());
 
       // json apparently cannot directly convert to Eigen structures
-      std::vector<double> harmonics_tmp = data["harmonics"];
+      auto harmonics_tmp = data["harmonics"].get<std::vector<double>>();
       math::Vector_t harmonics_ref = Eigen::Map<math::Vector_t>(
           harmonics_tmp.data(), harmonics_tmp.size());
 

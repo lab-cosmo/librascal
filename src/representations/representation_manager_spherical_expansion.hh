@@ -604,9 +604,10 @@ namespace rascal {
     using Data_t = typename SparseProperty_t::Data_t;
     using SparsePropertyGradient_t =
         BlockSparseProperty<double, 2, 0, Manager_t, Key_t>;
-    using Matrix_t =
-        Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
-    using Vector_t = Eigen::VectorXd;
+    using Matrix_t = math::Matrix_t;
+    using Vector_t = math::Vector_t;
+    using Matrix_Ref = math::Matrix_Ref;
+    using Vector_Ref = math::Vector_Ref;
 
     /**
      * Set the hyperparameters of this descriptor from a json object.
@@ -879,19 +880,18 @@ namespace rascal {
         auto & coefficients_neigh_gradient =
             this->expansions_coefficients_gradient[neigh];
         this->spherical_harmonics.calc(direction, this->compute_gradients);
-        Vector_t harmonics = spherical_harmonics.get_harmonics();
-        Matrix_t harmonics_gradients{};
+        auto&& harmonics{spherical_harmonics.get_harmonics()};
+        auto&& harmonics_gradients{spherical_harmonics.get_harmonics_derivatives()};
         if (this->compute_gradients) {
           coefficients_neigh_gradient.resize(keys, n_spatial_dimensions * n_row,
                                              n_col, 0.);
-          harmonics_gradients = spherical_harmonics.get_harmonics_derivatives();
         }
 
-        Matrix_t neighbour_contribution =
+        auto&& neighbour_contribution =
             radial_integral
                 ->template compute_neighbour_contribution<SmearingType>(dist,
                                                                         neigh);
-        Matrix_t neighbour_derivative =
+        auto&& neighbour_derivative =
             radial_integral
                 ->template compute_neighbour_derivative<SmearingType>(dist,
                                                                       neigh);
@@ -905,7 +905,7 @@ namespace rascal {
             coefficients_center_by_type.block(radial_n, l_block_idx, 1,
                                               l_block_size) +=
                 (neighbour_contribution(radial_n, angular_l) *
-                 harmonics.segment(l_block_idx, l_block_size).transpose() *
+                 harmonics.segment(l_block_idx, l_block_size) *
                  cutoff_function->f_c(dist));
             l_block_idx += l_block_size;
           }
@@ -933,7 +933,7 @@ namespace rascal {
                 ((neighbour_derivative * cutoff_function->f_c(dist))
                  + (neighbour_contribution * cutoff_function->df_c(dist)))
                                                                 .col(angular_l)
-                * harmonics.segment(l_block_idx, l_block_size).transpose()
+                * harmonics.segment(l_block_idx, l_block_size)
                 * direction(cartesian_idx);
               // Angular component: Remember, the harmonics derivatives need to
               // be divided by r to get the Cartesian gradient

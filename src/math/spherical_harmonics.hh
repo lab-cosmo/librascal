@@ -86,11 +86,7 @@ namespace rascal {
      */
     class SphericalHarmonics {
      protected:
-      using Matrix_Ref = typename Eigen::Ref<const Matrix_t>;
-      using MatrixX2_Ref = typename Eigen::Ref<const MatrixX2_t>;
-      using Vector_Ref = typename Eigen::Ref<const Vector_t>;
-      // using Vector_Ref = typename Eigen::Ref<const Eigen::VectorXd>;
-
+      
       size_t max_angular{0};
       Vector_t angular_coeffs1{};
       Vector_t angular_coeffs2{};
@@ -273,7 +269,7 @@ namespace rascal {
        *
        * @return void, results have to be retrieved with get functions
        *
-       * @warning Prints warning and normalizes direction if it is not 
+       * @warning Prints warning and normalizes direction if it is not
        *          already normalized.
        */
       void calc(const Eigen::Ref<const Eigen::Vector3d> & direction,
