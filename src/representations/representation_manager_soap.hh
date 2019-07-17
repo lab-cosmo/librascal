@@ -292,6 +292,7 @@ namespace rascal {
   void RepresentationManagerSOAP<Mngr>::compute_powerspectrum() {
     using internal::enumValue;
     using internal::SOAPType;
+    using internal::n_spatial_dimensions;
     using math::pow;
 
     // get the relevant precomputation object and unpack the useful infos
@@ -572,13 +573,14 @@ namespace rascal {
             const auto & soap_vector_by_species_pair{
               soap_vector[soap_grad_spair.first]};
             Eigen::Map<Eigen::Matrix<
-              double, 3, Eigen::Dynamic, Eigen::RowMajor>> soap_gradient_3N(
+              double, n_spatial_dimensions,
+              Eigen::Dynamic, Eigen::RowMajor>> soap_gradient_dim_N(
                   soap_gradient_by_species_pair.data(),
-                  3, grad_component_size);
+                  n_spatial_dimensions, grad_component_size);
             const Eigen::Map<const Eigen::VectorXd> soap_vector_N(
                 soap_vector_by_species_pair.data(), grad_component_size);
             soap_vector_dot_center_gradient +=
-              (soap_gradient_3N * soap_vector_N);
+              (soap_gradient_dim_N * soap_vector_N);
           }
           // Now update each species-pair-block using the dot-product just
           // computed
@@ -587,13 +589,14 @@ namespace rascal {
             const auto & soap_vector_by_species_pair{
               soap_vector[soap_grad_spair.first]};
             Eigen::Map<Eigen::Matrix<
-              double, 3, Eigen::Dynamic, Eigen::RowMajor>> soap_gradient_3N(
+              double, n_spatial_dimensions,
+              Eigen::Dynamic, Eigen::RowMajor>> soap_gradient_dim_N(
                   soap_gradient_by_species_pair.data(),
-                  3, grad_component_size);
+                  n_spatial_dimensions, grad_component_size);
             const Eigen::Map<const Eigen::VectorXd> soap_vector_N(
                 soap_vector_by_species_pair.data(), grad_component_size);
-            soap_gradient_3N = ((
-                  soap_gradient_3N -
+            soap_gradient_dim_N = ((
+                  soap_gradient_dim_N -
                   soap_vector_dot_center_gradient * soap_vector_N.transpose())
               / soap_vector_norm);
           }
@@ -609,13 +612,14 @@ namespace rascal {
               const auto & soap_vector_by_species_pair{
                 soap_vector[soap_grad_spair.first]};
               Eigen::Map<Eigen::Matrix<
-                double, 3, Eigen::Dynamic, Eigen::RowMajor>> soap_gradient_3N(
+                double, n_spatial_dimensions,
+                Eigen::Dynamic, Eigen::RowMajor>> soap_gradient_dim_N(
                     soap_gradient_by_species_pair.data(),
-                    3, grad_component_size);
+                    n_spatial_dimensions, grad_component_size);
               const Eigen::Map<const Eigen::VectorXd> soap_vector_N(
                   soap_vector_by_species_pair.data(), grad_component_size);
               soap_vector_dot_neigh_gradient +=
-                (soap_gradient_3N * soap_vector_N);
+                (soap_gradient_dim_N * soap_vector_N);
             }
             // Then, update each species-pair-block
             for (auto soap_grad_spair : soap_neigh_gradient) {
@@ -623,13 +627,14 @@ namespace rascal {
               const auto & soap_vector_by_species_pair{
                 soap_vector[soap_grad_spair.first]};
               Eigen::Map<Eigen::Matrix<
-                double, 3, Eigen::Dynamic, Eigen::RowMajor>> soap_gradient_3N(
+                double, n_spatial_dimensions,
+                Eigen::Dynamic, Eigen::RowMajor>> soap_gradient_dim_N(
                     soap_gradient_by_species_pair.data(),
-                    3, grad_component_size);
+                    n_spatial_dimensions, grad_component_size);
               const Eigen::Map<const Eigen::VectorXd> soap_vector_N(
                   soap_vector_by_species_pair.data(), grad_component_size);
-              soap_gradient_3N = ((
-                    soap_gradient_3N -
+              soap_gradient_dim_N = ((
+                    soap_gradient_dim_N -
                     soap_vector_dot_neigh_gradient * soap_vector_N.transpose())
                 / soap_vector_norm);
             } // for soap_grad_spair : soap_center_gradient
