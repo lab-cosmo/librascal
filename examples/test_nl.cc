@@ -48,7 +48,6 @@
 #include <string>
 #include <initializer_list>
 
-// using namespace std;
 using namespace rascal;  // NOLINT
 
 template <typename Manager, template <class> class... AdaptorImplementationPack>

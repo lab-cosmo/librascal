@@ -64,9 +64,7 @@ namespace rascal {
   template <class ManagerImplementation>
   class AdaptorCenterPairs
       : public AdaptorFilter<ManagerImplementation,
-                             ManagerImplementation::traits::MaxOrder>,
-        public std::enable_shared_from_this<
-            AdaptorCenterPairs<ManagerImplementation>> {
+                             ManagerImplementation::traits::MaxOrder> {
    public:
     using Manager_t = AdaptorCenterPairs<ManagerImplementation>;
     //using Parent = StructureManager<Manager_t>;
