@@ -47,7 +47,7 @@
 // using namespace std;
 using namespace rascal;  // NOLINT
 
-using Representation_t = RepresentationManagerSphericalExpansion<
+using Representation_t = RepresentationManagerSOAP<
     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
 
 int main() {

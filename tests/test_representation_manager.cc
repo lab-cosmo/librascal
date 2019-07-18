@@ -215,13 +215,17 @@ namespace rascal {
   }
 
   using simple_periodic_fixtures = boost::mpl::list<RepresentationFixture<
-      SingleHypersSphericalExpansion, RepresentationManagerSphericalExpansion>>;
+        SingleHypersSphericalRepresentation,
+        RepresentationManagerSphericalExpansion>>;
+      //RepresentationFixture<
+        //SingleHypersSphericalRepresentation,
+        //RepresentationManagerSOAP>>;
 
   /**
    * Test the gradient of the SphericalExpansion representation on a few simple
    * crystal structures (single- and multi-species, primitive and supercells)
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(spherical_expansion_gradients, Fix,
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(spherical_representation_gradients, Fix,
                                    simple_periodic_fixtures, Fix) {
     auto & managers = Fix::managers;
     auto & hyper = Fix::hypers.front();

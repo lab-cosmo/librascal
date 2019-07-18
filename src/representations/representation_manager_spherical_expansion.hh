@@ -729,6 +729,20 @@ namespace rascal {
       return this->dummy;
     }
 
+    /**
+     * Return a reference to the internal sparse data storage
+     *
+     * @todo(max) this should really be a const reference, but that screws
+     * things up further down the line (when indexing the sparse property)
+     */
+    SparseProperty_t & get_representation_sparse() {
+      return this->expansions_coefficients;
+    }
+
+    SparsePropertyGradient_t & get_gradient_sparse() {
+      return this->expansions_coefficients_gradient;
+    }
+
     Data_t & get_representation_sparse_raw_data() {
       return this->expansions_coefficients.get_raw_data();
     }

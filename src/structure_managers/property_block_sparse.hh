@@ -549,6 +549,23 @@ namespace rascal {
                               CallerOrder - 1);
     }
 
+    /* --------------------------------------------------------------------
+     * AAAAAaaaargh oh no the const version breaks everything
+     * pls no
+    //! Property accessor by cluster ref
+    template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order,
+              std::enable_if_t<(CallerOrder <= Order_), int> = 0>
+    inline decltype(auto)
+    const operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
+      static_assert(CallerOrder <= Order, "should be CallerOrder <= Order");
+      static_assert(CallerLayer >= PropertyLayer,
+                    "You are trying to access a property that does not exist at"
+                    "this depth in the adaptor stack.");
+
+      return this->operator()(id.get_cluster_index(CallerLayer),
+                              CallerOrder - 1);
+    } */
+
     /**
      * Access a property of order 1 with a clusterRef of order 2
      */
