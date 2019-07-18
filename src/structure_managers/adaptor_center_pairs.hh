@@ -63,22 +63,59 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   class AdaptorCenterPairs
-      : public AdaptorFilter<ManagerImplementation, MaxOrder> {
+      : public AdaptorFilter<ManagerImplementation,
+                             ManagerImplementation::traits::MaxOrder>,
+        public std::enable_shared_from_this<
+            AdaptorCenterPairs<ManagerImplementation>> {
    public:
+    using Manager_t = AdaptorCenterPairs<ManagerImplementation>;
+    //using Parent = StructureManager<Manager_t>;
+    using Parent = AdaptorFilter<ManagerImplementation,
+                                 ManagerImplementation::traits::MaxOrder>;
     using traits = StructureManager_traits<AdaptorCenterPairs>;
+    using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
+    using Hypers_t = typename Parent::Hypers_t;
+
+    //! Default constructor
+    AdaptorCenterPairs() = delete;
+
+    AdaptorCenterPairs(ImplementationPtr_t manager)
+      : Parent{manager} {}
+
+    AdaptorCenterPairs(ImplementationPtr_t manager, std::tuple<> /*val*/)
+      : AdaptorCenterPairs{manager} {}
+
+    AdaptorCenterPairs(ImplementationPtr_t manager,
+                       const Hypers_t & /*adaptor_hypers*/)
+      : AdaptorCenterPairs{manager} {}
+
+    //! Copy constructor
+    AdaptorCenterPairs(const AdaptorCenterPairs & other) = delete;
+
+    //! Move constructor
+    AdaptorCenterPairs(AdaptorCenterPairs && other) = delete;
+
+    //! Destructor
+    virtual ~AdaptorCenterPairs() = default;
+
+    //! Copy assignment operator
+    AdaptorCenterPairs & operator=(const AdaptorCenterPairs & other) = delete;
+
+    //! Move assignment operator
+    AdaptorCenterPairs & operator=(AdaptorCenterPairs && other) = delete;
 
     //! This is where the magic happens and the center-pairs are added
     void perform_filtering() final {
-      for (auto && atom : this->structure_manager) {
+      for (auto && atom : this->manager) {
 
         // construct and add ii-pair
-        auto ii_pair{*(atom.begin())};
+        // auto ii_pair{*(atom.begin())};
 
-        ii_pair.back() = ii_pair.front();
-        ii_pair.get_atom_type() = atom.get_atom_type();
-        ii_pair.get_position() = atom.get_position();
+        // ii_pair.back() = ii_pair.front();
+        // ii_pair.get_atom_type() = atom.get_atom_type();
+        // ii_pair.get_position() = atom.get_position();
 
-        this->add_cluster(ii_pair);
+        // this->add_cluster(ii_pair);
 
         // add all other pairs in neighbour list
         for (auto && pair : atom) {
@@ -86,7 +123,7 @@ namespace rascal {
         }
       }
     }
-  }
+  };
 }  // namespace rascal
 
 #endif  // SRC_STRUCTURE_MANAGERS_ADAPTOR_CENTER_PAIRS_HH_

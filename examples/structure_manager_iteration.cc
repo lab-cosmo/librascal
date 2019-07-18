@@ -88,6 +88,14 @@ int main() {
   auto center_contrib_manager{
       rascal::make_adapted_manager<rascal::AdaptorCenterPairs>(strict_manager)};
 
+  // for (auto atom : center_contrib_manager) {
+  //   for (auto pair : atom) {
+  //     std::cout << "center contrib -- pair (" << atom.get_atom_tag() << ", "
+  //               << pair.get_atom_tag() << " ) global index "
+  //               << pair.get_global_index() << std::endl;
+  //   }
+  // }
+
   // calling the `.update()` method triggers the build of a strict neighbourlist
   // (all pairs are within the specified cutoff)
   //  strict_manager.update();
