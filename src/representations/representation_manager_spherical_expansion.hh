@@ -529,8 +529,8 @@ namespace rascal {
             unitary * eigs_invsqrt.matrix().asDiagonal() * unitary.adjoint();
       }
 
-      inline Matrix_Ref get_radial_orthonormalization_matrix() const {
-        return Matrix_Ref(radial_ortho_matrix);
+      inline Matrix_t get_radial_orthonormalization_matrix() const {
+        return this->radial_norm_factors.asDiagonal()*this->radial_ortho_matrix;
       }
 
       std::shared_ptr<AtomicSmearingSpecificationBase> atomic_smearing{};
@@ -860,6 +860,8 @@ namespace rascal {
       this->expansions_coefficients_gradient.resize();
     }
 
+    Matrix_t radial_ortho_mat{radial_integral->get_radial_orthonormalization_matrix()};
+
     for (auto center : this->structure_manager) {
       auto & coefficients_center = this->expansions_coefficients[center];
       auto & coefficients_center_gradient =
@@ -972,27 +974,17 @@ namespace rascal {
       }      // for (neigh : center)
 
       // Normalize and orthogonalize the radial coefficients
-      coefficients_center.lhs_dot(
-          radial_integral->radial_norm_factors.asDiagonal());
-      coefficients_center.lhs_dot(radial_integral->radial_ortho_matrix);
+      coefficients_center.lhs_dot(radial_ortho_mat);
 
       if (this->compute_gradients) {
-        coefficients_center_gradient.template lhs_dot_der<n_spatial_dimensions>(radial_integral->radial_norm_factors.asDiagonal());
-        coefficients_center_gradient.template lhs_dot_der<n_spatial_dimensions>(radial_integral->radial_ortho_matrix);
+        coefficients_center_gradient.template lhs_dot_der<n_spatial_dimensions>(radial_ortho_mat);
         for (auto neigh : center) {
           auto & coefficients_neigh_gradient =
           this->expansions_coefficients_gradient[neigh];
+          coefficients_neigh_gradient.template lhs_dot_der<n_spatial_dimensions>(radial_ortho_mat);
+        } // for (neigh : center)
+      }   // if (this->compute_gradients)
 
-          coefficients_neigh_gradient.template lhs_dot_der<n_spatial_dimensions>(radial_integral->radial_norm_factors.asDiagonal());
-          coefficients_neigh_gradient.template lhs_dot_der<n_spatial_dimensions>(radial_integral->radial_ortho_matrix);
-        }
-      }
-      // if (this->compute_gradients) {
-      //   // Normalize and orthogonalize the radial coefficients
-      //   coefficients_center_gradient.lhs_dot(
-      //       radial_integral->radial_norm_factors.asDiagonal());
-      //   coefficients_center_gradient.lhs_dot(radial_integral->radial_ortho_matrix);
-      // }
 
     }        // for (center : structure_manager)
   }          // compute()
