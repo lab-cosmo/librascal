@@ -246,7 +246,8 @@ namespace rascal {
 
       using Parent = RadialContributionBase;
       using Hypers_t = typename Parent::Hypers_t;
-      using Matrix_t = typename Parent::Matrix_t;
+      // using Matrix_t = typename Parent::Matrix_t;
+      using Matrix_t = Eigen::MatrixXd;
       using Vector_t = typename Parent::Vector_t;
       using Matrix_Ref = typename Parent::Matrix_Ref;
       using Vector_Ref = typename Parent::Vector_Ref;
@@ -379,7 +380,6 @@ namespace rascal {
               (this->a_b_l_n.col(angular_l - 1).array() * a_b_l).matrix();
         }
 
-        // this->hyp1f1_calculator.calc(distance, fac_a, this->fac_b);
         this->hyp1f1_calculator.calc(distance, fac_a, this->fac_b, this->compute_gradients);
 
         this->radial_integral_neighbour =
@@ -887,6 +887,7 @@ namespace rascal {
         double f_c{cutoff_function->f_c(dist)};
         auto && coefficients_center_by_type{coefficients_center[neigh_type]};
 
+        // compute the coefficients
         size_t l_block_idx{0};
         for (size_t angular_l{0}; angular_l < this->max_angular + 1;
               ++angular_l) {
@@ -901,6 +902,7 @@ namespace rascal {
         // compute the gradients of the coefficients with respect to
         // atoms positions
         if (this->compute_gradients) {
+          // TODO(max,felix) should only have 1 valid key
           coefficients_neigh_gradient.resize(keys, n_spatial_dimensions * n_row,
                                              n_col, 0.);
 
@@ -960,10 +962,15 @@ namespace rascal {
       coefficients_center.lhs_dot(radial_ortho_mat);
 
       if (this->compute_gradients) {
+        // TODO(felix) stack 3 times radial_ortho_mat to simplify this
+        // Eigen::MatrixXd radial_ortho_mat_der(3*this->max_radial, this->max_radial);
+        // radial_ortho_mat_der << radial_ortho_mat, radial_ortho_mat, radial_ortho_mat;
+        // coefficients_center_gradient.lhs_dot(radial_ortho_mat_der);
         coefficients_center_gradient.template lhs_dot_der<n_spatial_dimensions>(radial_ortho_mat);
         for (auto neigh : center) {
           auto & coefficients_neigh_gradient =
           this->expansions_coefficients_gradient[neigh];
+          // coefficients_neigh_gradient.lhs_dot(radial_ortho_mat_der);
           coefficients_neigh_gradient.template lhs_dot_der<n_spatial_dimensions>(radial_ortho_mat);
         }    // for (neigh : center)
       }      // if (this->compute_gradients)
