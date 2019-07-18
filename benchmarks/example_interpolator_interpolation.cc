@@ -36,7 +36,7 @@ inline bool file_exists(const char* name) {
   return (stat (name, &buffer) == 0); 
 }
 
-static constexpr int ITERATIONS = 100;
+static constexpr int ITERATIONS = 200;
 
 int main(){
   auto intp{Interpolator <

@@ -173,6 +173,8 @@ namespace rascal {
       void initialize(const Vector_Ref & grid,
           const Vector_Ref & evaluated_grid){
         this->compute_second_derivatives_on_grid(grid, evaluated_grid);
+        this->h = grid(1) - grid(0);
+        this->h_sq_6 = this->h*this->h/6.0;
       }
 
 
@@ -222,16 +224,18 @@ namespace rascal {
       }
 
       inline double rawinterp(const Vector_Ref & xx, const Vector_Ref & yy,
-          size_t j1, double x) {
+          const size_t & j1, const double & x) {
         size_t klo{j1}, khi{j1+1};
-        const Vector_Ref && y2 = std::move(Vector_Ref(this->second_derivatives));
-        double h{xx(khi)-xx(klo)};
         DEBUG_IF (h == 0.0) { throw std::runtime_error ("Bad xa input to routine splint");}
-        double a{(xx(khi)-x)/h};
-        double b{(x-xx(klo))/h};
-        return a*yy(klo)+b*yy(khi)+((a*a*a-a)*y2(klo) +(b*b*b-b)*y2(khi))*(h*h)/6.0;
+        // a+b=1
+        double a{(xx(khi)-x)/this->h};
+        //double b{1-a};
+        double b{(x-xx(klo))/this->h};
+        return a*yy(klo)+b*yy(khi)+((a*a*a-a)*this->second_derivatives(klo) +(b*b*b-b)*this->second_derivatives(khi))*h_sq_6;
       }
 
+      double h{0};
+      double h_sq_6{0}; // h*h/6.0
       Vector_t second_derivatives{};
     };
 
@@ -244,25 +248,30 @@ namespace rascal {
     template <>
     struct SearchMethod<SearchMethod_t::AStarUniform> {
 
-      SearchMethod<SearchMethod_t::AStarUniform>(): 
-          nb_support_points{2} {} 
+      SearchMethod<SearchMethod_t::AStarUniform>() {} 
 
-      void initialize(const int & ){
+      void initialize(const Vector_Ref & grid){
+        this->nb_grid_points_per_unit = grid.size()/(grid(grid.size()-1)-grid(0));
+        this->x1 = grid(0);
+        this->grid_size = grid.size();
       }
 
       // If the requests to locate seem correlated, then the heuristic is used
-      size_t search(double x, const Vector_Ref & grid) {
+      size_t search(double x, const Vector_Ref &) {
         // TODO(alex) make this work for general grids
         // nb_grid_points/unit
-        double nb_grid_points_per_unit = grid.size()/(grid(grid.size()-1)-grid(0));
+        //TODO(alex) save this
         // for heap_based this is less costly
         // (x-grid(0)) * nb_grid_points_per_unit >> 1
         //int raw_index = static_cast<int>(std::floor((x-grid(0)) * nb_grid_points_per_unit)-1);
-        int raw_index = static_cast<int>((x-grid(0)) * nb_grid_points_per_unit)-1;
-        return std::max(0,std::min(static_cast<int>(grid.size()-nb_support_points), raw_index));
+        int raw_index = static_cast<int>((x-this->x1) * this->nb_grid_points_per_unit)-1;
+        return std::max(0,std::min(static_cast<int>(this->grid_size-this->nb_support_points), raw_index));
       }
       // the number of support methods the interpolation method uses
-      size_t nb_support_points;
+      double nb_grid_points_per_unit{0};
+      double x1{0};
+      const size_t nb_support_points{2};
+      size_t grid_size{0};
     };
 
 
@@ -273,7 +282,7 @@ namespace rascal {
       SearchMethod<SearchMethod_t::Locate>() : 
           nb_support_points{2} {} 
 
-      void initialize(const int & ){
+      void initialize(const Vector_Ref & ){
       }
 
       // If the requests to locate seem correlated, then the heuristic is used
@@ -317,9 +326,9 @@ namespace rascal {
       SearchMethod<SearchMethod_t::Hunt>() : correlated{false},
           nb_support_points{2}, last_accessed_index{0}, dj{0} {} 
 
-      void initialize(const int & grid_size){
+      void initialize(const Vector_Ref & grid){
         this->dj = std::min(1, 
-            static_cast<int>(std::round(std::sqrt(std::sqrt(grid_size)))));
+            static_cast<int>(std::round(std::sqrt(std::sqrt(grid.size())))));
       }
 
       // If the requests to locate seem correlated, then the heuristic is used
@@ -429,7 +438,7 @@ namespace rascal {
         this->precision = precision;
 
         this->initialize_interpolator();
-        this->search_method.initialize(this->grid.size());
+        this->search_method.initialize(this->grid);
       }
 
       // Initialization function given an alread precomputed grid. For optimization purposes
@@ -440,7 +449,7 @@ namespace rascal {
         this->grid = grid;
         this->evaluated_grid = this->eval(this->grid);
         this->intp_method.initialize(this->grid, this->evaluated_grid);
-        this->search_method.initialize(this->grid.size());
+        this->search_method.initialize(this->grid);
       }
 
 
@@ -465,6 +474,7 @@ namespace rascal {
         this->evaluated_grid = this->eval(this->grid);
 
         this->intp_method.initialize(this->grid, this->evaluated_grid);
+        this->search_method.initialize(this->grid);
 
         Vector_t test_grid{this->grid_rational.compute_test_grid(this->x1,this->x2,this->fineness)};
         Vector_t test_grid_interpolated{this->interpolate(test_grid)};
@@ -531,8 +541,8 @@ namespace rascal {
       double x1{0};
       double x2{1};
       double precision{1e-5};
-      double mean_error;
-      double max_error;
+      double mean_error{0};
+      double max_error{0};
       int fineness{0};
       int max_grid_points{10000000}; //1e7
       Vector_t grid{};
