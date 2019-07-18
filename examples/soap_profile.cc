@@ -49,7 +49,7 @@
 // using namespace std;
 using namespace rascal;  // NOLINT
 
-const int N_ITERATIONS = 1000;
+const int N_ITERATIONS = 500;
 
 using Representation_t = RepresentationManagerSOAP<
     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
@@ -115,28 +115,6 @@ int main(int argc, char * argv[]) {
             << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
             << std::endl;
 
-  Representation_t representation{manager, hypers};
-
-  start = std::chrono::high_resolution_clock::now();
-  // This is the part that should get profiled
-  for (size_t looper{0}; looper < N_ITERATIONS; looper++) {
-    representation.compute();
-  }
-  finish = std::chrono::high_resolution_clock::now();
-
-  elapsed = finish - start;
-  std::cout << "Compute representation"
-            << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
-            << std::endl;
-
-  auto soap = representation.get_representation_full();
-  std::cout << "Sample SOAP elements " << std::endl
-            << soap(0, 0) << " " << soap(0, 1) << " " << soap(0, 2) << "\n"
-            << soap(1, 0) << " " << soap(1, 1) << " " << soap(1, 2) << "\n"
-            << soap(2, 0) << " " << soap(2, 1) << " " << soap(2, 2) << "\n";
-
-  // Profile again, this time with gradients
-  hypers["compute_gradients"] = true;
   Representation_t representation_gradients{manager, hypers};
   start = std::chrono::high_resolution_clock::now();
   // This is the part that should get profiled

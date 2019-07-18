@@ -103,7 +103,7 @@ int main() {
   feature.push_back(representation);
   auto X{feature.get_feature_matrix_dense()};
   std::cout << "sadfasd" << std::endl;
-  auto n_center{feature.sample_size()};
+  // auto n_center{feature.sample_size()};
   auto norms = X.colwise().norm();
   std::cout << norms.size() << std::endl;
   // for (int icenter{0}; icenter < n_center; icenter++) {
