@@ -519,41 +519,39 @@ namespace rascal {
       // center_it->position() = center_position;
       // representation.compute();
       auto center = *center_it;
-      auto keys_center =
-          representation.expansions_coefficients.get_keys(center);
+      auto & data_sparse{representation.get_representation_sparse()};
+      auto keys_center = data_sparse.get_keys(center);
       Key_t center_key{center.get_atom_type()};
-      size_t n_coeffs_per_key{static_cast<size_t>(
-          representation.expansions_coefficients.get_nb_comp())};
-      size_t n_coeffs_center{n_coeffs_per_key * keys_center.size()};
+      size_t n_entries_per_key{static_cast<size_t>(data_sparse.get_nb_comp())};
+      size_t n_entries_center{n_entries_per_key * keys_center.size()};
       Eigen::Matrix<double, 3, Eigen::Dynamic, Eigen::RowMajor>
-        grad_coeffs_pairs(3,
-                          n_coeffs_center + (center.size() * n_coeffs_per_key));
-      auto & grad_coeffs_center =
-          representation.expansions_coefficients_gradient[center];
+        grad_coeffs_pairs(3, n_entries_center +
+                             (center.size() * n_entries_per_key));
+      auto & gradients_sparse{representation.get_gradient_sparse()};
+      auto & gradients_center{gradients_sparse[center]};
       size_t col_offset{0};
       for (auto & key : keys_center) {
         // Here the 'flattening' retains the 3 Cartesian dimensions as rows,
         // since they vary the slowest within each key
         Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
-            grad_coeffs_center[key].data(), 3, n_coeffs_per_key);
-        grad_coeffs_pairs.block(0, col_offset, 3, n_coeffs_per_key) =
+            gradients_center[key].data(), 3, n_entries_per_key);
+        grad_coeffs_pairs.block(0, col_offset, 3, n_entries_per_key) =
             grad_coeffs_flat;
-        col_offset += n_coeffs_per_key;
+        col_offset += n_entries_per_key;
       }
       for (auto neigh : center) {
         typename RepManager::Key_t neigh_key{neigh.get_atom_type()};
         // We need grad_i c^{ji} -- using just 'neigh' would give us
         // grad_j c^{ij}, hence the swap
-        auto neigh_swap{swap_pair_key(neigh)};
-        auto & grad_coeffs_neigh =
-            representation.expansions_coefficients_gradient[neigh_swap];
+        auto neigh_swap{swap_pair_ref(neigh)};
+        auto & gradients_neigh{gradients_sparse[neigh_swap]};
         Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
-            grad_coeffs_neigh[center_key].data(), 3, n_coeffs_per_key);
-        grad_coeffs_pairs.block(0, col_offset, 3, n_coeffs_per_key) =
+            gradients_neigh[center_key].data(), 3, n_entries_per_key);
+        grad_coeffs_pairs.block(0, col_offset, 3, n_entries_per_key) =
             grad_coeffs_flat;
         // The offset keeps advancing from neighbour to neighbour, because the
         // neighbour index has also been flattened out
-        col_offset += n_coeffs_per_key;
+        col_offset += n_entries_per_key;
       }
       return grad_coeffs_pairs;
     }
@@ -572,21 +570,21 @@ namespace rascal {
      * @todo wouldn't this be better as a member of StructureManager
      *       (viz. AdaptorNeighbourList<whatever>)?
      */
-    PairRef_t swap_pair_key(const PairRef_t & pair_key) {
+    PairRef_t swap_pair_ref(const PairRef_t & pair_ref) {
       // Get the atom index to the corresponding atom tag
-      size_t access_index = structure_manager->get_atom_index(pair_key.back());
+      size_t access_index = structure_manager->get_atom_index(pair_ref.back());
       auto new_center_it{structure_manager->get_iterator_at(access_index)};
       // Return cluster ref at which the iterator is currently pointing
       auto && new_center{*new_center_it};
       // Iterate until (j,i) is found
       for (auto new_pair : new_center) {
-        if (new_pair.back() == pair_key.front()) {
+        if (new_pair.back() == pair_ref.front()) {
           return new_pair;
         }
       }
       std::stringstream err_str{};
-      err_str << "Didn't find symmetric pair for pair (i=" << pair_key.front()
-              << ", j=" << pair_key.back() << ").";
+      err_str << "Didn't find symmetric pair for pair (i=" << pair_ref.front()
+              << ", j=" << pair_ref.back() << ").";
       throw std::range_error(err_str.str());
     }
   };
