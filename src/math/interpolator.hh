@@ -229,8 +229,7 @@ namespace rascal {
         DEBUG_IF (h == 0.0) { throw std::runtime_error ("Bad xa input to routine splint");}
         double a{(xx(khi)-x)/h};
         double b{(x-xx(klo))/h};
-        return a*yy(klo)+b*yy(khi)+((a*a*a-a)*y2(klo)
-          +(b*b*b-b)*y2(khi))*(h*h)/6.0;
+        return a*yy(klo)+b*yy(khi)+((a*a*a-a)*y2(klo) +(b*b*b-b)*y2(khi))*(h*h)/6.0;
       }
 
       Vector_t second_derivatives{};
@@ -258,7 +257,8 @@ namespace rascal {
         double nb_grid_points_per_unit = grid.size()/(grid(grid.size()-1)-grid(0));
         // for heap_based this is less costly
         // (x-grid(0)) * nb_grid_points_per_unit >> 1
-        int raw_index = static_cast<int>(std::floor((x-grid(0)) * nb_grid_points_per_unit)-1);
+        //int raw_index = static_cast<int>(std::floor((x-grid(0)) * nb_grid_points_per_unit)-1);
+        int raw_index = static_cast<int>((x-grid(0)) * nb_grid_points_per_unit)-1;
         return std::max(0,std::min(static_cast<int>(grid.size()-nb_support_points), raw_index));
       }
       // the number of support methods the interpolation method uses
@@ -451,7 +451,7 @@ namespace rascal {
         double error{this->compute_grid_error()};
         // TODO(alex) add some procedure to not get locked if precision is too
         // high
-        while (error > this->precision || this->grid.size() < this->max_grid_points) {
+        while (error > this->precision && this->grid.size() < this->max_grid_points) {
           this->fineness++;
           error = this->compute_grid_error();
         }
@@ -534,7 +534,7 @@ namespace rascal {
       double mean_error;
       double max_error;
       int fineness{0};
-      int max_grid_points{1000000};
+      int max_grid_points{10000000}; //1e7
       Vector_t grid{};
       Vector_t evaluated_grid{};
 

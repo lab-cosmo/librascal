@@ -108,7 +108,7 @@ namespace rascal {
          {"ranges", {std::make_pair(0,8)}},
          {"log_mean_error_bounds", {-10}},
          {"func_names", {SupportedFunc::Gaussian}},
-         {"nbs_points", {1e6}},
+         {"nbs_points", {1e3,1e4,1e5,1e6}},
          {"random", {true}}
          };
      }
@@ -132,9 +132,9 @@ namespace rascal {
      static const json data() {
        return {
          {"ranges", {std::make_pair(0,8)}},
-         {"log_mean_error_bounds", {-9}},
+         {"log_mean_error_bounds", {-10}},
          {"func_names", {SupportedFunc::Gaussian}},
-         {"nbs_points", {1e6}},
+         {"nbs_points", {1e3,1e4,1e5,1e6}},
          {"random", {true}}
          };
      }
@@ -212,21 +212,21 @@ namespace rascal {
     
     // global init
     IntpFix<Dataset>() : Parent() {
-      json data = Dataset::data();
-      auto range = this->template lookup<std::pair<double,double>>(data, "ranges", 0); 
-      this->x1 = std::get<0>(range);
-      this->x2 = std::get<1>(range);
-      this->log_mean_error_bound = this->template lookup<int>(data, "log_mean_error_bounds", 0);
-      this->mean_error_bound = std::pow(10,this->log_mean_error_bound);
-      auto func_name = this->template lookup<SupportedFunc>(data, "func_names", 0);
-      this->set_function(func_name);
-      this->intp.initalize(this->func, this->x1, this->x2, this->mean_error_bound); 
-      this->init_points();
-      this->init =true;
+      //json data = Dataset::data();
+      //auto range = this->template lookup<std::pair<double,double>>(data, "ranges", 0); 
+      //this->x1 = std::get<0>(range);
+      //this->x2 = std::get<1>(range);
+      //this->log_mean_error_bound = this->template lookup<int>(data, "log_mean_error_bounds", 0);
+      //this->mean_error_bound = std::pow(10,this->log_mean_error_bound);
+      //auto func_name = this->template lookup<SupportedFunc>(data, "func_names", 0);
+      //this->set_function(func_name);
+      //this->intp.initalize(this->func, this->x1, this->x2, this->mean_error_bound); 
+      //this->init_points();
+      //this->init = true;
     }
 
-    void init_points(){
-      const int new_points = 100000;
+    void init_points() {
+      const int new_points = 1000000;
       if (this->random) {
         srand(SEED);
         math::Vector_t points_tmp  = math::Vector_t::LinSpaced(new_points , this->x1,this->x2);
@@ -239,7 +239,9 @@ namespace rascal {
       }
     }
 
-    // local init TODO(alex) remove
+    // TODO(alex) only way to prevent multiple initialization but still change of parameters when they change is to have a has_changed function which checks if parameters have changed
+    // To split parameters which do not change the interpolator from nb_interations, I can include a has_interpolator_parameters_changed
+    
     IntpFix<Dataset>(const ::benchmark::State& state) : Parent() {
       this->SetUp(state);
     }
@@ -262,14 +264,14 @@ namespace rascal {
         this->intp.initalize(this->func, this->x1, this->x2, this->mean_error_bound); 
         this->init_points();
         this->init =true;
+        std::cout << "Init ressources " << this->log_mean_error_bound << std::endl;
       }
-      std::cout << "Init ressources" << this->log_mean_error_bound << std::endl;
       this->nb_points = this->template lookup<size_t>(data, "nbs_points", state);
       this->random = this->template lookup<bool>(data, "random", state); 
       //std::cout << "Finish points" << std::endl;
     }
     void TearDown() {
-      this->init = false;
+      init = false;
     }
 
     bool init;
