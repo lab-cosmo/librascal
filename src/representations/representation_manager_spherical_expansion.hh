@@ -341,10 +341,10 @@ namespace rascal {
               this->radial_n_factors(radial_n) * a_b_l_n;
         }
 
-        this->radial_integral_center.transpose() *=
-          this->radial_norm_factors.asDiagonal();
-        this->radial_integral_center =
-            this->radial_ortho_matrix * this->radial_integral_center;
+        // this->radial_integral_center.transpose() *=
+        //   this->radial_norm_factors.asDiagonal();
+        // this->radial_integral_center =
+        //     this->radial_ortho_matrix * this->radial_integral_center;
 
         return Vector_Ref(this->radial_integral_center);
       }
@@ -393,10 +393,10 @@ namespace rascal {
                 .matrix() *
             this->distance_fac_a_l.asDiagonal();
 
-        this->radial_integral_neighbour.transpose() *=
-            this->radial_norm_factors.asDiagonal();
-        this->radial_integral_neighbour.transpose() *=
-            this->radial_ortho_matrix;
+        // this->radial_integral_neighbour.transpose() *=
+        //     this->radial_norm_factors.asDiagonal();
+        // this->radial_integral_neighbour.transpose() *=
+        //     this->radial_ortho_matrix;
 
         return Matrix_Ref(this->radial_integral_neighbour);
       }
@@ -450,10 +450,10 @@ namespace rascal {
                 .matrix() *
             this->distance_fac_a_l.asDiagonal();
 
-        this->radial_neighbour_derivative.transpose() *=
-            this->radial_norm_factors.asDiagonal();
-        this->radial_neighbour_derivative.transpose() *=
-            this->radial_ortho_matrix;
+        // this->radial_neighbour_derivative.transpose() *=
+        //     this->radial_norm_factors.asDiagonal();
+        // this->radial_neighbour_derivative.transpose() *=
+        //     this->radial_ortho_matrix;
 
         this->radial_neighbour_derivative +=
             this->radial_integral_neighbour * proportional_factors.asDiagonal();
@@ -957,11 +957,22 @@ namespace rascal {
         }    // if (this->compute_gradients)
       }      // for (neigh : center)
 
-      // // Normalize and orthogonalize the radial coefficients
-      // coefficients_center.lhs_dot(
-      //     radial_integral->radial_norm_factors.asDiagonal());
-      // coefficients_center.lhs_dot(radial_integral->radial_ortho_matrix);
+      // Normalize and orthogonalize the radial coefficients
+      coefficients_center.lhs_dot(
+          radial_integral->radial_norm_factors.asDiagonal());
+      coefficients_center.lhs_dot(radial_integral->radial_ortho_matrix);
 
+      if (this->compute_gradients) {
+        coefficients_center_gradient.template lhs_dot_der<n_spatial_dimensions>(radial_integral->radial_norm_factors.asDiagonal());
+        coefficients_center_gradient.template lhs_dot_der<n_spatial_dimensions>(radial_integral->radial_ortho_matrix);
+        for (auto neigh : center) {
+          auto & coefficients_neigh_gradient =
+          this->expansions_coefficients_gradient[neigh];
+
+          coefficients_neigh_gradient.template lhs_dot_der<n_spatial_dimensions>(radial_integral->radial_norm_factors.asDiagonal());
+          coefficients_neigh_gradient.template lhs_dot_der<n_spatial_dimensions>(radial_integral->radial_ortho_matrix);
+        }
+      }
       // if (this->compute_gradients) {
       //   // Normalize and orthogonalize the radial coefficients
       //   coefficients_center_gradient.lhs_dot(

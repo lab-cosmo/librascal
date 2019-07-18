@@ -380,6 +380,19 @@ namespace rascal {
         }
       }
 
+      template <int Dim, typename Derived>
+      inline void lhs_dot_der(const Eigen::EigenBase<Derived> & left_side_mat) {
+        for (const auto & el : this->map) {
+          auto && pos{el.second};
+          auto blocks{reference(&this->data[std::get<0>(pos)], std::get<1>(pos), std::get<2>(pos))};
+          int n_rows{static_cast<int>(std::get<1>(pos) / Dim)};
+          int n_cols{std::get<2>(pos)};
+          for (int ii{0}; ii < Dim; ++ii) {
+            blocks.block(ii*n_rows, 0, n_rows, n_cols).transpose() *= left_side_mat;
+          }
+        }
+      }
+
      private:
       /**
        * Functor to get a key from a map
