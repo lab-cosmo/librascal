@@ -106,10 +106,11 @@ namespace rascal {
     //! with all previous pairs
     void perform_filtering() final {
       for (auto && atom : this->manager) {
-        // construct and add ii-pair
+        // get a ClusterRef<2> to construct an ii pair
         auto && ii_it{atom.begin()};
+        // dereference for correct type
         auto && ii_pair{*ii_it};
-
+        // reset atom tag to actually be an ii-pair
         ii_pair.set_atom_tag(1, atom.get_atom_tag());
 
         // add it to the list of pairs
