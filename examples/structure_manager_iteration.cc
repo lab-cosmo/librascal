@@ -78,22 +78,21 @@ int main() {
   //  manager.update(filename);
 
   // `pair_manager` is constructed with the `manager` and a `cutoff`.
-  auto pair_manager{make_adapted_manager<AdaptorNeighbourList>(
-      manager, cutoff, true)};
+  auto pair_manager{
+      make_adapted_manager<AdaptorNeighbourList>(manager, cutoff, true)};
   // By invoking the `.update()` method, a neighbour list is built.
   //  pair_manager->update();
 
   // `strict_manager` is constructed with a `pair_manager`.
-  auto strict_manager{make_adapted_manager<AdaptorStrict>(
-      pair_manager, cutoff)};
+  auto strict_manager{
+      make_adapted_manager<AdaptorStrict>(pair_manager, cutoff)};
 
   auto center_contrib_manager{
       make_adapted_manager<AdaptorCenterPairs>(strict_manager)};
 
   // `triplet_manager` is constructed with a pair list (strict or not, here
   // strict)
-  auto triplet_manager{
-      make_adapted_manager<AdaptorMaxOrder>(strict_manager)};
+  auto triplet_manager{make_adapted_manager<AdaptorMaxOrder>(strict_manager)};
   // `.update()` triggers the extension of the pair list to triplets
   // triplet_manager->update(positions, atom_types, cell, PBC_t{pbc.data()});
   triplet_manager->update(filename);
@@ -118,6 +117,15 @@ int main() {
   for (auto atom : strict_manager) {
     for (auto pair : atom) {
       std::cout << "strict pair (" << atom.get_atom_tag() << ", "
+                << pair.get_atom_tag() << ") global index "
+                << pair.get_global_index() << std::endl;
+    }
+  }
+
+  // `strict_manager` provides iteration over atoms and strict pairs
+  for (auto atom : center_contrib_manager) {
+    for (auto pair : atom) {
+      std::cout << "center contrib pair (" << atom.get_atom_tag() << ", "
                 << pair.get_atom_tag() << ") global index "
                 << pair.get_global_index() << std::endl;
     }
