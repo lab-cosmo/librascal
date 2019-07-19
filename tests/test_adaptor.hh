@@ -129,6 +129,24 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
+  template <class ManagerImplementation>
+  struct PairFixtureCenterPairs {
+    using AdaptorCenterPairs_t =
+        AdaptorCenterPairs<AdaptorNeighbourList<ManagerImplementation>>;
+
+    PairFixtureCenterPairs()
+        : adaptor_center_pairs{make_adapted_manager<AdaptorCenterPairs>(
+              this->fixture.pair_manager, this->fixture.cutoff)} {
+      this->adaptor_center_pairs->update();
+    }
+
+    ~PairFixtureCenterPairs() = default;
+
+    PairFixture<ManagerImplementation> fixture{};
+    std::shared_ptr<AdaptorCenterPairs_t> adaptor_center_pairs;
+  };
+
+  /* ---------------------------------------------------------------------- */
   /**
    * Streamline the test on several structures and cutoffs
    */

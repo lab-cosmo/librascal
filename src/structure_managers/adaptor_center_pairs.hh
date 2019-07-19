@@ -102,6 +102,11 @@ namespace rascal {
     //! Move assignment operator
     AdaptorCenterPairs & operator=(AdaptorCenterPairs && other) = delete;
 
+    template <class... Args>
+    void update(Args &&... arguments) {
+      this->manager->update(std::forward<Args>(arguments)...);
+    }
+
     //! This is where the magic happens and the center-pairs are added along
     //! with all previous pairs
     void perform_filtering() final {
