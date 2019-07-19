@@ -66,16 +66,20 @@ namespace rascal {
    * Iteration test for strict adaptor. It also checks if the first pair in each
    * atoms neighbourhood is itself.
    */
-  BOOST_FIXTURE_TEST_CASE(iterator_test, PairFixtureCenterPairs) {
+  BOOST_FIXTURE_TEST_CASE(iterator_test, PairFixtureCenters) {
     // auto adaptor_center_pairs{
     //     make_adapted_manager<AdaptorCenterPairs>(pair_manager, cutoff)};
     // adaptor_center_pairs->update();
 
+    auto adaptor_center_pairs{
+        make_adapted_manager<AdaptorCenterPairs>(pair_manager, cutoff)};
+    adaptor_center_pairs->update();
+
     int atom_counter{};
     int pair_counter{};
-    constexpr bool verbose{false};
+    constexpr bool verbose{true};
 
-    for (auto atom : this->adaptor_center_pairs) {
+    for (auto atom : adaptor_center_pairs) {
       auto index{atom.get_global_index()};
       BOOST_CHECK_EQUAL(index, atom_counter);
 
@@ -97,6 +101,10 @@ namespace rascal {
         ++pair_counter;
       }
     }
+    auto natoms{this->pair_manager->get_nb_clusters(1)};
+    auto pairs_without_ii{this->pair_manager->get_nb_clusters(2)};
+    auto pairs_with_ii{adaptor_center_pairs->get_nb_clusters(2)};
+    BOOST_CHECK_EQUAL(pairs_without_ii + natoms, pairs_with_ii);
   }
 
   BOOST_AUTO_TEST_SUITE_END();

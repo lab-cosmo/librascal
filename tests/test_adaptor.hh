@@ -130,13 +130,13 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
-  struct PairFixtureCenterPairs {
+  struct PairFixtureCenterPairs : PairFixtureCenters {
     using AdaptorCenterPairs_t =
-        AdaptorCenterPairs<AdaptorNeighbourList<ManagerImplementation>>;
+        AdaptorCenterPairs<ManagerImplementation>;
 
     PairFixtureCenterPairs()
         : adaptor_center_pairs{make_adapted_manager<AdaptorCenterPairs>(
-              this->fixture.pair_manager, this->fixture.cutoff)} {
+              this->fixture.pair_manager)} {
       this->adaptor_center_pairs->update();
     }
 
