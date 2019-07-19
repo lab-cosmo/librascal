@@ -272,6 +272,7 @@ namespace rascal {
         // init size of the member data
         // both precomputed quantities and actual expansion coefficients
         this->radial_ortho_matrix.resize(this->max_radial, this->max_radial);
+        this->ortho_norm_matrix.resize(this->max_radial, this->max_radial);
         this->fac_b.resize(this->max_radial, 1);
         this->a_b_l_n.resize(this->max_radial, this->max_angular + 1);
         this->distance_fac_a_l.resize(this->max_angular + 1);
@@ -308,6 +309,8 @@ namespace rascal {
       void precompute() {
         this->precompute_radial_sigmas();
         this->precompute_radial_overlap();
+        this->ortho_norm_matrix = this->radial_norm_factors.asDiagonal()*this->radial_ortho_matrix;
+
         this->hyp1f1_calculator.precompute(this->max_radial, this->max_angular);
       }
 
@@ -439,6 +442,21 @@ namespace rascal {
         return Matrix_Ref(this->radial_neighbour_derivative);
       }
 
+      template <typename Coeffs>
+      void finalize_coefficients(Coeffs & coefficients) const {
+        coefficients.lhs_dot(this->ortho_norm_matrix);
+      }
+
+      template <typename Coeffs, typename Center>
+      void finalize_coefficients_der(Coeffs & coefficients_gradient, Center& center) const {
+        auto&& coefficients_center_gradient = coefficients_gradient[center];
+        coefficients_center_gradient.template lhs_dot_der<n_spatial_dimensions>(this->ortho_norm_matrix);
+        for (auto neigh : center) {
+          auto & coefficients_neigh_gradient = coefficients_gradient[neigh];
+          coefficients_neigh_gradient.template lhs_dot_der<n_spatial_dimensions>(this->ortho_norm_matrix);
+        }    // for (neigh : center)
+      }
+
       /** Compute common prefactors for the radial Gaussian basis functions */
       void precompute_radial_sigmas() {
         using math::pow;
@@ -541,6 +559,7 @@ namespace rascal {
       Vector_t radial_norm_factors{};
       Vector_t radial_n_factors{};
       Matrix_t radial_ortho_matrix{};
+      Matrix_t ortho_norm_matrix{};
     };
 
   }  // namespace internal
@@ -840,7 +859,8 @@ namespace rascal {
         n_spatial_dimensions * n_row, n_col);
     this->expansions_coefficients_gradient.resize();
 
-
+    // get the orthonormalization matrix to apply it on the already summed
+    // over coefficients
     Matrix_t radial_ortho_mat{radial_integral->get_radial_orthonormalization_matrix()};
 
     for (auto center : this->structure_manager) {
@@ -903,7 +923,8 @@ namespace rascal {
         // atoms positions
         if (this->compute_gradients) {
           // TODO(max,felix) should only have 1 valid key
-          coefficients_neigh_gradient.resize(keys, n_spatial_dimensions * n_row,
+          std::vector<Key_t> neigh_types{neigh_type};
+          coefficients_neigh_gradient.resize(neigh_types, n_spatial_dimensions * n_row,
                                              n_col, 0.);
 
           auto&& neighbour_derivative =
@@ -959,21 +980,10 @@ namespace rascal {
       }      // for (neigh : center)
 
       // Normalize and orthogonalize the radial coefficients
-      coefficients_center.lhs_dot(radial_ortho_mat);
-
+      radial_integral->finalize_coefficients(coefficients_center);
       if (this->compute_gradients) {
-        // TODO(felix) stack 3 times radial_ortho_mat to simplify this
-        // Eigen::MatrixXd radial_ortho_mat_der(3*this->max_radial, this->max_radial);
-        // radial_ortho_mat_der << radial_ortho_mat, radial_ortho_mat, radial_ortho_mat;
-        // coefficients_center_gradient.lhs_dot(radial_ortho_mat_der);
-        coefficients_center_gradient.template lhs_dot_der<n_spatial_dimensions>(radial_ortho_mat);
-        for (auto neigh : center) {
-          auto & coefficients_neigh_gradient =
-          this->expansions_coefficients_gradient[neigh];
-          // coefficients_neigh_gradient.lhs_dot(radial_ortho_mat_der);
-          coefficients_neigh_gradient.template lhs_dot_der<n_spatial_dimensions>(radial_ortho_mat);
-        }    // for (neigh : center)
-      }      // if (this->compute_gradients)
+        radial_integral->finalize_coefficients_der(this->expansions_coefficients_gradient, center);
+      }
     }        // for (center : structure_manager)
   }          // compute()
 
