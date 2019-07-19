@@ -108,15 +108,8 @@ namespace rascal {
       for (auto && atom : this->manager) {
         // construct and add ii-pair
 
-        std::array<int, 2> atom_tag_list{atom.get_atom_tag(),
-                                         atom.get_atom_tag()};
-        Eigen::Map<const Eigen::Matrix<size_t, 1, 1>> index_array{0};
-
-        ClusterRefKey<2, 0> ii_cluster(atom_tag_list, index_array);
-
-        // this->add_cluster(ii_cluster);
-
-        auto && ii_pair{*(atom.begin())};
+        auto && ii_it{atom.begin()};
+        auto && ii_pair{*ii_it};
         ii_pair.set_atom_tag(1, atom.get_atom_tag());
         this->add_cluster(ii_pair);
 
