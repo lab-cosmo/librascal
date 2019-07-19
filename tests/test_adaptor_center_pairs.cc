@@ -101,10 +101,11 @@ namespace rascal {
         ++pair_counter;
       }
     }
-    auto natoms{this->pair_manager->get_nb_clusters(1)};
+    auto natoms{adaptor_center_pairs->get_nb_clusters(1)};
+    std::cout << "natoms " << natoms << std::endl;
     auto pairs_without_ii{this->pair_manager->get_nb_clusters(2)};
     auto pairs_with_ii{adaptor_center_pairs->get_nb_clusters(2)};
-    BOOST_CHECK_EQUAL(pairs_without_ii + natoms, pairs_with_ii);
+    BOOST_CHECK_EQUAL(pairs_without_ii + atom_counter, pairs_with_ii);
   }
 
   BOOST_AUTO_TEST_SUITE_END();
