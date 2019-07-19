@@ -207,6 +207,11 @@ namespace rascal {
       return this->manager->get_position(index);
     }
 
+    //! returns the number of atoms
+    inline size_t get_size_with_ghosts() const {
+      return this->manager->get_size_with_ghosts();
+    }
+
     /**
      * return pair distance
      */

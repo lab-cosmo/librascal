@@ -107,6 +107,9 @@ namespace rascal {
       this->manager->update(std::forward<Args>(arguments)...);
     }
 
+    // TODO(markus,felix) orverride the accessor functions like get_position
+    // because the adaptor filter does not provide a proper implementation
+
     //! This is where the magic happens and the center-pairs are added along
     //! with all previous pairs
     void perform_filtering() final {

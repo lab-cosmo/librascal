@@ -938,6 +938,19 @@ namespace rascal {
       return atom_j;
     }
 
+    inline auto get_atom_ii() {
+      auto && manager = it.get_manager();
+      auto && atom_i_tag = this->front();
+      auto && atom_i_index = manager.get_atom_index(atom_i_tag);
+      auto && atom_i_it = manager.get_iterator_at(atom_i_index, 0);
+      auto && atom_i = *atom_i_it;
+      auto && atom_ii_it = atom_i.begin();
+      constexpr static size_t ClusterLayer_{
+          ManagerImplementation::template cluster_layer_from_order<2>()};
+      auto atom_ii = static_cast<ClusterRefKey<2, ClusterLayer_>>(*atom_ii_it);
+      return atom_ii;
+    }
+
     /**
      * Returns the position of the last atom in the cluster, e.g. when
      * cluster order==1 it is the atom position, when cluster order==2 it is
