@@ -309,7 +309,8 @@ namespace rascal {
       void precompute() {
         this->precompute_radial_sigmas();
         this->precompute_radial_overlap();
-        this->ortho_norm_matrix = this->radial_norm_factors.asDiagonal()*this->radial_ortho_matrix;
+        this->ortho_norm_matrix =
+            this->radial_norm_factors.asDiagonal() * this->radial_ortho_matrix;
 
         this->hyp1f1_calculator.precompute(this->max_radial, this->max_angular);
       }
@@ -383,7 +384,8 @@ namespace rascal {
               (this->a_b_l_n.col(angular_l - 1).array() * a_b_l).matrix();
         }
 
-        this->hyp1f1_calculator.calc(distance, fac_a, this->fac_b, this->compute_gradients);
+        this->hyp1f1_calculator.calc(distance, fac_a, this->fac_b,
+                                     this->compute_gradients);
 
         this->radial_integral_neighbour =
             (this->a_b_l_n.array() *
@@ -448,13 +450,17 @@ namespace rascal {
       }
 
       template <typename Coeffs, typename Center>
-      void finalize_coefficients_der(Coeffs & coefficients_gradient, Center& center) const {
-        auto&& coefficients_center_gradient = coefficients_gradient[center];
-        coefficients_center_gradient.template lhs_dot_der<n_spatial_dimensions>(this->ortho_norm_matrix);
+      void finalize_coefficients_der(Coeffs & coefficients_gradient,
+                                     Center & center) const {
+        auto && coefficients_center_gradient = coefficients_gradient[center];
+        coefficients_center_gradient.template lhs_dot_der<n_spatial_dimensions>(
+            this->ortho_norm_matrix);
         for (auto neigh : center) {
           auto & coefficients_neigh_gradient = coefficients_gradient[neigh];
-          coefficients_neigh_gradient.template lhs_dot_der<n_spatial_dimensions>(this->ortho_norm_matrix);
-        }    // for (neigh : center)
+          coefficients_neigh_gradient
+              .template lhs_dot_der<n_spatial_dimensions>(
+                  this->ortho_norm_matrix);
+        }  // for (neigh : center)
       }
 
       /** Compute common prefactors for the radial Gaussian basis functions */
@@ -521,7 +527,8 @@ namespace rascal {
       }
 
       inline Matrix_t get_radial_orthonormalization_matrix() const {
-        return this->radial_norm_factors.asDiagonal()*this->radial_ortho_matrix;
+        return this->radial_norm_factors.asDiagonal() *
+               this->radial_ortho_matrix;
       }
 
       inline Matrix_Ref get_radial_integral_neighbour() const {
@@ -861,7 +868,8 @@ namespace rascal {
 
     // get the orthonormalization matrix to apply it on the already summed
     // over coefficients
-    Matrix_t radial_ortho_mat{radial_integral->get_radial_orthonormalization_matrix()};
+    Matrix_t radial_ortho_mat{
+        radial_integral->get_radial_orthonormalization_matrix()};
 
     for (auto center : this->structure_manager) {
       auto & coefficients_center = this->expansions_coefficients[center];
@@ -897,10 +905,11 @@ namespace rascal {
         auto & coefficients_neigh_gradient =
             this->expansions_coefficients_gradient[neigh];
         this->spherical_harmonics.calc(direction, this->compute_gradients);
-        auto&& harmonics{spherical_harmonics.get_harmonics()};
-        auto&& harmonics_gradients{spherical_harmonics.get_harmonics_derivatives()};
+        auto && harmonics{spherical_harmonics.get_harmonics()};
+        auto && harmonics_gradients{
+            spherical_harmonics.get_harmonics_derivatives()};
 
-        auto&& neighbour_contribution =
+        auto && neighbour_contribution =
             radial_integral
                 ->template compute_neighbour_contribution<SmearingType>(dist,
                                                                         neigh);
@@ -910,12 +919,12 @@ namespace rascal {
         // compute the coefficients
         size_t l_block_idx{0};
         for (size_t angular_l{0}; angular_l < this->max_angular + 1;
-              ++angular_l) {
+             ++angular_l) {
           size_t l_block_size{2 * angular_l + 1};
           coefficients_center_by_type.block(0, l_block_idx, max_radial,
                                             l_block_size) +=
               (neighbour_contribution.col(angular_l) *
-                (harmonics.segment(l_block_idx, l_block_size) * f_c));
+               (harmonics.segment(l_block_idx, l_block_size) * f_c));
           l_block_idx += l_block_size;
         }
 
@@ -924,13 +933,13 @@ namespace rascal {
         if (this->compute_gradients) {
           // TODO(max,felix) should only have 1 valid key
           std::vector<Key_t> neigh_types{neigh_type};
-          coefficients_neigh_gradient.resize(neigh_types, n_spatial_dimensions * n_row,
-                                             n_col, 0.);
+          coefficients_neigh_gradient.resize(
+              neigh_types, n_spatial_dimensions * n_row, n_col, 0.);
 
-          auto&& neighbour_derivative =
-            radial_integral
-                ->template compute_neighbour_derivative<SmearingType>(dist,
-                                                                      neigh);
+          auto && neighbour_derivative =
+              radial_integral
+                  ->template compute_neighbour_derivative<SmearingType>(dist,
+                                                                        neigh);
           double df_c{cutoff_function->df_c(dist)};
           // The gradients only contribute to the type of the neighbour
           // (the atom that's moving)
@@ -946,7 +955,8 @@ namespace rascal {
           Matrix_t pair_gradient_contribution_p1 =
                 ((neighbour_derivative * f_c)
                  + (neighbour_contribution * df_c));
-          Matrix_t pair_gradient_contribution{this->max_radial, this->max_angular + 1};
+          Matrix_t pair_gradient_contribution{this->max_radial,
+                                              this->max_angular + 1};
           for (size_t cartesian_idx{0}; cartesian_idx < n_spatial_dimensions;
                  ++cartesian_idx) {
             size_t l_block_idx{0};
@@ -974,18 +984,19 @@ namespace rascal {
                   max_radial, l_block_size) += pair_gradient_contribution;
               l_block_idx += l_block_size;
               // clang-format on
-            } // for (angular_l)
-          }  // for cartesian_idx
-        }    // if (this->compute_gradients)
-      }      // for (neigh : center)
+            }  // for (angular_l)
+          }    // for cartesian_idx
+        }      // if (this->compute_gradients)
+      }        // for (neigh : center)
 
       // Normalize and orthogonalize the radial coefficients
       radial_integral->finalize_coefficients(coefficients_center);
       if (this->compute_gradients) {
-        radial_integral->finalize_coefficients_der(this->expansions_coefficients_gradient, center);
+        radial_integral->finalize_coefficients_der(
+            this->expansions_coefficients_gradient, center);
       }
-    }        // for (center : structure_manager)
-  }          // compute()
+    }  // for (center : structure_manager)
+  }    // compute()
 
 }  // namespace rascal
 

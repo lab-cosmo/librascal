@@ -65,9 +65,8 @@ int main(int argc, char * argv[]) {
   std::string filename{argv[1]};
 
   double cutoff{5.};
-  json hypers{{"max_radial", 8},
-              {"max_angular", 6},
-              {"compute_gradients", false}};
+  json hypers{
+      {"max_radial", 8}, {"max_angular", 6}, {"compute_gradients", false}};
 
   json fc_hypers{{"type", "Cosine"},
                  {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
@@ -155,6 +154,6 @@ int main(int argc, char * argv[]) {
             << expn2(0, 0) << " " << expn2(0, 1) << " " << expn2(0, 2) << "\n"
             << expn2(1, 0) << " " << expn2(1, 1) << " " << expn2(1, 2) << "\n"
             << expn2(2, 0) << " " << expn2(2, 1) << " " << expn2(2, 2) << "\n";
-  //TODO(max) print out analogous gradient components, for now see
-  //spherical_expansion_example
+  // TODO(max) print out analogous gradient components, for now see
+  // spherical_expansion_example
 }

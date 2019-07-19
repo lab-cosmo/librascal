@@ -119,7 +119,8 @@ int main() {
   // auto max1{kernel1.mean()};
   // auto max2{kernel2.mean()};
   // auto diff{(kernel1 - kernel2).array().abs().matrix().mean()};
-  std::cout << kernel1.mean() << ", " << kernel1.minCoeff() << ", " << kernel1.maxCoeff()  << std::endl;
+  std::cout << kernel1.mean() << ", " << kernel1.minCoeff() << ", "
+            << kernel1.maxCoeff() << std::endl;
   // std::cout << max1 << ", " << max2 << ", " << diff << std::endl;
 
   // diff = (kernel2 - kernel3).array().abs().matrix().mean();

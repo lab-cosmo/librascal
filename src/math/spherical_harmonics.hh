@@ -86,7 +86,6 @@ namespace rascal {
      */
     class SphericalHarmonics {
      protected:
-      
       size_t max_angular{0};
       Vector_t angular_coeffs1{};
       Vector_t angular_coeffs2{};

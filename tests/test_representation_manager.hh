@@ -278,12 +278,9 @@ namespace rascal {
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
-    std::vector<json> rep_hypers{{{"max_radial", 4},
-                                  {"max_angular", 2},
-                                  {"compute_gradients", true}},
-                                 {{"max_radial", 6},
-                                  {"max_angular", 4},
-                                  {"compute_gradients", true}}};
+    std::vector<json> rep_hypers{
+        {{"max_radial", 4}, {"max_angular", 2}, {"compute_gradients", true}},
+        {{"max_radial", 6}, {"max_angular", 4}, {"compute_gradients", true}}};
   };
 
   /** Contains some simple periodic structures for testing complicated things
@@ -455,8 +452,8 @@ namespace rascal {
         std::shared_ptr<typename RepManager::Manager_t> structure_manager,
         Structure_t atomic_structure)
         : representation{representation}, structure_manager{structure_manager},
-          atomic_structure{atomic_structure},
-          center_it{structure_manager->begin()} {}
+          atomic_structure{atomic_structure}, center_it{
+                                                  structure_manager->begin()} {}
 
     ~RepresentationManagerGradientCalculator() = default;
 
@@ -525,8 +522,8 @@ namespace rascal {
       size_t n_entries_per_key{static_cast<size_t>(data_sparse.get_nb_comp())};
       size_t n_entries_center{n_entries_per_key * keys_center.size()};
       Eigen::Matrix<double, 3, Eigen::Dynamic, Eigen::RowMajor>
-        grad_coeffs_pairs(3, n_entries_center +
-                             (center.size() * n_entries_per_key));
+          grad_coeffs_pairs(3, n_entries_center +
+                                   (center.size() * n_entries_per_key));
       auto & gradients_sparse{representation.get_gradient_sparse()};
       auto & gradients_center{gradients_sparse[center]};
       size_t col_offset{0};
@@ -607,8 +604,8 @@ namespace rascal {
     RepresentationManagerGradientFixture(
         std::string filename, std::shared_ptr<StructureManager_t> structure,
         Calculator_t & calc)
-        : structure{structure}, center_it{structure->begin()},
-          calculator{calc} {
+        : structure{structure}, center_it{structure->begin()}, calculator{
+                                                                   calc} {
       json input_data;
       std::ifstream input_file{filename};
       input_file >> input_data;

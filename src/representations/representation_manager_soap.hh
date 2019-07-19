@@ -299,8 +299,8 @@ namespace rascal {
   template <class Mngr>
   void RepresentationManagerSOAP<Mngr>::compute_powerspectrum() {
     using internal::enumValue;
-    using internal::SOAPType;
     using internal::n_spatial_dimensions;
+    using internal::SOAPType;
     using math::pow;
 
     // get the relevant precomputation object and unpack the useful infos
@@ -313,7 +313,7 @@ namespace rascal {
     auto & expansions_coefficients{rep_expansion.expansions_coefficients};
     // No error if gradients not computed; just an empty array in that case
     auto & expansions_coefficients_gradient{
-      rep_expansion.expansions_coefficients_gradient};
+        rep_expansion.expansions_coefficients_gradient};
 
     this->initialize_percenter_powerspectrum_soap_vectors();
 
@@ -375,12 +375,12 @@ namespace rascal {
 
       if (this->compute_gradients) {
         auto & grad_center_coefficients{
-          expansions_coefficients_gradient[center]};
+            expansions_coefficients_gradient[center]};
         auto & soap_center_gradient{this->soap_vector_gradients[center]};
         for (const auto & grad_species_1 : grad_center_coefficients) {
           spair_type[0] = grad_species_1.first[0];
           const auto & expansion_coefficients_1{
-            coefficients[grad_species_1.first]};
+              coefficients[grad_species_1.first]};
           const auto & grad_center_coefficients_1{grad_species_1.second};
           for (const auto & grad_species_2 : grad_center_coefficients) {
             spair_type[1] = grad_species_2.first[0];
@@ -389,10 +389,10 @@ namespace rascal {
               continue;
             }
             const auto & expansion_coefficients_2{
-              coefficients[grad_species_2.first]};
+                coefficients[grad_species_2.first]};
             const auto & grad_center_coefficients_2{grad_species_2.second};
             auto && soap_center_gradient_by_species_pair{
-              soap_center_gradient[spair_type]};
+                soap_center_gradient[spair_type]};
 
             // Sum the gradients wrt the central atom position
             size_t n1n2{0};
@@ -402,15 +402,15 @@ namespace rascal {
             for (size_t cartesian_idx{0}; cartesian_idx < 3; ++cartesian_idx) {
               size_t cartesian_offset_n{cartesian_idx * this->max_radial};
               size_t cartesian_offset_n1n2{
-                cartesian_idx * static_cast<size_t>(
-                    math::pow(this->max_radial, 2))};
+                  cartesian_idx *
+                  static_cast<size_t>(math::pow(this->max_radial, 2))};
               n1n2 = 0;
               for (size_t n1{0}; n1 < this->max_radial; ++n1) {
                 for (size_t n2{0}; n2 < this->max_radial; ++n2) {
-                  //NOTE(max) this is included in the l=0 case, no?
-                  //soap_center_gradient_by_species_pair(n1n2, 0) =
-                  //coef1(n1, 0) * coef2(n2, 0);
-                  //pos = 1;
+                  // NOTE(max) this is included in the l=0 case, no?
+                  // soap_center_gradient_by_species_pair(n1n2, 0) =
+                  // coef1(n1, 0) * coef2(n2, 0);
+                  // pos = 1;
                   l_block_idx = 0;
                   for (size_t l{0}; l < this->max_angular + 1; ++l) {
                     size_t l_block_size{2 * l + 1};
@@ -435,9 +435,9 @@ namespace rascal {
                     l_block_idx += l_block_size;
                   }
                   ++n1n2;
-                } // for n2
-              }   // for n1
-            }     // for cartesian_idx
+                }  // for n2
+              }    // for n1
+            }      // for cartesian_idx
 
             // The gradients also need the 1/sqrt(2l + 1) factors
             soap_center_gradient_by_species_pair *= l_factors.asDiagonal();
@@ -450,10 +450,10 @@ namespace rascal {
             // Sum the gradients wrt the neighbour atom position
             for (auto neigh : center) {
               auto & grad_neigh_coefficients{
-                expansions_coefficients_gradient[neigh]};
+                  expansions_coefficients_gradient[neigh]};
               auto & soap_neigh_gradient{this->soap_vector_gradients[neigh]};
               auto && soap_neigh_gradient_by_species_pair{
-                soap_neigh_gradient[spair_type]};
+                  soap_neigh_gradient[spair_type]};
               soap_neigh_gradient_by_species_pair.setZero();
 
               auto neigh_type = neigh.get_atom_type();
@@ -468,13 +468,13 @@ namespace rascal {
               // TODO(max) is there a symmetry here we can exploit?
               if (neigh_type == spair_type[0]) {
                 const auto & grad_neigh_coefficients_1{
-                  grad_neigh_coefficients[grad_species_1.first]};
+                    grad_neigh_coefficients[grad_species_1.first]};
                 for (size_t cartesian_idx{0}; cartesian_idx < 3;
-                    ++cartesian_idx) {
+                     ++cartesian_idx) {
                   size_t cartesian_offset_n{cartesian_idx * this->max_radial};
                   size_t cartesian_offset_n1n2{
-                    cartesian_idx * static_cast<size_t>(
-                        math::pow(this->max_radial, 2))};
+                      cartesian_idx *
+                      static_cast<size_t>(math::pow(this->max_radial, 2))};
                   n1n2 = 0;
                   for (size_t n1{0}; n1 < this->max_radial; ++n1) {
                     for (size_t n2{0}; n2 < this->max_radial; ++n2) {
@@ -494,10 +494,10 @@ namespace rascal {
                         l_block_idx += l_block_size;
                       }
                       ++n1n2;
-                    } // for n2
-                  }   // for n1
-                }     // for cartesian_idx
-              }       // if (neigh_type == spair_type[0])
+                    }  // for n2
+                  }    // for n1
+                }      // for cartesian_idx
+              }        // if (neigh_type == spair_type[0])
 
               // Same as above, only gradient wrt neighbour of type 2
               // Necessary because we're only doing a half-iteration over
@@ -506,13 +506,13 @@ namespace rascal {
               // these if-nested-horrible-for-loop blocks
               if (neigh_type == spair_type[1]) {
                 const auto & grad_neigh_coefficients_2{
-                  grad_neigh_coefficients[grad_species_2.first]};
+                    grad_neigh_coefficients[grad_species_2.first]};
                 for (size_t cartesian_idx{0}; cartesian_idx < 3;
-                    ++cartesian_idx) {
+                     ++cartesian_idx) {
                   size_t cartesian_offset_n{cartesian_idx * this->max_radial};
                   size_t cartesian_offset_n1n2{
-                    cartesian_idx * static_cast<size_t>(
-                        math::pow(this->max_radial, 2))};
+                      cartesian_idx *
+                      static_cast<size_t>(math::pow(this->max_radial, 2))};
                   n1n2 = 0;
                   for (size_t n1{0}; n1 < this->max_radial; ++n1) {
                     for (size_t n2{0}; n2 < this->max_radial; ++n2) {
@@ -532,19 +532,19 @@ namespace rascal {
                         l_block_idx += l_block_size;
                       }
                       ++n1n2;
-                    } // for n2
-                  }   // for n1
-                }     // for cartesian_idx
-              }       // if (neigh_type == spair_type[1])
+                    }  // for n2
+                  }    // for n1
+                }      // for cartesian_idx
+              }        // if (neigh_type == spair_type[1])
 
               // Same factors as for the gradient wrt center
               soap_neigh_gradient_by_species_pair *= l_factors.asDiagonal();
               if (spair_type[0] != spair_type[1]) {
                 soap_neigh_gradient_by_species_pair *= math::SQRT_TWO;
               }
-            } // for neigh : center
-          }   // for grad_species_2 : grad_coefficients
-        }     // for grad_species_1 : grad_coefficients
+            }  // for neigh : center
+          }    // for grad_species_2 : grad_coefficients
+        }      // for grad_species_1 : grad_coefficients
 
         // NOTE(max) the multiplications below have already been done within the
         // species pair loop above -- not sure which way is more efficient
@@ -574,39 +574,37 @@ namespace rascal {
           soap_vector_dot_center_gradient.setZero();
           // (n1, n2) * l
           size_t grad_component_size{
-            static_cast<size_t>(math::pow(this->max_radial, 2))
-                             * (this->max_angular + 1)};
+              static_cast<size_t>(math::pow(this->max_radial, 2)) *
+              (this->max_angular + 1)};
           for (auto soap_grad_spair : soap_center_gradient) {
             auto & soap_gradient_by_species_pair{soap_grad_spair.second};
             const auto & soap_vector_by_species_pair{
-              soap_vector[soap_grad_spair.first]};
-            Eigen::Map<Eigen::Matrix<
-              double, n_spatial_dimensions,
-              Eigen::Dynamic, Eigen::RowMajor>> soap_gradient_dim_N(
-                  soap_gradient_by_species_pair.data(),
-                  n_spatial_dimensions, grad_component_size);
+                soap_vector[soap_grad_spair.first]};
+            Eigen::Map<Eigen::Matrix<double, n_spatial_dimensions,
+                                     Eigen::Dynamic, Eigen::RowMajor>>
+                soap_gradient_dim_N(soap_gradient_by_species_pair.data(),
+                                    n_spatial_dimensions, grad_component_size);
             const Eigen::Map<const Eigen::VectorXd> soap_vector_N(
                 soap_vector_by_species_pair.data(), grad_component_size);
             soap_vector_dot_center_gradient +=
-              (soap_gradient_dim_N * soap_vector_N);
+                (soap_gradient_dim_N * soap_vector_N);
           }
           // Now update each species-pair-block using the dot-product just
           // computed
           for (auto soap_grad_spair : soap_center_gradient) {
             auto & soap_gradient_by_species_pair{soap_grad_spair.second};
             const auto & soap_vector_by_species_pair{
-              soap_vector[soap_grad_spair.first]};
-            Eigen::Map<Eigen::Matrix<
-              double, n_spatial_dimensions,
-              Eigen::Dynamic, Eigen::RowMajor>> soap_gradient_dim_N(
-                  soap_gradient_by_species_pair.data(),
-                  n_spatial_dimensions, grad_component_size);
+                soap_vector[soap_grad_spair.first]};
+            Eigen::Map<Eigen::Matrix<double, n_spatial_dimensions,
+                                     Eigen::Dynamic, Eigen::RowMajor>>
+                soap_gradient_dim_N(soap_gradient_by_species_pair.data(),
+                                    n_spatial_dimensions, grad_component_size);
             const Eigen::Map<const Eigen::VectorXd> soap_vector_N(
                 soap_vector_by_species_pair.data(), grad_component_size);
-            soap_gradient_dim_N = ((
-                  soap_gradient_dim_N -
-                  soap_vector_dot_center_gradient * soap_vector_N.transpose())
-              / soap_vector_norm);
+            soap_gradient_dim_N =
+                ((soap_gradient_dim_N -
+                  soap_vector_dot_center_gradient * soap_vector_N.transpose()) /
+                 soap_vector_norm);
           }
 
           // Aaand do the same thing for the gradients wrt neighbouring atoms
@@ -618,39 +616,39 @@ namespace rascal {
             for (auto soap_grad_spair : soap_neigh_gradient) {
               auto & soap_gradient_by_species_pair{soap_grad_spair.second};
               const auto & soap_vector_by_species_pair{
-                soap_vector[soap_grad_spair.first]};
-              Eigen::Map<Eigen::Matrix<
-                double, n_spatial_dimensions,
-                Eigen::Dynamic, Eigen::RowMajor>> soap_gradient_dim_N(
-                    soap_gradient_by_species_pair.data(),
-                    n_spatial_dimensions, grad_component_size);
+                  soap_vector[soap_grad_spair.first]};
+              Eigen::Map<Eigen::Matrix<double, n_spatial_dimensions,
+                                       Eigen::Dynamic, Eigen::RowMajor>>
+                  soap_gradient_dim_N(soap_gradient_by_species_pair.data(),
+                                      n_spatial_dimensions,
+                                      grad_component_size);
               const Eigen::Map<const Eigen::VectorXd> soap_vector_N(
                   soap_vector_by_species_pair.data(), grad_component_size);
               soap_vector_dot_neigh_gradient +=
-                (soap_gradient_dim_N * soap_vector_N);
+                  (soap_gradient_dim_N * soap_vector_N);
             }
             // Then, update each species-pair-block
             for (auto soap_grad_spair : soap_neigh_gradient) {
               auto & soap_gradient_by_species_pair{soap_grad_spair.second};
               const auto & soap_vector_by_species_pair{
-                soap_vector[soap_grad_spair.first]};
-              Eigen::Map<Eigen::Matrix<
-                double, n_spatial_dimensions,
-                Eigen::Dynamic, Eigen::RowMajor>> soap_gradient_dim_N(
-                    soap_gradient_by_species_pair.data(),
-                    n_spatial_dimensions, grad_component_size);
+                  soap_vector[soap_grad_spair.first]};
+              Eigen::Map<Eigen::Matrix<double, n_spatial_dimensions,
+                                       Eigen::Dynamic, Eigen::RowMajor>>
+                  soap_gradient_dim_N(soap_gradient_by_species_pair.data(),
+                                      n_spatial_dimensions,
+                                      grad_component_size);
               const Eigen::Map<const Eigen::VectorXd> soap_vector_N(
                   soap_vector_by_species_pair.data(), grad_component_size);
-              soap_gradient_dim_N = ((
-                    soap_gradient_dim_N -
-                    soap_vector_dot_neigh_gradient * soap_vector_N.transpose())
-                / soap_vector_norm);
-            } // for soap_grad_spair : soap_center_gradient
-          }   // for neigh : center
-        }     // if normalize
-      }       // if compute gradients
-    }         // for center : manager
-  } // compute_powerspectrum()
+              soap_gradient_dim_N =
+                  ((soap_gradient_dim_N - soap_vector_dot_neigh_gradient *
+                                              soap_vector_N.transpose()) /
+                   soap_vector_norm);
+            }  // for soap_grad_spair : soap_center_gradient
+          }    // for neigh : center
+        }      // if normalize
+      }        // if compute gradients
+    }          // for center : manager
+  }            // compute_powerspectrum()
 
   template <class Mngr>
   void RepresentationManagerSOAP<Mngr>::compute_radialspectrum() {
@@ -700,8 +698,8 @@ namespace rascal {
 
     auto & expansions_coefficients{rep_expansion.expansions_coefficients};
 
-    //TODO(max) can we use the same pair_list for the gradients as for the
-    //expansion coefficients?
+    // TODO(max) can we use the same pair_list for the gradients as for the
+    // expansion coefficients?
 
     // identify the species in each environment and initialize soap_vectors
     for (auto center : this->structure_manager) {
@@ -746,7 +744,7 @@ namespace rascal {
         soap_vector_gradients[center].resize(
             pair_list, n_spatial_dimensions * n_row, n_col);
         for (auto neigh : center) {
-          //TODO(max) naïve but functional -- it will contain lots of zeros
+          // TODO(max) naïve but functional -- it will contain lots of zeros
           // Would be better to filter the pair list somehow
           // (the gradient wrt neighbour j is zero if the neighbouring atom is
           // not the same species as either neigh1 or neigh2 (species in the
@@ -754,8 +752,8 @@ namespace rascal {
           soap_vector_gradients[neigh].resize(
               pair_list, n_spatial_dimensions * n_row, n_col);
         }
-      } // if compute gradients
-    }   // for center : manager
+      }  // if compute gradients
+    }    // for center : manager
   }
 
   template <class Mngr>

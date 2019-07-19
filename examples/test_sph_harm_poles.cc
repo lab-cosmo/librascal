@@ -32,8 +32,8 @@
 #include "math/math_utils.hh"
 #include "math/spherical_harmonics.hh"
 
-using rascal::math::SphericalHarmonics;
 using rascal::math::PI;
+using rascal::math::SphericalHarmonics;
 
 int main() {
   double cos_theta{0.};

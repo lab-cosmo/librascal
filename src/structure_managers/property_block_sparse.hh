@@ -336,9 +336,7 @@ namespace rascal {
       /**
        * l^2 norm of the entire vector
        */
-      inline Precision_t norm() const {
-        return this->data.matrix().norm();
-      }
+      inline Precision_t norm() const { return this->data.matrix().norm(); }
 
       /**
        * squared l^2 norm of the entire vector (sum of squared elements)
@@ -350,9 +348,7 @@ namespace rascal {
       /**
        * Normalize the whole vector
        */
-      inline void normalize() {
-        this->data /= this->data.matrix().norm();
-      }
+      inline void normalize() { this->data /= this->data.matrix().norm(); }
 
       inline void multiply_offdiagonal_elements_by(const double & fac) {
         for (const auto & el : this->map) {
@@ -384,11 +380,13 @@ namespace rascal {
       inline void lhs_dot_der(const Eigen::EigenBase<Derived> & left_side_mat) {
         for (const auto & el : this->map) {
           auto && pos{el.second};
-          auto blocks{reference(&this->data[std::get<0>(pos)], std::get<1>(pos), std::get<2>(pos))};
+          auto blocks{reference(&this->data[std::get<0>(pos)], std::get<1>(pos),
+                                std::get<2>(pos))};
           int n_rows{static_cast<int>(std::get<1>(pos) / Dim)};
           int n_cols{std::get<2>(pos)};
           for (int ii{0}; ii < Dim; ++ii) {
-            blocks.block(ii*n_rows, 0, n_rows, n_cols).transpose() *= left_side_mat;
+            blocks.block(ii * n_rows, 0, n_rows, n_cols).transpose() *=
+                left_side_mat;
           }
         }
       }

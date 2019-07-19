@@ -126,8 +126,7 @@ int main(int argc, char * argv[]) {
     std::cout << std::endl;
     std::cout << "Gradient of this expansion wrt center pos: " << std::endl;
     std::cout << Eigen::Map<Eigen::MatrixXd>(
-        representation.soap_vector_gradients.get_dense_row(center)
-            .data(),
+        representation.soap_vector_gradients.get_dense_row(center).data(),
         3 * n_species_center,
         representation.soap_vector_gradients.get_nb_comp());
     std::cout << std::endl;
@@ -139,8 +138,7 @@ int main(int argc, char * argv[]) {
       std::cout << "Gradient of the above wrt atom " << neigh.back();
       std::cout << " of type " << neigh.get_atom_type() << std::endl;
       std::cout << Eigen::Map<Eigen::MatrixXd>(
-          representation.soap_vector_gradients.get_dense_row(neigh)
-              .data(),
+          representation.soap_vector_gradients.get_dense_row(neigh).data(),
           3 * n_species_center,
           representation.soap_vector_gradients.get_nb_comp());
       std::cout << std::endl;

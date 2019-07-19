@@ -582,8 +582,7 @@ namespace rascal {
         this->dz_dr.resize(max_radial);
 
         for (size_t n_radial{0}; n_radial < max_radial; n_radial++) {
-          for (size_t l_angular{0}; l_angular < max_angular + 1;
-                l_angular++) {
+          for (size_t l_angular{0}; l_angular < max_angular + 1; l_angular++) {
             auto a{this->get_a(n_radial, l_angular)};
             auto b{this->get_b(l_angular)};
             hyp1f1.emplace_back(a, b, precomputation_size, tolerance);
