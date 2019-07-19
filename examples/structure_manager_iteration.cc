@@ -97,30 +97,30 @@ int main() {
   // triplet_manager->update(positions, atom_types, cell, PBC_t{pbc.data()});
   triplet_manager->update(filename);
 
-  // Iteration over `manager`
-  std::cout << "manager iteration over atoms" << std::endl;
-  for (auto atom : manager) {
-    std::cout << "atom " << atom.get_atom_tag() << " global index "
-              << atom.get_global_index() << std::endl;
-  }
+  // // Iteration over `manager`
+  // std::cout << "manager iteration over atoms" << std::endl;
+  // for (auto atom : manager) {
+  //   std::cout << "atom " << atom.get_atom_tag() << " global index "
+  //             << atom.get_global_index() << std::endl;
+  // }
 
-  // `pair_manager` provides iteration over atoms and pairs
-  for (auto atom : pair_manager) {
-    for (auto pair : atom) {
-      std::cout << "pair (" << atom.get_atom_tag() << ", "
-                << pair.get_atom_tag() << " ) global index "
-                << pair.get_global_index() << std::endl;
-    }
-  }
+  // // `pair_manager` provides iteration over atoms and pairs
+  // for (auto atom : pair_manager) {
+  //   for (auto pair : atom) {
+  //     std::cout << "pair (" << atom.get_atom_tag() << ", "
+  //               << pair.get_atom_tag() << " ) global index "
+  //               << pair.get_global_index() << std::endl;
+  //   }
+  // }
 
   // `strict_manager` provides iteration over atoms and strict pairs
-  for (auto atom : strict_manager) {
-    for (auto pair : atom) {
-      std::cout << "strict pair (" << atom.get_atom_tag() << ", "
-                << pair.get_atom_tag() << ") global index "
-                << pair.get_global_index() << std::endl;
-    }
-  }
+  // for (auto atom : strict_manager) {
+  //   for (auto pair : atom) {
+  //     std::cout << "strict pair (" << atom.get_atom_tag() << ", "
+  //               << pair.get_atom_tag() << ") global index "
+  //               << pair.get_global_index() << std::endl;
+  //   }
+  // }
 
   // `strict_manager` provides iteration over atoms and strict pairs
   for (auto atom : center_contrib_manager) {
@@ -131,16 +131,16 @@ int main() {
     }
   }
 
-  // `triplet_manager` provides iteration over atoms, strict pairs and strict
-  // triplets
-  for (auto atom : triplet_manager) {
-    for (auto pair : atom) {
-      for (auto triplet : pair) {
-        std::cout << "triplet (" << atom.get_atom_tag() << ", "
-                  << pair.get_atom_tag() << ", " << triplet.get_atom_tag()
-                  << ") global index " << triplet.get_global_index()
-                  << std::endl;
-      }
-    }
-  }
+  // // `triplet_manager` provides iteration over atoms, strict pairs and strict
+  // // triplets
+  // for (auto atom : triplet_manager) {
+  //   for (auto pair : atom) {
+  //     for (auto triplet : pair) {
+  //       std::cout << "triplet (" << atom.get_atom_tag() << ", "
+  //                 << pair.get_atom_tag() << ", " << triplet.get_atom_tag()
+  //                 << ") global index " << triplet.get_global_index()
+  //                 << std::endl;
+  //     }
+  //   }
+  // }
 }

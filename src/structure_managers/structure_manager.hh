@@ -446,7 +446,8 @@ namespace rascal {
       return std::static_pointer_cast<UserProperty_t>(property);
     }
 
-    void register_property(std::shared_ptr<PropertyBase> property, const std::string & name) {
+    void register_property(std::shared_ptr<PropertyBase> property,
+                           const std::string & name) {
       this->properties[name] = property;
     }
     /**
@@ -485,14 +486,15 @@ namespace rascal {
               name);
     }
 
-    inline void set_updated_property_status(const bool& is_updated) {
-      for (auto& element : this->properties) {
-        auto& property{element.second};
+    inline void set_updated_property_status(const bool & is_updated) {
+      for (auto & element : this->properties) {
+        auto & property{element.second};
         property->set_updated_status(is_updated);
       }
     }
 
-    inline void set_updated_property_status(const std::string & name, const bool& is_updated) {
+    inline void set_updated_property_status(const std::string & name,
+                                            const bool & is_updated) {
       this->properties[name]->set_updated_status(is_updated);
     }
 
@@ -926,12 +928,12 @@ namespace rascal {
     }
 
     inline auto get_atom_j() {
-      auto&& manager = it.get_manager();
-      auto&& atom_j_tag = this->get_internal_neighbour_atom_tag();
-      auto&& atom_j_index = manager.get_atom_index(atom_j_tag);
+      auto && manager = it.get_manager();
+      auto && atom_j_tag = this->get_internal_neighbour_atom_tag();
+      auto && atom_j_index = manager.get_atom_index(atom_j_tag);
       auto atom_j_it = manager.get_iterator_at(atom_j_index, 0);
       constexpr static size_t ClusterLayer_{
-        ManagerImplementation::template cluster_layer_from_order<1>()};
+          ManagerImplementation::template cluster_layer_from_order<1>()};
       auto atom_j = static_cast<ClusterRefKey<1, ClusterLayer_>>(*atom_j_it);
       return atom_j;
     }
@@ -997,6 +999,11 @@ namespace rascal {
     //! returns the atom tags, which constitute the cluster
     const std::array<int, Order> & get_atom_tag_list() const {
       return this->atom_tag_list;
+    }
+
+    //! allows to set the atom tags, which constitute the cluster
+    inline void set_atom_tag(const size_t index, const int tag) {
+      this->atom_tag_list[index] = tag;
     }
 
     inline Iterator_t & get_iterator() { return this->it; }
