@@ -106,42 +106,13 @@ namespace rascal {
     //! with all previous pairs
     void perform_filtering() final {
       for (auto && atom : this->manager) {
-        // construct and add ii-pair
-
-        std::array<int, 2> atom_tag_list{atom.get_atom_tag(),
-                                         atom.get_atom_tag()};
-        Eigen::Map<const Eigen::Matrix<size_t, 1, 1>> index_array{0};
-
-        ClusterRefKey<2, 0> ii_cluster(atom_tag_list, index_array);
-
-        // this->add_cluster(ii_cluster);
-
+        // construct and add ii-pair from an existing pair to get the right type
         auto && ii_pair{*(atom.begin())};
+        // change atom tag of pair to current atom
         ii_pair.set_atom_tag(1, atom.get_atom_tag());
+
+        // add it to the list of pairs
         this->add_cluster(ii_pair);
-
-        // auto new_size{atom.size() + 1};
-        // std::cout << "atom.size(), new_size " << atom.size() << ", " <<
-        // new_size
-        //           << std::endl;
-        // std::vector<int> atom_tag_list_new;
-        // atom_tag_list_new.resize(new_size);
-        // atom_tag_list_new[0] = atom.get_atom_tag();
-        // auto i{0};
-        // for (auto && pair : atom) {
-        //   atom_tag_list_new[++i] = pair.get_atom_tag();
-        // }
-
-        // auto atom_tag_list{atom.get_atom_tag_list()};
-        // std::cout << "atom_tag_list.size() " << atom_tag_list.size() <<
-        // std::endl;
-        // //std::array<int,
-
-        // ii_pair.back() = ii_pair.front();
-        // ii_pair.get_atom_type() = atom.get_atom_type();
-        // ii_pair.get_position() = atom.get_position();
-
-        // this->add_cluster(ii_pair);
 
         // add all other pairs in neighbour list
         for (auto && pair : atom) {
