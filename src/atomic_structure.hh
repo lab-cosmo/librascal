@@ -145,14 +145,15 @@ namespace rascal {
         auto filename{s["filename"].get<std::string>()};
         this->set_structure(filename);
       } else if (s.count("cell") == 1 and
-                (s.count("atom_types") == 1 or s.count("numbers") == 1) and
+                 (s.count("atom_types") == 1 or s.count("numbers") == 1) and
                  s.count("pbc") == 1 and s.count("positions") == 1) {
         json_io::AtomicJsonData json_atoms_object{};
         json_atoms_object = s;
         this->set_structure(json_atoms_object);
       } else {
-        std::string error{"The json input was not understood. The input keys are: "};
-        for (auto& el : s.items()) {
+        std::string error{
+            "The json input was not understood. The input keys are: "};
+        for (auto & el : s.items()) {
           error += el.key() + std::string(", ");
         }
         throw std::runtime_error(error);

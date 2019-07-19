@@ -38,14 +38,18 @@
 
 // namespace rascal {
 
-//   /* ---------------------------------------------------------------------- */
+//   /* ----------------------------------------------------------------------
+//   */
 //   /**
-//    * A templated Fixture, inherits from the ReperesentationFixture. It provides
-//    * access to different data structures. They are used to check the aggregation
+//    * A templated Fixture, inherits from the ReperesentationFixture. It
+//    provides
+//    * access to different data structures. They are used to check the
+//    aggregation
 //    * of calculated feature data from multiple structures.
 //    */
 //   template <typename T, template <typename> class FeatureManager,
-//             template <typename> class RepresentationManager, class BaseFixture>
+//             template <typename> class RepresentationManager, class
+//             BaseFixture>
 //   struct FeatureFixture
 //       : CalculatorFixture<BaseFixture, RepresentationManager> {
 //     using Parent = CalculatorFixture<BaseFixture, RepresentationManager>;
@@ -81,14 +85,18 @@
 //     std::list<Feature_t> features{};
 //   };
 
-//   /* ---------------------------------------------------------------------- */
+//   /* ----------------------------------------------------------------------
+//   */
 //   /**
-//    * A templated Fixture, inherits from the ReperesentationFixture. It provides
-//    * access to different data structures. They are used to check the aggregation
+//    * A templated Fixture, inherits from the ReperesentationFixture. It
+//    provides
+//    * access to different data structures. They are used to check the
+//    aggregation
 //    * of calculated feature data from multiple structures.
 //    */
 //   template <typename T, template <typename> class FeatureManager,
-//             template <typename> class RepresentationManager, class BaseFixture>
+//             template <typename> class RepresentationManager, class
+//             BaseFixture>
 //   struct SparseFeatureFixture
 //       : CalculatorFixture<BaseFixture, RepresentationManager> {
 //     using Parent = CalculatorFixture<BaseFixture, RepresentationManager>;
@@ -119,7 +127,8 @@
 //     std::vector<size_t> inner_sizes{};
 //   };
 
-//   /* ---------------------------------------------------------------------- */
+//   /* ----------------------------------------------------------------------
+//   */
 
 // }  // namespace rascal
 

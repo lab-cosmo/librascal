@@ -31,16 +31,18 @@
 // namespace rascal {
 
 //   BOOST_AUTO_TEST_SUITE(feature_dense_test);
-//   /* ---------------------------------------------------------------------- */
+//   /* ----------------------------------------------------------------------
+//   */
 //   // TODO(felix) define more test that could be streamlined
-//   // gets a list of fixtures for all the different possible structure managers
-//   using multiple_fixtures = boost::mpl::list<
+//   // gets a list of fixtures for all the different possible structure
+//   managers using multiple_fixtures = boost::mpl::list<
 //       FeatureFixture<double, FeatureManagerDense, CalculatorSortedCoulomb,
 //                      MultipleStructureSortedCoulomb>,
 //       FeatureFixture<float, FeatureManagerDense, CalculatorSortedCoulomb,
 //                      MultipleStructureSortedCoulomb>>;
 
-//   /* ---------------------------------------------------------------------- */
+//   /* ----------------------------------------------------------------------
+//   */
 //   /**
 //    * Test if the Fixture with multiple structures builds
 //    */
@@ -48,7 +50,8 @@
 //   // multiple_fixtures,
 //   //                                 Fix) {}
 
-//   /* ---------------------------------------------------------------------- */
+//   /* ----------------------------------------------------------------------
+//   */
 //   /**
 //    * Test the construction of the feature manager
 //    */
@@ -62,7 +65,8 @@
 //     }
 //   }
 
-//   /* ---------------------------------------------------------------------- */
+//   /* ----------------------------------------------------------------------
+//   */
 //   /**
 //    * Test pushing back the feature matrices of several representations in the
 //    * feature manager and check if the data is properly set.
@@ -130,13 +134,15 @@
 //                            CalculatorSphericalExpansion,
 //                            MultipleStructureSphericalExpansion>>;
 
-//   /* ---------------------------------------------------------------------- */
+//   /* ----------------------------------------------------------------------
+//   */
 //   /**
 //    * Test if the Fixture with multiple structures builds
 //    */
 //   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_setup_test, Fix,
 //                                    multiple_fixtures_sparse, Fix) {}
-//   /* ---------------------------------------------------------------------- */
+//   /* ----------------------------------------------------------------------
+//   */
 //   /**
 //    * Test the construction of the feature manager
 //    */
@@ -152,7 +158,8 @@
 //     }
 //   }
 
-//   /* ---------------------------------------------------------------------- */
+//   /* ----------------------------------------------------------------------
+//   */
 //   /**
 //    * Test pushing back the feature matrices of several representations in the
 //    * feature manager and check if the data is properly set.
@@ -186,7 +193,8 @@
 
 //     // move the features into the feature manager
 //     for (size_t i_hyper{0}; i_hyper < hypers.size(); i_hyper++) {
-//       for (size_t i_rep{0}; i_rep < representations[i_hyper].size(); i_rep++) {
+//       for (size_t i_rep{0}; i_rep < representations[i_hyper].size(); i_rep++)
+//       {
 //         features[i_hyper].push_back(representations[i_hyper][i_rep]);
 //       }
 //     }
@@ -218,9 +226,8 @@
 //             auto && data = datas[key];
 //             for (int i_col{0}; i_col < data.cols(); i_col++) {
 //               for (int i_row{0}; i_row < data.rows(); i_row++) {
-//                 diff += data(i_row, i_col) - feature_matrix(i_count, i_center);
-//                 N += 1;
-//                 if (verbose) {
+//                 diff += data(i_row, i_col) - feature_matrix(i_count,
+//                 i_center); N += 1; if (verbose) {
 //                   if (diff > 1e-12) {
 //                     std::cout << diff << ", ";
 //                     std::cout << data(i_row, i_col) << ", ";

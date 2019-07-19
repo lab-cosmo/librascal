@@ -88,8 +88,9 @@ int main(int argc, char * argv[]) {
   json adaptors;
   json ad1{{"name", "AdaptorNeighbourList"},
            {"initialization_arguments",
-            {{"cutoff", cutoff}, {"consider_ghost_neighbours", false},
-            {"skin", 0.}}}};
+            {{"cutoff", cutoff},
+             {"consider_ghost_neighbours", false},
+             {"skin", 0.}}}};
   json ad2{{"name", "AdaptorStrict"},
            {"initialization_arguments", {{"cutoff", cutoff}}}};
   adaptors.emplace_back(ad1);
@@ -132,11 +133,11 @@ int main(int argc, char * argv[]) {
             << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
             << std::endl;
   // auto property_name{representation.get_name()};
-  // auto&& property{manager->template get_validated_property_ref<Property_t>(property_name)};
-  // auto soap{property.get_dense_rep()};
-  // TODELETE
-  // auto soap = representation.get_dense_rep();
-  // std::cout << "Sample SphericalInvariant elements \n"
+  // auto&& property{manager->template
+  // get_validated_property_ref<Property_t>(property_name)}; auto
+  // soap{property.get_dense_rep()}; TODELETE auto soap =
+  // representation.get_dense_rep(); std::cout << "Sample SphericalInvariant
+  // elements \n"
   //           << soap(0, 0) << " " << soap(0, 1) << " " << soap(0, 2) << "\n"
   //           << soap(1, 0) << " " << soap(1, 1) << " " << soap(1, 2) << "\n"
   //           << soap(2, 0) << " " << soap(2, 1) << " " << soap(2, 2) << "\n";

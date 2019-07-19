@@ -44,7 +44,6 @@ PYBIND11_MODULE(_rascal, mod) {
   py::module m_kernels = m_models.def_submodule("Kernels");
   m_kernels.doc() = "Collection of Kernels";
 
-
   py::module m_utl = mod.def_submodule("utils");
   py::module m_math = mod.def_submodule("math");
   m_math.doc() = "Collection of math functions";

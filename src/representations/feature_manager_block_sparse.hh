@@ -51,7 +51,8 @@
 //    * aggregated structures.
 //    * sparse_keys is the sparse dimension and can have a varying number of
 //    * actually stored keys.
-//    * row_inner and col_inner are the inner dense dimensions that are fixed for
+//    * row_inner and col_inner are the inner dense dimensions that are fixed
+//    for
 //    * all centers and sparse_keys.
 //    * The 2nd view is a consolidated (dense) copy of the 1st where missing
 //    * sparse keys have been filled with zeros.
@@ -68,10 +69,10 @@
 //     using Precision_t = typename Parent::Precision_t;
 
 //     using Key_t = std::vector<int>;
-//     using Dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, Eigen::Dynamic>;
-//     using dense_ref_t = Eigen::Map<Dense_t>;
-//     using MapCenter_t = std::vector<std::pair<size_t, size_t>>;
-//     using map_sparse_t = std::vector<
+//     using Dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic,
+//     Eigen::Dynamic>; using dense_ref_t = Eigen::Map<Dense_t>; using
+//     MapCenter_t = std::vector<std::pair<size_t, size_t>>; using map_sparse_t
+//     = std::vector<
 //         std::map<Key_t, std::pair<size_t, std::pair<size_t, size_t>>>>;
 //     using Keys_t = std::vector<std::list<Key_t>>;
 //     using Data_t = std::vector<Precision_t>;
@@ -85,10 +86,12 @@
 //      */
 //     FeatureManagerBlockSparse(size_t inner_size, Hypers_t hypers)
 //         : feature_matrix{}, inner_size{inner_size}, n_center{0}, hypers{
-//                                                                      hypers} {}
+//                                                                      hypers}
+//                                                                      {}
 
 //     //! Copy constructor
-//     FeatureManagerBlockSparse(const FeatureManagerBlockSparse & other) = delete;
+//     FeatureManagerBlockSparse(const FeatureManagerBlockSparse & other) =
+//     delete;
 
 //     //! Move constructor
 //     FeatureManagerBlockSparse(FeatureManagerBlockSparse && other) = default;
@@ -181,7 +184,8 @@
 //           this->keys_list.back().emplace_back(key);
 //           this->map2sparse.back().emplace(std::make_pair(
 //               key, std::make_pair(key_start,
-//                                   std::make_pair(value.rows(), value.cols()))));
+//                                   std::make_pair(value.rows(),
+//                                   value.cols()))));
 
 //           key_start += value.size();
 //         }
@@ -213,35 +217,35 @@
 //       return std::make_tuple(this->sample_size(), this->feature_size());
 //     }
 
-    // //! return the feature matrix as an Map over Eigen MatrixXd
-    // inline Feature_Matrix_t get_feature_matrix_dense() {
-    //   Feature_Matrix_t mat =
-    //       Feature_Matrix_t::Zero(this->feature_size(), this->sample_size());
-    //   auto inner_size{this->get_inner_size()};
-    //   // loop center
-    //   for (int i_center{0}; i_center < this->sample_size(); i_center++) {
-    //     auto & center_start{this->map2centers[i_center].first};
-    //     size_t i_feature{0};
-    //     // loop sparse key
-    //     for (auto & key : this->unique_keys) {
-    //       // if the key exist
-    //       if (this->map2sparse[i_center].count(key) == 1) {
-    //         auto key_start{center_start +
-    //                        this->map2sparse[i_center][key].first};
-    //         auto & key_shape{this->map2sparse[i_center][key].second};
-    //         auto key_size{key_shape.first * key_shape.second};
-    //         for (size_t i_val{0}; i_val < key_size; i_val++) {
-    //           mat(i_feature, i_center) =
-    //               this->feature_matrix[key_start + i_val];
-    //           i_feature++;
-    //         }
-    //       } else {
-    //         i_feature += inner_size;
-    //       }
-    //     }  // keys
-    //   }    // centers
-    //   return mat;
-    // }
+// //! return the feature matrix as an Map over Eigen MatrixXd
+// inline Feature_Matrix_t get_feature_matrix_dense() {
+//   Feature_Matrix_t mat =
+//       Feature_Matrix_t::Zero(this->feature_size(), this->sample_size());
+//   auto inner_size{this->get_inner_size()};
+//   // loop center
+//   for (int i_center{0}; i_center < this->sample_size(); i_center++) {
+//     auto & center_start{this->map2centers[i_center].first};
+//     size_t i_feature{0};
+//     // loop sparse key
+//     for (auto & key : this->unique_keys) {
+//       // if the key exist
+//       if (this->map2sparse[i_center].count(key) == 1) {
+//         auto key_start{center_start +
+//                        this->map2sparse[i_center][key].first};
+//         auto & key_shape{this->map2sparse[i_center][key].second};
+//         auto key_size{key_shape.first * key_shape.second};
+//         for (size_t i_val{0}; i_val < key_size; i_val++) {
+//           mat(i_feature, i_center) =
+//               this->feature_matrix[key_start + i_val];
+//           i_feature++;
+//         }
+//       } else {
+//         i_feature += inner_size;
+//       }
+//     }  // keys
+//   }    // centers
+//   return mat;
+// }
 
 //     inline Feature_Matrix_ref get_feature_matrix() {
 //       return Feature_Matrix_ref(this->feature_matrix.data(),
@@ -293,7 +297,8 @@
 //   using Dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, Eigen::Dynamic>;
 
 //   template <typename T>
-//   std::list<T> intersection_of(const std::list<T> & a, const std::list<T> & b) {
+//   std::list<T> intersection_of(const std::list<T> & a, const std::list<T> &
+//   b) {
 //     std::list<T> rtn;
 //     std::unordered_multiset<T, internal::Hash<T>> st;
 //     std::for_each(a.begin(), a.end(), [&st](const T & k) { st.insert(k); });
@@ -435,9 +440,9 @@
 
 //         // loop over the centers again
 //         for (int icenter2{icenter1 + 1}; icenter2 < iframe1_nd; icenter2++) {
-//           // compute the dot product (cosine) between 2 normalized sparse vector
-//           double inner_val{0.};
-//           for (const auto & key : keys_intersection) {
+//           // compute the dot product (cosine) between 2 normalized sparse
+//           vector double inner_val{0.}; for (const auto & key :
+//           keys_intersection) {
 //             auto vec1{X1.get_features(icenter1, key)};
 //             auto vec2{X1.get_features(icenter2, key)};
 //             inner_val += vec1.dot(vec2);

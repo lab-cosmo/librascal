@@ -45,10 +45,14 @@ namespace rascal {
    * specialisation of traits for strict adaptor
    */
   template <class ManagerImplementation>
-  struct StructureManager_traits<AdaptorCenterContribution<ManagerImplementation>> {
-    constexpr static AdaptorTraits::Strict Strict{ ManagerImplementation::traits::Strict};
-    constexpr static bool HasDistances{ ManagerImplementation::traits::HasDistances};
-    constexpr static bool HasDirectionVectors{ ManagerImplementation::traits::HasDirectionVectors};
+  struct StructureManager_traits<
+      AdaptorCenterContribution<ManagerImplementation>> {
+    constexpr static AdaptorTraits::Strict Strict{
+        ManagerImplementation::traits::Strict};
+    constexpr static bool HasDistances{
+        ManagerImplementation::traits::HasDistances};
+    constexpr static bool HasDirectionVectors{
+        ManagerImplementation::traits::HasDirectionVectors};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
     using LayerByOrder = typename LayerIncreaser<
@@ -60,7 +64,8 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   class AdaptorCenterContribution
-      : public StructureManager<AdaptorCenterContribution<ManagerImplementation>>,
+      : public StructureManager<
+            AdaptorCenterContribution<ManagerImplementation>>,
         public std::enable_shared_from_this<
             AdaptorCenterContribution<ManagerImplementation>> {
    public:
@@ -73,11 +78,10 @@ namespace rascal {
     using Hypers_t = typename Parent::Hypers_t;
 
     using Distance_t = typename Parent::template Property_t<double, 2, 1>;
-    using DirectionVector_t = typename Parent::template Property_t<double, 2, 3>;
+    using DirectionVector_t =
+        typename Parent::template Property_t<double, 2, 3>;
 
-
-    static_assert(traits::MaxOrder == 2,
-                  "Works only on pairs pairs");
+    static_assert(traits::MaxOrder == 2, "Works only on pairs pairs");
     constexpr static auto AtomLayer{
         Manager_t::template cluster_layer_from_order<1>()};
     constexpr static auto PairLayer{
@@ -103,10 +107,12 @@ namespace rascal {
     virtual ~AdaptorCenterContribution() = default;
 
     //! Copy assignment operator
-    AdaptorCenterContribution & operator=(const AdaptorCenterContribution & other) = delete;
+    AdaptorCenterContribution &
+    operator=(const AdaptorCenterContribution & other) = delete;
 
     //! Move assignment operator
-    AdaptorCenterContribution & operator=(AdaptorCenterContribution && other) = default;
+    AdaptorCenterContribution &
+    operator=(AdaptorCenterContribution && other) = default;
 
     //! update just the adaptor assuming the underlying manager was updated
     inline void update_self();
@@ -312,21 +318,20 @@ namespace rascal {
    private:
   };
 
-
   /*--------------------------------------------------------------------------*/
   template <class ManagerImplementation>
   AdaptorCenterContribution<ManagerImplementation>::AdaptorCenterContribution(
       std::shared_ptr<ManagerImplementation> manager)
       : manager{std::move(manager)}, distance{std::make_shared<Distance_t>(
                                          *this)},
-        dir_vec{std::make_shared<DirectionVector_t>(*this)},
-        atom_tag_list{}, neighbours_cluster_index{}, nb_neigh{}, offsets{}
-  { }
+        dir_vec{std::make_shared<DirectionVector_t>(*this)}, atom_tag_list{},
+        neighbours_cluster_index{}, nb_neigh{}, offsets{} {}
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
   template <class... Args>
-  void AdaptorCenterContribution<ManagerImplementation>::update(Args &&... arguments) {
+  void AdaptorCenterContribution<ManagerImplementation>::update(
+      Args &&... arguments) {
     this->manager->update(std::forward<Args>(arguments)...);
   }
 
@@ -349,8 +354,7 @@ namespace rascal {
     }
 
     //! initialise the distance storage
-    this->distance =
-        this->template get_property_ptr<Distance_t>("distance");
+    this->distance = this->template get_property_ptr<Distance_t>("distance");
     this->dir_vec =
         this->template get_property_ptr<DirectionVector_t>("dir_vec");
 

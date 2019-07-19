@@ -37,16 +37,15 @@
 #include "json_io.hh"
 #include "atomic_structure.hh"
 
-
 namespace rascal {
 
-
-  template<typename Manager,
+  template <typename Manager,
             template <class> class... AdaptorImplementationPack>
   class ManagerCollection {
    public:
     using Self_t = ManagerCollection<Manager, AdaptorImplementationPack...>;
-    using TypeHolder_t = StructureManagerTypeHolder<Manager, AdaptorImplementationPack...>;
+    using TypeHolder_t =
+        StructureManagerTypeHolder<Manager, AdaptorImplementationPack...>;
     using Manager_t = typename TypeHolder_t::type;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
     using ManagerList_t = typename TypeHolder_t::type_list;
@@ -62,10 +61,9 @@ namespace rascal {
    public:
     ManagerCollection() = default;
 
-    explicit ManagerCollection(const Hypers_t& adaptor_inputs) {
+    explicit ManagerCollection(const Hypers_t & adaptor_inputs) {
       this->adaptor_inputs = adaptor_inputs;
     };
-
 
     //! Copy constructor
     ManagerCollection(const ManagerCollection & other) = delete;
@@ -82,7 +80,6 @@ namespace rascal {
     //! Move assignment operator
     ManagerCollection & operator=(ManagerCollection && other) = default;
 
-
     /**
      * Give the ManagerCollection the iterator functionality using Data_t
      * functionality
@@ -90,43 +87,42 @@ namespace rascal {
     using iterator = typename Data_t::iterator;
     using const_iterator = typename Data_t::const_iterator;
 
-    inline iterator begin() noexcept {
-      return this->managers.begin();
-    }
+    inline iterator begin() noexcept { return this->managers.begin(); }
     inline const_iterator begin() const noexcept {
       return this->managers.begin();
     }
 
-    inline iterator end() noexcept {
-      return this->managers.end();
-    }
-    inline const_iterator end() const noexcept {
-      return this->managers.end();
-    }
+    inline iterator end() noexcept { return this->managers.end(); }
+    inline const_iterator end() const noexcept { return this->managers.end(); }
 
     //! set the global inputs for the adaptors
-    inline void set_adaptor_inputs(const Hypers_t& adaptor_inputs) {
+    inline void set_adaptor_inputs(const Hypers_t & adaptor_inputs) {
       this->adaptor_inputs = adaptor_inputs;
     }
 
-    inline const Hypers_t& get_adaptors_parameters() const {
+    inline const Hypers_t & get_adaptors_parameters() const {
       return this->adaptor_inputs;
     }
 
     /**
      * functions to add a(several) structures to the collection
      */
-    inline void add_structure(const Hypers_t& structure, const Hypers_t& adaptor_inputs) {
-      auto manager = make_structure_manager_stack<Manager, AdaptorImplementationPack...>(structure, adaptor_inputs);
+    inline void add_structure(const Hypers_t & structure,
+                              const Hypers_t & adaptor_inputs) {
+      auto manager =
+          make_structure_manager_stack<Manager, AdaptorImplementationPack...>(
+              structure, adaptor_inputs);
       this->add_structure(manager);
     }
 
-    inline void add_structure(const Hypers_t& structure) {
-      auto manager = make_structure_manager_stack<Manager, AdaptorImplementationPack...>(structure, this->adaptor_inputs);
+    inline void add_structure(const Hypers_t & structure) {
+      auto manager =
+          make_structure_manager_stack<Manager, AdaptorImplementationPack...>(
+              structure, this->adaptor_inputs);
       this->add_structure(manager);
     }
 
-    inline void add_structure(std::shared_ptr<Manager_t>& manager) {
+    inline void add_structure(std::shared_ptr<Manager_t> & manager) {
       this->managers.emplace_back(manager);
     }
 
@@ -135,15 +131,17 @@ namespace rascal {
      * update them afterwards (small workaround because AtomicStructure<3>
      * can't be put in a json object).
      */
-    void add_structures(const std::vector<AtomicStructure<3>>& atomic_structures) {
+    void
+    add_structures(const std::vector<AtomicStructure<3>> & atomic_structures) {
       Hypers_t structure = Hypers_t::object();
-      for (const auto& atomic_structure : atomic_structures) {
+      for (const auto & atomic_structure : atomic_structures) {
         this->add_structure(structure);
         this->managers.back()->update(atomic_structure);
       }
     }
 
-    void add_structures(const Hypers_t& structures, const Hypers_t& adaptors_inputs) {
+    void add_structures(const Hypers_t & structures,
+                        const Hypers_t & adaptors_inputs) {
       if (not structures.is_array()) {
         throw std::runtime_error(R"(Provide the structures as an array
         (or list) of json dictionary defining the structure)");
@@ -154,17 +152,18 @@ namespace rascal {
       }
 
       for (int i_structure{0}; i_structure < structures.size(); ++i_structure) {
-        this->add_structure(structures[i_structure], adaptors_inputs[i_structure]);
+        this->add_structure(structures[i_structure],
+                            adaptors_inputs[i_structure]);
       }
     }
 
-    void add_structures(const Hypers_t& structures) {
+    void add_structures(const Hypers_t & structures) {
       if (not structures.is_array()) {
         throw std::runtime_error(R"(Provide the structures as an array
         (or list) of json dictionary defining the structure)");
       }
 
-      for (auto& structure : structures) {
+      for (auto & structure : structures) {
         this->add_structure(structure);
       }
     }
@@ -184,14 +183,15 @@ namespace rascal {
      * first and 3 would corresponds to the 4th structure irrespective of the
      * actual indices in the file.
      */
-    void add_structures(const std::string& filename, const int& start = 0,
+    void add_structures(const std::string & filename, const int & start = 0,
                         int length = -1) {
       // important not to do brace initialization because it adds an extra
       // nesting layer
       json structures = json_io::load(filename);
 
       if (not structures.is_object()) {
-        throw std::runtime_error(R"(The ase format's first level is a dictionary with indicies as keys to the structures)");
+        throw std::runtime_error(
+            R"(The ase format's first level is a dictionary with indicies as keys to the structures)");
       }
 
       if (structures.count("ids") == 1) {
@@ -204,7 +204,7 @@ namespace rascal {
         }
         ids.erase(ids.begin() + length, ids.end());
 
-        for (auto& idx : ids) {
+        for (auto & idx : ids) {
           this->add_structure(structures[std::to_string(idx)].get<Hypers_t>());
         }
       } else {
@@ -213,12 +213,9 @@ namespace rascal {
     }
 
     //! number of structure manager in the collection
-    inline size_t size() const {
-      return this->managers.size();
-    }
-
+    inline size_t size() const { return this->managers.size(); }
   };
 
-}
+}  // namespace rascal
 
 #endif  // SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_COLLECTION_HH_

@@ -30,7 +30,6 @@
 #ifndef TESTS_TEST_PROPERTIES_HH_
 #define TESTS_TEST_PROPERTIES_HH_
 
-
 #include "tests.hh"
 #include "test_structure.hh"
 #include "test_adaptor.hh"

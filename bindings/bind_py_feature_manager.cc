@@ -114,7 +114,8 @@ using namespace rascal;  // NOLINT
 //               [](Feature_t & self, Feature_t & other, const int & zeta) {
 //                 return cosine_kernel_global(zeta, self, other);
 //               });
-//   feature.def("cosine_kernel_global", [](Feature_t & self, const int & zeta) {
+//   feature.def("cosine_kernel_global", [](Feature_t & self, const int & zeta)
+//   {
 //     return cosine_kernel_global(zeta, self);
 //   });
 //   return feature;

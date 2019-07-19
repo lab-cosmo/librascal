@@ -79,22 +79,18 @@ namespace rascal {
                                   {"soap_type", "PowerSpectrum"},
                                   {"normalize", true}}};
 
-
-    std::vector<json> kernel_hypers{{ {"zeta", 2},
-                                      {"target_type", "Structure"},
-                                      {"name", "Cosine"}},
-                                    { {"zeta", 2},
-                                      {"target_type", "Atom"},
-                                      {"name", "Cosine"}}
-                                    };
+    std::vector<json> kernel_hypers{
+        {{"zeta", 2}, {"target_type", "Structure"}, {"name", "Cosine"}},
+        {{"zeta", 2}, {"target_type", "Atom"}, {"name", "Cosine"}}};
   };
 
   struct DataSphericalInvariantsKernelFixture {
-    using ManagerTypeHolder_t = StructureManagerTypeHolder<StructureManagerCenters,
+    using ManagerTypeHolder_t =
+        StructureManagerTypeHolder<StructureManagerCenters,
                                    AdaptorNeighbourList, AdaptorStrict>;
     using Representation_t = CalculatorSphericalInvariants;
 
-    DataSphericalInvariantsKernelFixture()   {
+    DataSphericalInvariantsKernelFixture() {
       std::vector<std::uint8_t> ref_data_ubjson;
       internal::read_binary_file(ref_filename, ref_data_ubjson);
       auto datas = json::from_ubjson(ref_data_ubjson);
@@ -103,17 +99,16 @@ namespace rascal {
       this->start = datas["start"];
       this->lenght = datas["length"];
 
-      for (auto& cutoff : datas["cutoffs"]) {
+      for (auto & cutoff : datas["cutoffs"]) {
         json parameters;
         json structure{};
         json adaptors;
-        json ad1{
-            {"name", "AdaptorNeighbourList"},
-            {"initialization_arguments",
-              {{"cutoff", cutoff},
-              {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+        json ad1{{"name", "AdaptorNeighbourList"},
+                 {"initialization_arguments",
+                  {{"cutoff", cutoff},
+                   {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
         json ad2{{"name", "AdaptorStrict"},
-                  {"initialization_arguments", {{"cutoff", cutoff}}}};
+                 {"initialization_arguments", {{"cutoff", cutoff}}}};
         adaptors.emplace_back(ad1);
         adaptors.emplace_back(ad2);
 
@@ -122,7 +117,7 @@ namespace rascal {
         this->factory_args.push_back(parameters);
       }
 
-      for (auto& data : this->ref_data[0].get<json>()) {
+      for (auto & data : this->ref_data[0].get<json>()) {
         this->representation_hypers.push_back(data["hypers_rep"]);
         this->kernel_hypers.push_back(data["hypers_kernel"]);
       }
@@ -141,15 +136,15 @@ namespace rascal {
     std::string filename{""};
     int start{0};
     int lenght{0};
-
   };
 
   /**
    * BaseFixture is expected to be similar to
    * StrictNLKernelFixture
    */
-  template<class BaseFixture>
-  struct KernelFixture : CollectionFixture<BaseFixture>, CalculatorFixture<BaseFixture> {
+  template <class BaseFixture>
+  struct KernelFixture : CollectionFixture<BaseFixture>,
+                         CalculatorFixture<BaseFixture> {
     using ParentA = CollectionFixture<BaseFixture>;
     using ParentB = CalculatorFixture<BaseFixture>;
 
@@ -158,16 +153,17 @@ namespace rascal {
     using Calculator_t = typename ParentB::Representation_t;
     using Property_t = typename Calculator_t::template Property_t<Manager_t>;
 
-    KernelFixture() :ParentA{}, ParentB{} {
-      for (auto& collection : this->collections) {
-        collection.add_structures(this->ParentA::filename, this->ParentA::start, this->ParentA::lenght);
-        for (auto& hyper : this->ParentB::representation_hypers) {
+    KernelFixture() : ParentA{}, ParentB{} {
+      for (auto & collection : this->collections) {
+        collection.add_structures(this->ParentA::filename, this->ParentA::start,
+                                  this->ParentA::lenght);
+        for (auto & hyper : this->ParentB::representation_hypers) {
           this->representations.push_back(hyper);
           this->representations.back().compute(collection);
         }
       }
 
-      for (auto& hyper : this->ParentA::kernel_hypers) {
+      for (auto & hyper : this->ParentA::kernel_hypers) {
         this->kernels.push_back(hyper);
       }
     }
@@ -177,7 +173,6 @@ namespace rascal {
     ~KernelFixture() = default;
 
     bool verbose{false};
-
   };
 
 }  // namespace rascal

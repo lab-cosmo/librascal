@@ -158,8 +158,8 @@ namespace rascal {
     using Manager_t = Manager;
     using Self_t = TypedProperty<T, Order, PropertyLayer, Manager>;
     using traits = typename Manager::traits;
-    using Dense_t = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic,
-                                  Eigen::RowMajor>;
+    using Dense_t =
+        Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
     using value_type = typename Value::type;
     using reference = typename Value::reference;
@@ -172,7 +172,8 @@ namespace rascal {
                  nb_col,
                  Order,
                  PropertyLayer,
-                 metadata}, type_id{internal::GetTypeNameHelper<Self_t>::GetTypeName()} {}
+                 metadata},
+          type_id{internal::GetTypeNameHelper<Self_t>::GetTypeName()} {}
 
     //! Default constructor
     TypedProperty() = delete;
@@ -195,9 +196,7 @@ namespace rascal {
     /* ---------------------------------------------------------------------- */
     //! return runtime info about the stored (e.g., numerical) type
     //! return info about the type
-    const std::string& get_type_info() const {
-      return this->type_id;
-    };
+    const std::string & get_type_info() const { return this->type_id; };
 
     Manager_t & get_manager() {
       return static_cast<Manager_t &>(this->base_manager);

@@ -487,9 +487,9 @@ namespace rascal {
    * The local environment of each atom is represented by Gaussians of a
    * certain width (user-defined; can be constant, species-dependent, or
    * radially dependent).  This density field is expanded in an angular basis
-   * of spherical harmonics (à la SphericalInvariant) and a radial basis of either Gaussians
-   * (again, as in SphericalInvariant) or one of the more recent bases currently under
-   * development.
+   * of spherical harmonics (à la SphericalInvariant) and a radial basis of
+   * either Gaussians (again, as in SphericalInvariant) or one of the more
+   * recent bases currently under development.
    */
   class CalculatorSphericalExpansion : public CalculatorBase {
    public:
@@ -498,13 +498,13 @@ namespace rascal {
     using ReferenceHypers_t = Parent::ReferenceHypers_t;
     using Key_t = typename Parent::Key_t;
 
-    template<class StructureManager>
+    template <class StructureManager>
     using Property_t =
         BlockSparseProperty<double, 1, 0, StructureManager, Key_t>;
 
-    template<class StructureManager>
+    template <class StructureManager>
     using Dense_t = typename Property_t<StructureManager>::Dense_t;
-    template<class StructureManager>
+    template <class StructureManager>
     using Data_t = typename Property_t<StructureManager>::Data_t;
 
     template <class StructureManager, size_t Order>
@@ -520,8 +520,8 @@ namespace rascal {
      *                    specified in the structure
      */
     void set_hyperparameters(const Hypers_t & hypers) {
-      using internal::CutoffFunctionType;
       using internal::AtomicSmearingType;
+      using internal::CutoffFunctionType;
       using internal::RadialBasisType;
       this->hypers = hypers;
 
@@ -611,47 +611,44 @@ namespace rascal {
      * of structure manager(s) (in an iterator) held in shared_ptr
      */
     template <class StructureManager>
-    void compute(StructureManager& managers);
+    void compute(StructureManager & managers);
 
     //! choose the RadialBasisType and AtomicSmearingType from the hypers
     template <internal::CutoffFunctionType FcType, class StructureManager>
-    void compute_by_radial_contribution(StructureManager& managers);
-
-
+    void compute_by_radial_contribution(StructureManager & managers);
 
     /**
      * loop over a collection of manangers if it is an iterator.
      * Or just call compute_impl
      */
-    template <internal::CutoffFunctionType FcType,
-              internal::RadialBasisType RadialType,
-              internal::AtomicSmearingType SmearingType,
-              class StructureManager,
-              std::enable_if_t<internal::is_proper_iterator<StructureManager>::value, int> = 0>
-    inline void compute_loop(StructureManager& managers) {
-      for (auto& manager : managers) {
+    template <
+        internal::CutoffFunctionType FcType,
+        internal::RadialBasisType RadialType,
+        internal::AtomicSmearingType SmearingType, class StructureManager,
+        std::enable_if_t<internal::is_proper_iterator<StructureManager>::value,
+                         int> = 0>
+    inline void compute_loop(StructureManager & managers) {
+      for (auto & manager : managers) {
         this->compute_impl<FcType, RadialType, SmearingType>(manager);
       }
     }
 
-
     //! single manager case
     template <internal::CutoffFunctionType FcType,
               internal::RadialBasisType RadialType,
-              internal::AtomicSmearingType SmearingType,
-              class StructureManager,
-              std::enable_if_t<not(internal::is_proper_iterator<StructureManager>::value), int> = 0>
-    inline void compute_loop(StructureManager& manager) {
+              internal::AtomicSmearingType SmearingType, class StructureManager,
+              std::enable_if_t<
+                  not(internal::is_proper_iterator<StructureManager>::value),
+                  int> = 0>
+    inline void compute_loop(StructureManager & manager) {
       this->compute_impl<FcType, RadialType, SmearingType>(manager);
     }
 
     //! Compute the spherical exansion given several options
     template <internal::CutoffFunctionType FcType,
               internal::RadialBasisType RadialType,
-              internal::AtomicSmearingType SmearingType,
-              class StructureManager>
+              internal::AtomicSmearingType SmearingType, class StructureManager>
     inline void compute_impl(std::shared_ptr<StructureManager> manager);
-
 
    protected:
     double interaction_cutoff{};
@@ -675,13 +672,14 @@ namespace rascal {
 
   // compute classes template construction
   template <class StructureManager>
-  void CalculatorSphericalExpansion::compute(StructureManager& managers) {
+  void CalculatorSphericalExpansion::compute(StructureManager & managers) {
     // specialize based on the cutoff function
     using internal::CutoffFunctionType;
 
     switch (this->cutoff_function_type) {
     case CutoffFunctionType::Cosine: {
-      this->compute_by_radial_contribution<CutoffFunctionType::Cosine>(managers);
+      this->compute_by_radial_contribution<CutoffFunctionType::Cosine>(
+          managers);
       break;
     }
     default:
@@ -691,7 +689,8 @@ namespace rascal {
   }
 
   template <internal::CutoffFunctionType FcType, class StructureManager>
-  void CalculatorSphericalExpansion::compute_by_radial_contribution(StructureManager& managers) {
+  void CalculatorSphericalExpansion::compute_by_radial_contribution(
+      StructureManager & managers) {
     // specialize based on the type of radial contribution
     using internal::AtomicSmearingType;
     using internal::RadialBasisType;
@@ -710,7 +709,6 @@ namespace rascal {
     }
   }
 
-
   /**
    * Compute the spherical expansion
    * TODO(felix,max) use the parity of the spherical harmonics to use half
@@ -718,14 +716,15 @@ namespace rascal {
    */
   template <internal::CutoffFunctionType FcType,
             internal::RadialBasisType RadialType,
-            internal::AtomicSmearingType SmearingType,
-            class StructureManager>
-  void CalculatorSphericalExpansion::compute_impl(std::shared_ptr<StructureManager> manager) {
+            internal::AtomicSmearingType SmearingType, class StructureManager>
+  void CalculatorSphericalExpansion::compute_impl(
+      std::shared_ptr<StructureManager> manager) {
     using Prop_t = Property_t<StructureManager>;
     using math::PI;
     using math::pow;
 
-    auto&& expansions_coefficients{manager->template get_property_ref<Prop_t>(this->get_name())};
+    auto && expansions_coefficients{
+        manager->template get_property_ref<Prop_t>(this->get_name())};
 
     // if the representation has already been computed for the current
     // structure then do nothing

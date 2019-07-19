@@ -64,7 +64,8 @@
 //     virtual ~FeatureManagerBase() = default;
 
 //     //! Copy assignment operator
-//     FeatureManagerBase & operator=(const FeatureManagerBase & other) = delete;
+//     FeatureManagerBase & operator=(const FeatureManagerBase & other) =
+//     delete;
 
 //     //! Move assignment operator
 //     FeatureManagerBase & operator=(FeatureManagerBase && other) = default;

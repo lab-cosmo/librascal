@@ -36,17 +36,15 @@
 
 namespace rascal {
 
-
   struct StrictNLCollectionFixture : MultipleStructureManagerNLStrictFixture {
     using Parent = MultipleStructureManagerNLStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
 
     StrictNLCollectionFixture() : Parent{} {};
-    
+
     ~StrictNLCollectionFixture() = default;
 
-    std::string filename{
-        "reference_data/dft-smiles_500.ubjson"};
+    std::string filename{"reference_data/dft-smiles_500.ubjson"};
     int start{0};
     int lenght{10};
   };
@@ -55,16 +53,17 @@ namespace rascal {
    * BaseFixture is expected to be similar to
    * StrictNLCollectionFixture for instance
    */
-  template<class BaseFixture>
+  template <class BaseFixture>
   struct CollectionFixture : BaseFixture {
     using Parent = BaseFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using ManagerTypeList_t = typename ManagerTypeHolder_t::type_list;
     using Manager_t = typename ManagerTypeHolder_t::type;
-    using ManagerCollection_t = typename TypeHolderInjector<ManagerCollection,ManagerTypeList_t>::type;
+    using ManagerCollection_t =
+        typename TypeHolderInjector<ManagerCollection, ManagerTypeList_t>::type;
 
     CollectionFixture() : Parent{} {
-      for (auto& args : this->factory_args) {
+      for (auto & args : this->factory_args) {
         collections.emplace_back(args["adaptors"]);
         structures.emplace_back(args["structure"]);
       }
@@ -75,7 +74,6 @@ namespace rascal {
     json structures{};
 
     std::vector<ManagerCollection_t> collections{};
-
   };
 
 }  // namespace rascal

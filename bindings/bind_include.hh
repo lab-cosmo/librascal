@@ -28,7 +28,6 @@
 #ifndef BINDINGS_BIND_INCLUDE_HH_
 #define BINDINGS_BIND_INCLUDE_HH_
 
-
 // #include "math/math_interface.hh"
 // #include "math/math_utils.hh"
 
@@ -77,10 +76,7 @@ PYBIND11_MAKE_OPAQUE(std::vector<rascal::AtomicStructure<3>>);
 
 namespace py = pybind11;
 
-
-
 namespace rascal {
-
 
   namespace internal {
 

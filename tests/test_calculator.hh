@@ -90,7 +90,8 @@ namespace rascal {
     json factory_args{};
   };
 
-  struct MultipleStructureSphericalInvariant : MultipleStructureManagerNLStrictFixture {
+  struct MultipleStructureSphericalInvariant
+      : MultipleStructureManagerNLStrictFixture {
     using Parent = MultipleStructureManagerNLStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalInvariants;
@@ -150,9 +151,12 @@ namespace rascal {
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalInvariants;
 
-    SphericalInvariantTestData() : Parent{} { this->get_ref(this->ref_filename); }
+    SphericalInvariantTestData() : Parent{} {
+      this->get_ref(this->ref_filename);
+    }
     ~SphericalInvariantTestData() = default;
-    std::string ref_filename{"reference_data/spherical_invariant_reference.ubjson"};
+    std::string ref_filename{
+        "reference_data/spherical_invariant_reference.ubjson"};
     bool verbose{true};
   };
 
@@ -219,18 +223,19 @@ namespace rascal {
     MultipleStructureSortedCoulomb() : Parent{} {};
     ~MultipleStructureSortedCoulomb() = default;
 
-    std::vector<json> representation_hypers{{{"central_cutoff", 3.},
-                              {"central_decay", 0.5},
-                              {"interaction_cutoff", 10.},
-                              {"interaction_decay", 0.5},
-                              {"size", 120},
-                              {"sorting_algorithm", "distance"}},
-                             {{"central_cutoff", 3.},
-                              {"central_decay", 0.5},
-                              {"interaction_cutoff", 10.},
-                              {"interaction_decay", 0.5},
-                              {"size", 120},
-                              {"sorting_algorithm", "row_norm"}}};
+    std::vector<json> representation_hypers{
+        {{"central_cutoff", 3.},
+         {"central_decay", 0.5},
+         {"interaction_cutoff", 10.},
+         {"interaction_decay", 0.5},
+         {"size", 120},
+         {"sorting_algorithm", "distance"}},
+        {{"central_cutoff", 3.},
+         {"central_decay", 0.5},
+         {"interaction_cutoff", 10.},
+         {"interaction_decay", 0.5},
+         {"size", 120},
+         {"sorting_algorithm", "row_norm"}}};
   };
 
   struct SortedCoulombTestData : TestData {
@@ -254,14 +259,14 @@ namespace rascal {
     using Parent = MultipleStructureFixture<BaseFixture>;
     using Manager_t = typename Parent::Manager_t;
     using Representation_t = typename BaseFixture::Representation_t;
-    using Property_t = typename Representation_t::template Property_t<Manager_t>;
+    using Property_t =
+        typename Representation_t::template Property_t<Manager_t>;
 
     CalculatorFixture() : Parent{} {}
     ~CalculatorFixture() = default;
 
     std::vector<Representation_t> representations{};
   };
-
 
   /* ---------------------------------------------------------------------- */
 

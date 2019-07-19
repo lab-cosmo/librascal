@@ -34,7 +34,8 @@
 
 // namespace rascal {
 //   /**
-//    * Handles the aggregation of features from compatible representation managers
+//    * Handles the aggregation of features from compatible representation
+//    managers
 //    * using a dense underlying data storage.
 //    */
 //   template <typename T>
@@ -51,7 +52,8 @@
 //      * to setup a new RepresentationManager.
 //      */
 //     FeatureManagerDense(int n_feature, Hypers_t hypers)
-//         : feature_matrix{}, n_feature{n_feature}, n_center{0}, hypers{hypers} {}
+//         : feature_matrix{}, n_feature{n_feature}, n_center{0}, hypers{hypers}
+//         {}
 
 //     //! Copy constructor
 //     FeatureManagerDense(const FeatureManagerDense & other) = delete;
@@ -63,7 +65,8 @@
 //     ~FeatureManagerDense() = default;
 
 //     //! Copy assignment operator
-//     FeatureManagerDense & operator=(const FeatureManagerDense & other) = delete;
+//     FeatureManagerDense & operator=(const FeatureManagerDense & other) =
+//     delete;
 
 //     //! Move assignment operator
 //     FeatureManagerDense & operator=(FeatureManagerDense && other) = default;

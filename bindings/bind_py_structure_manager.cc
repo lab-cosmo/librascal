@@ -46,7 +46,8 @@ namespace rascal {
   using ClusterRefkey_t = ClusterRefKey<Order, HelperLayer<SMI, Order>::layer>;
 
   template <typename SMI, size_t Order>
-  using ClusterRef_t = typename StructureManager<SMI>::template ClusterRef<Order>;
+  using ClusterRef_t =
+      typename StructureManager<SMI>::template ClusterRef<Order>;
 
   template <typename SMI, size_t Order>
   using PyClusterRef =
@@ -54,8 +55,8 @@ namespace rascal {
 
   template <typename StructureManagerImplementation>
   using PyManager = py::class_<StructureManagerImplementation,
-                              StructureManager<StructureManagerImplementation>,
-                              std::shared_ptr<StructureManagerImplementation>>;
+                               StructureManager<StructureManagerImplementation>,
+                               std::shared_ptr<StructureManagerImplementation>>;
 
   //! Bind a ClusterRef (to enable the acces to properties such as distances)
   template <size_t Order, size_t Layer>
@@ -107,7 +108,7 @@ namespace rascal {
     py::class_<ClusterRef, ClusterRefKey> py_cluster(m, cluster_name.c_str());
     py_cluster
         .def_property_readonly("atom_tag", &ClusterRef::get_atom_tag,
-                              py::return_value_policy::reference)
+                               py::return_value_policy::reference)
         .def_property_readonly(
             "atom_type",
             [](const ClusterRef & cluster) { return cluster.get_atom_type(); },
@@ -117,9 +118,9 @@ namespace rascal {
             [](const ClusterRef & cluster) { return cluster.get_index(); },
             py::return_value_policy::reference)
         .def_property_readonly("size", &ClusterRef::size,
-                              py::return_value_policy::reference)
+                               py::return_value_policy::reference)
         .def_property_readonly("position", &ClusterRef::get_position,
-                              py::return_value_policy::reference);
+                               py::return_value_policy::reference);
     return py_cluster;
   }
 
@@ -147,7 +148,7 @@ namespace rascal {
   template <typename StructureManagerImplementation, size_t Order>
   decltype(auto)
   add_iterator(py::module & m,
-              PyManager<StructureManagerImplementation> & manager) {
+               PyManager<StructureManagerImplementation> & manager) {
     using Child = StructureManagerImplementation;
     using Parent = typename Child::Parent;
 
@@ -169,8 +170,9 @@ namespace rascal {
             size_t MaxOrder>
   struct add_iterators {
     //! starts recursion
-    static void static_for(py::module & m,
-                          PyManager<StructureManagerImplementation> & manager) {
+    static void
+    static_for(py::module & m,
+               PyManager<StructureManagerImplementation> & manager) {
       auto py_cluster =
           add_iterator<StructureManagerImplementation, Order>(m, manager);
       add_iterators<StructureManagerImplementation, Order + 1,
@@ -192,7 +194,7 @@ namespace rascal {
   struct add_iterators<StructureManagerImplementation, MaxOrder, MaxOrder> {
     static void
     static_for(py::module &,
-              PyClusterRef<StructureManagerImplementation, MaxOrder - 1> &) {}
+               PyClusterRef<StructureManagerImplementation, MaxOrder - 1> &) {}
   };
 
   template <typename Manager_t>
@@ -224,8 +226,9 @@ namespace rascal {
 
   //! templated function for adding a StructureManager implementation
   template <typename StructureManagerImplementation>
-  decltype(auto) add_structure_manager_implementation(py::module & m,
-                                                      py::module & m_throwaway) {
+  decltype(auto)
+  add_structure_manager_implementation(py::module & m,
+                                       py::module & m_throwaway) {
     using Child = StructureManagerImplementation;
     constexpr static size_t MaxOrder = Child::traits::MaxOrder;
 
@@ -238,13 +241,14 @@ namespace rascal {
   }
 
   template <typename StructureManagerImplementation>
-  void bind_update_unpacked(PyManager<StructureManagerImplementation> & manager) {
+  void
+  bind_update_unpacked(PyManager<StructureManagerImplementation> & manager) {
     manager.def("update",
                 [](StructureManagerImplementation & manager,
-                  const py::EigenDRef<const Eigen::MatrixXd> & positions,
-                  const py::EigenDRef<const Eigen::VectorXi> & atom_types,
-                  const py::EigenDRef<const Eigen::MatrixXd> & cell,
-                  const py::EigenDRef<const Eigen::MatrixXi> & pbc) {
+                   const py::EigenDRef<const Eigen::MatrixXd> & positions,
+                   const py::EigenDRef<const Eigen::VectorXi> & atom_types,
+                   const py::EigenDRef<const Eigen::MatrixXd> & cell,
+                   const py::EigenDRef<const Eigen::MatrixXi> & pbc) {
                   manager.update(positions, atom_types, cell, pbc);
                 },
                 py::arg("positions"), py::arg("atom_types"), py::arg("cell"),
@@ -253,7 +257,8 @@ namespace rascal {
 
   template <typename StructureManagerImplementation>
   void bind_update_empty(PyManager<StructureManagerImplementation> & manager) {
-    manager.def("update", [](StructureManagerImplementation & v) { v.update(); },
+    manager.def("update",
+                [](StructureManagerImplementation & v) { v.update(); },
                 py::call_guard<py::gil_scoped_release>());
   }
 
@@ -276,12 +281,12 @@ namespace rascal {
     }
 
     static void bind_adapted_manager_maker(const std::string & name,
-                                          py::module & m_adaptor) {
+                                           py::module & m_adaptor) {
       m_adaptor.def(
           name.c_str(),
           [](ImplementationPtr_t & manager, const double & cutoff) {
-            return make_adapted_manager<AdaptorStrict, Implementation_t>(manager,
-                                                                        cutoff);
+            return make_adapted_manager<AdaptorStrict, Implementation_t>(
+                manager, cutoff);
           },
           py::arg("manager"), py::arg("cutoff"), py::return_value_policy::copy);
     }
@@ -298,7 +303,7 @@ namespace rascal {
     }
 
     static void bind_adapted_manager_maker(const std::string & name,
-                                          py::module & m_adaptor) {
+                                           py::module & m_adaptor) {
       m_adaptor.def(
           name.c_str(),
           [](ImplementationPtr_t & manager) {
@@ -320,7 +325,7 @@ namespace rascal {
     }
 
     static void bind_adapted_manager_maker(const std::string & name,
-                                          py::module & m_adaptor) {
+                                           py::module & m_adaptor) {
       m_adaptor.def(
           name.c_str(),
           [](ImplementationPtr_t & manager) {
@@ -342,7 +347,7 @@ namespace rascal {
     }
 
     static void bind_adapted_manager_maker(const std::string & name,
-                                          py::module & m_adaptor) {
+                                           py::module & m_adaptor) {
       m_adaptor.def(
           name.c_str(),
           [](ImplementationPtr_t & manager) {
@@ -366,11 +371,11 @@ namespace rascal {
     }
 
     static void bind_adapted_manager_maker(const std::string & name,
-                                          py::module & m_adaptor) {
+                                           py::module & m_adaptor) {
       m_adaptor.def(
           name.c_str(),
           [](ImplementationPtr_t manager, const double & cutoff,
-            const bool & consider_ghost_neighbours) {
+             const bool & consider_ghost_neighbours) {
             return make_adapted_manager<AdaptorNeighbourList, Implementation_t>(
                 manager, cutoff, consider_ghost_neighbours);
           },
@@ -396,14 +401,14 @@ namespace rascal {
                                                                 m_adaptor);
   }
 
-  template <typename Manager, template <class> class ...Adaptor>
+  template <typename Manager, template <class> class... Adaptor>
   void bind_structure_manager_collection(py::module & m_str_mng) {
     using ManagerCollection_t = ManagerCollection<Manager, Adaptor...>;
     using Manager_t = typename ManagerCollection_t::Manager_t;
     std::string factory_name = "ManagerCollection_";
     factory_name += internal::GetBindingTypeName<Manager_t>();
-    py::class_<ManagerCollection_t> manager_collection(
-        m_str_mng, factory_name.c_str());
+    py::class_<ManagerCollection_t> manager_collection(m_str_mng,
+                                                       factory_name.c_str());
 
     // bind constructor
     manager_collection.def(py::init([](std::string & adaptor_inputs_str) {
@@ -413,22 +418,30 @@ namespace rascal {
     }));
 
     // bind iteration over the managers
-    manager_collection.def(
-        "__iter__",
-        [](ManagerCollection_t & v) { return py::make_iterator(v.begin(), v.end()); },
-        py::keep_alive<0, 1>());
+    manager_collection.def("__iter__",
+                           [](ManagerCollection_t & v) {
+                             return py::make_iterator(v.begin(), v.end());
+                           },
+                           py::keep_alive<0, 1>());
 
     // add_structures to the collection
-    manager_collection.def("add_structures", (void (ManagerCollection_t::*)(const std::vector<AtomicStructure<3>>& )) &ManagerCollection_t::add_structures);
-    manager_collection.def("add_structures", (void (ManagerCollection_t::*)(const std::string&, const int&, int)) &ManagerCollection_t::add_structures, R"(Read a file and extract the structures from start to start + length.)", py::arg("filename"), py::arg("start") = 0, py::arg("length") = -1);
-
+    manager_collection.def("add_structures",
+                           (void (ManagerCollection_t::*)(
+                               const std::vector<AtomicStructure<3>> &)) &
+                               ManagerCollection_t::add_structures);
     manager_collection.def(
-        "__len__",
-        [](ManagerCollection_t & v) { return v.size(); });
+        "add_structures",
+        (void (ManagerCollection_t::*)(const std::string &, const int &, int)) &
+            ManagerCollection_t::add_structures,
+        R"(Read a file and extract the structures from start to start + length.)",
+        py::arg("filename"), py::arg("start") = 0, py::arg("length") = -1);
 
-    manager_collection.def(
-        "get_parameters",
-        [](ManagerCollection_t & v) { return std::string(v.get_adaptors_parameters().dump(2)); });
+    manager_collection.def("__len__",
+                           [](ManagerCollection_t & v) { return v.size(); });
+
+    manager_collection.def("get_parameters", [](ManagerCollection_t & v) {
+      return std::string(v.get_adaptors_parameters().dump(2));
+    });
   }
 
   /**
@@ -448,7 +461,7 @@ namespace rascal {
     using type = BindAdaptorStack<Manager_t, AdaptorImplementationPack...>;
 
     BindAdaptorStack(py::module & m_nl, py::module & m_adaptor,
-                    py::module & m_throwaway)
+                     py::module & m_throwaway)
         : next_stack{m_nl, m_adaptor, m_throwaway} {
       add_structure_manager_interface<Manager_t>(m_throwaway);
 
@@ -459,7 +472,8 @@ namespace rascal {
       bind_update_unpacked<Manager_t>(adaptor);
       // bind clusterRefs so that one can loop over adaptor
       // MaxOrder+1 because recursion stops at Val-1
-      add_iterators<Manager_t, 1, MaxOrder + 1>::static_for(m_throwaway, adaptor);
+      add_iterators<Manager_t, 1, MaxOrder + 1>::static_for(m_throwaway,
+                                                            adaptor);
       // bind the factory function
       bind_make_adapted_manager<AdaptorImplementation, ManagerImplementation>(
           m_nl);
@@ -479,7 +493,7 @@ namespace rascal {
     using ManagerPtr = std::shared_ptr<Manager_t>;
 
     BindAdaptorStack(py::module & m_nl, py::module & m_adaptor,
-                    py::module & m_throwaway) {
+                     py::module & m_throwaway) {
       add_structure_manager_interface<Manager_t>(m_throwaway);
 
       auto adaptor = add_manager<Manager_t>(m_adaptor);
@@ -489,7 +503,8 @@ namespace rascal {
       bind_update_unpacked<Manager_t>(adaptor);
       // bind clusterRefs so that one can loop over adaptor
       // MaxOrder+1 because recursion stops at Val-1
-      add_iterators<Manager_t, 1, MaxOrder + 1>::static_for(m_throwaway, adaptor);
+      add_iterators<Manager_t, 1, MaxOrder + 1>::static_for(m_throwaway,
+                                                            adaptor);
       // bind the factory function
       bind_make_adapted_manager<AdaptorImplementation, ManagerImplementation>(
           m_nl);
@@ -526,40 +541,52 @@ namespace rascal {
    * AtomicStructure can be passed from python to c++ without copy to the
    * ManagerCollection.
    */
-  void  bind_atomic_structure(py::module & mod) {
+  void bind_atomic_structure(py::module & mod) {
     using AtomicStructure_t = AtomicStructure<3>;
     py::class_<AtomicStructure_t>(mod, "AtomicStructure")
-      .def(py::init<>())
-      .def("get_positions", [](AtomicStructure_t & atomic_structure) {
-          return atomic_structure.positions;
-        }, py::return_value_policy::reference_internal)
-      .def("get_atom_types", [](AtomicStructure_t & atomic_structure) {
-          return atomic_structure.atom_types;
-        }, py::return_value_policy::reference_internal)
-      .def("get_cell", [](AtomicStructure_t & atomic_structure) {
-          return atomic_structure.cell;
-        }, py::return_value_policy::reference_internal)
-      .def("get_pbc", [](AtomicStructure_t & atomic_structure) {
-          return atomic_structure.pbc;
-        }, py::return_value_policy::reference_internal);
+        .def(py::init<>())
+        .def("get_positions",
+             [](AtomicStructure_t & atomic_structure) {
+               return atomic_structure.positions;
+             },
+             py::return_value_policy::reference_internal)
+        .def("get_atom_types",
+             [](AtomicStructure_t & atomic_structure) {
+               return atomic_structure.atom_types;
+             },
+             py::return_value_policy::reference_internal)
+        .def("get_cell",
+             [](AtomicStructure_t & atomic_structure) {
+               return atomic_structure.cell;
+             },
+             py::return_value_policy::reference_internal)
+        .def("get_pbc",
+             [](AtomicStructure_t & atomic_structure) {
+               return atomic_structure.pbc;
+             },
+             py::return_value_policy::reference_internal);
 
     using AtomicStructureList_t = std::vector<AtomicStructure<3>>;
     py::class_<AtomicStructureList_t>(mod, "AtomicStructureList")
-      .def(py::init<>())
-      .def("append", [](AtomicStructureList_t & v,
-                  const py::EigenDRef<const Eigen::MatrixXd> & positions,
-                  const py::EigenDRef<const Eigen::VectorXi> & atom_types,
-                  const py::EigenDRef<const Eigen::MatrixXd> & cell,
-                  const py::EigenDRef<const Eigen::MatrixXi> & pbc) {
-                  v.emplace_back();
-                  v.back().set_structure(positions, atom_types, cell, pbc);
-                },
-                py::arg("positions"), py::arg("atom_types"), py::arg("cell"),
-                py::arg("pbc"), py::call_guard<py::gil_scoped_release>())
-      .def("__len__", [](const AtomicStructureList_t &v) { return v.size(); })
-      .def("__iter__", [](AtomicStructureList_t &v) {
-        return py::make_iterator(v.begin(), v.end());
-    }, py::keep_alive<0, 1>());
+        .def(py::init<>())
+        .def("append",
+             [](AtomicStructureList_t & v,
+                const py::EigenDRef<const Eigen::MatrixXd> & positions,
+                const py::EigenDRef<const Eigen::VectorXi> & atom_types,
+                const py::EigenDRef<const Eigen::MatrixXd> & cell,
+                const py::EigenDRef<const Eigen::MatrixXi> & pbc) {
+               v.emplace_back();
+               v.back().set_structure(positions, atom_types, cell, pbc);
+             },
+             py::arg("positions"), py::arg("atom_types"), py::arg("cell"),
+             py::arg("pbc"), py::call_guard<py::gil_scoped_release>())
+        .def("__len__",
+             [](const AtomicStructureList_t & v) { return v.size(); })
+        .def("__iter__",
+             [](AtomicStructureList_t & v) {
+               return py::make_iterator(v.begin(), v.end());
+             },
+             py::keep_alive<0, 1>());
   }
 
   //! Main function to add StructureManagers and their Adaptors
@@ -586,7 +613,8 @@ namespace rascal {
         adaptor_stack_1{m_nl, m_adp, m_throwaway};
 
     // bind the manager collection
-    bind_structure_manager_collection<Manager_t, AdaptorNeighbourList, AdaptorStrict>(m_nl);
+    bind_structure_manager_collection<Manager_t, AdaptorNeighbourList,
+                                      AdaptorStrict>(m_nl);
     bind_atomic_structure(m_nl);
   }
-}
+}  // namespace rascal

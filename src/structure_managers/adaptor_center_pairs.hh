@@ -108,7 +108,8 @@ namespace rascal {
       for (auto && atom : this->manager) {
         // construct and add ii-pair
 
-        std::array<int, 2> atom_tag_list{atom.get_atom_tag(), atom.get_atom_tag()};
+        std::array<int, 2> atom_tag_list{atom.get_atom_tag(),
+                                         atom.get_atom_tag()};
         Eigen::Map<const Eigen::Matrix<size_t, 1, 1>> index_array{0};
 
         ClusterRefKey<2, 0> ii_cluster(atom_tag_list, index_array);
@@ -120,7 +121,8 @@ namespace rascal {
         this->add_cluster(ii_pair);
 
         // auto new_size{atom.size() + 1};
-        // std::cout << "atom.size(), new_size " << atom.size() << ", " << new_size
+        // std::cout << "atom.size(), new_size " << atom.size() << ", " <<
+        // new_size
         //           << std::endl;
         // std::vector<int> atom_tag_list_new;
         // atom_tag_list_new.resize(new_size);
@@ -130,9 +132,9 @@ namespace rascal {
         //   atom_tag_list_new[++i] = pair.get_atom_tag();
         // }
 
-
         // auto atom_tag_list{atom.get_atom_tag_list()};
-        // std::cout << "atom_tag_list.size() " << atom_tag_list.size() << std::endl;
+        // std::cout << "atom_tag_list.size() " << atom_tag_list.size() <<
+        // std::endl;
         // //std::array<int,
 
         // ii_pair.back() = ii_pair.front();
