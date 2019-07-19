@@ -106,9 +106,10 @@ namespace rascal {
     //! with all previous pairs
     void perform_filtering() final {
       for (auto && atom : this->manager) {
-        // construct and add ii-pair from an existing pair to get the right type
-        auto && ii_pair{*(atom.begin())};
-        // change atom tag of pair to current atom
+        // construct and add ii-pair
+        auto && ii_it{atom.begin()};
+        auto && ii_pair{*ii_it};
+
         ii_pair.set_atom_tag(1, atom.get_atom_tag());
 
         // add it to the list of pairs
