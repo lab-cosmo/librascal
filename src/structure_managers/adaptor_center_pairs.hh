@@ -54,8 +54,9 @@ namespace rascal {
     // todo(markus) reset PairOrder to zero since new pairs are added
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
 
-    using LayerByOrder = typename LayerExtender<
-        MaxOrder, typename ManagerImplementation::traits::LayerByOrder>::type;
+    // using LayerByOrder = typename LayerExtender<
+    //     MaxOrder, typename ManagerImplementation::traits::LayerByOrder>::type;
+    using LayerByOrder = std::index_sequence<0, 0>;
   };
 
   /**
@@ -123,7 +124,7 @@ namespace rascal {
                 << this->manager->get_nb_clusters(2) << std::endl;
       auto index{0};
       for (auto && atom : this->manager) {
-        this->add_cluster(atom);
+        // this->add_cluster(atom);
         std::cout << "ACP-filtering: atom iteration center " << ++index
                   << std::endl;
         // get a ClusterRef<2> to construct an ii pair

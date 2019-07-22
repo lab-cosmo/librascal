@@ -67,13 +67,14 @@ namespace rascal {
    * in each atoms neighbourhood is itself.
    */
   //todo(markus) this filtering does not seem to work with ghost atoms
-  BOOST_FIXTURE_TEST_CASE(iterator_test, PairFixtureSimple<StructureManagerCenters>) {
+  BOOST_FIXTURE_TEST_CASE(iterator_test, PairFixtureCenters) {
+                          //PairFixtureSimple<StructureManagerCenters>) {
     // auto adaptor_center_pairs{
     //     make_adapted_manager<AdaptorCenterPairs>(pair_manager, cutoff)};
     // adaptor_center_pairs->update();
 
     auto adaptor_center_pairs{
-        make_adapted_manager<AdaptorCenterPairs>(pair_manager)};
+        make_adapted_manager<AdaptorCenterPairs>(pair_manager, cutoff)};
     adaptor_center_pairs->update();
 
     int atom_counter{};
@@ -118,7 +119,7 @@ namespace rascal {
       std::cout << "ctr " << ++ctr << std::endl;
 
       auto index{atom.get_global_index()};
-      std::cout << "index " << index << std::endl;
+      std::cout << "index atom " << index << std::endl;
       BOOST_CHECK_EQUAL(index, atom_counter);
       ++atom_counter;
 
@@ -128,7 +129,7 @@ namespace rascal {
         auto pair_offset{pair.get_global_index()};
         auto pair_type{pair.get_atom_type()};
         if (verbose) {
-          std::cout << "pair (" << atom.back() << ", " << pair.back()
+          std::cout << "index pair (" << atom.back() << ", " << pair.back()
                     << "), pair_counter = " << pair_counter
                     << ", pair_offset = " << pair_offset
                     << ", atom types = " << type << ", " << pair_type
@@ -150,8 +151,13 @@ namespace rascal {
     std::cout << "pairs_with_ii " << pairs_with_ii << std::endl;
     std::cout << "atom_counter " << atom_counter << std::endl;
 
-    // Check
-    BOOST_CHECK_EQUAL(pairs_without_ii + atom_counter, pairs_with_ii);
+
+    std::cout << "Number of atoms parent " << natoms_parent << std::endl;
+    std::cout << "Number of pairs parent " << pairs_without_ii << std::endl;
+    std::cout << "Number of pairs current " << pairs_with_ii << std::endl;
+    // Check increase in number of pairs (should be number of atoms, because
+    // only ii-pairs are added
+    BOOST_CHECK_EQUAL(pairs_without_ii + natoms_parent, pairs_with_ii);
   }
 
   BOOST_AUTO_TEST_SUITE_END();

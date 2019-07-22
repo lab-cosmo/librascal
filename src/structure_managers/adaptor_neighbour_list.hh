@@ -452,7 +452,8 @@ namespace rascal {
      * radius or extends an existing neighbourlist to the next order
      */
     AdaptorNeighbourList(ImplementationPtr_t manager, double cutoff,
-                         bool consider_ghost_neighbours = false);
+                         bool consider_ghost_neighbours = false,
+                         bool include_ii_pairs = false);
 
     AdaptorNeighbourList(ImplementationPtr_t manager, std::tuple<double> tp)
         : AdaptorNeighbourList(manager, std::get<0>(tp)) {}
@@ -510,6 +511,8 @@ namespace rascal {
     inline bool get_consider_ghost_neighbours() const {
       return this->consider_ghost_neighbours;
     }
+
+    inline bool get_include_ii_pairs() const { return this->include_ii_pairs; }
 
     /**
      * Returns the linear indices of the clusters (whose atom tags are stored
@@ -771,6 +774,9 @@ namespace rascal {
     //! whether or not to consider neighbours of ghost atoms
     const bool consider_ghost_neighbours;
 
+    //! whether or not to include ii-pairs
+    const bool include_ii_pairs;
+
    private:
   };
 
@@ -779,11 +785,12 @@ namespace rascal {
   template <class ManagerImplementation>
   AdaptorNeighbourList<ManagerImplementation>::AdaptorNeighbourList(
       std::shared_ptr<ManagerImplementation> manager, double cutoff,
-      bool consider_ghost_neighbours)
+      bool consider_ghost_neighbours, bool include_ii_pairs)
       : manager{std::move(manager)}, cutoff{cutoff}, atom_tag_list{},
-        atom_types{}, ghost_atom_tag_list{}, nb_neigh{}, neighbours_atom_tag{},
-        offsets{}, n_centers{0}, n_ghosts{0}, consider_ghost_neighbours{
-                                                  consider_ghost_neighbours} {
+        atom_types{}, ghost_atom_tag_list{}, nb_neigh{},
+        neighbours_atom_tag{}, offsets{}, n_centers{0}, n_ghosts{0},
+        consider_ghost_neighbours{consider_ghost_neighbours},
+        include_ii_pairs{include_ii_pairs} {
     static_assert(not(traits::MaxOrder < 1), "No atom list in manager");
   }
 
@@ -1042,6 +1049,11 @@ namespace rascal {
       auto box_index = internal::get_box_index(dpos, cutoff);
       auto && current_j_atoms =
           internal::get_neighbours_atom_tag(atom_tag, box_index, atom_id_cell);
+
+      if (this->include_ii_pairs) {
+        this->neighbours_atom_tag.push_back(atom_tag);
+        nneigh++;
+      }
 
       for (auto j_atom_tag : current_j_atoms) {
         this->neighbours_atom_tag.push_back(j_atom_tag);
