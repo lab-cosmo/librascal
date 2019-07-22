@@ -113,11 +113,23 @@ namespace rascal {
     //! This is where the magic happens and the center-pairs are added along
     //! with all previous pairs
     void perform_filtering() final {
+      std::cout << "ACP-filtering size() " << this->manager->size()
+                << std::endl;
+      std::cout << "ACP-filtering get_size() " << this->manager->get_size()
+                << std::endl;
+      std::cout << "ACP-filtering get_size_with_ghosts() "
+                << this->manager->get_size_with_ghosts() << std::endl;
+      std::cout << "ACP-filtering get_nb_clusters(2) "
+                << this->manager->get_nb_clusters(2) << std::endl;
+      auto index{0};
       for (auto && atom : this->manager) {
+        this->add_cluster(atom);
+        std::cout << "ACP-filtering: atom iteration center " << ++index
+                  << std::endl;
         // get a ClusterRef<2> to construct an ii pair
         auto && ii_it{atom.begin()};
         // dereference for correct type
-        auto && ii_pair{*ii_it};
+        auto ii_pair{*ii_it};
         // reset atom tag to actually be an ii-pair
         ii_pair.set_atom_tag(1, atom.get_atom_tag());
 

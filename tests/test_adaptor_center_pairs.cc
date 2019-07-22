@@ -33,11 +33,11 @@
 
 namespace rascal {
 
-  using Fixtures = boost::mpl::list<
-      PairFixtureCenterPairs<PairFixtureSimple<StructureManagerCenters>>,
-      PairFixtureCenterPairs<PairFixtureCenters>
-      // PairFixtureCenterPairs<ManagerFixture<StructureManagerLammps>>
-      >;
+  // using Fixtures = boost::mpl::list<
+  //     PairFixtureCenterPairs<PairFixtureSimple<StructureManagerCenters>>,
+  //     PairFixtureCenterPairs<PairFixtureCenters>
+  //     // PairFixtureCenterPairs<ManagerFixture<StructureManagerLammps>>
+  //     >;
 
   BOOST_AUTO_TEST_SUITE(center_pairs_adaptor_test);
 
@@ -63,28 +63,66 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Iteration test for strict adaptor. It also checks if the first pair in each
-   * atoms neighbourhood is itself.
+   * Iteration test for center pairs adaptor. It also checks if the first pair
+   * in each atoms neighbourhood is itself.
    */
-  BOOST_FIXTURE_TEST_CASE(iterator_test, PairFixtureCenters) {
+  //todo(markus) this filtering does not seem to work with ghost atoms
+  BOOST_FIXTURE_TEST_CASE(iterator_test, PairFixtureSimple<StructureManagerCenters>) {
     // auto adaptor_center_pairs{
     //     make_adapted_manager<AdaptorCenterPairs>(pair_manager, cutoff)};
     // adaptor_center_pairs->update();
 
     auto adaptor_center_pairs{
-        make_adapted_manager<AdaptorCenterPairs>(pair_manager, cutoff)};
+        make_adapted_manager<AdaptorCenterPairs>(pair_manager)};
     adaptor_center_pairs->update();
 
     int atom_counter{};
     int pair_counter{};
     constexpr bool verbose{true};
 
-    for (auto atom : adaptor_center_pairs) {
+    for (auto atom : pair_manager) {
       auto index{atom.get_global_index()};
+      std::cout << "pairpair index " << index << std::endl;
       BOOST_CHECK_EQUAL(index, atom_counter);
+      ++atom_counter;
 
       auto type{atom.get_atom_type()};
+
+      for (auto pair : atom) {
+        auto pair_offset{pair.get_global_index()};
+        auto pair_type{pair.get_atom_type()};
+        if (verbose) {
+          std::cout << "pairpair (" << atom.back() << ", " << pair.back()
+                    << "), pair_counter = " << pair_counter
+                    << ", pair_offset = " << pair_offset
+                    << ", atom types = " << type << ", " << pair_type
+                    << std::endl;
+        }
+
+        BOOST_CHECK_EQUAL(pair_counter, pair_offset);
+        ++pair_counter;
+      }
+    }
+
+    int ctr{0};
+    atom_counter = 0;
+    pair_counter = 0;
+
+    std::cout << "ACP-test test size() " << adaptor_center_pairs->size() << std::endl;
+    std::cout << "ACP-test test get_size() " << adaptor_center_pairs->get_size()
+              << std::endl;
+    std::cout << "ACP-test test get_size_with_ghosts() "
+              << adaptor_center_pairs->get_size_with_ghosts() << std::endl;
+
+    for (auto atom : adaptor_center_pairs) {
+      std::cout << "ctr " << ++ctr << std::endl;
+
+      auto index{atom.get_global_index()};
+      std::cout << "index " << index << std::endl;
+      BOOST_CHECK_EQUAL(index, atom_counter);
       ++atom_counter;
+
+      auto type{atom.get_atom_type()};
 
       for (auto pair : atom) {
         auto pair_offset{pair.get_global_index()};
@@ -101,10 +139,18 @@ namespace rascal {
         ++pair_counter;
       }
     }
-    auto natoms{adaptor_center_pairs->get_nb_clusters(1)};
-    std::cout << "natoms " << natoms << std::endl;
+    auto natoms_current{adaptor_center_pairs->get_size()};
+    std::cout << "natoms_current " << natoms_current << std::endl;
+    auto natoms_parent{this->pair_manager->get_size()};
+    std::cout << "natoms_parent " << natoms_parent << std::endl;
+
     auto pairs_without_ii{this->pair_manager->get_nb_clusters(2)};
+    std::cout << "pairs_without_ii " << pairs_without_ii << std::endl;
     auto pairs_with_ii{adaptor_center_pairs->get_nb_clusters(2)};
+    std::cout << "pairs_with_ii " << pairs_with_ii << std::endl;
+    std::cout << "atom_counter " << atom_counter << std::endl;
+
+    // Check
     BOOST_CHECK_EQUAL(pairs_without_ii + atom_counter, pairs_with_ii);
   }
 
