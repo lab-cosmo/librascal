@@ -46,10 +46,11 @@ namespace rascal {
                           PairFixtureSimple<StructureManagerCenters>) {
     constexpr bool verbose{false};
 
+    pair_manager->update();
     auto npairs = pair_manager->get_nb_clusters(2);
 
     if (verbose) {
-      std::cout << "npairs " << npairs << std::endl;
+      std::cout << "n1 pairs " << npairs << std::endl;
     }
     int np{0};
     for (auto atom : pair_manager) {
@@ -60,6 +61,55 @@ namespace rascal {
     if (verbose) {
       std::cout << "np " << np << std::endl;
     }
+  }
+
+  BOOST_FIXTURE_TEST_CASE(
+      simple_cubic_9_neighbour_list_ii_pairs,
+      PairFixtureSimpleCenterPairs<StructureManagerCenters>) {
+    constexpr bool verbose{false};
+
+    pair_manager1->update();
+    pair_manager2->update();
+
+    auto natoms1{pair_manager1->get_nb_clusters(1)};
+    auto natoms2{pair_manager1->get_nb_clusters(1)};
+
+    auto npairs1{pair_manager1->get_nb_clusters(2)};
+    auto npairs2{pair_manager2->get_nb_clusters(2)};
+
+    if (verbose) {
+      std::cout << "natoms 1/2 " << natoms1 << "/" << natoms2 << std::endl;
+      std::cout << "npairs 1/2 " << npairs1 << "/" << npairs2 << std::endl;
+    }
+
+    BOOST_CHECK_EQUAL(natoms1, natoms2);
+    BOOST_CHECK_EQUAL(npairs1 + natoms1, npairs2);
+
+    auto pair_counter{0};
+    for (auto atom : pair_manager2) {
+      auto type{atom.get_atom_type()};
+      bool first{true};
+      auto tag1 = atom.get_atom_tag();
+      for (auto pair : atom) {
+        auto pair_type{pair.get_atom_type()};
+        ++pair_counter;
+        auto tag2 = pair.get_atom_tag();
+        if (first) {
+          // Check if the ii-pairs actually exist as the first neighbour of the
+          // i-atom; check is based on atom tag.
+          BOOST_CHECK_EQUAL(tag1, tag2);
+          first = false;
+        }
+        if (verbose) {
+          std::cout << "pair (" << tag1 << ", " << tag2
+                    << "), pair_counter = " << pair_counter
+                    << ", atom types = " << type << ", " << pair_type
+                    << std::endl;
+        }
+      }
+    }
+
+    BOOST_CHECK_EQUAL(pair_counter, npairs2);
   }
 
   /* ---------------------------------------------------------------------- */
@@ -80,6 +130,8 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE(test_build_neighbour_simple,
                           PairFixtureSimple<StructureManagerCenters>) {
     constexpr bool verbose{false};
+
+    pair_manager->update();
 
     //! testing iteration of zerot-th order manager
     for (auto atom : fixture.manager) {
@@ -108,6 +160,8 @@ namespace rascal {
     }
     BOOST_CHECK_EQUAL(n_pairs, pair_manager->get_nb_clusters(2));
   }
+
+  /* ---------------------------------------------------------------------- */
 
   using multiple_fixtures = boost::mpl::list<
       MultipleStructureFixture<MultipleStructureManagerNLFixture>>;
@@ -458,6 +512,12 @@ namespace rascal {
       }
     }
   }
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Testing if the `include_ii_pairs` works. This flag include self-pairs with
+   * the central atom.
+   */
 
   BOOST_AUTO_TEST_SUITE_END();
 }  // namespace rascal

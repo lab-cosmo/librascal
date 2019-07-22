@@ -41,7 +41,6 @@
 #include "structure_managers/adaptor_increase_maxorder.hh"
 #include "structure_managers/adaptor_neighbour_list.hh"
 #include "structure_managers/adaptor_half_neighbour_list.hh"
-#include "structure_managers/adaptor_center_pairs.hh"
 #include "structure_managers/make_structure_manager.hh"
 #include "rascal_utility.hh"
 
@@ -100,7 +99,7 @@ namespace rascal {
   struct ManagerFixtureFile : public ManagerFixture<ManagerImplementation> {
     // initialize manager variable
     ManagerFixtureFile()
-        : ManagerFixture<ManagerImplementation>{}, cutoff{1.},
+        : ManagerFixture<ManagerImplementation>{}, cutoff{3.5},
           filename{"simple_cubic_9.json"}  // initialize current fixture
     {
       this->manager->update(filename);

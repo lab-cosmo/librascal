@@ -53,8 +53,8 @@ namespace rascal {
     using PairManager_t = AdaptorNeighbourList<Manager_t>;
 
     PairFixtureSimple()
-        : cutoff{1.}, pair_manager{make_adapted_manager<AdaptorNeighbourList>(
-                          fixture.manager, this->cutoff)} {}
+        : cutoff{1.5}, pair_manager{make_adapted_manager<AdaptorNeighbourList>(
+                           fixture.manager, this->cutoff)} {}
 
     ~PairFixtureSimple() = default;
 
@@ -76,7 +76,7 @@ namespace rascal {
                   " MaxOrder=1");
 
     PairFixtureCenters()
-        : cutoff{3.5}, pair_manager{make_adapted_manager<AdaptorNeighbourList>(
+        : cutoff{1.5}, pair_manager{make_adapted_manager<AdaptorNeighbourList>(
                            this->fixture.manager, this->cutoff, true)} {}
 
     ~PairFixtureCenters() {}
@@ -85,6 +85,33 @@ namespace rascal {
 
     double cutoff;
     std::shared_ptr<PairManager_t> pair_manager;
+  };
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * PairFixture based on StructureManagerCenters which includes ii-pairs
+   */
+  template <class ManagerImplementation>
+  struct PairFixtureSimpleCenterPairs {
+    using Manager_t = ManagerImplementation;
+
+    static_assert(ManagerImplementation::traits::MaxOrder == 1,
+                  "Lower layer manager has to be a collection of atoms, i.e."
+                  " MaxOrder=1");
+
+    using PairManager_t = AdaptorNeighbourList<Manager_t>;
+
+    PairFixtureSimpleCenterPairs()
+        : cutoff{1.5}, pair_manager1{make_adapted_manager<AdaptorNeighbourList>(
+                           fixture.manager, this->cutoff, true, false)},
+          pair_manager2{make_adapted_manager<AdaptorNeighbourList>(
+              fixture.manager, this->cutoff, true, true)} {}
+
+    ~PairFixtureSimpleCenterPairs() = default;
+
+    ManagerFixtureFile<Manager_t> fixture{};
+    double cutoff;
+    std::shared_ptr<PairManager_t> pair_manager1, pair_manager2;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -126,24 +153,6 @@ namespace rascal {
     // with ´manager´ as an iterator?
     PairFixture<ManagerImplementation> fixture{true};
     std::shared_ptr<AdaptorStrict_t> adaptor_strict;
-  };
-
-  /* ---------------------------------------------------------------------- */
-  template <class ManagerImplementation>
-  struct PairFixtureCenterPairs : PairFixtureCenters {
-    using AdaptorCenterPairs_t =
-        AdaptorCenterPairs<ManagerImplementation>;
-
-    PairFixtureCenterPairs()
-        : adaptor_center_pairs{make_adapted_manager<AdaptorCenterPairs>(
-              this->fixture.pair_manager)} {
-      this->adaptor_center_pairs->update();
-    }
-
-    ~PairFixtureCenterPairs() = default;
-
-    PairFixture<ManagerImplementation> fixture{};
-    std::shared_ptr<AdaptorCenterPairs_t> adaptor_center_pairs;
   };
 
   /* ---------------------------------------------------------------------- */

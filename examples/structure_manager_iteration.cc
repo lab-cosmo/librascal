@@ -30,7 +30,6 @@
 #include <structure_managers/adaptor_increase_maxorder.hh>
 #include <structure_managers/adaptor_neighbour_list.hh>
 #include <structure_managers/adaptor_strict.hh>
-#include <structure_managers/adaptor_center_pairs.hh>
 #include <structure_managers/make_structure_manager.hh>
 #include <structure_managers/property.hh>
 #include <structure_managers/structure_manager_centers.hh>
@@ -87,9 +86,6 @@ int main() {
   auto strict_manager{
       make_adapted_manager<AdaptorStrict>(pair_manager, cutoff)};
 
-  auto center_contrib_manager{
-      make_adapted_manager<AdaptorCenterPairs>(strict_manager)};
-
   // `triplet_manager` is constructed with a pair list (strict or not, here
   // strict)
   auto triplet_manager{make_adapted_manager<AdaptorMaxOrder>(strict_manager)};
@@ -123,14 +119,6 @@ int main() {
   // }
 
   // `strict_manager` provides iteration over atoms and strict pairs
-  for (auto atom : center_contrib_manager) {
-    for (auto pair : atom) {
-      std::cout << "center contrib pair (" << atom.get_atom_tag() << ", "
-                << pair.get_atom_tag() << ") global index "
-                << pair.get_global_index() << std::endl;
-    }
-  }
-
   // // `triplet_manager` provides iteration over atoms, strict pairs and strict
   // // triplets
   // for (auto atom : triplet_manager) {
