@@ -137,6 +137,17 @@ int main(int argc, char * argv[]) {
       if (neigh_count >= n_neigh_print) {
         break;
       }
+      auto keys_neigh = representation.expansions_coefficients[neigh]
+        .get_keys();
+      std::cout << "Neighbour keys: ";
+      for (auto key : keys_neigh) {
+        std::cout << "(";
+        for (auto key_sp : key) {
+          std::cout << key_sp << ", ";
+        }
+        std::cout << "\b\b) ";
+      }
+      std::cout << std::endl;
       std::cout << "Gradient of the above wrt atom " << neigh.back();
       std::cout << " of type " << neigh.get_atom_type() << std::endl;
       std::cout << Eigen::Map<Eigen::MatrixXd>(

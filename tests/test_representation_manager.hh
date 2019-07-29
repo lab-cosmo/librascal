@@ -470,6 +470,11 @@ namespace rascal {
       Key_t center_key{center.get_atom_type()};
       size_t n_entries_per_key{static_cast<size_t>(data_sparse.get_nb_comp())};
       size_t n_entries_center{n_entries_per_key * keys_center.size()};
+      size_t n_entries_neighbours{0};
+      for (auto neigh : center) {
+        n_entries_neighbours +=
+            (data_sparse[neigh].get_keys().size() * n_entries_per_key);
+      }
       // Packed array containing: The center coefficients (all species) and
       // the neighbour coefficients (only same species as center)
       // TODO(max) this is broken for SOAP (and anything else that indexes by
@@ -482,8 +487,7 @@ namespace rascal {
       // I'm considering just looping over _all_ species (keys) in the
       // neighbours, regardless of whether the gradient is nonzero or not.  At
       // least that would be consistent and work for both SOAP and SphExpn.
-      Eigen::ArrayXd data_pairs(n_entries_center +
-                                center.size() * n_entries_per_key);
+      Eigen::ArrayXd data_pairs(n_entries_center + n_entries_neighbours);
 
       size_t result_idx{0};
       for (auto & key : keys_center) {
@@ -493,14 +497,19 @@ namespace rascal {
         result_idx += n_entries_per_key;
       }
       for (auto neigh : center) {
-        auto & data_neigh = data_sparse[neigh];
+        auto & data_neigh{data_sparse[neigh]};
+        auto keys_neigh{data_neigh.get_keys()};
         // The neighbour gradient (i =/= j) only contributes to the channel
         // associated with the _center_ type (the type of the atom that's
         // moving)
-        Eigen::Map<Eigen::ArrayXd> data_flat(data_neigh[center_key].data(),
-                                             n_entries_per_key);
-        data_pairs.segment(result_idx, n_entries_per_key) = data_flat;
-        result_idx += n_entries_per_key;
+        // NOTE(max) optimization removed for now because it doesn't generalize
+        // as well to SOAP
+        for (auto & key : keys_neigh) {
+          Eigen::Map<Eigen::ArrayXd> data_flat(data_neigh[key].data(),
+                                               n_entries_per_key);
+          data_pairs.segment(result_idx, n_entries_per_key) = data_flat;
+          result_idx += n_entries_per_key;
+        }
       }
 
       // Reset the atomic structure for the next iteration
@@ -521,34 +530,44 @@ namespace rascal {
       Key_t center_key{center.get_atom_type()};
       size_t n_entries_per_key{static_cast<size_t>(data_sparse.get_nb_comp())};
       size_t n_entries_center{n_entries_per_key * keys_center.size()};
+      size_t n_entries_neighbours{0};
+      for (auto neigh : center) {
+        n_entries_neighbours +=
+            (data_sparse[neigh].get_keys().size() * n_entries_per_key);
+      }
       Eigen::Matrix<double, 3, Eigen::Dynamic, Eigen::RowMajor>
-          grad_coeffs_pairs(3, n_entries_center +
-                                   (center.size() * n_entries_per_key));
+          grad_coeffs_pairs(3, n_entries_center + n_entries_neighbours);
       auto & gradients_sparse{representation.get_gradient_sparse()};
       auto & gradients_center{gradients_sparse[center]};
-      size_t col_offset{0};
+
+      // Use the exact same iteration pattern as in f() (including the use of
+      // the key lists of the sparse _data_, not the sparse _gradients_) to
+      // guarantee that the gradients appear in the same place as their
+      // corresponding data
+      size_t result_idx{0};
       for (auto & key : keys_center) {
         // Here the 'flattening' retains the 3 Cartesian dimensions as rows,
         // since they vary the slowest within each key
         Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
             gradients_center[key].data(), 3, n_entries_per_key);
-        grad_coeffs_pairs.block(0, col_offset, 3, n_entries_per_key) =
+        grad_coeffs_pairs.block(0, result_idx, 3, n_entries_per_key) =
             grad_coeffs_flat;
-        col_offset += n_entries_per_key;
+        result_idx += n_entries_per_key;
       }
       for (auto neigh : center) {
-        typename RepManager::Key_t neigh_key{neigh.get_atom_type()};
+        auto & data_neigh{data_sparse[neigh]};
+        auto keys_neigh{data_neigh.get_keys()};
         // We need grad_i c^{ji} -- using just 'neigh' would give us
         // grad_j c^{ij}, hence the swap
         auto neigh_swap{swap_pair_ref(neigh)};
         auto & gradients_neigh{gradients_sparse[neigh_swap]};
-        Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
-            gradients_neigh[center_key].data(), 3, n_entries_per_key);
-        grad_coeffs_pairs.block(0, col_offset, 3, n_entries_per_key) =
-            grad_coeffs_flat;
-        // The offset keeps advancing from neighbour to neighbour, because the
-        // neighbour index has also been flattened out
-        col_offset += n_entries_per_key;
+        for (auto key : keys_neigh) {
+          Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
+              gradients_neigh[key].data(), 3, n_entries_per_key);
+          grad_coeffs_pairs.block(0, result_idx, 3, n_entries_per_key) =
+              grad_coeffs_flat;
+          result_idx += n_entries_per_key;
+        }
       }
       return grad_coeffs_pairs;
     }
