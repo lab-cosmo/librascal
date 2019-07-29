@@ -135,5 +135,5 @@ int main(int argc, char * argv[]) {
             << soap2(0, 0) << " " << soap2(0, 1) << " " << soap2(0, 2) << "\n"
             << soap2(1, 0) << " " << soap2(1, 1) << " " << soap2(1, 2) << "\n"
             << soap2(2, 0) << " " << soap2(2, 1) << " " << soap2(2, 2) << "\n";
-  //TODO(max) print out analogous gradient components, for now see soap_example
+  // TODO(max) print out analogous gradient components, for now see soap_example
 }
