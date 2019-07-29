@@ -542,14 +542,12 @@ namespace rascal {
     }
 
     for (auto atom : Fix::manager) {
-      for (auto atom2 : Fix::manager) {
-        for (auto pair : atom) {
-          if (atom.back() == pair.back()) {
-            auto error = (Fix::atom_vector_property[atom] -
-                          Fix::atom_vector_property[pair])
-                             .norm();
-            BOOST_CHECK_LE(error, tol * 100);
-          }
+      for (auto pair : atom) {
+        if (atom.back() == pair.back()) {
+          auto error = (Fix::atom_vector_property[atom] -
+                        Fix::atom_vector_property[pair])
+                           .norm();
+          BOOST_CHECK_LE(error, tol * 100);
         }
       }
     }
