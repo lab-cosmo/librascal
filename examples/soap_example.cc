@@ -135,8 +135,7 @@ int main(int argc, char * argv[]) {
       if (neigh_count >= n_neigh_print) {
         break;
       }
-      //auto keys_neigh = representation.soap_vector_gradients.get_keys(neigh);
-      auto keys_neigh = representation.soap_vectors[neigh].get_keys();
+      auto keys_neigh = representation.soap_vector_gradients[neigh].get_keys();
       std::cout << "Neighbour keys: ";
       for (auto key : keys_neigh) {
         std::cout << "(";

@@ -746,6 +746,9 @@ namespace rascal {
       return this->expansions_coefficients;
     }
 
+    /**
+     * Return a reference to the internal sparse storage of the gradients
+     */
     SparsePropertyGradient_t & get_gradient_sparse() {
       return this->expansions_coefficients_gradient;
     }

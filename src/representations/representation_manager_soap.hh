@@ -195,11 +195,20 @@ namespace rascal {
       return this->soap_vectors.get_raw_data();
     }
 
-    const SparseProperty_t & get_representation_sparse() {
+    /**
+     * Return a reference to the internal sparse data storage
+     *
+     * @todo(max) this should really be a const reference, but that screws
+     * things up further down the line (when indexing the sparse property)
+     */
+    SparseProperty_t & get_representation_sparse() {
       return this->soap_vectors;
     }
 
-    const SparsePropertyGradient_t & get_gradient_sparse() {
+    /**
+     * Return a reference to the internal sparse storage of the gradients
+     */
+    SparsePropertyGradient_t & get_gradient_sparse() {
       return this->soap_vector_gradients;
     }
 

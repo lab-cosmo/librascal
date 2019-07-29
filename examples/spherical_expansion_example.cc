@@ -137,7 +137,7 @@ int main(int argc, char * argv[]) {
       if (neigh_count >= n_neigh_print) {
         break;
       }
-      auto keys_neigh = representation.expansions_coefficients[neigh]
+      auto keys_neigh = representation.expansions_coefficients_gradient[neigh]
         .get_keys();
       std::cout << "Neighbour keys: ";
       for (auto key : keys_neigh) {
