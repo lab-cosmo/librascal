@@ -10,6 +10,20 @@ namespace rascal {
   // TODO(alex) make this more clear by changing the data structure of the
   // reference data
   // TODO(alex) replace info and verbose usage of VerbosityValue NORMAL DEBUG
+  /* Rescued from `test_math_utils.cc`: Keep or refer to the script used to
+   * generate reference values
+   * ```python
+   * import numpy as np
+   * from scipy import special as spf
+   * harmonics = np.zeros((lmax+1, 2*lmax + 1, unit_vectors.shape[0]))
+   * for l in range(lmax+1):
+   *     harmonics[l, l, :] = spf.sph_harm(0, l, phis, thetas)
+   *     for m in range(1, l+1):
+   *         complex_harmonics = spf.sph_harm(m, l, phis, thetas)
+   *         harmonics[l, l+m, :] = np.real(complex_harmonics)*np.sqrt(2)
+   *         harmonics[l, l-m, :] = -1*np.imag(complex_harmonics)*np.sqrt(2)
+   * ```
+   */
   BOOST_FIXTURE_TEST_CASE(math_spherical_harmonics_test,
                           SphericalHarmonicsClassRefFixture) {
     if (info) {
@@ -31,7 +45,7 @@ namespace rascal {
       Eigen::Vector3d unit_vector(unit_vector_tmp.data());
 
       // json apparently cannot directly convert to Eigen structures
-      std::vector<double> harmonics_tmp = data["harmonics"];
+      auto harmonics_tmp = data["harmonics"].get<std::vector<double>>();
       math::Vector_t harmonics_ref = Eigen::Map<math::Vector_t>(
           harmonics_tmp.data(), harmonics_tmp.size());
 
@@ -70,6 +84,21 @@ namespace rascal {
     }
   }
 
+  /* Rescued from `test_math_utils.cc`: Keep or refer to the script used to
+   * generate reference values
+   * ```python
+   * import numpy as np
+   * from scipy import special as spf
+   * alp_normfacts = np.zeros((lmax+1, lmax+1))
+   * for l in range(lmax+1):
+   *     for m in range(l+1):
+   *         alp_normfacts[l, m] = np.sqrt(
+   *             (2*l + 1)/(2*np.pi) / np.prod(np.arange(l-m+1, l+m+1)))
+   * for d_idx in range(n_directions):
+   *     alps[:, :, d_idx] = (spf.lpmn(l, l, np.cos(thetas[d_idx]))[0].T
+   *                          * alp_normfacts[:, :, np.newaxis])
+   * ```
+   */
   BOOST_FIXTURE_TEST_CASE(math_associated_legendre_polynomial_test,
                           SphericalHarmonicsClassRefFixture) {
     verbose = false;
@@ -135,14 +164,45 @@ namespace rascal {
     }
   }
 
+  /* TODO(alex) port this test, rescued from test_math_utils.cc, for the new
+   * class
+   *
+  BOOST_FIXTURE_TEST_CASE(math_cos_sin_mphi_test,
+                          SphericalHarmonicsRefFixture) {
+    size_t max_m = 10;
+    Eigen::VectorXd phi_test(5);
+    phi_test << 0, 0.1, math::PI / 4, math::PI, math::PI * 2;
+    for (size_t phi_idx{0}; phi_idx < 5; phi_idx++) {
+      double cos_phi = std::cos(phi_test(phi_idx));
+      double sin_phi = std::sin(phi_test(phi_idx));
+      Eigen::MatrixXd cos_sin_m_phi =
+          math::compute_cos_sin_angle_multiples(cos_phi, sin_phi, max_m);
+      if (verbose) {
+        std::cout << "Cos | sin (mφ), φ=" << phi_test(phi_idx) << std::endl;
+        std::cout << cos_sin_m_phi.transpose() << std::endl;
+      }
+      for (size_t m_idx{0}; m_idx < max_m; m_idx++) {
+        auto cos_error{std::abs(cos_sin_m_phi(m_idx, 0) -
+                                std::cos(m_idx * phi_test(phi_idx)))};
+        auto sin_error{std::abs(cos_sin_m_phi(m_idx, 1) -
+                                std::sin(m_idx * phi_test(phi_idx)))};
+        BOOST_CHECK_LE(cos_error, math::dbl_ftol);
+        BOOST_CHECK_LE(sin_error, math::dbl_ftol);
+      }
+    }
+  }
+  */
+
   BOOST_AUTO_TEST_CASE(spherical_harmonics_gradient_test) {
+    // (max) what?! how does this even remain numerically stable?
+    // it's total overkill in any case, 10 or even 3 would suffice
     constexpr size_t test_max_angular = 30;
-    SphericalHarmonicsClassFunctionHolder<test_max_angular>
-        harmonics_calculator{};
-    harmonics_calculator.precompute();
+    SphericalHarmonicsGradientsCalculator<test_max_angular>
+        harmonics_grad_calc{};
+    harmonics_grad_calc.precompute();
     GradientTestFixture fix{
         "reference_data/spherical_harmonics_gradient_test.json"};
-    test_gradients(harmonics_calculator, fix);
+    test_gradients(harmonics_grad_calc, fix);
   }
 
   BOOST_AUTO_TEST_SUITE_END();

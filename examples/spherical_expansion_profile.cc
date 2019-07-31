@@ -32,7 +32,6 @@
 #include "rascal_utility.hh"
 #include "representations/representation_manager_sorted_coulomb.hh"
 #include "representations/representation_manager_spherical_expansion.hh"
-#include "representations/representation_manager_spherical_invariants.hh"
 #include "representations/feature_manager_dense.hh"
 #include "basic_types.hh"
 #include "atomic_structure.hh"
@@ -49,9 +48,9 @@
 // using namespace std;
 using namespace rascal;  // NOLINT
 
-const int N_ITERATIONS = 500;
+const int N_ITERATIONS = 1000;
 
-using Representation_t = RepresentationManagerSphericalInvariants<
+using Representation_t = RepresentationManagerSphericalExpansion<
     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
 
 int main(int argc, char * argv[]) {
@@ -66,11 +65,8 @@ int main(int argc, char * argv[]) {
   std::string filename{argv[1]};
 
   double cutoff{5.};
-  json hypers{{"max_radial", 8},
-              {"max_angular", 6},
-              {"soap_type", "PowerSpectrum"},
-              {"normalize", true},
-              {"compute_gradients", false}};
+  json hypers{
+      {"max_radial", 8}, {"max_angular", 6}, {"compute_gradients", false}};
 
   json fc_hypers{{"type", "Cosine"},
                  {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
@@ -115,6 +111,28 @@ int main(int argc, char * argv[]) {
             << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
             << std::endl;
 
+  Representation_t representation{manager, hypers};
+
+  start = std::chrono::high_resolution_clock::now();
+  // This is the part that should get profiled
+  for (size_t looper{0}; looper < N_ITERATIONS; looper++) {
+    representation.compute();
+  }
+  finish = std::chrono::high_resolution_clock::now();
+
+  elapsed = finish - start;
+  std::cout << "Compute representation"
+            << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
+            << std::endl;
+
+  auto expn = representation.get_representation_full();
+  std::cout << "Sample SphericalExpansion elements " << std::endl
+            << expn(0, 0) << " " << expn(0, 1) << " " << expn(0, 2) << "\n"
+            << expn(1, 0) << " " << expn(1, 1) << " " << expn(1, 2) << "\n"
+            << expn(2, 0) << " " << expn(2, 1) << " " << expn(2, 2) << "\n";
+
+  // Profile again, this time with gradients
+  hypers["compute_gradients"] = true;
   Representation_t representation_gradients{manager, hypers};
   start = std::chrono::high_resolution_clock::now();
   // This is the part that should get profiled
@@ -130,10 +148,12 @@ int main(int argc, char * argv[]) {
   std::cout << "Ratio (with gradients / without gradients): "
             << elapsed_grad.count() / elapsed.count() << std::endl;
 
-  auto soap2 = representation_gradients.get_representation_full();
-  std::cout << "Sample SOAP elements (should be identical) " << std::endl
-            << soap2(0, 0) << " " << soap2(0, 1) << " " << soap2(0, 2) << "\n"
-            << soap2(1, 0) << " " << soap2(1, 1) << " " << soap2(1, 2) << "\n"
-            << soap2(2, 0) << " " << soap2(2, 1) << " " << soap2(2, 2) << "\n";
-  // TODO(max) print out analogous gradient components, for now see soap_example
+  auto expn2 = representation_gradients.get_representation_full();
+  std::cout << "Sample SphericalExpansion elements (should be identical) "
+            << std::endl
+            << expn2(0, 0) << " " << expn2(0, 1) << " " << expn2(0, 2) << "\n"
+            << expn2(1, 0) << " " << expn2(1, 1) << " " << expn2(1, 2) << "\n"
+            << expn2(2, 0) << " " << expn2(2, 1) << " " << expn2(2, 2) << "\n";
+  // TODO(max) print out analogous gradient components, for now see
+  // spherical_expansion_example
 }

@@ -70,7 +70,9 @@ namespace rascal {
     using Vector_t = Eigen::Matrix<double, 1, Eigen::Dynamic, Eigen::RowMajor>;
 
     using MatrixX2_t = Eigen::Matrix<double, Eigen::Dynamic, 2>;
-
+    using Matrix_Ref = typename Eigen::Ref<const Matrix_t>;
+    using MatrixX2_Ref = typename Eigen::Ref<const MatrixX2_t>;
+    using Vector_Ref = typename Eigen::Ref<const Vector_t>;
     /**
      * Define integer powers and wrap the different cases under the same name
      */

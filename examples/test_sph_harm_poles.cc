@@ -32,8 +32,8 @@
 #include "math/math_utils.hh"
 #include "math/spherical_harmonics.hh"
 
-using rascal::math::compute_assoc_legendre_polynom;
 using rascal::math::PI;
+using rascal::math::SphericalHarmonics;
 
 int main() {
   double cos_theta{0.};
@@ -45,14 +45,16 @@ int main() {
   double raising_plm_factor{
       sqrt((angular_l - m_count) * (angular_l + m_count + 1))};
   Eigen::MatrixXd assoc_legendre_polynom;
+  SphericalHarmonics harmonics_calculator{false};
+  harmonics_calculator.precompute(angular_l);
   std::cout << "l = " << angular_l << "\tm = " << m_count << std::endl;
   std::cout << "# theta\tPole singularity\tEquator singularity" << std::endl;
   std::cout << std::setprecision(15);
   for (double theta{PI / 4.}; theta > 1E-15; theta = theta / 2.) {
     cos_theta = std::cos(theta);
     sin_theta = std::sqrt(1.0 - pow(cos_theta, 2));
-    assoc_legendre_polynom =
-        compute_assoc_legendre_polynom(cos_theta, angular_l);
+    harmonics_calculator.compute_assoc_legendre_polynom(cos_theta);
+    assoc_legendre_polynom = harmonics_calculator.get_assoc_legendre_polynom();
     double result_nopoles{m_count * assoc_legendre_polynom(angular_l, m_count) /
                           sin_theta};
     double result_noequator{
@@ -66,8 +68,8 @@ int main() {
   for (double theta_c{PI / 4.}; theta_c > 1E-15; theta_c = theta_c / 2.) {
     sin_theta = std::cos(theta_c);
     cos_theta = std::sqrt(1.0 - pow(sin_theta, 2));
-    assoc_legendre_polynom =
-        compute_assoc_legendre_polynom(cos_theta, angular_l);
+    harmonics_calculator.compute_assoc_legendre_polynom(cos_theta);
+    assoc_legendre_polynom = harmonics_calculator.get_assoc_legendre_polynom();
     double result_nopoles{m_count * assoc_legendre_polynom(angular_l, m_count) /
                           sin_theta};
     double result_noequator{

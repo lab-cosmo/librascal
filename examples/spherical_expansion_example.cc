@@ -1,5 +1,5 @@
 /**
- * file   soap_example.cc
+ * file   soap_profile.cc
  *
  * @author Max Veit <max.veit@epfl.ch>
  *
@@ -32,7 +32,6 @@
 #include "rascal_utility.hh"
 #include "representations/representation_manager_sorted_coulomb.hh"
 #include "representations/representation_manager_spherical_expansion.hh"
-#include "representations/representation_manager_spherical_invariants.hh"
 #include "representations/feature_manager_dense.hh"
 #include "basic_types.hh"
 #include "atomic_structure.hh"
@@ -46,9 +45,12 @@
 #include <initializer_list>
 #include <chrono>
 
+// using namespace std;
 using namespace rascal;  // NOLINT
 
-using Representation_t = RepresentationManagerSphericalInvariants<
+// using Representation_t = RepresentationManagerSOAP<
+// AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
+using Representation_t = RepresentationManagerSphericalExpansion<
     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
 
 int main(int argc, char * argv[]) {
@@ -61,11 +63,10 @@ int main(int argc, char * argv[]) {
   std::string filename{argv[1]};
 
   double cutoff{4.};
-  json hypers{{"max_radial", 3},
-              {"max_angular", 2},
-              {"compute_gradients", true},
-              {"soap_type", "PowerSpectrum"},
-              {"normalize", true}};
+  json hypers{
+      {"max_radial", 3}, {"max_angular", 2}, {"compute_gradients", true}};
+  //{"soap_type", "PowerSpectrum"},
+  //{"normalize", true}};
 
   json fc_hypers{{"type", "Cosine"},
                  {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
@@ -110,7 +111,7 @@ int main(int argc, char * argv[]) {
                "columns and n-l-m along the rows."
             << std::endl;
   std::cout << "Gradients are printed with: First Cartesian component, "
-               "then species pairs, along the rows; n-n'-l along the columns.";
+               "then species, along the rows; n-l-m along the columns.";
   std::cout << std::endl;
   size_t center_count{0};
   for (auto center : manager) {
@@ -118,24 +119,26 @@ int main(int argc, char * argv[]) {
       break;
     }
     size_t n_species_center{
-        representation.soap_vectors.get_keys(center).size()};
+        representation.expansions_coefficients.get_keys(center).size()};
     std::cout << "============================" << std::endl;
     std::cout << "Center " << center.get_index();
     std::cout << " of type " << center.get_atom_type() << std::endl;
-    std::cout << representation.soap_vectors.get_dense_row(center);
+    std::cout << representation.expansions_coefficients.get_dense_row(center);
     std::cout << std::endl;
     std::cout << "Gradient of this expansion wrt center pos: " << std::endl;
     std::cout << Eigen::Map<Eigen::MatrixXd>(
-        representation.soap_vector_gradients.get_dense_row(center).data(),
+        representation.expansions_coefficients_gradient.get_dense_row(center)
+            .data(),
         3 * n_species_center,
-        representation.soap_vector_gradients.get_nb_comp());
+        representation.expansions_coefficients_gradient.get_nb_comp());
     std::cout << std::endl;
     size_t neigh_count{0};
     for (auto neigh : center) {
       if (neigh_count >= n_neigh_print) {
         break;
       }
-      auto keys_neigh = representation.soap_vector_gradients[neigh].get_keys();
+      auto keys_neigh = representation.expansions_coefficients_gradient[neigh]
+        .get_keys();
       std::cout << "Neighbour keys: ";
       for (auto key : keys_neigh) {
         std::cout << "(";
@@ -148,9 +151,10 @@ int main(int argc, char * argv[]) {
       std::cout << "Gradient of the above wrt atom " << neigh.back();
       std::cout << " of type " << neigh.get_atom_type() << std::endl;
       std::cout << Eigen::Map<Eigen::MatrixXd>(
-          representation.soap_vector_gradients.get_dense_row(neigh).data(),
+          representation.expansions_coefficients_gradient.get_dense_row(neigh)
+              .data(),
           3 * n_species_center,
-          representation.soap_vector_gradients.get_nb_comp());
+          representation.expansions_coefficients_gradient.get_nb_comp());
       std::cout << std::endl;
       ++neigh_count;
     }

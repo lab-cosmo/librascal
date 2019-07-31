@@ -360,4 +360,5 @@ if(AUTOPEP8_FOUND)
   # .pycodestyle in project root folder
   autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
   autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
+  autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/scripts" "")
 endif()

@@ -3,10 +3,11 @@
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  * @author  Max Veit <max.veit@epfl.ch>
+ * @author  Alex
  *
  * @date   14 October 2018
  *
- * @brief implementation of the spherical harmonics
+ * @brief implementation of the spherical harmonics, optimized, with gradients
  *
  * Copyright  2018  Felix Musil, Max Veit, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -36,70 +37,30 @@
 namespace rascal {
   namespace math {
     /**
-     * Compute a set of normalized associated Legendre polynomials
-     *
-     * These are normalized for use in computing the real spherical harmonics;
-     * see math::compute_spherical_harmonics() for details.  The m==0 harmonics
-     * require an extra factor of 1/√2 (see below).  Only positive-m functions
-     * are computed.
-     *
-     * @param cos_theta (aka x) Where to evaluate the polynomial
-     *
-     * @param max_angular Compute up to this angular momentum number (l_max)
-     *
-     * @return assoc_legendre_polynom
-     *        An (Eigen)matrix containing the evaluated polynomials.
-     *        Sized l_max by (2*lmax + 1); the row is indexed by l and the
-     *        column by m >= 0.
-     */
-    Matrix_t compute_assoc_legendre_polynom(double cos_theta,
-                                            size_t max_angular);
-
-    /**
-     * Compute cos(mφ) and sin(mφ) from the recurrence relations
-     *
-     * The relations are (these are the same recurrence relations used to
-     * calculate the Chebyshev polynomials):
-     *
-     * cos(mφ) = 2cos(φ)cos((m-1)φ) - cos((m-2)φ)
-     * sin(mφ) = 2cos(φ)sin((m-1)φ) - sin((m-2)φ)
-     *
-     * and they require only cos(φ) and sin(φ) to start.
-     *
-     * @param cos_phi Value of cos(φ) to start the relation
-     *
-     * @param sin_phi Value of sin(φ) to start the relation
-     *
-     * @param max_m Compute up to a maximum value of max_m (inclusive)
-     *
-     * @return cos_sin_m_phi
-     *        (Eigen)matrix containing the results.
-     *        Sized max_m by 2 with the cos(mφ) stored in the first column
-     *        and sin(mφ) in the second column, m being the row index
-     */
-    MatrixX2_t compute_cos_sin_angle_multiples(double cos_phi, double sin_phi,
-                                               size_t max_m);
-
-    /**
-     * Compute a full set of spherical harmonics given a direction vector
+     * Compute a full set of spherical harmonics (optimized version)
      *
      * Follows the algorithm described in https://arxiv.org/abs/1410.1748
      *
-     * In brief, this computes the real spherical harmonics where the imaginary
-     * components of the usual complex functions are instead stored in the
-     * negative-m indices:
+     * In brief, this class computes the real spherical harmonics where the
+     * imaginary components of the usual complex functions are instead stored
+     * in the negative-m indices:
      *
-     *               ╭ √((2l+1)/(2*π) * (l+m)!/(l-m)!) P_l^-m(cos(θ)) sin(-mφ)
-     *               |                                                  for m<0
-     * Y_l^m(θ, φ) = ┤ √((2l+1)/(4*π)) P_l(cos(θ)) for m==0
+     * //clang-format off (mangles comments horribly)
+     *
+     *               ╭ √((2l+1)/(2*π) * (l+m)!/(l-m)!)
+     *               |                    P_l^-m(cos(θ)) sin(-mφ)   for m<0
      *               |
-     *               ╰ √((2l+1)/(2*π) * (l-m)!/(l+m)!) P_l^m(cos(θ)) cos(mφ)
-     *                                                                  for m>0
+     * Y_l^m(θ, φ) = ┤ √((2l+1)/(4*π)) P_l(cos(θ))                  for m==0
+     *               |
+     *               ╰ √((2l+1)/(2*π) * (l-m)!/(l+m)!)
+     *                                    P_l^m(cos(θ)) cos(mφ)     for m>0
+     *
+     * //clang-format on
      *
      * In case you're wondering why it's 1/2π on the m=/=0 components (instead
-     * of 1/4π), there's an extra factor of 1/2 that comes from integrating cos²
-     * or sin² over the full circle of φ, so these are indeed normalized in the
-     * same sense as the complex spherical harmonics:
+     * of 1/4π), there's an extra factor of 1/2 that comes from integrating
+     * cos² or sin² over the full circle of φ, so these are indeed normalized
+     * in the same sense as the complex spherical harmonics:
      *
      * ∫∫_(Sphere) dΩ Y_l^m(θ, φ) Y_l'^m'(θ, φ) = δ_(ll')δ_(mm')
      *
@@ -107,59 +68,24 @@ namespace rascal {
      * associated Legendre polynomials defined above; however, all other
      * normalization factors are.)
      *
-     * @param direction Unit vector giving the angles (arguments for the Y_l^m)
+     * Cartesian gradients can optionally be computed in addition.
      *
-     * @param max_angular Compute up to this angular momentum number (l_max)
+     * Part of the efficiency derives from moving the direction-independent
+     * calculations into a separate precompute() method; you must therefore call
+     * precompute() (which also sets max_l) before any call to calc().
      *
-     * @return  (Eigen)vector containing the results.
-     *          Sized (l_max+1)**2, contains the l,m components in compressed
-     *          format, i.e. (00)(1-1)(10)(11)(2-2)....
+     * Once calc() has been called for a direction vector, the results can be
+     * retrieved with get_harmonics() (and the gradients, if computed, with
+     * get_harmonics_derivatives())
+     *
+     * Note the storage order of the harmonics components here follows the
+     * "compressed" format, with the l index varying the slowest, from 0 to
+     * l_max, and m varying from -l to l for each value of l, for a total of
+     * (l_max+1)^2 components.  For example, the first few entries of the array
+     * would have the (l, m) numbers: (0,0) (1,-1) (1,0) (1, 1) (2, -2)....
      */
-    Vector_t compute_spherical_harmonics(
-        const Eigen::Ref<const Eigen::Vector3d> & direction,
-        size_t max_angular);
-
-    /**
-     * Compute a full set of spherical harmonics and their Cartesian gradients
-     *
-     * Spherical harmonics are defined as described in
-     * math::compute_spherical_harmonics().  Gradients are defined with respect
-     * to motion of the central atom, which is the opposite sign of the usual
-     * definition with respect to the _arguments_ of the Y_l^m.  The actual
-     * Cartesian gradients include an extra factor of 1/r that is not included
-     * here; the rest is independent of radius.
-     *
-     * @param direction Unit vector giving the angles (arguments for the Y_l^m)
-     *
-     * @param max_angular Compute up to this angular momentum number (l_max)
-     *
-     * @return  (Eigen)array containing the results.
-     *          Sized 4 by (l_max+1)^2; the first index collects the
-     *          value of the harmonic and the x, y, and z gradient components.
-     *          The second index collects l and m quantum numbers, stored in
-     *          compact format (m varies fastest, from -l to l, and l from 0 to
-     *          l_max).
-     *
-     * @warning This function will access the associated Legendre polynomials
-     *          for m=l+1 and assume they are equal to zero.  The implementation
-     *          of the polynomials in this file respects this convention.
-     *
-     * @todo Add an option to switch off the computation of gradients, so this
-     *       function becomes equivalent to math::compute_spherical_harmonics()
-     */
-    Matrix_t compute_spherical_harmonics_derivatives(
-        const Eigen::Ref<const Eigen::Vector3d> & direction,
-        size_t max_angular);
-
-    // New class which contains the above functions to precompute as much as
-    // possible.
     class SphericalHarmonics {
      protected:
-      using Matrix_Ref = typename Eigen::Ref<const Matrix_t>;
-      using MatrixX2_Ref = typename Eigen::Ref<const MatrixX2_t>;
-      using Vector_Ref = typename Eigen::Ref<const Vector_t>;
-      // using Vector_Ref = typename Eigen::Ref<const Eigen::VectorXd>;
-
       size_t max_angular{0};
       Vector_t angular_coeffs1{};
       Vector_t angular_coeffs2{};
@@ -177,8 +103,15 @@ namespace rascal {
       Vector_t phi_derivative_factors{};
 
      public:
+      /** Constructs the class, but doesn't precompute or set anything */
       SphericalHarmonics() {}
 
+      /**
+       * Construct a SphericalHarmonics class with a default setting for whether
+       * to calculate the gradients
+       *
+       * Remember to call precompute to finish initialization
+       */
       explicit SphericalHarmonics(bool calculate_derivatives)
           : calculate_derivatives{calculate_derivatives} {}
 
@@ -261,7 +194,20 @@ namespace rascal {
         }
       }
 
-      // computation from here
+      /**
+       * Compute a set of normalized associated Legendre polynomials
+       *
+       * These are normalized for use in computing the real spherical harmonics;
+       * see the class documentation for details.  In particular, the m==0
+       * harmonics require an extra factor of 1/√2.  The negative-m functions
+       * are not computed due to symmetry.
+       *
+       * @param cos_theta (aka x) Where to evaluate the polynomial
+       *
+       * Stores the results as an (Eigen)matrix containing the evaluated
+       * polynomials, sized l_max by (2*lmax + 1); the row is indexed by l and
+       * the column by m >= 0.
+       */
       void compute_assoc_legendre_polynom(double cos_theta) {
         using math::pow;
         using std::sqrt;
@@ -311,26 +257,19 @@ namespace rascal {
       }
 
       /**
-       * Allows usage of calc member function with a default parameter for
-       * the calculate_derivatives variable.
-       */
-      void calc(const Eigen::Ref<const Eigen::Vector3d> & direction) {
-        this->calc(direction, this->calculate_derivatives);
-      }
-
-      /**
        * Compute a full set of spherical harmonics given a direction vector.
        * If calculate_derivatives flag is on, the derivatives are additionally
        * computed.
        *
-       * @param Direction unit vector giving the angles (arguments for the
-       * Y_l^m)
+       * @param direction   unit vector giving the angles
+       *                    (arguments for the Y_l^m)
        *
-       * @param Flag which decides if function is computes derivatives
+       * @param calculate_derivatives       Compute the gradients too?
        *
-       * @return Void, results have to be retrieved with get functions
+       * @return void, results have to be retrieved with get functions
        *
-       * @warning Throws warning, if vector is not normalized.
+       * @warning Prints warning and normalizes direction if it is not
+       *          already normalized.
        */
       void calc(const Eigen::Ref<const Eigen::Vector3d> & direction,
                 bool calculate_derivatives) {
@@ -362,7 +301,6 @@ namespace rascal {
           sin_phi = direction_normed[1] / sqrt_xy;
         }
 
-        // change cos_sin_m_phi to this->cos_sin_m_phi
         this->compute_assoc_legendre_polynom(cos_theta);
         this->compute_cos_sin_angle_multiples(cos_phi, sin_phi);
 
@@ -389,6 +327,14 @@ namespace rascal {
       }
 
       /**
+       * Allows usage of calc member function with a default parameter for
+       * the calculate_derivatives variable.
+       */
+      void calc(const Eigen::Ref<const Eigen::Vector3d> & direction) {
+        this->calc(direction, this->calculate_derivatives);
+      }
+
+      /**
        * Compute cos(mφ) and sin(mφ) from the recurrence relations
        *
        * The relations are (these are the same recurrence relations used to
@@ -403,12 +349,9 @@ namespace rascal {
        *
        * @param sin_phi Value of sin(φ) to start the relation
        *
-       * @param max_m Compute up to a maximum value of max_m (inclusive)
-       *
-       * @return cos_sin_m_phi
-       *        (Eigen)matrix containing the results.
-       *        Sized max_m by 2 with the cos(mφ) stored in the first column
-       *        and sin(mφ) in the second column, m being the row index
+       * Stores the results as an (Eigen)matrix, sized max_m by 2 with the
+       * cos(mφ) stored in the first column and sin(mφ) in the second column,
+       * with m being the row index
        */
       void compute_cos_sin_angle_multiples(const double & cos_phi,
                                            const double & sin_phi) {
@@ -426,37 +369,12 @@ namespace rascal {
       }
 
       /**
-       * Compute a full set of spherical harmonics given a direction vector
+       * Combine the associated Legendre polynomials with the cos/sin(mφ) to
+       * compute the final spherical harmonics
        *
-       * Follows the algorithm described in https://arxiv.org/abs/1410.1748
-       *
-       * In brief, this computes the real spherical harmonics where the
-       * imaginary components of the usual complex functions are instead stored
-       * in the negative-m indices:
-       *
-       *               ╭ √((2l+1)/(2*π) * (l+m)!/(l-m)!) P_l^-m(cos(θ)) sin(-mφ)
-       *               |                                                  for
-       * m<0 Y_l^m(θ, φ) = ┤ √((2l+1)/(4*π)) P_l(cos(θ)) for m==0
-       *               |
-       *               ╰ √((2l+1)/(2*π) * (l-m)!/(l+m)!) P_l^m(cos(θ)) cos(mφ)
-       *                                                                  for
-       * m>0
-       *
-       * In case you're wondering why it's 1/2π on the m=/=0 components (instead
-       * of 1/4π), there's an extra factor of 1/2 that comes from integrating
-       * cos² or sin² over the full circle of φ, so these are indeed normalized
-       * in the same sense as the complex spherical harmonics:
-       *
-       * ∫∫_(Sphere) dΩ Y_l^m(θ, φ) Y_l'^m'(θ, φ) = δ_(ll')δ_(mm')
-       *
-       * (this extra factor of 1/√2 is not included in the normalization of the
-       * associated Legendre polynomials defined above; however, all other
-       * normalization factors are.)
-       *
-       * @param direction Unit vector giving the angles (arguments for the
-       * Y_l^m)
-       *
-       * @param max_angular Compute up to this angular momentum number (l_max)
+       * Stores the results as an (Eigen)matrix, sized (l_max+1)^2.  The index
+       * collects l and m quantum numbers stored in compact format (m varies
+       * fastest, from -l to l, and l from 0 to l_max).
        *
        */
       void compute_spherical_harmonics() {
@@ -465,6 +383,9 @@ namespace rascal {
              angular_l++) {
           // uses symmetry of spherical harmonics,
           // careful with the storage order
+          // TODO(alex) please clarify -- is it the same storage order we had
+          // before (i.e. negative-m components first)?  If so, please refer to
+          // the above documentation or delete this comment -- Max
           this->harmonics.segment(lm_base + angular_l, angular_l + 1) =
               this->assoc_legendre_polynom.row(angular_l)
                   .head(angular_l + 1)
@@ -492,17 +413,9 @@ namespace rascal {
        * Cartesian gradients include an extra factor of 1/r that is not included
        * here; the rest is independent of radius.
        *
-       * @param direction Unit vector giving the angles (arguments for the
-       * Y_l^m)
+       * Results are stored as in compute_spherical_harmonics(), but with an
+       * extra (row) index for the x, y, and z Cartesian components.
        *
-       * @param max_angular Compute up to this angular momentum number (l_max)
-       *
-       * @return  (Eigen)matrix containing the results.
-       *          Sized 4 by (l_max+1)^2; the first index collects the
-       *          value of the harmonic and the x, y, and z gradient components.
-       *          The second index collects l and m quantum numbers, stored in
-       *          compact format (m varies fastest, from -l to l, and l from 0
-       * to l_max).
        */
       void compute_spherical_harmonics_derivatives(double sin_theta,
                                                    double cos_theta,
@@ -710,6 +623,18 @@ namespace rascal {
         return Vector_Ref(this->harmonics);
       }
 
+      /**
+       * Access the Cartesian gradients of the harmonics, if computed
+       *
+       * @todo (alex) what happens if they haven't been computed and this gets
+       *              called anyway?
+       *
+       * @return  (Eigen)matrix containing the results.
+       *          Sized 3 by (l_max+1)^2; the first index runs over the the x,
+       *          y, and z gradient components and the second index collects l
+       *          and m quantum numbers, stored in compact format (m varies
+       *          fastest, from -l to l, and l from 0 to l_max).
+       */
       inline const Matrix_Ref get_harmonics_derivatives() {
         return Matrix_Ref(this->harmonics_derivatives);
       }
