@@ -270,6 +270,12 @@ namespace rascal {
       this->normalize = hypers.at("normalize").get<bool>();
       this->spherical_invariants_type_str =
           hypers.at("soap_type").get<std::string>();
+          
+      if (hypers.find("compute_gradients") != hypers.end()) {
+        this->compute_gradients = hypers.at("compute_gradients").get<bool>();
+      } else {  // Default false (don't compute gradients)
+        this->compute_gradients = false;
+      }
 
       if (this->spherical_invariants_type_str.compare("PowerSpectrum") == 0) {
         this->spherical_invariants_type =
@@ -1053,7 +1059,7 @@ namespace rascal {
 
       if (this->compute_gradients) {
         // The gradient wrt center is nonzero for all species pairs
-        soap_vector_gradients[center].resize(
+        this->soap_vector_gradients[center].resize(
             pair_list, n_spatial_dimensions * n_row, n_col);
         for (auto neigh : center) {
           // TODO(max) naïve but functional -- it will contain lots of zeros
@@ -1061,7 +1067,7 @@ namespace rascal {
           // (the gradient wrt neighbour j is zero if the neighbouring atom is
           // not the same species as either neigh1 or neigh2 (species in the
           // block-sparse pair key) )
-          soap_vector_gradients[neigh].resize(
+          this->soap_vector_gradients[neigh].resize(
               pair_list, n_spatial_dimensions * n_row, n_col);
         }
       }  // if compute gradients
