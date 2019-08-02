@@ -753,7 +753,7 @@ namespace rascal {
         soap_vector_gradients[center].resize(
             pair_list, n_spatial_dimensions * n_row, n_col);
 
-        //TODO(max,felix) needs work
+        // TODO(max,felix) needs work
         /*
         // Neighbour gradients need a separate pair list because if the species
         // of j is not the same as either of the species for that SOAP entry,

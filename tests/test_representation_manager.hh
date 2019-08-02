@@ -151,7 +151,8 @@ namespace rascal {
                                   {"normalize", true}}};
   };
 
-  struct MultipleStructureSOAPNoCenter : MultipleStructureManagerNLStrictFixtureNoCenter {
+  struct MultipleStructureSOAPNoCenter
+      : MultipleStructureManagerNLStrictFixtureNoCenter {
     using Parent = MultipleStructureManagerNLStrictFixtureNoCenter;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
 
