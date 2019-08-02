@@ -297,6 +297,16 @@ namespace rascal {
                  std::istream_iterator<BINARY>());
     }
 
+    inline void read_text_file(const std::string & filename, json& j) {
+      std::ifstream reader(filename);
+      if (not reader.is_open()) {
+        throw std::runtime_error(std::string("Could not open the file: ") +
+                                 filename);
+      }
+      reader >> j;
+      reader.close();
+    }
+
   }  // namespace internal
 }  // namespace rascal
 
