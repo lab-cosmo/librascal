@@ -332,6 +332,10 @@ namespace rascal {
         return keys;
       }
 
+      inline void multiply_elements_by(const double & fac) {
+        this->data *= fac;
+      }
+
       /**
        * l^2 norm of the entire vector
        */
@@ -353,7 +357,7 @@ namespace rascal {
       /**
        * Multiply the elements that belong to (key1, key2) entry with
        * key1 =!= key2
-       * 
+       *
        * relevant only when the keys have 2 indices
        */
       inline void multiply_offdiagonal_elements_by(const double & fac) {

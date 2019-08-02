@@ -230,35 +230,36 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(spherical_representation_gradients, Fix,
                                    simple_periodic_fixtures, Fix) {
     auto & managers = Fix::managers;
-    auto & hyper = Fix::hypers.front();
+    auto & hypers = Fix::hypers;
     auto & representations = Fix::representations;
     auto & structures = Fix::structures;
     auto filename_it = Fix::filenames.begin();
-    for (auto & manager : managers) {
-      hyper["compute_gradients"] = true;
-      representations.emplace_back(manager, hyper);
-      structures.emplace_back();
-      structures.back().set_structure(*filename_it);
-      // The finite-difference tests don't work with periodic boundary
-      // conditions -- moving one atom moves all its periodic images, too
-      structures.back().pbc.setZero();
-      RepresentationManagerGradientCalculator<typename Fix::Representation_t>
-          calculator(representations.back(), manager, structures.back());
-      RepresentationManagerGradientFixture<typename Fix::Representation_t>
-          grad_fix("reference_data/spherical_expansion_gradient_test.json",
-                   manager, calculator);
-      if (grad_fix.verbosity >= GradientTestFixture::VerbosityValue::INFO) {
-        std::cout << "Testing structure: " << *filename_it << std::endl;
+
+    for (auto manager : managers) {
+      for (auto hyper : hypers) {
+        hyper["compute_gradients"] = true;
+        representations.emplace_back(manager, hyper);
+        structures.emplace_back();
+        structures.back().set_structure(*filename_it);
+        // The finite-difference tests don't work with periodic boundary
+        // conditions -- moving one atom moves all its periodic images, too
+        structures.back().pbc.setZero();
+        RepresentationManagerGradientCalculator<typename Fix::Representation_t>
+            calculator(representations.back(), manager, structures.back());
+        RepresentationManagerGradientFixture<typename Fix::Representation_t>
+            grad_fix("reference_data/spherical_expansion_gradient_test.json",
+                    manager, calculator);
+        if (grad_fix.verbosity >= GradientTestFixture::VerbosityValue::INFO) {
+          std::cout << "Testing structure: " << *filename_it << std::endl;
+        }
+        do {
+          test_gradients(grad_fix.get_calculator(), grad_fix);
+          grad_fix.advance_center();
+        } while (grad_fix.has_next());
       }
-      do {
-        test_gradients(grad_fix.get_calculator(), grad_fix);
-        grad_fix.advance_center();
-      } while (grad_fix.has_next());
       ++filename_it;
     }
   }
-
-
 
   BOOST_AUTO_TEST_SUITE_END();
 

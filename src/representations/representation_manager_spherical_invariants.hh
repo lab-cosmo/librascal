@@ -270,7 +270,7 @@ namespace rascal {
       this->normalize = hypers.at("normalize").get<bool>();
       this->spherical_invariants_type_str =
           hypers.at("soap_type").get<std::string>();
-          
+
       if (hypers.find("compute_gradients") != hypers.end()) {
         this->compute_gradients = hypers.at("compute_gradients").get<bool>();
       } else {  // Default false (don't compute gradients)
@@ -583,8 +583,7 @@ namespace rascal {
                      ++cartesian_idx) {
                   size_t cartesian_offset_n{cartesian_idx * this->max_radial};
                   size_t cartesian_offset_n1n2{
-                      cartesian_idx *
-                      static_cast<size_t>(math::pow(this->max_radial, 2))};
+                      cartesian_idx * math::pow(this->max_radial, 2_z)};
                   n1n2 = 0;
                   for (size_t n1{0}; n1 < this->max_radial; ++n1) {
                     for (size_t n2{0}; n2 < this->max_radial; ++n2) {
@@ -621,8 +620,7 @@ namespace rascal {
                      ++cartesian_idx) {
                   size_t cartesian_offset_n{cartesian_idx * this->max_radial};
                   size_t cartesian_offset_n1n2{
-                      cartesian_idx *
-                      static_cast<size_t>(math::pow(this->max_radial, 2))};
+                      cartesian_idx * math::pow(this->max_radial, 2_z)};
                   n1n2 = 0;
                   for (size_t n1{0}; n1 < this->max_radial; ++n1) {
                     for (size_t n2{0}; n2 < this->max_radial; ++n2) {
@@ -763,8 +761,12 @@ namespace rascal {
   RepresentationManagerSphericalInvariants<Mngr>::compute_radialspectrum() {
     rep_expansion.compute();
     using math::pow;
+    using internal::n_spatial_dimensions;
 
     auto & expansions_coefficients{rep_expansion.expansions_coefficients};
+    // No error if gradients not computed; just an empty array in that case
+    auto & expansions_coefficients_gradient{
+        rep_expansion.expansions_coefficients_gradient};
 
     this->initialize_percenter_radialspectrum_soap_vectors();
     Key_t element_type{0};
@@ -783,7 +785,101 @@ namespace rascal {
       if (this->normalize) {
         soap_vector.normalize();
       }
-    }
+
+
+      if (this->compute_gradients) {
+
+        auto & grad_center_coefficients{
+            expansions_coefficients_gradient[center]};
+        auto & soap_center_gradient{this->soap_vector_gradients[center]};
+
+        for (const auto & el : grad_center_coefficients) {
+          element_type[0] = el.first[0];
+          auto && coef_grad_center{el.second};
+          soap_center_gradient[element_type] += coef_grad_center;
+        }
+
+        for (auto neigh : center) {
+          auto && grad_neigh_coefficients{
+            expansions_coefficients_gradient[neigh]};
+          auto && soap_neigh_gradient{this->soap_vector_gradients[neigh]};
+          for (const auto & el : grad_neigh_coefficients) {
+            element_type[0] = el.first[0];
+            auto && coef_grad_neigh{el.second};
+            soap_neigh_gradient[element_type] += coef_grad_neigh;
+          }
+        } // for (auto neigh : center)
+
+        if (this->normalize) {
+          double coefficients_norm_inv{1. / coefficients.norm()};
+          double coefficients_norm_inv3{math::pow(coefficients_norm_inv, 3_z)};
+
+          soap_center_gradient.multiply_elements_by(coefficients_norm_inv);
+
+          Eigen::Array3d norm_grad_center = Eigen::Array3d::Zero();
+          for (const auto & el : grad_center_coefficients) {
+            element_type[0] = el.first[0];
+            auto && coef_grad_center{el.second};
+            auto && coef_by_type{coefficients[element_type]};
+            for (size_t cartesian_idx{0}; cartesian_idx < 3;
+                     ++cartesian_idx) {
+              size_t cartesian_offset_n{cartesian_idx * this->max_radial};
+              norm_grad_center[cartesian_idx] +=
+              (coef_grad_center.block(cartesian_offset_n, 0,
+                                      this->max_radial, 1).array()
+              * coef_by_type.array()).sum();
+            }
+          }
+          norm_grad_center *= coefficients_norm_inv3;
+
+          for (const auto & el : coefficients) {
+            element_type[0] = el.first[0];
+            auto && coef{el.second};
+            auto && soap_center_gradient_by_type{soap_center_gradient[element_type]};
+            for (size_t cartesian_idx{0}; cartesian_idx < 3;
+                    ++cartesian_idx) {
+              size_t cartesian_offset_n{cartesian_idx * this->max_radial};
+              soap_center_gradient_by_type.block(cartesian_offset_n, 0, this->max_radial, 1) -= coef * norm_grad_center[cartesian_idx];
+            }
+          }
+
+          for (auto neigh : center) {
+            auto && grad_neigh_coefficients{
+            expansions_coefficients_gradient[neigh]};
+            auto && soap_neigh_gradient{this->soap_vector_gradients[neigh]};
+
+            soap_neigh_gradient.multiply_elements_by(coefficients_norm_inv);
+
+            Eigen::Array3d norm_grad_neigh = Eigen::Array3d::Zero();
+            for (const auto & el : grad_neigh_coefficients) {
+              element_type[0] = el.first[0];
+              auto && coef_grad_neigh{el.second};
+              auto && coef_by_type{coefficients[element_type]};
+              for (size_t cartesian_idx{0}; cartesian_idx < 3;
+                     ++cartesian_idx) {
+                size_t cartesian_offset_n{cartesian_idx * this->max_radial};
+                norm_grad_neigh[cartesian_idx] +=
+                (coef_grad_neigh.block(cartesian_offset_n, 0,
+                                      this->max_radial, 1).array()
+                 * coef_by_type.array()).sum();
+              }
+            }
+            norm_grad_neigh *= coefficients_norm_inv3;
+
+            for (const auto & el : coefficients) {
+              element_type[0] = el.first[0];
+              auto && coef{el.second};
+              auto && soap_neigh_gradient_by_type{soap_neigh_gradient[element_type]};
+              for (size_t cartesian_idx{0}; cartesian_idx < 3;
+                    ++cartesian_idx) {
+                size_t cartesian_offset_n{cartesian_idx * this->max_radial};
+                soap_neigh_gradient_by_type.block(cartesian_offset_n, 0, this->max_radial, 1) -= coef * norm_grad_neigh[cartesian_idx];
+              }
+            }
+          } // for (auto neigh : center)
+        } // if (this->normalize)
+      } // if (this->compute_gradients)
+    } // for (auto center : this->structure_manager)
   }
 
   template <class Mngr>
@@ -1060,7 +1156,7 @@ namespace rascal {
       if (this->compute_gradients) {
         // The gradient wrt center is nonzero for all species pairs
         this->soap_vector_gradients[center].resize(
-            pair_list, n_spatial_dimensions * n_row, n_col);
+            pair_list, n_spatial_dimensions * n_row, n_col, 0);
         for (auto neigh : center) {
           // TODO(max) naïve but functional -- it will contain lots of zeros
           // Would be better to filter the pair list somehow
@@ -1068,7 +1164,7 @@ namespace rascal {
           // not the same species as either neigh1 or neigh2 (species in the
           // block-sparse pair key) )
           this->soap_vector_gradients[neigh].resize(
-              pair_list, n_spatial_dimensions * n_row, n_col);
+              pair_list, n_spatial_dimensions * n_row, n_col, 0);
         }
       }  // if compute gradients
     }    // for center : manager
@@ -1077,12 +1173,20 @@ namespace rascal {
   template <class Mngr>
   void RepresentationManagerSphericalInvariants<
       Mngr>::initialize_percenter_radialspectrum_soap_vectors() {
+    using internal::n_spatial_dimensions;
     size_t n_row{this->max_radial};
     size_t n_col{1};
 
     this->soap_vectors.clear();
     this->soap_vectors.set_shape(n_row, n_col);
     this->soap_vectors.resize();
+
+    if (this->compute_gradients) {
+      this->soap_vector_gradients.clear();
+      this->soap_vector_gradients.set_shape(n_spatial_dimensions * n_row,
+                                            n_col);
+      this->soap_vector_gradients.resize();
+    }
 
     auto & expansions_coefficients{rep_expansion.expansions_coefficients};
 
@@ -1098,6 +1202,16 @@ namespace rascal {
       keys.insert({center.get_atom_type()});
       // initialize the radial spectrum to 0 and the proper size
       soap_vector.resize(keys, n_row, n_col, 0);
+
+      if (this->compute_gradients) {
+        // The gradient wrt center is nonzero for all species pairs
+        this->soap_vector_gradients[center].resize(
+            keys, n_spatial_dimensions * n_row, n_col, 0);
+        for (auto neigh : center) {
+          this->soap_vector_gradients[neigh].resize(
+              keys, n_spatial_dimensions * n_row, n_col, 0);
+        }
+      }  // if compute gradients
     }
   }
 

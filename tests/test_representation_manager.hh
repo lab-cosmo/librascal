@@ -437,11 +437,16 @@ namespace rascal {
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
-    std::vector<json> rep_hypers{{{"max_radial", 2},
-                                  {"max_angular", 2},
-                                  {"normalize", true},
-                                  {"soap_type", "PowerSpectrum"},
-                                  {"compute_gradients", true}}};
+   std::vector<json> rep_hypers{{{"max_radial", 2},
+                                 {"max_angular", 2},
+                                 {"normalize", true},
+                                 {"soap_type", "PowerSpectrum"},
+                                 {"compute_gradients", true}},
+                                {{"max_radial", 4},
+                                 {"max_angular", 0},
+                                 {"normalize", true},
+                                 {"soap_type", "RadialSpectrum"},
+                                 {"compute_gradients", true}}};
   };
 
   struct SphericalExpansionTestData : TestData {
