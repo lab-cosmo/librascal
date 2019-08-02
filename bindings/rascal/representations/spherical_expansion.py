@@ -55,7 +55,7 @@ class SphericalExpansion(object):
     def __init__(self, interaction_cutoff, cutoff_smooth_width,
                  max_radial, max_angular, gaussian_sigma_type,
                  gaussian_sigma_constant=0., cutoff_function_type="Cosine",
-                 n_species=1,radial_basis="GTO",
+                 n_species=1, radial_basis="GTO",
                  method='thread', n_workers=1, disable_pbar=False):
         """Construct a SphericalExpansion representation
 

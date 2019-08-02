@@ -164,20 +164,23 @@ namespace rascal {
     MultipleStructureManagerNLFixture() {
       for (auto && filename : this->filenames) {
         for (auto && cutoff : this->cutoffs) {
-          json parameters;
-          json structure{{"filename", filename}};
-          json adaptors;
-          json ad1{
-              {"name", "AdaptorNeighbourList"},
-              {"initialization_arguments",
-               {{"cutoff", cutoff},
-                {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
-          adaptors.push_back(ad1);
+          for (auto && skin : this->skins) {
+            json parameters;
+            json structure{{"filename", filename}};
+            json adaptors;
+            json ad1{
+                {"name", "AdaptorNeighbourList"},
+                {"initialization_arguments",
+                 {{"cutoff", cutoff},
+                  {"skin", skin},
+                  {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+            adaptors.push_back(ad1);
 
-          parameters["structure"] = structure;
-          parameters["adaptors"] = adaptors;
+            parameters["structure"] = structure;
+            parameters["adaptors"] = adaptors;
 
-          this->factory_args.emplace_back(parameters);
+            this->factory_args.emplace_back(parameters);
+          }
         }
       }
     }
@@ -190,6 +193,41 @@ namespace rascal {
         "reference_data/simple_cubic_8.json",
         "reference_data/small_molecule.json"};
     const std::vector<double> cutoffs{{1., 2., 3.}};
+    const std::vector<double> skins{{0., 0.3}};
+
+    json factory_args{};
+  };
+
+  struct MultipleStructureManagerNLRattleFixture {
+    using ManagerTypeHolder_t =
+        StructureManagerTypeHolder<StructureManagerCenters,
+                                   AdaptorNeighbourList>;
+    MultipleStructureManagerNLRattleFixture() {
+      for (auto && skin : this->skins) {
+        json parameters;
+        json structure{{"filename", filename}};
+        json adaptors;
+        json ad1{{"name", "AdaptorNeighbourList"},
+                 {"initialization_arguments",
+                  {{"cutoff", cutoff},
+                   {"skin", skin},
+                   {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+        adaptors.push_back(ad1);
+
+        parameters["structure"] = structure;
+        parameters["adaptors"] = adaptors;
+
+        this->factory_args.emplace_back(parameters);
+      }
+    }
+
+    ~MultipleStructureManagerNLRattleFixture() = default;
+
+    const bool consider_ghost_neighbours{false};
+    const std::string filename{
+        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+    const double cutoff{3.};
+    const std::vector<double> skins{{0., 0.1, 0.3}};
 
     json factory_args{};
   };
@@ -202,23 +240,26 @@ namespace rascal {
     MultipleStructureManagerNLStrictFixture() {
       for (auto && filename : this->filenames) {
         for (auto && cutoff : this->cutoffs) {
-          json parameters;
-          json structure{{"filename", filename}};
-          json adaptors;
-          json ad1{
-              {"name", "AdaptorNeighbourList"},
-              {"initialization_arguments",
-               {{"cutoff", cutoff},
-                {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
-          json ad2{{"name", "AdaptorStrict"},
-                   {"initialization_arguments", {{"cutoff", cutoff}}}};
-          adaptors.emplace_back(ad1);
-          adaptors.emplace_back(ad2);
+          for (auto && skin : this->skins) {
+            json parameters;
+            json structure{{"filename", filename}};
+            json adaptors;
+            json ad1{
+                {"name", "AdaptorNeighbourList"},
+                {"initialization_arguments",
+                 {{"cutoff", cutoff},
+                  {"skin", skin},
+                  {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+            json ad2{{"name", "AdaptorStrict"},
+                     {"initialization_arguments", {{"cutoff", cutoff}}}};
+            adaptors.emplace_back(ad1);
+            adaptors.emplace_back(ad2);
 
-          parameters["structure"] = structure;
-          parameters["adaptors"] = adaptors;
+            parameters["structure"] = structure;
+            parameters["adaptors"] = adaptors;
 
-          this->factory_args.emplace_back(parameters);
+            this->factory_args.emplace_back(parameters);
+          }
         }
       }
     }
@@ -230,6 +271,7 @@ namespace rascal {
         "reference_data/simple_cubic_8.json",
         "reference_data/small_molecule.json"};
     const std::vector<double> cutoffs{{2., 3.}};
+    const std::vector<double> skins{{0., 0.3}};
 
     json factory_args{};
   };
@@ -252,7 +294,7 @@ namespace rascal {
 
     ~MultipleStructureFixture() = default;
 
-    std::list<ManagerPtr_t> managers{};
+    std::vector<ManagerPtr_t> managers{};
   };
 
 }  // namespace rascal

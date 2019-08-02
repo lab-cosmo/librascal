@@ -192,8 +192,6 @@ namespace rascal {
                                "of parameters as there are adaptors to build.");
     }
 
-    AtomicStructure<3> structure{};
-    structure.set_structure(structure_inputs);
     // instanciate the base manager
     auto manager_base = make_structure_manager<Manager>();
     // build the stack of adaptors
@@ -203,7 +201,11 @@ namespace rascal {
     auto manager = factory.get_manager();
     // give a structure to the underlying base manager
     // and update all the stack of adaptors
-    manager->update(structure);
+    if (structure_inputs.size() > 0) {
+      AtomicStructure<3> structure{};
+      structure.set_structure(structure_inputs);
+      manager->update(structure);
+    }
 
     return manager;
   }

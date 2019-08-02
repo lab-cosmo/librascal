@@ -346,12 +346,12 @@ namespace rascal {
      */
     void attach_property(const std::string & name,
                          std::shared_ptr<PropertyBase> property) {
-      if (this->has_property(name)) {
-        std::stringstream error{};
-        error << "A property of name '" << name
-              << "' has already been registered";
-        throw std::runtime_error(error.str());
-      }
+      // if (this->has_property(name)) {
+      //   std::stringstream error{};
+      //   error << "A property of name '" << name
+      //         << "' has already been registered";
+      //   throw std::runtime_error(error.str());
+      // }
       this->properties[name] = property;
       this->property_fresh[name] = false;
     }
@@ -538,6 +538,20 @@ namespace rascal {
     constexpr static size_t cluster_layer_from_order() {
       static_assert(Order > 0, "Order is <1 this should not be");
       return get_layer(Order, typename traits::LayerByOrder{});
+    }
+
+    /**
+     * When the underlying structure changes, all computations are potentially
+     * invalid. This function triggers the setting of the statue variable to
+     * `false` along the tree to the managers and the properties it holds.
+     */
+    void send_changed_structure_signal() final {
+      this->set_update_status(false);
+      for (auto && child : this->children) {
+        if (not child.expired()) {
+          child.lock()->send_changed_structure_signal();
+        }
+      }
     }
 
    protected:

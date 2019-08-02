@@ -83,6 +83,9 @@ set(ENABLE_PROFILING "OFF" CACHE BOOL
   "If on, adds gprof profiling information to some of the examples. \
   (GNU compilers only)")
 
+SET(TYPE_ARCHITECTURE "native" CACHE STRING "Choose the type of architecture to compile to in release mode. Default is to let the compiler decide")
+
+
 message(STATUS "Build type is: ${CMAKE_BUILD_TYPE}")
 
 ########## COMPILATION FLAGS ##########
@@ -102,7 +105,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-non-virtual-dtor")
   string( TOLOWER "${CMAKE_BUILD_TYPE}" build_type )
   if ("release" STREQUAL "${build_type}" )
-    add_compile_options(-march=native)
+    add_compile_options("-march=${TYPE_ARCHITECTURE}")
   endif()
   if ("debug" STREQUAL "${build_type}" )
     add_compile_options(-O0)
@@ -347,4 +350,5 @@ if(AUTOPEP8_FOUND)
   # .pycodestyle in project root folder
   autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
   autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
+  autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/scripts" "")
 endif()
