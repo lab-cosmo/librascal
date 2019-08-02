@@ -74,7 +74,7 @@ namespace rascal {
       Key_t data;
       using Value_t = typename Key_t::value_type;
 
-      explicit SortedKey(const Key_t & key) : data{std::move(key)} {
+      explicit SortedKey(const Key_t & key) : data{key} {
         if (data.size() > 1) {
           std::sort(data.begin(), data.end());
         }
@@ -107,6 +107,8 @@ namespace rascal {
       using Map_t = std::map<K, std::tuple<int, int, int>>;
       using Precision_t = typename V::value_type;
       using Data_t = Eigen::Array<Precision_t, Eigen::Dynamic, 1>;
+      using DataRef_t = Eigen::Ref<Data_t>;
+      using DataConstRef_t = const Eigen::Ref<const Data_t>;
       //! the data holder.
       Data_t data{};
       Map_t map{};
@@ -332,13 +334,21 @@ namespace rascal {
       }
 
       /**
+       * l^2 norm of the entire vector
+       */
+      inline Precision_t norm() const { return this->data.matrix().norm(); }
+
+      /**
+       * squared l^2 norm of the entire vector (sum of squared elements)
+       */
+      inline Precision_t squaredNorm() const {
+        return this->data.matrix().squaredNorm();
+      }
+
+      /**
        * Normalize the whole vector
        */
-      inline void normalize() {
-        using ref = typename Eigen::Map<Eigen::VectorXd>;
-        auto data_ref{ref(&data[0], data.size())};
-        data_ref /= data_ref.norm();
-      }
+      inline void normalize() { this->data /= this->data.matrix().norm(); }
 
       inline void multiply_offdiagonal_elements_by(const double & fac) {
         for (const auto & el : this->map) {
@@ -348,6 +358,35 @@ namespace rascal {
             auto block{reference(&this->data[std::get<0>(pos)],
                                  std::get<1>(pos), std::get<2>(pos))};
             block *= fac;
+          }
+        }
+      }
+
+      /**
+       * dot product from the left side
+       * A = left_side_mat*A where A are all the key blocks
+       */
+      template <typename Derived>
+      inline void lhs_dot(const Eigen::EigenBase<Derived> & left_side_mat) {
+        for (const auto & el : this->map) {
+          auto && pos{el.second};
+          auto block{reference(&this->data[std::get<0>(pos)], std::get<1>(pos),
+                               std::get<2>(pos))};
+          block.transpose() *= left_side_mat;
+        }
+      }
+
+      template <int Dim, typename Derived>
+      inline void lhs_dot_der(const Eigen::EigenBase<Derived> & left_side_mat) {
+        for (const auto & el : this->map) {
+          auto && pos{el.second};
+          auto blocks{reference(&this->data[std::get<0>(pos)], std::get<1>(pos),
+                                std::get<2>(pos))};
+          int n_rows{static_cast<int>(std::get<1>(pos) / Dim)};
+          int n_cols{std::get<2>(pos)};
+          for (int ii{0}; ii < Dim; ++ii) {
+            blocks.block(ii * n_rows, 0, n_rows, n_cols).transpose() *=
+                left_side_mat;
           }
         }
       }
@@ -508,13 +547,29 @@ namespace rascal {
                               CallerOrder - 1);
     }
 
+    /* --------------------------------------------------------------------
+     * AAAAAaaaargh oh no the const version breaks everything
+     * pls no
+    //! Property accessor by cluster ref
+    template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order,
+              std::enable_if_t<(CallerOrder <= Order_), int> = 0>
+    inline decltype(auto)
+    const operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
+      static_assert(CallerOrder <= Order, "should be CallerOrder <= Order");
+      static_assert(CallerLayer >= PropertyLayer,
+                    "You are trying to access a property that does not exist at"
+                    "this depth in the adaptor stack.");
+
+      return this->operator()(id.get_cluster_index(CallerLayer),
+                              CallerOrder - 1);
+    } */
+
     /**
      * Access a property of order 1 with a clusterRef of order 2
      */
     template <
-        size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order,
-        std::enable_if_t<(Order_ == 1) and (CallerOrder > 1), int> =  // NOLINT
-        0>                                                            // NOLINT
+      size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order,
+      std::enable_if_t<(Order_ == 1) and (CallerOrder > 1), int> = 0> // NOLINT
     inline decltype(auto)
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
       return this->operator()(this->get_manager().get_atom_index(

@@ -273,46 +273,50 @@ namespace rascal {
 
   /**
    * Test the derivative of the GTO radial integral in the SphericalExpansion
+   *
+   * Doesn't depend much on the structuremanager or even the specific pair in
+   * use; the nested loops below are just to pick out _a_ pair to supply as a
+   * required argument to the radial integral functions.
+   *
+   * We do test a variety of hypers, though.
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(spherical_expansion_radial_derivative, Fix,
                                    fixtures_with_gradients, Fix) {
     auto & managers = Fix::managers;
     auto & hypers = Fix::hypers;
-    // aaaaaargh what a hack
+    // We need to explicitly specify a cluster ref type below - in this case,
+    // it's for an atom pair (hence the 2)
     using ClusterRef_t = typename Fix::Manager_t::template ClusterRef<2>;
     using RadialIntegral_t =
         internal::RadialContribution<internal::RadialBasisType::GTO>;
     GradientTestFixture test_data{"reference_data/radial_derivative_test.json"};
-    auto manager = managers.front();  // there should be just one
-    // doesn't work, dunno why, see nested for loops below for replacement hack
-    // auto & pair = (manager.begin())->begin();
+    auto && it_manager{managers.front()->begin()};  // Need only one manager
+    auto && atom{*it_manager};
+    auto && it_atom{atom.begin()};
+    auto && pair{*it_atom};  // Need only one (arbitrary) pair
+    auto manager = managers.front();
     for (auto & hyper : hypers) {
       std::shared_ptr<RadialIntegral_t> radial_integral =
           std::make_shared<RadialIntegral_t>(hyper);
-      for (auto center : manager) {
-        for (auto pair : center) {
-          // in C++17 the compiler would be able to deduce the template
-          // arguments for itself >:/
-          SphericalExpansionRadialDerivative<RadialIntegral_t, ClusterRef_t>
-              calculator(radial_integral, pair);
-          test_gradients(calculator, test_data);
-          // I really just need _a_ pair, not any one in particular.
-          break;
-        }  // for (auto pair : center)
-        break;
-      }  // for (auto center : managers)
-      // But do try all the hypers
-    }  // for (auto hyper : hypers)
+      // in C++17 the compiler would be able to deduce the template
+      // arguments for itself >:/
+      SphericalExpansionRadialDerivative<RadialIntegral_t, ClusterRef_t>
+          calculator(radial_integral, pair);
+      test_gradients(calculator, test_data);
+    }
   }
 
-  using simple_periodic_fixtures = boost::mpl::list<RepresentationFixture<
-      SingleHypersSphericalExpansion, RepresentationManagerSphericalExpansion>>;
+  using simple_periodic_fixtures = boost::mpl::list<
+      RepresentationFixture<SingleHypersSphericalRepresentation,
+                            RepresentationManagerSphericalExpansion>,
+      RepresentationFixture<SingleHypersSphericalRepresentation,
+                            RepresentationManagerSOAP>>;
 
   /**
    * Test the gradient of the SphericalExpansion representation on a few simple
    * crystal structures (single- and multi-species, primitive and supercells)
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(spherical_expansion_gradients, Fix,
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(spherical_representation_gradients, Fix,
                                    simple_periodic_fixtures, Fix) {
     auto & managers = Fix::managers;
     auto & hyper = Fix::hypers.front();

@@ -86,11 +86,6 @@ namespace rascal {
      */
     class SphericalHarmonics {
      protected:
-      using Matrix_Ref = typename Eigen::Ref<const Matrix_t>;
-      using MatrixX2_Ref = typename Eigen::Ref<const MatrixX2_t>;
-      using Vector_Ref = typename Eigen::Ref<const Vector_t>;
-      // using Vector_Ref = typename Eigen::Ref<const Eigen::VectorXd>;
-
       size_t max_angular{0};
       Vector_t angular_coeffs1{};
       Vector_t angular_coeffs2{};

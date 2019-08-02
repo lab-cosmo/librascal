@@ -144,6 +144,10 @@ namespace rascal {
                                  {{"max_radial", 6},
                                   {"max_angular", 6},
                                   {"soap_type", "PowerSpectrum"},
+                                  {"normalize", true}},
+                                 {{"max_radial", 1},
+                                  {"max_angular", 6},
+                                  {"soap_type", "PowerSpectrum"},
                                   {"normalize", true}}};
   };
 
@@ -368,8 +372,9 @@ namespace rascal {
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
-    std::vector<json> rep_hypers{{{"max_radial", 4}, {"max_angular", 2}},
-                                 {{"max_radial", 6}, {"max_angular", 4}}};
+    std::vector<json> rep_hypers{
+        {{"max_radial", 4}, {"max_angular", 2}, {"compute_gradients", true}},
+        {{"max_radial", 6}, {"max_angular", 4}, {"compute_gradients", true}}};
   };
 
   /** Contains some simple periodic structures for testing complicated things
@@ -419,11 +424,11 @@ namespace rascal {
     std::vector<Structure_t> structures{};
   };
 
-  struct SingleHypersSphericalExpansion : SimplePeriodicNLStrictFixture {
+  struct SingleHypersSphericalRepresentation : SimplePeriodicNLStrictFixture {
     using Parent = SimplePeriodicNLStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
 
-    SingleHypersSphericalExpansion() : Parent{} {
+    SingleHypersSphericalRepresentation() : Parent{} {
       for (auto & ri_hyp : this->radial_contribution_hypers) {
         for (auto & fc_hyp : this->fc_hypers) {
           for (auto & sig_hyp : this->density_hypers) {
@@ -438,7 +443,7 @@ namespace rascal {
       }
     };
 
-    ~SingleHypersSphericalExpansion() = default;
+    ~SingleHypersSphericalRepresentation() = default;
 
     std::vector<json> hypers{};
     std::vector<json> fc_hypers{
@@ -450,7 +455,11 @@ namespace rascal {
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
-    std::vector<json> rep_hypers{{{"max_radial", 2}, {"max_angular", 2}}};
+    std::vector<json> rep_hypers{{{"max_radial", 2},
+                                  {"max_angular", 2},
+                                  {"normalize", true},
+                                  {"soap_type", "PowerSpectrum"},
+                                  {"compute_gradients", true}}};
   };
 
   struct SphericalExpansionTestData : TestData {
@@ -483,6 +492,10 @@ namespace rascal {
       Eigen::ArrayXXd result(this->max_radial, this->max_angular + 1);
       result = this->radial_integral->template compute_neighbour_contribution<
           internal::AtomicSmearingType::Constant>(input_v(0), this->pair);
+      // result.matrix().transpose() *=
+      //     this->radial_integral->radial_norm_factors.asDiagonal();
+      // result.matrix().transpose() *=
+      //     this->radial_integral->radial_ortho_matrix;
       Eigen::Map<Eigen::Array<double, 1, Eigen::Dynamic>> result_flat(
           result.data(), 1, result.size());
       return result_flat;
@@ -545,39 +558,52 @@ namespace rascal {
       modified_structure.positions.col(center.get_index()) = center_position;
       this->structure_manager->update(modified_structure);
       representation.compute();
-      auto & coeffs_center = representation.expansions_coefficients[center];
-      auto keys_center =
-          representation.expansions_coefficients.get_keys(center);
+      auto & data_sparse{representation.get_representation_sparse()};
+      auto & gradients_sparse{representation.get_gradient_sparse()};
+      auto & data_center{data_sparse[center]};
+      auto keys_center = gradients_sparse.get_keys(center);
       Key_t center_key{center.get_atom_type()};
-      size_t n_coeffs_per_key{static_cast<size_t>(
-          representation.expansions_coefficients.get_nb_comp())};
-      size_t n_coeffs_center{n_coeffs_per_key * keys_center.size()};
+      size_t n_entries_per_key{static_cast<size_t>(data_sparse.get_nb_comp())};
+      size_t n_entries_center{n_entries_per_key * keys_center.size()};
+      size_t n_entries_neighbours{0};
+      // Count all the keys in the sparse gradient structure where the gradient
+      // is nonzero (i.e. where the key has an entry in the structure)
+      for (auto neigh : center) {
+        n_entries_neighbours +=
+            (gradients_sparse[swap_pair_ref(neigh)].get_keys().size() *
+             n_entries_per_key);
+      }
       // Packed array containing: The center coefficients (all species) and
       // the neighbour coefficients (only same species as center)
-      Eigen::ArrayXd coeffs_pairs(n_coeffs_center +
-                                  center.size() * n_coeffs_per_key);
+      Eigen::ArrayXd data_pairs(n_entries_center + n_entries_neighbours);
 
       size_t result_idx{0};
       for (auto & key : keys_center) {
-        Eigen::Map<Eigen::RowVectorXd> coeffs_flat(coeffs_center[key].data(),
-                                                   n_coeffs_per_key);
-        coeffs_pairs.segment(result_idx, n_coeffs_per_key) = coeffs_flat;
-        result_idx += n_coeffs_per_key;
+        Eigen::Map<Eigen::RowVectorXd> data_flat(data_center[key].data(),
+                                                 n_entries_per_key);
+        data_pairs.segment(result_idx, n_entries_per_key) = data_flat;
+        result_idx += n_entries_per_key;
       }
       for (auto neigh : center) {
-        auto & coeffs_neigh = representation.expansions_coefficients[neigh];
-        // The neighbour gradient (i =/= j) only contributes to the channel
-        // associated with the _center_ type (the type of the atom that's
-        // moving)
-        Eigen::Map<Eigen::ArrayXd> coeffs_flat(coeffs_neigh[center_key].data(),
-                                               n_coeffs_per_key);
-        coeffs_pairs.segment(result_idx, n_coeffs_per_key) = coeffs_flat;
-        result_idx += n_coeffs_per_key;
+        auto & data_neigh{data_sparse[neigh]};
+        // The neighbour gradient (i =/= j) only contributes to certain species
+        // channels (keys), in the case of SOAP and SphExpn those keys
+        // containing the species of the center (the atom wrt the derivative is
+        // being taken)
+        // The nonzero gradient keys are already indicated in the sparse
+        // gradient structure
+        auto keys_neigh{gradients_sparse[swap_pair_ref(neigh)].get_keys()};
+        for (auto & key : keys_neigh) {
+          Eigen::Map<Eigen::ArrayXd> data_flat(data_neigh[key].data(),
+                                               n_entries_per_key);
+          data_pairs.segment(result_idx, n_entries_per_key) = data_flat;
+          result_idx += n_entries_per_key;
+        }
       }
 
       // Reset the atomic structure for the next iteration
       this->structure_manager->update(this->atomic_structure);
-      return coeffs_pairs.transpose();
+      return data_pairs.transpose();
     }
 
     Eigen::Array<double, 3, Eigen::Dynamic>
@@ -588,43 +614,46 @@ namespace rascal {
       // center_it->position() = center_position;
       // representation.compute();
       auto center = *center_it;
-      auto keys_center =
-          representation.expansions_coefficients.get_keys(center);
-      Key_t center_key{center.get_atom_type()};
-      size_t n_coeffs_per_key{static_cast<size_t>(
-          representation.expansions_coefficients.get_nb_comp())};
-      size_t n_coeffs_center{n_coeffs_per_key * keys_center.size()};
+      auto & data_sparse{representation.get_representation_sparse()};
+      auto & gradients_sparse{representation.get_gradient_sparse()};
+      auto & gradients_center{gradients_sparse[center]};
+      auto keys_center = gradients_center.get_keys();
+      size_t n_entries_per_key{static_cast<size_t>(data_sparse.get_nb_comp())};
+      size_t n_entries_center{n_entries_per_key * keys_center.size()};
+      size_t n_entries_neighbours{0};
+      for (auto neigh : center) {
+        n_entries_neighbours +=
+            (gradients_sparse[swap_pair_ref(neigh)].get_keys().size() *
+             n_entries_per_key);
+      }
       Eigen::Matrix<double, 3, Eigen::Dynamic, Eigen::RowMajor>
-          grad_coeffs_pairs(3, n_coeffs_center +
-                                   (center.size() * n_coeffs_per_key));
-      auto & grad_coeffs_center =
-          representation.expansions_coefficients_gradient[center];
-      size_t col_offset{0};
+          grad_coeffs_pairs(3, n_entries_center + n_entries_neighbours);
+
+      // Use the exact same iteration pattern as in f()  to guarantee that the
+      // gradients appear in the same place as their corresponding data
+      size_t result_idx{0};
       for (auto & key : keys_center) {
         // Here the 'flattening' retains the 3 Cartesian dimensions as rows,
         // since they vary the slowest within each key
         Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
-            grad_coeffs_center[key].data(), 3, n_coeffs_per_key);
-        grad_coeffs_pairs.block(0, col_offset, 3, n_coeffs_per_key) =
+            gradients_center[key].data(), 3, n_entries_per_key);
+        grad_coeffs_pairs.block(0, result_idx, 3, n_entries_per_key) =
             grad_coeffs_flat;
-        col_offset += n_coeffs_per_key;
+        result_idx += n_entries_per_key;
       }
       for (auto neigh : center) {
-        typename RepManager::Key_t neigh_key{neigh.get_atom_type()};
         // We need grad_i c^{ji} -- using just 'neigh' would give us
         // grad_j c^{ij}, hence the swap
-        // TODO(max,felix) how does this apply to other representations,
-        // especially SOAP (sorry, SphericalInvariants<λ=0>)?
-        auto neigh_swap{swap_pair_key(neigh)};
-        auto & grad_coeffs_neigh =
-            representation.expansions_coefficients_gradient[neigh_swap];
-        Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
-            grad_coeffs_neigh[center_key].data(), 3, n_coeffs_per_key);
-        grad_coeffs_pairs.block(0, col_offset, 3, n_coeffs_per_key) =
-            grad_coeffs_flat;
-        // The offset keeps advancing from neighbour to neighbour, because the
-        // neighbour index has also been flattened out
-        col_offset += n_coeffs_per_key;
+        auto neigh_swap{swap_pair_ref(neigh)};
+        auto & gradients_neigh{gradients_sparse[neigh_swap]};
+        auto keys_neigh{gradients_neigh.get_keys()};
+        for (auto key : keys_neigh) {
+          Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
+              gradients_neigh[key].data(), 3, n_entries_per_key);
+          grad_coeffs_pairs.block(0, result_idx, 3, n_entries_per_key) =
+              grad_coeffs_flat;
+          result_idx += n_entries_per_key;
+        }
       }
       return grad_coeffs_pairs;
     }
@@ -643,21 +672,21 @@ namespace rascal {
      * @todo wouldn't this be better as a member of StructureManager
      *       (viz. AdaptorNeighbourList<whatever>)?
      */
-    PairRef_t swap_pair_key(const PairRef_t & pair_key) {
+    PairRef_t swap_pair_ref(const PairRef_t & pair_ref) {
       // Get the atom index to the corresponding atom tag
-      size_t access_index = structure_manager->get_atom_index(pair_key.back());
+      size_t access_index = structure_manager->get_atom_index(pair_ref.back());
       auto new_center_it{structure_manager->get_iterator_at(access_index)};
       // Return cluster ref at which the iterator is currently pointing
       auto && new_center{*new_center_it};
       // Iterate until (j,i) is found
       for (auto new_pair : new_center) {
-        if (new_pair.back() == pair_key.front()) {
+        if (new_pair.back() == pair_ref.front()) {
           return new_pair;
         }
       }
       std::stringstream err_str{};
-      err_str << "Didn't find symmetric pair for pair (i=" << pair_key.front()
-              << ", j=" << pair_key.back() << ").";
+      err_str << "Didn't find symmetric pair for pair (i=" << pair_ref.front()
+              << ", j=" << pair_ref.back() << ").";
       throw std::range_error(err_str.str());
     }
   };
