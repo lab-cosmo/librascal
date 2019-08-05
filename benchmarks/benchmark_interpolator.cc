@@ -39,6 +39,8 @@ namespace rascal {
           tmp(i % fix.points.size()) = radial_contr.compute_contribution<AtomicSmearingType::Constant>(fix.points(i % fix.points.size()), 0.5)(0,0);
         }
       }
+
+      state.SetComplexityN(fix.nb_points);
       state.counters.insert({
           {"x1",fix.x1},
           {"x2",fix.x2},
@@ -91,6 +93,7 @@ namespace rascal {
     //  }
     //}
     //fix.TearDown();
+    state.SetComplexityN(fix.nb_points);
     state.counters.insert({
         {"x1",fix.x1},
         {"x2",fix.x2},
@@ -123,6 +126,7 @@ namespace rascal {
         
       }
     }
+    state.SetComplexityN(fix.nb_points);
     state.counters.insert({
         {"nb_points",fix.nb_points}
       });
@@ -152,6 +156,7 @@ namespace rascal {
         tmp(i % fix.points.size()) = intp.interpolate(fix.points(i % fix.points.size()));
       }
     }
+    state.SetComplexityN(fix.nb_points);
     state.counters.insert({
         {"x1",fix.x1},
         {"x2",fix.x2},
