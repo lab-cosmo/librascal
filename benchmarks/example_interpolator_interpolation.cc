@@ -41,8 +41,8 @@ static constexpr int ITERATIONS = 200;
 int main(){
   auto intp{Interpolator <
     InterpolationMethod<InterpolationMethod_t::CubicSpline>,
-    GridRational<GridType_t::Uniform, RefinementMethod_t::HeapBased>,
-    SearchMethod<SearchMethod_t::AStarUniform>
+    GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
+    SearchMethod<SearchMethod_t::Uniform>
       >()};
   auto func = [](double x) {return std::exp(-std::pow((x-1)/0.5,2)/2);};
   double x1{0};

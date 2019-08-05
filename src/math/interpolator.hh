@@ -18,7 +18,7 @@ namespace rascal {
     using Vector_Ref = typename Eigen::Ref<const Vector_t>;
 
     enum class GridType_t {Uniform};
-    enum class RefinementMethod_t {HeapBased, Uniform, Adaptive};
+    enum class RefinementMethod_t {Exponential, Linear, Adaptive};
 
     // TODO(alex) make plots of hyp1f1 normalized
     // TODO(alex) look at the graphs again, and make a grid type which is similar
@@ -124,7 +124,7 @@ namespace rascal {
     };
 
     template <>
-    struct GridRational<GridType_t::Uniform, RefinementMethod_t::Uniform> {
+    struct GridRational<GridType_t::Uniform, RefinementMethod_t::Linear> {
       Vector_t compute_grid(double x1, double x2, int fineness) {
         double nb_grid_points = fineness+2;
         return Vector_t::LinSpaced(nb_grid_points, x1, x2);
@@ -143,7 +143,7 @@ namespace rascal {
     };
 
     template <>
-    struct GridRational<GridType_t::Uniform, RefinementMethod_t::HeapBased> {
+    struct GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential> {
       Vector_t compute_grid(double x1, double x2, int fineness) {
         double nb_grid_points = 2 << fineness;
         return Vector_t::LinSpaced(nb_grid_points, x1, x2);
@@ -159,6 +159,9 @@ namespace rascal {
       void update_errors(Vector_Ref) {} 
       int grid_size{0};
     };
+
+
+    // Search, grid can be kept. CubicSpline needs to be vectorized, intp error has to be a bit adapted
 
     enum class InterpolationMethod_t {CubicSpline};
 
@@ -239,16 +242,16 @@ namespace rascal {
       Vector_t second_derivatives{};
     };
 
-    enum class SearchMethod_t {Hunt, Locate, AStarUniform};
+    enum class SearchMethod_t {Hunt, Locate, Uniform};
 
     template <SearchMethod_t Type>
     struct SearchMethod{};
 
     // CURRENTLY ASSUMES THAT GRID IS UNIFORM
     template <>
-    struct SearchMethod<SearchMethod_t::AStarUniform> {
+    struct SearchMethod<SearchMethod_t::Uniform> {
 
-      SearchMethod<SearchMethod_t::AStarUniform>() {} 
+      SearchMethod<SearchMethod_t::Uniform>() {} 
 
       void initialize(const Vector_Ref & grid){
         this->nb_grid_points_per_unit = grid.size()/(grid(grid.size()-1)-grid(0));

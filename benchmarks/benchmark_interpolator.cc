@@ -66,8 +66,8 @@ namespace rascal {
     auto radial_contr{RadialContribution<RadialBasisType::GTO>(hypers)};
     using AdaptiveInterpolator = Interpolator <
       InterpolationMethod<InterpolationMethod_t::CubicSpline>,
-      GridRational<GridType_t::Uniform, RefinementMethod_t::HeapBased>,
-      SearchMethod<SearchMethod_t::AStarUniform>
+      GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
+      SearchMethod<SearchMethod_t::Uniform>
         >;
     const int nb_intps{max_radial*(max_angular+1)};
     //std::vector<std::function<double(double)>> funcs(nb_intps); 
@@ -137,8 +137,8 @@ namespace rascal {
     fix.SetUp(state);
     auto intp{Interpolator <
       InterpolationMethod<InterpolationMethod_t::CubicSpline>,
-      GridRational<GridType_t::Uniform, RefinementMethod_t::HeapBased>,
-      SearchMethod<SearchMethod_t::AStarUniform>
+      GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
+      SearchMethod<SearchMethod_t::Uniform>
         >()};
     double n = 10;
     double l = 10;

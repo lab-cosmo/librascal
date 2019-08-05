@@ -115,8 +115,8 @@ namespace rascal {
     using SupportedFunc = typename Dataset::SupportedFunc;
     using Interpolator_t = Interpolator<
       InterpolationMethod<InterpolationMethod_t::CubicSpline>,
-      GridRational<GridType_t::Uniform, RefinementMethod_t::HeapBased>,
-      SearchMethod<SearchMethod_t::AStarUniform>
+      GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
+      SearchMethod<SearchMethod_t::Uniform>
         >;
     
     // global init
