@@ -40,25 +40,6 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(math_bessel_test,
   ModifiedBesselFirstKindRefFixture) {
-    json& i_exp_ref{this->ref_data["i_exp"]};
-    for (auto & data : i_exp_ref) {
-      double x{data["x"]};
-      auto ref_vals{data["vals"].get<std::vector<double>>()};
-      size_t max_order{data["max_order"]};
-
-      auto vals{math::bessel_i_exp_allorders(x, max_order)};
-
-      // for (size_t order{0}; order < max_order; ++order) {
-      //   double rel_error{(vals(order) - ref_vals[order])};
-
-      //   if ((rel_error > 1e5 * math::dbl_ftol) and this->verbose) {
-      //     std::cout << " order=" << order << " x=" << x
-      //     << " diff=" << rel_error<< " val=" << vals(order) << std::endl;
-      //   }
-
-      //   BOOST_CHECK_LE(rel_error, 1e5 * math::dbl_ftol);
-      // }
-    }
 
     json& i_complete_square_ref{this->ref_data["i_complete_square"]};
     for (auto & data : i_complete_square_ref) {
@@ -67,20 +48,27 @@ namespace rascal {
       double alpha{data["alpha"]}, rij{data["rij"]};
       auto ref_vals{data["vals"].get<std::vector<std::vector<double>>>()};
       size_t max_order{data["max_order"]};
-
-      auto vals{math::bessel_i_exp_exp_complete_square(xns, rij, alpha, max_order)};
+      this->j_v_complete_square.precompute(max_order-1, xns);
+      this->j_v_complete_square.calc(rij, alpha);
+      auto vals{this->j_v_complete_square.get_values()};
 
       for (size_t i_x{0}; i_x < xs.size(); ++i_x){
         for (size_t order{0}; order < max_order; ++order) {
-          double rel_error{(vals(i_x, order) - ref_vals[i_x][order])};
+          double rel_error{(vals(i_x, order) - ref_vals[i_x][order]) / ref_vals[i_x][order]};
+          // when the values are too small none of the method to compute
+          // the MBSFs are accurate with respect to the high precision
+          // baseline
+          if (ref_vals[i_x][order] > 1e-19) {
+            if ((rel_error > 1e5 * math::dbl_ftol) and this->verbose) {
+              std::cout << " order=" << order << " x=" << xs[i_x]
+              << " alpha=" << alpha << " rij=" << rij
+              << " diff=" << rel_error << " ref=" << ref_vals[i_x][order] << " val=" << vals(i_x, order)<< std::endl;
+            }
 
-          if ((rel_error > 1e5 * math::dbl_ftol) and this->verbose) {
-            std::cout << " order=" << order << " x=" << xs[i_x]
-            << " alpha=" << alpha << " rij=" << rij
-            << " diff=" << rel_error<< " val=" << vals(i_x, order) << std::endl;
+            BOOST_CHECK_LE(rel_error, 1e5 * math::dbl_ftol);
+
           }
 
-          // BOOST_CHECK_LE(rel_error, 1e5 * math::dbl_ftol);
         }
       }
 

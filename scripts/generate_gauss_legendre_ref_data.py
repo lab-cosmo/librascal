@@ -12,7 +12,7 @@ def get_leggauss(order, a, b):
     w = (b-a)*0.5 * w
     return x,w
 
-#dump radial and power spectra for methane
+
 def dump_reference_json():
     path = '../'
     sys.path.insert(0, os.path.join(path, 'build/'))
@@ -21,8 +21,8 @@ def dump_reference_json():
     a = 0
     for order in range(2,20):
         for b in np.linspace(2,10,20):
-                x,w = get_leggauss(order, a, b)
-                data.append(dict(a=a,b=b,order=order,points=x.tolist(),weights=w.tolist()))
+            x,w = get_leggauss(order, a, b)
+            data.append(dict(a=a,b=b,order=order,points=x.tolist(),weights=w.tolist()))
     print(len(data))
     with open(path+"tests/reference_data/gauss_legendre_reference.ubjson",'wb') as f:
         ubjson.dump(data,f)

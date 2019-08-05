@@ -40,12 +40,12 @@ def dump_reference_json():
             vals.append(float(val))
         data["i_exp"].append(dict(x=x,max_order=max_order,vals=vals))
 
-    # gaussian sigma in [0.1, 0.4]
-    alphas = np.linspace(3.1, 50, 10)
+    # gaussian sigma in [0.1, 0.9]
+    alphas = np.linspace(0.6, 50, 10)
     # looks at rc up to 10
-    xns = np.linspace(0.03, 10, 10)
+    xns = np.linspace(0.05, 10, 15)
     # atoms should not be much close than this
-    rijs = np.linspace(0.8, 10, 10)
+    rijs = np.linspace(0.6, 10, 15)
 
     for alpha in alphas:
         for rij in rijs:

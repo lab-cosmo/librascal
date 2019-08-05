@@ -36,7 +36,7 @@
 #include "math/spherical_harmonics.hh"
 #include "math/hyp1f1.hh"
 #include "math/gauss_legendre.hh"
-#include "math/recursive_bessel.hh"
+#include "math/bessel.hh"
 #include "rascal_utility.hh"
 
 #include <fstream>
@@ -104,10 +104,6 @@ namespace rascal {
 
   struct ModifiedBesselFirstKindRefFixture {
     ModifiedBesselFirstKindRefFixture() {
-      // std::vector<std::uint8_t> ref_data_ubjson;
-      // internal::read_binary_file(this->ref_filename, ref_data_ubjson);
-      // this->ref_data = json::from_ubjson(ref_data_ubjson);
-
       internal::read_text_file(this->ref_filename, this->ref_data);
     }
 
@@ -117,6 +113,7 @@ namespace rascal {
         "reference_data/modified_bessel_first_kind_reference.json";
 
     json ref_data{};
+    math::ModifiedSphericalBessel j_v_complete_square{};
     bool verbose{true};
   };
 
