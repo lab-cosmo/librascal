@@ -173,7 +173,7 @@ namespace rascal {
         this->intp.initalize(this->func, this->x1, this->x2, this->mean_error_bound); 
         this->init_points();
         this->init =true;
-        std::cout << "Init ressources " << this->log_mean_error_bound << std::endl;
+        //std::cout << "Init ressources " << this->log_mean_error_bound << std::endl;
       }
       this->nb_points = this->template lookup<size_t>(data, "nbs_points", state);
       this->random = this->template lookup<bool>(data, "random", state); 
