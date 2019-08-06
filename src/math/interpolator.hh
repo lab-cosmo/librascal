@@ -1,16 +1,11 @@
 #ifndef SRC_MATH_INTERPOLATOR_HH_
 #define SRC_MATH_INTERPOLATOR_HH_
 
-#ifdef DEBUG
-  #define DEBUG_IF(x) if(x)
-#else
-  #define DEBUG_IF(x) if(false)
-#endif
-
 #include <functional>
 #include <forward_list>
 #include <iostream>
 #include <limits>
+#include <cassert>
 #include "math_utils.hh"
 
 namespace rascal {
@@ -182,7 +177,7 @@ namespace rascal {
 
       inline double interpolate(const Vector_Ref & grid,
           const Vector_Ref & evaluated_grid,
-          double x, size_t nearest_grid_index_to_x) {
+          double x, int nearest_grid_index_to_x) {
         return this->rawinterp(grid, evaluated_grid,
             nearest_grid_index_to_x, x);
       }
@@ -237,9 +232,9 @@ namespace rascal {
       //}
 
       inline double rawinterp(const Vector_Ref & xx, const Vector_Ref & yy,
-          const size_t & j1, const double & x) {
-        size_t klo{j1}, khi{j1+1};
-        DEBUG_IF (h == 0.0) { throw std::runtime_error ("Bad xa input to routine splint");}
+          const int & j1, const double & x) {
+        int klo{j1}, khi{j1+1};
+        assert (h != 0.0); // Bad xa input to routine splint
         // a+b=1
         double a{(xx(khi)-x)/this->h};
         //double b{1-a};
@@ -267,24 +262,27 @@ namespace rascal {
         this->nb_grid_points_per_unit = grid.size()/(grid(grid.size()-1)-grid(0));
         this->x1 = grid(0);
         this->grid_size = grid.size();
+        this->search_size = this->grid_size-this->nb_support_points;
       }
 
       // If the requests to locate seem correlated, then the heuristic is used
-      size_t search(double x, const Vector_Ref &) {
+      int search(double x, const Vector_Ref &) {
         // TODO(alex) make this work for general grids
         // nb_grid_points/unit
         //TODO(alex) save this
         // for heap_based this is less costly
         // (x-grid(0)) * nb_grid_points_per_unit >> 1
         //int raw_index = static_cast<int>(std::floor((x-grid(0)) * nb_grid_points_per_unit)-1);
-        int raw_index = static_cast<int>((x-this->x1) * this->nb_grid_points_per_unit)-1;
-        return std::max(0,std::min(static_cast<int>(this->grid_size-this->nb_support_points), raw_index));
+        // if x1 is zero and x2-x1 = 2**n then we could save some computation time
+        return std::max(0,std::min(this->search_size, static_cast<int>((x-this->x1) * this->nb_grid_points_per_unit)-1));
+
       }
       // the number of support methods the interpolation method uses
       double nb_grid_points_per_unit{0};
       double x1{0};
       const size_t nb_support_points{2};
       size_t grid_size{0};
+      int search_size{0};
     };
 
 
@@ -385,7 +383,7 @@ namespace rascal {
         int jsav{static_cast<int>(this->last_accessed_index)};
 
         int jl=jsav, jm, ju, inc=1;
-        DEBUG_IF (n < 2 || mm < 2 || mm > n) throw std::runtime_error ("hunt size error");
+        assert ( (n < 2 || mm < 2 || mm > n) ); // hunt size error
 
         bool ascnd=(xx[n-1] >= xx[0]);
         if (jl < 0 || jl > n-1) {
@@ -534,9 +532,8 @@ namespace rascal {
 
       double interpolate(double x) {
         // TODO(alex) throw runtime error, what is diff?
-        DEBUG_IF (x<this->x1) { throw std::runtime_error ("x is outside of range, below x1"); }
-        DEBUG_IF (x>this->x2) { throw std::runtime_error ("x is outside of range, above x2"); }
-        size_t nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
+        assert (x<this->x1 && x>this->x2); // x is outside of range, below x1
+        int nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
         return intp_method.interpolate(
             this->grid, this->evaluated_grid,
             x, nearest_grid_index_to_x);
@@ -559,12 +556,121 @@ namespace rascal {
       int fineness{0};
       int max_grid_points{10000000}; //1e7
       Vector_t grid{};
-      Vector_t evaluated_grid{};
+      Vector_t evaluated_grid{}; // map matrix function to Vector_t to decrease ressources
 
       InterpolationMethod intp_method;
       GridRational grid_rational;
       SearchMethod search_method;
     };
+
+//    template<class InterpolationMethod, class GridRational, class SearchMethod>
+//    class InterpolatorMatrix : public Interpolator<InterpolationMethod, GridRational, SearchMethod> {
+//     public: 
+//      using Parent = Interpolator<InterpolationMethod, GridRational, SearchMethod>;
+//      InterpolatorMatrix() : Parent() {}
+//
+//      void initalize(std::function<Matrix_t(double)> function, double x1, double x2, double precision) {
+//        if (x2<x1) {
+//          throw std::runtime_error("x2 must be greater x1");
+//        }
+//        this->function = function;
+//        Matrix_t result = function(0);
+//        this->cols = result.cols();
+//        this->rows = result.rows();
+//        this->x1 = x1;
+//        this->x2 = x2;
+//        this->precision = precision;
+//
+//        this->initialize_interpolator();
+//        this->search_method.initialize(this->grid);
+//      }
+//
+//      void initialize_interpolator() {
+//        // Fineness starts with zero and is incremently increased
+//        // this definition is arbitrary but make computation more readable
+//        this->fineness = 0;
+//        double error{this->compute_grid_error()};
+//        // TODO(alex) add some procedure to not get locked if precision is too
+//        // high
+//        while (error > this->precision && this->grid.size() < this->max_grid_points) {
+//          this->fineness++;
+//          error = this->compute_grid_error();
+//        }
+//      }
+//
+//      // TODO(alex) if I use temporary variables instead of this, does the
+//      // compiler optimize this?
+//      double compute_grid_error() {
+//        this->grid = 
+//            this->grid_rational.compute_grid(this->x1,this->x2, this->fineness);
+//        this->evaluated_grid = this->eval(this->grid);
+//
+//        this->intp_method.initialize(this->grid, this->evaluated_grid);
+//        this->search_method.initialize(this->grid);
+//
+//        Vector_t test_grid{this->grid_rational.compute_test_grid(this->x1,this->x2,this->fineness)};
+//        // calcu
+//        this->max_error = 0.;
+//        this->mean_error = 0.;
+//        for (int i=0; i<test_grid.size() ; i++) {
+//          // (grid_size, row*col)
+//          Vector_t test_grid{this->grid_rational.compute_test_grid(this->x1,this->x2,this->fineness)};
+//          Matrix_t test_grid_interpolated{this->interpolate(test_grid)};
+//          Matrix_t test_grid_evaluated{this->eval(test_grid)};
+//          // computes the relative error
+//          Matrix_t error_mat = 2*(intp_val-eval_val).array().abs()/(std::numeric_limits< double >::min()+intp_val.array().abs()+eval_val.array().abs());
+//          this->max_error += error_mat.maxCoeff();
+//          this->mean_error += error_mat.mean();
+//          // print mean error for interest
+//        }
+//        if (this->grid.size() % 1==0) {
+//          std::cout << "grid_size=" << this->grid.size() << std::endl;
+//          std::cout << "max error=" << this->max_error << std::endl;
+//          std::cout << "mean_error=" << this->mean_error << std::endl;
+//        }
+//        //if (grid_rational.grid_size % 50 == 0) {
+//        //  std::cout << "fineness=" << this->fineness << std::endl;
+//        //  std::cout << "mean error=" << this->mean_error << std::endl;
+//        //  std::cout << "max error=" << this->max_error << std::endl;
+//        //}
+//        return this->max_error;
+//      }
+//
+//      Vector_t eval_(double x) {return Map<Vector_t>(this->function(x),this->cols * this->rows);}
+//      //Matrix_t eval(double x) {return this->function(x);}
+//
+//      double interpolate(double x) {
+//        // TODO(alex) throw runtime error, what is diff?
+//        assert (x<this->x1 && x>this->x2); // x is outside of range
+//        size_t nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
+//        return intp_method.interpolate(
+//            this->grid, this->evaluated_grid,
+//            x, nearest_grid_index_to_x);
+//      }
+//
+//      Vector_t interpolate(const Vector_Ref & points) {
+//        Vector_t interpolated_points = Vector_t::Zero(points.size());
+//        for (int i{0}; i<points.size(); i++) {
+//          interpolated_points(i) = this->interpolate(points(i));
+//        }
+//        return interpolated_points;
+//      }
+//     
+//      std::function<Matrix_t(double)> function{};
+//      double x1{0};
+//      double x2{1};
+//      double precision{1e-5};
+//      double mean_error{0};
+//      double max_error{0};
+//      int fineness{0};
+//      int max_grid_points{10000000}; //1e7
+//      Vector_t grid{};
+//      Matrix_t evaluated_grid{};
+//
+//      InterpolationMethod intp_method;
+//      GridRational grid_rational;
+//      SearchMethod search_method;
+//    };
 
 
   // TODO(alex) make a CRTP calculator and check if this can be merged with the GradientCalutaro stuff
