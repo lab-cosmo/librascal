@@ -221,6 +221,7 @@ namespace rascal {
         this->bessel_values.resize(this->n_max, l_max + 1);
         this->bessel_arg.resize(this->n_max);
         this->exp_bessel_arg.resize(this->n_max);
+        this->bessel_arg_pow.resize(this->n_max);
         this->efac.resize(this->n_max);
         this->l_max = l_max;
         this->order_max = static_cast<int>(this->l_max+1);
@@ -251,11 +252,13 @@ namespace rascal {
       bessel_i_allorders_complete_square(const double & r, const double & a_scale) {
         this->bessel_arg = 2. * a_scale * r * this->x_v;
         this->exp_bessel_arg = Eigen::exp(-this->bessel_arg);
+        this->bessel_arg_pow = Eigen::ArrayXd::Constant(this->n_max, 1.);
         for (int order{0}; order < this->order_max; ++order) {
           auto & hyp1f1{this->hyp1f1s[order]};
           for (int ii{0}; ii < this->n_max; ++ii) {
-            this->bessel_values(ii, order) = this->exp_bessel_arg[ii] * this->igammas[order] * math::pow(this->bessel_arg[ii] * 0.5, order) * 0.5 * math::SQRT_PI * hyp1f1.calc(2.*this->bessel_arg[ii]);
+            this->bessel_values(ii, order) = this->exp_bessel_arg[ii] * this->igammas[order] * this->bessel_arg_pow[ii] * 0.5 * math::SQRT_PI * hyp1f1.calc(2.*this->bessel_arg[ii]);
           }
+          this->bessel_arg_pow *= 0.5 * this->bessel_arg;
         }
 
         this->efac = std::exp(-a_scale*r*r) * Eigen::exp(-a_scale*this->x_v.square());
@@ -333,6 +336,7 @@ namespace rascal {
       Eigen::ArrayXXd bessel_values{};
 
       Eigen::ArrayXd bessel_arg{};
+      Eigen::ArrayXd bessel_arg_pow{};
       Eigen::ArrayXd exp_bessel_arg{};
       Eigen::ArrayXd x_v{};
       Eigen::ArrayXd efac{};

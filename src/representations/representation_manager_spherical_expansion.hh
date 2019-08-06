@@ -38,6 +38,8 @@
 #include "math/math_utils.hh"
 #include "math/spherical_harmonics.hh"
 #include "math/hyp1f1.hh"
+#include "math/bessel.hh"
+#include "math/gauss_legendre.hh"
 #include "structure_managers/property_block_sparse.hh"
 
 #include <algorithm>
@@ -61,7 +63,7 @@ namespace rascal {
      * List of possible Radial basis that can be used by the spherical
      * expansion.
      */
-    enum class RadialBasisType { GTO, End_ };
+    enum class RadialBasisType { GTO, DVR, End_ };
 
     /**
      * List of possible atomic smearing for the definition of the atomic
@@ -569,6 +571,197 @@ namespace rascal {
       Matrix_t ortho_norm_matrix{};
     };
 
+    /**
+     * Implementation of the radial contribution for DVR basis
+     */
+    template <>
+    struct RadialContribution<RadialBasisType::DVR> : RadialContributionBase {
+      //! Constructor
+      explicit RadialContribution(const Hypers_t & hypers) {
+        this->set_hyperparameters(hypers);
+        this->precompute();
+      }
+      //! Destructor
+      virtual ~RadialContribution() = default;
+      //! Copy constructor
+      RadialContribution(const RadialContribution & other) = delete;
+      //! Move constructor
+      RadialContribution(RadialContribution && other) = default;
+      //! Copy assignment operator
+      RadialContribution & operator=(const RadialContribution & other) = delete;
+      //! Move assignment operator
+      RadialContribution & operator=(RadialContribution && other) = default;
+
+      using Parent = RadialContributionBase;
+      using Hypers_t = typename Parent::Hypers_t;
+      using Matrix_t = typename Parent::Matrix_t;
+      using Vector_t = typename Parent::Vector_t;
+      using Matrix_Ref = typename Parent::Matrix_Ref;
+      using Vector_Ref = typename Parent::Vector_Ref;
+
+      /**
+       * Set hyperparameters.
+       * @params hypers is expected to be the same as the the input of
+       *         the spherical expansion
+       */
+      void set_hyperparameters(const Hypers_t & hypers) {
+        this->hypers = hypers;
+
+        this->max_radial = hypers.at("max_radial");
+        this->max_angular = hypers.at("max_angular");
+
+        // init size of the member data
+        // both precomputed quantities and actual expansion coefficients
+        this->legendre_radial_factor.resize(this->max_radial);
+        this->legendre_points.resize(this->max_radial);
+
+        this->radial_integral_neighbour.resize(this->max_radial,
+                                               this->max_angular + 1);
+        this->radial_neighbour_derivative.resize(this->max_radial,
+                                               this->max_angular + 1);
+        this->radial_integral_center.resize(this->max_radial);
+
+        // find the cutoff radius of the representation
+        auto fc_hypers = hypers.at("cutoff_function").get<json>();
+        this->interaction_cutoff =
+            fc_hypers.at("cutoff").at("value").get<double>();
+        this->smooth_width =
+            fc_hypers.at("smooth_width").at("value").get<double>();
+
+        // define the type of smearing to use
+        auto smearing_hypers = hypers.at("gaussian_density").get<json>();
+        auto smearing_type = smearing_hypers.at("type").get<std::string>();
+        if (smearing_type.compare("Constant") == 0) {
+          this->atomic_smearing_type = AtomicSmearingType::Constant;
+          this->atomic_smearing =
+              make_atomic_smearing<AtomicSmearingType::Constant>(
+                  smearing_hypers);
+        } else {
+          throw std::logic_error(
+              "Requested Gaussian sigma type \'" + smearing_type +
+              "\' has not been implemented.  Must be one of" +
+              ": \'Constant\'.");
+        }
+      }
+
+      void precompute() {
+        auto point_weight{math::compute_gauss_legendre_points_weights(
+            0., this->interaction_cutoff + 2 * this->smooth_width,
+            this->max_radial)};
+
+        this->legendre_radial_factor = point_weight.col(1).array().sqrt() *
+                                       point_weight.col(0).array().square();
+        this->legendre_points = point_weight.col(0);
+
+        this->bessel.precompute(this->max_angular, this->legendre_points);
+      }
+
+      //! define the contribution from the central atom to the expansion
+      template <AtomicSmearingType AST, size_t Order, size_t Layer>
+      Vector_Ref
+      compute_center_contribution(ClusterRefKey<Order, Layer> & center) {
+        using math::PI;
+        using math::pow;
+        using std::sqrt;
+
+        auto smearing{downcast_atomic_smearing<AST>(this->atomic_smearing)};
+
+        // a = 1 / (2*\sigma^2)
+        double fac_a{0.5 * pow(smearing->get_gaussian_sigma(center), -2)};
+
+        this->radial_integral_center =
+            this->legendre_radial_factor.array() *
+            Eigen::exp((-fac_a * this->legendre_points.array().square()));
+
+        return Matrix_Ref(this->radial_integral_center);
+      }
+
+      //! define the contribution from a neighbour atom to the expansion
+      template <AtomicSmearingType AST, size_t Order, size_t Layer>
+      Matrix_Ref
+      compute_neighbour_contribution(const double & distance,
+                                     ClusterRefKey<Order, Layer> & pair) {
+        using math::PI;
+        using math::pow;
+        using std::sqrt;
+
+        auto smearing{downcast_atomic_smearing<AST>(this->atomic_smearing)};
+        // a = 1 / (2*\sigma^2)
+        double fac_a{0.5 * pow(smearing->get_gaussian_sigma(pair), -2)};
+
+        this->bessel.calc(distance, fac_a);
+
+        this->radial_integral_neighbour =
+            this->legendre_radial_factor.asDiagonal() *
+            this->bessel.get_values().matrix();
+
+        return Matrix_Ref(this->radial_integral_neighbour);
+      }
+
+      /**
+       * Compute the radial derivative of the neighbour contribution
+       *
+       * Note that you _must_ call compute_neighbour_contribution() first to
+       * populate the relevant arrays!
+       *
+       * The derivative is taken with respect to the pair distance, r_{ij}.  In
+       * order to get the radial component of the gradient, remember to multiply
+       * by the direction vector \hat{\vec{r}_{ij}} (and not the vector itself),
+       * since
+       * \[
+       *    \grad_{\vec{r}_i} f(r_{ij}) =
+       *                    \frac{d f}{d r_{ij}} \frac{- \vec{r}_{ij}}{r_{ij}}
+       *                  = \frac{d f}{d r_{ij}} -\hat{\vec{r}_{ij}}
+       * \])
+       * so multiply by _negative_ $\hat{\vec{r}}_ij$ to get the radial
+       * component of the gradient wrt motion of the central atom
+       * ($\frac{d}{d\vec{r}_i}$).
+       *
+       * And finally, there is no compute_center_derivative() because that's
+       * just zero -- the centre contribution doesn't vary w.r.t. motion of
+       * the central atom
+       */
+      template <AtomicSmearingType AST, size_t Order, size_t Layer>
+      Matrix_Ref
+      compute_neighbour_derivative(const double & /*distance*/,
+                                   ClusterRefKey<Order, Layer> & /*pair*/) {
+        using math::PI;
+        using math::pow;
+        using std::sqrt;
+
+        return Matrix_Ref(this->radial_neighbour_derivative);
+      }
+
+      template <typename Coeffs>
+      void finalize_coefficients(Coeffs & /*coefficients*/) const { }
+
+      template <typename Coeffs, typename Center>
+      void finalize_coefficients_der(Coeffs & /*coefficients_gradient*/,
+                                     Center & /*center*/) const { }
+
+      math::ModifiedSphericalBessel bessel{};
+
+      std::shared_ptr<AtomicSmearingSpecificationBase> atomic_smearing{};
+      AtomicSmearingType atomic_smearing_type{};
+
+      // data member used to store the contributions to the expansion
+      Matrix_t radial_integral_neighbour{};
+      Matrix_t radial_neighbour_derivative{};
+      Vector_t radial_integral_center{};
+
+      Hypers_t hypers{};
+      // some useful parameters
+      double interaction_cutoff{};
+      double smooth_width{};
+      size_t max_radial{};
+      size_t max_angular{};
+
+      Vector_t legendre_radial_factor{};
+      Vector_t legendre_points{};
+      Vector_t legendre_points2{};
+
+    };
+
   }  // namespace internal
 
   template <internal::RadialBasisType Type, class Hypers>
@@ -663,10 +856,17 @@ namespace rascal {
         this->radial_integral = rc_shared;
         this->radial_integral_type = RadialBasisType::GTO;
 
+      } else if (radial_contribution_type.compare("DVR") == 0) {
+        auto rc_shared = std::make_shared<
+            internal::RadialContribution<RadialBasisType::DVR>>(hypers);
+        this->atomic_smearing_type = rc_shared->atomic_smearing_type;
+        this->radial_integral = rc_shared;
+        this->radial_integral_type = RadialBasisType::DVR;
       } else {
         throw std::logic_error(
             "Requested Radial contribution type \'" + radial_contribution_type +
-            "\' has not been implemented.  Must be one of" + ": \'GTO\'.");
+            "\' has not been implemented.  Must be one of" + ": \'GTO\' "
+            + " \'DVR\'. ");
       }
 
       auto fc_hypers = hypers.at("cutoff_function").get<json>();
@@ -830,6 +1030,12 @@ namespace rascal {
                          AtomicSmearingType::Constant>();
       break;
     }
+    case internal::combineEnums(RadialBasisType::DVR,
+                                AtomicSmearingType::Constant): {
+      this->compute_impl<FcType, RadialBasisType::DVR,
+                         AtomicSmearingType::Constant>();
+      break;
+    }
     default:
       throw std::logic_error("The combination of parameter is not handdled.");
       break;
@@ -867,11 +1073,6 @@ namespace rascal {
     this->expansions_coefficients_gradient.set_shape(
         n_spatial_dimensions * n_row, n_col);
     this->expansions_coefficients_gradient.resize();
-
-    // get the orthonormalization matrix to apply it on the already summed
-    // over coefficients
-    Matrix_t radial_ortho_mat{
-        radial_integral->get_radial_orthonormalization_matrix()};
 
     for (auto center : this->structure_manager) {
       auto & coefficients_center = this->expansions_coefficients[center];
