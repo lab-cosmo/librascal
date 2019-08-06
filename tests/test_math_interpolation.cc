@@ -35,13 +35,13 @@ namespace rascal {
 
   using StandardInterpolator = Interpolator<
       InterpolationMethod<InterpolationMethod_t::CubicSpline>,
-      GridRational<GridType_t::Uniform, RefinementMethod_t::HeapBased>,
+      GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
       SearchMethod<SearchMethod_t::Hunt>
         >;
   using UniformInterpolator = Interpolator<
       InterpolationMethod<InterpolationMethod_t::CubicSpline>,
-      GridRational<GridType_t::Uniform, RefinementMethod_t::HeapBased>,
-      SearchMethod<SearchMethod_t::AStarUniform>
+      GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
+      SearchMethod<SearchMethod_t::Uniform>
         >;
   using interpolator_fixtures = boost::mpl::list<InterpolatorFixture<StandardInterpolator>,
                    InterpolatorFixture<UniformInterpolator>>;                     

@@ -39,6 +39,8 @@ namespace rascal {
           tmp(i % fix.points.size()) = radial_contr.compute_contribution<AtomicSmearingType::Constant>(fix.points(i % fix.points.size()), 0.5)(0,0);
         }
       }
+
+      state.SetComplexityN(fix.nb_points);
       state.counters.insert({
           {"x1",fix.x1},
           {"x2",fix.x2},
@@ -64,8 +66,8 @@ namespace rascal {
     auto radial_contr{RadialContribution<RadialBasisType::GTO>(hypers)};
     using AdaptiveInterpolator = Interpolator <
       InterpolationMethod<InterpolationMethod_t::CubicSpline>,
-      GridRational<GridType_t::Uniform, RefinementMethod_t::HeapBased>,
-      SearchMethod<SearchMethod_t::AStarUniform>
+      GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
+      SearchMethod<SearchMethod_t::Uniform>
         >;
     const int nb_intps{max_radial*(max_angular+1)};
     //std::vector<std::function<double(double)>> funcs(nb_intps); 
@@ -91,6 +93,7 @@ namespace rascal {
     //  }
     //}
     //fix.TearDown();
+    state.SetComplexityN(fix.nb_points);
     state.counters.insert({
         {"x1",fix.x1},
         {"x2",fix.x2},
@@ -123,6 +126,7 @@ namespace rascal {
         
       }
     }
+    state.SetComplexityN(fix.nb_points);
     state.counters.insert({
         {"nb_points",fix.nb_points}
       });
@@ -133,8 +137,8 @@ namespace rascal {
     fix.SetUp(state);
     auto intp{Interpolator <
       InterpolationMethod<InterpolationMethod_t::CubicSpline>,
-      GridRational<GridType_t::Uniform, RefinementMethod_t::HeapBased>,
-      SearchMethod<SearchMethod_t::AStarUniform>
+      GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
+      SearchMethod<SearchMethod_t::Uniform>
         >()};
     double n = 10;
     double l = 10;
@@ -152,6 +156,7 @@ namespace rascal {
         tmp(i % fix.points.size()) = intp.interpolate(fix.points(i % fix.points.size()));
       }
     }
+    state.SetComplexityN(fix.nb_points);
     state.counters.insert({
         {"x1",fix.x1},
         {"x2",fix.x2},
