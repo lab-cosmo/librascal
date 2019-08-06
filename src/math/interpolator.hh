@@ -168,13 +168,19 @@ namespace rascal {
     template <>
     class InterpolationMethod<InterpolationMethod_t::CubicSpline> {
      public:
-      InterpolationMethod<InterpolationMethod_t::CubicSpline>(){}
+      InterpolationMethod<InterpolationMethod_t::CubicSpline>(): h{}, h_squared_6{} {}
 
       void initialize(const Vector_Ref & grid,
           const Vector_Ref & evaluated_grid){
         this->compute_second_derivatives_on_grid(grid, evaluated_grid);
+        this->compute_constants(grid);
       }
 
+      void compute_constants(const Vector_Ref & grid) {
+        this->h = 
+          grid.segment(1,grid.size()-1).array() - grid.segment(0,grid.size()-1).array();
+        this->h_squared_6 = this->h.array()*this->h.array()/6.0;
+      }
 
       inline double interpolate(const Vector_Ref & grid,
           const Vector_Ref & evaluated_grid,
@@ -221,17 +227,28 @@ namespace rascal {
         return y2;
       }
 
+      //inline double rawinterp(const Vector_Ref & xx, const Vector_Ref & yy,
+      //    size_t j1, double x) {
+      //  size_t klo{j1}, khi{j1+1};
+      //  const Vector_Ref && y2 = std::move(Vector_Ref(this->second_derivatives));
+      //  double h{xx(khi)-xx(klo)};
+      //  DEBUG_IF (h == 0.0) { throw std::runtime_error ("Bad xa input to routine splint");}
+      //  double a{(xx(khi)-x)/h};
+      //  double b{(x-xx(klo))/h};
+      //  return a*yy(klo)+b*yy(khi)+((a*a*a-a)*y2(klo) +(b*b*b-b)*y2(khi))*(h*h)/6.0;
+      //}
+
       inline double rawinterp(const Vector_Ref & xx, const Vector_Ref & yy,
           size_t j1, double x) {
         size_t klo{j1}, khi{j1+1};
         const Vector_Ref && y2 = std::move(Vector_Ref(this->second_derivatives));
-        double h{xx(khi)-xx(klo)};
-        DEBUG_IF (h == 0.0) { throw std::runtime_error ("Bad xa input to routine splint");}
-        double a{(xx(khi)-x)/h};
-        double b{(x-xx(klo))/h};
-        return a*yy(klo)+b*yy(khi)+((a*a*a-a)*y2(klo) +(b*b*b-b)*y2(khi))*(h*h)/6.0;
+        DEBUG_IF (this->h(klo) == 0.0) { throw std::runtime_error ("Bad xa input to routine splint");}
+        double a{(xx(khi)-x)/this->h(klo)};
+        double b{(x-xx(klo))/this->h(klo)};
+        return a*yy(klo)+b*yy(khi)+((a*a*a-a)*y2(klo) +(b*b*b-b)*y2(khi))*this->h_squared_6(klo);
       }
-
+      Vector_t h{};
+      Vector_t h_squared_6{};
       Vector_t second_derivatives{};
     };
 
@@ -531,8 +548,8 @@ namespace rascal {
       double x1{0};
       double x2{1};
       double precision{1e-5};
-      double mean_error;
-      double max_error;
+      double mean_error{0};
+      double max_error{0};
       int fineness{0};
       int max_grid_points{10000000}; //1e7
       Vector_t grid{};
