@@ -650,8 +650,13 @@ namespace rascal {
             0., this->interaction_cutoff + 3 * this->smearing,
             this->max_radial)};
 
-        this->legendre_radial_factor = point_weight.col(1).array().sqrt() *
-                                       point_weight.col(0).array().square();
+        // sqrt(w) * x
+        // x and not x^2 because in the kernel formulation the r^2 from the
+        // jacobian gets split out into each of the expansion coefficients
+        // so only x
+        this->legendre_radial_factor = point_weight.col(1).array().sqrt()*
+                                       point_weight.col(0).array();
+
         this->legendre_points = point_weight.col(0);
 
         this->bessel.precompute(this->max_angular, this->legendre_points);
@@ -696,7 +701,7 @@ namespace rascal {
             this->legendre_radial_factor.asDiagonal() *
             this->bessel.get_values().matrix();
 
-        return Matrix_Ref(this->radial_integral_neighbour);
+            return Matrix_Ref(this->radial_integral_neighbour);
       }
 
       /**
