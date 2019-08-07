@@ -60,18 +60,18 @@ int main(){
   double mean_error_bound{1e-10};
   size_t nb_points = 1e6;
   //size_t nb_iterations = 100000;
-  std::vector<size_t> nbs_iterations = {1000,10000,100000,1000000};
+  std::vector<size_t> nbs_iterations = {1000,10000,100000};//,1000000};
   const char* filename{"interpolator_hyp1f1_grid.dat"};
 
   if (not(file_exists(filename))) {
     std::cout << "Grid file does not exists, has to be computed." << std::endl;
-    intp.initalize(func, x1, x2, mean_error_bound); 
+    intp.initialize(func, x1, x2, mean_error_bound); 
     Eigen::write_binary(filename, intp.grid);
   } else {
     std::cout << "Grid file exists, is read." << std::endl;
     Vector_t grid;
     Eigen::read_binary(filename, grid);
-    intp.initalize(func, x1, x2, grid);
+    intp.initialize(func, x1, x2, grid);
   }
   std::cout << "grid size=" << intp.grid.size() << std::endl;
 
@@ -126,31 +126,31 @@ int main(){
   }
 
   // RADIAL CONTRIBUTION
-    int max_radial{1};
-    int max_angular{max_radial-1};
-    json fc_hypers{
-         {"type", "Constant"},
-         {"gaussian_sigma", {{"value", 0.5}, {"unit", "A"}}}
-        };
-    json hypers{{"gaussian_density", fc_hypers},
-              {"max_radial", max_radial},
-              {"max_angular", max_angular},
-              {"cutoff_function", {{"cutoff",{{"value", 2.0}, {"unit", "A"}}}}}
-    };
-    auto radial_contr{RadialContribution<RadialBasisType::GTO>(hypers)};
-    func = [&radial_contr](double x) {return radial_contr.compute_contribution<AtomicSmearingType::Constant>(x, 0.5)(0,0);};
+  int max_radial{1};
+  int max_angular{max_radial-1};
+  json fc_hypers{
+       {"type", "Constant"},
+       {"gaussian_sigma", {{"value", 0.5}, {"unit", "A"}}}
+      };
+  json hypers{{"gaussian_density", fc_hypers},
+            {"max_radial", max_radial},
+            {"max_angular", max_angular},
+            {"cutoff_function", {{"cutoff",{{"value", 2.0}, {"unit", "A"}}}}}
+  };
+  auto radial_contr{RadialContribution<RadialBasisType::GTO>(hypers)};
+  func = [&radial_contr](double x) {return radial_contr.compute_contribution<AtomicSmearingType::Constant>(x, 0.5)(0,0);};
 
-    const char* filename2{"interpolator_radial_grid.dat"};
-    if (not(file_exists(filename2))) {
-      std::cout << "Grid file does not exists, has to be computed." << std::endl;
-      intp.initalize(func, x1, x2, mean_error_bound); 
-      Eigen::write_binary(filename2, intp.grid);
-    } else {
-      std::cout << "Grid file exists, is read." << std::endl;
-      Vector_t grid;
-      Eigen::read_binary(filename2, grid);
-      intp.initalize(func, x1, x2, grid);
-    }
+  const char* filename2{"interpolator_radial_grid.dat"};
+  if (not(file_exists(filename2))) {
+    std::cout << "Grid file does not exists, has to be computed." << std::endl;
+    intp.initialize(func, x1, x2, mean_error_bound); 
+    Eigen::write_binary(filename2, intp.grid);
+  } else {
+    std::cout << "Grid file exists, is read." << std::endl;
+    Vector_t grid;
+    Eigen::read_binary(filename2, grid);
+    intp.initialize(func, x1, x2, grid);
+  }
 
 
   std::cout << std::endl;
@@ -189,6 +189,74 @@ int main(){
       << "Interpolation of " << nb_iterations << " points"
               << std::endl;
   }
+
+  // RADIAL CONTRIBUTION VECTORIZED
+  max_radial = 3;
+  max_angular = max_radial-1;
+  hypers = {{"gaussian_density", fc_hypers},
+              {"max_radial", max_radial},
+              {"max_angular", max_angular},
+              {"cutoff_function", {{"cutoff",{{"value", 2.0}, {"unit", "A"}}}}}
+    };
+  radial_contr = RadialContribution<RadialBasisType::GTO>(hypers);
+  std::function<Matrix_t(double)> func_vec = [&radial_contr](double x) {return radial_contr.compute_contribution<AtomicSmearingType::Constant>(x, 0.5);};
+
+  auto intp_vec{InterpolatorVectorized <
+    InterpolationMethod<InterpolationMethod_t::CubicSplineVectorized>,
+    GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
+    SearchMethod<SearchMethod_t::Uniform>
+      >()};
+  const char* filename_radial_vec{"interpolator_radial_vec_grid.dat"};
+  if (not(file_exists(filename_radial_vec))) {
+    std::cout << "Grid file does not exists, has to be computed." << std::endl;
+    intp_vec.initialize(func_vec, x1, x2, mean_error_bound); 
+    Eigen::write_binary(filename_radial_vec, intp.grid);
+  } else {
+    std::cout << "Grid file exists, is read." << std::endl;
+    Vector_t grid;
+    Eigen::read_binary(filename_radial_vec, grid);
+    intp_vec.initialize(func_vec, x1, x2, grid);
+  }
+
+  std::cout << std::endl;
+
+  Matrix_t points_vec_tmp = Matrix_t::Zero(max_radial,(max_angular+1));
+  for (size_t nb_iterations : nbs_iterations) {
+    auto start = std::chrono::high_resolution_clock::now();
+    for (int j{0}; j < ITERATIONS; j++) {
+      for (size_t i{0}; i<nb_iterations;i++) {        
+        points_vec_tmp = radial_contr.compute_contribution<AtomicSmearingType::Constant>(points(i % points.size()), 0.5);
+      }
+    }
+    auto finish = std::chrono::high_resolution_clock::now();
+
+    elapsed = finish - start;
+    std::cout << std::fixed;
+    std::cout 
+      << " elapsed: " << std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed).count()/double(ITERATIONS) << " ns "
+      << "RadialVec of " << nb_iterations << " points"
+              << std::endl;
+  }
+
+  std::cout << std::endl;
+
+  for (size_t nb_iterations : nbs_iterations) {
+    auto start = std::chrono::high_resolution_clock::now();
+    for (int j{0}; j < ITERATIONS; j++) {
+      for (size_t i{0}; i<nb_iterations;i++) {
+        points_vec_tmp = intp_vec.interpolate(points(i % nb_points));
+      }
+    }
+    auto finish = std::chrono::high_resolution_clock::now();
+
+    elapsed = finish - start;
+    std::cout 
+              << " elapsed: " << std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed).count()/double(ITERATIONS) << " ns "
+      << "Interpolation of " << nb_iterations << " points"
+              << std::endl;
+  }
+
+
 
   return 0;
 }

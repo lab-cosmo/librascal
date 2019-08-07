@@ -129,7 +129,7 @@ namespace rascal {
       //this->mean_error_bound = std::pow(10,this->log_mean_error_bound);
       //auto func_name = this->template lookup<SupportedFunc>(data, "func_names", 0);
       //this->set_function(func_name);
-      //this->intp.initalize(this->func, this->x1, this->x2, this->mean_error_bound); 
+      //this->intp.initialize(this->func, this->x1, this->x2, this->mean_error_bound); 
       //this->init_points();
       //this->init = true;
     }
@@ -170,7 +170,7 @@ namespace rascal {
         this->mean_error_bound = std::pow(10,this->log_mean_error_bound);
         auto func_name = this->template lookup<SupportedFunc>(data, "func_names", state);
         this->set_function(func_name);
-        this->intp.initalize(this->func, this->x1, this->x2, this->mean_error_bound); 
+        this->intp.initialize(this->func, this->x1, this->x2, this->mean_error_bound); 
         this->init_points();
         this->init =true;
         //std::cout << "Init ressources " << this->log_mean_error_bound << std::endl;

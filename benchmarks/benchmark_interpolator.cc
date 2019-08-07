@@ -76,7 +76,7 @@ namespace rascal {
       //std::cout<< "Iterating=" << i << std::endl;
       auto func = [&radial_contr, nb_intps, max_angular, max_radial,i](double x) {return radial_contr.compute_contribution<AtomicSmearingType::Constant>(x, 0.5)(i/(max_angular+1),i % max_radial);};
       intps.push_back(AdaptiveInterpolator());
-      intps.at(i).initalize(func, fix.x1, fix.x2, fix.mean_error_bound); 
+      intps.at(i).initialize(func, fix.x1, fix.x2, fix.mean_error_bound); 
     }
     Vector_t tmp = Vector_t::Zero(fix.points.size());
     auto intp = intps.at(0);
@@ -146,7 +146,7 @@ namespace rascal {
     double b = l+1.5;
     auto hyp1f1 = math::Hyp1f1(a, b, 200, 1e-15);
     auto func = [&hyp1f1](double x) {return hyp1f1.calc(x);};
-    intp.initalize(func, fix.x1, fix.x2, fix.mean_error_bound); 
+    intp.initialize(func, fix.x1, fix.x2, fix.mean_error_bound); 
     Vector_t tmp = Vector_t::Zero(fix.points.size());
     for (auto _ : state) {
       for (size_t i{0}; i<fix.nb_points;i++) {

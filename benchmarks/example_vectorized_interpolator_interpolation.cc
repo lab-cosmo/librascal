@@ -39,18 +39,31 @@ inline bool file_exists(const char* name) {
 static constexpr int ITERATIONS = 200;
 
 int main(){
-  auto intp{Interpolator <
-    InterpolationMethod<InterpolationMethod_t::CubicSpline>,
+  auto intp{InterpolatorVectorized <
+    InterpolationMethod<InterpolationMethod_t::CubicSplineVectorized>,
     GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
     SearchMethod<SearchMethod_t::Uniform>
       >()};
-  auto func = [](double x) {return std::exp(-std::pow((x-1)/0.5,2)/2);};
+  int max_radial{3};
+  int max_angular{max_radial-1};
+  json fc_hypers{
+       {"type", "Constant"},
+       {"gaussian_sigma", {{"value", 0.5}, {"unit", "A"}}}
+      };
+  json hypers{{"gaussian_density", fc_hypers},
+            {"max_radial", max_radial},
+            {"max_angular", max_angular},
+            {"cutoff_function", {{"cutoff",{{"value", 2.0}, {"unit", "A"}}}}}
+  };
+  auto radial_contr = RadialContribution<RadialBasisType::GTO>(hypers);
+  std::function<Matrix_t(double)> func = [&radial_contr](double x) {return radial_contr.compute_contribution<AtomicSmearingType::Constant>(x, 0.5);};
+
   double x1{0};
   double x2{8};
   double mean_error_bound{1e-10};
   size_t nb_points = 1e6;
-  size_t nb_iterations = 1000000;
-  const char* filename{"interpolator_grid.dat"};
+  size_t nb_iterations = 100000;
+  const char* filename{"interpolator_vectorized_grid.dat"};
 
   if (not(file_exists(filename))) {
     std::cout << "Grid file does not exists, has to be computed." << std::endl;
@@ -71,11 +84,12 @@ int main(){
     points(i) = points_tmp(rand() % nb_points);
   }
 
+  Matrix_t mat_tmp = Matrix_t::Zero(max_radial, max_angular+1);
   std::chrono::duration<double> elapsed{};
   auto start = std::chrono::high_resolution_clock::now();
   for (int j{0}; j < ITERATIONS; j++) {
     for (size_t i{0}; i<nb_iterations;i++) {
-      points_tmp(i % nb_points) = intp.interpolate(points(i % nb_points));
+      mat_tmp = intp.interpolate(points(i % nb_points));
     }
   }
   auto finish = std::chrono::high_resolution_clock::now();

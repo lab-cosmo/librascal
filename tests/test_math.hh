@@ -35,6 +35,7 @@
 #include "math/spherical_harmonics.hh"
 #include "math/hyp1f1.hh"
 #include "math/interpolator.hh"
+#include "representations/representation_manager_spherical_expansion.hh"
 #include "rascal_utility.hh"
 
 #include <fstream>
@@ -48,21 +49,41 @@ namespace rascal {
     return hyp1f1.calc(z);
   }
 
+  static internal::RadialContribution<rascal::internal::RadialBasisType::GTO> radial_contribution_generator(int max_radial, int max_angular) {
+    json fc_hypers{
+         {"type", "Constant"},
+         {"gaussian_sigma", {{"value", 0.5}, {"unit", "A"}}}
+        };
+    json hypers{{"gaussian_density", fc_hypers},
+              {"max_radial", max_radial},
+              {"max_angular", max_angular},
+              {"cutoff_function", {{"cutoff",{{"value", 2.0}, {"unit", "A"}}}}}
+    };
+    return internal::RadialContribution<rascal::internal::RadialBasisType::GTO>(hypers);
+  }
+
+  template <class Interpolator>
+  static double intp_ref_mean_error(Interpolator & intp, const math::Vector_Ref & ref_points) {
+    return (intp.interpolate(ref_points) - intp.eval(ref_points)).array().abs().mean();
+  }
+
   template <class Interpolator>
   struct InterpolatorFixture {
     InterpolatorFixture<Interpolator>() :
       intp{Interpolator()},
       identity_func{[](double x) {return x;}},
       exp_func{[](double x) {return std::exp(x);}},
-      hyp1f1_func{std::bind(hyp1f1_function_generator, 0,0, std::placeholders::_1)},
-      precision{1e-5}  // should result in a grid size of 2**7
+      hyp1f1_func{std::bind(hyp1f1_function_generator, 0,0, std::placeholders::_1)}
     {}
 
     Interpolator intp;
+    double x1{0};
+    double x2{8};
+    double mean_error_bound{1e-5};
+    int nb_ref_points{100};
     std::function<double(double)> identity_func;
     std::function<double(double)> exp_func;
     std::function<double(double)> hyp1f1_func;
-    double precision;
     // TODO(alex) do later
     //std::array<std::function<double(double)>,2> functions;
   };
