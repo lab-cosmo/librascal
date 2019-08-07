@@ -32,15 +32,6 @@ def get_feature_vector(hypers, frames):
         feature_vector = soap_vectors.get_feature_matrix()
     return feature_vector
 
-##########################################################################################
-
-def normalise(feature_vector):
-    x = feature_vector
-    ncen = feature_vector.shape[0]
-    for i in range(ncen):
-        norm = np.linalg.norm(x[i])
-        if norm >= 1.0e-20: x[i] /= norm
-    return x
 
 ##########################################################################################
 
