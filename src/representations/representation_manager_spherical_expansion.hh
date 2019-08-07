@@ -636,6 +636,7 @@ namespace rascal {
           this->atomic_smearing =
               make_atomic_smearing<AtomicSmearingType::Constant>(
                   smearing_hypers);
+          this->smearing = smearing_hypers.at("gaussian_sigma").at("value").get<double>();
         } else {
           throw std::logic_error(
               "Requested Gaussian sigma type \'" + smearing_type +
@@ -646,7 +647,7 @@ namespace rascal {
 
       void precompute() {
         auto point_weight{math::compute_gauss_legendre_points_weights(
-            0., this->interaction_cutoff + 2 * this->smooth_width,
+            0., this->interaction_cutoff + 3 * this->smearing,
             this->max_radial)};
 
         this->legendre_radial_factor = point_weight.col(1).array().sqrt() *
@@ -753,6 +754,7 @@ namespace rascal {
       // some useful parameters
       double interaction_cutoff{};
       double smooth_width{};
+      double smearing{};
       size_t max_radial{};
       size_t max_angular{};
 

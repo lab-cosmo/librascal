@@ -220,15 +220,18 @@ namespace rascal {
         this->n_max = x_v.size();
         this->bessel_values.resize(this->n_max, l_max + 1);
         this->bessel_arg.resize(this->n_max);
+        this->bessel_arg_i.resize(this->n_max);
         this->exp_bessel_arg.resize(this->n_max);
         this->bessel_arg_pow.resize(this->n_max);
         this->efac.resize(this->n_max);
         this->l_max = l_max;
         this->order_max = static_cast<int>(this->l_max+1);
-        this->igammas.resize(this->order_max);
-        for (int order{0}; order < this->order_max; ++order) {
+        this->igammas.resize(2);
+        int ii{0};
+        for (int order{this->order_max-2}; order < this->order_max; ++order) {
           this->hyp1f1s.emplace_back(static_cast<double>(order+1), static_cast<double>(2*order+2));
-          this->igammas[order] = 1./std::tgamma(1.5+order);
+          this->igammas[ii] = 1./std::tgamma(1.5+order);
+          ii++;
         }
       }
 
@@ -248,24 +251,24 @@ namespace rascal {
        *                 in the equation above
        * @param a_scale  Scaling factor for the exponential arguments
        */
-      inline void
-      bessel_i_allorders_complete_square(const double & r, const double & a_scale) {
-        this->bessel_arg = 2. * a_scale * r * this->x_v;
-        this->exp_bessel_arg = Eigen::exp(-this->bessel_arg);
-        this->bessel_arg_pow = Eigen::ArrayXd::Constant(this->n_max, 1.);
-        for (int order{0}; order < this->order_max; ++order) {
-          auto & hyp1f1{this->hyp1f1s[order]};
-          for (int ii{0}; ii < this->n_max; ++ii) {
-            this->bessel_values(ii, order) = this->exp_bessel_arg[ii] * this->igammas[order] * this->bessel_arg_pow[ii] * 0.5 * math::SQRT_PI * hyp1f1.calc(2.*this->bessel_arg[ii]);
-          }
-          this->bessel_arg_pow *= 0.5 * this->bessel_arg;
-        }
+      // inline void
+      // bessel_i_allorders_complete_square(const double & r, const double & a_scale) {
+      //   this->bessel_arg = 2. * a_scale * r * this->x_v;
+      //   this->exp_bessel_arg = Eigen::exp(-this->bessel_arg);
+      //   this->bessel_arg_pow = Eigen::ArrayXd::Constant(this->n_max, 1.);
+      //   for (int order{0}; order < this->order_max; ++order) {
+      //     auto & hyp1f1{this->hyp1f1s[order]};
+      //     for (int ii{0}; ii < this->n_max; ++ii) {
+      //       this->bessel_values(ii, order) = this->exp_bessel_arg[ii] * this->igammas[order] * this->bessel_arg_pow[ii] * 0.5 * math::SQRT_PI * hyp1f1.calc(2.*this->bessel_arg[ii]);
+      //     }
+      //     this->bessel_arg_pow *= 0.5 * this->bessel_arg;
+      //   }
 
-        this->efac = std::exp(-a_scale*r*r) * Eigen::exp(-a_scale*this->x_v.square());
-        for (int order{0}; order < this->order_max; ++order) {
-          this->bessel_values.col(order) *= this->efac;
-        }
-      }
+      //   this->efac = std::exp(-a_scale*r*r) * Eigen::exp(-a_scale*this->x_v.square());
+      //   for (int order{0}; order < this->order_max; ++order) {
+      //     this->bessel_values.col(order) *= this->efac;
+      //   }
+      // }
 
       /**
        * Optimized MBSFs times two exponentials that complete the square
@@ -281,26 +284,60 @@ namespace rascal {
        *                 in the equation above
        * @param a_scale  Scaling factor for the exponential arguments
        */
-      void bessel_i_recursive_complete_square(const double & r, const double & a_scale) {
+      // void bessel_i_recursive_complete_square(const double & r, const double & a_scale) {
 
-        this->bessel_arg = 2. * a_scale * r * this->x_v;
-        this->bessel_arg = this->bessel_arg.inverse();
+      //   this->bessel_arg = 2. * a_scale * r * this->x_v;
+      //   this->bessel_arg = this->bessel_arg.inverse();
+      //   // i_0(z) = sinh(z) / z
+      //   this->bessel_values.col(0) =
+      //                           (Eigen::exp(-a_scale * (x_v - r).square()) -
+      //                           Eigen::exp(-a_scale * (x_v + r).square())) *
+      //                           0.5 * this->bessel_arg;
+      //   // i_1(z) = cosh(z)/z - i_0(z)/z
+      //   this->bessel_values.col(1) =
+      //                           ((Eigen::exp(-a_scale * (x_v - r).square()) +
+      //                             Eigen::exp(-a_scale * (x_v + r).square())) *
+      //                             0.5*bessel_arg)
+      //                           - this->bessel_values.col(0) * bessel_arg;
+
+      //   this->upward_recursion(this->n_max);
+      // }
+
+      void upward_recursion(const double & distance, const double & fac_a,const int& n_rows) {
+
+        auto vals = this->bessel_values.bottomRows(n_rows);
         // i_0(z) = sinh(z) / z
-        this->bessel_values.col(0) =
-                                (Eigen::exp(-a_scale * (x_v - r).square()) -
-                                Eigen::exp(-a_scale * (x_v + r).square())) *
-                                0.5 * this->bessel_arg;
+        vals.col(0) = (Eigen::exp(-fac_a * (x_v.tail(n_rows) - distance).square()) -
+                        Eigen::exp(-fac_a * (x_v.tail(n_rows) + distance).square())) *
+                        0.5 * this->bessel_arg_i.tail(n_rows);
         // i_1(z) = cosh(z)/z - i_0(z)/z
-        this->bessel_values.col(1) =
-                                ((Eigen::exp(-a_scale * (x_v - r).square()) +
-                                  Eigen::exp(-a_scale * (x_v + r).square())) *
-                                  0.5*bessel_arg)
-                                - this->bessel_values.col(0) * bessel_arg;
+        vals.col(1) = ((Eigen::exp(-fac_a * (x_v.tail(n_rows) - distance).square()) +
+                          Eigen::exp(-fac_a * (x_v.tail(n_rows) + distance).square())) *
+                          0.5*this->bessel_arg_i.tail(n_rows))
+                        - vals.col(0) * this->bessel_arg_i.tail(n_rows);
 
         for (int order{2}; order < this->order_max; ++order) {
-          this->bessel_values.col(order) = this->bessel_values.col(order - 2)
-                                - this->bessel_values.col(order - 1) *
-                                  (2. * order - 1.) * bessel_arg;
+          vals.col(order) = vals.col(order - 2) - vals.col(order - 1) *
+                                  (2. * order - 1.) * this->bessel_arg_i.tail(n_rows);
+        }
+      }
+
+      void downward_recursion(const double & distance, const double & fac_a,const int& n_rows) {
+        auto vals = this->bessel_values.topRows(n_rows);
+        this->exp_bessel_arg = Eigen::exp(-this->bessel_arg.head(n_rows));
+        this->efac = std::exp(-fac_a*distance*distance) * Eigen::exp(-fac_a*this->x_v.head(n_rows).square());
+        for (int i_order{0}; i_order < 2; ++i_order) {
+          int order{this->order_max-2+i_order};
+          auto & hyp1f1{this->hyp1f1s[i_order]};
+          for (int ii{0}; ii < n_rows; ++ii) {
+            vals(ii, order) = this->exp_bessel_arg[ii] * this->igammas[i_order] * math::pow(this->bessel_arg[ii] * 0.5, order) * 0.5 * math::SQRT_PI * hyp1f1.calc(2.*this->bessel_arg[ii]);
+          }
+          vals.col(order) *= this->efac;
+        }
+
+        for (int order{this->order_max-3}; order >= 0; --order) {
+          vals.col(order) = vals.col(order + 2) + vals.col(order + 1) *
+                                  (2. * order + 3.) * this->bessel_arg_i.head(n_rows);
         }
       }
 
@@ -313,13 +350,40 @@ namespace rascal {
        * additional factors >~1e10.
        */
       inline void calc(const double & distance, const double & fac_a) {
-        double fac{distance*distance*fac_a};
-        // the criteria for fac has be found empirically
-        if (fac > 40) {
-          this->bessel_i_recursive_complete_square(distance, fac_a);
-        } else {
-          this->bessel_i_allorders_complete_square(distance, fac_a);
+        this->bessel_arg = (2. * fac_a * distance) * this->x_v;
+        this->bessel_arg_i = this->bessel_arg.inverse();
+        // find the index where bessel_arg is larger than 50 (x_v is sorted)
+        int n_down{0};
+        for (; n_down < this->n_max; ++n_down) {
+          if (this->bessel_arg[n_down] > 50) {
+            ++n_down;
+            break;
+          }
         }
+
+        // apply downward recurence where bessel_arg < 50
+        if (n_down > 0) {
+          this->downward_recursion(distance, fac_a, n_down);
+        }
+
+        // apply upward recurence where bessel_arg > 50
+        int n_up{this->n_max-n_down};
+        if (n_up > 0) {
+          this->upward_recursion(distance, fac_a, n_up);
+        }
+
+        bessel_values.unaryExpr(
+          [](double d) {
+            if (d < 1e-100) {
+              return 0.;
+            } else {
+              return d;
+            }
+          }
+        );
+
+
+
       }
 
       /**
@@ -335,7 +399,9 @@ namespace rascal {
 
       Eigen::ArrayXXd bessel_values{};
 
+
       Eigen::ArrayXd bessel_arg{};
+      Eigen::ArrayXd bessel_arg_i{};
       Eigen::ArrayXd bessel_arg_pow{};
       Eigen::ArrayXd exp_bessel_arg{};
       Eigen::ArrayXd x_v{};

@@ -54,24 +54,29 @@ namespace rascal {
 
       for (size_t i_x{0}; i_x < xs.size(); ++i_x){
         for (size_t order{0}; order < max_order; ++order) {
-          double rel_error{(vals(i_x, order) - ref_vals[i_x][order]) / ref_vals[i_x][order]};
-          // when the values are too small none of the method to compute
-          // the MBSFs are accurate with respect to the high precision
-          // baseline
-          if (ref_vals[i_x][order] > 1e-19) {
-            if ((rel_error > 1e5 * math::dbl_ftol) and this->verbose) {
+          double rel_error{0.};
+          if (ref_vals[i_x][order] > 0) {
+            rel_error = std::abs(vals(i_x, order) - ref_vals[i_x][order]) / ref_vals[i_x][order];
+          } else {
+            rel_error = ref_vals[i_x][order];
+          }
+
+          // the MBSFs are set to 0 if < 1e-100 so no point checking with
+          // the reference then. Note the MBSFs are very accurate when < 1e-200
+          if (ref_vals[i_x][order] > 1e-90 and vals(i_x, order) > 1e-90) {
+            if ((rel_error > 1e3 * math::dbl_ftol) and this->verbose) {
               std::cout << " order=" << order << " x=" << xs[i_x]
               << " alpha=" << alpha << " rij=" << rij
               << " diff=" << rel_error << " ref=" << ref_vals[i_x][order] << " val=" << vals(i_x, order)<< std::endl;
             }
 
-            BOOST_CHECK_LE(rel_error, 1e5 * math::dbl_ftol);
+            BOOST_CHECK_LE(rel_error, 1e3 * math::dbl_ftol);
 
           }
 
         }
+        // break;
       }
-
     }
   }
 
