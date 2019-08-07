@@ -5,6 +5,9 @@ using namespace rascal::math;
 
 namespace rascal {
   namespace internal {
+    // 
+
+
     ////////////
     // Issues //
     ////////////
@@ -21,7 +24,7 @@ namespace rascal {
     template <class Fix>
     void BM_RadCon(benchmark::State& state, Fix & fix) {
       fix.SetUp(state);
-      int max_radial{1};
+      int max_radial{15};
       int max_angular{max_radial-1};
       json fc_hypers{
            {"type", "Constant"},
@@ -31,12 +34,12 @@ namespace rascal {
                 {"max_radial", max_radial},
                 {"max_angular", max_angular},
                 {"cutoff_function", {{"cutoff",{{"value", 2.0}, {"unit", "A"}}}}}
-      };
+        };
       auto radial_contr{RadialContribution<RadialBasisType::GTO>(hypers)};
       Vector_t tmp = Vector_t::Zero(fix.points.size());
       for (auto _ : state) {
         for (size_t i{0}; i<fix.nb_points;i++) {
-          tmp(i % fix.points.size()) = radial_contr.compute_contribution<AtomicSmearingType::Constant>(fix.points(i % fix.points.size()), 0.5)(0,0);
+          benchmark::DoNotOptimize ( radial_contr.compute_contribution<AtomicSmearingType::Constant>(fix.points(i % fix.points.size()), 0.5) ) ;
         }
       }
 
@@ -52,7 +55,7 @@ namespace rascal {
   void BM_IntpRadCon(benchmark::State &state, Fix & fix) {
     fix.SetUp(state);
     //std::cout <<  fix.log_mean_error_bound << std::endl;
-    int max_radial{1};
+    int max_radial{15};
     int max_angular{max_radial-1};
     json fc_hypers{
          {"type", "Constant"},
@@ -64,42 +67,26 @@ namespace rascal {
               {"cutoff_function", {{"cutoff",{{"value", 2.0}, {"unit", "A"}}}}}
     };
     auto radial_contr{RadialContribution<RadialBasisType::GTO>(hypers)};
-    using AdaptiveInterpolator = Interpolator <
-      InterpolationMethod<InterpolationMethod_t::CubicSpline>,
+    auto intp = InterpolatorVectorized<
+      InterpolationMethod<InterpolationMethod_t::CubicSplineVectorized>,
       GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
       SearchMethod<SearchMethod_t::Uniform>
-        >;
-    const int nb_intps{max_radial*(max_angular+1)};
-    //std::vector<std::function<double(double)>> funcs(nb_intps); 
-    std::vector<AdaptiveInterpolator> intps(nb_intps);
-    for (int i{0}; i<nb_intps;i++) { 
-      //std::cout<< "Iterating=" << i << std::endl;
-      auto func = [&radial_contr, nb_intps, max_angular, max_radial,i](double x) {return radial_contr.compute_contribution<AtomicSmearingType::Constant>(x, 0.5)(i/(max_angular+1),i % max_radial);};
-      intps.push_back(AdaptiveInterpolator());
-      intps.at(i).initialize(func, fix.x1, fix.x2, fix.mean_error_bound); 
-    }
-    Vector_t tmp = Vector_t::Zero(fix.points.size());
-    auto intp = intps.at(0);
+        >();
+    std::function<Matrix_t(double)> func = [&radial_contr](double x) {return radial_contr.compute_contribution<AtomicSmearingType::Constant>(x, 0.5);};
+    intp.initialize(func, fix.x1, fix.x2, fix.mean_error_bound); 
     for (auto _ : state) {
       for (size_t i{0}; i<fix.nb_points;i++) {
-        tmp(i % fix.points.size()) = intp.interpolate(fix.points(i));
+        benchmark::DoNotOptimize( intp.interpolate(fix.points(i % fix.points.size())) );
       }
     }
-    //for (auto _ : state) {
-    //  for (int j{0}; j<nb_intps; j++) {
-    //    for (int i{0}; i<fix.points.size();i++) {
-    //      intps.at(j).interpolate(fix.points(i));
-    //    }
-    //  }
-    //}
-    //fix.TearDown();
     state.SetComplexityN(fix.nb_points);
     state.counters.insert({
         {"x1",fix.x1},
         {"x2",fix.x2},
-        {"log(mean_error_bound)", fix.log_mean_error_bound},
+        {"log(error_bound)", fix.log_mean_error_bound},
+        {"log(max_error)", std::log10(intp.max_error)},
         {"nb_points",fix.nb_points},
-        {"grid_size",intps.at(0).grid.size()},
+        {"grid_size",intp.grid.size()},
         {"random",fix.random}
       });
   }
@@ -207,11 +194,11 @@ namespace rascal {
   auto intpfix_cfi_b_r2{IntpFix<CFI_B>()};
   BENCHMARK_CAPTURE(BM_IntpRadCon, t, intpfix_cfi_b_r2)->Apply(AllCombinationsArguments<CFI_B>)->Complexity();
 
-  auto intpfix_cfi_b_h2{IntpFix<CFI_B>()};
-  BENCHMARK_CAPTURE(BM_Hyp1f1, t2, intpfix_cfi_b_h2)->Apply(AllCombinationsArguments<CFI_B>)->Complexity();
+  //auto intpfix_cfi_b_h2{IntpFix<CFI_B>()};
+  //BENCHMARK_CAPTURE(BM_Hyp1f1, t2, intpfix_cfi_b_h2)->Apply(AllCombinationsArguments<CFI_B>)->Complexity();
 
-  auto intpfix_cfi_b_h1{IntpFix<CFI_B>()};
-  BENCHMARK_CAPTURE(BM_IntpHyp1f1, t, intpfix_cfi_b_h1)->Apply(AllCombinationsArguments<CFI_B>)->Complexity();
+  //auto intpfix_cfi_b_h1{IntpFix<CFI_B>()};
+  //BENCHMARK_CAPTURE(BM_IntpHyp1f1, t, intpfix_cfi_b_h1)->Apply(AllCombinationsArguments<CFI_B>)->Complexity();
 
 
 

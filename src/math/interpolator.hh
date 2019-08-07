@@ -317,8 +317,8 @@ namespace rascal {
         assert (h != 0.0); // Bad xa input to routine splint
         // a+b=1
         double a{(xx(khi)-x)/this->h};
-        //double b{1-a};
-        double b{(x-xx(klo))/this->h};
+        double b{1-a};
+        //double b{(x-xx(klo))/this->h};
         return a*yy.row(klo).array()+b*yy.row(khi).array()+((a*a*a-a)*this->second_derivatives.row(klo).array() +(b*b*b-b)*this->second_derivatives.row(khi).array())*h_sq_6;
       }
 
@@ -666,8 +666,8 @@ namespace rascal {
         this->cols = result.cols();
         this->rows = result.rows();
         this->matrix_size = this->cols*this->rows;
-        std::cout << "Matrix shape ("<< this->rows << "," << this->cols << ")";
-        std::cout << std::endl;
+        //std::cout << "Matrix shape ("<< this->rows << "," << this->cols << ")";
+        //std::cout << std::endl;
         this->x1 = x1;
         this->x2 = x2;
         this->precision = precision;

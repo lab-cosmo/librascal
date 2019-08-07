@@ -19,7 +19,8 @@ namespace rascal {
     enum class SupportedFunc {
       Gaussian,
       TwoGaussians,
-      SinLikeGaussian
+      SinLikeGaussian,
+      RadialContribution
     };
   };
 
@@ -71,8 +72,8 @@ namespace rascal {
      using SupportedFunc = typename BaseInterpolatorDataset::SupportedFunc;
      static const json data() {
        return {
-         {"ranges", {std::make_pair(0,8)}},
-         {"log_mean_error_bounds", {-10}},
+         {"ranges", {std::make_pair(0,16)}},
+         {"log_mean_error_bounds", {-8}},
          {"func_names", {SupportedFunc::Gaussian}},
          {"nbs_points", {1e3,1e4,1e5,1e6}},
          {"random", {true}}
@@ -204,6 +205,9 @@ namespace rascal {
           this->func = [](double x) {return (std::exp(-std::pow((x-1)/0.5,2)/2) + std::exp(-std::pow((x-3)/0.5,2)/2))/2;};
           break;
         case SupportedFunc::SinLikeGaussian:
+          this->func = [](double x) {return (std::exp(-std::pow((x-1)/0.5,2)/2) - std::exp(-std::pow((x-3)/0.5,2)/2))/2;};
+          break;
+        case SupportedFunc::RadialContribution:
           this->func = [](double x) {return (std::exp(-std::pow((x-1)/0.5,2)/2) - std::exp(-std::pow((x-3)/0.5,2)/2))/2;};
           break;
         default:
