@@ -236,42 +236,9 @@ namespace rascal {
       }
 
       /**
-       * Optimized MBSFs times two exponentials that complete the square
-       *
-       * \[
-       *    f(r; x_n, a) = e^{-ar^2} e^{-ax_n^2} i_l(2*a*r*x_n)
-       * \]
-       * using the representation of Modified Bessel function as 1F1
-       * \[
-       *  i_l(x) = \exp{-x} \frac{\sqrt{\pi}}{4\Gamma{1.5 + n}}
-       *            (\frac{x}{2})^{l} 1F1(l+1, 2l+2, 2x)
-       * \]
-       *
-       * @param r        (single) value of r (second exponential argument)
-       *                 in the equation above
-       * @param a_scale  Scaling factor for the exponential arguments
-       */
-      // inline void
-      // bessel_i_allorders_complete_square(const double & r, const double & a_scale) {
-      //   this->bessel_arg = 2. * a_scale * r * this->x_v;
-      //   this->exp_bessel_arg = Eigen::exp(-this->bessel_arg);
-      //   this->bessel_arg_pow = Eigen::ArrayXd::Constant(this->n_max, 1.);
-      //   for (int order{0}; order < this->order_max; ++order) {
-      //     auto & hyp1f1{this->hyp1f1s[order]};
-      //     for (int ii{0}; ii < this->n_max; ++ii) {
-      //       this->bessel_values(ii, order) = this->exp_bessel_arg[ii] * this->igammas[order] * this->bessel_arg_pow[ii] * 0.5 * math::SQRT_PI * hyp1f1.calc(2.*this->bessel_arg[ii]);
-      //     }
-      //     this->bessel_arg_pow *= 0.5 * this->bessel_arg;
-      //   }
-
-      //   this->efac = std::exp(-a_scale*r*r) * Eigen::exp(-a_scale*this->x_v.square());
-      //   for (int order{0}; order < this->order_max; ++order) {
-      //     this->bessel_values.col(order) *= this->efac;
-      //   }
-      // }
-
-      /**
-       * Optimized MBSFs times two exponentials that complete the square
+       * Compute the MBSFs times two exponentials that complete the square
+       * using upward recursion. This is stable when 2*a*r*x_n > 50, so
+       * it is useful to avoid overflow/underflow in the individual terms of f.
        *
        * This is for the lucky case that we're computing something of the form
        * \[
@@ -280,29 +247,12 @@ namespace rascal {
        * where the exponentials complete the square of the cosh and sinh
        * arguments that are used to build the (modified) Bessel functions.
        *
-       * @param r        (single) value of r (second exponential argument)
-       *                 in the equation above
-       * @param a_scale  Scaling factor for the exponential arguments
+       * @param distance (single) value of distance
+       *                (second exponential argument) in the equation above
+       * @param fac_a  Scaling factor for the exponential arguments
+       * @param n_rows number of rows where the recursion is applicable
+       *               from the bottom
        */
-      // void bessel_i_recursive_complete_square(const double & r, const double & a_scale) {
-
-      //   this->bessel_arg = 2. * a_scale * r * this->x_v;
-      //   this->bessel_arg = this->bessel_arg.inverse();
-      //   // i_0(z) = sinh(z) / z
-      //   this->bessel_values.col(0) =
-      //                           (Eigen::exp(-a_scale * (x_v - r).square()) -
-      //                           Eigen::exp(-a_scale * (x_v + r).square())) *
-      //                           0.5 * this->bessel_arg;
-      //   // i_1(z) = cosh(z)/z - i_0(z)/z
-      //   this->bessel_values.col(1) =
-      //                           ((Eigen::exp(-a_scale * (x_v - r).square()) +
-      //                             Eigen::exp(-a_scale * (x_v + r).square())) *
-      //                             0.5*bessel_arg)
-      //                           - this->bessel_values.col(0) * bessel_arg;
-
-      //   this->upward_recursion(this->n_max);
-      // }
-
       void upward_recursion(const double & distance, const double & fac_a,const int& n_rows) {
 
         auto vals = this->bessel_values.bottomRows(n_rows);
@@ -322,6 +272,28 @@ namespace rascal {
         }
       }
 
+      /**
+       * Compute the MBSFs times two exponentials using downward recurence
+       * which is stable in general but when a, r and/or x_n becomes too large
+       * one of the terms of f might overflow/underflow while f is finite.
+       * The recurence relation is initialized using the confluent
+       * hypergeometric function.
+       *
+       * \[
+       *    f(r; x_n, a) = e^{-ar^2} e^{-ax_n^2} i_l(2*a*r*x_n)
+       * \]
+       * using the representation of Modified Bessel function as 1F1
+       * \[
+       *  i_l(x) = \exp{-x} \frac{\sqrt{\pi}}{4\Gamma{1.5 + n}}
+       *            (\frac{x}{2})^{l} 1F1(l+1, 2l+2, 2x)
+       * \]
+       *
+       * @param distance (single) value of distance
+       *                (second exponential argument) in the equation above
+       * @param fac_a  Scaling factor for the exponential arguments
+       * @param n_rows number of rows where the recursion is applicable
+       *               from the top
+       */
       void downward_recursion(const double & distance, const double & fac_a,const int& n_rows) {
         auto vals = this->bessel_values.topRows(n_rows);
         this->exp_bessel_arg = Eigen::exp(-this->bessel_arg.head(n_rows));
@@ -344,15 +316,15 @@ namespace rascal {
       /**
        * Compute all the MBSFs for the given x-values up to the given order
        *
-       * The smallest x-value should not be too small (x > 0.05), the results
-       * become inacurate between very small values (<~1e-30). For our purpose
-       * such errors are irelevant since the radial integral does not have
-       * additional factors >~1e10.
+       * The MBSFs are accurate when the expected value is > 1e-100. Below this
+       * threshold the MBSFs are set to 0 because of the numerical noise
+       * arrising below 1e-150.
        */
       inline void calc(const double & distance, const double & fac_a) {
         this->bessel_arg = (2. * fac_a * distance) * this->x_v;
         this->bessel_arg_i = this->bessel_arg.inverse();
-        // find the index where bessel_arg is larger than 50 (x_v is sorted)
+        // find the index where bessel_arg is larger than 50
+        // (bessel_arg is sorted by increasing order)
         int n_down{0};
         for (; n_down < this->n_max; ++n_down) {
           if (this->bessel_arg[n_down] > 50) {
@@ -372,6 +344,7 @@ namespace rascal {
           this->upward_recursion(distance, fac_a, n_up);
         }
 
+        // set small values to 0.
         bessel_values.unaryExpr(
           [](double d) {
             if (d < 1e-100) {
@@ -381,9 +354,6 @@ namespace rascal {
             }
           }
         );
-
-
-
       }
 
       /**
