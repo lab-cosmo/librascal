@@ -89,12 +89,12 @@ namespace rascal {
       }
       
       template <typename T>
-      T lookup(json & data, std::string name, const ::benchmark::State& state) {
-        return this->template lookup<T>(data, name, state.range(this->state_range_index_to_key[name])); 
+      T lookup(const json & data, std::string name, const ::benchmark::State& state) const {
+        return this->template lookup<T>(data, name, state.range(this->state_range_index_to_key.at(name))); 
       }
 
       template <typename T>
-      T lookup(json & data, std::string name, const int64_t index) {
+      T lookup(const json & data, std::string name, const int64_t index) const {
         return data[name].at(index).get<T>();
       }
 

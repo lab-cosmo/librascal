@@ -11,8 +11,6 @@ namespace rascal {
     ////////////
     // Issues //
     ////////////
-    // Currently there is not way to print out the results in scientific notation which make it harder to interpret the results. There is a pull request takling this issue https://github.com/google/benchmark/pull/821 but it is not yet merged
-    
     // TODO(alex) To have a credible time benchmarks for the initialization function.
     // distance function caluclates for (radial_max, angular_max+1) points, this must be incuded
     // in the intp, maybe make extra class MatrixIntp
@@ -24,7 +22,7 @@ namespace rascal {
     template <class Fix>
     void BM_RadCon(benchmark::State& state, Fix & fix) {
       fix.SetUp(state);
-      int max_radial{15};
+      int max_radial{3};
       int max_angular{max_radial-1};
       json fc_hypers{
            {"type", "Constant"},
@@ -36,26 +34,26 @@ namespace rascal {
                 {"cutoff_function", {{"cutoff",{{"value", 2.0}, {"unit", "A"}}}}}
         };
       auto radial_contr{RadialContribution<RadialBasisType::GTO>(hypers)};
-      Vector_t tmp = Vector_t::Zero(fix.points.size());
+      Vector_t tmp = Vector_t::Zero(fix.ref_points.size());
       for (auto _ : state) {
-        for (size_t i{0}; i<fix.nb_points;i++) {
-          benchmark::DoNotOptimize ( radial_contr.compute_contribution<AtomicSmearingType::Constant>(fix.points(i % fix.points.size()), 0.5) ) ;
+        for (size_t i{0}; i<fix.nb_iterations;i++) {
+          benchmark::DoNotOptimize ( radial_contr.compute_contribution<AtomicSmearingType::Constant>(fix.ref_points(i % fix.nb_ref_points), 0.5) ) ;
         }
       }
 
-      state.SetComplexityN(fix.nb_points);
+      state.SetComplexityN(fix.nb_iterations);
       state.counters.insert({
           {"x1",fix.x1},
           {"x2",fix.x2},
-          {"nb_points",fix.nb_points}
+          {"nb_iterations",fix.nb_iterations}
         });
     }
 
   template <class Fix>
   void BM_IntpRadCon(benchmark::State &state, Fix & fix) {
     fix.SetUp(state);
-    //std::cout <<  fix.log_mean_error_bound << std::endl;
-    int max_radial{15};
+    //std::cout <<  fix.log_error_bound << std::endl;
+    int max_radial{3};
     int max_angular{max_radial-1};
     json fc_hypers{
          {"type", "Constant"},
@@ -73,19 +71,19 @@ namespace rascal {
       SearchMethod<SearchMethod_t::Uniform>
         >();
     std::function<Matrix_t(double)> func = [&radial_contr](double x) {return radial_contr.compute_contribution<AtomicSmearingType::Constant>(x, 0.5);};
-    intp.initialize(func, fix.x1, fix.x2, fix.mean_error_bound); 
+    intp.initialize(func, fix.x1, fix.x2, fix.error_bound); 
     for (auto _ : state) {
-      for (size_t i{0}; i<fix.nb_points;i++) {
-        benchmark::DoNotOptimize( intp.interpolate(fix.points(i % fix.points.size())) );
+      for (size_t i{0}; i<fix.nb_iterations;i++) {
+        benchmark::DoNotOptimize( intp.interpolate(fix.ref_points(i % fix.ref_points.size())) );
       }
     }
-    state.SetComplexityN(fix.nb_points);
+    state.SetComplexityN(fix.nb_iterations);
     state.counters.insert({
         {"x1",fix.x1},
         {"x2",fix.x2},
-        {"log(error_bound)", fix.log_mean_error_bound},
+        {"log(error_bound)", fix.log_error_bound},
         {"log(max_error)", std::log10(intp.max_error)},
-        {"nb_points",fix.nb_points},
+        {"nb_iterations",fix.nb_iterations},
         {"grid_size",intp.grid.size()},
         {"random",fix.random}
       });
@@ -103,19 +101,19 @@ namespace rascal {
     double a = 0.5*(n+l+3);
     double b = l+1.5;
     auto hyp1f1 = math::Hyp1f1(a, b, 200, 1e-15);
-    Vector_t tmp = Vector_t::Zero(fix.points.size());
+    Vector_t tmp = Vector_t::Zero(fix.ref_points.size());
     for (auto _ : state) {
-      for (size_t i{0}; i<fix.nb_points;i++) {
+      for (size_t i{0}; i<fix.nb_iterations;i++) {
         //benchmark::DoNotOptimize (
-        //  hyp1f1.calc(fix.points(i % fix.points.size()))
+        //  hyp1f1.calc(fix.ref_points(i % fix.ref_points.size()))
         //);
-        tmp(i % fix.points.size()) = hyp1f1.calc(fix.points(i % fix.points.size()));
+        tmp(i % fix.ref_points.size()) = hyp1f1.calc(fix.ref_points(i % fix.ref_points.size()));
         
       }
     }
-    state.SetComplexityN(fix.nb_points);
+    state.SetComplexityN(fix.nb_iterations);
     state.counters.insert({
-        {"nb_points",fix.nb_points}
+        {"nb_iterations",fix.nb_iterations}
       });
   }
 
@@ -133,24 +131,24 @@ namespace rascal {
     double b = l+1.5;
     auto hyp1f1 = math::Hyp1f1(a, b, 200, 1e-15);
     auto func = [&hyp1f1](double x) {return hyp1f1.calc(x);};
-    intp.initialize(func, fix.x1, fix.x2, fix.mean_error_bound); 
-    Vector_t tmp = Vector_t::Zero(fix.points.size());
+    intp.initialize(func, fix.x1, fix.x2, fix.error_bound); 
+    Vector_t tmp = Vector_t::Zero(fix.ref_points.size());
     for (auto _ : state) {
-      for (size_t i{0}; i<fix.nb_points;i++) {
+      for (size_t i{0}; i<fix.nb_iterations;i++) {
         //benchmark::DoNotOptimize (
-        //  intp.interpolate(fix.points(i % fix.points.size()))
+        //  intp.interpolate(fix.ref_points(i % fix.ref_points.size()))
         //);
-        tmp(i % fix.points.size()) = intp.interpolate(fix.points(i % fix.points.size()));
+        tmp(i % fix.ref_points.size()) = intp.interpolate(fix.ref_points(i % fix.ref_points.size()));
       }
     }
-    state.SetComplexityN(fix.nb_points);
+    state.SetComplexityN(fix.nb_iterations);
     state.counters.insert({
         {"x1",fix.x1},
         {"x2",fix.x2},
-        {"log(mean_error_bound)", fix.log_mean_error_bound},
+        {"log(error_bound)", fix.log_error_bound},
         {"log(mean_error)",std::log10(intp.mean_error)},
         //{"log(max_error)",std::log10(intp.max_error)},
-        {"nb_points",fix.nb_points},
+        {"nb_iterations",fix.nb_iterations},
         {"grid_size",intp.grid.size()}
       });
   }
@@ -161,11 +159,11 @@ namespace rascal {
   template <class IntpFix>
   void BM_IntpSimpFun(benchmark::State &state, IntpFix & fix) {
     fix.SetUp(state);
-    //std::cout << "Start iteration " << fix.nb_points << std::endl;
+    //std::cout << "Start iteration " << fix.nb_iterations << std::endl;
     for (auto _ : state) {
-      for (size_t i{0}; i<fix.nb_points;i++) {
+      for (size_t i{0}; i<fix.nb_iterations;i++) {
         benchmark::DoNotOptimize (
-          fix.intp.interpolate(fix.points(i % fix.points.size()))
+          fix.intp.interpolate(fix.ref_points(i % fix.ref_points.size()))
         );
       }
     }
@@ -173,10 +171,10 @@ namespace rascal {
     state.counters.insert({
         {"x1",fix.x1},
         {"x2",fix.x2},
-        {"log(mean_error_bound)", fix.log_mean_error_bound},
+        {"log(error_bound)", fix.log_error_bound},
         {"log(mean_error)",std::log10(fix.intp.mean_error)},
         {"log(max_error)",std::log10(fix.intp.max_error)},
-        {"nb_points",fix.nb_points},
+        {"nb_iterations",fix.nb_iterations},
         {"grid_size",fix.intp.grid.size()}
       });
   }  
@@ -189,16 +187,15 @@ namespace rascal {
   //BENCHMARK_TEMPLATE(BM_IntpSimpFun, IntpFix<I_B>)->Apply(AllCombinationsArguments<I_B>);
   
   // TODO(alex) since they are anyway global we can use BENCHMARK
-  auto intpfix_cfi_b_r1{IntpFix<CFI_B>()};
+  auto intpfix_cfi_b_r1{InterpolatorFixture<CFI_B>()};
   BENCHMARK_CAPTURE(BM_RadCon, t, intpfix_cfi_b_r1)->Apply(AllCombinationsArguments<CFI_B>)->Complexity();
-  auto intpfix_cfi_b_r2{IntpFix<CFI_B>()};
-  BENCHMARK_CAPTURE(BM_IntpRadCon, t, intpfix_cfi_b_r2)->Apply(AllCombinationsArguments<CFI_B>)->Complexity();
+  BENCHMARK_CAPTURE(BM_IntpRadCon, , intpfix_cfi_b_r1)->Apply(AllCombinationsArguments<CFI_B>)->Complexity();
 
-  //auto intpfix_cfi_b_h2{IntpFix<CFI_B>()};
-  //BENCHMARK_CAPTURE(BM_Hyp1f1, t2, intpfix_cfi_b_h2)->Apply(AllCombinationsArguments<CFI_B>)->Complexity();
+  //auto intpfix_cfi_b_h2{InterpolatorFixture<CFI_B>()};
+  //BENCHMARK_CAPTURE(BM_Hyp1f1, , intpfix_cfi_b_h2)->Apply(AllCombinationsArguments<CFI_B>)->Complexity();
 
-  //auto intpfix_cfi_b_h1{IntpFix<CFI_B>()};
-  //BENCHMARK_CAPTURE(BM_IntpHyp1f1, t, intpfix_cfi_b_h1)->Apply(AllCombinationsArguments<CFI_B>)->Complexity();
+  //auto intpfix_cfi_b_h1{InterpolatorFixture<CFI_B>()};
+  //BENCHMARK_CAPTURE(BM_IntpHyp1f1, , intpfix_cfi_b_h1)->Apply(AllCombinationsArguments<CFI_B>)->Complexity();
 
 
 
