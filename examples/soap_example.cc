@@ -147,9 +147,11 @@ int main(int argc, char * argv[]) {
     std::cout << std::endl;
     std::cout << "Gradient of this expansion wrt center pos: " << std::endl;
     std::cout << Eigen::Map<Eigen::MatrixXd>(
-            representation.soap_vector_gradients.get_dense_row(center).data(),
-            3 * n_species_center,
-            representation.soap_vector_gradients.get_nb_comp()).transpose();
+                     representation.soap_vector_gradients.get_dense_row(center)
+                         .data(),
+                     3 * n_species_center,
+                     representation.soap_vector_gradients.get_nb_comp())
+                     .transpose();
     std::cout << std::endl;
     size_t neigh_count{0};
     for (auto neigh : center) {

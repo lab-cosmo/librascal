@@ -1,4 +1,5 @@
-from rascal.representations import SortedCoulombMatrix, SphericalExpansion, SphericalInvariants
+from rascal.representations import (SortedCoulombMatrix, SphericalExpansion,
+                                    SphericalInvariants)
 from test_utils import load_json_frame, BoxList, Box
 import unittest
 import numpy as np

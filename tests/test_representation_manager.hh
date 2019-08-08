@@ -120,17 +120,17 @@ namespace rascal {
 
     std::vector<json> fc_hypers{
         {{"type", "Cosine"},
-         {"cutoff", {{"value", 3.0}, {"unit", "A"}}},
-         {"smooth_width", {{"value", 0.5}, {"unit", "A"}}}},
+         {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
+         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}},
         {{"type", "Cosine"},
-         {"cutoff", {{"value", 2.0}, {"unit", "A"}}},
-         {"smooth_width", {{"value", 1.0}, {"unit", "A"}}}}};
+         {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
+         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
 
     std::vector<json> density_hypers{
         {{"type", "Constant"},
-         {"gaussian_sigma", {{"value", 0.2}, {"unit", "A"}}}},
+         {"gaussian_sigma", {{"value", 0.2}, {"unit", "AA"}}}},
         {{"type", "Constant"},
-         {"gaussian_sigma", {{"value", 0.4}, {"unit", "A"}}}}};
+         {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
 
     std::vector<json> rep_hypers{{{"max_radial", 6},

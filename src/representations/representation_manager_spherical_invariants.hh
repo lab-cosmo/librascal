@@ -99,7 +99,7 @@ namespace rascal {
       using Hypers_t = typename SphericalInvariantsPrecomputationBase::Hypers_t;
       explicit SphericalInvariantsPrecomputation(const Hypers_t & hypers) {
         this->max_angular = hypers.at("max_angular");
-        // this->l_factors.resize(math::pow(this->max_angular + 1, 2_z));
+        // this->l_factors.resize(math::pow(this->max_angular + 1, 2_n));
 
         // size_t lm{0};
         // for (size_t l{0}; l < this->max_angular + 1; ++l) {
@@ -159,7 +159,7 @@ namespace rascal {
           }
         }
 
-        this->w3js.resize(n_elements);
+        this->wigner_w3js.resize(n_elements);
         n_elements = 0;
         wig_table_init(2 * (this->max_angular + 1), 3);
         wig_temp_init(2 * (this->max_angular + 1));
@@ -184,8 +184,8 @@ namespace rascal {
                     if (m1s + m2s + m3s != 0) {
                       continue;
                     }
-                    this->w3js(n_elements) = wig3jj(2 * l1, 2 * l2, 2 * l3,
-                                                    2 * m1s, 2 * m2s, 2 * m3s);
+                    this->wigner_w3js(n_elements) = wig3jj(
+                        2 * l1, 2 * l2, 2 * l3, 2 * m1s, 2 * m2s, 2 * m3s);
                     ++n_elements;
                   }
                 }
@@ -199,7 +199,7 @@ namespace rascal {
 
       size_t max_angular{0};
       bool inversion_symmetry{};
-      Eigen::ArrayXd w3js{};
+      Eigen::ArrayXd wigner_w3js{};
     };
 
   }  // namespace internal
@@ -583,7 +583,7 @@ namespace rascal {
                      ++cartesian_idx) {
                   size_t cartesian_offset_n{cartesian_idx * this->max_radial};
                   size_t cartesian_offset_n1n2{
-                      cartesian_idx * math::pow(this->max_radial, 2_z)};
+                      cartesian_idx * math::pow(this->max_radial, 2_n)};
                   n1n2 = 0;
                   for (size_t n1{0}; n1 < this->max_radial; ++n1) {
                     for (size_t n2{0}; n2 < this->max_radial; ++n2) {
@@ -620,7 +620,7 @@ namespace rascal {
                      ++cartesian_idx) {
                   size_t cartesian_offset_n{cartesian_idx * this->max_radial};
                   size_t cartesian_offset_n1n2{
-                      cartesian_idx * math::pow(this->max_radial, 2_z)};
+                      cartesian_idx * math::pow(this->max_radial, 2_n)};
                   n1n2 = 0;
                   for (size_t n1{0}; n1 < this->max_radial; ++n1) {
                     for (size_t n2{0}; n2 < this->max_radial; ++n2) {
@@ -809,7 +809,7 @@ namespace rascal {
 
         if (this->normalize) {
           double coefficients_norm_inv{1. / coefficients.norm()};
-          double coefficients_norm_inv3{math::pow(coefficients_norm_inv, 3_z)};
+          double coefficients_norm_inv3{math::pow(coefficients_norm_inv, 3_n)};
 
           soap_center_gradient.multiply_elements_by(coefficients_norm_inv);
 
@@ -896,7 +896,7 @@ namespace rascal {
         SphericalInvariantsType::BiSpectrum>(
         this->precompute_spherical_invariants[enumValue(
             SphericalInvariantsType::BiSpectrum)])};
-    auto & w3js{precomputation->w3js};
+    auto & wigner_w3js{precomputation->wigner_w3js};
 
     rep_expansion.compute();
 
@@ -946,7 +946,7 @@ namespace rascal {
                 for (size_t n2{0}; n2 < this->max_radial; n2++) {
                   for (size_t n3{0}; n3 < this->max_radial; n3++) {
                     size_t l0{0};
-                    int count{0};
+                    int wigner_count{0};
                     for (size_t l1{0}; l1 < this->max_angular + 1; l1++) {
                       for (size_t l2{0}; l2 < this->max_angular + 1; l2++) {
                         for (size_t l3{0}; l3 < this->max_angular + 1; l3++) {
@@ -956,35 +956,37 @@ namespace rascal {
                             }
                           }
 
-                          if ((l1 < static_cast<size_t>(
-                                std::abs<int>(l2 - l3))) ||
+                          if ((l1 <
+                               static_cast<size_t>(std::abs<int>(l2 - l3))) ||
                               (l1 > l2 + l3)) {
                             continue;
                           }
 
                           for (size_t m1{0}; m1 < 2 * l1 + 1; m1++) {
                             int m1s{static_cast<int>(m1 - l1)};
-                            size_t lm1{math::pow(l1, 2_z) + m1};
+                            size_t lm1{math::pow(l1, 2_n) + m1};
                             for (size_t m2{0}; m2 < 2 * l2 + 1; m2++) {
                               int m2s{static_cast<int>(m2 - l2)};
-                              size_t lm2{math::pow(l2, 2_z) + m2};
+                              size_t lm2{math::pow(l2, 2_n) + m2};
                               for (size_t m3{0}; m3 < 2 * l3 + 1; m3++) {
                                 int m3s{static_cast<int>(m3 - l3)};
                                 if (m1s + m2s + m3s != 0) {
                                   continue;
                                 }
-                                size_t lm3{math::pow(l3, 2_z) + m3};
-                                double w3j = w3js[count];
+                                size_t lm3{math::pow(l3, 2_n) + m3};
+                                double w3j = wigner_w3js[wigner_count];
                                 complex coef1c, coef2c, coef3c;
                                 // usual formulae for converting from real to
                                 // complex
+                                // TODO(andrea, michael) avoid complex
+                                // arithmetic
                                 if (m1s > 0) {
                                   coef1c = math::pow(-1, m1s) *
                                            complex{coef1(n1, lm1),
                                                    coef1(n1, lm1 - 2 * m1s)};
                                 } else if (m1s == 0) {
                                   coef1c = complex(coef1(n1, lm1), 0.0) *
-                                           std::sqrt(2.0);
+                                           math::SQRT_TWO;
                                 } else if (m1s < 0) {
                                   coef1c = complex{coef1(n1, lm1 - 2 * m1s),
                                                    -coef1(n1, lm1)};
@@ -995,7 +997,7 @@ namespace rascal {
                                                    coef2(n2, lm2 - 2 * m2s)};
                                 } else if (m2s == 0) {
                                   coef2c = complex(coef2(n2, lm2), 0.0) *
-                                           std::sqrt(2.0);
+                                           math::SQRT_TWO;
                                 } else if (m2s < 0) {
                                   coef2c = complex{coef2(n2, lm2 - 2 * m2s),
                                                    -coef2(n2, lm2)};
@@ -1006,14 +1008,14 @@ namespace rascal {
                                                    coef3(n3, lm3 - 2 * m3s)};
                                 } else if (m3s == 0) {
                                   coef3c = complex(coef3(n3, lm3), 0.0) *
-                                           std::sqrt(2.0);
+                                           math::SQRT_TWO;
                                 } else if (m3s < 0) {
                                   coef3c = complex{coef3(n3, lm3 - 2 * m3s),
                                                    -coef3(n3, lm3)};
                                 }
-                                coef1c /= std::sqrt(2.0);
-                                coef2c /= std::sqrt(2.0);
-                                coef3c /= std::sqrt(2.0);
+                                coef1c *= math::INV_SQRT_TWO;
+                                coef2c *= math::INV_SQRT_TWO;
+                                coef3c *= math::INV_SQRT_TWO;
                                 // The descriptor components are purely real or
                                 // imaginary
                                 // depending on the divisibility of l1 + l2 +l3
@@ -1027,7 +1029,7 @@ namespace rascal {
                                       w3j * mult *
                                       (coef1c * coef2c * coef3c).imag();
                                 }
-                                count++;
+                                wigner_count++;
                               }  // m3
                             }    // m2
                           }      // m1
@@ -1054,16 +1056,16 @@ namespace rascal {
   template <class Mngr>
   void RepresentationManagerSphericalInvariants<
       Mngr>::initialize_percenter_bispectrum_soap_vectors() {
-    size_t n_row{math::pow(this->max_radial, 3_z)};
+    size_t n_row{math::pow(this->max_radial, 3_n)};
     size_t n_col{0};
     double max_ang{static_cast<double>(this->max_angular)};
     if (this->inversion_symmetry == false) {
       n_col = static_cast<size_t>(1.0 + 2.0 * max_ang +
-                                  1.5 * math::pow(max_ang, 2_z) +
-                                  math::pow(max_ang, 3_z) * 0.5);
+                                  1.5 * math::pow(max_ang, 2_n) +
+                                  math::pow(max_ang, 3_n) * 0.5);
     } else {
       n_col = static_cast<size_t>(std::floor(
-          ((math::pow(max_ang + 1.0, 2_z) + 1) * (2 * (max_ang + 1.0) + 3)) /
+          ((math::pow(max_ang + 1.0, 2_n) + 1) * (2 * (max_ang + 1.0) + 3)) /
           8.0));
     }
 
@@ -1103,7 +1105,7 @@ namespace rascal {
   void RepresentationManagerSphericalInvariants<
       Mngr>::initialize_percenter_powerspectrum_soap_vectors() {
     using internal::n_spatial_dimensions;
-    size_t n_row{math::pow(this->max_radial, 2_z)};
+    size_t n_row{math::pow(this->max_radial, 2_n)};
     size_t n_col{this->max_angular + 1};
 
     // clear the data container and resize it
