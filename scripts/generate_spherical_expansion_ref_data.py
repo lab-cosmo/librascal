@@ -1,17 +1,17 @@
 #!/usr/bin/env python
+import json
+import ase
+import argparse
+import rascal
+import rascal.lib as lrl
+import numpy as np
+from ase.io import read
+from rascal.representations import SphericalExpansion
+from rascal.utils import ostream_redirect
 """Generate reference data for the librascal spherical expansion"""
 
 import sys
 sys.path.insert(0, '../build/')
-from rascal.utils import ostream_redirect
-from rascal.representations import SphericalExpansion
-from ase.io import read
-import numpy as np
-import rascal.lib as lrl
-import rascal
-import argparse
-import ase
-import json
 
 
 def load_json(fn):
@@ -85,21 +85,21 @@ def dump_reference_json():
                                 frames = [json2ase(load_json(fn))]
                                 hypers = {"interaction_cutoff": cutoff,
                                           "cutoff_smooth_width":
-                                                cutoff_smooth_width,
+                                          cutoff_smooth_width,
                                           "max_radial": max_radial,
                                           "max_angular": max_angular,
                                           "gaussian_sigma_type": "Constant",
                                           "cutoff_function_type": "Cosine",
                                           "gaussian_sigma_constant":
-                                                gaussian_sigma,
+                                          gaussian_sigma,
                                           "radial_basis": rad_basis}
                                 # x = get_soap_vectors(hypers, frames)
                                 sph_expn = SphericalExpansion(**hypers)
                                 expansions = sph_expn.transform(frames)
                                 x = expansions.get_feature_matrix()
                                 data['rep_info'][-1].append(
-                                        dict(feature_matrix=x.tolist(),
-                                             hypers=copy(sph_expn.hypers)))
+                                    dict(feature_matrix=x.tolist(),
+                                         hypers=copy(sph_expn.hypers)))
 
     with open(path+"tests/reference_data/spherical_expansion_reference.ubjson",
               'wb') as f:
@@ -143,7 +143,9 @@ def main(json_dump, save_kernel):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-json_dump', action='store_true', help='Switch for dumping json')
-    parser.add_argument('-save_kernel', action='store_true', help='Switch for dumping json')
+    parser.add_argument('-json_dump', action='store_true',
+                        help='Switch for dumping json')
+    parser.add_argument('-save_kernel', action='store_true',
+                        help='Switch for dumping json')
     args = parser.parse_args()
     main(args.json_dump, args.save_kernel)
