@@ -174,6 +174,7 @@ namespace rascal {
           const Vector_Ref & evaluated_grid){
         this->compute_second_derivatives_on_grid(grid, evaluated_grid);
         this->h = grid(1) - grid(0); // TODO(alex) asserts uniform grid
+        assert (this->h != 0.0); // Bad xa input to routine splint
         this->h_sq_6 = this->h*this->h/6.0;
       }
 
@@ -238,7 +239,6 @@ namespace rascal {
       inline double rawinterp(const Vector_Ref & xx, const Vector_Ref & yy,
           const int & j1, const double & x) {
         int klo{j1}, khi{j1+1};
-        assert (h != 0.0); // Bad xa input to routine splint
         // a+b=1
         double a{(xx(khi)-x)/this->h};
         //double b{1-a};

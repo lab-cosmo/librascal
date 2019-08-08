@@ -19,8 +19,9 @@ namespace rascal {
     enum class SupportedFunc {
       Identity,
       Gaussian,
-      TwoGaussians,
-      SinLikeGaussian,
+      TwoGaussians, // TODO(alex) better naming
+      SinLikeGaussian, // TODO(alex) better naming
+      Hyp1f1, 
       RadialContribution
     };
   };
@@ -59,33 +60,6 @@ namespace rascal {
      }
   };
 
-  class I_S : public BaseInterpolatorDataset {
-    public:
-     using SupportedFunc = typename BaseInterpolatorDataset::SupportedFunc;
-     static const json data() {
-       return {
-         {"ranges", {std::make_pair(0,8)}},
-         {"log_error_bounds", {-10}},
-         {"func_names", {SupportedFunc::Gaussian}},
-         {"nbs_points", {100,1000,10000,100000}},
-         {"random", {false}}
-         };
-     }
-  };
-  class I_B : public BaseInterpolatorDataset {
-    public:
-     using SupportedFunc = typename BaseInterpolatorDataset::SupportedFunc;
-     static const json data() {
-       return {
-         {"ranges", {std::make_pair(0,3),std::make_pair(0,5),std::make_pair(0,8)}},
-         {"log_error_bounds", {-3,-5,-8}},
-         {"func_names", {SupportedFunc::Gaussian, SupportedFunc::TwoGaussians,SupportedFunc::SinLikeGaussian}},
-         {"nbs_points", {1e8}},
-         {"random", {true}}
-         };
-     }
-  };
-
 
   template<class Dataset>
   class InterpolatorFixture : public BaseFixture<Dataset> {
@@ -103,18 +77,20 @@ namespace rascal {
     void SetUp(const ::benchmark::State& state) {
       const json data = Dataset::data();
       // Because in the two initialization processes share parameters of the json string, therefore we check the change of parameters before anything is initialized
-      bool init_interpolator{this->have_interpolator_parameters_changed(state, data)};
-      bool init_ref_points{this->have_ref_points_parameters_changed(state, data)};
-      if (init_interpolator) {
+      bool interpolator_parameters_changed{this->have_interpolator_parameters_changed(state, data)};
+      bool ref_points_parameters_changed{this->have_ref_points_parameters_changed(state, data)};
+      if (not(this->initialized) || interpolator_parameters_changed) {
         this->init_interpolator(state, data);
       }
-      if (init_ref_points) {
-        this->init_ref_points(state, data);
+      if (not(this->initialized) || ref_points_parameters_changed) {
+        this->init_ref_points(state, data);      
       }
       this->nb_iterations = this->template lookup<size_t>(data, "nbs_iterations", state);
+      this->initialized = true;
     }
-
-    Interpolator_t intp;
+    
+    bool initialized{false};
+    Interpolator_t intp;  
     double x1{0};
     double x2{0};
     int log_error_bound{0};
@@ -172,8 +148,16 @@ namespace rascal {
       this->func_name = this->template lookup<SupportedFunc>(data, "func_names", state);
         
       this->error_bound = std::pow(10,this->log_error_bound);
-      //this->init_function(func_name);
-      //this->intp.initialize(this->func, this->x1, this->x2, this->error_bound); 
+      this->init_function(func_name);
+      this->intp.initialize(this->func, this->x1, this->x2, this->error_bound); 
+    }
+    void init_hyp1f1() {
+      double n = 10;
+      double l = 10;
+      double a = 0.5*(n+l+3);
+      double b = l+1.5;
+      auto hyp1f1 = math::Hyp1f1(a, b, 200, 1e-15);
+      this->func = [=](double x) mutable {return hyp1f1.calc(x);};
     }
 
     void init_function(SupportedFunc name) {
@@ -189,6 +173,9 @@ namespace rascal {
           break;
         case SupportedFunc::SinLikeGaussian:
           this->func = [](double x) {return (std::exp(-std::pow((x-1)/0.5,2)/2) - std::exp(-std::pow((x-3)/0.5,2)/2))/2;};
+          break;
+        case SupportedFunc::Hyp1f1:
+          this->init_hyp1f1();
           break;
         case SupportedFunc::RadialContribution:
           //init_radial_contribution(param);
