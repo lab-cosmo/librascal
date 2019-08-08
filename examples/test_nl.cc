@@ -27,6 +27,7 @@
 
 #include "structure_managers/structure_manager_centers.hh"
 #include "structure_managers/adaptor_strict.hh"
+#include "structure_managers/adaptor_center_contribution.hh"
 #include "structure_managers/adaptor_neighbour_list.hh"
 #include "structure_managers/make_structure_manager.hh"
 #include "structure_managers/structure_manager_collection.hh"
@@ -64,7 +65,7 @@ struct Test {
 // using Representation_t = CalculatorSphericalInvariants;
 using ManagerTypeHolder_t =
     StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList,
-                               AdaptorStrict>;
+                               AdaptorCenterContribution>;
 using ManagerTypeList_t = typename ManagerTypeHolder_t::type_list;
 using Manager_t = typename ManagerTypeHolder_t::type;
 using ManagerCollection_t =
@@ -114,9 +115,12 @@ int main() {
             {{"cutoff", cutoff},
              {"consider_ghost_neighbours", false},
              {"skin", 0.}}}};
+  json ad1b{{"name", "AdaptorCenterContribution"},
+           {"initialization_arguments", {}}};
   json ad2{{"name", "AdaptorStrict"},
            {"initialization_arguments", {{"cutoff", cutoff}}}};
   adaptors.emplace_back(ad1);
+  adaptors.emplace_back(ad1b);
   adaptors.emplace_back(ad2);
   // ManagerCollection_t collection{adaptors};
   // collection.add_structures(filename, 0, 10);
@@ -127,35 +131,49 @@ int main() {
 
   auto manager =
       make_structure_manager_stack<StructureManagerCenters,
-                                   AdaptorNeighbourList, AdaptorStrict>(
+                                   AdaptorNeighbourList, AdaptorCenterContribution,
+                                   AdaptorStrict>(
           structure, adaptors);
 
-  // using Prop_t = typename
-  // StructureManager<AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>::template
-  // Property_t<int, 1, 1>;
-
-  auto prop = Prop_t<int, 1>(*manager);
-  int ii{0};
-  prop.resize();
   for (auto center : manager) {
-    prop[center] = ii;
-    ++ii;
-  }
-
-  for (auto center : manager) {
-    auto && center_tag = center.get_atom_tag();
-    std::cout << "Center prop: " << center_tag << " -- " << prop[center]
-              << " -- " << manager->get_position(center_tag).transpose()
-              << std::endl;
-    for (auto neigh : center) {
-      std::cout << "typeid(neigh) " << typeid(neigh).name() << std::endl;
-      auto atom_j = neigh.get_atom_j();
-      auto && atom_j_tag = atom_j.get_atom_tag();
-      std::cout << "atom_j prop: " << atom_j_tag << " -- " << prop[atom_j]
-                << " -- " << manager->get_position(atom_j_tag).transpose()
-                << std::endl;
+    auto ctag = center.get_atom_tag();
+    std::cout << "Center: " << ctag << std::endl;
+    for(auto neigh : center) {
+      auto tag_list = neigh.get_atom_tag_list();
+      auto dist = manager->get_distance(neigh);
+      auto atom_ii = neigh.get_atom_ii();
+      auto atom_ii_tag = atom_ii.get_atom_tag_list();
+      auto atom_ii_ids = atom_ii.get_cluster_indices();
+      std::cout << "neigh: " << tag_list[0] << ", " << tag_list[1] << ", " << dist << " tag_ii: " << atom_ii_tag[0] << ", " << atom_ii_tag[1] << ", " << atom_ii_ids[0] << std::endl;
     }
   }
+
+  // // using Prop_t = typename
+  // // StructureManager<AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>::template
+  // // Property_t<int, 1, 1>;
+
+  // auto prop = Prop_t<int, 1>(*manager);
+  // int ii{0};
+  // prop.resize();
+  // for (auto center : manager) {
+  //   prop[center] = ii;
+  //   ++ii;
+  // }
+
+  // for (auto center : manager) {
+  //   auto && center_tag = center.get_atom_tag();
+  //   std::cout << "Center prop: " << center_tag << " -- " << prop[center]
+  //             << " -- " << manager->get_position(center_tag).transpose()
+  //             << std::endl;
+  //   for (auto neigh : center) {
+  //     std::cout << "typeid(neigh) " << typeid(neigh).name() << std::endl;
+  //     auto atom_j = neigh.get_atom_j();
+  //     auto && atom_j_tag = atom_j.get_atom_tag();
+  //     std::cout << "atom_j prop: " << atom_j_tag << " -- " << prop[atom_j]
+  //               << " -- " << manager->get_position(atom_j_tag).transpose()
+  //               << std::endl;
+  //   }
+  // }
 
   // for (auto center : manager) {
   //   auto&& center_tag = center.get_atom_tag();
