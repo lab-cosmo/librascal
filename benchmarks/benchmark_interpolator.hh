@@ -22,6 +22,8 @@ namespace rascal {
       TwoGaussians, // TODO(alex) better naming
       SinLikeGaussian, // TODO(alex) better naming
       Hyp1f1, 
+    };
+    enum class SupportedVecFunc {
       RadialContribution
     };
   };
@@ -30,31 +32,80 @@ namespace rascal {
    */
 
 
-  class RadialContributionInterpolatorVectorized : public BaseInterpolatorDataset {
+  class RadConDataset : public BaseInterpolatorDataset {
     public:
      using SupportedFunc = typename BaseInterpolatorDataset::SupportedFunc;
      static const json data() {
        return {
-         {"ranges", {std::make_pair(0,16)}},
-         {"log_error_bounds", {-8}},
-         {"func_names", {SupportedFunc::RadialContribution}},
+         //{"nbs_iterations", {1e3,1e4,1e5,1e6}},
          {"nbs_iterations", {1e3,1e4,1e5,1e6}},
-         {"max_angular", {3}},
+         {"ranges", {std::make_pair(0,16)}},
+         {"log_error_bounds", {-10}},
+         {"func_names", {SupportedVecFunc::RadialContribution}},
+         {"max_radial", {3}},
          {"random", {true}}
          };
      }
   };
 
-  class CFI_B : public BaseInterpolatorDataset {
+  class RadConDataset1 : public BaseInterpolatorDataset {
     public:
      using SupportedFunc = typename BaseInterpolatorDataset::SupportedFunc;
      static const json data() {
        return {
-         {"ranges", {std::make_pair(0,16)}},
-         {"log_error_bounds", {-8}},
-         {"func_names", {SupportedFunc::Gaussian}},
+         //{"nbs_iterations", {1e3,1e4,1e5,1e6}},
          {"nbs_iterations", {1e3,1e4,1e5,1e6}},
-         {"max_angular", {3}},
+         {"ranges", {std::make_pair(0,16)}},
+         {"log_error_bounds", {-10}},
+         {"func_names", {SupportedVecFunc::RadialContribution}},
+         {"max_radial", {3}},
+         {"random", {true}}
+         };
+     }
+  };
+
+  class RadConDataset2 : public BaseInterpolatorDataset {
+    public:
+     using SupportedFunc = typename BaseInterpolatorDataset::SupportedFunc;
+     static const json data() {
+       return {
+         //{"nbs_iterations", {1e3,1e4,1e5,1e6}},
+         {"nbs_iterations", {1e3,1e4,1e5,1e6}},
+         {"ranges", {std::make_pair(0,16)}},
+         {"log_error_bounds", {-10}},
+         {"func_names", {SupportedVecFunc::RadialContribution}},
+         {"max_radial", {5}},
+         {"random", {true}}
+         };
+     }
+  };
+  class RadConDataset3 : public BaseInterpolatorDataset {
+    public:
+     using SupportedFunc = typename BaseInterpolatorDataset::SupportedFunc;
+     static const json data() {
+       return {
+         //{"nbs_iterations", {1e3,1e4,1e5,1e6}},
+         {"nbs_iterations", {1e3,1e4,1e5,1e6}},
+         {"ranges", {std::make_pair(0,16)}},
+         {"log_error_bounds", {-10}},
+         {"func_names", {SupportedVecFunc::RadialContribution}},
+         {"max_radial", {8}},
+         {"random", {true}}
+         };
+     }
+  };
+
+
+
+  class Hyp1f1Dataset : public BaseInterpolatorDataset {
+    public:
+     using SupportedFunc = typename BaseInterpolatorDataset::SupportedFunc;
+     static const json data() {
+       return {
+         {"nbs_iterations", {1e3,1e4,1e5,1e6}},
+         {"ranges", {std::make_pair(0,1), std::make_pair(0,8), std::make_pair(0,16)}},
+         {"log_error_bounds", {-8,-10,-12}},
+         {"func_names", {SupportedFunc::Hyp1f1}},
          {"random", {true}}
          };
      }
@@ -74,11 +125,13 @@ namespace rascal {
     
     InterpolatorFixture <Dataset>() : Parent() {}
 
+    // Could be moved to base class with virtual classes and shared by vectorized and scalar
     void SetUp(const ::benchmark::State& state) {
       const json data = Dataset::data();
       // Because in the two initialization processes share parameters of the json string, therefore we check the change of parameters before anything is initialized
       bool interpolator_parameters_changed{this->have_interpolator_parameters_changed(state, data)};
       bool ref_points_parameters_changed{this->have_ref_points_parameters_changed(state, data)};
+
       if (not(this->initialized) || interpolator_parameters_changed) {
         this->init_interpolator(state, data);
       }
@@ -101,9 +154,9 @@ namespace rascal {
     bool random{true};
     const int nb_ref_points = 100000;
     math::Vector_t ref_points{Vector_t::Zero(nb_ref_points)};
-    //RadialContribution<RadialBasisType::GTO> 
 
-   private:
+   protected:
+    // could be moved to a base class
     bool have_ref_points_parameters_changed(const ::benchmark::State& state, const json & data) const {
       bool new_random = this->template lookup<bool>(data, "random", state); 
       auto range = this->template lookup<std::pair<double,double>>(data, "ranges", state); 
@@ -120,13 +173,13 @@ namespace rascal {
       this->random = this->template lookup<bool>(data, "random", state); 
       if (this->random) {
         srand(SEED);
-        math::Vector_t points_tmp  = math::Vector_t::LinSpaced(nb_ref_points , this->x1,this->x2);
-        this->ref_points = math::Vector_t::Zero(nb_ref_points);
+        math::Vector_t points_tmp  = math::Vector_t::LinSpaced(this->nb_ref_points, this->x1,this->x2);
+        this->ref_points = math::Vector_t::Zero(this->nb_ref_points);
         for (int i{0};i<this->ref_points.size();i++) {
-          this->ref_points(i) = points_tmp(rand() % nb_ref_points);
+          this->ref_points(i) = points_tmp(rand() % this->nb_ref_points);
         }
       } else {
-        this->ref_points = math::Vector_t::LinSpaced(nb_ref_points,this->x1,this->x2);
+        this->ref_points = math::Vector_t::LinSpaced(this->nb_ref_points,this->x1,this->x2);
       }
     }
 
@@ -140,7 +193,6 @@ namespace rascal {
     }
 
     void init_interpolator(const ::benchmark::State& state, const json & data) {
-      std::cout << "Initialize interpolator" << std::endl;
       auto range = this->template lookup<std::pair<double,double>>(data, "ranges", state); 
       this->x1 = std::get<0>(range);
       this->x2 = std::get<1>(range);
@@ -148,10 +200,11 @@ namespace rascal {
       this->func_name = this->template lookup<SupportedFunc>(data, "func_names", state);
         
       this->error_bound = std::pow(10,this->log_error_bound);
-      this->init_function(func_name);
+      this->init_function();
       this->intp.initialize(this->func, this->x1, this->x2, this->error_bound); 
     }
-    void init_hyp1f1() {
+
+    void init_hyp1f1_function() {
       double n = 10;
       double l = 10;
       double a = 0.5*(n+l+3);
@@ -160,8 +213,8 @@ namespace rascal {
       this->func = [=](double x) mutable {return hyp1f1.calc(x);};
     }
 
-    void init_function(SupportedFunc name) {
-      switch(name) {
+    void init_function() {
+      switch(this->func_name) {
         case SupportedFunc::Identity:
           this->func = [](double x) {return x;};
           break;
@@ -175,12 +228,7 @@ namespace rascal {
           this->func = [](double x) {return (std::exp(-std::pow((x-1)/0.5,2)/2) - std::exp(-std::pow((x-3)/0.5,2)/2))/2;};
           break;
         case SupportedFunc::Hyp1f1:
-          this->init_hyp1f1();
-          break;
-        case SupportedFunc::RadialContribution:
-          //init_radial_contribution(param);
-            
-          this->func = [](double x) {return (std::exp(-std::pow((x-1)/0.5,2)/2) - std::exp(-std::pow((x-3)/0.5,2)/2))/2;};
+          this->init_hyp1f1_function();
           break;
         default:
           this->func = [](double x) {return x;};
@@ -189,5 +237,111 @@ namespace rascal {
     }
   };
 
+  template<class Dataset>
+  class InterpolatorVectorizedFixture : public InterpolatorFixture<Dataset> {
+   public:
+    using Parent = InterpolatorFixture<Dataset>;
+    using SupportedVecFunc = typename Dataset::SupportedVecFunc;
+    using Interpolator_t = InterpolatorVectorized<
+      InterpolationMethod<InterpolationMethod_t::CubicSplineVectorized>,
+      GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
+      SearchMethod<SearchMethod_t::Uniform>
+        >;
+
+    InterpolatorVectorizedFixture<Dataset>() : Parent() {}
+
+    void SetUp(const ::benchmark::State& state) {
+      const json data = Dataset::data();
+      // Because in the two initialization processes share parameters of the json string, therefore we check the change of parameters before anything is initialized
+      bool interpolator_parameters_changed{this->have_interpolator_parameters_changed(state, data)};
+      bool ref_points_parameters_changed{this->have_ref_points_parameters_changed(state, data)};
+
+      if (not(this->initialized) || interpolator_parameters_changed) {
+        this->init_interpolator(state, data);
+      }
+      if (not(this->initialized) || ref_points_parameters_changed) {
+        this->init_ref_points(state, data);      
+      }
+      this->nb_iterations = this->template lookup<size_t>(data, "nbs_iterations", state);
+      this->initialized = true;
+    }
+
+
+    Interpolator_t intp;  
+    std::function<math::Matrix_t(double)> func;
+    SupportedVecFunc func_name;
+    int max_radial{0};
+    RadialContribution<RadialBasisType::GTO> radial_contr;
+
+   protected:
+    bool have_ref_points_parameters_changed(const ::benchmark::State& state, const json & data) const {
+      bool new_random = this->template lookup<bool>(data, "random", state); 
+      auto range = this->template lookup<std::pair<double,double>>(data, "ranges", state); 
+      double new_x1 = std::get<0>(range);
+      double new_x2 = std::get<1>(range);
+      return (new_random != this->random || new_x1 != this->x1 || new_x2 != this->x2);
+    }
+
+    // initialize the ref points 
+    void init_ref_points(const ::benchmark::State& state, const json & data) { 
+      auto range = this->template lookup<std::pair<double,double>>(data, "ranges", state); 
+      this->x1 = std::get<0>(range);
+      this->x2 = std::get<1>(range);
+      this->random = this->template lookup<bool>(data, "random", state); 
+      if (this->random) {
+        srand(SEED);
+        math::Vector_t points_tmp  = math::Vector_t::LinSpaced(this->nb_ref_points, this->x1,this->x2);
+        this->ref_points = math::Vector_t::Zero(this->nb_ref_points);
+        for (int i{0};i<this->ref_points.size();i++) {
+          this->ref_points(i) = points_tmp(rand() % this->nb_ref_points);
+        }
+      } else {
+        this->ref_points = math::Vector_t::LinSpaced(this->nb_ref_points,this->x1,this->x2);
+      }
+    }
+
+    bool have_interpolator_parameters_changed(const ::benchmark::State& state, const json & data) const {
+      bool have_scalar_parameters_changed{Parent::have_interpolator_parameters_changed(state, data)};    
+      int new_max_radial = this->template lookup<int>(data, "max_radial", state);
+      return (have_scalar_parameters_changed || new_max_radial != this->max_radial); 
+    }
+
+    void init_interpolator(const ::benchmark::State& state, const json & data) {
+      auto range = this->template lookup<std::pair<double,double>>(data, "ranges", state); 
+      this->x1 = std::get<0>(range);
+      this->x2 = std::get<1>(range);
+      this->log_error_bound = this->template lookup<int>(data, "log_error_bounds", state);
+      this->func_name = this->template lookup<SupportedVecFunc>(data, "func_names", state);
+        
+      this->error_bound = std::pow(10,this->log_error_bound);
+      this->init_function(state, data);
+      this->intp.initialize(this->func, this->x1, this->x2, this->error_bound); 
+    }
+
+    void init_radial_contribution_function(const ::benchmark::State& state, const json & data) {
+      this->max_radial = this->template lookup<int>(data, "max_radial", state);
+      int max_angular{this->max_radial-1};
+      json fc_hypers{
+           {"type", "Constant"},
+           {"gaussian_sigma", {{"value", 0.5}, {"unit", "A"}}}
+          };
+      json hypers{{"gaussian_density", fc_hypers},
+                {"max_radial", max_radial},
+                {"max_angular", max_angular},
+                {"cutoff_function", {{"cutoff",{{"value", 2.0}, {"unit", "A"}}}}}
+        };
+      // we cannot copy radial contribution to the lambda function, because the copying has been disabled
+      this->radial_contr = RadialContribution<RadialBasisType::GTO>(hypers);
+      this->func = [&](double x) mutable {return this->radial_contr.compute_contribution<AtomicSmearingType::Constant>(x,0.5);};
+    }
+
+    void init_function(const ::benchmark::State& state, const json & data) {
+      switch(this->func_name) {
+        case SupportedVecFunc::RadialContribution:
+         this->init_radial_contribution_function(state, data);
+         break;
+      }
+    }
+  };
   }
 }

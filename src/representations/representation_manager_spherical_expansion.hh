@@ -224,6 +224,10 @@ namespace rascal {
      */
     template <>
     struct RadialContribution<RadialBasisType::GTO> : RadialContributionBase {
+
+      //! Default Constructor
+      explicit RadialContribution() {}
+
       //! Constructor
       explicit RadialContribution(const Hypers_t & hypers) {
         this->set_hyperparameters(hypers);

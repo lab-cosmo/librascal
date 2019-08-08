@@ -3,6 +3,10 @@
 #include <map>
 #include <iostream>
 
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fstream>
+
 #include "json_io.hh"
 
 namespace rascal {
@@ -100,5 +104,32 @@ namespace rascal {
 
       std::map<std::string,int64_t> state_range_index_to_key;
     };
+    
+    inline bool file_exists(const char* name) {
+      struct stat buffer;   
+      return (stat (name, &buffer) == 0); 
+    }
+
+    template<class Matrix>
+    void write_binary(const char* filename, const Matrix& matrix){
+        std::ofstream out(filename, std::ios::out | std::ios::binary | std::ios::trunc);
+        typename Matrix::Index rows=matrix.rows(), cols=matrix.cols();
+        out.write((char*) (&rows), sizeof(typename Matrix::Index));
+        out.write((char*) (&cols), sizeof(typename Matrix::Index));
+        out.write((char*) matrix.data(), rows*cols*sizeof(typename Matrix::Scalar) );
+        out.close();
+    }
+    template<class Matrix>
+    void read_binary(const char* filename, Matrix& matrix){
+        std::ifstream in(filename, std::ios::in | std::ios::binary);
+        typename Matrix::Index rows=0, cols=0;
+        in.read((char*) (&rows),sizeof(typename Matrix::Index));
+        in.read((char*) (&cols),sizeof(typename Matrix::Index));
+        matrix.resize(rows, cols);
+        in.read( (char *) matrix.data() , rows*cols*sizeof(typename Matrix::Scalar) );
+        in.close();
+    }
+
   } // internal
 } // rascal
+

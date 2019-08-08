@@ -594,7 +594,7 @@ namespace rascal {
         //  std::cout << "mean error=" << this->mean_error << std::endl;
         //  std::cout << "max error=" << this->max_error << std::endl;
         //}
-        return this->max_error;
+        return this->mean_error;
       }
 
       double eval(double x) {return this->function(x);}
@@ -746,7 +746,7 @@ namespace rascal {
         //  std::cout << "mean error=" << this->mean_error << std::endl;
         //  std::cout << "max error=" << this->max_error << std::endl;
         //}
-        return this->max_error;
+        return this->mean_error;
       }
 
       Vector_t eval(double x) {return Eigen::Map<Vector_t>(this->function(x).data(),this->matrix_size);}
@@ -759,9 +759,10 @@ namespace rascal {
         return evaluated_grid;
       }
 
-      Matrix_t interpolate(double x) {
+      auto interpolate(double x) {
         return Eigen::Map<Matrix_t>(this->interpolate_raw(x).data(), this->rows, this->cols);
       }
+
       // should be private
       Vector_t interpolate_raw(double x) {
         // TODO(alex) throw runtime error, what is diff?

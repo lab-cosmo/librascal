@@ -31,10 +31,10 @@ void read_binary(const char* filename, Matrix& matrix){
 }
 } // Eigen::
 
-inline bool file_exists(const char* name) {
-  struct stat buffer;   
-  return (stat (name, &buffer) == 0); 
-}
+//inline bool file_exists(const char* name) {
+//  struct stat buffer;   
+//  return (stat (name, &buffer) == 0); 
+//}
 
 static constexpr int ITERATIONS = 100;
 
@@ -52,10 +52,8 @@ int main(){
   double b = l+1.5;
   auto hyp1f1 = Hyp1f1(a, b, 200, 1e-15);
 
-
-
   double x1{0};
-  double x2{8};
+  double x2{16};
   std::function<double(double)> func = [&hyp1f1](double x) {return hyp1f1.calc(x);};
   double mean_error_bound{1e-10};
   size_t nb_points = 1e6;
@@ -151,6 +149,7 @@ int main(){
     Eigen::read_binary(filename2, grid);
     intp.initialize(func, x1, x2, grid);
   }
+  std::cout << "grid size=" << intp.grid.size() << std::endl;
 
 
   std::cout << std::endl;
@@ -191,7 +190,7 @@ int main(){
   }
 
   // RADIAL CONTRIBUTION VECTORIZED
-  max_radial = 3;
+  max_radial = 5;
   max_angular = max_radial-1;
   hypers = {{"gaussian_density", fc_hypers},
               {"max_radial", max_radial},
@@ -217,15 +216,15 @@ int main(){
     Eigen::read_binary(filename_radial_vec, grid);
     intp_vec.initialize(func_vec, x1, x2, grid);
   }
+  std::cout << "grid size=" << intp_vec.grid.size() << std::endl;
 
   std::cout << std::endl;
 
-  Matrix_t points_vec_tmp = Matrix_t::Zero(max_radial,(max_angular+1));
   for (size_t nb_iterations : nbs_iterations) {
     auto start = std::chrono::high_resolution_clock::now();
     for (int j{0}; j < ITERATIONS; j++) {
       for (size_t i{0}; i<nb_iterations;i++) {        
-        points_vec_tmp = radial_contr.compute_contribution<AtomicSmearingType::Constant>(points(i % points.size()), 0.5);
+        Matrix_t points_vec_tmp = radial_contr.compute_contribution<AtomicSmearingType::Constant>(points(i % points.size()), 0.5);
       }
     }
     auto finish = std::chrono::high_resolution_clock::now();
@@ -244,7 +243,7 @@ int main(){
     auto start = std::chrono::high_resolution_clock::now();
     for (int j{0}; j < ITERATIONS; j++) {
       for (size_t i{0}; i<nb_iterations;i++) {
-        points_vec_tmp = intp_vec.interpolate(points(i % nb_points));
+        Matrix_t points_vec_tmp = intp_vec.interpolate(points(i % nb_points));
       }
     }
     auto finish = std::chrono::high_resolution_clock::now();
