@@ -133,8 +133,8 @@ namespace rascal {
         for (size_t l1{0}; l1 < this->max_angular + 1; ++l1) {
           for (size_t l2{0}; l2 < this->max_angular + 1; ++l2) {
             for (size_t l3{0}; l3 < this->max_angular + 1; ++l3) {
-              if (l1 < static_cast<size_t>(std::abs<int>(l2 - l3)) ||
-                  l1 > l2 + l3) {
+              if ((l1 < static_cast<size_t>(std::abs<int>(l2 - l3))) ||
+                  (l1 > l2 + l3)) {
                 continue;
               }
               if (this->inversion_symmetry == true) {
@@ -166,8 +166,8 @@ namespace rascal {
         for (size_t l1{0}; l1 < this->max_angular + 1; ++l1) {
           for (size_t l2{0}; l2 < this->max_angular + 1; ++l2) {
             for (size_t l3{0}; l3 < this->max_angular + 1; ++l3) {
-              if (l1 < static_cast<size_t>(std::abs<int>(l2 - l3)) ||
-                  l1 > l2 + l3) {
+              if ((l1 < static_cast<size_t>(std::abs<int>(l2 - l3))) ||
+                  (l1 > l2 + l3)) {
                 continue;
               }
               if (this->inversion_symmetry == true) {
@@ -956,9 +956,9 @@ namespace rascal {
                             }
                           }
 
-                          if (l1 <
-                                  static_cast<size_t>(std::abs<int>(l2 - l3)) ||
-                              l1 > l2 + l3) {
+                          if ((l1 < static_cast<size_t>(
+                                std::abs<int>(l2 - l3))) ||
+                              (l1 > l2 + l3)) {
                             continue;
                           }
 

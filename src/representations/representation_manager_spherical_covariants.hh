@@ -87,7 +87,7 @@ namespace rascal {
                 int m2s{static_cast<int>(m2 - l2)};
                 for (size_t m3{0}; m3 < 2 * l3 + 1; m3++) {
                   int m3s{static_cast<int>(m3 - l3)};
-                  if (m1s + m2s + m3s != 0 && m1s + m2s - m3s != 0) {
+                  if ((m1s + m2s + m3s != 0) && (m1s + m2s - m3s != 0)) {
                     continue;
                   }
                   ++n_elements;
@@ -103,8 +103,8 @@ namespace rascal {
         wig_temp_init(2 * (this->max_angular + 1));
         for (size_t l1{0}; l1 < this->max_angular + 1; ++l1) {
           for (size_t l2{0}; l2 < this->max_angular + 1; ++l2) {
-            if (l1 < static_cast<size_t>(std::abs<int>(l2 - l3)) ||
-                l1 > l2 + l3) {
+            if ((l1 < static_cast<size_t>(std::abs<int>(l2 - l3))) ||
+                (l1 > l2 + l3)) {
               continue;
             }
             if (this->inversion_symmetry == true) {
@@ -118,7 +118,7 @@ namespace rascal {
                 int m2s{static_cast<int>(m2 - l2)};
                 for (size_t m3{0}; m3 < 2 * l3 + 1; m3++) {
                   int m3s{static_cast<int>(m3 - l3)};
-                  if (m1s + m2s + m3s != 0 && m1s + m2s - m3s != 0) {
+                  if ((m1s + m2s + m3s != 0) && (m1s + m2s - m3s != 0)) {
                     continue;
                   }
                   double w3j1{wig3jj(2 * l1, 2 * l2, 2 * l3, 2 * m1s, 2 * m2s,
@@ -404,8 +404,8 @@ namespace rascal {
                 int count{0};
                 for (size_t l1{0}; l1 < this->max_angular + 1; l1++) {
                   for (size_t l2{0}; l2 < this->max_angular + 1; l2++) {
-                    if (l1 < static_cast<size_t>(std::abs<int>(l2 - l3)) ||
-                        l1 > l2 + l3) {
+                    if ((l1 < static_cast<size_t>(std::abs<int>(l2 - l3))) ||
+                        (l1 > l2 + l3)) {
                       continue;
                     }
                     if (this->inversion_symmetry == true) {
@@ -420,7 +420,8 @@ namespace rascal {
                         size_t lm1{pow(l1, 2_z) + m1};
                         for (size_t m2{0}; m2 < 2 * l2 + 1; m2++) {
                           int m2s{static_cast<int>(m2 - l2)};
-                          if (m1s + m2s + m3s != 0 && m1s + m2s - m3s != 0) {
+                          if ((m1s + m2s + m3s != 0) &&
+                              (m1s + m2s - m3s != 0)) {
                             continue;
                           }
                           size_t lm2{pow(l2, 2_z) + m2};
