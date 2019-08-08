@@ -1155,16 +1155,35 @@ namespace rascal {
 
       if (this->compute_gradients) {
         // The gradient wrt center is nonzero for all species pairs
-        this->soap_vector_gradients[center].resize(
-            pair_list, n_spatial_dimensions * n_row, n_col, 0);
+        soap_vector_gradients[center].resize(
+            pair_list, n_spatial_dimensions * n_row, n_col, 0.);
+
+        //TODO(max,felix) needs work
+        /*
+        // Neighbour gradients need a separate pair list because if the species
+        // of j is not the same as either of the species for that SOAP entry,
+        // the gradient is zero.
         for (auto neigh : center) {
-          // TODO(max) naïve but functional -- it will contain lots of zeros
-          // Would be better to filter the pair list somehow
-          // (the gradient wrt neighbour j is zero if the neighbouring atom is
-          // not the same species as either neigh1 or neigh2 (species in the
-          // block-sparse pair key) )
-          this->soap_vector_gradients[neigh].resize(
-              pair_list, n_spatial_dimensions * n_row, n_col, 0);
+          std::vector<internal::SortedKey<Key_t>> grad_pair_list{};
+          for (const auto & el1 : coefficients) {
+            auto && neigh_1_type{el1.first[0]};
+            for (const auto & el2 : coefficients) {
+              auto && neigh_2_type{el2.first[0]};
+              auto neigh_type = neigh.get_atom_type();
+              if (neigh_1_type <= neigh_2_type) {
+                pair_type[0] = neigh_1_type;
+                pair_type[1] = neigh_2_type;
+                if ((neigh_type == pair_type[0]) or
+                    (neigh_type == pair_type[1])) {
+                  grad_pair_list.emplace_back(is_sorted, pair_type);
+                }
+              }
+            }
+          }
+          */
+        for (auto neigh : center) {
+          soap_vector_gradients[neigh].resize(
+              pair_list, n_spatial_dimensions * n_row, n_col, 0.);
         }
       }  // if compute gradients
     }    // for center : manager

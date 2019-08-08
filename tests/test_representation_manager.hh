@@ -548,7 +548,7 @@ namespace rascal {
       auto & data_sparse{representation.get_representation_sparse()};
       auto & gradients_sparse{representation.get_gradient_sparse()};
       auto & data_center{data_sparse[center]};
-      auto keys_center = data_sparse.get_keys(center);
+      auto keys_center = gradients_sparse.get_keys(center);
       Key_t center_key{center.get_atom_type()};
       size_t n_entries_per_key{static_cast<size_t>(data_sparse.get_nb_comp())};
       size_t n_entries_center{n_entries_per_key * keys_center.size()};
@@ -604,7 +604,7 @@ namespace rascal {
       auto & data_sparse{representation.get_representation_sparse()};
       auto & gradients_sparse{representation.get_gradient_sparse()};
       auto & gradients_center{gradients_sparse[center]};
-      auto keys_center = data_sparse.get_keys(center);
+      auto keys_center = gradients_center.get_keys();
       size_t n_entries_per_key{static_cast<size_t>(data_sparse.get_nb_comp())};
       size_t n_entries_center{n_entries_per_key * keys_center.size()};
       size_t n_entries_neighbours{0};
