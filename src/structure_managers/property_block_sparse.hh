@@ -353,7 +353,6 @@ namespace rascal {
        */
       inline void normalize() { this->data /= this->data.matrix().norm(); }
 
-
       /**
        * Multiply the elements that belong to (key1, key2) entry with
        * key1 =!= key2
@@ -575,9 +574,9 @@ namespace rascal {
     /**
      * Access a property of order 1 with a clusterRef of order 2
      */
-    template <
-      size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order,
-      std::enable_if_t<(Order_ == 1) and (CallerOrder > 1), int> = 0> // NOLINT
+    template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order,
+              std::enable_if_t<(Order_ == 1) and (CallerOrder > 1),  // NOLINT
+                               int> = 0>                             // NOLINT
     inline decltype(auto)
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
       return this->operator()(this->get_manager().get_atom_index(
