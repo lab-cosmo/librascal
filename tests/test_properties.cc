@@ -701,7 +701,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
 
   /*
-   * A fixture for testing partially sparse proterties.
+   * A fixture for testing partially sparse properties.
    * TODO(felix) use MultipleStructureManagerCentersFixture instead of NL
    */
   template <size_t Order>
