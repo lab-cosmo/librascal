@@ -359,7 +359,7 @@ namespace rascal {
        *
        * relevant only when the keys have 2 indices
        */
-      inline void multiply_offdiagonal_elements_by(const double & fac) {
+      inline void multiply_off_diagonal_elements_by(const double & fac) {
         for (const auto & el : this->map) {
           auto && pair_type{el.first};
           auto && pos{el.second};
