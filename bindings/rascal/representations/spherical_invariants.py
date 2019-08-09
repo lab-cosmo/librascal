@@ -76,7 +76,7 @@ class SphericalInvariants(object):
         self.update_hyperparameters(
             max_radial=max_radial, max_angular=max_angular,
             n_species=n_species,
-            soap_type=soap_type, normalize=normalize,
+            invariants_type=soap_type, normalize=normalize,
             inversion_symmetry=inversion_symmetry)
 
         cutoff_function = dict(
@@ -135,8 +135,9 @@ class SphericalInvariants(object):
         """
         allowed_keys = {'interaction_cutoff', 'cutoff_smooth_width',
                         'max_radial', 'max_angular', 'gaussian_sigma_type',
-                        'gaussian_sigma_constant', 'n_species', 'soap_type',
-                        'inversion_symmetry', 'cutoff_function', 'normalize',
+                        'gaussian_sigma_constant', 'n_species',
+                        'invariants_type', 'inversion_symmetry',
+                        'cutoff_function', 'normalize',
                         'gaussian_density', 'radial_contribution'}
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}
@@ -194,13 +195,13 @@ class SphericalInvariants(object):
         (this is the descriptor size per atomic centre)
 
         """
-        if self.hypers['soap_type'] == 'RadialSpectrum':
+        if self.hypers['invariants_type'] == 'RadialSpectrum':
             return (self.hypers['n_species']*self.hypers['max_radial'])
-        if self.hypers['soap_type'] == 'PowerSpectrum':
+        if self.hypers['invariants_type'] == 'PowerSpectrum':
             return (int((self.hypers['n_species']*(self.hypers['n_species']
             + 1))/2) * self.hypers['max_radial']**2
             * (self.hypers['max_angular'] + 1))
-        if self.hypers['soap_type'] == 'BiSpectrum':
+        if self.hypers['invariants_type'] == 'BiSpectrum':
             if self.hypers['inversion_symmetry'] == False:
                 return (self.hypers['n_species']**3
                 * self.hypers['max_radial']**3

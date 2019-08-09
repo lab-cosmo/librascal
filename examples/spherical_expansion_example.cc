@@ -65,8 +65,6 @@ int main(int argc, char * argv[]) {
   double cutoff{4.};
   json hypers{
       {"max_radial", 3}, {"max_angular", 2}, {"compute_gradients", true}};
-  //{"soap_type", "PowerSpectrum"},
-  //{"normalize", true}};
 
   json fc_hypers{{"type", "Cosine"},
                  {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},

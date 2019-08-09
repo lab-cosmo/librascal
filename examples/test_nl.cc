@@ -55,8 +55,8 @@ int main() {
   double cutoff{3.};
   json hypers{{"max_radial", 6},
               {"max_angular", 6},
-              // {"soap_type", "PowerSpectrum"},
-              {"soap_type", "BiSpectrum"},
+              // {"invariants_type", "PowerSpectrum"},
+              {"invariants_type", "BiSpectrum"},
               {"inversion_symmetry", true},
               {"normalize", true},
               {"compute_gradients", true}};
