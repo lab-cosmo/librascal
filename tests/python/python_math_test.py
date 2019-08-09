@@ -13,4 +13,3 @@ class TestMath(unittest.TestCase):
         np.random.seed(10)
         self.Ntest = 100
         self.atol = 1e-14
-

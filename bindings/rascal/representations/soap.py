@@ -59,7 +59,7 @@ class SOAP(object):
     def __init__(self, interaction_cutoff, cutoff_smooth_width,
                  max_radial, max_angular, gaussian_sigma_type,
                  gaussian_sigma_constant=0., n_species=1,
-                 cutoff_function_type="Cosine",radial_basis="GTO",
+                 cutoff_function_type="Cosine", radial_basis="GTO",
                  soap_type="PowerSpectrum", normalize=True):
         """Construct a SphericalExpansion representation
 
@@ -176,7 +176,7 @@ class SOAP(object):
             except:
                 print("Structure data gather {} failed".format(ii))
 
-            ii+=1
+            ii += 1
 
         return features
 
