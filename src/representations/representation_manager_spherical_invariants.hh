@@ -269,7 +269,7 @@ namespace rascal {
       this->max_angular = hypers.at("max_angular");
       this->normalize = hypers.at("normalize").get<bool>();
       this->spherical_invariants_type_str =
-          hypers.at("invariants_type").get<std::string>();
+          hypers.at("soap_type").get<std::string>();
 
       if (hypers.find("compute_gradients") != hypers.end()) {
         this->compute_gradients = hypers.at("compute_gradients").get<bool>();

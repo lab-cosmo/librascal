@@ -64,7 +64,7 @@ int main(int argc, char * argv[]) {
   json hypers{{"max_radial", 3},
               {"max_angular", 2},
               {"compute_gradients", true},
-              {"invariants_type", "PowerSpectrum"},
+              {"soap_type", "PowerSpectrum"},
               {"normalize", true}};
 
   json fc_hypers{{"type", "Cosine"},

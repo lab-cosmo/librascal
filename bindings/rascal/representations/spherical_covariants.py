@@ -79,7 +79,7 @@ class SphericalCovariants(object):
         self.update_hyperparameters(
             max_radial=max_radial, max_angular=max_angular,
             n_species=n_species,
-            covariants_type=soap_type,
+            soap_type=soap_type,
             normalize=normalize,
             inversion_symmetry=inversion_symmetry,
             lam=lam)
@@ -137,10 +137,9 @@ class SphericalCovariants(object):
         """
         allowed_keys = {'interaction_cutoff', 'cutoff_smooth_width',
                         'max_radial', 'max_angular', 'gaussian_sigma_type',
-                        'gaussian_sigma_constant', 'n_species',
-                        'covariants_type', 'inversion_symmetry', 'lam',
-                        'cutoff_function', 'normalize', 'gaussian_density',
-                        'radial_contribution'}
+                        'gaussian_sigma_constant', 'n_species', 'soap_type',
+                        'inversion_symmetry', 'lam', 'cutoff_function',
+                        'normalize', 'gaussian_density', 'radial_contribution'}
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}
         self.hypers.update(hypers_clean)
@@ -197,7 +196,7 @@ class SphericalCovariants(object):
         (this is the descriptor size per atomic centre)
 
         """
-        if self.hypers['covariants_type'] == 'LambdaSpectrum':
+        if self.hypers['soap_type'] == 'LambdaSpectrum':
             if self.hypers['inversion_symmetry'] == True:
                 n_col = (np.ceil((self.hypers['max_angular'] + 1)**2/2.0) -
                     (1.0 + np.floor((self.hypers['lam'] - 1)/2.0))**2 -

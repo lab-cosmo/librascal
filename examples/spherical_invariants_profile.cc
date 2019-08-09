@@ -68,7 +68,7 @@ int main(int argc, char * argv[]) {
   double cutoff{5.};
   json hypers{{"max_radial", 8},
               {"max_angular", 6},
-              {"invariants_type", "PowerSpectrum"},
+              {"soap_type", "PowerSpectrum"},
               {"normalize", true},
               {"compute_gradients", false}};
 
