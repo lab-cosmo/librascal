@@ -91,6 +91,9 @@ int main(){
   for (int j{0}; j < ITERATIONS; j++) {
     for (size_t i{0}; i<nb_iterations;i++) {
       mat_tmp = intp.interpolate(points(i % nb_points));
+      //mat_tmp = intp.interpolate_optimal(points(i % nb_points)); // ~x41 faster 
+      //mat_tmp.noalias()  = points(i % nb_points) * Matrix_t::Ones(max_radial, max_angular+1); // ~x65 faster
+      // the difference because of these two is a little bit the malloc space and function call, but mainly the check_rows__cols_for__overflow function of eigen, which can be optimized
     }
   }
   auto finish = std::chrono::high_resolution_clock::now();

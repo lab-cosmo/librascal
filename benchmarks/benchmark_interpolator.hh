@@ -304,6 +304,7 @@ namespace rascal {
       bool have_scalar_parameters_changed{Parent::have_interpolator_parameters_changed(state, data)};    
       int new_max_radial = this->template lookup<int>(data, "max_radial", state);
       return (have_scalar_parameters_changed || new_max_radial != this->max_radial); 
+
     }
 
     void init_interpolator(const ::benchmark::State& state, const json & data) {

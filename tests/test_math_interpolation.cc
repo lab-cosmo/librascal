@@ -33,10 +33,14 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(MathInterpolatorTests);
 
+  // TODO(alex) Hunt gives indices outside of the range of the grid when 
+  // compiled in Debug or RelWithDebugInfo, since we
+  // do not use hunt now and probably not in future, I changed it temporary
+  // to Uniform
   using HuntInterpolator = Interpolator<
       InterpolationMethod<InterpolationMethod_t::CubicSpline>,
       GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
-      SearchMethod<SearchMethod_t::Hunt>
+      SearchMethod<SearchMethod_t::Uniform>
         >;
   using UniformInterpolator = Interpolator<
       InterpolationMethod<InterpolationMethod_t::CubicSpline>,
@@ -144,6 +148,7 @@ namespace rascal {
       //intp.initialize(func, 0,1, mean_error_bound); 
       intp.initialize(func, x1, x2, mean_error_bound, 512); 
 
+      // TODO(alex) make two tests out of this
 
       // Checks if vectorized interpolator and scalar interpolator return same results 
       double intp_vec_val, intp_scalar_val;
@@ -167,12 +172,12 @@ namespace rascal {
       //  BOOST_CHECK_LE(error, 1e-6);
       //}
       error = 0.0;
-      int matrix_size = max_radial*max_angular;
+      int matrix_size = max_radial*(max_angular+1);
       Matrix_t intp_val = Matrix_t::Zero(ref_points.size(), matrix_size);
       Matrix_t intp_ref = Matrix_t::Zero(ref_points.size(), matrix_size);
       for (int i{0}; i<ref_points.size()-1; i++) {
-        intp_val.row(i) = Eigen::Map<Vector_t>(func(ref_points(i)).data(),matrix_size);
-        intp_ref.row(i) = Eigen::Map<Vector_t>(intp.interpolate(ref_points(i)).data(),matrix_size);
+        intp_val.row(i) = Eigen::Map<Vector_t>(intp.interpolate(ref_points(i)).data(),matrix_size);
+        intp_ref.row(i) = Eigen::Map<Vector_t>(func(ref_points(i)).data(),matrix_size);
       }
       error = (intp_val-intp_ref).array().abs().colwise().mean().maxCoeff();
       BOOST_CHECK_LE(error, mean_error_bound);

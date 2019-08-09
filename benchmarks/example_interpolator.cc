@@ -46,16 +46,16 @@ int main(){
       >()};
   //auto func = [](double x) {return std::exp(-std::pow((x-1)/0.5,2)/2);};
 
-  double n = 10;
-  double l = 9;
+  double n = 5;
+  double l = 5;
   double a = 0.5*(n+l+3);
   double b = l+1.5;
   auto hyp1f1 = Hyp1f1(a, b, 200, 1e-15);
 
   double x1{0};
-  double x2{16};
+  double x2{8};
   std::function<double(double)> func = [&hyp1f1](double x) {return hyp1f1.calc(x);};
-  double mean_error_bound{1e-10};
+  double mean_error_bound{1e-5};
   size_t nb_points = 1e6;
   //size_t nb_iterations = 100000;
   std::vector<size_t> nbs_iterations = {1000,10000,100000};//,1000000};
@@ -243,7 +243,9 @@ int main(){
     auto start = std::chrono::high_resolution_clock::now();
     for (int j{0}; j < ITERATIONS; j++) {
       for (size_t i{0}; i<nb_iterations;i++) {
-        Matrix_t points_vec_tmp = intp_vec.interpolate(points(i % nb_points));
+        Matrix_t points_vec_tmp = intp_vec.interpolate(points(i % nb_points)); // ~x41
+        //Matrix_t points_vec_tmp = intp_vec.interpolate_optimal(points(i % nb_points)); // ~x41
+        //Matrix_t points_vec_tmp = points(i % nb_points) * Matrix_t::Ones(max_radial, max_angular+1); // ~x65
       }
     }
     auto finish = std::chrono::high_resolution_clock::now();

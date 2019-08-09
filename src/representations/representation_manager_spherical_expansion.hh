@@ -322,6 +322,8 @@ namespace rascal {
         this->hyp1f1_calculator.precompute(this->max_radial, this->max_angular);
       }
 
+      // TODO(alex) specialization for AtomicSmearingType=Constant
+      // everything can be optimized
       //! define the contribution from the central atom to the expansion
       template <AtomicSmearingType AST, size_t Order, size_t Layer>
       Vector_Ref
@@ -356,6 +358,7 @@ namespace rascal {
         return Vector_Ref(this->radial_integral_center);
       }
 
+      // TODO(alex) specialization for AtomicSmearingType=Constant
       //! define the contribution from a neighbour atom to the expansion
       template <AtomicSmearingType AST>
       Matrix_t
@@ -396,6 +399,7 @@ namespace rascal {
 
         // TODO(alex) make temp out of this which is returned instead of
         // variable
+        // TODO(alex) noalias
         Matrix_t radial_integral_neighbour =
             (a_b_l_n.array() * this->hyp1f1_calculator.get_values().array())
                 .matrix() *
@@ -417,6 +421,8 @@ namespace rascal {
         using math::pow;
         using std::sqrt;
 
+        // TODO(alex) specialization for AtomicSmearingType=Constant
+        // FROM HERE
         auto smearing{downcast_atomic_smearing<AST>(this->atomic_smearing)};
         // a = 1 / (2*\sigma^2)
         double fac_a{0.5 * pow(smearing->get_gaussian_sigma(pair), -2)};
@@ -443,6 +449,7 @@ namespace rascal {
           this->a_b_l_n.col(angular_l) =
               (this->a_b_l_n.col(angular_l - 1).array() * a_b_l).matrix();
         }
+        // TILL HERE
 
         this->hyp1f1_calculator.calc(distance, fac_a, this->fac_b,
                                      this->compute_gradients);

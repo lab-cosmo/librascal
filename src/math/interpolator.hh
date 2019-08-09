@@ -759,8 +759,22 @@ namespace rascal {
         return evaluated_grid;
       }
 
-      auto interpolate(double x) {
+      // TODO(alex) 
+      // make a function availabe to return as Matrix directly without a map
+      // The problem here is that returning a map does not store the underlying
+      // matrix, by returning only the map, it is like returning a pointer without
+      // storing the referenced structure resulting in segfault.
+      // Solution: We need to return a Matrix_t, we cannot
+      //
+      // TODO(alex) returning the type Matrix_t without makinngEigen::Map<Matrix_t> executes faster, but does result in errors in the tests
+      Matrix_t interpolate(double x) {
         return Eigen::Map<Matrix_t>(this->interpolate_raw(x).data(), this->rows, this->cols);
+      }
+
+      // This function is only for optimization purposes used.
+      // To extract the overhead created by the class
+      Matrix_t interpolate_optimal(const double & x) const {
+        return x * Matrix_t::Ones(this->rows, this->cols);
       }
 
       // should be private
