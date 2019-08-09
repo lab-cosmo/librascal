@@ -475,7 +475,7 @@ namespace rascal {
 
       // the SQRT_TWO factor comes from the fact that
       // the upper diagonal of the species is not considered
-      soap_vector.multiply_offdiagonal_elements_by(math::SQRT_TWO);
+      soap_vector.multiply_off_diagonal_elements_by(math::SQRT_TWO);
 
       // normalize the soap vector
       double soap_vector_norm{1.0};
@@ -657,11 +657,11 @@ namespace rascal {
         // NOTE(max) the multiplications below have already been done within the
         // species pair loop above -- not sure which way is more efficient
 
-        // soap_center_gradient.multiply_offdiagonal_elements_by(
+        // soap_center_gradient.multiply_off_diagonal_elements_by(
         //         math::SQRT_TWO);
         // for (auto neigh : center) {
         //   auto & soap_neigh_gradient{this->soap_vector_gradients[neigh]};
-        //   soap_neigh_gradient.multiply_offdiagonal_elements_by(
+        //   soap_neigh_gradient.multiply_off_diagonal_elements_by(
         //           math::SQRT_TWO);
         // }
 

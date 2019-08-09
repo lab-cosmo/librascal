@@ -492,7 +492,7 @@ namespace rascal {
 
       // the SQRT_TWO factor comes from the fact that
       // the upper diagonal of the species is not considered
-      soap_vector.multiply_offdiagonal_elements_by(math::SQRT_TWO);
+      soap_vector.multiply_off_diagonal_elements_by(math::SQRT_TWO);
 
       // normalize the soap vector
       if (this->normalize) {
