@@ -53,6 +53,7 @@ int main(){
   json hypers{{"gaussian_density", fc_hypers},
             {"max_radial", max_radial},
             {"max_angular", max_angular},
+            {"compute_gradients", true},
             {"cutoff_function", {{"cutoff",{{"value", 2.0}, {"unit", "A"}}}}}
   };
   auto radial_contr = RadialContribution<RadialBasisType::GTO>(hypers);

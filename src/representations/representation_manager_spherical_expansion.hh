@@ -436,7 +436,8 @@ namespace rascal {
           this->a_b_l_n(radial_n, 0) = pow(a_b_l(radial_n), 3 + radial_n);
         }
         // seems like vetorization does not improve things here because it is
-        // memory is not contiguous ?
+        // memory is not contiguous ? or because max_angular is quite small and
+        // memory overhead balances out the vector arithmetics gain
         for (size_t angular_l{1}; angular_l < this->max_angular + 1;
              ++angular_l) {
           this->a_b_l_n.col(angular_l) =

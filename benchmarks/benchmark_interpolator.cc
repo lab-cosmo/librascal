@@ -174,11 +174,9 @@ namespace rascal {
   BENCHMARK_CAPTURE(BM_IntpRadCon, , intp_vec_fix3)->Apply(AllCombinationsArguments<RadConDataset3>)->Complexity();
   BENCHMARK_CAPTURE(BM_RadCon, , intp_vec_fix3)->Apply(AllCombinationsArguments<RadConDataset>)->Complexity();
 
-  //auto intp_fix{InterpolatorFixture<Hyp1f1Dataset>()};
-  //BENCHMARK_CAPTURE(BM_Hyp1f1, , intp_fix)->Apply(AllCombinationsArguments<Hyp1f1Dataset>)->Complexity();
-  //BENCHMARK_CAPTURE(BM_IntpHyp1f1, , intp_fix)->Apply(AllCombinationsArguments<Hyp1f1Dataset>)->Complexity();
-  //BENCHMARK_CAPTURE(BM_Hyp1f1_DoNotOptimize, , intp_fix)->Apply(AllCombinationsArguments<Hyp1f1Dataset>)->Complexity();
-  //BENCHMARK_CAPTURE(BM_IntpHyp1f1_DoNotOptimize, , intp_fix)->Apply(AllCombinationsArguments<Hyp1f1Dataset>)->Complexity();
+  auto intp_fix{InterpolatorFixture<Hyp1f1Dataset>()};
+  BENCHMARK_CAPTURE(BM_Hyp1f1_DoNotOptimize, , intp_fix)->Apply(AllCombinationsArguments<Hyp1f1Dataset>)->Complexity();
+  BENCHMARK_CAPTURE(BM_IntpHyp1f1_DoNotOptimize, , intp_fix)->Apply(AllCombinationsArguments<Hyp1f1Dataset>)->Complexity();
 
 
 

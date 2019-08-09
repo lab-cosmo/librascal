@@ -47,7 +47,7 @@ int main(){
   //auto func = [](double x) {return std::exp(-std::pow((x-1)/0.5,2)/2);};
 
   double n = 10;
-  double l = 10;
+  double l = 9;
   double a = 0.5*(n+l+3);
   double b = l+1.5;
   auto hyp1f1 = Hyp1f1(a, b, 200, 1e-15);
@@ -125,7 +125,7 @@ int main(){
 
   // RADIAL CONTRIBUTION
   int max_radial{1};
-  int max_angular{max_radial-1};
+  int max_angular{max_radial};
   json fc_hypers{
        {"type", "Constant"},
        {"gaussian_sigma", {{"value", 0.5}, {"unit", "A"}}}
@@ -191,7 +191,7 @@ int main(){
 
   // RADIAL CONTRIBUTION VECTORIZED
   max_radial = 5;
-  max_angular = max_radial-1;
+  max_angular = max_radial;
   hypers = {{"gaussian_density", fc_hypers},
               {"max_radial", max_radial},
               {"max_angular", max_angular},

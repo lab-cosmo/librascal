@@ -103,8 +103,8 @@ namespace rascal {
      static const json data() {
        return {
          {"nbs_iterations", {1e3,1e4,1e5,1e6}},
-         {"ranges", {std::make_pair(0,1), std::make_pair(0,8), std::make_pair(0,16)}},
-         {"log_error_bounds", {-8,-10,-12}},
+         {"ranges", {std::make_pair(0,16)}},
+         {"log_error_bounds", {-8}},
          {"func_names", {SupportedFunc::Hyp1f1}},
          {"random", {true}}
          };
@@ -206,7 +206,7 @@ namespace rascal {
 
     void init_hyp1f1_function() {
       double n = 10;
-      double l = 10;
+      double l = 9;
       double a = 0.5*(n+l+3);
       double b = l+1.5;
       auto hyp1f1 = math::Hyp1f1(a, b, 200, 1e-15);
@@ -320,7 +320,7 @@ namespace rascal {
 
     void init_radial_contribution_function(const ::benchmark::State& state, const json & data) {
       this->max_radial = this->template lookup<int>(data, "max_radial", state);
-      int max_angular{this->max_radial-1};
+      int max_angular{this->max_radial};
       json fc_hypers{
            {"type", "Constant"},
            {"gaussian_sigma", {{"value", 0.5}, {"unit", "A"}}}

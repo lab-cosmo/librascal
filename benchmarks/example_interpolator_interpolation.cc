@@ -44,9 +44,17 @@ int main(){
     GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
     SearchMethod<SearchMethod_t::Uniform>
       >()};
-  auto func = [](double x) {return std::exp(-std::pow((x-1)/0.5,2)/2);};
+
+  double n = 5;
+  double l = 4;
+  double a = 0.5*(n+l+3);
+  double b = l+1.5;
+  auto hyp1f1 = Hyp1f1(a, b, 200, 1e-15);
+  //auto func = [](double x) {return std::exp(-std::pow((x-1)/0.5,2)/2);};
+  std::function<double(double)> func = [&hyp1f1](double x) {return hyp1f1.calc(x, 0.25, 0.5, true);};
+
   double x1{0};
-  double x2{8};
+  double x2{16};
   double mean_error_bound{1e-10};
   size_t nb_points = 1e6;
   size_t nb_iterations = 1000000;
@@ -75,7 +83,9 @@ int main(){
   auto start = std::chrono::high_resolution_clock::now();
   for (int j{0}; j < ITERATIONS; j++) {
     for (size_t i{0}; i<nb_iterations;i++) {
-      points_tmp(i % nb_points) = intp.interpolate(points(i % nb_points));
+      //points_tmp(i % nb_points) = intp.interpolate(points(i % nb_points));
+      //points_tmp(i % nb_points) = hyp1f1.calc(points(i % nb_points));
+      points_tmp(i % nb_points) = hyp1f1.calc(points(i % nb_points));
     }
   }
   auto finish = std::chrono::high_resolution_clock::now();
