@@ -279,11 +279,11 @@ namespace rascal {
     json factory_args{};
   };
 
-  struct MultipleStructureManagerNLFixtureNoCenter {
+  struct MultipleStructureManagerNLFixtureCenterMask {
     using ManagerTypeHolder_t =
         StructureManagerTypeHolder<StructureManagerCenters,
                                    AdaptorNeighbourList>;
-    MultipleStructureManagerNLFixtureNoCenter() {
+    MultipleStructureManagerNLFixtureCenterMask() {
       // random-number engine used
       std::mt19937_64 rng{1242484542};
 
@@ -318,7 +318,7 @@ namespace rascal {
               auto n_flips = uni(rng);
               for (int i_it{0}; i_it < n_flips; ++i_it) {
                 auto i_idx = uni(rng);
-                atomic_structure.is_a_center_atom(i_idx) = false;
+                atomic_structure.center_atoms_mask(i_idx) = false;
               }
 
               json structure_no_center = atomic_structure;
@@ -330,7 +330,7 @@ namespace rascal {
       }
     }
 
-    ~MultipleStructureManagerNLFixtureNoCenter() = default;
+    ~MultipleStructureManagerNLFixtureCenterMask() = default;
 
     const std::vector<bool> consider_ghost_neighbours_list{{false, true}};
     const std::vector<std::string> filenames{
@@ -346,11 +346,11 @@ namespace rascal {
     json factory_args{};
   };
 
-  struct MultipleStructureManagerNLStrictFixtureNoCenter {
+  struct MultipleStructureManagerNLStrictFixtureCenterMask {
     using ManagerTypeHolder_t =
         StructureManagerTypeHolder<StructureManagerCenters,
                                    AdaptorNeighbourList, AdaptorStrict>;
-    MultipleStructureManagerNLStrictFixtureNoCenter() {
+    MultipleStructureManagerNLStrictFixtureCenterMask() {
       // random-number engine used
       std::mt19937_64 rng{1242484542};
 
@@ -387,7 +387,7 @@ namespace rascal {
               auto n_flips = uni(rng);
               for (int i_it{0}; i_it < n_flips; ++i_it) {
                 auto i_idx = uni(rng);
-                atomic_structure.is_a_center_atom(i_idx) = false;
+                atomic_structure.center_atoms_mask(i_idx) = false;
               }
 
               json structure_no_center = atomic_structure;
@@ -399,7 +399,7 @@ namespace rascal {
       }
     }
 
-    ~MultipleStructureManagerNLStrictFixtureNoCenter() = default;
+    ~MultipleStructureManagerNLStrictFixtureCenterMask() = default;
 
     const std::vector<bool> consider_ghost_neighbours_list{{false, true}};
     const std::vector<std::string> filenames{

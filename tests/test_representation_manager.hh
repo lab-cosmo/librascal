@@ -151,12 +151,12 @@ namespace rascal {
                                   {"normalize", true}}};
   };
 
-  struct MultipleStructureSOAPNoCenter
-      : MultipleStructureManagerNLStrictFixtureNoCenter {
-    using Parent = MultipleStructureManagerNLStrictFixtureNoCenter;
+  struct MultipleStructureSOAPCenterMask
+      : MultipleStructureManagerNLStrictFixtureCenterMask {
+    using Parent = MultipleStructureManagerNLStrictFixtureCenterMask;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
 
-    MultipleStructureSOAPNoCenter() : Parent{} {
+    MultipleStructureSOAPCenterMask() : Parent{} {
       for (auto & ri_hyp : this->radial_contribution_hypers) {
         for (auto & fc_hyp : this->fc_hypers) {
           for (auto & sig_hyp : this->density_hypers) {
@@ -170,7 +170,7 @@ namespace rascal {
         }
       }
     };
-    ~MultipleStructureSOAPNoCenter() = default;
+    ~MultipleStructureSOAPCenterMask() = default;
 
     std::vector<json> hypers{};
 
@@ -254,12 +254,12 @@ namespace rascal {
     std::vector<json> rep_hypers{{{"max_radial", 10}, {"max_angular", 8}}};
   };
 
-  struct MultipleStructureSphericalExpansionNoCenter
-      : MultipleStructureManagerNLStrictFixtureNoCenter {
-    using Parent = MultipleStructureManagerNLStrictFixtureNoCenter;
+  struct MultipleStructureSphericalExpansionCenterMask
+      : MultipleStructureManagerNLStrictFixtureCenterMask {
+    using Parent = MultipleStructureManagerNLStrictFixtureCenterMask;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
 
-    MultipleStructureSphericalExpansionNoCenter() : Parent{} {
+    MultipleStructureSphericalExpansionCenterMask() : Parent{} {
       for (auto & ri_hyp : this->radial_contribution_hypers) {
         for (auto & fc_hyp : this->fc_hypers) {
           for (auto & sig_hyp : this->density_hypers) {
@@ -273,7 +273,7 @@ namespace rascal {
         }
       }
     };
-    ~MultipleStructureSphericalExpansionNoCenter() = default;
+    ~MultipleStructureSphericalExpansionCenterMask() = default;
 
     std::vector<json> hypers{};
 
@@ -782,13 +782,13 @@ namespace rascal {
                               {"sorting_algorithm", "row_norm"}}};
   };
 
-  struct MultipleStructureSortedCoulombNoCenter
-      : MultipleStructureManagerNLStrictFixtureNoCenter {
-    using Parent = MultipleStructureManagerNLStrictFixtureNoCenter;
+  struct MultipleStructureSortedCoulombCenterMask
+      : MultipleStructureManagerNLStrictFixtureCenterMask {
+    using Parent = MultipleStructureManagerNLStrictFixtureCenterMask;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
 
-    MultipleStructureSortedCoulombNoCenter() : Parent{} {};
-    ~MultipleStructureSortedCoulombNoCenter() = default;
+    MultipleStructureSortedCoulombCenterMask() : Parent{} {};
+    ~MultipleStructureSortedCoulombCenterMask() = default;
 
     std::vector<json> hypers{{{"central_decay", 0.5},
                               {"interaction_cutoff", 10.},

@@ -217,8 +217,8 @@ namespace rascal {
       return PBC_ref(this->atoms_object.pbc);
     }
 
-    inline ArrayB_ref get_is_center_atom() {
-      return ArrayB_ref(this->atoms_object.is_a_center_atom);
+    inline ArrayB_ref get_center_atoms_mask() {
+      return ArrayB_ref(this->atoms_object.center_atoms_mask);
     }
 
     //! Returns the position of an atom, given an AtomRef
@@ -350,7 +350,7 @@ namespace rascal {
     //! Total number of center atoms in the structure
     size_t n_center_atoms{};
 
-    //! Total number of center atoms in the structure
+    //! Total number of atoms in the structure
     size_t natoms{};
 
     //! number of time the structure has been updated

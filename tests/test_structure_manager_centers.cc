@@ -44,9 +44,9 @@ namespace rascal {
     int i_manager{0};
     for (auto & manager : this->managers) {
       auto & structure = this->structures[i_manager];
-      auto & is_a_center_atom = structure.is_a_center_atom;
-      BOOST_CHECK_EQUAL(manager->get_size(), is_a_center_atom.count());
-      BOOST_CHECK_EQUAL(manager->get_nb_clusters(1), is_a_center_atom.count());
+      auto & center_atoms_mask = structure.center_atoms_mask;
+      BOOST_CHECK_EQUAL(manager->get_size(), center_atoms_mask.count());
+      BOOST_CHECK_EQUAL(manager->get_nb_clusters(1), center_atoms_mask.count());
 
       int atom_counter{0};
 
@@ -106,10 +106,10 @@ namespace rascal {
         std::cout << "periodicity (x,y,z):\n" << periodicity << std::endl;
       }
 
-      auto is_center_atom{manager->get_is_center_atom()};
+      auto center_atoms_mask{manager->get_center_atoms_mask()};
       if (verbose) {
         std::cout << "which atom is a centeral atom:\n"
-                  << is_center_atom << std::endl;
+                  << center_atoms_mask << std::endl;
       }
     }
   }

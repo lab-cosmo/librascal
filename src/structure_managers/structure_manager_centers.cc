@@ -37,9 +37,9 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   // function for setting the internal data structures
   void StructureManagerCenters::build() {
-    auto && is_center_atom = this->get_is_center_atom();
+    auto && center_atoms_mask = this->get_center_atoms_mask();
     this->natoms = this->get_positions().size() / traits::Dim;
-    this->n_center_atoms = is_center_atom.count();
+    this->n_center_atoms = center_atoms_mask.count();
     // initialize necessary data structure
     this->atoms_index[0].clear();
     this->offsets.clear();
@@ -48,14 +48,14 @@ namespace rascal {
 
     // set the references to the particles positions
     for (size_t id{0}; id < this->natoms; ++id) {
-      if (is_center_atom(id)) {
+      if (center_atoms_mask(id)) {
         this->atoms_index[0].push_back(id);
         this->offsets.push_back(id);
       }
     }
 
     for (size_t id{0}; id < this->natoms; ++id) {
-      if (not is_center_atom(id)) {
+      if (not center_atoms_mask(id)) {
         this->atoms_index[0].push_back(id);
         this->offsets.push_back(id);
       }

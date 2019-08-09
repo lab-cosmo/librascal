@@ -660,7 +660,6 @@ namespace rascal {
 
     //! Returns the type of a given atom, given an AtomRef
     inline const int & get_atom_type(const int & atom_tag) const {
-      // return this->atom_types[this->get_atom_index(atom_tag)];
       return this->atom_types[atom_tag];
     }
 
@@ -1021,21 +1020,6 @@ namespace rascal {
     // of current atoms to start the full list of current i-atoms and ghosts
     // This is done before the ghost atom generation, to have them all
     // contiguously at the beginning of the list.
-    // for (auto center : this->manager) {
-    //   auto atom_tag{center.get_atom_tag()};
-    //   size_t cluster_index = this->manager->get_atom_index(atom_tag);
-    //   auto atom_type = center.get_atom_type();
-    //   this->atom_tag_list.push_back(atom_tag);
-    //   this->atom_types.push_back(atom_type);
-    //   this->atom_index_from_atom_tag_list.push_back(cluster_index);
-    // }
-
-    // // fill up the tags for the missing center atoms. should never be
-    // accessed for (size_t i{this->n_centers}; i < this->n_atoms; ++i) {
-    //   this->atom_types.push_back(std::numeric_limits<int>::max());
-    //   this->atom_index_from_atom_tag_list.push_back(
-    //       std::numeric_limits<size_t>::max());
-    // }
     for (size_t atom_tag{0}; atom_tag < this->n_atoms; ++atom_tag) {
       auto atom_type = this->manager->get_atom_type(atom_tag);
       auto cluster_index = this->manager->get_atom_index(atom_tag);
@@ -1086,13 +1070,6 @@ namespace rascal {
 
     // go through all atoms and/or ghosts to build neighbour list, depending on
     // the runtime decision flag
-    // auto nb_atoms{this->consider_ghost_neighbours
-    //                  ? this->n_centers + this->n_ghosts
-    //                  : this->get_size()};
-
-    // #BUG8486@(markus) I changed it so it could work with other
-    // ManagerImplementations that does not make the atomic indices
-    // as StructurManagerCenters
     std::vector<int> current_j_atoms{};
     for (auto center : this->get_manager().with_ghosts()) {
       int atom_tag = center.get_atom_tag();

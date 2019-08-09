@@ -731,7 +731,6 @@ namespace rascal {
         sparse_features.emplace_back(*manager, sparse_features_desc);
         this->keys_list.emplace_back();
         test_data_t test_data{};
-        // for (auto atom : manager) { // NOTE(max) replaced since `atom` unused
         for (size_t i{0}; i < manager->get_size(); ++i) {
           // set up random unique keys
           auto set_max_size{size_dist(gen)};

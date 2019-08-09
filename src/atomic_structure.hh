@@ -90,7 +90,7 @@ namespace rascal {
     Cell_t cell{};
     PBC_t pbc{};
     //! Contains the information wheter an atom should be centered on or not
-    ArrayB_t is_a_center_atom{};
+    ArrayB_t center_atoms_mask{};
 
     inline size_t get_number_of_atoms() const { return positions.cols(); }
 
@@ -98,8 +98,8 @@ namespace rascal {
                               const AtomTypesInput_t & atom_types,
                               const Eigen::Ref<const Eigen::MatrixXd> cell,
                               const PBCInput_t & pbc) {
-      auto is_a_center_atom = ArrayB_t::Ones(atom_types.size());
-      this->set_structure(positions, atom_types, cell, pbc, is_a_center_atom);
+      auto center_atoms_mask = ArrayB_t::Ones(atom_types.size());
+      this->set_structure(positions, atom_types, cell, pbc, center_atoms_mask);
     }
 
     //! method for initializing structure data from raw Eigen types, beware:
@@ -108,11 +108,11 @@ namespace rascal {
                               const AtomTypesInput_t & atom_types,
                               const Eigen::Ref<const Eigen::MatrixXd> cell,
                               const PBCInput_t & pbc,
-                              const ArrayB_t & is_a_center_atom) {
+                              const ArrayB_t & center_atoms_mask) {
       // check data consistency
       auto npos{positions.cols()};
       auto ntypes{atom_types.rows()};
-      auto n_center_flags{is_a_center_atom.size()};
+      auto n_center_flags{center_atoms_mask.size()};
       if (npos != ntypes or ntypes != n_center_flags) {
         std::stringstream err_str{};
         err_str << "Number of atom positions and atom types is not the same: '"
@@ -125,7 +125,7 @@ namespace rascal {
       this->atom_types = atom_types;
       this->pbc = pbc;
       this->positions = positions;
-      this->is_a_center_atom = is_a_center_atom;
+      this->center_atoms_mask = center_atoms_mask;
     }
 
     // TODO(markus): add function to read from XYZ files
@@ -170,7 +170,7 @@ namespace rascal {
       this->atom_types = other.atom_types;
       this->cell = other.cell;
       this->pbc = other.pbc;
-      this->is_a_center_atom = other.is_a_center_atom;
+      this->center_atoms_mask = other.center_atoms_mask;
     }
 
     inline void set_structure() {}
@@ -203,7 +203,7 @@ namespace rascal {
       if (this->positions.cols() == other.positions.cols()) {
         if ((this->pbc.array() != other.pbc.array()).any() or
             (this->cell.array() != other.cell.array()).any() or
-            (this->is_a_center_atom != other.is_a_center_atom).any() or
+            (this->center_atoms_mask != other.center_atoms_mask).any() or
             (this->positions - other.positions)
                     .rowwise()
                     .squaredNorm()
@@ -221,22 +221,22 @@ namespace rascal {
                              const Eigen::Ref<const Eigen::MatrixXd> cell,
                              const PBCInput_t & pbc,
                              const double & skin2) const {
-      auto is_a_center_atom = ArrayB_t::Ones(atom_types.size());
+      auto center_atoms_mask = ArrayB_t::Ones(atom_types.size());
       return this->is_identical(positions, atom_types, cell, pbc,
-                                is_a_center_atom, skin2);
+                                center_atoms_mask, skin2);
     }
 
     inline bool is_identical(const PositionsInput_t & positions,
                              const AtomTypesInput_t & /*atom_types*/,
                              const Eigen::Ref<const Eigen::MatrixXd> cell,
                              const PBCInput_t & pbc,
-                             const ArrayB_ref & is_a_center_atom,
+                             const ArrayB_ref & center_atoms_mask,
                              const double & skin2) const {
       bool is_similar{true};
       if (this->positions.cols() == positions.cols()) {
         if ((this->pbc.array() != pbc.array()).any() or
             (this->cell.array() != cell.array()).any() or
-            (this->is_a_center_atom != is_a_center_atom).any() or
+            (this->center_atoms_mask != center_atoms_mask).any() or
             (this->positions - positions).rowwise().squaredNorm().maxCoeff() >
                 skin2) {
           is_similar = false;
@@ -258,7 +258,7 @@ namespace rascal {
              {"atom_types", s.atom_types},
              {"pbc", s.pbc},
              {"positions", s.positions},
-             {"is_a_center_atom", s.is_a_center_atom}};
+             {"center_atoms_mask", s.center_atoms_mask}};
   }
 
   /* ---------------------------------------------------------------------- */
@@ -280,9 +280,9 @@ namespace rascal {
     if (atom_types.size() == positions.rows()) {
       positions.transposeInPlace();
     }
-    if (j.count("is_a_center_atom") == 1) {
-      auto is_a_center_atom = j.at("is_a_center_atom").get<ArrayB_t>();
-      s.set_structure(positions, atom_types, cell, pbc, is_a_center_atom);
+    if (j.count("center_atoms_mask") == 1) {
+      auto center_atoms_mask = j.at("center_atoms_mask").get<ArrayB_t>();
+      s.set_structure(positions, atom_types, cell, pbc, center_atoms_mask);
     } else {
       s.set_structure(positions, atom_types, cell, pbc);
     }

@@ -145,24 +145,24 @@ int main() {
   // int n_flips{4};
   // for (int i_it{0}; i_it < n_flips; ++i_it) {
   //   auto i_idx = uni(rng);
-  //   atomic_structure.is_a_center_atom(i_idx) = false;
+  //   atomic_structure.center_atoms_mask(i_idx) = false;
   // }
-  // atomic_structure.is_a_center_atom = false;
-  // // atomic_structure.is_a_center_atom(0) = true;
-  // atomic_structure.is_a_center_atom(4) = true;
-  atomic_structure.is_a_center_atom(2) = false;
-  atomic_structure.is_a_center_atom(3) = false;
+  // atomic_structure.center_atoms_mask = false;
+  // // atomic_structure.center_atoms_mask(0) = true;
+  // atomic_structure.center_atoms_mask(4) = true;
+  atomic_structure.center_atoms_mask(2) = false;
+  atomic_structure.center_atoms_mask(3) = false;
 
-  atomic_structure.is_a_center_atom(6) = false;
-  atomic_structure.is_a_center_atom(7) = false;
-  // atomic_structure.is_a_center_atom(10) = false;
-  // atomic_structure.is_a_center_atom(12) = false;
-  // atomic_structure.is_a_center_atom(13) = false;
-  // atomic_structure.is_a_center_atom(14) = false;
-  // atomic_structure.is_a_center_atom(15) = false;
-  // atomic_structure.is_a_center_atom(16) = false;
+  atomic_structure.center_atoms_mask(6) = false;
+  atomic_structure.center_atoms_mask(7) = false;
+  // atomic_structure.center_atoms_mask(10) = false;
+  // atomic_structure.center_atoms_mask(12) = false;
+  // atomic_structure.center_atoms_mask(13) = false;
+  // atomic_structure.center_atoms_mask(14) = false;
+  // atomic_structure.center_atoms_mask(15) = false;
+  // atomic_structure.center_atoms_mask(16) = false;
 
-  auto & is_center_atom = atomic_structure.is_a_center_atom;
+  auto & center_atoms_mask = atomic_structure.center_atoms_mask;
 
   std::vector<std::vector<double>> distances_ref{};
   std::vector<std::vector<double>> distances{};
@@ -172,7 +172,7 @@ int main() {
   size_t i_center{0};
   auto mm0 = extract_underlying_manager<0>(manager);
   for (auto center : manager) {
-    if (is_center_atom(i_center)) {
+    if (center_atoms_mask(i_center)) {
       distances_ref.emplace_back();
       types_ref.emplace_back();
       std::cout << "center_atom: " << center.get_atom_tag() << " -- "
@@ -230,7 +230,8 @@ int main() {
     }
   }
 
-  std::cout << "is_center_atom: " << is_center_atom.transpose() << std::endl;
+  std::cout << "center_atoms_mask: " << center_atoms_mask.transpose()
+            << std::endl;
   i_center = 0;
   for (; i_center < manager->size(); ++i_center) {
     auto ref_order = sort_with_ordering(distances_ref[i_center]);
@@ -264,7 +265,7 @@ int main() {
   std::cout << manager->size();
   for (i_center = 0; i_center < n_atoms; ++i_center) {
     std::cout << "Center idx: " << i_center << std::endl;
-    if (is_center_atom(i_center)) {
+    if (center_atoms_mask(i_center)) {
       auto row_full = rep_full.col(i_center).eval();
       auto row_no_center = rep_no_center.col(i_no_center).eval();
       auto diff = (row_full - row_no_center).norm();

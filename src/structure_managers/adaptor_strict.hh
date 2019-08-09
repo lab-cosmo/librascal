@@ -138,6 +138,7 @@ namespace rascal {
     inline const double & get_cutoff() const { return this->cutoff; }
 
     inline size_t get_nb_clusters(int order) const {
+      assert(order > 0);
       return this->atom_tag_list[order - 1].size();
     }
 

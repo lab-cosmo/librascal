@@ -52,9 +52,9 @@ def unpack_ase(frame):
     numbers = frame.get_atomic_numbers()
     pbc = frame.get_pbc().astype(int)
 
-    if "is_a_center_atom" in frame.arrays.keys():
-        is_a_center_atom = frame.get_array("is_a_center_atom")
+    if "center_atoms_mask" in frame.arrays.keys():
+        center_atoms_mask = frame.get_array("center_atoms_mask")
     else:
-        is_a_center_atom = np.ones_like(numbers, dtype=bool)
+        center_atoms_mask = np.ones_like(numbers, dtype=bool)
 
-    return adapt_structure(cell=cell, positions=positions, atom_types=numbers, pbc=pbc, is_a_center_atom=is_a_center_atom)
+    return adapt_structure(cell=cell, positions=positions, atom_types=numbers, pbc=pbc, center_atoms_mask=center_atoms_mask)

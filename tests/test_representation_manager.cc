@@ -34,23 +34,23 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
 
-  using multiple_nocenter_fixtures = boost::mpl::list<
+  using multiple_center_mask_fixtures = boost::mpl::list<
       // TODO(felix) For some reason the Sorted coulomb version is
       // susceptible to
       // differences in neighbour ordering so test will fail for a wrong
       // reason...
-      // RepresentationFixture<MultipleStructureSortedCoulombNoCenter,
+      // RepresentationFixture<MultipleStructureSortedCoulombCenterMask,
       //                       RepresentationManagerSortedCoulomb>,
-      RepresentationFixture<MultipleStructureSphericalExpansionNoCenter,
+      RepresentationFixture<MultipleStructureSphericalExpansionCenterMask,
                             RepresentationManagerSphericalExpansion>,
-      RepresentationFixture<MultipleStructureSOAPNoCenter,
+      RepresentationFixture<MultipleStructureSOAPCenterMask,
                             RepresentationManagerSOAP>>;
 
   /**
    * Test that selecting subsets of centers will give the same representation
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_nocenter_test, Fix,
-                                   multiple_nocenter_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_center_mask_test, Fix,
+                                   multiple_center_mask_fixtures, Fix) {
     bool verbose{false};
     auto & managers = Fix::managers;
     // auto & representations = Fix::representations;
@@ -62,11 +62,11 @@ namespace rascal {
       for (auto & hyper : hypers) {
         auto & manager = managers[i_manager];
         auto & manager_no_center = managers[i_manager + 1];
-        auto is_center_atom = extract_underlying_manager<0>(manager_no_center)
-                                  ->get_is_center_atom();
+        auto center_atoms_mask =
+          extract_underlying_manager<0>(manager_no_center) ->get_center_atoms_mask();
 
         if (verbose) {
-          std::cout << "is_center_atom: " << is_center_atom.transpose()
+          std::cout << "center_atoms_mask: " << center_atoms_mask.transpose()
                     << std::endl;
         }
 
@@ -82,7 +82,7 @@ namespace rascal {
         size_t i_no_center{0};
         for (size_t i_center{0}; i_center < manager_no_center->size();
              ++i_center) {
-          if (is_center_atom(i_center)) {
+          if (center_atoms_mask(i_center)) {
             auto row_full = rep_full.col(i_center);
             auto row_no_center = rep_no_center.col(i_no_center);
             auto diff = (row_full - row_no_center).norm();
@@ -208,9 +208,9 @@ namespace rascal {
       auto man = extract_underlying_manager<0>(manager);
       auto atomic_structure = man->get_atomic_structure();
       auto n_atoms = atomic_structure.get_number_of_atoms();
-      atomic_structure.is_a_center_atom = ArrayB_t::Zero(n_atoms);
+      atomic_structure.center_atoms_mask = ArrayB_t::Zero(n_atoms);
       auto i_atom1 = static_cast<int>(n_atoms / 2);
-      atomic_structure.is_a_center_atom[i_atom1] = true;
+      atomic_structure.center_atoms_mask[i_atom1] = true;
       manager->update(atomic_structure);
       for (auto & hyper : hypers) {
         representations.emplace_back(manager, hyper);

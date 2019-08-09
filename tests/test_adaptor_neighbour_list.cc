@@ -35,7 +35,6 @@
 namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(neighbour_list_adaptor_test);
-  // TODO(felix) add adaptor test for the no center option
 
   /* ---------------------------------------------------------------------- */
   /**

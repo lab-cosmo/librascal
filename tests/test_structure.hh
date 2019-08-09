@@ -393,24 +393,24 @@ namespace rascal {
     ManagerFixture()
         : manager{make_structure_manager<Manager_t>()}, cutoff{2.} {
       Eigen::ArrayXi to_change_id(50);
-      ArrayB_t is_a_center_atom(50);
+      ArrayB_t center_atoms_mask(50);
       for (auto & filename : this->filenames) {
         for (auto & n_is_not_center : this->n_is_not_centers) {
           structures.emplace_back();
           structures.back().set_structure(filename);
 
           // don't center on all atoms
-          is_a_center_atom =
+          center_atoms_mask =
               ArrayB_t::Ones(structures.back().get_number_of_atoms());
           to_change_id = ((Eigen::ArrayXd::Random(n_is_not_center) +
                            Eigen::ArrayXd::Ones(n_is_not_center)) *
-                          ((is_a_center_atom.size() - 1) * 0.5))
+                          ((center_atoms_mask.size() - 1) * 0.5))
                              .cast<int>();
           for (int i_id{0}; i_id < n_is_not_center; ++i_id) {
-            is_a_center_atom(to_change_id(i_id)) = false;
+            center_atoms_mask(to_change_id(i_id)) = false;
           }
 
-          structures.back().is_a_center_atom = is_a_center_atom;
+          structures.back().center_atoms_mask = center_atoms_mask;
           managers.push_back(make_structure_manager<Manager_t>());
           managers.back()->update(structures.back());
         }

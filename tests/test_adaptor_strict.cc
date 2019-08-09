@@ -413,9 +413,9 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   using Fixtures_no_center = boost::mpl::list<
-      MultipleStructureFixture<MultipleStructureManagerNLFixtureNoCenter>,
+      MultipleStructureFixture<MultipleStructureManagerNLFixtureCenterMask>,
       MultipleStructureFixture<
-          MultipleStructureManagerNLStrictFixtureNoCenter>>;
+          MultipleStructureManagerNLStrictFixtureCenterMask>>;
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_no_center_test, Fix,
                                    Fixtures_no_center, Fix) {
@@ -425,10 +425,26 @@ namespace rascal {
     for (int i_it{0}; i_it < n_it; i_it += 2) {
       auto & manager = managers[i_it];
       auto & manager_no_center = managers[i_it + 1];
-      auto is_center_atom = extract_underlying_manager<0>(manager_no_center)
-                                ->get_is_center_atom();
+      auto center_atoms_mask = extract_underlying_manager<0>(manager_no_center)
+                                ->get_center_atoms_mask();
+
+      if (not manager->get_consider_ghost_neighbours()) {
+        auto natoms = manager->get_size();
+        auto natoms2 = manager->get_nb_clusters(1);
+        BOOST_CHECK_EQUAL(natoms, natoms2);
+
+        auto n_center_atom = center_atoms_mask.count();
+        natoms = manager_no_center->get_size();
+        natoms2 = manager_no_center->get_nb_clusters(1);
+        BOOST_CHECK_EQUAL(n_center_atom, natoms);
+      } else {
+        auto natoms = manager->get_size_with_ghosts();
+        auto natoms2 = manager->get_nb_clusters(1);
+        BOOST_CHECK_EQUAL(natoms, natoms2);
+      }
+
       if (verbose) {
-        std::cout << "is_center_atom: " << is_center_atom.transpose()
+        std::cout << "center_atoms_mask: " << center_atoms_mask.transpose()
                   << std::endl;
       }
       std::vector<std::vector<double>> distances_ref{};
@@ -439,7 +455,7 @@ namespace rascal {
         std::cout << "Center index: ";
       }
       for (auto center : manager) {
-        if (is_center_atom(i_center)) {
+        if (center_atoms_mask(i_center)) {
           distances_ref.emplace_back();
           if (verbose) {
             std::cout << extract_underlying_manager<0>(manager)->get_atom_index(
@@ -455,7 +471,7 @@ namespace rascal {
       }
       if (verbose) {
         std::cout << std::endl;
-        std::cout << "Center index nocenter: ";
+        std::cout << "Center index center_mask: ";
       }
       for (auto center : manager_no_center) {
         distances.emplace_back();
