@@ -78,33 +78,15 @@ namespace rascal {
       BOOST_CHECK_LE(error, mean_error_bound);
     }
     
-    int max_angular = 20;
-    int max_radial = 20;
-    double a,b;
-
-    bool verbose{false};
-    int l{max_angular};
-    int n{max_radial};
-    // TODO(alex) this test would take 5 seconds, therefore
-    // I only test subset
-    //for (size_t l{0}; l<max_angular; l++) {
-    //  for (size_t n{0}; n<max_radial; n++) {
-        if (verbose) {
-          std::cout << "Testing for n="<<n<<" and l="<<l<<std::endl;
-        }
-        func  = [&](double x) {return this->hyp1f1.calc(x);};
-        //func = std::bind(hyp1f1_function_generator, a, b, std::placeholders::_1);
-        intp.initialize(func, Fix::x1, Fix::x2, Fix::mean_error_bound);
-        for (int i{0}; i<ref_points.size()-1; i++) {
-          intp_val = intp.interpolate(ref_points(i));
-          intp_ref = func(ref_points(i));
-          error = std::abs(intp_val - intp_ref);
-          BOOST_CHECK_LE(error, mean_error_bound);
-        }
-    //  }
-    //
-    //}
-    //
+    func  = [&](double x) {return this->hyp1f1.calc(x);};
+    //func = std::bind(hyp1f1_function_generator, a, b, std::placeholders::_1);
+    intp.initialize(func, Fix::x1, Fix::x2, Fix::mean_error_bound);
+    for (int i{0}; i<ref_points.size()-1; i++) {
+      intp_val = intp.interpolate(ref_points(i));
+      intp_ref = func(ref_points(i));
+      error = std::abs(intp_val - intp_ref);
+      BOOST_CHECK_LE(error, mean_error_bound);
+    }
   }
     
   // Test for identity function
