@@ -1,11 +1,11 @@
 /**
- * file   soap_example.cc
+ * file   spherical_invariants_example.cc
  *
  * @author Max Veit <max.veit@epfl.ch>
  *
  * @date   26 June 2019
  *
- * @brief  Example for profiling the spherical expansion and SOAP
+ * @brief  Example for computing the spherical invariants (SOAP)
  *
  * Copyright © 2018 Max Veit, Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -106,8 +106,8 @@ int main(int argc, char * argv[]) {
   // something
   std::cout << "Expansion of first " << n_centers_print << " centers:";
   std::cout << std::endl;
-  std::cout << "Note that the coefficients are printed with species pairs "
-               "along the columns and n-n'-m along the rows."
+  std::cout << "Note that the coefficients are printed with species pairs along"
+               " the columns and n-n'-l along the rows."
             << std::endl;
   std::cout << "Gradients are printed with: First Cartesian component, "
                "then species pairs, along the columns; n-n'-l along the rows.";
@@ -146,12 +146,14 @@ int main(int argc, char * argv[]) {
     }
     std::cout << std::endl;
     std::cout << "Gradient of this expansion wrt center pos: " << std::endl;
+    // clang-format off
+    // makes an absolute mess of the below
     std::cout << Eigen::Map<Eigen::MatrixXd>(
-                     representation.soap_vector_gradients.get_dense_row(center)
-                         .data(),
-                     3 * n_species_center,
-                     representation.soap_vector_gradients.get_nb_comp())
-                     .transpose();
+           representation.soap_vector_gradients.get_dense_row(center).data(),
+           3 * n_species_center,
+           representation.soap_vector_gradients.get_nb_comp())
+      .transpose();
+    // clang-format on
     std::cout << std::endl;
     size_t neigh_count{0};
     for (auto neigh : center) {
@@ -170,12 +172,13 @@ int main(int argc, char * argv[]) {
       std::cout << std::endl;
       std::cout << "Gradient of the above wrt atom " << neigh.back();
       std::cout << " of type " << neigh.get_atom_type() << std::endl;
+      // clang-format off
       std::cout << Eigen::Map<Eigen::MatrixXd>(
-                       representation.soap_vector_gradients.get_dense_row(neigh)
-                           .data(),
-                       3 * n_species_center,
-                       representation.soap_vector_gradients.get_nb_comp())
-                       .transpose();
+          representation.soap_vector_gradients.get_dense_row(neigh).data(),
+          3 * n_species_center,
+          representation.soap_vector_gradients.get_nb_comp())
+        .transpose();
+      // clang-format on
       std::cout << std::endl;
       ++neigh_count;
     }

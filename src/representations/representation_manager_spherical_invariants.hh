@@ -314,6 +314,13 @@ namespace rascal {
       }
     }
 
+    /**
+     * Return the raw data for the representation
+     *
+     * @warning placeholder -- doesn't actually return anything meaningful
+     *
+     * Will be replaced when the representation calculator is implemented
+     */
     std::vector<Precision_t> & get_representation_raw_data() {
       return this->dummy;
     }
@@ -383,6 +390,7 @@ namespace rascal {
                internal::enumSize<internal::SphericalInvariantsType>()>
         precompute_spherical_invariants{};
     std::string spherical_invariants_type_str{};
+    //! Unused variable, will be eliminated with the representation calculator
     std::vector<Precision_t> dummy{};
   };
 
@@ -978,6 +986,8 @@ namespace rascal {
                                 complex coef1c, coef2c, coef3c;
                                 // usual formulae for converting from real to
                                 // complex
+                                // see src/math/spherical_harmonics.hh for the
+                                // inverse transformation
                                 // TODO(andrea, michael) avoid complex
                                 // arithmetic
                                 if (m1s > 0) {
@@ -1016,6 +1026,7 @@ namespace rascal {
                                 coef1c *= math::INV_SQRT_TWO;
                                 coef2c *= math::INV_SQRT_TWO;
                                 coef3c *= math::INV_SQRT_TWO;
+
                                 // The descriptor components are purely real or
                                 // imaginary
                                 // depending on the divisibility of l1 + l2 +l3

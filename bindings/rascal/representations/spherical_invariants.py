@@ -11,7 +11,7 @@ import numpy as np
 class SphericalInvariants(object):
 
     """
-    Computes a SphericalInvariants representation, e.g. power spectrum etc.
+    Computes a SphericalInvariants representation, i.e. the SOAP power spectrum
 
     Hyperparameters
     ----------
@@ -213,6 +213,6 @@ class SphericalInvariants(object):
                 * int(np.floor(((self.hypers['max_angular'] + 1)**2 + 1)
                 * (2*(self.hypers['max_angular'] + 1) + 3)/8.0)))
         else:
-            raise RuntimeError('Only soap_type = RadialSpectrum || '
-                               'PowerSpectrum || BiSpectrum '
-                               'implemented for now')
+            raise ValueError('Only soap_type = RadialSpectrum || '
+                             'PowerSpectrum || BiSpectrum '
+                             'implemented for now')

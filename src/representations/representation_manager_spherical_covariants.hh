@@ -68,10 +68,12 @@ namespace rascal {
         this->lambda = hypers.at("lam").get<size_t>();
 
         // get the number of non zero elements in the w3j
+        // Use the well-known selection rules for the Wigner 3j symbols
         int n_elements{0};
         size_t l3{this->lambda};
         for (size_t l1{0}; l1 < this->max_angular + 1; ++l1) {
           for (size_t l2{0}; l2 < this->max_angular + 1; ++l2) {
+            // Triangle rule
             if (l1 < static_cast<size_t>(std::abs<int>(l2 - l3)) ||
                 l1 > l2 + l3) {
               continue;
@@ -87,6 +89,7 @@ namespace rascal {
                 int m2s{static_cast<int>(m2 - l2)};
                 for (size_t m3{0}; m3 < 2 * l3 + 1; m3++) {
                   int m3s{static_cast<int>(m3 - l3)};
+                  // Selection rule for m
                   if ((m1s + m2s + m3s != 0) && (m1s + m2s - m3s != 0)) {
                     continue;
                   }
@@ -245,6 +248,13 @@ namespace rascal {
       }
     }
 
+    /**
+     * Return the raw data for the representation
+     *
+     * @warning placeholder -- doesn't actually return anything meaningful
+     *
+     * Will be replaced when the representation calculator is implemented
+     */
     std::vector<Precision_t> & get_representation_raw_data() {
       return this->dummy;
     }
@@ -281,6 +291,7 @@ namespace rascal {
                internal::enumSize<internal::SphericalCovariantsType>()>
         precompute_spherical_covariants{};
     std::string spherical_covariants_type_str{};
+    //! Placeholder, will be eliminated with the representation calculator
     std::vector<Precision_t> dummy{};
     bool inversion_symmetry{false};
     size_t lambda{0};
@@ -432,6 +443,9 @@ namespace rascal {
                           complex coef1c, coef2c;
                           double w3j = wigner_3js[wigner_count];
                           // usual formulae for converting from real to complex
+                          // These are the inverses of the formulae we used to
+                          // define the real spherical harmonics in
+                          // src/math/spherical_harmonics.hh
                           if (m1s > 0) {
                             coef1c = pow(-1.0, m1s) *
                                      complex(coef1(n1, lm1),
@@ -456,6 +470,7 @@ namespace rascal {
                           }
                           coef1c *= math::INV_SQRT_TWO;
                           coef2c *= math::INV_SQRT_TWO;
+
                           // combine the coefficients with Wigner 3j symbols
                           // TODO(andrea, michael) avoid complex arithmetic
                           complex i_unit{0.0, 1.0};

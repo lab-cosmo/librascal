@@ -1,11 +1,11 @@
 /**
- * file   soap_profile.cc
+ * file   spherical_invariants_profile.cc
  *
  * @author Max Veit <max.veit@epfl.ch>
  *
  * @date   7 May 2019
  *
- * @brief  Example for profiling the spherical expansion and SOAP
+ * @brief  Example for profiling the spherical invariants (SOAP)
  *
  * Copyright © 2018 Max Veit, Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -135,5 +135,6 @@ int main(int argc, char * argv[]) {
             << soap2(0, 0) << " " << soap2(0, 1) << " " << soap2(0, 2) << "\n"
             << soap2(1, 0) << " " << soap2(1, 1) << " " << soap2(1, 2) << "\n"
             << soap2(2, 0) << " " << soap2(2, 1) << " " << soap2(2, 2) << "\n";
-  // TODO(max) print out analogous gradient components, for now see soap_example
+  // TODO(max) print out analogous gradient components, for now see
+  // spherical_invariants_example
 }
