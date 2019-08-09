@@ -143,8 +143,8 @@ namespace rascal {
     a = 0.5*(n+l+3);
     b = l+1.5;
     math::Hyp1f1 hyp1f1{a, b, 200, 1e-15};
-    std::function<double(double)> func = [&hyp1f1](double x) {return hyp1f1.calc(x);};
-    //func = std::bind(hyp1f1_function_generator, a, b, std::placeholders::_1);
+    //std::function<double(double)> func = [&hyp1f1](double x) {return hyp1f1.calc(x);};
+    std::function<double(double)> func = std::bind(hyp1f1_function_generator, a, b, std::placeholders::_1);
     intp.initialize(func, this->x1, this->x2, this->mean_error_bound); 
     BOOST_CHECK_LE(intp_ref_mean_error(this->intp, ref_points), this->mean_error_bound);
     //  }
@@ -169,8 +169,7 @@ namespace rascal {
         >;
 
   BOOST_FIXTURE_TEST_CASE(math_interpolator_vectorized_test, InterpolatorFixture<DefaultInterpolatorVectorized>) {
-
-      bool verbose{true};
+      bool verbose{false};
       Vector_t ref_points = Vector_t::LinSpaced(nb_ref_points, x1, x2); 
       double error;
 
@@ -206,15 +205,26 @@ namespace rascal {
 
 
       // checks if error bound is fulfilled
-      Matrix_t intp_val = Matrix_t::Zero(max_radial,max_angular);
-      Matrix_t intp_ref = Matrix_t::Zero(max_radial,max_angular);
+      //Matrix_t intp_val = Matrix_t::Zero(max_radial,max_angular);
+      //Matrix_t intp_ref = Matrix_t::Zero(max_radial,max_angular);
+      // Test for max error function
+      // TODO(alex) find a better way of testing this, error function is changed
+      //for (int i{0}; i<ref_points.size()-1; i++) {
+      //  intp_val = intp.interpolate(ref_points(i));
+      //  intp_ref = func(ref_points(i));
+      //  error = (intp_val - intp_ref).array().abs().maxCoeff();
+      //  BOOST_CHECK_LE(error, 1e-6);
+      //}
+      error = 0.0;
+      int matrix_size = max_radial*max_angular;
+      Matrix_t intp_val = Matrix_t::Zero(ref_points.size(), matrix_size);
+      Matrix_t intp_ref = Matrix_t::Zero(ref_points.size(), matrix_size);
       for (int i{0}; i<ref_points.size()-1; i++) {
-        intp_val = intp.interpolate(ref_points(i));
-        intp_ref = func(ref_points(i));
-        error = (intp_val - intp_ref).array().abs().maxCoeff();
-        BOOST_CHECK_LE(error, mean_error_bound);
+        intp_val.row(i) = Eigen::Map<Vector_t>(func(ref_points(i)).data(),matrix_size);
+        intp_ref.row(i) = Eigen::Map<Vector_t>(intp.interpolate(ref_points(i)).data(),matrix_size);
       }
-
+      error = (intp_val-intp_ref).array().abs().colwise().mean().maxCoeff();
+      BOOST_CHECK_LE(error, mean_error_bound);
     }
 
   BOOST_AUTO_TEST_SUITE_END();
