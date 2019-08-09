@@ -63,7 +63,8 @@ namespace rascal {
         auto & manager = managers[i_manager];
         auto & manager_no_center = managers[i_manager + 1];
         auto center_atoms_mask =
-          extract_underlying_manager<0>(manager_no_center) ->get_center_atoms_mask();
+            extract_underlying_manager<0>(manager_no_center)
+                ->get_center_atoms_mask();
 
         if (verbose) {
           std::cout << "center_atoms_mask: " << center_atoms_mask.transpose()

@@ -426,7 +426,7 @@ namespace rascal {
       auto & manager = managers[i_it];
       auto & manager_no_center = managers[i_it + 1];
       auto center_atoms_mask = extract_underlying_manager<0>(manager_no_center)
-                                ->get_center_atoms_mask();
+                                   ->get_center_atoms_mask();
 
       if (not manager->get_consider_ghost_neighbours()) {
         auto natoms = manager->get_size();

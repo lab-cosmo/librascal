@@ -333,10 +333,10 @@ namespace rascal {
   template <int TargetLevel, typename StructureManager>
   decltype(auto)
   extract_underlying_manager(std::shared_ptr<StructureManager> manager) {
-
     static constexpr int n_step_below =
         StructureManager::traits::StackLevel - TargetLevel;
-    static_assert(n_step_below >= 0,
+    static_assert(
+        n_step_below >= 0,
         "TargetLevel is larger than the number of manager in the stack");
     auto test{
         internal::UnderlyingManagerExtractor<StructureManager, n_step_below>(
