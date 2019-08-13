@@ -106,6 +106,11 @@ namespace rascal {
       return enumValue(e1) + enumSize<Enum1>() * enumValue(e2);
     }
 
+    template <typename Enum1, typename Enum2, typename Enum3>
+    constexpr size_t combineEnums(Enum1 e1, Enum2 e2, Enum3 e3) {
+      return enumValue(e1) + enumSize<Enum1>() * (enumValue(e2) + enumSize<Enum2>() *enumValue(e3));
+    }
+
     /* ---------------------------------------------------------------------- */
     /**
      * Implementation of the generation of an index sequence from Min to Max

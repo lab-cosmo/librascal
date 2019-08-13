@@ -265,6 +265,13 @@ namespace rascal {
       return this->atom_tag_list[1];
     }
 
+    double get_min_distance() {
+      return this->min_distance;
+    }
+    double get_max_distance() {
+      return this->max_distance;
+    }
+
    protected:
     /**
      * main function during construction of a neighbourlist.
@@ -302,6 +309,8 @@ namespace rascal {
     std::shared_ptr<Distance_t> distance;
     std::shared_ptr<DirectionVector_t> dir_vec;
     const double cutoff;
+    double min_distance;
+    double max_distance;
 
     /**
      * store atom tags per order,i.e.
@@ -363,7 +372,9 @@ namespace rascal {
       : manager{std::move(manager)}, distance{std::make_shared<Distance_t>(
                                          *this)},
         dir_vec{std::make_shared<DirectionVector_t>(*this)}, cutoff{cutoff},
-        atom_tag_list{}, neighbours_cluster_index{}, nb_neigh{}, offsets{}
+        min_distance{}, max_distance{}, atom_tag_list{},
+        neighbours_cluster_index{}, nb_neigh{}, offsets{}
+        
 
   {
     if (not internal::check_cutoff(this->manager, cutoff)) {
@@ -414,6 +425,8 @@ namespace rascal {
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
     size_t pair_counter{0};
+    this->min_distance = std::numeric_limits<double>::max();
+    this->max_distance = 0.;
     // depending on the underlying neighbourlist, the proxy `.with_ghosts()` is
     // either actually with ghosts, or only returns the number of centers.
     for (auto atom : this->manager.get()->with_ghosts()) {
@@ -438,6 +451,13 @@ namespace rascal {
 
           this->dir_vec->push_back((vec_ij.array() / distance).matrix());
           this->distance->push_back(distance);
+
+          if (distance > this->max_distance) {
+            this->max_distance = distance;
+          }
+          if (distance < this->max_distance) {
+            this->max_distance = distance;
+          }
 
           Eigen::Matrix<size_t, PairLayer + 1, 1> indices_pair;
           indices_pair.template head<PairLayer>() = pair.get_cluster_indices();

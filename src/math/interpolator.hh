@@ -334,7 +334,7 @@ namespace rascal {
     template <SearchMethod_t Type>
     struct SearchMethod{};
 
-    // CURRENTLY ASSUMES THAT GRID IS UNIFORM
+    // TODO(alex) assert that it only can be used with Uniform grids
     template <>
     struct SearchMethod<SearchMethod_t::Uniform> {
 
@@ -344,7 +344,7 @@ namespace rascal {
         this->nb_grid_points_per_unit = grid.size()/(grid(grid.size()-1)-grid(0));
         this->x1 = grid(0);
         this->grid_size = grid.size();
-        this->search_size = this->grid_size-this->nb_support_points;
+        this->search_size = this->grid_size - this->nb_support_points;
       }
 
       // If the requests to locate seem correlated, then the heuristic is used
@@ -361,8 +361,9 @@ namespace rascal {
       }
       // the number of support methods the interpolation method uses
       double nb_grid_points_per_unit{0};
-      double x1{0};
-      const size_t nb_support_points{2};
+      double x1{0};      
+      // asserts that we only use it with CubicSpline
+      size_t nb_support_points{2};
       size_t grid_size{0};
       int search_size{0};
     };
@@ -803,6 +804,11 @@ namespace rascal {
       Matrix_t evaluated_grid{};
     };
 
+    using InterpolatorVectorized_t = InterpolatorVectorized<
+          InterpolationMethod<InterpolationMethod_t::CubicSplineVectorized>,
+          GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
+          SearchMethod<SearchMethod_t::Uniform>
+        >;
 
   // TODO(alex) make a CRTP calculator and check if this can be merged with the GradientCalutaro stuff
 

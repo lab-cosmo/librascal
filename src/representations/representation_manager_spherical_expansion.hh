@@ -71,6 +71,13 @@ namespace rascal {
     enum class AtomicSmearingType { Constant, PerSpecies, Radial, End_ };
 
     /**
+     * List of possible usages of interpolator. Currently only full usage
+     * or no usage is allowed, but a hybrid coud be added in the future.
+     */
+    enum class InterpolatorType { NoIntp, WithIntp, End_ };
+
+
+    /**
      * Base class for the specification of the atomic smearing.
      */
     struct AtomicSmearingSpecificationBase {
@@ -124,6 +131,9 @@ namespace rascal {
       }
       template <size_t Order, size_t Layer>
       double get_gaussian_sigma(ClusterRefKey<Order, Layer> & /* pair */) {
+        return this->constant_gaussian_sigma;
+      }
+      double get_gaussian_sigma() {
         return this->constant_gaussian_sigma;
       }
       double constant_gaussian_sigma{0.};
@@ -205,14 +215,11 @@ namespace rascal {
 
       virtual void precompute() = 0;
       // Can't make templated virtual member function... But these functions
-      // are expected
+      // are expected. One could use CRTP ;)
       // virtual Vector_Ref compute_center_contribution() = 0;
       // virtual Matrix_Ref compute_neighbour_contribution() = 0;
       // virtual Matrix_Ref compute_neighbour_derivative() = 0;
     };
-
-    template <RadialBasisType RBT>
-    struct RadialContribution {};
 
     /**
      * Implementation of the radial contribution for Gaussian Type Orbitals
@@ -258,6 +265,7 @@ namespace rascal {
       using Vector_t = typename Parent::Vector_t;
       using Matrix_Ref = typename Parent::Matrix_Ref;
       using Vector_Ref = typename Parent::Vector_Ref;
+
 
       /**
        * Set hyperparameters.
@@ -322,44 +330,11 @@ namespace rascal {
         this->hyp1f1_calculator.precompute(this->max_radial, this->max_angular);
       }
 
-      // TODO(alex) specialization for AtomicSmearingType=Constant
-      // everything can be optimized
-      //! define the contribution from the central atom to the expansion
-      template <AtomicSmearingType AST, size_t Order, size_t Layer>
-      Vector_Ref
-      compute_center_contribution(ClusterRefKey<Order, Layer> & center) {
-        using math::PI;
-        using math::pow;
-        using std::sqrt;
-
-        auto smearing{downcast_atomic_smearing<AST>(this->atomic_smearing)};
-
-        // a = 1 / (2*\sigma^2)
-        double fac_a{0.5 * pow(smearing->get_gaussian_sigma(center), -2)};
-
-        // Contribution from the central atom
-        // Y_l^m(θ, φ) =  √((2l+1)/(4*π))) \delta_{m0} and
-        //  \delta_{l0} (spherical symmetry) and
-        // 1F1(a,b,0) = 1
-        for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
-          double a_b_l_n{0};
-          if (radial_n % 2 == 0) {
-            a_b_l_n = sqrt(pow(fac_a + this->fac_b[radial_n],
-                               -1 * static_cast<int>(3 + radial_n)));
-          } else {
-            a_b_l_n = pow(fac_a + this->fac_b[radial_n],
-                          -1 * static_cast<int>(3 + radial_n) / 2);
-          }
-
-          this->radial_integral_center(radial_n) =
-              this->radial_n_factors(radial_n) * a_b_l_n;
-        }
-
-        return Vector_Ref(this->radial_integral_center);
-      }
-
-      // TODO(alex) specialization for AtomicSmearingType=Constant
-      //! define the contribution from a neighbour atom to the expansion
+      // TODO(alex) remove this function completely when benchmarks do not use
+      // this anymore or remove the unncessary template parameter
+      /* Define the contribution from a neighbour atom to the expansion
+       * without requiring a cluster object os it can be used for benchmarks.
+       */
       template <AtomicSmearingType AST>
       Matrix_t
       compute_contribution(const double & distance, const double & sigma) {
@@ -397,9 +372,6 @@ namespace rascal {
 
         this->hyp1f1_calculator.calc(distance, fac_a, this->fac_b);
 
-        // TODO(alex) make temp out of this which is returned instead of
-        // variable
-        // TODO(alex) noalias
         Matrix_t radial_integral_neighbour =
             (a_b_l_n.array() * this->hyp1f1_calculator.get_values().array())
                 .matrix() *
@@ -412,23 +384,63 @@ namespace rascal {
       }
 
 
-      //! define the contribution from a neighbour atom to the expansion
+      // TODO(alex) for the specialization of AtomicSmearingType=Constant
+      // everything can be precomputed
+      //! define the contribution from the central atom to the expansion
       template <AtomicSmearingType AST, size_t Order, size_t Layer>
-      Matrix_Ref
-      compute_neighbour_contribution(const double & distance,
-                                     ClusterRefKey<Order, Layer> & pair) {
+      Vector_Ref
+      compute_center_contribution(ClusterRefKey<Order, Layer> & center) {
         using math::PI;
         using math::pow;
         using std::sqrt;
 
-        // TODO(alex) specialization for AtomicSmearingType=Constant
-        // FROM HERE
         auto smearing{downcast_atomic_smearing<AST>(this->atomic_smearing)};
+
         // a = 1 / (2*\sigma^2)
-        double fac_a{0.5 * pow(smearing->get_gaussian_sigma(pair), -2)};
+        double fac_a{0.5 * pow(smearing->get_gaussian_sigma(center), -2)};
+
+        // Contribution from the central atom
+        // Y_l^m(θ, φ) =  √((2l+1)/(4*π))) \delta_{m0} and
+        //  \delta_{l0} (spherical symmetry) and
+        // 1F1(a,b,0) = 1
+        for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
+          double a_b_l_n{0};
+          if (radial_n % 2 == 0) {
+            a_b_l_n = sqrt(pow(fac_a + this->fac_b[radial_n],
+                               -1 * static_cast<int>(3 + radial_n)));
+          } else {
+            a_b_l_n = pow(fac_a + this->fac_b[radial_n],
+                          -1 * static_cast<int>(3 + radial_n) / 2);
+          }
+
+          this->radial_integral_center(radial_n) =
+              this->radial_n_factors(radial_n) * a_b_l_n;
+        }
+
+        return Vector_Ref(this->radial_integral_center);
+      }
+
+      template <AtomicSmearingType AST,
+                size_t Order, size_t Layer>
+      inline Matrix_Ref compute_neighbour_contribution(const double & distance,
+                                     ClusterRefKey<Order, Layer> & pair) {
+        auto smearing{downcast_atomic_smearing<AST>(this->atomic_smearing)};
+        double smearing_value{smearing->get_gaussian_sigma(pair)};
+        return this->compute_neighbour_contribution(distance, smearing_value);
+      }
+
+      //! define the contribution from a neighbour atom to the expansion
+      inline Matrix_Ref compute_neighbour_contribution(
+              const double & distance, const double & smearing_value) {
+        using math::pow;
+        using std::sqrt;
+
+        // a = 1 / (2*\sigma^2)
+        double fac_a{0.5 * pow(smearing_value, -2)};
 
         // computes (r_{ij}*a)^l incrementally
         this->distance_fac_a_l(0) = 1.;
+
         double distance_fac_a{distance * fac_a};
         for (size_t angular_l{1}; angular_l < this->max_angular + 1;
              angular_l++) {
@@ -449,7 +461,6 @@ namespace rascal {
           this->a_b_l_n.col(angular_l) =
               (this->a_b_l_n.col(angular_l - 1).array() * a_b_l).matrix();
         }
-        // TILL HERE
 
         this->hyp1f1_calculator.calc(distance, fac_a, this->fac_b,
                                      this->compute_gradients);
@@ -460,8 +471,12 @@ namespace rascal {
                 .matrix() *
             this->distance_fac_a_l.asDiagonal();
 
+        // TODO(alex) make a function which returns a ref and one which returns a copy
         return Matrix_Ref(this->radial_integral_neighbour);
       }
+
+
+
 
       /**
        * Compute the radial derivative of the neighbour contribution
@@ -487,7 +502,7 @@ namespace rascal {
        * the central atom
        */
       template <AtomicSmearingType AST, size_t Order, size_t Layer>
-      Matrix_Ref
+      inline Matrix_Ref
       compute_neighbour_derivative(const double & distance,
                                    ClusterRefKey<Order, Layer> & /*pair*/) {
         using math::PI;
@@ -534,10 +549,6 @@ namespace rascal {
       void precompute_radial_sigmas() {
         using math::pow;
         // Precompute common prefactors
-        // TODO(alex) TODO(felix) why do we not use the standard that we
-        // calculate radial from 0 up to max_radial (so in this for loop the
-        // condition should be max_radial+1) as we usually do it for
-        // max_angular?
         for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
           this->radial_sigmas[radial_n] =
               std::max(std::sqrt(static_cast<double>(radial_n)), 1.0) *
@@ -609,6 +620,10 @@ namespace rascal {
         return Matrix_Ref(this->radial_neighbour_derivative);
       }
 
+      template<AtomicSmearingType AST>
+      inline void init_interpolator(double x1, double x2, double accuracy);
+
+
       std::shared_ptr<AtomicSmearingSpecificationBase> atomic_smearing{};
       AtomicSmearingType atomic_smearing_type{};
       math::Hyp1f1SphericalExpansion hyp1f1_calculator{true, 1e-13, 200};
@@ -638,6 +653,55 @@ namespace rascal {
       Matrix_t radial_ortho_matrix{};
       Matrix_t ortho_norm_matrix{};
     };
+
+    template <RadialBasisType RBT, AtomicSmearingType::AST, InterpolatorType::IT>
+    struct RadialContributionCalculator: {
+    
+    };
+
+    template <RadialBasisType RBT>
+    struct RadialContributionCalculator<
+        AtomicSmearingType::Constant, InterpolatorType::NoIntp> : 
+        public RadialContribution<RBT> {
+      using Matrix_Ref = typename Parent::Matrix_Ref;
+      using Interpolator_t = math::InterpolatorVectorized_t;
+
+      compute_neighbour_contribution(distance, pair){
+        Parent::compute_neighbour_contribution(distance, smearing_value);
+      }
+
+      double smearing_value;
+      Interpolator_t intp{};
+    };
+
+    template <RadialBasisType RBT>
+    struct RadialContributionCalculator<
+        AtomicSmearingType::Constant, InterpolatorType::WithIntp> : 
+        public RadialContribution<RBT> {
+
+      compute_neighbour_contribution(distance, pair){
+        this->radial_integral_neighbour = this->intp.interpolate(distance);
+        return Matrix_Ref(this->radial_integral_neighbour);
+      }
+      compute_neighbour_contribution
+    };
+
+
+    template <>
+    inline void RadialContribution<RadialBasisType::GTO>::init_interpolator<AtomicSmearingType::Constant>(double x1, double x2, double accuracy) {
+      // declaration has to be done outside of switch case
+      auto smearing{downcast_atomic_smearing<AtomicSmearingType::Constant>(this->atomic_smearing)};
+      double smearing_value = smearing->get_gaussian_sigma();
+      // "this" is passed by reference and smearing_value by copy
+      std::function<Matrix_t(double)> func{
+        [&, smearing_value](double distance) mutable {
+          this->compute_neighbour_contribution_intp(distance,
+                smearing_value);
+          return this->radial_integral_neighbour;
+        }
+      };
+      this->intp.initialize(func, x1, x2, accuracy);
+    }
 
   }  // namespace internal
 
@@ -715,6 +779,7 @@ namespace rascal {
       } else {  // Default false (don't compute gradients)
         this->compute_gradients = false;
       }
+
       this->spherical_harmonics.precompute(this->max_angular,
                                            this->compute_gradients);
 
@@ -722,7 +787,6 @@ namespace rascal {
           hypers.at("radial_contribution").get<json>();
       auto radial_contribution_type =
           radial_contribution_hypers.at("type").get<std::string>();
-
       // create the class that will compute the radial terms of the
       // expansion. the atomic smearing is an integral part of the
       // radial contribution
@@ -730,14 +794,39 @@ namespace rascal {
         auto rc_shared = std::make_shared<
             internal::RadialContribution<RadialBasisType::GTO>>(hypers);
         this->atomic_smearing_type = rc_shared->atomic_smearing_type;
+
+      if(this->use_interpolator) {
+        double x1 = this->structure_manager->get_min_distance();
+        double x2 = this->structure_manager->get_max_distance();
+        if (radial_contribution_type.compare("GTO") == 0) {
+          auto smearing_hypers = hypers.at("gaussian_density").get<json>();
+          auto smearing_type = smearing_hypers.at("type").get<std::string>();
+          if (smearing_type.compare("Constant") == 0) {
+            rc_shared->template init_interpolator<internal::AtomicSmearingType::Constant>(x1,x2,this->interpolator_accuracy);
+          }
+        }
+      }
+
+
         this->radial_integral = rc_shared;
         this->radial_integral_type = RadialBasisType::GTO;
-
       } else {
         throw std::logic_error(
             "Requested Radial contribution type \'" + radial_contribution_type +
             "\' has not been implemented.  Must be one of" + ": \'GTO\'.");
       }
+      // interpolator begin
+      if (radial_contribution_hypers.find("use_interpolator") != radial_contribution_hypers.end()) {
+        this->use_interpolator = radial_contribution_hypers.at("use_interpolator").get<bool>();
+      } else {  // Default false (don't use interpolator)
+        this->use_interpolator = false;
+      }
+      if (radial_contribution_hypers.find("interpolator_accuracy") != radial_contribution_hypers.end()) {
+        this->interpolator_accuracy = radial_contribution_hypers.at("interpolator_accuracy").get<double>();
+      } else {  // Default accuracy
+        this->interpolator_accuracy = 1e-8;
+      }
+      // interpolator end 
 
       auto fc_hypers = hypers.at("cutoff_function").get<json>();
       auto fc_type = fc_hypers.at("type").get<std::string>();
@@ -799,7 +888,8 @@ namespace rascal {
     //! Compute the spherical exansion given several options
     template <internal::CutoffFunctionType FcType,
               internal::RadialBasisType RadialType,
-              internal::AtomicSmearingType SmearingType>
+              internal::AtomicSmearingType SmearingType,
+              internal::InterpolatorType IntpType>
     void compute_impl();
 
     std::vector<Precision_t> & get_representation_raw_data() {
@@ -846,10 +936,12 @@ namespace rascal {
    private:
     double interaction_cutoff{};
     double cutoff_smooth_width{};
+    bool interpolator_accuracy{};
     size_t max_radial{};
     size_t max_angular{};
     size_t n_species{};
     bool compute_gradients{};
+    bool use_interpolator{};
 
     std::vector<Precision_t> dummy{};
 
@@ -892,13 +984,25 @@ namespace rascal {
     // specialize based on the type of radial contribution
     using internal::AtomicSmearingType;
     using internal::RadialBasisType;
+    using internal::InterpolatorType;
 
     switch (internal::combineEnums(this->radial_integral_type,
-                                   this->atomic_smearing_type)) {
+                                   this->atomic_smearing_type,
+                                   this->use_interpolator)) {
     case internal::combineEnums(RadialBasisType::GTO,
-                                AtomicSmearingType::Constant): {
+                                AtomicSmearingType::Constant,
+                                InterpolatorType::NoIntp): {
       this->compute_impl<FcType, RadialBasisType::GTO,
-                         AtomicSmearingType::Constant>();
+                         AtomicSmearingType::Constant,
+                         InterpolatorType::NoIntp>();
+      break;
+    }
+    case internal::combineEnums(RadialBasisType::GTO,
+                                AtomicSmearingType::Constant,
+                                InterpolatorType::WithIntp): {
+      this->compute_impl<FcType, RadialBasisType::GTO,
+                         AtomicSmearingType::Constant,
+                         InterpolatorType::WithIntp>();
       break;
     }
     default:
@@ -915,7 +1019,8 @@ namespace rascal {
   template <class Mngr>
   template <internal::CutoffFunctionType FcType,
             internal::RadialBasisType RadialType,
-            internal::AtomicSmearingType SmearingType>
+            internal::AtomicSmearingType SmearingType,
+            internal::InterpolatorType IntpType>
   void RepresentationManagerSphericalExpansion<Mngr>::compute_impl() {
     using internal::n_spatial_dimensions;
     using math::PI;
@@ -938,7 +1043,7 @@ namespace rascal {
     this->expansions_coefficients_gradient.set_shape(
         n_spatial_dimensions * n_row, n_col);
     this->expansions_coefficients_gradient.resize();
-
+    
     // get the orthonormalization matrix to apply it on the already summed
     // over coefficients
     Matrix_t radial_ortho_mat{
@@ -984,8 +1089,8 @@ namespace rascal {
 
         auto && neighbour_contribution =
             radial_integral
-                ->template compute_neighbour_contribution<SmearingType>(dist,
-                                                                        neigh);
+                ->template compute_neighbour_contribution<SmearingType,
+                    IntpType>(dist, neigh);
         double f_c{cutoff_function->f_c(dist)};
         auto && coefficients_center_by_type{coefficients_center[neigh_type]};
 
@@ -1011,8 +1116,8 @@ namespace rascal {
 
           auto && neighbour_derivative =
               radial_integral
-                  ->template compute_neighbour_derivative<SmearingType>(dist,
-                                                                        neigh);
+                  ->template compute_neighbour_derivative<SmearingType
+                      >(dist, neigh);
           double df_c{cutoff_function->df_c(dist)};
           // The gradients only contribute to the type of the neighbour
           // (the atom that's moving)
