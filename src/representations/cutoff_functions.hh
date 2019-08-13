@@ -1,5 +1,5 @@
 /**
- * file   cutoff_functions.hh
+ * @file   cutoff_functions.hh
  *
  * @author Max Veit <max.veit@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>

@@ -1,5 +1,5 @@
 /**
- * file   adaptor_neighbour_list.hh
+ * @file   adaptor_neighbour_list.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  * @author Till Junge <till.junge@epfl.ch>

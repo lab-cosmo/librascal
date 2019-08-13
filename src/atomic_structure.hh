@@ -1,5 +1,5 @@
 /**
- * file   atomic_structure.hh
+ * @file   atomic_structure.hh
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  * @author  Markus Stricker <markus.stricker@epfl.ch>

@@ -1,5 +1,5 @@
 /**
- * \file  src/structure_managers/structure_manager_centers.hh
+ * @file  src/structure_managers/structure_manager_centers.hh
  *
  * @ingroup group_structure_manager
  *

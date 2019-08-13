@@ -1,5 +1,5 @@
 /**
- * file   adaptor_strict.hh
+ * @file   adaptor_strict.hh
  *
  * @author Till Junge <till.junge@altermail.ch>
  * @author Felix Musil <felix.musil@epfl.ch>

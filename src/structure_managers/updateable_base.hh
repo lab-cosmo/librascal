@@ -1,5 +1,5 @@
 /**
- * file   updateable_base.hh
+ * @file   updateable_base.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *

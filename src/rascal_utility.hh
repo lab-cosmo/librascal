@@ -1,5 +1,5 @@
 /**
- * file   rascal_utility.hh
+ * @file   rascal_utility.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>

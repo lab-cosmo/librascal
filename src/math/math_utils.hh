@@ -1,5 +1,5 @@
 /**
- * file   math_utils.hh
+ * @file   math_utils.hh
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  * @author  Max Veit <max.veit@epfl.ch>

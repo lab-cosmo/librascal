@@ -1,5 +1,5 @@
 /**
- * file   property_block_sparse.hh
+ * @file   property_block_sparse.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *

@@ -1,5 +1,5 @@
 /**
- * file   test_calculator.hh
+ * @file   test_calculator.hh
  *
  * @author Musil Felix <musil.felix@epfl.ch>
  * @author Max Veit <max.veit@epfl.ch>

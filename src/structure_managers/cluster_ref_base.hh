@@ -1,5 +1,5 @@
 /**
- * file   cluster_ref_base.hh
+ * @file   cluster_ref_base.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *

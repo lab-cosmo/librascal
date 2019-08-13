@@ -1,5 +1,5 @@
 /**
- * file   units.hh
+ * @file   units.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  *

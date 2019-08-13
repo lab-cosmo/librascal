@@ -1,5 +1,5 @@
 /**
- * file   calculator_spherical_expansion.hh
+ * @file   calculator_spherical_expansion.hh
  *
  * @author Max Veit <max.veit@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>

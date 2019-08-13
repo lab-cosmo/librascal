@@ -1,5 +1,5 @@
 /**
- * file   basis_function_manager.cc
+ * @file   basis_function_manager.cc
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *

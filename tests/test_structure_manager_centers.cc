@@ -1,5 +1,5 @@
 /**
- * file     test_structure_manager_centers.cc
+ * @file     test_structure_manager_centers.cc
  *
  * @author  Markus Stricker <markus.stricker@epfl.ch>
  *

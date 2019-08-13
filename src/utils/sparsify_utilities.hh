@@ -1,5 +1,5 @@
 /**
- * file   sparsify_utilities.hh
+ * @file   sparsify_utilities.hh
  *
  * @author  Michele Ceriotti <michele.ceriotti@gmail.com>
  *

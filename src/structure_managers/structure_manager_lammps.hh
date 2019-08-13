@@ -1,5 +1,5 @@
 /**
- * file   structure_manager_lammps.hh
+ * @file   structure_manager_lammps.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  *

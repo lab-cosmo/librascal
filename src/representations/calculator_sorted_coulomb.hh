@@ -1,5 +1,5 @@
 /**
- * file   calculator_sorted_coulomb.hh
+ * @file   calculator_sorted_coulomb.hh
  *
  * @author Musil Felix <musil.felix@epfl.ch>
  *

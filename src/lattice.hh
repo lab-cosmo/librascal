@@ -1,5 +1,5 @@
 /**
- * file   lattice.hh
+ * @file   lattice.hh
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  *
