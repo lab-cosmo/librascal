@@ -98,8 +98,7 @@ namespace rascal {
 
     inline void set_structure(const PositionsInput_t & positions,
                               const AtomTypesInput_t & atom_types,
-                              const CellInput_t cell,
-                              const PBCInput_t & pbc) {
+                              const CellInput_t cell, const PBCInput_t & pbc) {
       auto center_atoms_mask = ArrayB_t::Ones(atom_types.size());
       this->set_structure(positions, atom_types, cell, pbc, center_atoms_mask);
     }
@@ -108,8 +107,7 @@ namespace rascal {
     //! copy!
     inline void set_structure(const PositionsInput_t & positions,
                               const AtomTypesInput_t & atom_types,
-                              const CellInput_t cell,
-                              const PBCInput_t & pbc,
+                              const CellInput_t cell, const PBCInput_t & pbc,
                               const ArrayB_t & center_atoms_mask) {
       // check data consistency
       auto npos{positions.cols()};
@@ -220,8 +218,7 @@ namespace rascal {
 
     inline bool is_identical(const PositionsInput_t & positions,
                              const AtomTypesInput_t & atom_types,
-                             const CellInput_t cell,
-                             const PBCInput_t & pbc,
+                             const CellInput_t cell, const PBCInput_t & pbc,
                              const double & skin2) const {
       auto center_atoms_mask = ArrayB_t::Ones(atom_types.size());
       return this->is_identical(positions, atom_types, cell, pbc,
@@ -230,8 +227,7 @@ namespace rascal {
 
     inline bool is_identical(const PositionsInput_t & positions,
                              const AtomTypesInput_t & /*atom_types*/,
-                             const CellInput_t cell,
-                             const PBCInput_t & pbc,
+                             const CellInput_t cell, const PBCInput_t & pbc,
                              const ArrayB_ref & center_atoms_mask,
                              const double & skin2) const {
       bool is_similar{true};

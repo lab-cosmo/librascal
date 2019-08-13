@@ -90,8 +90,8 @@ namespace rascal {
       RepresentationFixture<MultipleStructureSphericalExpansion,
                             RepresentationManagerSphericalExpansion>,
       RepresentationFixture<
-                MultipleStructureSOAP<MultipleStructureManagerNLStrictFixture>,
-                         RepresentationManagerSOAP>>;
+          MultipleStructureSOAP<MultipleStructureManagerNLStrictFixture>,
+          RepresentationManagerSOAP>>;
 
   using fixtures_ref_test = boost::mpl::list<RepresentationFixture<
       SortedCoulombTestData, RepresentationManagerSortedCoulomb>>;
@@ -252,11 +252,13 @@ namespace rascal {
       // RepresentationFixture<MultipleStructureSortedCoulombCenterMask,
       //                       RepresentationManagerSortedCoulomb>,
       RepresentationFixture<
-      MultipleStructureSOAP<MultipleStructureManagerNLStrictFixtureCenterMask>,
-                            RepresentationManagerSphericalExpansion>,
+          MultipleStructureSOAP<
+              MultipleStructureManagerNLStrictFixtureCenterMask>,
+          RepresentationManagerSphericalExpansion>,
       RepresentationFixture<
-      MultipleStructureSOAP<MultipleStructureManagerNLStrictFixtureCenterMask>,
-                            RepresentationManagerSOAP>>;
+          MultipleStructureSOAP<
+              MultipleStructureManagerNLStrictFixtureCenterMask>,
+          RepresentationManagerSOAP>>;
 
   /**
    * Test that selecting subsets of centers will give the same representation

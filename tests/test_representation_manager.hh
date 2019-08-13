@@ -92,8 +92,8 @@ namespace rascal {
     json ref_data{};
     json factory_args{};
   };
-  
-  template<typename MultipleStructureFixture>
+
+  template <typename MultipleStructureFixture>
   struct MultipleStructureSOAP : MultipleStructureFixture {
     using Parent = MultipleStructureFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
@@ -151,7 +151,6 @@ namespace rascal {
                                   {"soap_type", "PowerSpectrum"},
                                   {"normalize", true}}};
   };
-
 
   struct SOAPTestData : TestData {
     using Parent = TestData;
