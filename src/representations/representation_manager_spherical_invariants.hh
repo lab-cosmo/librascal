@@ -58,7 +58,8 @@ namespace rascal {
     };
 
     /**
-     * Base class for the specification of the atomic smearing.
+     * Base class for the specification of the precomputations
+     * (it's different for radial vs. full spectrum)
      */
     struct SphericalInvariantsPrecomputationBase {
       //! Constructor
