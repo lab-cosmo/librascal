@@ -321,7 +321,7 @@ namespace rascal {
       return this->atoms_object;
     }
 
-    int get_n_atoms() const { return this->natoms; }
+    inline size_t get_n_atoms() const { return this->natoms; }
 
    protected:
     //! makes atom tag lists and offsets

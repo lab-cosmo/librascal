@@ -860,7 +860,7 @@ namespace rascal {
     if (this->need_update) {
       // set the number of centers
       this->n_centers = this->manager->get_size();
-      this->n_atoms = static_cast<size_t>(this->manager->get_n_atoms());
+      this->n_atoms = this->manager->get_n_atoms();
       this->n_ghosts = 0;
       //! Reset cluster_indices for adaptor to fill with sequence
       internal::for_each(this->cluster_indices_container,
