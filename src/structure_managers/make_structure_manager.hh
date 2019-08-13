@@ -1,5 +1,5 @@
 /**
- * file   make_structure_manager.hh
+ * @file   make_structure_manager.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *

@@ -1,5 +1,5 @@
 /**
- * file   test_properties.hh
+ * @file   test_properties.hh
  *
  * @author Till Junge <till.junge@altermail.ch>
  *

@@ -1,5 +1,5 @@
 /**
- * file   .hh
+ * @file   test_feature_manager.hh
  *
  * @author Musil Felix <musil.felix@epfl.ch>
  *

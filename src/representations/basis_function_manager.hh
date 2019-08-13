@@ -1,5 +1,5 @@
 /**
- * file   basis_function_manager.hh
+ * @file   basis_function_manager.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *

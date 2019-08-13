@@ -1,5 +1,5 @@
 /**
- * file   for_each_at_order.hh
+ * @file   for_each_at_order.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  *

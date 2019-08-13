@@ -1,5 +1,5 @@
 /**
- * file   representation_manager_soap.hh
+ * @file   representation_manager_soap.hh
  *
  * @author Max Veit <max.veit@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>

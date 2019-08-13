@@ -1,5 +1,5 @@
 /**
- * file   representation_manager_base.cc
+ * @file   representation_manager_base.cc
  *
  * @author Musil Felix <musil.felix@epfl.ch>
  *

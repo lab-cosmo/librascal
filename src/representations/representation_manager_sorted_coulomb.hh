@@ -1,5 +1,5 @@
 /**
- * file   representation_manager_sorted_coulomb.hh
+ * @file   representation_manager_sorted_coulomb.hh
  *
  * @author Musil Felix <musil.felix@epfl.ch>
  *

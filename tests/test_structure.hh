@@ -1,5 +1,5 @@
 /**
- * file test_structure.hh
+ * @file test_structure.hh
  *
  * @author Till Junge <till.junge@altermail.ch>
  * @author Markus Stricker <markus.stricker@epfl.ch>

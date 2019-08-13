@@ -1,5 +1,5 @@
 /**
- * file   symmetry_functions.hh
+ * @file   symmetry_functions.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  * @author Markus Stricker <markus.stricker@epfl.ch>

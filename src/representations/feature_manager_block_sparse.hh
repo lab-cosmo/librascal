@@ -1,5 +1,5 @@
 /**
- * file feature_manager_dense.hh
+ * @file feature_manager_block_sparse.hh
  *
  * @author Musil Felix <musil.felix@epfl.ch>
  *

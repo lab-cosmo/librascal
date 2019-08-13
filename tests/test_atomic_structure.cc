@@ -1,5 +1,5 @@
 /**
- * file   test_atomic_structure.cc
+ * @file   test_atomic_structure.cc
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  *

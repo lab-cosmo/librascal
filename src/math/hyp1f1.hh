@@ -1,5 +1,5 @@
 /**
- * file   hyp1f1.hh
+ * @file   hyp1f1.hh
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  *

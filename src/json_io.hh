@@ -1,5 +1,5 @@
 /**
- * file   json_io.hh
+ * @file   json_io.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *

@@ -1,5 +1,5 @@
 /**
- * file   test_representation_manager_base.hh
+ * @file   test_representation_manager.hh
  *
  * @author Musil Felix <musil.felix@epfl.ch>
  * @author Max Veit <max.veit@epfl.ch>
