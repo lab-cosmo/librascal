@@ -648,12 +648,12 @@ namespace rascal {
       Matrix_t ortho_norm_matrix{};
     };
 
-    template <AtomicSmearingType AST, InterpolatorType IT, RadialBasisType RBT>
+    template <RadialBasisType RBT, AtomicSmearingType AST, InterpolatorType IT>
     struct RadialContributionSuite {}; 
 
     template <RadialBasisType RBT>
     struct RadialContributionSuite<
-        AtomicSmearingType::Constant, InterpolatorType::NoIntp, RBT> : 
+         RBT, AtomicSmearingType::Constant, InterpolatorType::NoIntp> : 
         public RadialContribution<RBT> {
      public: 
       using Parent = RadialContribution<RBT>;
@@ -674,8 +674,8 @@ namespace rascal {
     };
 
     template <RadialBasisType RBT>
-    class RadialContributionSuite<
-        AtomicSmearingType::Constant, InterpolatorType::WithIntp, RBT> : 
+    struct RadialContributionSuite<
+         RBT, AtomicSmearingType::Constant, InterpolatorType::WithIntp> : 
         public RadialContribution<RBT> {
      public:
       using Parent = RadialContribution<RBT>;
@@ -727,11 +727,11 @@ namespace rascal {
         radial_integral);
   }
 
-  template <internal::AtomicSmearingType AST, internal::InterpolatorType IT, internal::RadialBasisType RBT>
+  template <internal::RadialBasisType RBT, internal::AtomicSmearingType AST, internal::InterpolatorType IT>
   decltype(auto) downcast_radial_integral_suite(
       const std::shared_ptr<internal::RadialContributionBase> &
           radial_integral) {
-    return std::static_pointer_cast<internal::RadialContributionSuite<AST, IT, RBT>>(radial_integral);
+    return std::static_pointer_cast<internal::RadialContributionSuite<RBT, AST, IT>>(radial_integral);
   }
 
   // TODO(alex) adapt to RadialContributionSuite
@@ -876,9 +876,9 @@ namespace rascal {
                                   InterpolatorType::NoIntp): {
         auto rc_shared = std::make_shared<
             internal::RadialContributionSuite<
+                RadialBasisType::GTO,
                 AtomicSmearingType::Constant, 
-                InterpolatorType::NoIntp,
-                RadialBasisType::GTO
+                InterpolatorType::NoIntp
             >>(hypers);
         this->radial_integral = rc_shared;
         break;
@@ -890,9 +890,9 @@ namespace rascal {
         double x2 = this->structure_manager->get_max_distance();
         auto rc_shared = std::make_shared<
             internal::RadialContributionSuite<
-                AtomicSmearingType::Constant,
-                InterpolatorType::WithIntp,
-                RadialBasisType::GTO
+                RadialBasisType::GTO,
+                AtomicSmearingType::Constant, 
+                InterpolatorType::WithIntp
             >>(hypers, x1, x2, interpolator_accuracy);
         this->radial_integral = rc_shared;
         break;
@@ -1105,7 +1105,7 @@ namespace rascal {
     auto cutoff_function{
         downcast_cutoff_function<FcType>(this->cutoff_function)};
     auto radial_integral{
-        downcast_radial_integral_suite<SmearingType, IntpType, RadialType>(this->radial_integral)};
+        downcast_radial_integral_suite<RadialType, SmearingType, IntpType>(this->radial_integral)};
 
     auto n_row{this->max_radial};
     auto n_col{(this->max_angular + 1) * (this->max_angular + 1)};
