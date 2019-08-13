@@ -61,6 +61,7 @@ namespace rascal {
      */
     using Cell_t = Eigen::Matrix<double, Dim, Dim>;
     using Cell_ref = Eigen::Ref<Cell_t>;
+    using ConstCell_ref = const Eigen::Ref<const Cell_t>;
 
     using AtomTypes_t = Eigen::Matrix<int, Eigen::Dynamic, 1>;
     using AtomTypes_ref = Eigen::Ref<AtomTypes_t>;
@@ -80,6 +81,7 @@ namespace rascal {
         Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1>>;
 
     using PBCInput_t = Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1>>;
+    using CellInput_t = Eigen::Ref<const Eigen::MatrixXd>;
 
     using ArrayB_t = Eigen::Array<bool, Eigen::Dynamic, 1>;
     using ArrayB_ref = Eigen::Ref<const ArrayB_t>;
@@ -96,7 +98,7 @@ namespace rascal {
 
     inline void set_structure(const PositionsInput_t & positions,
                               const AtomTypesInput_t & atom_types,
-                              const Eigen::Ref<const Eigen::MatrixXd> cell,
+                              const CellInput_t cell,
                               const PBCInput_t & pbc) {
       auto center_atoms_mask = ArrayB_t::Ones(atom_types.size());
       this->set_structure(positions, atom_types, cell, pbc, center_atoms_mask);
@@ -106,7 +108,7 @@ namespace rascal {
     //! copy!
     inline void set_structure(const PositionsInput_t & positions,
                               const AtomTypesInput_t & atom_types,
-                              const Eigen::Ref<const Eigen::MatrixXd> cell,
+                              const CellInput_t cell,
                               const PBCInput_t & pbc,
                               const ArrayB_t & center_atoms_mask) {
       // check data consistency
@@ -218,7 +220,7 @@ namespace rascal {
 
     inline bool is_identical(const PositionsInput_t & positions,
                              const AtomTypesInput_t & atom_types,
-                             const Eigen::Ref<const Eigen::MatrixXd> cell,
+                             const CellInput_t cell,
                              const PBCInput_t & pbc,
                              const double & skin2) const {
       auto center_atoms_mask = ArrayB_t::Ones(atom_types.size());
@@ -228,7 +230,7 @@ namespace rascal {
 
     inline bool is_identical(const PositionsInput_t & positions,
                              const AtomTypesInput_t & /*atom_types*/,
-                             const Eigen::Ref<const Eigen::MatrixXd> cell,
+                             const CellInput_t cell,
                              const PBCInput_t & pbc,
                              const ArrayB_ref & center_atoms_mask,
                              const double & skin2) const {

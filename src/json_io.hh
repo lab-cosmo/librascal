@@ -52,8 +52,7 @@ namespace Eigen {
       template <typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
       static void apply_mat(
           const size_t & /*n_rows*/, const size_t & /*n_cols*/,
-          Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> & /*s*/) {
-      }
+          Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> & /*s*/) {}
       template <typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
       static void apply_arr(
           const size_t & /*n_rows*/, const size_t & /*n_cols*/,

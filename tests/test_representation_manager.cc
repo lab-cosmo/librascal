@@ -33,73 +33,6 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(representation_test);
 
   /* ---------------------------------------------------------------------- */
-
-  using multiple_center_mask_fixtures = boost::mpl::list<
-      // TODO(felix) For some reason the Sorted coulomb version is
-      // susceptible to
-      // differences in neighbour ordering so test will fail for a wrong
-      // reason...
-      // RepresentationFixture<MultipleStructureSortedCoulombCenterMask,
-      //                       RepresentationManagerSortedCoulomb>,
-      RepresentationFixture<MultipleStructureSphericalExpansionCenterMask,
-                            RepresentationManagerSphericalExpansion>,
-      RepresentationFixture<MultipleStructureSOAPCenterMask,
-                            RepresentationManagerSOAP>>;
-
-  /**
-   * Test that selecting subsets of centers will give the same representation
-   */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_center_mask_test, Fix,
-                                   multiple_center_mask_fixtures, Fix) {
-    bool verbose{false};
-    auto & managers = Fix::managers;
-    // auto & representations = Fix::representations;
-    auto & hypers = Fix::hypers;
-    using Representation_t = typename Fix::Representation_t;
-
-    int n_manager{static_cast<int>(managers.size())};
-    for (int i_manager{0}; i_manager < n_manager; i_manager += 2) {
-      for (auto & hyper : hypers) {
-        auto & manager = managers[i_manager];
-        auto & manager_no_center = managers[i_manager + 1];
-        auto center_atoms_mask =
-            extract_underlying_manager<0>(manager_no_center)
-                ->get_center_atoms_mask();
-
-        if (verbose) {
-          std::cout << "center_atoms_mask: " << center_atoms_mask.transpose()
-                    << std::endl;
-        }
-
-        Representation_t representation{manager, hyper};
-        representation.compute();
-        Representation_t representation_no_center{manager_no_center, hyper};
-        representation_no_center.compute();
-
-        auto rep_full = representation.get_representation_full();
-        auto rep_no_center = representation_no_center.get_representation_full();
-        BOOST_CHECK_EQUAL(rep_full.rows(), rep_no_center.rows());
-
-        size_t i_no_center{0};
-        for (size_t i_center{0}; i_center < manager_no_center->size();
-             ++i_center) {
-          if (center_atoms_mask(i_center)) {
-            auto row_full = rep_full.col(i_center);
-            auto row_no_center = rep_no_center.col(i_no_center);
-            auto diff = (row_full - row_no_center).norm();
-            BOOST_CHECK_LE(diff, math::dbl_ftol);
-            if (verbose) {
-              std::cout << "Center idx: " << i_center << " Diff: " << diff
-                        << std::endl;
-            }
-            i_no_center++;
-          }
-        }
-      }
-    }
-  }
-
-  /* ---------------------------------------------------------------------- */
   /**
    * Test the row norm sorting
    */
@@ -156,7 +89,9 @@ namespace rascal {
                             RepresentationManagerSortedCoulomb>,
       RepresentationFixture<MultipleStructureSphericalExpansion,
                             RepresentationManagerSphericalExpansion>,
-      RepresentationFixture<MultipleStructureSOAP, RepresentationManagerSOAP>>;
+      RepresentationFixture<
+                MultipleStructureSOAP<MultipleStructureManagerNLStrictFixture>,
+                         RepresentationManagerSOAP>>;
 
   using fixtures_ref_test = boost::mpl::list<RepresentationFixture<
       SortedCoulombTestData, RepresentationManagerSortedCoulomb>>;
@@ -304,6 +239,75 @@ namespace rascal {
       SphericalExpansionRadialDerivative<RadialIntegral_t, ClusterRef_t>
           calculator(radial_integral, pair);
       test_gradients(calculator, test_data);
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+
+  using multiple_center_mask_fixtures = boost::mpl::list<
+      // TODO(felix) For some reason the Sorted coulomb version is
+      // susceptible to
+      // differences in neighbour ordering so test will fail for a wrong
+      // reason...
+      // RepresentationFixture<MultipleStructureSortedCoulombCenterMask,
+      //                       RepresentationManagerSortedCoulomb>,
+      RepresentationFixture<
+      MultipleStructureSOAP<MultipleStructureManagerNLStrictFixtureCenterMask>,
+                            RepresentationManagerSphericalExpansion>,
+      RepresentationFixture<
+      MultipleStructureSOAP<MultipleStructureManagerNLStrictFixtureCenterMask>,
+                            RepresentationManagerSOAP>>;
+
+  /**
+   * Test that selecting subsets of centers will give the same representation
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_center_mask_test, Fix,
+                                   multiple_center_mask_fixtures, Fix) {
+    bool verbose{false};
+    auto & managers = Fix::managers;
+    // auto & representations = Fix::representations;
+    auto & hypers = Fix::hypers;
+    using Representation_t = typename Fix::Representation_t;
+
+    int n_manager{static_cast<int>(managers.size())};
+    for (int i_manager{0}; i_manager < n_manager; i_manager += 2) {
+      for (auto & hyper : hypers) {
+        auto & manager = managers[i_manager];
+        auto & manager_no_center = managers[i_manager + 1];
+        auto center_atoms_mask =
+            extract_underlying_manager<0>(manager_no_center)
+                ->get_center_atoms_mask();
+
+        if (verbose) {
+          std::cout << "center_atoms_mask: " << center_atoms_mask.transpose()
+                    << std::endl;
+        }
+
+        Representation_t representation{manager, hyper};
+        representation.compute();
+        Representation_t representation_no_center{manager_no_center, hyper};
+        representation_no_center.compute();
+
+        auto rep_full = representation.get_representation_full();
+        auto rep_no_center = representation_no_center.get_representation_full();
+        BOOST_CHECK_EQUAL(rep_full.rows(), rep_no_center.rows());
+
+        size_t i_no_center{0};
+        for (size_t i_center{0}; i_center < manager_no_center->size();
+             ++i_center) {
+          if (center_atoms_mask(i_center)) {
+            auto row_full = rep_full.col(i_center);
+            auto row_no_center = rep_no_center.col(i_no_center);
+            auto diff = (row_full - row_no_center).norm();
+            BOOST_CHECK_LE(diff, math::dbl_ftol);
+            if (verbose) {
+              std::cout << "Center idx: " << i_center << " Diff: " << diff
+                        << std::endl;
+            }
+            i_no_center++;
+          }
+        }
+      }
     }
   }
 

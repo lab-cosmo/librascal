@@ -77,9 +77,13 @@ namespace rascal {
   };
 
   /**
-   * Definition of the new StructureManager class. To add your own, please stick
-   * to the convention of using 'StructureManagerYours', where 'Yours' will give
-   * a hint of what it is about.
+   * StructureManagerCenters is an entry point to the neighbourlist. It takes
+   * an atomic structure (positions, atomic number, cell and periodic boundary
+   * conditions) and allows to select the atoms for which a neighbourlist will
+   * be built (by default all atoms are considered).
+   *
+   * This manager allows for one level of iteration over the centers or i-atoms
+   * that have been selected.
    */
   class StructureManagerCenters :
       // public inheritance of the base class
@@ -145,7 +149,7 @@ namespace rascal {
 
     //! Default constructor, values are set during .update() function
     StructureManagerCenters()
-        : atoms_object{}, atoms_index{}, lattice{}, offsets{},
+        : atoms_object{}, lattice{}, atoms_index{}, offsets{},
           n_center_atoms{}, natoms{} {}
 
     //! Copy constructor
@@ -329,21 +333,27 @@ namespace rascal {
      */
     AtomicStructure<traits::Dim> atoms_object{};
 
-    /**
-     * store atoms index per order,i.e.
-     *   - atoms_index[0] lists all i-atoms
-     * the structure here is only used for conformance, could just be a vector.
-     */
-    std::array<std::vector<size_t>, traits::MaxOrder> atoms_index;
-
     //! Lattice type for storing the cell and querying cell-related data
     Lattice<traits::Dim> lattice;
 
     /**
+     * store atoms index per order,i.e.
+     *   - atoms_index[0] lists all i-atoms that will be centered on and at the
+     * back the atoms that won't be centered on are indexed too.
+     *
+     * This array is expected to be accessed with atom_tags.
+     *
+     * It is important to index all atoms even if they are not centers since
+     * they will potentially be neighbours and we want to be able to get the
+     * atom_index of a neighbour.
+     */
+    std::array<std::vector<size_t>, traits::MaxOrder> atoms_index;
+
+    /**
      * A vector which stores the absolute offsets for each atom to access the
      * correct variables in the neighbourlist. Here they are just the 1, 2, 3,
-     * etc. corresponding to the sequence in which the atoms are provided during
-     * construction.
+     * etc. corresponding to the sequence in which the atoms are provided
+     * during construction.
      */
     std::vector<size_t> offsets{};
 

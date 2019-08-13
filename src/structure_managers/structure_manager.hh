@@ -911,7 +911,7 @@ namespace rascal {
 
     //! return the index of the atom/pair/etc. it is always the last one,
     //! since the other ones are accessed an Order above.
-    inline decltype(auto) get_atom_tag() const { return this->back(); }
+    inline int get_atom_tag() const { return this->back(); }
     //! returns a reference to the manager with the maximum layer
     inline Manager_t & get_manager() { return this->it.get_manager(); }
 
