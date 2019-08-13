@@ -221,6 +221,9 @@ namespace rascal {
       // virtual Matrix_Ref compute_neighbour_derivative() = 0;
     };
 
+    template <RadialBasisType RBT>
+    struct RadialContribution {};
+
     /**
      * Implementation of the radial contribution for Gaussian Type Orbitals
      * radial basis functions and gaussian smearing of the atom density.
@@ -236,7 +239,6 @@ namespace rascal {
      */
     template <>
     struct RadialContribution<RadialBasisType::GTO> : RadialContributionBase {
-
       //! Default Constructor
       explicit RadialContribution() {}
 
@@ -420,8 +422,7 @@ namespace rascal {
         return Vector_Ref(this->radial_integral_center);
       }
 
-      template <AtomicSmearingType AST,
-                size_t Order, size_t Layer>
+      template <AtomicSmearingType AST, size_t Order, size_t Layer>
       inline Matrix_Ref compute_neighbour_contribution(const double & distance,
                                      ClusterRefKey<Order, Layer> & pair) {
         auto smearing{downcast_atomic_smearing<AST>(this->atomic_smearing)};
@@ -474,9 +475,6 @@ namespace rascal {
         // TODO(alex) make a function which returns a ref and one which returns a copy
         return Matrix_Ref(this->radial_integral_neighbour);
       }
-
-
-
 
       /**
        * Compute the radial derivative of the neighbour contribution
@@ -620,10 +618,6 @@ namespace rascal {
         return Matrix_Ref(this->radial_neighbour_derivative);
       }
 
-      template<AtomicSmearingType AST>
-      inline void init_interpolator(double x1, double x2, double accuracy);
-
-
       std::shared_ptr<AtomicSmearingSpecificationBase> atomic_smearing{};
       AtomicSmearingType atomic_smearing_type{};
       math::Hyp1f1SphericalExpansion hyp1f1_calculator{true, 1e-13, 200};
@@ -654,54 +648,68 @@ namespace rascal {
       Matrix_t ortho_norm_matrix{};
     };
 
-    template <RadialBasisType RBT, AtomicSmearingType::AST, InterpolatorType::IT>
-    struct RadialContributionCalculator: {
-    
+    template <AtomicSmearingType AST, InterpolatorType IT, RadialBasisType RBT>
+    struct RadialContributionSuite {}; 
+
+    template <RadialBasisType RBT>
+    struct RadialContributionSuite<
+        AtomicSmearingType::Constant, InterpolatorType::NoIntp, RBT> : 
+        public RadialContribution<RBT> {
+     public: 
+      using Parent = RadialContribution<RBT>;
+      using Hypers_t = typename Parent::Hypers_t;
+      using Matrix_Ref = typename Parent::Matrix_Ref;
+
+      RadialContributionSuite(const Hypers_t & hypers) : Parent(hypers) {
+        auto smearing{downcast_atomic_smearing<AtomicSmearingType::Constant>(this->atomic_smearing)};
+        this->smearing_value = smearing->get_gaussian_sigma();
+      }
+
+      template <size_t Order, size_t Layer>
+      inline Matrix_Ref compute_neighbour_contribution(const double & distance, ClusterRefKey<Order, Layer> &) {
+        return Parent::compute_neighbour_contribution(distance, this->smearing_value);
+      }
+
+      double smearing_value{};
     };
 
     template <RadialBasisType RBT>
-    struct RadialContributionCalculator<
-        AtomicSmearingType::Constant, InterpolatorType::NoIntp> : 
+    class RadialContributionSuite<
+        AtomicSmearingType::Constant, InterpolatorType::WithIntp, RBT> : 
         public RadialContribution<RBT> {
+     public:
+      using Parent = RadialContribution<RBT>;
+      using Hypers_t = typename Parent::Hypers_t;
+      using Matrix_t = typename Parent::Matrix_t;
       using Matrix_Ref = typename Parent::Matrix_Ref;
       using Interpolator_t = math::InterpolatorVectorized_t;
 
-      compute_neighbour_contribution(distance, pair){
-        Parent::compute_neighbour_contribution(distance, smearing_value);
+      RadialContributionSuite(const Hypers_t & hypers, double x1, double x2, double accuracy) : Parent(hypers) {
+        auto smearing{downcast_atomic_smearing<AtomicSmearingType::Constant>(this->atomic_smearing)};
+        this->smearing_value = smearing->get_gaussian_sigma();
+        this->init_interpolator(x1, x2, accuracy);
       }
 
-      double smearing_value;
-      Interpolator_t intp{};
-    };
-
-    template <RadialBasisType RBT>
-    struct RadialContributionCalculator<
-        AtomicSmearingType::Constant, InterpolatorType::WithIntp> : 
-        public RadialContribution<RBT> {
-
-      compute_neighbour_contribution(distance, pair){
+      template<size_t Order, size_t Layer>
+      inline Matrix_Ref compute_neighbour_contribution(const double & distance, ClusterRefKey<Order, Layer> &){
         this->radial_integral_neighbour = this->intp.interpolate(distance);
         return Matrix_Ref(this->radial_integral_neighbour);
       }
-      compute_neighbour_contribution
+
+      void init_interpolator(double x1, double x2, double accuracy) {
+        // "this" is passed by reference
+        std::function<Matrix_t(double)> func{
+          [&](double distance) mutable {
+            Parent::compute_neighbour_contribution(distance, this->smearing_value);
+            return this->radial_integral_neighbour;
+          }
+        };
+        this->intp.initialize(func, x1, x2, accuracy);
+      }
+
+      double smearing_value{};
+      Interpolator_t intp{};
     };
-
-
-    template <>
-    inline void RadialContribution<RadialBasisType::GTO>::init_interpolator<AtomicSmearingType::Constant>(double x1, double x2, double accuracy) {
-      // declaration has to be done outside of switch case
-      auto smearing{downcast_atomic_smearing<AtomicSmearingType::Constant>(this->atomic_smearing)};
-      double smearing_value = smearing->get_gaussian_sigma();
-      // "this" is passed by reference and smearing_value by copy
-      std::function<Matrix_t(double)> func{
-        [&, smearing_value](double distance) mutable {
-          this->compute_neighbour_contribution_intp(distance,
-                smearing_value);
-          return this->radial_integral_neighbour;
-        }
-      };
-      this->intp.initialize(func, x1, x2, accuracy);
-    }
 
   }  // namespace internal
 
@@ -718,6 +726,20 @@ namespace rascal {
     return std::static_pointer_cast<internal::RadialContribution<Type>>(
         radial_integral);
   }
+
+  template <internal::AtomicSmearingType AST, internal::InterpolatorType IT, internal::RadialBasisType RBT>
+  decltype(auto) downcast_radial_integral_suite(
+      const std::shared_ptr<internal::RadialContributionBase> &
+          radial_integral) {
+    return std::static_pointer_cast<internal::RadialContributionSuite<AST, IT, RBT>>(radial_integral);
+  }
+
+  // TODO(alex) adapt to RadialContributionSuite
+  //template <internal::RadialBasisType Type, class Hypers>
+  //decltype(auto) make_radial_integral_suite(const Hypers & basis_hypers) {
+  //  return std::static_pointer_cast<internal::RadialContributionBase>(
+  //      std::make_shared<internal::RadialContribution<Type>>(basis_hypers));
+  //}
 
   /**
    * Handles the expansion of an environment in a spherical and radial basis.
@@ -762,6 +784,8 @@ namespace rascal {
     void set_hyperparameters(const Hypers_t & hypers) {
       using internal::CutoffFunctionType;
       using internal::RadialBasisType;
+      using internal::AtomicSmearingType;
+      using internal::InterpolatorType;
 
       this->hypers = hypers;
 
@@ -783,50 +807,100 @@ namespace rascal {
       this->spherical_harmonics.precompute(this->max_angular,
                                            this->compute_gradients);
 
+      // create the class that will compute the radial terms of the
+      // expansion. the atomic smearing is an integral part of the
+      // radial contribution
+      //
+      auto smearing_hypers = hypers.at("gaussian_density").get<json>();
+      auto smearing_type = smearing_hypers.at("type").get<std::string>();
+
+      if (smearing_type.compare("Constant") == 0) {
+        this->atomic_smearing_type = AtomicSmearingType::Constant;
+      } else if (smearing_type.compare("PerSpecies") == 0) {
+        throw std::logic_error(
+            "Requested Smearing type \'PerSpecies\'"
+            "\' has not been implemented.  Must be one of"
+            ": \'Constant\'.");
+      } else if (smearing_type.compare("Radial") == 0) {
+        throw std::logic_error(
+            "Requested Smearing type \'Radial\'"
+            "\' has not been implemented.  Must be one of"
+            ": \'Constant\'.");
+      } else {
+        throw std::logic_error(
+            "Requested Smearing type \'" + smearing_type +
+            "\' is unknown.  Must be one of" + ": \'Constant\'.");
+      }
+
       auto radial_contribution_hypers =
           hypers.at("radial_contribution").get<json>();
       auto radial_contribution_type =
           radial_contribution_hypers.at("type").get<std::string>();
-      // create the class that will compute the radial terms of the
-      // expansion. the atomic smearing is an integral part of the
-      // radial contribution
       if (radial_contribution_type.compare("GTO") == 0) {
-        auto rc_shared = std::make_shared<
-            internal::RadialContribution<RadialBasisType::GTO>>(hypers);
-        this->atomic_smearing_type = rc_shared->atomic_smearing_type;
-
-      if(this->use_interpolator) {
-        double x1 = this->structure_manager->get_min_distance();
-        double x2 = this->structure_manager->get_max_distance();
-        if (radial_contribution_type.compare("GTO") == 0) {
-          auto smearing_hypers = hypers.at("gaussian_density").get<json>();
-          auto smearing_type = smearing_hypers.at("type").get<std::string>();
-          if (smearing_type.compare("Constant") == 0) {
-            rc_shared->template init_interpolator<internal::AtomicSmearingType::Constant>(x1,x2,this->interpolator_accuracy);
-          }
-        }
-      }
-
-
-        this->radial_integral = rc_shared;
         this->radial_integral_type = RadialBasisType::GTO;
       } else {
         throw std::logic_error(
             "Requested Radial contribution type \'" + radial_contribution_type +
             "\' has not been implemented.  Must be one of" + ": \'GTO\'.");
       }
+
       // interpolator begin
-      if (radial_contribution_hypers.find("use_interpolator") != radial_contribution_hypers.end()) {
-        this->use_interpolator = radial_contribution_hypers.at("use_interpolator").get<bool>();
+      if (radial_contribution_hypers.find("interpolator_type") != radial_contribution_hypers.end()) {
+        auto intp_type_name{radial_contribution_hypers.at("interpolator_type").get<std::string>()};
+        if (intp_type_name.compare("WithIntp") == 0) {
+          this->interpolator_type = InterpolatorType::WithIntp;
+        } else if (intp_type_name.compare("NoIntp") == 0) {
+          this->interpolator_type = InterpolatorType::NoIntp;
+        } else {
+          throw std::logic_error(
+              "Requested Interpolator type \'" + intp_type_name +
+              "\' has not been implemented.  Must be one of" + ": \'GTO\'.");
+        }
       } else {  // Default false (don't use interpolator)
-        this->use_interpolator = false;
+        this->interpolator_type = InterpolatorType::NoIntp;
       }
+      
+      double interpolator_accuracy;
       if (radial_contribution_hypers.find("interpolator_accuracy") != radial_contribution_hypers.end()) {
-        this->interpolator_accuracy = radial_contribution_hypers.at("interpolator_accuracy").get<double>();
+        interpolator_accuracy = radial_contribution_hypers.at("interpolator_accuracy").get<double>();
       } else {  // Default accuracy
-        this->interpolator_accuracy = 1e-8;
+        interpolator_accuracy = 1e-8;
       }
       // interpolator end 
+
+      switch (internal::combineEnums(this->radial_integral_type,
+                                     this->atomic_smearing_type,
+                                     this->interpolator_type)) {
+      case internal::combineEnums(RadialBasisType::GTO,
+                                  AtomicSmearingType::Constant,
+                                  InterpolatorType::NoIntp): {
+        auto rc_shared = std::make_shared<
+            internal::RadialContributionSuite<
+                AtomicSmearingType::Constant, 
+                InterpolatorType::NoIntp,
+                RadialBasisType::GTO
+            >>(hypers);
+        this->radial_integral = rc_shared;
+        break;
+      }
+      case internal::combineEnums(RadialBasisType::GTO,
+                                  AtomicSmearingType::Constant,
+                                  InterpolatorType::WithIntp): {
+        double x1 = this->structure_manager->get_min_distance();
+        double x2 = this->structure_manager->get_max_distance();
+        auto rc_shared = std::make_shared<
+            internal::RadialContributionSuite<
+                AtomicSmearingType::Constant,
+                InterpolatorType::WithIntp,
+                RadialBasisType::GTO
+            >>(hypers, x1, x2, interpolator_accuracy);
+        this->radial_integral = rc_shared;
+        break;
+      }
+      default:
+        throw std::logic_error("The combination of parameter is not handled.");
+        break;
+      }
 
       auto fc_hypers = hypers.at("cutoff_function").get<json>();
       auto fc_type = fc_hypers.at("type").get<std::string>();
@@ -936,12 +1010,11 @@ namespace rascal {
    private:
     double interaction_cutoff{};
     double cutoff_smooth_width{};
-    bool interpolator_accuracy{};
+    double interpolator_accuracy{};
     size_t max_radial{};
     size_t max_angular{};
     size_t n_species{};
     bool compute_gradients{};
-    bool use_interpolator{};
 
     std::vector<Precision_t> dummy{};
 
@@ -951,6 +1024,8 @@ namespace rascal {
 
     std::shared_ptr<internal::RadialContributionBase> radial_integral{};
     internal::RadialBasisType radial_integral_type{};
+
+    internal::InterpolatorType interpolator_type{};
 
     std::shared_ptr<internal::CutoffFunctionBase> cutoff_function{};
     internal::CutoffFunctionType cutoff_function_type{};
@@ -988,7 +1063,7 @@ namespace rascal {
 
     switch (internal::combineEnums(this->radial_integral_type,
                                    this->atomic_smearing_type,
-                                   this->use_interpolator)) {
+                                   this->interpolator_type)) {
     case internal::combineEnums(RadialBasisType::GTO,
                                 AtomicSmearingType::Constant,
                                 InterpolatorType::NoIntp): {
@@ -1006,7 +1081,7 @@ namespace rascal {
       break;
     }
     default:
-      throw std::logic_error("The combination of parameter is not handdled.");
+      throw std::logic_error("The combination of parameter is not handled.");
       break;
     }
   }
@@ -1030,7 +1105,7 @@ namespace rascal {
     auto cutoff_function{
         downcast_cutoff_function<FcType>(this->cutoff_function)};
     auto radial_integral{
-        downcast_radial_integral<RadialType>(this->radial_integral)};
+        downcast_radial_integral_suite<SmearingType, IntpType, RadialType>(this->radial_integral)};
 
     auto n_row{this->max_radial};
     auto n_col{(this->max_angular + 1) * (this->max_angular + 1)};
@@ -1089,8 +1164,7 @@ namespace rascal {
 
         auto && neighbour_contribution =
             radial_integral
-                ->template compute_neighbour_contribution<SmearingType,
-                    IntpType>(dist, neigh);
+                ->template compute_neighbour_contribution(dist, neigh);
         double f_c{cutoff_function->f_c(dist)};
         auto && coefficients_center_by_type{coefficients_center[neigh_type]};
 
