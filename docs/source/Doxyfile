@@ -25,3 +25,5 @@ ALIASES               += "endrst=\endverbatim"
 QUIET                  = YES
 WARNINGS               = YES
 WARN_IF_UNDOCUMENTED   = YES
+
+USE_MATHJAX            = YES
