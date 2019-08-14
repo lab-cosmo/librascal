@@ -101,6 +101,8 @@ class SphericalExpansion(object):
                     print("Warning: default parameter for spline range is used.")
                     spline_range=(0, interaction_cutoff)
                 optimization_args={'type':'Spline', 'accuracy':accuracy, 'range':{'begin':spline_range[0], 'end':spline_range[1]}}
+            elif optimization_args['type'] == 'Nothing':
+                optimization_args=dict({'type':'Nothing'})
             else:
                 print('Optimization type is not known. Switching to no'
                       ' optimization.')
@@ -109,7 +111,7 @@ class SphericalExpansion(object):
             optimization_args=dict({'type':'Nothing'})
         radial_contribution = dict(
             type=radial_basis,
-            optimization_args=optimization_args
+            optimization=optimization_args
         )
         self.update_hyperparameters(cutoff_function=cutoff_function,
                                     gaussian_density=gaussian_density,

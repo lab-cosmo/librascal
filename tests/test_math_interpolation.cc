@@ -47,7 +47,7 @@ namespace rascal {
       GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
       SearchMethod<SearchMethod_t::Uniform>
         >;
-  using interpolator_fixtures = boost::mpl::list<InterpolatorFixture<HuntInterpolator>,
+  using interpolator_fixtures = boost::mpl::list<
                    InterpolatorFixture<UniformInterpolator>>;                     
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(math_interpolator_tests, Fix,

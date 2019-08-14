@@ -747,7 +747,7 @@ namespace rascal {
         auto radial_contribution_hypers =
             hypers.at("radial_contribution").template get<json>();
         auto optimization_hypers =
-            radial_contribution_hypers.at("optimization_args").template get<json>();
+            radial_contribution_hypers.at("optimization").template get<json>();
 
         double accuracy{this->get_interpolator_accuracy(optimization_hypers)};
         double range_begin{this->get_range_begin(optimization_hypers)};
@@ -916,9 +916,9 @@ namespace rascal {
       // TODO(alex) change this when gradient is implemented in interpolator
       // and then also make this logic more readable
       // interpolator begin
-      if (radial_contribution_hypers.find("optimization_args") != radial_contribution_hypers.end()) {
+      if (radial_contribution_hypers.find("optimization") != radial_contribution_hypers.end()) {
         auto optimization_hypers =
-            radial_contribution_hypers.at("optimization_args").get<json>();
+            radial_contribution_hypers.at("optimization").get<json>();
         if (optimization_hypers.find("type") != optimization_hypers.end()) {
           auto intp_type_name{optimization_hypers.at("type").get<std::string>()};
           if (intp_type_name.compare("Spline") == 0) {

@@ -133,7 +133,7 @@ namespace rascal {
     std::vector<json> radial_contribution_hypers{
         {{"type", "GTO"}},
         {{"type", "GTO"},
-         {"optimization_args", 
+         {"optimization", 
              {{"type", "Spline"},
               {"accuracy", 1e-8},
               {"range",{{"begin", 0.},{"end",3.}}}
