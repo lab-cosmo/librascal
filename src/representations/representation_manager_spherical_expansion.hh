@@ -714,25 +714,25 @@ namespace rascal {
         this->fac_a = 0.5 * pow(smearing->get_gaussian_sigma(), -2);
       }
 
-      double get_range_begin(const Hypers_t & radial_contribution_hypers) {
-        if (radial_contribution_hypers.find("interpolator_range_begin") != radial_contribution_hypers.end()) {
-          return radial_contribution_hypers.at("interpolator_range_begin").template get<double>();
+      double get_range_begin(const Hypers_t & optimization_hypers) {
+        if (optimization_hypers.find("range") != optimization_hypers.end()) {
+          return optimization_hypers.at("range").at("begin").template get<double>();
         }
         // default range begin
         return 0.;
       }
       
-      double get_range_end(const Hypers_t & radial_contribution_hypers) {
-        if (radial_contribution_hypers.find("interpolator_range_end") != radial_contribution_hypers.end()) {
-          return radial_contribution_hypers.at("interpolator_range_end").template get<double>();
+      double get_range_end(const Hypers_t & optimization_hypers) {
+        if (optimization_hypers.find("range") != optimization_hypers.end()) {
+          return optimization_hypers.at("range").at("end").template get<double>();
         }
         throw std::logic_error("Interpolator option is on but no range end for interpolation is given in the json hyperparameter. Interpolator cannot be initialized.");
         return -1;
       }
 
-      double get_interpolator_accuracy(const Hypers_t & radial_contribution_hypers) {
-        if (radial_contribution_hypers.find("interpolator_accuracy") != radial_contribution_hypers.end()) {
-          return radial_contribution_hypers.at("interpolator_accuracy").template get<double>();
+      double get_interpolator_accuracy(const Hypers_t & optimization_hypers) {
+        if (optimization_hypers.find("accuracy") != optimization_hypers.end()) {
+          return optimization_hypers.at("accuracy").template get<double>();
         }
         // default accuracy
         return 1e-8;
@@ -746,9 +746,12 @@ namespace rascal {
       void init_interpolator(const Hypers_t & hypers) {
         auto radial_contribution_hypers =
             hypers.at("radial_contribution").template get<json>();
-        double accuracy{this->get_interpolator_accuracy(radial_contribution_hypers)};
-        double range_begin{this->get_range_begin(radial_contribution_hypers)};
-        double range_end{this->get_range_end(radial_contribution_hypers)};
+        auto optimization_hypers =
+            radial_contribution_hypers.at("optimization_args").template get<json>();
+
+        double accuracy{this->get_interpolator_accuracy(optimization_hypers)};
+        double range_begin{this->get_range_begin(optimization_hypers)};
+        double range_end{this->get_range_end(optimization_hypers)};
         this->init_interpolator(range_begin, range_end, accuracy);
       }
 
@@ -911,20 +914,27 @@ namespace rascal {
       }
 
       // TODO(alex) change this when gradient is implemented in interpolator
+      // and then also make this logic more readable
       // interpolator begin
-      if (radial_contribution_hypers.find("optimization_type") != radial_contribution_hypers.end()) {
-        auto intp_type_name{radial_contribution_hypers.at("optimization_type").get<std::string>()};
-        if (intp_type_name.compare("Interpolator") == 0) {
-          if (hypers.find("compute_gradients") != hypers.end()) {
-            bool compute_gradients = hypers.at("compute_gradients").get<bool>();
-            if (compute_gradients) {
-              throw std::logic_error(
-                  "The usage of the interpolator is not compatible"
-                  " with activated gradient calculation.");
+      if (radial_contribution_hypers.find("optimization_args") != radial_contribution_hypers.end()) {
+        auto optimization_hypers =
+            radial_contribution_hypers.at("optimization_args").get<json>();
+        if (optimization_hypers.find("type") != optimization_hypers.end()) {
+          auto intp_type_name{optimization_hypers.at("type").get<std::string>()};
+          if (intp_type_name.compare("Spline") == 0) {
+            if (hypers.find("compute_gradients") != hypers.end()) {
+              bool compute_gradients = hypers.at("compute_gradients").get<bool>();
+              if (compute_gradients) {
+                throw std::logic_error(
+                    "The usage of the interpolator is not implemented"
+                    " with activated gradient calculation.");
+              }
             }
+            this->interpolator_type = InterpolatorType::WithIntp;
+          } else {
+            this->interpolator_type = InterpolatorType::NoIntp;
           }
-          this->interpolator_type = InterpolatorType::WithIntp;
-        } else {
+        } else {  // Default false (don't use interpolator)          
           this->interpolator_type = InterpolatorType::NoIntp;
         }
       } else {  // Default false (don't use interpolator)
