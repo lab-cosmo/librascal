@@ -88,18 +88,23 @@ class SphericalExpansion(object):
             ),
         )
 
-        if optimization_args['type'] == 'Spline':
-            if 'accuracy' in optimization_args:
-                accuracy=optimization_args['accuracy']
+        if 'type' in optimization_args:
+            if optimization_args['type'] == 'Spline':
+                if 'accuracy' in optimization_args:
+                    accuracy=optimization_args['accuracy']
+                else:
+                    accuracy=1e-8
+                if 'range' in optimization_args:
+                    spline_range=optimization_args['range']
+                else:
+                    #TODO(felix) remove this when there is a check for the distance for the usage of the interpolator in the RadialContribution
+                    print("Warning: default parameter for spline range is used.")
+                    spline_range=(0, interaction_cutoff)
+                optimization_args={'type':'Spline', 'accuracy':accuracy, 'range':{'begin':spline_range[0], 'end':spline_range[1]}}
             else:
-                accuracy=1e-8
-            if 'range' in optimization_args:
-                spline_range=optimization_args['range']
-            else:
-                #TODO(felix) remove this when there is a check for the distance for the usage of the interpolator in the RadialContribution
-                print("Warning: default parameter for spline range is used.")
-                spline_range=(0, interaction_cutoff)
-            optimization_args={'type':'Spline', 'accuracy':accuracy, 'range':{'begin':spline_range[0], 'end':spline_range[1]}}
+                print('Optimization type is not known. Switching to no'
+                      ' optimization.')
+                optimization_args=dict({'type':'Nothing'})
         else:
             optimization_args=dict({'type':'Nothing'})
         radial_contribution = dict(
