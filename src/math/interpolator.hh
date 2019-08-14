@@ -536,6 +536,8 @@ namespace rascal {
         this->search_method.initialize(this->grid);
       }
 
+      // TODO(alex) initialize_parameter? precompute  
+
       // Initialization function given an alread precomputed grid. For optimization purposes
       void initialize(std::function<double(double)> function, double x1, double x2, Vector_t grid) {
         this->function = function;

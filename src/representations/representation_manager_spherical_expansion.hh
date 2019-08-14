@@ -427,17 +427,16 @@ namespace rascal {
                                      ClusterRefKey<Order, Layer> & pair) {
         auto smearing{downcast_atomic_smearing<AST>(this->atomic_smearing)};
         double smearing_value{smearing->get_gaussian_sigma(pair)};
-        return this->compute_neighbour_contribution(distance, smearing_value);
+        // a = 1 / (2*\sigma^2)
+        double fac_a{0.5 * pow(smearing_value, -2)};
+        return this->compute_neighbour_contribution(distance, fac_a);
       }
 
       //! define the contribution from a neighbour atom to the expansion
       inline Matrix_Ref compute_neighbour_contribution(
-              const double & distance, const double & smearing_value) {
+              const double & distance, const double & fac_a) {
         using math::pow;
         using std::sqrt;
-
-        // a = 1 / (2*\sigma^2)
-        double fac_a{0.5 * pow(smearing_value, -2)};
 
         // computes (r_{ij}*a)^l incrementally
         this->distance_fac_a_l(0) = 1.;
@@ -648,9 +647,17 @@ namespace rascal {
       Matrix_t ortho_norm_matrix{};
     };
 
+
+
+    // TODO(all) name ok? I also thought about RadialContributionHandler, do we have something similar in the code?
+    /* A RadialContributionSuite handles the different cases of AtomicSmearingType and InterpolatorType. Depending on these template parameters different member variables have to used and different parameters can be precomputed.
+     */
+
     template <RadialBasisType RBT, AtomicSmearingType AST, InterpolatorType IT>
     struct RadialContributionSuite {}; 
 
+    /* For the a constant smearing type the "a" factor can be precomputed
+     */
     template <RadialBasisType RBT>
     struct RadialContributionSuite<
          RBT, AtomicSmearingType::Constant, InterpolatorType::NoIntp> : 
@@ -661,18 +668,24 @@ namespace rascal {
       using Matrix_Ref = typename Parent::Matrix_Ref;
 
       RadialContributionSuite(const Hypers_t & hypers) : Parent(hypers) {
+        this->precompute_fac_a();
+      }
+
+      void precompute_fac_a() {
         auto smearing{downcast_atomic_smearing<AtomicSmearingType::Constant>(this->atomic_smearing)};
-        this->smearing_value = smearing->get_gaussian_sigma();
+        this->fac_a = 0.5 * pow(smearing->get_gaussian_sigma(), -2);
       }
 
       template <size_t Order, size_t Layer>
       inline Matrix_Ref compute_neighbour_contribution(const double & distance, ClusterRefKey<Order, Layer> &) {
-        return Parent::compute_neighbour_contribution(distance, this->smearing_value);
+        return Parent::compute_neighbour_contribution(distance, this->fac_a);
       }
 
-      double smearing_value{};
+      double fac_a{};
     };
 
+    /* For the a constant smearing type the "a" factor can be precomputed and when using the interpolator has to be initialized and used.
+     */
     template <RadialBasisType RBT>
     struct RadialContributionSuite<
          RBT, AtomicSmearingType::Constant, InterpolatorType::WithIntp> : 
@@ -684,30 +697,81 @@ namespace rascal {
       using Matrix_Ref = typename Parent::Matrix_Ref;
       using Interpolator_t = math::InterpolatorVectorized_t;
 
+      RadialContributionSuite(const Hypers_t & hypers) : Parent(hypers) {
+        this->precompute_fac_a();
+
+        this->init_interpolator(hypers);
+      }
+
+      // If we find a case where smarter parameters for x1 and x2 can given
       RadialContributionSuite(const Hypers_t & hypers, double x1, double x2, double accuracy) : Parent(hypers) {
-        auto smearing{downcast_atomic_smearing<AtomicSmearingType::Constant>(this->atomic_smearing)};
-        this->smearing_value = smearing->get_gaussian_sigma();
+        this->precompute_fac_a();
         this->init_interpolator(x1, x2, accuracy);
       }
 
+      void precompute_fac_a() {
+        auto smearing{downcast_atomic_smearing<AtomicSmearingType::Constant>(this->atomic_smearing)};
+        this->fac_a = 0.5 * pow(smearing->get_gaussian_sigma(), -2);
+      }
+
+      double get_range_begin(const Hypers_t & radial_contribution_hypers) {
+        if (radial_contribution_hypers.find("interpolator_range_begin") != radial_contribution_hypers.end()) {
+          return radial_contribution_hypers.at("interpolator_range_begin").template get<double>();
+        }
+        // default range begin
+        return 0.;
+      }
+      
+      double get_range_end(const Hypers_t & radial_contribution_hypers) {
+        if (radial_contribution_hypers.find("interpolator_range_end") != radial_contribution_hypers.end()) {
+          return radial_contribution_hypers.at("interpolator_range_end").template get<double>();
+        }
+        throw std::logic_error("Interpolator option is on but no range end for interpolation is given in the json hyperparameter. Interpolator cannot be initialized.");
+        return -1;
+      }
+
+      double get_interpolator_accuracy(const Hypers_t & radial_contribution_hypers) {
+        if (radial_contribution_hypers.find("interpolator_accuracy") != radial_contribution_hypers.end()) {
+          return radial_contribution_hypers.at("interpolator_accuracy").template get<double>();
+        }
+        // default accuracy
+        return 1e-8;
+      }
+      
+      double get_cutoff(const Hypers_t & hypers) {
+        auto fc_hypers = hypers.at("cutoff_function").template get<json>();
+        return fc_hypers.at("cutoff").at("value").template get<double>();
+      }
+
+      void init_interpolator(const Hypers_t & hypers) {
+        auto radial_contribution_hypers =
+            hypers.at("radial_contribution").template get<json>();
+        double accuracy{this->get_interpolator_accuracy(radial_contribution_hypers)};
+        double range_begin{this->get_range_begin(radial_contribution_hypers)};
+        double range_end{this->get_range_end(radial_contribution_hypers)};
+        this->init_interpolator(range_begin, range_end, accuracy);
+      }
+
+
+      void init_interpolator(double range_begin, double range_end, double accuracy) {
+        // "this" is passed by reference and is mutable
+        std::function<Matrix_t(double)> func{
+          [&](double distance) mutable {
+            Parent::compute_neighbour_contribution(distance, this->fac_a);
+            return this->radial_integral_neighbour;
+          }
+        };
+        this->intp.initialize(func, range_begin, range_end, accuracy);
+        this->intp.initialize_interpolator();
+      }
+
       template<size_t Order, size_t Layer>
-      inline Matrix_Ref compute_neighbour_contribution(const double & distance, ClusterRefKey<Order, Layer> &){
+      inline Matrix_Ref compute_neighbour_contribution(const double & distance, ClusterRefKey<Order, Layer> &) {
         this->radial_integral_neighbour = this->intp.interpolate(distance);
         return Matrix_Ref(this->radial_integral_neighbour);
       }
 
-      void init_interpolator(double x1, double x2, double accuracy) {
-        // "this" is passed by reference
-        std::function<Matrix_t(double)> func{
-          [&](double distance) mutable {
-            Parent::compute_neighbour_contribution(distance, this->smearing_value);
-            return this->radial_integral_neighbour;
-          }
-        };
-        this->intp.initialize(func, x1, x2, accuracy);
-      }
-
-      double smearing_value{};
+      double fac_a{};
       Interpolator_t intp{};
     };
 
@@ -844,28 +908,27 @@ namespace rascal {
             "\' has not been implemented.  Must be one of" + ": \'GTO\'.");
       }
 
+      // TODO(alex) change this when gradient is implemented in interpolator
       // interpolator begin
-      if (radial_contribution_hypers.find("interpolator_type") != radial_contribution_hypers.end()) {
-        auto intp_type_name{radial_contribution_hypers.at("interpolator_type").get<std::string>()};
-        if (intp_type_name.compare("WithIntp") == 0) {
+      if (radial_contribution_hypers.find("optimization_type") != radial_contribution_hypers.end()) {
+        auto intp_type_name{radial_contribution_hypers.at("optimization_type").get<std::string>()};
+        if (intp_type_name.compare("Interpolator") == 0) {
+          if (hypers.find("compute_gradients") != hypers.end()) {
+            bool compute_gradients = hypers.at("compute_gradients").get<bool>();
+            if (compute_gradients) {
+              throw std::logic_error(
+                  "The usage of the interpolator is not compatible"
+                  " with activated gradient calculation.");
+            }
+          }
           this->interpolator_type = InterpolatorType::WithIntp;
-        } else if (intp_type_name.compare("NoIntp") == 0) {
-          this->interpolator_type = InterpolatorType::NoIntp;
         } else {
-          throw std::logic_error(
-              "Requested Interpolator type \'" + intp_type_name +
-              "\' has not been implemented.  Must be one of" + ": \'GTO\'.");
+          this->interpolator_type = InterpolatorType::NoIntp;
         }
       } else {  // Default false (don't use interpolator)
         this->interpolator_type = InterpolatorType::NoIntp;
       }
       
-      double interpolator_accuracy;
-      if (radial_contribution_hypers.find("interpolator_accuracy") != radial_contribution_hypers.end()) {
-        interpolator_accuracy = radial_contribution_hypers.at("interpolator_accuracy").get<double>();
-      } else {  // Default accuracy
-        interpolator_accuracy = 1e-8;
-      }
       // interpolator end 
 
       switch (internal::combineEnums(this->radial_integral_type,
@@ -886,14 +949,12 @@ namespace rascal {
       case internal::combineEnums(RadialBasisType::GTO,
                                   AtomicSmearingType::Constant,
                                   InterpolatorType::WithIntp): {
-        double x1 = this->structure_manager->get_min_distance();
-        double x2 = this->structure_manager->get_max_distance();
         auto rc_shared = std::make_shared<
             internal::RadialContributionSuite<
                 RadialBasisType::GTO,
                 AtomicSmearingType::Constant, 
                 InterpolatorType::WithIntp
-            >>(hypers, x1, x2, interpolator_accuracy);
+            >>(hypers);
         this->radial_integral = rc_shared;
         break;
       }

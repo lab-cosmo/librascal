@@ -105,6 +105,31 @@ namespace rascal {
       }
     }
   }
+
+  BOOST_FIXTURE_TEST_CASE(min_max_distance_test, PairFixtureCenters) {
+    auto adaptor_strict{
+        make_adapted_manager<AdaptorStrict>(pair_manager, cutoff)};
+    adaptor_strict->update();
+
+    double min_distance = std::numeric_limits<double>::max();
+    double max_distance = 0.;
+    double distance;
+    for (auto atom : adaptor_strict) {
+      for (auto pair : atom) {
+        distance = adaptor_strict->get_distance(pair);
+        if (distance > max_distance) {
+          max_distance = distance;
+        }
+        if (distance < min_distance) {
+          min_distance = distance;
+        }
+      }
+    }
+    BOOST_CHECK_LE(std::abs(max_distance - adaptor_strict->get_max_distance()), tol);
+    BOOST_CHECK_LE(std::abs(min_distance - adaptor_strict->get_min_distance()), tol);
+  }
+
+
   /* ---------------------------------------------------------------------- */
   /*
    * Compare the strict neighbour list with the linked cell one

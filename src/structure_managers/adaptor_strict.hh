@@ -265,6 +265,7 @@ namespace rascal {
       return this->atom_tag_list[1];
     }
 
+    // TODO(alex) implement in all with HasDistance true when merged with default_implementation_function
     double get_min_distance() {
       return this->min_distance;
     }
@@ -425,6 +426,7 @@ namespace rascal {
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
     size_t pair_counter{0};
+    // TODO(all) warning or error if pairs are empty???
     this->min_distance = std::numeric_limits<double>::max();
     this->max_distance = 0.;
     // depending on the underlying neighbourlist, the proxy `.with_ghosts()` is
@@ -455,8 +457,8 @@ namespace rascal {
           if (distance > this->max_distance) {
             this->max_distance = distance;
           }
-          if (distance < this->max_distance) {
-            this->max_distance = distance;
+          if (distance < this->min_distance) {
+            this->min_distance = distance;
           }
 
           Eigen::Matrix<size_t, PairLayer + 1, 1> indices_pair;

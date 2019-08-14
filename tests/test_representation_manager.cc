@@ -255,6 +255,62 @@ namespace rascal {
     }
   }
 
+  using sherical_expansion_fix = RepresentationFixture<SphericalExpansionTestData,
+                            RepresentationManagerSphericalExpansion>;
+
+  BOOST_FIXTURE_TEST_CASE(interpolator_reference_test, sherical_expansion_fix) {
+    auto & managers = this->managers;
+    auto & representations = this->representations;
+    auto & ref_data = this->ref_data;
+
+    // Choose the data depending on the current options
+    // using Std2DArray_t = std::vector<std::vector<double>>;
+    using Std2DArray_t = std::vector<std::vector<double>>;
+
+    const auto & data{ref_data.at("rep_info").template get<json>()};
+    // feature_matrices = data["feature_matrices"];
+
+    size_t manager_i{0};
+    
+    // we use this as tolerance but the interpolator cannot guarantee for this accuracy,the tolerance was determined by brute force
+    double accuracy{1e-10};
+    for (auto & manager : managers) {
+      for (const auto & config : data.at(manager_i)) {
+        auto hypers = config.at("hypers").template get<json>();
+        hypers["radial_contribution"]["optimization_type"] = "Interpolator";
+        hypers["radial_contribution"]["interpolator_accuracy"] = accuracy;
+        hypers["radial_contribution"]["interpolator_range_end"] = 3.;
+        const auto & ref_representation =
+            config.at("feature_matrix").template get<Std2DArray_t>();
+
+        representations.emplace_back(manager, hypers);
+        representations.back().compute();
+
+        // TODO(felix) quick fix of something that will disappear soon
+        FeatureManagerBlockSparse<double> features{
+            representations.back().get_feature_size(), hypers};
+        features.push_back(representations.back());
+        auto test_representation = features.get_feature_matrix_dense();
+
+        auto n_feature{test_representation.rows()};
+        auto n_center{test_representation.cols()};
+        BOOST_CHECK_EQUAL(ref_representation.size(), n_feature);
+        for (size_t row_i{0}; row_i < ref_representation.size(); row_i++) {
+          BOOST_CHECK_EQUAL(ref_representation[row_i].size(), n_center);
+          for (size_t col_i{0}; col_i < ref_representation[row_i].size();
+               ++col_i) {
+            auto diff{std::abs(ref_representation[row_i][col_i] -
+                               test_representation(row_i, col_i))};
+            BOOST_CHECK_LE(diff, 1e-8);
+          }
+        }
+      }
+      manager_i += 1;
+    }
+  }
+
+
+
   BOOST_AUTO_TEST_SUITE_END();
 
   /* ---------------------------------------------------------------------- */
