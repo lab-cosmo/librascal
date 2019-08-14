@@ -79,7 +79,8 @@ int main() {
   // positions, types. It also provides iteration over all atom.
   manager->update(filename);
 
-  //std::cout << "Atoms mask: " << manager->get_center_atoms_mask() << std::endl;
+  //std::cout << "Atoms mask: " << manager->get_center_atoms_mask() 
+  //          << std::endl;
 
   // `pair_manager` is constructed with the `manager` and a `cutoff`.
   auto pair_manager{rascal::make_adapted_manager<rascal::AdaptorNeighbourList>(
