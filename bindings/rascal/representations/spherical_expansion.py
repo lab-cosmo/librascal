@@ -55,10 +55,7 @@ class SphericalExpansion(object):
                  max_radial, max_angular, gaussian_sigma_type,
                  gaussian_sigma_constant=0., cutoff_function_type="Cosine",
                  n_species=1, radial_basis="GTO",
-                 optimization_type="Nothing",
-                 interpolator_accuracy=1e-8,
-                 interpolator_range_begin=0.0,
-                 interpolator_range_end=5.0,
+                 optimization_args={},
                  method='thread', n_workers=1, disable_pbar=False):
         """Construct a SphericalExpansion representation
 
@@ -72,7 +69,6 @@ class SphericalExpansion(object):
             max_radial=max_radial, max_angular=max_angular,
             n_species=n_species
         )
-
         cutoff_function = dict(
             type=cutoff_function_type,
             cutoff=dict(
@@ -91,12 +87,24 @@ class SphericalExpansion(object):
                 unit='A'
             ),
         )
+
+        if optimization_args['type'] == 'Spline':
+            if 'accuracy' in optimization_args:
+                accuracy=optimization_args['accuracy']
+            else:
+                accuracy=1e-8
+            if 'range' in optimization_args:
+                spline_range=optimization_args['range']
+            else:
+                #TODO(felix) remove this when there is a check for the distance for the usage of the interpolator in the RadialContribution
+                print("Warning: default parameter for spline range is used.")
+                spline_range=(0, interaction_cutoff)
+            optimization_args={'type':'Spline', 'accuracy':accuracy, 'range':{'begin':spline_range[0], 'end':spline_range[1]}}
+        else:
+            optimization_args=dict({'type':'Nothing'})
         radial_contribution = dict(
             type=radial_basis,
-            optimization_type=optimization_type,
-            interpolator_accuracy=interpolator_accuracy,
-            interpolator_range_begin=interpolator_range_begin,
-            interpolator_range_end=interpolator_range_end,
+            optimization_args=optimization_args
         )
         self.update_hyperparameters(cutoff_function=cutoff_function,
                                     gaussian_density=gaussian_density,

@@ -767,6 +767,8 @@ namespace rascal {
 
       template<size_t Order, size_t Layer>
       inline Matrix_Ref compute_neighbour_contribution(const double & distance, ClusterRefKey<Order, Layer> &) {
+        // TODO(alex)TODO(felix) include an check that the distance is within
+        // the (x1,x2) range of the interpolator
         this->radial_integral_neighbour = this->intp.interpolate(distance);
         return Matrix_Ref(this->radial_integral_neighbour);
       }

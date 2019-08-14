@@ -57,7 +57,7 @@ def dump_reference_json():
     cutoff_smooth_widths = [0., 1.]
     radial_basis = ["GTO"]
     # optimization type
-    opt_types = ["Nothing", "Interpolator"]
+    opt_args = [{"type":"Nothing"},{"type":"Spline", "accuracy":1e-8, "range":(0.,5.)}]
 
     fns = [
         os.path.join(
@@ -96,11 +96,7 @@ def dump_reference_json():
                                               "gaussian_sigma_constant":
                                                     gaussian_sigma,
                                               "radial_basis": rad_basis,
-                                              "optimization_type": opt_type}
-                                    if (opt_type == "Interpolator"):
-                                        hypers["interpolator_accuracy"] = 1e-8
-                                        hypers["interpolator_range_begin"] = 0.
-                                        hypers["interpolator_range_end"] = 5.
+                                              "optimization_args": opt_args}
                                     # x = get_soap_vectors(hypers, frames)
                                     sph_expn = SphericalExpansion(**hypers)
                                     expansions = sph_expn.transform(frames)

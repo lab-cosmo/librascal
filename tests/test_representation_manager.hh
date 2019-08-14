@@ -133,10 +133,14 @@ namespace rascal {
     std::vector<json> radial_contribution_hypers{
         {{"type", "GTO"}},
         {{"type", "GTO"},
-         {"optimization_type", "Interpolator"},
-         {"interpolator_accuracy", 1e-8},
-         {"interpolator_range_begin", 0.},
-         {"interpolator_range_end", 3.}}};
+         {"optimization_args", 
+             {{"type", "Spline"},
+              {"accuracy", 1e-8},
+              {"range",{{"begin", 0.},{"end",3.}}}
+             }
+         }
+        }
+    };
     std::vector<json> rep_hypers{{{"max_radial", 6},
                                   {"max_angular", 0},
                                   {"soap_type", "RadialSpectrum"},
