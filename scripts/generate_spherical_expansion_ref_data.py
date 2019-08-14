@@ -56,6 +56,8 @@ def dump_reference_json():
     max_angulars = [3, 6]
     cutoff_smooth_widths = [0., 1.]
     radial_basis = ["GTO"]
+    # optimization type
+    opt_types = ["Nothing", "Interpolator"]
 
     fns = [
         os.path.join(
@@ -82,24 +84,30 @@ def dump_reference_json():
                     for max_angular in max_angulars:
                         for cutoff_smooth_width in cutoff_smooth_widths:
                             for rad_basis in radial_basis:
-                                frames = [json2ase(load_json(fn))]
-                                hypers = {"interaction_cutoff": cutoff,
-                                          "cutoff_smooth_width":
-                                                cutoff_smooth_width,
-                                          "max_radial": max_radial,
-                                          "max_angular": max_angular,
-                                          "gaussian_sigma_type": "Constant",
-                                          "cutoff_function_type": "Cosine",
-                                          "gaussian_sigma_constant":
-                                                gaussian_sigma,
-                                          "radial_basis": rad_basis}
-                                # x = get_soap_vectors(hypers, frames)
-                                sph_expn = SphericalExpansion(**hypers)
-                                expansions = sph_expn.transform(frames)
-                                x = expansions.get_feature_matrix()
-                                data['rep_info'][-1].append(
-                                        dict(feature_matrix=x.tolist(),
-                                             hypers=copy(sph_expn.hypers)))
+                                for opt_type in opt_types:
+                                    frames = [json2ase(load_json(fn))]
+                                    hypers = {"interaction_cutoff": cutoff,
+                                              "cutoff_smooth_width":
+                                                    cutoff_smooth_width,
+                                              "max_radial": max_radial,
+                                              "max_angular": max_angular,
+                                              "gaussian_sigma_type": "Constant",
+                                              "cutoff_function_type": "Cosine",
+                                              "gaussian_sigma_constant":
+                                                    gaussian_sigma,
+                                              "radial_basis": rad_basis,
+                                              "optimization_type": opt_type}
+                                    if (opt_type == "Interpolator"):
+                                        hypers["interpolator_accuracy"] = 1e-8
+                                        hypers["interpolator_range_begin"] = 0.
+                                        hypers["interpolator_range_end"] = 5.
+                                    # x = get_soap_vectors(hypers, frames)
+                                    sph_expn = SphericalExpansion(**hypers)
+                                    expansions = sph_expn.transform(frames)
+                                    x = expansions.get_feature_matrix()
+                                    data['rep_info'][-1].append(
+                                            dict(feature_matrix=x.tolist(),
+                                                 hypers=copy(sph_expn.hypers)))
 
     with open(path+"tests/reference_data/spherical_expansion_reference.ubjson",
               'wb') as f:

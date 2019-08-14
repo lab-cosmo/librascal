@@ -51,17 +51,21 @@ class SphericalExpansion(object):
         http://link.aps.org/doi/10.1103/PhysRevB.87.184115
 
     """
-
     def __init__(self, interaction_cutoff, cutoff_smooth_width,
                  max_radial, max_angular, gaussian_sigma_type,
                  gaussian_sigma_constant=0., cutoff_function_type="Cosine",
                  n_species=1, radial_basis="GTO",
+                 optimization_type="Nothing",
+                 interpolator_accuracy=1e-8,
+                 interpolator_range_begin=0.0,
+                 interpolator_range_end=5.0,
                  method='thread', n_workers=1, disable_pbar=False):
         """Construct a SphericalExpansion representation
 
         Required arguments are all the hyperparameters named in the
         class documentation
         """
+
         self.name = 'sphericalexpansion'
         self.hypers = dict()
         self.update_hyperparameters(
@@ -89,6 +93,10 @@ class SphericalExpansion(object):
         )
         radial_contribution = dict(
             type=radial_basis,
+            optimization_type=optimization_type,
+            interpolator_accuracy=interpolator_accuracy,
+            interpolator_range_begin=interpolator_range_begin,
+            interpolator_range_end=interpolator_range_end,
         )
         self.update_hyperparameters(cutoff_function=cutoff_function,
                                     gaussian_density=gaussian_density,
