@@ -86,16 +86,30 @@ namespace rascal {
     using ArrayB_t = Eigen::Array<bool, Eigen::Dynamic, 1>;
     using ArrayB_ref = Eigen::Ref<const ArrayB_t>;
 
-    // Eigen types for saving atomic structure data
+
+    //! positions of the atomic structure in a Nx3 Eigen Matrix
     Positions_t positions{};
+    //! atomic numbers of the N atoms
     AtomTypes_t atom_types{};
+    //! cell vectors defining the box
     Cell_t cell{};
+    //! periodic boundary conditions for each directions
     PBC_t pbc{};
     //! Contains the information wheter an atom should be centered on or not
+    //! in the form of an array of N booleans (true->center)
     ArrayB_t center_atoms_mask{};
 
     inline size_t get_number_of_atoms() const { return positions.cols(); }
 
+    /**
+     * Set the atomic structure. The expected input are similar to the member
+     * variable of the AtomicStructure class.
+     *
+     * By default all atoms are considered as atoms to center the
+     * representation on.
+     *
+     * A valid atomic structure file is in the ASE json format.
+     */
     inline void set_structure(const PositionsInput_t & positions,
                               const AtomTypesInput_t & atom_types,
                               const CellInput_t cell, const PBCInput_t & pbc) {

@@ -80,7 +80,11 @@ namespace rascal {
    * StructureManagerCenters is an entry point to the neighbourlist. It takes
    * an atomic structure (positions, atomic number, cell and periodic boundary
    * conditions) and allows to select the atoms for which a neighbourlist will
-   * be built (by default all atoms are considered).
+   * be built (by default all atoms are considered). Note that all atoms are
+   * considered as potential neighbors.
+   *
+   * The setting of the structure is done through the update function and with
+   * the help of the AtomicStructure class.
    *
    * This manager allows for one level of iteration over the centers or i-atoms
    * that have been selected.
@@ -340,6 +344,9 @@ namespace rascal {
      * store atoms index per order,i.e.
      *   - atoms_index[0] lists all i-atoms that will be centered on and at the
      * back the atoms that won't be centered on are indexed too.
+     *
+     * The size of the manager is n_center_atoms so the loop over the center
+     * atoms does not include the atoms that are not centered on.
      *
      * This array is expected to be accessed with atom_tags.
      *

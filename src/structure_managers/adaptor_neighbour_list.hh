@@ -304,7 +304,7 @@ namespace rascal {
     //! get dimension dependent neighbour indices (surrounding cell and the cell
     //! itself
     template <size_t Dim, class Container_t>
-    void get_neighbours_atom_tag(const int current_atom_tag,
+    void fill_neighbours_atom_tag(const int current_atom_tag,
                                  const std::array<int, Dim> & ccoord,
                                  const Container_t & boxes,
                                  std::vector<int> & neighbours_atom_tag) {
@@ -943,26 +943,26 @@ namespace rascal {
     // nboxes_per_dim is the number of mesh boxes in each dimension, not to be
     // confused with the number of cells to ensure periodicity
     for (auto i{0}; i < dim; ++i) {
-      auto min_coord = std::min(0., cell.row(i).minCoeff());
-      auto max_coord = std::max(0., cell.row(i).maxCoeff());
+      double min_coord{std::min(0., cell.row(i).minCoeff())};
+      double max_coord{std::max(0., cell.row(i).maxCoeff())};
 
       // minimum is given by -cutoff and a delta to avoid ambiguity during cell
       // sorting of atom position e.g. at x = (0,0,0).
-      auto epsilon = 0.25 * cutoff;
+      double epsilon{0.25 * cutoff};
       // 2 cutoff for extra layer of emtpy cells (because of stencil iteration)
       mesh_min[i] = min_coord - 2 * cutoff - epsilon;
 
       // outer mesh, including one layer of emtpy cells
-      auto lmesh = std::fabs(mesh_min[i]) + max_coord + 3 * cutoff;
-      auto n = std::ceil(lmesh / cutoff);
-      auto lmax = n * cutoff - std::fabs(mesh_min[i]);
+      double lmesh{std::fabs(mesh_min[i]) + max_coord + 3 * cutoff};
+      double n{std::ceil(lmesh / cutoff)};
+      double lmax{n * cutoff - std::fabs(mesh_min[i])};
       mesh_max[i] = lmax;
-      nboxes_per_dim[i] = n;
+      nboxes_per_dim[i] = static_cast<int>(n);
 
       // positions min/max for ghost atoms
       ghost_min[i] = mesh_min[i] + cutoff;
-      auto lghost = lmesh - 2 * cutoff;
-      auto n_ghosts = std::ceil(lghost / cutoff);
+      double lghost{lmesh - 2 * cutoff};
+      double n_ghosts{std::ceil(lghost / cutoff)};
       ghost_max[i] = n_ghosts * cutoff - std::fabs(ghost_min[i]);
     }
 
@@ -1078,7 +1078,7 @@ namespace rascal {
       Vector_t pos = center.get_position();
       Vector_t dpos = pos - mesh_min;
       auto box_index = internal::get_box_index(dpos, cutoff);
-      internal::get_neighbours_atom_tag(atom_tag, box_index, atom_id_cell,
+      internal::fill_neighbours_atom_tag(atom_tag, box_index, atom_id_cell,
                                         current_j_atoms);
 
       nneigh += current_j_atoms.size();

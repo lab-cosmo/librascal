@@ -46,7 +46,7 @@ namespace rascal {
     internal::for_each(this->cluster_indices_container,
                        internal::ResizePropertyToZero());
 
-    // set the references to the particles positions
+    // set the references to the center atoms positions and types
     for (size_t id{0}; id < this->natoms; ++id) {
       if (center_atoms_mask(id)) {
         this->atoms_index[0].push_back(id);
@@ -74,7 +74,7 @@ namespace rascal {
     if (order == 1) {
       return this->n_center_atoms;
     } else {
-      throw std::string("ERREUR : Order != 1");
+      throw std::string("ERROR : Order != 1");
     }
   }
   /* ---------------------------------------------------------------------- */
