@@ -840,7 +840,7 @@ namespace rascal {
       // manager centers.
       auto && atomic_structure{this->manager->get_atomic_structure()};
       // if the structure has not changed by more than skin**2
-      if (not atomic_structure.is_identical(std::forward<Args>(arguments)...,
+      if (not atomic_structure.is_similar(std::forward<Args>(arguments)...,
                                             this->skin2)) {
         this->need_update = true;
       } else {

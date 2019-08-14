@@ -176,30 +176,33 @@ namespace rascal {
     inline void set_structure() {}
 
     /**
-     * Compare if another structure is identical to itself.
+     * Compare if another atomic structure is identical to itself.
      *
      * Assumes that if the structure is given as json or filename related then
      * it is different. Do the comparison only if it is given as an
      * AtomicStructure or positions, pbc...
      * Used for the verlet list
+     *
+     * @param threshold2 tolerance parameter squared for the similarity
+     *                    comparison
      */
-    inline bool is_identical(const double &) const { return true; }
+    inline bool is_similar(const double &) const { return true; }
 
-    inline bool is_identical(const json_io::AtomicJsonData &, const double &) {
+    inline bool is_similar(const json_io::AtomicJsonData &, const double &) {
       return false;
     }
 
-    inline bool is_identical(const json &, const double &) const {
+    inline bool is_similar(const json &, const double &) const {
       return false;
     }
 
-    inline bool is_identical(const std::string &, const double &) const {
+    inline bool is_similar(const std::string &, const double &) const {
       return false;
     }
 
-    inline bool is_identical(const AtomicStructure<Dim> & other,
-                             const double & skin2) const {
-      bool is_similar{true};
+    inline bool is_similar(const AtomicStructure<Dim> & other,
+                             const double & threshold2) const {
+      bool is_similar_{true};
       if (this->positions.cols() == other.positions.cols()) {
         if ((this->pbc.array() != other.pbc.array()).any() or
             (this->cell.array() != other.cell.array()).any() or
@@ -207,42 +210,42 @@ namespace rascal {
             (this->positions - other.positions)
                     .rowwise()
                     .squaredNorm()
-                    .maxCoeff() > skin2) {
-          is_similar = false;
+                    .maxCoeff() > threshold2) {
+          is_similar_ = false;
         }
       } else {
-        is_similar = false;
+        is_similar_ = false;
       }
-      return is_similar;
+      return is_similar_;
     }
 
-    inline bool is_identical(const PositionsInput_t & positions,
+    inline bool is_similar(const PositionsInput_t & positions,
                              const AtomTypesInput_t & atom_types,
                              const CellInput_t cell, const PBCInput_t & pbc,
-                             const double & skin2) const {
+                             const double & threshold2) const {
       auto center_atoms_mask = ArrayB_t::Ones(atom_types.size());
-      return this->is_identical(positions, atom_types, cell, pbc,
-                                center_atoms_mask, skin2);
+      return this->is_similar(positions, atom_types, cell, pbc,
+                                center_atoms_mask, threshold2);
     }
 
-    inline bool is_identical(const PositionsInput_t & positions,
+    inline bool is_similar(const PositionsInput_t & positions,
                              const AtomTypesInput_t & /*atom_types*/,
                              const CellInput_t cell, const PBCInput_t & pbc,
                              const ArrayB_ref & center_atoms_mask,
-                             const double & skin2) const {
-      bool is_similar{true};
+                             const double & threshold2) const {
+      bool is_similar_{true};
       if (this->positions.cols() == positions.cols()) {
         if ((this->pbc.array() != pbc.array()).any() or
             (this->cell.array() != cell.array()).any() or
             (this->center_atoms_mask != center_atoms_mask).any() or
             (this->positions - positions).rowwise().squaredNorm().maxCoeff() >
-                skin2) {
-          is_similar = false;
+                threshold2) {
+          is_similar_ = false;
         }
       } else {
-        is_similar = false;
+        is_similar_ = false;
       }
-      return is_similar;
+      return is_similar_;
     }
   };
 
