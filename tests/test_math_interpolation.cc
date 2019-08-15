@@ -54,6 +54,8 @@ namespace rascal {
                                    interpolator_fixtures, Fix) {
     auto intp{Fix::intp};
     auto identity_func{Fix::identity_func};
+    auto poly_func{Fix::poly_func};
+    auto poly_derivative_func{Fix::poly_derivative_func};
     auto exp_func{Fix::exp_func};
     auto mean_error_bound{Fix::mean_error_bound};
 
@@ -72,15 +74,39 @@ namespace rascal {
       BOOST_CHECK_LE(error, mean_error_bound);
     }
 
+    // derivative
+    intp_ref = 1;
+    for (int i{0}; i<ref_points.size()-1; i++) {
+      intp_val = intp.interpolate_derivative(ref_points(i));
+      error = std::abs(intp_val - intp_ref);
+      BOOST_CHECK_LE(error, mean_error_bound);
+    }
+
+    intp.initialize(Fix::poly_func, Fix::x1, Fix::x2, Fix::mean_error_bound);
+    for (int i{0}; i<ref_points.size()-1; i++) {
+      intp_val = intp.interpolate(ref_points(i));
+      intp_ref = Fix::poly_func(ref_points(i));
+      error = std::abs(intp_val - intp_ref);
+      BOOST_CHECK_LE(error, 2*mean_error_bound);
+    }
+
+    // derivative
+    error = intp_derivative_ref_error(intp, Fix::poly_derivative_func, ref_points);
+    BOOST_CHECK_LE(error, 2000*mean_error_bound);
+
     // Test for exp function
     func = exp_func;
-    intp.initialize(func, Fix::x1, Fix::x2, Fix::mean_error_bound);
+    intp.initialize(func, Fix::x1, Fix::x2, mean_error_bound);
     for (int i{0}; i<ref_points.size()-1; i++) {
       intp_val = intp.interpolate(ref_points(i));
       intp_ref = func(ref_points(i));
       error = std::abs(intp_val - intp_ref);
-      BOOST_CHECK_LE(error, mean_error_bound);
+      BOOST_CHECK_LE(error, mean_error_bound); 
     }
+
+    // the error for the derivative for the exponential is significant large
+    error = intp_derivative_ref_error(intp, func, ref_points);
+    BOOST_CHECK_LE(error, 0.5);
     
     func  = [&](double x) {return this->hyp1f1.calc(x);};
     //func = std::bind(hyp1f1_function_generator, a, b, std::placeholders::_1);
@@ -92,7 +118,14 @@ namespace rascal {
       BOOST_CHECK_LE(error, mean_error_bound);
     }
   }
-    
+
+
+  // Calculate the numerical derivative from the interpolator results and compares it
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(math_interpolator_derivative_tests, Fix,
+                                   interpolator_fixtures, Fix) {
+    // TODO(alex)
+  }
+
   // Test for identity function
   BOOST_FIXTURE_TEST_CASE(math_interpolator_identity_test, InterpolatorFixture<UniformInterpolator>) {
     Vector_t ref_points = Vector_t::LinSpaced(this->nb_ref_points, this->x1, this->x2);

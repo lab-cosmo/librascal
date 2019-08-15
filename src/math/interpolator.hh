@@ -184,6 +184,12 @@ namespace rascal {
         return this->rawinterp(grid, evaluated_grid,
             nearest_grid_index_to_x, x);
       }
+      inline double interpolate_derivative(const Vector_Ref & grid,
+          const Vector_Ref & evaluated_grid,
+          double x, int nearest_grid_index_to_x) {
+        return this->rawinterp_derivative(grid, evaluated_grid,
+            nearest_grid_index_to_x, x);
+      }
 
      private:
       // TODO(felix) the numerical recipes gives the option to set the first
@@ -244,6 +250,18 @@ namespace rascal {
         //double b{1-a};
         double b{(x-xx(klo))/this->h};
         return a*yy(klo)+b*yy(khi)+((a*a*a-a)*this->second_derivatives(klo) +(b*b*b-b)*this->second_derivatives(khi))*h_sq_6;
+      }
+
+      inline double rawinterp_derivative(const Vector_Ref & xx, const Vector_Ref & yy,
+          const int & j1, const double & x) {
+        int klo{j1}, khi{j1+1};
+        assert (h != 0.0); // Bad xa input to routine splint
+        // a+b=1
+        double a{(xx(khi)-x)/this->h};
+        double b{1-a};
+        //double b{(x-xx(klo))/this->h};
+        // (yy(khi)-yy(klo))/this->h can be precomputed
+        return (yy(khi)-yy(klo))/this->h - ( (3*a*a-1) *this->second_derivatives(klo) + (3*b*b-1)*this->second_derivatives(khi) ) * this->h/6.;
       }
 
       double h{0};
@@ -319,7 +337,22 @@ namespace rascal {
         double a{(xx(khi)-x)/this->h};
         double b{1-a};
         //double b{(x-xx(klo))/this->h};
+        // TODO(alex)
+        // h_sq_6 * sec_der can be stored to save one multiplication
         return a*yy.row(klo).array()+b*yy.row(khi).array()+((a*a*a-a)*this->second_derivatives.row(klo).array() +(b*b*b-b)*this->second_derivatives.row(khi).array())*h_sq_6;
+      }
+
+      inline Vector_t rawinterp_derivative(const Vector_Ref & xx, const Matrix_Ref & yy,
+          const int & j1, const double & x) {
+        int klo{j1}, khi{j1+1};
+        assert (h != 0.0); // Bad xa input to routine splint
+        // a+b=1
+        double a{(xx(khi)-x)/this->h};
+        double b{1-a};
+        //double b{(x-xx(klo))/this->h};
+        // yy(khi)-yy(klo)/this->h can be precomputed
+        // TODO(alex)
+        return (yy.row(khi).array()-yy.row(klo).array())/this->h - ( (3*a*a-1) *this->second_derivatives.row(klo).array() + (3*b*b-1)*this->second_derivatives.row(khi).array() ) * this->h/6;
       }
 
       double h{0};
@@ -626,6 +659,15 @@ namespace rascal {
         assert (x>=this->x1 && x<=this->x2); // x is outside of range, below x1
         int nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
         return this->intp_method.interpolate(
+            this->grid, this->evaluated_grid,
+            x, nearest_grid_index_to_x);
+      }
+
+      double interpolate_derivative(double x) {
+        // TODO(alex) throw runtime error, what is diff?
+        assert (x>=this->x1 && x<=this->x2); // x is outside of range, below x1
+        int nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
+        return this->intp_method.interpolate_derivative(
             this->grid, this->evaluated_grid,
             x, nearest_grid_index_to_x);
       }
