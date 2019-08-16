@@ -107,10 +107,35 @@ namespace rascal {
   using interpolator_fixtures = boost::mpl::list<
                    InterpolatorFixture<UniformInterpolator>>;                     
 
-  // TODO(alex) rename later to spline test
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(math_interpolator_tests, Fix,
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(functions_interpolator_tests, Fix,
                                    interpolator_fixtures, Fix) {
-    bool verbose{false};
+    bool verbose{true};
+
+    Vector_t ref_points = Vector_t::LinSpaced(Fix::nb_ref_points, Fix::x1, Fix::x2);
+    double error;
+    std::function<double(double)> func;
+    std::string function_name;
+
+    for (const auto pair : Fix::functions) {
+      function_name = pair.first;
+      func = Fix::functions[function_name];
+      if (verbose) { std::cout << "Test for function: " << function_name << std::endl;}
+
+      Fix::intp.initialize(func, Fix::x1, Fix::x2, Fix::error_bound);
+      if (verbose) { std::cout << "Interpolator interpolator fineness: " << Fix::intp.fineness << std::endl;}
+      if (verbose) { std::cout << "Interpolator grid size: " << Fix::intp.grid.size() << std::endl;}
+
+      // Checks if interpolator satisfies the given error bound. This condition should be always fulfilled.
+      error = compute_intp_error(Fix::intp, func, ref_points);
+      BOOST_CHECK_LE(error, Fix::error_bound);
+    }
+  }
+
+
+  // TODO(alex) rename later to spline test
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(functions_interpolator_derivative_tests, Fix,
+                                   interpolator_fixtures, Fix) {
+    bool verbose{true};
 
     Vector_t ref_points = Vector_t::LinSpaced(Fix::nb_ref_points, Fix::x1, Fix::x2);
     double error, intp_error, finite_diff_error;
@@ -124,7 +149,7 @@ namespace rascal {
       derivative_func = Fix::derivatives[function_name];
       if (verbose) { std::cout << "Test for function: " << function_name << std::endl;}
 
-      Fix::intp.initialize(func, Fix::x1, Fix::x2, Fix::error_bound, 
+      Fix::intp.initialize(func, Fix::x1, Fix::x2, Fix::error_bound,
           derivative_func(Fix::x1), derivative_func(Fix::x2));
       if (verbose) { std::cout << "Interpolator interpolator fineness: " << Fix::intp.fineness << std::endl;}
       if (verbose) { std::cout << "Interpolator grid size: " << Fix::intp.grid.size() << std::endl;}
@@ -177,7 +202,38 @@ namespace rascal {
       SearchMethod<SearchMethod_t::Uniform>
         >;
 
-  BOOST_FIXTURE_TEST_CASE(math_interpolator_vectorized_test, InterpolatorFixture<DefaultInterpolatorVectorized>) {
+  // This test compares the vectorized interpolator with the standard interpolators results for the functions map
+  BOOST_FIXTURE_TEST_CASE(functions_interpolator_vectorized_test,
+        InterpolatorFixture<DefaultInterpolatorVectorized>) {
+    bool verbose{true};
+
+    Vector_t ref_points = Vector_t::LinSpaced(nb_ref_points, x1, x2);
+    double error;
+    std::function<double(double)> func;
+    std::function<Matrix_t(double)> vectorized_func;
+    std::string function_name;
+    auto intp_scalar = UniformInterpolator();
+    math::Vector_t intp_scalar_vals = math::Vector_t::Zero(ref_points.size());
+    math::Vector_t intp_vals = math::Vector_t::Zero(ref_points.size());
+
+    for (const auto pair : functions) {
+      function_name = pair.first;
+      if (verbose) { std::cout << "Test for function: " << function_name << std::endl;}
+      func = functions[function_name];
+      vectorized_func = [&](double x) {Matrix_t mat(1,1); mat << x; return mat;};
+      intp_scalar.initialize(func, x1, x2, error_bound);
+      intp.initialize(vectorized_func, x1, x2, error_bound);
+      for (int i{0}; i<ref_points.size()-1; i++) {
+        intp_scalar_vals(i) = intp_scalar.interpolate(ref_points(i));
+        intp_vals(i) = intp.interpolate(ref_points(i))(0,0);
+        error = std::abs(intp_scalar_vals(i)-intp_vals(i));
+        BOOST_CHECK_LE(error, tol);
+      }
+    }
+  }
+
+  BOOST_FIXTURE_TEST_CASE(radial_contribution_interpolator_vectorized_test,
+        InterpolatorFixture<DefaultInterpolatorVectorized>) {
       Vector_t ref_points = Vector_t::LinSpaced(nb_ref_points, x1, x2); 
       double error;
 
@@ -185,16 +241,12 @@ namespace rascal {
 
       auto intp_scalar = UniformInterpolator();
       std::function<double(double)> func_scalar =
-          [&](double x) {return this->radial_contr.compute_contribution<rascal::internal::AtomicSmearingType::Constant>(x, 0.5)(0,0);};
+          [&](double x) {return this->radial_contr.compute_neighbour_contribution(x, 0.5)(0,0);};
       intp_scalar.initialize(func_scalar, x1, x2, error_bound);
 
-      std::function<Matrix_t(double)> func = [&](double x) {return this->radial_contr.compute_contribution<rascal::internal::AtomicSmearingType::Constant>(x, 0.5);};
-      ////// change to function generator
-      ////func = std::bind(hyp1f1_function_generator, a, b, std::placeholders::_1);
-      //intp.initialize(func, 0,1, error_bound); 
+      std::function<Matrix_t(double)> func = 
+          [&](double x) {return this->radial_contr.compute_neighbour_contribution(x, 0.5);};
       intp.initialize(func, x1, x2, error_bound); 
-
-      // TODO(alex) make two tests out of this
 
       // Checks if vectorized interpolator and scalar interpolator return same results 
       double intp_vec_val, intp_scalar_val;
@@ -204,7 +256,6 @@ namespace rascal {
         error = std::abs(intp_vec_val - intp_scalar_val);
         BOOST_CHECK_LE(error, 1e-10);// TODO(alex) use global tolerance
       }
-
 
       // checks if error bound is fulfilled
       //Matrix_t intp_val = Matrix_t::Zero(max_radial,max_angular);

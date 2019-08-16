@@ -329,6 +329,12 @@ namespace rascal {
         return this->rawinterp(grid, evaluated_grid,
             nearest_grid_index_to_x, x);
       }
+      inline Vector_t interpolate_derivative(const Vector_Ref & grid,
+          const Matrix_Ref & evaluated_grid,
+          double x, int nearest_grid_index_to_x) {
+        return this->rawinterp_derivative(grid, evaluated_grid,
+            nearest_grid_index_to_x, x);
+      }
      private:
       // TODO(felix) the numerical recipes gives the option to set the first
       // derivative's starting and end point,
@@ -377,7 +383,6 @@ namespace rascal {
         // a+b=1
         double a{(xx(khi)-x)/this->h};
         double b{1-a};
-        //double b{(x-xx(klo))/this->h};
         // TODO(alex)
         // h_sq_6 * sec_der can be stored to save one multiplication
         return a*yy.row(klo).array()+b*yy.row(khi).array()+((a*a*a-a)*this->second_derivatives.row(klo).array() +(b*b*b-b)*this->second_derivatives.row(khi).array())*h_sq_6;
@@ -878,20 +883,25 @@ namespace rascal {
       // The problem here is that returning a map does not store the underlying
       // matrix, by returning only the map, it is like returning a pointer without
       // storing the referenced structure resulting in segfault.
-      // Solution: We need to return a Matrix_t, we cannot
+      // Solution: We need to return a Matrix_t
       //
       // TODO(alex) returning the type Matrix_t without makinngEigen::Map<Matrix_t> executes faster, but does result in errors in the tests
       Matrix_t interpolate(double x) {
         return Eigen::Map<Matrix_t>(this->interpolate_raw(x).data(), this->rows, this->cols);
       }
 
+      Matrix_t interpolate_derivative(double x) {
+        return Eigen::Map<Matrix_t>(this->interpolate_derivative_raw(x).data(), this->rows, this->cols);
+      }
+
       // This function is only for optimization purposes used.
-      // To extract the overhead created by the class
+      // To give and comparisment with the overhead calling the class
       Matrix_t interpolate_optimal(const double & x) const {
         return x * Matrix_t::Ones(this->rows, this->cols);
       }
 
       // should be private
+      // Since the interpolator stores the output of the function as vector, it interpolation results is by default a vector.
       Vector_t interpolate_raw(double x) {
         // TODO(alex) throw runtime error, what is diff?
         assert (x>=this->x1 && x<=this->x2); // x is outside of range
@@ -907,6 +917,15 @@ namespace rascal {
           interpolated_points.row(i) = this->interpolate_raw(points(i));
         }
         return interpolated_points;
+      }
+
+      Vector_t interpolate_derivative_raw(double x) {
+        // TODO(alex) throw runtime error, what is diff?
+        assert (x>=this->x1 && x<=this->x2); // x is outside of range
+        int nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
+        return this->intp_method.interpolate(
+            this->grid, this->evaluated_grid,
+            x, nearest_grid_index_to_x);
       }
      
       int rows{0};

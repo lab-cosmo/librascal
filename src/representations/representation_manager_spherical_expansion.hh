@@ -765,7 +765,6 @@ namespace rascal {
           }
         };
         this->intp.initialize(func, range_begin, range_end, accuracy);
-        this->intp.initialize_interpolator();
       }
 
       template<size_t Order, size_t Layer>

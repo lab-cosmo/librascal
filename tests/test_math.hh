@@ -85,9 +85,8 @@ namespace rascal {
     };
     
     // a=0.5*(n+l+3), b = l+1.5, mmax, tolerance
-    internal::RadialContribution<rascal::internal::RadialBasisType::GTO> radial_contr{internal::RadialContribution<rascal::internal::RadialBasisType::GTO>(hypers)};
-    // TODO(alex) do later
-    //std::array<std::function<double(double)>,2> functions;
+    internal::RadialContribution<rascal::internal::RadialBasisType::GTO> radial_contr{
+        internal::RadialContribution<rascal::internal::RadialBasisType::GTO>(hypers)};
   };
 
   struct SphericalHarmonicsRefFixture {
