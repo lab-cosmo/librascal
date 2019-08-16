@@ -178,6 +178,14 @@ namespace rascal {
         this->h_sq_6 = this->h*this->h/6.0;
       }
 
+      void initialize(const Vector_Ref & grid,
+          const Vector_Ref & evaluated_grid, double yd1, double ydn){
+        this->compute_second_derivatives_on_grid(grid, evaluated_grid, yd1, ydn);
+        this->h = grid(1) - grid(0); // TODO(alex) asserts uniform grid
+        assert (this->h != 0.0); // Bad xa input to routine splint
+        this->h_sq_6 = this->h*this->h/6.0;
+      }
+
       inline double interpolate(const Vector_Ref & grid,
           const Vector_Ref & evaluated_grid,
           double x, int nearest_grid_index_to_x) {
@@ -192,20 +200,53 @@ namespace rascal {
       }
 
      private:
-      // TODO(felix) the numerical recipes gives the option to set the first
-      // derivative's starting and end point,
-      // for now I did not include this option, I do not see now where
-      // we would use it
       // TODO(alex) reference numerical recipes
+      void compute_second_derivatives_on_grid(
+          const Vector_Ref & grid, const Vector_Ref & evaluated_grid,
+          double yd1, double ydn) {
+        this->second_derivatives = std::move(this->sety2(grid, evaluated_grid, yd1, ydn));
+        //std::cout << "this->second_derivatives" << this->second_derivatives.head(3) << std::endl; 
+      }
+
       void compute_second_derivatives_on_grid(
           const Vector_Ref & grid, const Vector_Ref & evaluated_grid) {
         this->second_derivatives = std::move(this->sety2(grid, evaluated_grid));
         //std::cout << "this->second_derivatives" << this->second_derivatives.head(3) << std::endl; 
       }
 
+      // clamped boundary conditions when first derivative for boundaries is known
+      // s'(x_0) = y'(x_0), s'(x_n) = y'(x_n)
+      inline Vector_t sety2(const Vector_Ref & xv, const Vector_Ref & yv,
+          double yd1, double ydn) {
+        int n{static_cast<int>(xv.size())};
+        Vector_t y2 = Vector_t::Zero(n);
+        Vector_t u = Vector_t::Zero(n);
+        size_t sig;
+        double p, qn, un;
+        y2(0) = -0.5;
+        u(0)=(3.0/(xv(1)-xv(0)))*((yv(1)-yv(0))/(xv(1)-xv(0))-yd1);
+        for (int i{1}; i<n-1; i++) {
+          sig=(xv(i)-xv(i-1))/(xv(i+1)-xv(i-1));
+          p=sig*y2(i-1)+2.0;
+          y2(i)=(sig-1.0)/p;
+          u(i)=(yv(i+1)-yv(i))/(xv(i+1)-xv(i)) - (yv(i)-yv(i-1))/(xv(i)-xv(i-1));
+          u(i)=(6.0*u(i)/(xv(i+1)-xv(i-1))-sig*u(i-1))/p;
+        }
+        qn=0.5; // qn=0.5 but we just reuse p because it is not needed anyway
+        // un
+        //u(n-1) = (3.0/(xv(n-1)-xv(n-2)))*(ydn-(yv(n-1)-yv(n-2))/(xv(n-1)-xv(n-2)));
+        un = (3.0/(xv(n-1)-xv(n-2)))*(ydn-(yv(n-1)-yv(n-2))/(xv(n-1)-xv(n-2)));
+        y2(n-1)=(un-qn*u(n-2))/(qn*y2(n-2)+1.0);
+        for (int k{n-2};k>=0;k--) {
+          y2(k)=y2(k)*y2(k+1)+u(k);
+        }
+        return y2;
+      }
+
       // This is done to be close to the numerical recipes implementation in
       // naming while making it more readable.
       // TODO(alex) reference numerical recipes
+      // natural/simple boundary conditions s''(x_0) = s''(x_n) = 0
       inline Vector_t sety2(const Vector_Ref & xv, const Vector_Ref & yv) {
         int n{static_cast<int>(xv.size())};
         Vector_t y2 = Vector_t::Zero(n);
@@ -261,7 +302,7 @@ namespace rascal {
         double b{1-a};
         //double b{(x-xx(klo))/this->h};
         // (yy(khi)-yy(klo))/this->h can be precomputed
-        return (yy(khi)-yy(klo))/this->h - ( (3*a*a-1) *this->second_derivatives(klo) + (3*b*b-1)*this->second_derivatives(khi) ) * this->h/6.;
+        return (yy(khi)-yy(klo))/this->h + ( -(3*a*a-1) *this->second_derivatives(klo) + (3*b*b-1)*this->second_derivatives(khi) ) * this->h/6.;
       }
 
       double h{0};
@@ -555,7 +596,7 @@ namespace rascal {
      public: 
       Interpolator() : intp_method{InterpolationMethod()}, grid_rational{GridRational()}, search_method{SearchMethod()} {}
 
-      void initialize(std::function<double(double)> function, double x1, double x2, double precision, int max_grid_points = 10000000) {
+      void initialize(std::function<double(double)> function, double x1, double x2, double precision, int max_grid_points = 10000000, int fineness=5) {
         if (x2<x1) {
           throw std::runtime_error("x2 must be greater x1");
         }
@@ -564,6 +605,25 @@ namespace rascal {
         this->x2 = x2;
         this->precision = precision;
         this->max_grid_points = max_grid_points;
+        this->fineness = fineness;
+
+        this->initialize_interpolator();
+        this->search_method.initialize(this->grid);
+      }
+
+      void initialize(std::function<double(double)> function, double x1, double x2, double precision, double yd1, double ydn, int max_grid_points = 10000000, int fineness=5) {
+        if (x2<x1) {
+          throw std::runtime_error("x2 must be greater x1");
+        }
+        this->function = function;
+        this->x1 = x1;
+        this->x2 = x2;
+        this->precision = precision;
+        this->yd1 = yd1;
+        this->ydn = ydn;
+        this->clamped_boundary_conditions = true;
+        this->max_grid_points = max_grid_points;
+        this->fineness = fineness;
 
         this->initialize_interpolator();
         this->search_method.initialize(this->grid);
@@ -586,7 +646,6 @@ namespace rascal {
       void initialize_interpolator() {
         // Fineness starts with zero and is incremently increased
         // this definition is arbitrary but make computation more readable
-        this->fineness = 5;
         double error{this->compute_grid_error()};
         // TODO(alex) add some procedure to not get locked if precision is too
         // high
@@ -603,7 +662,11 @@ namespace rascal {
             this->grid_rational.compute_grid(this->x1,this->x2, this->fineness);
         this->evaluated_grid = this->eval(this->grid);
 
-        this->intp_method.initialize(this->grid, this->evaluated_grid);
+        if (this->clamped_boundary_conditions) {
+          this->intp_method.initialize(this->grid, this->evaluated_grid, this->yd1, this->ydn);
+        } else {
+          this->intp_method.initialize(this->grid, this->evaluated_grid);
+        }
         this->search_method.initialize(this->grid);
 
         Vector_t test_grid{this->grid_rational.compute_test_grid(this->x1,this->x2,this->fineness)};
@@ -686,6 +749,12 @@ namespace rascal {
       double precision{1e-5};
       double mean_error{0};
       double max_error{0};
+      double min_error{0}; // TODO(alex) smallest error on test grid without grid points
+      double clamped_boundary_conditions{false};
+      // y'(x1)
+      double yd1{0.};
+      // y'(x2)
+      double ydn{0.};
       int fineness{0};
       int max_grid_points{10000000}; //1e7
       Vector_t grid{};

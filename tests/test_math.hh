@@ -47,47 +47,31 @@
 namespace rascal {
 
   template <class Interpolator>
-  static double intp_ref_mean_error(Interpolator & intp, const math::Vector_Ref & ref_points) {
-    return (intp.interpolate(ref_points) - intp.eval(ref_points)).array().abs().mean();
-  }
-  // TODO(alex) adapt this when error function is 
-  // error function migh change
-  //template <class ErrorFunction>
-  //template <> ErrorType::Mean
-  template <class Interpolator>
-  static double intp_derivative_ref_error(Interpolator & intp, std::function<double(double)> func, const math::Vector_Ref & ref_points) {
-    math::Vector_t intp_vals = math::Vector_t::Zero(ref_points.size());
-    math::Vector_t intp_refs = math::Vector_t::Zero(ref_points.size());
-    for (int i{0}; i<ref_points.size()-1; i++) {
-      intp_vals(i) = intp.interpolate_derivative(ref_points(i));
-      intp_refs(i) = func(ref_points(i));
-    }
-    //std::cout << intp_vals << std::endl;
-    //std::cout << intp_refs << std::endl;
-    //std::cout << (intp_vals - intp_refs) << std::endl;
-    return (intp_vals - intp_refs).array().abs().mean();
-  }
-
-  template <class Interpolator>
   struct InterpolatorFixture {
     InterpolatorFixture<Interpolator>() :
-      intp{Interpolator()},
-      identity_func{[](double x) {return x;}},
-      poly_func{[](double x) {return x*x*x/900-x/2+2;}},
-      poly_derivative_func{[](double x) {return x*x/300-0.5;}},
-      exp_func{[](double x) {return std::exp(x);}}
+      intp{Interpolator()}
     {}
 
     Interpolator intp;
     double x1{0};
-    double x2{8};
-    double mean_error_bound{1e-5};
+    double x2{1};
+    double error_bound{1e-5};
     int nb_ref_points{100};    
-    std::function<double(double)> identity_func;
-    std::function<double(double)> poly_func;
-    std::function<double(double)> poly_derivative_func;
-    std::function<double(double)> exp_func;
+    
+    std::map<std::string, std::function<double(double)>> functions{
+      {"identity", {[](double x) {return x;}}},
+      {"polynomial", {[](double x) {return x*x*x/900-x/2+3;}}},
+      {"exp", {[](double x) {return std::exp(0.5*x);}}},
+      {"sin", {[](double x) {return std::sin(x);}}}
+    };
+    std::map<std::string, std::function<double(double)>> derivatives{
+      {"identity", {[](double) {return 1;}}},
+      {"polynomial", {[](double x) {return x*x/300-0.5;}}},
+      {"exp", {[](double x) {return 0.5*std::exp(0.5*x);}}},
+      {"sin", {[](double x) {return std::cos(x);}}}
+    };
 
+    math::Hyp1f1 hyp1f1{0.5*(20+20+3), 20+1.5, 200, 1e-15};
     const int max_radial{3};
     const int max_angular{max_radial-1};
     const json fc_hypers{
@@ -101,7 +85,6 @@ namespace rascal {
     };
     
     // a=0.5*(n+l+3), b = l+1.5, mmax, tolerance
-    math::Hyp1f1 hyp1f1{0.5*(20+20+3), 20+1.5, 200, 1e-15};
     internal::RadialContribution<rascal::internal::RadialBasisType::GTO> radial_contr{internal::RadialContribution<rascal::internal::RadialBasisType::GTO>(hypers)};
     // TODO(alex) do later
     //std::array<std::function<double(double)>,2> functions;

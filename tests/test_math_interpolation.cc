@@ -31,6 +31,63 @@
 namespace rascal {
   namespace math {
 
+  template <class Interpolator>
+  static double intp_ref_mean_error(Interpolator & intp, const math::Vector_Ref & ref_points) {
+    return (intp.interpolate(ref_points) - intp.eval(ref_points)).array().abs().mean();
+  }
+  // TODO(alex) adapt this when error function is 
+  // error function migh change
+  //template <class ErrorFunction>
+  //template <> ErrorType::Mean
+  template <class Interpolator>
+  static double compute_intp_error(Interpolator & intp, std::function<double(double)> func, const math::Vector_Ref & ref_points) {
+    math::Vector_t intp_vals = math::Vector_t::Zero(ref_points.size());
+    math::Vector_t intp_refs = math::Vector_t::Zero(ref_points.size());
+    for (int i{0}; i<ref_points.size()-1; i++) {
+      intp_vals(i) = intp.interpolate(ref_points(i));
+      intp_refs(i) = func(ref_points(i));
+    }
+    return (intp_vals - intp_refs).array().abs().mean();
+  }
+
+
+  template <class Interpolator>
+  static double compute_intp_derivative_error(Interpolator & intp, std::function<double(double)> derivative_func, const math::Vector_Ref & ref_points) {
+    math::Vector_t intp_vals = math::Vector_t::Zero(ref_points.size());
+    math::Vector_t intp_refs = math::Vector_t::Zero(ref_points.size());
+    for (int i{0}; i<ref_points.size()-1; i++) {
+      intp_vals(i) = intp.interpolate_derivative(ref_points(i));
+      intp_refs(i) = derivative_func(ref_points(i));
+    }
+    return (intp_vals - intp_refs).array().abs().mean();
+  }
+
+
+  template <class Interpolator>
+  static double compute_intp_finite_diff_error(Interpolator & intp, std::function<double(double)> derivative_func, const math::Vector_Ref & ref_points) {
+    Vector_t intp_refs = Vector_t::Zero(ref_points.size()-1);
+    Vector_t finite_diff_derivative = Vector_t::Zero(ref_points.size()-1);
+    for (int i{0}; i<ref_points.size()-2; i++) {
+      intp_refs(i) = derivative_func(ref_points(i));
+      finite_diff_derivative(i) = (intp.interpolate(ref_points(i+1))-intp.interpolate(ref_points(i)))/(ref_points(i+1)-ref_points(i));
+    }
+    //std::cout << intp_refs << std::endl;
+    //std::cout << finite_diff_derivative << std::endl;
+    return (finite_diff_derivative - intp_refs).array().abs().mean();
+  }
+
+  static double compute_intp_finite_diff_error(std::function<double(double)> func, std::function<double(double)> derivative_func, const math::Vector_Ref & ref_points) {
+    Vector_t intp_refs = Vector_t::Zero(ref_points.size()-1);
+    Vector_t finite_diff_derivative = Vector_t::Zero(ref_points.size()-1);
+    for (int i{0}; i<ref_points.size()-2; i++) {
+      intp_refs(i) = derivative_func(ref_points(i));
+      finite_diff_derivative(i) = (func(ref_points(i+1))-func(ref_points(i)))/(ref_points(i+1)-ref_points(i));
+    }
+    //std::cout << intp_refs << std::endl;
+    //std::cout << finite_diff_derivative << std::endl;
+    return (finite_diff_derivative - intp_refs).array().abs().mean();
+  }
+
   BOOST_AUTO_TEST_SUITE(MathInterpolatorTests);
 
   // TODO(alex) Hunt gives indices outside of the range of the grid when 
@@ -50,112 +107,68 @@ namespace rascal {
   using interpolator_fixtures = boost::mpl::list<
                    InterpolatorFixture<UniformInterpolator>>;                     
 
+  // TODO(alex) rename later to spline test
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(math_interpolator_tests, Fix,
                                    interpolator_fixtures, Fix) {
-    auto intp{Fix::intp};
-    auto identity_func{Fix::identity_func};
-    auto poly_func{Fix::poly_func};
-    auto poly_derivative_func{Fix::poly_derivative_func};
-    auto exp_func{Fix::exp_func};
-    auto mean_error_bound{Fix::mean_error_bound};
+    bool verbose{false};
 
-    Vector_t ref_points = Vector_t::LinSpaced(Fix::nb_ref_points, Fix::x1, Fix::x2); 
-    double error, intp_val, intp_ref;
+    Vector_t ref_points = Vector_t::LinSpaced(Fix::nb_ref_points, Fix::x1, Fix::x2);
+    double error, intp_error, finite_diff_error;
     std::function<double(double)> func;
+    std::function<double(double)> derivative_func;
+    std::string function_name;
 
-    // TODO(alex) make function array
-    // Test for identity function
-    func = identity_func;
-    intp.initialize(func, Fix::x1, Fix::x2, Fix::mean_error_bound);
-    for (int i{0}; i<ref_points.size()-1; i++) {
-      intp_val = intp.interpolate(ref_points(i));
-      intp_ref = func(ref_points(i));
-      error = std::abs(intp_val - intp_ref);
-      BOOST_CHECK_LE(error, mean_error_bound);
-    }
+    for (const auto pair : Fix::functions) {
+      function_name = pair.first;
+      func = Fix::functions[function_name];
+      derivative_func = Fix::derivatives[function_name];
+      if (verbose) { std::cout << "Test for function: " << function_name << std::endl;}
 
-    // derivative
-    intp_ref = 1;
-    for (int i{0}; i<ref_points.size()-1; i++) {
-      intp_val = intp.interpolate_derivative(ref_points(i));
-      error = std::abs(intp_val - intp_ref);
-      BOOST_CHECK_LE(error, mean_error_bound);
-    }
+      Fix::intp.initialize(func, Fix::x1, Fix::x2, Fix::error_bound, 
+          derivative_func(Fix::x1), derivative_func(Fix::x2));
+      if (verbose) { std::cout << "Interpolator interpolator fineness: " << Fix::intp.fineness << std::endl;}
+      if (verbose) { std::cout << "Interpolator grid size: " << Fix::intp.grid.size() << std::endl;}
 
-    intp.initialize(Fix::poly_func, Fix::x1, Fix::x2, Fix::mean_error_bound);
-    for (int i{0}; i<ref_points.size()-1; i++) {
-      intp_val = intp.interpolate(ref_points(i));
-      intp_ref = Fix::poly_func(ref_points(i));
-      error = std::abs(intp_val - intp_ref);
-      BOOST_CHECK_LE(error, 2*mean_error_bound);
-    }
+      // Checks if interpolator satisfies the given error bound. This condition should be always fulfilled.
+      error = compute_intp_error(Fix::intp, func, ref_points);
+      BOOST_CHECK_LE(error, Fix::error_bound);
 
-    // derivative
-    error = intp_derivative_ref_error(intp, Fix::poly_derivative_func, ref_points);
-    BOOST_CHECK_LE(error, 2000*mean_error_bound);
+     // The following conditions do not necessary have to be fulfilled, but an error here could point out a bug in the interpolator or question the sanity of it or be because the derivative function does not agree with the function. For an unfulfillde condition the error should be at least be comparatively small.
 
-    // Test for exp function
-    func = exp_func;
-    intp.initialize(func, Fix::x1, Fix::x2, mean_error_bound);
-    for (int i{0}; i<ref_points.size()-1; i++) {
-      intp_val = intp.interpolate(ref_points(i));
-      intp_ref = func(ref_points(i));
-      error = std::abs(intp_val - intp_ref);
-      BOOST_CHECK_LE(error, mean_error_bound); 
-    }
+      // Checks if using the interpolators derivative is at least as accurate as using finite methods with the interpolators function or if they are close. This condition should be always fulfilled.
+      intp_error = compute_intp_derivative_error(Fix::intp, derivative_func, ref_points);
+      finite_diff_error = compute_intp_finite_diff_error(Fix::intp, derivative_func, ref_points);
+      BOOST_CHECK((finite_diff_error - intp_error) >= 0 || std::abs(finite_diff_error - intp_error) < tol);
+      if (verbose) { std::cout << "Interpolator derivative compared to interpolator function finite method error on test grid: " << std::abs(finite_diff_error - intp_error) << std::endl;}
 
-    // the error for the derivative for the exponential is significant large
-    error = intp_derivative_ref_error(intp, func, ref_points);
-    BOOST_CHECK_LE(error, 0.5);
-    
-    func  = [&](double x) {return this->hyp1f1.calc(x);};
-    //func = std::bind(hyp1f1_function_generator, a, b, std::placeholders::_1);
-    intp.initialize(func, Fix::x1, Fix::x2, Fix::mean_error_bound);
-    for (int i{0}; i<ref_points.size()-1; i++) {
-      intp_val = intp.interpolate(ref_points(i));
-      intp_ref = func(ref_points(i));
-      error = std::abs(intp_val - intp_ref);
-      BOOST_CHECK_LE(error, mean_error_bound);
+      // Checks if derivative holds for a slightly higher error bound. Since the order of the error does not increase, it should be close to the error bound. A rigorous error bound can be found in https://doi.org/10.1016/0021-9045(82)90041-7 and could be implemented, but this is good enough.
+      error = compute_intp_derivative_error(Fix::intp, derivative_func, ref_points);
+      BOOST_CHECK_LE(error, 5*Fix::error_bound);
+
+      // Check if derivative of the interpolator is as precise as the finite difference method for the points used by the interpolator. 
+      intp_error = compute_intp_derivative_error(Fix::intp, derivative_func, Fix::intp.grid);
+      finite_diff_error = compute_intp_finite_diff_error(func, derivative_func, Fix::intp.grid);
+      BOOST_CHECK((finite_diff_error - intp_error) >= 0 || std::abs(finite_diff_error - intp_error) < tol);
+      if (verbose) { std::cout << "Interpolator derivative compared to function finite method error on interpolator grid: " << std::abs(finite_diff_error - intp_error) << std::endl;}
     }
   }
 
-
-  // Calculate the numerical derivative from the interpolator results and compares it
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(math_interpolator_derivative_tests, Fix,
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(hyp1f1_interpolator_tests, Fix,
                                    interpolator_fixtures, Fix) {
-    // TODO(alex)
+    Vector_t ref_points = Vector_t::LinSpaced(Fix::nb_ref_points, Fix::x1, Fix::x2);
+    std::function<double(double)> func  = [&](double x) {return Fix::hyp1f1.calc(x);};
+    Fix::intp.initialize(func, Fix::x1, Fix::x2, Fix::error_bound);
+    double error = compute_intp_error(Fix::intp, func, ref_points);
+    BOOST_CHECK_LE(error, Fix::error_bound);
   }
-
-  // Test for identity function
-  BOOST_FIXTURE_TEST_CASE(math_interpolator_identity_test, InterpolatorFixture<UniformInterpolator>) {
-    Vector_t ref_points = Vector_t::LinSpaced(this->nb_ref_points, this->x1, this->x2);
-    this->intp.initialize(this->identity_func, this->x1, this->x2, this->mean_error_bound); 
-    BOOST_CHECK_LE(intp_ref_mean_error(this->intp, ref_points), this->mean_error_bound);
-  }
-
-  // Test for identity function
-  BOOST_FIXTURE_TEST_CASE(math_interpolator_exp_test, InterpolatorFixture<UniformInterpolator>) {
-    Vector_t ref_points = Vector_t::LinSpaced(this->nb_ref_points, this->x1, this->x2);
-    this->intp.initialize(this->exp_func, this->x1, this->x2, this->mean_error_bound); 
-    BOOST_CHECK_LE(intp_ref_mean_error(this->intp, ref_points), this->mean_error_bound);
-  }
-  // tests if functions are well approximated up to precisicion
-  BOOST_FIXTURE_TEST_CASE(math_interpolator_hyp1f1_test, InterpolatorFixture<UniformInterpolator>) {
-    Vector_t ref_points = Vector_t::LinSpaced(this->nb_ref_points, this->x1, this->x2);
-    std::function<double(double)> func = [&](double x) {return this->hyp1f1.calc(x);};
-    //std::function<double(double)> func = std::bind(hyp1f1_function_generator, a, b, std::placeholders::_1);
-    intp.initialize(func, this->x1, this->x2, this->mean_error_bound); 
-    BOOST_CHECK_LE(intp_ref_mean_error(this->intp, ref_points), this->mean_error_bound);
-    //  }
-    //}
-  }
-
-  BOOST_FIXTURE_TEST_CASE(math_interpolator_radial_contribution_test, InterpolatorFixture<UniformInterpolator>) {
+  
+  BOOST_FIXTURE_TEST_CASE(radial_contribution_test, InterpolatorFixture<UniformInterpolator>) {
     Vector_t ref_points = Vector_t::LinSpaced(this->nb_ref_points, this->x1, this->x2);
     std::function<double(double)> func =
         [&](double x) {return this->radial_contr.compute_contribution<rascal::internal::AtomicSmearingType::Constant>(x, 0.5)(0,0);};
-    intp.initialize(func, this->x1, this->x2, this->mean_error_bound); 
-    BOOST_CHECK_LE(intp_ref_mean_error(this->intp, ref_points), this->mean_error_bound);
+    this->intp.initialize(func, this->x1, this->x2, this->error_bound);
+    double error = compute_intp_error(this->intp, func, ref_points);
+    BOOST_CHECK_LE(error, this->error_bound);
   }
 
   using DefaultInterpolatorVectorized = InterpolatorVectorized<
@@ -173,13 +186,13 @@ namespace rascal {
       auto intp_scalar = UniformInterpolator();
       std::function<double(double)> func_scalar =
           [&](double x) {return this->radial_contr.compute_contribution<rascal::internal::AtomicSmearingType::Constant>(x, 0.5)(0,0);};
-      intp_scalar.initialize(func_scalar, x1, x2, mean_error_bound);
+      intp_scalar.initialize(func_scalar, x1, x2, error_bound);
 
       std::function<Matrix_t(double)> func = [&](double x) {return this->radial_contr.compute_contribution<rascal::internal::AtomicSmearingType::Constant>(x, 0.5);};
       ////// change to function generator
       ////func = std::bind(hyp1f1_function_generator, a, b, std::placeholders::_1);
-      //intp.initialize(func, 0,1, mean_error_bound); 
-      intp.initialize(func, x1, x2, mean_error_bound, 512); 
+      //intp.initialize(func, 0,1, error_bound); 
+      intp.initialize(func, x1, x2, error_bound); 
 
       // TODO(alex) make two tests out of this
 
@@ -213,7 +226,7 @@ namespace rascal {
         intp_ref.row(i) = Eigen::Map<Vector_t>(func(ref_points(i)).data(),matrix_size);
       }
       error = (intp_val-intp_ref).array().abs().colwise().mean().maxCoeff();
-      BOOST_CHECK_LE(error, mean_error_bound);
+      BOOST_CHECK_LE(error, error_bound);
     }
 
   BOOST_AUTO_TEST_SUITE_END();
