@@ -69,7 +69,7 @@ int main(){
     std::cout << "Grid file exists, is read." << std::endl;
     Vector_t grid;
     Eigen::read_binary(filename, grid);
-    intp.initialize(func, x1, x2, grid);
+    intp.initialize(func, grid);
   }
   std::cout << "grid size=" << intp.grid.size() << std::endl;
 
@@ -147,7 +147,7 @@ int main(){
     std::cout << "Grid file exists, is read." << std::endl;
     Vector_t grid;
     Eigen::read_binary(filename2, grid);
-    intp.initialize(func, x1, x2, grid);
+    intp.initialize(func, grid);
   }
   std::cout << "grid size=" << intp.grid.size() << std::endl;
 
@@ -214,7 +214,7 @@ int main(){
     std::cout << "Grid file exists, is read." << std::endl;
     Vector_t grid;
     Eigen::read_binary(filename_radial_vec, grid);
-    intp_vec.initialize(func_vec, x1, x2, grid);
+    intp_vec.initialize(func_vec, grid);
   }
   std::cout << "grid size=" << intp_vec.grid.size() << std::endl;
 

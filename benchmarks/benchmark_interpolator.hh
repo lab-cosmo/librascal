@@ -316,7 +316,7 @@ namespace rascal {
         
       this->error_bound = std::pow(10,this->log_error_bound);
       this->init_function(state, data);
-      this->intp.initialize(this->func, this->x1, this->x2, this->error_bound); 
+      this->intp.initialize(this->func, this->x1, this->x2, this->error_bound, 10000000, 5, true) ; 
     }
 
     void init_radial_contribution_function(const ::benchmark::State& state, const json & data) {
