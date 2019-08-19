@@ -406,17 +406,32 @@ namespace rascal {
       Matrix_t second_derivatives{};
     };
 
+    enum class ErrorMetric_t {Absolute, Relative};
+    enum class ErrorNorm_t {Mean, Max};
+
+    template <ErrorMetric_t Metric>
+    struct ErrorMetric{};
+
+    template <ErrorMetric_t Metric, ErrorNorm_t Norm>
+    struct ErrorMethod{};
 
     // Works for functions with large value outside of the range [0,1] well
-    struct ErrorRelative {
-      Vector_t compute_entrywise_error(const Matrix_Ref & values, const Matrix_Ref & references) {
+    template <>      
+    struct ErrorMetric<ErrorMetric_t::Relative> {
+      Vector_t compute_entrywise_error(const Vector_Ref & values, const Vector_Ref & references) {
+        return 2*((values - references).array().abs()/
+          (std::numeric_limits< double >::min()+values.array().abs() + references.array().abs()));
+      }
+
+      Matrix_t compute_entrywise_error(const Matrix_Ref & values, const Matrix_Ref & references) {
         return 2*((values - references).array().abs()/
           (std::numeric_limits< double >::min()+values.array().abs() + references.array().abs()));
       }
     };
 
     // Works for functions within the range [0,1] well
-    struct ErrorAbsolute {
+    template <>
+    struct ErrorMetric<ErrorMetric_t::Absolute> {
       // Template deduction does not work here and I do not understand why, but it could be better to write two functions in any case, code repitition, but more understandable code.
       //template <typename Derived>
       //Eigen::MatrixBase<Derived> compute_entrywise_error(
@@ -434,21 +449,9 @@ namespace rascal {
       }
     };
 
-    enum class ErrorMethod_t {AbsoluteMean, AbsoluteMax, RelativeMean, RelativeAbsolute};
-    enum class ErrorMethodVectorized_t {AbsoluteMean, AbsoluteMax, RelativeMean, RelativeAbsolute};
 
-    template <ErrorMethod_t Type>
-    struct ErrorMethod{};
-
-    //template <>
-    //struct ErrorMethod<ErrorMethod_t::AbsoluteMean> : public ErrorAbsolute {
-    //  double compute_global_error(const Vector_Ref & values, const Vector_Ref & references) {
-    //    return this->compute_entrywise_error(values, references).mean();
-    //  }
-    //};
-
-    template <>
-    struct ErrorMethod<ErrorMethod_t::AbsoluteMean> : public ErrorAbsolute {
+    template <ErrorMetric_t Metric>
+    struct ErrorMethod<Metric, ErrorNorm_t::Mean> : public ErrorMetric<Metric> {
 
       double compute_global_error(const Vector_Ref & values, const Vector_Ref & references) {
         return this->compute_entrywise_error(values, references).mean();
@@ -456,7 +459,6 @@ namespace rascal {
 
       // for the case of a (grid_size, result_size) the maxmimal mean error is used
       double compute_global_error(const Matrix_Ref & values, const Matrix_Ref & references) {
-        std::cout << "correct function is used" << std::endl;
         return this->compute_entrywise_error(values, references).colwise().mean().maxCoeff();
       }
 
@@ -473,20 +475,29 @@ namespace rascal {
       }
     };
 
-    //template <>
-    //struct ErrorMethod<ErrorMethod_t::Relative> {
-    //  compute_error(const Vector_Ref & values, const Vector_Ref & references) {
-    //    Vector_t error_grid{2*((values - references).array().abs()/
-    //      (std::numeric_limits< double >::min()+values.array().abs() + references.array().abs()))};
-    //  }
-    //};
+    template <ErrorMetric_t Metric>
+    struct ErrorMethod<Metric, ErrorNorm_t::Max> : public ErrorMetric<Metric> {
+      double compute_global_error(const Vector_Ref & values, const Vector_Ref & references) {
+        return this->compute_entrywise_error(values, references).maxCoeff();
+      }
 
-    //template <>
-    //struct ErrorMethod<ErrorMethodVectorized_t::AbsoluteMaxOfMeans> {
-    //  compute_error(const Matrix_Ref & error_mat) {
-    //    return error_mat.colwise().mean().maxCoeff;
-    //  }
-    //};
+      // for the case of a (grid_size, result_size) the maxmimal mean error is used
+      double compute_global_error(const Matrix_Ref & values, const Matrix_Ref & references) {
+        return this->compute_entrywise_error(values, references).maxCoeff();
+      }
+
+      // takes a (grid_size) Vector
+      double compute_global_error(
+          const Vector_Ref & errors) {
+        return errors.maxCoeff();
+      }
+
+      // takes a (grid_size, result_size) matrix
+      double compute_global_error(
+          const Matrix_Ref & errors) {
+        return errors.maxCoeff();
+      }
+    };
 
 
     enum class SearchMethod_t {Hunt, Locate, Uniform};
@@ -677,7 +688,7 @@ namespace rascal {
       int dj;
     };
 
-    template<class InterpolationMethod, class GridRational, class SearchMethod, class ErrorMethod=ErrorMethod<ErrorMethod_t::AbsoluteMean>>
+    template<class InterpolationMethod, class GridRational, class SearchMethod, class ErrorMethod=ErrorMethod<ErrorMetric_t::Absolute, ErrorNorm_t::Mean>>
     class Interpolator {
      public: 
       Interpolator() : intp_method{InterpolationMethod()}, grid_rational{GridRational()}, search_method{SearchMethod()}, error_method{ErrorMethod()} {}
@@ -851,7 +862,7 @@ namespace rascal {
       ErrorMethod error_method;
     };
 
-    template<class InterpolationMethod, class GridRational, class SearchMethod, class ErrorMethod=ErrorMethod<ErrorMethod_t::AbsoluteMean>>
+    template<class InterpolationMethod, class GridRational, class SearchMethod, class ErrorMethod=ErrorMethod<ErrorMetric_t::Absolute, ErrorNorm_t::Mean>>
     class InterpolatorVectorized : public Interpolator<InterpolationMethod, GridRational, SearchMethod, ErrorMethod> {
      public: 
       using Parent = Interpolator<InterpolationMethod, GridRational, SearchMethod>;
