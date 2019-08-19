@@ -109,11 +109,11 @@ namespace rascal {
       // for refinement key = error
       // for constructing grid x1
       std::forward_list<double> grid_meshes;
-      // TODO priority queue does not work well because splitting meshes does.
-      // One could make Mesh only owning the x1 and error but the. For the
-      // current test grid we need some clever binary tree structure where
-      // leafs have errors and their parents add up, Node{x1,error}
-      //std::priority_queue<Mesh> grid_meshes_error;
+       //std::priority_queue<Mesh> grid_meshes_error;
+      // A priority queue does not work well because splitting meshes does 
+      // insert between.
+      // One could make a tree with meshes as nodes (x1, error), each mesh
+      // only owns the x1 and error. 
       std::forward_list<double> grid_meshes_error;
       int grid_size;
       std::forward_list<double>::iterator max_it;
@@ -137,8 +137,8 @@ namespace rascal {
       }
 
       void update_errors(Vector_Ref) {} 
-      // TODO(alex) use grid_size
       int grid_size{0};
+      // One could extend this with a configurable linear slope factor
     };
 
     template <>
@@ -160,11 +160,9 @@ namespace rascal {
 
       void update_errors(Vector_Ref) {} 
       int grid_size{0};
+      // One could extend this with a configurable exponential basis factor
+      // default would be 2
     };
-
-
-    // Search, grid can be kept. CubicSpline needs to be vectorized, intp error has to be a bit adapted
-
 
     enum class InterpolationMethod_t {CubicSpline, CubicSplineVectorized};
 
@@ -315,6 +313,7 @@ namespace rascal {
 
       double h{0};
       double h_sq_6{0}; // h*h/6.0
+      // These are terms equal to the second order finite difference, but are exact terms used in the interpolation derived from the spline conditions and are meant to approximates the second derivative.
       Vector_t second_derivatives{};
     };
 
@@ -414,6 +413,7 @@ namespace rascal {
       // The gap between two grid points
       double h{0};
       double h_sq_6{0}; // h*h/6.0      
+      // These are terms equal to the second order finite difference, but are exact terms used in the interpolation derived from the spline conditions and are meant to approximates the second derivative.
       Matrix_t second_derivatives{};
     };
 
@@ -696,36 +696,20 @@ namespace rascal {
       int dj;
     };
 
-    // Typed class which checks if the correct combination of template parameters are used, because not all combinations are allowed.
-    //template<class InterpolationMethod, class GridRational, class SearchMethod, class ErrorMethod=ErrorMethod<ErrorMetric_t::Absolute, ErrorNorm_t::Mean>>
-    //class InterpolatorTyped {
-    //  assert (not(InterpolationMethod == CubicSpline) || GridRational::Type == GritdType_t::Uniform)
-    //  assert (not(InterpolationMethod  == CubicSplineVectorized) || GridRational::Type == GritdType_t::Uniform)
-    //}
-    
-    // TODO(alex) CRTP  
-    //template <class Interpolator>
     class InterpolatorBase {
-
-
-      void initialize(std::function<double(double)> function, double x1, double x2, double precision, int max_grid_points = 10000000, int fineness=5) {
-        if (x2<x1) {
-          throw std::runtime_error("x2 must be greater x1");
-        }
-        this->function = function;
+     public:
+      void initialize(double x1, double x2, double precision, int max_grid_points = 10000000, int fineness=5) {
+        if (x2<x1) { throw std::runtime_error("x2 must be greater x1"); }
         this->x1 = x1;
         this->x2 = x2;
         this->precision = precision;
         this->max_grid_points = max_grid_points;
         this->fineness = fineness;
-
-        this->initialize_interpolator();
-        this->search_method.initialize(this->grid);
       }
-
-    //  // TODO(alex) 
-      // The boundary points of the range of interpolation
+     
+      // the function which is interpolated
       std::function<double(double)> function{};
+      // The boundary points of the range of interpolation
       double x1{0};
       double x2{1};
       double precision{1e-5};
@@ -744,7 +728,9 @@ namespace rascal {
 
     template<class InterpolationMethod, class GridRational, class SearchMethod, class ErrorMethod>
     class InterpolatorTyped : public InterpolatorBase {
+     public:
       InterpolatorTyped() : InterpolatorBase(), intp_method{InterpolationMethod()}, grid_rational{GridRational()}, search_method{SearchMethod()}, error_method{ErrorMethod()} {}
+
       InterpolationMethod intp_method;
       GridRational grid_rational;
       SearchMethod search_method;
@@ -759,24 +745,24 @@ namespace rascal {
       using Parent = InterpolatorTyped<InterpolationMethod, GridRational, SearchMethod, ErrorMethod>;
      public: 
       Interpolator() : Parent() {}
-      void initialize(std::function<double(double)> function, double x1, double x2, double precision, double yd1, double ydn, int max_grid_points = 10000000, int fineness=5) {
-        if (x2<x1) {
-          throw std::runtime_error("x2 must be greater x1");
-        }
-        this->function = function;
-        this->x1 = x1;
-        this->x2 = x2;
-        this->precision = precision;
-        this->yd1 = yd1;
-        this->ydn = ydn;
-        this->clamped_boundary_conditions = true;
-        this->max_grid_points = max_grid_points;
-        this->fineness = fineness;
 
-        this->initialize_interpolator();
+      void initialize(std::function<double(double)> function, double x1, double x2, double precision, int max_grid_points = 10000000, int fineness=5) {
+        Parent::initialize(x1, x2, precision, max_grid_points, fineness);
+        this->function = function;
+        this->clamped_boundary_conditions = false;
+
+        this->initialize();
       }
 
-      // TODO(alex) initialize_parameter? precompute  
+      void initialize(std::function<double(double)> function, double x1, double x2, double precision, double yd1, double ydn, int max_grid_points = 10000000, int fineness=5) {
+        Parent::initialize(x1, x2, precision, max_grid_points, fineness);
+        this->function = function;
+        this->clamped_boundary_conditions = true;
+        this->yd1 = yd1;
+        this->ydn = ydn;
+
+        this->initialize();
+      }
 
       // Initialization function given an alread precomputed grid. For optimization purposes
       void initialize(std::function<double(double)> function, double x1, double x2, Vector_t grid) {
@@ -832,19 +818,16 @@ namespace rascal {
       Vector_t evaluated_grid{}; // map matrix function to Vector_t to decrease ressources
 
      private:
-      void initialize_interpolator() {
-        // this definition is arbitrary but make computation more readable
+      // Should be called after the parameters have been correctly initialized.
+      // TODO(alex) rename fineness to grid_fineness
+      void initialize() {
         this->compute_grid_error();
-        // TODO(alex) add some procedure to not get locked if precision is too
-        // high
         while (this->error > this->precision && this->grid.size() < this->max_grid_points) {
           this->fineness++;
           this->compute_grid_error();
         }
       }
 
-      // TODO(alex) if I use temporary variables instead of this, does the
-      // compiler optimize this?
       void compute_grid_error() {
         this->grid = 
             this->grid_rational.compute_grid(this->x1,this->x2, this->fineness);
@@ -887,55 +870,92 @@ namespace rascal {
       InterpolatorVectorized() : Parent() {}
 
       void initialize(std::function<Matrix_t(double)> function, double x1, double x2, double precision, int max_grid_points = 10000000, int fineness=5) {
-        if (x2<x1) {
-          throw std::runtime_error("x2 must be greater x1");
-        }
+        Parent(x1,x2,precision,max_grid_points,fineness);
         this->function = function;
         Matrix_t result = function(0);
         this->cols = result.cols();
         this->rows = result.rows();
         this->matrix_size = this->cols*this->rows;
-        //std::cout << "Matrix shape ("<< this->rows << "," << this->cols << ")";
-        //std::cout << std::endl;
-        this->x1 = x1;
-        this->x2 = x2;
-        this->precision = precision;
-        this->max_grid_points = max_grid_points;
-        this->fineness = fineness;
 
-        this->initialize_interpolator();
+        this->initialize();
       }
 
+      // Allows the initialization with an already defined grid 
       void initialize(std::function<Matrix_t(double)> function, double x1, double x2, Vector_t grid) {
         this->function = function;
         Matrix_t result = function(0);
         this->cols = result.cols();
         this->rows = result.rows();
         this->matrix_size = this->cols*this->rows;
-        this->x1 = x1;
-        this->x2 = x2;
+        this->x1 = grid(0);
+        this->x2 = grid(grid.size()-1);
         this->grid = grid;
         this->evaluated_grid = this->eval(this->grid);
+
         this->intp_method.initialize(this->grid, this->evaluated_grid);
         this->search_method.initialize(this->grid);
       }
 
-      // copy of Interpolator, important to use new definition of compute_grid_error function
-      void initialize_interpolator() {
-        // Fineness starts with zero and is incremently increased
-        // this definition is arbitrary but make computation more readable
+      // Possible source of improvement, if we store the result in the
+      // interpolator and return a Eigen::Map, some checks do not have to be made
+      Matrix_t interpolate(double x) {
+        return Eigen::Map<Matrix_t>(this->interpolate_raw(x).data(), this->rows, this->cols);
+      }
+
+      Matrix_t interpolate_derivative(double x) {
+        return Eigen::Map<Matrix_t>(this->interpolate_derivative_raw(x).data(), this->rows, this->cols);
+      }
+
+      // This function is exists for benchmark purposes, to compute the memory
+      // and function call overhead.
+      Matrix_t interpolate_optimal(const double & x) const {
+        return x * Matrix_t::Ones(this->rows, this->cols);
+      }
+
+      // The vectorized interpolator stores the output of the function as vector,
+      //it interpolation results is by default a vector.
+      Vector_t interpolate_raw(double x) {
+        // x is outside of rangße
+        assert (x>=this->x1 && x<=this->x2);
+        int nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
+        return this->intp_method.interpolate(
+            this->grid, this->evaluated_grid,
+            x, nearest_grid_index_to_x);
+      }
+
+      Matrix_t interpolate_raw(const Vector_Ref & points) {
+        Matrix_t interpolated_points = Matrix_t::Zero(points.size(), this->matrix_size);
+        for (int i{0}; i<points.size(); i++) {
+          interpolated_points.row(i) = this->interpolate_raw(points(i));
+        }
+        return interpolated_points;
+      }
+
+      Vector_t interpolate_derivative_raw(double x) {
+        // x is outside of range
+        assert (x>=this->x1 && x<=this->x2);
+        int nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
+        return this->intp_method.interpolate_derivative(
+            this->grid, this->evaluated_grid,
+            x, nearest_grid_index_to_x);
+      } 
+      
+      int rows{0};
+      int cols{0};
+      int matrix_size{0};
+      std::function<Matrix_t(double)> function{};
+      Vector_t grid{};
+      Matrix_t evaluated_grid{};
+
+     private:
+      void initialize() {
         this->compute_grid_error();
-        // TODO(alex) add some procedure to not get locked if precision is too
-        // high
         while (this->error > this->precision && this->grid.size() < this->max_grid_points) {
           this->fineness++;
           this->compute_grid_error();
         }
       }
 
-
-      // TODO(alex) if I use temporary variables instead of this, does the
-      // compiler optimize this?
       void compute_grid_error() {
         this->grid = 
             this->grid_rational.compute_grid(this->x1,this->x2, this->fineness);
@@ -944,20 +964,13 @@ namespace rascal {
         this->intp_method.initialize(this->grid, this->evaluated_grid);
         this->search_method.initialize(this->grid);
 
-        // calcu
         // (grid_size, row*col)
         Vector_t test_grid{this->grid_rational.compute_test_grid(this->x1,this->x2,this->fineness)};
         // TODO(alex) here is an important problem, the search method
         // works different here
         Matrix_t test_grid_interpolated{this->interpolate_raw(test_grid)};
         Matrix_t test_grid_evaluated{this->eval(test_grid)};
-        // computes the relative error
-        
         this->error = this->error_method.compute_global_error(Matrix_Ref(test_grid_interpolated), Matrix_Ref(test_grid_evaluated));
-        //this->max_error = error_mat.maxCoeff(&maxRow, &maxCol);
-        // maximal mean error of each col
-        //this->mean_error = error_mat.colwise().mean().maxCoeff();
-        // print mean error for interest
         //if (this->grid.size() % 1==0) {
         //  std::cout << "grid_size=" << this->grid.size() << std::endl;
         //  std::cout << "mean_error=" << this->mean_error << std::endl;
@@ -985,62 +998,6 @@ namespace rascal {
         return evaluated_grid;
       }
 
-      // TODO(alex) 
-      // make a function availabe to return as Matrix directly without a map
-      // The problem here is that returning a map does not store the underlying
-      // matrix, by returning only the map, it is like returning a pointer without
-      // storing the referenced structure resulting in segfault.
-      // Solution: We need to return a Matrix_t
-      //
-      // TODO(alex) returning the type Matrix_t without makinngEigen::Map<Matrix_t> executes faster, but does result in errors in the tests
-      Matrix_t interpolate(double x) {
-        return Eigen::Map<Matrix_t>(this->interpolate_raw(x).data(), this->rows, this->cols);
-      }
-
-      Matrix_t interpolate_derivative(double x) {
-        return Eigen::Map<Matrix_t>(this->interpolate_derivative_raw(x).data(), this->rows, this->cols);
-      }
-
-      // This function is only for optimization purposes used.
-      // To give and comparisment with the overhead calling the class
-      Matrix_t interpolate_optimal(const double & x) const {
-        return x * Matrix_t::Ones(this->rows, this->cols);
-      }
-
-      // should be private
-      // Since the interpolator stores the output of the function as vector, it interpolation results is by default a vector.
-      Vector_t interpolate_raw(double x) {
-        // TODO(alex) throw runtime error, what is diff?
-        assert (x>=this->x1 && x<=this->x2); // x is outside of range
-        int nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
-        return this->intp_method.interpolate(
-            this->grid, this->evaluated_grid,
-            x, nearest_grid_index_to_x);
-      }
-
-      Matrix_t interpolate_raw(const Vector_Ref & points) {
-        Matrix_t interpolated_points = Matrix_t::Zero(points.size(), this->matrix_size);
-        for (int i{0}; i<points.size(); i++) {
-          interpolated_points.row(i) = this->interpolate_raw(points(i));
-        }
-        return interpolated_points;
-      }
-
-      Vector_t interpolate_derivative_raw(double x) {
-        // TODO(alex) throw runtime error, what is diff?
-        assert (x>=this->x1 && x<=this->x2); // x is outside of range
-        int nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
-        return this->intp_method.interpolate_derivative(
-            this->grid, this->evaluated_grid,
-            x, nearest_grid_index_to_x);
-      }
-     
-      int rows{0};
-      int cols{0};
-      int matrix_size{0};
-      std::function<Matrix_t(double)> function{};
-      Vector_t grid{};
-      Matrix_t evaluated_grid{};
     };
 
     using InterpolatorVectorized_t = InterpolatorVectorized<
