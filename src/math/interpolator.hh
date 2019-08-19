@@ -398,11 +398,12 @@ namespace rascal {
         //double b{(x-xx(klo))/this->h};
         // yy(khi)-yy(klo)/this->h can be precomputed
         // TODO(alex)
-        return (yy.row(khi).array()-yy.row(klo).array())/this->h - ( (3*a*a-1) *this->second_derivatives.row(klo).array() + (3*b*b-1)*this->second_derivatives.row(khi).array() ) * this->h/6;
+        return (yy.row(khi).array()-yy.row(klo).array())/this->h + ( -(3*a*a-1) *this->second_derivatives.row(klo).array() + (3*b*b-1)*this->second_derivatives.row(khi).array() ) * this->h/6;
       }
 
+      // The gap between two grid points
       double h{0};
-      double h_sq_6{0}; // h*h/6.0
+      double h_sq_6{0}; // h*h/6.0      
       Matrix_t second_derivatives{};
     };
 
@@ -432,12 +433,6 @@ namespace rascal {
     // Works for functions within the range [0,1] well
     template <>
     struct ErrorMetric<ErrorMetric_t::Absolute> {
-      // Template deduction does not work here and I do not understand why, but it could be better to write two functions in any case, code repitition, but more understandable code.
-      //template <typename Derived>
-      //Eigen::MatrixBase<Derived> compute_entrywise_error(
-      //    const Eigen::Ref<const Eigen::MatrixBase<Derived>> & values, const Eigen::Ref<const Eigen::MatrixBase<Derived>> & references) {
-      //  return (values - references).array().abs();
-      //}
       Vector_t compute_entrywise_error(
           const Vector_Ref & values, const Vector_Ref & references) {
         return (values - references).array().abs();
@@ -687,6 +682,14 @@ namespace rascal {
       // parameter used to determine if search requests are correlated
       int dj;
     };
+
+    // Typed class which checks if the correct combination of template parameters are used, because not all combinations are allowed.
+    //template<class InterpolationMethod, class GridRational, class SearchMethod, class ErrorMethod=ErrorMethod<ErrorMetric_t::Absolute, ErrorNorm_t::Mean>>
+    //class InterpolatorTyped {
+    //  // We specialized the Spline methods for uniform grid. The spline methods can be also adapted for general grids, but for uniform grids the computation can much more optimized.
+    //  assert (not(InterpolationMethod == CubicSpline) || GridRational::Type == GritdType_t::Uniform)
+    //  assert (not(InterpolationMethod  == CubicSplineVectorized) || GridRational::Type == GritdType_t::Uniform)
+    //}
 
     template<class InterpolationMethod, class GridRational, class SearchMethod, class ErrorMethod=ErrorMethod<ErrorMetric_t::Absolute, ErrorNorm_t::Mean>>
     class Interpolator {
@@ -1015,7 +1018,7 @@ namespace rascal {
         // TODO(alex) throw runtime error, what is diff?
         assert (x>=this->x1 && x<=this->x2); // x is outside of range
         int nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
-        return this->intp_method.interpolate(
+        return this->intp_method.interpolate_derivative(
             this->grid, this->evaluated_grid,
             x, nearest_grid_index_to_x);
       }

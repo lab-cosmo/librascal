@@ -104,12 +104,18 @@ namespace rascal {
       GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
       SearchMethod<SearchMethod_t::Uniform>
         >;
+
+  using DefaultInterpolatorVectorized = InterpolatorVectorized<
+      InterpolationMethod<InterpolationMethod_t::CubicSplineVectorized>,
+      GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
+      SearchMethod<SearchMethod_t::Uniform>
+        >;
   using interpolator_fixtures = boost::mpl::list<
-                   InterpolatorFixture<UniformInterpolator>>;                     
+                   InterpolatorFixture<UniformInterpolator>>;
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(functions_interpolator_tests, Fix,
                                    interpolator_fixtures, Fix) {
-    bool verbose{true};
+    bool verbose{false};
 
     Vector_t ref_points = Vector_t::LinSpaced(Fix::nb_ref_points, Fix::x1, Fix::x2);
     double error;
@@ -131,11 +137,28 @@ namespace rascal {
     }
   }
 
-
-  // TODO(alex) rename later to spline test
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(functions_interpolator_derivative_tests, Fix,
+  // Because the hyp1f1 and radial contribution has to be initiated, these tests cannot be included in the function map and have to be specified in a separate tests
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(hyp1f1_interpolator_tests, Fix,
                                    interpolator_fixtures, Fix) {
-    bool verbose{true};
+    Vector_t ref_points = Vector_t::LinSpaced(Fix::nb_ref_points, Fix::x1, Fix::x2);
+    std::function<double(double)> func  = [&](double x) {return Fix::hyp1f1.calc(x);};
+    Fix::intp.initialize(func, Fix::x1, Fix::x2, Fix::error_bound);
+    double error = compute_intp_error(Fix::intp, func, ref_points);
+    BOOST_CHECK_LE(error, Fix::error_bound);
+  }
+  
+  BOOST_FIXTURE_TEST_CASE(radial_contribution_test, InterpolatorFixture<UniformInterpolator>) {
+    Vector_t ref_points = Vector_t::LinSpaced(this->nb_ref_points, this->x1, this->x2);
+    std::function<double(double)> func =
+        [&](double x) {return this->radial_contr.compute_contribution<rascal::internal::AtomicSmearingType::Constant>(x, 0.5)(0,0);};
+    this->intp.initialize(func, this->x1, this->x2, this->error_bound);
+    double error = compute_intp_error(this->intp, func, ref_points);
+    BOOST_CHECK_LE(error, this->error_bound);
+  }
+
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(functions_derivative_interpolator_tests, Fix,
+                                   interpolator_fixtures, Fix) {
+    bool verbose{false};
 
     Vector_t ref_points = Vector_t::LinSpaced(Fix::nb_ref_points, Fix::x1, Fix::x2);
     double error, intp_error, finite_diff_error;
@@ -178,24 +201,6 @@ namespace rascal {
     }
   }
 
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(hyp1f1_interpolator_tests, Fix,
-                                   interpolator_fixtures, Fix) {
-    Vector_t ref_points = Vector_t::LinSpaced(Fix::nb_ref_points, Fix::x1, Fix::x2);
-    std::function<double(double)> func  = [&](double x) {return Fix::hyp1f1.calc(x);};
-    Fix::intp.initialize(func, Fix::x1, Fix::x2, Fix::error_bound);
-    double error = compute_intp_error(Fix::intp, func, ref_points);
-    BOOST_CHECK_LE(error, Fix::error_bound);
-  }
-  
-  BOOST_FIXTURE_TEST_CASE(radial_contribution_test, InterpolatorFixture<UniformInterpolator>) {
-    Vector_t ref_points = Vector_t::LinSpaced(this->nb_ref_points, this->x1, this->x2);
-    std::function<double(double)> func =
-        [&](double x) {return this->radial_contr.compute_contribution<rascal::internal::AtomicSmearingType::Constant>(x, 0.5)(0,0);};
-    this->intp.initialize(func, this->x1, this->x2, this->error_bound);
-    double error = compute_intp_error(this->intp, func, ref_points);
-    BOOST_CHECK_LE(error, this->error_bound);
-  }
-
   using DefaultInterpolatorVectorized = InterpolatorVectorized<
       InterpolationMethod<InterpolationMethod_t::CubicSplineVectorized>,
       GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
@@ -205,7 +210,7 @@ namespace rascal {
   // This test compares the vectorized interpolator with the scalar interpolators results for the functions map. The results should match
   BOOST_FIXTURE_TEST_CASE(functions_interpolator_vectorized_test,
         InterpolatorFixture<DefaultInterpolatorVectorized>) {
-    bool verbose{true};
+    bool verbose{false};
 
     Vector_t ref_points = Vector_t::LinSpaced(nb_ref_points, x1, x2);
     double error;
@@ -235,6 +240,39 @@ namespace rascal {
     }
   }
 
+  BOOST_FIXTURE_TEST_CASE(functions_dervative_interpolator_vectorized_test,
+        InterpolatorFixture<DefaultInterpolatorVectorized>) {
+    bool verbose{true};
+
+    Vector_t ref_points = Vector_t::LinSpaced(nb_ref_points, x1, x2);
+    double error;
+    std::function<double(double)> func;
+    std::function<Matrix_t(double)> vectorized_func;
+    std::string function_name;
+    auto intp_scalar = UniformInterpolator();
+    double intp_scalar_val;
+    double intp_val;
+
+    for (const auto pair : functions) {
+      function_name = pair.first;
+      if (verbose) { std::cout << "Test for function: " << function_name << std::endl;}
+      func = functions[function_name];
+      vectorized_func = [&](double x) {Matrix_t mat(1,1); mat << func(x); return mat;};
+      intp_scalar.initialize(func, x1, x2, error_bound);
+      intp.initialize(vectorized_func, x1, x2, error_bound);
+
+      BOOST_CHECK_EQUAL(intp_scalar.grid.size(), intp.grid.size());
+
+      for (int i{0}; i<ref_points.size()-1; i++) {
+        intp_scalar_val = intp_scalar.interpolate_derivative(ref_points(i));
+        intp_val = intp.interpolate_derivative(ref_points(i))(0,0);
+        error = std::abs(intp_scalar_val-intp_val);
+        BOOST_CHECK_LE(error, tol);
+      }
+    }
+  }
+
+  // Because the radial contribution has to be initiated, this test is not included in the function map and has to be specified in a separate test. It checks if the standard interpolator and vectorized interpolator return the same results and if the vectorized interpolator is fulfills its error bound
   BOOST_FIXTURE_TEST_CASE(radial_contribution_interpolator_vectorized_test,
         InterpolatorFixture<DefaultInterpolatorVectorized>) {
       Vector_t ref_points = Vector_t::LinSpaced(nb_ref_points, x1, x2); 
