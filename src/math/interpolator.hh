@@ -16,30 +16,21 @@ namespace rascal {
     enum class GridType_t {Uniform};
     enum class RefinementMethod_t {Exponential, Linear, Adaptive};
 
-    // TODO(alex) make plots of hyp1f1 normalized
-    // TODO(alex) look at the graphs again, and make a grid type which is similar
-    // to the shape
-    // is similar to the graph
-
-    // TODO(alex) currently the grid rational could be static
     template <GridType_t Type, RefinementMethod_t Method>
     struct GridRational {
     };
 
-    //TODO(alex) adaptive: tree structure blocks{start,end,error,blocks}
-    // refine where k largest error exist
-    // get grid from (tree -> grid)
     template <>
     struct GridRational<GridType_t::Uniform, RefinementMethod_t::Adaptive> {
       GridRational<GridType_t::Uniform, RefinementMethod_t::Adaptive>() : grid_meshes{},grid_meshes_error{}, grid_size{0}, max_it{} {}
 
       constexpr static GridType_t GridType { GridType_t::Uniform };
       constexpr static RefinementMethod_t RefinementMethod { RefinementMethod_t::Adaptive };
-      //}
-      // TODO for this grid rational it makes sense to save the test grid,
+      // These are possible improvements for this grid rational:
+      // - for this grid rational it makes sense to save the test grid,
       // because it is one step ahead and we can add more points 
-      // TODO make hyperparameter k highest error
-      // TODO make grid rational init compute, increase_finness() and then remove x1,x2,fineness
+      // - make hyperparameter k highest error
+      // - make grid rational init compute, increase_finness() and then remove x1,x2,fineness
       Vector_t compute_grid(double x1, double x2, int fineness) {
         if (fineness == 0) {
           this->grid_meshes = {x1, x2};
@@ -57,10 +48,6 @@ namespace rascal {
         double mid_point{cur+(*next_it-cur)/2};
         this->grid_meshes.emplace_after(this->max_it, mid_point);
         this->grid_size++;
-        //if (this->grid_size % 1000 == 0) {
-        //  std::cout << this->grid_size << std::endl;
-        //}
-
       }
 
       Vector_t grid_from_meshes() {
@@ -105,13 +92,10 @@ namespace rascal {
         }
       }
 
-      // two sortings
-      // for refinement key = error
-      // for constructing grid x1
+      // We store the grid sorted in two ways:
+      // - for the refinement key which is the error
+      // - for constructing of the grid x1 of each mesh
       std::forward_list<double> grid_meshes;
-       //std::priority_queue<Mesh> grid_meshes_error;
-      // A priority queue does not work well because splitting meshes does 
-      // insert between.
       // One could make a tree with meshes as nodes (x1, error), each mesh
       // only owns the x1 and error. 
       std::forward_list<double> grid_meshes_error;
@@ -169,6 +153,9 @@ namespace rascal {
     template <InterpolationMethod_t Type>
     struct InterpolationMethod{};
 
+    // An implementation of the cubic spline method, the implementation is adapted from "Numerical Recipes" [1] and optimized for uniform grids.
+    //
+    // [1] Press, William H., et al. Numerical recipes 3rd edition: The art of scientific computing. Cambridge university press, 2007.
     template <>
     class InterpolationMethod<InterpolationMethod_t::CubicSpline> {
      public:
@@ -178,15 +165,15 @@ namespace rascal {
 
       void initialize(const Vector_Ref & grid,
           const Vector_Ref & evaluated_grid){
-        this->compute_second_derivatives_on_grid(grid, evaluated_grid);
-        this->h = grid(1) - grid(0); // TODO(alex) asserts uniform grid
+        this->compute_second_derivative(grid, evaluated_grid);
+        this->h = grid(1) - grid(0);
         assert (this->h != 0.0); // Bad xa input to routine splint
         this->h_sq_6 = this->h*this->h/6.0;
       }
 
       void initialize(const Vector_Ref & grid,
           const Vector_Ref & evaluated_grid, double yd1, double ydn){
-        this->compute_second_derivatives_on_grid(grid, evaluated_grid, yd1, ydn);
+        this->compute_second_derivative(grid, evaluated_grid, yd1, ydn);
         this->h = grid(1) - grid(0); // TODO(alex) asserts uniform grid
         assert (this->h != 0.0); // Bad xa input to routine splint
         this->h_sq_6 = this->h*this->h/6.0;
@@ -206,29 +193,22 @@ namespace rascal {
       }
 
      private:
-      // TODO(alex) reference numerical recipes
-      void compute_second_derivatives_on_grid(
-          const Vector_Ref & grid, const Vector_Ref & evaluated_grid,
-          double yd1, double ydn) {
-        this->second_derivatives = std::move(this->sety2(grid, evaluated_grid, yd1, ydn));
-        //std::cout << "this->second_derivatives" << this->second_derivatives.head(3) << std::endl; 
-      }
-
-      void compute_second_derivatives_on_grid(
-          const Vector_Ref & grid, const Vector_Ref & evaluated_grid) {
-        this->second_derivatives = std::move(this->sety2(grid, evaluated_grid));
-        //std::cout << "this->second_derivatives" << this->second_derivatives.head(3) << std::endl; 
-      }
-
+      // The two functions below implement the tridiagonal matrix algorithm
+      // to solve the linear system in
+      // http://mathworld.wolfram.com/CubicSpline.html
+      // under different boundary conditions. We describe with s the spline function and with y the targeted function for interpolation.
+      // 
+      // Reference:
+      // https://en.wikipedia.org/wiki/Tridiagonal_matrix_algorithm
+      
       // clamped boundary conditions when first derivative for boundaries is known
       // s'(x_0) = y'(x_0), s'(x_n) = y'(x_n)
-      inline Vector_t sety2(const Vector_Ref & xv, const Vector_Ref & yv,
-          double yd1, double ydn) {
+      inline void compute_second_derivative(const Vector_Ref & xv, const Vector_Ref & yv, double yd1, double ydn) {
         int n{static_cast<int>(xv.size())};
         Vector_t y2 = Vector_t::Zero(n);
         Vector_t u = Vector_t::Zero(n);
         size_t sig;
-        double p, qn, un;
+        double p;
         y2(0) = -0.5;
         u(0)=(3.0/(xv(1)-xv(0)))*((yv(1)-yv(0))/(xv(1)-xv(0))-yd1);
         for (int i{1}; i<n-1; i++) {
@@ -238,22 +218,17 @@ namespace rascal {
           u(i)=(yv(i+1)-yv(i))/(xv(i+1)-xv(i)) - (yv(i)-yv(i-1))/(xv(i)-xv(i-1));
           u(i)=(6.0*u(i)/(xv(i+1)-xv(i-1))-sig*u(i-1))/p;
         }
-        qn=0.5; // qn=0.5 but we just reuse p because it is not needed anyway
-        // un
-        //u(n-1) = (3.0/(xv(n-1)-xv(n-2)))*(ydn-(yv(n-1)-yv(n-2))/(xv(n-1)-xv(n-2)));
-        un = (3.0/(xv(n-1)-xv(n-2)))*(ydn-(yv(n-1)-yv(n-2))/(xv(n-1)-xv(n-2)));
-        y2(n-1)=(un-qn*u(n-2))/(qn*y2(n-2)+1.0);
+        p=0.5; // qn=0.5 but we just reuse p because it is not needed anyway
+        u(n-1) = (3.0/(xv(n-1)-xv(n-2)))*(ydn-(yv(n-1)-yv(n-2))/(xv(n-1)-xv(n-2)));
+        y2(n-1)=(u(n-1)-p*u(n-2))/(p*y2(n-2)+1.0);
         for (int k{n-2};k>=0;k--) {
           y2(k)=y2(k)*y2(k+1)+u(k);
         }
-        return y2;
+        second_derivative = y2;
       }
 
-      // This is done to be close to the numerical recipes implementation in
-      // naming while making it more readable.
-      // TODO(alex) reference numerical recipes
       // natural/simple boundary conditions s''(x_0) = s''(x_n) = 0
-      inline Vector_t sety2(const Vector_Ref & xv, const Vector_Ref & yv) {
+      inline void compute_second_derivative(const Vector_Ref & xv, const Vector_Ref & yv) {
         int n{static_cast<int>(xv.size())};
         Vector_t y2 = Vector_t::Zero(n);
         Vector_t u = Vector_t::Zero(n);
@@ -261,6 +236,7 @@ namespace rascal {
         double p;
         y2(0) = 0.0;
         u(0) = 0.0;
+        // forward sweeping 
         for (int i{1}; i<n-1; i++) {
           sig=(xv(i)-xv(i-1))/(xv(i+1)-xv(i-1));
           p=sig*y2(i-1)+2.0;
@@ -270,24 +246,14 @@ namespace rascal {
         }
         //u(n-1) = 0.0;
         //p=0.0;
+        // back substitution
         y2(n-1) = 0.0; // (u(n-1)-p*u(n-2))/(p*y2(n-2)+1.0);
         for (int k{n-2};k>0;k--) {
           y2(k)=y2(k)*y2(k+1)+u(k);
         }
         y2(0)= 0.0; // y2(0)*y2(1)+u(0);
-        return y2;
+        second_derivative = y2;
       }
-
-      //inline double rawinterp(const Vector_Ref & xx, const Vector_Ref & yy,
-      //    size_t j1, double x) {
-      //  size_t klo{j1}, khi{j1+1};
-      //  const Vector_Ref && y2 = std::move(Vector_Ref(this->second_derivatives));
-      //  double h{xx(khi)-xx(klo)};
-      //  DEBUG_IF (h == 0.0) { throw std::runtime_error ("Bad xa input to routine splint");}
-      //  double a{(xx(khi)-x)/h};
-      //  double b{(x-xx(klo))/h};
-      //  return a*yy(klo)+b*yy(khi)+((a*a*a-a)*y2(klo) +(b*b*b-b)*y2(khi))*(h*h)/6.0;
-      //}
 
       inline double rawinterp(const Vector_Ref & xx, const Vector_Ref & yy,
           const int & j1, const double & x) {
@@ -296,25 +262,27 @@ namespace rascal {
         double a{(xx(khi)-x)/this->h};
         //double b{1-a};
         double b{(x-xx(klo))/this->h};
-        return a*yy(klo)+b*yy(khi)+((a*a*a-a)*this->second_derivatives(klo) +(b*b*b-b)*this->second_derivatives(khi))*h_sq_6;
+        return a*yy(klo)+b*yy(khi)+((a*a*a-a)*this->second_derivative(klo) +(b*b*b-b)*this->second_derivative(khi))*h_sq_6;
       }
 
       inline double rawinterp_derivative(const Vector_Ref & xx, const Vector_Ref & yy,
           const int & j1, const double & x) {
         int klo{j1}, khi{j1+1};
         assert (h != 0.0); // Bad xa input to routine splint
-        // a+b=1
+        // It is a+b=1
         double a{(xx(khi)-x)/this->h};
         double b{1-a};
         //double b{(x-xx(klo))/this->h};
         // (yy(khi)-yy(klo))/this->h can be precomputed
-        return (yy(khi)-yy(klo))/this->h + ( -(3*a*a-1) *this->second_derivatives(klo) + (3*b*b-1)*this->second_derivatives(khi) ) * this->h/6.;
+        return (yy(khi)-yy(klo))/this->h + ( -(3*a*a-1) *this->second_derivative(klo) + (3*b*b-1)*this->second_derivative(khi) ) * this->h/6.;
       }
 
+      // grid step size
       double h{0};
       double h_sq_6{0}; // h*h/6.0
-      // These are terms equal to the second order finite difference, but are exact terms used in the interpolation derived from the spline conditions and are meant to approximates the second derivative.
-      Vector_t second_derivatives{};
+      // This term is the solution vector of the linear system of the tridiagonal toeplitz matrix derived by the conditions of cubic spline. The linear system can be found in  http://mathworld.wolfram.com/CubicSpline.html
+      // The term is not the second derivative, but called in numerical recipes like this. Because of consistency we keep the naming.
+      Vector_t second_derivative{};
     };
 
 
@@ -700,11 +668,11 @@ namespace rascal {
      public:
       InterpolatorBase() {}; 
 
-      void initialize(double x1, double x2, double precision, int max_grid_points = 10000000, int fineness=5) {
+      void initialize(double x1, double x2, double error_bound, int max_grid_points = 10000000, int fineness=5) {
         if (x2<x1) { throw std::runtime_error("x2 must be greater x1"); }
         this->x1 = x1;
         this->x2 = x2;
-        this->precision = precision;
+        this->error_bound = error_bound;
         this->max_grid_points = max_grid_points;
         this->fineness = fineness;
       }
@@ -714,7 +682,7 @@ namespace rascal {
       // The boundary points of the range of interpolation
       double x1{0};
       double x2{1};
-      double precision{1e-5};
+      double error_bound{1e-5};
       double error{0};
 
       // If the first derivative of the function at the boundary points is known, one can initialize the interpolator with these values to obtain a higher accuracy with the interpolation method.
@@ -743,13 +711,13 @@ namespace rascal {
     class Interpolator : public InterpolatorTyped<InterpolationMethod, GridRational, SearchMethod, ErrorMethod> {
       // We specialized the spline methods for uniform grid. The spline methods can be also adapted for general grids, but for uniform grids the computation can much more optimized.
       static_assert (not(InterpolationMethod::Method == InterpolationMethod_t::CubicSpline) || GridRational::GridType == GridType_t::Uniform);
-      //static_assert (not(SearchMethod::Method == SearchMethod_t::Uniform) || GridRational::GridType == GridType_t::Uniform);
-      using Parent = InterpolatorTyped<InterpolationMethod, GridRational, SearchMethod, ErrorMethod>;
+      static_assert (not(SearchMethod::Method == SearchMethod_t::Uniform) || GridRational::GridType == GridType_t::Uniform);
      public: 
+      using Parent = InterpolatorTyped<InterpolationMethod, GridRational, SearchMethod, ErrorMethod>;
       Interpolator() : Parent() {}
 
-      void initialize(std::function<double(double)> function, double x1, double x2, double precision, int max_grid_points = 10000000, int fineness=5, bool is_benchmarked=false) {
-        Parent::initialize(x1, x2, precision, max_grid_points, fineness);
+      void initialize(std::function<double(double)> function, double x1, double x2, double error_bound, int max_grid_points = 10000000, int fineness=5, bool is_benchmarked=false) {
+        Parent::initialize(x1, x2, error_bound, max_grid_points, fineness);
         this->function = function;
         this->clamped_boundary_conditions = false;
         this->is_benchmarked = is_benchmarked=false;
@@ -757,8 +725,8 @@ namespace rascal {
         this->initialize();
       }
 
-      void initialize(std::function<double(double)> function, double x1, double x2, double precision, double yd1, double ydn, int max_grid_points = 10000000, int fineness=5, bool is_benchmarked=false) {
-        Parent::initialize(x1, x2, precision, max_grid_points, fineness);
+      void initialize(std::function<double(double)> function, double x1, double x2, double error_bound, double yd1, double ydn, int max_grid_points = 10000000, int fineness=5, bool is_benchmarked=false) {
+        Parent::initialize(x1, x2, error_bound, max_grid_points, fineness);
         this->function = function;
         this->clamped_boundary_conditions = true;
         this->yd1 = yd1;
@@ -792,8 +760,7 @@ namespace rascal {
       }
 
       double interpolate(double x) {
-        // TODO(alex) throw runtime error, what is diff?
-        assert (x>=this->x1 && x<=this->x2); // x is outside of range, below x1
+        assert (x>=this->x1 && x<=this->x2);
         int nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
         return this->intp_method.interpolate(
             this->grid, this->evaluated_grid,
@@ -809,8 +776,7 @@ namespace rascal {
       }
 
       double interpolate_derivative(double x) {
-        // TODO(alex) throw runtime error, what is diff?
-        assert (x>=this->x1 && x<=this->x2); // x is outside of range, below x1
+        assert (x>=this->x1 && x<=this->x2);
         int nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
         return this->intp_method.interpolate_derivative(
             this->grid, this->evaluated_grid,
@@ -828,7 +794,7 @@ namespace rascal {
       // TODO(alex) rename fineness to grid_fineness
       void initialize() {
         this->compute_grid_error();
-        while (this->error > this->precision && this->grid.size() < this->max_grid_points) {
+        while (this->error > this->error_bound && this->grid.size() < this->max_grid_points) {
           this->fineness++;
           this->compute_grid_error();
         }
@@ -883,12 +849,14 @@ namespace rascal {
 
     template<class InterpolationMethod, class GridRational, class SearchMethod, class ErrorMethod=ErrorMethod<ErrorMetric_t::Absolute, ErrorNorm_t::Mean>>
     class InterpolatorVectorized : public InterpolatorTyped<InterpolationMethod, GridRational, SearchMethod, ErrorMethod> {
+      static_assert (not(InterpolationMethod::Method == InterpolationMethod_t::CubicSplineVectorized) || GridRational::GridType == GridType_t::Uniform);
+      static_assert (not(SearchMethod::Method == SearchMethod_t::Uniform) || GridRational::GridType == GridType_t::Uniform);
      public: 
       using Parent = InterpolatorTyped<InterpolationMethod, GridRational, SearchMethod, ErrorMethod>;
       InterpolatorVectorized() : Parent() {}
 
-      void initialize(std::function<Matrix_t(double)> function, double x1, double x2, double precision, int max_grid_points = 10000000, int fineness=5, bool is_benchmarked=false) {
-        Parent::initialize(x1, x2, precision, max_grid_points, fineness);
+      void initialize(std::function<Matrix_t(double)> function, double x1, double x2, double error_bound, int max_grid_points = 10000000, int fineness=5, bool is_benchmarked=false) {
+        Parent::initialize(x1, x2, error_bound, max_grid_points, fineness);
         this->function = function;
         Matrix_t result = function(0);
         this->cols = result.cols();
@@ -989,7 +957,7 @@ namespace rascal {
      private:
       void initialize() {
         this->compute_grid_error();
-        while (this->error > this->precision && this->grid.size() < this->max_grid_points) {
+        while (this->error > this->error_bound && this->grid.size() < this->max_grid_points) {
           this->fineness++;
           this->compute_grid_error();
         }
@@ -1047,7 +1015,6 @@ namespace rascal {
           SearchMethod<SearchMethod_t::Uniform>
         >;
 
-  // TODO(alex) make a CRTP calculator and check if this can be merged with the GradientCalutaro stuff
 
   }  // namespace math
 }  // namespace rascal
