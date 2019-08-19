@@ -213,20 +213,21 @@ namespace rascal {
     std::function<Matrix_t(double)> vectorized_func;
     std::string function_name;
     auto intp_scalar = UniformInterpolator();
-    math::Vector_t intp_scalar_vals = math::Vector_t::Zero(ref_points.size());
-    math::Vector_t intp_vals = math::Vector_t::Zero(ref_points.size());
+    double intp_scalar_val;
+    double intp_val;
 
     for (const auto pair : functions) {
       function_name = pair.first;
       if (verbose) { std::cout << "Test for function: " << function_name << std::endl;}
       func = functions[function_name];
-      vectorized_func = [&](double x) {Matrix_t mat(1,1); mat << x; return mat;};
+      vectorized_func = [&](double x) {Matrix_t mat(1,1); mat << func(x); return mat;};
       intp_scalar.initialize(func, x1, x2, error_bound);
       intp.initialize(vectorized_func, x1, x2, error_bound);
+
       for (int i{0}; i<ref_points.size()-1; i++) {
-        intp_scalar_vals(i) = intp_scalar.interpolate(ref_points(i));
-        intp_vals(i) = intp.interpolate(ref_points(i))(0,0);
-        error = std::abs(intp_scalar_vals(i)-intp_vals(i));
+        intp_scalar_val = intp_scalar.interpolate(ref_points(i));
+        intp_val = intp.interpolate(ref_points(i))(0,0);
+        error = std::abs(intp_scalar_val-intp_val);
         BOOST_CHECK_LE(error, tol);
       }
     }
@@ -256,18 +257,7 @@ namespace rascal {
         error = std::abs(intp_vec_val - intp_scalar_val);
         BOOST_CHECK_LE(error, 1e-10);// TODO(alex) use global tolerance
       }
-
-      // checks if error bound is fulfilled
-      //Matrix_t intp_val = Matrix_t::Zero(max_radial,max_angular);
-      //Matrix_t intp_ref = Matrix_t::Zero(max_radial,max_angular);
-      // Test for max error function
-      // TODO(alex) find a better way of testing this, error function is changed
-      //for (int i{0}; i<ref_points.size()-1; i++) {
-      //  intp_val = intp.interpolate(ref_points(i));
-      //  intp_ref = func(ref_points(i));
-      //  error = (intp_val - intp_ref).array().abs().maxCoeff();
-      //  BOOST_CHECK_LE(error, 1e-6);
-      //}
+      
       error = 0.0;
       int matrix_size = max_radial*(max_angular+1);
       Matrix_t intp_val = Matrix_t::Zero(ref_points.size(), matrix_size);
