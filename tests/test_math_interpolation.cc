@@ -202,7 +202,7 @@ namespace rascal {
       SearchMethod<SearchMethod_t::Uniform>
         >;
 
-  // This test compares the vectorized interpolator with the standard interpolators results for the functions map
+  // This test compares the vectorized interpolator with the scalar interpolators results for the functions map. The results should match
   BOOST_FIXTURE_TEST_CASE(functions_interpolator_vectorized_test,
         InterpolatorFixture<DefaultInterpolatorVectorized>) {
     bool verbose{true};
@@ -223,6 +223,8 @@ namespace rascal {
       vectorized_func = [&](double x) {Matrix_t mat(1,1); mat << func(x); return mat;};
       intp_scalar.initialize(func, x1, x2, error_bound);
       intp.initialize(vectorized_func, x1, x2, error_bound);
+
+      BOOST_CHECK_EQUAL(intp_scalar.grid.size(), intp.grid.size());
 
       for (int i{0}; i<ref_points.size()-1; i++) {
         intp_scalar_val = intp_scalar.interpolate(ref_points(i));
@@ -255,7 +257,7 @@ namespace rascal {
         intp_vec_val = intp.interpolate(ref_points(i))(0,0);
         intp_scalar_val = intp_scalar.interpolate(ref_points(i)); 
         error = std::abs(intp_vec_val - intp_scalar_val);
-        BOOST_CHECK_LE(error, 1e-10);// TODO(alex) use global tolerance
+        BOOST_CHECK_LE(error, tol);
       }
       
       error = 0.0;

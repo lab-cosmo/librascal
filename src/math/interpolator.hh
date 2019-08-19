@@ -407,6 +407,87 @@ namespace rascal {
     };
 
 
+    // Works for functions with large value outside of the range [0,1] well
+    struct ErrorRelative {
+      Vector_t compute_entrywise_error(const Matrix_Ref & values, const Matrix_Ref & references) {
+        return 2*((values - references).array().abs()/
+          (std::numeric_limits< double >::min()+values.array().abs() + references.array().abs()));
+      }
+    };
+
+    // Works for functions within the range [0,1] well
+    struct ErrorAbsolute {
+      // Template deduction does not work here and I do not understand why, but it could be better to write two functions in any case, code repitition, but more understandable code.
+      //template <typename Derived>
+      //Eigen::MatrixBase<Derived> compute_entrywise_error(
+      //    const Eigen::Ref<const Eigen::MatrixBase<Derived>> & values, const Eigen::Ref<const Eigen::MatrixBase<Derived>> & references) {
+      //  return (values - references).array().abs();
+      //}
+      Vector_t compute_entrywise_error(
+          const Vector_Ref & values, const Vector_Ref & references) {
+        return (values - references).array().abs();
+      }
+
+      Matrix_t compute_entrywise_error(
+          const Matrix_Ref & values, const Matrix_Ref & references) {
+        return (values - references).array().abs();
+      }
+    };
+
+    enum class ErrorMethod_t {AbsoluteMean, AbsoluteMax, RelativeMean, RelativeAbsolute};
+    enum class ErrorMethodVectorized_t {AbsoluteMean, AbsoluteMax, RelativeMean, RelativeAbsolute};
+
+    template <ErrorMethod_t Type>
+    struct ErrorMethod{};
+
+    //template <>
+    //struct ErrorMethod<ErrorMethod_t::AbsoluteMean> : public ErrorAbsolute {
+    //  double compute_global_error(const Vector_Ref & values, const Vector_Ref & references) {
+    //    return this->compute_entrywise_error(values, references).mean();
+    //  }
+    //};
+
+    template <>
+    struct ErrorMethod<ErrorMethod_t::AbsoluteMean> : public ErrorAbsolute {
+
+      double compute_global_error(const Vector_Ref & values, const Vector_Ref & references) {
+        return this->compute_entrywise_error(values, references).mean();
+      }
+
+      // for the case of a (grid_size, result_size) the maxmimal mean error is used
+      double compute_global_error(const Matrix_Ref & values, const Matrix_Ref & references) {
+        std::cout << "correct function is used" << std::endl;
+        return this->compute_entrywise_error(values, references).colwise().mean().maxCoeff();
+      }
+
+      // takes a (grid_size) Vector
+      double compute_global_error(
+          const Vector_Ref & errors) {
+        return errors.mean();
+      }
+
+      // takes a (grid_size, result_size) matrix
+      double compute_global_error(
+          const Matrix_Ref & errors) {
+        return errors.colwise().mean().maxCoeff();
+      }
+    };
+
+    //template <>
+    //struct ErrorMethod<ErrorMethod_t::Relative> {
+    //  compute_error(const Vector_Ref & values, const Vector_Ref & references) {
+    //    Vector_t error_grid{2*((values - references).array().abs()/
+    //      (std::numeric_limits< double >::min()+values.array().abs() + references.array().abs()))};
+    //  }
+    //};
+
+    //template <>
+    //struct ErrorMethod<ErrorMethodVectorized_t::AbsoluteMaxOfMeans> {
+    //  compute_error(const Matrix_Ref & error_mat) {
+    //    return error_mat.colwise().mean().maxCoeff;
+    //  }
+    //};
+
 
     enum class SearchMethod_t {Hunt, Locate, Uniform};
 
@@ -596,10 +677,10 @@ namespace rascal {
       int dj;
     };
 
-    template<class InterpolationMethod, class GridRational, class SearchMethod>
+    template<class InterpolationMethod, class GridRational, class SearchMethod, class ErrorMethod=ErrorMethod<ErrorMethod_t::AbsoluteMean>>
     class Interpolator {
      public: 
-      Interpolator() : intp_method{InterpolationMethod()}, grid_rational{GridRational()}, search_method{SearchMethod()} {}
+      Interpolator() : intp_method{InterpolationMethod()}, grid_rational{GridRational()}, search_method{SearchMethod()}, error_method{ErrorMethod()} {}
 
       void initialize(std::function<double(double)> function, double x1, double x2, double precision, int max_grid_points = 10000000, int fineness=5) {
         if (x2<x1) {
@@ -651,18 +732,18 @@ namespace rascal {
       void initialize_interpolator() {
         // Fineness starts with zero and is incremently increased
         // this definition is arbitrary but make computation more readable
-        double error{this->compute_grid_error()};
+        this->compute_grid_error();
         // TODO(alex) add some procedure to not get locked if precision is too
         // high
-        while (error > this->precision && this->grid.size() < this->max_grid_points) {
+        while (this->error > this->precision && this->grid.size() < this->max_grid_points) {
           this->fineness++;
-          error = this->compute_grid_error();
+          this->compute_grid_error();
         }
       }
 
       // TODO(alex) if I use temporary variables instead of this, does the
       // compiler optimize this?
-      double compute_grid_error() {
+      void compute_grid_error() {
         this->grid = 
             this->grid_rational.compute_grid(this->x1,this->x2, this->fineness);
         this->evaluated_grid = this->eval(this->grid);
@@ -681,10 +762,9 @@ namespace rascal {
         //Vector_t error_grid{2*((test_grid_interpolated - test_grid_evaluated).array()/
         //  (std::numeric_limits< double >::min()+test_grid_interpolated.array().abs() + test_grid_evaluated.array().abs())).abs()};
         // absolute error
-        Vector_t error_grid{(test_grid_interpolated - test_grid_evaluated).array().abs()};
-        grid_rational.update_errors(Vector_Ref(error_grid));        
-        this->max_error = error_grid.maxCoeff();
-        this->mean_error = error_grid.mean();
+        Vector_t error_grid{this->error_method.compute_entrywise_error(Vector_Ref(test_grid_interpolated), Vector_Ref(test_grid_evaluated))};
+        grid_rational.update_errors(Vector_Ref(error_grid));
+        this->error = this->error_method.compute_global_error(Vector_Ref(error_grid));
         //if (this->grid.size() % 1==0) {
         //  std::cout << "grid_size=" << this->grid.size() << std::endl;
         //  std::cout << "mean_error=" << this->mean_error << std::endl;
@@ -698,7 +778,6 @@ namespace rascal {
         //  std::cout << "mean error=" << this->mean_error << std::endl;
         //  std::cout << "max error=" << this->max_error << std::endl;
         //}
-        return this->mean_error;
       }
 
       double eval(double x) {return this->function(x);}
@@ -752,6 +831,7 @@ namespace rascal {
       double x1{0};
       double x2{1};
       double precision{1e-5};
+      double error{0};
       double mean_error{0};
       double max_error{0};
       double min_error{0}; // TODO(alex) smallest error on test grid without grid points
@@ -768,15 +848,16 @@ namespace rascal {
       InterpolationMethod intp_method;
       GridRational grid_rational;
       SearchMethod search_method;
+      ErrorMethod error_method;
     };
 
-    template<class InterpolationMethod, class GridRational, class SearchMethod>
-    class InterpolatorVectorized : public Interpolator<InterpolationMethod, GridRational, SearchMethod> {
+    template<class InterpolationMethod, class GridRational, class SearchMethod, class ErrorMethod=ErrorMethod<ErrorMethod_t::AbsoluteMean>>
+    class InterpolatorVectorized : public Interpolator<InterpolationMethod, GridRational, SearchMethod, ErrorMethod> {
      public: 
       using Parent = Interpolator<InterpolationMethod, GridRational, SearchMethod>;
       InterpolatorVectorized() : Parent() {}
 
-      void initialize(std::function<Matrix_t(double)> function, double x1, double x2, double precision, int max_grid_points = 10000000) {
+      void initialize(std::function<Matrix_t(double)> function, double x1, double x2, double precision, int max_grid_points = 10000000, int fineness=5) {
         if (x2<x1) {
           throw std::runtime_error("x2 must be greater x1");
         }
@@ -791,6 +872,7 @@ namespace rascal {
         this->x2 = x2;
         this->precision = precision;
         this->max_grid_points = max_grid_points;
+        this->fineness = fineness;
 
         this->initialize_interpolator();
         this->search_method.initialize(this->grid);
@@ -810,22 +892,23 @@ namespace rascal {
         this->search_method.initialize(this->grid);
       }
 
+      // copy of Interpolator, important to use new definition of compute_grid_error function
       void initialize_interpolator() {
         // Fineness starts with zero and is incremently increased
         // this definition is arbitrary but make computation more readable
-        this->fineness = 5;
-        double error{this->compute_grid_error()};
+        this->compute_grid_error();
         // TODO(alex) add some procedure to not get locked if precision is too
         // high
-        while (error > this->precision && this->grid.size() < this->max_grid_points) {
+        while (this->error > this->precision && this->grid.size() < this->max_grid_points) {
           this->fineness++;
-          error = this->compute_grid_error();
+          this->compute_grid_error();
         }
       }
 
+
       // TODO(alex) if I use temporary variables instead of this, does the
       // compiler optimize this?
-      double compute_grid_error() {
+      void compute_grid_error() {
         this->grid = 
             this->grid_rational.compute_grid(this->x1,this->x2, this->fineness);
         this->evaluated_grid = this->eval(this->grid);
@@ -834,21 +917,20 @@ namespace rascal {
         this->search_method.initialize(this->grid);
 
         // calcu
-        this->max_error = 0.;
-        this->mean_error = 0.;
         // (grid_size, row*col)
         Vector_t test_grid{this->grid_rational.compute_test_grid(this->x1,this->x2,this->fineness)};
         Matrix_t test_grid_interpolated{this->interpolate_raw(test_grid)};
         Matrix_t test_grid_evaluated{this->eval(test_grid)};
         // computes the relative error
+        //Vector_t error_grid{2*((test_grid_interpolated - test_grid_evaluated).array()/
+        //  (std::numeric_limits< double >::min()+test_grid_interpolated.array().abs() + test_grid_evaluated.array().abs())).abs()};
         //Matrix_t error_mat = 2*(test_grid_interpolated-test_grid_evaluated).array().abs()/
         //  (std::numeric_limits< double >::min()+test_grid_interpolated.array().abs()+test_grid_evaluated.array().abs());
         
-        Matrix_t error_mat = (test_grid_interpolated-test_grid_evaluated).array().abs();
-        Matrix_t::Index maxRow, maxCol;
-        this->max_error = error_mat.maxCoeff(&maxRow, &maxCol);
+        this->error = this->error_method.compute_global_error(Matrix_Ref(test_grid_interpolated), Matrix_Ref(test_grid_evaluated));
+        //this->max_error = error_mat.maxCoeff(&maxRow, &maxCol);
         // maximal mean error of each col
-        this->mean_error = error_mat.colwise().mean().maxCoeff();
+        //this->mean_error = error_mat.colwise().mean().maxCoeff();
         // print mean error for interest
         //if (this->grid.size() % 1==0) {
         //  std::cout << "grid_size=" << this->grid.size() << std::endl;
@@ -865,7 +947,6 @@ namespace rascal {
         //  std::cout << "mean error=" << this->mean_error << std::endl;
         //  std::cout << "max error=" << this->max_error << std::endl;
         //}
-        return this->mean_error;
       }
 
       Vector_t eval(double x) {return Eigen::Map<Vector_t>(this->function(x).data(),this->matrix_size);}
