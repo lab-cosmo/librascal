@@ -172,32 +172,39 @@ namespace rascal {
       derivative_func = Fix::derivatives[function_name];
       if (verbose) { std::cout << "Test for function: " << function_name << std::endl;}
 
-      Fix::intp.initialize(func, Fix::x1, Fix::x2, Fix::error_bound,
-          derivative_func(Fix::x1), derivative_func(Fix::x2));
-      if (verbose) { std::cout << "Interpolator interpolator fineness: " << Fix::intp.fineness << std::endl;}
-      if (verbose) { std::cout << "Interpolator grid size: " << Fix::intp.grid.size() << std::endl;}
+      for (bool clamped_boundary_condition : {true, false}) {
+        if (verbose) { std::cout << "Interpolator interpolator clamped_boundary_condition : " << clamped_boundary_condition << std::endl;}
+        if (clamped_boundary_condition) {
+          Fix::intp.initialize(func, Fix::x1, Fix::x2, Fix::error_bound,
+              derivative_func(Fix::x1), derivative_func(Fix::x2));
+        } else {
+          Fix::intp.initialize(func, Fix::x1, Fix::x2, Fix::error_bound);
+        }
+        if (verbose) { std::cout << "Interpolator interpolator fineness: " << Fix::intp.fineness << std::endl;}
+        if (verbose) { std::cout << "Interpolator grid size: " << Fix::intp.grid.size() << std::endl;}
 
-      // Checks if interpolator satisfies the given error bound. This condition should be always fulfilled.
-      error = compute_intp_error(Fix::intp, func, ref_points);
-      BOOST_CHECK_LE(error, Fix::error_bound);
+        // Checks if interpolator satisfies the given error bound. This condition should be always fulfilled.
+        error = compute_intp_error(Fix::intp, func, ref_points);
+        BOOST_CHECK_LE(error, Fix::error_bound);
 
-     // The following conditions do not necessary have to be fulfilled, but an error here could point out a bug in the interpolator or question the sanity of it or be because the derivative function does not agree with the function. For an unfulfillde condition the error should be at least be comparatively small.
+       // The following conditions do not necessary have to be fulfilled, but an error here could point out a bug in the interpolator or question the sanity of it or be because the derivative function does not agree with the function. For an unfulfillde condition the error should be at least be comparatively small.
 
-      // Checks if using the interpolators derivative is at least as accurate as using finite methods with the interpolators function or if they are close. This condition should be always fulfilled.
-      intp_error = compute_intp_derivative_error(Fix::intp, derivative_func, ref_points);
-      finite_diff_error = compute_intp_finite_diff_error(Fix::intp, derivative_func, ref_points);
-      BOOST_CHECK((finite_diff_error - intp_error) >= 0 || std::abs(finite_diff_error - intp_error) < tol);
-      if (verbose) { std::cout << "Interpolator derivative compared to interpolator function finite method error on test grid: " << std::abs(finite_diff_error - intp_error) << std::endl;}
+        // Checks if using the interpolators derivative is at least as accurate as using finite methods with the interpolators function or if they are close. This condition should be always fulfilled.
+        intp_error = compute_intp_derivative_error(Fix::intp, derivative_func, ref_points);
+        finite_diff_error = compute_intp_finite_diff_error(Fix::intp, derivative_func, ref_points);
+        BOOST_CHECK((finite_diff_error - intp_error) >= 0 || std::abs(finite_diff_error - intp_error) < tol);
+        if (verbose) { std::cout << "Interpolator derivative compared to interpolator function finite method error on test grid: " << std::abs(finite_diff_error - intp_error) << std::endl;}
 
-      // Checks if derivative holds for a slightly higher error bound. Since the order of the error does not increase, it should be close to the error bound. A rigorous error bound can be found in https://doi.org/10.1016/0021-9045(82)90041-7 and could be implemented, but this is good enough.
-      error = compute_intp_derivative_error(Fix::intp, derivative_func, ref_points);
-      BOOST_CHECK_LE(error, 5*Fix::error_bound);
+        // Checks if derivative holds for a slightly higher error bound. Since the order of the error does not increase, it should be close to the error bound. A rigorous error bound can be found in https://doi.org/10.1016/0021-9045(82)90041-7 and could be implemented, but this is good enough.
+        error = compute_intp_derivative_error(Fix::intp, derivative_func, ref_points);
+        BOOST_CHECK_LE(error, 6*Fix::error_bound);
 
-      // Check if derivative of the interpolator is as precise as the finite difference method for the points used by the interpolator. 
-      intp_error = compute_intp_derivative_error(Fix::intp, derivative_func, Fix::intp.grid);
-      finite_diff_error = compute_intp_finite_diff_error(func, derivative_func, Fix::intp.grid);
-      BOOST_CHECK((finite_diff_error - intp_error) >= 0 || std::abs(finite_diff_error - intp_error) < tol);
-      if (verbose) { std::cout << "Interpolator derivative compared to function finite method error on interpolator grid: " << std::abs(finite_diff_error - intp_error) << std::endl;}
+        // Check if derivative of the interpolator is as precise as the finite difference method for the points used by the interpolator. 
+        intp_error = compute_intp_derivative_error(Fix::intp, derivative_func, Fix::intp.grid);
+        finite_diff_error = compute_intp_finite_diff_error(func, derivative_func, Fix::intp.grid);
+        BOOST_CHECK((finite_diff_error - intp_error) >= 0 || std::abs(finite_diff_error - intp_error) < tol);
+        if (verbose) { std::cout << "Interpolator derivative compared to function finite method error on interpolator grid: " << std::abs(finite_diff_error - intp_error) << std::endl;}
+      }
     }
   }
 
@@ -242,7 +249,7 @@ namespace rascal {
 
   BOOST_FIXTURE_TEST_CASE(functions_dervative_interpolator_vectorized_test,
         InterpolatorFixture<DefaultInterpolatorVectorized>) {
-    bool verbose{true};
+    bool verbose{false};
 
     Vector_t ref_points = Vector_t::LinSpaced(nb_ref_points, x1, x2);
     double error;

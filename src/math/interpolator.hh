@@ -165,18 +165,16 @@ namespace rascal {
 
       void initialize(const Vector_Ref & grid,
           const Vector_Ref & evaluated_grid){
-        this->compute_second_derivative(grid, evaluated_grid);
         this->h = grid(1) - grid(0);
-        assert (this->h != 0.0); // Bad xa input to routine splint
         this->h_sq_6 = this->h*this->h/6.0;
+        this->compute_second_derivative(evaluated_grid);
       }
 
       void initialize(const Vector_Ref & grid,
           const Vector_Ref & evaluated_grid, double yd1, double ydn){
-        this->compute_second_derivative(grid, evaluated_grid, yd1, ydn);
-        this->h = grid(1) - grid(0); // TODO(alex) asserts uniform grid
-        assert (this->h != 0.0); // Bad xa input to routine splint
+        this->h = grid(1) - grid(0);
         this->h_sq_6 = this->h*this->h/6.0;
+        this->compute_second_derivative(evaluated_grid, yd1, ydn);
       }
 
       inline double interpolate(const Vector_Ref & grid,
@@ -203,86 +201,92 @@ namespace rascal {
       
       // clamped boundary conditions when first derivative for boundaries is known
       // s'(x_0) = y'(x_0), s'(x_n) = y'(x_n)
-      inline void compute_second_derivative(const Vector_Ref & xv, const Vector_Ref & yv, double yd1, double ydn) {
-        int n{static_cast<int>(xv.size())};
+      inline void compute_second_derivative(const Vector_Ref & yv, double yd1, double ydn) {
+        // Bad xa input to routine splint
+        assert (this->h != 0.0);
+        int n{static_cast<int>(yv.size())};
         Vector_t y2 = Vector_t::Zero(n);
         Vector_t u = Vector_t::Zero(n);
-        size_t sig;
         double p;
+
+        // forward sweeping 
         y2(0) = -0.5;
-        u(0)=(3.0/(xv(1)-xv(0)))*((yv(1)-yv(0))/(xv(1)-xv(0))-yd1);
+        u(0)=(3.0/this->h)*((yv(1)-yv(0))/this->h -yd1);
         for (int i{1}; i<n-1; i++) {
-          sig=(xv(i)-xv(i-1))/(xv(i+1)-xv(i-1));
-          p=sig*y2(i-1)+2.0;
-          y2(i)=(sig-1.0)/p;
-          u(i)=(yv(i+1)-yv(i))/(xv(i+1)-xv(i)) - (yv(i)-yv(i-1))/(xv(i)-xv(i-1));
-          u(i)=(6.0*u(i)/(xv(i+1)-xv(i-1))-sig*u(i-1))/p;
+          p=0.5*y2(i-1)+2.0;
+          y2(i)=-0.5/p;
+          u(i)=(yv(i+1)-2*yv(i)+yv(i-1))/this->h;
+          u(i)=(3.0*u(i)/this->h -0.5*u(i-1))/p;
         }
+
+        // back substitution
         p=0.5; // qn=0.5 but we just reuse p because it is not needed anyway
-        u(n-1) = (3.0/(xv(n-1)-xv(n-2)))*(ydn-(yv(n-1)-yv(n-2))/(xv(n-1)-xv(n-2)));
+        u(n-1) = (3.0/this->h)*(ydn-(yv(n-1)-yv(n-2))/this->h);
         y2(n-1)=(u(n-1)-p*u(n-2))/(p*y2(n-2)+1.0);
         for (int k{n-2};k>=0;k--) {
           y2(k)=y2(k)*y2(k+1)+u(k);
         }
-        second_derivative = y2;
+        this->second_derivative_h_sq_6 = y2*this->h_sq_6 ;
       }
 
       // natural/simple boundary conditions s''(x_0) = s''(x_n) = 0
-      inline void compute_second_derivative(const Vector_Ref & xv, const Vector_Ref & yv) {
-        int n{static_cast<int>(xv.size())};
+      inline void compute_second_derivative(const Vector_Ref & yv) {
+        // Bad xa input to routine splint
+        assert (this->h != 0.0);
+        int n{static_cast<int>(yv.size())};
         Vector_t y2 = Vector_t::Zero(n);
         Vector_t u = Vector_t::Zero(n);
-        size_t sig;
         double p;
+
+        // forward sweeping 
         y2(0) = 0.0;
         u(0) = 0.0;
-        // forward sweeping 
         for (int i{1}; i<n-1; i++) {
-          sig=(xv(i)-xv(i-1))/(xv(i+1)-xv(i-1));
-          p=sig*y2(i-1)+2.0;
-          y2(i)=(sig-1.0)/p;
-          u(i)=(yv(i+1)-yv(i))/(xv(i+1)-xv(i)) - (yv(i)-yv(i-1))/(xv(i)-xv(i-1));
-          u(i)=(6.0*u(i)/(xv(i+1)-xv(i-1))-sig*u(i-1))/p;
+          p=0.5*y2(i-1)+2.0;
+          y2(i)=-0.5/p;
+          u(i)=(yv(i+1)-2*yv(i)+yv(i-1))/this->h;
+          u(i)=(3.0*u(i)/this->h -0.5*u(i-1))/p;
         }
-        //u(n-1) = 0.0;
-        //p=0.0;
+
         // back substitution
         y2(n-1) = 0.0; // (u(n-1)-p*u(n-2))/(p*y2(n-2)+1.0);
         for (int k{n-2};k>0;k--) {
           y2(k)=y2(k)*y2(k+1)+u(k);
         }
         y2(0)= 0.0; // y2(0)*y2(1)+u(0);
-        second_derivative = y2;
+        this->second_derivative_h_sq_6 = y2*this->h_sq_6 ;
       }
 
       inline double rawinterp(const Vector_Ref & xx, const Vector_Ref & yy,
           const int & j1, const double & x) {
-        int klo{j1}, khi{j1+1};
+        const int klo{j1}, khi{j1+1};
         // a+b=1
-        double a{(xx(khi)-x)/this->h};
+        const double a{(xx(khi)-x)/this->h};
         //double b{1-a};
-        double b{(x-xx(klo))/this->h};
-        return a*yy(klo)+b*yy(khi)+((a*a*a-a)*this->second_derivative(klo) +(b*b*b-b)*this->second_derivative(khi))*h_sq_6;
+        const double b{(x-xx(klo))/this->h};
+        return a*( yy(klo)+(a*a-1)*this->second_derivative_h_sq_6(klo) ) +
+            b*( yy(khi)+(b*b-1)*this->second_derivative_h_sq_6(khi) );
       }
 
       inline double rawinterp_derivative(const Vector_Ref & xx, const Vector_Ref & yy,
           const int & j1, const double & x) {
-        int klo{j1}, khi{j1+1};
+        const int klo{j1}, khi{j1+1};
         assert (h != 0.0); // Bad xa input to routine splint
         // It is a+b=1
-        double a{(xx(khi)-x)/this->h};
-        double b{1-a};
-        //double b{(x-xx(klo))/this->h};
-        // (yy(khi)-yy(klo))/this->h can be precomputed
-        return (yy(khi)-yy(klo))/this->h + ( -(3*a*a-1) *this->second_derivative(klo) + (3*b*b-1)*this->second_derivative(khi) ) * this->h/6.;
+        const double a{(xx(khi)-x)/this->h};
+        const double b{1-a};
+        // yy(khi)-yy(klo) could be precomputed
+        return ( yy(khi)-yy(klo) - (3*a*a-1) *this->second_derivative_h_sq_6(klo) + (3*b*b-1)*this->second_derivative_h_sq_6(khi) ) / this->h;
       }
 
       // grid step size
       double h{0};
-      double h_sq_6{0}; // h*h/6.0
+      // h*h/6.0
+      double h_sq_6{0};
       // This term is the solution vector of the linear system of the tridiagonal toeplitz matrix derived by the conditions of cubic spline. The linear system can be found in  http://mathworld.wolfram.com/CubicSpline.html
-      // The term is not the second derivative, but called in numerical recipes like this. Because of consistency we keep the naming.
-      Vector_t second_derivative{};
+      // The term is not the second derivative, but called in numerical recipes like this. Because of consistency we keep the naming. In addition we already multiply them with coefficient
+      // y2 *h*h/6
+      Vector_t second_derivative_h_sq_6{};
     };
 
 
@@ -295,9 +299,9 @@ namespace rascal {
 
       void initialize(const Vector_Ref & grid,
           const Matrix_Ref & evaluated_grid){
-        this->compute_second_derivatives_on_grid(grid, evaluated_grid);
         this->h = grid(1) - grid(0);
         this->h_sq_6 = this->h*this->h/6.0;
+        this->compute_second_derivatives_on_grid(grid, evaluated_grid);
       }
 
       inline Vector_t interpolate(const Vector_Ref & grid,
@@ -332,7 +336,7 @@ namespace rascal {
         int n{static_cast<int>(xv.size())};
         Matrix_t y2 = Matrix_t::Zero(n,yv.cols());
         Matrix_t u = Matrix_t::Zero(n,yv.cols());
-        size_t sig;
+        double sig;
         Vector_t p = Vector_t::Zero(n);
         y2.row(0) = Vector_t::Zero(yv.cols());
         u.row(0) = Vector_t::Zero(yv.cols());
@@ -784,7 +788,8 @@ namespace rascal {
       }
      
       Vector_t grid{};
-      Vector_t evaluated_grid{}; // map matrix function to Vector_t to decrease ressources      
+      // evaluated by the function to interpolate
+      Vector_t evaluated_grid{}; 
       double mean_error{0.};
       double max_error{0.};
       bool is_benchmarked{false};
