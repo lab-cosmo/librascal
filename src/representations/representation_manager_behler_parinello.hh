@@ -156,4 +156,4 @@ namespace rascal {
 
 #include "representation_manager_behler_parinello_impl.hh"
 
-#endif // SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_BEHLER_PARINELLO_HH_
+#endif  // SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_BEHLER_PARINELLO_HH_
