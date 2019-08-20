@@ -301,7 +301,7 @@ namespace rascal {
           const Matrix_Ref & evaluated_grid){
         this->h = grid(1) - grid(0);
         this->h_sq_6 = this->h*this->h/6.0;
-        this->compute_second_derivatives_on_grid(grid, evaluated_grid);
+        this->compute_second_derivative(evaluated_grid);
       }
 
       inline Vector_t interpolate(const Vector_Ref & grid,
@@ -317,76 +317,60 @@ namespace rascal {
             nearest_grid_index_to_x, x);
       }
      private:
-      // TODO(felix) the numerical recipes gives the option to set the first
-      // derivative's starting and end point,
-      // for now I did not include this option, I do not see now where
-      // we would use it
-      // TODO(alex) reference numerical recipes
-      void compute_second_derivatives_on_grid(
-          const Vector_Ref & grid, const Matrix_Ref & evaluated_grid) {
-        // TODO(alex) optimize
-        this->second_derivatives = std::move(this->sety2(grid, evaluated_grid));
-        //std::cout << "this->second_derivatives" << this->second_derivatives.col(0).head(3).transpose() << std::endl; 
-      }
-
-      // This is done to be close to the numerical recipes implementation in
-      // naming while making it more readable.
-      // TODO(alex) reference numerical recipes
-      inline Matrix_t sety2(const Vector_Ref & xv, const Matrix_Ref & yv) {
-        int n{static_cast<int>(xv.size())};
+      inline void compute_second_derivative(const Matrix_Ref & yv) {
+        int n{static_cast<int>(yv.rows())};
         Matrix_t y2 = Matrix_t::Zero(n,yv.cols());
         Matrix_t u = Matrix_t::Zero(n,yv.cols());
-        double sig;
+        const double sig=0; //wtf is more accurate than the correct value 0.5 TODO(alex)
         Vector_t p = Vector_t::Zero(n);
         y2.row(0) = Vector_t::Zero(yv.cols());
         u.row(0) = Vector_t::Zero(yv.cols());
         for (int i{1}; i<n-1; i++) {
-          sig=(xv(i)-xv(i-1))/(xv(i+1)-xv(i-1));
           p=sig*y2.row(i-1).array()+2.0;
-          y2.row(i)=(sig-1.0)/p.array();
-          u.row(i).array() = (yv.row(i+1).array()-yv.row(i).array())/(xv(i+1)-xv(i)) - (yv.row(i).array()-yv.row(i-1).array())/(xv(i)-xv(i-1));
-          u.row(i).array() =(6.0*u.row(i).array()/(xv(i+1)-xv(i-1))-sig*u.row(i-1).array())/p.array();
+          y2.row(i) = (sig-1.0)/p.array();
+          // noalias keework prevents storage of temporaries
+          u.row(i).noalias() = ( 3.*( yv.row(i+1).array()-2*yv.row(i).array()+yv.row(i-1).array() )/(this->h*this->h) ).matrix();
+          u.row(i).array() -= sig*u.row(i-1).array();
+          u.row(i).array() /= p.array();
         }
-        //u(n-1) = 0.0;
-        //p=0.0;
-        y2.row(n-1) = Vector_t::Zero(y2.cols()); //(u(n-1)-p*u(n-2))/(p*y2.row(n-2).array()+1.0);
+        y2.row(n-1) = Vector_t::Zero(y2.cols());
         for (int k{n-2};k>0;k--) {
-          y2.row(k).array()=y2.row(k).array()*y2.row(k+1).array()+u.row(k).array();
+          y2.row(k) = y2.row(k).array()*y2.row(k+1).array()+u.row(k).array();
         }
-        y2.row(0) = Vector_t::Zero(y2.cols()); // y2.row(0)*y2.row(1)+u(0);
-        return y2;
+        y2.row(0) = Vector_t::Zero(y2.cols());
+        //this->second_derivative = y2;
+        this->second_derivative_h_sq_6 = y2*this->h_sq_6 ;
       }
 
       inline Vector_t rawinterp(const Vector_Ref & xx, const Matrix_Ref & yy,
           const int & j1, const double & x) {
         int klo{j1}, khi{j1+1};
-        assert (h != 0.0); // Bad xa input to routine splint
+        // Bad xa input to routine splint
+        assert (h != 0.0);
         // a+b=1
         double a{(xx(khi)-x)/this->h};
         double b{1-a};
-        // TODO(alex)
-        // h_sq_6 * sec_der can be stored to save one multiplication
-        return a*yy.row(klo).array()+b*yy.row(khi).array()+((a*a*a-a)*this->second_derivatives.row(klo).array() +(b*b*b-b)*this->second_derivatives.row(khi).array())*h_sq_6;
+        return ( a*( yy.row(klo).array()+(a*a-1)*this->second_derivative_h_sq_6.row(klo).array() ) +
+            b*( yy.row(khi).array()+(b*b-1)*this->second_derivative_h_sq_6.row(khi).array() ) ).matrix();
       }
 
       inline Vector_t rawinterp_derivative(const Vector_Ref & xx, const Matrix_Ref & yy,
           const int & j1, const double & x) {
         int klo{j1}, khi{j1+1};
-        assert (h != 0.0); // Bad xa input to routine splint
+        // Bad xa input to routine splint
+        assert (h != 0.0); 
         // a+b=1
         double a{(xx(khi)-x)/this->h};
         double b{1-a};
-        //double b{(x-xx(klo))/this->h};
-        // yy(khi)-yy(klo)/this->h can be precomputed
-        // TODO(alex)
-        return (yy.row(khi).array()-yy.row(klo).array())/this->h + ( -(3*a*a-1) *this->second_derivatives.row(klo).array() + (3*b*b-1)*this->second_derivatives.row(khi).array() ) * this->h/6;
+        return ( ( yy.row(khi).array()-yy.row(klo).array() - (3*a*a-1) *this->second_derivative_h_sq_6.row(klo).array() + (3*b*b-1)*this->second_derivative_h_sq_6.row(khi).array() ) / this->h ).matrix();
       }
 
       // The gap between two grid points
       double h{0};
-      double h_sq_6{0}; // h*h/6.0      
-      // These are terms equal to the second order finite difference, but are exact terms used in the interpolation derived from the spline conditions and are meant to approximates the second derivative.
-      Matrix_t second_derivatives{};
+      // h*h/6.0
+      double h_sq_6{0};
+      // second_derivative*h*h/6
+      Matrix_t second_derivative_h_sq_6{};
     };
 
     enum class ErrorMetric_t {Absolute, Relative};
@@ -401,12 +385,12 @@ namespace rascal {
     // Works for functions with large value outside of the range [0,1] well
     template <>      
     struct ErrorMetric<ErrorMetric_t::Relative> {
-      Vector_t compute_entrywise_error(const Vector_Ref & values, const Vector_Ref & references) {
+      static Vector_t compute_entrywise_error(const Vector_Ref & values, const Vector_Ref & references) {
         return 2*((values - references).array().abs()/
           (std::numeric_limits< double >::min()+values.array().abs() + references.array().abs()));
       }
 
-      Matrix_t compute_entrywise_error(const Matrix_Ref & values, const Matrix_Ref & references) {
+      static Matrix_t compute_entrywise_error(const Matrix_Ref & values, const Matrix_Ref & references) {
         return 2*((values - references).array().abs()/
           (std::numeric_limits< double >::min()+values.array().abs() + references.array().abs()));
       }
@@ -415,12 +399,12 @@ namespace rascal {
     // Works for functions within the range [0,1] well
     template <>
     struct ErrorMetric<ErrorMetric_t::Absolute> {
-      Vector_t compute_entrywise_error(
+      static Vector_t compute_entrywise_error(
           const Vector_Ref & values, const Vector_Ref & references) {
         return (values - references).array().abs();
       }
 
-      Matrix_t compute_entrywise_error(
+      static Matrix_t compute_entrywise_error(
           const Matrix_Ref & values, const Matrix_Ref & references) {
         return (values - references).array().abs();
       }
@@ -429,24 +413,25 @@ namespace rascal {
 
     template <ErrorMetric_t Metric>
     struct ErrorMethod<Metric, ErrorNorm_t::Mean> : public ErrorMetric<Metric> {
+      using Parent = ErrorMetric<Metric>;
 
-      double compute_global_error(const Vector_Ref & values, const Vector_Ref & references) {
-        return this->compute_entrywise_error(values, references).mean();
+      static double compute_global_error(const Vector_Ref & values, const Vector_Ref & references) {
+        return Parent::compute_entrywise_error(values, references).mean();
       }
 
       // for the case of a (grid_size, result_size) the maxmimal mean error is used
-      double compute_global_error(const Matrix_Ref & values, const Matrix_Ref & references) {
-        return this->compute_entrywise_error(values, references).colwise().mean().maxCoeff();
+      static double compute_global_error(const Matrix_Ref & values, const Matrix_Ref & references) {
+        return Parent::compute_entrywise_error(values, references).colwise().mean().maxCoeff();
       }
 
       // takes a (grid_size) Vector
-      double compute_global_error(
+      static double compute_global_error(
           const Vector_Ref & errors) {
         return errors.mean();
       }
 
       // takes a (grid_size, result_size) matrix
-      double compute_global_error(
+      static double compute_global_error(
           const Matrix_Ref & errors) {
         return errors.colwise().mean().maxCoeff();
       }
@@ -454,23 +439,24 @@ namespace rascal {
 
     template <ErrorMetric_t Metric>
     struct ErrorMethod<Metric, ErrorNorm_t::Max> : public ErrorMetric<Metric> {
-      double compute_global_error(const Vector_Ref & values, const Vector_Ref & references) {
-        return this->compute_entrywise_error(values, references).maxCoeff();
+      using Parent = ErrorMetric<Metric>;
+      static double compute_global_error(const Vector_Ref & values, const Vector_Ref & references) {
+        return Parent::compute_entrywise_error(values, references).maxCoeff();
       }
 
       // for the case of a (grid_size, result_size) the maxmimal mean error is used
-      double compute_global_error(const Matrix_Ref & values, const Matrix_Ref & references) {
-        return this->compute_entrywise_error(values, references).maxCoeff();
+      static double compute_global_error(const Matrix_Ref & values, const Matrix_Ref & references) {
+        return Parent::compute_entrywise_error(values, references).maxCoeff();
       }
 
       // takes a (grid_size) Vector
-      double compute_global_error(
+      static double compute_global_error(
           const Vector_Ref & errors) {
         return errors.maxCoeff();
       }
 
       // takes a (grid_size, result_size) matrix
-      double compute_global_error(
+      static double compute_global_error(
           const Matrix_Ref & errors) {
         return errors.maxCoeff();
       }
@@ -668,6 +654,7 @@ namespace rascal {
       int dj;
     };
 
+    // Untemplated Interpolator class used to upcast the interpolator and store it in memory structures
     class InterpolatorBase {
      public:
       InterpolatorBase() {}; 
@@ -687,6 +674,7 @@ namespace rascal {
       double x1{0};
       double x2{1};
       double error_bound{1e-5};
+      // TODO(alex) rename to grid errror
       double error{0};
 
       // If the first derivative of the function at the boundary points is known, one can initialize the interpolator with these values to obtain a higher accuracy with the interpolation method.
@@ -700,6 +688,7 @@ namespace rascal {
       int max_grid_points{10000000}; //1e7
     };
 
+    // Templated interpolator class used to
     template<class InterpolationMethod, class GridRational, class SearchMethod, class ErrorMethod>
     class InterpolatorTyped : public InterpolatorBase {
      public:
