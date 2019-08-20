@@ -259,23 +259,22 @@ namespace rascal {
 
       inline double rawinterp(const Vector_Ref & xx, const Vector_Ref & yy,
           const int & j1, const double & x) {
+        assert (this->h != 0.0);
         const int klo{j1}, khi{j1+1};
         // a+b=1
         const double a{(xx(khi)-x)/this->h};
-        //double b{1-a};
-        const double b{(x-xx(klo))/this->h};
+        double b{1-a};
         return a*( yy(klo)+(a*a-1)*this->second_derivative_h_sq_6(klo) ) +
             b*( yy(khi)+(b*b-1)*this->second_derivative_h_sq_6(khi) );
       }
 
       inline double rawinterp_derivative(const Vector_Ref & xx, const Vector_Ref & yy,
           const int & j1, const double & x) {
+        assert (this->h != 0.0);
         const int klo{j1}, khi{j1+1};
-        assert (h != 0.0); // Bad xa input to routine splint
         // It is a+b=1
         const double a{(xx(khi)-x)/this->h};
         const double b{1-a};
-        // yy(khi)-yy(klo) could be precomputed
         return ( yy(khi)-yy(klo) - (3*a*a-1) *this->second_derivative_h_sq_6(klo) + (3*b*b-1)*this->second_derivative_h_sq_6(khi) ) / this->h;
       }
 
@@ -503,11 +502,12 @@ namespace rascal {
     };
 
 
+    // Improvements:
+    // - make nb_support_points const
     template <>
     struct SearchMethod<SearchMethod_t::Locate> {
       constexpr static SearchMethod_t Method { SearchMethod_t::Locate };
 
-      // TODO(alex) initilize nb_support_points with parameters from the interpolation mtehod
       SearchMethod<SearchMethod_t::Locate>() : 
           nb_support_points{2} {} 
 
@@ -519,16 +519,13 @@ namespace rascal {
         return this->locate(x, grid);
       }
 
-      // TODO(alex) move this to a Base class if we want to implement more
-      // search methods
-      // TODO(alex) ref numerical recipes
       int locate(double x, const Vector_Ref & xx) {
         int n{static_cast<int>(xx.size())};
         int mm{static_cast<int>(nb_support_points)};
 
         int ju,jm,jl;
-        //TODO(alex) activate in debug mode
-        //if (n < 2 || mm < 2 || mm > n) throw("locate size error");
+        // size error
+        assert( not(n < 2 || mm < 2 || mm > n) );
         bool ascnd=(xx[n-1] >= xx[0]);
         jl=0;
         ju=n-1;
@@ -543,17 +540,18 @@ namespace rascal {
       }
 
       // the number of support methods the interpolation method uses
-      // TODO(alex) make const
       size_t nb_support_points;
     };
 
 
 
+    // Improvements/Problems of hunt:
+    // - Hunt gives indices outside of the range of the grid when compiled in Debug or RelWithDebugInfo
+    // - make nb_support_points const
     template <>
     struct SearchMethod<SearchMethod_t::Hunt> {
 
       constexpr static SearchMethod_t Method { SearchMethod_t::Hunt };
-      // TODO(alex) initilize nb_support_points with parameters from the interpolation mtehod
       SearchMethod<SearchMethod_t::Hunt>() : correlated{false},
           nb_support_points{2}, last_accessed_index{0}, dj{0} {} 
 
@@ -564,22 +562,16 @@ namespace rascal {
 
       // If the requests to locate seem correlated, then the heuristic is used
       int search(double x, const Vector_Ref & grid) {
-        //return this->locate(x, grid);
         return this->correlated ? this->hunt(x, grid) : this->locate(x, grid);
       }
 
-      // TODO(alex) move this to a Base class if we want to implement more
-      // search methods
-      // TODO(alex) ref numerical recipes
       int locate(double x, const Vector_Ref & xx) {
         int n{static_cast<int>(xx.size())};
         int mm{static_cast<int>(nb_support_points)};
         int jsav{static_cast<int>(this->last_accessed_index)};
 
-        // TODO(alex) is this faster than pow(n, 0.25) ?
         int ju,jm,jl;
-        //TODO(alex) activate in debug mode
-        //if (n < 2 || mm < 2 || mm > n) throw("locate size error");
+        assert( not(n < 2 || mm < 2 || mm > n) );
         bool ascnd=(xx[n-1] >= xx[0]);
         jl=0;
         ju=n-1;
@@ -603,7 +595,8 @@ namespace rascal {
         int jsav{static_cast<int>(this->last_accessed_index)};
 
         int jl=jsav, jm, ju, inc=1;
-        assert ( (n < 2 || mm < 2 || mm > n) ); // hunt size error
+        // hunt size error
+        assert( not(n < 2 || mm < 2 || mm > n) );
 
         bool ascnd=(xx[n-1] >= xx[0]);
         if (jl < 0 || jl > n-1) {

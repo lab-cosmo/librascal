@@ -30,6 +30,8 @@
 
 namespace rascal {
   namespace math {
+  using AbsoluteMeanErrorMethod = ErrorMethod<ErrorMetric_t::Absolute, ErrorNorm_t::Mean>;
+  using RelativeMeanErrorMethod = ErrorMethod<ErrorMetric_t::Relative, ErrorNorm_t::Mean>;
 
   static double convert_to_scalar(const double x) {
     return x;
@@ -42,23 +44,21 @@ namespace rascal {
   static double intp_ref_mean_error(Interpolator & intp, const math::Vector_Ref & ref_points) {
     return (intp.interpolate(ref_points) - intp.eval(ref_points)).array().abs().mean();
   }
-  // TODO(alex) adapt this when error function is 
-  // error function migh change
-  //template <class ErrorFunction>
-  //template <> ErrorType::Mean
-  template <class Interpolator>
-  static double compute_intp_error(Interpolator & intp, std::function<double(double)> func, const math::Vector_Ref & ref_points) {
+  // These functions calculate the error between the interpolated function and the interpolation on a set of reference points for different 
+
+  template <class ErrorMethod, class Interpolator>
+  static double compute_intp_error(Interpolator & intp, std::function<double(double)> ref_func, const math::Vector_Ref & ref_points) {
     math::Vector_t intp_vals = math::Vector_t::Zero(ref_points.size());
     math::Vector_t intp_refs = math::Vector_t::Zero(ref_points.size());
     for (int i{0}; i<ref_points.size()-1; i++) {
       intp_vals(i) = convert_to_scalar(intp.interpolate(ref_points(i)));
-      intp_refs(i) = func(ref_points(i));
+      intp_refs(i) = ref_func(ref_points(i));
     }
-    return (intp_vals - intp_refs).array().abs().mean();
+    return ErrorMethod::compute_global_error(Vector_Ref(intp_vals), Vector_Ref(intp_refs));
   }
 
 
-  template <class Interpolator>
+  template <class ErrorMethod, class Interpolator>
   static double compute_intp_derivative_error(Interpolator & intp, std::function<double(double)> derivative_func, const math::Vector_Ref & ref_points) {
     math::Vector_t intp_vals = math::Vector_t::Zero(ref_points.size());
     math::Vector_t intp_refs = math::Vector_t::Zero(ref_points.size());
@@ -66,11 +66,11 @@ namespace rascal {
       intp_vals(i) = convert_to_scalar(intp.interpolate_derivative(ref_points(i)));
       intp_refs(i) = derivative_func(ref_points(i));
     }
-    return (intp_vals - intp_refs).array().abs().mean();
+    return ErrorMethod::compute_global_error(Vector_Ref(intp_vals), Vector_Ref(intp_refs));
   }
 
 
-  template <class Interpolator>
+  template <class ErrorMethod, class Interpolator>
   static double compute_intp_finite_diff_error(Interpolator & intp, std::function<double(double)> derivative_func, const math::Vector_Ref & ref_points) {
     Vector_t intp_refs = Vector_t::Zero(ref_points.size()-1);
     Vector_t finite_diff_derivative = Vector_t::Zero(ref_points.size()-1);
@@ -78,47 +78,34 @@ namespace rascal {
       intp_refs(i) = derivative_func(ref_points(i));
       finite_diff_derivative(i) = (convert_to_scalar(intp.interpolate(ref_points(i+1)))-convert_to_scalar(intp.interpolate(ref_points(i))))/(ref_points(i+1)-ref_points(i));
     }
-    //std::cout << intp_refs << std::endl;
-    //std::cout << finite_diff_derivative << std::endl;
-    return (finite_diff_derivative - intp_refs).array().abs().mean();
+    return ErrorMethod::compute_global_error(Vector_Ref(finite_diff_derivative), Vector_Ref(intp_refs));
   }
 
-  static double compute_intp_finite_diff_error(std::function<double(double)> func, std::function<double(double)> derivative_func, const math::Vector_Ref & ref_points) {
-    Vector_t intp_refs = Vector_t::Zero(ref_points.size()-1);
+  template <class ErrorMethod>
+  static double compute_finite_diff_error(std::function<double(double)> func, std::function<double(double)> derivative_func, const math::Vector_Ref & ref_points) {
+    Vector_t derivative_refs = Vector_t::Zero(ref_points.size()-1);
     Vector_t finite_diff_derivative = Vector_t::Zero(ref_points.size()-1);
     for (int i{0}; i<ref_points.size()-2; i++) {
-      intp_refs(i) = derivative_func(ref_points(i));
+      derivative_refs(i) = derivative_func(ref_points(i));
       finite_diff_derivative(i) = (func(ref_points(i+1))-func(ref_points(i)))/(ref_points(i+1)-ref_points(i));
     }
-    //std::cout << intp_refs << std::endl;
-    //std::cout << finite_diff_derivative << std::endl;
-    return (finite_diff_derivative - intp_refs).array().abs().mean();
+    return ErrorMethod::compute_global_error(Vector_Ref(finite_diff_derivative), Vector_Ref(derivative_refs));
   }
+  
+  //
+  // ----------------------------------------------
+  //
 
   BOOST_AUTO_TEST_SUITE(MathInterpolatorTests);
 
-  // TODO(alex) Hunt gives indices outside of the range of the grid when 
-  // compiled in Debug or RelWithDebugInfo, since we
-  // do not use hunt now and probably not in future, I changed it temporary
-  // to Uniform
-  using HuntInterpolator = Interpolator<
-      InterpolationMethod<InterpolationMethod_t::CubicSpline>,
-      GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
-      SearchMethod<SearchMethod_t::Uniform>
-        >;
-  using UniformInterpolator = Interpolator<
+  using InterpolatorDefault = Interpolator<
       InterpolationMethod<InterpolationMethod_t::CubicSpline>,
       GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
       SearchMethod<SearchMethod_t::Uniform>
         >;
 
-  using DefaultInterpolatorVectorized = InterpolatorVectorized<
-      InterpolationMethod<InterpolationMethod_t::CubicSplineVectorized>,
-      GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
-      SearchMethod<SearchMethod_t::Uniform>
-        >;
   using interpolator_fixtures = boost::mpl::list<
-                   InterpolatorFixture<UniformInterpolator>>;
+                   InterpolatorFixture<InterpolatorDefault>>;
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(functions_interpolator_tests, Fix,
                                    interpolator_fixtures, Fix) {
@@ -139,7 +126,7 @@ namespace rascal {
       if (verbose) { std::cout << "Interpolator grid size: " << Fix::intp.grid.size() << std::endl;}
 
       // Checks if interpolator satisfies the given error bound. This condition should be always fulfilled.
-      error = compute_intp_error(Fix::intp, func, ref_points);
+      error = compute_intp_error<AbsoluteMeanErrorMethod>(Fix::intp, func, ref_points);
       BOOST_CHECK_LE(error, Fix::error_bound);
     }
   }
@@ -150,16 +137,16 @@ namespace rascal {
     Vector_t ref_points = Vector_t::LinSpaced(Fix::nb_ref_points, Fix::x1, Fix::x2);
     std::function<double(double)> func  = [&](double x) {return Fix::hyp1f1.calc(x);};
     Fix::intp.initialize(func, Fix::x1, Fix::x2, Fix::error_bound);
-    double error = compute_intp_error(Fix::intp, func, ref_points);
+    double error = compute_intp_error<AbsoluteMeanErrorMethod>(Fix::intp, func, ref_points);
     BOOST_CHECK_LE(error, Fix::error_bound);
   }
   
-  BOOST_FIXTURE_TEST_CASE(radial_contribution_test, InterpolatorFixture<UniformInterpolator>) {
+  BOOST_FIXTURE_TEST_CASE(radial_contribution_test, InterpolatorFixture<InterpolatorDefault>) {
     Vector_t ref_points = Vector_t::LinSpaced(this->nb_ref_points, this->x1, this->x2);
     std::function<double(double)> func =
         [&](double x) {return this->radial_contr.compute_contribution<rascal::internal::AtomicSmearingType::Constant>(x, 0.5)(0,0);};
     this->intp.initialize(func, this->x1, this->x2, this->error_bound);
-    double error = compute_intp_error(this->intp, func, ref_points);
+    double error = compute_intp_error<AbsoluteMeanErrorMethod>(this->intp, func, ref_points);
     BOOST_CHECK_LE(error, this->error_bound);
   }
 
@@ -191,31 +178,65 @@ namespace rascal {
         if (verbose) { std::cout << "Interpolator grid size: " << Fix::intp.grid.size() << std::endl;}
 
         // Checks if interpolator satisfies the given error bound. This condition should be always fulfilled.
-        error = compute_intp_error(Fix::intp, func, ref_points);
+        error = compute_intp_error<AbsoluteMeanErrorMethod>(Fix::intp, func, ref_points);
         BOOST_CHECK_LE(error, Fix::error_bound);
 
        // The following conditions do not necessary have to be fulfilled, but an error here could point out a bug in the interpolator or question the sanity of it or be because the derivative function does not agree with the function. For an unfulfillde condition the error should be at least be comparatively small.
 
         // Checks if using the interpolators derivative is at least as accurate as using finite methods with the interpolators function or if they are close. This condition should be always fulfilled.
-        intp_error = compute_intp_derivative_error(Fix::intp, derivative_func, ref_points);
-        finite_diff_error = compute_intp_finite_diff_error(Fix::intp, derivative_func, ref_points);
+        intp_error = compute_intp_derivative_error<AbsoluteMeanErrorMethod>(Fix::intp, derivative_func, ref_points);
+        finite_diff_error = compute_intp_finite_diff_error<AbsoluteMeanErrorMethod>(Fix::intp, derivative_func, ref_points);
         BOOST_CHECK((finite_diff_error - intp_error) >= 0 || std::abs(finite_diff_error - intp_error) < tol);
         if (verbose) { std::cout << "Interpolator derivative compared to interpolator function finite method error on test grid: " << std::abs(finite_diff_error - intp_error) << std::endl;}
 
         // Checks if derivative holds for a slightly higher error bound. Since the order of the error does not increase, it should be close to the error bound. A rigorous error bound can be found in https://doi.org/10.1016/0021-9045(82)90041-7 and could be implemented, but this is good enough.
-        error = compute_intp_derivative_error(Fix::intp, derivative_func, ref_points);
+        error = compute_intp_derivative_error<AbsoluteMeanErrorMethod>(Fix::intp, derivative_func, ref_points);
         BOOST_CHECK_LE(error, 6*Fix::error_bound);
 
         // Check if derivative of the interpolator is as precise as the finite difference method for the points used by the interpolator. 
-        intp_error = compute_intp_derivative_error(Fix::intp, derivative_func, Fix::intp.grid);
-        finite_diff_error = compute_intp_finite_diff_error(func, derivative_func, Fix::intp.grid);
+        intp_error = compute_intp_derivative_error<AbsoluteMeanErrorMethod>(Fix::intp, derivative_func, Fix::intp.grid);
+        finite_diff_error = compute_finite_diff_error<AbsoluteMeanErrorMethod>(func, derivative_func, Fix::intp.grid);
         BOOST_CHECK((finite_diff_error - intp_error) >= 0 || std::abs(finite_diff_error - intp_error) < tol);
         if (verbose) { std::cout << "Interpolator derivative compared to function finite method error on interpolator grid: " << std::abs(finite_diff_error - intp_error) << std::endl;}
       }
     }
   }
 
-  using DefaultInterpolatorVectorized = InterpolatorVectorized<
+  using InterpolatorUniformRelativeError = Interpolator<
+      InterpolationMethod<InterpolationMethod_t::CubicSpline>,
+      GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
+      SearchMethod<SearchMethod_t::Uniform>,
+      ErrorMethod<ErrorMetric_t::Relative, ErrorNorm_t::Mean>
+        >;
+  using interpolator_relative_error_fixtures = boost::mpl::list<
+                   InterpolatorFixture<InterpolatorUniformRelativeError>>;
+
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(functions_interpolator_relative_error_tests, Fix,
+                                   interpolator_relative_error_fixtures , Fix) {
+    bool verbose{false};
+
+    Vector_t ref_points = Vector_t::LinSpaced(Fix::nb_ref_points, Fix::x1, Fix::x2);
+    double error;
+    std::function<double(double)> func;
+    std::string function_name;
+
+    for (const auto pair : Fix::functions) {
+      function_name = pair.first;
+      func = Fix::functions[function_name];
+      if (verbose) { std::cout << "Test for function: " << function_name << std::endl;}
+
+      Fix::intp.initialize(func, Fix::x1, Fix::x2, Fix::error_bound);
+      if (verbose) { std::cout << "Interpolator interpolator fineness: " << Fix::intp.fineness << std::endl;}
+      if (verbose) { std::cout << "Interpolator grid size: " << Fix::intp.grid.size() << std::endl;}
+
+      // Checks if interpolator satisfies the given error bound. This condition should be always fulfilled.
+      error = compute_intp_error<ErrorMethod<ErrorMetric_t::Relative, ErrorNorm_t::Mean>>(Fix::intp, func, ref_points);
+      BOOST_CHECK_LE(error, Fix::error_bound);
+    }
+  }
+
+
+  using InterpolatorVectorizedDefault = InterpolatorVectorized<
       InterpolationMethod<InterpolationMethod_t::CubicSplineVectorized>,
       GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
       SearchMethod<SearchMethod_t::Uniform>
@@ -223,7 +244,7 @@ namespace rascal {
 
   // This test compares the vectorized interpolator with the scalar interpolators results for the functions map. The results should match
   BOOST_FIXTURE_TEST_CASE(functions_interpolator_vectorized_test,
-        InterpolatorFixture<DefaultInterpolatorVectorized>) {
+        InterpolatorFixture<InterpolatorVectorizedDefault>) {
     bool verbose{false};
 
     Vector_t ref_points = Vector_t::LinSpaced(nb_ref_points, x1, x2);
@@ -243,15 +264,14 @@ namespace rascal {
       if (verbose) { std::cout << "Interpolator grid size: " << intp.grid.size() << std::endl;}
 
       // Checks if interpolator satisfies the given error bound. This condition should be always fulfilled.
-      error = compute_intp_error(intp, func, ref_points);
+      error = compute_intp_error<AbsoluteMeanErrorMethod>(intp, func, ref_points);
       BOOST_CHECK_LE(error, error_bound);
     }
   }
 
-  // TODO(alex) change as above
   BOOST_FIXTURE_TEST_CASE(functions_dervative_interpolator_vectorized_test,
-        InterpolatorFixture<DefaultInterpolatorVectorized>) {
-    bool verbose{true};
+        InterpolatorFixture<InterpolatorVectorizedDefault>) {
+    bool verbose{false};
 
     Vector_t ref_points = Vector_t::LinSpaced(nb_ref_points, x1, x2);
     double error, intp_error, finite_diff_error;
@@ -272,24 +292,24 @@ namespace rascal {
       if (verbose) { std::cout << "Interpolator grid size: " << intp.grid.size() << std::endl;}
 
       // Checks if interpolator satisfies the given error bound. This condition should be always fulfilled.
-      error = compute_intp_error(intp, func, ref_points);
+      error = compute_intp_error<AbsoluteMeanErrorMethod>(intp, func, ref_points);
       BOOST_CHECK_LE(error, error_bound);
 
      // The following conditions do not necessary have to be fulfilled, but an error here could point out a bug in the interpolator or question the sanity of it or be because the derivative function does not agree with the function. For an unfulfillde condition the error should be at least be comparatively small.
 
       // Checks if using the interpolators derivative is at least as accurate as using finite methods with the interpolators function or if they are close. This condition should be always fulfilled.
-      intp_error = compute_intp_derivative_error(intp, derivative_func, ref_points);
-      finite_diff_error = compute_intp_finite_diff_error(intp, derivative_func, ref_points);
+      intp_error = compute_intp_derivative_error<AbsoluteMeanErrorMethod>(intp, derivative_func, ref_points);
+      finite_diff_error = compute_intp_finite_diff_error<AbsoluteMeanErrorMethod>(intp, derivative_func, ref_points);
       BOOST_CHECK((finite_diff_error - intp_error) >= 0 || std::abs(finite_diff_error - intp_error) < tol);
       if (verbose) { std::cout << "Interpolator derivative compared to interpolator function finite method error on test grid: " << std::abs(finite_diff_error - intp_error) << std::endl;}
 
       // Checks if derivative holds for a slightly higher error bound. Since the order of the error does not increase, it should be close to the error bound. A rigorous error bound can be found in https://doi.org/10.1016/0021-9045(82)90041-7 and could be implemented, but this is good enough.
-      error = compute_intp_derivative_error(intp, derivative_func, ref_points);
+      error = compute_intp_derivative_error<AbsoluteMeanErrorMethod>(intp, derivative_func, ref_points);
       BOOST_CHECK_LE(error, 6*error_bound);
 
       // Check if derivative of the interpolator is as precise as the finite difference method for the points used by the interpolator. 
-      intp_error = compute_intp_derivative_error(intp, derivative_func, intp.grid);
-      finite_diff_error = compute_intp_finite_diff_error(func, derivative_func, intp.grid);
+      intp_error = compute_intp_derivative_error<AbsoluteMeanErrorMethod>(intp, derivative_func, intp.grid);
+      finite_diff_error = compute_finite_diff_error<AbsoluteMeanErrorMethod>(func, derivative_func, intp.grid);
       BOOST_CHECK((finite_diff_error - intp_error) >= 0 || std::abs(finite_diff_error - intp_error) < tol);
       if (verbose) { std::cout << "Interpolator derivative compared to function finite method error on interpolator grid: " << std::abs(finite_diff_error - intp_error) << std::endl;}
     }
@@ -297,7 +317,7 @@ namespace rascal {
 
   // Because the radial contribution has to be initiated, this test is not included in the function map and has to be specified in a separate test. It checks if the standard interpolator and vectorized interpolator return the same results and if the vectorized interpolator is fulfills its error bound
   BOOST_FIXTURE_TEST_CASE(radial_contribution_interpolator_vectorized_test,
-        InterpolatorFixture<DefaultInterpolatorVectorized>) {
+        InterpolatorFixture<InterpolatorVectorizedDefault>) {
       Vector_t ref_points = Vector_t::LinSpaced(nb_ref_points, x1, x2); 
 
       std::function<Matrix_t(double)> func = 
