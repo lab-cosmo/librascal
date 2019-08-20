@@ -103,18 +103,10 @@ namespace rascal {
 
     /**
      * When the underlying structure changes, all computations are potentially
-     * invalid. This function triggers the setting of the statue variable to
-     * `false` along the tree. Should only be called from the root of the tree
-     * (usually a StructureManager).
+     * invalid. This function triggers the setting of the status variable to
+     * `false` along the tree to the managers and the properties it holds.
      */
-    void send_changed_structure_signal() {
-      this->set_update_status(true);
-      for (auto && child : this->children) {
-        if (not child.expired()) {
-          child.lock()->set_update_status(false);
-        }
-      }
-    }
+    virtual void send_changed_structure_signal() = 0;
 
     //! Setter function for update statue variable
     inline void set_update_status(const bool sig) { this->updated = sig; }

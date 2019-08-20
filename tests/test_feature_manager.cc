@@ -46,8 +46,9 @@ namespace rascal {
   /**
    * Test if the Fixture with multiple structures builds
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_setup_test, Fix, multiple_fixtures,
-                                   Fix) {}
+  // BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_setup_test, Fix,
+  // multiple_fixtures,
+  //                                 Fix) {}
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -196,13 +197,13 @@ namespace rascal {
       std::set<std::vector<int>> unique_keys{};
       for (size_t i_center{0}; i_center < original_data[i_hyper].size();
            ++i_center) {
-        for (auto & element : original_data[i_hyper][i_center]) {
+        for (const auto & element : original_data[i_hyper][i_center]) {
           unique_keys.emplace(element.first);
         }
       }
       for (size_t i_center{0}; i_center < original_data[i_hyper].size();
            ++i_center) {
-        auto & datas{original_data[i_hyper][i_center]};
+        auto && datas{original_data[i_hyper][i_center]};
         int i_count{0};
         double diff{0};
         int N{0};
@@ -213,7 +214,7 @@ namespace rascal {
           if (datas.count(key) == 1) {
             if (verbose)
               std::cout << "Key: " << key[0] << std::endl;
-            auto & data = datas[key];
+            auto && data = datas[key];
             for (int i_col{0}; i_col < data.cols(); i_col++) {
               for (int i_row{0}; i_row < data.rows(); i_row++) {
                 diff += data(i_row, i_col) - feature_matrix(i_count, i_center);

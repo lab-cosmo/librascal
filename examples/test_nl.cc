@@ -53,14 +53,23 @@ using Representation_t = RepresentationManagerSOAP<
 int main() {
   std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
   double cutoff{3.};
-  json hypers{{"interaction_cutoff", 2.0},
-              {"cutoff_smooth_width", 0.0},
-              {"max_radial", 6},
+  json hypers{{"max_radial", 6},
               {"max_angular", 6},
-              {"gaussian_sigma_type", "Constant"},
-              {"gaussian_sigma_constant", 0.2},
-              {"soap_type", "PowerSpectrum"}};
-  json structure{{"filename", filename}};
+              {"soap_type", "PowerSpectrum"},
+              {"normalize", true},
+              {"compute_gradients", true}};
+
+  json fc_hypers{{"type", "Cosine"},
+                 {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
+                 {"smooth_width", {{"value", 0.}, {"unit", "AA"}}}};
+  json sigma_hypers{{"type", "Constant"},
+                    {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}};
+
+  hypers["cutoff_function"] = fc_hypers;
+  hypers["gaussian_density"] = sigma_hypers;
+  hypers["radial_contribution"] = {{"type", "GTO"}};
+
+  json structure{};
   json adaptors;
   json ad1{{"name", "AdaptorNeighbourList"},
            {"initialization_arguments",
@@ -69,10 +78,22 @@ int main() {
            {"initialization_arguments", {{"cutoff", cutoff}}}};
   adaptors.emplace_back(ad1);
   adaptors.emplace_back(ad2);
+
+  AtomicStructure<3> atomic_structure{};
+  atomic_structure.set_structure(filename);
   auto manager =
       make_structure_manager_stack<StructureManagerCenters,
                                    AdaptorNeighbourList, AdaptorStrict>(
           structure, adaptors);
+
+  manager->update(atomic_structure);
+
+  AtomicStructure<3> atomic_structure2{atomic_structure};
+
+  atomic_structure2.positions(0, 0) += 0.5;
+
+  manager->update(atomic_structure2);
+
   Representation_t representation{manager, hypers};
   representation.compute();
 
@@ -82,12 +103,12 @@ int main() {
   feature.push_back(representation);
   auto X{feature.get_feature_matrix_dense()};
   std::cout << "sadfasd" << std::endl;
-  auto n_center{feature.sample_size()};
+  // auto n_center{feature.sample_size()};
   auto norms = X.colwise().norm();
   std::cout << norms.size() << std::endl;
-  for (int icenter{0}; icenter < n_center; icenter++) {
-    std::cout << norms[icenter] << std::endl;
-  }
+  // for (int icenter{0}; icenter < n_center; icenter++) {
+  //   std::cout << norms[icenter] << std::endl;
+  // }
 
   auto kernel1 = X.transpose() * X;
 
@@ -95,15 +116,16 @@ int main() {
 
   auto kernel3 = dot(feature);
 
-  auto max1{kernel1.mean()};
-  auto max2{kernel2.mean()};
-  auto diff{(kernel1 - kernel2).array().abs().matrix().mean()};
+  // auto max1{kernel1.mean()};
+  // auto max2{kernel2.mean()};
+  // auto diff{(kernel1 - kernel2).array().abs().matrix().mean()};
+  std::cout << kernel1.mean() << ", " << kernel1.minCoeff() << ", "
+            << kernel1.maxCoeff() << std::endl;
+  // std::cout << max1 << ", " << max2 << ", " << diff << std::endl;
 
-  std::cout << max1 << ", " << max2 << ", " << diff << std::endl;
+  // diff = (kernel2 - kernel3).array().abs().matrix().mean();
 
-  diff = (kernel2 - kernel3).array().abs().matrix().mean();
-
-  std::cout << diff << std::endl;
+  // std::cout << diff << std::endl;
 
   return (0);
 }

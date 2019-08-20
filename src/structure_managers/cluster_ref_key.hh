@@ -93,6 +93,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   //! extractors helpers for cluster layers
   namespace internal {
+    constexpr static int InvalidLayer = -1;
     template <size_t head, size_t... tail>
     struct Min {
       constexpr static size_t value{
@@ -141,11 +142,13 @@ namespace rascal {
     return internal::MinExtractor<ActiveDimensions>::value;
   }
 
-  //! Dynamic access to layer by cluster dimension (possibly not necessary)
-  template <size_t MaxOrder, size_t... Ints>
-  constexpr size_t get_layer(size_t index, std::index_sequence<Ints...>) {
+  // #BUG8486@(all) removed the MaxOrder template parameter, and the meaning
+  // of the access index was not clear, changed name to order
+  template <size_t... Ints>
+  constexpr size_t get_layer(const size_t order,
+                             const std::index_sequence<Ints...>) {
     constexpr size_t arr[]{Ints...};
-    return arr[index];
+    return arr[order - 1];
   }
 
   /**
@@ -209,8 +212,8 @@ namespace rascal {
      * direct constructor. Initialized with an array of atoms indices,
      * and a cluster reference data
      */
-    ClusterRefKey(AtomIndex_t atom_indices, IndexConstArray cluster_indices)
-        : Parent{Order, Layer}, atom_indices{atom_indices},
+    ClusterRefKey(AtomIndex_t atom_tag_list, IndexConstArray cluster_indices)
+        : Parent{Order, Layer}, atom_tag_list{atom_tag_list},
           cluster_indices{cluster_indices.data()} {}
 
     //! Copy constructor
@@ -228,15 +231,21 @@ namespace rascal {
     //! Move assignment operator
     ClusterRefKey & operator=(ClusterRefKey && other) = default;
 
-    //! returns the atom indices of the current cluster
-    const inline AtomIndex_t & get_atom_indices() const {
-      return this->atom_indices;
+    //! returns the atom tags of the current cluster
+    const inline AtomIndex_t & get_atom_tag_list() const {
+      return this->atom_tag_list;
     }
 
-    //! returns the first atom index in this cluster
-    const int & front() const { return this->atom_indices.front(); }
-    //! returns the last atom index in this cluster
-    const int & back() const { return this->atom_indices.back(); }
+    //! returns the first atom tag in this cluster
+    const int & front() const { return this->atom_tag_list.front(); }
+    //! returns the last atom tag in this cluster
+    const int & back() const { return this->atom_tag_list.back(); }
+    /* the internal cluster neighbour is the neighbour which was added as
+     * neighbour in the creation of this cluster
+     */
+    const int & get_internal_neighbour_atom_tag() const { return this->back(); }
+
+    const int & get_atom_tag() const { return this->back(); }
 
     //! returns the cluster's index, given a specific layer
     inline size_t get_cluster_index(const size_t layer) const {
@@ -256,11 +265,11 @@ namespace rascal {
 
    protected:
     /**
-     *  Array with unique atom indices. These can be user defined to refer to
+     *  Array with unique atom tags. These can be user defined to refer to
      *  the exact same atom, e.g. in a Monte-Carlo simulation, where atoms are
      *  swapped.
      */
-    AtomIndex_t atom_indices;
+    AtomIndex_t atom_tag_list;
     /**
      * Cluster indices by layer order, highest layer, means last adaptor, and
      * means last entry (.back())

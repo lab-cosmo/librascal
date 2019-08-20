@@ -145,7 +145,7 @@ namespace rascal {
         break;
       }
       case 2: {
-        return this->neighbours.size();
+        return this->neighbours_atom_tag.size();
         break;
       }
       default: {
@@ -162,7 +162,7 @@ namespace rascal {
       return this->manager->get_size_with_ghosts();
     }
 
-    //! returns position of the given atom index
+    //! returns position of the given atom tag
     inline Vector_ref get_position(const int & index) {
       return this->manager->get_position(index);
     }
@@ -175,8 +175,8 @@ namespace rascal {
     //! Returns the id of the index-th neighbour atom of a given cluster
     template <size_t Order, size_t Layer>
     inline int
-    get_cluster_neighbour(const ClusterRefKey<Order, Layer> & cluster,
-                          size_t index) const {
+    get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & cluster,
+                           size_t index) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles up to traits::MaxOrder");
 
@@ -185,17 +185,21 @@ namespace rascal {
           internal::IncreaseHelper<Order == (traits::MaxOrder - 1)>;
 
       if (Order < (traits::MaxOrder - 1)) {
-        return IncreaseHelper_t::get_cluster_neighbour(*this->manager, cluster,
-                                                       index);
+        return IncreaseHelper_t::get_neighbour_atom_tag(*this->manager, cluster,
+                                                        index);
       } else {
         auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
-        return this->neighbours[offset + index];
+        return this->neighbours_atom_tag[offset + index];
       }
     }
 
-    //! get atom_index of the index-th atom in manager
-    inline int get_cluster_neighbour(const Parent &, size_t index) const {
-      return this->manager->get_cluster_neighbour(*this->manager, index);
+    //! get atom_tag of the index-th atom in manager
+    inline int get_neighbour_atom_tag(const Parent &, size_t index) const {
+      return this->manager->get_neighbour_atom_tag(*this->manager, index);
+    }
+
+    size_t get_atom_index(const int atom_tag) const {
+      return this->manager->get_atom_index(atom_tag);
     }
 
     //! return atom type
@@ -208,14 +212,19 @@ namespace rascal {
       return this->manager->get_atom_type(atom.get_index());
     }
 
-    //! Returns atom type given an atom index
+    //! Returns atom type given an atom tag
     inline int & get_atom_type(const int & atom_id) {
       return this->manager->get_atom_type(atom_id);
     }
 
-    //! Returns a constant atom type given an atom index
+    //! Returns a constant atom type given an atom tag
     inline const int & get_atom_type(const int & atom_id) const {
       return this->manager->get_atom_type(atom_id);
+    }
+
+    //! check whether neighbours of ghosts were considered
+    inline bool get_consider_ghost_neighbours() const {
+      return this->manager->get_consider_ghost_neighbours();
     }
 
     /**
@@ -241,7 +250,7 @@ namespace rascal {
     //! Returns the number of neighbours of a given cluster
     template <size_t Order, size_t Layer>
     inline size_t
-    get_cluster_size(const ClusterRefKey<Order, Layer> & cluster) const {
+    get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
       /*
@@ -254,7 +263,7 @@ namespace rascal {
                     "this implementation handles only the respective MaxOrder");
 
       if (Order < (traits::MaxOrder - 1)) {
-        return this->manager->get_cluster_size(cluster);
+        return this->manager->get_cluster_size_impl(cluster);
       } else {
         auto access_index = cluster.get_cluster_index(Layer);
         return nb_neigh[access_index];
@@ -273,8 +282,8 @@ namespace rascal {
     //! Stores the number of neighbours for every atom after sorting
     std::vector<size_t> nb_neigh;
 
-    //! Stores all neighbours, i.e. atom indices in a list
-    std::vector<size_t> neighbours;
+    //! Stores all neighbours, i.e. atom tags in a list
+    std::vector<int> neighbours_atom_tag;
 
     /**
      * Stores the offsets for accessing `neighbours`; this is the entry point in
@@ -291,7 +300,8 @@ namespace rascal {
   template <class ManagerImplementation>
   AdaptorHalfList<ManagerImplementation>::AdaptorHalfList(
       std::shared_ptr<ManagerImplementation> manager)
-      : manager{std::move(manager)}, nb_neigh{}, neighbours{}, offsets{} {
+      : manager{std::move(manager)}, nb_neigh{},
+        neighbours_atom_tag{}, offsets{} {
     // this->manager->add_child(this->get_weak_ptr());
   }
 
@@ -300,11 +310,6 @@ namespace rascal {
   template <class ManagerImplementation>
   template <class... Args>
   void AdaptorHalfList<ManagerImplementation>::update(Args &&... arguments) {
-    // if sizeof...(arguments) == 0 then the underlying structure
-    // is not changed
-    if (sizeof...(arguments) > 0) {
-      this->set_update_status(false);
-    }
     this->manager->update(std::forward<Args>(arguments)...);
   }
 
@@ -323,7 +328,7 @@ namespace rascal {
     // filling it
     this->nb_neigh.resize(0);
     this->offsets.resize(0);
-    this->neighbours.resize(0);
+    this->neighbours_atom_tag.resize(0);
 
     // fill the list, at least pairs are mandatory for this to work
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
@@ -333,7 +338,7 @@ namespace rascal {
     // counter for total number of pairs (minimal list) for cluster_indices
     size_t pair_counter{0};
 
-    for (auto atom : *this->manager) {
+    for (auto atom : this->manager->with_ghosts()) {
       // Add new depth layer for atoms (see LayerByOrder for possible
       // optimisation).
       constexpr auto AtomLayer{
@@ -344,7 +349,7 @@ namespace rascal {
       indices(AtomLayer) = indices(AtomLayer - 1);
       atom_cluster_indices.push_back(indices);
 
-      auto index_i{atom.get_atom_index()};
+      auto index_i{atom.get_atom_tag()};
 
       // neighbours per atom counter to correct for offsets
       int nneigh{0};
@@ -353,13 +358,13 @@ namespace rascal {
         constexpr auto PairLayer{compute_cluster_layer<pair.order()>(
             typename traits::LayerByOrder{})};
 
-        auto index_j{pair.get_atom_index()};
+        auto index_j{pair.get_atom_tag()};
 
         // This is the actual check for the half neighbour list: only pairs with
         // higher index_j than index_i are used. It should in principle ensure a
         // minimal neighbour list.
         if (index_i < index_j) {
-          this->neighbours.push_back(index_j);
+          this->neighbours_atom_tag.push_back(index_j);
           nneigh++;
 
           // get underlying cluster indices to add at this layer

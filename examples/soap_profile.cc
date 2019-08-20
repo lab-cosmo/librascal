@@ -35,6 +35,7 @@
 #include "representations/representation_manager_soap.hh"
 #include "representations/feature_manager_dense.hh"
 #include "basic_types.hh"
+#include "atomic_structure.hh"
 
 #include <iostream>
 #include <basic_types.hh>
@@ -43,11 +44,12 @@
 #include <functional>
 #include <string>
 #include <initializer_list>
+#include <chrono>
 
 // using namespace std;
 using namespace rascal;  // NOLINT
 
-const int N_ITERATIONS = 10000;  // it's over 9000
+const int N_ITERATIONS = 500;
 
 using Representation_t = RepresentationManagerSOAP<
     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
@@ -56,21 +58,31 @@ int main(int argc, char * argv[]) {
   if (argc < 2) {
     std::cerr << "Must provide atomic structure json filename as argument";
     std::cerr << std::endl;
+    return -1;
   }
 
   // TODO(max) put these in a file so they can be varied systematically
   // maybe together with the filename and iteration count
   std::string filename{argv[1]};
-  json hypers{{"interaction_cutoff", 2.0},
-              {"cutoff_smooth_width", 0.0},
-              {"max_radial", 6},
-              {"max_angular", 6},
-              {"gaussian_sigma_type", "Constant"},
-              {"gaussian_sigma_constant", 0.2},
-              {"soap_type", "PowerSpectrum"}};
-  json structure{{"filename", filename}};
 
-  double cutoff{hypers["interaction_cutoff"]};
+  double cutoff{5.};
+  json hypers{{"max_radial", 8},
+              {"max_angular", 6},
+              {"soap_type", "PowerSpectrum"},
+              {"normalize", true},
+              {"compute_gradients", false}};
+
+  json fc_hypers{{"type", "Cosine"},
+                 {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
+                 {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}};
+  json sigma_hypers{{"type", "Constant"},
+                    {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}};
+
+  hypers["cutoff_function"] = fc_hypers;
+  hypers["gaussian_density"] = sigma_hypers;
+  hypers["radial_contribution"] = {{"type", "GTO"}};
+
+  json structure{{"filename", filename}};
   json adaptors;
   json ad1{{"name", "AdaptorNeighbourList"},
            {"initialization_arguments",
@@ -84,10 +96,44 @@ int main(int argc, char * argv[]) {
                                    AdaptorNeighbourList, AdaptorStrict>(
           structure, adaptors);
 
-  Representation_t representation{manager, hypers};
+  AtomicStructure<3> ast{};
+  ast.set_structure(filename);
 
+  std::cout << "structure filename: " << filename << std::endl;
+
+  std::chrono::duration<double> elapsed{};
+
+  auto start = std::chrono::high_resolution_clock::now();
   // This is the part that should get profiled
   for (size_t looper{0}; looper < N_ITERATIONS; looper++) {
-    representation.compute();
+    manager->update(ast);
   }
+  auto finish = std::chrono::high_resolution_clock::now();
+
+  elapsed = finish - start;
+  std::cout << "Neighbour List"
+            << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
+            << std::endl;
+
+  Representation_t representation_gradients{manager, hypers};
+  start = std::chrono::high_resolution_clock::now();
+  // This is the part that should get profiled
+  for (size_t looper{0}; looper < N_ITERATIONS; looper++) {
+    representation_gradients.compute();
+  }
+  finish = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> elapsed_grad{};
+  elapsed_grad = finish - start;
+  std::cout << "Compute representation with gradients"
+            << " elapsed: " << elapsed_grad.count() / N_ITERATIONS << " seconds"
+            << std::endl;
+  std::cout << "Ratio (with gradients / without gradients): "
+            << elapsed_grad.count() / elapsed.count() << std::endl;
+
+  auto soap2 = representation_gradients.get_representation_full();
+  std::cout << "Sample SOAP elements (should be identical) " << std::endl
+            << soap2(0, 0) << " " << soap2(0, 1) << " " << soap2(0, 2) << "\n"
+            << soap2(1, 0) << " " << soap2(1, 1) << " " << soap2(1, 2) << "\n"
+            << soap2(2, 0) << " " << soap2(2, 1) << " " << soap2(2, 2) << "\n";
+  // TODO(max) print out analogous gradient components, for now see soap_example
 }
