@@ -2,6 +2,7 @@
  * file   representation_manager_behler_parinello.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
+ * @author Markus Stricker <markus.stricker@epfl.ch>
  *
  * @date   13 Dec 2018
  *

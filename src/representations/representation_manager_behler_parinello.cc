@@ -2,6 +2,7 @@
  * file   representation_manager_behler_parinello.cc
  *
  * @author Till Junge <till.junge@epfl.ch>
+ * @author Markus Stricker <markus.stricker@epfl.ch>
  *
  * @date   13 Dec 2018
  *
@@ -24,4 +25,3 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
-
