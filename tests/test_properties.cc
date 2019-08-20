@@ -709,13 +709,13 @@ namespace rascal {
       : public MultipleStructureFixture<MultipleStructureManagerNLFixture> {
     using Parent = MultipleStructureFixture<MultipleStructureManagerNLFixture>;
     using ManagerTypeList_t = typename Parent::ManagerTypeHolder_t::type_list;
-
+    using Manager_t = typename Parent::ManagerTypeHolder_t::type;
     using Key_t = std::vector<int>;
     using BlockSparseProperty_t =
         BlockSparseProperty<double, Order, 0, Manager_t, Key_t>;
     using Dense_t = typename BlockSparseProperty_t::Dense_t;
     using InputData_t = typename BlockSparseProperty_t::InputData_t;
-    using test_data_t = std::vector<InputData_t>;
+    using TestData_t = std::vector<InputData_t>;
 
     constexpr static Dim_t DynSize() { return 3; }
 
@@ -730,8 +730,7 @@ namespace rascal {
       for (auto & manager : managers) {
         sparse_features.emplace_back(*manager, sparse_features_desc);
         this->keys_list.emplace_back();
-        test_data_t test_data{};
-        //for (auto atom : manager) { // NOTE(max) replaced since `atom` unused
+        TestData_t test_data{};
         for (size_t i{0}; i < manager->get_size(); ++i) {
           // set up random unique keys
           auto set_max_size{size_dist(gen)};
@@ -759,7 +758,7 @@ namespace rascal {
     int n_col{8};
 
     std::vector<std::vector<std::set<Key_t>>> keys_list{};
-    std::vector<test_data_t> test_datas{};
+    std::vector<TestData_t> test_datas{};
     std::vector<BlockSparseProperty_t> sparse_features{};
   };
 

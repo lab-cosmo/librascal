@@ -104,9 +104,7 @@ decltype(auto) bind_sparse_feature_manager(py::module & mod, py::module &) {
                                 py::return_value_policy::copy);
   feature.def_property_readonly("shape", &Feature_t::shape,
                                 py::return_value_policy::copy);
-  feature.def("get_feature_matrix", &Feature_t::get_feature_matrix_dense,
-              py::return_value_policy::reference_internal,
-              py::keep_alive<1, 0>());
+  feature.def("get_feature_matrix", &Feature_t::get_feature_matrix_dense);
   feature.def("dot", [](Feature_t & self, Feature_t & other) {
     return dot(self, other);
   });

@@ -122,11 +122,21 @@ endif()
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR
     CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
   set(LIBRASCAL_NAME "rascal-dbg")
+  set(WIGXJPF_NAME "wigxjpf-dbg")
 else()
   set(LIBRASCAL_NAME "rascal")
+  set(WIGXJPF_NAME "wigxjpfo")
 endif()
 
+# include_directories(SYSTEM
+#   ${CMAKE_SOURCE_DIR}/build/external/wigxjpf/inc
+#   ${CMAKE_SOURCE_DIR}/build/external/wigxjpf/cfg
+#   )
+
+add_external_package(wigxjpf VERSION 1.9 CONFIG)
+
 add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
+
 
 # Try to find optional cpp linter
 include(cpplint)
@@ -271,7 +281,8 @@ add_custom_command(OUTPUT copy_test_reference_data
         always_rebuild
   )
 
-# put it there to avoid warnings from boost tests
+# put it down here to avoid warnings from boost tests
+# DON'T UNCOMMENT, just fix your code
 add_compile_options(-Werror) # warnings are errors!
 
 # compile the library
