@@ -128,14 +128,13 @@ namespace rascal {
     StructureManager & structure;
     SpeciesManager<StructureManager> species;
 
-    // neural net topology
     //! uninque cutoff function used for all input nodes
     CutoffFuntype cutoff_fun{};
     //! set of all cutoff values for optimisation
     std::set<double> cutoffs{};
     //! number of hidden layers in the network
     /**
-     * Ths next part needs to go out into a kernel-like function
+     * The next part needs to go out into a kernel-like function
      */
     size_t nb_hidden_layers{Invalid};
     //! number of species represented by the network (some species might be
