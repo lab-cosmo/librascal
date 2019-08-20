@@ -134,7 +134,8 @@ namespace rascal {
     std::set<double> cutoffs{};
     //! number of hidden layers in the network
     /**
-     * The next part needs to go out into a kernel-like function
+     * The next part needs to go out into a kernel-like function which only
+     * deals with the neural network
      */
     size_t nb_hidden_layers{Invalid};
     //! number of species represented by the network (some species might be
