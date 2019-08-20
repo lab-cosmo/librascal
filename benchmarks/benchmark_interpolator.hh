@@ -9,6 +9,8 @@
 
 using namespace rascal::math;
 
+// TODO(alex) naming to BFixture to prevent collision
+
 namespace rascal {
   namespace internal {
   int SEED = 1597463007; //0x5f3759df
@@ -189,7 +191,7 @@ namespace rascal {
       double new_x2 = std::get<1>(range);
       int new_log_error_bound = this->template lookup<int>(data, "log_error_bounds", state);
       auto new_func_name = this->template lookup<SupportedFunc>(data, "func_names", state);
-      return (new_x1 != this->x1 || new_x2 != this->x2 || new_log_error_bound != this->log_error_bound || new_func_name != this->func_name);      
+      return (new_x1 != this->x1 || new_x2 != this->x2 || new_log_error_bound != this->log_error_bound || new_func_name != this->func_name);
     }
 
     void init_interpolator(const ::benchmark::State& state, const json & data) {
@@ -221,6 +223,7 @@ namespace rascal {
         case SupportedFunc::Gaussian:
           this->func = [](double x) {return std::exp(-std::pow((x-1)/0.5,2)/2);};
           break;
+        // TODO(alex) remove these two
         case SupportedFunc::TwoGaussians:
           this->func = [](double x) {return (std::exp(-std::pow((x-1)/0.5,2)/2) + std::exp(-std::pow((x-3)/0.5,2)/2))/2;};
           break;
@@ -265,7 +268,6 @@ namespace rascal {
       this->nb_iterations = this->template lookup<size_t>(data, "nbs_iterations", state);
       this->initialized = true;
     }
-
 
     Interpolator_t intp;  
     std::function<math::Matrix_t(double)> func;
@@ -338,11 +340,145 @@ namespace rascal {
 
     void init_function(const ::benchmark::State& state, const json & data) {
       switch(this->func_name) {
+        // This case uses the RadialContribution class as comparisment and can therefore directly be computed for different distances
         case SupportedVecFunc::RadialContribution:
          this->init_radial_contribution_function(state, data);
          break;
       }
     }
   };
+
+//  // This class uses the RepresentationManager class as basis to call the RadialContribution. Therefore benchmarks for different atomic structures can be done.
+//  template<class Dataset>
+//  class RepresentationManagerBFixture : public InterpolatorFixture<Dataset> {
+//
+//    using Representation_t = RepresentationManagerSphericalExpansion<
+//        AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
+//    using Manager_t = 
+//
+//    InterpolatorRepresentationManagerFixture<Dataset>() : Parent() {}
+//
+//    Manager_t manager{};
+//    Representation_t representation{};
+//    void init_repr_calc_function(const ::benchmark::State& state, const json & data) {
+//      this->max_radial = this->template lookup<int>(data, "max_radial", state);
+//      int max_angular{this->max_radial};
+//      // TODO(alex) put these two into the data class
+//      std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+//      double cutoff{8.};      
+//      // make structure manager
+//      json hypers{{"max_radial", this->max_radial},
+//                  {"max_angular", max_angular},
+//                  {"soap_type", "PowerSpectrum"},
+//                  {"normalize", true},
+//                  {"compute_gradients", true}};
+//
+//      json fc_hypers{{"type", "Cosine"},
+//                     {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
+//                     {"smooth_width", {{"value", 0.}, {"unit", "AA"}}}};
+//      json sigma_hypers{{"type", "Constant"},
+//                        {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}};
+//
+//      hypers["cutoff_function"] = fc_hypers;
+//      hypers["gaussian_density"] = sigma_hypers;
+//
+//      hypers["radial_contribution"] = {{"type", "GTO"}};
+//
+//      json structure{};
+//      json adaptors;
+//      json ad1{{"name", "AdaptorNeighbourList"},
+//               {"initialization_arguments",
+//                {{"cutoff", cutoff}, {"consider_ghost_neighbours", false}}}};
+//      json ad2{{"name", "AdaptorStrict"},
+//               {"initialization_arguments", {{"cutoff", cutoff}}}};
+//      adaptors.emplace_back(ad1);
+//      adaptors.emplace_back(ad2);
+//
+//      AtomicStructure<3> atomic_structure{};
+//      atomic_structure.set_structure(filename);
+//      this->manager =
+//          make_structure_manager_stack<StructureManagerCenters,
+//                                       AdaptorNeighbourList, AdaptorStrict>(
+//          structure, adaptors);
+//      // make representation manager
+//      this->representation = Representation_t(manager, hypers);
+//    }
+//  };
+//  
+//
+//  // abstract class for all fixtures using the interpolator
+//  template<class Dataset>
+//  class InterpolatorInterfaceBF : public BaseFixture<Dataset> {
+//   public:
+//    using Parent = BaseFixture<Dataset>;
+//    using SupportedFunc = typename Dataset::SupportedFunc;
+//    using Interpolator_t = Interpolator<
+//      InterpolationMethod<InterpolationMethod_t::CubicSpline>,
+//      GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
+//      SearchMethod<SearchMethod_t::Uniform>
+//        >;
+//    
+//    // Could be moved to base class with virtual classes and shared by vectorized and scalar
+//    void SetUp(const ::benchmark::State& state) {
+//      const json data = Dataset::data();
+//      // Because in the two initialization processes share parameters of the json string, therefore we check the change of parameters before anything is initialized
+//      bool interpolator_parameters_changed{this->have_interpolator_parameters_changed(state, data)};
+//      bool ref_points_parameters_changed{this->have_ref_points_parameters_changed(state, data)};
+//
+//      if (not(this->initialized) || interpolator_parameters_changed) {
+//        this->init_interpolator(state, data);
+//      }
+//      if (not(this->initialized) || ref_points_parameters_changed) {
+//        this->init_ref_points(state, data);      
+//      }
+//      this->nb_iterations = this->template lookup<size_t>(data, "nbs_iterations", state);
+//      this->initialized = true;
+//    }
+//    
+//    bool initialized{false};
+//    Interpolator_t intp;  
+//    double x1{0};
+//    double x2{0};
+//    int log_error_bound{0};
+//    double error_bound{0};
+//    size_t nb_iterations{0};
+//    bool random{true};
+//    const int nb_ref_points = 100000;
+//    math::Vector_t ref_points{Vector_t::Zero(nb_ref_points)};
+//
+//
+//    //SupportedFunc func_name{SupportedFunc::Identity};
+//    //std::function<double(double)> func{};
+//
+//   protected:
+//    // could be moved to a base class
+//    bool have_ref_points_parameters_changed(const ::benchmark::State& state, const json & data) const {
+//      bool new_random = this->template lookup<bool>(data, "random", state); 
+//      auto range = this->template lookup<std::pair<double,double>>(data, "ranges", state); 
+//      double new_x1 = std::get<0>(range);
+//      double new_x2 = std::get<1>(range);
+//      return (new_random != this->random || new_x1 != this->x1 || new_x2 != this->x2);
+//    }
+//
+//    // initialize the ref points 
+//    void init_ref_points(const ::benchmark::State& state, const json & data) { 
+//      auto range = this->template lookup<std::pair<double,double>>(data, "ranges", state); 
+//      this->x1 = std::get<0>(range);
+//      this->x2 = std::get<1>(range);
+//      this->random = this->template lookup<bool>(data, "random", state); 
+//      if (this->random) {
+//        srand(SEED);
+//        math::Vector_t points_tmp  = math::Vector_t::LinSpaced(this->nb_ref_points, this->x1,this->x2);
+//        this->ref_points = math::Vector_t::Zero(this->nb_ref_points);
+//        for (int i{0};i<this->ref_points.size();i++) {
+//          this->ref_points(i) = points_tmp(rand() % this->nb_ref_points);
+//        }
+//      } else {
+//        this->ref_points = math::Vector_t::LinSpaced(this->nb_ref_points,this->x1,this->x2);
+//      }
+//    }
+//    virtual bool have_interpolator_parameters_changed(const ::benchmark::State& state, const json & data) const = 0;
+//    virtual void init_interpolator(const ::benchmark::State& state, const json & data) = 0;
+//    };
   }
 }

@@ -25,8 +25,6 @@ namespace rascal {
       for (auto _ : state) {
         for (size_t i{0}; i<fix.nb_iterations;i++) {
           benchmark::DoNotOptimize( fix.func(fix.ref_points(i % fix.nb_ref_points)) );
-          // with Matrix_t the results do not agree with the chrono timed in example_interpolator.cc
-          //Matrix_t tmp = fix.func(fix.ref_points(i % fix.nb_ref_points));
         }
       }
       state.SetComplexityN(fix.nb_iterations);
@@ -44,7 +42,6 @@ namespace rascal {
       for (auto _ : state) {
         for (size_t i{0}; i<fix.nb_iterations;i++) {
           benchmark::DoNotOptimize( fix.intp.interpolate(fix.ref_points(i % fix.ref_points.size())) );
-          //Matrix_t tmp = fix.intp.interpolate(fix.ref_points(i % fix.ref_points.size())) ;
         }
       }
       state.SetComplexityN(fix.nb_iterations);
@@ -54,7 +51,7 @@ namespace rascal {
           {"nb_iterations",fix.nb_iterations},
           {"max_radial", fix.max_radial},
           {"log(error_bound)", fix.log_error_bound},
-          {"log(max_error)", std::log10(fix.intp.max_error)},
+          {"log(max_grid_error)", std::log10(fix.intp.max_grid_error)},
           {"grid_size", fix.intp.grid.size()},
         });
     }
@@ -108,8 +105,8 @@ namespace rascal {
         {"x1",fix.x1},
         {"x2",fix.x2},
         {"log(error_bound)", fix.log_error_bound},
-        {"log(mean_error)",std::log10(fix.intp.mean_error)},
-        {"log(max_error)",std::log10(fix.intp.max_error)},
+        {"log(mean_grid_error)",std::log10(fix.intp.mean_grid_error)},
+        {"log(max_grid_error)",std::log10(fix.intp.max_grid_error)},
         {"nb_iterations",fix.nb_iterations},
         {"grid_size",fix.intp.grid.size()}
       });
@@ -130,8 +127,8 @@ namespace rascal {
         {"x1",fix.x1},
         {"x2",fix.x2},
         {"log(error_bound)", fix.log_error_bound},
-        {"log(mean_error)",std::log10(fix.intp.mean_error)},
-        {"log(max_error)",std::log10(fix.intp.max_error)},
+        {"log(mean_grid_error)",std::log10(fix.intp.mean_grid_error)},
+        {"log(max_grid_error)",std::log10(fix.intp.max_grid_error)},
         {"nb_iterations",fix.nb_iterations},
         {"grid_size",fix.intp.grid.size()}
       });
@@ -154,8 +151,8 @@ namespace rascal {
         {"x1",fix.x1},
         {"x2",fix.x2},
         {"log(error_bound)", fix.log_error_bound},
-        {"log(mean_error)",std::log10(fix.intp.mean_error)},
-        {"log(max_error)",std::log10(fix.intp.max_error)},
+        {"log(mean_grid_error)",std::log10(fix.intp.mean_grid_error)},
+        {"log(max_grid_error)",std::log10(fix.intp.max_grid_error)},
         {"nb_iterations",fix.nb_iterations},
         {"grid_size",fix.intp.grid.size()}
       });

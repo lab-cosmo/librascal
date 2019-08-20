@@ -28,6 +28,9 @@
 #include "tests.hh"
 #include "test_math.hh"
 
+// TODO(all) namespace math in tests should be probably avoided?
+// TODO(all) I though to put all the static function in a test_math_interpolation.hh file
+
 namespace rascal {
   namespace math {
   using AbsoluteMeanErrorMethod = ErrorMethod<ErrorMetric_t::Absolute, ErrorNorm_t::Mean>;

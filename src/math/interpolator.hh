@@ -320,7 +320,7 @@ namespace rascal {
         int n{static_cast<int>(yv.rows())};
         Matrix_t y2 = Matrix_t::Zero(n,yv.cols());
         Matrix_t u = Matrix_t::Zero(n,yv.cols());
-        const double sig=0; //wtf is more accurate than the correct value 0.5 TODO(alex)
+        const double sig=0; //wtf this is more accurate than the correct value 0.5 TODO(alex)
         Vector_t p = Vector_t::Zero(n);
         y2.row(0) = Vector_t::Zero(yv.cols());
         u.row(0) = Vector_t::Zero(yv.cols());
@@ -467,13 +467,13 @@ namespace rascal {
     template <SearchMethod_t Method>
     struct SearchMethod{};
 
-    // TODO(alex) assert that it only can be used with Uniform grids
     template <>
     struct SearchMethod<SearchMethod_t::Uniform> {
 
       constexpr static SearchMethod_t Method { SearchMethod_t::Uniform };
 
       void initialize(const Vector_Ref & grid){
+        // nb_grid_points/unit
         this->nb_grid_points_per_unit = grid.size()/(grid(grid.size()-1)-grid(0));
         this->x1 = grid(0);
         this->grid_size = grid.size();
@@ -482,13 +482,6 @@ namespace rascal {
 
       // If the requests to locate seem correlated, then the heuristic is used
       int search(double x, const Vector_Ref &) {
-        // TODO(alex) make this work for general grids
-        // nb_grid_points/unit
-        //TODO(alex) save this
-        // for heap_based this is less costly
-        // (x-grid(0)) * nb_grid_points_per_unit >> 1
-        //int raw_index = static_cast<int>(std::floor((x-grid(0)) * nb_grid_points_per_unit)-1);
-        // if x1 is zero and x2-x1 = 2**n then we could save some computation time
         return std::max(0,std::min(this->search_size, static_cast<int>((x-this->x1) * this->nb_grid_points_per_unit)-1));
 
       }
@@ -667,8 +660,7 @@ namespace rascal {
       double x1{0};
       double x2{1};
       double error_bound{1e-5};
-      // TODO(alex) rename to grid errror
-      double error{0};
+      double grid_error{0};
 
       // If the first derivative of the function at the boundary points is known, one can initialize the interpolator with these values to obtain a higher accuracy with the interpolation method.
       double clamped_boundary_conditions{false}; 
@@ -772,16 +764,15 @@ namespace rascal {
       Vector_t grid{};
       // evaluated by the function to interpolate
       Vector_t evaluated_grid{}; 
-      double mean_error{0.};
-      double max_error{0.};
+      double mean_grid_error{0.};
+      double max_grid_error{0.};
       bool is_benchmarked{false};
 
      private:
       // Should be called after the parameters have been correctly initialized.
-      // TODO(alex) rename fineness to grid_fineness
       void initialize() {
         this->compute_grid_error();
-        while (this->error > this->error_bound && this->grid.size() < this->max_grid_points) {
+        while (this->grid_error > this->error_bound && this->grid.size() < this->max_grid_points) {
           this->fineness++;
           this->compute_grid_error();
         }
@@ -807,19 +798,19 @@ namespace rascal {
         Vector_t test_grid_evaluated{this->eval(test_grid)}; 
         Vector_t error_grid{this->error_method.compute_entrywise_error(Vector_Ref(test_grid_interpolated), Vector_Ref(test_grid_evaluated))};
         this->grid_rational.update_errors(Vector_Ref(error_grid));
-        this->error = this->error_method.compute_global_error(Vector_Ref(error_grid));
+        this->grid_error = this->error_method.compute_global_error(Vector_Ref(error_grid));
         //if (this->grid.size() % 1==0) {
         //  std::cout << "grid_size=" << this->grid.size() << std::endl;
-        //  std::cout << "mean_error=" << this->mean_error << std::endl;
-        //  std::cout << "max error=" << this->max_error << std::endl;
+        //  std::cout << "mean_grid_error=" << this->mean_grid_error << std::endl;
+        //  std::cout << "max error=" << this->max_grid_error << std::endl;
         //  std::cout << "error_grid=" << error_grid.head(3) << std::endl;
         //  std::cout << "test_grid_eval=" << test_grid_evaluated.head(3) << std::endl;
         //  std::cout << "test_grid_intp=" << test_grid_interpolated.head(3) << std::endl;
         //}
         //if (grid_rational.grid_size % 50 == 0) {
         //  std::cout << "fineness=" << this->fineness << std::endl;
-        //  std::cout << "mean error=" << this->mean_error << std::endl;
-        //  std::cout << "max error=" << this->max_error << std::endl;
+        //  std::cout << "mean error=" << this->mean_grid_error << std::endl;
+        //  std::cout << "max error=" << this->max_grid_error << std::endl;
         //}
       }
 
@@ -828,8 +819,8 @@ namespace rascal {
         Vector_t test_grid_interpolated{this->interpolate(test_grid)};
         Vector_t test_grid_evaluated{this->eval(test_grid)}; 
         Vector_t error_grid{this->error_method.compute_entrywise_error(Vector_Ref(test_grid_interpolated), Vector_Ref(test_grid_evaluated))};
-        this->max_error = error_grid.maxCoeff();
-        this->mean_error = error_grid.mean();
+        this->max_grid_error = error_grid.maxCoeff();
+        this->mean_grid_error = error_grid.mean();
       }
 
     };
@@ -937,14 +928,14 @@ namespace rascal {
       // Sets if additional parameter are calculated for benchmark purposes
       bool is_benchmarked{false};
       // the max error of all entries
-      double max_error{0.};
+      double max_grid_error{0.};
       // the mean error of all entries
-      double mean_error{0.};
+      double mean_grid_error{0.};
 
      private:
       void initialize() {
         this->compute_grid_error();
-        while (this->error > this->error_bound && this->grid.size() < this->max_grid_points) {
+        while (this->grid_error > this->error_bound && this->grid.size() < this->max_grid_points) {
           this->fineness++;
           this->compute_grid_error();
         }
@@ -965,11 +956,12 @@ namespace rascal {
         // (grid_size, row*col)
         Matrix_t test_grid_interpolated{this->interpolate_raw(test_grid)};
         Matrix_t test_grid_evaluated{this->eval(test_grid)};
-        this->error = this->error_method.compute_global_error(Matrix_Ref(test_grid_interpolated), Matrix_Ref(test_grid_evaluated));
+        this->grid_error = this->error_method.compute_global_error(Matrix_Ref(test_grid_interpolated), Matrix_Ref(test_grid_evaluated));
+        // TODO(alex) remove when benchmark finished
         //if (this->grid.size() % 1==0) {
         //  std::cout << "grid_size=" << this->grid.size() << std::endl;
-        //  std::cout << "mean_error=" << this->mean_error << std::endl;
-        //  std::cout << "max error=" << this->max_error << std::endl;
+        //  std::cout << "mean_grid_error=" << this->mean_grid_error << std::endl;
+        //  std::cout << "max error=" << this->max_grid_error << std::endl;
         //  //std::cout << "max error at=" << maxRow << maxCol << std::endl;
         //  std::cout << "error_mat=" << error_mat.col(0).head(3).transpose() << std::endl;
         //  std::cout << "test_grid_eval=" << test_grid_evaluated.col(0).head(3).transpose() << std::endl;
@@ -978,8 +970,8 @@ namespace rascal {
         //}
         //if (grid_rational.grid_size % 50 == 0) {
         //  std::cout << "fineness=" << this->fineness << std::endl;
-        //  std::cout << "mean error=" << this->mean_error << std::endl;
-        //  std::cout << "max error=" << this->max_error << std::endl;
+        //  std::cout << "mean error=" << this->mean_grid_error << std::endl;
+        //  std::cout << "max error=" << this->max_grid_error << std::endl;
         //}
       }
 
@@ -990,8 +982,8 @@ namespace rascal {
         Matrix_t test_grid_interpolated{this->interpolate_raw(test_grid)};
         Matrix_t test_grid_evaluated{this->eval(test_grid)};
         Matrix_t error_mat = this->error_method.compute_entrywise_error(Matrix_Ref(test_grid_interpolated), Matrix_Ref(test_grid_evaluated));
-        this->max_error = error_mat.maxCoeff();
-        this->mean_error = error_mat.mean();
+        this->max_grid_error = error_mat.maxCoeff();
+        this->mean_grid_error = error_mat.mean();
       }
 
     };
