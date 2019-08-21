@@ -2,6 +2,11 @@
 #include <map>
 #include <iostream>
 
+#include "structure_managers/structure_manager_centers.hh"
+#include "structure_managers/adaptor_strict.hh"
+#include "structure_managers/adaptor_neighbour_list.hh"
+#include "structure_managers/make_structure_manager.hh"
+
 #include "math/interpolator.hh"
 #include "benchmarks.hh"  
 #include "representations/representation_manager_spherical_expansion.hh"
@@ -9,7 +14,7 @@
 
 using namespace rascal::math;
 
-// TODO(alex) naming to BFixture to prevent collision
+// TODO(all) naming to BFixture to prevent collision with tests ok?
 
 namespace rascal {
   namespace internal {
@@ -17,22 +22,36 @@ namespace rascal {
 
   class BaseInterpolatorDataset  {
    public:
-    // TODO(alex) better naming
     enum class SupportedFunc {
       Identity,
       Gaussian,
-      TwoGaussians, // TODO(alex) better naming
-      SinLikeGaussian, // TODO(alex) better naming
-      Hyp1f1, 
+      Hyp1f1
     };
     enum class SupportedVecFunc {
       RadialContribution
     };
   };
 
-  /* To make the data available in an Argument function we create a static class with all the data. To avoid separate declaration and definitions for static member variables we use functions. This explained more in detail in https://stackoverflow.com/a/17057121/10329403 .
-   */
-
+  // TODO(alex) move this to tutorial
+  // Static const functions because json type cannot be static const. See https://stackoverflow.com/a/17057121/10329403
+  
+  class SphericalExpansionDataset : public BaseInterpolatorDataset {
+    public:
+     using SupportedFunc = typename BaseInterpolatorDataset::SupportedFunc;
+     static const json data() {
+       return {
+         //{"nbs_iterations", {1e3,1e4,1e5,1e6}},
+         {"nbs_iterations", {1e3}},
+         {"ranges", {std::make_pair(0,16)}}, // dummy
+         {"log_error_bounds", {-8}},
+         {"func_names", {SupportedVecFunc::RadialContribution}}, // dummy
+         {"max_radial", {3,6,9}},
+         {"random", {true}}, // dummy
+         {"filenames", {"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"}},
+         {"cutoffs", {16}}
+         };
+     }
+  };
 
   class RadConDataset : public BaseInterpolatorDataset {
     public:
@@ -113,20 +132,15 @@ namespace rascal {
      }
   };
 
+  // TODO(alex) make abstract class which follows general pattern in tutorial
 
+  // abstract class for all fixtures using the interpolator
   template<class Dataset>
-  class InterpolatorFixture : public BaseFixture<Dataset> {
+  class InterpolatorBFixture : public BaseFixture<Dataset> {
    public:
     using Parent = BaseFixture<Dataset>;
     using SupportedFunc = typename Dataset::SupportedFunc;
-    using Interpolator_t = Interpolator<
-      InterpolationMethod<InterpolationMethod_t::CubicSpline>,
-      GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
-      SearchMethod<SearchMethod_t::Uniform>
-        >;
     
-    InterpolatorFixture <Dataset>() : Parent() {}
-
     // Could be moved to base class with virtual classes and shared by vectorized and scalar
     void SetUp(const ::benchmark::State& state) {
       const json data = Dataset::data();
@@ -145,17 +159,17 @@ namespace rascal {
     }
     
     bool initialized{false};
-    Interpolator_t intp;  
     double x1{0};
     double x2{0};
     int log_error_bound{0};
     double error_bound{0};
-    SupportedFunc func_name{SupportedFunc::Identity};
-    std::function<double(double)> func{};
     size_t nb_iterations{0};
     bool random{true};
     const int nb_ref_points = 100000;
     math::Vector_t ref_points{Vector_t::Zero(nb_ref_points)};
+
+    //SupportedFunc func_name{SupportedFunc::Identity};
+    //std::function<double(double)> func{};
 
    protected:
     // could be moved to a base class
@@ -184,8 +198,29 @@ namespace rascal {
         this->ref_points = math::Vector_t::LinSpaced(this->nb_ref_points,this->x1,this->x2);
       }
     }
+    virtual bool have_interpolator_parameters_changed(const ::benchmark::State& state, const json & data) const = 0;
+    virtual void init_interpolator(const ::benchmark::State& state, const json & data) = 0;
+  };
 
-    bool have_interpolator_parameters_changed(const ::benchmark::State& state, const json & data) const {
+  template<class Dataset>
+  class InterpolatorScalarFixture : public InterpolatorBFixture<Dataset> {
+   public:
+    using Parent = InterpolatorBFixture<Dataset>;
+    using SupportedFunc = typename Dataset::SupportedFunc;
+    using Interpolator_t = Interpolator<
+      InterpolationMethod<InterpolationMethod_t::CubicSpline>,
+      GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
+      SearchMethod<SearchMethod_t::Uniform>
+        >;
+    
+    InterpolatorScalarFixture<Dataset>() : Parent() {}
+
+    Interpolator_t intp;  
+    SupportedFunc func_name{SupportedFunc::Identity};
+    std::function<double(double)> func{};
+
+   protected:
+    bool have_interpolator_parameters_changed(const ::benchmark::State& state, const json & data) const override {
       auto range = this->template lookup<std::pair<double,double>>(data, "ranges", state); 
       double new_x1 = std::get<0>(range);
       double new_x2 = std::get<1>(range);
@@ -194,7 +229,7 @@ namespace rascal {
       return (new_x1 != this->x1 || new_x2 != this->x2 || new_log_error_bound != this->log_error_bound || new_func_name != this->func_name);
     }
 
-    void init_interpolator(const ::benchmark::State& state, const json & data) {
+    void init_interpolator(const ::benchmark::State& state, const json & data) override {
       auto range = this->template lookup<std::pair<double,double>>(data, "ranges", state); 
       this->x1 = std::get<0>(range);
       this->x2 = std::get<1>(range);
@@ -223,13 +258,6 @@ namespace rascal {
         case SupportedFunc::Gaussian:
           this->func = [](double x) {return std::exp(-std::pow((x-1)/0.5,2)/2);};
           break;
-        // TODO(alex) remove these two
-        case SupportedFunc::TwoGaussians:
-          this->func = [](double x) {return (std::exp(-std::pow((x-1)/0.5,2)/2) + std::exp(-std::pow((x-3)/0.5,2)/2))/2;};
-          break;
-        case SupportedFunc::SinLikeGaussian:
-          this->func = [](double x) {return (std::exp(-std::pow((x-1)/0.5,2)/2) - std::exp(-std::pow((x-3)/0.5,2)/2))/2;};
-          break;
         case SupportedFunc::Hyp1f1:
           this->init_hyp1f1_function();
           break;
@@ -241,33 +269,15 @@ namespace rascal {
   };
 
   template<class Dataset>
-  class InterpolatorVectorizedFixture : public InterpolatorFixture<Dataset> {
+  class InterpolatorVectorizedFixture : public InterpolatorBFixture<Dataset> {
    public:
-    using Parent = InterpolatorFixture<Dataset>;
+    using Parent = InterpolatorBFixture<Dataset>;
     using SupportedVecFunc = typename Dataset::SupportedVecFunc;
     using Interpolator_t = InterpolatorVectorized<
       InterpolationMethod<InterpolationMethod_t::CubicSplineVectorized>,
       GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
       SearchMethod<SearchMethod_t::Uniform>
         >;
-
-    InterpolatorVectorizedFixture<Dataset>() : Parent() {}
-
-    void SetUp(const ::benchmark::State& state) {
-      const json data = Dataset::data();
-      // Because in the two initialization processes share parameters of the json string, therefore we check the change of parameters before anything is initialized
-      bool interpolator_parameters_changed{this->have_interpolator_parameters_changed(state, data)};
-      bool ref_points_parameters_changed{this->have_ref_points_parameters_changed(state, data)};
-
-      if (not(this->initialized) || interpolator_parameters_changed) {
-        this->init_interpolator(state, data);
-      }
-      if (not(this->initialized) || ref_points_parameters_changed) {
-        this->init_ref_points(state, data);      
-      }
-      this->nb_iterations = this->template lookup<size_t>(data, "nbs_iterations", state);
-      this->initialized = true;
-    }
 
     Interpolator_t intp;  
     std::function<math::Matrix_t(double)> func;
@@ -276,40 +286,24 @@ namespace rascal {
     RadialContribution<RadialBasisType::GTO> radial_contr;
 
    protected:
-    bool have_ref_points_parameters_changed(const ::benchmark::State& state, const json & data) const {
-      bool new_random = this->template lookup<bool>(data, "random", state); 
+
+    bool have_scalar_interpolator_parameters_changed(const ::benchmark::State& state, const json & data) const  {
       auto range = this->template lookup<std::pair<double,double>>(data, "ranges", state); 
       double new_x1 = std::get<0>(range);
       double new_x2 = std::get<1>(range);
-      return (new_random != this->random || new_x1 != this->x1 || new_x2 != this->x2);
+      int new_log_error_bound = this->template lookup<int>(data, "log_error_bounds", state);
+      auto new_func_name = this->template lookup<SupportedVecFunc>(data, "func_names", state);
+      return (new_x1 != this->x1 || new_x2 != this->x2 || new_log_error_bound != this->log_error_bound || new_func_name != this->func_name);
     }
 
-    // initialize the ref points 
-    void init_ref_points(const ::benchmark::State& state, const json & data) { 
-      auto range = this->template lookup<std::pair<double,double>>(data, "ranges", state); 
-      this->x1 = std::get<0>(range);
-      this->x2 = std::get<1>(range);
-      this->random = this->template lookup<bool>(data, "random", state); 
-      if (this->random) {
-        srand(SEED);
-        math::Vector_t points_tmp  = math::Vector_t::LinSpaced(this->nb_ref_points, this->x1,this->x2);
-        this->ref_points = math::Vector_t::Zero(this->nb_ref_points);
-        for (int i{0};i<this->ref_points.size();i++) {
-          this->ref_points(i) = points_tmp(rand() % this->nb_ref_points);
-        }
-      } else {
-        this->ref_points = math::Vector_t::LinSpaced(this->nb_ref_points,this->x1,this->x2);
-      }
-    }
+    bool have_interpolator_parameters_changed(const ::benchmark::State& state, const json & data) const override {
+      bool have_scalar_parameters_changed{this->have_scalar_interpolator_parameters_changed(state, data)}; 
 
-    bool have_interpolator_parameters_changed(const ::benchmark::State& state, const json & data) const {
-      bool have_scalar_parameters_changed{Parent::have_interpolator_parameters_changed(state, data)};    
       int new_max_radial = this->template lookup<int>(data, "max_radial", state);
       return (have_scalar_parameters_changed || new_max_radial != this->max_radial); 
-
     }
 
-    void init_interpolator(const ::benchmark::State& state, const json & data) {
+    void init_interpolator(const ::benchmark::State& state, const json & data) override {
       auto range = this->template lookup<std::pair<double,double>>(data, "ranges", state); 
       this->x1 = std::get<0>(range);
       this->x2 = std::get<1>(range);
@@ -348,137 +342,106 @@ namespace rascal {
     }
   };
 
-//  // This class uses the RepresentationManager class as basis to call the RadialContribution. Therefore benchmarks for different atomic structures can be done.
-//  template<class Dataset>
-//  class RepresentationManagerBFixture : public InterpolatorFixture<Dataset> {
-//
-//    using Representation_t = RepresentationManagerSphericalExpansion<
-//        AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
-//    using Manager_t = 
-//
-//    InterpolatorRepresentationManagerFixture<Dataset>() : Parent() {}
-//
-//    Manager_t manager{};
-//    Representation_t representation{};
-//    void init_repr_calc_function(const ::benchmark::State& state, const json & data) {
-//      this->max_radial = this->template lookup<int>(data, "max_radial", state);
-//      int max_angular{this->max_radial};
-//      // TODO(alex) put these two into the data class
-//      std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
-//      double cutoff{8.};      
-//      // make structure manager
-//      json hypers{{"max_radial", this->max_radial},
-//                  {"max_angular", max_angular},
-//                  {"soap_type", "PowerSpectrum"},
-//                  {"normalize", true},
-//                  {"compute_gradients", true}};
-//
-//      json fc_hypers{{"type", "Cosine"},
-//                     {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
-//                     {"smooth_width", {{"value", 0.}, {"unit", "AA"}}}};
-//      json sigma_hypers{{"type", "Constant"},
-//                        {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}};
-//
-//      hypers["cutoff_function"] = fc_hypers;
-//      hypers["gaussian_density"] = sigma_hypers;
-//
-//      hypers["radial_contribution"] = {{"type", "GTO"}};
-//
-//      json structure{};
-//      json adaptors;
-//      json ad1{{"name", "AdaptorNeighbourList"},
-//               {"initialization_arguments",
-//                {{"cutoff", cutoff}, {"consider_ghost_neighbours", false}}}};
-//      json ad2{{"name", "AdaptorStrict"},
-//               {"initialization_arguments", {{"cutoff", cutoff}}}};
-//      adaptors.emplace_back(ad1);
-//      adaptors.emplace_back(ad2);
-//
-//      AtomicStructure<3> atomic_structure{};
-//      atomic_structure.set_structure(filename);
-//      this->manager =
-//          make_structure_manager_stack<StructureManagerCenters,
-//                                       AdaptorNeighbourList, AdaptorStrict>(
-//          structure, adaptors);
-//      // make representation manager
-//      this->representation = Representation_t(manager, hypers);
-//    }
-//  };
-//  
-//
-//  // abstract class for all fixtures using the interpolator
-//  template<class Dataset>
-//  class InterpolatorInterfaceBF : public BaseFixture<Dataset> {
-//   public:
-//    using Parent = BaseFixture<Dataset>;
-//    using SupportedFunc = typename Dataset::SupportedFunc;
-//    using Interpolator_t = Interpolator<
-//      InterpolationMethod<InterpolationMethod_t::CubicSpline>,
-//      GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
-//      SearchMethod<SearchMethod_t::Uniform>
-//        >;
-//    
-//    // Could be moved to base class with virtual classes and shared by vectorized and scalar
-//    void SetUp(const ::benchmark::State& state) {
-//      const json data = Dataset::data();
-//      // Because in the two initialization processes share parameters of the json string, therefore we check the change of parameters before anything is initialized
-//      bool interpolator_parameters_changed{this->have_interpolator_parameters_changed(state, data)};
-//      bool ref_points_parameters_changed{this->have_ref_points_parameters_changed(state, data)};
-//
-//      if (not(this->initialized) || interpolator_parameters_changed) {
-//        this->init_interpolator(state, data);
-//      }
-//      if (not(this->initialized) || ref_points_parameters_changed) {
-//        this->init_ref_points(state, data);      
-//      }
-//      this->nb_iterations = this->template lookup<size_t>(data, "nbs_iterations", state);
-//      this->initialized = true;
-//    }
-//    
-//    bool initialized{false};
-//    Interpolator_t intp;  
-//    double x1{0};
-//    double x2{0};
-//    int log_error_bound{0};
-//    double error_bound{0};
-//    size_t nb_iterations{0};
-//    bool random{true};
-//    const int nb_ref_points = 100000;
-//    math::Vector_t ref_points{Vector_t::Zero(nb_ref_points)};
-//
-//
-//    //SupportedFunc func_name{SupportedFunc::Identity};
-//    //std::function<double(double)> func{};
-//
-//   protected:
-//    // could be moved to a base class
-//    bool have_ref_points_parameters_changed(const ::benchmark::State& state, const json & data) const {
-//      bool new_random = this->template lookup<bool>(data, "random", state); 
-//      auto range = this->template lookup<std::pair<double,double>>(data, "ranges", state); 
-//      double new_x1 = std::get<0>(range);
-//      double new_x2 = std::get<1>(range);
-//      return (new_random != this->random || new_x1 != this->x1 || new_x2 != this->x2);
-//    }
-//
-//    // initialize the ref points 
-//    void init_ref_points(const ::benchmark::State& state, const json & data) { 
-//      auto range = this->template lookup<std::pair<double,double>>(data, "ranges", state); 
-//      this->x1 = std::get<0>(range);
-//      this->x2 = std::get<1>(range);
-//      this->random = this->template lookup<bool>(data, "random", state); 
-//      if (this->random) {
-//        srand(SEED);
-//        math::Vector_t points_tmp  = math::Vector_t::LinSpaced(this->nb_ref_points, this->x1,this->x2);
-//        this->ref_points = math::Vector_t::Zero(this->nb_ref_points);
-//        for (int i{0};i<this->ref_points.size();i++) {
-//          this->ref_points(i) = points_tmp(rand() % this->nb_ref_points);
-//        }
-//      } else {
-//        this->ref_points = math::Vector_t::LinSpaced(this->nb_ref_points,this->x1,this->x2);
-//      }
-//    }
-//    virtual bool have_interpolator_parameters_changed(const ::benchmark::State& state, const json & data) const = 0;
-//    virtual void init_interpolator(const ::benchmark::State& state, const json & data) = 0;
-//    };
+  // This class uses the RepresentationManager class as basis to call the RadialContribution. Therefore benchmarks for different atomic structures can be done.
+  template<class Dataset>
+  class SphericalExpansionBFixture : public InterpolatorBFixture<Dataset> {
+   public:
+    using Representation_t = RepresentationManagerSphericalExpansion<
+        AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
+    using Manager_t = AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>;
+    using ManagerPtr_t = std::shared_ptr<Manager_t>;
+    using Parent = InterpolatorBFixture<Dataset>;
+
+    SphericalExpansionBFixture<Dataset>(const bool use_interpolator, const bool compute_gradients) : Parent(), use_interpolator{use_interpolator}, compute_gradients{compute_gradients} {}
+
+    const bool use_interpolator;
+    const bool compute_gradients;
+    int max_radial{0};
+    std::string filename;
+    double cutoff{0};
+    int nb_neighbours{0};
+    ManagerPtr_t manager{};
+    // to postpone initialization of representation from the time the object is created, we create a list
+    std::list<Representation_t> representations{};
+    json hypers;
+
+    void init_interpolator(const ::benchmark::State& state, const json & data) override {
+      this->log_error_bound = this->template lookup<int>(data, "log_error_bounds", state);
+      this->error_bound = std::pow(10,this->log_error_bound);
+      this->max_radial = this->template lookup<int>(data, "max_radial", state);
+      int max_angular{this->max_radial};
+      // TODO(alex) put these two into the data class
+      this->filename = this->template lookup<std::string>(data, "filenames", state);
+      this->cutoff = this->template lookup<double>(data, "cutoffs", state);
+
+      // make structure manager
+      json structure{};
+      json adaptors;
+      json ad1{{"name", "AdaptorNeighbourList"},
+               {"initialization_arguments",
+                {{"cutoff", cutoff}, {"consider_ghost_neighbours", false}}}};
+      json ad2{{"name", "AdaptorStrict"},
+               {"initialization_arguments", {{"cutoff", this->cutoff}}}};
+      adaptors.emplace_back(ad1);
+      adaptors.emplace_back(ad2);
+
+      AtomicStructure<3> atomic_structure{};
+      atomic_structure.set_structure(this->filename);
+      this->manager =
+          make_structure_manager_stack<StructureManagerCenters,
+                                       AdaptorNeighbourList, AdaptorStrict>(
+          structure, adaptors);
+      this->manager->update(atomic_structure);
+
+      this->nb_neighbours = 0;
+      for (auto center : this->manager) {
+        for (auto neigh : center) {
+          this->nb_neighbours++;
+        }
+      }
+
+      // make representation manager
+      json hypers{{"max_radial", this->max_radial},
+                  {"max_angular", max_angular},
+                  {"soap_type", "PowerSpectrum"},
+                  {"normalize", true},
+                  {"compute_gradients", this->compute_gradients}};
+
+      json fc_hypers{{"type", "Cosine"},
+                     {"cutoff", {{"value", this->cutoff}, {"unit", "AA"}}},
+                     {"smooth_width", {{"value", 0.}, {"unit", "AA"}}}};
+      json sigma_hypers{{"type", "Constant"},
+                        {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}};
+
+      hypers["cutoff_function"] = fc_hypers;
+      hypers["gaussian_density"] = sigma_hypers;
+
+      if (this->use_interpolator) {
+        hypers["radial_contribution"] = {
+              {"type", "GTO"},
+              {"optimization", 
+                  {{"type", "Spline"},
+                   {"accuracy", this->error_bound},
+                   {"range",{{"begin", 0.},{"end",cutoff}}}
+                  }
+              }
+        };
+      } else {
+        hypers["radial_contribution"] = {{"type", "GTO"}};
+      }
+      this->hypers = hypers;
+      this->representations.clear();
+      this->representations.emplace_back(Representation_t(manager, hypers));
+    }
+
+
+    bool have_interpolator_parameters_changed(const ::benchmark::State& state, const json & data) const override {
+      int new_log_error_bound = this->template lookup<int>(data, "log_error_bounds", state);
+      int new_max_radial = this->template lookup<int>(data, "max_radial", state);
+      std::string new_filename = this->template lookup<std::string>(data, "filenames", state);
+      double new_cutoff = this->template lookup<double>(data, "cutoffs", state);
+      return (new_log_error_bound != this->log_error_bound || new_max_radial != this->max_radial || new_filename != this->filename || new_cutoff != this->cutoff); 
+    }
+  };
   }
 }

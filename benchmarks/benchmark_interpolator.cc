@@ -1,4 +1,5 @@
 #include "benchmark_interpolator.hh"
+#include "representations/feature_manager_block_sparse.hh"
 
 
 using namespace rascal::math;
@@ -18,6 +19,19 @@ namespace rascal {
     //test interpoltar matrix
     //1.tests Interpoltaro for gauss function compares only initialization speed
 
+    template <class Fix>
+    void BM_SphExp(benchmark::State& state, Fix & fix) {
+      fix.SetUp(state);
+      for (auto _ : state) {
+        fix.representations.back().compute();
+      }
+      // TODO(alex) I would like to print interpolator information, but it is covered under a lot of layers
+      state.counters.insert({
+          {"max_radial", fix.max_radial},
+          {"cutoff", fix.cutoff},
+          {"nb_neighbours", fix.nb_neighbours}
+        });
+    }
 
     template <class Fix>
     void BM_RadCon(benchmark::State& state, Fix & fix) {
@@ -158,76 +172,34 @@ namespace rascal {
       });
   }  
   
-  
+
+
+  auto sph_exp_intp_fix = SphericalExpansionBFixture<SphericalExpansionDataset>(true, false);
+  BENCHMARK_CAPTURE(BM_SphExp, use_intp_no_gradient, sph_exp_intp_fix)->Apply(AllCombinationsArguments<SphericalExpansionDataset>);
+  auto sph_exp_fix = SphericalExpansionBFixture<SphericalExpansionDataset>(false, false);
+  BENCHMARK_CAPTURE(BM_SphExp, no_intp_no_gradient, sph_exp_fix)->Apply(AllCombinationsArguments<SphericalExpansionDataset>);
+
+  auto sph_exp_intp_gradient_fix = SphericalExpansionBFixture<SphericalExpansionDataset>(true, true);
+  BENCHMARK_CAPTURE(BM_SphExp, use_intp_comp_gradient , sph_exp_intp_gradient_fix)->Apply(AllCombinationsArguments<SphericalExpansionDataset>);
+  auto sph_exp_gradient_fix = SphericalExpansionBFixture<SphericalExpansionDataset>(false, true);
+  BENCHMARK_CAPTURE(BM_SphExp, no_intp_comp_gradient, sph_exp_gradient_fix)->Apply(AllCombinationsArguments<SphericalExpansionDataset>);
+
   //auto intp_vec_fix{InterpolatorVectorizedFixture<RadConDataset>()};
   //BENCHMARK_CAPTURE(BM_IntpRadCon, , intp_vec_fix)->Apply(AllCombinationsArguments<RadConDataset>)->Complexity();
-  auto intp_vec_fix1{InterpolatorVectorizedFixture<RadConDataset1>()};
-  BENCHMARK_CAPTURE(BM_IntpRadCon, , intp_vec_fix1)->Apply(AllCombinationsArguments<RadConDataset1>)->Complexity();
-  BENCHMARK_CAPTURE(BM_RadCon, , intp_vec_fix1)->Apply(AllCombinationsArguments<RadConDataset>)->Complexity();
-  auto intp_vec_fix2{InterpolatorVectorizedFixture<RadConDataset2>()};
-  BENCHMARK_CAPTURE(BM_IntpRadCon, , intp_vec_fix2)->Apply(AllCombinationsArguments<RadConDataset2>)->Complexity();
-  BENCHMARK_CAPTURE(BM_RadCon, , intp_vec_fix2)->Apply(AllCombinationsArguments<RadConDataset>)->Complexity();
-  auto intp_vec_fix3{InterpolatorVectorizedFixture<RadConDataset3>()};
-  BENCHMARK_CAPTURE(BM_IntpRadCon, , intp_vec_fix3)->Apply(AllCombinationsArguments<RadConDataset3>)->Complexity();
-  BENCHMARK_CAPTURE(BM_RadCon, , intp_vec_fix3)->Apply(AllCombinationsArguments<RadConDataset>)->Complexity();
+  
+  //auto intp_vec_fix1{InterpolatorVectorizedFixture<RadConDataset1>()};
+  //BENCHMARK_CAPTURE(BM_IntpRadCon, , intp_vec_fix1)->Apply(AllCombinationsArguments<RadConDataset1>)->Complexity();
+  //BENCHMARK_CAPTURE(BM_RadCon, , intp_vec_fix1)->Apply(AllCombinationsArguments<RadConDataset>)->Complexity();
+  //auto intp_vec_fix2{InterpolatorVectorizedFixture<RadConDataset2>()};
+  //BENCHMARK_CAPTURE(BM_IntpRadCon, , intp_vec_fix2)->Apply(AllCombinationsArguments<RadConDataset2>)->Complexity();
+  //BENCHMARK_CAPTURE(BM_RadCon, , intp_vec_fix2)->Apply(AllCombinationsArguments<RadConDataset>)->Complexity();
+  //auto intp_vec_fix3{InterpolatorVectorizedFixture<RadConDataset3>()};
+  //BENCHMARK_CAPTURE(BM_IntpRadCon, , intp_vec_fix3)->Apply(AllCombinationsArguments<RadConDataset3>)->Complexity();
+  //BENCHMARK_CAPTURE(BM_RadCon, , intp_vec_fix3)->Apply(AllCombinationsArguments<RadConDataset>)->Complexity();
 
-  auto intp_fix{InterpolatorFixture<Hyp1f1Dataset>()};
-  BENCHMARK_CAPTURE(BM_Hyp1f1_DoNotOptimize, , intp_fix)->Apply(AllCombinationsArguments<Hyp1f1Dataset>)->Complexity();
-  BENCHMARK_CAPTURE(BM_IntpHyp1f1_DoNotOptimize, , intp_fix)->Apply(AllCombinationsArguments<Hyp1f1Dataset>)->Complexity();
-
-
-
-  ///////////////////////////////////////////////
-  // PSEUDO CODE HOW TO USE TESTS FOR MANAGERS //
-  ///////////////////////////////////////////////
-
-  //class ManagerDataFixture {
-  // Manager_t = Strict;
-  // public:
-  //  
-  //  static const json data() {
-  //    return {
-  //      {"filenames", {"crystal.json", "structure.json"}},
-  //      {"sigmas", {0.1,0.3,0.5}}
-  //      };
-  //  }
-  //}
-
-  //template <class ManagerDataFixture>
-  //class ManagerFixture : public ::benchmark::Fixture {
-  // public:
-  //  using Manager_t = DataFixture::Manager_t;
-  //  // This is executed one time when this benchmark is used
-  //  void SetUp(const ::benchmark::State& state) {
-  //    json data = ManagerDataFixture::data();
-  //    for (json::iterator it = data.begin(); it != data.end(); ++it) {
-  //      std::string filename = data["filenames"].at(i).get<string>();
-  //      auto manager = create_manager<Manager_t>(filename);
-  //      managers.push_back();        
-  //    }
-  //  }
-  //  static const json data() {
-  //    return {
-  //      {"filenames", {"crystal.json", "structure.json"}},
-  //      {"max_angular", {5,10,15}}
-  //      };
-  //  }
-  //  Manager_t managers;
-  //  std::vector<size_t> max_angulars;
-  //}
-
-  //BENCHMARK_DEFINE_F(ManagerFixture<ManagerDataFixture>, ManagerBench)(benchmark::State &state) {
-  //  // This is executed #repetitions
-  //  auto manager = managers.at(state.range(0)); 
-  //  size_t max_angular = max_angulars.at(state.range(1)); 
-  //  for (auto _ : state) {
-  //    // This is executed #iterations
-  //  }
-  //}
-  //BENCHMARK_DEFINE_F(ManagerFixture<ManagerDataFixture>, ManagerBench)->Apply(AllCombinationsArguments<ManagerDataFixture>)
-
-
- //https://github.com/google/benchmark/issues/387
+  //auto intp_fix{InterpolatorScalarFixture<Hyp1f1Dataset>()};
+  //BENCHMARK_CAPTURE(BM_Hyp1f1_DoNotOptimize, , intp_fix)->Apply(AllCombinationsArguments<Hyp1f1Dataset>)->Complexity();
+  //BENCHMARK_CAPTURE(BM_IntpHyp1f1_DoNotOptimize, , intp_fix)->Apply(AllCombinationsArguments<Hyp1f1Dataset>)->Complexity();
  
   } // namespace internal
 } // namespace rascal

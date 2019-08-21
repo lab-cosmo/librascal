@@ -87,6 +87,13 @@ int main() {
           structure, adaptors);
 
   manager->update(atomic_structure);
+  int nb_neighbours{0};
+  for (auto center : manager) {
+    for (auto neigh : center) {
+      nb_neighbours++;
+    }
+  }
+  std::cout << "nb_neighbours" << nb_neighbours << std::endl;
 
   AtomicStructure<3> atomic_structure2{atomic_structure};
 

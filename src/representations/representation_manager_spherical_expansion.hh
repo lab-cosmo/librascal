@@ -498,7 +498,7 @@ namespace rascal {
        * just zero -- the centre contribution doesn't vary w.r.t. motion of
        * the central atom
        */
-      template <AtomicSmearingType AST, size_t Order, size_t Layer>
+      template <size_t Order, size_t Layer>
       inline Matrix_Ref
       compute_neighbour_derivative(const double & distance,
                                    ClusterRefKey<Order, Layer> & /*pair*/) {
@@ -671,14 +671,20 @@ namespace rascal {
         this->precompute_fac_a();
       }
 
-      void precompute_fac_a() {
-        auto smearing{downcast_atomic_smearing<AtomicSmearingType::Constant>(this->atomic_smearing)};
-        this->fac_a = 0.5 * pow(smearing->get_gaussian_sigma(), -2);
-      }
-
       template <size_t Order, size_t Layer>
       inline Matrix_Ref compute_neighbour_contribution(const double & distance, ClusterRefKey<Order, Layer> &) {
         return Parent::compute_neighbour_contribution(distance, this->fac_a);
+      }
+
+      template<size_t Order, size_t Layer>
+      inline Matrix_Ref compute_neighbour_derivative(const double & distance, ClusterRefKey<Order, Layer> & pair) {
+        return Parent::compute_neighbour_derivative(distance, pair);
+      }
+     
+     protected:
+      void precompute_fac_a() {
+        auto smearing{downcast_atomic_smearing<AtomicSmearingType::Constant>(this->atomic_smearing)};
+        this->fac_a = 0.5 * pow(smearing->get_gaussian_sigma(), -2);
       }
 
       double fac_a{};
@@ -709,6 +715,44 @@ namespace rascal {
         this->init_interpolator(x1, x2, accuracy);
       }
 
+      void init_interpolator(const Hypers_t & hypers) {
+        auto radial_contribution_hypers =
+            hypers.at("radial_contribution").template get<json>();
+        auto optimization_hypers =
+            radial_contribution_hypers.at("optimization").template get<json>();
+
+        double accuracy{this->get_interpolator_accuracy(optimization_hypers)};
+        double range_begin{this->get_range_begin(optimization_hypers)};
+        double range_end{this->get_range_end(optimization_hypers)};
+        this->init_interpolator(range_begin, range_end, accuracy);
+      }
+
+      template<size_t Order, size_t Layer>
+      inline Matrix_Ref compute_neighbour_contribution(const double & distance, ClusterRefKey<Order, Layer> &) {
+        // TODO(alex)TODO(felix) include an check that the distance is within
+        // the (x1,x2) range of the interpolator
+        this->radial_integral_neighbour = this->intp.interpolate(distance);
+        return Matrix_Ref(this->radial_integral_neighbour);
+      }
+
+      template<size_t Order, size_t Layer>
+      inline Matrix_Ref compute_neighbour_derivative(const double & distance, ClusterRefKey<Order, Layer> &) {
+        this->radial_neighbour_derivative = this->intp.interpolate(distance);
+        return Matrix_Ref(this->radial_neighbour_derivative);
+      }
+      
+
+     protected:
+      void init_interpolator(double range_begin, double range_end, double accuracy) {
+        // "this" is passed by reference and is mutable
+        std::function<Matrix_t(double)> func{
+          [&](double distance) mutable {
+            Parent::compute_neighbour_contribution(distance, this->fac_a);
+            return this->radial_integral_neighbour;
+          }
+        };
+        this->intp.initialize(func, range_begin, range_end, accuracy);
+      }
       void precompute_fac_a() {
         auto smearing{downcast_atomic_smearing<AtomicSmearingType::Constant>(this->atomic_smearing)};
         this->fac_a = 0.5 * pow(smearing->get_gaussian_sigma(), -2);
@@ -741,38 +785,6 @@ namespace rascal {
       double get_cutoff(const Hypers_t & hypers) {
         auto fc_hypers = hypers.at("cutoff_function").template get<json>();
         return fc_hypers.at("cutoff").at("value").template get<double>();
-      }
-
-      void init_interpolator(const Hypers_t & hypers) {
-        auto radial_contribution_hypers =
-            hypers.at("radial_contribution").template get<json>();
-        auto optimization_hypers =
-            radial_contribution_hypers.at("optimization").template get<json>();
-
-        double accuracy{this->get_interpolator_accuracy(optimization_hypers)};
-        double range_begin{this->get_range_begin(optimization_hypers)};
-        double range_end{this->get_range_end(optimization_hypers)};
-        this->init_interpolator(range_begin, range_end, accuracy);
-      }
-
-
-      void init_interpolator(double range_begin, double range_end, double accuracy) {
-        // "this" is passed by reference and is mutable
-        std::function<Matrix_t(double)> func{
-          [&](double distance) mutable {
-            Parent::compute_neighbour_contribution(distance, this->fac_a);
-            return this->radial_integral_neighbour;
-          }
-        };
-        this->intp.initialize(func, range_begin, range_end, accuracy);
-      }
-
-      template<size_t Order, size_t Layer>
-      inline Matrix_Ref compute_neighbour_contribution(const double & distance, ClusterRefKey<Order, Layer> &) {
-        // TODO(alex)TODO(felix) include an check that the distance is within
-        // the (x1,x2) range of the interpolator
-        this->radial_integral_neighbour = this->intp.interpolate(distance);
-        return Matrix_Ref(this->radial_integral_neighbour);
       }
 
       double fac_a{};
@@ -921,14 +933,6 @@ namespace rascal {
         if (optimization_hypers.find("type") != optimization_hypers.end()) {
           auto intp_type_name{optimization_hypers.at("type").get<std::string>()};
           if (intp_type_name.compare("Spline") == 0) {
-            if (hypers.find("compute_gradients") != hypers.end()) {
-              bool compute_gradients = hypers.at("compute_gradients").get<bool>();
-              if (compute_gradients) {
-                throw std::logic_error(
-                    "The usage of the interpolator is not implemented"
-                    " with activated gradient calculation.");
-              }
-            }
             this->interpolator_type = InterpolatorType::WithIntp;
           } else {
             this->interpolator_type = InterpolatorType::NoIntp;
@@ -1262,8 +1266,7 @@ namespace rascal {
 
           auto && neighbour_derivative =
               radial_integral
-                  ->template compute_neighbour_derivative<SmearingType
-                      >(dist, neigh);
+                  ->template compute_neighbour_derivative(dist, neigh);
           double df_c{cutoff_function->df_c(dist)};
           // The gradients only contribute to the type of the neighbour
           // (the atom that's moving)

@@ -646,7 +646,8 @@ namespace rascal {
       InterpolatorBase() {}; 
 
       void initialize(double x1, double x2, double error_bound, int max_grid_points = 10000000, int fineness=5) {
-        if (x2<x1) { throw std::runtime_error("x2 must be greater x1"); }
+        if (x2<x1) { throw std::logic_error("x2 must be greater x1"); }
+        if (error_bound <= 0) { throw std::logic_error("error bound must be > 0"); }
         this->x1 = x1;
         this->x2 = x2;
         this->error_bound = error_bound;
@@ -799,19 +800,6 @@ namespace rascal {
         Vector_t error_grid{this->error_method.compute_entrywise_error(Vector_Ref(test_grid_interpolated), Vector_Ref(test_grid_evaluated))};
         this->grid_rational.update_errors(Vector_Ref(error_grid));
         this->grid_error = this->error_method.compute_global_error(Vector_Ref(error_grid));
-        //if (this->grid.size() % 1==0) {
-        //  std::cout << "grid_size=" << this->grid.size() << std::endl;
-        //  std::cout << "mean_grid_error=" << this->mean_grid_error << std::endl;
-        //  std::cout << "max error=" << this->max_grid_error << std::endl;
-        //  std::cout << "error_grid=" << error_grid.head(3) << std::endl;
-        //  std::cout << "test_grid_eval=" << test_grid_evaluated.head(3) << std::endl;
-        //  std::cout << "test_grid_intp=" << test_grid_interpolated.head(3) << std::endl;
-        //}
-        //if (grid_rational.grid_size % 50 == 0) {
-        //  std::cout << "fineness=" << this->fineness << std::endl;
-        //  std::cout << "mean error=" << this->mean_grid_error << std::endl;
-        //  std::cout << "max error=" << this->max_grid_error << std::endl;
-        //}
       }
 
       void compute_paratemeters_for_evaluation() {
@@ -833,7 +821,7 @@ namespace rascal {
       using Parent = InterpolatorTyped<InterpolationMethod, GridRational, SearchMethod, ErrorMethod>;
       InterpolatorVectorized() : Parent() {}
 
-      void initialize(std::function<Matrix_t(double)> function, double x1, double x2, double error_bound, int max_grid_points = 10000000, int fineness=5, bool is_benchmarked=false) {
+      void initialize(std::function<Matrix_t(double)> function, double x1, double x2, double error_bound, int max_grid_points = 500000, int fineness=5, bool is_benchmarked=false) {
         Parent::initialize(x1, x2, error_bound, max_grid_points, fineness);
         this->function = function;
         Matrix_t result = function(0);
@@ -939,9 +927,13 @@ namespace rascal {
           this->fineness++;
           this->compute_grid_error();
         }
+        // TODO(alex) this parameter is almost usless if we implment a get_hypers function
         if(this->is_benchmarked){
           this->compute_paratemeters_for_evaluation();
         }
+        // TODO(alex) find a way to access this
+        //std::cout << "grid_size=" << this->grid.size() << std::endl; 
+        //std::cout << "error=" << this->error << std::endl; 
       }
 
       void compute_grid_error() {
@@ -959,19 +951,10 @@ namespace rascal {
         this->grid_error = this->error_method.compute_global_error(Matrix_Ref(test_grid_interpolated), Matrix_Ref(test_grid_evaluated));
         // TODO(alex) remove when benchmark finished
         //if (this->grid.size() % 1==0) {
-        //  std::cout << "grid_size=" << this->grid.size() << std::endl;
-        //  std::cout << "mean_grid_error=" << this->mean_grid_error << std::endl;
-        //  std::cout << "max error=" << this->max_grid_error << std::endl;
-        //  //std::cout << "max error at=" << maxRow << maxCol << std::endl;
-        //  std::cout << "error_mat=" << error_mat.col(0).head(3).transpose() << std::endl;
-        //  std::cout << "test_grid_eval=" << test_grid_evaluated.col(0).head(3).transpose() << std::endl;
-        //  std::cout << "test_grid_intp=" << test_grid_interpolated.col(0).head(3).transpose() << std::endl;
+        //  std::cout << "grid_size=" << this->grid.size();
+        //  std::cout << ", grid_error=" << this->grid_error;
+        //  std::cout << "error_bound =" << this->error_bound << std::endl;
         //  std::cout << std::endl;
-        //}
-        //if (grid_rational.grid_size % 50 == 0) {
-        //  std::cout << "fineness=" << this->fineness << std::endl;
-        //  std::cout << "mean error=" << this->mean_grid_error << std::endl;
-        //  std::cout << "max error=" << this->max_grid_error << std::endl;
         //}
       }
 

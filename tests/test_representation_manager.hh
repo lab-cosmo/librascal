@@ -1,5 +1,5 @@
 /**
- * file   test_representation_manager_base.hh
+ * file   test_representation_manager.hh
  *
  * @author Musil Felix <musil.felix@epfl.ch>
  * @author Max Veit <max.veit@epfl.ch>
@@ -64,7 +64,6 @@ namespace rascal {
 
       for (auto && filename : filenames) {
         for (auto && cutoff : cutoffs) {
-          // std::cout << filename << " " << cutoff << std::endl;
           json parameters;
           json structure{{"filename", filename}};
           json adaptors;
@@ -422,8 +421,8 @@ namespace rascal {
     Eigen::Array<double, 1, Eigen::Dynamic>
     grad_f(const Eigen::Matrix<double, 1, 1> & input_v) {
       Eigen::ArrayXXd result(this->max_radial, this->max_angular + 1);
-      result = this->radial_integral->template compute_neighbour_derivative<
-          internal::AtomicSmearingType::Constant>(input_v(0), this->pair);
+      result = this->radial_integral->template compute_neighbour_derivative(
+          input_v(0), this->pair);
       Eigen::Map<Eigen::Array<double, 1, Eigen::Dynamic>> result_flat(
           result.data(), 1, result.size());
       return result_flat;
