@@ -737,7 +737,7 @@ namespace rascal {
 
       template<size_t Order, size_t Layer>
       inline Matrix_Ref compute_neighbour_derivative(const double & distance, ClusterRefKey<Order, Layer> &) {
-        this->radial_neighbour_derivative = this->intp.interpolate(distance);
+        this->radial_neighbour_derivative = this->intp.interpolate_derivative(distance);
         return Matrix_Ref(this->radial_neighbour_derivative);
       }
       
@@ -935,6 +935,7 @@ namespace rascal {
           if (intp_type_name.compare("Spline") == 0) {
             this->interpolator_type = InterpolatorType::WithIntp;
           } else {
+            std::runtime_error("Wrongly configured optimization function. Remove optimization flag or use as type \'Spline\'");
             this->interpolator_type = InterpolatorType::NoIntp;
           }
         } else {  // Default false (don't use interpolator)          
@@ -964,6 +965,7 @@ namespace rascal {
       case internal::combineEnums(RadialBasisType::GTO,
                                   AtomicSmearingType::Constant,
                                   InterpolatorType::WithIntp): {
+        std::cout << "chosen" << std::endl;
         auto rc_shared = std::make_shared<
             internal::RadialContributionSuite<
                 RadialBasisType::GTO,

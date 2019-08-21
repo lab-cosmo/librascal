@@ -887,8 +887,15 @@ namespace rascal {
       }
 
       Matrix_t interpolate_derivative(double x) {
-        return Eigen::Map<Matrix_t>(this->interpolate_derivative_raw(x).data(), this->rows, this->cols);
+        // TODO(alex) change to Eigen::Map again
+        Matrix_t result(this->rows, this->cols);
+        Vector_t tmp = this->interpolate_derivative_raw(x);
+        for (int i{0}; i< this->rows*this->cols;i++) {
+          result(i/this->cols, i%this->cols) = tmp(i);
+        }
+        return result;
       }
+      
 
       Vector_t interpolate_derivative_raw(double x) {
         // x is outside of range
@@ -934,6 +941,7 @@ namespace rascal {
         // TODO(alex) find a way to access this
         //std::cout << "grid_size=" << this->grid.size() << std::endl; 
         //std::cout << "error=" << this->error << std::endl; 
+        //and max mean error, use compute_paratemeters_for_evaluation
       }
 
       void compute_grid_error() {

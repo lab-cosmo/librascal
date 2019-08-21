@@ -371,7 +371,17 @@ namespace rascal {
     std::vector<json> density_hypers{
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
-    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
+    std::vector<json> radial_contribution_hypers{
+        {{"type", "GTO"}},
+        {{"type", "GTO"},
+         {"optimization", 
+             {{"type", "Spline"},
+              {"accuracy", 1e-8},
+              {"range",{{"begin", 0.},{"end",3.}}}
+             }
+         }
+        }
+    };
     std::vector<json> rep_hypers{{{"max_radial", 2},
                                   {"max_angular", 2},
                                   {"normalize", true},
