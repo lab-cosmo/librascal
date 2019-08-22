@@ -4,6 +4,7 @@
  * @author Max Veit <max.veit@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
  * @author Andrea Grifasi <andrea.grifasi@epfl.ch>
+ * @author  Alexander Goscinski <alexander.goscinski@epfl.ch>
  *
  * @date   19 October 2018
  *
@@ -935,7 +936,7 @@ namespace rascal {
           if (intp_type_name.compare("Spline") == 0) {
             this->interpolator_type = InterpolatorType::WithIntp;
           } else {
-            std::runtime_error("Wrongly configured optimization function. Remove optimization flag or use as type \'Spline\'");
+            std::runtime_error("Wrongly configured optimization type. Remove optimization flag or use as type \'Spline\'");
             this->interpolator_type = InterpolatorType::NoIntp;
           }
         } else {  // Default false (don't use interpolator)          

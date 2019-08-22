@@ -6,24 +6,11 @@ using namespace rascal::math;
 
 namespace rascal {
   namespace internal {
-    // 
-
-
-    ////////////
-    // Issues //
-    ////////////
-    // TODO(alex) To have a credible time benchmarks for the initialization function.
-    // distance function caluclates for (radial_max, angular_max+1) points, this must be incuded
-    // in the intp, maybe make extra class MatrixIntp
-
-    //test interpoltar matrix
-    //1.tests Interpoltaro for gauss function compares only initialization speed
-
     template <class Fix>
     void BM_SphExp(benchmark::State& state, Fix & fix) {
       fix.SetUp(state);
       for (auto _ : state) {
-        fix.representations.back().compute();
+        fix.representation_ptr->compute();
       }
       // TODO(alex) I would like to print interpolator information, but it is covered under a lot of layers
       state.counters.insert({
@@ -174,13 +161,13 @@ namespace rascal {
   
 
 
-  auto sph_exp_intp_fix = SphericalExpansionBFixture<SphericalExpansionDataset>(true, false);
-  BENCHMARK_CAPTURE(BM_SphExp, use_intp_no_gradient, sph_exp_intp_fix)->Apply(AllCombinationsArguments<SphericalExpansionDataset>);
-  auto sph_exp_fix = SphericalExpansionBFixture<SphericalExpansionDataset>(false, false);
-  BENCHMARK_CAPTURE(BM_SphExp, no_intp_no_gradient, sph_exp_fix)->Apply(AllCombinationsArguments<SphericalExpansionDataset>);
+  //auto sph_exp_intp_fix = SphericalExpansionBFixture<SphericalExpansionDataset>(true, false);
+  //BENCHMARK_CAPTURE(BM_SphExp, use_intp_no_gradient, sph_exp_intp_fix)->Apply(AllCombinationsArguments<SphericalExpansionDataset>);
+  //auto sph_exp_fix = SphericalExpansionBFixture<SphericalExpansionDataset>(false, false);
+  //BENCHMARK_CAPTURE(BM_SphExp, no_intp_no_gradient, sph_exp_fix)->Apply(AllCombinationsArguments<SphericalExpansionDataset>);
 
-  auto sph_exp_intp_gradient_fix = SphericalExpansionBFixture<SphericalExpansionDataset>(true, true);
-  BENCHMARK_CAPTURE(BM_SphExp, use_intp_comp_gradient , sph_exp_intp_gradient_fix)->Apply(AllCombinationsArguments<SphericalExpansionDataset>);
+  //auto sph_exp_intp_gradient_fix = SphericalExpansionBFixture<SphericalExpansionDataset>(true, true);
+  //BENCHMARK_CAPTURE(BM_SphExp, use_intp_comp_gradient , sph_exp_intp_gradient_fix)->Apply(AllCombinationsArguments<SphericalExpansionDataset>);
   auto sph_exp_gradient_fix = SphericalExpansionBFixture<SphericalExpansionDataset>(false, true);
   BENCHMARK_CAPTURE(BM_SphExp, no_intp_comp_gradient, sph_exp_gradient_fix)->Apply(AllCombinationsArguments<SphericalExpansionDataset>);
 

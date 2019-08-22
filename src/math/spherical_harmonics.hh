@@ -3,7 +3,7 @@
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  * @author  Max Veit <max.veit@epfl.ch>
- * @author  Alex
+ * @author  Alexander Goscinski <alexander.goscinski@epfl.ch>
  *
  * @date   14 October 2018
  *

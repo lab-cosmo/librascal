@@ -1,3 +1,30 @@
+/**
+ * file  interpolator.hh
+ *
+ * @author  Alexander Goscinski <alexander.goscinski@epfl.ch>
+ *
+ * @date   22 August 2019
+ *
+ * @brief interpolator for functions of the form ℝ->ℝ and ℝ->ℝ^n
+ *
+ * Copyright  2018 Musil Felix, COSMO (EPFL), LAMMM (EPFL)
+ *
+ * rascal is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3, or (at
+ * your option) any later version.
+ *
+ * rascal is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+
 #include <functional>
 #include <map>
 #include <iostream>
@@ -35,6 +62,7 @@ namespace rascal {
   // TODO(alex) move this to tutorial
   // Static const functions because json type cannot be static const. See https://stackoverflow.com/a/17057121/10329403
   
+  //TODO(alex) make max_radial to pair (max_radial, max_angular)
   class SphericalExpansionDataset : public BaseInterpolatorDataset {
     public:
      using SupportedFunc = typename BaseInterpolatorDataset::SupportedFunc;
@@ -362,7 +390,7 @@ namespace rascal {
     int nb_neighbours{0};
     ManagerPtr_t manager{};
     // to postpone initialization of representation from the time the object is created, we create a list
-    std::list<Representation_t> representations{};
+    std::shared_ptr<Representation_t> representation_ptr;
     json hypers;
 
     void init_interpolator(const ::benchmark::State& state, const json & data) override {
@@ -430,8 +458,7 @@ namespace rascal {
         hypers["radial_contribution"] = {{"type", "GTO"}};
       }
       this->hypers = hypers;
-      this->representations.clear();
-      this->representations.emplace_back(Representation_t(manager, hypers));
+      this->representation_ptr = std::make_shared<Representation_t>(manager, hypers);
     }
 
 
