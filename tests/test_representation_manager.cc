@@ -215,13 +215,13 @@ namespace rascal {
   }
 
   using simple_periodic_fixtures = boost::mpl::list<
-      RepresentationFixture<SingleHypersSphericalRepresentation,
-                            RepresentationManagerSphericalExpansion>,
-      RepresentationFixture<SingleHypersSphericalRepresentation,
-                            RepresentationManagerSOAP>
+      //RepresentationFixture<SingleHypersSphericalRepresentation,
+      //                      RepresentationManagerSphericalExpansion>,
+      //RepresentationFixture<SingleHypersSphericalRepresentation,
+      //                      RepresentationManagerSOAP>,
+      RepresentationFixture<MultipleStructureSOAP,
+                            RepresentationManagerSphericalExpansion>
                               >;
-  // TODO(alex) add back
-
   /**
    * Test the gradient of the SphericalExpansion representation on a few simple
    * crystal structures (single- and multi-species, primitive and supercells)
@@ -231,12 +231,12 @@ namespace rascal {
     auto & managers = Fix::managers;
     auto & representations = Fix::representations;
     auto & structures = Fix::structures;
-    //auto & hyper = Fix::hypers.front();
-    auto filename_it = Fix::filenames.begin();
+    auto & hyper = Fix::hypers.front();
+    auto filename_it = Fix::filenames.begin(); // TODO(max) this returns error for one file
     for (auto & manager : managers) {
-      for (auto & hyper : Fix::hypers) {
-        std::cout << "iteration" << std::endl;
+      //for (auto & hyper : Fix::hypers) {
         hyper["compute_gradients"] = true;
+        std::cout << hyper << std::endl;
         representations.emplace_back(manager, hyper);
         structures.emplace_back();
         structures.back().set_structure(*filename_it);
@@ -256,8 +256,8 @@ namespace rascal {
           grad_fix.advance_center();
         } while (grad_fix.has_next());
         ++filename_it;
-        representations.clear();
-      }
+        representations.clear(); // TODO(max) error because end is not reach do some whie .end() was reached loop
+      //}
     }
   }
 

@@ -966,7 +966,7 @@ namespace rascal {
       case internal::combineEnums(RadialBasisType::GTO,
                                   AtomicSmearingType::Constant,
                                   InterpolatorType::WithIntp): {
-        std::cout << "chosen" << std::endl;
+        //std::cout << "chosen" << std::endl;
         auto rc_shared = std::make_shared<
             internal::RadialContributionSuite<
                 RadialBasisType::GTO,
