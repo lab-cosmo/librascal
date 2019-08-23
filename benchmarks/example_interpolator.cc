@@ -136,7 +136,10 @@ int main(){
             {"cutoff_function", {{"cutoff",{{"value", 2.0}, {"unit", "A"}}}}}
   };
   auto radial_contr{RadialContribution<RadialBasisType::GTO>(hypers)};
-  func = [&radial_contr](double x) {return radial_contr.compute_contribution<AtomicSmearingType::Constant>(x, 0.5)(0,0);};
+  func = [&radial_contr](double x) {
+    radial_contr.compute_neighbour_contribution(x, 0.5);
+    return radial_contr.radial_integral_neighbour(0,0);
+  };
 
   const char* filename2{"interpolator_radial_grid.dat"};
   if (not(file_exists(filename2))) {

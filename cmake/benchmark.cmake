@@ -1,13 +1,13 @@
 #message(WARNING "processed: ${_benchmark_external_dir}")
-
+#TODO(alex) reinsert download_external_project
 # If project does not exist 
-download_external_project(benchmark
-  URL "https://github.com/google/benchmark.git"
-  BACKEND GIT
-  THIRD_PARTY_SRC_DIR ${_benchmark_external_dir}
-  BUILD_COMMAND ""
-  ${_benchmark_UPDATE}
-  )
+#download_external_project(benchmark
+#  URL "https://github.com/google/benchmark.git"
+#  BACKEND GIT
+#  THIRD_PARTY_SRC_DIR ${_benchmark_external_dir}
+#  BUILD_COMMAND ""
+#  ${_benchmark_UPDATE}
+#  )
 
 set(benchmark_SOURCE_DIR "${_benchmark_external_dir}/${package}")
 #message(WARNING "processed: ${benchmark_SOURCE_DIR}")

@@ -215,12 +215,12 @@ namespace rascal {
   }
 
   using simple_periodic_fixtures = boost::mpl::list<
-      //RepresentationFixture<SingleHypersSphericalRepresentation,
-      //                      RepresentationManagerSphericalExpansion>,
-      //RepresentationFixture<SingleHypersSphericalRepresentation,
-      //                      RepresentationManagerSOAP>,
-      RepresentationFixture<MultipleStructureSOAP,
-                            RepresentationManagerSphericalExpansion>
+      RepresentationFixture<SingleHypersSphericalRepresentation,
+                            RepresentationManagerSphericalExpansion>,
+      RepresentationFixture<SingleHypersSphericalRepresentation,
+                            RepresentationManagerSOAP>
+      //RepresentationFixture<MultipleStructureSOAP,
+      //                      RepresentationManagerSphericalExpansion>
                               >;
   /**
    * Test the gradient of the SphericalExpansion representation on a few simple

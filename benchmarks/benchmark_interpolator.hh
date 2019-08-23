@@ -62,7 +62,6 @@ namespace rascal {
   // TODO(alex) move this to tutorial
   // Static const functions because json type cannot be static const. See https://stackoverflow.com/a/17057121/10329403
   
-  //TODO(alex) make max_radial to pair (max_radial, max_angular)
   class SphericalExpansionDataset : public BaseInterpolatorDataset {
     public:
      using SupportedFunc = typename BaseInterpolatorDataset::SupportedFunc;
@@ -73,10 +72,10 @@ namespace rascal {
          {"ranges", {std::make_pair(0,16)}}, // dummy
          {"log_error_bounds", {-8}},
          {"func_names", {SupportedVecFunc::RadialContribution}}, // dummy
-         {"max_radial", {3,6,9}},
+         {"radial_angular", {std::make_pair(3,3),std::make_pair(6,6),std::make_pair(9,9)}},
          {"random", {true}}, // dummy
          {"filenames", {"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"}},
-         {"cutoffs", {16}}
+         {"cutoffs", {8}}
          };
      }
   };
@@ -385,6 +384,7 @@ namespace rascal {
     const bool use_interpolator;
     const bool compute_gradients;
     int max_radial{0};
+    int max_angular{0};
     std::string filename;
     double cutoff{0};
     int nb_neighbours{0};
@@ -394,11 +394,12 @@ namespace rascal {
     json hypers;
 
     void init_interpolator(const ::benchmark::State& state, const json & data) override {
+      // set parameter
       this->log_error_bound = this->template lookup<int>(data, "log_error_bounds", state);
       this->error_bound = std::pow(10,this->log_error_bound);
-      this->max_radial = this->template lookup<int>(data, "max_radial", state);
-      int max_angular{this->max_radial};
-      // TODO(alex) put these two into the data class
+      auto radial_angular = this->template lookup<std::pair<int,int>>(data, "radial_angular", state); 
+      this->max_radial = std::get<0>(radial_angular);
+      this->max_angular = std::get<1>(radial_angular);
       this->filename = this->template lookup<std::string>(data, "filenames", state);
       this->cutoff = this->template lookup<double>(data, "cutoffs", state);
 
@@ -430,7 +431,7 @@ namespace rascal {
 
       // make representation manager
       json hypers{{"max_radial", this->max_radial},
-                  {"max_angular", max_angular},
+                  {"max_angular", this->max_angular},
                   {"soap_type", "PowerSpectrum"},
                   {"normalize", true},
                   {"compute_gradients", this->compute_gradients}};
@@ -464,10 +465,12 @@ namespace rascal {
 
     bool have_interpolator_parameters_changed(const ::benchmark::State& state, const json & data) const override {
       int new_log_error_bound = this->template lookup<int>(data, "log_error_bounds", state);
-      int new_max_radial = this->template lookup<int>(data, "max_radial", state);
+      auto radial_angular = this->template lookup<std::pair<int,int>>(data, "radial_angular", state); 
+      int new_max_radial = std::get<0>(radial_angular);
+      int new_max_angular = std::get<1>(radial_angular);
       std::string new_filename = this->template lookup<std::string>(data, "filenames", state);
       double new_cutoff = this->template lookup<double>(data, "cutoffs", state);
-      return (new_log_error_bound != this->log_error_bound || new_max_radial != this->max_radial || new_filename != this->filename || new_cutoff != this->cutoff); 
+      return (new_log_error_bound != this->log_error_bound || new_max_radial != this->max_radial || new_max_angular != this->max_angular || new_filename != this->filename || new_cutoff != this->cutoff); 
     }
   };
   }

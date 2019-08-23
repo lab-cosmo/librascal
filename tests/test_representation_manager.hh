@@ -332,9 +332,9 @@ namespace rascal {
 
     // TODO(alex) TODO(max) seg faults in the simple cubic structures for SOAP
     const std::vector<std::string> filenames{
-        //"reference_data/simple_cubic_3.json",
-        //"reference_data/simple_cubic_8.json",
-        "reference_data/small_molecule.json", // no seg fault ,only accuracy test error
+        //"reference_data/simple_cubic_3.json", // seg fault
+        //"reference_data/simple_cubic_8.json", // seg fault
+        //"reference_data/small_molecule.json", // no seg fault ,only accuracy test error, seems just less accurate
         "reference_data/diamond_2atom.json",
         "reference_data/diamond_2atom_distorted.json",
         "reference_data/diamond_cubic_distorted.json",

@@ -4,7 +4,7 @@
  * @author Max Veit <max.veit@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
  * @author Andrea Grifasi <andrea.grifasi@epfl.ch>
- * @author  Alexander Goscinski <alexander.goscinski@epfl.ch>
+ * @author Alexander Goscinski <alexander.goscinski@epfl.ch>
  *
  * @date   19 October 2018
  *
@@ -24,7 +24,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this software; see the file LICENSE. If not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Free Software Foundation, Inc., 59 Temple Place - Handler 330,
  * Boston, MA 02111-1307, USA.
  */
 
@@ -75,7 +75,7 @@ namespace rascal {
      * List of possible usages of interpolator. Currently only full usage
      * or no usage is allowed, but a hybrid coud be added in the future.
      */
-    enum class InterpolatorType { NoIntp, WithIntp, End_ };
+    enum class OptimizationType { Nothing, Interpolator, End_ };
 
 
     /**
@@ -246,8 +246,6 @@ namespace rascal {
       //! Constructor
       explicit RadialContribution(const Hypers_t & hypers) {
         this->set_hyperparameters(hypers);
-        // TODO(alex) adapt usage of precompute in initializer in
-        // SphericalHarmonics or the other way around
         this->precompute();
       }
       //! Destructor
@@ -333,7 +331,6 @@ namespace rascal {
         this->hyp1f1_calculator.precompute(this->max_radial, this->max_angular);
       }
 
-      // TODO(alex) remove this function completely when benchmarks do not use
       // this anymore or remove the unncessary template parameter
       /* Define the contribution from a neighbour atom to the expansion
        * without requiring a cluster object os it can be used for benchmarks.
@@ -650,30 +647,33 @@ namespace rascal {
 
 
 
-    // TODO(all) name ok? I also thought about RadialContributionHandler, do we have something similar in the code?
-    /* A RadialContributionSuite handles the different cases of AtomicSmearingType and InterpolatorType. Depending on these template parameters different member variables have to used and different parameters can be precomputed.
+    /* A RadialContributionHandler handles the different cases of AtomicSmearingType and OptimizationType. Depending on these template parameters different member variables have to used and different parameters can be precomputed.
      */
 
-    template <RadialBasisType RBT, AtomicSmearingType AST, InterpolatorType IT>
-    struct RadialContributionSuite {}; 
+    template <RadialBasisType RBT, AtomicSmearingType AST, OptimizationType IT>
+    struct RadialContributionHandler {}; 
 
     /* For the a constant smearing type the "a" factor can be precomputed
      */
     template <RadialBasisType RBT>
-    struct RadialContributionSuite<
-         RBT, AtomicSmearingType::Constant, InterpolatorType::NoIntp> : 
+    struct RadialContributionHandler<
+         RBT, AtomicSmearingType::Constant, OptimizationType::Nothing> :
         public RadialContribution<RBT> {
      public: 
       using Parent = RadialContribution<RBT>;
       using Hypers_t = typename Parent::Hypers_t;
       using Matrix_Ref = typename Parent::Matrix_Ref;
 
-      RadialContributionSuite(const Hypers_t & hypers) : Parent(hypers) {
+      RadialContributionHandler(const Hypers_t & hypers) : Parent(hypers) {
         this->precompute_fac_a();
       }
 
       template <size_t Order, size_t Layer>
       inline Matrix_Ref compute_neighbour_contribution(const double & distance, ClusterRefKey<Order, Layer> &) {
+        return Parent::compute_neighbour_contribution(distance, this->fac_a);
+      }
+
+      inline Matrix_Ref compute_neighbour_contribution(const double & distance) {
         return Parent::compute_neighbour_contribution(distance, this->fac_a);
       }
 
@@ -694,8 +694,8 @@ namespace rascal {
     /* For the a constant smearing type the "a" factor can be precomputed and when using the interpolator has to be initialized and used.
      */
     template <RadialBasisType RBT>
-    struct RadialContributionSuite<
-         RBT, AtomicSmearingType::Constant, InterpolatorType::WithIntp> : 
+    struct RadialContributionHandler<
+         RBT, AtomicSmearingType::Constant, OptimizationType::Interpolator> : 
         public RadialContribution<RBT> {
      public:
       using Parent = RadialContribution<RBT>;
@@ -704,14 +704,14 @@ namespace rascal {
       using Matrix_Ref = typename Parent::Matrix_Ref;
       using Interpolator_t = math::InterpolatorVectorized_t;
 
-      RadialContributionSuite(const Hypers_t & hypers) : Parent(hypers) {
+      RadialContributionHandler(const Hypers_t & hypers) : Parent(hypers) {
         this->precompute_fac_a();
 
         this->init_interpolator(hypers);
       }
 
       // If we find a case where smarter parameters for x1 and x2 can given
-      RadialContributionSuite(const Hypers_t & hypers, double x1, double x2, double accuracy) : Parent(hypers) {
+      RadialContributionHandler(const Hypers_t & hypers, double x1, double x2, double accuracy) : Parent(hypers) {
         this->precompute_fac_a();
         this->init_interpolator(x1, x2, accuracy);
       }
@@ -745,6 +745,7 @@ namespace rascal {
 
      protected:
       void init_interpolator(double range_begin, double range_end, double accuracy) {
+        //TODO(alex) adapt interpolator such that Matrix_Ref can be used
         // "this" is passed by reference and is mutable
         std::function<Matrix_t(double)> func{
           [&](double distance) mutable {
@@ -808,14 +809,14 @@ namespace rascal {
         radial_integral);
   }
 
-  template <internal::RadialBasisType RBT, internal::AtomicSmearingType AST, internal::InterpolatorType IT>
+  template <internal::RadialBasisType RBT, internal::AtomicSmearingType AST, internal::OptimizationType IT>
   decltype(auto) downcast_radial_integral_suite(
       const std::shared_ptr<internal::RadialContributionBase> &
           radial_integral) {
-    return std::static_pointer_cast<internal::RadialContributionSuite<RBT, AST, IT>>(radial_integral);
+    return std::static_pointer_cast<internal::RadialContributionHandler<RBT, AST, IT>>(radial_integral);
   }
 
-  // TODO(alex) adapt to RadialContributionSuite
+  // TODO(alex) adapt to RadialContributionHandler
   //template <internal::RadialBasisType Type, class Hypers>
   //decltype(auto) make_radial_integral_suite(const Hypers & basis_hypers) {
   //  return std::static_pointer_cast<internal::RadialContributionBase>(
@@ -866,7 +867,7 @@ namespace rascal {
       using internal::CutoffFunctionType;
       using internal::RadialBasisType;
       using internal::AtomicSmearingType;
-      using internal::InterpolatorType;
+      using internal::OptimizationType;
 
       this->hypers = hypers;
 
@@ -934,16 +935,16 @@ namespace rascal {
         if (optimization_hypers.find("type") != optimization_hypers.end()) {
           auto intp_type_name{optimization_hypers.at("type").get<std::string>()};
           if (intp_type_name.compare("Spline") == 0) {
-            this->interpolator_type = InterpolatorType::WithIntp;
+            this->interpolator_type = OptimizationType::Interpolator;
           } else {
             std::runtime_error("Wrongly configured optimization type. Remove optimization flag or use as type \'Spline\'");
-            this->interpolator_type = InterpolatorType::NoIntp;
+            this->interpolator_type = OptimizationType::Nothing;
           }
         } else {  // Default false (don't use interpolator)          
-          this->interpolator_type = InterpolatorType::NoIntp;
+          this->interpolator_type = OptimizationType::Nothing;
         }
       } else {  // Default false (don't use interpolator)
-        this->interpolator_type = InterpolatorType::NoIntp;
+        this->interpolator_type = OptimizationType::Nothing;
       }
       
       // interpolator end 
@@ -953,25 +954,24 @@ namespace rascal {
                                      this->interpolator_type)) {
       case internal::combineEnums(RadialBasisType::GTO,
                                   AtomicSmearingType::Constant,
-                                  InterpolatorType::NoIntp): {
+                                  OptimizationType::Nothing): {
         auto rc_shared = std::make_shared<
-            internal::RadialContributionSuite<
+            internal::RadialContributionHandler<
                 RadialBasisType::GTO,
                 AtomicSmearingType::Constant, 
-                InterpolatorType::NoIntp
+                OptimizationType::Nothing
             >>(hypers);
         this->radial_integral = rc_shared;
         break;
       }
       case internal::combineEnums(RadialBasisType::GTO,
                                   AtomicSmearingType::Constant,
-                                  InterpolatorType::WithIntp): {
-        //std::cout << "chosen" << std::endl;
+                                  OptimizationType::Interpolator): {
         auto rc_shared = std::make_shared<
-            internal::RadialContributionSuite<
+            internal::RadialContributionHandler<
                 RadialBasisType::GTO,
                 AtomicSmearingType::Constant, 
-                InterpolatorType::WithIntp
+                OptimizationType::Interpolator
             >>(hypers);
         this->radial_integral = rc_shared;
         break;
@@ -1042,7 +1042,7 @@ namespace rascal {
     template <internal::CutoffFunctionType FcType,
               internal::RadialBasisType RadialType,
               internal::AtomicSmearingType SmearingType,
-              internal::InterpolatorType IntpType>
+              internal::OptimizationType OptType>
     void compute_impl();
 
     std::vector<Precision_t> & get_representation_raw_data() {
@@ -1104,7 +1104,7 @@ namespace rascal {
     std::shared_ptr<internal::RadialContributionBase> radial_integral{};
     internal::RadialBasisType radial_integral_type{};
 
-    internal::InterpolatorType interpolator_type{};
+    internal::OptimizationType interpolator_type{};
 
     std::shared_ptr<internal::CutoffFunctionBase> cutoff_function{};
     internal::CutoffFunctionType cutoff_function_type{};
@@ -1138,25 +1138,25 @@ namespace rascal {
     // specialize based on the type of radial contribution
     using internal::AtomicSmearingType;
     using internal::RadialBasisType;
-    using internal::InterpolatorType;
+    using internal::OptimizationType;
 
     switch (internal::combineEnums(this->radial_integral_type,
                                    this->atomic_smearing_type,
                                    this->interpolator_type)) {
     case internal::combineEnums(RadialBasisType::GTO,
                                 AtomicSmearingType::Constant,
-                                InterpolatorType::NoIntp): {
+                                OptimizationType::Nothing): {
       this->compute_impl<FcType, RadialBasisType::GTO,
                          AtomicSmearingType::Constant,
-                         InterpolatorType::NoIntp>();
+                         OptimizationType::Nothing>();
       break;
     }
     case internal::combineEnums(RadialBasisType::GTO,
                                 AtomicSmearingType::Constant,
-                                InterpolatorType::WithIntp): {
+                                OptimizationType::Interpolator): {
       this->compute_impl<FcType, RadialBasisType::GTO,
                          AtomicSmearingType::Constant,
-                         InterpolatorType::WithIntp>();
+                         OptimizationType::Interpolator>();
       break;
     }
     default:
@@ -1174,7 +1174,7 @@ namespace rascal {
   template <internal::CutoffFunctionType FcType,
             internal::RadialBasisType RadialType,
             internal::AtomicSmearingType SmearingType,
-            internal::InterpolatorType IntpType>
+            internal::OptimizationType OptType>
   void RepresentationManagerSphericalExpansion<Mngr>::compute_impl() {
     using internal::n_spatial_dimensions;
     using math::PI;
@@ -1184,7 +1184,7 @@ namespace rascal {
     auto cutoff_function{
         downcast_cutoff_function<FcType>(this->cutoff_function)};
     auto radial_integral{
-        downcast_radial_integral_suite<RadialType, SmearingType, IntpType>(this->radial_integral)};
+        downcast_radial_integral_suite<RadialType, SmearingType, OptType>(this->radial_integral)};
 
     auto n_row{this->max_radial};
     auto n_col{(this->max_angular + 1) * (this->max_angular + 1)};

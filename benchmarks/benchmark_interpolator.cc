@@ -15,6 +15,7 @@ namespace rascal {
       // TODO(alex) I would like to print interpolator information, but it is covered under a lot of layers
       state.counters.insert({
           {"max_radial", fix.max_radial},
+          {"max_angular", fix.max_radial},
           {"cutoff", fix.cutoff},
           {"nb_neighbours", fix.nb_neighbours}
         });
