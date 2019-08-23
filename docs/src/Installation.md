@@ -53,18 +53,16 @@ make
 
 3. <b>Documentation</b>
 
-    The documentation relies on the sphinx, breathe, doxygen and graphviz packages. To install them on ubuntu:
+    The current documentation relies on the doxygen package. To install it on ubuntu:
 ```Shell
-pip3 install sphinx sphinx_rtd_theme breathe
-sudo apt-get install doxygen graphviz
+sudo apt-get install doxygen
 ```
-    Then to build the documentation run:
+    The documentation is located in the librascal/docs/documentation/html folder. The source files for the documentation are located in the librascal/docs/src folder. 
+    To rebuild the documentation, run the 
 ```Shell
-cd build
-cmake -DENABLE_DOC=ON  ..
-make dev_doc
+doxygen Config
 ```
-
+    in the librascal/docs/src folder.
 4. <b>Bindings</b>
 
       Librascal relies on the pybind11 library to automate the generation of the python bindings which are built by default. Nevertheless, to build only the c++ library:

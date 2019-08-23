@@ -3,8 +3,9 @@
   <!-- Navigation index tabs for HTML output -->
   <navindex>
     <tab type="mainpage" visible="yes" title="Main page"/>
+    <tab type="user" url="md_Whitepaper.html" title="Whitepaper"/>
     <tab type="user" url="md_Installation.html" title="Installation"/>
-    <tab type="usergroup" title="Tutorial">
+    <tab type="usergroup" title="Tutorials">
       <tab type="user" url="md_Tutorial.html" title="Formation energies"/>
       <tab type="user" url="md_Tutorial_CS.html" title="Chemical shifts"/>
     </tab>
@@ -24,7 +25,14 @@
       <tab type="hierarchy" visible="yes" title="" intro=""/>
       <tab type="classmembers" visible="yes" title="" intro=""/>
     </tab>
-    <tab type="files" visible="yes" title="">
+    <tab type="usergroup" url="md_NeighbourLM.html" title="Neighbour List Manager"/>
+    <tab type="usergroup" title="Developer guide">
+      <tab type="user" url="md_Convention.html" title="Coding convention"/>
+      <tab type="user" url="md_HowtoContr.html" title="How to contribute"/>
+      <tab type="user" url="md_HowtoRepr.html" title="How to add a new representation"/>
+      <tab type="user" url="md_HowtoTest.html" title="How to write a test"/>
+    </tab>
+    <tab type="files" visible="yes" title="Auto Documentation">
       <tab type="filelist" visible="no" title="" intro=""/>
       <tab type="globals" visible="no" title="" intro=""/>
     </tab>
