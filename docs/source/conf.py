@@ -58,8 +58,9 @@ sys.path.insert(0,import_path)
 
 
 print("rascal_path = '{}'".format(rascal_path))
-subprocess.call('ls; pwd', shell=True)
-subprocess.call("cd {} && doxygen".format(rascal_path), shell=True)
+# NO - do it in the sensible way, as a makefile target!
+# subprocess.call('ls; pwd', shell=True)
+# subprocess.call("cd {} && doxygen".format(rascal_path), shell=True)
 
 breathe_projects = {"rascal": os.path.join(rascal_path, "doxygenxml")}
 breathe_default_project = "rascal"
