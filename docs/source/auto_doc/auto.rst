@@ -11,4 +11,5 @@ For more details about the methods, the interfaces and the classes implemented i
 
    auto_python
    auto_cpp
+   auto_cpp_index
 

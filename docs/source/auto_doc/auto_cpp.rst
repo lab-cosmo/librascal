@@ -1,37 +1,23 @@
 .. _auto_cpp:
 
-C++
----
+C++ documentation
+-----------------
 
-.. .. doxygenfile:: src/structure_managers/structure_manager_centers.hh
+Outline
+=======
 
-Representation
-**************
-
-Interfaces
-~~~~~~~~~~~
-
-Classes
-~~~~~~~
-
-Models
-******
-
-Interfaces
-~~~~~~~~~~~
-
-Classes
-~~~~~~~
-
-Neighbor list manager
-*********************
-
-Interfaces
-~~~~~~~~~~~
-
-Classes
-~~~~~~~
-
-.. .. doxygenindex::
+ .. doxygennamespace:: rascal
     :project: rascal
+    :members:
+    :outline:
 
+Classes
+=======
+
+ .. just try an example with latex markup
+
+ .. doxygenclass:: rascal::math::SphericalHarmonics
+    :project: rascal
+    :members:
+
+(TODO)
