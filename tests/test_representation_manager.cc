@@ -221,7 +221,8 @@ namespace rascal {
       RepresentationFixture<SingleHypersSphericalRepresentation,
                             RepresentationManagerSphericalExpansion>,
       RepresentationFixture<SingleHypersSphericalRepresentation,
-                            RepresentationManagerSOAP>
+                            RepresentationManagerSphericalInvariants>
+      // TODO(alex) move this to spherical_expansion_radial_derivative
       //RepresentationFixture<MultipleStructureSOAP,
       //                      RepresentationManagerSphericalExpansion>
                               >;
@@ -259,7 +260,6 @@ namespace rascal {
           grad_fix.advance_center();
         } while (grad_fix.has_next());
         ++filename_it;
-        representations.clear(); // TODO(max) error because end is not reach do some whie .end() was reached loop
       //}
     }
   }
