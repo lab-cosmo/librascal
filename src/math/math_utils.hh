@@ -29,8 +29,6 @@
 #ifndef SRC_MATH_MATH_UTILS_HH_
 #define SRC_MATH_MATH_UTILS_HH_
 
-// #include "math_interface.hh"
-
 #include <Eigen/Dense>
 #include <cmath>
 #include <limits>
@@ -45,7 +43,7 @@ namespace rascal {
    * for unsigned long. Both have equivalent underlying storage but not the
    * same type...
    */
-  constexpr std::size_t operator"" _z(unsigned long long int n) {  // NOLINT
+  constexpr std::size_t operator"" _n(unsigned long long int n) {  // NOLINT
     return n;
   }
 
@@ -54,7 +52,8 @@ namespace rascal {
     // Reminder: C++ floating-point literals are automatically of type double
     /// Pi to more digits than anyone could possibly need
     const double PI = 3.14159265358979323846264338327950288419716939937510;
-    const double SQRT_PI = 1.7724538509055160272981674833411451827975494561223871282;
+    const double SQRT_PI =
+        1.7724538509055160272981674833411451827975494561223871282;
     const double SQRT_TWO = std::sqrt(2.0);
     const double INV_SQRT_TWO = std::sqrt(0.5);
     const double SQRT_THREE = std::sqrt(3.0);

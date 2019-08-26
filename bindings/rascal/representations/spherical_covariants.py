@@ -11,7 +11,7 @@ import numpy as np
 class SphericalCovariants(object):
 
     """
-    Computes a SphericalCovariants representation, e.g. lambda spectrum.
+    Computes a SphericalCovariants representation, i.e. lambda spectrum.
 
     Hyperparameters
     ----------
@@ -55,9 +55,10 @@ class SphericalCovariants(object):
         Compute the representation for a list of ase.Atoms object.
 
 
-    .. [soap] Bartók, Kondor, and Csányi, "On representing chemical
-        environments", Phys. Rev. B. 87(18), p. 184115
-        http://link.aps.org/doi/10.1103/PhysRevB.87.184115
+    .. [lambda-soap] Grisafi, A., Wilkins, D. M., Csányi, G., & Ceriotti, M.
+    (2018). Symmetry-Adapted Machine Learning for Tensorial Properties of
+    Atomistic Systems. Physical Review Letters, 120(3), 036002.
+    https://doi.org/10.1103/PhysRevLett.120.036002
 
     """
 
@@ -137,7 +138,8 @@ class SphericalCovariants(object):
         allowed_keys = {'interaction_cutoff', 'cutoff_smooth_width',
                         'max_radial', 'max_angular', 'gaussian_sigma_type',
                         'gaussian_sigma_constant', 'n_species', 'soap_type',
-                        'inversion_symmetry', 'lam', 'cutoff_function', 'normalize', 'gaussian_density', 'radial_contribution'}
+                        'inversion_symmetry', 'lam', 'cutoff_function',
+                        'normalize', 'gaussian_density', 'radial_contribution'}
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}
         self.hypers.update(hypers_clean)
@@ -196,28 +198,33 @@ class SphericalCovariants(object):
         """
         if self.hypers['soap_type'] == 'LambdaSpectrum':
             if self.hypers['inversion_symmetry'] == True:
-                n_col = np.ceil((self.hypers['max_angular'] + 1)**2/2.0) - \
-                    (1.0 + np.floor((self.hypers['lam'] - 1)/2.0))**2 - \
+                n_col = (np.ceil((self.hypers['max_angular'] + 1)**2/2.0) -
+                    (1.0 + np.floor((self.hypers['lam'] - 1)/2.0))**2 -
                     np.floor((self.hypers['max_angular'] + 1 -
-                              self.hypers['lam'])**2/2.0)*(self.hypers['lam'] % 2) - \
+                              self.hypers['lam'])**2/2.0)
+                        * (self.hypers['lam'] % 2) -
                     (np.ceil((self.hypers['max_angular'] + 1 -
                               self.hypers['lam'])**2/2.0) -
                      (self.hypers['max_angular'] -
-                      self.hypers['lam'] + 1)) * \
-                    (1.0 - self.hypers['lam'] % 2)
+                      self.hypers['lam'] + 1)) *
+                    (1.0 - self.hypers['lam'] % 2))
                 if (self.hypers['lam'] % 2 == 1):
                     n_col = -n_col + 0.5*(2.0 + self.hypers['lam'] -
-                                          3*self.hypers['lam']**2 +
-                                          2*self.hypers['max_angular'] +
-                                          4*self.hypers['lam']*self.hypers['max_angular'])
+                                          3 * self.hypers['lam']**2 +
+                                          2 * self.hypers['max_angular'] +
+                                          4 * self.hypers['lam']
+                                            * self.hypers['max_angular'])
                 n_col *= (2*self.hypers['lam'] + 1)
-                return int(n_col*self.hypers['n_species']**2*self.hypers['max_radial']**2)
+                return int(n_col * self.hypers['n_species']**2
+                           * self.hypers['max_radial']**2)
             else:
-                return (self.hypers['n_species']**2*self.hypers['max_radial']**2 *
+                return (self.hypers['n_species']**2 *
+                        self.hypers['max_radial']**2 *
                         int((2 + self.hypers['lam'] - 3*self.hypers['lam']**2 +
-                             2*self.hypers['max_angular'] +
-                             4*self.hypers['lam']*self.hypers['max_angular'])/2) *
+                             2 * self.hypers['max_angular'] +
+                             4 * self.hypers['lam']
+                               * self.hypers['max_angular'])/2) *
                         (2*self.hypers['lam'] + 1))
         else:
-            raise RuntimeError('Only soap_type = LambdaSpectrum '
-                               'implemented for now')
+            raise ValueError('Only soap_type = LambdaSpectrum '
+                             'implemented for now')

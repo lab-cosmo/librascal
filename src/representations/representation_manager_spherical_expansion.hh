@@ -618,7 +618,7 @@ namespace rascal {
         this->radial_integral_neighbour.resize(this->max_radial,
                                                this->max_angular + 1);
         this->radial_neighbour_derivative.resize(this->max_radial,
-                                               this->max_angular + 1);
+                                                 this->max_angular + 1);
         this->radial_integral_center.resize(this->max_radial);
 
         // find the cutoff radius of the representation
@@ -636,7 +636,8 @@ namespace rascal {
           this->atomic_smearing =
               make_atomic_smearing<AtomicSmearingType::Constant>(
                   smearing_hypers);
-          this->smearing = smearing_hypers.at("gaussian_sigma").at("value").get<double>();
+          this->smearing =
+              smearing_hypers.at("gaussian_sigma").at("value").get<double>();
         } else {
           throw std::logic_error(
               "Requested Gaussian sigma type \'" + smearing_type +
@@ -654,8 +655,8 @@ namespace rascal {
         // x and not x^2 because in the kernel formulation the r^2 from the
         // jacobian gets split out into each of the expansion coefficients
         // so only x
-        this->legendre_radial_factor = point_weight.col(1).array().sqrt()*
-                                       point_weight.col(0).array();
+        this->legendre_radial_factor =
+            point_weight.col(1).array().sqrt() * point_weight.col(0).array();
 
         this->legendre_points = point_weight.col(0);
 
@@ -701,7 +702,7 @@ namespace rascal {
             this->legendre_radial_factor.asDiagonal() *
             this->bessel.get_values().matrix();
 
-            return Matrix_Ref(this->radial_integral_neighbour);
+        return Matrix_Ref(this->radial_integral_neighbour);
       }
 
       /**
@@ -739,11 +740,11 @@ namespace rascal {
       }
 
       template <typename Coeffs>
-      void finalize_coefficients(Coeffs & /*coefficients*/) const { }
+      void finalize_coefficients(Coeffs & /*coefficients*/) const {}
 
       template <typename Coeffs, typename Center>
       void finalize_coefficients_der(Coeffs & /*coefficients_gradient*/,
-                                     Center & /*center*/) const { }
+                                     Center & /*center*/) const {}
 
       math::ModifiedSphericalBessel bessel{};
 
@@ -766,7 +767,6 @@ namespace rascal {
       Vector_t legendre_radial_factor{};
       Vector_t legendre_points{};
       Vector_t legendre_points2{};
-
     };
 
   }  // namespace internal
@@ -870,10 +870,10 @@ namespace rascal {
         this->radial_integral = rc_shared;
         this->radial_integral_type = RadialBasisType::DVR;
       } else {
-        throw std::logic_error(
-            "Requested Radial contribution type \'" + radial_contribution_type +
-            "\' has not been implemented.  Must be one of" + ": \'GTO\' "
-            + " \'DVR\'. ");
+        throw std::logic_error("Requested Radial contribution type \'" +
+                               radial_contribution_type +
+                               "\' has not been implemented.  Must be one of" +
+                               ": \'GTO\' " + " \'DVR\'. ");
       }
 
       auto fc_hypers = hypers.at("cutoff_function").get<json>();
@@ -939,6 +939,13 @@ namespace rascal {
               internal::AtomicSmearingType SmearingType>
     void compute_impl();
 
+    /**
+     * Return the raw data for the representation
+     *
+     * @warning placeholder -- doesn't actually return anything meaningful
+     *
+     * Will be replaced when the representation calculator is implemented
+     */
     std::vector<Precision_t> & get_representation_raw_data() {
       return this->dummy;
     }
@@ -987,6 +994,7 @@ namespace rascal {
     size_t n_species{};
     bool compute_gradients{};
 
+    //! Unused variable, will be eliminated with the representation calculator
     std::vector<Precision_t> dummy{};
 
     ManagerPtr_t structure_manager;

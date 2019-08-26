@@ -120,17 +120,17 @@ namespace rascal {
 
     std::vector<json> fc_hypers{
         {{"type", "Cosine"},
-         {"cutoff", {{"value", 3.0}, {"unit", "A"}}},
-         {"smooth_width", {{"value", 0.5}, {"unit", "A"}}}},
+         {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
+         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}},
         {{"type", "Cosine"},
-         {"cutoff", {{"value", 2.0}, {"unit", "A"}}},
-         {"smooth_width", {{"value", 1.0}, {"unit", "A"}}}}};
+         {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
+         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
 
     std::vector<json> density_hypers{
         {{"type", "Constant"},
-         {"gaussian_sigma", {{"value", 0.2}, {"unit", "A"}}}},
+         {"gaussian_sigma", {{"value", 0.2}, {"unit", "AA"}}}},
         {{"type", "Constant"},
-         {"gaussian_sigma", {{"value", 0.4}, {"unit", "A"}}}}};
+         {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
 
     std::vector<json> rep_hypers{{{"max_radial", 6},
@@ -438,16 +438,16 @@ namespace rascal {
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
-   std::vector<json> rep_hypers{{{"max_radial", 2},
-                                 {"max_angular", 2},
-                                 {"normalize", true},
-                                 {"soap_type", "PowerSpectrum"},
-                                 {"compute_gradients", true}},
-                                {{"max_radial", 4},
-                                 {"max_angular", 0},
-                                 {"normalize", true},
-                                 {"soap_type", "RadialSpectrum"},
-                                 {"compute_gradients", true}}};
+    std::vector<json> rep_hypers{{{"max_radial", 2},
+                                  {"max_angular", 2},
+                                  {"normalize", true},
+                                  {"soap_type", "PowerSpectrum"},
+                                  {"compute_gradients", true}},
+                                 {{"max_radial", 4},
+                                  {"max_angular", 0},
+                                  {"normalize", true},
+                                  {"soap_type", "RadialSpectrum"},
+                                  {"compute_gradients", true}}};
   };
 
   struct SphericalExpansionTestData : TestData {
@@ -549,7 +549,7 @@ namespace rascal {
       auto & data_sparse{representation.get_representation_sparse()};
       auto & gradients_sparse{representation.get_gradient_sparse()};
       auto & data_center{data_sparse[center]};
-      auto keys_center = data_sparse.get_keys(center);
+      auto keys_center = gradients_sparse.get_keys(center);
       Key_t center_key{center.get_atom_type()};
       size_t n_entries_per_key{static_cast<size_t>(data_sparse.get_nb_comp())};
       size_t n_entries_center{n_entries_per_key * keys_center.size()};
@@ -605,7 +605,7 @@ namespace rascal {
       auto & data_sparse{representation.get_representation_sparse()};
       auto & gradients_sparse{representation.get_gradient_sparse()};
       auto & gradients_center{gradients_sparse[center]};
-      auto keys_center = data_sparse.get_keys(center);
+      auto keys_center = gradients_center.get_keys();
       size_t n_entries_per_key{static_cast<size_t>(data_sparse.get_nb_comp())};
       size_t n_entries_center{n_entries_per_key * keys_center.size()};
       size_t n_entries_neighbours{0};

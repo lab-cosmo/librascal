@@ -248,7 +248,7 @@ namespace rascal {
             calculator(representations.back(), manager, structures.back());
         RepresentationManagerGradientFixture<typename Fix::Representation_t>
             grad_fix("reference_data/spherical_expansion_gradient_test.json",
-                    manager, calculator);
+                     manager, calculator);
         if (grad_fix.verbosity >= GradientTestFixture::VerbosityValue::INFO) {
           std::cout << "Testing structure: " << *filename_it << std::endl;
         }

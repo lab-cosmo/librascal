@@ -1,11 +1,11 @@
 /**
- * file   soap_example.cc
+ * file   spherical_invariants_example.cc
  *
  * @author Max Veit <max.veit@epfl.ch>
  *
  * @date   26 June 2019
  *
- * @brief  Example for profiling the spherical expansion and SOAP
+ * @brief  Example for computing the spherical invariants (SOAP)
  *
  * Copyright © 2018 Max Veit, Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -106,11 +106,11 @@ int main(int argc, char * argv[]) {
   // something
   std::cout << "Expansion of first " << n_centers_print << " centers:";
   std::cout << std::endl;
-  std::cout << "Note that the coefficients are printed with species along the "
-               "columns and n-l-m along the rows."
+  std::cout << "Note that the coefficients are printed with species pairs along"
+               " the columns and n-n'-l along the rows."
             << std::endl;
   std::cout << "Gradients are printed with: First Cartesian component, "
-               "then species pairs, along the rows; n-n'-l along the columns.";
+               "then species pairs, along the columns; n-n'-l along the rows.";
   std::cout << std::endl;
   size_t center_count{0};
   for (auto center : manager) {
@@ -124,11 +124,36 @@ int main(int argc, char * argv[]) {
     std::cout << " of type " << center.get_atom_type() << std::endl;
     std::cout << representation.soap_vectors.get_dense_row(center);
     std::cout << std::endl;
+    auto keys_center = representation.soap_vectors[center].get_keys();
+    std::cout << "Center data keys: ";
+    for (auto key : keys_center) {
+      std::cout << "(";
+      for (auto key_sp : key) {
+        std::cout << key_sp << ", ";
+      }
+      std::cout << "\b\b) ";
+    }
+    std::cout << std::endl;
+    auto keys_grad_center =
+        representation.soap_vector_gradients[center].get_keys();
+    std::cout << "Center gradient keys: ";
+    for (auto key : keys_grad_center) {
+      std::cout << "(";
+      for (auto key_sp : key) {
+        std::cout << key_sp << ", ";
+      }
+      std::cout << "\b\b) ";
+    }
+    std::cout << std::endl;
     std::cout << "Gradient of this expansion wrt center pos: " << std::endl;
+    // clang-format off
+    // makes an absolute mess of the below
     std::cout << Eigen::Map<Eigen::MatrixXd>(
-        representation.soap_vector_gradients.get_dense_row(center).data(),
-        3 * n_species_center,
-        representation.soap_vector_gradients.get_nb_comp());
+           representation.soap_vector_gradients.get_dense_row(center).data(),
+           3 * n_species_center,
+           representation.soap_vector_gradients.get_nb_comp())
+      .transpose();
+    // clang-format on
     std::cout << std::endl;
     size_t neigh_count{0};
     for (auto neigh : center) {
@@ -147,10 +172,13 @@ int main(int argc, char * argv[]) {
       std::cout << std::endl;
       std::cout << "Gradient of the above wrt atom " << neigh.back();
       std::cout << " of type " << neigh.get_atom_type() << std::endl;
+      // clang-format off
       std::cout << Eigen::Map<Eigen::MatrixXd>(
           representation.soap_vector_gradients.get_dense_row(neigh).data(),
           3 * n_species_center,
-          representation.soap_vector_gradients.get_nb_comp());
+          representation.soap_vector_gradients.get_nb_comp())
+        .transpose();
+      // clang-format on
       std::cout << std::endl;
       ++neigh_count;
     }

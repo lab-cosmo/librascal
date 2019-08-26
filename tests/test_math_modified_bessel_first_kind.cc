@@ -33,30 +33,29 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(MathBesselFirstKindTests);
 
   /* ----------------------------------------------------------------------
-  */
+   */
   /**
    * Check the implementation of the modified bessel function of the first
    * kind against mpmath v1.1.0
    */
-  BOOST_FIXTURE_TEST_CASE(math_bessel_test,
-  ModifiedBesselFirstKindRefFixture) {
-
-    json& i_complete_square_ref{this->ref_data["i_complete_square"]};
+  BOOST_FIXTURE_TEST_CASE(math_bessel_test, ModifiedBesselFirstKindRefFixture) {
+    json & i_complete_square_ref{this->ref_data["i_complete_square"]};
     for (auto & data : i_complete_square_ref) {
       auto xs{data["xs"].get<std::vector<double>>()};
       Eigen::Map<Eigen::ArrayXd> xns(&xs[0], xs.size());
       double alpha{data["alpha"]}, rij{data["rij"]};
       auto ref_vals{data["vals"].get<std::vector<std::vector<double>>>()};
       size_t max_order{data["max_order"]};
-      this->j_v_complete_square.precompute(max_order-1, xns);
+      this->j_v_complete_square.precompute(max_order - 1, xns);
       this->j_v_complete_square.calc(rij, alpha);
       auto vals{this->j_v_complete_square.get_values()};
 
-      for (size_t i_x{0}; i_x < xs.size(); ++i_x){
+      for (size_t i_x{0}; i_x < xs.size(); ++i_x) {
         for (size_t order{0}; order < max_order; ++order) {
           double rel_error{0.};
           if (ref_vals[i_x][order] > 0) {
-            rel_error = std::abs(vals(i_x, order) - ref_vals[i_x][order]) / ref_vals[i_x][order];
+            rel_error = std::abs(vals(i_x, order) - ref_vals[i_x][order]) /
+                        ref_vals[i_x][order];
           } else {
             rel_error = ref_vals[i_x][order];
           }
@@ -66,14 +65,14 @@ namespace rascal {
           if (ref_vals[i_x][order] > 1e-90 and vals(i_x, order) > 1e-90) {
             if ((rel_error > 1e3 * math::dbl_ftol) and this->verbose) {
               std::cout << " order=" << order << " x=" << xs[i_x]
-              << " alpha=" << alpha << " rij=" << rij
-              << " diff=" << rel_error << " ref=" << ref_vals[i_x][order] << " val=" << vals(i_x, order)<< std::endl;
+                        << " alpha=" << alpha << " rij=" << rij
+                        << " diff=" << rel_error
+                        << " ref=" << ref_vals[i_x][order]
+                        << " val=" << vals(i_x, order) << std::endl;
             }
 
             BOOST_CHECK_LE(rel_error, 1e3 * math::dbl_ftol);
-
           }
-
         }
         // break;
       }
@@ -81,6 +80,7 @@ namespace rascal {
   }
 
   /* ----------------------------------------------------------------------
-  */ BOOST_AUTO_TEST_SUITE_END();
+   */
+  BOOST_AUTO_TEST_SUITE_END();
 
 }  // namespace rascal

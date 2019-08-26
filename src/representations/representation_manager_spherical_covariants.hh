@@ -68,10 +68,12 @@ namespace rascal {
         this->lambda = hypers.at("lam").get<size_t>();
 
         // get the number of non zero elements in the w3j
+        // Use the well-known selection rules for the Wigner 3j symbols
         int n_elements{0};
         size_t l3{this->lambda};
         for (size_t l1{0}; l1 < this->max_angular + 1; ++l1) {
           for (size_t l2{0}; l2 < this->max_angular + 1; ++l2) {
+            // Triangle rule
             if (l1 < static_cast<size_t>(std::abs<int>(l2 - l3)) ||
                 l1 > l2 + l3) {
               continue;
@@ -87,7 +89,8 @@ namespace rascal {
                 int m2s{static_cast<int>(m2 - l2)};
                 for (size_t m3{0}; m3 < 2 * l3 + 1; m3++) {
                   int m3s{static_cast<int>(m3 - l3)};
-                  if (m1s + m2s + m3s != 0 && m1s + m2s - m3s != 0) {
+                  // Selection rule for m
+                  if ((m1s + m2s + m3s != 0) && (m1s + m2s - m3s != 0)) {
                     continue;
                   }
                   ++n_elements;
@@ -97,14 +100,14 @@ namespace rascal {
           }
         }
 
-        this->w3js.resize(n_elements);
+        this->wigner_3js.resize(n_elements);
         n_elements = 0;
         wig_table_init(2 * (this->max_angular + 1), 3);
         wig_temp_init(2 * (this->max_angular + 1));
         for (size_t l1{0}; l1 < this->max_angular + 1; ++l1) {
           for (size_t l2{0}; l2 < this->max_angular + 1; ++l2) {
-            if (l1 < static_cast<size_t>(std::abs<int>(l2 - l3)) ||
-                l1 > l2 + l3) {
+            if ((l1 < static_cast<size_t>(std::abs<int>(l2 - l3))) ||
+                (l1 > l2 + l3)) {
               continue;
             }
             if (this->inversion_symmetry == true) {
@@ -118,7 +121,7 @@ namespace rascal {
                 int m2s{static_cast<int>(m2 - l2)};
                 for (size_t m3{0}; m3 < 2 * l3 + 1; m3++) {
                   int m3s{static_cast<int>(m3 - l3)};
-                  if (m1s + m2s + m3s != 0 && m1s + m2s - m3s != 0) {
+                  if ((m1s + m2s + m3s != 0) && (m1s + m2s - m3s != 0)) {
                     continue;
                   }
                   double w3j1{wig3jj(2 * l1, 2 * l2, 2 * l3, 2 * m1s, 2 * m2s,
@@ -126,22 +129,24 @@ namespace rascal {
                   double w3j2{wig3jj(2 * l1, 2 * l2, 2 * l3, 2 * m1s, 2 * m2s,
                                      -2 * m3s)};
                   if (m3s > 0) {
-                    this->w3js(n_elements) =
-                        (w3j2 + math::pow(-1, m3s) * w3j1) / std::sqrt(2.0);
+                    this->wigner_3js(n_elements) =
+                        (w3j2 + math::pow(-1, m3s) * w3j1) * math::INV_SQRT_TWO;
                   } else if (m3s < 0) {
-                    this->w3js(n_elements) =
-                        ((w3j1 - math::pow(-1, m3s) * w3j2)) / std::sqrt(2.0);
+                    this->wigner_3js(n_elements) =
+                        ((w3j1 - math::pow(-1, m3s) * w3j2)) *
+                        math::INV_SQRT_TWO;
                   } else if (m3s == 0) {
-                    this->w3js(n_elements) = w3j1;
+                    this->wigner_3js(n_elements) = w3j1;
                   }
                   //*/
                   // change to the following for agreement with SOAPFAST
                   //(different definition of the real spherical harmonics)
                   /*
-                  if (m3s > 0) { this->w3js.push_back((w3j1 + pow(-1,
+                  if (m3s > 0) { this->wigner_3js.push_back((w3j1 + pow(-1,
                   m3s)*w3j2)/sqrt(2.0)); } else if (m3s == 0) {
-                  this->w3js.push_back(w3j1); } else if (m3s < 0) {
-                  this->w3js.push_back(((w3j2 - pow(-1, m3s)*w3j1))/sqrt(2.0));
+                  this->wigner_3js.push_back(w3j1); } else if (m3s < 0) {
+                  this->wigner_3js.push_back(((w3j2 - pow(-1,
+                  m3s)*w3j1))/sqrt(2.0));
                   }
                   */
                   ++n_elements;
@@ -156,7 +161,7 @@ namespace rascal {
 
       size_t max_angular{0};
       bool inversion_symmetry{false};
-      Eigen::ArrayXd w3js{};
+      Eigen::ArrayXd wigner_3js{};
       size_t lambda{2};
     };
 
@@ -243,6 +248,13 @@ namespace rascal {
       }
     }
 
+    /**
+     * Return the raw data for the representation
+     *
+     * @warning placeholder -- doesn't actually return anything meaningful
+     *
+     * Will be replaced when the representation calculator is implemented
+     */
     std::vector<Precision_t> & get_representation_raw_data() {
       return this->dummy;
     }
@@ -279,6 +291,7 @@ namespace rascal {
                internal::enumSize<internal::SphericalCovariantsType>()>
         precompute_spherical_covariants{};
     std::string spherical_covariants_type_str{};
+    //! Placeholder, will be eliminated with the representation calculator
     std::vector<Precision_t> dummy{};
     bool inversion_symmetry{false};
     size_t lambda{0};
@@ -303,29 +316,29 @@ namespace rascal {
       Mngr>::initialize_percenter_lambda_soap_vectors() {
     using math::pow;
 
-    size_t n_row{pow(this->max_radial, 2_z)};
+    size_t n_row{pow(this->max_radial, 2_n)};
     // number of combinations of l1 and l2 satisfying the triangle constraint
     size_t n_col{0};
     if (this->inversion_symmetry == false) {
       n_col = static_cast<size_t>(
-          (2 + this->lambda - 3 * pow(this->lambda, 2_z) +
+          (2 + this->lambda - 3 * pow(this->lambda, 2_n) +
            2 * this->max_angular + 4 * this->lambda * this->max_angular) /
           2 * (2 * this->lambda + 1));
     } else {
       n_col =
           static_cast<size_t>(
-              std::ceil(pow(this->max_angular + 1, 2_z) / 2.0) -
+              std::ceil(pow(this->max_angular + 1, 2_n) / 2.0) -
               pow(1.0 + std::floor((this->lambda - 1) / 2.0), 2) -
-              std::floor(pow(this->max_angular + 1 - this->lambda, 2_z) / 2.0) *
+              std::floor(pow(this->max_angular + 1 - this->lambda, 2_n) / 2.0) *
                   (this->lambda % 2) -
-              (std::ceil(pow(this->max_angular + 1 - this->lambda, 2_z) / 2.0) -
+              (std::ceil(pow(this->max_angular + 1 - this->lambda, 2_n) / 2.0) -
                (this->max_angular - this->lambda + 1)) *
                   (1.0 - this->lambda % 2)) *
           (2 * this->lambda + 1);
       if (this->lambda % 2 == 1) {
         n_col = static_cast<size_t>(
             0.5 *
-                (2 + this->lambda - 3 * pow(this->lambda, 2_z) +
+                (2 + this->lambda - 3 * pow(this->lambda, 2_n) +
                  2 * this->max_angular + 4 * this->lambda * this->max_angular) *
                 (2 * this->lambda + 1) -
             static_cast<int>(n_col));
@@ -349,6 +362,8 @@ namespace rascal {
       auto & center_type{center.get_atom_type()};
       Key_t pair_type{center_type, center_type};
       // TODO(felix) optimize this loop
+      // the species are not sorted by construction so there are sorted
+      // explicitly and many redundant combinations are present in pair_list
       for (const auto & el1 : coefficients) {
         pair_type[0] = el1.first[0];
         for (const auto & el2 : coefficients) {
@@ -377,7 +392,7 @@ namespace rascal {
         SphericalCovariantsType::LambdaSpectrum>(
         this->precompute_spherical_covariants[enumValue(
             SphericalCovariantsType::LambdaSpectrum)])};
-    auto & w3js{precomputation->w3js};
+    auto & wigner_3js{precomputation->wigner_3js};
 
     Key_t p_type{0, 0};
     internal::SortedKey<Key_t> pair_type{p_type};
@@ -401,11 +416,11 @@ namespace rascal {
             for (size_t n1{0}; n1 < this->max_radial; n1++) {
               for (size_t n2{0}; n2 < this->max_radial; n2++) {
                 size_t l0{0};
-                int count{0};
+                int wigner_count{0};
                 for (size_t l1{0}; l1 < this->max_angular + 1; l1++) {
                   for (size_t l2{0}; l2 < this->max_angular + 1; l2++) {
-                    if (l1 < static_cast<size_t>(std::abs<int>(l2 - l3)) ||
-                        l1 > l2 + l3) {
+                    if ((l1 < static_cast<size_t>(std::abs<int>(l2 - l3))) ||
+                        (l1 > l2 + l3)) {
                       continue;
                     }
                     if (this->inversion_symmetry == true) {
@@ -417,23 +432,27 @@ namespace rascal {
                       int m3s{static_cast<int>(m3 - l3)};
                       for (size_t m1{0}; m1 < 2 * l1 + 1; m1++) {
                         int m1s{static_cast<int>(m1 - l1)};
-                        size_t lm1{pow(l1, 2_z) + m1};
+                        size_t lm1{pow(l1, 2_n) + m1};
                         for (size_t m2{0}; m2 < 2 * l2 + 1; m2++) {
                           int m2s{static_cast<int>(m2 - l2)};
-                          if (m1s + m2s + m3s != 0 && m1s + m2s - m3s != 0) {
+                          if ((m1s + m2s + m3s != 0) &&
+                              (m1s + m2s - m3s != 0)) {
                             continue;
                           }
-                          size_t lm2{pow(l2, 2_z) + m2};
+                          size_t lm2{pow(l2, 2_n) + m2};
                           complex coef1c, coef2c;
-                          double w3j = w3js[count];
+                          double w3j = wigner_3js[wigner_count];
                           // usual formulae for converting from real to complex
+                          // These are the inverses of the formulae we used to
+                          // define the real spherical harmonics in
+                          // src/math/spherical_harmonics.hh
                           if (m1s > 0) {
                             coef1c = pow(-1.0, m1s) *
                                      complex(coef1(n1, lm1),
                                              coef1(n1, lm1 - 2 * m1s));
                           } else if (m1s == 0) {
                             coef1c =
-                                complex(coef1(n1, lm1), 0.0) * std::sqrt(2.0);
+                                complex(coef1(n1, lm1), 0.0) * math::SQRT_TWO;
                           } else if (m1s < 0) {
                             coef1c = complex(coef1(n1, lm1 - 2 * m1s),
                                              -coef1(n1, lm1));
@@ -444,19 +463,21 @@ namespace rascal {
                                              coef2(n2, lm2 - 2 * m2s));
                           } else if (m2s == 0) {
                             coef2c =
-                                complex(coef2(n2, lm2), 0.0) * std::sqrt(2.0);
+                                complex(coef2(n2, lm2), 0.0) * math::SQRT_TWO;
                           } else if (m2s < 0) {
                             coef2c = complex{coef2(n2, lm2 - 2 * m2s),
                                              -coef2(n2, lm2)};
                           }
-                          coef1c /= std::sqrt(2.0);
-                          coef2c /= std::sqrt(2.0);
+                          coef1c *= math::INV_SQRT_TWO;
+                          coef2c *= math::INV_SQRT_TWO;
+
                           // combine the coefficients with Wigner 3j symbols
-                          complex ci{0.0, 1.0};
+                          // TODO(andrea, michael) avoid complex arithmetic
+                          complex i_unit{0.0, 1.0};
                           if ((l1 + l2 + l3) % 2 == 0) {
                             if (m3s < 0) {
                               soap_vector_by_type(nn, l0) +=
-                                  w3j * (ci * coef1c * coef2c).real();
+                                  w3j * (i_unit * coef1c * coef2c).real();
                             } else {
                               soap_vector_by_type(nn, l0) +=
                                   w3j * (coef1c * coef2c).real();
@@ -464,13 +485,13 @@ namespace rascal {
                           } else if (this->inversion_symmetry == false) {
                             if (m3s < 0) {
                               soap_vector_by_type(nn, l0) +=
-                                  w3j * (ci * coef1c * coef2c).imag();
+                                  w3j * (i_unit * coef1c * coef2c).imag();
                             } else {
                               soap_vector_by_type(nn, l0) +=
                                   w3j * (coef1c * coef2c).imag();
                             }
                           }
-                          count++;
+                          wigner_count++;
                         }  // m2
                       }    // m1
                       l0++;
@@ -486,7 +507,7 @@ namespace rascal {
 
       // the SQRT_TWO factor comes from the fact that
       // the upper diagonal of the species is not considered
-      soap_vector.multiply_offdiagonal_elements_by(math::SQRT_TWO);
+      soap_vector.multiply_off_diagonal_elements_by(math::SQRT_TWO);
 
       // normalize the soap vector
       if (this->normalize) {
