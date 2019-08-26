@@ -57,9 +57,9 @@ namespace rascal {
       // - for this grid rational it makes sense to save the test grid,
       // because it is one step ahead and we can add more points 
       // - make hyperparameter k highest error
-      // - make grid rational init compute, increase_finness() and then remove x1,x2,fineness
-      Vector_t compute_grid(double x1, double x2, int fineness) {
-        if (fineness == 0) {
+      // - make grid rational init compute, increase_finness() and then remove x1,x2,grid_fineness
+      Vector_t compute_grid(double x1, double x2, int grid_fineness) {
+        if (grid_fineness == 0) {
           this->grid_meshes = {x1, x2};
           this->grid_size = 2;
           return this->grid_from_meshes();
@@ -135,12 +135,12 @@ namespace rascal {
       constexpr static GridType_t GridType {  GridType_t::Uniform };
       constexpr static RefinementMethod_t RefinementMethod { RefinementMethod_t::Linear };
 
-      Vector_t compute_grid(double x1, double x2, int fineness) {
-        double nb_grid_points = fineness+2;
+      Vector_t compute_grid(double x1, double x2, int grid_fineness) {
+        double nb_grid_points = grid_fineness+2;
         return Vector_t::LinSpaced(nb_grid_points, x1, x2);
       }
-      Vector_t compute_test_grid(double x1, double x2, int fineness) {
-        double nb_grid_points = fineness+2;
+      Vector_t compute_test_grid(double x1, double x2, int grid_fineness) {
+        double nb_grid_points = grid_fineness+2;
         // half of a step size in the grid to get the inner grid points
         // step size = (x2-x1)/(nb_grid_points-1)
         double offset{(x2-x1)/(2*(nb_grid_points-1))};
@@ -157,12 +157,12 @@ namespace rascal {
       constexpr static GridType_t GridType {  GridType_t::Uniform };
       constexpr static RefinementMethod_t RefinementMethod { RefinementMethod_t::Exponential };
 
-      Vector_t compute_grid(double x1, double x2, int fineness) {
-        double nb_grid_points = 2 << fineness;
+      Vector_t compute_grid(double x1, double x2, int grid_fineness) {
+        double nb_grid_points = 2 << grid_fineness;
         return Vector_t::LinSpaced(nb_grid_points, x1, x2);
       }
-      Vector_t compute_test_grid(double x1, double x2, int fineness) {
-        double nb_grid_points = 2 << fineness;
+      Vector_t compute_test_grid(double x1, double x2, int grid_fineness) {
+        double nb_grid_points = 2 << grid_fineness;
         // half of a step size in the grid to get the inner grid points
         // step size = (x2-x1)/(nb_grid_points-1)
         double offset{(x2-x1)/(2*(nb_grid_points-1))};
@@ -207,13 +207,13 @@ namespace rascal {
       inline double interpolate(const Vector_Ref & grid,
           const Vector_Ref & evaluated_grid,
           double x, int nearest_grid_index_to_x) {
-        return this->rawinterp(grid, evaluated_grid,
+        return this->raw_interpolate(grid, evaluated_grid,
             nearest_grid_index_to_x, x);
       }
       inline double interpolate_derivative(const Vector_Ref & grid,
           const Vector_Ref & evaluated_grid,
           double x, int nearest_grid_index_to_x) {
-        return this->rawinterp_derivative(grid, evaluated_grid,
+        return this->raw_interpolate_derivative(grid, evaluated_grid,
             nearest_grid_index_to_x, x);
       }
 
@@ -284,7 +284,7 @@ namespace rascal {
         this->second_derivative_h_sq_6 = y2*this->h_sq_6 ;
       }
 
-      inline double rawinterp(const Vector_Ref & xx, const Vector_Ref & yy,
+      inline double raw_interpolate(const Vector_Ref & xx, const Vector_Ref & yy,
           const int & j1, const double & x) {
         assert (this->h != 0.0);
         const int klo{j1}, khi{j1+1};
@@ -295,7 +295,7 @@ namespace rascal {
             b*( yy(khi)+(b*b-1)*this->second_derivative_h_sq_6(khi) );
       }
 
-      inline double rawinterp_derivative(const Vector_Ref & xx, const Vector_Ref & yy,
+      inline double raw_interpolate_derivative(const Vector_Ref & xx, const Vector_Ref & yy,
           const int & j1, const double & x) {
         assert (this->h != 0.0);
         const int klo{j1}, khi{j1+1};
@@ -334,16 +334,15 @@ namespace rascal {
       inline Vector_t interpolate(const Vector_Ref & grid,
           const Matrix_Ref & evaluated_grid,
           double x, int nearest_grid_index_to_x) {
-        return this->rawinterp(grid, evaluated_grid,
+        return this->raw_interpolate(grid, evaluated_grid,
             nearest_grid_index_to_x, x);
       }
       inline Vector_t interpolate_derivative(const Vector_Ref & grid,
           const Matrix_Ref & evaluated_grid,
           double x, int nearest_grid_index_to_x) {
-        return this->rawinterp_derivative(grid, evaluated_grid,
+        return this->raw_interpolate_derivative(grid, evaluated_grid,
             nearest_grid_index_to_x, x);
       }
-     // TODO(alex) rename rawinterp and interpolate_raw to raw_interpolate
      private:
       inline void compute_second_derivative(const Matrix_Ref & yv) {
         int n{static_cast<int>(yv.rows())};
@@ -370,7 +369,7 @@ namespace rascal {
         this->second_derivative_h_sq_6 = y2*this->h_sq_6 ;
       }
 
-      inline Vector_t rawinterp(const Vector_Ref & xx, const Matrix_Ref & yy,
+      inline Vector_t raw_interpolate(const Vector_Ref & xx, const Matrix_Ref & yy,
           const int & j1, const double & x) {
         int klo{j1}, khi{j1+1};
         // Bad xa input to routine splint
@@ -382,7 +381,7 @@ namespace rascal {
             b*( yy.row(khi).array()+(b*b-1)*this->second_derivative_h_sq_6.row(khi).array() ) ).matrix();
       }
 
-      inline Vector_t rawinterp_derivative(const Vector_Ref & xx, const Matrix_Ref & yy,
+      inline Vector_t raw_interpolate_derivative(const Vector_Ref & xx, const Matrix_Ref & yy,
           const int & j1, const double & x) {
         int klo{j1}, khi{j1+1};
         // Bad xa input to routine splint
@@ -674,14 +673,14 @@ namespace rascal {
      public:
       InterpolatorBase() {}; 
 
-      void initialize(double x1, double x2, double error_bound, int max_grid_points = 10000000, int fineness=5) {
+      void initialize(double x1, double x2, double error_bound, int max_grid_points = 10000000, int grid_fineness=5) {
         if (x2<x1) { throw std::logic_error("x2 must be greater x1"); }
         if (error_bound <= 0) { throw std::logic_error("error bound must be > 0"); }
         this->x1 = x1;
         this->x2 = x2;
         this->error_bound = error_bound;
         this->max_grid_points = max_grid_points;
-        this->fineness = fineness;
+        this->grid_fineness = grid_fineness;
       }
      
       // the function which is interpolated
@@ -698,8 +697,8 @@ namespace rascal {
       double yd1{0.};
       // y'(x2)
       double ydn{0.};
-      // Describes the finess of the grid, higher value means finer grids. It is up to the GridRational how to use the fineness.
-      int fineness{0};
+      // Describes the finess of the grid, higher value means finer grids. It is up to the GridRational how to use the grid_fineness.
+      int grid_fineness{0};
       int max_grid_points{10000000}; //1e7
     };
 
@@ -724,16 +723,16 @@ namespace rascal {
       using Parent = InterpolatorTyped<InterpolationMethod, GridRational, SearchMethod, ErrorMethod>;
       Interpolator() : Parent() {}
 
-      void initialize(std::function<double(double)> function, double x1, double x2, double error_bound, int max_grid_points = 10000000, int fineness=5) {
-        Parent::initialize(x1, x2, error_bound, max_grid_points, fineness);
+      void initialize(std::function<double(double)> function, double x1, double x2, double error_bound, int max_grid_points = 10000000, int grid_fineness=5) {
+        Parent::initialize(x1, x2, error_bound, max_grid_points, grid_fineness);
         this->function = function;
         this->clamped_boundary_conditions = false;
 
         this->initialize();
       }
 
-      void initialize(std::function<double(double)> function, double x1, double x2, double error_bound, double yd1, double ydn, int max_grid_points = 10000000, int fineness=5) {
-        Parent::initialize(x1, x2, error_bound, max_grid_points, fineness);
+      void initialize(std::function<double(double)> function, double x1, double x2, double error_bound, double yd1, double ydn, int max_grid_points = 10000000, int grid_fineness=5) {
+        Parent::initialize(x1, x2, error_bound, max_grid_points, grid_fineness);
         this->function = function;
         this->clamped_boundary_conditions = true;
         this->yd1 = yd1;
@@ -803,14 +802,14 @@ namespace rascal {
       void initialize() {
         this->compute_grid_error();
         while (this->grid_error > this->error_bound && this->grid.size() < this->max_grid_points) {
-          this->fineness++;
+          this->grid_fineness++;
           this->compute_grid_error();
         }
       }
 
       void compute_grid_error() {
         this->grid = 
-            this->grid_rational.compute_grid(this->x1,this->x2, this->fineness);
+            this->grid_rational.compute_grid(this->x1,this->x2, this->grid_fineness);
         this->evaluated_grid = this->eval(this->grid);
 
         if (this->clamped_boundary_conditions) {
@@ -820,7 +819,7 @@ namespace rascal {
         }
         this->search_method.initialize(this->grid);
 
-        Vector_t test_grid{this->grid_rational.compute_test_grid(this->x1,this->x2,this->fineness)};
+        Vector_t test_grid{this->grid_rational.compute_test_grid(this->x1,this->x2,this->grid_fineness)};
         Vector_t test_grid_interpolated{this->interpolate(test_grid)};
         Vector_t test_grid_evaluated{this->eval(test_grid)}; 
         Vector_t error_grid{this->error_method.compute_entrywise_error(Vector_Ref(test_grid_interpolated), Vector_Ref(test_grid_evaluated))};
@@ -829,7 +828,7 @@ namespace rascal {
       }
 
       void compute_paratemeters_for_evaluation() {
-        Vector_t test_grid{this->grid_rational.compute_test_grid(this->x1,this->x2,this->fineness)};
+        Vector_t test_grid{this->grid_rational.compute_test_grid(this->x1,this->x2,this->grid_fineness)};
         Vector_t test_grid_interpolated{this->interpolate(test_grid)};
         Vector_t test_grid_evaluated{this->eval(test_grid)}; 
         Vector_t error_grid{this->error_method.compute_entrywise_error(Vector_Ref(test_grid_interpolated), Vector_Ref(test_grid_evaluated))};
@@ -847,8 +846,8 @@ namespace rascal {
       using Parent = InterpolatorTyped<InterpolationMethod, GridRational, SearchMethod, ErrorMethod>;
       InterpolatorVectorized() : Parent() {}
 
-      void initialize(std::function<Matrix_t(double)> function, double x1, double x2, double error_bound, int max_grid_points = 500000, int fineness=5) {
-        Parent::initialize(x1, x2, error_bound, max_grid_points, fineness);
+      void initialize(std::function<Matrix_t(double)> function, double x1, double x2, double error_bound, int max_grid_points = 500000, int grid_fineness=5) {
+        Parent::initialize(x1, x2, error_bound, max_grid_points, grid_fineness);
         this->function = function;
         Matrix_t result = function(0);
         this->cols = result.cols();
@@ -890,15 +889,16 @@ namespace rascal {
       // TODO(alex)
       // Eigen::Map creates a copy, but I do not know if a Vector_t is 
       // constructed in between, I guess so 
+      // there is a ptr solution, apply this here or into radial contribution handler
       
       // interpolator and return a Eigen::Map, some checks do not have to be made
       Matrix_t interpolate(double x) {
-        return Eigen::Map<Matrix_t>(this->interpolate_raw(x).data(), this->rows, this->cols);
+        return Eigen::Map<Matrix_t>(this->raw_interpolate(x).data(), this->rows, this->cols);
       }
       
       // The vectorized interpolator stores the output of the function as vector,
       //it interpolation results is by default a vector.
-      Vector_t interpolate_raw(double x) {
+      Vector_t raw_interpolate(double x) {
         // x is outside of range
         assert (x>=this->x1 && x<=this->x2);
         int nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
@@ -910,10 +910,10 @@ namespace rascal {
       // TODO(alex) vectorize search method: int nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
       // then vectorize this
       // then do the same for the derivative
-      Matrix_t interpolate_raw(const Vector_Ref & points) {
+      Matrix_t raw_interpolate(const Vector_Ref & points) {
         Matrix_t interpolated_points = Matrix_t::Zero(points.size(), this->matrix_size);
         for (int i{0}; i<points.size(); i++) {
-          interpolated_points.row(i) = this->interpolate_raw(points(i));
+          interpolated_points.row(i) = this->raw_interpolate(points(i));
         }
         return interpolated_points;      
       }
@@ -944,8 +944,6 @@ namespace rascal {
         return x * Matrix_t::Ones(this->rows, this->cols);
       }
 
-
-      //TODO(alex) rename fineness to grid_fineness
       //TODO(alex) bring get information to Handler and Manager
       
       // Function returns a json with information about the interpolator to
@@ -955,11 +953,11 @@ namespace rascal {
           std::runtime_error("Interpolator information was requested before interpolator was initialized.");
         }
         // compute test errors
-        Vector_t test_grid{this->grid_rational.compute_test_grid(this->x1,this->x2,this->fineness)};
+        Vector_t test_grid{this->grid_rational.compute_test_grid(this->x1,this->x2,this->grid_fineness)};
         // (grid_size, row*col)
         // TODO(all) are these 3 lines optimized to ?:
-        //  this->grid_error = this->error_method.compute_global_error(this->interpolate_raw(Vector_Ref(test_grid)), this->eval(Vector_Ref(test_grid)));
-        Matrix_t test_grid_interpolated{this->interpolate_raw(Vector_Ref(test_grid))};
+        //  this->grid_error = this->error_method.compute_global_error(this->raw_interpolate(Vector_Ref(test_grid)), this->eval(Vector_Ref(test_grid)));
+        Matrix_t test_grid_interpolated{this->raw_interpolate(Vector_Ref(test_grid))};
         Matrix_t test_grid_evaluated{this->eval(Vector_Ref(test_grid))};
         Matrix_t error_mat = this->error_method.compute_entrywise_error(test_grid_interpolated, test_grid_evaluated);
         double mean_grid_error = error_mat.mean();
@@ -984,7 +982,7 @@ namespace rascal {
       void initialize() {
         this->compute_grid_error();
         while (this->grid_error > this->error_bound && this->grid.size() < this->max_grid_points) {
-          this->fineness++;
+          this->grid_fineness++;
           this->compute_grid_error();
         }
         // TODO(alex) quick fix for benchmarks, remove when information is
@@ -996,23 +994,23 @@ namespace rascal {
 
       void compute_grid_error() {
         this->grid = 
-            this->grid_rational.compute_grid(this->x1,this->x2, this->fineness);
+            this->grid_rational.compute_grid(this->x1,this->x2, this->grid_fineness);
         this->evaluated_grid = this->eval(Vector_Ref(this->grid));
 
         this->intp_method.initialize(Vector_Ref(this->grid), Matrix_Ref(this->evaluated_grid));
         this->search_method.initialize(Vector_Ref(this->grid));
 
-        Vector_t test_grid{this->grid_rational.compute_test_grid(this->x1,this->x2,this->fineness)};
+        Vector_t test_grid{this->grid_rational.compute_test_grid(this->x1,this->x2,this->grid_fineness)};
         // (grid_size, row*col)
-        // TODO(all) would these 3 lines:
+        // TODO(alex) would these 3 lines:
         //
-        // Matrix_t test_grid_interpolated{this->interpolate_raw(Vector_Ref(test_grid))};
+        // Matrix_t test_grid_interpolated{this->raw_interpolate(Vector_Ref(test_grid))};
         // Matrix_t test_grid_evaluated{this->eval(Vector_Ref(test_grid))};
         // this->grid_error = this->error_method.compute_global_error(Matrix_Ref(test_grid_interpolated), Matrix_Ref(test_grid_evaluated));
         // 
-        // be optimized to ?
-        // this->grid_error = this->error_method.compute_global_error(this->interpolate_raw(Vector_Ref(test_grid)), this->eval(Vector_Ref(test_grid)));
-        Matrix_t test_grid_interpolated{this->interpolate_raw(Vector_Ref(test_grid))};
+        // be optimized to ? how 
+        // this->grid_error = this->error_method.compute_global_error(this->raw_interpolate(Vector_Ref(test_grid)), this->eval(Vector_Ref(test_grid)));
+        Matrix_t test_grid_interpolated{this->raw_interpolate(Vector_Ref(test_grid))};
         Matrix_t test_grid_evaluated{this->eval(Vector_Ref(test_grid))};
         this->grid_error = this->error_method.compute_global_error(Matrix_Ref(test_grid_interpolated), Matrix_Ref(test_grid_evaluated));
       }
