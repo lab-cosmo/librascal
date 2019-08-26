@@ -103,7 +103,7 @@ namespace rascal {
     }
 
 
-    // TODO(alex) rename BenchmarkBaseFixture to avoid conflict with tests
+    // TODO(alex) rename BaseBFixture to avoid conflict with tests
     template<class Dataset>
     class BaseFixture {
      protected:
