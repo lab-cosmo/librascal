@@ -37,7 +37,8 @@
 #include "representations/representation_manager_base.hh"
 #include "representations/representation_manager_sorted_coulomb.hh"
 #include "representations/representation_manager_spherical_expansion.hh"
-#include "representations/representation_manager_soap.hh"
+#include "representations/representation_manager_spherical_invariants.hh"
+#include "representations/representation_manager_spherical_covariants.hh"
 #include "representations/feature_manager_block_sparse.hh"
 
 #include "json_io.hh"
@@ -94,11 +95,12 @@ namespace rascal {
   };
 
   template <typename MultipleStructureFixture>
-  struct MultipleStructureSOAP : MultipleStructureFixture {
+  struct MultipleStructureSphericalInvariants
+      : MultipleStructureFixture {
     using Parent = MultipleStructureFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
 
-    MultipleStructureSOAP() : Parent{} {
+    MultipleStructureSphericalInvariants() : Parent{} {
       for (auto & ri_hyp : this->radial_contribution_hypers) {
         for (auto & fc_hyp : this->fc_hypers) {
           for (auto & sig_hyp : this->density_hypers) {
@@ -112,7 +114,76 @@ namespace rascal {
         }
       }
     };
-    ~MultipleStructureSOAP() = default;
+
+    ~MultipleStructureSphericalInvariants() = default;
+
+    std::vector<json> hypers{};
+
+    std::vector<json> fc_hypers{
+        {{"type", "Cosine"},
+         {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
+         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}},
+        {{"type", "Cosine"},
+         {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
+         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
+
+    std::vector<json> density_hypers{
+        {{"type", "Constant"},
+         {"gaussian_sigma", {{"value", 0.2}, {"unit", "AA"}}}},
+        {{"type", "Constant"},
+         {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
+    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
+
+    std::vector<json> rep_hypers{{{"max_radial", 6},
+                                  {"max_angular", 0},
+                                  {"soap_type", "RadialSpectrum"},
+                                  {"normalize", true}},
+                                 {{"max_radial", 6},
+                                  {"max_angular", 0},
+                                  {"soap_type", "RadialSpectrum"},
+                                  {"normalize", true}},
+                                 {{"max_radial", 6},
+                                  {"max_angular", 6},
+                                  {"soap_type", "PowerSpectrum"},
+                                  {"normalize", true}},
+                                 {{"max_radial", 6},
+                                  {"max_angular", 6},
+                                  {"soap_type", "PowerSpectrum"},
+                                  {"normalize", true}},
+                                 {{"max_radial", 4},
+                                  {"max_angular", 1},
+                                  {"soap_type", "BiSpectrum"},
+                                  {"inversion_symmetry", true},
+                                  {"normalize", true}},
+                                 {{"max_radial", 4},
+                                  {"max_angular", 1},
+                                  {"soap_type", "BiSpectrum"},
+                                  {"inversion_symmetry", false},
+                                  {"normalize", true}}};
+  };
+
+  template <typename MultipleStructureFixture>
+  struct MultipleStructureSphericalCovariants
+      : MultipleStructureFixture {
+    using Parent = MultipleStructureFixture;
+    using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
+
+    MultipleStructureSphericalCovariants() : Parent{} {
+      for (auto & ri_hyp : this->radial_contribution_hypers) {
+        for (auto & fc_hyp : this->fc_hypers) {
+          for (auto & sig_hyp : this->density_hypers) {
+            for (auto & rep_hyp : this->rep_hypers) {
+              rep_hyp["cutoff_function"] = fc_hyp;
+              rep_hyp["gaussian_density"] = sig_hyp;
+              rep_hyp["radial_contribution"] = ri_hyp;
+              this->hypers.push_back(rep_hyp);
+            }
+          }
+        }
+      }
+    };
+
+    ~MultipleStructureSphericalCovariants() = default;
 
     std::vector<json> hypers{};
 
@@ -131,33 +202,39 @@ namespace rascal {
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
     std::vector<json> rep_hypers{{{"max_radial", 6},
-                                  {"max_angular", 0},
-                                  {"soap_type", "RadialSpectrum"},
-                                  {"normalize", true}},
-                                 {{"max_radial", 6},
-                                  {"max_angular", 0},
-                                  {"soap_type", "RadialSpectrum"},
+                                  {"max_angular", 6},
+                                  {"soap_type", "LambdaSpectrum"},
+                                  {"lam", 2},
+                                  {"inversion_symmetry", true},
                                   {"normalize", true}},
                                  {{"max_radial", 6},
                                   {"max_angular", 6},
-                                  {"soap_type", "PowerSpectrum"},
-                                  {"normalize", true}},
-                                 {{"max_radial", 6},
-                                  {"max_angular", 6},
-                                  {"soap_type", "PowerSpectrum"},
-                                  {"normalize", true}},
-                                 {{"max_radial", 1},
-                                  {"max_angular", 6},
-                                  {"soap_type", "PowerSpectrum"},
+                                  {"soap_type", "LambdaSpectrum"},
+                                  {"lam", 2},
+                                  {"inversion_symmetry", false},
                                   {"normalize", true}}};
   };
 
-  struct SOAPTestData : TestData {
+  struct SphericalInvariantsTestData : TestData {
     using Parent = TestData;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
-    SOAPTestData() : Parent{} { this->get_ref(this->ref_filename); }
-    ~SOAPTestData() = default;
-    std::string ref_filename{"reference_data/soap_reference.ubjson"};
+    SphericalInvariantsTestData() : Parent{} {
+      this->get_ref(this->ref_filename);
+    }
+    ~SphericalInvariantsTestData() = default;
+    std::string ref_filename{
+        "reference_data/spherical_invariants_reference.ubjson"};
+  };
+
+  struct SphericalCovariantsTestData : TestData {
+    using Parent = TestData;
+    using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
+    SphericalCovariantsTestData() : Parent{} {
+      this->get_ref(this->ref_filename);
+    }
+    ~SphericalCovariantsTestData() = default;
+    std::string ref_filename{
+        "reference_data/spherical_covariants_reference.ubjson"};
   };
 
   struct MultipleStructureSphericalExpansion
@@ -406,6 +483,11 @@ namespace rascal {
                                   {"max_angular", 2},
                                   {"normalize", true},
                                   {"soap_type", "PowerSpectrum"},
+                                  {"compute_gradients", true}},
+                                 {{"max_radial", 4},
+                                  {"max_angular", 0},
+                                  {"normalize", true},
+                                  {"soap_type", "RadialSpectrum"},
                                   {"compute_gradients", true}}};
   };
 

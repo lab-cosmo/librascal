@@ -1,3 +1,8 @@
+from copy import copy
+from rascal.representations import SortedCoulombMatrix
+from ase import Atoms
+import json
+import ubjson
 """Script used to generate the sorted_coulomb_reference.ubjson reference file
 """
 
@@ -6,13 +11,6 @@ import sys
 path = os.path.abspath('../')
 sys.path.insert(0, os.path.join(path, 'build/'))
 sys.path.insert(0, os.path.join(path, 'tests/'))
-
-import ubjson
-import json
-from ase import Atoms
-from rascal.representations import SortedCoulombMatrix
-from copy import copy
-
 
 
 def load_json(fn):

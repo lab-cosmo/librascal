@@ -1,11 +1,11 @@
 /**
- * file   soap_profile.cc
+ * file   spherical_expansion_example.cc
  *
  * @author Max Veit <max.veit@epfl.ch>
  *
  * @date   26 June 2019
  *
- * @brief  Example for profiling the spherical expansion and SOAP
+ * @brief  Example for computing the spherical expansion
  *
  * Copyright © 2018 Max Veit, Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -48,7 +48,7 @@
 // using namespace std;
 using namespace rascal;  // NOLINT
 
-// using Representation_t = RepresentationManagerSOAP<
+// using Representation_t = RepresentationManagerSphericalInvariants<
 // AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
 using Representation_t = RepresentationManagerSphericalExpansion<
     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;

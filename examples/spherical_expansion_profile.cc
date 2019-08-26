@@ -1,11 +1,11 @@
 /**
- * file   soap_profile.cc
+ * file   spherical_expansion_profile.cc
  *
  * @author Max Veit <max.veit@epfl.ch>
  *
  * @date   7 May 2019
  *
- * @brief  Example for profiling the spherical expansion and SOAP
+ * @brief  Example for profiling the spherical expansion
  *
  * Copyright © 2018 Max Veit, Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *

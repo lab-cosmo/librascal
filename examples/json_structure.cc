@@ -33,7 +33,7 @@
 #include "rascal_utility.hh"
 #include "representations/representation_manager_sorted_coulomb.hh"
 #include "representations/representation_manager_spherical_expansion.hh"
-#include "representations/representation_manager_soap.hh"
+#include "representations/representation_manager_spherical_invariants.hh"
 #include "representations/feature_manager_dense.hh"
 #include "representations/feature_manager_block_sparse.hh"
 #include "json_io.hh"
@@ -48,7 +48,7 @@
 
 using namespace rascal;  // NOLINT
 
-using Representation_t = RepresentationManagerSOAP<
+using Representation_t = RepresentationManagerSphericalInvariants<
     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
 
 using LayerByOrder = std::index_sequence<0, 0, 1>;

@@ -32,7 +32,7 @@
 #include "rascal_utility.hh"
 #include "representations/representation_manager_sorted_coulomb.hh"
 #include "representations/representation_manager_spherical_expansion.hh"
-#include "representations/representation_manager_soap.hh"
+#include "representations/representation_manager_spherical_invariants.hh"
 #include "representations/feature_manager_dense.hh"
 #include "representations/feature_manager_block_sparse.hh"
 
@@ -48,7 +48,7 @@
 // using namespace std;
 using namespace rascal;  // NOLINT
 
-using Representation_t = RepresentationManagerSOAP<
+using Representation_t = RepresentationManagerSphericalInvariants<
     AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
 
 int main() {
@@ -56,7 +56,9 @@ int main() {
   double cutoff{3.};
   json hypers{{"max_radial", 6},
               {"max_angular", 6},
-              {"soap_type", "PowerSpectrum"},
+              // {"soap_type", "PowerSpectrum"},
+              {"soap_type", "BiSpectrum"},
+              {"inversion_symmetry", true},
               {"normalize", true},
               {"compute_gradients", false}};
 

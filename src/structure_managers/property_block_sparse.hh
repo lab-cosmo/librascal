@@ -82,8 +82,7 @@ namespace rascal {
 
       SortedKey(const Sorted<false> &, const Key_t & key) : SortedKey{key} {}
 
-      SortedKey(const Sorted<true> &, const Key_t & key)
-          : data{std::move(key)} {}
+      SortedKey(const Sorted<true> &, const Key_t & key) : data{key} {}
 
       Key_t copy_sort(const Key_t & key) {
         Key_t skey{key};
@@ -333,6 +332,10 @@ namespace rascal {
         return keys;
       }
 
+      inline void multiply_elements_by(const double & fac) {
+        this->data *= fac;
+      }
+
       /**
        * l^2 norm of the entire vector
        */
@@ -350,7 +353,13 @@ namespace rascal {
        */
       inline void normalize() { this->data /= this->data.matrix().norm(); }
 
-      inline void multiply_offdiagonal_elements_by(const double & fac) {
+      /**
+       * Multiply the elements that belong to (key1, key2) entry with
+       * key1 =!= key2
+       *
+       * relevant only when the keys have 2 indices
+       */
+      inline void multiply_off_diagonal_elements_by(const double & fac) {
         for (const auto & el : this->map) {
           auto && pair_type{el.first};
           auto && pos{el.second};
@@ -419,10 +428,8 @@ namespace rascal {
     using Dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, Eigen::Dynamic,
                                   Eigen::RowMajor>;
     using DenseRef_t = Eigen::Map<Dense_t>;
-    using sizes_t = std::vector<size_t>;
     using Key_t = Key;
     using Keys_t = std::set<Key_t>;
-    using keys_list_t = std::vector<std::set<Key_t>>;
     using InputData_t = internal::InternallySortedKeyMap<Key_t, Dense_t>;
     using Data_t = std::vector<InputData_t>;
     using DataOrders_t = std::array<std::vector<InputData_t>, Order>;

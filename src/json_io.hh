@@ -51,17 +51,17 @@ namespace Eigen {
     struct ResizeEigen {
       template <typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
       static void apply_mat(
-          const size_t & n_rows, const size_t & n_cols,
+          const size_t & /* n_rows*/, const size_t & /*n_cols */,
           Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> & /*s*/) {
-        static_assert(n_rows == _Rows, "Trying to resize a fixed-size matrix");
-        static_assert(n_cols == _Cols, "Trying to resize a fixed-size matrix");
+        // assert(n_rows == _Rows);
+        // assert(n_cols == _Cols);
       }
       template <typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
       static void apply_arr(
-          const size_t & n_rows, const size_t & n_cols,
+          const size_t & /* n_rows*/, const size_t & /*n_cols */,
           Array<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> & /*s*/) {
-        static_assert(n_rows == _Rows, "Trying to resize a fixed-size matrix");
-        static_assert(n_cols == _Cols, "Trying to resize a fixed-size matrix");
+        // assert(n_rows == _Rows);
+        // assert(n_cols == _Cols);
       }
     };
 
@@ -86,17 +86,17 @@ namespace Eigen {
     struct ResizeEigen<Dynamic, _Cols> {
       template <typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
       static void apply_mat(
-          const size_t & n_rows, const size_t & n_cols,
+          const size_t & n_rows, const size_t & /* n_cols */,
           Matrix<_Scalar, Dynamic, _Cols, _Options, _MaxRows, _MaxCols> & s) {
-        static_assert(n_cols == _Cols, "Trying to resize a fixed-size matrix");
+        // assert(n_cols == _Cols);
         s.resize(n_rows, _Cols);
       }
 
       template <typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
       static void apply_arr(
-          const size_t & n_rows, const size_t & n_cols,
+          const size_t & n_rows, const size_t & /*n_cols */,
           Array<_Scalar, Dynamic, _Cols, _Options, _MaxRows, _MaxCols> & s) {
-        static_assert(n_cols == _Cols, "Trying to resize a fixed-size matrix");
+        // assert(n_cols == _Cols);
         s.resize(n_rows, _Cols);
       }
     };
@@ -105,17 +105,17 @@ namespace Eigen {
     struct ResizeEigen<_Rows, Dynamic> {
       template <typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
       static void apply_mat(
-          const size_t & n_rows, const size_t & n_cols,
+          const size_t & /*n_rows */, const size_t & n_cols,
           Matrix<_Scalar, _Rows, Dynamic, _Options, _MaxRows, _MaxCols> & s) {
-        static_assert(n_rows == _Rows, "Trying to resize a fixed-size matrix");
+        // assert(n_rows == _Rows);
         s.resize(_Rows, n_cols);
       }
 
       template <typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
       static void apply_arr(
-          const size_t & n_rows, const size_t & n_cols,
+          const size_t & /*n_rows */, const size_t & n_cols,
           Array<_Scalar, _Rows, Dynamic, _Options, _MaxRows, _MaxCols> & s) {
-        static_assert(n_rows == _Rows, "Trying to resize a fixed-size matrix");
+        // assert(n_rows == _Rows);
         s.resize(_Rows, n_cols);
       }
     };
