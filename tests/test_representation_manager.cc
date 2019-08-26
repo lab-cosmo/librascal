@@ -236,7 +236,7 @@ namespace rascal {
     for (auto & manager : managers) {
       //for (auto & hyper : Fix::hypers) {
         hyper["compute_gradients"] = true;
-        std::cout << hyper << std::endl;
+        //std::cout << hyper << std::endl;
         representations.emplace_back(manager, hyper);
         structures.emplace_back();
         structures.back().set_structure(*filename_it);

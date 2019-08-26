@@ -310,7 +310,8 @@ namespace rascal {
       // h*h/6.0
       double h_sq_6{0};
       // This term is the solution vector of the linear system of the tridiagonal toeplitz matrix derived by the conditions of cubic spline. The linear system can be found in  http://mathworld.wolfram.com/CubicSpline.html
-      // The term is not the second derivative, but called in numerical recipes like this. Because of consistency we keep the naming. In addition we already multiply them with coefficient
+      // These terms are the remaining constants of the second
+      // derivative of the cubic spline. In addition we already multiply them with precomputed coefficients derived by assuming a uniform grid
       // y2 *h*h/6
       Vector_t second_derivative_h_sq_6{};
     };
@@ -342,6 +343,7 @@ namespace rascal {
         return this->rawinterp_derivative(grid, evaluated_grid,
             nearest_grid_index_to_x, x);
       }
+     // TODO(alex) rename rawinterp and interpolate_raw to raw_interpolate
      private:
       inline void compute_second_derivative(const Matrix_Ref & yv) {
         int n{static_cast<int>(yv.rows())};
@@ -886,8 +888,8 @@ namespace rascal {
       }
 
       // TODO(alex)
-      // Eigen::Map creates a copy, but I do not know if a Vector_t is in
-      // initialization reshaped, check this
+      // Eigen::Map creates a copy, but I do not know if a Vector_t is 
+      // constructed in between, I guess so 
       
       // interpolator and return a Eigen::Map, some checks do not have to be made
       Matrix_t interpolate(double x) {
@@ -905,7 +907,7 @@ namespace rascal {
             x, nearest_grid_index_to_x);
       }
 
-      // TODO(alex) vectorize search method:  int nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
+      // TODO(alex) vectorize search method: int nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
       // then vectorize this
       // then do the same for the derivative
       Matrix_t interpolate_raw(const Vector_Ref & points) {
@@ -1002,19 +1004,17 @@ namespace rascal {
 
         Vector_t test_grid{this->grid_rational.compute_test_grid(this->x1,this->x2,this->fineness)};
         // (grid_size, row*col)
-        // TODO(all) are these 3 lines optimized to ?:
-        //  this->grid_error = this->error_method.compute_global_error(this->interpolate_raw(Vector_Ref(test_grid)), this->eval(Vector_Ref(test_grid)));
+        // TODO(all) would these 3 lines:
+        //
+        // Matrix_t test_grid_interpolated{this->interpolate_raw(Vector_Ref(test_grid))};
+        // Matrix_t test_grid_evaluated{this->eval(Vector_Ref(test_grid))};
+        // this->grid_error = this->error_method.compute_global_error(Matrix_Ref(test_grid_interpolated), Matrix_Ref(test_grid_evaluated));
+        // 
+        // be optimized to ?
+        // this->grid_error = this->error_method.compute_global_error(this->interpolate_raw(Vector_Ref(test_grid)), this->eval(Vector_Ref(test_grid)));
         Matrix_t test_grid_interpolated{this->interpolate_raw(Vector_Ref(test_grid))};
         Matrix_t test_grid_evaluated{this->eval(Vector_Ref(test_grid))};
         this->grid_error = this->error_method.compute_global_error(Matrix_Ref(test_grid_interpolated), Matrix_Ref(test_grid_evaluated));
-
-        // TODO(alex) remove when benchmark finished
-        //if (this->grid.size() % 1==0) {
-        //  std::cout << "grid_size=" << this->grid.size();
-        //  std::cout << ", grid_error=" << this->grid_error;
-        //  std::cout << "error_bound =" << this->error_bound << std::endl;
-        //  std::cout << std::endl;
-        //}
       }
     };
 
