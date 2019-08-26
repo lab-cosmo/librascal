@@ -1,13 +1,13 @@
 /**
- * file  interpolator.hh
+ * file  benchmark_interpolator.hh
  *
  * @author  Alexander Goscinski <alexander.goscinski@epfl.ch>
  *
  * @date   22 August 2019
  *
- * @brief interpolator for functions of the form ℝ->ℝ and ℝ->ℝ^n
+ * @brief contains the data and fixtures of the interpolator benchmarks
  *
- * Copyright  2018 Musil Felix, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright  2019 Alexander Goscinski, COSMO (EPFL), LAMMM (EPFL)
  *
  * rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as

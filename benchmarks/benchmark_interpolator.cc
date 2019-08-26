@@ -1,4 +1,32 @@
+/**
+ * file  benchmark_interpolator.cc
+ *
+ * @author  Alexander Goscinski <alexander.goscinski@epfl.ch>
+ *
+ * @date   22 August 2019
+ *
+ * @brief benchmarks for the interpolator
+ *
+ * Copyright  2019 Alexander Goscinski, COSMO (EPFL), LAMMM (EPFL)
+ *
+ * rascal is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3, or (at
+ * your option) any later version.
+ *
+ * rascal is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+
 #include "benchmark_interpolator.hh"
+// TODO(alex) still needed?
 #include "representations/feature_manager_block_sparse.hh"
 
 
