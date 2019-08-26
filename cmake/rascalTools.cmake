@@ -105,9 +105,6 @@ function(download_external_project project_name)
 
   set(_working_dir ${PROJECT_BINARY_DIR}/third-party/${project_name}-download)
 
-  # message(WARNING "project name:" ${project_name})
-  #    message(WARNING "project src:" ${_src_dir})
-  #    message(WARNING "project BUILD:" ${_dep_args_BUILD_COMMAND})
   if(_dep_args_BACKEND STREQUAL "NONE")
     file(WRITE ${_working_dir}/CMakeLists.txt
   "

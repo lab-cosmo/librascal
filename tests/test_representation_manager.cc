@@ -89,7 +89,10 @@ namespace rascal {
                             RepresentationManagerSortedCoulomb>,
       RepresentationFixture<MultipleStructureSphericalExpansion,
                             RepresentationManagerSphericalExpansion>,
-      RepresentationFixture<MultipleStructureSOAP, RepresentationManagerSOAP>>;
+      RepresentationFixture<MultipleStructureSphericalInvariants,
+                            RepresentationManagerSphericalInvariants>,
+      RepresentationFixture<MultipleStructureSphericalCovariants,
+                            RepresentationManagerSphericalCovariants>>;
 
   using fixtures_ref_test = boost::mpl::list<RepresentationFixture<
       SortedCoulombTestData, RepresentationManagerSortedCoulomb>>;
@@ -273,7 +276,10 @@ namespace rascal {
   using fixtures_ref_test = boost::mpl::list<
       RepresentationFixture<SphericalExpansionTestData,
                             RepresentationManagerSphericalExpansion>,
-      RepresentationFixture<SOAPTestData, RepresentationManagerSOAP>>;
+      RepresentationFixture<SphericalInvariantsTestData,
+                            RepresentationManagerSphericalInvariants>,
+      RepresentationFixture<SphericalCovariantsTestData,
+                            RepresentationManagerSphericalCovariants>>;
 
   /*
    * Test if the representation computed is equal to a reference from a file

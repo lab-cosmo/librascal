@@ -84,7 +84,11 @@ void add_representation_managers(py::module & mod, py::module & m_throwaway) {
   auto rep_spherical_expansion =
       add_representation_manager<Representation2_t>(mod, m_throwaway);
 
-  using Representation3_t = RepresentationManagerSOAP<Manager_t>;
-  auto rep_soap =
+  using Representation3_t = RepresentationManagerSphericalInvariants<Manager_t>;
+  auto rep_spherical_invariants =
       add_representation_manager<Representation3_t>(mod, m_throwaway);
+
+  using Representation4_t = RepresentationManagerSphericalCovariants<Manager_t>;
+  auto rep_spherical_covariants =
+      add_representation_manager<Representation4_t>(mod, m_throwaway);
 }

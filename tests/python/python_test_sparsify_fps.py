@@ -79,7 +79,8 @@ class TestFPS(unittest.TestCase):
         # I first select 50
         r_fps = fps(self.x, 50, 0, method="simple")
 
-        # I ask for 100 but provide the restart tuple. Selection will continue from point 51
+        # I ask for 100 but provide the restart tuple.
+        # Selection will continue from point 51
         r_fps = fps(self.x, 100, 0, method="simple", restart=r_fps)
 
         self.fps_return_match(r_fps, ref)
@@ -90,8 +91,8 @@ class TestFPS(unittest.TestCase):
                     restart={"fps_indices": r_fps["fps_indices"]})
         self.fps_return_match(r_fps, ref)
 
-        # You can also add new points (in this case we reuse the same feature matrix)
-        # and continue the selection
+        # You can also add new points (in this case we reuse
+        # the same feature matrix) and continue the selection
         r_fps = fps(self.x, 50, 0, method="simple")
         xx = np.concatenate((self.x[r_fps["fps_indices"]], self.x))
         r_fps = fps(xx, 100, 0, method="simple",

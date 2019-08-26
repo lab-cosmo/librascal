@@ -1073,6 +1073,13 @@ namespace rascal {
               internal::OptimizationType OptType>
     void compute_impl();
 
+    /**
+     * Return the raw data for the representation
+     *
+     * @warning placeholder -- doesn't actually return anything meaningful
+     *
+     * Will be replaced when the representation calculator is implemented
+     */
     std::vector<Precision_t> & get_representation_raw_data() {
       return this->dummy;
     }
@@ -1114,7 +1121,6 @@ namespace rascal {
     SparsePropertyGradient_t expansions_coefficients_gradient;
 
    protected:
-   private:
     double interaction_cutoff{};
     double cutoff_smooth_width{};
     double interpolator_accuracy{};
@@ -1123,6 +1129,7 @@ namespace rascal {
     size_t n_species{};
     bool compute_gradients{};
 
+    //! Unused variable, will be eliminated with the representation calculator
     std::vector<Precision_t> dummy{};
 
     ManagerPtr_t structure_manager;
