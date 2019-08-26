@@ -34,9 +34,9 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Check the implementation of hyp1f1 against mpmath v1.1.0
+   * Check the implementation of gauss_legendre against scipy
    */
-  BOOST_FIXTURE_TEST_CASE(math_hyp1f1_test, GaussLegendreRefFixture) {
+  BOOST_FIXTURE_TEST_CASE(math_gauss_legendre_test, GaussLegendreRefFixture) {
     for (auto & data : this->ref_data) {
       double a{data["a"]}, b{data["b"]};
       int order{data["order"]};

@@ -34,22 +34,18 @@
 
 namespace rascal {
   namespace math {
+
     /**
-     * Compute the modified spherical Bessel function of the first kind
+     * Computes of the modified bessel function of the first kind (MBSF) as
+     * \[
+     *    f(r; x_n, a) = e^{-ar^2} e^{-ax_n^2} i_l(2*a*r*x_n)
+     * \]
+     * Just precompte() once, calc(), and use get_values() to access
+     * the values
      *
-     * This function, hereafter denoted MBSF, is notated as i_n(x).  Here,
-     * n must be an integer and x must be a real number > 0.  All orders n
-     * are computed and returned, up to a specified maximum order.
-     *
-     * @param x     Argument of the MBSF
-     * @param l_max Maximum order to compute
-     *
-     * @return Eigen::Array (1-D) of Bessel function values
-     *
-     * Since the MSBF blows up exponentially with increasing argument (x),
-     * what is returned here is e^{-x}*i_n(x), which is bounded (decays to
-     * leading order as 1/x).  If you want i_n(x) itself, multiply the
-     * result by e^x (at your own peril).
+     * Note that this uses the "exp-exp complete-square" optimized function,
+     * where the Bessel function is multiplied by two exponentials that keep
+     * it from blowing up.
      *
      * The recursion relation used here is:
      * \[
@@ -60,160 +56,6 @@ namespace rascal {
      * from
      * http://mathworld.wolfram.com/ModifiedSphericalBesselFunctionoftheFirstKind.html
      * // NOLINT
-     *
-     */
-    inline Eigen::ArrayXd bessel_i_exp_allorders(double x, size_t order_max) {
-      if (order_max < 1) {
-        order_max = 1;
-      }
-      Eigen::ArrayXd function_values(order_max);
-      // Note: Since x is not likely to be close to zero, there is no
-      // signficant improvement in accuracy from using std::expm1 instead
-      function_values(0) = (1. - std::exp(-2. * x)) / (2. * x);
-      function_values(1) =
-          ((x - 1.) + std::exp(-2. * x) * (x + 1.)) / (2. * x * x);
-      for (size_t order{2}; order < order_max; ++order) {
-        function_values(order) =
-            -function_values(order - 1) * (2. * order - 1.) / x +
-            function_values(order - 2);
-      }
-      return function_values;
-    }
-
-    /**
-     * Compute the modified spherical Bessel function of the first kind
-     *
-     * Vectorized version for multiple arguments (x_v)
-     *
-     * @param x_v   Eigen::Array of MBSF arguments
-     * @param order_max Maximum order to compute
-     *
-     * @return Eigen::Array (2-D) of Bessel function values.  The different
-     *         arguments (x_v) go along the rows, while the column indexes
-     *         the orders (n-values).
-     */
-    inline Eigen::ArrayXXd
-    bessel_i_exp_allorders(const Eigen::Ref<const Eigen::ArrayXd> & x_v,
-                           size_t order_max) {
-      if (order_max < 1) {
-        order_max = 1;
-      }
-      Eigen::ArrayXXd function_values(x_v.size(), order_max);
-      function_values.col(0) = (1. - Eigen::exp(-2. * x_v)) / (2. * x_v);
-      function_values.col(1) =
-          ((x_v - 1.) + Eigen::exp(-2. * x_v) * (x_v + 1.)) /
-          (2. * x_v.square());
-      for (size_t order{2}; order < order_max; ++order) {
-        function_values.col(order) =
-            -function_values.col(order - 1) * (2. * order - 1.) / x_v +
-            function_values.col(order - 2);
-      }
-      return function_values;
-    }
-
-    inline Eigen::ArrayXXd
-    bessel_i_allorders(const Eigen::Ref<const Eigen::ArrayXd> & x_v,
-                       int order_max) {
-      if (order_max < 1) {
-        order_max = 1;
-      }
-
-      Eigen::ArrayXXd function_values(x_v.size(), order_max);
-      Eigen::ArrayXd epx_x_v = Eigen::exp(-x_v);
-      for (int order{0}; order < order_max; ++order) {
-        Hyp1f1 hyp1f1{static_cast<double>(order + 1),
-                      static_cast<double>(2 * order + 2)};
-        double igamma{1 / std::tgamma(1.5 + order)};
-        for (int ii{0}; ii < x_v.size(); ++ii) {
-          function_values(ii, order) = epx_x_v[ii] * igamma *
-                                       pow(x_v[ii] * 0.5, order) * 0.5 *
-                                       std::sqrt(PI) * hyp1f1.calc(2 * x_v[ii]);
-        }
-      }
-      return function_values;
-    }
-    /**
-     * Optimized MBSFs times two exponentials that complete the square
-     *
-     * This is for the lucky case that we're computing something of the form
-     * \[
-     *    f(r; x_n, a) = e^{-ar^2} e^{-ax_n^2} i_l(2ar*x_n)
-     * \]
-     * where the exponentials complete the square of the cosh and sinh
-     * arguments that are used to build the (modified) Bessel functions.
-     *
-     * @param x_v      Eigen::Array of x-values (part of the argument of the
-     *                 first exponential; see equation above)
-     * @param r        (single) value of r (second exponential argument)
-     *                 in the equation above
-     * @param a_scale  Scaling factor for the exponential arguments
-     * @param l_max    Maximum order of MBSF to compute
-     *
-     * @return     Eigen::Array (2-D) of function values.  The x_v
-     *             (ultimately, radial indices) correspond to rows, while the
-     *             columns correspond to MBSF orders (ultimately l-channels).
-     */
-    inline Eigen::ArrayXXd bessel_i_exp_exp_complete_square(
-        const Eigen::Ref<const Eigen::ArrayXd> & x_v, const double r,
-        const double a_scale, size_t order_max) {
-      using Prec_t = long double;
-      if (order_max < 1) {
-        order_max = 1;
-      }
-      Eigen::Array<Prec_t, Eigen::Dynamic, Eigen::Dynamic> function_values(
-          x_v.size(), order_max);
-      Eigen::Array<Prec_t, Eigen::Dynamic, 1> bessel_arg(x_v.size());
-      Eigen::Array<Prec_t, Eigen::Dynamic, 1> epx_p_arg(x_v.size());
-      Eigen::Array<Prec_t, Eigen::Dynamic, 1> epx_m_arg(x_v.size());
-      Prec_t fff{static_cast<Prec_t>(2. * a_scale * r)};
-      for (int ii{0}; ii < x_v.size(); ++ii) {
-        bessel_arg[ii] =
-            static_cast<Prec_t>(1.) / (fff * static_cast<Prec_t>(x_v[ii]));
-        epx_p_arg[ii] = std::exp(
-            static_cast<Prec_t>(-a_scale * (x_v[ii] + r) * (x_v[ii] + r)));
-        epx_m_arg[ii] = std::exp(
-            static_cast<Prec_t>(-a_scale * (x_v[ii] - r) * (x_v[ii] - r)));
-      }
-      // bessel_arg = static_cast<Prec_t>(2. * a_scale * r) *
-      // x_v.cast<Prec_t>(); bessel_arg = bessel_arg.inverse();
-      // TODO(max) is it faster to allocate arrays for the exp results, or
-      //           does the cost of allocating memory outweigh the savings
-      //           of evaluating it again _once_?
-      // i_0(z) = sinh(z)/z
-      Prec_t fac{0.5};
-      // function_values.col(0) = (Eigen::exp(-a_scale * (x_v - r).square()) -
-      //                           Eigen::exp(-a_scale * (x_v +
-      //                           r).square())).cast<Prec_t>() *
-      //                          (fac*bessel_arg);
-      function_values.col(0) = (epx_m_arg - epx_p_arg) * fac * bessel_arg;
-      // i_1(z) = cosh(z)/z - i_0(z)/z
-      // function_values.col(1) = ((Eigen::exp(-a_scale * (x_v - r).square()) +
-      //                            Eigen::exp(-a_scale * (x_v +
-      //                            r).square())).cast<Prec_t>() *
-      //                           (fac*bessel_arg)) -
-      //                          (function_values.col(0) * bessel_arg);
-      function_values.col(1) = (epx_m_arg + epx_p_arg) * fac * bessel_arg -
-                               (function_values.col(0) * bessel_arg);
-      for (size_t order{2}; order < order_max; ++order) {
-        function_values.col(order) = -function_values.col(order - 1) *
-                                         static_cast<Prec_t>(2. * order - 1.) *
-                                         bessel_arg +
-                                     function_values.col(order - 2);
-      }
-      return function_values.cast<double>();
-    }
-
-    /**
-     * Computes of the MSBFs as
-     * \[
-     *    f(r; x_n, a) = e^{-ar^2} e^{-ax_n^2} i_l(2*a*r*x_n)
-     * \]
-     * Just precompte() once, calc(), and use get_values() to access
-     * the values
-     *
-     * Note that this uses the "exp-exp complete-square" optimized function,
-     * where the Bessel function is multiplied by two exponentials that keep
-     * it from blowing up.
      */
     class ModifiedSphericalBessel {
      public:
@@ -252,13 +94,6 @@ namespace rascal {
        * Compute the MBSFs times two exponentials that complete the square
        * using upward recursion. This is stable when 2*a*r*x_n > 50, so
        * it is useful to avoid overflow/underflow in the individual terms of f.
-       *
-       * This is for the lucky case that we're computing something of the form
-       * \[
-       *    f(r; x_n, a) = e^{-ar^2} e^{-ax_n^2} i_l(2*a*r*x_n)
-       * \]
-       * where the exponentials complete the square of the cosh and sinh
-       * arguments that are used to build the (modified) Bessel functions.
        *
        * @param distance (single) value of distance
        *                (second exponential argument) in the equation above
