@@ -20,6 +20,7 @@ jobs:
                                         apt-get install -y git
                                         apt-get install -y libboost-test-dev
                                         apt-get install -y doxygen graphviz
+                                        apt-get install -y pandoc
                                         apt-get install -y gcc-5 g++-5
                         - run:
                                 name: installing python packages
