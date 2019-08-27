@@ -21,11 +21,12 @@ It comes with a GNU Lesser General Public License of version 3, which means that
    intro
    whitepaper
    installation
+   theory
    tutorials/tutorials
    representation/representations
    models/models
    neighbor_list/neighbor-list-manager
-   dev_guide/developer
+   dev_guide/developer	
    auto_doc/auto
    bibliography
 

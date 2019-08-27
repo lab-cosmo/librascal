@@ -169,7 +169,7 @@ plt.xlabel('DFT energy / (eV/atom)')
 plt.ylabel('Predicted energy / (eV/atom)')
 ~~~~~~~~~~~~~
 The result of this block is:
-![Prediction of the energy and the real energy of each molecule](../../src/R1s.png)
+![Prediction of the energy and the real energy of each molecule](../../../docs/source/dox_resources/R1s.png)
 The result is quite good. One can try to change the train dataset to see how it affects the precision of the result. 
 
 ###Radial spectrum
@@ -201,7 +201,7 @@ plt.xlabel('DFT energy / (eV/atom)')
 plt.ylabel('Predicted energy / (eV/atom)')
 ~~~~~~~~~~~~~
 Comparison of full and radial spectrum:
-![Comparison of full and radial spectrum](../../src/Comps.png)
+![Comparison of full and radial spectrum](../../../docs/source/dox_resources/Comps.png)
 
 It can be seen that the two spectres are quite similar, but the radial spectrum is much more simple to compute (as feature matrix is much smaller and the set of spherical harmonics doesn't have to be computed). It is quite an inteseting fact, but, unfortunately, this feature is probably not generalizable and should be just the feature of this particular dataset.
 
@@ -289,5 +289,5 @@ plt.scatter(X[:,0],X[:,1],s=3)
 ~~~~~~~~~~~~~
 
 The result of this block is:
-![KernalPCA](../../src/PCAs.png)
+![KernalPCA](../../../docs/source/dox_resources/PCAs.png)
 It shows how the structures is located in the abstract 2D map, where similar structures are located near to each other, and the very different ones far from each other. 
