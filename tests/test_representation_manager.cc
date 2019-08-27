@@ -223,9 +223,9 @@ namespace rascal {
       RepresentationFixture<SingleHypersSphericalRepresentation,
                             RepresentationManagerSphericalInvariants>
       // TODO(alex) move this to spherical_expansion_radial_derivative
-      //RepresentationFixture<MultipleStructureSOAP,
+      // RepresentationFixture<MultipleStructureSOAP,
       //                      RepresentationManagerSphericalExpansion>
-                              >;
+      >;
   /**
    * Test the gradient of the SphericalExpansion representation on a few simple
    * crystal structures (single- and multi-species, primitive and supercells)
@@ -236,30 +236,31 @@ namespace rascal {
     auto & representations = Fix::representations;
     auto & structures = Fix::structures;
     auto & hyper = Fix::hypers.front();
-    auto filename_it = Fix::filenames.begin(); // TODO(max) this returns error for one file
+    auto filename_it =
+        Fix::filenames.begin();  // TODO(max) this returns error for one file
     for (auto & manager : managers) {
-      //for (auto & hyper : Fix::hypers) {
-        hyper["compute_gradients"] = true;
-        //std::cout << hyper << std::endl;
-        representations.emplace_back(manager, hyper);
-        structures.emplace_back();
-        structures.back().set_structure(*filename_it);
-        // The finite-difference tests don't work with periodic boundary
-        // conditions -- moving one atom moves all its periodic images, too
-        structures.back().pbc.setZero();
-        RepresentationManagerGradientCalculator<typename Fix::Representation_t>
-            calculator(representations.back(), manager, structures.back());
-        RepresentationManagerGradientFixture<typename Fix::Representation_t>
-            grad_fix("reference_data/spherical_expansion_gradient_test.json",
-                     manager, calculator);
-        if (grad_fix.verbosity >= GradientTestFixture::VerbosityValue::INFO) {
-          std::cout << "Testing structure: " << *filename_it << std::endl;
-        }
-        do {
-          test_gradients(grad_fix.get_calculator(), grad_fix);
-          grad_fix.advance_center();
-        } while (grad_fix.has_next());
-        ++filename_it;
+      // for (auto & hyper : Fix::hypers) {
+      hyper["compute_gradients"] = true;
+      // std::cout << hyper << std::endl;
+      representations.emplace_back(manager, hyper);
+      structures.emplace_back();
+      structures.back().set_structure(*filename_it);
+      // The finite-difference tests don't work with periodic boundary
+      // conditions -- moving one atom moves all its periodic images, too
+      structures.back().pbc.setZero();
+      RepresentationManagerGradientCalculator<typename Fix::Representation_t>
+          calculator(representations.back(), manager, structures.back());
+      RepresentationManagerGradientFixture<typename Fix::Representation_t>
+          grad_fix("reference_data/spherical_expansion_gradient_test.json",
+                   manager, calculator);
+      if (grad_fix.verbosity >= GradientTestFixture::VerbosityValue::INFO) {
+        std::cout << "Testing structure: " << *filename_it << std::endl;
+      }
+      do {
+        test_gradients(grad_fix.get_calculator(), grad_fix);
+        grad_fix.advance_center();
+      } while (grad_fix.has_next());
+      ++filename_it;
       //}
     }
   }

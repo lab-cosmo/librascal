@@ -267,17 +267,20 @@ namespace rascal {
 
     ~MultipleStructureManagerNLStrictFixture() = default;
     const bool consider_ghost_neighbours{false};
-    // TODO(alex) TODO(max)  
+    // TODO(alex) TODO(max)
     const std::vector<std::string> filenames{
-        //"reference_data/CaCrP2O7_mvc-11955_symmetrized.json", // computation takes too long
+        //"reference_data/CaCrP2O7_mvc-11955_symmetrized.json", // computation
+        // takes too long
         //"reference_data/simple_cubic_8.json", // seg fault
         "reference_data/diamond_2atom.json",
         "reference_data/diamond_2atom_distorted.json",
-        //"reference_data/diamond_cubic_distorted.json", // Didn't find symmetric pair for pair (i=0, j=2)
-        //"reference_data/SiC_moissanite.json", // Didn't find symmetric pair for pair (i=2, j=3)
-        "reference_data/SiCGe_wurtzite_like.json", // did not check
-        "reference_data/SiC_moissanite_supercell.json", // did not check 
-        "reference_data/small_molecule.json"}; // seg fault
+        //"reference_data/diamond_cubic_distorted.json", // Didn't find
+        // symmetric pair for pair (i=0, j=2)
+        //"reference_data/SiC_moissanite.json", // Didn't find symmetric pair
+        // for pair (i=2, j=3)
+        "reference_data/SiCGe_wurtzite_like.json",       // did not check
+        "reference_data/SiC_moissanite_supercell.json",  // did not check
+        "reference_data/small_molecule.json"};           // seg fault
 
     const std::vector<double> cutoffs{{2., 3.}};
     const std::vector<double> skins{{0., 0.3}};

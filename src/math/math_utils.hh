@@ -29,7 +29,6 @@
 #ifndef SRC_MATH_MATH_UTILS_HH_
 #define SRC_MATH_MATH_UTILS_HH_
 
-
 #include <Eigen/Dense>
 #include <cmath>
 #include <limits>

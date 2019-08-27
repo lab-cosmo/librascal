@@ -95,7 +95,8 @@ namespace rascal {
       Eigen::VectorXd coeff_derivative{};
 
      public:
-      // Parameter used to fix the sum when evaluating the numerical derivatives.
+      // Parameter used to fix the sum when evaluating the numerical
+      // derivatives.
       size_t n_terms{100};
 
       Hyp1f1Series(const double & a, const double & b, const size_t & mmax,
@@ -169,7 +170,7 @@ namespace rascal {
         } else {
           throw std::runtime_error("n_terms should be >= -1");
         }
-        //this->n_terms = this->mmax;
+        // this->n_terms = this->mmax;
         double res{0.};
         if (not derivative) {
           res = this->sum(z, this->coeff, mmax, n_terms);
@@ -193,7 +194,7 @@ namespace rascal {
                                                z * (coefficient(i + 2) +
                                                     z * coefficient(i + 3))));
             if (a1 < this->tolerance * res) {
-              //this->n_terms = i;
+              // this->n_terms = i;
               res += a1;
               break;
             }
@@ -250,7 +251,8 @@ namespace rascal {
       }
 
      public:
-      // Parameter used to fix the sum when evaluating the numerical derivatives.
+      // Parameter used to fix the sum when evaluating the numerical
+      // derivatives.
       size_t n_terms{20};
 
       Hyp1f1Asymptotic(const double & a, const double & b, const size_t & mmax,
@@ -329,7 +331,7 @@ namespace rascal {
       inline double hyp2f0(const double & z, const bool & derivative,
                            const int & n_terms) {
         using math::pow;
-        //this->n_terms = this->mmax;
+        // this->n_terms = this->mmax;
 
         size_t mmax{0};
         if (n_terms == -1) {
@@ -362,7 +364,7 @@ namespace rascal {
           s_i = coefficient(i) * izpow;
           if (res > 0 and std::fabs(s_i) < this->tolerance * res and
               n_terms == -1) {
-            //this->n_terms = i;
+            // this->n_terms = i;
             break;
           }
           res += s_i;
@@ -398,7 +400,7 @@ namespace rascal {
 
       double z_asympt{1.};
 
-      size_t nterms_a{0}, nterms_s{0};
+      size_t nterms_a{0};
       double h1f1_a{0}, h1f1_s{0};
       double z_above{0.}, z_below{0.};
 
@@ -406,8 +408,8 @@ namespace rascal {
         this->h1f1_s = this->hyp1f1_series.calc(this->z_asympt);
         this->h1f1_a = this->hyp1f1_asymptotic.calc(this->z_asympt);
 
-        //this->nterms_s = this->hyp1f1_series.n_terms;
-        //this->nterms_a = this->hyp1f1_asymptotic.n_terms;
+        // this->nterms_s = this->hyp1f1_series.n_terms;
+        // this->nterms_a = this->hyp1f1_asymptotic.n_terms;
       }
 
       /**

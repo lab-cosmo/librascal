@@ -125,10 +125,11 @@ namespace rascal {
         }
       }
     }
-    BOOST_CHECK_LE(std::abs(max_distance - adaptor_strict->get_max_distance()), tol);
-    BOOST_CHECK_LE(std::abs(min_distance - adaptor_strict->get_min_distance()), tol);
+    BOOST_CHECK_LE(std::abs(max_distance - adaptor_strict->get_max_distance()),
+                   tol);
+    BOOST_CHECK_LE(std::abs(min_distance - adaptor_strict->get_min_distance()),
+                   tol);
   }
-
 
   /* ---------------------------------------------------------------------- */
   /*

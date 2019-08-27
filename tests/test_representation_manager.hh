@@ -135,17 +135,15 @@ namespace rascal {
     std::vector<json> radial_contribution_hypers{
         {{"type", "GTO"}},
         {{"type", "GTO"},
-         {"optimization", 
-             {{"type", "Spline"},
-              {"accuracy", 1e-8},
-              {"range",{{"begin", 0.},{"end",3.}}}
-             }
-         }
-        }
-    };
+         {"optimization",
+          {{"type", "Spline"},
+           {"accuracy", 1e-8},
+           {"range", {{"begin", 0.}, {"end", 3.}}}}}}};
 
-    // TODO(alex) TODO(max) 
-    // for max_angular=0 and soap_type=RadialSpectrum error in SOAP independent from the cubic jsons. Strangely for max_angular=0 and soap_type=PowerSpectrum there is no error
+    // TODO(alex) TODO(max)
+    // for max_angular=0 and soap_type=RadialSpectrum error in SOAP independent
+    // from the cubic jsons. Strangely for max_angular=0 and
+    // soap_type=PowerSpectrum there is no error
     std::vector<json> rep_hypers{//{{"max_radial", 6},
                                  // {"max_angular", 0},
                                  // {"soap_type", "RadialSpectrum"},
@@ -409,7 +407,8 @@ namespace rascal {
     const std::vector<std::string> filenames{
         //"reference_data/simple_cubic_3.json", // seg fault
         //"reference_data/simple_cubic_8.json", // seg fault
-        //"reference_data/small_molecule.json", // no seg fault ,only accuracy test error, seems just less accurate
+        //"reference_data/small_molecule.json", // no seg fault ,only accuracy
+        // test error, seems just less accurate
         "reference_data/diamond_2atom.json",
         "reference_data/diamond_2atom_distorted.json",
         "reference_data/diamond_cubic_distorted.json",
@@ -453,13 +452,13 @@ namespace rascal {
     std::vector<json> density_hypers{
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
-    std::vector<json> radial_contribution_hypers{
-        {{"type", "GTO"}}
-    };
-    // TODO(alex) TODO(max) 
-    // for max_angular=0 and soap_type=RadialSpectrum error in SOAP independent from the cubic jsons. Strangely for max_angular=0 and soap_type=PowerSpectrum there is no error
+    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
+    // TODO(alex) TODO(max)
+    // for max_angular=0 and soap_type=RadialSpectrum error in SOAP independent
+    // from the cubic jsons. Strangely for max_angular=0 and
+    // soap_type=PowerSpectrum there is no error
     std::vector<json> rep_hypers{{{"max_radial", 2},
-                                  {"max_angular", 2}, 
+                                  {"max_angular", 2},
                                   {"normalize", true},
                                   {"soap_type", "PowerSpectrum"},
                                   {"compute_gradients", true}},

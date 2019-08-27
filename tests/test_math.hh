@@ -35,7 +35,6 @@
 #include "math/math_utils.hh"
 #include "math/spherical_harmonics.hh"
 #include "math/hyp1f1.hh"
-#include "math/interpolator.hh"
 #include "representations/representation_manager_spherical_expansion.hh"
 #include "rascal_utility.hh"
 
@@ -45,49 +44,6 @@
 #include <functional>
 
 namespace rascal {
-
-  template <class Interpolator>
-  struct InterpolatorFixture {
-    InterpolatorFixture<Interpolator>() :
-      intp{Interpolator()}
-    {}
-
-    Interpolator intp;
-    double x1{0};
-    double x2{1};
-    double error_bound{1e-5};
-    int nb_ref_points{100};    
-    
-    std::map<std::string, std::function<double(double)>> functions{
-      {"identity", {[](double x) {return x;}}},
-      {"polynomial", {[](double x) {return x*x*x/900-x/2+3;}}},
-      {"exp", {[](double x) {return std::exp(0.5*x);}}},
-      {"sin", {[](double x) {return std::sin(x);}}}
-    };
-    std::map<std::string, std::function<double(double)>> derivatives{
-      {"identity", {[](double) {return 1;}}},
-      {"polynomial", {[](double x) {return x*x/300-0.5;}}},
-      {"exp", {[](double x) {return 0.5*std::exp(0.5*x);}}},
-      {"sin", {[](double x) {return std::cos(x);}}}
-    };
-
-    math::Hyp1f1 hyp1f1{0.5*(20+20+3), 20+1.5, 200, 1e-15};
-    const int max_radial{3};
-    const int max_angular{max_radial-1};
-    const json fc_hypers{
-         {"type", "Constant"},
-         {"gaussian_sigma", {{"value", 0.5}, {"unit", "A"}}}
-        };
-    const json hypers{{"gaussian_density", fc_hypers},
-              {"max_radial", max_radial},
-              {"max_angular", max_angular},
-              {"cutoff_function", {{"cutoff",{{"value", 2.0}, {"unit", "A"}}}}}
-    };
-    
-    // a=0.5*(n+l+3), b = l+1.5, mmax, tolerance
-    internal::RadialContribution<rascal::internal::RadialBasisType::GTO> radial_contr{
-        internal::RadialContribution<rascal::internal::RadialBasisType::GTO>(hypers)};
-  };
 
   struct SphericalHarmonicsRefFixture {
     SphericalHarmonicsRefFixture() {

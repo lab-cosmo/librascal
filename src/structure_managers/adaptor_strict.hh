@@ -265,13 +265,10 @@ namespace rascal {
       return this->atom_tag_list[1];
     }
 
-    // TODO(alex) implement in all with HasDistance true when merged with default_implementation_function
-    double get_min_distance() {
-      return this->min_distance;
-    }
-    double get_max_distance() {
-      return this->max_distance;
-    }
+    // TODO(alex) implement in all with HasDistance true when merged with
+    // default_implementation_function
+    double get_min_distance() { return this->min_distance; }
+    double get_max_distance() { return this->max_distance; }
 
    protected:
     /**
@@ -375,7 +372,6 @@ namespace rascal {
         dir_vec{std::make_shared<DirectionVector_t>(*this)}, cutoff{cutoff},
         min_distance{}, max_distance{}, atom_tag_list{},
         neighbours_cluster_index{}, nb_neigh{}, offsets{}
-        
 
   {
     if (not internal::check_cutoff(this->manager, cutoff)) {
