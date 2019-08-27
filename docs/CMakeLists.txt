@@ -43,7 +43,7 @@ add_custom_target(doxygen_doc
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
     COMMENT "Generating C++ documentation with Doxygen")
 
-add_custom_target(dev_doc
+add_custom_target(doc
   COMMAND
   ${SPHINX_EXECUTABLE}
   -q -b html

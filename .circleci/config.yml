@@ -45,7 +45,7 @@ jobs:
                         - run:
                                 command: |
                                         cd build
-                                        make dev_doc
+                                        make doc
                         - run:
                                 command: |
                                         cd build
@@ -95,7 +95,7 @@ jobs:
                         - run:
                                 command: |
                                         cd build
-                                        make dev_doc
+                                        make doc
                         - run:
                                 command: |
                                         cd build
@@ -143,7 +143,7 @@ jobs:
                         - run:
                                 command: |
                                         cd build
-                                        make dev_doc
+                                        make doc
                         - run:
                                 command: |
                                         cd build
@@ -192,7 +192,7 @@ jobs:
                         - run:
                                 command: |
                                         cd build
-                                        make dev_doc
+                                        make doc
                         - run:
                                 command: |
                                         cd build
@@ -254,7 +254,7 @@ jobs:
                         - run:
                                 command: |
                                         cd build
-                                        make dev_doc
+                                        make doc
                         - run:
                                 command: |
                                         cd build
@@ -316,7 +316,7 @@ jobs:
                         - run:
                                 command: |
                                         cd build
-                                        make dev_doc
+                                        make doc
                         - run:
                                 command: |
                                         cd build
@@ -367,7 +367,7 @@ jobs:
                         - run:
                                 command: |
                                         cd build
-                                        make dev_doc
+                                        make doc
                         - run:
                                 command: |
                                         cd build
@@ -419,7 +419,7 @@ jobs:
                         - run:
                                 command: |
                                         cd build
-                                        make dev_doc
+                                        make doc
                         - run:
                                 command: |
                                         cd build
@@ -473,7 +473,7 @@ jobs:
                         - run:
                                 command: |
                                         cd build
-                                        make dev_doc
+                                        make doc
                         - run:
                                 command: |
                                         cd build
