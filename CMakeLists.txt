@@ -86,8 +86,10 @@ set(ENABLE_PROFILING "OFF" CACHE BOOL
 
 SET(TYPE_ARCHITECTURE "native" CACHE STRING "Choose the type of architecture to compile to in release mode. Default is to let the compiler decide")
 
-
 message(STATUS "Build type is: ${CMAKE_BUILD_TYPE}")
+
+set(BUILD_BENCHMARK "OFF" CACHE BOOL
+  "If on, the google benchmark will be built.")
 
 ########## COMPILATION FLAGS ##########
 add_compile_options(-Wall -Wextra)
@@ -138,8 +140,20 @@ add_external_package(wigxjpf VERSION 1.9 CONFIG)
 add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
 
 # Integrate google benchmark
-find_package(Threads REQUIRED)
-add_external_package(benchmark VERSION 1.5.0 CONFIG)
+if(BUILD_BENCHMARK)
+  find_package(Threads REQUIRED)
+  add_external_package(benchmark VERSION 1.5.0 CONFIG)
+
+ # Compile benchmark files
+ file( GLOB binaries "${CMAKE_SOURCE_DIR}/benchmarks/*.cc")
+ foreach(binaryfile ${binaries})
+   get_filename_component(binaryname  ${binaryfile} NAME_WE)
+   add_executable(${binaryname} ${binaryfile})
+   target_link_libraries(${binaryname} "${LIBRASCAL_NAME}")
+   target_link_libraries(${binaryname} Threads::Threads)
+   target_link_libraries(${binaryname} benchmark)
+ endforeach(binaryfile ${binaries})
+endif()
 
 # Try to find optional cpp linter
 include(cpplint)
@@ -320,16 +334,6 @@ add_compile_options(-Werror) # warnings are errors!
 endforeach(binaryfile ${binaries})
 configure_file("${CMAKE_SOURCE_DIR}/examples/crystal_structure.json" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file("${CMAKE_SOURCE_DIR}/examples/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
-
-# Compile benchmark files
-file( GLOB binaries "${CMAKE_SOURCE_DIR}/benchmarks/*.cc")
-foreach(binaryfile ${binaries})
-  get_filename_component(binaryname  ${binaryfile} NAME_WE)
-  add_executable(${binaryname} ${binaryfile})
-  target_link_libraries(${binaryname} "${LIBRASCAL_NAME}")
-  target_link_libraries(${binaryname} Threads::Threads)
-  target_link_libraries(${binaryname} benchmark)
-endforeach(binaryfile ${binaries})
 
 # Add profiling information for the appropriate examples
 if (ENABLE_PROFILING)
