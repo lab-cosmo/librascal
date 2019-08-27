@@ -822,8 +822,7 @@ INPUT_ENCODING         = UTF-8
 # *.f, *.for, *.tcl, *.vhd, *.vhdl, *.ucf and *.qsf.
 
 # Only document C++ files; the rest is handled by Sphinx.
-# Exception: Include the markdown files until we get them merged to sphinx
-FILE_PATTERNS          = *.hh *.cc *.md # *.py *.ipynb *.pdf *.rst
+FILE_PATTERNS          = *.hh *.cc # *.md *.py *.ipynb *.pdf *.rst
 
 # The RECURSIVE tag can be used to specify whether or not subdirectories should
 # be searched for input files as well.
