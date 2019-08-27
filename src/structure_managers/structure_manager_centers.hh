@@ -283,29 +283,21 @@ namespace rascal {
     //! Function for returning the number of atoms
     size_t get_nb_clusters(size_t order) const;
 
-    /**
-     * invokes the initialisation/reinitialisation based on existing
-     * data. E.g. when the atom positions are provided by a simulation method,
-     * which evolves in time, this function updates the data.
-     */
-    void
-    update_self(const Eigen::Ref<const Eigen::MatrixXd, 0,
-                                 Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>>
-                    positions,
-                const Eigen::Ref<const Eigen::VectorXi> atom_types,
-                const Eigen::Ref<const Eigen::MatrixXd> cell,
-                const Eigen::Ref<const PBC_t> pbc);
-    /**
-     * Overload of the update function invokes an update from a file, which
-     * holds a structure in the format of the ASE atoms object
-     */
-    void update_self(const std::string filename);
-
-    //! overload of update that does not change the underlying structure
-    void update_self(const AtomicStructure<traits::Dim> & structure);
-
-    //! overload of update that does not change the underlying structure
+    //! to follow the base class
     void update_self() {}
+
+    /**
+     * Use AtomObject to read the incoming structure
+     */
+    template <class... Args>
+    void update_self(Args &&... arguments) {
+      this->atoms_object.set_structure(std::forward<Args>(arguments)...);
+      this->build();
+    }
+
+    inline const AtomicStructure<traits::Dim> & get_atomic_structure() const {
+      return this->atoms_object;
+    }
 
    protected:
     //! makes atom tag lists and offsets
@@ -337,6 +329,9 @@ namespace rascal {
 
     //! Total number of atoms in structure
     size_t natoms{};
+
+    //! number of time the structure has been updated
+    size_t n_update{0};
   };
 
   /* ---------------------------------------------------------------------- */

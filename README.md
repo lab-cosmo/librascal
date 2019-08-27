@@ -2,7 +2,7 @@
 A scalable and versatile fingerprint and machine-learning code
 
 ## How to install:
-* Need to have the programs git, gcc/clang (with c++14 support), cmake and python 3.6 with numpy, scipy and ASE (https://wiki.fysik.dtu.dk/ase/index.html). On ubuntu run:
+* Need to have the programs git, gcc/clang (with c++14 support), cmake and python 3.6 with numpy, scipy and ASE (https://wiki.fysik.dtu.dk/ase/index.html). On Ubuntu run:
 ```Shell
 sudo apt-get install git gcc cmake
 pip3 install numpy scipy ase
@@ -18,8 +18,8 @@ make
 
 ## Alternative build:
 
-The library supports several alternative build that have additional depencies.
-Note that the curse gui for cmake (ccmake) is quite helpfull to customize the build options.
+The library supports several alternative build that have additional dependencies.
+Note that the `ncurses` GUI for cmake (ccmake) is quite helpful to customize the build options.
 
 1. Tests
 
@@ -74,7 +74,7 @@ Note that the curse gui for cmake (ccmake) is quite helpfull to customize the bu
     shopt -s extglob
     rm -fr -- !(external|third-party)
     ```
-    * To help developers conform their contribution to the coding convention, the formating of new functionalities can be automated using clang-format (for the c++ files) and autopep8 (for the python files). The .clang-format and .pycodestyle files define common settings to be used.
+    * To help developers conform their contribution to the coding convention, the formatting of new functionalities can be automated using clang-format (for the c++ files) and autopep8 (for the python files). The .clang-format and .pycodestyle files define common settings to be used.
 
       To enable these functionalities (optional) you can install these tools with:
       ```Shell
@@ -113,7 +113,7 @@ Note that the curse gui for cmake (ccmake) is quite helpfull to customize the bu
     make
     ```
 
-## Misceleaneous Information
+## Miscellaneous Information
 
 * Common cmake flag:
   + -DCMAKE_C_COMPILER
@@ -136,7 +136,7 @@ Note that the curse gui for cmake (ccmake) is quite helpfull to customize the bu
     + ON -> install root is in the user's home directory, i.e. ~/.local/
 
 
-To build libRascal with as docker environement:
+To build librascal as a docker environment:
 ```
 sudo docker build -t test -f ./docker/install_env.dockerfile  .
 sudo docker run -it -v /path/to/repo/:/home/user/  test

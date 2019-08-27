@@ -5,3 +5,4 @@ SortIncludes: false
 PointerAlignment: Middle
 AlwaysBreakTemplateDeclarations: true
 ColumnLimit: 80
+KeepEmptyLinesAtTheStartOfBlocks: false

@@ -29,11 +29,25 @@
 #ifndef SRC_MATH_MATH_UTILS_HH_
 #define SRC_MATH_MATH_UTILS_HH_
 
+
 #include <Eigen/Dense>
 #include <cmath>
 #include <limits>
+#include <cstdint>
 
 namespace rascal {
+  /**
+   * User defined literal operator to initialize size_t literals
+   *
+   * linter wants std::uint64_t to avoid the C style type but litterals are
+   * of type unsigned long long while std::uint64_t on 64bits machines stands
+   * for unsigned long. Both have equivalent underlying storage but not the
+   * same type...
+   */
+  constexpr std::size_t operator"" _n(unsigned long long int n) {  // NOLINT
+    return n;
+  }
+
   namespace math {
 
     // Reminder: C++ floating-point literals are automatically of type double
@@ -55,15 +69,47 @@ namespace rascal {
     using Vector_t = Eigen::Matrix<double, 1, Eigen::Dynamic, Eigen::RowMajor>;
 
     using MatrixX2_t = Eigen::Matrix<double, Eigen::Dynamic, 2>;
-
+    using Matrix_Ref = typename Eigen::Ref<const Matrix_t>;
+    using MatrixX2_Ref = typename Eigen::Ref<const MatrixX2_t>;
+    using Vector_Ref = typename Eigen::Ref<const Vector_t>;
     /**
      * Define integer powers and wrap the different cases under the same name
      */
     namespace details {
       //! unsingned integer power
-      double pow_u(double x, size_t n);
+      template <typename Scalar_>
+      inline Scalar_ pow_u(Scalar_ x, size_t n) {
+        Scalar_ value{1};
+
+        /* repeated squaring method
+         * returns 0.0^0 = 1.0, so continuous in x
+         * (from GSL)
+         */
+        do {
+          if (n & 1)
+            value *= x; /* for n odd */
+          n >>= 1;
+          x *= x;
+        } while (n);
+
+        return value;
+      }
+
       //! integer power
-      double pow_i(const double & x, const int & n);
+      template <typename Scalar_>
+      inline double pow_i(const Scalar_ & x, const int & n) {
+        size_t un{0};
+        double value{static_cast<double>(x)};
+
+        if (n < 0) {
+          value = 1.0 / x;
+          un = static_cast<size_t>(-n);
+        } else {
+          un = static_cast<size_t>(n);
+        }
+
+        return pow_u(value, un);
+      }
     }  // namespace details
 
     //! integer power
@@ -71,8 +117,28 @@ namespace rascal {
       return details::pow_i(x, n);
     }
 
+    //! integer power
+    inline double pow(const int & x, const int & n) {
+      return details::pow_i(x, n);
+    }
+
+    //! integer power
+    inline double pow(const size_t & x, const int & n) {
+      return details::pow_i(x, n);
+    }
+
     //! unsingned integer power
     inline double pow(const double & x, const std::size_t & n) {
+      return details::pow_u(x, n);
+    }
+
+    //! unsingned integer power
+    inline int pow(const int & x, const std::size_t & n) {
+      return details::pow_u(x, n);
+    }
+
+    //! unsingned integer power
+    inline size_t pow(const size_t & x, const std::size_t & n) {
       return details::pow_u(x, n);
     }
 

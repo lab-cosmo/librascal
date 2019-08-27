@@ -71,7 +71,6 @@
 #include <map>
 #include <memory>
 
-// PYBIND11_MAKE_OPAQUE(std::vector<double>);
 
 PYBIND11_MAKE_OPAQUE(std::vector<rascal::AtomicStructure<3>>);
 

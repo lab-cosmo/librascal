@@ -30,11 +30,47 @@
 #include "tests.hh"
 #include "test_structure.hh"
 #include "test_adaptor.hh"
-#include "structure_managers/adaptor_neighbour_list.hh"
+#include "atomic_structure.hh"
 
 namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(neighbour_list_adaptor_test);
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Test that the verlet list allows to not recompute the linked cell
+   * neighborlist when the structure has changed depending on the skin
+   * parameter
+   */
+  using verlet_list_fixtures = boost::mpl::list<
+      MultipleStructureFixture<MultipleStructureManagerNLRattleFixture>>;
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(verlet_list_test, Fix, verlet_list_fixtures,
+                                   Fix) {
+    auto & managers = Fix::managers;
+    auto managers_no_skin = managers[0];
+    auto managers_small_skin = managers[1];
+    auto managers_skin = managers[2];
+    auto & filename = Fix::filename;
+    AtomicStructure<3> structure{};
+    structure.set_structure(filename);
+
+    int n_update{3};
+
+    structure.positions.array() += 0.05;
+    managers_no_skin->update(structure);
+    managers_small_skin->update(structure);
+    managers_skin->update(structure);
+
+    structure.set_structure(filename);
+    structure.positions.array() += 0.07;
+    managers_small_skin->update(structure);
+    managers_no_skin->update(structure);
+    managers_skin->update(structure);
+
+    BOOST_CHECK_EQUAL(n_update, managers_no_skin->get_n_update());
+    BOOST_CHECK_EQUAL(n_update - 1, managers_small_skin->get_n_update());
+    BOOST_CHECK_EQUAL(1, managers_skin->get_n_update());
+  }
 
   /* ---------------------------------------------------------------------- */
   /*

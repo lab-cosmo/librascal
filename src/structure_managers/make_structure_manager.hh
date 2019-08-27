@@ -192,7 +192,6 @@ namespace rascal {
                                "of parameters as there are adaptors to build.");
     }
 
-
     // instanciate the base manager
     auto manager_base = make_structure_manager<Manager>();
     // build the stack of adaptors
@@ -294,7 +293,7 @@ namespace rascal {
 
   /**
    * TODO(felix) use TypeHolderInjector to simplify this thing
-   * 
+   *
    * Factory function to make a manager with its types provided with
    * a StructureManagerTypeHolder and arguments packaged in two json object.
    */

@@ -81,6 +81,11 @@ namespace rascal {
       return this->name;
     }
 
+    //! return the name of the calculator's gradients
+    inline std::string get_gradient_name() const {
+      return this->name + std::string("_gradients");
+    }
+
     inline const std::string& get_prefix() const {
       return this->default_prefix;
     }

@@ -89,20 +89,23 @@ int main() {
   //             {"identifier",rep_id}};
   json hypers{{"max_radial", 8},
               {"max_angular", 6},
-              {"soap_type", "PowerSpectrum"},
-              {"normalize", true}};
+              // {"soap_type", "PowerSpectrum"},
+              {"soap_type", "BiSpectrum"},
+              {"inversion_symmetry", true},
+              {"normalize", true},
+              {"compute_gradients", true}};
 
   json fc_hypers{{"type", "Cosine"},
-                 {"cutoff", {{"value", cutoff}, {"unit", "A"}}},
-                 {"smooth_width", {{"value", 0.5}, {"unit", "A"}}}};
+                 {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
+                 {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}};
   json sigma_hypers{{"type", "Constant"},
-                    {"gaussian_sigma", {{"value", 0.4}, {"unit", "A"}}}};
+                    {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}};
 
   hypers["cutoff_function"] = fc_hypers;
   hypers["gaussian_density"] = sigma_hypers;
   hypers["radial_contribution"] = {{"type", "GTO"}};
 
-  json structure{{"filename", filename}};
+  json structure{};
   json adaptors;
   json ad1{{"name", "AdaptorNeighbourList"},
            {"initialization_arguments",
@@ -160,37 +163,6 @@ int main() {
 
 
   // auto test_representation{property.get_dense_rep()};
-
-
-  // TODELETE
-  // size_t inner_size{representation.get_feature_size()};
-  // FeatureManagerBlockSparse<double> feature{inner_size, hypers};
-
-  // feature.push_back(representation);
-  // auto X{feature.get_feature_matrix_dense()};
-  // std::cout << "sadfasd" << std::endl;
-  // auto n_center{feature.sample_size()};
-  // auto norms = X.colwise().norm();
-  // std::cout << norms.size() << std::endl;
-  // for (int icenter{0}; icenter < n_center; icenter++) {
-  //   std::cout << norms[icenter] << std::endl;
-  // }
-
-  // auto kernel1 = X.transpose() * X;
-
-  // auto kernel2 = dot(feature, feature);
-
-  // auto kernel3 = dot(feature);
-
-  // auto max1{kernel1.mean()};
-  // auto max2{kernel2.mean()};
-  // auto diff{(kernel1 - kernel2).array().abs().matrix().mean()};
-
-  // std::cout << max1 << ", " << max2 << ", " << diff << std::endl;
-
-  // diff = (kernel2 - kernel3).array().abs().matrix().mean();
-
-  // std::cout << diff << std::endl;
 
   return (0);
 }

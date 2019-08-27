@@ -195,5 +195,3 @@ class TestNLStrict(unittest.TestCase):
                 # sort because the order is not the same
                 ref_sort_ids, sort_ids = np.argsort(
                     ref_dists), np.argsort(dists)
-                # self.assertTrue(np.allclose(ref_dists[ref_sort_ids],dists[sort_ids]))
-                # self.assertTrue(np.allclose(ref_dirVecs[ref_sort_ids],dirVecs[sort_ids]))
