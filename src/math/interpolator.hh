@@ -716,9 +716,9 @@ namespace rascal {
 
     template<class InterpolationMethod, class GridRational, class SearchMethod, class ErrorMethod=ErrorMethod<ErrorMetric_t::Absolute, ErrorNorm_t::Mean>>
     class Interpolator : public InterpolatorTyped<InterpolationMethod, GridRational, SearchMethod, ErrorMethod> {
-      // We specialized the spline methods for uniform grid. The spline methods can be also adapted for general grids, but for uniform grids the computation can much more optimized.
-      static_assert (not(InterpolationMethod::Method == InterpolationMethod_t::CubicSpline) || GridRational::GridType == GridType_t::Uniform);
-      static_assert (not(SearchMethod::Method == SearchMethod_t::Uniform) || GridRational::GridType == GridType_t::Uniform);
+      // We specialized the spline methods for uniform grid. The spline methods can be also adapted for general grids, however for uniform grids the computation can be much more optimized.
+      static_assert (not(InterpolationMethod::Method == InterpolationMethod_t::CubicSpline) || GridRational::GridType == GridType_t::Uniform, "The Interpolator class has been initiated with wrong template parameters: Interpolator method cubic spline only supports a uniform grid type.");
+      static_assert (not(SearchMethod::Method == SearchMethod_t::Uniform) || GridRational::GridType == GridType_t::Uniform, "The Interpolator class has been initiated with wrong template parameters:  Interpolator method cubic spline only supports the uniform search method.");
      public: 
       using Parent = InterpolatorTyped<InterpolationMethod, GridRational, SearchMethod, ErrorMethod>;
       Interpolator() : Parent() {}
@@ -840,8 +840,8 @@ namespace rascal {
 
     template<class InterpolationMethod, class GridRational, class SearchMethod, class ErrorMethod=ErrorMethod<ErrorMetric_t::Absolute, ErrorNorm_t::Mean>>
     class InterpolatorVectorized : public InterpolatorTyped<InterpolationMethod, GridRational, SearchMethod, ErrorMethod> {
-      static_assert (not(InterpolationMethod::Method == InterpolationMethod_t::CubicSplineVectorized) || GridRational::GridType == GridType_t::Uniform);
-      static_assert (not(SearchMethod::Method == SearchMethod_t::Uniform) || GridRational::GridType == GridType_t::Uniform);
+      static_assert (not(InterpolationMethod::Method == InterpolationMethod_t::CubicSplineVectorized) || GridRational::GridType == GridType_t::Uniform, "The InterpolatorVectorized class has been initiated with wrong template parameters: Interpolator method cubic spline only supports a uniform grid type.");
+      static_assert (not(SearchMethod::Method == SearchMethod_t::Uniform) || GridRational::GridType == GridType_t::Uniform, "The InterpolatorVectorized class has been initiated with wrong template parameters: Interpolator method cubic spline only supports the uniform search method.");
      public: 
       using Parent = InterpolatorTyped<InterpolationMethod, GridRational, SearchMethod, ErrorMethod>;
       InterpolatorVectorized() : Parent() {}
