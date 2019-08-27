@@ -36,7 +36,7 @@ It takes care of:
 * Providing iterators that can be used to loop over clusters of a given type,
   and to access properties associated with clusters of each body order.
 
-![](../../src/implementation_structure_manager.svg)
+![](../../../docs/figures/implementation_structure_manager.svg)
 
 In practice the ``StructureManager`` allocates the memory to store
 property data, which can be accessed as a heterogeneous map containing
@@ -115,7 +115,7 @@ structure, or fetching data from a host code such as LAMMPS) takes the
 status of an existing manager and "adapts" it by computing properties,
 creating clusters of higher order, or filtering existing clusters.
 
-<img src="../../src/implementation_structure_layers-0.png" width="800">
+<img src="../../../docs/figures/implementation_structure_layers-0.png" width="800">
 Conceptually this can be understood as if the state of a manager was
 described by a series of layers, one for each cluster order, starting
 from an empty slate in which no data exists. Each layer
@@ -128,31 +128,31 @@ Consider for instance the following stack:
 item in the index list corresponds to an atom, and can be used to index
 associated properties, e.g. the position of each atom
 
-<img src="../../src/implementation_structure_layers-1.png" width="800">
+<img src="../../../docs/figures/implementation_structure_layers-1.png" width="800">
 
 2. Pair clusters are computed with a linked-cell algorithm
 [AllenTildesley]_. The parameters
 of the manager determines how the pairs are constructed, and no distance is
 actually computed and stored
 
-<img src="../../src/implementation_structure_layers-2.png" width="800">
+<img src="../../../docs/figures/implementation_structure_layers-2.png" width="800">
 
 3. Distances are computed for a subset of the pairs, e.g. only for pairs
 within a strict cutoff of 3Å. Only a subset of the pairs computed at the
 previous layer is indexed. We will discuss later how one can index multiple
 layers without runtime overhead.
 
-<img src="../../src/implementation_structure_layers-3.png" width="800">
+<img src="../../../docs/figures/implementation_structure_layers-3.png" width="800">
 
 4. Only oxygen atoms, and pairs involving oxygen atoms are selected. Note that
 this adds a new layer to both atoms and pairs.
 
-<img src="../../src/implementation_structure_layers-4.png" width="800">
+<img src="../../../docs/figures/implementation_structure_layers-4.png" width="800">
 
 5. Triplets of oxygen atoms are constructed, and angles computed between them.
 A new layer is created for triplets and properties are simultaneously stored
 
-<img src="../../src/implementation_structure_layers-5.png" width="800">
+<img src="../../../docs/figures/implementation_structure_layers-5.png" width="800">
 
 It is important to keep in mind that this architecture is not associated with a
 separate control structure in the code, but is realized at compile time by
@@ -169,7 +169,7 @@ The actual infrastructure to index and access cluster data is created at
 compile time and linked statically, so despite the apparent complexity there
 is little to no associated overhead.
 
-<img src="../../src/implementation_clusterref.svg" >
+<img src="../../../docs/figures/implementation_clusterref.svg" >
 
 Compile-time lookup of the appropriate property is achieved by means
 of the ``ClusterRef`` object, that holds a list of the location in memory of
