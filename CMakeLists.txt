@@ -330,7 +330,6 @@ foreach(binaryfile ${binaries})
   target_link_libraries(${binaryname} "${LIBRASCAL_NAME}")
   #TODO(all) Removed global compiler flag and only include it when building our files; also not sure if PUBLIC is correct;
   target_compile_options(${binaryname} PUBLIC "-Weffc++")
-add_compile_options(-Werror) # warnings are errors!
 endforeach(binaryfile ${binaries})
 configure_file("${CMAKE_SOURCE_DIR}/examples/crystal_structure.json" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file("${CMAKE_SOURCE_DIR}/examples/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)

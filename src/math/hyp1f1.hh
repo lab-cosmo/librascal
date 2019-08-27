@@ -400,7 +400,9 @@ namespace rascal {
 
       double z_asympt{1.};
 
-      size_t nterms_a{0};
+      // TODO(all) TODO(felix) I remember this was a quick fix and I am not
+      // sure if this should be added to master
+      // size_t nterms_a{0}, nterms_s{0};
       double h1f1_a{0}, h1f1_s{0};
       double z_above{0.}, z_below{0.};
 

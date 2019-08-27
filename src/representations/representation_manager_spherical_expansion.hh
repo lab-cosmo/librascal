@@ -683,7 +683,7 @@ namespace rascal {
       }
 
       inline Matrix_Ref
-      compute_neighbour_contribution(const double & distance) {
+      compute_neighbour_contribution(const double &) {
         return Parent::compute_neighbour_contribution(this->fac_a);
       }
 
