@@ -4,10 +4,10 @@ Installation
 ============
 
 
-Prequisties
-###########
+Prerequisites
+#############
 
-Bofore installing Rascal, please make sure you have at least the following packages installed:
+Before installing Rascal, please make sure you have at least the following packages installed:
 
 +-------------+--------------------+
 | Package     |  Required version  |
@@ -28,7 +28,7 @@ Other necessary packages (such as Eigen and PyBind11) are downloaded automatical
 
 
 Get Rascal
-###########
+##########
 
 It is strongly recommended to clone Rascal from its repository in GitHub.
 
@@ -37,7 +37,7 @@ It is strongly recommended to clone Rascal from its repository in GitHub.
     git clone https://github.com/cosmo-epfl/librascal.git
 
 Build Rascal
-#############
+############
 
 To compile the code it is necessary to have CMake 3.0 and a C++ compiler supporting C++14. During the configuration, it will automatically try to download the external libraries on which it depends:
 
@@ -69,7 +69,8 @@ Alternative build
 The library supports several alternative build that have additional depencies.
 Note that the curse gui for cmake (ccmake) is quite helpfull to customize the build options.
 
-1. Tests
+Tests
+~~~~~
 
 Librascal source code is extensively tested (both c++ and python). The BOOST unit_test_framework is requiered to build the tests (see below for further details on how to install the boost library).
 To build and run the tests:
@@ -91,7 +92,8 @@ To install these dependencies on ubuntu:
     pip3 install autopep8
 
 
-2. Build Type
+Build Type
+~~~~~~~~~~
 
 Several build types are available Release (default), Debug and RelWithDebInfo. To build an alternative mode:
 
@@ -111,7 +113,8 @@ Or
     make
 
 
-3. Documentation
+Documentation
+~~~~~~~~~~~~~
 
 The current documentation relies on the doxygen package. To install it on ubuntu:
 
@@ -129,7 +132,8 @@ To rebuild the documentation, run the
 
 in the build folder.
 
-4. Bindings
+Bindings
+~~~~~~~~
 
 Librascal relies on the pybind11 library to automate the generation of the python bindings which are built by default. Nevertheless, to build only the c++ library:
 
@@ -140,7 +144,8 @@ Librascal relies on the pybind11 library to automate the generation of the pytho
     make
 
 
-5. Helpers for Developers
+Helpers for Developers
+~~~~~~~~~~~~~~~~~~~~~~
 
 * To remove all the cmake files/folders except for the external library (enable glob and remove):
 
@@ -180,7 +185,6 @@ If code needs to be specifically excluded from auto formatting, e.g. a matrix wh
     // clang-format off
     SOME CODE TO IGNORE
     // clang-format on
-    
 
 * Python
 
@@ -191,10 +195,11 @@ If code needs to be specifically excluded from auto formatting, e.g. a matrix wh
 
 where <b>`noqa`</b> stands for <b>no</b> <b>q</b>uality <b>a</b>ssurance.
 
-Misceleaneous Information
-########################
+Miscellaneous Information
+#########################
 
-* Common cmake flag:
+* Common cmake flags:
+
   + -DCMAKE_C_COMPILER
   + -DBUILD_BINDINGS
   + -DUSER
@@ -204,18 +209,24 @@ Misceleaneous Information
   + -DBUILD_TESTS
 
 * Special flags:
+
   + -DBUILD_BINDINGS:
-    + ON (default) -> build python binding
-    + OFF -> does not build python binding
+
+    - ON (default) -> build python binding
+    - OFF -> does not build python binding
+
   + -DINSTALL_PATH:
-    + empty (default) -> does not install in a custom folder
-    + custom string -> root path for the installation
+
+    - empty (default) -> does not install in a custom folder
+    - custom string -> root path for the installation
+
   + -DUSER:
-    + OFF (default) -> changes nothing
-    + ON -> install root is in the user's home directory, i.e. ~/.local/
+
+    - OFF (default) -> changes nothing
+    - ON -> install root is in the user's home directory, i.e. ~/.local/
 
 
-To build libRascal with as docker environement:
+To build librascal as a docker environment:
 
 .. code-block:: bash
 
@@ -230,11 +241,13 @@ Run Rascal
 In order to run Rascal, you need to import the library into a Python code:
 
 .. code-block:: python
-    
-    import Rascal as R
+
+    import rascal
+    from rascal.representations import *
 
 
 Advanced options
 ################
 
-It is possible to link Rascal with other scientific calculation packages, s.a LAMMPS, ASE,... etc. A specific flag needs to be specified when building Rascal.
+It is possible to link Rascal with other scientific calculation packages, like
+LAMMPS, ASE, i-PI, and n2p2.  These interfaces are still a work in progress.
