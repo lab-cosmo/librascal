@@ -71,12 +71,13 @@ jobs:
                                         apt-get install -y git
                                         apt-get install -y libboost-test-dev
                                         apt-get install -y doxygen graphviz
+                                        apt-get install -y pandoc
                                         apt-get install -y gcc-6 g++-6
                         - run:
                                 name: installing python packages
                                 command: |
                                         python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx==2.2.0 breathe==4.11.1 sphinx_rtd_theme nbsphinx cpplint
+                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme nbsphinx cpplint
                         - run:
                                 command: |
                                         rm -rf build
@@ -120,11 +121,12 @@ jobs:
                                         apt-get install -y git
                                         apt-get install -y libboost-test-dev
                                         apt-get install -y doxygen graphviz
+                                        apt-get install -y pandoc
                         - run:
                                 name: installing python packages
                                 command: |
                                         python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx==2.2.0 breathe==4.11.1 sphinx_rtd_theme nbsphinx cpplint
+                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme nbsphinx cpplint
                         - run:
                                 command: |
                                         rm -rf build
@@ -169,11 +171,12 @@ jobs:
                                         apt-get install -y git
                                         apt-get install -y libboost-test-dev
                                         apt-get install -y doxygen graphviz
+                                        apt-get install -y pandoc
                         - run:
                                 name: installing python packages
                                 command: |
                                         python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx==2.2.0 breathe==4.11.1 sphinx_rtd_theme nbsphinx cpplint
+                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme nbsphinx cpplint
                         - run:
                                 command: |
                                         rm -rf build
@@ -218,6 +221,7 @@ jobs:
                                         apt-get install -y git
                                         apt-get install -y libboost-test-dev
                                         apt-get install -y doxygen graphviz
+                                        apt-get install -y pandoc
                                         apt-get install -y software-properties-common
                                         apt-get install -y gcc-5 g++-5
                                         apt-get update -y
@@ -235,7 +239,7 @@ jobs:
                                 name: installing python packages
                                 command: |
                                         python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx==2.2.0 breathe==4.11.1 sphinx_rtd_theme nbsphinx cpplint
+                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme nbsphinx cpplint
                         - run:
                                 command: |
                                         rm -rf build
@@ -280,6 +284,7 @@ jobs:
                                         apt-get install -y git
                                         apt-get install -y libboost-test-dev
                                         apt-get install -y doxygen graphviz
+                                        apt-get install -y pandoc
                                         apt-get install -y software-properties-common
                                         apt-get install -y gcc-5 g++-5
                                         apt-get update -y
@@ -297,7 +302,7 @@ jobs:
                                 name: installing python packages
                                 command: |
                                         python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx==2.2.0 breathe==4.11.1 sphinx_rtd_theme nbsphinx cpplint
+                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme nbsphinx cpplint
                         - run:
                                 command: |
                                         rm -rf build
@@ -342,13 +347,14 @@ jobs:
                                         apt-get install -y git
                                         apt-get install -y libboost-test-dev
                                         apt-get install -y doxygen graphviz
+                                        apt-get install -y pandoc
                                         apt-get remove -y clang
                                         apt-get install -y clang-6.0 libclang-common-6.0-dev libllvm6.0 libc++-dev
                         - run:
                                 name: installing python packages
                                 command: |
                                         python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx==2.2.0 breathe==4.11.1 sphinx_rtd_theme nbsphinx cpplint
+                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme nbsphinx cpplint
                         - run:
                                 command: |
                                         rm -rf build
@@ -394,13 +400,14 @@ jobs:
                                         apt-get install -y git
                                         apt-get install -y libboost-test-dev
                                         apt-get install -y doxygen graphviz
+                                        apt-get install -y pandoc
                                         apt-get remove -y clang
                                         apt-get install -y clang-5.0 libclang-common-5.0-dev libllvm5.0 libc++-dev
                         - run:
                                 name: installing python packages
                                 command: |
                                         python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx==2.2.0 breathe==4.11.1 sphinx_rtd_theme nbsphinx cpplint
+                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme nbsphinx cpplint
                         - run:
                                 command: |
                                         rm -rf build
@@ -444,6 +451,7 @@ jobs:
                                         apt-get install -y git
                                         apt-get install -y libboost-test-dev
                                         apt-get install -y doxygen graphviz
+                                        apt-get install -y pandoc
                                         apt-get install -y clang-4.0 llvm-4.0
                                         #apt-get install -y software-properties-common
                                         #apt-get update -y
@@ -454,7 +462,7 @@ jobs:
                                 name: installing python packages
                                 command: |
                                         python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx==2.2.0 breathe==4.11.1 sphinx_rtd_theme nbsphinx cpplint
+                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme nbsphinx cpplint
                         - run:
                                 command: |
                                         rm -rf build
