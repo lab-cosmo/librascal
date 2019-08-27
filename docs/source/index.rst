@@ -14,6 +14,18 @@ Although at the moment is a serial-only code, we aim to write it in MPI so that 
 
 It comes with a GNU Lesser General Public License of version 3, which means that it can be modified and freely distribute, although we take no responsibility for its misuse.
 
+Developers
+==========
+
+Rascal is jointly developed between the `COSMO <https://cosmo.epfl.ch>`_ and
+`LAMMM <https://lammm.epfl.ch>`_ groups at EPFL.  The principal developers are
+Michele Ceriotti, Federico Giberti, Alexander Gocsinski, Till Junge, Félix
+Musil, Markus Stricker, Max Veit, and Michael Willatt.
+
+This documentation has been contributed by Chiheb Ben Mahmoud, Michele Ceriotti,
+Klim Goldshtein, Till Junge, Markus Stricker, Félix Musil, and is currently
+maintained by Max Veit.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
@@ -37,3 +49,4 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
