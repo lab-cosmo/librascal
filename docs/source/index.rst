@@ -19,10 +19,10 @@ It comes with a GNU Lesser General Public License of version 3, which means that
    :caption: Contents:
 
    intro
-   whitepaper
    installation
-   theory
    tutorials/tutorials
+   whitepaper
+   SOAP
    representation/representations
    models/models
    neighbor_list/neighbor-list-manager
