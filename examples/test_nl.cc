@@ -35,8 +35,6 @@
 #include "representations/calculator_sorted_coulomb.hh"
 #include "representations/calculator_spherical_expansion.hh"
 #include "representations/calculator_spherical_invariants.hh"
-#include "representations/feature_manager_dense.hh"
-#include "representations/feature_manager_block_sparse.hh"
 
 #include "models/kernels.hh"
 

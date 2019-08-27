@@ -381,10 +381,10 @@ namespace rascal {
 
         for (auto & key : unique_keys) {
           auto && posA{this->map[key]};
-          auto vecA{reference(&this->data[std::get<0>(posA)],
+          auto vecA{VectorRef_t(&this->data[std::get<0>(posA)],
                                 std::get<1>(posA) * std::get<2>(posA))};
           auto && posB{B.map[key]};
-          auto vecB{reference(&B.data[std::get<0>(posB)],
+          auto vecB{VectorRef_t(&B.data[std::get<0>(posB)],
                               std::get<1>(posB) * std::get<2>(posB))};
           val += vecA.dot(vecB);
 
@@ -473,6 +473,7 @@ namespace rascal {
 
    protected:
     DataOrders_t values{};  //!< storage for properties
+    std::string type_id{};
 
    public:
     //! constructor
@@ -761,9 +762,6 @@ namespace rascal {
       return mat;
     }
 
-   protected:
-    std::string type_id{};
-    Data_t values{};  //!< storage for properties
   };
 
 }  // namespace rascal

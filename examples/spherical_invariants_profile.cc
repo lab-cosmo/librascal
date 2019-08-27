@@ -33,7 +33,6 @@
 #include "representations/calculator_sorted_coulomb.hh"
 #include "representations/calculator_spherical_expansion.hh"
 #include "representations/calculator_spherical_invariants.hh"
-#include "representations/feature_manager_dense.hh"
 #include "basic_types.hh"
 #include "atomic_structure.hh"
 
@@ -132,6 +131,6 @@ int main(int argc, char * argv[]) {
   std::cout << "Compute representation with gradients"
             << " elapsed: " << elapsed_grad.count() / N_ITERATIONS << " seconds"
             << std::endl;
-  auto property_name{representation.get_name()};
-  auto&& property{manager->template get_validated_property_ref<Property_t>(property_name)};
+  // auto property_name{representation.get_name()};
+  // auto&& property{manager->template get_validated_property_ref<Property_t>(property_name)};
 }

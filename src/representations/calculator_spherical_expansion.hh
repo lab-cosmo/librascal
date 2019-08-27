@@ -840,13 +840,14 @@ namespace rascal {
             class StructureManager>
   void CalculatorSphericalExpansion::compute_impl(std::shared_ptr<StructureManager> manager) {
     using Prop_t = Property_t<StructureManager>;
+    using PropGrad_t = PropertyGradient_t<StructureManager>;
     using internal::n_spatial_dimensions;
     using math::PI;
     using math::pow;
 
     auto&& expansions_coefficients{manager->template get_property_ref<Prop_t>(this->get_name())};
 
-    auto&& expansions_coefficients_gradient{manager->template get_property_ref<Prop_t>(this->get_gradient_name())};
+    auto&& expansions_coefficients_gradient{manager->template get_property_ref<PropGrad_t>(this->get_gradient_name())};
 
     // if the representation has already been computed for the current
     // structure then do nothing
@@ -878,7 +879,7 @@ namespace rascal {
     Matrix_t radial_ortho_mat{
         radial_integral->get_radial_orthonormalization_matrix()};
 
-    for (auto center : this->structure_manager) {
+    for (auto center : manager) {
       auto & coefficients_center = expansions_coefficients[center];
       auto & coefficients_center_gradient =
           expansions_coefficients_gradient[center];
@@ -1002,7 +1003,7 @@ namespace rascal {
         radial_integral->finalize_coefficients_der(
             expansions_coefficients_gradient, center);
       }
-    }  // for (center : structure_manager)
+    }  // for (center : manager)
   }    // compute()
 
 }  // namespace rascal
