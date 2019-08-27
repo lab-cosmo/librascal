@@ -40,6 +40,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.napoleon',
               'sphinx.ext.autosummary',
               'breathe',
+              'nbsphinx',
               ]
 
 ## this line detects whether the script is run on readthedocs.io, where it
