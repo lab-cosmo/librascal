@@ -208,7 +208,7 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(spherical_expansion_radial_derivative, Fix,
                                    fixtures_with_gradients, Fix) {
     auto & managers = Fix::managers;
-    auto & hypers = Fix::hypers;
+    auto & hypers = Fix::representation_hypers;
     // We need to explicitly specify a cluster ref type below - in this case,
     // it's for an atom pair (hence the 2)
     using ClusterRef_t = typename Fix::Manager_t::template ClusterRef<2>;
@@ -232,7 +232,7 @@ namespace rascal {
   }
 
   using simple_periodic_fixtures = boost::mpl::list<
-      CalculatorFixture<SingleHypersSphericalRepresentation, // expension
+      CalculatorFixture<SingleHypersSphericalRepresentation>, // expension
       CalculatorFixture<SingleHypersSphericalRepresentation>>; // invariants
 
   /**
@@ -242,7 +242,7 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(spherical_representation_gradients, Fix,
                                    simple_periodic_fixtures, Fix) {
     auto & managers = Fix::managers;
-    auto & hypers = Fix::hypers;
+    auto & hypers = Fix::representation_hypers;
     auto & representations = Fix::representations;
     auto & structures = Fix::structures;
     auto filename_it = Fix::filenames.begin();
@@ -250,15 +250,15 @@ namespace rascal {
     for (auto manager : managers) {
       for (auto hyper : hypers) {
         hyper["compute_gradients"] = true;
-        representations.emplace_back(manager, hyper);
+        representations.emplace_back(hyper);
         structures.emplace_back();
         structures.back().set_structure(*filename_it);
         // The finite-difference tests don't work with periodic boundary
         // conditions -- moving one atom moves all its periodic images, too
         structures.back().pbc.setZero();
-        RepresentationManagerGradientCalculator<typename Fix::Representation_t>
+        RepresentationManagerGradientCalculator<typename Fix::Representation_t, typename Fix::Manager_t>
             calculator(representations.back(), manager, structures.back());
-        RepresentationManagerGradientFixture<typename Fix::Representation_t>
+        RepresentationManagerGradientFixture<typename Fix::Representation_t, typename Fix::Manager_t>
             grad_fix("reference_data/spherical_expansion_gradient_test.json",
                      manager, calculator);
         if (grad_fix.verbosity >= GradientTestFixture::VerbosityValue::INFO) {

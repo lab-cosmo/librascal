@@ -176,7 +176,7 @@ namespace rascal {
               rep_hyp["cutoff_function"] = fc_hyp;
               rep_hyp["gaussian_density"] = sig_hyp;
               rep_hyp["radial_contribution"] = ri_hyp;
-              this->hypers.push_back(rep_hyp);
+              this->representation_hypers.push_back(rep_hyp);
             }
           }
         }
@@ -185,7 +185,7 @@ namespace rascal {
 
     ~MultipleStructureSphericalCovariants() = default;
 
-    std::vector<json> hypers{};
+    std::vector<json> representation_hypers{};
 
     std::vector<json> fc_hypers{
         {{"type", "Cosine"},
@@ -223,6 +223,7 @@ namespace rascal {
       this->get_ref(this->ref_filename);
     }
     ~SphericalInvariantsTestData() = default;
+    bool verbose{true};
     std::string ref_filename{
         "reference_data/spherical_invariants_reference.ubjson"};
   };
@@ -235,6 +236,7 @@ namespace rascal {
       this->get_ref(this->ref_filename);
     }
     ~SphericalCovariantsTestData() = default;
+    bool verbose{true};
     std::string ref_filename{
         "reference_data/spherical_covariants_reference.ubjson"};
   };
@@ -336,7 +338,7 @@ namespace rascal {
               rep_hyp["cutoff_function"] = fc_hyp;
               rep_hyp["gaussian_density"] = sig_hyp;
               rep_hyp["radial_contribution"] = ri_hyp;
-              this->hypers.push_back(rep_hyp);
+              this->representation_hypers.push_back(rep_hyp);
             }
           }
         }
@@ -345,7 +347,7 @@ namespace rascal {
 
     ~MultipleHypersSphericalExpansion() = default;
 
-    std::vector<json> hypers{};
+    std::vector<json> representation_hypers{};
     std::vector<json> fc_hypers{
         {{"type", "Cosine"},
          {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
@@ -425,7 +427,7 @@ namespace rascal {
               rep_hyp["cutoff_function"] = fc_hyp;
               rep_hyp["gaussian_density"] = sig_hyp;
               rep_hyp["radial_contribution"] = ri_hyp;
-              this->hypers.push_back(rep_hyp);
+              this->representation_hypers.push_back(rep_hyp);
             }
           }
         }
@@ -434,7 +436,7 @@ namespace rascal {
 
     ~SingleHypersSphericalRepresentation() = default;
 
-    std::vector<json> hypers{};
+    std::vector<json> representation_hypers{};
     std::vector<json> fc_hypers{
         {{"type", "Cosine"},
          {"cutoff", {{"value", 2.5}, {"unit", "AA"}}},
@@ -465,9 +467,9 @@ namespace rascal {
       this->get_ref(this->ref_filename);
     }
     ~SphericalExpansionTestData() = default;
+    bool verbose{true};
     std::string ref_filename{
         "reference_data/spherical_expansion_reference.ubjson"};
-    bool verbose{true};
   };
 
   /**
@@ -526,20 +528,26 @@ namespace rascal {
    * respect to the center position can then be tested, as usual, with
    * test_gradients() (defined in test_math.hh).
    */
-  template <typename RepManager>
+  template <typename RepManager, class StructureManager>
   class RepresentationManagerGradientCalculator {
    public:
     using Structure_t = AtomicStructure<3>;
     using Key_t = typename RepManager::Key_t;
-    using PairRef_t = typename RepManager::Manager_t::template ClusterRef<2>;
     static const size_t n_arguments = 3;
 
-    template <typename T>
+    using PairRef_t = typename RepManager::template ClusterRef_t<StructureManager, 2>;
+
+    // type of the data structure holding the representation and its gradients
+    using Prop_t = typename RepManager::template Property_t<StructureManager>;
+    using PropGrad_t = typename RepManager::template PropertyGradient_t<StructureManager>;
+
+
+    template <typename T, class V>
     friend class RepresentationManagerGradientFixture;
 
     RepresentationManagerGradientCalculator(
         RepManager & representation,
-        std::shared_ptr<typename RepManager::Manager_t> structure_manager,
+        std::shared_ptr<StructureManager> structure_manager,
         Structure_t atomic_structure)
         : representation{representation}, structure_manager{structure_manager},
           atomic_structure{atomic_structure}, center_it{
@@ -553,9 +561,12 @@ namespace rascal {
       Structure_t modified_structure{this->atomic_structure};
       modified_structure.positions.col(center.get_index()) = center_position;
       this->structure_manager->update(modified_structure);
-      representation.compute();
-      auto & data_sparse{representation.get_representation_sparse()};
-      auto & gradients_sparse{representation.get_gradient_sparse()};
+      this->representation.compute(this->structure_manager);
+
+      auto&& data_sparse{structure_manager->template get_property_ref<Prop_t>(representation.get_name())};
+      auto&& gradients_sparse{structure_manager->template get_property_ref<PropGrad_t>(representation.get_gradient_name())};
+
+
       auto & data_center{data_sparse[center]};
       auto keys_center = gradients_sparse.get_keys(center);
       Key_t center_key{center.get_atom_type()};
@@ -610,8 +621,10 @@ namespace rascal {
       // center_it->position() = center_position;
       // representation.compute();
       auto center = *center_it;
-      auto & data_sparse{representation.get_representation_sparse()};
-      auto & gradients_sparse{representation.get_gradient_sparse()};
+
+      auto&& data_sparse{structure_manager->template get_property_ref<Prop_t>(representation.get_name())};
+      auto&& gradients_sparse{structure_manager->template get_property_ref<PropGrad_t>(representation.get_gradient_name())};
+
       auto & gradients_center{gradients_sparse[center]};
       auto keys_center = gradients_center.get_keys();
       size_t n_entries_per_key{static_cast<size_t>(data_sparse.get_nb_comp())};
@@ -656,9 +669,9 @@ namespace rascal {
 
    private:
     RepManager & representation;
-    std::shared_ptr<typename RepManager::Manager_t> structure_manager;
+    std::shared_ptr<StructureManager> structure_manager;
     Structure_t atomic_structure;
-    typename RepManager::Manager_t::iterator center_it;
+    typename StructureManager::iterator center_it;
 
     inline void advance_center() { ++this->center_it; }
 
@@ -693,12 +706,12 @@ namespace rascal {
    * Holds data (i.e. function values, gradient directions) and iterates through
    * the list of centers
    */
-  template <typename RepManager_t>
+  template <typename RepManager_t, class StructureManager_t>
   class RepresentationManagerGradientFixture : public GradientTestFixture {
    public:
     using StdVector2Dim_t = std::vector<std::vector<double>>;
-    using Calculator_t = RepresentationManagerGradientCalculator<RepManager_t>;
-    using StructureManager_t = typename RepManager_t::Manager_t;
+    using Calculator_t = RepresentationManagerGradientCalculator<RepManager_t, StructureManager_t>;
+
 
     static const size_t n_arguments = 3;
 
@@ -707,9 +720,7 @@ namespace rascal {
         Calculator_t & calc)
         : structure{structure}, center_it{structure->begin()}, calculator{
                                                                    calc} {
-      json input_data;
-      std::ifstream input_file{filename};
-      input_file >> input_data;
+      json input_data{json_io::load(filename)};
 
       this->function_inputs = this->get_function_inputs();
       this->displacement_directions =
@@ -747,10 +758,6 @@ namespace rascal {
                               center_pos.data() + center_pos.size());
       return inputs_new;
     }
-
-    // StdVector2Dim_t function_inputs{};
-    // Eigen::MatrixXd displacement_directions{};
-    // VerbosityValue verbosity{VerbosityValue::NORMAL};
 
     std::shared_ptr<StructureManager_t> structure;
     typename StructureManager_t::iterator center_it;

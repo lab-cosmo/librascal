@@ -294,7 +294,7 @@ namespace rascal {
     template <internal::SphericalCovariantsType Type, std::enable_if_t<Type == internal::SphericalCovariantsType::LambdaSpectrum, int> = 0, class StructureManager>
     void compute_impl(std::shared_ptr<StructureManager> manager);
 
-    template <class StructureManager, class Invariants, class ExpansionCoeff>
+    template <class Invariants, class ExpansionCoeff,class StructureManager>
     void initialize_percenter_lambda_soap_vectors(Invariants& soap_vector, ExpansionCoeff& expansions_coefficients, std::shared_ptr<StructureManager> manager);
 
    protected:
@@ -326,7 +326,7 @@ namespace rascal {
     }
   }
 
-  template <class StructureManager, class Invariants, class ExpansionCoeff>
+  template <class Invariants, class ExpansionCoeff, class StructureManager>
   void CalculatorSphericalCovariants::initialize_percenter_lambda_soap_vectors(Invariants& soap_vectors, ExpansionCoeff& expansions_coefficients, std::shared_ptr<StructureManager> manager) {
     using math::pow;
 
@@ -392,9 +392,9 @@ namespace rascal {
   void
   CalculatorSphericalCovariants::compute_impl(std::shared_ptr<StructureManager> manager) {
     using PropExp_t = typename CalculatorSphericalExpansion::Property_t<StructureManager>;
-    using PropGradExp_t = typename CalculatorSphericalExpansion::Property_t<StructureManager>;
+    // using PropGradExp_t = typename CalculatorSphericalExpansion::Property_t<StructureManager>;
     using Prop_t = Property_t<StructureManager>;
-    using PropGrad_t = PropertyGradient_t<StructureManager>;
+    // using PropGrad_t = PropertyGradient_t<StructureManager>;
     using internal::SphericalCovariantsType;
     using math::pow;
     using internal::enumValue;
@@ -419,7 +419,7 @@ namespace rascal {
       return;
     }
 
-    this->initialize_percenter_lambda_soap_vectors();
+    this->initialize_percenter_lambda_soap_vectors(soap_vectors, expansions_coefficients, manager);
 
     Key_t p_type{0, 0};
     internal::SortedKey<Key_t> pair_type{p_type};
