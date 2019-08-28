@@ -716,7 +716,7 @@ namespace rascal {
     using Key_t = std::vector<int>;
     using BlockSparseProperty_t =
         BlockSparseProperty<double, Order, 0, Manager_t, Key_t>;
-    using Dense_t = typename BlockSparseProperty_t::Dense_t;
+    using Matrix_t = typename BlockSparseProperty_t::Matrix_t;
     using InputData_t = typename BlockSparseProperty_t::InputData_t;
     using TestData_t = std::vector<InputData_t>;
 
@@ -747,7 +747,7 @@ namespace rascal {
           // resize and set to 0
           datas.resize(keys, n_row, n_col, 0);
           for (auto & key : keys) {
-            auto data = Dense_t::Random(n_row, n_col);
+            auto data = Matrix_t::Random(n_row, n_col);
             datas[key] += data;
           }
           this->keys_list.back().push_back(keys);

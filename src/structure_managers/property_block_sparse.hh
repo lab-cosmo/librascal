@@ -30,6 +30,7 @@
 
 
 #include "rascal_utility.hh"
+#include "math/math_utils.hh"
 #include "structure_managers/property_base.hh"
 #include "structure_managers/cluster_ref_key.hh"
 
@@ -462,12 +463,11 @@ namespace rascal {
     using Self_t = BlockSparseProperty<Precision_t,Order,PropertyLayer,Manager,Key>;
     using traits = typename Manager::traits;
 
-    using Dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, Eigen::Dynamic,
-                                  Eigen::RowMajor>;
-    using DenseRef_t = Eigen::Map<Dense_t>;
+    using Matrix_t = math::Matrix_t;
+    using DenseRef_t = Eigen::Map<Matrix_t>;
     using Key_t = Key;
     using Keys_t = std::set<Key_t>;
-    using InputData_t = internal::InternallySortedKeyMap<Key_t, Dense_t>;
+    using InputData_t = internal::InternallySortedKeyMap<Key_t, Matrix_t>;
     using Data_t = std::vector<InputData_t>;
     using DataOrders_t = std::array<std::vector<InputData_t>, Order>;
 
@@ -656,7 +656,7 @@ namespace rascal {
     //! Accessor for property by cluster index and return a dense
     //! representation of the property associated to this cluster
     template <size_t CallerOrder, size_t CallerLayer>
-    inline Dense_t
+    inline Matrix_t
     get_dense_row(const ClusterRefKey<CallerOrder, CallerLayer> & id) {
       static_assert(CallerOrder <= Order, "should be CallerOrder <= Order");
       static_assert(CallerLayer >= PropertyLayer,
@@ -667,9 +667,9 @@ namespace rascal {
                                  CallerOrder - 1);
     }
 
-    inline Dense_t get_dense_row(const size_t & index, const size_t & i_order) {
+    inline Matrix_t get_dense_row(const size_t & index, const size_t & i_order) {
       auto keys = this->values[i_order][index].get_keys();
-      Dense_t feature_row = Dense_t::Zero(this->get_nb_comp(), keys.size());
+      Matrix_t feature_row = Matrix_t::Zero(this->get_nb_comp(), keys.size());
       size_t i_col{0};
       for (const auto & key : keys) {
         size_t i_row{0};
@@ -683,9 +683,60 @@ namespace rascal {
       return feature_row;
     }
 
-    inline Dense_t get_dense_rep() {
+    /**
+     * Fill a dense feature matrix with layout Ncenter x Nfeatures
+     * if Order == 1.
+     * It is filled in the lexicografical order provided by all_keys and the
+     * missing entries are filled with zeros.
+     * The features are flattened out following the underlying storage order.
+     *
+     * @params features dense Eigen matrix of the proper size
+     *
+     * @param all_keys set of all the keys that should be considered when
+     * building the feature matrix
+     *
+     */
+    inline void fill_dense_feature_matrix(Eigen::Ref<Matrix_t> features, const Keys_t& all_keys) {
+      int inner_size{this->get_nb_comp()};
+      for (size_t i_order{0}; i_order < Order; ++i_order) {
+        size_t n_center{this->values[i_order].size()};
+        for (size_t i_center{0}; i_center < n_center; i_center++) {
+          int i_feat{0};
+          for (const auto & key : all_keys) {
+            if (this->values[i_order][i_center].count(key) == 1) {
+              for (int i_pos{0};
+                   i_pos < this->values[i_order][i_center][key].size();
+                   i_pos++) {
+                features(i_center, i_feat) =
+                    this->values[i_order][i_center][key](i_pos);
+                i_feat++;
+              }
+            } else {
+              i_feat += inner_size;
+            }
+          }
+        } // keys
+      } // centers
+    }
+
+    /**
+     * Get a dense feature matrix Ncenter x Nfeatures. The keys to use are
+     * deduced from the local storage.
+     */
+    inline Matrix_t get_dense_feature_matrix() {
+      auto all_keys = this->get_keys();
       size_t n_elements{this->size()};
       int inner_size{this->get_nb_comp()};
+      Matrix_t features =
+          Matrix_t::Zero(n_elements, inner_size * all_keys.size());
+      this->fill_dense_feature_matrix(features, all_keys);
+      return features;
+    }
+
+    /**
+     * @return set of unique keys at the level of the structure
+     */
+    inline Keys_t get_keys() {
       Keys_t all_keys{};
       for (size_t i_order{0}; i_order < Order; ++i_order) {
         size_t n_center{this->values[i_order].size()};
@@ -696,34 +747,13 @@ namespace rascal {
           }
         }
       }
-      Dense_t features =
-          Dense_t::Zero(inner_size * all_keys.size(), n_elements);
-
-      for (size_t i_order{0}; i_order < Order; ++i_order) {
-        size_t n_center{this->values[i_order].size()};
-        for (size_t i_center{0}; i_center < n_center; i_center++) {
-          int i_feat{0};
-          for (const auto & key : all_keys) {
-            if (this->values[i_order][i_center].count(key) == 1) {
-              for (int i_pos{0};
-                   i_pos < this->values[i_order][i_center][key].size();
-                   i_pos++) {
-                features(i_feat, i_center) =
-                    this->values[i_order][i_center][key](i_pos);
-                i_feat++;
-              }
-            } else {
-              i_feat += inner_size;
-            }
-          }
-        } // keys
-      } // centers
-      return features;
+      return all_keys;
     }
 
-    //! getter to the underlying data storage
-    // A hack here is fine because the function will disapear soon
-    inline std::vector<InputData_t> & get_raw_data() { return this->values[0]; }
+    // //! getter to the underlying data storage
+    // // A hack here is fine because the function will disapear soon
+    // inline std::vector<InputData_t> & get_raw_data() { return this->values[0]; }
+
     //! get number of different distinct element in the property
     //! (typically the number of center)
     inline size_t get_nb_item() const { return this->size(); }
@@ -744,8 +774,8 @@ namespace rascal {
      * assumes order == 1 for the moment should use SFINAE to take care of
      * the case order == 2
      */
-    inline Dense_t dot(Self_t& B) {
-      Dense_t mat(this->size(), B.size());
+    inline Matrix_t dot(Self_t& B) {
+      Matrix_t mat(this->size(), B.size());
       auto&& managerA{this->get_manager()};
       auto&& managerB{B.get_manager()};
       int i_row{0};

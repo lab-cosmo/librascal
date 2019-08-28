@@ -26,6 +26,7 @@
  */
 
 #include "bind_py_structure_manager.hh"
+#include "bind_py_representation_calculator.hh"
 
 namespace rascal {
   /**
@@ -396,6 +397,12 @@ namespace rascal {
                                                                 m_adaptor);
   }
 
+  template <class Calculator, class ManagerCollection_t, class ManagerCollectionBinder>
+  void bind_feature_matrix_getter(ManagerCollectionBinder& manager_collection) {
+    manager_collection.def(
+        "get_dense_feature_matrix", &ManagerCollection_t::template get_dense_feature_matrix<Calculator>, py::call_guard<py::gil_scoped_release>());
+  }
+
   template <typename Manager, template <class> class ...Adaptor>
   void bind_structure_manager_collection(py::module & m_str_mng) {
     using ManagerCollection_t = ManagerCollection<Manager, Adaptor...>;
@@ -429,6 +436,11 @@ namespace rascal {
     manager_collection.def(
         "get_parameters",
         [](ManagerCollection_t & v) { return std::string(v.get_adaptors_parameters().dump(2)); });
+
+    bind_feature_matrix_getter<CalculatorSortedCoulomb, ManagerCollection_t>(manager_collection);
+    bind_feature_matrix_getter<CalculatorSphericalExpansion, ManagerCollection_t>(manager_collection);
+    bind_feature_matrix_getter<CalculatorSphericalInvariants, ManagerCollection_t>(manager_collection);
+    bind_feature_matrix_getter<CalculatorSphericalCovariants,ManagerCollection_t>(manager_collection);
   }
 
   /**

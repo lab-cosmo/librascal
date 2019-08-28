@@ -39,7 +39,6 @@
 #include "representations/calculator_spherical_expansion.hh"
 #include "representations/calculator_spherical_invariants.hh"
 #include "representations/calculator_spherical_covariants.hh"
-#include "representations/feature_manager_block_sparse.hh"
 
 #include "json_io.hh"
 #include "rascal_utility.hh"

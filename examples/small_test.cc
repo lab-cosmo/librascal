@@ -25,16 +25,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-// #include "structure_managers/structure_manager_centers.hh"
-// #include "structure_managers/adaptor_strict.hh"
-// #include "structure_managers/adaptor_neighbour_list.hh"
-// #include "structure_managers/make_structure_manager.hh"
-// #include "rascal_utility.hh"
-// #include "representations/calculator_sorted_coulomb.hh"
-// #include "representations/calculator_spherical_expansion.hh"
-// #include "representations/calculator_spherical_invariants.hh"
-// #include "representations/feature_manager_dense.hh"
-// #include "representations/feature_manager_block_sparse.hh"
 
 #include <iostream>
 #include <basic_types.hh>

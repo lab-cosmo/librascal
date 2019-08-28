@@ -115,7 +115,7 @@ namespace rascal {
     base.def_readonly("default_prefix", &CalculatorBase::default_prefix);
     /*-------------------- rep-bind-start --------------------*/
     // Defines a particular structure manager type
-    
+
     using TypeHolder_t = StructureManagerTypeHolder<StructureManagerCenters,AdaptorNeighbourList, AdaptorStrict>;
     using ManagerList_t = typename TypeHolder_t::type_list;
     // using Manager_t = typename TypeHolder_t::type;
@@ -138,6 +138,11 @@ namespace rascal {
     auto rep_soap =
         add_representation_calculator<Calc3_t>(mod, m_throwaway);
     bind_compute_function_helper<ManagerList_t>(rep_soap);
+
+    using Calc4_t = CalculatorSphericalCovariants;
+    auto rep_lambda_soap =
+        add_representation_calculator<Calc4_t>(mod, m_throwaway);
+    bind_compute_function_helper<ManagerList_t>(rep_lambda_soap);
   }
 
 }

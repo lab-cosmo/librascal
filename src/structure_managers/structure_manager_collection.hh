@@ -54,6 +54,7 @@ namespace rascal {
     using traits = typename Manager_t::traits;
     using Data_t = std::vector<ManagerPtr_t>;
     using value_type = typename Data_t::value_type;
+    using Matrix_t = math::Matrix_t;
 
    protected:
     Data_t managers{};
@@ -191,7 +192,7 @@ namespace rascal {
       json structures = json_io::load(filename);
 
       if (not structures.is_object()) {
-        throw std::runtime_error(R"(The ase format's first level is a dictionary with indicies as keys to the structures)");
+        throw std::runtime_error(R"(The first level of the ase format is a dictionary with indicies as keys to the structures)");
       }
 
       if (structures.count("ids") == 1) {
@@ -215,6 +216,143 @@ namespace rascal {
     //! number of structure manager in the collection
     inline size_t size() const {
       return this->managers.size();
+    }
+
+    template<class Calculator>
+    inline Matrix_t get_dense_feature_matrix(const Calculator& calculator) {
+      using Prop_t = typename Calculator::template Property_t<Manager_t>;
+
+      auto property_name{this->get_calculator_name(calculator, false)};
+
+      auto&& property_ = managers[0]->template get_property_ref<Prop_t>(property_name);
+      // assume inner_size is consistent for all managers
+      int inner_size{property_.get_nb_comp()};
+
+      Matrix_t features{};
+
+      auto n_rows{this->get_number_of_elements(calculator, false)};
+
+      FeatureMatHelper<Prop_t>::apply(this->managers, property_name, features, n_rows, inner_size);
+      return features;
+    }
+
+   protected:
+
+
+    /**
+     * Helper classes to deal with the differentiation between Property and
+     * BlockSparseProperty when filling the feature matrix.
+     */
+    template<typename T>
+    struct FeatureMatHelper {};
+
+    template <typename T, size_t Order, size_t PropertyLayer,
+            int NbRow, int NbCol>
+    struct FeatureMatHelper<Property<T,Order,PropertyLayer,Manager_t,NbRow,NbCol>> {
+      using Prop_t = Property<T,Order,PropertyLayer,Manager_t,NbRow,NbCol>;
+      template<class StructureManagers>
+      static void apply(StructureManagers& managers, const std::string& property_name, Eigen::Ref<Matrix_t> features, int n_rows, int inner_size) {
+        features.resize(n_rows, inner_size);
+        int i_row{0};
+        for (auto& manager : managers) {
+          auto&& property = manager->template get_property_ref<Prop_t>(property_name);
+          auto n_rows_manager = property.size();
+          property.fill_dense_feature_matrix(
+              features.block(i_row, 0, n_rows_manager, inner_size));
+          i_row += n_rows_manager;
+        }
+      }
+    };
+
+    template <typename T, size_t Order, size_t PropertyLayer, typename Key>
+    struct FeatureMatHelper<BlockSparseProperty<T,Order,PropertyLayer,Manager_t,Key>> {
+      using Prop_t = BlockSparseProperty<T,Order,PropertyLayer,Manager_t,Key>;
+      using Keys_t = typename Prop_t::Keys_t;
+
+      template<class StructureManagers>
+      static void apply(StructureManagers& managers, const std::string& property_name, Eigen::Ref<Matrix_t> features, int n_rows, int inner_size) {
+
+        Keys_t all_keys{};
+        for (auto& manager : managers) {
+          auto&& property = manager->template get_property_ref<Prop_t>(property_name);
+          auto keys = property.get_keys();
+          all_keys.insert(keys.begin(), keys.end());
+        }
+
+        int n_cols{all_keys.size() * inner_size};
+        features.resize(n_rows, n_cols);
+        int i_row{0};
+        for (auto& manager : managers) {
+          auto&& property = manager->template get_property_ref<Prop_t>(property_name);
+          auto n_rows_manager = property.size();
+          property.fill_dense_feature_matrix(
+              features.block(i_row, 0, n_rows_manager, n_cols), all_keys);
+          i_row += n_rows_manager;
+        }
+      }
+    };
+
+    /**
+     * @param calculator a calculator
+     * @param is_gradients wether to return the name associated with the
+     * features or their gradients
+     * @return name of the property associated with the calculator
+     */
+    template<class Calculator>
+    inline std::string get_calculator_name(const Calculator& calculator, bool is_gradients) {
+      std::string property_name{};
+      if (not is_gradients) {
+        property_name = calculator.get_name();
+      } else {
+        property_name = calculator.get_gradient_name();
+      }
+      return property_name;
+    }
+
+    /**
+     * Should only be used if calculator has BlockSparseProperty.
+     * @param is_gradients wether to return the keys associated with the
+     * features or their gradients
+     * @return set of keys of all the BlockSparseProperty in the managers
+     */
+    template<class Calculator>
+    inline auto get_keys(const Calculator& calculator, bool is_gradients = false) {
+      using Prop_t = typename Calculator::template Property_t<Manager_t>;
+      using Keys_t = typename Prop_t::Keys_t;
+
+      Keys_t all_keys{};
+
+      auto property_name{this->get_calculator_name(calculator, is_gradients)};
+
+      for (auto& manager : this->managers) {
+        auto&& property = manager->template get_property_ref<Prop_t>(property_name);
+        auto keys = property.get_keys();
+        all_keys.insert(keys.begin(), keys.end());
+      }
+
+      return all_keys;
+    }
+
+    /**
+     * @param is_gradients wether to return the number of elements associated
+     * with the features or their gradients
+     * @return the number of rows of the feature matrix, i.e. the number of
+     * samples
+     */
+    template<class Calculator>
+    inline size_t get_number_of_elements(const Calculator& calculator, bool is_gradients = false) {
+      using Prop_t = typename Calculator::template Property_t<Manager_t>;
+
+      size_t n_elements{0};
+
+      auto property_name{this->get_calculator_name(calculator, is_gradients)};
+
+      for (auto& manager : this->managers) {
+        auto&& property = manager->template get_property_ref<Prop_t>(property_name);
+        n_elements += property.size();
+      }
+
+      return n_elements;
     }
 
   };

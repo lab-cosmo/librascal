@@ -170,7 +170,7 @@ namespace rascal {
         auto property_name{representations.back().get_name()};
         auto&& property{manager->template get_validated_property_ref<Property_t>(property_name)};
 
-        auto test_representation{property.get_dense_rep()};
+        auto test_representation{property.get_dense_feature_matrix()};
 
         BOOST_CHECK_EQUAL(ref_representation.size(),
                           test_representation.rows());
