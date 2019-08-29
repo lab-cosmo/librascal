@@ -10,15 +10,19 @@ unsupervised learning algorithm. Simple regression code will be included
 for testing purposes, but the long-term goal is to develop a separate
 collection of tools to this end.
 
-librascal as of now is thought as standalone code. However, we aim to
+librascal is currently considered a standalone code. However, we aim to
 provide enough flexibility to interface it with other codes such as
-LAMMPS and PLUMED-2.0. It can be used as a C++ library as well as a
-python module. To be able to call it from python, we have used the
+LAMMPS and PLUMED-2.0.  It can be used as a C++ library as well as a
+python module.  To be able to call it from python, we have used the
 pybind11 library.
 
 Although at the moment is a serial-only code, we aim to write it in MPI
 so that it will be possible to take advantage of parallelization to
-speed up the calculations significantly.
+speed up the calculations significantly.  Parallelization is possible especially
+over atoms in a structure (for large structures), over structures in a
+collection (for large collections of small structures), or over components of a
+representation (for representations with a large number of independent functions
+or components).
 
 It comes with a GNU Lesser General Public License of version 3, which
 means that it can be modified and freely distributed, although we take
@@ -240,6 +244,7 @@ helpful to customize the build options.
    Librascal relies on the pybind11 library to automate the generation
    of the python bindings which are built by default. Nevertheless, to
    build only the c++ library:
+
    .. code:: shell
 
       cd build
@@ -275,7 +280,7 @@ Miscellaneous Information
 
       -  OFF (default) -> changes nothing
       -  ON -> install root is in the user’s home directory, i.e.
-         ~/.local/
+         ``~/.local/``
 
 To build librascal as a docker environment:
 
