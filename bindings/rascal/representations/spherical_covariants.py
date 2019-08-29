@@ -144,13 +144,13 @@ class SphericalCovariants(object):
 
         Returns
         -------
-        
+
 
         """
         if not isinstance(frames, AtomsList):
             frames = AtomsList(frames, self.nl_options)
 
-        self._representation.compute(frames)
+        self._representation.compute(frames.managers)
         return frames
 
     def get_num_coefficients(self):

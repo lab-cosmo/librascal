@@ -98,7 +98,7 @@ class SortedCoulombMatrix(object):
         self.rep_options = dict(name=self.name, args=[hypers_str])
         self._representation = CalculatorFactory(self.rep_options)
 
-        self._representation.compute(frames)
+        self._representation.compute(frames.managers)
 
         return frames
 
