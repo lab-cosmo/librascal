@@ -1,30 +1,15 @@
-#!/usr/bin/env python
 import json
 import ase
 import argparse
-import rascal
-import rascal.lib as lrl
 import numpy as np
 from ase.io import read
-from rascal.representations import SphericalExpansion
-from rascal.utils import ostream_redirect
 """Generate reference data for the librascal spherical expansion"""
-
 import sys
 sys.path.insert(0, '../build/')
-
-
-def load_json(fn):
-    with open(fn, 'r') as f:
-        data = json.load(f)
-    return data[str(data['ids'][0])]
-
-
-def json2ase(f):
-    return ase.Atoms(**{v: f[k] for k, v in
-                        dict(positions='positions', atom_types='numbers',
-                             pbc='pbc', cell='cell').items()
-                        })
+from rascal.representations import SphericalExpansion
+from rascal.utils import ostream_redirect
+import rascal
+import rascal.lib as lrl
 
 
 ###############################################################################
@@ -34,7 +19,7 @@ def get_soap_vectors(hypers, frames):
     with ostream_redirect():
         sph_expn = SphericalExpansion(**hypers)
         expansions = sph_expn.transform(frames)
-        soap_vectors = expansions.get_feature_matrix()
+        soap_vectors = expansions.get_dense_feature_matrix(sph_expn)
     return soap_vectors
 
 ###############################################################################
@@ -82,7 +67,7 @@ def dump_reference_json():
                     for max_angular in max_angulars:
                         for cutoff_smooth_width in cutoff_smooth_widths:
                             for rad_basis in radial_basis:
-                                frames = [json2ase(load_json(fn))]
+                                frames = read(fn)
                                 hypers = {"interaction_cutoff": cutoff,
                                           "cutoff_smooth_width":
                                           cutoff_smooth_width,
@@ -96,7 +81,7 @@ def dump_reference_json():
                                 # x = get_soap_vectors(hypers, frames)
                                 sph_expn = SphericalExpansion(**hypers)
                                 expansions = sph_expn.transform(frames)
-                                x = expansions.get_feature_matrix()
+                                x = expansions.get_dense_feature_matrix(sph_expn)
                                 data['rep_info'][-1].append(
                                     dict(feature_matrix=x.tolist(),
                                          hypers=copy(sph_expn.hypers)))

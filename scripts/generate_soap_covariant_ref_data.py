@@ -1,28 +1,17 @@
 
-from rascal.utils import ostream_redirect
-from rascal.representations import SphericalCovariants
+
 from ase.io import read
 import numpy as np
-import rascal.lib as lrl
-import rascal
+
 import argparse
 import ase
 import json
 import sys
 sys.path.insert(0, '../build/')
-
-
-def load_json(fn):
-    with open(fn, 'r') as f:
-        data = json.load(f)
-    return data[str(data['ids'][0])]
-
-
-def json2ase(f):
-    return ase.Atoms(**{v: f[k] for k, v in
-                        dict(positions='positions', atom_types='numbers',
-                             pbc='pbc', cell='cell').items()
-                        })
+import rascal.lib as lrl
+import rascal
+from rascal.utils import ostream_redirect
+from rascal.representations import SphericalCovariants
 
 
 #############################################################################
@@ -33,7 +22,7 @@ def get_feature_vector(hypers, frames):
         soap_vectors = soap.transform(frames)
         print('Feature vector size: %.3fMB' %
               (soap.get_num_coefficients()*8.0/1.0e6))
-        feature_vector = soap_vectors.get_feature_matrix()
+        feature_vector = soap_vectors.get_dense_feature_matrix(soap)
     return feature_vector
 
 #############################################################################
@@ -73,12 +62,11 @@ def dump_reference_json():
                 rep_info=[])
 
     for fn in fns:
-        frames = [json2ase(load_json(fn))]
+        frames = read(fn)
         for cutoff in cutoffs:
             print(fn, cutoff)
             data['rep_info'].append([])
-            for soap_type, gaussian_sigma, max_radial, max_angular,
-            inversion_symmetry, Lambda in product(soap_types, gaussian_sigmas,
+            for soap_type, gaussian_sigma, max_radial, max_angular, inversion_symmetry, Lambda in product(soap_types, gaussian_sigmas,
             max_radials, max_angulars, inversion_symmetries, Lambdas):
                 hypers = {"interaction_cutoff": cutoff,
                           "cutoff_smooth_width": 0.5,
@@ -94,7 +82,7 @@ def dump_reference_json():
                           "lam": Lambda}
                 soap = SphericalCovariants(**hypers)
                 soap_vectors = soap.transform(frames)
-                x = soap_vectors.get_feature_matrix()
+                x = soap_vectors.get_dense_feature_matrix(soap)
                 # x = get_feature_vector(hypers, frames)
                 data['rep_info'][-1].append(dict(feature_matrix=x.tolist(),
                                                  hypers=copy(soap.hypers)))
@@ -131,7 +119,6 @@ def main(json_dump, save_kernel):
     ncen = np.cumsum([len(frame) for frame in frames])[-1]
 
     x = get_feature_vector(test_hypers, frames)
-    x = x.T  # Eigen column major
     x0 = x.shape[0]
     x = x.reshape((x0, 3, -1, (2*lam + 1), nmax**2))
     x = x.transpose((0, 3, 1, 2, 4))
