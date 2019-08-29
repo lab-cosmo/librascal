@@ -87,11 +87,11 @@ int main() {
   //             {"identifier",rep_id}};
   json hypers{{"max_radial", 8},
               {"max_angular", 6},
-              // {"soap_type", "PowerSpectrum"},
-              {"soap_type", "BiSpectrum"},
+              {"soap_type", "PowerSpectrum"},
+              // {"soap_type", "BiSpectrum"},
               {"inversion_symmetry", true},
               {"normalize", true},
-              {"compute_gradients", true}};
+              {"compute_gradients", false}};
 
   json fc_hypers{{"type", "Cosine"},
                  {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
@@ -145,6 +145,9 @@ int main() {
   //   }
   //   std::cout  << std::endl;
   // }
+  auto feat = collectionA.get_dense_feature_matrix(representation);
+  std::cout << feat << std::endl;
+  std::cout << "*******************************************" << std::endl;
   auto mat = kernel.compute(representation, collectionA, collectionB);
   std::cout << mat << std::endl;
 

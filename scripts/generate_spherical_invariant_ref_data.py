@@ -8,7 +8,7 @@ import rascal
 import rascal.lib as lrl
 import numpy as np
 from ase.io import read
-from rascal.representations import SphericalInvariant
+from rascal.representations import SphericalInvariants
 from rascal.utils import ostream_redirect
 def load_json(fn):
     with open(fn,'r') as f:
@@ -26,7 +26,7 @@ dict(positions='positions',atom_types='numbers',pbc='pbc',cell='cell').items()
 
 def get_spectrum(hypers, frames):
     with ostream_redirect():
-        soap = SphericalInvariant(**hypers)
+        soap = SphericalInvariants(**hypers)
         soap_vectors = soap.transform(frames)
         spectrum = soap_vectors.get_feature_matrix()
     return spectrum
@@ -112,7 +112,7 @@ def dump_reference_json():
                                     "cutoff_function_type":"Cosine",
                                     "normalize": True,
                                     "radial_basis":"GTO"}
-                            soap = SphericalInvariant(**hypers)
+                            soap = SphericalInvariants(**hypers)
                             soap_vectors = soap.transform(frames)
                             x = soap_vectors.get_feature_matrix()
                             # x = get_spectrum(hypers, frames)

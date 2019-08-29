@@ -590,8 +590,8 @@ namespace rascal {
    * The local environment of each atom is represented by Gaussians of a
    * certain width (user-defined; can be constant, species-dependent, or
    * radially dependent).  This density field is expanded in an angular basis
-   * of spherical harmonics (à la SphericalInvariant) and a radial basis of either Gaussians
-   * (again, as in SphericalInvariant) or one of the more recent bases currently under
+   * of spherical harmonics (à la SphericalInvariants) and a radial basis of either Gaussians
+   * (again, as in SphericalInvariants) or one of the more recent bases currently under
    * development.
    */
   class CalculatorSphericalExpansion : public CalculatorBase {

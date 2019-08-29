@@ -218,6 +218,14 @@ namespace rascal {
       return this->managers.size();
     }
 
+    /**
+     * Access individual managers from the list of managers
+     */
+    template<typename T>
+    ManagerPtr_t operator[](T index) {
+      return this->managers[index]->get_shared_ptr();
+    }
+
     template<class Calculator>
     inline Matrix_t get_dense_feature_matrix(const Calculator& calculator) {
       using Prop_t = typename Calculator::template Property_t<Manager_t>;
@@ -250,8 +258,8 @@ namespace rascal {
             int NbRow, int NbCol>
     struct FeatureMatHelper<Property<T,Order,PropertyLayer,Manager_t,NbRow,NbCol>> {
       using Prop_t = Property<T,Order,PropertyLayer,Manager_t,NbRow,NbCol>;
-      template<class StructureManagers>
-      static void apply(StructureManagers& managers, const std::string& property_name, Eigen::Ref<Matrix_t> features, int n_rows, int inner_size) {
+      template<class StructureManagers, class Matrix>
+      static void apply(StructureManagers& managers, const std::string& property_name, Matrix& features, int n_rows, int inner_size) {
         features.resize(n_rows, inner_size);
         int i_row{0};
         for (auto& manager : managers) {
@@ -269,8 +277,8 @@ namespace rascal {
       using Prop_t = BlockSparseProperty<T,Order,PropertyLayer,Manager_t,Key>;
       using Keys_t = typename Prop_t::Keys_t;
 
-      template<class StructureManagers>
-      static void apply(StructureManagers& managers, const std::string& property_name, Eigen::Ref<Matrix_t> features, int n_rows, int inner_size) {
+      template<class StructureManagers, class Matrix>
+      static void apply(StructureManagers& managers, const std::string& property_name, Matrix& features, int n_rows, int inner_size) {
 
         Keys_t all_keys{};
         for (auto& manager : managers) {
@@ -279,7 +287,7 @@ namespace rascal {
           all_keys.insert(keys.begin(), keys.end());
         }
 
-        int n_cols{all_keys.size() * inner_size};
+        size_t n_cols{all_keys.size() * inner_size};
         features.resize(n_rows, n_cols);
         int i_row{0};
         for (auto& manager : managers) {

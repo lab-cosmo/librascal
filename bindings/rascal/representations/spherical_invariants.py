@@ -1,9 +1,7 @@
 import json
 
-from ..neighbourlist import get_neighbourlist
 from .base import CalculatorFactory
-from ..neighbourlist.structure_manager import convert_to_structure_list
-from ..neighbourlist.base import (NeighbourListFactory, StructureCollectionFactory)
+from ..neighbourlist import AtomsList
 import numpy as np
 
 
@@ -109,8 +107,8 @@ class SphericalInvariants(object):
 
         self.nl_options = [
             dict(name='centers', args=[]),
-            dict(name='neighbourlist', args=[interaction_cutoff]),
-            dict(name='strict', args=[interaction_cutoff])
+            dict(name='neighbourlist', args=dict(cutoff=interaction_cutoff)),
+            dict(name='strict', args=dict(cutoff=interaction_cutoff))
         ]
 
         hypers_str = json.dumps(self.hypers)
@@ -144,26 +142,15 @@ class SphericalInvariants(object):
 
         Returns
         -------
-        FeatureManager.blocksparse_double
             Object containing the representation
 
         """
-        structures = convert_to_structure_list(frames)
-        managers = StructureCollectionFactory(self.nl_options)
-        try:
-            managers.add_structures(structures)
-        except:
-            print("Neighbourlist of structures failed. try one at a time.")
-            ii = 0
-            for structure, manager in zip(structures, managers):
-                try:
-                    manager.update(structure)
-                except:
-                    print("Structure Rep computation {} failed".format(ii))
+        if not isinstance(frames, AtomsList):
+            frames = AtomsList(frames, self.nl_options)
 
-        self._representation.compute(managers)
+        self._representation.compute(frames)
 
-        return managers
+        return frames
 
     def get_num_coefficients(self):
         """Return the number of coefficients in the representation

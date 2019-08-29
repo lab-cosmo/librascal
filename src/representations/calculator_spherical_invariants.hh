@@ -290,7 +290,7 @@ namespace rascal {
         this->inversion_symmetry = hypers.at("inversion_symmetry").get<bool>();
 
       } else {
-        throw std::logic_error("Requested SphericalInvariant type \'" + this->spherical_invariants_type_str +
+        throw std::logic_error("Requested SphericalInvariants type \'" + this->spherical_invariants_type_str +
                                "\' has not been implemented.  Must be one of" +
                                ": \'PowerSpectrum or RadialSpectrum\', " +
                                "\'BiSpectrum\'.");

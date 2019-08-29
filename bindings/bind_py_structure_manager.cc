@@ -424,6 +424,13 @@ namespace rascal {
         "__iter__",
         [](ManagerCollection_t & v) { return py::make_iterator(v.begin(), v.end()); },
         py::keep_alive<0, 1>());
+    // bind [] accessor
+    manager_collection.def(
+      "__getitem__",
+      [](ManagerCollection_t & v, int index) {
+        return v[index];
+      }, py::keep_alive<0, 1>()
+    );
 
     // add_structures to the collection
     manager_collection.def("add_structures", (void (ManagerCollection_t::*)(const std::vector<AtomicStructure<3>>& )) &ManagerCollection_t::add_structures);
