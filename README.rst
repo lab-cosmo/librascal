@@ -130,7 +130,8 @@ helpful to customize the build options.
 
    .. code:: shell
 
-      cd build  cmake -DBUILD_TESTS=ON ..
+      cd build
+      cmake -DBUILD_TESTS=ON ..
       make
       ctest -V
 
