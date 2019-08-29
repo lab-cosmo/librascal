@@ -22,7 +22,6 @@ class AtomsList(object):
             # if python structure
             structures = convert_to_structure_list(frames)
             managers = StructureCollectionFactory(nl_options)
-            # managers.add_structures(structures)
             try:
                 managers.add_structures(structures)
             except:

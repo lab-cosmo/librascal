@@ -1,5 +1,6 @@
 from copy import copy
 from ase import Atoms
+from ase.io import read
 import json
 import ubjson
 """Script used to generate the sorted_coulomb_reference.ubjson reference file

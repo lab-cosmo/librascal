@@ -92,7 +92,7 @@ class SortedCoulombMatrix(object):
         if not isinstance(frames, AtomsList):
             frames = AtomsList(frames, self.nl_options)
 
-        self.size = self.get_size(frames)
+        self.size = self.get_size(frames.managers)
         self.update_hyperparameters(size=self.size)
         hypers_str = json.dumps(self.hypers)
         self.rep_options = dict(name=self.name, args=[hypers_str])
