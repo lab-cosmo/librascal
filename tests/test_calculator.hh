@@ -201,14 +201,14 @@ namespace rascal {
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
-    std::vector<json> rep_hypers{{{"max_radial", 6},
-                                  {"max_angular", 6},
+    std::vector<json> rep_hypers{{{"max_radial", 1},
+                                  {"max_angular", 2},
                                   {"soap_type", "LambdaSpectrum"},
                                   {"lam", 2},
                                   {"inversion_symmetry", true},
                                   {"normalize", true}},
-                                 {{"max_radial", 6},
-                                  {"max_angular", 6},
+                                 {{"max_radial", 2},
+                                  {"max_angular", 3},
                                   {"soap_type", "LambdaSpectrum"},
                                   {"lam", 2},
                                   {"inversion_symmetry", false},
