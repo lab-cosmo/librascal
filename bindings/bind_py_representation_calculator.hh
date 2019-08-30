@@ -38,7 +38,7 @@
 #include "bind_py_structure_manager.hh"
 
 namespace rascal {
-    void add_representation_calculators(py::module &, py::module &);
+  void add_representation_calculators(py::module &, py::module &);
 }
 
 #endif  // BINDINGS_BIND_PY_REPRESENTATION_CALCULATOR_HH_

@@ -27,12 +27,10 @@
 
 #include "bind_py_models.hh"
 
-
 namespace rascal {
 
   decltype(auto) add_kernel(py::module & mod, py::module &) {
-    py::class_<Kernel> kernel(
-        mod, "Kernel");
+    py::class_<Kernel> kernel(mod, "Kernel");
     // use custom constructor to pass json formated string as initializer
     // an alternative would be to convert python dict to json internally
     // but needs some work on in the pybind machinery
@@ -45,14 +43,13 @@ namespace rascal {
     return kernel;
   }
 
-  template <internal::KernelType Type, class Calculator, class StructureManagers, class CalculatorBind>
-  void bind_kernel_compute_function(CalculatorBind& kernel) {
+  template <internal::KernelType Type, class Calculator,
+            class StructureManagers, class CalculatorBind>
+  void bind_kernel_compute_function(CalculatorBind & kernel) {
     kernel.def("compute",
-                &Kernel::template compute<Calculator, StructureManagers>,
-                py::call_guard<py::gil_scoped_release>());
+               &Kernel::template compute<Calculator, StructureManagers>,
+               py::call_guard<py::gil_scoped_release>());
   }
-
-
 
   /**
    * Function to bind the representation managers to python
@@ -64,16 +61,17 @@ namespace rascal {
    *
    */
   void add_kernels(py::module & mod, py::module & m_throwaway) {
-
     // Defines a particular structure manager type
-    using ManagerCollection_t = ManagerCollection<StructureManagerCenters,
-                                   AdaptorNeighbourList, AdaptorStrict>;
+    using ManagerCollection_t =
+        ManagerCollection<StructureManagerCenters, AdaptorNeighbourList,
+                          AdaptorStrict>;
 
     // Defines the representation manager type for the particular structure
     // manager
     using Calc1_t = CalculatorSphericalInvariants;
     // Bind the interface of this representation manager
     auto kernel = add_kernel(mod, m_throwaway);
-    bind_kernel_compute_function<internal::KernelType::Cosine, Calc1_t, ManagerCollection_t>(kernel);
+    bind_kernel_compute_function<internal::KernelType::Cosine, Calc1_t,
+                                 ManagerCollection_t>(kernel);
   }
-}
+}  // namespace rascal

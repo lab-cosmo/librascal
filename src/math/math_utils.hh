@@ -29,7 +29,6 @@
 #ifndef SRC_MATH_MATH_UTILS_HH_
 #define SRC_MATH_MATH_UTILS_HH_
 
-
 #include <Eigen/Dense>
 #include <cmath>
 #include <limits>
@@ -151,19 +150,14 @@ namespace rascal {
      * defines integer power functor to apply integer power to an Eigen
      * object as an element wise Unary operation
      */
-    template<typename Scalar>
+    template <typename Scalar>
     struct MakePositiveIntegerPower {
-
       typedef Scalar result_type;
       size_t b;
-      explicit MakePositiveIntegerPower(const size_t& b) : b{b} {}
+      explicit MakePositiveIntegerPower(const size_t & b) : b{b} {}
 
-      Scalar operator()(const Scalar& a) const {
-        return pow(a, this->b);
-      }
-
+      Scalar operator()(const Scalar & a) const { return pow(a, this->b); }
     };
-
 
     /**
      * Compute a cosine-type switching function for smooth cutoffs

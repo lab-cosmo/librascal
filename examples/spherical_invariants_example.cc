@@ -50,7 +50,8 @@ using namespace rascal;  // NOLINT
 using Representation_t = CalculatorSphericalInvariants;
 using Manager_t = AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>;
 using Prop_t = typename CalculatorSphericalInvariants::Property_t<Manager_t>;
-using PropDer_t = typename CalculatorSphericalInvariants::PropertyGradient_t<Manager_t>;
+using PropDer_t =
+    typename CalculatorSphericalInvariants::PropertyGradient_t<Manager_t>;
 
 int main(int argc, char * argv[]) {
   if (argc < 2) {
@@ -116,15 +117,16 @@ int main(int argc, char * argv[]) {
   std::cout << std::endl;
   size_t center_count{0};
 
-  auto&& soap_vectors{manager->template get_property_ref<Prop_t>(representation.get_name())};
-  auto&& soap_vector_gradients{manager->template get_property_ref<PropDer_t>(representation.get_gradient_name())};
+  auto && soap_vectors{
+      manager->template get_property_ref<Prop_t>(representation.get_name())};
+  auto && soap_vector_gradients{manager->template get_property_ref<PropDer_t>(
+      representation.get_gradient_name())};
 
   for (auto center : manager) {
     if (center_count >= n_centers_print) {
       break;
     }
-    size_t n_species_center{
-        soap_vectors.get_keys(center).size()};
+    size_t n_species_center{soap_vectors.get_keys(center).size()};
     std::cout << "============================" << std::endl;
     std::cout << "Center " << center.get_index();
     std::cout << " of type " << center.get_atom_type() << std::endl;
@@ -140,8 +142,7 @@ int main(int argc, char * argv[]) {
       std::cout << "\b\b) ";
     }
     std::cout << std::endl;
-    auto keys_grad_center =
-        soap_vector_gradients[center].get_keys();
+    auto keys_grad_center = soap_vector_gradients[center].get_keys();
     std::cout << "Center gradient keys: ";
     for (auto key : keys_grad_center) {
       std::cout << "(";

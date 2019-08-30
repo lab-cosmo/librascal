@@ -49,24 +49,27 @@
 // using namespace std;
 using namespace rascal;  // NOLINT
 
-template<typename Manager,
-        template <class> class... AdaptorImplementationPack>
+template <typename Manager, template <class> class... AdaptorImplementationPack>
 struct Test {
-  using ManagerTypeHolder_t = StructureManagerTypeHolder<StructureManagerCenters,
-                                   AdaptorNeighbourList, AdaptorStrict>;
+  using ManagerTypeHolder_t =
+      StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList,
+                                 AdaptorStrict>;
   using ManagerTypeList_t = typename ManagerTypeHolder_t::type_list;
   void operator()() {
-    std::cout << internal::GetTypeName<ManagerTypeList_t>()<<std::endl;
+    std::cout << internal::GetTypeName<ManagerTypeList_t>() << std::endl;
   }
 };
 
 // using Representation_t = CalculatorSphericalInvariants;
-using ManagerTypeHolder_t = StructureManagerTypeHolder<StructureManagerCenters,
-                                   AdaptorNeighbourList, AdaptorStrict>;
+using ManagerTypeHolder_t =
+    StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList,
+                               AdaptorStrict>;
 using ManagerTypeList_t = typename ManagerTypeHolder_t::type_list;
 using Manager_t = typename ManagerTypeHolder_t::type;
-using ManagerCollection_t = typename TypeHolderInjector<ManagerCollection,ManagerTypeList_t>::type;
-// using Manager_t = AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>;
+using ManagerCollection_t =
+    typename TypeHolderInjector<ManagerCollection, ManagerTypeList_t>::type;
+// using Manager_t =
+// AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>;
 using Representation_t = CalculatorSphericalInvariants;
 using Property_t = typename Representation_t::template Property_t<Manager_t>;
 // using ManagerCollection_t = ManagerCollection<>;
@@ -107,8 +110,9 @@ int main() {
   json adaptors;
   json ad1{{"name", "AdaptorNeighbourList"},
            {"initialization_arguments",
-            {{"cutoff", cutoff}, {"consider_ghost_neighbours", false},
-            {"skin", 0.}}}};
+            {{"cutoff", cutoff},
+             {"consider_ghost_neighbours", false},
+             {"skin", 0.}}}};
   json ad2{{"name", "AdaptorStrict"},
            {"initialization_arguments", {{"cutoff", cutoff}}}};
   adaptors.emplace_back(ad1);
@@ -135,9 +139,8 @@ int main() {
   representation.compute(collectionA);
   representation.compute(collectionB);
 
-  json kernel_hypers{{"zeta", 2},
-                      {"target_type", "Structure"},
-                      {"name", "Cosine"}};
+  json kernel_hypers{
+      {"zeta", 2}, {"target_type", "Structure"}, {"name", "Cosine"}};
   Kernel kernel{kernel_hypers};
   // for (auto& manager : collectionA) {
   //   for (auto center : manager) {
@@ -155,16 +158,14 @@ int main() {
   //                     {"target_type", "Atom"}};
   // Kernel<internal::KernelType::Cosine> kernel_local{kernel_hypers_local};
 
-  // auto mat_local = kernel_local.compute(representation, collectionA, collectionA);
-  // std::cout << mat_local << std::endl;
-
+  // auto mat_local = kernel_local.compute(representation, collectionA,
+  // collectionA); std::cout << mat_local << std::endl;
 
   // auto property_name{representation.get_name()};
-  // auto&& property{manager->template get_validated_property_ref<Property_t>(property_name)};
-
+  // auto&& property{manager->template
+  // get_validated_property_ref<Property_t>(property_name)};
 
   // auto test_representation{property.get_dense_feature_matrix()};
 
   return (0);
 }
-

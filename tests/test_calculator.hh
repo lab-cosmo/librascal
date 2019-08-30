@@ -535,12 +535,13 @@ namespace rascal {
     using Key_t = typename RepManager::Key_t;
     static const size_t n_arguments = 3;
 
-    using PairRef_t = typename RepManager::template ClusterRef_t<StructureManager, 2>;
+    using PairRef_t =
+        typename RepManager::template ClusterRef_t<StructureManager, 2>;
 
     // type of the data structure holding the representation and its gradients
     using Prop_t = typename RepManager::template Property_t<StructureManager>;
-    using PropGrad_t = typename RepManager::template PropertyGradient_t<StructureManager>;
-
+    using PropGrad_t =
+        typename RepManager::template PropertyGradient_t<StructureManager>;
 
     template <typename T, class V>
     friend class RepresentationManagerGradientFixture;
@@ -563,9 +564,11 @@ namespace rascal {
       this->structure_manager->update(modified_structure);
       this->representation.compute(this->structure_manager);
 
-      auto&& data_sparse{structure_manager->template get_property_ref<Prop_t>(representation.get_name())};
-      auto&& gradients_sparse{structure_manager->template get_property_ref<PropGrad_t>(representation.get_gradient_name())};
-
+      auto && data_sparse{structure_manager->template get_property_ref<Prop_t>(
+          representation.get_name())};
+      auto && gradients_sparse{
+          structure_manager->template get_property_ref<PropGrad_t>(
+              representation.get_gradient_name())};
 
       auto & data_center{data_sparse[center]};
       auto keys_center = gradients_sparse.get_keys(center);
@@ -622,8 +625,11 @@ namespace rascal {
       // representation.compute();
       auto center = *center_it;
 
-      auto&& data_sparse{structure_manager->template get_property_ref<Prop_t>(representation.get_name())};
-      auto&& gradients_sparse{structure_manager->template get_property_ref<PropGrad_t>(representation.get_gradient_name())};
+      auto && data_sparse{structure_manager->template get_property_ref<Prop_t>(
+          representation.get_name())};
+      auto && gradients_sparse{
+          structure_manager->template get_property_ref<PropGrad_t>(
+              representation.get_gradient_name())};
 
       auto & gradients_center{gradients_sparse[center]};
       auto keys_center = gradients_center.get_keys();
@@ -710,8 +716,9 @@ namespace rascal {
   class RepresentationManagerGradientFixture : public GradientTestFixture {
    public:
     using StdVector2Dim_t = std::vector<std::vector<double>>;
-    using Calculator_t = RepresentationManagerGradientCalculator<RepManager_t, StructureManager_t>;
-
+    using Calculator_t =
+        RepresentationManagerGradientCalculator<RepManager_t,
+                                                StructureManager_t>;
 
     static const size_t n_arguments = 3;
 
@@ -772,18 +779,19 @@ namespace rascal {
     MultipleStructureSortedCoulomb() : Parent{} {};
     ~MultipleStructureSortedCoulomb() = default;
 
-    std::vector<json> representation_hypers{{{"central_cutoff", 3.},
-                              {"central_decay", 0.5},
-                              {"interaction_cutoff", 10.},
-                              {"interaction_decay", 0.5},
-                              {"size", 120},
-                              {"sorting_algorithm", "distance"}},
-                             {{"central_cutoff", 3.},
-                              {"central_decay", 0.5},
-                              {"interaction_cutoff", 10.},
-                              {"interaction_decay", 0.5},
-                              {"size", 120},
-                              {"sorting_algorithm", "row_norm"}}};
+    std::vector<json> representation_hypers{
+        {{"central_cutoff", 3.},
+         {"central_decay", 0.5},
+         {"interaction_cutoff", 10.},
+         {"interaction_decay", 0.5},
+         {"size", 120},
+         {"sorting_algorithm", "distance"}},
+        {{"central_cutoff", 3.},
+         {"central_decay", 0.5},
+         {"interaction_cutoff", 10.},
+         {"interaction_decay", 0.5},
+         {"size", 120},
+         {"sorting_algorithm", "row_norm"}}};
   };
 
   struct SortedCoulombTestData : TestData {
@@ -807,14 +815,14 @@ namespace rascal {
     using Parent = MultipleStructureFixture<BaseFixture>;
     using Manager_t = typename Parent::Manager_t;
     using Representation_t = typename BaseFixture::Representation_t;
-    using Property_t = typename Representation_t::template Property_t<Manager_t>;
+    using Property_t =
+        typename Representation_t::template Property_t<Manager_t>;
 
     CalculatorFixture() : Parent{} {}
     ~CalculatorFixture() = default;
 
     std::vector<Representation_t> representations{};
   };
-
 
   /* ---------------------------------------------------------------------- */
 

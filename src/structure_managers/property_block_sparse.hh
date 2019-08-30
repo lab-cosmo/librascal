@@ -28,12 +28,10 @@
 #ifndef SRC_STRUCTURE_MANAGERS_PROPERTY_BLOCK_SPARSE_HH_
 #define SRC_STRUCTURE_MANAGERS_PROPERTY_BLOCK_SPARSE_HH_
 
-
 #include "rascal_utility.hh"
 #include "math/math_utils.hh"
 #include "structure_managers/property_base.hh"
 #include "structure_managers/cluster_ref_key.hh"
-
 
 #include <unordered_map>
 #include <set>
@@ -380,7 +378,7 @@ namespace rascal {
       /**
        * dot product with another internally sorted map
        */
-      inline Precision_t dot(Self_t& B) {
+      inline Precision_t dot(Self_t & B) {
         Precision_t val{0.};
         auto keysB{B.get_keys()};
         auto unique_keys{this->intersection(keysB)};
@@ -391,9 +389,8 @@ namespace rascal {
                                 std::get<1>(posA) * std::get<2>(posA))};
           auto && posB{B.map[key]};
           auto vecB{VectorRef_t(&B.data[std::get<0>(posB)],
-                              std::get<1>(posB) * std::get<2>(posB))};
+                                std::get<1>(posB) * std::get<2>(posB))};
           val += vecA.dot(vecB);
-
         }
         return val;
       }
@@ -428,17 +425,18 @@ namespace rascal {
       }
 
      private:
-
-      std::vector<key_type> intersection(std::vector<key_type> &keys){
-        if (keys.empty()){
+      std::vector<key_type> intersection(std::vector<key_type> & keys) {
+        if (keys.empty()) {
           return std::vector<key_type>();
         }
         std::set<key_type> set{keys.cbegin(), keys.cend()};
         std::vector<key_type> intersections;
-        for (auto el: this->map){
-            if (set.erase(el.first) > 0){ // if n exists in set, then 1 is returned and n is erased; otherwise, 0.
-                intersections.push_back(el.first);
-            }
+        for (auto el : this->map) {
+          if (set.erase(el.first) >
+              0) {  // if n exists in set, then 1 is returned and n is erased;
+                    // otherwise, 0.
+            intersections.push_back(el.first);
+          }
         }
         return intersections;
       }
@@ -465,7 +463,8 @@ namespace rascal {
    public:
     using Parent = PropertyBase;
     using Manager_t = Manager;
-    using Self_t = BlockSparseProperty<Precision_t,Order,PropertyLayer,Manager,Key>;
+    using Self_t =
+        BlockSparseProperty<Precision_t, Order, PropertyLayer, Manager, Key>;
     using traits = typename Manager::traits;
 
     using Matrix_t = math::Matrix_t;
@@ -489,7 +488,8 @@ namespace rascal {
                  0,
                  Order,
                  PropertyLayer,
-                 metadata}, type_id{internal::GetTypeNameHelper<Self_t>::GetTypeName()} {}
+                 metadata},
+          type_id{internal::GetTypeNameHelper<Self_t>::GetTypeName()} {}
 
     //! Default constructor
     BlockSparseProperty() = delete;
@@ -514,8 +514,8 @@ namespace rascal {
       auto type_id{internal::GetTypeNameHelper<Self_t>::GetTypeName()};
       if (not(other.get_type_info() == type_id)) {
         std::stringstream err_str{};
-        err_str << "Incompatible types: '" << other.get_type_info()
-                << "' != '" << type_id << "'.";
+        err_str << "Incompatible types: '" << other.get_type_info() << "' != '"
+                << type_id << "'.";
         throw std::runtime_error(err_str.str());
       }
     }
@@ -523,9 +523,7 @@ namespace rascal {
     /* --------------------------------------------------------------------- */
 
     //! return info about the type
-    const std::string& get_type_info() const final {
-      return this->type_id;
-    };
+    const std::string & get_type_info() const final { return this->type_id; };
 
     /**
      * the case consider_ghost_atoms == true is limited to cluster_index
@@ -672,7 +670,8 @@ namespace rascal {
                                  CallerOrder - 1);
     }
 
-    inline Matrix_t get_dense_row(const size_t & index, const size_t & i_order) {
+    inline Matrix_t get_dense_row(const size_t & index,
+                                  const size_t & i_order) {
       auto keys = this->values[i_order][index].get_keys();
       Matrix_t feature_row = Matrix_t::Zero(this->get_nb_comp(), keys.size());
       size_t i_col{0};
@@ -701,7 +700,8 @@ namespace rascal {
      * building the feature matrix
      *
      */
-    inline void fill_dense_feature_matrix(Eigen::Ref<Matrix_t> features, const Keys_t& all_keys) {
+    inline void fill_dense_feature_matrix(Eigen::Ref<Matrix_t> features,
+                                          const Keys_t & all_keys) {
       int inner_size{this->get_nb_comp()};
       int i_row{0};
       for (size_t i_order{0}; i_order < Order; ++i_order) {
@@ -710,9 +710,7 @@ namespace rascal {
           int i_feat{0};
           for (const auto & key : all_keys) {
             if (this->values[i_order][i_center].count(key) == 1) {
-              for (int i_pos{0};
-                   i_pos < inner_size;
-                   i_pos++) {
+              for (int i_pos{0}; i_pos < inner_size; i_pos++) {
                 features(i_row, i_feat) =
                     this->values[i_order][i_center][key](i_pos);
                 i_feat++;
@@ -720,10 +718,10 @@ namespace rascal {
             } else {
               i_feat += inner_size;
             }
-          } // keys
+          }  // keys
           i_row++;
-        } // centers
-      } // order
+        }  // centers
+      }    // order
     }
 
     /**
@@ -759,7 +757,8 @@ namespace rascal {
 
     // //! getter to the underlying data storage
     // // A hack here is fine because the function will disapear soon
-    // inline std::vector<InputData_t> & get_raw_data() { return this->values[0]; }
+    // inline std::vector<InputData_t> & get_raw_data() { return
+    // this->values[0]; }
 
     //! get number of different distinct element in the property
     //! (typically the number of center)
@@ -781,16 +780,16 @@ namespace rascal {
      * assumes order == 1 for the moment should use SFINAE to take care of
      * the case order == 2
      */
-    inline Matrix_t dot(Self_t& B) {
+    inline Matrix_t dot(Self_t & B) {
       Matrix_t mat(this->size(), B.size());
-      auto&& managerA{this->get_manager()};
-      auto&& managerB{B.get_manager()};
+      auto && managerA{this->get_manager()};
+      auto && managerB{B.get_manager()};
       int i_row{0};
       for (auto centerA : managerA) {
-        auto&& rowA{this->operator[](centerA)};
+        auto && rowA{this->operator[](centerA)};
         int i_col{0};
         for (auto centerB : managerB) {
-          auto&& rowB{B[centerB]};
+          auto && rowB{B[centerB]};
           mat(i_row, i_col) = rowA.dot(rowB);
           ++i_col;
         }
@@ -798,7 +797,6 @@ namespace rascal {
       }
       return mat;
     }
-
   };
 
 }  // namespace rascal

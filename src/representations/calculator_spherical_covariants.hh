@@ -184,40 +184,39 @@ namespace rascal {
         spherical_covariants_precompute);
   }
 
-  class CalculatorSphericalCovariants
-      : public CalculatorBase {
+  class CalculatorSphericalCovariants : public CalculatorBase {
    public:
     using Hypers_t = typename CalculatorBase::Hypers_t;
     using Key_t = typename CalculatorBase::Key_t;
 
-    template<class StructureManager>
+    template <class StructureManager>
     using Property_t =
         BlockSparseProperty<double, 1, 0, StructureManager, Key_t>;
-    template<class StructureManager>
+    template <class StructureManager>
     using PropertyGradient_t =
         BlockSparseProperty<double, 2, 0, StructureManager, Key_t>;
 
-    template<class StructureManager>
+    template <class StructureManager>
     using Dense_t = typename Property_t<StructureManager>::Dense_t;
-    template<class StructureManager>
+    template <class StructureManager>
     using Data_t = typename Property_t<StructureManager>::Data_t;
 
     template <class StructureManager, size_t Order>
     using ClusterRef_t = typename StructureManager::template ClusterRef<Order>;
 
-
-    CalculatorSphericalCovariants(const Hypers_t & hyper) : rep_expansion{hyper} {
+    CalculatorSphericalCovariants(const Hypers_t & hyper)
+        : rep_expansion{hyper} {
       this->set_default_prefix("spherical_covariants_");
       this->set_hyperparameters(hyper);
     }
 
     //! Copy constructor
-    CalculatorSphericalCovariants(
-        const CalculatorSphericalCovariants & other) = delete;
+    CalculatorSphericalCovariants(const CalculatorSphericalCovariants & other) =
+        delete;
 
     //! Move constructor
-    CalculatorSphericalCovariants(
-        CalculatorSphericalCovariants && other) = default;
+    CalculatorSphericalCovariants(CalculatorSphericalCovariants && other) =
+        default;
 
     //! Destructor
     virtual ~CalculatorSphericalCovariants() = default;
@@ -268,36 +267,43 @@ namespace rascal {
      * compatible with the representation
      */
     template <class StructureManager>
-    void compute(StructureManager& managers);
+    void compute(StructureManager & managers);
 
     /**
      * loop over a collection of manangers if it is an iterator.
      * Or just call compute_impl
      */
-    template <internal::SphericalCovariantsType Type,
-              class StructureManager,
-              std::enable_if_t<internal::is_proper_iterator<StructureManager>::value, int> = 0>
-    void compute_loop(StructureManager& managers) {
-      for (auto& manager : managers) {
+    template <
+        internal::SphericalCovariantsType Type, class StructureManager,
+        std::enable_if_t<internal::is_proper_iterator<StructureManager>::value,
+                         int> = 0>
+    void compute_loop(StructureManager & managers) {
+      for (auto & manager : managers) {
         this->compute_impl<Type>(manager);
       }
     }
 
     //! single manager case
-    template <internal::SphericalCovariantsType Type,
-              class StructureManager,
-              std::enable_if_t<not( internal::is_proper_iterator<StructureManager>::value), int> = 0>
-    void compute_loop(StructureManager& manager) {
+    template <internal::SphericalCovariantsType Type, class StructureManager,
+              std::enable_if_t<
+                  not(internal::is_proper_iterator<StructureManager>::value),
+                  int> = 0>
+    void compute_loop(StructureManager & manager) {
       this->compute_impl<Type>(manager);
     }
 
-
     //! compute representation lambda spectrum
-    template <internal::SphericalCovariantsType Type, std::enable_if_t<Type == internal::SphericalCovariantsType::LambdaSpectrum, int> = 0, class StructureManager>
+    template <
+        internal::SphericalCovariantsType Type,
+        std::enable_if_t<
+            Type == internal::SphericalCovariantsType::LambdaSpectrum, int> = 0,
+        class StructureManager>
     void compute_impl(std::shared_ptr<StructureManager> manager);
 
-    template <class Invariants, class ExpansionCoeff,class StructureManager>
-    void initialize_percenter_lambda_soap_vectors(Invariants& soap_vector, ExpansionCoeff& expansions_coefficients, std::shared_ptr<StructureManager> manager);
+    template <class Invariants, class ExpansionCoeff, class StructureManager>
+    void initialize_percenter_lambda_soap_vectors(
+        Invariants & soap_vector, ExpansionCoeff & expansions_coefficients,
+        std::shared_ptr<StructureManager> manager);
 
    protected:
     size_t max_radial{};
@@ -316,7 +322,7 @@ namespace rascal {
   };
 
   template <class StructureManager>
-  void CalculatorSphericalCovariants::compute(StructureManager& managers) {
+  void CalculatorSphericalCovariants::compute(StructureManager & managers) {
     using internal::SphericalCovariantsType;
     switch (this->spherical_covariants_type) {
     case SphericalCovariantsType::LambdaSpectrum:
@@ -329,7 +335,9 @@ namespace rascal {
   }
 
   template <class Invariants, class ExpansionCoeff, class StructureManager>
-  void CalculatorSphericalCovariants::initialize_percenter_lambda_soap_vectors(Invariants& soap_vectors, ExpansionCoeff& expansions_coefficients, std::shared_ptr<StructureManager> manager) {
+  void CalculatorSphericalCovariants::initialize_percenter_lambda_soap_vectors(
+      Invariants & soap_vectors, ExpansionCoeff & expansions_coefficients,
+      std::shared_ptr<StructureManager> manager) {
     using math::pow;
 
     size_t n_row{pow(this->max_radial, 2_n)};
@@ -390,16 +398,22 @@ namespace rascal {
     }
   }
 
-  template <internal::SphericalCovariantsType Type, std::enable_if_t<Type == internal::SphericalCovariantsType::LambdaSpectrum, int> = 0, class StructureManager>
-  void
-  CalculatorSphericalCovariants::compute_impl(std::shared_ptr<StructureManager> manager) {
-    using PropExp_t = typename CalculatorSphericalExpansion::Property_t<StructureManager>;
-    // using PropGradExp_t = typename CalculatorSphericalExpansion::Property_t<StructureManager>;
+  template <
+      internal::SphericalCovariantsType Type,
+      std::enable_if_t<
+          Type == internal::SphericalCovariantsType::LambdaSpectrum, int> = 0,
+      class StructureManager>
+  void CalculatorSphericalCovariants::compute_impl(
+      std::shared_ptr<StructureManager> manager) {
+    using PropExp_t =
+        typename CalculatorSphericalExpansion::Property_t<StructureManager>;
+    // using PropGradExp_t = typename
+    // CalculatorSphericalExpansion::Property_t<StructureManager>;
     using Prop_t = Property_t<StructureManager>;
     // using PropGrad_t = PropertyGradient_t<StructureManager>;
+    using internal::enumValue;
     using internal::SphericalCovariantsType;
     using math::pow;
-    using internal::enumValue;
     using complex = std::complex<double>;
 
     // get the relevant precomputation object and unpack the useful infos
@@ -411,9 +425,12 @@ namespace rascal {
 
     // Compute the spherical expansions of the current structure
     rep_expansion.compute(manager);
-    auto&& expansions_coefficients{manager->template get_property_ref<PropExp_t>(rep_expansion.get_name())};
+    auto && expansions_coefficients{
+        manager->template get_property_ref<PropExp_t>(
+            rep_expansion.get_name())};
 
-    auto&& soap_vectors{manager->template get_property_ref<Prop_t>(this->get_name())};
+    auto && soap_vectors{
+        manager->template get_property_ref<Prop_t>(this->get_name())};
 
     // if the representation has already been computed for the current
     // structure then do nothing
@@ -421,7 +438,8 @@ namespace rascal {
       return;
     }
 
-    this->initialize_percenter_lambda_soap_vectors(soap_vectors, expansions_coefficients, manager);
+    this->initialize_percenter_lambda_soap_vectors(
+        soap_vectors, expansions_coefficients, manager);
 
     Key_t p_type{0, 0};
     internal::SortedKey<Key_t> pair_type{p_type};

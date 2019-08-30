@@ -33,19 +33,20 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(manager_collection_test);
 
-  using fixtures_test = boost::mpl::list<CollectionFixture<StrictNLCollectionFixture>>;
+  using fixtures_test =
+      boost::mpl::list<CollectionFixture<StrictNLCollectionFixture>>;
 
   /**
    * Test loading structures from file in ubjson binary format
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(load_multiple_structures_test, Fix,
                                    fixtures_test, Fix) {
-    auto& collections = Fix::collections;
-    auto& filename = Fix::filename;
-    auto& start = Fix::start;
-    auto& lenght = Fix::lenght;
+    auto & collections = Fix::collections;
+    auto & filename = Fix::filename;
+    auto & start = Fix::start;
+    auto & lenght = Fix::lenght;
 
-    for (auto& collection : collections) {
+    for (auto & collection : collections) {
       collection.add_structures(filename, start, lenght);
       BOOST_CHECK_EQUAL(collection.size(), lenght);
     }
@@ -54,15 +55,15 @@ namespace rascal {
   /**
    * Test the iteration over the manager and its functionalities
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(iterate_structures_test, Fix,
-                                   fixtures_test, Fix) {
-    auto& collections = Fix::collections;
-    auto& filename = Fix::filename;
-    auto& start = Fix::start;
-    auto& lenght = Fix::lenght;
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(iterate_structures_test, Fix, fixtures_test,
+                                   Fix) {
+    auto & collections = Fix::collections;
+    auto & filename = Fix::filename;
+    auto & start = Fix::start;
+    auto & lenght = Fix::lenght;
 
-    for (auto& collection : collections) {
-      collection.add_structures(filename, start+30, lenght+5);
+    for (auto & collection : collections) {
+      collection.add_structures(filename, start + 30, lenght + 5);
 
       for (auto & manager : collection) {
         for (auto atom : manager) {
@@ -75,17 +76,15 @@ namespace rascal {
   /**
    * Test adding structures with json hyper parameter format
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(add_structures_test, Fix,
-                                   fixtures_test, Fix) {
-    auto& collections = Fix::collections;
-    auto& structures = Fix::structures;
-    for (auto& collection : collections) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(add_structures_test, Fix, fixtures_test,
+                                   Fix) {
+    auto & collections = Fix::collections;
+    auto & structures = Fix::structures;
+    for (auto & collection : collections) {
       collection.add_structures(structures);
       BOOST_CHECK_EQUAL(collection.size(), structures.size());
     }
   }
 
-
   BOOST_AUTO_TEST_SUITE_END();
 }  // namespace rascal
-

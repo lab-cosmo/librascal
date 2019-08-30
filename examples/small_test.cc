@@ -25,7 +25,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #include <iostream>
 #include <basic_types.hh>
 #include <cmath>
@@ -101,11 +100,12 @@ using namespace rascal;  // NOLINT
 //   return std::dynamic_pointer_cast<Prop>(base);
 // }
 
-// using Manager_t = AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>;
-// using Property1_t = BlockSparseProperty<double, 1, 0, Manager_t, std::vector<int>>;
-// using Property2_t = BlockSparseProperty<double, 1, 0, Manager_t, std::vector<double>>;
+// using Manager_t =
+// AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>; using
+// Property1_t = BlockSparseProperty<double, 1, 0, Manager_t, std::vector<int>>;
+// using Property2_t = BlockSparseProperty<double, 1, 0, Manager_t,
+// std::vector<double>>;
 int main() {
-
   // std::vector<std::shared_ptr<Base>> tests{};
   // tests.emplace_back(make<1>());
   // tests.emplace_back(make<3>());
@@ -125,7 +125,8 @@ int main() {
   // json adaptors;
   // json ad1{{"name", "AdaptorNeighbourList"},
   //          {"initialization_arguments",
-  //                   {{"cutoff", cutoff}, {"consider_ghost_neighbours", false}}}};
+  //                   {{"cutoff", cutoff}, {"consider_ghost_neighbours",
+  //                   false}}}};
   // json ad2{{"name", "AdaptorStrict"},
   //          {"initialization_arguments", {{"cutoff", cutoff}}}};
   // adaptors.emplace_back(ad1);
@@ -137,18 +138,13 @@ int main() {
 
   // auto prop1_base{make_prop<Property1_t>(manager)};
   // std::cout << internal::GetTypeName<Property1_t>() << std::endl;
-  // std::cout << internal::GetTypeNameHelper<Property1_t>::GetTypeName() << std::endl;
-  // std::cout << internal::GetTypeNameHelper<double>::GetTypeName() << std::endl;
-  // Property1_t::check_compatibility(*prop1_base);
+  // std::cout << internal::GetTypeNameHelper<Property1_t>::GetTypeName() <<
+  // std::endl; std::cout << internal::GetTypeNameHelper<double>::GetTypeName()
+  // << std::endl; Property1_t::check_compatibility(*prop1_base);
 
   // Property2_t::check_compatibility(*prop1_base);
 
-
   // auto prop1{downcast_prop<Property1_t>(prop1_base)};
-
-
-
 
   return (0);
 }
-

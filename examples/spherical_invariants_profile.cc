@@ -88,8 +88,9 @@ int main(int argc, char * argv[]) {
   json adaptors;
   json ad1{{"name", "AdaptorNeighbourList"},
            {"initialization_arguments",
-            {{"cutoff", cutoff}, {"consider_ghost_neighbours", false},
-            {"skin", 0.}}}};
+            {{"cutoff", cutoff},
+             {"consider_ghost_neighbours", false},
+             {"skin", 0.}}}};
   json ad2{{"name", "AdaptorStrict"},
            {"initialization_arguments", {{"cutoff", cutoff}}}};
   adaptors.emplace_back(ad1);
@@ -132,5 +133,6 @@ int main(int argc, char * argv[]) {
             << " elapsed: " << elapsed_grad.count() / N_ITERATIONS << " seconds"
             << std::endl;
   // auto property_name{representation.get_name()};
-  // auto&& property{manager->template get_validated_property_ref<Property_t>(property_name)};
+  // auto&& property{manager->template
+  // get_validated_property_ref<Property_t>(property_name)};
 }

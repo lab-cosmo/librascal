@@ -109,12 +109,11 @@ namespace rascal {
     /**
      * Controls the is_updated flag
      */
-    inline const bool& is_updated() const { return this->updated; }
+    inline const bool & is_updated() const { return this->updated; }
 
-    inline void set_updated_status(const bool& is_updated) {
+    inline void set_updated_status(const bool & is_updated) {
       this->updated = is_updated;
     }
-
 
    protected:
     //!< base-class reference to StructureManager

@@ -446,7 +446,8 @@ namespace rascal {
       return std::static_pointer_cast<UserProperty_t>(property);
     }
 
-    void register_property(std::shared_ptr<PropertyBase> property, const std::string & name) {
+    void register_property(std::shared_ptr<PropertyBase> property,
+                           const std::string & name) {
       this->properties[name] = property;
     }
     /**
@@ -485,14 +486,15 @@ namespace rascal {
               name);
     }
 
-    inline void set_updated_property_status(const bool& is_updated) {
-      for (auto& element : this->properties) {
-        auto& property{element.second};
+    inline void set_updated_property_status(const bool & is_updated) {
+      for (auto & element : this->properties) {
+        auto & property{element.second};
         property->set_updated_status(is_updated);
       }
     }
 
-    inline void set_updated_property_status(const std::string & name, const bool& is_updated) {
+    inline void set_updated_property_status(const std::string & name,
+                                            const bool & is_updated) {
       this->properties[name]->set_updated_status(is_updated);
     }
 

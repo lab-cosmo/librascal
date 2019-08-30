@@ -84,17 +84,17 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
 
-  using multiple_fixtures = boost::mpl::list<
-      CalculatorFixture<MultipleStructureSortedCoulomb>,
-      CalculatorFixture<MultipleStructureSphericalExpansion>,
-      CalculatorFixture<MultipleStructureSphericalInvariants>,
-      CalculatorFixture<MultipleStructureSphericalCovariants>>;
+  using multiple_fixtures =
+      boost::mpl::list<CalculatorFixture<MultipleStructureSortedCoulomb>,
+                       CalculatorFixture<MultipleStructureSphericalExpansion>,
+                       CalculatorFixture<MultipleStructureSphericalInvariants>,
+                       CalculatorFixture<MultipleStructureSphericalCovariants>>;
 
-  using fixtures_ref_test = boost::mpl::list<
-      CalculatorFixture<SortedCoulombTestData>,
-      CalculatorFixture<SphericalExpansionTestData>,
-      CalculatorFixture<SphericalInvariantsTestData>,
-      CalculatorFixture<SphericalCovariantsTestData>>;
+  using fixtures_ref_test =
+      boost::mpl::list<CalculatorFixture<SortedCoulombTestData>,
+                       CalculatorFixture<SphericalExpansionTestData>,
+                       CalculatorFixture<SphericalInvariantsTestData>,
+                       CalculatorFixture<SphericalCovariantsTestData>>;
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -108,7 +108,7 @@ namespace rascal {
 
     for (auto & hyper : representation_hypers) {
       representations.emplace_back(hyper);
-      auto& name{representations.back().get_name()};
+      auto & name{representations.back().get_name()};
       if (verbose) {
         std::cout << name << std::endl;
       }
@@ -117,20 +117,22 @@ namespace rascal {
     for (auto & hyper : representation_hypers) {
       hyper["identifier"] = "my_representation";
       representations.emplace_back(hyper);
-      auto& name{representations.back().get_name()};
-      auto& prefix{representations.back().get_prefix()};
-      BOOST_CHECK_EQUAL(prefix+std::string("my_representation"), name);
+      auto & name{representations.back().get_name()};
+      auto & prefix{representations.back().get_prefix()};
+      BOOST_CHECK_EQUAL(prefix + std::string("my_representation"), name);
     }
   }
 
- /* ---------------------------------------------------------------------- */
- /**
-  * Test that the function get_dense_feature_matrix from managerCollection and
-  * Property return the same dense matrix
-  */
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Test that the function get_dense_feature_matrix from managerCollection and
+   * Property return the same dense matrix
+   */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_dense_feature_comparison, Fix,
-                                  multiple_fixtures, Fix) {
-    using ManagerCollection_t = typename TypeHolderInjector<ManagerCollection,typename Fix::ManagerTypeList_t>::type;
+                                   multiple_fixtures, Fix) {
+    using ManagerCollection_t =
+        typename TypeHolderInjector<ManagerCollection,
+                                    typename Fix::ManagerTypeList_t>::type;
     using Property_t = typename Fix::Property_t;
 
     bool verbose = false;
@@ -144,21 +146,25 @@ namespace rascal {
         representations.emplace_back(hyper);
         representations.back().compute(manager);
         ManagerCollection_t collection{};
-        auto& prop = manager->template get_validated_property_ref<Property_t>(representations.back().get_name());
+        auto & prop = manager->template get_validated_property_ref<Property_t>(
+            representations.back().get_name());
         math::Matrix_t feat_prop = prop.get_dense_feature_matrix();
         collection.add_structure(manager);
-        math::Matrix_t feat_col = collection.get_dense_feature_matrix(representations.back());
+        math::Matrix_t feat_col =
+            collection.get_dense_feature_matrix(representations.back());
 
         BOOST_CHECK_EQUAL(feat_prop.rows(), feat_col.rows());
         BOOST_CHECK_EQUAL(feat_prop.cols(), feat_col.cols());
         for (int row_i{0}; row_i < feat_prop.rows(); row_i++) {
-          for (int col_i{0}; col_i < feat_prop.cols();
-              ++col_i) {
-            double diff = std::abs(feat_prop(row_i, col_i)-feat_col(row_i, col_i));
+          for (int col_i{0}; col_i < feat_prop.cols(); ++col_i) {
+            double diff =
+                std::abs(feat_prop(row_i, col_i) - feat_col(row_i, col_i));
 
             BOOST_CHECK_LE(diff, 6e-12);
             if (verbose and diff > 6e-12) {
-              std::cout << "manager_i=" << manager_i << " pos=" << row_i << ", " << col_i << " \t "<<  feat_prop(row_i, col_i) << "\t != " << feat_col(row_i, col_i) << std::endl;
+              std::cout << "manager_i=" << manager_i << " pos=" << row_i << ", "
+                        << col_i << " \t " << feat_prop(row_i, col_i)
+                        << "\t != " << feat_col(row_i, col_i) << std::endl;
             }
           }
         }
@@ -167,22 +173,22 @@ namespace rascal {
     }
   }
 
- /* ---------------------------------------------------------------------- */
- /**
-  * Test if the compute function runs
-  */
- BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_compute_test, Fix,
-                                  multiple_fixtures, Fix) {
-   auto & managers = Fix::managers;
-   auto & representations = Fix::representations;
-   auto & representation_hypers = Fix::representation_hypers;
-   for (auto & manager : managers) {
-     for (auto & hyper : representation_hypers) {
-       representations.emplace_back(hyper);
-       representations.back().compute(manager);
-     }
-   }
- }
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Test if the compute function runs
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_compute_test, Fix,
+                                   multiple_fixtures, Fix) {
+    auto & managers = Fix::managers;
+    auto & representations = Fix::representations;
+    auto & representation_hypers = Fix::representation_hypers;
+    for (auto & manager : managers) {
+      for (auto & hyper : representation_hypers) {
+        representations.emplace_back(hyper);
+        representations.back().compute(manager);
+      }
+    }
+  }
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -193,7 +199,7 @@ namespace rascal {
     auto & managers = Fix::managers;
     auto & representations = Fix::representations;
     auto & ref_data = Fix::ref_data;
-    auto& verbose = Fix::verbose;
+    auto & verbose = Fix::verbose;
     using Property_t = typename Fix::Property_t;
 
     // Choose the data depending on the current options
@@ -205,14 +211,17 @@ namespace rascal {
     size_t manager_i{0};
     for (auto & manager : managers) {
       for (const auto & rep_info : rep_infos.at(manager_i)) {
-        const auto & representation_hypers = rep_info.at("hypers").template get<json>();
+        const auto & representation_hypers =
+            rep_info.at("hypers").template get<json>();
         const auto & ref_representation =
             rep_info.at("feature_matrix").template get<Std2DArray_t>();
 
         representations.emplace_back(representation_hypers);
         representations.back().compute(manager);
         auto property_name{representations.back().get_name()};
-        auto&& property{manager->template get_validated_property_ref<Property_t>(property_name)};
+        auto && property{
+            manager->template get_validated_property_ref<Property_t>(
+                property_name)};
         auto test_representation = property.get_dense_feature_matrix();
 
         BOOST_CHECK_EQUAL(ref_representation.size(),
@@ -222,12 +231,14 @@ namespace rascal {
                             test_representation.cols());
           for (size_t col_i{0}; col_i < ref_representation[row_i].size();
                ++col_i) {
-
             auto diff{std::abs(ref_representation[row_i][col_i] -
                                test_representation(row_i, col_i))};
             BOOST_CHECK_LE(diff, 6e-12);
             if (verbose and diff > 6e-12) {
-              std::cout << "manager_i=" << manager_i << " pos=" << row_i << ", " << col_i << " \t "<<  ref_representation[row_i][col_i] << "\t != " << test_representation(row_i, col_i) << std::endl;
+              std::cout << "manager_i=" << manager_i << " pos=" << row_i << ", "
+                        << col_i << " \t " << ref_representation[row_i][col_i]
+                        << "\t != " << test_representation(row_i, col_i)
+                        << std::endl;
             }
           }
         }
@@ -236,8 +247,8 @@ namespace rascal {
     }
   }
 
-  using fixtures_with_gradients = boost::mpl::list<
-      CalculatorFixture<MultipleHypersSphericalExpansion>>;
+  using fixtures_with_gradients =
+      boost::mpl::list<CalculatorFixture<MultipleHypersSphericalExpansion>>;
 
   /**
    * Test the derivative of the GTO radial integral in the SphericalExpansion
@@ -275,8 +286,8 @@ namespace rascal {
   }
 
   using simple_periodic_fixtures = boost::mpl::list<
-      CalculatorFixture<SingleHypersSphericalRepresentation>, // expension
-      CalculatorFixture<SingleHypersSphericalRepresentation>>; // invariants
+      CalculatorFixture<SingleHypersSphericalRepresentation>,   // expension
+      CalculatorFixture<SingleHypersSphericalRepresentation>>;  // invariants
 
   /**
    * Test the gradient of the SphericalExpansion representation on a few simple
@@ -299,9 +310,11 @@ namespace rascal {
         // The finite-difference tests don't work with periodic boundary
         // conditions -- moving one atom moves all its periodic images, too
         structures.back().pbc.setZero();
-        RepresentationManagerGradientCalculator<typename Fix::Representation_t, typename Fix::Manager_t>
+        RepresentationManagerGradientCalculator<typename Fix::Representation_t,
+                                                typename Fix::Manager_t>
             calculator(representations.back(), manager, structures.back());
-        RepresentationManagerGradientFixture<typename Fix::Representation_t, typename Fix::Manager_t>
+        RepresentationManagerGradientFixture<typename Fix::Representation_t,
+                                             typename Fix::Manager_t>
             grad_fix("reference_data/spherical_expansion_gradient_test.json",
                      manager, calculator);
         if (grad_fix.verbosity >= GradientTestFixture::VerbosityValue::INFO) {
@@ -317,6 +330,5 @@ namespace rascal {
   }
 
   BOOST_AUTO_TEST_SUITE_END();
-
 
 }  // namespace rascal

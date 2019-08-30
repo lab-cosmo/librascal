@@ -31,4 +31,4 @@ namespace py = pybind11;
 
 namespace rascal {
   void math_binding(py::module &) {}
-}
+}  // namespace rascal

@@ -28,8 +28,6 @@
 #ifndef BINDINGS_BIND_PY_MODELS_HH_
 #define BINDINGS_BIND_PY_MODELS_HH_
 
-
-
 #include "bind_include.hh"
 #include "bind_py_structure_manager.hh"
 #include "bind_py_representation_calculator.hh"
@@ -37,7 +35,7 @@
 #include "models/kernels.hh"
 
 namespace rascal {
-    void add_kernels(py::module &, py::module &);
+  void add_kernels(py::module &, py::module &);
 }
 
 #endif  // BINDINGS_BIND_PY_MODELS_HH_

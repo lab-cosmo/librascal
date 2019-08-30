@@ -82,7 +82,8 @@ namespace rascal {
 
     //! Constructor with Manager
     explicit Property(Manager_t & manager, std::string metadata = "no metadata")
-        : Parent{manager, NbRow, NbCol, metadata}, type_id{internal::GetTypeNameHelper<Self_t>::GetTypeName()} {}
+        : Parent{manager, NbRow, NbCol, metadata},
+          type_id{internal::GetTypeNameHelper<Self_t>::GetTypeName()} {}
 
     //! Copy constructor
     Property(const Property & other) = delete;
@@ -110,15 +111,13 @@ namespace rascal {
       auto type_id{internal::GetTypeNameHelper<Self_t>::GetTypeName()};
       if (not(other.get_type_info() == type_id)) {
         std::stringstream err_str{};
-        err_str << "Incompatible types: '" << other.get_type_info()
-                << "' != '" << type_id << "'.";
+        err_str << "Incompatible types: '" << other.get_type_info() << "' != '"
+                << type_id << "'.";
         throw std::runtime_error(err_str.str());
       }
     }
 
-    const std::string& get_type_info() const final {
-      return this->type_id;
-    };
+    const std::string & get_type_info() const final { return this->type_id; };
 
     /* ---------------------------------------------------------------------- */
     /**
@@ -221,7 +220,6 @@ namespace rascal {
 
    protected:
     std::string type_id{};
-
   };
 
 }  // namespace rascal

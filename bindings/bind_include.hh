@@ -28,7 +28,6 @@
 #ifndef BINDINGS_BIND_INCLUDE_HH_
 #define BINDINGS_BIND_INCLUDE_HH_
 
-
 #include "atomic_structure.hh"
 #include "rascal_utility.hh"
 
@@ -45,15 +44,11 @@
 #include <map>
 #include <memory>
 
-
 PYBIND11_MAKE_OPAQUE(std::vector<rascal::AtomicStructure<3>>);
 
 namespace py = pybind11;
 
-
-
 namespace rascal {
-
 
   namespace internal {
 

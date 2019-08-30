@@ -53,7 +53,8 @@ const int N_ITERATIONS = 1000;
 using Representation_t = CalculatorSphericalInvariants;
 using Manager_t = AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>;
 using Prop_t = typename CalculatorSphericalInvariants::Property_t<Manager_t>;
-using PropDer_t = typename CalculatorSphericalInvariants::PropertyGradient_t<Manager_t>;
+using PropDer_t =
+    typename CalculatorSphericalInvariants::PropertyGradient_t<Manager_t>;
 
 int main(int argc, char * argv[]) {
   if (argc < 2) {
@@ -153,9 +154,12 @@ int main(int argc, char * argv[]) {
   // auto expn2 = representation_gradients.get_representation_full();
   // std::cout << "Sample SphericalExpansion elements (should be identical) "
   //           << std::endl
-  //           << expn2(0, 0) << " " << expn2(0, 1) << " " << expn2(0, 2) << "\n"
-  //           << expn2(1, 0) << " " << expn2(1, 1) << " " << expn2(1, 2) << "\n"
-  //           << expn2(2, 0) << " " << expn2(2, 1) << " " << expn2(2, 2) << "\n";
+  //           << expn2(0, 0) << " " << expn2(0, 1) << " " << expn2(0, 2) <<
+  //           "\n"
+  //           << expn2(1, 0) << " " << expn2(1, 1) << " " << expn2(1, 2) <<
+  //           "\n"
+  //           << expn2(2, 0) << " " << expn2(2, 1) << " " << expn2(2, 2) <<
+  //           "\n";
   // TODO(max) print out analogous gradient components, for now see
   // spherical_expansion_example
 }

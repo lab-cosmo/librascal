@@ -65,9 +65,11 @@ namespace rascal {
       //! Destructor
       virtual ~SphericalInvariantsPrecomputationBase() = default;
       //! Copy constructor
-      SphericalInvariantsPrecomputationBase(const SphericalInvariantsPrecomputationBase & other) = delete;
+      SphericalInvariantsPrecomputationBase(
+          const SphericalInvariantsPrecomputationBase & other) = delete;
       //! Move constructor
-      SphericalInvariantsPrecomputationBase(SphericalInvariantsPrecomputationBase && other) = default;
+      SphericalInvariantsPrecomputationBase(
+          SphericalInvariantsPrecomputationBase && other) = default;
       //! Copy assignment operator
       SphericalInvariantsPrecomputationBase &
       operator=(const SphericalInvariantsPrecomputationBase & other) = delete;
@@ -82,14 +84,16 @@ namespace rascal {
     struct SphericalInvariantsPrecomputation {};
 
     template <>
-    struct SphericalInvariantsPrecomputation<SphericalInvariantsType::RadialSpectrum>
+    struct SphericalInvariantsPrecomputation<
+        SphericalInvariantsType::RadialSpectrum>
         : SphericalInvariantsPrecomputationBase {
       using Hypers_t = typename SphericalInvariantsPrecomputationBase::Hypers_t;
       explicit SphericalInvariantsPrecomputation(const Hypers_t &) {}
     };
 
     template <>
-    struct SphericalInvariantsPrecomputation<SphericalInvariantsType::PowerSpectrum>
+    struct SphericalInvariantsPrecomputation<
+        SphericalInvariantsType::PowerSpectrum>
         : SphericalInvariantsPrecomputationBase {
       using Hypers_t = typename SphericalInvariantsPrecomputationBase::Hypers_t;
       explicit SphericalInvariantsPrecomputation(const Hypers_t & hypers) {
@@ -207,28 +211,26 @@ namespace rascal {
 
   class CalculatorSphericalInvariants : public CalculatorBase {
    public:
-
     using Hypers_t = typename CalculatorBase::Hypers_t;
     using Key_t = typename CalculatorBase::Key_t;
 
-    template<class StructureManager>
+    template <class StructureManager>
     using Property_t =
         BlockSparseProperty<double, 1, 0, StructureManager, Key_t>;
-    template<class StructureManager>
+    template <class StructureManager>
     using PropertyGradient_t =
         BlockSparseProperty<double, 2, 0, StructureManager, Key_t>;
 
-    template<class StructureManager>
+    template <class StructureManager>
     using Dense_t = typename Property_t<StructureManager>::Dense_t;
-    template<class StructureManager>
+    template <class StructureManager>
     using Data_t = typename Property_t<StructureManager>::Data_t;
 
     template <class StructureManager, size_t Order>
     using ClusterRef_t = typename StructureManager::template ClusterRef<Order>;
 
-
     CalculatorSphericalInvariants(const Hypers_t & hyper)
-      : rep_expansion{hyper} {
+        : rep_expansion{hyper} {
       this->set_default_prefix("spherical_invariants_");
       this->set_hyperparameters(hyper);
     }
@@ -254,13 +256,14 @@ namespace rascal {
 
     void set_hyperparameters(const Hypers_t & hypers) {
       using internal::enumValue;
-      using internal::SphericalInvariantsType;
       using internal::SphericalInvariantsPrecomputationBase;
+      using internal::SphericalInvariantsType;
 
       this->max_radial = hypers.at("max_radial").get<size_t>();
       this->max_angular = hypers.at("max_angular").get<size_t>();
       this->normalize = hypers.at("normalize").get<bool>();
-      this->spherical_invariants_type_str = hypers.at("soap_type").get<std::string>();
+      this->spherical_invariants_type_str =
+          hypers.at("soap_type").get<std::string>();
 
       if (hypers.find("compute_gradients") != hypers.end()) {
         this->compute_gradients = hypers.at("compute_gradients").get<bool>();
@@ -269,13 +272,20 @@ namespace rascal {
       }
 
       if (this->spherical_invariants_type_str.compare("PowerSpectrum") == 0) {
-        this->spherical_invariants_type = SphericalInvariantsType::PowerSpectrum;
-        this->precompute_spherical_invariants[enumValue(SphericalInvariantsType::PowerSpectrum)] =
-            make_spherical_invariants_precompute<SphericalInvariantsType::PowerSpectrum>(hypers);
-      } else if (this->spherical_invariants_type_str.compare("RadialSpectrum") == 0) {
-        this->spherical_invariants_type = SphericalInvariantsType::RadialSpectrum;
-        this->precompute_spherical_invariants[enumValue(SphericalInvariantsType::RadialSpectrum)] =
-            make_spherical_invariants_precompute<SphericalInvariantsType::RadialSpectrum>(hypers);
+        this->spherical_invariants_type =
+            SphericalInvariantsType::PowerSpectrum;
+        this->precompute_spherical_invariants[enumValue(
+            SphericalInvariantsType::PowerSpectrum)] =
+            make_spherical_invariants_precompute<
+                SphericalInvariantsType::PowerSpectrum>(hypers);
+      } else if (this->spherical_invariants_type_str.compare(
+                     "RadialSpectrum") == 0) {
+        this->spherical_invariants_type =
+            SphericalInvariantsType::RadialSpectrum;
+        this->precompute_spherical_invariants[enumValue(
+            SphericalInvariantsType::RadialSpectrum)] =
+            make_spherical_invariants_precompute<
+                SphericalInvariantsType::RadialSpectrum>(hypers);
         if (this->max_angular > 0) {
           throw std::logic_error("max_angular should be 0 with RadialSpectrum");
         }
@@ -290,7 +300,8 @@ namespace rascal {
         this->inversion_symmetry = hypers.at("inversion_symmetry").get<bool>();
 
       } else {
-        throw std::logic_error("Requested SphericalInvariants type \'" + this->spherical_invariants_type_str +
+        throw std::logic_error("Requested SphericalInvariants type \'" +
+                               this->spherical_invariants_type_str +
                                "\' has not been implemented.  Must be one of" +
                                ": \'PowerSpectrum or RadialSpectrum\', " +
                                "\'BiSpectrum\'.");
@@ -298,7 +309,6 @@ namespace rascal {
 
       this->set_name(hypers);
     }
-
 
     /**
      * Compute representation for a given structure manager.
@@ -310,51 +320,76 @@ namespace rascal {
      * compatible with the representation
      */
     template <class StructureManager>
-    void compute(StructureManager& managers);
+    void compute(StructureManager & managers);
 
     /**
      * loop over a collection of manangers if it is an iterator.
      * Or just call compute_impl
      */
-    template <internal::SphericalInvariantsType BodyOrder,
-              class StructureManager,
-              std::enable_if_t<internal::is_proper_iterator<StructureManager>::value, int> = 0>
-    void compute_loop(StructureManager& managers) {
-      for (auto& manager : managers) {
+    template <
+        internal::SphericalInvariantsType BodyOrder, class StructureManager,
+        std::enable_if_t<internal::is_proper_iterator<StructureManager>::value,
+                         int> = 0>
+    void compute_loop(StructureManager & managers) {
+      for (auto & manager : managers) {
         this->compute_impl<BodyOrder>(manager);
       }
     }
 
     //! single manager case
-    template <internal::SphericalInvariantsType BodyOrder,
-              class StructureManager,
-              std::enable_if_t<not( internal::is_proper_iterator<StructureManager>::value), int> = 0>
-    void compute_loop(StructureManager& manager) {
+    template <
+        internal::SphericalInvariantsType BodyOrder, class StructureManager,
+        std::enable_if_t<
+            not(internal::is_proper_iterator<StructureManager>::value), int> =
+            0>
+    void compute_loop(StructureManager & manager) {
       this->compute_impl<BodyOrder>(manager);
     }
 
-
     //! compute representation \nu == 1
-    template <internal::SphericalInvariantsType BodyOrder, std::enable_if_t<BodyOrder == internal::SphericalInvariantsType::RadialSpectrum, int> = 0, class StructureManager>
+    template <
+        internal::SphericalInvariantsType BodyOrder,
+        std::enable_if_t<BodyOrder ==
+                             internal::SphericalInvariantsType::RadialSpectrum,
+                         int> = 0,
+        class StructureManager>
     void compute_impl(std::shared_ptr<StructureManager> manager);
 
     //! compute representation \nu == 2
-    template <internal::SphericalInvariantsType BodyOrder, std::enable_if_t<BodyOrder == internal::SphericalInvariantsType::PowerSpectrum, int> = 0, class StructureManager>
+    template <internal::SphericalInvariantsType BodyOrder,
+              std::enable_if_t<
+                  BodyOrder == internal::SphericalInvariantsType::PowerSpectrum,
+                  int> = 0,
+              class StructureManager>
     void compute_impl(std::shared_ptr<StructureManager> manager);
 
     //! compute representation \nu == 3
-    template <internal::SphericalInvariantsType BodyOrder, std::enable_if_t<BodyOrder == internal::SphericalInvariantsType::BiSpectrum, int> = 0, class StructureManager>
+    template <internal::SphericalInvariantsType BodyOrder,
+              std::enable_if_t<
+                  BodyOrder == internal::SphericalInvariantsType::BiSpectrum,
+                  int> = 0,
+              class StructureManager>
     void compute_impl(std::shared_ptr<StructureManager> manager);
 
     //! initialize the soap vectors with only the keys needed for each center
-    template <class StructureManager, class Invariants, class InvariantsDerivative, class ExpansionCoeff>
-    void initialize_percenter_powerspectrum_soap_vectors(Invariants& soap_vector, InvariantsDerivative& soap_vector_gradients, ExpansionCoeff& expansions_coefficients, std::shared_ptr<StructureManager> manager);
+    template <class StructureManager, class Invariants,
+              class InvariantsDerivative, class ExpansionCoeff>
+    void initialize_percenter_powerspectrum_soap_vectors(
+        Invariants & soap_vector, InvariantsDerivative & soap_vector_gradients,
+        ExpansionCoeff & expansions_coefficients,
+        std::shared_ptr<StructureManager> manager);
 
-    template <class StructureManager, class Invariants, class InvariantsDerivative, class ExpansionCoeff>
-    void initialize_percenter_radialspectrum_soap_vectors(Invariants& soap_vector, InvariantsDerivative& soap_vector_gradients, ExpansionCoeff& expansions_coefficients, std::shared_ptr<StructureManager> manager);
+    template <class StructureManager, class Invariants,
+              class InvariantsDerivative, class ExpansionCoeff>
+    void initialize_percenter_radialspectrum_soap_vectors(
+        Invariants & soap_vector, InvariantsDerivative & soap_vector_gradients,
+        ExpansionCoeff & expansions_coefficients,
+        std::shared_ptr<StructureManager> manager);
 
     template <class StructureManager, class Invariants, class ExpansionCoeff>
-    void initialize_percenter_bispectrum_soap_vectors(Invariants& soap_vector, ExpansionCoeff& expansions_coefficients, std::shared_ptr<StructureManager> manager);
+    void initialize_percenter_bispectrum_soap_vectors(
+        Invariants & soap_vector, ExpansionCoeff & expansions_coefficients,
+        std::shared_ptr<StructureManager> manager);
 
    protected:
     size_t max_radial{};
@@ -368,12 +403,13 @@ namespace rascal {
     internal::SphericalInvariantsType spherical_invariants_type{};
     //! collection of precomputation for the different body order
     std::array<std::shared_ptr<internal::SphericalInvariantsPrecomputationBase>,
-               internal::enumSize<internal::SphericalInvariantsType>()> precompute_spherical_invariants{};
+               internal::enumSize<internal::SphericalInvariantsType>()>
+        precompute_spherical_invariants{};
     std::string spherical_invariants_type_str{};
   };
 
   template <class StructureManager>
-  void CalculatorSphericalInvariants::compute(StructureManager& managers) {
+  void CalculatorSphericalInvariants::compute(StructureManager & managers) {
     using internal::SphericalInvariantsType;
     switch (this->spherical_invariants_type) {
     case SphericalInvariantsType::RadialSpectrum:
@@ -391,10 +427,18 @@ namespace rascal {
     }
   }
 
-  template <internal::SphericalInvariantsType BodyOrder, std::enable_if_t<BodyOrder == internal::SphericalInvariantsType::PowerSpectrum, int> = 0, class StructureManager>
-  void CalculatorSphericalInvariants::compute_impl(std::shared_ptr<StructureManager> manager) {
-    using PropExp_t = typename CalculatorSphericalExpansion::Property_t<StructureManager>;
-    using PropGradExp_t = typename CalculatorSphericalExpansion::PropertyGradient_t<StructureManager>;
+  template <internal::SphericalInvariantsType BodyOrder,
+            std::enable_if_t<
+                BodyOrder == internal::SphericalInvariantsType::PowerSpectrum,
+                int> = 0,
+            class StructureManager>
+  void CalculatorSphericalInvariants::compute_impl(
+      std::shared_ptr<StructureManager> manager) {
+    using PropExp_t =
+        typename CalculatorSphericalExpansion::Property_t<StructureManager>;
+    using PropGradExp_t =
+        typename CalculatorSphericalExpansion::PropertyGradient_t<
+            StructureManager>;
     using Prop_t = Property_t<StructureManager>;
     using PropGrad_t = PropertyGradient_t<StructureManager>;
     using internal::enumValue;
@@ -403,8 +447,10 @@ namespace rascal {
     using math::pow;
 
     // get the relevant precomputation object and unpack the useful infos
-    auto precomputation{downcast_spherical_invariants_precompute<SphericalInvariantsType::PowerSpectrum>(
-        this->precompute_spherical_invariants[enumValue(SphericalInvariantsType::PowerSpectrum)])};
+    auto precomputation{downcast_spherical_invariants_precompute<
+        SphericalInvariantsType::PowerSpectrum>(
+        this->precompute_spherical_invariants[enumValue(
+            SphericalInvariantsType::PowerSpectrum)])};
     auto & l_factors{precomputation->l_factors};
 
     // TODO(felix) use the updated mech of the prop to avoid recomputing
@@ -412,15 +458,21 @@ namespace rascal {
     // Compute the spherical expansions of the current structure
     rep_expansion.compute(manager);
 
-    auto&& expansions_coefficients{manager->template get_property_ref<PropExp_t>(rep_expansion.get_name())};
+    auto && expansions_coefficients{
+        manager->template get_property_ref<PropExp_t>(
+            rep_expansion.get_name())};
 
     // No error if gradients not computed; just an empty array in that case
-    auto&& expansions_coefficients_gradient{
-        manager->template get_property_ref<PropGradExp_t>(rep_expansion.get_gradient_name())};
+    auto && expansions_coefficients_gradient{
+        manager->template get_property_ref<PropGradExp_t>(
+            rep_expansion.get_gradient_name())};
 
-    auto&& soap_vectors{manager->template get_property_ref<Prop_t>(this->get_name())};
+    auto && soap_vectors{
+        manager->template get_property_ref<Prop_t>(this->get_name())};
 
-    auto&& soap_vector_gradients{manager->template get_property_ref<PropGrad_t>(this->get_gradient_name())};
+    auto && soap_vector_gradients{
+        manager->template get_property_ref<PropGrad_t>(
+            this->get_gradient_name())};
 
     // if the representation has already been computed for the current
     // structure then do nothing
@@ -428,7 +480,8 @@ namespace rascal {
       return;
     }
 
-    this->initialize_percenter_powerspectrum_soap_vectors(soap_vectors, soap_vector_gradients, expansions_coefficients, manager);
+    this->initialize_percenter_powerspectrum_soap_vectors(
+        soap_vectors, soap_vector_gradients, expansions_coefficients, manager);
 
     Key_t pair_type{0, 0};
     // use special container to tell that there is not need to sort when
@@ -757,31 +810,46 @@ namespace rascal {
     }          // for center : manager
   }            // compute_powerspectrum()
 
-  template <internal::SphericalInvariantsType BodyOrder, std::enable_if_t<BodyOrder == internal::SphericalInvariantsType::RadialSpectrum, int> = 0, class StructureManager>
-  void CalculatorSphericalInvariants::compute_impl(std::shared_ptr<StructureManager> manager) {
-    using PropExp_t = typename CalculatorSphericalExpansion::Property_t<StructureManager>;
-    using PropGradExp_t = typename CalculatorSphericalExpansion::PropertyGradient_t<StructureManager>;
+  template <internal::SphericalInvariantsType BodyOrder,
+            std::enable_if_t<
+                BodyOrder == internal::SphericalInvariantsType::RadialSpectrum,
+                int> = 0,
+            class StructureManager>
+  void CalculatorSphericalInvariants::compute_impl(
+      std::shared_ptr<StructureManager> manager) {
+    using PropExp_t =
+        typename CalculatorSphericalExpansion::Property_t<StructureManager>;
+    using PropGradExp_t =
+        typename CalculatorSphericalExpansion::PropertyGradient_t<
+            StructureManager>;
     using Prop_t = Property_t<StructureManager>;
     using PropGrad_t = PropertyGradient_t<StructureManager>;
     using math::pow;
 
     rep_expansion.compute(manager);
 
-    auto&& expansions_coefficients{manager->template get_property_ref<PropExp_t>(rep_expansion.get_name())};
+    auto && expansions_coefficients{
+        manager->template get_property_ref<PropExp_t>(
+            rep_expansion.get_name())};
 
     auto & expansions_coefficients_gradient{
-      manager->template get_property_ref<PropGradExp_t>(rep_expansion.get_gradient_name())};
+        manager->template get_property_ref<PropGradExp_t>(
+            rep_expansion.get_gradient_name())};
 
-    auto&& soap_vectors{manager->template get_property_ref<Prop_t>(this->get_name())};
+    auto && soap_vectors{
+        manager->template get_property_ref<Prop_t>(this->get_name())};
 
-    auto&& soap_vector_gradients{manager->template get_property_ref<PropGrad_t>(this->get_gradient_name())};
+    auto && soap_vector_gradients{
+        manager->template get_property_ref<PropGrad_t>(
+            this->get_gradient_name())};
     // if the representation has already been computed for the current
     // structure then do nothing
     if (soap_vectors.is_updated()) {
       return;
     }
 
-    this->initialize_percenter_radialspectrum_soap_vectors(soap_vectors, soap_vector_gradients, expansions_coefficients, manager);
+    this->initialize_percenter_radialspectrum_soap_vectors(
+        soap_vectors, soap_vector_gradients, expansions_coefficients, manager);
     Key_t element_type{0};
 
     for (auto center : manager) {
@@ -901,15 +969,22 @@ namespace rascal {
     }        // for (auto center : manager)
   }
 
-  template <internal::SphericalInvariantsType BodyOrder, std::enable_if_t<BodyOrder == internal::SphericalInvariantsType::BiSpectrum, int> = 0, class StructureManager>
-  void CalculatorSphericalInvariants::compute_impl(std::shared_ptr<StructureManager> manager) {
-    using PropExp_t = typename CalculatorSphericalExpansion::Property_t<StructureManager>;
-    // using PropGradExp_t = typename CalculatorSphericalExpansion::PropertyGradient_t<StructureManager>;
+  template <
+      internal::SphericalInvariantsType BodyOrder,
+      std::enable_if_t<
+          BodyOrder == internal::SphericalInvariantsType::BiSpectrum, int> = 0,
+      class StructureManager>
+  void CalculatorSphericalInvariants::compute_impl(
+      std::shared_ptr<StructureManager> manager) {
+    using PropExp_t =
+        typename CalculatorSphericalExpansion::Property_t<StructureManager>;
+    // using PropGradExp_t = typename
+    // CalculatorSphericalExpansion::PropertyGradient_t<StructureManager>;
     using Prop_t = Property_t<StructureManager>;
     // using PropGrad_t = PropertyGradient_t<StructureManager>;
-    using math::pow;
-    using internal::SphericalInvariantsType;
     using internal::enumValue;
+    using internal::SphericalInvariantsType;
+    using math::pow;
 
     auto precomputation{downcast_spherical_invariants_precompute<
         SphericalInvariantsType::BiSpectrum>(
@@ -919,11 +994,12 @@ namespace rascal {
 
     rep_expansion.compute(manager);
 
-    auto&& expansions_coefficients{manager->template get_property_ref<PropExp_t>(rep_expansion.get_name())};
+    auto && expansions_coefficients{
+        manager->template get_property_ref<PropExp_t>(
+            rep_expansion.get_name())};
 
-
-
-    auto&& soap_vectors{manager->template get_property_ref<Prop_t>(this->get_name())};
+    auto && soap_vectors{
+        manager->template get_property_ref<Prop_t>(this->get_name())};
 
     // if the representation has already been computed for the current
     // structure then do nothing
@@ -931,7 +1007,8 @@ namespace rascal {
       return;
     }
 
-    this->initialize_percenter_bispectrum_soap_vectors(soap_vectors, expansions_coefficients, manager);
+    this->initialize_percenter_bispectrum_soap_vectors(
+        soap_vectors, expansions_coefficients, manager);
 
     using complex = std::complex<double>;
 
@@ -1086,7 +1163,10 @@ namespace rascal {
   }    // end function
 
   template <class StructureManager, class Invariants, class ExpansionCoeff>
-  void CalculatorSphericalInvariants::initialize_percenter_bispectrum_soap_vectors(Invariants& soap_vectors, ExpansionCoeff& expansions_coefficients, std::shared_ptr<StructureManager> manager) {
+  void
+  CalculatorSphericalInvariants::initialize_percenter_bispectrum_soap_vectors(
+      Invariants & soap_vectors, ExpansionCoeff & expansions_coefficients,
+      std::shared_ptr<StructureManager> manager) {
     size_t n_row{math::pow(this->max_radial, 3_n)};
     size_t n_col{0};
     double max_ang{static_cast<double>(this->max_angular)};
@@ -1130,8 +1210,14 @@ namespace rascal {
     }
   }
 
-  template <class StructureManager, class Invariants, class InvariantsDerivative, class ExpansionCoeff>
-  void CalculatorSphericalInvariants::initialize_percenter_powerspectrum_soap_vectors(Invariants& soap_vectors, InvariantsDerivative& soap_vector_gradients,ExpansionCoeff& expansions_coefficients, std::shared_ptr<StructureManager> manager) {
+  template <class StructureManager, class Invariants,
+            class InvariantsDerivative, class ExpansionCoeff>
+  void CalculatorSphericalInvariants::
+      initialize_percenter_powerspectrum_soap_vectors(
+          Invariants & soap_vectors,
+          InvariantsDerivative & soap_vector_gradients,
+          ExpansionCoeff & expansions_coefficients,
+          std::shared_ptr<StructureManager> manager) {
     using internal::n_spatial_dimensions;
     size_t n_row{math::pow(this->max_radial, 2_n)};
     size_t n_col{this->max_angular + 1};
@@ -1143,8 +1229,7 @@ namespace rascal {
 
     if (this->compute_gradients) {
       soap_vector_gradients.clear();
-      soap_vector_gradients.set_shape(n_spatial_dimensions * n_row,
-                                            n_col);
+      soap_vector_gradients.set_shape(n_spatial_dimensions * n_row, n_col);
       soap_vector_gradients.resize();
     }
 
@@ -1222,8 +1307,14 @@ namespace rascal {
     }    // for center : manager
   }
 
-  template <class StructureManager, class Invariants, class InvariantsDerivative, class ExpansionCoeff>
-  void CalculatorSphericalInvariants::initialize_percenter_radialspectrum_soap_vectors(Invariants& soap_vectors, InvariantsDerivative& soap_vector_gradients, ExpansionCoeff& expansions_coefficients, std::shared_ptr<StructureManager> manager) {
+  template <class StructureManager, class Invariants,
+            class InvariantsDerivative, class ExpansionCoeff>
+  void CalculatorSphericalInvariants::
+      initialize_percenter_radialspectrum_soap_vectors(
+          Invariants & soap_vectors,
+          InvariantsDerivative & soap_vector_gradients,
+          ExpansionCoeff & expansions_coefficients,
+          std::shared_ptr<StructureManager> manager) {
     using internal::n_spatial_dimensions;
     size_t n_row{this->max_radial};
     size_t n_col{1};
@@ -1234,8 +1325,7 @@ namespace rascal {
 
     if (this->compute_gradients) {
       soap_vector_gradients.clear();
-      soap_vector_gradients.set_shape(n_spatial_dimensions * n_row,
-                                            n_col);
+      soap_vector_gradients.set_shape(n_spatial_dimensions * n_row, n_col);
       soap_vector_gradients.resize();
     }
 
@@ -1254,8 +1344,8 @@ namespace rascal {
 
       if (this->compute_gradients) {
         // The gradient wrt center is nonzero for all species pairs
-        soap_vector_gradients[center].resize(
-            keys, n_spatial_dimensions * n_row, n_col, 0);
+        soap_vector_gradients[center].resize(keys, n_spatial_dimensions * n_row,
+                                             n_col, 0);
         for (auto neigh : center) {
           soap_vector_gradients[neigh].resize(
               keys, n_spatial_dimensions * n_row, n_col, 0);

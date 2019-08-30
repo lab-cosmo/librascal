@@ -33,8 +33,7 @@
 #include "bind_include.hh"
 
 namespace rascal {
-    void utils_binding(py::module &);
+  void utils_binding(py::module &);
 }
-
 
 #endif  // BINDINGS_BIND_PY_UTILS_HH_

@@ -229,22 +229,34 @@ namespace rascal {
   };
 
   namespace detail {
-    template <template <typename Manager, template <class> class... AdaptorImplementation> class Collection, typename SM, typename AdaptorTypeHolder_>
+    template <template <typename Manager,
+                        template <class> class... AdaptorImplementation>
+              class Collection,
+              typename SM, typename AdaptorTypeHolder_>
     struct InjectTypeHolderHelper;
 
-    template <template <typename Manager, template <class> class... AdaptorImplementation> class Collection, typename SM, template <class> class... Ti>
+    template <template <typename Manager,
+                        template <class> class... AdaptorImplementation>
+              class Collection,
+              typename SM, template <class> class... Ti>
     struct InjectTypeHolderHelper<Collection, SM, AdaptorTypeHolder<Ti...>> {
       using type = Collection<SM, Ti...>;
     };
 
-    template <template <typename Manager, template <class> class... AdaptorImplementation> class Collection, typename StructureManagerTypeHolder_>
+    template <template <typename Manager,
+                        template <class> class... AdaptorImplementation>
+              class Collection,
+              typename StructureManagerTypeHolder_>
     struct InjectTypeHolderUtil;
 
-    template <template <typename Manager, template <class> class... AdaptorImplementation> class Collection, typename... T>
+    template <template <typename Manager,
+                        template <class> class... AdaptorImplementation>
+              class Collection,
+              typename... T>
     struct InjectTypeHolderUtil<Collection, std::tuple<T...>> {
       using type = typename InjectTypeHolderHelper<Collection, T...>::type;
     };
-  }
+  }  // namespace detail
   /**
    * Utility class holding the fully typed Collection class in type member
    *
@@ -259,11 +271,14 @@ namespace rascal {
    * C++17 would allow to avoid the functor
    * see https://stackoverflow.com/a/49291186/11609484.
    */
-  template <template <typename Manager, template <class> class... AdaptorImplementation> class Collection, typename StructureManagerTypeHolder_>
+  template <template <typename Manager,
+                      template <class> class... AdaptorImplementation>
+            class Collection,
+            typename StructureManagerTypeHolder_>
   struct TypeHolderInjector {
-    using type = typename detail::InjectTypeHolderUtil<Collection, StructureManagerTypeHolder_>::type;
+    using type = typename detail::InjectTypeHolderUtil<
+        Collection, StructureManagerTypeHolder_>::type;
   };
-
 
   namespace internal {
     /**

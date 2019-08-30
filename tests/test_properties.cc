@@ -629,8 +629,10 @@ namespace rascal {
         Fix::pair_property[pair] = ++pair_property_counter;
       }
     }
-    auto & base_property{static_cast<PropertyBase &>(Fix::atom_dynamic_vector_property)};
-    auto & FakeSizedProperty{static_cast<typename Fix::AtomVectorProperty_t &>(base_property)};
+    auto & base_property{
+        static_cast<PropertyBase &>(Fix::atom_dynamic_vector_property)};
+    auto & FakeSizedProperty{
+        static_cast<typename Fix::AtomVectorProperty_t &>(base_property)};
 
     pair_property_counter = 0;
     counter = 0;
