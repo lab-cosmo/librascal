@@ -401,7 +401,7 @@ namespace rascal {
   template <
       internal::SphericalCovariantsType Type,
       std::enable_if_t<
-          Type == internal::SphericalCovariantsType::LambdaSpectrum, int> = 0,
+          Type == internal::SphericalCovariantsType::LambdaSpectrum, int>,
       class StructureManager>
   void CalculatorSphericalCovariants::compute_impl(
       std::shared_ptr<StructureManager> manager) {
