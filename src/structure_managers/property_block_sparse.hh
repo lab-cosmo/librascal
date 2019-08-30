@@ -352,7 +352,12 @@ namespace rascal {
       /**
        * squared l^2 norm of the entire vector (sum of squared elements)
        */
-      inline void normalize() { this->data /= this->data.matrix().norm(); }
+      inline void normalize() {
+        double norm = this->data.matrix().norm();
+        if (std::abs(norm) > 0.) {
+          this->data /= norm;
+        }
+      }
 
       /**
        * Multiply the elements that belong to (key1, key2) entry with
