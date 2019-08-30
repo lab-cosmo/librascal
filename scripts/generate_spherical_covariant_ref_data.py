@@ -83,7 +83,7 @@ def dump_reference_json():
                 soap = SphericalCovariants(**hypers)
                 soap_vectors = soap.transform(frames)
                 x = soap_vectors.get_dense_feature_matrix(soap)
-                # x = get_feature_vector(hypers, frames)
+                x[np.abs(x) < 1e-300] = 0.
                 data['rep_info'][-1].append(dict(feature_matrix=x.tolist(),
                                                  hypers=copy(soap.hypers)))
 

@@ -698,6 +698,7 @@ namespace rascal {
      */
     inline void fill_dense_feature_matrix(Eigen::Ref<Matrix_t> features, const Keys_t& all_keys) {
       int inner_size{this->get_nb_comp()};
+      int i_row{0};
       for (size_t i_order{0}; i_order < Order; ++i_order) {
         size_t n_center{this->values[i_order].size()};
         for (size_t i_center{0}; i_center < n_center; i_center++) {
@@ -705,18 +706,19 @@ namespace rascal {
           for (const auto & key : all_keys) {
             if (this->values[i_order][i_center].count(key) == 1) {
               for (int i_pos{0};
-                   i_pos < this->values[i_order][i_center][key].size();
+                   i_pos < inner_size;
                    i_pos++) {
-                features(i_center, i_feat) =
+                features(i_row, i_feat) =
                     this->values[i_order][i_center][key](i_pos);
                 i_feat++;
               }
             } else {
               i_feat += inner_size;
             }
-          }
-        } // keys
-      } // centers
+          } // keys
+          i_row++;
+        } // centers
+      } // order
     }
 
     /**

@@ -254,6 +254,8 @@ namespace rascal {
                                "\' has not been implemented.  Must be one of" +
                                ": \'LambdaSpectrum\'.");
       }
+
+      this->set_name(hypers);
     }
 
     /**

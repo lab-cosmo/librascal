@@ -261,10 +261,11 @@ namespace rascal {
       template<class StructureManagers, class Matrix>
       static void apply(StructureManagers& managers, const std::string& property_name, Matrix& features, int n_rows, int inner_size) {
         features.resize(n_rows, inner_size);
+        features.setZero();
         int i_row{0};
         for (auto& manager : managers) {
           auto&& property = manager->template get_property_ref<Prop_t>(property_name);
-          auto n_rows_manager = property.size();
+          auto n_rows_manager = property.get_nb_item();
           property.fill_dense_feature_matrix(
               features.block(i_row, 0, n_rows_manager, inner_size));
           i_row += n_rows_manager;
@@ -286,9 +287,10 @@ namespace rascal {
           auto keys = property.get_keys();
           all_keys.insert(keys.begin(), keys.end());
         }
-
+        
         size_t n_cols{all_keys.size() * inner_size};
         features.resize(n_rows, n_cols);
+        features.setZero();
         int i_row{0};
         for (auto& manager : managers) {
           auto&& property = manager->template get_property_ref<Prop_t>(property_name);
@@ -357,7 +359,7 @@ namespace rascal {
 
       for (auto& manager : this->managers) {
         auto&& property = manager->template get_property_ref<Prop_t>(property_name);
-        n_elements += property.size();
+        n_elements += property.get_nb_item();
       }
 
       return n_elements;

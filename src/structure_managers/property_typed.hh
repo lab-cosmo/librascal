@@ -294,7 +294,7 @@ namespace rascal {
     // inline std::vector<T> & get_raw_data() { return this->values; }
 
     inline void fill_dense_feature_matrix(Eigen::Ref<Matrix_t> features) {
-      size_t n_center{this->size()};
+      size_t n_center{this->get_nb_item()};
       auto n_cols{this->get_nb_comp()};
       auto mat = reference(this->values.data(), n_cols, n_center);
       for (size_t i_center{0}; i_center < n_center; i_center++) {
@@ -320,12 +320,12 @@ namespace rascal {
                             this->get_nb_row(), this->get_nb_col());
     }
 
-    inline auto get_dense_feature_matrix() {
+    inline Matrix_t get_dense_feature_matrix() {
       auto nb_centers{this->get_nb_item()};
       auto nb_features{this->get_nb_comp()};
-      Eigen::Map<const Eigen::MatrixXd> representation(this->values.data(),
-                                                       nb_features, nb_centers);
-      return representation;
+      Matrix_t features(nb_centers, nb_features);
+      this->fill_dense_feature_matrix(features);
+      return features;
     }
 
    protected:
