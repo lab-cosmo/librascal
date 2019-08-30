@@ -123,22 +123,66 @@ namespace rascal {
     }
   }
 
-  /* ---------------------------------------------------------------------- */
-  /**
-   * Test if the compute function runs
-   */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_compute_test, Fix,
-                                   multiple_fixtures, Fix) {
+ /* ---------------------------------------------------------------------- */
+ /**
+  * Test that the function get_dense_feature_matrix from managerCollection and
+  * Property return the same dense matrix
+  */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_dense_feature_comparison, Fix,
+                                  multiple_fixtures, Fix) {
+    using ManagerCollection_t = typename TypeHolderInjector<ManagerCollection,typename Fix::ManagerTypeList_t>::type;
+    using Property_t = typename Fix::Property_t;
+
+    bool verbose = false;
+
     auto & managers = Fix::managers;
     auto & representations = Fix::representations;
     auto & representation_hypers = Fix::representation_hypers;
+    int manager_i{0};
     for (auto & manager : managers) {
       for (auto & hyper : representation_hypers) {
         representations.emplace_back(hyper);
         representations.back().compute(manager);
+        ManagerCollection_t collection{};
+        auto& prop = manager->template get_validated_property_ref<Property_t>(representations.back().get_name());
+        math::Matrix_t feat_prop = prop.get_dense_feature_matrix();
+        collection.add_structure(manager);
+        math::Matrix_t feat_col = collection.get_dense_feature_matrix(representations.back());
+
+        BOOST_CHECK_EQUAL(feat_prop.rows(), feat_col.rows());
+        BOOST_CHECK_EQUAL(feat_prop.cols(), feat_col.cols());
+        for (int row_i{0}; row_i < feat_prop.rows(); row_i++) {
+          for (int col_i{0}; col_i < feat_prop.cols();
+              ++col_i) {
+            double diff = std::abs(feat_prop(row_i, col_i)-feat_col(row_i, col_i));
+
+            BOOST_CHECK_LE(diff, 6e-12);
+            if (verbose and diff > 6e-12) {
+              std::cout << "manager_i=" << manager_i << " pos=" << row_i << ", " << col_i << " \t "<<  feat_prop(row_i, col_i) << "\t != " << feat_col(row_i, col_i) << std::endl;
+            }
+          }
+        }
       }
+      manager_i++;
     }
   }
+
+ /* ---------------------------------------------------------------------- */
+ /**
+  * Test if the compute function runs
+  */
+ BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_compute_test, Fix,
+                                  multiple_fixtures, Fix) {
+   auto & managers = Fix::managers;
+   auto & representations = Fix::representations;
+   auto & representation_hypers = Fix::representation_hypers;
+   for (auto & manager : managers) {
+     for (auto & hyper : representation_hypers) {
+       representations.emplace_back(hyper);
+       representations.back().compute(manager);
+     }
+   }
+ }
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -169,17 +213,16 @@ namespace rascal {
         representations.back().compute(manager);
         auto property_name{representations.back().get_name()};
         auto&& property{manager->template get_validated_property_ref<Property_t>(property_name)};
-
-        auto test_representation{property.get_dense_feature_matrix()};
+        auto test_representation = property.get_dense_feature_matrix();
 
         BOOST_CHECK_EQUAL(ref_representation.size(),
                           test_representation.rows());
         for (size_t row_i{0}; row_i < ref_representation.size(); row_i++) {
           BOOST_CHECK_EQUAL(ref_representation[row_i].size(),
                             test_representation.cols());
-
           for (size_t col_i{0}; col_i < ref_representation[row_i].size();
                ++col_i) {
+
             auto diff{std::abs(ref_representation[row_i][col_i] -
                                test_representation(row_i, col_i))};
             BOOST_CHECK_LE(diff, 6e-12);
