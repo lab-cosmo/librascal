@@ -55,7 +55,7 @@ namespace rascal {
 
       KernelImpl() = default;
 
-      KernelImpl(const Hypers_t & hypers) : KernelImplBase{} {
+      explicit KernelImpl(const Hypers_t & hypers) : KernelImplBase{} {
         this->set_hyperparmeters(hypers);
       }
 
@@ -151,7 +151,7 @@ namespace rascal {
    public:
     using Hypers_t = typename internal::KernelImplBase::Hypers_t;
 
-    Kernel(const Hypers_t & hypers) {
+    explicit Kernel(const Hypers_t & hypers) {
       using internal::KernelType;
       using internal::TargetType;
 

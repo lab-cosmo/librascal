@@ -196,7 +196,7 @@ namespace rascal {
     /* ---------------------------------------------------------------------- */
     //! return runtime info about the stored (e.g., numerical) type
     //! return info about the type
-    const std::string & get_type_info() const { return this->type_id; };
+    const std::string & get_type_info() const { return this->type_id; }
 
     Manager_t & get_manager() {
       return static_cast<Manager_t &>(this->base_manager);

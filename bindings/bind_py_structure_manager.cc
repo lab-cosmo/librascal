@@ -442,7 +442,7 @@ namespace rascal {
 
     // add_structures to the collection
     manager_collection.def("add_structures",
-                           (void (ManagerCollection_t::*)(
+                           (void (ManagerCollection_t::*)(  // NOLINT
                                const std::vector<AtomicStructure<3>> &)) &
                                ManagerCollection_t::add_structures);
     manager_collection.def(

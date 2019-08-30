@@ -64,7 +64,7 @@ namespace rascal {
 
     explicit ManagerCollection(const Hypers_t & adaptor_inputs) {
       this->adaptor_inputs = adaptor_inputs;
-    };
+    }
 
     //! Copy constructor
     ManagerCollection(const ManagerCollection & other) = delete;

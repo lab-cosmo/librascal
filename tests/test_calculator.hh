@@ -828,4 +828,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif  // TESTS_TEST_REPRESENTATION_MANAGER_HH_
+#endif  // TESTS_TEST_CALCULATOR_HH_

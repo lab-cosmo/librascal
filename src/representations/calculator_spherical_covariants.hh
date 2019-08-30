@@ -28,8 +28,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_CALCULATOR_SPHERICAL_COVARIANTS_HH_
-#define SRC_CALCULATOR_SPHERICAL_COVARIANTS_HH_
+#ifndef SRC_REPRESENTATIONS_CALCULATOR_SPHERICAL_COVARIANTS_HH_
+#define SRC_REPRESENTATIONS_CALCULATOR_SPHERICAL_COVARIANTS_HH_
 
 #include "representations/calculator_base.hh"
 #include "representations/calculator_spherical_expansion.hh"
@@ -204,7 +204,7 @@ namespace rascal {
     template <class StructureManager, size_t Order>
     using ClusterRef_t = typename StructureManager::template ClusterRef<Order>;
 
-    CalculatorSphericalCovariants(const Hypers_t & hyper)
+    explicit CalculatorSphericalCovariants(const Hypers_t & hyper)
         : rep_expansion{hyper} {
       this->set_default_prefix("spherical_covariants_");
       this->set_hyperparameters(hyper);
@@ -565,4 +565,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif  // SRC_CALCULATOR_SPHERICAL_COVARIANTS_HH_
+#endif  // SRC_REPRESENTATIONS_CALCULATOR_SPHERICAL_COVARIANTS_HH_

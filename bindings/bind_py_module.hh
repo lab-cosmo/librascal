@@ -25,8 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef BINDINGS_PY_MODULE_HH_
-#define BINDINGS_PY_MODULE_HH_
+#ifndef BINDINGS_BIND_PY_MODULE_HH_
+#define BINDINGS_BIND_PY_MODULE_HH_
 
 #include "bind_include.hh"
 #include "bind_py_math.hh"
@@ -35,4 +35,4 @@
 #include "bind_py_utils.hh"
 #include "bind_py_models.hh"
 
-#endif  // BINDINGS_PY_MODULE_HH_
+#endif  // BINDINGS_BIND_PY_MODULE_HH_
