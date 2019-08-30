@@ -221,6 +221,7 @@ namespace rascal {
         if ((this->pbc.array() != other.pbc.array()).any() or
             (this->cell.array() != other.cell.array()).any() or
             (this->center_atoms_mask != other.center_atoms_mask).any() or
+            (this->atom_types.array() != other.atom_types.array()).any() or
             (this->positions - other.positions)
                     .rowwise()
                     .squaredNorm()
@@ -243,7 +244,7 @@ namespace rascal {
     }
 
     inline bool is_similar(const PositionsInput_t & positions,
-                             const AtomTypesInput_t & /*atom_types*/,
+                             const AtomTypesInput_t & atom_types,
                              const CellInput_t cell, const PBCInput_t & pbc,
                              const ArrayB_ref & center_atoms_mask,
                              const double & threshold2) const {
@@ -252,6 +253,7 @@ namespace rascal {
         if ((this->pbc.array() != pbc.array()).any() or
             (this->cell.array() != cell.array()).any() or
             (this->center_atoms_mask != center_atoms_mask).any() or
+            (this->atom_types.array() != atom_types.array()).any() or
             (this->positions - positions).rowwise().squaredNorm().maxCoeff() >
                 threshold2) {
           is_similar_ = false;
