@@ -34,6 +34,7 @@
 #include "test_math.hh"
 #include "test_structure.hh"
 #include "atomic_structure.hh"
+#include "structure_managers/structure_manager_collection.hh"
 #include "representations/calculator_base.hh"
 #include "representations/calculator_sorted_coulomb.hh"
 #include "representations/calculator_spherical_expansion.hh"
@@ -719,7 +720,7 @@ namespace rascal {
         Calculator_t & calc)
         : structure{structure}, center_it{structure->begin()}, calculator{
                                                                    calc} {
-      json input_data{json_io::load(filename)};
+      json input_data = json_io::load(filename);
 
       this->function_inputs = this->get_function_inputs();
       this->displacement_directions =
