@@ -363,7 +363,7 @@ namespace rascal {
 
       auto atom_tag = atom.get_atom_tag();
       AtomIndex_t self_atom_tag_list{atom_tag, atom_tag};
-      // Eigen::Matrix<size_t, PairLayer + 1, 1> self_indices_pair;
+     
       std::array<size_t, PairLayer + 1> self_indices_pair;
       self_indices_pair[PairLayer] = pair_counter;
       auto self_indices_pair_ = IndexConstArray(self_indices_pair.data());
