@@ -944,7 +944,7 @@ namespace rascal {
       auto && atom_i_index = manager.get_atom_index(atom_i_tag);
       auto && atom_i_it = manager.get_iterator_at(atom_i_index, 0);
       auto && atom_i = *atom_i_it;
-      auto && atom_ii_it = atom_i.begin();
+      auto && atom_ii_it = atom_i.with_self_pair().begin();
       constexpr static size_t ClusterLayer_{
           ManagerImplementation::template cluster_layer_from_order<2>()};
       auto atom_ii = static_cast<ClusterRefKey<2, ClusterLayer_>>(*atom_ii_it);
@@ -989,7 +989,7 @@ namespace rascal {
       return this->it.get_manager();
     }
     //! start of the iteration over the cluster itself
-    // template <bool T = HasCenterPairOrderOne, std::enable_if_t<not(T), int> = 0>
+    template <bool T = HasCenterPairOrderOne, std::enable_if_t<not(T), int> = 0>
     inline iterator begin() {
       std::array<size_t, Order> counters{this->it.get_counters()};
       auto offset = this->get_manager().get_offset(counters);
