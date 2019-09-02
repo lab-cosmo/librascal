@@ -58,6 +58,7 @@ namespace rascal {
     constexpr static bool HasDirectionVectors{false};
     constexpr static int Dim{parent_traits::Dim};
     constexpr static bool HasCenterPair{parent_traits::HasCenterPair};
+    constexpr static int StackLevel{parent_traits::StackLevel + 1};
     // New MaxOrder upon construction, by construction should be 2
     constexpr static size_t MaxOrder{parent_traits::MaxOrder +
                                      1};
@@ -432,6 +433,7 @@ namespace rascal {
    public:
     using Manager_t = AdaptorNeighbourList<ManagerImplementation>;
     using Parent = StructureManager<Manager_t>;
+    using ManagerImplementation_t = ManagerImplementation;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorNeighbourList>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;

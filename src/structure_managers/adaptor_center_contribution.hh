@@ -52,6 +52,7 @@ namespace rascal {
     constexpr static bool HasDirectionVectors{parent_traits::HasDirectionVectors};
     constexpr static bool HasCenterPair{true};
     constexpr static int Dim{parent_traits::Dim};
+    constexpr static int StackLevel{parent_traits::StackLevel + 1};
     constexpr static size_t MaxOrder{parent_traits::MaxOrder};
     // TODO explain
     using LayerByOrder = std::index_sequence<ManagerImplementation::template cluster_layer_from_order<1>() + 1, 0>;
@@ -76,6 +77,7 @@ namespace rascal {
    public:
     using Manager_t = AdaptorCenterContribution<ManagerImplementation>;
     using Parent = StructureManager<Manager_t>;
+    using ManagerImplementation_t = ManagerImplementation;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<Manager_t>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
@@ -296,6 +298,8 @@ namespace rascal {
      */
     std::array<std::vector<size_t>, traits::MaxOrder> offsets;
 
+    std::array<double, traits::Dim> self_dir_vec{0, 0, 0};
+
    private:
   };
 
@@ -364,9 +368,9 @@ namespace rascal {
       self_indices_pair[PairLayer] = pair_counter;
       auto self_indices_pair_ = IndexConstArray(self_indices_pair.data());
       pair_cluster_indices.push_back(self_indices_pair_);
-      pair_counter++;
       auto self_pair = ClusterRefKey<2, PairLayer>(self_atom_tag_list, self_indices_pair_);
       this->add_atom(self_pair);
+      pair_counter++;
 
       for (auto pair : atom) {
 

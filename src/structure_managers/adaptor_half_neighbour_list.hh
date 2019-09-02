@@ -54,6 +54,7 @@ namespace rascal {
     constexpr static bool HasDirectionVectors{
         parent_traits::HasDirectionVectors};
     constexpr static bool HasCenterPair{parent_traits::HasCenterPair};
+    constexpr static int StackLevel{parent_traits::StackLevel + 1};
     constexpr static int Dim{parent_traits::Dim};
     constexpr static size_t MaxOrder{parent_traits::MaxOrder};
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
@@ -77,6 +78,7 @@ namespace rascal {
    public:
     using Manager_t = AdaptorHalfList<ManagerImplementation>;
     using Parent = StructureManager<Manager_t>;
+    using ManagerImplementation_t = ManagerImplementation;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorHalfList>;
     using parent_traits = typename ManagerImplementation::traits;

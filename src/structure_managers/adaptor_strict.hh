@@ -55,6 +55,7 @@ namespace rascal {
     constexpr static bool HasCenterPair{parent_traits::HasCenterPair};
     constexpr static int Dim{parent_traits::Dim};
     constexpr static size_t MaxOrder{parent_traits::MaxOrder};
+    constexpr static int StackLevel{parent_traits::StackLevel + 1};
     using LayerByOrder = typename LayerIncreaser<
         MaxOrder, typename parent_traits::LayerByOrder>::type;
   };
@@ -78,6 +79,7 @@ namespace rascal {
    public:
     using Manager_t = AdaptorStrict<ManagerImplementation>;
     using Parent = StructureManager<Manager_t>;
+    using ManagerImplementation_t = ManagerImplementation;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorStrict>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
@@ -413,6 +415,9 @@ namespace rascal {
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
     size_t pair_counter{0};
+
+    double rc2{this->cutoff * this->cutoff};
+
     // depending on the underlying neighbourlist, the proxy `.with_ghosts()` is
     // either actually with ghosts, or only returns the number of centers.
     for (auto atom : this->manager.get()->with_ghosts()) {
@@ -426,15 +431,18 @@ namespace rascal {
       indices.template head<AtomLayer>() = atom.get_cluster_indices();
       indices(AtomLayer) = indices(AtomLayer - 1);
       atom_cluster_indices.push_back(indices);
-      double rc2{this->cutoff * this->cutoff};
-      for (auto pair : atom) {
+      for (auto pair : atom.with_self_pair()) {
         auto vec_ij{pair.get_position() - atom.get_position()};
         double distance2{(vec_ij).squaredNorm()};
         if (distance2 <= rc2) {
           this->add_atom(pair);
           double distance{std::sqrt(distance2)};
+          if (distance2 > 0.) {
+            this->dir_vec->push_back((vec_ij.array() / distance).matrix());
+          } else {
+            this->dir_vec->push_back((vec_ij.array()).matrix());
+          }
 
-          this->dir_vec->push_back((vec_ij.array() / distance).matrix());
           this->distance->push_back(distance);
 
           Eigen::Matrix<size_t, PairLayer + 1, 1> indices_pair;

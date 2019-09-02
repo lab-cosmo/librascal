@@ -105,6 +105,36 @@ namespace rascal {
       }
     }
   }
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Test that the atom index from a neighbour matches the atom tag of the
+   * ClusterRefKey returned by get_atom_j
+   */
+  BOOST_FIXTURE_TEST_CASE(get_atom_j_test, ManagerFixture<StructureManagerCenters>) {
+    auto pair_manager{
+          make_adapted_manager<AdaptorNeighbourList>(manager, cutoff)};
+    auto adaptor_strict{
+        make_adapted_manager<AdaptorStrict>(pair_manager, cutoff)};
+    adaptor_strict->update();
+
+    constexpr bool verbose{false};
+
+    for (auto atom : adaptor_strict) {
+      for (auto pair : atom) {
+        auto atom_j_index = adaptor_strict->get_atom_index(pair.back());
+        auto atom_j = pair.get_atom_j();
+        auto atom_j_tag = atom_j.get_atom_tag_list();
+        if (verbose) {
+          std::cout << "neigh: " << atom_j_index
+                    << " tag_j: " << atom_j_tag[0] << std::endl;
+        }
+
+        BOOST_CHECK_EQUAL(atom_j_index, atom_j_tag[0]);
+      }
+    }
+  }
+
   /* ---------------------------------------------------------------------- */
   /*
    * Compare the strict neighbour list with the linked cell one

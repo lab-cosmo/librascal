@@ -866,6 +866,7 @@ namespace rascal {
     using IndexConstArray_t = typename ThisParentClass::IndexConstArray;
     using IndexArray_t = typename ThisParentClass::IndexArray;
 
+    static constexpr bool HasCenterPairOrderOne{traits::HasCenterPair and Order == 1};
     //! Default constructor
     ClusterRef() = delete;
 
@@ -916,8 +917,8 @@ namespace rascal {
      * you will get an error about not finding the function to call
      * because of SFINAE.
      */
-    template <size_t T = Order,
-              std::enable_if_t<T == 2, int> = 0>
+    template <size_t Order_ = Order,
+              std::enable_if_t<Order_ == 2, int> = 0>
     inline auto get_atom_j() {
       auto && manager = it.get_manager();
       auto && atom_j_tag = this->get_internal_neighbour_atom_tag();
@@ -988,11 +989,30 @@ namespace rascal {
       return this->it.get_manager();
     }
     //! start of the iteration over the cluster itself
+    template <bool T = HasCenterPairOrderOne, std::enable_if_t<not(T), int> = 0>
     inline iterator begin() {
       std::array<size_t, Order> counters{this->it.get_counters()};
       auto offset = this->get_manager().get_offset(counters);
+      iterator iii = iterator(*this, 0, offset);
+      ++iii;
+      return iii;
+    }
+
+    /**
+     * start of the iteration over the cluster itself.
+     *
+     * Special case when HasCenterPair == true and Order == 1. The default
+     * iteration in this case does not include the ii-pair by starting at 1
+     * since the ii-pair is the first element.
+     */
+    template <bool T = HasCenterPairOrderOne, std::enable_if_t<T, int> = 0>
+    inline iterator begin() {
+      std::array<size_t, Order> counters{this->it.get_counters()};
+      auto offset = this->get_manager().get_offset(counters);
+      // return iterator(*this, 1, offset);
       return iterator(*this, 0, offset);
     }
+
     //! end of the iterations over the cluster itself
     inline iterator end() {
       return iterator(*this, this->size(), std::numeric_limits<size_t>::max());
@@ -1022,6 +1042,7 @@ namespace rascal {
     inline Iterator_t & get_iterator() { return this->it; }
     inline const Iterator_t & get_iterator() const { return this->it; }
 
+
    protected:
     //! counters for access
     inline std::array<size_t, 1> get_counters() const {
@@ -1033,7 +1054,44 @@ namespace rascal {
     //!`atom_cluster_indices` is an initially contiguous numbering of atoms
     Iterator_t & it;
 
-   private:
+    template <class ManagerImplementation_= ManagerImplementation, size_t Order_ = Order>
+    struct CustomProxy {
+      using ClusterRef_t = typename StructureManager<ManagerImplementation_>::template ClusterRef<Order_>;
+      using iterator = typename ClusterRef_t::iterator;
+      friend iterator;
+
+      CustomProxy(ClusterRef_t& cluster_ref, size_t& start, size_t& offset, size_t& finish) :cluster_ref{cluster_ref}, start{start}, offset{offset}, finish{finish} {}
+
+      inline iterator begin() {
+        return iterator(cluster_ref, this->start, this->offset);
+      }
+      //! end of the iterations over the cluster itself
+      inline iterator end() {
+        return iterator(cluster_ref, this->finish, std::numeric_limits<size_t>::max());
+      }
+      ClusterRef_t& cluster_ref;
+      size_t start;
+      size_t offset;
+      size_t finish;
+    };
+   public:
+
+    // inline CustomProxy<ManagerImplementation, Order> with_self_pair() {
+    //   std::array<size_t, Order> counters{this->it.get_counters()};
+    //   size_t offset{this->get_manager().get_offset(counters)};
+    //   size_t finish{this->size()};
+    //   size_t start{0};
+    //   return CustomProxy<ManagerImplementation, Order>(*this, start, offset, finish);
+    // }
+
+    // template <bool T = HasCenterPairOrderOne, std::enable_if_t<T, int> = 0>
+    inline CustomProxy<ManagerImplementation, Order> with_self_pair() {
+      std::array<size_t, Order> counters{this->it.get_counters()};
+      size_t offset{this->get_manager().get_offset(counters)};
+      size_t finish{this->size()};
+      size_t start{0};
+      return CustomProxy<ManagerImplementation, Order>(*this, start, offset, finish);
+    }
   };
 
   namespace internal {

@@ -58,6 +58,7 @@ namespace rascal {
         parent_traits::HasDirectionVectors};
     constexpr static bool HasCenterPair{parent_traits::HasCenterPair};
     constexpr static int Dim{parent_traits::Dim};
+    constexpr static int StackLevel{parent_traits::StackLevel + 1};
     //! New MaxOrder upon construction!
     constexpr static size_t MaxOrder{MaxOrder_};
     //! New Layer
@@ -123,6 +124,7 @@ namespace rascal {
     using Manager_t = AdaptorFilter<ManagerImplementation, MaxOrder>;
     using Parent = StructureManager<Manager_t>;
     using ParentBase = FilterBase;
+    using ManagerImplementation_t = ManagerImplementation;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorFilter>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
@@ -178,15 +180,7 @@ namespace rascal {
 
     virtual void perform_filtering() = 0;
 
-    //! returns the distance between atoms in a given pair
-    template <size_t Order, size_t Layer,
-              bool DummyHasDistances = traits::HasDistances>
-    inline const std::enable_if_t<DummyHasDistances, double> &
-    get_distance(const ClusterRefKey<Order, Layer> & pair) const {
-      static_assert(DummyHasDistances == traits::HasDistances,
-                    "SFINAE, do not specify");
-      return this->manager->get_distance(pair);
-    }
+
 
     /**
      * return the number of 'neighbours' (i.e., number of pairs for an atom,
@@ -213,6 +207,16 @@ namespace rascal {
       return this->manager->get_size_with_ghosts();
     }
 
+     //! returns the distance between atoms in a given pair
+    template <size_t Order, size_t Layer,
+              bool DummyHasDistances = traits::HasDistances>
+    inline const std::enable_if_t<DummyHasDistances, double> &
+    get_distance(const ClusterRefKey<Order, Layer> & pair) const {
+      static_assert(DummyHasDistances == traits::HasDistances,
+                    "SFINAE, do not specify");
+      return this->manager->get_distance(pair);
+    }
+    
     /**
      * return pair distance
      */
