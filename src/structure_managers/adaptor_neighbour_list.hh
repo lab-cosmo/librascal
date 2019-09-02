@@ -805,7 +805,7 @@ namespace rascal {
   template <class ManagerImplementation>
   AdaptorNeighbourList<ManagerImplementation>::AdaptorNeighbourList(
       std::shared_ptr<ManagerImplementation> manager, double cutoff,
-      const bool & consider_ghost_neighbours, const double & skin)
+      bool consider_ghost_neighbours, double skin)
       : manager{std::move(manager)}, cutoff{cutoff}, skin2{skin * skin},
         atom_tag_list{}, atom_types{}, ghost_atom_tag_list{}, nb_neigh{},
         neighbours_atom_tag{}, offsets{}, n_centers{0}, n_ghosts{0},
