@@ -989,14 +989,10 @@ namespace rascal {
       return this->it.get_manager();
     }
     //! start of the iteration over the cluster itself
-    template <bool T = HasCenterPairOrderOne, std::enable_if_t<not(T), int> = 0>
+    // template <bool T = HasCenterPairOrderOne, std::enable_if_t<not(T), int> = 0>
     inline iterator begin() {
       std::array<size_t, Order> counters{this->it.get_counters()};
       auto offset = this->get_manager().get_offset(counters);
-      // iterator iii = iterator(*this, 0, offset);
-      // ++iii;
-      // return iii.get_iterator();
-      // return iterator(*this, 1, offset);
       return iterator(*this, 0, offset);
     }
 
@@ -1012,7 +1008,6 @@ namespace rascal {
       std::array<size_t, Order> counters{this->it.get_counters()};
       auto offset = this->get_manager().get_offset(counters);
       return iterator(*this, 1, offset);
-      // return iterator(*this, 0, offset);
     }
 
     //! end of the iterations over the cluster itself
