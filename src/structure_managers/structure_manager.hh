@@ -908,6 +908,16 @@ namespace rascal {
       return this->atoms;
     }
 
+    /**
+     * Getter for a ClusterRefKey refering to the current j-atom of the
+     * ij-pair.
+     *
+     * if you try to use this function and Order != 2 then
+     * you will get an error about not finding the function to call
+     * because of SFINAE.
+     */
+    template <typename T = ManagerImplementation,
+              std::enable_if_t<Order == 2, int> = 0>
     inline auto get_atom_j() {
       auto && manager = it.get_manager();
       auto && atom_j_tag = this->get_internal_neighbour_atom_tag();
@@ -919,6 +929,14 @@ namespace rascal {
       return atom_j;
     }
 
+    /**
+     * Getter for a ClusterRefKey refering to the current ii pair.
+     *
+     * if you try to use this function and HasCenterPair == false then
+     * you will get an error about not finding the function to call
+     * because of SFINAE.
+     */
+    template <typename T = ManagerImplementation, std::enable_if_t<StructureManager_traits<T>::HasCenterPair, int> = 0>
     inline auto get_atom_ii() {
       auto && manager = it.get_manager();
       auto && atom_i_tag = this->front();
@@ -931,6 +949,7 @@ namespace rascal {
       auto atom_ii = static_cast<ClusterRefKey<2, ClusterLayer_>>(*atom_ii_it);
       return atom_ii;
     }
+
 
     /**
      * Returns the position of the last atom in the cluster, e.g. when
