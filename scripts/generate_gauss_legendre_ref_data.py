@@ -6,8 +6,10 @@ from numpy.polynomial.legendre import leggauss
 import numpy as np
 import ubjson
 
+# Computes the sample points and weights for Gauss-Legendre quadrature and rescales them. 
 def get_leggauss(order, a, b):
     x,w = leggauss(order)
+    # rescaling
     x = (b-a)*0.5 * x + 0.5*(a+b)
     w = (b-a)*0.5 * w
     return x,w
