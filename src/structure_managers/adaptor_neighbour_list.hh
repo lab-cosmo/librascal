@@ -52,12 +52,14 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   struct StructureManager_traits<AdaptorNeighbourList<ManagerImplementation>> {
+    using parent_traits = StructureManager_traits<ManagerImplementation>;
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDistances{false};
     constexpr static bool HasDirectionVectors{false};
-    constexpr static int Dim{ManagerImplementation::traits::Dim};
+    constexpr static int Dim{parent_traits::Dim};
+    constexpr static bool HasCenterPair{parent_traits::HasCenterPair};
     // New MaxOrder upon construction, by construction should be 2
-    constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder +
+    constexpr static size_t MaxOrder{parent_traits::MaxOrder +
                                      1};
     // When using periodic boundary conditions, it is possible that atoms are
     // added upon construction of the neighbour list. Therefore the layering

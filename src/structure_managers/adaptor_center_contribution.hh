@@ -1,16 +1,14 @@
 /**
  * file   adaptor_center_contribution.hh
  *
- * @author Till Junge <till.junge@altermail.ch>
+ * @author Markus Stricker <markus.stricker@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
  *
- * @date   04 Jun 2018
+ * @date   July 2019
  *
- * @brief implements an adaptor for structure_managers, filtering
- * the original manager so that only neighbours that are strictly
- * within r_cut are retained
+ * @brief
  *
- * Copyright  2018 Till Junge, Felix Musil COSMO (EPFL), LAMMM (EPFL)
+ * Copyright  2019 Markus Stricker, Felix Musil COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -48,12 +46,13 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   struct StructureManager_traits<AdaptorCenterContribution<ManagerImplementation>> {
-    constexpr static AdaptorTraits::Strict Strict{ManagerImplementation::traits::Strict};
-    constexpr static bool HasDistances{ManagerImplementation::traits::HasDistances};
-    constexpr static bool HasDirectionVectors{ManagerImplementation::traits::HasDirectionVectors};
+    using parent_traits = StructureManager_traits<ManagerImplementation>;
+    constexpr static AdaptorTraits::Strict Strict{parent_traits::Strict};
+    constexpr static bool HasDistances{parent_traits::HasDistances};
+    constexpr static bool HasDirectionVectors{parent_traits::HasDirectionVectors};
     constexpr static bool HasCenterPair{true};
-    constexpr static int Dim{ManagerImplementation::traits::Dim};
-    constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
+    constexpr static int Dim{parent_traits::Dim};
+    constexpr static size_t MaxOrder{parent_traits::MaxOrder};
     // TODO explain
     using LayerByOrder = std::index_sequence<ManagerImplementation::template cluster_layer_from_order<1>() + 1, 0>;
   };

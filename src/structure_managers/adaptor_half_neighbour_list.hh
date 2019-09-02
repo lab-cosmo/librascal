@@ -46,18 +46,20 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   struct StructureManager_traits<AdaptorHalfList<ManagerImplementation>> {
+    using parent_traits = StructureManager_traits<ManagerImplementation>;
     constexpr static AdaptorTraits::Strict Strict{
-        ManagerImplementation::traits::Strict};
+        parent_traits::Strict};
     constexpr static bool HasDistances{
-        ManagerImplementation::traits::HasDistances};
+        parent_traits::HasDistances};
     constexpr static bool HasDirectionVectors{
-        ManagerImplementation::traits::HasDirectionVectors};
-    constexpr static int Dim{ManagerImplementation::traits::Dim};
-    constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
+        parent_traits::HasDirectionVectors};
+    constexpr static bool HasCenterPair{parent_traits::HasCenterPair};
+    constexpr static int Dim{parent_traits::Dim};
+    constexpr static size_t MaxOrder{parent_traits::MaxOrder};
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
         AdaptorTraits::NeighbourListType::half};
     using LayerByOrder = typename LayerIncreaser<
-        MaxOrder, typename ManagerImplementation::traits::LayerByOrder>::type;
+        MaxOrder, typename parent_traits::LayerByOrder>::type;
   };
 
   /**

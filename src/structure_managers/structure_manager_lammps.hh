@@ -50,6 +50,7 @@ namespace rascal {
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDistances{false};
     constexpr static bool HasDirectionVectors{false};
+    constexpr static bool HasCenterPair{false};
     using LayerByOrder = std::index_sequence<0, 0>;
   };
 
