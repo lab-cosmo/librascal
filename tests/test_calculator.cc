@@ -27,6 +27,7 @@
 
 #include "tests.hh"
 #include "test_calculator.hh"
+#include "test_math.hh"  // for the gradient test
 
 namespace rascal {
   BOOST_AUTO_TEST_SUITE(representation_test);
@@ -86,12 +87,14 @@ namespace rascal {
   using multiple_fixtures =
       boost::mpl::list<CalculatorFixture<MultipleStructureSortedCoulomb>,
                        CalculatorFixture<MultipleStructureSphericalExpansion>,
-                       CalculatorFixture<MultipleStructureSphericalInvariant>>;
+                       CalculatorFixture<MultipleStructureSphericalInvariants>,
+                       CalculatorFixture<MultipleStructureSphericalCovariants>>;
 
   using fixtures_ref_test =
       boost::mpl::list<CalculatorFixture<SortedCoulombTestData>,
                        CalculatorFixture<SphericalExpansionTestData>,
-                       CalculatorFixture<SphericalInvariantTestData>>;
+                       CalculatorFixture<SphericalInvariantsTestData>,
+                       CalculatorFixture<SphericalCovariantsTestData>>;
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -117,6 +120,56 @@ namespace rascal {
       auto & name{representations.back().get_name()};
       auto & prefix{representations.back().get_prefix()};
       BOOST_CHECK_EQUAL(prefix + std::string("my_representation"), name);
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Test that the function get_dense_feature_matrix from managerCollection and
+   * Property return the same dense matrix
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_dense_feature_comparison, Fix,
+                                   multiple_fixtures, Fix) {
+    using ManagerCollection_t =
+        typename TypeHolderInjector<ManagerCollection,
+                                    typename Fix::ManagerTypeList_t>::type;
+    using Property_t = typename Fix::Property_t;
+
+    bool verbose = false;
+
+    auto & managers = Fix::managers;
+    auto & representations = Fix::representations;
+    auto & representation_hypers = Fix::representation_hypers;
+    int manager_i{0};
+    for (auto & manager : managers) {
+      for (auto & hyper : representation_hypers) {
+        representations.emplace_back(hyper);
+        representations.back().compute(manager);
+        ManagerCollection_t collection{};
+        auto & prop = manager->template get_validated_property_ref<Property_t>(
+            representations.back().get_name());
+        math::Matrix_t feat_prop = prop.get_dense_feature_matrix();
+        collection.add_structure(manager);
+        math::Matrix_t feat_col =
+            collection.get_dense_feature_matrix(representations.back());
+
+        BOOST_CHECK_EQUAL(feat_prop.rows(), feat_col.rows());
+        BOOST_CHECK_EQUAL(feat_prop.cols(), feat_col.cols());
+        for (int row_i{0}; row_i < feat_prop.rows(); row_i++) {
+          for (int col_i{0}; col_i < feat_prop.cols(); ++col_i) {
+            double diff =
+                std::abs(feat_prop(row_i, col_i) - feat_col(row_i, col_i));
+
+            BOOST_CHECK_LE(diff, 6e-12);
+            if (verbose and diff > 6e-12) {
+              std::cout << "manager_i=" << manager_i << " pos=" << row_i << ", "
+                        << col_i << " \t " << feat_prop(row_i, col_i)
+                        << "\t != " << feat_col(row_i, col_i) << std::endl;
+            }
+          }
+        }
+      }
+      manager_i++;
     }
   }
 
@@ -169,18 +222,15 @@ namespace rascal {
         auto && property{
             manager->template get_validated_property_ref<Property_t>(
                 property_name)};
-
-        auto test_representation{property.get_dense_rep()};
+        auto test_representation = property.get_dense_feature_matrix();
 
         BOOST_CHECK_EQUAL(ref_representation.size(),
                           test_representation.rows());
         for (size_t row_i{0}; row_i < ref_representation.size(); row_i++) {
           BOOST_CHECK_EQUAL(ref_representation[row_i].size(),
                             test_representation.cols());
-
           for (size_t col_i{0}; col_i < ref_representation[row_i].size();
                ++col_i) {
-
             auto diff{std::abs(ref_representation[row_i][col_i] -
                                test_representation(row_i, col_i))};
             BOOST_CHECK_LE(diff, 6e-12);
@@ -194,6 +244,88 @@ namespace rascal {
         }
       }
       manager_i += 1;
+    }
+  }
+
+  using fixtures_with_gradients =
+      boost::mpl::list<CalculatorFixture<MultipleHypersSphericalExpansion>>;
+
+  /**
+   * Test the derivative of the GTO radial integral in the SphericalExpansion
+   *
+   * Doesn't depend much on the structuremanager or even the specific pair in
+   * use; the nested loops below are just to pick out _a_ pair to supply as a
+   * required argument to the radial integral functions.
+   *
+   * We do test a variety of hypers, though.
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(spherical_expansion_radial_derivative, Fix,
+                                   fixtures_with_gradients, Fix) {
+    auto & managers = Fix::managers;
+    auto & hypers = Fix::representation_hypers;
+    // We need to explicitly specify a cluster ref type below - in this case,
+    // it's for an atom pair (hence the 2)
+    using ClusterRef_t = typename Fix::Manager_t::template ClusterRef<2>;
+    using RadialIntegral_t =
+        internal::RadialContribution<internal::RadialBasisType::GTO>;
+    GradientTestFixture test_data{"reference_data/radial_derivative_test.json"};
+    auto && it_manager{managers.front()->begin()};  // Need only one manager
+    auto && atom{*it_manager};
+    auto && it_atom{atom.begin()};
+    auto && pair{*it_atom};  // Need only one (arbitrary) pair
+    auto manager = managers.front();
+    for (auto & hyper : hypers) {
+      std::shared_ptr<RadialIntegral_t> radial_integral =
+          std::make_shared<RadialIntegral_t>(hyper);
+      // in C++17 the compiler would be able to deduce the template
+      // arguments for itself >:/
+      SphericalExpansionRadialDerivative<RadialIntegral_t, ClusterRef_t>
+          calculator(radial_integral, pair);
+      test_gradients(calculator, test_data);
+    }
+  }
+
+  using simple_periodic_fixtures = boost::mpl::list<
+      CalculatorFixture<SingleHypersSphericalRepresentation>,   // expension
+      CalculatorFixture<SingleHypersSphericalRepresentation>>;  // invariants
+
+  /**
+   * Test the gradient of the SphericalExpansion representation on a few simple
+   * crystal structures (single- and multi-species, primitive and supercells)
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(spherical_representation_gradients, Fix,
+                                   simple_periodic_fixtures, Fix) {
+    auto & managers = Fix::managers;
+    auto & hypers = Fix::representation_hypers;
+    auto & representations = Fix::representations;
+    auto & structures = Fix::structures;
+    auto filename_it = Fix::filenames.begin();
+
+    for (auto manager : managers) {
+      for (auto hyper : hypers) {
+        hyper["compute_gradients"] = true;
+        representations.emplace_back(hyper);
+        structures.emplace_back();
+        structures.back().set_structure(*filename_it);
+        // The finite-difference tests don't work with periodic boundary
+        // conditions -- moving one atom moves all its periodic images, too
+        structures.back().pbc.setZero();
+        RepresentationManagerGradientCalculator<typename Fix::Representation_t,
+                                                typename Fix::Manager_t>
+            calculator(representations.back(), manager, structures.back());
+        RepresentationManagerGradientFixture<typename Fix::Representation_t,
+                                             typename Fix::Manager_t>
+            grad_fix("reference_data/spherical_expansion_gradient_test.json",
+                     manager, calculator);
+        if (grad_fix.verbosity >= GradientTestFixture::VerbosityValue::INFO) {
+          std::cout << "Testing structure: " << *filename_it << std::endl;
+        }
+        do {
+          test_gradients(grad_fix.get_calculator(), grad_fix);
+          grad_fix.advance_center();
+        } while (grad_fix.has_next());
+      }
+      ++filename_it;
     }
   }
 

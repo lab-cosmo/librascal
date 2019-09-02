@@ -55,7 +55,7 @@ namespace rascal {
 
       KernelImpl() = default;
 
-      KernelImpl(const Hypers_t & hypers) : KernelImplBase{} {
+      explicit KernelImpl(const Hypers_t & hypers) : KernelImplBase{} {
         this->set_hyperparmeters(hypers);
       }
 
@@ -75,7 +75,6 @@ namespace rascal {
       inline math::Matrix_t compute(StructureManagers & managersA,
                                     StructureManagers & managersB,
                                     const std::string & representation_name) {
-
         math::Matrix_t kernel(managersA.size(), managersB.size());
         auto integer_power{math::MakePositiveIntegerPower<double>(this->zeta)};
         size_t ii_A{0};
@@ -152,7 +151,7 @@ namespace rascal {
    public:
     using Hypers_t = typename internal::KernelImplBase::Hypers_t;
 
-    Kernel(const Hypers_t & hypers) {
+    explicit Kernel(const Hypers_t & hypers) {
       using internal::KernelType;
       using internal::TargetType;
 

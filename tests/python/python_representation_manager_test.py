@@ -1,4 +1,5 @@
-from rascal.representations import SortedCoulombMatrix, SphericalExpansion, SphericalInvariant
+from rascal.representations import (SortedCoulombMatrix, SphericalExpansion,
+                                    SphericalInvariants)
 from test_utils import load_json_frame, BoxList, Box
 import unittest
 import numpy as np
@@ -26,7 +27,7 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
 
         features = rep.transform([self.frame])
 
-        test = features.get_feature_matrix().T
+        test = features.get_dense_feature_matrix(rep)
 
 
 class TestSphericalExpansionRepresentation(unittest.TestCase):
@@ -52,10 +53,10 @@ class TestSphericalExpansionRepresentation(unittest.TestCase):
 
         features = rep.transform([self.frame])
 
-        test = features.get_feature_matrix().T
+        test = features.get_dense_feature_matrix(rep)
 
 
-class TestSphericalInvariantRepresentation(unittest.TestCase):
+class TestSphericalInvariantsRepresentation(unittest.TestCase):
     def setUp(self):
         """
         builds the test case. Test the order=1 structure manager implementation
@@ -76,8 +77,8 @@ class TestSphericalInvariantRepresentation(unittest.TestCase):
 
     def test_representation_transform(self):
 
-        rep = SphericalInvariant(**self.hypers)
+        rep = SphericalInvariants(**self.hypers)
 
         features = rep.transform([self.frame])
 
-        test = features.get_feature_matrix().T
+        test = features.get_dense_feature_matrix(rep)

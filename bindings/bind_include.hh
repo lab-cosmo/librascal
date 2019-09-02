@@ -28,34 +28,8 @@
 #ifndef BINDINGS_BIND_INCLUDE_HH_
 #define BINDINGS_BIND_INCLUDE_HH_
 
-// #include "math/math_interface.hh"
-// #include "math/math_utils.hh"
-
-// #include "representations/calculator_base.hh"
-// #include "representations/calculator_sorted_coulomb.hh"
-// #include "representations/calculator_spherical_expansion.hh"
-// #include "representations/calculator_spherical_invariants.hh"
-
-// #include "representations/feature_manager_base.hh"
-// #include "representations/feature_manager_dense.hh"
-// #include "representations/feature_manager_block_sparse.hh"
-
-// #include "structure_managers/structure_manager_centers.hh"
-// #include "structure_managers/structure_manager_lammps.hh"
-// #include "structure_managers/adaptor_strict.hh"
-// #include "structure_managers/adaptor_neighbour_list.hh"
-// #include "structure_managers/adaptor_increase_maxorder.hh"
-// #include "structure_managers/adaptor_half_neighbour_list.hh"
-// #include "structure_managers/adaptor_full_neighbour_list.hh"
-// #include "structure_managers/make_structure_manager.hh"
-// #include "structure_managers/structure_manager.hh"
-// #include "structure_managers/structure_manager_base.hh"
-
-// #include "basic_types.hh"
 #include "atomic_structure.hh"
 #include "rascal_utility.hh"
-
-// #include "json_io.hh"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl_bind.h>
@@ -69,8 +43,6 @@
 #include <vector>
 #include <map>
 #include <memory>
-
-// PYBIND11_MAKE_OPAQUE(std::vector<double>);
 
 PYBIND11_MAKE_OPAQUE(std::vector<rascal::AtomicStructure<3>>);
 

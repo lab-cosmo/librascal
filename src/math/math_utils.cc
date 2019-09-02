@@ -30,40 +30,5 @@
 #include "math_utils.hh"
 
 namespace rascal {
-  namespace math {
-
-    namespace details {
-      double pow_u(double x, size_t n) {
-        double value{1.0};
-
-        /* repeated squaring method
-         * returns 0.0^0 = 1.0, so continuous in x
-         * (from GSL)
-         */
-        do {
-          if (n & 1)
-            value *= x; /* for n odd */
-          n >>= 1;
-          x *= x;
-        } while (n);
-
-        return value;
-      }
-
-      double pow_i(const double & x, const int & n) {
-        size_t un{0};
-        double value{x};
-
-        if (n < 0) {
-          value = 1.0 / x;
-          un = static_cast<size_t>(-n);
-        } else {
-          un = static_cast<size_t>(n);
-        }
-
-        return pow_u(value, un);
-      }
-    }  // namespace details
-
-  }  // namespace math
+  namespace math {}  // namespace math
 }  // namespace rascal

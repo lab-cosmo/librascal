@@ -316,6 +316,10 @@ namespace rascal {
       // open the file:
       std::ifstream file(filename, std::ios::binary);
 
+      if (not file.is_open()) {
+        throw std::runtime_error(std::string("Could not open the file: ") +
+                                 filename);
+      }
       // Stop eating new lines in binary mode!!!
       file.unsetf(std::ios::skipws);
 

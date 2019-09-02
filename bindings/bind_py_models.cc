@@ -61,7 +61,6 @@ namespace rascal {
    *
    */
   void add_kernels(py::module & mod, py::module & m_throwaway) {
-
     // Defines a particular structure manager type
     using ManagerCollection_t =
         ManagerCollection<StructureManagerCenters, AdaptorNeighbourList,

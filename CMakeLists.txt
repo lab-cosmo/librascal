@@ -83,6 +83,9 @@ set(ENABLE_PROFILING "OFF" CACHE BOOL
   "If on, adds gprof profiling information to some of the examples. \
   (GNU compilers only)")
 
+SET(TYPE_ARCHITECTURE "native" CACHE STRING "Choose the type of architecture to compile to in release mode. Default is to let the compiler decide")
+
+
 message(STATUS "Build type is: ${CMAKE_BUILD_TYPE}")
 
 ########## COMPILATION FLAGS ##########
@@ -102,7 +105,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-non-virtual-dtor")
   string( TOLOWER "${CMAKE_BUILD_TYPE}" build_type )
   if ("release" STREQUAL "${build_type}" )
-    add_compile_options(-march=native)
+    add_compile_options("-march=${TYPE_ARCHITECTURE}")
   endif()
   if ("debug" STREQUAL "${build_type}" )
     add_compile_options(-O0)
@@ -119,11 +122,21 @@ endif()
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR
     CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
   set(LIBRASCAL_NAME "rascal-dbg")
+  set(WIGXJPF_NAME "wigxjpf-dbg")
 else()
   set(LIBRASCAL_NAME "rascal")
+  set(WIGXJPF_NAME "wigxjpfo")
 endif()
 
+# include_directories(SYSTEM
+#   ${CMAKE_SOURCE_DIR}/build/external/wigxjpf/inc
+#   ${CMAKE_SOURCE_DIR}/build/external/wigxjpf/cfg
+#   )
+
+add_external_package(wigxjpf VERSION 1.9 CONFIG)
+
 add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
+
 
 # Try to find optional cpp linter
 include(cpplint)
@@ -269,7 +282,7 @@ add_custom_command(OUTPUT copy_test_reference_data
   )
 
 # put it there to avoid warnings from boost tests
-# add_compile_options(-Werror) # warnings are errors!
+add_compile_options(-Werror) # warnings are errors!
 
 # compile the library
 add_subdirectory(
@@ -347,4 +360,5 @@ if(AUTOPEP8_FOUND)
   # .pycodestyle in project root folder
   autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
   autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
+  autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/scripts" "")
 endif()

@@ -29,6 +29,8 @@
 #ifndef SRC_MATH_MATH_INTERFACE_HH_
 #define SRC_MATH_MATH_INTERFACE_HH_
 
+#include "wigxjpf.h"
+
 #include <cmath>
 #include <iostream>
 

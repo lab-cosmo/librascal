@@ -55,7 +55,6 @@ PYBIND11_MODULE(_rascal, mod) {
 
   rascal::add_structure_managers(m_nl, m_throwaway);
   rascal::add_representation_calculators(m_rpr_mng, m_throwaway);
-  // rascal::add_feature_managers(m_feat_mng, m_throwaway);
   rascal::utils_binding(m_utl);
   rascal::math_binding(m_math);
   rascal::add_kernels(m_kernels, m_throwaway);

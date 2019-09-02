@@ -211,7 +211,7 @@ RepManager
 
 A ``RepManager`` object has the purpose of computing properties of
 clusters, such as distances, angles, or more complex features such as
-symmetry functions or SphericalInvariant power spectrum components, and to store them in
+symmetry functions or SphericalInvariants power spectrum components, and to store them in
 the Properties associated with the structure.
 It needs to be initialized with a ``StructureManager`` and
 a JSON formatted string that contains its hyperparameters.
@@ -234,7 +234,7 @@ Let's say you wanted to be able to write code like this
   sm = ras.compute_pairs(sm)
   sm = ras.adaptor_strict(sm, 3.0)
 
-  rep = ras.SphericalInvariant(sm, hypers)
+  rep = ras.SphericalInvariants(sm, hypers)
   sm = rep.compute()
 
 The way we understand it,  this would make it impossible to have statically
@@ -252,7 +252,7 @@ based on StructureManagerFull, that could go like
 
 .. code-block:: c++
 
-  RepManagerSphericalInvariant<StructureManagerFull> (StructureManagerFull& SM, hypers) {
+  RepManagerSphericalInvariants<StructureManagerFull> (StructureManagerFull& SM, hypers) {
     this->sm = SM;
     this->sm.initialize_pars_based_on_hypers(hypers);
     this->sm.update();

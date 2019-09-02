@@ -453,20 +453,14 @@ namespace rascal {
      */
     AdaptorNeighbourList(ImplementationPtr_t manager, double cutoff,
                          bool consider_ghost_neighbours = false,
-                         bool include_ii_pairs = false);
-
-    AdaptorNeighbourList(ImplementationPtr_t manager, std::tuple<double> tp)
-        : AdaptorNeighbourList(manager, std::get<0>(tp)) {}
-
-    AdaptorNeighbourList(ImplementationPtr_t manager,
-                         std::tuple<double, bool> tp)
-        : AdaptorNeighbourList(manager, std::get<0>(tp), std::get<1>(tp)) {}
+                         double skin = 0.);
 
     AdaptorNeighbourList(ImplementationPtr_t manager,
                          const Hypers_t & adaptor_hypers)
         : AdaptorNeighbourList(
               manager, adaptor_hypers.at("cutoff").template get<double>(),
-              optional_argument(adaptor_hypers)) {}
+              optional_argument_ghost(adaptor_hypers),
+              optional_argument_skin(adaptor_hypers)) {}
 
     //! Copy constructor
     AdaptorNeighbourList(const AdaptorNeighbourList & other) = delete;
@@ -484,13 +478,21 @@ namespace rascal {
     //! Move assignment operator
     AdaptorNeighbourList & operator=(AdaptorNeighbourList && other) = default;
 
-    bool optional_argument(const Hypers_t & adaptor_hypers) {
+    inline bool optional_argument_ghost(const Hypers_t & adaptor_hypers) {
       bool consider_ghost_neighbours{false};
       if (adaptor_hypers.find("consider_ghost_neighbours") !=
           adaptor_hypers.end()) {
         consider_ghost_neighbours = adaptor_hypers["consider_ghost_neighbours"];
       }
       return consider_ghost_neighbours;
+    }
+
+    inline double optional_argument_skin(const Hypers_t & adaptor_hypers) {
+      double skin{0.};
+      if (adaptor_hypers.find("skin") != adaptor_hypers.end()) {
+        skin = adaptor_hypers["skin"];
+      }
+      return skin;
     }
 
     /**
@@ -511,8 +513,6 @@ namespace rascal {
     inline bool get_consider_ghost_neighbours() const {
       return this->consider_ghost_neighbours;
     }
-
-    inline bool get_include_ii_pairs() const { return this->include_ii_pairs; }
 
     /**
      * Returns the linear indices of the clusters (whose atom tags are stored
@@ -668,6 +668,10 @@ namespace rascal {
       return this->manager->get_shared_ptr();
     }
 
+    const size_t & get_n_update() const { return this->n_update; }
+
+    const size_t & get_skin2() const { return this->skin2; }
+
    protected:
     /* ---------------------------------------------------------------------- */
     /**
@@ -726,6 +730,16 @@ namespace rascal {
 
     //! Cutoff radius for neighbour list
     const double cutoff;
+    /**
+     * If no atom has moved more than the skin-distance since the
+     * last call to the update method, then the linked cell neighbor list can
+     * be reused. This will save some expensive rebuilds of the list, but
+     * extra neighbors outside the cutoff will be considered.
+     *
+     * use squared skin to avoid computing the sqrt of the squared norm
+     * between the two .
+     */
+    const double skin2;
 
     //! stores i-atom and ghost atom tags
     std::vector<int> atom_tag_list{};
@@ -765,6 +779,15 @@ namespace rascal {
      */
     size_t n_ghosts;
 
+    //! counts the number of time the neighbour list has been updated
+    size_t n_update{0};
+
+    /**
+     * on top of the main update signal, the skin parameter allow to skip
+     * the update. So this variable records this possiblity.
+     */
+    bool need_update{true};
+
     //! ghost atom positions
     std::vector<double> ghost_positions{};
 
@@ -774,9 +797,6 @@ namespace rascal {
     //! whether or not to consider neighbours of ghost atoms
     const bool consider_ghost_neighbours;
 
-    //! whether or not to include ii-pairs
-    const bool include_ii_pairs;
-
    private:
   };
 
@@ -785,12 +805,11 @@ namespace rascal {
   template <class ManagerImplementation>
   AdaptorNeighbourList<ManagerImplementation>::AdaptorNeighbourList(
       std::shared_ptr<ManagerImplementation> manager, double cutoff,
-      bool consider_ghost_neighbours, bool include_ii_pairs)
-      : manager{std::move(manager)}, cutoff{cutoff}, atom_tag_list{},
-        atom_types{}, ghost_atom_tag_list{}, nb_neigh{},
+      const bool & consider_ghost_neighbours, const double & skin)
+      : manager{std::move(manager)}, cutoff{cutoff}, skin2{skin * skin},
+        atom_tag_list{}, atom_types{}, ghost_atom_tag_list{}, nb_neigh{},
         neighbours_atom_tag{}, offsets{}, n_centers{0}, n_ghosts{0},
-        consider_ghost_neighbours{consider_ghost_neighbours},
-        include_ii_pairs{include_ii_pairs} {
+        consider_ghost_neighbours{consider_ghost_neighbours} {
     static_assert(not(traits::MaxOrder < 1), "No atom list in manager");
   }
 
@@ -803,6 +822,18 @@ namespace rascal {
   template <class... Args>
   void
   AdaptorNeighbourList<ManagerImplementation>::update(Args &&... arguments) {
+    if (sizeof...(arguments) > 0) {
+      // TODO(felix) should not have to assume that the underlying manager is
+      // manager centers.
+      auto && atomic_structure{this->manager->get_atomic_structure()};
+      // if the structure has not changed by more than skin**2
+      if (not atomic_structure.is_identical(std::forward<Args>(arguments)...,
+                                            this->skin2)) {
+        this->need_update = true;
+      } else {
+        this->need_update = false;
+      }
+    }
     this->manager->update(std::forward<Args>(arguments)...);
   }
   /* ---------------------------------------------------------------------- */
@@ -813,33 +844,36 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   void AdaptorNeighbourList<ManagerImplementation>::update_self() {
-    // set the number of centers
-    this->n_centers = this->manager->get_size();
-    this->n_ghosts = 0;
-    //! Reset cluster_indices for adaptor to fill with sequence
-    internal::for_each(this->cluster_indices_container,
-                       internal::ResizePropertyToZero());
+    if (this->need_update) {
+      // set the number of centers
+      this->n_centers = this->manager->get_size();
+      this->n_ghosts = 0;
+      //! Reset cluster_indices for adaptor to fill with sequence
+      internal::for_each(this->cluster_indices_container,
+                         internal::ResizePropertyToZero());
 
-    // initialize necessary data structure
-    this->atom_tag_list.clear();
-    this->atom_types.clear();
-    this->ghost_atom_tag_list.clear();
-    this->nb_neigh.clear();
-    this->neighbours_atom_tag.clear();
-    this->offsets.clear();
-    this->ghost_positions.clear();
-    this->ghost_types.clear();
-    // actual call for building the neighbour list
-    this->make_full_neighbour_list();
-    this->set_offsets();
+      // initialize necessary data structure
+      this->atom_tag_list.clear();
+      this->atom_types.clear();
+      this->ghost_atom_tag_list.clear();
+      this->nb_neigh.clear();
+      this->neighbours_atom_tag.clear();
+      this->offsets.clear();
+      this->ghost_positions.clear();
+      this->ghost_types.clear();
+      // actual call for building the neighbour list
+      this->make_full_neighbour_list();
+      this->set_offsets();
 
-    // layering is started from the scratch, therefore all clusters and
-    // centers+ghost atoms are in the right order.
-    auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
-    auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
+      // layering is started from the scratch, therefore all clusters and
+      // centers+ghost atoms are in the right order.
+      auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
+      auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
-    atom_cluster_indices.fill_sequence(this->consider_ghost_neighbours);
-    pair_cluster_indices.fill_sequence();
+      atom_cluster_indices.fill_sequence(this->consider_ghost_neighbours);
+      pair_cluster_indices.fill_sequence();
+      ++this->n_update;
+    }
   }
 
   /* ---------------------------------------------------------------------- */
@@ -1049,11 +1083,6 @@ namespace rascal {
       auto box_index = internal::get_box_index(dpos, cutoff);
       auto && current_j_atoms =
           internal::get_neighbours_atom_tag(atom_tag, box_index, atom_id_cell);
-
-      if (this->include_ii_pairs) {
-        this->neighbours_atom_tag.push_back(atom_tag);
-        nneigh++;
-      }
 
       for (auto j_atom_tag : current_j_atoms) {
         this->neighbours_atom_tag.push_back(j_atom_tag);

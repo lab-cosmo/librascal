@@ -32,6 +32,7 @@
 #include "representations/calculator_sorted_coulomb.hh"
 #include "representations/calculator_spherical_expansion.hh"
 #include "representations/calculator_spherical_invariants.hh"
+#include "representations/calculator_spherical_covariants.hh"
 
 #include "bind_include.hh"
 #include "bind_py_structure_manager.hh"

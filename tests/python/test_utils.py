@@ -2,13 +2,12 @@ import json
 import numpy as np
 
 
-
-def adapt_structure(cell, positions, atom_types, pbc):
+def adapt_structure(cell, positions, numbers, pbc):
     cell = np.array(cell.T, order='F')
     positions = np.array(positions.T, order='F')
-    atom_types = atom_types.reshape(-1, 1)
+    numbers = numbers.reshape(-1, 1)
     pbc = pbc.reshape(3, 1)
-    return dict(cell=cell, positions=positions, atom_types=atom_types, pbc=pbc)
+    return dict(cell=cell, positions=positions, atom_types=numbers, pbc=pbc)
 
 
 def dump_json_frame(fn, frames):
@@ -19,7 +18,7 @@ def dump_json_frame(fn, frames):
     for ii, frame in enumerate(frames):
         data[ii] = dict(positions=frame.get_positions().tolist(),
                         cell=frame.get_cell().tolist(),
-                        atom_types=frame.get_atomic_numbers().tolist(),
+                        numbers=frame.get_atomic_numbers().tolist(),
                         pbc=frame.get_pbc().tolist())
 
     data['ids'] = np.arange(len(frames)).tolist()
@@ -43,7 +42,8 @@ class BoxList(object):
         # Compute reciprocal lattice vectors.
         b1_c, b2_c, b3_c = np.linalg.pinv(cell).T
 
-        # Compute distances of cell faces (height between 2 consecutive faces [010]
+        # Compute distances of cell faces (height between 2
+        # consecutive faces [010]
         l1 = np.linalg.norm(b1_c)
         l2 = np.linalg.norm(b2_c)
         l3 = np.linalg.norm(b3_c)
@@ -53,12 +53,13 @@ class BoxList(object):
 
         # We use a minimum bin size of 3 A
         self.bin_size = max_cutoff
-        # Compute number of bins such that a sphere of radius cutoff fit into eight
-        # neighboring bins.
+        # Compute number of bins such that a sphere of radius
+        # cutoff fit into eight neighboring bins.
         self.nbins_c = np.maximum(
             (face_dist_c / self.bin_size).astype(int), [1, 1, 1])
         self.nbins = np.prod(self.nbins_c)
-        # Compute over how many bins we need to loop in the neighbor list search.
+        # Compute over how many bins we need to loop in the
+        # neighbor list search.
         self.neigh_search = np.ceil(
             self.bin_size * self.nbins_c / face_dist_c).astype(int)
         self.bin2icenters = [[] for bin_idx in range(self.nbins)]
@@ -75,10 +76,12 @@ class BoxList(object):
         # print(self.nbins)
         for bin_id in range(self.nbins):
             self.list.append(Box(
-                bin_id, self.nbins_c, self.neigh_search, self.bin2icenters[bin_id], pbc, self))
+                bin_id, self.nbins_c, self.neigh_search,
+                self.bin2icenters[bin_id], pbc, self))
 
     def cell2lin(self, ids):
-        return int(ids[0] + self.nbins_c[0] * (ids[1] + self.nbins_c[1] * ids[2]))
+        return int(ids[0] + self.nbins_c[0] * (ids[1] + self.nbins_c[1]
+                    * ids[2]))
 
     def iter_box(self):
         for bin_id in range(self.nbins):
@@ -103,13 +106,16 @@ class Box(object):
 
             if 0 == self.mult_pos[ii] and p is False:
                 self.search_idx.append(
-                    [self.mult_pos[ii]+jj for jj in range(self.neigh_search[ii]+1)])
+                    [self.mult_pos[ii]+jj for jj in range(
+                                                    self.neigh_search[ii]+1)])
             elif self.nbins_c[ii]-1 == self.mult_pos[ii] and p is False:
                 self.search_idx.append(
-                    [self.mult_pos[ii]+jj for jj in range(-self.neigh_search[ii], 0+1)])
+                    [self.mult_pos[ii]+jj for jj in range(
+                                                -self.neigh_search[ii], 0+1)])
             else:
                 self.search_idx.append([self.mult_pos[ii]+jj for jj in
-                                        range(-self.neigh_search[ii], self.neigh_search[ii]+1)])
+                                        range(-self.neigh_search[ii],
+                                        self.neigh_search[ii]+1)])
 
         self.neighbour_bin_index, self.neighbour_bin_shift = [], []
         for ii in self.search_idx[0]:
@@ -121,7 +127,8 @@ class Box(object):
                     self.neighbour_bin_shift.append(box_shift)
 
     def cell2lin(self, ids):
-        return int(ids[0] + self.nbins_c[0] * (ids[1] + self.nbins_c[1] * ids[2]))
+        return int(ids[0] + self.nbins_c[0] * (ids[1] + self.nbins_c[1]
+                    * ids[2]))
 
     def lin2cell(self, lin_ids):
         fac = 1

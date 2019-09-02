@@ -40,6 +40,7 @@
 #include "structure_managers/property_block_sparse.hh"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <memory>
 #include <exception>
@@ -51,6 +52,9 @@
 namespace rascal {
 
   namespace internal {
+
+    //! Just for clarity, make it explicit that we're working in 3-D
+    static const size_t n_spatial_dimensions = 3;
 
     /**
      * List of possible Radial basis that can be used by the spherical
@@ -202,6 +206,7 @@ namespace rascal {
       // are expected
       // virtual Vector_Ref compute_center_contribution() = 0;
       // virtual Matrix_Ref compute_neighbour_contribution() = 0;
+      // virtual Matrix_Ref compute_neighbour_derivative() = 0;
     };
 
     template <RadialBasisType RBT>
@@ -240,7 +245,8 @@ namespace rascal {
 
       using Parent = RadialContributionBase;
       using Hypers_t = typename Parent::Hypers_t;
-      using Matrix_t = typename Parent::Matrix_t;
+      // using Matrix_t = typename Parent::Matrix_t;
+      using Matrix_t = Eigen::MatrixXd;
       using Vector_t = typename Parent::Vector_t;
       using Matrix_Ref = typename Parent::Matrix_Ref;
       using Vector_Ref = typename Parent::Vector_Ref;
@@ -256,16 +262,27 @@ namespace rascal {
         this->max_radial = hypers.at("max_radial");
         this->max_angular = hypers.at("max_angular");
 
+        if (hypers.find("compute_gradients") != hypers.end()) {
+          this->compute_gradients = hypers.at("compute_gradients").get<bool>();
+        } else {  // Default false (don't compute gradients)
+          this->compute_gradients = false;
+        }
+
         // init size of the member data
         // both precomputed quantities and actual expansion coefficients
         this->radial_ortho_matrix.resize(this->max_radial, this->max_radial);
+        this->ortho_norm_matrix.resize(this->max_radial, this->max_radial);
         this->fac_b.resize(this->max_radial, 1);
+        this->a_b_l_n.resize(this->max_radial, this->max_angular + 1);
+        this->distance_fac_a_l.resize(this->max_angular + 1);
         this->radial_norm_factors.resize(this->max_radial, 1);
         this->radial_n_factors.resize(this->max_radial);
         this->radial_sigmas.resize(this->max_radial, 1);
         this->radial_integral_neighbour.resize(this->max_radial,
                                                this->max_angular + 1);
         this->radial_integral_center.resize(this->max_radial);
+        this->radial_neighbour_derivative.resize(this->max_radial,
+                                                 this->max_angular + 1);
 
         // find the cutoff radius of the representation
         auto fc_hypers = hypers.at("cutoff_function").get<json>();
@@ -291,6 +308,9 @@ namespace rascal {
       void precompute() {
         this->precompute_radial_sigmas();
         this->precompute_radial_overlap();
+        this->ortho_norm_matrix =
+            this->radial_norm_factors.asDiagonal() * this->radial_ortho_matrix;
+
         this->hyp1f1_calculator.precompute(this->max_radial, this->max_angular);
       }
 
@@ -322,12 +342,9 @@ namespace rascal {
           }
 
           this->radial_integral_center(radial_n) =
-              this->radial_norm_factors(radial_n) *
               this->radial_n_factors(radial_n) * a_b_l_n;
         }
 
-        this->radial_integral_center =
-            this->radial_ortho_matrix * this->radial_integral_center;
         return Vector_Ref(this->radial_integral_center);
       }
 
@@ -345,40 +362,104 @@ namespace rascal {
         double fac_a{0.5 * pow(smearing->get_gaussian_sigma(pair), -2)};
 
         // computes (r_{ij}*a)^l incrementally
-        Vector_t distance_fac_a_l(this->max_angular + 1);
-        distance_fac_a_l(0) = 1.;
+        this->distance_fac_a_l(0) = 1.;
         double distance_fac_a{distance * fac_a};
         for (size_t angular_l{1}; angular_l < this->max_angular + 1;
              angular_l++) {
-          distance_fac_a_l(angular_l) =
-              distance_fac_a_l(angular_l - 1) * distance_fac_a;
+          this->distance_fac_a_l(angular_l) =
+              this->distance_fac_a_l(angular_l - 1) * distance_fac_a;
         }
 
         // computes (a+b_n)^{-0.5*(3+l+n)}
-        Matrix_t a_b_l_n(this->max_radial, this->max_angular + 1);
+        Eigen::ArrayXd a_b_l{Eigen::rsqrt(fac_a + this->fac_b.array())};
         for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
-          double a_b_l{1. / sqrt(fac_a + this->fac_b[radial_n])};
-
-          a_b_l_n(radial_n, 0) = pow(a_b_l, 3 + radial_n);
-
-          for (size_t angular_l{1}; angular_l < this->max_angular + 1;
-               angular_l++) {
-            a_b_l_n(radial_n, angular_l) =
-                a_b_l_n(radial_n, angular_l - 1) * a_b_l;
-          }
+          this->a_b_l_n(radial_n, 0) = pow(a_b_l(radial_n), 3 + radial_n);
+        }
+        // seems like vetorization does not improve things here because it is
+        // memory is not contiguous ?
+        for (size_t angular_l{1}; angular_l < this->max_angular + 1;
+             ++angular_l) {
+          this->a_b_l_n.col(angular_l) =
+              (this->a_b_l_n.col(angular_l - 1).array() * a_b_l).matrix();
         }
 
-        this->hyp1f1_calculator.calc(distance, fac_a, this->fac_b);
+        this->hyp1f1_calculator.calc(distance, fac_a, this->fac_b,
+                                     this->compute_gradients);
 
         this->radial_integral_neighbour =
-            (a_b_l_n.array() * this->hyp1f1_calculator.get_values().array())
+            (this->a_b_l_n.array() *
+             this->hyp1f1_calculator.get_values().array())
                 .matrix() *
-            distance_fac_a_l.asDiagonal();
-        this->radial_integral_neighbour.transpose() *=
-            this->radial_norm_factors.asDiagonal();
-        this->radial_integral_neighbour.transpose() *=
-            this->radial_ortho_matrix;
+            this->distance_fac_a_l.asDiagonal();
+
         return Matrix_Ref(this->radial_integral_neighbour);
+      }
+
+      /**
+       * Compute the radial derivative of the neighbour contribution
+       *
+       * Note that you _must_ call compute_neighbour_contribution() first to
+       * populate the relevant arrays!
+       *
+       * The derivative is taken with respect to the pair distance, r_{ij}.  In
+       * order to get the radial component of the gradient, remember to multiply
+       * by the direction vector \hat{\vec{r}_{ij}} (and not the vector itself),
+       * since
+       * \[
+       *    \grad_{\vec{r}_i} f(r_{ij}) =
+       *                    \frac{d f}{d r_{ij}} \frac{- \vec{r}_{ij}}{r_{ij}}
+       *                  = \frac{d f}{d r_{ij}} -\hat{\vec{r}_{ij}}
+       * \])
+       * so multiply by _negative_ $\hat{\vec{r}}_ij$ to get the radial
+       * component of the gradient wrt motion of the central atom
+       * ($\frac{d}{d\vec{r}_i}$).
+       *
+       * And finally, there is no compute_center_derivative() because that's
+       * just zero -- the centre contribution doesn't vary w.r.t. motion of
+       * the central atom
+       */
+      template <AtomicSmearingType AST, size_t Order, size_t Layer>
+      Matrix_Ref
+      compute_neighbour_derivative(const double & distance,
+                                   ClusterRefKey<Order, Layer> & /*pair*/) {
+        using math::PI;
+        using math::pow;
+        using std::sqrt;
+
+        // start proportional_factors as the list of l from 0 to l_max
+        Vector_t proportional_factors =
+            Vector_t::LinSpaced(this->max_angular + 1, 0, this->max_angular);
+        proportional_factors /= distance;
+
+        this->radial_neighbour_derivative =
+            (this->a_b_l_n.array() *
+             this->hyp1f1_calculator.get_derivatives().array())
+                .matrix() *
+            this->distance_fac_a_l.asDiagonal();
+
+        this->radial_neighbour_derivative +=
+            this->radial_integral_neighbour * proportional_factors.asDiagonal();
+
+        return Matrix_Ref(this->radial_neighbour_derivative);
+      }
+
+      template <typename Coeffs>
+      void finalize_coefficients(Coeffs & coefficients) const {
+        coefficients.lhs_dot(this->ortho_norm_matrix);
+      }
+
+      template <typename Coeffs, typename Center>
+      void finalize_coefficients_der(Coeffs & coefficients_gradient,
+                                     Center & center) const {
+        auto && coefficients_center_gradient = coefficients_gradient[center];
+        coefficients_center_gradient.template lhs_dot_der<n_spatial_dimensions>(
+            this->ortho_norm_matrix);
+        for (auto neigh : center) {
+          auto & coefficients_neigh_gradient = coefficients_gradient[neigh];
+          coefficients_neigh_gradient
+              .template lhs_dot_der<n_spatial_dimensions>(
+                  this->ortho_norm_matrix);
+        }  // for (neigh : center)
       }
 
       /** Compute common prefactors for the radial Gaussian basis functions */
@@ -412,6 +493,8 @@ namespace rascal {
         // TODO(max-veit) see if we can replace the gammas with their natural
         // logs,
         // since it'll overflow for relatively small n (n1 + n2 >~ 300)
+        // UPDATE nevermind, the overlap matrix becomes singular well before
+        // this point.
         Matrix_t overlap(this->max_radial, this->max_radial);
         for (size_t radial_n1{0}; radial_n1 < this->max_radial; radial_n1++) {
           for (size_t radial_n2{0}; radial_n2 < this->max_radial; radial_n2++) {
@@ -442,27 +525,47 @@ namespace rascal {
             unitary * eigs_invsqrt.matrix().asDiagonal() * unitary.adjoint();
       }
 
+      inline Matrix_t get_radial_orthonormalization_matrix() const {
+        return this->radial_norm_factors.asDiagonal() *
+               this->radial_ortho_matrix;
+      }
+
+      inline Matrix_Ref get_radial_integral_neighbour() const {
+        return Matrix_Ref(this->radial_integral_neighbour);
+      }
+
+      inline Matrix_Ref get_radial_neighbour_derivative() const {
+        return Matrix_Ref(this->radial_neighbour_derivative);
+      }
+
       std::shared_ptr<AtomicSmearingSpecificationBase> atomic_smearing{};
       AtomicSmearingType atomic_smearing_type{};
       math::Hyp1f1SphericalExpansion hyp1f1_calculator{true, 1e-13, 200};
       // data member used to store the contributions to the expansion
       Matrix_t radial_integral_neighbour{};
       Vector_t radial_integral_center{};
+      // And derivatives
+      Matrix_t radial_neighbour_derivative{};
+      // and of course, d/dr of the center contribution is zero
 
       Hypers_t hypers{};
-      // some
+      // some usefull parameters
       double interaction_cutoff{};
       size_t max_radial{};
       size_t max_angular{};
+      bool compute_gradients{};
 
       // \sigma_n = (r_\text{cut}-\delta r_\text{cut})
       // \max(\sqrt{n},1)/n_\text{max}
       Vector_t radial_sigmas{};
       // b = 1 / (2*\sigma_n^2)
       Vector_t fac_b{};
+      Matrix_t a_b_l_n{};
+      Vector_t distance_fac_a_l{};
       Vector_t radial_norm_factors{};
       Vector_t radial_n_factors{};
       Matrix_t radial_ortho_matrix{};
+      Matrix_t ortho_norm_matrix{};
     };
 
   }  // namespace internal
@@ -487,8 +590,8 @@ namespace rascal {
    * The local environment of each atom is represented by Gaussians of a
    * certain width (user-defined; can be constant, species-dependent, or
    * radially dependent).  This density field is expanded in an angular basis
-   * of spherical harmonics (à la SphericalInvariant) and a radial basis of
-   * either Gaussians (again, as in SphericalInvariant) or one of the more
+   * of spherical harmonics (à la SphericalInvariants) and a radial basis of
+   * either Gaussians (again, as in SphericalInvariants) or one of the more
    * recent bases currently under development.
    */
   class CalculatorSphericalExpansion : public CalculatorBase {
@@ -501,6 +604,9 @@ namespace rascal {
     template <class StructureManager>
     using Property_t =
         BlockSparseProperty<double, 1, 0, StructureManager, Key_t>;
+    template <class StructureManager>
+    using PropertyGradient_t =
+        BlockSparseProperty<double, 2, 0, StructureManager, Key_t>;
 
     template <class StructureManager>
     using Dense_t = typename Property_t<StructureManager>::Dense_t;
@@ -509,6 +615,11 @@ namespace rascal {
 
     template <class StructureManager, size_t Order>
     using ClusterRef_t = typename StructureManager::template ClusterRef<Order>;
+
+    using Matrix_t = math::Matrix_t;
+    using Vector_t = math::Vector_t;
+    using Matrix_Ref = math::Matrix_Ref;
+    using Vector_Ref = math::Vector_Ref;
 
     /**
      * Set the hyperparameters of this descriptor from a json object.
@@ -532,6 +643,13 @@ namespace rascal {
       } else {
         this->n_species = 1;  // default: no species distinction
       }
+      if (hypers.find("compute_gradients") != hypers.end()) {
+        this->compute_gradients = hypers.at("compute_gradients").get<bool>();
+      } else {  // Default false (don't compute gradients)
+        this->compute_gradients = false;
+      }
+      this->spherical_harmonics.precompute(this->max_angular,
+                                           this->compute_gradients);
 
       auto radial_contribution_hypers =
           hypers.at("radial_contribution").get<json>();
@@ -580,7 +698,7 @@ namespace rascal {
      * @throw logic_error if an invalid option or combination of options is
      *                    specified in the container
      */
-    CalculatorSphericalExpansion(const Hypers_t & hyper) {
+    explicit CalculatorSphericalExpansion(const Hypers_t & hyper) {
       this->set_default_prefix("spherical_expansion_");
       this->set_hyperparameters(hyper);
     }
@@ -656,6 +774,7 @@ namespace rascal {
     size_t max_radial{};
     size_t max_angular{};
     size_t n_species{};
+    bool compute_gradients{};
 
     internal::AtomicSmearingType atomic_smearing_type{};
 
@@ -667,7 +786,7 @@ namespace rascal {
 
     Hypers_t hypers{};
 
-    // static constexpr char calculator_name[] = "spherical_expansion";
+    math::SphericalHarmonics spherical_harmonics{};
   };
 
   // compute classes template construction
@@ -720,11 +839,17 @@ namespace rascal {
   void CalculatorSphericalExpansion::compute_impl(
       std::shared_ptr<StructureManager> manager) {
     using Prop_t = Property_t<StructureManager>;
+    using PropGrad_t = PropertyGradient_t<StructureManager>;
+    using internal::n_spatial_dimensions;
     using math::PI;
     using math::pow;
 
     auto && expansions_coefficients{
         manager->template get_property_ref<Prop_t>(this->get_name())};
+
+    auto && expansions_coefficients_gradient{
+        manager->template get_property_ref<PropGrad_t>(
+            this->get_gradient_name())};
 
     // if the representation has already been computed for the current
     // structure then do nothing
@@ -739,13 +864,27 @@ namespace rascal {
         downcast_radial_integral<RadialType>(this->radial_integral)};
 
     auto n_row{this->max_radial};
-    auto n_col{(max_angular + 1) * (max_angular + 1)};
+    auto n_col{(this->max_angular + 1) * (this->max_angular + 1)};
     expansions_coefficients.clear();
     expansions_coefficients.set_shape(n_row, n_col);
     expansions_coefficients.resize();
 
+    if (this->compute_gradients) {
+      expansions_coefficients_gradient.clear();
+      // Row-major ordering, so the Cartesian (spatial) index varies slowest
+      expansions_coefficients_gradient.set_shape(n_spatial_dimensions * n_row,
+                                                 n_col);
+      expansions_coefficients_gradient.resize();
+    }
+    // get the orthonormalization matrix to apply it on the already summed
+    // over coefficients
+    Matrix_t radial_ortho_mat{
+        radial_integral->get_radial_orthonormalization_matrix()};
+
     for (auto center : manager) {
       auto & coefficients_center = expansions_coefficients[center];
+      auto & coefficients_center_gradient =
+          expansions_coefficients_gradient[center];
       Key_t center_type{center.get_atom_type()};
 
       // TODO(felix) think about an option to have "global" species,
@@ -757,6 +896,10 @@ namespace rascal {
       keys.insert({center_type});
       // initialize the expansion coefficients to 0
       coefficients_center.resize(keys, n_row, n_col, 0.);
+      if (this->compute_gradients) {
+        coefficients_center_gradient.resize(keys, n_spatial_dimensions * n_row,
+                                            n_col, 0.);
+      }
 
       // Start the accumulator with the central atom
       coefficients_center[center_type].col(0) +=
@@ -769,30 +912,101 @@ namespace rascal {
         auto direction{manager->get_direction_vector(neigh)};
         Key_t neigh_type{neigh.get_atom_type()};
 
-        // Note: the copy _should_ be optimized out (RVO)
-        auto harmonics =
-            math::compute_spherical_harmonics(direction, this->max_angular);
-        auto neighbour_contribution =
+        auto & coefficients_neigh_gradient =
+            expansions_coefficients_gradient[neigh];
+        this->spherical_harmonics.calc(direction, this->compute_gradients);
+        auto && harmonics{spherical_harmonics.get_harmonics()};
+        auto && harmonics_gradients{
+            spherical_harmonics.get_harmonics_derivatives()};
+
+        auto && neighbour_contribution =
             radial_integral
                 ->template compute_neighbour_contribution<SmearingType>(dist,
                                                                         neigh);
-
-        harmonics *= cutoff_function->f_c(dist);
-        size_t lm_pos{0}, lm_size{0};
+        double f_c{cutoff_function->f_c(dist)};
         auto && coefficients_center_by_type{coefficients_center[neigh_type]};
-        for (size_t radial_n{0}; radial_n < this->max_radial; radial_n++) {
-          lm_pos = 0;
-          for (size_t l{0}; l < this->max_angular + 1; ++l) {
-            lm_size = 2 * l + 1;
-            coefficients_center_by_type.block(radial_n, lm_pos, 1, lm_size) +=
-                (neighbour_contribution(radial_n, l) *
-                 harmonics.segment(lm_pos, lm_size));
-            lm_pos += lm_size;
-          }
+
+        // compute the coefficients
+        size_t l_block_idx{0};
+        for (size_t angular_l{0}; angular_l < this->max_angular + 1;
+             ++angular_l) {
+          size_t l_block_size{2 * angular_l + 1};
+          coefficients_center_by_type.block(0, l_block_idx, max_radial,
+                                            l_block_size) +=
+              (neighbour_contribution.col(angular_l) *
+               (harmonics.segment(l_block_idx, l_block_size) * f_c));
+          l_block_idx += l_block_size;
         }
-      }  // for (neigh : center)
-    }    // for (center : structure_manager)
-  }      // compute()
+
+        // compute the gradients of the coefficients with respect to
+        // atoms positions
+        if (this->compute_gradients) {
+          // TODO(max,felix) should only have 1 valid key
+          std::vector<Key_t> neigh_types{neigh_type};
+          coefficients_neigh_gradient.resize(
+              neigh_types, n_spatial_dimensions * n_row, n_col, 0.);
+
+          auto && neighbour_derivative =
+              radial_integral
+                  ->template compute_neighbour_derivative<SmearingType>(dist,
+                                                                        neigh);
+          double df_c{cutoff_function->df_c(dist)};
+          // The gradients only contribute to the type of the neighbour
+          // (the atom that's moving)
+          // grad_i c^{ij}
+          auto && gradient_center_by_type{
+              coefficients_center_gradient[neigh_type]};
+          // grad_j c^{ij}
+          auto && gradient_neigh_by_type{
+              coefficients_neigh_gradient[neigh_type]};
+
+          // Radial component: d/dr_{ij} (c_{ij} f_c{r_{ij}}) \hat{r_{ij}}
+          // clang-format off
+          Matrix_t pair_gradient_contribution_p1 =
+                ((neighbour_derivative * f_c)
+                 + (neighbour_contribution * df_c));
+          Matrix_t pair_gradient_contribution{this->max_radial,
+                                              this->max_angular + 1};
+          for (size_t cartesian_idx{0}; cartesian_idx < n_spatial_dimensions;
+                 ++cartesian_idx) {
+            size_t l_block_idx{0};
+            for (size_t angular_l{0}; angular_l < this->max_angular + 1;
+                ++angular_l) {
+              size_t l_block_size{2 * angular_l + 1};
+              pair_gradient_contribution.resize(this->max_radial, l_block_size);
+              pair_gradient_contribution =
+                pair_gradient_contribution_p1.col(angular_l)
+                * harmonics.segment(l_block_idx, l_block_size)
+                * direction(cartesian_idx);
+              pair_gradient_contribution +=
+                  neighbour_contribution.col(angular_l)
+                  * harmonics_gradients.block(cartesian_idx, l_block_idx,
+                                              1, l_block_size)
+                  * f_c / dist;
+
+              // Each Cartesian gradient component occupies a contiguous block
+              // (row-major storage)
+              gradient_center_by_type.block(
+                  cartesian_idx * max_radial, l_block_idx,
+                  max_radial, l_block_size) -= pair_gradient_contribution;
+              gradient_neigh_by_type.block(
+                  cartesian_idx * max_radial, l_block_idx,
+                  max_radial, l_block_size) += pair_gradient_contribution;
+              l_block_idx += l_block_size;
+              // clang-format on
+            }  // for (angular_l)
+          }    // for cartesian_idx
+        }      // if (this->compute_gradients)
+      }        // for (neigh : center)
+
+      // Normalize and orthogonalize the radial coefficients
+      radial_integral->finalize_coefficients(coefficients_center);
+      if (this->compute_gradients) {
+        radial_integral->finalize_coefficients_der(
+            expansions_coefficients_gradient, center);
+      }
+    }  // for (center : manager)
+  }    // compute()
 
 }  // namespace rascal
 

@@ -34,7 +34,6 @@ namespace rascal {
 
   template <typename Calculator>
   decltype(auto) add_representation_calculator(py::module & mod, py::module &) {
-
     std::string representation_name =
         internal::GetBindingTypeName<Calculator>();
 
@@ -137,6 +136,11 @@ namespace rascal {
     using Calc3_t = CalculatorSphericalInvariants;
     auto rep_soap = add_representation_calculator<Calc3_t>(mod, m_throwaway);
     bind_compute_function_helper<ManagerList_t>(rep_soap);
+
+    using Calc4_t = CalculatorSphericalCovariants;
+    auto rep_lambda_soap =
+        add_representation_calculator<Calc4_t>(mod, m_throwaway);
+    bind_compute_function_helper<ManagerList_t>(rep_lambda_soap);
   }
 
 }  // namespace rascal

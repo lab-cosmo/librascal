@@ -32,6 +32,7 @@
 #define SRC_STRUCTURE_MANAGERS_PROPERTY_TYPED_HH_
 
 #include "rascal_utility.hh"
+#include "math/math_utils.hh"
 #include "structure_managers/property_base.hh"
 #include "structure_managers/cluster_ref_key.hh"
 
@@ -158,8 +159,7 @@ namespace rascal {
     using Manager_t = Manager;
     using Self_t = TypedProperty<T, Order, PropertyLayer, Manager>;
     using traits = typename Manager::traits;
-    using Dense_t =
-        Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+    using Matrix_t = math::Matrix_t;
 
     using value_type = typename Value::type;
     using reference = typename Value::reference;
@@ -196,7 +196,7 @@ namespace rascal {
     /* ---------------------------------------------------------------------- */
     //! return runtime info about the stored (e.g., numerical) type
     //! return info about the type
-    const std::string & get_type_info() const { return this->type_id; };
+    const std::string & get_type_info() const { return this->type_id; }
 
     Manager_t & get_manager() {
       return static_cast<Manager_t &>(this->base_manager);
@@ -289,8 +289,20 @@ namespace rascal {
                             this->get_nb_row(), this->get_nb_col());
     }
 
-    //! getter to the underlying data storage
-    inline std::vector<T> & get_raw_data() { return this->values; }
+    // //! getter to the underlying data storage
+    // inline std::vector<T> & get_raw_data() { return this->values; }
+
+    inline void fill_dense_feature_matrix(Eigen::Ref<Matrix_t> features) {
+      size_t n_center{this->get_nb_item()};
+      auto n_cols{this->get_nb_comp()};
+      auto mat = reference(this->values.data(), n_cols, n_center);
+      for (size_t i_center{0}; i_center < n_center; i_center++) {
+        for (int i_pos{0}; i_pos < n_cols; i_pos++) {
+          // the storage order is swapped here because mat is ColMajor
+          features(i_center, i_pos) = mat(i_pos, i_center);
+        }
+      }
+    }
 
     //! get number of different distinct element in the property
     //! (typically the number of center)
@@ -307,12 +319,12 @@ namespace rascal {
                             this->get_nb_row(), this->get_nb_col());
     }
 
-    inline auto get_dense_rep() {
+    inline Matrix_t get_dense_feature_matrix() {
       auto nb_centers{this->get_nb_item()};
       auto nb_features{this->get_nb_comp()};
-      Eigen::Map<const Eigen::MatrixXd> representation(this->values.data(),
-                                                       nb_features, nb_centers);
-      return representation;
+      Matrix_t features(nb_centers, nb_features);
+      this->fill_dense_feature_matrix(features);
+      return features;
     }
 
    protected:

@@ -178,7 +178,7 @@ namespace rascal {
 
     /* -------------------- rep-construc-start -------------------- */
     //! Constructor
-    CalculatorSortedCoulomb(const Hypers_t & hyper) {
+    explicit CalculatorSortedCoulomb(const Hypers_t & hyper) {
       this->set_default_prefix("sorted_coulomb_");
       this->check_hyperparameters(this->reference_hypers, hyper);
       // Extract the options and hyperparameters

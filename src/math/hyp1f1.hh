@@ -119,19 +119,25 @@ namespace rascal {
           }
         }
       }
-      //! Computes G(a,b,z)
+      /**
+       * Computes G(a,b,z)
+       * @param z -> pow(alpha * r_ij, 2) / (alpha + beta)
+       * @param z2 -> argument of exp(-alpha*r_ij^2)
+       * @param ez2 -> exp(-alpha*r_ij^2)
+       *
+       *  !Warning! the derivative outputed from this function is not dG/dz
+       * but d1F1/dz * \frac{\Gamma(a)}{\Gamma(b)} * \exp{-\alpha r_{ij}^2}.
+       * We do this to avoid computing both d1F1/dz and 1F1 when asking for
+       * gradients and perform this step in Hyp1f1SphericalExpansion.
+       */
       inline double calc(const double & z, const double & z2,
                          const double & ez2, const bool & derivative = false,
                          const int & n_terms = -1) {
-        // z -> pow(alpha * r_ij, 2) / (alpha + beta)
-        // z2 ->argument of exp(-alpha*r_ij^2)
         using math::pow;
         double result{0.};
         if (not this->is_exp) {
           result = this->prefac * this->calc(z, derivative, n_terms) * ez2;
         } else {
-          // simplification of the argument with exp(-alpha*r_ij^2)
-          // double z2{-alpha * beta * pow(r_ij, 2) / (alpha + beta)};
           result = this->prefac * std::exp(z + z2);
         }
         return result;
@@ -274,12 +280,21 @@ namespace rascal {
         }
       }
 
-      //! Computes G(a,b,z)
+      /**
+       * Computes G(a,b,z)
+       * @param z -> pow(alpha * r_ij, 2) / (alpha + beta)
+       * @param z2 -> argument of exp(-alpha*r_ij^2)
+       * @param ez2 -> exp(-alpha*r_ij^2)
+       *
+       *  !Warning! the derivative outputed from this function is not dG/dz
+       * but d1F1/dz * \frac{\Gamma(a)}{\Gamma(b)} * \exp{-\alpha r_{ij}^2}.
+       * We do this to avoid computing both d1F1/dz and 1F1 when asking for
+       * gradients and perform this step in Hyp1f1SphericalExpansion.
+       */
       inline double calc(const double & z, const double & z2,
                          const bool & derivative = false,
                          const int & n_terms = -1) {
         using math::pow;
-        // z2 -> argument of exp(-alpha*r_ij^2)
         double result{0.};
         if (not this->is_exp) {
           auto fac{this->z_power_a_b(z)};
@@ -488,7 +503,17 @@ namespace rascal {
         }
       }
 
-      //! Compute G(a,b,z)
+      /**
+       * Computes G(a,b,z)
+       * @param z -> pow(alpha * r_ij, 2) / (alpha + beta)
+       * @param z2 -> argument of exp(-alpha*r_ij^2)
+       * @param ez2 -> exp(-alpha*r_ij^2)
+       *
+       *  !Warning! the derivative outputed from this function is not dG/dz
+       * but d1F1/dz * \frac{\Gamma(a)}{\Gamma(b)} * \exp{-\alpha r_{ij}^2}.
+       * We do this to avoid computing both d1F1/dz and 1F1 when asking for
+       * gradients and perform this step in Hyp1f1SphericalExpansion.
+       */
       inline double calc(const double & z, const double & z2,
                          const double & ez2, const bool & derivative = false) {
         if (z > this->z_asympt) {
@@ -516,7 +541,8 @@ namespace rascal {
     class Hyp1f1SphericalExpansion {
      protected:
       using Matrix_Ref = typename Eigen::Ref<const Matrix_t>;
-      using Vector_Ref = typename Eigen::Ref<const Eigen::VectorXd>;
+      using Vector_t = Eigen::VectorXd;
+      using Vector_Ref = typename Eigen::Ref<const Vector_t>;
 
       size_t max_angular{0}, max_radial{0};
       std::vector<Hyp1f1> hyp1f1{};
@@ -526,6 +552,8 @@ namespace rascal {
       double tolerance;
       size_t precomputation_size;
       bool recursion;
+      Eigen::ArrayXd z{};
+      Eigen::ArrayXd dz_dr{};
 
       inline int get_pos(const int & n_radial, const int & l_angular) {
         return l_angular + (this->max_angular + 1) * n_radial;
@@ -550,23 +578,14 @@ namespace rascal {
         this->max_radial = max_radial;
         this->values.resize(max_radial, max_angular + 1);
         this->derivatives.resize(max_radial, max_angular + 1);
-        if (not this->recursion) {
-          for (size_t n_radial{0}; n_radial < max_radial; n_radial++) {
-            for (size_t l_angular{0}; l_angular < max_angular + 1;
-                 l_angular++) {
-              auto a{this->get_a(n_radial, l_angular)};
-              auto b{this->get_b(l_angular)};
-              hyp1f1.emplace_back(a, b, precomputation_size, tolerance);
-            }
-          }
-        } else {
-          for (size_t n_radial{0}; n_radial < max_radial; n_radial++) {
-            for (size_t l_angular{0}; l_angular < max_angular + 1;
-                 l_angular++) {
-              auto a{this->get_a(n_radial, l_angular)};
-              auto b{this->get_b(l_angular)};
-              hyp1f1.emplace_back(a, b, precomputation_size, tolerance);
-            }
+        this->z.resize(max_radial);
+        this->dz_dr.resize(max_radial);
+
+        for (size_t n_radial{0}; n_radial < max_radial; n_radial++) {
+          for (size_t l_angular{0}; l_angular < max_angular + 1; l_angular++) {
+            auto a{this->get_a(n_radial, l_angular)};
+            auto b{this->get_b(l_angular)};
+            hyp1f1.emplace_back(a, b, precomputation_size, tolerance);
           }
         }
       }
@@ -589,7 +608,7 @@ namespace rascal {
         return this->hyp1f1[ipos].calc(z, z2, ez2);
       }
 
-      //! the work horse that computes 1F1 for all possible n, l values
+      //! the work horse that computes G for all possible n, l values
       inline void calc(const double & r_ij, const double & alpha,
                        const Vector_Ref & fac_b,
                        const bool & derivative = false) {
@@ -601,21 +620,26 @@ namespace rascal {
         }
       }
 
-      //! computes G using recursion relations
-      //! (derivative are always computed)
+      /**
+       *  Computes G and dG/dz*dz/dr using recursion relations with
+       *  z = (alpha * r_ij)**2 / (alpha + fac_b)
+       */
       inline void calc_recursion(const double & r_ij, const double & alpha,
                                  const Vector_Ref & fac_b) {
         double M1p2p{0.}, M2p3p{0.}, MP1p2p{0.}, MP2p3p{0.}, M1p1p{0.}, Moo{0.},
             MP1p1p{0.}, MPoo{0.};
 
-        double alpha_rij_2{alpha * r_ij};
-        double z2{-r_ij * alpha_rij_2};
+        double alpha_rij{alpha * r_ij};
+        double z2{-r_ij * alpha_rij};
         double ez2{std::exp(z2)};
-        alpha_rij_2 *= alpha_rij_2;
+        this->z = (alpha_rij * alpha) * (alpha + fac_b.array()).inverse();
+        this->dz_dr = this->z;
+        this->z *= r_ij;
+        this->dz_dr *= 2;
+
         for (size_t n_radial{0}; n_radial < this->max_radial; ++n_radial) {
           // get the starting points for the recursion
-          double z{alpha_rij_2 / (alpha + fac_b(n_radial))};
-
+          auto & z{this->z(n_radial)};
           int l_angular{static_cast<int>(this->max_angular)};
           int ipos{this->get_pos(n_radial, l_angular)};
           M1p2p = this->hyp1f1[ipos].calc(z, z2, ez2);
@@ -657,7 +681,11 @@ namespace rascal {
             this->values(n_radial, 0) = Moo;
             this->derivatives(n_radial, 0) = M1p1p;
           }
+
+          this->derivatives.row(n_radial) *= this->dz_dr(n_radial);
         }
+        // here is where dG/dz*dz/dr is computed
+        this->derivatives -= (2 * alpha_rij) * this->values;
       }
 
       //! computes G by direct evaluation
@@ -666,28 +694,35 @@ namespace rascal {
                               const bool & derivative) {
         // computes some intermediates that accelerate calculations further
         // down
-        double alpha_rij_2{alpha * r_ij};
-        double z2{-r_ij * alpha_rij_2};
+        double alpha_rij{alpha * r_ij};
+        double z2{-r_ij * alpha_rij};
         double ez2{std::exp(z2)};
-        alpha_rij_2 *= alpha_rij_2;
+        this->z = (alpha_rij * alpha) * (alpha + fac_b.array()).inverse();
+        this->dz_dr = this->z;
+        this->z *= r_ij;
+        this->dz_dr *= 2;
 
         for (size_t n_radial{0}; n_radial < this->max_radial; n_radial++) {
-          double z{alpha_rij_2 / (alpha + fac_b(n_radial))};
+          auto & z{this->z(n_radial)};
           for (size_t l_angular{0}; l_angular < this->max_angular + 1;
                l_angular++) {
             int ipos{this->get_pos(n_radial, l_angular)};
             this->values(n_radial, l_angular) =
                 this->hyp1f1[ipos].calc(z, z2, ez2);
           }
-
-          if (derivative) {
+        }
+        if (derivative) {
+          for (size_t n_radial{0}; n_radial < this->max_radial; n_radial++) {
+            auto & z{this->z(n_radial)};
             for (size_t l_angular{0}; l_angular < this->max_angular + 1;
                  l_angular++) {
               int ipos{this->get_pos(n_radial, l_angular)};
               this->derivatives(n_radial, l_angular) =
                   this->hyp1f1[ipos].calc(z, z2, ez2, true);
             }
+            this->derivatives.row(n_radial) *= this->dz_dr(n_radial);
           }
+          this->derivatives -= (2 * alpha * r_ij) * this->values;
         }
       }
 

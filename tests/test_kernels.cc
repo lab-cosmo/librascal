@@ -88,7 +88,6 @@ namespace rascal {
     for (auto & collection : collections) {
       for (auto & representation : representations) {
         for (auto & kernel : kernels) {
-
           auto mat = kernel.compute(representation, collection, collection);
 
           if (Fix::verbose) {
@@ -97,7 +96,6 @@ namespace rascal {
           }
 
           if (kernel.target_type == internal::TargetType::Structure) {
-
             BOOST_CHECK_EQUAL(mat.size(),
                               collection.size() * collection.size());
 

@@ -8,7 +8,7 @@ import rascal
 import rascal.lib as lrl
 import numpy as np
 from ase.io import read
-from rascal.representations import SphericalInvariant
+from rascal.representations import SphericalInvariants
 from rascal.models import Kernel
 from rascal.utils import ostream_redirect
 
@@ -75,7 +75,7 @@ def dump_reference_json():
                                                 "cutoff_function_type":"Cosine",
                                                 "normalize": True,
                                                 "radial_basis":"GTO"}
-                                        soap = SphericalInvariant(**hypers)
+                                        soap = SphericalInvariants(**hypers)
                                         soap_vectors = soap.transform(frames)
                                         hypers_kernel = dict(name=kernel_name,
                                         target_type=target_type)

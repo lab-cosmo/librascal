@@ -1,8 +1,7 @@
 import numpy as np
 import json
 
-from ..neighbourlist.base import (NeighbourListFactory, StructureCollectionFactory)
-from ..neighbourlist import get_neighbourlist, convert_to_structure_list
+from ..neighbourlist import AtomsList
 from ..lib import RepresentationManager
 from .base import CalculatorFactory
 from ..utils import FactoryPool
@@ -90,29 +89,18 @@ class SortedCoulombMatrix(object):
 
             Object containing the representation
         """
-        structures = convert_to_structure_list(frames)
-        managers = StructureCollectionFactory(self.nl_options)
+        if not isinstance(frames, AtomsList):
+            frames = AtomsList(frames, self.nl_options)
 
-        try:
-            managers.add_structures(structures)
-        except:
-            print("Neighbourlist of structures failed. try one at a time.")
-            ii = 0
-            for structure, manager in zip(structures, managers):
-                try:
-                    manager.update(structure)
-                except:
-                    print("Neighbourlist of structure {} failed".format(ii))
-
-        self.size = self.get_size(managers)
+        self.size = self.get_size(frames.managers)
         self.update_hyperparameters(size=self.size)
         hypers_str = json.dumps(self.hypers)
         self.rep_options = dict(name=self.name, args=[hypers_str])
         self._representation = CalculatorFactory(self.rep_options)
 
-        self._representation.compute(managers)
+        self._representation.compute(frames.managers)
 
-        return managers
+        return frames
 
 
     def get_Nfeature(self):
