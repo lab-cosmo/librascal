@@ -916,8 +916,8 @@ namespace rascal {
      * you will get an error about not finding the function to call
      * because of SFINAE.
      */
-    template <typename T = ManagerImplementation,
-              std::enable_if_t<Order == 2, int> = 0>
+    template <size_t T = Order,
+              std::enable_if_t<T == 2, int> = 0>
     inline auto get_atom_j() {
       auto && manager = it.get_manager();
       auto && atom_j_tag = this->get_internal_neighbour_atom_tag();
