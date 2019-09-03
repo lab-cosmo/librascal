@@ -156,22 +156,12 @@ namespace rascal {
 
       for (auto atom : adaptor) {
         auto ctag = atom.get_atom_tag();
-        for (auto pair : atom) {
-          auto atom_ii = pair.get_atom_ii();
-          auto atom_ii_tag = atom_ii.get_atom_tag_list();
+        auto atom_ii = atom.get_atom_ii();
+        auto atom_ii_tag = atom_ii.get_atom_tag_list();
 
-          if (verbose) {
-            std::cout << "Center: " << ctag
-                      << " neigh: " << atom_ii_tag[0] << ", " << atom_ii_tag[1]
-                      << std::endl;
-          }
-
-          BOOST_CHECK_EQUAL(ctag, atom_ii_tag[0]);
-          BOOST_CHECK_EQUAL(ctag, atom_ii_tag[1]);
-        }
+        BOOST_CHECK_EQUAL(ctag, atom_ii_tag[0]);
+        BOOST_CHECK_EQUAL(ctag, atom_ii_tag[1]);
       }
-
-
     }
   }
 
@@ -269,8 +259,9 @@ namespace rascal {
 
       i_center = 0;
       for (auto atom : adaptor) {
+        auto ii_pair = atom.get_atom_ii();
+        BOOST_CHECK_EQUAL(ref_1[i_center], prop[ii_pair]);
         for (auto pair : atom) {
-          auto ii_pair = pair.get_atom_ii();
           BOOST_CHECK_EQUAL(ref_1[i_center], prop[ii_pair]);
 
           auto && atom_j_tag = pair.back();

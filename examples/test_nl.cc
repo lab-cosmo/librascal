@@ -145,13 +145,14 @@ int main() {
   for (auto center : manager) {
     auto ctag = center.get_atom_tag();
     std::cout << "Center: " << ctag << std::endl;
-    for(auto neigh : center.with_self_pair()) {
-    // for(auto neigh : center) {
+    auto atom_ii = center.get_atom_ii();
+    auto atom_ii_tag = atom_ii.get_atom_tag_list();
+    auto atom_ii_ids = atom_ii.get_cluster_indices();
+
+    for(auto neigh : center) {
       auto tag_list = neigh.get_atom_tag_list();
       auto dist = manager->get_distance(neigh);
-      auto atom_ii = neigh.get_atom_ii();
-      auto atom_ii_tag = atom_ii.get_atom_tag_list();
-      auto atom_ii_ids = atom_ii.get_cluster_indices();
+
       auto atom_j = neigh.get_atom_j();
       auto atom_j_tag = atom_j.get_atom_tag_list();
       auto atom_j_ids = atom_j.get_cluster_indices();

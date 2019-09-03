@@ -28,6 +28,7 @@
 #include "structure_managers/structure_manager_centers.hh"
 #include "structure_managers/adaptor_strict.hh"
 #include "structure_managers/adaptor_neighbour_list.hh"
+#include "structure_managers/adaptor_center_contribution.hh"
 #include "structure_managers/make_structure_manager.hh"
 #include "rascal_utility.hh"
 #include "representations/calculator_sorted_coulomb.hh"
@@ -48,7 +49,7 @@
 using namespace rascal;  // NOLINT
 
 using Representation_t = CalculatorSphericalInvariants;
-using Manager_t = AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>;
+using Manager_t = AdaptorStrict<AdaptorCenterContribution<AdaptorNeighbourList<StructureManagerCenters>>>;
 using Prop_t = typename CalculatorSphericalInvariants::Property_t<Manager_t>;
 using PropDer_t =
     typename CalculatorSphericalInvariants::PropertyGradient_t<Manager_t>;
@@ -84,13 +85,17 @@ int main(int argc, char * argv[]) {
   json ad1{{"name", "AdaptorNeighbourList"},
            {"initialization_arguments",
             {{"cutoff", cutoff}, {"consider_ghost_neighbours", false}}}};
+  json ad1b{{"name", "AdaptorCenterContribution"},
+           {"initialization_arguments", {}}};
   json ad2{{"name", "AdaptorStrict"},
            {"initialization_arguments", {{"cutoff", cutoff}}}};
   adaptors.emplace_back(ad1);
+  adaptors.emplace_back(ad1b);
   adaptors.emplace_back(ad2);
   auto manager =
       make_structure_manager_stack<StructureManagerCenters,
-                                   AdaptorNeighbourList, AdaptorStrict>(
+                                   AdaptorNeighbourList, AdaptorCenterContribution,
+                                   AdaptorStrict>(
           structure, adaptors);
 
   Representation_t representation{hypers};
@@ -142,7 +147,8 @@ int main(int argc, char * argv[]) {
       std::cout << "\b\b) ";
     }
     std::cout << std::endl;
-    auto keys_grad_center = soap_vector_gradients[center].get_keys();
+    auto ii_pair = center.get_atom_ii();
+    auto keys_grad_center = soap_vector_gradients[ii_pair].get_keys();
     std::cout << "Center gradient keys: ";
     for (auto key : keys_grad_center) {
       std::cout << "(";
@@ -156,7 +162,7 @@ int main(int argc, char * argv[]) {
     // clang-format off
     // makes an absolute mess of the below
     std::cout << Eigen::Map<Eigen::MatrixXd>(
-           soap_vector_gradients.get_dense_row(center).data(),
+           soap_vector_gradients.get_dense_row(ii_pair).data(),
            3 * n_species_center,
            soap_vector_gradients.get_nb_comp())
       .transpose();

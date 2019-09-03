@@ -867,6 +867,8 @@ namespace rascal {
     using IndexArray_t = typename ThisParentClass::IndexArray;
 
     static constexpr bool HasCenterPairOrderOne{traits::HasCenterPair and Order == 1};
+
+    static constexpr bool HasCenterPairOrderTwo{traits::HasCenterPair and Order == 2};
     //! Default constructor
     ClusterRef() = delete;
 
@@ -933,7 +935,8 @@ namespace rascal {
     }
 
     /**
-     * Getter for a ClusterRefKey refering to the current ii pair.
+     * Getter for a ClusterRefKey refering to the ii-pair of the current
+     * i-atom.
      *
      * if you try to use this function and HasCenterPair == false then
      * you will get an error about not finding the function to call
@@ -941,19 +944,17 @@ namespace rascal {
      *
      * @return ClusterRefKey of order 2 and proper layer
      */
-    template <typename T = ManagerImplementation, std::enable_if_t<StructureManager_traits<T>::HasCenterPair, int> = 0>
+    template <bool T = HasCenterPairOrderOne, std::enable_if_t<T, int> = 0>
     inline auto get_atom_ii() {
-      auto && manager = it.get_manager();
-      auto && atom_i_tag = this->front();
-      auto && atom_i_index = manager.get_atom_index(atom_i_tag);
-      auto && atom_i_it = manager.get_iterator_at(atom_i_index, 0);
-      auto && atom_i = *atom_i_it;
-      auto && atom_ii_it = atom_i.with_self_pair().begin();
+      static_assert(traits::MaxOrder > 1, "Need neighbors to get one");
+
+      auto && atom_ii_it = this->with_self_pair().begin();
       constexpr static size_t ClusterLayer_{
           ManagerImplementation::template cluster_layer_from_order<2>()};
       auto atom_ii = static_cast<ClusterRefKey<2, ClusterLayer_>>(*atom_ii_it);
       return atom_ii;
     }
+
 
     /**
      * Getter for a ClusterRefKey refering to the current jj-pair associated
@@ -965,7 +966,7 @@ namespace rascal {
      *
      * @return ClusterRefKey of order 2 and proper layer
      */
-    template <typename T = ManagerImplementation, std::enable_if_t<StructureManager_traits<T>::HasCenterPair, int> = 0>
+    template <bool T = HasCenterPairOrderTwo, std::enable_if_t<T, int> = 0>
     inline auto get_atom_jj() {
       auto && manager = it.get_manager();
       auto && atom_j_tag = this->back();
@@ -1101,15 +1102,11 @@ namespace rascal {
     };
    public:
 
-    // inline CustomProxy<ManagerImplementation, Order> with_self_pair() {
-    //   std::array<size_t, Order> counters{this->it.get_counters()};
-    //   size_t offset{this->get_manager().get_offset(counters)};
-    //   size_t finish{this->size()};
-    //   size_t start{0};
-    //   return CustomProxy<ManagerImplementation, Order>(*this, start, offset, finish);
-    // }
-
-    // template <bool T = HasCenterPairOrderOne, std::enable_if_t<T, int> = 0>
+    /**
+     * Return an iterable for Order == 2 that includes the self pair if
+     * HasCenterPair == true. If HasCenterPair == false then its the
+     * regular iteration.
+     */
     inline CustomProxy<ManagerImplementation, Order> with_self_pair() {
       std::array<size_t, Order> counters{this->it.get_counters()};
       size_t offset{this->get_manager().get_offset(counters)};
