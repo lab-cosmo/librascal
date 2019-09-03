@@ -916,6 +916,8 @@ namespace rascal {
      * if you try to use this function and Order != 2 then
      * you will get an error about not finding the function to call
      * because of SFINAE.
+     *
+     * @return ClusterRefKey of order 1 and proper layer
      */
     template <size_t Order_ = Order,
               std::enable_if_t<Order_ == 2, int> = 0>
@@ -936,6 +938,8 @@ namespace rascal {
      * if you try to use this function and HasCenterPair == false then
      * you will get an error about not finding the function to call
      * because of SFINAE.
+     *
+     * @return ClusterRefKey of order 2 and proper layer
      */
     template <typename T = ManagerImplementation, std::enable_if_t<StructureManager_traits<T>::HasCenterPair, int> = 0>
     inline auto get_atom_ii() {
@@ -958,6 +962,8 @@ namespace rascal {
      * if you try to use this function and HasCenterPair == false then
      * you will get an error about not finding the function to call
      * because of SFINAE.
+     *
+     * @return ClusterRefKey of order 2 and proper layer
      */
     template <typename T = ManagerImplementation, std::enable_if_t<StructureManager_traits<T>::HasCenterPair, int> = 0>
     inline auto get_atom_jj() {
