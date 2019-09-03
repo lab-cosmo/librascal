@@ -177,8 +177,42 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
+   * Test that the jj pair is properly built
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(get_atom_jj_test, Fix, multiple_fixtures,
+                                   Fix) {
+    auto && managers = Fix::managers;
+    bool verbose{false};
+    for (auto & manager: managers) {
+      auto adaptor{
+            make_adapted_manager<AdaptorCenterContribution>(manager)};
+      adaptor->update();
+
+      for (auto atom : adaptor) {
+
+        for (auto pair : atom) {
+          auto atom_j = pair.get_atom_j();
+          auto ctag = atom_j.get_atom_tag();
+          auto atom_jj = pair.get_atom_jj();
+          auto atom_jj_tag = atom_jj.get_atom_tag_list();
+
+          if (verbose) {
+            std::cout << "Center j: " << ctag
+                      << " neigh: " << atom_jj_tag[0] << ", " << atom_jj_tag[1]
+                      << std::endl;
+          }
+
+          BOOST_CHECK_EQUAL(ctag, atom_jj_tag[0]);
+          BOOST_CHECK_EQUAL(ctag, atom_jj_tag[1]);
+        }
+      }
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /**
    * Test that a property is filled and accessed properly when using
-   * with_self_pair()
+   * with_self_pair() and get_atom_ii() and get_atom_jj()
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_ii_property_test, Fix, multiple_fixtures,
                                    Fix) {
@@ -222,7 +256,30 @@ namespace rascal {
         ++i_center;
       }
 
+      // test get_atom_ii and get_atom_jj
+      std::vector<int> ref_1{};
+      i_center = 0;
+      for (auto atom : adaptor) {
+        ref_1.push_back(i_center);
+        for (auto pair : atom.with_self_pair()) {
+          prop[pair] = i_center;
+        }
+        ++i_center;
+      }
 
+      i_center = 0;
+      for (auto atom : adaptor) {
+        for (auto pair : atom) {
+          auto ii_pair = pair.get_atom_ii();
+          BOOST_CHECK_EQUAL(ref_1[i_center], prop[ii_pair]);
+
+          auto && atom_j_tag = pair.back();
+          auto && atom_j_index = adaptor->get_atom_index(atom_j_tag);
+          auto jj_pair = pair.get_atom_jj();
+          BOOST_CHECK_EQUAL(ref_1[atom_j_index], prop[jj_pair]);
+        }
+        ++i_center;
+      }
     }
   }
 
