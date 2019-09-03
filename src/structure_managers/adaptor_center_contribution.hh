@@ -54,20 +54,22 @@ namespace rascal {
     constexpr static int Dim{parent_traits::Dim};
     constexpr static int StackLevel{parent_traits::StackLevel + 1};
     constexpr static size_t MaxOrder{parent_traits::MaxOrder};
-    // TODO explain
+    // Reset the Layer for the pair since the underlying iteration pool is
+    // increased in size so all the data belongs to the adaptor
     using LayerByOrder = std::index_sequence<ManagerImplementation::template cluster_layer_from_order<1>() + 1, 0>;
   };
 
   /**
-   * Adaptor that guarantees that only neighbours within the cutoff are
-   * present. A neighbor manager could include some wiggle room and list
-   * clusters with distances above the specified cutoff, this adaptor makes it
-   * possible to get a list with only the clusters that have distances strictly
-   * below the cutoff. This is also useful to extract managers with different
-   * levels of truncation from a single, loose manager.
+   * Adaptor that adds the centeral atom to the iteration over pairs and the
+   * use of the get_atom_ii(). The ii-pair is added at the begining of
+   * every block of data associated to neighbors.
+   * The default iteration pattern does not include the ii-pair so use
+   * with_self_pair() to include it. The properties associated with this
+   * manager will have an entry for the ii-pair.
    *
-   * This interface should be implemented by all managers with the trait
-   * AdaptorTraits::Strict::yes
+   * It should be used on a linked cell neighbor list to avoid
+   * rebuilding the distance and direction vector arrays of the AdaptorStrict
+   * (or some sort of similar indirections).
    */
   template <class ManagerImplementation>
   class AdaptorCenterContribution
@@ -297,10 +299,6 @@ namespace rascal {
      * store the offsets from where the nb_neigh can be counted
      */
     std::array<std::vector<size_t>, traits::MaxOrder> offsets;
-
-    std::array<double, traits::Dim> self_dir_vec{0, 0, 0};
-
-   private:
   };
 
   /*--------------------------------------------------------------------------*/
@@ -363,7 +361,7 @@ namespace rascal {
 
       auto atom_tag = atom.get_atom_tag();
       AtomIndex_t self_atom_tag_list{atom_tag, atom_tag};
-     
+
       std::array<size_t, PairLayer + 1> self_indices_pair;
       self_indices_pair[PairLayer] = pair_counter;
       auto self_indices_pair_ = IndexConstArray(self_indices_pair.data());
