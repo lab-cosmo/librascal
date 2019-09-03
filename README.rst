@@ -120,9 +120,10 @@ required python packages required for rascal.
         - ase
         - ubjson
         - cpplint
-        - sphinx=1.8.
+        - sphinx=2.1.2
         - sphinx_rtd_theme
-        - breathe
+        - breathe=4.13.1
+        - pandoc
         - nbsphinx
         - jupyter
         - qml
@@ -208,6 +209,8 @@ helpful to customize the build options.
      cd build
      cmake -DENABLE_DOC=ON ..
      make doc
+
+   the index html file is located in ./docs/dox_html/index.html
 
 4. Helpers for Developers
 
