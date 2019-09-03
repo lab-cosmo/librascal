@@ -104,6 +104,31 @@ And the following libraries to build the documentation:
 Beware, Python3 is mandatory. The code won’t work with a Python version
 older than 3.
 
+Using the package manager of your choice this yaml script should install all
+required python packages required for rascal.
+
+.. code:: shell
+
+    name: librascal-env
+    dependencies:
+      - python=3.6 
+      - pip:
+        - numpy
+        - matplotlib
+        - scipy
+        - mpmath
+        - ase
+        - ubjson
+        - cpplint
+        - sphinx=1.8.
+        - sphinx_rtd_theme
+        - breathe
+        - nbsphinx
+        - jupyter
+        - qml
+        - autopep8
+        - pytest
+
 To configure and compile the code with the default options, on \*nix
 systems (Windows is not supported):
 
