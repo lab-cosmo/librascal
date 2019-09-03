@@ -93,7 +93,7 @@ namespace rascal {
         BOOST_CHECK_EQUAL(type, atom_types[index]);
         ++atom_counter;
 
-        for (auto pair : atom) {
+        for (auto pair : atom.with_self_pair()) {
           auto pair_offset{pair.get_global_index()};
           auto pair_type{pair.get_atom_type()};
           if (verbose) {
@@ -143,7 +143,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Test that
+   * Test that the ii pair is properly set
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(get_atom_ii_test, Fix, multiple_fixtures,
                                    Fix) {
@@ -169,6 +169,57 @@ namespace rascal {
           BOOST_CHECK_EQUAL(ctag, atom_ii_tag[0]);
           BOOST_CHECK_EQUAL(ctag, atom_ii_tag[1]);
         }
+      }
+
+
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Test that a property is filled and accessed properly when using
+   * with_self_pair()
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_ii_property_test, Fix, multiple_fixtures,
+                                   Fix) {
+    auto && managers = Fix::managers;
+    using Manager_t = typename Fix::Manager_t;
+    // bool verbose{false};
+    for (auto & manager: managers) {
+      auto adaptor{
+            make_adapted_manager<AdaptorCenterContribution>(manager)};
+      adaptor->update();
+      auto prop = Property<int, 2, 0, AdaptorCenterContribution<Manager_t>, 1, 1>(*adaptor);
+      prop.resize();
+      std::vector<std::vector<int>> ref{};
+      // std::make_shared<AdaptorCenterContribution<Manager_t>>(*)
+      for (auto atom : adaptor) {
+        int counter{0};
+        ref.emplace_back();
+        for (auto pair : atom.with_self_pair()) {
+          prop[pair] = counter;
+          ref.back().push_back(counter);
+          ++counter;
+        }
+      }
+      int i_center{0};
+      for (auto atom : adaptor) {
+        int counter{0};
+        for (auto pair : atom) {
+          BOOST_CHECK_EQUAL(ref[i_center][counter+1], prop[pair]);
+          ++counter;
+        }
+        ++i_center;
+      }
+
+      i_center = 0;
+      for (auto atom : adaptor) {
+        int counter{0};
+        for (auto pair : atom.with_self_pair()) {
+          BOOST_CHECK_EQUAL(ref[i_center][counter], prop[pair]);
+          ++counter;
+        }
+        ++i_center;
       }
 
 

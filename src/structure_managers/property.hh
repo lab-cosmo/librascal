@@ -218,7 +218,6 @@ namespace rascal {
       return reference(&value, this->get_nb_row(), this->get_nb_col());
     }
 
-   protected:
     std::string type_id{};
   };
 
