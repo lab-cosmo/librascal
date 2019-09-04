@@ -41,8 +41,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * test strict neighbourhood constructor, this is done here instead
-   * of in the Fixture, because of the default constructor is deleted.
+   * test adptor constructor
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_test, Fix, multiple_fixtures, Fix) {
     auto && managers = Fix::managers;
@@ -55,7 +54,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Update test
+   * test update
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(update_test, Fix, multiple_fixtures, Fix) {
     auto && managers = Fix::managers;
@@ -148,7 +147,6 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(get_atom_ii_test, Fix, multiple_fixtures,
                                    Fix) {
     auto && managers = Fix::managers;
-    bool verbose{false};
     for (auto & manager: managers) {
       auto adaptor{
             make_adapted_manager<AdaptorCenterContribution>(manager)};

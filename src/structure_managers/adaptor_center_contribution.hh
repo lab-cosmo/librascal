@@ -131,7 +131,7 @@ namespace rascal {
     void update(Args &&... arguments);
 
     //! returns the (strict) cutoff for the adaptor
-    inline const double & get_cutoff() const { return this->manager->get_cutoff(); }
+    inline double get_cutoff() const { return this->manager->get_cutoff(); }
 
     inline size_t get_nb_clusters(int order) const {
       return this->atom_tag_list[order - 1].size();

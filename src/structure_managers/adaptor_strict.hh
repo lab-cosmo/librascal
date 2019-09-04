@@ -106,9 +106,6 @@ namespace rascal {
      */
     AdaptorStrict(ImplementationPtr_t manager, double cutoff);
 
-    AdaptorStrict(ImplementationPtr_t manager, std::tuple<double> tp)
-        : AdaptorStrict(manager, std::get<0>(tp)) {}
-
     AdaptorStrict(ImplementationPtr_t manager, const Hypers_t & adaptor_hypers)
         : AdaptorStrict(manager,
                         adaptor_hypers.at("cutoff").template get<double>()) {}
@@ -136,7 +133,7 @@ namespace rascal {
     void update(Args &&... arguments);
 
     //! returns the (strict) cutoff for the adaptor
-    inline const double & get_cutoff() const { return this->cutoff; }
+    inline double get_cutoff() const { return this->cutoff; }
 
     inline size_t get_nb_clusters(int order) const {
       return this->atom_tag_list[order - 1].size();

@@ -52,7 +52,8 @@ namespace rascal {
   struct TestData {
     using ManagerTypeHolder_t =
         StructureManagerTypeHolder<StructureManagerCenters,
-                                   AdaptorNeighbourList, AdaptorStrict>;
+                                   AdaptorNeighbourList,
+                                   AdaptorCenterContribution, AdaptorStrict>;
     TestData() = default;
 
     void get_ref(const std::string & ref_filename) {
@@ -74,9 +75,12 @@ namespace rascal {
               {"initialization_arguments",
                {{"cutoff", cutoff},
                 {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+          json ad1b{{"name", "AdaptorCenterContribution"},
+                      {"initialization_arguments", {}}};
           json ad2{{"name", "AdaptorStrict"},
                    {"initialization_arguments", {{"cutoff", cutoff}}}};
           adaptors.emplace_back(ad1);
+          adaptors.emplace_back(ad1b);
           adaptors.emplace_back(ad2);
 
           parameters["structure"] = structure;
@@ -94,9 +98,11 @@ namespace rascal {
     json factory_args{};
   };
 
+
+
   struct MultipleStructureSphericalInvariants
-      : MultipleStructureManagerNLStrictFixture {
-    using Parent = MultipleStructureManagerNLStrictFixture;
+      : MultipleStructureManagerNLCCStrictFixture {
+    using Parent = MultipleStructureManagerNLCCStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalInvariants;
 
@@ -163,8 +169,8 @@ namespace rascal {
   };
 
   struct MultipleStructureSphericalCovariants
-      : MultipleStructureManagerNLStrictFixture {
-    using Parent = MultipleStructureManagerNLStrictFixture;
+      : MultipleStructureManagerNLCCStrictFixture {
+    using Parent = MultipleStructureManagerNLCCStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalCovariants;
 
@@ -242,8 +248,8 @@ namespace rascal {
   };
 
   struct MultipleStructureSphericalExpansion
-      : MultipleStructureManagerNLStrictFixture {
-    using Parent = MultipleStructureManagerNLStrictFixture;
+      : MultipleStructureManagerNLCCStrictFixture {
+    using Parent = MultipleStructureManagerNLCCStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalExpansion;
 
@@ -289,12 +295,13 @@ namespace rascal {
    *  functionality on a single structure, but using the rest of the testing
    *  machinery
    */
-  struct SimpleStructureManagerNLStrictFixture {
+  struct SimpleStructureManagerNLCCStrictFixture {
     using ManagerTypeHolder_t =
         StructureManagerTypeHolder<StructureManagerCenters,
-                                   AdaptorNeighbourList, AdaptorStrict>;
+                                   AdaptorNeighbourList,
+                                   AdaptorCenterContribution, AdaptorStrict>;
 
-    SimpleStructureManagerNLStrictFixture() {
+    SimpleStructureManagerNLCCStrictFixture() {
       json parameters;
       json structure{{"filename", filename}};
       json adaptors;
@@ -303,9 +310,12 @@ namespace rascal {
                 {{"cutoff", cutoff},
                  {"skin", cutoff_skin},
                  {"consider_ghost_neighbours", false}}}};
+      json ad1b{{"name", "AdaptorCenterContribution"},
+                      {"initialization_arguments", {}}};
       json ad2{{"name", "AdaptorStrict"},
                {"initialization_arguments", {{"cutoff", cutoff}}}};
       adaptors.emplace_back(ad1);
+      adaptors.push_back(ad1b);
       adaptors.emplace_back(ad2);
 
       parameters["structure"] = structure;
@@ -314,7 +324,7 @@ namespace rascal {
       this->factory_args.emplace_back(parameters);
     }
 
-    ~SimpleStructureManagerNLStrictFixture() = default;
+    ~SimpleStructureManagerNLCCStrictFixture() = default;
 
     const std::string filename{
         "reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
@@ -325,8 +335,8 @@ namespace rascal {
   };
 
   struct MultipleHypersSphericalExpansion
-      : SimpleStructureManagerNLStrictFixture {
-    using Parent = SimpleStructureManagerNLStrictFixture;
+      : SimpleStructureManagerNLCCStrictFixture {
+    using Parent = SimpleStructureManagerNLCCStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalExpansion;
 
@@ -370,13 +380,14 @@ namespace rascal {
   /** Contains some simple periodic structures for testing complicated things
    *  like gradients
    */
-  struct SimplePeriodicNLStrictFixture {
+  struct SimplePeriodicNLCCStrictFixture {
     using ManagerTypeHolder_t =
         StructureManagerTypeHolder<StructureManagerCenters,
-                                   AdaptorNeighbourList, AdaptorStrict>;
+                                   AdaptorNeighbourList,
+                                   AdaptorCenterContribution, AdaptorStrict>;
     using Structure_t = AtomicStructure<3>;
 
-    SimplePeriodicNLStrictFixture() {
+    SimplePeriodicNLCCStrictFixture() {
       for (auto && filename : filenames) {
         json parameters;
         json structure{{"filename", filename}};
@@ -386,9 +397,12 @@ namespace rascal {
                   {{"cutoff", cutoff},
                    {"skin", cutoff_skin},
                    {"consider_ghost_neighbours", false}}}};
+        json ad1b{{"name", "AdaptorCenterContribution"},
+                      {"initialization_arguments", {}}};
         json ad2{{"name", "AdaptorStrict"},
                  {"initialization_arguments", {{"cutoff", cutoff}}}};
         adaptors.emplace_back(ad1);
+        adaptors.push_back(ad1b);
         adaptors.emplace_back(ad2);
 
         parameters["structure"] = structure;
@@ -398,7 +412,7 @@ namespace rascal {
       }
     }
 
-    ~SimplePeriodicNLStrictFixture() = default;
+    ~SimplePeriodicNLCCStrictFixture() = default;
 
     const std::vector<std::string> filenames{
         "reference_data/diamond_2atom.json",
@@ -414,8 +428,8 @@ namespace rascal {
     std::vector<Structure_t> structures{};
   };
 
-  struct SingleHypersSphericalRepresentation : SimplePeriodicNLStrictFixture {
-    using Parent = SimplePeriodicNLStrictFixture;
+  struct SingleHypersSphericalRepresentation : SimplePeriodicNLCCStrictFixture {
+    using Parent = SimplePeriodicNLCCStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalExpansion;
 
@@ -569,9 +583,9 @@ namespace rascal {
       auto && gradients_sparse{
           structure_manager->template get_property_ref<PropGrad_t>(
               representation.get_gradient_name())};
-
-      auto & data_center{data_sparse[center]};
-      auto keys_center = gradients_sparse.get_keys(center);
+      auto ii_pair = center.get_atom_ii();
+      auto & data_center{data_sparse[ii_pair]};
+      auto keys_center = gradients_sparse.get_keys(ii_pair);
       Key_t center_key{center.get_atom_type()};
       size_t n_entries_per_key{static_cast<size_t>(data_sparse.get_nb_comp())};
       size_t n_entries_center{n_entries_per_key * keys_center.size()};
@@ -630,8 +644,8 @@ namespace rascal {
       auto && gradients_sparse{
           structure_manager->template get_property_ref<PropGrad_t>(
               representation.get_gradient_name())};
-
-      auto & gradients_center{gradients_sparse[center]};
+      auto ii_pair = center.get_atom_ii();
+      auto & gradients_center{gradients_sparse[ii_pair]};
       auto keys_center = gradients_center.get_keys();
       size_t n_entries_per_key{static_cast<size_t>(data_sparse.get_nb_comp())};
       size_t n_entries_center{n_entries_per_key * keys_center.size()};
@@ -794,18 +808,49 @@ namespace rascal {
          {"sorting_algorithm", "row_norm"}}};
   };
 
-  struct SortedCoulombTestData : TestData {
-    using Parent = TestData;
-    using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
+  struct SortedCoulombTestData  {
+    using ManagerTypeHolder_t = StructureManagerTypeHolder<StructureManagerCenters,
+                                   AdaptorNeighbourList,  AdaptorStrict>;
     using Representation_t = CalculatorSortedCoulomb;
-    SortedCoulombTestData() : Parent{} { this->get_ref(this->ref_filename); }
+    SortedCoulombTestData() { this->get_ref(this->ref_filename); }
     ~SortedCoulombTestData() = default;
 
-    // name of the file containing the reference data. it has been generated
-    // with the following python code:
-    // script/generate_sorted_coulomb_ref_data.py
+    void get_ref(const std::string & ref_filename) {
+      std::vector<std::uint8_t> ref_data_ubjson;
+      internal::read_binary_file(ref_filename, ref_data_ubjson);
+      this->ref_data = json::from_ubjson(ref_data_ubjson);
+      auto filenames =
+          this->ref_data.at("filenames").get<std::vector<std::string>>();
+      auto cutoffs = this->ref_data.at("cutoffs").get<std::vector<double>>();
+
+      for (auto && filename : filenames) {
+        for (auto && cutoff : cutoffs) {
+          // std::cout << filename << " " << cutoff << std::endl;
+          json parameters;
+          json structure{{"filename", filename}};
+          json adaptors;
+          json ad1{
+              {"name", "AdaptorNeighbourList"},
+              {"initialization_arguments",
+               {{"cutoff", cutoff},
+                {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+          json ad2{{"name", "AdaptorStrict"},
+                   {"initialization_arguments", {{"cutoff", cutoff}}}};
+          adaptors.emplace_back(ad1);
+          adaptors.emplace_back(ad2);
+
+          parameters["structure"] = structure;
+          parameters["adaptors"] = adaptors;
+
+          this->factory_args.emplace_back(parameters);
+        }
+      }
+    }
 
     const bool consider_ghost_neighbours{false};
+    json ref_data{};
+    json factory_args{};
+
     std::string ref_filename{"reference_data/sorted_coulomb_reference.ubjson"};
     bool verbose{true};
   };

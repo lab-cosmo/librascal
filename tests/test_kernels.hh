@@ -87,7 +87,8 @@ namespace rascal {
   struct DataSphericalInvariantsKernelFixture {
     using ManagerTypeHolder_t =
         StructureManagerTypeHolder<StructureManagerCenters,
-                                   AdaptorNeighbourList, AdaptorStrict>;
+                                   AdaptorNeighbourList,
+                                   AdaptorCenterContribution, AdaptorStrict>;
     using Representation_t = CalculatorSphericalInvariants;
 
     DataSphericalInvariantsKernelFixture() {
@@ -107,9 +108,12 @@ namespace rascal {
                  {"initialization_arguments",
                   {{"cutoff", cutoff},
                    {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+        json ad1b{{"name", "AdaptorCenterContribution"},
+                      {"initialization_arguments", {}}};
         json ad2{{"name", "AdaptorStrict"},
                  {"initialization_arguments", {{"cutoff", cutoff}}}};
         adaptors.emplace_back(ad1);
+        adaptors.emplace_back(ad1b);
         adaptors.emplace_back(ad2);
 
         parameters["structure"] = structure;

@@ -285,10 +285,11 @@ namespace rascal {
     }
   }
 
+  // using simple_periodic_fixtures = boost::mpl::list<
+  //     CalculatorFixture<SingleHypersSphericalRepresentation>,   // expension
+  //     CalculatorFixture<SingleHypersSphericalRepresentation>>;  // invariants
   using simple_periodic_fixtures = boost::mpl::list<
-      CalculatorFixture<SingleHypersSphericalRepresentation>,   // expension
       CalculatorFixture<SingleHypersSphericalRepresentation>>;  // invariants
-
   /**
    * Test the gradient of the SphericalExpansion representation on a few simple
    * crystal structures (single- and multi-species, primitive and supercells)
