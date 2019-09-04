@@ -128,19 +128,23 @@ namespace rascal {
     bind_compute_function_helper<ManagerList_t>(rep_sorted_coulomb);
 
     /*-------------------- rep-bind-end --------------------*/
+    using ManagerList_1_t = typename
+        StructureManagerTypeHolder<StructureManagerCenters,
+                                   AdaptorNeighbourList, AdaptorCenterContribution,
+                                   AdaptorStrict>::type_list;
     using Calc2_t = CalculatorSphericalExpansion;
     auto rep_spherical_expansion =
         add_representation_calculator<Calc2_t>(mod, m_throwaway);
-    bind_compute_function_helper<ManagerList_t>(rep_spherical_expansion);
+    bind_compute_function_helper<ManagerList_1_t>(rep_spherical_expansion);
 
     using Calc3_t = CalculatorSphericalInvariants;
     auto rep_soap = add_representation_calculator<Calc3_t>(mod, m_throwaway);
-    bind_compute_function_helper<ManagerList_t>(rep_soap);
+    bind_compute_function_helper<ManagerList_1_t>(rep_soap);
 
     using Calc4_t = CalculatorSphericalCovariants;
     auto rep_lambda_soap =
         add_representation_calculator<Calc4_t>(mod, m_throwaway);
-    bind_compute_function_helper<ManagerList_t>(rep_lambda_soap);
+    bind_compute_function_helper<ManagerList_1_t>(rep_lambda_soap);
   }
 
 }  // namespace rascal

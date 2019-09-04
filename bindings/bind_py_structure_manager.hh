@@ -39,6 +39,7 @@
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/structure_manager_base.hh"
 #include "structure_managers/structure_manager_collection.hh"
+#include "structure_managers/adaptor_center_contribution.hh"
 
 #include "bind_include.hh"
 

@@ -207,6 +207,14 @@ namespace rascal {
     return manager;
   }
 
+  template <typename Manager_t>
+  decltype(auto) add_manager_safe(py::module & mod, const std::string& manager_name) {
+    using Parent = typename Manager_t::Parent;
+    py::class_<Manager_t, Parent, std::shared_ptr<Manager_t>> manager(
+        mod, manager_name.c_str());
+    return manager;
+  }
+
   /**
    * templated function for adding a StructureManager interface
    * to allow using the iteration over the manager in python, the interface
@@ -267,6 +275,8 @@ namespace rascal {
    * Binding utility for the construction of adaptors.
    * Uses partial specialization to define how to bind the constructor of each
    * adaptors.
+   *
+   * Register Adaptors here
    */
   template <template <class> class Adaptor, typename Implementation_t>
   struct BindAdaptor {};
@@ -290,6 +300,28 @@ namespace rascal {
                 manager, cutoff);
           },
           py::arg("manager"), py::arg("cutoff"), py::return_value_policy::copy);
+    }
+  };
+
+  template <typename Implementation_t>
+  struct BindAdaptor<AdaptorCenterContribution, Implementation_t> {
+    using Manager_t = AdaptorCenterContribution<Implementation_t>;
+    using ImplementationPtr_t = std::shared_ptr<Implementation_t>;
+    using PyManager_t = PyManager<Manager_t>;
+    static void bind_adaptor_init(PyManager_t & adaptor) {
+      adaptor.def(py::init<std::shared_ptr<Implementation_t>>(),
+                  py::keep_alive<1, 2>());
+    }
+
+    static void bind_adapted_manager_maker(const std::string & name,
+                                           py::module & m_adaptor) {
+      m_adaptor.def(
+          name.c_str(),
+          [](ImplementationPtr_t & manager) {
+            return make_adapted_manager<AdaptorCenterContribution, Implementation_t>(
+                manager);
+          },
+          py::arg("manager"), py::return_value_policy::copy);
     }
   };
 
@@ -461,6 +493,8 @@ namespace rascal {
 
     bind_feature_matrix_getter<CalculatorSortedCoulomb, ManagerCollection_t>(
         manager_collection);
+
+    // Register Calculator here
     bind_feature_matrix_getter<CalculatorSphericalExpansion,
                                ManagerCollection_t>(manager_collection);
     bind_feature_matrix_getter<CalculatorSphericalInvariants,
@@ -486,22 +520,26 @@ namespace rascal {
     using type = BindAdaptorStack<Manager_t, AdaptorImplementationPack...>;
 
     BindAdaptorStack(py::module & m_nl, py::module & m_adaptor,
-                     py::module & m_throwaway)
-        : next_stack{m_nl, m_adaptor, m_throwaway} {
-      add_structure_manager_interface<Manager_t>(m_throwaway);
+                     py::module & m_throwaway, std::set<std::string>& name_list)
+        : next_stack{m_nl, m_adaptor, m_throwaway, name_list} {
 
-      auto adaptor = add_manager<Manager_t>(m_adaptor);
-      BindAdaptor<AdaptorImplementation,
-                  ManagerImplementation>::bind_adaptor_init(adaptor);
-      // bind_update_empty<Manager_t>(adaptor);
-      bind_update_unpacked<Manager_t>(adaptor);
-      // bind clusterRefs so that one can loop over adaptor
-      // MaxOrder+1 because recursion stops at Val-1
-      add_iterators<Manager_t, 1, MaxOrder + 1>::static_for(m_throwaway,
-                                                            adaptor);
-      // bind the factory function
-      bind_make_adapted_manager<AdaptorImplementation, ManagerImplementation>(
-          m_nl);
+      std::string manager_name{internal::GetBindingTypeName<Manager_t>()};
+      if (not name_list.count(manager_name)) {
+        name_list.insert(manager_name);
+        add_structure_manager_interface<Manager_t>(m_throwaway);
+        auto adaptor = add_manager_safe<Manager_t>(m_adaptor, manager_name);
+        BindAdaptor<AdaptorImplementation,
+                    ManagerImplementation>::bind_adaptor_init(adaptor);
+        // bind_update_empty<Manager_t>(adaptor);
+        bind_update_unpacked<Manager_t>(adaptor);
+        // bind clusterRefs so that one can loop over adaptor
+        // MaxOrder+1 because recursion stops at Val-1
+        add_iterators<Manager_t, 1, MaxOrder + 1>::static_for(m_throwaway,
+                                                              adaptor);
+        // bind the factory function
+        bind_make_adapted_manager<AdaptorImplementation, ManagerImplementation>(
+            m_nl);
+      }
     }
 
     type next_stack;
@@ -518,21 +556,24 @@ namespace rascal {
     using ManagerPtr = std::shared_ptr<Manager_t>;
 
     BindAdaptorStack(py::module & m_nl, py::module & m_adaptor,
-                     py::module & m_throwaway) {
-      add_structure_manager_interface<Manager_t>(m_throwaway);
-
-      auto adaptor = add_manager<Manager_t>(m_adaptor);
-      BindAdaptor<AdaptorImplementation,
-                  ManagerImplementation>::bind_adaptor_init(adaptor);
-      bind_update_empty<Manager_t>(adaptor);
-      bind_update_unpacked<Manager_t>(adaptor);
-      // bind clusterRefs so that one can loop over adaptor
-      // MaxOrder+1 because recursion stops at Val-1
-      add_iterators<Manager_t, 1, MaxOrder + 1>::static_for(m_throwaway,
-                                                            adaptor);
-      // bind the factory function
-      bind_make_adapted_manager<AdaptorImplementation, ManagerImplementation>(
-          m_nl);
+                     py::module & m_throwaway, std::set<std::string>& name_list) {
+      std::string manager_name{internal::GetBindingTypeName<Manager_t>()};
+      if (not name_list.count(manager_name)) {
+        name_list.insert(manager_name);
+        add_structure_manager_interface<Manager_t>(m_throwaway);
+        auto adaptor = add_manager_safe<Manager_t>(m_adaptor, manager_name);
+        BindAdaptor<AdaptorImplementation,
+                    ManagerImplementation>::bind_adaptor_init(adaptor);
+        bind_update_empty<Manager_t>(adaptor);
+        bind_update_unpacked<Manager_t>(adaptor);
+        // bind clusterRefs so that one can loop over adaptor
+        // MaxOrder+1 because recursion stops at Val-1
+        add_iterators<Manager_t, 1, MaxOrder + 1>::static_for(m_throwaway,
+                                                              adaptor);
+        // bind the factory function
+        bind_make_adapted_manager<AdaptorImplementation, ManagerImplementation>(
+            m_nl);
+      }
     }
   };
 
@@ -633,13 +674,21 @@ namespace rascal {
 
     // bind the factory function
     bind_make_structure_manager<Manager_t>(m_nl);
-
+    std::set<std::string> name_list{};
     BindAdaptorStack<Manager_t, AdaptorNeighbourList, AdaptorStrict>
-        adaptor_stack_1{m_nl, m_adp, m_throwaway};
+        adaptor_stack_1{m_nl, m_adp, m_throwaway, name_list};
+
+    BindAdaptorStack<Manager_t, AdaptorNeighbourList, AdaptorCenterContribution, AdaptorStrict>
+        adaptor_stack_2{m_nl, m_adp, m_throwaway, name_list};
 
     // bind the manager collection
     bind_structure_manager_collection<Manager_t, AdaptorNeighbourList,
                                       AdaptorStrict>(m_nl);
+
+    bind_structure_manager_collection<Manager_t, AdaptorNeighbourList,
+                                      AdaptorCenterContribution,
+                                      AdaptorStrict>(m_nl);
+
     bind_atomic_structure(m_nl);
   }
 }  // namespace rascal

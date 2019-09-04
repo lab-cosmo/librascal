@@ -1,7 +1,8 @@
 from ..lib import NeighbourList
 import numpy as np
 
-_neighbourlist_list = ["centers", "neighbourlist",
+# Register Adaptors and StructureManagers
+_neighbourlist_list = ["centers", "neighbourlist", "centercontribution",
                        "strict", "maxorder", "halflist", "fulllist"]
 
 _neighbourlists = {}

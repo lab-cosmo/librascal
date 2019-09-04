@@ -108,6 +108,7 @@ class SphericalInvariants(object):
         self.nl_options = [
             dict(name='centers', args=[]),
             dict(name='neighbourlist', args=dict(cutoff=interaction_cutoff)),
+            dict(name="centercontribution", args=dict()),
             dict(name='strict', args=dict(cutoff=interaction_cutoff))
         ]
 
