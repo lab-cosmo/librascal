@@ -1,5 +1,9 @@
 
 
+import rascal.lib as lrl
+from rascal.representations import SphericalInvariants
+from rascal.utils import ostream_redirect
+import rascal
 from ase.io import read
 import numpy as np
 import argparse
@@ -7,10 +11,6 @@ import ase
 import json
 import sys
 sys.path.insert(0, '../build/')
-import rascal
-from rascal.utils import ostream_redirect
-from rascal.representations import SphericalInvariants
-import rascal.lib as lrl
 
 
 ############################################################################
@@ -78,16 +78,16 @@ def dump_reference_json():
                                 inversion_symmetry = True
 
                             hypers = {"interaction_cutoff": cutoff,
-                                    "cutoff_smooth_width": 0.5,
-                                    "max_radial": max_radial,
-                                    "max_angular": max_angular,
-                                    "gaussian_sigma_type": "Constant",
-                                    "normalize": True,
-                                    "cutoff_function_type": "Cosine",
-                                    "radial_basis": "GTO",
-                                    "gaussian_sigma_constant": gaussian_sigma,
-                                    "soap_type": soap_type,
-                                    "inversion_symmetry": inversion_symmetry, }
+                                      "cutoff_smooth_width": 0.5,
+                                      "max_radial": max_radial,
+                                      "max_angular": max_angular,
+                                      "gaussian_sigma_type": "Constant",
+                                      "normalize": True,
+                                      "cutoff_function_type": "Cosine",
+                                      "radial_basis": "GTO",
+                                      "gaussian_sigma_constant": gaussian_sigma,
+                                      "soap_type": soap_type,
+                                      "inversion_symmetry": inversion_symmetry, }
 
                             soap = SphericalInvariants(**hypers)
                             soap_vectors = soap.transform(frames)
@@ -97,9 +97,9 @@ def dump_reference_json():
                                 dict(feature_matrix=x.tolist(),
                                      hypers=copy(soap.hypers)))
 
-    with open(path+
-                "tests/reference_data/spherical_invariants_reference.ubjson",
-                'wb') as f:
+    with open(path +
+              "tests/reference_data/spherical_invariants_reference.ubjson",
+              'wb') as f:
         ubjson.dump(data, f)
 
 #############################################################################

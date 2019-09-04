@@ -37,8 +37,10 @@ class AtomsList(object):
 
     def __iter__(self):
         return self.managers
+
     def __getitem__(self, key):
         return self.managers[key]
+
     def get_dense_feature_matrix(self, calculator):
         return self.managers.get_dense_feature_matrix(calculator._representation)
 

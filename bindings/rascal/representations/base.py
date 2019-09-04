@@ -24,4 +24,3 @@ def CalculatorFactory(rep_options):
         raise NameError('The representations factory {} has not been registered. The available combinations are: {}'.format(
             name, list(_representations.keys())))
     return _representations[name](*rep_options['args'])
-

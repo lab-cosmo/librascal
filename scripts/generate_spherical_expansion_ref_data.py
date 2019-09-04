@@ -1,3 +1,7 @@
+import rascal.lib as lrl
+import rascal
+from rascal.utils import ostream_redirect
+from rascal.representations import SphericalExpansion
 import json
 import ase
 import argparse
@@ -6,10 +10,6 @@ from ase.io import read
 """Generate reference data for the librascal spherical expansion"""
 import sys
 sys.path.insert(0, '../build/')
-from rascal.representations import SphericalExpansion
-from rascal.utils import ostream_redirect
-import rascal
-import rascal.lib as lrl
 
 
 ###############################################################################
@@ -81,7 +81,8 @@ def dump_reference_json():
                                 # x = get_soap_vectors(hypers, frames)
                                 sph_expn = SphericalExpansion(**hypers)
                                 expansions = sph_expn.transform(frames)
-                                x = expansions.get_dense_feature_matrix(sph_expn)
+                                x = expansions.get_dense_feature_matrix(
+                                    sph_expn)
                                 x[np.abs(x) < 1e-300] = 0.
                                 data['rep_info'][-1].append(
                                     dict(feature_matrix=x.tolist(),

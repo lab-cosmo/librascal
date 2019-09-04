@@ -18,6 +18,7 @@ for k, v in NeighbourList.__dict__.items():
         name = k.lower().replace('managercollection_', '')
         _structure_collections[name] = v
 
+
 def NeighbourListFactory(nl_options):
     names = []
     args = []
@@ -39,6 +40,7 @@ def NeighbourListFactory(nl_options):
 
     return managers[-1]
 
+
 def StructureCollectionFactory(nl_options):
     import json
 
@@ -47,7 +49,8 @@ def StructureCollectionFactory(nl_options):
     for opt in nl_options:
         full_name.insert(0, opt['name'])
         name = '_'.join(full_name)
-        args.append(dict(name=opt['name'], initialization_arguments=opt['args']))
+        args.append(
+            dict(name=opt['name'], initialization_arguments=opt['args']))
 
     if name not in _structure_collections:
         raise NameError('The StructureCollection factory {} has not been registered. The available combinations are: {}'.format(
