@@ -107,7 +107,7 @@ older than 3.
 Using the package manager of your choice this yaml script should install all
 required python packages required for rascal.
 
-.. code:: shell
+.. code:: yaml
 
     name: librascal-env
     dependencies:
@@ -210,7 +210,10 @@ helpful to customize the build options.
      cmake -DENABLE_DOC=ON ..
      make doc
 
-   the index html file is located in ./docs/dox_html/index.html
+   and open :file:`build/docs/html/intro.html` in a browser.  The
+   Doxygen html build is still available under
+   :file:`build/docs/dox_html/index.html` but it is being phased out in favour
+   of Sphinx/breathe.
 
 4. Helpers for Developers
 
