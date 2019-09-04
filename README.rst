@@ -105,11 +105,11 @@ Beware, Python3 is mandatory. The code won’t work with a Python version
 older than 3.
 
 Using the package manager of your choice this yaml script should install all
-required python packages required for rascal.
+required python packages required for the usage and development of rascal.
 
 .. code:: yaml
 
-    name: librascal-env
+    name: librascal-dev-env
     dependencies:
       - python=3.6 
       - pip:
@@ -123,7 +123,6 @@ required python packages required for rascal.
         - sphinx=2.1.2
         - sphinx_rtd_theme
         - breathe=4.13.1
-        - pandoc
         - nbsphinx
         - jupyter
         - qml
