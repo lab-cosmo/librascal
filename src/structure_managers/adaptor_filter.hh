@@ -180,8 +180,6 @@ namespace rascal {
 
     virtual void perform_filtering() = 0;
 
-
-
     /**
      * return the number of 'neighbours' (i.e., number of pairs for an atom,
      * number of triplets for a pair, etc) of a given order.
@@ -207,7 +205,7 @@ namespace rascal {
       return this->manager->get_size_with_ghosts();
     }
 
-     //! returns the distance between atoms in a given pair
+    //! returns the distance between atoms in a given pair
     template <size_t Order, size_t Layer,
               bool DummyHasDistances = traits::HasDistances>
     inline const std::enable_if_t<DummyHasDistances, double> &
@@ -216,7 +214,7 @@ namespace rascal {
                     "SFINAE, do not specify");
       return this->manager->get_distance(pair);
     }
-    
+
     /**
      * return pair distance
      */

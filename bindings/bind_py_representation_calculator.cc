@@ -128,10 +128,9 @@ namespace rascal {
     bind_compute_function_helper<ManagerList_t>(rep_sorted_coulomb);
 
     /*-------------------- rep-bind-end --------------------*/
-    using ManagerList_1_t = typename
-        StructureManagerTypeHolder<StructureManagerCenters,
-                                   AdaptorNeighbourList, AdaptorCenterContribution,
-                                   AdaptorStrict>::type_list;
+    using ManagerList_1_t = typename StructureManagerTypeHolder<
+        StructureManagerCenters, AdaptorNeighbourList,
+        AdaptorCenterContribution, AdaptorStrict>::type_list;
     using Calc2_t = CalculatorSphericalExpansion;
     auto rep_spherical_expansion =
         add_representation_calculator<Calc2_t>(mod, m_throwaway);

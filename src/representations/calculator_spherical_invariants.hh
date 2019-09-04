@@ -427,11 +427,11 @@ namespace rascal {
     }
   }
 
-  template <internal::SphericalInvariantsType BodyOrder,
-            std::enable_if_t<
-                BodyOrder == internal::SphericalInvariantsType::PowerSpectrum,
-                int>,
-            class StructureManager>
+  template <
+      internal::SphericalInvariantsType BodyOrder,
+      std::enable_if_t<
+          BodyOrder == internal::SphericalInvariantsType::PowerSpectrum, int>,
+      class StructureManager>
   void CalculatorSphericalInvariants::compute_impl(
       std::shared_ptr<StructureManager> manager) {
     using PropExp_t =
@@ -809,11 +809,11 @@ namespace rascal {
     }          // for center : manager
   }            // compute_powerspectrum()
 
-  template <internal::SphericalInvariantsType BodyOrder,
-            std::enable_if_t<
-                BodyOrder == internal::SphericalInvariantsType::RadialSpectrum,
-                int>,
-            class StructureManager>
+  template <
+      internal::SphericalInvariantsType BodyOrder,
+      std::enable_if_t<
+          BodyOrder == internal::SphericalInvariantsType::RadialSpectrum, int>,
+      class StructureManager>
   void CalculatorSphericalInvariants::compute_impl(
       std::shared_ptr<StructureManager> manager) {
     using PropExp_t =
@@ -1346,8 +1346,8 @@ namespace rascal {
       if (this->compute_gradients) {
         auto ii_pair = center.get_atom_ii();
         // The gradient wrt center is nonzero for all species pairs
-        soap_vector_gradients[ii_pair].resize(keys, n_spatial_dimensions * n_row,
-                                             n_col, 0);
+        soap_vector_gradients[ii_pair].resize(
+            keys, n_spatial_dimensions * n_row, n_col, 0);
         for (auto neigh : center) {
           soap_vector_gradients[neigh].resize(
               keys, n_spatial_dimensions * n_row, n_col, 0);

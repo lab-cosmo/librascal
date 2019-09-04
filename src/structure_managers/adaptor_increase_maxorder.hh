@@ -60,11 +60,11 @@ namespace rascal {
     constexpr static bool HasCenterPair{parent_traits::HasCenterPair};
     constexpr static int StackLevel{parent_traits::StackLevel + 1};
     // New MaxOrder upon construction
-    constexpr static size_t MaxOrder{parent_traits::MaxOrder +
-                                     1};
+    constexpr static size_t MaxOrder{parent_traits::MaxOrder + 1};
     // Extend the layer by one with the new MaxOrder
-    using LayerByOrder = typename LayerExtender<
-        MaxOrder, typename parent_traits::LayerByOrder>::type;
+    using LayerByOrder =
+        typename LayerExtender<MaxOrder,
+                               typename parent_traits::LayerByOrder>::type;
   };
 
   /* ---------------------------------------------------------------------- */

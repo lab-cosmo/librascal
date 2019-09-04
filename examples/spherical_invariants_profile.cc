@@ -93,7 +93,7 @@ int main(int argc, char * argv[]) {
              {"consider_ghost_neighbours", false},
              {"skin", 0.}}}};
   json ad1b{{"name", "AdaptorCenterContribution"},
-           {"initialization_arguments", {}}};
+            {"initialization_arguments", {}}};
   json ad2{{"name", "AdaptorStrict"},
            {"initialization_arguments", {{"cutoff", cutoff}}}};
   adaptors.emplace_back(ad1);
@@ -101,8 +101,8 @@ int main(int argc, char * argv[]) {
   adaptors.emplace_back(ad2);
   auto manager =
       make_structure_manager_stack<StructureManagerCenters,
-                                   AdaptorNeighbourList, AdaptorCenterContribution,
-                                   AdaptorStrict>(
+                                   AdaptorNeighbourList,
+                                   AdaptorCenterContribution, AdaptorStrict>(
           structure, adaptors);
 
   AtomicStructure<3> ast{};

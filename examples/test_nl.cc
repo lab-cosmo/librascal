@@ -49,10 +49,11 @@
 
 using namespace rascal;  // NOLINT
 
-// template <typename Manager, template <class> class... AdaptorImplementationPack>
-// struct Test {
+// template <typename Manager, template <class> class...
+// AdaptorImplementationPack> struct Test {
 //   using ManagerTypeHolder_t =
-//       StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList,
+//       StructureManagerTypeHolder<StructureManagerCenters,
+//       AdaptorNeighbourList,
 //                                  AdaptorStrict>;
 //   using ManagerTypeList_t = typename ManagerTypeHolder_t::type_list;
 //   void operator()() {
@@ -118,7 +119,7 @@ int main() {
              {"consider_ghost_neighbours", false},
              {"skin", 0.}}}};
   json ad1b{{"name", "AdaptorCenterContribution"},
-           {"initialization_arguments", {}}};
+            {"initialization_arguments", {}}};
   json ad2{{"name", "AdaptorStrict"},
            {"initialization_arguments", {{"cutoff", cutoff}}}};
   adaptors.emplace_back(ad1);
@@ -133,8 +134,8 @@ int main() {
 
   auto manager =
       make_structure_manager_stack<StructureManagerCenters,
-                                   AdaptorNeighbourList, AdaptorCenterContribution,
-                                   AdaptorStrict>(
+                                   AdaptorNeighbourList,
+                                   AdaptorCenterContribution, AdaptorStrict>(
           structure, adaptors);
   // auto manager =
   //     make_structure_manager_stack<StructureManagerCenters,
@@ -149,19 +150,24 @@ int main() {
     auto atom_ii_tag = atom_ii.get_atom_tag_list();
     auto atom_ii_ids = atom_ii.get_cluster_indices();
 
-    for(auto neigh : center) {
+    for (auto neigh : center) {
       auto tag_list = neigh.get_atom_tag_list();
       auto dist = manager->get_distance(neigh);
 
       auto atom_j = neigh.get_atom_j();
       auto atom_j_tag = atom_j.get_atom_tag_list();
       auto atom_j_ids = atom_j.get_cluster_indices();
-      std::cout << "neigh: " << tag_list[0] << ", " << tag_list[1] << ", " << dist << " tag_ii: " << atom_ii_tag[0] << ", " << atom_ii_tag[1] << ", " << atom_ii_ids[0] << " tag_j: " << atom_j_tag[0] << ", " << atom_j_ids[0] << std::endl;
+      std::cout << "neigh: " << tag_list[0] << ", " << tag_list[1] << ", "
+                << dist << " tag_ii: " << atom_ii_tag[0] << ", "
+                << atom_ii_tag[1] << ", " << atom_ii_ids[0]
+                << " tag_j: " << atom_j_tag[0] << ", " << atom_j_ids[0]
+                << std::endl;
     }
   }
 
   // // using Prop_t = typename
-  // // StructureManager<AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>::template
+  // //
+  // StructureManager<AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>::template
   // // Property_t<int, 1, 1>;
 
   // auto prop = Prop_t<int, 1>(*manager);

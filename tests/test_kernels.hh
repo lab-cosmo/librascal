@@ -109,7 +109,7 @@ namespace rascal {
                   {{"cutoff", cutoff},
                    {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
         json ad1b{{"name", "AdaptorCenterContribution"},
-                      {"initialization_arguments", {}}};
+                  {"initialization_arguments", {}}};
         json ad2{{"name", "AdaptorStrict"},
                  {"initialization_arguments", {{"cutoff", cutoff}}}};
         adaptors.emplace_back(ad1);

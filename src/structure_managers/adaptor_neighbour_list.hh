@@ -60,8 +60,7 @@ namespace rascal {
     constexpr static bool HasCenterPair{parent_traits::HasCenterPair};
     constexpr static int StackLevel{parent_traits::StackLevel + 1};
     // New MaxOrder upon construction, by construction should be 2
-    constexpr static size_t MaxOrder{parent_traits::MaxOrder +
-                                     1};
+    constexpr static size_t MaxOrder{parent_traits::MaxOrder + 1};
     // When using periodic boundary conditions, it is possible that atoms are
     // added upon construction of the neighbour list. Therefore the layering
     // sequence is reset: here is layer 0 again.

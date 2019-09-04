@@ -76,7 +76,7 @@ namespace rascal {
                {{"cutoff", cutoff},
                 {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
           json ad1b{{"name", "AdaptorCenterContribution"},
-                      {"initialization_arguments", {}}};
+                    {"initialization_arguments", {}}};
           json ad2{{"name", "AdaptorStrict"},
                    {"initialization_arguments", {{"cutoff", cutoff}}}};
           adaptors.emplace_back(ad1);
@@ -97,8 +97,6 @@ namespace rascal {
     json ref_data{};
     json factory_args{};
   };
-
-
 
   struct MultipleStructureSphericalInvariants
       : MultipleStructureManagerNLCCStrictFixture {
@@ -311,7 +309,7 @@ namespace rascal {
                  {"skin", cutoff_skin},
                  {"consider_ghost_neighbours", false}}}};
       json ad1b{{"name", "AdaptorCenterContribution"},
-                      {"initialization_arguments", {}}};
+                {"initialization_arguments", {}}};
       json ad2{{"name", "AdaptorStrict"},
                {"initialization_arguments", {{"cutoff", cutoff}}}};
       adaptors.emplace_back(ad1);
@@ -398,7 +396,7 @@ namespace rascal {
                    {"skin", cutoff_skin},
                    {"consider_ghost_neighbours", false}}}};
         json ad1b{{"name", "AdaptorCenterContribution"},
-                      {"initialization_arguments", {}}};
+                  {"initialization_arguments", {}}};
         json ad2{{"name", "AdaptorStrict"},
                  {"initialization_arguments", {{"cutoff", cutoff}}}};
         adaptors.emplace_back(ad1);
@@ -808,9 +806,10 @@ namespace rascal {
          {"sorting_algorithm", "row_norm"}}};
   };
 
-  struct SortedCoulombTestData  {
-    using ManagerTypeHolder_t = StructureManagerTypeHolder<StructureManagerCenters,
-                                   AdaptorNeighbourList,  AdaptorStrict>;
+  struct SortedCoulombTestData {
+    using ManagerTypeHolder_t =
+        StructureManagerTypeHolder<StructureManagerCenters,
+                                   AdaptorNeighbourList, AdaptorStrict>;
     using Representation_t = CalculatorSortedCoulomb;
     SortedCoulombTestData() { this->get_ref(this->ref_filename); }
     ~SortedCoulombTestData() = default;

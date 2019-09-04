@@ -47,10 +47,8 @@ namespace rascal {
   template <class ManagerImplementation>
   struct StructureManager_traits<AdaptorFullList<ManagerImplementation>> {
     using parent_traits = StructureManager_traits<ManagerImplementation>;
-    constexpr static AdaptorTraits::Strict Strict{
-        parent_traits::Strict};
-    constexpr static bool HasDistances{
-        parent_traits::HasDistances};
+    constexpr static AdaptorTraits::Strict Strict{parent_traits::Strict};
+    constexpr static bool HasDistances{parent_traits::HasDistances};
     constexpr static bool HasDirectionVectors{
         parent_traits::HasDirectionVectors};
     constexpr static int Dim{parent_traits::Dim};
@@ -61,10 +59,9 @@ namespace rascal {
     constexpr static bool HasCenterPair{parent_traits::HasCenterPair};
     // New pairs are added at this layer, which did not exist before. Therefore
     // the layering has to be reset.
-    constexpr static size_t AtomLayer{
-        get<0>(typename LayerIncreaser<
-               MaxOrder,
-               typename parent_traits::LayerByOrder>::type{})};
+    constexpr static size_t AtomLayer{get<0>(
+        typename LayerIncreaser<MaxOrder,
+                                typename parent_traits::LayerByOrder>::type{})};
     using LayerByOrder = std::index_sequence<AtomLayer, 0>;
   };
 

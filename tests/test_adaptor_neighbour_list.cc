@@ -131,7 +131,8 @@ namespace rascal {
   //       ++pair_counter;
   //       auto tag2 = pair.get_atom_tag();
   //       if (first) {
-  //         // Check if the ii-pairs actually exist as the first neighbour of the
+  //         // Check if the ii-pairs actually exist as the first neighbour of
+  //         the
   //         // i-atom; check is based on atom tag.
   //         BOOST_CHECK_EQUAL(tag1, tag2);
   //         first = false;
@@ -202,9 +203,10 @@ namespace rascal {
    * Test that the atom index from a neighbour matches the atom tag of the
    * ClusterRefKey returned by get_atom_j
    */
-  BOOST_FIXTURE_TEST_CASE(get_atom_j_test, ManagerFixture<StructureManagerCenters>) {
+  BOOST_FIXTURE_TEST_CASE(get_atom_j_test,
+                          ManagerFixture<StructureManagerCenters>) {
     auto pair_manager{
-          make_adapted_manager<AdaptorNeighbourList>(manager, cutoff)};
+        make_adapted_manager<AdaptorNeighbourList>(manager, cutoff)};
 
     constexpr bool verbose{false};
 
@@ -214,8 +216,8 @@ namespace rascal {
         auto atom_j = pair.get_atom_j();
         auto atom_j_tag = atom_j.get_atom_tag_list();
         if (verbose) {
-          std::cout << "neigh: " << atom_j_index
-                    << " tag_j: " << atom_j_tag[0] << std::endl;
+          std::cout << "neigh: " << atom_j_index << " tag_j: " << atom_j_tag[0]
+                    << std::endl;
         }
 
         BOOST_CHECK_EQUAL(atom_j_index, atom_j_tag[0]);
@@ -574,7 +576,6 @@ namespace rascal {
       }
     }
   }
-
 
   BOOST_AUTO_TEST_SUITE_END();
 }  // namespace rascal

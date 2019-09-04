@@ -56,8 +56,9 @@ namespace rascal {
     constexpr static int Dim{parent_traits::Dim};
     constexpr static size_t MaxOrder{parent_traits::MaxOrder};
     constexpr static int StackLevel{parent_traits::StackLevel + 1};
-    using LayerByOrder = typename LayerIncreaser<
-        MaxOrder, typename parent_traits::LayerByOrder>::type;
+    using LayerByOrder =
+        typename LayerIncreaser<MaxOrder,
+                                typename parent_traits::LayerByOrder>::type;
   };
 
   /**

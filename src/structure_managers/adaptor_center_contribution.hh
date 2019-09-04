@@ -45,18 +45,21 @@ namespace rascal {
    * specialisation of traits for strict adaptor
    */
   template <class ManagerImplementation>
-  struct StructureManager_traits<AdaptorCenterContribution<ManagerImplementation>> {
+  struct StructureManager_traits<
+      AdaptorCenterContribution<ManagerImplementation>> {
     using parent_traits = StructureManager_traits<ManagerImplementation>;
     constexpr static AdaptorTraits::Strict Strict{parent_traits::Strict};
     constexpr static bool HasDistances{parent_traits::HasDistances};
-    constexpr static bool HasDirectionVectors{parent_traits::HasDirectionVectors};
+    constexpr static bool HasDirectionVectors{
+        parent_traits::HasDirectionVectors};
     constexpr static bool HasCenterPair{true};
     constexpr static int Dim{parent_traits::Dim};
     constexpr static int StackLevel{parent_traits::StackLevel + 1};
     constexpr static size_t MaxOrder{parent_traits::MaxOrder};
     // Reset the Layer for the pair since the underlying iteration pool is
     // increased in size so all the data belongs to the adaptor
-    using LayerByOrder = std::index_sequence<ManagerImplementation::template cluster_layer_from_order<1>() + 1, 0>;
+    using LayerByOrder = std::index_sequence<
+        ManagerImplementation::template cluster_layer_from_order<1>() + 1, 0>;
   };
 
   /**
@@ -73,7 +76,8 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   class AdaptorCenterContribution
-      : public StructureManager<AdaptorCenterContribution<ManagerImplementation>>,
+      : public StructureManager<
+            AdaptorCenterContribution<ManagerImplementation>>,
         public std::enable_shared_from_this<
             AdaptorCenterContribution<ManagerImplementation>> {
    public:
@@ -103,9 +107,10 @@ namespace rascal {
      * specifies the strict cutoff radius. all clusters with distances above
      * this parameter will be skipped
      */
-    AdaptorCenterContribution(ImplementationPtr_t manager);
+    explicit AdaptorCenterContribution(ImplementationPtr_t manager);
 
-    AdaptorCenterContribution(ImplementationPtr_t manager, const Hypers_t & /* adaptor_hypers*/)
+    AdaptorCenterContribution(ImplementationPtr_t manager,
+                              const Hypers_t & /* adaptor_hypers*/)
         : AdaptorCenterContribution(manager) {}
 
     //! Copy constructor
@@ -118,10 +123,12 @@ namespace rascal {
     virtual ~AdaptorCenterContribution() = default;
 
     //! Copy assignment operator
-    AdaptorCenterContribution & operator=(const AdaptorCenterContribution & other) = delete;
+    AdaptorCenterContribution &
+    operator=(const AdaptorCenterContribution & other) = delete;
 
     //! Move assignment operator
-    AdaptorCenterContribution & operator=(AdaptorCenterContribution && other) = default;
+    AdaptorCenterContribution &
+    operator=(AdaptorCenterContribution && other) = default;
 
     //! update just the adaptor assuming the underlying manager was updated
     inline void update_self();
@@ -306,12 +313,13 @@ namespace rascal {
   AdaptorCenterContribution<ManagerImplementation>::AdaptorCenterContribution(
       std::shared_ptr<ManagerImplementation> manager)
       : manager{std::move(manager)}, atom_tag_list{},
-        neighbours_cluster_index{}, nb_neigh{}, offsets{} { }
+        neighbours_cluster_index{}, nb_neigh{}, offsets{} {}
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
   template <class... Args>
-  void AdaptorCenterContribution<ManagerImplementation>::update(Args &&... arguments) {
+  void AdaptorCenterContribution<ManagerImplementation>::update(
+      Args &&... arguments) {
     this->manager->update(std::forward<Args>(arguments)...);
   }
 
@@ -334,7 +342,8 @@ namespace rascal {
     }
 
     using AtomIndex_t = typename ClusterRefKey<2, PairLayer>::AtomIndex_t;
-    using IndexConstArray = typename ClusterRefKey<2, PairLayer>::IndexConstArray;
+    using IndexConstArray =
+        typename ClusterRefKey<2, PairLayer>::IndexConstArray;
 
     // fill the list, at least pairs are mandatory for this to work
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
@@ -344,9 +353,10 @@ namespace rascal {
     // depending on the underlying neighbourlist, the proxy `.with_ghosts()` is
     // either actually with ghosts, or only returns the number of centers.
     for (auto atom : this->manager.get()->with_ghosts()) {
-    //   using IndexArray = Eigen::Map<Eigen::Matrix<size_t, Layer + 1, 1>>;
-    // using AtomIndex_t = std::array<int, Order>;
-    // ClusterRefKey(AtomIndex_t atom_tag_list, IndexConstArray cluster_indices)
+      //   using IndexArray = Eigen::Map<Eigen::Matrix<size_t, Layer + 1, 1>>;
+      // using AtomIndex_t = std::array<int, Order>;
+      // ClusterRefKey(AtomIndex_t atom_tag_list, IndexConstArray
+      // cluster_indices)
 
       this->add_atom(atom);
       /**
@@ -366,19 +376,18 @@ namespace rascal {
       self_indices_pair[PairLayer] = pair_counter;
       auto self_indices_pair_ = IndexConstArray(self_indices_pair.data());
       pair_cluster_indices.push_back(self_indices_pair_);
-      auto self_pair = ClusterRefKey<2, PairLayer>(self_atom_tag_list, self_indices_pair_);
+      auto self_pair =
+          ClusterRefKey<2, PairLayer>(self_atom_tag_list, self_indices_pair_);
       this->add_atom(self_pair);
       pair_counter++;
 
       for (auto pair : atom) {
-
         this->add_atom(pair);
 
         Eigen::Matrix<size_t, PairLayer + 1, 1> indices_pair;
         indices_pair(PairLayer) = pair_counter;
         pair_cluster_indices.push_back(indices_pair);
         pair_counter++;
-
       }
     }
   }

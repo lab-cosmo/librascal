@@ -565,14 +565,10 @@ namespace rascal {
       this->values.resize(new_size);
     }
 
-    inline size_t size() const {
-      return this->values.size();
-    }
+    inline size_t size() const { return this->values.size(); }
 
     //! clear all the content of the property
-    inline void clear() {
-      this->values.clear();
-    }
+    inline void clear() { this->values.clear(); }
 
     inline Manager_t & get_manager() {
       return static_cast<Manager_t &>(this->base_manager);
@@ -595,11 +591,11 @@ namespace rascal {
      */
     template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order,
               std::enable_if_t<(Order_ == 1) and (CallerOrder == 2),  // NOLINT
-                               int> = 0>                             // NOLINT
+                               int> = 0>                              // NOLINT
     inline decltype(auto)
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
       return this->operator[](this->get_manager().get_atom_index(
-                                  id.get_internal_neighbour_atom_tag()));
+          id.get_internal_neighbour_atom_tag()));
     }
 
     //! Accessor for property by index for dynamically sized properties
@@ -615,12 +611,12 @@ namespace rascal {
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");
 
-      return this->operator()(id.get_cluster_index(CallerLayer),  key);
+      return this->operator()(id.get_cluster_index(CallerLayer), key);
     }
 
     //! Accessor for property by index for dynamically sized properties
     inline DenseRef_t operator()(const size_t & index, const Key_t & key) {
-      auto&& val = this->values[index].at(key);
+      auto && val = this->values[index].at(key);
       return DenseRef_t(&val(0, 0), val.rows(), val.cols());
     }
 
@@ -674,8 +670,7 @@ namespace rascal {
         for (const auto & key : all_keys) {
           if (this->values[i_center].count(key) == 1) {
             for (int i_pos{0}; i_pos < inner_size; i_pos++) {
-              features(i_row, i_feat) =
-                  this->values[i_center][key](i_pos);
+              features(i_row, i_feat) = this->values[i_center][key](i_pos);
               i_feat++;
             }
           } else {
@@ -726,8 +721,7 @@ namespace rascal {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");
-      return this->values[id.get_cluster_index(CallerLayer)]
-          .get_keys();
+      return this->values[id.get_cluster_index(CallerLayer)].get_keys();
     }
 
     /**

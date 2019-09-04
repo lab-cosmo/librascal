@@ -208,7 +208,8 @@ namespace rascal {
   }
 
   template <typename Manager_t>
-  decltype(auto) add_manager_safe(py::module & mod, const std::string& manager_name) {
+  decltype(auto) add_manager_safe(py::module & mod,
+                                  const std::string & manager_name) {
     using Parent = typename Manager_t::Parent;
     py::class_<Manager_t, Parent, std::shared_ptr<Manager_t>> manager(
         mod, manager_name.c_str());
@@ -315,13 +316,12 @@ namespace rascal {
 
     static void bind_adapted_manager_maker(const std::string & name,
                                            py::module & m_adaptor) {
-      m_adaptor.def(
-          name.c_str(),
-          [](ImplementationPtr_t & manager) {
-            return make_adapted_manager<AdaptorCenterContribution, Implementation_t>(
-                manager);
-          },
-          py::arg("manager"), py::return_value_policy::copy);
+      m_adaptor.def(name.c_str(),
+                    [](ImplementationPtr_t & manager) {
+                      return make_adapted_manager<AdaptorCenterContribution,
+                                                  Implementation_t>(manager);
+                    },
+                    py::arg("manager"), py::return_value_policy::copy);
     }
   };
 
@@ -520,9 +520,9 @@ namespace rascal {
     using type = BindAdaptorStack<Manager_t, AdaptorImplementationPack...>;
 
     BindAdaptorStack(py::module & m_nl, py::module & m_adaptor,
-                     py::module & m_throwaway, std::set<std::string>& name_list)
+                     py::module & m_throwaway,
+                     std::set<std::string> & name_list)
         : next_stack{m_nl, m_adaptor, m_throwaway, name_list} {
-
       std::string manager_name{internal::GetBindingTypeName<Manager_t>()};
       if (not name_list.count(manager_name)) {
         name_list.insert(manager_name);
@@ -556,7 +556,8 @@ namespace rascal {
     using ManagerPtr = std::shared_ptr<Manager_t>;
 
     BindAdaptorStack(py::module & m_nl, py::module & m_adaptor,
-                     py::module & m_throwaway, std::set<std::string>& name_list) {
+                     py::module & m_throwaway,
+                     std::set<std::string> & name_list) {
       std::string manager_name{internal::GetBindingTypeName<Manager_t>()};
       if (not name_list.count(manager_name)) {
         name_list.insert(manager_name);
@@ -678,7 +679,8 @@ namespace rascal {
     BindAdaptorStack<Manager_t, AdaptorNeighbourList, AdaptorStrict>
         adaptor_stack_1{m_nl, m_adp, m_throwaway, name_list};
 
-    BindAdaptorStack<Manager_t, AdaptorNeighbourList, AdaptorCenterContribution, AdaptorStrict>
+    BindAdaptorStack<Manager_t, AdaptorNeighbourList, AdaptorCenterContribution,
+                     AdaptorStrict>
         adaptor_stack_2{m_nl, m_adp, m_throwaway, name_list};
 
     // bind the manager collection
@@ -686,8 +688,8 @@ namespace rascal {
                                       AdaptorStrict>(m_nl);
 
     bind_structure_manager_collection<Manager_t, AdaptorNeighbourList,
-                                      AdaptorCenterContribution,
-                                      AdaptorStrict>(m_nl);
+                                      AdaptorCenterContribution, AdaptorStrict>(
+        m_nl);
 
     bind_atomic_structure(m_nl);
   }

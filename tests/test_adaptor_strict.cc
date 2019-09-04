@@ -46,19 +46,17 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(adaptor_strict_test);
 
-
   /* ---------------------------------------------------------------------- */
   /**
    * test strict neighbourhood constructor, this is done here instead
    * of in the Fixture, because of the default constructor is deleted.
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_test, Fix, multiple_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_test, Fix, multiple_fixtures,
+                                   Fix) {
     auto && managers = Fix::managers;
-    for (auto & manager: managers) {
+    for (auto & manager : managers) {
       double cutoff{manager->get_cutoff()};
-      auto adaptor{
-          make_adapted_manager<AdaptorStrict>(manager, cutoff)};
-
+      auto adaptor{make_adapted_manager<AdaptorStrict>(manager, cutoff)};
     }
   }
 
@@ -68,10 +66,9 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(update_test, Fix, multiple_fixtures, Fix) {
     auto && managers = Fix::managers;
-    for (auto & manager: managers) {
+    for (auto & manager : managers) {
       double cutoff{manager->get_cutoff()};
-      auto adaptor{
-          make_adapted_manager<AdaptorStrict>(manager, cutoff)};
+      auto adaptor{make_adapted_manager<AdaptorStrict>(manager, cutoff)};
       adaptor->update();
     }
   }
@@ -83,10 +80,9 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(iterator_test, Fix, multiple_fixtures, Fix) {
     auto && managers = Fix::managers;
-    for (auto & manager: managers) {
+    for (auto & manager : managers) {
       double cutoff{manager->get_cutoff()};
-      auto adaptor_strict{
-          make_adapted_manager<AdaptorStrict>(manager, cutoff)};
+      auto adaptor_strict{make_adapted_manager<AdaptorStrict>(manager, cutoff)};
       adaptor_strict->update();
 
       auto structure = extract_underlying_manager<0>(adaptor_strict);
@@ -127,13 +123,13 @@ namespace rascal {
    * Test that the atom index from a neighbour matches the atom tag of the
    * ClusterRefKey returned by get_atom_j
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(get_atom_j_test, Fix, multiple_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(get_atom_j_test, Fix, multiple_fixtures,
+                                   Fix) {
     auto && managers = Fix::managers;
     constexpr bool verbose{false};
-    for (auto & manager: managers) {
+    for (auto & manager : managers) {
       double cutoff{manager->get_cutoff()};
-      auto adaptor_strict{
-            make_adapted_manager<AdaptorStrict>(manager, cutoff)};
+      auto adaptor_strict{make_adapted_manager<AdaptorStrict>(manager, cutoff)};
       adaptor_strict->update();
 
       for (auto atom : adaptor_strict) {
@@ -297,7 +293,6 @@ namespace rascal {
       }
     }
   }
-
 
   /* ---------------------------------------------------------------------- */
   /*

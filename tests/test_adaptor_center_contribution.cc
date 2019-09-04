@@ -33,7 +33,6 @@
 
 namespace rascal {
 
-
   BOOST_AUTO_TEST_SUITE(adaptor_center_contribution_test);
 
   using multiple_fixtures = boost::mpl::list<
@@ -43,12 +42,11 @@ namespace rascal {
   /**
    * test adptor constructor
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_test, Fix, multiple_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_test, Fix, multiple_fixtures,
+                                   Fix) {
     auto && managers = Fix::managers;
-    for (auto & manager: managers) {
-      auto adaptor{
-          make_adapted_manager<AdaptorCenterContribution>(manager)};
-
+    for (auto & manager : managers) {
+      auto adaptor{make_adapted_manager<AdaptorCenterContribution>(manager)};
     }
   }
 
@@ -58,9 +56,8 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(update_test, Fix, multiple_fixtures, Fix) {
     auto && managers = Fix::managers;
-    for (auto & manager: managers) {
-      auto adaptor{
-          make_adapted_manager<AdaptorCenterContribution>(manager)};
+    for (auto & manager : managers) {
+      auto adaptor{make_adapted_manager<AdaptorCenterContribution>(manager)};
       adaptor->update();
     }
   }
@@ -72,7 +69,7 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(iterator_test, Fix, multiple_fixtures, Fix) {
     auto && managers = Fix::managers;
-    for (auto & manager: managers) {
+    for (auto & manager : managers) {
       auto adaptor_strict{
           make_adapted_manager<AdaptorCenterContribution>(manager)};
       adaptor_strict->update();
@@ -115,12 +112,13 @@ namespace rascal {
    * Test that the atom index from a neighbour matches the atom tag of the
    * ClusterRefKey returned by get_atom_j
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(get_atom_j_test, Fix, multiple_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(get_atom_j_test, Fix, multiple_fixtures,
+                                   Fix) {
     auto && managers = Fix::managers;
     constexpr bool verbose{false};
-    for (auto & manager: managers) {
+    for (auto & manager : managers) {
       auto adaptor_strict{
-            make_adapted_manager<AdaptorCenterContribution>(manager)};
+          make_adapted_manager<AdaptorCenterContribution>(manager)};
       adaptor_strict->update();
 
       for (auto atom : adaptor_strict) {
@@ -139,7 +137,6 @@ namespace rascal {
     }
   }
 
-
   /* ---------------------------------------------------------------------- */
   /**
    * Test that the ii pair is properly set
@@ -147,9 +144,8 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(get_atom_ii_test, Fix, multiple_fixtures,
                                    Fix) {
     auto && managers = Fix::managers;
-    for (auto & manager: managers) {
-      auto adaptor{
-            make_adapted_manager<AdaptorCenterContribution>(manager)};
+    for (auto & manager : managers) {
+      auto adaptor{make_adapted_manager<AdaptorCenterContribution>(manager)};
       adaptor->update();
 
       for (auto atom : adaptor) {
@@ -171,13 +167,11 @@ namespace rascal {
                                    Fix) {
     auto && managers = Fix::managers;
     bool verbose{false};
-    for (auto & manager: managers) {
-      auto adaptor{
-            make_adapted_manager<AdaptorCenterContribution>(manager)};
+    for (auto & manager : managers) {
+      auto adaptor{make_adapted_manager<AdaptorCenterContribution>(manager)};
       adaptor->update();
 
       for (auto atom : adaptor) {
-
         for (auto pair : atom) {
           auto atom_j = pair.get_atom_j();
           auto ctag = atom_j.get_atom_tag();
@@ -185,9 +179,8 @@ namespace rascal {
           auto atom_jj_tag = atom_jj.get_atom_tag_list();
 
           if (verbose) {
-            std::cout << "Center j: " << ctag
-                      << " neigh: " << atom_jj_tag[0] << ", " << atom_jj_tag[1]
-                      << std::endl;
+            std::cout << "Center j: " << ctag << " neigh: " << atom_jj_tag[0]
+                      << ", " << atom_jj_tag[1] << std::endl;
           }
 
           BOOST_CHECK_EQUAL(ctag, atom_jj_tag[0]);
@@ -202,16 +195,17 @@ namespace rascal {
    * Test that a property is filled and accessed properly when using
    * with_self_pair() and get_atom_ii() and get_atom_jj()
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_ii_property_test, Fix, multiple_fixtures,
-                                   Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_ii_property_test, Fix,
+                                   multiple_fixtures, Fix) {
     auto && managers = Fix::managers;
     using Manager_t = typename Fix::Manager_t;
     // bool verbose{false};
-    for (auto & manager: managers) {
-      auto adaptor{
-            make_adapted_manager<AdaptorCenterContribution>(manager)};
+    for (auto & manager : managers) {
+      auto adaptor{make_adapted_manager<AdaptorCenterContribution>(manager)};
       adaptor->update();
-      auto prop = Property<int, 2, 0, AdaptorCenterContribution<Manager_t>, 1, 1>(*adaptor);
+      auto prop =
+          Property<int, 2, 0, AdaptorCenterContribution<Manager_t>, 1, 1>(
+              *adaptor);
       prop.resize();
       std::vector<std::vector<int>> ref{};
       // std::make_shared<AdaptorCenterContribution<Manager_t>>(*)
@@ -228,7 +222,7 @@ namespace rascal {
       for (auto atom : adaptor) {
         int counter{0};
         for (auto pair : atom) {
-          BOOST_CHECK_EQUAL(ref[i_center][counter+1], prop[pair]);
+          BOOST_CHECK_EQUAL(ref[i_center][counter + 1], prop[pair]);
           ++counter;
         }
         ++i_center;
@@ -271,7 +265,6 @@ namespace rascal {
       }
     }
   }
-
 
   BOOST_AUTO_TEST_SUITE_END();
 
