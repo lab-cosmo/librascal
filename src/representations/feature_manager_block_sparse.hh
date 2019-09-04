@@ -358,7 +358,66 @@ namespace rascal {
   }
 
   /**
-   * global cosine kernel with a power of zeta
+   * atomic cosine (dot-product) kernel with a power of zeta
+   *
+   * Only accumulates on the intersection of keys for each environment
+   */
+  template <typename Precision_t>
+  decltype(auto)
+  cosine_kernel_atomic(const int & zeta,
+                       FeatureManagerBlockSparse<Precision_t> & X1,
+                       FeatureManagerBlockSparse<Precision_t> & X2) {
+    size_t natoms_X1{static_cast<size_t>(X1.sample_size())};
+    size_t natoms_X2{static_cast<size_t>(X2.sample_size())};
+
+    Dense_t<Precision_t> kernel_mat(natoms_X1, natoms_X2);
+    for (size_t i_center1{0}; i_center1 < natoms_X1; ++i_center1) {
+      auto && keys1{X1.get_keys(i_center1)};
+      for (size_t i_center2{0}; i_center2 < natoms_X2; ++i_center2) {
+        auto && keys2{X2.get_keys(i_center2)};
+        auto keys_intersection{intersection_of(keys1, keys2)};
+        double dot_product{0.};
+        for (const auto & key : keys_intersection) {
+          auto vec1{X1.get_features(i_center1, key)};
+          auto vec2{X2.get_features(i_center2, key)};
+          dot_product += vec1.dot(vec2);
+        }
+        kernel_mat(i_center1, i_center2) = std::pow(dot_product, zeta);
+      }
+    }
+    return kernel_mat;
+  }
+
+  /**
+   * atomic cosine (dot-product) kernel with itself, with a power of zeta
+   *
+   * Only accumulates on the intersection of keys for each environment
+   */
+  template <typename Precision_t>
+  decltype(auto)
+  cosine_kernel_atomic(const int & zeta,
+                       FeatureManagerBlockSparse<Precision_t> & X1) {
+    size_t natoms_X1{static_cast<size_t>(X1.sample_size())};
+
+    Dense_t<Precision_t> kernel_mat(natoms_X1, natoms_X1);
+    for (size_t i_center1{0}; i_center1 < natoms_X1; ++i_center1) {
+      auto && keys1{X1.get_keys(i_center1)};
+      for (size_t i_center2{0}; i_center2 < natoms_X1; ++i_center2) {
+        double dot_product{0.};
+        for (const auto & key : keys1) {
+          auto vec1{X1.get_features(i_center1, key)};
+          auto vec2{X1.get_features(i_center2, key)};
+          dot_product += vec1.dot(vec2);
+        }
+        kernel_mat(i_center1, i_center2) = std::pow(dot_product, zeta);
+      }
+    }
+    return kernel_mat;
+  }
+
+
+  /**
+   * global (summed molecular) cosine kernel with a power of zeta
    */
   template <typename Precision_t>
   decltype(auto)
