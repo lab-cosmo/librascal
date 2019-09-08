@@ -1,5 +1,6 @@
 # from ..lib.Kernels import CosineKernel
 from ..lib._rascal.Models.Kernels import Kernel as Kernelcpp
+from ..neighbourlist import AtomsList
 import json
 
 class Kernel(object):
@@ -8,7 +9,7 @@ class Kernel(object):
         hypers = dict(name=name,target_type=target_type)
         hypers.update(**kwargs)
         hypers_str = json.dumps(hypers)
-        self.representation = representation._representation
+        self._representation = representation._representation
 
         self._kernel = Kernelcpp(hypers_str)
 
@@ -16,4 +17,9 @@ class Kernel(object):
     def __call__(self, X, Y=None):
         if Y is None:
             Y = X
-        return self._kernel.compute(self.representation, X, Y)
+        if isinstance(X, AtomsList):
+            X = X.managers
+        if isinstance(Y, AtomsList):
+            Y = Y.managers
+            
+        return self._kernel.compute(self._representation, X, Y)
