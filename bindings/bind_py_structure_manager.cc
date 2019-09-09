@@ -59,7 +59,7 @@ namespace rascal {
                                StructureManager<StructureManagerImplementation>,
                                std::shared_ptr<StructureManagerImplementation>>;
 
-  //! Bind a ClusterRef (to enable the acces to properties such as distances)
+  //! Bind a ClusterRef (to enable the access to properties such as distances)
   template <size_t Order, size_t Layer>
   void add_cluster_ref(py::module & m) {
     std::string cluster_parent_name =
