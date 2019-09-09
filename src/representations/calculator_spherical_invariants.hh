@@ -427,11 +427,11 @@ namespace rascal {
     }
   }
 
-  template <internal::SphericalInvariantsType BodyOrder,
-            std::enable_if_t<
-                BodyOrder == internal::SphericalInvariantsType::PowerSpectrum,
-                int>,
-            class StructureManager>
+  template <
+      internal::SphericalInvariantsType BodyOrder,
+      std::enable_if_t<
+          BodyOrder == internal::SphericalInvariantsType::PowerSpectrum, int>,
+      class StructureManager>
   void CalculatorSphericalInvariants::compute_impl(
       std::shared_ptr<StructureManager> manager) {
     using PropExp_t =
@@ -810,11 +810,11 @@ namespace rascal {
     }          // for center : manager
   }            // compute_powerspectrum()
 
-  template <internal::SphericalInvariantsType BodyOrder,
-            std::enable_if_t<
-                BodyOrder == internal::SphericalInvariantsType::RadialSpectrum,
-                int>,
-            class StructureManager>
+  template <
+      internal::SphericalInvariantsType BodyOrder,
+      std::enable_if_t<
+          BodyOrder == internal::SphericalInvariantsType::RadialSpectrum, int>,
+      class StructureManager>
   void CalculatorSphericalInvariants::compute_impl(
       std::shared_ptr<StructureManager> manager) {
     using PropExp_t =
