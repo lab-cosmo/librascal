@@ -406,7 +406,17 @@ namespace rascal {
   inline void CalculatorSortedCoulomb::compute_impl(
       std::shared_ptr<StructureManager> & manager) {
     using Prop_t = Property_t<StructureManager>;
+
+    // TODO(felix) use the commented code bellow. needs changes in the tests
+    // because it actually runs cases where
+    // this->central_cutoff > manager->get_cutoff() is true.
     this->update_central_cutoff(manager->get_cutoff());
+    // if (this->central_cutoff > manager->get_cutoff()) {
+    //   std::string error{R"(The hypers cutoff and the managers cutoff are not compatible: )"};
+    //   error += std::to_string(this->central_cutoff) + std::string(" > ");
+    //   error +=  std::to_string(manager->get_cutoff());
+    //   throw std::runtime_error(error);
+    // }
 
     // get a reference to the data container that will hold the representation
     // in the structure manager
