@@ -40,7 +40,8 @@ namespace rascal {
     template <size_t Order>
     using ClusterRef_t = typename StructureManager::template ClusterRef<Order>;
 
-    using StdSpecies = TupleStandardisation<StructureManager::traits::MaxOrder>;
+    using StdSpecies =
+        TupleStandardisation<int, StructureManager::traits::MaxOrder>;
 
     //! Default constructor
     InputNodeContributionBase() = delete;
@@ -70,7 +71,7 @@ namespace rascal {
     //! needs to be called after reading the input file and prior to the first
     //! evaluation. Attaches all necessary properties for precalculated values
     //! to the manager
-    virtual void init(StructureManager & manager) = 0;
+    virtual void init(const UnitStyle & units) = 0;
 
     //! needs to be called in the beginning of every evaluation step, refreshes
     //! the precalculated properties if necessary
@@ -82,7 +83,7 @@ namespace rascal {
     //! insert a parameter (sub-)json
     void add_params(const json & params) {
       const auto & type{params.at("type").get<std::string>()};
-      if (type != get_name(FunType)) {
+      if (type != get_name(this->sym_fun_type)) {
         std::stringstream error{};
         error << "Parameter set for function type '" << type
               << "' assigned to function of type '"
@@ -99,24 +100,27 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
-  template <SymmetryFunType SymFun, CutoffFuntype CutFun,
+  template <SymmetryFunType SymFunType, internal::CutoffFunctionType CutFunType,
             class StructureManager>
   class InputNodeContribution final
       : public InputNodeContributionBase<StructureManager> {
    public:
-    using Parent = InputNodeContributionBase;
-    using SymmetryFunction = SymmetryFun<SymFun>;
-    using CutoffFunction = CutoffFun<CutFun>;
+    using Parent = InputNodeContributionBase<StructureManager>;
+    using SymmetryFunction = SymmetryFun<SymFunType>;
+    using CutoffFunction = internal::CutoffFunction<CutFunType>;
+    using StdSpecies = typename Parent::StdSpecies;
+    template <size_t Order>
+    using ClusterRef_t = typename Parent::ClusterRef_t;
 
     // stores parameter packs ordered by cutoff radius
     using ParamStorage =
-        std::map<double,
-                 Eigen::Matrix<double, SymFun::NbParams, Eigen::Dynamic>>;
+        std::map<double, Eigen::Matrix<double, SymmetryFun<SymFunType>::NbParams,
+                                       Eigen::Dynamic>>;
 
     constexpr static size_t MaxOrder{Parent::traits::MaxOrder};
 
     //! Default constructor
-    InputNodeContribution() : Parent(SymFun) {}
+    InputNodeContribution() : Parent(SymFunType) {}
 
     //! Copy constructor
     InputNodeContribution(const InputNodeContribution & other) = delete;
@@ -134,7 +138,7 @@ namespace rascal {
     //! Move assignment operator
     InputNodeContribution & operator=(InputNodeContribution && other) = default;
 
-    void init(StructureManager & manager) final;
+    void init(const UnitStyle & units) final;
     void prepare(StructureManager & manager) final;
 
     void apply(StructureManager & manager) const;
@@ -143,7 +147,9 @@ namespace rascal {
     size_t get_index() const;              // to implement
 
    protected:
-    inline void eval_cluster(StructureManager & manager, ClusterRef_t cluster
+    template <size_t Order>
+    inline void eval_cluster(StructureManager & manager,
+                             const ClusterRef_t<Order> & cluster);
     static constexpr size_t AtomOrder{1};
     static constexpr size_t PairOrder{2};
     static constexpr size_t AtomLayer{

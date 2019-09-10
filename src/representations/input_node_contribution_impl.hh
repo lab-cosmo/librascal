@@ -33,38 +33,42 @@
 namespace rascal {
 
   /* ---------------------------------------------------------------------- */
-  template <SymmetryFunType SymFun, CutoffFuntype CutFun,
+  template <SymmetryFunType SymFunType, internal::CutoffFunctionType CutFunType,
             class StructureManager>
-  void InputNodeContribution<SymFun, CutFun, StructureManager>::apply(
-      StructureManager & manager) const {
-    utils::for_each_at_order<SymmetryFunction::NbParams>::loop(eval_cluster,
-                                                               manager);
+  void InputNodeContribution<SymFunType, CutFunType, StructureManager>::apply(
+      StructureManager & /*manager*/) const {
+    // utils::for_each_at_order<SymmetryFun<SymFunType>::NbParams>::loop(
+    //     eval_cluster, manager);
   }
 
   /* ---------------------------------------------------------------------- */
-  template <SymmetryFunType SymFun, CutoffFuntype CutFun,
+  template <SymmetryFunType SymFunType, internal::CutoffFunctionType CutFunType,
             class StructureManager>
-  void InputNodeContribution<SymFun, CutFun, StructureManager>::init(
+  void InputNodeContribution<SymFunType, CutFunType, StructureManager>::init(
       const UnitStyle & units) {
     std::map<double, size_t> nb_param_per_cutoff{};
+
+    // counting the number of parameters to store per cutoff
     for (const auto & param : this->raw_params) {
-      auto && r_cut{param.at("r_cut").get<double>()};
+      auto && r_cut{param.at("r_cut").template get<double>()};
       nb_param_per_cutoff[r_cut]++;
     }
 
+    // allocate storage
     for (const auto & key_val : nb_param_per_cutoff) {
-      auto && r_cut{param.at("r_cut").get<double>()};
-      this->params[r_cut] =
-          params.Zero(SymFun::NbParams, nb_param_per_cutoff[r_cut]);
+      auto && r_cut{key_val.first};
+      this->params[r_cut].resize(SymmetryFun<SymFunType>::NbParams,
+                                 nb_param_per_cutoff[r_cut]);
+      this->params[r_cut].setZero();
     }
 
-    // resize the parameter storage
+    // store params in storage
     std::map<double, size_t> nb_param_counter{};
-    for (size_t i{0}; i < this->raw_params.size(); ++i) {
-      auto && r_cut { param.at("r_cut").get<double>() }
+    for (auto && param : this->raw_params) {
+      auto && r_cut{param.at("r_cut").template get<double>()};
 
       this->params[r_cut].col(nb_param_counter[r_cut]++) =
-          SymmetryFun<SymFun>::read(this->raw_params[i], units);
+          SymmetryFun<SymFunType>::read(param, units);
     }
   }
 

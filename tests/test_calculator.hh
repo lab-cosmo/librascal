@@ -40,6 +40,7 @@
 #include "representations/calculator_spherical_expansion.hh"
 #include "representations/calculator_spherical_invariants.hh"
 #include "representations/calculator_spherical_covariants.hh"
+#include "representations/calculator_behler_parinello.hh"
 
 #include "json_io.hh"
 #include "rascal_utility.hh"
@@ -829,6 +830,17 @@ namespace rascal {
          {"interaction_decay", 0.5},
          {"size", 120},
          {"sorting_algorithm", "row_norm"}}};
+  };
+
+  struct MultipleStructureBehlerParinello
+      : MultipleStructureManagerNLStrictFixture {
+    using Parent = MultipleStructureManagerNLStrictFixture;
+    using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
+    using Representation_t = CalculatorBehlerParinello;
+    MultipleStructureBehlerParinello() : Parent{} {};
+    ~MultipleStructureBehlerParinello() = default;
+
+    std::vector<json> representation_hypers{{{"bla", 3.}, {"bla list", "em"}}};
   };
 
   struct SortedCoulombTestData : TestData {

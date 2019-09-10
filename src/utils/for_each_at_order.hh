@@ -61,9 +61,9 @@ namespace rascal {
       struct ForEachAtOrderHelper<Order, Order, Cluster, Function, Args...> {
         static void loop(Cluster & cluster, Function && function,
                          Args &&... args) {
-          function(cluster, forward<Args>(args)...);
+          function(cluster, std::forward<Args>(args)...);
         }
-      }
+      };
 
     }  // namespace detail
 

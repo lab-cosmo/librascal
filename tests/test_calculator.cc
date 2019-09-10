@@ -88,7 +88,8 @@ namespace rascal {
       boost::mpl::list<CalculatorFixture<MultipleStructureSortedCoulomb>,
                        CalculatorFixture<MultipleStructureSphericalExpansion>,
                        CalculatorFixture<MultipleStructureSphericalInvariants>,
-                       CalculatorFixture<MultipleStructureSphericalCovariants>>;
+                       CalculatorFixture<MultipleStructureSphericalCovariants>,
+                       CalculatorFixture<MultipleStructureBehlerParinello>>;
 
   using fixtures_ref_test =
       boost::mpl::list<CalculatorFixture<SortedCoulombTestData>,

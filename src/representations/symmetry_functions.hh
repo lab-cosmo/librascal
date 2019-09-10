@@ -47,7 +47,7 @@ namespace rascal {
   enum class SymmetryFunType { One, Gaussian, Cosine, Angular1, Angular2 };
 
   /* ---------------------------------------------------------------------- */
-  std::string get_name(SymmetryFunType fun_type) {
+  inline std::string get_name(SymmetryFunType fun_type) {
     switch (fun_type) {
     case SymmetryFunType::One: {
       return "One";
@@ -83,7 +83,6 @@ namespace rascal {
   struct SymmetryFun<SymmetryFunType::Gaussian> {
     static constexpr size_t Order{2};
     static constexpr size_t NbParams{2};
-    using ParamShape = Eigen::MatrixBase<double, NbParams, 1>;
     /**
      * usually, derivatives are aligned with the distance vector, in which case
      * a scalar return type is sufficient. (important for triplet-related
@@ -91,19 +90,28 @@ namespace rascal {
      */
     static constexpr bool DerivativeIsCollinear{true};
 
-    static double eval_function(const Eigen::MatrixBase<ParamShape> & params,
+    template <class Derived>
+    static double eval_function(const Eigen::MatrixBase<Derived> & params,
                                 const double & r_ij) {
+      static_assert(Derived::RowsAtCompileTime==NbParams,
+                    "size mismatch");
+      static_assert(Derived::ColsAtCompileTime==1,
+                    "Needs a column vector");
       auto && eta{params(0)};
       auto && r_s{params(1)};
       auto && delta_r = r_ij - r_s;
       return exp(-eta * delta_r * delta_r);
     }
 
-    template <class Derived>
-    static auto eval_derivative(const Eigen::MatrixBase<ParamShape> & params,
+    template <class Derived1, class Derived2>
+    static auto eval_derivative(const Eigen::MatrixBase<Derived1> & params,
                                 const double & r_ij,
-                                const Eigen::MatrixBase<Derived> & n_ij)
+                                const Eigen::MatrixBase<Derived2> & n_ij)
         -> decltype(auto) {
+      static_assert(Derived1::RowsAtCompileTime==NbParams,
+                    "size mismatch");
+      static_assert(Derived1::ColsAtCompileTime==1,
+                    "Needs a column vector");
       auto && eta{params(0)};
       auto && r_s{params(1)};
       auto && delta_r{r_ij - r_s};
@@ -113,55 +121,56 @@ namespace rascal {
     static Eigen::Matrix<double, NbParams, 1> read(const json & params,
                                                    const UnitStyle & units) {
       Eigen::Matrix<double, NbParams, 1> retval{};
-      retval(0) = json_io::check_units(units.distance(-1, 2), param.at("eta"));
-      retval(1) = json_io::check_units(units.distance(), param.at("r_s"));
+      retval(0) = json_io::check_units(units.distance(-1, 2), params.at("eta"));
+      retval(1) = json_io::check_units(units.distance(), params.at("r_s"));
       return retval;
     }
   };
 
-  template <>
-  struct SymmetryFun<SymmetryFunType::Angular1> {
-    static constexpr size_t Order{3};
-    static constexpr size_t NbParams{3};
-    using ParamShape = Eigen::MatrixBase<double, NbParams, 1>;
-    /**
-     * usually, derivatives are aligned with the distance vector, in which case
-     * a scalar return type is sufficient. (important for triplet-related
-     * functions)
-     */
-    static constexpr bool DerivativeIsCollinear{false};
+  // template <>
+  // struct SymmetryFun<SymmetryFunType::Angular1> {
+  //   static constexpr size_t Order{3};
+  //   static constexpr size_t NbParams{4};
+  //   using ParamShape = Eigen::Matrix<double, NbParams, 1>;
+  //   /**
+  //    * usually, derivatives are aligned with the distance vector, in which case
+  //    * a scalar return type is sufficient. (important for triplet-related
+  //    * functions)
+  //    */
+  //   static constexpr bool DerivativeIsCollinear{false};
 
-    static double eval_function(const Eigen::MatrixBase<ParamShape> & params,
-                                const double & r_ij, const double & r_jk,
-                                const double & r_ik, const double cos_theta) {
-      auto && zeta{params(0)};
-      auto && eta{params(1)};
-      auto && lambda{params(2)};
-      auto && delta_r = r_ij - r_s;
-      return exp(-eta * delta_r * delta_r);
-    }
+  //   static double eval_function(const Eigen::Map<ParamS> & params,
+  //                               const double & r_ij, const double & r_jk,
+  //                               const double & r_ik, const double cos_theta) {
+  //     auto && zeta{params(0)};
+  //     auto && eta{params(1)};
+  //     auto && lambda{params(2)};
+  //     auto && r_s{params(2)};
+  //     auto && delta_r = r_ij - r_s;
+  //     return exp(-eta * delta_r * delta_r);
+  //   }
 
-    template <class Derived>
-    static auto eval_derivative(const Eigen::MatrixBase<ParamShape> & params,
-                                const double & r_ij,
-                                const Eigen::MatrixBase<Derived> & n_ij)
-        -> decltype(auto) {
-      auto && eta{params(0)};
-      auto && r_s{params(1)};
-      auto && delta_r{r_ij - r_s};
-      return n_ij * (-2. * eta * delta_r * exp(-eta * delta_r * delta_r));
-    }
+  //   template <class Derived>
+  //   static auto eval_derivative(const Eigen::MatrixBase<ParamShape> & params,
+  //                               const double & r_ij,
+  //                               const Eigen::MatrixBase<Derived> & n_ij)
+  //       -> decltype(auto) {
+  //     auto && eta{params(0)};
+  //     auto && r_s{params(1)};
+  //     auto && delta_r{r_ij - r_s};
+  //     return n_ij * (-2. * eta * delta_r * exp(-eta * delta_r * delta_r));
+  //   }
 
-    static Eigen::Matrix<double, NbParams, 1> read(const json & params,
-                                                   const UnitStyle & units) {
-      Eigen::Matrix<double, NbParams, 1> retval{};
-      retval(0) = json_io::check_units(units.distance(-1, 2), param.at("eta"));
-      retval(1) = json_io::check_units(units.distance(), param.at("r_s"));
-      return retval;
-    }
+  //   static Eigen::Matrix<double, NbParams, 1> read(const json & params,
+  //                                                  const UnitStyle & units) {
+  //     Eigen::Matrix<double, NbParams, 1> retval{};
+  //     retval(0) = json_io::check_units(units.distance(-1, 2), param.at("eta"));
+  //     retval(1) = json_io::check_units(units.distance(), param.at("r_s"));
+  //     return retval;
+  //   }
 
-   protected:
-  };
+  //  protected:
+  // };
 
 }  // namespace rascal
 
