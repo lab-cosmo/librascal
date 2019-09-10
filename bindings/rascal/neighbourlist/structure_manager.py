@@ -1,4 +1,5 @@
-from .base import NeighbourList, NeighbourListFactory, is_valid_structure, adapt_structure, StructureCollectionFactory
+from .base import (NeighbourList, NeighbourListFactory, is_valid_structure,
+ adapt_structure, StructureCollectionFactory)
 from collections.abc import Iterable
 
 
@@ -25,7 +26,8 @@ class AtomsList(object):
             try:
                 managers.add_structures(structures)
             except:
-                print("Neighbourlist of structures failed. try one at a time.")
+                print("""Neighbourlist of structures failed. trying
+                one at a time.""")
                 ii = 0
                 for structure, manager in zip(structures, managers):
                     try:

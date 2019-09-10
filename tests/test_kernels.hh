@@ -70,12 +70,12 @@ namespace rascal {
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
-    std::vector<json> rep_hypers{{{"max_radial", 6},
+    std::vector<json> rep_hypers{{{"max_radial", 3},
                                   {"max_angular", 0},
                                   {"soap_type", "RadialSpectrum"},
                                   {"normalize", true}},
-                                 {{"max_radial", 6},
-                                  {"max_angular", 6},
+                                 {{"max_radial", 2},
+                                  {"max_angular", 2},
                                   {"soap_type", "PowerSpectrum"},
                                   {"normalize", true}}};
 

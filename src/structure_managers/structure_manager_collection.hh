@@ -239,8 +239,8 @@ namespace rascal {
 
       auto n_rows{this->get_number_of_elements(calculator, false)};
 
-      FeatureMatHelper<Prop_t>::apply(this->managers, property_name, features,
-                                      n_rows, inner_size);
+      FeatureMatrixHelper<Prop_t>::apply(this->managers, property_name,
+                                         features, n_rows, inner_size);
       return features;
     }
 
@@ -250,11 +250,11 @@ namespace rascal {
      * BlockSparseProperty when filling the feature matrix.
      */
     template <typename T>
-    struct FeatureMatHelper {};
+    struct FeatureMatrixHelper {};
 
     template <typename T, size_t Order, size_t PropertyLayer, int NbRow,
               int NbCol>
-    struct FeatureMatHelper<
+    struct FeatureMatrixHelper<
         Property<T, Order, PropertyLayer, Manager_t, NbRow, NbCol>> {
       using Prop_t = Property<T, Order, PropertyLayer, Manager_t, NbRow, NbCol>;
       template <class StructureManagers, class Matrix>
@@ -276,7 +276,7 @@ namespace rascal {
     };
 
     template <typename T, size_t Order, size_t PropertyLayer, typename Key>
-    struct FeatureMatHelper<
+    struct FeatureMatrixHelper<
         BlockSparseProperty<T, Order, PropertyLayer, Manager_t, Key>> {
       using Prop_t =
           BlockSparseProperty<T, Order, PropertyLayer, Manager_t, Key>;

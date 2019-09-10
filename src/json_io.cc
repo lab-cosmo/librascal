@@ -33,10 +33,10 @@ namespace rascal {
 
     json load(const std::string & filename) {
       json data;
-      auto extention{internal::get_filename_extension(filename)};
-      if (extention == "json") {
+      auto extension{internal::get_filename_extension(filename)};
+      if (extension == "json") {
         data = load_txt(filename);
-      } else if (extention == "ubjson") {
+      } else if (extension == "ubjson") {
         data = load_bin(filename);
       } else {
         throw std::runtime_error(std::string("Don't know the extension of ") +

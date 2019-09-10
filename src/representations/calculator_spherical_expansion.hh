@@ -53,9 +53,6 @@ namespace rascal {
 
   namespace internal {
 
-    //! Just for clarity, make it explicit that we're working in 3-D
-    static const size_t n_spatial_dimensions = 3;
-
     /**
      * List of possible Radial basis that can be used by the spherical
      * expansion.
@@ -448,7 +445,7 @@ namespace rascal {
         coefficients.lhs_dot(this->ortho_norm_matrix);
       }
 
-      template <typename Coeffs, typename Center>
+      template <int n_spatial_dimensions, typename Coeffs, typename Center>
       void finalize_coefficients_der(Coeffs & coefficients_gradient,
                                      Center & center) const {
         auto && coefficients_center_gradient = coefficients_gradient[center];
@@ -840,7 +837,8 @@ namespace rascal {
       std::shared_ptr<StructureManager> manager) {
     using Prop_t = Property_t<StructureManager>;
     using PropGrad_t = PropertyGradient_t<StructureManager>;
-    using internal::n_spatial_dimensions;
+    constexpr static int n_spatial_dimensions = StructureManager::dim();
+
     using math::PI;
     using math::pow;
 
@@ -967,7 +965,7 @@ namespace rascal {
                  + (neighbour_contribution * df_c));
           Matrix_t pair_gradient_contribution{this->max_radial,
                                               this->max_angular + 1};
-          for (size_t cartesian_idx{0}; cartesian_idx < n_spatial_dimensions;
+          for (int cartesian_idx{0}; cartesian_idx < n_spatial_dimensions;
                  ++cartesian_idx) {
             size_t l_block_idx{0};
             for (size_t angular_l{0}; angular_l < this->max_angular + 1;
@@ -1002,8 +1000,9 @@ namespace rascal {
       // Normalize and orthogonalize the radial coefficients
       radial_integral->finalize_coefficients(coefficients_center);
       if (this->compute_gradients) {
-        radial_integral->finalize_coefficients_der(
-            expansions_coefficients_gradient, center);
+        radial_integral
+            ->template finalize_coefficients_der<n_spatial_dimensions>(
+                expansions_coefficients_gradient, center);
       }
     }  // for (center : manager)
   }    // compute()

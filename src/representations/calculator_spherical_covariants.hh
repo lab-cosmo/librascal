@@ -301,7 +301,7 @@ namespace rascal {
     void compute_impl(std::shared_ptr<StructureManager> manager);
 
     template <class Invariants, class ExpansionCoeff, class StructureManager>
-    void initialize_percenter_lambda_soap_vectors(
+    void initialize_per_center_lambda_soap_vectors(
         Invariants & soap_vector, ExpansionCoeff & expansions_coefficients,
         std::shared_ptr<StructureManager> manager);
 
@@ -335,7 +335,7 @@ namespace rascal {
   }
 
   template <class Invariants, class ExpansionCoeff, class StructureManager>
-  void CalculatorSphericalCovariants::initialize_percenter_lambda_soap_vectors(
+  void CalculatorSphericalCovariants::initialize_per_center_lambda_soap_vectors(
       Invariants & soap_vectors, ExpansionCoeff & expansions_coefficients,
       std::shared_ptr<StructureManager> manager) {
     using math::pow;
@@ -437,7 +437,7 @@ namespace rascal {
       return;
     }
 
-    this->initialize_percenter_lambda_soap_vectors(
+    this->initialize_per_center_lambda_soap_vectors(
         soap_vectors, expansions_coefficients, manager);
 
     Key_t p_type{0, 0};

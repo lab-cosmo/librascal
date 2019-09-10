@@ -218,8 +218,13 @@ namespace rascal {
 
     inline void update_central_cutoff(const double &);
 
-    //! check if size of representation manager is enough for current structure
-    //! manager
+    /**
+     * check if size of the calculator is enough for current structure
+     * manager.
+     * size refers to the parameter that regulate the feature size of the
+     * calculator.
+     */
+
     template <class StructureManager>
     void check_size_compatibility(StructureManager & manager) {
       for (auto center : manager) {
@@ -412,14 +417,14 @@ namespace rascal {
     // this->central_cutoff > manager->get_cutoff() is true.
     this->update_central_cutoff(manager->get_cutoff());
     // if (this->central_cutoff > manager->get_cutoff()) {
-    //   std::string error{R"(The hypers cutoff and the managers cutoff are not compatible: )"};
-    //   error += std::to_string(this->central_cutoff) + std::string(" > ");
-    //   error +=  std::to_string(manager->get_cutoff());
+    //   std::string error{R"(The hypers cutoff and the managers cutoff are not
+    //   compatible: )"}; error += std::to_string(this->central_cutoff) +
+    //   std::string(" > "); error +=  std::to_string(manager->get_cutoff());
     //   throw std::runtime_error(error);
     // }
 
-    // get a reference to the data container that will hold the representation
-    // in the structure manager
+    // Get a reference to the data container where the computed representation
+    // is stored in the corresponding structure manager
     auto && coulomb_matrices{
         manager->template get_property_ref<Prop_t>(this->get_name())};
 

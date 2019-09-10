@@ -782,13 +782,13 @@ namespace rascal {
      */
     inline Matrix_t dot(Self_t & B) {
       Matrix_t mat(this->size(), B.size());
-      auto && managerA{this->get_manager()};
-      auto && managerB{B.get_manager()};
+      auto && manager_a{this->get_manager()};
+      auto && manager_b{B.get_manager()};
       int i_row{0};
-      for (auto centerA : managerA) {
+      for (auto centerA : manager_a) {
         auto && rowA{this->operator[](centerA)};
         int i_col{0};
-        for (auto centerB : managerB) {
+        for (auto centerB : manager_b) {
           auto && rowB{B[centerB]};
           mat(i_row, i_col) = rowA.dot(rowB);
           ++i_col;

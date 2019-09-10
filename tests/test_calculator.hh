@@ -223,7 +223,7 @@ namespace rascal {
       this->get_ref(this->ref_filename);
     }
     ~SphericalInvariantsTestData() = default;
-    bool verbose{true};
+    bool verbose{false};
     std::string ref_filename{
         "reference_data/spherical_invariants_reference.ubjson"};
   };
@@ -236,7 +236,7 @@ namespace rascal {
       this->get_ref(this->ref_filename);
     }
     ~SphericalCovariantsTestData() = default;
-    bool verbose{true};
+    bool verbose{false};
     std::string ref_filename{
         "reference_data/spherical_covariants_reference.ubjson"};
   };
@@ -504,7 +504,7 @@ namespace rascal {
       this->get_ref(this->ref_filename);
     }
     ~SphericalExpansionTestData() = default;
-    bool verbose{true};
+    bool verbose{false};
     std::string ref_filename{
         "reference_data/spherical_expansion_reference.ubjson"};
   };
@@ -844,7 +844,7 @@ namespace rascal {
 
     const bool consider_ghost_neighbours{false};
     std::string ref_filename{"reference_data/sorted_coulomb_reference.ubjson"};
-    bool verbose{true};
+    bool verbose{false};
   };
 
   template <class BaseFixture>
