@@ -60,7 +60,6 @@ namespace rascal {
       using Map = std::map<std::string, std::string>;
       Map mapping = {{"StructureManager", ""},
                      {"Adaptor", ""},
-                     {"Calculator", ""},
                      {"Calculator", ""}};
     };
 
