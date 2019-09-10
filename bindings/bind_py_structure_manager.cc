@@ -241,6 +241,11 @@ namespace rascal {
     return manager;
   }
 
+  /**
+   * Bind the update function when the atomic structure is provided as
+   * a set of positions, the corresponding atom_types, the cell vectors and
+   * the periodic boundary conditions.
+   */
   template <typename StructureManagerImplementation>
   void
   bind_update_unpacked(PyManager<StructureManagerImplementation> & manager) {
@@ -256,6 +261,11 @@ namespace rascal {
                 py::arg("pbc"), py::call_guard<py::gil_scoped_release>());
   }
 
+  /**
+   * Bind the update function when no atomic structure is provided. It
+   * corresponds to the case when several adaptors are stacked on a
+   * structure manager centers and then you update keeping the structure as is.
+   */
   template <typename StructureManagerImplementation>
   void bind_update_empty(PyManager<StructureManagerImplementation> & manager) {
     manager.def("update",
