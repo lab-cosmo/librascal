@@ -1,5 +1,5 @@
 /**
- * file   input_node_contribution_impl.hh
+ * file   behler_feature_impl.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
@@ -25,8 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_REPRESENTATIONS_INPUT_NODE_CONTRIBUTION_IMPL_HH_
-#define SRC_REPRESENTATIONS_INPUT_NODE_CONTRIBUTION_IMPL_HH_
+#ifndef SRC_REPRESENTATIONS_BEHLER_FEATURE_IMPL_HH_
+#define SRC_REPRESENTATIONS_BEHLER_FEATURE_IMPL_HH_
 
 #include "utils/for_each_at_order.hh"
 
@@ -35,7 +35,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <SymmetryFunType SymFunType, internal::CutoffFunctionType CutFunType,
             class StructureManager>
-  void InputNodeContribution<SymFunType, CutFunType, StructureManager>::apply(
+  void BehlerFeature<SymFunType, CutFunType, StructureManager>::apply(
       StructureManager & /*manager*/) const {
     // utils::for_each_at_order<SymmetryFun<SymFunType>::NbParams>::loop(
     //     eval_cluster, manager);
@@ -44,7 +44,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <SymmetryFunType SymFunType, internal::CutoffFunctionType CutFunType,
             class StructureManager>
-  void InputNodeContribution<SymFunType, CutFunType, StructureManager>::init(
+  void BehlerFeature<SymFunType, CutFunType, StructureManager>::init(
       const UnitStyle & units) {
     std::map<double, size_t> nb_param_per_cutoff{};
 
@@ -74,4 +74,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif  // SRC_REPRESENTATIONS_INPUT_NODE_CONTRIBUTION_IMPL_HH_
+#endif  // SRC_REPRESENTATIONS_BEHLER_FEATURE_IMPL_HH_

@@ -34,7 +34,7 @@
 #include "structure_managers/adaptor_filter.hh"
 #include "structure_managers/property.hh"
 #include "utils/tuple_standardisation.hh"
-#include "representations/input_node_contribution.hh"
+#include "representations/behler_feature.hh"
 
 namespace rascal {
 
@@ -55,7 +55,7 @@ namespace rascal {
     CalculatorBehlerParinello() = delete;
 
     //! Construct for a input parameter json
-    CalculatorBehlerParinello(const Hypers_t & parameters);
+    inline explicit CalculatorBehlerParinello(const Hypers_t & parameters);
 
     //! Copy constructor
     CalculatorBehlerParinello(const CalculatorBehlerParinello & other) = delete;
@@ -75,10 +75,10 @@ namespace rascal {
     operator=(CalculatorBehlerParinello && other) = default;
 
     //! Pure Virtual Function to set hyperparameters of the representation
-    void set_hyperparameters(const Hypers_t &) final;
+    void set_hyperparameters(const Hypers_t &) final{};
 
     template <class StructureManager>
-    void compute(StructureManager & manager);
+    void compute(StructureManager & /*manager*/) {}
 
    protected:
     //! unique cutoff function used for all input nodes
@@ -92,4 +92,5 @@ namespace rascal {
   };
 }  // namespace rascal
 
-#endif /* SRC_REPRESENTATIONS_CALCULATOR_BEHLER_PARINELLO_HH_ */
+#include "calculator_behler_parinello_impl.hh"
+#endif  // SRC_REPRESENTATIONS_CALCULATOR_BEHLER_PARINELLO_HH_

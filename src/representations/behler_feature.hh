@@ -1,5 +1,5 @@
 /**
- * file   input_node_contribution.hh
+ * file   behler_feature.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
@@ -26,8 +26,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_REPRESENTATIONS_INPUT_NODE_CONTRIBUTION_HH_
-#define SRC_REPRESENTATIONS_INPUT_NODE_CONTRIBUTION_HH_
+#ifndef SRC_REPRESENTATIONS_BEHLER_FEATURE_HH_
+#define SRC_REPRESENTATIONS_BEHLER_FEATURE_HH_
 
 #include "representations/cutoff_functions.hh"
 #include "representations/symmetry_functions.hh"
@@ -35,7 +35,7 @@
 namespace rascal {
 
   template <class StructureManager>
-  class InputNodeContributionBase {
+  class BehlerFeatureBase {
    public:
     template <size_t Order>
     using ClusterRef_t = typename StructureManager::template ClusterRef<Order>;
@@ -44,29 +44,26 @@ namespace rascal {
         TupleStandardisation<int, StructureManager::traits::MaxOrder>;
 
     //! Default constructor
-    InputNodeContributionBase() = delete;
+    BehlerFeatureBase() = delete;
 
     //! Constructor with symmetry function type
-    InputNodeContributionBase(const SymmetryFunType sym_fun_type,
-                              const size_t order)
+    BehlerFeatureBase(const SymmetryFunType sym_fun_type, const size_t order)
         : sym_fun_type{sym_fun_type}, order{order} {}
 
     //! Copy constructor
-    InputNodeContributionBase(const InputNodeContributionBase & other);
+    BehlerFeatureBase(const BehlerFeatureBase & other);
 
     //! Move constructor
-    InputNodeContributionBase(InputNodeContributionBase && other) noexcept;
+    BehlerFeatureBase(BehlerFeatureBase && other) noexcept;
 
     //! Destructor
-    virtual ~InputNodeContributionBase() noexcept;
+    virtual ~BehlerFeatureBase() noexcept;
 
     //! Copy assignment operator
-    InputNodeContributionBase &
-    operator=(const InputNodeContributionBase & other);
+    BehlerFeatureBase & operator=(const BehlerFeatureBase & other);
 
     //! Move assignment operator
-    InputNodeContributionBase &
-    operator=(InputNodeContributionBase && other) noexcept;
+    BehlerFeatureBase & operator=(BehlerFeatureBase && other) noexcept;
 
     //! needs to be called after reading the input file and prior to the first
     //! evaluation. Attaches all necessary properties for precalculated values
@@ -102,10 +99,9 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <SymmetryFunType SymFunType, internal::CutoffFunctionType CutFunType,
             class StructureManager>
-  class InputNodeContribution final
-      : public InputNodeContributionBase<StructureManager> {
+  class BehlerFeature final : public BehlerFeatureBase<StructureManager> {
    public:
-    using Parent = InputNodeContributionBase<StructureManager>;
+    using Parent = BehlerFeatureBase<StructureManager>;
     using SymmetryFunction = SymmetryFun<SymFunType>;
     using CutoffFunction = internal::CutoffFunction<CutFunType>;
     using StdSpecies = typename Parent::StdSpecies;
@@ -114,29 +110,29 @@ namespace rascal {
 
     // stores parameter packs ordered by cutoff radius
     using ParamStorage =
-        std::map<double, Eigen::Matrix<double, SymmetryFun<SymFunType>::NbParams,
-                                       Eigen::Dynamic>>;
+        std::map<double,
+                 Eigen::Matrix<double, SymmetryFun<SymFunType>::NbParams,
+                               Eigen::Dynamic>>;
 
     constexpr static size_t MaxOrder{Parent::traits::MaxOrder};
 
     //! Default constructor
-    InputNodeContribution() : Parent(SymFunType) {}
+    BehlerFeature() : Parent(SymFunType) {}
 
     //! Copy constructor
-    InputNodeContribution(const InputNodeContribution & other) = delete;
+    BehlerFeature(const BehlerFeature & other) = delete;
 
     //! Move constructor
-    InputNodeContribution(InputNodeContribution && other) = default;
+    BehlerFeature(BehlerFeature && other) = default;
 
     //! Destructor
-    ~InputNodeContribution() = default;
+    ~BehlerFeature() = default;
 
     //! Copy assignment operator
-    InputNodeContribution &
-    operator=(const InputNodeContribution & other) = delete;
+    BehlerFeature & operator=(const BehlerFeature & other) = delete;
 
     //! Move assignment operator
-    InputNodeContribution & operator=(InputNodeContribution && other) = default;
+    BehlerFeature & operator=(BehlerFeature && other) = default;
 
     void init(const UnitStyle & units) final;
     void prepare(StructureManager & manager) final;
@@ -161,6 +157,6 @@ namespace rascal {
   };
 
 }  // namespace rascal
-#include "input_node_contribution_impl.hh"
+#include "behler_feature_impl.hh"
 
-#endif  // SRC_REPRESENTATIONS_INPUT_NODE_CONTRIBUTION_HH_
+#endif  // SRC_REPRESENTATIONS_BEHLER_FEATURE_HH_

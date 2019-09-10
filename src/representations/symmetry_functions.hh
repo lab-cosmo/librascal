@@ -93,10 +93,8 @@ namespace rascal {
     template <class Derived>
     static double eval_function(const Eigen::MatrixBase<Derived> & params,
                                 const double & r_ij) {
-      static_assert(Derived::RowsAtCompileTime==NbParams,
-                    "size mismatch");
-      static_assert(Derived::ColsAtCompileTime==1,
-                    "Needs a column vector");
+      static_assert(Derived::RowsAtCompileTime == NbParams, "size mismatch");
+      static_assert(Derived::ColsAtCompileTime == 1, "Needs a column vector");
       auto && eta{params(0)};
       auto && r_s{params(1)};
       auto && delta_r = r_ij - r_s;
@@ -108,10 +106,8 @@ namespace rascal {
                                 const double & r_ij,
                                 const Eigen::MatrixBase<Derived2> & n_ij)
         -> decltype(auto) {
-      static_assert(Derived1::RowsAtCompileTime==NbParams,
-                    "size mismatch");
-      static_assert(Derived1::ColsAtCompileTime==1,
-                    "Needs a column vector");
+      static_assert(Derived1::RowsAtCompileTime == NbParams, "size mismatch");
+      static_assert(Derived1::ColsAtCompileTime == 1, "Needs a column vector");
       auto && eta{params(0)};
       auto && r_s{params(1)};
       auto && delta_r{r_ij - r_s};
@@ -133,7 +129,8 @@ namespace rascal {
   //   static constexpr size_t NbParams{4};
   //   using ParamShape = Eigen::Matrix<double, NbParams, 1>;
   //   /**
-  //    * usually, derivatives are aligned with the distance vector, in which case
+  //    * usually, derivatives are aligned with the distance vector, in which
+  //    case
   //    * a scalar return type is sufficient. (important for triplet-related
   //    * functions)
   //    */
@@ -141,7 +138,8 @@ namespace rascal {
 
   //   static double eval_function(const Eigen::Map<ParamS> & params,
   //                               const double & r_ij, const double & r_jk,
-  //                               const double & r_ik, const double cos_theta) {
+  //                               const double & r_ik, const double cos_theta)
+  //                               {
   //     auto && zeta{params(0)};
   //     auto && eta{params(1)};
   //     auto && lambda{params(2)};
@@ -164,9 +162,9 @@ namespace rascal {
   //   static Eigen::Matrix<double, NbParams, 1> read(const json & params,
   //                                                  const UnitStyle & units) {
   //     Eigen::Matrix<double, NbParams, 1> retval{};
-  //     retval(0) = json_io::check_units(units.distance(-1, 2), param.at("eta"));
-  //     retval(1) = json_io::check_units(units.distance(), param.at("r_s"));
-  //     return retval;
+  //     retval(0) = json_io::check_units(units.distance(-1, 2),
+  //     param.at("eta")); retval(1) = json_io::check_units(units.distance(),
+  //     param.at("r_s")); return retval;
   //   }
 
   //  protected:
