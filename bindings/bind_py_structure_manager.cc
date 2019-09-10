@@ -165,7 +165,7 @@ namespace rascal {
   /**
    * Bind the clusterRef allowing to iterate over the manager, atom, neigh...
    * Use signature overloading to dispatch to the proper function.
-   * Use iteration by recursion to iterate from Order to MaxOrder-1 staticaly
+   * Use iteration by recursion to iterate from Order to MaxOrder-1 statically
    */
   template <typename StructureManagerImplementation, size_t Order,
             size_t MaxOrder>
