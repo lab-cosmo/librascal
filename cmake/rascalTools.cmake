@@ -25,7 +25,7 @@ This module provide some helper functions for rascal
 
 download_external_project(project_name
   URL <url>
-  BACKEND <GIT|HG>
+  BACKEND <GIT|HG|NONE>
   [TAG <tag>]
   [THIRD_PARTY_SRC_DIR <dir>]
   [NO_UPDATE]
@@ -73,6 +73,9 @@ function(download_external_project project_name)
     TAG
     BACKEND
     THIRD_PARTY_SRC_DIR
+    CONFIGURE_COMMAND
+    BUILD_COMMAND
+    INSTALL_COMMAND
     )
   set(_dep_multi_variables)
   cmake_parse_arguments(_dep_args
@@ -90,9 +93,6 @@ function(download_external_project project_name)
     message(FATAL_ERROR "You have to provide a backend to download ${project_name}")
   endif()
 
-  if(_dep_args_TAG)
-    set(_ep_tag "${_dep_args_BACKEND}_TAG ${_dep_args_TAG}")
-  endif()
 
   set(_src_dir ${PROJECT_SOURCE_DIR}/third-party/${project_name})
   if (_dep_args_THIRD_PARTY_SRC_DIR)
@@ -104,22 +104,49 @@ function(download_external_project project_name)
   endif()
 
   set(_working_dir ${PROJECT_BINARY_DIR}/third-party/${project_name}-download)
-  file(WRITE ${_working_dir}/CMakeLists.txt
-    "
+
+  if(_dep_args_BACKEND STREQUAL "NONE")
+    file(WRITE ${_working_dir}/CMakeLists.txt
+  "
 cmake_minimum_required(VERSION 3.1)
 project(${project_name}-download NONE)
 include(ExternalProject)
 ExternalProject_Add(${project_name}
-	SOURCE_DIR ${_src_dir}
-	BINARY_DIR ${_working_dir}
-	${_dep_args_BACKEND}_REPOSITORY ${_dep_args_URL}
-	${_ep_tag}
-	CONFIGURE_COMMAND \"\"
-	BUILD_COMMAND     \"\"
-	INSTALL_COMMAND   \"\"
-	TEST_COMMAND      \"\"
-	)
+SOURCE_DIR ${_src_dir}
+BINARY_DIR ${_working_dir}
+URL ${_dep_args_URL}
+CONFIGURE_COMMAND \"\"
+BUILD_COMMAND ${_dep_args_BUILD_COMMAND}
+INSTALL_COMMAND   \"\"
+TEST_COMMAND      \"\"
+)
 ")
+#
+  else()
+    if(_dep_args_TAG)
+      set(_ep_tag "${_dep_args_BACKEND}_TAG ${_dep_args_TAG}")
+    endif()
+
+    file(WRITE ${_working_dir}/CMakeLists.txt
+        "
+cmake_minimum_required(VERSION 3.1)
+project(${project_name}-download NONE)
+include(ExternalProject)
+ExternalProject_Add(${project_name}
+  SOURCE_DIR ${_src_dir}
+  BINARY_DIR ${_working_dir}
+  ${_dep_args_BACKEND}_REPOSITORY ${_dep_args_URL}
+  ${_ep_tag}
+  CONFIGURE_COMMAND \"\"
+  BUILD_COMMAND     \"\"
+  INSTALL_COMMAND   \"\"
+  TEST_COMMAND      \"\"
+  )
+")
+
+  endif(_dep_args_BACKEND STREQUAL "NONE")
+
+
   message(STATUS "Downloading ${project_name} ${_dep_args_GIT_TAG}")
   execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
     RESULT_VARIABLE _result

@@ -234,7 +234,7 @@ Let's say you wanted to be able to write code like this
   sm = ras.compute_pairs(sm)
   sm = ras.adaptor_strict(sm, 3.0)
 
-  rep = ras.SOAP(sm, hypers)
+  rep = ras.SphericalInvariants(sm, hypers)
   sm = rep.compute()
 
 The way we understand it,  this would make it impossible to have statically
@@ -252,7 +252,7 @@ based on StructureManagerFull, that could go like
 
 .. code-block:: c++
 
-  RepManagerSOAP<StructureManagerFull> (StructureManagerFull& SM, hypers) {
+  RepManagerSphericalInvariants<StructureManagerFull> (StructureManagerFull& SM, hypers) {
     this->sm = SM;
     this->sm.initialize_pars_based_on_hypers(hypers);
     this->sm.update();

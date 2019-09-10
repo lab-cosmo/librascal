@@ -8,7 +8,7 @@ from python_structure_manager_test import (
 )
 from python_representation_manager_test import (
     TestSortedCoulombRepresentation, TestSphericalExpansionRepresentation,
-    TestSOAPRepresentation
+    TestSphericalInvariantsRepresentation
 )
 
 from python_math_test import TestMath

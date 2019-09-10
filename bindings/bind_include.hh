@@ -36,7 +36,8 @@
 #include "representations/representation_manager_base.hh"
 #include "representations/representation_manager_sorted_coulomb.hh"
 #include "representations/representation_manager_spherical_expansion.hh"
-#include "representations/representation_manager_soap.hh"
+#include "representations/representation_manager_spherical_invariants.hh"
+#include "representations/representation_manager_spherical_covariants.hh"
 
 #include "representations/feature_manager_base.hh"
 #include "representations/feature_manager_dense.hh"
