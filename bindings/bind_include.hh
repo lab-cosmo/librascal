@@ -53,29 +53,30 @@ namespace rascal {
   namespace internal {
 
     /**
-     * Mapping to search and replace in type names
-     * when giving binding name
+     * Mapping used to replace all occurences of the first string with the
+     * second string in the class titles in the python binding module names. 
+     *
+     * first: string which should be replaced
+     * second: the replaced with string  
      */
-    struct SubstitutionMap {
-      using Map = std::map<std::string, std::string>;
-      Map mapping = {
-          {"StructureManager", ""}, {"Adaptor", ""}, {"Calculator", ""}};
-    };
+    const std::map<std::string, std::string> module_name_replacement_map = {
+        {"StructureManager", ""},
+        {"Adaptor", ""},
+        {"Calculator", ""}};
 
     /**
-     * Transforms the template type to a string for the pyhton bindings.
+     * Transforms the template type to a string for the python bindings.
      * There are submodules in the python bindings with the class
-     * tittle so to avoid redundancy they are removed from the
+     * title so to avoid redundancy they are removed from the
      * typename.
-     * @template T type that should be stringifyied
+     * @template T type that should be stringified
      * @returns std::string name of the type
      */
     template <typename T>
     std::string GetBindingTypeName() {
       std::string typeName = GetTypeName<T>();
-      SubstitutionMap ojb{};
       std::vector<std::string> names{typeName};
-      for (const auto & map : ojb.mapping) {
+      for (const auto & map : module_name_replacement_map) {
         names.push_back(std::regex_replace(
             names.back(), std::regex(map.first.c_str()), map.second.c_str()));
       }
