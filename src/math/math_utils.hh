@@ -156,7 +156,7 @@ namespace rascal {
      *   vec.unaryExpr(functor);
      *   // result is vec = [25,100,400]
      *
-     * @param Scalar can be of type: double, int and uint
+     * @paramt Scalar can be of type: double, int and uint
      */
     template <typename Scalar>
     struct MakePositiveIntegerPower {
