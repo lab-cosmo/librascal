@@ -210,7 +210,7 @@ namespace rascal {
   /**
    * templated function for adding a StructureManager interface
    * to allow using the iteration over the manager in python, the interface
-   * of the structure manager need to be binded.
+   * of the structure manager need to be bound.
    */
   template <typename StructureManagerImplementation>
   decltype(auto) add_structure_manager_interface(py::module & m) {
