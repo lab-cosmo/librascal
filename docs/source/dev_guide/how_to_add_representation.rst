@@ -11,9 +11,11 @@ How to add a new representation
 Write a RepresentationManager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+TODO(felix) update this part of the doc
+
 A representation manager is an object that builds a representation of the atomic structure contained in *a* structure manager. This class:
 
-- inherits publicly from :cpp:class:`RepresentationManagerBase <rascal::RepresentationManagerBase>` to follow its interface and use some of the common utilies shared by such class.
+- inherits publicly from :cpp:class:`CalculatorBase <rascal::CalculatorBase>` to follow its interface and use some of the common utilies shared by such class.
 
 - is templated by a structure manager to be able to build the representation efficiently.
 
@@ -25,12 +27,12 @@ The behaviour of a representation manager is defined at construction by a struct
 
 Note that there is one representation manager per structure manager.
 
-To illustrate the basic structure that a new representation that would be implemented in ``representation_manager_custom.hh`` should follow, let's take the example of the :cpp:class:`RepresentationManagerSortedCoulomb <rascal::RepresentationManagerSortedCoulomb>`. A detailed discussion of the sorted coulomb matrix representation can be found in [#one]_ and [#two]_.
+To illustrate the basic structure that a new representation that would be implemented in ``representation_manager_custom.hh`` should follow, let's take the example of the :cpp:class:`CalculatorSortedCoulomb <rascal::CalculatorSortedCoulomb>`. A detailed discussion of the sorted coulomb matrix representation can be found in [#one]_ and [#two]_.
 
 
 The representation starts with the definition of some useful short hands
 
-.. literalinclude:: ../../../src/representations/representation_manager_sorted_coulomb.hh
+.. literalinclude:: ../../../src/representations/calculator_sorted_coulomb.hh
     :language: c++
     :start-after: rep-preamble-start
     :end-before: rep-preamble-end
@@ -38,7 +40,7 @@ The representation starts with the definition of some useful short hands
 
 followed by the definition of its constructors and destructor
 
-.. literalinclude:: ../../../src/representations/representation_manager_sorted_coulomb.hh
+.. literalinclude:: ../../../src/representations/calculator_sorted_coulomb.hh
     :language: c++
     :start-after: rep-construc-start
     :end-before: rep-construc-end
@@ -46,7 +48,7 @@ followed by the definition of its constructors and destructor
 
 the declaration of the concrete implementation of the RepresentationManager interface
 
-.. literalinclude:: ../../../src/representations/representation_manager_sorted_coulomb.hh
+.. literalinclude:: ../../../src/representations/calculator_sorted_coulomb.hh
     :language: c++
     :start-after: rep-interface-start
     :end-before: rep-interface-end
@@ -56,7 +58,7 @@ and the declaration of some functions for internal use in the protected section.
 
 The end of the class contains the different internal variables needed by the class
 
-.. literalinclude:: ../../../src/representations/representation_manager_sorted_coulomb.hh
+.. literalinclude:: ../../../src/representations/calculator_sorted_coulomb.hh
     :language: c++
     :start-after: rep-variables-start
     :end-before: rep-variables-end
@@ -81,13 +83,13 @@ The last step is to write a python class in ``bindings/rascal/representations/``
 Efficient Implementation of Options
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The switch between several implementations of conceptually equivalent parts of a representation can be implemented through several mechanisms such a virtual inheritance. We detail here how to implement such switch efficiently using the :cpp:class:`RepresentationManagerSortedCoulomb <rascal::RepresentationManagerSortedCoulomb>` as an example.
+The switch between several implementations of conceptually equivalent parts of a representation can be implemented through several mechanisms such a virtual inheritance. We detail here how to implement such switch efficiently using the :cpp:class:`CalculatorSortedCoulomb <rascal::CalculatorSortedCoulomb>` as an example.
 
 To make the coulomb matrix invariant with respect to permutation Ref. [#two]_ proposes to sort the upper triangular part of the coulomb matrix according to the norm of each rows or the distance from the central atom (see [#one]_ for details).
 
 The implementation of these two behaviour is encapsulated in the :cpp:class:`SortCoulomMatrix <rascal::internal::SortCoulomMatrix>` class and the choice between them is done with a template parameter using template specialization. Note that a in this particular case templated functions could be sufficient but to underline how to implement the most general case a class is used.
 
-.. literalinclude:: ../../../src/representations/representation_manager_sorted_coulomb.hh
+.. literalinclude:: ../../../src/representations/calculator_sorted_coulomb.hh
     :language: c++
     :start-after: rep-options-def-start
     :end-before: rep-options-def-end
@@ -95,15 +97,15 @@ The implementation of these two behaviour is encapsulated in the :cpp:class:`Sor
 
 The specific implementation of the two options is done in with template specialization
 
-.. literalinclude:: ../../../src/representations/representation_manager_sorted_coulomb.hh
+.. literalinclude:: ../../../src/representations/calculator_sorted_coulomb.hh
     :language: c++
     :start-after: rep-options-impl-start
     :end-before: rep-options-impl-end
     :dedent: 4
 
-Finally, the switch between the two behaviours is done in the :cpp:func:`compute() <rascal::RepresentationManagerSortedCoulomb::compute()>` by calling the templated function :cpp:func:`compute_helper() <rascal::RepresentationManagerSortedCoulomb::compute_helper()>` where the computation of the representation is actually implemented
+Finally, the switch between the two behaviours is done in the :cpp:func:`compute() <rascal::CalculatorSortedCoulomb::compute()>` by calling the templated function :cpp:func:`compute_helper() <rascal::CalculatorSortedCoulomb::compute_helper()>` where the computation of the representation is actually implemented
 
-.. literalinclude:: ../../../src/representations/representation_manager_sorted_coulomb.hh
+.. literalinclude:: ../../../src/representations/calculator_sorted_coulomb.hh
     :language: c++
     :start-after: rep-options-compute-start
     :end-before: rep-options-compute-end

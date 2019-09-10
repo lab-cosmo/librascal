@@ -25,7 +25,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "bind_include.hh"
+#include "bind_py_module.hh"
 
 using namespace pybind11::literals;  // NOLINT (is recommended use of pybind11)
 namespace py = pybind11;
@@ -38,8 +38,11 @@ PYBIND11_MODULE(_rascal, mod) {
 
   py::module m_rpr_mng = mod.def_submodule("RepresentationManager");
   m_rpr_mng.doc() = "Representation Manager Classes";
-  py::module m_feat_mng = mod.def_submodule("FeatureManager");
-  m_feat_mng.doc() = "Feature Manager Classes";
+  py::module m_models = mod.def_submodule("Models");
+  m_models.doc() = "Collection of models";
+
+  py::module m_kernels = m_models.def_submodule("Kernels");
+  m_kernels.doc() = "Collection of Kernels";
 
   py::module m_utl = mod.def_submodule("utils");
   py::module m_math = mod.def_submodule("math");
@@ -50,9 +53,9 @@ PYBIND11_MODULE(_rascal, mod) {
 
   py::add_ostream_redirect(m_utl, "ostream_redirect");
 
-  add_structure_managers(m_nl, m_throwaway);
-  add_representation_managers(m_rpr_mng, m_throwaway);
-  add_feature_managers(m_feat_mng, m_throwaway);
-  utils_binding(m_utl);
-  math_binding(m_math);
+  rascal::add_structure_managers(m_nl, m_throwaway);
+  rascal::add_representation_calculators(m_rpr_mng, m_throwaway);
+  rascal::utils_binding(m_utl);
+  rascal::math_binding(m_math);
+  rascal::add_kernels(m_kernels, m_throwaway);
 }

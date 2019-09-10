@@ -25,9 +25,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "bind_include.hh"
+#include "bind_py_math.hh"
 
-namespace math = rascal::math;
 namespace py = pybind11;
 
-void math_binding(py::module &) {}
+namespace rascal {
+  void math_binding(py::module &) {}
+}  // namespace rascal

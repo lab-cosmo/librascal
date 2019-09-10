@@ -31,6 +31,8 @@
 #ifndef SRC_STRUCTURE_MANAGERS_PROPERTY_TYPED_HH_
 #define SRC_STRUCTURE_MANAGERS_PROPERTY_TYPED_HH_
 
+#include "rascal_utility.hh"
+#include "math/math_utils.hh"
 #include "structure_managers/property_base.hh"
 #include "structure_managers/cluster_ref_key.hh"
 
@@ -155,7 +157,9 @@ namespace rascal {
     using Parent = PropertyBase;
     using Value = internal::Value<T, Eigen::Dynamic, Eigen::Dynamic>;
     using Manager_t = Manager;
+    using Self_t = TypedProperty<T, Order, PropertyLayer, Manager>;
     using traits = typename Manager::traits;
+    using Matrix_t = math::Matrix_t;
 
     using value_type = typename Value::type;
     using reference = typename Value::reference;
@@ -168,7 +172,8 @@ namespace rascal {
                  nb_col,
                  Order,
                  PropertyLayer,
-                 metadata} {}
+                 metadata},
+          type_id{internal::GetTypeNameHelper<Self_t>::GetTypeName()} {}
 
     //! Default constructor
     TypedProperty() = delete;
@@ -190,7 +195,8 @@ namespace rascal {
 
     /* ---------------------------------------------------------------------- */
     //! return runtime info about the stored (e.g., numerical) type
-    const std::type_info & get_type_info() const final { return typeid(T); };
+    //! return info about the type
+    const std::string & get_type_info() const { return this->type_id; }
 
     Manager_t & get_manager() {
       return static_cast<Manager_t &>(this->base_manager);
@@ -234,6 +240,10 @@ namespace rascal {
       for (size_t i{0}; i < this->values.size(); ++i) {
         values[i] = i;
       }
+      // fill_sequence happens in update_self so if it is called it means that
+      // the property was not up to date (no need to check here if it should
+      // be updated)
+      this->set_updated_status(true);
     }
 
     //! Adjust size of values (only increases, never frees)
@@ -252,7 +262,7 @@ namespace rascal {
      * shortens the vector so that the manager can push_back into it (capacity
      * not reduced)
      */
-    void resize_to_zero() { this->values.resize(0); }
+    void clear() { this->values.clear(); }
 
     /* ---------------------------------------------------------------------- */
     //! Property accessor by cluster ref
@@ -279,8 +289,20 @@ namespace rascal {
                             this->get_nb_row(), this->get_nb_col());
     }
 
-    //! getter to the underlying data storage
-    inline std::vector<T> & get_raw_data() { return this->values; }
+    // //! getter to the underlying data storage
+    // inline std::vector<T> & get_raw_data() { return this->values; }
+
+    inline void fill_dense_feature_matrix(Eigen::Ref<Matrix_t> features) {
+      size_t n_center{this->get_nb_item()};
+      auto n_cols{this->get_nb_comp()};
+      auto mat = reference(this->values.data(), n_cols, n_center);
+      for (size_t i_center{0}; i_center < n_center; i_center++) {
+        for (int i_pos{0}; i_pos < n_cols; i_pos++) {
+          // the storage order is swapped here because mat is ColMajor
+          features(i_center, i_pos) = mat(i_pos, i_center);
+        }
+      }
+    }
 
     //! get number of different distinct element in the property
     //! (typically the number of center)
@@ -297,7 +319,16 @@ namespace rascal {
                             this->get_nb_row(), this->get_nb_col());
     }
 
+    inline Matrix_t get_dense_feature_matrix() {
+      auto nb_centers{this->get_nb_item()};
+      auto nb_features{this->get_nb_comp()};
+      Matrix_t features(nb_centers, nb_features);
+      this->fill_dense_feature_matrix(features);
+      return features;
+    }
+
    protected:
+    std::string type_id{};
     std::vector<T> values{};  //!< storage for properties
   };
 }  // namespace rascal

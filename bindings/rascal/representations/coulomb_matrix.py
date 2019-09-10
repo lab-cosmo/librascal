@@ -1,11 +1,11 @@
 import numpy as np
 import json
 
-from ..neighbourlist.base import NeighbourListFactory
-from ..neighbourlist import get_neighbourlist, convert_to_structure
-from ..lib import RepresentationManager, FeatureManager
-from .base import RepresentationFactory, FeatureFactory
-from ..utils import get_full_name, FactoryPool
+from ..neighbourlist import AtomsList
+from ..lib import RepresentationManager
+from .base import CalculatorFactory
+from ..utils import FactoryPool
+from itertools import starmap
 
 
 class SortedCoulombMatrix(object):
@@ -46,7 +46,7 @@ class SortedCoulombMatrix(object):
         self.hypers = dict()
         self.update_hyperparameters(
             sorting_algorithm=sorting_algorithm,
-            cutoff=cutoff,
+            central_cutoff=cutoff,
             central_decay=central_decay,
             interaction_cutoff=interaction_cutoff,
             interaction_decay=interaction_decay,
@@ -54,14 +54,10 @@ class SortedCoulombMatrix(object):
         )
 
         self.nl_options = [
-            dict(name='centers', args=[]),
-            dict(name='neighbourlist', args=[cutoff]),
-            dict(name='strict', args=[cutoff])
+            dict(name='centers', args=dict()),
+            dict(name='neighbourlist', args=dict(cutoff=cutoff)),
+            dict(name='strict', args=dict(cutoff=cutoff))
         ]
-
-        neighbourlist_full_name = get_full_name(self.nl_options)
-        self.name = self.name + '_' + neighbourlist_full_name
-
         self.misc = dict(method=method, n_workers=n_workers,
                          disable_pbar=disable_pbar)
 
@@ -71,11 +67,13 @@ class SortedCoulombMatrix(object):
         Also updates the internal json-like representation
 
         """
-        allowed_keys = {'sorting_algorithm', 'cutoff', 'central_decay',
+        allowed_keys = {'sorting_algorithm', 'central_cutoff', 'central_decay',
                         'interaction_cutoff', 'interaction_decay', 'size'}
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}
         self.hypers.update(hypers_clean)
+
+
 
     def transform(self, frames):
         """
@@ -88,39 +86,22 @@ class SortedCoulombMatrix(object):
 
         Returns
         -------
-        FeatureManager.Dense_double
+
             Object containing the representation
         """
-        structures = [convert_to_structure(frame) for frame in frames]
+        if not isinstance(frames, AtomsList):
+            frames = AtomsList(frames, self.nl_options)
 
-        pool = FactoryPool(**self.misc)
-        inputs = [(structure, self.nl_options) for structure in structures]
-        managers = pool.starmap(get_neighbourlist, inputs)
-
-        self.size = self.get_size(managers)
+        self.size = self.get_size(frames.managers)
         self.update_hyperparameters(size=self.size)
         hypers_str = json.dumps(self.hypers)
         self.rep_options = dict(name=self.name, args=[hypers_str])
+        self._representation = CalculatorFactory(self.rep_options)
 
-        n_features = self.get_Nfeature()
-        self.feature_options = dict(name='dense_double', args=[
-                                    n_features, hypers_str])
+        self._representation.compute(frames.managers)
 
-        representations = [RepresentationFactory(
-            manager, self.rep_options) for manager in managers]
+        return frames
 
-        def compute_wrapper(representation): return representation.compute()
-        pool.map(compute_wrapper, representations)
-
-        pool.close()
-        pool.join()
-
-        features = FeatureFactory(self.feature_options)
-
-        for cm in representations:
-            features.append(cm)
-
-        return features
 
     def get_Nfeature(self):
         return int(self.size*(self.size+1)/2)

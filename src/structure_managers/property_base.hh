@@ -34,7 +34,6 @@
 #include "structure_managers/structure_manager_base.hh"
 
 #include <string>
-#include <typeinfo>
 #include <vector>
 #include <array>
 
@@ -63,8 +62,8 @@ namespace rascal {
     //! Move assignment operator
     PropertyBase & operator=(PropertyBase && other) = default;
 
-    //! return runtime info about the stored (e.g., numerical) type
-    virtual const std::type_info & get_type_info() const = 0;
+    //! return compile time type information
+    virtual const std::string & get_type_info() const = 0;
 
     //! returns the number of degrees of freedom stored per cluster
     inline Dim_t get_nb_comp() const { return this->nb_comp; }
@@ -107,6 +106,15 @@ namespace rascal {
     //! returns the metadata string
     inline std::string get_metadata() const { return this->metadata; }
 
+    /**
+     * Controls the is_updated flag
+     */
+    inline const bool & is_updated() const { return this->updated; }
+
+    inline void set_updated_status(const bool & is_updated) {
+      this->updated = is_updated;
+    }
+
    protected:
     //!< base-class reference to StructureManager
     StructureManagerBase & base_manager;
@@ -118,6 +126,9 @@ namespace rascal {
     const size_t property_layer;
     //!< e.g. a JSON formatted string
     const std::string metadata;
+    //! tells if the property is in synch with the underlying structure of
+    //! the structure manager
+    bool updated{false};
     //! constructor
     PropertyBase(StructureManagerBase & manager, Dim_t nb_row, Dim_t nb_col,
                  size_t order, size_t layer,

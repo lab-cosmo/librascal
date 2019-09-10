@@ -30,10 +30,9 @@
 #include "structure_managers/adaptor_neighbour_list.hh"
 #include "structure_managers/make_structure_manager.hh"
 #include "rascal_utility.hh"
-#include "representations/representation_manager_sorted_coulomb.hh"
-#include "representations/representation_manager_spherical_expansion.hh"
-#include "representations/representation_manager_spherical_invariants.hh"
-#include "representations/feature_manager_dense.hh"
+#include "representations/calculator_sorted_coulomb.hh"
+#include "representations/calculator_spherical_expansion.hh"
+#include "representations/calculator_spherical_invariants.hh"
 #include "basic_types.hh"
 #include "atomic_structure.hh"
 
@@ -48,8 +47,11 @@
 
 using namespace rascal;  // NOLINT
 
-using Representation_t = RepresentationManagerSphericalInvariants<
-    AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
+using Representation_t = CalculatorSphericalInvariants;
+using Manager_t = AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>;
+using Prop_t = typename CalculatorSphericalInvariants::Property_t<Manager_t>;
+using PropDer_t =
+    typename CalculatorSphericalInvariants::PropertyGradient_t<Manager_t>;
 
 int main(int argc, char * argv[]) {
   if (argc < 2) {
@@ -91,8 +93,9 @@ int main(int argc, char * argv[]) {
                                    AdaptorNeighbourList, AdaptorStrict>(
           structure, adaptors);
 
-  Representation_t representation{manager, hypers};
-  representation.compute();
+  Representation_t representation{hypers};
+
+  representation.compute(manager);
 
   constexpr size_t n_centers_print{4};
   constexpr size_t n_neigh_print{1};
@@ -113,18 +116,23 @@ int main(int argc, char * argv[]) {
                "then species pairs, along the columns; n-n'-l along the rows.";
   std::cout << std::endl;
   size_t center_count{0};
+
+  auto && soap_vectors{
+      manager->template get_property_ref<Prop_t>(representation.get_name())};
+  auto && soap_vector_gradients{manager->template get_property_ref<PropDer_t>(
+      representation.get_gradient_name())};
+
   for (auto center : manager) {
     if (center_count >= n_centers_print) {
       break;
     }
-    size_t n_species_center{
-        representation.soap_vectors.get_keys(center).size()};
+    size_t n_species_center{soap_vectors.get_keys(center).size()};
     std::cout << "============================" << std::endl;
     std::cout << "Center " << center.get_index();
     std::cout << " of type " << center.get_atom_type() << std::endl;
-    std::cout << representation.soap_vectors.get_dense_row(center);
+    std::cout << soap_vectors.get_dense_row(center);
     std::cout << std::endl;
-    auto keys_center = representation.soap_vectors[center].get_keys();
+    auto keys_center = soap_vectors[center].get_keys();
     std::cout << "Center data keys: ";
     for (auto key : keys_center) {
       std::cout << "(";
@@ -134,8 +142,7 @@ int main(int argc, char * argv[]) {
       std::cout << "\b\b) ";
     }
     std::cout << std::endl;
-    auto keys_grad_center =
-        representation.soap_vector_gradients[center].get_keys();
+    auto keys_grad_center = soap_vector_gradients[center].get_keys();
     std::cout << "Center gradient keys: ";
     for (auto key : keys_grad_center) {
       std::cout << "(";
@@ -149,9 +156,9 @@ int main(int argc, char * argv[]) {
     // clang-format off
     // makes an absolute mess of the below
     std::cout << Eigen::Map<Eigen::MatrixXd>(
-           representation.soap_vector_gradients.get_dense_row(center).data(),
+           soap_vector_gradients.get_dense_row(center).data(),
            3 * n_species_center,
-           representation.soap_vector_gradients.get_nb_comp())
+           soap_vector_gradients.get_nb_comp())
       .transpose();
     // clang-format on
     std::cout << std::endl;
@@ -160,7 +167,7 @@ int main(int argc, char * argv[]) {
       if (neigh_count >= n_neigh_print) {
         break;
       }
-      auto keys_neigh = representation.soap_vector_gradients[neigh].get_keys();
+      auto keys_neigh = soap_vector_gradients[neigh].get_keys();
       std::cout << "Neighbour keys: ";
       for (auto key : keys_neigh) {
         std::cout << "(";
@@ -174,9 +181,9 @@ int main(int argc, char * argv[]) {
       std::cout << " of type " << neigh.get_atom_type() << std::endl;
       // clang-format off
       std::cout << Eigen::Map<Eigen::MatrixXd>(
-          representation.soap_vector_gradients.get_dense_row(neigh).data(),
+          soap_vector_gradients.get_dense_row(neigh).data(),
           3 * n_species_center,
-          representation.soap_vector_gradients.get_nb_comp())
+          soap_vector_gradients.get_nb_comp())
         .transpose();
       // clang-format on
       std::cout << std::endl;

@@ -1,7 +1,6 @@
 /**
- * file   property_base.hh
+ * file   property_block_sparse.hh
  *
- * @author Till Junge <till.junge@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
  *
  * @date   03 April 2019
@@ -29,6 +28,8 @@
 #ifndef SRC_STRUCTURE_MANAGERS_PROPERTY_BLOCK_SPARSE_HH_
 #define SRC_STRUCTURE_MANAGERS_PROPERTY_BLOCK_SPARSE_HH_
 
+#include "rascal_utility.hh"
+#include "math/math_utils.hh"
 #include "structure_managers/property_base.hh"
 #include "structure_managers/cluster_ref_key.hh"
 
@@ -41,7 +42,6 @@
 #include <type_traits>
 
 namespace rascal {
-
   namespace internal {
 
     /**
@@ -106,11 +106,13 @@ namespace rascal {
       using Map_t = std::map<K, std::tuple<int, int, int>>;
       using Precision_t = typename V::value_type;
       using Data_t = Eigen::Array<Precision_t, Eigen::Dynamic, 1>;
-      using DataRef_t = Eigen::Ref<Data_t>;
-      using DataConstRef_t = const Eigen::Ref<const Data_t>;
+      using Vector_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, 1>;
+      using VectorRef_t = typename Eigen::Map<Vector_t>;
+      using Self_t = InternallySortedKeyMap<K, V>;
       //! the data holder.
       Data_t data{};
       Map_t map{};
+      bool normalized{false};
 
       // some member types
       using key_type = typename MyMap_t::key_type;
@@ -341,17 +343,19 @@ namespace rascal {
        */
       inline Precision_t norm() const { return this->data.matrix().norm(); }
 
-      /**
-       * squared l^2 norm of the entire vector (sum of squared elements)
-       */
       inline Precision_t squaredNorm() const {
         return this->data.matrix().squaredNorm();
       }
 
       /**
-       * Normalize the whole vector
+       * squared l^2 norm of the entire vector (sum of squared elements)
        */
-      inline void normalize() { this->data /= this->data.matrix().norm(); }
+      inline void normalize() {
+        double norm = this->data.matrix().norm();
+        if (std::abs(norm) > 0.) {
+          this->data /= norm;
+        }
+      }
 
       /**
        * Multiply the elements that belong to (key1, key2) entry with
@@ -369,6 +373,26 @@ namespace rascal {
             block *= fac;
           }
         }
+      }
+
+      /**
+       * dot product with another internally sorted map
+       */
+      inline Precision_t dot(Self_t & B) {
+        Precision_t val{0.};
+        auto keysB{B.get_keys()};
+        auto unique_keys{this->intersection(keysB)};
+
+        for (auto & key : unique_keys) {
+          auto && posA{this->map[key]};
+          auto vecA{VectorRef_t(&this->data[std::get<0>(posA)],
+                                std::get<1>(posA) * std::get<2>(posA))};
+          auto && posB{B.map[key]};
+          auto vecB{VectorRef_t(&B.data[std::get<0>(posB)],
+                                std::get<1>(posB) * std::get<2>(posB))};
+          val += vecA.dot(vecB);
+        }
+        return val;
       }
 
       /**
@@ -401,6 +425,22 @@ namespace rascal {
       }
 
      private:
+      std::vector<key_type> intersection(std::vector<key_type> & keys) {
+        if (keys.empty()) {
+          return std::vector<key_type>();
+        }
+        std::set<key_type> set{keys.cbegin(), keys.cend()};
+        std::vector<key_type> intersections;
+        for (auto el : this->map) {
+          if (set.erase(el.first) >
+              0) {  // if n exists in set, then 1 is returned and n is erased;
+                    // otherwise, 0.
+            intersections.push_back(el.first);
+          }
+        }
+        return intersections;
+      }
+
       /**
        * Functor to get a key from a map
        */
@@ -423,19 +463,21 @@ namespace rascal {
    public:
     using Parent = PropertyBase;
     using Manager_t = Manager;
+    using Self_t =
+        BlockSparseProperty<Precision_t, Order, PropertyLayer, Manager, Key>;
     using traits = typename Manager::traits;
 
-    using Dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, Eigen::Dynamic,
-                                  Eigen::RowMajor>;
-    using DenseRef_t = Eigen::Map<Dense_t>;
+    using Matrix_t = math::Matrix_t;
+    using DenseRef_t = Eigen::Map<Matrix_t>;
     using Key_t = Key;
     using Keys_t = std::set<Key_t>;
-    using InputData_t = internal::InternallySortedKeyMap<Key_t, Dense_t>;
+    using InputData_t = internal::InternallySortedKeyMap<Key_t, Matrix_t>;
     using Data_t = std::vector<InputData_t>;
     using DataOrders_t = std::array<std::vector<InputData_t>, Order>;
 
    protected:
     DataOrders_t values{};  //!< storage for properties
+    std::string type_id{};
 
    public:
     //! constructor
@@ -446,7 +488,8 @@ namespace rascal {
                  0,
                  Order,
                  PropertyLayer,
-                 metadata} {}
+                 metadata},
+          type_id{internal::GetTypeNameHelper<Self_t>::GetTypeName()} {}
 
     //! Default constructor
     BlockSparseProperty() = delete;
@@ -466,11 +509,21 @@ namespace rascal {
     //! Move assignment operator
     BlockSparseProperty & operator=(BlockSparseProperty && other) = default;
 
-    /* ---------------------------------------------------------------------- */
-    //! return runtime info about the stored (e.g., numerical) type
-    const std::type_info & get_type_info() const final {
-      return typeid(Precision_t);
-    };
+    static inline void check_compatibility(PropertyBase & other) {
+      // check ``type`` compatibility
+      auto type_id{internal::GetTypeNameHelper<Self_t>::GetTypeName()};
+      if (not(other.get_type_info() == type_id)) {
+        std::stringstream err_str{};
+        err_str << "Incompatible types: '" << other.get_type_info() << "' != '"
+                << type_id << "'.";
+        throw std::runtime_error(err_str.str());
+      }
+    }
+
+    /* --------------------------------------------------------------------- */
+
+    //! return info about the type
+    const std::string & get_type_info() const final { return this->type_id; };
 
     /**
      * the case consider_ghost_atoms == true is limited to cluster_index
@@ -554,23 +607,6 @@ namespace rascal {
                               CallerOrder - 1);
     }
 
-    /* --------------------------------------------------------------------
-     * AAAAAaaaargh oh no the const version breaks everything
-     * pls no
-    //! Property accessor by cluster ref
-    template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order,
-              std::enable_if_t<(CallerOrder <= Order_), int> = 0>
-    inline decltype(auto)
-    const operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
-      static_assert(CallerOrder <= Order, "should be CallerOrder <= Order");
-      static_assert(CallerLayer >= PropertyLayer,
-                    "You are trying to access a property that does not exist at"
-                    "this depth in the adaptor stack.");
-
-      return this->operator()(id.get_cluster_index(CallerLayer),
-                              CallerOrder - 1);
-    } */
-
     /**
      * Access a property of order 1 with a clusterRef of order 2
      */
@@ -623,7 +659,7 @@ namespace rascal {
     //! Accessor for property by cluster index and return a dense
     //! representation of the property associated to this cluster
     template <size_t CallerOrder, size_t CallerLayer>
-    inline Dense_t
+    inline Matrix_t
     get_dense_row(const ClusterRefKey<CallerOrder, CallerLayer> & id) {
       static_assert(CallerOrder <= Order, "should be CallerOrder <= Order");
       static_assert(CallerLayer >= PropertyLayer,
@@ -634,9 +670,10 @@ namespace rascal {
                                  CallerOrder - 1);
     }
 
-    inline Dense_t get_dense_row(const size_t & index, const size_t & i_order) {
+    inline Matrix_t get_dense_row(const size_t & index,
+                                  const size_t & i_order) {
       auto keys = this->values[i_order][index].get_keys();
-      Dense_t feature_row = Dense_t::Zero(this->get_nb_comp(), keys.size());
+      Matrix_t feature_row = Matrix_t::Zero(this->get_nb_comp(), keys.size());
       size_t i_col{0};
       for (const auto & key : keys) {
         size_t i_row{0};
@@ -650,9 +687,61 @@ namespace rascal {
       return feature_row;
     }
 
-    inline Dense_t get_dense_rep() {
+    /**
+     * Fill a dense feature matrix with layout Ncenter x Nfeatures
+     * if Order == 1.
+     * It is filled in the lexicografical order provided by all_keys and the
+     * missing entries are filled with zeros.
+     * The features are flattened out following the underlying storage order.
+     *
+     * @params features dense Eigen matrix of the proper size
+     *
+     * @param all_keys set of all the keys that should be considered when
+     * building the feature matrix
+     *
+     */
+    inline void fill_dense_feature_matrix(Eigen::Ref<Matrix_t> features,
+                                          const Keys_t & all_keys) {
+      int inner_size{this->get_nb_comp()};
+      int i_row{0};
+      for (size_t i_order{0}; i_order < Order; ++i_order) {
+        size_t n_center{this->values[i_order].size()};
+        for (size_t i_center{0}; i_center < n_center; i_center++) {
+          int i_feat{0};
+          for (const auto & key : all_keys) {
+            if (this->values[i_order][i_center].count(key) == 1) {
+              for (int i_pos{0}; i_pos < inner_size; i_pos++) {
+                features(i_row, i_feat) =
+                    this->values[i_order][i_center][key](i_pos);
+                i_feat++;
+              }
+            } else {
+              i_feat += inner_size;
+            }
+          }  // keys
+          i_row++;
+        }  // centers
+      }    // order
+    }
+
+    /**
+     * Get a dense feature matrix Ncenter x Nfeatures. The keys to use are
+     * deduced from the local storage.
+     */
+    inline Matrix_t get_dense_feature_matrix() {
+      auto all_keys = this->get_keys();
       size_t n_elements{this->size()};
       int inner_size{this->get_nb_comp()};
+      Matrix_t features =
+          Matrix_t::Zero(n_elements, inner_size * all_keys.size());
+      this->fill_dense_feature_matrix(features, all_keys);
+      return features;
+    }
+
+    /**
+     * @return set of unique keys at the level of the structure
+     */
+    inline Keys_t get_keys() {
       Keys_t all_keys{};
       for (size_t i_order{0}; i_order < Order; ++i_order) {
         size_t n_center{this->values[i_order].size()};
@@ -663,34 +752,14 @@ namespace rascal {
           }
         }
       }
-      Dense_t features =
-          Dense_t::Zero(inner_size * all_keys.size(), n_elements);
-
-      for (size_t i_order{0}; i_order < Order; ++i_order) {
-        size_t n_center{this->values[i_order].size()};
-        for (size_t i_center{0}; i_center < n_center; i_center++) {
-          int i_feat{0};
-          for (const auto & key : all_keys) {
-            if (this->values[i_order][i_center].count(key) == 1) {
-              for (int i_pos{0};
-                   i_pos < this->values[i_order][i_center][key].size();
-                   i_pos++) {
-                features(i_feat, i_center) =
-                    this->values[i_order][i_center][key](i_pos);
-                i_feat++;
-              }
-            } else {
-              i_feat += inner_size;
-            }
-          }
-        }
-      }
-      return features;
+      return all_keys;
     }
 
-    //! getter to the underlying data storage
-    // A hack here is fine because the function will disapear soon
-    inline std::vector<InputData_t> & get_raw_data() { return this->values[0]; }
+    // //! getter to the underlying data storage
+    // // A hack here is fine because the function will disapear soon
+    // inline std::vector<InputData_t> & get_raw_data() { return
+    // this->values[0]; }
+
     //! get number of different distinct element in the property
     //! (typically the number of center)
     inline size_t get_nb_item() const { return this->size(); }
@@ -704,6 +773,29 @@ namespace rascal {
                     "this depth in the adaptor stack.");
       return this->values[CallerOrder - 1][id.get_cluster_index(CallerLayer)]
           .get_keys();
+    }
+
+    /**
+     * dot product between property block sparse A and B
+     * assumes order == 1 for the moment should use SFINAE to take care of
+     * the case order == 2
+     */
+    inline Matrix_t dot(Self_t & B) {
+      Matrix_t mat(this->size(), B.size());
+      auto && managerA{this->get_manager()};
+      auto && managerB{B.get_manager()};
+      int i_row{0};
+      for (auto centerA : managerA) {
+        auto && rowA{this->operator[](centerA)};
+        int i_col{0};
+        for (auto centerB : managerB) {
+          auto && rowB{B[centerB]};
+          mat(i_row, i_col) = rowA.dot(rowB);
+          ++i_col;
+        }
+        ++i_row;
+      }
+      return mat;
     }
   };
 
