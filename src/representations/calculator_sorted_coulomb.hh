@@ -240,6 +240,7 @@ namespace rascal {
 
     /* -------------------- rep-interface-end -------------------- */
 
+    /* -------------------- compute-loop-begin -------------------- */
     //! loop over a collection of manangers (note that maps would raise a
     //! compilation error)
     template <
@@ -259,6 +260,7 @@ namespace rascal {
     inline void compute_loop(StructureManager & manager) {
       this->compute_impl<AlgorithmType>(manager);
     }
+    /* -------------------- compute-loop-end -------------------- */
 
     //! Implementation of compute representation
     template <internal::CMSortAlgorithm AlgorithmType, class StructureManager>

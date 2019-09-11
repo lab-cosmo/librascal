@@ -49,7 +49,10 @@ PYBIND11_MODULE(_rascal, mod) {
   m_math.doc() = "Collection of math functions";
   py::module m_throwaway = mod.def_submodule("rubbish");
   m_throwaway.doc() =
-      "Collection of bindings that are needed but not functional";
+      "Collection of bindings that are needed to build functional bindings for"
+      " the python user but are not functional itself. It basically contains"
+      " all methods which are used on the binding side, but are not meant to"
+      " be used by the python user. It is also not part of the rascal library";
 
   py::add_ostream_redirect(m_utl, "ostream_redirect");
 
