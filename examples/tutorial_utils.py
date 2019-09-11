@@ -15,13 +15,13 @@ from time import strftime
 from tqdm import tqdm_notebook as tqdm
 
 style = {'description_width': 'initial'}
-hyper_vals = {"soap_type": ["PowerSpectrum", "RadialSpectrum"],
-            "interaction_cutoff":[2.0,5.0],
-            "max_radial": [0, 10],
-            "max_angular": [0, 10],
-            "gaussian_sigma_constant": [0.0,1.0],
-            "gaussian_sigma_type":["Constant"],
-            "cutoff_smooth_width":[0.0,1.0],
+hyper_vals = {"soap_type": dict(options = ["PowerSpectrum", "RadialSpectrum"], name = "Bond Order"),
+            "interaction_cutoff":dict(options = [2.0,5.0],name = r"$r_{cut}$"),
+            "max_radial":dict(options =  [0, 10],name = r"$n_{max}$"),
+            "max_angular": dict(options = [0, 10],name = r"$l_{max}$"),
+            "gaussian_sigma_constant": dict(options = [0.0,1.0],name = r"$\sigma$"),
+            "gaussian_sigma_type":dict(fixed="Constant"),
+            "cutoff_smooth_width":dict(fixed=0.5),
             }
 hyper_dict = {"Power Spectrum":dict(soap_type="PowerSpectrum",
                               interaction_cutoff=3.5,
@@ -48,54 +48,46 @@ hyper_dict = {"Power Spectrum":dict(soap_type="PowerSpectrum",
                                   cutoff_smooth_width=0.5,
                                   )
           }
-known_properties = dict(ENERGY="atomic", dft_formation_energy_per_atom_in_eV="global")
-def split_dataset(frames, test_fraction, seed=10):
+known_properties = dict(ENERGY="atomic", dft_formation_energy_per_atom_in_eV="global")\
+
+def markdown_table_from_dict(d, headers):
+    return '<table>  <thead><tr>{}</tr></thead><tbody>'.format(''.join(['<th>{}</th>'.format(h) for h in headers]))+''.join(['<tr><td>{}</td>{}</tr>'.format(key, ''.join(['<td>{}</td>'.format(v) for v in d[key]])) for key in d])+'</tbody></table>'
+def split_dataset(frames, train_fraction, seed=10):
     N = len(frames)
     ids = np.arange(N)
     np.random.seed(seed)
     np.random.shuffle(ids)
-    Ntrain = int(N*test_fraction)
+    Ntrain = int(N*train_fraction)
     train = ids[:Ntrain]
     test = ids[Ntrain:]
-    targets = extract_energy(frames)
     return np.array(train), np.array(test)#[frames[ii] for ii in train],targets[train],[frames[ii] for ii in test],targets[test]
-def get_mae(ypred,y):
-    return np.mean(np.abs(ypred-y))
-def get_rmse(ypred,y):
-    return np.sqrt(np.mean((ypred-y)**2))
-def get_sup(ypred,y):
-    return np.amax(np.abs((ypred-y)))
+# def get_mae(ypred,y):
+#     return np.mean(np.abs(ypred-y))
+# def get_rmse(ypred,y):
+#     return np.sqrt(np.mean((ypred-y)**2))
+# # def get_sup(ypred,y):
+# #     return np.amax(np.abs((ypred-y)))
 def get_r2(y_pred,y_true):
-    weight = 1
-    sample_weight = None
-    numerator = (weight * (y_true - y_pred) ** 2).sum(axis=0,dtype=np.float64)
-    denominator = (weight * (y_true - np.average(
-        y_true, axis=0, weights=sample_weight)) ** 2).sum(axis=0,dtype=np.float64)
-    output_scores = 1 - (numerator / denominator)
+    numerator = ((y_true - y_pred) ** 2).sum(axis=0,dtype=np.float64)
+    denominator = ((y_true - np.average(y_true, axis=0)) ** 2).sum(axis=0,dtype=np.float64)
+    output_scores = 1 - numerator / denominator
     return np.mean(output_scores)
 def get_score(ypred,y):
-    score_func = dict(
-        MAE=get_mae,
-        RMSE=get_rmse,
-        SUP=get_sup,
-        R2=get_r2,
-    )
-    scores = {}
-    for k,func in score_func.items():
-        scores[k] = func(ypred,y)
-    return scores
-def compute_representation(representation,frames):
-    expansions = representation.transform(frames)
-    return expansions
+    return {
+                "SUP": [np.amax(np.abs((ypred-y)))],
+                "MAE": [np.mean(np.abs(ypred-y))],
+                "RMSD":[np.sqrt(np.mean((ypred-y)**2))],
+                r"$R^2$" : [get_r2(ypred, y)]
+                }
 def compute_kernel(zeta, rep1, rep2=None, kernel_type = 'global'):
     if(kernel_type=='atomic'):
-        kernel_function = cosine_kernel_atomic
+        kernel_function = rep1.cosine_kernel_atomic
     else:
-        kernel_function = cosine_kernal_global
+        kernel_function = rep1.cosine_kernel_global
     if rep2 is not None:
-        return rep1.kernel_function(rep2, zeta)
+        return kernel_function(rep2, zeta)
     else:
-        return rep1.kernel_function(zeta)
+        return kernel_function(zeta)
 class KRR(object):
     def __init__(self,zeta,weights,representation,X, kernel_type):
         self.weights = weights
@@ -105,15 +97,18 @@ class KRR(object):
         self.kernel_type=kernel_type
 
     def predict(self,frames):
-        features = compute_representation(self.representation,frames)
+        features = self.representation.transform(frames)
         kernel = compute_kernel(self.zeta, self.X, features, self.kernel_type)
         return np.dot(self.weights, kernel)
 def extract_property(frames, property='energy'):
     try:
         return np.array([cc.info[property] for cc in frames])
     except:
-        print(frames[0].info)
-        raise KeyError("{} is not a property in the given frames".format(property))
+        try:
+            return np.array([cc.array[property] for cc in frames])
+        except:
+            print(frames[0].info)
+            raise KeyError("{} is not a property in the given frames".format(property))
 def readme_button():
     def show_readme_for_button(b):
         clear_output()
@@ -123,26 +118,26 @@ def readme_button():
     display(button, output)
 
     button.on_click(show_readme_for_button)
-def make_util_buttons():
-    funcs = {'compute_kernel': compute_kernel,
-             'compute_representation': compute_representation,
-             'extract_energy': extract_energy,
-             'get_mae': get_mae,
-             'get_r2': get_r2,
-             'get_rmse': get_rmse,
-             'get_score': get_score,
-             'get_sup': get_sup,
-             'split_dataset': split_dataset,
-             'train_krr_model': train_krr_model
-            }
-
-    def disp_func(a):
-        clear_output()
-        make_util_buttons()
-        lines = inspect.getsource(funcs[button.value])
-        display(Markdown('```python\n'+str(''.join(lines))+'```'))
-
-    button = _button_template_(funcs.keys(), "Show: ", disp_func)
+# def make_util_buttons():
+#     funcs = {'compute_kernel': compute_kernel,
+#
+#              'extract_energy': extract_energy,
+#              'get_mae': get_mae,
+#              'get_r2': get_r2,
+#              'get_rmse': get_rmse,
+#              'get_score': get_score,
+#              'get_sup': get_sup,
+#              'split_dataset': split_dataset,
+#              'train_krr_model': train_krr_model
+#             }
+#
+#     def disp_func(a):
+#         clear_output()
+#         make_util_buttons()
+#         lines = inspect.getsource(funcs[button.value])
+#         display(Markdown('```python\n'+str(''.join(lines))+'```'))
+#
+#     button = _button_template_(funcs.keys(), "Show: ", disp_func)
 def link_ngl_wdgt_to_ax_pos(ax, pos, ngl_widget):
     from matplotlib.widgets import AxesWidget
     from scipy.spatial import cKDTree
@@ -199,68 +194,68 @@ def _button_template_(options, description, disp_func, default=None):
         )
     display(button)
     button.observe(disp_func, 'value')
-
     return button
 
-# def setup_SOAP():
 class SOAP_tutorial(object):
-    def __init__(self, input_file='small_molecules-1000.xyz',perc_test=0.8, interactive = False, verbose=True, hyperparameters = dict(**hyper_dict['Power Spectrum']), number_of_frames=None, property=None):
-        self.perc_test = perc_test
+    def __init__(self, input_file='small_molecules-1000.xyz',training_percentage=0.8, interactive = False, verbose=True, hyperparameters = dict(**hyper_dict['Power Spectrum']), number_of_frames=None, property=None):
+        self.training_percentage = training_percentage
         self.zeta = 2
         self.Lambda = 5e-3
 
         self.hyperparameters = hyperparameters
-        self.verbosity_wrap = lambda s: (print('\r') if not verbose else print(s))
+        self.verbosity_wrap = lambda s: (print('\r') if not verbose else display(Markdown(s)))
 
         file_options = [f for f in os.listdir('./data') if f.endswith('xyz')]
         if(input_file!=None):
-            # self.verbosity_wrap("Our input file is {}.\n".format(input_file))
             file_options.insert(0, input_file)
             if(input_file in file_options[1:]):
                 file_options.pop(file_options[1:].index(input_file)+1)
-            # self.verbosity_wrap("Our hyperparameters are \n\t{}".format('\n\t'.join(['{:<30} {:<10}'.format(k, self.hyperparameters[k]) for k in self.hyperparameters])))
         self.input_file = file_options[0] if input_file==None else input_file
         self.frames=np.array(read('./data/'+self.input_file, ":"))
         self.train_idx, self.test_idx = None, None
 
         self.sliders = {val:
-                        widgets.FloatSlider(value = self.hyperparameters.get(val, hyper_vals[val][0]),
-                                    min = hyper_vals[val][0],
-                                    max = hyper_vals[val][1],
-                                    description = val.replace("_"," ").title(),
+                        widgets.FloatSlider(value = self.hyperparameters.get(val, hyper_vals[val]['options'][0]),
+                                    min = hyper_vals[val]['options'][0],
+                                    max = hyper_vals[val]['options'][1],
+                                    description = hyper_vals[val]['name'],
                                     continuous_update = True,
-                                    step = (hyper_vals[val][1]-hyper_vals[val][0])/20.,\
+                                    step = (hyper_vals[val]['options'][1]-hyper_vals[val]['options'][0])/20.,\
                                     style=style,\
                                     )
-                        if isinstance(hyper_vals[val][0],float) else
-                        widgets.IntSlider(value = self.hyperparameters.get(val, hyper_vals[val][0]),
-                                    min = hyper_vals[val][0],
-                                    max = hyper_vals[val][1],
-                                    description = val.replace("_"," ").title(),
+                        if isinstance(hyper_vals[val]['options'][0],float) else
+                        widgets.IntSlider(value = self.hyperparameters.get(val, hyper_vals[val]['options'][0]),
+                                    min = hyper_vals[val]['options'][0],
+                                    max = hyper_vals[val]['options'][1],
+                                    description = hyper_vals[val]['name'],
                                     continuous_update = True,
                                     step = 1,
                                     style=style,\
                                     )
-                        if isinstance(hyper_vals[val][0],int) and hyper_vals[val][0]!=True else
-                        widgets.Dropdown(options=hyper_vals[val],
+                        if isinstance(hyper_vals[val]['options'][0],int) and hyper_vals[val]['options'][0]!=True else
+                        widgets.Dropdown(options=hyper_vals[val]['options'],
                                          style=style,\
-                                         value = self.hyperparameters.get(val, hyper_vals[val][0]),
-                                         description=val.replace("_"," ").title())
-                        for val in hyper_vals}
+                                         value = self.hyperparameters.get(val, hyper_vals[val]['options'][0]),
+                                         description=hyper_vals[val]['name'],
+                                         )
+                        for val in hyper_vals if 'fixed' not in hyper_vals[val]}
 
-        self.input_button = _button_template_(file_options, "Input File: ", self.get_input)
-
-        self.preset_button = _button_template_(list(hyper_dict.keys()), "SOAP Presets: ", self.disp_func)
 
         self.properties = {prop: extract_property(self.frames, prop) for prop in self.frames[0].info if prop in known_properties}
         self.sliders['number_of_frames'] = widgets.IntSlider(value=len(self.frames) if number_of_frames==None else number_of_frames, min = 0, max = len(self.frames), \
                                                     description="Number of Frames", step=1, style=style)
-        self.sliders['property'] = widgets.Dropdown(value=list(self.properties.keys())[0] if property==None else property, options=list(self.properties.keys()), \
+        self.sliders['property_to_ml'] = widgets.Dropdown(value=list(self.properties.keys())[0] if property==None else property, options=list(self.properties.keys()), \
                                                     description="Property to ML", style=style)
         if(interactive):
-            for s in self.sliders:
-                display(self.sliders[s])
-                self.sliders[s].observe(lambda change: self.change_func(change), names='value')
+            self.input_button = _button_template_(file_options, "Input File: ", self.get_input)
+
+            self.preset_button = _button_template_(list(hyper_dict.keys()), "SOAP Presets: ", self.disp_func)
+
+            slider_order = ['number_of_frames','property_to_ml', *list(hyper_vals.keys())]
+            for s in slider_order:
+                if(s in self.sliders):
+                    display(self.sliders[s])
+                    self.sliders[s].observe(lambda change: self.change_func(change), names='value')
         self.krr = {prop:None for prop in self.properties}
         self.trained={prop:False for prop in self.properties}
     def reset_ML(self, inp_change=False):
@@ -268,15 +263,15 @@ class SOAP_tutorial(object):
             self.properties = {prop: extract_property(self.frames, prop) for prop in self.frames[0].info if  prop in known_properties}
             self.sliders['number_of_frames'].max = len(self.frames)
             self.sliders['number_of_frames'].value = len(self.frames)
-            self.sliders['property'].value = list(self.properties.keys())[0]
-            self.sliders['property'].options=list(self.properties.keys())
+            self.sliders['property_to_ml'].options=list(self.properties.keys())
+            self.sliders['property_to_ml'].value = list(self.properties.keys())[0]
         self.krr = {prop:None for prop in self.properties}
         self.trained={prop:False for prop in self.properties}
     def change_func(self,change):
-        slider = self.sliders[change['owner'].description.replace(' ','_').lower()]
-        if(slider.description.replace(' ','_').lower() in self.hyperparameters):
-            self.hyperparameters[slider.description.replace(' ','_').lower()] = change['new']
-        slider.value = change['new']
+        change['owner'].value = change['new']
+        for s in self.hyperparameters:
+            if(s in self.sliders):
+                self.hyperparameters[s] = self.sliders[s].value
         self.reset_ML()
     def disp_func(self,a):
         self.hyperparameters = hyper_dict[self.preset_button.value]
@@ -288,59 +283,52 @@ class SOAP_tutorial(object):
         self.input_file = self.input_button.value
         self.frames = np.array(read('./data/'+ self.input_file, ":"))
         self.reset_ML(True)
-    def compute_SOAP(self, frames = None):
-        if(frames==None):
-            self.train_idx, self.test_idx = split_dataset(self.frames[:self.sliders['number_of_frames'].value],self.perc_test)
-            frames=self.frames[self.train_idx]
-
-        self.verbosity_wrap("\nWe'll now construct the SOAP representation of the first frame by inputting our hyperparameters into rascal.representations.SphericalInvariants and use this to transform our frames.")
-        soap = SOAP(**self.hyperparameters)
-
-        compute_representation(soap, frames)
     def train_krr_model(self, jitter=1e-8):
+
+        self.output_params()
+        self.verbosity_wrap("<br/>We will now train a model on {}.".format(self.sliders['property_to_ml'].value))
+
         representation = SOAP(**self.hyperparameters)
 
-        self.train_idx, self.test_idx = split_dataset(self.frames[:self.sliders['number_of_frames'].value],self.perc_test)
-        self.verbosity_wrap("First, I am going to separate my dataset:\n\tTraining Set: {} pts ({}%)\n\tTesting Set: {} pts ({}%)".format(
-                                                                  len(self.train_idx), \
-                                                                  round(100*(self.perc_test)), \
-                                                                  len(self.test_idx), \
-                                                                  round(100*(1-self.perc_test))))
+        self.train_idx, self.test_idx = split_dataset(self.frames[:self.sliders['number_of_frames'].value],self.training_percentage)
+        self.verbosity_wrap("First, I am going to separate my dataset:")
+        self.verbosity_wrap(markdown_table_from_dict({"Training Set": [len(self.train_idx),round(100*(self.training_percentage))],
+                                                      "Testing Set":[len(self.test_idx),round(100*(1-self.training_percentage))]}, headers=["Partition","Number of Frames", "Percentage"]))
         t = time.time()
 
-        self.verbosity_wrap("\nNow we will compute the SOAP representation of our training frames.")
+        self.verbosity_wrap("<br/>Now we will compute the SOAP representation of our training frames.")
 
-        features = compute_representation(representation, self.frames[self.train_idx])
+        features = representation.transform(self.frames[self.train_idx])
 
-        self.verbosity_wrap('In this run, computing the SOAP vectors took {} seconds/frame'.format(round((time.time()-t)/len(self.train_idx),8)))
-        self.verbosity_wrap("\nNext we find the kernel for our training model.\n(This step may take a few minutes for larger training sets.)")
+        self.verbosity_wrap('This took {} seconds/frame.'.format(round((time.time()-t)/len(self.train_idx),8)))
+        self.verbosity_wrap("<br/>Next we find the kernel for our training model.<br/>(This step may take a few minutes for larger training sets.)")
 
         time.sleep(.5)
-        kernel = compute_kernel(self.zeta, features, kernel_type=known_properties[self.sliders['property'].value])
-        delta = np.std(self.properties[self.sliders['property'].value][self.train_idx]) / np.mean(kernel.diagonal())
+        kernel = compute_kernel(self.zeta, features, kernel_type=known_properties[self.sliders['property_to_ml'].value])
+        delta = np.std(self.properties[self.sliders['property_to_ml'].value][self.train_idx]) / np.mean(kernel.diagonal())
         kernel[np.diag_indices_from(kernel)] += self.Lambda**2 / delta **2 + jitter
 
-        self.verbosity_wrap("\nWe will adjust the diagonals of our kernel by {} so that it is properly scaled.".format(self.Lambda**2 / delta **2 + jitter))
-        self.verbosity_wrap("\nNow we can take this kernel to compute the weights of our KRR.")
+        self.verbosity_wrap("<br/>We will adjust the diagonals of our kernel by {} so that it is properly scaled.".format(round(self.Lambda**2 / delta **2 + jitter,8)))
+        self.verbosity_wrap("<br/>Now we can take this kernel to compute the weights of our KRR.")
 
-        weights = np.linalg.solve(kernel,self.properties[self.sliders['property'].value][self.train_idx])
-        model = KRR(self.zeta, weights, representation, features, kernel_type=known_properties[self.sliders['property'].value])
-        self.krr[self.sliders['property'].value], k = model, kernel
-        self.trained[self.sliders['property'].value] = True
-        return self.krr[self.sliders['property'].value], k
-
+        weights = np.linalg.solve(kernel,self.properties[self.sliders['property_to_ml'].value][self.train_idx])
+        model = KRR(self.zeta, weights, representation, features, kernel_type=known_properties[self.sliders['property_to_ml'].value])
+        self.krr[self.sliders['property_to_ml'].value], k = model, kernel
+        self.trained[self.sliders['property_to_ml'].value] = True
     def plot_prediction(self):
-        if(self.trained[self.sliders['property'].value]==False):
-            self.train_model(self.sliders['property'].value)
-        y_pred = self.krr[self.sliders['property'].value].predict(self.frames[self.test_idx])
-        print(get_score(y_pred, self.properties[self.sliders['property'].value][self.test_idx]))
-        plt.scatter(y_pred, self.properties[self.sliders['property'].value][self.test_idx], s=3)
+        if(self.trained[self.sliders['property_to_ml'].value]==False):
+            self.verbosity_wrap("Model has not yet been trained, training now..."   )
+            self.train_model(self.sliders['property_to_ml'].value)
+        y_pred = self.krr[self.sliders['property_to_ml'].value].predict(self.frames[self.test_idx])
+        self.verbosity_wrap(markdown_table_from_dict(get_score(y_pred, self.properties[self.sliders['property_to_ml'].value][self.test_idx]), headers=["Statistic","Value" ]))
+        plt.scatter(y_pred, self.properties[self.sliders['property_to_ml'].value][self.test_idx], s=3)
         plt.axis('scaled')
         plt.xlabel('DFT energy / (eV/atom)')
         plt.ylabel('Predicted energy / (eV/atom)')
         plt.gca().set_aspect('equal')
         plt.show()
-
-
+    def output_params(self):
+        self.verbosity_wrap('Our input file is {}, of which we are using {} frames.'.format(self.input_file, self.sliders['number_of_frames'].value))
+        self.verbosity_wrap("<br/>Our hyperparameters are {}".format(markdown_table_from_dict({hyper_vals[k]['name']:[self.hyperparameters[k]] for k in self.hyperparameters if 'fixed' not in hyper_vals[k]}, headers =["Parameter", "Value"])))
 if __name__=="__main__":
     make_util_buttons()
