@@ -47,17 +47,18 @@ namespace rascal {
      */
     template <typename T, Dim_t NbRow, Dim_t NbCol>
     struct Value {
-      using type = Eigen::Map<Eigen::Matrix<T, NbRow, NbCol>>;
-      using reference = type;
-      using const_reference = const type;
+      using value_type = Eigen::Matrix<T, NbRow, NbCol>;
+      using reference = Eigen::Map<Eigen::Matrix<T, NbRow, NbCol>>;
+      using const_reference =
+          const Eigen::Map<const Eigen::Matrix<T, NbRow, NbCol>>;
 
       //! get a reference to specific value at row and colum
       static reference get_ref(T & value, int nb_row, int nb_col) {
-        return type(&value, nb_row, nb_col);
+        return reference(&value, nb_row, nb_col);
       }
 
       //! get a reference
-      static reference get_ref(T & value) { return type(&value); }
+      static reference get_ref(T & value) { return reference(&value); }
 
       //! push back data into ``property``
       static void push_in_vector(std::vector<T> & vec, reference ref) {
@@ -112,7 +113,7 @@ namespace rascal {
     struct Value<T, 1, 1> {
       constexpr static Dim_t NbRow{1};
       constexpr static Dim_t NbCol{1};
-      using type = T;
+      using value_type = T;
       using reference = T &;
       using const_reference = const T &;
 
@@ -139,12 +140,6 @@ namespace rascal {
       }
     };
 
-    template <typename T, size_t NbRow, size_t NbCol>
-    using Value_t = typename Value<T, NbRow, NbCol>::type;
-
-    template <typename T, size_t NbRow, size_t NbCol>
-    using Value_ref = typename Value<T, NbRow, NbCol>::reference;
-
   }  // namespace internal
 
   /* ---------------------------------------------------------------------- */
@@ -155,14 +150,14 @@ namespace rascal {
   class TypedProperty : public PropertyBase {
    public:
     using Parent = PropertyBase;
-    using Value = internal::Value<T, Eigen::Dynamic, Eigen::Dynamic>;
+    using Value_t = internal::Value<T, Eigen::Dynamic, Eigen::Dynamic>;
     using Manager_t = Manager;
     using Self_t = TypedProperty<T, Order, PropertyLayer, Manager>;
     using traits = typename Manager::traits;
     using Matrix_t = math::Matrix_t;
 
-    using value_type = typename Value::type;
-    using reference = typename Value::reference;
+    using value_type = typename Value_t::value_type;
+    using reference = typename Value_t::reference;
 
     //! constructor
     TypedProperty(Manager_t & manager, Dim_t nb_row, Dim_t nb_col = 1,
@@ -285,8 +280,8 @@ namespace rascal {
 
     //! Accessor for property by index for dynamically sized properties
     reference operator[](const size_t & index) {
-      return Value::get_ref(this->values[index * this->get_nb_comp()],
-                            this->get_nb_row(), this->get_nb_col());
+      return Value_t::get_ref(this->values[index * this->get_nb_comp()],
+                              this->get_nb_row(), this->get_nb_col());
     }
 
     // //! getter to the underlying data storage
@@ -315,8 +310,8 @@ namespace rascal {
      */
     reference back() {
       auto && index{this->values.size() - this->get_nb_comp()};
-      return Value::get_ref(this->values[index * this->get_nb_comp()],
-                            this->get_nb_row(), this->get_nb_col());
+      return Value_t::get_ref(this->values[index * this->get_nb_comp()],
+                              this->get_nb_row(), this->get_nb_col());
     }
 
     inline Matrix_t get_dense_feature_matrix() {

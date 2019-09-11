@@ -54,15 +54,13 @@ namespace rascal {
 
     /**
      * Mapping used to replace all occurences of the first string with the
-     * second string in the class titles in the python binding module names. 
+     * second string in the class titles in the python binding module names.
      *
      * first: string which should be replaced
-     * second: the replaced with string  
+     * second: the replaced with string
      */
     const std::map<std::string, std::string> module_name_replacement_map = {
-        {"StructureManager", ""},
-        {"Adaptor", ""},
-        {"Calculator", ""}};
+        {"StructureManager", ""}, {"Adaptor", ""}, {"Calculator", ""}};
 
     /**
      * Transforms the template type to a string for the python bindings.
