@@ -1,0 +1,21 @@
+#!/bin/sh
+#
+# An example hook script to verify what is about to be committed.
+# Called by "git commit" with no arguments.  The hook should
+# exit with non-zero status after issuing an appropriate message if
+# it wants to stop the commit.
+#
+# To enable this hook, rename this file to "pre-commit".
+
+pip install nbfilter
+
+NBS=$(echo $(git diff --full-index -z --cached $against --name-only) | sort | grep "ipynb")
+
+for NB in $NBS ; do
+    echo "Removing outputs from $NB"
+    python -m nbfilter.clean < $NB | sponge $NB
+    git add "$NB"
+done
+
+# If there are whitespace errors, print the offending file names and fail.
+exec git diff --full-index --check --cached $against --
