@@ -11,8 +11,6 @@ How to add a new representation
 Write a Calculator for a representation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO(felix) check if this part was correctly updated 
-
 A calculator of a representation is an object that builds a representation of the atomic structure contained in *a* structure manager. This class:
 
 - inherits publicly from :cpp:class:`CalculatorBase <rascal::CalculatorBase>` to follow its interface and use some of the common utilies shared by such class.
