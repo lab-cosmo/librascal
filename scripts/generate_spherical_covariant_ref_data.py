@@ -120,8 +120,8 @@ def main(json_dump, save_kernel):
 
     x = get_feature_vector(test_hypers, frames)
     x0 = x.shape[0]
-    x = x.reshape((x0, 3, -1, (2*lam + 1), nmax**2))
-    x = x.transpose((0, 3, 1, 2, 4))
+    x = x.reshape((x0, 1, nmax**2, -1, (2*lam + 1)))
+    x = x.transpose((0, 4, 1, 2, 3))
     x = x.reshape((x0*(2*lam + 1), -1))
     kernel = np.dot(x, x.T)
     kernel = kernel.reshape((x0, (2*lam + 1), x0, (2*lam + 1)))

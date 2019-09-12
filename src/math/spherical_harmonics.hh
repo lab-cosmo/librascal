@@ -366,6 +366,14 @@ namespace rascal {
                 this->cos_sin_m_phi.row(m_count - 2);
           }
         }
+
+	//
+        for (size_t m_count{0}; m_count < this->max_angular + 1; m_count++) {
+	  cos_sin_m_phi.row(m_count)[0] *= pow(-1, m_count);
+	  cos_sin_m_phi.row(m_count)[1] *= pow(-1, m_count);
+	}
+	//
+
       }
 
       /**

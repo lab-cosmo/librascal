@@ -115,12 +115,39 @@ namespace rascal {
                 continue;
               }
             }
-            for (size_t m1{0}; m1 < 2 * l1 + 1; m1++) {
-              int m1s{static_cast<int>(m1 - l1)};
-              for (size_t m2{0}; m2 < 2 * l2 + 1; m2++) {
-                int m2s{static_cast<int>(m2 - l2)};
-                for (size_t m3{0}; m3 < 2 * l3 + 1; m3++) {
-                  int m3s{static_cast<int>(m3 - l3)};
+            //for (size_t m1{0}; m1 < 2 * l1 + 1; m1++) {
+            //  int m1s{static_cast<int>(m1 - l1)};
+            //  for (size_t m2{0}; m2 < 2 * l2 + 1; m2++) {
+            //    int m2s{static_cast<int>(m2 - l2)};
+            //    for (size_t m3{0}; m3 < 2 * l3 + 1; m3++) {
+            //      int m3s{static_cast<int>(m3 - l3)};
+            //      if ((m1s + m2s + m3s != 0) && (m1s + m2s - m3s != 0)) {
+            //        continue;
+            //      }
+            //      double w3j1{wig3jj(2 * l1, 2 * l2, 2 * l3, 2 * m1s, 2 * m2s,
+            //                         2 * m3s)};
+            //      double w3j2{wig3jj(2 * l1, 2 * l2, 2 * l3, 2 * m1s, 2 * m2s,
+            //                         -2 * m3s)};
+            //      if (m3s > 0) {
+            //        this->wigner_3js(n_elements) =
+            //            (w3j2 + math::pow(-1, m3s) * w3j1) * math::INV_SQRT_TWO;
+            //      } else if (m3s < 0) {
+            //        this->wigner_3js(n_elements) =
+            //            ((w3j1 - math::pow(-1, m3s) * w3j2)) *
+            //            math::INV_SQRT_TWO;
+            //      } else if (m3s == 0) {
+            //        this->wigner_3js(n_elements) = w3j1;
+            //      }
+            //      ++n_elements;
+            //    }
+            //  }
+            //}
+            for (size_t m3{0}; m3 < 2 * l3 + 1; m3++) {
+              int m3s{static_cast<int>(m3 - l3)};
+              for (size_t m1{0}; m1 < 2 * l1 + 1; m1++) {
+                int m1s{static_cast<int>(m1 - l1)};
+                for (size_t m2{0}; m2 < 2 * l2 + 1; m2++) {
+                  int m2s{static_cast<int>(m2 - l2)};
                   if ((m1s + m2s + m3s != 0) && (m1s + m2s - m3s != 0)) {
                     continue;
                   }
@@ -138,17 +165,6 @@ namespace rascal {
                   } else if (m3s == 0) {
                     this->wigner_3js(n_elements) = w3j1;
                   }
-                  //*/
-                  // change to the following for agreement with SOAPFAST
-                  //(different definition of the real spherical harmonics)
-                  /*
-                  if (m3s > 0) { this->wigner_3js.push_back((w3j1 + pow(-1,
-                  m3s)*w3j2)/sqrt(2.0)); } else if (m3s == 0) {
-                  this->wigner_3js.push_back(w3j1); } else if (m3s < 0) {
-                  this->wigner_3js.push_back(((w3j2 - pow(-1,
-                  m3s)*w3j1))/sqrt(2.0));
-                  }
-                  */
                   ++n_elements;
                 }
               }
@@ -453,7 +469,14 @@ namespace rascal {
         for (const auto & el2 : coefficients) {
           pair_type[1] = el2.first[0];
           auto & coef2{el2.second};
-
+	  //double mult{1.0};
+          //if (pair_type[0] == pair_type[1]) {
+          //  mult = 1.0;
+          //}
+          ////different species
+          //else {
+          //  mult = std::sqrt(2.0);
+          //}
           size_t & l3{this->lambda};
           if (soap_vector.count(pair_type) == 1) {
             auto && soap_vector_by_type{soap_vector[pair_type]};
@@ -495,24 +518,24 @@ namespace rascal {
                           if (m1s > 0) {
                             coef1c = pow(-1.0, m1s) *
                                      complex(coef1(n1, lm1),
-                                             coef1(n1, lm1 - 2 * m1s));
+                                             -coef1(n1, lm1 - 2 * m1s));
                           } else if (m1s == 0) {
                             coef1c =
                                 complex(coef1(n1, lm1), 0.0) * math::SQRT_TWO;
                           } else if (m1s < 0) {
                             coef1c = complex(coef1(n1, lm1 - 2 * m1s),
-                                             -coef1(n1, lm1));
+                                             coef1(n1, lm1));
                           }
                           if (m2s > 0) {
                             coef2c = pow(-1.0, m2s) *
                                      complex(coef2(n2, lm2),
-                                             coef2(n2, lm2 - 2 * m2s));
+                                             -coef2(n2, lm2 - 2 * m2s));
                           } else if (m2s == 0) {
                             coef2c =
                                 complex(coef2(n2, lm2), 0.0) * math::SQRT_TWO;
                           } else if (m2s < 0) {
                             coef2c = complex{coef2(n2, lm2 - 2 * m2s),
-                                             -coef2(n2, lm2)};
+                                             coef2(n2, lm2)};
                           }
                           coef1c *= math::INV_SQRT_TWO;
                           coef2c *= math::INV_SQRT_TWO;
@@ -523,18 +546,22 @@ namespace rascal {
                           if ((l1 + l2 + l3) % 2 == 0) {
                             if (m3s < 0) {
                               soap_vector_by_type(nn, l0) +=
-                                  w3j * (i_unit * coef1c * coef2c).real();
+                                 w3j * (i_unit * coef1c * coef2c).real();
+                                 //mult * w3j * (i_unit * coef1c * coef2c).real();
                             } else {
                               soap_vector_by_type(nn, l0) +=
-                                  w3j * (coef1c * coef2c).real();
+                                 w3j * (coef1c * coef2c).real();
+                                 //mult * w3j * (coef1c * coef2c).real();
                             }
                           } else if (this->inversion_symmetry == false) {
                             if (m3s < 0) {
                               soap_vector_by_type(nn, l0) +=
-                                  w3j * (i_unit * coef1c * coef2c).imag();
+                                 w3j * (i_unit * coef1c * coef2c).imag();
+                                 //mult * w3j * (i_unit * coef1c * coef2c).imag();
                             } else {
                               soap_vector_by_type(nn, l0) +=
-                                  w3j * (coef1c * coef2c).imag();
+                                 w3j * (coef1c * coef2c).imag();
+                                 //mult * w3j * (coef1c * coef2c).imag();
                             }
                           }
                           wigner_count++;
@@ -556,9 +583,9 @@ namespace rascal {
       soap_vector.multiply_off_diagonal_elements_by(math::SQRT_TWO);
 
       // normalize the soap vector
-      if (this->normalize) {
-        soap_vector.normalize();
-      }
+      //if (this->normalize) {
+      //  soap_vector.normalize();
+      //}
     }  // center
   }    // compute_lambdaspectrum
 
