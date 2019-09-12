@@ -44,11 +44,11 @@ namespace rascal {
     auto & collections = Fix::collections;
     auto & filename = Fix::filename;
     auto & start = Fix::start;
-    auto & lenght = Fix::lenght;
+    auto & length = Fix::length;
 
     for (auto & collection : collections) {
-      collection.add_structures(filename, start, lenght);
-      BOOST_CHECK_EQUAL(collection.size(), lenght);
+      collection.add_structures(filename, start, length);
+      BOOST_CHECK_EQUAL(collection.size(), length);
     }
   }
 
@@ -60,10 +60,10 @@ namespace rascal {
     auto & collections = Fix::collections;
     auto & filename = Fix::filename;
     auto & start = Fix::start;
-    auto & lenght = Fix::lenght;
+    auto & length = Fix::length;
 
     for (auto & collection : collections) {
-      collection.add_structures(filename, start + 30, lenght + 5);
+      collection.add_structures(filename, start + 30, length + 5);
 
       for (auto & manager : collection) {
         for (auto atom : manager) {

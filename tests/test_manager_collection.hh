@@ -5,7 +5,8 @@
  *
  * @date   14 June 2019
  *
- * @brief
+ * @brief contains the fixtures with data for the tests of the structure
+ *        manager collection
  *
  * @section LICENSE
  *
