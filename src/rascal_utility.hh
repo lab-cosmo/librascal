@@ -56,15 +56,21 @@ namespace rascal {
     template <typename... Ts>
     using void_t = typename make_void<Ts...>::type;
 
+    /**
+     * Checks if the type T has a begin, end, iterator and const_iterator
+     * functionality.
+     */
     template <class, class = void_t<>>
     struct is_iterable : std::false_type {};
-
+ 
     template <class T>
     struct is_iterable<T,
                        void_t<decltype(std::declval<T>().begin()),
                               decltype(std::declval<T>().end()),
                               typename T::iterator, typename T::const_iterator>>
         : std::true_type {};
+
+
     template <class, class = void_t<>>
     struct is_map : std::false_type {};
 

@@ -57,13 +57,13 @@ namespace rascal {
 
    protected:
     Data_t managers{};
-    Hypers_t adaptor_inputs{};
+    Hypers_t adaptor_parameters{};
 
    public:
     ManagerCollection() = default;
 
-    explicit ManagerCollection(const Hypers_t & adaptor_inputs) {
-      this->adaptor_inputs = adaptor_inputs;
+    explicit ManagerCollection(const Hypers_t & adaptor_parameters) {
+      this->adaptor_parameters = adaptor_parameters;
     }
 
     //! Copy constructor
@@ -97,29 +97,29 @@ namespace rascal {
     inline const_iterator end() const noexcept { return this->managers.end(); }
 
     //! set the global inputs for the adaptors
-    inline void set_adaptor_inputs(const Hypers_t & adaptor_inputs) {
-      this->adaptor_inputs = adaptor_inputs;
+    inline void set_adaptor_parameters(const Hypers_t & adaptor_parameters) {
+      this->adaptor_parameters = adaptor_parameters;
     }
 
     inline const Hypers_t & get_adaptors_parameters() const {
-      return this->adaptor_inputs;
+      return this->adaptor_parameters;
     }
 
     /**
-     * functions to add a(several) structures to the collection
+     * functions to add one or several structures to the collection
      */
     inline void add_structure(const Hypers_t & structure,
-                              const Hypers_t & adaptor_inputs) {
+                              const Hypers_t & adaptor_parameters) {
       auto manager =
           make_structure_manager_stack<Manager, AdaptorImplementationPack...>(
-              structure, adaptor_inputs);
+              structure, adaptor_parameters);
       this->add_structure(manager);
     }
 
     inline void add_structure(const Hypers_t & structure) {
       auto manager =
           make_structure_manager_stack<Manager, AdaptorImplementationPack...>(
-              structure, this->adaptor_inputs);
+              structure, this->adaptor_parameters);
       this->add_structure(manager);
     }
 
@@ -128,15 +128,17 @@ namespace rascal {
     }
 
     /**
-     * Function used from python. add empty structures to build the objects and
-     * update them afterwards (small workaround because AtomicStructure<3>
-     * can't be put in a json object).
+     * A helper function used in the python bindings. It adds empty structures
+     * to then updates them with the actual atomic structure (a small workaround
+     * because AtomicStructure<3> can't be put in a json object).
+     *
+     * @param atomic_structures the structures which are added to the managers.
      */
     void
     add_structures(const std::vector<AtomicStructure<3>> & atomic_structures) {
-      Hypers_t structure = Hypers_t::object();
+      Hypers_t empty_structure = Hypers_t::object();
       for (const auto & atomic_structure : atomic_structures) {
-        this->add_structure(structure);
+        this->add_structure(empty_structure);
         this->managers.back()->update(atomic_structure);
       }
     }

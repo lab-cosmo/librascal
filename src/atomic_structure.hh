@@ -88,7 +88,10 @@ namespace rascal {
     Cell_t cell{};
     PBC_t pbc{};
 
+
+    //! Default constructor
     AtomicStructure() = default;
+
     //! method for initializing structure data from raw Eigen types, beware:
     //! copy!
     inline void set_structure(const PositionsInput_t & positions,

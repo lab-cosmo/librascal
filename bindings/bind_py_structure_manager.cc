@@ -450,11 +450,20 @@ namespace rascal {
         [](ManagerCollection_t & v, int index) { return v[index]; },
         py::keep_alive<0, 1>());
 
-    // add_structures to the collection
+    /**
+     * Binds the `add_structures`. Instead of invoking the targeted function to bind within a lambda function, a pointer-to-member-function is used here.
+     *
+     * @param ManagerCollection_t::add_structures a pointer-to-member-function of the add_structures function in ManagerCollection which takes an vector of AtomicStructures<3> and returns void.
+     */
     manager_collection.def("add_structures",
                            (void (ManagerCollection_t::*)(  // NOLINT
                                const std::vector<AtomicStructure<3>> &)) &
                                ManagerCollection_t::add_structures);
+    /**
+     * Binds the `add_structures`. Instead of invoking the targeted function to bind within a lambda function, a pointer-to-member-function is used here.
+     *
+     * @param ManagerCollection_t::add_structures a pointer-to-member-function of the add_structures function in ManagerCollection which takes a string, const int and int, and returns void.
+     */
     manager_collection.def(
         "add_structures",
         (void (ManagerCollection_t::*)(const std::string &, const int &, int)) &
