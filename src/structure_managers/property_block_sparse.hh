@@ -107,7 +107,7 @@ namespace rascal {
       using Precision_t = typename V::value_type;
       using Data_t = Eigen::Array<Precision_t, Eigen::Dynamic, 1>;
       using Vector_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, 1>;
-      using VectorRef_t = typename Eigen::Map<Vector_t>;
+      using VectorMap_Ref = typename Eigen::Map<Vector_t>;
       using Self_t = InternallySortedKeyMap<K, V>;
       //! the data holder.
       Data_t data{};
@@ -385,10 +385,10 @@ namespace rascal {
 
         for (auto & key : unique_keys) {
           auto && posA{this->map[key]};
-          auto vecA{VectorRef_t(&this->data[std::get<0>(posA)],
+          auto vecA{VectorMap_Ref(&this->data[std::get<0>(posA)],
                                 std::get<1>(posA) * std::get<2>(posA))};
           auto && posB{B.map[key]};
-          auto vecB{VectorRef_t(&B.data[std::get<0>(posB)],
+          auto vecB{VectorMap_Ref(&B.data[std::get<0>(posB)],
                                 std::get<1>(posB) * std::get<2>(posB))};
           val += vecA.dot(vecB);
         }

@@ -36,7 +36,8 @@ namespace rascal {
       boost::mpl::list<KernelFixture<DataSphericalInvariantsKernelFixture>>;
 
   /**
-   * Test the compute functionality
+   * Tests if the compute functionality agrees with the results of the reference
+   * data.
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(kernel_ref_data_test, Fix,
                                    multiple_ref_fixtures, Fix) {
@@ -77,7 +78,8 @@ namespace rascal {
       boost::mpl::list<KernelFixture<StrictNLKernelFixture>>;
 
   /**
-   * Test the compute functionality
+   * Tests if the compute functionality matches the size of atoms/structures
+   * given as input.
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_kernel_compute_test, Fix,
                                    multiple_fixtures, Fix) {
