@@ -97,7 +97,7 @@ namespace rascal {
       this->ref_data = datas["rep_info"]["spherical_invariants"];
       this->filename = datas["filename"];
       this->start = datas["start"];
-      this->lenght = datas["length"];
+      this->length = datas["length"];
 
       for (auto & cutoff : datas["cutoffs"]) {
         json parameters;
@@ -135,7 +135,7 @@ namespace rascal {
     std::string ref_filename{"reference_data/kernel_reference.ubjson"};
     std::string filename{""};
     int start{0};
-    int lenght{0};
+    int length{0};
   };
 
   /**
@@ -156,7 +156,7 @@ namespace rascal {
     KernelFixture() : ParentA{}, ParentB{} {
       for (auto & collection : this->collections) {
         collection.add_structures(this->ParentA::filename, this->ParentA::start,
-                                  this->ParentA::lenght);
+                                  this->ParentA::length);
         for (auto & hyper : this->ParentB::representation_hypers) {
           this->representations.emplace_back(hyper);
           this->representations.back().compute(collection);

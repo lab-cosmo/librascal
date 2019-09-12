@@ -47,7 +47,7 @@ namespace rascal {
 
     std::string filename{"reference_data/dft-smiles_500.ubjson"};
     int start{0};
-    int lenght{10};
+    int length{10};
   };
 
   /**
