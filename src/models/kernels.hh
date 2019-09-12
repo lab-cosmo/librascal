@@ -98,7 +98,7 @@ namespace rascal {
       }
 
       /**
-       * Compute the kernel between 2 set of structures.
+       * Compute the kernel between 2 set of structures for a given representation specified by the name.
        *
        * @param managers_a a ManagerCollection or similar collection of
        * structure managers
@@ -190,6 +190,18 @@ namespace rascal {
       }
     }
 
+
+    /*
+     * The root compute kernel function. It computes the kernel between 2 set of structures for a given representation specified by the calculator.
+     *
+     * @param calculator the calculator which has been used to calculate
+     * the representation on the two managers
+     * has been registered in the elements of managers_a and managers_b
+     * @param managers_a a ManagerCollection or similar collection of
+     * structure managers
+     * @param managers_b a ManagerCollection or similar collection of
+     * structure managers
+     */
     template <class Calculator, class StructureManagers>
     math::Matrix_t compute(const Calculator & calculator,
                            const StructureManagers & managers_a,
