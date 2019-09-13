@@ -15,7 +15,7 @@ from time import strftime
 from tqdm import tqdm_notebook as tqdm
 
 style = {'description_width': 'initial'}
-hyper_vals = {"soap_type": dict(options = ["PowerSpectrum", "RadialSpectrum"], name = "Bond Order"),
+hyper_vals = {"soap_type": dict(options = ["PowerSpectrum", "RadialSpectrum"], name = "Body Order"),
             "interaction_cutoff":dict(options = [2.0,5.0],name = r"$r_{cut}$"),
             "max_radial":dict(options =  [0, 10],name = r"$n_{max}$"),
             "max_angular": dict(options = [0, 10],name = r"$l_{max}$"),
@@ -48,7 +48,7 @@ hyper_dict = {"Power Spectrum":dict(soap_type="PowerSpectrum",
                                   cutoff_smooth_width=0.5,
                                   )
           }
-known_properties = dict(ENERGY="atomic", dft_formation_energy_per_atom_in_eV="global")\
+known_properties = dict(CS="atomic", dft_formation_energy_per_atom_in_eV="global")\
 
 def markdown_table_from_dict(d, headers):
     return '<table>  <thead><tr>{}</tr></thead><tbody>'.format(''.join(['<th>{}</th>'.format(h) for h in headers]))+''.join(['<tr><td>{}</td>{}</tr>'.format(key, ''.join(['<td>{}</td>'.format(v) for v in d[key]])) for key in d])+'</tbody></table>'
@@ -61,12 +61,6 @@ def split_dataset(frames, train_fraction, seed=10):
     train = ids[:Ntrain]
     test = ids[Ntrain:]
     return np.array(train), np.array(test)#[frames[ii] for ii in train],targets[train],[frames[ii] for ii in test],targets[test]
-# def get_mae(ypred,y):
-#     return np.mean(np.abs(ypred-y))
-# def get_rmse(ypred,y):
-#     return np.sqrt(np.mean((ypred-y)**2))
-# # def get_sup(ypred,y):
-# #     return np.amax(np.abs((ypred-y)))
 def get_r2(y_pred,y_true):
     numerator = ((y_true - y_pred) ** 2).sum(axis=0,dtype=np.float64)
     denominator = ((y_true - np.average(y_true, axis=0)) ** 2).sum(axis=0,dtype=np.float64)
@@ -101,14 +95,13 @@ class KRR(object):
         kernel = compute_kernel(self.zeta, self.X, features, self.kernel_type)
         return np.dot(self.weights, kernel)
 def extract_property(frames, property='energy'):
-    try:
+    if(property in frames[0].info):
         return np.array([cc.info[property] for cc in frames])
-    except:
-        try:
-            return np.array([cc.array[property] for cc in frames])
-        except:
-            print(frames[0].info)
-            raise KeyError("{} is not a property in the given frames".format(property))
+    elif(property in frames[0].arrays):
+        return np.array([cc.arrays[property] for cc in frames])
+    else:
+        print(frames[0].info)
+        raise KeyError("{} is not a property in the given frames".format(property))
 def readme_button():
     def show_readme_for_button(b):
         clear_output()
@@ -118,26 +111,6 @@ def readme_button():
     display(button, output)
 
     button.on_click(show_readme_for_button)
-# def make_util_buttons():
-#     funcs = {'compute_kernel': compute_kernel,
-#
-#              'extract_energy': extract_energy,
-#              'get_mae': get_mae,
-#              'get_r2': get_r2,
-#              'get_rmse': get_rmse,
-#              'get_score': get_score,
-#              'get_sup': get_sup,
-#              'split_dataset': split_dataset,
-#              'train_krr_model': train_krr_model
-#             }
-#
-#     def disp_func(a):
-#         clear_output()
-#         make_util_buttons()
-#         lines = inspect.getsource(funcs[button.value])
-#         display(Markdown('```python\n'+str(''.join(lines))+'```'))
-#
-#     button = _button_template_(funcs.keys(), "Show: ", disp_func)
 def link_ngl_wdgt_to_ax_pos(ax, pos, ngl_widget):
     from matplotlib.widgets import AxesWidget
     from scipy.spatial import cKDTree
@@ -241,8 +214,8 @@ class SOAP_tutorial(object):
                         for val in hyper_vals if 'fixed' not in hyper_vals[val]}
 
 
-        self.properties = {prop: extract_property(self.frames, prop) for prop in self.frames[0].info if prop in known_properties}
-        self.sliders['number_of_frames'] = widgets.IntSlider(value=len(self.frames) if number_of_frames==None else number_of_frames, min = 0, max = len(self.frames), \
+        self.properties = {prop: extract_property(self.frames, prop) for prop in [*list(self.frames[0].info.keys()), *list(self.frames[0].arrays.keys())] if prop in known_properties}
+        self.sliders['number_of_frames'] = widgets.IntSlider(value=int(len(self.frames)*0.2) if number_of_frames==None else number_of_frames, min = 0, max = len(self.frames), \
                                                     description="Number of Frames", step=1, style=style)
         self.sliders['property_to_ml'] = widgets.Dropdown(value=list(self.properties.keys())[0] if property==None else property, options=list(self.properties.keys()), \
                                                     description="Property to ML", style=style)
@@ -260,9 +233,9 @@ class SOAP_tutorial(object):
         self.trained={prop:False for prop in self.properties}
     def reset_ML(self, inp_change=False):
         if(inp_change):
-            self.properties = {prop: extract_property(self.frames, prop) for prop in self.frames[0].info if  prop in known_properties}
+            self.properties = {prop: extract_property(self.frames, prop) for prop in [*list(self.frames[0].info.keys()), *list(self.frames[0].arrays.keys())] if  prop in known_properties}
             self.sliders['number_of_frames'].max = len(self.frames)
-            self.sliders['number_of_frames'].value = len(self.frames)
+            self.sliders['number_of_frames'].value = int(len(self.frames)*0.2)
             self.sliders['property_to_ml'].options=list(self.properties.keys())
             self.sliders['property_to_ml'].value = list(self.properties.keys())[0]
         self.krr = {prop:None for prop in self.properties}
@@ -274,9 +247,9 @@ class SOAP_tutorial(object):
                 self.hyperparameters[s] = self.sliders[s].value
         self.reset_ML()
     def disp_func(self,a):
-        self.hyperparameters = hyper_dict[self.preset_button.value]
         for s in self.sliders:
             if(s in self.hyperparameters):
+                self.hyperparameters[s] = hyper_dict[self.preset_button.value][s]
                 self.sliders[s].value = self.hyperparameters[s]
         self.reset_ML()
     def get_input(self,a):
@@ -291,6 +264,9 @@ class SOAP_tutorial(object):
         representation = SOAP(**self.hyperparameters)
 
         self.train_idx, self.test_idx = split_dataset(self.frames[:self.sliders['number_of_frames'].value],self.training_percentage)
+
+        training_properties = np.concatenate(self.properties[self.sliders['property_to_ml'].value][self.train_idx])[:,0] if known_properties[self.sliders['property_to_ml'].value]=='atomic' else self.properties[self.sliders['property_to_ml'].value][self.train_idx]
+
         self.verbosity_wrap("First, I am going to separate my dataset:")
         self.verbosity_wrap(markdown_table_from_dict({"Training Set": [len(self.train_idx),round(100*(self.training_percentage))],
                                                       "Testing Set":[len(self.test_idx),round(100*(1-self.training_percentage))]}, headers=["Partition","Number of Frames", "Percentage"]))
@@ -299,19 +275,19 @@ class SOAP_tutorial(object):
         self.verbosity_wrap("<br/>Now we will compute the SOAP representation of our training frames.")
 
         features = representation.transform(self.frames[self.train_idx])
-
+        # print(features.shape)
         self.verbosity_wrap('This took {} seconds/frame.'.format(round((time.time()-t)/len(self.train_idx),8)))
         self.verbosity_wrap("<br/>Next we find the kernel for our training model.<br/>(This step may take a few minutes for larger training sets.)")
 
         time.sleep(.5)
         kernel = compute_kernel(self.zeta, features, kernel_type=known_properties[self.sliders['property_to_ml'].value])
-        delta = np.std(self.properties[self.sliders['property_to_ml'].value][self.train_idx]) / np.mean(kernel.diagonal())
+        delta = np.std(training_properties) / np.mean(kernel.diagonal())
         kernel[np.diag_indices_from(kernel)] += self.Lambda**2 / delta **2 + jitter
 
         self.verbosity_wrap("<br/>We will adjust the diagonals of our kernel by {} so that it is properly scaled.".format(round(self.Lambda**2 / delta **2 + jitter,8)))
         self.verbosity_wrap("<br/>Now we can take this kernel to compute the weights of our KRR.")
 
-        weights = np.linalg.solve(kernel,self.properties[self.sliders['property_to_ml'].value][self.train_idx])
+        weights = np.linalg.solve(kernel,training_properties)
         model = KRR(self.zeta, weights, representation, features, kernel_type=known_properties[self.sliders['property_to_ml'].value])
         self.krr[self.sliders['property_to_ml'].value], k = model, kernel
         self.trained[self.sliders['property_to_ml'].value] = True
@@ -319,9 +295,11 @@ class SOAP_tutorial(object):
         if(self.trained[self.sliders['property_to_ml'].value]==False):
             self.verbosity_wrap("Model has not yet been trained, training now..."   )
             self.train_model(self.sliders['property_to_ml'].value)
+        testing_properties =np.concatenate(self.properties[self.sliders['property_to_ml'].value][self.test_idx])[:,0] if known_properties[self.sliders['property_to_ml'].value]=='atomic' else self.properties[self.sliders['property_to_ml'].value][self.test_idx]
         y_pred = self.krr[self.sliders['property_to_ml'].value].predict(self.frames[self.test_idx])
-        self.verbosity_wrap(markdown_table_from_dict(get_score(y_pred, self.properties[self.sliders['property_to_ml'].value][self.test_idx]), headers=["Statistic","Value" ]))
-        plt.scatter(y_pred, self.properties[self.sliders['property_to_ml'].value][self.test_idx], s=3)
+        self.verbosity_wrap(markdown_table_from_dict(get_score(y_pred, testing_properties), headers=["Statistic","Value" ]))
+
+        plt.scatter(y_pred, testing_properties, s=3)
         plt.axis('scaled')
         plt.xlabel('DFT energy / (eV/atom)')
         plt.ylabel('Predicted energy / (eV/atom)')
@@ -330,5 +308,3 @@ class SOAP_tutorial(object):
     def output_params(self):
         self.verbosity_wrap('Our input file is {}, of which we are using {} frames.'.format(self.input_file, self.sliders['number_of_frames'].value))
         self.verbosity_wrap("<br/>Our hyperparameters are {}".format(markdown_table_from_dict({hyper_vals[k]['name']:[self.hyperparameters[k]] for k in self.hyperparameters if 'fixed' not in hyper_vals[k]}, headers =["Parameter", "Value"])))
-if __name__=="__main__":
-    make_util_buttons()
