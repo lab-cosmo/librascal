@@ -426,7 +426,7 @@ namespace rascal {
     std::vector<Structure_t> structures{};
   };
 
-  struct SingleHypersSphericalRepresentation : SimplePeriodicNLCCStrictFixture {
+  struct SingleHypersSphericalExpansion : SimplePeriodicNLCCStrictFixture {
     using Parent = SimplePeriodicNLCCStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalExpansion;
@@ -463,8 +463,8 @@ namespace rascal {
         {{"max_radial", 4}, {"max_angular", 0}, {"compute_gradients", true}}};
   };
 
-  struct SingleHypersSphericalInvariants : SimplePeriodicNLStrictFixture {
-    using Parent = SimplePeriodicNLStrictFixture;
+  struct SingleHypersSphericalInvariants : SimplePeriodicNLCCStrictFixture {
+    using Parent = SimplePeriodicNLCCStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalInvariants;
 
