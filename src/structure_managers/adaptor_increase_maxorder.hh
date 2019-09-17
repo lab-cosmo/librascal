@@ -36,7 +36,6 @@
 #include "lattice.hh"
 #include "basic_types.hh"
 
-#include <typeinfo>
 #include <set>
 #include <vector>
 

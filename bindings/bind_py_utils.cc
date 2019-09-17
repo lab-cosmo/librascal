@@ -25,28 +25,30 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "bind_include.hh"
-namespace utils = rascal::utils;
+#include "bind_py_utils.hh"
 
-void utils_binding(py::module & mod) {
-  py::module m_utils_sparse = mod.def_submodule("sparsification");
-  m_utils_sparse.doc() = "Sparsification Routines";
+namespace rascal {
+  void utils_binding(py::module & mod) {
+    py::module m_utils_sparse = mod.def_submodule("sparsification");
+    m_utils_sparse.doc() = "Sparsification Routines";
 
-  m_utils_sparse.def(
-      "fps", &utils::select_fps,
-      "Selects points from a NxD dimensional"
-      " feature matrix by farthest point sampling (N is the number of"
-      " sample in a D dimensional space).",
-      py::arg("feature_matrix"), py::arg("n_sparse") = 0,
-      py::arg("i_first_point") = 0,
-      py::arg("restart") = std::make_tuple(Eigen::ArrayXi(0), Eigen::ArrayXd(0),
-                                           Eigen::ArrayXd(0)));
+    m_utils_sparse.def(
+        "fps", &utils::select_fps,
+        "Selects points from a NxD dimensional"
+        " feature matrix by farthest point sampling (N is the number of"
+        " sample in a D dimensional space).",
+        py::arg("feature_matrix"), py::arg("n_sparse") = 0,
+        py::arg("i_first_point") = 0,
+        py::arg("restart") = std::make_tuple(
+            Eigen::ArrayXi(0), Eigen::ArrayXd(0), Eigen::ArrayXd(0)));
 
-  m_utils_sparse.def(
-      "fps_voronoi", &utils::select_fps_voronoi,
-      "Selects points from a"
-      " NxD dimensional feature matrix by farthest point sampling, using"
-      " a Voronoi cell method (N is the number of sample in a D dimensional"
-      " space).",
-      py::arg("feature_matrix"), py::arg("n_sparse"), py::arg("i_first_point"));
-}
+    m_utils_sparse.def(
+        "fps_voronoi", &utils::select_fps_voronoi,
+        "Selects points from a"
+        " NxD dimensional feature matrix by farthest point sampling, using"
+        " a Voronoi cell method (N is the number of sample in a D dimensional"
+        " space).",
+        py::arg("feature_matrix"), py::arg("n_sparse"),
+        py::arg("i_first_point"));
+  }
+}  // namespace rascal

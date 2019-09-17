@@ -211,7 +211,7 @@ RepManager
 
 A ``RepManager`` object has the purpose of computing properties of
 clusters, such as distances, angles, or more complex features such as
-symmetry functions or SOAP power spectrum components, and to store them in
+symmetry functions or SphericalInvariants power spectrum components, and to store them in
 the Properties associated with the structure.
 It needs to be initialized with a ``StructureManager`` and
 a JSON formatted string that contains its hyperparameters.
